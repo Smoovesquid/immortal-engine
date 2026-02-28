@@ -120,3 +120,19 @@ function dedupe(arr) {
   }
   return out;
 }
+
+export function assertMapStructure(map) {
+  const m = ensureMap(map);
+  const ids = new Set();
+  for (const n of m.nodes) {
+    if (!n.id) throw new Error('Map invariant: node without id');
+    if (ids.has(n.id)) throw new Error('Map invariant: duplicate node id');
+    ids.add(n.id);
+  }
+  if (m.currentNodeId && !ids.has(m.currentNodeId)) {
+    throw new Error('Map invariant: invalid currentNodeId');
+  }
+  if (m.discovered.length && m.discovered[0] !== m.currentNodeId) {
+    throw new Error('Map invariant: discovered[0] must equal currentNodeId');
+  }
+}

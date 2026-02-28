@@ -1,3 +1,4 @@
+import { assertMapStructure } from './mapState.js';
 import { seedFromString, makeRng } from '../rng.js';
 
 // Living Terrain Engine v1 — deterministic narrative map graph.
@@ -47,12 +48,15 @@ export function generateInitialMap({ seed = 'seed', packId = 'fantasy', pack = {
 
   const startNodeId = nodes[0]?.id || '';
 
-  return {
+  const map = {
     nodes,
     edges,
     discovered: startNodeId ? [startNodeId] : [],
     currentNodeId: startNodeId
   };
+
+  assertMapStructure(map);
+  return map;
 }
 
 function hasEdge(edges, a, b) {

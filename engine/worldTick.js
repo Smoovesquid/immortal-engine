@@ -1,3 +1,4 @@
+import { assertWorldInvariants } from './invariants.js';
 import { ensureWorld } from './state.js';
 import { ensureInstrumentLayer, reinforceMotif } from './instrument.js';
 import { seedFromString, makeRng } from './rng.js';
@@ -52,6 +53,7 @@ export function worldTick(world, seed = '') {
   w = tickMotifs(w, rng, severity);
 
   // 8) Apply fate weighting already expressed via severity.
+  assertWorldInvariants(w);
   return w;
 }
 

@@ -1,3 +1,4 @@
+import { assertWorldInvariants } from './invariants.js';
 import { ensureLedger } from './ledger.js';
 import { ensureEnding } from './ending.js';
 import { ensureInstrumentLayer } from './instrument.js';
@@ -11,7 +12,7 @@ export function ensureWorld(partial) {
   const meta = w.meta && typeof w.meta === 'object' ? w.meta : {};
   const ui = w.ui && typeof w.ui === 'object' ? w.ui : {};
 
-  return {
+  const world = {
     meta: {
       campaignId: String(meta.campaignId ?? 'campaign'),
       version: WORLD_VERSION,
@@ -63,6 +64,9 @@ export function ensureWorld(partial) {
       lastError: ui.lastError ? String(ui.lastError) : ''
     }
   };
+
+  assertWorldInvariants(world);
+  return world;
 }
 
 export function newWorld({ seed, fate, campaignId, pack }) {

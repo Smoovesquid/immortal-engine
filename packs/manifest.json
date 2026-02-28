@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "packs": [
+    { "id": "fantasy", "name": "Fantasy", "path": "/packs/fantasy/pack.json" },
+    { "id": "space-rift", "name": "Space Rift", "path": "/packs/space-rift/pack.json" },
+    { "id": "zombie", "name": "Zombie Apocalypse", "path": "/packs/zombie/pack.json" },
+    { "id": "haunted", "name": "Haunted House", "path": "/packs/haunted/pack.json" },
+    { "id": "modern", "name": "Modern IRL", "path": "/packs/modern/pack.json" }
+  ]
+}

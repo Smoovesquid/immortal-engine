@@ -1,0 +1,375 @@
+{
+  "weapons": [
+    {
+      "name": "Baseball bat",
+      "tags": [
+        "martial"
+      ],
+      "notes": "Sports equipment turned policy.",
+      "damage": "1d6",
+      "weight": 2,
+      "noise": 1,
+      "light": 0,
+      "bulk": 2
+    },
+    {
+      "name": "Fire axe",
+      "tags": [
+        "tools",
+        "martial"
+      ],
+      "notes": "Makes doors negotiable.",
+      "damage": "1d8",
+      "weight": 2,
+      "noise": 1,
+      "light": 0,
+      "bulk": 2
+    },
+    {
+      "name": "Hunting rifle",
+      "tags": [
+        "martial"
+      ],
+      "notes": "Loud problems, distant solutions.",
+      "damage": "1d10",
+      "weight": 2,
+      "noise": 1,
+      "light": 0,
+      "bulk": 2
+    },
+    {
+      "name": "Kitchen machete",
+      "tags": [
+        "martial"
+      ],
+      "notes": "Improvised, effective.",
+      "damage": "1d8",
+      "weight": 2,
+      "noise": 1,
+      "light": 0,
+      "bulk": 2
+    },
+    {
+      "name": "Nail gun",
+      "tags": [
+        "tech",
+        "tools"
+      ],
+      "notes": "For building or stopping.",
+      "damage": "1d6",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    },
+    {
+      "name": "Pipe wrench",
+      "tags": [
+        "tools",
+        "martial"
+      ],
+      "notes": "Heavy truth.",
+      "damage": "1d6",
+      "weight": 2,
+      "noise": 1,
+      "light": 0,
+      "bulk": 2
+    }
+  ],
+  "armor": [
+    {
+      "name": "Motorcycle jacket",
+      "tags": [
+        "armor",
+        "clothes"
+      ],
+      "ac": 1,
+      "notes": "Bite-resistant optimism.",
+      "weight": 1,
+      "noise": 1,
+      "light": 0,
+      "bulk": 1
+    },
+    {
+      "name": "Hockey pads",
+      "tags": [
+        "armor"
+      ],
+      "ac": 1,
+      "notes": "The apocalypse loves sports.",
+      "weight": 3,
+      "noise": 2,
+      "light": 0,
+      "bulk": 3
+    },
+    {
+      "name": "Work boots",
+      "tags": [
+        "armor"
+      ],
+      "ac": 0,
+      "notes": "Good for running; bad for noise.",
+      "weight": 3,
+      "noise": 2,
+      "light": 0,
+      "bulk": 3
+    },
+    {
+      "name": "Homemade arm guards",
+      "tags": [
+        "armor"
+      ],
+      "ac": 1,
+      "notes": "Duct tape engineering.",
+      "weight": 3,
+      "noise": 2,
+      "light": 0,
+      "bulk": 3
+    }
+  ],
+  "tools": [
+    {
+      "name": "Bolt cutters",
+      "tags": [
+        "tools"
+      ],
+      "notes": "Freedom, in two handles.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    },
+    {
+      "name": "First-aid kit",
+      "tags": [
+        "tools",
+        "consumable"
+      ],
+      "notes": "A bag of second chances.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    },
+    {
+      "name": "Zip ties",
+      "tags": [
+        "tools"
+      ],
+      "notes": "Friendships, temporary.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    },
+    {
+      "name": "Flashlight",
+      "tags": [
+        "tools"
+      ],
+      "notes": "Hope with batteries.",
+      "weight": 1,
+      "noise": 1,
+      "light": 4,
+      "bulk": 1
+    },
+    {
+      "name": "Crowbar",
+      "tags": [
+        "tools"
+      ],
+      "notes": "Opens things that shouldn’t.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    }
+  ],
+  "clothes": [
+    {
+      "name": "Backpack",
+      "tags": [
+        "clothes"
+      ],
+      "notes": "Your world fits inside.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    },
+    {
+      "name": "Bandana",
+      "tags": [
+        "clothes"
+      ],
+      "notes": "Dust, blood, lies.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    },
+    {
+      "name": "Rain poncho",
+      "tags": [
+        "clothes"
+      ],
+      "notes": "Keeps you dry; not clean.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    }
+  ],
+  "spells": [],
+  "tech": [
+    {
+      "name": "Hand-crank radio",
+      "tags": [
+        "tech"
+      ],
+      "notes": "Static and rumors.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    },
+    {
+      "name": "Walkie-talkies",
+      "tags": [
+        "tech"
+      ],
+      "notes": "Range is a form of trust.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    }
+  ],
+  "oddities": [
+    {
+      "name": "Photo of strangers",
+      "tags": [
+        "oddity"
+      ],
+      "notes": "You recognize them anyway.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    },
+    {
+      "name": "Key labeled “SAFE”",
+      "tags": [
+        "oddity"
+      ],
+      "notes": "You’ve never found the safe.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    },
+    {
+      "name": "Locket with a name scratched out",
+      "tags": [
+        "oddity"
+      ],
+      "notes": "Someone refused to forget.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    }
+  ],
+  "consumables": [
+    {
+      "name": "Canned beans",
+      "tags": [
+        "consumable"
+      ],
+      "notes": "The currency of tomorrow.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    },
+    {
+      "name": "Bottled water",
+      "tags": [
+        "consumable"
+      ],
+      "notes": "Clear and precious.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    },
+    {
+      "name": "Antibiotics (few)",
+      "tags": [
+        "consumable"
+      ],
+      "notes": "A miracle with an expiration date.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    },
+    {
+      "name": "Battery pack",
+      "tags": [
+        "consumable"
+      ],
+      "notes": "Light, radio, hope.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    }
+  ],
+  "junk": [
+    {
+      "name": "Lucky charm",
+      "tags": [
+        "junk"
+      ],
+      "notes": "Still unlucky.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    },
+    {
+      "name": "Comic book",
+      "tags": [
+        "junk"
+      ],
+      "notes": "Endings used to be fun.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    },
+    {
+      "name": "Broken watch",
+      "tags": [
+        "junk"
+      ],
+      "notes": "Time stopped caring first.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    },
+    {
+      "name": "Empty ammo box",
+      "tags": [
+        "junk"
+      ],
+      "notes": "A promise already spent.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    }
+  ]
+}

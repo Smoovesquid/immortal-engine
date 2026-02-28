@@ -1,0 +1,384 @@
+{
+  "weapons": [
+    {
+      "name": "Utility knife",
+      "tags": [
+        "tools",
+        "martial"
+      ],
+      "notes": "Opens boxes; closes arguments.",
+      "damage": "1d4",
+      "weight": 2,
+      "noise": 1,
+      "light": 0,
+      "bulk": 2
+    },
+    {
+      "name": "Hammer",
+      "tags": [
+        "tools",
+        "martial"
+      ],
+      "notes": "The classic answer.",
+      "damage": "1d6",
+      "weight": 2,
+      "noise": 1,
+      "light": 0,
+      "bulk": 2
+    },
+    {
+      "name": "Taser",
+      "tags": [
+        "tech"
+      ],
+      "notes": "Compliance, battery-powered.",
+      "damage": "1d6",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    },
+    {
+      "name": "9mm pistol",
+      "tags": [
+        "martial"
+      ],
+      "notes": "The loudest negotiation.",
+      "damage": "1d8",
+      "weight": 2,
+      "noise": 1,
+      "light": 0,
+      "bulk": 2
+    },
+    {
+      "name": "Pepper spray",
+      "tags": [
+        "tools"
+      ],
+      "notes": "A tiny storm.",
+      "damage": "1d4",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    },
+    {
+      "name": "Crowbar",
+      "tags": [
+        "tools",
+        "martial"
+      ],
+      "notes": "Leverage is a philosophy.",
+      "damage": "1d6",
+      "weight": 2,
+      "noise": 1,
+      "light": 0,
+      "bulk": 2
+    }
+  ],
+  "armor": [
+    {
+      "name": "Work vest",
+      "tags": [
+        "armor",
+        "clothes"
+      ],
+      "ac": 1,
+      "notes": "More pockets than peace.",
+      "weight": 1,
+      "noise": 1,
+      "light": 0,
+      "bulk": 1
+    },
+    {
+      "name": "Motorcycle helmet",
+      "tags": [
+        "armor"
+      ],
+      "ac": 1,
+      "notes": "Keeps your thoughts in.",
+      "weight": 3,
+      "noise": 2,
+      "light": 0,
+      "bulk": 3
+    },
+    {
+      "name": "Safety glasses",
+      "tags": [
+        "armor"
+      ],
+      "ac": 0,
+      "notes": "Protects eyes; not decisions.",
+      "weight": 3,
+      "noise": 2,
+      "light": 0,
+      "bulk": 3
+    }
+  ],
+  "tools": [
+    {
+      "name": "Tool belt",
+      "tags": [
+        "tools"
+      ],
+      "notes": "Portable competence.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    },
+    {
+      "name": "Duct tape",
+      "tags": [
+        "tools"
+      ],
+      "notes": "Fixes anything but time.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    },
+    {
+      "name": "Multimeter",
+      "tags": [
+        "tech"
+      ],
+      "notes": "Truth, in volts.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    },
+    {
+      "name": "Lock picks",
+      "tags": [
+        "tools"
+      ],
+      "notes": "Because consent is rare.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    },
+    {
+      "name": "Notebook + sharpie",
+      "tags": [
+        "tools"
+      ],
+      "notes": "Write it down; it becomes real.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    }
+  ],
+  "clothes": [
+    {
+      "name": "Hoodie",
+      "tags": [
+        "clothes"
+      ],
+      "notes": "Blend in, disappear.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    },
+    {
+      "name": "High-vis jacket",
+      "tags": [
+        "clothes"
+      ],
+      "notes": "Authority by neon.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    },
+    {
+      "name": "Steel-toe boots",
+      "tags": [
+        "clothes"
+      ],
+      "notes": "Good for kicking doors.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    }
+  ],
+  "spells": [],
+  "tech": [
+    {
+      "name": "Smartphone (cracked)",
+      "tags": [
+        "tech"
+      ],
+      "notes": "Full of ghosts called “contacts”.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    },
+    {
+      "name": "Body cam",
+      "tags": [
+        "tech"
+      ],
+      "notes": "Truth with an angle.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    },
+    {
+      "name": "Drone (small)",
+      "tags": [
+        "tech"
+      ],
+      "notes": "Eyes that don’t blink.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    },
+    {
+      "name": "USB stick labeled “DO NOT”",
+      "tags": [
+        "tech"
+      ],
+      "notes": "So you will.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    }
+  ],
+  "oddities": [
+    {
+      "name": "Keycard to nowhere",
+      "tags": [
+        "oddity"
+      ],
+      "notes": "The reader still beeps.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    },
+    {
+      "name": "Coin that comes back",
+      "tags": [
+        "oddity"
+      ],
+      "notes": "Always in your pocket.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    },
+    {
+      "name": "Receipt for a thing you didn’t buy",
+      "tags": [
+        "oddity"
+      ],
+      "notes": "But you remember carrying it.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    }
+  ],
+  "consumables": [
+    {
+      "name": "Energy bar",
+      "tags": [
+        "consumable"
+      ],
+      "notes": "Tastes like accountability.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    },
+    {
+      "name": "Painkillers",
+      "tags": [
+        "consumable"
+      ],
+      "notes": "For knees and conscience.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    },
+    {
+      "name": "Cigarettes",
+      "tags": [
+        "consumable"
+      ],
+      "notes": "Bad idea in a box.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    },
+    {
+      "name": "Bottled water",
+      "tags": [
+        "consumable"
+      ],
+      "notes": "Simple, precious.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    }
+  ],
+  "junk": [
+    {
+      "name": "Old lanyard",
+      "tags": [
+        "junk"
+      ],
+      "notes": "A past life’s access.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    },
+    {
+      "name": "Broken earbuds",
+      "tags": [
+        "junk"
+      ],
+      "notes": "Silence, but not peace.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    },
+    {
+      "name": "Parking ticket",
+      "tags": [
+        "junk"
+      ],
+      "notes": "The city still remembers you.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    },
+    {
+      "name": "Mismatched glove",
+      "tags": [
+        "junk"
+      ],
+      "notes": "The other one stayed behind.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    }
+  ]
+}

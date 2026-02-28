@@ -1,0 +1,421 @@
+{
+  "weapons": [
+    {
+      "name": "Cold iron crowbar",
+      "tags": [
+        "tools",
+        "martial"
+      ],
+      "notes": "Pries doors and superstitions.",
+      "damage": "1d6",
+      "weight": 2,
+      "noise": 1,
+      "light": 0,
+      "bulk": 2
+    },
+    {
+      "name": "Kitchen knife",
+      "tags": [
+        "martial"
+      ],
+      "notes": "Not for carving turkey.",
+      "damage": "1d4",
+      "weight": 2,
+      "noise": 1,
+      "light": 0,
+      "bulk": 2
+    },
+    {
+      "name": "Flashlight baton",
+      "tags": [
+        "tech",
+        "martial"
+      ],
+      "notes": "Light and leverage.",
+      "damage": "1d6",
+      "weight": 2,
+      "noise": 1,
+      "light": 4,
+      "bulk": 2
+    },
+    {
+      "name": "Salt-loaded slingshot",
+      "tags": [
+        "occult"
+      ],
+      "notes": "Petty vengeance for spirits.",
+      "damage": "1d4",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    },
+    {
+      "name": "Antique revolver (one good shot)",
+      "tags": [
+        "martial"
+      ],
+      "notes": "The cylinder clicks like teeth.",
+      "damage": "1d8",
+      "weight": 2,
+      "noise": 1,
+      "light": 0,
+      "bulk": 2
+    },
+    {
+      "name": "Hunting knife",
+      "tags": [
+        "martial"
+      ],
+      "notes": "Too sharp to feel safe.",
+      "damage": "1d6",
+      "weight": 2,
+      "noise": 1,
+      "light": 0,
+      "bulk": 2
+    }
+  ],
+  "armor": [
+    {
+      "name": "Thick coat",
+      "tags": [
+        "armor",
+        "clothes"
+      ],
+      "ac": 1,
+      "notes": "Smells like smoke.",
+      "weight": 1,
+      "noise": 1,
+      "light": 0,
+      "bulk": 1
+    },
+    {
+      "name": "Rain slicker",
+      "tags": [
+        "clothes"
+      ],
+      "ac": 0,
+      "notes": "Keeps the wet out, not the cold.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    },
+    {
+      "name": "Work gloves",
+      "tags": [
+        "armor"
+      ],
+      "ac": 0,
+      "notes": "For touching things that want you.",
+      "weight": 3,
+      "noise": 2,
+      "light": 0,
+      "bulk": 3
+    },
+    {
+      "name": "Motorcycle helmet",
+      "tags": [
+        "armor"
+      ],
+      "ac": 1,
+      "notes": "Muffles the whispers.",
+      "weight": 3,
+      "noise": 2,
+      "light": 0,
+      "bulk": 3
+    }
+  ],
+  "tools": [
+    {
+      "name": "EMF meter",
+      "tags": [
+        "tech"
+      ],
+      "notes": "Beeps when fear is nearby.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    },
+    {
+      "name": "Salt pouch",
+      "tags": [
+        "occult"
+      ],
+      "notes": "A line is an argument.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    },
+    {
+      "name": "Polaroid camera",
+      "tags": [
+        "tech"
+      ],
+      "notes": "Sometimes catches extra people.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    },
+    {
+      "name": "Tape recorder",
+      "tags": [
+        "tech"
+      ],
+      "notes": "Plays back things you didn’t say.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    },
+    {
+      "name": "Candles + matches",
+      "tags": [
+        "tools",
+        "occult"
+      ],
+      "notes": "Light with a price.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    },
+    {
+      "name": "Pocket mirror",
+      "tags": [
+        "oddity"
+      ],
+      "notes": "For checking behind you.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    }
+  ],
+  "clothes": [
+    {
+      "name": "Black hoodie",
+      "tags": [
+        "clothes"
+      ],
+      "notes": "The unofficial uniform.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    },
+    {
+      "name": "Secondhand suit",
+      "tags": [
+        "clothes"
+      ],
+      "notes": "Someone else’s last good day.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    },
+    {
+      "name": "Worn boots",
+      "tags": [
+        "clothes"
+      ],
+      "notes": "They know the stairs.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    }
+  ],
+  "spells": [
+    {
+      "name": "Banishing Phrase",
+      "tags": [
+        "spell",
+        "occult"
+      ],
+      "notes": "Works once. Maybe.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    },
+    {
+      "name": "Borrowed Voice",
+      "tags": [
+        "spell"
+      ],
+      "notes": "Speak like someone you miss.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    },
+    {
+      "name": "Door That Isn’t There",
+      "tags": [
+        "spell"
+      ],
+      "notes": "Exit into an apology.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    }
+  ],
+  "tech": [
+    {
+      "name": "UV flashlight",
+      "tags": [
+        "tech"
+      ],
+      "notes": "Shows what was cleaned up.",
+      "weight": 1,
+      "noise": 1,
+      "light": 4,
+      "bulk": 1
+    },
+    {
+      "name": "Motion sensor",
+      "tags": [
+        "tech"
+      ],
+      "notes": "Trusts nobody.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    }
+  ],
+  "oddities": [
+    {
+      "name": "Key that fits no lock",
+      "tags": [
+        "oddity"
+      ],
+      "notes": "But it turns anyway.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    },
+    {
+      "name": "Old ring with a warm spot",
+      "tags": [
+        "oddity"
+      ],
+      "notes": "Like it remembers a hand.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    },
+    {
+      "name": "Stitched doll (missing an eye)",
+      "tags": [
+        "oddity"
+      ],
+      "notes": "You don’t remember picking it up.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    },
+    {
+      "name": "Jar of porch dirt",
+      "tags": [
+        "oddity"
+      ],
+      "notes": "From a house that burned down.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    }
+  ],
+  "consumables": [
+    {
+      "name": "Energy drink",
+      "tags": [
+        "consumable"
+      ],
+      "notes": "Courage in a can.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    },
+    {
+      "name": "Painkillers",
+      "tags": [
+        "consumable"
+      ],
+      "notes": "For headaches and hauntings.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    },
+    {
+      "name": "Incense sticks",
+      "tags": [
+        "consumable",
+        "occult"
+      ],
+      "notes": "The smell of bargaining.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    }
+  ],
+  "junk": [
+    {
+      "name": "Bus ticket (expired)",
+      "tags": [
+        "junk"
+      ],
+      "notes": "Still goes somewhere.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    },
+    {
+      "name": "Half-burned letter",
+      "tags": [
+        "junk"
+      ],
+      "notes": "Only the apology survived.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    },
+    {
+      "name": "Broken rosary",
+      "tags": [
+        "junk"
+      ],
+      "notes": "Faith, damaged.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    },
+    {
+      "name": "Hotel keycard",
+      "tags": [
+        "junk"
+      ],
+      "notes": "Opens a room that isn’t booked.",
+      "weight": 1,
+      "noise": 0,
+      "light": 0,
+      "bulk": 1
+    }
+  ]
+}

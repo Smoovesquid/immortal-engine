@@ -1,0 +1,45 @@
+# PROGRESS
+
+## 2026-02-18
+- Scaffolded V2 project: Express dev server, public skeleton, and required folder layout.
+- Added offline packs + manifest (Fantasy/Space Rift/Zombie/Haunted/Modern).
+- Implemented DOM-free deterministic engine modules (state/rng/ledger/guard/playloop/save/log).
+- Implemented minimal V2 UI flow (Title → Onboarding → Play) with drawers/modals.
+- Added node --test smoke tests for determinism, guard, save roundtrip, and fate effects.
+- Fixed guard to catch simple “The X is (not) Y” contradictions; all tests passing.
+- RC UX hardening: Advanced-only debug badge, blocked reasons + one-click fix, dev log pane, and global safe transition error banner + lastError persistence.
+- Added “musical story instrument” to world state + deterministic motif/omen/promise scene references; resolve now updates exactly one system (ledger OR clocks).
+- Added Ending System v1: deterministic triggers/types, Session End screen, and stable chronicle export.
+- Added safe voice readout: Speak button reads narration-only (mechanics stripped), auto-disables if unsupported.
+- Added autopilot playtest harness (Advanced): Simulate 10 turns + deterministic run report; expanded pack content seeds; added print takeaway and Release mode toggle + friendly error screen + README.
+- Added Narrative Composer layer (engine/composer.js) between playloop and UI; deterministic tone/motif/clock shading with anti-repetition; added composer unit tests.
+- Ledger Discipline v2: dedupe + cap to 8 per list, objective fact stability, deterministic non-repeating location rotation, location-based omen variation, and question evolution.
+- Added optional LLM adapter (safe mode) for narration augmentation with strict validation + fallback; UI toggle in Advanced; mock test for contradiction fallback.
+- NEXT_1+2: Refactored composer/playloop to produce state-reactive deterministic narration with motif memory (meta.motifs), strict 1-sentence + 1-bracket-line output; added sceneDirector-driven causal New Scene with tags+thread carry-forward; added tests for determinism, clocks influence, carry-forward invariant.
+- NEXT_3: Added Narration Mode toggle (Offline / LLM Polish) with strict safe-mode prompt + validation (forbidden tokens + noun injection heuristic + facts lock); polished line stored as displayOnly only; tests cover disabled mode, adapter failure fallback, and contradiction fallback.
+- Physics Upgrade v1: added universal resolveMove (engine/resolve.js) + delta executor (engine/effectsCore.js), integrated into playloop turn resolution with deterministic move tagging heuristics, added resolution tests (determinism, fate effect, mixed outcome, safe delta clamps).
+- Physics Upgrade v2: added world.time (turn/scene), meta.advantageTokens (0..2) with deterministic +2 spend, and lightweight position zones (far/near/engaged) via delta ops; added action economy tests.
+- Physics Upgrade v2.1: added Scarcity (Supply/resource depletion), Injury (Wounds 0..6 with DC penalty thresholds), and Fear (Stress 0..6 + dread-driven risk/cost gravity) via delta ops; added gravity-system tests.
+- Narrative Instrument v2: added engine/instrument.js with deterministic motif seeding, thread lifecycle helpers, inevitability meter (0..12) and consequence weighting hook; added tests.
+- Narrative Instrument Scene Director v2: generateSceneFrame with beat memory + callback weighting (motifs/threads/timeline consequence) and inevitability-driven escalation; playloop records lastBeats; added tests.
+- Narrative Instrument Ending System v2: endingArchitect triggers on inevitability/threads/clocks and generates deterministic thematic ending summary referencing motif+thread+consequence; world locks read-only; added tests.
+- AI CONDUCTOR MODE — DELTA ORCHESTRATION COMPLETE
+- WORLD AUTONOMY ENGINE (Living System Core): added deterministic worldTick layer (factions/threads/scars/ecology/reputation drift), integrated into playloop, and updated sceneDirector tone/tags to reflect ecology/hostility/scars; added tests.
+- Living Terrain Engine v1: added deterministic narrative map graph (nodes/edges/discovery/current node), integrated into beginAdventure + travel moves, and wired sceneDirector location to current map node; added determinism + integration tests.
+- Gear as Physics Inputs v1: added gear signal schema (weight/noise/light/bulk) across packs; implemented `engine/gear/gearProps.js` scoring; integrated into `resolve` (DC deltas) and `worldTick` (pressure/dread bumps); added tests.
+- Character Genesis v2: added `engine/chargen/details.js` to roll 3 ritual options per category (detail/keepsake/line/rumor) + deterministic picks; `createCharacter` now persists these into `entity.traits`; wired guided Character Genesis modal with a new Ritual step (choose 1 of 3 per category); updated print sheet to include ritual fields; added tests.
+- Environmental Signals v1: added `world.env` (noise/heat/scent/light) with `envCore`; resolve emits env residue deltas; effectsCore applies env ops; worldTick consumes residue into pressure/dread and decays it; added tests.
+- Factions/Threads anchored to Map (v1): living threads now include `nodeId` (default current node); worldTick can scarify map nodes via hostile faction offscreen actions; sceneDirector surfaces current-node scars as tags; added tests.
+- Composer/Instrument v3 (scar-weighted myth pressure): composer now computes worldBias (scars/ecology/war) to bias tone + shade lexicon deterministically; added tests.
+- Living Terrain Engine v2 (tactical zoom, lightweight): map now supports `tactical` layer toggled on confrontation beats; resolve DC lightly incorporates position when tactical active; added tests.
+- Online AI constrained planner v2: server now returns dev-only reason codes on AI contract failures; Advanced UI displays last AI result line in debug badge.
+- Character Genesis (RC):
+  - Added pack gear.json files (flavorful pools) + pure deterministic chargen engine modules (stats/backgrounds/loadout/dark fate/genesis)
+  - Wired Onboarding Step 3 into guided Character Genesis modal and fast Roll Party
+  - Party drawer shows stats + inventory summary; Print Sheet added
+  - Added engine/conductor.js (deterministic proposals + application + timeline logs)
+  - Added world.meta.aiMode (off|advisory|conductor) + Advanced UI control
+  - Integrated into playloop after resolution
+  - Added conductor tests (determinism, inevitability weighting, advisory vs conductor behavior)
+- Implemented offline, DOM-free engine modules (seeded RNG, world state, ledger, guard, play loop, saves).
+- Added minimal pack system + 5 starter packs with tone words, locations, objectives, archetypes, and skills.

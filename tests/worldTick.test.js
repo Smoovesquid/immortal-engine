@@ -16,7 +16,7 @@ const pack = {
 test('worldTick deterministic given same seed + world', () => {
   let w = newWorld({ seed: 'seed', fate: 0.9, campaignId: 'c', pack: { primaryId: 'fantasy', mixerId: null } });
   w.scene.promptSeed = 'p';
-  w.threads = [{ id: 't1', objective: 'Stop the leak', tension: 3, trajectory: 'static', factionId: 'shadow', active: true, age: 0 }];
+  w.instrument = { ...(w.instrument || {}), threads: [{ id: 't1', label: 'Stop the leak', tension: 3, introducedAt: 0, age: 0, status: 'open' }] };
 
   const a = worldTick(w, 'S');
   const b = worldTick(w, 'S');
@@ -26,10 +26,10 @@ test('worldTick deterministic given same seed + world', () => {
 test('thread escalation occurs at deterministic tension thresholds', () => {
   let w = newWorld({ seed: 'seed', fate: 0.5, campaignId: 'c', pack: { primaryId: 'fantasy', mixerId: null } });
   w.scene.promptSeed = 'p';
-  w.threads = [{ id: 't1', objective: 'Stop the leak', tension: 3, trajectory: 'static', factionId: 'shadow', active: true, age: 0 }];
+  w.instrument = { ...(w.instrument || {}), threads: [{ id: 't1', label: 'Stop the leak', tension: 3, introducedAt: 0, age: 0, status: 'open' }] };
   const w2 = worldTick(w, 'S');
-  assert.ok(w2.threads[0].tension >= 4);
-  const hit = w2.timeline.find(e => e.kind === 'worldTick' && String(e.data.text).includes('thread escalates'));
+  assert.ok(w2.instrument.threads[0].tension >= 4);
+  const hit = w2.timeline.find(e => String(e.data?.text || '').includes('thread escalates'));
   assert.ok(hit);
 });
 
@@ -64,8 +64,8 @@ test('fate slider modifies severity curve deterministically (blood increases eco
   let blood = newWorld({ seed: 'seed', fate: 1.0, campaignId: 'c', pack: { primaryId: 'fantasy', mixerId: null } });
   coop.scene.promptSeed = 'p';
   blood.scene.promptSeed = 'p';
-  coop.threads = [{ id: 't1', objective: 'Stop the leak', tension: 4, trajectory: 'static', factionId: 'shadow', active: true, age: 0 }];
-  blood.threads = [{ id: 't1', objective: 'Stop the leak', tension: 4, trajectory: 'static', factionId: 'shadow', active: true, age: 0 }];
+  coop.instrument = { ...(coop.instrument || {}), threads: [{ id: 't1', label: 'Stop the leak', tension: 4, introducedAt: 0, age: 0, status: 'open' }] };
+  blood.instrument = { ...(blood.instrument || {}), threads: [{ id: 't1', label: 'Stop the leak', tension: 4, introducedAt: 0, age: 0, status: 'open' }] };
 
   const a = worldTick(coop, 'S').ecology.corruption;
   const b = worldTick(blood, 'S').ecology.corruption;

@@ -81,12 +81,13 @@ function tickFactions(w, rng, severity) {
 }
 
 function tickLivingThreads(w, rng, severity) {
-  const threads = Array.isArray(w.threads) ? w.threads : [];
+  const inst = ensureInstrumentLayer(w.instrument);
+const threads = inst.threads;
   if (!threads.length) return w;
 
   const bump = Math.max(1, Math.round(1 * severity));
   const next = threads.map(t => {
-    if (!t.active) return t;
+    if (t.status === 'resolved') return t;
     const tension = clampInt((t.tension ?? 0) + bump, 0, 6);
     const age = clampInt((t.age ?? 0) + 1, 0, 999);
 
@@ -101,13 +102,13 @@ function tickLivingThreads(w, rng, severity) {
     return { ...t, tension, age, objective, trajectory };
   });
 
-  let w2 = { ...w, threads: next };
+  let w2 = { ...w, instrument: { ...inst, threads: next } };
 
   // Escalate event when any thread crosses threshold.
-  const hot = next.filter(t => t.active && t.tension >= 4).sort((a, b) => (b.tension - a.tension) || a.id.localeCompare(b.id));
+  const hot = next.filter(t => t.status !== 'resolved' && t.tension >= 4).sort((a, b) => (b.tension - a.tension) || a.id.localeCompare(b.id));
   if (hot.length) {
     const t0 = hot[0];
-    w2 = pushTickLog(w2, `[TICK] thread escalates: ${t0.objective} (tension:${t0.tension}/6)`);
+    w2 = pushTickLog(w2, `thread escalates: ${t0.label} (tension:${t0.tension}/6)`);
   }
   return w2;
 }
@@ -273,8 +274,9 @@ function tickQuestions(w, rng) {
 }
 
 function tickEcology(w, severity) {
+  const inst = ensureInstrumentLayer(w.instrument);
   const e = w.ecology || { corruption: 0, instability: 0, scarcity: 0 };
-  const open = Array.isArray(w.threads) ? w.threads.filter(t => t.active) : [];
+  const open = inst.threads.filter(t => t.status !== 'resolved');
   const tensionSum = open.reduce((s, t) => s + (t.tension ?? 0), 0);
 
   const corruptionBump = Math.round((tensionSum > 0 ? 1 + tensionSum * 0.15 : 0) * severity);

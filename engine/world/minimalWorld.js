@@ -67,3 +67,28 @@ function newScene(world) {
 }
 
 export { createMinimalWorld, newScene };
+
+function createWorld(opts) {
+  return createMinimalWorld(opts);
+}
+
+function worldTick(world) {
+  const nextTurn = world.turn + 1;
+  const nextPressure = world.pressure + 1;
+
+  return {
+    ...world,
+    turn: nextTurn,
+    pressure: nextPressure
+  };
+}
+
+export { createWorld, worldTick };
+
+
+
+// --- U8 expansion: deterministic single-surface reveal ---
+
+
+import { resolveSurfaceContact } from './resolveSurfaceContact.js';
+export { resolveSurfaceContact };

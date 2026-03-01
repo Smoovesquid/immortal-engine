@@ -13,6 +13,7 @@ function projectLatentSurface(surface) {
       {
         id: surface.id + '-socket-0',
         kind: 'container',
+        affordance: 'open',
         state: 'latent'
       }
     ]

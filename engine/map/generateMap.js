@@ -3,14 +3,15 @@ import { seedFromString, makeRng } from '../rng.js';
 
 // Living Terrain Engine v1 — deterministic narrative map graph.
 
-export function generateInitialMap({ seed = 'seed', packId = 'fantasy', pack = {} } = {}) {
+export function generateInitialMap({ seed = 'seed', packId = 'fantasy', pack = {}, nodeCountOverride = null } = {}) {
   const rng = makeRng(seedFromString(`${seed}|map|${packId}`));
 
   const names = Array.isArray(pack.locations) ? pack.locations.map(String).filter(Boolean) : [];
   const fallback = ['Roadside', 'Ruined Tower', 'Dry Creek', 'Old Shrine', 'Sooted Bridge', 'Salt Flats', 'Black Orchard', 'Hollow Chapel'];
   const pool = (names.length ? names : fallback).slice();
 
-  const nodeCount = clampInt(12 + (seedFromString(`${seed}|mapN|${packId}`) % 10), 12, 22);
+  const nodeCountBase = 12 + (seedFromString(`${seed}|mapN|${packId}`) % 10);
+  const nodeCount = clampInt((nodeCountOverride == null ? nodeCountBase : Number(nodeCountOverride)), 12, 200);
 
   const nodes = [];
   const used = new Set();
@@ -37,7 +38,7 @@ export function generateInitialMap({ seed = 'seed', packId = 'fantasy', pack = {
     edges.push({ a, b, kind: 'path' });
   }
 
-  const chordCount = clampInt(Math.floor(nodes.length / 3), 3, 7);
+  const chordCount = clampInt(Math.floor(nodes.length / 10), 3, 25);
   for (let j = 0; j < chordCount; j++) {
     const i = (j * 3 + 2) % nodes.length;
     const k = (i + 4 + (j % 3)) % nodes.length;

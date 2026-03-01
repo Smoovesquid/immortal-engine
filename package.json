@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "node --watch server.js",
-    "test": "node --test"
+    "test": "node --test",
+    "dpos": "bash scripts/dpos.sh"
   },
   "dependencies": {
     "express": "^4.19.2",

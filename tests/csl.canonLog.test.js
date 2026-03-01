@@ -31,3 +31,19 @@ test('duplicate event id does not double log', () => {
 
   assert.equal(twice.events.length, 1);
 });
+
+
+test('CanonLog: rejects unknown event type', () => {
+    const log = createCanonLog();
+    assert.throws(
+        () => appendCanonEvent(log, { id: 'e_bad_type', type: 'NOPE', targetId: 't1' }),
+        /CanonLog: invalid event type/
+    );
+});
+test('CanonLog: rejects missing/invalid targetId', () => {
+    const log = createCanonLog();
+    assert.throws(
+        () => appendCanonEvent(log, { id: 'e_bad_target', type: 'CANON_CREATE' }),
+        /CanonLog: invalid targetId/
+    );
+});

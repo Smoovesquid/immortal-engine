@@ -3,6 +3,8 @@ import { newWorld, ensureWorld } from '../engine/state.js';
 import { beginAdventure, playerMove, newScene } from '../engine/playloop.js';
 import { hasSlot, loadSlot, saveSlot, exportWorld, importWorld } from '../engine/save.js';
 import { worldHash as worldHashAsync } from '../engine/worldHash.browser.js';
+import { buildMythSpec, mythSpecJson } from '../engine/mythSpec.js';
+import { generateTriadFrames, deriveInvocationFromFrame } from '../engine/triad.js';
 
 const app = document.querySelector('#app');
 
@@ -43,6 +45,12 @@ const ui = {
   screen: 'invoke',
 
   invoke: { seed: 'seed', fate: 0.2, primaryId: 'fantasy', mixerId: '' },
+
+  gate4: {
+    mythInput: '',
+    frames: [],
+    frameIndex: null
+  },
 
   play: {
     input: '',
@@ -91,16 +99,16 @@ function startFromWorld(w, { keepTranscript = false } = {}) {
   });
 }
 
-function beginNewWorld() {
-  const seed = String(ui.invoke.seed || 'seed').trim() || 'seed';
-  const fate = coerceFate01(ui.invoke.fate);
-  const primaryId = String(ui.invoke.primaryId || 'fantasy');
-  const mixerId = String(ui.invoke.mixerId || '').trim() || null;
+function beginFromInvocation(inv) {
+  const seed = String(inv?.seed || 'seed').trim() || 'seed';
+  const fate = coerceFate01(inv?.fate);
+  const primaryId = String(inv?.pack?.primaryId || 'fantasy');
+  const mixerId = (inv?.pack?.mixerId === null || inv?.pack?.mixerId === undefined) ? null : String(inv.pack.mixerId);
 
   const w0 = newWorld({
     seed,
     fate,
-    campaignId: `campaign-${seed}`,
+    campaignId: String(inv?.campaignId || `campaign-${seed}`),
     pack: { primaryId, mixerId }
   });
 
@@ -112,6 +120,20 @@ function beginNewWorld() {
   ui.play.lastResolutionKind = 'turn';
 
   startFromWorld(world, { keepTranscript: true });
+}
+
+function beginNewWorld() {
+  const seed = String(ui.invoke.seed || 'seed').trim() || 'seed';
+  const fate = coerceFate01(ui.invoke.fate);
+  const primaryId = String(ui.invoke.primaryId || 'fantasy');
+  const mixerId = String(ui.invoke.mixerId || '').trim() || null;
+
+  beginFromInvocation({
+    seed,
+    fate,
+    campaignId: `campaign-${seed}`,
+    pack: { primaryId, mixerId }
+  });
 }
 
 function continueSlot1() {
@@ -211,7 +233,7 @@ function renderInvoke() {
       el('div', { class: 'header' },
         el('div', {},
           el('div', { class: 'title' }, 'Immortal Engine — UI v1'),
-          el('div', { class: 'sub' }, 'Gate 2: Play Loop Integrity')
+          el('div', { class: 'sub' }, 'Gate 4: MythSpec + Deterministic Triad')
         )
       ),
       el('div', { class: 'card stack' },
@@ -224,6 +246,71 @@ function renderInvoke() {
         primarySelect,
         el('div', { class: 'small' }, 'mixer pack (optional)'),
         mixerSelect,
+        el('div', { class: 'small' }, 'myth input'),
+        el('input', {
+          class: 'input',
+          value: ui.gate4.mythInput,
+          placeholder: 'e.g. a bell under ash',
+          onInput: (e) => { ui.gate4.mythInput = String(e.target.value || ''); }
+        }),
+
+        el('div', { class: 'row' },
+          el('button', {
+            class: 'btn',
+            onClick: () => {
+              const seed = String(ui.invoke.seed || 'seed').trim() || 'seed';
+              const fate = coerceFate01(ui.invoke.fate);
+              const primaryId = String(ui.invoke.primaryId || 'fantasy');
+              const mixerId = String(ui.invoke.mixerId || '').trim() || null;
+              const myth = String(ui.gate4.mythInput || '').trim();
+
+              const spec = buildMythSpec({ seed, fate, pack: { primaryId, mixerId }, mythInput: myth });
+              ui.gate4.frames = generateTriadFrames(spec);
+              ui.gate4.frameIndex = null;
+              render();
+            }
+          }, 'Generate Triad'),
+
+          el('button', {
+            class: 'btn primary',
+            disabled: ui.gate4.frameIndex === null || ui.gate4.frameIndex === undefined,
+            onClick: () => {
+              const seed = String(ui.invoke.seed || 'seed').trim() || 'seed';
+              const fate = coerceFate01(ui.invoke.fate);
+              const primaryId = String(ui.invoke.primaryId || 'fantasy');
+              const mixerId = String(ui.invoke.mixerId || '').trim() || null;
+              const myth = String(ui.gate4.mythInput || '').trim();
+
+              const spec = buildMythSpec({ seed, fate, pack: { primaryId, mixerId }, mythInput: myth });
+              const inv = deriveInvocationFromFrame({
+                baseSeed: seed,
+                pack: { primaryId, mixerId },
+                fate,
+                mythSpec: spec,
+                frameIndex: ui.gate4.frameIndex
+              });
+              beginFromInvocation(inv);
+            }
+          }, 'Begin (frame)')
+        ),
+
+        (Array.isArray(ui.gate4.frames) && ui.gate4.frames.length === 3)
+          ? el('div', { class: 'stack' },
+              ui.gate4.frames.map((f, i) => {
+                const selected = ui.gate4.frameIndex === i;
+                const label = String(f?.blurb || f?.id || `frame ${i}`);
+                return el('div', { class: 'card stack' },
+                  el('div', {}, el('strong', {}, `Frame ${i+1}: `), label),
+                  el('div', { class: 'row' },
+                    el('button', {
+                      class: selected ? 'btn primary' : 'btn',
+                      onClick: () => { ui.gate4.frameIndex = i; render(); }
+                    }, selected ? 'Selected' : 'Select')
+                  )
+                );
+              })
+            )
+          : el('div', { class: 'small' }, 'Triad: generate to see 3 frames.'),
         el('div', { class: 'row' }, continueBtn, beginBtn)
       )
     )

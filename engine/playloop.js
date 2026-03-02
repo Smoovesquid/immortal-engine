@@ -150,7 +150,17 @@ export function playerMove(world, packsById, text) {
   w = worldTick(w, `${w.meta.seed}|tick|turn${w.time.turn}|tl${w.timeline.length}`);
 
   // Ending check (deterministic by state).
+  const wasEndingTriggered = Boolean(w.ending?.triggered);
   w = triggerEnding(w);
+  if (!wasEndingTriggered && Boolean(w.ending?.triggered)) {
+    w = pushEvent(w, {
+      kind: 'endingTriggered',
+      data: {
+        endingType: String(w.ending?.type || ''),
+        epilogueLine: String(w.ending?.epilogueLine || '')
+      }
+    });
+  }
 
   const composed = compose(w, text, resolution, { pack });
   w = applyComposerDelta(w, composed.ledgerDelta);
@@ -232,7 +242,17 @@ export function newScene(world, packsById, { lastResolutionKind = 'turn' } = {})
   };
 
   w = pushEvent(w, { kind: 'scene', data: { location: plan.location, objective: plan.objective, refKind, tags: plan.tags, thread: plan.thread, carry: plan.carry } });
+  const wasEndingTriggered = Boolean(w.ending?.triggered);
   w = triggerEnding(w);
+  if (!wasEndingTriggered && Boolean(w.ending?.triggered)) {
+    w = pushEvent(w, {
+      kind: 'endingTriggered',
+      data: {
+        endingType: String(w.ending?.type || ''),
+        epilogueLine: String(w.ending?.epilogueLine || '')
+      }
+    });
+  }
 
   const composed = compose(w, '', outcome, { pack });
   w = applyComposerDelta(w, composed.ledgerDelta);

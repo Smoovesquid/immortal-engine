@@ -1,7 +1,7 @@
 import { normalizeManifest, normalizePack } from '../engine/rulesets.js';
 import { newWorld, ensureWorld } from '../engine/state.js';
 import { beginAdventure, playerMove, newScene } from '../engine/playloop.js';
-import { hasSlot, loadSlot, saveSlot } from '../engine/save.js';
+import { hasSlot, loadSlot, saveSlot, exportWorld, importWorld } from '../engine/save.js';
 import { worldHash as worldHashAsync } from '../engine/worldHash.browser.js';
 
 const app = document.querySelector('#app');
@@ -279,6 +279,40 @@ function renderPlay() {
     }
   }, 'Save');
 
+  const exportBtn = el('button', {
+    class: 'btn',
+    onClick: async () => {
+      if (!w) return setStatus('No world loaded.');
+      const txt = exportWorld(w);
+      try {
+        await navigator.clipboard.writeText(txt);
+        setStatus('Copied export JSON.');
+      } catch {
+        try { window.prompt('Copy export JSON:', txt); } catch {}
+        setStatus('Export ready.');
+      }
+    }
+  }, 'Export JSON');
+
+  const importBtn = el('button', {
+    class: 'btn',
+    onClick: () => {
+      let txt = '';
+      try { txt = String(window.prompt('Paste export JSON:', '') || ''); } catch {}
+      if (!txt.trim()) return;
+      try {
+        const w2 = importWorld(txt);
+        persistAndRehash(w2);
+        ui.play.lines.push({ who: 'wizard', text: 'Wizard: Import accepted. What do you do?', mech: '' });
+        ui.play.input = '';
+        ui.play.lastResolutionKind = 'turn';
+        setStatus('Imported into slot1.');
+      } catch (e) {
+        setStatus(String(e && e.message ? e.message : e));
+      }
+    }
+  }, 'Import JSON');
+
   const moveBtn = el('button', { class: 'btn primary', onClick: () => doSubmitMove() }, 'Submit Move');
   const sceneBtn = el('button', { class: 'btn', onClick: () => doNewScene() }, 'New Scene');
 
@@ -308,7 +342,7 @@ function renderPlay() {
         el('div', { class: 'small' }, `seed: ${seed}`),
         el('div', { class: 'small' }, `fate: ${fate}`),
         el('div', { class: 'small' }, `pack: ${pack}`),
-        el('div', { class: 'row' }, backBtn, reloadBtn, saveBtn)
+        el('div', { class: 'row' }, backBtn, reloadBtn, saveBtn, exportBtn, importBtn)
       ),
       renderTranscript(ui.play.lines),
       el('div', { class: 'card stack' },

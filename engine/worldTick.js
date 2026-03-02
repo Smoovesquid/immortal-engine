@@ -105,6 +105,24 @@ const threads = inst.threads;
   let w2 = { ...w, instrument: { ...inst, threads: next } };
 
   // Escalate event when any thread crosses threshold.
+  // Canonical threadShift surface: log a stable event when tension crosses the escalation threshold.
+  const prevById = new Map((threads || []).map(t => [String(t.id), t]));
+  const crossed = next
+    .filter(t => t.status !== 'resolved')
+    .map(t => {
+      const prev = prevById.get(String(t.id)) || {};
+      const from = Number(prev.tension ?? 0);
+      const to = Number(t.tension ?? 0);
+      return { t, from, to };
+    })
+    .filter(x => x.from < 4 && x.to >= 4)
+    .sort((a, b) => (b.to - a.to) || String(a.t.id).localeCompare(String(b.t.id)));
+
+  if (crossed.length) {
+    const x = crossed[0];
+    w2 = pushEvent(w2, { kind: 'threadShift', data: { threadId: String(x.t.id), from: x.from, to: x.to, reason: 'tensionThreshold' } });
+  }
+
   const hot = next.filter(t => t.status !== 'resolved' && t.tension >= 4).sort((a, b) => (b.tension - a.tension) || a.id.localeCompare(b.id));
   if (hot.length) {
     const t0 = hot[0];
@@ -363,6 +381,13 @@ function pushTickLog(w, line) {
   const t = w.timeline.length;
   const e = { t, kind: 'worldTick', data: { text: String(line) } };
   return { ...w, timeline: [...w.timeline, e] };
+}
+
+
+function pushEvent(world, { kind, data }) {
+  const t = world.timeline.length;
+  const e = { t, kind: String(kind), data: data ?? {} };
+  return { ...world, timeline: [...world.timeline, e] };
 }
 
 function clampInt(n, lo, hi) {

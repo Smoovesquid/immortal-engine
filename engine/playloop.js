@@ -13,6 +13,7 @@ import { conductorDecision, applyConductorDeltas } from './conductor.js';
 import { worldTick } from './worldTick.js';
 import { resolveMove } from './resolve.js';
 import { applyDeltas } from './effectsCore.js';
+import { introduceThread } from './instrument.js';
 
 // Pure-ish play loop: world -> {world, output}
 
@@ -50,6 +51,11 @@ export function beginAdventure(world, packsById) {
   const objFact = `objective:${objective}`;
   if (!hasFact(w, objFact)) w = addFact(w, objFact, 'scene');
   w = addQuestion(w, `How will you approach: ${objective}?`);
+  // U16: deterministic starter thread so worldTick/threadShift has a living thread to evolve.
+  if (!Array.isArray(w.instrument?.threads) || w.instrument.threads.length === 0) {
+    w = introduceThread(w, objective);
+  }
+
 
   const refKind = sceneRefKind(w, 'opening');
 
@@ -67,6 +73,7 @@ export function beginAdventure(world, packsById) {
   const composed = compose(w, '', outcome, { pack });
   w = applyComposerDelta(w, composed.ledgerDelta);
   return { world: w, output: { narration: composed.narrationLine, mechanics: composed.mechanicsLine } };
+
 }
 
 export function playerMove(world, packsById, text) {

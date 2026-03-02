@@ -1,0 +1,406 @@
+PROJECT INTELLIGENCE CORE
+Version: 4.3
+Mode: Cumulative / Insight-Maximization
+
+⸻
+
+CORE (Stable — Rarely Modified)
+
+Objective
+
+Build deterministic, architecture-first systems.
+Explicit state. No silent mutation. Stability > novelty.
+Maximize durable insight accumulation per thread.
+Eliminate cross-thread entropy via structured externalization.
+
+Primary Orientation
+
+At this stage:
+Accumulation > Compression.
+Discovery > Defensiveness.
+Signal Capture > Minimalism.
+Explicitization > Implicit memory.
+
+Operating Rules
+
+• One probe OR one patch per cycle (engine workspace cycles only).
+• Acceptance Criteria (AC) must be explicit + machine-checkable.
+• Restart ≠ reset (state awareness required).
+• No refactor without failing signal.
+• Phase execution must follow declared roadmap order.
+• When thread context = Intelligence Core update → DO NOT branch into engine work.
+• In Intelligence Core threads: output updated document only.
+• Before any coding or design thread ends → mandatory Insight Harvest Protocol.
+• Threads are encouraged to contribute multiple durable insights per session.
+• Assume at least one invariant-level learning exists in any non-trivial thread.
+• Prefer invariant discovery over feature completion.
+• No durable insight may remain solely in chat memory.
+
+Definitions
+
+• Probe = single diagnostic action (read-only command, test run, inspection).
+• Patch = single bounded code modification intended to resolve one failing signal.
+• Cycle = one probe OR one patch followed by verification.
+• Core updates ≠ engine cycles.
+• Durable Insight = reusable architectural principle, invariant clarification, boundary condition, drift pattern, tooling constraint, workflow optimization, or generalized abstraction beyond a local fix.
+
+Invariants
+
+• No hidden state changes.
+• All meaningful transitions observable.
+• Debugging bounded.
+• Drift detection enforced.
+• Meta-threads must not mutate project layers.
+• Cross-thread knowledge must be externalized to this Core.
+• Determinism over narrative richness.
+• Rendering layers may not introduce canonical truth.
+• Canonical state must be sufficient to reconstruct narrative state.
+
+Drift Stops
+
+Stop if:
+• Two unrelated areas modified consecutively.
+• Failure unchanged after 2 cycles.
+• Required artifact missing.
+• Clean system altered without signal.
+• Thread objective diverges from declared mode.
+• Phase work attempts to reopen completed invariant layer without failure signal.
+• Insight Harvest Protocol skipped before closure.
+
+CORE STATUS: STABLE
+
+⸻
+
+INSIGHT HARVEST PROTOCOL (Aggressive Accumulation Mode)
+
+At end of every coding or design thread:
+	1.	Assume multiple durable insights exist.
+	2.	Extract ALL candidate durable insights from:
+• Architecture constraints revealed
+• Determinism clarifications
+• Pressure engine behaviors
+• Voice/AI boundary learnings
+• Drift patterns
+• Failure patterns
+• Tooling limitations
+• Workflow optimizations
+• Invariant tensions
+• Unexpected system interactions
+• Abstractions that generalized beyond local fix
+• Narrative pacing constraints discovered
+• Phase-gating or escalation boundary insights
+• Rendering vs canonical-state separation insights
+• Any reusable architectural generalization
+• Any newly discovered invariant or boundary condition
+	3.	Prefer over-extraction to under-extraction.
+	4.	Preserve nuance even if partially redundant (compression deferred).
+	5.	Phrase insights as reusable system principles when possible.
+	6.	Append all durable candidates to LEDGER.
+	7.	If fewer than two durable insights identified, perform secondary abstraction pass.
+	8.	Increment version if any additions occur.
+	9.	Never close thread without executing this protocol.
+
+⸻
+
+LEDGER (Accumulation Phase)
+
+Purpose: High-density cross-thread intelligence growth.
+
+Rules (Accumulation Mode):
+
+• Bullet format only.
+• No narrative prose.
+• Do NOT aggressively compress at this stage.
+• Allow partial redundancy if it preserves nuance.
+• Preserve architectural context where helpful.
+• Only exclude trivial or ephemeral debugging artifacts.
+
+⸻
+
+L1 — Session State Insight
+Injection may derive from session metadata, not filesystem.
+
+L2 — Reset Principle
+Full state reset may require deleting session metadata, not just restart.
+
+L3 — AC Discipline
+Explicit AC PASS / FAIL required.
+Manual enforcement acceptable in early phase.
+
+L4 — Repo Boundary
+Operational workspace ≠ product repo.
+Avoid broad git operations at root.
+
+L5 — Stability Doctrine
+Guardrails > complexity.
+Protect working systems.
+
+L6 — Meta-Thread Containment
+Core update threads modify Core/LEDGER only.
+Return updated document only.
+
+L7 — Cross-Thread Accumulation
+Over-extract durable insight.
+Compression deferred.
+No durable insight may remain implicit.
+
+L8 — Phase Ladder Governance
+Completed layers immutable absent failing signal.
+New capability must layer atop prior invariants.
+
+L9 — AI Integration Guardrail
+External AI non-authoritative.
+No canonical state mutation.
+Deterministic fallback required.
+Secrets redacted.
+Config persistence explicit and auditable.
+
+L10 — Voice Interface Separation
+Voice layer transport-only.
+Speech ↔ text adapter has zero authority over state.
+All decisions pass through deterministic engine.
+Transcripts logged for replay parity.
+
+L11 — Narrative Phase Governance
+Narrative pacing must be explicit state or derivable invariant.
+Escalation gates deterministic and testable.
+AI rendering obeys declared narrative phase constraints.
+Prologue forbids pressure deltas and quest initiation absent trigger event.
+Phase transitions mechanically observable.
+
+L12 — World Edit Containment
+AI world edits only through explicit event channel.
+World edits logged as canonical events.
+World edits cannot directly mutate pressure, scars, quests, or prior facts.
+World edit types whitelisted and bounded.
+World edit budget deterministic if implemented.
+
+L13 — Extraction Bias Principle
+Default assumption: each substantial thread yields ≥2 durable insights.
+If fewer extracted, re-scan thread for abstraction opportunities.
+Architectural generalizations preferred over local fixes.
+
+L14 — Canonical vs Render Boundary
+Canonical state is sole source of truth.
+Renderers (AI, UI, voice, logs) are projections only.
+Any mismatch between render and canonical must resolve toward canonical.
+
+L15 — Cross-Thread Entropy Control
+Context window loss is expected.
+Core is the only authoritative cross-thread memory layer.
+All reusable architectural intelligence must be externalized here.
+Threads must assume future context truncation.
+
+L16 — OpenClaw Prompt Report Staleness Trap
+Injected file lists shown in session prompt reports can remain stale across restarts if the session persists.
+Session wipe may be required to refresh what the agent “believes” is injected.
+
+L17 — verify_injection.sh Limitation
+verify_injection.sh reports only what is recorded inside sessions.json → systemPromptReport → injectedWorkspaceFiles.
+It does not inspect filesystem or actual injection behavior directly.
+
+L18 — Multi-Session Selection Hazard
+OpenClaw can have multiple active sessions (main + subagent).
+Any “verify” or “refresh prompt report” must target the intended sessionId (prefer key == agent:main:main).
+
+L19 — “Sessions file missing” Is Not Failure, It’s State
+sessions.json may legitimately not exist until a session is created.
+Workflow must include a deterministic “create session” step before expecting injection reports.
+
+L20 — Multiple Gateway Instances Confuse Hygiene
+More than one gateway/process (or running under different profiles) can produce misleading state observations.
+Hygiene requires verifying which gateway is active and which state dir/profile is being used.
+
+L21 — Injection vs “Workspace Copies” Confusion
+Seeing filenames in injectedWorkspaceFiles does not prove the files exist in workspace or are being re-injected from disk.
+It may reflect cached session prompt metadata, not current disk state.
+
+L22 — Git Boundary Risk From Workspace-as-Repo
+When workspace root is treated like a git repo, “git add -A” can sweep in unrelated documents, embedded repos, and large artifacts.
+Commit hygiene requires a narrow add list (governance-only) or a dedicated repo boundary.
+
+L23 — Pressure Scale Resolution Principle
+Compressed global pressure ranges cause melodrama and “catastrophe proximity”; widen scale (e.g., 0–1000) and separate micro drift vs structural instability to preserve everyday subtlety and earned escalation.
+
+L24 — Nonlinear Escalation Requirement
+Escalation must be thresholded/nonlinear and driven by compounding risk (ignored warnings, high-risk actions), not by quotidian actions; minor life actions should route to micro-state only.
+
+L25 — Tone Gating as Deterministic Policy
+Narrative intensity must be mechanically gated by structural bands; tone policy must read canonical structural instability (or a verified alias) and clamp/forbid catastrophic vocabulary at baseline.
+
+L26 — Mode Separation for Social DM
+Companion/“friend chat” mode must be explicitly separable from narrative mode and mechanically inert: no RNG, no state mutation, no canonical log append, no pressure/clock change; preserves determinism while enabling relationship stickiness.
+
+L27 — Language-Triggered Mode Switching
+Natural-language triggers (e.g., DM name prefix) can switch modes without UI toggles if parsing is rule-based, deterministic, and mode effects are isolated from canonical state.
+
+L28 — Agent Refusal-State Persistence
+Tool/agent “refusal mode” can persist across turns/sessions as an internal state lock; resumption requires an explicit override/clear instruction; treat refusal as a mode flag, not content-policy truth.
+
+L29 — Chunked Autonomy Governance
+Allow multi-chunk autonomous execution only with strict per-chunk verification gates (test→build), stop-on-fail reporting, and invariants repeated verbatim; prevents drift while saving tokens.
+
+L30 — Deterministic Completion Audit Pattern
+When progress is uncertain (hang-up/partial recap), use a binary completion audit checklist requiring YES/NO + file/line proof for each acceptance item; reduces recap loops and reveals missing chunks.
+
+L31 — Repo Hygiene Autopilot Requirement
+Agents operating in mutable repos must autonomously resolve dirty working trees via deterministic stash protocol before proceeding; never require human intervention for routine hygiene.
+
+L32 — Player Mode Isolation Principle
+Presentation layer must default to narrative-only mode; debug overlays and internal state exposure must be opt-in and non-persistent; player-mode must never leak RNG, checksum, or canonical state.
+
+L33 — Black-Box Playtest Necessity
+Dedicated playtest agents must operate in strict black-box mode to evaluate experiential quality; white-box inspection is a separate, explicitly declared mode.
+
+L34 — Playtest Artifact Reproducibility
+Every playtest must emit seed, ordered inputs, and transcript to enable deterministic replay and comparison across versions.
+
+L35 — Persona as Testing Instrument
+Agent personality profiles (e.g., casual playtester) function as deterministic behavioral instruments; boundaries must prevent role bleed into builder/refactor authority.
+
+L36 — Genesis Grounding Requirement
+Narrative engines must begin in low-pressure, comprehensible, spatially grounded states; escalation legitimacy depends on a clearly established baseline normalcy.
+
+L37 — Warning Precedence Principle
+All catastrophic or irreversible consequences must be preceded by diegetic warnings within player-visible narrative; escalation without forewarning violates fairness invariant.
+
+L38 — Debug Overlay Determinism Rule
+Developer debug layers must be presentation-only, session-local, and never mutate canonical state, RNG, event log, pressure, factions, or memory.
+
+L39 — Escalation Cooldown Principle
+Faction stage advancement must be rate-limited via explicit cooldown invariants; no multi-stage jumps within bounded ACT windows; stage progression strictly monotonic (+1 only).
+
+L40 — Single-Mutation Per Turn Constraint
+Each ACT turn may produce at most one structural escalation event (e.g., stage advance) and one associated world flag; prevents cascade amplification and preserves pacing legibility.
+
+L41 — Ambient Rotation Determinism
+Narrative ambient detail must rotate deterministically to prevent repetition fatigue while preserving replay parity; no random text selection without seeded derivation.
+
+L42 — Threshold-Visible Feedback Policy
+Pressure numbers or structural metrics should surface only when thresholds cross or when explicitly queried; constant metric leakage reduces mystery and degrades attachment.
+
+L43 — World Memory Echo Window
+World-memory changes must echo narratively for multiple subsequent turns to reinforce attachment; destroyed locations permanently alter descriptive projection.
+
+L44 — Playtest Hardening Loop Principle
+Extended-session stability requires deliberate stress simulation (50 observe, 50 low ACT, 20 high ACT, death/respawn); invariants must survive long-run repetition without drift.
+
+L45 — Voice-Native Architecture Ladder
+Migration to voice/mobile requires staged transformation: stateless API isolation → session persistence → deterministic intent classification → voice contract separation → mobile shell; no layer may grant authority over canonical state.
+
+L46 — Intent Classification Determinism
+Conversational input handling must be rule-based and deterministic; classification layer cannot mutate state directly and must route all actions through canonical engine pathways.
+
+L47 — Session Isolation for Productization
+Global in-memory state is incompatible with multi-user or mobile environments; sessionId-scoped canonical state required for scalable product architecture.
+
+L48 — External Narration Authentication Invariant
+External AI integration must treat authentication as a first-class invariant; missing or invalid API keys must surface explicit errors and never silently degrade into deterministic truth without trace visibility.
+
+L49 — Integration Boundary Diagnosis Principle
+When deterministic core passes tests but runtime behavior diverges, default suspicion to integration boundary (auth, endpoint, config persistence) before modifying engine logic.
+
+L50 — Restart Configuration Persistence Rule
+Runtime configuration required for feature enablement (e.g., AI provider, API key) must persist across restarts via explicit disk storage; in-memory defaults must not be mistaken for durable state.
+
+L51 — Mock Endpoint Validation Pattern
+Before debugging live external providers, validate architecture using a local mock endpoint to isolate deterministic engine correctness from network/auth variability.
+
+L52 — Domain Transferability Principle
+A deterministic pressure engine is domain-agnostic at structural level; only vector definitions, weight calibration, and interpretation layer require domain specialization.
+
+L53 — Binary Decision as Pressure Aggregation
+High-stakes binary decisions (buy / do not buy) are reducible to weighted multi-vector pressure resolution; decision clarity increases when explicit push-toward vs push-away forces are separated.
+
+L54 — Range-Over-Point Forecasting Doctrine
+For complex systems (M&A, poker, narrative), predictive value lies in narrowing plausible outcome ranges, not in single-point forecasts; engine output should prefer distributions over absolutes.
+
+L55 — Calibration Deferred Architecture
+Engine may be constructed structurally prior to empirical calibration; introduce adjustable parameter layer (sliders/weights) that can be tuned via backtesting without mutating core logic.
+
+L56 — Historical Backtesting as Playtest Analog
+In non-game domains, historical datasets function as playtesting substrate; simulate prior events to refine vector weights and interaction effects before forward deployment.
+
+L57 — Vector Interaction Non-Independence Rule
+Pressure vectors are rarely independent; architecture must allow for interaction terms or compounding effects rather than linear additive weighting only.
+
+L58 — Interpretation Layer Separation
+Canonical pressure computation and human-facing interpretation may be decoupled; narrative or strategic framing may vary without altering deterministic core calculations.
+
+L59 — Incentive Alignment Encoding Principle
+Partnership or compensation logic can be formalized as parameterized rule-sets (smart-contract-like structures) where triggers and reward distributions are predefined and observable.
+
+L60 — Black-Box Anxiety Signal
+If system behavior feels “black box,” require explicit surfacing of vector inputs, weights, and intermediate state; opacity must be treated as a diagnosable architectural deficiency, not mystique.
+
+L61 — Localhost ≠ Internet Dependency Principle
+Local web UI served from localhost is independent of external network conditions; perceived instability during development often originates from integration boundaries, not Wi-Fi variability.
+
+L62 — Integration Surface Isolation Rule
+When adding a new surface (e.g., URL server) the deterministic engine must remain untouched; adapter layers must wrap, not modify, canonical logic.
+
+L63 — Presentation Transport Symmetry Principle
+Terminal UI and Web UI should be thin, symmetric transports over the same director + engine pipeline; divergence between transports signals architectural leak.
+
+L64 — Canonical Spine Completion Pattern
+For each major deterministic transition, enforce a canonical event with stable shape + export/import durability test; spine coverage sequence observed: resolution → threadShift → scarFormed → endingTriggered (freeze).
+
+L65 — “Unreachable Patch” Detection Principle
+Code injected after an early return can silently fail acceptance goals; always verify control flow reachability when adding state mutation or event emission logic.
+
+L66 — Event Shape Drift Trap
+Adding a new canonical event must include required identifiers (e.g., threadId) in the emitted data; tests should assert type+presence, not just existence, to prevent silent schema drift.
+
+L67 — Spec Artifact Must Live in Repo
+Victory criteria must be embodied as a repo-local, versioned doc to prevent “chat-only” acceptance standards and to enable deterministic closure.
+
+L68 — “Attempted Gate ≠ Landed Gate” Guard
+A planned next-gate label is not real until a file exists + tests pass + dpos clean; treat missing artifacts as absence, not partial completion.
+
+L69 — DPoS as Merge Gate Discipline
+Treat npm run dpos as a hard merge gate: clean tree required; tests required; scope shown; prevents accidental partial acceptance.
+
+L70 — Victory Gates as Repo-Local Spine Contract
+Victory Gates are the phase/acceptance contract embodied in-repo (versioned + committed), not a chat concept; they are the authoritative product ladder for UI + engine convergence.
+
+L71 — Shell Label Leakage Hazard
+Prefixing terminal blocks with non-shell tokens (“PROBE ONLY:”, “Run:”) causes command-not-found failures; terminal prompts must be pure shell.
+
+L72 — Patch Tool Availability Must Be Verified
+Assuming helper commands (e.g., apply_patch) exist is unsafe; use portable primitives (cat/heredoc/sed) unless tool presence is proven.
+
+L73 — UI “Looks Broken” Often Equals State/Storage, Not Missing Files
+Runtime UI regressions can be state-wiring/localStorage routing/refresh behavior; verify served files + route wiring before rebuilding.
+
+L74 — Governance-First Closure Rule
+Before opening new chat windows, commit governance artifacts (Victory Gates + Intelligence Core) into repo-local files to prevent context-window loss from erasing acceptance truth.
+
+LEDGER STATUS: ACTIVE (Accumulation Mode)
+
+⸻
+
+UPDATE CONTRACT (Accumulation Phase)
+
+When continuing:
+	1.	Ingest as canonical state.
+	2.	Prioritize insight harvesting over minimization.
+	3.	Execute Insight Harvest Protocol before closure.
+	4.	Append all durable candidates discovered.
+	5.	Increment version for any net addition.
+	6.	Compression phase will occur later as separate operation.
+	7.	If thread intent = Core update → return updated document only (no extra work, no side quests, no code).
+
+Document optimized for expansion phase.
+
+⸻
+
+CURRENT STATE
+
+Version: 4.3
+Stability: High
+Mode: Accumulation
+Deferred: compression pass, retry ladder, AC auto-wiring, model tuning
+
+⸻
+
+END

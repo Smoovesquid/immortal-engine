@@ -77,7 +77,28 @@ export function beginAdventure(world, packsById) {
 }
 
 export function playerMove(world, packsById, text) {
+
+  // Gate III.2: after ending is locked, play surfaces must not mutate state.
+  if (Boolean(world?.ending?.locked)) {
+    return {
+      world,
+      output: {
+        narration: String(world?.ending?.epilogueLine || 'The end.'),
+        mechanics: ''
+      }
+    };
+  }
   let w = ensureWorld(world);
+  // Gate III.2: after ending is locked, play surfaces must not mutate state.
+  if (Boolean(w.ending?.locked)) {
+    return {
+      world: w,
+      output: {
+        narration: String(w.ending?.epilogueLine || 'The end.'),
+        mechanics: ''
+      }
+    };
+  }
   const primary = packsById[w.pack.primaryId];
   const mixer = w.pack.mixerId ? packsById[w.pack.mixerId] : null;
   const pack = mergePacks(primary, mixer);
@@ -170,7 +191,28 @@ export function playerMove(world, packsById, text) {
 }
 
 export function newScene(world, packsById, { lastResolutionKind = 'turn' } = {}) {
+
+  // Gate III.2: after ending is locked, play surfaces must not mutate state.
+  if (Boolean(world?.ending?.locked)) {
+    return {
+      world,
+      output: {
+        narration: String(world?.ending?.epilogueLine || 'The end.'),
+        mechanics: ''
+      }
+    };
+  }
   let w = ensureWorld(world);
+  // Gate III.2: after ending is locked, play surfaces must not mutate state.
+  if (Boolean(w.ending?.locked)) {
+    return {
+      world: w,
+      output: {
+        narration: String(w.ending?.epilogueLine || 'The end.'),
+        mechanics: ''
+      }
+    };
+  }
   const primary = packsById[w.pack.primaryId];
   const mixer = w.pack.mixerId ? packsById[w.pack.mixerId] : null;
   const pack = mergePacks(primary, mixer);

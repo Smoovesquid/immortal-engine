@@ -91,6 +91,8 @@ No marketplace. No creator tools.
 
 # GATE 4 — User Completion Loop
 
+Text-first MVP: Primary interaction is typed text (input + output). Voice I/O is explicitly deferred to Post-MVP.
+
 User must be able to:
 
 1. Start campaign < 60 seconds.
@@ -101,6 +103,8 @@ User must be able to:
 
 Acceptance Criteria:
 
+- Text-first MVP: campaign is fully playable via typed text only (no mic required).
+- LLM narration is visible as text output (no audio required).
 - Clean onboarding.
 - Visible inevitability progression.
 - Chronicle export human-readable.
@@ -175,6 +179,7 @@ MVP achieved at first sustained paying cohort.
 
 # Post-MVP (Not In Scope)
 
+- Voice mode.
 - Multiplayer.
 - Pack marketplace.
 - Creator tools.

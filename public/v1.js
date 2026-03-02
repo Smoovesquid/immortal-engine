@@ -5,6 +5,7 @@ import { hasSlot, loadSlot, saveSlot, exportWorld, importWorld } from '../engine
 import { worldHash as worldHashAsync } from '../engine/worldHash.browser.js';
 import { buildMythSpec, mythSpecJson } from '../engine/mythSpec.js';
 import { generateTriadFrames, deriveInvocationFromFrame } from '../engine/triad.js';
+import { deriveSequelInvocation } from '../engine/sequel.js';
 
 const app = document.querySelector('#app');
 

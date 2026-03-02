@@ -191,8 +191,8 @@ Impact on prior gates:
 # EVOLUTION LEDGER (Entries)
 
 Version: UI SPINE v1.1
-Change: Closed Gate 5 with transcript-determinism freeze test (U29) enforcing same seed + same transcript => same canon + same worldHash.
-Reason: Formalize Gate 5 acceptance with a machine-checkable freeze invariant.
+Change: Added supporting freeze invariant (U29): same seed + same transcript => same canon + same worldHash.
+Reason: Machine-checkable determinism guard for the play loop and voice contract (supports Gates 1–3).
 Impact on prior gates: None (additive test only).
 
 ---
@@ -203,4 +203,11 @@ Version: UI SPINE v1.2
 Change: Closed Gate 6 with chronicle-derived sequel invocation determinism test (U30).
 Reason: Formalize sequel continuity as a machine-checkable invariant.
 Impact on prior gates: None (additive test + new module only).
+---
 
+# EVOLUTION LEDGER (Entries)
+
+Version: UI SPINE v1.3
+Change: Closed Gate 5 (Pressure Visibility) by surfacing deterministic tension/clocks indicator in /public/v1.js (tension = instrument.inevitability; clocks = pressure/dread/revelation).
+Reason: Meet ladder requirement: inevitability/pressure rise is player-visible and deterministic prior to ending lock.
+Impact on prior gates: None (presentation-only UI; no canonical mutation).

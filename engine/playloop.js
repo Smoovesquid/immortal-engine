@@ -56,7 +56,6 @@ export function beginAdventure(world, packsById) {
     w = introduceThread(w, objective);
   }
 
-
   const refKind = sceneRefKind(w, 'opening');
 
   const outcome = {
@@ -137,7 +136,6 @@ export function playerMove(world, packsById, text) {
       updateKind: inferUpdateKindFromDeltas(result.deltas)
     }
   });
-
 
   // Living Terrain Engine v1: travel intents advance map position deterministically.
   if (moveAdvancesScene(text)) {

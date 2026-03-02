@@ -1,5 +1,5 @@
 # IMMORTAL ENGINE — VICTORY GATES
-## UI SPINE v1.1
+## UI SPINE v1.2
 
 ---
 
@@ -194,4 +194,13 @@ Version: UI SPINE v1.1
 Change: Closed Gate 5 with transcript-determinism freeze test (U29) enforcing same seed + same transcript => same canon + same worldHash.
 Reason: Formalize Gate 5 acceptance with a machine-checkable freeze invariant.
 Impact on prior gates: None (additive test only).
+
+---
+
+# EVOLUTION LEDGER (Entries)
+
+Version: UI SPINE v1.2
+Change: Closed Gate 6 with chronicle-derived sequel invocation determinism test (U30).
+Reason: Formalize sequel continuity as a machine-checkable invariant.
+Impact on prior gates: None (additive test + new module only).
 

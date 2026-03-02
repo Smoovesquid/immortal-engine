@@ -106,6 +106,20 @@ export function playerMove(world, packsById, text) {
     updateKind: inferUpdateKindFromDeltas(result.deltas),
     outcome: result.outcome
   };
+  // Canonical resolution surface: persist a stable resolution event for replay/query/export durability.
+  w = pushEvent(w, {
+    kind: 'resolution',
+    data: {
+      actorId,
+      intent: String(text || ''),
+      text: String(text || ''),
+      roll: result.roll,
+      dc: result.dc,
+      outcome: result.outcome,
+      updateKind: inferUpdateKindFromDeltas(result.deltas)
+    }
+  });
+
 
   // Living Terrain Engine v1: travel intents advance map position deterministically.
   if (moveAdvancesScene(text)) {

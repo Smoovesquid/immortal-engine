@@ -256,7 +256,7 @@ function buildMechanics({ resolution, clocks }) {
   // turn
   const roll = resolution?.roll ?? '';
   const dc = resolution?.dc ?? '';
-  const ok = resolution?.success ? 'success' : 'fail';
+  const ok = resolution?.success ? 'success' : 'failure';
   const upd = String(resolution?.updateKind || '');
   return `roll:${roll} vs DC:${dc} → ${ok} | update:${upd} | clocks:p${clocks.pressure}/d${clocks.dread}/r${clocks.revelation}`;
 }

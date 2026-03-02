@@ -152,17 +152,17 @@ function classifyOutcome({ band, margin, rng }) {
   if (band === 'blood') {
     if (margin >= 4) return 'success';
     if (margin >= -1) return 'mixed';
-    return 'fail';
+    return 'failure';
   }
   if (band === 'grim') {
     if (margin >= 3) return 'success';
     if (margin >= -2) return 'mixed';
-    return 'fail';
+    return 'failure';
   }
   // coop
   if (margin >= 2) return 'success';
   if (margin >= -3) return 'mixed';
-  return 'fail';
+  return 'failure';
 }
 
 function buildDeltas({ w, m, band, outcome, margin, rng, usedAdvantage, gearSignals }) {
@@ -239,7 +239,7 @@ function buildDeltas({ w, m, band, outcome, margin, rng, usedAdvantage, gearSign
     }
   }
 
-  if (outcome === 'fail') {
+  if (outcome === 'failure') {
     const weight = consequenceWeight(w);
     const baseBump = band === 'blood' ? 3 : band === 'grim' ? 2 : 1;
     const bump = clampInt(Math.round(baseBump * weight), 1, 4);
@@ -367,7 +367,7 @@ function envDeltasForMove({ w, m, outcome, gearSignals }) {
   if (gs.light >= 6) light += 1;
 
   // Outcome: fail is messier; success is cleaner.
-  if (outcome === 'fail') { noise += 1; scent += 1; }
+  if (outcome === 'failure') { noise += 1; scent += 1; }
   if (outcome === 'success') { noise = Math.max(0, noise - 1); }
 
   const ops = [];

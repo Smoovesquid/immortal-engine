@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 
 import { newWorld } from '../engine/state.js';
 import { worldHash } from '../engine/worldHash.js';
-import { appendCanonEvent } from '../engine/canonLog.js';
+import { appendCanonEvent } from '../engine/csl/canonLog.js';
 
 /*
 Gate 2 — LLM Containment Hardening
@@ -58,11 +58,13 @@ test('U31: Gate 2 LLM Containment — only canonical events change worldHash', (
 
   const hashBefore = worldHash(w);
 
-  w = appendCanonEvent(w, {
+  const canon2 = appendCanonEvent(w.canonLog, {
     type: 'CANON_CREATE',
     id: 'gate2-test-event',
     targetId: 'world'
   });
+
+  w = { ...w, canonLog: canon2 };
 
   const hashAfter = worldHash(w);
 

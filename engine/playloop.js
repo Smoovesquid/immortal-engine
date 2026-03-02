@@ -89,16 +89,6 @@ export function playerMove(world, packsById, text) {
     };
   }
   let w = ensureWorld(world);
-  // Gate III.2: after ending is locked, play surfaces must not mutate state.
-  if (Boolean(w.ending?.locked)) {
-    return {
-      world: w,
-      output: {
-        narration: String(w.ending?.epilogueLine || 'The end.'),
-        mechanics: ''
-      }
-    };
-  }
   const primary = packsById[w.pack.primaryId];
   const mixer = w.pack.mixerId ? packsById[w.pack.mixerId] : null;
   const pack = mergePacks(primary, mixer);
@@ -203,16 +193,6 @@ export function newScene(world, packsById, { lastResolutionKind = 'turn' } = {})
     };
   }
   let w = ensureWorld(world);
-  // Gate III.2: after ending is locked, play surfaces must not mutate state.
-  if (Boolean(w.ending?.locked)) {
-    return {
-      world: w,
-      output: {
-        narration: String(w.ending?.epilogueLine || 'The end.'),
-        mechanics: ''
-      }
-    };
-  }
   const primary = packsById[w.pack.primaryId];
   const mixer = w.pack.mixerId ? packsById[w.pack.mixerId] : null;
   const pack = mergePacks(primary, mixer);

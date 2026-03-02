@@ -2,7 +2,7 @@ import { normalizeManifest, normalizePack } from '../engine/rulesets.js';
 import { newWorld, ensureWorld } from '../engine/state.js';
 import { beginAdventure } from '../engine/playloop.js';
 import { hasSlot, loadSlot, saveSlot } from '../engine/save.js';
-import { worldHash } from '../engine/worldHash.js';
+import { worldHash as worldHashAsync } from '../engine/worldHash.browser.js';
 
 const app = document.querySelector('#app');
 

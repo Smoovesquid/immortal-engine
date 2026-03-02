@@ -430,6 +430,7 @@ function renderPlay() {
         el('div', { class: 'small' }, `seed: ${seed}`),
         el('div', { class: 'small' }, `fate: ${fate}`),
         el('div', { class: 'small' }, `pack: ${pack}`),
+        el('div', { class: 'small' }, `tension: ${(w?.instrument?.inevitability ?? 0)}/12 | clocks: p${(w?.clocks?.pressure ?? 0)}/12 d${(w?.clocks?.dread ?? 0)}/12 r${(w?.clocks?.revelation ?? 0)}/12`),
         el('div', { class: 'row' }, backBtn, reloadBtn, saveBtn, exportBtn, importBtn)
       ),
       renderTranscript(ui.play.lines),

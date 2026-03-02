@@ -318,14 +318,14 @@ function applyIrreversibleThresholds(w) {
   let w2 = w;
 
   if (w2.ecology.corruption > 70) {
-    w2 = ensureScar(w2, 'corruption_shift', 'Corruption breached 70: the world permanently darkens.');
+    w2 = ensureScar(w2, 'corruption_shift', 'Corruption breached 70: the world permanently darkens.', 'corruption>70');
   }
   const maxHostility = (Array.isArray(w2.factions) ? w2.factions.reduce((m, f) => Math.max(m, f.hostility ?? 0), 0) : 0);
   if (maxHostility > 80) {
-    w2 = ensureScar(w2, 'war_state', 'Hostility breached 80: factions enter open conflict.');
+    w2 = ensureScar(w2, 'war_state', 'Hostility breached 80: factions enter open conflict.', 'hostility>80');
   }
   if (w2.ecology.scarcity > 75) {
-    w2 = ensureScar(w2, 'famine_arc', 'Scarcity breached 75: famine arc unlocked.');
+    w2 = ensureScar(w2, 'famine_arc', 'Scarcity breached 75: famine arc unlocked.', 'scarcity>75');
   }
 
   return w2;
@@ -369,14 +369,18 @@ function pickFactionMove({ pressure, hostility, rng }) {
   return rng.pick(['observe', 'prepare', 'probe']);
 }
 
-function ensureScar(w, id, description) {
+function ensureScar(w, id, description, trigger = '') {
   const scars = Array.isArray(w.scars) ? w.scars : [];
-  if (scars.some(s => s.id === id)) return w;
-  const scar = { id, description, permanent: true };
-  const w2 = { ...w, scars: [...scars, scar] };
-  return pushTickLog(w2, `[TICK] scar formed: ${id}`);
+  const sid = String(id || '').trim();
+  if (!sid) return w;
+  if (scars.some(s => s.id === sid)) return w;
+  const desc = String(description || '');
+  const scar = { id: sid, description: desc, permanent: true };
+  let w2 = { ...w, scars: [...scars, scar] };
+  // U17: Canonical scarFormed surface: stable event for replay/query/export durability.
+  w2 = pushEvent(w2, { kind: 'scarFormed', data: { scarId: sid, description: desc, trigger: String(trigger || '') } });
+  return pushTickLog(w2, `[TICK] scar formed: ${sid}`);
 }
-
 function pushTickLog(w, line) {
   const t = w.timeline.length;
   const e = { t, kind: 'worldTick', data: { text: String(line) } };

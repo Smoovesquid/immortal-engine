@@ -88,7 +88,7 @@ const threads = inst.threads;
   const bump = Math.max(1, Math.round(1 * severity));
   const next = threads.map(t => {
     if (t.status === 'resolved') return t;
-    const tension = clampInt((t.tension ?? 0) + bump, 0, 6);
+    const tension = clampInt((t.tension ?? 0) + bump, 0, 5);
     const age = clampInt((t.age ?? 0) + 1, 0, 999);
 
     // If unresolved for N ticks -> mutate objective deterministically.

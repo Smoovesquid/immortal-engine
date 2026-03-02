@@ -1,6 +1,6 @@
 import { normalizeManifest, normalizePack } from '../engine/rulesets.js';
 import { newWorld, ensureWorld } from '../engine/state.js';
-import { beginAdventure } from '../engine/playloop.js';
+import { beginAdventure, playerMove, newScene } from '../engine/playloop.js';
 import { hasSlot, loadSlot, saveSlot } from '../engine/save.js';
 import { worldHash as worldHashAsync } from '../engine/worldHash.browser.js';
 
@@ -41,7 +41,15 @@ async function loadPacks() {
 const ui = {
   packs: { manifest: null, byId: {} },
   screen: 'invoke',
+
   invoke: { seed: 'seed', fate: 0.2, primaryId: 'fantasy', mixerId: '' },
+
+  play: {
+    input: '',
+    lines: [],
+    lastResolutionKind: 'turn'
+  },
+
   world: null,
   worldHash: '',
   status: ''
@@ -58,16 +66,29 @@ function coerceFate01(x) {
   return Math.max(0, Math.min(1, n));
 }
 
-function computeHash(w) {
-  try { return worldHash(w); } catch { return ''; }
+async function computeHashAsync(w) {
+  try { return await worldHashAsync(w); } catch { return ''; }
 }
 
-function startFromWorld(w) {
+function startFromWorld(w, { keepTranscript = false } = {}) {
   const safe = ensureWorld(w);
   ui.world = safe;
-  ui.worldHash = computeHash(safe);
-  ui.screen = 'world';
+
+  if (!keepTranscript) {
+    ui.play.lines = [];
+    ui.play.input = '';
+    ui.play.lastResolutionKind = 'turn';
+    ui.play.lines.push({ who: 'wizard', text: 'Wizard: The world steadies. What do you do?', mech: '' });
+  }
+
+  ui.worldHash = '(computing...)';
+  ui.screen = 'play';
   render();
+
+  computeHashAsync(safe).then((h) => {
+    ui.worldHash = h || '';
+    render();
+  });
 }
 
 function beginNewWorld() {
@@ -83,9 +104,65 @@ function beginNewWorld() {
     pack: { primaryId, mixerId }
   });
 
-  const { world } = beginAdventure(w0, ui.packs.byId);
+  const { world, output } = beginAdventure(w0, ui.packs.byId);
   saveSlot(localStorage, world, 'slot1');
-  startFromWorld(world);
+
+  ui.play.lines = [{ who: 'wizard', text: output?.narration || 'Wizard: The world begins.', mech: output?.mechanics || '' }];
+  ui.play.input = '';
+  ui.play.lastResolutionKind = 'turn';
+
+  startFromWorld(world, { keepTranscript: true });
+}
+
+function continueSlot1() {
+  const w = loadSlot(localStorage, 'slot1');
+  if (!w) return setStatus('No slot found.');
+  ui.play.lines = [{ who: 'wizard', text: 'Wizard: Welcome back. What do you do?', mech: '' }];
+  ui.play.input = '';
+  ui.play.lastResolutionKind = 'turn';
+  startFromWorld(w, { keepTranscript: true });
+}
+
+function persistAndRehash(world) {
+  saveSlot(localStorage, world, 'slot1');
+  ui.world = ensureWorld(world);
+  ui.worldHash = '(computing...)';
+  render();
+  computeHashAsync(ui.world).then((h) => {
+    ui.worldHash = h || '';
+    render();
+  });
+}
+
+function doSubmitMove() {
+  const w = ui.world ? ensureWorld(ui.world) : null;
+  if (!w) return setStatus('No world loaded.');
+  if (Boolean(w.ending?.locked)) return setStatus('Session ended (ending locked).');
+
+  const text = String(ui.play.input || '').trim();
+  if (!text) return;
+
+  const { world, output } = playerMove(w, ui.packs.byId, text);
+
+  ui.play.lines.push({ who: 'you', text, mech: '' });
+  ui.play.lines.push({ who: 'wizard', text: output?.narration || 'Wizard: ...', mech: output?.mechanics || '' });
+  ui.play.input = '';
+  ui.play.lastResolutionKind = 'turn';
+
+  persistAndRehash(world);
+}
+
+function doNewScene() {
+  const w = ui.world ? ensureWorld(ui.world) : null;
+  if (!w) return setStatus('No world loaded.');
+  if (Boolean(w.ending?.locked)) return setStatus('Session ended (ending locked).');
+
+  const { world, output } = newScene(w, ui.packs.byId, { lastResolutionKind: ui.play.lastResolutionKind || 'turn' });
+
+  ui.play.lines.push({ who: 'wizard', text: output?.narration || 'Wizard: The scene turns.', mech: output?.mechanics || '' });
+  ui.play.lastResolutionKind = 'scene';
+
+  persistAndRehash(world);
 }
 
 function renderInvoke() {
@@ -124,11 +201,7 @@ function renderInvoke() {
   const continueBtn = el('button', {
     class: 'btn',
     disabled: !has,
-    onClick: () => {
-      const w = loadSlot(localStorage, 'slot1');
-      if (!w) return setStatus('No slot found.');
-      startFromWorld(w);
-    }
+    onClick: () => continueSlot1()
   }, 'Continue (slot1)');
 
   const beginBtn = el('button', { class: 'btn primary', onClick: () => beginNewWorld() }, 'Begin');
@@ -138,7 +211,7 @@ function renderInvoke() {
       el('div', { class: 'header' },
         el('div', {},
           el('div', { class: 'title' }, 'Immortal Engine — UI v1'),
-          el('div', { class: 'sub' }, 'Gate 1: Deterministic Invocation')
+          el('div', { class: 'sub' }, 'Gate 2: Play Loop Integrity')
         )
       ),
       el('div', { class: 'card stack' },
@@ -157,14 +230,28 @@ function renderInvoke() {
   );
 }
 
-function renderWorld() {
+function renderTranscript(lines) {
+  const items = (Array.isArray(lines) ? lines : []).map((ln) => {
+    const who = String(ln?.who || 'wizard');
+    const text = String(ln?.text || '');
+    const mech = String(ln?.mech || '');
+    const whoLabel = who === 'you' ? 'You' : 'Wizard';
+    return el('div', { class: 'card stack' },
+      el('div', {}, el('strong', {}, `${whoLabel}: `), text),
+      mech ? el('div', { class: 'mono small' }, mech) : null
+    );
+  });
+  return el('div', { class: 'stack' }, items);
+}
+
+function renderPlay() {
   const w = ui.world ? ensureWorld(ui.world) : null;
   const pack = w ? `${w.pack.primaryId}${w.pack.mixerId ? ` + ${w.pack.mixerId}` : ''}` : '';
   const seed = w ? String(w.meta.seed) : '';
   const fate = w ? String(w.meta.fate) : '';
-  const hash = ui.worldHash || (w ? computeHash(w) : '');
+  const hash = String(ui.worldHash || '');
 
-  const resetBtn = el('button', {
+  const backBtn = el('button', {
     class: 'btn ghost',
     onClick: () => {
       ui.world = null;
@@ -174,29 +261,62 @@ function renderWorld() {
     }
   }, 'Back');
 
-  const refreshBtn = el('button', {
+  const reloadBtn = el('button', {
     class: 'btn',
     onClick: () => {
       const w2 = loadSlot(localStorage, 'slot1');
       if (!w2) return setStatus('No slot found.');
-      startFromWorld(w2);
+      startFromWorld(w2, { keepTranscript: true });
     }
   }, 'Reload slot1');
+
+  const saveBtn = el('button', {
+    class: 'btn',
+    onClick: () => {
+      if (!w) return setStatus('No world loaded.');
+      saveSlot(localStorage, w, 'slot1');
+      setStatus('Saved slot1.');
+    }
+  }, 'Save');
+
+  const moveBtn = el('button', { class: 'btn primary', onClick: () => doSubmitMove() }, 'Submit Move');
+  const sceneBtn = el('button', { class: 'btn', onClick: () => doNewScene() }, 'New Scene');
+
+  const input = el('input', {
+    class: 'input',
+    value: ui.play.input,
+    placeholder: 'Type your move…',
+    onInput: (e) => { ui.play.input = String(e.target.value || ''); },
+    onKeydown: (e) => {
+      if (e.key === 'Enter') doSubmitMove();
+    }
+  });
+
+  const ended = Boolean(w?.ending?.locked);
 
   return el('div', { class: 'container stack' },
     el('div', { class: 'panel' },
       el('div', { class: 'header' },
         el('div', {},
-          el('div', { class: 'title' }, 'World Materialized'),
-          el('div', { class: 'sub' }, 'Gate 1 acceptance: refresh restores identical worldHash.')
+          el('div', { class: 'title' }, 'Play Loop'),
+          el('div', { class: 'sub' }, ended ? 'Ending locked: no further state mutation.' : 'Gate 2 acceptance: moves + scenes mutate deterministically; hash updates.')
         )
       ),
       el('div', { class: 'card stack' },
+        ui.status ? el('div', { class: 'small' }, ui.status) : null,
         el('div', {}, el('strong', {}, 'worldHash'), el('div', { class: 'mono small' }, hash || '(hash unavailable)')),
         el('div', { class: 'small' }, `seed: ${seed}`),
         el('div', { class: 'small' }, `fate: ${fate}`),
         el('div', { class: 'small' }, `pack: ${pack}`),
-        el('div', { class: 'row' }, resetBtn, refreshBtn)
+        el('div', { class: 'row' }, backBtn, reloadBtn, saveBtn)
+      ),
+      renderTranscript(ui.play.lines),
+      el('div', { class: 'card stack' },
+        input,
+        el('div', { class: 'row' },
+          el('button', { class: 'btn', disabled: ended, onClick: () => doNewScene() }, 'New Scene'),
+          el('button', { class: 'btn primary', disabled: ended, onClick: () => doSubmitMove() }, 'Submit Move')
+        )
       )
     )
   );
@@ -218,7 +338,7 @@ function render() {
     return;
   }
 
-  if (ui.screen === 'world') app.append(renderWorld());
+  if (ui.screen === 'play') app.append(renderPlay());
   else app.append(renderInvoke());
 }
 
@@ -231,7 +351,7 @@ window.addEventListener('error', (e) => {
           el('div', { class: 'header' },
             el('div', {},
               el('div', { class: 'title' }, 'UI v1 — Error'),
-              el('div', { class: 'sub' }, 'Gate 1 must load without console errors.')
+              el('div', { class: 'sub' }, 'Gate 2 must load without console errors.')
             )
           ),
           el('div', { class: 'card stack' },
@@ -252,10 +372,14 @@ async function boot() {
   if (hasSlot(localStorage, 'slot1')) {
     const w = loadSlot(localStorage, 'slot1');
     if (w) {
-      startFromWorld(w);
+      ui.play.lines = [{ who: 'wizard', text: 'Wizard: Welcome back. What do you do?', mech: '' }];
+      ui.play.input = '';
+      ui.play.lastResolutionKind = 'turn';
+      startFromWorld(w, { keepTranscript: true });
       return;
     }
   }
+
   ui.screen = 'invoke';
   render();
 }

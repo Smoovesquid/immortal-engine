@@ -4,6 +4,7 @@ import { ensureEnding } from './ending.js';
 import { ensureInstrumentLayer } from './instrument.js';
 import { ensureMap } from './map/mapState.js';
 import { ensureEnv } from './env/envCore.js';
+import { createCanonLog } from './csl/canonLog.js';
 
 export const WORLD_VERSION = 8;
 
@@ -57,6 +58,8 @@ export function ensureWorld(partial) {
     scars: ensureScars(w.scars),
     ecology: ensureEcology(w.ecology),
     reputation: ensureReputation(w.reputation, ensureFactions(w.factions)),
+
+    canonLog: ensureCanonLog(w.canonLog),
 
     timeline: Array.isArray(w.timeline) ? w.timeline : [],
     ui: {
@@ -250,6 +253,16 @@ function ensureStringArray(x, cap) {
     if (out.length >= cap) break;
   }
   return out;
+}
+
+function ensureCanonLog(log) {
+  if (!log || typeof log !== 'object') {
+    return createCanonLog();
+  }
+  if (!Array.isArray(log.events)) {
+    return createCanonLog();
+  }
+  return { events: [...log.events] };
 }
 
 // ensureInstrument moved to engine/instrument.js (ensureInstrumentLayer)

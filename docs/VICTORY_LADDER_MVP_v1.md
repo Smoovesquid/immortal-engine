@@ -89,6 +89,83 @@ No marketplace. No creator tools.
 
 ---
 
+
+
+---
+
+## GATE 3.1 — Regional World Contract
+
+Objective: Deterministic, themed regional topology with faction personality vectors.
+
+World Generation Requirements:
+
+- Exactly 5 regions per campaign:
+  - 1 Origin (safe cluster)
+  - 2 Mid-tier regions
+  - 1 High-threat region
+  - 1 Anomaly region
+- Total nodes per world: ~20–30.
+- Player always spawns in Origin region.
+- Origin region baseline hostility is lowest in world.
+- Region sizes are variable within bounded deterministic ranges.
+- Regions generated via seed → Region Theme Vector.
+
+Region Theme Vector must include:
+
+- Tone bias
+- Base hostility
+- Base instability
+- Scar density baseline
+- Environmental modifier
+
+Faction Personality Vector Contract:
+
+- Each region has a dominant faction.
+- Factions have exactly 8 personality axes:
+  - Scarcity
+  - Curiosity
+  - Dominance
+  - Mercy
+  - Paranoia
+  - Honor
+  - Corruption
+  - Isolation
+- Values are bounded integers (deterministic).
+- Minor NPCs inherit faction vector.
+- Major NPCs may apply bounded modifier.
+
+Containment Rule:
+
+- LLM receives vectors.
+- LLM may narrate personality.
+- LLM may not mutate vectors or world state.
+- All behavioral outcomes computed by engine.
+
+Threat Model:
+
+effectiveThreat =
+  regionBaseThreat
++ distanceModifier
++ min(playerPowerInfluence, cap)
+
+Bleed Rules:
+
+- Low-probability anomaly pockets in low-tier regions.
+- Low-probability sanctuaries in high-tier regions.
+- Origin may destabilize late-campaign but never becomes high-tier.
+
+Acceptance Criteria:
+
+- ≥10 seeded worlds show distinct region vector patterns.
+- Player never spawns outside Origin.
+- Origin baseline hostility lowest across regions.
+- WorldHash stable across generation.
+- All regions reachable via clustered graph with weighted bridges.
+- No instant-lethal states in first 3 turns.
+- Personality vectors influence deterministic reaction weighting.
+- No LLM-only behavioral mutation possible.
+
+
 # GATE 4 — User Completion Loop
 
 Text-first MVP: Primary interaction is typed text (input + output). Voice I/O is explicitly deferred to Post-MVP.

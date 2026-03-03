@@ -34,7 +34,27 @@ export function discoverNode(world, nodeId) {
   const id = String(nodeId || '').trim();
   if (!id) return w;
   if (m.discovered.includes(id)) return w;
-  return { ...w, map: { ...m, discovered: [id, ...m.discovered] } };
+
+  const turn = w.time?.turn ?? 0;
+  const nextDiscovered = [id, ...m.discovered];
+  const mem = m.memory && typeof m.memory === 'object' ? m.memory : {};
+  const seenTurnByNodeId = {
+    ...(mem.seenTurnByNodeId && typeof mem.seenTurnByNodeId === 'object' ? mem.seenTurnByNodeId : {}),
+    [id]: (mem.seenTurnByNodeId && mem.seenTurnByNodeId[id] !== undefined) ? mem.seenTurnByNodeId[id] : turn
+  };
+
+  return {
+    ...w,
+    map: {
+      ...m,
+      discovered: nextDiscovered,
+      memory: {
+        ...mem,
+        seenNodeIds: nextDiscovered,
+        seenTurnByNodeId
+      }
+    }
+  };
 }
 
 export function moveToNode(world, nodeId) {
@@ -44,8 +64,34 @@ export function moveToNode(world, nodeId) {
   if (!id) return w;
   const nbs = neighbors(m, m.currentNodeId);
   if (!nbs.includes(id)) return w;
-  const w1 = { ...w, map: { ...m, currentNodeId: id } };
-  return discoverNode(w1, id);
+
+  const w1 = discoverNode({ ...w, map: { ...m, currentNodeId: id } }, id);
+  const m1 = ensureMap(w1.map);
+  const turn = w1.time?.turn ?? 0;
+  const mem = m1.memory && typeof m1.memory === 'object' ? m1.memory : {};
+
+  const visitedTurnByNodeId = {
+    ...(mem.visitedTurnByNodeId && typeof mem.visitedTurnByNodeId === 'object' ? mem.visitedTurnByNodeId : {}),
+    [id]: (mem.visitedTurnByNodeId && mem.visitedTurnByNodeId[id] !== undefined) ? mem.visitedTurnByNodeId[id] : turn
+  };
+
+  const seenTurnByNodeId = {
+    ...(mem.seenTurnByNodeId && typeof mem.seenTurnByNodeId === 'object' ? mem.seenTurnByNodeId : {}),
+    [id]: (mem.seenTurnByNodeId && mem.seenTurnByNodeId[id] !== undefined) ? mem.seenTurnByNodeId[id] : turn
+  };
+
+  return {
+    ...w1,
+    map: {
+      ...m1,
+      memory: {
+        ...mem,
+        visitedTurnByNodeId,
+        seenTurnByNodeId,
+        seenNodeIds: m1.discovered
+      }
+    }
+  };
 }
 
 export function scarifyNode(world, nodeId, scarId) {

@@ -6,6 +6,7 @@ import { ensureMap } from './map/mapState.js';
 import { ensureEnv } from './env/envCore.js';
 import { createCanonLog } from './csl/canonLog.js';
 import { generateRegions } from './world/regions.js';
+import { generateInitialMap } from './map/generateMap.js';
 
 export const WORLD_VERSION = 8;
 
@@ -77,10 +78,12 @@ export function ensureWorld(partial) {
 }
 
 export function newWorld({ seed, fate, campaignId, pack }) {
+  const packObj = (pack && typeof pack === 'object') ? pack : { primaryId: 'fantasy', mixerId: null };
+  const map0 = generateInitialMap({ seed: String(seed), packId: String(packObj.primaryId || 'fantasy'), pack: {} });
   return ensureWorld({
     meta: { seed: String(seed), fate: clamp01(fate ?? 0.2), campaignId: String(campaignId ?? 'campaign'), motifs: ensureMotifs(null), advantageTokens: ensureAdvantageTokens(null), aiMode: ensureAiMode(null), microClocks: ensureMicroClocks(null) },
-    pack,
-    map: null,
+    pack: packObj,
+    map: map0,
     env: null,
     party: [],
     ledger: { facts: [], threats: [], questions: [] },

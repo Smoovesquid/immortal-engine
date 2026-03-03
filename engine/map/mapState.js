@@ -11,7 +11,10 @@ export function ensureMap(map) {
   const tacticalRaw = m.tactical && typeof m.tactical === 'object' ? m.tactical : null;
   const tactical = tacticalRaw ? ensureTactical(tacticalRaw) : { active: false, zoneLayout: null };
 
-  return { nodes, edges, discovered: dedupe(discovered), currentNodeId, tactical };
+  const memoryRaw = m.memory && typeof m.memory === 'object' ? m.memory : null;
+  const memory = ensureMapMemory(memoryRaw, dedupe(discovered));
+
+  return { nodes, edges, discovered: dedupe(discovered), currentNodeId, tactical, memory };
 }
 
 export function neighbors(map, nodeId) {
@@ -124,6 +127,16 @@ function ensureTactical(t) {
     active: Boolean(x.active),
     zoneLayout: zl ? { lanes: lanes.length ? lanes : ['left', 'center', 'right'], coverTags: cover.length ? cover : ['cover', 'shadow'] } : null
   };
+}
+
+function ensureMapMemory(mem, discovered) {
+  const x = mem && typeof mem === 'object' ? mem : {};
+  const seenNodeIds = Array.isArray(x.seenNodeIds) ? dedupe(x.seenNodeIds) : dedupe(discovered);
+  const visitedTurnByNodeId = (x.visitedTurnByNodeId && typeof x.visitedTurnByNodeId === 'object') ? x.visitedTurnByNodeId : {};
+  const seenTurnByNodeId = (x.seenTurnByNodeId && typeof x.seenTurnByNodeId === 'object') ? x.seenTurnByNodeId : {};
+  const knowledgeByNodeId = (x.knowledgeByNodeId && typeof x.knowledgeByNodeId === 'object') ? x.knowledgeByNodeId : {};
+  const snapshotByNodeId = (x.snapshotByNodeId && typeof x.snapshotByNodeId === 'object') ? x.snapshotByNodeId : {};
+  return { seenNodeIds, visitedTurnByNodeId, seenTurnByNodeId, knowledgeByNodeId, snapshotByNodeId };
 }
 
 function dedupe(arr) {

@@ -69,6 +69,24 @@ export function pickTravelDestination(world, playerText) {
   if (!nbs.length) return here;
 
   const t = String(playerText || '').toLowerCase();
+
+  // Directional shorthand: choose neighbor by stable index.
+  // neighbors() preserves deterministic insertion order based on edges traversal.
+  const dir = (t.match(/\\b(north|south|east|west|n|s|e|w)\\b/) || [])[1] || '';
+  if (dir) {
+    const idx =
+      (dir === 'north' || dir === 'n') ? 0 :
+      (dir === 'east'  || dir === 'e') ? 1 :
+      (dir === 'south' || dir === 's') ? 2 :
+      (dir === 'west'  || dir === 'w') ? 3 : 0;
+    return nbs[idx % nbs.length] || nbs[0];
+  }
+
+  // Generic "exit"/"leave" with no named destination: deterministic first neighbor.
+  if (/\\b(exit|leave|escape|get out|get outside|out of here)\\b/.test(t)) {
+    return nbs[0] || here;
+  }
+
   const nbNodes = nbs.map(id => m.nodes.find(n => n.id === id)).filter(Boolean);
   const match = nbNodes.find(n => t.includes(String(n.name || '').toLowerCase()));
   if (match) return match.id;

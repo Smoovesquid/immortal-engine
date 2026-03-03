@@ -8,7 +8,7 @@ import { triggerEnding } from './ending.js';
 import { compose } from './composer.js';
 import { planNextScene } from './sceneDirector.js';
 import { generateInitialMap } from './map/generateMap.js';
-import { ensureMap, pickTravelDestination, moveToNode } from './map/mapState.js';
+import { ensureMap, pickTravelDestination, moveToNode, neighbors } from './map/mapState.js';
 import { conductorDecision, applyConductorDeltas } from './conductor.js';
 import { worldTick } from './worldTick.js';
 import { resolveMove } from './resolve.js';
@@ -182,6 +182,14 @@ export function playerMove(world, packsById, text) {
   }
 
   const composed = compose(w, text, resolution, { pack });
+
+  // Surface-only exploration: list adjacent map nodes deterministically (no state mutation).
+  if (isExploreIntent(text)) {
+    const exits = exitsLine(w);
+    if (exits) {
+      composed.narrationLine = `${String(composed.narrationLine || 'Wizard: ...')} ${exits}`.trim();
+    }
+  }
   w = applyComposerDelta(w, composed.ledgerDelta);
 
   // Strict output discipline: 1 narration line + 1 bracket line.
@@ -367,6 +375,37 @@ function isPassiveIntent(t) {
 function moveAdvancesScene(text) {
   const t = String(text || '').toLowerCase();
   return /\b(travel|leave|enter|head to|go to|move to|escape|journey|walk to)\b/.test(t);
+}
+
+function isExploreIntent(text) {
+  const t = String(text || '').toLowerCase().trim();
+  if (!t) return false;
+  return /\b(look around|look about|survey|scan|search the area|where can i go|where do i go|options|exits?|way out|how do i get out|get out of here|leave this place)\b/.test(t);
+}
+
+function exitsLine(world) {
+  const w = world || {};
+  const m = ensureMap(w.map);
+  const here = String(m.currentNodeId || '');
+  if (!here) return '';
+  const nbs = neighbors(m, here);
+  if (!Array.isArray(nbs) || nbs.length === 0) return '';
+  const names = nbs
+    .map(id => (m.nodes || []).find(n => n && n.id === id))
+    .filter(Boolean)
+    .map(n => String(n.name || '').trim())
+    .filter(Boolean);
+  const uniq = [];
+  const seen = new Set();
+  for (const nm of names) {
+    const k = nm.toLowerCase();
+    if (seen.has(k)) continue;
+    seen.add(k);
+    uniq.push(nm);
+    if (uniq.length >= 5) break;
+  }
+  if (!uniq.length) return '';
+  return `Exits: ${uniq.join(', ')}.`;
 }
 
 function inferredFactFromMove(text) {

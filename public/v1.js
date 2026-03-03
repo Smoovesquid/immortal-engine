@@ -329,7 +329,7 @@ function renderTranscript(lines) {
     const mech = String(ln?.mech || '');
     const whoLabel = who === 'you' ? 'You' : 'Wizard';
     return el('div', { class: 'card stack' },
-      el('div', {}, el('strong', {}, `${whoLabel}: `), text),
+      el('div', {}, text),
       mech ? el('div', { class: 'mono small' }, mech) : null
     );
   });
@@ -495,17 +495,6 @@ async function boot() {
   render();
   const packs = await loadPacks();
   ui.packs = packs;
-
-  if (hasSlot(localStorage, 'slot1')) {
-    const w = loadSlot(localStorage, 'slot1');
-    if (w) {
-      ui.play.lines = [{ who: 'wizard', text: 'Wizard: Welcome back. What do you do?', mech: '' }];
-      ui.play.input = '';
-      ui.play.lastResolutionKind = 'turn';
-      startFromWorld(w, { keepTranscript: true });
-      return;
-    }
-  }
 
   ui.screen = 'invoke';
   render();

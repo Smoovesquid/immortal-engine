@@ -21,7 +21,8 @@ export function ensureWorld(partial) {
       fate: clamp01(meta.fate ?? 0.2),
       motifs: ensureMotifs(meta.motifs),
       advantageTokens: ensureAdvantageTokens(meta.advantageTokens),
-      aiMode: ensureAiMode(meta.aiMode)
+      aiMode: ensureAiMode(meta.aiMode),
+      microClocks: ensureMicroClocks(meta.microClocks)
     },
     ruleset: w.ruleset && typeof w.ruleset === 'object' ? w.ruleset : { id: 'core', version: 1 },
     pack: w.pack && typeof w.pack === 'object' ? w.pack : { primaryId: 'fantasy', mixerId: null },
@@ -74,7 +75,7 @@ export function ensureWorld(partial) {
 
 export function newWorld({ seed, fate, campaignId, pack }) {
   return ensureWorld({
-    meta: { seed: String(seed), fate: clamp01(fate ?? 0.2), campaignId: String(campaignId ?? 'campaign'), motifs: ensureMotifs(null), advantageTokens: ensureAdvantageTokens(null), aiMode: ensureAiMode(null) },
+    meta: { seed: String(seed), fate: clamp01(fate ?? 0.2), campaignId: String(campaignId ?? 'campaign'), motifs: ensureMotifs(null), advantageTokens: ensureAdvantageTokens(null), aiMode: ensureAiMode(null), microClocks: ensureMicroClocks(null) },
     pack,
     map: null,
     env: null,
@@ -95,6 +96,15 @@ export function newWorld({ seed, fate, campaignId, pack }) {
     timeline: [],
     ui: { advanced: false, lastError: '' }
   });
+}
+
+function ensureMicroClocks(x) {
+  const obj = x && typeof x === 'object' ? x : {};
+  return {
+    pressure: clampInt(obj.pressure ?? 0, 0, 99),
+    dread: clampInt(obj.dread ?? 0, 0, 99),
+    revelation: clampInt(obj.revelation ?? 0, 0, 99)
+  };
 }
 
 function ensureAdvantageTokens(x) {

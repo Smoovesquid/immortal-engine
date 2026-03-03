@@ -142,7 +142,14 @@ export function playerMove(world, packsById, text) {
     const dest = pickTravelDestination(w, text);
     const before = w.map?.currentNodeId;
     w = moveToNode(w, dest);
+
+    // Keep scene surface in sync with map position so UI reflects travel immediately.
     if (w.map?.currentNodeId && w.map.currentNodeId !== before) {
+      const here = w.map?.nodes?.find(n => n && n.id === w.map.currentNodeId) || null;
+      const nextName = String(here?.name || '').trim();
+      if (nextName) {
+        w = { ...w, scene: { ...w.scene, location: nextName } };
+      }
       w = pushEvent(w, { kind: 'travel', data: { from: before || '', to: w.map.currentNodeId } });
     }
   }
@@ -154,6 +161,9 @@ export function playerMove(world, packsById, text) {
     const proposal = conductorDecision(w, rng2);
     w = applyConductorDeltas(w, proposal, { mode: aiMode === 'advisory' ? 'advisory' : 'conductor' });
   }
+
+  // Active-context passivity: advance micro pressure on repeated passive intent after non-success.
+  w = applyMicroPressureIfNeeded(w, move, text);
 
   // Living world tick: every player action advances the world offscreen.
   w = worldTick(w, `${w.meta.seed}|tick|turn${w.time.turn}|tl${w.timeline.length}`);
@@ -280,6 +290,79 @@ export function newScene(world, packsById, { lastResolutionKind = 'turn' } = {})
 }
 
 // (legacy DC/update logic removed; handled by engine/resolve.js + engine/effectsCore.js)
+
+function applyMicroPressureIfNeeded(world, move, text) {
+  const w = world || {};
+  const m = move || {};
+  const t = normalizeIntent(text);
+
+  if (!isPassiveIntent(t)) return w;
+  if (String(m.stakeTag || '') !== 'time') return w;
+  if (!isActiveContext(w)) return w;
+
+  const last = lastResolutionData(w);
+  if (!last) return w;
+
+  const lastIntent = normalizeIntent(last.intent || last.text || '');
+  if (!lastIntent || lastIntent !== t) return w;
+
+  if (String(last.outcome || '') === 'success') return w;
+
+  return bumpMicroClock(w, 'pressure', 1, 12);
+}
+
+function bumpMicroClock(world, key, add, rolloverAt) {
+  const w = world || {};
+  const meta = w.meta || {};
+  const micro = (meta.microClocks && typeof meta.microClocks === 'object') ? meta.microClocks : {};
+  const cur = Number(micro[key] ?? 0);
+  const next = cur + Number(add ?? 0);
+
+  const roll = Math.max(1, Number(rolloverAt ?? 12));
+  const macroAdd = Math.floor(next / roll);
+  const microNext = next % roll;
+
+  const clocks = w.clocks || {};
+  const macroCur = Number(clocks[key] ?? 0);
+  const macroNext = Math.min(12, macroCur + macroAdd);
+
+  return {
+    ...w,
+    meta: { ...meta, microClocks: { ...micro, [key]: microNext } },
+    clocks: { ...clocks, [key]: macroNext }
+  };
+}
+
+function isActiveContext(world) {
+  const w = world || {};
+  const tags = Array.isArray(w?.scene?.tags) ? w.scene.tags : [];
+  const tagHit = tags.some(x => String(x || '').toLowerCase() === 'confrontation');
+  const clocks = w.clocks || {};
+  const clockHit = (Number(clocks.pressure || 0) > 0) || (Number(clocks.dread || 0) > 0);
+  const tacticalHit = Boolean(w?.map?.tactical?.active);
+  return tagHit || clockHit || tacticalHit;
+}
+
+function lastResolutionData(world) {
+  const tl = Array.isArray(world?.timeline) ? world.timeline : [];
+  for (let i = tl.length - 1; i >= 0; i--) {
+    const e = tl[i];
+    if (e && e.kind === 'resolution') return e.data || null;
+  }
+  return null;
+}
+
+function normalizeIntent(s) {
+  return String(s || '')
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function isPassiveIntent(t) {
+  const s = String(t || '');
+  return /\b(wait|do nothing|idle|linger|stall)\b/.test(s);
+}
 
 function moveAdvancesScene(text) {
   const t = String(text || '').toLowerCase();

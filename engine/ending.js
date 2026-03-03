@@ -9,13 +9,20 @@ export const ENDING_TYPES = [
   'The Cost Paid'
 ];
 
+function coerceBool(x) {
+  // Guard against legacy/stringified booleans: "false" should not become truthy.
+  if (x === true || x === 'true' || x === 1) return true;
+  if (x === false || x === 'false' || x === 0) return false;
+  return false;
+}
+
 export function ensureEnding(e) {
   const x = e && typeof e === 'object' ? e : {};
   return {
-    triggered: Boolean(x.triggered),
+    triggered: coerceBool(x.triggered),
     type: String(x.type ?? ''),
     epilogueLine: String(x.epilogueLine ?? ''),
-    locked: Boolean(x.locked)
+    locked: coerceBool(x.locked)
   };
 }
 

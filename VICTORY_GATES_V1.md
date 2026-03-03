@@ -211,3 +211,11 @@ Version: UI SPINE v1.3
 Change: Closed Gate 5 (Pressure Visibility) by surfacing deterministic tension/clocks indicator in /public/v1.js (tension = instrument.inevitability; clocks = pressure/dread/revelation).
 Reason: Meet ladder requirement: inevitability/pressure rise is player-visible and deterministic prior to ending lock.
 Impact on prior gates: None (presentation-only UI; no canonical mutation).
+---
+
+# EVOLUTION LEDGER (Entries)
+
+Version: UI SPINE v1.4
+Change: Closed Gate 7 (UI Parity & Legacy Sunset). Default entrypoint /public/index.html redirects to /v1.html; legacy UI remains isolated under /public/legacy/ with no core-loop dependency.
+Reason: Formalize that v1 supports invocation/play/save/export/import/ending and fully replaces legacy onboarding.
+Impact on prior gates: None (routing/docs-only; no canonical mutation).

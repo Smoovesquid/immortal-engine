@@ -107,6 +107,13 @@ export function playerMove(world, packsById, text) {
     return { world: w, output: { narration: composed.narrationLine, mechanics: composed.mechanicsLine } };
   }
 
+  // Surface-only exploration: list adjacent map nodes deterministically (no roll, no tick, no timeline).
+  if (isExploreIntent(text)) {
+    const exits = exitsLine(w);
+    const line = exits ? `Wizard: You take stock of your surroundings. ${exits}` : 'Wizard: You take stock of your surroundings.';
+    return { world: w, output: { narration: line, mechanics: '' } };
+  }
+
   const actorId = (w.party?.[0]?.id) ? String(w.party[0].id) : 'party';
   const move = inferMoveFromText(w, pack, actorId, text);
 
@@ -183,13 +190,6 @@ export function playerMove(world, packsById, text) {
 
   const composed = compose(w, text, resolution, { pack });
 
-  // Surface-only exploration: list adjacent map nodes deterministically (no state mutation).
-  if (isExploreIntent(text)) {
-    const exits = exitsLine(w);
-    if (exits) {
-      composed.narrationLine = `${String(composed.narrationLine || 'Wizard: ...')} ${exits}`.trim();
-    }
-  }
   w = applyComposerDelta(w, composed.ledgerDelta);
 
   // Strict output discipline: 1 narration line + 1 bracket line.

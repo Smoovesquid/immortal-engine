@@ -158,6 +158,7 @@ function persistAndRehash(world) {
 }
 
 function doSubmitMove() {
+  setStatus('Submitting move…');
   const w = ui.world ? ensureWorld(ui.world) : null;
   if (!w) return setStatus('No world loaded.');
   if (Boolean(w.ending?.locked)) return setStatus('Session ended (ending locked).');
@@ -173,9 +174,11 @@ function doSubmitMove() {
   ui.play.lastResolutionKind = 'turn';
 
   persistAndRehash(world);
+  setStatus('Move resolved.');
 }
 
 function doNewScene() {
+  setStatus('Creating new scene…');
   const w = ui.world ? ensureWorld(ui.world) : null;
   if (!w) return setStatus('No world loaded.');
   if (Boolean(w.ending?.locked)) return setStatus('Session ended (ending locked).');
@@ -186,6 +189,7 @@ function doNewScene() {
   ui.play.lastResolutionKind = 'scene';
 
   persistAndRehash(world);
+  setStatus('Scene advanced.');
 }
 
 function renderInvoke() {

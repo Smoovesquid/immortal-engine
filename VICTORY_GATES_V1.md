@@ -219,3 +219,11 @@ Version: UI SPINE v1.4
 Change: Closed Gate 7 (UI Parity & Legacy Sunset). Default entrypoint /public/index.html redirects to /v1.html; legacy UI remains isolated under /public/legacy/ with no core-loop dependency.
 Reason: Formalize that v1 supports invocation/play/save/export/import/ending and fully replaces legacy onboarding.
 Impact on prior gates: None (routing/docs-only; no canonical mutation).
+---
+
+# EVOLUTION LEDGER (Entries)
+
+Version: UI SPINE v1.5
+Change: Closed Gate 4 (MythSpec + Deterministic Triad). MythSpec is deterministic for identical inputs; Triad frames + frame-derived invocation are deterministic; worldHash stable for identical myth + frame selection (tests: U28, U32).
+Reason: Formalize Gate 4 acceptance as a machine-checkable invariant backed by deterministic tests.
+Impact on prior gates: None (additive tests/docs-only; no canonical mutation).

@@ -57,6 +57,38 @@ export function discoverNode(world, nodeId) {
   };
 }
 
+export function seeNode(world, nodeId) {
+  const w = ensureWorld(world);
+  const m = ensureMap(w.map);
+  const id = String(nodeId || "").trim();
+  if (!id) return w;
+  if (m.discovered.includes(id)) return w;
+
+  const turn = w.time?.turn ?? 0;
+  // IMPORTANT: no travel => keep discovered[0] === currentNodeId
+  const nextDiscovered = [...m.discovered, id];
+  const mem = (m.memory && typeof m.memory === "object") ? m.memory : {};
+
+  const seenTurnByNodeId = {
+    ...((mem.seenTurnByNodeId && typeof mem.seenTurnByNodeId === "object") ? mem.seenTurnByNodeId : {}),
+    [id]: (mem.seenTurnByNodeId && mem.seenTurnByNodeId[id] !== undefined) ? mem.seenTurnByNodeId[id] : turn
+  };
+
+  return {
+    ...w,
+    map: {
+      ...m,
+      discovered: nextDiscovered,
+      memory: {
+        ...mem,
+        seenNodeIds: nextDiscovered,
+        seenTurnByNodeId
+      }
+    }
+  };
+}
+
+
 export function moveToNode(world, nodeId) {
   const w = ensureWorld(world);
   const m = ensureMap(w.map);

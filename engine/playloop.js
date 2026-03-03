@@ -373,14 +373,17 @@ function isPassiveIntent(t) {
 }
 
 function moveAdvancesScene(text) {
-  const t = String(text || '').toLowerCase();
-  return /\b(travel|leave|enter|head to|go to|move to|escape|journey|walk to)\b/.test(t);
+  const t = String(text || "").toLowerCase();
+  // Travel intents: named destinations OR directional/exit shorthand.
+  // Shorthand destination resolution happens in pickTravelDestination().
+  return /\b(travel|leave|exit|enter|head to|go to|move to|escape|journey|walk to|go north|go south|go east|go west|north|south|east|west|n|s|e|w)\b/.test(t);
 }
+
 
 function isExploreIntent(text) {
   const t = String(text || '').toLowerCase().trim();
   if (!t) return false;
-  return /\b(look around|look about|survey|scan|search the area|where can i go|where do i go|options|exits?|way out|how do i get out|get out of here|leave this place)\b/.test(t);
+  return /\b(look around|look about|survey|scan|search the area|where can i go|where do i go|options|exits|way out|how do i get out|get out of here|leave this place)\b/.test(t);
 }
 
 function exitsLine(world) {

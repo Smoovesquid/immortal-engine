@@ -4,8 +4,6 @@
  *
  * Inputs are explicit so determinism is obvious and testable.
  */
-function isObject(x) { return x && typeof x === 'object'; }
-
 export function generateStructuresForNode({ seed, nodeId, engineVersion, nodeTags }) {
   const s = String(seed ?? '');
   const nid = String(nodeId ?? '');

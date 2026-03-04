@@ -68,11 +68,33 @@ const ui = {
   aiKey: '',
   aiKeyAck: '',
   aiTest: { ok: null, text: '(not run)', ms: null },
+  aiStatus: { ok: null, online: null, source: "(unknown)", mode: "(unknown)", envPresent: null, sessionPresent: null },
   map: { zoom: 'region' }
 };
 
+async function refreshAiStatus() {
+  try {
+    const r = await fetch("/api/ai-status");
+    const j = await r.json();
+    if (!j || typeof j !== "object") {
+      ui.aiStatus = { ok:false, online:false, source:"bad_json", mode:"?", envPresent:null, sessionPresent:null };
+      return;
+    }
+    ui.aiStatus = {
+      ok: Boolean(j.ok),
+      online: Boolean(j.online),
+      source: String(j.source || "none"),
+      mode: String(j.mode || "(unknown)"),
+      envPresent: (j.envPresent == null ? null : Boolean(j.envPresent)),
+      sessionPresent: (j.sessionPresent == null ? null : Boolean(j.sessionPresent))
+    };
+  } catch (e) {
+    ui.aiStatus = { ok:false, online:false, source:"error", mode:"?", envPresent:null, sessionPresent:null };
+  }
+}
+
 function setStatus(msg) {
-  ui.status = String(msg || '');
+  ui.status = String(msg || "");
   render();
 }
 
@@ -611,6 +633,7 @@ function renderAi() {
         el('div', { class: 'small' }, 'key test: ' + (ui.aiTest?.ok === null || ui.aiTest?.ok === undefined ? '(unknown)' : (ui.aiTest.ok ? 'PASS' : 'FAIL')) + (ui.aiTest?.ms == null ? '' : (' ' + String(ui.aiTest.ms) + 'ms'))),
         el('pre', { class: 'mono small', style: { whiteSpace: 'pre-wrap' } }, String(ui.aiTest?.text || '')),
         el('div', { class: 'small' }, `online: ${online === null || online === undefined ? '(unknown)' : String(online)}`),
+        el("div", { class: "small" }, "ai: " + (ui.aiStatus?.online ? ("ONLINE (" + String(ui.aiStatus.source||"none") + ") mode=" + String(ui.aiStatus.mode||"?") ) : ("OFFLINE mode=" + String(ui.aiStatus.mode||"?") ))),
         el('pre', { class: 'mono small', style: { whiteSpace: 'pre-wrap' } }, statusText)
       )
     )
@@ -666,7 +689,9 @@ window.addEventListener('error', (e) => {
 });
 
 async function boot() {
-  render();
+  
+  await refreshAiStatus();
+render();
   const packs = await loadPacks();
   ui.packs = packs;
   await fetchAiStatus();

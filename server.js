@@ -36,6 +36,21 @@ export function createApp() {
     return res.json({ ok: true, online: true });
   });
 
+  app.post('/api/ai-test', async (_req, res) => {
+    const client = makeOpenAiClient({ apiKey: sessionOpenAiKey });
+    if (client == null) return res.json({ ok: false, reason: 'no_client' });
+    try {
+      const resp = await client.responses.create({
+        model: process.env.OPENAI_MODEL || 'gpt-4.1-mini',
+        input: 'Return exactly: OK'
+      });
+      const text = String(resp.output_text || '').trim();
+      return res.json({ ok: true, response: text || '(empty)' });
+    } catch (e) {
+      return res.json({ ok: false, reason: String(e?.message || e) });
+    }
+  });
+
   app.post('/api/ai', async (req, res) => {
     const client = makeOpenAiClient({ apiKey: sessionOpenAiKey });
     const out = await handleAiRequest({ client, body: req.body });

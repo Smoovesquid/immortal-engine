@@ -8,9 +8,12 @@ export function hasOpenAiKey() {
   return Boolean(process.env.OPENAI_API_KEY && String(process.env.OPENAI_API_KEY).trim());
 }
 
-export function makeOpenAiClient() {
-  if (!hasOpenAiKey()) return null;
-  return new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+export function makeOpenAiClient(opts = {}) {
+  const runtimeKey = String(opts?.apiKey || "").trim();
+  const envKey = String(process.env.OPENAI_API_KEY || "").trim();
+  const key = envKey || runtimeKey;
+  if (!key) return null;
+  return new OpenAI({ apiKey: key });
 }
 
 export async function handleAiRequest({ client, body }) {

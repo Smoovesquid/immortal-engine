@@ -65,6 +65,7 @@ const ui = {
   worldHash: '',
   status: '',
   ai: { online: null, text: '(not loaded)' },
+  aiKey: '',
   map: { zoom: 'region' }
 };
 
@@ -512,6 +513,41 @@ function renderAi() {
   const statusText = ui.ai?.text || '(not loaded)';
   const online = ui.ai?.online;
 
+  const keyInput = el('textarea', {
+    class: 'input',
+    rows: '3',
+    placeholder: 'Paste OpenAI API key here (server memory only; lost on restart)',
+    value: ui.aiKey || '',
+    onInput: (e) => { ui.aiKey = String(e.target.value || ''); }
+  });
+
+  const setKeyBtn = el('button', {
+    class: 'btn primary',
+    onClick: async () => {
+      const apiKey = String(ui.aiKey || '').trim();
+      await fetch('/api/ai-key', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ apiKey }) });
+      const res = await fetchAiStatus();
+      if (res.ok) {
+        ui.ai = { online: Boolean(res.status?.online), text: JSON.stringify(res.status, null, 2) };
+        render();
+      }
+    }
+  }, 'Set Key');
+
+  const clearKeyBtn = el('button', {
+    class: 'btn',
+    onClick: async () => {
+      ui.aiKey = '';
+      await fetch('/api/ai-key', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ apiKey: '' }) });
+      const res = await fetchAiStatus();
+      if (res.ok) {
+        ui.ai = { online: Boolean(res.status?.online), text: JSON.stringify(res.status, null, 2) };
+        render();
+      }
+      render();
+    }
+  }, 'Clear');
+
   const refreshBtn = el('button', {
     class: 'btn',
     onClick: async () => {
@@ -538,6 +574,9 @@ function renderAi() {
       ),
       el('div', { class: 'card stack' },
         el('div', { class: 'row' }, refreshBtn),
+        el('div', { class: 'small' }, 'OpenAI API key (runtime)'),
+        keyInput,
+        el('div', { class: 'row' }, setKeyBtn, clearKeyBtn),
         el('div', { class: 'small' }, `online: ${online === null || online === undefined ? '(unknown)' : String(online)}`),
         el('pre', { class: 'mono small', style: { whiteSpace: 'pre-wrap' } }, statusText)
       )

@@ -10,7 +10,7 @@ const __dirname = path.dirname(__filename);
 
 export function createApp() {
   const app = express();
-  const client = makeOpenAiClient();
+  let sessionOpenAiKey = null;
 
   app.use(express.json({ limit: '256kb' }));
 
@@ -22,10 +22,22 @@ export function createApp() {
   app.get('/healthz', (_req, res) => res.type('text').send('ok'));
 
   app.get('/api/ai-status', (_req, res) => {
-    res.json({ ok: true, online: hasOpenAiKey() });
+    const online = hasOpenAiKey() || Boolean(sessionOpenAiKey && String(sessionOpenAiKey).trim());
+    res.json({ ok: true, online });
+  });
+
+  app.post('/api/ai-key', (req, res) => {
+    const apiKey = String(req?.body?.apiKey || '').trim();
+    if (!apiKey) {
+      sessionOpenAiKey = null;
+      return res.json({ ok: true, online: hasOpenAiKey() });
+    }
+    sessionOpenAiKey = apiKey;
+    return res.json({ ok: true, online: true });
   });
 
   app.post('/api/ai', async (req, res) => {
+    const client = makeOpenAiClient({ apiKey: sessionOpenAiKey });
     const out = await handleAiRequest({ client, body: req.body });
     res.json(out);
   });

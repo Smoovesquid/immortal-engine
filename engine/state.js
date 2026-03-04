@@ -7,6 +7,7 @@ import { ensureEnv } from './env/envCore.js';
 import { createCanonLog } from './csl/canonLog.js';
 import { generateRegions } from './world/regions.js';
 import { generateInitialMap } from './map/generateMap.js';
+import { ensureStructures } from './structures/structuresState.js';
 
 export const WORLD_VERSION = 8;
 
@@ -61,6 +62,9 @@ export function ensureWorld(partial) {
     scars: ensureScars(w.scars),
     ecology: ensureEcology(w.ecology),
     reputation: ensureReputation(w.reputation, ensureFactions(w.factions)),
+
+    structures: ensureStructures(w.structures),
+
 
     regions: Array.isArray(w.regions) ? w.regions : generateRegions(String(meta.seed ?? 'seed')),
 

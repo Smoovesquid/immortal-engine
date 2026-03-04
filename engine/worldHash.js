@@ -26,6 +26,7 @@ function projectForHash(world) {
     scars: w.scars,
     ecology: w.ecology,
     reputation: w.reputation,
+    structures: w.structures,
 
     canonLog: w.canonLog,
     timeline: w.timeline

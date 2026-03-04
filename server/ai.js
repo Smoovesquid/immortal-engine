@@ -1,6 +1,8 @@
 import OpenAI from 'openai';
+import crypto from 'node:crypto';
 import { validatePolish } from '../engine/ai/polishValidation.js';
 import { parseConductJson } from '../engine/ai/conductContract.js';
+import { appendAiTrace } from './aiTrace.js';
 
 export function hasOpenAiKey() {
   return Boolean(process.env.OPENAI_API_KEY && String(process.env.OPENAI_API_KEY).trim());
@@ -43,26 +45,42 @@ export async function handleAiRequest({ client, body }) {
   }
 
   try {
-    const resp = await client.responses.create({
-      model: process.env.OPENAI_MODEL || 'gpt-4.1-mini',
+    const model = process.env.OPENAI_MODEL || 'gpt-4.1-mini';
+    const requestPayload = {
+      model,
       input: prompt,
-      // Determinism is not guaranteed; seed used only for trace.
+      metadata: { seed: String(seed), mode }
+    };
+    const requestHash = crypto.createHash('sha256').update(JSON.stringify(requestPayload)).digest('hex');
+
+    const resp = await client.responses.create({
+      model,
+      input: prompt,
       metadata: { seed: String(seed), mode }
     });
 
     const text = String(resp.output_text || '').trim();
 
+    const system_fingerprint = resp?.system_fingerprint ? String(resp.system_fingerprint) : null;
     if (mode === 'POLISH') {
       // server-side validation uses the provided snapshot as world proxy when possible
       const worldProxy = { ledger: { facts: [] }, scene: { location: '' }, meta: { seed: 'seed', fate } };
       const v = validatePolish({ world: worldProxy, composerLine, candidateText: text });
-      if (!v.ok) return devFail(`polish_validation:${v.reason || 'invalid'}`);
+      if (!v.ok) {
+        appendAiTrace({ requestHash, model, seed, mode, system_fingerprint, responseText: text, parsedProposal: null, validationResult: 'rejected', rejectionReason: `polish_validation:${v.reason || 'invalid'}` });
+        return devFail(`polish_validation:${v.reason || 'invalid'}`);
+      }
+      appendAiTrace({ requestHash, model, seed, mode, system_fingerprint, responseText: text, parsedProposal: null, validationResult: 'accepted', rejectionReason: null });
       return { ok: true, text: v.text };
     }
 
     if (mode === 'ADVISE') {
       const obj = parseJsonLenient(text);
-      if (!obj || typeof obj !== 'object') return { ok: false };
+      if (!obj || typeof obj !== 'object') {
+        appendAiTrace({ requestHash, model, seed, mode, system_fingerprint, responseText: text, parsedProposal: null, validationResult: 'rejected', rejectionReason: 'advise_parse_failed' });
+        return { ok: false };
+      }
+      appendAiTrace({ requestHash, model, seed, mode, system_fingerprint, responseText: text, parsedProposal: obj, validationResult: 'accepted', rejectionReason: null });
       return { ok: true, text: JSON.stringify(obj), json: obj };
     }
 
@@ -70,7 +88,11 @@ export async function handleAiRequest({ client, body }) {
       // Model sometimes wraps JSON; be lenient in extraction, strict in contract.
       const extracted = extractJsonObject(text);
       const parsed = parseConductJson(extracted || text);
-      if (!parsed.ok) return devFail(`conduct_contract:${parsed.reason || 'invalid'}`);
+      if (!parsed.ok) {
+        appendAiTrace({ requestHash, model, seed, mode, system_fingerprint, responseText: text, parsedProposal: null, validationResult: 'rejected', rejectionReason: `conduct_contract:${parsed.reason || 'invalid'}` });
+        return devFail(`conduct_contract:${parsed.reason || 'invalid'}`);
+      }
+      appendAiTrace({ requestHash, model, seed, mode, system_fingerprint, responseText: text, parsedProposal: parsed.value, validationResult: 'accepted', rejectionReason: null });
       return { ok: true, text: JSON.stringify(parsed.value), json: parsed.value };
     }
 

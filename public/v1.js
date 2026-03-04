@@ -1,11 +1,13 @@
 import { normalizeManifest, normalizePack } from '../engine/rulesets.js';
 import { newWorld, ensureWorld } from '../engine/state.js';
 import { beginAdventure, playerMove, newScene } from '../engine/playloop.js';
+import { neighbors } from '../engine/map/mapState.js';
 import { hasSlot, loadSlot, saveSlot, exportWorld, importWorld } from '../engine/save.js';
 import { worldHash as worldHashAsync } from '../engine/worldHash.browser.js';
 import { buildMythSpec, mythSpecJson } from '../engine/mythSpec.js';
 import { generateTriadFrames, deriveInvocationFromFrame } from '../engine/triad.js';
 import { deriveSequelInvocation } from '../engine/sequel.js';
+import { renderMapView } from './map/MapView.js';
 
 const app = document.querySelector('#app');
 
@@ -61,7 +63,9 @@ const ui = {
 
   world: null,
   worldHash: '',
-  status: ''
+  status: '',
+  ai: { online: null, text: '(not loaded)' },
+  map: { zoom: 'region' }
 };
 
 function setStatus(msg) {
@@ -449,8 +453,104 @@ function renderPlay() {
   );
 }
 
+
+function renderNav() {
+  const btn = (label, screen, { disabled = false } = {}) => el('button', {
+    class: ui.screen === screen ? 'btn primary' : 'btn',
+    disabled,
+    onClick: () => { ui.screen = screen; render(); }
+  }, label);
+
+  const hasWorld = Boolean(ui.world);
+
+  return el('div', { class: 'panel' },
+    el('div', { class: 'header' },
+      el('div', { class: 'row' },
+        btn('Invoke', 'invoke'),
+        btn('Play', 'play', { disabled: !hasWorld }),
+        btn('Map', 'map', { disabled: !hasWorld }),
+        btn('AI', 'ai')
+      )
+    )
+  );
+}
+
+
+function renderMap() {
+  const w = ui.world ? ensureWorld(ui.world) : null;
+  if (!w) {
+    return el('div', { class: 'container stack' },
+      el('div', { class: 'panel' },
+        el('div', { class: 'header' },
+          el('div', {}, el('div', { class: 'title' }, 'Map'), el('div', { class: 'sub' }, 'No world loaded.'))
+        ),
+        el('div', { class: 'card stack' },
+          el('div', { class: 'small' }, 'Start a world first (Invoke → Begin).')
+        )
+      )
+    );
+  }
+
+  return renderMapView(w, ui.map?.zoom || 'region', (z) => {
+    ui.map = { zoom: z };
+    render();
+  });
+}
+
+
+async function fetchAiStatus() {
+  try {
+    const r = await fetch('/api/ai-status');
+    const j = await r.json();
+    return { ok: true, status: j };
+  } catch (e) {
+    return { ok: false, error: String(e?.message || e) };
+  }
+}
+
+function renderAi() {
+  const statusText = ui.ai?.text || '(not loaded)';
+  const online = ui.ai?.online;
+
+  const refreshBtn = el('button', {
+    class: 'btn',
+    onClick: async () => {
+      ui.ai = { online: null, text: '(loading...)' };
+      render();
+      const res = await fetchAiStatus();
+      if (!res.ok) {
+        ui.ai = { online: false, text: res.error || 'error' };
+        return render();
+      }
+      const txt = JSON.stringify(res.status, null, 2);
+      ui.ai = { online: Boolean(res.status?.online), text: txt };
+      render();
+    }
+  }, 'Refresh');
+
+  return el('div', { class: 'container stack' },
+    el('div', { class: 'panel' },
+      el('div', { class: 'header' },
+        el('div', {},
+          el('div', { class: 'title' }, 'AI Connection'),
+          el('div', { class: 'sub' }, 'Server-side AI status (/api/ai-status).')
+        )
+      ),
+      el('div', { class: 'card stack' },
+        el('div', { class: 'row' }, refreshBtn),
+        el('div', { class: 'small' }, `online: ${online === null || online === undefined ? '(unknown)' : String(online)}`),
+        el('pre', { class: 'mono small', style: { whiteSpace: 'pre-wrap' } }, statusText)
+      )
+    )
+  );
+}
+
 function render() {
   clear(app);
+
+  // Nav always present
+  app.append(renderNav());
+
   if (!ui.packs.manifest) {
     app.append(el('div', { class: 'container stack' },
       el('div', { class: 'panel' },
@@ -466,6 +566,8 @@ function render() {
   }
 
   if (ui.screen === 'play') app.append(renderPlay());
+  else if (ui.screen === 'map') app.append(renderMap());
+  else if (ui.screen === 'ai') app.append(renderAi());
   else app.append(renderInvoke());
 }
 
@@ -495,6 +597,7 @@ async function boot() {
   render();
   const packs = await loadPacks();
   ui.packs = packs;
+  await fetchAiStatus();
 
   ui.screen = 'invoke';
   render();

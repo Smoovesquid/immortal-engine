@@ -6,15 +6,12 @@ No integration into state/map yet.
 Pure generation utilities.
 */
 
-import crypto from 'node:crypto';
+import { seedFromString } from '../rng.js';
 
 function hashInt(seed, salt, mod) {
-  const h = crypto
-    .createHash('sha256')
-    .update(String(seed) + '::' + String(salt))
-    .digest('hex');
-  const n = parseInt(h.slice(0, 8), 16);
-  return n % mod;
+  const m = Math.max(1, Math.trunc(Number(mod) || 1));
+  const n = seedFromString(`${String(seed)}::${String(salt)}`);
+  return Math.abs(n) % m;
 }
 
 const PERSONALITY_AXES = [

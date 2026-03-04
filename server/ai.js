@@ -11,8 +11,17 @@ export function hasOpenAiKey() {
 export function makeOpenAiClient(opts = {}) {
   const runtimeKey = String(opts?.apiKey || "").trim();
   const envKey = String(process.env.OPENAI_API_KEY || "").trim();
-  const key = envKey || runtimeKey;
+  const mode = String(opts?.mode || "auto");
+
+  let key = "";
+
+  if (mode === "disabled") key = "";
+  else if (mode === "session") key = runtimeKey;
+  else if (mode === "env") key = envKey;
+  else key = runtimeKey || envKey;
+
   if (!key) return null;
+
   return new OpenAI({ apiKey: key });
 }
 

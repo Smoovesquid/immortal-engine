@@ -8,13 +8,16 @@ export function ensureMap(map) {
   const discovered = Array.isArray(m.discovered) ? m.discovered.map(String) : [];
   const currentNodeId = String(m.currentNodeId || (nodes[0]?.id || ''));
 
+  const currentStructureId = String(m.currentStructureId || '');
+  const currentRoomId = String(m.currentRoomId || '');
+
   const tacticalRaw = m.tactical && typeof m.tactical === 'object' ? m.tactical : null;
   const tactical = tacticalRaw ? ensureTactical(tacticalRaw) : { active: false, zoneLayout: null };
 
   const memoryRaw = m.memory && typeof m.memory === 'object' ? m.memory : null;
   const memory = ensureMapMemory(memoryRaw, dedupe(discovered));
 
-  return { nodes, edges, discovered: dedupe(discovered), currentNodeId, tactical, memory };
+  return { nodes, edges, discovered: dedupe(discovered), currentNodeId, currentStructureId, currentRoomId, tactical, memory };
 }
 
 export function neighbors(map, nodeId) {

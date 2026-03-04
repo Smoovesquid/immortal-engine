@@ -66,6 +66,8 @@ const ui = {
   status: '',
   ai: { online: null, text: '(not loaded)' },
   aiKey: '',
+  aiKeyAck: '',
+  aiTest: { ok: null, text: '(not run)', ms: null },
   map: { zoom: 'region' }
 };
 
@@ -510,14 +512,17 @@ async function fetchAiStatus() {
 }
 
 async function runAiTest() {
+  const t0 = Date.now();
   try {
     const r = await fetch('/api/ai-test', { method: 'POST', headers: { 'content-type': 'application/json' } });
     const j = await r.json();
-    if (!j || typeof j !== 'object') return { ok: false, text: 'bad_json' };
-    if (j.ok) return { ok: true, text: String(j.response || '') };
-    return { ok: false, text: String(j.reason || 'fail') };
+    const ms = Date.now() - t0;
+    if (!j || typeof j !== 'object') return { ok: false, text: 'bad_json', ms };
+    if (j.ok) return { ok: true, text: String(j.response || ''), ms };
+    return { ok: false, text: String(j.reason || 'fail'), ms };
   } catch (e) {
-    return { ok: false, text: String(e?.message || e) };
+    const ms = Date.now() - t0;
+    return { ok: false, text: String(e?.message || e), ms };
   }
 }
 
@@ -578,6 +583,17 @@ function renderAi() {
     }
   }, 'Refresh');
 
+  const runTestBtn = el('button', {
+    class: 'btn',
+    onClick: async () => {
+      ui.aiTest = { ok: null, text: '(testing...)', ms: null };
+      render();
+      const t = await runAiTest();
+      ui.aiTest = { ok: Boolean(t.ok), text: String(t.text || ''), ms: (t.ms == null ? null : Number(t.ms)) };
+      render();
+    }
+  }, 'Run Test');
+
   return el('div', { class: 'container stack' },
     el('div', { class: 'panel' },
       el('div', { class: 'header' },
@@ -587,10 +603,13 @@ function renderAi() {
         )
       ),
       el('div', { class: 'card stack' },
-        el('div', { class: 'row' }, refreshBtn),
+        el('div', { class: 'row' }, refreshBtn, runTestBtn),
         el('div', { class: 'small' }, 'OpenAI API key (runtime)'),
         keyInput,
         el('div', { class: 'row' }, setKeyBtn, clearKeyBtn),
+        (ui.aiKeyAck ? el('div', { class: 'small' }, ui.aiKeyAck) : null),
+        el('div', { class: 'small' }, 'key test: ' + (ui.aiTest?.ok === null || ui.aiTest?.ok === undefined ? '(unknown)' : (ui.aiTest.ok ? 'PASS' : 'FAIL')) + (ui.aiTest?.ms == null ? '' : (' ' + String(ui.aiTest.ms) + 'ms'))),
+        el('pre', { class: 'mono small', style: { whiteSpace: 'pre-wrap' } }, String(ui.aiTest?.text || '')),
         el('div', { class: 'small' }, `online: ${online === null || online === undefined ? '(unknown)' : String(online)}`),
         el('pre', { class: 'mono small', style: { whiteSpace: 'pre-wrap' } }, statusText)
       )

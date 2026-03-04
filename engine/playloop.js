@@ -14,6 +14,7 @@ import { worldTick } from './worldTick.js';
 import { resolveMove } from './resolve.js';
 import { applyDeltas } from './effectsCore.js';
 import { introduceThread } from './instrument.js';
+import { applyGeneratedStructuresForNode } from './structures/applyGeneratedStructuresForNode.js';
 
 // Pure-ish play loop: world -> {world, output}
 
@@ -152,6 +153,7 @@ export function playerMove(world, packsById, text) {
 
     // Keep scene surface in sync with map position so UI reflects travel immediately.
     if (w.map?.currentNodeId && w.map.currentNodeId !== before) {
+      w = applyGeneratedStructuresForNode(w, w.map.currentNodeId);
       const here = w.map?.nodes?.find(n => n && n.id === w.map.currentNodeId) || null;
       const nextName = String(here?.name || '').trim();
       if (nextName) {
@@ -219,6 +221,9 @@ export function newScene(world, packsById, { lastResolutionKind = 'turn' } = {})
   if (w.map?.nodes?.length) {
     const dest = pickTravelDestination(w, '');
     w = moveToNode(w, dest);
+    if (w.map?.currentNodeId) {
+      w = applyGeneratedStructuresForNode(w, w.map.currentNodeId);
+    }
   }
 
   const plan = planNextScene(w, pack, { lastResolutionKind });

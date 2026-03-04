@@ -626,7 +626,7 @@ function renderAi() {
       ),
       el('div', { class: 'card stack' },
         el('div', { class: 'row' }, refreshBtn, runTestBtn),
-        el('div', { class: 'small' }, 'OpenAI API key (runtime)'),
+        el('div', { class: 'small' }, 'AI API key (runtime)'),
         keyInput,
         el('div', { class: 'row' }, setKeyBtn, clearKeyBtn),
         (ui.aiKeyAck ? el('div', { class: 'small' }, ui.aiKeyAck) : null),

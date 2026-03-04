@@ -10,12 +10,6 @@ These gates must pass before enabling an external LLM API key.
 
 **Closed (PASS, test-backed):**
 - Gate A — **PASS** (U37)
-- Gate C — **PASS** (U35) + redaction hardening (U38)
-- Gate D — **PASS** (U36)
-- Gate E — **PASS** (U34)
-
-**Closed (PASS, test-backed):**
-- Gate A — **PASS** (U37)
 - Gate B — **PASS** (U40)
 - Gate C — **PASS** (U35) + redaction hardening (U38)
 - Gate D — **PASS** (U36)
@@ -83,7 +77,7 @@ Verify that determinism survives LLM integration.
 Narration may vary, but canonical state and worldHash must remain identical.
 
 **Evidence**
-- 
+- `tests/victory/U40.gateB.apiEnabledReplayDeterminism.stubbed.test.js`
 
 ---
 

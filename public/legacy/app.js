@@ -18,7 +18,7 @@ import { openPrintSheet } from './ui/printSheet.js';
 import { createCharacter, rollGenesisOptions, rollDetailOptions } from '../engine/chargen/index.js';
 import { openChargenModal } from './ui/chargenModal.js';
 import { validatePolish } from '../engine/ai/polishValidation.js';
-import { parseConductJson, applyConductDeltas } from '../engine/ai/conductContract.js';
+import { parseConductJson } from '../engine/ai/conductContract.js';
 
 const app = document.querySelector('#app');
 

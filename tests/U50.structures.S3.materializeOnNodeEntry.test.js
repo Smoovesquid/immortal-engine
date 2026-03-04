@@ -3,8 +3,6 @@ import assert from 'node:assert/strict';
 
 import { ensureWorld } from '../engine/state.js';
 import { playerMove, newScene } from '../engine/playloop.js';
-import { worldHash } from '../engine/worldHash.js';
-
 const packsById = {
   fantasy: {
     id: 'fantasy',

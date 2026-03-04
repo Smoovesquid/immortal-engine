@@ -1,6 +1,7 @@
 import { forestDomain } from '../csl/domains/forest.js';
 import { generateLatentSurfacesForNode } from '../scene/latentProjection.js';
 import { createCanonLog } from '../csl/canonLog.js';
+import { projectStructuresForNode } from './structures.js';
 
 function createMinimalWorld({ seed }) {
   if (!seed) {
@@ -23,7 +24,8 @@ function createMinimalWorld({ seed }) {
     nodes.push({
       id: nodeId,
       domainId: forestDomain.domainId,
-      surfaces
+      surfaces,
+      structures: projectStructuresForNode({ nodeId, surfaces })
     });
   }
 
@@ -84,11 +86,6 @@ function worldTick(world) {
 }
 
 export { createWorld, worldTick };
-
-
-
-// --- U8 expansion: deterministic single-surface reveal ---
-
 
 import { resolveSurfaceContact } from './resolveSurfaceContact.js';
 export { resolveSurfaceContact };

@@ -509,6 +509,18 @@ async function fetchAiStatus() {
   }
 }
 
+async function runAiTest() {
+  try {
+    const r = await fetch('/api/ai-test', { method: 'POST', headers: { 'content-type': 'application/json' } });
+    const j = await r.json();
+    if (!j || typeof j !== 'object') return { ok: false, text: 'bad_json' };
+    if (j.ok) return { ok: true, text: String(j.response || '') };
+    return { ok: false, text: String(j.reason || 'fail') };
+  } catch (e) {
+    return { ok: false, text: String(e?.message || e) };
+  }
+}
+
 function renderAi() {
   const statusText = ui.ai?.text || '(not loaded)';
   const online = ui.ai?.online;
@@ -526,11 +538,14 @@ function renderAi() {
     onClick: async () => {
       const apiKey = String(ui.aiKey || '').trim();
       await fetch('/api/ai-key', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ apiKey }) });
+      ui.aiKeyAck = apiKey ? 'Key stored (server memory).' : 'Key cleared.';
       const res = await fetchAiStatus();
-      if (res.ok) {
-        ui.ai = { online: Boolean(res.status?.online), text: JSON.stringify(res.status, null, 2) };
-        render();
-      }
+      if (res.ok) ui.ai = { online: Boolean(res.status?.online), text: JSON.stringify(res.status, null, 2) };
+      ui.aiTest = { ok: null, text: '(testing...)' };
+      render();
+      const t = await runAiTest();
+      ui.aiTest = { ok: Boolean(t.ok), text: String(t.text || '') };
+      render();
     }
   }, 'Set Key');
 
@@ -539,11 +554,10 @@ function renderAi() {
     onClick: async () => {
       ui.aiKey = '';
       await fetch('/api/ai-key', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ apiKey: '' }) });
+      ui.aiKeyAck = 'Key cleared.';
       const res = await fetchAiStatus();
-      if (res.ok) {
-        ui.ai = { online: Boolean(res.status?.online), text: JSON.stringify(res.status, null, 2) };
-        render();
-      }
+      if (res.ok) ui.ai = { online: Boolean(res.status?.online), text: JSON.stringify(res.status, null, 2) };
+      ui.aiTest = { ok: null, text: '(not run)' };
       render();
     }
   }, 'Clear');

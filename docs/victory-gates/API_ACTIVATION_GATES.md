@@ -14,8 +14,15 @@ These gates must pass before enabling an external LLM API key.
 - Gate D — **PASS** (U36)
 - Gate E — **PASS** (U34)
 
+**Closed (PASS, test-backed):**
+- Gate A — **PASS** (U37)
+- Gate B — **PASS** (U40)
+- Gate C — **PASS** (U35) + redaction hardening (U38)
+- Gate D — **PASS** (U36)
+- Gate E — **PASS** (U34)
+
 **Open (BLOCKER):**
-- Gate B — **OPEN** (no test yet)
+- (none)
 
 **Evidence (merged commits):**
 - Gate C trace capture: commit `ab8f9b4` (adds `server/aiTrace.js`, trace append in `server/ai.js`, test `tests/victory/U35.aiTrace.capture.test.js`)
@@ -53,7 +60,7 @@ Rejected proposals must not change worldHash.
 
 ---
 
-## Gate B — Deterministic Replay With API Enabled (OPEN)
+## Gate B — Deterministic Replay With API Enabled (PASS)
 
 **Objective**
 Verify that determinism survives LLM integration.
@@ -75,8 +82,8 @@ Verify that determinism survives LLM integration.
 **Invariant**
 Narration may vary, but canonical state and worldHash must remain identical.
 
-**Status**
-- Not yet implemented as a machine-checkable test.
+**Evidence**
+- 
 
 ---
 

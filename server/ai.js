@@ -105,14 +105,20 @@ export async function handleAiRequest({ client, body }) {
     if (process.env.NODE_ENV !== 'production') {
       console.error('[ai] request failed', String(e?.message || e));
     }
-    return devFail(`request_failed:${String(e?.message || e)}`);
+    const msg = redactSecrets(String(e?.message || e));
+    return devFail("request_failed:" + msg);
   }
 }
 
 function devFail(reason) {
-  const r = String(reason || 'fail');
+  const r = redactSecrets(String(reason || 'fail'));
   if (process.env.NODE_ENV === 'production') return { ok: false };
   return { ok: false, reason: r };
+}
+
+function redactSecrets(s) {
+  const raw = String(s || "");
+  return raw.replace(/\bsk-[A-Za-z0-9_-]{10,}\b/g, "sk-***");
 }
 
 function parseJsonLenient(text) {

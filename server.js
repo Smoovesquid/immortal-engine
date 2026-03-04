@@ -21,10 +21,17 @@ export function createApp() {
 
   app.get('/healthz', (_req, res) => res.type('text').send('ok'));
 
-  app.get('/api/ai-status', (_req, res) => {
-    const online = hasOpenAiKey() || Boolean(sessionOpenAiKey && String(sessionOpenAiKey).trim());
-    res.json({ ok: true, online });
-  });
+  app.get('/api/ai-status', (req, res) => {
+  try {
+    const envPresent = hasOpenAiKey();
+    const sessionPresent = Boolean(sessionOpenAiKey && String(sessionOpenAiKey).trim());
+    const online = envPresent || sessionPresent;
+    const source = envPresent ? 'env' : (sessionPresent ? 'session' : 'none');
+    return res.json({ ok: true, online, envPresent, sessionPresent, source });
+  } catch {
+    return res.status(500).json({ ok: false });
+  }
+});
 
   app.post('/api/ai-key', (req, res) => {
     const apiKey = String(req?.body?.apiKey || '').trim();

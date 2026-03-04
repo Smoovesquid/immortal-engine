@@ -307,9 +307,6 @@ async function applyOnlineAiAfterWizardLine({ world, lineIndex }) {
         if (cur2?.who === 'wizard' && cur2.text === composerLine) p.lines[lineIndex] = { ...cur2, displayOnly: v.text };
       }
     }
-
-    p.world = applyConductDeltas(world, parsed.value);
-    saveSlot(localStorage, p.world, 'slot1');
     render();
     scrollTranscriptToBottom();
   }

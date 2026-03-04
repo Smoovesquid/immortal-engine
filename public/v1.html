@@ -8,6 +8,13 @@
   </head>
   <body>
     <div id="app"></div>
-    <script type="module" src="/v1.js"></script>
+    <script type="module">
+  const params = new URLSearchParams(location.search);
+  const cb = params.get("cb") || "0";
+  const s = document.createElement("script");
+  s.type = "module";
+  s.src = "/v1.js?cb=" + encodeURIComponent(cb);
+  document.head.appendChild(s);
+</script>
   </body>
 </html>

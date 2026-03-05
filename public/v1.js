@@ -1,3 +1,4 @@
+import { renderLocalMapProjection } from '../engine/map/localMapRenderer.js';
 import { normalizeManifest, normalizePack } from '../engine/rulesets.js';
 import { newWorld, ensureWorld } from '../engine/state.js';
 import { beginAdventure, playerMove, newScene } from '../engine/playloop.js';
@@ -502,6 +503,15 @@ function renderNav() {
 
 
 function renderMap() {
+  const projection = renderLocalMapProjection({
+    seed: w?.meta?.seed || 'seed',
+    nodeId: 'local-node',
+    regionId: 'region-1',
+    packId: w?.pack?.primaryId || 'fantasy',
+    edges: [],
+    settlementType: 'village'
+  });
+  console.log('LOCAL MAP PROJECTION', projection);
   const w = ui.world ? ensureWorld(ui.world) : null;
   if (!w) {
     return el('div', { class: 'container stack' },

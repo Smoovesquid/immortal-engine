@@ -16,10 +16,12 @@ function fixtureWorld(seed = 'u60') {
   });
 }
 
-test('U60/S1: local map clickthrough wiring uses enter command for buildings', () => {
+test('U60/S1: local map is visual-only (no clickthrough command wiring)', () => {
   const src = readFileSync(path.join(process.cwd(), 'public/map/LocalMap.js'), 'utf8');
-  assert.match(src, /onCommand\(c\.command\)/);
-  assert.match(src, /`enter \$\{label\.split\(' '\)\[0\]\}`/);
+  assert.doesNotMatch(src, /addEventListener\('click'/);
+  assert.doesNotMatch(src, /onCommand\(c\.command\)/);
+  assert.doesNotMatch(src, /clickable\.push/);
+  assert.doesNotMatch(src, /`enter \$\{label\.split$begin:math:text$\' \'$end:math:text$$begin:math:display$0$end:math:display$\}`/);
 });
 
 test('U60/S2: map projection does not mutate world', () => {

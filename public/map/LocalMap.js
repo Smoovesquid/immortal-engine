@@ -31,7 +31,8 @@ function inHexMask(dx, dy, R) {
   return dist <= R;
 }
 
-export function renderLocalMap(world, onCommand) {
+// Visual-only: NO click handlers, NO command emission.
+export function renderLocalMap(world) {
   // Tactical grid: deterministic obstacles derived from (seed + nodeId + cell).
   const seed = String(world?.meta?.seed ?? 'seed');
   const nodeId = String(world?.map?.currentNodeId ?? '');
@@ -87,7 +88,6 @@ export function renderLocalMap(world, onCommand) {
   }
 
   const projection = projectStructuresForMap(world);
-  const clickable = [];
 
   function nodePos(id) {
     const h = hash32(key + '|node|' + String(id || ''));
@@ -96,7 +96,7 @@ export function renderLocalMap(world, onCommand) {
     return { x: rx * cell, y: ry * cell };
   }
 
-  function drawAtNode(kind, p, label) {
+  function drawAtNode(kind, p) {
     const x = p.x + cell / 2;
     const y = p.y + cell / 2;
     ctx.strokeStyle = 'rgba(255,255,255,0.9)';
@@ -112,19 +112,12 @@ export function renderLocalMap(world, onCommand) {
     } else {
       ctx.fillRect(x - 3, y - 3, 6, 6);
     }
-
-    if (kind === 'building' && /^#\d+\s/.test(label)) {
-      clickable.push({ x: x - 6, y: y - 6, w: 12, h: 12, command: `enter ${label.split(' ')[0]}` });
-    }
   }
 
-  const buildings = projection.structures.filter(s => s.anchorType === 'node' && s.kind === 'building');
   const nodeSorted = projection.structures.filter(s => s.anchorType === 'node').sort((a, b) => a.id.localeCompare(b.id));
   for (const s of nodeSorted) {
     const p = nodePos(s.anchorRef || s.id);
-    const idx = 1 + buildings.findIndex(b => b.id === s.id);
-    const label = idx > 0 ? `#${idx} ${s.id}` : s.id;
-    drawAtNode(s.kind, p, label);
+    drawAtNode(s.kind, p);
   }
 
   const edgeStructures = projection.structures.filter(s => s.anchorType === 'edge');
@@ -154,22 +147,6 @@ export function renderLocalMap(world, onCommand) {
   ctx.beginPath();
   ctx.arc(cx * cell + cell / 2, cy * cell + cell / 2, cell * 0.28, 0, Math.PI * 2);
   ctx.fill();
-
-  if (typeof onCommand === 'function') {
-    canvas.addEventListener('click', (ev) => {
-      const rect = canvas.getBoundingClientRect();
-      const sx = canvas.width / rect.width;
-      const sy = canvas.height / rect.height;
-      const x = (ev.clientX - rect.left) * sx;
-      const y = (ev.clientY - rect.top) * sy;
-      for (const c of clickable) {
-        if (x >= c.x && x <= c.x + c.w && y >= c.y && y <= c.y + c.h) {
-          onCommand(c.command);
-          break;
-        }
-      }
-    });
-  }
 
   return el('div', { class: 'card stack' },
     el('div', {}, el('strong', {}, 'Local (tactical)')),

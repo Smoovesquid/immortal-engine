@@ -759,16 +759,3 @@ function drawLocalProjection(projection) {
   }
 }
 
-const originalRenderMap = renderMap;
-
-renderMap = function() {
-  const node = originalRenderMap();
-
-  try {
-
-    setTimeout(()=>drawLocalProjection(projection),50);
-  } catch {}
-
-  return node;
-}
-

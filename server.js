@@ -4,6 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { makeOpenAiClient, hasOpenAiKey, handleAiRequest } from './server/ai.js';
+import { buildLocalProjection } from './engine/map/projection/localProjection.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -83,6 +84,18 @@ return res.json({ ok:false, reason:safe });
     const client = makeOpenAiClient({ apiKey: sessionOpenAiKey, mode: aiMode });
     const out = await handleAiRequest({ client, body: req.body });
     res.json(out);
+  });
+
+  app.get('/api/local-projection', (req, res) => {
+    try {
+      const seed = String(req?.query?.seed || "").trim();
+      const nodeId = String(req?.query?.nodeId || "").trim();
+      if (!seed || !nodeId) return res.status(400).json({ ok: false, reason: "missing_seed_or_nodeId" });
+      const projection = buildLocalProjection({ seed }, nodeId);
+      return res.json({ ok: true, projection });
+    } catch (e) {
+      return res.status(500).json({ ok: false, reason: String(e?.message || e) });
+    }
   });
 
   return app;

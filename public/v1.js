@@ -506,8 +506,19 @@ function renderMap() {
   const w = ui.world ? ensureWorld(ui.world) : null;
 
   if (!w) {
-    return el("div", { class: "container stack" }, el("div", { class: "panel" }, el("div", { class: "header" }, el("div", {}, el("div", { class: "title" }, "Map"), el("div", { class: "sub" }, "No world loaded.")))), el("div", { class: "card stack" }, el("div", { class: "small" }, "Start a world first (Invoke → Begin)."))));
-  }
+    return el("div",{class:"container stack"},
+      el("div",{class:"panel"},
+        el("div",{class:"header"},
+          el("div",{},
+            el("div",{class:"title"},"Map"),
+            el("div",{class:"sub"},"No world loaded.")
+          )
+        ),
+        el("div",{class:"card stack"},
+          el("div",{class:"small"},"Start a world first (Invoke → Begin).")
+        )
+      )
+    );  }
 
   const projection = renderLocalMapProjection({
     seed: w?.meta?.seed || "seed",

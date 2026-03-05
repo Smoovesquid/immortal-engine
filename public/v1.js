@@ -505,6 +505,7 @@ function renderNav() {
 function renderMap() {
   const w = ui.world ? ensureWorld(ui.world) : null;
   const w = ui.world ? ensureWorld(ui.world) : null;
+  const w = ui.world ? ensureWorld(ui.world) : null;
   const projection = renderLocalMapProjection({
     seed: w?.meta?.seed || "seed",
     nodeId: "local-node",

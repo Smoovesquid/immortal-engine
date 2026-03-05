@@ -503,16 +503,18 @@ function renderNav() {
 
 
 function renderMap() {
-  const projection = renderLocalMapProjection({
-    seed: w?.meta?.seed || 'seed',
-    nodeId: 'local-node',
-    regionId: 'region-1',
-    packId: w?.pack?.primaryId || 'fantasy',
-    edges: [],
-    settlementType: 'village'
-  });
+  const w = ui.world ? ensureWorld(ui.world) : null;
   console.log('LOCAL MAP PROJECTION', projection);
   const w = ui.world ? ensureWorld(ui.world) : null;
+  const projection = renderLocalMapProjection({
+    seed: w?.meta?.seed || "seed",
+    nodeId: "local-node",
+    regionId: "region-1",
+    packId: w?.pack?.primaryId || "fantasy",
+    edges: [],
+    settlementType: "village"
+  });
+  console.log("LOCAL MAP PROJECTION", projection);
   if (!w) {
     return el('div', { class: 'container stack' },
       el('div', { class: 'panel' },
@@ -762,14 +764,6 @@ renderMap = function() {
   const node = originalRenderMap();
 
   try {
-    const projection = renderLocalMapProjection({
-      seed: ui.world?.meta?.seed || "seed",
-      nodeId: "local-node",
-      regionId: "region-1",
-      packId: ui.world?.pack?.primaryId || "fantasy",
-      edges: [],
-      settlementType: "village"
-    });
 
     setTimeout(()=>drawLocalProjection(projection),50);
   } catch {}

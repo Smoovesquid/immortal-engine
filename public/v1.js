@@ -517,24 +517,33 @@ function renderMap() {
           el("div",{class:"small"},"Start a world first (Invoke → Begin).")
         )
       )
-    );  }
+    );
+  }
 
-  const projection = renderLocalMapProjection({
-    seed: w?.meta?.seed || "seed",
-    nodeId: "local-node",
-    regionId: "region-1",
-    packId: w?.pack?.primaryId || "fantasy",
-    edges: [],
-    settlementType: "village"
-  });
-
-  setTimeout(() => drawLocalProjection(projection), 50);
+  const seed = String(w?.meta?.seed || w?.seed || "seed");
+  const nodeId = String(w?.map?.currentNodeId || "local-node");
+  queueLocalProjectionDraw({ seed, nodeId });
 
   return renderMapView(w, ui.map?.zoom || "region", (z) => {
     ui.map = { zoom: z };
     render();
   });
 }
+
+let _lpReqToken = 0;
+function queueLocalProjectionDraw({ seed, nodeId }) {
+  const token = ++_lpReqToken;
+  setTimeout(async () => {
+    try {
+      const url = `/api/local-projection?seed=${encodeURIComponent(String(seed||""))}&nodeId=${encodeURIComponent(String(nodeId||""))}`;
+      const r = await fetch(url);
+      const j = await r.json();
+      if (token !== _lpReqToken) return;
+      if (j && j.ok && j.projection) drawLocalProjection(j.projection);
+    } catch {}
+  }, 0);
+}
+
 async function fetchAiStatus() {
   try {
     const r = await fetch('/api/ai-status');
@@ -721,6 +730,7 @@ function drawLocalProjection(projection) {
   const ctx = canvas.getContext("2d");
   const w = canvas.width;
   const h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
 
   if (projection.terrain?.terrain) {
     ctx.fillStyle = "#2e8b57";
@@ -735,7 +745,7 @@ function drawLocalProjection(projection) {
     ctx.strokeStyle = "#c2b280";
     ctx.lineWidth = 2;
     projection.roads.forEach((r, i) => {
-      const angle = (r.angle || 0) * Math.PI / 180;
+      const angle = (r.angle || 0);
       const x1 = w/2;
       const y1 = h/2;
       const x2 = x1 + Math.cos(angle) * 200;
@@ -747,13 +757,15 @@ function drawLocalProjection(projection) {
       ctx.stroke();
     });
   }
+  const bfr = (projection && projection.buildingsFromRoads) ? projection.buildingsFromRoads : null;
+  const blist = (bfr && Array.isArray(bfr.buildings)) ? bfr.buildings : (Array.isArray(bfr) ? bfr : []);
 
-  if (projection.buildingsFromRoads) {
+  if (blist.length) {
     ctx.fillStyle = "#444";
-    projection.buildingsFromRoads.forEach((b, idx) => {
-      const off = (typeof b.offset === "number") ? b.offset : (((b.roadIndex || 0) * 97 + idx * 37) % 1000) / 1000;
+    blist.forEach((b, idx) => {
+      const off = (typeof b.offset01 === "number") ? b.offset01 : (((b.roadIndex || 0) * 97 + idx * 37) % 1000) / 1000;
       const x = off * w;
-      const y = (b.roadIndex % 10) / 10 * h;
+      const y = (((b.roadIndex || 0) % 10) / 10) * h;
       ctx.fillRect(x, y, 6, 6);
     });
   }

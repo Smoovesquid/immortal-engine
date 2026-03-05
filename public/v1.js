@@ -505,15 +505,6 @@ function renderNav() {
 function renderMap() {
   const w = ui.world ? ensureWorld(ui.world) : null;
 
-  const projection = renderLocalMapProjection({
-    seed: w?.meta?.seed || "seed",
-    nodeId: "local-node",
-    regionId: "region-1",
-    packId: w?.pack?.primaryId || "fantasy",
-    edges: [],
-    settlementType: "village"
-  });
-
   if (!w) {
     return el("div", { class: "container stack" },
       el("div", { class: "panel" },
@@ -526,6 +517,17 @@ function renderMap() {
       )
     );
   }
+
+  const projection = renderLocalMapProjection({
+    seed: w?.meta?.seed || "seed",
+    nodeId: "local-node",
+    regionId: "region-1",
+    packId: w?.pack?.primaryId || "fantasy",
+    edges: [],
+    settlementType: "village"
+  });
+
+  setTimeout(() => drawLocalProjection(projection), 50);
 
   return renderMapView(w, ui.map?.zoom || "region", (z) => {
     ui.map = { zoom: z };

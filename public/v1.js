@@ -8,6 +8,7 @@ import { buildMythSpec, mythSpecJson } from '../engine/mythSpec.js';
 import { generateTriadFrames, deriveInvocationFromFrame } from '../engine/triad.js';
 import { deriveSequelInvocation } from '../engine/sequel.js';
 import { renderMapView } from './map/MapView.js';
+import { getInteriorView } from '../engine/structures/interiors.js';
 
 const app = document.querySelector('#app');
 
@@ -175,6 +176,39 @@ function continueSlot1() {
   startFromWorld(w, { keepTranscript: true });
 }
 
+
+async function aiPolishLine(line) {
+  try {
+    if (!ui.aiStatus?.online) return '';
+    const seedStr = String(ui.world?.meta?.seed || '');
+    const resp = await fetch('/api/ai', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        mode: 'POLISH',
+        seed: 0,
+        composerLine: String(line || ''),
+        worldSnapshot: {},
+        styleProfile: { voice: 'wizard', verbosity: 0, fate: 0.2 }
+      })
+    }).then(r => r.json());
+    return resp?.ok ? String(resp.text || '') : '';
+  } catch {
+    return '';
+  }
+}
+
+function maybePolishLastWizardLine() {
+  (async () => {
+    const last = ui.play.lines[ui.play.lines.length - 1];
+    if (!last || last.who !== 'wizard') return;
+    const polished = await aiPolishLine(last.text);
+    if (!polished) return;
+    last.text = polished;
+    render();
+  })();
+}
+
 function persistAndRehash(world) {
   saveSlot(localStorage, world, 'slot1');
   ui.world = ensureWorld(world);
@@ -203,7 +237,14 @@ function doSubmitMove() {
   ui.play.lastResolutionKind = 'turn';
 
   persistAndRehash(world);
+  maybePolishLastWizardLine();
   setStatus('Move resolved.');
+}
+
+function doQuickCommand(text) {
+  ui.play.input = String(text || '').trim();
+  if (!ui.play.input) return;
+  doSubmitMove();
 }
 
 function doNewScene() {
@@ -218,6 +259,7 @@ function doNewScene() {
   ui.play.lastResolutionKind = 'scene';
 
   persistAndRehash(world);
+  maybePolishLastWizardLine();
   setStatus('Scene advanced.');
 }
 
@@ -448,6 +490,7 @@ function renderPlay() {
   });
 
   const ended = Boolean(w?.ending?.locked);
+  const interiorView = w ? getInteriorView(w) : { active: false, structures: [] };
 
   return el('div', { class: 'container stack' },
     el('div', { class: 'panel' },
@@ -466,6 +509,28 @@ function renderPlay() {
         el('div', { class: 'small' }, `tension: ${(w?.instrument?.inevitability ?? 0)}/12 | clocks: p${(w?.clocks?.pressure ?? 0)}/12 d${(w?.clocks?.dread ?? 0)}/12 r${(w?.clocks?.revelation ?? 0)}/12`),
         el('div', { class: 'row' }, backBtn, reloadBtn, saveBtn, exportBtn, importBtn)
       ),
+      interiorView.active
+        ? el('div', { class: 'card stack' },
+            el('div', { class: 'small' }, `Interior: ${interiorView.structureKey} / ${interiorView.roomId}`),
+            el('div', { class: 'row' },
+              el('button', { class: 'btn', disabled: ended, onClick: () => doQuickCommand('look around') }, 'Look around'),
+              el('button', { class: 'btn', disabled: ended, onClick: () => doQuickCommand('exit building') }, 'Exit building')
+            ),
+            el('div', { class: 'small' }, 'Exits'),
+            el('div', { class: 'row' }, ...(interiorView.exits || []).map(x =>
+              el('button', { class: 'btn', disabled: ended, onClick: () => doQuickCommand(`go ${x.id}`) }, x.id)
+            )),
+            el('div', { class: 'small' }, 'Surfaces'),
+            el('div', { class: 'row' }, ...(interiorView.surfaces || []).map(x =>
+              el('button', { class: 'btn', disabled: ended, onClick: () => doQuickCommand(`inspect ${x.id}`) }, x.id)
+            ))
+          )
+        : el('div', { class: 'card stack' },
+            el('div', { class: 'small' }, 'Structures at node'),
+            el('div', { class: 'row' }, ...(interiorView.structures || []).map(x =>
+              el('button', { class: 'btn', disabled: ended, onClick: () => doQuickCommand(`enter #${x.index}`) }, `#${x.index} ${x.id}`)
+            ))
+          ),
       renderTranscript(ui.play.lines),
       el('div', { class: 'card stack' },
         input,
@@ -519,6 +584,8 @@ function renderMap() {
   return renderMapView(w, ui.map?.zoom || 'region', (z) => {
     ui.map = { zoom: z };
     render();
+  }, (cmd) => {
+    doQuickCommand(String(cmd || ''));
   });
 }
 

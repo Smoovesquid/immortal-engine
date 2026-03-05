@@ -24,7 +24,7 @@ export function generateInitialMap({ seed = 'seed', packId = 'fantasy', pack = {
     nodes.push({
       id,
       name,
-      tags: [],
+      tags: ['structure:demo'],
       motifs: [],
       scars: []
     });

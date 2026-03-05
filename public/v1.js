@@ -711,3 +711,69 @@ render();
 }
 
 boot().catch((e) => setStatus(String(e?.message || e)));
+
+function drawLocalProjection(projection) {
+  const canvas = document.querySelector("canvas");
+  if (!canvas) return;
+
+  const ctx = canvas.getContext("2d");
+  const w = canvas.width;
+  const h = canvas.height;
+
+  if (projection.terrain?.terrain) {
+    ctx.fillStyle = "#2e8b57";
+    projection.terrain.terrain.forEach(t => {
+      ctx.beginPath();
+      ctx.arc(t.x * w, t.y * h, 4, 0, Math.PI * 2);
+      ctx.fill();
+    });
+  }
+
+  if (projection.roads) {
+    ctx.strokeStyle = "#c2b280";
+    ctx.lineWidth = 2;
+    projection.roads.forEach((r, i) => {
+      const angle = (r.angle || 0) * Math.PI / 180;
+      const x1 = w/2;
+      const y1 = h/2;
+      const x2 = x1 + Math.cos(angle) * 200;
+      const y2 = y1 + Math.sin(angle) * 200;
+
+      ctx.beginPath();
+      ctx.moveTo(x1,y1);
+      ctx.lineTo(x2,y2);
+      ctx.stroke();
+    });
+  }
+
+  if (projection.buildingsFromRoads) {
+    ctx.fillStyle = "#444";
+    projection.buildingsFromRoads.forEach(b => {
+      const x = (b.offset || Math.random()) * w;
+      const y = (b.roadIndex % 10) / 10 * h;
+      ctx.fillRect(x, y, 6, 6);
+    });
+  }
+}
+
+const originalRenderMap = renderMap;
+
+renderMap = function() {
+  const node = originalRenderMap();
+
+  try {
+    const projection = renderLocalMapProjection({
+      seed: ui.world?.meta?.seed || "seed",
+      nodeId: "local-node",
+      regionId: "region-1",
+      packId: ui.world?.pack?.primaryId || "fantasy",
+      edges: [],
+      settlementType: "village"
+    });
+
+    setTimeout(()=>drawLocalProjection(projection),50);
+  } catch {}
+
+  return node;
+}
+

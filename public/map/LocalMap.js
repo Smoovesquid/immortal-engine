@@ -116,8 +116,8 @@ function drawExterior(ctx, world, w, size, cell) {
 
   // Player marker (exactly one token): deterministic per current node, so travel visibly moves token.
   const ph = hash32('player:' + key);
-  const ox = ((ph % 9) - 4) * (cell * 1.2);
-  const oy = (((Math.floor(ph / 9)) % 9) - 4) * (cell * 1.2);
+  const ox = ((ph % 9) - 4) * cell * 2;
+  const oy = (((Math.floor(ph / 9)) % 9) - 4) * cell * 2;
   ctx.fillStyle = 'red';
   ctx.beginPath();
   ctx.arc(mid * cell + cell / 2 + ox, mid * cell + cell / 2 + oy, cell * 0.35, 0, Math.PI * 2);

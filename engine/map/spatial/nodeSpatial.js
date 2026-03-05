@@ -32,3 +32,12 @@ export function generateNodeSpatialIdentity({ worldSeed, nodeId, nodeType }) {
     factionPresence
   };
 }
+
+/*
+Compatibility wrapper
+- localProjection.js currently calls generateNodeSpatial(seed, nodeId)
+- Keep identity generator as the canonical source; expose a stable shim.
+*/
+export function generateNodeSpatial(worldSeed, nodeId, nodeType = "node") {
+  return generateNodeSpatialIdentity({ worldSeed, nodeId, nodeType });
+}

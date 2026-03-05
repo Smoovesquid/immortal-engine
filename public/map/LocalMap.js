@@ -1,4 +1,5 @@
 import { hash32 } from './hash.js';
+import { projectStructuresForMap } from '../../engine/map/structureProjection.js';
 
 function el(tag, attrs = {}, ...children) {
   const node = document.createElement(tag);
@@ -30,7 +31,7 @@ function inHexMask(dx, dy, R) {
   return dist <= R;
 }
 
-export function renderLocalMap(world) {
+export function renderLocalMap(world, onCommand) {
   // Tactical grid: deterministic obstacles derived from (seed + nodeId + cell).
   const seed = String(world?.meta?.seed ?? 'seed');
   const nodeId = String(world?.map?.currentNodeId ?? '');
@@ -85,12 +86,90 @@ export function renderLocalMap(world) {
     ctx.beginPath(); ctx.moveTo(0, i * cell); ctx.lineTo(w, i * cell); ctx.stroke();
   }
 
+  const projection = projectStructuresForMap(world);
+  const clickable = [];
+
+  function nodePos(id) {
+    const h = hash32(key + '|node|' + String(id || ''));
+    const rx = 8 + (h % 45);
+    const ry = 8 + (Math.floor(h / 97) % 45);
+    return { x: rx * cell, y: ry * cell };
+  }
+
+  function drawAtNode(kind, p, label) {
+    const x = p.x + cell / 2;
+    const y = p.y + cell / 2;
+    ctx.strokeStyle = 'rgba(255,255,255,0.9)';
+    ctx.fillStyle = 'rgba(255,255,255,0.35)';
+
+    if (kind === 'building') {
+      ctx.fillRect(x - 4, y - 4, 8, 8);
+      ctx.strokeRect(x - 4, y - 4, 8, 8);
+    } else if (kind === 'tower') {
+      ctx.beginPath(); ctx.moveTo(x, y - 5); ctx.lineTo(x - 5, y + 4); ctx.lineTo(x + 5, y + 4); ctx.closePath(); ctx.fill(); ctx.stroke();
+    } else if (kind === 'shrine') {
+      ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    } else {
+      ctx.fillRect(x - 3, y - 3, 6, 6);
+    }
+
+    if (kind === 'building' && /^#\d+\s/.test(label)) {
+      clickable.push({ x: x - 6, y: y - 6, w: 12, h: 12, command: `enter ${label.split(' ')[0]}` });
+    }
+  }
+
+  const buildings = projection.structures.filter(s => s.anchorType === 'node' && s.kind === 'building');
+  const nodeSorted = projection.structures.filter(s => s.anchorType === 'node').sort((a, b) => a.id.localeCompare(b.id));
+  for (const s of nodeSorted) {
+    const p = nodePos(s.anchorRef || s.id);
+    const idx = 1 + buildings.findIndex(b => b.id === s.id);
+    const label = idx > 0 ? `#${idx} ${s.id}` : s.id;
+    drawAtNode(s.kind, p, label);
+  }
+
+  const edgeStructures = projection.structures.filter(s => s.anchorType === 'edge');
+  for (const s of edgeStructures) {
+    const parts = String(s.anchorRef || '').split('::');
+    if (parts.length !== 2) continue;
+    const a = nodePos(parts[0]);
+    const b = nodePos(parts[1]);
+    ctx.strokeStyle = 'rgba(220,220,220,0.7)';
+    ctx.lineWidth = s.kind === 'wall' ? 3 : 1;
+    ctx.beginPath(); ctx.moveTo(a.x + cell / 2, a.y + cell / 2); ctx.lineTo(b.x + cell / 2, b.y + cell / 2); ctx.stroke();
+    ctx.lineWidth = 1;
+  }
+
+  const coordStructures = projection.structures.filter(s => s.anchorType === 'coord');
+  for (const s of coordStructures) {
+    const [sx, sy] = String(s.anchorRef || '0,0').split(',');
+    const x = (Number(sx) || 0) % size;
+    const y = (Number(sy) || 0) % size;
+    ctx.fillStyle = 'rgba(255,255,255,0.8)';
+    ctx.beginPath(); ctx.arc(x * cell + cell / 2, y * cell + cell / 2, 3, 0, Math.PI * 2); ctx.fill();
+  }
+
   // player marker at center
   const cx = mid, cy = mid;
   ctx.fillStyle = 'rgba(255,255,255,0.85)';
   ctx.beginPath();
   ctx.arc(cx * cell + cell / 2, cy * cell + cell / 2, cell * 0.28, 0, Math.PI * 2);
   ctx.fill();
+
+  if (typeof onCommand === 'function') {
+    canvas.addEventListener('click', (ev) => {
+      const rect = canvas.getBoundingClientRect();
+      const sx = canvas.width / rect.width;
+      const sy = canvas.height / rect.height;
+      const x = (ev.clientX - rect.left) * sx;
+      const y = (ev.clientY - rect.top) * sy;
+      for (const c of clickable) {
+        if (x >= c.x && x <= c.x + c.w && y >= c.y && y <= c.y + c.h) {
+          onCommand(c.command);
+          break;
+        }
+      }
+    });
+  }
 
   return el('div', { class: 'card stack' },
     el('div', {}, el('strong', {}, 'Local (tactical)')),

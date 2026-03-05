@@ -15,7 +15,7 @@ import { resolveMove } from './resolve.js';
 import { applyDeltas } from './effectsCore.js';
 import { introduceThread } from './instrument.js';
 import { applyGeneratedStructuresForNode } from './structures/applyGeneratedStructuresForNode.js';
-import { enterStructureInterior, exitStructureInterior, moveWithinInterior, getInteriorView, resolveStructureSelection } from './structures/interiors.js';
+import { enterStructureInterior, exitStructureInterior, moveWithinInterior, getInteriorView, resolveStructureSelection, inspectInteriorSurface } from './structures/interiors.js';
 
 // Pure-ish play loop: world -> {world, output}
 
@@ -135,13 +135,30 @@ export function playerMove(world, packsById, text) {
     return { world: w, output: { narration: 'Wizard: That way is blocked from here.', mechanics: '' } };
   }
 
+  if (interiorAction.kind === 'inspect') {
+    const out = inspectInteriorSurface(w, interiorAction.surfaceId);
+    if (!out.ok) return { world: w, output: { narration: 'Wizard: There is nothing like that to inspect here.', mechanics: '' } };
+    const w1 = pushEvent(out.world, {
+      kind: 'interiorInspect',
+      data: {
+        structureKey: String(out.world.scene?.interior?.structureKey || ''),
+        roomId: String(out.world.scene?.interior?.roomId || ''),
+        surfaceId: String(out.surface?.id || ''),
+        surfaceKind: String(out.surface?.kind || '')
+      }
+    });
+    return { world: w1, output: { narration: `Wizard: You inspect ${out.surface.id}.`, mechanics: '' } };
+  }
+
   // Surface-only exploration: list adjacent map nodes deterministically (no roll, no tick, no timeline).
   if (isExploreIntent(text)) {
     if (w.scene?.interior) {
       const view = getInteriorView(w);
       const exits = (view.exits || []).map(x => x.id);
+      const surfaces = (view.surfaces || []).map(x => x.id);
       const exitsLineTxt = exits.length ? `Exits: ${exits.join(', ')}.` : 'Exits: none.';
-      return { world: w, output: { narration: `Wizard: You scan the room. ${exitsLineTxt}`, mechanics: '' } };
+      const surfaceLineTxt = surfaces.length ? `Surfaces: ${surfaces.join(', ')}.` : 'Surfaces: none.';
+      return { world: w, output: { narration: `Wizard: Interior ${view.structureKey}/${view.roomId}. ${exitsLineTxt} ${surfaceLineTxt}`, mechanics: '' } };
     }
 
     const exits = exitsLine(w);
@@ -442,8 +459,12 @@ function inferInteriorAction(text, interior) {
   }
 
   if (/\b(leave|exit building|exit structure|go outside|step outside)\b/.test(t)) return { kind: 'exit' };
-  const goMatch = t.match(/\bgo\s+([a-z0-9:_-]+)/i);
+  const goMatch = t.match(/\b(?:go|move)\s+([a-z0-9:_-]+)/i);
   if (goMatch) return { kind: 'move', toRoomId: String(goMatch[1] || '') };
+
+  const inspectMatch = t.match(/\binspect\s+([a-z0-9:_-]+)/i);
+  if (inspectMatch) return { kind: 'inspect', surfaceId: String(inspectMatch[1] || '') };
+
   return { kind: 'none' };
 }
 

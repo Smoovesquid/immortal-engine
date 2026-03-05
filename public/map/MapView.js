@@ -20,7 +20,7 @@ function el(tag, attrs = {}, ...children) {
   return node;
 }
 
-export function renderMapView(world, zoom, onZoom) {
+export function renderMapView(world, zoom, onZoom, onCommand) {
   const z = zoom || 'region';
 
   const tabs = el('div', { class: 'row' },
@@ -31,7 +31,7 @@ export function renderMapView(world, zoom, onZoom) {
 
   const body =
     z === 'world' ? renderWorldMap(world?.map) :
-    z === 'local' ? renderLocalMap(world) :
+    z === 'local' ? renderLocalMap(world, onCommand) :
     renderRegionMap(world?.map);
 
   return el('div', { class: 'container stack' },

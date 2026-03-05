@@ -32,7 +32,8 @@ const CANONICAL_TIMELINE_EVENT_KINDS = [
   'resolution',
   'threadShift',
   'scarFormed',
-  'endingTriggered'
+  'endingTriggered',
+  'interiorInspect'
 ];
 
 // Non-canonical timeline logs are allowed to exist, but are NOT part of the canonical surface freeze.

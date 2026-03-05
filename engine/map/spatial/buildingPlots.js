@@ -1,4 +1,4 @@
-import { hashString } from '../utils/hash.js';
+import { hashString } from '../../utils/hash.js';
 
 /**
  * Gate S3: deterministic building plot generator from nodeSpatial + roadGraph.

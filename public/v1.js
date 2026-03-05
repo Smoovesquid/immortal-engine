@@ -520,10 +520,6 @@ function renderMap() {
     );
   }
 
-  const seed = String(w?.meta?.seed || w?.seed || "seed");
-  const nodeId = String(w?.map?.currentNodeId || "local-node");
-  queueLocalProjectionDraw({ seed, nodeId });
-
   return renderMapView(w, ui.map?.zoom || "region", (z) => {
     ui.map = { zoom: z };
     render();

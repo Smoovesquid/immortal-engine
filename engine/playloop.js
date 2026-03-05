@@ -48,6 +48,11 @@ export function beginAdventure(world, packsById) {
   // Tactical zoom defaults off at start.
   w = { ...w, map: { ...(w.map || {}), tactical: { active: false, zoneLayout: null } }, scene: { location, objective, time: 'start', promptSeed: `${seed}` } };
 
+  // Materialize deterministic structures for the starting node so exterior discovery is available immediately.
+  if (w.map?.currentNodeId) {
+    w = applyGeneratedStructuresForNode(w, w.map.currentNodeId);
+  }
+
   // Canon facts for guard.
   w = addFact(w, `location:${location}`, 'scene');
   const objFact = `objective:${objective}`;
@@ -130,9 +135,27 @@ export function playerMove(world, packsById, text) {
   }
 
   if (interiorAction.kind === 'move') {
-    const w1 = moveWithinInterior(w, interiorAction.toRoomId);
-    if (w1 !== w) return { world: w1, output: { narration: `Wizard: You move to ${w1.scene.interior.roomId}.`, mechanics: '' } };
-    return { world: w, output: { narration: 'Wizard: That way is blocked from here.', mechanics: '' } };
+    const wantsRiskyMove = isRiskyOrObstructedMoveIntent(text);
+    if (!wantsRiskyMove) {
+      const targetRoomId = interiorAction.toRoomId || pickAdjacentInteriorByDirection(w, interiorAction.direction);
+      const w1 = moveWithinInterior(w, targetRoomId);
+      if (w1 !== w) {
+        let w2 = pushEvent(w1, {
+          kind: 'move',
+          data: {
+            mode: 'interior',
+            fromRoomId: String(w.scene?.interior?.roomId || ''),
+            toRoomId: String(w1.scene?.interior?.roomId || ''),
+            withinSpeed: true,
+            rolled: false
+          }
+        });
+        w2 = worldTick(w2, `${w2.meta.seed}|tick|interior-move|turn${w2.time.turn}|tl${w2.timeline.length}`);
+        return { world: w2, output: { narration: `Wizard: You move to ${w2.scene.interior.roomId}.`, mechanics: '' } };
+      }
+      return { world: w, output: { narration: 'Wizard: That way is blocked from here.', mechanics: '' } };
+    }
+    // Risky/obstructed/special movement falls through to normal resolution (roll-capable path).
   }
 
   // Surface-only exploration: list adjacent map nodes deterministically (no roll, no tick, no timeline).
@@ -152,6 +175,25 @@ export function playerMove(world, packsById, text) {
       : 'Structures: none.';
     const line = exits ? `Wizard: You take stock of your surroundings. ${exits} ${structuresLine}` : `Wizard: You take stock of your surroundings. ${structuresLine}`;
     return { world: w, output: { narration: line, mechanics: '' } };
+  }
+
+  // Free movement (within speed): deterministic travel without a roll unless explicit obstacle/risk language is present.
+  if (!w.scene?.interior && isFreeMovementIntent(text)) {
+    const before = String(w.map?.currentNodeId || '');
+    const nbs = neighbors(w.map, before);
+    const t = String(text || '').toLowerCase();
+    const dest = /\b(exit|leave)\b/.test(t) ? (nbs[0] || before) : pickTravelDestination(w, text);
+    let w1 = moveToNode(w, dest);
+    if (w1.map?.currentNodeId && w1.map.currentNodeId !== before) {
+      w1 = applyGeneratedStructuresForNode(w1, w1.map.currentNodeId);
+      const here = w1.map?.nodes?.find(n => n && n.id === w1.map.currentNodeId) || null;
+      const nextName = String(here?.name || '').trim();
+      if (nextName) w1 = { ...w1, scene: { ...w1.scene, location: nextName } };
+      w1 = setPrimaryPartyZone(w1, 'near');
+      w1 = pushEvent(w1, { kind: 'travel', data: { from: before, to: String(w1.map.currentNodeId) } });
+      return { world: w1, output: { narration: 'Wizard: You move within speed and reach the next position.', mechanics: '' } };
+    }
+    return { world: w, output: { narration: 'Wizard: You hold position.', mechanics: '' } };
   }
 
   const actorId = (w.party?.[0]?.id) ? String(w.party[0].id) : 'party';
@@ -423,6 +465,28 @@ function moveAdvancesScene(text) {
   return /\b(travel|leave|exit|head to|go to|move to|escape|journey|walk to|go north|go south|go east|go west|north|south|east|west|n|s|e|w)\b/.test(t);
 }
 
+function isFreeMovementIntent(text) {
+  const t = String(text || '').toLowerCase().trim();
+  if (!t) return false;
+
+  // Explicit tactical movement-within-speed (legacy phrasing).
+  if (/\b(within speed|30\s*ft|move\s+\d+\s*ft|step\s+\d+\s*ft)\b/.test(t)) return true;
+
+  // Broad free movement / travel phrasing (deterministic: destination is still resolved by adjacency rules).
+  return /\b(travel|leave|exit|head\s+to|go\s+to|move\s+to|walk\s+to|walk|go\s+north|go\s+south|go\s+east|go\s+west|north|south|east|west|n|s|e|w)\b/.test(t);
+}
+
+function setPrimaryPartyZone(world, zone) {
+  const w = world || {};
+  const party = Array.isArray(w.party) ? w.party : [];
+  if (!party.length) return w;
+  const z = String(zone || 'near');
+  return {
+    ...w,
+    party: party.map((p, i) => i === 0 ? { ...p, position: { ...(p.position || {}), zone: z } } : p)
+  };
+}
+
 function inferInteriorAction(text, interior) {
   const t = String(text || '').toLowerCase().trim();
   const inside = Boolean(interior && typeof interior === 'object');
@@ -442,8 +506,14 @@ function inferInteriorAction(text, interior) {
   }
 
   if (/\b(leave|exit building|exit structure|go outside|step outside)\b/.test(t)) return { kind: 'exit' };
+  const moveFtDir = t.match(/\b(?:move|step|go)\s+\d+\s*ft\s+(north|south|east|west|n|s|e|w)\b/i);
+  if (moveFtDir) return { kind: 'move', toRoomId: '', direction: normalizeDir(moveFtDir[1]) };
+
+  const goDir = t.match(/^\s*(?:go\s+)?(north|south|east|west|n|s|e|w)\s*$/i);
+  if (goDir) return { kind: 'move', toRoomId: '', direction: normalizeDir(goDir[1]) };
+
   const goMatch = t.match(/\bgo\s+([a-z0-9:_-]+)/i);
-  if (goMatch) return { kind: 'move', toRoomId: String(goMatch[1] || '') };
+  if (goMatch) return { kind: 'move', toRoomId: String(goMatch[1] || ''), direction: '' };
   return { kind: 'none' };
 }
 
@@ -451,6 +521,30 @@ function isExploreIntent(text) {
   const t = String(text || '').toLowerCase().trim();
   if (!t) return false;
   return /\b(look around|look about|survey|scan|search the area|where can i go|where do i go|options|exits|way out|how do i get out|get out of here|leave this place)\b/.test(t);
+}
+
+function normalizeDir(d) {
+  const s = String(d || '').toLowerCase();
+  if (s === 'n') return 'north';
+  if (s === 'e') return 'east';
+  if (s === 's') return 'south';
+  if (s === 'w') return 'west';
+  return s;
+}
+
+function pickAdjacentInteriorByDirection(world, direction) {
+  const view = getInteriorView(world);
+  const exits = Array.isArray(view?.exits) ? view.exits.map(x => String(x?.id || '')).filter(Boolean) : [];
+  if (!exits.length) return '';
+
+  const dir = normalizeDir(direction);
+  const idx = dir === 'north' ? 0 : dir === 'east' ? 1 : dir === 'south' ? 2 : dir === 'west' ? 3 : 0;
+  return exits[idx % exits.length] || exits[0];
+}
+
+function isRiskyOrObstructedMoveIntent(text) {
+  const t = String(text || '').toLowerCase();
+  return /\b(hazard|obstacle|obstruct|blocked|contested|jump|force\s+door|squeeze|stealth\s*sprint|under\s*fire|danger)\b/.test(t);
 }
 
 function exitsLine(world) {

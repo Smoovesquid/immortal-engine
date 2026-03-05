@@ -19,12 +19,27 @@ export function generateStructuresForNode({ seed, nodeId, engineVersion, nodeTag
   const trigger = tags.includes('structure:demo') || (s.length > 0 && nid.length > 0 && (s + '|' + nid).length % 2 === 0);
   if (!trigger) return [];
 
+  const roomCount = 3 + ((s.length + nid.length + ver) % 2); // 3..4 deterministic
+  const rooms = [];
+  for (let i = 0; i < roomCount; i++) {
+    rooms.push({ id: `room:${id}:${i + 1}`, tags: i === 0 ? ['entry'] : [] });
+  }
+
+  // Deterministic sparse connectivity: chain + one shortcut to create doors/path choices.
+  const edges = [];
+  for (let i = 0; i < roomCount - 1; i++) {
+    edges.push({ a: rooms[i].id, b: rooms[i + 1].id, kind: 'door' });
+  }
+  if (roomCount >= 4) {
+    edges.push({ a: rooms[0].id, b: rooms[2].id, kind: 'door' });
+  }
+
   return [{
     id,
     kind: 'building',
     nodeId: nid,
     anchors: { nodeId: nid },
-    topology: null,
+    topology: { kind: 'rooms', rooms, edges },
     surfaces: {},
     tags: ['generated', 'demo']
   }];

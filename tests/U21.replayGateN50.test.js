@@ -36,6 +36,12 @@ function replayFromTimeline(seedWorld, packs) {
       w = beginAdventure(w, packs).world;
     } else if (kind === 'scene') {
       w = newScene(w, packs).world;
+    } else if (kind === 'travel') {
+      const to = String(e?.data?.to || '');
+      const node = (w.map?.nodes || []).find(n => String(n?.id || '') === to) || null;
+      const name = String(node?.name || '').trim();
+      const txt = name ? `go to ${name}` : 'exit';
+      w = playerMove(w, packs, txt).world;
     } else if (kind === 'resolution' || kind === 'blocked') {
       const txt = String(e?.data?.text ?? e?.data?.intent ?? '');
       w = playerMove(w, packs, txt).world;

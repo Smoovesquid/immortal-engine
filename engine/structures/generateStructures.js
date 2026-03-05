@@ -16,7 +16,7 @@ export function generateStructuresForNode({ seed, nodeId, engineVersion, nodeTag
 
   // Deterministic rule: only emit a trivial building if a stable trigger is present.
   // Keeps behavior minimal and predictable while proving the pipeline.
-  const trigger = tags.includes('structure:demo') || /^n\d+$/.test(nid);
+  const trigger = tags.includes('structure:demo') || /^n\d+(?:_|$)/.test(nid);
   if (!trigger) return [];
 
   const roomCount = 3 + ((s.length + nid.length + ver) % 2); // 3..4 deterministic

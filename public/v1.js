@@ -504,8 +504,7 @@ function renderNav() {
 
 function renderMap() {
   const w = ui.world ? ensureWorld(ui.world) : null;
-  const w = ui.world ? ensureWorld(ui.world) : null;
-  const w = ui.world ? ensureWorld(ui.world) : null;
+
   const projection = renderLocalMapProjection({
     seed: w?.meta?.seed || "seed",
     nodeId: "local-node",
@@ -514,21 +513,21 @@ function renderMap() {
     edges: [],
     settlementType: "village"
   });
-  console.log("LOCAL MAP PROJECTION", projection);
+
   if (!w) {
-    return el('div', { class: 'container stack' },
-      el('div', { class: 'panel' },
-        el('div', { class: 'header' },
-          el('div', {}, el('div', { class: 'title' }, 'Map'), el('div', { class: 'sub' }, 'No world loaded.'))
+    return el("div", { class: "container stack" },
+      el("div", { class: "panel" },
+        el("div", { class: "header" },
+          el("div", {}, el("div", { class: "title" }, "Map"), el("div", { class: "sub" }, "No world loaded."))
         ),
-        el('div', { class: 'card stack' },
-          el('div', { class: 'small' }, 'Start a world first (Invoke → Begin).')
+        el("div", { class: "card stack" },
+          el("div", { class: "small" }, "Start a world first (Invoke → Begin).")
         )
       )
     );
   }
 
-  return renderMapView(w, ui.map?.zoom || 'region', (z) => {
+  return renderMapView(w, ui.map?.zoom || "region", (z) => {
     ui.map = { zoom: z };
     render();
   });

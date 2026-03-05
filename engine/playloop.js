@@ -505,7 +505,7 @@ function inferInteriorAction(text, interior) {
     return { kind: 'none' };
   }
 
-  if (/\b(leave|exit building|exit structure|go outside|step outside)\b/.test(t)) return { kind: 'exit' };
+  if (/\b(leave|exit|go outside|step outside)\b/.test(t)) return { kind: 'exit' };
   const moveFtDir = t.match(/\b(?:move|step|go)\s+\d+\s*ft\s+(north|south|east|west|n|s|e|w)\b/i);
   if (moveFtDir) return { kind: 'move', toRoomId: '', direction: normalizeDir(moveFtDir[1]) };
 

@@ -1,4 +1,4 @@
-import { renderLocalMapProjection } from '../engine/map/localMapRenderer.js';
+import { renderLocalMapProjection } from '/engine/map/localMapRenderer.js';
 import { normalizeManifest, normalizePack } from '../engine/rulesets.js';
 import { newWorld, ensureWorld } from '../engine/state.js';
 import { beginAdventure, playerMove, newScene } from '../engine/playloop.js';

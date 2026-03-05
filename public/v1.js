@@ -751,8 +751,9 @@ function drawLocalProjection(projection) {
 
   if (projection.buildingsFromRoads) {
     ctx.fillStyle = "#444";
-    projection.buildingsFromRoads.forEach(b => {
-      const x = (b.offset || Math.random()) * w;
+    projection.buildingsFromRoads.forEach((b, idx) => {
+      const off = (typeof b.offset === "number") ? b.offset : (((b.roadIndex || 0) * 97 + idx * 37) % 1000) / 1000;
+      const x = off * w;
       const y = (b.roadIndex % 10) / 10 * h;
       ctx.fillRect(x, y, 6, 6);
     });

@@ -38,8 +38,9 @@ export function ensureWorld(partial) {
       time: String(w.scene.time ?? 'start'),
       promptSeed: String(w.scene.promptSeed ?? ''),
       tags: ensureTags(w.scene.tags),
-      thread: String(w.scene.thread ?? '')
-    } : { location: '', objective: '', time: 'start', promptSeed: '', tags: [], thread: '' },
+      thread: String(w.scene.thread ?? ''),
+      interior: ensureInteriorContext(w.scene.interior)
+    } : { location: '', objective: '', time: 'start', promptSeed: '', tags: [], thread: '', interior: null },
     time: ensureTime(w.time),
     ledger: ensureLedger(w.ledger),
     instrument: ensureInstrumentLayer(w.instrument),
@@ -283,6 +284,14 @@ function ensureCanonLog(log) {
     return createCanonLog();
   }
   return { events: [...log.events] };
+}
+
+function ensureInteriorContext(x) {
+  if (!x || typeof x !== 'object') return null;
+  const structureKey = String(x.structureKey ?? '').trim();
+  const roomId = String(x.roomId ?? '').trim();
+  if (!structureKey || !roomId) return null;
+  return { structureKey, roomId };
 }
 
 // ensureInstrument moved to engine/instrument.js (ensureInstrumentLayer)

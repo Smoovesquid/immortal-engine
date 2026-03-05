@@ -1,6 +1,42 @@
 import { normalizeAnchor } from './anchors.js';
 import { normalizeTopology } from './topology.js';
 
+function ensureInteriorDiscovery(x) {
+  const obj = x && typeof x === 'object' ? x : {};
+  const byStructureIdIn = (obj.byStructureId && typeof obj.byStructureId === 'object') ? obj.byStructureId : {};
+  const byStructureId = {};
+
+  for (const [sidRaw, recRaw] of Object.entries(byStructureIdIn)) {
+    const sid = String(sidRaw);
+    if (!sid) continue;
+    const rec = recRaw && typeof recRaw === 'object' ? recRaw : {};
+    const seenRoomIdsIn = (rec.seenRoomIds && typeof rec.seenRoomIds === 'object') ? rec.seenRoomIds : {};
+    const visitedRoomIdsIn = (rec.visitedRoomIds && typeof rec.visitedRoomIds === 'object') ? rec.visitedRoomIds : {};
+
+    const seenRoomIds = {};
+    const visitedRoomIds = {};
+    for (const [rid, turn] of Object.entries(seenRoomIdsIn)) {
+      const key = String(rid);
+      if (!key) continue;
+      seenRoomIds[key] = clampInt(turn ?? 0, 0, 999999999);
+    }
+    for (const [rid, turn] of Object.entries(visitedRoomIdsIn)) {
+      const key = String(rid);
+      if (!key) continue;
+      visitedRoomIds[key] = clampInt(turn ?? 0, 0, 999999999);
+    }
+
+    byStructureId[sid] = {
+      enteredTurn: clampInt(rec.enteredTurn ?? 0, 0, 999999999),
+      seenRoomIds,
+      visitedRoomIds,
+      lastRoomId: String(rec.lastRoomId ?? '')
+    };
+  }
+
+  return { byStructureId };
+}
+
 function uniqStrings(arr) {
   const out = [];
   const seen = new Set();
@@ -24,8 +60,9 @@ export function ensureStructures(x) {
   }
 
   const nextId = clampInt(obj.nextId ?? 1, 1, 1000000000);
+  const interiorDiscovery = ensureInteriorDiscovery(obj.interiorDiscovery);
 
-  return { byId, nextId };
+  return { byId, nextId, interiorDiscovery };
 }
 
 function ensureStructure(v, fallbackId) {

@@ -15,6 +15,7 @@ import { resolveMove } from './resolve.js';
 import { applyDeltas } from './effectsCore.js';
 import { introduceThread } from './instrument.js';
 import { applyGeneratedStructuresForNode } from './structures/applyGeneratedStructuresForNode.js';
+import { enterStructureInterior, exitStructureInterior, moveWithinInterior, getInteriorView, resolveStructureSelection } from './structures/interiors.js';
 
 // Pure-ish play loop: world -> {world, output}
 
@@ -108,10 +109,48 @@ export function playerMove(world, packsById, text) {
     return { world: w, output: { narration: composed.narrationLine, mechanics: composed.mechanicsLine } };
   }
 
+  const interiorAction = inferInteriorAction(text, w.scene?.interior);
+  if (interiorAction.kind === 'enter') {
+    const nodeId = String(w.map?.currentNodeId || '');
+    const wPrepared = nodeId ? applyGeneratedStructuresForNode(w, nodeId) : w;
+    const sel = resolveStructureSelection(wPrepared, interiorAction.structureRef);
+    if (!sel.structure) {
+      const msg = sel.reason === 'index-out-of-range'
+        ? 'Wizard: No structure matches that selection here.'
+        : 'Wizard: There are no structures to enter here.';
+      return { world: w, output: { narration: msg, mechanics: '' } };
+    }
+    const w1 = enterStructureInterior(wPrepared, interiorAction.structureRef);
+    if (w1 !== wPrepared) return { world: w1, output: { narration: 'Wizard: You enter the structure interior.', mechanics: '' } };
+  }
+
+  if (interiorAction.kind === 'exit') {
+    const w1 = exitStructureInterior(w);
+    if (w1 !== w) return { world: w1, output: { narration: 'Wizard: You step back outside.', mechanics: '' } };
+  }
+
+  if (interiorAction.kind === 'move') {
+    const w1 = moveWithinInterior(w, interiorAction.toRoomId);
+    if (w1 !== w) return { world: w1, output: { narration: `Wizard: You move to ${w1.scene.interior.roomId}.`, mechanics: '' } };
+    return { world: w, output: { narration: 'Wizard: That way is blocked from here.', mechanics: '' } };
+  }
+
   // Surface-only exploration: list adjacent map nodes deterministically (no roll, no tick, no timeline).
   if (isExploreIntent(text)) {
+    if (w.scene?.interior) {
+      const view = getInteriorView(w);
+      const exits = (view.exits || []).map(x => x.id);
+      const exitsLineTxt = exits.length ? `Exits: ${exits.join(', ')}.` : 'Exits: none.';
+      return { world: w, output: { narration: `Wizard: You scan the room. ${exitsLineTxt}`, mechanics: '' } };
+    }
+
     const exits = exitsLine(w);
-    const line = exits ? `Wizard: You take stock of your surroundings. ${exits}` : 'Wizard: You take stock of your surroundings.';
+    const view = getInteriorView(w);
+    const structures = Array.isArray(view?.structures) ? view.structures : [];
+    const structuresLine = structures.length
+      ? `Structures: ${structures.map(s => `#${s.index} ${s.id}`).join(', ')}.`
+      : 'Structures: none.';
+    const line = exits ? `Wizard: You take stock of your surroundings. ${exits} ${structuresLine}` : `Wizard: You take stock of your surroundings. ${structuresLine}`;
     return { world: w, output: { narration: line, mechanics: '' } };
   }
 
@@ -381,9 +420,32 @@ function moveAdvancesScene(text) {
   const t = String(text || "").toLowerCase();
   // Travel intents: named destinations OR directional/exit shorthand.
   // Shorthand destination resolution happens in pickTravelDestination().
-  return /\b(travel|leave|exit|enter|head to|go to|move to|escape|journey|walk to|go north|go south|go east|go west|north|south|east|west|n|s|e|w)\b/.test(t);
+  return /\b(travel|leave|exit|head to|go to|move to|escape|journey|walk to|go north|go south|go east|go west|north|south|east|west|n|s|e|w)\b/.test(t);
 }
 
+function inferInteriorAction(text, interior) {
+  const t = String(text || '').toLowerCase().trim();
+  const inside = Boolean(interior && typeof interior === 'object');
+  if (!t) return { kind: 'none' };
+
+  if (!inside) {
+    if (t === 'enter') return { kind: 'enter', structureRef: '' };
+    if (/\b(go inside|enter building|enter structure|go indoors)\b/.test(t)) return { kind: 'enter', structureRef: '' };
+
+    const m = t.match(/^enter\s+(.+)$/i);
+    if (m) {
+      const ref = String(m[1] || '').trim();
+      if (ref === 'building' || ref === 'structure') return { kind: 'enter', structureRef: '' };
+      return { kind: 'enter', structureRef: ref };
+    }
+    return { kind: 'none' };
+  }
+
+  if (/\b(leave|exit building|exit structure|go outside|step outside)\b/.test(t)) return { kind: 'exit' };
+  const goMatch = t.match(/\bgo\s+([a-z0-9:_-]+)/i);
+  if (goMatch) return { kind: 'move', toRoomId: String(goMatch[1] || '') };
+  return { kind: 'none' };
+}
 
 function isExploreIntent(text) {
   const t = String(text || '').toLowerCase().trim();

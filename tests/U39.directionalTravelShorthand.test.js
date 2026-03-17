@@ -15,20 +15,20 @@ const packsById = {
   }
 };
 
-test('U39: "go north" travels to deterministic neighbor[0] and syncs scene.location', () => {
+test('U39: "go north" moves player dot locally 30ft (no node travel)', () => {
   const w0 = newWorld({ seed: 'u39', fate: 0.2, campaignId: 'c1', pack: { primaryId: 'fantasy', mixerId: null } });
   const a = beginAdventure(w0, packsById);
 
   const m0 = ensureMap(a.world.map);
-  const nbs = neighbors(m0, m0.currentNodeId);
-  assert.ok(nbs.length >= 1, 'must have at least one neighbor');
+  const startNode = m0.currentNodeId;
 
   const t1 = playerMove(a.world, packsById, 'go north');
   const m1 = ensureMap(t1.world.map);
 
-  assert.equal(m1.currentNodeId, nbs[0], 'north selects neighbor[0]');
-  const here = m1.nodes.find(n => n.id === m1.currentNodeId);
-  assert.equal(String(t1.world.scene.location), String(here?.name || ''), 'scene.location syncs to map node name');
+  assert.equal(m1.currentNodeId, startNode, 'node must not change — go north is local movement');
+  const pos = t1.world.party?.[0]?.position || {};
+  assert.equal(pos.localFtY, -30, 'localFtY must decrease by 30ft when going north');
+  assert.equal(pos.localFtX, 0, 'localFtX must be unchanged');
 });
 
 test('U39b: "exit" with no named destination travels to deterministic neighbor[0]', () => {

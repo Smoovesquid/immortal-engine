@@ -526,14 +526,30 @@ function isFreeMovementIntent(text) {
 
 function parseLocalFeetMove(text) {
   const t = String(text || '').toLowerCase().trim();
+
+  // Explicit foot distance: "move 30ft north", "step 10ft e"
   const m = t.match(/\b(?:move|step|go)\s+(\d+)\s*ft\s+(north|south|east|west|n|s|e|w)\b/);
-  if (!m) return null;
-  const ft = Math.max(0, Number(m[1] || 0));
-  const d = normalizeDir(m[2]);
-  if (d === 'north') return { dxFt: 0, dyFt: -ft };
-  if (d === 'south') return { dxFt: 0, dyFt: ft };
-  if (d === 'east') return { dxFt: ft, dyFt: 0 };
-  if (d === 'west') return { dxFt: -ft, dyFt: 0 };
+  if (m) {
+    const ft = Math.max(0, Number(m[1] || 0));
+    const d = normalizeDir(m[2]);
+    if (d === 'north') return { dxFt: 0, dyFt: -ft };
+    if (d === 'south') return { dxFt: 0, dyFt: ft };
+    if (d === 'east')  return { dxFt: ft, dyFt: 0 };
+    if (d === 'west')  return { dxFt: -ft, dyFt: 0 };
+  }
+
+  // Bare directional: "move north", "walk east", "go s", "north", "n", etc.
+  // Default step is 30ft (one standard D&D move action).
+  const m2 = t.match(/^(?:(?:move|walk|step|go|head)\s+)?(north|south|east|west|n|s|e|w)$/);
+  if (m2) {
+    const ft = 30;
+    const d = normalizeDir(m2[1]);
+    if (d === 'north') return { dxFt: 0, dyFt: -ft };
+    if (d === 'south') return { dxFt: 0, dyFt: ft };
+    if (d === 'east')  return { dxFt: ft, dyFt: 0 };
+    if (d === 'west')  return { dxFt: -ft, dyFt: 0 };
+  }
+
   return null;
 }
 
@@ -544,7 +560,7 @@ function setPrimaryPartyZone(world, zone) {
   const z = String(zone || 'near');
   return {
     ...w,
-    party: party.map((p, i) => i === 0 ? { ...p, position: { ...(p.position || {}), zone: z } } : p)
+    party: party.map((p, i) => i === 0 ? { ...p, position: { ...(p.position || {}), zone: z, localFtX: 0, localFtY: 0 } } : p)
   };
 }
 

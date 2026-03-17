@@ -1,5 +1,6 @@
 import { assertMapStructure } from './mapState.js';
 import { seedFromString, makeRng } from '../rng.js';
+import { classifyNodeType } from './nodeType.js';
 
 // Living Terrain Engine v1 — deterministic narrative map graph.
 
@@ -21,9 +22,11 @@ export function generateInitialMap({ seed = 'seed', packId = 'fantasy', pack = {
     used.add(name);
 
     const id = `n${i}_${seedFromString(`${seed}|${packId}|${name}`)}`;
+    const nodeType = classifyNodeType({ seed, nodeId: id, name });
     nodes.push({
       id,
       name,
+      nodeType,
       tags: [],
       motifs: [],
       scars: []

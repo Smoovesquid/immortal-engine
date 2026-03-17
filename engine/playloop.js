@@ -174,17 +174,17 @@ export function playerMove(world, packsById, text) {
       const view = getInteriorView(w);
       const exits = (view.exits || []).map(x => x.id);
       const exitsLineTxt = exits.length ? `Exits: ${exits.join(', ')}.` : 'Exits: none.';
-      return { world: w, output: { narration: `Wizard: You scan the room. ${exitsLineTxt}`, mechanics: '' } };
+      return { world: w, output: { narration: `Wizard: You scan the room. ${exitsLineTxt}`, mechanics: 'observe only — no roll, state unchanged' } };
     }
 
     const exits = exitsLine(w);
     const view = getInteriorView(w);
     const structures = Array.isArray(view?.structures) ? view.structures : [];
     const structuresLine = structures.length
-      ? `Structures: ${structures.map(s => `#${s.index} ${s.id}`).join(', ')}.`
+      ? `Structures: ${structures.map(s => `${s.kind} #${s.index}`).join(', ')}.`
       : 'Structures: none.';
     const line = exits ? `Wizard: You take stock of your surroundings. ${exits} ${structuresLine}` : `Wizard: You take stock of your surroundings. ${structuresLine}`;
-    return { world: w, output: { narration: line, mechanics: '' } };
+    return { world: w, output: { narration: line, mechanics: 'observe only — no roll, state unchanged' } };
   }
 
   // Feet-based local tactical movement within current node (no node travel).

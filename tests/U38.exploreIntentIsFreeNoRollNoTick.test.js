@@ -31,6 +31,6 @@ test('U38: explore intent is free (no resolution event, no clocks/timeline chang
   assert.equal(tl1, tl0, 'timeline must not change');
   assert.deepEqual(c1, c0, 'clocks must not change');
   assert.equal(here1, here0, 'position must not change');
-  assert.equal(String(t1.output?.mechanics || ''), '', 'mechanics line must be empty');
+  assert.ok(String(t1.output?.mechanics || '').includes('no roll'), 'mechanics must signal no-roll observe');
   assert.ok(String(t1.output?.narration || '').includes('Exits:'), 'must include Exits:');
 });

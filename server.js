@@ -90,8 +90,9 @@ return res.json({ ok:false, reason:safe });
     try {
       const seed = String(req?.query?.seed || "").trim();
       const nodeId = String(req?.query?.nodeId || "").trim();
+      const nodeType = String(req?.query?.nodeType || "settlement").trim();
       if (!seed || !nodeId) return res.status(400).json({ ok: false, reason: "missing_seed_or_nodeId" });
-      const projection = buildLocalProjection({ seed }, nodeId);
+      const projection = buildLocalProjection({ seed }, nodeId, nodeType);
       return res.json({ ok: true, projection });
     } catch (e) {
       return res.status(500).json({ ok: false, reason: String(e?.message || e) });

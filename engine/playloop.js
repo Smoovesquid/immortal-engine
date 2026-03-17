@@ -16,6 +16,7 @@ import { applyDeltas } from './effectsCore.js';
 import { introduceThread } from './instrument.js';
 import { applyGeneratedStructuresForNode } from './structures/applyGeneratedStructuresForNode.js';
 import { enterStructureInterior, exitStructureInterior, moveWithinInterior, getInteriorView, resolveStructureSelection } from './structures/interiors.js';
+import { createCharacter } from './chargen/genesis.js';
 
 // Pure-ish play loop: world -> {world, output}
 
@@ -27,6 +28,15 @@ export function beginAdventure(world, packsById) {
 
   const seed = seedFromString(`${w.meta.seed}|begin|${pack.id}`);
   const rng = makeRng(seed);
+
+  if (!Array.isArray(w.party) || w.party.length === 0) {
+    const pc = createCharacter({
+      seed: `${w.meta.seed}|begin|pc`,
+      packId: String(w.pack?.primaryId || 'fantasy'),
+      fate: Number(w.meta?.fate ?? 0.2)
+    });
+    w = { ...w, party: [pc] };
+  }
 
   // Living Terrain Engine v1: generate map if missing.
   if (!w.map?.nodes?.length) {
@@ -175,6 +185,44 @@ export function playerMove(world, packsById, text) {
       : 'Structures: none.';
     const line = exits ? `Wizard: You take stock of your surroundings. ${exits} ${structuresLine}` : `Wizard: You take stock of your surroundings. ${structuresLine}`;
     return { world: w, output: { narration: line, mechanics: '' } };
+  }
+
+  // Feet-based local tactical movement within current node (no node travel).
+  if (!w.scene?.interior) {
+    const localFeet = parseLocalFeetMove(text);
+    if (localFeet) {
+      const party = Array.isArray(w.party) ? w.party : [];
+      const p0 = party[0] || {};
+      const pos0 = p0.position && typeof p0.position === 'object' ? p0.position : {};
+      const beforeLocalFtX = Number(pos0.localFtX || 0);
+      const beforeLocalFtY = Number(pos0.localFtY || 0);
+      const afterLocalFtX = beforeLocalFtX + Number(localFeet.dxFt || 0);
+      const afterLocalFtY = beforeLocalFtY + Number(localFeet.dyFt || 0);
+      const nextParty = party.map((p, i) => i === 0 ? {
+        ...p,
+        position: {
+          ...(p.position || {}),
+          zone: 'near',
+          localFtX: afterLocalFtX,
+          localFtY: afterLocalFtY
+        }
+      } : p);
+      let w1 = { ...w, party: nextParty };
+      w1 = pushEvent(w1, {
+        kind: 'move',
+        data: {
+          mode: 'local',
+          type: 'local_move',
+          dxFt: Number(localFeet.dxFt || 0),
+          dyFt: Number(localFeet.dyFt || 0),
+          before: { localFtX: beforeLocalFtX, localFtY: beforeLocalFtY },
+          after: { localFtX: afterLocalFtX, localFtY: afterLocalFtY },
+          withinSpeed: true,
+          rolled: false
+        }
+      });
+      return { world: w1, output: { narration: 'Wizard: You shift position locally.', mechanics: '' } };
+    }
   }
 
   // Free movement (within speed): deterministic travel without a roll unless explicit obstacle/risk language is present.
@@ -470,10 +518,23 @@ function isFreeMovementIntent(text) {
   if (!t) return false;
 
   // Explicit tactical movement-within-speed (legacy phrasing).
-  if (/\b(within speed|30\s*ft|move\s+\d+\s*ft|step\s+\d+\s*ft)\b/.test(t)) return true;
+  if (/\b(within speed|30\s*ft)\b/.test(t)) return true;
 
   // Broad free movement / travel phrasing (deterministic: destination is still resolved by adjacency rules).
   return /\b(travel|leave|exit|head\s+to|go\s+to|move\s+to|walk\s+to|walk|go\s+north|go\s+south|go\s+east|go\s+west|north|south|east|west|n|s|e|w)\b/.test(t);
+}
+
+function parseLocalFeetMove(text) {
+  const t = String(text || '').toLowerCase().trim();
+  const m = t.match(/\b(?:move|step|go)\s+(\d+)\s*ft\s+(north|south|east|west|n|s|e|w)\b/);
+  if (!m) return null;
+  const ft = Math.max(0, Number(m[1] || 0));
+  const d = normalizeDir(m[2]);
+  if (d === 'north') return { dxFt: 0, dyFt: -ft };
+  if (d === 'south') return { dxFt: 0, dyFt: ft };
+  if (d === 'east') return { dxFt: ft, dyFt: 0 };
+  if (d === 'west') return { dxFt: -ft, dyFt: 0 };
+  return null;
 }
 
 function setPrimaryPartyZone(world, zone) {

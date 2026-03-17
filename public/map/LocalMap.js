@@ -43,6 +43,43 @@ function roomLayoutFromTopology(topology) {
   return out;
 }
 
+function parseFeetIntent(text) {
+  const t = String(text || '').toLowerCase();
+  const m = t.match(/\b(?:move|step|go)\s+(\d+)\s*ft\s+(north|south|east|west|n|s|e|w)\b/);
+  if (!m) return { dxFt: 0, dyFt: 0 };
+  const ft = Math.max(0, Number(m[1] || 0));
+  const d = String(m[2] || '');
+  if (d === 'north' || d === 'n') return { dxFt: 0, dyFt: -ft };
+  if (d === 'south' || d === 's') return { dxFt: 0, dyFt: ft };
+  if (d === 'east' || d === 'e') return { dxFt: ft, dyFt: 0 };
+  if (d === 'west' || d === 'w') return { dxFt: -ft, dyFt: 0 };
+  return { dxFt: 0, dyFt: 0 };
+}
+
+function projectedFeetFromTimeline(world) {
+  const tl = Array.isArray(world?.timeline) ? world.timeline : [];
+  let x = 0;
+  let y = 0;
+  for (const ev of tl) {
+    if (!ev || typeof ev !== 'object') continue;
+    const data = ev.data && typeof ev.data === 'object' ? ev.data : {};
+    const text = String(data.intent || data.text || data.intentText || '');
+    const d = parseFeetIntent(text);
+    x += d.dxFt;
+    y += d.dyFt;
+  }
+  const clamp = (v) => Math.max(-150, Math.min(150, v));
+  return { xFt: clamp(x), yFt: clamp(y) };
+}
+
+function playerFeet(world) {
+  const pos = world?.party?.[0]?.position && typeof world.party[0].position === 'object' ? world.party[0].position : {};
+  if (typeof pos.localFtX === 'number' || typeof pos.localFtY === 'number') {
+    return { xFt: Number(pos.localFtX || 0), yFt: Number(pos.localFtY || 0) };
+  }
+  return projectedFeetFromTimeline(world);
+}
+
 function drawExterior(ctx, world, w, size, cell) {
   const seed = String(world?.meta?.seed ?? 'seed');
   const nodeId = String(world?.map?.currentNodeId ?? '');
@@ -114,10 +151,10 @@ function drawExterior(ctx, world, w, size, cell) {
     }
   }
 
-  // Player marker (exactly one token): deterministic per current node, so travel visibly moves token.
-  const ph = hash32('player:' + key);
-  const ox = ((ph % 9) - 4) * cell * 2;
-  const oy = (((Math.floor(ph / 9)) % 9) - 4) * cell * 2;
+  // Player marker from canonical local feet position (5 ft per square).
+  const { xFt, yFt } = playerFeet(world);
+  const ox = (xFt / 5) * cell;
+  const oy = (yFt / 5) * cell;
   ctx.fillStyle = 'red';
   ctx.beginPath();
   ctx.arc(mid * cell + cell / 2 + ox, mid * cell + cell / 2 + oy, cell * 0.35, 0, Math.PI * 2);
@@ -181,12 +218,16 @@ function drawInterior(ctx, world, w) {
     ctx.stroke();
   }
 
-  // Player marker (exactly one tile/room)
+  // Player marker (5 ft per square): offset inside current room by canonical feet position.
   const p = centers.get(roomId);
   if (p) {
+    const { xFt, yFt } = playerFeet(world);
+    const ox = (xFt / 5) * 12;
+    const oy = (yFt / 5) * 12;
+
     ctx.fillStyle = '#ff2d55';
     ctx.beginPath();
-    ctx.arc(p.cx, p.cy, 10, 0, Math.PI * 2);
+    ctx.arc(p.cx + ox, p.cy + oy, 10, 0, Math.PI * 2);
     ctx.fill();
   }
 }

@@ -59,35 +59,37 @@
 
 **Model:** `claude-sonnet-4-6`
 
+**Status: ✅ COMPLETE — all 6 gates passed, 236 tests green**
+
 ---
 
 ### Gates
 
-#### N1 — Surface context reaches the narrator
+#### ✅ N1 — Surface context reaches the narrator
 - `buildNarratorContext(world, outcome)` emits a structured object: place name, nodeType, structures present, interior state (room if inside), pack tone words
 - The narrator cannot describe what it doesn't know — this is the data contract
 - **Test:** pure function, no API. All 4 nodeTypes produce distinct context objects.
 
-#### N2 — Anthropic API replaces OpenAI
+#### ✅ N2 — Anthropic API replaces OpenAI
 - `callLLM` posts to Anthropic's Messages API (`/v1/messages`) with correct headers
 - Falls back silently if key is absent
 - **Test:** real API call with key from env returns a non-empty string
 
-#### N3 — Prompt is grounded — narrator cannot invent topology
+#### ✅ N3 — Prompt is grounded — narrator cannot invent topology
 - System prompt explicitly names what is canonical and includes "do not invent"
 - Each nodeType produces a distinct system prompt
 - **Test:** verify system prompt string for each nodeType contains correct canonical facts
 
-#### N4 — Grounding guard catches node-type violations
+#### ✅ N4 — Grounding guard catches node-type violations
 - `validateNarrationCandidate` extended: wilderness narration must not mention roads/buildings; dungeon narration must not mention open sky
 - **Test:** unit test validator with violating strings for each nodeType
 
-#### N5 — Pack tone shapes narration voice
+#### ✅ N5 — Pack tone shapes narration voice
 - `toneWords` from the pack (cooperative/grim/blood) are injected into the system prompt
 - Grim and cooperative packs produce demonstrably different prompts
 - **Test:** prompt strings differ by tone profile
 
-#### N6 — Narration integrates into playloop
+#### ✅ N6 — Narration integrates into playloop
 - `playerMove` returns real AI narration in `output.narration` instead of "Wizard: ..."
 - Offline/error path falls back to base narration silently, no throws
 - **Test:** integration test with real key; null-key test proves silent fallback

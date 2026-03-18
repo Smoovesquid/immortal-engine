@@ -73,7 +73,7 @@ const ui = {
   worldHash: '',
   status: '',
   ai: { online: null, text: '(not loaded)' },
-  aiKey: '',
+  aiKey: sessionStorage.getItem('anthropic_key') || '',
   aiKeyAck: '',
   aiTest: { ok: null, text: '(not run)', ms: null },
   aiStatus: { ok: null, online: null, source: "(unknown)", mode: "(unknown)", envPresent: null, sessionPresent: null },
@@ -603,7 +603,7 @@ function renderAi() {
   const keyInput = el('textarea', {
     class: 'input',
     rows: '3',
-    placeholder: 'Paste Anthropic API key here (stored in browser memory only)',
+    placeholder: 'Paste Anthropic API key here (survives reloads, cleared when tab closes)',
     value: ui.aiKey || '',
     onInput: (e) => { ui.aiKey = String(e.target.value || ''); }
   });
@@ -623,6 +623,7 @@ function renderAi() {
         });
         const data = await res.json();
         if (data.ok) {
+          sessionStorage.setItem('anthropic_key', apiKey);
           ui.aiKeyAck = '✓ Key works — AI narration enabled.';
           ui.ai = { online: true, text: 'Anthropic narration active.' };
         } else {
@@ -640,6 +641,7 @@ function renderAi() {
     class: 'btn',
     onClick: () => {
       ui.aiKey = '';
+      sessionStorage.removeItem('anthropic_key');
       ui.aiKeyAck = 'Key cleared — narration disabled.';
       ui.ai = { online: false, text: 'No key.' };
       render();

@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 
 import { makeOpenAiClient, hasOpenAiKey, handleAiRequest } from './server/ai.js';
 import { buildLocalProjection } from './engine/map/projection/localProjection.js';
+import { augmentNarration } from './engine/llmAdapter.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -84,6 +85,30 @@ return res.json({ ok:false, reason:safe });
     const client = makeOpenAiClient({ apiKey: sessionOpenAiKey, mode: aiMode });
     const out = await handleAiRequest({ client, body: req.body });
     res.json(out);
+  });
+
+  // N6 — AI narration endpoint
+  // POST { world, baseNarration, outcome } → { ok, narration }
+  // Falls back to baseNarration silently if key absent or API fails.
+  app.post('/api/narrate', async (req, res) => {
+    try {
+      const world        = req.body?.world        ?? null;
+      const baseNarration = String(req.body?.baseNarration ?? '').trim();
+      const outcome      = req.body?.outcome      ?? {};
+      const anthropicKey = String(req.body?.anthropicKey || process.env.ANTHROPIC_API_KEY || '').trim();
+
+      const narration = await augmentNarration({
+        world,
+        outcome,
+        baseNarration,
+        enabled: Boolean(anthropicKey),
+        apiKey:  anthropicKey
+      });
+
+      return res.json({ ok: true, narration });
+    } catch {
+      return res.json({ ok: true, narration: String(req.body?.baseNarration ?? '') });
+    }
   });
 
   app.get('/api/local-projection', (req, res) => {

@@ -181,13 +181,15 @@ export function pickTravelDestination(world, playerText) {
 
 function ensureNode(n) {
   const x = n && typeof n === 'object' ? n : {};
-  return {
+  const base = {
     id: String(x.id || ''),
     name: String(x.name || ''),
     tags: Array.isArray(x.tags) ? x.tags.map(String).slice(0, 8) : [],
     motifs: Array.isArray(x.motifs) ? x.motifs.map(String).slice(0, 8) : [],
     scars: Array.isArray(x.scars) ? x.scars.map(String).slice(0, 8) : []
   };
+  if (x.nodeType) base.nodeType = String(x.nodeType);
+  return base;
 }
 
 function ensureEdge(e) {

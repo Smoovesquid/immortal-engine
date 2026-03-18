@@ -51,16 +51,56 @@
 
 ---
 
-## Parking Lot
+---
 
-Noted, not active. Do not work on these until Surface v1 is complete.
+## Active Milestone: AI Narration v1
+
+**Goal:** The AI narrator describes only what the canonical surface says is true. It knows the place type, the structures, the room, the tone. It cannot invent topology. If the API is unavailable, the game continues silently with base narration.
+
+**Model:** `claude-sonnet-4-6`
+
+---
+
+### Gates
+
+#### N1 — Surface context reaches the narrator
+- `buildNarratorContext(world, outcome)` emits a structured object: place name, nodeType, structures present, interior state (room if inside), pack tone words
+- The narrator cannot describe what it doesn't know — this is the data contract
+- **Test:** pure function, no API. All 4 nodeTypes produce distinct context objects.
+
+#### N2 — Anthropic API replaces OpenAI
+- `callLLM` posts to Anthropic's Messages API (`/v1/messages`) with correct headers
+- Falls back silently if key is absent
+- **Test:** real API call with key from env returns a non-empty string
+
+#### N3 — Prompt is grounded — narrator cannot invent topology
+- System prompt explicitly names what is canonical and includes "do not invent"
+- Each nodeType produces a distinct system prompt
+- **Test:** verify system prompt string for each nodeType contains correct canonical facts
+
+#### N4 — Grounding guard catches node-type violations
+- `validateNarrationCandidate` extended: wilderness narration must not mention roads/buildings; dungeon narration must not mention open sky
+- **Test:** unit test validator with violating strings for each nodeType
+
+#### N5 — Pack tone shapes narration voice
+- `toneWords` from the pack (cooperative/grim/blood) are injected into the system prompt
+- Grim and cooperative packs produce demonstrably different prompts
+- **Test:** prompt strings differ by tone profile
+
+#### N6 — Narration integrates into playloop
+- `playerMove` returns real AI narration in `output.narration` instead of "Wizard: ..."
+- Offline/error path falls back to base narration silently, no throws
+- **Test:** integration test with real key; null-key test proves silent fallback
+
+---
+
+## Parking Lot
 
 - Node type system feeds into faction/ecology pressure (wilderness nodes have different pressure profiles)
 - Voice output (TTS with good voice)
 - Voice input (STT)
 - Multiplayer session sync
 - Mobile UI
-- AI narration layer — **blocked until Surface v1 gates all pass**
 
 ---
 

@@ -9,6 +9,14 @@ import { generateTriadFrames, deriveInvocationFromFrame } from '../engine/triad.
 import { deriveSequelInvocation } from '../engine/sequel.js';
 import { renderMapView } from './map/MapView.js';
 
+// ?reset — wipe all saved state and start fresh
+if (new URLSearchParams(location.search).has('reset')) {
+  Object.keys(localStorage)
+    .filter(k => k.startsWith('ai-dm-v2:'))
+    .forEach(k => localStorage.removeItem(k));
+  location.replace(location.pathname);
+}
+
 const app = document.querySelector('#app');
 
 function el(tag, attrs = {}, ...children) {
@@ -186,7 +194,7 @@ function persistAndRehash(world) {
   });
 }
 
-function doSubmitMove() {
+async function doSubmitMove() {
   setStatus('Submitting move…');
   const w = ui.world ? ensureWorld(ui.world) : null;
   if (!w) return setStatus('No world loaded.');
@@ -196,14 +204,37 @@ function doSubmitMove() {
   if (!text) return;
 
   const { world, output } = playerMove(w, ui.packs.byId, text);
+  const baseNarration = output?.narration || 'Wizard: ...';
 
   ui.play.lines.push({ who: 'you', text, mech: '' });
-  ui.play.lines.push({ who: 'wizard', text: output?.narration || 'Wizard: ...', mech: output?.mechanics || '' });
+  // Push base narration immediately so the player never waits.
+  const wizardLine = { who: 'wizard', text: baseNarration, mech: output?.mechanics || '' };
+  ui.play.lines.push(wizardLine);
   ui.play.input = '';
   ui.play.lastResolutionKind = 'turn';
 
   persistAndRehash(world);
   setStatus('Move resolved.');
+  render();
+
+  // Fire-and-forget narration upgrade. If it fails, wizardLine already has the base text.
+  const anthropicKey = String(ui.aiKey || '').trim();
+  if (anthropicKey) {
+    try {
+      const res = await fetch('/api/narrate', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ world, baseNarration, outcome: { input: text }, anthropicKey })
+      });
+      const data = await res.json();
+      if (data.ok && data.narration && data.narration !== baseNarration) {
+        wizardLine.text = data.narration;
+        render();
+      }
+    } catch {
+      // silently keep base narration
+    }
+  }
 }
 
 function doNewScene() {
@@ -572,7 +603,7 @@ function renderAi() {
   const keyInput = el('textarea', {
     class: 'input',
     rows: '3',
-    placeholder: 'Paste OpenAI API key here (server memory only; lost on restart)',
+    placeholder: 'Paste Anthropic API key here (stored in browser memory only)',
     value: ui.aiKey || '',
     onInput: (e) => { ui.aiKey = String(e.target.value || ''); }
   });
@@ -581,27 +612,32 @@ function renderAi() {
     class: 'btn primary',
     onClick: async () => {
       const apiKey = String(ui.aiKey || '').trim();
-      await fetch('/api/ai-key', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ apiKey }) });
-      ui.aiKeyAck = apiKey ? 'Key stored (server memory).' : 'Key cleared.';
-      const res = await fetchAiStatus();
-      if (res.ok) ui.ai = { online: Boolean(res.status?.online), text: JSON.stringify(res.status, null, 2) };
-      ui.aiTest = { ok: null, text: '(testing...)' };
+      if (!apiKey) { ui.aiKeyAck = 'No key entered.'; return render(); }
+      // Test the key against /api/narrate with a minimal payload.
+      ui.aiKeyAck = 'Testing…';
       render();
-      const t = await runAiTest();
-      ui.aiTest = { ok: Boolean(t.ok), text: String(t.text || '') };
+      try {
+        const res = await fetch('/api/narrate', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ world: null, baseNarration: 'test', outcome: {}, anthropicKey: apiKey })
+        });
+        const data = await res.json();
+        ui.aiKeyAck = data.ok ? '✓ Anthropic key works — narration enabled.' : '✗ Key rejected by server.';
+        ui.ai = { online: data.ok, text: data.ok ? 'Anthropic narration active.' : 'Key failed.' };
+      } catch {
+        ui.aiKeyAck = '✗ Could not reach server.';
+      }
       render();
     }
   }, 'Set Key');
 
   const clearKeyBtn = el('button', {
     class: 'btn',
-    onClick: async () => {
+    onClick: () => {
       ui.aiKey = '';
-      await fetch('/api/ai-key', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ apiKey: '' }) });
-      ui.aiKeyAck = 'Key cleared.';
-      const res = await fetchAiStatus();
-      if (res.ok) ui.ai = { online: Boolean(res.status?.online), text: JSON.stringify(res.status, null, 2) };
-      ui.aiTest = { ok: null, text: '(not run)' };
+      ui.aiKeyAck = 'Key cleared — narration disabled.';
+      ui.ai = { online: false, text: 'No key.' };
       render();
     }
   }, 'Clear');
@@ -643,7 +679,7 @@ function renderAi() {
       ),
       el('div', { class: 'card stack' },
         el('div', { class: 'row' }, refreshBtn, runTestBtn),
-        el('div', { class: 'small' }, 'AI API key (runtime)'),
+        el('div', { class: 'small' }, 'Anthropic API key (browser memory — not sent to server except during narration calls)'),
         keyInput,
         el('div', { class: 'row' }, setKeyBtn, clearKeyBtn),
         (ui.aiKeyAck ? el('div', { class: 'small' }, ui.aiKeyAck) : null),

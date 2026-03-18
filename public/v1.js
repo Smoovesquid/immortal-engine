@@ -297,7 +297,7 @@ function renderInvoke() {
     el('div', { class: 'panel' },
       el('div', { class: 'header' },
         el('div', {},
-          el('div', { class: 'title' }, 'Immortal Engine — build 2026.03.18b'),
+          el('div', { class: 'title' }, 'Immortal Engine — build 2026.03.18c'),
           el('div', { class: 'sub' }, 'Gate 4: MythSpec + Deterministic Triad')
         )
       ),
@@ -583,12 +583,17 @@ async function fetchAiStatus() {
 
 async function runAiTest() {
   const t0 = Date.now();
+  const apiKey = String(ui.aiKey || '').trim();
+  if (!apiKey) return { ok: false, text: 'No key set — go to AI tab and paste your Anthropic key', ms: 0 };
   try {
-    const r = await fetch('/api/ai-test', { method: 'POST', headers: { 'content-type': 'application/json' } });
+    const r = await fetch('/api/anthropic-test', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ anthropicKey: apiKey })
+    });
     const j = await r.json();
     const ms = Date.now() - t0;
-    if (!j || typeof j !== 'object') return { ok: false, text: 'bad_json', ms };
-    if (j.ok) return { ok: true, text: String(j.response || ''), ms };
+    if (j.ok) return { ok: true, text: `Anthropic connection OK (${ms}ms)`, ms };
     return { ok: false, text: String(j.reason || 'fail'), ms };
   } catch (e) {
     const ms = Date.now() - t0;
@@ -710,7 +715,7 @@ function render() {
       el('div', { class: 'panel' },
         el('div', { class: 'header' },
           el('div', {},
-            el('div', { class: 'title' }, 'Immortal Engine — build 2026.03.18b'),
+            el('div', { class: 'title' }, 'Immortal Engine — build 2026.03.18c'),
             el('div', { class: 'sub' }, 'Loading packs…')
           )
         )

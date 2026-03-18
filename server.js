@@ -87,6 +87,34 @@ return res.json({ ok:false, reason:safe });
     res.json(out);
   });
 
+  // Anthropic key test — returns ok:true only if the key actually works
+  app.post('/api/anthropic-test', async (req, res) => {
+    const key = String(req.body?.anthropicKey || '').trim();
+    if (!key) return res.json({ ok: false, reason: 'no_key' });
+    try {
+      const r = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-api-key': key,
+          'anthropic-version': '2023-06-01'
+        },
+        body: JSON.stringify({
+          model: 'claude-haiku-4-5-20251001',
+          max_tokens: 5,
+          messages: [{ role: 'user', content: 'Say: OK' }]
+        })
+      });
+      if (!r.ok) {
+        const err = await r.json().catch(() => ({}));
+        return res.json({ ok: false, reason: err?.error?.message || `HTTP ${r.status}` });
+      }
+      return res.json({ ok: true });
+    } catch (e) {
+      return res.json({ ok: false, reason: String(e?.message || 'network_error') });
+    }
+  });
+
   // N6 — AI narration endpoint
   // POST { world, baseNarration, outcome } → { ok, narration }
   // Falls back to baseNarration silently if key absent or API fails.

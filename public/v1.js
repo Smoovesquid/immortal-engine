@@ -613,20 +613,24 @@ function renderAi() {
     onClick: async () => {
       const apiKey = String(ui.aiKey || '').trim();
       if (!apiKey) { ui.aiKeyAck = 'No key entered.'; return render(); }
-      // Test the key against /api/narrate with a minimal payload.
-      ui.aiKeyAck = 'Testing…';
+      ui.aiKeyAck = 'Testing key with Anthropic…';
       render();
       try {
-        const res = await fetch('/api/narrate', {
+        const res = await fetch('/api/anthropic-test', {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ world: null, baseNarration: 'test', outcome: {}, anthropicKey: apiKey })
+          body: JSON.stringify({ anthropicKey: apiKey })
         });
         const data = await res.json();
-        ui.aiKeyAck = data.ok ? '✓ Anthropic key works — narration enabled.' : '✗ Key rejected by server.';
-        ui.ai = { online: data.ok, text: data.ok ? 'Anthropic narration active.' : 'Key failed.' };
+        if (data.ok) {
+          ui.aiKeyAck = '✓ Key works — AI narration enabled.';
+          ui.ai = { online: true, text: 'Anthropic narration active.' };
+        } else {
+          ui.aiKeyAck = `✗ Key rejected: ${data.reason || 'unknown error'}`;
+          ui.ai = { online: false, text: String(data.reason || 'Key failed.') };
+        }
       } catch {
-        ui.aiKeyAck = '✗ Could not reach server.';
+        ui.aiKeyAck = '✗ Could not reach the server. Is it running?';
       }
       render();
     }

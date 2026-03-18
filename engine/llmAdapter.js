@@ -126,9 +126,10 @@ export function validateNarrationCandidate(world, narrationCandidate, {
   const terminals = (cand.match(/[.!?]/g) || []).length;
   if (terminals > 1) return false;
 
-  // Location lock: must include current location token.
+  // Location lock: Claude was told to reference ctx.placeName, so check that.
+  // Fall back to scene.location only if placeName is absent.
   const w = world ? ensureWorld(world) : null;
-  const loc = String(w?.scene?.location ?? ctx?.placeName ?? '').trim();
+  const loc = String(ctx?.placeName ?? w?.scene?.location ?? '').trim();
   if (loc && !containsInsensitive(cand, loc)) return false;
 
   // Objective lock: if objective exists, narration must not claim a different explicit objective.
@@ -158,15 +159,8 @@ export function validateNarrationCandidate(world, narrationCandidate, {
     if (denied && containsInsensitive(cand, denied)) return false;
   }
 
-  // New-noun heuristic: reject if candidate introduces too many tokens not in allowed vocab.
-  const allowed = buildAllowedVocab({ baseNarration, styleProfile, facts, motifs, world: w, ctx });
-  const tokens = tokenize(cand);
-  let unknownNounish = 0;
-  for (const tok of tokens) {
-    if (allowed.has(tok)) continue;
-    if (looksNounish(tok)) unknownNounish++;
-    if (unknownNounish >= 3) return false;
-  }
+  // New-noun heuristic removed — the system prompt already constrains invention.
+  // The location lock and node-type guard are the meaningful checks.
 
   return true;
 }

@@ -297,7 +297,7 @@ function renderInvoke() {
     el('div', { class: 'panel' },
       el('div', { class: 'header' },
         el('div', {},
-          el('div', { class: 'title' }, 'Immortal Engine — build 2026.03.18'),
+          el('div', { class: 'title' }, 'Immortal Engine — build 2026.03.18b'),
           el('div', { class: 'sub' }, 'Gate 4: MythSpec + Deterministic Triad')
         )
       ),
@@ -710,7 +710,7 @@ function render() {
       el('div', { class: 'panel' },
         el('div', { class: 'header' },
           el('div', {},
-            el('div', { class: 'title' }, 'Immortal Engine — build 2026.03.18'),
+            el('div', { class: 'title' }, 'Immortal Engine — build 2026.03.18b'),
             el('div', { class: 'sub' }, 'Loading packs…')
           )
         )

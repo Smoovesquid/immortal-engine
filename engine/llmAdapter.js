@@ -224,7 +224,8 @@ export async function augmentNarration({
   let candidate = '';
   try {
     candidate = await callLLM({ ctx, baseNarration: base, apiKey, model, fetchImpl });
-  } catch {
+  } catch (err) {
+    console.warn(`LLM narration failed, falling back to base narration: ${err?.message || 'unknown error'}`);
     return base;
   }
 

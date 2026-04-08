@@ -1,6 +1,7 @@
 import { assertMapStructure } from './mapState.js';
 import { seedFromString, makeRng } from '../rng.js';
 import { classifyNodeType } from './nodeType.js';
+import { clampInt } from '../util.js';
 
 // Living Terrain Engine v1 — deterministic narrative map graph.
 
@@ -77,8 +78,3 @@ function uniquify(name, used) {
   return n;
 }
 
-function clampInt(n, lo, hi) {
-  const x = Math.trunc(Number(n));
-  if (!Number.isFinite(x)) return lo;
-  return Math.max(lo, Math.min(hi, x));
-}

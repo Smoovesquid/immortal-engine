@@ -1,3 +1,5 @@
+import { clampInt } from '../util.js';
+
 // Gear as Physics Inputs v1
 // Offline + deterministic: derive aggregate signals from inventory items.
 
@@ -129,8 +131,4 @@ function toInt(v) {
   return Number.isFinite(n) ? n : NaN;
 }
 
-function clampInt(n, lo, hi) {
-  const x = Math.trunc(Number(n));
-  if (!Number.isFinite(x)) return lo;
-  return Math.max(lo, Math.min(hi, x));
-}
+

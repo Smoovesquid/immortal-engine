@@ -8,6 +8,7 @@
 
 import { ensureWorld } from '../state.js';
 import { filterContext } from '../npc/perspectiveFilter.js';
+import { fateBand } from '../rulesets.js';
 
 /**
  * buildNarratorContext(world, outcome) → NarratorContext
@@ -64,6 +65,25 @@ export function buildNarratorContext(world, outcome = {}) {
     population: settlement.population || 0
   } : null;
 
+  // ── Speaker perspective (from NPC depth + perspective filter) ──────
+  // Pick the most relevant NPC as the current speaker. If the action text
+  // mentions an NPC name, use that NPC. Otherwise pick the first NPC with
+  // depth data (personality + knowledge graph).
+  let speaker = null;
+  if (settlement) {
+    const deepNpcs = (settlement.npcs || []).filter(n => n?.personality && n?.knowledgeGraph);
+    if (deepNpcs.length > 0) {
+      const actionLower = actionText.toLowerCase();
+      const mentioned = deepNpcs.find(n =>
+        actionLower.includes((n.name || '').toLowerCase()) ||
+        actionLower.includes((n.role || '').toLowerCase())
+      );
+      const chosen = mentioned || deepNpcs[0];
+      const allFacts = deepNpcs.flatMap(n => n.knowledgeGraph || []);
+      speaker = buildSpeakerContext(chosen, allFacts);
+    }
+  }
+
   return {
     placeName,
     nodeType,
@@ -75,21 +95,22 @@ export function buildNarratorContext(world, outcome = {}) {
     actionText,
     mechanicsText,
     fate: Number(w.meta?.fate ?? 0.5),
-    settlement: settlementContext
+    settlement: settlementContext,
+    speaker
   };
 }
 
 /**
  * Derive a single tone label from pack toneWords + fate.
+ * Uses fateBand() for canonical thresholds, then downgrades if the pack
+ * lacks toneWords for the computed band.
  * Returns 'blood' | 'grim' | 'cooperative'
  */
 function deriveTone(toneWords, fate) {
-  const f = Number(fate ?? 0.5);
-  if (!toneWords || typeof toneWords !== 'object') {
-    return f >= 0.7 ? 'blood' : f >= 0.4 ? 'grim' : 'cooperative';
-  }
-  if (f >= 0.7 && Array.isArray(toneWords.blood)  && toneWords.blood.length)  return 'blood';
-  if (f >= 0.4 && Array.isArray(toneWords.grim)   && toneWords.grim.length)   return 'grim';
+  const band = fateBand(Number(fate ?? 0.5));
+  if (!toneWords || typeof toneWords !== 'object') return band;
+  if (band === 'blood' && Array.isArray(toneWords.blood) && toneWords.blood.length) return 'blood';
+  if (band !== 'cooperative' && Array.isArray(toneWords.grim) && toneWords.grim.length) return 'grim';
   return 'cooperative';
 }
 

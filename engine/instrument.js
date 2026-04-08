@@ -1,3 +1,4 @@
+import { clampInt } from './util.js';
 import { ensureWorld } from './state.js';
 import { seedFromString, makeRng } from './rng.js';
 import { fateBand } from './rulesets.js';
@@ -240,8 +241,3 @@ function capThreads(arr, cap) {
   return arr.slice(0, cap);
 }
 
-function clampInt(n, lo, hi) {
-  const x = Math.trunc(Number(n));
-  if (!Number.isFinite(x)) return lo;
-  return Math.max(lo, Math.min(hi, x));
-}

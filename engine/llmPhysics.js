@@ -2,6 +2,7 @@
 // The engine owns state. The LLM owns common sense.
 // Census-taker mode: flat, literal physics. No drama. No Chekhov's guns.
 
+import { clampInt } from './util.js';
 import { ensureWorld } from './state.js';
 import { ensureMap } from './map/mapState.js';
 
@@ -427,12 +428,6 @@ function offlineFallback(world, playerText, detection) {
     description: `You interact with ${targetName}.`,
     fallbackUsed: true
   };
-}
-
-function clampInt(n, lo, hi) {
-  const x = Math.trunc(Number(n));
-  if (!Number.isFinite(x)) return lo;
-  return Math.max(lo, Math.min(hi, x));
 }
 
 // --- Helpers ---

@@ -1,7 +1,4 @@
-function clampInt(n, lo, hi) {
-  const v = Number.isFinite(+n) ? Math.floor(+n) : lo;
-  return Math.max(lo, Math.min(hi, v));
-}
+import { clampInt } from '../util.js';
 
 function isObject(x) { return x && typeof x === 'object'; }
 

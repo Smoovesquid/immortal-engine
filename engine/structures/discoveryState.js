@@ -1,9 +1,6 @@
-function isObject(x) { return x && typeof x === 'object'; }
+import { clampInt } from '../util.js';
 
-function clampInt(n, lo, hi) {
-  const v = Number.isFinite(+n) ? Math.floor(+n) : lo;
-  return Math.max(lo, Math.min(hi, v));
-}
+function isObject(x) { return x && typeof x === 'object'; }
 
 function ensureStringSetRecord(x) {
   const obj = isObject(x) ? x : {};

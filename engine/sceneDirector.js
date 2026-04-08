@@ -1,3 +1,4 @@
+import { clampInt, clamp01 } from './util.js';
 import { makeRng, seedFromString } from './rng.js';
 import { fateBand } from './rulesets.js';
 import { ensureInstrumentLayer } from './instrument.js';
@@ -377,14 +378,4 @@ function maxHostility(w) {
   return factions.reduce((m, f) => Math.max(m, f.hostility ?? 0), 0);
 }
 
-function clampInt(n, lo, hi) {
-  const x = Math.trunc(Number(n));
-  if (!Number.isFinite(x)) return lo;
-  return Math.max(lo, Math.min(hi, x));
-}
 
-function clamp01(v) {
-  const x = Number(v);
-  if (!Number.isFinite(x)) return 0;
-  return Math.max(0, Math.min(1, x));
-}

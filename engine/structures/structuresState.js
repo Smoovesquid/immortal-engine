@@ -1,5 +1,6 @@
 import { normalizeAnchor } from './anchors.js';
 import { normalizeTopology } from './topology.js';
+import { clampInt } from '../util.js';
 
 function ensureInteriorDiscovery(x) {
   const obj = x && typeof x === 'object' ? x : {};
@@ -88,9 +89,4 @@ function ensureStructure(v, fallbackId) {
     surfaces,
     tags
   };
-}
-
-function clampInt(n, lo, hi) {
-  const v = Number.isFinite(+n) ? Math.floor(+n) : lo;
-  return Math.max(lo, Math.min(hi, v));
 }

@@ -1,3 +1,4 @@
+import { clampInt } from './util.js';
 import { ensureWorld } from './state.js';
 import { addFact, addThreat, addQuestion } from './ledger.js';
 import { ensureEnv } from './env/envCore.js';
@@ -158,8 +159,4 @@ function clampZone(z) {
   return (s === 'far' || s === 'near' || s === 'engaged') ? s : 'near';
 }
 
-function clampInt(n, lo, hi) {
-  const x = Math.trunc(Number(n));
-  if (!Number.isFinite(x)) return lo;
-  return Math.max(lo, Math.min(hi, x));
-}
+

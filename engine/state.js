@@ -1,3 +1,4 @@
+import { clampInt, clamp01 } from './util.js';
 import { assertWorldInvariants } from './invariants.js';
 import { ensureLedger } from './ledger.js';
 import { ensureEnding } from './ending.js';
@@ -296,13 +297,4 @@ function ensureInteriorContext(x) {
 
 // ensureInstrument moved to engine/instrument.js (ensureInstrumentLayer)
 
-function clamp01(v) {
-  const x = Number(v);
-  if (!Number.isFinite(x)) return 0;
-  return Math.max(0, Math.min(1, x));
-}
-function clampInt(v, lo, hi) {
-  const x = Math.trunc(Number(v));
-  if (!Number.isFinite(x)) return lo;
-  return Math.max(lo, Math.min(hi, x));
-}
+

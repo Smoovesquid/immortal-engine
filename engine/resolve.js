@@ -1,3 +1,4 @@
+import { clampInt, clamp01 } from './util.js';
 import { ensureWorld } from './state.js';
 import { makeRng, seedFromString } from './rng.js';
 import { fateBand } from './rulesets.js';
@@ -394,19 +395,7 @@ function positionDeltaFor({ approach, outcome }) {
   };
 }
 
-function clamp01(v) {
-  const x = Number(v);
-  if (!Number.isFinite(x)) return 0;
-  return Math.max(0, Math.min(1, x));
-}
-
 function findActor(w, actorId) {
   const party = Array.isArray(w.party) ? w.party : [];
   return party.find(e => String(e?.id) === String(actorId)) || null;
-}
-
-function clampInt(n, lo, hi) {
-  const x = Math.trunc(Number(n));
-  if (!Number.isFinite(x)) return lo;
-  return Math.max(lo, Math.min(hi, x));
 }

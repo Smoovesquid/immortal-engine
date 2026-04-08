@@ -2,6 +2,7 @@
 // Computed from decompression events. Deterministic. No LLM.
 
 import { seedFromString, makeRng } from '../rng.js';
+import { clamp01 } from '../util.js';
 
 // ── Personality Axes ─────────────────────────────────────────────────────────
 // 3 axes, each 0-1, seeded from NPC history events + faction + role.
@@ -88,14 +89,14 @@ function assignWitnessedEvents(npc, npcIndex, history, rng) {
   return witnessed;
 }
 
-function buildKnowledgeGraph(witnessedEvents, secrets) {
+function buildKnowledgeGraph(witnessedEvents, secrets, rng) {
   const facts = [];
 
   for (const event of witnessedEvents) {
     facts.push({
       factId: `${event.eventId}_era${event.era}`,
       source: 'witnessed',
-      confidence: 0.8 + Math.random() * 0.2, // Will be re-seeded deterministically
+      confidence: 0.8 + rng.nextFloat() * 0.2,
       event
     });
   }
@@ -232,15 +233,9 @@ export function computeNpcDepth(npcs, history, secrets, seed) {
 
     const knowledgeGraph = buildKnowledgeGraph(
       allWitnessed[i],
-      npcSecrets
+      npcSecrets,
+      npcRng
     );
-
-    // Deterministic confidence (replace the Math.random in buildKnowledgeGraph)
-    for (const fact of knowledgeGraph) {
-      if (fact.source === 'witnessed') {
-        fact.confidence = 0.8 + npcRng.nextFloat() * 0.2;
-      }
-    }
 
     const npcSecretIds = computeSecrets(npc, knowledgeGraph, personality);
 
@@ -294,8 +289,3 @@ export function updatePlayerRelationship(npc, action) {
   return { ...npc, playerRelationship: pr };
 }
 
-function clamp01(v) {
-  const x = Number(v);
-  if (!Number.isFinite(x)) return 0;
-  return Math.max(0, Math.min(1, x));
-}

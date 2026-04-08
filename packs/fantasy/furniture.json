@@ -1,0 +1,31 @@
+{
+  "trade": [
+    { "name": "oak trading counter", "tags": ["wood", "furniture"], "weight": 5, "bulk": 4, "parts": ["counter top", "legs", "drawers"] },
+    { "name": "merchant scales", "tags": ["metal", "tool"], "weight": 2, "bulk": 1, "parts": ["pan", "weights", "beam"] },
+    { "name": "crate of dry goods", "tags": ["wood", "container"], "weight": 3, "bulk": 3, "parts": ["lid", "slats", "nails"] },
+    { "name": "wine barrel", "tags": ["wood", "container"], "weight": 4, "bulk": 4, "parts": ["staves", "hoops", "bung"] }
+  ],
+  "sacred": [
+    { "name": "stone altar", "tags": ["stone", "furniture"], "weight": 5, "bulk": 5, "parts": ["slab", "base"] },
+    { "name": "iron candelabra", "tags": ["metal", "furniture"], "weight": 3, "bulk": 2, "parts": ["stem", "arms", "base"] },
+    { "name": "prayer kneeler", "tags": ["wood", "furniture"], "weight": 2, "bulk": 2, "parts": ["pad", "frame"] },
+    { "name": "offering bowl", "tags": ["stone", "tool"], "weight": 2, "bulk": 1, "parts": ["bowl", "pedestal"] }
+  ],
+  "military": [
+    { "name": "weapon rack", "tags": ["wood", "furniture"], "weight": 4, "bulk": 4, "parts": ["frame", "pegs", "crossbar"] },
+    { "name": "iron-banded chest", "tags": ["metal", "container"], "weight": 4, "bulk": 3, "parts": ["lid", "body", "lock", "bands"] },
+    { "name": "training dummy", "tags": ["wood", "furniture"], "weight": 3, "bulk": 3, "parts": ["post", "arms", "head"] },
+    { "name": "map table", "tags": ["wood", "furniture"], "weight": 4, "bulk": 4, "parts": ["top", "legs", "drawers"] }
+  ],
+  "wilderness": [
+    { "name": "fallen log", "tags": ["wood", "natural"], "weight": 5, "bulk": 5, "parts": ["trunk", "bark", "branches"] },
+    { "name": "campfire ring", "tags": ["stone", "natural"], "weight": 5, "bulk": 3, "parts": ["stones", "ash pit"] },
+    { "name": "makeshift lean-to", "tags": ["wood", "furniture"], "weight": 3, "bulk": 4, "parts": ["poles", "branches", "binding"] }
+  ],
+  "default": [
+    { "name": "wooden table", "tags": ["wood", "furniture"], "weight": 4, "bulk": 3, "parts": ["top", "legs"] },
+    { "name": "stool", "tags": ["wood", "furniture"], "weight": 2, "bulk": 1, "parts": ["seat", "legs"] },
+    { "name": "wall torch", "tags": ["metal", "tool"], "weight": 1, "bulk": 1, "parts": ["bracket", "torch"] },
+    { "name": "wooden shelf", "tags": ["wood", "furniture"], "weight": 3, "bulk": 3, "parts": ["boards", "brackets"] }
+  ]
+}

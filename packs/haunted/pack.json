@@ -293,5 +293,18 @@
     "your shadow looks slightly wrong (48)",
     "the smell of ozone lingers (49)",
     "a low hum threads through the walls (50)"
+  ],
+  "prices": [
+    "a memory you need",
+    "the sound of your own voice",
+    "a door staying shut",
+    "candlelight",
+    "the thing that keeps you sane",
+    "a promise to the dead"
+  ],
+  "factionPool": [
+    { "id": "house_staff", "name": "House Staff", "type": "civic" },
+    { "id": "occult_circle", "name": "Occult Circle", "type": "shadow" },
+    { "id": "parish_watch", "name": "Parish Watch", "type": "religious" }
   ]
 }

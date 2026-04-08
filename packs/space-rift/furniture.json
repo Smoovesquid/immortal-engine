@@ -1,0 +1,30 @@
+{
+  "trade": [
+    { "name": "alloy trading terminal", "tags": ["metal", "furniture"], "weight": 4, "bulk": 3, "parts": ["screen", "frame", "wiring"] },
+    { "name": "cargo pod", "tags": ["metal", "container"], "weight": 5, "bulk": 5, "parts": ["shell", "latch", "seal"] },
+    { "name": "credit scanner", "tags": ["metal", "tool"], "weight": 1, "bulk": 1, "parts": ["lens", "housing"] },
+    { "name": "supply crate", "tags": ["metal", "container"], "weight": 3, "bulk": 3, "parts": ["lid", "body", "clasps"] }
+  ],
+  "sacred": [
+    { "name": "resonance shrine", "tags": ["crystal", "furniture"], "weight": 4, "bulk": 4, "parts": ["crystal core", "base", "conduit"] },
+    { "name": "meditation pod", "tags": ["metal", "furniture"], "weight": 3, "bulk": 3, "parts": ["shell", "cushion", "seal"] },
+    { "name": "void lantern", "tags": ["crystal", "tool"], "weight": 2, "bulk": 1, "parts": ["lens", "frame", "fuel cell"] }
+  ],
+  "military": [
+    { "name": "weapons locker", "tags": ["metal", "container"], "weight": 5, "bulk": 4, "parts": ["door", "shelves", "lock mechanism"] },
+    { "name": "tactical display", "tags": ["metal", "furniture"], "weight": 3, "bulk": 3, "parts": ["screen", "mount", "wiring"] },
+    { "name": "ammo crate", "tags": ["metal", "container"], "weight": 3, "bulk": 2, "parts": ["lid", "body", "dividers"] },
+    { "name": "blast shield", "tags": ["metal", "furniture"], "weight": 5, "bulk": 5, "parts": ["panel", "hinges", "bolts"] }
+  ],
+  "wilderness": [
+    { "name": "crashed escape pod", "tags": ["metal", "wreckage"], "weight": 5, "bulk": 5, "parts": ["hull", "seat", "console"] },
+    { "name": "signal beacon", "tags": ["metal", "tool"], "weight": 2, "bulk": 2, "parts": ["antenna", "power cell", "housing"] },
+    { "name": "rock outcrop", "tags": ["stone", "natural"], "weight": 5, "bulk": 5, "parts": ["slabs", "gravel"] }
+  ],
+  "default": [
+    { "name": "metal workbench", "tags": ["metal", "furniture"], "weight": 4, "bulk": 3, "parts": ["surface", "legs", "drawers"] },
+    { "name": "swivel chair", "tags": ["metal", "furniture"], "weight": 2, "bulk": 1, "parts": ["seat", "base", "casters"] },
+    { "name": "overhead pipe", "tags": ["metal", "fixture"], "weight": 3, "bulk": 2, "parts": ["pipe", "joints", "brackets"] },
+    { "name": "storage bin", "tags": ["metal", "container"], "weight": 2, "bulk": 2, "parts": ["body", "lid"] }
+  ]
+}

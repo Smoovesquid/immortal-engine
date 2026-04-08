@@ -293,5 +293,19 @@
     "your shadow looks slightly wrong (48)",
     "the smell of ozone lingers (49)",
     "a low hum threads through the walls (50)"
+  ],
+  "prices": [
+    "oxygen reserves",
+    "hull integrity",
+    "a frequency that can't be unheard",
+    "reactor time",
+    "the nav computer's trust",
+    "breathable air"
+  ],
+  "factionPool": [
+    { "id": "station_authority", "name": "Station Authority", "type": "civic" },
+    { "id": "rift_runners", "name": "Rift Runners", "type": "shadow" },
+    { "id": "science_corps", "name": "Science Corps", "type": "merchant" },
+    { "id": "colonial_militia", "name": "Colonial Militia", "type": "military" }
   ]
 }

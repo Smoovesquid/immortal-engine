@@ -17,6 +17,8 @@ import { introduceThread } from './instrument.js';
 import { applyGeneratedStructuresForNode } from './structures/applyGeneratedStructuresForNode.js';
 import { enterStructureInterior, exitStructureInterior, moveWithinInterior, getInteriorView, resolveStructureSelection } from './structures/interiors.js';
 import { createCharacter } from './chargen/genesis.js';
+import { decompressAndCanonizeSync } from './decompression/decompress.js';
+import { detectPhysicalInteraction } from './llmPhysics.js';
 
 // Pure-ish play loop: world -> {world, output}
 
@@ -234,14 +236,24 @@ export function playerMove(world, packsById, text) {
     let w1 = moveToNode(w, dest);
     if (w1.map?.currentNodeId && w1.map.currentNodeId !== before) {
       w1 = applyGeneratedStructuresForNode(w1, w1.map.currentNodeId);
-      const here = w1.map?.nodes?.find(n => n && n.id === w1.map.currentNodeId) || null;
-      const nextName = String(here?.name || '').trim();
+      // Decompress settlement if arriving at a settlement node
+      const arrivalNode = w1.map?.nodes?.find(n => n && n.id === w1.map.currentNodeId) || null;
+      if (arrivalNode?.nodeType === 'settlement' && !arrivalNode?.settlement?.decompressed) {
+        w1 = decompressAndCanonizeSync(w1, w1.map.currentNodeId, pack);
+      }
+      const nextName = String(arrivalNode?.name || '').trim();
       if (nextName) w1 = { ...w1, scene: { ...w1.scene, location: nextName } };
       w1 = setPrimaryPartyZone(w1, 'near');
       w1 = pushEvent(w1, { kind: 'travel', data: { from: before, to: String(w1.map.currentNodeId) } });
       return { world: w1, output: { narration: 'Wizard: You move within speed and reach the next position.', mechanics: '' } };
     }
     return { world: w, output: { narration: 'Wizard: You hold position.', mechanics: '' } };
+  }
+
+  // Physics detection: check if the action targets physical objects
+  const physicsDetection = detectPhysicalInteraction(w, text);
+  if (physicsDetection.detected) {
+    w = pushEvent(w, { kind: 'physics', data: { matches: physicsDetection.matches, text } });
   }
 
   const actorId = (w.party?.[0]?.id) ? String(w.party[0].id) : 'party';
@@ -283,8 +295,12 @@ export function playerMove(world, packsById, text) {
     // Keep scene surface in sync with map position so UI reflects travel immediately.
     if (w.map?.currentNodeId && w.map.currentNodeId !== before) {
       w = applyGeneratedStructuresForNode(w, w.map.currentNodeId);
-      const here = w.map?.nodes?.find(n => n && n.id === w.map.currentNodeId) || null;
-      const nextName = String(here?.name || '').trim();
+      // Decompress settlement if arriving at a settlement node
+      const arrNode = w.map?.nodes?.find(n => n && n.id === w.map.currentNodeId) || null;
+      if (arrNode?.nodeType === 'settlement' && !arrNode?.settlement?.decompressed) {
+        w = decompressAndCanonizeSync(w, w.map.currentNodeId, pack);
+      }
+      const nextName = String(arrNode?.name || '').trim();
       if (nextName) {
         w = { ...w, scene: { ...w.scene, location: nextName } };
       }
@@ -352,6 +368,11 @@ export function newScene(world, packsById, { lastResolutionKind = 'turn' } = {})
     w = moveToNode(w, dest);
     if (w.map?.currentNodeId) {
       w = applyGeneratedStructuresForNode(w, w.map.currentNodeId);
+      // Decompress settlement if arriving at a settlement node
+      const sceneNode = w.map?.nodes?.find(n => n && n.id === w.map.currentNodeId) || null;
+      if (sceneNode?.nodeType === 'settlement' && !sceneNode?.settlement?.decompressed) {
+        w = decompressAndCanonizeSync(w, w.map.currentNodeId, pack);
+      }
     }
   }
 

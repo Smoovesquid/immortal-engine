@@ -49,6 +49,43 @@ export function buildSystemPrompt(ctx) {
     ? `Structures here: ${ctx.structuresHere.map(s => `${s.kind} #${s.index}`).join(', ')}.`
     : 'No structures are present here.';
 
+  // Settlement context (from decompression pipeline)
+  const settlementLines = [];
+  if (ctx.settlement) {
+    const s = ctx.settlement;
+    if (s.npcs?.length) {
+      settlementLines.push(`- NPCs present: ${s.npcs.map(n => `${n.name} (${n.role}, ${n.disposition})`).join(', ')}`);
+    }
+    if (s.factions?.length) {
+      settlementLines.push(`- Factions: ${s.factions.map(f => `${f.id} (${f.attitude})`).join(', ')}`);
+    }
+    if (s.tensions?.length) {
+      settlementLines.push(`- Tensions: ${s.tensions.map(t => `${t.type} (severity ${t.severity})`).join(', ')}`);
+    }
+    settlementLines.push(`- Economy: ${s.economy}, population: ~${s.population}`);
+  }
+  const settlementBlock = settlementLines.length
+    ? `\nSETTLEMENT DATA:\n${settlementLines.join('\n')}\n`
+    : '';
+
+  // Speaker perspective (from perspective filter — Layer 4)
+  const speakerLines = [];
+  if (ctx.speaker) {
+    speakerLines.push(`You are narrating from ${ctx.speaker.name}'s perspective.`);
+    if (ctx.speaker.omittedFacts?.length) {
+      speakerLines.push(`You do not know: ${ctx.speaker.omittedFacts.join('; ')}.`);
+    }
+    if (ctx.speaker.secrets?.length) {
+      speakerLines.push(`You are hiding: ${ctx.speaker.secrets.join('; ')}.`);
+    }
+    if (ctx.speaker.emotionalColoring?.length) {
+      speakerLines.push(`Your emotional state: ${ctx.speaker.emotionalColoring.map(e => `${e.emotion} (intensity ${e.intensity.toFixed(1)})`).join(', ')}.`);
+    }
+  }
+  const speakerBlock = speakerLines.length
+    ? `\nSPEAKER PERSPECTIVE:\n${speakerLines.join('\n')}\n`
+    : '';
+
   return [
     `You are a Dungeon Master narrator. Describe what the player experiences in ONE sentence.`,
     ``,
@@ -57,7 +94,8 @@ export function buildSystemPrompt(ctx) {
     `- Place type: ${typeDesc}`,
     `- ${inside}`,
     `- ${structures}`,
-    ``,
+    settlementBlock,
+    speakerBlock,
     `RULES:`,
     `- Do NOT invent topology, place names, or structures not listed above.`,
     `- Do NOT use the words: actually, turns out.`,
@@ -66,7 +104,7 @@ export function buildSystemPrompt(ctx) {
     `- Reference the location name "${ctx.placeName}" in your narration.`,
     ``,
     tone
-  ].join('\n');
+  ].filter(Boolean).join('\n');
 }
 
 // ── N2: Anthropic API call ────────────────────────────────────────────────────

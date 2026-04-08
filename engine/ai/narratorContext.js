@@ -7,6 +7,7 @@
  */
 
 import { ensureWorld } from '../state.js';
+import { filterContext } from '../npc/perspectiveFilter.js';
 
 /**
  * buildNarratorContext(world, outcome) → NarratorContext
@@ -48,6 +49,21 @@ export function buildNarratorContext(world, outcome = {}) {
   const actionText    = String(outcome?.input  ?? outcome?.text ?? '');
   const mechanicsText = String(outcome?.mechanics ?? '');
 
+  // ── Settlement data (from decompression) ───────────────────────────
+  const settlement = currentNode?.settlement?.decompressed ? currentNode.settlement : null;
+  const settlementContext = settlement ? {
+    npcs: (settlement.npcs || []).map(n => ({
+      name: n.name || `the ${n.role}`,
+      role: n.role,
+      factionId: n.factionId || null,
+      disposition: n.disposition
+    })),
+    factions: settlement.factions || [],
+    tensions: (settlement.tensions || []).map(t => ({ type: t.type, severity: t.severity })),
+    economy: settlement.economy || 'stable',
+    population: settlement.population || 0
+  } : null;
+
   return {
     placeName,
     nodeType,
@@ -58,7 +74,8 @@ export function buildNarratorContext(world, outcome = {}) {
     tone,
     actionText,
     mechanicsText,
-    fate: Number(w.meta?.fate ?? 0.5)
+    fate: Number(w.meta?.fate ?? 0.5),
+    settlement: settlementContext
   };
 }
 
@@ -74,4 +91,52 @@ function deriveTone(toneWords, fate) {
   if (f >= 0.7 && Array.isArray(toneWords.blood)  && toneWords.blood.length)  return 'blood';
   if (f >= 0.4 && Array.isArray(toneWords.grim)   && toneWords.grim.length)   return 'grim';
   return 'cooperative';
+}
+
+/**
+ * buildSpeakerContext(npc, allFacts) → speaker context for narrator prompt
+ *
+ * Runs the perspective filter for a specific NPC and returns the data
+ * needed by the narrator system prompt's SPEAKER PERSPECTIVE block.
+ *
+ * @param {object} npc — enriched NPC with depth fields
+ * @param {object[]} allFacts — all settlement facts (from knowledgeGraph entries)
+ * @returns {object|null} — speaker context or null if NPC has no depth
+ */
+export function buildSpeakerContext(npc, allFacts) {
+  if (!npc?.personality || !npc?.knowledgeGraph) return null;
+
+  const { filteredFacts, emotionalColoring } = filterContext(
+    npc,
+    allFacts,
+    npc.playerRelationship
+  );
+
+  // Compute omitted facts (things the NPC doesn't know or is hiding)
+  const filteredIds = new Set(filteredFacts.map(f => f.factId || f.id || ''));
+  const omittedFacts = allFacts
+    .filter(f => !filteredIds.has(f.factId || f.id || ''))
+    .map(f => describeFactBriefly(f));
+
+  // Describe secrets the NPC is actively hiding
+  const secrets = (npc.secrets || [])
+    .filter(s => !filteredIds.has(s))
+    .map(s => s.replace(/_/g, ' ').replace(/era\d+/, '').trim());
+
+  return {
+    name: npc.name || `the ${npc.role}`,
+    role: npc.role,
+    personality: npc.personality,
+    filteredFacts,
+    omittedFacts,
+    secrets,
+    emotionalColoring
+  };
+}
+
+function describeFactBriefly(fact) {
+  if (!fact?.event) return fact?.factId || 'unknown event';
+  const eventId = fact.event.eventId || '';
+  const era = fact.event.era ?? '?';
+  return `${eventId.replace(/_/g, ' ')} (era ${era})`;
 }

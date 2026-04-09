@@ -1,64 +1,340 @@
 /**
- * N1 — Narrator Context Builder
+ * N1 — Narrator Context Builder / DM Context Packet
  *
- * Assembles everything the AI narrator is allowed to know.
+ * Assembles everything the AI narrator (DM) is allowed to know.
  * Canonical facts only — no invented detail.
  * Pure function: no world mutation, no API calls.
+ *
+ * Two modes:
+ *   buildNarratorContext(world, outcome)  — original slim context for narration polish
+ *   buildDMContext(world, outcome, pack)  — full DM briefing with NPCs, world pressure, player, rules
  */
 
 import { ensureWorld } from '../state.js';
+import { ensureInstrumentLayer } from '../instrument.js';
+import { fateBand } from '../rulesets.js';
+import { filterContext } from '../npc/perspectiveFilter.js';
 
 /**
- * buildNarratorContext(world, outcome) → NarratorContext
- *
- * @param {object} world   — canonical world state
- * @param {object} outcome — result of the last engine action (from playloop)
- * @returns {NarratorContext}
+ * buildNarratorContext(world, outcome) → NarratorContext (original slim context)
  */
 export function buildNarratorContext(world, outcome = {}) {
   const w = ensureWorld(world);
+  const scene = buildScene(w, outcome);
 
-  // ── Place ─────────────────────────────────────────────────────────────
-  const nodeId      = String(w.map?.currentNodeId ?? '');
+  const nodeId = String(w.map?.currentNodeId ?? '');
   const currentNode = (w.map?.nodes ?? []).find(n => n.id === nodeId) ?? null;
-  const placeName   = String(currentNode?.name ?? 'Unknown');
-  const nodeType    = String(currentNode?.nodeType ?? 'wilderness');
+  const settlement = currentNode?.settlement ?? null;
 
-  // ── Structures at this node ───────────────────────────────────────────
+  // Auto-select speaker from settlement NPCs
+  let speaker = null;
+  if (settlement?.npcs?.length) {
+    const actionText = String(outcome?.input ?? outcome?.text ?? '').toLowerCase();
+    // Pick NPC mentioned in action text, or default to first
+    let picked = null;
+    if (actionText) {
+      picked = settlement.npcs.find(npc => {
+        const name = String(npc.name ?? npc.role ?? '').toLowerCase();
+        return name && actionText.includes(name);
+      });
+    }
+    picked = picked || settlement.npcs[0];
+    speaker = buildSpeakerContext(picked, picked.knowledgeGraph || []);
+  }
+
+  return {
+    placeName: scene.location.name,
+    nodeType: scene.location.type,
+    location: scene.location.name,
+    objective: String(w.scene?.objective ?? ''),
+    structuresHere: scene.structuresHere,
+    interior: scene.interior,
+    tone: scene.tone,
+    actionText: String(outcome?.input ?? outcome?.text ?? ''),
+    mechanicsText: String(outcome?.mechanics ?? ''),
+    fate: Number(w.meta?.fate ?? 0.5),
+    settlement: settlement ? {
+      npcs: settlement.npcs || [],
+      factions: settlement.factions || [],
+      tensions: Array.isArray(settlement.tensions) ? settlement.tensions : [],
+      economy: settlement.economy ?? null,
+      population: settlement.population ?? null
+    } : null,
+    speaker
+  };
+}
+
+/**
+ * buildDMContext(world, outcome, pack) → DMContext
+ *
+ * Full DM briefing packet. Rebuilt every turn. Capped at ~6K tokens worth of data.
+ *
+ * @param {object} world    — canonical world state
+ * @param {object} outcome  — result of the last engine action
+ * @param {object} pack     — resolved pack data
+ * @returns {DMContext}
+ */
+export function buildDMContext(world, outcome = {}, pack = {}) {
+  const w = ensureWorld(world);
+
+  const scene = buildScene(w, outcome);
+  const npcsPresent = buildNPCsPresent(w);
+  const worldPressure = buildWorldPressure(w);
+  const player = buildPlayer(w);
+  const rules = buildRules(w, pack);
+  const worldWhisper = pickWorldWhisper(w);
+
+  return {
+    scene,
+    npcsPresent,
+    worldPressure,
+    player,
+    rules,
+    worldWhisper
+  };
+}
+
+// ── Scene ─────────────────────────────────────────────────────────────────
+
+function buildScene(w, outcome) {
+  const nodeId = String(w.map?.currentNodeId ?? '');
+  const currentNode = (w.map?.nodes ?? []).find(n => n.id === nodeId) ?? null;
+  const placeName = String(currentNode?.name ?? 'Unknown');
+  const nodeType = String(currentNode?.nodeType ?? 'wilderness');
+
   const allStructures = Object.values(w.structures?.byId ?? {});
   const structuresHere = allStructures
     .filter(s => s?.nodeId === nodeId || s?.anchors?.nodeId === nodeId)
     .map((s, i) => ({ index: i + 1, kind: String(s.kind ?? 'structure') }));
 
-  // ── Interior state ────────────────────────────────────────────────────
   const interior = (w.scene?.interior && typeof w.scene.interior === 'object')
     ? { structureKey: String(w.scene.interior.structureKey ?? ''), roomId: String(w.scene.interior.roomId ?? '') }
     : null;
 
-  // ── Pack tone ─────────────────────────────────────────────────────────
-  // toneWords live on the resolved pack, passed separately via outcome or world
   const toneWords = outcome?.pack?.toneWords ?? w._resolvedPack?.toneWords ?? null;
   const tone = deriveTone(toneWords, w.meta?.fate);
 
-  // ── Scene context ─────────────────────────────────────────────────────
-  const location  = String(w.scene?.location  ?? placeName);
-  const objective = String(w.scene?.objective ?? '');
+  // Exits from current node
+  const edges = Array.isArray(w.map?.edges) ? w.map.edges : [];
+  const exits = edges
+    .filter(e => e.from === nodeId || e.to === nodeId)
+    .map(e => {
+      const targetId = e.from === nodeId ? e.to : e.from;
+      const targetNode = (w.map?.nodes ?? []).find(n => n.id === targetId);
+      return targetNode ? String(targetNode.name) : null;
+    })
+    .filter(Boolean);
 
-  // ── Last action ───────────────────────────────────────────────────────
-  const actionText    = String(outcome?.input  ?? outcome?.text ?? '');
-  const mechanicsText = String(outcome?.mechanics ?? '');
+  // Time of day from turn count (rough cycle)
+  const turn = w.time?.turn ?? 0;
+  const timeOfDay = ['dawn', 'morning', 'midday', 'afternoon', 'dusk', 'night'][turn % 6];
+
+  // Settlement data
+  const settlement = currentNode?.settlement ?? null;
 
   return {
-    placeName,
-    nodeType,
-    location,
-    objective,
-    structuresHere,
+    location: { name: placeName, type: nodeType, exits },
     interior,
+    structuresHere,
+    timeOfDay,
+    activeThreat: pickActiveThreat(w),
     tone,
-    actionText,
-    mechanicsText,
-    fate: Number(w.meta?.fate ?? 0.5)
+    settlementName: settlement?.decompressed ? placeName : null,
+    settlementEconomy: settlement?.economy ?? null,
+    settlementTensions: Array.isArray(settlement?.tensions) ? settlement.tensions.map(t => t.type) : []
+  };
+}
+
+// ── NPCs Present ──────────────────────────────────────────────────────────
+
+function buildNPCsPresent(w) {
+  const nodeId = String(w.map?.currentNodeId ?? '');
+  const currentNode = (w.map?.nodes ?? []).find(n => n.id === nodeId) ?? null;
+  const settlement = currentNode?.settlement;
+  if (!settlement?.npcs?.length) return [];
+
+  const npcs = settlement.npcs;
+  // First NPC gets full detail (~500 tokens), rest get summary (~200 each)
+  return npcs.map((npc, i) => {
+    const cs = npc.conversationState ?? {};
+    const metPlayer = Boolean(cs.metPlayer);
+    const topics = Array.isArray(cs.topicsDiscussed) ? cs.topicsDiscussed.slice(-5) : [];
+    const gossipReceived = Array.isArray(npc.gossipReceived) ? npc.gossipReceived.slice(-3) : [];
+
+    const base = {
+      name: String(npc.name ?? `the ${npc.role}`),
+      role: String(npc.role ?? 'townfolk'),
+      factionId: npc.factionId || null,
+      personality: npc.personality ?? null,
+      disposition: npc.disposition ?? null,
+      conversationState: {
+        metPlayer,
+        trustLevel: Number(cs.trustLevel ?? 5),
+        topicsDiscussed: topics,
+        lastInteraction: cs.lastInteraction ?? null
+      }
+    };
+
+    // Returning NPC: include conversation summary so DM has memory of prior interactions.
+    if (metPlayer && topics.length > 0) {
+      base.conversationSummary = `Has met the player. Discussed: ${topics.join(', ')}.`;
+    }
+
+    // Include gossip the NPC received from other NPCs.
+    if (gossipReceived.length > 0) {
+      base.gossipHeard = gossipReceived;
+    }
+
+    if (i === 0) {
+      // Full detail for primary NPC
+      return {
+        ...base,
+        publicKnowledge: summarizeKnowledge(npc.knowledgeGraph, false),
+        secrets: summarizeSecrets(npc),
+        archetypeDesc: String(npc.archetypeDesc ?? '')
+      };
+    }
+
+    // Summary for other NPCs
+    return base;
+  });
+}
+
+function summarizeKnowledge(knowledgeGraph, secretsOnly = false) {
+  if (!Array.isArray(knowledgeGraph)) return [];
+  return knowledgeGraph
+    .filter(f => secretsOnly ? f.source === 'secret' : f.source !== 'secret')
+    .slice(0, 8)
+    .map(f => f.factId);
+}
+
+function summarizeSecrets(npc) {
+  if (!Array.isArray(npc.secrets)) return [];
+  return npc.secrets.slice(0, 4).map(s => ({
+    factId: String(s),
+    revealCondition: 'trust >= 7 or persuasion check'
+  }));
+}
+
+// ── World Pressure ────────────────────────────────────────────────────────
+
+function buildWorldPressure(w) {
+  const inst = ensureInstrumentLayer(w.instrument);
+  const factions = Array.isArray(w.factions) ? w.factions : [];
+
+  // Faction summary
+  const factionSummary = factions.map(f => {
+    const attitude = f.hostility >= 80 ? 'hostile' : f.hostility >= 40 ? 'wary' : 'neutral';
+    return `${f.id}: ${attitude}, pressure ${f.pressure}`;
+  }).join('; ') || 'no factions';
+
+  // Ecology summary
+  const eco = w.ecology ?? {};
+  const ecoNotes = [];
+  if (eco.corruption >= 40) ecoNotes.push(`corruption ${eco.corruption}`);
+  if (eco.scarcity >= 40) ecoNotes.push(`scarcity ${eco.scarcity}`);
+  if (eco.instability >= 40) ecoNotes.push(`instability ${eco.instability}`);
+  const ecologySummary = ecoNotes.length ? ecoNotes.join(', ') : 'ecology stable';
+
+  // Active scars
+  const scars = Array.isArray(w.scars) ? w.scars.map(s => s.description).slice(0, 3) : [];
+
+  // Active threads
+  const threads = inst.threads
+    .filter(t => t.status !== 'resolved')
+    .map(t => ({ label: t.label, tension: t.tension, status: t.status }))
+    .slice(0, 4);
+
+  return { factionSummary, ecologySummary, activeScars: scars, activeThreads: threads };
+}
+
+// ── Player ────────────────────────────────────────────────────────────────
+
+function buildPlayer(w) {
+  const actor = Array.isArray(w.party) && w.party.length ? w.party[0] : {};
+  const inv = actor.inventory ?? {};
+  const weapons = Array.isArray(inv.weapons) ? inv.weapons.map(g => String(g?.name ?? g)).slice(0, 3) : [];
+  const armor = Array.isArray(inv.armor) ? inv.armor.map(g => String(g?.name ?? g)).slice(0, 2) : [];
+
+  return {
+    name: String(actor.name ?? 'Adventurer'),
+    stats: actor.stats ?? {},
+    weapons,
+    armor,
+    wounds: Number(actor.wounds ?? 0),
+    stress: Number(actor.stress ?? 0),
+    reputation: w.reputation?.factions ?? {}
+  };
+}
+
+// ── Rules ─────────────────────────────────────────────────────────────────
+
+function buildRules(w, pack) {
+  const packName = String(pack?.name ?? w.pack?.primaryId ?? 'fantasy');
+  const toneWords = pack?.toneWords ?? {};
+  const band = fateBand(w.meta?.fate);
+  const setting = Array.isArray(toneWords[band]) ? toneWords[band].join(', ') : packName;
+
+  return {
+    setting,
+    packId: String(w.pack?.primaryId ?? 'fantasy'),
+    whatCannotExist: Array.isArray(pack?.constraints) ? pack.constraints : [],
+    diceSystem: 'd20, DC set by engine, report result to engine'
+  };
+}
+
+// ── World Whisper (one offscreen change for DM to mention) ───────────────
+
+function pickWorldWhisper(w) {
+  const timeline = Array.isArray(w.timeline) ? w.timeline : [];
+  // Find the most recent worldTick event
+  for (let i = timeline.length - 1; i >= Math.max(0, timeline.length - 5); i--) {
+    const e = timeline[i];
+    if (e?.kind === 'worldTick' && e?.data?.text) {
+      return String(e.data.text);
+    }
+  }
+  return null;
+}
+
+// ── Active Threat ─────────────────────────────────────────────────────────
+
+function pickActiveThreat(w) {
+  const threats = Array.isArray(w.ledger?.threats) ? w.ledger.threats : [];
+  if (!threats.length) return null;
+  // Most recent high-level threat
+  const sorted = [...threats].sort((a, b) => (b.level ?? 0) - (a.level ?? 0));
+  const top = sorted[0];
+  return typeof top === 'string' ? top : String(top?.text ?? top?.description ?? '');
+}
+
+// ── Speaker Context ──────────────────────────────────────────────────────────
+
+/**
+ * buildSpeakerContext(npc, facts) → SpeakerContext | null
+ *
+ * Builds a perspective-filtered speaker context for an NPC with depth.
+ * Returns null for shallow NPCs (no personality).
+ */
+export function buildSpeakerContext(npc, facts) {
+  if (!npc?.personality) return null;
+
+  const allFacts = Array.isArray(facts) ? facts : [];
+  const pr = npc.playerRelationship || { trust: 0.5, interactions: 0 };
+  const { filteredFacts, emotionalColoring } = filterContext(npc, allFacts, pr);
+
+  const omittedFacts = allFacts
+    .filter(f => !filteredFacts.some(ff => ff.factId === f.factId))
+    .map(f => f.factId || f.id || '');
+
+  return {
+    name: String(npc.name ?? npc.role ?? ''),
+    role: String(npc.role ?? ''),
+    personality: npc.personality,
+    filteredFacts,
+    omittedFacts,
+    secrets: Array.isArray(npc.secrets) ? npc.secrets : [],
+    emotionalColoring
   };
 }
 
@@ -67,11 +343,9 @@ export function buildNarratorContext(world, outcome = {}) {
  * Returns 'blood' | 'grim' | 'cooperative'
  */
 function deriveTone(toneWords, fate) {
-  const f = Number(fate ?? 0.5);
-  if (!toneWords || typeof toneWords !== 'object') {
-    return f >= 0.7 ? 'blood' : f >= 0.4 ? 'grim' : 'cooperative';
-  }
-  if (f >= 0.7 && Array.isArray(toneWords.blood)  && toneWords.blood.length)  return 'blood';
-  if (f >= 0.4 && Array.isArray(toneWords.grim)   && toneWords.grim.length)   return 'grim';
-  return 'cooperative';
+  const band = fateBand(Number(fate ?? 0.5));
+  if (!toneWords || typeof toneWords !== 'object') return band;
+  if (band === 'blood' && Array.isArray(toneWords.blood) && toneWords.blood.length) return 'blood';
+  if (band === 'grim'  && Array.isArray(toneWords.grim)  && toneWords.grim.length)  return 'grim';
+  return band;
 }

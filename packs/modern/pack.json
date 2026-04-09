@@ -293,19 +293,5 @@
     "your shadow looks slightly wrong (48)",
     "the smell of ozone lingers (49)",
     "a low hum threads through the walls (50)"
-  ],
-  "prices": [
-    "plausible deniability",
-    "a phone call you can't take back",
-    "your credit score",
-    "sleep",
-    "a relationship",
-    "your reputation"
-  ],
-  "factionPool": [
-    { "id": "city_hall", "name": "City Hall", "type": "civic" },
-    { "id": "underground", "name": "The Underground", "type": "shadow" },
-    { "id": "private_security", "name": "Private Security", "type": "military" },
-    { "id": "business_council", "name": "Business Council", "type": "merchant" }
   ]
 }

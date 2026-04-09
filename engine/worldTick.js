@@ -1,4 +1,3 @@
-import { clampInt } from './util.js';
 import { assertWorldInvariants } from './invariants.js';
 import { ensureWorld } from './state.js';
 import { ensureInstrumentLayer, reinforceMotif } from './instrument.js';
@@ -393,6 +392,12 @@ function pushEvent(world, { kind, data }) {
   const t = world.timeline.length;
   const e = { t, kind: String(kind), data: data ?? {} };
   return { ...world, timeline: [...world.timeline, e] };
+}
+
+function clampInt(n, lo, hi) {
+  const x = Math.trunc(Number(n));
+  if (!Number.isFinite(x)) return lo;
+  return Math.max(lo, Math.min(hi, x));
 }
 
 function truncate(s, n) {

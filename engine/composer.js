@@ -1,4 +1,3 @@
-import { clampInt } from './util.js';
 import { makeRng, seedFromString } from './rng.js';
 import { fateBand } from './rulesets.js';
 
@@ -275,6 +274,12 @@ function ensureOneSentence(s) {
   // Prefer question mark ending for wizard prompt.
   if (!/[\?\.!]$/.test(first)) return first + '?';
   return first;
+}
+
+function clampInt(n, lo, hi) {
+  const x = Math.trunc(Number(n));
+  if (!Number.isFinite(x)) return lo;
+  return Math.max(lo, Math.min(hi, x));
 }
 
 function dedupe(arr) {

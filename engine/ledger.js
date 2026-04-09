@@ -1,5 +1,3 @@
-import { clampInt } from './util.js';
-
 export const LEDGER_CAPS = {
   facts: 8,
   threats: 8,
@@ -100,4 +98,8 @@ export function factStrings(world) {
   return ledger.facts.map(f => String(f.text));
 }
 
-
+function clampInt(n, lo, hi) {
+  const x = Math.trunc(Number(n));
+  if (!Number.isFinite(x)) return lo;
+  return Math.max(lo, Math.min(hi, x));
+}

@@ -1,6 +1,5 @@
 import { ensureWorld } from './state.js';
 import { makeRng, seedFromString } from './rng.js';
-import { clamp01 } from './util.js';
 import { addFact, addQuestion, addThreat } from './ledger.js';
 import { hasFact } from './ledgerUtils.js';
 import { fateBand } from './rulesets.js';
@@ -18,10 +17,6 @@ import { introduceThread } from './instrument.js';
 import { applyGeneratedStructuresForNode } from './structures/applyGeneratedStructuresForNode.js';
 import { enterStructureInterior, exitStructureInterior, moveWithinInterior, getInteriorView, resolveStructureSelection } from './structures/interiors.js';
 import { createCharacter } from './chargen/genesis.js';
-import { decompressAndCanonizeSync } from './decompression/decompress.js';
-import { detectPhysicalInteraction } from './llmPhysics.js';
-import { updatePlayerRelationship } from './npc/npcDepth.js';
-import { filterContext, detectContradictions, applyContradictionEffects } from './npc/perspectiveFilter.js';
 
 // Pure-ish play loop: world -> {world, output}
 
@@ -239,22 +234,14 @@ export function playerMove(world, packsById, text) {
     let w1 = moveToNode(w, dest);
     if (w1.map?.currentNodeId && w1.map.currentNodeId !== before) {
       w1 = applyGeneratedStructuresForNode(w1, w1.map.currentNodeId);
-      // Decompress settlement if arriving at a settlement node
-      w1 = decompressIfSettlement(w1, pack);
-      const arrivalNode = w1.map?.nodes?.find(n => n && n.id === w1.map.currentNodeId) || null;
-      const nextName = String(arrivalNode?.name || '').trim();
+      const here = w1.map?.nodes?.find(n => n && n.id === w1.map.currentNodeId) || null;
+      const nextName = String(here?.name || '').trim();
       if (nextName) w1 = { ...w1, scene: { ...w1.scene, location: nextName } };
       w1 = setPrimaryPartyZone(w1, 'near');
       w1 = pushEvent(w1, { kind: 'travel', data: { from: before, to: String(w1.map.currentNodeId) } });
       return { world: w1, output: { narration: 'Wizard: You move within speed and reach the next position.', mechanics: '' } };
     }
     return { world: w, output: { narration: 'Wizard: You hold position.', mechanics: '' } };
-  }
-
-  // Physics detection: check if the action targets physical objects
-  const physicsDetection = detectPhysicalInteraction(w, text);
-  if (physicsDetection.detected) {
-    w = pushEvent(w, { kind: 'physics', data: { matches: physicsDetection.matches, text } });
   }
 
   const actorId = (w.party?.[0]?.id) ? String(w.party[0].id) : 'party';
@@ -287,9 +274,6 @@ export function playerMove(world, packsById, text) {
     }
   });
 
-  // ── NPC interaction: update trust + detect contradictions ──────────
-  w = applyNpcInteraction(w, text, result.outcome);
-
   // Living Terrain Engine v1: travel intents advance map position deterministically.
   if (moveAdvancesScene(text)) {
     const dest = pickTravelDestination(w, text);
@@ -299,10 +283,8 @@ export function playerMove(world, packsById, text) {
     // Keep scene surface in sync with map position so UI reflects travel immediately.
     if (w.map?.currentNodeId && w.map.currentNodeId !== before) {
       w = applyGeneratedStructuresForNode(w, w.map.currentNodeId);
-      // Decompress settlement if arriving at a settlement node
-      w = decompressIfSettlement(w, pack);
-      const arrNode = w.map?.nodes?.find(n => n && n.id === w.map.currentNodeId) || null;
-      const nextName = String(arrNode?.name || '').trim();
+      const here = w.map?.nodes?.find(n => n && n.id === w.map.currentNodeId) || null;
+      const nextName = String(here?.name || '').trim();
       if (nextName) {
         w = { ...w, scene: { ...w.scene, location: nextName } };
       }
@@ -370,8 +352,6 @@ export function newScene(world, packsById, { lastResolutionKind = 'turn' } = {})
     w = moveToNode(w, dest);
     if (w.map?.currentNodeId) {
       w = applyGeneratedStructuresForNode(w, w.map.currentNodeId);
-      // Decompress settlement if arriving at a settlement node
-      w = decompressIfSettlement(w, pack);
     }
   }
 
@@ -865,85 +845,6 @@ function mergePacks(primary, mixer) {
   };
 }
 
-// ── Decompression helper ─────────────────────────────────────────────
-// Decompresses the settlement at the current node if needed.
-function decompressIfSettlement(world, pack) {
-  const nodeId = world.map?.currentNodeId;
-  const node = (world.map?.nodes ?? []).find(n => n && n.id === nodeId) || null;
-  if (node?.nodeType === 'settlement' && !node?.settlement?.decompressed) {
-    return decompressAndCanonizeSync(world, nodeId, pack);
-  }
-  return world;
-}
-
-// ── NPC interaction helper ────────────────────────────────────────────
-// After resolution, update NPC trust based on player action and detect
-// contradictions between NPCs at the current settlement.
-function applyNpcInteraction(world, playerText, outcomeKind) {
-  const nodeId = world.map?.currentNodeId;
-  const node = (world.map?.nodes ?? []).find(n => n.id === nodeId);
-  const settlement = node?.settlement;
-  if (!settlement?.decompressed) return world;
-
-  const npcs = settlement.npcs || [];
-  const deepNpcs = npcs.filter(n => n?.personality && n?.knowledgeGraph);
-  if (deepNpcs.length === 0) return world;
-
-  // Infer interaction type from player text
-  const textLower = (playerText || '').toLowerCase();
-  let action = 'ask';
-  if (/help|heal|protect|defend|give/.test(textLower)) action = 'help';
-  else if (/trade|buy|sell|barter|offer/.test(textLower)) action = 'trade';
-  else if (/threaten|intimidate|force|attack/.test(textLower)) action = 'threaten';
-  else if (/betray|steal|lie|deceive|trick/.test(textLower)) action = 'betray';
-
-  // Find the mentioned NPC or default to the first deep NPC
-  const mentioned = deepNpcs.find(n =>
-    textLower.includes((n.name || '').toLowerCase()) ||
-    textLower.includes((n.role || '').toLowerCase())
-  );
-  if (!mentioned) return world;
-
-  // Update player relationship for the mentioned NPC
-  const updated = updatePlayerRelationship(mentioned, action);
-  let updatedNpcs = npcs.map(n => (n === mentioned ? updated : n));
-
-  // Detect contradictions between NPC pairs at this settlement
-  const contradictions = [];
-  for (let i = 0; i < deepNpcs.length; i++) {
-    for (let j = i + 1; j < deepNpcs.length; j++) {
-      const a = deepNpcs[i] === mentioned ? updated : deepNpcs[i];
-      const b = deepNpcs[j] === mentioned ? updated : deepNpcs[j];
-      const factsA = filterContext(a, a.knowledgeGraph || [], a.playerRelationship).filteredFacts;
-      const factsB = filterContext(b, b.knowledgeGraph || [], b.playerRelationship).filteredFacts;
-      contradictions.push(...detectContradictions(a, b, factsA, factsB));
-    }
-  }
-
-  // Apply contradiction effects
-  for (const c of contradictions) {
-    updatedNpcs = updatedNpcs.map(n => {
-      if ((n.id || n.name) === c.holder) return applyContradictionEffects(n, c);
-      return n;
-    });
-  }
-
-  // Write updated NPCs back to settlement on the node
-  if (updatedNpcs === npcs) return world;
-  const updatedSettlement = { ...settlement, npcs: updatedNpcs };
-  const updatedNodes = world.map.nodes.map(n =>
-    n.id === nodeId ? { ...n, settlement: updatedSettlement } : n
-  );
-  let w = { ...world, map: { ...world.map, nodes: updatedNodes } };
-
-  // Log contradiction events
-  for (const c of contradictions) {
-    w = pushEvent(w, { kind: 'contradiction', data: c });
-  }
-
-  return w;
-}
-
 // (narration moved to engine/composer.js)
 
 function pushEvent(world, { kind, data }) {
@@ -965,3 +866,8 @@ function uniq(arr) {
   return out;
 }
 
+function clamp01(v){
+  const x = Number(v);
+  if (!Number.isFinite(x)) return 0;
+  return Math.max(0, Math.min(1, x));
+}

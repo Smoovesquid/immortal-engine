@@ -293,18 +293,5 @@
     "your shadow looks slightly wrong (48)",
     "the smell of ozone lingers (49)",
     "a low hum threads through the walls (50)"
-  ],
-  "prices": [
-    "ammunition",
-    "a safe route back",
-    "noise discipline",
-    "clean bandages",
-    "someone's hiding spot",
-    "the last antibiotics"
-  ],
-  "factionPool": [
-    { "id": "survivor_council", "name": "Survivor Council", "type": "civic" },
-    { "id": "scavenger_crew", "name": "Scavenger Crew", "type": "shadow" },
-    { "id": "quarantine_force", "name": "Quarantine Force", "type": "military" }
   ]
 }

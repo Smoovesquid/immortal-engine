@@ -1,5 +1,4 @@
 import { rngFrom } from './rngTables.js';
-import { clampInt } from '../util.js';
 
 export const STAT_KEYS = ['MIGHT', 'AGILITY', 'WITS', 'GRIT', 'CHARM'];
 
@@ -33,3 +32,8 @@ export function rollStats({ method = '2d6+2', seed = 'seed', rng = null } = {}) 
   return out;
 }
 
+function clampInt(n, lo, hi) {
+  const x = Math.trunc(Number(n));
+  if (!Number.isFinite(x)) return lo;
+  return Math.max(lo, Math.min(hi, x));
+}

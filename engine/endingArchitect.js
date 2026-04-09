@@ -1,4 +1,3 @@
-import { clampInt } from './util.js';
 import { ensureWorld } from './state.js';
 import { ensureInstrumentLayer } from './instrument.js';
 import { seedFromString, makeRng } from './rng.js';
@@ -131,6 +130,12 @@ function weightedPick(rng, items) {
     if (r <= acc) return it.t;
   }
   return list[list.length - 1]?.t;
+}
+
+function clampInt(n, lo, hi) {
+  const x = Math.trunc(Number(n));
+  if (!Number.isFinite(x)) return lo;
+  return Math.max(lo, Math.min(hi, x));
 }
 
 function toInt(x) {

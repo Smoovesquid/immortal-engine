@@ -1,5 +1,3 @@
-import { clamp01 } from './util.js';
-
 // Packs/rulesets loader + normalization. Offline: uses fetch in browser, fs in node tests if needed.
 
 export function normalizePack(raw) {
@@ -48,4 +46,8 @@ export function toneWordsFor(pack, fate01) {
 function arrayStrings(x) {
   return (Array.isArray(x) ? x : []).map(String).filter(Boolean);
 }
-
+function clamp01(v){
+  const x = Number(v);
+  if (!Number.isFinite(x)) return 0;
+  return Math.max(0, Math.min(1, x));
+}

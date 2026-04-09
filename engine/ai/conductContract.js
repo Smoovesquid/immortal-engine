@@ -1,6 +1,5 @@
 import { ensureWorld } from '../state.js';
 import { addFact, addThreat, addQuestion } from '../ledger.js';
-import { clampInt } from '../util.js';
 
 // CONDUCT contract JSON:
 // { narration: "ONE sentence", deltas: { addFact, addThreat, addQuestion, clock, forceNextBeat } }
@@ -86,4 +85,8 @@ function looksUnsafeText(s) {
   return false;
 }
 
-
+function clampInt(n, lo, hi) {
+  const x = Math.trunc(Number(n));
+  if (!Number.isFinite(x)) return lo;
+  return Math.max(lo, Math.min(hi, x));
+}

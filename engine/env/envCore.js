@@ -1,5 +1,4 @@
 import { ensureWorld } from '../state.js';
-import { clampInt } from '../util.js';
 
 // Environmental Signals v1
 // world.env = { noise, heat, scent, light } each 0..6
@@ -37,4 +36,8 @@ function toInt(x) {
   return Number.isFinite(n) ? n : NaN;
 }
 
-
+function clampInt(n, lo, hi) {
+  const x = Math.trunc(Number(n));
+  if (!Number.isFinite(x)) return lo;
+  return Math.max(lo, Math.min(hi, x));
+}

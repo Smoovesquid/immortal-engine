@@ -293,19 +293,5 @@
     "your shadow looks slightly wrong (48)",
     "the smell of ozone lingers (49)",
     "a low hum threads through the walls (50)"
-  ],
-  "prices": [
-    "time, blood, trust",
-    "bone and silence",
-    "a name spoken aloud",
-    "iron and regret",
-    "the last clean water",
-    "a door that won't reopen"
-  ],
-  "factionPool": [
-    { "id": "crown_guard", "name": "Crown Guard", "type": "civic" },
-    { "id": "shadow_guild", "name": "Shadow Guild", "type": "shadow" },
-    { "id": "temple_order", "name": "Temple Order", "type": "religious" },
-    { "id": "merchant_league", "name": "Merchant League", "type": "merchant" }
   ]
 }

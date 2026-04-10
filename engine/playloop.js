@@ -438,7 +438,8 @@ export function playerMove(world, packsById, text) {
     dc: result.dc,
     success: result.outcome === 'success',
     updateKind: inferUpdateKindFromDeltas(result.deltas),
-    outcome: result.outcome
+    outcome: result.outcome,
+    approach: move.approachTag
   };
   // Canonical resolution surface: persist a stable resolution event for replay/query/export durability.
   w = pushEvent(w, {

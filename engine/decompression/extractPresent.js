@@ -211,14 +211,41 @@ function deriveTensions(history, finalState) {
 }
 
 function deriveSecrets(history) {
-  const scarEvents = ['corruption_scar', 'war_scar', 'famine_scar'];
-  return history
-    .filter(h => scarEvents.includes(h.eventId))
-    .map(h => ({
-      type: h.eventId.replace('_scar', ''),
-      connectedTo: h.era,
-      severity: h.eventId === 'war_scar' ? 4 : 3
-    }));
+  // Scar events produce strong secrets; other charged events produce weaker secrets.
+  // The settlementTicker only runs 2-10 ticks, which rarely hits scar thresholds —
+  // so we also derive secrets from faction wars, blights, and unrest. Every
+  // settlement with any history at all should yield at least one secret so the
+  // NPC depth system has something to distribute.
+  const SECRET_MAP = {
+    corruption_scar: { type: 'corruption', severity: 4 },
+    war_scar:        { type: 'war',        severity: 5 },
+    famine_scar:     { type: 'famine',     severity: 4 },
+    faction_war:     { type: 'war',        severity: 3 },
+    faction_tension: { type: 'rivalry',    severity: 2 },
+    blight:          { type: 'corruption', severity: 2 },
+    famine:          { type: 'famine',     severity: 2 },
+    unrest:          { type: 'rivalry',    severity: 2 }
+  };
+
+  const secrets = [];
+  const seen = new Set();
+  for (const h of history) {
+    const m = SECRET_MAP[h.eventId];
+    if (!m) continue;
+    const key = `${m.type}|${h.era}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    secrets.push({ type: m.type, connectedTo: h.era, severity: m.severity });
+  }
+
+  // Floor: every settlement carries at least one buried truth from its founding,
+  // so NPC depth has something private to hold even when the short history
+  // simulation didn't trip any threshold detectors.
+  if (secrets.length === 0) {
+    secrets.push({ type: 'rivalry', connectedTo: 0, severity: 2 });
+  }
+
+  return secrets;
 }
 
 function derivePopulation(tags, rng) {

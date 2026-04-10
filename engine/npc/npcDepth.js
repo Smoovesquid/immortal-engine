@@ -133,8 +133,11 @@ function buildRelationships(npcIndex, allNpcs, allWitnessed, rng) {
       if (theirEvents.has(e)) sharedCount++;
     }
 
-    let bond = 0;
-    const history = [];
+    // Baseline neighborly bond: NPCs in the same settlement know each other.
+    // Without this, factionless NPCs would have no positive bonds and gossip
+    // could never spread between them.
+    let bond = 0.1;
+    const history = ['neighbors'];
 
     if (sharedCount > 0) {
       bond += sharedCount * 0.15;
@@ -148,9 +151,9 @@ function buildRelationships(npcIndex, allNpcs, allWitnessed, rng) {
       history.push('same faction');
     }
 
-    // Different factions = negative bond
+    // Different factions = negative bond (overrides neighborly baseline)
     if (me.factionId && other.factionId && me.factionId !== other.factionId) {
-      bond -= 0.3;
+      bond -= 0.4;
       history.push('rival factions');
     }
 
@@ -222,13 +225,19 @@ export function computeNpcDepth(npcs, history, secrets, seed) {
 
     const personality = computePersonality(npc, i, history || [], seed, npcRng);
 
-    // Assign settlement secrets to specific NPCs based on faction + honesty
-    const npcSecrets = settlementSecrets.filter((s, si) => {
-      // Distribute secrets: each NPC with matching faction or low honesty gets relevant ones
-      if (npc.factionId && s.type === 'war') return npcRng.nextFloat() < 0.5;
-      if (npc.factionId && s.type === 'corruption') return npcRng.nextFloat() < 0.3;
-      // Fallback: the first NPC or NPCs with low honesty get leftover secrets
-      return i === 0 || personality.honesty < 0.4;
+    // Assign settlement secrets to specific NPCs. Distribution rules:
+    // - Faction members are likelier to know war/rivalry secrets
+    // - Low-honesty NPCs hoard any kind of secret
+    // - The first NPC (highest faction-pressure rep) always gets at least one
+    // - All NPCs get a chance at any remaining secret so depth isn't concentrated
+    const npcSecrets = settlementSecrets.filter((s) => {
+      if (npc.factionId && (s.type === 'war' || s.type === 'rivalry')) {
+        return npcRng.nextFloat() < 0.6;
+      }
+      if (npc.factionId && s.type === 'corruption') return npcRng.nextFloat() < 0.4;
+      if (personality.honesty < 0.5) return npcRng.nextFloat() < 0.5;
+      if (i === 0) return true;
+      return npcRng.nextFloat() < 0.25;
     });
 
     const knowledgeGraph = buildKnowledgeGraph(

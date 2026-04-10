@@ -34,7 +34,11 @@ export function detectPhysicalInteraction(world, playerText) {
     const f = furniture[i];
     if (!f) continue;
     const name = String(f.name || '').toLowerCase();
-    if (name && text.includes(name)) {
+    // Match the full name ("wooden table") OR the head noun ("table")
+    // so natural phrases like "examine the table" hit "wooden table".
+    const headNoun = (name.split(/\s+/).pop() || '').replace(/[^a-z0-9-]/g, '');
+    const headHit = headNoun.length >= 3 && new RegExp(`\\b${headNoun}\\b`).test(text);
+    if (name && (text.includes(name) || headHit)) {
       matches.push({ type: 'furniture', index: i, name: f.name, match: 'name' });
       continue;
     }
@@ -198,6 +202,18 @@ async function callPhysicsLLM({ world, playerText, detection, apiKey, endpoint, 
     description: String(parsed.result || '').trim(),
     fallbackUsed: false
   };
+}
+
+// Synchronous evaluator: skips the LLM and runs the offline fallback only.
+// Used by the deterministic playloop where async physics would force the
+// whole loop to become async.
+export function evaluatePhysicsSync(world, playerText) {
+  const w = ensureWorld(world);
+  const detection = detectPhysicalInteraction(w, playerText);
+  if (!detection.detected) {
+    return { plausible: false, deltas: [], description: '', fallbackUsed: false };
+  }
+  return offlineFallback(w, playerText, detection);
 }
 
 // --- Validation ---

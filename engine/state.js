@@ -9,7 +9,7 @@ import { generateRegions } from './world/regions.js';
 import { generateInitialMap } from './map/generateMap.js';
 import { ensureStructures } from './structures/structuresState.js';
 
-export const WORLD_VERSION = 8;
+export const WORLD_VERSION = 9;
 
 export function ensureWorld(partial) {
   const w = partial && typeof partial === 'object' ? partial : {};

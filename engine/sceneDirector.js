@@ -125,23 +125,24 @@ function chooseBeatType({ w, inst, band, sceneIndex, rng }) {
     }
   }
 
-  // Force confrontation when any thread tension >= 4.
-  const highThread = inst.threads.find(t => t.status !== 'resolved' && t.tension >= 4);
-  if (highThread) return 'confrontation';
-
   // Rhythm encouragement.
   const rhythm = ['quiet', 'escalation', 'reveal', 'confrontation'];
-  let candidate = rhythm[sceneIndex % rhythm.length];
 
-  // Escalation probability increases with inevitability.
-  const inev = inst.inevitability;
-  const base = 0.12 + (inev / 24); // 0.12..0.62
-  const fateBoost = band === 'blood' ? 0.12 : band === 'grim' ? 0.06 : 0.0;
-  const pEsc = clamp01(base + fateBoost);
+  // Force confrontation when any thread tension >= 4.
+  const highThread = inst.threads.find(t => t.status !== 'resolved' && t.tension >= 4);
+  let candidate = highThread ? 'confrontation' : rhythm[sceneIndex % rhythm.length];
 
-  if (rng.nextFloat() < pEsc) {
-    candidate = (candidate === 'quiet') ? 'escalation' : candidate;
-    if (inev >= 10 && candidate !== 'confrontation') candidate = 'escalation';
+  if (!highThread) {
+    // Escalation probability increases with inevitability.
+    const inev = inst.inevitability;
+    const base = 0.12 + (inev / 24); // 0.12..0.62
+    const fateBoost = band === 'blood' ? 0.12 : band === 'grim' ? 0.06 : 0.0;
+    const pEsc = clamp01(base + fateBoost);
+
+    if (rng.nextFloat() < pEsc) {
+      candidate = (candidate === 'quiet') ? 'escalation' : candidate;
+      if (inev >= 10 && candidate !== 'confrontation') candidate = 'escalation';
+    }
   }
 
   // Beat memory: prevent repeating same beat 3x in a row.

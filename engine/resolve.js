@@ -200,11 +200,21 @@ function buildDeltas({ w, m, band, outcome, margin, rng, usedAdvantage, gearSign
     const posDelta = positionDeltaFor({ approach: m.approachTag, outcome });
     if (posDelta) deltas.push(posDelta);
 
-    // Cooperative can relieve a bit of pressure.
-    if (band === 'cooperative' && (w.clocks.pressure ?? 0) > 0 && rng.nextFloat() < 0.6) {
-      deltas.push({ op: 'clock', key: 'pressure', by: -1 });
-      costs.push({ kind: 'clock', key: 'pressure', by: -1, note: 'pressure eases' });
+    // Clock relief: success eases the highest active clock. Chance varies by band.
+    const reliefChance = band === 'cooperative' ? 0.6 : band === 'grim' ? 0.3 : 0.15;
+    if (rng.nextFloat() < reliefChance) {
+      const clockKeys = ['pressure', 'dread', 'revelation'];
+      const active = clockKeys.filter(k => (w.clocks[k] ?? 0) > 0).sort((a, b) => (w.clocks[b] ?? 0) - (w.clocks[a] ?? 0));
+      if (active.length > 0) {
+        deltas.push({ op: 'clock', key: active[0], by: -1 });
+        gains.push({ kind: 'clock', key: active[0], by: -1, note: `${active[0]} eases` });
+      }
     }
+
+    // Relief valve: successful rolls reduce tension on the most tense open thread by 1.
+    // This prevents the death spiral where threads auto-escalate with no brake.
+    deltas.push({ op: 'threadRelief', by: -1 });
+    gains.push({ kind: 'threadRelief', by: -1 });
   }
 
   if (outcome === 'mixed') {
@@ -278,8 +288,8 @@ function buildDeltas({ w, m, band, outcome, margin, rng, usedAdvantage, gearSign
     costs.push({ kind: 'wound', entityId: m.actorId, by });
   }
 
-  // Fear: Stress (0..6) on dread stakes OR when dread clock is high.
-  if ((m.stakeTag === 'dread' || (w.clocks.dread ?? 0) >= 6) && outcome !== 'success') {
+  // Fear: Stress (0..6) on dread stakes, harm stakes (combat trauma), OR when dread clock is high.
+  if ((m.stakeTag === 'dread' || m.stakeTag === 'harm' || (w.clocks.dread ?? 0) >= 6) && outcome !== 'success') {
     const by = outcome === 'mixed' ? 1 : (band === 'blood' ? 2 : 1);
     deltas.push({ op: 'stress', entityId: m.actorId, by });
     costs.push({ kind: 'stress', entityId: m.actorId, by });

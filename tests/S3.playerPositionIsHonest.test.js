@@ -30,41 +30,41 @@ function makeWorld(seed = 's3') {
 function ftX(w) { return Number(w.party?.[0]?.position?.localFtX ?? 0); }
 function ftY(w) { return Number(w.party?.[0]?.position?.localFtY ?? 0); }
 
-test('S3: 3 moves north accumulates localFtY to -90', () => {
+test('S3: 3 explicit-ft moves north accumulates localFtY to -90', () => {
   let w = makeWorld('s3-north');
-  w = playerMove(w, packsById, 'go north').world;
-  w = playerMove(w, packsById, 'go north').world;
-  w = playerMove(w, packsById, 'go north').world;
+  w = playerMove(w, packsById, 'move 30ft north').world;
+  w = playerMove(w, packsById, 'move 30ft north').world;
+  w = playerMove(w, packsById, 'move 30ft north').world;
   assert.equal(ftX(w), 0,   'localFtX should be 0 after 3 north moves');
   assert.equal(ftY(w), -90, 'localFtY should be -90 after 3 north moves');
 });
 
-test('S3: 3 moves south accumulates localFtY to +90', () => {
+test('S3: 3 explicit-ft moves south accumulates localFtY to +90', () => {
   let w = makeWorld('s3-south');
-  w = playerMove(w, packsById, 'go south').world;
-  w = playerMove(w, packsById, 'go south').world;
-  w = playerMove(w, packsById, 'go south').world;
+  w = playerMove(w, packsById, 'move 30ft south').world;
+  w = playerMove(w, packsById, 'move 30ft south').world;
+  w = playerMove(w, packsById, 'move 30ft south').world;
   assert.equal(ftX(w), 0,  'localFtX should be 0 after 3 south moves');
   assert.equal(ftY(w), 90, 'localFtY should be +90 after 3 south moves');
 });
 
-test('S3: east/west moves accumulate localFtX only', () => {
+test('S3: explicit-ft east/west moves accumulate localFtX only', () => {
   let w = makeWorld('s3-ew');
-  w = playerMove(w, packsById, 'go east').world;
-  w = playerMove(w, packsById, 'go east').world;
-  w = playerMove(w, packsById, 'go west').world;
+  w = playerMove(w, packsById, 'move 30ft east').world;
+  w = playerMove(w, packsById, 'move 30ft east').world;
+  w = playerMove(w, packsById, 'move 30ft west').world;
   assert.equal(ftX(w), 30, 'localFtX should be +30 (2 east, 1 west)');
   assert.equal(ftY(w), 0,  'localFtY should be 0');
 });
 
 test('S3: node arrival resets localFtX and localFtY to 0', () => {
   let w = makeWorld('s3-reset');
-  // Move locally first
-  w = playerMove(w, packsById, 'go north').world;
-  w = playerMove(w, packsById, 'go east').world;
+  // Move locally first with explicit foot distances
+  w = playerMove(w, packsById, 'move 30ft north').world;
+  w = playerMove(w, packsById, 'move 30ft east').world;
   assert.ok(ftX(w) !== 0 || ftY(w) !== 0, 'position should be non-zero after local moves');
 
-  // Travel to a new node
+  // Travel to a new node via directional shorthand (now inter-node travel)
   const neighbors = (w.map?.edges || [])
     .filter(e => e.a === w.map.currentNodeId || e.b === w.map.currentNodeId)
     .map(e => e.a === w.map.currentNodeId ? e.b : e.a);

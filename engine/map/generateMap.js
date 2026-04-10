@@ -9,7 +9,13 @@ export function generateInitialMap({ seed = 'seed', packId = 'fantasy', pack = {
 
   const names = Array.isArray(pack.locations) ? pack.locations.map(String).filter(Boolean) : [];
   const fallback = ['Roadside', 'Ruined Tower', 'Dry Creek', 'Old Shrine', 'Sooted Bridge', 'Salt Flats', 'Black Orchard', 'Hollow Chapel'];
+  // Settlement-keyword names injected so at least some nodes classify as settlements.
+  const settlementNames = ['Trader\'s Camp', 'Riverside Inn', 'Wayfarers\' Outpost'];
   const pool = (names.length ? names : fallback).slice();
+  // Ensure settlement names are in the pool so the classifier can assign nodeType 'settlement'.
+  for (const sn of settlementNames) {
+    if (!pool.some(n => String(n).toLowerCase() === sn.toLowerCase())) pool.push(sn);
+  }
 
   const nodeCountBase = 12 + (seedFromString(`${seed}|mapN|${packId}`) % 10);
   const nodeCount = clampInt((nodeCountOverride == null ? nodeCountBase : Number(nodeCountOverride)), 12, 200);
@@ -48,6 +54,21 @@ export function generateInitialMap({ seed = 'seed', packId = 'fantasy', pack = {
     const a = nodes[i].id;
     const b = nodes[k].id;
     if (!hasEdge(edges, a, b)) edges.push({ a, b, kind: (j % 2) ? 'road' : 'tunnel' });
+  }
+
+  // Guarantee at least 2 settlement nodes. If the keyword classifier didn't produce
+  // enough, forcibly reclassify the 2nd and 3rd nodes (index 1,2) as settlements
+  // so NPC genesis can trigger on arrival.
+  const settlementCount = nodes.filter(n => n.nodeType === 'settlement').length;
+  if (settlementCount < 2) {
+    const need = 2 - settlementCount;
+    let patched = 0;
+    for (let i = 1; i < nodes.length && patched < need; i++) {
+      if (nodes[i].nodeType !== 'settlement') {
+        nodes[i] = { ...nodes[i], nodeType: 'settlement' };
+        patched++;
+      }
+    }
   }
 
   const startNodeId = nodes[0]?.id || '';

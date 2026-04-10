@@ -13,10 +13,13 @@ import { conductorDecision, applyConductorDeltas } from './conductor.js';
 import { worldTick } from './worldTick.js';
 import { resolveMove } from './resolve.js';
 import { applyDeltas } from './effectsCore.js';
-import { introduceThread } from './instrument.js';
+import { introduceThread, resolveThread, ensureInstrumentLayer } from './instrument.js';
 import { applyGeneratedStructuresForNode } from './structures/applyGeneratedStructuresForNode.js';
 import { enterStructureInterior, exitStructureInterior, moveWithinInterior, getInteriorView, resolveStructureSelection } from './structures/interiors.js';
 import { createCharacter } from './chargen/genesis.js';
+import { decompressAndCanonizeSync } from './decompression/decompress.js';
+import { discoverNode } from './map/mapState.js';
+import { detectPhysicalInteraction, evaluatePhysicsSync } from './llmPhysics.js';
 
 // Pure-ish play loop: world -> {world, output}
 
@@ -44,8 +47,25 @@ export function beginAdventure(world, packsById) {
     w = { ...w, map: generateInitialMap({ seed: w.meta.seed, packId, pack }) };
   }
 
-  const m = ensureMap(w.map);
+  // Starting node must be a settlement (not random wilderness).
+  let m = ensureMap(w.map);
+  const settlements = m.nodes.filter(n => n.nodeType === 'settlement');
+  if (settlements.length > 0 && (!m.currentNodeId || !settlements.some(n => n.id === m.currentNodeId))) {
+    // Move starting position to a settlement
+    const startNode = settlements[0];
+    w = { ...w, map: { ...w.map, currentNodeId: startNode.id } };
+    w = discoverNode(w, startNode.id);
+    m = ensureMap(w.map);
+  }
+
   const here = m.nodes.find(n => n.id === m.currentNodeId);
+
+  // Run settlement decompression for the starting node (generates NPCs, history, buildings).
+  if (here?.nodeType === 'settlement' && !here.settlement?.decompressed) {
+    w = decompressAndCanonizeSync(w, here.id, pack);
+    // Re-read after decompression
+    m = ensureMap(w.map);
+  }
 
   const location = here?.name || pickFrom(pack, 'locations', rng) || rng.pick(pack.starterLocations) || 'unknown place';
   const objective = pickFrom(pack, 'objectives', rng) || rng.pick(pack.starterObjectives) || 'survive the night';
@@ -73,6 +93,11 @@ export function beginAdventure(world, packsById) {
     w = introduceThread(w, objective);
   }
 
+  // Build opening context with NPC presence
+  const startingNode = w.map.nodes.find(n => n.id === w.map.currentNodeId);
+  const settlementData = startingNode?.settlement;
+  const npcNames = settlementData?.npcs?.map(n => n.name).filter(Boolean) ?? [];
+
   const refKind = sceneRefKind(w, 'opening');
 
   const outcome = {
@@ -81,10 +106,12 @@ export function beginAdventure(world, packsById) {
     location,
     objective,
     fateBand: fateBand(w.meta.fate),
-    refKind
+    refKind,
+    npcsPresent: npcNames,
+    settlementEconomy: settlementData?.economy ?? null
   };
 
-  w = pushEvent(w, { kind: 'begin', data: { location, objective, pack: pack.id, refKind } });
+  w = pushEvent(w, { kind: 'begin', data: { location, objective, pack: pack.id, refKind, npcsPresent: npcNames } });
 
   const composed = compose(w, '', outcome, { pack });
   w = applyComposerDelta(w, composed.ledgerDelta);
@@ -234,17 +261,97 @@ export function playerMove(world, packsById, text) {
     let w1 = moveToNode(w, dest);
     if (w1.map?.currentNodeId && w1.map.currentNodeId !== before) {
       w1 = applyGeneratedStructuresForNode(w1, w1.map.currentNodeId);
+      // Decompress settlement on arrival (generates NPCs, history, buildings).
+      const arrNode = w1.map?.nodes?.find(n => n && n.id === w1.map.currentNodeId) || null;
+      if (arrNode?.nodeType === 'settlement' && !arrNode.settlement?.decompressed) {
+        w1 = decompressAndCanonizeSync(w1, w1.map.currentNodeId, pack);
+      }
       const here = w1.map?.nodes?.find(n => n && n.id === w1.map.currentNodeId) || null;
       const nextName = String(here?.name || '').trim();
       if (nextName) w1 = { ...w1, scene: { ...w1.scene, location: nextName } };
       w1 = setPrimaryPartyZone(w1, 'near');
       w1 = pushEvent(w1, { kind: 'travel', data: { from: before, to: String(w1.map.currentNodeId) } });
-      return { world: w1, output: { narration: 'Wizard: You move within speed and reach the next position.', mechanics: '' } };
+      return { world: w1, output: { narration: nextName ? `Wizard: You travel to ${nextName}.` : 'Wizard: You move to the next position.', mechanics: '' } };
     }
     return { world: w, output: { narration: 'Wizard: You hold position.', mechanics: '' } };
   }
 
   const actorId = (w.party?.[0]?.id) ? String(w.party[0].id) : 'party';
+
+  // NPC dialogue intercept: "talk to X" at a settlement updates NPC conversation state
+  // instead of routing through generic dice resolution.
+  const talkMatch = String(text || '').match(/\b(?:talk|speak|chat)\s+(?:to|with)\s+(.+)/i);
+  if (talkMatch) {
+    const npcName = talkMatch[1].trim();
+    const curNode = w.map?.nodes?.find(n => n.id === w.map?.currentNodeId);
+    const npcs = curNode?.settlement?.npcs || [];
+    const targetNpc = npcs.find(n =>
+      String(n.name).toLowerCase() === npcName.toLowerCase() ||
+      String(n.name).toLowerCase().startsWith(npcName.toLowerCase())
+    );
+    if (targetNpc) {
+      const npcId = targetNpc.id || targetNpc.name;
+      const trust = targetNpc.conversationState?.trustLevel ?? 5;
+      const honesty = targetNpc.personality?.honesty ?? 0.5;
+      const trustBump = Math.max(honesty > 0.6 ? 1 : 0, 1);
+      const deltas = [
+        { op: 'npcTrustDelta', npcId, by: trustBump },
+        { op: 'npcKnowledgeShared', npcId, fact: `player spoke at turn ${w.time?.turn ?? 0}` }
+      ];
+      w = applyDeltas(w, deltas);
+      w = pushEvent(w, { kind: 'npcDialogue', data: { npcId, npcName: targetNpc.name, trust: trust + trustBump } });
+      const role = targetNpc.role ? ` the ${targetNpc.role}` : '';
+      const mood = honesty > 0.7 ? 'speaks openly' : honesty < 0.3 ? 'is guarded and evasive' : 'chooses words carefully';
+      return { world: w, output: {
+        narration: `Wizard: ${targetNpc.name}${role} ${mood}; ${trust >= 7 ? 'trust runs deep between you' : trust >= 4 ? 'a cautious exchange' : 'suspicion colors every word'}; what do you do?`,
+        mechanics: `[dialogue:${targetNpc.name} | role:${targetNpc.role || 'unknown'} | trust:${trust}→${Math.min(trust + trustBump, 10)} | honesty:${honesty.toFixed(2)}]`
+      }};
+    }
+  }
+
+  // Physical interaction intercept: "examine the table", "break the chair",
+  // "take the lantern". Three guards prevent hijacking generic combat moves
+  // like "force the locked door":
+  //   1. The player text must contain a physics verb (examine/break/take/etc.)
+  //   2. Detection must match a furniture/item name (not just a notes substring)
+  //   3. The offline fallback must produce real deltas (not a no-op)
+  const PHYSICS_VERB_RE = /\b(examine|inspect|search|look at|check|rip|break|smash|tear|kick|punch|shatter|take|grab|pick up|steal)\b/i;
+  if (PHYSICS_VERB_RE.test(String(text || ''))) {
+    const detection = detectPhysicalInteraction(w, text);
+    const nameMatch = (detection.matches || []).some(m => m.match === 'name' || m.match === 'part');
+    if (detection.detected && nameMatch) {
+      const physics = evaluatePhysicsSync(w, text);
+      if (physics && physics.plausible) {
+        w = applyDeltas(w, physics.deltas || []);
+        // Emit a 'resolution' event (not a custom kind) so deterministic replay
+        // — which only re-runs begin/scene/travel/resolution/blocked — re-executes
+        // the same text and follows the same physics path on playback.
+        w = pushEvent(w, {
+          kind: 'resolution',
+          data: {
+            actorId,
+            intent: String(text || ''),
+            text: String(text || ''),
+            roll: 0,
+            dc: 0,
+            outcome: 'physics',
+            updateKind: 'physics',
+            matches: detection.matches.map(m => ({ type: m.type, name: m.name })),
+            deltaCount: (physics.deltas || []).length
+          }
+        });
+        const matchSummary = detection.matches.map(m => m.name).filter(Boolean).slice(0, 2).join(', ');
+        return {
+          world: w,
+          output: {
+            narration: `Wizard: ${physics.description}`,
+            mechanics: `[physics:${matchSummary || 'object'} | deltas:${(physics.deltas || []).length} | offline]`
+          }
+        };
+      }
+    }
+  }
+
   const move = inferMoveFromText(w, pack, actorId, text);
 
   const { world2, result } = resolveMove(w, move);
@@ -283,12 +390,34 @@ export function playerMove(world, packsById, text) {
     // Keep scene surface in sync with map position so UI reflects travel immediately.
     if (w.map?.currentNodeId && w.map.currentNodeId !== before) {
       w = applyGeneratedStructuresForNode(w, w.map.currentNodeId);
+      // Decompress settlement on arrival (generates NPCs, history, buildings).
+      const arrNode = w.map?.nodes?.find(n => n && n.id === w.map.currentNodeId) || null;
+      if (arrNode?.nodeType === 'settlement' && !arrNode.settlement?.decompressed) {
+        w = decompressAndCanonizeSync(w, w.map.currentNodeId, pack);
+      }
       const here = w.map?.nodes?.find(n => n && n.id === w.map.currentNodeId) || null;
       const nextName = String(here?.name || '').trim();
       if (nextName) {
         w = { ...w, scene: { ...w.scene, location: nextName } };
       }
       w = pushEvent(w, { kind: 'travel', data: { from: before || '', to: w.map.currentNodeId } });
+    }
+  }
+
+  // Thread resolution: a successful roll during a confrontation beat resolves the
+  // highest-tension open thread. This is the primary mechanism for thread closure.
+  if (result.outcome === 'success') {
+    const sceneTags = Array.isArray(w.scene?.tags) ? w.scene.tags : [];
+    const isConfrontation = sceneTags.includes('confrontation') ||
+      (w.instrument?.lastBeats?.[0] === 'confrontation');
+    if (isConfrontation) {
+      const inst = ensureInstrumentLayer(w.instrument);
+      const hotThread = inst.threads
+        .filter(t => t.status !== 'resolved' && t.tension >= 3)
+        .sort((a, b) => b.tension - a.tension)[0];
+      if (hotThread) {
+        w = resolveThread(w, hotThread.id);
+      }
     }
   }
 
@@ -538,18 +667,9 @@ function parseLocalFeetMove(text) {
     if (d === 'west')  return { dxFt: -ft, dyFt: 0 };
   }
 
-  // Bare directional: "move north", "walk east", "go s", "north", "n", etc.
-  // Default step is 30ft (one standard D&D move action).
-  const m2 = t.match(/^(?:(?:move|walk|step|go|head)\s+)?(north|south|east|west|n|s|e|w)$/);
-  if (m2) {
-    const ft = 30;
-    const d = normalizeDir(m2[1]);
-    if (d === 'north') return { dxFt: 0, dyFt: -ft };
-    if (d === 'south') return { dxFt: 0, dyFt: ft };
-    if (d === 'east')  return { dxFt: ft, dyFt: 0 };
-    if (d === 'west')  return { dxFt: -ft, dyFt: 0 };
-  }
-
+  // Bare directionals ("go north", "north", "n") are handled by the travel-intent
+  // system (isFreeMovementIntent / moveAdvancesScene) for inter-node movement.
+  // Only match them as local feet moves when inside a structure interior.
   return null;
 }
 

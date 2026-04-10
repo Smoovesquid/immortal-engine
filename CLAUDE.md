@@ -3,7 +3,7 @@
 ## Quick Reference
 
 ```
-node --test                    # 369 tests (S/N/U/C/G prefixes)
+node --test                    # full suite (S/N/U/C/G/D prefixes)
 npm run dev                    # Express on :5179
 npm run playtest:quick         # headless playtest, fast probes
 npm run playtest:full          # headless playtest, all bug classes
@@ -112,3 +112,5 @@ fix(<module>): <bug class> — <what changed>
 ```
 
 Bug fix protocol: reproduce → baseline test → fix → retest → commit.
+
+**Staging discipline.** Do not use `git add -A` / `git add .` when unrelated untracked or modified files are present in the tree — stage files explicitly by path so each commit's scope matches its message. Only use `-A` when the working tree is known to contain a single coherent change.

@@ -1,4 +1,4 @@
-import { ensureWorld } from './state.js';
+import { ensureWorld, ensureCombat, defaultCombat } from './state.js';
 import { addFact, addThreat, addQuestion } from './ledger.js';
 import { ensureEnv } from './env/envCore.js';
 import { ensureInstrumentLayer } from './instrument.js';
@@ -199,6 +199,55 @@ export function applyDeltas(world, deltas = []) {
       if (op.addFact) w = addFact(w, op.addFact, op.source || 'resolution');
       if (op.addThreat) w = addThreat(w, op.addThreat, op.level ?? 1);
       if (op.addQuestion) w = addQuestion(w, op.addQuestion);
+      continue;
+    }
+
+    if (kind === 'combatState') {
+      // Pass 5: sole mutation path for world.combat. Accepts a partial merge
+      // (top-level fields + enemies replacement) plus per-enemy hp deltas and
+      // defeated markers. Re-normalized via ensureCombat after merging.
+      const cur = w.combat ? { ...w.combat, enemies: Array.isArray(w.combat.enemies) ? w.combat.enemies.map(e => ({ ...e })) : [] } : defaultCombat();
+      let enemies = cur.enemies;
+
+      const set = op.set && typeof op.set === 'object' ? op.set : null;
+      if (set && Array.isArray(set.enemies)) {
+        enemies = set.enemies.map(e => ({ ...e }));
+      }
+
+      // enemyHpDelta: array of { id, by }
+      if (Array.isArray(op.enemyHpDelta)) {
+        for (const eh of op.enemyHpDelta) {
+          if (!eh || typeof eh !== 'object') continue;
+          const id = String(eh.id ?? '');
+          const by = toInt(eh.by ?? 0);
+          if (!id || !by) continue;
+          enemies = enemies.map(e => {
+            if (String(e.id) !== id) return e;
+            const maxHp = Number.isInteger(e.maxHp) ? e.maxHp : 1;
+            const cur0 = Number.isInteger(e.hp) ? e.hp : maxHp;
+            const next = clampInt(cur0 + by, 0, maxHp);
+            return { ...e, hp: next, defeated: next === 0 ? true : Boolean(e.defeated) };
+          });
+        }
+      }
+
+      // enemyDefeated: array of enemy ids to flag defeated (and zero hp).
+      if (Array.isArray(op.enemyDefeated)) {
+        const ids = new Set(op.enemyDefeated.map(String));
+        enemies = enemies.map(e => ids.has(String(e.id)) ? { ...e, hp: 0, defeated: true } : e);
+      }
+
+      const merged = {
+        active: set && 'active' in set ? Boolean(set.active) : cur.active,
+        round: set && 'round' in set ? toInt(set.round) : cur.round,
+        turnIndex: set && 'turnIndex' in set ? toInt(set.turnIndex) : cur.turnIndex,
+        beganAt: set && 'beganAt' in set ? toInt(set.beganAt) : cur.beganAt,
+        reason: set && 'reason' in set ? String(set.reason ?? '') : cur.reason,
+        playerGuard: set && 'playerGuard' in set ? Boolean(set.playerGuard) : cur.playerGuard,
+        enemies
+      };
+
+      w = { ...w, combat: ensureCombat(merged) };
       continue;
     }
 

@@ -98,6 +98,76 @@ export function assertWorldInvariants(world) {
     }
   }
 
+  // Combat (Pass 5)
+  const combat = world.combat;
+  if (!combat || typeof combat !== 'object') {
+    throw new Error('Invariant: combat must be object');
+  }
+  if (typeof combat.active !== 'boolean') {
+    throw new Error('Invariant: combat.active must be boolean');
+  }
+  if (!Number.isInteger(combat.round) || combat.round < 0 || combat.round > 99) {
+    throw new Error('Invariant: combat.round must be 0..99');
+  }
+  if (!Number.isInteger(combat.turnIndex) || combat.turnIndex < 0 || combat.turnIndex > 6) {
+    throw new Error('Invariant: combat.turnIndex must be 0..6');
+  }
+  if (!Number.isInteger(combat.beganAt) || combat.beganAt < 0) {
+    throw new Error('Invariant: combat.beganAt must be non-negative integer');
+  }
+  if (typeof combat.reason !== 'string') {
+    throw new Error('Invariant: combat.reason must be string');
+  }
+  if (typeof combat.playerGuard !== 'boolean') {
+    throw new Error('Invariant: combat.playerGuard must be boolean');
+  }
+  if (!Array.isArray(combat.enemies)) {
+    throw new Error('Invariant: combat.enemies must be array');
+  }
+  if (combat.enemies.length > 6) {
+    throw new Error(`Invariant: combat.enemies.length ${combat.enemies.length} exceeds cap 6`);
+  }
+  if (combat.active && combat.enemies.length === 0) {
+    throw new Error('Invariant: active combat must have at least one enemy');
+  }
+  const seenEnemyIds = new Set();
+  for (const e of combat.enemies) {
+    if (!e || typeof e !== 'object') {
+      throw new Error('Invariant: combat enemy must be object');
+    }
+    if (!e.id || typeof e.id !== 'string') {
+      throw new Error('Invariant: combat enemy.id must be non-empty string');
+    }
+    if (seenEnemyIds.has(e.id)) {
+      throw new Error(`Invariant: duplicate combat enemy id ${e.id}`);
+    }
+    seenEnemyIds.add(e.id);
+    if (typeof e.name !== 'string' || !e.name) {
+      throw new Error(`Invariant: combat enemy ${e.id} missing name`);
+    }
+    if (!Number.isInteger(e.maxHp) || e.maxHp < 1 || e.maxHp > 20) {
+      throw new Error(`Invariant: combat enemy ${e.id} maxHp out of range 1..20`);
+    }
+    if (!Number.isInteger(e.hp) || e.hp < 0 || e.hp > e.maxHp) {
+      throw new Error(`Invariant: combat enemy ${e.id} hp out of range 0..maxHp`);
+    }
+    if (!Number.isInteger(e.damage) || e.damage < 1 || e.damage > 6) {
+      throw new Error(`Invariant: combat enemy ${e.id} damage out of range 1..6`);
+    }
+    if (typeof e.canParley !== 'boolean') {
+      throw new Error(`Invariant: combat enemy ${e.id} canParley must be boolean`);
+    }
+    if (typeof e.defeated !== 'boolean') {
+      throw new Error(`Invariant: combat enemy ${e.id} defeated must be boolean`);
+    }
+    if (typeof e.sourceNpcId !== 'string') {
+      throw new Error(`Invariant: combat enemy ${e.id} sourceNpcId must be string`);
+    }
+  }
+  if (combat.active && world.scene?.dialogue) {
+    throw new Error('Invariant: combat.active and scene.dialogue are mutually exclusive');
+  }
+
   // Dialogue mode (optional)
   const dialogue = world.scene?.dialogue;
   if (dialogue != null) {

@@ -57,6 +57,47 @@ export function assertWorldInvariants(world) {
     }
   }
 
+  // Recent beats (narrative memory cache, FIFO cap 6)
+  const beats = world.recentBeats;
+  if (!Array.isArray(beats)) {
+    throw new Error('Invariant: recentBeats must be an array');
+  }
+  if (beats.length > 6) {
+    throw new Error(`Invariant: recentBeats.length ${beats.length} exceeds cap 6`);
+  }
+  for (const b of beats) {
+    if (!b || typeof b !== 'object') {
+      throw new Error('Invariant: beat must be object');
+    }
+    if (!Number.isInteger(b.t) || b.t < 0) {
+      throw new Error('Invariant: beat.t must be non-negative integer');
+    }
+    if (typeof b.input !== 'string') {
+      throw new Error('Invariant: beat.input must be string');
+    }
+    if (b.input.length > 140) {
+      throw new Error(`Invariant: beat.input length ${b.input.length} exceeds cap 140`);
+    }
+    if (typeof b.approach !== 'string') {
+      throw new Error('Invariant: beat.approach must be string');
+    }
+    if (typeof b.stake !== 'string') {
+      throw new Error('Invariant: beat.stake must be string');
+    }
+    if (!BEAT_OUTCOMES.has(b.outcome)) {
+      throw new Error(`Invariant: invalid beat outcome ${b.outcome}`);
+    }
+    if (typeof b.location !== 'string') {
+      throw new Error('Invariant: beat.location must be string');
+    }
+    if (typeof b.mechanics !== 'string') {
+      throw new Error('Invariant: beat.mechanics must be string');
+    }
+    if (b.mechanics.length > 200) {
+      throw new Error(`Invariant: beat.mechanics length ${b.mechanics.length} exceeds cap 200`);
+    }
+  }
+
   // Dialogue mode (optional)
   const dialogue = world.scene?.dialogue;
   if (dialogue != null) {
@@ -94,3 +135,4 @@ export function assertWorldInvariants(world) {
 
 const GOAL_KINDS = new Set(['reach', 'obtain', 'talkTo', 'learn', 'defeat']);
 const GOAL_STATUSES = new Set(['active', 'completed', 'failed']);
+const BEAT_OUTCOMES = new Set(['success', 'mixed', 'failure']);

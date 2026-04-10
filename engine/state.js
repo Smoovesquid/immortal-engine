@@ -9,11 +9,16 @@ import { generateRegions } from './world/regions.js';
 import { generateInitialMap } from './map/generateMap.js';
 import { ensureStructures } from './structures/structuresState.js';
 
-export const WORLD_VERSION = 11;
+export const WORLD_VERSION = 12;
 
 const GOAL_KINDS = new Set(['reach', 'obtain', 'talkTo', 'learn', 'defeat']);
 const GOAL_STATUSES = new Set(['active', 'completed', 'failed']);
 const GOALS_CAP = 12;
+
+const RECENT_BEATS_CAP = 6;
+const BEAT_INPUT_CAP = 140;
+const BEAT_MECHANICS_CAP = 200;
+const BEAT_OUTCOMES = new Set(['success', 'mixed', 'failure']);
 
 export function ensureWorld(partial) {
   const w = partial && typeof partial === 'object' ? partial : {};
@@ -78,6 +83,8 @@ export function ensureWorld(partial) {
 
     goals: ensureGoals(w.goals),
 
+    recentBeats: ensureRecentBeats(w.recentBeats),
+
     timeline: Array.isArray(w.timeline) ? w.timeline : [],
     ui: {
       advanced: Boolean(ui.advanced),
@@ -112,9 +119,55 @@ export function newWorld({ seed, fate, campaignId, pack }) {
 
     combat: { active: false, initiatives: {}, turnOrder: [], turnIndex: 0 },
     goals: [],
+    recentBeats: [],
     timeline: [],
     ui: { advanced: false, lastError: '' }
   });
+}
+
+function ensureRecentBeats(beats) {
+  const list = Array.isArray(beats) ? beats : [];
+  const out = [];
+  for (const b of list) {
+    if (!b || typeof b !== 'object') continue;
+    if (!BEAT_OUTCOMES.has(String(b.outcome))) continue;
+    const tNum = Number(b.t);
+    if (!Number.isFinite(tNum)) continue;
+    const t = Math.max(0, Math.trunc(tNum));
+    const inputRaw = String(b.input ?? '');
+    const mechRaw = String(b.mechanics ?? '');
+    out.push({
+      t,
+      input: inputRaw.length > BEAT_INPUT_CAP ? inputRaw.slice(0, BEAT_INPUT_CAP) : inputRaw,
+      approach: String(b.approach ?? ''),
+      stake: String(b.stake ?? ''),
+      outcome: String(b.outcome),
+      location: String(b.location ?? ''),
+      mechanics: mechRaw.length > BEAT_MECHANICS_CAP ? mechRaw.slice(0, BEAT_MECHANICS_CAP) : mechRaw
+    });
+  }
+  if (out.length > RECENT_BEATS_CAP) {
+    return out.slice(out.length - RECENT_BEATS_CAP);
+  }
+  return out;
+}
+
+/**
+ * appendRecentBeat(world, beat) → new world
+ *
+ * Pure helper. Pushes a new beat onto world.recentBeats, applies the
+ * normalizer (which enforces shape, type coercion, and string caps), and
+ * trims FIFO to the cap of 6. Returns a new world object — never mutates.
+ *
+ * Beat shape: { t, input, approach, stake, outcome, location, mechanics }
+ * If the supplied beat is malformed (bad outcome, missing fields), the
+ * normalizer drops it silently and the world is returned with prior beats
+ * unchanged.
+ */
+export function appendRecentBeat(world, beat) {
+  const prior = Array.isArray(world?.recentBeats) ? world.recentBeats : [];
+  const next = ensureRecentBeats([...prior, beat]);
+  return { ...world, recentBeats: next };
 }
 
 function ensureGoals(goals) {

@@ -22,6 +22,8 @@ import { discoverNode } from './map/mapState.js';
 import { detectPhysicalInteraction, evaluatePhysicsSync } from './llmPhysics.js';
 import { createGoal, checkGoals } from './goals/goalContract.js';
 import { beginDialogue, askNpc, endDialogue, resolveNpcAtCurrentNode } from './npc/dialogue.js';
+import { resolveCombatTurn } from './combat/combatResolve.js';
+import { beginCombat, endCombat, mintEnemyFromNpc } from './combat/combatLifecycle.js';
 
 // Pure-ish play loop: world -> {world, output}
 
@@ -378,6 +380,107 @@ export function playerMove(world, packsById, text) {
             mechanics: `[dialogue enter | ${begun.outcome.npcName} | role:${begun.outcome.npcRole || 'unknown'} | trust:${begun.outcome.trustLevel}/10 | mood:${begun.outcome.mood}]`
           }
         };
+      }
+    }
+  }
+
+  // ── Pass 5: Combat branch ─────────────────────────────────────────────────
+  // Combat sits BEFORE the physics intercept. When combat is active, physical
+  // verbs (kick/punch/grab) flow into the combat resolver instead of physics —
+  // this is the R13 closure: combat turns produce beats, physics turns do not,
+  // so routing via combat means combat verbs gain narrative memory.
+  //
+  // When combat is NOT active, an explicit "attack <hostile NPC>" intent
+  // begins combat and resolves the player's first turn in the same call.
+  if (w.combat?.active) {
+    // Flee / retreat: deterministic exit, costs 1 stress and 1 pressure clock.
+    if (isFleeIntent(text)) {
+      let wf = endCombat(w, { reason: 'player-flee' });
+      wf = applyDeltas(wf, [
+        { op: 'stress', entityId: actorId, by: 1 },
+        { op: 'clock', key: 'pressure', by: 1 }
+      ]);
+      // Beat: flee is a player turn — record an outcome=mixed beat.
+      const fleeMove = { actorId, intentText: String(text || ''), approachTag: 'survival', stakeTag: 'time' };
+      const fleeResult = { outcome: 'mixed', mechanicsLine: '[combat:flee | stress+1 | pressure+1]' };
+      wf = appendRecentBeat(wf, buildBeatFromTurn(wf, text, fleeMove, fleeResult));
+      return { world: wf, output: { narration: 'Wizard: You break off and retreat from the fight.', mechanics: fleeResult.mechanicsLine } };
+    }
+
+    const move = inferCombatMoveFromText(w, pack, actorId, text);
+    const { world: wAfter, result } = resolveCombatTurn(w, move);
+    w = wAfter;
+
+    // R13 closure: combat turns produce beats via the same seam as mainline.
+    w = appendRecentBeat(w, buildBeatFromTurn(w, text, move, result));
+
+    // Stable resolution event so replay re-enters the same path.
+    w = pushEvent(w, {
+      kind: 'resolution',
+      data: {
+        actorId,
+        intent: String(text || ''),
+        text: String(text || ''),
+        roll: result.roll,
+        dc: result.dc,
+        outcome: result.outcome,
+        updateKind: 'combat',
+        combatSummary: String(result.combatSummary || '')
+      }
+    });
+
+    const composed = compose(w, text, {
+      kind: 'turn',
+      t: w.timeline.length,
+      roll: result.roll,
+      dc: result.dc,
+      success: result.outcome === 'success',
+      updateKind: 'combat',
+      outcome: result.outcome,
+      approach: move.approachTag
+    }, { pack });
+    w = applyComposerDelta(w, composed.ledgerDelta);
+
+    return { world: w, output: { narration: composed.narrationLine, mechanics: result.mechanicsLine } };
+  }
+
+  // Combat-begin trigger (explicit intent only): "attack/fight <hostile NPC name>"
+  // at the current node. No event-driven ambushes — Pass 5 scope is explicit.
+  {
+    const begin = detectAttackBeginIntent(w, text);
+    if (begin) {
+      let w1 = beginCombat(w, { enemies: [mintEnemyFromNpc(begin.npc)], reason: 'player-attack' });
+      if (w1.combat?.active) {
+        w = w1;
+        const move = inferCombatMoveFromText(w, pack, actorId, text);
+        const { world: wAfter, result } = resolveCombatTurn(w, move);
+        w = wAfter;
+        w = appendRecentBeat(w, buildBeatFromTurn(w, text, move, result));
+        w = pushEvent(w, {
+          kind: 'resolution',
+          data: {
+            actorId,
+            intent: String(text || ''),
+            text: String(text || ''),
+            roll: result.roll,
+            dc: result.dc,
+            outcome: result.outcome,
+            updateKind: 'combat',
+            combatSummary: String(result.combatSummary || '')
+          }
+        });
+        const composed = compose(w, text, {
+          kind: 'turn',
+          t: w.timeline.length,
+          roll: result.roll,
+          dc: result.dc,
+          success: result.outcome === 'success',
+          updateKind: 'combat',
+          outcome: result.outcome,
+          approach: move.approachTag
+        }, { pack });
+        w = applyComposerDelta(w, composed.ledgerDelta);
+        return { world: w, output: { narration: composed.narrationLine, mechanics: result.mechanicsLine } };
       }
     }
   }
@@ -1074,6 +1177,66 @@ function generateInstrument(pack, fate, rng) {
     cost,
     omen,
     question
+  };
+}
+
+// ── Pass 5: combat helpers ────────────────────────────────────────────────
+
+function isFleeIntent(text) {
+  const t = String(text || '').toLowerCase();
+  return /\b(flee|retreat|disengage|run\s+away|run\s+for\s+it|break\s+off)\b/.test(t);
+}
+
+// Detects "attack <name>" / "fight <name>" / "kill <name>" / "strike <name>"
+// against a hostile NPC at the current node. Returns { npc } or null.
+// Conservative: only matches when the player text starts with an attack verb
+// AND the named target maps to an NPC at the current node with hostile===true.
+function detectAttackBeginIntent(world, text) {
+  const t = String(text || '').trim();
+  if (!t) return null;
+  const m = t.match(/\b(attack|fight|kill|strike|assault)\s+(.+)/i);
+  if (!m) return null;
+  const ref = String(m[2] || '').trim().replace(/[.!?,;:]+$/, '').trim();
+  if (!ref) return null;
+
+  const nodeId = String(world?.map?.currentNodeId ?? '');
+  const node = (world?.map?.nodes || []).find(n => n && n.id === nodeId) || null;
+  const npcs = node?.settlement?.npcs || [];
+  if (!Array.isArray(npcs) || !npcs.length) return null;
+
+  const norm = (s) => String(s || '').toLowerCase().trim();
+  const refLower = norm(ref);
+  const npc = npcs.find(n => n && n.hostile === true && (
+    norm(n.id) === refLower ||
+    norm(n.name) === refLower ||
+    norm(n.name).includes(refLower) ||
+    refLower.includes(norm(n.name))
+  ));
+  if (!npc) return null;
+  return { npc };
+}
+
+// Translates free text into a combat-shaped move. Reuses the mainline
+// inferMoveFromText for stake/risk computation, then biases the approach
+// based on combat-meaningful verbs. Always sets stakeTag='harm' and points
+// at the first living enemy when no explicit target is parsed.
+function inferCombatMoveFromText(world, pack, actorId, text) {
+  const base = inferMoveFromText(world, pack, actorId, text);
+  const t = String(text || '').toLowerCase();
+  let approachTag = base.approachTag;
+  if (/\b(attack|strike|hit|punch|fight|kill|swing|slash|stab|charge)\b/.test(t)) approachTag = 'force';
+  else if (/\b(parley|talk\s+down|soothe|calm|appeal|plead)\b/.test(t)) approachTag = 'heart';
+  else if (/\b(defend|guard|brace|block|hold\s+the\s+line|shield)\b/.test(t)) approachTag = 'endure';
+  else if (/\b(study|aim|read|observe|size\s+up|focus)\b/.test(t)) approachTag = 'focus';
+  else if (/\b(sneak|slip|feint|dodge|weave|finesse)\b/.test(t)) approachTag = 'finesse';
+
+  const enemies = Array.isArray(world?.combat?.enemies) ? world.combat.enemies : [];
+  const firstAlive = enemies.find(e => e && e.hp > 0);
+  return {
+    ...base,
+    approachTag,
+    stakeTag: 'harm',
+    targetId: firstAlive ? firstAlive.id : null
   };
 }
 

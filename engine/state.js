@@ -9,7 +9,7 @@ import { generateRegions } from './world/regions.js';
 import { generateInitialMap } from './map/generateMap.js';
 import { ensureStructures } from './structures/structuresState.js';
 
-export const WORLD_VERSION = 12;
+export const WORLD_VERSION = 13;
 
 const GOAL_KINDS = new Set(['reach', 'obtain', 'talkTo', 'learn', 'defeat']);
 const GOAL_STATUSES = new Set(['active', 'completed', 'failed']);
@@ -60,12 +60,7 @@ export function ensureWorld(partial) {
       pressure: clampInt(w.clocks.pressure ?? 0, 0, 12),
       revelation: clampInt(w.clocks.revelation ?? 0, 0, 12)
     } : { dread: 0, pressure: 0, revelation: 0 },
-    combat: w.combat && typeof w.combat === 'object' ? {
-      active: Boolean(w.combat.active),
-      initiatives: w.combat.initiatives ?? {},
-      turnOrder: Array.isArray(w.combat.turnOrder) ? w.combat.turnOrder : [],
-      turnIndex: clampInt(w.combat.turnIndex ?? 0, 0, 999)
-    } : { active: false, initiatives: {}, turnOrder: [], turnIndex: 0 },
+    combat: ensureCombat(w.combat),
 
     // Living system core
     factions: ensureFactions(w.factions),
@@ -117,7 +112,7 @@ export function newWorld({ seed, fate, campaignId, pack }) {
     ecology: ensureEcology(null),
     reputation: ensureReputation(null, ensureFactions(null)),
 
-    combat: { active: false, initiatives: {}, turnOrder: [], turnIndex: 0 },
+    combat: defaultCombat(),
     goals: [],
     recentBeats: [],
     timeline: [],
@@ -168,6 +163,55 @@ export function appendRecentBeat(world, beat) {
   const prior = Array.isArray(world?.recentBeats) ? world.recentBeats : [];
   const next = ensureRecentBeats([...prior, beat]);
   return { ...world, recentBeats: next };
+}
+
+// ── Combat (Pass 5) ────────────────────────────────────────────────────────
+// Combat encounter shape — see engine/combat/* for the resolver/lifecycle.
+//
+//   world.combat = {
+//     active, round, turnIndex, enemies, beganAt, reason, playerGuard
+//   }
+//
+// Enemy: { id, name, hp, maxHp, damage, canParley, defeated, sourceNpcId }
+//
+// playerGuard is a one-shot flag set by an endure-success during combat;
+// the next enemy counter consumes it (–1 to that counter's damage).
+const COMBAT_ENEMY_CAP = 6;
+
+export function defaultCombat() {
+  return { active: false, round: 0, turnIndex: 0, enemies: [], beganAt: 0, reason: '', playerGuard: false };
+}
+
+export function ensureCombat(c) {
+  if (!c || typeof c !== 'object') return defaultCombat();
+
+  const enemiesIn = Array.isArray(c.enemies) ? c.enemies : [];
+  const enemies = [];
+  for (const eRaw of enemiesIn) {
+    if (!eRaw || typeof eRaw !== 'object') continue;
+    const id = String(eRaw.id ?? '').trim();
+    const name = String(eRaw.name ?? '').trim();
+    if (!id || !name) continue;
+    const maxHp = clampInt(eRaw.maxHp ?? 1, 1, 20);
+    const hpRaw = clampInt(eRaw.hp ?? maxHp, 0, 20);
+    const hp = Math.min(maxHp, hpRaw);
+    const damage = clampInt(eRaw.damage ?? 1, 1, 6);
+    const canParley = Boolean(eRaw.canParley ?? true);
+    const defeated = Boolean(eRaw.defeated ?? (hp === 0));
+    const sourceNpcId = String(eRaw.sourceNpcId ?? '');
+    enemies.push({ id, name, hp, maxHp, damage, canParley, defeated, sourceNpcId });
+    if (enemies.length >= COMBAT_ENEMY_CAP) break;
+  }
+
+  const active = Boolean(c.active);
+  const round = clampInt(c.round ?? 0, 0, 99);
+  const turnIndex = clampInt(c.turnIndex ?? 0, 0, COMBAT_ENEMY_CAP);
+  const beganAt = clampInt(c.beganAt ?? 0, 0, 999999);
+  const reasonRaw = String(c.reason ?? '');
+  const reason = reasonRaw.length > 64 ? reasonRaw.slice(0, 64) : reasonRaw;
+  const playerGuard = Boolean(c.playerGuard);
+
+  return { active, round, turnIndex, enemies, beganAt, reason, playerGuard };
 }
 
 function ensureGoals(goals) {

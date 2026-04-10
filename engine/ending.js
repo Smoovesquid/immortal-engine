@@ -22,7 +22,8 @@ export function ensureEnding(e) {
     triggered: coerceBool(x.triggered),
     type: String(x.type ?? ''),
     epilogueLine: String(x.epilogueLine ?? ''),
-    locked: coerceBool(x.locked)
+    locked: coerceBool(x.locked),
+    reason: String(x.reason ?? '')
   };
 }
 

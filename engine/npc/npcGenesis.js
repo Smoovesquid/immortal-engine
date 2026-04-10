@@ -139,6 +139,10 @@ export function generateSettlementNPCs(nodeId, seed, pack, factionState, ecology
       factionId,
       originTick,
       disposition,
+      // Pass 5: optional hostile flag — defaults false. NPC genesis does not
+      // mint hostile NPCs on its own; tests/scripts can set this directly to
+      // make a settlement NPC attackable. No bestiary, no autogen of hostility.
+      hostile: false,
       conversationState: {
         metPlayer: false,
         topicsDiscussed: [],

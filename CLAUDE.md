@@ -16,7 +16,7 @@ WORLD_VERSION                  # see engine/state.js (source of truth)
 
 **Canon Log wins.** `engine/csl/` (schema, validator, serializer, grammar, latent, domains). If Canon Log and world state diverge, Canon Log is authoritative. See `docs/ARCHITECTURE_OVERVIEW.md`.
 
-**Silent LLM fallback.** `engine/llmAdapter.js`, `engine/llmPhysics.js`, `server/llmProvider.js` call Claude Sonnet 4.6 via Anthropic Messages API (`/v1/messages`). If the key is missing or the API errors, the game continues with base narration — never throws to caller. The `openai` dep in `package.json` is stale/unused.
+**Silent LLM fallback.** `engine/llmAdapter.js`, `engine/llmPhysics.js`, `server/llmProvider.js` call Claude Sonnet 4.6 via Anthropic Messages API (`/v1/messages`). If the key is missing or the API errors, the game continues with base narration — never throws to caller. **The `openai` dep is NOT stale** — `server/ai.js` uses it for the victory-gates API activation path (polish/trace/replay flow), separate from the Anthropic-backed narration layer. Two clients coexist by design; don't drop the dep.
 
 **Invariants throw.** `engine/invariants.js` runs `assertWorldInvariants()` on every `ensureWorld()` call. Invariant violations are hard failures. This is the opposite of the LLM layer — know which layer you're in.
 

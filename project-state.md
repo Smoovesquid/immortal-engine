@@ -30,7 +30,7 @@ _Snapshot: 2026-04-10, branch `feat/phase2-physics-decompression`_
 
 ## 2. Architecture snapshot
 
-**Stack:** Node.js (ESM, `"type": "module"`), Express 4, `openai` SDK (legacy dependency), `dotenv`. Vanilla HTML/CSS/JS browser UI (no framework, no build step). Tests via `node --test`. LLM calls target **Anthropic Messages API** with model `claude-sonnet-4-6` (the `openai` dep is leftover from pre-N2).
+**Stack:** Node.js (ESM, `"type": "module"`), Express 4, `@anthropic-ai/sdk`, `openai` SDK, `dotenv`. Vanilla HTML/CSS/JS browser UI (no framework, no build step). Tests via `node --test`. **Two LLM clients coexist by design:** narration layer (`engine/llmAdapter.js`, `engine/llmPhysics.js`, `server/llmProvider.js`) calls **Anthropic Messages API** with `claude-sonnet-4-6`; victory-gates API activation layer (`server/ai.js`, trace/replay flow) uses the OpenAI client.
 
 **Entry points:**
 - `server.js` — Express dev server on port 5179, thin wrapper over `engine/`.
@@ -170,7 +170,7 @@ Ordered by how often they bite day-to-day work:
    - `engine/llmPhysics.js` handles physics-detection LLM calls.
    - `server/llmProvider.js` is the abstraction layer.
    - **Silent fallback:** if key is missing or API errors, the game continues with base narration — no throws. This is a hard contract and easy to violate.
-   - The `openai` dependency in `package.json` is stale and should probably be removed.
+   - The `openai` dependency is **live**: `server/ai.js` uses it for the victory-gates API activation path (polish/trace/replay), separate from the Anthropic narration layer. Two clients coexist by design.
 
 5. **Active milestone structure + test naming.** `PLAN.md` organizes work as S# (Canonical Surface) and N# (AI Narration) gates. Tests mirror this (`S1.*`, `N2N3N4N5.*`). New test files should follow the `{prefix}##.shortName.test.js` convention.
 
@@ -199,4 +199,4 @@ Ordered by how often they bite day-to-day work:
 - Expand the engine map to name the subdirectory families (`npc/`, `map/`, `structures/`, `decompression/`, `csl/`, `goals/`, `chargen/`, `env/`, `gear/`).
 - Add a **Test naming** bullet: `S#`, `N#`, `U##`, `C#`, `G0#` and what each prefix means.
 - Add a **When bumping `WORLD_VERSION`** checklist.
-- Remove or de-emphasize the `openai` dep; note the real model is Claude Sonnet 4.6.
+- Document the dual-client reality: Anthropic (`claude-sonnet-4-6`) for narration, OpenAI for victory-gates API activation path (`server/ai.js`). Do not remove the `openai` dep.

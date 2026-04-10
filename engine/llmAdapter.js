@@ -333,6 +333,10 @@ export function buildDMSystemPrompt(dmCtx) {
 
   const threatLine = scene.activeThreat ? `ACTIVE THREAT: ${scene.activeThreat}` : '';
   const whisperLine = dmCtx.worldWhisper ? `OFFSCREEN CHANGE (mention naturally if relevant): ${dmCtx.worldWhisper}` : '';
+  const goals = dmCtx.goals?.active ?? [];
+  const goalLine = goals.length
+    ? `PLAYER GOALS (active): ${goals.map(g => `${g.label || g.kind} [${g.kind}:${g.targetRef}]`).join(' | ')}`
+    : '';
 
   return [
     `You are the Dungeon Master for a tabletop RPG session.`,
@@ -345,6 +349,7 @@ export function buildDMSystemPrompt(dmCtx) {
     `- Exits: ${(loc.exits ?? []).join(', ') || 'none visible'}`,
     scene.interior ? `- Interior: room ${scene.interior.roomId}` : `- Outdoors`,
     threatLine,
+    goalLine,
     ``,
     `NPCs PRESENT:`,
     npcBlock,

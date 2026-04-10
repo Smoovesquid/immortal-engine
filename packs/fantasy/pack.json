@@ -28,6 +28,13 @@
     "recover a stolen relic",
     "break a local curse"
   ],
+  "starterGoals": [
+    {
+      "kind": "reach",
+      "targetRef": "__nearest_settlement__",
+      "label": "Travel to the next settlement"
+    }
+  ],
   "skills": [
     "Torchcraft",
     "Steel",

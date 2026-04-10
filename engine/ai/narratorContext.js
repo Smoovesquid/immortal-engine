@@ -83,6 +83,7 @@ export function buildDMContext(world, outcome = {}, pack = {}) {
   const player = buildPlayer(w);
   const rules = buildRules(w, pack);
   const worldWhisper = pickWorldWhisper(w);
+  const goals = buildGoalsBlock(w);
 
   return {
     scene,
@@ -90,8 +91,21 @@ export function buildDMContext(world, outcome = {}, pack = {}) {
     worldPressure,
     player,
     rules,
-    worldWhisper
+    worldWhisper,
+    goals
   };
+}
+
+// ── Goals ─────────────────────────────────────────────────────────────────
+
+function buildGoalsBlock(w) {
+  const all = Array.isArray(w.goals) ? w.goals : [];
+  const active = all
+    .filter(g => g.status === 'active')
+    .slice(0, 3)
+    .map(g => ({ kind: String(g.kind), label: String(g.label || ''), targetRef: String(g.targetRef) }));
+  const completedThisSession = all.reduce((n, g) => n + (g.status === 'completed' ? 1 : 0), 0);
+  return { active, completedThisSession };
 }
 
 // ── Scene ─────────────────────────────────────────────────────────────────

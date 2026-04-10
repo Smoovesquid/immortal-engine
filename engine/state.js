@@ -9,7 +9,11 @@ import { generateRegions } from './world/regions.js';
 import { generateInitialMap } from './map/generateMap.js';
 import { ensureStructures } from './structures/structuresState.js';
 
-export const WORLD_VERSION = 9;
+export const WORLD_VERSION = 10;
+
+const GOAL_KINDS = new Set(['reach', 'obtain', 'talkTo', 'learn', 'defeat']);
+const GOAL_STATUSES = new Set(['active', 'completed', 'failed']);
+const GOALS_CAP = 12;
 
 export function ensureWorld(partial) {
   const w = partial && typeof partial === 'object' ? partial : {};
@@ -71,6 +75,8 @@ export function ensureWorld(partial) {
 
     canonLog: ensureCanonLog(w.canonLog),
 
+    goals: ensureGoals(w.goals),
+
     timeline: Array.isArray(w.timeline) ? w.timeline : [],
     ui: {
       advanced: Boolean(ui.advanced),
@@ -104,9 +110,43 @@ export function newWorld({ seed, fate, campaignId, pack }) {
     reputation: ensureReputation(null, ensureFactions(null)),
 
     combat: { active: false, initiatives: {}, turnOrder: [], turnIndex: 0 },
+    goals: [],
     timeline: [],
     ui: { advanced: false, lastError: '' }
   });
+}
+
+function ensureGoals(goals) {
+  const list = Array.isArray(goals) ? goals : [];
+  const out = [];
+  const seenIds = new Set();
+  for (const g of list) {
+    if (!g || typeof g !== 'object') continue;
+    const id = String(g.id ?? '').trim();
+    const kind = String(g.kind ?? '').trim();
+    const targetRef = String(g.targetRef ?? '').trim();
+    if (!id || !kind || !targetRef) continue;
+    if (!GOAL_KINDS.has(kind)) continue;
+    if (seenIds.has(id)) continue;
+    const status = GOAL_STATUSES.has(String(g.status ?? '')) ? String(g.status) : 'active';
+    const createdAt = Number.isFinite(Number(g.createdAt)) ? Math.max(0, Math.trunc(Number(g.createdAt))) : 0;
+    const completedAtRaw = g.completedAt;
+    const completedAt = (completedAtRaw == null)
+      ? null
+      : (Number.isFinite(Number(completedAtRaw)) ? Math.max(0, Math.trunc(Number(completedAtRaw))) : null);
+    seenIds.add(id);
+    out.push({
+      id,
+      kind,
+      targetRef,
+      label: String(g.label ?? ''),
+      status,
+      createdAt,
+      completedAt
+    });
+    if (out.length >= GOALS_CAP) break;
+  }
+  return out;
 }
 
 function ensureMicroClocks(x) {

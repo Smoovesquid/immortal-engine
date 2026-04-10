@@ -13,8 +13,21 @@ export function normalizePack(raw) {
     },
     starterLocations: arrayStrings(p.starterLocations),
     starterObjectives: arrayStrings(p.starterObjectives),
+    starterGoals: normalizeStarterGoals(p.starterGoals),
     skills: arrayStrings(p.skills)
   };
+}
+
+function normalizeStarterGoals(x) {
+  if (!Array.isArray(x)) return [];
+  return x
+    .filter(g => g && typeof g === 'object')
+    .map(g => ({
+      kind: String(g.kind ?? '').trim(),
+      targetRef: String(g.targetRef ?? '').trim(),
+      label: String(g.label ?? '').trim()
+    }))
+    .filter(g => g.kind && g.targetRef);
 }
 
 export function normalizeManifest(raw) {

@@ -20,6 +20,7 @@ import { createCharacter } from './chargen/genesis.js';
 import { decompressAndCanonizeSync } from './decompression/decompress.js';
 import { discoverNode } from './map/mapState.js';
 import { detectPhysicalInteraction, evaluatePhysicsSync } from './llmPhysics.js';
+import { createGoal, checkGoals } from './goals/goalContract.js';
 
 // Pure-ish play loop: world -> {world, output}
 
@@ -91,6 +92,11 @@ export function beginAdventure(world, packsById) {
   // U16: deterministic starter thread so worldTick/threadShift has a living thread to evolve.
   if (!Array.isArray(w.instrument?.threads) || w.instrument.threads.length === 0) {
     w = introduceThread(w, objective);
+  }
+
+  // Seed an initial goal so playerMove has something verifiable to track.
+  if (Array.isArray(w.goals) && w.goals.length === 0) {
+    w = seedInitialGoal(w, pack, objective);
   }
 
   // Build opening context with NPC presence
@@ -271,6 +277,7 @@ export function playerMove(world, packsById, text) {
       if (nextName) w1 = { ...w1, scene: { ...w1.scene, location: nextName } };
       w1 = setPrimaryPartyZone(w1, 'near');
       w1 = pushEvent(w1, { kind: 'travel', data: { from: before, to: String(w1.map.currentNodeId) } });
+      w1 = maybeCheckGoals(w1);
       return { world: w1, output: { narration: nextName ? `Wizard: You travel to ${nextName}.` : 'Wizard: You move to the next position.', mechanics: '' } };
     }
     return { world: w, output: { narration: 'Wizard: You hold position.', mechanics: '' } };
@@ -300,6 +307,7 @@ export function playerMove(world, packsById, text) {
       ];
       w = applyDeltas(w, deltas);
       w = pushEvent(w, { kind: 'npcDialogue', data: { npcId, npcName: targetNpc.name, trust: trust + trustBump } });
+      w = maybeCheckGoals(w);
       const role = targetNpc.role ? ` the ${targetNpc.role}` : '';
       const mood = honesty > 0.7 ? 'speaks openly' : honesty < 0.3 ? 'is guarded and evasive' : 'chooses words carefully';
       return { world: w, output: {
@@ -435,6 +443,9 @@ export function playerMove(world, packsById, text) {
   // Living world tick: every player action advances the world offscreen.
   w = worldTick(w, `${w.meta.seed}|tick|turn${w.time.turn}|tl${w.timeline.length}`);
 
+  // Goal Contract: promote any active goal whose completion predicate is true.
+  w = maybeCheckGoals(w);
+
   // Ending check (deterministic by state).
   const wasEndingTriggered = Boolean(w.ending?.triggered);
   w = triggerEnding(w);
@@ -543,6 +554,10 @@ export function newScene(world, packsById, { lastResolutionKind = 'turn' } = {})
   };
 
   w = pushEvent(w, { kind: 'scene', data: { location: plan.location, objective: plan.objective, refKind, tags: plan.tags, thread: plan.thread, carry: plan.carry } });
+
+  // Goal Contract: scene transitions can complete reach-goals (newScene moves nodes).
+  w = maybeCheckGoals(w);
+
   const wasEndingTriggered = Boolean(w.ending?.triggered);
   w = triggerEnding(w);
   if (!wasEndingTriggered && Boolean(w.ending?.triggered)) {
@@ -971,6 +986,89 @@ function pushEvent(world, { kind, data }) {
   const t = world.timeline.length;
   const e = { t, kind: String(kind), data: data ?? {} };
   return { ...world, timeline: [...world.timeline, e] };
+}
+
+// Seed a single deterministic starter goal. Resolves the
+// __nearest_settlement__ sentinel against the current map. Falls back to a
+// learn-objective goal if no other settlement is reachable.
+function seedInitialGoal(world, pack, objective) {
+  let w = world;
+  const starters = Array.isArray(pack?.starterGoals) ? pack.starterGoals : null;
+
+  if (starters && starters.length) {
+    for (const spec of starters) {
+      const resolved = resolveStarterGoalSpec(w, spec);
+      if (!resolved) continue;
+      const { world: w1, goal } = createGoal(w, resolved);
+      if (!goal) continue;
+      w = pushEvent(w1, { kind: 'goalCreated', data: { goalId: goal.id, kind: goal.kind, targetRef: goal.targetRef } });
+      return w;
+    }
+  }
+
+  // Fallback: try a reach-goal toward a non-current settlement, else learn objective.
+  const otherSettlement = pickOtherSettlement(w);
+  if (otherSettlement) {
+    const { world: w1, goal } = createGoal(w, {
+      kind: 'reach',
+      targetRef: otherSettlement.id,
+      label: `Travel to ${otherSettlement.name || otherSettlement.id}`
+    });
+    if (goal) {
+      return pushEvent(w1, { kind: 'goalCreated', data: { goalId: goal.id, kind: goal.kind, targetRef: goal.targetRef } });
+    }
+  }
+
+  const objText = String(objective || '').trim();
+  if (objText) {
+    const factText = `objective:${objText}`;
+    const { world: w1, goal } = createGoal(w, {
+      kind: 'learn',
+      targetRef: factText,
+      label: objText
+    });
+    if (goal) {
+      return pushEvent(w1, { kind: 'goalCreated', data: { goalId: goal.id, kind: goal.kind, targetRef: goal.targetRef } });
+    }
+  }
+
+  return w;
+}
+
+function resolveStarterGoalSpec(world, spec) {
+  if (!spec || typeof spec !== 'object') return null;
+  const kind = String(spec.kind || '').trim();
+  const label = String(spec.label || '').trim();
+  let targetRef = String(spec.targetRef || '').trim();
+  if (!kind || !targetRef) return null;
+
+  if (targetRef === '__nearest_settlement__') {
+    const node = pickOtherSettlement(world);
+    if (!node) return null;
+    targetRef = node.id;
+  }
+  return { kind, targetRef, label };
+}
+
+function pickOtherSettlement(world) {
+  const nodes = Array.isArray(world?.map?.nodes) ? world.map.nodes : [];
+  const here = String(world?.map?.currentNodeId || '');
+  // Deterministic: filter by nodeType, exclude current, sort by id.
+  const others = nodes
+    .filter(n => n && n.nodeType === 'settlement' && n.id !== here)
+    .slice()
+    .sort((a, b) => String(a.id).localeCompare(String(b.id)));
+  return others[0] || null;
+}
+
+function maybeCheckGoals(world) {
+  const { world: next, completed } = checkGoals(world);
+  if (!completed.length) return next;
+  let w = next;
+  for (const g of completed) {
+    w = pushEvent(w, { kind: 'goalCompleted', data: { goalId: g.id, kind: g.kind, targetRef: g.targetRef } });
+  }
+  return w;
 }
 
 function uniq(arr) {

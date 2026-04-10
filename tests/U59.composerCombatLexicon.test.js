@@ -16,6 +16,7 @@ import assert from 'node:assert/strict';
 import { newWorld, ensureWorld } from '../engine/state.js';
 import { compose, buildCombatPhrase } from '../engine/composer.js';
 import { makeRng, seedFromString } from '../engine/rng.js';
+import { buildDMSystemPrompt } from '../engine/llmAdapter.js';
 
 const APPROACHES = ['force', 'finesse', 'endure', 'heart', 'focus'];
 const OUTCOMES = ['success', 'mixed', 'failure'];
@@ -174,4 +175,52 @@ test('U59-09: compose() with no approach + no updateKind still returns narration
   }, { pack: {} });
   assert.equal(typeof composed.narrationLine, 'string');
   assert.ok(composed.narrationLine.length > 0);
+});
+
+// ── 10–11: DM system prompt COMBAT block ──────────────────────────────────
+
+test('U59-10: buildDMSystemPrompt includes COMBAT block when dmCtx.combat is active', () => {
+  const dmCtx = {
+    scene: { location: { name: 'arena', type: 'wilderness', exits: [] }, timeOfDay: 'dusk', interior: null },
+    npcsPresent: [],
+    worldPressure: { factionSummary: 'none', ecologySummary: 'stable', activeScars: [], activeThreads: [] },
+    player: { name: 'Tester', stats: { MIGHT: 12 }, weapons: [], wounds: 0, stress: 0 },
+    rules: { setting: 'fantasy', packId: 'fantasy', whatCannotExist: [] },
+    worldWhisper: null,
+    goals: { active: [], completedThisSession: 0 },
+    recentBeats: [],
+    combat: {
+      round: 2,
+      playerGuard: true,
+      enemies: [
+        { id: 'enemy_0', name: 'Kael', hp: 3, maxHp: 8, canParley: false, defeated: false },
+        { id: 'enemy_1', name: 'Orla', hp: 0, maxHp: 6, canParley: true, defeated: true }
+      ]
+    },
+    dialogueTurn: null
+  };
+  const prompt = buildDMSystemPrompt(dmCtx);
+  assert.ok(prompt.includes('COMBAT (active'), 'COMBAT block missing');
+  assert.ok(prompt.includes('round 2'), 'round number missing');
+  assert.ok(prompt.includes('Kael: HP 3/8 [parley-refused]'), 'hostile enemy line missing');
+  assert.ok(prompt.includes('(defeated) Orla: HP 0/6 [parley]'), 'defeated friendly enemy line missing');
+  assert.ok(prompt.includes('Player guard: yes'), 'playerGuard line missing');
+});
+
+test('U59-11: buildDMSystemPrompt omits COMBAT block when dmCtx.combat is null', () => {
+  const dmCtx = {
+    scene: { location: { name: 'arena', type: 'wilderness', exits: [] }, timeOfDay: 'dusk', interior: null },
+    npcsPresent: [],
+    worldPressure: { factionSummary: 'none', ecologySummary: 'stable', activeScars: [], activeThreads: [] },
+    player: { name: 'Tester', stats: { MIGHT: 12 }, weapons: [], wounds: 0, stress: 0 },
+    rules: { setting: 'fantasy', packId: 'fantasy', whatCannotExist: [] },
+    worldWhisper: null,
+    goals: { active: [], completedThisSession: 0 },
+    recentBeats: [],
+    combat: null,
+    dialogueTurn: null
+  };
+  const prompt = buildDMSystemPrompt(dmCtx);
+  assert.ok(!prompt.includes('COMBAT (active'), 'COMBAT block leaked when inactive');
+  assert.ok(!prompt.includes('Player guard:'), 'playerGuard line leaked when inactive');
 });

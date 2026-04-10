@@ -364,6 +364,24 @@ export function buildDMSystemPrompt(dmCtx) {
       ].join('\n')
     : '';
 
+  // Pass B — combat awareness: surface live combat state so the narrator can
+  // write fight prose with the right enemies and HP. Silently omits when
+  // combat is null (the LLM layer must never throw). Capped at 6 enemy lines
+  // (current invariant cap). Defeated enemies render with a (defeated) prefix.
+  const combat = dmCtx.combat;
+  const combatBlock = combat
+    ? [
+        ``,
+        `COMBAT (active — round ${combat.round}):`,
+        ...((combat.enemies || []).slice(0, 6).map(e => {
+          const tag = e.canParley ? '[parley]' : '[parley-refused]';
+          const prefix = e.defeated ? '(defeated) ' : '';
+          return `- ${prefix}${e.name}: HP ${e.hp}/${e.maxHp} ${tag}`;
+        })),
+        `Player guard: ${combat.playerGuard ? 'yes' : 'no'}`
+      ].join('\n')
+    : '';
+
   // DIALOGUE MODE — speak in the NPC's voice, respect withheld facts.
   const dt = dmCtx.dialogueTurn;
   const dialogueBlock = dt
@@ -410,6 +428,7 @@ export function buildDMSystemPrompt(dmCtx) {
     `- Weapons: ${(player.weapons ?? []).join(', ') || 'none'}`,
     `- Wounds: ${player.wounds ?? 0}/6, Stress: ${player.stress ?? 0}/6`,
     beatsBlock,
+    combatBlock,
     ``,
     `RULES:`,
     `- You CANNOT invent locations, NPCs, or history not in the context above.`,

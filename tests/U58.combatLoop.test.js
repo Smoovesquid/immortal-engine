@@ -26,6 +26,7 @@ import { createGoal, checkGoals } from '../engine/goals/goalContract.js';
 import { worldHash } from '../engine/worldHash.js';
 import { exportWorld, importWorld, loadSlot } from '../engine/save.js';
 import { playerMove } from '../engine/playloop.js';
+import { buildDMContext } from '../engine/ai/narratorContext.js';
 
 const packsById = {
   fantasy: {
@@ -605,6 +606,48 @@ test('U58-41: R15 — heart success vs non-hostile-minted enemy ends combat (par
   assert.ok(found, 'expected a heart success');
   assert.equal(found.world.combat.active, false, 'parley ends combat');
   assert.equal(found.world.combat.enemies[0].defeated, false);
+});
+
+// ── 42–44: Pass B — DMContext combat projection ───────────────────────────
+
+test('U58-42: buildDMContext returns combat:null when combat is inactive', () => {
+  const w = mkCombatWorld('dm-inactive');
+  const ctx = buildDMContext(w, {}, {});
+  assert.equal(ctx.combat, null);
+});
+
+test('U58-43: buildDMContext exposes round/playerGuard/enemies during active combat', () => {
+  let w = mkCombatWorld('dm-active');
+  w = startCombatDirectly(w, [
+    mkEnemy({ id: 'enemy_0', name: 'Kael', hp: 6, maxHp: 8, canParley: false }),
+    mkEnemy({ id: 'enemy_1', name: 'Yara', hp: 4, maxHp: 4, canParley: true })
+  ]);
+  // Force a guard set so the projection observably carries it.
+  w = applyDeltas(w, [{ op: 'combatState', set: { playerGuard: true } }]);
+  const ctx = buildDMContext(w, {}, {});
+  assert.ok(ctx.combat, 'combat block expected');
+  assert.equal(ctx.combat.round, 1);
+  assert.equal(ctx.combat.playerGuard, true);
+  assert.equal(ctx.combat.enemies.length, 2);
+  assert.equal(ctx.combat.enemies[0].name, 'Kael');
+  assert.equal(ctx.combat.enemies[0].hp, 6);
+  assert.equal(ctx.combat.enemies[0].maxHp, 8);
+  assert.equal(ctx.combat.enemies[0].canParley, false);
+  assert.equal(ctx.combat.enemies[1].name, 'Yara');
+  assert.equal(ctx.combat.enemies[1].canParley, true);
+});
+
+test('U58-44: DMContext combat.enemies is a sliced copy — mutating it does not touch world', () => {
+  let w = mkCombatWorld('dm-slice');
+  w = startCombatDirectly(w, [mkEnemy({ id: 'enemy_0', name: 'Kael', hp: 5, maxHp: 8 })]);
+  const ctx = buildDMContext(w, {}, {});
+  // Mutate the projection.
+  ctx.combat.enemies[0].hp = 999;
+  ctx.combat.enemies.push({ id: 'enemy_x', name: 'Phantom', hp: 1, maxHp: 1, canParley: false, defeated: false });
+  // World untouched.
+  assert.equal(w.combat.enemies.length, 1);
+  assert.equal(w.combat.enemies[0].hp, 5);
+  assert.equal(w.combat.enemies[0].name, 'Kael');
 });
 
 test('U58-35: loading a v12 save warns and normalizes combat to default', () => {

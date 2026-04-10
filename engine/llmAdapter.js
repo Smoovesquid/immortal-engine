@@ -348,6 +348,22 @@ export function buildDMSystemPrompt(dmCtx) {
     ? `PLAYER GOALS (active): ${goals.map(g => `${g.label || g.kind} [${g.kind}:${g.targetRef}]`).join(' | ')}`
     : '';
 
+  // Pass 4 — narrative memory: surface the last few resolved turns so the
+  // narrator can write continuity without re-describing them. Empty/malformed
+  // beats arrays silently omit the block (LLM layer must never throw).
+  const beats = Array.isArray(dmCtx.recentBeats) ? dmCtx.recentBeats : [];
+  const beatsBlock = beats.length
+    ? [
+        ``,
+        `RECENT BEATS (most recent last — for continuity, do NOT re-describe):`,
+        ...beats.map((b, i) => {
+          const inputQ = String(b.input || '').replace(/"/g, '\\"');
+          const tag = [b.approach, b.stake].filter(Boolean).join('/');
+          return `${i + 1}. [t=${b.t}] "${inputQ}" → ${b.outcome} @${b.location}${tag ? ` | ${tag}` : ''}`;
+        })
+      ].join('\n')
+    : '';
+
   // DIALOGUE MODE — speak in the NPC's voice, respect withheld facts.
   const dt = dmCtx.dialogueTurn;
   const dialogueBlock = dt
@@ -393,6 +409,7 @@ export function buildDMSystemPrompt(dmCtx) {
     `- Stats: ${Object.entries(player.stats || {}).map(([k,v]) => `${k}:${v}`).join(' ')}`,
     `- Weapons: ${(player.weapons ?? []).join(', ') || 'none'}`,
     `- Wounds: ${player.wounds ?? 0}/6, Stress: ${player.stress ?? 0}/6`,
+    beatsBlock,
     ``,
     `RULES:`,
     `- You CANNOT invent locations, NPCs, or history not in the context above.`,

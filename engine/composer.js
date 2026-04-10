@@ -66,7 +66,13 @@ export function compose(world, playerText, resolution, context = {}) {
 
   const npcPhrase = buildNpcPhrase(w, rng);
   const stressPhrase = buildStressPhrase(w);
-  const approachPhrase = buildApproachPhrase(resolution, rng);
+  // Pass B: combat turns get a parallel lexicon flavored for fights. Detection
+  // is the explicit updateKind === 'combat' marker the playloop sets when it
+  // routes a turn through resolveCombatTurn — never string-sniff combatSummary.
+  const isCombatTurn = String(resolution?.updateKind || '') === 'combat';
+  const approachPhrase = isCombatTurn
+    ? buildCombatPhraseFromResolution(resolution, rng)
+    : buildApproachPhrase(resolution, rng);
 
   const narrationLine = ensureOneSentence(buildNarration({
     band,
@@ -292,6 +298,73 @@ function buildApproachPhrase(resolution, rng) {
   const bank = APPROACH_LEXICON[approach][outcome];
   if (!Array.isArray(bank) || !bank.length) return '';
   return String(rng.pick(bank) || bank[0]);
+}
+
+// ── Combat lexicon ─────────────────────────────────────────────────────────
+// Parallel to APPROACH_LEXICON but flavored for fights. Used when the
+// composer detects a combat turn (resolution.updateKind === 'combat').
+// Heart-success has TWO success banks: parley (the foe stands down) vs
+// trivial (the foe is hostile and refuses parley — heart-appeal lands but
+// bounces). The playloop derives the parleyed boolean from the resolver's
+// mechanicsLine 'combat:parley' marker. Lowercase clauses, no period.
+const COMBAT_LEXICON = {
+  force: {
+    success: ['the blow lands hard', 'bone and armor give way', 'the strike crashes home', 'iron meets meat'],
+    mixed: ['the swing grazes', 'the hit lands shallow', 'the blow connects, just'],
+    failure: ['the swing misses wide', 'the target pivots away', 'momentum buys you nothing', 'your guard breaks first']
+  },
+  finesse: {
+    success: ['the thrust finds its seam', 'the cut slips past the guard', 'the blade goes where the eye was not', 'a precise opening, taken'],
+    mixed: ['the edge skitters off armor', 'a glancing slip, half a wound', 'the cut grazes ribs'],
+    failure: ['the parry catches you flat', 'the lock turns the wrong way', 'your timing arrives a beat late']
+  },
+  endure: {
+    success: ['the impact is weathered', 'you set your feet and take it', 'the line holds against the press', 'you eat the blow and stay standing'],
+    mixed: ['the hit rocks you, but the line holds', 'you take it badly and keep moving', 'pain trades for ground'],
+    failure: ['the wall in you gives', 'your guard buckles inward', 'endurance runs out mid-blow']
+  },
+  heart: {
+    successParley: ['the fight drains out of them', 'the weapon lowers', 'they hear you, and stop', 'the rage cracks and recedes'],
+    successTrivial: ['your words bounce off steel', 'they hear nothing but blood', 'the appeal dies in the air between you', 'no part of them is listening'],
+    mixed: ['the appeal half-lands and half-glances', 'a flicker behind the eyes, then nothing', 'they pause, then come again'],
+    failure: ['the words die before they reach', 'the eyes go cold and stay cold', 'no part of them wants to hear you']
+  },
+  focus: {
+    success: ['a gap in their stance becomes visible', 'you read the rhythm of their breathing', 'the pattern of the fight resolves', 'their next move arrives in your head before their hand'],
+    mixed: ['half the pattern shows itself', 'a piece of the rhythm comes clear', 'you see the opening too late to take it'],
+    failure: ['the fight stays a blur', 'their pattern stays opaque', 'you read nothing usable in time']
+  }
+};
+
+export function buildCombatPhrase({ approach, outcome, parleyed, enemyName, rng } = {}) {
+  const a = String(approach || '');
+  const cell = COMBAT_LEXICON[a];
+  if (!cell) return '';
+  const outRaw = String(outcome || '');
+  let bankKey = outRaw;
+  if (a === 'heart' && outRaw === 'success') {
+    bankKey = parleyed ? 'successParley' : 'successTrivial';
+  }
+  const bank = cell[bankKey];
+  if (!Array.isArray(bank) || !bank.length) return '';
+  const phrase = String((rng && typeof rng.pick === 'function' ? rng.pick(bank) : bank[0]) || bank[0]);
+  const name = String(enemyName || '').trim();
+  if (!name) return phrase;
+  // Most combat clauses are subjectless; appending "— Kael" reads cleanest
+  // and doesn't force per-clause grammar surgery.
+  return `${phrase} — ${name}`;
+}
+
+// Internal wrapper used by compose() so the call site mirrors
+// buildApproachPhrase's resolution-shaped signature.
+function buildCombatPhraseFromResolution(resolution, rng) {
+  return buildCombatPhrase({
+    approach: resolution?.approach,
+    outcome: resolution?.outcome || (resolution?.success ? 'success' : 'failure'),
+    parleyed: Boolean(resolution?.parleyed),
+    enemyName: resolution?.enemyName,
+    rng
+  });
 }
 
 function buildNpcPhrase(world, rng) {

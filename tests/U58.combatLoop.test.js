@@ -26,6 +26,7 @@ import { createGoal, checkGoals } from '../engine/goals/goalContract.js';
 import { worldHash } from '../engine/worldHash.js';
 import { exportWorld, importWorld, loadSlot } from '../engine/save.js';
 import { playerMove } from '../engine/playloop.js';
+import { buildDMContext } from '../engine/ai/narratorContext.js';
 
 const packsById = {
   fantasy: {
@@ -560,6 +561,94 @@ test('U58-34: worldHash observes combat state', () => {
 });
 
 // ── 35: save version warning ──────────────────────────────────────────────
+
+// ── 36–41: R15 — mintEnemyFromNpc honors npc.hostile ──────────────────────
+
+test('U58-36: R15 — hostile NPC mints with canParley:false', () => {
+  const e = mintEnemyFromNpc({ id: 'n1', name: 'Kael', hostile: true });
+  assert.equal(e.canParley, false);
+});
+
+test('U58-37: R15 — NPC with no hostile field mints with canParley:true', () => {
+  const e = mintEnemyFromNpc({ id: 'n2', name: 'Yara' });
+  assert.equal(e.canParley, true);
+});
+
+test('U58-38: R15 — explicitly non-hostile NPC mints with canParley:true', () => {
+  const e = mintEnemyFromNpc({ id: 'n3', name: 'Orla', hostile: false });
+  assert.equal(e.canParley, true);
+});
+
+test('U58-39: R15 — explicit combatProfile.canParley overrides hostile derivation', () => {
+  const e = mintEnemyFromNpc({ id: 'n4', name: 'Iden', hostile: true, combatProfile: { canParley: true } });
+  assert.equal(e.canParley, true);
+});
+
+test('U58-40: R15 — heart success vs hostile-minted enemy stays in combat (trivial damage)', () => {
+  let w = mkCombatWorld('r15-hostile');
+  // Mint via the public path so the hostile flag drives canParley.
+  const enemy = mintEnemyFromNpc({ id: 'npc_hostile', name: 'Kael', hostile: true, combatProfile: { maxHp: 10, damage: 2 } });
+  w = startCombatDirectly(w, [{ ...enemy, id: 'enemy_0' }]);
+  assert.equal(w.combat.enemies[0].canParley, false);
+  const found = findCombatTurnOutcome(w, 'heart', 'success');
+  assert.ok(found, 'expected a heart success');
+  assert.equal(found.world.combat.active, true, 'still in combat — parley refused');
+  assert.ok(found.world.combat.enemies[0].hp < 10, 'enemy took trivial damage');
+  assert.ok(found.world.combat.enemies[0].hp >= 8, 'damage was small (~1)');
+});
+
+test('U58-41: R15 — heart success vs non-hostile-minted enemy ends combat (parley)', () => {
+  let w = mkCombatWorld('r15-nonhostile');
+  const enemy = mintEnemyFromNpc({ id: 'npc_friend', name: 'Yara', combatProfile: { maxHp: 10, damage: 2 } });
+  w = startCombatDirectly(w, [{ ...enemy, id: 'enemy_0' }]);
+  assert.equal(w.combat.enemies[0].canParley, true);
+  const found = findCombatTurnOutcome(w, 'heart', 'success');
+  assert.ok(found, 'expected a heart success');
+  assert.equal(found.world.combat.active, false, 'parley ends combat');
+  assert.equal(found.world.combat.enemies[0].defeated, false);
+});
+
+// ── 42–44: Pass B — DMContext combat projection ───────────────────────────
+
+test('U58-42: buildDMContext returns combat:null when combat is inactive', () => {
+  const w = mkCombatWorld('dm-inactive');
+  const ctx = buildDMContext(w, {}, {});
+  assert.equal(ctx.combat, null);
+});
+
+test('U58-43: buildDMContext exposes round/playerGuard/enemies during active combat', () => {
+  let w = mkCombatWorld('dm-active');
+  w = startCombatDirectly(w, [
+    mkEnemy({ id: 'enemy_0', name: 'Kael', hp: 6, maxHp: 8, canParley: false }),
+    mkEnemy({ id: 'enemy_1', name: 'Yara', hp: 4, maxHp: 4, canParley: true })
+  ]);
+  // Force a guard set so the projection observably carries it.
+  w = applyDeltas(w, [{ op: 'combatState', set: { playerGuard: true } }]);
+  const ctx = buildDMContext(w, {}, {});
+  assert.ok(ctx.combat, 'combat block expected');
+  assert.equal(ctx.combat.round, 1);
+  assert.equal(ctx.combat.playerGuard, true);
+  assert.equal(ctx.combat.enemies.length, 2);
+  assert.equal(ctx.combat.enemies[0].name, 'Kael');
+  assert.equal(ctx.combat.enemies[0].hp, 6);
+  assert.equal(ctx.combat.enemies[0].maxHp, 8);
+  assert.equal(ctx.combat.enemies[0].canParley, false);
+  assert.equal(ctx.combat.enemies[1].name, 'Yara');
+  assert.equal(ctx.combat.enemies[1].canParley, true);
+});
+
+test('U58-44: DMContext combat.enemies is a sliced copy — mutating it does not touch world', () => {
+  let w = mkCombatWorld('dm-slice');
+  w = startCombatDirectly(w, [mkEnemy({ id: 'enemy_0', name: 'Kael', hp: 5, maxHp: 8 })]);
+  const ctx = buildDMContext(w, {}, {});
+  // Mutate the projection.
+  ctx.combat.enemies[0].hp = 999;
+  ctx.combat.enemies.push({ id: 'enemy_x', name: 'Phantom', hp: 1, maxHp: 1, canParley: false, defeated: false });
+  // World untouched.
+  assert.equal(w.combat.enemies.length, 1);
+  assert.equal(w.combat.enemies[0].hp, 5);
+  assert.equal(w.combat.enemies[0].name, 'Kael');
+});
 
 test('U58-35: loading a v12 save warns and normalizes combat to default', () => {
   const storage = (() => {

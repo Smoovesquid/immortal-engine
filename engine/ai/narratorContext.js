@@ -96,7 +96,31 @@ export function buildDMContext(world, outcome = {}, pack = {}) {
     worldWhisper,
     goals,
     recentBeats: Array.isArray(w.recentBeats) ? w.recentBeats.slice() : [],
+    combat: buildCombatBlock(w),
     dialogueTurn: buildDialogueTurn(w)
+  };
+}
+
+// ── Combat ────────────────────────────────────────────────────────────────
+// Pass B: derived view of world.combat for the DM. Returns null when combat
+// is inactive so the system prompt can omit the block silently. Sliced/copied
+// — callers must not mutate the returned arrays back into world state.
+
+function buildCombatBlock(w) {
+  const c = w?.combat;
+  if (!c?.active) return null;
+  const enemies = (Array.isArray(c.enemies) ? c.enemies : []).map(e => ({
+    id: String(e?.id ?? ''),
+    name: String(e?.name ?? ''),
+    hp: Number(e?.hp ?? 0),
+    maxHp: Number(e?.maxHp ?? 0),
+    canParley: Boolean(e?.canParley),
+    defeated: Boolean(e?.defeated)
+  }));
+  return {
+    round: Number(c.round ?? 0),
+    playerGuard: Boolean(c.playerGuard),
+    enemies
   };
 }
 

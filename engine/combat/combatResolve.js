@@ -53,7 +53,9 @@ export function resolveCombatTurn(world, move) {
         costs: [],
         deltas: [],
         mechanicsLine: '[combat inactive — no-op]',
-        combatSummary: 'combat is not active'
+        combatSummary: 'combat is not active',
+        targetEnemyName: '',
+        targetEnemyId: ''
       }
     };
   }
@@ -61,6 +63,13 @@ export function resolveCombatTurn(world, move) {
   const m = normalizeCombatMove(move, w.combat);
   const targetId = m.targetId;
   const targetEnemy = findLivingEnemy(w.combat, targetId) || firstLivingEnemy(w.combat);
+
+  // Pass B: surface the targeted enemy's identity on the result so the
+  // composer (and any other downstream consumer) can mention them by name
+  // without parsing free-form combatSummary text. Empty strings when no
+  // single enemy is the focus (victory branch overrides below).
+  const targetEnemyName = String(targetEnemy?.name ?? '');
+  const targetEnemyId = String(targetEnemy?.id ?? '');
 
   // Player turn: delegate to the canonical resolver. This reuses Pass 3's
   // approach signatures, DC hooks, and seeded RNG. Do NOT reimplement.
@@ -118,7 +127,9 @@ export function resolveCombatTurn(world, move) {
       result: {
         ...result,
         combatSummary: summaryParts.join('; ') || 'parley',
-        mechanicsLine: `${result.mechanicsLine} | combat:parley`
+        mechanicsLine: `${result.mechanicsLine} | combat:parley`,
+        targetEnemyName,
+        targetEnemyId
       }
     };
   }
@@ -132,7 +143,9 @@ export function resolveCombatTurn(world, move) {
       result: {
         ...result,
         combatSummary: summaryParts.join('; ') + ' — last enemy falls',
-        mechanicsLine: `${result.mechanicsLine} | combat:victory`
+        mechanicsLine: `${result.mechanicsLine} | combat:victory`,
+        targetEnemyName,
+        targetEnemyId
       }
     };
   }
@@ -172,7 +185,9 @@ export function resolveCombatTurn(world, move) {
       result: {
         ...result,
         combatSummary: summaryParts.join('; ') + ' — you fall',
-        mechanicsLine: `${result.mechanicsLine} | combat:defeat`
+        mechanicsLine: `${result.mechanicsLine} | combat:defeat`,
+        targetEnemyName,
+        targetEnemyId
       }
     };
   }
@@ -185,7 +200,9 @@ export function resolveCombatTurn(world, move) {
     result: {
       ...result,
       combatSummary: summaryParts.join('; '),
-      mechanicsLine: `${result.mechanicsLine} | combat:r${w.combat.round - 1}`
+      mechanicsLine: `${result.mechanicsLine} | combat:r${w.combat.round - 1}`,
+      targetEnemyName,
+      targetEnemyId
     }
   };
 }

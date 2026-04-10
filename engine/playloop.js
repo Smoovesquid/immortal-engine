@@ -437,7 +437,10 @@ export function playerMove(world, packsById, text) {
       success: result.outcome === 'success',
       updateKind: 'combat',
       outcome: result.outcome,
-      approach: move.approachTag
+      approach: move.approachTag,
+      enemyName: String(result.targetEnemyName || ''),
+      enemyId: String(result.targetEnemyId || ''),
+      parleyed: typeof result.mechanicsLine === 'string' && result.mechanicsLine.includes('combat:parley')
     }, { pack });
     w = applyComposerDelta(w, composed.ledgerDelta);
 
@@ -477,7 +480,10 @@ export function playerMove(world, packsById, text) {
           success: result.outcome === 'success',
           updateKind: 'combat',
           outcome: result.outcome,
-          approach: move.approachTag
+          approach: move.approachTag,
+          enemyName: String(result.targetEnemyName || ''),
+          enemyId: String(result.targetEnemyId || ''),
+          parleyed: typeof result.mechanicsLine === 'string' && result.mechanicsLine.includes('combat:parley')
         }, { pack });
         w = applyComposerDelta(w, composed.ledgerDelta);
         return { world: w, output: { narration: composed.narrationLine, mechanics: result.mechanicsLine } };

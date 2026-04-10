@@ -29,13 +29,22 @@ const DEFAULT_ENEMY = {
  * Pure: maps an NPC into an Enemy record. Reads optional npc.combatProfile
  * for { maxHp, damage, canParley } overrides. Defaults are intentionally
  * boring — Pass 5 has no bestiary.
+ *
+ * R15: canParley derivation honors npc.hostile. Explicit hostile NPCs mint
+ * with canParley:false so a heart-success can't trivially end combat against
+ * them (the heart-fallback trivial-damage branch fires instead). Non-hostile
+ * NPCs attacked by mistake remain parley-eligible — the "friendly fire"
+ * safety valve. An explicit npc.combatProfile.canParley always wins (lets
+ * tests and future bestiary content override the derivation).
  */
 export function mintEnemyFromNpc(npc) {
   const n = npc && typeof npc === 'object' ? npc : {};
   const profile = n.combatProfile && typeof n.combatProfile === 'object' ? n.combatProfile : {};
   const maxHp = clampInt(profile.maxHp ?? DEFAULT_ENEMY.maxHp, 1, 20);
   const damage = clampInt(profile.damage ?? DEFAULT_ENEMY.damage, 1, 6);
-  const canParley = profile.canParley == null ? DEFAULT_ENEMY.canParley : Boolean(profile.canParley);
+  const canParley = profile.canParley == null
+    ? !Boolean(n.hostile)
+    : Boolean(profile.canParley);
   const sourceNpcId = String(n.id ?? '');
   return {
     id: '', // assigned at begin

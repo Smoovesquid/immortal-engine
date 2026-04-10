@@ -1,0 +1,29 @@
+{
+  "trade": [
+    { "name": "dusty display case", "tags": ["glass", "furniture"], "weight": 4, "bulk": 4, "parts": ["glass panes", "frame", "shelves"] },
+    { "name": "moth-eaten counter", "tags": ["wood", "furniture"], "weight": 4, "bulk": 3, "parts": ["counter top", "legs", "drawers"] },
+    { "name": "brass cash register", "tags": ["metal", "tool"], "weight": 3, "bulk": 2, "parts": ["drawer", "keys", "bell"] }
+  ],
+  "sacred": [
+    { "name": "crumbling altar", "tags": ["stone", "furniture"], "weight": 5, "bulk": 5, "parts": ["slab", "base", "carvings"] },
+    { "name": "rusted censer", "tags": ["metal", "tool"], "weight": 2, "bulk": 1, "parts": ["bowl", "chain", "lid"] },
+    { "name": "rotting prayer bench", "tags": ["wood", "furniture"], "weight": 3, "bulk": 2, "parts": ["seat", "kneeler", "frame"] },
+    { "name": "stained glass shard rack", "tags": ["glass", "fixture"], "weight": 3, "bulk": 3, "parts": ["frame", "shards", "lead strips"] }
+  ],
+  "military": [
+    { "name": "collapsed armor stand", "tags": ["metal", "furniture"], "weight": 3, "bulk": 3, "parts": ["post", "arms", "base"] },
+    { "name": "warped weapons cabinet", "tags": ["wood", "container"], "weight": 4, "bulk": 3, "parts": ["doors", "shelves", "hinges"] },
+    { "name": "dusty war banner", "tags": ["fabric", "fixture"], "weight": 1, "bulk": 2, "parts": ["cloth", "pole", "mounting"] }
+  ],
+  "wilderness": [
+    { "name": "gnarled dead tree", "tags": ["wood", "natural"], "weight": 5, "bulk": 5, "parts": ["trunk", "branches", "roots"] },
+    { "name": "cracked headstone", "tags": ["stone", "fixture"], "weight": 4, "bulk": 3, "parts": ["slab", "base", "inscription"] },
+    { "name": "rusted iron fence", "tags": ["metal", "barrier"], "weight": 4, "bulk": 4, "parts": ["rails", "posts", "gate"] }
+  ],
+  "default": [
+    { "name": "cobwebbed armchair", "tags": ["wood", "furniture"], "weight": 3, "bulk": 3, "parts": ["seat", "back", "arms", "legs"] },
+    { "name": "warped dining table", "tags": ["wood", "furniture"], "weight": 4, "bulk": 3, "parts": ["top", "legs"] },
+    { "name": "cracked mirror", "tags": ["glass", "fixture"], "weight": 2, "bulk": 2, "parts": ["glass", "frame"] },
+    { "name": "creaking rocking chair", "tags": ["wood", "furniture"], "weight": 2, "bulk": 2, "parts": ["seat", "rockers", "back"] }
+  ]
+}

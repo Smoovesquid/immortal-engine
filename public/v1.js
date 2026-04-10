@@ -73,7 +73,7 @@ const ui = {
   worldHash: '',
   status: '',
   ai: { online: null, text: '(not loaded)' },
-  aiKey: sessionStorage.getItem('anthropic_key') || '',
+  aiKey: localStorage.getItem('anthropic_key') || '',
   aiKeyAck: '',
   aiTest: { ok: null, text: '(not run)', ms: null },
   aiStatus: { ok: null, online: null, source: "(unknown)", mode: "(unknown)", envPresent: null, sessionPresent: null },
@@ -104,6 +104,25 @@ async function refreshAiStatus() {
 function setStatus(msg) {
   ui.status = String(msg || "");
   render();
+}
+
+async function tryAiNarration(world, baseNarration, outcome) {
+  const anthropicKey = String(ui.aiKey || '').trim();
+  if (!anthropicKey) return null;
+  try {
+    const res = await fetch('/api/narrate', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ world, baseNarration, outcome, anthropicKey })
+    });
+    const data = await res.json();
+    if (data.ok && data.narration && data.narration !== baseNarration) {
+      return data.narration;
+    }
+  } catch {
+    // fall through
+  }
+  return null;
 }
 
 function coerceFate01(x) {
@@ -137,7 +156,7 @@ function startFromWorld(w, { keepTranscript = false } = {}) {
   });
 }
 
-function beginFromInvocation(inv) {
+async function beginFromInvocation(inv) {
   const seed = String(inv?.seed || 'seed').trim() || 'seed';
   const fate = coerceFate01(inv?.fate);
   const primaryId = String(inv?.pack?.primaryId || 'fantasy');
@@ -153,11 +172,18 @@ function beginFromInvocation(inv) {
   const { world, output } = beginAdventure(w0, ui.packs.byId);
   saveSlot(localStorage, world, 'slot1');
 
-  ui.play.lines = [{ who: 'wizard', text: output?.narration || 'Wizard: The world begins.', mech: output?.mechanics || '' }];
+  const baseNarration = output?.narration || 'The world begins.';
+  const wizardLine = { who: 'wizard', text: '', mech: output?.mechanics || '' };
+  ui.play.lines = [wizardLine];
   ui.play.input = '';
   ui.play.lastResolutionKind = 'turn';
 
   startFromWorld(world, { keepTranscript: true });
+
+  // Try AI narration; fall back to base if unavailable
+  const aiText = await tryAiNarration(world, baseNarration, {});
+  wizardLine.text = aiText || baseNarration;
+  render();
 }
 
 function beginNewWorld() {
@@ -207,49 +233,43 @@ async function doSubmitMove() {
   const baseNarration = output?.narration || 'Wizard: ...';
 
   ui.play.lines.push({ who: 'you', text, mech: '' });
-  // Push base narration immediately so the player never waits.
-  const wizardLine = { who: 'wizard', text: baseNarration, mech: output?.mechanics || '' };
+  const wizardLine = { who: 'wizard', text: '', mech: output?.mechanics || '' };
   ui.play.lines.push(wizardLine);
   ui.play.input = '';
   ui.play.lastResolutionKind = 'turn';
 
   persistAndRehash(world);
-  setStatus('Move resolved.');
+  setStatus('Narrating…');
   render();
 
-  // Fire-and-forget narration upgrade. If it fails, wizardLine already has the base text.
-  const anthropicKey = String(ui.aiKey || '').trim();
-  if (anthropicKey) {
-    try {
-      const res = await fetch('/api/narrate', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ world, baseNarration, outcome: { input: text }, anthropicKey })
-      });
-      const data = await res.json();
-      if (data.ok && data.narration && data.narration !== baseNarration) {
-        wizardLine.text = data.narration;
-        render();
-      }
-    } catch {
-      // silently keep base narration
-    }
-  }
+  // Wait for AI narration; fall back to base if unavailable
+  const aiText = await tryAiNarration(world, baseNarration, { input: text });
+  wizardLine.text = aiText || baseNarration;
+  setStatus('Move resolved.');
+  render();
 }
 
-function doNewScene() {
+async function doNewScene() {
   setStatus('Creating new scene…');
   const w = ui.world ? ensureWorld(ui.world) : null;
   if (!w) return setStatus('No world loaded.');
   if (Boolean(w.ending?.locked)) return setStatus('Session ended (ending locked).');
 
   const { world, output } = newScene(w, ui.packs.byId, { lastResolutionKind: ui.play.lastResolutionKind || 'turn' });
+  const baseNarration = output?.narration || 'The scene turns.';
 
-  ui.play.lines.push({ who: 'wizard', text: output?.narration || 'Wizard: The scene turns.', mech: output?.mechanics || '' });
+  const wizardLine = { who: 'wizard', text: '', mech: output?.mechanics || '' };
+  ui.play.lines.push(wizardLine);
   ui.play.lastResolutionKind = 'scene';
 
   persistAndRehash(world);
+  setStatus('Narrating…');
+  render();
+
+  const aiText = await tryAiNarration(world, baseNarration, {});
+  wizardLine.text = aiText || baseNarration;
   setStatus('Scene advanced.');
+  render();
 }
 
 function renderInvoke() {
@@ -297,7 +317,7 @@ function renderInvoke() {
     el('div', { class: 'panel' },
       el('div', { class: 'header' },
         el('div', {},
-          el('div', { class: 'title' }, 'Immortal Engine — build 2026.03.18c'),
+          el('div', { class: 'title' }, 'Immortal Engine — build 004'),
           el('div', { class: 'sub' }, 'Gate 4: MythSpec + Deterministic Triad')
         )
       ),
@@ -495,6 +515,14 @@ function renderPlay() {
         el('div', { class: 'small' }, `fate: ${fate}`),
         el('div', { class: 'small' }, `pack: ${pack}`),
         el('div', { class: 'small' }, `tension: ${(w?.instrument?.inevitability ?? 0)}/12 | clocks: p${(w?.clocks?.pressure ?? 0)}/12 d${(w?.clocks?.dread ?? 0)}/12 r${(w?.clocks?.revelation ?? 0)}/12`),
+        (() => {
+          const goals = Array.isArray(w?.goals) ? w.goals : [];
+          const active = goals.find(g => g && g.status === 'active');
+          const justCompleted = goals.find(g => g && g.status === 'completed' && g.completedAt === (w?.timeline?.length ?? -1));
+          if (justCompleted) return el('div', { class: 'small' }, `Goal: ${String(justCompleted.label || justCompleted.kind)} ✓`);
+          if (active) return el('div', { class: 'small' }, `Goal: ${String(active.label || active.kind)}`);
+          return null;
+        })(),
         el('div', { class: 'row' }, backBtn, reloadBtn, saveBtn, exportBtn, importBtn)
       ),
       renderTranscript(ui.play.lines),
@@ -628,7 +656,7 @@ function renderAi() {
         });
         const data = await res.json();
         if (data.ok) {
-          sessionStorage.setItem('anthropic_key', apiKey);
+          localStorage.setItem('anthropic_key', apiKey);
           ui.aiKeyAck = '✓ Key works — AI narration enabled.';
           ui.ai = { online: true, text: 'Anthropic narration active.' };
         } else {
@@ -646,7 +674,7 @@ function renderAi() {
     class: 'btn',
     onClick: () => {
       ui.aiKey = '';
-      sessionStorage.removeItem('anthropic_key');
+      localStorage.removeItem('anthropic_key');
       ui.aiKeyAck = 'Key cleared — narration disabled.';
       ui.ai = { online: false, text: 'No key.' };
       render();
@@ -715,7 +743,7 @@ function render() {
       el('div', { class: 'panel' },
         el('div', { class: 'header' },
           el('div', {},
-            el('div', { class: 'title' }, 'Immortal Engine — build 2026.03.18c'),
+            el('div', { class: 'title' }, 'Immortal Engine — build 004'),
             el('div', { class: 'sub' }, 'Loading packs…')
           )
         )

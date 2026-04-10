@@ -64,6 +64,10 @@ export function compose(world, playerText, resolution, context = {}) {
   const loc = w.scene?.location || 'somewhere';
   const obj = w.scene?.objective || 'survive';
 
+  const npcPhrase = buildNpcPhrase(w, rng);
+  const stressPhrase = buildStressPhrase(w);
+  const approachPhrase = buildApproachPhrase(resolution, rng);
+
   const narrationLine = ensureOneSentence(buildNarration({
     band,
     tone,
@@ -74,7 +78,10 @@ export function compose(world, playerText, resolution, context = {}) {
     obj,
     playerText,
     resolution,
-    threadClause
+    threadClause,
+    npcPhrase,
+    stressPhrase,
+    approachPhrase
   }));
 
   const mechanicsLine = bracketLine(buildMechanics({ band, resolution, clocks }));
@@ -217,12 +224,13 @@ function stakesPhrase(band, clocks, resolution, rng) {
   return rng.pick(pool) || pool[0];
 }
 
-function buildNarration({ band, tone, motifPhrase, clockShade, stakes, loc, obj, resolution, threadClause }) {
+function buildNarration({ band, tone, motifPhrase, clockShade, stakes, loc, obj, resolution, threadClause, npcPhrase, stressPhrase, approachPhrase }) {
   const kind = String(resolution?.kind || 'turn');
+  const stressClause = stressPhrase ? `; ${stressPhrase}` : '';
 
   if (kind === 'blocked') {
     const reason = String(resolution?.reason || 'that conflicts with canon');
-    return `Wizard: No—${reason}; stay in the ${loc} with ${tone} care as ${motifPhrase} returns${clockShade ? `, ${clockShade}` : ''}${threadClause}; objective remains: ${obj}; what do you do?`;
+    return `Wizard: No—${reason}; stay in the ${loc} with ${tone} care as ${motifPhrase} returns${clockShade ? `, ${clockShade}` : ''}${stressClause}${threadClause}; objective remains: ${obj}; what do you do?`;
   }
 
   if (kind === 'scene' || kind === 'begin') {
@@ -231,7 +239,8 @@ function buildNarration({ band, tone, motifPhrase, clockShade, stakes, loc, obj,
     const price = resolution?.price ? ` Price: ${String(resolution.price)}.` : '';
     // Single sentence, so keep carry/omen/price as clauses.
     const clause = [carry.trim(), omen.trim(), price.trim()].filter(Boolean).join(' ');
-    return `Wizard: At the ${loc}, ${tone} and alert, you notice ${motifPhrase}${clockShade ? `; ${clockShade}` : ''}${threadClause}; ${clause ? clause + ' ' : ''}objective: ${obj}; what do you do?`;
+    const npcClause = npcPhrase ? `; ${npcPhrase}` : '';
+    return `Wizard: At the ${loc}, ${tone} and alert, you notice ${motifPhrase}${clockShade ? `; ${clockShade}` : ''}${npcClause}${stressClause}${threadClause}; ${clause ? clause + ' ' : ''}objective: ${obj}; what do you do?`;
   }
 
   // turn
@@ -239,7 +248,85 @@ function buildNarration({ band, tone, motifPhrase, clockShade, stakes, loc, obj,
   const hit = success ? (band === 'cooperative' ? 'it lands clean' : band === 'grim' ? 'it works, narrowly' : 'it works, brutally')
     : (band === 'cooperative' ? 'it doesn’t land, but you learn' : band === 'grim' ? 'it fails and you pay' : 'it fails and the world collects');
 
-  return `Wizard: In the ${loc}, ${motifPhrase} threads through your move—${hit}; ${stakes}${clockShade ? `; ${clockShade}` : ''}${threadClause}; what do you do?`;
+  const approachClause = approachPhrase ? `, ${approachPhrase}` : '';
+
+  return `Wizard: In the ${loc}, ${motifPhrase} threads through your move—${hit}${approachClause}; ${stakes}${clockShade ? `; ${clockShade}` : ''}${stressClause}${threadClause}; what do you do?`;
+}
+
+// Approach-keyed phrase banks. Each entry is a short, lowercase clause the
+// composer drops into the turn narration. Kept offline and deterministic —
+// picks come from the composer rng. Gated on a known approach key so older
+// tests (and kind='begin'/'scene'/'blocked') pass through untouched.
+const APPROACH_LEXICON = {
+  force: {
+    success: ['bone and leverage win the argument', 'the world yields with a crack', 'brute momentum carries you', 'iron first, question later'],
+    mixed: ['you shove through and leave prints', 'the hinge groans but gives', 'momentum costs its tax'],
+    failure: ['your shoulder finds a wall that doesn’t move', 'force bleeds out against stone', 'you overcommit and pay']
+  },
+  finesse: {
+    success: ['a quiet hand, a quiet door', 'precision without witnesses', 'slipped in like breath'],
+    mixed: ['careful, but not quite careful enough', 'the edge of a sound — no more', 'a hair out of line'],
+    failure: ['the lockwork argues back', 'a feather’s-weight miss', 'the thread snaps clean']
+  },
+  endure: {
+    success: ['teeth set, knees locked, you hold', 'you outlast the moment', 'nothing breaks that matters'],
+    mixed: ['you take the hit and keep your feet', 'the line bends, does not snap', 'you eat it and walk on'],
+    failure: ['endurance has a bottom, and you find it', 'the body runs out before the will', 'even granite splits eventually']
+  },
+  heart: {
+    success: ['warmth finds a foothold', 'a look passes between you and something softens', 'plain words reach the listening part'],
+    mixed: ['the connection flickers, half-made', 'a careful kindness, half-returned', 'the ice thins without breaking'],
+    failure: ['the door closes behind the eyes', 'trust frays faster than you can speak', 'you reach, and nothing reaches back']
+  },
+  focus: {
+    success: ['the pattern unknots in your head', 'clarity drops into place', 'you read the room and the room answers'],
+    mixed: ['you see most of it, not all', 'the shape half-resolves', 'insight arrives late, but arrives'],
+    failure: ['the pattern stays stubborn', 'you stare and the meaning slips', 'the picture refuses to come']
+  }
+};
+
+function buildApproachPhrase(resolution, rng) {
+  const approach = String(resolution?.approach || '');
+  if (!APPROACH_LEXICON[approach]) return '';
+  const outcome = String(resolution?.outcome || (resolution?.success ? 'success' : 'failure'));
+  const bank = APPROACH_LEXICON[approach][outcome];
+  if (!Array.isArray(bank) || !bank.length) return '';
+  return String(rng.pick(bank) || bank[0]);
+}
+
+function buildNpcPhrase(world, rng) {
+  const map = world?.map && typeof world.map === 'object' ? world.map : null;
+  const here = map?.nodes?.find?.(n => n.id === map.currentNodeId);
+  const npcs = Array.isArray(here?.settlement?.npcs) ? here.settlement.npcs : [];
+  if (!npcs.length) return '';
+
+  // Pick up to two named NPCs deterministically (RNG seeded from the same compose seed).
+  const named = npcs
+    .map(n => ({ name: String(n?.name || '').trim(), role: String(n?.role || '').trim() }))
+    .filter(n => n.name);
+  if (!named.length) return '';
+
+  const i1 = rng.int(0, named.length - 1);
+  const a = named[i1];
+  if (named.length === 1) {
+    return a.role
+      ? `${a.name} the ${a.role} is nearby`
+      : `${a.name} is nearby`;
+  }
+  let i2 = rng.int(0, named.length - 1);
+  if (i2 === i1) i2 = (i1 + 1) % named.length;
+  const b = named[i2];
+  return `${a.name} and ${b.name} move within sight`;
+}
+
+function buildStressPhrase(world) {
+  const player = Array.isArray(world?.party) ? world.party[0] : null;
+  const stress = clampInt(player?.stress ?? 0, 0, 6);
+  if (stress <= 0) return '';
+  if (stress <= 1) return 'a thread of strain runs under your breath';
+  if (stress <= 3) return 'strain coils tight in your shoulders';
+  if (stress <= 5) return 'your nerves are loud and ragged';
+  return 'you are stretched to the breaking point';
 }
 
 function buildMechanics({ resolution, clocks }) {

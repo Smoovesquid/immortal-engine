@@ -9,13 +9,19 @@ export function shouldTriggerEnding(world) {
   const w = ensureWorld(world);
   const inst = ensureInstrumentLayer(w.instrument);
 
+  // Minimum 15 turns before ending can trigger — prevents premature endings.
+  const turns = w.time?.turn ?? 0;
+  if (turns < 15) return false;
+
   const inev = inst.inevitability ?? 0;
   const threshold = fateBand(w.meta.fate) === 'blood' ? 8 : fateBand(w.meta.fate) === 'grim' ? 9 : 10;
 
   const clocksMaxed = (w.clocks.pressure >= 12) || (w.clocks.dread >= 12) || (w.clocks.revelation >= 12);
   const majorResolved = inst.threads.some(t => t.status === 'resolved');
 
-  return Boolean(inev >= threshold || majorResolved || clocksMaxed);
+  // Ending requires BOTH resolved threads AND inevitability threshold (or maxed clocks).
+  // This prevents the death spiral where either condition alone ends the game.
+  return Boolean(majorResolved && (inev >= threshold || clocksMaxed));
 }
 
 export function generateEnding(world) {
@@ -53,7 +59,7 @@ export function generateEnding(world) {
 }
 
 function chooseEndingType({ band, inevitability, wounds, stress, rng }) {
-  const inev = clampInt(inevitability ?? 0, 0, 12);
+  const inev = clampInt(inevitability ?? 0, 0, 10);
   const harm = wounds + stress;
 
   const weights = [];
@@ -83,7 +89,7 @@ function pickFinalMotif(inst, rng) {
 }
 
 function buildSummaryLine({ endingType, finalMotif, threadRef, consequence, band, wounds, stress, inevitability, rng }) {
-  const inev = clampInt(inevitability ?? 0, 0, 12);
+  const inev = clampInt(inevitability ?? 0, 0, 10);
   const pain = wounds + stress;
 
   const flavor = endingType === 'triumphant'
@@ -100,7 +106,7 @@ function buildSummaryLine({ endingType, finalMotif, threadRef, consequence, band
   const bandWord = band === 'cooperative' ? 'mercy' : band === 'grim' ? 'pressure' : 'blood';
 
   // Must reference motif + thread + consequence.
-  return `Wizard: Ending (${endingType})—${f}; motif: ${finalMotif}; thread: ${threadRef}; consequence: ${consequence}; inevitability:${inev}/12, wounds:${pain}, and ${bandWord} sets the tone.`;
+  return `Wizard: Ending (${endingType})—${f}; motif: ${finalMotif}; thread: ${threadRef}; consequence: ${consequence}; inevitability:${inev}/10, wounds:${pain}, and ${bandWord} sets the tone.`;
 }
 
 function lastConsequence(w) {

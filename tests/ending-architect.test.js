@@ -12,8 +12,12 @@ test('deterministic ending generation', () => {
   w.scene = { location: 'tower', objective: 'find', time: 'start', promptSeed: '123', tags: [], thread: '' };
   w = seedMotifs(w, pack);
   w = introduceThread(w, 'the rift wants a price');
-  w = escalateThread(w, w.instrument.threads[0].id);
-  w.instrument.inevitability = 12;
+  const tid = w.instrument.threads[0].id;
+  w = escalateThread(w, tid);
+  w.instrument.inevitability = 10;
+  // Ending now requires BOTH resolved thread AND inevitability threshold, plus 15+ turns
+  w = { ...w, time: { ...w.time, turn: 20 } };
+  w.instrument = { ...w.instrument, threads: w.instrument.threads.map(t => t.id === tid ? { ...t, status: 'resolved' } : t) };
 
   assert.equal(shouldTriggerEnding(w), true);
   const a = generateEnding(w);
@@ -30,8 +34,8 @@ test('different fate produces different weighting (often different endingType)',
   blood = seedMotifs(blood, pack);
   coop = introduceThread(coop, 'the rift wants a price');
   blood = introduceThread(blood, 'the rift wants a price');
-  coop.instrument.inevitability = 12;
-  blood.instrument.inevitability = 12;
+  coop.instrument.inevitability = 10;
+  blood.instrument.inevitability = 10;
 
   const a = generateEnding(coop).endingType;
   const b = generateEnding(blood).endingType;
@@ -43,7 +47,7 @@ test('ending always references motif + thread + consequence', () => {
   w.scene = { location: 'tower', objective: 'find', time: 'start', promptSeed: '123', tags: [], thread: '' };
   w = seedMotifs(w, pack);
   w = introduceThread(w, 'the rift wants a price');
-  w.instrument.inevitability = 12;
+  w.instrument.inevitability = 10;
 
   const e = generateEnding(w);
   assert.ok(e.summaryLine.includes('motif:'));

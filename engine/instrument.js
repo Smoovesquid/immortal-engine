@@ -43,7 +43,7 @@ export function ensureInstrumentLayer(inst) {
       reinforced: normalizeReinforced(reinforced)
     },
     threads: capThreads(threads, 12),
-    inevitability: clampInt(i.inevitability ?? 0, 0, 12),
+    inevitability: clampInt(i.inevitability ?? 0, 0, 10),
     lastBeats,
     nextBeatOverride
   };
@@ -178,7 +178,7 @@ export function consequenceWeight(world) {
   const band = fateBand(w.meta.fate);
   const inev = inst.inevitability;
   const base = band === 'blood' ? 1.15 : band === 'grim' ? 1.05 : 0.95;
-  const inevBump = 1 + (inev / 24); // up to +0.5
+  const inevBump = 1 + (inev / 20); // up to +0.5
   return Number((base * inevBump).toFixed(4));
 }
 
@@ -186,7 +186,7 @@ function withInevitability(inst, fate, { escalation = false, resolution = false 
   const band = fateBand(fate);
   const open = inst.threads.filter(t => t.status !== 'resolved');
   const tensionSum = open.reduce((s, t) => s + clampInt(t.tension, 0, 5), 0);
-  let inev = clampInt(tensionSum, 0, 12);
+  let inev = clampInt(tensionSum, 0, 10);
 
   // Escalation boosts inevitability, blood grows faster.
   if (escalation) inev += (band === 'blood' ? 2 : 1);
@@ -195,7 +195,7 @@ function withInevitability(inst, fate, { escalation = false, resolution = false 
   // Fate biases growth.
   if (band === 'blood') inev += 1;
 
-  return { ...inst, inevitability: clampInt(inev, 0, 12) };
+  return { ...inst, inevitability: clampInt(inev, 0, 10) };
 }
 
 function normalizeThread(t) {

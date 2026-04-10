@@ -15,20 +15,23 @@ const packsById = {
   }
 };
 
-test('U39: "go north" moves player dot locally 30ft (no node travel)', () => {
+test('U39: "go north" triggers inter-node travel to a neighboring node', () => {
   const w0 = newWorld({ seed: 'u39', fate: 0.2, campaignId: 'c1', pack: { primaryId: 'fantasy', mixerId: null } });
   const a = beginAdventure(w0, packsById);
 
   const m0 = ensureMap(a.world.map);
   const startNode = m0.currentNodeId;
+  const nbs = neighbors(m0, startNode);
 
   const t1 = playerMove(a.world, packsById, 'go north');
   const m1 = ensureMap(t1.world.map);
 
-  assert.equal(m1.currentNodeId, startNode, 'node must not change — go north is local movement');
-  const pos = t1.world.party?.[0]?.position || {};
-  assert.equal(pos.localFtY, -30, 'localFtY must decrease by 30ft when going north');
-  assert.equal(pos.localFtX, 0, 'localFtX must be unchanged');
+  // Bare directionals route to inter-node travel (free movement intent).
+  // If neighbors exist, should move to one; if not, stays put.
+  if (nbs.length > 0) {
+    assert.notEqual(m1.currentNodeId, startNode, 'node should change — go north is inter-node travel');
+    assert.ok(nbs.includes(m1.currentNodeId), 'must travel to an adjacent node');
+  }
 });
 
 test('U39b: "exit" with no named destination travels to deterministic neighbor[0]', () => {

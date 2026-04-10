@@ -1,0 +1,29 @@
+{
+  "trade": [
+    { "name": "overturned register counter", "tags": ["wood", "furniture"], "weight": 5, "bulk": 4, "parts": ["counter top", "drawers", "legs"] },
+    { "name": "shopping cart", "tags": ["metal", "tool"], "weight": 2, "bulk": 3, "parts": ["basket", "wheels", "handle"] },
+    { "name": "empty display rack", "tags": ["metal", "furniture"], "weight": 3, "bulk": 3, "parts": ["shelves", "frame", "hooks"] }
+  ],
+  "sacred": [
+    { "name": "cracked church pew", "tags": ["wood", "furniture"], "weight": 4, "bulk": 4, "parts": ["seat", "back", "legs"] },
+    { "name": "tarnished cross", "tags": ["metal", "fixture"], "weight": 3, "bulk": 2, "parts": ["crossbar", "post", "base"] },
+    { "name": "votive candle stand", "tags": ["metal", "furniture"], "weight": 2, "bulk": 2, "parts": ["tray", "legs", "candle stubs"] }
+  ],
+  "military": [
+    { "name": "sandbag wall", "tags": ["fabric", "barrier"], "weight": 5, "bulk": 5, "parts": ["bags", "fill", "stakes"] },
+    { "name": "ammo locker", "tags": ["metal", "container"], "weight": 4, "bulk": 3, "parts": ["door", "shelves", "lock"] },
+    { "name": "folding cot", "tags": ["metal", "furniture"], "weight": 2, "bulk": 2, "parts": ["frame", "canvas", "legs"] },
+    { "name": "radio set", "tags": ["metal", "tool"], "weight": 2, "bulk": 1, "parts": ["box", "antenna", "dial"] }
+  ],
+  "wilderness": [
+    { "name": "abandoned car", "tags": ["metal", "wreckage"], "weight": 5, "bulk": 5, "parts": ["doors", "hood", "trunk", "tires"] },
+    { "name": "burned campsite", "tags": ["wood", "natural"], "weight": 3, "bulk": 3, "parts": ["charred logs", "ash ring", "tent poles"] },
+    { "name": "dumpster", "tags": ["metal", "container"], "weight": 5, "bulk": 5, "parts": ["lid", "body", "wheels"] }
+  ],
+  "default": [
+    { "name": "plywood barricade", "tags": ["wood", "barrier"], "weight": 4, "bulk": 4, "parts": ["boards", "nails", "braces"] },
+    { "name": "plastic chair", "tags": ["plastic", "furniture"], "weight": 1, "bulk": 1, "parts": ["seat", "legs"] },
+    { "name": "metal shelving unit", "tags": ["metal", "furniture"], "weight": 3, "bulk": 3, "parts": ["shelves", "frame", "bolts"] },
+    { "name": "overturned desk", "tags": ["wood", "furniture"], "weight": 4, "bulk": 3, "parts": ["top", "legs", "drawers"] }
+  ]
+}

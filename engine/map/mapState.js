@@ -189,6 +189,10 @@ function ensureNode(n) {
     scars: Array.isArray(x.scars) ? x.scars.map(String).slice(0, 8) : []
   };
   if (x.nodeType) base.nodeType = String(x.nodeType);
+  // Preserve settlement data from decompression (NPCs, buildings, history, etc.)
+  if (x.settlement && typeof x.settlement === 'object') base.settlement = x.settlement;
+  // Preserve furniture data for physics interaction
+  if (Array.isArray(x.furniture)) base.furniture = x.furniture;
   return base;
 }
 

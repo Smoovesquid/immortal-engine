@@ -29,6 +29,7 @@ function projectForHash(world) {
     structures: w.structures,
 
     canonLog: w.canonLog,
+    goals: w.goals,
     timeline: w.timeline
   };
 }

@@ -1,4 +1,4 @@
-import { ensureWorld } from './state.js';
+import { ensureWorld, WORLD_VERSION } from './state.js';
 
 const KEY_LAST = 'ai-dm-v2:lastSlot';
 
@@ -18,6 +18,10 @@ export function loadSlot(storage, slotId = 'slot1') {
   const raw = storage.getItem(slotKey(slotId));
   if (!raw) return null;
   const parsed = JSON.parse(raw);
+  const savedVersion = parsed?.meta?.version;
+  if (savedVersion != null && savedVersion !== WORLD_VERSION) {
+    console.warn(`Loading save from v${savedVersion}, current version is v${WORLD_VERSION}`);
+  }
   return ensureWorld(parsed);
 }
 

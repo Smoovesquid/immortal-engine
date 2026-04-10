@@ -1,0 +1,30 @@
+{
+  "trade": [
+    { "name": "checkout counter", "tags": ["wood", "furniture"], "weight": 5, "bulk": 4, "parts": ["counter top", "drawers", "card reader"] },
+    { "name": "display shelf", "tags": ["metal", "furniture"], "weight": 3, "bulk": 3, "parts": ["shelves", "frame", "price tags"] },
+    { "name": "vending machine", "tags": ["metal", "furniture"], "weight": 5, "bulk": 5, "parts": ["glass panel", "dispenser", "coin slot"] },
+    { "name": "folding table", "tags": ["metal", "furniture"], "weight": 2, "bulk": 2, "parts": ["top", "legs", "hinges"] }
+  ],
+  "sacred": [
+    { "name": "memorial plaque", "tags": ["metal", "fixture"], "weight": 3, "bulk": 2, "parts": ["plate", "mounting", "inscription"] },
+    { "name": "meditation cushion", "tags": ["fabric", "furniture"], "weight": 1, "bulk": 1, "parts": ["cushion", "cover"] },
+    { "name": "offering box", "tags": ["wood", "container"], "weight": 2, "bulk": 1, "parts": ["box", "slot", "lock"] }
+  ],
+  "military": [
+    { "name": "gun safe", "tags": ["metal", "container"], "weight": 5, "bulk": 4, "parts": ["door", "shelves", "lock", "hinges"] },
+    { "name": "tactical gear locker", "tags": ["metal", "container"], "weight": 4, "bulk": 3, "parts": ["door", "hooks", "shelf"] },
+    { "name": "situation board", "tags": ["wood", "furniture"], "weight": 3, "bulk": 3, "parts": ["board", "frame", "pins"] },
+    { "name": "field radio", "tags": ["metal", "tool"], "weight": 2, "bulk": 1, "parts": ["box", "antenna", "handset"] }
+  ],
+  "wilderness": [
+    { "name": "park bench", "tags": ["wood", "furniture"], "weight": 4, "bulk": 3, "parts": ["seat", "back", "legs"] },
+    { "name": "trash can", "tags": ["metal", "container"], "weight": 2, "bulk": 2, "parts": ["body", "lid"] },
+    { "name": "chain-link fence section", "tags": ["metal", "barrier"], "weight": 3, "bulk": 4, "parts": ["mesh", "posts", "ties"] }
+  ],
+  "default": [
+    { "name": "office desk", "tags": ["wood", "furniture"], "weight": 4, "bulk": 3, "parts": ["top", "legs", "drawers"] },
+    { "name": "rolling chair", "tags": ["metal", "furniture"], "weight": 2, "bulk": 1, "parts": ["seat", "base", "casters"] },
+    { "name": "filing cabinet", "tags": ["metal", "container"], "weight": 3, "bulk": 2, "parts": ["drawers", "frame", "lock"] },
+    { "name": "fluorescent light fixture", "tags": ["metal", "fixture"], "weight": 2, "bulk": 2, "parts": ["tube", "housing", "ballast"] }
+  ]
+}

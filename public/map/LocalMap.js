@@ -232,6 +232,36 @@ function drawInterior(ctx, world, w) {
   }
 }
 
+function npcsAtCurrentNode(world) {
+  const nodeId = String(world?.map?.currentNodeId || '');
+  const node = (world?.map?.nodes || []).find(n => n.id === nodeId);
+  return Array.isArray(node?.settlement?.npcs) ? node.settlement.npcs : [];
+}
+
+function renderNpcRoster(world) {
+  const npcs = npcsAtCurrentNode(world);
+  if (!npcs.length) {
+    return el('div', { class: 'small', style: { opacity: '0.6' } }, 'No known persons here.');
+  }
+  const rows = npcs.map(n => {
+    const name = String(n?.name || 'unknown').trim() || 'unknown';
+    const role = String(n?.role || '').trim();
+    const trust = Number(n?.conversationState?.trustLevel ?? 5);
+    const met = Boolean(n?.conversationState?.metPlayer);
+    const disp = String(n?.disposition || '').trim();
+    const tags = [
+      role || null,
+      disp || null,
+      met ? `met (trust ${trust}/10)` : null
+    ].filter(Boolean).join(' • ');
+    return el('div', { class: 'small' },
+      el('strong', {}, name),
+      tags ? ` — ${tags}` : ''
+    );
+  });
+  return el('div', { class: 'stack', style: { gap: '4px' } }, ...rows);
+}
+
 export function renderLocalMap(world) {
   const size = 61;
   const cell = 14;
@@ -244,14 +274,19 @@ export function renderLocalMap(world) {
   else drawExterior(ctx, world, w, size, cell);
 
   const structures = structuresAtCurrentNode(world);
+  const npcs = npcsAtCurrentNode(world);
   const info = isInterior
     ? `Interior mode • structure=${String(world?.scene?.interior?.structureKey || '')} • room=${String(world?.scene?.interior?.roomId || '')}`
-    : `Exterior mode • structures here=${structures.length}`;
+    : `Exterior mode • structures here=${structures.length} • persons here=${npcs.length}`;
 
   return el('div', { class: 'card stack' },
     el('div', {}, el('strong', {}, 'Local (tactical)')),
     el('div', { style: { color: '#00ffff', fontWeight: '700' } }, 'LOCAL_MAP_DEBUG_V1'),
     el('div', { class: 'small' }, info),
-    canvas
+    canvas,
+    el('div', { class: 'stack' },
+      el('div', {}, el('strong', {}, 'Persons of note')),
+      renderNpcRoster(world)
+    )
   );
 }

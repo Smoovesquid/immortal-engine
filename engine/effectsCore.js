@@ -1,6 +1,7 @@
 import { ensureWorld } from './state.js';
 import { addFact, addThreat, addQuestion } from './ledger.js';
 import { ensureEnv } from './env/envCore.js';
+import { ensureInstrumentLayer } from './instrument.js';
 
 // Data-driven delta executor. Pure and deterministic.
 // Applies a list of ops to the world safely (clamps, initializes missing fields).
@@ -119,6 +120,81 @@ export function applyDeltas(world, deltas = []) {
       continue;
     }
 
+    if (kind === 'npcTrustDelta') {
+      // Update NPC trust level in settlement data; mark NPC as having met the player.
+      const npcId = String(op.npcId || '');
+      const by = toInt(op.by ?? 0);
+      if (!npcId || !by) continue;
+      w = mutateNpc(w, npcId, npc => {
+        const cs = npc.conversationState ?? { metPlayer: false, topicsDiscussed: [], trustLevel: 5, lastInteraction: null };
+        return { ...npc, conversationState: { ...cs, metPlayer: true, trustLevel: clampInt(cs.trustLevel + by, 0, 10), lastInteraction: w.time?.turn ?? 0 } };
+      });
+      continue;
+    }
+
+    if (kind === 'npcSecretRevealed') {
+      // Mark a secret as revealed
+      const npcId = String(op.npcId || '');
+      const secretFactId = String(op.secretFactId || '');
+      if (!npcId || !secretFactId) continue;
+      w = mutateNpc(w, npcId, npc => {
+        const revealed = Array.isArray(npc.revealedSecrets) ? [...npc.revealedSecrets] : [];
+        if (!revealed.includes(secretFactId)) revealed.push(secretFactId);
+        return { ...npc, revealedSecrets: revealed };
+      });
+      // Also add to ledger as a canonical fact
+      w = addFact(w, `secret:${secretFactId} revealed by ${npcId}`, 'npc');
+      continue;
+    }
+
+    if (kind === 'npcKnowledgeShared') {
+      // Add player-shared knowledge to NPC + track topic in conversationState (cap 20, FIFO).
+      const npcId = String(op.npcId || '');
+      const fact = String(op.fact || '');
+      if (!npcId || !fact) continue;
+      w = mutateNpc(w, npcId, npc => {
+        const kg = Array.isArray(npc.knowledgeGraph) ? [...npc.knowledgeGraph] : [];
+        kg.push({ factId: `player_shared:${fact}`, source: 'player', confidence: 1.0, event: null });
+        const cs = npc.conversationState ?? { metPlayer: false, topicsDiscussed: [], trustLevel: 5, lastInteraction: null };
+        let topics = Array.isArray(cs.topicsDiscussed) ? [...cs.topicsDiscussed] : [];
+        topics.push(fact);
+        if (topics.length > 20) topics = topics.slice(topics.length - 20);
+        return { ...npc, knowledgeGraph: kg, conversationState: { ...cs, metPlayer: true, topicsDiscussed: topics, lastInteraction: w.time?.turn ?? 0 } };
+      });
+      continue;
+    }
+
+    if (kind === 'rollRequest') {
+      // Roll requests are informational — stored in timeline for the playloop to process
+      const action = String(op.action || '');
+      if (action) {
+        const t = w.timeline.length;
+        w = { ...w, timeline: [...w.timeline, { t, kind: 'rollRequest', data: { action, dcSuggestion: op.dcSuggestion, stat: op.stat } }] };
+      }
+      continue;
+    }
+
+    if (kind === 'threadRelief') {
+      // Relief valve: reduce tension on the most tense open thread.
+      const by = toInt(op.by ?? -1);
+      if (!Number.isFinite(by) || by === 0) continue;
+      const inst = ensureInstrumentLayer(w.instrument);
+      const open = inst.threads
+        .filter(t => t.status !== 'resolved' && t.tension > 0)
+        .sort((a, b) => (b.tension - a.tension) || a.id.localeCompare(b.id));
+      if (open.length) {
+        const target = open[0];
+        const threads = inst.threads.map(t => {
+          if (t.id !== target.id) return t;
+          const tension = clampInt(t.tension + by, 0, 5);
+          const status = tension < 3 && t.status === 'escalating' ? 'open' : t.status;
+          return { ...t, tension, status };
+        });
+        w = { ...w, instrument: { ...inst, threads } };
+      }
+      continue;
+    }
+
     if (kind === 'ledger') {
       if (op.addFact) w = addFact(w, op.addFact, op.source || 'resolution');
       if (op.addThreat) w = addThreat(w, op.addThreat, op.level ?? 1);
@@ -134,9 +210,113 @@ export function applyDeltas(world, deltas = []) {
       w = { ...w, timeline: [...w.timeline, e] };
       continue;
     }
+
+    // ── Physics ops ────────────────────────────────────────────────────────
+    // Produced by llmPhysics.evaluatePhysics() (LLM or offline fallback) when
+    // the player interacts with furniture or items.
+
+    if (kind === 'createItem') {
+      const entityId = String(op.entityId || '');
+      const bucket = String(op.bucket || 'junk');
+      const item = op.item && typeof op.item === 'object' ? op.item : null;
+      if (!entityId || !item || !item.name) continue;
+      w = mutateEntity(w, entityId, (e) => {
+        const inv = (e.inventory && typeof e.inventory === 'object') ? e.inventory : {};
+        const arr = Array.isArray(inv[bucket]) ? [...inv[bucket]] : [];
+        arr.push({
+          name: String(item.name),
+          tags: Array.isArray(item.tags) ? item.tags.map(String).slice(0, 6) : [],
+          weight: clampInt(item.weight ?? 1, 0, 5),
+          noise: clampInt(item.noise ?? 0, 0, 5),
+          light: clampInt(item.light ?? 0, 0, 5),
+          bulk: clampInt(item.bulk ?? 1, 0, 5),
+          notes: String(item.notes || '')
+        });
+        return { ...e, inventory: { ...inv, [bucket]: arr } };
+      });
+      continue;
+    }
+
+    if (kind === 'removeItem') {
+      const entityId = String(op.entityId || '');
+      const bucket = String(op.bucket || '');
+      const itemName = String(op.itemName || '');
+      if (!entityId || !bucket || !itemName) continue;
+      w = mutateEntity(w, entityId, (e) => {
+        const inv = (e.inventory && typeof e.inventory === 'object') ? e.inventory : {};
+        const arr = Array.isArray(inv[bucket]) ? inv[bucket] : [];
+        const idx = arr.findIndex(i => String(i?.name) === itemName);
+        if (idx === -1) return e;
+        const next = arr.slice();
+        next.splice(idx, 1);
+        return { ...e, inventory: { ...inv, [bucket]: next } };
+      });
+      continue;
+    }
+
+    if (kind === 'modifyFurniture') {
+      const nodeId = String(op.nodeId || '');
+      const furnitureId = toInt(op.furnitureId ?? -1);
+      const changes = op.changes && typeof op.changes === 'object' ? op.changes : null;
+      if (!nodeId || furnitureId < 0 || !changes) continue;
+      w = mutateNode(w, nodeId, (node) => {
+        const furniture = Array.isArray(node.furniture) ? [...node.furniture] : [];
+        if (furnitureId >= furniture.length) return node;
+        const cur = furniture[furnitureId] || {};
+        const next = { ...cur };
+        if (typeof changes.state === 'string') next.state = changes.state;
+        if (Array.isArray(changes.parts)) next.parts = changes.parts.map(String);
+        if (typeof changes.notes === 'string') next.notes = changes.notes;
+        furniture[furnitureId] = next;
+        return { ...node, furniture };
+      });
+      continue;
+    }
+
+    if (kind === 'removeFurniture') {
+      const nodeId = String(op.nodeId || '');
+      const furnitureId = toInt(op.furnitureId ?? -1);
+      if (!nodeId || furnitureId < 0) continue;
+      w = mutateNode(w, nodeId, (node) => {
+        const furniture = Array.isArray(node.furniture) ? [...node.furniture] : [];
+        if (furnitureId >= furniture.length) return node;
+        furniture.splice(furnitureId, 1);
+        return { ...node, furniture };
+      });
+      continue;
+    }
   }
 
   return w;
+}
+
+function mutateNode(world, nodeId, fn) {
+  const nodes = Array.isArray(world.map?.nodes) ? world.map.nodes : [];
+  const idx = nodes.findIndex(n => n.id === nodeId);
+  if (idx === -1) return world;
+  const nextNodes = nodes.slice();
+  nextNodes[idx] = fn(nextNodes[idx]);
+  return { ...world, map: { ...world.map, nodes: nextNodes } };
+}
+
+function mutateNpc(world, npcId, fn) {
+  const nodeId = String(world.map?.currentNodeId ?? '');
+  const nodes = Array.isArray(world.map?.nodes) ? world.map.nodes : [];
+  const nodeIdx = nodes.findIndex(n => n.id === nodeId);
+  if (nodeIdx === -1) return world;
+  const node = nodes[nodeIdx];
+  if (!node.settlement?.npcs?.length) return world;
+
+  const npcIdx = node.settlement.npcs.findIndex(n =>
+    n.id === npcId || String(n.name).toLowerCase() === String(npcId).toLowerCase()
+  );
+  if (npcIdx === -1) return world;
+
+  const nextNpcs = [...node.settlement.npcs];
+  nextNpcs[npcIdx] = fn(nextNpcs[npcIdx]);
+  const nextNodes = [...nodes];
+  nextNodes[nodeIdx] = { ...node, settlement: { ...node.settlement, npcs: nextNpcs } };
+  return { ...world, map: { ...world.map, nodes: nextNodes } };
 }
 
 function mutateEntity(world, entityId, fn) {

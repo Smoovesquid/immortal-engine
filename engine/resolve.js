@@ -140,7 +140,19 @@ function computeDC({ w, m, band, gearSignals }) {
     tacticalBump = clampInt(tacticalBump, -1, 2);
   }
 
-  return clampInt(base + clockBump + riskBump + bandBump + woundBump + stressBump + gearBump + tacticalBump, 6, 20);
+  let dc = clampInt(base + clockBump + riskBump + bandBump + woundBump + stressBump + gearBump + tacticalBump, 6, 20);
+
+  // Focus learning-from-failure hook: if the newest ledger fact is the
+  // "studied-the-miss" marker left by a prior focus failure, the next focus
+  // attempt gets dc -= 1 (floor 8). Consumption is handled in buildDeltas.
+  if (approach === 'focus') {
+    const topFact = String(w.ledger?.facts?.[0]?.text || '');
+    if (topFact === 'you:studied-the-miss') {
+      dc = Math.max(8, dc - 1);
+    }
+  }
+
+  return dc;
 }
 
 function classifyOutcome({ band, margin, rng }) {
@@ -200,11 +212,21 @@ function buildDeltas({ w, m, band, outcome, margin, rng, usedAdvantage, gearSign
     const posDelta = positionDeltaFor({ approach: m.approachTag, outcome });
     if (posDelta) deltas.push(posDelta);
 
-    // Cooperative can relieve a bit of pressure.
-    if (band === 'cooperative' && (w.clocks.pressure ?? 0) > 0 && rng.nextFloat() < 0.6) {
-      deltas.push({ op: 'clock', key: 'pressure', by: -1 });
-      costs.push({ kind: 'clock', key: 'pressure', by: -1, note: 'pressure eases' });
+    // Clock relief: success eases the highest active clock. Chance varies by band.
+    const reliefChance = band === 'cooperative' ? 0.6 : band === 'grim' ? 0.3 : 0.15;
+    if (rng.nextFloat() < reliefChance) {
+      const clockKeys = ['pressure', 'dread', 'revelation'];
+      const active = clockKeys.filter(k => (w.clocks[k] ?? 0) > 0).sort((a, b) => (w.clocks[b] ?? 0) - (w.clocks[a] ?? 0));
+      if (active.length > 0) {
+        deltas.push({ op: 'clock', key: active[0], by: -1 });
+        gains.push({ kind: 'clock', key: active[0], by: -1, note: `${active[0]} eases` });
+      }
     }
+
+    // Relief valve: successful rolls reduce tension on the most tense open thread by 1.
+    // This prevents the death spiral where threads auto-escalate with no brake.
+    deltas.push({ op: 'threadRelief', by: -1 });
+    gains.push({ kind: 'threadRelief', by: -1 });
   }
 
   if (outcome === 'mixed') {
@@ -255,9 +277,18 @@ function buildDeltas({ w, m, band, outcome, margin, rng, usedAdvantage, gearSign
     const posDelta = positionDeltaFor({ approach: m.approachTag, outcome });
     if (posDelta) deltas.push(posDelta);
 
-    const threatLevel = band === 'cooperative' ? 1 : band === 'grim' ? 2 : 3;
-    deltas.push({ op: 'ledger', addThreat: `Cost: ${defaultCostText(w, band)}.`, level: threatLevel });
+    // Endure failure signature: swallows the threat, pays in stress instead.
+    // The stress bump is added by addApproachSignature() below.
+    if (m.approachTag !== 'endure') {
+      const threatLevel = band === 'cooperative' ? 1 : band === 'grim' ? 2 : 3;
+      deltas.push({ op: 'ledger', addThreat: `Cost: ${defaultCostText(w, band)}.`, level: threatLevel });
+    }
   }
+
+  // Approach signatures: each (approach, outcome) cell emits a mechanically
+  // distinct delta so that narration and tests can observe which approach
+  // was used. These augment the common path — they never replace core deltas.
+  addApproachSignature({ w, m, outcome, band, deltas, gains, costs });
 
   // Environmental residue: emit signals that worldTick will turn into escalation.
   const envOps = envDeltasForMove({ w, m, outcome, gearSignals });
@@ -278,14 +309,140 @@ function buildDeltas({ w, m, band, outcome, margin, rng, usedAdvantage, gearSign
     costs.push({ kind: 'wound', entityId: m.actorId, by });
   }
 
-  // Fear: Stress (0..6) on dread stakes OR when dread clock is high.
-  if ((m.stakeTag === 'dread' || (w.clocks.dread ?? 0) >= 6) && outcome !== 'success') {
+  // Fear: Stress (0..6) on dread stakes, harm stakes (combat trauma), OR when dread clock is high.
+  if ((m.stakeTag === 'dread' || m.stakeTag === 'harm' || (w.clocks.dread ?? 0) >= 6) && outcome !== 'success') {
     const by = outcome === 'mixed' ? 1 : (band === 'blood' ? 2 : 1);
     deltas.push({ op: 'stress', entityId: m.actorId, by });
     costs.push({ kind: 'stress', entityId: m.actorId, by });
   }
 
   return { gains, costs, deltas };
+}
+
+function addApproachSignature({ w, m, outcome, band, deltas, gains, costs }) {
+  const a = String(m.approachTag || '');
+  const o = String(outcome || '');
+  const actor = findActor(w, m.actorId);
+
+  // ── FORCE ───────────────────────────────────────────────────────
+  // Identity: visceral, loud, overcommitted. Body pays either way.
+  if (a === 'force') {
+    if (o === 'success') {
+      deltas.push({ op: 'env', key: 'noise', by: +1 });
+      if (m.stakeTag === 'harm') {
+        deltas.push({ op: 'ledger', addFact: 'you:broke-through' });
+      }
+    } else if (o === 'mixed') {
+      deltas.push({ op: 'env', key: 'heat', by: +1 });
+    } else if (o === 'failure') {
+      deltas.push({ op: 'ledger', addFact: 'you:overcommitted' });
+    }
+    return;
+  }
+
+  // ── FINESSE ─────────────────────────────────────────────────────
+  // Identity: precise, quiet. Cleans up its own traces.
+  if (a === 'finesse') {
+    if (o === 'success') {
+      deltas.push({ op: 'env', key: 'noise', by: -1 });
+      deltas.push({ op: 'env', key: 'scent', by: -1 });
+    } else if (o === 'mixed') {
+      deltas.push({ op: 'env', key: 'noise', by: -1 });
+    } else if (o === 'failure') {
+      deltas.push({ op: 'ledger', addFact: 'you:clean-miss' });
+    }
+    return;
+  }
+
+  // ── ENDURE ──────────────────────────────────────────────────────
+  // Identity: gritted teeth. Held ground costs less on mixed, heals on success.
+  if (a === 'endure') {
+    if (o === 'success') {
+      const stressCur = clampInt(actor?.stress ?? 0, 0, 6);
+      const woundCur = clampInt(actor?.wounds ?? 0, 0, 6);
+      if (stressCur > 0) {
+        deltas.push({ op: 'stress', entityId: m.actorId, by: -1 });
+        gains.push({ kind: 'stress', entityId: m.actorId, by: -1, note: 'held the line' });
+      } else if (woundCur > 0) {
+        deltas.push({ op: 'wound', entityId: m.actorId, by: -1 });
+        gains.push({ kind: 'wound', entityId: m.actorId, by: -1, note: 'held the line' });
+      }
+      deltas.push({ op: 'ledger', addFact: 'you:held-the-line' });
+    } else if (o === 'mixed') {
+      // Endure eats mixed cheaply — a distinct ledger marker, no extra cost.
+      deltas.push({ op: 'ledger', addFact: 'you:held-steady' });
+    } else if (o === 'failure') {
+      // Pays in stress rather than a new threat entry (the default threat
+      // was suppressed upstream when approach === 'endure').
+      deltas.push({ op: 'stress', entityId: m.actorId, by: +1 });
+      costs.push({ kind: 'stress', entityId: m.actorId, by: +1, note: 'endurance breaks' });
+    }
+    return;
+  }
+
+  // ── HEART ───────────────────────────────────────────────────────
+  // Identity: warmth, connection. Never disturbs the environment.
+  if (a === 'heart') {
+    if (o === 'success') {
+      const npcId = findNpcHere(w);
+      if (npcId) {
+        deltas.push({ op: 'npcTrustDelta', npcId, by: +1 });
+        gains.push({ kind: 'npcTrust', npcId, by: +1 });
+      } else {
+        deltas.push({ op: 'ledger', addFact: 'you:rapport' });
+      }
+    } else if (o === 'mixed') {
+      deltas.push({ op: 'ledger', addFact: 'you:gentle-partial' });
+    } else if (o === 'failure') {
+      deltas.push({ op: 'ledger', addFact: 'you:trust-frays' });
+    }
+    return;
+  }
+
+  // ── FOCUS ───────────────────────────────────────────────────────
+  // Identity: observation, insight. Learns from misses — and from the clock.
+  if (a === 'focus') {
+    // One-shot DC hook consumption: if the prior-newest fact was the
+    // studied-the-miss marker, computeDC already applied the -1 discount
+    // above; emit applied-the-lesson now so the hook is no longer the
+    // active (top) fact once these deltas are applied.
+    const topFactPre = String(w.ledger?.facts?.[0]?.text || '');
+    const hookWasActive = (topFactPre === 'you:studied-the-miss');
+    if (hookWasActive) {
+      deltas.push({ op: 'ledger', addFact: 'you:applied-the-lesson' });
+    }
+
+    if (o === 'success') {
+      deltas.push({ op: 'ledger', addFact: 'you:read-the-pattern' });
+      if ((w.clocks?.revelation ?? 0) > 0) {
+        deltas.push({ op: 'clock', key: 'revelation', by: -1 });
+      }
+    } else if (o === 'mixed') {
+      // Focus burns the clock: on time-staked mixed, eat an extra turn
+      // beyond the baseline mixed-cost.
+      if (m.stakeTag === 'time') {
+        deltas.push({ op: 'time', key: 'turn', by: +1 });
+        costs.push({ kind: 'time', key: 'turn', by: +1, note: 'focus burns the clock' });
+      }
+      deltas.push({ op: 'ledger', addFact: 'you:saw-partially' });
+    } else if (o === 'failure') {
+      // Arm the DC hook for the next focus attempt.
+      deltas.push({ op: 'ledger', addFact: 'you:studied-the-miss' });
+    }
+    return;
+  }
+}
+
+function findNpcHere(w) {
+  const nodeId = String(w?.map?.currentNodeId ?? '');
+  const node = (w?.map?.nodes || []).find(n => n && n.id === nodeId) || null;
+  const npcs = node?.settlement?.npcs || [];
+  if (!Array.isArray(npcs) || !npcs.length) return null;
+  // Deterministic: first NPC with an id (tie-break = insertion order).
+  for (const npc of npcs) {
+    if (npc?.id) return String(npc.id);
+  }
+  return null;
 }
 
 function pickResourceKey(w, m, rng) {

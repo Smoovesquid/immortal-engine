@@ -1,6 +1,6 @@
 import { assertWorldInvariants } from './invariants.js';
 import { ensureWorld } from './state.js';
-import { ensureInstrumentLayer, reinforceMotif } from './instrument.js';
+import { ensureInstrumentLayer, reinforceMotif, tickThreads } from './instrument.js';
 import { seedFromString, makeRng } from './rng.js';
 import { fateBand } from './rulesets.js';
 import { scoreInventorySignals } from './gear/gearProps.js';
@@ -45,6 +45,9 @@ export function worldTick(world, seed = '') {
 
   // 5) Accumulate scars (irreversible)
   w = applyIrreversibleThresholds(w);
+
+  // 5.5) Gossip propagation: NPCs share player-knowledge to friends/family (one-hop per tick).
+  w = tickGossip(w, rng);
 
   // 6) Modify reputation + alignment state
   w = tickReputation(w, severity);
@@ -102,7 +105,12 @@ const threads = inst.threads;
     return { ...t, tension, age, objective, trajectory };
   });
 
-  let w2 = { ...w, instrument: { ...inst, threads: next } };
+  // Recalculate inevitability from current thread tensions.
+  const openThreads = next.filter(t => t.status !== 'resolved');
+  const tensionSum = openThreads.reduce((s, t) => s + clampInt(t.tension, 0, 5), 0);
+  const inevitability = clampInt(tensionSum, 0, 10);
+
+  let w2 = { ...w, instrument: { ...inst, threads: next, inevitability } };
 
   // Escalate event when any thread crosses threshold.
   // Canonical threadShift surface: log a stable event when tension crosses the escalation threshold.
@@ -247,7 +255,8 @@ function tickEnv(w, severity) {
   dBump = clampInt(dBump, 0, 2);
 
   // Decay every tick (the world doesn't remember everything forever).
-  const decay = severity >= 1.2 ? 1 : 2; // harsher fate retains residue longer
+  // Slow decay (1 pt/tick) lets residue accumulate before decaying away.
+  const decay = 1;
   const nextEnv = {
     noise: clampInt(noise - decay, 0, 6),
     heat: clampInt(heat - decay, 0, 6),
@@ -281,12 +290,15 @@ function tickQuestions(w, rng) {
   if (rng.nextFloat() >= 0.35) return w;
 
   const i = rng.int(0, questions.length - 1);
-  const q = String(questions[i] || '').trim();
+  const entry = questions[i];
+  // Questions may be objects with a .text property or bare strings.
+  const q = String(entry && typeof entry === 'object' ? (entry.text || '') : (entry || '')).trim();
   if (!q) return w;
 
   const transformed = q.endsWith('?') ? q.replace(/\?+$/, '?') : `${q}?`;
   const nextQs = questions.slice();
-  nextQs[i] = transformed;
+  // Preserve object structure if the entry was an object; update .text in place.
+  nextQs[i] = entry && typeof entry === 'object' ? { ...entry, text: transformed } : transformed;
   const w2 = { ...w, ledger: { ...w.ledger, questions: nextQs } };
   return pushTickLog(w2, `[TICK] a question sharpens: "${truncate(transformed, 48)}"`);
 }
@@ -299,7 +311,7 @@ function tickEcology(w, severity) {
 
   const corruptionBump = Math.round((tensionSum > 0 ? 1 + tensionSum * 0.15 : 0) * severity);
   const scarcityBump = Math.round((w.clocks.pressure >= 8 ? 1 : 0) * severity);
-  const instabilityBump = Math.round(((w.clocks.revelation >= 8 ? 1 : 0) + (w.clocks.dread >= 8 ? 1 : 0)) * severity);
+  const instabilityBump = Math.round(((w.clocks.pressure >= 6 ? 1 : 0) + (w.clocks.dread >= 6 ? 1 : 0)) * severity);
 
   const next = {
     corruption: clampInt(e.corruption + corruptionBump, 0, 100),
@@ -326,6 +338,19 @@ function applyIrreversibleThresholds(w) {
   }
   if (w2.ecology.scarcity > 75) {
     w2 = ensureScar(w2, 'famine_arc', 'Scarcity breached 75: famine arc unlocked.', 'scarcity>75');
+  }
+
+  // Per-node scars use lower thresholds — playtest expects to see the place
+  // mark itself as ecology and clocks drift, not only at terminal thresholds.
+  // Stamp the current node so the visited place reflects accumulated pressure.
+  const here = String(w2.map?.currentNodeId ?? '');
+  if (here) {
+    if ((w2.clocks?.pressure ?? 0) >= 8) w2 = scarifyNode(w2, here, 'pressure_mark');
+    if ((w2.clocks?.dread ?? 0) >= 8) w2 = scarifyNode(w2, here, 'dread_mark');
+    if (w2.ecology.corruption >= 10) w2 = scarifyNode(w2, here, 'corruption_taint');
+    if (w2.ecology.scarcity >= 15)  w2 = scarifyNode(w2, here, 'scarcity_strain');
+    if (w2.ecology.instability >= 15) w2 = scarifyNode(w2, here, 'instability_fracture');
+    if (maxHostility >= 40) w2 = scarifyNode(w2, here, 'hostility_mark');
   }
 
   return w2;
@@ -360,6 +385,64 @@ function tickMotifs(w, rng, severity) {
   const m = active[rng.nextInt(active.length)];
   const w2 = reinforceMotif(w, m, 1);
   return pushTickLog(w2, `[TICK] motif lingers: ${m}`);
+}
+
+function tickGossip(w, rng) {
+  // Gossip propagation: NPCs with honesty >= 0.6 who have met the player share
+  // player-sourced knowledge to friends/family (bond > 0) in the same settlement.
+  // One-hop per tick. Gossip items are tagged so they don't re-propagate endlessly.
+  const nodes = Array.isArray(w.map?.nodes) ? w.map.nodes : [];
+  let changed = false;
+  const nextNodes = nodes.map(node => {
+    if (!node.settlement?.decompressed || !Array.isArray(node.settlement?.npcs)) return node;
+    const npcs = node.settlement.npcs;
+    if (npcs.length < 2) return node;
+
+    // Build per-NPC list of player-shared knowledge eligible for gossip.
+    const gossipSources = [];
+    for (let i = 0; i < npcs.length; i++) {
+      const npc = npcs[i];
+      const honesty = npc.personality?.honesty ?? 0;
+      if (honesty < 0.6) continue;
+      if (!npc.conversationState?.metPlayer) continue;
+      const kg = Array.isArray(npc.knowledgeGraph) ? npc.knowledgeGraph : [];
+      const playerFacts = kg.filter(f => f.source === 'player').map(f => f.factId);
+      if (playerFacts.length) gossipSources.push({ idx: i, npc, facts: playerFacts });
+    }
+    if (!gossipSources.length) return node;
+
+    // For each source, spread one fact to one friendly NPC.
+    const nextNpcs = [...npcs];
+    for (const src of gossipSources) {
+      const rels = src.npc.relationships ?? {};
+      const friends = Object.entries(rels)
+        .filter(([, r]) => (r.bond ?? 0) > 0)
+        .map(([targetId]) => targetId);
+      if (!friends.length) continue;
+
+      const targetId = rng.pick(friends);
+      const targetIdx = nextNpcs.findIndex(n => (n.id || `npc_${npcs.indexOf(n)}`) === targetId);
+      if (targetIdx === -1 || targetIdx === src.idx) continue;
+
+      // Pick a random fact to share.
+      const fact = rng.pick(src.facts);
+      const target = nextNpcs[targetIdx];
+      const received = Array.isArray(target.gossipReceived) ? [...target.gossipReceived] : [];
+      if (received.some(g => g.fact === fact)) continue; // already knows
+
+      received.push({ fact, from: src.npc.name || src.npc.id, tick: w.time?.turn ?? 0 });
+      if (received.length > 10) received.splice(0, received.length - 10); // cap at 10
+      nextNpcs[targetIdx] = { ...target, gossipReceived: received };
+      changed = true;
+    }
+
+    if (nextNpcs === npcs) return node;
+    return { ...node, settlement: { ...node.settlement, npcs: nextNpcs } };
+  });
+
+  if (!changed) return w;
+  const w2 = { ...w, map: { ...w.map, nodes: nextNodes } };
+  return pushTickLog(w2, '[TICK] gossip spreads among NPCs');
 }
 
 function pickFactionMove({ pressure, hostility, rng }) {

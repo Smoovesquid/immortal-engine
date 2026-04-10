@@ -561,6 +561,52 @@ test('U58-34: worldHash observes combat state', () => {
 
 // ── 35: save version warning ──────────────────────────────────────────────
 
+// ── 36–41: R15 — mintEnemyFromNpc honors npc.hostile ──────────────────────
+
+test('U58-36: R15 — hostile NPC mints with canParley:false', () => {
+  const e = mintEnemyFromNpc({ id: 'n1', name: 'Kael', hostile: true });
+  assert.equal(e.canParley, false);
+});
+
+test('U58-37: R15 — NPC with no hostile field mints with canParley:true', () => {
+  const e = mintEnemyFromNpc({ id: 'n2', name: 'Yara' });
+  assert.equal(e.canParley, true);
+});
+
+test('U58-38: R15 — explicitly non-hostile NPC mints with canParley:true', () => {
+  const e = mintEnemyFromNpc({ id: 'n3', name: 'Orla', hostile: false });
+  assert.equal(e.canParley, true);
+});
+
+test('U58-39: R15 — explicit combatProfile.canParley overrides hostile derivation', () => {
+  const e = mintEnemyFromNpc({ id: 'n4', name: 'Iden', hostile: true, combatProfile: { canParley: true } });
+  assert.equal(e.canParley, true);
+});
+
+test('U58-40: R15 — heart success vs hostile-minted enemy stays in combat (trivial damage)', () => {
+  let w = mkCombatWorld('r15-hostile');
+  // Mint via the public path so the hostile flag drives canParley.
+  const enemy = mintEnemyFromNpc({ id: 'npc_hostile', name: 'Kael', hostile: true, combatProfile: { maxHp: 10, damage: 2 } });
+  w = startCombatDirectly(w, [{ ...enemy, id: 'enemy_0' }]);
+  assert.equal(w.combat.enemies[0].canParley, false);
+  const found = findCombatTurnOutcome(w, 'heart', 'success');
+  assert.ok(found, 'expected a heart success');
+  assert.equal(found.world.combat.active, true, 'still in combat — parley refused');
+  assert.ok(found.world.combat.enemies[0].hp < 10, 'enemy took trivial damage');
+  assert.ok(found.world.combat.enemies[0].hp >= 8, 'damage was small (~1)');
+});
+
+test('U58-41: R15 — heart success vs non-hostile-minted enemy ends combat (parley)', () => {
+  let w = mkCombatWorld('r15-nonhostile');
+  const enemy = mintEnemyFromNpc({ id: 'npc_friend', name: 'Yara', combatProfile: { maxHp: 10, damage: 2 } });
+  w = startCombatDirectly(w, [{ ...enemy, id: 'enemy_0' }]);
+  assert.equal(w.combat.enemies[0].canParley, true);
+  const found = findCombatTurnOutcome(w, 'heart', 'success');
+  assert.ok(found, 'expected a heart success');
+  assert.equal(found.world.combat.active, false, 'parley ends combat');
+  assert.equal(found.world.combat.enemies[0].defeated, false);
+});
+
 test('U58-35: loading a v12 save warns and normalizes combat to default', () => {
   const storage = (() => {
     const data = {};

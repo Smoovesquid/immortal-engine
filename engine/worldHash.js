@@ -30,6 +30,7 @@ function projectForHash(world) {
 
     canonLog: w.canonLog,
     goals: w.goals,
+    recentBeats: w.recentBeats,
     timeline: w.timeline
   };
 }

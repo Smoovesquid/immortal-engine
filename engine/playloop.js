@@ -1,4 +1,4 @@
-import { ensureWorld } from './state.js';
+import { ensureWorld, appendRecentBeat } from './state.js';
 import { makeRng, seedFromString } from './rng.js';
 import { addFact, addQuestion, addThreat } from './ledger.js';
 import { hasFact } from './ledgerUtils.js';
@@ -431,6 +431,13 @@ export function playerMove(world, packsById, text) {
   // Apply deltas (canon mutation path).
   w = applyDeltas(world2, result.deltas);
 
+  // Pass 4 — narrative memory: append a beat for this mainline resolution turn.
+  // Beats are a derived narrator-continuity cache (cap 6, FIFO). They are NOT
+  // canon log events, NOT delta-routed, and NOT emitted from dialogue, pure
+  // exploration, structure transitions, or any branch that short-circuits
+  // before resolveMove.
+  w = appendRecentBeat(w, buildBeatFromTurn(w, text, move, result));
+
   const resolution = {
     kind: 'turn',
     t: w.timeline.length,
@@ -819,6 +826,34 @@ function isDialogueBreakingIntent(text, world) {
   // Physics interactions
   if (DIALOGUE_PHYSICS_VERB_RE.test(t)) return true;
   return false;
+}
+
+// Pass 4 — narrative memory: derive a beat from the just-resolved turn.
+// The world passed in must already reflect post-applyDeltas state so that
+// timeline.length corresponds to the committed turn index. Pure function;
+// caller (playerMove) routes the result through appendRecentBeat which
+// applies the normalizer and FIFO trim.
+function buildBeatFromTurn(world, text, move, result) {
+  const nodeId = String(world?.map?.currentNodeId ?? '');
+  const node = (world?.map?.nodes ?? []).find(n => n && n.id === nodeId) || null;
+  const interior = world?.scene?.interior;
+  let location = '';
+  if (interior && typeof interior === 'object' && interior.structureKey && interior.roomId) {
+    location = `interior:${String(interior.structureKey)}:${String(interior.roomId)}`;
+  } else if (node?.name) {
+    location = String(node.name);
+  } else if (nodeId) {
+    location = nodeId;
+  }
+  return {
+    t: Array.isArray(world?.timeline) ? world.timeline.length : 0,
+    input: String(text ?? ''),
+    approach: String(move?.approachTag ?? ''),
+    stake: String(move?.stakeTag ?? ''),
+    outcome: String(result?.outcome ?? ''),
+    location,
+    mechanics: String(result?.mechanicsLine ?? '')
+  };
 }
 
 function dialogueAskNarration(outcome) {

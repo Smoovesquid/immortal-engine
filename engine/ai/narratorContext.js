@@ -95,6 +95,7 @@ export function buildDMContext(world, outcome = {}, pack = {}) {
     rules,
     worldWhisper,
     goals,
+    recentBeats: Array.isArray(w.recentBeats) ? w.recentBeats.slice() : [],
     dialogueTurn: buildDialogueTurn(w)
   };
 }

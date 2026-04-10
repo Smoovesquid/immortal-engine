@@ -21,6 +21,7 @@ import { decompressAndCanonizeSync } from './decompression/decompress.js';
 import { discoverNode } from './map/mapState.js';
 import { detectPhysicalInteraction, evaluatePhysicsSync } from './llmPhysics.js';
 import { createGoal, checkGoals } from './goals/goalContract.js';
+import { beginDialogue, askNpc, endDialogue, resolveNpcAtCurrentNode } from './npc/dialogue.js';
 
 // Pure-ish play loop: world -> {world, output}
 
@@ -157,6 +158,71 @@ export function playerMove(world, packsById, text) {
     return { world: w, output: { narration: composed.narrationLine, mechanics: composed.mechanicsLine } };
   }
 
+  // ── Dialogue mode intercept ───────────────────────────────────────────────
+  // If an NPC dialogue is active, route input: explicit exit, auto-exit on
+  // movement/physics/scene intents, else treat as an ask.
+  if (w.scene?.dialogue) {
+    const explicitExit = isDialogueExitIntent(text);
+    const breakingIntent = isDialogueBreakingIntent(text, w);
+
+    if (explicitExit) {
+      const ended = endDialogue(w);
+      w = ended.world;
+      w = pushEvent(w, {
+        kind: 'dialogueExit',
+        data: {
+          npcId: ended.outcome.npcId || '',
+          turnsInDialogue: ended.outcome.turnsInDialogue || 0,
+          topicsCount: ended.outcome.topicsCount || 0
+        }
+      });
+      w = maybeCheckGoals(w);
+      const name = ended.outcome.npcName || 'them';
+      return {
+        world: w,
+        output: {
+          narration: `Wizard: You step away from ${name}.`,
+          mechanics: `[dialogue exit | turns:${ended.outcome.turnsInDialogue} | topics:${ended.outcome.topicsCount}]`
+        }
+      };
+    }
+
+    if (breakingIntent) {
+      const ended = endDialogue(w);
+      w = ended.world;
+      w = pushEvent(w, {
+        kind: 'dialogueExit',
+        data: {
+          npcId: ended.outcome.npcId || '',
+          turnsInDialogue: ended.outcome.turnsInDialogue || 0,
+          topicsCount: ended.outcome.topicsCount || 0
+        }
+      });
+      // Fall through — continue processing the rest of playerMove with dialogue cleared.
+    } else {
+      // Treat input as an ask inside the current dialogue.
+      const asked = askNpc(w, text);
+      w = asked.world;
+      w = pushEvent(w, {
+        kind: 'dialogueAsk',
+        data: {
+          npcId: asked.outcome.npcId || '',
+          topic: asked.outcome.topic || '',
+          mode: asked.outcome.mode || '',
+          factId: asked.outcome.factId || ''
+        }
+      });
+      w = maybeCheckGoals(w);
+      return {
+        world: w,
+        output: {
+          narration: dialogueAskNarration(asked.outcome),
+          mechanics: `[dialogue ask | ${asked.outcome.mode}${asked.outcome.factId ? ` | ${asked.outcome.factId}` : ''} | trust:${asked.outcome.trustLevel}]`
+        }
+      };
+    }
+  }
+
   const interiorAction = inferInteriorAction(text, w.scene?.interior);
   if (interiorAction.kind === 'enter') {
     const nodeId = String(w.map?.currentNodeId || '');
@@ -285,35 +351,34 @@ export function playerMove(world, packsById, text) {
 
   const actorId = (w.party?.[0]?.id) ? String(w.party[0].id) : 'party';
 
-  // NPC dialogue intercept: "talk to X" at a settlement updates NPC conversation state
-  // instead of routing through generic dice resolution.
-  const talkMatch = String(text || '').match(/\b(?:talk|speak|chat)\s+(?:to|with)\s+(.+)/i);
-  if (talkMatch) {
-    const npcName = talkMatch[1].trim();
-    const curNode = w.map?.nodes?.find(n => n.id === w.map?.currentNodeId);
-    const npcs = curNode?.settlement?.npcs || [];
-    const targetNpc = npcs.find(n =>
-      String(n.name).toLowerCase() === npcName.toLowerCase() ||
-      String(n.name).toLowerCase().startsWith(npcName.toLowerCase())
-    );
-    if (targetNpc) {
-      const npcId = targetNpc.id || targetNpc.name;
-      const trust = targetNpc.conversationState?.trustLevel ?? 5;
-      const honesty = targetNpc.personality?.honesty ?? 0.5;
-      const trustBump = Math.max(honesty > 0.6 ? 1 : 0, 1);
-      const deltas = [
-        { op: 'npcTrustDelta', npcId, by: trustBump },
-        { op: 'npcKnowledgeShared', npcId, fact: `player spoke at turn ${w.time?.turn ?? 0}` }
-      ];
-      w = applyDeltas(w, deltas);
-      w = pushEvent(w, { kind: 'npcDialogue', data: { npcId, npcName: targetNpc.name, trust: trust + trustBump } });
-      w = maybeCheckGoals(w);
-      const role = targetNpc.role ? ` the ${targetNpc.role}` : '';
-      const mood = honesty > 0.7 ? 'speaks openly' : honesty < 0.3 ? 'is guarded and evasive' : 'chooses words carefully';
-      return { world: w, output: {
-        narration: `Wizard: ${targetNpc.name}${role} ${mood}; ${trust >= 7 ? 'trust runs deep between you' : trust >= 4 ? 'a cautious exchange' : 'suspicion colors every word'}; what do you do?`,
-        mechanics: `[dialogue:${targetNpc.name} | role:${targetNpc.role || 'unknown'} | trust:${trust}→${Math.min(trust + trustBump, 10)} | honesty:${honesty.toFixed(2)}]`
-      }};
+  // NPC dialogue entry: "talk to X" / "speak to X" / "approach X" begins a
+  // canonical dialogue mode with an NPC at the current settlement. If no NPC
+  // resolves, fall through to generic resolution (preserves legacy behavior
+  // for intents like "I talk to whoever is watching").
+  const talkRef = extractDialogueRef(text);
+  if (talkRef) {
+    const resolved = resolveNpcAtCurrentNode(w, talkRef);
+    if (resolved) {
+      const begun = beginDialogue(w, talkRef);
+      if (begun.outcome.ok) {
+        w = begun.world;
+        w = pushEvent(w, {
+          kind: 'dialogueEnter',
+          data: {
+            npcId: begun.outcome.npcId,
+            npcName: begun.outcome.npcName
+          }
+        });
+        w = maybeCheckGoals(w);
+        const role = begun.outcome.npcRole ? ` the ${begun.outcome.npcRole}` : '';
+        return {
+          world: w,
+          output: {
+            narration: `Wizard: You approach ${begun.outcome.npcName}${role}; ${begun.outcome.mood} eyes meet yours.`,
+            mechanics: `[dialogue enter | ${begun.outcome.npcName} | role:${begun.outcome.npcRole || 'unknown'} | trust:${begun.outcome.trustLevel}/10 | mood:${begun.outcome.mood}]`
+          }
+        };
+      }
     }
   }
 
@@ -727,6 +792,65 @@ function inferInteriorAction(text, interior) {
   const goMatch = t.match(/\bgo\s+([a-z0-9:_-]+)/i);
   if (goMatch) return { kind: 'move', toRoomId: String(goMatch[1] || ''), direction: '' };
   return { kind: 'none' };
+}
+
+// ── Dialogue intent helpers ────────────────────────────────────────────────
+
+const DIALOGUE_PHYSICS_VERB_RE = /\b(examine|inspect|search|look at|check|rip|break|smash|tear|kick|punch|shatter|take|grab|pick up|steal)\b/i;
+
+function isDialogueExitIntent(text) {
+  const t = String(text || '').toLowerCase().trim();
+  if (!t) return false;
+  return /\b(leave|walk away|step away|end conversation|end conversation\.|stop talking|goodbye|good\s?bye|farewell|done talking)\b/.test(t);
+}
+
+function isDialogueBreakingIntent(text, world) {
+  const t = String(text || '');
+  if (!t.trim()) return false;
+  if (isExploreIntent(t)) return true;
+  if (moveAdvancesScene(t)) return true;
+  if (isFreeMovementIntent(t)) return true;
+  // Interior transitions
+  const ia = inferInteriorAction(t, world?.scene?.interior);
+  if (ia && ia.kind && ia.kind !== 'none') return true;
+  // Local feet moves
+  if (parseLocalFeetMove(t)) return true;
+  // Physics interactions
+  if (DIALOGUE_PHYSICS_VERB_RE.test(t)) return true;
+  return false;
+}
+
+function dialogueAskNarration(outcome) {
+  const name = outcome?.npcName || 'They';
+  switch (outcome?.mode) {
+    case 'shared':
+      return `Wizard: ${name} answers plainly, offering what they know.`;
+    case 'withheld':
+      return `Wizard: ${name} deflects, keeping the truth close.`;
+    case 'lied':
+      return `Wizard: ${name} offers a smooth explanation that doesn't quite match what you feel.`;
+    case 'deflected':
+    default:
+      return `Wizard: ${name} changes the subject.`;
+  }
+}
+
+function extractDialogueRef(text) {
+  const t = String(text || '');
+  // "talk to X" / "speak to X" / "speak with X" / "chat with X"
+  const m1 = t.match(/\b(?:talk|speak|chat)\s+(?:to|with)\s+(.+)/i);
+  if (m1 && m1[1]) return cleanDialogueRef(m1[1]);
+  // "approach X" (conservative — resolved NPC must exist or caller falls through)
+  const m2 = t.match(/\bapproach\s+(.+)/i);
+  if (m2 && m2[1]) return cleanDialogueRef(m2[1]);
+  return '';
+}
+
+function cleanDialogueRef(raw) {
+  return String(raw || '')
+    .trim()
+    .replace(/[.!?,;:]+$/, '')
+    .trim();
 }
 
 function isExploreIntent(text) {

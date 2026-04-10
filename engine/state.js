@@ -9,7 +9,7 @@ import { generateRegions } from './world/regions.js';
 import { generateInitialMap } from './map/generateMap.js';
 import { ensureStructures } from './structures/structuresState.js';
 
-export const WORLD_VERSION = 10;
+export const WORLD_VERSION = 11;
 
 const GOAL_KINDS = new Set(['reach', 'obtain', 'talkTo', 'learn', 'defeat']);
 const GOAL_STATUSES = new Set(['active', 'completed', 'failed']);
@@ -43,8 +43,9 @@ export function ensureWorld(partial) {
       promptSeed: String(w.scene.promptSeed ?? ''),
       tags: ensureTags(w.scene.tags),
       thread: String(w.scene.thread ?? ''),
-      interior: ensureInteriorContext(w.scene.interior)
-    } : { location: '', objective: '', time: 'start', promptSeed: '', tags: [], thread: '', interior: null },
+      interior: ensureInteriorContext(w.scene.interior),
+      dialogue: ensureDialogueContext(w.scene.dialogue)
+    } : { location: '', objective: '', time: 'start', promptSeed: '', tags: [], thread: '', interior: null, dialogue: null },
     time: ensureTime(w.time),
     ledger: ensureLedger(w.ledger),
     instrument: ensureInstrumentLayer(w.instrument),
@@ -324,6 +325,40 @@ function ensureCanonLog(log) {
     return createCanonLog();
   }
   return { events: [...log.events] };
+}
+
+function ensureDialogueContext(x) {
+  if (!x || typeof x !== 'object') return null;
+  const npcId = String(x.npcId ?? '').trim();
+  if (!npcId) return null;
+  const startedAt = Number.isFinite(Number(x.startedAt)) ? Math.max(0, Math.trunc(Number(x.startedAt))) : 0;
+  const turnsInDialogue = Number.isFinite(Number(x.turnsInDialogue)) ? Math.max(0, Math.trunc(Number(x.turnsInDialogue))) : 0;
+  const rawTopics = Array.isArray(x.topicsOffered) ? x.topicsOffered.map(String) : [];
+  const topicsOffered = [];
+  const seen = new Set();
+  for (const t of rawTopics) {
+    const s = t.trim();
+    if (!s) continue;
+    if (seen.has(s)) continue;
+    seen.add(s);
+    topicsOffered.push(s);
+    if (topicsOffered.length >= 20) break;
+  }
+  let lastAnswer = null;
+  if (x.lastAnswer && typeof x.lastAnswer === 'object') {
+    const mode = String(x.lastAnswer.mode ?? '');
+    const validModes = new Set(['shared', 'withheld', 'lied', 'deflected']);
+    if (validModes.has(mode)) {
+      lastAnswer = {
+        factId: x.lastAnswer.factId ? String(x.lastAnswer.factId) : null,
+        mode,
+        trustAtTime: Number.isFinite(Number(x.lastAnswer.trustAtTime))
+          ? Math.trunc(Number(x.lastAnswer.trustAtTime))
+          : 0
+      };
+    }
+  }
+  return { npcId, startedAt, turnsInDialogue, topicsOffered, lastAnswer };
 }
 
 function ensureInteriorContext(x) {

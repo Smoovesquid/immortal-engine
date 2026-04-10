@@ -34,7 +34,10 @@ const CANONICAL_TIMELINE_EVENT_KINDS = [
   'scarFormed',
   'endingTriggered',
   'goalCreated',
-  'goalCompleted'
+  'goalCompleted',
+  'dialogueEnter',
+  'dialogueAsk',
+  'dialogueExit'
 ];
 
 // Non-canonical timeline logs are allowed to exist, but are NOT part of the canonical surface freeze.

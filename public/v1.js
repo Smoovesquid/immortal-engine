@@ -515,6 +515,14 @@ function renderPlay() {
         el('div', { class: 'small' }, `fate: ${fate}`),
         el('div', { class: 'small' }, `pack: ${pack}`),
         el('div', { class: 'small' }, `tension: ${(w?.instrument?.inevitability ?? 0)}/12 | clocks: p${(w?.clocks?.pressure ?? 0)}/12 d${(w?.clocks?.dread ?? 0)}/12 r${(w?.clocks?.revelation ?? 0)}/12`),
+        (() => {
+          const goals = Array.isArray(w?.goals) ? w.goals : [];
+          const active = goals.find(g => g && g.status === 'active');
+          const justCompleted = goals.find(g => g && g.status === 'completed' && g.completedAt === (w?.timeline?.length ?? -1));
+          if (justCompleted) return el('div', { class: 'small' }, `Goal: ${String(justCompleted.label || justCompleted.kind)} ✓`);
+          if (active) return el('div', { class: 'small' }, `Goal: ${String(active.label || active.kind)}`);
+          return null;
+        })(),
         el('div', { class: 'row' }, backBtn, reloadBtn, saveBtn, exportBtn, importBtn)
       ),
       renderTranscript(ui.play.lines),

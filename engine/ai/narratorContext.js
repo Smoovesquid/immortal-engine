@@ -14,6 +14,7 @@ import { ensureWorld } from '../state.js';
 import { ensureInstrumentLayer } from '../instrument.js';
 import { fateBand } from '../rulesets.js';
 import { filterContext } from '../npc/perspectiveFilter.js';
+import { availableTopics as dialogueAvailableTopics } from '../npc/dialogue.js';
 
 /**
  * buildNarratorContext(world, outcome) → NarratorContext (original slim context)
@@ -60,7 +61,8 @@ export function buildNarratorContext(world, outcome = {}) {
       economy: settlement.economy ?? null,
       population: settlement.population ?? null
     } : null,
-    speaker
+    speaker,
+    dialogueTurn: buildDialogueTurn(w)
   };
 }
 
@@ -92,8 +94,82 @@ export function buildDMContext(world, outcome = {}, pack = {}) {
     player,
     rules,
     worldWhisper,
-    goals
+    goals,
+    dialogueTurn: buildDialogueTurn(w)
   };
+}
+
+// ── Dialogue Turn ─────────────────────────────────────────────────────────
+// Derived view for LLM/DM prompts when scene.dialogue is active.
+// sharedFacts are computed from the ledger (`npc:{id} shared:{factId}` markers).
+// withheldFacts are computed from topicsOffered minus shared + current trust rules.
+
+const DIALOGUE_TRUST_REVEAL_PUBLIC = 4;
+const DIALOGUE_TRUST_REVEAL_SECRET = 7;
+
+export function buildDialogueTurn(world) {
+  const w = ensureWorld(world);
+  const d = w.scene?.dialogue;
+  if (!d) return null;
+
+  const nodeId = String(w.map?.currentNodeId ?? '');
+  const node = (w.map?.nodes || []).find(n => n.id === nodeId) || null;
+  const npcs = node?.settlement?.npcs || [];
+  const npc = npcs.find(n => String(n?.id) === String(d.npcId)) || null;
+  if (!npc) return null;
+
+  const trust = Number(npc.conversationState?.trustLevel ?? 5);
+  const secrets = new Set(Array.isArray(npc.secrets) ? npc.secrets.map(String) : []);
+
+  const sharedFacts = computeSharedFacts(w, String(d.npcId));
+  const sharedSet = new Set(sharedFacts);
+
+  const topicsOffered = Array.isArray(d.topicsOffered) ? d.topicsOffered.map(String) : [];
+  const withheldFacts = [];
+  for (const t of topicsOffered) {
+    if (sharedSet.has(t)) continue;
+    if (secrets.has(t)) {
+      if (trust < DIALOGUE_TRUST_REVEAL_SECRET) withheldFacts.push(t);
+    } else {
+      if (trust < DIALOGUE_TRUST_REVEAL_PUBLIC) withheldFacts.push(t);
+    }
+  }
+
+  return {
+    npc: {
+      name: String(npc.name || ''),
+      role: String(npc.role || ''),
+      mood: dialogueMood(npc, trust),
+      trustLevel: trust,
+      personality: npc.personality || null,
+      factionId: npc.factionId || null
+    },
+    sharedFacts,
+    withheldFacts,
+    lastMode: d.lastAnswer?.mode || null,
+    lastFactId: d.lastAnswer?.factId || null,
+    availableTopics: dialogueAvailableTopics(w)
+  };
+}
+
+function computeSharedFacts(w, npcId) {
+  const facts = Array.isArray(w.ledger?.facts) ? w.ledger.facts : [];
+  const prefix = `npc:${npcId} shared:`;
+  const out = [];
+  for (const f of facts) {
+    const t = String(f?.text || '');
+    if (t.startsWith(prefix)) out.push(t.slice(prefix.length));
+  }
+  return out;
+}
+
+function dialogueMood(npc, trust) {
+  const h = Number(npc?.personality?.honesty ?? 0.5);
+  if (trust >= 7) return 'warm';
+  if (h > 0.7) return 'open';
+  if (h < 0.3) return 'guarded';
+  if (trust <= 2) return 'wary';
+  return 'measured';
 }
 
 // ── Goals ─────────────────────────────────────────────────────────────────

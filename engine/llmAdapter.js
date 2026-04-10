@@ -195,6 +195,16 @@ export function validateNarrationCandidate(world, narrationCandidate, {
     if (candLower.includes(word)) return false;
   }
 
+  // Dialogue mode guard: if the active dialogue has withheldFacts, the narration
+  // must NOT mention any of those factIds.
+  const dialogueTurn = ctx?.dialogueTurn ?? null;
+  if (dialogueTurn && Array.isArray(dialogueTurn.withheldFacts)) {
+    for (const wf of dialogueTurn.withheldFacts) {
+      const t = String(wf || '').trim();
+      if (t && containsInsensitive(cand, t)) return false;
+    }
+  }
+
   // Contradiction guard: provided "FACTS YOU MAY NOT CHANGE" + any local "not X" facts.
   for (const t0 of facts) {
     const t = String(t0 ?? '').trim();
@@ -338,6 +348,22 @@ export function buildDMSystemPrompt(dmCtx) {
     ? `PLAYER GOALS (active): ${goals.map(g => `${g.label || g.kind} [${g.kind}:${g.targetRef}]`).join(' | ')}`
     : '';
 
+  // DIALOGUE MODE — speak in the NPC's voice, respect withheld facts.
+  const dt = dmCtx.dialogueTurn;
+  const dialogueBlock = dt
+    ? [
+        ``,
+        `DIALOGUE MODE — you are speaking in the voice of ${dt.npc.name} (${dt.npc.role}).`,
+        `- NPC mood: ${dt.npc.mood}; trust ${dt.npc.trustLevel}/10.`,
+        dt.sharedFacts?.length ? `- SHARED facts (may reference): ${dt.sharedFacts.join(', ')}` : `- SHARED facts: (none yet)`,
+        dt.withheldFacts?.length ? `- WITHHELD facts (MUST NOT reveal or mention): ${dt.withheldFacts.join(', ')}` : '',
+        dt.availableTopics?.length ? `- Topics available at this trust level: ${dt.availableTopics.join(', ')}` : '',
+        dt.lastMode ? `- Last answer mode: ${dt.lastMode}${dt.lastFactId ? ` (fact: ${dt.lastFactId})` : ''}` : '',
+        `- Write in the NPC's voice using **${dt.npc.name}:** "..." format, not the DM's voice.`,
+        `- Never reveal a factId not in SHARED. Never volunteer a secret.`
+      ].filter(Boolean).join('\n')
+    : '';
+
   return [
     `You are the Dungeon Master for a tabletop RPG session.`,
     ``,
@@ -350,6 +376,7 @@ export function buildDMSystemPrompt(dmCtx) {
     scene.interior ? `- Interior: room ${scene.interior.roomId}` : `- Outdoors`,
     threatLine,
     goalLine,
+    dialogueBlock,
     ``,
     `NPCs PRESENT:`,
     npcBlock,

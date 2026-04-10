@@ -19,6 +19,7 @@
 
 import { ensureWorld } from '../state.js';
 import { hasFact } from '../ledgerUtils.js';
+import { resolveNpcFromList } from '../npc/dialogue.js';
 
 const VALID_KINDS = new Set(['reach', 'obtain', 'talkTo', 'learn', 'defeat']);
 
@@ -154,15 +155,11 @@ function partyHasItem(w, itemId) {
 
 function settlementNpcMet(w, npcId) {
   const nodes = Array.isArray(w.map?.nodes) ? w.map.nodes : [];
-  const ref = String(npcId);
   for (const n of nodes) {
     const npcs = n?.settlement?.npcs;
     if (!Array.isArray(npcs)) continue;
-    for (const npc of npcs) {
-      const id = String(npc?.id ?? npc?.name ?? '');
-      if (id !== ref) continue;
-      if (npc?.conversationState?.metPlayer === true) return true;
-    }
+    const resolved = resolveNpcFromList(npcs, npcId);
+    if (resolved && resolved?.conversationState?.metPlayer === true) return true;
   }
   return false;
 }

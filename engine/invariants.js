@@ -56,6 +56,40 @@ export function assertWorldInvariants(world) {
       throw new Error(`Invariant: completed goal ${g.id} must have completedAt`);
     }
   }
+
+  // Dialogue mode (optional)
+  const dialogue = world.scene?.dialogue;
+  if (dialogue != null) {
+    if (typeof dialogue !== 'object') {
+      throw new Error('Invariant: scene.dialogue must be object or null');
+    }
+    if (!dialogue.npcId || typeof dialogue.npcId !== 'string') {
+      throw new Error('Invariant: scene.dialogue.npcId must be non-empty string');
+    }
+    if (!Number.isInteger(dialogue.turnsInDialogue) || dialogue.turnsInDialogue < 0) {
+      throw new Error('Invariant: scene.dialogue.turnsInDialogue must be non-negative integer');
+    }
+    if (!Array.isArray(dialogue.topicsOffered)) {
+      throw new Error('Invariant: scene.dialogue.topicsOffered must be array');
+    }
+    if (dialogue.topicsOffered.length > 20) {
+      throw new Error(`Invariant: scene.dialogue.topicsOffered length ${dialogue.topicsOffered.length} exceeds cap 20`);
+    }
+    const seenTopics = new Set();
+    for (const t of dialogue.topicsOffered) {
+      if (seenTopics.has(t)) {
+        throw new Error(`Invariant: scene.dialogue.topicsOffered has duplicate ${t}`);
+      }
+      seenTopics.add(t);
+    }
+    const nodeId = String(world.map?.currentNodeId ?? '');
+    const node = (world.map?.nodes || []).find(n => n && n.id === nodeId) || null;
+    const npcs = node?.settlement?.npcs || [];
+    const foundNpc = npcs.some(n => String(n?.id) === dialogue.npcId);
+    if (!foundNpc) {
+      throw new Error(`Invariant: scene.dialogue.npcId ${dialogue.npcId} not at current node`);
+    }
+  }
 }
 
 const GOAL_KINDS = new Set(['reach', 'obtain', 'talkTo', 'learn', 'defeat']);

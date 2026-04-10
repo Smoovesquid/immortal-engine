@@ -416,6 +416,181 @@ function renderTranscript(lines) {
   return el('div', { class: 'stack' }, items);
 }
 
+// ── Status panels: pure views over canonical world state ──────────────
+
+const GOAL_KIND_VERBS = {
+  reach: 'Reach',
+  obtain: 'Obtain',
+  talkTo: 'Talk to',
+  learn: 'Learn',
+  defeat: 'Defeat'
+};
+
+function goalDisplayLabel(goal) {
+  if (goal.label && goal.label.trim()) return goal.label.trim();
+  const verb = GOAL_KIND_VERBS[goal.kind] || goal.kind;
+  return `${verb} ${goal.targetRef}`;
+}
+
+function dots(filled, total, ch = '●', empty = '○') {
+  const n = Math.max(0, Math.min(total, filled | 0));
+  return ch.repeat(n) + empty.repeat(total - n);
+}
+
+function truncate(text, cap) {
+  const s = String(text || '');
+  if (s.length <= cap) return s;
+  return s.slice(0, cap - 1) + '…';
+}
+
+function renderGoalsSection(world) {
+  const goals = Array.isArray(world?.goals) ? world.goals : [];
+  const active = goals
+    .filter(g => g.status === 'active')
+    .slice()
+    .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+  const completed = goals
+    .filter(g => g.status === 'completed')
+    .slice()
+    .sort((a, b) => (b.completedAt || 0) - (a.completedAt || 0));
+
+  // 12 total cap matches engine GOALS_CAP.
+  const ordered = [...active, ...completed].slice(0, 12);
+
+  const body = ordered.length === 0
+    ? el('div', { class: 'empty-muted' }, 'No goals yet.')
+    : el('ul', { class: 'goal-list' },
+        ordered.map(g => {
+          const isActive = g.status === 'active';
+          return el('li', { class: `goal-item ${isActive ? 'active' : 'completed'}` },
+            el('span', { class: 'goal-icon' }, isActive ? '▢' : '✓'),
+            el('span', { class: 'goal-label' }, goalDisplayLabel(g)),
+            isActive ? el('span', { class: 'goal-kind' }, String(g.kind)) : null
+          );
+        })
+      );
+
+  return el('section', { class: 'status-section', 'aria-label': 'Goal tracker' },
+    el('h3', { class: 'status-heading' }, 'Goals'),
+    body
+  );
+}
+
+function renderPartySection(world) {
+  const pc = Array.isArray(world?.party) && world.party[0] ? world.party[0] : null;
+
+  if (!pc) {
+    return el('section', { class: 'status-section', 'aria-label': 'Party status' },
+      el('h3', { class: 'status-heading' }, 'Party'),
+      el('div', { class: 'empty-muted' }, 'No character yet.')
+    );
+  }
+
+  const wounds = Math.max(0, Math.min(6, Number(pc.wounds) || 0));
+  const stress = Math.max(0, Math.min(6, Number(pc.stress) || 0));
+  const adv = Math.max(0, Math.min(2, Number(world?.meta?.advantageTokens?.[pc.id]) || 0));
+
+  return el('section', { class: 'status-section', 'aria-label': 'Party status' },
+    el('h3', { class: 'status-heading' }, 'Party'),
+    el('div', { class: 'party-strip' },
+      el('div', { class: 'party-name' }, String(pc.name || 'Adventurer')),
+      el('div', { class: 'party-bar wounds' },
+        el('span', { class: 'party-bar-label' }, 'wounds'),
+        el('span', { class: 'party-bar-dots', 'aria-label': `${wounds} of 6 wounds` }, dots(wounds, 6))
+      ),
+      el('div', { class: 'party-bar stress' },
+        el('span', { class: 'party-bar-label' }, 'stress'),
+        el('span', { class: 'party-bar-dots', 'aria-label': `${stress} of 6 stress` }, dots(stress, 6))
+      ),
+      el('div', { class: 'party-bar advantage' },
+        el('span', { class: 'party-bar-label' }, 'advantage'),
+        el('span', { class: 'party-bar-dots', 'aria-label': `${adv} advantage tokens` },
+          adv === 0 ? '—' : '◆'.repeat(adv))
+      )
+    )
+  );
+}
+
+function renderCombatSection(world) {
+  const combat = world?.combat;
+  const active = Boolean(combat?.active);
+
+  const section = el('section', {
+    class: 'status-section',
+    'aria-label': 'Combat indicator',
+    hidden: !active
+  });
+
+  if (!active) return section;
+
+  const enemies = Array.isArray(combat.enemies) ? combat.enemies : [];
+  const round = Number(combat.round) || 0;
+
+  section.appendChild(el('div', { class: 'combat-header' }, `⚔ COMBAT — Round ${round}`));
+  section.appendChild(
+    el('ul', { class: 'enemy-list' },
+      enemies.map(en => {
+        const maxHp = Math.max(1, Number(en.maxHp) || 1);
+        const hp = Math.max(0, Math.min(maxHp, Number(en.hp) || 0));
+        const defeated = Boolean(en.defeated) || hp === 0;
+        const tagClass = en.canParley ? 'parley' : 'hostile';
+        const tagLabel = en.canParley ? '[parley]' : '[hostile]';
+        return el('li', { class: `enemy-item${defeated ? ' defeated' : ''}` },
+          el('div', { class: 'enemy-row' },
+            el('span', { class: 'enemy-name' }, String(en.name || 'enemy')),
+            el('span', { class: `enemy-tag ${tagClass}` }, tagLabel)
+          ),
+          el('div', { class: 'enemy-hp', 'aria-label': `${hp} of ${maxHp} hit points` },
+            dots(hp, maxHp)
+          )
+        );
+      })
+    )
+  );
+  section.appendChild(
+    el('div', { class: 'combat-hint' }, 'attack <name> | focus <name> | flee')
+  );
+
+  return section;
+}
+
+function renderBeatsSection(world) {
+  const beats = Array.isArray(world?.recentBeats) ? world.recentBeats : [];
+
+  const body = beats.length === 0
+    ? el('div', { class: 'empty-muted' }, 'No history yet.')
+    : el('div', { class: 'beats-scroll', 'data-beats-scroll': '1' },
+        beats.map(b => {
+          const outcome = String(b.outcome || 'mixed');
+          const approach = String(b.approach || '');
+          const stake = String(b.stake || '');
+          const meta = [approach, stake].filter(Boolean).join(' / ');
+          return el('div', { class: `beat-row ${outcome}` },
+            el('div', { class: 'beat-head' },
+              el('span', { class: 'beat-turn' }, `[t=${Number(b.t) || 0}]`),
+              el('span', { class: 'beat-input' }, truncate(b.input, 60)),
+              el('span', { class: 'beat-outcome' }, outcome)
+            ),
+            meta ? el('div', { class: 'beat-meta' }, meta) : null
+          );
+        })
+      );
+
+  return el('section', { class: 'status-section', 'aria-label': 'Recent beats' },
+    el('h3', { class: 'status-heading' }, 'Recent beats'),
+    body
+  );
+}
+
+function renderStatusPanels(world) {
+  return el('aside', { class: 'status-panels', 'aria-label': 'Status panels' },
+    renderGoalsSection(world),
+    renderPartySection(world),
+    renderCombatSection(world),
+    renderBeatsSection(world)
+  );
+}
+
 function renderPlay() {
   const w = ui.world ? ensureWorld(ui.world) : null;
   const pack = w ? `${w.pack.primaryId}${w.pack.mixerId ? ` + ${w.pack.mixerId}` : ''}` : '';
@@ -500,39 +675,36 @@ function renderPlay() {
 
   const ended = Boolean(w?.ending?.locked);
 
-  return el('div', { class: 'container stack' },
-    el('div', { class: 'panel' },
-      el('div', { class: 'header' },
-        el('div', {},
-          el('div', { class: 'title' }, 'Play Loop'),
-          el('div', { class: 'sub' }, ended ? 'Ending locked: no further state mutation.' : 'Gate 2 acceptance: moves + scenes mutate deterministically; hash updates.')
-        )
-      ),
-      el('div', { class: 'card stack' },
-        ui.status ? el('div', { class: 'small' }, ui.status) : null,
-        el('div', {}, el('strong', {}, 'worldHash'), el('div', { class: 'mono small' }, hash || '(hash unavailable)')),
-        el('div', { class: 'small' }, `seed: ${seed}`),
-        el('div', { class: 'small' }, `fate: ${fate}`),
-        el('div', { class: 'small' }, `pack: ${pack}`),
-        el('div', { class: 'small' }, `tension: ${(w?.instrument?.inevitability ?? 0)}/12 | clocks: p${(w?.clocks?.pressure ?? 0)}/12 d${(w?.clocks?.dread ?? 0)}/12 r${(w?.clocks?.revelation ?? 0)}/12`),
-        (() => {
-          const goals = Array.isArray(w?.goals) ? w.goals : [];
-          const active = goals.find(g => g && g.status === 'active');
-          const justCompleted = goals.find(g => g && g.status === 'completed' && g.completedAt === (w?.timeline?.length ?? -1));
-          if (justCompleted) return el('div', { class: 'small' }, `Goal: ${String(justCompleted.label || justCompleted.kind)} ✓`);
-          if (active) return el('div', { class: 'small' }, `Goal: ${String(active.label || active.kind)}`);
-          return null;
-        })(),
-        el('div', { class: 'row' }, backBtn, reloadBtn, saveBtn, exportBtn, importBtn)
-      ),
-      renderTranscript(ui.play.lines),
-      el('div', { class: 'card stack' },
-        input,
-        el('div', { class: 'row' },
-          el('button', { class: 'btn', disabled: ended, onClick: () => doNewScene() }, 'New Scene'),
-          el('button', { class: 'btn primary', disabled: ended, onClick: () => doSubmitMove() }, 'Submit Move')
-        )
+  const mainPanel = el('div', { class: 'panel' },
+    el('div', { class: 'header' },
+      el('div', {},
+        el('div', { class: 'title' }, 'Play Loop'),
+        el('div', { class: 'sub' }, ended ? 'Ending locked: no further state mutation.' : 'Gate 2 acceptance: moves + scenes mutate deterministically; hash updates.')
       )
+    ),
+    el('div', { class: 'card stack' },
+      ui.status ? el('div', { class: 'small' }, ui.status) : null,
+      el('div', {}, el('strong', {}, 'worldHash'), el('div', { class: 'mono small' }, hash || '(hash unavailable)')),
+      el('div', { class: 'small' }, `seed: ${seed}`),
+      el('div', { class: 'small' }, `fate: ${fate}`),
+      el('div', { class: 'small' }, `pack: ${pack}`),
+      el('div', { class: 'small' }, `tension: ${(w?.instrument?.inevitability ?? 0)}/12 | clocks: p${(w?.clocks?.pressure ?? 0)}/12 d${(w?.clocks?.dread ?? 0)}/12 r${(w?.clocks?.revelation ?? 0)}/12`),
+      el('div', { class: 'row' }, backBtn, reloadBtn, saveBtn, exportBtn, importBtn)
+    ),
+    renderTranscript(ui.play.lines),
+    el('div', { class: 'card stack' },
+      input,
+      el('div', { class: 'row' },
+        el('button', { class: 'btn', disabled: ended, onClick: () => doNewScene() }, 'New Scene'),
+        el('button', { class: 'btn primary', disabled: ended, onClick: () => doSubmitMove() }, 'Submit Move')
+      )
+    )
+  );
+
+  return el('div', { class: 'container stack' },
+    el('div', { class: 'play-layout' },
+      el('div', { class: 'main-col' }, mainPanel),
+      w ? renderStatusPanels(w) : null
     )
   );
 }
@@ -756,6 +928,10 @@ function render() {
   else if (ui.screen === 'map') app.append(renderMap());
   else if (ui.screen === 'ai') app.append(renderAi());
   else app.append(renderInvoke());
+
+  // Auto-scroll the recent-beats panel to bottom so newest beats are visible.
+  const beatsScroll = document.querySelector('[data-beats-scroll]');
+  if (beatsScroll) beatsScroll.scrollTop = beatsScroll.scrollHeight;
 }
 
 window.addEventListener('error', (e) => {

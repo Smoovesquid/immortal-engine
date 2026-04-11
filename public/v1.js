@@ -516,8 +516,20 @@ function renderPartySection(world) {
     );
   });
 
+  // Pass H — HOME badge: surface when the player is currently in their
+  // home village. Silently omits when meta.homeNodeId is unset (pre-Pass-H
+  // saves) or when the player has ventured out.
+  const homeNodeId = String(world?.meta?.homeNodeId || '');
+  const currentNodeId = String(world?.map?.currentNodeId || '');
+  const atHome = Boolean(homeNodeId) && homeNodeId === currentNodeId;
+  const heading = atHome
+    ? el('h3', { class: 'status-heading' },
+        'Party ',
+        el('span', { class: 'home-badge', 'aria-label': 'At home' }, 'HOME'))
+    : el('h3', { class: 'status-heading' }, 'Party');
+
   return el('section', { class: 'status-section', 'aria-label': 'Party status' },
-    el('h3', { class: 'status-heading' }, 'Party'),
+    heading,
     el('div', { class: 'party-strip' },
       el('div', { class: 'party-name' }, String(pc.name || 'Adventurer')),
       el('div', { class: 'party-bar wounds' },

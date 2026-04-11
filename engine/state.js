@@ -8,8 +8,16 @@ import { createCanonLog } from './csl/canonLog.js';
 import { generateRegions } from './world/regions.js';
 import { generateInitialMap } from './map/generateMap.js';
 import { ensureStructures } from './structures/structuresState.js';
+import { statMod, maxWounds } from './ruleset/core/stats.js';
 
-export const WORLD_VERSION = 15;
+// Pass T1 — bumped from 15 → 16. Adds crunch schema to party entities
+// (level, xp, foci, purse, inventory.items, spells). See docs/CRUNCH_V1.md.
+export const WORLD_VERSION = 16;
+
+// Crunch caps (T1). Kept here so they're colocated with ensureEntity.
+const FOCI_CAP = 6;
+const SPELLS_KNOWN_CAP = 20;
+const SPELL_SLOT_LEVELS = [1, 2, 3, 4, 5];
 
 const GOAL_KINDS = new Set(['reach', 'obtain', 'talkTo', 'learn', 'defeat']);
 const GOAL_STATUSES = new Set(['active', 'completed', 'failed']);
@@ -282,21 +290,36 @@ function ensureEntity(e) {
   const stats = x.stats && typeof x.stats === 'object' ? x.stats : {};
   const inv = x.inventory && typeof x.inventory === 'object' ? x.inventory : {};
 
+  // Pass T1 — normalize the five-stat block BEFORE wounds clamp so we can
+  // derive GRIT mod → dynamic maxWounds. Old saves with no level field
+  // default to level 1; with default GRIT 10, statMod(10) = 0, so
+  // maxWounds(1, 0) = 6 — identical to the pre-T1 static cap.
+  const statBlock = {
+    MIGHT: clampInt(stats.MIGHT ?? 10, 1, 20),
+    AGILITY: clampInt(stats.AGILITY ?? 10, 1, 20),
+    WITS: clampInt(stats.WITS ?? 10, 1, 20),
+    GRIT: clampInt(stats.GRIT ?? 10, 1, 20),
+    CHARM: clampInt(stats.CHARM ?? 10, 1, 20)
+  };
+  const level = clampInt(x.level ?? 1, 1, 20);
+  const xpVal = clampIntMin(x.xp ?? 0, 0);
+  const woundCap = maxWounds(level, statMod(statBlock.GRIT));
+
   return {
     id: String(x.id || 'party'),
     name: String(x.name || 'Adventurer'),
     archetype: String(x.archetype || x.background?.name || 'Unknown'),
     vibe: String(x.vibe || x.traits?.vibe || 'grim'),
     stress: clampInt(x.stress ?? 0, 0, 6),
-    wounds: clampInt(x.wounds ?? 0, 0, 6),
+    wounds: clampInt(x.wounds ?? 0, 0, woundCap),
 
-    stats: {
-      MIGHT: clampInt(stats.MIGHT ?? 10, 1, 20),
-      AGILITY: clampInt(stats.AGILITY ?? 10, 1, 20),
-      WITS: clampInt(stats.WITS ?? 10, 1, 20),
-      GRIT: clampInt(stats.GRIT ?? 10, 1, 20),
-      CHARM: clampInt(stats.CHARM ?? 10, 1, 20)
-    },
+    // Pass T1 — crunch progression fields.
+    level,
+    xp: xpVal,
+    foci: ensureFoci(x.foci),
+    purse: ensurePurse(x.purse),
+
+    stats: statBlock,
     inventory: {
       weapons: Array.isArray(inv.weapons) ? inv.weapons : [],
       armor: Array.isArray(inv.armor) ? inv.armor : [],
@@ -306,8 +329,12 @@ function ensureEntity(e) {
       tech: Array.isArray(inv.tech) ? inv.tech : [],
       oddities: Array.isArray(inv.oddities) ? inv.oddities : [],
       consumables: Array.isArray(inv.consumables) ? inv.consumables : [],
-      junk: Array.isArray(inv.junk) ? inv.junk : []
+      junk: Array.isArray(inv.junk) ? inv.junk : [],
+      // Pass T1 — new unified item array. Existing string-array categories
+      // stay in place untouched; T2 will migrate them into `items`.
+      items: ensureInventoryItems(inv.items)
     },
+    spells: ensureSpells(x.spells),
     traits: x.traits && typeof x.traits === 'object'
       ? x.traits
       : { vibe: '', fear: '', flaw: '', ideal: '', detail: '', keepsake: '', lineYouWontCross: '', rumor: '' },
@@ -323,6 +350,86 @@ function ensureEntity(e) {
     // removed from its settlement after recruit).
     companion: ensureCompanionMarker(x.companion)
   };
+}
+
+// ── Pass T1 crunch helpers ───────────────────────────────────────────────
+
+function ensureFoci(foci) {
+  const arr = Array.isArray(foci) ? foci : [];
+  const out = [];
+  const seen = new Set();
+  for (const f of arr) {
+    const s = String(f ?? '').trim();
+    if (!s) continue;
+    if (seen.has(s)) continue;
+    seen.add(s);
+    out.push(s);
+    if (out.length >= FOCI_CAP) break;
+  }
+  return out;
+}
+
+function ensurePurse(p) {
+  const obj = p && typeof p === 'object' ? p : {};
+  return {
+    copper: clampIntMin(obj.copper ?? 0, 0),
+    silver: clampIntMin(obj.silver ?? 0, 0),
+    gold: clampIntMin(obj.gold ?? 0, 0),
+    platinum: clampIntMin(obj.platinum ?? 0, 0)
+  };
+}
+
+function ensureInventoryItems(items) {
+  const arr = Array.isArray(items) ? items : [];
+  const out = [];
+  for (const it of arr) {
+    if (!it || typeof it !== 'object') continue;
+    const id = String(it.id ?? '').trim();
+    const defRef = String(it.defRef ?? '').trim();
+    if (!id || !defRef) continue;
+    let equipped = null;
+    if (it.equipped != null) {
+      const s = String(it.equipped).trim();
+      if (s) equipped = s;
+    }
+    out.push({ id, defRef, equipped });
+  }
+  return out;
+}
+
+function ensureSpells(s) {
+  const obj = s && typeof s === 'object' ? s : {};
+  const knownRaw = Array.isArray(obj.known) ? obj.known : [];
+  const known = [];
+  const seen = new Set();
+  for (const k of knownRaw) {
+    const str = String(k ?? '').trim();
+    if (!str) continue;
+    if (seen.has(str)) continue;
+    seen.add(str);
+    known.push(str);
+    if (known.length >= SPELLS_KNOWN_CAP) break;
+  }
+  const slotsIn = obj.slots && typeof obj.slots === 'object' ? obj.slots : {};
+  const maxSlotsIn = obj.maxSlots && typeof obj.maxSlots === 'object' ? obj.maxSlots : {};
+  const maxSlots = {};
+  const slots = {};
+  for (const lvl of SPELL_SLOT_LEVELS) {
+    const max = clampIntMin(maxSlotsIn[lvl] ?? 0, 0);
+    maxSlots[lvl] = max;
+    const cur = clampIntMin(slotsIn[lvl] ?? 0, 0);
+    slots[lvl] = Math.min(cur, max);
+  }
+  let concentration = null;
+  if (obj.concentration && typeof obj.concentration === 'object') {
+    const spellRef = String(obj.concentration.spellRef ?? '').trim();
+    if (spellRef) {
+      const startedAtRaw = Number(obj.concentration.startedAt);
+      const startedAt = Number.isFinite(startedAtRaw) ? Math.max(0, Math.trunc(startedAtRaw)) : 0;
+      concentration = { spellRef, startedAt };
+    }
+  }
+  return { known, slots, maxSlots, concentration };
 }
 
 function ensureCompanionMarker(c) {
@@ -505,4 +612,9 @@ function clampInt(v, lo, hi) {
   const x = Math.trunc(Number(v));
   if (!Number.isFinite(x)) return lo;
   return Math.max(lo, Math.min(hi, x));
+}
+function clampIntMin(v, lo) {
+  const x = Math.trunc(Number(v));
+  if (!Number.isFinite(x)) return lo;
+  return Math.max(lo, x);
 }

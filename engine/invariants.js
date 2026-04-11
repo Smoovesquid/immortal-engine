@@ -9,6 +9,23 @@ export function assertWorldInvariants(world) {
     throw new Error('Invariant: world version mismatch');
   }
 
+  // Pass H — homeNodeId, when non-empty, must reference an existing
+  // settlement node. Empty string is the default for new worlds and the
+  // graceful-degradation value for pre-Pass-H save loads (those worlds
+  // simply have no home concept). The home must be a real place AND
+  // must be a settlement specifically — home cannot be a wilderness tile.
+  const homeNodeId = String(world.meta?.homeNodeId ?? '');
+  if (homeNodeId) {
+    const nodes = Array.isArray(world.map?.nodes) ? world.map.nodes : [];
+    const home = nodes.find(n => n && String(n.id) === homeNodeId) || null;
+    if (!home) {
+      throw new Error(`Invariant: meta.homeNodeId ${homeNodeId} does not match any node`);
+    }
+    if (String(home.nodeType) !== 'settlement') {
+      throw new Error(`Invariant: meta.homeNodeId ${homeNodeId} is not a settlement node (nodeType=${home.nodeType})`);
+    }
+  }
+
   // Pass C1 — party + companion shape (cap 3, marker structure).
   const party = world.party;
   if (!Array.isArray(party)) {

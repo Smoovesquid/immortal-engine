@@ -16,7 +16,12 @@ const packsById = {
 
 test('U43: feet-based local movement mutates localFt and does not travel nodes', () => {
   const w0 = newWorld({ seed: 'u43', fate: 0.2, campaignId: 'c1', pack: { primaryId: 'fantasy', mixerId: null } });
-  const a0 = beginAdventure(w0, packsById).world;
+  let a0 = beginAdventure(w0, packsById).world;
+  // Pass H — leave the home interior so feet-based movement (exterior-only)
+  // can run.
+  if (a0.scene?.interior) {
+    a0 = playerMove(a0, packsById, 'leave the house').world;
+  }
 
   const beforeNode = String(a0.map?.currentNodeId || '');
   const beforeLocation = String(a0.scene?.location || '');

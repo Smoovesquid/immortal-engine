@@ -99,6 +99,8 @@ export function moveToNode(world, nodeId) {
   if (!id) return w;
   const nbs = neighbors(m, m.currentNodeId);
   if (!nbs.includes(id)) return w;
+  const previousNodeId = String(m.currentNodeId || '');
+  const nodeChanged = previousNodeId !== id;
 
   const w1 = discoverNode({ ...w, map: { ...m, currentNodeId: id } }, id);
   const m1 = ensureMap(w1.map);
@@ -115,17 +117,30 @@ export function moveToNode(world, nodeId) {
     [id]: (mem.seenTurnByNodeId && mem.seenTurnByNodeId[id] !== undefined) ? mem.seenTurnByNodeId[id] : turn
   };
 
+  // Pass H — interior context is bound to a specific node's structure. When
+  // the player moves to a different node, any stale interior pointer must be
+  // cleared (the structure no longer exists at this node).
+  const sceneInterior = nodeChanged ? null : (w1.scene?.interior ?? null);
+  const interiorMapKeys = nodeChanged
+    ? { currentStructureId: '', currentRoomId: '' }
+    : {
+      currentStructureId: String(m1.currentStructureId || ''),
+      currentRoomId: String(m1.currentRoomId || '')
+    };
+
   return {
     ...w1,
     map: {
       ...m1,
+      ...interiorMapKeys,
       memory: {
         ...mem,
         visitedTurnByNodeId,
         seenTurnByNodeId,
         seenNodeIds: m1.discovered
       }
-    }
+    },
+    scene: w1.scene ? { ...w1.scene, interior: sceneInterior } : w1.scene
   };
 }
 

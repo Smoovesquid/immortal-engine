@@ -9,7 +9,7 @@ import { generateRegions } from './world/regions.js';
 import { generateInitialMap } from './map/generateMap.js';
 import { ensureStructures } from './structures/structuresState.js';
 
-export const WORLD_VERSION = 14;
+export const WORLD_VERSION = 15;
 
 const GOAL_KINDS = new Set(['reach', 'obtain', 'talkTo', 'learn', 'defeat']);
 const GOAL_STATUSES = new Set(['active', 'completed', 'failed']);
@@ -34,7 +34,12 @@ export function ensureWorld(partial) {
       motifs: ensureMotifs(meta.motifs),
       advantageTokens: ensureAdvantageTokens(meta.advantageTokens),
       aiMode: ensureAiMode(meta.aiMode),
-      microClocks: ensureMicroClocks(meta.microClocks)
+      microClocks: ensureMicroClocks(meta.microClocks),
+      // Pass H — canonical home marker. Empty string on new worlds and on
+      // pre-Pass-H save loads (graceful degradation: those worlds simply
+      // have no home concept). When non-empty, must reference an existing
+      // settlement node — see assertWorldInvariants.
+      homeNodeId: String(meta.homeNodeId ?? '')
     },
     ruleset: w.ruleset && typeof w.ruleset === 'object' ? w.ruleset : { id: 'core', version: 1 },
     pack: w.pack && typeof w.pack === 'object' ? w.pack : { primaryId: 'fantasy', mixerId: null },

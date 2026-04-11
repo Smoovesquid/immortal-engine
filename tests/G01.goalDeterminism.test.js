@@ -17,7 +17,12 @@ const packsById = {
   }
 };
 
-test('G01: same seed + same pack produces same initial goal id/kind/targetRef', () => {
+// Pass H — beginAdventure no longer seeds an initial goal. The player wakes
+// in their home bedroom with no quest; quests are discovered by venturing out.
+// G01 now asserts the new contract: begin produces an empty goals array, and
+// the empty state is reproducible across runs (still deterministic).
+
+test('G01: same seed + same pack produces the same (empty) initial goals', () => {
   const seed = 'g01-determinism';
 
   const w1 = beginAdventure(
@@ -31,19 +36,11 @@ test('G01: same seed + same pack produces same initial goal id/kind/targetRef', 
   ).world;
 
   assert.ok(Array.isArray(w1.goals), 'goals must be an array');
-  assert.ok(w1.goals.length >= 1, 'beginAdventure should seed at least one goal');
-  assert.equal(w1.goals.length, w2.goals.length);
-
-  const a = w1.goals[0];
-  const b = w2.goals[0];
-  assert.equal(a.id, b.id);
-  assert.equal(a.kind, b.kind);
-  assert.equal(a.targetRef, b.targetRef);
-  assert.equal(a.status, 'active');
-  assert.equal(a.completedAt, null);
+  assert.equal(w1.goals.length, 0, 'Pass H: beginAdventure must not seed any starting goal');
+  assert.deepEqual(w1.goals, w2.goals, 'same seed must produce same goals state');
 });
 
-test('G01: pack without starterGoals still seeds a fallback goal deterministically', () => {
+test('G01: pack without starterGoals also produces no starting goal', () => {
   const noGoalsPacks = {
     fantasy: { ...packsById.fantasy, starterGoals: undefined }
   };
@@ -52,8 +49,5 @@ test('G01: pack without starterGoals still seeds a fallback goal deterministical
     noGoalsPacks
   ).world;
 
-  assert.ok(w.goals.length >= 1, 'fallback should still seed a goal');
-  const g = w.goals[0];
-  assert.ok(g.kind === 'reach' || g.kind === 'learn', `expected reach|learn fallback, got ${g.kind}`);
-  assert.equal(g.status, 'active');
+  assert.equal(w.goals.length, 0, 'Pass H: pack starterGoals are unused at begin');
 });

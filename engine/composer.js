@@ -74,6 +74,13 @@ export function compose(world, playerText, resolution, context = {}) {
     ? buildCombatPhraseFromResolution(resolution, rng)
     : buildApproachPhrase(resolution, rng);
 
+  // Pass H — when this is the begin event AND the player is waking inside a
+  // home interior, use a dedicated bedroom-opening line bank instead of the
+  // legacy quest-opening line. Detection is conservative: all three signals
+  // must be present so any test or path that calls beginAdventure with
+  // scene.time !== 'waking' or no interior falls through to legacy behavior.
+  const wakingOpener = pickWakingOpener(w, resolution, rng);
+
   const narrationLine = ensureOneSentence(buildNarration({
     band,
     tone,
@@ -87,7 +94,8 @@ export function compose(world, playerText, resolution, context = {}) {
     threadClause,
     npcPhrase,
     stressPhrase,
-    approachPhrase
+    approachPhrase,
+    wakingOpener
   }));
 
   const mechanicsLine = bracketLine(buildMechanics({ band, resolution, clocks }));
@@ -230,13 +238,43 @@ function stakesPhrase(band, clocks, resolution, rng) {
   return rng.pick(pool) || pool[0];
 }
 
-function buildNarration({ band, tone, motifPhrase, clockShade, stakes, loc, obj, resolution, threadClause, npcPhrase, stressPhrase, approachPhrase }) {
+// Pass H — waking-in-bed opening line bank. Neutral tone (pack-specific
+// texture is layered elsewhere). Selection is deterministic via the
+// composer's seeded rng, so same world + same seed → same opener.
+const WAKING_OPENERS = [
+  'You wake in your own bed, in your own room — first light through the shutters.',
+  'The ceiling above your bed. A familiar crack. Morning.',
+  'Your eyes open in the half-dark. Your house. Your village. Another day.',
+  'You wake. The bed is yours. The room is yours. The day is waiting.',
+  'Morning. The quiet of your own room. The smell of woodsmoke from downstairs.',
+  'You come awake slowly. The weight of the blanket. The sound of your own village outside.'
+];
+
+function pickWakingOpener(world, resolution, rng) {
+  const kind = String(resolution?.kind || '');
+  if (kind !== 'begin') return '';
+  const sceneTime = String(world?.scene?.time || '');
+  if (sceneTime !== 'waking') return '';
+  const interior = world?.scene?.interior;
+  if (!interior || typeof interior !== 'object') return '';
+  return String(rng.pick(WAKING_OPENERS) || WAKING_OPENERS[0]);
+}
+
+function buildNarration({ band, tone, motifPhrase, clockShade, stakes, loc, obj, resolution, threadClause, npcPhrase, stressPhrase, approachPhrase, wakingOpener }) {
   const kind = String(resolution?.kind || 'turn');
   const stressClause = stressPhrase ? `; ${stressPhrase}` : '';
 
   if (kind === 'blocked') {
     const reason = String(resolution?.reason || 'that conflicts with canon');
     return `Wizard: No—${reason}; stay in the ${loc} with ${tone} care as ${motifPhrase} returns${clockShade ? `, ${clockShade}` : ''}${stressClause}${threadClause}; objective remains: ${obj}; what do you do?`;
+  }
+
+  // Pass H — bedroom waking opening. When the begin event lands the player in
+  // a home interior at scene.time='waking', use the dedicated line bank
+  // instead of the quest-opening shape. The legacy opening is preserved for
+  // any path that calls beginAdventure without those signals.
+  if (kind === 'begin' && wakingOpener) {
+    return `Wizard: ${wakingOpener} What do you do?`;
   }
 
   if (kind === 'scene' || kind === 'begin') {

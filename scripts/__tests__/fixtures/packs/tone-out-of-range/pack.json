@@ -1,0 +1,22 @@
+{
+  "id": "tone-out-of-range",
+  "name": "Tone Out Of Range",
+  "toneWords": {
+    "cooperative": ["warm"],
+    "grim": ["cold"],
+    "blood": ["black"]
+  },
+  "starterLocations": ["shrine"],
+  "starterObjectives": ["find it"],
+  "skills": ["Steel"],
+  "locations": ["shrine (level 1)"],
+  "objectives": ["recover it"],
+  "complications": ["a clock starts"],
+  "npcArchetypes": ["wary guide"],
+  "sensoryMotifs": ["lanternlit dust"],
+  "toneVectors": {
+    "cooperative": 0.2,
+    "grim": 0.5,
+    "blood": 2.5
+  }
+}

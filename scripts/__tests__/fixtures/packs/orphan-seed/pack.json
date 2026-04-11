@@ -1,0 +1,24 @@
+{
+  "id": "orphan-seed",
+  "name": "Orphan Seed",
+  "toneWords": {
+    "cooperative": ["warm"],
+    "grim": ["cold"],
+    "blood": ["black"]
+  },
+  "starterLocations": ["shrine"],
+  "starterObjectives": ["find it"],
+  "skills": ["Steel"],
+  "locations": ["shrine (level 1)"],
+  "objectives": ["recover it"],
+  "complications": ["a clock starts"],
+  "npcArchetypes": ["wary guide"],
+  "sensoryMotifs": ["lanternlit dust"],
+  "seeds": [
+    { "id": "seed-used" },
+    { "id": "seed-orphaned" }
+  ],
+  "regions": [
+    { "id": "region-a", "seed": "seed-used" }
+  ]
+}

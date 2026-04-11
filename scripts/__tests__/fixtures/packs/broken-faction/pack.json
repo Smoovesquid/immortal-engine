@@ -1,0 +1,24 @@
+{
+  "id": "broken-faction",
+  "name": "Broken Faction",
+  "toneWords": {
+    "cooperative": ["warm"],
+    "grim": ["cold"],
+    "blood": ["black"]
+  },
+  "starterLocations": ["shrine"],
+  "starterObjectives": ["find it"],
+  "skills": ["Steel"],
+  "locations": ["shrine (level 1)"],
+  "objectives": ["recover it"],
+  "complications": ["a clock starts"],
+  "npcArchetypes": ["wary guide"],
+  "sensoryMotifs": ["lanternlit dust"],
+  "factions": [
+    { "id": "ember-order" }
+  ],
+  "npcs": [
+    { "id": "captain-ilya", "faction": "ember-order" },
+    { "id": "wandering-priest", "faction": "silent-choir" }
+  ]
+}

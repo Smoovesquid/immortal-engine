@@ -1,0 +1,17 @@
+{
+  "id": "valid-minimal",
+  "name": "Valid Minimal",
+  "toneWords": {
+    "cooperative": ["warm"],
+    "grim": ["cold"],
+    "blood": ["black"]
+  },
+  "starterLocations": ["roadside shrine"],
+  "starterObjectives": ["find the missing courier"],
+  "skills": ["Steel"],
+  "locations": ["sunken crypt (level 1)", "mossy stair (level 2)"],
+  "objectives": ["recover a stolen relic"],
+  "complications": ["a clock starts when you arrive"],
+  "npcArchetypes": ["wary guide with a secret"],
+  "sensoryMotifs": ["air tastes of lanternlit dust"]
+}

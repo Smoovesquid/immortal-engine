@@ -1,0 +1,21 @@
+{
+  "id": "duplicate-id",
+  "name": "Duplicate ID",
+  "toneWords": {
+    "cooperative": ["warm"],
+    "grim": ["cold"],
+    "blood": ["black"]
+  },
+  "starterLocations": ["shrine"],
+  "starterObjectives": ["find it"],
+  "skills": ["Steel"],
+  "locations": ["shrine (level 1)"],
+  "objectives": ["recover it"],
+  "complications": ["a clock starts"],
+  "npcArchetypes": ["wary guide"],
+  "sensoryMotifs": ["lanternlit dust"],
+  "regions": [
+    { "id": "region-a" },
+    { "id": "region-a" }
+  ]
+}

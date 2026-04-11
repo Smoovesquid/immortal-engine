@@ -21,7 +21,7 @@ import { decompressAndCanonizeSync } from './decompression/decompress.js';
 import { discoverNode } from './map/mapState.js';
 import { detectPhysicalInteraction, evaluatePhysicsSync } from './llmPhysics.js';
 import { createGoal, checkGoals } from './goals/goalContract.js';
-import { beginDialogue, askNpc, endDialogue, resolveNpcAtCurrentNode } from './npc/dialogue.js';
+import { beginDialogue, askNpc, endDialogue, resolveNpcAtCurrentNode, isRecruitIntent } from './npc/dialogue.js';
 import { resolveCombatTurn } from './combat/combatResolve.js';
 import { beginCombat, endCombat, mintEnemyFromNpc } from './combat/combatLifecycle.js';
 
@@ -212,7 +212,12 @@ export function playerMove(world, packsById, text) {
   // movement/physics/scene intents, else treat as an ask.
   if (w.scene?.dialogue) {
     const explicitExit = isDialogueExitIntent(text);
-    const breakingIntent = isDialogueBreakingIntent(text, w);
+    // Recruit intent ("invite to travel") must beat the breaking-intent guard —
+    // its literal phrase contains "travel" which would otherwise route through
+    // moveAdvancesScene and exit dialogue. Inside an active dialogue the player's
+    // intent is to recruit, not to walk away.
+    const recruitIntent = isRecruitIntent(text);
+    const breakingIntent = !recruitIntent && isDialogueBreakingIntent(text, w);
 
     if (explicitExit) {
       const ended = endDialogue(w);

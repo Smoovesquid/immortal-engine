@@ -4,7 +4,24 @@
 
 ---
 
-## Active Milestone: Canonical Surface v1
+## Current North Star (2026-04-11)
+
+**An infinite, deterministic, AI-narrated RPG with full tabletop crunch, dense authored lore, and a world that never stops surprising the player.**
+
+Canonical vision docs (read these first):
+- [`docs/NORTH_STAR.md`](docs/NORTH_STAR.md) — the one-page vision and the three load-bearing ideas
+- [`docs/CRUNCH_V1.md`](docs/CRUNCH_V1.md) — stats, items, spells, bestiary, loot, XP (5e-lite ruleset)
+- [`docs/RUMOR_LAYER.md`](docs/RUMOR_LAYER.md) — distance-weighted rumor collapse from distant latent seeds
+- [`docs/PROSE_TO_WORLD.md`](docs/PROSE_TO_WORLD.md) — author-time LLM pipeline: prose → canonical pack
+- [`docs/SLICE_PLAN.md`](docs/SLICE_PLAN.md) — vertical slice worker-pass breakdown
+
+**Supersedes:** the finite-arc framing in `docs/VICTORY_LADDER_MVP_v1.md` and `docs/CAMPAIGN_LIFECYCLE_SPEC_v1.md`. Those docs remain as history; when they conflict with the north star, the north star wins. They'll be rewritten post-slice.
+
+**Active work:** vertical slice (see `docs/SLICE_PLAN.md`). Pass S1 (UI surface spine) is the first worker pass.
+
+---
+
+## Historical Milestone: Canonical Surface v1
 
 **Goal:** The world the player inhabits must be real and honest. Every place has a type, every place generates content appropriate to that type, and entering/exiting structures produces verified state changes. Only when this is true is the surface ready for an AI narrator.
 
@@ -53,7 +70,7 @@
 
 ---
 
-## Active Milestone: AI Narration v1
+## Historical Milestone: AI Narration v1
 
 **Goal:** The AI narrator describes only what the canonical surface says is true. It knows the place type, the structures, the room, the tone. It cannot invent topology. If the API is unavailable, the game continues silently with base narration.
 

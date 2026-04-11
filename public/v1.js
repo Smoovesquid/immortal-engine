@@ -490,6 +490,27 @@ function renderPartySection(world) {
   const stress = Math.max(0, Math.min(6, Number(pc.stress) || 0));
   const adv = Math.max(0, Math.min(2, Number(world?.meta?.advantageTokens?.[pc.id]) || 0));
 
+  // Pass C1 — companions: render party[1..n] as compact rows below the
+  // player. Minimal fields (name, role, trust/10) — no wounds/stress/
+  // advantage in C1. Empty array adds no extra DOM.
+  const companions = (Array.isArray(world?.party) ? world.party.slice(1) : [])
+    .filter(c => c && c.companion);
+  const companionRows = companions.map(c => {
+    const trust = Math.max(0, Math.min(10, Number(c.companion?.trustLevel) || 0));
+    const role = String(c.companion?.role || c.archetype || '');
+    return el('div', { class: 'party-strip companion' },
+      el('div', { class: 'party-name' }, String(c.name || 'Companion')),
+      el('div', { class: 'party-bar' },
+        el('span', { class: 'party-bar-label' }, 'role'),
+        el('span', { class: 'party-bar-dots' }, role || '—')
+      ),
+      el('div', { class: 'party-bar' },
+        el('span', { class: 'party-bar-label' }, 'trust'),
+        el('span', { class: 'party-bar-dots', 'aria-label': `${trust} of 10 trust` }, `${trust}/10`)
+      )
+    );
+  });
+
   return el('section', { class: 'status-section', 'aria-label': 'Party status' },
     el('h3', { class: 'status-heading' }, 'Party'),
     el('div', { class: 'party-strip' },
@@ -507,7 +528,8 @@ function renderPartySection(world) {
         el('span', { class: 'party-bar-dots', 'aria-label': `${adv} advantage tokens` },
           adv === 0 ? '—' : '◆'.repeat(adv))
       )
-    )
+    ),
+    ...companionRows
   );
 }
 

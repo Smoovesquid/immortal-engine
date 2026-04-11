@@ -37,7 +37,20 @@ const FORCE_BASE = 3;
 const FINESSE_BASE = 2;
 const HEART_FALLBACK_DAMAGE = 1;
 
-export function resolveCombatTurn(world, move) {
+/**
+ * resolveCombatTurn(world, move, opts?)
+ *
+ * opts.afterPlayerTurn — optional hook invoked AFTER player-turn combat
+ *   effects have been applied but BEFORE the post-player victory check
+ *   and the enemy counter phase. Signature: (world) => { world, summaryParts }
+ *   where summaryParts is an optional array of strings appended to the
+ *   combatSummary. Used by the playloop to interleave companion turns
+ *   into the round: player → companions → counters.
+ *
+ *   If the hook ends combat (e.g. companion parley) the resolver short
+ *   circuits before the counter phase, mirroring the player parley path.
+ */
+export function resolveCombatTurn(world, move, opts = {}) {
   let w = ensureWorld(world);
 
   if (!w.combat?.active || !Array.isArray(w.combat.enemies) || w.combat.enemies.length === 0) {
@@ -95,7 +108,7 @@ export function resolveCombatTurn(world, move) {
       if (targetEnemy.canParley) {
         // Parley: combat ends, enemies are NOT marked defeated.
         // Defeat goals do NOT fire on parley.
-        combatDeltas.push({ op: 'combatState', set: { active: false, round: 0, turnIndex: 0, reason: 'parley', playerGuard: false } });
+        combatDeltas.push({ op: 'combatState', set: { active: false, round: 0, turnIndex: 0, reason: 'parley', playerGuard: false, companionGuard: false } });
         parleyEnded = true;
         summaryParts.push(`parley with ${targetEnemy.name} succeeds — combat ends`);
       } else {
@@ -116,6 +129,49 @@ export function resolveCombatTurn(world, move) {
   // Apply combat-translation deltas.
   if (combatDeltas.length) {
     w = applyDeltas(w, combatDeltas);
+  }
+
+  // Pass C2 — interleave hook: after the player's turn applies but before
+  // the victory/counter phase, let the caller (playloop) run companion turns.
+  // The hook may damage enemies, set companionGuard, or end combat via
+  // companion parley. If combat ends inside the hook we short circuit
+  // through the parley-style return below.
+  let companionSummary = [];
+  let companionEndedCombat = false;
+  if (typeof opts.afterPlayerTurn === 'function' && !parleyEnded && w.combat?.active) {
+    const hookRes = opts.afterPlayerTurn(w) || {};
+    if (hookRes.world && typeof hookRes.world === 'object') {
+      w = hookRes.world;
+    }
+    if (Array.isArray(hookRes.summaryParts)) {
+      companionSummary = hookRes.summaryParts.map(String);
+    }
+    // If the companion hook ended combat (e.g. companion parley), surface
+    // the end reason via a resolution event and short circuit past the
+    // victory/counter phases.
+    if (!w.combat?.active) {
+      companionEndedCombat = true;
+      const endReason = String(w.combat?.reason || 'companion-parley');
+      w = pushTimeline(w, { kind: 'resolution', data: { outcome: endReason, targetDefeated: '' } });
+      w = pushTimeline(w, { kind: 'combat-end', data: { reason: endReason } });
+    }
+  }
+
+  if (companionSummary.length) {
+    for (const s of companionSummary) summaryParts.push(s);
+  }
+
+  if (companionEndedCombat) {
+    return {
+      world: w,
+      result: {
+        ...result,
+        combatSummary: summaryParts.join('; ') || 'companion ends combat',
+        mechanicsLine: `${result.mechanicsLine} | combat:companion-end`,
+        targetEnemyName,
+        targetEnemyId
+      }
+    };
   }
 
   // After the player's turn, emit a parley resolution event if applicable.
@@ -150,27 +206,45 @@ export function resolveCombatTurn(world, move) {
     };
   }
 
-  // Enemy counter-attacks: each living enemy in id-order deals enemy.damage to party[0].
-  // playerGuard (if set) consumes on the FIRST counter (–1 to its damage).
-  let guardActive = Boolean(w.combat?.playerGuard);
+  // Enemy counter-attacks: each living enemy in id-order deals enemy.damage
+  // to a round-robin-selected living party member (player + companions).
+  // playerGuard + companionGuard are both one-shots that each reduce one
+  // counter by 1 — playerGuard consumes first, then companionGuard. Down
+  // party members (wounds >= 6) are skipped as targets. If everyone is
+  // down, the loop breaks and no counters land.
+  const livingParty = (w.party || []).filter(p => p && (p.wounds ?? 0) < 6);
+  const playerGuardActive = Boolean(w.combat?.playerGuard);
+  const companionGuardActive = Boolean(w.combat?.companionGuard);
+  let partyIdx = 0;
+  let playerGuardConsumed = false;
+  let companionGuardConsumed = false;
   const counterDeltas = [];
-  let guardConsumed = false;
-  let totalCounterDmg = 0;
   for (const e of (w.combat?.enemies || [])) {
     if (!(e.hp > 0)) continue;
+    if (livingParty.length === 0) break;
+    const targetMember = livingParty[partyIdx % livingParty.length];
+    partyIdx++;
     let dmg = clampInt(e.damage, 1, 6);
-    if (guardActive && !guardConsumed) {
+    if (playerGuardActive && !playerGuardConsumed) {
       dmg = Math.max(0, dmg - 1);
-      guardConsumed = true;
+      playerGuardConsumed = true;
+    } else if (companionGuardActive && !companionGuardConsumed) {
+      dmg = Math.max(0, dmg - 1);
+      companionGuardConsumed = true;
     }
     if (dmg > 0) {
-      counterDeltas.push({ op: 'wound', entityId: 'party', by: dmg });
-      totalCounterDmg += dmg;
-      summaryParts.push(`${e.name} hits back for ${dmg}`);
+      counterDeltas.push({ op: 'wound', entityId: String(targetMember.id), by: dmg });
+      summaryParts.push(`${e.name} hits ${targetMember.name} for ${dmg}`);
     }
   }
-  if (guardConsumed) {
-    counterDeltas.push({ op: 'combatState', set: { playerGuard: false } });
+  if (playerGuardConsumed || companionGuardConsumed) {
+    counterDeltas.push({
+      op: 'combatState',
+      set: {
+        playerGuard: playerGuardConsumed ? false : Boolean(w.combat?.playerGuard),
+        companionGuard: companionGuardConsumed ? false : Boolean(w.combat?.companionGuard)
+      }
+    });
   }
   if (counterDeltas.length) {
     w = applyDeltas(w, counterDeltas);
@@ -243,7 +317,7 @@ function applyVictory(world) {
   const allIds = (w.combat?.enemies || []).map(e => e.id);
   w = applyDeltas(w, [{
     op: 'combatState',
-    set: { active: false, round: 0, turnIndex: 0, reason: 'combat-victory', playerGuard: false },
+    set: { active: false, round: 0, turnIndex: 0, reason: 'combat-victory', playerGuard: false, companionGuard: false },
     enemyDefeated: allIds
   }]);
 
@@ -271,7 +345,7 @@ function applyPlayerDefeat(world) {
   // End combat (preserves enemies array with their final hp).
   w = applyDeltas(w, [{
     op: 'combatState',
-    set: { active: false, round: 0, turnIndex: 0, reason: 'defeated-in-combat', playerGuard: false }
+    set: { active: false, round: 0, turnIndex: 0, reason: 'defeated-in-combat', playerGuard: false, companionGuard: false }
   }]);
   w = pushTimeline(w, { kind: 'combat-end', data: { reason: 'defeated-in-combat' } });
 

@@ -179,7 +179,7 @@ export function appendRecentBeat(world, beat) {
 const COMBAT_ENEMY_CAP = 6;
 
 export function defaultCombat() {
-  return { active: false, round: 0, turnIndex: 0, enemies: [], beganAt: 0, reason: '', playerGuard: false };
+  return { active: false, round: 0, turnIndex: 0, enemies: [], beganAt: 0, reason: '', playerGuard: false, companionGuard: false };
 }
 
 export function ensureCombat(c) {
@@ -210,8 +210,9 @@ export function ensureCombat(c) {
   const reasonRaw = String(c.reason ?? '');
   const reason = reasonRaw.length > 64 ? reasonRaw.slice(0, 64) : reasonRaw;
   const playerGuard = Boolean(c.playerGuard);
+  const companionGuard = Boolean(c.companionGuard);
 
-  return { active, round, turnIndex, enemies, beganAt, reason, playerGuard };
+  return { active, round, turnIndex, enemies, beganAt, reason, playerGuard, companionGuard };
 }
 
 function ensureGoals(goals) {

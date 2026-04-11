@@ -102,7 +102,8 @@ export function beginCombat(world, { enemies, reason } = {}) {
       enemies: shaped,
       beganAt,
       reason: reasonStr,
-      playerGuard: false
+      playerGuard: false,
+      companionGuard: false
     }
   }]);
 
@@ -126,7 +127,8 @@ export function endCombat(world, { reason } = {}) {
       round: 0,
       turnIndex: 0,
       reason: reasonStr,
-      playerGuard: false
+      playerGuard: false,
+      companionGuard: false
     }
   }]);
   return w;

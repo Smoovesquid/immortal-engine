@@ -540,3 +540,85 @@ test('U60-29: end-to-end Pass C1 integration gate', () => {
   // Final invariant pass
   assert.doesNotThrow(() => assertWorldInvariants(wDismissed));
 });
+
+// ── U60-30 — Pass C1.1 fresh-world recruit walk ──────────────────────────
+// U60-29 seeded trust directly on the NPC, which hid a bug where fresh-world
+// NPCs had no public facts in their knowledgeGraph — dialogue always
+// deflected, trust never climbed, the invite topic never surfaced. This
+// gate drives the path: fresh world → talk → ask-until-trust-6 → invite →
+// recruit. No manual trust seeding. No delta ops that paper over the bug.
+
+test('U60-30: fresh-world recruit walk via dialogue (no trust seeding)', () => {
+  const { w: w0, nodeId } = makeWorldWithSettlement('u60-30', { requireNeighbor: true });
+  const npc = getNpcs(w0, nodeId)[0];
+
+  // Baseline: trust starts at 5, public facts must exist on genesis.
+  assert.equal(npc.conversationState.trustLevel, 5, 'fresh NPC trust is 5');
+  const publicFacts = (npc.knowledgeGraph || []).filter(f =>
+    f && f.source !== 'secret' && !npc.secrets.includes(String(f.factId || ''))
+  );
+  assert.ok(publicFacts.length >= 1, 'genesis seeds at least one public fact');
+  const topicId = String(publicFacts[0].factId);
+
+  // Begin dialogue — topic must be askable even at trust 5 via the public
+  // reveal threshold (trust >= 4 for non-secret facts).
+  let { world: w1 } = beginDialogue(w0, npc.id);
+
+  // Drive a keyword string pulled from the public factId so extractTopic
+  // scores a hit. Factids use underscores — player input expresses them as
+  // space-delimited words.
+  const askText = 'I ask about ' + topicId.replace(/_/g, ' ');
+
+  // Loop asks until trust reaches 6 — cap the loop so a failure yields a
+  // clear error instead of hanging.
+  const MAX_ASKS = 12;
+  let lastMode = '';
+  let asks = 0;
+  for (; asks < MAX_ASKS; asks++) {
+    const { world: wNext, outcome } = askNpc(w1, askText);
+    w1 = wNext;
+    lastMode = outcome.mode;
+    if (Number(outcome.trustLevel) >= 6) break;
+    // Safety: if the mode is not 'shared' the trust delta is zero or
+    // negative and the loop will never converge. Surface it fast.
+    assert.equal(outcome.mode, 'shared', `ask#${asks + 1}: expected shared, got ${outcome.mode}`);
+  }
+  assert.ok(asks < MAX_ASKS, `trust reached 6 within ${asks + 1} asks`);
+  assert.equal(lastMode, 'shared', 'final ask mode is shared');
+
+  // Invite topic now surfaces in availableTopics.
+  const topics = availableTopics(w1);
+  assert.ok(topics.includes('invite_to_travel'), 'invite_to_travel topic surfaces');
+
+  // Accept — askNpc with the invite phrase recruits.
+  const { world: wRecruited, outcome: inviteOutcome } = askNpc(w1, 'invite to travel');
+  assert.equal(inviteOutcome.mode, 'recruited', 'invite returns recruited');
+  assert.equal(wRecruited.party.length, 2, 'party grew to 2');
+  assert.ok(wRecruited.party[1].companion != null, 'companion marker set');
+  assert.equal(wRecruited.party[1].companion.sourceNpcId, npc.id, 'source npc linked');
+});
+
+// ── U60-31 — recentBeats populates on social and resolve turns ─────────────
+// Pass C1.1 closed a gap where dialogue enter/ask returned without writing
+// a beat; Recent Beats read "No history yet" through whole conversations.
+// This gate locks the engine behavior so regressions can't re-open the gap.
+
+test('U60-31: recentBeats populates on dialogue enter + ask', () => {
+  const { w: w0, nodeId } = makeWorldWithSettlement('u60-31');
+  const npc = getNpcs(w0, nodeId)[0];
+  assert.equal((w0.recentBeats || []).length, 0, 'fresh world: no beats');
+
+  // Dialogue enter via playerMove — beat written even though no roll occurs.
+  const firstName = String(npc.name || '').split(' ')[0] || String(npc.name || '');
+  const { world: w1 } = playerMove(w0, packsById, `talk to ${firstName}`);
+  assert.ok((w1.recentBeats || []).length >= 1, 'dialogue enter writes a beat');
+  const enterBeat = w1.recentBeats[w1.recentBeats.length - 1];
+  assert.match(String(enterBeat.mechanics || ''), /^dialogue:enter/, 'enter beat tagged');
+
+  // Dialogue ask via playerMove — another beat on top.
+  const { world: w2 } = playerMove(w1, packsById, 'ask about the local market gossip');
+  assert.ok((w2.recentBeats || []).length >= 2, 'dialogue ask writes a beat');
+  const askBeat = w2.recentBeats[w2.recentBeats.length - 1];
+  assert.match(String(askBeat.mechanics || ''), /^dialogue:/, 'ask beat tagged');
+  assert.doesNotThrow(() => assertWorldInvariants(w2));
+});

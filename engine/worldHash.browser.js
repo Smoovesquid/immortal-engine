@@ -1,5 +1,6 @@
 import { ensureWorld } from './state.js';
 import { stableStringify } from './log.js';
+import { projectPartyForHash } from './crunchHashProjection.js';
 
 function projectForHash(world) {
   const w = ensureWorld(world);
@@ -8,7 +9,9 @@ function projectForHash(world) {
     meta: w.meta,
     ruleset: w.ruleset,
     pack: w.pack,
-    party: w.party,
+    // Pass T1: sort non-load-bearing party arrays (foci, items, known spells)
+    // so trivial reorderings don't break replay hash equality.
+    party: projectPartyForHash(w.party),
     map: w.map,
     env: w.env,
     scene: w.scene,

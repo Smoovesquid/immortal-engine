@@ -1,6 +1,7 @@
 import crypto from 'node:crypto';
 import { ensureWorld } from './state.js';
 import { stableStringify } from './log.js';
+import { projectPartyForHash } from './crunchHashProjection.js';
 
 // Canon-identity projection: exclude UI-only fields; include all deterministic state + timeline.
 function projectForHash(world) {
@@ -10,7 +11,9 @@ function projectForHash(world) {
     meta: w.meta,
     ruleset: w.ruleset,
     pack: w.pack,
-    party: w.party,
+    // Pass T1: sort non-load-bearing party arrays (foci, items, known spells)
+    // so trivial reorderings don't break replay hash equality.
+    party: projectPartyForHash(w.party),
     map: w.map,
     env: w.env,
     scene: w.scene,

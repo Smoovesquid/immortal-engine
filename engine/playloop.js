@@ -261,6 +261,20 @@ export function playerMove(world, packsById, text) {
           factId: asked.outcome.factId || ''
         }
       });
+      // Pass C1.1 — dialogue ask produces a beat so the Recent Beats panel
+      // fills during conversation. Outcome maps shared→success, recruited→
+      // success, lied/withheld/refused-*→mixed, deflected→failure.
+      const askOutcome = askBeatOutcome(asked.outcome.mode);
+      const askHereNode = (w.map?.nodes || []).find(n => n && n.id === w.map?.currentNodeId) || null;
+      w = appendRecentBeat(w, {
+        t: Number(w.time?.turn ?? 0),
+        input: String(text || ''),
+        approach: 'heart',
+        stake: 'rapport',
+        outcome: askOutcome,
+        location: String(askHereNode?.name || w.scene?.location || ''),
+        mechanics: `dialogue:${asked.outcome.mode}${asked.outcome.factId ? `:${asked.outcome.factId}` : ''}`
+      });
       w = maybeCheckGoals(w);
       return {
         world: w,
@@ -418,6 +432,18 @@ export function playerMove(world, packsById, text) {
             npcId: begun.outcome.npcId,
             npcName: begun.outcome.npcName
           }
+        });
+        // Pass C1.1 — dialogue enter writes a beat so the Recent Beats panel
+        // records the social turn.
+        const enterHere = (w.map?.nodes || []).find(n => n && n.id === w.map?.currentNodeId) || null;
+        w = appendRecentBeat(w, {
+          t: Number(w.time?.turn ?? 0),
+          input: String(text || ''),
+          approach: 'heart',
+          stake: 'rapport',
+          outcome: 'success',
+          location: String(enterHere?.name || w.scene?.location || ''),
+          mechanics: `dialogue:enter:${begun.outcome.npcId}`
         });
         w = maybeCheckGoals(w);
         const role = begun.outcome.npcRole ? ` the ${begun.outcome.npcRole}` : '';
@@ -1012,6 +1038,17 @@ function buildBeatFromTurn(world, text, move, result) {
     location,
     mechanics: String(result?.mechanicsLine ?? '')
   };
+}
+
+// Pass C1.1 — map dialogue ask modes to beat outcomes. Shared/recruited
+// count as social success. Lies/withholdings/soft refusals are mixed.
+// Hard refusals and blank deflections are failures.
+function askBeatOutcome(mode) {
+  const m = String(mode || '');
+  if (m === 'shared' || m === 'recruited') return 'success';
+  if (m === 'refused-hard') return 'failure';
+  if (m === 'deflected') return 'mixed';
+  return 'mixed';
 }
 
 function dialogueAskNarration(outcome) {

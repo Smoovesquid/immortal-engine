@@ -131,6 +131,18 @@ export function generateSettlementNPCs(nodeId, seed, pack, factionState, ecology
     // Earlier NPCs are founding members, later ones are newer arrivals
     const originTick = i < 2 ? 0 : npcRng.int(1, 9);
 
+    // Pass C1.1 — seed at least one public (non-secret) fact per NPC so the
+    // dialogue path can reach mode:'shared' on a fresh world. Without this
+    // seed, settlement history on turn 0 is empty → computeNpcDepth returns
+    // an empty or secret-only knowledgeGraph → askNpc always deflects →
+    // trust never climbs to the invite threshold. Facts are derived
+    // deterministically from local context (building types, factions,
+    // neighbor npc indices) and carry source:'public' so computeSecrets
+    // never marks them secret. Shape mirrors buildKnowledgeGraph output.
+    const publicFacts = seedPublicFacts({
+      nid, i, count, role, factionId, buildings, factions, originTick, npcRng
+    });
+
     npcs.push({
       id: `npc_${nid}_${i}`,
       name,
@@ -143,6 +155,7 @@ export function generateSettlementNPCs(nodeId, seed, pack, factionState, ecology
       // mint hostile NPCs on its own; tests/scripts can set this directly to
       // make a settlement NPC attackable. No bestiary, no autogen of hostility.
       hostile: false,
+      knowledgeGraph: publicFacts,
       conversationState: {
         metPlayer: false,
         topicsDiscussed: [],
@@ -159,4 +172,75 @@ function clampInt(n, lo, hi) {
   const x = Math.trunc(Number(n));
   if (!Number.isFinite(x)) return lo;
   return Math.max(lo, Math.min(hi, x));
+}
+
+// ── Public-fact seeding (Pass C1.1) ─────────────────────────────────────────
+// Derives 1-3 deterministic non-secret facts per NPC from local context.
+// Facts are non-secret (source:'public'), topic-extractable (multi-word
+// factId tokens that survive the STOP_TOKENS filter in dialogue.js), and
+// seeded from npcRng so same seed+node+index → same facts across runs.
+function seedPublicFacts({ nid, i, count, role, factionId, buildings, factions, originTick, npcRng }) {
+  const facts = [];
+
+  // Fact 1 — always present. Local building if any, else settlement trade/life.
+  // Building facts like "local_market_gossip" tokenize to ['local','market','gossip']
+  // so player inputs like "ask about the market" score a hit in extractTopic.
+  if (buildings.length > 0) {
+    const b = buildings[npcRng.int(0, buildings.length - 1)];
+    const safe = String(b).replace(/[^a-z0-9]+/gi, '_').toLowerCase();
+    facts.push({
+      factId: `local_${safe}_gossip`,
+      source: 'public',
+      confidence: 0.9,
+      event: { era: 0, eventId: `local_${safe}_gossip`, worldState: null }
+    });
+  } else {
+    facts.push({
+      factId: `settlement_daily_rumor`,
+      source: 'public',
+      confidence: 0.8,
+      event: { era: 0, eventId: `settlement_daily_rumor`, worldState: null }
+    });
+  }
+
+  // Fact 2 — faction context. Factionless NPCs still know which faction holds
+  // local pressure, so derive from dominant faction if any factions exist.
+  if (Array.isArray(factions) && factions.length > 0) {
+    const facRef = factionId
+      ? factions.find(f => f.id === factionId)
+      : [...factions].sort((a, b) => (b.pressure - a.pressure) || a.id.localeCompare(b.id))[0];
+    if (facRef && facRef.id) {
+      const safe = String(facRef.id).replace(/[^a-z0-9]+/gi, '_').toLowerCase();
+      facts.push({
+        factId: `faction_${safe}_standing`,
+        source: 'public',
+        confidence: 0.85,
+        event: { era: 0, eventId: `faction_${safe}_standing`, worldState: null }
+      });
+    }
+  }
+
+  // Fact 3 — neighbor awareness. NPCs at the same settlement know one another
+  // by role. Seed a "neighbor_<role>" fact pointing at another index.
+  if (count > 1) {
+    const otherIdx = (i + 1) % count;
+    facts.push({
+      factId: `neighbor_${otherIdx}_presence`,
+      source: 'public',
+      confidence: 0.75,
+      event: { era: 0, eventId: `neighbor_${otherIdx}_presence`, worldState: null }
+    });
+  }
+
+  // Fact 4 — role-flavored trade fact. "market_trade_talk",
+  // "smithy_trade_talk" etc. so "ask about the trade" finds a hit.
+  facts.push({
+    factId: `role_${String(role || 'townsfolk').toLowerCase()}_trade_talk`,
+    source: 'public',
+    confidence: 0.7,
+    event: { era: 0, eventId: `role_${role || 'townsfolk'}_trade_talk`, worldState: null }
+  });
+
+  void nid; void originTick;
+  return facts;
 }

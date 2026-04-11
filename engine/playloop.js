@@ -160,6 +160,53 @@ export function playerMove(world, packsById, text) {
     return { world: w, output: { narration: composed.narrationLine, mechanics: composed.mechanicsLine } };
   }
 
+  // ── Pass C1 — dismiss verb ───────────────────────────────────────────────
+  // "dismiss <name>" removes a companion from the party. Resolved before the
+  // dialogue intercept and the physics/combat branches so the verb is always
+  // available; case-insensitive name match against party[1..n]. No-op when
+  // no companion matches the name (the player still gets a clear message
+  // and the call short-circuits).
+  {
+    const dismissMatch = String(text || '').match(/^\s*dismiss\s+(.+?)\s*$/i);
+    if (dismissMatch) {
+      const name = dismissMatch[1].trim();
+      const companions = (Array.isArray(w.party) ? w.party : []).slice(1);
+      const target = companions.find(e => String(e?.name || '').toLowerCase() === name.toLowerCase());
+      if (!target) {
+        return {
+          world: w,
+          output: {
+            narration: `Wizard: No companion named "${name}" travels with you.`,
+            mechanics: '[dismiss | no-such-companion]'
+          }
+        };
+      }
+      let wd = applyDeltas(w, [{ op: 'dismissCompanion', entityId: String(target.id) }]);
+      const here = (wd.map?.nodes || []).find(n => n && n.id === wd.map?.currentNodeId) || null;
+      const locationName = String(here?.name || wd.scene?.location || '');
+      wd = appendRecentBeat(wd, {
+        t: Number(wd.time?.turn ?? 0),
+        input: `dismiss ${name}`,
+        approach: 'heart',
+        stake: 'parting',
+        outcome: 'mixed',
+        location: locationName,
+        mechanics: `dismiss:${target.id}`
+      });
+      wd = pushEvent(wd, {
+        kind: 'companionDismissed',
+        data: { entityId: String(target.id), name: String(target.name || '') }
+      });
+      return {
+        world: wd,
+        output: {
+          narration: `Wizard: ${target.name} parts ways with you.`,
+          mechanics: `[dismiss | ${target.name}]`
+        }
+      };
+    }
+  }
+
   // ── Dialogue mode intercept ───────────────────────────────────────────────
   // If an NPC dialogue is active, route input: explicit exit, auto-exit on
   // movement/physics/scene intents, else treat as an ask.
@@ -299,7 +346,8 @@ export function playerMove(world, packsById, text) {
       const beforeLocalFtY = Number(pos0.localFtY || 0);
       const afterLocalFtX = beforeLocalFtX + Number(localFeet.dxFt || 0);
       const afterLocalFtY = beforeLocalFtY + Number(localFeet.dyFt || 0);
-      const nextParty = party.map((p, i) => i === 0 ? {
+      // Pass C1 — companions follow the player through local feet moves.
+      const nextParty = party.map(p => ({
         ...p,
         position: {
           ...(p.position || {}),
@@ -307,7 +355,7 @@ export function playerMove(world, packsById, text) {
           localFtX: afterLocalFtX,
           localFtY: afterLocalFtY
         }
-      } : p);
+      }));
       let w1 = { ...w, party: nextParty };
       w1 = pushEvent(w1, {
         kind: 'move',
@@ -875,9 +923,10 @@ function setPrimaryPartyZone(world, zone) {
   const party = Array.isArray(w.party) ? w.party : [];
   if (!party.length) return w;
   const z = String(zone || 'near');
+  // Pass C1 — companions follow the player on zone updates after travel.
   return {
     ...w,
-    party: party.map((p, i) => i === 0 ? { ...p, position: { ...(p.position || {}), zone: z, localFtX: 0, localFtY: 0 } } : p)
+    party: party.map(p => ({ ...p, position: { ...(p.position || {}), zone: z, localFtX: 0, localFtY: 0 } }))
   };
 }
 

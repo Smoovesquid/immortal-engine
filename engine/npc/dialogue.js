@@ -5,12 +5,21 @@
 
 import { ensureWorld } from '../state.js';
 import { addFact } from '../ledger.js';
+import { applyDeltas } from '../effectsCore.js';
 
 const TRUST_REVEAL_PUBLIC = 4;
 const TRUST_REVEAL_SECRET = 7;
 const HONESTY_LIAR = 0.3;
 const TOPICS_OFFERED_CAP = 20;
 const TOPICS_DISCUSSED_CAP = 20;
+
+// Pass C1 — companion recruit topic. Surfaces in availableTopics when the
+// trust gate is met and the party has room. Recognized in askNpc text by
+// the literal substring "invite to travel".
+const INVITE_TOPIC_ID = 'invite_to_travel';
+const INVITE_TRUST_THRESHOLD = 6;
+const PARTY_CAP = 3;
+const INVITE_TEXT_RE = /\binvite\s+to\s+travel\b/i;
 
 const STOP_TOKENS = new Set([
   'era', 'the', 'and', 'for', 'with', 'from', 'that', 'this', 'your', 'yours',
@@ -107,6 +116,16 @@ export function askNpc(world, text) {
   const honesty = Number(npc.personality?.honesty ?? 0.5);
   const knownIds = new Set((npc.knowledgeGraph || []).map(f => String(f.factId || '')));
   const secrets = new Set(Array.isArray(npc.secrets) ? npc.secrets.map(String) : []);
+
+  // Pass C1 — recruit branch. The literal "invite to travel" intercepts the
+  // normal topic-extraction path. Outcome by trust band: ≥6 recruits and
+  // emits a recruit beat (caller wires the beat — askNpc returns the
+  // mode and the post-recruit world); 4-5 refuses soft (-1 trust); ≤3
+  // refuses hard (-1 trust). Refusal paths consume a dialogue turn but
+  // produce no recruit and no beat.
+  if (INVITE_TEXT_RE.test(String(text || ''))) {
+    return handleInviteToTravel(w, d, npc, trust);
+  }
 
   const topic = extractTopic(text, npc);
 
@@ -301,7 +320,96 @@ export function availableTopics(world) {
       if (trust >= TRUST_REVEAL_PUBLIC) out.push(id);
     }
   }
+
+  // Pass C1 — surface the invite_to_travel topic when (a) trust is high
+  // enough, (b) the party has room, and (c) this NPC is not already a
+  // companion (which can't happen in the current shape — companions are
+  // removed from the settlement on recruit — but the check is cheap and
+  // future-proofs against later passes that may keep the NPC around).
+  const party = Array.isArray(w.party) ? w.party : [];
+  const alreadyCompanion = party.some(p => p?.companion?.sourceNpcId === String(d.npcId));
+  if (
+    !alreadyCompanion &&
+    party.length < PARTY_CAP &&
+    trust >= INVITE_TRUST_THRESHOLD
+  ) {
+    out.push(INVITE_TOPIC_ID);
+  }
+
   return out;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// invite_to_travel — Pass C1
+
+function handleInviteToTravel(w, d, npc, trust) {
+  const npcId = String(d.npcId);
+  const nodeId = String(w.map?.currentNodeId || '');
+  const party = Array.isArray(w.party) ? w.party : [];
+  const alreadyCompanion = party.some(p => p?.companion?.sourceNpcId === npcId);
+
+  // Trust gate: ≥6 recruits, otherwise refuse (soft 4-5, hard ≤3) and
+  // apply a -1 trust nudge through npcTrustDelta.
+  if (trust >= INVITE_TRUST_THRESHOLD && party.length < PARTY_CAP && !alreadyCompanion) {
+    const w1 = applyDeltas(w, [
+      { op: 'recruitCompanion', sourceNpcId: npcId, nodeId }
+    ]);
+
+    // Dialogue context survives but the NPC is now gone from the settlement,
+    // which would trip the "npc at current node" invariant on the next
+    // ensureWorld. Close the dialogue immediately as part of the recruit
+    // outcome — the player has just gained a companion and there's nothing
+    // more to ask. Mirrors how combat-begin auto-ends an open dialogue.
+    const w2 = { ...w1, scene: { ...w1.scene, dialogue: null } };
+
+    return {
+      world: w2,
+      outcome: {
+        kind: 'dialogueAsk',
+        ok: true,
+        npcId,
+        npcName: String(npc.name || ''),
+        topic: INVITE_TOPIC_ID,
+        mode: 'recruited',
+        factId: '',
+        trustLevel: trust,
+        trustDelta: 0,
+        text: 'invite to travel',
+        recruitedSourceNpcId: npcId
+      }
+    };
+  }
+
+  // Refusal — apply -1 trust through the canonical mutation path.
+  const refusedMode = trust >= 4 ? 'refused-soft' : 'refused-hard';
+  const w1 = applyDeltas(w, [
+    { op: 'npcTrustDelta', npcId, by: -1 }
+  ]);
+  const newTrust = Math.max(0, trust - 1);
+
+  // Bump turnsInDialogue so the refusal still consumes a dialogue turn.
+  const nextDialogue = {
+    ...d,
+    turnsInDialogue: Number(d.turnsInDialogue || 0) + 1,
+    lastAnswer: { factId: null, mode: refusedMode, trustAtTime: trust }
+  };
+  const w2 = { ...w1, scene: { ...w1.scene, dialogue: nextDialogue } };
+
+  return {
+    world: w2,
+    outcome: {
+      kind: 'dialogueAsk',
+      ok: true,
+      npcId,
+      npcName: String(npc.name || ''),
+      topic: INVITE_TOPIC_ID,
+      mode: refusedMode,
+      factId: '',
+      trustLevel: newTrust,
+      trustDelta: -1,
+      text: 'invite to travel'
+    }
+  };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

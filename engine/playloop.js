@@ -411,7 +411,7 @@ export function playerMove(world, packsById, text) {
       const nextName = String(here?.name || '').trim();
       if (nextName) w1 = { ...w1, scene: { ...w1.scene, location: nextName } };
       w1 = setPrimaryPartyZone(w1, 'near');
-      w1 = pushEvent(w1, { kind: 'travel', data: { from: before, to: String(w1.map.currentNodeId) } });
+      w1 = pushEvent(w1, { kind: 'travel', data: { from: before, to: String(w1.map.currentNodeId), intent: String(text || '') } });
       w1 = maybeCheckGoals(w1);
       return { world: w1, output: { narration: nextName ? `Wizard: You travel to ${nextName}.` : 'Wizard: You move to the next position.', mechanics: '' } };
     }
@@ -669,7 +669,7 @@ export function playerMove(world, packsById, text) {
       if (nextName) {
         w = { ...w, scene: { ...w.scene, location: nextName } };
       }
-      w = pushEvent(w, { kind: 'travel', data: { from: before || '', to: w.map.currentNodeId } });
+      w = pushEvent(w, { kind: 'travel', data: { from: before || '', to: w.map.currentNodeId, intent: String(text || '') } });
     }
   }
 

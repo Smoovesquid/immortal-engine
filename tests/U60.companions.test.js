@@ -590,12 +590,17 @@ test('U60-30: fresh-world recruit walk via dialogue (no trust seeding)', () => {
   const topics = availableTopics(w1);
   assert.ok(topics.includes('invite_to_travel'), 'invite_to_travel topic surfaces');
 
-  // Accept — askNpc with the invite phrase recruits.
-  const { world: wRecruited, outcome: inviteOutcome } = askNpc(w1, 'invite to travel');
-  assert.equal(inviteOutcome.mode, 'recruited', 'invite returns recruited');
+  // Accept — drive the recruit step through playerMove so the layer above
+  // askNpc (the dialogue intercept + breaking-intent guard) actually runs.
+  // The earlier U60-30 called askNpc directly, which hid C1.2: the literal
+  // "invite to travel" matches moveAdvancesScene('\\btravel\\b') and the
+  // intercept routed it to movement instead of recruit.
+  const startNode = w1.map.currentNodeId;
+  const { world: wRecruited } = playerMove(w1, packsById, 'invite to travel');
   assert.equal(wRecruited.party.length, 2, 'party grew to 2');
   assert.ok(wRecruited.party[1].companion != null, 'companion marker set');
   assert.equal(wRecruited.party[1].companion.sourceNpcId, npc.id, 'source npc linked');
+  assert.equal(wRecruited.map.currentNodeId, startNode, 'player did not travel');
 });
 
 // ── U60-31 — recentBeats populates on social and resolve turns ─────────────
@@ -621,4 +626,28 @@ test('U60-31: recentBeats populates on dialogue enter + ask', () => {
   const askBeat = w2.recentBeats[w2.recentBeats.length - 1];
   assert.match(String(askBeat.mechanics || ''), /^dialogue:/, 'ask beat tagged');
   assert.doesNotThrow(() => assertWorldInvariants(w2));
+});
+
+// ── U60-32 — Pass C1.2 recruit-intent precedence gate ─────────────────────
+// Narrow regression: locks the rule that playerMove routes "invite to travel"
+// to the recruit branch instead of the movement branch. The recruit phrase
+// contains "travel", which moveAdvancesScene matches; without the recruit
+// short-circuit in the dialogue intercept, playerMove would treat the input
+// as a dialogue-breaking movement intent and walk the player to a neighbor.
+// Trust is seeded directly here — this test is NOT the fresh-world walk
+// gate (U60-30 is). The only thing being asserted here is precedence.
+
+test('U60-32: playerMove("invite to travel") during dialogue recruits, does not travel', () => {
+  const { w: w0, nodeId } = makeWorldWithSettlement('u60-32', { requireNeighbor: true });
+  const npc = getNpcs(w0, nodeId)[0];
+  const wTrusted = setNpcTrust(w0, nodeId, npc.id, 6);
+  const { world: w1 } = beginDialogue(wTrusted, npc.id);
+  const startNode = w1.map.currentNodeId;
+  const { world: wAfter } = playerMove(w1, packsById, 'invite to travel');
+  assert.equal(wAfter.party.length, 2, 'playerMove recruited instead of traveling');
+  assert.ok(wAfter.party[1].companion != null, 'companion marker set');
+  assert.equal(wAfter.party[1].companion.sourceNpcId, npc.id, 'source npc linked');
+  assert.equal(wAfter.map.currentNodeId, startNode, 'player did not travel');
+  assert.equal(wAfter.scene?.dialogue, null, 'dialogue auto-cleared on recruit');
+  assert.doesNotThrow(() => assertWorldInvariants(wAfter));
 });

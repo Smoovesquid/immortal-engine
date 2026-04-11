@@ -74,14 +74,19 @@ export function decompressAndCanonizeSync(world, nodeId, pack) {
     { buildings: buildingTypes }
   );
 
-  // Merge genesis data (name, conversationState, disposition) onto depth NPCs
+  // Merge genesis data (name, conversationState, disposition) onto depth NPCs.
+  // Pass C1.1 — also merge genesis knowledgeGraph. Genesis seeds deterministic
+  // public facts so fresh-world NPCs have shareable topics; without this merge
+  // the seeds never reach askNpc and dialogue always deflects.
   const namedNpcs = deepNpcs.map((npc, i) => {
     const gen = genesisNpcs[i];
     if (!gen) return { ...npc, name: npc.name || `the ${npc.role}`, description: '', factualDetail: '' };
+    const mergedKg = mergeKnowledgeGraphs(npc.knowledgeGraph, gen.knowledgeGraph);
     return {
       ...npc,
       name: gen.name,
       conversationState: gen.conversationState,
+      knowledgeGraph: mergedKg,
       description: '',
       factualDetail: ''
     };
@@ -110,4 +115,27 @@ export function decompressAndCanonizeSync(world, nodeId, pack) {
     ...world,
     map: { ...world.map, nodes: updatedNodes }
   };
+}
+
+// Pass C1.1 — dedupe-by-factId union of depth kg and genesis kg.
+// Depth facts (from witnessed events) win over genesis seeds on collision,
+// preserving canonical event-derived knowledge when history is non-empty.
+function mergeKnowledgeGraphs(depthKg, genKg) {
+  const out = [];
+  const seen = new Set();
+  const deep = Array.isArray(depthKg) ? depthKg : [];
+  const gen = Array.isArray(genKg) ? genKg : [];
+  for (const f of deep) {
+    const id = String(f?.factId || '');
+    if (!id || seen.has(id)) continue;
+    seen.add(id);
+    out.push(f);
+  }
+  for (const f of gen) {
+    const id = String(f?.factId || '');
+    if (!id || seen.has(id)) continue;
+    seen.add(id);
+    out.push(f);
+  }
+  return out;
 }

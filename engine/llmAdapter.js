@@ -348,6 +348,15 @@ export function buildDMSystemPrompt(dmCtx) {
     ? `PLAYER GOALS (active): ${goals.map(g => `${g.label || g.kind} [${g.kind}:${g.targetRef}]`).join(' | ')}`
     : '';
 
+  // Pass H — home signal so the narrator LLM can distinguish at-home from
+  // away scenes. Silently omits when no home is set (pre-Pass-H saves).
+  const home = dmCtx.home;
+  const homeLine = home
+    ? (home.isCurrent
+        ? `HOME: the player is in their home village${home.name ? ` (${home.name})` : ''}.`
+        : `HOME: the player's home village${home.name ? ` (${home.name})` : ''} lies elsewhere.`)
+    : '';
+
   // Pass 4 — narrative memory: surface the last few resolved turns so the
   // narrator can write continuity without re-describing them. Empty/malformed
   // beats arrays silently omit the block (LLM layer must never throw).
@@ -434,6 +443,7 @@ export function buildDMSystemPrompt(dmCtx) {
     scene.interior ? `- Interior: room ${scene.interior.roomId}` : `- Outdoors`,
     threatLine,
     goalLine,
+    homeLine,
     dialogueBlock,
     ``,
     `NPCs PRESENT:`,

@@ -87,6 +87,7 @@ export function buildDMContext(world, outcome = {}, pack = {}) {
   const rules = buildRules(w, pack);
   const worldWhisper = pickWorldWhisper(w);
   const goals = buildGoalsBlock(w);
+  const home = buildHomeBlock(w);
 
   return {
     scene,
@@ -96,10 +97,29 @@ export function buildDMContext(world, outcome = {}, pack = {}) {
     rules,
     worldWhisper,
     goals,
+    home,
     recentBeats: Array.isArray(w.recentBeats) ? w.recentBeats.slice() : [],
     combat: buildCombatBlock(w),
     companions: buildCompanionsBlock(w),
     dialogueTurn: buildDialogueTurn(w)
+  };
+}
+
+// ── Home (Pass H) ─────────────────────────────────────────────────────────
+// Projects meta.homeNodeId into the DM context so the narrator LLM can
+// distinguish at-home from away scenes. Null when no home is set (pre-Pass-H
+// saves or worlds without a settlement at begin).
+
+function buildHomeBlock(w) {
+  const homeNodeId = String(w?.meta?.homeNodeId || '');
+  if (!homeNodeId) return null;
+  const currentNodeId = String(w?.map?.currentNodeId || '');
+  const nodes = Array.isArray(w?.map?.nodes) ? w.map.nodes : [];
+  const home = nodes.find(n => String(n?.id) === homeNodeId) || null;
+  return {
+    nodeId: homeNodeId,
+    name: String(home?.name || ''),
+    isCurrent: currentNodeId === homeNodeId
   };
 }
 

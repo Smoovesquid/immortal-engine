@@ -24,7 +24,14 @@ const packsById = {
 
 function makeWorld(seed = 's3') {
   const w0 = newWorld({ seed, fate: 0.2, campaignId: 'c1', pack: { primaryId: 'fantasy', mixerId: null } });
-  return beginAdventure(w0, packsById).world;
+  let w = beginAdventure(w0, packsById).world;
+  // Pass H — beginAdventure puts the player in the home bedroom. Local foot
+  // movement requires being outside, so step out before exercising the
+  // exterior-only assertions in this gate.
+  if (w.scene?.interior) {
+    w = playerMove(w, packsById, 'leave the house').world;
+  }
+  return w;
 }
 
 function ftX(w) { return Number(w.party?.[0]?.position?.localFtX ?? 0); }

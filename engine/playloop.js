@@ -81,27 +81,63 @@ export function beginAdventure(world, packsById) {
   }
 
   // Tactical zoom defaults off at start.
-  w = { ...w, map: { ...(w.map || {}), tactical: { active: false, zoneLayout: null } }, scene: { location, objective, time: 'start', promptSeed: `${seed}` } };
+  // Pass H — scene.time = 'waking' is the signal the composer reads to pick the
+  // bedroom-opening line bank instead of the legacy quest-opening bank.
+  w = { ...w, map: { ...(w.map || {}), tactical: { active: false, zoneLayout: null } }, scene: { location, objective, time: 'waking', promptSeed: `${seed}` } };
 
   // Materialize deterministic structures for the starting node so exterior discovery is available immediately.
   if (w.map?.currentNodeId) {
     w = applyGeneratedStructuresForNode(w, w.map.currentNodeId);
   }
 
-  // Canon facts for guard.
-  w = addFact(w, `location:${location}`, 'scene');
-  const objFact = `objective:${objective}`;
-  if (!hasFact(w, objFact)) w = addFact(w, objFact, 'scene');
-  w = addQuestion(w, `How will you approach: ${objective}?`);
-  // U16: deterministic starter thread so worldTick/threadShift has a living thread to evolve.
-  if (!Array.isArray(w.instrument?.threads) || w.instrument.threads.length === 0) {
-    w = introduceThread(w, objective);
+  // Pass H — mark the starting settlement as home if not already set. Save/resume
+  // semantics: don't overwrite a pre-existing homeNodeId (the saved game already
+  // knows where home is).
+  if (!w.meta?.homeNodeId && w.map?.currentNodeId) {
+    w = { ...w, meta: { ...w.meta, homeNodeId: String(w.map.currentNodeId) } };
   }
 
-  // Seed an initial goal so playerMove has something verifiable to track.
-  if (Array.isArray(w.goals) && w.goals.length === 0) {
-    w = seedInitialGoal(w, pack, objective);
+  // Pass H — place the player inside the first structure at home, in the first
+  // non-entry room (room 2 by stub topology — the "bedroom"). The generated
+  // topology guarantees room 2 is adjacent to room 1 (the entry). Graceful
+  // degradation: if there are no structures or the structure has only the entry
+  // room, stay outside and narrate as exterior.
+  {
+    const structuresHere = Object.values(w.structures?.byId || {}).filter(
+      s => String(s?.nodeId || '') === String(w.map?.currentNodeId || '')
+    );
+    if (structuresHere.length > 0) {
+      const w1 = enterStructureInterior(w, '#1');
+      const interior = w1.scene?.interior || null;
+      if (interior) {
+        const st = w1.structures?.byId?.[interior.structureKey];
+        const rooms = Array.isArray(st?.topology?.rooms) ? st.topology.rooms : [];
+        // Find the first non-entry room (room index 1 in the stub).
+        const nonEntry = rooms.find(r => !((Array.isArray(r?.tags) ? r.tags : []).includes('entry')));
+        const bedroomId = nonEntry ? String(nonEntry.id) : '';
+        if (bedroomId && bedroomId !== interior.roomId) {
+          w = moveWithinInterior(w1, bedroomId);
+        } else {
+          w = w1;
+        }
+      }
+    }
   }
+
+  // Canon facts for guard.
+  w = addFact(w, `location:${location}`, 'scene');
+  // Pass H — drop the objective: fact and "How will you approach" question.
+  // The player wakes with no quest; finding one happens by venturing out.
+  // U16: deterministic starter thread so worldTick/threadShift has a living thread
+  // to evolve. Use a neutral 'morning light' seed instead of the (now unused)
+  // objective string.
+  if (!Array.isArray(w.instrument?.threads) || w.instrument.threads.length === 0) {
+    w = introduceThread(w, 'morning light');
+  }
+
+  // Pass H — beginAdventure no longer seeds an initial goal. The player wakes
+  // up with nothing to do; quests are discovered by leaving home and venturing
+  // out. seedInitialGoal is still defined for save-resume semantics elsewhere.
 
   // Build opening context with NPC presence
   const startingNode = w.map.nodes.find(n => n.id === w.map.currentNodeId);

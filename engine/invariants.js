@@ -1,4 +1,8 @@
 import { WORLD_VERSION } from './state.js';
+import { statMod, maxWounds } from './ruleset/core/stats.js';
+
+const SPELL_SLOT_LEVELS = [1, 2, 3, 4, 5];
+const CURRENCY_KEYS = ['copper', 'silver', 'gold', 'platinum'];
 
 export function assertWorldInvariants(world) {
   if (!world || typeof world !== 'object') {
@@ -40,6 +44,10 @@ export function assertWorldInvariants(world) {
     if (!member || typeof member !== 'object') {
       throw new Error(`Invariant: party[${i}] must be object`);
     }
+
+    // Pass T1 — crunch schema invariants.
+    assertCrunchFields(member, i);
+
     const c = member.companion;
     if (i === 0) {
       if (c != null) {
@@ -266,3 +274,119 @@ export function assertWorldInvariants(world) {
 const GOAL_KINDS = new Set(['reach', 'obtain', 'talkTo', 'learn', 'defeat']);
 const GOAL_STATUSES = new Set(['active', 'completed', 'failed']);
 const BEAT_OUTCOMES = new Set(['success', 'mixed', 'failure']);
+
+// ── Pass T1 crunch invariants ────────────────────────────────────────────
+function assertCrunchFields(member, i) {
+  // level ∈ [1, 20]
+  if (!Number.isInteger(member.level) || member.level < 1 || member.level > 20) {
+    throw new Error(`Invariant: party[${i}].level must be integer 1..20 (got ${member.level})`);
+  }
+  // xp ≥ 0
+  if (!Number.isInteger(member.xp) || member.xp < 0) {
+    throw new Error(`Invariant: party[${i}].xp must be non-negative integer (got ${member.xp})`);
+  }
+
+  // wounds ≤ maxWounds(level, gritMod)
+  const grit = member.stats?.GRIT;
+  const gritMod = statMod(grit);
+  const cap = maxWounds(member.level, gritMod);
+  if (!Number.isInteger(member.wounds) || member.wounds < 0 || member.wounds > cap) {
+    throw new Error(
+      `Invariant: party[${i}].wounds must be integer 0..${cap} for level ${member.level}/GRIT ${grit} (got ${member.wounds})`
+    );
+  }
+
+  // foci array, length ≤ 6, all strings
+  if (!Array.isArray(member.foci)) {
+    throw new Error(`Invariant: party[${i}].foci must be array`);
+  }
+  if (member.foci.length > 6) {
+    throw new Error(`Invariant: party[${i}].foci length ${member.foci.length} exceeds cap 6`);
+  }
+  for (const f of member.foci) {
+    if (typeof f !== 'string' || !f) {
+      throw new Error(`Invariant: party[${i}].foci entries must be non-empty strings`);
+    }
+  }
+
+  // purse: four currency integers ≥ 0
+  const purse = member.purse;
+  if (!purse || typeof purse !== 'object') {
+    throw new Error(`Invariant: party[${i}].purse must be object`);
+  }
+  for (const k of CURRENCY_KEYS) {
+    const v = purse[k];
+    if (!Number.isInteger(v) || v < 0) {
+      throw new Error(`Invariant: party[${i}].purse.${k} must be non-negative integer (got ${v})`);
+    }
+  }
+
+  // inventory.items: array of {id, defRef, equipped: string|null}
+  const items = member.inventory?.items;
+  if (!Array.isArray(items)) {
+    throw new Error(`Invariant: party[${i}].inventory.items must be array`);
+  }
+  for (let j = 0; j < items.length; j++) {
+    const it = items[j];
+    if (!it || typeof it !== 'object') {
+      throw new Error(`Invariant: party[${i}].inventory.items[${j}] must be object`);
+    }
+    if (typeof it.id !== 'string' || !it.id) {
+      throw new Error(`Invariant: party[${i}].inventory.items[${j}].id must be non-empty string`);
+    }
+    if (typeof it.defRef !== 'string' || !it.defRef) {
+      throw new Error(`Invariant: party[${i}].inventory.items[${j}].defRef must be non-empty string`);
+    }
+    if (it.equipped !== null && (typeof it.equipped !== 'string' || !it.equipped)) {
+      throw new Error(`Invariant: party[${i}].inventory.items[${j}].equipped must be non-empty string or null`);
+    }
+  }
+
+  // spells block
+  const spells = member.spells;
+  if (!spells || typeof spells !== 'object') {
+    throw new Error(`Invariant: party[${i}].spells must be object`);
+  }
+  if (!Array.isArray(spells.known)) {
+    throw new Error(`Invariant: party[${i}].spells.known must be array`);
+  }
+  if (spells.known.length > 20) {
+    throw new Error(`Invariant: party[${i}].spells.known length ${spells.known.length} exceeds cap 20`);
+  }
+  for (const s of spells.known) {
+    if (typeof s !== 'string' || !s) {
+      throw new Error(`Invariant: party[${i}].spells.known entries must be non-empty strings`);
+    }
+  }
+  if (!spells.slots || typeof spells.slots !== 'object') {
+    throw new Error(`Invariant: party[${i}].spells.slots must be object`);
+  }
+  if (!spells.maxSlots || typeof spells.maxSlots !== 'object') {
+    throw new Error(`Invariant: party[${i}].spells.maxSlots must be object`);
+  }
+  for (const lvl of SPELL_SLOT_LEVELS) {
+    const cur = spells.slots[lvl];
+    const max = spells.maxSlots[lvl];
+    if (!Number.isInteger(cur) || cur < 0) {
+      throw new Error(`Invariant: party[${i}].spells.slots[${lvl}] must be non-negative integer (got ${cur})`);
+    }
+    if (!Number.isInteger(max) || max < 0) {
+      throw new Error(`Invariant: party[${i}].spells.maxSlots[${lvl}] must be non-negative integer (got ${max})`);
+    }
+    if (cur > max) {
+      throw new Error(`Invariant: party[${i}].spells.slots[${lvl}] ${cur} exceeds maxSlots[${lvl}] ${max}`);
+    }
+  }
+  const conc = spells.concentration;
+  if (conc !== null) {
+    if (!conc || typeof conc !== 'object') {
+      throw new Error(`Invariant: party[${i}].spells.concentration must be object or null`);
+    }
+    if (typeof conc.spellRef !== 'string' || !conc.spellRef) {
+      throw new Error(`Invariant: party[${i}].spells.concentration.spellRef must be non-empty string`);
+    }
+    if (typeof conc.startedAt !== 'number' || !Number.isFinite(conc.startedAt)) {
+      throw new Error(`Invariant: party[${i}].spells.concentration.startedAt must be finite number`);
+    }
+  }
+}

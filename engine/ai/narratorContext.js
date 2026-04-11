@@ -97,8 +97,32 @@ export function buildDMContext(world, outcome = {}, pack = {}) {
     goals,
     recentBeats: Array.isArray(w.recentBeats) ? w.recentBeats.slice() : [],
     combat: buildCombatBlock(w),
+    companions: buildCompanionsBlock(w),
     dialogueTurn: buildDialogueTurn(w)
   };
+}
+
+// ── Companions ────────────────────────────────────────────────────────────
+// Pass C1: derived view of party[1..n] for the DM. Empty array when the
+// player is solo so the system prompt can omit the block silently. The
+// shape is intentionally minimal — name/role/trust/recruited turn — so
+// the LLM can write companion-aware prose without leaking stat synthesis
+// details.
+
+function buildCompanionsBlock(w) {
+  const party = Array.isArray(w?.party) ? w.party : [];
+  const out = [];
+  for (let i = 1; i < party.length; i++) {
+    const p = party[i];
+    if (!p?.companion) continue;
+    out.push({
+      name: String(p.name || ''),
+      role: String(p.companion.role || p.archetype || ''),
+      trustLevel: Number(p.companion.trustLevel ?? 5),
+      recruitedAtTurn: Number(p.companion.recruitedAtTurn ?? 0)
+    });
+  }
+  return out;
 }
 
 // ── Combat ────────────────────────────────────────────────────────────────

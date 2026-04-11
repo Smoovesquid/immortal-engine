@@ -364,6 +364,22 @@ export function buildDMSystemPrompt(dmCtx) {
       ].join('\n')
     : '';
 
+  // Pass C1 — companions: surface party[1..n] so the narrator can write
+  // companion-aware prose. Slots between PLAYER and RECENT BEATS so the
+  // model sees them as part of the player's immediate context. Empty when
+  // the player is solo (the LLM layer must never throw — empty string
+  // filters out via the trailing .filter(Boolean)).
+  const companions = Array.isArray(dmCtx.companions) ? dmCtx.companions : [];
+  const companionsBlock = companions.length
+    ? [
+        ``,
+        `COMPANIONS (traveling with you):`,
+        ...companions.map(c =>
+          `- ${c.name} (${c.role}): trust ${c.trustLevel}/10, joined turn ${c.recruitedAtTurn}`
+        )
+      ].join('\n')
+    : '';
+
   // Pass B — combat awareness: surface live combat state so the narrator can
   // write fight prose with the right enemies and HP. Silently omits when
   // combat is null (the LLM layer must never throw). Capped at 6 enemy lines
@@ -427,6 +443,7 @@ export function buildDMSystemPrompt(dmCtx) {
     `- Stats: ${Object.entries(player.stats || {}).map(([k,v]) => `${k}:${v}`).join(' ')}`,
     `- Weapons: ${(player.weapons ?? []).join(', ') || 'none'}`,
     `- Wounds: ${player.wounds ?? 0}/6, Stress: ${player.stress ?? 0}/6`,
+    companionsBlock,
     beatsBlock,
     combatBlock,
     ``,

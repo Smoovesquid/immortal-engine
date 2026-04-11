@@ -2,7 +2,10 @@ import { filterByTags, rollOnTable } from './rngTables.js';
 
 export function emptyInventory() {
   return {
-    weapons: [], armor: [], tools: [], clothes: [], spells: [], tech: [], oddities: [], consumables: [], junk: []
+    weapons: [], armor: [], tools: [], clothes: [], spells: [], tech: [], oddities: [], consumables: [], junk: [],
+    // Pass T1 — crunch items array lives alongside the legacy string-array
+    // categories. Starts empty at chargen; T2 will populate it.
+    items: []
   };
 }
 

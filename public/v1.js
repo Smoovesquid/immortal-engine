@@ -443,6 +443,176 @@ function truncate(text, cap) {
   return s.slice(0, cap - 1) + '…';
 }
 
+// Pass S1 — 5e-lite ability modifier. Used by the character sheet panel.
+// Pre-T1 stats live as 1..20 ints; this helper is forward-compatible with
+// CRUNCH_V1.md once T1 lands and full ruleset math comes online.
+function statMod(score) {
+  const s = Math.max(1, Math.min(20, Number(score) || 10));
+  const m = Math.floor((s - 10) / 2);
+  return (m >= 0 ? '+' : '') + String(m);
+}
+
+// Pass S1 — Character Sheet panel.
+// Renders the canonical 5-stat block + identity from world.party[0]. Reads
+// only existing schema (no T1 fields yet) so this panel works on the current
+// engine and gracefully gains rows when T1 (level/xp/foci) lands.
+function renderCharacterSheetSection(world) {
+  const pc = Array.isArray(world?.party) && world.party[0] ? world.party[0] : null;
+  if (!pc) {
+    return el('section', { class: 'status-section', 'aria-label': 'Character sheet' },
+      el('h3', { class: 'status-heading' }, 'Character'),
+      el('div', { class: 'empty-muted' }, 'No character yet.')
+    );
+  }
+
+  const stats = pc.stats && typeof pc.stats === 'object' ? pc.stats : {};
+  const STAT_ORDER = ['MIGHT', 'AGILITY', 'WITS', 'GRIT', 'CHARM'];
+
+  // Forward-compat: T1 will add level/xp. Until then, default to 1 / 0.
+  const level = Number.isFinite(Number(pc.level)) ? Math.max(1, Math.trunc(Number(pc.level))) : 1;
+
+  const identityRows = [];
+  if (pc.archetype) identityRows.push(el('div', { class: 'sheet-row' },
+    el('span', { class: 'sheet-k' }, 'archetype'),
+    el('span', { class: 'sheet-v' }, String(pc.archetype))
+  ));
+  if (pc.background?.name) identityRows.push(el('div', { class: 'sheet-row' },
+    el('span', { class: 'sheet-k' }, 'background'),
+    el('span', { class: 'sheet-v' }, String(pc.background.name))
+  ));
+  if (pc.signature?.itemName) identityRows.push(el('div', { class: 'sheet-row' },
+    el('span', { class: 'sheet-k' }, 'signature'),
+    el('span', { class: 'sheet-v' }, String(pc.signature.itemName))
+  ));
+
+  return el('section', { class: 'status-section', 'aria-label': 'Character sheet' },
+    el('h3', { class: 'status-heading' }, 'Character'),
+    el('div', { class: 'character-name' },
+      el('span', { class: 'character-name-text' }, String(pc.name || 'Adventurer')),
+      el('span', { class: 'character-level' }, `lv ${level}`)
+    ),
+    el('div', { class: 'stat-grid' },
+      STAT_ORDER.map(key => {
+        const value = Math.max(1, Math.min(20, Number(stats[key]) || 10));
+        return el('div', { class: 'stat-cell' },
+          el('div', { class: 'stat-key' }, key),
+          el('div', { class: 'stat-value' }, String(value)),
+          el('div', { class: 'stat-mod' }, statMod(value))
+        );
+      })
+    ),
+    identityRows.length ? el('div', { class: 'sheet-rows' }, identityRows) : null
+  );
+}
+
+// Pass S1 — Inventory panel.
+// Reads world.party[0].inventory which is currently `{category: string[]}`.
+// T2 will upgrade items to objects with defRefs; this panel falls back to
+// stringifying whatever it gets, so it survives the schema change.
+const INVENTORY_CATEGORIES = [
+  { key: 'weapons', label: 'Weapons' },
+  { key: 'armor', label: 'Armor' },
+  { key: 'spells', label: 'Spells' },
+  { key: 'consumables', label: 'Consumables' },
+  { key: 'tools', label: 'Tools' },
+  { key: 'tech', label: 'Tech' },
+  { key: 'oddities', label: 'Oddities' },
+  { key: 'clothes', label: 'Clothes' },
+  { key: 'junk', label: 'Junk' }
+];
+
+function inventoryItemLabel(raw) {
+  if (raw == null) return '';
+  if (typeof raw === 'string') return raw;
+  if (typeof raw === 'object') {
+    if (raw.name) return String(raw.name);
+    if (raw.defRef) return String(raw.defRef);
+  }
+  return String(raw);
+}
+
+function renderInventorySection(world) {
+  const pc = Array.isArray(world?.party) && world.party[0] ? world.party[0] : null;
+  const inv = pc && pc.inventory && typeof pc.inventory === 'object' ? pc.inventory : null;
+
+  if (!inv) {
+    return el('section', { class: 'status-section', 'aria-label': 'Inventory' },
+      el('h3', { class: 'status-heading' }, 'Inventory'),
+      el('div', { class: 'empty-muted' }, 'No inventory yet.')
+    );
+  }
+
+  const populated = INVENTORY_CATEGORIES
+    .map(cat => ({ cat, items: Array.isArray(inv[cat.key]) ? inv[cat.key] : [] }))
+    .filter(({ items }) => items.length > 0);
+
+  // Forward-compat: T1 will add `pc.purse`. Until then, render only when present.
+  const purse = pc.purse && typeof pc.purse === 'object' ? pc.purse : null;
+  const purseRow = purse ? el('div', { class: 'purse-row' },
+    ['gold', 'silver', 'copper', 'platinum']
+      .filter(k => Number(purse[k]) > 0)
+      .map(k => el('span', { class: `coin coin-${k}` }, `${Number(purse[k]) || 0} ${k[0]}`))
+  ) : null;
+
+  const body = populated.length === 0
+    ? el('div', { class: 'empty-muted' }, 'Pockets empty.')
+    : el('div', { class: 'inventory-categories' },
+        populated.map(({ cat, items }) => el('div', { class: 'inv-cat' },
+          el('div', { class: 'inv-cat-head' },
+            el('span', { class: 'inv-cat-label' }, cat.label),
+            el('span', { class: 'inv-cat-count' }, `×${items.length}`)
+          ),
+          el('ul', { class: 'inv-list' },
+            items.map(it => el('li', { class: 'inv-item' }, inventoryItemLabel(it)))
+          )
+        ))
+      );
+
+  return el('section', { class: 'status-section', 'aria-label': 'Inventory' },
+    el('h3', { class: 'status-heading' }, 'Inventory'),
+    purseRow,
+    body
+  );
+}
+
+// Pass S1 — Rumor Board panel.
+// Forward-compat stub. Reads `world.rumors || []`. The R-track passes (R1/R2/R3)
+// will populate this. Until then, the panel renders a brief empty state. This is
+// the spine for the load-bearing rumor layer; ship the panel now so the visual
+// affordance exists when content lands.
+function renderRumorBoardSection(world) {
+  const rumors = Array.isArray(world?.rumors) ? world.rumors : [];
+
+  if (rumors.length === 0) {
+    return el('section', { class: 'status-section', 'aria-label': 'Rumor board' },
+      el('h3', { class: 'status-heading' }, 'Rumors'),
+      el('div', { class: 'empty-muted' },
+        'You have heard nothing yet. Talk to people; the world is bigger than this room.')
+    );
+  }
+
+  // Sort: most recently minted first.
+  const ordered = rumors.slice().sort((a, b) => (Number(b.mintedAt) || 0) - (Number(a.mintedAt) || 0));
+
+  return el('section', { class: 'status-section', 'aria-label': 'Rumor board' },
+    el('h3', { class: 'status-heading' }, 'Rumors'),
+    el('ul', { class: 'rumor-list' },
+      ordered.slice(0, 8).map(r => {
+        const tier = Math.max(0, Math.min(4, Number(r.tier) || 0));
+        const verified = String(r.verified || '');
+        return el('li', { class: `rumor-item tier-${tier}${verified ? ` verified-${verified}` : ''}` },
+          el('div', { class: 'rumor-body' }, String(r.body || '…')),
+          el('div', { class: 'rumor-meta' },
+            el('span', { class: 'rumor-carrier' }, `via ${String(r.carrierNpcId || 'unknown')}`),
+            el('span', { class: 'rumor-tier' }, `tier ${tier}`),
+            verified ? el('span', { class: `rumor-verdict verdict-${verified}` }, verified) : null
+          )
+        );
+      })
+    )
+  );
+}
+
 function renderGoalsSection(world) {
   const goals = Array.isArray(world?.goals) ? world.goals : [];
   const active = goals
@@ -622,10 +792,21 @@ function renderBeatsSection(world) {
 }
 
 function renderStatusPanels(world) {
+  // Pass S1 — slice spine. Order is intentional:
+  //   Character (the sheet you read at the top of your turn)
+  //   Party     (compact vitals + companions; survives from previous passes)
+  //   Inventory (loot, gear, soon-to-be-items)
+  //   Combat    (only when active; otherwise hidden)
+  //   Rumors    (the rumor board — soft goals that pull you outward)
+  //   Goals     (hard goals from the existing goal contract — stays for now)
+  //   Beats     (recent history)
   return el('aside', { class: 'status-panels', 'aria-label': 'Status panels' },
-    renderGoalsSection(world),
+    renderCharacterSheetSection(world),
     renderPartySection(world),
+    renderInventorySection(world),
     renderCombatSection(world),
+    renderRumorBoardSection(world),
+    renderGoalsSection(world),
     renderBeatsSection(world)
   );
 }

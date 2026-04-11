@@ -15,6 +15,7 @@ import { ensureInstrumentLayer } from '../instrument.js';
 import { fateBand } from '../rulesets.js';
 import { filterContext } from '../npc/perspectiveFilter.js';
 import { availableTopics as dialogueAvailableTopics } from '../npc/dialogue.js';
+import { companionApproachForRole } from '../combat/companionTurn.js';
 
 /**
  * buildNarratorContext(world, outcome) → NarratorContext (original slim context)
@@ -141,10 +142,32 @@ function buildCombatBlock(w) {
     canParley: Boolean(e?.canParley),
     defeated: Boolean(e?.defeated)
   }));
+
+  // Pass C2 — companions-in-combat view. Derived from party[1..n] so the
+  // narrator can write companion-aware fight prose with wounds and
+  // approach on hand. Only present when combat is active.
+  const party = Array.isArray(w?.party) ? w.party : [];
+  const companions = [];
+  for (let i = 1; i < party.length; i++) {
+    const p = party[i];
+    if (!p?.companion) continue;
+    const role = String(p.companion.role || p.archetype || '');
+    companions.push({
+      id: String(p.id || ''),
+      name: String(p.name || ''),
+      role,
+      approach: companionApproachForRole(role),
+      wounds: Number(p.wounds ?? 0),
+      down: Number(p.wounds ?? 0) >= 6
+    });
+  }
+
   return {
     round: Number(c.round ?? 0),
     playerGuard: Boolean(c.playerGuard),
-    enemies
+    companionGuard: Boolean(c.companionGuard),
+    enemies,
+    companions
   };
 }
 

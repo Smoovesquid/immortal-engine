@@ -322,6 +322,58 @@ export function applyDeltas(world, deltas = []) {
       continue;
     }
 
+    // ── Pass C1 — companions ───────────────────────────────────────────────
+    // Recruit mints a party entity from a settlement NPC. Pure state mutation:
+    // no randomness, no LLM. Source NPC is removed from the settlement so it
+    // cannot be re-recruited or talked to again. Dismiss removes a companion
+    // from the party without restoring them to a settlement.
+
+    if (kind === 'recruitCompanion') {
+      const sourceNpcId = String(op.sourceNpcId || '').trim();
+      const nodeId = String(op.nodeId || w.map?.currentNodeId || '');
+      if (!sourceNpcId || !nodeId) continue;
+
+      const party = Array.isArray(w.party) ? w.party : [];
+      if (party.length >= 3) continue;
+      if (party.some(p => p?.companion?.sourceNpcId === sourceNpcId)) continue;
+
+      const nodes = Array.isArray(w.map?.nodes) ? w.map.nodes : [];
+      const nodeIdx = nodes.findIndex(n => n && n.id === nodeId);
+      if (nodeIdx === -1) continue;
+      const node = nodes[nodeIdx];
+      const npcs = Array.isArray(node?.settlement?.npcs) ? node.settlement.npcs : [];
+      const npcIdx = npcs.findIndex(n => n && String(n.id) === sourceNpcId);
+      if (npcIdx === -1) continue;
+      const sourceNpc = npcs[npcIdx];
+
+      // Remove NPC from settlement.
+      const nextNpcs = npcs.slice();
+      nextNpcs.splice(npcIdx, 1);
+      const nextNodes = nodes.slice();
+      nextNodes[nodeIdx] = { ...node, settlement: { ...node.settlement, npcs: nextNpcs } };
+
+      const player = party[0] || {};
+      const playerPos = (player.position && typeof player.position === 'object') ? player.position : { zone: 'far' };
+      const minted = mintCompanionFromNpc(sourceNpc, playerPos, w.time?.turn ?? 0);
+      const nextParty = [...party, minted];
+
+      w = { ...w, party: nextParty, map: { ...w.map, nodes: nextNodes } };
+      continue;
+    }
+
+    if (kind === 'dismissCompanion') {
+      const entityId = String(op.entityId || '').trim();
+      if (!entityId) continue;
+      const party = Array.isArray(w.party) ? w.party : [];
+      const idx = party.findIndex(e => String(e?.id) === entityId);
+      if (idx <= 0) continue; // not found, or trying to dismiss player
+      if (!party[idx]?.companion) continue;
+      const nextParty = party.slice();
+      nextParty.splice(idx, 1);
+      w = { ...w, party: nextParty };
+      continue;
+    }
+
     if (kind === 'removeFurniture') {
       const nodeId = String(op.nodeId || '');
       const furnitureId = toInt(op.furnitureId ?? -1);
@@ -391,4 +443,89 @@ function clampInt(n, lo, hi) {
   const x = Math.trunc(Number(n));
   if (!Number.isFinite(x)) return lo;
   return Math.max(lo, Math.min(hi, x));
+}
+
+// Pass C1 — companion mint. Pure: deterministic stat synthesis from role,
+// empty inventory, position copied from player, companion marker carrying
+// provenance back to the source NPC. ensureWorld will re-normalize the
+// shape and apply invariants on the next state read.
+const COMPANION_ROLE_STAT_BUMP = {
+  tavern_keeper: 'CHARM',
+  innkeeper: 'CHARM',
+  smith: 'MIGHT',
+  priest: 'GRIT',
+  merchant: 'CHARM',
+  guard_captain: 'MIGHT',
+  stable_hand: 'AGILITY',
+  scholar: 'WITS',
+  hedge_witch: 'WITS',
+  artisan: 'AGILITY',
+  elder: 'WITS',
+  laborer: 'MIGHT',
+  veteran: 'GRIT',
+  trader: 'CHARM',
+  healer: 'WITS',
+  scavenger: 'AGILITY',
+  mediator: 'CHARM',
+  guard: 'MIGHT',
+  representative: 'CHARM'
+};
+
+function mintCompanionFromNpc(npc, playerPosition, currentTurn) {
+  const sourceId = String(npc?.id || '');
+  const role = String(npc?.role || '');
+  const trustRaw = Number(npc?.conversationState?.trustLevel ?? 5);
+  const trustLevel = Number.isFinite(trustRaw)
+    ? Math.max(0, Math.min(10, Math.trunc(trustRaw)))
+    : 5;
+
+  const stats = { MIGHT: 10, AGILITY: 10, WITS: 10, GRIT: 10, CHARM: 10 };
+  const bumpStat = COMPANION_ROLE_STAT_BUMP[role];
+  if (bumpStat && stats[bumpStat] != null) {
+    stats[bumpStat] = stats[bumpStat] + 2;
+  }
+
+  const position = playerPosition && typeof playerPosition === 'object'
+    ? JSON.parse(JSON.stringify(playerPosition))
+    : { zone: 'far' };
+
+  return {
+    id: `companion_${sourceId}`,
+    name: String(npc?.name || sourceId || 'companion'),
+    archetype: role || 'companion',
+    vibe: 'companion',
+    stress: 0,
+    wounds: 0,
+    stats,
+    inventory: {
+      weapons: [],
+      armor: [],
+      tools: [],
+      clothes: [],
+      spells: [],
+      tech: [],
+      oddities: [],
+      consumables: [],
+      junk: []
+    },
+    traits: {
+      vibe: 'companion',
+      fear: '',
+      flaw: '',
+      ideal: '',
+      detail: '',
+      keepsake: '',
+      lineYouWontCross: '',
+      rumor: ''
+    },
+    background: { name: role || '', tags: [], hook: '' },
+    signature: { itemName: '', meaning: '' },
+    position,
+    companion: {
+      sourceNpcId: sourceId,
+      recruitedAtTurn: Math.max(0, Math.trunc(Number(currentTurn) || 0)),
+      trustLevel,
+      role
+    }
+  };
 }

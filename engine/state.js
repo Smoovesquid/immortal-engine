@@ -9,7 +9,7 @@ import { generateRegions } from './world/regions.js';
 import { generateInitialMap } from './map/generateMap.js';
 import { ensureStructures } from './structures/structuresState.js';
 
-export const WORLD_VERSION = 13;
+export const WORLD_VERSION = 14;
 
 const GOAL_KINDS = new Set(['reach', 'obtain', 'talkTo', 'learn', 'defeat']);
 const GOAL_STATUSES = new Set(['active', 'completed', 'failed']);
@@ -308,8 +308,30 @@ function ensureEntity(e) {
     background: x.background && typeof x.background === 'object' ? x.background : { name: '', tags: [], hook: '' },
     signature: x.signature && typeof x.signature === 'object' ? x.signature : { itemName: '', meaning: '' },
 
-    position: x.position && typeof x.position === 'object' ? x.position : { zone: 'far' }
+    position: x.position && typeof x.position === 'object' ? x.position : { zone: 'far' },
+
+    // Pass C1 — companion marker. null for the player (party[0]) and for any
+    // entity that has not been recruited as a traveling companion. A well-formed
+    // marker carries enough provenance to render in the UI and the narrator
+    // context without re-deriving from the source NPC (which may have been
+    // removed from its settlement after recruit).
+    companion: ensureCompanionMarker(x.companion)
   };
+}
+
+function ensureCompanionMarker(c) {
+  if (!c || typeof c !== 'object') return null;
+  const sourceNpcId = String(c.sourceNpcId ?? '').trim();
+  if (!sourceNpcId) return null;
+  const recruitedAtTurnRaw = Number(c.recruitedAtTurn);
+  if (!Number.isFinite(recruitedAtTurnRaw)) return null;
+  const recruitedAtTurn = Math.max(0, Math.trunc(recruitedAtTurnRaw));
+  const trustLevelRaw = Number(c.trustLevel);
+  const trustLevel = Number.isFinite(trustLevelRaw)
+    ? Math.max(0, Math.min(10, Math.trunc(trustLevelRaw)))
+    : 5;
+  const role = String(c.role ?? '').trim();
+  return { sourceNpcId, recruitedAtTurn, trustLevel, role };
 }
 
 function ensureAiMode(x) {

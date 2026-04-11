@@ -394,7 +394,15 @@ export function buildDMSystemPrompt(dmCtx) {
           const prefix = e.defeated ? '(defeated) ' : '';
           return `- ${prefix}${e.name}: HP ${e.hp}/${e.maxHp} ${tag}`;
         })),
-        `Player guard: ${combat.playerGuard ? 'yes' : 'no'}`
+        ...(Array.isArray(combat.companions) && combat.companions.length ? [
+          `Companions:`,
+          ...combat.companions.slice(0, 3).map(c => {
+            const state = c.down ? '(down)' : '(alive)';
+            return `- ${state} ${c.name} [${c.approach}]: wounds ${c.wounds}/6`;
+          })
+        ] : []),
+        `Player guard: ${combat.playerGuard ? 'yes' : 'no'}`,
+        `Companion guard: ${combat.companionGuard ? 'yes' : 'no'}`
       ].join('\n')
     : '';
 

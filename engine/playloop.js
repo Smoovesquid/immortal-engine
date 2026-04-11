@@ -24,6 +24,7 @@ import { createGoal, checkGoals } from './goals/goalContract.js';
 import { beginDialogue, askNpc, endDialogue, resolveNpcAtCurrentNode, isRecruitIntent } from './npc/dialogue.js';
 import { resolveCombatTurn } from './combat/combatResolve.js';
 import { beginCombat, endCombat, mintEnemyFromNpc } from './combat/combatLifecycle.js';
+import { resolveCompanionTurn } from './combat/companionTurn.js';
 
 // Pure-ish play loop: world -> {world, output}
 
@@ -411,7 +412,13 @@ export function playerMove(world, packsById, text) {
       const nextName = String(here?.name || '').trim();
       if (nextName) w1 = { ...w1, scene: { ...w1.scene, location: nextName } };
       w1 = setPrimaryPartyZone(w1, 'near');
-      w1 = pushEvent(w1, { kind: 'travel', data: { from: before, to: String(w1.map.currentNodeId) } });
+      w1 = pushEvent(w1, { kind: 'travel', data: { from: before, to: String(w1.map.currentNodeId), intent: String(text || '') } });
+      // Pass C2 — free-movement travel writes a beat so Recent Beats reflects
+      // the travel turn. Uses the same buildBeatFromTurn/appendRecentBeat seam
+      // as the combat branch. Approach/stake tags mirror the flee-beat idiom.
+      const travelMove = { actorId: 'party', intentText: String(text || ''), approachTag: 'survival', stakeTag: 'time' };
+      const travelResult = { outcome: 'success', mechanicsLine: '[travel | free-movement]' };
+      w1 = appendRecentBeat(w1, buildBeatFromTurn(w1, text, travelMove, travelResult));
       w1 = maybeCheckGoals(w1);
       return { world: w1, output: { narration: nextName ? `Wizard: You travel to ${nextName}.` : 'Wizard: You move to the next position.', mechanics: '' } };
     }
@@ -487,11 +494,21 @@ export function playerMove(world, packsById, text) {
     }
 
     const move = inferCombatMoveFromText(w, pack, actorId, text);
-    const { world: wAfter, result } = resolveCombatTurn(w, move);
+    // Pass C2 — companion turns interleave between player effects and the
+    // counter phase. The hook collects beat specs for each companion turn;
+    // we append them after the resolver returns so beats land in the
+    // player → companion(s) order.
+    const companionBeats = [];
+    const { world: wAfter, result } = resolveCombatTurn(w, move, {
+      afterPlayerTurn: (wMid) => runCompanionTurns(wMid, companionBeats)
+    });
     w = wAfter;
 
     // R13 closure: combat turns produce beats via the same seam as mainline.
     w = appendRecentBeat(w, buildBeatFromTurn(w, text, move, result));
+    for (const spec of companionBeats) {
+      w = appendRecentBeat(w, buildBeatFromTurn(w, spec.text, spec.move, spec.result));
+    }
 
     // Stable resolution event so replay re-enters the same path.
     w = pushEvent(w, {
@@ -535,9 +552,15 @@ export function playerMove(world, packsById, text) {
       if (w1.combat?.active) {
         w = w1;
         const move = inferCombatMoveFromText(w, pack, actorId, text);
-        const { world: wAfter, result } = resolveCombatTurn(w, move);
+        const companionBeats = [];
+        const { world: wAfter, result } = resolveCombatTurn(w, move, {
+          afterPlayerTurn: (wMid) => runCompanionTurns(wMid, companionBeats)
+        });
         w = wAfter;
         w = appendRecentBeat(w, buildBeatFromTurn(w, text, move, result));
+        for (const spec of companionBeats) {
+          w = appendRecentBeat(w, buildBeatFromTurn(w, spec.text, spec.move, spec.result));
+        }
         w = pushEvent(w, {
           kind: 'resolution',
           data: {
@@ -669,7 +692,7 @@ export function playerMove(world, packsById, text) {
       if (nextName) {
         w = { ...w, scene: { ...w.scene, location: nextName } };
       }
-      w = pushEvent(w, { kind: 'travel', data: { from: before || '', to: w.map.currentNodeId } });
+      w = pushEvent(w, { kind: 'travel', data: { from: before || '', to: w.map.currentNodeId, intent: String(text || '') } });
     }
   }
 
@@ -1278,6 +1301,50 @@ function generateInstrument(pack, fate, rng) {
 }
 
 // ── Pass 5: combat helpers ────────────────────────────────────────────────
+
+// Pass C2 — companion turn interleave. Invoked as the afterPlayerTurn hook
+// on resolveCombatTurn: after the player's combat effects have landed but
+// before the post-player victory check and the enemy counter phase, every
+// living companion takes a deterministic turn. Each companion that actually
+// acts contributes a beat spec into `beats` so the playloop caller can
+// append a RecentBeats entry per companion in player → companion(s) order.
+// Returns the mutated world plus summary parts for the combatSummary line.
+function runCompanionTurns(world, beats) {
+  let w = world;
+  const summaryParts = [];
+  const party = Array.isArray(w?.party) ? w.party : [];
+  for (let i = 1; i < party.length; i++) {
+    if (!w.combat?.active) break;
+    const companion = w.party?.[i];
+    if (!companion || (companion.wounds ?? 0) >= 6) continue;
+    const ct = resolveCompanionTurn(w, companion);
+    w = ct.world;
+    if (ct.result.skipped) continue;
+    summaryParts.push(String(ct.result.mechanicsLine || ''));
+
+    // Companion beat shape mirrors the mainline/combat seam so buildBeatFromTurn
+    // normalizes it identically. approachTag is the companion's resolved
+    // approach; stakeTag is 'harm' (the companion is acting in a combat round).
+    // outcome is 'success' on parley, else 'mixed' — companions don't roll so
+    // we don't claim success on straight damage.
+    const companionMove = {
+      actorId: String(companion.id),
+      intentText: '',
+      approachTag: String(ct.result.approach || 'force'),
+      stakeTag: 'harm'
+    };
+    const companionResult = {
+      outcome: ct.result.parleyed ? 'success' : 'mixed',
+      mechanicsLine: String(ct.result.mechanicsLine || '')
+    };
+    beats.push({ text: ct.result.mechanicsLine || '', move: companionMove, result: companionResult });
+
+    // If the companion ended combat (parley), stop — resolveCombatTurn's
+    // own short-circuit will skip the counter phase and return.
+    if (!w.combat?.active) break;
+  }
+  return { world: w, summaryParts };
+}
 
 function isFleeIntent(text) {
   const t = String(text || '').toLowerCase();

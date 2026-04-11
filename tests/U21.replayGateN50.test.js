@@ -37,11 +37,18 @@ function replayFromTimeline(seedWorld, packs) {
     } else if (kind === 'scene') {
       w = newScene(w, packs).world;
     } else if (kind === 'travel') {
-      const to = String(e?.data?.to || '');
-      const node = (w.map?.nodes || []).find(n => String(n?.id || '') === to) || null;
-      const name = String(node?.name || '').trim();
-      const txt = name ? `go to ${name}` : 'exit';
-      w = playerMove(w, packs, txt).world;
+      // Prefer the original intent text (C2 widened the travel event data);
+      // fall back to 'go to <name>' for legacy timelines.
+      const intent = String(e?.data?.intent || '');
+      if (intent) {
+        w = playerMove(w, packs, intent).world;
+      } else {
+        const to = String(e?.data?.to || '');
+        const node = (w.map?.nodes || []).find(n => String(n?.id || '') === to) || null;
+        const name = String(node?.name || '').trim();
+        const txt = name ? `go to ${name}` : 'exit';
+        w = playerMove(w, packs, txt).world;
+      }
     } else if (kind === 'resolution' || kind === 'blocked') {
       const txt = String(e?.data?.text ?? e?.data?.intent ?? '');
       w = playerMove(w, packs, txt).world;

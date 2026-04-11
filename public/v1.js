@@ -498,6 +498,7 @@ function renderPartySection(world) {
   const companionRows = companions.map(c => {
     const trust = Math.max(0, Math.min(10, Number(c.companion?.trustLevel) || 0));
     const role = String(c.companion?.role || c.archetype || '');
+    const cWounds = Math.max(0, Math.min(6, Number(c.wounds) || 0));
     return el('div', { class: 'party-strip companion' },
       el('div', { class: 'party-name' }, String(c.name || 'Companion')),
       el('div', { class: 'party-bar' },
@@ -507,6 +508,10 @@ function renderPartySection(world) {
       el('div', { class: 'party-bar' },
         el('span', { class: 'party-bar-label' }, 'trust'),
         el('span', { class: 'party-bar-dots', 'aria-label': `${trust} of 10 trust` }, `${trust}/10`)
+      ),
+      el('div', { class: 'party-bar wounds' },
+        el('span', { class: 'party-bar-label' }, 'wounds'),
+        el('span', { class: 'party-bar-dots', 'aria-label': `${cWounds} of 6 wounds` }, `${cWounds}/6`)
       )
     );
   });

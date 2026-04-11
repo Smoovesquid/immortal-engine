@@ -22,6 +22,11 @@ export function loadSlot(storage, slotId = 'slot1') {
   if (savedVersion != null && savedVersion !== WORLD_VERSION) {
     console.warn(`Loading save from v${savedVersion}, current version is v${WORLD_VERSION}`);
   }
+  // Pass T1 (v15 → v16): old saves pre-date the crunch schema
+  // (level/xp/foci/purse/inventory.items/spells). ensureWorld + ensureEntity
+  // fill those fields with safe defaults (level 1, xp 0, empty foci/purse/
+  // items, zero spell slots, null concentration) so v15 saves upgrade
+  // silently to v16 without loss of existing data.
   return ensureWorld(parsed);
 }
 

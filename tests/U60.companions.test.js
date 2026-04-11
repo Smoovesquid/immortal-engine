@@ -20,6 +20,8 @@ import { buildDMContext } from '../engine/ai/narratorContext.js';
 import { buildDMSystemPrompt } from '../engine/llmAdapter.js';
 import { worldHash } from '../engine/worldHash.js';
 import { exportWorld, importWorld } from '../engine/save.js';
+import { resolveCombatTurn } from '../engine/combat/combatResolve.js';
+import { resolveCompanionTurn } from '../engine/combat/companionTurn.js';
 
 const packsById = {
   fantasy: {
@@ -650,4 +652,214 @@ test('U60-32: playerMove("invite to travel") during dialogue recruits, does not 
   assert.equal(wAfter.map.currentNodeId, startNode, 'player did not travel');
   assert.equal(wAfter.scene?.dialogue, null, 'dialogue auto-cleared on recruit');
   assert.doesNotThrow(() => assertWorldInvariants(wAfter));
+});
+
+// ── C2 — Pass C2 helpers ─────────────────────────────────────────────────
+
+// Start combat directly via the combatState op — mirrors U58's startCombatDirectly
+// so tests don't depend on detectAttackBeginIntent + name matching for simple
+// combat-shape fixtures. Uses canParley:false by default so the player's heart
+// fallback doesn't trivially end combat.
+function startCombatDirectly(world, enemies, reason = 'player-attack') {
+  return applyDeltas(world, [{
+    op: 'combatState',
+    set: { active: true, round: 1, turnIndex: 0, enemies, beganAt: 0, reason, playerGuard: false, companionGuard: false }
+  }]);
+}
+
+// Mark an NPC hostile at a specific node so detectAttackBeginIntent picks
+// them up. Returns a new world.
+function setNpcHostile(w, nodeId, npcId, hostile = true) {
+  const nodes = w.map.nodes.map(n => {
+    if (n.id !== nodeId) return n;
+    const nextNpcs = n.settlement.npcs.map(npc => {
+      if (npc.id !== npcId) return npc;
+      return { ...npc, hostile: Boolean(hostile) };
+    });
+    return { ...n, settlement: { ...n.settlement, npcs: nextNpcs } };
+  });
+  return { ...w, map: { ...w.map, nodes } };
+}
+
+// ── U60-33..40 — Pass C2: free-movement beats + companion combat ─────────
+
+test('U60-33: free-movement travel writes a recent beat', () => {
+  const { w, nodeId } = makeWorldWithSettlement('u60-33', { requireNeighbor: true });
+  const edge = w.map.edges.find(e => e.a === nodeId || e.b === nodeId);
+  const targetId = edge.a === nodeId ? edge.b : edge.a;
+  const targetName = w.map.nodes.find(n => n.id === targetId).name;
+
+  const startCount = (w.recentBeats || []).length;
+  const { world: w1 } = playerMove(w, packsById, `travel to ${targetName}`);
+  assert.notEqual(w1.map.currentNodeId, nodeId, 'travel moved to neighbor');
+  assert.ok((w1.recentBeats || []).length > startCount, 'free-movement wrote a beat');
+  const last = w1.recentBeats[w1.recentBeats.length - 1];
+  assert.match(String(last.mechanics || ''), /free-movement/, 'beat mechanics tags free-movement');
+});
+
+test('U60-34: companion takes a turn after player turn in combat', () => {
+  const { w } = makeWorldWithSettlement('u60-34');
+  let w1 = addCompanionDirect(w, {
+    id: 'c_tove', sourceNpcId: 'src_tove', name: 'Tove', role: 'smith', trustLevel: 7
+  });
+  // Start combat directly with a beefy enemy so one round doesn't end it.
+  w1 = startCombatDirectly(w1, [{
+    id: 'enemy_0', name: 'Brigand', hp: 20, maxHp: 20, damage: 2,
+    canParley: false, defeated: false, sourceNpcId: 'npc_b0'
+  }]);
+  const beatsBefore = (w1.recentBeats || []).length;
+  const { world: w2 } = playerMove(w1, packsById, 'I strike the brigand');
+  assert.ok(w2.combat?.active, 'combat still active after one round');
+  const added = (w2.recentBeats || []).slice(beatsBefore);
+  // Expect a player beat AND a companion beat (companion forces via smith
+  // role = 'force' approach table entry).
+  assert.ok(added.length >= 2, `expected >= 2 new beats, got ${added.length}`);
+  const companionBeat = added.find(b => /companion Tove/.test(String(b.mechanics || '')));
+  assert.ok(companionBeat, 'companion beat present in added beats');
+});
+
+test('U60-35: down companion (wounds>=6) does not end combat; player keeps fighting', () => {
+  const { w } = makeWorldWithSettlement('u60-35');
+  let w1 = addCompanionDirect(w, {
+    id: 'c_lucca', sourceNpcId: 'src_lucca', name: 'Lucca', role: 'laborer', trustLevel: 7
+  });
+  // Drive the companion directly to 6 wounds via the wound op (generalized
+  // counter phase — proves the op works on companion ids too).
+  w1 = applyDeltas(w1, [{ op: 'wound', entityId: 'c_lucca', by: 6 }]);
+  assert.equal(w1.party[1].wounds, 6, 'companion clamped at 6 wounds');
+
+  // Begin combat. A down companion must not cause the resolver to break,
+  // nor should the counter phase end combat — only party[0] hitting 6
+  // wounds does that.
+  w1 = startCombatDirectly(w1, [{
+    id: 'enemy_0', name: 'Brigand', hp: 30, maxHp: 30, damage: 2,
+    canParley: false, defeated: false, sourceNpcId: 'npc_b'
+  }]);
+  const beatsBefore = (w1.recentBeats || []).length;
+  const { world: w2 } = playerMove(w1, packsById, 'I strike the brigand');
+  assert.equal(w2.party[1].wounds, 6, 'companion still at 6 — skipped as counter target');
+  assert.ok(w2.party[0].wounds < 6, `player still fighting (wounds=${w2.party[0].wounds})`);
+  assert.ok(w2.combat?.active, 'combat continues with a down companion in party');
+  // The companion's turn was skipped (down) so we expect a player beat but
+  // no companion beat in the added set.
+  const added = (w2.recentBeats || []).slice(beatsBefore);
+  const companionBeat = added.find(b => /companion Lucca/.test(String(b.mechanics || '')));
+  assert.ok(!companionBeat, 'down companion does not take a turn');
+});
+
+test('U60-36: companion parley ends combat with companion-parley reason', () => {
+  const { w } = makeWorldWithSettlement('u60-36');
+  // Heart-approach companion (tavern_keeper).
+  let w1 = addCompanionDirect(w, {
+    id: 'c_finn', sourceNpcId: 'src_finn', name: 'Finn', role: 'tavern_keeper', trustLevel: 7
+  });
+  // Enemy with canParley: true so the companion heart-turn can parley.
+  // Player uses a non-damaging approach (focus) so the fight doesn't end via
+  // player victory before the companion turn.
+  w1 = startCombatDirectly(w1, [{
+    id: 'enemy_0', name: 'Ronin', hp: 20, maxHp: 20, damage: 2,
+    canParley: true, defeated: false, sourceNpcId: 'npc_r'
+  }]);
+  const { world: w2 } = playerMove(w1, packsById, 'I study the ronin');
+  assert.equal(w2.combat?.active, false, 'combat ended after companion parley');
+  assert.equal(String(w2.combat?.reason || ''), 'companion-parley', 'end reason recorded');
+});
+
+test('U60-37: player defeat still locks ending (regression)', () => {
+  const { w } = makeWorldWithSettlement('u60-37');
+  let w1 = addCompanionDirect(w, {
+    id: 'c_any', sourceNpcId: 'src_any', name: 'Any', role: 'guard', trustLevel: 7
+  });
+  // Single very-high-damage enemy so counters quickly reach player defeat.
+  w1 = startCombatDirectly(w1, [{
+    id: 'enemy_0', name: 'Executioner', hp: 60, maxHp: 60, damage: 6,
+    canParley: false, defeated: false, sourceNpcId: 'npc_e'
+  }]);
+  for (let i = 0; i < 8; i++) {
+    if (!w1.combat?.active) break;
+    if ((w1.party[0].wounds ?? 0) >= 6) break;
+    const { world: wNext } = playerMove(w1, packsById, 'I strike');
+    w1 = wNext;
+  }
+  assert.equal(w1.ending?.locked, true, 'ending locked after defeat');
+  assert.equal(String(w1.ending?.reason || ''), 'defeated-in-combat', 'defeat reason recorded');
+});
+
+test('U60-38: save/load with wounded companion preserves wounds + marker', () => {
+  const { w } = makeWorldWithSettlement('u60-38');
+  let w1 = addCompanionDirect(w, {
+    id: 'c_w', sourceNpcId: 'src_w', name: 'Wanda', role: 'guard', trustLevel: 6
+  });
+  // Seed companion wounds directly via the wound op (generalized counter phase).
+  w1 = applyDeltas(w1, [{ op: 'wound', entityId: 'c_w', by: 3 }]);
+  assert.equal(w1.party[1].wounds, 3, 'companion wounded before export');
+  const exported = exportWorld(w1);
+  const reloaded = importWorld(exported);
+  assert.equal(reloaded.party.length, 2, 'party survived save');
+  assert.equal(reloaded.party[1].wounds, 3, 'companion wounds persisted');
+  assert.equal(reloaded.party[1].companion?.sourceNpcId, 'src_w', 'companion marker intact');
+});
+
+test('U60-39: integration walk — recruit via dialogue, attack hostile, companion fights via playerMove', () => {
+  const { w: w0, nodeId } = makeWorldWithSettlement('u60-39');
+
+  // Two NPCs: the first gets trust seeded and recruited; the second is
+  // marked hostile so the player can "attack <name>" to begin combat.
+  const npcs = getNpcs(w0, nodeId);
+  assert.ok(npcs.length >= 2, 'need at least two NPCs for the walk');
+  const companionNpc = npcs[0];
+  const enemyNpc = npcs[1];
+
+  // (a) Seed trust and recruit via playerMove('invite to travel').
+  let w1 = setNpcTrust(w0, nodeId, companionNpc.id, 6);
+  const { world: wDlg } = beginDialogue(w1, companionNpc.id);
+  w1 = wDlg;
+  const { world: wRec } = playerMove(w1, packsById, 'invite to travel');
+  assert.equal(wRec.party.length, 2, 'recruited via playerMove');
+
+  // (b) Mark the second NPC hostile at the node, then attack them.
+  const wHostile = setNpcHostile(wRec, nodeId, enemyNpc.id, true);
+  // Pick a stable single-token from the enemy name so detectAttackBeginIntent
+  // matches via the includes branch.
+  const enemyRef = String(enemyNpc.name || enemyNpc.id);
+  const beatsBefore = (wHostile.recentBeats || []).length;
+  const { world: wCombatBegin } = playerMove(wHostile, packsById, `attack ${enemyRef}`);
+  assert.ok(
+    wCombatBegin.combat?.active || wCombatBegin.combat?.reason === 'parley' || (wCombatBegin.combat?.enemies || []).length > 0,
+    'attack started combat'
+  );
+
+  // (c) Loop combat rounds via playerMove until combat ends. Verify the
+  // companion is still in party throughout.
+  let w2 = wCombatBegin;
+  for (let i = 0; i < 20; i++) {
+    if (!w2.combat?.active) break;
+    const { world: wNext } = playerMove(w2, packsById, 'I strike the foe');
+    w2 = wNext;
+  }
+  // After the walk, the companion is still at party[1] (unless combat
+  // killed the player, which depends on dice — assert minimally that party
+  // still contains the companion slot as long as the player isn't defeated).
+  if (!w2.ending?.locked) {
+    assert.equal(w2.party.length, 2, 'companion still in party after combat');
+    assert.ok(w2.party[1].companion != null, 'companion marker intact');
+  }
+  // In any case, verify at least one companion beat OR player beat landed.
+  const added = (w2.recentBeats || []).slice(beatsBefore);
+  assert.ok(added.length > 0, 'combat produced beats via playerMove');
+});
+
+test('U60-40: unknown-role companion falls back to force approach', () => {
+  const { w } = makeWorldWithSettlement('u60-40');
+  let w1 = addCompanionDirect(w, {
+    id: 'c_x', sourceNpcId: 'src_x', name: 'Xen', role: 'unknown_role_xyz', trustLevel: 7
+  });
+  w1 = startCombatDirectly(w1, [{
+    id: 'enemy_0', name: 'Mook', hp: 30, maxHp: 30, damage: 1,
+    canParley: false, defeated: false, sourceNpcId: 'npc_m'
+  }]);
+  const ct = resolveCompanionTurn(w1, w1.party[1]);
+  assert.equal(ct.result.skipped, false, 'companion turn resolved');
+  assert.equal(ct.result.approach, 'force', 'unknown role falls back to force');
+  assert.match(String(ct.result.mechanicsLine || ''), /force/, 'mechanicsLine tags force');
 });

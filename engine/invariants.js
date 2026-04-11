@@ -9,6 +9,49 @@ export function assertWorldInvariants(world) {
     throw new Error('Invariant: world version mismatch');
   }
 
+  // Pass C1 — party + companion shape (cap 3, marker structure).
+  const party = world.party;
+  if (!Array.isArray(party)) {
+    throw new Error('Invariant: party must be an array');
+  }
+  if (party.length > 3) {
+    throw new Error(`Invariant: party.length ${party.length} exceeds cap 3`);
+  }
+  const seenCompanionSources = new Set();
+  for (let i = 0; i < party.length; i++) {
+    const member = party[i];
+    if (!member || typeof member !== 'object') {
+      throw new Error(`Invariant: party[${i}] must be object`);
+    }
+    const c = member.companion;
+    if (i === 0) {
+      if (c != null) {
+        throw new Error('Invariant: party[0].companion must be null (player is not a companion)');
+      }
+      continue;
+    }
+    if (c == null) continue;
+    if (typeof c !== 'object') {
+      throw new Error(`Invariant: party[${i}].companion must be object or null`);
+    }
+    if (typeof c.sourceNpcId !== 'string' || !c.sourceNpcId) {
+      throw new Error(`Invariant: party[${i}].companion.sourceNpcId must be non-empty string`);
+    }
+    if (!Number.isInteger(c.recruitedAtTurn) || c.recruitedAtTurn < 0) {
+      throw new Error(`Invariant: party[${i}].companion.recruitedAtTurn must be non-negative integer`);
+    }
+    if (!Number.isInteger(c.trustLevel) || c.trustLevel < 0 || c.trustLevel > 10) {
+      throw new Error(`Invariant: party[${i}].companion.trustLevel must be integer 0..10`);
+    }
+    if (typeof c.role !== 'string') {
+      throw new Error(`Invariant: party[${i}].companion.role must be string`);
+    }
+    if (seenCompanionSources.has(c.sourceNpcId)) {
+      throw new Error(`Invariant: duplicate companion sourceNpcId ${c.sourceNpcId}`);
+    }
+    seenCompanionSources.add(c.sourceNpcId);
+  }
+
   const clocks = world.clocks || {};
   for (const k of ['dread', 'pressure', 'revelation']) {
     const v = clocks[k];

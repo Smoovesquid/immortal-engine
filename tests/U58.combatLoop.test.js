@@ -11,7 +11,7 @@
 //   * player defeat → ending lock (no new ending type)
 //   * flee path
 //   * R13 closure: beats written for combat turns; physics intercept bypassed
-//   * determinism, save/load roundtrip, worldHash projection, v12→v13 warning
+//   * determinism, save/load roundtrip, worldHash projection, v12→v14 warning
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -102,10 +102,10 @@ function findCombatTurnOutcome(world, approach, targetOutcome, max = 80) {
 
 // ── 1–6: state shape & normalization ──────────────────────────────────────
 
-test('U58-01: newWorld combat shape is the inactive default and version is 13', () => {
+test('U58-01: newWorld combat shape is the inactive default and version is 14', () => {
   const w = newWorld({ seed: 'u58-fresh', fate: 0.2, campaignId: 'c', pack: { primaryId: 'fantasy', mixerId: null } });
-  assert.equal(w.meta.version, 13);
-  assert.equal(WORLD_VERSION, 13);
+  assert.equal(w.meta.version, 14);
+  assert.equal(WORLD_VERSION, 14);
   assert.deepEqual(w.combat, defaultCombat());
   assert.equal(w.combat.active, false);
   assert.deepEqual(w.combat.enemies, []);
@@ -670,11 +670,11 @@ test('U58-35: loading a v12 save warns and normalizes combat to default', () => 
   try {
     const loaded = loadSlot(storage, 'slot1');
     assert.ok(loaded);
-    assert.equal(loaded.meta.version, 13);
+    assert.equal(loaded.meta.version, 14);
     assert.deepEqual(loaded.combat, defaultCombat());
     assert.ok(warnings.length > 0);
     assert.ok(warnings[0].includes('v12'));
-    assert.ok(warnings[0].includes('v13'));
+    assert.ok(warnings[0].includes('v14'));
   } finally {
     console.warn = origWarn;
   }

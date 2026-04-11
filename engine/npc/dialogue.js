@@ -21,6 +21,13 @@ const INVITE_TRUST_THRESHOLD = 6;
 const PARTY_CAP = 3;
 const INVITE_TEXT_RE = /\binvite\s+to\s+travel\b/i;
 
+// Exported so playloop.js can check recruit intent BEFORE its dialogue-breaking
+// intent guard. The recruit phrase contains "travel", which would otherwise
+// route through moveAdvancesScene and exit dialogue.
+export function isRecruitIntent(text) {
+  return INVITE_TEXT_RE.test(String(text || ''));
+}
+
 const STOP_TOKENS = new Set([
   'era', 'the', 'and', 'for', 'with', 'from', 'that', 'this', 'your', 'yours',
   'about', 'into', 'over', 'npc', 'secret'

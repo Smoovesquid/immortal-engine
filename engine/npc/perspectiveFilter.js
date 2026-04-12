@@ -186,12 +186,13 @@ export function detectContradictions(npcA, npcB, filteredFactsA, filteredFactsB)
  * @param {object} world — current world state
  * @returns {{ facts: object[], rumors: object[] }}
  */
-export function gatherNpcKnowledge(npc, world) {
+export function gatherNpcKnowledge(npc, world, opts = {}) {
   const facts = (Array.isArray(npc?.knowledgeGraph) ? npc.knowledgeGraph : [])
-    .map(f => ({
+    .map((f, idx) => ({
       id: String(f.factId || ''),
       text: String(f.factId || ''),
-      source: String(f.source || '')
+      source: String(f.source || ''),
+      _index: idx
     }));
 
   const rumors = (Array.isArray(npc?.rumorIds) ? npc.rumorIds : [])
@@ -203,6 +204,36 @@ export function gatherNpcKnowledge(npc, world) {
       tier: r.tier,
       tags: Array.isArray(r.tags) ? r.tags : []
     }));
+
+  // When opts.topic is provided, add priority scoring
+  if (opts.topic) {
+    const topicWords = String(opts.topic).toLowerCase().split(/\s+/).filter(w => w.length >= 4);
+
+    for (const f of facts) {
+      const idLower = f.id.toLowerCase();
+      if (topicWords.some(w => idLower.includes(w))) {
+        f.priority = 3;
+      } else if (f._index >= facts.length * 0.5) {
+        f.priority = 2; // recent (later in array)
+      } else {
+        f.priority = 1; // old
+      }
+    }
+
+    for (const r of rumors) {
+      const rTags = r.tags.map(t => String(t).toLowerCase());
+      if (topicWords.some(w => rTags.some(t => t.includes(w)))) {
+        r.priority = 3;
+      } else if (r.tier <= 1) {
+        r.priority = 2; // high-tier
+      } else {
+        r.priority = 1; // low-tier
+      }
+    }
+  }
+
+  // Strip internal _index field
+  for (const f of facts) { delete f._index; }
 
   return { facts, rumors };
 }

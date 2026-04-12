@@ -1,3 +1,5 @@
+> **Status:** Partially superseded — Gates 1-3 (deterministic invocation, play loop, chronicle) remain valid. Gate 4 (MythSpec/Triad) references concepts that have been absorbed into the current pack system. See `NORTH_STAR.md` and `SLICE_PLAN.md` for current development model.
+
 # Immortal Engine — Victory Gates
 
 Version: 1.0  

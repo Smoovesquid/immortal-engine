@@ -1,3 +1,5 @@
+> **Status:** Principles remain valid. Collaboration model (section 4) references ChatGPT/OpenClaw/Keystone tooling that has been replaced by Claude Code. Section 9 references gpt-4o-mini as default model; current LLM stack uses Claude Sonnet via Anthropic API + optional Ollama for local inference. See `LOCAL_LLM.md`.
+
 # DRIFT GUARD PROTOCOL (v1.0)
 
 **Owner:** Timothy Smith  

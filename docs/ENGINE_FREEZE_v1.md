@@ -1,3 +1,5 @@
+> **Status:** Core contracts (Canon Log, worldHash, save format, mutation rules) remain binding. The "MVP track" framing and references to sequel derivation and ending lock reflect the retired finite-arc model. See `NORTH_STAR.md` for current vision.
+
 # ENGINE FREEZE CONTRACT v1.0
 
 ## Status

@@ -1,3 +1,5 @@
+> **Status:** Partially superseded — the "v1 Shippable" framing and ending-related gates (III, V) assume finite campaigns, which have been retired. Core determinism contracts (II, IV, VI) remain valid as permanent engine rails. See `NORTH_STAR.md` for current vision.
+
 # VICTORY GATE v1
 Immortal Engine — Deterministic Voice DM
 

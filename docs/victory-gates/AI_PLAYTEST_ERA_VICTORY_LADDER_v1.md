@@ -1,3 +1,5 @@
+> **Status:** Partially superseded. Gate A1 (narrative weave) and A2 (structure layer) are implemented. Gate A3 (spatial illusion UI) is partially covered by the map panels. Gates A4-A5 (AI action proposals, autonomous playtester) remain aspirational. The playtest harness (`scripts/playtest.js`) covers some of A5's goals through headless simulation. See `NORTH_STAR.md` for current vision.
+
 # AI Playtest Era — Victory Ladder v1
 
 This ladder extends the existing Victory Gates spine with an AI-first playtest era.

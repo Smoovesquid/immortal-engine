@@ -1,3 +1,5 @@
+> **Status:** Largely complete. UI Gates 1-6 have been addressed through the S1 UI surface pass and subsequent work. The UI now includes character sheet, inventory, rumor board, and recent beats panels. These gates remain useful as a quality checklist but are no longer an active development ladder.
+
 # Immortal Engine — UI Victory Gates
 
 Version: 1.0  

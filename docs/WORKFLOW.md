@@ -1,3 +1,5 @@
+> **Status:** Partially stale. Branch naming convention (dave/tim prefixes) and review model reflect an earlier team structure. Current development uses the home-base/worker-window pattern described in `SLICE_PLAN.md`. Core principles (PR discipline, determinism checks, AI code as draft) remain valid.
+
 # Immortal Engine — Collaboration Workflow
 
 Version: 1.0

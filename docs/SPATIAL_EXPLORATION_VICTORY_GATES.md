@@ -1,3 +1,5 @@
+> **Status:** Partially superseded. Gates S1-S6 (node identity, roads, buildings, rendering, structure identity, enterable structures) are implemented in `engine/structures/` and `engine/map/`. Gates S7-S12 (interior maps, tactical grids, landmarks, dungeons, faction spatial influence, discovery memory) are aspirational and not yet built. The gate numbering here conflicts with the S-prefix test naming in `CLAUDE.md` (S1-S6 tests cover Canonical Surface, not spatial exploration). See `SLICE_PLAN.md` for current priorities.
+
 # Spatial Exploration Victory Gates
 
 Purpose:

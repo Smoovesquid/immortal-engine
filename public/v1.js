@@ -330,19 +330,24 @@ function beginNewWorld() {
 
 async function beginFromChargen() {
   const { seed, fate, pack, ritualPicks, name } = ui.chargen;
-  const pc = createWanderer({ seed, fate, name: name || undefined, ritualPicks });
+  let pc, w0, w1, world, output;
+  try {
+    pc = createWanderer({ seed, fate, name: name || undefined, ritualPicks });
 
-  const w0 = newWorld({
-    seed,
-    fate,
-    campaignId: `campaign-${seed}`,
-    pack
-  });
+    w0 = newWorld({
+      seed,
+      fate,
+      campaignId: `campaign-${seed}`,
+      pack
+    });
 
-  // Inject pre-created character; beginAdventure skips creation when party.length > 0
-  const w1 = ensureWorld({ ...w0, party: [pc] });
+    // Inject pre-created character; beginAdventure skips creation when party.length > 0
+    w1 = ensureWorld({ ...w0, party: [pc] });
 
-  const { world, output } = beginAdventure(w1, ui.packs.byId);
+    ({ world, output } = beginAdventure(w1, ui.packs.byId));
+  } catch (e) {
+    return setStatus(`Begin failed: ${e?.message || e}`);
+  }
   saveSlot(localStorage, world, 'slot1');
 
   const baseNarration = output?.narration || 'The world begins.';
@@ -387,9 +392,14 @@ async function doSubmitMove() {
   if (Boolean(w.ending?.locked)) return setStatus('Session ended (ending locked).');
 
   const text = String(ui.play.input || '').trim();
-  if (!text) return;
+  if (!text) return setStatus('');
 
-  const { world, output } = playerMove(w, ui.packs.byId, text);
+  let world, output;
+  try {
+    ({ world, output } = playerMove(w, ui.packs.byId, text));
+  } catch (e) {
+    return setStatus(`Move failed: ${e?.message || e}`);
+  }
   const baseNarration = output?.narration || 'Wizard: ...';
 
   ui.play.lines.push({ who: 'you', text, mech: '' });
@@ -416,7 +426,12 @@ async function doNewScene() {
   if (!w) return setStatus('No world loaded.');
   if (Boolean(w.ending?.locked)) return setStatus('Session ended (ending locked).');
 
-  const { world, output } = newScene(w, ui.packs.byId, { lastResolutionKind: ui.play.lastResolutionKind || 'turn' });
+  let world, output;
+  try {
+    ({ world, output } = newScene(w, ui.packs.byId, { lastResolutionKind: ui.play.lastResolutionKind || 'turn' }));
+  } catch (e) {
+    return setStatus(`New scene failed: ${e?.message || e}`);
+  }
   const baseNarration = output?.narration || 'The scene turns.';
 
   const wizardLine = { who: 'wizard', text: '', mech: output?.mechanics || '' };
@@ -664,12 +679,13 @@ function renderTranscript(lines) {
     const text = String(ln?.text || '');
     const mech = String(ln?.mech || '');
     const whoLabel = who === 'you' ? 'You' : 'Wizard';
-    return el('div', { class: 'card stack' },
-      el('div', {}, text),
-      mech ? el('div', { class: 'mono small' }, mech) : null
+    return el('div', { class: 'line' },
+      el('div', { class: 'who' }, whoLabel),
+      el('div', { class: 'text' }, text),
+      mech ? el('div', { class: 'mech' }, mech) : null
     );
   });
-  return el('div', { class: 'stack' }, items);
+  return el('div', { class: 'transcript', 'data-transcript-scroll': '1' }, ...items);
 }
 
 // ── Status panels: pure views over canonical world state ──────────────
@@ -724,8 +740,8 @@ function renderCharacterSheetSection(world) {
   const stats = pc.stats && typeof pc.stats === 'object' ? pc.stats : {};
   const STAT_ORDER = ['MIGHT', 'AGILITY', 'WITS', 'GRIT', 'CHARM'];
 
-  // Forward-compat: T1 will add level/xp. Until then, default to 1 / 0.
   const level = Number.isFinite(Number(pc.level)) ? Math.max(1, Math.trunc(Number(pc.level))) : 1;
+  const xp = Number.isFinite(Number(pc.xp)) ? Math.max(0, Math.trunc(Number(pc.xp))) : 0;
 
   const identityRows = [];
   if (pc.archetype) identityRows.push(el('div', { class: 'sheet-row' },
@@ -740,6 +756,21 @@ function renderCharacterSheetSection(world) {
     el('span', { class: 'sheet-k' }, 'signature'),
     el('span', { class: 'sheet-v' }, String(pc.signature.itemName))
   ));
+
+  // QA1 — XP row
+  identityRows.push(el('div', { class: 'sheet-row' },
+    el('span', { class: 'sheet-k' }, 'xp'),
+    el('span', { class: 'sheet-v' }, String(xp))
+  ));
+
+  // QA1 — Foci
+  const foci = Array.isArray(pc.foci) ? pc.foci.filter(Boolean) : [];
+  if (foci.length) {
+    identityRows.push(el('div', { class: 'sheet-row' },
+      el('span', { class: 'sheet-k' }, 'foci'),
+      el('span', { class: 'sheet-v' }, foci.join(', '))
+    ));
+  }
 
   // Pass S2 — equipped gear indicators
   const items = Array.isArray(pc.inventory?.items) ? pc.inventory.items : [];
@@ -840,18 +871,34 @@ function renderInventorySection(world) {
       .map(k => el('span', { class: `coin coin-${k}` }, `${Number(purse[k]) || 0} ${k[0]}`))
   ) : null;
 
-  const body = populated.length === 0
+  // T1 unified items (objects with {id, defRef, equipped})
+  const unifiedItems = Array.isArray(inv.items) ? inv.items.filter(it => it && it.defRef) : [];
+
+  const body = (populated.length === 0 && unifiedItems.length === 0)
     ? el('div', { class: 'empty-muted' }, 'Pockets empty.')
     : el('div', { class: 'inventory-categories' },
-        populated.map(({ cat, items }) => el('div', { class: 'inv-cat' },
+        ...populated.map(({ cat, items }) => el('div', { class: 'inv-cat' },
           el('div', { class: 'inv-cat-head' },
             el('span', { class: 'inv-cat-label' }, cat.label),
-            el('span', { class: 'inv-cat-count' }, `×${items.length}`)
+            el('span', { class: 'inv-cat-count' }, `\u00d7${items.length}`)
           ),
           el('ul', { class: 'inv-list' },
             items.map(it => el('li', { class: 'inv-item' }, inventoryItemLabel(it)))
           )
-        ))
+        )),
+        unifiedItems.length ? el('div', { class: 'inv-cat' },
+          el('div', { class: 'inv-cat-head' },
+            el('span', { class: 'inv-cat-label' }, 'Items'),
+            el('span', { class: 'inv-cat-count' }, `\u00d7${unifiedItems.length}`)
+          ),
+          el('ul', { class: 'inv-list' },
+            unifiedItems.map(it => {
+              const label = String(it.defRef || it.id);
+              const eqTag = it.equipped ? ` [${it.equipped}]` : '';
+              return el('li', { class: 'inv-item' }, label + eqTag);
+            })
+          )
+        ) : null
       );
 
   return el('section', { class: 'status-section', 'aria-label': 'Inventory' },
@@ -1527,6 +1574,10 @@ function render() {
   // Auto-scroll the recent-beats panel to bottom so newest beats are visible.
   const beatsScroll = document.querySelector('[data-beats-scroll]');
   if (beatsScroll) beatsScroll.scrollTop = beatsScroll.scrollHeight;
+
+  // Auto-scroll transcript to bottom so the latest narration is visible.
+  const transcriptScroll = document.querySelector('[data-transcript-scroll]');
+  if (transcriptScroll) transcriptScroll.scrollTop = transcriptScroll.scrollHeight;
 }
 
 window.addEventListener('error', (e) => {

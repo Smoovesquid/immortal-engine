@@ -227,8 +227,16 @@ export function ensureCombat(c) {
       ? eRaw.damageType : 'bludgeoning';
     const conditions = (Array.isArray(eRaw.conditions) ? eRaw.conditions : [])
       .map(normalizeCondition).filter(Boolean).slice(0, 12);
+    // CM3: actions, multiattack, saveProficiencies
+    const actions = Array.isArray(eRaw.actions) ? eRaw.actions.slice(0, 10) : [];
+    const multiattack = Array.isArray(eRaw.multiattack)
+      ? eRaw.multiattack.filter(s => typeof s === 'string').slice(0, 6)
+      : null;
+    const saveProficiencies = Array.isArray(eRaw.saveProficiencies)
+      ? eRaw.saveProficiencies.filter(s => typeof s === 'string').slice(0, 5)
+      : [];
     const sourceNpcId = String(eRaw.sourceNpcId ?? '');
-    enemies.push({ id, name, hp, maxHp, damage, ac, cr, damageType, resistances, conditionImmunities, conditions, canParley, defeated, sourceNpcId });
+    enemies.push({ id, name, hp, maxHp, damage, ac, cr, damageType, resistances, conditionImmunities, conditions, actions, multiattack, saveProficiencies, canParley, defeated, sourceNpcId });
     if (enemies.length >= COMBAT_ENEMY_CAP) break;
   }
 

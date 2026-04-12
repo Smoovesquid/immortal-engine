@@ -56,6 +56,10 @@ export function mintEnemyFromNpc(npc) {
     ?? 'bludgeoning';
   const resistances = bestiary?.resistances ?? profile.resistances ?? {};
   const conditionImmunities = bestiary?.conditionImmunities ?? profile.conditionImmunities ?? [];
+  // CM3: pass through actions, multiattack, saveProficiencies from bestiary.
+  const actions = bestiary?.actions ?? profile.actions ?? [];
+  const multiattack = bestiary?.multiattack ?? profile.multiattack ?? null;
+  const saveProficiencies = bestiary?.saveProficiencies ?? profile.saveProficiencies ?? [];
   const canParley = profile.canParley != null
     ? Boolean(profile.canParley)
     : bestiary
@@ -73,6 +77,9 @@ export function mintEnemyFromNpc(npc) {
     damageType,
     resistances,
     conditionImmunities,
+    actions,
+    multiattack,
+    saveProficiencies,
     canParley,
     defeated: false,
     sourceNpcId

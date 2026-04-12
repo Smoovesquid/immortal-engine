@@ -38,6 +38,7 @@ import { computeAttack } from '../gear/gearProps.js';
 import { applyResistance } from './damageTypes.js';
 import { tickConditions, hasCondition, applyCondition } from './conditions.js';
 import { getConditionModifiers } from './conditionEffects.js';
+import { resolveAction, resolveRecharge } from './actionResolver.js';
 
 const FORCE_BASE = 3;
 const FINESSE_BASE = 2;
@@ -249,12 +250,12 @@ export function resolveCombatTurn(world, move, opts = {}) {
     };
   }
 
-  // Enemy counter-attacks: each living enemy in id-order deals enemy.damage
-  // to a round-robin-selected living party member (player + companions).
-  // playerGuard + companionGuard are both one-shots that each reduce one
-  // counter by 1 — playerGuard consumes first, then companionGuard. Down
-  // party members (wounds >= 6) are skipped as targets. If everyone is
-  // down, the loop breaks and no counters land.
+  // Enemy counter-attacks: CM3 action resolution replaces flat damage.
+  // Each living, non-stunned enemy resolves its actions against a round-robin
+  // party target. Enemies WITH an actions array use resolveAction(); enemies
+  // WITHOUT fall back to flat damage (backwards compatible).
+  const counterSeed = seedFromString(`${w.meta?.seed || ''}|counter|${w.time?.turn ?? 0}|${w.combat?.round ?? 0}`);
+  const counterRng = makeRng(counterSeed);
   const livingParty = (w.party || []).filter(p => p && (p.wounds ?? 0) < 6);
   const playerGuardActive = Boolean(w.combat?.playerGuard);
   const companionGuardActive = Boolean(w.combat?.companionGuard);
@@ -273,27 +274,85 @@ export function resolveCombatTurn(world, move, opts = {}) {
     if (livingParty.length === 0) break;
     const targetMember = livingParty[partyIdx % livingParty.length];
     partyIdx++;
-    let rawDmg = clampInt(e.damage, 1, 9999);
-    // CM1: apply enemy damage type against target's resistances (if any)
-    const eDmgType = e.damageType || 'bludgeoning';
-    const targetRes = targetMember.resistances || {};
-    const eRes = applyResistance(rawDmg, eDmgType, targetRes);
-    let dmg = eRes.heals ? 0 : eRes.final; // absorb on player heals 0 for now (wound system)
-    if (playerGuardActive && !playerGuardConsumed) {
-      dmg = Math.max(0, dmg - 1);
-      playerGuardConsumed = true;
-    } else if (companionGuardActive && !companionGuardConsumed) {
-      dmg = Math.max(0, dmg - 1);
-      companionGuardConsumed = true;
-    }
-    if (eRes.heals) {
-      summaryParts.push(`${e.name} attacks ${targetMember.name} — ${eDmgType} absorbed`);
-    } else if (eRes.final === 0) {
-      summaryParts.push(`${e.name} attacks ${targetMember.name} — immune to ${eDmgType}`);
-    } else if (dmg > 0) {
-      counterDeltas.push({ op: 'wound', entityId: String(targetMember.id), by: dmg });
-      const suffix = eRes.level !== 'normal' ? ` (${eRes.level})` : '';
-      summaryParts.push(`${e.name} hits ${targetMember.name} for ${dmg}${suffix}`);
+
+    const enemyActions = Array.isArray(e.actions) ? e.actions : [];
+
+    if (enemyActions.length > 0) {
+      // CM3: resolve real actions
+      const actionsToResolve = pickActions(e, enemyActions);
+      let totalDmg = 0;
+      const actionSummaries = [];
+
+      for (const act of actionsToResolve) {
+        const res = resolveAction(act, e, targetMember, counterRng);
+
+        if (res.hit) {
+          totalDmg += res.damage;
+          const critTag = res.critical ? ' (CRITICAL)' : '';
+          const resTag = res.resistanceResult.level !== 'normal' ? ` [${res.resistanceResult.level}]` : '';
+          actionSummaries.push(`${res.actionName} ${res.damage} ${res.damageType}${critTag}${resTag}`);
+
+          // Apply conditions from hit actions
+          if (res.conditionsApplied.length > 0) {
+            const tgtConds = Array.isArray(targetMember.conditions) ? targetMember.conditions : [];
+            const tgtImmunities = Array.isArray(targetMember.conditionImmunities) ? targetMember.conditionImmunities : [];
+            for (const cond of res.conditionsApplied) {
+              const applied = applyCondition(tgtConds, cond, tgtImmunities);
+              if (applied !== tgtConds) {
+                actionSummaries.push(`applies ${cond.name}`);
+              }
+            }
+          }
+        } else if (res.saveResult) {
+          // Save-based action: target saved
+          if (res.damage > 0) {
+            totalDmg += res.damage;
+            actionSummaries.push(`${res.actionName} (saved, half) ${res.damage} ${res.damageType}`);
+          } else {
+            actionSummaries.push(`${res.actionName} — ${targetMember.name} saves`);
+          }
+        } else {
+          actionSummaries.push(`${res.actionName} misses`);
+        }
+      }
+
+      // Apply guard reduction to total
+      let dmg = totalDmg;
+      if (playerGuardActive && !playerGuardConsumed) {
+        dmg = Math.max(0, dmg - 1);
+        playerGuardConsumed = true;
+      } else if (companionGuardActive && !companionGuardConsumed) {
+        dmg = Math.max(0, dmg - 1);
+        companionGuardConsumed = true;
+      }
+
+      if (dmg > 0) {
+        counterDeltas.push({ op: 'wound', entityId: String(targetMember.id), by: dmg });
+      }
+      summaryParts.push(`${e.name} → ${targetMember.name}: ${actionSummaries.join(', ')}`);
+    } else {
+      // Legacy flat damage fallback (no actions array)
+      let rawDmg = clampInt(e.damage, 1, 9999);
+      const eDmgType = e.damageType || 'bludgeoning';
+      const targetRes = targetMember.resistances || {};
+      const eRes = applyResistance(rawDmg, eDmgType, targetRes);
+      let dmg = eRes.heals ? 0 : eRes.final;
+      if (playerGuardActive && !playerGuardConsumed) {
+        dmg = Math.max(0, dmg - 1);
+        playerGuardConsumed = true;
+      } else if (companionGuardActive && !companionGuardConsumed) {
+        dmg = Math.max(0, dmg - 1);
+        companionGuardConsumed = true;
+      }
+      if (eRes.heals) {
+        summaryParts.push(`${e.name} attacks ${targetMember.name} — ${eDmgType} absorbed`);
+      } else if (eRes.final === 0) {
+        summaryParts.push(`${e.name} attacks ${targetMember.name} — immune to ${eDmgType}`);
+      } else if (dmg > 0) {
+        counterDeltas.push({ op: 'wound', entityId: String(targetMember.id), by: dmg });
+        const suffix = eRes.level !== 'normal' ? ` (${eRes.level})` : '';
+        summaryParts.push(`${e.name} hits ${targetMember.name} for ${dmg}${suffix}`);
+      }
     }
   }
   if (playerGuardConsumed || companionGuardConsumed) {
@@ -363,6 +422,29 @@ export function resolveCombatTurn(world, move, opts = {}) {
 }
 
 // ── internals ──────────────────────────────────────────────────────────────
+
+/**
+ * Pick which actions an enemy takes this turn.
+ * If enemy has a multiattack array, resolve each named action from the list.
+ * Otherwise, use the first action.
+ */
+function pickActions(enemy, actions) {
+  const multi = Array.isArray(enemy.multiattack) ? enemy.multiattack : null;
+  if (multi && multi.length > 0) {
+    // Map multiattack names to action objects (case-insensitive name match)
+    const actionMap = {};
+    for (const a of actions) {
+      if (a && a.name) actionMap[a.name.toLowerCase()] = a;
+    }
+    const resolved = [];
+    for (const name of multi) {
+      const act = actionMap[String(name).toLowerCase()];
+      if (act) resolved.push(act);
+    }
+    return resolved.length > 0 ? resolved : [actions[0]];
+  }
+  return [actions[0]];
+}
 
 function normalizeCombatMove(move, combat) {
   const m = move && typeof move === 'object' ? move : {};

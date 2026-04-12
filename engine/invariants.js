@@ -245,6 +245,16 @@ export function assertWorldInvariants(world) {
     if (!Array.isArray(e.conditions)) {
       throw new Error(`Invariant: combat enemy ${e.id} conditions must be array`);
     }
+    // CM3: actions, saveProficiencies must be arrays; multiattack null or array
+    if (!Array.isArray(e.actions)) {
+      throw new Error(`Invariant: combat enemy ${e.id} actions must be array`);
+    }
+    if (!Array.isArray(e.saveProficiencies)) {
+      throw new Error(`Invariant: combat enemy ${e.id} saveProficiencies must be array`);
+    }
+    if (e.multiattack !== null && !Array.isArray(e.multiattack)) {
+      throw new Error(`Invariant: combat enemy ${e.id} multiattack must be null or array`);
+    }
   }
   if (combat.active && world.scene?.dialogue) {
     throw new Error('Invariant: combat.active and scene.dialogue are mutually exclusive');

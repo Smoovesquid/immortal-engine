@@ -150,20 +150,47 @@ export function renderRegionMap(map) {
     const p = pos2.get(id);
     if (!p) continue;
     const isHere = id === String(hereId ?? '');
+    const isDecompressed = Boolean(n?.settlement?.decompressed);
+
+    // Pass S2 — differentiate discovered (decompressed) vs undiscovered nodes
+    const nodeFill = isHere
+      ? 'rgba(103,212,255,0.25)'
+      : isDecompressed
+        ? 'rgba(255,255,255,0.18)'
+        : 'rgba(255,255,255,0.08)';
+    const nodeStroke = isHere
+      ? 'rgba(103,212,255,0.6)'
+      : isDecompressed
+        ? 'rgba(255,255,255,0.25)'
+        : 'rgba(255,255,255,0.12)';
+    const nodeR = isHere ? 8 : 5;
 
     svg.appendChild(el('polygon', {
-      points: hexPath(p.x, p.y, isHere ? 7 : 5),
-      fill: isHere ? 'rgba(255,255,255,0.20)' : 'rgba(255,255,255,0.14)',
-      stroke: 'rgba(0,0,0,0.35)',
-      'stroke-width': 2
+      points: hexPath(p.x, p.y, nodeR),
+      fill: nodeFill,
+      stroke: nodeStroke,
+      'stroke-width': isHere ? 2.5 : 1.5
     }));
 
+    // Pass S2 — current position pulsing ring indicator
+    if (isHere) {
+      svg.appendChild(el('polygon', {
+        points: hexPath(p.x, p.y, 12),
+        fill: 'none',
+        stroke: 'rgba(103,212,255,0.35)',
+        'stroke-width': 1.5,
+        'stroke-dasharray': '4,3'
+      }));
+    }
+
     const name = String(n?.name || id);
+    const labelOpacity = isHere ? 1.0 : isDecompressed ? 0.72 : 0.4;
     svg.appendChild(el('text', {
       x: p.x + 14, y: p.y + 5,
       fill: '#ffffff',
-      'fill-opacity': 0.72,
-      'font-size': 12,
+      'fill-opacity': labelOpacity,
+      'font-size': isHere ? 13 : 12,
+      'font-weight': isHere ? '700' : '400',
       'font-family': 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace'
     }, name));
   }

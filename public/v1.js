@@ -8,6 +8,8 @@ import { buildMythSpec, mythSpecJson } from '../engine/mythSpec.js';
 import { generateTriadFrames, deriveInvocationFromFrame } from '../engine/triad.js';
 import { deriveSequelInvocation } from '../engine/sequel.js';
 import { renderMapView } from './map/MapView.js';
+import { renderSpellbookSection } from './panels/spellbook.js';
+import { renderCombatHudSection } from './panels/combatHud.js';
 import tts from './tts.js';
 import { createWanderer } from '../engine/chargen/wanderer.js';
 import { rollDetailOptions } from '../engine/chargen/details.js';
@@ -739,6 +741,34 @@ function renderCharacterSheetSection(world) {
     el('span', { class: 'sheet-v' }, String(pc.signature.itemName))
   ));
 
+  // Pass S2 — equipped gear indicators
+  const items = Array.isArray(pc.inventory?.items) ? pc.inventory.items : [];
+  const equippedItems = items.filter(it => it.equipped);
+  const equipRows = equippedItems.map(it => {
+    const slotLabel = String(it.equipped).replace(/_/g, ' ');
+    const isMagical = Boolean(it.magical);
+    return el('div', { class: 'sheet-equip-item' },
+      el('span', { class: 'sheet-equip-slot' }, slotLabel),
+      el('span', { class: `sheet-equip-name${isMagical ? ' magical' : ''}` }, String(it.name || it.defRef || '?'))
+    );
+  });
+
+  // Pass S2 — compact spell slot summary on character sheet
+  const spells = pc.spells;
+  let slotSummary = null;
+  if (spells && spells.maxSlots && typeof spells.maxSlots === 'object') {
+    const parts = [];
+    for (const lvl of [1, 2, 3, 4, 5, 6, 7, 8, 9]) {
+      const max = Number(spells.maxSlots[lvl]) || 0;
+      if (max <= 0) continue;
+      const cur = Math.max(0, Number(spells.slots?.[lvl]) || 0);
+      parts.push(`${cur}/${max} L${lvl}`);
+    }
+    if (parts.length > 0) {
+      slotSummary = el('div', { class: 'sheet-spell-slots' }, `Slots: ${parts.join(', ')}`);
+    }
+  }
+
   return el('section', { class: 'status-section', 'aria-label': 'Character sheet' },
     el('h3', { class: 'status-heading' }, 'Character'),
     el('div', { class: 'character-name' },
@@ -755,7 +785,9 @@ function renderCharacterSheetSection(world) {
         );
       })
     ),
-    identityRows.length ? el('div', { class: 'sheet-rows' }, identityRows) : null
+    identityRows.length ? el('div', { class: 'sheet-rows' }, identityRows) : null,
+    equipRows.length ? el('div', { class: 'sheet-equip' }, ...equipRows) : null,
+    slotSummary
   );
 }
 
@@ -854,12 +886,18 @@ function renderRumorBoardSection(world) {
       ordered.slice(0, 8).map(r => {
         const tier = Math.max(0, Math.min(4, Number(r.tier) || 0));
         const verified = String(r.verified || '');
+        // Pass S2 — verification badge: checkmark for verified true, ? for unverified
+        const verifiedBadge = r.verified === true
+          ? el('span', { class: 'rumor-verified-badge verified' }, 'V')
+          : r.verified === false
+            ? el('span', { class: 'rumor-verified-badge unverified' }, '?')
+            : (verified ? el('span', { class: `rumor-verdict verdict-${verified}` }, verified) : null);
         return el('li', { class: `rumor-item tier-${tier}${verified ? ` verified-${verified}` : ''}` },
-          el('div', { class: 'rumor-body' }, String(r.body || '…')),
+          el('div', { class: 'rumor-body' }, String(r.body || '...')),
           el('div', { class: 'rumor-meta' },
             el('span', { class: 'rumor-carrier' }, `via ${String(r.carrierNpcId || 'unknown')}`),
             el('span', { class: 'rumor-tier' }, `tier ${tier}`),
-            verified ? el('span', { class: `rumor-verdict verdict-${verified}` }, verified) : null
+            verifiedBadge
           )
         );
       })
@@ -1058,7 +1096,8 @@ function renderStatusPanels(world) {
     renderCharacterSheetSection(world),
     renderPartySection(world),
     renderInventorySection(world),
-    renderCombatSection(world),
+    renderCombatHudSection(world, el),
+    renderSpellbookSection(world, el),
     renderRumorBoardSection(world),
     renderGoalsSection(world),
     renderBeatsSection(world)

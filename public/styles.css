@@ -193,3 +193,53 @@ a{color:var(--accent)}
 /* TTS toggle */
 .tts-toggle{font-size:16px;padding:6px 10px;min-width:36px;line-height:1;margin-left:auto}
 .tts-toggle.tts-on{border-color:var(--accent);color:var(--accent)}
+
+/* ── Pass S2 — Spellbook panel ──────────────────────────────────────── */
+.spell-slots-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.spell-slot-pip{font-family:var(--mono);font-size:11px;border:1px solid var(--border);border-radius:999px;padding:1px 8px;color:var(--accent)}
+.spell-concentration{font-family:var(--mono);font-size:11px;color:var(--gold);margin-bottom:8px;padding:4px 8px;background:rgba(255,209,102,.08);border:1px solid rgba(255,209,102,.25);border-radius:8px}
+.spell-concentration .spell-conc-icon{color:var(--gold);margin-right:2px}
+.spell-list{display:flex;flex-direction:column;gap:4px}
+.spell-entry{padding:4px 8px;border-left:2px solid var(--border);font-size:12px}
+.spell-entry.concentrating{border-left-color:var(--gold);background:rgba(255,209,102,.04)}
+.spell-entry-header{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}
+.spell-name{font-weight:600;color:var(--text)}
+.spell-level{font-family:var(--mono);font-size:10px;color:var(--accent);border:1px solid var(--border);border-radius:999px;padding:0 6px}
+.spell-school{font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:lowercase}
+.spell-detail{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:1px}
+
+/* ── Pass S2 — Combat HUD ───────────────────────────────────────────── */
+.combat-hud-header{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--danger);margin-bottom:8px;letter-spacing:.06em}
+.combat-player-vitals{margin-bottom:10px;padding-bottom:8px;border-bottom:1px dashed rgba(35,48,74,.6)}
+.combat-vital-row{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.combat-vital-label{font-family:var(--mono);font-size:11px;color:var(--text);flex:0 0 80px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.combat-vital-label.stress-label{color:var(--accent)}
+.combat-stress-val{font-family:var(--mono);font-size:11px;color:var(--accent)}
+.combat-enemies-hud{display:flex;flex-direction:column;gap:6px;margin-bottom:8px}
+.combat-enemy-row{display:flex;flex-direction:column;gap:2px}
+.combat-enemy-row.defeated{opacity:.5}
+.combat-enemy-info{display:flex;align-items:center;gap:6px}
+.combat-enemy-name{font-size:12px;font-weight:600;color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.combat-enemy-row.defeated .combat-enemy-name{text-decoration:line-through;color:var(--muted)}
+.combat-tag{font-family:var(--mono);font-size:9px;border:1px solid var(--border);border-radius:999px;padding:0 6px;color:var(--muted)}
+.combat-tag.parley{color:var(--accent);border-color:rgba(103,212,255,.4)}
+
+/* HP bars */
+.hp-bar-container{display:flex;align-items:center;gap:6px;flex:1;min-width:0}
+.hp-bar-track{flex:1;height:8px;background:rgba(255,255,255,.06);border-radius:4px;overflow:hidden}
+.hp-bar-fill{height:100%;border-radius:4px;transition:width .2s ease}
+.hp-bar-text{font-family:var(--mono);font-size:10px;color:var(--muted);flex:0 0 auto;min-width:36px;text-align:right}
+
+/* ── Pass S2 — Enhanced Character Sheet (equipment + slots) ─────────── */
+.sheet-equip{display:flex;flex-direction:column;gap:3px;margin-top:6px;padding-top:6px;border-top:1px dashed rgba(35,48,74,.6)}
+.sheet-equip-item{display:flex;align-items:baseline;gap:6px;font-size:12px}
+.sheet-equip-slot{font-family:var(--mono);font-size:10px;color:var(--muted);flex:0 0 64px;text-transform:uppercase;letter-spacing:.04em}
+.sheet-equip-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text)}
+.sheet-equip-name.magical{color:var(--gold)}
+.sheet-spell-slots{font-family:var(--mono);font-size:11px;color:var(--accent);margin-top:4px}
+
+/* ── Pass S2 — Enhanced Rumor Board ─────────────────────────────────── */
+.rumor-item.tier-1 .rumor-body,.rumor-item.tier-2 .rumor-body{opacity:.85}
+.rumor-verified-badge{font-family:var(--mono);font-size:10px;padding:0 5px;border:1px solid var(--border);border-radius:999px;flex:0 0 auto}
+.rumor-verified-badge.verified{color:var(--ok);border-color:rgba(92,242,167,.4)}
+.rumor-verified-badge.unverified{color:var(--muted);border-color:var(--border)}

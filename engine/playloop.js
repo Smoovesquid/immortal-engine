@@ -39,6 +39,10 @@ export function beginAdventure(world, packsById) {
   if (pack.id === 'fantasy' && packsById.westmarch) {
     pack = mergeSubRegion(pack, packsById.westmarch);
   }
+  // Pass D1 — Ashenmoor sub-region.
+  if (pack.id === 'fantasy' && packsById.ashenmoor) {
+    pack = mergeSubRegion(pack, packsById.ashenmoor);
+  }
 
   const seed = seedFromString(`${w.meta.seed}|begin|${pack.id}`);
   const rng = makeRng(seed);

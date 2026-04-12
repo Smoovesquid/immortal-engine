@@ -6,6 +6,7 @@
     { "id": "zombie", "name": "Zombie Apocalypse", "path": "/packs/zombie/pack.json" },
     { "id": "haunted", "name": "Haunted House", "path": "/packs/haunted/pack.json" },
     { "id": "modern", "name": "Modern IRL", "path": "/packs/modern/pack.json" },
-    { "id": "westmarch", "name": "The Westmarch", "path": "/packs/fantasy/westmarch/pack.json" }
+    { "id": "westmarch", "name": "The Westmarch", "path": "/packs/fantasy/westmarch/pack.json" },
+    { "id": "ashenmoor", "name": "The Ashenmoor", "path": "/packs/fantasy/ashenmoor/pack.json" }
   ]
 }

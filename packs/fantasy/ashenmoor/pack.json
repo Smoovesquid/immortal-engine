@@ -1,0 +1,263 @@
+{
+  "id": "ashenmoor",
+  "name": "The Ashenmoor",
+  "toneWords": {
+    "cooperative": ["damp", "grey", "hushed"],
+    "grim": ["bleak", "rotting", "silent"],
+    "blood": ["choking", "drowned", "forgotten"]
+  },
+  "toneVectors": {
+    "dread": 0.7,
+    "wonder": 0.3,
+    "warmth": 0.1,
+    "decay": 0.8,
+    "isolation": 0.9,
+    "mystery": 0.75
+  },
+  "starterLocations": [
+    "the abbey gatehouse",
+    "greyfen causeway",
+    "the western mouth of harrowgate"
+  ],
+  "starterObjectives": [
+    "find passage through harrowgate",
+    "learn why the monks keep silence",
+    "settle the peat dispute"
+  ],
+  "skills": [
+    "Torchcraft",
+    "Steel",
+    "Wits",
+    "Charm"
+  ],
+  "locations": [
+    "abbey gatehouse (level 1)",
+    "ruined nave (level 2)",
+    "cloister garden (level 3)",
+    "chapter house (level 4)",
+    "undercroft door (level 5)",
+    "greyfen causeway (level 6)",
+    "peat drying kilns (level 7)",
+    "village council hall (level 8)",
+    "sunken trade road (level 9)",
+    "northern peat bogs (level 10)",
+    "standing stone circle (level 11)",
+    "windswept rise (level 12)",
+    "cairn field (level 13)",
+    "harrowgate western mouth (level 14)",
+    "fog defile (level 15)",
+    "rusted waymarker (level 16)",
+    "harrowgate eastern mouth (level 17)",
+    "sem's turf hut (level 18)",
+    "abbey refectory (level 19)",
+    "black briar thicket (level 20)"
+  ],
+  "objectives": [
+    "find passage through harrowgate (before the fog thickens 1)",
+    "learn why the monks keep silence (without breaking trust 2)",
+    "settle the peat dispute (before violence 3)",
+    "translate the old script above the undercroft (4)",
+    "recover fen dysart's hidden tablets (5)",
+    "escort a trader safely through the pass (6)",
+    "investigate the lights at the standing stones (7)",
+    "earn brother maren's trust (8)",
+    "find a safe trade route bypassing harrowgate (9)",
+    "discover what the monks sealed below (10)",
+    "retrieve the lost waymarkers from the pass (11)",
+    "convince warden thessa to share the abbey's secret (12)",
+    "map the safe paths through the northern bogs (13)",
+    "determine what old sem knows about the fog (14)",
+    "prevent sister vrenn from entering the undercroft alone (15)"
+  ],
+  "complications": [
+    "the fog thickens without warning (1)",
+    "a monk's bell rings at the wrong hour (2)",
+    "peat-cutters block the causeway (3)",
+    "the perpetual fire gutters low (4)",
+    "carved tablets surface in the cut peat (5)",
+    "old sem refuses to guide without conditions (6)",
+    "the standing stones hum at nightfall (7)",
+    "a traveler stumbles out of harrowgate, changed (8)",
+    "sister vrenn vanishes from the abbey (9)",
+    "the northern bogs begin to flood (10)",
+    "reeve callum issues an ultimatum to the order (11)",
+    "lights move between the stones at midday (12)",
+    "the undercroft door is found ajar (13)",
+    "a peat-cutter's tools are found but not the cutter (14)",
+    "the fog begins creeping beyond the pass (15)"
+  ],
+  "npcArchetypes": [
+    "silent herbalist torn between vow and truth (1)",
+    "gaunt warden who guards a terrible secret (2)",
+    "pragmatic reeve desperate for a trade route (3)",
+    "reckless young cutter who found buried tablets (4)",
+    "blind hermit who speaks to the fog (5)",
+    "anxious young monk drawn to forbidden knowledge (6)",
+    "scarred peat-hauler who lost a friend in the pass (7)",
+    "itinerant tinker who trades in rumors and nails (8)",
+    "elderly midwife who remembers the silence (9)",
+    "mute bell-ringer who watches from the tower (10)",
+    "suspicious causeway toll-keeper (11)",
+    "wandering scholar drawn by tales of the stones (12)",
+    "orphaned child raised by the village council (13)",
+    "retired soldier turned peat-cutter (14)",
+    "travelling merchant stranded by fog (15)"
+  ],
+  "sensoryMotifs": [
+    "wet peat smell clings to everything (1)",
+    "fog muffles sound to a whisper (2)",
+    "bronze bells ring faintly in still air (3)",
+    "black water pools in every footprint (4)",
+    "grey lichen creeps across stone (5)",
+    "smoke from the drying kilns stings your eyes (6)",
+    "the ground gives slightly underfoot (7)",
+    "cold seeps upward from the peat (8)",
+    "distant lights pulse behind the fog (9)",
+    "the air tastes of ash and iron (10)",
+    "wind carries a sound like breathing (11)",
+    "shadows move wrong in the cloister (12)",
+    "the perpetual fire crackles with blue sparks (13)",
+    "rain falls sideways across the moor (14)",
+    "silence presses on your ears like a hand (15)"
+  ],
+  "regions": [
+    {
+      "id": "abbey-grounds",
+      "name": "Abbey Grounds",
+      "description": "The ruined abbey of Saint Aldwyn and its surrounding outbuildings.",
+      "adjacent": ["greyfen", "moorland-interior"]
+    },
+    {
+      "id": "greyfen",
+      "name": "Greyfen Village",
+      "description": "A peat-harvesting settlement along a raised causeway.",
+      "adjacent": ["abbey-grounds", "moorland-interior", "harrowgate"]
+    },
+    {
+      "id": "moorland-interior",
+      "name": "Moorland Interior",
+      "description": "The windswept rises and peat bogs of the deep moor, including the standing stones.",
+      "adjacent": ["abbey-grounds", "greyfen", "harrowgate"]
+    },
+    {
+      "id": "harrowgate",
+      "name": "Harrowgate Pass",
+      "description": "A fog-choked defile cutting through the eastern ridge.",
+      "adjacent": ["greyfen", "moorland-interior"]
+    }
+  ],
+  "factions": [
+    {
+      "id": "ember-quill",
+      "name": "The Order of the Ember Quill",
+      "description": "Silent monks guarding the sealed undercroft of Saint Aldwyn's Abbey.",
+      "pressure": 30,
+      "hostility": 10,
+      "agenda": "Keep the undercroft sealed, maintain the perpetual fire, watch the standing stones."
+    },
+    {
+      "id": "greyfen-cutters",
+      "name": "The Greyfen Peat-Cutters",
+      "description": "Moorland folk who harvest peat for survival and resent the abbey's territorial claims.",
+      "pressure": 50,
+      "hostility": 25,
+      "agenda": "Secure access to the northern peat bogs, find a trade route bypassing Harrowgate."
+    }
+  ],
+  "npcs": [
+    {
+      "id": "npc_maren",
+      "name": "Brother Maren",
+      "archetype": "silent herbalist torn between vow and truth",
+      "faction": "ember-quill",
+      "location": "abbey-grounds",
+      "personality": { "honesty": 0.7, "warmth": 0.6, "volatility": 0.3 },
+      "hook": "Communicates via wax tablet; may share fragments about the undercroft if trusted."
+    },
+    {
+      "id": "npc_thessa",
+      "name": "Warden Thessa",
+      "archetype": "gaunt warden who guards a terrible secret",
+      "faction": "ember-quill",
+      "location": "abbey-grounds",
+      "personality": { "honesty": 0.4, "warmth": 0.1, "volatility": 0.2 },
+      "hook": "Communicates only through terse written notes; will protect the undercroft at any cost."
+    },
+    {
+      "id": "npc_callum",
+      "name": "Reeve Callum",
+      "archetype": "pragmatic reeve desperate for a trade route",
+      "faction": "greyfen-cutters",
+      "location": "greyfen",
+      "personality": { "honesty": 0.8, "warmth": 0.5, "volatility": 0.4 },
+      "hook": "Hires travelers for scouting; wants the northern bogs and a route past Harrowgate."
+    },
+    {
+      "id": "npc_dysart",
+      "name": "Fen Dysart",
+      "archetype": "reckless young cutter who found buried tablets",
+      "faction": "greyfen-cutters",
+      "location": "moorland-interior",
+      "personality": { "honesty": 0.5, "warmth": 0.4, "volatility": 0.7 },
+      "hook": "Has hidden carved tablets found near the standing stones; wants to sell them and leave."
+    },
+    {
+      "id": "npc_sem",
+      "name": "Old Sem",
+      "archetype": "blind hermit who speaks to the fog",
+      "faction": null,
+      "location": "harrowgate",
+      "personality": { "honesty": 0.9, "warmth": 0.6, "volatility": 0.1 },
+      "hook": "Claims to have crossed the pass seventeen times; guides only on his strict conditions."
+    },
+    {
+      "id": "npc_vrenn",
+      "name": "Sister Vrenn",
+      "archetype": "anxious young monk drawn to forbidden knowledge",
+      "faction": "ember-quill",
+      "location": "abbey-grounds",
+      "personality": { "honesty": 0.6, "warmth": 0.5, "volatility": 0.8 },
+      "hook": "The youngest monk; has been caught trying to enter the undercroft and grows more agitated."
+    }
+  ],
+  "threads": [
+    {
+      "id": "sealed-undercroft",
+      "name": "The Sealed Undercroft",
+      "description": "Something was imprisoned beneath the abbey thirty years ago. The seals are weakening.",
+      "tension": 40,
+      "factions": ["ember-quill"]
+    },
+    {
+      "id": "peat-war",
+      "name": "The Peat War",
+      "description": "Greyfen needs the northern bogs the abbey claims. The truce is fraying.",
+      "tension": 55,
+      "factions": ["ember-quill", "greyfen-cutters"]
+    },
+    {
+      "id": "fog-hunger",
+      "name": "The Fog's Hunger",
+      "description": "Disappearances in Harrowgate are increasing. The fog may not be natural.",
+      "tension": 35,
+      "factions": []
+    }
+  ],
+  "seeds": [
+    { "id": "seed_undercroft_voice", "tag": "undercroft", "hint": "A voice answers from below when the fire burns low." },
+    { "id": "seed_tablet_spirals", "tag": "tablets", "hint": "The spirals on the buried tablets match the standing stones exactly." },
+    { "id": "seed_fog_boundary", "tag": "fog", "hint": "The fog is a boundary, not weather. Something presses from the other side." },
+    { "id": "seed_silence_origin", "tag": "history", "hint": "The Silence killed seven monks in a single night. The survivors chose muteness." },
+    { "id": "seed_fire_purpose", "tag": "ritual", "hint": "The perpetual peat fire feeds something beneath the chapter house." },
+    { "id": "seed_sem_crossings", "tag": "guide", "hint": "Old Sem has crossed Harrowgate seventeen times. He lost his eyes on the third." },
+    { "id": "seed_stone_lights", "tag": "stones", "hint": "The lights at the standing stones pulse in time with the fog's thickening." },
+    { "id": "seed_vrenn_dreams", "tag": "undercroft", "hint": "Sister Vrenn dreams of the undercroft nightly. Something is calling her." },
+    { "id": "seed_old_script", "tag": "language", "hint": "The Old Script above the undercroft door is a warning, not a name." },
+    { "id": "seed_causeway_sinking", "tag": "terrain", "hint": "The causeway is sinking. In five years Greyfen will be an island." },
+    { "id": "seed_monks_solstice", "tag": "ritual", "hint": "The solstice vigil at the stones reinforces something. Missing one weakens it." },
+    { "id": "seed_merchant_fate", "tag": "mystery", "hint": "The merchant Dysart told about the tablets entered Harrowgate and never emerged." },
+    { "id": "seed_bell_pattern", "tag": "communication", "hint": "The monks' bell patterns encode a language more complex than their hand signs." },
+    { "id": "seed_peat_bones", "tag": "discovery", "hint": "Ancient bones surface in the cut peat. They are not human." },
+    { "id": "seed_fog_voices", "tag": "fog", "hint": "The voices in the fog speak a language that sounds like the Old Script." }
+  ]
+}

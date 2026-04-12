@@ -109,6 +109,65 @@ Return format:
 Only include deltas for physical changes that logically follow from the action.
 weight/noise/light/bulk must be integers 0-5.`;
 
+// --- Local LLM Classification (Pass P1) ---
+
+const VALID_DIFFICULTIES = new Set(['trivial', 'easy', 'medium', 'hard', 'impossible']);
+const VALID_STATS = new Set(['MIGHT', 'AGILITY', 'WITS', 'GRIT', 'CHARM']);
+
+/**
+ * classifyPhysicsLocal({ world, playerText, detection, queryLocalFn }) → classification | null
+ *
+ * Asks the local model for a plausibility classification.
+ * Returns { possible, difficulty, stat } or null on failure.
+ * Never throws.
+ */
+async function classifyPhysicsLocal({ world, playerText, detection, queryLocalFn }) {
+  if (typeof queryLocalFn !== 'function') return null;
+
+  const party = Array.isArray(world.party) ? world.party : [];
+  const player = party[0] || {};
+  const stats = player.stats || {};
+  const sceneTags = Array.isArray(world.scene?.tags) ? world.scene.tags.join(', ') : '';
+
+  // Build relevant equipment context
+  const inv = player.inventory || {};
+  const equipped = Array.isArray(inv.items)
+    ? inv.items.filter(i => i.equipped).map(i => i.defRef || i.id).join(', ')
+    : '';
+
+  const targetName = detection.matches[0]?.name || 'the environment';
+
+  const prompt = `The player wants to: "${playerText}"
+Target: ${targetName}
+Environment: ${sceneTags || 'dungeon'}
+Player stats: MIGHT ${stats.MIGHT ?? 10}, AGILITY ${stats.AGILITY ?? 10}, WITS ${stats.WITS ?? 10}, GRIT ${stats.GRIT ?? 10}, CHARM ${stats.CHARM ?? 10}
+Equipment: ${equipped || 'basic gear'}
+
+Is this physically possible? Reply as JSON:
+{ "possible": true/false, "difficulty": "trivial"|"easy"|"medium"|"hard"|"impossible", "stat": "MIGHT"|"AGILITY"|"WITS"|"GRIT"|"CHARM" }`;
+
+  try {
+    const resp = await queryLocalFn({
+      prompt,
+      schema: { possible: 'boolean', difficulty: 'string', stat: 'string' },
+      timeout: 2000
+    });
+
+    if (!resp || !resp.ok || !resp.result) return null;
+
+    const r = resp.result;
+    if (typeof r.possible !== 'boolean') return null;
+
+    return {
+      possible: r.possible,
+      difficulty: VALID_DIFFICULTIES.has(r.difficulty) ? r.difficulty : 'medium',
+      stat: VALID_STATS.has(r.stat) ? r.stat : 'MIGHT'
+    };
+  } catch {
+    return null;
+  }
+}
+
 export async function evaluatePhysics({
   world,
   playerText,
@@ -117,7 +176,8 @@ export async function evaluatePhysics({
   endpoint = 'https://api.openai.com/v1/chat/completions',
   model = 'gpt-4o-mini',
   fetchImpl = globalThis.fetch,
-  chatCompletionFn = null
+  chatCompletionFn = null,
+  queryLocalFn = null
 } = {}) {
   const w = ensureWorld(world);
   const detection = detectPhysicalInteraction(w, playerText);
@@ -126,19 +186,39 @@ export async function evaluatePhysics({
     return { plausible: false, deltas: [], description: '', fallbackUsed: false };
   }
 
+  // Pass P1 — try local LLM classification first
+  let localClass = null;
+  if (queryLocalFn) {
+    localClass = await classifyPhysicsLocal({ world: w, playerText, detection, queryLocalFn });
+    if (localClass && (!localClass.possible || localClass.difficulty === 'impossible')) {
+      return {
+        plausible: false,
+        deltas: [],
+        description: '',
+        fallbackUsed: false,
+        classification: localClass
+      };
+    }
+  }
+
   // Try LLM if available (provider-agnostic path or legacy OpenAI path)
   const hasLlm = chatCompletionFn || (apiKey && typeof fetchImpl === 'function');
   if (hasLlm) {
     try {
       const result = await callPhysicsLLM({ world: w, playerText, detection, apiKey, endpoint, model, fetchImpl, chatCompletionFn });
-      if (result) return result;
+      if (result) {
+        result.classification = localClass || null;
+        return result;
+      }
     } catch {
       // Fall through to offline fallback
     }
   }
 
   // Offline fallback: approach-based outcome with real deltas
-  return offlineFallback(w, playerText, detection);
+  const fallbackResult = offlineFallback(w, playerText, detection);
+  fallbackResult.classification = localClass || null;
+  return fallbackResult;
 }
 
 async function callPhysicsLLM({ world, playerText, detection, apiKey, endpoint, model, fetchImpl, chatCompletionFn }) {

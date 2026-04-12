@@ -297,6 +297,83 @@ export function filterRumors(speaker, rumors, playerRelationship) {
 }
 
 /**
+ * applyMoodOverlay(emotionalColoring, brainMood) → emotionalColoring[]
+ *
+ * Shifts emotional coloring intensities based on the NPC brain's mood decision.
+ * Pure function — same inputs, same output.
+ *
+ * Mood effects:
+ * - 'hostile': amplify 'guarded' and 'evasive' intensities by 1.5x, add hostile undertone
+ * - 'fearful': amplify 'nervous' intensity by 1.5x, add fearful undertone
+ * - 'warm': reduce all negative intensities by 0.7x, cap nervousness at 0.3
+ * - 'amused': reduce 'guarded' intensity by 0.5x, add amused undertone
+ * - 'wary': no change (default mood, baseline behavior)
+ *
+ * @param {object[]} emotionalColoring — existing coloring array
+ * @param {string} brainMood — mood from NpcDecision
+ * @returns {object[]} — new coloring array (never mutates input)
+ */
+export function applyMoodOverlay(emotionalColoring, brainMood) {
+  const mood = String(brainMood || 'wary');
+  const coloring = Array.isArray(emotionalColoring) ? emotionalColoring : [];
+
+  if (mood === 'wary' || !coloring.length) {
+    // Default mood or no coloring — return copy unchanged
+    // But still add mood undertone if non-wary and empty
+    if (mood !== 'wary' && !coloring.length) {
+      return [{
+        emotion: mood,
+        intensity: mood === 'hostile' ? 0.7 : mood === 'fearful' ? 0.6 : 0.4,
+        trigger: null
+      }];
+    }
+    return coloring.map(c => ({ ...c }));
+  }
+
+  const result = coloring.map(c => {
+    const next = { ...c };
+    const intensity = Number(c.intensity ?? 0);
+
+    switch (mood) {
+      case 'hostile':
+        if (c.emotion === 'guarded' || c.emotion === 'evasive') {
+          next.intensity = Math.min(1, intensity * 1.5);
+        }
+        break;
+      case 'fearful':
+        if (c.emotion === 'nervous') {
+          next.intensity = Math.min(1, intensity * 1.5);
+        }
+        break;
+      case 'warm':
+        next.intensity = Math.min(1, intensity * 0.7);
+        if (c.emotion === 'nervous') {
+          next.intensity = Math.min(0.3, next.intensity);
+        }
+        break;
+      case 'amused':
+        if (c.emotion === 'guarded') {
+          next.intensity = Math.min(1, intensity * 0.5);
+        }
+        break;
+    }
+
+    return next;
+  });
+
+  // Add mood undertone if not wary
+  if (mood !== 'wary') {
+    result.push({
+      emotion: mood,
+      intensity: mood === 'hostile' ? 0.7 : mood === 'fearful' ? 0.6 : 0.4,
+      trigger: null
+    });
+  }
+
+  return result;
+}
+
+/**
  * applyContradictionEffects(holder, contradiction) → updated NPC
  *
  * When a contradiction is exposed, shift the holder's emotional state.

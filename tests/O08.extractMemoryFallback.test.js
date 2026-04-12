@@ -11,6 +11,12 @@ function makeNpc(name = 'Marta') {
   };
 }
 
+// Helper: extract text from memory entry (string or D2 object)
+function memText(entry) {
+  if (!entry) return '';
+  return typeof entry === 'string' ? entry : String(entry.text || '');
+}
+
 describe('O08: extractMemory deterministic fallback templates', () => {
   it('same inputs produce same output (deterministic)', () => {
     const npc = makeNpc();
@@ -19,9 +25,9 @@ describe('O08: extractMemory deterministic fallback templates', () => {
 
     const a = extractMemory(npc, 'tell me about trade', decision, outcome);
     const b = extractMemory(npc, 'tell me about trade', decision, outcome);
-    assert.equal(a, b, 'deterministic: same inputs produce same output');
-    assert.equal(typeof a, 'string');
-    assert.ok(a.length > 0);
+    assert.deepStrictEqual(a, b, 'deterministic: same inputs produce same output');
+    const text = memText(a);
+    assert.ok(text.length > 0);
   });
 
   it('shared mode produces "discussed {topic}" template', () => {
@@ -29,8 +35,9 @@ describe('O08: extractMemory deterministic fallback templates', () => {
     const mem = extractMemory(npc, 'trade?', null, {
       mode: 'shared', topic: 'trade_routes', trustLevel: 6
     });
-    assert.ok(mem.includes('discussed'), 'shared mode includes "discussed"');
-    assert.ok(mem.includes('trade_routes'), 'shared mode includes topic');
+    const text = memText(mem);
+    assert.ok(text.includes('discussed'), 'shared mode includes "discussed"');
+    assert.ok(text.includes('trade_routes'), 'shared mode includes topic');
   });
 
   it('withheld mode produces "withheld" template', () => {
@@ -38,8 +45,9 @@ describe('O08: extractMemory deterministic fallback templates', () => {
     const mem = extractMemory(npc, 'secrets?', null, {
       mode: 'withheld', topic: 'dark_secret', trustLevel: 3
     });
-    assert.ok(mem.includes('withheld'), 'withheld mode includes "withheld"');
-    assert.ok(mem.includes('dark_secret'), 'withheld mode includes topic');
+    const text = memText(mem);
+    assert.ok(text.includes('withheld'), 'withheld mode includes "withheld"');
+    assert.ok(text.includes('dark_secret'), 'withheld mode includes topic');
   });
 
   it('lied mode produces "misled" template', () => {
@@ -47,7 +55,7 @@ describe('O08: extractMemory deterministic fallback templates', () => {
     const mem = extractMemory(npc, 'what happened?', null, {
       mode: 'lied', topic: 'the_incident', trustLevel: 4
     });
-    assert.ok(mem.includes('misled'), 'lied mode includes "misled"');
+    assert.ok(memText(mem).includes('misled'), 'lied mode includes "misled"');
   });
 
   it('deflected with no topic returns null', () => {
@@ -64,7 +72,7 @@ describe('O08: extractMemory deterministic fallback templates', () => {
       mode: 'deflected', topic: 'weather'
     });
     assert.ok(mem, 'deflected with topic returns a memory');
-    assert.ok(mem.includes('weather'));
+    assert.ok(memText(mem).includes('weather'));
   });
 
   it('recruited mode produces travel template', () => {
@@ -72,8 +80,8 @@ describe('O08: extractMemory deterministic fallback templates', () => {
     const mem = extractMemory(npc, 'invite to travel', null, {
       mode: 'recruited', topic: '', trustLevel: 7
     });
-    assert.ok(mem.includes('agreed to travel'), 'recruited mode includes "agreed to travel"');
-    assert.ok(mem.includes('Aldric'), 'recruited mode includes NPC name');
+    assert.ok(memText(mem).includes('agreed to travel'), 'recruited mode includes "agreed to travel"');
+    assert.ok(memText(mem).includes('Aldric'), 'recruited mode includes NPC name');
   });
 
   it('refused-soft mode produces refusal template', () => {
@@ -81,7 +89,7 @@ describe('O08: extractMemory deterministic fallback templates', () => {
     const mem = extractMemory(npc, 'invite to travel', null, {
       mode: 'refused-soft', topic: '', trustLevel: 4
     });
-    assert.ok(mem.includes('refused'), 'refused-soft includes "refused"');
+    assert.ok(memText(mem).includes('refused'), 'refused-soft includes "refused"');
   });
 });
 

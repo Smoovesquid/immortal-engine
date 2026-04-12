@@ -166,13 +166,22 @@ export function applyDeltas(world, deltas = []) {
 
     if (kind === 'npcMemoryAdd') {
       const npcId = String(op.npcId || '');
-      const entry = String(op.entry || '').trim();
-      if (!npcId || !entry) continue;
+      const entry = op.entry;
+      // Support both string and object entries (Pass D2)
+      const memEntry = (entry && typeof entry === 'object')
+        ? { text: String(entry.text || '').trim(), turn: Math.max(0, Math.trunc(Number(entry.turn) || 0)), salience: clamp01f(entry.salience ?? 1.0) }
+        : String(entry || '').trim();
+      const memText = typeof memEntry === 'object' ? memEntry.text : memEntry;
+      if (!npcId || !memText) continue;
       w = mutateNpc(w, npcId, npc => {
         const memory = Array.isArray(npc.memory) ? [...npc.memory] : [];
-        // Deduplicate exact strings
-        if (memory.includes(entry)) return npc;
-        memory.push(entry);
+        // Deduplicate by text content
+        const exists = memory.some(m => {
+          const t = typeof m === 'object' ? String(m.text || '') : String(m);
+          return t === memText;
+        });
+        if (exists) return npc;
+        memory.push(memEntry);
         // FIFO eviction if over cap 12
         while (memory.length > 12) memory.shift();
         return { ...npc, memory };
@@ -635,6 +644,11 @@ function clampInt(n, lo, hi) {
   const x = Math.trunc(Number(n));
   if (!Number.isFinite(x)) return lo;
   return Math.max(lo, Math.min(hi, x));
+}
+
+function clamp01f(v) {
+  const x = Number(v);
+  return Number.isFinite(x) ? Math.max(0, Math.min(1, x)) : 0;
 }
 
 // Pass C1 — companion mint. Pure: deterministic stat synthesis from role,

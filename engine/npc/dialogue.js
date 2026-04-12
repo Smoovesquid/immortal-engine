@@ -286,12 +286,13 @@ export function askNpc(world, text) {
 
   // ── Pass O3 — NPC persistent memory ────────────────────────────────────
   // Record what happened from the NPC's perspective.
+  // Pass D2 — pass currentTurn for memory timestamping.
   const memoryEntry = extractMemory(npc, text, brainDecision, {
     mode,
     topic: factId || '',
     trustLevel: nextTrust,
     trustDelta
-  });
+  }, curTurn);
   let w3 = w2;
   if (memoryEntry) {
     w3 = applyDeltas(w2, [{ op: 'npcMemoryAdd', npcId: d.npcId, entry: memoryEntry }]);

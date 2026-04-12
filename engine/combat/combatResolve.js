@@ -32,6 +32,7 @@ import { ensureWorld } from '../state.js';
 import { resolveMove } from '../resolve.js';
 import { applyDeltas } from '../effectsCore.js';
 import { checkGoals } from '../goals/goalContract.js';
+import { computeAttack } from '../gear/gearProps.js';
 
 const FORCE_BASE = 3;
 const FINESSE_BASE = 2;
@@ -97,7 +98,9 @@ export function resolveCombatTurn(world, move, opts = {}) {
   if (targetEnemy && result.outcome === 'success') {
     if (m.approachTag === 'force' || m.approachTag === 'finesse') {
       const base = m.approachTag === 'force' ? FORCE_BASE : FINESSE_BASE;
-      const dmg = clampInt(base + Math.floor(result.margin / 2), 1, 8);
+      const attack = computeAttack(w.party?.[0]);
+      const weaponBonus = attack.damageBonus;
+      const dmg = clampInt(base + Math.floor(result.margin / 2) + weaponBonus, 1, 20);
       combatDeltas.push({ op: 'combatState', enemyHpDelta: [{ id: targetEnemy.id, by: -dmg }] });
       summaryParts.push(`${m.approachTag} hit on ${targetEnemy.name} for ${dmg}`);
     } else if (m.approachTag === 'endure') {

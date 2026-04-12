@@ -16,6 +16,31 @@ import { gatherNpcKnowledge } from './perspectiveFilter.js';
 const VALID_MOODS = new Set(['wary', 'warm', 'hostile', 'fearful', 'amused']);
 const VALID_APPROACHES = new Set(['volunteer', 'wait_to_be_asked', 'deflect', 'lie']);
 
+// ── Faction standing helper ─────────────────────────────────────────────────
+
+/**
+ * getFactionStanding(npc, world) → { factionId, hostility, playerReputation } | null
+ * Returns the NPC's faction context: how hostile the faction is and the player's
+ * reputation with that faction. Returns null if NPC has no faction.
+ */
+function getFactionStanding(npc, world) {
+  const factionId = String(npc.factionId || '').trim();
+  if (!factionId) return null;
+
+  const factions = Array.isArray(world?.factions) ? world.factions : [];
+  const faction = factions.find(f => f.id === factionId);
+  if (!faction) return null;
+
+  const rep = world?.reputation?.factions || {};
+  const playerReputation = Number(rep[factionId] ?? 0);
+
+  return {
+    factionId,
+    hostility: Number(faction.hostility ?? 0),
+    playerReputation  // -100 to +100
+  };
+}
+
 // ── Context builder ─────────────────────────────────────────────────────────
 
 /**
@@ -73,7 +98,9 @@ export function buildNpcContext(npc, world, playerInput) {
     memories: Array.isArray(npc.memory) ? npc.memory.slice() : [],
     playerInput: String(playerInput || ''),
     turn: Number(world?.time?.turn ?? 0),
-    secrets: new Set(Array.isArray(npc.secrets) ? npc.secrets.map(String) : [])
+    secrets: new Set(Array.isArray(npc.secrets) ? npc.secrets.map(String) : []),
+    factionId: String(npc.factionId || ''),
+    factionStanding: getFactionStanding(npc, world)
   };
 }
 
@@ -110,10 +137,14 @@ function buildPromptVerbose(ctx) {
     .map(r => `- ${r.targetId}: bond ${r.bond.toFixed(2)} (${r.history.join(', ')})`)
     .join('\n');
 
+  const factionInfo = ctx.factionStanding
+    ? `\nFaction: ${ctx.factionStanding.factionId} (player reputation: ${ctx.factionStanding.playerReputation}, faction hostility: ${ctx.factionStanding.hostility})`
+    : '';
+
   return `You are ${ctx.name}, a ${ctx.archetype}.
 Personality: ${traits}.
 Trust toward this person: ${ctx.trust}/10.
-Mood: ${ctx.mood}.
+Mood: ${ctx.mood}.${factionInfo}
 
 You know:
 ${knowledgeBlock || '(nothing)'}
@@ -140,6 +171,10 @@ const APPROACH_CODES = { volunteer: 'V', wait_to_be_asked: 'Q', deflect: 'D', li
 function buildPromptCompressed(facts, rumors, ctx) {
   const traits = ctx.traits.length > 0 ? ctx.traits.join(', ') : 'unremarkable';
 
+  const factionLine = ctx.factionStanding
+    ? `\nFac:${ctx.factionStanding.factionId} rep:${ctx.factionStanding.playerReputation} host:${ctx.factionStanding.hostility}`
+    : '';
+
   const factLines = facts.map(f => `[F:${f.id}] ${f.text}`).join('\n');
   const rumorLines = rumors.map(r => `[R:${r.id}] ${r.text} t${r.tier}`).join('\n');
   const knowledgeBlock = [factLines, rumorLines].filter(Boolean).join('\n');
@@ -152,7 +187,7 @@ function buildPromptCompressed(facts, rumors, ctx) {
     relBlock = `\nRel:\n${relLines}\n`;
   }
 
-  return `${ctx.name},${ctx.archetype}.${traits}.T${ctx.trust}/10.${MOOD_CODES[ctx.mood] || ctx.mood}.
+  return `${ctx.name},${ctx.archetype}.${traits}.T${ctx.trust}/10.${MOOD_CODES[ctx.mood] || ctx.mood}.${factionLine}
 K:
 ${knowledgeBlock || '-'}
 ${relBlock}P:"${ctx.playerInput}"
@@ -287,6 +322,31 @@ export function fallbackRules(context) {
   const allFacts = (context.knownFacts || []);
   const allRumors = (context.carriedRumors || []);
 
+  // Pass F1 — faction reputation influence on NPC decisions.
+  // If the NPC belongs to a faction and the player has very negative reputation
+  // with that faction, the NPC defaults to wary/deflect regardless of personal trust.
+  // If very positive reputation, mood warms.
+  const faction = context.factionStanding || null;
+  let factionMoodShift = null;
+
+  if (faction) {
+    const rep = Number(faction.playerReputation ?? 0);
+    const hostility = Number(faction.hostility ?? 0);
+
+    // Hostile faction + player on bad terms → deflect
+    if (rep <= -50 || (hostility >= 70 && rep < 0)) {
+      factionMoodShift = 'hostile';
+    }
+    // Player on moderately bad terms → wary
+    else if (rep <= -25) {
+      factionMoodShift = 'wary';
+    }
+    // Very positive reputation → warm boost
+    else if (rep >= 50) {
+      factionMoodShift = 'warm';
+    }
+  }
+
   // Pass O3 — memory-based trust boost in the 4-6 range.
   // If any memory contains a word (>=4 chars) from the player input, treat
   // trust as +1 for share behavior. Only applies in the 4-6 band.
@@ -300,6 +360,11 @@ export function fallbackRules(context) {
       return inputWords.some(w => memLower.includes(w));
     });
     if (hasMemoryMatch) effectiveTrust = trust + 1;
+  }
+
+  // Pass F1 — warm faction boost: treat effective trust as +1 when trust >= 3
+  if (factionMoodShift === 'warm' && trust >= 3) {
+    effectiveTrust = effectiveTrust + 1;
   }
 
   // Separate personal (secret) facts from public facts.
@@ -341,6 +406,27 @@ export function fallbackRules(context) {
     mood = trust <= 1 ? 'hostile' : 'wary';
     approach = 'deflect';
     why = 'Trust is low — withholding.';
+  }
+
+  // Pass F1 — faction mood overrides applied after trust-based computation.
+  // Hostile faction forces deflect unless personal trust is very high (>=7).
+  if (factionMoodShift === 'hostile' && trust < 7) {
+    share = [];
+    mood = 'hostile';
+    approach = 'deflect';
+    why = 'Faction hostility overrides — withholding.';
+  }
+
+  // Wary faction: override mood to 'wary' if it would have been warm/amused
+  if (factionMoodShift === 'wary' && (mood === 'warm' || mood === 'amused')) {
+    mood = 'wary';
+  }
+
+  // Warm faction: ensure approach is at least 'wait_to_be_asked' (not deflect/lie)
+  if (factionMoodShift === 'warm' && trust >= 3) {
+    if (approach === 'deflect' || approach === 'lie') {
+      approach = 'wait_to_be_asked';
+    }
   }
 
   return { share, mood, approach, why };

@@ -15,6 +15,8 @@ import { ensureWorld } from '../state.js';
 import { applyDeltas } from '../effectsCore.js';
 import { endDialogue } from '../npc/dialogue.js';
 import { getMonsterDef } from '../ruleset/core/bestiary/index.js';
+import { makeRng, seedFromString } from '../rng.js';
+import { buildCombatants, rollInitiative } from './initiative.js';
 
 const ENEMY_CAP = 6;
 
@@ -67,6 +69,9 @@ export function mintEnemyFromNpc(npc) {
       : !Boolean(n.hostile);
   // CM5: lootTableRef from bestiary or combatProfile.
   const lootTableRef = profile.lootTableRef ?? bestiary?.lootTableRef ?? null;
+  // CM6: initiative modifier from bestiary or combatProfile.
+  const initMod = typeof (profile.initMod ?? bestiary?.initMod) === 'number'
+    ? (profile.initMod ?? bestiary?.initMod) : 0;
   const sourceNpcId = String(n.id ?? '');
   return {
     id: '', // assigned at begin
@@ -85,7 +90,8 @@ export function mintEnemyFromNpc(npc) {
     canParley,
     defeated: false,
     sourceNpcId,
-    lootTableRef
+    lootTableRef,
+    initMod
   };
 }
 
@@ -123,6 +129,12 @@ export function beginCombat(world, { enemies, reason } = {}) {
   // First, push the begin event so beganAt points at the begin marker.
   w = pushCombatEvent(w, 'combat-begin', { reason: reasonStr, enemies: shaped.map(e => ({ id: e.id, name: e.name, sourceNpcId: e.sourceNpcId })) });
 
+  // CM6: roll initiative for all combatants.
+  const initSeed = seedFromString(`${w.meta?.seed || ''}|initiative|${beganAt}`);
+  const initRng = makeRng(initSeed);
+  const combatants = buildCombatants(w.party, shaped);
+  const initiativeOrder = rollInitiative(combatants, initRng);
+
   // Then apply the state mutation through the canonical delta op.
   w = applyDeltas(w, [{
     op: 'combatState',
@@ -134,7 +146,8 @@ export function beginCombat(world, { enemies, reason } = {}) {
       beganAt,
       reason: reasonStr,
       playerGuard: false,
-      companionGuard: false
+      companionGuard: false,
+      initiativeOrder
     }
   }]);
 

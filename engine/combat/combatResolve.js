@@ -265,7 +265,11 @@ export function resolveCombatTurn(world, move, opts = {}) {
   let playerGuardConsumed = false;
   let companionGuardConsumed = false;
   const counterDeltas = [];
-  for (const e of (w.combat?.enemies || [])) {
+  // CM6: sort enemies by initiative order when available.
+  const initOrder = Array.isArray(w.combat?.initiativeOrder) ? w.combat.initiativeOrder : [];
+  const allEnemies = w.combat?.enemies || [];
+  const orderedEnemies = sortEnemiesByInitiative(allEnemies, initOrder);
+  for (const e of orderedEnemies) {
     if (!(e.hp > 0)) continue;
     // CM2: stunned/paralyzed enemies skip their counter
     const eMods = getConditionModifiers(e.conditions || []);
@@ -432,6 +436,25 @@ export function resolveCombatTurn(world, move, opts = {}) {
  * If enemy has a multiattack array, resolve each named action from the list.
  * Otherwise, use the first action.
  */
+/**
+ * CM6: sort enemies by initiative order. Enemies not in the initiative
+ * list come last, preserving their original array order.
+ */
+function sortEnemiesByInitiative(enemies, initOrder) {
+  if (!initOrder.length) return enemies;
+  const posMap = {};
+  for (let i = 0; i < initOrder.length; i++) {
+    if (initOrder[i].type === 'enemy') {
+      posMap[initOrder[i].id] = i;
+    }
+  }
+  return [...enemies].sort((a, b) => {
+    const posA = posMap[a.id] ?? 999;
+    const posB = posMap[b.id] ?? 999;
+    return posA - posB;
+  });
+}
+
 function pickActions(enemy, actions) {
   const multi = Array.isArray(enemy.multiattack) ? enemy.multiattack : null;
   if (multi && multi.length > 0) {

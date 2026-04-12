@@ -29,8 +29,8 @@ function begin(seed = 'u61') {
 }
 
 // U61-01 — WORLD_VERSION is at the Pass R1 bump.
-test('U61-01: WORLD_VERSION is 17', () => {
-  assert.equal(WORLD_VERSION, 17);
+test('U61-01: WORLD_VERSION is 18', () => {
+  assert.equal(WORLD_VERSION, 18);
 });
 
 // U61-02 — beginAdventure sets meta.homeNodeId to the starting settlement.

@@ -74,6 +74,7 @@ function mkEnemy(over = {}) {
     defeated: false,
     sourceNpcId: 'npc_test_0',
     lootTableRef: null,
+    initMod: 0,
     ...over
   };
 }
@@ -112,10 +113,10 @@ function findCombatTurnOutcome(world, approach, targetOutcome, max = 80) {
 
 // ── 1–6: state shape & normalization ──────────────────────────────────────
 
-test('U58-01: newWorld combat shape is the inactive default and version is 17', () => {
+test('U58-01: newWorld combat shape is the inactive default and version is 18', () => {
   const w = newWorld({ seed: 'u58-fresh', fate: 0.2, campaignId: 'c', pack: { primaryId: 'fantasy', mixerId: null } });
-  assert.equal(w.meta.version, 17);
-  assert.equal(WORLD_VERSION, 17);
+  assert.equal(w.meta.version, 18);
+  assert.equal(WORLD_VERSION, 18);
   assert.deepEqual(w.combat, defaultCombat());
   assert.equal(w.combat.active, false);
   assert.deepEqual(w.combat.enemies, []);
@@ -168,7 +169,7 @@ test('U58-06: invariant — dialogue and combat are mutually exclusive', () => {
   const w = newWorld({ seed: 'u58-mutex', fate: 0.2, campaignId: 'c', pack: { primaryId: 'fantasy', mixerId: null } });
   const bad = {
     ...w,
-    combat: { active: true, round: 1, turnIndex: 0, enemies: [mkEnemy()], beganAt: 0, reason: 'x', playerGuard: false },
+    combat: { active: true, round: 1, turnIndex: 0, enemies: [mkEnemy()], beganAt: 0, reason: 'x', playerGuard: false, companionGuard: false, initiativeOrder: [] },
     scene: { ...w.scene, dialogue: { npcId: 'npc_x', startedAt: 0, turnsInDialogue: 0, topicsOffered: [], lastAnswer: null } }
   };
   assert.throws(() => assertWorldInvariants(bad), /mutually exclusive/);
@@ -691,11 +692,11 @@ test('U58-35: loading a v12 save warns and normalizes combat to default', () => 
   try {
     const loaded = loadSlot(storage, 'slot1');
     assert.ok(loaded);
-    assert.equal(loaded.meta.version, 17);
+    assert.equal(loaded.meta.version, 18);
     assert.deepEqual(loaded.combat, defaultCombat());
     assert.ok(warnings.length > 0);
     assert.ok(warnings[0].includes('v12'));
-    assert.ok(warnings[0].includes('v17'));
+    assert.ok(warnings[0].includes('v18'));
   } finally {
     console.warn = origWarn;
   }

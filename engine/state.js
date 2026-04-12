@@ -14,7 +14,7 @@ import { normalizeCondition } from './combat/conditions.js';
 
 // Pass R1 — bumped from 16 → 17. Adds rumor layer: world.rumors[],
 // npc.rumorIds[], npc.sophistication. See docs/RUMOR_LAYER.md.
-export const WORLD_VERSION = 17;
+export const WORLD_VERSION = 18;
 
 // Crunch caps (T1). Kept here so they're colocated with ensureEntity.
 const FOCI_CAP = 6;
@@ -198,7 +198,7 @@ export function appendRecentBeat(world, beat) {
 const COMBAT_ENEMY_CAP = 6;
 
 export function defaultCombat() {
-  return { active: false, round: 0, turnIndex: 0, enemies: [], beganAt: 0, reason: '', playerGuard: false, companionGuard: false };
+  return { active: false, round: 0, turnIndex: 0, enemies: [], beganAt: 0, reason: '', playerGuard: false, companionGuard: false, initiativeOrder: [] };
 }
 
 export function ensureCombat(c) {
@@ -238,7 +238,9 @@ export function ensureCombat(c) {
     const sourceNpcId = String(eRaw.sourceNpcId ?? '');
     // CM5: lootTableRef for per-enemy loot table override.
     const lootTableRef = typeof eRaw.lootTableRef === 'string' ? eRaw.lootTableRef : null;
-    enemies.push({ id, name, hp, maxHp, damage, ac, cr, damageType, resistances, conditionImmunities, conditions, actions, multiattack, saveProficiencies, canParley, defeated, sourceNpcId, lootTableRef });
+    // CM6: initMod — initiative modifier from bestiary or profile.
+    const initMod = typeof eRaw.initMod === 'number' ? clampInt(eRaw.initMod, -10, 30) : 0;
+    enemies.push({ id, name, hp, maxHp, damage, ac, cr, damageType, resistances, conditionImmunities, conditions, actions, multiattack, saveProficiencies, canParley, defeated, sourceNpcId, lootTableRef, initMod });
     if (enemies.length >= COMBAT_ENEMY_CAP) break;
   }
 
@@ -251,7 +253,19 @@ export function ensureCombat(c) {
   const playerGuard = Boolean(c.playerGuard);
   const companionGuard = Boolean(c.companionGuard);
 
-  return { active, round, turnIndex, enemies, beganAt, reason, playerGuard, companionGuard };
+  // CM6: initiativeOrder — array of { id, type, roll, modifier, total }.
+  const initiativeOrder = (Array.isArray(c.initiativeOrder) ? c.initiativeOrder : [])
+    .filter(e => e && typeof e === 'object')
+    .map(e => ({
+      id: String(e.id ?? ''),
+      type: String(e.type ?? 'enemy'),
+      roll: clampInt(e.roll ?? 0, 0, 20),
+      modifier: clampInt(e.modifier ?? 0, -10, 30),
+      total: clampInt(e.total ?? 0, -10, 50)
+    }))
+    .slice(0, 12); // cap at party + enemy cap
+
+  return { active, round, turnIndex, enemies, beganAt, reason, playerGuard, companionGuard, initiativeOrder };
 }
 
 // ── Pass R1 — rumor normalizer ──────────────────────────────────────────

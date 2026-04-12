@@ -259,6 +259,14 @@ export function assertWorldInvariants(world) {
     if (e.lootTableRef !== null && typeof e.lootTableRef !== 'string') {
       throw new Error(`Invariant: combat enemy ${e.id} lootTableRef must be null or string`);
     }
+    // CM6: initMod must be a number.
+    if (typeof e.initMod !== 'number') {
+      throw new Error(`Invariant: combat enemy ${e.id} initMod must be number`);
+    }
+  }
+  // CM6: initiativeOrder must be an array.
+  if (!Array.isArray(combat.initiativeOrder)) {
+    throw new Error('Invariant: combat.initiativeOrder must be array');
   }
   if (combat.active && world.scene?.dialogue) {
     throw new Error('Invariant: combat.active and scene.dialogue are mutually exclusive');

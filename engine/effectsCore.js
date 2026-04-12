@@ -281,6 +281,8 @@ export function applyDeltas(world, deltas = []) {
         reason: set && 'reason' in set ? String(set.reason ?? '') : cur.reason,
         playerGuard: set && 'playerGuard' in set ? Boolean(set.playerGuard) : cur.playerGuard,
         companionGuard: set && 'companionGuard' in set ? Boolean(set.companionGuard) : cur.companionGuard,
+        // CM6: initiativeOrder
+        initiativeOrder: set && 'initiativeOrder' in set ? set.initiativeOrder : (cur.initiativeOrder || []),
         enemies
       };
 

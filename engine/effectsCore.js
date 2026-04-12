@@ -375,7 +375,6 @@ export function applyDeltas(world, deltas = []) {
       continue;
     }
 
-<<<<<<< HEAD
     // ── Pass T2 — structured item ops for inventory.items[] ────────────────
     // These operate on the new object-array items schema from T1.
     // The legacy createItem/removeItem (string-based, bucket-oriented) above

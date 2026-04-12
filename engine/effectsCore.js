@@ -375,6 +375,7 @@ export function applyDeltas(world, deltas = []) {
       continue;
     }
 
+<<<<<<< HEAD
     // ── Pass T2 — structured item ops for inventory.items[] ────────────────
     // These operate on the new object-array items schema from T1.
     // The legacy createItem/removeItem (string-based, bucket-oriented) above
@@ -437,6 +438,70 @@ export function applyDeltas(world, deltas = []) {
         const updated = items.map(it => it.id === itemId ? { ...it, equipped: null } : it);
         return { ...e, inventory: { ...inv, items: updated } };
       });
+      continue;
+    }
+
+    // ── Pass R1 — rumor ops ─────────────────────────────────────────────────
+
+    if (kind === 'mintRumor') {
+      const rumor = op.rumor;
+      if (!rumor || typeof rumor !== 'object') continue;
+      const id = String(rumor.id ?? '').trim();
+      const sourceSeedId = String(rumor.sourceSeedId ?? '').trim();
+      const carrierNpcId = String(rumor.carrierNpcId ?? '').trim();
+      const body = String(rumor.body ?? '').trim();
+      if (!id || !sourceSeedId || !body) continue;
+
+      const existing = Array.isArray(w.rumors) ? w.rumors : [];
+      if (existing.some(r => r.id === id)) continue;
+      if (existing.length >= 64) continue;
+
+      const shaped = {
+        id,
+        sourceSeedId,
+        carrierNpcId,
+        hopCount: clampInt(rumor.hopCount ?? 0, 0, 99),
+        tier: clampInt(rumor.tier ?? 0, 0, 4),
+        age: clampInt(rumor.age ?? 0, 0, 9999),
+        mintedAt: clampInt(rumor.mintedAt ?? 0, 0, 999999),
+        body,
+        tags: Array.isArray(rumor.tags) ? rumor.tags.map(String).slice(0, 8) : []
+      };
+
+      w = { ...w, rumors: [...existing, shaped] };
+
+      // Add rumorId to carrier NPC's rumorIds (current node only —
+      // minting happens during dialogue at the player's node).
+      if (carrierNpcId) {
+        w = mutateNpc(w, carrierNpcId, npc => {
+          const ids = Array.isArray(npc.rumorIds) ? [...npc.rumorIds] : [];
+          if (!ids.includes(id)) ids.push(id);
+          return { ...npc, rumorIds: ids };
+        });
+      }
+
+      continue;
+    }
+
+    if (kind === 'forgetRumor') {
+      const rumorId = String(op.rumorId ?? '').trim();
+      if (!rumorId) continue;
+      const rumors = Array.isArray(w.rumors) ? w.rumors : [];
+      const idx = rumors.findIndex(r => r.id === rumorId);
+      if (idx === -1) continue;
+      const forgotten = rumors[idx];
+      const nextRumors = rumors.slice();
+      nextRumors.splice(idx, 1);
+      w = { ...w, rumors: nextRumors };
+
+      // Remove from carrier NPC's rumorIds (current node).
+      if (forgotten.carrierNpcId) {
+        w = mutateNpc(w, forgotten.carrierNpcId, npc => {
+          const ids = Array.isArray(npc.rumorIds) ? [...npc.rumorIds] : [];
+          return { ...npc, rumorIds: ids.filter(rid => rid !== rumorId) };
+        });
+      }
+
       continue;
     }
 

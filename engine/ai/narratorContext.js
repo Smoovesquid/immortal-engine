@@ -13,7 +13,7 @@
 import { ensureWorld } from '../state.js';
 import { ensureInstrumentLayer } from '../instrument.js';
 import { fateBand } from '../rulesets.js';
-import { filterContext } from '../npc/perspectiveFilter.js';
+import { filterContext, applyMoodOverlay } from '../npc/perspectiveFilter.js';
 import { availableTopics as dialogueAvailableTopics } from '../npc/dialogue.js';
 import { companionApproachForRole } from '../combat/companionTurn.js';
 
@@ -44,6 +44,12 @@ export function buildNarratorContext(world, outcome = {}) {
     speaker = buildSpeakerContext(picked, picked.knowledgeGraph || []);
   }
 
+  // If brain mood is available from the outcome, overlay it onto speaker emotional coloring
+  const brainMood = outcome?.brainMood || outcome?.brainDecision?.mood || null;
+  if (brainMood && speaker) {
+    speaker = { ...speaker, emotionalColoring: applyMoodOverlay(speaker.emotionalColoring || [], brainMood) };
+  }
+
   return {
     placeName: scene.location.name,
     nodeType: scene.location.type,
@@ -63,7 +69,7 @@ export function buildNarratorContext(world, outcome = {}) {
       population: settlement.population ?? null
     } : null,
     speaker,
-    dialogueTurn: buildDialogueTurn(w)
+    dialogueTurn: buildDialogueTurn(w, outcome)
   };
 }
 
@@ -101,7 +107,7 @@ export function buildDMContext(world, outcome = {}, pack = {}) {
     recentBeats: Array.isArray(w.recentBeats) ? w.recentBeats.slice() : [],
     combat: buildCombatBlock(w),
     companions: buildCompanionsBlock(w),
-    dialogueTurn: buildDialogueTurn(w)
+    dialogueTurn: buildDialogueTurn(w, outcome)
   };
 }
 
@@ -199,7 +205,7 @@ function buildCombatBlock(w) {
 const DIALOGUE_TRUST_REVEAL_PUBLIC = 4;
 const DIALOGUE_TRUST_REVEAL_SECRET = 7;
 
-export function buildDialogueTurn(world) {
+export function buildDialogueTurn(world, outcome) {
   const w = ensureWorld(world);
   const d = w.scene?.dialogue;
   if (!d) return null;
@@ -227,11 +233,14 @@ export function buildDialogueTurn(world) {
     }
   }
 
+  // Brain mood from outcome (if available) takes priority over derived mood
+  const brainMood = outcome?.brainMood || outcome?.brainDecision?.mood || null;
+
   return {
     npc: {
       name: String(npc.name || ''),
       role: String(npc.role || ''),
-      mood: dialogueMood(npc, trust),
+      mood: brainMood || dialogueMood(npc, trust),
       trustLevel: trust,
       personality: npc.personality || null,
       factionId: npc.factionId || null

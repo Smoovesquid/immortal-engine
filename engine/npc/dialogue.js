@@ -289,6 +289,7 @@ export function askNpc(world, text) {
       trustDelta,
       text: String(text || ''),
       brainDecision: brainDecision || null,
+      brainMood: brainDecision?.mood || null,
       rumorBodies: rumorSurface.bodies,
       rumorMintHint: rumorSurface.mintHint
     }

@@ -195,6 +195,127 @@ export function castSpell(world, { spellRef, targetId, slotLevel } = {}) {
         autoSuccess: Boolean(effect.autoSuccess)
       });
     }
+
+    // CM8: heal — restore wounds or stress.
+    if (effect.kind === 'heal') {
+      let healAmount = 0;
+      if (effect.dice === 'half_damage') {
+        // Vampiric touch: heal for half the damage already dealt this cast.
+        const dmgEffect = appliedEffects.find(e => e.kind === 'damage');
+        healAmount = dmgEffect ? Math.floor(dmgEffect.totalDamage / 2) : 0;
+      } else {
+        healAmount = rollDice(rng, String(effect.dice || '1d8'));
+        // Upcast healing.
+        if (!isCantrip && def.scalingByLevel?.extraDice && effectiveSlotLevel > def.level) {
+          const extraLevels = effectiveSlotLevel - def.level;
+          for (let i = 0; i < extraLevels; i++) {
+            healAmount += rollDice(rng, String(def.scalingByLevel.extraDice));
+          }
+        }
+      }
+      if (healAmount > 0) {
+        const healTarget = effect.target === 'self' ? String(party0.id) : (targetId || String(party0.id));
+        if (effect.target === 'party') {
+          // Mass heal: reduce wounds on all living party members.
+          const healDeltas = (w.party || [])
+            .filter(p => p && (p.wounds ?? 0) > 0 && (p.wounds ?? 0) < 6)
+            .map(p => ({ op: 'wound', entityId: String(p.id), by: -healAmount }));
+          if (healDeltas.length) w = applyDeltas(w, healDeltas);
+        } else {
+          w = applyDeltas(w, [{ op: 'wound', entityId: healTarget, by: -healAmount }]);
+        }
+      }
+      appliedEffects.push({ kind: 'heal', healAmount, target: effect.target || 'single', targetId: targetId || null });
+    }
+
+    // CM8: conditions — apply or remove conditions on target.
+    if (effect.kind === 'conditions') {
+      if (effect.removeCondition) {
+        // Restoration spells: remove named conditions from target.
+        const condTarget = targetId || String(party0.id);
+        const names = Array.isArray(effect.conditionNames) ? effect.conditionNames : [];
+        const removeDeltas = names.map(name => ({ op: 'removeCondition', entityId: condTarget, name }));
+        if (removeDeltas.length) w = applyDeltas(w, removeDeltas);
+        appliedEffects.push({ kind: 'conditions', removed: names, targetId: condTarget });
+      } else if (effect.condition) {
+        // Apply condition to target (enemy or ally).
+        const cond = effect.condition;
+        const condDc = (cond.until?.dc === 0) ? spellDC : (cond.until?.dc ?? spellDC);
+        const normalizedCond = {
+          name: String(cond.name ?? ''),
+          until: cond.until ? { ...cond.until, dc: condDc } : null,
+          source: `spell:${ref}`,
+          severity: cond.severity ?? 1,
+          stackBehavior: cond.stackBehavior ?? 'replace'
+        };
+        if (targetId && w.combat?.active) {
+          const enemies = Array.isArray(w.combat.enemies) ? w.combat.enemies : [];
+          const targetEnemy = enemies.find(e => String(e.id) === String(targetId) && e.hp > 0);
+          if (targetEnemy) {
+            w = applyDeltas(w, [{ op: 'combatState', enemyConditions: [{ id: targetEnemy.id, addCondition: normalizedCond }] }]);
+          }
+        } else if (targetId) {
+          w = applyDeltas(w, [{ op: 'condition', entityId: String(targetId), add: normalizedCond.name, until: normalizedCond.until }]);
+        }
+        appliedEffects.push({ kind: 'conditions', applied: normalizedCond, targetId: targetId || null });
+      }
+    }
+
+    // CM8: area_damage — same as damage but flagged as area effect.
+    if (effect.kind === 'area_damage') {
+      let diceStr = String(effect.dice || '1d6');
+      const baseDamage = rollDice(rng, diceStr);
+      let totalDamage = baseDamage;
+
+      let saved = false;
+      if (def.savingThrow && targetId) {
+        const saveRoll = rng.int(1, 20);
+        saved = saveRoll >= spellDC;
+        if (saved && def.savingThrow.halfOnSave) {
+          totalDamage = Math.max(1, Math.floor(totalDamage / 2));
+        } else if (saved) {
+          totalDamage = 0;
+        }
+      }
+
+      if (targetId && w.combat?.active) {
+        const enemies = Array.isArray(w.combat.enemies) ? w.combat.enemies : [];
+        const targetEnemy = enemies.find(e => String(e.id) === String(targetId) && e.hp > 0);
+        if (targetEnemy) {
+          w = applyDeltas(w, [{ op: 'combatState', enemyHpDelta: [{ id: targetEnemy.id, by: -totalDamage }] }]);
+        }
+      }
+
+      appliedEffects.push({
+        kind: 'area_damage',
+        dice: diceStr,
+        damageType: effect.damageType || 'untyped',
+        totalDamage, saved, area: effect.area || null,
+        targetId: targetId || null
+      });
+    }
+
+    // CM8: buff — apply a beneficial modifier to target.
+    if (effect.kind === 'buff') {
+      appliedEffects.push({
+        kind: 'buff',
+        stat: effect.stat || 'unknown',
+        value: effect.value,
+        target: effect.target || 'single',
+        targetId: targetId || String(party0.id)
+      });
+    }
+
+    // CM8: debuff — apply a harmful modifier to target.
+    if (effect.kind === 'debuff') {
+      appliedEffects.push({
+        kind: 'debuff',
+        stat: effect.stat || 'unknown',
+        penalty: effect.penalty || 0,
+        target: effect.target || 'single',
+        targetId: targetId || null
+      });
+    }
   }
 
   return {
@@ -217,13 +338,17 @@ export function castSpell(world, { spellRef, targetId, slotLevel } = {}) {
  * Returns the total as an integer.
  */
 export function rollDice(rng, diceStr) {
-  const m = String(diceStr).match(/^(\d+)d(\d+)$/);
+  const m = String(diceStr).match(/^(\d+)d(\d+)(?:([+-])(\d+))?$/);
   if (!m) return 0;
   const count = Math.max(1, Math.min(20, parseInt(m[1], 10) || 1));
   const sides = Math.max(1, Math.min(100, parseInt(m[2], 10) || 6));
   let total = 0;
   for (let i = 0; i < count; i++) {
     total += rng.int(1, sides);
+  }
+  if (m[3] && m[4]) {
+    const mod = parseInt(m[4], 10) || 0;
+    total += m[3] === '+' ? mod : -mod;
   }
   return total;
 }

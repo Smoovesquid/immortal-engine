@@ -86,7 +86,16 @@ const ui = {
   aiKeyAck: '',
   aiTest: { ok: null, text: '(not run)', ms: null },
   aiStatus: { ok: null, online: null, source: "(unknown)", mode: "(unknown)", envPresent: null, sessionPresent: null },
-  map: { zoom: 'region' }
+  map: { zoom: 'region' },
+  auth: {
+    token: localStorage.getItem('auth_token') || null,
+    username: localStorage.getItem('auth_username') || null,
+    loginError: '',
+    registerError: '',
+    formUser: '',
+    formPass: '',
+    formMode: 'login' // 'login' or 'register'
+  }
 };
 
 async function refreshAiStatus() {
@@ -138,6 +147,99 @@ function coerceFate01(x) {
   const n = Number(x);
   if (!Number.isFinite(n)) return 0.2;
   return Math.max(0, Math.min(1, n));
+}
+
+// ── Auth helpers ──────────────────────────────────────────────────────
+
+function isLoggedIn() {
+  return Boolean(ui.auth.token && ui.auth.username);
+}
+
+function authHeaders() {
+  if (!ui.auth.token) return {};
+  return { 'Authorization': `Bearer ${ui.auth.token}` };
+}
+
+function setAuth(token, username) {
+  ui.auth.token = token;
+  ui.auth.username = username;
+  if (token) {
+    localStorage.setItem('auth_token', token);
+    localStorage.setItem('auth_username', username);
+  } else {
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('auth_username');
+  }
+}
+
+function logout() {
+  setAuth(null, null);
+  ui.auth.loginError = '';
+  ui.auth.registerError = '';
+  render();
+}
+
+async function doLogin() {
+  const username = String(ui.auth.formUser || '').trim();
+  const password = String(ui.auth.formPass || '');
+  if (!username || !password) { ui.auth.loginError = 'Enter username and password.'; render(); return; }
+  try {
+    const r = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+    const data = await r.json();
+    if (data.ok) {
+      setAuth(data.token, data.username);
+      ui.auth.loginError = '';
+      ui.auth.formPass = '';
+      render();
+    } else {
+      ui.auth.loginError = data.error === 'invalid_credentials' ? 'Wrong username or password.' : (data.error || 'Login failed.');
+      render();
+    }
+  } catch {
+    ui.auth.loginError = 'Could not reach server.';
+    render();
+  }
+}
+
+async function doRegister() {
+  const username = String(ui.auth.formUser || '').trim();
+  const password = String(ui.auth.formPass || '');
+  if (!username || !password) { ui.auth.registerError = 'Enter username and password.'; render(); return; }
+  try {
+    const r = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+    const data = await r.json();
+    if (data.ok) {
+      setAuth(data.token, data.username);
+      ui.auth.registerError = '';
+      ui.auth.formPass = '';
+      render();
+    } else {
+      ui.auth.registerError = data.error === 'user_exists' ? 'Username already taken.' : (data.error || 'Registration failed.');
+      render();
+    }
+  } catch {
+    ui.auth.registerError = 'Could not reach server.';
+    render();
+  }
+}
+
+/** Fire-and-forget: save world to server if logged in */
+function syncWorldToServer(worldState, worldId) {
+  if (!isLoggedIn()) return;
+  const id = worldId || String(worldState?.meta?.seed || 'default');
+  fetch('/api/worlds', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', ...authHeaders() },
+    body: JSON.stringify({ worldId: id, state: worldState })
+  }).catch(() => {}); // fire-and-forget
 }
 
 async function computeHashAsync(w) {
@@ -268,6 +370,7 @@ function persistAndRehash(world) {
   saveSlot(localStorage, world, 'slot1');
   ui.world = ensureWorld(world);
   ui.worldHash = '(computing...)';
+  syncWorldToServer(world);
   render();
   computeHashAsync(ui.world).then((h) => {
     ui.worldHash = h || '';
@@ -1081,6 +1184,62 @@ function renderPlay() {
 }
 
 
+function renderAuthScreen() {
+  const isLogin = ui.auth.formMode === 'login';
+  const error = isLogin ? ui.auth.loginError : ui.auth.registerError;
+
+  const userInput = el('input', {
+    class: 'input',
+    placeholder: 'Username',
+    value: ui.auth.formUser || '',
+    onInput: (e) => { ui.auth.formUser = String(e.target.value || ''); }
+  });
+
+  const passInput = el('input', {
+    class: 'input',
+    type: 'password',
+    placeholder: 'Password (min 6 chars)',
+    value: ui.auth.formPass || '',
+    onInput: (e) => { ui.auth.formPass = String(e.target.value || ''); },
+    onKeydown: (e) => { if (e.key === 'Enter') isLogin ? doLogin() : doRegister(); }
+  });
+
+  const toggleBtn = el('button', {
+    class: 'btn',
+    onClick: () => {
+      ui.auth.formMode = isLogin ? 'register' : 'login';
+      ui.auth.loginError = '';
+      ui.auth.registerError = '';
+      render();
+    }
+  }, isLogin ? 'Need an account? Register' : 'Have an account? Log in');
+
+  const submitBtn = el('button', {
+    class: 'btn primary',
+    onClick: () => isLogin ? doLogin() : doRegister()
+  }, isLogin ? 'Log in' : 'Register');
+
+  return el('div', { class: 'container stack' },
+    el('div', { class: 'panel' },
+      el('div', { class: 'header' },
+        el('div', {},
+          el('div', { class: 'title' }, isLogin ? 'Log In' : 'Register'),
+          el('div', { class: 'sub' }, 'Optional — play without an account to stay offline.')
+        )
+      ),
+      el('div', { class: 'card stack' },
+        error ? el('div', { class: 'small', style: { color: '#c44' } }, error) : null,
+        el('div', { class: 'small' }, 'username'),
+        userInput,
+        el('div', { class: 'small' }, 'password'),
+        passInput,
+        el('div', { class: 'row' }, submitBtn),
+        toggleBtn
+      )
+    )
+  );
+}
+
 function renderNav() {
   const btn = (label, screen, { disabled = false } = {}) => el('button', {
     class: ui.screen === screen ? 'btn primary' : 'btn',
@@ -1096,15 +1255,32 @@ function renderNav() {
     onClick: () => { tts.toggle(); render(); }
   }, tts.enabled ? '\u{1F50A}' : '\u{1F507}') : null;
 
+  const navButtons = [
+    btn('Invoke', 'invoke'),
+    btn('Play', 'play', { disabled: !hasWorld }),
+    btn('Map', 'map', { disabled: !hasWorld }),
+    btn('AI', 'ai'),
+    ttsBtn
+  ];
+
+  if (isLoggedIn()) {
+    navButtons.push(
+      el('span', { class: 'small', style: { alignSelf: 'center', marginLeft: 'auto' } }, ui.auth.username),
+      el('button', { class: 'btn ghost', onClick: () => logout() }, 'Logout')
+    );
+  } else {
+    navButtons.push(
+      el('button', {
+        class: ui.screen === 'auth' ? 'btn primary' : 'btn',
+        style: { marginLeft: 'auto' },
+        onClick: () => { ui.screen = 'auth'; render(); }
+      }, 'Login')
+    );
+  }
+
   return el('div', { class: 'panel' },
     el('div', { class: 'header' },
-      el('div', { class: 'row' },
-        btn('Invoke', 'invoke'),
-        btn('Play', 'play', { disabled: !hasWorld }),
-        btn('Map', 'map', { disabled: !hasWorld }),
-        btn('AI', 'ai'),
-        ttsBtn
-      )
+      el('div', { class: 'row' }, ...navButtons)
     )
   );
 }
@@ -1306,6 +1482,7 @@ function render() {
   else if (ui.screen === 'chargen') app.append(renderChargen());
   else if (ui.screen === 'map') app.append(renderMap());
   else if (ui.screen === 'ai') app.append(renderAi());
+  else if (ui.screen === 'auth') app.append(renderAuthScreen());
   else app.append(renderInvoke());
 
   // Auto-scroll the recent-beats panel to bottom so newest beats are visible.

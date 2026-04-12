@@ -11,3 +11,4 @@ yarn-error.log*
 .artifacts/
 *.bak
 .pack-cache/
+data/

@@ -1,11 +1,18 @@
 import 'dotenv/config';
 import express from 'express';
+import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { makeOpenAiClient, hasOpenAiKey, handleAiRequest } from './server/ai.js';
 import { buildLocalProjection } from './engine/map/projection/localProjection.js';
 import { augmentNarration } from './engine/llmAdapter.js';
+import { hashPassword, verifyPassword, generateToken, requireAuth } from './server/auth.js';
+import { createUser, findUser, userExists, validateUsername } from './server/userStore.js';
+import { saveWorld, loadWorld, listWorlds, deleteWorld, isSafeId } from './server/worldStore.js';
+import { ensureWorld } from './engine/state.js';
+import { playerMove } from './engine/playloop.js';
+import { normalizeManifest, normalizePack } from './engine/rulesets.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -136,6 +143,160 @@ return res.json({ ok:false, reason:safe });
       return res.json({ ok: true, narration });
     } catch {
       return res.json({ ok: true, narration: String(req.body?.baseNarration ?? '') });
+    }
+  });
+
+  // ── Auth routes ───────────────────────────────────────────────────────
+
+  app.post('/api/auth/register', async (req, res) => {
+    try {
+      const username = String(req.body?.username || '').trim();
+      const password = String(req.body?.password || '');
+
+      if (!validateUsername(username)) {
+        return res.status(400).json({ ok: false, error: 'invalid_username' });
+      }
+      if (!password || password.length < 6 || password.length > 128) {
+        return res.status(400).json({ ok: false, error: 'invalid_password' });
+      }
+      if (userExists(username)) {
+        return res.status(409).json({ ok: false, error: 'user_exists' });
+      }
+
+      const hashed = await hashPassword(password);
+      createUser(username, hashed);
+      const token = generateToken(username);
+      return res.json({ ok: true, token, username });
+    } catch (e) {
+      return res.status(500).json({ ok: false, error: 'server_error' });
+    }
+  });
+
+  app.post('/api/auth/login', async (req, res) => {
+    try {
+      const username = String(req.body?.username || '').trim();
+      const password = String(req.body?.password || '');
+
+      const user = findUser(username);
+      if (!user) {
+        return res.status(401).json({ ok: false, error: 'invalid_credentials' });
+      }
+
+      const valid = await verifyPassword(password, user.hashedPassword);
+      if (!valid) {
+        return res.status(401).json({ ok: false, error: 'invalid_credentials' });
+      }
+
+      const token = generateToken(username);
+      return res.json({ ok: true, token, username });
+    } catch (e) {
+      return res.status(500).json({ ok: false, error: 'server_error' });
+    }
+  });
+
+  // ── World routes (auth required) ─────────────────────────────────────
+
+  app.get('/api/worlds', requireAuth, (req, res) => {
+    try {
+      const worlds = listWorlds(req.user.username);
+      return res.json({ ok: true, worlds });
+    } catch (e) {
+      return res.status(500).json({ ok: false, error: 'server_error' });
+    }
+  });
+
+  app.get('/api/worlds/:id', requireAuth, (req, res) => {
+    try {
+      const worldId = String(req.params.id || '');
+      if (!isSafeId(worldId)) {
+        return res.status(400).json({ ok: false, error: 'invalid_world_id' });
+      }
+      const state = loadWorld(req.user.username, worldId);
+      if (!state) {
+        return res.status(404).json({ ok: false, error: 'not_found' });
+      }
+      return res.json({ ok: true, worldId, state });
+    } catch (e) {
+      return res.status(500).json({ ok: false, error: 'server_error' });
+    }
+  });
+
+  app.post('/api/worlds', requireAuth, (req, res) => {
+    try {
+      const worldId = String(req.body?.worldId || '').trim();
+      const state = req.body?.state;
+      if (!isSafeId(worldId)) {
+        return res.status(400).json({ ok: false, error: 'invalid_world_id' });
+      }
+      if (!state || typeof state !== 'object') {
+        return res.status(400).json({ ok: false, error: 'missing_state' });
+      }
+      saveWorld(req.user.username, worldId, state);
+      return res.json({ ok: true, worldId });
+    } catch (e) {
+      return res.status(500).json({ ok: false, error: 'server_error' });
+    }
+  });
+
+  app.delete('/api/worlds/:id', requireAuth, (req, res) => {
+    try {
+      const worldId = String(req.params.id || '');
+      if (!isSafeId(worldId)) {
+        return res.status(400).json({ ok: false, error: 'invalid_world_id' });
+      }
+      const deleted = deleteWorld(req.user.username, worldId);
+      if (!deleted) {
+        return res.status(404).json({ ok: false, error: 'not_found' });
+      }
+      return res.json({ ok: true });
+    } catch (e) {
+      return res.status(500).json({ ok: false, error: 'server_error' });
+    }
+  });
+
+  // ── Server-authoritative move (auth required) ────────────────────────
+
+  // Lazy-load packs once for server-side move execution
+  let _serverPacks = null;
+  function getServerPacks() {
+    if (_serverPacks) return _serverPacks;
+    const packsDir = path.join(__dirname, 'packs');
+    const manRaw = JSON.parse(fs.readFileSync(path.join(packsDir, 'manifest.json'), 'utf-8'));
+    const manifest = normalizeManifest(manRaw);
+    const byId = {};
+    for (const p of manifest.packs) {
+      const raw = JSON.parse(fs.readFileSync(path.join(__dirname, p.path), 'utf-8'));
+      byId[p.id] = normalizePack(raw);
+    }
+    _serverPacks = byId;
+    return byId;
+  }
+
+  app.post('/api/move', requireAuth, (req, res) => {
+    try {
+      const worldId = String(req.body?.worldId || '').trim();
+      const action = String(req.body?.action || '').trim();
+
+      if (!isSafeId(worldId)) {
+        return res.status(400).json({ ok: false, error: 'invalid_world_id' });
+      }
+      if (!action) {
+        return res.status(400).json({ ok: false, error: 'missing_action' });
+      }
+
+      const currentState = loadWorld(req.user.username, worldId);
+      if (!currentState) {
+        return res.status(404).json({ ok: false, error: 'world_not_found' });
+      }
+
+      const packsById = getServerPacks();
+      const safeWorld = ensureWorld(currentState);
+      const { world: newState, output } = playerMove(safeWorld, packsById, action);
+
+      saveWorld(req.user.username, worldId, newState);
+      return res.json({ ok: true, worldId, state: newState, output });
+    } catch (e) {
+      return res.status(500).json({ ok: false, error: 'server_error' });
     }
   });
 

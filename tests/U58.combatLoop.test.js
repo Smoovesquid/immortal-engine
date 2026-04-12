@@ -75,6 +75,8 @@ function mkEnemy(over = {}) {
     sourceNpcId: 'npc_test_0',
     lootTableRef: null,
     initMod: 0,
+    legendaryActions: null,
+    reactions: null,
     ...over
   };
 }

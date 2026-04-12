@@ -1,31 +1,17 @@
 /**
- * Pass 5 — Combat resolver.
+ * Pass 5 + CM7 — Combat resolver.
  *
  * resolveCombatTurn(world, move) -> { world, result }
  *
- * Combat is not a parallel resolution system. It REUSES resolve.js (Pass 3)
- * for the player's approach roll, then translates the base outcome into
- * combat-specific effects: enemy HP damage, parley, focus advantage, defend.
- * After the player's turn, living enemies counter-attack deterministically.
+ * CM7 refactor: walk initiativeOrder top to bottom. Each slot resolves
+ * based on type:
+ *   - 'party' (id === player): resolve the player's move
+ *   - 'party' (companion): resolve companion action via afterPlayerTurn hook
+ *   - 'enemy': resolve enemy counter-attack
+ * After each entity's turn, check for legendary actions from eligible enemies.
  *
  * Pure: no LLM, no Math.random, no Date.now. All randomness comes from
  * resolveMove's seeded RNG.
- *
- * Approach signatures inside combat:
- *   force success    → enemy HP damage (base 3 + ⌊margin/2⌋, clamp 1..8)
- *   finesse success  → enemy HP damage (base 2 + ⌊margin/2⌋, clamp 1..8)
- *   endure success   → heal -1 stress; sets playerGuard (next counter -1)
- *   heart success    → parley → ends combat IF target enemy.canParley;
- *                      otherwise trivial 1 damage
- *   focus success    → no damage; arms studied-the-miss DC hook;
- *                      reveals enemy maxHp in mechanicsLine
- *   any failure/mixed → no enemy damage, the resolveMove deltas still apply
- *
- * Victory: when all enemies hp === 0, combat ends. One resolution event
- * per defeated enemy is pushed with data.targetDefeated = sourceNpcId || id.
- *
- * Defeat: when party[0].wounds === 6 after counters, combat ends and the
- * ending is locked with reason 'defeated-in-combat' (no new ending type).
  */
 
 import { ensureWorld } from '../state.js';
@@ -41,6 +27,7 @@ import { getConditionModifiers } from './conditionEffects.js';
 import { resolveAction, resolveRecharge } from './actionResolver.js';
 import { rollLootForCR } from '../ruleset/core/loot/lootRoll.js';
 import { rollDice } from './diceRoller.js';
+import { rollSave } from './savingThrows.js';
 
 const FORCE_BASE = 3;
 const FINESSE_BASE = 2;
@@ -49,21 +36,16 @@ const HEART_FALLBACK_DAMAGE = 1;
 /**
  * resolveCombatTurn(world, move, opts?)
  *
- * opts.afterPlayerTurn — optional hook invoked AFTER player-turn combat
- *   effects have been applied but BEFORE the post-player victory check
- *   and the enemy counter phase. Signature: (world) => { world, summaryParts }
- *   where summaryParts is an optional array of strings appended to the
- *   combatSummary. Used by the playloop to interleave companion turns
- *   into the round: player → companions → counters.
- *
- *   If the hook ends combat (e.g. companion parley) the resolver short
- *   circuits before the counter phase, mirroring the player parley path.
+ * opts.afterPlayerTurn — optional hook for companion resolution.
+ *   Signature: (world, companionId?) => { world, summaryParts }
+ *   CM7: may be called per-companion at their initiative slot.
+ *   Falls back to old behavior (all companions at once) if companionId
+ *   is not supported by the hook.
  */
 export function resolveCombatTurn(world, move, opts = {}) {
   let w = ensureWorld(world);
 
   if (!w.combat?.active || !Array.isArray(w.combat.enemies) || w.combat.enemies.length === 0) {
-    // No-op result for the caller — should not be reached if playloop guards correctly.
     return {
       world: w,
       result: {
@@ -85,20 +67,10 @@ export function resolveCombatTurn(world, move, opts = {}) {
   const m = normalizeCombatMove(move, w.combat);
   const targetId = m.targetId;
   const targetEnemy = findLivingEnemy(w.combat, targetId) || firstLivingEnemy(w.combat);
-
-  // Pass B: surface the targeted enemy's identity on the result so the
-  // composer (and any other downstream consumer) can mention them by name
-  // without parsing free-form combatSummary text. Empty strings when no
-  // single enemy is the focus (victory branch overrides below).
   const targetEnemyName = String(targetEnemy?.name ?? '');
   const targetEnemyId = String(targetEnemy?.id ?? '');
 
-  // Player turn: delegate to the canonical resolver. This reuses Pass 3's
-  // approach signatures, DC hooks, and seeded RNG. Do NOT reimplement.
-  const { result } = resolveMove(w, m);
-  w = applyDeltas(w, result.deltas);
-
-  // CM2: Tick enemy conditions at start of round (ongoing damage, saves, expiry).
+  // CM2: Tick enemy conditions at start of round.
   const conditionTickSeed = seedFromString(`${w.meta?.seed || ''}|condtick|${w.time?.turn ?? 0}|${w.combat?.round ?? 0}`);
   const condTickRng = makeRng(conditionTickSeed);
   const condTickDeltas = [];
@@ -123,270 +95,500 @@ export function resolveCombatTurn(world, move, opts = {}) {
     w = applyDeltas(w, condTickDeltas);
   }
 
-  // Translate the base resolve into combat effects.
-  const combatDeltas = [];
+  // CM7: Reset legendary action remaining and reaction usesRemaining at round start.
+  w = resetLegendaryAndReactions(w);
+
   const summaryParts = [...condTickSummary];
-  let parleyEnded = false;
+  const playerId = String(w.party?.[0]?.id ?? 'party');
 
-  if (targetEnemy && result.outcome === 'success') {
-    if (m.approachTag === 'force' || m.approachTag === 'finesse') {
-      const base = m.approachTag === 'force' ? FORCE_BASE : FINESSE_BASE;
-      const attack = computeAttack(w.party?.[0]);
-      const weaponBonus = attack.damageBonus;
-      const rawDmg = clampInt(base + Math.floor(result.margin / 2) + weaponBonus, 1, 20);
-      const res = applyResistance(rawDmg, attack.damageType, targetEnemy.resistances);
-      if (res.heals) {
-        // Absorb: enemy heals instead of taking damage
-        combatDeltas.push({ op: 'combatState', enemyHpDelta: [{ id: targetEnemy.id, by: res.final }] });
-        summaryParts.push(`${m.approachTag} hit on ${targetEnemy.name} — absorbed ${res.final} hp`);
-      } else if (res.final === 0) {
-        summaryParts.push(`${m.approachTag} hit on ${targetEnemy.name} — immune to ${attack.damageType}`);
-      } else {
-        combatDeltas.push({ op: 'combatState', enemyHpDelta: [{ id: targetEnemy.id, by: -res.final }] });
-        const suffix = res.level !== 'normal' ? ` (${res.level})` : '';
-        summaryParts.push(`${m.approachTag} hit on ${targetEnemy.name} for ${res.final}${suffix}`);
-      }
-    } else if (m.approachTag === 'endure') {
-      // playerGuard one-shot: reduces next enemy counter by 1.
-      combatDeltas.push({ op: 'combatState', set: { playerGuard: true } });
-      summaryParts.push('brace — next enemy strike softened');
-    } else if (m.approachTag === 'heart') {
-      if (targetEnemy.canParley) {
-        // Parley: combat ends, enemies are NOT marked defeated.
-        // Defeat goals do NOT fire on parley.
-        combatDeltas.push({ op: 'combatState', set: { active: false, round: 0, turnIndex: 0, reason: 'parley', playerGuard: false, companionGuard: false } });
-        parleyEnded = true;
-        summaryParts.push(`parley with ${targetEnemy.name} succeeds — combat ends`);
-      } else {
-        combatDeltas.push({ op: 'combatState', enemyHpDelta: [{ id: targetEnemy.id, by: -HEART_FALLBACK_DAMAGE }] });
-        summaryParts.push(`heart-appeal lands but ${targetEnemy.name} is unmoved (${HEART_FALLBACK_DAMAGE})`);
-      }
-    } else if (m.approachTag === 'focus') {
-      // Focus success arms the DC hook via Pass 3's existing addApproachSignature
-      // (you:read-the-pattern). It also reveals enemy maxHp via summary.
-      summaryParts.push(`study ${targetEnemy.name} — maxHp ${targetEnemy.maxHp}`);
-    }
-  } else if (targetEnemy && result.outcome === 'mixed') {
-    summaryParts.push(`${m.approachTag} grazes ${targetEnemy.name}`);
-  } else if (targetEnemy) {
-    summaryParts.push(`${m.approachTag} fails against ${targetEnemy.name}`);
-  }
-
-  // Apply combat-translation deltas.
-  if (combatDeltas.length) {
-    w = applyDeltas(w, combatDeltas);
-  }
-
-  // Pass C2 — interleave hook: after the player's turn applies but before
-  // the victory/counter phase, let the caller (playloop) run companion turns.
-  // The hook may damage enemies, set companionGuard, or end combat via
-  // companion parley. If combat ends inside the hook we short circuit
-  // through the parley-style return below.
-  let companionSummary = [];
-  let companionEndedCombat = false;
-  if (typeof opts.afterPlayerTurn === 'function' && !parleyEnded && w.combat?.active) {
-    const hookRes = opts.afterPlayerTurn(w) || {};
-    if (hookRes.world && typeof hookRes.world === 'object') {
-      w = hookRes.world;
-    }
-    if (Array.isArray(hookRes.summaryParts)) {
-      companionSummary = hookRes.summaryParts.map(String);
-    }
-    // If the companion hook ended combat (e.g. companion parley), surface
-    // the end reason via a resolution event and short circuit past the
-    // victory/counter phases.
-    if (!w.combat?.active) {
-      companionEndedCombat = true;
-      const endReason = String(w.combat?.reason || 'companion-parley');
-      w = pushTimeline(w, { kind: 'resolution', data: { outcome: endReason, targetDefeated: '' } });
-      w = pushTimeline(w, { kind: 'combat-end', data: { reason: endReason } });
-    }
-  }
-
-  if (companionSummary.length) {
-    for (const s of companionSummary) summaryParts.push(s);
-  }
-
-  if (companionEndedCombat) {
-    return {
-      world: w,
-      result: {
-        ...result,
-        combatSummary: summaryParts.join('; ') || 'companion ends combat',
-        mechanicsLine: `${result.mechanicsLine} | combat:companion-end`,
-        targetEnemyName,
-        targetEnemyId
-      }
-    };
-  }
-
-  // After the player's turn, emit a parley resolution event if applicable.
-  if (parleyEnded) {
-    w = pushTimeline(w, { kind: 'resolution', data: { outcome: 'parley', targetDefeated: '' } });
-    w = pushTimeline(w, { kind: 'combat-end', data: { reason: 'parley' } });
-    return {
-      world: w,
-      result: {
-        ...result,
-        combatSummary: summaryParts.join('; ') || 'parley',
-        mechanicsLine: `${result.mechanicsLine} | combat:parley`,
-        targetEnemyName,
-        targetEnemyId
-      }
-    };
-  }
-
-  // Check victory: all enemies hp === 0?
-  const aliveAfterPlayer = (w.combat?.enemies || []).filter(e => e.hp > 0);
-  if (aliveAfterPlayer.length === 0 && w.combat?.active) {
-    w = applyVictory(w);
-    return {
-      world: w,
-      result: {
-        ...result,
-        combatSummary: summaryParts.join('; ') + ' — last enemy falls',
-        mechanicsLine: `${result.mechanicsLine} | combat:victory`,
-        targetEnemyName,
-        targetEnemyId
-      }
-    };
-  }
-
-  // Enemy counter-attacks: CM3 action resolution replaces flat damage.
-  // Each living, non-stunned enemy resolves its actions against a round-robin
-  // party target. Enemies WITH an actions array use resolveAction(); enemies
-  // WITHOUT fall back to flat damage (backwards compatible).
+  // CM7: Pure initiative ordering. Walk initiativeOrder top-to-bottom.
+  const initOrder = Array.isArray(w.combat?.initiativeOrder) ? w.combat.initiativeOrder : [];
   const counterSeed = seedFromString(`${w.meta?.seed || ''}|counter|${w.time?.turn ?? 0}|${w.combat?.round ?? 0}`);
   const counterRng = makeRng(counterSeed);
-  const livingParty = (w.party || []).filter(p => p && (p.wounds ?? 0) < 6);
-  const playerGuardActive = Boolean(w.combat?.playerGuard);
-  const companionGuardActive = Boolean(w.combat?.companionGuard);
-  let partyIdx = 0;
+
+  let playerResolved = false;
+  let result = null;
+  let parleyEnded = false;
+  let companionEndedCombat = false;
+  const companionsResolved = new Set();
+  let legTriggerIndex = 0;
+
+  // Track guard state locally for the round.
+  let playerGuardActive = Boolean(w.combat?.playerGuard);
+  let companionGuardActive = Boolean(w.combat?.companionGuard);
   let playerGuardConsumed = false;
   let companionGuardConsumed = false;
-  const counterDeltas = [];
-  // CM6: sort enemies by initiative order when available.
-  const initOrder = Array.isArray(w.combat?.initiativeOrder) ? w.combat.initiativeOrder : [];
-  const allEnemies = w.combat?.enemies || [];
-  const orderedEnemies = sortEnemiesByInitiative(allEnemies, initOrder);
-  for (const e of orderedEnemies) {
-    if (!(e.hp > 0)) continue;
-    // CM2: stunned/paralyzed enemies skip their counter
-    const eMods = getConditionModifiers(e.conditions || []);
-    if (eMods.skipTurn) {
-      summaryParts.push(`${e.name} is incapacitated — skips counter`);
-      continue;
-    }
-    if (livingParty.length === 0) break;
-    const rawTarget = livingParty[partyIdx % livingParty.length];
-    // CM4: compute AC from equipped armor so resolveAction uses real AC.
-    const targetMember = { ...rawTarget, ac: computeAC(rawTarget) };
-    partyIdx++;
+  let partyIdx = 0;
 
-    const enemyActions = Array.isArray(e.actions) ? e.actions : [];
+  for (let slotIdx = 0; slotIdx < initOrder.length; slotIdx++) {
+    const slot = initOrder[slotIdx];
+    if (!w.combat?.active) break;
 
-    if (enemyActions.length > 0) {
-      // CM3: resolve real actions
-      const actionsToResolve = pickActions(e, enemyActions);
-      let totalDmg = 0;
-      const actionSummaries = [];
+    if (slot.type === 'party' && slot.id === playerId && !playerResolved) {
+      // ── Player's turn ──
+      playerResolved = true;
+      const moveResult = resolveMove(w, m);
+      result = moveResult.result;
+      w = applyDeltas(w, result.deltas);
 
-      for (const act of actionsToResolve) {
-        const res = resolveAction(act, e, targetMember, counterRng);
+      // Translate into combat effects.
+      const combatDeltas = [];
+      const currentTargetEnemy = findLivingEnemy(w.combat, targetId) || firstLivingEnemy(w.combat);
 
-        if (res.hit) {
-          totalDmg += res.damage;
-          const critTag = res.critical ? ' (CRITICAL)' : '';
-          const resTag = res.resistanceResult.level !== 'normal' ? ` [${res.resistanceResult.level}]` : '';
-          actionSummaries.push(`${res.actionName} ${res.damage} ${res.damageType}${critTag}${resTag}`);
+      if (currentTargetEnemy && result.outcome === 'success') {
+        if (m.approachTag === 'force' || m.approachTag === 'finesse') {
+          const attack = computeAttack(w.party?.[0]);
+          const base = m.approachTag === 'force' ? FORCE_BASE : FINESSE_BASE;
+          const weaponBonus = attack.damageBonus;
+          let rawDmg = clampInt(base + Math.floor(result.margin / 2) + weaponBonus, 1, 20);
+          const dmgType = attack.damageType;
 
-          // Apply conditions from hit actions
-          if (res.conditionsApplied.length > 0) {
-            const tgtConds = Array.isArray(targetMember.conditions) ? targetMember.conditions : [];
-            const tgtImmunities = Array.isArray(targetMember.conditionImmunities) ? targetMember.conditionImmunities : [];
-            for (const cond of res.conditionsApplied) {
-              const applied = applyCondition(tgtConds, cond, tgtImmunities);
-              if (applied !== tgtConds) {
-                actionSummaries.push(`applies ${cond.name}`);
-              }
+          // CM7: Check reactions before applying damage.
+          const reactionResult = checkEnemyReaction(
+            w, currentTargetEnemy, m.approachTag, rawDmg, dmgType, counterRng, summaryParts
+          );
+          w = reactionResult.world;
+          rawDmg = reactionResult.damage;
+
+          if (rawDmg > 0) {
+            const res = applyResistance(rawDmg, dmgType, currentTargetEnemy.resistances);
+            if (res.heals) {
+              combatDeltas.push({ op: 'combatState', enemyHpDelta: [{ id: currentTargetEnemy.id, by: res.final }] });
+              summaryParts.push(`${m.approachTag} hit on ${currentTargetEnemy.name} — absorbed ${res.final} hp`);
+            } else if (res.final === 0) {
+              summaryParts.push(`${m.approachTag} hit on ${currentTargetEnemy.name} — immune to ${dmgType}`);
+            } else {
+              combatDeltas.push({ op: 'combatState', enemyHpDelta: [{ id: currentTargetEnemy.id, by: -res.final }] });
+              const suffix = res.level !== 'normal' ? ` (${res.level})` : '';
+              summaryParts.push(`${m.approachTag} hit on ${currentTargetEnemy.name} for ${res.final}${suffix}`);
             }
-          }
-        } else if (res.saveResult) {
-          // Save-based action: target saved
-          if (res.damage > 0) {
-            totalDmg += res.damage;
-            actionSummaries.push(`${res.actionName} (saved, half) ${res.damage} ${res.damageType}`);
           } else {
-            actionSummaries.push(`${res.actionName} — ${targetMember.name} saves`);
+            summaryParts.push(`${m.approachTag} attack on ${currentTargetEnemy.name} — parried`);
           }
-        } else {
-          actionSummaries.push(`${res.actionName} misses`);
+        } else if (m.approachTag === 'endure') {
+          combatDeltas.push({ op: 'combatState', set: { playerGuard: true } });
+          playerGuardActive = true;
+          summaryParts.push('brace — next enemy strike softened');
+        } else if (m.approachTag === 'heart') {
+          if (currentTargetEnemy.canParley) {
+            combatDeltas.push({ op: 'combatState', set: { active: false, round: 0, turnIndex: 0, reason: 'parley', playerGuard: false, companionGuard: false } });
+            parleyEnded = true;
+            summaryParts.push(`parley with ${currentTargetEnemy.name} succeeds — combat ends`);
+          } else {
+            combatDeltas.push({ op: 'combatState', enemyHpDelta: [{ id: currentTargetEnemy.id, by: -HEART_FALLBACK_DAMAGE }] });
+            summaryParts.push(`heart-appeal lands but ${currentTargetEnemy.name} is unmoved (${HEART_FALLBACK_DAMAGE})`);
+          }
+        } else if (m.approachTag === 'focus') {
+          summaryParts.push(`study ${currentTargetEnemy.name} — maxHp ${currentTargetEnemy.maxHp}`);
+        }
+      } else if (currentTargetEnemy && result.outcome === 'mixed') {
+        summaryParts.push(`${m.approachTag} grazes ${currentTargetEnemy.name}`);
+      } else if (currentTargetEnemy) {
+        summaryParts.push(`${m.approachTag} fails against ${currentTargetEnemy.name}`);
+      }
+
+      if (combatDeltas.length) {
+        w = applyDeltas(w, combatDeltas);
+      }
+
+      if (parleyEnded) {
+        w = pushTimeline(w, { kind: 'resolution', data: { outcome: 'parley', targetDefeated: '' } });
+        w = pushTimeline(w, { kind: 'combat-end', data: { reason: 'parley' } });
+        break;
+      }
+
+      // Check victory after player turn.
+      const aliveAfterPlayer = (w.combat?.enemies || []).filter(e => e.hp > 0);
+      if (aliveAfterPlayer.length === 0 && w.combat?.active) {
+        w = applyVictory(w);
+        return {
+          world: w,
+          result: {
+            ...result,
+            combatSummary: summaryParts.join('; ') + ' — last enemy falls',
+            mechanicsLine: `${result.mechanicsLine} | combat:victory`,
+            targetEnemyName,
+            targetEnemyId
+          }
+        };
+      }
+
+    } else if (slot.type === 'party' && slot.id !== playerId && !companionsResolved.has(slot.id)) {
+      // ── Companion's turn ──
+      companionsResolved.add(slot.id);
+      if (typeof opts.afterPlayerTurn === 'function' && w.combat?.active) {
+        // If the player hasn't resolved yet, defer companion processing.
+        // Companions that go before the player still act in initiative order,
+        // but the hook is called at their slot.
+        const hookRes = opts.afterPlayerTurn(w, slot.id) || {};
+        if (hookRes.world && typeof hookRes.world === 'object') {
+          w = hookRes.world;
+        }
+        if (Array.isArray(hookRes.summaryParts)) {
+          for (const s of hookRes.summaryParts) summaryParts.push(String(s));
+        }
+        if (!w.combat?.active) {
+          companionEndedCombat = true;
+          const endReason = String(w.combat?.reason || 'companion-parley');
+          w = pushTimeline(w, { kind: 'resolution', data: { outcome: endReason, targetDefeated: '' } });
+          w = pushTimeline(w, { kind: 'combat-end', data: { reason: endReason } });
+          break;
+        }
+        // Check victory after companion.
+        const aliveAfterCompanion = (w.combat?.enemies || []).filter(e => e.hp > 0);
+        if (aliveAfterCompanion.length === 0 && w.combat?.active) {
+          // Ensure player result exists for return.
+          if (!result) {
+            const moveResult = resolveMove(w, m);
+            result = moveResult.result;
+            w = applyDeltas(w, result.deltas);
+            playerResolved = true;
+          }
+          w = applyVictory(w);
+          return {
+            world: w,
+            result: {
+              ...result,
+              combatSummary: summaryParts.join('; ') + ' — last enemy falls',
+              mechanicsLine: `${result.mechanicsLine} | combat:victory`,
+              targetEnemyName,
+              targetEnemyId
+            }
+          };
         }
       }
 
-      // Apply guard reduction to total
-      let dmg = totalDmg;
-      if (playerGuardActive && !playerGuardConsumed) {
-        dmg = Math.max(0, dmg - 1);
-        playerGuardConsumed = true;
-      } else if (companionGuardActive && !companionGuardConsumed) {
-        dmg = Math.max(0, dmg - 1);
-        companionGuardConsumed = true;
+    } else if (slot.type === 'enemy') {
+      // ── Enemy's turn ──
+      const e = (w.combat?.enemies || []).find(en => en.id === slot.id);
+      if (!e || !(e.hp > 0)) { legTriggerIndex++; continue; }
+
+      const eMods = getConditionModifiers(e.conditions || []);
+      if (eMods.skipTurn) {
+        summaryParts.push(`${e.name} is incapacitated — skips turn`);
+        legTriggerIndex++;
+        // Still check legendary after skipped turn.
+        w = processLegendaryActions(w, e.id, counterRng, summaryParts, legTriggerIndex, partyIdx);
+        continue;
       }
 
-      if (dmg > 0) {
-        counterDeltas.push({ op: 'wound', entityId: String(targetMember.id), by: dmg });
+      const livingParty = (w.party || []).filter(p => p && (p.wounds ?? 0) < 6);
+      if (livingParty.length === 0) { legTriggerIndex++; continue; }
+      const rawTarget = livingParty[partyIdx % livingParty.length];
+      const targetMember = { ...rawTarget, ac: computeAC(rawTarget) };
+      partyIdx++;
+
+      const enemyActions = Array.isArray(e.actions) ? e.actions : [];
+      const counterDeltas = [];
+
+      if (enemyActions.length > 0) {
+        const actionsToResolve = pickActions(e, enemyActions);
+        let totalDmg = 0;
+        const actionSummaries = [];
+
+        for (const act of actionsToResolve) {
+          const res = resolveAction(act, e, targetMember, counterRng);
+
+          if (res.hit) {
+            totalDmg += res.damage;
+            const critTag = res.critical ? ' (CRITICAL)' : '';
+            const resTag = res.resistanceResult.level !== 'normal' ? ` [${res.resistanceResult.level}]` : '';
+            actionSummaries.push(`${res.actionName} ${res.damage} ${res.damageType}${critTag}${resTag}`);
+
+            if (res.conditionsApplied.length > 0) {
+              const tgtConds = Array.isArray(targetMember.conditions) ? targetMember.conditions : [];
+              const tgtImmunities = Array.isArray(targetMember.conditionImmunities) ? targetMember.conditionImmunities : [];
+              for (const cond of res.conditionsApplied) {
+                const applied = applyCondition(tgtConds, cond, tgtImmunities);
+                if (applied !== tgtConds) {
+                  actionSummaries.push(`applies ${cond.name}`);
+                }
+              }
+            }
+          } else if (res.saveResult) {
+            if (res.damage > 0) {
+              totalDmg += res.damage;
+              actionSummaries.push(`${res.actionName} (saved, half) ${res.damage} ${res.damageType}`);
+            } else {
+              actionSummaries.push(`${res.actionName} — ${targetMember.name} saves`);
+            }
+          } else {
+            actionSummaries.push(`${res.actionName} misses`);
+          }
+        }
+
+        let dmg = totalDmg;
+        if (playerGuardActive && !playerGuardConsumed) {
+          dmg = Math.max(0, dmg - 1);
+          playerGuardConsumed = true;
+        } else if (companionGuardActive && !companionGuardConsumed) {
+          dmg = Math.max(0, dmg - 1);
+          companionGuardConsumed = true;
+        }
+
+        if (dmg > 0) {
+          counterDeltas.push({ op: 'wound', entityId: String(targetMember.id), by: dmg });
+        }
+        summaryParts.push(`${e.name} → ${targetMember.name}: ${actionSummaries.join(', ')}`);
+      } else {
+        // Legacy flat damage fallback.
+        let rawDmg = clampInt(e.damage, 1, 9999);
+        const eDmgType = e.damageType || 'bludgeoning';
+        const targetRes = targetMember.resistances || {};
+        const eRes = applyResistance(rawDmg, eDmgType, targetRes);
+        let dmg = eRes.heals ? 0 : eRes.final;
+        if (playerGuardActive && !playerGuardConsumed) {
+          dmg = Math.max(0, dmg - 1);
+          playerGuardConsumed = true;
+        } else if (companionGuardActive && !companionGuardConsumed) {
+          dmg = Math.max(0, dmg - 1);
+          companionGuardConsumed = true;
+        }
+        if (eRes.heals) {
+          summaryParts.push(`${e.name} attacks ${targetMember.name} — ${eDmgType} absorbed`);
+        } else if (eRes.final === 0) {
+          summaryParts.push(`${e.name} attacks ${targetMember.name} — immune to ${eDmgType}`);
+        } else if (dmg > 0) {
+          counterDeltas.push({ op: 'wound', entityId: String(targetMember.id), by: dmg });
+          const suffix = eRes.level !== 'normal' ? ` (${eRes.level})` : '';
+          summaryParts.push(`${e.name} hits ${targetMember.name} for ${dmg}${suffix}`);
+        }
       }
-      summaryParts.push(`${e.name} → ${targetMember.name}: ${actionSummaries.join(', ')}`);
-    } else {
-      // Legacy flat damage fallback (no actions array)
-      let rawDmg = clampInt(e.damage, 1, 9999);
-      const eDmgType = e.damageType || 'bludgeoning';
-      const targetRes = targetMember.resistances || {};
-      const eRes = applyResistance(rawDmg, eDmgType, targetRes);
-      let dmg = eRes.heals ? 0 : eRes.final;
-      if (playerGuardActive && !playerGuardConsumed) {
-        dmg = Math.max(0, dmg - 1);
-        playerGuardConsumed = true;
-      } else if (companionGuardActive && !companionGuardConsumed) {
-        dmg = Math.max(0, dmg - 1);
-        companionGuardConsumed = true;
+
+      if (counterDeltas.length) {
+        w = applyDeltas(w, counterDeltas);
       }
-      if (eRes.heals) {
-        summaryParts.push(`${e.name} attacks ${targetMember.name} — ${eDmgType} absorbed`);
-      } else if (eRes.final === 0) {
-        summaryParts.push(`${e.name} attacks ${targetMember.name} — immune to ${eDmgType}`);
-      } else if (dmg > 0) {
-        counterDeltas.push({ op: 'wound', entityId: String(targetMember.id), by: dmg });
-        const suffix = eRes.level !== 'normal' ? ` (${eRes.level})` : '';
-        summaryParts.push(`${e.name} hits ${targetMember.name} for ${dmg}${suffix}`);
-      }
+
+      legTriggerIndex++;
+    }
+
+    // CM7: After each entity's turn, process legendary actions from eligible enemies.
+    if (w.combat?.active && slot.type !== undefined) {
+      w = processLegendaryActions(w, slot.id, counterRng, summaryParts, legTriggerIndex, partyIdx);
     }
   }
+
+  // If player's move was not resolved via initiative (empty initiativeOrder or
+  // player not in the list), resolve it now — backwards compat.
+  if (!playerResolved && !parleyEnded && !companionEndedCombat) {
+    const moveResult = resolveMove(w, m);
+    result = moveResult.result;
+    w = applyDeltas(w, result.deltas);
+    playerResolved = true;
+
+    // Translate combat effects (same as initiative-ordered player turn).
+    const combatDeltas = [];
+    const currentTargetEnemy = findLivingEnemy(w.combat, targetId) || firstLivingEnemy(w.combat);
+    if (currentTargetEnemy && result.outcome === 'success') {
+      if (m.approachTag === 'force' || m.approachTag === 'finesse') {
+        const attack = computeAttack(w.party?.[0]);
+        const base = m.approachTag === 'force' ? FORCE_BASE : FINESSE_BASE;
+        const weaponBonus = attack.damageBonus;
+        const rawDmg = clampInt(base + Math.floor(result.margin / 2) + weaponBonus, 1, 20);
+        const res = applyResistance(rawDmg, attack.damageType, currentTargetEnemy.resistances);
+        if (res.heals) {
+          combatDeltas.push({ op: 'combatState', enemyHpDelta: [{ id: currentTargetEnemy.id, by: res.final }] });
+          summaryParts.push(`${m.approachTag} hit on ${currentTargetEnemy.name} — absorbed ${res.final} hp`);
+        } else if (res.final === 0) {
+          summaryParts.push(`${m.approachTag} hit on ${currentTargetEnemy.name} — immune to ${attack.damageType}`);
+        } else {
+          combatDeltas.push({ op: 'combatState', enemyHpDelta: [{ id: currentTargetEnemy.id, by: -res.final }] });
+          const suffix = res.level !== 'normal' ? ` (${res.level})` : '';
+          summaryParts.push(`${m.approachTag} hit on ${currentTargetEnemy.name} for ${res.final}${suffix}`);
+        }
+      } else if (m.approachTag === 'endure') {
+        combatDeltas.push({ op: 'combatState', set: { playerGuard: true } });
+        playerGuardActive = true;
+        summaryParts.push('brace — next enemy strike softened');
+      } else if (m.approachTag === 'heart') {
+        if (currentTargetEnemy.canParley) {
+          combatDeltas.push({ op: 'combatState', set: { active: false, round: 0, turnIndex: 0, reason: 'parley', playerGuard: false, companionGuard: false } });
+          parleyEnded = true;
+          summaryParts.push(`parley with ${currentTargetEnemy.name} succeeds — combat ends`);
+        } else {
+          combatDeltas.push({ op: 'combatState', enemyHpDelta: [{ id: currentTargetEnemy.id, by: -HEART_FALLBACK_DAMAGE }] });
+          summaryParts.push(`heart-appeal lands but ${currentTargetEnemy.name} is unmoved (${HEART_FALLBACK_DAMAGE})`);
+        }
+      } else if (m.approachTag === 'focus') {
+        summaryParts.push(`study ${currentTargetEnemy.name} — maxHp ${currentTargetEnemy.maxHp}`);
+      }
+    } else if (currentTargetEnemy && result.outcome === 'mixed') {
+      summaryParts.push(`${m.approachTag} grazes ${currentTargetEnemy.name}`);
+    } else if (currentTargetEnemy) {
+      summaryParts.push(`${m.approachTag} fails against ${currentTargetEnemy.name}`);
+    }
+    if (combatDeltas.length) w = applyDeltas(w, combatDeltas);
+
+    if (parleyEnded) {
+      w = pushTimeline(w, { kind: 'resolution', data: { outcome: 'parley', targetDefeated: '' } });
+      w = pushTimeline(w, { kind: 'combat-end', data: { reason: 'parley' } });
+      return {
+        world: w,
+        result: {
+          ...result,
+          combatSummary: summaryParts.join('; ') || 'parley',
+          mechanicsLine: `${result.mechanicsLine} | combat:parley`,
+          targetEnemyName,
+          targetEnemyId
+        }
+      };
+    }
+
+    // Check victory.
+    const aliveAfterFallback = (w.combat?.enemies || []).filter(e => e.hp > 0);
+    if (aliveAfterFallback.length === 0 && w.combat?.active) {
+      w = applyVictory(w);
+      return {
+        world: w,
+        result: {
+          ...result,
+          combatSummary: summaryParts.join('; ') + ' — last enemy falls',
+          mechanicsLine: `${result.mechanicsLine} | combat:victory`,
+          targetEnemyName,
+          targetEnemyId
+        }
+      };
+    }
+
+    // Fallback: call companion hook if available (pre-CM7 compat).
+    if (typeof opts.afterPlayerTurn === 'function' && w.combat?.active) {
+      const hookRes = opts.afterPlayerTurn(w) || {};
+      if (hookRes.world && typeof hookRes.world === 'object') {
+        w = hookRes.world;
+      }
+      if (Array.isArray(hookRes.summaryParts)) {
+        for (const s of hookRes.summaryParts) summaryParts.push(String(s));
+      }
+      if (!w.combat?.active) {
+        companionEndedCombat = true;
+        const endReason = String(w.combat?.reason || 'companion-parley');
+        w = pushTimeline(w, { kind: 'resolution', data: { outcome: endReason, targetDefeated: '' } });
+        w = pushTimeline(w, { kind: 'combat-end', data: { reason: endReason } });
+        // Fall through to the return at the end.
+      }
+    }
+
+    // Check victory after companion.
+    if (!companionEndedCombat && w.combat?.active) {
+      const aliveAfterComp = (w.combat?.enemies || []).filter(e => e.hp > 0);
+      if (aliveAfterComp.length === 0) {
+        w = applyVictory(w);
+        return {
+          world: w,
+          result: {
+            ...result,
+            combatSummary: summaryParts.join('; ') + ' — last enemy falls',
+            mechanicsLine: `${result.mechanicsLine} | combat:victory`,
+            targetEnemyName,
+            targetEnemyId
+          }
+        };
+      }
+    }
+
+    // Fallback: run remaining enemies that weren't in initiative order.
+    if (!companionEndedCombat && w.combat?.active) {
+      const initEnemyIds = new Set(initOrder.filter(s => s.type === 'enemy').map(s => s.id));
+      const remainingEnemies = (w.combat?.enemies || []).filter(e => e.hp > 0 && !initEnemyIds.has(e.id));
+      const fallbackDeltas = [];
+      for (const e of remainingEnemies) {
+        const eMods = getConditionModifiers(e.conditions || []);
+        if (eMods.skipTurn) {
+          summaryParts.push(`${e.name} is incapacitated — skips counter`);
+          continue;
+        }
+        const livingParty = (w.party || []).filter(p => p && (p.wounds ?? 0) < 6);
+        if (livingParty.length === 0) break;
+        const rawTarget = livingParty[partyIdx % livingParty.length];
+        const targetMember = { ...rawTarget, ac: computeAC(rawTarget) };
+        partyIdx++;
+        const enemyActions = Array.isArray(e.actions) ? e.actions : [];
+        if (enemyActions.length > 0) {
+          const actionsToResolve = pickActions(e, enemyActions);
+          let totalDmg = 0;
+          const actionSummaries = [];
+          for (const act of actionsToResolve) {
+            const res = resolveAction(act, e, targetMember, counterRng);
+            if (res.hit) {
+              totalDmg += res.damage;
+              actionSummaries.push(`${res.actionName} ${res.damage} ${res.damageType}`);
+            } else {
+              actionSummaries.push(`${res.actionName} misses`);
+            }
+          }
+          let dmg = totalDmg;
+          if (playerGuardActive && !playerGuardConsumed) {
+            dmg = Math.max(0, dmg - 1);
+            playerGuardConsumed = true;
+          } else if (companionGuardActive && !companionGuardConsumed) {
+            dmg = Math.max(0, dmg - 1);
+            companionGuardConsumed = true;
+          }
+          if (dmg > 0) {
+            fallbackDeltas.push({ op: 'wound', entityId: String(targetMember.id), by: dmg });
+          }
+          summaryParts.push(`${e.name} → ${targetMember.name}: ${actionSummaries.join(', ')}`);
+        } else {
+          let rawDmg = clampInt(e.damage, 1, 9999);
+          const eDmgType = e.damageType || 'bludgeoning';
+          const targetRes = targetMember.resistances || {};
+          const eRes = applyResistance(rawDmg, eDmgType, targetRes);
+          let dmg = eRes.heals ? 0 : eRes.final;
+          if (playerGuardActive && !playerGuardConsumed) {
+            dmg = Math.max(0, dmg - 1);
+            playerGuardConsumed = true;
+          } else if (companionGuardActive && !companionGuardConsumed) {
+            dmg = Math.max(0, dmg - 1);
+            companionGuardConsumed = true;
+          }
+          if (eRes.heals) {
+            summaryParts.push(`${e.name} attacks ${targetMember.name} — ${eDmgType} absorbed`);
+          } else if (eRes.final === 0) {
+            summaryParts.push(`${e.name} attacks ${targetMember.name} — immune to ${eDmgType}`);
+          } else if (dmg > 0) {
+            fallbackDeltas.push({ op: 'wound', entityId: String(targetMember.id), by: dmg });
+            const suffix = eRes.level !== 'normal' ? ` (${eRes.level})` : '';
+            summaryParts.push(`${e.name} hits ${targetMember.name} for ${dmg}${suffix}`);
+          }
+        }
+      }
+      if (fallbackDeltas.length) w = applyDeltas(w, fallbackDeltas);
+    }
+  }
+
+  // Consume guard flags if used.
   if (playerGuardConsumed || companionGuardConsumed) {
-    counterDeltas.push({
+    w = applyDeltas(w, [{
       op: 'combatState',
       set: {
         playerGuard: playerGuardConsumed ? false : Boolean(w.combat?.playerGuard),
         companionGuard: companionGuardConsumed ? false : Boolean(w.combat?.companionGuard)
       }
-    });
-  }
-  if (counterDeltas.length) {
-    w = applyDeltas(w, counterDeltas);
+    }]);
   }
 
-  // Pass T3 — concentration break: if the player took damage from counters
-  // and is concentrating, roll a GRIT save. DC = max(10, floor(totalDmg/2)).
-  // Failure breaks concentration via setConcentration delta.
+  if (parleyEnded || companionEndedCombat) {
+    const endReason = companionEndedCombat ? 'companion-end' : 'parley';
+    return {
+      world: w,
+      result: {
+        ...(result || { outcome: 'mixed', roll: 0, dc: 0, margin: 0, gains: [], costs: [], deltas: [], mechanicsLine: '' }),
+        combatSummary: summaryParts.join('; ') || endReason,
+        mechanicsLine: `${(result || {}).mechanicsLine || ''} | combat:${endReason}`,
+        targetEnemyName,
+        targetEnemyId
+      }
+    };
+  }
+
+  // Concentration break check.
   {
-    const playerDmg = counterDeltas
-      .filter(d => d.op === 'wound' && String(d.entityId) === String(w.party?.[0]?.id ?? 'party'))
-      .reduce((sum, d) => sum + clampInt(d.by, 0, 6), 0);
-    const conc = w.party?.[0]?.spells?.concentration;
-    if (playerDmg > 0 && conc && conc.spellRef) {
-      const concDC = Math.max(10, Math.floor(playerDmg / 2));
-      const gritScore = w.party?.[0]?.stats?.GRIT ?? 10;
+    const playerEntity = w.party?.[0];
+    const playerDmgEstimate = summaryParts.filter(s => s.includes('→') && s.includes(String(playerEntity?.name))).length;
+    const conc = playerEntity?.spells?.concentration;
+    if (playerDmgEstimate > 0 && conc && conc.spellRef) {
+      const concDC = Math.max(10, Math.floor(playerDmgEstimate * 2 / 2));
+      const gritScore = playerEntity?.stats?.GRIT ?? 10;
       const gritMod = statMod(gritScore);
       const concSeed = seedFromString(`${w.meta?.seed || ''}|conc|${w.time?.turn ?? 0}|${w.combat?.round ?? 0}`);
       const concRng = makeRng(concSeed);
@@ -405,9 +607,9 @@ export function resolveCombatTurn(world, move, opts = {}) {
     return {
       world: w,
       result: {
-        ...result,
+        ...(result || { outcome: 'mixed', roll: 0, dc: 0, margin: 0, gains: [], costs: [], deltas: [], mechanicsLine: '' }),
         combatSummary: summaryParts.join('; ') + ' — you fall',
-        mechanicsLine: `${result.mechanicsLine} | combat:defeat`,
+        mechanicsLine: `${(result || {}).mechanicsLine || ''} | combat:defeat`,
         targetEnemyName,
         targetEnemyId
       }
@@ -420,26 +622,177 @@ export function resolveCombatTurn(world, move, opts = {}) {
   return {
     world: w,
     result: {
-      ...result,
+      ...(result || { outcome: 'mixed', roll: 0, dc: 0, margin: 0, gains: [], costs: [], deltas: [], mechanicsLine: '' }),
       combatSummary: summaryParts.join('; '),
-      mechanicsLine: `${result.mechanicsLine} | combat:r${w.combat.round - 1}`,
+      mechanicsLine: `${(result || {}).mechanicsLine || ''} | combat:r${w.combat.round - 1}`,
       targetEnemyName,
       targetEnemyId
     }
   };
 }
 
-// ── internals ──────────────────────────────────────────────────────────────
+// ─��� CM7: Legendary actions ──────────────────────────────────────────────
 
 /**
- * Pick which actions an enemy takes this turn.
- * If enemy has a multiattack array, resolve each named action from the list.
- * Otherwise, use the first action.
+ * After each entity's turn, check if any OTHER enemy has legendaryActions
+ * with remaining > 0. If so, spend the highest-cost affordable option.
+ * Cap: one option per trigger point.
  */
+function processLegendaryActions(world, triggerEntityId, rng, summaryParts, triggerIndex, partyIdx) {
+  let w = world;
+  const enemies = w.combat?.enemies || [];
+  for (const e of enemies) {
+    if (!(e.hp > 0)) continue;
+    if (e.id === triggerEntityId) continue; // Can't use legendary on own turn.
+    const la = e.legendaryActions;
+    if (!la || la.remaining <= 0 || !Array.isArray(la.options) || la.options.length === 0) continue;
+
+    // Pick highest-cost affordable option.
+    const affordable = la.options.filter(o => o.cost <= la.remaining);
+    if (affordable.length === 0) continue;
+    affordable.sort((a, b) => b.cost - a.cost);
+    const chosen = affordable[0];
+
+    // Resolve the legendary action against a party target.
+    const livingParty = (w.party || []).filter(p => p && (p.wounds ?? 0) < 6);
+    if (livingParty.length === 0) continue;
+    const rawTarget = livingParty[partyIdx % livingParty.length];
+    const targetMember = { ...rawTarget, ac: computeAC(rawTarget) };
+
+    const legSeed = seedFromString(`${w.meta?.seed || ''}|leg|${w.combat?.round ?? 0}|${e.id}|${triggerIndex}`);
+    const legRng = makeRng(legSeed);
+    const res = resolveAction(chosen.action, e, targetMember, legRng);
+
+    // Decrement remaining.
+    const newRemaining = la.remaining - chosen.cost;
+    w = applyDeltas(w, [{
+      op: 'combatState',
+      enemyConditions: [{
+        id: e.id,
+        conditions: e.conditions // preserve conditions, just update legendaryActions via set
+      }]
+    }]);
+    // Direct update of legendaryActions remaining via combat state manipulation.
+    const updatedEnemies = (w.combat?.enemies || []).map(en => {
+      if (en.id !== e.id) return en;
+      return { ...en, legendaryActions: { ...en.legendaryActions, remaining: newRemaining } };
+    });
+    w = applyDeltas(w, [{ op: 'combatState', set: { enemies: updatedEnemies } }]);
+
+    if (res.hit && res.damage > 0) {
+      w = applyDeltas(w, [{ op: 'wound', entityId: String(targetMember.id), by: res.damage }]);
+      summaryParts.push(`${e.name} legendary: ${chosen.name} hits ${targetMember.name} for ${res.damage} ${res.damageType}`);
+    } else if (res.saveResult && res.damage > 0) {
+      w = applyDeltas(w, [{ op: 'wound', entityId: String(targetMember.id), by: res.damage }]);
+      summaryParts.push(`${e.name} legendary: ${chosen.name} (saved, half) ${res.damage} ${res.damageType}`);
+    } else {
+      summaryParts.push(`${e.name} legendary: ${chosen.name} misses`);
+    }
+
+    break; // One legendary action per trigger point.
+  }
+  return w;
+}
+
 /**
- * CM6: sort enemies by initiative order. Enemies not in the initiative
- * list come last, preserving their original array order.
+ * Reset legendaryActions.remaining and reaction usesRemaining at round start.
  */
+function resetLegendaryAndReactions(world) {
+  let w = world;
+  const enemies = w.combat?.enemies || [];
+  let needsUpdate = false;
+  const updatedEnemies = enemies.map(e => {
+    let changed = false;
+    let newEnemy = e;
+
+    if (e.legendaryActions && e.legendaryActions.remaining !== e.legendaryActions.perRound) {
+      newEnemy = {
+        ...newEnemy,
+        legendaryActions: { ...newEnemy.legendaryActions, remaining: newEnemy.legendaryActions.perRound }
+      };
+      changed = true;
+    }
+
+    if (Array.isArray(e.reactions)) {
+      const newReactions = e.reactions.map(r => {
+        if (r.usesRemaining !== r.uses) return { ...r, usesRemaining: r.uses };
+        return r;
+      });
+      if (newReactions.some((r, i) => r !== e.reactions[i])) {
+        newEnemy = { ...newEnemy, reactions: newReactions };
+        changed = true;
+      }
+    }
+
+    if (changed) { needsUpdate = true; return newEnemy; }
+    return e;
+  });
+
+  if (needsUpdate) {
+    w = applyDeltas(w, [{ op: 'combatState', set: { enemies: updatedEnemies } }]);
+  }
+  return w;
+}
+
+// ── CM7: Reactions ──────────────────────────────────────────────────────
+
+/**
+ * Check if a targeted enemy has a reaction that matches the player's attack.
+ * Returns { world, damage } where damage may be reduced to 0 if parried.
+ */
+function checkEnemyReaction(world, enemy, approachTag, damage, damageType, rng, summaryParts) {
+  let w = world;
+  if (!Array.isArray(enemy.reactions)) return { world: w, damage };
+
+  const trigger = (approachTag === 'force') ? 'hit_by_melee' : (approachTag === 'finesse') ? 'hit_by_ranged' : null;
+  if (!trigger) return { world: w, damage };
+
+  for (const reaction of enemy.reactions) {
+    if (reaction.trigger !== trigger) continue;
+    if (reaction.usesRemaining <= 0) continue;
+
+    const effect = reaction.effect && typeof reaction.effect === 'object' ? reaction.effect : {};
+
+    // Decrement usesRemaining.
+    const updatedEnemies = (w.combat?.enemies || []).map(en => {
+      if (en.id !== enemy.id) return en;
+      return {
+        ...en,
+        reactions: en.reactions.map(r => r.name === reaction.name ? { ...r, usesRemaining: r.usesRemaining - 1 } : r)
+      };
+    });
+    w = applyDeltas(w, [{ op: 'combatState', set: { enemies: updatedEnemies } }]);
+
+    // acBonus effect: enemy's effective AC was already beaten by the player, but
+    // if adding acBonus would make it exceed the player's roll, the attack misses.
+    if (typeof effect.acBonus === 'number' && effect.acBonus > 0) {
+      summaryParts.push(`${enemy.name} reacts: ${reaction.name} (+${effect.acBonus} AC)`);
+      // The player already "hit" — this is a retroactive parry. We reduce damage to 0.
+      // This is a simplification: the reaction adds AC, making marginal hits miss.
+      return { world: w, damage: 0 };
+    }
+
+    // damage effect: retaliatory damage.
+    if (effect.damage) {
+      const reactSeed = seedFromString(`${w.meta?.seed || ''}|react|${w.combat?.round ?? 0}|${enemy.id}`);
+      const reactRng = makeRng(reactSeed);
+      const dmgRolled = rollDice(effect.damage, reactRng);
+      const reactDmg = Math.max(0, dmgRolled.total);
+      if (reactDmg > 0) {
+        const reactType = effect.damageType || 'bludgeoning';
+        w = applyDeltas(w, [{ op: 'wound', entityId: String(w.party?.[0]?.id ?? 'party'), by: reactDmg }]);
+        summaryParts.push(`${enemy.name} reacts: ${reaction.name} deals ${reactDmg} ${reactType}`);
+      }
+    }
+
+    return { world: w, damage };
+  }
+
+  return { world: w, damage };
+}
+
+// ── internals ──────────────────────────────────────────────────────────────
+
 function sortEnemiesByInitiative(enemies, initOrder) {
   if (!initOrder.length) return enemies;
   const posMap = {};
@@ -458,7 +811,6 @@ function sortEnemiesByInitiative(enemies, initOrder) {
 function pickActions(enemy, actions) {
   const multi = Array.isArray(enemy.multiattack) ? enemy.multiattack : null;
   if (multi && multi.length > 0) {
-    // Map multiattack names to action objects (case-insensitive name match)
     const actionMap = {};
     for (const a of actions) {
       if (a && a.name) actionMap[a.name.toLowerCase()] = a;
@@ -502,8 +854,6 @@ function firstLivingEnemy(combat) {
 
 function applyVictory(world) {
   let w = world;
-  // Mark every enemy defeated and end combat in one delta op (avoids
-  // intermediate active+empty invariant violations).
   const allIds = (w.combat?.enemies || []).map(e => e.id);
   w = applyDeltas(w, [{
     op: 'combatState',
@@ -511,10 +861,6 @@ function applyVictory(world) {
     enemyDefeated: allIds
   }]);
 
-  // Emit one resolution event per defeated enemy (so the defeat goal kind
-  // can satisfy via timelineRecordsDefeat). Use sourceNpcId when present
-  // (defeat goals are typically authored against an NPC id, not a transient
-  // enemy id), falling back to enemy id otherwise.
   for (const e of (w.combat?.enemies || [])) {
     const ref = e.sourceNpcId || e.id;
     w = pushTimeline(w, {
@@ -522,7 +868,8 @@ function applyVictory(world) {
       data: { outcome: 'combat-victory', targetDefeated: ref, enemyId: e.id, enemyName: e.name }
     });
   }
-  // CM5: roll loot for each defeated enemy, apply to player inventory/purse.
+
+  // CM5: loot rolling.
   const lootSeed = seedFromString(`${w.meta?.seed || ''}|loot|${w.time?.turn ?? 0}`);
   const lootRng = makeRng(lootSeed);
   const lootResults = [];
@@ -540,7 +887,7 @@ function applyVictory(world) {
           lootResults.push({ kind: 'currency', currency: drop.currency, amount: amt, source: e.name });
         }
       } else if (drop.kind === 'item' && drop.defRef) {
-        const itemId = `loot_${Date.now ? lootItemCounter : lootItemCounter}_${e.id}`;
+        const itemId = `loot_${lootItemCounter}_${e.id}`;
         lootItemCounter++;
         lootDeltas.push({ op: 'addItem', entityId: 'party', item: { id: itemId, defRef: drop.defRef, equipped: null } });
         lootResults.push({ kind: 'item', defRef: drop.defRef, rarity: drop.rarity || 'common', source: e.name });
@@ -551,26 +898,19 @@ function applyVictory(world) {
     w = applyDeltas(w, lootDeltas);
   }
 
-  // combat-end timeline marker for completeness
   w = pushTimeline(w, { kind: 'combat-end', data: { reason: 'combat-victory', loot: lootResults } });
-
-  // Promote any newly satisfied defeat goals.
   const checked = checkGoals(w);
   return checked.world;
 }
 
 function applyPlayerDefeat(world) {
   let w = world;
-  // End combat (preserves enemies array with their final hp).
   w = applyDeltas(w, [{
     op: 'combatState',
     set: { active: false, round: 0, turnIndex: 0, reason: 'defeated-in-combat', playerGuard: false, companionGuard: false }
   }]);
   w = pushTimeline(w, { kind: 'combat-end', data: { reason: 'defeated-in-combat' } });
 
-  // Lock the ending. Reuses an existing ending type ('The Cost Paid') —
-  // does NOT invent a new ending kind. The reason is recorded on the
-  // ending object so the cause is recoverable.
   const ending = {
     triggered: true,
     type: 'The Cost Paid',

@@ -72,6 +72,9 @@ export function mintEnemyFromNpc(npc) {
   // CM6: initiative modifier from bestiary or combatProfile.
   const initMod = typeof (profile.initMod ?? bestiary?.initMod) === 'number'
     ? (profile.initMod ?? bestiary?.initMod) : 0;
+  // CM7: legendaryActions and reactions from bestiary or combatProfile.
+  const legendaryActions = profile.legendaryActions ?? bestiary?.legendaryActions ?? null;
+  const reactions = profile.reactions ?? bestiary?.reactions ?? null;
   const sourceNpcId = String(n.id ?? '');
   return {
     id: '', // assigned at begin
@@ -91,7 +94,9 @@ export function mintEnemyFromNpc(npc) {
     defeated: false,
     sourceNpcId,
     lootTableRef,
-    initMod
+    initMod,
+    legendaryActions,
+    reactions
   };
 }
 

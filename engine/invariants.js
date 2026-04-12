@@ -263,6 +263,19 @@ export function assertWorldInvariants(world) {
     if (typeof e.initMod !== 'number') {
       throw new Error(`Invariant: combat enemy ${e.id} initMod must be number`);
     }
+    // CM7: legendaryActions must be null or object with perRound/remaining/options.
+    if (e.legendaryActions !== null) {
+      if (!e.legendaryActions || typeof e.legendaryActions !== 'object') {
+        throw new Error(`Invariant: combat enemy ${e.id} legendaryActions must be null or object`);
+      }
+      if (!Array.isArray(e.legendaryActions.options)) {
+        throw new Error(`Invariant: combat enemy ${e.id} legendaryActions.options must be array`);
+      }
+    }
+    // CM7: reactions must be null or array.
+    if (e.reactions !== null && !Array.isArray(e.reactions)) {
+      throw new Error(`Invariant: combat enemy ${e.id} reactions must be null or array`);
+    }
   }
   // CM6: initiativeOrder must be an array.
   if (!Array.isArray(combat.initiativeOrder)) {

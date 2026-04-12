@@ -240,7 +240,10 @@ export function ensureCombat(c) {
     const lootTableRef = typeof eRaw.lootTableRef === 'string' ? eRaw.lootTableRef : null;
     // CM6: initMod — initiative modifier from bestiary or profile.
     const initMod = typeof eRaw.initMod === 'number' ? clampInt(eRaw.initMod, -10, 30) : 0;
-    enemies.push({ id, name, hp, maxHp, damage, ac, cr, damageType, resistances, conditionImmunities, conditions, actions, multiattack, saveProficiencies, canParley, defeated, sourceNpcId, lootTableRef, initMod });
+    // CM7: legendaryActions and reactions.
+    const legendaryActions = normalizeLegendaryActions(eRaw.legendaryActions);
+    const reactions = normalizeReactions(eRaw.reactions);
+    enemies.push({ id, name, hp, maxHp, damage, ac, cr, damageType, resistances, conditionImmunities, conditions, actions, multiattack, saveProficiencies, canParley, defeated, sourceNpcId, lootTableRef, initMod, legendaryActions, reactions });
     if (enemies.length >= COMBAT_ENEMY_CAP) break;
   }
 
@@ -266,6 +269,48 @@ export function ensureCombat(c) {
     .slice(0, 12); // cap at party + enemy cap
 
   return { active, round, turnIndex, enemies, beganAt, reason, playerGuard, companionGuard, initiativeOrder };
+}
+
+// ── CM7 — legendary actions & reactions normalizers ─────────────────────
+
+const VALID_REACTION_TRIGGERS = new Set(['hit_by_melee', 'hit_by_ranged', 'ally_damaged']);
+
+function normalizeLegendaryActions(raw) {
+  if (!raw || typeof raw !== 'object') return null;
+  const perRound = clampInt(raw.perRound ?? 0, 0, 10);
+  if (perRound === 0) return null;
+  const remaining = clampInt(raw.remaining ?? perRound, 0, perRound);
+  const optionsRaw = Array.isArray(raw.options) ? raw.options : [];
+  const options = [];
+  for (const o of optionsRaw) {
+    if (!o || typeof o !== 'object') continue;
+    const name = String(o.name ?? '').trim();
+    if (!name) continue;
+    const cost = clampInt(o.cost ?? 1, 1, 3);
+    const action = o.action && typeof o.action === 'object' ? o.action : {};
+    options.push({ name, cost, action });
+    if (options.length >= 6) break;
+  }
+  if (options.length === 0) return null;
+  return { perRound, remaining, options };
+}
+
+function normalizeReactions(raw) {
+  if (!Array.isArray(raw)) return null;
+  const out = [];
+  for (const r of raw) {
+    if (!r || typeof r !== 'object') continue;
+    const name = String(r.name ?? '').trim();
+    if (!name) continue;
+    const trigger = String(r.trigger ?? '').trim();
+    if (!VALID_REACTION_TRIGGERS.has(trigger)) continue;
+    const effect = r.effect && typeof r.effect === 'object' ? r.effect : {};
+    const uses = clampInt(r.uses ?? 1, 0, 3);
+    const usesRemaining = clampInt(r.usesRemaining ?? uses, 0, uses);
+    out.push({ name, trigger, effect, uses, usesRemaining });
+    if (out.length >= 4) break;
+  }
+  return out.length > 0 ? out : null;
 }
 
 // ── Pass R1 — rumor normalizer ──────────────────────────────────────────

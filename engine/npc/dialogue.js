@@ -9,6 +9,7 @@ import { applyDeltas } from '../effectsCore.js';
 import { filterRumors } from './perspectiveFilter.js';
 import { appendCanonEvent } from '../csl/canonLog.js';
 import { buildNpcContext, fallbackRules, findCachedDecision } from './npcBrain.js';
+import { extractMemory } from './npcMemory.js';
 
 const TRUST_REVEAL_PUBLIC = 4;
 const TRUST_REVEAL_SECRET = 7;
@@ -256,13 +257,26 @@ export function askNpc(world, text) {
     scene: { ...w1.scene, dialogue: nextDialogue }
   };
 
+  // ── Pass O3 — NPC persistent memory ────────────────────────────────────
+  // Record what happened from the NPC's perspective.
+  const memoryEntry = extractMemory(npc, text, brainDecision, {
+    mode,
+    topic: factId || '',
+    trustLevel: nextTrust,
+    trustDelta
+  });
+  let w3 = w2;
+  if (memoryEntry) {
+    w3 = applyDeltas(w2, [{ op: 'npcMemoryAdd', npcId: d.npcId, entry: memoryEntry }]);
+  }
+
   // ── Pass R2 — rumor surfacing ──────────────────────────────────────────
   // After fact-based response, check if the NPC has rumors matching the topic.
   // Surface existing rumor bodies; signal lazy-mint opportunity if seeds match.
-  const rumorSurface = surfaceRumorsForTopic(w2, npc, text);
+  const rumorSurface = surfaceRumorsForTopic(w3, npc, text);
 
   return {
-    world: w2,
+    world: w3,
     outcome: {
       kind: 'dialogueAsk',
       ok: true,

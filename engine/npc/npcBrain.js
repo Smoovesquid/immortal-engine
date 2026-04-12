@@ -70,6 +70,7 @@ export function buildNpcContext(npc, world, playerInput) {
     knownFacts: facts,
     carriedRumors: rumors,
     relationships,
+    memories: Array.isArray(npc.memory) ? npc.memory.slice() : [],
     playerInput: String(playerInput || ''),
     turn: Number(world?.time?.turn ?? 0),
     secrets: new Set(Array.isArray(npc.secrets) ? npc.secrets.map(String) : [])
@@ -89,6 +90,10 @@ function buildPrompt(ctx) {
     .join('\n');
   const knowledgeBlock = [factLines, rumorLines].filter(Boolean).join('\n');
 
+  const memoryLines = Array.isArray(ctx.memories) && ctx.memories.length > 0
+    ? ctx.memories.map(m => `- ${m}`).join('\n')
+    : '(nothing)';
+
   const relLines = ctx.relationships
     .map(r => `- ${r.targetId}: bond ${r.bond.toFixed(2)} (${r.history.join(', ')})`)
     .join('\n');
@@ -100,6 +105,9 @@ Mood: ${ctx.mood}.
 
 You know:
 ${knowledgeBlock || '(nothing)'}
+
+You remember:
+${memoryLines}
 
 Relationships:
 ${relLines || '(none)'}
@@ -177,6 +185,21 @@ export function fallbackRules(context) {
   const allFacts = (context.knownFacts || []);
   const allRumors = (context.carriedRumors || []);
 
+  // Pass O3 — memory-based trust boost in the 4-6 range.
+  // If any memory contains a word (>=4 chars) from the player input, treat
+  // trust as +1 for share behavior. Only applies in the 4-6 band.
+  const memories = Array.isArray(context.memories) ? context.memories : [];
+  let effectiveTrust = trust;
+  if (trust >= 4 && trust <= 6 && memories.length > 0) {
+    const inputWords = String(context.playerInput || '').toLowerCase()
+      .split(/\s+/).filter(w => w.length >= 4);
+    const hasMemoryMatch = inputWords.length > 0 && memories.some(mem => {
+      const memLower = String(mem).toLowerCase();
+      return inputWords.some(w => memLower.includes(w));
+    });
+    if (hasMemoryMatch) effectiveTrust = trust + 1;
+  }
+
   // Separate personal (secret) facts from public facts.
   const publicFacts = allFacts.filter(f => !secrets.has(f.id));
   const personalFacts = allFacts.filter(f => secrets.has(f.id));
@@ -186,20 +209,20 @@ export function fallbackRules(context) {
   let approach = 'deflect';
   let why = '';
 
-  if (trust >= 7) {
+  if (effectiveTrust >= 7) {
     // High trust: share all non-personal facts + all rumors.
     share = [
       ...publicFacts.map(f => f.id),
       ...allRumors.map(r => r.id)
     ];
     // Trust 8+: also share personal facts.
-    if (trust >= 8) {
+    if (effectiveTrust >= 8) {
       share = share.concat(personalFacts.map(f => f.id));
     }
     mood = 'warm';
     approach = 'volunteer';
     why = 'Trust is high — sharing openly.';
-  } else if (trust >= 4) {
+  } else if (effectiveTrust >= 4) {
     // Medium trust: share exactly one fact, picked deterministically.
     const candidates = publicFacts;
     if (candidates.length > 0) {

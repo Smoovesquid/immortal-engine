@@ -236,7 +236,9 @@ export function ensureCombat(c) {
       ? eRaw.saveProficiencies.filter(s => typeof s === 'string').slice(0, 5)
       : [];
     const sourceNpcId = String(eRaw.sourceNpcId ?? '');
-    enemies.push({ id, name, hp, maxHp, damage, ac, cr, damageType, resistances, conditionImmunities, conditions, actions, multiattack, saveProficiencies, canParley, defeated, sourceNpcId });
+    // CM5: lootTableRef for per-enemy loot table override.
+    const lootTableRef = typeof eRaw.lootTableRef === 'string' ? eRaw.lootTableRef : null;
+    enemies.push({ id, name, hp, maxHp, damage, ac, cr, damageType, resistances, conditionImmunities, conditions, actions, multiattack, saveProficiencies, canParley, defeated, sourceNpcId, lootTableRef });
     if (enemies.length >= COMBAT_ENEMY_CAP) break;
   }
 

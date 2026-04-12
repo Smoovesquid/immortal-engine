@@ -1,7 +1,7 @@
 // Pass T2 — deterministic loot roller.
 // Uses seeded RNG from engine/rng.js — no Math.random().
 
-import { getLootTable } from './index.js';
+import { getLootTable, tableIdForCR } from './index.js';
 
 /**
  * rollLoot(tableId, rng) -> array of loot results (items/currency).
@@ -27,4 +27,14 @@ export function rollLoot(tableId, rng) {
     }
   }
   return results;
+}
+
+/**
+ * rollLootForCR(cr, rng, overrideTableId?) -> array of loot results.
+ *
+ * Selects the loot table by CR band (or explicit override) and rolls.
+ */
+export function rollLootForCR(cr, rng, overrideTableId) {
+  const tableId = overrideTableId || tableIdForCR(cr);
+  return rollLoot(tableId, rng);
 }

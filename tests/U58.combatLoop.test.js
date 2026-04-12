@@ -73,6 +73,7 @@ function mkEnemy(over = {}) {
     canParley: true,
     defeated: false,
     sourceNpcId: 'npc_test_0',
+    lootTableRef: null,
     ...over
   };
 }

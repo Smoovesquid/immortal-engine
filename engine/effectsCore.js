@@ -476,6 +476,23 @@ export function applyDeltas(world, deltas = []) {
       continue;
     }
 
+    // ── Pass CM5 — currency ops ──────────────────────────────────────────────
+
+    if (kind === 'addCurrency') {
+      const entityId = String(op.entityId || 'party');
+      const currency = String(op.currency ?? '').trim();
+      const amount = Math.max(0, Math.trunc(Number(op.amount ?? 0)));
+      if (!currency || amount <= 0) continue;
+      const VALID = ['copper', 'silver', 'gold', 'platinum'];
+      if (!VALID.includes(currency)) continue;
+      w = mutateEntity(w, entityId, (e) => {
+        const purse = (e.purse && typeof e.purse === 'object') ? { ...e.purse } : { copper: 0, silver: 0, gold: 0, platinum: 0 };
+        purse[currency] = (purse[currency] || 0) + amount;
+        return { ...e, purse };
+      });
+      continue;
+    }
+
     // ── Pass R1 — rumor ops ─────────────────────────────────────────────────
 
     if (kind === 'mintRumor') {

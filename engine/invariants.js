@@ -255,6 +255,10 @@ export function assertWorldInvariants(world) {
     if (e.multiattack !== null && !Array.isArray(e.multiattack)) {
       throw new Error(`Invariant: combat enemy ${e.id} multiattack must be null or array`);
     }
+    // CM5: lootTableRef must be null or string.
+    if (e.lootTableRef !== null && typeof e.lootTableRef !== 'string') {
+      throw new Error(`Invariant: combat enemy ${e.id} lootTableRef must be null or string`);
+    }
   }
   if (combat.active && world.scene?.dialogue) {
     throw new Error('Invariant: combat.active and scene.dialogue are mutually exclusive');

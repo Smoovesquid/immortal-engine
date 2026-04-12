@@ -65,6 +65,8 @@ export function mintEnemyFromNpc(npc) {
     : bestiary
       ? Boolean(base.canParley)
       : !Boolean(n.hostile);
+  // CM5: lootTableRef from bestiary or combatProfile.
+  const lootTableRef = profile.lootTableRef ?? bestiary?.lootTableRef ?? null;
   const sourceNpcId = String(n.id ?? '');
   return {
     id: '', // assigned at begin
@@ -82,7 +84,8 @@ export function mintEnemyFromNpc(npc) {
     saveProficiencies,
     canParley,
     defeated: false,
-    sourceNpcId
+    sourceNpcId,
+    lootTableRef
   };
 }
 

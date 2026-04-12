@@ -39,6 +39,8 @@ import { applyResistance } from './damageTypes.js';
 import { tickConditions, hasCondition, applyCondition } from './conditions.js';
 import { getConditionModifiers } from './conditionEffects.js';
 import { resolveAction, resolveRecharge } from './actionResolver.js';
+import { rollLootForCR } from '../ruleset/core/loot/lootRoll.js';
+import { rollDice } from './diceRoller.js';
 
 const FORCE_BASE = 3;
 const FINESSE_BASE = 2;
@@ -497,8 +499,37 @@ function applyVictory(world) {
       data: { outcome: 'combat-victory', targetDefeated: ref, enemyId: e.id, enemyName: e.name }
     });
   }
+  // CM5: roll loot for each defeated enemy, apply to player inventory/purse.
+  const lootSeed = seedFromString(`${w.meta?.seed || ''}|loot|${w.time?.turn ?? 0}`);
+  const lootRng = makeRng(lootSeed);
+  const lootResults = [];
+  const lootDeltas = [];
+  let lootItemCounter = 0;
+  for (const e of (w.combat?.enemies || [])) {
+    const drops = rollLootForCR(e.cr ?? 0, lootRng, e.lootTableRef);
+    for (const drop of drops) {
+      if (!drop) continue;
+      if (drop.kind === 'currency' && drop.currency && drop.amount) {
+        const rolled = rollDice(drop.amount, lootRng);
+        const amt = Math.max(0, rolled.total);
+        if (amt > 0) {
+          lootDeltas.push({ op: 'addCurrency', entityId: 'party', currency: drop.currency, amount: amt });
+          lootResults.push({ kind: 'currency', currency: drop.currency, amount: amt, source: e.name });
+        }
+      } else if (drop.kind === 'item' && drop.defRef) {
+        const itemId = `loot_${Date.now ? lootItemCounter : lootItemCounter}_${e.id}`;
+        lootItemCounter++;
+        lootDeltas.push({ op: 'addItem', entityId: 'party', item: { id: itemId, defRef: drop.defRef, equipped: null } });
+        lootResults.push({ kind: 'item', defRef: drop.defRef, rarity: drop.rarity || 'common', source: e.name });
+      }
+    }
+  }
+  if (lootDeltas.length > 0) {
+    w = applyDeltas(w, lootDeltas);
+  }
+
   // combat-end timeline marker for completeness
-  w = pushTimeline(w, { kind: 'combat-end', data: { reason: 'combat-victory' } });
+  w = pushTimeline(w, { kind: 'combat-end', data: { reason: 'combat-victory', loot: lootResults } });
 
   // Promote any newly satisfied defeat goals.
   const checked = checkGoals(w);

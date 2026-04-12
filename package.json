@@ -9,7 +9,8 @@
     "playtest": "node scripts/playtest.js",
     "playtest:quick": "node scripts/playtest.js --seeds 10 --turns 50",
     "playtest:full": "node scripts/playtest.js --seeds 100 --turns 500",
-    "dpos": "bash scripts/dpos.sh"
+    "dpos": "bash scripts/dpos.sh",
+    "import-pack": "node scripts/import/index.js"
   },
   "dependencies": {
     "express": "^4.19.2",

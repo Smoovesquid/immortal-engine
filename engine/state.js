@@ -9,6 +9,7 @@ import { generateRegions } from './world/regions.js';
 import { generateInitialMap } from './map/generateMap.js';
 import { ensureStructures } from './structures/structuresState.js';
 import { statMod, maxWounds } from './ruleset/core/stats.js';
+import { normalizeResistances, isValidDamageType } from './combat/damageTypes.js';
 
 // Pass R1 — bumped from 16 → 17. Adds rumor layer: world.rumors[],
 // npc.rumorIds[], npc.sophistication. See docs/RUMOR_LAYER.md.
@@ -217,8 +218,14 @@ export function ensureCombat(c) {
     const cr = typeof eRaw.cr === 'number' ? Math.max(0, eRaw.cr) : 0;
     const canParley = Boolean(eRaw.canParley ?? true);
     const defeated = Boolean(eRaw.defeated ?? (hp === 0));
+    const resistances = normalizeResistances(eRaw.resistances);
+    const conditionImmunities = Array.isArray(eRaw.conditionImmunities)
+      ? eRaw.conditionImmunities.filter(s => typeof s === 'string' && s)
+      : [];
+    const damageType = (typeof eRaw.damageType === 'string' && isValidDamageType(eRaw.damageType))
+      ? eRaw.damageType : 'bludgeoning';
     const sourceNpcId = String(eRaw.sourceNpcId ?? '');
-    enemies.push({ id, name, hp, maxHp, damage, ac, cr, canParley, defeated, sourceNpcId });
+    enemies.push({ id, name, hp, maxHp, damage, ac, cr, damageType, resistances, conditionImmunities, canParley, defeated, sourceNpcId });
     if (enemies.length >= COMBAT_ENEMY_CAP) break;
   }
 

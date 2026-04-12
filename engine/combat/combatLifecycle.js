@@ -50,6 +50,12 @@ export function mintEnemyFromNpc(npc) {
   const damage = clampInt(profile.damage ?? base.damage, 1, 999);
   const ac = bestiary ? (bestiary.ac ?? 10) : 10;
   const cr = bestiary ? (bestiary.cr ?? 0) : 0;
+  // CM1: damage type from bestiary's first action, or profile override, or default.
+  const damageType = profile.damageType
+    ?? (bestiary?.actions?.[0]?.type)
+    ?? 'bludgeoning';
+  const resistances = bestiary?.resistances ?? profile.resistances ?? {};
+  const conditionImmunities = bestiary?.conditionImmunities ?? profile.conditionImmunities ?? [];
   const canParley = profile.canParley != null
     ? Boolean(profile.canParley)
     : bestiary
@@ -64,6 +70,9 @@ export function mintEnemyFromNpc(npc) {
     damage,
     ac,
     cr,
+    damageType,
+    resistances,
+    conditionImmunities,
     canParley,
     defeated: false,
     sourceNpcId

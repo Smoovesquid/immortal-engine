@@ -231,6 +231,16 @@ export function assertWorldInvariants(world) {
     if (typeof e.sourceNpcId !== 'string') {
       throw new Error(`Invariant: combat enemy ${e.id} sourceNpcId must be string`);
     }
+    // CM1: damage type, resistances, conditionImmunities
+    if (typeof e.damageType !== 'string') {
+      throw new Error(`Invariant: combat enemy ${e.id} damageType must be string`);
+    }
+    if (!e.resistances || typeof e.resistances !== 'object' || Array.isArray(e.resistances)) {
+      throw new Error(`Invariant: combat enemy ${e.id} resistances must be object`);
+    }
+    if (!Array.isArray(e.conditionImmunities)) {
+      throw new Error(`Invariant: combat enemy ${e.id} conditionImmunities must be array`);
+    }
   }
   if (combat.active && world.scene?.dialogue) {
     throw new Error('Invariant: combat.active and scene.dialogue are mutually exclusive');

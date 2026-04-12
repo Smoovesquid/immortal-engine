@@ -35,6 +35,7 @@ import { checkGoals } from '../goals/goalContract.js';
 import { makeRng, seedFromString } from '../rng.js';
 import { statMod } from '../ruleset/core/stats.js';
 import { computeAttack } from '../gear/gearProps.js';
+import { applyResistance } from './damageTypes.js';
 
 const FORCE_BASE = 3;
 const FINESSE_BASE = 2;
@@ -102,9 +103,19 @@ export function resolveCombatTurn(world, move, opts = {}) {
       const base = m.approachTag === 'force' ? FORCE_BASE : FINESSE_BASE;
       const attack = computeAttack(w.party?.[0]);
       const weaponBonus = attack.damageBonus;
-      const dmg = clampInt(base + Math.floor(result.margin / 2) + weaponBonus, 1, 20);
-      combatDeltas.push({ op: 'combatState', enemyHpDelta: [{ id: targetEnemy.id, by: -dmg }] });
-      summaryParts.push(`${m.approachTag} hit on ${targetEnemy.name} for ${dmg}`);
+      const rawDmg = clampInt(base + Math.floor(result.margin / 2) + weaponBonus, 1, 20);
+      const res = applyResistance(rawDmg, attack.damageType, targetEnemy.resistances);
+      if (res.heals) {
+        // Absorb: enemy heals instead of taking damage
+        combatDeltas.push({ op: 'combatState', enemyHpDelta: [{ id: targetEnemy.id, by: res.final }] });
+        summaryParts.push(`${m.approachTag} hit on ${targetEnemy.name} — absorbed ${res.final} hp`);
+      } else if (res.final === 0) {
+        summaryParts.push(`${m.approachTag} hit on ${targetEnemy.name} — immune to ${attack.damageType}`);
+      } else {
+        combatDeltas.push({ op: 'combatState', enemyHpDelta: [{ id: targetEnemy.id, by: -res.final }] });
+        const suffix = res.level !== 'normal' ? ` (${res.level})` : '';
+        summaryParts.push(`${m.approachTag} hit on ${targetEnemy.name} for ${res.final}${suffix}`);
+      }
     } else if (m.approachTag === 'endure') {
       // playerGuard one-shot: reduces next enemy counter by 1.
       combatDeltas.push({ op: 'combatState', set: { playerGuard: true } });
@@ -229,7 +240,12 @@ export function resolveCombatTurn(world, move, opts = {}) {
     if (livingParty.length === 0) break;
     const targetMember = livingParty[partyIdx % livingParty.length];
     partyIdx++;
-    let dmg = clampInt(e.damage, 1, 9999);
+    let rawDmg = clampInt(e.damage, 1, 9999);
+    // CM1: apply enemy damage type against target's resistances (if any)
+    const eDmgType = e.damageType || 'bludgeoning';
+    const targetRes = targetMember.resistances || {};
+    const eRes = applyResistance(rawDmg, eDmgType, targetRes);
+    let dmg = eRes.heals ? 0 : eRes.final; // absorb on player heals 0 for now (wound system)
     if (playerGuardActive && !playerGuardConsumed) {
       dmg = Math.max(0, dmg - 1);
       playerGuardConsumed = true;
@@ -237,9 +253,14 @@ export function resolveCombatTurn(world, move, opts = {}) {
       dmg = Math.max(0, dmg - 1);
       companionGuardConsumed = true;
     }
-    if (dmg > 0) {
+    if (eRes.heals) {
+      summaryParts.push(`${e.name} attacks ${targetMember.name} — ${eDmgType} absorbed`);
+    } else if (eRes.final === 0) {
+      summaryParts.push(`${e.name} attacks ${targetMember.name} — immune to ${eDmgType}`);
+    } else if (dmg > 0) {
       counterDeltas.push({ op: 'wound', entityId: String(targetMember.id), by: dmg });
-      summaryParts.push(`${e.name} hits ${targetMember.name} for ${dmg}`);
+      const suffix = eRes.level !== 'normal' ? ` (${eRes.level})` : '';
+      summaryParts.push(`${e.name} hits ${targetMember.name} for ${dmg}${suffix}`);
     }
   }
   if (playerGuardConsumed || companionGuardConsumed) {

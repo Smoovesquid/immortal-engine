@@ -27,6 +27,12 @@ function makeWorld() {
   return { time: { turn: 1 }, rumors: [] };
 }
 
+// Helper: extract text from memory entry (string or D2 object)
+function memText(entry) {
+  if (!entry) return '';
+  return typeof entry === 'string' ? entry : String(entry.text || '');
+}
+
 describe('O09: buildNpcContext includes NPC memories', () => {
   it('context.memories contains the NPC memory entries', () => {
     const memories = ['Sera discussed trade with the traveler.', 'Sera withheld info about the ruins.'];
@@ -34,8 +40,9 @@ describe('O09: buildNpcContext includes NPC memories', () => {
     const ctx = buildNpcContext(npc, makeWorld(), 'Tell me about the ruins');
     assert.ok(Array.isArray(ctx.memories), 'context.memories is an array');
     assert.equal(ctx.memories.length, 2);
-    assert.equal(ctx.memories[0], memories[0]);
-    assert.equal(ctx.memories[1], memories[1]);
+    // D2: memories are now normalized objects with text/turn/salience
+    assert.equal(memText(ctx.memories[0]), memories[0]);
+    assert.equal(memText(ctx.memories[1]), memories[1]);
   });
 
   it('context.memories is empty array when NPC has no memories', () => {

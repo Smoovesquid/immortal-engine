@@ -10,6 +10,7 @@
 
 import { makeRng, seedFromString } from '../rng.js';
 import { gatherNpcKnowledge } from './perspectiveFilter.js';
+import { decayMemories } from './npcMemory.js';
 
 // ── Mood + Approach enums ───────────────────────────────────────────────────
 
@@ -95,7 +96,11 @@ export function buildNpcContext(npc, world, playerInput) {
     knownFacts: facts,
     carriedRumors: rumors,
     relationships,
-    memories: Array.isArray(npc.memory) ? npc.memory.slice() : [],
+    memories: (() => {
+      const rawMemories = Array.isArray(npc.memory) ? npc.memory : [];
+      const decayed = decayMemories(rawMemories, Number(world?.time?.turn ?? 0));
+      return [...decayed].sort((a, b) => b.salience - a.salience);
+    })(),
     playerInput: String(playerInput || ''),
     turn: Number(world?.time?.turn ?? 0),
     secrets: new Set(Array.isArray(npc.secrets) ? npc.secrets.map(String) : []),
@@ -130,7 +135,11 @@ function buildPromptVerbose(ctx) {
   const knowledgeBlock = [factLines, rumorLines].filter(Boolean).join('\n');
 
   const memoryLines = Array.isArray(ctx.memories) && ctx.memories.length > 0
-    ? ctx.memories.map(m => `- ${m}`).join('\n')
+    ? ctx.memories.map(m => {
+        const text = typeof m === 'string' ? m : String(m.text || m);
+        const sal = typeof m === 'object' && m.salience != null ? ` [${(m.salience * 10).toFixed(0)}/10]` : '';
+        return `- ${text}${sal}`;
+      }).join('\n')
     : '(nothing)';
 
   const relLines = ctx.relationships
@@ -350,13 +359,18 @@ export function fallbackRules(context) {
   // Pass O3 — memory-based trust boost in the 4-6 range.
   // If any memory contains a word (>=4 chars) from the player input, treat
   // trust as +1 for share behavior. Only applies in the 4-6 band.
+  // Pass D2 — salience gate: very faded memories (salience <= 0.2) don't trigger recall.
   const memories = Array.isArray(context.memories) ? context.memories : [];
   let effectiveTrust = trust;
   if (trust >= 4 && trust <= 6 && memories.length > 0) {
     const inputWords = String(context.playerInput || '').toLowerCase()
       .split(/\s+/).filter(w => w.length >= 4);
     const hasMemoryMatch = inputWords.length > 0 && memories.some(mem => {
-      const memLower = String(mem).toLowerCase();
+      const memText = typeof mem === 'string' ? mem : String(mem.text || '');
+      const memSalience = typeof mem === 'object' ? Number(mem.salience ?? 1) : 1;
+      // Only match memories with salience > 0.2 (very faded memories don't trigger recall)
+      if (memSalience <= 0.2) return false;
+      const memLower = memText.toLowerCase();
       return inputWords.some(w => memLower.includes(w));
     });
     if (hasMemoryMatch) effectiveTrust = trust + 1;

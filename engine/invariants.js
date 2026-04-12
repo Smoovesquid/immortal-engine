@@ -276,6 +276,14 @@ export function assertWorldInvariants(world) {
     if (e.reactions !== null && !Array.isArray(e.reactions)) {
       throw new Error(`Invariant: combat enemy ${e.id} reactions must be null or array`);
     }
+    // CM9: lairActions must be null or array.
+    if (e.lairActions !== null && e.lairActions !== undefined && !Array.isArray(e.lairActions)) {
+      throw new Error(`Invariant: combat enemy ${e.id} lairActions must be null or array`);
+    }
+    // CM9: senses must be an object.
+    if (e.senses && typeof e.senses !== 'object') {
+      throw new Error(`Invariant: combat enemy ${e.id} senses must be object`);
+    }
   }
   // CM6: initiativeOrder must be an array.
   if (!Array.isArray(combat.initiativeOrder)) {

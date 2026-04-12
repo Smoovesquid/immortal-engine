@@ -75,6 +75,9 @@ export function mintEnemyFromNpc(npc) {
   // CM7: legendaryActions and reactions from bestiary or combatProfile.
   const legendaryActions = profile.legendaryActions ?? bestiary?.legendaryActions ?? null;
   const reactions = profile.reactions ?? bestiary?.reactions ?? null;
+  // CM9: lairActions and senses from bestiary or combatProfile.
+  const lairActions = profile.lairActions ?? bestiary?.lairActions ?? null;
+  const senses = profile.senses ?? bestiary?.senses ?? { darkvision: null, blindsight: null, tremorsense: null, truesight: null };
   const sourceNpcId = String(n.id ?? '');
   return {
     id: '', // assigned at begin
@@ -96,7 +99,9 @@ export function mintEnemyFromNpc(npc) {
     lootTableRef,
     initMod,
     legendaryActions,
-    reactions
+    reactions,
+    lairActions,
+    senses
   };
 }
 

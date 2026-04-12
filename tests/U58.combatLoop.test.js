@@ -77,6 +77,8 @@ function mkEnemy(over = {}) {
     initMod: 0,
     legendaryActions: null,
     reactions: null,
+    lairActions: null,
+    senses: { darkvision: null, blindsight: null, tremorsense: null, truesight: null },
     ...over
   };
 }

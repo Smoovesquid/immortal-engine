@@ -28,6 +28,7 @@ import { resolveAction, resolveRecharge } from './actionResolver.js';
 import { rollLootForCR } from '../ruleset/core/loot/lootRoll.js';
 import { rollDice } from './diceRoller.js';
 import { rollSave } from './savingThrows.js';
+import { applySenseOverrides } from './senses.js';
 
 const FORCE_BASE = 3;
 const FINESSE_BASE = 2;
@@ -98,7 +99,11 @@ export function resolveCombatTurn(world, move, opts = {}) {
   // CM7: Reset legendary action remaining and reaction usesRemaining at round start.
   w = resetLegendaryAndReactions(w);
 
-  const summaryParts = [...condTickSummary];
+  // CM9: Process lair actions at round start (before entity turns).
+  const lairSummary = [];
+  w = processLairActions(w, lairSummary);
+
+  const summaryParts = [...condTickSummary, ...lairSummary];
   const playerId = String(w.party?.[0]?.id ?? 'party');
 
   // CM7: Pure initiative ordering. Walk initiativeOrder top-to-bottom.
@@ -275,7 +280,10 @@ export function resolveCombatTurn(world, move, opts = {}) {
       const livingParty = (w.party || []).filter(p => p && (p.wounds ?? 0) < 6);
       if (livingParty.length === 0) { legTriggerIndex++; continue; }
       const rawTarget = livingParty[partyIdx % livingParty.length];
-      const targetMember = { ...rawTarget, ac: computeAC(rawTarget) };
+      const baseAc = computeAC(rawTarget);
+      // CM9: Apply sense overrides — enemy senses can adjust effective AC of target.
+      const senseResult = applySenseOverrides(e, rawTarget);
+      const targetMember = { ...rawTarget, ac: Math.max(0, baseAc - senseResult.toHitMod) };
       partyIdx++;
 
       const enemyActions = Array.isArray(e.actions) ? e.actions : [];
@@ -789,6 +797,52 @@ function checkEnemyReaction(world, enemy, approachTag, damage, damageType, rng, 
   }
 
   return { world: w, damage };
+}
+
+// ── CM9: Lair Actions ──────────────────────────────────────────────────
+
+/**
+ * Process lair actions at round start (initiative count 20, before entities).
+ * Cycles through lair action options by round number.
+ * One lair action per round from the first enemy that has them.
+ */
+function processLairActions(world, summaryParts) {
+  let w = world;
+  const enemies = w.combat?.enemies || [];
+  const round = w.combat?.round ?? 1;
+
+  for (const e of enemies) {
+    if (!(e.hp > 0)) continue;
+    if (!Array.isArray(e.lairActions) || e.lairActions.length === 0) continue;
+
+    // Cycle through lair actions by round.
+    const idx = (round - 1) % e.lairActions.length;
+    const la = e.lairActions[idx];
+    if (!la) continue;
+
+    // Resolve the lair action against a party target.
+    const livingParty = (w.party || []).filter(p => p && (p.wounds ?? 0) < 6);
+    if (livingParty.length === 0) break;
+    const rawTarget = livingParty[0];
+    const targetMember = { ...rawTarget, ac: computeAC(rawTarget) };
+
+    const lairSeed = seedFromString(`${w.meta?.seed || ''}|lair|${round}|${e.id}`);
+    const lairRng = makeRng(lairSeed);
+    const res = resolveAction(la.action, e, targetMember, lairRng);
+
+    if (res.hit && res.damage > 0) {
+      w = applyDeltas(w, [{ op: 'wound', entityId: String(targetMember.id), by: res.damage }]);
+      summaryParts.push(`Lair: ${la.name} hits ${targetMember.name} for ${res.damage} ${res.damageType}`);
+    } else if (res.saveResult && res.damage > 0) {
+      w = applyDeltas(w, [{ op: 'wound', entityId: String(targetMember.id), by: res.damage }]);
+      summaryParts.push(`Lair: ${la.name} (saved, half) ${res.damage} ${res.damageType}`);
+    } else {
+      summaryParts.push(`Lair: ${la.name} misses`);
+    }
+
+    break; // Only one lair action per round.
+  }
+  return w;
 }
 
 // ── internals ──────────────────────────────────────────────────────────────

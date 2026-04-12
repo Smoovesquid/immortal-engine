@@ -243,7 +243,10 @@ export function ensureCombat(c) {
     // CM7: legendaryActions and reactions.
     const legendaryActions = normalizeLegendaryActions(eRaw.legendaryActions);
     const reactions = normalizeReactions(eRaw.reactions);
-    enemies.push({ id, name, hp, maxHp, damage, ac, cr, damageType, resistances, conditionImmunities, conditions, actions, multiattack, saveProficiencies, canParley, defeated, sourceNpcId, lootTableRef, initMod, legendaryActions, reactions });
+    // CM9: lairActions and senses.
+    const lairActions = normalizeLairActions(eRaw.lairActions);
+    const senses = normalizeSenses(eRaw.senses);
+    enemies.push({ id, name, hp, maxHp, damage, ac, cr, damageType, resistances, conditionImmunities, conditions, actions, multiattack, saveProficiencies, canParley, defeated, sourceNpcId, lootTableRef, initMod, legendaryActions, reactions, lairActions, senses });
     if (enemies.length >= COMBAT_ENEMY_CAP) break;
   }
 
@@ -311,6 +314,32 @@ function normalizeReactions(raw) {
     if (out.length >= 4) break;
   }
   return out.length > 0 ? out : null;
+}
+
+// ── CM9 — lair actions & senses normalizers ───────────────────────────────
+
+function normalizeLairActions(raw) {
+  if (!Array.isArray(raw)) return null;
+  const out = [];
+  for (const la of raw) {
+    if (!la || typeof la !== 'object') continue;
+    const name = String(la.name ?? '').trim();
+    if (!name) continue;
+    const action = la.action && typeof la.action === 'object' ? la.action : {};
+    out.push({ name, action });
+    if (out.length >= 4) break;
+  }
+  return out.length > 0 ? out : null;
+}
+
+function normalizeSenses(raw) {
+  if (!raw || typeof raw !== 'object') return { darkvision: null, blindsight: null, tremorsense: null, truesight: null };
+  return {
+    darkvision: typeof raw.darkvision === 'number' ? clampInt(raw.darkvision, 0, 300) : null,
+    blindsight: typeof raw.blindsight === 'number' ? clampInt(raw.blindsight, 0, 300) : null,
+    tremorsense: typeof raw.tremorsense === 'number' ? clampInt(raw.tremorsense, 0, 300) : null,
+    truesight: typeof raw.truesight === 'number' ? clampInt(raw.truesight, 0, 300) : null
+  };
 }
 
 // ── Pass R1 — rumor normalizer ──────────────────────────────────────────

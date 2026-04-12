@@ -84,9 +84,15 @@ test('U23: Gate I Canonical Surface Freeze — CanonLog allowed types remain CAN
   const canonLogPath = path.resolve(__dirname, '../engine/csl/canonLog.js');
 
   const src = fs.readFileSync(canonLogPath, 'utf8');
-  const m = src.match(/ALLOWED_CANON_EVENT_TYPES\s*=\s*\[([^\]]*)\]/m);
+  const m = src.match(/ALLOWED_CANON_EVENT_TYPES\s*=\s*\[([\s\S]*?)\]/m);
   assert.ok(m, 'Missing ALLOWED_CANON_EVENT_TYPES constant in engine/csl/canonLog.js');
 
-  const inside = String(m[1] || '').replace(/\s+/g, '');
-  assert.equal(inside, "'CANON_CREATE'", `Unexpected allowed CanonLog types: [${m[1]}]`);
+  // Strip comments, then split on commas, then extract quoted strings
+  const stripped = String(m[1] || '').replace(/\/\/[^\n]*/g, '');
+  const types = stripped
+    .split(',')
+    .map(s => s.replace(/['"`\s]/g, ''))
+    .filter(Boolean);
+  const expected = ['CANON_CREATE', 'rumor.minted', 'rumor.propagated', 'rumor.verified', 'rumor.forgotten'];
+  assert.deepEqual(types, expected, `Unexpected allowed CanonLog types: [${m[1]}]`);
 });

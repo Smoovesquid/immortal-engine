@@ -5,7 +5,14 @@
  */
 
 
-const ALLOWED_CANON_EVENT_TYPES = ['CANON_CREATE'];
+const ALLOWED_CANON_EVENT_TYPES = [
+  'CANON_CREATE',
+  // Pass R1 — rumor lifecycle events
+  'rumor.minted',
+  'rumor.propagated',
+  'rumor.verified',
+  'rumor.forgotten'
+];
 function validateCanonEvent(event) {
     if (!event || typeof event !== 'object') {
         throw new Error('CanonLog: invalid event');

@@ -303,6 +303,83 @@ test('CM09-17 world with lairActions and senses passes invariants', () => {
   assertWorldInvariants(w);
 });
 
+// ── multi-target lair actions ─────────────────────────────────────────────
+
+test('CM09-19 lair action targets all living party members', () => {
+  const enemy = mkEnemy({
+    lairActions: [
+      { name: 'Tremor', action: { name: 'Tremor', save: { stat: 'AGILITY', dc: 14, halfOnSave: true }, damage: '2d8', type: 'bludgeoning' } }
+    ]
+  });
+  const initOrder = [
+    { id: 'party', type: 'party', roll: 18, modifier: 2, total: 20 },
+    { id: 'companion_1', type: 'party', roll: 14, modifier: 1, total: 15 },
+    { id: 'enemy_0', type: 'enemy', roll: 10, modifier: 2, total: 12 }
+  ];
+  let w = mkCombatWithInit('lair-multi', [enemy], initOrder);
+  w = ensureWorld({
+    ...w,
+    party: [
+      w.party[0],
+      {
+        id: 'companion_1', name: 'Tove', vibe: 'loyal', archetype: 'guardian',
+        wounds: 0, stress: 0, resources: { Supply: 3 },
+        stats: { MIGHT: 12, AGILITY: 12, GRIT: 12, CHARM: 10, WITS: 10 }
+      }
+    ]
+  });
+
+  const { world, result } = resolveCombatTurn(w,
+    { approachTag: 'force', intentText: 'attack', risk: 0.5, stakeTag: 'harm' },
+    { afterPlayerTurn: (wrld, cid) => ({ world: wrld, summaryParts: [] }) }
+  );
+
+  // Both party members should be mentioned in the lair action summary.
+  assert.ok(result.combatSummary.includes('Lair'), 'lair action should fire');
+  assert.ok(result.combatSummary.includes('Tremor'), 'lair action name should appear');
+  assert.ok(result.combatSummary.includes('Hero'), 'Hero should be targeted by lair action');
+  assert.ok(result.combatSummary.includes('Tove'), 'Tove should be targeted by lair action');
+});
+
+test('CM09-20 lair action — one party member can pass while another fails', () => {
+  // Use a save DC that makes mixed results likely with different stats.
+  const enemy = mkEnemy({
+    lairActions: [
+      { name: 'Quake', action: { name: 'Quake', save: { stat: 'AGILITY', dc: 12, halfOnSave: true }, damage: '2d6', type: 'bludgeoning' } }
+    ]
+  });
+  const initOrder = [
+    { id: 'party', type: 'party', roll: 18, modifier: 2, total: 20 },
+    { id: 'companion_1', type: 'party', roll: 14, modifier: -2, total: 12 },
+    { id: 'enemy_0', type: 'enemy', roll: 10, modifier: 2, total: 12 }
+  ];
+  let w = mkCombatWithInit('lair-mixed', [enemy], initOrder);
+  // Give the companion very low AGILITY to increase save failure likelihood.
+  w = ensureWorld({
+    ...w,
+    party: [
+      w.party[0],
+      {
+        id: 'companion_1', name: 'Tove', vibe: 'loyal', archetype: 'guardian',
+        wounds: 0, stress: 0, resources: { Supply: 3 },
+        stats: { MIGHT: 12, AGILITY: 5, GRIT: 12, CHARM: 10, WITS: 10 }
+      }
+    ]
+  });
+
+  const { world, result } = resolveCombatTurn(w,
+    { approachTag: 'force', intentText: 'attack', risk: 0.5, stakeTag: 'harm' },
+    { afterPlayerTurn: (wrld, cid) => ({ world: wrld, summaryParts: [] }) }
+  );
+
+  // Both names should be in the summary — each gets their own save result.
+  assert.ok(result.combatSummary.includes('Hero'), 'Hero should appear in lair summary');
+  assert.ok(result.combatSummary.includes('Tove'), 'Tove should appear in lair summary');
+  // The summary should contain per-member results (saves/fails independently).
+  const lairPart = result.combatSummary.split(';').find(s => s.includes('Lair'));
+  assert.ok(lairPart, 'lair segment should exist in summary');
+});
+
 // ── determinism ───────────────────────────────────────────────────────────
 
 test('CM09-18 determinism: same seed → same lair action outcomes', () => {

@@ -820,25 +820,29 @@ function processLairActions(world, summaryParts) {
     const la = e.lairActions[idx];
     if (!la) continue;
 
-    // Resolve the lair action against a party target.
+    // Resolve the lair action against ALL living party members.
     const livingParty = (w.party || []).filter(p => p && (p.wounds ?? 0) < 6);
     if (livingParty.length === 0) break;
-    const rawTarget = livingParty[0];
-    const targetMember = { ...rawTarget, ac: computeAC(rawTarget) };
 
     const lairSeed = seedFromString(`${w.meta?.seed || ''}|lair|${round}|${e.id}`);
     const lairRng = makeRng(lairSeed);
-    const res = resolveAction(la.action, e, targetMember, lairRng);
+    const perMemberSummaries = [];
 
-    if (res.hit && res.damage > 0) {
-      w = applyDeltas(w, [{ op: 'wound', entityId: String(targetMember.id), by: res.damage }]);
-      summaryParts.push(`Lair: ${la.name} hits ${targetMember.name} for ${res.damage} ${res.damageType}`);
-    } else if (res.saveResult && res.damage > 0) {
-      w = applyDeltas(w, [{ op: 'wound', entityId: String(targetMember.id), by: res.damage }]);
-      summaryParts.push(`Lair: ${la.name} (saved, half) ${res.damage} ${res.damageType}`);
-    } else {
-      summaryParts.push(`Lair: ${la.name} misses`);
+    for (const rawTarget of livingParty) {
+      const targetMember = { ...rawTarget, ac: computeAC(rawTarget) };
+      const res = resolveAction(la.action, e, targetMember, lairRng);
+
+      if (res.hit && res.damage > 0) {
+        w = applyDeltas(w, [{ op: 'wound', entityId: String(targetMember.id), by: res.damage }]);
+        perMemberSummaries.push(`${targetMember.name} takes ${res.damage} ${res.damageType}`);
+      } else if (res.saveResult && res.damage > 0) {
+        w = applyDeltas(w, [{ op: 'wound', entityId: String(targetMember.id), by: res.damage }]);
+        perMemberSummaries.push(`${targetMember.name} saves, takes ${res.damage} ${res.damageType}`);
+      } else {
+        perMemberSummaries.push(`${targetMember.name} saves`);
+      }
     }
+    summaryParts.push(`Lair: ${la.name}: ${perMemberSummaries.join('; ')}`);
 
     break; // Only one lair action per round.
   }

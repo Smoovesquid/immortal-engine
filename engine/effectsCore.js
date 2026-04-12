@@ -164,6 +164,22 @@ export function applyDeltas(world, deltas = []) {
       continue;
     }
 
+    if (kind === 'npcMemoryAdd') {
+      const npcId = String(op.npcId || '');
+      const entry = String(op.entry || '').trim();
+      if (!npcId || !entry) continue;
+      w = mutateNpc(w, npcId, npc => {
+        const memory = Array.isArray(npc.memory) ? [...npc.memory] : [];
+        // Deduplicate exact strings
+        if (memory.includes(entry)) return npc;
+        memory.push(entry);
+        // FIFO eviction if over cap 12
+        while (memory.length > 12) memory.shift();
+        return { ...npc, memory };
+      });
+      continue;
+    }
+
     if (kind === 'rollRequest') {
       // Roll requests are informational — stored in timeline for the playloop to process
       const action = String(op.action || '');

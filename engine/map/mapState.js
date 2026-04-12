@@ -205,10 +205,22 @@ function ensureNode(n) {
   };
   if (x.nodeType) base.nodeType = String(x.nodeType);
   // Preserve settlement data from decompression (NPCs, buildings, history, etc.)
-  if (x.settlement && typeof x.settlement === 'object') base.settlement = x.settlement;
+  if (x.settlement && typeof x.settlement === 'object') {
+    const s = x.settlement;
+    if (Array.isArray(s.npcs)) {
+      base.settlement = { ...s, npcs: s.npcs.map(ensureNpcMemory) };
+    } else {
+      base.settlement = s;
+    }
+  }
   // Preserve furniture data for physics interaction
   if (Array.isArray(x.furniture)) base.furniture = x.furniture;
   return base;
+}
+
+function ensureNpcMemory(npc) {
+  if (!npc || typeof npc !== 'object') return npc;
+  return { ...npc, memory: Array.isArray(npc.memory) ? npc.memory.slice(0, 12) : [] };
 }
 
 function ensureEdge(e) {

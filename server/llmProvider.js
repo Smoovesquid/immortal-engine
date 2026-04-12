@@ -1,6 +1,9 @@
-// LLM Provider abstraction — supports Anthropic (Claude) and OpenAI.
+// LLM Provider abstraction — supports Anthropic (Claude), OpenAI, and local (Ollama).
 // Detects which API key is available and routes accordingly.
 // All engine modules call chatCompletion() and don't care which provider is active.
+// Local LLM is a separate channel (NPC brain, rumor garble, physics detect) — not a cloud replacement.
+
+import { queryLocal, checkHealth, isAvailable } from './localLlmProvider.js';
 
 const ANTHROPIC_DEFAULT_MODEL = 'claude-sonnet-4-20250514';
 const OPENAI_DEFAULT_MODEL = 'gpt-4o-mini';
@@ -131,4 +134,16 @@ async function callOpenAI({ messages, model, temperature, max_tokens, apiKey, fe
   const data = await res.json();
   const content = data?.choices?.[0]?.message?.content || '';
   return { content };
+}
+
+// --- Local LLM (Ollama) routing ---
+
+export { checkHealth as checkLocalHealth };
+
+export function hasLocalLlm() {
+  return isAvailable();
+}
+
+export async function queryLocalLlm(opts) {
+  return queryLocal(opts);
 }

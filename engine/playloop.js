@@ -33,7 +33,12 @@ export function beginAdventure(world, packsById) {
   let w = ensureWorld(world);
   const primary = packsById[w.pack.primaryId];
   const mixer = w.pack.mixerId ? packsById[w.pack.mixerId] : null;
-  const pack = mergePacks(primary, mixer);
+  let pack = mergePacks(primary, mixer);
+
+  // Pass I3 — Westmarch slice default: enrich fantasy pack with westmarch sub-region.
+  if (pack.id === 'fantasy' && packsById.westmarch) {
+    pack = mergeSubRegion(pack, packsById.westmarch);
+  }
 
   const seed = seedFromString(`${w.meta.seed}|begin|${pack.id}`);
   const rng = makeRng(seed);
@@ -1588,6 +1593,22 @@ function mergePacks(primary, mixer) {
     starterLocations: uniq([...(p.starterLocations||[]), ...(mixer.starterLocations||[])]),
     starterObjectives: uniq([...(p.starterObjectives||[]), ...(mixer.starterObjectives||[])]),
     skills: uniq([...(p.skills||[]), ...(mixer.skills||[])])
+  };
+}
+
+// Pass I3 — merge a sub-region pack into a base pack by appending catalog arrays.
+export function mergeSubRegion(basePack, regionPack) {
+  const append = (field) => [
+    ...(basePack[field] || []),
+    ...(regionPack[field] || [])
+  ];
+  return {
+    ...basePack,
+    locations: append('locations'),
+    npcArchetypes: append('npcArchetypes'),
+    objectives: append('objectives'),
+    complications: append('complications'),
+    sensoryMotifs: append('sensoryMotifs')
   };
 }
 

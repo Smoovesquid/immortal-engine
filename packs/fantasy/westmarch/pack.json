@@ -1,0 +1,265 @@
+{
+  "id": "westmarch",
+  "name": "The Westmarch",
+  "toneWords": {
+    "cooperative": ["hearth-warm", "steady", "hopeful"],
+    "grim": ["iron", "windswept", "weary"],
+    "blood": ["ash", "pitiless", "scarred"]
+  },
+  "starterLocations": [
+    "Thornwall market square",
+    "Seil's Crossing",
+    "the Broken Spire"
+  ],
+  "starterObjectives": [
+    "find Dalla's missing apprentice",
+    "investigate the Greywood silence",
+    "settle the bridge toll dispute"
+  ],
+  "starterGoals": [
+    { "kind": "reach", "targetRef": "__nearest_settlement__", "label": "Travel to the next settlement" }
+  ],
+  "skills": ["Steel", "Wits", "Charm", "Woodcraft"],
+  "locations": [
+    "Thornwall market square (level 1)",
+    "Thornwall garrison tower (level 2)",
+    "Thornwall chapel of the Quiet God (level 3)",
+    "Thornwall smithy (level 4)",
+    "Seil's Crossing stone bridge (level 5)",
+    "riverside trail south of Thornwall (level 6)",
+    "king's road eastern approach (level 7)",
+    "Ashenford longhall (level 8)",
+    "Ashenford communal well (level 9)",
+    "Ashfall Ridge lower slopes (level 10)",
+    "sealed mine entrance at Ashfall Ridge (level 11)",
+    "the Broken Spire watchtower (level 12)",
+    "Greywood Edge woodcutter's shack (level 13)",
+    "deep Greywood — silent grove (level 14)",
+    "deep Greywood — moss-covered ruin (level 15)",
+    "ridge trail between Thornwall and Ashenford (level 16)",
+    "scrubland south of the king's road (level 17)",
+    "river shallows upstream of the crossing (level 18)",
+    "charcoal-burner's camp on Ashfall Ridge (level 19)",
+    "abandoned trapper's blind in the Greywood fringe (level 20)"
+  ],
+  "objectives": [
+    "find Dalla's missing apprentice in the Greywood (1)",
+    "investigate the silence in the deep Greywood (2)",
+    "settle the bridge toll dispute at Seil's Crossing (3)",
+    "convince Warden Maren to unseal the ridge mines (4)",
+    "track the missing Compact scout Pel (5)",
+    "escort a merchant caravan safely through the Westmarch (6)",
+    "deliver Captain Hale's patrol report to the capital (7)",
+    "recover strange tools from the old tunnels beneath Ashfall Ridge (8)",
+    "mediate between the Crown Watch and the Seil Compact (9)",
+    "map the ruins in the deep Greywood (10)",
+    "find what drove the game from the deep woods (11)",
+    "locate the source of the moving lights in the Greywood (12)",
+    "earn Renna Voss's trust to access Compact intelligence (13)",
+    "investigate the old stonework beneath Seil's Crossing (14)",
+    "deliver supplies to the charcoal-burners on the ridge (15)"
+  ],
+  "complications": [
+    "the trail goes cold at nightfall (1)",
+    "Crown Watch soldiers demand your papers (2)",
+    "a Compact patrol mistakes you for a spy (3)",
+    "the bridge is blocked by a toll dispute (4)",
+    "fog rolls in from the river and refuses to lift (5)",
+    "the Greywood canopy blocks all starlight (6)",
+    "your guide refuses to go further (7)",
+    "an old mine shaft collapses behind you (8)",
+    "someone has been following your trail (9)",
+    "the settlement gates are barred at dusk (10)",
+    "a messenger arrives with contradictory orders (11)",
+    "the river is running higher than expected (12)",
+    "your informant has gone silent (13)",
+    "wolves are denning near the only safe path (14)",
+    "a cold rain turns the road to mud (15)"
+  ],
+  "npcArchetypes": [
+    "methodical garrison captain with a troubled past (1)",
+    "pragmatic provisioner who trusts no outsider (2)",
+    "tight-lipped elder who governs with quiet authority (3)",
+    "skittish young ranger who has seen too much (4)",
+    "cheerful smith hiding a private fear (5)",
+    "long-winded chapel keeper with surprising knowledge (6)",
+    "suspicious charcoal-burner who watches the ridge (7)",
+    "weary merchant stranded by the toll dispute (8)",
+    "missing scout known only by reputation (9)",
+    "apprentice who vanished into the forest (10)",
+    "retired trapper nursing old wounds (11)",
+    "river bargeman who knows every crossing (12)",
+    "herbalist who ranges the Greywood fringe (13)",
+    "Crown Watch soldier questioning their orders (14)",
+    "Compact hunter with a personal grudge (15)"
+  ],
+  "sensoryMotifs": [
+    "woodsmoke hangs in the still air (1)",
+    "the river murmurs beneath old stone (2)",
+    "iron tang of a freshly worked forge (3)",
+    "wind scrapes across the ridge like a whetstone (4)",
+    "pine resin and wet earth after rain (5)",
+    "silence pools in the deep forest like water (6)",
+    "distant hammering from the mine works (7)",
+    "the creak of a timber palisade in the wind (8)",
+    "frost clings to grass in the blue morning (9)",
+    "charcoal dust greys everything it touches (10)",
+    "owl calls that stop too suddenly (11)",
+    "the weight of old trees pressing close (12)",
+    "boot-churned mud on the king's road (13)",
+    "a thin curl of smoke from a homestead chimney (14)",
+    "the smell of tallow candles in a low-ceilinged hall (15)"
+  ],
+  "regions": [
+    {
+      "id": "thornwall",
+      "name": "Thornwall",
+      "description": "A timber-palisade town of three hundred souls at the River Seil crossing.",
+      "nodes": [
+        { "id": "thornwall-square", "name": "Thornwall market square" },
+        { "id": "thornwall-garrison", "name": "Thornwall garrison tower" },
+        { "id": "thornwall-chapel", "name": "Chapel of the Quiet God" },
+        { "id": "thornwall-smithy", "name": "Thornwall smithy" }
+      ],
+      "adjacency": ["ashenford", "greywood-edge", "seils-crossing"],
+      "seedIds": ["seed-thornwall"]
+    },
+    {
+      "id": "seils-crossing",
+      "name": "Seil's Crossing",
+      "description": "An ancient stone bridge over the River Seil, older than the kingdom itself.",
+      "nodes": [
+        { "id": "seils-bridge", "name": "Seil's Crossing stone bridge" }
+      ],
+      "adjacency": ["thornwall"],
+      "seedIds": ["seed-bridge"]
+    },
+    {
+      "id": "ashenford",
+      "name": "Ashenford",
+      "description": "A cluster of homesteads around a communal well beneath the Ashfall Ridge.",
+      "nodes": [
+        { "id": "ashenford-longhall", "name": "Ashenford longhall" },
+        { "id": "ashenford-well", "name": "Ashenford communal well" },
+        { "id": "ashfall-mines", "name": "Sealed mine entrance" }
+      ],
+      "adjacency": ["thornwall"],
+      "seedIds": ["seed-ashenford"]
+    },
+    {
+      "id": "greywood-edge",
+      "name": "Greywood Edge",
+      "description": "The western boundary of settled land, where the old forest begins.",
+      "nodes": [
+        { "id": "broken-spire", "name": "The Broken Spire" },
+        { "id": "greywood-deep", "name": "Deep Greywood" }
+      ],
+      "adjacency": ["thornwall"],
+      "seedIds": ["seed-greywood"]
+    }
+  ],
+  "factions": [
+    {
+      "id": "crown-watch",
+      "name": "Crown Watch",
+      "description": "The kingdom's garrison force in the Westmarch, thin-stretched and under-supplied.",
+      "disposition": "lawful",
+      "seedIds": ["seed-crown-watch"]
+    },
+    {
+      "id": "seil-compact",
+      "name": "Seil Compact",
+      "description": "An informal alliance of frontier settlers who believe they must protect their own.",
+      "disposition": "independent",
+      "seedIds": ["seed-seil-compact"]
+    }
+  ],
+  "npcs": [
+    {
+      "id": "aldric-hale",
+      "name": "Captain Aldric Hale",
+      "role": "Crown Watch garrison commander",
+      "faction": "crown-watch",
+      "traits": ["methodical", "stubborn", "privately worried"],
+      "seedRef": "seed-hale"
+    },
+    {
+      "id": "renna-voss",
+      "name": "Renna Voss",
+      "role": "Provisioner and Compact leader",
+      "faction": "seil-compact",
+      "traits": ["sharp", "pragmatic", "deeply rooted"],
+      "seedRef": "seed-voss"
+    },
+    {
+      "id": "warden-maren",
+      "name": "Warden Maren",
+      "role": "Elder of Ashenford",
+      "faction": "seil-compact",
+      "traits": ["guarded", "knowledgeable", "patient"],
+      "seedRef": "seed-maren"
+    },
+    {
+      "id": "corin-blackthorn",
+      "name": "Corin Blackthorn",
+      "role": "Lone ranger of the Greywood fringe",
+      "traits": ["skittish", "competent", "exhausted"],
+      "seedRef": "seed-corin"
+    },
+    {
+      "id": "dalla-smith",
+      "name": "Dalla the Smith",
+      "role": "Thornwall blacksmith",
+      "traits": ["cheerful", "strong", "quietly terrified"],
+      "seedRef": "seed-dalla"
+    },
+    {
+      "id": "old-gerren",
+      "name": "Old Gerren",
+      "role": "Chapel keeper of the Quiet God",
+      "traits": ["long-winded", "knowledgeable", "devout"],
+      "seedRef": "seed-gerren"
+    }
+  ],
+  "threads": [
+    {
+      "id": "greywood-silence",
+      "name": "The Greywood Silence",
+      "description": "Something has changed in the old forest. Game has fled, sound behaves strangely, and two people are missing.",
+      "nodeId": "broken-spire",
+      "seedRef": "seed-greywood-silence"
+    },
+    {
+      "id": "bridge-dispute",
+      "name": "The Bridge Dispute",
+      "description": "The Crown Watch has begun taxing crossings at Seil's Crossing. The Compact argues no one owns the bridge.",
+      "nodeId": "seils-bridge",
+      "seedRef": "seed-bridge-dispute"
+    },
+    {
+      "id": "ridge-mines",
+      "name": "The Ridge Mines",
+      "description": "Miners at Ashenford have broken into an older tunnel system. Warden Maren sealed the entrance, but questions remain.",
+      "nodeId": "ashfall-mines",
+      "seedRef": "seed-ridge-mines"
+    }
+  ],
+  "seeds": [
+    { "id": "seed-thornwall", "kind": "place", "label": "Thornwall — frontier town at the river crossing", "tags": ["settlement", "trade", "garrison"] },
+    { "id": "seed-bridge", "kind": "place", "label": "Seil's Crossing — ancient stone bridge with strange customs", "tags": ["landmark", "old-world", "crossing"] },
+    { "id": "seed-ashenford", "kind": "place", "label": "Ashenford — insular mining hamlet on the ridge", "tags": ["settlement", "mining", "ridge"] },
+    { "id": "seed-greywood", "kind": "place", "label": "Greywood Edge — boundary of the old forest", "tags": ["wilderness", "forest", "uncanny"] },
+    { "id": "seed-crown-watch", "kind": "faction", "label": "Crown Watch — under-strength garrison keeping order", "tags": ["law", "military", "distant-crown"] },
+    { "id": "seed-seil-compact", "kind": "faction", "label": "Seil Compact — frontier self-reliance pact", "tags": ["independent", "settlers", "vigilante"] },
+    { "id": "seed-hale", "kind": "npc", "label": "Captain Hale — methodical soldier in a punishing post", "tags": ["authority", "garrison", "investigation"] },
+    { "id": "seed-voss", "kind": "npc", "label": "Renna Voss — provisioner and Compact voice", "tags": ["trade", "leadership", "frontier"] },
+    { "id": "seed-maren", "kind": "npc", "label": "Warden Maren — elder with sealed knowledge", "tags": ["elder", "secrets", "mining"] },
+    { "id": "seed-corin", "kind": "npc", "label": "Corin Blackthorn — lone ranger haunted by what he's seen", "tags": ["ranger", "greywood", "witness"] },
+    { "id": "seed-dalla", "kind": "npc", "label": "Dalla the Smith — forge-keeper with a missing apprentice", "tags": ["craft", "loss", "trusted"] },
+    { "id": "seed-gerren", "kind": "npc", "label": "Old Gerren — chapel keeper and reluctant historian", "tags": ["knowledge", "faith", "history"] },
+    { "id": "seed-greywood-silence", "kind": "event", "label": "The Greywood Silence — something drives life from the deep forest", "tags": ["mystery", "threat", "forest"] },
+    { "id": "seed-bridge-dispute", "kind": "event", "label": "The Bridge Dispute — toll rights ignite faction tension", "tags": ["conflict", "politics", "trade"] },
+    { "id": "seed-ridge-mines", "kind": "event", "label": "The Ridge Mines — old tunnels beneath Ashfall hold secrets", "tags": ["discovery", "underground", "history"] }
+  ],
+  "toneVectors": { "cooperative": 0.4, "grim": 0.6, "blood": 0.5 }
+}

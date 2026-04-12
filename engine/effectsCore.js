@@ -375,6 +375,71 @@ export function applyDeltas(world, deltas = []) {
       continue;
     }
 
+    // ── Pass T2 — structured item ops for inventory.items[] ────────────────
+    // These operate on the new object-array items schema from T1.
+    // The legacy createItem/removeItem (string-based, bucket-oriented) above
+    // remain for backward compat.
+
+    if (kind === 'addItem') {
+      const entityId = String(op.entityId || 'party');
+      const item = op.item;
+      if (!item || typeof item !== 'object') continue;
+      const id = String(item.id ?? '').trim();
+      const defRef = String(item.defRef ?? '').trim();
+      if (!id || !defRef) continue;
+      w = mutateEntity(w, entityId, (e) => {
+        const inv = e.inventory || {};
+        const items = Array.isArray(inv.items) ? [...inv.items] : [];
+        if (items.some(it => it.id === id)) return e; // no dupes
+        items.push({ id, defRef, equipped: item.equipped ?? null });
+        return { ...e, inventory: { ...inv, items } };
+      });
+      continue;
+    }
+
+    if (kind === 'removeItemById') {
+      const entityId = String(op.entityId || 'party');
+      const itemId = String(op.itemId ?? '').trim();
+      if (!itemId) continue;
+      w = mutateEntity(w, entityId, (e) => {
+        const inv = e.inventory || {};
+        const items = Array.isArray(inv.items) ? [...inv.items] : [];
+        return { ...e, inventory: { ...inv, items: items.filter(it => it.id !== itemId) } };
+      });
+      continue;
+    }
+
+    if (kind === 'equipItem') {
+      const entityId = String(op.entityId || 'party');
+      const itemId = String(op.itemId ?? '').trim();
+      const slot = String(op.slot ?? '').trim();
+      if (!itemId || !slot) continue;
+      w = mutateEntity(w, entityId, (e) => {
+        const inv = e.inventory || {};
+        const items = Array.isArray(inv.items) ? [...inv.items] : [];
+        const updated = items.map(it => {
+          if (it.equipped === slot && it.id !== itemId) return { ...it, equipped: null };
+          if (it.id === itemId) return { ...it, equipped: slot };
+          return it;
+        });
+        return { ...e, inventory: { ...inv, items: updated } };
+      });
+      continue;
+    }
+
+    if (kind === 'unequipItem') {
+      const entityId = String(op.entityId || 'party');
+      const itemId = String(op.itemId ?? '').trim();
+      if (!itemId) continue;
+      w = mutateEntity(w, entityId, (e) => {
+        const inv = e.inventory || {};
+        const items = Array.isArray(inv.items) ? [...inv.items] : [];
+        const updated = items.map(it => it.id === itemId ? { ...it, equipped: null } : it);
+        return { ...e, inventory: { ...inv, items: updated } };
+      });
+      continue;
+    }
+
     if (kind === 'removeFurniture') {
       const nodeId = String(op.nodeId || '');
       const furnitureId = toInt(op.furnitureId ?? -1);

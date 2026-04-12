@@ -16,6 +16,15 @@ function getModel() {
   return (process.env.LOCAL_LLM_MODEL || '').trim() || DEFAULT_MODEL;
 }
 
+function getContextWindow() {
+  const envVal = (process.env.LOCAL_LLM_CONTEXT || '').trim();
+  if (envVal) {
+    const n = parseInt(envVal, 10);
+    if (Number.isFinite(n) && n >= 512 && n <= 32768) return n;
+  }
+  return 4096;
+}
+
 export async function checkHealth(fetchImpl = globalThis.fetch) {
   try {
     const endpoint = getEndpoint();
@@ -71,7 +80,10 @@ export async function queryLocal({ prompt, schema, model, timeout, fetchImpl } =
         model: resolvedModel,
         prompt: fullPrompt,
         format: 'json',
-        stream: false
+        stream: false,
+        options: {
+          num_ctx: getContextWindow()
+        }
       }),
       signal: controller.signal
     });

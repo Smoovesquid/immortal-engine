@@ -35,6 +35,47 @@ The engine has three AI layers. Each has a clear job and a clear boundary:
 **Recommended model:** Llama 3.1 8B (Q4_K_M quantization, ~4.5GB VRAM, ~25 tok/s on M1).
 **Fallback model:** Phi-3 Mini 3.8B (Q4, ~2.5GB, ~40 tok/s) for constrained hardware.
 
+### Model tier table
+
+| Tier | Model | Min RAM | Context | Use case |
+|------|-------|---------|---------|----------|
+| Compact | Phi-3 3.8B | 8 GB | 2048 | Basic NPC decisions, fast inference |
+| Standard | Llama 3.1 8B | 16 GB | 4096 | Full NPC personality + rumor garbling |
+| Enhanced | Llama 3.1 14B | 24 GB+ | 8192 | Rich NPC reasoning + conversation memory |
+
+The engine auto-recommends a tier based on available RAM via `engine/ruleset/core/modelTiers.js`. Override with env vars:
+
+```bash
+LOCAL_LLM_MODEL=llama3.1:14b    # model override
+LOCAL_LLM_CONTEXT=8192           # context window override
+```
+
+### KV-cache configuration
+
+Ollama allocates KV-cache memory proportional to `num_ctx`. The engine passes `num_ctx` (default 4096) in every request. Configure via:
+
+```bash
+LOCAL_LLM_CONTEXT=8192   # larger context for enhanced tier
+```
+
+**Modelfile examples** for manual Ollama configuration:
+
+```dockerfile
+# Standard tier (16GB machine)
+FROM llama3.1:8b
+PARAMETER num_ctx 4096
+
+# Enhanced tier (24GB+ machine) 
+FROM llama3.1:14b
+PARAMETER num_ctx 8192
+
+# Compact tier (8GB machine)
+FROM phi3:3.8b
+PARAMETER num_ctx 2048
+```
+
+When KV-cache quantization lands in llama.cpp/Ollama, these context windows can grow 2-4x on the same hardware without accuracy loss (see "Future: KV-cache quantization scaling path" above).
+
 ---
 
 ## Provider architecture

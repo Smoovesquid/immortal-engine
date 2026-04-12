@@ -13,11 +13,12 @@ Canonical vision docs (read these first):
 - [`docs/CRUNCH_V1.md`](docs/CRUNCH_V1.md) — stats, items, spells, bestiary, loot, XP (5e-lite ruleset)
 - [`docs/RUMOR_LAYER.md`](docs/RUMOR_LAYER.md) — distance-weighted rumor collapse from distant latent seeds
 - [`docs/PROSE_TO_WORLD.md`](docs/PROSE_TO_WORLD.md) — author-time LLM pipeline: prose → canonical pack
+- [`docs/LOCAL_LLM.md`](docs/LOCAL_LLM.md) — local Ollama model for NPC brain, rumor garbling, physics detect
 - [`docs/SLICE_PLAN.md`](docs/SLICE_PLAN.md) — vertical slice worker-pass breakdown
 
 **Supersedes:** the finite-arc framing in `docs/VICTORY_LADDER_MVP_v1.md` and `docs/CAMPAIGN_LIFECYCLE_SPEC_v1.md`. Those docs remain as history; when they conflict with the north star, the north star wins. They'll be rewritten post-slice.
 
-**Active work:** vertical slice (see `docs/SLICE_PLAN.md`). Pass S1 (UI surface spine) is the first worker pass.
+**Active work:** vertical slice (see `docs/SLICE_PLAN.md`). Pass S1 ✅, Pass I1 ✅, Pass T1 in progress. Four tracks: T (crunch), R/O (rumor + local LLM), I (importer).
 
 ---
 

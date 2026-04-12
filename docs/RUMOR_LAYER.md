@@ -179,6 +179,12 @@ Each rumor renders as:
 
 ---
 
+## Local LLM integration
+
+Rumor garbling (tier rewrites) routes through the local Ollama provider when available. See `docs/LOCAL_LLM.md` for the full spec. The local model handles the constrained rewrite task (tier 0 truth → tier 2 distortion); if unavailable, falls back to template-based garbling from seed tags. The provider is shared infrastructure built in Pass O1.
+
+---
+
 ## Open questions
 
 1. **Rumor tags vs topics:** do rumors piggyback on existing NPC dialogue topics, or is the rumor tag system separate? (Lean: separate, rumor tags bubble up as topics when relevant.)

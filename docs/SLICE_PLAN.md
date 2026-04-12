@@ -7,6 +7,7 @@
 - One archetype (Wanderer), one chargen flow.
 - ~12 items, ~6 spells, ~8 bestiary entries.
 - Rumor layer active across the authored region.
+- Local LLM (Ollama) for NPC brain decisions + rumor garbling; optional, graceful fallback.
 - Full character sheet, inventory, spellbook, map, journal, rumor board UI.
 - Mobile-responsive.
 
@@ -39,27 +40,35 @@ Each worker pass is a self-contained unit of work handed off to a fresh Claude C
   │  Crunch    │     │  Rumor     │     │  Importer  │
   │  schema    │     │  schema    │     │  validator │
   └─────┬──────┘     └─────┬──────┘     └─────┬──────┘
+        │                  │                  │
         ▼                  ▼                  ▼
   ┌────────────┐     ┌────────────┐     ┌────────────┐
-  │  Pass T2   │     │  Pass R2   │     │  Pass I2   │
-  │  Items +   │     │  Rumor     │     │  Importer  │
-  │  combat    │     │  mint LLM  │     │  stages    │
+  │  Pass T2   │     │ Pass O1    │     │  Pass I2   │
+  │  Items +   │     │ Local LLM  │     │  Importer  │
+  │  combat    │     │ provider   │     │  stages    │
   └─────┬──────┘     └─────┬──────┘     └─────┬──────┘
-        ▼                  ▼                  ▼
-  ┌────────────┐     ┌────────────┐     ┌────────────┐
-  │  Pass T3   │     │  Pass R3   │     │  Pass I3   │
-  │  Spells    │     │  Propagate │     │  Slice     │
-  │            │     │  + verify  │     │  pack      │
-  └─────┬──────┘     └─────┬──────┘     └─────┬──────┘
-        └──────────────────┼──────────────────┘
-                           ▼
+        │            ┌─────┴──────┐           │
+        ▼            ▼            ▼           ▼
+  ┌────────────┐  ┌──────────┐ ┌──────────┐ ┌────────────┐
+  │  Pass T3   │  │ Pass R2  │ │ Pass O2  │ │  Pass I3   │
+  │  Spells    │  │ Rumor    │ │ NPC      │ │  Slice     │
+  │            │  │ mint LLM │ │ Brain    │ │  pack      │
+  └─────┬──────┘  └────┬─────┘ └────┬─────┘ └─────┬──────┘
+        │              ▼            │              │
+        │         ┌──────────┐      │              │
+        │         │ Pass R3  │      │              │
+        │         │ Propagate│      │              │
+        │         │ + verify │      │              │
+        │         └────┬─────┘      │              │
+        └──────────────┼────────────┼──────────────┘
+                       ▼            ▼
                   ┌────────────────┐
                   │  Pass M1       │  Merge + polish
                   │  Integration   │  (slice ready)
                   └────────────────┘
 ```
 
-The three tracks (T, R, I) run in parallel worktrees after their respective kickoff passes. Pass S1 runs first because it's the smallest and unblocks visual verification for every downstream pass. Pass M1 is the merge where everything integrates.
+Four tracks (T, R/O, I) run in parallel worktrees after their respective kickoff passes. Pass S1 runs first because it's the smallest and unblocks visual verification for every downstream pass. Track O (local LLM) branches from R after R1 — the Ollama provider (O1) is shared infrastructure, then R2 (rumor minting) and O2 (NPC brain) consume it in parallel. Pass M1 is the merge where everything integrates.
 
 ---
 
@@ -135,7 +144,9 @@ The three tracks (T, R, I) run in parallel worktrees after their respective kick
 ---
 
 ### Pass R2 — Rumor Minting via LLM
-**Goal:** lazy rumor minting at dialogue surface. LLM prompt per tier. Silent fallback to deterministic placeholder. Canon Log integration.
+**Goal:** lazy rumor minting at dialogue surface. LLM prompt per tier. Uses local LLM provider (Pass O1) for garbling when available, falls back to cloud, then to deterministic placeholder. Canon Log integration.
+
+**Depends on:** Pass R1 (rumor schema), Pass O1 (local LLM provider).
 
 **Files:** `engine/rumor/mint.js` (new), `engine/rumor/prompt.js` (new), `engine/llmAdapter.js`, `engine/npc/perspectiveFilter.js`, `engine/npc/dialogue.js`.
 
@@ -153,6 +164,32 @@ The three tracks (T, R, I) run in parallel worktrees after their respective kick
 **Tests:** U74, U75.
 
 **Commit:** `feat(rumor): pass R3 — propagation and verification`
+
+---
+
+### Pass O1 — Local LLM Provider
+**Goal:** Ollama client in `server/localLlmProvider.js`. Health check on boot, configurable endpoint/model via env vars, timeout, structured JSON output, silent `{ok: false}` fallback. Shared infrastructure for all local-model consumers (NPC brain, rumor garble, physics detect). See `docs/LOCAL_LLM.md`.
+
+**Depends on:** Pass R1 (rumor schema must exist so the provider's consumers can be tested).
+
+**Files:** `server/localLlmProvider.js` (new), `server/llmProvider.js` (extend routing).
+
+**Tests:** O01 (fallback when unreachable), O02 (timeout behavior).
+
+**Commit:** `feat(local-llm): pass O1 — Ollama provider with silent fallback`
+
+---
+
+### Pass O2 — NPC Brain
+**Goal:** `engine/npc/npcBrain.js` — personality-aware NPC decision-making via local LLM. Context builder reads NPC state (traits, trust, known facts, carried rumors, relationships). Returns structured decisions (what to share, mood, approach). Rule-based fallback when Ollama is unavailable. Decisions canonized in Canon Log for replay determinism. See `docs/LOCAL_LLM.md`.
+
+**Depends on:** Pass O1 (local LLM provider), Pass R1 (rumor schema — brain needs NPC rumor inventory).
+
+**Files:** `engine/npc/npcBrain.js` (new), `engine/npc/perspectiveFilter.js` (extend), `engine/npc/dialogue.js` (wire brain into dialogue flow), `engine/csl/canonLog.js` (new `npcDecision` event type).
+
+**Tests:** O03 (decision shape valid), O04 (fallback matches trust-threshold rules), O05 (Canon Log replay), O06 (determinism).
+
+**Commit:** `feat(npc): pass O2 — NPC brain with local LLM + rule-based fallback`
 
 ---
 

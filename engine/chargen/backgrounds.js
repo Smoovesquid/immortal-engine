@@ -9,7 +9,8 @@ const BACKGROUNDS = {
     { name: 'Sellsword', tags: ['martial', 'armor'], hook: 'You’ve been paid to win and paid to lose.' },
     { name: 'Hedge-Witch', tags: ['spell', 'oddity'], hook: 'Your bargains are older than the crown.' },
     { name: 'Runebroken Scholar', tags: ['wits', 'tools'], hook: 'You found a sentence that rewrote you.' },
-    { name: 'Oathless Knight', tags: ['martial', 'armor'], hook: 'The oath snapped; the echo still pulls.' }
+    { name: 'Oathless Knight', tags: ['martial', 'armor'], hook: 'The oath snapped; the echo still pulls.' },
+    { name: 'Wanderer', tags: ['wits', 'charm'], hook: 'You follow roads that don\'t appear on any map.' }
   ],
   haunted: [
     { name: 'Exorcist (unlicensed)', tags: ['occult', 'tools'], hook: 'You’ve seen the invoice that follows salvation.' },

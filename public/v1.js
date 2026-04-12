@@ -8,6 +8,10 @@ import { buildMythSpec, mythSpecJson } from '../engine/mythSpec.js';
 import { generateTriadFrames, deriveInvocationFromFrame } from '../engine/triad.js';
 import { deriveSequelInvocation } from '../engine/sequel.js';
 import { renderMapView } from './map/MapView.js';
+import { createWanderer } from '../engine/chargen/wanderer.js';
+import { rollDetailOptions } from '../engine/chargen/details.js';
+import { rollStats, STAT_KEYS } from '../engine/chargen/stats.js';
+import { seedFromString, makeRng } from '../engine/rng.js';
 
 // ?reset — wipe all saved state and start fresh
 if (new URLSearchParams(location.search).has('reset')) {
@@ -62,6 +66,8 @@ const ui = {
     frames: [],
     frameIndex: null
   },
+
+  chargen: null,
 
   play: {
     input: '',
@@ -192,12 +198,56 @@ function beginNewWorld() {
   const primaryId = String(ui.invoke.primaryId || 'fantasy');
   const mixerId = String(ui.invoke.mixerId || '').trim() || null;
 
-  beginFromInvocation({
+  // Preview stats for chargen display
+  const baseSeed = `${seed}|chargen|${primaryId}|f${Math.round(fate * 100)}|m:2d6+2`;
+  const statsRng = makeRng(seedFromString(`${baseSeed}|stats`));
+  const statsPreview = rollStats({ method: '2d6+2', rng: statsRng });
+
+  // Roll ritual options for player to pick from
+  const ritualRng = makeRng(seedFromString(`${baseSeed}|ritual`));
+  const ritualOptions = rollDetailOptions(primaryId, baseSeed, ritualRng);
+
+  ui.chargen = {
+    name: '',
+    seed,
+    fate,
+    pack: { primaryId, mixerId },
+    ritualOptions,
+    ritualPicks: { detail: null, keepsake: null, lineYouWontCross: null, rumor: null },
+    stats: statsPreview
+  };
+  ui.screen = 'chargen';
+  render();
+}
+
+async function beginFromChargen() {
+  const { seed, fate, pack, ritualPicks, name } = ui.chargen;
+  const pc = createWanderer({ seed, fate, name: name || undefined, ritualPicks });
+
+  const w0 = newWorld({
     seed,
     fate,
     campaignId: `campaign-${seed}`,
-    pack: { primaryId, mixerId }
+    pack
   });
+
+  // Inject pre-created character; beginAdventure skips creation when party.length > 0
+  const w1 = ensureWorld({ ...w0, party: [pc] });
+
+  const { world, output } = beginAdventure(w1, ui.packs.byId);
+  saveSlot(localStorage, world, 'slot1');
+
+  const baseNarration = output?.narration || 'The world begins.';
+  const wizardLine = { who: 'wizard', text: '', mech: output?.mechanics || '' };
+  ui.play.lines = [wizardLine];
+  ui.play.input = '';
+  ui.play.lastResolutionKind = 'turn';
+
+  startFromWorld(world, { keepTranscript: true });
+
+  const aiText = await tryAiNarration(world, baseNarration, {});
+  wizardLine.text = aiText || baseNarration;
+  render();
 }
 
 function continueSlot1() {
@@ -317,7 +367,7 @@ function renderInvoke() {
     el('div', { class: 'panel' },
       el('div', { class: 'header' },
         el('div', {},
-          el('div', { class: 'title' }, 'Immortal Engine — build 004'),
+          el('div', { class: 'title' }, 'Immortal Engine — build 005'),
           el('div', { class: 'sub' }, 'Gate 4: MythSpec + Deterministic Triad')
         )
       ),
@@ -397,6 +447,100 @@ function renderInvoke() {
             )
           : el('div', { class: 'small' }, 'Triad: generate to see 3 frames.'),
         el('div', { class: 'row' }, continueBtn, beginBtn)
+      )
+    )
+  );
+}
+
+function renderChargen() {
+  const cg = ui.chargen;
+  if (!cg) return el('div', {}, 'No chargen state.');
+
+  const stats = cg.stats;
+  const statOrder = ['MIGHT', 'AGILITY', 'WITS', 'GRIT', 'CHARM'];
+
+  const nameInput = el('input', {
+    class: 'input',
+    value: cg.name,
+    placeholder: 'Enter a name (or leave blank for a random one)',
+    onInput: (e) => { cg.name = String(e.target.value || ''); }
+  });
+
+  const statRows = statOrder.map(k => {
+    const val = stats?.stats?.[k] ?? '?';
+    const mod = stats?.mods?.[k] ?? 0;
+    const modStr = (mod >= 0 ? '+' : '') + String(mod);
+    const dice = Array.isArray(stats?.dice?.[k]) ? stats.dice[k].join(', ') : '';
+    return el('div', { class: 'sheet-row' },
+      el('span', { class: 'sheet-k' }, k),
+      el('span', { class: 'sheet-v' }, `${val} (${modStr})`),
+      el('span', { class: 'small' }, ` [${dice}]`)
+    );
+  });
+
+  const ritualCategories = ['detail', 'keepsake', 'lineYouWontCross', 'rumor'];
+  const ritualLabels = {
+    detail: 'A telling detail',
+    keepsake: 'A keepsake you carry',
+    lineYouWontCross: 'A line you won\'t cross',
+    rumor: 'A rumor you believe'
+  };
+
+  const ritualSections = ritualCategories.map(cat => {
+    const options = cg.ritualOptions?.[cat] || [];
+    if (!options.length) return null;
+
+    const radios = options.map((opt, i) => {
+      const isSelected = cg.ritualPicks[cat] === opt;
+      return el('label', { class: 'card', style: { cursor: 'pointer', display: 'block', padding: '4px 8px' } },
+        el('input', {
+          type: 'radio',
+          name: `ritual-${cat}`,
+          checked: isSelected || undefined,
+          onChange: () => { cg.ritualPicks[cat] = opt; render(); }
+        }),
+        ' ' + opt
+      );
+    });
+
+    return el('div', { class: 'stack' },
+      el('div', { class: 'small' }, ritualLabels[cat] || cat),
+      ...radios
+    );
+  });
+
+  const beginBtn = el('button', {
+    class: 'btn primary',
+    onClick: () => beginFromChargen()
+  }, 'Begin Adventure');
+
+  const backBtn = el('button', {
+    class: 'btn',
+    onClick: () => { ui.screen = 'invoke'; render(); }
+  }, 'Back');
+
+  return el('div', { class: 'container stack' },
+    el('div', { class: 'panel' },
+      el('div', { class: 'header' },
+        el('div', {},
+          el('div', { class: 'title' }, 'Create Your Wanderer'),
+          el('div', { class: 'sub' }, 'Immortal Engine — build 005')
+        )
+      ),
+      el('div', { class: 'card stack' },
+        el('div', { class: 'small' }, 'Name'),
+        nameInput,
+
+        el('div', { class: 'small', style: { marginTop: '8px' } }, 'Archetype'),
+        el('div', {}, 'Wanderer'),
+
+        el('div', { class: 'small', style: { marginTop: '8px' } }, 'Stats (2d6+2)'),
+        ...statRows,
+
+        el('div', { class: 'small', style: { marginTop: '12px' } }, 'Ritual Choices'),
+        ...ritualSections.filter(Boolean),
+
+        el('div', { class: 'row', style: { marginTop: '12px' } }, backBtn, beginBtn)
       )
     )
   );
@@ -1135,7 +1279,7 @@ function render() {
       el('div', { class: 'panel' },
         el('div', { class: 'header' },
           el('div', {},
-            el('div', { class: 'title' }, 'Immortal Engine — build 004'),
+            el('div', { class: 'title' }, 'Immortal Engine — build 005'),
             el('div', { class: 'sub' }, 'Loading packs…')
           )
         )
@@ -1145,6 +1289,7 @@ function render() {
   }
 
   if (ui.screen === 'play') app.append(renderPlay());
+  else if (ui.screen === 'chargen') app.append(renderChargen());
   else if (ui.screen === 'map') app.append(renderMap());
   else if (ui.screen === 'ai') app.append(renderAi());
   else app.append(renderInvoke());

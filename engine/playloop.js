@@ -318,15 +318,20 @@ export function playerMove(world, packsById, text) {
       // success, lied/withheld/refused-*→mixed, deflected→failure.
       const askOutcome = askBeatOutcome(asked.outcome.mode);
       const askHereNode = (w.map?.nodes || []).find(n => n && n.id === w.map?.currentNodeId) || null;
-      w = appendRecentBeat(w, {
+      const askBeat = {
         t: Number(w.time?.turn ?? 0),
         input: String(text || ''),
-        approach: 'heart',
+        approach: asked.outcome.brainDecision?.approach || 'heart',
         stake: 'rapport',
         outcome: askOutcome,
         location: String(askHereNode?.name || w.scene?.location || ''),
         mechanics: `dialogue:${asked.outcome.mode}${asked.outcome.factId ? `:${asked.outcome.factId}` : ''}`
-      });
+      };
+      // Pass W1 — flow brainMood into beat for narration layer
+      if (asked.outcome.brainMood) {
+        askBeat.brainMood = asked.outcome.brainMood;
+      }
+      w = appendRecentBeat(w, askBeat);
       w = maybeCheckGoals(w);
       return {
         world: w,

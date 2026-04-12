@@ -162,6 +162,29 @@ export function askNpc(world, text) {
 
   const topic = extractTopic(text, npc);
 
+  // Pass W1 — brain-driven mode override.
+  // The brain decision can shift the default trust-threshold behavior:
+  // - If brain.share includes the topic, upgrade from deflect to share (trust >= 3 guard)
+  // - If brain.approach is 'deflect', downgrade share to deflect (trust < 7 guard)
+  // - If brain.approach is 'lie', shift to lied if honesty allows
+  // - Brain cannot override secret protection below trust 7
+  let brainOverride = null;
+  if (brainDecision && topic && knownIds.has(topic)) {
+    const brainWantsToShare = Array.isArray(brainDecision.share) && brainDecision.share.includes(topic);
+    const isSecret = secrets.has(topic);
+
+    if (brainWantsToShare && !isSecret && trust >= 3) {
+      // Brain volunteers a public fact — lower the threshold from 4 to 3
+      brainOverride = 'shared';
+    } else if (brainDecision.approach === 'deflect' && !isSecret && trust < 7) {
+      // Brain deflects — override share to deflect unless high trust
+      brainOverride = 'deflected';
+    } else if (brainDecision.approach === 'lie' && !isSecret && honesty < 0.5) {
+      // Brain lies — only if personality supports it
+      brainOverride = 'lied';
+    }
+  }
+
   let mode;
   let factId = null;
 
@@ -181,6 +204,10 @@ export function askNpc(world, text) {
     }
   } else {
     if (trust >= TRUST_REVEAL_PUBLIC) {
+      mode = brainOverride || 'shared';
+      factId = topic;
+    } else if (brainOverride === 'shared') {
+      // Brain override: share at trust 3+ for public facts
       mode = 'shared';
       factId = topic;
     } else {
@@ -289,6 +316,7 @@ export function askNpc(world, text) {
       trustDelta,
       text: String(text || ''),
       brainDecision: brainDecision || null,
+      brainMood: brainDecision?.mood || null,
       rumorBodies: rumorSurface.bodies,
       rumorMintHint: rumorSurface.mintHint
     }

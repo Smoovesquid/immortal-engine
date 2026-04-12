@@ -29,9 +29,13 @@ export async function decompressAndCanonize(world, nodeId, pack, llmOptions = {}
   // Step 4: Optional LLM texture
   const textured = await texturize(deepSettlement, history, pack, llmOptions);
 
+  // Pass T2 — hostile NPC gap fix (async path).
+  const texturedNpcs = ensureHostileNpc(textured.npcs || [], world, nodeId);
+  const texturedWithHostile = { ...textured, npcs: texturedNpcs };
+
   // Step 5: Canonize on the node
   const canonized = {
-    ...textured,
+    ...texturedWithHostile,
     decompressed: true,
     decompressedAt: world.time?.scene ?? 0,
     tickCount
@@ -92,9 +96,14 @@ export function decompressAndCanonizeSync(world, nodeId, pack) {
     };
   });
 
+  // Pass T2 — hostile NPC gap fix. If no hostile NPC exists in any
+  // decompressed settlement in the world AND none in the current batch,
+  // seed a hostile bandit. Deterministic: same seed+node → same bandit.
+  const finalNpcs = ensureHostileNpc(namedNpcs, world, nodeId);
+
   const offlineSettlement = {
     ...settlement,
-    npcs: namedNpcs,
+    npcs: finalNpcs,
     buildings: settlement.buildings.map(b => ({ ...b, description: '' })),
     sensory: '',
     textured: false,
@@ -115,6 +124,58 @@ export function decompressAndCanonizeSync(world, nodeId, pack) {
     ...world,
     map: { ...world.map, nodes: updatedNodes }
   };
+}
+
+// Pass T2 — ensure at least one hostile NPC exists in the world.
+// Scans all decompressed settlements for any hostile NPC. If none found
+// and the current batch has none, appends a hostile bandit. Deterministic:
+// bandit name is seeded from nodeId + world seed.
+function ensureHostileNpc(npcs, world, nodeId) {
+  // Check if any hostile already exists in decompressed settlements
+  const nodes = Array.isArray(world.map?.nodes) ? world.map.nodes : [];
+  for (const n of nodes) {
+    const snpcs = n.settlement?.decompressed ? (n.settlement.npcs || []) : [];
+    if (snpcs.some(npc => npc.hostile === true)) return npcs;
+  }
+  // Check if the current batch already has one
+  if (npcs.some(npc => npc.hostile === true)) return npcs;
+
+  // Seed a hostile bandit deterministically
+  const banditRng = makeRng(seedFromString(`${nodeId}|${world.meta?.seed || ''}|hostile_bandit`));
+  const BANDIT_NAMES = [
+    'Greyhand', 'The Thorn', 'Ashblade', 'Rattleclaw',
+    'Brokefang', 'Nighttooth', 'Scarvein', 'Duskfang'
+  ];
+  const name = BANDIT_NAMES[banditRng.int(0, BANDIT_NAMES.length - 1)];
+
+  const bandit = {
+    id: `npc_${nodeId}_hostile_0`,
+    name,
+    role: 'bandit',
+    archetypeDesc: '',
+    factionId: null,
+    originTick: 0,
+    disposition: {},
+    hostile: true,
+    combatProfile: { maxHp: 10, damage: 3, canParley: false },
+    knowledgeGraph: [],
+    conversationState: {
+      metPlayer: false,
+      topicsDiscussed: [],
+      trustLevel: 0,
+      lastInteraction: null
+    },
+    // Match npcDepth output shape so downstream consumers don't break.
+    personality: { honesty: 0.3, trustOfOutsiders: 0.1, selfPreservation: 0.8 },
+    witnessedEvents: [],
+    secrets: [],
+    playerRelationship: { trust: 0, meetings: 0, sharedFacts: [] },
+    revealedSecrets: [],
+    description: '',
+    factualDetail: ''
+  };
+
+  return [...npcs, bandit];
 }
 
 // Pass C1.1 — dedupe-by-factId union of depth kg and genesis kg.

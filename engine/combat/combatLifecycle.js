@@ -14,6 +14,7 @@
 import { ensureWorld } from '../state.js';
 import { applyDeltas } from '../effectsCore.js';
 import { endDialogue } from '../npc/dialogue.js';
+import { getMonsterDef } from '../ruleset/core/bestiary/index.js';
 
 const ENEMY_CAP = 6;
 
@@ -40,18 +41,27 @@ const DEFAULT_ENEMY = {
 export function mintEnemyFromNpc(npc) {
   const n = npc && typeof npc === 'object' ? npc : {};
   const profile = n.combatProfile && typeof n.combatProfile === 'object' ? n.combatProfile : {};
-  const maxHp = clampInt(profile.maxHp ?? DEFAULT_ENEMY.maxHp, 1, 20);
-  const damage = clampInt(profile.damage ?? DEFAULT_ENEMY.damage, 1, 6);
-  const canParley = profile.canParley == null
-    ? !Boolean(n.hostile)
-    : Boolean(profile.canParley);
+
+  // B1: if the NPC has a bestiaryRef, pull stats from the bestiary catalog.
+  const bestiary = n.bestiaryRef ? getMonsterDef(n.bestiaryRef) : null;
+  const base = bestiary || DEFAULT_ENEMY;
+
+  const maxHp = clampInt(profile.maxHp ?? base.maxHp, 1, 999);
+  const damage = clampInt(profile.damage ?? base.damage, 1, 999);
+  const ac = bestiary ? (bestiary.ac ?? 10) : 10;
+  const canParley = profile.canParley != null
+    ? Boolean(profile.canParley)
+    : bestiary
+      ? Boolean(base.canParley)
+      : !Boolean(n.hostile);
   const sourceNpcId = String(n.id ?? '');
   return {
     id: '', // assigned at begin
-    name: String(n.name ?? sourceNpcId ?? 'foe'),
+    name: String(n.name ?? (bestiary && bestiary.name) ?? sourceNpcId ?? 'foe'),
     hp: maxHp,
     maxHp,
     damage,
+    ac,
     canParley,
     defeated: false,
     sourceNpcId

@@ -27,6 +27,10 @@ export function loadSlot(storage, slotId = 'slot1') {
   // fill those fields with safe defaults (level 1, xp 0, empty foci/purse/
   // items, zero spell slots, null concentration) so v15 saves upgrade
   // silently to v16 without loss of existing data.
+  //
+  // Pass R1 (v16 → v17): adds world.rumors[], npc.rumorIds[],
+  // npc.sophistication. ensureWorld fills rumors: []; NPCs without
+  // rumorIds/sophistication get defaults via ensureWorld normalization.
   return ensureWorld(parsed);
 }
 

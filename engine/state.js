@@ -10,9 +10,9 @@ import { generateInitialMap } from './map/generateMap.js';
 import { ensureStructures } from './structures/structuresState.js';
 import { statMod, maxWounds } from './ruleset/core/stats.js';
 
-// Pass T1 — bumped from 15 → 16. Adds crunch schema to party entities
-// (level, xp, foci, purse, inventory.items, spells). See docs/CRUNCH_V1.md.
-export const WORLD_VERSION = 16;
+// Pass R1 — bumped from 16 → 17. Adds rumor layer: world.rumors[],
+// npc.rumorIds[], npc.sophistication. See docs/RUMOR_LAYER.md.
+export const WORLD_VERSION = 17;
 
 // Crunch caps (T1). Kept here so they're colocated with ensureEntity.
 const FOCI_CAP = 6;
@@ -89,6 +89,9 @@ export function ensureWorld(partial) {
 
     canonLog: ensureCanonLog(w.canonLog),
 
+    // Pass R1 — rumor layer. Capped at 64 entries.
+    rumors: ensureRumors(w.rumors),
+
     goals: ensureGoals(w.goals),
 
     recentBeats: ensureRecentBeats(w.recentBeats),
@@ -126,6 +129,7 @@ export function newWorld({ seed, fate, campaignId, pack }) {
     reputation: ensureReputation(null, ensureFactions(null)),
 
     combat: defaultCombat(),
+    rumors: [],
     goals: [],
     recentBeats: [],
     timeline: [],
@@ -226,6 +230,39 @@ export function ensureCombat(c) {
   const companionGuard = Boolean(c.companionGuard);
 
   return { active, round, turnIndex, enemies, beganAt, reason, playerGuard, companionGuard };
+}
+
+// ── Pass R1 — rumor normalizer ──────────────────────────────────────────
+const RUMORS_CAP = 64;
+
+function ensureRumors(rumors) {
+  const list = Array.isArray(rumors) ? rumors : [];
+  const out = [];
+  const seenIds = new Set();
+  for (const r of list) {
+    if (!r || typeof r !== 'object') continue;
+    const id = String(r.id ?? '').trim();
+    if (!id) continue;
+    if (seenIds.has(id)) continue;
+    const sourceSeedId = String(r.sourceSeedId ?? '').trim();
+    if (!sourceSeedId) continue;
+    const body = String(r.body ?? '').trim();
+    if (!body) continue;
+    seenIds.add(id);
+    out.push({
+      id,
+      sourceSeedId,
+      carrierNpcId: String(r.carrierNpcId ?? '').trim(),
+      hopCount: clampInt(r.hopCount ?? 0, 0, 99),
+      tier: clampInt(r.tier ?? 0, 0, 4),
+      age: clampInt(r.age ?? 0, 0, 9999),
+      mintedAt: clampInt(r.mintedAt ?? 0, 0, 999999),
+      body,
+      tags: Array.isArray(r.tags) ? r.tags.map(String).slice(0, 8) : []
+    });
+    if (out.length >= RUMORS_CAP) break;
+  }
+  return out;
 }
 
 function ensureGoals(goals) {

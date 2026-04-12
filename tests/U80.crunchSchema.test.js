@@ -66,7 +66,7 @@ test('U80-06: newWorld() then ensureEntity still passes invariants with crunch d
   assert.equal(w2.party[0].wounds, 0);
 });
 
-test('U80-07: meta.version is 16 after ensureWorld', () => {
+test('U80-07: meta.version is 17 after ensureWorld', () => {
   const w = ensureWorld(PARTIAL_WORLD);
-  assert.equal(w.meta.version, 16);
+  assert.equal(w.meta.version, 17);
 });

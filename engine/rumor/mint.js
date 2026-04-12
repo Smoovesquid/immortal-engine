@@ -6,6 +6,7 @@ import { ensureWorld } from '../state.js';
 import { applyDeltas } from '../effectsCore.js';
 import { computeTier } from './tier.js';
 import { buildRumorPrompt } from './prompt.js';
+import { garbleRumor } from './garble.js';
 import { appendCanonEvent } from '../csl/canonLog.js';
 
 // ── Hop count via BFS ──────────────────────────────────────────────────────
@@ -137,6 +138,7 @@ function findNpcInWorld(world, npcId) {
  * queryLocalFn: optional, from localLlmProvider.queryLocal
  * cloudFetchFn: optional, async (prompt) -> { ok, body }
  * tone: optional string
+ * carrierTraits: optional { honesty, trustOfOutsiders, selfPreservation } for garbling
  *
  * Idempotent: if rumor with same ID exists, returns existing without minting.
  */
@@ -147,7 +149,8 @@ export async function mintRumorForNpc(world, {
   canonLog,
   queryLocalFn,
   cloudFetchFn,
-  tone
+  tone,
+  carrierTraits
 } = {}) {
   const w = ensureWorld(world);
   const log = canonLog && typeof canonLog === 'object' && Array.isArray(canonLog.events)
@@ -198,12 +201,26 @@ export async function mintRumorForNpc(world, {
   };
   const prompt = buildRumorPrompt({ seed: s, tier, carrier, tone: tone || '' });
 
-  // Try LLM, fall back to deterministic
+  // Try LLM, fall back to deterministic (with garbling for tier >= 2)
   const llmBody = await tryLlmMint(prompt, {
     queryLocalFn: queryLocalFn || null,
     cloudFetchFn: cloudFetchFn || null
   });
-  const body = llmBody || deterministicBody(s, tier);
+  let body;
+  if (llmBody) {
+    body = llmBody;
+  } else {
+    // For tier >= 2 with a truth body, garble the original truth instead of
+    // using the generic deterministicBody template
+    const truthSummary = String(s.truthBody || s.primaryName || '').trim();
+    const traits = carrierTraits || npc.personality || {};
+    if (tier >= 2 && truthSummary) {
+      const garbled = garbleRumor(truthSummary, tier, traits);
+      body = garbled || deterministicBody(s, tier);
+    } else {
+      body = deterministicBody(s, tier);
+    }
+  }
 
   // Construct rumor object
   const rumor = {

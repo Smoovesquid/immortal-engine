@@ -1,5 +1,6 @@
 // Rumor prompt builder — constructs LLM prompts for rumor minting at each tier.
 // Pure, deterministic (no randomness, no side effects).
+// NOTE: Garble-specific prompts live in ./garble.js (buildGarblePrompt).
 
 const TIER_INSTRUCTIONS = [
   // Tier 0 — Truth

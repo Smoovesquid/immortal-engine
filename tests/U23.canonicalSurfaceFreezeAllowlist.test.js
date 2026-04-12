@@ -93,6 +93,6 @@ test('U23: Gate I Canonical Surface Freeze — CanonLog allowed types remain CAN
     .split(',')
     .map(s => s.replace(/['"`\s]/g, ''))
     .filter(Boolean);
-  const expected = ['CANON_CREATE', 'rumor.minted', 'rumor.propagated', 'rumor.verified', 'rumor.forgotten'];
+  const expected = ['CANON_CREATE', 'rumor.minted', 'rumor.propagated', 'rumor.verified', 'rumor.forgotten', 'npcDecision'];
   assert.deepEqual(types, expected, `Unexpected allowed CanonLog types: [${m[1]}]`);
 });

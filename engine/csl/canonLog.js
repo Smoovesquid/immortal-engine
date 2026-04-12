@@ -11,7 +11,9 @@ const ALLOWED_CANON_EVENT_TYPES = [
   'rumor.minted',
   'rumor.propagated',
   'rumor.verified',
-  'rumor.forgotten'
+  'rumor.forgotten',
+  // Pass O2 — NPC brain decisions
+  'npcDecision'
 ];
 function validateCanonEvent(event) {
     if (!event || typeof event !== 'object') {

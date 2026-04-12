@@ -1,6 +1,72 @@
 // Gear as Physics Inputs v1
 // Offline + deterministic: derive aggregate signals from inventory items.
 
+import { getItemDef } from '../ruleset/core/items/index.js';
+import { statMod } from '../ruleset/core/stats.js';
+import { profBonusFor } from '../ruleset/core/levelTable.js';
+
+// ── Pass T2 — combat-relevant gear computations ──────────────────────────
+
+/**
+ * Returns { attackBonus, damageDice, damageBonus, damageType } for the
+ * entity's equipped main-hand weapon. Falls back to unarmed if nothing
+ * is equipped.
+ */
+export function computeAttack(entity) {
+  const items = entity?.inventory?.items || [];
+  const weapon = items.find(it => it.equipped === 'main_hand');
+  if (!weapon) {
+    const mod = statMod(entity?.stats?.MIGHT ?? 10);
+    return { attackBonus: mod, damageDice: '1', damageBonus: mod, damageType: 'bludgeoning' };
+  }
+  const def = getItemDef(weapon.defRef);
+  if (!def || def.kind !== 'weapon') {
+    const mod = statMod(entity?.stats?.MIGHT ?? 10);
+    return { attackBonus: mod, damageDice: '1', damageBonus: mod, damageType: 'bludgeoning' };
+  }
+
+  const statKey = def.stat || (def.properties?.includes('finesse') ? 'AGILITY' : 'MIGHT');
+  const mod = statMod(entity?.stats?.[statKey] ?? 10);
+  const prof = profBonusFor(entity?.level ?? 1);
+  const weaponBonus = def.bonus?.attack ?? 0;
+
+  return {
+    attackBonus: mod + prof + weaponBonus,
+    damageDice: def.damage?.dice ?? '1d4',
+    damageBonus: mod + (def.bonus?.damage ?? 0),
+    damageType: def.damage?.type ?? 'bludgeoning'
+  };
+}
+
+/**
+ * Returns AC value for the entity based on equipped armor + AGILITY mod
+ * + accessory bonuses. Unarmored default: 10 + dexMod.
+ */
+export function computeAC(entity) {
+  const items = entity?.inventory?.items || [];
+  const armor = items.find(it => it.equipped === 'armor');
+  const dexMod = statMod(entity?.stats?.AGILITY ?? 10);
+
+  let baseAC = 10 + dexMod; // unarmored
+  if (armor) {
+    const def = getItemDef(armor.defRef);
+    if (def && def.kind === 'armor') {
+      const maxDex = def.maxDexBonus;
+      const dexContrib = maxDex === null || maxDex === undefined ? dexMod : Math.min(dexMod, maxDex);
+      baseAC = def.ac + dexContrib;
+    }
+  }
+
+  // Check for ring/accessory AC bonuses
+  for (const it of items) {
+    if (!it.equipped) continue;
+    const def = getItemDef(it.defRef);
+    if (def?.acBonus) baseAC += def.acBonus;
+  }
+
+  return baseAC;
+}
+
 export function scoreInventorySignals(entity) {
   const inv = entity?.inventory && typeof entity.inventory === 'object' ? entity.inventory : {};
   const buckets = Object.values(inv);

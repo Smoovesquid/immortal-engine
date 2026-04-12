@@ -176,6 +176,96 @@ export function detectContradictions(npcA, npcB, filteredFactsA, filteredFactsB)
 }
 
 /**
+ * gatherNpcKnowledge(npc, world) → { facts, rumors }
+ *
+ * Returns structured knowledge for the NPC brain context builder.
+ * Facts come from the NPC's knowledgeGraph; rumors are resolved from
+ * npc.rumorIds against world.rumors.
+ *
+ * @param {object} npc — enriched NPC with depth
+ * @param {object} world — current world state
+ * @returns {{ facts: object[], rumors: object[] }}
+ */
+export function gatherNpcKnowledge(npc, world) {
+  const facts = (Array.isArray(npc?.knowledgeGraph) ? npc.knowledgeGraph : [])
+    .map(f => ({
+      id: String(f.factId || ''),
+      text: String(f.factId || ''),
+      source: String(f.source || '')
+    }));
+
+  const rumors = (Array.isArray(npc?.rumorIds) ? npc.rumorIds : [])
+    .map(rid => (Array.isArray(world?.rumors) ? world.rumors : []).find(r => r.id === rid))
+    .filter(Boolean)
+    .map(r => ({
+      id: String(r.id || ''),
+      text: String(r.body || ''),
+      tier: r.tier,
+      tags: Array.isArray(r.tags) ? r.tags : []
+    }));
+
+  return { facts, rumors };
+}
+
+/**
+ * filterRumors(speaker, rumors, playerRelationship) → { surfacedRumors }
+ *
+ * Rules:
+ * - NPC only surfaces rumors they carry (in their rumorIds).
+ * - Trust < 4: only share tier 3+ rumors (vague).
+ * - Trust 4-6: share tier 2+ rumors.
+ * - Trust 7+: share all rumors including tier 0.
+ * - Sophistication affects which rumors the NPC considers "interesting"
+ *   enough to volunteer: low-sophistication NPCs skip tier 0-1 unless asked.
+ *
+ * @param {object} speaker — NPC with rumorIds[], sophistication
+ * @param {object[]} rumors — world.rumors array
+ * @param {object} playerRelationship — { trust: 0-10 }
+ * @returns {{ surfacedRumors: object[] }}
+ */
+export function filterRumors(speaker, rumors, playerRelationship) {
+  if (!speaker || !Array.isArray(rumors)) {
+    return { surfacedRumors: [] };
+  }
+
+  const rumorIds = new Set(
+    Array.isArray(speaker.rumorIds) ? speaker.rumorIds.map(String) : []
+  );
+  if (rumorIds.size === 0) return { surfacedRumors: [] };
+
+  const trust = Number(playerRelationship?.trust ?? 5);
+  const sophistication = Number(speaker.sophistication ?? 2);
+
+  // Minimum tier the NPC will share based on trust
+  let minTier;
+  if (trust >= 7) {
+    minTier = 0;
+  } else if (trust >= 4) {
+    minTier = 2;
+  } else {
+    minTier = 3;
+  }
+
+  const surfacedRumors = [];
+  for (const rumor of rumors) {
+    if (!rumor || typeof rumor !== 'object') continue;
+    const id = String(rumor.id || '');
+    if (!rumorIds.has(id)) continue;
+
+    const tier = Number(rumor.tier ?? 0);
+    if (tier < minTier) continue;
+
+    // Low-sophistication NPCs (0-1) only volunteer tier 2+ (distorted/vague)
+    // unless trust is very high. They don't consider precise info "interesting".
+    if (sophistication <= 1 && tier < 2 && trust < 7) continue;
+
+    surfacedRumors.push(rumor);
+  }
+
+  return { surfacedRumors };
+}
+
+/**
  * applyContradictionEffects(holder, contradiction) → updated NPC
  *
  * When a contradiction is exposed, shift the holder's emotional state.

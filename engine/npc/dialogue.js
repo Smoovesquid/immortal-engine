@@ -6,6 +6,9 @@
 import { ensureWorld } from '../state.js';
 import { addFact } from '../ledger.js';
 import { applyDeltas } from '../effectsCore.js';
+import { filterRumors } from './perspectiveFilter.js';
+import { appendCanonEvent } from '../csl/canonLog.js';
+import { buildNpcContext, fallbackRules, findCachedDecision } from './npcBrain.js';
 
 const TRUST_REVEAL_PUBLIC = 4;
 const TRUST_REVEAL_SECRET = 7;
@@ -101,7 +104,7 @@ export function beginDialogue(world, npcRef) {
 // askNpc
 
 export function askNpc(world, text) {
-  const w = ensureWorld(world);
+  let w = ensureWorld(world);
   const d = w.scene?.dialogue;
   if (!d) {
     return {
@@ -123,6 +126,28 @@ export function askNpc(world, text) {
   const honesty = Number(npc.personality?.honesty ?? 0.5);
   const knownIds = new Set((npc.knowledgeGraph || []).map(f => String(f.factId || '')));
   const secrets = new Set(Array.isArray(npc.secrets) ? npc.secrets.map(String) : []);
+
+  // Pass O2 — NPC Brain decision. Check Canon Log cache first, then use
+  // deterministic fallback. The decision enriches the outcome for narration.
+  const curTurnBrain = Number(w.time?.turn ?? 0);
+  let brainDecision = null;
+  if (w.canonLog) {
+    brainDecision = findCachedDecision(w.canonLog, d.npcId, curTurnBrain);
+  }
+  if (!brainDecision) {
+    const brainContext = buildNpcContext(npc, w, text);
+    brainDecision = fallbackRules(brainContext);
+    // Canonize the decision for replay fidelity.
+    if (w.canonLog) {
+      const nextCanonLog = appendCanonEvent(w.canonLog, {
+        id: `npcDecision:${d.npcId}:${curTurnBrain}`,
+        type: 'npcDecision',
+        targetId: d.npcId,
+        decision: brainDecision
+      });
+      w = { ...w, canonLog: nextCanonLog };
+    }
+  }
 
   // Pass C1 — recruit branch. The literal "invite to travel" intercepts the
   // normal topic-extraction path. Outcome by trust band: ≥6 recruits and
@@ -231,6 +256,11 @@ export function askNpc(world, text) {
     scene: { ...w1.scene, dialogue: nextDialogue }
   };
 
+  // ── Pass R2 — rumor surfacing ──────────────────────────────────────────
+  // After fact-based response, check if the NPC has rumors matching the topic.
+  // Surface existing rumor bodies; signal lazy-mint opportunity if seeds match.
+  const rumorSurface = surfaceRumorsForTopic(w2, npc, text);
+
   return {
     world: w2,
     outcome: {
@@ -243,7 +273,10 @@ export function askNpc(world, text) {
       factId: factId || '',
       trustLevel: nextTrust,
       trustDelta,
-      text: String(text || '')
+      text: String(text || ''),
+      brainDecision: brainDecision || null,
+      rumorBodies: rumorSurface.bodies,
+      rumorMintHint: rumorSurface.mintHint
     }
   };
 }
@@ -482,6 +515,42 @@ export function resolveNpcFromList(npcs, npcRef) {
   }
 
   return null;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Pass R2 — rumor surfacing helper
+
+function surfaceRumorsForTopic(world, npc, text) {
+  const empty = { bodies: [], mintHint: null };
+  if (!npc || !text) return empty;
+
+  const rumorIds = Array.isArray(npc.rumorIds) ? npc.rumorIds : [];
+  const rumors = Array.isArray(world.rumors) ? world.rumors : [];
+  if (!rumors.length && !rumorIds.length) return empty;
+
+  const trust = Number(npc.conversationState?.trustLevel ?? 5);
+  const { surfacedRumors } = filterRumors(npc, rumors, { trust });
+
+  // Match surfaced rumors to the topic text via tag overlap
+  const t = String(text || '').toLowerCase();
+  const bodies = [];
+  for (const rumor of surfacedRumors) {
+    const tags = Array.isArray(rumor.tags) ? rumor.tags : [];
+    const bodyLower = String(rumor.body || '').toLowerCase();
+    const tagMatch = tags.some(tag => t.includes(String(tag).toLowerCase()));
+    const bodyMatch = bodyLower.split(/\s+/).some(w => w.length >= 4 && t.includes(w));
+    if (tagMatch || bodyMatch) {
+      bodies.push(String(rumor.body || ''));
+    }
+  }
+
+  // If no existing rumors matched, signal that lazy minting could apply.
+  // The caller (playloop) can then trigger async mintRumorForNpc.
+  const mintHint = bodies.length === 0 && rumorIds.length === 0
+    ? { npcId: String(npc.id || ''), topic: t }
+    : null;
+
+  return { bodies, mintHint };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

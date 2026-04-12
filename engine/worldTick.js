@@ -5,6 +5,7 @@ import { seedFromString, makeRng } from './rng.js';
 import { fateBand } from './rulesets.js';
 import { scoreInventorySignals } from './gear/gearProps.js';
 import { scarifyNode, ensureMap } from './map/mapState.js';
+import { propagateRumors } from './rumor/propagate.js';
 
 // Living System Core — deterministic world evolution.
 
@@ -48,6 +49,9 @@ export function worldTick(world, seed = '') {
 
   // 5.5) Gossip propagation: NPCs share player-knowledge to friends/family (one-hop per tick).
   w = tickGossip(w, rng);
+
+  // 5.7) Age and propagate rumors
+  w = tickRumors(w, rng);
 
   // 6) Modify reputation + alignment state
   w = tickReputation(w, severity);
@@ -385,6 +389,14 @@ function tickMotifs(w, rng, severity) {
   const m = active[rng.nextInt(active.length)];
   const w2 = reinforceMotif(w, m, 1);
   return pushTickLog(w2, `[TICK] motif lingers: ${m}`);
+}
+
+function tickRumors(w, rng) {
+  const rumors = Array.isArray(w.rumors) ? w.rumors : [];
+  if (!rumors.length) return w;
+  const canonLog = { events: [] };
+  const result = propagateRumors(w, rng, canonLog);
+  return result.world;
 }
 
 function tickGossip(w, rng) {

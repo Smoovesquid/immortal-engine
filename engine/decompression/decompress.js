@@ -8,6 +8,7 @@ import { seedFromString, makeRng } from '../rng.js';
 import { computeNpcDepth } from '../npc/npcDepth.js';
 import { generateSettlementNPCs } from '../npc/npcGenesis.js';
 import { generateNodeFurniture } from './generateFurniture.js';
+import { verifyRumorsForSeed } from '../rumor/verify.js';
 
 export async function decompressAndCanonize(world, nodeId, pack, llmOptions = {}) {
   const node = world.map.nodes.find(n => n.id === nodeId);
@@ -49,10 +50,17 @@ export async function decompressAndCanonize(world, nodeId, pack, llmOptions = {}
       : n
   );
 
-  return {
+  let result = {
     ...world,
     map: { ...world.map, nodes: updatedNodes }
   };
+
+  // Pass R3 — verify rumors about this node now that it's decompressed.
+  const truthBody = `${canonized.name || nodeId} — ${canonized.buildings?.map(b => b.name).join(', ') || 'settlement'}`;
+  const verifyResult = verifyRumorsForSeed(result, nodeId, truthBody, { events: [] });
+  result = verifyResult.world;
+
+  return result;
 }
 
 // Synchronous version for offline/non-LLM mode
@@ -120,10 +128,17 @@ export function decompressAndCanonizeSync(world, nodeId, pack) {
       : n
   );
 
-  return {
+  let result = {
     ...world,
     map: { ...world.map, nodes: updatedNodes }
   };
+
+  // Pass R3 — verify rumors about this node now that it's decompressed.
+  const truthBody = `${offlineSettlement.name || nodeId} — ${offlineSettlement.buildings?.map(b => b.name).join(', ') || 'settlement'}`;
+  const verifyResult = verifyRumorsForSeed(result, nodeId, truthBody, { events: [] });
+  result = verifyResult.world;
+
+  return result;
 }
 
 // Pass T2 — ensure at least one hostile NPC exists in the world.

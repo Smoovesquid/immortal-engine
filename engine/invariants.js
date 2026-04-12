@@ -236,6 +236,59 @@ export function assertWorldInvariants(world) {
     throw new Error('Invariant: combat.active and scene.dialogue are mutually exclusive');
   }
 
+  // ── Pass R1 — rumor layer invariants ──────────────────────────────────────
+  const rumors = world.rumors;
+  if (!Array.isArray(rumors)) {
+    throw new Error('Invariant: rumors must be an array');
+  }
+  if (rumors.length > 64) {
+    throw new Error(`Invariant: rumors.length ${rumors.length} exceeds cap 64`);
+  }
+  const seenRumorIds = new Set();
+  for (const r of rumors) {
+    if (!r || typeof r !== 'object') {
+      throw new Error('Invariant: rumor must be object');
+    }
+    if (typeof r.id !== 'string' || !r.id) {
+      throw new Error('Invariant: rumor.id must be non-empty string');
+    }
+    if (seenRumorIds.has(r.id)) {
+      throw new Error(`Invariant: duplicate rumor id ${r.id}`);
+    }
+    seenRumorIds.add(r.id);
+    if (typeof r.sourceSeedId !== 'string' || !r.sourceSeedId) {
+      throw new Error(`Invariant: rumor ${r.id} missing sourceSeedId`);
+    }
+    if (typeof r.body !== 'string' || !r.body) {
+      throw new Error(`Invariant: rumor ${r.id} has empty body`);
+    }
+    if (!Number.isInteger(r.tier) || r.tier < 0 || r.tier > 4) {
+      throw new Error(`Invariant: rumor ${r.id} tier must be integer 0..4 (got ${r.tier})`);
+    }
+  }
+
+  // NPC rumor references: every npc.rumorIds[x] must reference a real rumor.
+  // Also validate npc.sophistication when present.
+  const allNodes = Array.isArray(world.map?.nodes) ? world.map.nodes : [];
+  for (const node of allNodes) {
+    const npcs = Array.isArray(node?.settlement?.npcs) ? node.settlement.npcs : [];
+    for (const npc of npcs) {
+      if (!npc || typeof npc !== 'object') continue;
+      if (Array.isArray(npc.rumorIds)) {
+        for (const rid of npc.rumorIds) {
+          if (!seenRumorIds.has(rid)) {
+            throw new Error(`Invariant: npc ${npc.id} rumorIds references non-existent rumor ${rid}`);
+          }
+        }
+      }
+      if (npc.sophistication != null) {
+        if (!Number.isInteger(npc.sophistication) || npc.sophistication < 0 || npc.sophistication > 4) {
+          throw new Error(`Invariant: npc ${npc.id} sophistication must be integer 0..4 (got ${npc.sophistication})`);
+        }
+      }
+    }
+  }
+
   // Dialogue mode (optional)
   const dialogue = world.scene?.dialogue;
   if (dialogue != null) {

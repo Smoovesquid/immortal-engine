@@ -229,7 +229,7 @@ export function resolveCombatTurn(world, move, opts = {}) {
     if (livingParty.length === 0) break;
     const targetMember = livingParty[partyIdx % livingParty.length];
     partyIdx++;
-    let dmg = clampInt(e.damage, 1, 6);
+    let dmg = clampInt(e.damage, 1, 9999);
     if (playerGuardActive && !playerGuardConsumed) {
       dmg = Math.max(0, dmg - 1);
       playerGuardConsumed = true;

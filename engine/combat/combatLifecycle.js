@@ -49,6 +49,7 @@ export function mintEnemyFromNpc(npc) {
   const maxHp = clampInt(profile.maxHp ?? base.maxHp, 1, 999);
   const damage = clampInt(profile.damage ?? base.damage, 1, 999);
   const ac = bestiary ? (bestiary.ac ?? 10) : 10;
+  const cr = bestiary ? (bestiary.cr ?? 0) : 0;
   const canParley = profile.canParley != null
     ? Boolean(profile.canParley)
     : bestiary
@@ -62,6 +63,7 @@ export function mintEnemyFromNpc(npc) {
     maxHp,
     damage,
     ac,
+    cr,
     canParley,
     defeated: false,
     sourceNpcId

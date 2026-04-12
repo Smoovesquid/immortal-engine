@@ -118,14 +118,25 @@ test('U58-02: ensureCombat normalizes malformed input to default', () => {
 });
 
 test('U58-03: ensureCombat clamps enemy maxHp/hp/damage to ranges', () => {
+  // Pass B2: ranges widened to 1–9999 for CR 0–30 support.
   const c = ensureCombat({
     active: true,
     round: 1,
     enemies: [{ id: 'e1', name: 'huge', maxHp: 99, hp: 99, damage: 99, canParley: true, sourceNpcId: '' }]
   });
-  assert.equal(c.enemies[0].maxHp, 20);
-  assert.equal(c.enemies[0].hp, 20);
-  assert.equal(c.enemies[0].damage, 6);
+  assert.equal(c.enemies[0].maxHp, 99);
+  assert.equal(c.enemies[0].hp, 99);
+  assert.equal(c.enemies[0].damage, 99);
+
+  // Values beyond 9999 still clamp.
+  const c2 = ensureCombat({
+    active: true,
+    round: 1,
+    enemies: [{ id: 'e2', name: 'overflow', maxHp: 99999, hp: 99999, damage: 99999, canParley: true, sourceNpcId: '' }]
+  });
+  assert.equal(c2.enemies[0].maxHp, 9999);
+  assert.equal(c2.enemies[0].hp, 9999);
+  assert.equal(c2.enemies[0].damage, 9999);
 });
 
 test('U58-04: invariant — active combat with empty enemies throws', () => {

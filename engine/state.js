@@ -209,14 +209,16 @@ export function ensureCombat(c) {
     const id = String(eRaw.id ?? '').trim();
     const name = String(eRaw.name ?? '').trim();
     if (!id || !name) continue;
-    const maxHp = clampInt(eRaw.maxHp ?? 1, 1, 20);
-    const hpRaw = clampInt(eRaw.hp ?? maxHp, 0, 20);
+    const maxHp = clampInt(eRaw.maxHp ?? 1, 1, 9999);
+    const hpRaw = clampInt(eRaw.hp ?? maxHp, 0, 9999);
     const hp = Math.min(maxHp, hpRaw);
-    const damage = clampInt(eRaw.damage ?? 1, 1, 6);
+    const damage = clampInt(eRaw.damage ?? 1, 1, 9999);
+    const ac = clampInt(eRaw.ac ?? 10, 0, 30);
+    const cr = typeof eRaw.cr === 'number' ? Math.max(0, eRaw.cr) : 0;
     const canParley = Boolean(eRaw.canParley ?? true);
     const defeated = Boolean(eRaw.defeated ?? (hp === 0));
     const sourceNpcId = String(eRaw.sourceNpcId ?? '');
-    enemies.push({ id, name, hp, maxHp, damage, canParley, defeated, sourceNpcId });
+    enemies.push({ id, name, hp, maxHp, damage, ac, cr, canParley, defeated, sourceNpcId });
     if (enemies.length >= COMBAT_ENEMY_CAP) break;
   }
 

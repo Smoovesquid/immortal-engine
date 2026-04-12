@@ -213,14 +213,14 @@ export function assertWorldInvariants(world) {
     if (typeof e.name !== 'string' || !e.name) {
       throw new Error(`Invariant: combat enemy ${e.id} missing name`);
     }
-    if (!Number.isInteger(e.maxHp) || e.maxHp < 1 || e.maxHp > 20) {
-      throw new Error(`Invariant: combat enemy ${e.id} maxHp out of range 1..20`);
+    if (!Number.isInteger(e.maxHp) || e.maxHp < 1 || e.maxHp > 9999) {
+      throw new Error(`Invariant: combat enemy ${e.id} maxHp out of range 1..9999`);
     }
     if (!Number.isInteger(e.hp) || e.hp < 0 || e.hp > e.maxHp) {
       throw new Error(`Invariant: combat enemy ${e.id} hp out of range 0..maxHp`);
     }
-    if (!Number.isInteger(e.damage) || e.damage < 1 || e.damage > 6) {
-      throw new Error(`Invariant: combat enemy ${e.id} damage out of range 1..6`);
+    if (!Number.isInteger(e.damage) || e.damage < 1 || e.damage > 9999) {
+      throw new Error(`Invariant: combat enemy ${e.id} damage out of range 1..9999`);
     }
     if (typeof e.canParley !== 'boolean') {
       throw new Error(`Invariant: combat enemy ${e.id} canParley must be boolean`);

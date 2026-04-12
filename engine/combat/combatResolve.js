@@ -34,7 +34,7 @@ import { applyDeltas } from '../effectsCore.js';
 import { checkGoals } from '../goals/goalContract.js';
 import { makeRng, seedFromString } from '../rng.js';
 import { statMod } from '../ruleset/core/stats.js';
-import { computeAttack } from '../gear/gearProps.js';
+import { computeAttack, computeAC } from '../gear/gearProps.js';
 import { applyResistance } from './damageTypes.js';
 import { tickConditions, hasCondition, applyCondition } from './conditions.js';
 import { getConditionModifiers } from './conditionEffects.js';
@@ -272,7 +272,9 @@ export function resolveCombatTurn(world, move, opts = {}) {
       continue;
     }
     if (livingParty.length === 0) break;
-    const targetMember = livingParty[partyIdx % livingParty.length];
+    const rawTarget = livingParty[partyIdx % livingParty.length];
+    // CM4: compute AC from equipped armor so resolveAction uses real AC.
+    const targetMember = { ...rawTarget, ac: computeAC(rawTarget) };
     partyIdx++;
 
     const enemyActions = Array.isArray(e.actions) ? e.actions : [];

@@ -76,9 +76,21 @@ export function buildNpcContext(npc, world, playerInput) {
   };
 }
 
-// ── Prompt builder ──────────────────────────────────────────────────────────
+// ── Token budget ────────────────────────────────────────────────────────────
 
-function buildPrompt(ctx) {
+const DEFAULT_TOKEN_BUDGET = 1500;
+
+/**
+ * countTokensApprox(text) → number
+ * Rough estimate: 1 token ≈ 4 characters.
+ */
+export function countTokensApprox(text) {
+  return Math.ceil(String(text || '').length / 4);
+}
+
+// ── Prompt builder (verbose — original format) ─────────────────────────────
+
+function buildPromptVerbose(ctx) {
   const traits = ctx.traits.length > 0 ? ctx.traits.join(', ') : 'unremarkable';
 
   const factLines = ctx.knownFacts
@@ -110,6 +122,94 @@ Reply as JSON:
 { "share": [...], "mood": "...", "approach": "...", "why": "..." }`;
 }
 
+// ── Prompt builder (compressed) ─────────────────────────────────────────────
+
+// Mood code map: single-char codes for prompt compression
+const MOOD_CODES = { wary: 'W', warm: 'H', hostile: 'X', fearful: 'F', amused: 'A' };
+// Approach code map
+const APPROACH_CODES = { volunteer: 'V', wait_to_be_asked: 'Q', deflect: 'D', lie: 'L' };
+
+function buildPromptCompressed(facts, rumors, ctx) {
+  const traits = ctx.traits.length > 0 ? ctx.traits.join(', ') : 'unremarkable';
+
+  const factLines = facts.map(f => `[F:${f.id}] ${f.text}`).join('\n');
+  const rumorLines = rumors.map(r => `[R:${r.id}] ${r.text} t${r.tier}`).join('\n');
+  const knowledgeBlock = [factLines, rumorLines].filter(Boolean).join('\n');
+
+  let relBlock = '';
+  if (ctx.relationships.length > 0) {
+    const relLines = ctx.relationships
+      .map(r => `${r.targetId}:${r.bond.toFixed(2)}(${r.history.join(',')})`)
+      .join('\n');
+    relBlock = `\nRel:\n${relLines}\n`;
+  }
+
+  return `${ctx.name},${ctx.archetype}.${traits}.T${ctx.trust}/10.${MOOD_CODES[ctx.mood] || ctx.mood}.
+K:
+${knowledgeBlock || '-'}
+${relBlock}P:"${ctx.playerInput}"
+JSON:{share:[],mood:"W/H/X/F/A",approach:"V/Q/D/L",why:""}`;
+}
+
+/**
+ * compressPrompt(ctx, opts?) → string
+ *
+ * Budget-aware compressed prompt builder. Exported for testing.
+ * opts.tokenBudget — max tokens (default 1500).
+ */
+export function compressPrompt(ctx, opts = {}) {
+  const budget = opts.tokenBudget ?? DEFAULT_TOKEN_BUDGET;
+  let facts = [...(ctx.knownFacts || [])];
+  let rumors = [...(ctx.carriedRumors || [])];
+
+  let prompt = buildPromptCompressed(facts, rumors, ctx);
+  let tokens = countTokensApprox(prompt);
+
+  if (tokens <= budget) return prompt;
+
+  // Sort by priority (lowest first) — items without priority get 1
+  const sortByPriority = arr => [...arr].sort((a, b) => (a.priority ?? 1) - (b.priority ?? 1));
+  facts = sortByPriority(facts);
+  rumors = sortByPriority(rumors);
+
+  // Truncate: remove lowest-priority items first
+  // Start with low-tier rumors, then old facts
+  while (tokens > budget && rumors.length > 0 && (rumors[0].priority ?? 1) <= 1) {
+    rumors.shift();
+    prompt = buildPromptCompressed(facts, rumors, ctx);
+    tokens = countTokensApprox(prompt);
+  }
+
+  while (tokens > budget && facts.length > 0 && (facts[0].priority ?? 1) <= 1) {
+    facts.shift();
+    prompt = buildPromptCompressed(facts, rumors, ctx);
+    tokens = countTokensApprox(prompt);
+  }
+
+  // If still over budget, remove remaining lowest-priority items
+  while (tokens > budget && (rumors.length > 0 || facts.length > 0)) {
+    // Remove whichever has lower priority
+    const rPri = rumors.length > 0 ? (rumors[0].priority ?? 1) : Infinity;
+    const fPri = facts.length > 0 ? (facts[0].priority ?? 1) : Infinity;
+    if (rPri <= fPri && rumors.length > 0) {
+      rumors.shift();
+    } else if (facts.length > 0) {
+      facts.shift();
+    } else {
+      break;
+    }
+    prompt = buildPromptCompressed(facts, rumors, ctx);
+    tokens = countTokensApprox(prompt);
+  }
+
+  return prompt;
+}
+
+// Backward-compatible buildPrompt — now uses compressed format
+function buildPrompt(ctx) {
+  return compressPrompt(ctx);
+}
+
 // ── Decision validation ─────────────────────────────────────────────────────
 
 function validateDecision(d) {
@@ -123,6 +223,8 @@ function validateDecision(d) {
 }
 
 // ── LLM query ───────────────────────────────────────────────────────────────
+
+export { buildPromptVerbose as _buildPromptVerbose };
 
 const DECISION_SCHEMA = {
   share: ['string'],

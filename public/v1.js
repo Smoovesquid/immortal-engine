@@ -8,10 +8,13 @@ import { buildMythSpec, mythSpecJson } from '../engine/mythSpec.js';
 import { generateTriadFrames, deriveInvocationFromFrame } from '../engine/triad.js';
 import { deriveSequelInvocation } from '../engine/sequel.js';
 import { renderMapView } from './map/MapView.js';
+import tts from './tts.js';
 import { createWanderer } from '../engine/chargen/wanderer.js';
 import { rollDetailOptions } from '../engine/chargen/details.js';
 import { rollStats, STAT_KEYS } from '../engine/chargen/stats.js';
 import { seedFromString, makeRng } from '../engine/rng.js';
+
+tts.init();
 
 // ?reset — wipe all saved state and start fresh
 if (new URLSearchParams(location.search).has('reset')) {
@@ -189,6 +192,7 @@ async function beginFromInvocation(inv) {
   // Try AI narration; fall back to base if unavailable
   const aiText = await tryAiNarration(world, baseNarration, {});
   wizardLine.text = aiText || baseNarration;
+  tts.speak(wizardLine.text);
   render();
 }
 
@@ -247,6 +251,7 @@ async function beginFromChargen() {
 
   const aiText = await tryAiNarration(world, baseNarration, {});
   wizardLine.text = aiText || baseNarration;
+  tts.speak(wizardLine.text);
   render();
 }
 
@@ -295,6 +300,7 @@ async function doSubmitMove() {
   // Wait for AI narration; fall back to base if unavailable
   const aiText = await tryAiNarration(world, baseNarration, { input: text });
   wizardLine.text = aiText || baseNarration;
+  tts.speak(wizardLine.text);
   setStatus('Move resolved.');
   render();
 }
@@ -318,6 +324,7 @@ async function doNewScene() {
 
   const aiText = await tryAiNarration(world, baseNarration, {});
   wizardLine.text = aiText || baseNarration;
+  tts.speak(wizardLine.text);
   setStatus('Scene advanced.');
   render();
 }
@@ -1083,13 +1090,20 @@ function renderNav() {
 
   const hasWorld = Boolean(ui.world);
 
+  const ttsBtn = tts.isSupported() ? el('button', {
+    class: 'btn tts-toggle' + (tts.enabled ? ' tts-on' : ''),
+    title: tts.enabled ? 'TTS on — click to mute' : 'TTS off — click to enable',
+    onClick: () => { tts.toggle(); render(); }
+  }, tts.enabled ? '\u{1F50A}' : '\u{1F507}') : null;
+
   return el('div', { class: 'panel' },
     el('div', { class: 'header' },
       el('div', { class: 'row' },
         btn('Invoke', 'invoke'),
         btn('Play', 'play', { disabled: !hasWorld }),
         btn('Map', 'map', { disabled: !hasWorld }),
-        btn('AI', 'ai')
+        btn('AI', 'ai'),
+        ttsBtn
       )
     )
   );

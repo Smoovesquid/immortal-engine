@@ -189,3 +189,7 @@ a{color:var(--accent)}
 .beat-row.failure .beat-outcome{color:var(--danger);border:1px solid rgba(255,107,107,.4)}
 .beat-row .beat-meta{font-family:var(--mono);font-size:10px;color:var(--muted);align-self:flex-end}
 .empty-muted{color:var(--muted);font-size:12px;font-style:italic}
+
+/* TTS toggle */
+.tts-toggle{font-size:16px;padding:6px 10px;min-width:36px;line-height:1;margin-left:auto}
+.tts-toggle.tts-on{border-color:var(--accent);color:var(--accent)}

@@ -25,6 +25,7 @@ import { beginDialogue, askNpc, endDialogue, resolveNpcAtCurrentNode, isRecruitI
 import { resolveCombatTurn } from './combat/combatResolve.js';
 import { beginCombat, endCombat, mintEnemyFromNpc } from './combat/combatLifecycle.js';
 import { resolveCompanionTurn } from './combat/companionTurn.js';
+import { castSpell } from './spell/castSpell.js';
 
 // Pure-ish play loop: world -> {world, output}
 
@@ -503,6 +504,91 @@ export function playerMove(world, packsById, text) {
           }
         };
       }
+    }
+  }
+
+  // ── Pass T3: Spell casting branch ─────────────────────────────────────────
+  // "cast <spell>" routes through the spell casting system. In combat, the
+  // cast produces damage/effects and then falls through to the normal combat
+  // turn flow. Outside combat, it resolves immediately.
+  {
+    const castMatch = String(text || '').match(/^cast\s+(.+?)(?:\s+(?:at|on|toward)\s+(.+))?$/i);
+    if (castMatch) {
+      const rawSpellName = castMatch[1].trim();
+      const rawTarget = (castMatch[2] || '').trim();
+      const spellRef = rawSpellName.toLowerCase().replace(/\s+/g, '_');
+
+      // Resolve target: in combat, target the first living enemy by default.
+      let targetId = null;
+      if (w.combat?.active) {
+        const enemies = Array.isArray(w.combat.enemies) ? w.combat.enemies : [];
+        if (rawTarget) {
+          const tLower = rawTarget.toLowerCase();
+          const found = enemies.find(e => e.hp > 0 && (
+            String(e.name || '').toLowerCase() === tLower ||
+            String(e.name || '').toLowerCase().includes(tLower)
+          ));
+          targetId = found ? found.id : (enemies.find(e => e.hp > 0)?.id || null);
+        } else {
+          targetId = (enemies.find(e => e.hp > 0)?.id) || null;
+        }
+      }
+
+      const { world: wCast, result: castResult } = castSpell(w, {
+        spellRef,
+        targetId,
+        slotLevel: null
+      });
+
+      if (!castResult.ok) {
+        return {
+          world: wCast,
+          output: {
+            narration: `Wizard: ${castResult.reason === 'no-slots' ? 'You have no spell slots remaining at that level.' : castResult.reason === 'not-known' ? 'You do not know that spell.' : 'The spell fizzles — something is wrong.'}`,
+            mechanics: `[cast:${spellRef} | ${castResult.reason}]`
+          }
+        };
+      }
+
+      // Build mechanics line from effects.
+      const effectParts = castResult.effects.map(e => {
+        if (e.kind === 'damage') return `${e.totalDamage} ${e.damageType}${e.saved ? ' (saved)' : ''}`;
+        if (e.kind === 'acBoost') return `ac+${e.value}`;
+        if (e.kind === 'teleport') return `teleport ${e.distance}ft`;
+        if (e.kind === 'counter') return 'counter';
+        return e.kind;
+      });
+      const mechanicsLine = `[cast:${castResult.spellName} | ${effectParts.join(', ')}${castResult.slotConsumed ? ` | slot:${castResult.slotLevel}` : ' | cantrip'}]`;
+
+      // Record beat and resolution event.
+      let wOut = appendRecentBeat(wCast, buildBeatFromTurn(wCast, text, {
+        actorId,
+        intentText: String(text || ''),
+        approachTag: 'occult',
+        stakeTag: 'harm',
+        targetId
+      }, { outcome: 'success', mechanicsLine }));
+      wOut = pushEvent(wOut, {
+        kind: 'resolution',
+        data: {
+          actorId,
+          intent: String(text || ''),
+          text: String(text || ''),
+          roll: 0,
+          dc: 0,
+          outcome: 'success',
+          updateKind: 'spell',
+          spellRef: castResult.spellRef,
+          effects: castResult.effects.length
+        }
+      });
+
+      const dmgEffect = castResult.effects.find(e => e.kind === 'damage');
+      const narration = dmgEffect
+        ? `Wizard: You cast ${castResult.spellName}${targetId ? '' : ''}, dealing ${dmgEffect.totalDamage} ${dmgEffect.damageType} damage${dmgEffect.saved ? ' (the target partially resists)' : ''}.`
+        : `Wizard: You cast ${castResult.spellName}. The spell takes effect.`;
+
+      return { world: wOut, output: { narration, mechanics: mechanicsLine } };
     }
   }
 
@@ -1120,6 +1206,8 @@ function dialogueAskNarration(outcome) {
   switch (outcome?.mode) {
     case 'shared':
       return `Wizard: ${name} answers plainly, offering what they know.`;
+    case 'recruited':
+      return `Wizard: ${name} nods slowly and falls into step beside you.`;
     case 'withheld':
       return `Wizard: ${name} deflects, keeping the truth close.`;
     case 'lied':

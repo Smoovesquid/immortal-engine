@@ -504,6 +504,52 @@ export function applyDeltas(world, deltas = []) {
       continue;
     }
 
+    // ── Pass T3 — spell slot & concentration ops ────────────────────────────
+
+    if (kind === 'consumeSpellSlot') {
+      const level = toInt(op.level ?? 0);
+      if (level < 1 || level > 5) continue;
+      const party = Array.isArray(w.party) ? w.party : [];
+      if (!party[0]) continue;
+      const spells = party[0].spells || { known: [], slots: {}, maxSlots: {}, concentration: null };
+      const cur = toInt(spells.slots?.[level] ?? 0);
+      const next = Math.max(0, cur - 1);
+      const nextSpells = { ...spells, slots: { ...spells.slots, [level]: next } };
+      const nextParty = [...party];
+      nextParty[0] = { ...party[0], spells: nextSpells };
+      w = { ...w, party: nextParty };
+      continue;
+    }
+
+    if (kind === 'setConcentration') {
+      const party = Array.isArray(w.party) ? w.party : [];
+      if (!party[0]) continue;
+      const spells = party[0].spells || { known: [], slots: {}, maxSlots: {}, concentration: null };
+      const spellRef = op.spellRef ? String(op.spellRef).trim() : '';
+      const concentration = spellRef ? { spellRef, startedAt: toInt(op.startedAt ?? 0) } : null;
+      const nextSpells = { ...spells, concentration };
+      const nextParty = [...party];
+      nextParty[0] = { ...party[0], spells: nextSpells };
+      w = { ...w, party: nextParty };
+      continue;
+    }
+
+    if (kind === 'restoreSpellSlots') {
+      const party = Array.isArray(w.party) ? w.party : [];
+      if (!party[0]) continue;
+      const spells = party[0].spells || { known: [], slots: {}, maxSlots: {}, concentration: null };
+      const maxSlots = spells.maxSlots || {};
+      const restored = {};
+      for (const lvl of [1, 2, 3, 4, 5]) {
+        restored[lvl] = toInt(maxSlots[lvl] ?? 0);
+      }
+      const nextSpells = { ...spells, slots: restored };
+      const nextParty = [...party];
+      nextParty[0] = { ...party[0], spells: nextSpells };
+      w = { ...w, party: nextParty };
+      continue;
+    }
+
     if (kind === 'removeFurniture') {
       const nodeId = String(op.nodeId || '');
       const furnitureId = toInt(op.furnitureId ?? -1);

@@ -32,6 +32,8 @@ import { ensureWorld } from '../state.js';
 import { resolveMove } from '../resolve.js';
 import { applyDeltas } from '../effectsCore.js';
 import { checkGoals } from '../goals/goalContract.js';
+import { makeRng, seedFromString } from '../rng.js';
+import { statMod } from '../ruleset/core/stats.js';
 import { computeAttack } from '../gear/gearProps.js';
 
 const FORCE_BASE = 3;
@@ -251,6 +253,28 @@ export function resolveCombatTurn(world, move, opts = {}) {
   }
   if (counterDeltas.length) {
     w = applyDeltas(w, counterDeltas);
+  }
+
+  // Pass T3 — concentration break: if the player took damage from counters
+  // and is concentrating, roll a GRIT save. DC = max(10, floor(totalDmg/2)).
+  // Failure breaks concentration via setConcentration delta.
+  {
+    const playerDmg = counterDeltas
+      .filter(d => d.op === 'wound' && String(d.entityId) === String(w.party?.[0]?.id ?? 'party'))
+      .reduce((sum, d) => sum + clampInt(d.by, 0, 6), 0);
+    const conc = w.party?.[0]?.spells?.concentration;
+    if (playerDmg > 0 && conc && conc.spellRef) {
+      const concDC = Math.max(10, Math.floor(playerDmg / 2));
+      const gritScore = w.party?.[0]?.stats?.GRIT ?? 10;
+      const gritMod = statMod(gritScore);
+      const concSeed = seedFromString(`${w.meta?.seed || ''}|conc|${w.time?.turn ?? 0}|${w.combat?.round ?? 0}`);
+      const concRng = makeRng(concSeed);
+      const concRoll = concRng.int(1, 20) + gritMod;
+      if (concRoll < concDC) {
+        w = applyDeltas(w, [{ op: 'setConcentration', spellRef: '' }]);
+        summaryParts.push(`concentration broken (rolled ${concRoll} vs DC ${concDC})`);
+      }
+    }
   }
 
   // Check for player defeat.

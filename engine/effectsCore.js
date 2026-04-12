@@ -262,6 +262,17 @@ export function applyDeltas(world, deltas = []) {
         enemies = enemies.map(e => ids.has(String(e.id)) ? { ...e, hp: 0, defeated: true } : e);
       }
 
+      // CM2: enemyConditions — array of { id, conditions } to set conditions on enemies.
+      if (Array.isArray(op.enemyConditions)) {
+        for (const ec of op.enemyConditions) {
+          if (!ec || typeof ec !== 'object') continue;
+          const id = String(ec.id ?? '');
+          if (!id) continue;
+          const conds = Array.isArray(ec.conditions) ? ec.conditions : [];
+          enemies = enemies.map(e => String(e.id) === id ? { ...e, conditions: conds } : e);
+        }
+      }
+
       const merged = {
         active: set && 'active' in set ? Boolean(set.active) : cur.active,
         round: set && 'round' in set ? toInt(set.round) : cur.round,

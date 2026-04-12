@@ -66,6 +66,7 @@ function mkEnemy(over = {}) {
     damageType: 'bludgeoning',
     resistances: {},
     conditionImmunities: [],
+    conditions: [],
     canParley: true,
     defeated: false,
     sourceNpcId: 'npc_test_0',

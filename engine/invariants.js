@@ -241,6 +241,10 @@ export function assertWorldInvariants(world) {
     if (!Array.isArray(e.conditionImmunities)) {
       throw new Error(`Invariant: combat enemy ${e.id} conditionImmunities must be array`);
     }
+    // CM2: conditions array
+    if (!Array.isArray(e.conditions)) {
+      throw new Error(`Invariant: combat enemy ${e.id} conditions must be array`);
+    }
   }
   if (combat.active && world.scene?.dialogue) {
     throw new Error('Invariant: combat.active and scene.dialogue are mutually exclusive');

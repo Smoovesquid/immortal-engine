@@ -36,6 +36,8 @@ import { makeRng, seedFromString } from '../rng.js';
 import { statMod } from '../ruleset/core/stats.js';
 import { computeAttack } from '../gear/gearProps.js';
 import { applyResistance } from './damageTypes.js';
+import { tickConditions, hasCondition, applyCondition } from './conditions.js';
+import { getConditionModifiers } from './conditionEffects.js';
 
 const FORCE_BASE = 3;
 const FINESSE_BASE = 2;
@@ -93,9 +95,34 @@ export function resolveCombatTurn(world, move, opts = {}) {
   const { result } = resolveMove(w, m);
   w = applyDeltas(w, result.deltas);
 
+  // CM2: Tick enemy conditions at start of round (ongoing damage, saves, expiry).
+  const conditionTickSeed = seedFromString(`${w.meta?.seed || ''}|condtick|${w.time?.turn ?? 0}|${w.combat?.round ?? 0}`);
+  const condTickRng = makeRng(conditionTickSeed);
+  const condTickDeltas = [];
+  const condTickSummary = [];
+  for (const enemy of (w.combat?.enemies || [])) {
+    if (!(enemy.hp > 0) || !Array.isArray(enemy.conditions) || enemy.conditions.length === 0) continue;
+    const { conditions: newConds, tickResults } = tickConditions(enemy.conditions, enemy, w.combat?.round ?? 0, condTickRng);
+    if (newConds !== enemy.conditions) {
+      condTickDeltas.push({ op: 'combatState', enemyConditions: [{ id: enemy.id, conditions: newConds }] });
+    }
+    for (const tr of tickResults) {
+      if (tr.damage > 0 && tr.damageType) {
+        condTickDeltas.push({ op: 'combatState', enemyHpDelta: [{ id: enemy.id, by: -tr.damage }] });
+        condTickSummary.push(`${enemy.name} takes ${tr.damage} ${tr.damageType} (${tr.name})`);
+      }
+      if (tr.saved) {
+        condTickSummary.push(`${enemy.name} saves against ${tr.name}`);
+      }
+    }
+  }
+  if (condTickDeltas.length) {
+    w = applyDeltas(w, condTickDeltas);
+  }
+
   // Translate the base resolve into combat effects.
   const combatDeltas = [];
-  const summaryParts = [];
+  const summaryParts = [...condTickSummary];
   let parleyEnded = false;
 
   if (targetEnemy && result.outcome === 'success') {
@@ -237,6 +264,12 @@ export function resolveCombatTurn(world, move, opts = {}) {
   const counterDeltas = [];
   for (const e of (w.combat?.enemies || [])) {
     if (!(e.hp > 0)) continue;
+    // CM2: stunned/paralyzed enemies skip their counter
+    const eMods = getConditionModifiers(e.conditions || []);
+    if (eMods.skipTurn) {
+      summaryParts.push(`${e.name} is incapacitated — skips counter`);
+      continue;
+    }
     if (livingParty.length === 0) break;
     const targetMember = livingParty[partyIdx % livingParty.length];
     partyIdx++;

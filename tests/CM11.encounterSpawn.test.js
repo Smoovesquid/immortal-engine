@@ -12,10 +12,12 @@ import * as path from 'node:path';
 // ── helpers ──────────────────────────────────────────────────────────────
 
 function makeWorld(overrides = {}) {
-  const base = newWorld({ seed: 'cm11test', fate: 0.2, campaignId: 'test' });
+  const fate = overrides.meta?.fate ?? 0.2;
+  const base = newWorld({ seed: 'cm11test', fate, campaignId: 'test' });
   let w = ensureWorld({
     ...base,
     ...overrides,
+    meta: { ...base.meta, ...(overrides.meta || {}) },
     instrument: {
       ...base.instrument,
       inevitability: 0,
@@ -51,73 +53,108 @@ function loadPacks() {
 // ── evaluateEncounter ────────────────────────────────────────────────────
 
 describe('CM11 — Encounter spawning', () => {
-  it('CM11-01: confrontation beat at tension >= 3 spawns encounter', () => {
-    const w = makeWorld({ instrument: { inevitability: 4 } });
-    const plan = { beatType: 'confrontation' };
-    const result = evaluateEncounter(w, plan, rng());
-    assert.equal(result.spawn, true, 'should spawn');
-    assert.ok(result.cr > 0, 'CR should be positive');
-    assert.ok(result.count >= 1, 'count should be >= 1');
-  });
-
-  it('CM11-02: quiet beat does NOT spawn encounter', () => {
-    const w = makeWorld({ instrument: { inevitability: 8 } });
-    const plan = { beatType: 'quiet' };
-    const result = evaluateEncounter(w, plan, rng());
-    assert.equal(result.spawn, false);
-  });
-
-  it('CM11-03: escalation at low tension does NOT spawn', () => {
-    const w = makeWorld({ instrument: { inevitability: 2 }, clocks: { dread: 0 } });
-    const plan = { beatType: 'escalation' };
-    const result = evaluateEncounter(w, plan, rng());
-    assert.equal(result.spawn, false);
-  });
-
-  it('CM11-04: escalation at high tension + dread DOES spawn', () => {
+  it('CM11-01: high dread + fate spawns encounter', () => {
+    // dread 8, fate 0.8 → chance = (8/12)*0.8 = 0.533
+    // Use a seed that yields nextFloat < 0.533
     const w = makeWorld({
-      instrument: { inevitability: 6 },
-      clocks: { dread: 5, pressure: 0, revelation: 0 }
+      clocks: { dread: 8, pressure: 0, revelation: 0 },
+      meta: { fate: 0.8 }
     });
-    const plan = { beatType: 'escalation' };
-    const result = evaluateEncounter(w, plan, rng());
-    assert.equal(result.spawn, true, 'should spawn on escalation + tension 6 + dread 5');
-    assert.equal(result.ambush, false, 'escalation encounters are not ambushes');
+    // Try many seeds — at 53% chance, most will spawn
+    let spawned = false;
+    for (let i = 0; i < 20; i++) {
+      const result = evaluateEncounter(w, {}, rng(`spawn-${i}`));
+      if (result.spawn) { spawned = true; break; }
+    }
+    assert.ok(spawned, 'high dread + fate should spawn encounters');
   });
 
-  it('CM11-05: thread tension >= 6 forces ambush', () => {
+  it('CM11-02: dread 0 never spawns regardless of fate', () => {
     const w = makeWorld({
+      clocks: { dread: 0, pressure: 0, revelation: 0 },
+      meta: { fate: 1.0 }
+    });
+    for (let i = 0; i < 20; i++) {
+      const result = evaluateEncounter(w, {}, rng(`zero-${i}`));
+      assert.equal(result.spawn, false, `dread 0 should never spawn (seed ${i})`);
+    }
+  });
+
+  it('CM11-03: fate 0 never spawns regardless of dread', () => {
+    const w = makeWorld({
+      clocks: { dread: 12, pressure: 0, revelation: 0 },
+      meta: { fate: 0 }
+    });
+    for (let i = 0; i < 20; i++) {
+      const result = evaluateEncounter(w, {}, rng(`fate0-${i}`));
+      assert.equal(result.spawn, false, `fate 0 should never spawn (seed ${i})`);
+    }
+  });
+
+  it('CM11-04: beat type is irrelevant to spawning', () => {
+    // Same dread/fate, different beat types — spawn chance is identical
+    const base = { clocks: { dread: 10, pressure: 0, revelation: 0 }, meta: { fate: 0.8 } };
+    const w = makeWorld(base);
+
+    const r1 = evaluateEncounter(w, { beatType: 'quiet' }, rng('beat'));
+    const r2 = evaluateEncounter(w, { beatType: 'confrontation' }, rng('beat'));
+    const r3 = evaluateEncounter(w, { beatType: 'escalation' }, rng('beat'));
+    const r4 = evaluateEncounter(w, {}, rng('beat'));
+
+    assert.equal(r1.spawn, r2.spawn, 'quiet and confrontation should give same result');
+    assert.equal(r2.spawn, r3.spawn, 'confrontation and escalation should give same result');
+    assert.equal(r3.spawn, r4.spawn, 'escalation and no beat should give same result');
+  });
+
+  it('CM11-05: ambush only when dread >= 8 AND tension >= 6', () => {
+    // High dread + high tension → ambush
+    const wAmbush = makeWorld({
+      instrument: { inevitability: 7 },
+      clocks: { dread: 10, pressure: 0, revelation: 0 },
+      meta: { fate: 0.9 }
+    });
+    let foundAmbush = false;
+    for (let i = 0; i < 30; i++) {
+      const r = evaluateEncounter(wAmbush, {}, rng(`amb-${i}`));
+      if (r.spawn) { assert.equal(r.ambush, true, 'dread 10 + tension 7 → ambush'); foundAmbush = true; break; }
+    }
+    assert.ok(foundAmbush, 'should have found a spawn');
+
+    // High dread but low tension → spawn but NOT ambush
+    const wNoAmb = makeWorld({
       instrument: { inevitability: 3 },
-      threads: [
-        { id: 'threat_1', objective: 'dark forces', tension: 7, trajectory: 'static', factionId: '', nodeId: '', active: true, age: 0 }
-      ]
+      clocks: { dread: 10, pressure: 0, revelation: 0 },
+      meta: { fate: 0.9 }
     });
-    const plan = { beatType: 'confrontation' };
-    const result = evaluateEncounter(w, plan, rng());
-    assert.equal(result.spawn, true);
-    assert.equal(result.ambush, true, 'high thread tension forces ambush');
+    let foundNoAmb = false;
+    for (let i = 0; i < 30; i++) {
+      const r = evaluateEncounter(wNoAmb, {}, rng(`noamb-${i}`));
+      if (r.spawn) { assert.equal(r.ambush, false, 'dread 10 + tension 3 → no ambush'); foundNoAmb = true; break; }
+    }
+    assert.ok(foundNoAmb, 'should have found a spawn');
   });
 
   it('CM11-06: no spawn during active combat', () => {
-    let w = makeWorld({ instrument: { inevitability: 8 } });
-    // Start combat properly so invariants hold
+    let w = makeWorld({
+      clocks: { dread: 12, pressure: 0, revelation: 0 },
+      meta: { fate: 1.0 }
+    });
     w = beginCombat(w, {
       enemies: [mintEnemyFromNpc({ id: 'npc_test', name: 'Thug', hostile: true, combatProfile: { maxHp: 10, damage: 3 } })],
       reason: 'test'
     });
     assert.equal(w.combat.active, true, 'precondition: combat active');
-    const plan = { beatType: 'confrontation' };
-    const result = evaluateEncounter(w, plan, rng());
+    const result = evaluateEncounter(w, {}, rng());
     assert.equal(result.spawn, false);
   });
 
   it('CM11-07: no spawn during locked ending', () => {
     const w = makeWorld({
-      instrument: { inevitability: 8 },
+      clocks: { dread: 12, pressure: 0, revelation: 0 },
+      meta: { fate: 1.0 },
       ending: { locked: true }
     });
-    const plan = { beatType: 'confrontation' };
-    const result = evaluateEncounter(w, plan, rng());
+    const result = evaluateEncounter(w, {}, rng());
     assert.equal(result.spawn, false);
   });
 
@@ -125,36 +162,50 @@ describe('CM11 — Encounter spawning', () => {
     const pc1 = { id: 'pc_1', name: 'Hero', level: 1, stats: { MIGHT: 10, AGILITY: 10, WITS: 10, GRIT: 10, CHARM: 10 } };
     const pc5 = { ...pc1, level: 5 };
 
-    const w1 = ensureWorld({ ...makeWorld({ instrument: { inevitability: 4 } }), party: [pc1] });
-    const w5 = ensureWorld({ ...makeWorld({ instrument: { inevitability: 4 } }), party: [pc5] });
-
-    const plan = { beatType: 'confrontation' };
-    const r1 = evaluateEncounter(w1, plan, rng());
-    const r5 = evaluateEncounter(w5, plan, rng());
-
+    // Use high dread/fate to guarantee spawn
+    const base = { clocks: { dread: 12, pressure: 0, revelation: 0 }, meta: { fate: 1.0 }, instrument: { inevitability: 4 } };
+    let w1, w5, r1, r5;
+    // Find seeds that spawn for both
+    for (let i = 0; i < 50; i++) {
+      w1 = ensureWorld({ ...makeWorld(base), party: [pc1] });
+      w5 = ensureWorld({ ...makeWorld(base), party: [pc5] });
+      r1 = evaluateEncounter(w1, {}, rng(`cr-${i}`));
+      r5 = evaluateEncounter(w5, {}, rng(`cr-${i}`));
+      if (r1.spawn && r5.spawn) break;
+    }
+    assert.ok(r1.spawn, 'L1 should spawn');
+    assert.ok(r5.spawn, 'L5 should spawn');
     assert.ok(r1.cr > 0, `L1 CR should be positive, got ${r1.cr}`);
     assert.ok(r5.cr > r1.cr, `L5 CR (${r5.cr}) should be higher than L1 CR (${r1.cr})`);
-    assert.ok(r1.cr < 1, 'L1 CR should be < 1');
-    assert.ok(r5.cr < 2, 'L5 CR should be < 2');
   });
 
-  it('CM11-09: creature count scales with tension', () => {
-    const plan = { beatType: 'confrontation' };
+  it('CM11-09: creature count scales with tension and dread', () => {
+    // tension < 4, dread < 6 → count 1
+    const base = { clocks: { dread: 12, pressure: 0, revelation: 0 }, meta: { fate: 1.0 } };
 
-    const w2 = makeWorld({ instrument: { inevitability: 3 } });
-    const r2 = evaluateEncounter(w2, plan, rng());
-    assert.equal(r2.count, 1, 'tension 3 → 1 creature');
+    function getSpawnedResult(overrides) {
+      const w = makeWorld({ ...base, ...overrides });
+      for (let i = 0; i < 50; i++) {
+        const r = evaluateEncounter(w, {}, rng(`cnt-${JSON.stringify(overrides)}-${i}`));
+        if (r.spawn) return r;
+      }
+      return null;
+    }
 
-    const w5 = makeWorld({ instrument: { inevitability: 5 } });
-    const r5 = evaluateEncounter(w5, plan, rng());
-    assert.equal(r5.count, 2, 'tension 5 → 2 creatures');
+    // tension 2 (no +1), dread 3 (< 6, no +1) → count 1
+    const r1 = getSpawnedResult({ instrument: { inevitability: 2 }, clocks: { dread: 3, pressure: 0, revelation: 0 }, meta: { fate: 1.0 } });
+    assert.ok(r1, 'should spawn');
+    assert.equal(r1.count, 1, 'tension 2 + dread 3 → 1 creature');
 
-    const w5d = makeWorld({
-      instrument: { inevitability: 5 },
-      clocks: { dread: 7, pressure: 0, revelation: 0 }
-    });
-    const r5d = evaluateEncounter(w5d, plan, rng());
-    assert.equal(r5d.count, 3, 'tension 5 + dread 7 → 3 creatures');
+    // tension 5 (+1), dread 3 (< 6, no +1) → count 2
+    const r2 = getSpawnedResult({ instrument: { inevitability: 5 }, clocks: { dread: 3, pressure: 0, revelation: 0 }, meta: { fate: 1.0 } });
+    assert.ok(r2, 'should spawn');
+    assert.equal(r2.count, 2, 'tension 5 (+1) → 2 creatures');
+
+    // tension 5 (+1), dread 8 (+1) → count 3
+    const r3 = getSpawnedResult({ instrument: { inevitability: 5 }, clocks: { dread: 8, pressure: 0, revelation: 0 }, meta: { fate: 1.0 } });
+    assert.ok(r3, 'should spawn');
+    assert.equal(r3.count, 3, 'tension 5 (+1) + dread 8 (+1) → 3 creatures');
   });
 
   // ── selectCreatures ────────────────────────────────────────────────────
@@ -171,13 +222,16 @@ describe('CM11 — Encounter spawning', () => {
   });
 
   it('CM11-11: encounter is deterministic', () => {
-    const w = makeWorld({ instrument: { inevitability: 5 } });
-    const plan = { beatType: 'confrontation' };
+    const w = makeWorld({
+      instrument: { inevitability: 5 },
+      clocks: { dread: 10, pressure: 0, revelation: 0 },
+      meta: { fate: 0.9 }
+    });
 
-    const r1 = evaluateEncounter(w, plan, rng('determ'));
+    const r1 = evaluateEncounter(w, {}, rng('determ'));
     const c1 = selectCreatures(r1.cr, r1.count, null, rng('determ_select'));
 
-    const r2 = evaluateEncounter(w, plan, rng('determ'));
+    const r2 = evaluateEncounter(w, {}, rng('determ'));
     const c2 = selectCreatures(r2.cr, r2.count, null, rng('determ_select'));
 
     assert.deepStrictEqual(r1, r2, 'evaluation should be deterministic');

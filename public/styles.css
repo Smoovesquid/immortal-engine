@@ -243,3 +243,130 @@ a{color:var(--accent)}
 .rumor-verified-badge{font-family:var(--mono);font-size:10px;padding:0 5px;border:1px solid var(--border);border-radius:999px;flex:0 0 auto}
 .rumor-verified-badge.verified{color:var(--ok);border-color:rgba(92,242,167,.4)}
 .rumor-verified-badge.unverified{color:var(--muted);border-color:var(--border)}
+
+/* ── UI1 — Initiative Bar ──────────────────────────────────────────── */
+.initiative-bar{display:flex;gap:4px;overflow-x:auto;padding:4px 0 8px 0;margin-bottom:4px}
+.init-pill{display:flex;align-items:center;gap:4px;padding:3px 8px;border-radius:999px;font-family:var(--mono);font-size:11px;border:1px solid var(--border);background:rgba(255,255,255,.03);white-space:nowrap;transition:box-shadow .2s ease,opacity .2s ease}
+.init-pill.init-player{color:var(--accent);border-color:rgba(103,212,255,.3)}
+.init-pill.init-companion{color:var(--ok);border-color:rgba(92,242,167,.3)}
+.init-pill.init-enemy{color:var(--danger);border-color:rgba(255,107,107,.3)}
+.init-pill.init-current{box-shadow:0 0 8px rgba(103,212,255,.4);border-color:var(--accent)}
+.init-pill.init-current.init-enemy{box-shadow:0 0 8px rgba(255,107,107,.4);border-color:var(--danger)}
+.init-pill.init-current.init-companion{box-shadow:0 0 8px rgba(92,242,167,.4);border-color:var(--ok)}
+.init-pill.init-defeated{opacity:.4;text-decoration:line-through}
+.init-name{max-width:80px;overflow:hidden;text-overflow:ellipsis}
+.init-total{font-size:9px;opacity:.7}
+
+/* ── UI1 — Combat Dashboard ────────────────────────────────────────── */
+.combat-dashboard .combat-hud-header{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--danger);margin-bottom:4px;letter-spacing:.06em}
+
+/* Player/companion vitals */
+.combat-vitals-row{margin-bottom:6px}
+.combat-vitals-main{display:flex;align-items:center;gap:8px}
+.combat-vitals-row .combat-vital-label{font-family:var(--mono);font-size:11px;color:var(--text);flex:0 0 80px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.combat-vitals-companion .combat-vital-label{color:var(--ok)}
+.combat-conditions{display:flex;flex-wrap:wrap;gap:3px;margin-top:3px;padding-left:88px}
+
+/* AC badge */
+.ac-badge{font-family:var(--mono);font-size:10px;color:var(--muted);border:1px solid var(--border);border-radius:999px;padding:0 6px;flex:0 0 auto;white-space:nowrap}
+
+/* Condition badges */
+.cond-badge{font-family:var(--mono);font-size:9px;border-radius:999px;padding:1px 6px;transition:opacity .2s ease}
+.cond-debuff{color:#ff6b6b;background:rgba(255,107,107,.1);border:1px solid rgba(255,107,107,.3)}
+.cond-buff{color:#55ff88;background:rgba(85,255,136,.1);border:1px solid rgba(85,255,136,.3)}
+.cond-movement{color:var(--amber);background:rgba(255,170,51,.1);border:1px solid rgba(255,170,51,.3)}
+.cond-mental{color:#c88fff;background:rgba(200,143,255,.1);border:1px solid rgba(200,143,255,.3)}
+
+/* ── UI1 — Enemy Cards ─────────────────────────────────────────────── */
+.enemy-card{padding:8px 0;display:flex;flex-direction:column;gap:4px}
+.enemy-card+.enemy-card{border-top:1px dashed rgba(35,48,74,.4);padding-top:8px}
+.enemy-card.defeated{opacity:.45}
+.enemy-card.defeated .enemy-card-name{text-decoration:line-through;color:var(--muted)}
+.enemy-card-header{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.enemy-card-name{font-size:12px;font-weight:700;color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.enemy-cr-badge{font-family:var(--mono);font-size:9px;color:var(--gold);border:1px solid rgba(255,209,102,.35);border-radius:999px;padding:0 6px}
+.enemy-dtype-row{display:flex;flex-wrap:wrap;gap:3px;margin-top:2px}
+.enemy-dtype-tag{font-family:var(--mono);font-size:9px;color:var(--muted);border:1px solid var(--border);border-radius:999px;padding:0 6px}
+
+/* Resistance badges */
+.enemy-res-row{display:flex;flex-wrap:wrap;gap:3px;margin-top:2px}
+.res-badge{font-family:var(--mono);font-size:9px;border-radius:999px;padding:0 6px}
+.res-immune{color:#ff6b6b;border:1px solid rgba(255,107,107,.35)}
+.res-resistant{color:var(--amber);border:1px solid rgba(255,170,51,.35)}
+.res-vulnerable{color:var(--ok);border:1px solid rgba(92,242,167,.35)}
+
+/* Enemy traits */
+.enemy-traits{margin-top:2px}
+.enemy-trait{font-family:var(--mono);font-size:10px;font-style:italic;color:var(--muted);line-height:1.4}
+
+/* ── UI1 — Combat Log ──────────────────────────────────────────────── */
+.combat-log-section{margin-top:8px;padding-top:8px;border-top:1px dashed rgba(35,48,74,.6)}
+.combat-log{display:flex;flex-direction:column;gap:3px}
+.clog-row{display:flex;align-items:flex-start;gap:6px;font-size:11px;line-height:1.4;padding:2px 0}
+.clog-icon{flex:0 0 auto;font-size:12px}
+.clog-text{flex:1;min-width:0;font-family:var(--mono);color:var(--text)}
+.clog-lair .clog-text{color:var(--amber)}
+.clog-enemy .clog-text{color:var(--danger)}
+.clog-player .clog-text{color:var(--accent)}
+.clog-legendary .clog-text{color:var(--gold)}
+.clog-reaction .clog-text{color:#c88fff}
+.clog-spell .clog-text{color:#c88fff}
+
+/* Damage numbers and types */
+.clog-dmg{color:var(--accent);font-weight:700}
+.clog-miss{color:var(--muted);font-style:italic}
+.clog-crit{color:var(--gold);font-weight:700;text-transform:uppercase}
+.clog-immune{color:#ff6b6b;font-weight:600}
+.clog-resistant{color:var(--amber);font-weight:600}
+
+/* Damage type badges */
+.clog-dtype{font-size:10px;border-radius:999px;padding:0 4px;border:1px solid var(--border)}
+.dmg-physical{color:var(--muted)}
+.dmg-fire{color:#ff8c42;border-color:rgba(255,140,66,.35)}
+.dmg-cold{color:#8ecfff;border-color:rgba(142,207,255,.35)}
+.dmg-lightning{color:#ffe066;border-color:rgba(255,224,102,.35)}
+.dmg-acid{color:#66cc66;border-color:rgba(102,204,102,.35)}
+.dmg-necrotic{color:#9966cc;border-color:rgba(153,102,204,.35)}
+.dmg-radiant{color:var(--gold);border-color:rgba(255,215,0,.35)}
+.dmg-psychic{color:#ff88cc;border-color:rgba(255,136,204,.35)}
+.dmg-poison{color:#448844;border-color:rgba(68,136,68,.35)}
+.dmg-force{color:#eee;border-color:rgba(238,238,238,.35)}
+.dmg-temporal{color:#66cccc;border-color:rgba(102,204,204,.35)}
+.dmg-entropic{color:#cc3333;border-color:rgba(204,51,51,.35)}
+
+/* Victory/defeat banners */
+.clog-banner{font-family:var(--mono);font-size:12px;font-weight:700;text-align:center;padding:6px 10px;border-radius:8px;margin-top:4px}
+.clog-victory{color:var(--gold);background:rgba(255,215,0,.1);border:1px solid rgba(255,215,0,.3)}
+.clog-defeat{color:var(--danger);background:rgba(255,107,107,.1);border:1px solid rgba(255,107,107,.3)}
+
+/* ── UI1 — Loot Popup ─────────────────────────────────────────────── */
+.loot-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:1000;animation:loot-fadein .3s ease}
+@keyframes loot-fadein{from{opacity:0}to{opacity:1}}
+.loot-panel{width:min(360px,90vw);background:linear-gradient(180deg,rgba(18,24,38,.97),rgba(11,15,20,.97));border:2px solid var(--gold);border-radius:var(--radius);box-shadow:0 0 40px rgba(255,215,0,.15);padding:20px;text-align:center}
+.loot-header{font-family:var(--mono);font-size:20px;font-weight:800;color:var(--gold);letter-spacing:.12em;margin-bottom:4px}
+.loot-subheader{font-size:12px;color:var(--muted);margin-bottom:12px}
+.loot-items{display:flex;flex-direction:column;gap:4px;margin-bottom:12px;text-align:left}
+.loot-item{font-size:13px;padding:4px 8px;border-left:2px solid var(--border);color:var(--text)}
+.loot-rarity-common{border-left-color:var(--muted)}
+.loot-rarity-uncommon{border-left-color:var(--ok);color:var(--ok)}
+.loot-rarity-rare{border-left-color:var(--accent);color:var(--accent)}
+.loot-rarity-epic{border-left-color:#c88fff;color:#c88fff}
+.loot-rarity-legendary{border-left-color:var(--gold);color:var(--gold)}
+.loot-currency{display:flex;justify-content:center;gap:8px;margin-bottom:14px}
+.loot-coin{font-family:var(--mono);font-size:12px}
+.loot-dismiss{margin-top:4px;width:100%}
+
+/* ── UX1 — Dev toggle + dev-only visibility ──────────────────────── */
+.dev-only{display:none}
+.dev-only.dev-visible{display:revert}
+.dev-toggle{font-size:11px;padding:6px 10px;opacity:.6}
+.dev-toggle:hover{opacity:1}
+.dev-toggle.dev-on{opacity:1;border-color:var(--accent);color:var(--accent)}
+
+/* ── UX1 — Transcript player line styling ────────────────────────── */
+.line-player .who{color:var(--accent);font-weight:700;font-size:13px;margin-bottom:2px}
+.line-narration .text{line-height:1.6}
+
+/* ── UX1 — Wound/stress flash on party section ───────────────────── */
+@keyframes vitals-flash{0%{box-shadow:0 0 0 0 rgba(255,107,107,.5)}50%{box-shadow:0 0 8px 2px rgba(255,107,107,.3)}100%{box-shadow:0 0 0 0 transparent}}
+.party-strip.vitals-changed{animation:vitals-flash .5s ease}

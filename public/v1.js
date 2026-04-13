@@ -10,6 +10,8 @@ import { deriveSequelInvocation } from '../engine/sequel.js';
 import { renderMapView } from './map/MapView.js';
 import { renderSpellbookSection } from './panels/spellbook.js';
 import { renderCombatHudSection } from './panels/combatHud.js';
+import { renderInitiativeBar } from './panels/initiativeBar.js';
+import { renderLootPopup } from './panels/lootPopup.js';
 import tts from './tts.js';
 import { createWanderer } from '../engine/chargen/wanderer.js';
 import { rollDetailOptions } from '../engine/chargen/details.js';
@@ -77,7 +79,9 @@ const ui = {
   play: {
     input: '',
     lines: [],
-    lastResolutionKind: 'turn'
+    lastResolutionKind: 'turn',
+    lastCombatSummary: '',
+    pendingLoot: null
   },
 
   world: null,
@@ -88,7 +92,9 @@ const ui = {
   aiKeyAck: '',
   aiTest: { ok: null, text: '(not run)', ms: null },
   aiStatus: { ok: null, online: null, source: "(unknown)", mode: "(unknown)", envPresent: null, sessionPresent: null },
+  devMode: false,
   map: { zoom: 'region' },
+  prevVitals: { wounds: 0, stress: 0 },
   auth: {
     token: localStorage.getItem('auth_token') || null,
     username: localStorage.getItem('auth_username') || null,
@@ -256,7 +262,7 @@ function startFromWorld(w, { keepTranscript = false } = {}) {
     ui.play.lines = [];
     ui.play.input = '';
     ui.play.lastResolutionKind = 'turn';
-    ui.play.lines.push({ who: 'wizard', text: 'Wizard: The world steadies. What do you do?', mech: '' });
+    ui.play.lines.push({ who: 'wizard', text: 'The world steadies. What do you do?', mech: '' });
   }
 
   ui.worldHash = '(computing...)';
@@ -367,7 +373,7 @@ async function beginFromChargen() {
 function continueSlot1() {
   const w = loadSlot(localStorage, 'slot1');
   if (!w) return setStatus('No slot found.');
-  ui.play.lines = [{ who: 'wizard', text: 'Wizard: Welcome back. What do you do?', mech: '' }];
+  ui.play.lines = [{ who: 'wizard', text: 'Welcome back. What do you do?', mech: '' }];
   ui.play.input = '';
   ui.play.lastResolutionKind = 'turn';
   startFromWorld(w, { keepTranscript: true });
@@ -400,13 +406,24 @@ async function doSubmitMove() {
   } catch (e) {
     return setStatus(`Move failed: ${e?.message || e}`);
   }
-  const baseNarration = output?.narration || 'Wizard: ...';
+  const baseNarration = output?.narration || '...';
 
   ui.play.lines.push({ who: 'you', text, mech: '' });
   const wizardLine = { who: 'wizard', text: '', mech: output?.mechanics || '' };
   ui.play.lines.push(wizardLine);
   ui.play.input = '';
   ui.play.lastResolutionKind = 'turn';
+  ui.play.lastCombatSummary = output?.combatSummary || '';
+
+  // Detect combat-end with loot in timeline
+  const timeline = Array.isArray(world.timeline) ? world.timeline : [];
+  for (let i = timeline.length - 1; i >= 0; i--) {
+    const evt = timeline[i];
+    if (evt?.kind === 'combat-end' && evt.data?.loot) {
+      ui.play.pendingLoot = evt.data;
+      break;
+    }
+  }
 
   persistAndRehash(world);
   setStatus('Narrating…');
@@ -673,16 +690,38 @@ function renderChargen() {
   );
 }
 
+/** Detect raw canon log / dev status lines that should be hidden from players. */
+function isDevLine(text) {
+  if (!text) return false;
+  // Canon log raw format: [scene:..., [objective:..., [tags:..., [thread:...
+  if (/^\[(?:scene|objective|tags|thread):/.test(text.trim())) return true;
+  return false;
+}
+
 function renderTranscript(lines) {
+  const devClass = ui.devMode ? 'dev-only dev-visible' : 'dev-only';
+
   const items = (Array.isArray(lines) ? lines : []).map((ln) => {
     const who = String(ln?.who || 'wizard');
     const text = String(ln?.text || '');
     const mech = String(ln?.mech || '');
-    const whoLabel = who === 'you' ? 'You' : 'Wizard';
-    return el('div', { class: 'line' },
-      el('div', { class: 'who' }, whoLabel),
-      el('div', { class: 'text' }, text),
-      mech ? el('div', { class: 'mech' }, mech) : null
+    const isPlayer = who === 'you';
+
+    // Hide dev-only content: canon log lines and mechanics lines (except roll lines)
+    const mechIsDev = mech && !/\[roll:/.test(mech);
+    const textIsDev = isDevLine(text);
+
+    // Strip "Wizard: " prefix from narration for clean player-facing text
+    const displayText = (!isPlayer && text.startsWith('Wizard: '))
+      ? text.slice(8)
+      : text;
+
+    return el('div', { class: `line ${isPlayer ? 'line-player' : 'line-narration'}` },
+      isPlayer ? el('div', { class: 'who' }, 'You') : null,
+      textIsDev
+        ? el('div', { class: `text ${devClass}` }, displayText)
+        : el('div', { class: 'text' }, displayText),
+      mech ? el('div', { class: mechIsDev ? `mech ${devClass}` : 'mech' }, mech) : null
     );
   });
   return el('div', { class: 'transcript', 'data-transcript-scroll': '1' }, ...items);
@@ -1143,7 +1182,10 @@ function renderStatusPanels(world) {
     renderCharacterSheetSection(world),
     renderPartySection(world),
     renderInventorySection(world),
-    renderCombatHudSection(world, el),
+    renderCombatHudSection(world, el, {
+      combatSummary: ui.play.lastCombatSummary || '',
+      initiativeBar: renderInitiativeBar(world, el)
+    }),
     renderSpellbookSection(world, el),
     renderRumorBoardSection(world),
     renderGoalsSection(world),
@@ -1210,7 +1252,7 @@ function renderPlay() {
       try {
         const w2 = importWorld(txt);
         persistAndRehash(w2);
-        ui.play.lines.push({ who: 'wizard', text: 'Wizard: Import accepted. What do you do?', mech: '' });
+        ui.play.lines.push({ who: 'wizard', text: 'Import accepted. What do you do?', mech: '' });
         ui.play.input = '';
         ui.play.lastResolutionKind = 'turn';
         setStatus('Imported into slot1.');
@@ -1235,38 +1277,52 @@ function renderPlay() {
 
   const ended = Boolean(w?.ending?.locked);
 
+  const devClass = ui.devMode ? 'dev-only dev-visible' : 'dev-only';
+
   const mainPanel = el('div', { class: 'panel' },
     el('div', { class: 'header' },
       el('div', {},
         el('div', { class: 'title' }, 'Play Loop'),
-        el('div', { class: 'sub' }, ended ? 'Ending locked: no further state mutation.' : 'Gate 2 acceptance: moves + scenes mutate deterministically; hash updates.')
+        el('div', { class: `sub ${devClass}` }, ended ? 'Ending locked: no further state mutation.' : 'Gate 2 acceptance: moves + scenes mutate deterministically; hash updates.')
       )
     ),
     el('div', { class: 'card stack' },
-      ui.status ? el('div', { class: 'small' }, ui.status) : null,
-      el('div', {}, el('strong', {}, 'worldHash'), el('div', { class: 'mono small' }, hash || '(hash unavailable)')),
-      el('div', { class: 'small' }, `seed: ${seed}`),
-      el('div', { class: 'small' }, `fate: ${fate}`),
-      el('div', { class: 'small' }, `pack: ${pack}`),
-      el('div', { class: 'small' }, `tension: ${(w?.instrument?.inevitability ?? 0)}/12 | clocks: p${(w?.clocks?.pressure ?? 0)}/12 d${(w?.clocks?.dread ?? 0)}/12 r${(w?.clocks?.revelation ?? 0)}/12`),
-      el('div', { class: 'row' }, backBtn, reloadBtn, saveBtn, exportBtn, importBtn)
-    ),
-    renderTranscript(ui.play.lines),
-    el('div', { class: 'card stack' },
-      input,
-      el('div', { class: 'row' },
-        el('button', { class: 'btn', disabled: ended, onClick: () => doNewScene() }, 'New Scene'),
-        el('button', { class: 'btn primary', disabled: ended, onClick: () => doSubmitMove() }, 'Submit Move')
+      el('div', { class: devClass },
+        ui.status ? el('div', { class: 'small' }, ui.status) : null,
+        el('div', {}, el('strong', {}, 'worldHash'), el('div', { class: 'mono small' }, hash || '(hash unavailable)')),
+        el('div', { class: 'small' }, `seed: ${seed}`),
+        el('div', { class: 'small' }, `fate: ${fate}`),
+        el('div', { class: 'small' }, `pack: ${pack}`),
+        el('div', { class: 'small' }, `tension: ${(w?.instrument?.inevitability ?? 0)}/12 | clocks: p${(w?.clocks?.pressure ?? 0)}/12 d${(w?.clocks?.dread ?? 0)}/12 r${(w?.clocks?.revelation ?? 0)}/12`),
+        el('div', { class: 'row' }, backBtn, reloadBtn, saveBtn, exportBtn, importBtn)
+      ),
+      renderTranscript(ui.play.lines),
+      el('div', { class: 'card stack' },
+        input,
+        el('div', { class: 'row' },
+          el('button', { class: 'btn', disabled: ended, onClick: () => doNewScene() }, 'New Scene'),
+          el('button', { class: 'btn primary', disabled: ended, onClick: () => doSubmitMove() }, 'Submit Move')
+        )
       )
     )
   );
 
-  return el('div', { class: 'container stack' },
+  const playRoot = el('div', { class: 'container stack' },
     el('div', { class: 'play-layout' },
       el('div', { class: 'main-col' }, mainPanel),
       w ? renderStatusPanels(w) : null
     )
   );
+
+  // Loot popup overlay
+  if (ui.play.pendingLoot) {
+    playRoot.appendChild(renderLootPopup(ui.play.pendingLoot, el, () => {
+      ui.play.pendingLoot = null;
+      render();
+    }));
+  }
+
+  return playRoot;
 }
 
 
@@ -1341,12 +1397,19 @@ function renderNav() {
     onClick: () => { tts.toggle(); render(); }
   }, tts.enabled ? '\u{1F50A}' : '\u{1F507}') : null;
 
+  const devToggle = el('button', {
+    class: ui.devMode ? 'btn dev-toggle dev-on' : 'btn dev-toggle',
+    title: ui.devMode ? 'Dev info visible — click to hide' : 'Dev info hidden — click to show',
+    onClick: () => { ui.devMode = !ui.devMode; render(); }
+  }, 'Dev');
+
   const navButtons = [
     btn('Invoke', 'invoke'),
     btn('Play', 'play', { disabled: !hasWorld }),
     btn('Map', 'map', { disabled: !hasWorld }),
     btn('AI', 'ai'),
-    ttsBtn
+    ttsBtn,
+    devToggle
   ];
 
   if (isLoggedIn()) {
@@ -1578,6 +1641,27 @@ function render() {
   // Auto-scroll transcript to bottom so the latest narration is visible.
   const transcriptScroll = document.querySelector('[data-transcript-scroll]');
   if (transcriptScroll) transcriptScroll.scrollTop = transcriptScroll.scrollHeight;
+
+  // Auto-scroll the whole page so newest content is visible after moves/scenes.
+  if (ui.screen === 'play') {
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+  }
+
+  // Flash party strip when wounds or stress change.
+  if (ui.screen === 'play' && ui.world) {
+    const pc = ui.world.party?.[0];
+    const w0 = Number(pc?.wounds ?? 0);
+    const s0 = Number(pc?.stress ?? 0);
+    if (w0 !== ui.prevVitals.wounds || s0 !== ui.prevVitals.stress) {
+      const strip = document.querySelector('.party-strip');
+      if (strip) {
+        strip.classList.remove('vitals-changed');
+        void strip.offsetWidth; // force reflow to restart animation
+        strip.classList.add('vitals-changed');
+      }
+      ui.prevVitals = { wounds: w0, stress: s0 };
+    }
+  }
 }
 
 window.addEventListener('error', (e) => {

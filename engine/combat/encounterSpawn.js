@@ -26,54 +26,39 @@ const ALL_CREATURES = [
 
 /**
  * Decide whether this scene transition should spawn an encounter.
+ * Spawn chance is driven by dread and fate — beat type is irrelevant.
+ *   chance = (dread / 12) * fate
+ * Ambush (auto-start combat) only when dread >= 8 AND tension >= 6.
+ *
  * @param {object} world
- * @param {object} scenePlan - from sceneDirector.planNextScene()
+ * @param {object} _scenePlan - unused (kept for call-site compat)
  * @param {object} rng - seeded RNG from engine/rng.js
  * @returns {{ spawn: boolean, ambush: boolean, cr: number, count: number }}
  */
-export function evaluateEncounter(world, scenePlan, rng) {
+export function evaluateEncounter(world, _scenePlan, rng) {
   const noSpawn = { spawn: false, ambush: false, cr: 0, count: 0 };
 
   // Guard: no spawning during active combat or locked ending
   if (world?.combat?.active) return noSpawn;
   if (world?.ending?.locked) return noSpawn;
 
-  const beatType = String(scenePlan?.beatType || '');
   const tension = Number(world?.instrument?.inevitability ?? 0);
   const dread = Number(world?.clocks?.dread ?? 0);
+  const fate = Number(world?.meta?.fate ?? 0.2);
 
-  // Check threads for any with tension >= 6
-  const threads = Array.isArray(world?.threads) ? world.threads : [];
-  const hasHighTensionThread = threads.some(
-    t => t && Number(t.tension ?? 0) >= 6
-  );
-
-  let spawn = false;
-  let ambush = false;
-
-  // Rule: confrontation + high-tension thread → forced ambush
-  if (beatType === 'confrontation' && hasHighTensionThread) {
-    spawn = true;
-    ambush = true;
-  }
-  // Rule: confrontation + tension >= 3 → spawn, 50% ambush
-  else if (beatType === 'confrontation' && tension >= 3) {
-    spawn = true;
-    ambush = rng.nextFloat() < 0.5;
-  }
-  // Rule: escalation + tension >= 5 + dread >= 4 → spawn, no ambush
-  else if (beatType === 'escalation' && tension >= 5 && dread >= 4) {
-    spawn = true;
-    ambush = false;
-  }
+  // Base spawn chance = (dread / 12) × fate
+  const chance = (dread / 12) * fate;
+  const spawn = chance > 0 && rng.nextFloat() < chance;
 
   if (!spawn) return noSpawn;
+
+  // Ambush only if dread >= 8 AND tension >= 6
+  const ambush = dread >= 8 && tension >= 6;
 
   // CR scaling
   const playerLevel = Number(world?.party?.[0]?.level ?? 1);
   const baseCR = Math.max(0.125, Math.min(5, 0.125 * (1 + playerLevel)));
   const tensionMult = 1 + (tension / 12);
-  const fate = Number(world?.meta?.fate ?? 0.2);
   const fateMult = 0.5 + fate;
   const cr = Math.max(0.125, Math.min(5, baseCR * tensionMult * fateMult));
 

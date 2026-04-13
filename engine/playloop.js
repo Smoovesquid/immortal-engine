@@ -824,6 +824,25 @@ export function playerMove(world, packsById, text) {
     }
   }
 
+  // Trivial-intent gate: everyday physical actions auto-succeed without a roll.
+  // Placed after all specific gates (dialogue, interior, explore, movement, spells,
+  // combat, physics) but before the general resolveMove() fallthrough.
+  if (isTrivialIntent(text)) {
+    w = pushEvent(w, {
+      kind: 'resolution',
+      data: {
+        actorId,
+        intent: String(text || ''),
+        text: String(text || ''),
+        roll: 0,
+        dc: 0,
+        outcome: 'success',
+        updateKind: 'trivial'
+      }
+    });
+    return { world: w, output: { narration: `Wizard: You do so without difficulty.`, mechanics: 'trivial action — no roll, auto-success' } };
+  }
+
   const move = inferMoveFromText(w, pack, actorId, text);
 
   const { world2, result } = resolveMove(w, move);
@@ -1319,7 +1338,23 @@ function cleanDialogueRef(raw) {
 function isExploreIntent(text) {
   const t = String(text || '').toLowerCase().trim();
   if (!t) return false;
-  return /\b(look around|look about|survey|scan|search the area|where can i go|where do i go|options|exits|way out|how do i get out|get out of here|leave this place)\b/.test(t);
+  // Broad observation/perception: anything that is purely sensory or informational
+  // and requires no skill check. Covers "look around", "what do I see", "describe",
+  // "listen", "smell", inventory/status checks, reading signs, etc.
+  if (/\b(look around|look about|survey|scan|search the area|where can i go|where do i go|options|exits|way out|how do i get out|get out of here|leave this place)\b/.test(t)) return true;
+  // "What do I see / what's here / what is in this room / how big / what does X look like"
+  if (/^(what|how|where|who|describe)\b/.test(t) && !/\b(pick|climb|force|break|fight|attack|try|attempt|sneak|steal|persuade|deceive|track|forage|decipher|calm|leap|jump)\b/.test(t)) return true;
+  // "I look at X" / "I read X" / "I listen" / "I smell" / "I check my inventory"
+  if (/\bi\s+(look\s+at|read|listen|smell|check\s+(my\s+)?inventory|check\s+my|observe)\b/.test(t)) return true;
+  return false;
+}
+
+function isTrivialIntent(text) {
+  const t = String(text || '').toLowerCase().trim();
+  if (!t) return false;
+  // Trivial physical actions that auto-succeed: no risk, no uncertain outcome.
+  // These are everyday actions any able-bodied person can do without a check.
+  return /\bi\s+(sit\s+down|stand\s+up|draw\s+(my\s+)?sword|draw\s+(my\s+)?weapon|put\s+away|sheathe|open\s+the\s+door|walk\s+to|eat|drink|light\s+a\s+torch|light\s+my|take\s+off|put\s+on|drop\s+(my\s+)?pack|drop\s+my|wave|kneel|rest|pray|bow|nod|stretch|yawn|close\s+the\s+door|pick\s+up\s+(the\s+)?rock|pick\s+up\s+(the\s+)?stone)\b/.test(t);
 }
 
 function normalizeDir(d) {

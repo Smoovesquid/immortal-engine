@@ -26,6 +26,7 @@ import { resolveCombatTurn } from './combat/combatResolve.js';
 import { beginCombat, endCombat, mintEnemyFromNpc } from './combat/combatLifecycle.js';
 import { resolveCompanionTurn } from './combat/companionTurn.js';
 import { castSpell } from './spell/castSpell.js';
+import { evaluateEncounter, selectCreatures, spawnEncounter } from './combat/encounterSpawn.js';
 
 // Pure-ish play loop: world -> {world, output}
 
@@ -676,7 +677,7 @@ export function playerMove(world, packsById, text) {
     }, { pack });
     w = applyComposerDelta(w, composed.ledgerDelta);
 
-    return { world: w, output: { narration: composed.narrationLine, mechanics: result.mechanicsLine } };
+    return { world: w, output: { narration: composed.narrationLine, mechanics: result.mechanicsLine, combatSummary: String(result.combatSummary || '') } };
   }
 
   // Combat-begin trigger (explicit intent only): "attack/fight <hostile NPC name>"
@@ -724,7 +725,58 @@ export function playerMove(world, packsById, text) {
           parleyed: typeof result.mechanicsLine === 'string' && result.mechanicsLine.includes('combat:parley')
         }, { pack });
         w = applyComposerDelta(w, composed.ledgerDelta);
-        return { world: w, output: { narration: composed.narrationLine, mechanics: result.mechanicsLine } };
+        return { world: w, output: { narration: composed.narrationLine, mechanics: result.mechanicsLine, combatSummary: String(result.combatSummary || '') } };
+      }
+    }
+  }
+
+  // --- CM11: Attack any NPC (makes them hostile, then starts combat) ---
+  if (!w.combat?.active && !w.ending?.locked) {
+    const anyIntent = detectAttackAnyIntent(w, text);
+    if (anyIntent) {
+      // Mark NPC hostile before minting enemy
+      anyIntent.npc.hostile = true;
+      let w1 = beginCombat(w, { enemies: [mintEnemyFromNpc(anyIntent.npc)], reason: 'player-attack' });
+      if (w1.combat?.active) {
+        w = w1;
+        const move = inferCombatMoveFromText(w, pack, actorId, text);
+        const companionBeats = [];
+        const { world: wAfter, result } = resolveCombatTurn(w, move, {
+          afterPlayerTurn: (wMid) => runCompanionTurns(wMid, companionBeats)
+        });
+        w = wAfter;
+        w = appendRecentBeat(w, buildBeatFromTurn(w, text, move, result));
+        for (const spec of companionBeats) {
+          w = appendRecentBeat(w, buildBeatFromTurn(w, spec.text, spec.move, spec.result));
+        }
+        w = pushEvent(w, {
+          kind: 'resolution',
+          data: {
+            actorId,
+            intent: String(text || ''),
+            text: String(text || ''),
+            roll: result.roll,
+            dc: result.dc,
+            outcome: result.outcome,
+            updateKind: 'combat',
+            combatSummary: String(result.combatSummary || '')
+          }
+        });
+        const composed = compose(w, text, {
+          kind: 'turn',
+          t: w.timeline.length,
+          roll: result.roll,
+          dc: result.dc,
+          success: result.outcome === 'success',
+          updateKind: 'combat',
+          outcome: result.outcome,
+          approach: move.approachTag,
+          enemyName: String(result.targetEnemyName || ''),
+          enemyId: String(result.targetEnemyId || ''),
+          parleyed: typeof result.mechanicsLine === 'string' && result.mechanicsLine.includes('combat:parley')
+        }, { pack });
+        w = applyComposerDelta(w, composed.ledgerDelta);
+        return { world: w, output: { narration: composed.narrationLine, mechanics: result.mechanicsLine, combatSummary: String(result.combatSummary || '') } };
       }
     }
   }
@@ -957,6 +1009,20 @@ export function newScene(world, packsById, { lastResolutionKind = 'turn' } = {})
     const which = (seedFromString(`${w.meta.seed}|advClock|${w.timeline.length}`) % 3);
     const key = which === 0 ? 'pressure' : which === 1 ? 'dread' : 'revelation';
     w = { ...w, clocks: { ...w.clocks, [key]: Math.min(12, (w.clocks[key] ?? 0) + 1) } };
+  }
+
+  // --- Encounter spawning (CM11) ---
+  const encounterRng = makeRng(seedFromString(`${w.meta.seed}|encounter|${w.timeline.length}`));
+  const encounterEval = evaluateEncounter(w, plan, encounterRng);
+  if (encounterEval.spawn) {
+    const nodeId = String(w.map?.currentNodeId ?? '');
+    const node = (w.map?.nodes || []).find(n => n && n.id === nodeId) || null;
+    const region = node?.settlement?.region || null;
+    const creatures = selectCreatures(encounterEval.cr, encounterEval.count, region, encounterRng);
+    w = spawnEncounter(w, creatures, {
+      ambush: encounterEval.ambush,
+      reason: encounterEval.ambush ? 'ambush' : 'encounter'
+    }, encounterRng);
   }
 
   const refKind = sceneRefKind(w, 'scene');
@@ -1509,6 +1575,34 @@ function detectAttackBeginIntent(world, text) {
   const norm = (s) => String(s || '').toLowerCase().trim();
   const refLower = norm(ref);
   const npc = npcs.find(n => n && n.hostile === true && (
+    norm(n.id) === refLower ||
+    norm(n.name) === refLower ||
+    norm(n.name).includes(refLower) ||
+    refLower.includes(norm(n.name))
+  ));
+  if (!npc) return null;
+  return { npc };
+}
+
+// CM11: Like detectAttackBeginIntent but matches ANY NPC at the current node
+// (not just hostile ones). Only called after the hostile-only check returned null,
+// so hostile NPCs still take the fast path.
+function detectAttackAnyIntent(world, text) {
+  const t = String(text || '').trim();
+  if (!t) return null;
+  const m = t.match(/\b(attack|fight|kill|strike|assault)\s+(.+)/i);
+  if (!m) return null;
+  const ref = String(m[2] || '').trim().replace(/[.!?,;:]+$/, '').trim();
+  if (!ref) return null;
+
+  const nodeId = String(world?.map?.currentNodeId ?? '');
+  const node = (world?.map?.nodes || []).find(n => n && n.id === nodeId) || null;
+  const npcs = node?.settlement?.npcs || [];
+  if (!Array.isArray(npcs) || !npcs.length) return null;
+
+  const norm = (s) => String(s || '').toLowerCase().trim();
+  const refLower = norm(ref);
+  const npc = npcs.find(n => n && (
     norm(n.id) === refLower ||
     norm(n.name) === refLower ||
     norm(n.name).includes(refLower) ||

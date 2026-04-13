@@ -220,7 +220,8 @@ test('U58-09: "attack <hostile NPC>" at current node begins combat with that NPC
   assert.equal(out.world.combat.enemies[0].sourceNpcId, 'npc_n0_0');
 });
 
-test('U58-10: attacking a non-hostile NPC does NOT begin combat', () => {
+// CM11: attacking a non-hostile NPC now DOES begin combat (makes them hostile first).
+test('U58-10: attacking a non-hostile NPC begins combat (CM11)', () => {
   let w = mkCombatWorld('non-hostile');
   w = ensureWorld({
     ...w,
@@ -232,8 +233,9 @@ test('U58-10: attacking a non-hostile NPC does NOT begin combat', () => {
     }
   });
   const out = playerMove(w, packsById, 'attack Marta');
-  assert.equal(out.world.combat.active, false);
-  assert.equal(out.world.combat.enemies.length, 0);
+  assert.equal(out.world.combat.active, true);
+  assert.ok(out.world.combat.enemies.length > 0);
+  assert.ok(out.world.combat.enemies.some(e => e.name === 'Marta'));
 });
 
 // ── 11–17: approach signatures inside combat ──────────────────────────────

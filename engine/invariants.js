@@ -30,6 +30,15 @@ export function assertWorldInvariants(world) {
     }
   }
 
+  // v20 — free-roam avatar position. The player always has an integer tile cell,
+  // even when standing in open wilderness with no currentNodeId.
+  const mapPos = world.map?.pos;
+  if (mapPos != null) {
+    if (typeof mapPos !== 'object' || !Number.isInteger(mapPos.x) || !Number.isInteger(mapPos.y)) {
+      throw new Error('Invariant: map.pos must be an integer { x, y } cell');
+    }
+  }
+
   // Pass C1 — party + companion shape (cap 3, marker structure).
   const party = world.party;
   if (!Array.isArray(party)) {

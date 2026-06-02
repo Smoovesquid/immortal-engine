@@ -3,6 +3,23 @@ import assert from 'node:assert/strict';
 
 import { ensureWorld } from '../engine/state.js';
 import { playerMove, newScene } from '../engine/playloop.js';
+import { ensureMap } from '../engine/map/mapState.js';
+
+// v20 free-roam: walk the avatar tile by tile onto a node's cell to "enter" it.
+function walkToNode(w, packs, targetId) {
+  for (let i = 0; i < 100; i++) {
+    const m = ensureMap(w.map);
+    const target = m.nodes.find(n => String(n.id) === String(targetId));
+    const { x, y } = m.pos;
+    if (x === target.x && y === target.y) break;
+    const cmd = (target.x !== x)
+      ? (target.x > x ? 'go east' : 'go west')
+      : (target.y > y ? 'go south' : 'go north');
+    w = playerMove(w, packs, cmd).world;
+  }
+  return w;
+}
+
 const packsById = {
   fantasy: {
     id: 'fantasy',
@@ -30,18 +47,18 @@ test('U50: S3 node entry materializes generated structures once per node (id-bas
 
   const ids = () => Object.keys(w.structures?.byId || {}).sort();
 
-  // Travel to n1 => n1 structures materialize
-  w = playerMove(w, packsById, 'travel to North').world;
+  // Walk to n1 => n1 structures materialize on arrival
+  w = walkToNode(w, packsById, 'n1');
   assert.equal(w.map.currentNodeId, 'n1');
-  assert.deepEqual(ids(), ['stgen:v19:n1:0']);
+  assert.deepEqual(ids(), ['stgen:v20:n1:0']);
 
   // Re-enter n1 via newScene (from n1, dest should be n0; then back to n1)
   w = newScene(w, packsById).world;
   assert.equal(w.map.currentNodeId, 'n0');
-  assert.deepEqual(ids().sort(), ['stgen:v19:n0:0', 'stgen:v19:n1:0']);
+  assert.deepEqual(ids().sort(), ['stgen:v20:n0:0', 'stgen:v20:n1:0']);
 
-  // Travel north again (back to n1). Should NOT add a duplicate n1 structure.
-  w = playerMove(w, packsById, 'travel to North').world;
+  // Walk back to n1. Should NOT add a duplicate n1 structure.
+  w = walkToNode(w, packsById, 'n1');
   assert.equal(w.map.currentNodeId, 'n1');
-  assert.deepEqual(ids().sort(), ['stgen:v19:n0:0', 'stgen:v19:n1:0']);
+  assert.deepEqual(ids().sort(), ['stgen:v20:n0:0', 'stgen:v20:n1:0']);
 });

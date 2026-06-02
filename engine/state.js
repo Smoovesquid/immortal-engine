@@ -18,7 +18,12 @@ import { normalizeCondition } from './combat/conditions.js';
 // position (node.x, node.y) via the deterministic embedding (engine/map/embedding.js).
 // The compass now reads direction from coordinates instead of a hashed label, and
 // old saves backfill positions on load (ensureMap). See engine/map/mapState.js.
-export const WORLD_VERSION = 19;
+// Free-roam overworld — bumped 19 → 20. The player gains a free tile position
+// (map.pos = {x, y}) decoupled from currentNodeId: a cardinal move steps the
+// avatar one cell across the grid, landing on a node's cell "arrives" there, and
+// stepping into open tiles leaves currentNodeId empty (the wild). Old saves
+// backfill pos to the current node's cell (ensureMap). See engine/map/mapState.js.
+export const WORLD_VERSION = 20;
 
 // Crunch caps (T1). Kept here so they're colocated with ensureEntity.
 const FOCI_CAP = 6;

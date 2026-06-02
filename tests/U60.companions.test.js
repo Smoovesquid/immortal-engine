@@ -16,6 +16,7 @@ import { applyDeltas } from '../engine/effectsCore.js';
 import { decompressAndCanonizeSync } from '../engine/decompression/decompress.js';
 import { beginDialogue, askNpc, endDialogue, availableTopics } from '../engine/npc/dialogue.js';
 import { playerMove } from '../engine/playloop.js';
+import { ensureMap } from '../engine/map/mapState.js';
 import { buildDMContext } from '../engine/ai/narratorContext.js';
 import { buildDMSystemPrompt } from '../engine/llmAdapter.js';
 import { worldHash } from '../engine/worldHash.js';
@@ -34,6 +35,23 @@ const packsById = {
 };
 
 // ── helpers ──────────────────────────────────────────────────────────────
+
+// v20 free-roam: there is no teleport-to-node. Walk the avatar one tile at a
+// time toward a target node's cell; landing on it triggers arrival (companion
+// position sync, goal checks, etc.).
+function walkToNode(w, packs, targetId) {
+  for (let i = 0; i < 100; i++) {
+    const m = ensureMap(w.map);
+    const target = m.nodes.find(n => String(n.id) === String(targetId));
+    const { x, y } = m.pos;
+    if (x === target.x && y === target.y) break;
+    const cmd = (target.x !== x)
+      ? (target.x > x ? 'go east' : 'go west')
+      : (target.y > y ? 'go south' : 'go north');
+    w = playerMove(w, packs, cmd).world;
+  }
+  return w;
+}
 
 function seedPlayer(w, name = 'Hero') {
   // newWorld() leaves party empty — chargen seeds the player in the live
@@ -122,10 +140,10 @@ function addCompanionDirect(w, opts = {}) {
 
 // ── 01-07: state shape + invariants ─────────────────────────────────────
 
-test('U60-01: WORLD_VERSION is 19', () => {
-  assert.equal(WORLD_VERSION, 19);
+test('U60-01: WORLD_VERSION is 20', () => {
+  assert.equal(WORLD_VERSION, 20);
   const w = newWorld({ seed: 'u60-01', fate: 0.2, pack: { primaryId: 'fantasy', mixerId: null } });
-  assert.equal(w.meta.version, 19);
+  assert.equal(w.meta.version, 20);
 });
 
 test('U60-02: ensureEntity normalizes companion: null when field is missing', () => {
@@ -393,9 +411,10 @@ test('U60-21: playerMove across nodes updates all companion positions', () => {
       position: { ...(p.position || {}), zone: i === 0 ? 'far' : 'far', localFtX: 0, localFtY: 0 }
     }))
   });
-  const { world: wAfter } = playerMove(wWith, packsById, `travel to ${targetNode.name}`);
+  const wAfter = walkToNode(wWith, packsById, target);
+  assert.equal(wAfter.map.currentNodeId, target, 'walked to neighbor cell');
   assert.equal(wAfter.party.length, 2);
-  // Both party members should have zone 'near' after travel
+  // Both party members should share a zone after arrival
   assert.equal(wAfter.party[0].position.zone, wAfter.party[1].position.zone);
 });
 
@@ -516,9 +535,8 @@ test('U60-29: end-to-end Pass C1 integration gate', () => {
   const edge = wWithBeat.map.edges.find(e => e.a === nodeId || e.b === nodeId);
   assert.ok(edge, 'substep e: neighbor exists');
   const targetId = edge.a === nodeId ? edge.b : edge.a;
-  const targetName = wWithBeat.map.nodes.find(n => n.id === targetId).name;
-  const { world: wMoved } = playerMove(wWithBeat, packsById, `travel to ${targetName}`);
-  assert.notEqual(wMoved.map.currentNodeId, nodeId, 'substep e: node changed');
+  const wMoved = walkToNode(wWithBeat, packsById, targetId);
+  assert.equal(wMoved.map.currentNodeId, targetId, 'substep e: node changed');
   assert.equal(wMoved.party[0].position.zone, wMoved.party[1].position.zone, 'substep e: companion zone matches');
 
   // (f) save → import → party.length 2 + marker intact
@@ -684,17 +702,15 @@ function setNpcHostile(w, nodeId, npcId, hostile = true) {
 // ── U60-33..40 — Pass C2: free-movement beats + companion combat ─────────
 
 test('U60-33: free-movement travel writes a recent beat', () => {
-  const { w, nodeId } = makeWorldWithSettlement('u60-33', { requireNeighbor: true });
-  const edge = w.map.edges.find(e => e.a === nodeId || e.b === nodeId);
-  const targetId = edge.a === nodeId ? edge.b : edge.a;
-  const targetName = w.map.nodes.find(n => n.id === targetId).name;
+  // v20 free-roam: a single cardinal step across the overworld grid writes a
+  // travel beat — whether it lands on a node or steps into open wilderness.
+  const { w } = makeWorldWithSettlement('u60-33', { requireNeighbor: true });
 
   const startCount = (w.recentBeats || []).length;
-  const { world: w1 } = playerMove(w, packsById, `travel to ${targetName}`);
-  assert.notEqual(w1.map.currentNodeId, nodeId, 'travel moved to neighbor');
+  const { world: w1 } = playerMove(w, packsById, 'go north');
   assert.ok((w1.recentBeats || []).length > startCount, 'free-movement wrote a beat');
   const last = w1.recentBeats[w1.recentBeats.length - 1];
-  assert.match(String(last.mechanics || ''), /free-movement/, 'beat mechanics tags free-movement');
+  assert.match(String(last.mechanics || ''), /overworld/, 'beat mechanics tags an overworld travel step');
 });
 
 test('U60-34: companion takes a turn after player turn in combat', () => {

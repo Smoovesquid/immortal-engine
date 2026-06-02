@@ -8,7 +8,7 @@ import { triggerEnding } from './ending.js';
 import { compose } from './composer.js';
 import { planNextScene } from './sceneDirector.js';
 import { generateInitialMap } from './map/generateMap.js';
-import { ensureMap, pickTravelDestination, moveToNode, neighbors, exitsFrom, directionFromText } from './map/mapState.js';
+import { ensureMap, pickTravelDestination, moveToNode, neighbors, exitsFrom, directionFromText, stepCell, nodeAtCell, nodesWithinSight, cardinalToCell, seeNode, SIGHT_RADIUS } from './map/mapState.js';
 import { conductorDecision, applyConductorDeltas } from './conductor.js';
 import { worldTick } from './worldTick.js';
 import { resolveMove } from './resolve.js';
@@ -491,59 +491,90 @@ export function playerMove(world, packsById, text) {
   // player out of the encounter (escape combat has no flee by design; the input
   // falls through to the combat branch instead).
   if (!w.scene?.interior && !w.combat?.active && isFreeMovementIntent(text)) {
-    const before = String(w.map?.currentNodeId || '');
-    const nbs = neighbors(w.map, before);
-    const t = String(text || '').toLowerCase();
-
-    // Cardinal navigation: a bare direction ("north", "go west") resolves through
-    // the deterministic compass layout. An unexplored direction that leads
-    // nowhere is reported as a dead end — no move, no turn spent. This is the
-    // "discover by trying" feel: the only way to learn the exits is to test them.
-    const dir = directionFromText(t);
-    if (dir) {
-      const exitNeighborId = exitsFrom(w.map, before)[dir];
-      if (!exitNeighborId) {
-        return { world: w, output: { narration: `Wizard: There is no way ${dir} from here. The wall holds.`, mechanics: '' } };
-      }
+    // v20 free-roam: the overworld is walked one tile at a time. A bare cardinal
+    // ("north", "go west", or a compass button) steps the avatar a single cell.
+    // There is no teleport-to-named-place out here — the journey IS the gameplay,
+    // so non-cardinal travel phrasing just asks which way to set off.
+    const dir = directionFromText(String(text || '').toLowerCase());
+    if (!dir) {
+      return { world: w, output: { narration: 'Wizard: Out here you travel a step at a time. Which way — north, south, east, or west?', mechanics: '' } };
     }
 
-    const dest = /\b(exit|leave)\b/.test(t) ? (nbs[0] || before) : pickTravelDestination(w, text);
-    let w1 = moveToNode(w, dest);
-    if (w1.map?.currentNodeId && w1.map.currentNodeId !== before) {
-      w1 = applyGeneratedStructuresForNode(w1, w1.map.currentNodeId);
+    const m0 = ensureMap(w.map);
+    const fromPos = { x: m0.pos.x, y: m0.pos.y };
+    const beforeNodeId = String(m0.currentNodeId || '');
+    const toPos = stepCell(fromPos, dir);
+
+    // Take the step: the avatar now stands on toPos. Whether that's a named place
+    // or open country is decided next.
+    let w1 = { ...w, map: { ...m0, pos: toPos } };
+
+    // Anything newly within sight is revealed (icons pop onto the map as you roam).
+    const landed = nodeAtCell(w1.map, toPos.x, toPos.y);
+    const newlySighted = [];
+    for (const n of nodesWithinSight(w1.map, toPos, SIGHT_RADIUS)) {
+      if (landed && String(n.id) === String(landed.id)) continue;
+      if (ensureMap(w1.map).discovered.includes(String(n.id))) continue;
+      newlySighted.push(n);
+      w1 = seeNode(w1, n.id);
+    }
+
+    if (landed) {
+      // ── Arrival at a named node — run the existing node-entry pipeline. ──
+      const nodeId = String(landed.id);
+      w1 = discoverNode({ ...w1, map: { ...ensureMap(w1.map), currentNodeId: nodeId } }, nodeId);
+      w1 = applyGeneratedStructuresForNode(w1, nodeId);
       // Decompress settlement on arrival (generates NPCs, history, buildings).
-      const arrNode = w1.map?.nodes?.find(n => n && n.id === w1.map.currentNodeId) || null;
+      const arrNode = w1.map?.nodes?.find(n => n && n.id === nodeId) || null;
       if (arrNode?.nodeType === 'settlement' && !arrNode.settlement?.decompressed) {
-        w1 = decompressAndCanonizeSync(w1, w1.map.currentNodeId, pack);
+        w1 = decompressAndCanonizeSync(w1, nodeId, pack);
       }
-      const here = w1.map?.nodes?.find(n => n && n.id === w1.map.currentNodeId) || null;
+      const here = w1.map?.nodes?.find(n => n && n.id === nodeId) || null;
       const nextName = String(here?.name || '').trim();
       if (nextName) w1 = { ...w1, scene: { ...w1.scene, location: nextName } };
       w1 = setPrimaryPartyZone(w1, 'near');
-      w1 = pushEvent(w1, { kind: 'travel', data: { from: before, to: String(w1.map.currentNodeId), intent: String(text || '') } });
-      // Pass C2 — free-movement travel writes a beat so Recent Beats reflects
-      // the travel turn. Uses the same buildBeatFromTurn/appendRecentBeat seam
-      // as the combat branch. Approach/stake tags mirror the flee-beat idiom.
+      w1 = pushEvent(w1, { kind: 'travel', data: { from: beforeNodeId, to: nodeId, intent: String(text || '') } });
       const travelMove = { actorId: 'party', intentText: String(text || ''), approachTag: 'survival', stakeTag: 'time' };
-      const travelResult = { outcome: 'success', mechanicsLine: '[travel | free-movement]' };
+      const travelResult = { outcome: 'success', mechanicsLine: '[travel | overworld-arrive]' };
       w1 = appendRecentBeat(w1, buildBeatFromTurn(w1, text, travelMove, travelResult));
       w1 = maybeCheckGoals(w1);
-      // v1 Escape: arriving may trigger an ambush — but never on the winning
-      // tile (maybeCheckGoals would have locked the escape ending above).
-      w1 = maybeSpawnEscapeEncounter(w1, before);
+      // Arriving may trigger an ambush — but never on the winning tile
+      // (maybeCheckGoals would have locked the escape ending above).
+      w1 = maybeSpawnEscapeEncounter(w1, beforeNodeId);
       const ambushed = Boolean(w1.combat?.active);
-      // Clear hop in escape mode: you catch your breath and recover some HP.
+      // Reaching a refuge in escape mode: catch your breath, recover some HP.
       if (!ambushed && w1.meta?.mode === 'escape') {
-        const restRng = makeRng(seedFromString(`${w1.meta.seed}|shortRest|${w1.map.currentNodeId}|${w1.timeline.length}`));
+        const restRng = makeRng(seedFromString(`${w1.meta.seed}|shortRest|${nodeId}|${w1.timeline.length}`));
         w1 = shortRest(w1, restRng);
       }
-      const arrivalLine = nextName ? `Wizard: You travel to ${nextName}.` : 'Wizard: You move to the next position.';
+      const arrivalLine = nextName ? `Wizard: You reach ${nextName}.` : 'Wizard: You reach the place ahead.';
       const narration = ambushed
         ? `${arrivalLine} Something is already here, and it means you harm.`
         : arrivalLine;
       return { world: w1, output: { narration, mechanics: ambushed ? '[ambush]' : '' } };
     }
-    return { world: w, output: { narration: 'Wizard: You hold position.', mechanics: '' } };
+
+    // ── Open country between named places — no currentNodeId out here. ──
+    w1 = { ...w1, map: { ...ensureMap(w1.map), currentNodeId: '' } };
+    const locWord = wildernessWord(w1.meta?.seed, toPos);
+    w1 = { ...w1, scene: { ...w1.scene, location: locWord } };
+    w1 = setPrimaryPartyZone(w1, 'near');
+    w1 = pushEvent(w1, { kind: 'travel', data: { from: beforeNodeId, to: '', intent: String(text || '') } });
+    const wildMove = { actorId: 'party', intentText: String(text || ''), approachTag: 'survival', stakeTag: 'time' };
+    const wildResult = { outcome: 'success', mechanicsLine: '[travel | overworld-step]' };
+    w1 = appendRecentBeat(w1, buildBeatFromTurn(w1, text, wildMove, wildResult));
+    let narration = `Wizard: You press ${dir} into ${locWord}.`;
+    if (newlySighted.length) {
+      const spot = newlySighted[0];
+      const bearing = cardinalToCell(toPos, { x: spot.x, y: spot.y });
+      const spotName = String(spot.name || '').trim();
+      if (spotName && bearing) {
+        narration += ` To the ${bearing} you make out ${spotName}.`;
+      } else if (bearing) {
+        narration += ` Something stands out to the ${bearing}.`;
+      }
+    }
+    return { world: w1, output: { narration, mechanics: '' } };
   }
 
   const actorId = (w.party?.[0]?.id) ? String(w.party[0].id) : 'party';
@@ -1254,6 +1285,23 @@ function moveAdvancesScene(text) {
   // Travel intents: named destinations OR directional/exit shorthand.
   // Shorthand destination resolution happens in pickTravelDestination().
   return /\b(travel|leave|exit|head to|go to|move to|escape|journey|walk to|go north|go south|go east|go west|north|south|east|west|n|s|e|w)\b/.test(t);
+}
+
+// Deterministic flavor for a wilderness cell (no named node here). Seeded by
+// world seed + cell, so it's stable under replay and identical browser/server.
+function wildernessWord(seed, pos) {
+  const x = Number.isInteger(pos?.x) ? pos.x : 0;
+  const y = Number.isInteger(pos?.y) ? pos.y : 0;
+  const rng = makeRng(seedFromString(`${String(seed || 'seed')}|wild|${x}|${y}`));
+  const words = [
+    'open country',
+    'windswept flats',
+    'a lonely stretch of road',
+    'wild grassland',
+    'the empty wilds',
+    'a quiet hollow'
+  ];
+  return rng.pick(words) || 'open country';
 }
 
 function isFreeMovementIntent(text) {

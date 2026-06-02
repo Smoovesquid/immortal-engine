@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 
 import { newWorld } from '../engine/state.js';
 import { beginAdventure, playerMove } from '../engine/playloop.js';
-import { ensureMap, neighbors } from '../engine/map/mapState.js';
+import { ensureMap } from '../engine/map/mapState.js';
 
 const packsById = {
   fantasy: {
@@ -15,47 +15,60 @@ const packsById = {
   }
 };
 
-test('U39: "go north" triggers inter-node travel to a neighboring node', () => {
-  const w0 = newWorld({ seed: 'u39', fate: 0.2, campaignId: 'c1', pack: { primaryId: 'fantasy', mixerId: null } });
-  const a = beginAdventure(w0, packsById);
-  // Pass H — leave the home interior so directional shorthand resolves to
-  // inter-node travel rather than interior room navigation.
-  let outside = a.world;
-  if (outside.scene?.interior) {
-    outside = playerMove(outside, packsById, 'leave the house').world;
-  }
+function outsideWorld(seed) {
+  const w0 = newWorld({ seed, fate: 0.2, campaignId: 'c1', pack: { primaryId: 'fantasy', mixerId: null } });
+  let w = beginAdventure(w0, packsById).world;
+  // Leave the home interior so directional shorthand resolves to overworld
+  // tile movement rather than interior room navigation.
+  if (w.scene?.interior) w = playerMove(w, packsById, 'leave the house').world;
+  return w;
+}
 
-  const m0 = ensureMap(outside.map);
-  const startNode = m0.currentNodeId;
-  const nbs = neighbors(m0, startNode);
+// v20 free-roam: a bare cardinal steps the avatar exactly one tile across the
+// overworld grid. North is -y (grid y grows downward, matching compass geometry).
+test('U39: "go north" steps the avatar one tile north (free-roam)', () => {
+  const outside = outsideWorld('u39');
+  const from = { ...ensureMap(outside.map).pos };
 
   const t1 = playerMove(outside, packsById, 'go north');
   const m1 = ensureMap(t1.world.map);
 
-  // Bare directionals route to inter-node travel (free movement intent).
-  // If neighbors exist, should move to one; if not, stays put.
-  if (nbs.length > 0) {
-    assert.notEqual(m1.currentNodeId, startNode, 'node should change — go north is inter-node travel');
-    assert.ok(nbs.includes(m1.currentNodeId), 'must travel to an adjacent node');
+  assert.equal(m1.pos.x, from.x, 'x unchanged on a north step');
+  assert.equal(m1.pos.y, from.y - 1, 'one cell north (y decreases by 1)');
+});
+
+test('U39b: each cardinal moves the avatar exactly one cell in that direction', () => {
+  const outside = outsideWorld('u39b');
+  const deltas = {
+    'go north': { dx: 0, dy: -1 },
+    'go south': { dx: 0, dy: 1 },
+    'go east': { dx: 1, dy: 0 },
+    'go west': { dx: -1, dy: 0 }
+  };
+  for (const [cmd, d] of Object.entries(deltas)) {
+    const from = { ...ensureMap(outside.map).pos };
+    const next = ensureMap(playerMove(outside, packsById, cmd).world.map);
+    assert.equal(next.pos.x, from.x + d.dx, `${cmd}: x delta`);
+    assert.equal(next.pos.y, from.y + d.dy, `${cmd}: y delta`);
   }
 });
 
-test('U39b: "exit" with no named destination travels to deterministic neighbor[0]', () => {
-  const w0 = newWorld({ seed: 'u39b', fate: 0.2, campaignId: 'c1', pack: { primaryId: 'fantasy', mixerId: null } });
-  const a = beginAdventure(w0, packsById);
-  // Pass H — leave the home interior so the bare "exit" verb resolves to
-  // inter-node travel rather than interior exit.
-  let outside = a.world;
-  if (outside.scene?.interior) {
-    outside = playerMove(outside, packsById, 'leave the house').world;
-  }
+test('U39c: overworld walking is deterministic (same seed + steps => same position)', () => {
+  const walk = () => {
+    let w = outsideWorld('u39c');
+    for (const d of ['go north', 'go east', 'go east', 'go south', 'go west']) {
+      w = playerMove(w, packsById, d).world;
+    }
+    return ensureMap(w.map).pos;
+  };
+  assert.deepEqual(walk(), walk(), 'identical seed + inputs => identical avatar cell');
+});
 
-  const m0 = ensureMap(outside.map);
-  const nbs = neighbors(m0, m0.currentNodeId);
-  assert.ok(nbs.length >= 1, 'must have at least one neighbor');
-
-  const t1 = playerMove(outside, packsById, 'exit');
-  const m1 = ensureMap(t1.world.map);
-
-  assert.equal(m1.currentNodeId, nbs[0], 'exit selects neighbor[0]');
+test('U39d: non-cardinal travel phrasing does not move you (no teleport to named places)', () => {
+  const outside = outsideWorld('u39d');
+  const from = { ...ensureMap(outside.map).pos };
+  const r = playerMove(outside, packsById, 'travel to the far tower');
+  const after = ensureMap(r.world.map);
+  assert.deepEqual({ x: after.pos.x, y: after.pos.y }, from, 'no tile move without a cardinal');
+  assert.match(r.output.narration, /which way/i, 'prompts for a direction instead of teleporting');
 });

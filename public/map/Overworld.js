@@ -57,9 +57,17 @@ export function renderOverworld(world, opts = {}) {
   const discovered = new Set((Array.isArray(map.discovered) ? map.discovered : []).map(String));
 
   const byId = new Map(nodes.map(n => [String(n.id), n]));
-  const here = byId.get(String(map.currentNodeId || '')) || nodes[0] || null;
-  const cx = Number.isInteger(here?.x) ? here.x : 0;
-  const cy = Number.isInteger(here?.y) ? here.y : 0;
+  // v20 free-roam: the viewport (and the @ avatar) follow the player's free tile
+  // position, not whichever node is "current" — you can stand in open wilderness
+  // between named places. Fall back to the current node's cell for older states.
+  const fallback = byId.get(String(map.currentNodeId || '')) || nodes[0] || null;
+  const pos = (map.pos && Number.isInteger(map.pos.x) && Number.isInteger(map.pos.y))
+    ? map.pos
+    : { x: Number.isInteger(fallback?.x) ? fallback.x : 0, y: Number.isInteger(fallback?.y) ? fallback.y : 0 };
+  const cx = pos.x;
+  const cy = pos.y;
+  // The node you're literally standing on (if any) — used for the header label.
+  const standingNode = nodes.find(n => n.x === cx && n.y === cy) || null;
 
   // Nodes indexed by grid cell for fast lookup while painting tiles.
   const nodeAtCell = new Map();
@@ -137,22 +145,24 @@ export function renderOverworld(world, opts = {}) {
     if (!discovered.has(id)) continue;
     if (!Number.isInteger(n.x) || !Number.isInteger(n.y)) continue;
     if (Math.abs(n.x - cx) > halfC || Math.abs(n.y - cy) > halfR) continue;
-    const isHere = id === String(map.currentNodeId || '');
+    // The avatar's own cell shows the @ instead of the node glyph, but the place
+    // name still reads underneath so you know what you're standing on.
+    const underAvatar = (n.x === cx && n.y === cy);
     const p = cellToPx(n.x, n.y);
-    if (!isHere) {
+    if (!underAvatar) {
       svg.appendChild(el('text', {
         x: p.x, y: p.y + tile * 0.3,
         fill: '#c8a84e', 'font-size': Math.round(tile * 0.78),
         'text-anchor': 'middle', 'font-family': 'ui-monospace, Menlo, monospace'
       }, nodeGlyph(n)));
-      const label = String(n.name || '').slice(0, 12);
-      if (label) {
-        glyphLayer.appendChild(el('text', {
-          x: p.x, y: p.y + tile * 0.95,
-          fill: '#d4c5a9', 'fill-opacity': 0.85, 'font-size': Math.max(8, Math.round(tile * 0.42)),
-          'text-anchor': 'middle', 'font-family': 'ui-monospace, Menlo, monospace'
-        }, label));
-      }
+    }
+    const label = String(n.name || '').slice(0, 12);
+    if (label) {
+      glyphLayer.appendChild(el('text', {
+        x: p.x, y: p.y + tile * 0.95,
+        fill: '#d4c5a9', 'fill-opacity': 0.85, 'font-size': Math.max(8, Math.round(tile * 0.42)),
+        'text-anchor': 'middle', 'font-family': 'ui-monospace, Menlo, monospace'
+      }, label));
     }
   }
 
@@ -170,7 +180,9 @@ export function renderOverworld(world, opts = {}) {
     }, '@'));
   }
 
-  const hereName = String(here?.name || '').trim() || 'Uncharted';
+  // Header reads the place you're standing on, or "The Wilds" when you're out in
+  // open country between named nodes.
+  const hereName = String(standingNode?.name || '').trim() || 'The Wilds';
   return el('div', { class: 'play-map overworld' + (compact ? '' : ' overworld-full') },
     el('div', { class: 'play-map-header' },
       el('span', { class: 'play-map-label' }, hereName),

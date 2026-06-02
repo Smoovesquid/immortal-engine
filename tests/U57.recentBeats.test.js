@@ -40,10 +40,10 @@ function mkMainlineWorld(seedKey, fate = 0.3) {
 
 // ── Fresh world: shape & version ──────────────────────────────────────────
 
-test('U57: newWorld produces empty recentBeats and version 19', () => {
+test('U57: newWorld produces empty recentBeats and version 20', () => {
   const w = newWorld({ seed: 'u57-fresh', fate: 0.2, campaignId: 'c', pack: { primaryId: 'fantasy', mixerId: null } });
-  assert.equal(w.meta.version, 19);
-  assert.equal(WORLD_VERSION, 19);
+  assert.equal(w.meta.version, 20);
+  assert.equal(WORLD_VERSION, 20);
   assert.deepEqual(w.recentBeats, []);
 });
 
@@ -257,7 +257,7 @@ test('U57: location field uses interior:<key>:<roomId> when player is inside a s
   assert.match(lastBeat.location, /^interior:/, `location should be interior:* but was ${lastBeat.location}`);
 });
 
-// ── Save version warning (older → v19) ───────────────────────────────────
+// ── Save version warning (older → v20) ───────────────────────────────────
 
 test('U57: loading a v12 save warns about version mismatch', () => {
   const storage = (() => {
@@ -275,10 +275,10 @@ test('U57: loading a v12 save warns about version mismatch', () => {
   try {
     const loaded = loadSlot(storage, 'slot1');
     assert.ok(loaded);
-    assert.equal(loaded.meta.version, 19);
+    assert.equal(loaded.meta.version, 20);
     assert.ok(warnings.length > 0, 'expected a warning');
     assert.ok(warnings[0].includes('v12'));
-    assert.ok(warnings[0].includes('v19'));
+    assert.ok(warnings[0].includes('v20'));
   } finally {
     console.warn = origWarn;
   }

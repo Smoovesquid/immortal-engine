@@ -21,6 +21,13 @@ export function ensureMap(map) {
   const discovered = Array.isArray(m.discovered) ? m.discovered.map(String) : [];
   const currentNodeId = String(m.currentNodeId || (nodes[0]?.id || ''));
 
+  // Free-roam avatar position (v20). The player walks the tile grid one cell at a
+  // time; pos is decoupled from currentNodeId so you can stand in open wilderness
+  // between named places. Defaults (and backfills pre-v20 saves) to the current
+  // node's cell, so a fresh game and an upgraded save both start standing on the
+  // node they're "at".
+  const pos = ensurePos(m.pos, nodes, currentNodeId);
+
   const currentStructureId = String(m.currentStructureId || '');
   const currentRoomId = String(m.currentRoomId || '');
 
@@ -30,7 +37,21 @@ export function ensureMap(map) {
   const memoryRaw = m.memory && typeof m.memory === 'object' ? m.memory : null;
   const memory = ensureMapMemory(memoryRaw, dedupe(discovered));
 
-  return { nodes, edges, discovered: dedupe(discovered), currentNodeId, currentStructureId, currentRoomId, tactical, memory };
+  return { nodes, edges, discovered: dedupe(discovered), currentNodeId, pos, currentStructureId, currentRoomId, tactical, memory };
+}
+
+// Resolve the free-roam avatar cell. Prefer an explicit integer pos; otherwise
+// default to the current node's cell (so "you're standing on the place you're
+// at"), then to the first node, then to the origin for an empty map.
+function ensurePos(raw, nodes, currentNodeId) {
+  if (raw && Number.isInteger(raw.x) && Number.isInteger(raw.y)) {
+    return { x: raw.x, y: raw.y };
+  }
+  const cur = nodes.find(n => String(n.id) === String(currentNodeId)) || nodes[0] || null;
+  if (cur && Number.isInteger(cur.x) && Number.isInteger(cur.y)) {
+    return { x: cur.x, y: cur.y };
+  }
+  return { x: 0, y: 0 };
 }
 
 export function neighbors(map, nodeId) {
@@ -130,6 +151,61 @@ export function directionFromText(text) {
   return '';
 }
 
+// ── Free-roam overworld (v20) ──────────────────────────────────────────────
+// The player is a single avatar cell (map.pos) on the same integer grid the nodes
+// live on. A cardinal move steps that cell by one. Grid y grows downward, so south
+// is +y — same convention as the compass geometry above.
+const CARDINAL_DELTA = {
+  north: { dx: 0, dy: -1 },
+  south: { dx: 0, dy: 1 },
+  east: { dx: 1, dy: 0 },
+  west: { dx: -1, dy: 0 }
+};
+
+// How far (Chebyshev distance, in cells) the player can spot a node from the open
+// map. Nodes inside this radius get revealed as you roam; reaching a node's exact
+// cell is what "arrives" there.
+export const SIGHT_RADIUS = 3;
+
+// stepCell({x,y}, dir) -> {x,y} one cell in the cardinal direction (no mutation).
+export function stepCell(pos, dir) {
+  const p = (pos && Number.isInteger(pos.x) && Number.isInteger(pos.y)) ? pos : { x: 0, y: 0 };
+  const d = CARDINAL_DELTA[dir];
+  if (!d) return { x: p.x, y: p.y };
+  return { x: p.x + d.dx, y: p.y + d.dy };
+}
+
+// nodeAtCell(map, x, y) -> node sitting exactly on that cell, or null.
+export function nodeAtCell(map, x, y) {
+  const m = ensureMap(map);
+  for (const n of m.nodes) {
+    if (n.x === x && n.y === y) return n;
+  }
+  return null;
+}
+
+// nodesWithinSight(map, pos, radius) -> nodes whose cell is within Chebyshev
+// `radius` of pos, nearest first (ties broken by id) for deterministic reveal.
+export function nodesWithinSight(map, pos, radius = SIGHT_RADIUS) {
+  const m = ensureMap(map);
+  const px = Number.isInteger(pos?.x) ? pos.x : 0;
+  const py = Number.isInteger(pos?.y) ? pos.y : 0;
+  const hits = [];
+  for (const n of m.nodes) {
+    if (!Number.isInteger(n.x) || !Number.isInteger(n.y)) continue;
+    const cheb = Math.max(Math.abs(n.x - px), Math.abs(n.y - py));
+    if (cheb <= radius) hits.push({ node: n, cheb });
+  }
+  hits.sort((a, b) => (a.cheb - b.cheb) || (String(a.node.id) < String(b.node.id) ? -1 : 1));
+  return hits.map(h => h.node);
+}
+
+// cardinalToCell(from, to) -> 'north'|'south'|'east'|'west'|'' — the coarse
+// compass bearing from one cell to another (for "you spot X to the east").
+export function cardinalToCell(from, to) {
+  return cardinalOf(to.x - from.x, to.y - from.y);
+}
+
 export function discoverNode(world, nodeId) {
   const w = ensureWorld(world);
   const m = ensureMap(w.map);
@@ -227,11 +303,19 @@ export function moveToNode(world, nodeId) {
       currentRoomId: String(m1.currentRoomId || '')
     };
 
+  // v20 — a node jump (newScene/dev travel) places the free-roam avatar onto the
+  // destination node's cell, so the @ on the map stays on the place you're "at".
+  const destNode = m1.nodes.find(n => String(n.id) === id) || null;
+  const pos = (destNode && Number.isInteger(destNode.x) && Number.isInteger(destNode.y))
+    ? { x: destNode.x, y: destNode.y }
+    : m1.pos;
+
   return {
     ...w1,
     map: {
       ...m1,
       ...interiorMapKeys,
+      pos,
       memory: {
         ...mem,
         visitedTurnByNodeId,
@@ -397,7 +481,14 @@ export function assertMapStructure(map) {
   if (m.currentNodeId && !ids.has(m.currentNodeId)) {
     throw new Error('Map invariant: invalid currentNodeId');
   }
-  if (m.discovered.length && m.discovered[0] !== m.currentNodeId) {
+  // v20: free-roam clears currentNodeId while you stand in open wilderness, so the
+  // "you're at the head of your discovery list" contract only binds when you're
+  // actually standing on a node.
+  if (m.currentNodeId && m.discovered.length && m.discovered[0] !== m.currentNodeId) {
     throw new Error('Map invariant: discovered[0] must equal currentNodeId');
+  }
+  // v20: the avatar always has an integer tile position.
+  if (!m.pos || !Number.isInteger(m.pos.x) || !Number.isInteger(m.pos.y)) {
+    throw new Error('Map invariant: map.pos must be an integer cell');
   }
 }

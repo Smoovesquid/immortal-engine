@@ -3,7 +3,24 @@ import assert from 'node:assert/strict';
 
 import { ensureWorld } from '../engine/state.js';
 import { playerMove } from '../engine/playloop.js';
+import { ensureMap } from '../engine/map/mapState.js';
 import { createGoal, checkGoals } from '../engine/goals/goalContract.js';
+
+// v20 free-roam: there is no teleport-to-node. Walk the avatar one tile at a time
+// toward a target node's cell; landing on it triggers arrival (and goal checks).
+function walkToNode(w, packs, targetId) {
+  for (let i = 0; i < 100; i++) {
+    const m = ensureMap(w.map);
+    const target = m.nodes.find(n => String(n.id) === String(targetId));
+    const { x, y } = m.pos;
+    if (x === target.x && y === target.y) break;
+    const cmd = (target.x !== x)
+      ? (target.x > x ? 'go east' : 'go west')
+      : (target.y > y ? 'go south' : 'go north');
+    w = playerMove(w, packs, cmd).world;
+  }
+  return w;
+}
 
 const packsById = {
   fantasy: {
@@ -42,8 +59,8 @@ test('G02: reach-goal flips to completed when player moves to target node, exact
   assert.equal(noop.completed.length, 0);
   assert.equal(noop.world.goals[0].status, 'active');
 
-  // Move to target via playerMove (which calls checkGoals internally).
-  w = playerMove(w, packsById, 'travel to North').world;
+  // Walk the overworld to the target cell (arrival calls checkGoals internally).
+  w = walkToNode(w, packsById, 'n1');
   assert.equal(w.map.currentNodeId, 'n1');
 
   const g = w.goals.find(x => x.id === goalId);

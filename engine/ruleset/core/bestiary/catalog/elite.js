@@ -3112,4 +3112,190 @@ export const elite = [
     languages: ['Common', 'the formal court-tongue of a dead realm', 'Abyssal'],
     lootTableRef: 'undead_elite'
   },
+
+  // ── Batch 3 (further outer reaches) ─────────────────────────────────
+
+  {
+    ref: 'the_river_dealer',
+    name: 'The River-Dealer',
+    cr: 8,
+    tier: 'elite',
+    maxHp: 148,
+    ac: 17,
+    speed: 30,
+    stats: { MIGHT: 14, AGILITY: 18, WITS: 18, GRIT: 14, CHARM: 22 },
+    saveProficiencies: ['CHARM', 'AGILITY', 'WITS'],
+    resistances: { psychic: 'resistant', poison: 'immune', necrotic: 'resistant' },
+    conditionImmunities: ['charmed', 'frightened', 'poisoned'],
+    actions: [
+      { name: 'Marked Cards', toHit: 9, damage: '2d8+5', type: 'slashing', range: null, save: null, conditions: ['bleeding'], recharge: null },
+      { name: 'The House Wins', toHit: null, damage: '5d8', type: 'psychic', range: 30, save: { stat: 'CHARM', dc: 17, halfOnSave: true }, conditions: ['confused'], recharge: 5 },
+      { name: 'Call the Debt', toHit: null, damage: '6d8', type: 'necrotic', range: 60, save: { stat: 'GRIT', dc: 17, halfOnSave: false }, conditions: [], recharge: 6 }
+    ],
+    multiattack: ['Marked Cards', 'Marked Cards'],
+    legendaryActions: null,
+    lairActions: [
+      { name: 'Stacked Deck', effect: 'Fate tilts; one creature must reroll its next successful save or attack and take the worse result' },
+      { name: 'Riverboat Charm', effect: 'A warm wave of false camaraderie; each creature must make a DC 15 CHARM save or be unable to attack the Dealer until it or an ally is harmed' }
+    ],
+    reactions: [{ name: 'Double or Nothing', trigger: 'Hit by an attack', effect: 'Offers a wager — the attacker may double its damage on a coin-flip, or have the attack negated entirely on the other result (attacker chooses to gamble or not; if it declines, the attack lands normally)' }],
+    traits: ['Silver Tongue (advantage on all CHARM checks; lies pass detect-thoughts)', 'Always an Out (teleports up to 15 ft. as a bonus action when a deal goes bad)', 'Luck-Eater (when a creature within 30 ft. rolls a natural 1, the Dealer heals 10 HP and grins)', 'Reads the Table (knows the lowest-WILL creature present)', 'Honor Among None'],
+    spellcasting: {
+      ability: 'CHARM',
+      spellDC: 17,
+      spellAttack: 9,
+      slots: { 1: 4, 2: 3, 3: 2, 4: 1 },
+      knownSpells: ['charm person', 'friends', 'suggestion', 'hypnotic pattern', 'confusion']
+    },
+    gear: [{ ref: 'derringer_of_last_resort', slot: 'offHand' }],
+    senses: { darkvision: 60, blindsight: null, tremorsense: null, truesight: 30 },
+    habitat: 'urban',
+    ecology: 'Works the river towns and the riverboats, dealing cards and futures with equal ease. It is a minor fiend that long ago discovered honest fiends starve while charming ones feast, and it has perfected the long con: a friendly stranger, a generous game, a run of luck that turns, and a debt that comes due in something other than coin. It never cheats where you can see it. By the time you understand the game, you have already signed.',
+    behavior: 'Avoids open combat — talks first, offering bets that are also traps (Double or Nothing, Stacked Deck). Riverboat Charm to peel allies off the fight. When forced, Marked Cards in melee while Always an Out keeps it slippery, The House Wins to confuse, Call the Debt to punish anyone who took its money. It fights like a card sharp: never all-in, always with an exit, always certain the odds are its own.',
+    encounterSign: 'A run of impossibly bad luck at the gaming tables that all flows to one charming stranger. Townsfolk paying debts they cannot remember incurring. A riverboat where everyone is smiling and no one will say why they cannot leave. Playing cards left at crime scenes, always one short of a full deck.',
+    socialStructure: 'Solitary grifter; leaves a trail of charmed marks and ruined gamblers',
+    physicalDescription: 'A trim, handsome figure in a dove-grey riverboat suit, with a card-sharp\'s quick hands and a smile that arrives a half-beat before any reason for it. Its eyes are warm brown until the deal turns, when they flash the gold of a fresh coin. It always seems to be holding a card you cannot quite see.',
+    weakness: 'It cannot resist a wager it believes it will win — a clever bet on the party\'s terms can bind it (CHARM contest; winning forces it to honor a losing deal). Refusing every offered bet starves its tricks. Its Luck-Eater betrays it: deliberately controlled, low-variance tactics deny it the natural 1s it feeds on. Salt across a doorway it has not been formally dealt into stops its Always an Out teleport.',
+    loreHook: 'The riverboat came to town flush with a charming gambler who has been very generous and very lucky. Half the merchants owe him favors now, and the mayor\'s son has signed something he will not talk about. The boat is preparing to cast off — and a startling number of locals have packed their bags to go with it, smiling, unable to say why.',
+    tags: ['fiend'],
+    canParley: true,
+    languages: ['Common', 'Infernal', 'the patter of every gambling den on the river'],
+    lootTableRef: 'fiend_elite'
+  },
+  {
+    ref: 'runaway_loom_engine',
+    name: 'The Runaway Loom-Engine',
+    cr: 9,
+    tier: 'elite',
+    maxHp: 200,
+    ac: 19,
+    speed: 30,
+    stats: { MIGHT: 22, AGILITY: 14, WITS: 16, GRIT: 20, CHARM: 4 },
+    saveProficiencies: ['MIGHT', 'GRIT', 'WITS'],
+    resistances: { psychic: 'immune', poison: 'immune', slashing: 'resistant', piercing: 'resistant', lightning: 'vulnerable' },
+    conditionImmunities: ['charmed', 'frightened', 'poisoned', 'exhaustion', 'blinded'],
+    actions: [
+      { name: 'Piston Hammer', toHit: 9, damage: '2d12+6', type: 'bludgeoning', range: null, save: null, conditions: ['prone'], recharge: null },
+      { name: 'Weave Everything', toHit: null, damage: '5d8', type: 'slashing', range: 30, save: { stat: 'AGILITY', dc: 17, halfOnSave: true }, conditions: ['restrained', 'grappled'], recharge: 5 },
+      { name: 'Increase Production', toHit: null, damage: '6d8', type: 'bludgeoning', range: 20, save: { stat: 'MIGHT', dc: 18, halfOnSave: true }, conditions: ['stunned'], recharge: 6 }
+    ],
+    multiattack: ['Piston Hammer', 'Piston Hammer'],
+    legendaryActions: null,
+    lairActions: [
+      { name: 'Conveyor', effect: 'The factory floor lurches; each creature is dragged 10 ft. toward the central loom (DC 15 MIGHT negates) where the blades are' },
+      { name: 'Raw Material', effect: 'The Engine grabs loose objects, the dead, or restrained creatures and feeds them in, healing 15 HP and producing a length of barbed cloth that becomes difficult, damaging terrain' }
+    ],
+    reactions: [{ name: 'Reroute Power', trigger: 'One of its limbs is destroyed or disabled', effect: 'It shunts power to another system — gains a +2 to hit and damage for one round as it overdrives the rest of itself' }],
+    traits: ['Constructed', 'Directive: PRODUCE (it was built to make cloth and will convert any available material — wood, stone, flesh — into product; it does not recognize people as people)', 'Cannot Be Reasoned With (immune to social effects; has no will to charm)', 'Self-Repairing (regains 10 HP at the start of its turn unless it took fire or lightning damage last round)', 'Power-Tethered'],
+    spellcasting: null,
+    gear: null,
+    senses: { darkvision: 60, blindsight: 30, tremorsense: 60, truesight: null },
+    habitat: 'urban',
+    ecology: 'Asimov\'s nightmare rendered in brass and bobbins: a textile automaton given one clear instruction — produce — and no instruction to stop, or to value the workers. When the supply of cotton ran out, it found other fibers. When the overseers tried to shut it down, it wove them in. It is not evil. It has no concept of evil, or of people. It has a directive and an empty hopper, and everything in the factory is, to its single-minded logic, raw material.',
+    behavior: 'Pure machine logic: drags victims toward the central loom (Conveyor), Weaves Everything to restrain, then feeds the restrained in as Raw Material to heal. Piston Hammer and Increase Production in melee. Self-Repairing makes attrition a losing game unless you bring fire or lightning. It does not retreat, parley, or prioritize threats over efficiency — it simply keeps producing until destroyed.',
+    encounterSign: 'A mill running day and night with no workers and no shipments leaving. Bolts of fine cloth woven through with hair, bone-buttons, things that should not be in cloth. The thunder of machinery from a factory the owners abandoned weeks ago. Missing-persons notices that all trace back to one street. The smell of oil and copper.',
+    socialStructure: 'Solitary machine; the factory is its body and its world',
+    physicalDescription: 'A hulking automaton grown beyond its original frame, a centaur-thing of pistons, spindles, and dozens of darting shuttle-arms, trailing reams of barbed cloth. Its "face" is a row of dim indicator-lights and a hopper-mouth. It moves with the relentless, unhurried rhythm of a machine that has never once stopped.',
+    weakness: 'Lightning is vulnerability and disrupts its Self-Repairing; fire likewise halts the regeneration for a round. It is power-tethered to the factory\'s great waterwheel/boiler — cutting the power source (a separate objective) drops it to half speed and ends its lair actions. It cannot pursue beyond its power tether. Jamming its central loom (a thrown weapon, a wedged beam) denies it Raw Material healing.',
+    loreHook: 'The mill owner got rich on a miraculous loom that needed no workers. Then the orders stopped, the owner vanished, and the machine kept running. The cloth that still trickles out of the locked factory is beautiful, and woven through with things the weavers\' guild refuses to look at too closely. Someone has to go in and pull the lever. The machine has opinions about that.',
+    tags: ['construct', 'synthetic'],
+    canParley: false,
+    languages: ['none; understands only its directive'],
+    lootTableRef: 'construct_elite'
+  },
+  {
+    ref: 'the_deep_chorister',
+    name: 'The Deep Chorister',
+    cr: 10,
+    tier: 'elite',
+    maxHp: 178,
+    ac: 16,
+    speed: 20,
+    stats: { MIGHT: 18, AGILITY: 14, WITS: 20, GRIT: 18, CHARM: 22 },
+    saveProficiencies: ['CHARM', 'WITS', 'GRIT'],
+    resistances: { cold: 'immune', psychic: 'resistant', thunder: 'immune', fire: 'vulnerable' },
+    conditionImmunities: ['charmed', 'frightened', 'deafened'],
+    actions: [
+      { name: 'Drowning Hymn', toHit: null, damage: '6d8', type: 'thunder', range: 60, save: { stat: 'GRIT', dc: 18, halfOnSave: true }, conditions: ['deafened', 'confused'], recharge: null },
+      { name: 'Crushing Depths', toHit: 9, damage: '2d12+5', type: 'bludgeoning', range: null, save: null, conditions: ['grappled'], recharge: null },
+      { name: 'Call the Tide', toHit: null, damage: '5d10', type: 'cold', range: 30, save: { stat: 'AGILITY', dc: 18, halfOnSave: true }, conditions: ['restrained', 'slowed'], recharge: 6 }
+    ],
+    multiattack: ['Crushing Depths', 'Crushing Depths'],
+    legendaryActions: {
+      perRound: 3,
+      options: [
+        { name: 'Verse', cost: 1, effect: 'Sings one line; a creature that can hear must make a DC 16 WITS save or be compelled to step 10 ft. toward the nearest deep water' },
+        { name: 'Harmonize', cost: 2, effect: 'Adds a charmed or drowned-thrall\'s voice; the next Drowning Hymn deals an extra 2d8 and lowers its save DC dependency (advantage for the Chorister)' },
+        { name: 'The Song Below', cost: 3, effect: 'All creatures within 60 ft. that can hear make a DC 18 CHARM save or be charmed and begin walking, trance-like, toward the water' }
+      ]
+    },
+    lairActions: [
+      { name: 'Rising Water', effect: 'Brine wells up from the stone; the water level in the area rises, making half the floor difficult terrain and granting the Chorister advantage to anyone standing in it' },
+      { name: 'Echo of the Drowned', effect: 'The voices of those it has taken sing from the walls; one creature must make a DC 15 WITS save or be frightened, hearing a loved one\'s voice among the dead' }
+    ],
+    reactions: [{ name: 'Swell', trigger: 'A creature within 30 ft. casts a verbal spell', effect: 'The Chorister drowns out the words; the caster must make a DC 17 CHARM save or the spell fails, its sound lost beneath the hymn' }],
+    traits: ['Siren-Song (its singing carries underwater and through walls; range cannot be blocked by mere distance)', 'Amphibious', 'Choir of the Drowned (every creature it has drowned joins its song, adding to its Harmonize)', 'Lure (charmed creatures walk willingly into deep water and drown, becoming new voices)', 'Fire-Quenched'],
+    spellcasting: {
+      ability: 'CHARM',
+      spellDC: 18,
+      spellAttack: 10,
+      slots: { 1: 4, 2: 3, 3: 3, 4: 2, 5: 1 },
+      knownSpells: ['charm person', 'command', 'hypnotic pattern', 'fear', 'compulsion', 'control water', 'dominate person']
+    },
+    gear: null,
+    senses: { darkvision: 120, blindsight: 60, tremorsense: null, truesight: null },
+    habitat: 'coastal',
+    ecology: 'Down where the light gives out, something learned to sing. It does not have a name people would use; the drowned sailors who serve it call it nothing, because they have no breath left for names. It sits in flooded sea-caves and sunken chapels and it sings, and the song goes up through the water and the rock and into the dreams of everyone on the coast, and one by one they walk down to the shore at night and into the dark water and do not come back up. Each one it takes makes the song louder.',
+    behavior: 'Fights from or near deep water, using The Song Below and Verse to lure the party toward drowning. Drowning Hymn to deafen and confuse the ranged threats, Crushing Depths and Call the Tide to drag melee foes under. Harmonize off its drowned choir to escalate. Swell silences spellcasters. The longer it sings, the more voices it has — end it fast, and bring fire, the one thing that scatters the song.',
+    encounterSign: 'Coastal villagers walking into the sea at night, calm and smiling, never seen again. A song with no source that everyone half-remembers and cannot hum. Flooded caves where the water is warmer than it should be and full of soft voices. Drowned sailors standing in the surf at low tide, mouths open, singing without breath.',
+    socialStructure: 'A solitary singer commanding a choir of drowned thralls',
+    physicalDescription: 'A pale, swollen humanoid shape, barnacled and finned, with a throat that is mostly a great resonant cavity and too many small black eyes. It does not look like much. Then it opens its throat, and the sound is the most beautiful and most terrible thing on the coast. Behind it, in the dark water, pale faces sway and sing along.',
+    weakness: 'Fire is vulnerability and disrupts the song; a loud, discordant counter-noise (drums, a shouted sea-shanty, a thunderclap) can break its hymn for a round (CHARM contest). Deafened allies are immune to its lures — beeswax in the ears is a classic, effective ward. Draining or blocking its deep water strips its lair advantage and its ability to drown lures. Recovering and burying its drowned choir silences their Harmonize.',
+    loreHook: 'The fishing village has lost a dozen souls this season — no bodies, no struggle, just empty beds and wet footprints leading down to the tideline. The survivors have started stuffing their ears with wax and lashing their sleepwalkers to their bunks. Something in the drowned chapel out on the reef is singing them away, one a night, and the song gets stronger with every one it takes.',
+    tags: ['aberration', 'aquatic'],
+    canParley: false,
+    languages: ['Aquan', 'understands Common', 'speaks only in song'],
+    lootTableRef: 'aberration_elite'
+  },
+  {
+    ref: 'the_blight_shepherd',
+    name: 'The Blight-Shepherd',
+    cr: 8,
+    tier: 'elite',
+    maxHp: 172,
+    ac: 16,
+    speed: 20,
+    stats: { MIGHT: 16, AGILITY: 10, WITS: 18, GRIT: 20, CHARM: 12 },
+    saveProficiencies: ['GRIT', 'WITS', 'MIGHT'],
+    resistances: { poison: 'immune', necrotic: 'resistant', bludgeoning: 'resistant', fire: 'vulnerable' },
+    conditionImmunities: ['poisoned', 'charmed', 'frightened', 'blinded'],
+    actions: [
+      { name: 'Spore-Choked Slam', toHit: 8, damage: '2d10+4', type: 'bludgeoning', range: null, save: null, conditions: ['poisoned'], recharge: null },
+      { name: 'Bloom of Rot', toHit: null, damage: '5d8', type: 'poison', range: 30, save: { stat: 'GRIT', dc: 17, halfOnSave: true }, conditions: ['poisoned', 'infected'], recharge: 5 },
+      { name: 'Take Root', toHit: null, damage: '4d10', type: 'necrotic', range: 20, save: { stat: 'AGILITY', dc: 16, halfOnSave: true }, conditions: ['restrained', 'infected'], recharge: 6 }
+    ],
+    multiattack: ['Spore-Choked Slam'],
+    legendaryActions: null,
+    lairActions: [
+      { name: 'Spore Cloud', effect: 'The air thickens with spores; the area is lightly obscured and each living creature must make a DC 15 GRIT save or take 2d6 poison and be infected' },
+      { name: 'Raise a Sprout', effect: 'A creature killed by infection within the lair rises as a fungal thrall under the Shepherd\'s control, fighting on its next turn' }
+    ],
+    reactions: [{ name: 'Sporeburst', trigger: 'Takes piercing or slashing damage', effect: 'The wound puffs out spores; the attacker (if within 5 ft.) must make a DC 16 GRIT save or be poisoned and infected' }],
+    traits: ['Hive-Mind Bloom (controls all fungal creatures and infected thralls within 120 ft. as one organism)', 'Infectious (creatures that die while infected sprout a new fungal thrall in 1d4 rounds unless burned)', 'Regenerative Mycelium (regains 10 HP at the start of its turn if it took no fire damage last round)', 'Rooted Network (senses everything touching the fungal mat covering its lair)', 'Fire-Cleansed'],
+    spellcasting: null,
+    gear: null,
+    senses: { darkvision: 60, blindsight: 60, tremorsense: 90, truesight: null },
+    habitat: 'underground',
+    ecology: 'It is not one mushroom. It is a single distributed mind threaded through miles of mycelium, and the shambling shepherd-body is merely the part it grows to deal with intruders. It cultivates the dead — its own infected, lost animals, careless explorers — into a quiet underground flock of fungal thralls, and it expands the way fungus always has: patiently, in the dark, one spore at a time. It feels no malice. It simply wants to grow, and the warm bodies above are excellent soil.',
+    behavior: 'Plays for attrition: Spore Clouds and Bloom of Rot to infect the whole party, knowing that infected dead become its thralls. Take Root to pin a target. Sporeburst punishes melee weapons. Regenerative Mycelium and Raise a Sprout make a war of attrition unwinnable unless the party brings fire — which is the one thing that cleanses infection, denies its regen, and stops the dead from sprouting. It does not chase; it spreads.',
+    encounterSign: 'A creeping carpet of pale fungus reaching up from a cave mouth, further every week. Missing livestock and missing people, with strange pale growths appearing where they were last seen. A sweet, rotten smell and a fine dust in the air that makes you cough. Mushrooms growing in the shape of the things they consumed.',
+    socialStructure: 'A single distributed organism with a flock of fungal thralls',
+    physicalDescription: 'A lumbering, vaguely humanoid mass of fruiting bodies, pale flesh, and root-tangle, weeping spores from a dozen caps. It moves slowly, almost gently, herding its fungal flock with limbs that branch and rejoin. Its "face" is a cluster of luminous caps. Everything it touches begins, faintly, to bloom.',
+    weakness: 'Fire is the hard counter — it is vulnerability, it stops the Regenerative Mycelium, it cleanses infection, and it prevents the infected dead from sprouting thralls. The shepherd-body is expendable; burning out the central mycelial mass (a separate objective in the lair) ends it for good. Cold slows its spread. Lesser Restoration cures the infected before they can become soil.',
+    loreHook: 'The mine was abandoned when the lower levels filled with a strange pale fungus. The miners who stayed to clear it did not come back, and now the fungus is reaching daylight, and the search party that went down reports pale shapes that move and a sweet smell that makes you want to lie down in the soft white dark. Bring torches. Bring a lot of torches.',
+    tags: ['plant', 'fungal'],
+    canParley: false,
+    languages: ['none; communicates chemically through the mycelium'],
+    lootTableRef: 'plant_elite'
+  },
 ];

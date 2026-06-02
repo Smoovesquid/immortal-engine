@@ -21,6 +21,7 @@ import { decompressAndCanonizeSync } from './decompression/decompress.js';
 import { discoverNode } from './map/mapState.js';
 import { detectPhysicalInteraction, evaluatePhysicsSync } from './llmPhysics.js';
 import { createGoal, checkGoals } from './goals/goalContract.js';
+import { pickEscapeTarget } from './victory.js';
 import { beginDialogue, askNpc, endDialogue, resolveNpcAtCurrentNode, isRecruitIntent } from './npc/dialogue.js';
 import { resolveCombatTurn } from './combat/combatResolve.js';
 import { beginCombat, endCombat, mintEnemyFromNpc } from './combat/combatLifecycle.js';
@@ -150,6 +151,22 @@ export function beginAdventure(world, packsById) {
   // Pass H — beginAdventure no longer seeds an initial goal. The player wakes
   // up with nothing to do; quests are discovered by leaving home and venturing
   // out. seedInitialGoal is still defined for save-resume semantics elsewhere.
+
+  // v1 "Escape" game mode: seed a single reach goal toward a far node and a
+  // player-facing objective. Reaching it locks a victory (see playerMove).
+  // Opt-in via meta.mode === 'escape'; the open sandbox (all engine tests) skips
+  // this entirely and keeps the goalless waking opening.
+  if (w.meta?.mode === 'escape') {
+    const targetId = pickEscapeTarget(w);
+    if (targetId) {
+      const targetNode = w.map.nodes.find(n => String(n.id) === String(targetId));
+      const targetName = targetNode?.name || 'the open road';
+      w = discoverNode(w, targetId);
+      const created = createGoal(w, { kind: 'reach', targetRef: String(targetId), label: `Escape to ${targetName}` });
+      w = created.world;
+      w = { ...w, scene: { ...w.scene, objective: `Escape to ${targetName} — find the way out.` } };
+    }
+  }
 
   // Build opening context with NPC presence
   const startingNode = w.map.nodes.find(n => n.id === w.map.currentNodeId);
@@ -939,19 +956,24 @@ export function playerMove(world, packsById, text) {
   w = worldTick(w, `${w.meta.seed}|tick|turn${w.time.turn}|tl${w.timeline.length}`);
 
   // Goal Contract: promote any active goal whose completion predicate is true.
+  // (In escape mode this also locks the victory ending — see maybeCheckGoals.)
   w = maybeCheckGoals(w);
 
-  // Ending check (deterministic by state).
-  const wasEndingTriggered = Boolean(w.ending?.triggered);
-  w = triggerEnding(w);
-  if (!wasEndingTriggered && Boolean(w.ending?.triggered)) {
-    w = pushEvent(w, {
-      kind: 'endingTriggered',
-      data: {
-        endingType: String(w.ending?.type || ''),
-        epilogueLine: String(w.ending?.epilogueLine || '')
-      }
-    });
+  // Open sandbox: emergent ending check (deterministic by state). Escape mode
+  // benches emergent endings — its only outcomes are escape-win (maybeCheckGoals)
+  // and combat-defeat (combatResolve).
+  if (w.meta?.mode !== 'escape') {
+    const wasEndingTriggered = Boolean(w.ending?.triggered);
+    w = triggerEnding(w);
+    if (!wasEndingTriggered && Boolean(w.ending?.triggered)) {
+      w = pushEvent(w, {
+        kind: 'endingTriggered',
+        data: {
+          endingType: String(w.ending?.type || ''),
+          epilogueLine: String(w.ending?.epilogueLine || '')
+        }
+      });
+    }
   }
 
   const composed = compose(w, text, resolution, { pack });
@@ -1914,10 +1936,27 @@ function pickOtherSettlement(world) {
 
 function maybeCheckGoals(world) {
   const { world: next, completed } = checkGoals(world);
-  if (!completed.length) return next;
   let w = next;
   for (const g of completed) {
     w = pushEvent(w, { kind: 'goalCompleted', data: { goalId: g.id, kind: g.kind, targetRef: g.targetRef } });
+  }
+  // v1 Escape: completing the reach goal (arriving at the far node) locks a
+  // clean victory. This lives here — the single goal-promotion seam — so it
+  // fires from every action path (travel, free-movement, etc.). Losing is the
+  // engine's existing combat-defeat ending; emergent endings are benched for v1.
+  if (w.meta?.mode === 'escape' && !w.ending?.locked
+      && (w.goals || []).some(g => g.kind === 'reach' && g.status === 'completed')) {
+    w = {
+      ...w,
+      ending: {
+        triggered: true,
+        type: 'Narrow Escape',
+        epilogueLine: 'Wizard: You break into open air and keep running. Behind you the dark closes on nothing. You made it out.',
+        locked: true,
+        reason: 'escaped'
+      }
+    };
+    w = pushEvent(w, { kind: 'endingTriggered', data: { endingType: 'Narrow Escape', epilogueLine: 'escaped' } });
   }
   return w;
 }

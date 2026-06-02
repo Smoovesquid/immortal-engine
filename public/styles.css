@@ -412,6 +412,35 @@ a{color:var(--accent)}
 .play-input-bar .input{flex:1;padding:10px 12px;font-size:14px}
 .play-input-bar .btn{flex:0 0 auto;padding:10px 16px;font-size:13px}
 
+/* ── One-click front door ───────────────────────────────────────── */
+.front-door{text-align:center;padding:32px 24px;border:1px solid var(--accent);background:rgba(200,168,78,.06)}
+.front-door-title{font-family:var(--serif);font-size:28px;letter-spacing:.06em;color:var(--accent);margin-bottom:8px}
+.front-door-sub{font-family:var(--serif);font-style:italic;font-size:15px;color:var(--text);margin-bottom:20px}
+.front-door .row{justify-content:center}
+.front-door-btn{padding:12px 28px;font-size:15px}
+.advanced-invoke summary{cursor:pointer;font-size:12px;letter-spacing:.04em;color:var(--muted);padding:4px 0}
+
+/* ── Escape mode: objective banner ──────────────────────────────── */
+.objective-bar{display:flex;align-items:center;gap:8px;padding:10px 16px;background:rgba(200,168,78,.08);border-bottom:1px solid var(--border)}
+.objective-icon{color:var(--accent);font-size:14px}
+.objective-text{font-family:var(--serif);font-size:14px;color:var(--text);letter-spacing:.01em}
+
+/* ── Escape mode: clickable travel paths ────────────────────────── */
+.paths-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:10px 16px;border-top:1px solid var(--border);background:var(--panel2)}
+.paths-label{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.path-btn{padding:7px 14px;font-size:13px}
+
+/* ── Escape mode: win/lose end screen ───────────────────────────── */
+.escape-end-overlay{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;background:rgba(8,8,8,.82);backdrop-filter:blur(3px)}
+.escape-end-card{max-width:460px;width:88%;padding:36px 32px;text-align:center;border-radius:8px;border:1px solid var(--border);background:var(--panel)}
+.escape-end-card.win{border-color:var(--accent);box-shadow:0 0 36px rgba(200,168,78,.22)}
+.escape-end-card.lose{border-color:rgba(139,37,0,.7);box-shadow:0 0 36px rgba(139,37,0,.22)}
+.escape-end-title{font-family:var(--serif);font-size:32px;letter-spacing:.08em;margin-bottom:14px}
+.escape-end-card.win .escape-end-title{color:var(--accent)}
+.escape-end-card.lose .escape-end-title{color:#c0502f}
+.escape-end-text{font-family:var(--serif);font-size:15px;line-height:1.7;color:var(--text);margin-bottom:24px;font-style:italic}
+.escape-end-btn{padding:12px 28px;font-size:15px}
+
 /* ── Narration — serif font, DM voice ───────────────────────────── */
 .transcript{max-height:52vh;padding:10px 0}
 .line{padding:8px 0}

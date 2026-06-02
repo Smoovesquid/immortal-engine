@@ -167,6 +167,16 @@ export function pickTravelDestination(world, playerText) {
   const nbs = neighbors(m, here);
   if (!nbs.length) return here;
 
+  // Exact node-id targeting (UI path buttons): unambiguous even when node
+  // display names collide (e.g. two "Hollow Chapel" nodes). Marker form
+  // "::<nodeId>" embedded in the intent text; matched against neighbor ids.
+  const idMarker = String(playerText || '').match(/::([A-Za-z0-9_]+)/);
+  if (idMarker) {
+    const wantId = idMarker[1];
+    const hit = nbs.find(id => String(id) === wantId);
+    if (hit) return hit;
+  }
+
   const t = String(playerText || '').toLowerCase();
 
   // Directional shorthand: choose neighbor by stable index.

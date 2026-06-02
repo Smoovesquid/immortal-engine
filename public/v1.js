@@ -2,6 +2,7 @@ import { normalizeManifest, normalizePack } from '../engine/rulesets.js';
 import { newWorld, ensureWorld } from '../engine/state.js';
 import { beginAdventure, playerMove, newScene } from '../engine/playloop.js';
 import { neighbors } from '../engine/map/mapState.js';
+import { escapeOutcome } from '../engine/victory.js';
 import { hasSlot, loadSlot, saveSlot, exportWorld, importWorld } from '../engine/save.js';
 import { worldHash as worldHashAsync } from '../engine/worldHash.browser.js';
 import { buildMythSpec, mythSpecJson } from '../engine/mythSpec.js';
@@ -287,7 +288,8 @@ async function beginFromInvocation(inv) {
     seed,
     fate,
     campaignId: String(inv?.campaignId || `campaign-${seed}`),
-    pack: { primaryId, mixerId }
+    pack: { primaryId, mixerId },
+    mode: 'escape'
   });
 
   const { world, output } = beginAdventure(w0, ui.packs.byId);
@@ -346,7 +348,8 @@ async function beginFromChargen() {
       seed,
       fate,
       campaignId: `campaign-${seed}`,
-      pack
+      pack,
+      mode: 'escape'
     });
 
     // Inject pre-created character; beginAdventure skips creation when party.length > 0
@@ -413,7 +416,10 @@ async function doSubmitMove() {
   }
   const baseNarration = output?.narration || '...';
 
-  ui.play.lines.push({ who: 'you', text, mech: '' });
+  // Strip the internal "::<nodeId>" travel marker from the echoed player line
+  // (path buttons append it for unambiguous resolution; it must not be visible).
+  const displayText = text.replace(/\s*::\S+\s*$/, '').trim();
+  ui.play.lines.push({ who: 'you', text: displayText, mech: '' });
   const wizardLine = { who: 'wizard', text: '', mech: output?.mechanics || '' };
   ui.play.lines.push(wizardLine);
   ui.play.input = '';
@@ -442,9 +448,11 @@ async function doSubmitMove() {
   render();
 
   // Auto scene transition: if player moved to a new node, fire doNewScene()
-  // Queued after narration so the move's text is visible before the scene shifts
+  // Queued after narration so the move's text is visible before the scene shifts.
+  // Escape mode disables this — newScene auto-travels to a random neighbor, which
+  // would override the player's deliberate navigation toward the escape target.
   const newNodeId = String(world.map?.currentNodeId ?? '');
-  if (prevNodeId && newNodeId && prevNodeId !== newNodeId) {
+  if (world.meta?.mode !== 'escape' && prevNodeId && newNodeId && prevNodeId !== newNodeId) {
     await doNewScene();
   }
 }
@@ -476,6 +484,20 @@ async function doNewScene() {
   tts.speak(wizardLine.text);
   setStatus('Scene advanced.');
   render();
+}
+
+// Submit a move programmatically (used by clickable path buttons).
+function travelTo(text) {
+  ui.play.input = String(text || '');
+  doSubmitMove();
+}
+
+// Start a fresh Escape game with a new random seed (front door + Play Again).
+function playAgain() {
+  const seed = `escape-${Date.now().toString(36)}-${Math.floor(Math.random() * 1e6).toString(36)}`;
+  ui.screen = 'play';
+  ui.play.lines = [];
+  beginFromInvocation({ seed, fate: 0.2, pack: { primaryId: 'fantasy', mixerId: null } });
 }
 
 function renderInvoke() {
@@ -527,7 +549,17 @@ function renderInvoke() {
           el('div', { class: 'sub' }, 'Gate 4: MythSpec + Deterministic Triad')
         )
       ),
-      el('div', { class: 'card stack' },
+      // ── One-click front door: start (or resume) the Escape game ──────
+      el('div', { class: 'card stack front-door' },
+        el('div', { class: 'front-door-title' }, 'Escape the Dungeon'),
+        el('div', { class: 'front-door-sub' }, 'You wake somewhere you must not stay. Find the way out.'),
+        el('div', { class: 'row' },
+          el('button', { class: 'btn primary front-door-btn', onClick: () => playAgain() }, 'Begin Escape'),
+          has ? el('button', { class: 'btn front-door-btn', onClick: () => { ui.screen = 'play'; continueSlot1(); } }, 'Continue') : null
+        )
+      ),
+      el('details', { class: 'card stack advanced-invoke' },
+        el('summary', {}, 'Advanced (custom seed, packs, triad)'),
         ui.status ? el('div', { class: 'small' }, ui.status) : null,
         el('div', { class: 'small' }, 'seed'),
         seedInput,
@@ -1279,17 +1311,44 @@ function renderPlay() {
   // ── Compact local map ─────────────────────────────────────────────────
   const playMap = w ? renderLocalMap(w, { compact: true }) : null;
 
+  // ── Escape-mode chrome (objective banner + clickable paths) ───────────
+  const isEscape = w?.meta?.mode === 'escape';
+  const objective = String(w?.scene?.objective || '').trim();
+  const objectiveBar = (isEscape && objective && !ended)
+    ? el('div', { class: 'objective-bar' },
+        el('span', { class: 'objective-icon' }, '⚑'),
+        el('span', { class: 'objective-text' }, objective))
+    : null;
+
+  const pathItems = (() => {
+    if (!w || !isEscape || ended || inCombat || w.scene?.interior) return [];
+    const m = w.map;
+    const here = String(m?.currentNodeId || '');
+    return neighbors(m, here).map(id => {
+      const node = (m.nodes || []).find(n => String(n.id) === String(id));
+      return { id, name: String(node?.name || 'Unknown') };
+    });
+  })();
+  const pathsBar = pathItems.length
+    ? el('div', { class: 'paths-bar' },
+        el('span', { class: 'paths-label' }, 'Travel:'),
+        ...pathItems.map(p =>
+          el('button', { class: 'btn path-btn', onClick: () => travelTo(`travel to ${p.name} ::${p.id}`) }, p.name)))
+    : null;
+
   // ── Main panel (narration + map, no chrome) ───────────────────────────
   const mainPanel = el('div', { class: 'panel play-panel' },
     el('div', { class: 'play-header' },
       gearDropdown,
       ended ? el('div', { class: 'play-ended' }, 'Journey complete.') : null
     ),
+    objectiveBar,
     devPanel,
     el('div', { class: 'play-body' },
       playMap,
       renderTranscript(ui.play.lines)
     ),
+    pathsBar,
     el('div', { class: 'play-input-bar' },
       input,
       el('button', { class: 'btn primary', disabled: ended, onClick: () => doSubmitMove() }, 'Submit')
@@ -1311,7 +1370,24 @@ function renderPlay() {
     }));
   }
 
+  // Escape win/lose end screen (overlay)
+  const outcome = (ended && isEscape) ? escapeOutcome(w) : null;
+  if (outcome) playRoot.appendChild(renderEscapeEnd(w, outcome));
+
   return playRoot;
+}
+
+function renderEscapeEnd(w, outcome) {
+  const win = outcome === 'win';
+  const title = win ? 'YOU ESCAPED' : 'YOU DIED';
+  const epilogue = String(w?.ending?.epilogueLine || '').replace(/^Wizard:\s*/, '');
+  return el('div', { class: 'escape-end-overlay' },
+    el('div', { class: 'escape-end-card ' + (win ? 'win' : 'lose') },
+      el('div', { class: 'escape-end-title' }, title),
+      epilogue ? el('div', { class: 'escape-end-text' }, epilogue) : null,
+      el('button', { class: 'btn primary escape-end-btn', onClick: () => playAgain() }, 'Play Again')
+    )
+  );
 }
 
 

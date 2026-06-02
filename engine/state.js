@@ -49,7 +49,11 @@ export function ensureWorld(partial) {
       // pre-Pass-H save loads (graceful degradation: those worlds simply
       // have no home concept). When non-empty, must reference an existing
       // settlement node — see assertWorldInvariants.
-      homeNodeId: String(meta.homeNodeId ?? '')
+      homeNodeId: String(meta.homeNodeId ?? ''),
+      // v1 game mode. '' = open sandbox (default; all engine tests). 'escape' =
+      // the shippable "Escape" game: begin seeds a reach goal + objective and
+      // reaching it locks a clean victory ending. Opt-in, set by the UI.
+      mode: String(meta.mode ?? '')
     },
     ruleset: w.ruleset && typeof w.ruleset === 'object' ? w.ruleset : { id: 'core', version: 1 },
     pack: w.pack && typeof w.pack === 'object' ? w.pack : { primaryId: 'fantasy', mixerId: null },
@@ -109,11 +113,11 @@ export function ensureWorld(partial) {
   return world;
 }
 
-export function newWorld({ seed, fate, campaignId, pack }) {
+export function newWorld({ seed, fate, campaignId, pack, mode }) {
   const packObj = (pack && typeof pack === 'object') ? pack : { primaryId: 'fantasy', mixerId: null };
   const map0 = generateInitialMap({ seed: String(seed), packId: String(packObj.primaryId || 'fantasy'), pack: {} });
   return ensureWorld({
-    meta: { seed: String(seed), fate: clamp01(fate ?? 0.2), campaignId: String(campaignId ?? 'campaign'), motifs: ensureMotifs(null), advantageTokens: ensureAdvantageTokens(null), aiMode: ensureAiMode(null), microClocks: ensureMicroClocks(null) },
+    meta: { seed: String(seed), fate: clamp01(fate ?? 0.2), campaignId: String(campaignId ?? 'campaign'), mode: String(mode ?? ''), motifs: ensureMotifs(null), advantageTokens: ensureAdvantageTokens(null), aiMode: ensureAiMode(null), microClocks: ensureMicroClocks(null) },
     pack: packObj,
     map: map0,
     env: null,

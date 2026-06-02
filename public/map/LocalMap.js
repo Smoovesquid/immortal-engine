@@ -251,10 +251,10 @@ function drawInterior(ctx, world, w) {
     ctx.lineWidth = isCurrent ? 2.5 : 1.5;
     ctx.strokeRect(cx - roomW / 2, cy - roomH / 2, roomW, roomH);
 
-    // Room label
+    // Room label — readable, never the raw internal id
     ctx.fillStyle = THEME.roomLabel;
     ctx.font = '11px ui-monospace, SFMono-Regular, Menlo, monospace';
-    ctx.fillText(String(r.id), cx - roomW / 2 + 8, cy - roomH / 2 + 14);
+    ctx.fillText(isCurrent ? 'You are here' : `Room ${i + 1}`, cx - roomW / 2 + 8, cy - roomH / 2 + 14);
   });
 
   // Doors between rooms
@@ -369,7 +369,7 @@ export function renderLocalMap(world, opts = {}) {
     el('div', { class: 'local-map-header' },
       el('strong', {}, 'Local'),
       el('span', { class: 'small' }, isInterior
-        ? `Interior · ${String(world?.scene?.interior?.structureKey || '')} · room ${String(world?.scene?.interior?.roomId || '')}`
+        ? `Inside · ${String(world?.scene?.interior?.structureKey || 'structure')}`
         : `${nodeName} · ${structures.length} structures · ${npcs.length} persons`)
     ),
     canvas,

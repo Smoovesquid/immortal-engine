@@ -382,7 +382,9 @@ export function playerMove(world, packsById, text) {
           }
         });
         w2 = worldTick(w2, `${w2.meta.seed}|tick|interior-move|turn${w2.time.turn}|tl${w2.timeline.length}`);
-        return { world: w2, output: { narration: `Wizard: You move to ${w2.scene.interior.roomId}.`, mechanics: '' } };
+        const movedDir = normalizeDir(interiorAction.direction);
+        const moveMsg = movedDir ? `Wizard: You move ${movedDir} into the next chamber.` : 'Wizard: You move into the next chamber.';
+        return { world: w2, output: { narration: moveMsg, mechanics: '' } };
       }
       return { world: w, output: { narration: 'Wizard: That way is blocked from here.', mechanics: '' } };
     }
@@ -394,8 +396,8 @@ export function playerMove(world, packsById, text) {
   if (!w.combat?.active && isExploreIntent(text)) {
     if (w.scene?.interior) {
       const view = getInteriorView(w);
-      const exits = (view.exits || []).map(x => x.id);
-      const exitsLineTxt = exits.length ? `Exits: ${exits.join(', ')}.` : 'Exits: none.';
+      const labels = exitDirectionLabels(view);
+      const exitsLineTxt = labels.length ? `Exits: ${labels.join(', ')}.` : 'Exits: none.';
       return { world: w, output: { narration: `Wizard: You scan the room. ${exitsLineTxt}`, mechanics: 'observe only — no roll, state unchanged' } };
     }
 
@@ -1393,6 +1395,15 @@ function pickAdjacentInteriorByDirection(world, direction) {
   const dir = normalizeDir(direction);
   const idx = dir === 'north' ? 0 : dir === 'east' ? 1 : dir === 'south' ? 2 : dir === 'west' ? 3 : 0;
   return exits[idx % exits.length] || exits[0];
+}
+
+// Player-facing exit labels. Exits arrive sorted by id, and movement maps
+// direction → sorted index (north=0, east=1, south=2, west=3), so labeling by
+// the same order keeps "go north" consistent with the "Exits: north" the player sees.
+const EXIT_DIR_LABELS = ['north', 'east', 'south', 'west'];
+function exitDirectionLabels(view) {
+  const exits = Array.isArray(view?.exits) ? view.exits : [];
+  return exits.map((x, i) => EXIT_DIR_LABELS[i] || `passage ${i + 1}`);
 }
 
 function isRiskyOrObstructedMoveIntent(text) {

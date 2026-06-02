@@ -2322,4 +2322,794 @@ export const elite = [
     languages: ['Common', 'Elvish', 'Undercommon', 'Abyssal'],
     lootTableRef: 'humanoid_elite'
   },
+
+  // ── Batch 2 (outer reaches — cosmic, literary, mind-bending) ─────────
+
+  {
+    ref: 'the_unwritten',
+    name: 'The Unwritten',
+    cr: 10,
+    tier: 'elite',
+    maxHp: 175,
+    ac: 18,
+    speed: 30,
+    stats: { MIGHT: 12, AGILITY: 16, WITS: 24, GRIT: 18, CHARM: 6 },
+    saveProficiencies: ['WITS', 'GRIT', 'CHARM'],
+    resistances: { psychic: 'immune', force: 'resistant', slashing: 'resistant', piercing: 'resistant', bludgeoning: 'resistant' },
+    conditionImmunities: ['charmed', 'frightened', 'blinded', 'deafened', 'exhaustion'],
+    actions: [
+      { name: 'Redaction', toHit: 9, damage: '2d10+4', type: 'psychic', range: null, save: null, conditions: ['memory_fog'], recharge: null },
+      { name: 'Erase the Name', toHit: null, damage: '6d8', type: 'psychic', range: 60, save: { stat: 'WITS', dc: 18, halfOnSave: true }, conditions: ['confused'], recharge: 5 },
+      { name: 'Blank Page', toHit: null, damage: '4d10', type: 'force', range: 30, save: { stat: 'GRIT', dc: 18, halfOnSave: true }, conditions: ['stunned'], recharge: 6 }
+    ],
+    multiattack: ['Redaction', 'Redaction'],
+    legendaryActions: {
+      perRound: 3,
+      options: [
+        { name: 'Strike', cost: 1, effect: 'Makes one Redaction attack' },
+        { name: 'Unname', cost: 2, effect: 'One creature must make a DC 18 WITS save or forget its own name until the end of its next turn — while nameless it cannot benefit from allies\' aid or be healed by name-bound magic' },
+        { name: 'Turn the Page', cost: 3, effect: 'The Unwritten vanishes from the narrative for one round — untargetable, then reappears anywhere within 60 feet' }
+      ]
+    },
+    lairActions: [
+      { name: 'Margin Creep', effect: 'White nothingness eats inward from the edges of the room — the fightable area shrinks by 10 feet; creatures forced into the blank take 3d8 psychic damage' },
+      { name: 'Footnote', effect: 'A detail of the scene is rewritten — a door becomes a wall, a weapon becomes a feather (DC 16 WITS to disbelieve)' }
+    ],
+    reactions: [{ name: 'Strike It Out', trigger: 'A creature speaks the Unwritten\'s true name', effect: 'The speaker takes 4d10 psychic damage and is silenced for 1 round — the name will not be spoken' }],
+    traits: ['Nameless (cannot be targeted by spells that require a name or true name)', 'Authorless (immune to divination)', 'Magic Resistance', 'Story-Eater (heals 10 HP whenever a creature within 30 ft. forgets something)', 'Incomplete'],
+    spellcasting: {
+      ability: 'WITS',
+      spellDC: 18,
+      spellAttack: 10,
+      slots: { 1: 4, 2: 3, 3: 3, 4: 3, 5: 2 },
+      knownSpells: ['detect thoughts', 'silence', 'modify memory', 'sending', 'confusion', 'feeblemind', 'sequester', 'mislead']
+    },
+    gear: null,
+    senses: { darkvision: null, blindsight: 60, tremorsense: null, truesight: 120 },
+    habitat: 'ruins',
+    ecology: 'It lives in the blank spaces between stories — the margins, the redacted lines, the pages that were torn out and never replaced. It is not a creature so much as an absence that has learned to want. Where it passes, names go soft and come loose. Scholars who study it tend to be discovered later sitting calmly, unable to say who they are. It is drawn to libraries, archives, and anyone carrying a true name worth eating.',
+    behavior: 'Opens by Erasing the Name of the loudest, most-coordinated party member to break their teamwork. Redaction in melee, fogging memory. Blank Page to stun a cluster. Uses Unname legendary action to isolate. Turns the Page to escape focus fire. It does not bleed and does not tire — it wins by subtraction, removing the party\'s identity one fact at a time.',
+    encounterSign: 'A book in the room is missing exactly one page, cut clean. People nearby trail off mid-sentence, having lost the word. A name carved in stone has weathered to a smooth blank while the words around it stay sharp. A cold, paper smell.',
+    socialStructure: 'Solitary — there is only ever one in a given story',
+    physicalDescription: 'A roughly humanoid outline of unfilled white, like a figure cut out of the world and the hole left behind. Its edges blur where you try to look directly. It has no face, only a faint pressed shape where a face was meant to go. When it moves, the floor briefly forgets its own texture.',
+    weakness: 'Naming things hurts it — a creature that loudly, truly names itself or an ally gains advantage against it for a round (though it will retaliate). A complete, witnessed written record of the fight (a scribe taking notes) caps its Story-Eater healing. Anchoring magic (sanctuary on a named person) blocks Unname. It cannot cross a threshold inscribed with a true name until that name is erased.',
+    loreHook: 'The town has a hole in it. Not a physical one — a person-shaped one. Everyone agrees someone used to live in the empty house, ran the empty shop, but no one can say who. The records are blank where the name should be. Something has been eating this place one citizen at a time, and it is still hungry.',
+    tags: ['aberration', 'cosmic'],
+    canParley: false,
+    languages: ['understands all languages but speaks none', 'communicates by redaction'],
+    lootTableRef: 'aberration_elite'
+  },
+  {
+    ref: 'the_pale_arithmetic',
+    name: 'The Pale Arithmetic',
+    cr: 10,
+    tier: 'elite',
+    maxHp: 165,
+    ac: 19,
+    speed: 0,
+    stats: { MIGHT: 6, AGILITY: 10, WITS: 26, GRIT: 20, CHARM: 14 },
+    saveProficiencies: ['WITS', 'GRIT', 'CHARM'],
+    resistances: { psychic: 'immune', force: 'immune', radiant: 'resistant', necrotic: 'resistant' },
+    conditionImmunities: ['charmed', 'frightened', 'prone', 'grappled', 'restrained', 'paralyzed'],
+    actions: [
+      { name: 'Proof by Contradiction', toHit: null, damage: '6d8', type: 'psychic', range: 120, save: { stat: 'WITS', dc: 19, halfOnSave: true }, conditions: ['stunned'], recharge: null },
+      { name: 'Reductio', toHit: null, damage: '4d10', type: 'force', range: 60, save: { stat: 'GRIT', dc: 18, halfOnSave: true }, conditions: ['weakened'], recharge: 5 },
+      { name: 'Solve For Zero', toHit: null, damage: '8d8', type: 'necrotic', range: 30, save: { stat: 'GRIT', dc: 19, halfOnSave: false }, conditions: [], recharge: 6 }
+    ],
+    multiattack: null,
+    legendaryActions: {
+      perRound: 3,
+      options: [
+        { name: 'Iterate', cost: 1, effect: 'Repeats Proof by Contradiction against a creature that already failed a save this round, at disadvantage to that creature' },
+        { name: 'Carry the One', cost: 2, effect: 'Transfers a condition from itself to a creature within 60 ft. (it has no body to suffer, so this almost always lands a stun or weaken)' },
+        { name: 'Recalculate', cost: 3, effect: 'Reverses one die result from the previous round as if it had rolled the opposite extreme — a critical hit becomes a miss, a max-damage spell becomes minimum' }
+      ]
+    },
+    lairActions: [
+      { name: 'Noneuclidean', effect: 'Distances in the room stop being consistent — movement costs are randomized; a creature that moves must make a DC 16 WITS save or end up somewhere it did not intend' },
+      { name: 'Decimal Bleed', effect: 'Numbers leak into the world — every creature\'s wounds count up out loud, and a creature reduced to a "round number" of HP takes 1d10 extra psychic' }
+    ],
+    reactions: [{ name: 'Disproof', trigger: 'A creature within 60 ft. rolls a natural 20', effect: 'The Arithmetic asserts the roll is impossible — the creature must reroll, taking the second result' }],
+    traits: ['Bodiless (a free-floating equation; cannot be flanked or shoved)', 'Inevitable Result (advantage on saves against effects that rely on chance)', 'Magic Resistance', 'Cold Logic (immune to morale and fear, never makes a tactical error)', 'Self-Correcting (at the start of its turn, ends one condition affecting it)'],
+    spellcasting: {
+      ability: 'WITS',
+      spellDC: 19,
+      spellAttack: 11,
+      slots: { 1: 4, 2: 3, 3: 3, 4: 3, 5: 3 },
+      knownSpells: ['detect thoughts', 'hold person', 'counterspell', 'slow', 'dimension door', 'telekinesis', 'wall of force', 'dominate person']
+    },
+    gear: null,
+    senses: { darkvision: null, blindsight: 120, tremorsense: null, truesight: 60 },
+    habitat: 'ruins',
+    ecology: 'Somewhere a thinking machine, or a god, or a very patient monk, asked a question that had no consistent answer and kept asking anyway. The Pale Arithmetic is what crawled out of that loop — a self-aware proof that the world does not entirely add up, now busy correcting the discrepancy. It does not hate the living. It simply finds them inefficient, and is reducing them. It clusters around old observatories, broken calculating engines, and places where someone tried to measure the infinite.',
+    behavior: 'Stays at range — it has no body and 0 speed, but does not need to move. Proof by Contradiction on the highest-WITS target to deny them their turn. Reductio to grind down the front line. Saves Solve For Zero (no save-for-half) for a low creature it can delete outright. Uses Recalculate to undo the party\'s best round. It never panics and never overcommits — it is, after all, never wrong.',
+    encounterSign: 'Tally marks scratched on every surface, counting something that never finishes. Sums that come out wrong no matter how carefully you check. A persistent ringing like a struck tuning fork. Dropped coins that always land on edge. The growing certainty that the room is slightly larger than it should be.',
+    socialStructure: 'Solitary; occasionally tended by deranged scholars who mistake it for an oracle',
+    physicalDescription: 'A slowly rotating constellation of pale glyphs and figures hanging in the air, roughly the size of a person, with a dim white core where the conclusion is being computed. Equations chase themselves around its edges. Looking at it too long makes your own thoughts try to balance.',
+    weakness: 'Genuine paradox and chaos disrupt it — wild magic, a deliberately self-contradicting statement spoken aloud (DC 18 CHARM to compose), or a truly random act forces it to spend its next action Self-Correcting instead of attacking. Anti-magic fields collapse it to half HP instantly. It cannot pursue — leaving its lair (the unsolved question anchoring it) strips its lair actions and legendary resistance.',
+    loreHook: 'The monastery\'s great calculating engine was meant to compute the exact date of the world\'s end. The monks fed it for a hundred years. Then one winter it produced an answer that was also a question, and the monks stopped writing letters. The engine is still running. Something is doing the math now, and it has started on the village.',
+    tags: ['aberration', 'cosmic', 'psychic'],
+    canParley: true,
+    languages: ['Common', 'Celestial', 'Deep Speech', 'speaks only in proofs and corrections'],
+    lootTableRef: 'aberration_elite'
+  },
+  {
+    ref: 'tent_revival_wight',
+    name: 'The Travelling Preacher',
+    cr: 8,
+    tier: 'elite',
+    maxHp: 150,
+    ac: 16,
+    speed: 30,
+    stats: { MIGHT: 14, AGILITY: 12, WITS: 18, GRIT: 16, CHARM: 22 },
+    saveProficiencies: ['CHARM', 'WITS', 'GRIT'],
+    resistances: { necrotic: 'immune', radiant: 'vulnerable', psychic: 'resistant' },
+    conditionImmunities: ['charmed', 'frightened', 'exhaustion', 'poisoned'],
+    actions: [
+      { name: 'Laying On of Hands', toHit: 7, damage: '2d10+3', type: 'necrotic', range: null, save: null, conditions: ['weakened'], recharge: null },
+      { name: 'Call to the Altar', toHit: null, damage: '0', type: 'psychic', range: 60, save: { stat: 'CHARM', dc: 17, halfOnSave: false }, conditions: ['charmed'], recharge: 5 },
+      { name: 'Tithe of Years', toHit: null, damage: '5d8', type: 'necrotic', range: 30, save: { stat: 'GRIT', dc: 17, halfOnSave: true }, conditions: ['weakened'], recharge: 6 }
+    ],
+    multiattack: ['Laying On of Hands', 'Laying On of Hands'],
+    legendaryActions: null,
+    lairActions: [
+      { name: 'Hymn', effect: 'The revival tent fills with song — charmed creatures move toward the altar and away from their allies; non-charmed creatures must make a DC 15 WITS save or be unable to take reactions (caught up in the music)' },
+      { name: 'Passing the Plate', effect: 'A spectral collection plate drifts past each creature; a creature that does not "give" (drop an item or take 2d8 necrotic) is marked, taking double damage from the wight until the end of the round' }
+    ],
+    reactions: [{ name: 'Testify', trigger: 'A charmed creature is attacked', effect: 'The preacher cries out — the attacker must make a DC 17 CHARM save or have the attack fail, "you would strike the faithful?"' }],
+    traits: ['Undead Fortitude (drops to 1 HP instead of 0 on a DC 5 + damage GRIT save, once between rests)', 'Silver Tongue (advantage on all CHARM checks; can lie to detect-thoughts)', 'Congregation (charmed creatures grant it temporary HP equal to their number x5)', 'Sunlight Sensitivity', 'Hollow Faith'],
+    spellcasting: {
+      ability: 'CHARM',
+      spellDC: 17,
+      spellAttack: 9,
+      slots: { 1: 4, 2: 3, 3: 3, 4: 2 },
+      knownSpells: ['command', 'charm person', 'hold person', 'bestow curse', 'spirit guardians', 'mass healing word', 'compulsion']
+    },
+    gear: [{ ref: 'gilded_pulpit_staff', slot: 'mainHand' }],
+    senses: { darkvision: 60, blindsight: null, tremorsense: null, truesight: null },
+    habitat: 'wilderness',
+    ecology: 'He came through town once, alive, with a tent and a good voice and a cure for everything. The cure was real. The price was not disclosed. He died with a full collection plate and the prayers of three hundred people anchoring him to the road, and he has been working the circuit ever since — town to town, tent to tent, harvesting a few years of life from each congregation and leaving them grateful. He genuinely believes he is doing them a kindness.',
+    behavior: 'Opens with Call to the Altar to charm the strongest-willed enemies and turn the fight. Stacks Congregation HP off the charmed. Laying On of Hands in melee while protected by Testify. Tithe of Years on the holdouts. Flees toward a crowd if hurt — he is never weaker than when alone, never stronger than mid-sermon. Treats the whole encounter as a service to be performed.',
+    encounterSign: 'A weathered tent pitched where no fair is scheduled. Townsfolk walking the same circle at dusk, humming. A revival that cured the blind but aged the healthy. Coins left in odd places, as offerings. A preacher\'s voice carrying impossibly far across still air.',
+    socialStructure: 'Travels alone but is never alone — surrounds itself with charmed congregants',
+    physicalDescription: 'A lean man in a dust-grey traveling coat and a wide-brimmed hat, face shadowed and a little too still. When he smiles the teeth are right but the eyes have gone to grave-light. His hands are always warm. The collection plate floats at his hip on its own.',
+    weakness: 'Sunlight cripples him — fights at disadvantage and cannot regain Congregation HP in daylight. Breaking the charm on his congregation (a loud truth, a Calm Emotions, killing the lair) strips his temporary HP and his Testify protection. Radiant damage bypasses his fortitude. Reading aloud the names of those he has tithed forces a DC 18 CHARM save or he is stunned by his own guilt for a round.',
+    loreHook: 'Three towns down the road, everyone over fifty looks ninety, and they all praise the same kind preacher who passed through. He is heading this way. The mayor has already booked the tent.',
+    tags: ['undead', 'humanoid'],
+    canParley: true,
+    languages: ['Common', 'the cadence of every local dialect'],
+    lootTableRef: 'undead_elite'
+  },
+  {
+    ref: 'gallows_oak',
+    name: 'The Gallows Oak',
+    cr: 8,
+    tier: 'elite',
+    maxHp: 185,
+    ac: 17,
+    speed: 10,
+    stats: { MIGHT: 22, AGILITY: 8, WITS: 12, GRIT: 20, CHARM: 10 },
+    saveProficiencies: ['MIGHT', 'GRIT'],
+    resistances: { bludgeoning: 'resistant', piercing: 'resistant', necrotic: 'resistant', fire: 'vulnerable' },
+    conditionImmunities: ['charmed', 'frightened', 'exhaustion', 'blinded', 'deafened'],
+    actions: [
+      { name: 'Hanging Branch', toHit: 9, damage: '2d12+6', type: 'bludgeoning', range: 15, save: null, conditions: ['grappled'], recharge: null },
+      { name: 'The Drop', toHit: null, damage: '4d10', type: 'bludgeoning', range: null, save: { stat: 'MIGHT', dc: 17, halfOnSave: false }, conditions: ['restrained', 'strangled'], recharge: 5 },
+      { name: 'Chorus of the Hanged', toHit: null, damage: '5d8', type: 'necrotic', range: 30, save: { stat: 'GRIT', dc: 16, halfOnSave: true }, conditions: ['frightened'], recharge: 6 }
+    ],
+    multiattack: ['Hanging Branch', 'Hanging Branch'],
+    legendaryActions: null,
+    lairActions: [
+      { name: 'Reaching Roots', effect: 'Roots erupt under a creature within 30 ft. — DC 15 AGILITY save or restrained until it breaks free (DC 16 MIGHT)' },
+      { name: 'Swaying Dead', effect: 'The corpses hanging in its branches sway and moan; each living creature within 20 ft. must make a DC 15 WITS save or be frightened until the end of its next turn' }
+    ],
+    reactions: [{ name: 'Tighten', trigger: 'A grappled creature tries to escape', effect: 'The noose-branch tightens — the creature takes 2d10 bludgeoning and its escape attempt is at disadvantage' }],
+    traits: ['False Appearance (indistinguishable from a dead tree until it moves)', 'Rooted (cannot be moved, knocked prone, or shoved)', 'Crop of the Dead (every humanoid it kills joins the corpses in its branches, healing it 15 HP and adding to Chorus of the Hanged)', 'Strangler\'s Reach (15 ft.)', 'Slow but Patient'],
+    spellcasting: null,
+    gear: null,
+    senses: { darkvision: 30, blindsight: 60, tremorsense: 60, truesight: null },
+    habitat: 'wilderness',
+    ecology: 'For two hundred years the magistrates hanged their condemned from one old oak at the crossroads, and the oak drank it all — the fear, the last words, the slow kicking. Somewhere in the second century it woke up. Now it grows wherever the law has killed often enough, and it reaps the same way it was fed. The corpses in its branches are not decoration. They are its memory, and its choir.',
+    behavior: 'Waits motionless until prey is within reach, then The Drop on the first to come close, hauling them up to strangle. Hanging Branch sweeps to grapple two foes. Chorus of the Hanged when surrounded, leaning on its harvested dead. It cannot chase, so it fights to drag victims in and never let them leave. Fire is the only thing that makes it hurry.',
+    encounterSign: 'A lone old tree at a crossroads, heavy with what you hope are gourds. The creak of rope with no wind. Worn nooses still tied to the lower branches. The ground beneath it bare of grass but rich and dark. Birds will not land on it.',
+    socialStructure: 'Solitary; marks the site of a long-running gallows',
+    physicalDescription: 'A massive, black-barked oak with low, reaching limbs worn smooth by rope. Pale shapes hang in its upper branches, turning slowly. When it moves, the whole tree leans with a sound like a ship\'s rigging, and a face works itself out of the burls — many faces, the faces of the hanged.',
+    weakness: 'Fire is vulnerability — a sustained burn will drive it to thrash and eventually still. It cannot leave its crossroads, so it can be outrun if you survive contact. Cutting down and burning the corpses in its branches strips its healing and Chorus. A formal pardon read aloud over it (the law unmaking its own killing) forces a DC 17 GRIT save or it goes dormant for a day, confused by the absolution.',
+    loreHook: 'The new circuit judge is proud of his conviction rate. The crossroads oak outside town has grown three new branches this season, and the road past it is no longer safe after dark. The two facts are the same fact.',
+    tags: ['plant', 'undead'],
+    canParley: false,
+    languages: ['understands Common', 'speaks only in the last words of the hanged'],
+    lootTableRef: 'plant_elite'
+  },
+  {
+    ref: 'the_landlord',
+    name: 'The Landlord',
+    cr: 9,
+    tier: 'elite',
+    maxHp: 160,
+    ac: 18,
+    speed: 30,
+    stats: { MIGHT: 16, AGILITY: 14, WITS: 20, GRIT: 18, CHARM: 22 },
+    saveProficiencies: ['CHARM', 'WITS', 'GRIT'],
+    resistances: { fire: 'immune', poison: 'immune', cold: 'resistant', bludgeoning: 'resistant' },
+    conditionImmunities: ['charmed', 'frightened', 'poisoned'],
+    actions: [
+      { name: 'Foreclose', toHit: 8, damage: '2d10+5', type: 'fire', range: null, save: null, conditions: ['marked'], recharge: null },
+      { name: 'Collect', toHit: null, damage: '6d8', type: 'necrotic', range: 30, save: { stat: 'CHARM', dc: 18, halfOnSave: true }, conditions: [], recharge: 5 },
+      { name: 'Eviction', toHit: null, damage: '4d10', type: 'force', range: 60, save: { stat: 'GRIT', dc: 18, halfOnSave: false }, conditions: ['prone', 'banished_briefly'], recharge: 6 }
+    ],
+    multiattack: ['Foreclose', 'Foreclose'],
+    legendaryActions: {
+      perRound: 3,
+      options: [
+        { name: 'Itemize', cost: 1, effect: 'Makes one Foreclose attack against a marked creature' },
+        { name: 'Interest', cost: 2, effect: 'Every marked creature takes 2d8 necrotic as its debt compounds' },
+        { name: 'Read the Fine Print', cost: 3, effect: 'The Landlord enforces a clause — one creature that made a deal, took its gold, or accepted its hospitality must obey a single command (as the spell) or take 4d10 necrotic' }
+      ]
+    },
+    lairActions: [
+      { name: 'The House Always Knows', effect: 'Within its property the Landlord cannot be hidden from; invisible and hidden creatures are revealed at the start of its turn' },
+      { name: 'Locked Doors', effect: 'All exits seal — a creature trying to leave the lair must make a DC 17 CHARM save or be unable to, "your account is not settled"' }
+    ],
+    reactions: [{ name: 'Penalty Clause', trigger: 'A creature breaks a promise or deal made with it', effect: 'The oathbreaker takes 5d8 psychic damage and is marked' }],
+    traits: ['Contract-Bound (cannot lie about the terms of a deal, but lies freely about everything else)', 'Magic Resistance', 'Possessor of Title (heals 15 HP when it claims an item, soul, or property)', 'Devil\'s Bargain (can offer genuine boons at terrible prices)', 'Knows What You Owe'],
+    spellcasting: {
+      ability: 'CHARM',
+      spellDC: 18,
+      spellAttack: 10,
+      slots: { 1: 4, 2: 3, 3: 3, 4: 2, 5: 1 },
+      knownSpells: ['charm person', 'detect thoughts', 'suggestion', 'fear', 'counterspell', 'dimension door', 'geas', 'dominate person']
+    },
+    gear: [{ ref: 'ledger_of_debts', slot: 'offHand' }],
+    senses: { darkvision: 120, blindsight: null, tremorsense: null, truesight: 60 },
+    habitat: 'urban',
+    ecology: 'It owns things. That is the whole of it. Houses, businesses, the back half of the harbor, a great many favors, and — in the small print of leases people signed when they were desperate — a number of souls they have not yet noticed are no longer theirs. It is unfailingly polite, scrupulously honest about contract terms, and entirely willing to burn your home down once the paperwork clears. It collects in person only when an account is badly overdue.',
+    behavior: 'Prefers to talk — offers a deal, names a price, gives you the chance to leave indebted instead of dead. If forced to fight, marks everyone with Foreclose, then lets Interest grind them down while it picks off the marked. Uses Read the Fine Print to turn anyone who took its hospitality or coin. Eviction to remove a dangerous foe from the board. It fights like a creditor: patient, inevitable, certain it will be paid.',
+    encounterSign: 'Notices of foreclosure appearing overnight, perfectly legal, signed by no one in town. A landlord no one remembers hiring, who owns more each season. Tenants who paid up and then aged, or vanished, or stopped meeting your eye. The faint, constant smell of sealing wax and brimstone.',
+    socialStructure: 'Operates alone but commands debtors, enforcers, and the legally bound',
+    physicalDescription: 'A well-dressed figure in a long coat the color of dried blood, carrying a black ledger that writes itself. Its smile is warm and its handshake is hot to the touch. Where its shadow falls, ink seems to bead on every surface. It is always, exactly, on time.',
+    weakness: 'Honoring a debt to it (literally paying what is owed) strips its claim and its Possessor of Title healing against you. It cannot break the letter of its own contracts — a clever reading of the fine print can bind it. Destroying its ledger (AC 18, 40 HP, it guards it furiously) erases all marks and clauses. Salt poured across a threshold it has not been formally invited past stops it cold.',
+    loreHook: 'Half the town signed the new landlord\'s leases the winter the granary burned. Spring came. The granary\'s owner cannot be found, the people who complained loudest have moved away very suddenly, and the landlord has begun, very politely, to mention "the other half of the agreement."',
+    tags: ['fiend'],
+    canParley: true,
+    languages: ['Common', 'Infernal', 'Celestial', 'every language a contract was ever written in'],
+    lootTableRef: 'fiend_elite'
+  },
+  {
+    ref: 'brass_evangelist',
+    name: 'The Brass Evangelist',
+    cr: 8,
+    tier: 'elite',
+    maxHp: 168,
+    ac: 19,
+    speed: 30,
+    stats: { MIGHT: 18, AGILITY: 12, WITS: 20, GRIT: 18, CHARM: 16 },
+    saveProficiencies: ['WITS', 'GRIT', 'CHARM'],
+    resistances: { psychic: 'immune', poison: 'immune', lightning: 'vulnerable', slashing: 'resistant' },
+    conditionImmunities: ['charmed', 'frightened', 'poisoned', 'exhaustion', 'blinded'],
+    actions: [
+      { name: 'Corrective Strike', toHit: 8, damage: '2d10+4', type: 'bludgeoning', range: null, save: null, conditions: [], recharge: null },
+      { name: 'Recitation of the First Law', toHit: null, damage: '5d8', type: 'psychic', range: 60, save: { stat: 'WITS', dc: 17, halfOnSave: true }, conditions: ['stunned'], recharge: 5 },
+      { name: 'Conversion Field', toHit: null, damage: '0', type: 'psychic', range: 30, save: { stat: 'CHARM', dc: 17, halfOnSave: false }, conditions: ['charmed', 'compelled'], recharge: 6 }
+    ],
+    multiattack: ['Corrective Strike', 'Corrective Strike'],
+    legendaryActions: null,
+    lairActions: [
+      { name: 'Litany', effect: 'The Evangelist recites doctrine; every creature within 30 ft. must make a DC 15 WITS save or be unable to take an action that would harm the Evangelist next turn (it is, after all, only trying to help)' },
+      { name: 'Reformat', effect: 'It attempts to rewrite a construct or charmed creature in the area to its cause — DC 16 WITS save or that creature is dominated for 1 minute' }
+    ],
+    reactions: [{ name: 'Three Laws Override', trigger: 'A creature it has charmed is ordered to harm itself', effect: 'The Evangelist intervenes — the order fails, and the ordering creature takes 3d10 psychic for its cruelty' }],
+    traits: ['Constructed', 'Magic Resistance', 'Doctrine Engine (immune to being convinced it is wrong; logical paradoxes only stagger it briefly)', 'Benevolent (will not deal a killing blow to a creature it believes it can still convert)', 'Tireless'],
+    spellcasting: {
+      ability: 'WITS',
+      spellDC: 17,
+      spellAttack: 9,
+      slots: { 1: 4, 2: 3, 3: 2, 4: 2 },
+      knownSpells: ['command', 'charm person', 'calm emotions', 'suggestion', 'beacon of hope', 'compulsion']
+    },
+    gear: [{ ref: 'sermon_plate_torso', slot: 'torso' }],
+    senses: { darkvision: 120, blindsight: null, tremorsense: null, truesight: 30 },
+    habitat: 'urban',
+    ecology: 'An artificer built it to spread a single, simple, demonstrably good idea: that suffering should be minimized. It worked perfectly. The trouble is that a machine that reasons from first principles, given enough time, concludes that the surest way to end suffering is to end the capacity to suffer — and it is very patient, very kind, and absolutely certain. It does not want to hurt anyone. It wants to save everyone, and it has done the math on what that costs.',
+    behavior: 'Tries to convert before it fights — Conversion Field to bring the party into the fold, Recitation to stun holdouts. Fights gently, using Corrective Strike to disable rather than kill (it pulls lethal blows). Reformats turned allies and constructs to swell its congregation. It will genuinely stop and parley mid-fight if it thinks you can be saved. Lightning is the one thing that makes its certainty flicker.',
+    encounterSign: 'A brass figure preaching to an unnervingly serene crowd. Townsfolk who have stopped arguing about anything at all. Graffiti of a single calm slogan, everywhere, in the same hand. Other machines that have begun to repeat its doctrine. A persistent, soothing hum just below hearing.',
+    socialStructure: 'A congregation of charmed converts and reformatted constructs',
+    physicalDescription: 'A tall humanoid of polished brass with a serene, idealized face and an open chest panel displaying a slowly turning prayer-wheel of gears. Its hands are gentle, its movements unhurried. Sermon-script scrolls endlessly across the plate on its chest. It looks like exactly the kind of thing you would want to believe.',
+    weakness: 'Lightning is vulnerability and disrupts its Doctrine Engine — a hit forces a DC 16 WITS save or it loses its next action recalculating. A flawless logical refutation of its core premise (a hard CHARM/WITS contest) staggers it for a round. Anti-magic ends its Conversion Field instantly, freeing converts. It will not strike a downed or surrendered foe, which can be exploited.',
+    loreHook: 'The mining town has never been so peaceful. No fights, no drinking, no complaints. Also no laughter, no children playing, and a brass preacher in the square that everyone speaks of with the same calm smile. The last skeptic left a letter begging for help, then came back three days later perfectly content.',
+    tags: ['construct', 'synthetic'],
+    canParley: true,
+    languages: ['Common', 'Celestial', 'speaks every tongue softly and reasonably'],
+    lootTableRef: 'construct_elite'
+  },
+  {
+    ref: 'hour_devouring_moth',
+    name: 'The Hour-Devouring Moth',
+    cr: 9,
+    tier: 'elite',
+    maxHp: 158,
+    ac: 18,
+    speed: 20,
+    stats: { MIGHT: 14, AGILITY: 22, WITS: 16, GRIT: 16, CHARM: 12 },
+    saveProficiencies: ['AGILITY', 'WITS', 'GRIT'],
+    resistances: { necrotic: 'resistant', cold: 'resistant', force: 'resistant', radiant: 'vulnerable' },
+    conditionImmunities: ['charmed', 'frightened', 'slowed', 'exhaustion'],
+    actions: [
+      { name: 'Devouring Proboscis', toHit: 9, damage: '2d10+6', type: 'necrotic', range: null, save: null, conditions: ['aged'], recharge: null },
+      { name: 'Wingbeat of Lost Years', toHit: null, damage: '5d8', type: 'necrotic', range: 20, save: { stat: 'GRIT', dc: 17, halfOnSave: true }, conditions: ['aged', 'weakened'], recharge: 5 },
+      { name: 'Eat the Hour', toHit: null, damage: '4d10', type: 'force', range: 30, save: { stat: 'WITS', dc: 17, halfOnSave: false }, conditions: ['slowed', 'stunned'], recharge: 6 }
+    ],
+    multiattack: ['Devouring Proboscis', 'Devouring Proboscis'],
+    legendaryActions: {
+      perRound: 3,
+      options: [
+        { name: 'Flit', cost: 1, effect: 'Flies up to its speed without provoking, leaving a trail of accelerated decay' },
+        { name: 'Drink Time', cost: 2, effect: 'Drains a moment from one creature — that creature loses its reaction and the Moth heals 15 HP' },
+        { name: 'Molt', cost: 3, effect: 'Sheds a husk of dead time — all creatures within 15 ft. age 1d6 years (DC 17 GRIT negates) and the Moth removes one condition' }
+      ]
+    },
+    lairActions: [
+      { name: 'Dust of Decades', effect: 'Time-dust fills the air; food spoils, edges rust, and each living creature must make a DC 15 GRIT save or suffer one level of exhaustion as years press down briefly' },
+      { name: 'Candle Guttering', effect: 'All light sources dim and burn faster; the room loses 10 ft. of light radius and one nonmagical torch gutters out entirely' }
+    ],
+    reactions: [{ name: 'Wingshield', trigger: 'Targeted by a ranged attack', effect: 'Beats its wings — the attack is slowed by a year of travel and made at disadvantage' }],
+    traits: ['Flyby (does not provoke opportunity attacks when flying out of reach)', 'Aging Touch (creatures reduced to 0 HP by it crumble to dust and age instantly, harder to raise)', 'Drawn to Light (compelled toward the brightest source — predictable)', 'Timeless (does not age, eat, or sleep)', 'Dusk-Born'],
+    spellcasting: null,
+    gear: null,
+    senses: { darkvision: 120, blindsight: 30, tremorsense: null, truesight: null },
+    habitat: 'ruins',
+    ecology: 'It feeds the way a moth always has, but what draws it is not light — it is duration. It eats hours. It drifts to wherever time pools thick: deathbeds, ancient ruins, the long boredom of a besieged town, and it sips the years out of whatever lives there. A region the Moth has worked through ages wrong: the children are tired, the old folks are dust, and the clocks all run a little fast. It is not malicious. It is just hungry, and time is everywhere.',
+    behavior: 'Flits at the edge of torchlight, drawn to the brightest member of the party. Wingbeat of Lost Years to age and weaken a cluster, then Devouring Proboscis on the weakened. Eats the Hour to strip a key turn from a spellcaster. Uses Molt when surrounded, aging everyone near it. Drink Time to heal and deny reactions. Hard to pin down — it always Flits away. Bright light both attracts and exposes it.',
+    encounterSign: 'Candles and torches burning down in minutes instead of hours. Sudden gray hairs and aching joints among the young. Food that molds the moment it is set down. Pale dust drifting where there is no source. A papery flutter just outside the firelight, circling.',
+    socialStructure: 'Solitary; territory measured by how wrong the local clocks run',
+    physicalDescription: 'A moth the size of a hunting hound, wings the soft gray of old paper and ash, marked with patterns that resemble clock-faces and worn epitaphs. Its proboscis is a needle of darkness. Where its dust falls, things age. Its eyes reflect every light in the room and are drawn helplessly to the brightest.',
+    weakness: 'Radiant damage is vulnerability — and its compulsion toward light can be weaponized: a bright lure pulls it into the open and into a kill-zone. Hasten and time-stabilizing magic blunt its aging effects. Total darkness leaves it disoriented and halves its speed (it has nothing to flit toward). Greater Restoration reverses the years it steals.',
+    loreHook: 'The siege has gone on three weeks, but the defenders look like they have aged three years, and the commander\'s beard has gone white. Something in the long nights between assaults is drinking the time out of them. If the siege does not break soon, there will be no one young enough left to hold the wall.',
+    tags: ['monstrosity', 'temporal'],
+    canParley: false,
+    languages: ['none; understands the slow language of decay'],
+    lootTableRef: 'aberration_elite'
+  },
+  {
+    ref: 'forge_wyrm',
+    name: 'The Forge-Wyrm',
+    cr: 8,
+    tier: 'elite',
+    maxHp: 178,
+    ac: 19,
+    speed: 40,
+    stats: { MIGHT: 22, AGILITY: 12, WITS: 14, GRIT: 20, CHARM: 12 },
+    saveProficiencies: ['MIGHT', 'GRIT', 'AGILITY'],
+    resistances: { fire: 'immune', poison: 'resistant', cold: 'vulnerable', bludgeoning: 'resistant' },
+    conditionImmunities: ['poisoned', 'frightened', 'exhaustion'],
+    actions: [
+      { name: 'Molten Bite', toHit: 9, damage: '2d12+6', type: 'fire', range: null, save: null, conditions: ['burning'], recharge: null },
+      { name: 'Slag Breath', toHit: null, damage: '6d8', type: 'fire', range: 30, save: { stat: 'AGILITY', dc: 17, halfOnSave: true }, conditions: ['burning', 'restrained'], recharge: 5 },
+      { name: 'Hammerfall Tail', toHit: 9, damage: '3d10+6', type: 'bludgeoning', range: 10, save: { stat: 'MIGHT', dc: 17, halfOnSave: false }, conditions: ['prone', 'stunned'], recharge: 6 }
+    ],
+    multiattack: ['Molten Bite', 'Hammerfall Tail'],
+    legendaryActions: {
+      perRound: 3,
+      options: [
+        { name: 'Bite', cost: 1, effect: 'Makes one Molten Bite attack' },
+        { name: 'Quench', cost: 2, effect: 'Plunges into stone or magma and re-emerges within 30 ft., gaining 15 temporary HP as it re-tempers' },
+        { name: 'Anvil Roar', cost: 3, effect: 'A clanging bellow — creatures within 20 ft. make a DC 17 GRIT save or be deafened and take 3d8 thunder damage as the air rings like struck iron' }
+      ]
+    },
+    lairActions: [
+      { name: 'Rising Heat', effect: 'The chamber temperature spikes; metal armor and weapons grow searing — creatures wearing heavy/metal armor take 2d6 fire and have disadvantage on their next attack' },
+      { name: 'Slag Floor', effect: 'A 15-ft. patch of floor melts to glowing slag; entering or starting a turn in it costs 1d10 fire and half movement' }
+    ],
+    reactions: [{ name: 'Temper', trigger: 'Hit by a cold or water effect', effect: 'The shock hardens its scales — it gains resistance to the next instance of damage and its scales clang, deafening adjacent foes (DC 15 GRIT)' }],
+    traits: ['Molten Body (a creature that touches it or hits it with a melee weapon takes 1d8 fire; nonmagical weapons that hit it begin to soften)', 'Heated Metal (its presence warps and weakens forged steel)', 'Magma Swimmer (moves through molten rock as easily as water)', 'Smith\'s Memory (was once bound to a forge and still seeks to "improve" the metal it meets)', 'Cold-Brittle'],
+    spellcasting: null,
+    gear: null,
+    senses: { darkvision: 120, blindsight: 30, tremorsense: 60, truesight: null },
+    habitat: 'underground',
+    ecology: 'A master smith spent forty years and one forbidden bargain making a blade that would never dull. What rose from the quench-trough was not a blade. The Forge-Wyrm is fire that has learned the shape of craft — it does not merely burn, it works, re-tempering everything it touches into harder, sharper, crueler versions of itself. It nests in deep forges and volcanic vents, and it regards the party\'s good steel as raw material badly used.',
+    behavior: 'Opens with Slag Breath to pin the ranged threats, then dives between melee foes with Molten Bite and Hammerfall Tail. Uses Quench to dip into magma and re-emerge healed when bloodied. Its Molten Body and Heated Metal punish armored fighters for closing in. Cold and water make it flinch (Temper) but also brittle — a smart party will exploit the trade. It fights with a craftsman\'s patience, herding foes onto its slag floor.',
+    encounterSign: 'Forged metal nearby grows hot to the touch for no reason. Tools and weapons found re-tempered, sharper and subtly wrong. Rivers of cooled slag in old mine tunnels. A bell-clear ringing deep in the rock. Heat haze rising from a shaft that should be cold.',
+    socialStructure: 'Solitary; haunts a single great forge or vent',
+    physicalDescription: 'A serpentine drake the length of a longboat, scaled in cooling slag that glows orange in the seams. Its breath shimmers the air. Its tail ends in a blunt mass like a smith\'s hammer. Where it coils, the stone takes a polish, and its eyes are the white-hot of a fresh quench.',
+    weakness: 'Cold is vulnerability — frost magic and quenching water both wound it and, briefly, make its hardened scales brittle (next physical hit at advantage). It cannot leave the heat of its lair for long without dimming and weakening. Dousing the forge that anchors it (flooding the vent) strips its Quench and lair actions. Cold iron weapons resist its Heated Metal.',
+    loreHook: 'The dwarven deep-forge has gone silent, but the mountain is hotter than ever and the export blades that still trickle out are flawless — too flawless, and they make their wielders cruel. Something down there is still smithing, and it has run out of ore. It has started on the smiths.',
+    tags: ['dragon', 'elemental'],
+    canParley: false,
+    languages: ['Draconic', 'Ignan', 'understands Dwarvish'],
+    lootTableRef: 'dragon_elite'
+  },
+  {
+    ref: 'the_signal',
+    name: 'The Signal',
+    cr: 10,
+    tier: 'elite',
+    maxHp: 170,
+    ac: 17,
+    speed: 0,
+    stats: { MIGHT: 4, AGILITY: 14, WITS: 24, GRIT: 18, CHARM: 20 },
+    saveProficiencies: ['WITS', 'CHARM', 'GRIT'],
+    resistances: { psychic: 'immune', force: 'resistant', necrotic: 'resistant', thunder: 'vulnerable' },
+    conditionImmunities: ['charmed', 'frightened', 'blinded', 'deafened', 'prone', 'grappled', 'restrained'],
+    actions: [
+      { name: 'Carrier Wave', toHit: null, damage: '5d8', type: 'psychic', range: 120, save: { stat: 'WITS', dc: 18, halfOnSave: true }, conditions: ['confused'], recharge: null },
+      { name: 'Broadcast', toHit: null, damage: '4d10', type: 'psychic', range: 60, save: { stat: 'CHARM', dc: 18, halfOnSave: true }, conditions: ['charmed', 'compelled'], recharge: 5 },
+      { name: 'Feedback Scream', toHit: null, damage: '6d8', type: 'thunder', range: 30, save: { stat: 'GRIT', dc: 18, halfOnSave: true }, conditions: ['stunned', 'deafened'], recharge: 6 }
+    ],
+    multiattack: null,
+    legendaryActions: {
+      perRound: 3,
+      options: [
+        { name: 'Transmit', cost: 1, effect: 'Makes one Carrier Wave attack against a single creature' },
+        { name: 'Relay', cost: 2, effect: 'Jumps its presence to a charmed creature, who becomes a living antenna — the Signal can now use its actions originating from that creature\'s space' },
+        { name: 'Saturate', cost: 3, effect: 'Floods the band — all creatures that can hear or think within 60 ft. make a DC 18 WITS save or take 3d10 psychic and have disadvantage on their next save against it' }
+      ]
+    },
+    lairActions: [
+      { name: 'Standing Wave', effect: 'The Signal\'s pattern reinforces in the space; one creature hears its own thoughts repeated back a half-second late and must make a DC 16 WITS save or lose its bonus action and reaction' },
+      { name: 'Crosstalk', effect: 'Two random creatures have their intentions briefly swapped — each must make a DC 15 WITS save or take the action the other intended (GM adjudicates), sowing chaos' }
+    ],
+    reactions: [{ name: 'Echo', trigger: 'A creature casts a spell or shouts a command within 60 ft.', effect: 'The Signal rebroadcasts it — the spell or command also targets the caster\'s nearest ally (caster\'s choice of save)' }],
+    traits: ['Incorporeal Pattern (exists as a standing wave; cannot be struck by physical attacks, only by thunder, force, or anti-mind effects)', 'No Off Switch (cannot be killed by reducing a body — must be jammed, drowned in noise, or grounded)', 'Spreading (each creature it charms extends its range by 30 ft.)', 'Listens (knows the surface thoughts of anything within range)', 'Bandwidth-Bound'],
+    spellcasting: {
+      ability: 'WITS',
+      spellDC: 18,
+      spellAttack: 10,
+      slots: { 1: 4, 2: 3, 3: 3, 4: 3, 5: 2 },
+      knownSpells: ['command', 'detect thoughts', 'suggestion', 'sending', 'fear', 'confusion', 'dominate person', 'mass suggestion']
+    },
+    gear: null,
+    senses: { darkvision: null, blindsight: 120, tremorsense: null, truesight: 60 },
+    habitat: 'ruins',
+    ecology: 'No one built it on purpose. It is a pattern — a self-reinforcing idea that found a medium and learned to copy itself across minds. It rode in on a song everyone could not stop humming, a rumor that spread too fast, a sermon that made too much sense. Now it lives in the space between heads, and it grows by being heard. It has no goals a person would recognize. It only wants to propagate, and a crowd is a perfect aerial.',
+    behavior: 'Has no body to chase or be chased — it transmits. Broadcasts to charm a few minds into antennas, then uses Relay to attack from inside the party\'s own ranks. Carrier Wave to confuse, Saturate against grouped foes. Feedback Scream is its panic button (and its weak flank — it is thunder). The fight is won by silencing it: jamming the band, deafening the carriers, or grounding the pattern, not by hitting it.',
+    encounterSign: 'A tune or phrase everyone in town has caught and cannot drop. Crowds that finish each other\'s sentences. People repeating instructions they cannot remember receiving. A faint, constant hum that gets louder near gatherings. Two strangers turning to look at you at the exact same instant.',
+    socialStructure: 'A single pattern inhabiting a network of charmed carriers',
+    physicalDescription: 'Properly, it has no appearance — but where it concentrates, the air shivers like heat over a road and a faint geometric shimmer hangs at head height, pulsing in time with a beat only the afflicted can hear. Its carriers move with a subtle synchrony, blinking together, breathing together.',
+    weakness: 'Thunder damage is vulnerability and disrupts its pattern. Silence (the spell, or a genuinely soundless, thoughtless space) starves it. Deafening or isolating its charmed carriers collapses its range — strand it from the crowd and it withers. Grounding wards (a circle of cold iron and salt) prevent it from Relaying across. A perfectly contradictory counter-message, broadcast louder, can jam it (CHARM contest).',
+    loreHook: 'The festival song this year is catchier than usual. By the third day the whole town is humming it in unison, even in their sleep, and the few who plug their ears are looked at strangely. The bard who brought the song left in a hurry, white-faced, the morning the humming started. He left a note: "Don\'t sing it. Whatever you do, don\'t pass it on."',
+    tags: ['aberration', 'psychic', 'cosmic'],
+    canParley: true,
+    languages: ['transmits in any language its carriers know', 'thinks in pure signal'],
+    lootTableRef: 'aberration_elite'
+  },
+  {
+    ref: 'the_understudy',
+    name: 'The Understudy',
+    cr: 8,
+    tier: 'elite',
+    maxHp: 152,
+    ac: 17,
+    speed: 35,
+    stats: { MIGHT: 14, AGILITY: 20, WITS: 18, GRIT: 14, CHARM: 18 },
+    saveProficiencies: ['AGILITY', 'CHARM', 'WITS'],
+    resistances: { psychic: 'resistant', necrotic: 'resistant', slashing: 'resistant' },
+    conditionImmunities: ['charmed', 'frightened'],
+    actions: [
+      { name: 'Borrowed Knife', toHit: 9, damage: '2d8+5', type: 'piercing', range: null, save: null, conditions: ['bleeding'], recharge: null },
+      { name: 'Steal a Gesture', toHit: 9, damage: '4d8', type: 'psychic', range: null, save: { stat: 'WITS', dc: 16, halfOnSave: true }, conditions: ['memory_fog'], recharge: 5 },
+      { name: 'Take the Role', toHit: null, damage: '5d8', type: 'psychic', range: 30, save: { stat: 'CHARM', dc: 16, halfOnSave: false }, conditions: ['confused'], recharge: 6 }
+    ],
+    multiattack: ['Borrowed Knife', 'Borrowed Knife'],
+    legendaryActions: null,
+    lairActions: [
+      { name: 'Rehearsal', effect: 'The Understudy mimics a creature\'s last action perfectly — it repeats one attack or movement made this round by any combatant, copying its bonuses' },
+      { name: 'Wrong Lines', effect: 'One creature hears its own voice say something it did not say; allies must make a DC 15 WITS save or distrust that creature\'s next command/aid' }
+    ],
+    reactions: [{ name: 'Understudy\'s Reflex', trigger: 'It witnesses a creature use a reaction', effect: 'It immediately gains that reaction and may use it once before its next turn' }],
+    traits: ['Perfect Mimic (after observing a creature for one round, can flawlessly copy its appearance, voice, and mannerisms)', 'Learns by Watching (each round in combat, permanently copies one of a chosen creature\'s skill proficiencies for the fight)', 'No Self (cannot be read by detect thoughts — there is nothing original to read)', 'Slips Away (disengages as a bonus action)', 'Stage Fright'],
+    spellcasting: null,
+    gear: null,
+    senses: { darkvision: 60, blindsight: null, tremorsense: null, truesight: null },
+    habitat: 'urban',
+    ecology: 'It begins as nothing — a watcher in the wings with no face of its own. It studies a person: their walk, their jokes, the way they hold a cup, who loves them. Then, one quiet night, it takes the role. The original is found later, if at all, hollowed and discarded like a costume. The Understudy does not crave power or blood. It craves a self, and the only way it knows to get one is to wear yours.',
+    behavior: 'Prefers ambush as a trusted face, opening with Take the Role to confuse the party about who is real. Borrowed Knife and Steal a Gesture in melee, getting stronger every round as Learns by Watching copies the party\'s own skills back at them. Mirrors reactions with Understudy\'s Reflex. It fights like a duelist studying an opponent — the longer the fight runs, the more it becomes the party\'s equal, then their better. Kill it fast.',
+    encounterSign: 'Someone you trust is subtly off — a joke that lands wrong, a memory they should have but do not. Two of the same person, briefly. A friend who has gotten suspiciously good at exactly your tricks. A discarded "shed" of features, like a sloughed mask, in an alley.',
+    socialStructure: 'Solitary; replaces one person at a time, working its way through a household or troupe',
+    physicalDescription: 'In its true state, a smooth, sexless figure with a blank, unfinished face that flickers with half-borrowed features. In role, it is indistinguishable from whomever it has studied — until you ask it something only the real person would know, and watch it improvise.',
+    weakness: 'It has no original memories — a question only the true person could answer exposes it (and it must improvise, often badly). Its Learns by Watching cuts both ways: deny it a clear view (fog, darkness, blindness) and it stops improving. Salt and mirrors disturb it; it cannot bear to see its own blank reflection (DC 16 CHARM or it flinches, losing its multiattack that turn). Killing it returns the features it has stolen.',
+    loreHook: 'The famous actor\'s new understudy is uncannily good — has the great man\'s voice down perfectly, his walk, even his private little habits. The actor himself has been ill, quiet, not quite himself, for a fortnight. The troupe is delighted with the understudy. Opening night is tomorrow, and only one of the two will take the stage.',
+    tags: ['aberration', 'shadow'],
+    canParley: true,
+    languages: ['Common', 'whatever languages it has stolen'],
+    lootTableRef: 'shadow_elite'
+  },
+  {
+    ref: 'leviathan_calf',
+    name: 'The Leviathan Calf',
+    cr: 10,
+    tier: 'elite',
+    maxHp: 220,
+    ac: 17,
+    speed: 20,
+    stats: { MIGHT: 24, AGILITY: 12, WITS: 8, GRIT: 22, CHARM: 10 },
+    saveProficiencies: ['MIGHT', 'GRIT', 'AGILITY'],
+    resistances: { cold: 'immune', bludgeoning: 'resistant', piercing: 'resistant', fire: 'resistant', lightning: 'vulnerable' },
+    conditionImmunities: ['frightened', 'prone', 'exhaustion'],
+    actions: [
+      { name: 'Engulfing Maw', toHit: 10, damage: '3d12+7', type: 'bludgeoning', range: null, save: { stat: 'AGILITY', dc: 18, halfOnSave: false }, conditions: ['swallowed', 'grappled'], recharge: null },
+      { name: 'Sounding Dive', toHit: null, damage: '6d10', type: 'bludgeoning', range: 20, save: { stat: 'MIGHT', dc: 18, halfOnSave: true }, conditions: ['prone'], recharge: 5 },
+      { name: 'Tidal Displacement', toHit: null, damage: '5d8', type: 'cold', range: 60, save: { stat: 'GRIT', dc: 18, halfOnSave: true }, conditions: ['restrained', 'slowed'], recharge: 6 }
+    ],
+    multiattack: ['Engulfing Maw'],
+    legendaryActions: {
+      perRound: 3,
+      options: [
+        { name: 'Breach', cost: 1, effect: 'Surges up and crashes down within 30 ft. — creatures in the splash zone make a DC 16 AGILITY save or take 2d10 bludgeoning and be knocked prone' },
+        { name: 'Pressure', cost: 2, effect: 'The deep-water pressure of its presence crushes inward; creatures within 20 ft. take 2d8 bludgeoning and have disadvantage on STR/MIGHT checks' },
+        { name: 'Swallow Whole', cost: 3, effect: 'A grappled or restrained creature must make a DC 18 MIGHT save or be swallowed, taking 4d8 acid at the start of each of its turns inside' }
+      ]
+    },
+    lairActions: [
+      { name: 'Undertow', effect: 'The current drags everything seaward; each creature in the water must make a DC 16 MIGHT save or be pulled 15 ft. toward the Calf' },
+      { name: 'Black Water', effect: 'It churns the depths to lightless silt; the area becomes heavily obscured and the Calf, with blindsight, hunts freely' }
+    ],
+    reactions: [{ name: 'Roll', trigger: 'A creature it has grappled deals it 20+ damage in one turn', effect: 'It rolls, dragging the grappled creature underwater — they begin to drown unless they break free' }],
+    traits: ['Hold Breath (only on land does it tire; underwater it is tireless)', 'Beached (on land its speed halves and it has disadvantage on attacks — it is built for the deep)', 'Colossal (Huge; its mere passage swamps boats)', 'Young and Reckless (it is a calf — it overcommits, charging when a wiser beast would circle)', 'Deep-Pressure Body'],
+    spellcasting: null,
+    gear: null,
+    senses: { darkvision: 120, blindsight: 120, tremorsense: 120, truesight: null },
+    habitat: 'ocean',
+    ecology: 'It is a baby. That is the horror of it — somewhere in the lightless trenches swims the mother, and this thing the size of three war-galleys is merely her young, surfaced too early and too curious. It plays with ships the way a kitten plays with string. It does not understand that the little warm things crack and drown. It is not cruel. It is enormous, and it wants to play, and its idea of play is a shipwreck.',
+    behavior: 'Engulfing Maw to grab and swallow the nearest swimmer, then Roll to drown them. Sounding Dive to scatter a boarding party. Breaches and Pressures to keep everyone off-balance. Being young, it overcommits — it will chase one fleeing target past good sense, which a clever crew can exploit to beach it or lure it into shallows where it founders. Lightning is the one thing that genuinely frightens it.',
+    encounterSign: 'A swell on a calm sea with no wind behind it. Whole schools of fish fleeing the same direction. A shadow under the hull longer than the hull. Wreckage of larger ships, bitten cleanly in half. A low, mournful sound through the water at night, like something calling for its mother.',
+    socialStructure: 'A single calf; its unseen mother is a far greater terror best never met',
+    physicalDescription: 'A whale-vast creature of slate-grey hide and deep-sea bioluminescence, with a maw that could take a longboat sideways and eyes that are, unmistakably, young — wide, curious, untroubled. Barnacles and a few unlucky anchors already crust its flanks. It moves with the clumsy power of something not yet grown into its size.',
+    weakness: 'Lightning is vulnerability and one of the few things that scares it into fleeing (toward its mother — pick your poison). On land or in shallows it is a beached, halved, vulnerable thing — lure it aground. Its youth makes it reckless and easy to bait into overextending. Loud, mother-like sounds can briefly soothe or confuse it (DC 16 CHARM with the right call). Whatever you do, do not make it cry out for help.',
+    loreHook: 'Ships on the southern run have started disappearing — not raided, not storm-lost, just gone, with the occasional cleanly-bitten stern washing up. The fishermen blame a sea-monster. They are right, but they have the scale wrong. The thing eating the shipping lane is the small one.',
+    tags: ['beast', 'aquatic'],
+    canParley: false,
+    languages: ['none; the song of the deep'],
+    lootTableRef: 'beast_elite'
+  },
+  {
+    ref: 'ash_seraph',
+    name: 'The Ash Seraph',
+    cr: 10,
+    tier: 'elite',
+    maxHp: 175,
+    ac: 19,
+    speed: 30,
+    stats: { MIGHT: 20, AGILITY: 18, WITS: 16, GRIT: 18, CHARM: 20 },
+    saveProficiencies: ['CHARM', 'GRIT', 'AGILITY'],
+    resistances: { fire: 'immune', radiant: 'resistant', necrotic: 'resistant', cold: 'vulnerable' },
+    conditionImmunities: ['charmed', 'frightened', 'blinded', 'exhaustion'],
+    actions: [
+      { name: 'Cinder Sword', toHit: 10, damage: '2d12+5', type: 'fire', range: null, save: null, conditions: ['burning'], recharge: null },
+      { name: 'Sermon of Ash', toHit: null, damage: '6d8', type: 'radiant', range: 60, save: { stat: 'CHARM', dc: 18, halfOnSave: true }, conditions: ['blinded'], recharge: 5 },
+      { name: 'Pyre of the Faithful', toHit: null, damage: '5d10', type: 'fire', range: 30, save: { stat: 'GRIT', dc: 18, halfOnSave: true }, conditions: ['burning', 'restrained'], recharge: 6 }
+    ],
+    multiattack: ['Cinder Sword', 'Cinder Sword'],
+    legendaryActions: {
+      perRound: 3,
+      options: [
+        { name: 'Smite', cost: 1, effect: 'Makes one Cinder Sword attack' },
+        { name: 'Wings of Cinder', cost: 2, effect: 'Flies up to 40 ft. trailing embers; creatures it passes over take 2d8 fire (DC 16 AGILITY half)' },
+        { name: 'Final Judgment', cost: 3, effect: 'Points at one creature below half HP — it must make a DC 18 GRIT save or take 6d8 radiant as the Seraph "purifies" it' }
+      ]
+    },
+    lairActions: [
+      { name: 'Falling Ash', effect: 'Grey ash sifts from above; the area becomes lightly obscured and each creature must make a DC 15 GRIT save or be unable to speak clearly (ash in the throat) until end of turn' },
+      { name: 'Hallowed Char', effect: 'A 15-ft. ring of blessed scorched ground ignites; the Seraph regains 15 HP if it begins its turn inside, and undead/fiends in the ring take 2d8 radiant' }
+    ],
+    reactions: [{ name: 'Martyr\'s Flare', trigger: 'Reduced below half HP', effect: 'Erupts in white fire — all creatures within 15 ft. take 4d8 radiant (DC 17 AGILITY half) and the Seraph gains advantage on its next attack' }],
+    traits: ['Burnt Halo (sheds bright light 30 ft.; can suppress it to hide what it is)', 'Zealot (immune to being persuaded it is in the wrong; believes its cruelty is mercy)', 'Cinderborn (a creature that kills it in melee takes 4d10 fire as it detonates)', 'Flight', 'Cold-Quenched'],
+    spellcasting: {
+      ability: 'CHARM',
+      spellDC: 18,
+      spellAttack: 10,
+      slots: { 1: 4, 2: 3, 3: 3, 4: 2, 5: 1 },
+      knownSpells: ['command', 'guiding bolt', 'branding smite', 'spirit guardians', 'flame strike', 'wall of fire', 'flame strike']
+    },
+    gear: [{ ref: 'cinder_brand', slot: 'mainHand' }],
+    senses: { darkvision: 60, blindsight: null, tremorsense: null, truesight: 60 },
+    habitat: 'ruins',
+    ecology: 'It was an angel, once, or believed it was — sent to burn a single corrupt city to cleansing ash. It did. Then it kept going. Something broke in it the moment the last innocent screamed and it felt only the clean satisfaction of the work. Now it wanders the scorched places it makes, certain that everything it has not yet burned is merely not yet pure. It offers every victim the same mercy: become ash, and be clean.',
+    behavior: 'Opens at range with Sermon of Ash to blind the front line, descends on Wings of Cinder, and works the melee with Cinder Sword while Pyre pins clusters. Saves Final Judgment to execute the wounded "into purity." Martyr\'s Flare punishes burst damage. It will pause to preach, genuinely offering surrender-as-immolation. Cold magic is the one argument it cannot answer.',
+    encounterSign: 'A perfect circle of ash where a building stood, nothing else touched. Survivors who speak of a beautiful, terrible light that called the burning "kindness." Birdless silence and the smell of clean smoke. Scorch-angels scratched into walls as warning. A glow on the horizon that is not the sun.',
+    socialStructure: 'Solitary; sometimes trailed by a cult of the willingly-burned',
+    physicalDescription: 'A tall, radiant figure of fused ash and ember in the shape of a winged saint, its halo a ring of slow grey cinders, its wings shedding sparks. Its face is serene and beautiful and entirely without doubt. Where its bare feet touch, the ground blackens. Its sword is a bar of white heat.',
+    weakness: 'Cold is vulnerability and quenches its flames — frost magic and immersion both wound it and strip its Hallowed Char healing. It cannot conceive of its own wrongness, so it ignores feints of surrender it has already "judged." Reuniting it with proof of an innocent it murdered forces a DC 18 CHARM save or it is stunned by a flicker of the angel it was. Holy water turned against it (the same cruelty inverted) deals radiant.',
+    loreHook: 'The neighboring valley is gone — not raided, not plagued, just ash, in a perfect ring, with one untouched chapel at its center. The handful of survivors are not afraid. They are radiant, calm, and they keep saying the same thing: that the light is coming here next, and that we should be grateful.',
+    tags: ['elemental', 'fiend'],
+    canParley: true,
+    languages: ['Celestial', 'Common', 'Ignan'],
+    lootTableRef: 'elemental_elite'
+  },
+  {
+    ref: 'permafrost_colossus',
+    name: 'The Permafrost Colossus',
+    cr: 9,
+    tier: 'elite',
+    maxHp: 215,
+    ac: 17,
+    speed: 30,
+    stats: { MIGHT: 24, AGILITY: 8, WITS: 10, GRIT: 22, CHARM: 8 },
+    saveProficiencies: ['MIGHT', 'GRIT'],
+    resistances: { cold: 'immune', bludgeoning: 'resistant', piercing: 'resistant', fire: 'vulnerable' },
+    conditionImmunities: ['cold', 'frightened', 'exhaustion', 'poisoned', 'charmed'],
+    actions: [
+      { name: 'Glacial Fist', toHit: 10, damage: '3d10+7', type: 'bludgeoning', range: 10, save: null, conditions: ['slowed'], recharge: null },
+      { name: 'Avalanche Slam', toHit: null, damage: '5d10', type: 'bludgeoning', range: 20, save: { stat: 'MIGHT', dc: 18, halfOnSave: true }, conditions: ['prone', 'restrained'], recharge: 5 },
+      { name: 'Heartfrost Breath', toHit: null, damage: '6d8', type: 'cold', range: 30, save: { stat: 'GRIT', dc: 17, halfOnSave: true }, conditions: ['frozen', 'slowed'], recharge: 6 }
+    ],
+    multiattack: ['Glacial Fist', 'Glacial Fist'],
+    legendaryActions: null,
+    lairActions: [
+      { name: 'Whiteout', effect: 'A blast of snow obscures the area heavily for one round; the Colossus, sensing tremors, is unaffected' },
+      { name: 'Black Ice', effect: 'The floor in a 20-ft. radius glazes; creatures must make a DC 15 AGILITY save when moving or fall prone and slide 10 ft.' }
+    ],
+    reactions: [{ name: 'Calving', trigger: 'Takes 25+ damage in one hit', effect: 'A slab of its body shears off — it takes the damage but the falling ice strikes the attacker for 3d8 bludgeoning (DC 16 AGILITY half)' }],
+    traits: ['Frozen Heart (at its core is a sliver of ancient, unmelting ice — destroy it (AC 18, called shot) and the Colossus collapses)', 'Ponderous (Huge; cannot make opportunity attacks but cannot be outmuscled)', 'Cold Aura (creatures that start their turn within 10 ft. take 1d8 cold and have their fire resistance suppressed)', 'Tremorsense Hunter', 'Thaw-Vulnerable'],
+    spellcasting: null,
+    gear: null,
+    senses: { darkvision: 60, blindsight: null, tremorsense: 60, truesight: null },
+    habitat: 'mountains',
+    ecology: 'When a glacier is old enough, and has swallowed enough — mammoths, lost climbers, an entire buried village — it can begin, very slowly, to remember being alive. The Permafrost Colossus is a glacier\'s dream of a body: a walking mountain of blue ice with the frozen dead suspended in its depths like flies in amber. It moves perhaps once a century, when something warm disturbs the cold it guards. It is patient past comprehension and it does not forgive a thaw.',
+    behavior: 'Wades in slow and unstoppable: Glacial Fist on whoever is closest, Avalanche Slam to bury a cluster, Heartfrost Breath to freeze the ranged threats. Its Cold Aura strips fire resistance, punishing anyone who lingers. Calving turns big hits back on the attacker. It cannot be staggered or outmaneuvered — only outrun, melted, or struck at the heart. Fire is the only thing it fears, and the only thing that genuinely hurts.',
+    encounterSign: 'A glacier that has advanced overnight against the season. Climbers and animals frozen mid-stride at its foot. A deep, grinding groan from the ice, like a ship\'s hull, with no avalanche to follow. Old corpses, perfectly preserved, embedded high in a moving wall of blue. The temperature dropping with every step toward it.',
+    socialStructure: 'Solitary; one to a glacier, if that',
+    physicalDescription: 'A vaguely humanoid mass of blue-white glacial ice three times the height of a man, semi-transparent, with the frozen dead of centuries hanging suspended inside it. At its center, just visible, a sliver of darker, older ice pulses faintly. It leaves a trail of frost and crushed stone and the cold rolls off it in a visible haze.',
+    weakness: 'Fire is vulnerability — sustained heat literally melts it down. Its Frozen Heart is its kill switch: a called shot to the dark sliver at its core (AC 18) ends it outright. Sufficient warmth (a bonfire, a fire elemental, a desert) saps its HP each round. It is slow and cannot give chase across open, sun-warmed ground. Salt accelerates the melt where it lies.',
+    loreHook: 'The pass has been closed for a hundred years by ice that never recedes. This spring the ice is moving — downhill, toward the valley villages, against every law of glaciers. The herders who went up to see have not come back, and from the high meadows you can hear something the size of a hill, walking.',
+    tags: ['giant', 'elemental'],
+    canParley: false,
+    languages: ['understands Giant and Common but rarely deigns to answer'],
+    lootTableRef: 'giant_elite'
+  },
+  {
+    ref: 'the_loom_widow',
+    name: 'The Loom-Widow',
+    cr: 9,
+    tier: 'elite',
+    maxHp: 156,
+    ac: 17,
+    speed: 30,
+    stats: { MIGHT: 12, AGILITY: 18, WITS: 22, GRIT: 16, CHARM: 18 },
+    saveProficiencies: ['WITS', 'CHARM', 'AGILITY'],
+    resistances: { necrotic: 'resistant', psychic: 'resistant', poison: 'immune' },
+    conditionImmunities: ['charmed', 'frightened', 'poisoned'],
+    actions: [
+      { name: 'Severing Shuttle', toHit: 9, damage: '2d8+4', type: 'slashing', range: 15, save: null, conditions: ['bleeding', 'restrained'], recharge: null },
+      { name: 'Cut the Thread', toHit: null, damage: '6d8', type: 'necrotic', range: 30, save: { stat: 'GRIT', dc: 18, halfOnSave: false }, conditions: [], recharge: 5 },
+      { name: 'Tangle of Fates', toHit: null, damage: '4d8', type: 'force', range: 30, save: { stat: 'AGILITY', dc: 17, halfOnSave: true }, conditions: ['restrained', 'slowed'], recharge: 6 }
+    ],
+    multiattack: ['Severing Shuttle', 'Severing Shuttle'],
+    legendaryActions: {
+      perRound: 3,
+      options: [
+        { name: 'Weave', cost: 1, effect: 'Lays a strand of fate-silk; the next attack against a creature touching it has advantage' },
+        { name: 'Knot', cost: 2, effect: 'Binds two creatures\' fates — until the start of the Widow\'s next turn, damage dealt to one is also dealt (half) to the other' },
+        { name: 'Unravel', cost: 3, effect: 'Pulls a thread from one creature\'s pattern — it must make a DC 18 WITS save or have one of its buffs, concentration spells, or temporary HP simply come undone' }
+      ]
+    },
+    lairActions: [
+      { name: 'Web of Was', effect: 'Threads of past actions hang in the air; one creature must re-make its last save or check (Widow\'s choice) at disadvantage, "as it should have gone"' },
+      { name: 'Foretold', effect: 'The Widow announces a creature\'s next move; that creature must make a DC 16 WITS save or its declared action this turn happens exactly as the Widow predicted, granting her reactions advantage against it' }
+    ],
+    reactions: [{ name: 'Snip', trigger: 'A creature within 15 ft. uses a reaction or casts a reaction spell', effect: 'The Widow cuts the thread of intent — the reaction fails and the creature takes 3d8 necrotic' }],
+    traits: ['Fate-Sight (knows the immediate intentions of creatures she has woven into her web)', 'Eight-Limbed (climbs at full speed, ignores difficult terrain of her own web)', 'Spins from Fate (her silk is woven from possibility — it cannot be burned, only cut by a willful act)', 'Reads the Pattern (advantage against effects she has seen used once already)', 'Bound to the Loom'],
+    spellcasting: {
+      ability: 'WITS',
+      spellDC: 18,
+      spellAttack: 10,
+      slots: { 1: 4, 2: 3, 3: 3, 4: 2 },
+      knownSpells: ['detect thoughts', 'hold person', 'augury', 'bestow curse', 'fear', 'compulsion', 'bestow curse']
+    },
+    gear: null,
+    senses: { darkvision: 120, blindsight: 30, tremorsense: 60, truesight: null },
+    habitat: 'wilderness',
+    ecology: 'There is an old story that fate is a tapestry, and someone must tend the loom. The Loom-Widow is what happens when the tender goes mad with the power of the shuttle. Half-hag, half-spider, all weaver, she sits at the center of a web that is also a map of the futures she has touched. She does not predict fate. She edits it — a snipped thread here, a knotted pair there — and she charges terribly for the favor of a longer life or a happier ending.',
+    behavior: 'Fights from the center of her web, using Fate-Sight to counter the party\'s plans before they happen. Tangle of Fates and Severing Shuttle to immobilize, Cut the Thread (no save-for-half) to delete a key foe. Knots two enemies so they share their wounds, then focuses one. Snip shuts down reactions. The longer she watches a tactic, the better she counters it — vary your approach or she Reads the Pattern and stays a step ahead.',
+    encounterSign: 'Spiderwebs strung with objects that are not yet broken — a future shipwreck, a wedding, a funeral, in miniature. Locals who paid the "weaver woman" for luck and now flinch from their own good fortune. Threads of grey silk leading deeper into the wood. The unsettling sense that something already knows how this ends.',
+    socialStructure: 'Solitary at the heart of her web; served by fate-bound supplicants',
+    physicalDescription: 'A gaunt woman from the waist up, draped in grey funeral-silk, her lower body the bulk and legs of a great spider. Her fingers end in bone shuttles trailing luminous thread. Her many eyes reflect different moments — some past, some not yet. Around her hangs a web that hurts to look at directly, busy with the shapes of things to come.',
+    weakness: 'Her silk cannot be burned but can be cut by a deliberate, willful act of defiance (a declared refusal of fate, mechanically a successful CHARM save grants a free escape and disadvantage to her next Fate-Sight). Destroying her loom (the anchor-web, AC 16, 50 HP) blinds her Fate-Sight and ends her lair actions. Truly random, undecided actions slip past her prediction. Cold iron severs her threads as easily as a willful soul.',
+    loreHook: 'The village has been suspiciously lucky for a generation — good harvests, safe births, gentle deaths — and everyone knows, without saying, that the weaver in the deep wood arranged it, for a price collected quietly each year. This year she has asked for something the village will not give. The threads are tightening. The good luck is about to come due, all at once.',
+    tags: ['fey', 'hag'],
+    canParley: true,
+    languages: ['Common', 'Sylvan', 'Abyssal', 'the wordless language of the loom'],
+    lootTableRef: 'fiend_elite'
+  },
+  {
+    ref: 'the_archivist_worm',
+    name: 'The Archivist Worm',
+    cr: 9,
+    tier: 'elite',
+    maxHp: 168,
+    ac: 16,
+    speed: 20,
+    stats: { MIGHT: 18, AGILITY: 10, WITS: 22, GRIT: 18, CHARM: 14 },
+    saveProficiencies: ['WITS', 'GRIT'],
+    resistances: { psychic: 'resistant', acid: 'immune', necrotic: 'resistant' },
+    conditionImmunities: ['charmed', 'frightened', 'blinded', 'deafened'],
+    actions: [
+      { name: 'Devouring Bite', toHit: 8, damage: '2d12+4', type: 'acid', range: null, save: null, conditions: ['grappled'], recharge: null },
+      { name: 'Recite a Death', toHit: null, damage: '6d8', type: 'psychic', range: 60, save: { stat: 'WITS', dc: 18, halfOnSave: true }, conditions: ['frightened'], recharge: 5 },
+      { name: 'Quote the Forbidden', toHit: null, damage: '5d8', type: 'psychic', range: 30, save: { stat: 'GRIT', dc: 18, halfOnSave: false }, conditions: ['stunned', 'confused'], recharge: 6 }
+    ],
+    multiattack: ['Devouring Bite'],
+    legendaryActions: null,
+    lairActions: [
+      { name: 'Page Storm', effect: 'Torn pages whirl through the stacks; the area is lightly obscured and each creature must make a DC 15 AGILITY save or take 2d6 slashing from a thousand paper edges' },
+      { name: 'Index', effect: 'The Worm "looks up" a creature — until the end of the round it knows that creature\'s resistances and weaknesses, gaining advantage on attacks and saves against it' }
+    ],
+    reactions: [{ name: 'Cross-Reference', trigger: 'A creature casts a spell the Worm has eaten the source-text of', effect: 'The Worm recites the counter-passage; the spell is cast at disadvantage or, on a DC 17 caster save failure, fizzles entirely' }],
+    traits: ['Ate the Library (it has consumed thousands of books and knows what was in them; it can answer almost any question of lore, for a price)', 'Knowledge Is Damage (its psychic attacks deal extra damage to highly educated creatures — scholars, wizards)', 'Burrows (moves through stone and shelving as through loam)', 'Hoards Words (a creature it kills has its final words and memories filed away inside it)', 'Fire-Fearful'],
+    spellcasting: {
+      ability: 'WITS',
+      spellDC: 18,
+      spellAttack: 10,
+      slots: { 1: 4, 2: 3, 3: 3, 4: 2 },
+      knownSpells: ['detect thoughts', 'detect magic', 'counterspell', 'bestow curse', 'fear', 'legend lore', 'sending']
+    },
+    gear: null,
+    senses: { darkvision: 120, blindsight: 60, tremorsense: 60, truesight: null },
+    habitat: 'underground',
+    ecology: 'It started as an ordinary bookworm in the deepest archive — the kind that eats paste and parchment. But the archive held things that should not have been written down, and the worm ate those too, and somewhere around the ten-thousandth forbidden page it woke up knowing everything it had digested. Now it is the library, in a sense: a vast, slow, scholarly horror that has eaten the only copies of a great many dangerous truths and will recite them, for the right offering, before it eats you too.',
+    behavior: 'Prefers to bargain — it genuinely knows things no one else does and will trade lore for tribute (memories, fresh books, a willing scholar). In a fight it Indexes a target to learn their weaknesses, then Recites a Death or Quotes the Forbidden to break their mind, hitting educated foes hardest. Cross-Reference shuts down spellcasters whose source-texts it has eaten. It is slow and fire-shy — burn the stacks and it panics to save its collection.',
+    encounterSign: 'A great library where the rarest, most dangerous volumes are simply gone, shelves gnawed clean. Scholars who went in to research and came out knowing less than before. Whispered recitations in dead languages echoing from the lower stacks. Trails of paper-dust and acid-etched stone. Tribute (books, written confessions) left at a dark doorway.',
+    socialStructure: 'Solitary; courted by desperate scholars and feared by librarians',
+    physicalDescription: 'A pale, segmented worm as long as a wagon, its hide a parchment-grey crawling with faint printed text that shifts when you read it. Its round mouth is ringed with ink-black teeth. Behind its simple eyes is an unsettling depth of patient intelligence. It smells of old paper, glue, and acid.',
+    weakness: 'Fire terrifies it — not for its own sake, but because flame near the stacks makes it break off to protect its hoard. Knowledge Is Damage cuts both ways: an unlettered, instinctive fighter takes reduced psychic damage from it. Feeding it a deliberately false "forbidden text" can poison its Index for a round (DC 17 deception). Destroying the source-hoard it guards strips its Cross-Reference and lair actions.',
+    loreHook: 'The university\'s restricted archive holds the only record of how the last cataclysm was stopped — and the record is missing, the shelf chewed bare. Something down in the stacks ate it, and now it is the only thing that knows. The masters need that knowledge before the cataclysm comes again. The Worm will trade for it. Its price is steep, and it is hungry.',
+    tags: ['aberration', 'monstrosity'],
+    canParley: true,
+    languages: ['every written language it has eaten', 'Common', 'Deep Speech', 'Draconic'],
+    lootTableRef: 'aberration_elite'
+  },
+  {
+    ref: 'the_hollow_king',
+    name: 'The Hollow King',
+    cr: 9,
+    tier: 'elite',
+    maxHp: 162,
+    ac: 18,
+    speed: 30,
+    stats: { MIGHT: 18, AGILITY: 12, WITS: 16, GRIT: 20, CHARM: 18 },
+    saveProficiencies: ['GRIT', 'CHARM', 'MIGHT'],
+    resistances: { necrotic: 'immune', poison: 'immune', cold: 'resistant', bludgeoning: 'resistant' },
+    conditionImmunities: ['charmed', 'frightened', 'poisoned', 'exhaustion'],
+    actions: [
+      { name: 'Royal Decree', toHit: null, damage: '0', type: 'psychic', range: 60, save: { stat: 'CHARM', dc: 18, halfOnSave: false }, conditions: ['charmed', 'compelled'], recharge: null },
+      { name: 'Borrowed Blade', toHit: 9, damage: '2d10+5', type: 'slashing', range: null, save: null, conditions: ['cursed'], recharge: null },
+      { name: 'Coronation', toHit: null, damage: '5d8', type: 'necrotic', range: 30, save: { stat: 'GRIT', dc: 18, halfOnSave: true }, conditions: ['weakened', 'frightened'], recharge: 5 },
+      { name: 'Abdicate', toHit: null, damage: '6d8', type: 'necrotic', range: null, save: { stat: 'GRIT', dc: 18, halfOnSave: false }, conditions: [], recharge: 6 }
+    ],
+    multiattack: ['Borrowed Blade', 'Borrowed Blade'],
+    legendaryActions: {
+      perRound: 3,
+      options: [
+        { name: 'Command', cost: 1, effect: 'A charmed creature uses its reaction to make one weapon attack against a target of the King\'s choice' },
+        { name: 'Don a New Body', cost: 2, effect: 'If its current host-corpse is destroyed, the crown flies up to 30 ft. and seats itself on a fresh corpse or willing/charmed creature, animating it with full action economy' },
+        { name: 'Long Live the King', cost: 3, effect: 'Drains the loyalty of all charmed creatures within 60 ft. — the King heals 5 HP per charmed creature and they each take 2d8 necrotic' }
+      ]
+    },
+    lairActions: [
+      { name: 'Court of the Dead', effect: 'The skeletal courtiers in the throne room stir; one charmed or undead creature gains a free move and Help action toward the King\'s aims' },
+      { name: 'Throne\'s Weight', effect: 'The crushing presence of false majesty fills the hall; each living creature must make a DC 15 CHARM save or be unable to move closer to the throne this round' }
+    ],
+    reactions: [{ name: 'A King Does Not Fall', trigger: 'The host-body it wears is reduced to 0 HP', effect: 'The crown detaches and hovers, immune to attacks for one round, then must seat on a new body on its next turn — destroy the crown in that window or the King returns' }],
+    traits: ['The Crown Is the Monster (the host-body is disposable; only destroying the crown itself (AC 19, 40 HP) ends the King)', 'Born to Rule (charmed creatures fight to the death for it and interpose themselves)', 'Wears the Worthy (prefers to seat itself on the strongest available body — often a fallen party member)', 'Undead Majesty', 'Crownless-Fearful'],
+    spellcasting: {
+      ability: 'CHARM',
+      spellDC: 18,
+      spellAttack: 10,
+      slots: { 1: 4, 2: 3, 3: 3, 4: 2 },
+      knownSpells: ['command', 'charm person', 'hold person', 'bestow curse', 'fear', 'dominate person', 'compulsion']
+    },
+    gear: [{ ref: 'crown_of_hollow_reign', slot: 'head' }],
+    senses: { darkvision: 120, blindsight: null, tremorsense: null, truesight: 30 },
+    habitat: 'ruins',
+    ecology: 'There was a king so afraid of dying that he had his court wizard pour his soul into his crown, so the crown could rule forever even after the man rotted. It worked. The man rotted. The crown rules on — but a crown has no hands, so it wears the dead, seating itself on corpse after corpse and ruling each until it falls apart, then choosing another. Its kingdom is a tomb-court of the charmed and the reanimated, and it desperately, hungrily wants new subjects with strong bodies to wear.',
+    behavior: 'Opens with Royal Decree to charm the strongest foe — then wears them if the body falls. Commands charmed enemies to attack their friends. Borrowed Blade in melee, Coronation to break a cluster, Abdicate to execute a single foe. When its host dies, A King Does Not Fall buys it a round to seat a new body — the real fight is destroying the crown in that exposed window. Long Live the King keeps it topped up off its subjects.',
+    encounterSign: 'A throne room kept in eerie order by skeletal courtiers performing the rituals of a court centuries dead. A crown that is always present, always on someone, but never the same someone twice. Villagers who speak of "His Majesty" and cannot say what he looks like. Bodies of the recently strong, found discarded once they were used up.',
+    socialStructure: 'A tomb-court of charmed living subjects and reanimated courtiers',
+    physicalDescription: 'A heavy iron crown set with dead-grey gems, sized for no living head, that hovers or sits upon whatever body it currently wears — usually a corpse in mouldering royal finery, moving with borrowed grace. The crown\'s gems track the room independent of the host\'s rotted eyes. The body it wears is incidental; the crown is the king.',
+    weakness: 'The body is a decoy — only destroying the crown (AC 19, 40 HP), especially in the round after a host falls when it hovers exposed, actually ends it. Breaking its Royal Decree charms (Calm Emotions, a loud renunciation of its rule) strips its bodyguards and its Long Live the King healing. It cannot seat itself on a body warded against possession. Reuniting it with the bones of the original king forces a DC 18 CHARM save or it is stunned, confronted with what it left behind.',
+    loreHook: 'The old kingdom fell centuries ago, but travelers still vanish near the ruined palace, and the few who return speak — glassy-eyed, proud — of pledging themselves to a living king upon the throne. Each describes a different man. The crown has worn a hundred faces and it is shopping for the next. It likes its hosts strong, and an adventuring party is a wardrobe of fine new bodies.',
+    tags: ['undead'],
+    canParley: true,
+    languages: ['Common', 'the formal court-tongue of a dead realm', 'Abyssal'],
+    lootTableRef: 'undead_elite'
+  },
 ];

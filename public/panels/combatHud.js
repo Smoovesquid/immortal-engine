@@ -31,11 +31,21 @@ export function renderCombatHudSection(world, el) {
 
   // Player vitals
   if (pc) {
-    const maxWounds = Number(pc.maxWounds) || 6;
-    const wounds = Math.max(0, Math.min(maxWounds, Number(pc.wounds) || 0));
-    const playerHpCur = maxWounds - wounds;
-    const playerHpMax = maxWounds;
-    const stress = Math.max(0, Math.min(6, Number(pc.stress) || 0));
+    // v1 Escape: classic-D&D hit points live in meta.escapeHp. The deep wound/
+    // stress pool is bypassed in escape mode, so prefer escapeHp when present.
+    const isEscape = world?.meta?.mode === 'escape' && Number(world?.meta?.escapeMaxHp) > 0;
+    let playerHpCur, playerHpMax, stress;
+    if (isEscape) {
+      playerHpMax = Number(world.meta.escapeMaxHp) || 1;
+      playerHpCur = Math.max(0, Math.min(playerHpMax, Number(world.meta.escapeHp) || 0));
+      stress = 0;
+    } else {
+      const maxWounds = Number(pc.maxWounds) || 6;
+      const wounds = Math.max(0, Math.min(maxWounds, Number(pc.wounds) || 0));
+      playerHpCur = maxWounds - wounds;
+      playerHpMax = maxWounds;
+      stress = Math.max(0, Math.min(6, Number(pc.stress) || 0));
+    }
 
     section.appendChild(
       el('div', { class: 'combat-player-vitals' },
@@ -76,8 +86,9 @@ export function renderCombatHudSection(world, el) {
     );
   }
 
+  const isEscapeHint = world?.meta?.mode === 'escape' && Number(world?.meta?.escapeMaxHp) > 0;
   section.appendChild(
-    el('div', { class: 'combat-hint' }, 'attack <name> | focus <name> | flee')
+    el('div', { class: 'combat-hint' }, isEscapeHint ? "type 'attack' to strike" : 'attack <name> | focus <name> | flee')
   );
 
   return section;

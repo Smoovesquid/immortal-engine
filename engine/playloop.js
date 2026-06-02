@@ -8,7 +8,7 @@ import { triggerEnding } from './ending.js';
 import { compose } from './composer.js';
 import { planNextScene } from './sceneDirector.js';
 import { generateInitialMap } from './map/generateMap.js';
-import { ensureMap, pickTravelDestination, moveToNode, neighbors } from './map/mapState.js';
+import { ensureMap, pickTravelDestination, moveToNode, neighbors, exitsFrom, directionFromText } from './map/mapState.js';
 import { conductorDecision, applyConductorDeltas } from './conductor.js';
 import { worldTick } from './worldTick.js';
 import { resolveMove } from './resolve.js';
@@ -28,9 +28,17 @@ import { beginCombat, endCombat, mintEnemyFromNpc } from './combat/combatLifecyc
 import { resolveCompanionTurn } from './combat/companionTurn.js';
 import { castSpell } from './spell/castSpell.js';
 import { evaluateEncounter, selectCreatures, spawnEncounter } from './combat/encounterSpawn.js';
+import { resolveEscapeCombatTurn, initEscapeHp, shortRest } from './combat/escapeCombat.js';
 import { statMod, maxWounds } from './ruleset/core/stats.js';
 
 // Pure-ish play loop: world -> {world, output}
+
+// v1 Escape: per-travel chance of a creature ambush. Tuned so the journey has
+// real risk without becoming a death-spiral — most hops are clear, some bite.
+const ESCAPE_ENCOUNTER_CHANCE = 0.4;
+// Tamed foe HP for escape ambushes. Low enough that a gearless level-1 player
+// can usually drop it in a few swings before wounds pile up.
+const ESCAPE_ENEMY_HP = 5;
 
 export function beginAdventure(world, packsById) {
   let w = ensureWorld(world);
@@ -166,6 +174,8 @@ export function beginAdventure(world, packsById) {
       w = created.world;
       w = { ...w, scene: { ...w.scene, objective: `Escape to ${targetName} — find the way out.` } };
     }
+    // Classic-D&D hit points for the escape PC (see escapeCombat.js).
+    w = initEscapeHp(w);
   }
 
   // Build opening context with NPC presence
@@ -472,6 +482,19 @@ export function playerMove(world, packsById, text) {
     const before = String(w.map?.currentNodeId || '');
     const nbs = neighbors(w.map, before);
     const t = String(text || '').toLowerCase();
+
+    // Cardinal navigation: a bare direction ("north", "go west") resolves through
+    // the deterministic compass layout. An unexplored direction that leads
+    // nowhere is reported as a dead end — no move, no turn spent. This is the
+    // "discover by trying" feel: the only way to learn the exits is to test them.
+    const dir = directionFromText(t);
+    if (dir) {
+      const exitNeighborId = exitsFrom(w.map, before)[dir];
+      if (!exitNeighborId) {
+        return { world: w, output: { narration: `Wizard: There is no way ${dir} from here. The wall holds.`, mechanics: '' } };
+      }
+    }
+
     const dest = /\b(exit|leave)\b/.test(t) ? (nbs[0] || before) : pickTravelDestination(w, text);
     let w1 = moveToNode(w, dest);
     if (w1.map?.currentNodeId && w1.map.currentNodeId !== before) {
@@ -493,7 +516,20 @@ export function playerMove(world, packsById, text) {
       const travelResult = { outcome: 'success', mechanicsLine: '[travel | free-movement]' };
       w1 = appendRecentBeat(w1, buildBeatFromTurn(w1, text, travelMove, travelResult));
       w1 = maybeCheckGoals(w1);
-      return { world: w1, output: { narration: nextName ? `Wizard: You travel to ${nextName}.` : 'Wizard: You move to the next position.', mechanics: '' } };
+      // v1 Escape: arriving may trigger an ambush — but never on the winning
+      // tile (maybeCheckGoals would have locked the escape ending above).
+      w1 = maybeSpawnEscapeEncounter(w1, before);
+      const ambushed = Boolean(w1.combat?.active);
+      // Clear hop in escape mode: you catch your breath and recover some HP.
+      if (!ambushed && w1.meta?.mode === 'escape') {
+        const restRng = makeRng(seedFromString(`${w1.meta.seed}|shortRest|${w1.map.currentNodeId}|${w1.timeline.length}`));
+        w1 = shortRest(w1, restRng);
+      }
+      const arrivalLine = nextName ? `Wizard: You travel to ${nextName}.` : 'Wizard: You move to the next position.';
+      const narration = ambushed
+        ? `${arrivalLine} Something is already here, and it means you harm.`
+        : arrivalLine;
+      return { world: w1, output: { narration, mechanics: ambushed ? '[ambush]' : '' } };
     }
     return { world: w, output: { narration: 'Wizard: You hold position.', mechanics: '' } };
   }
@@ -637,6 +673,23 @@ export function playerMove(world, packsById, text) {
   // When combat is NOT active, an explicit "attack <hostile NPC>" intent
   // begins combat and resolves the player's first turn in the same call.
   if (w.combat?.active) {
+    // v1 Escape: classic-D&D combat. Any combat input resolves one round via
+    // the simple HP resolver; the deep wound/stress engine is bypassed. No
+    // flee — the journey's stakes are the point.
+    if (w.meta?.mode === 'escape') {
+      const { world: wAfter, result } = resolveEscapeCombatTurn(w);
+      w = wAfter;
+      const escMove = { actorId, intentText: String(text || ''), approachTag: 'force', stakeTag: 'survival' };
+      const escResult = { outcome: result.outcome, mechanicsLine: result.mechanicsLine };
+      w = appendRecentBeat(w, buildBeatFromTurn(w, text, escMove, escResult));
+      w = pushEvent(w, {
+        kind: 'resolution',
+        data: { actorId, intent: String(text || ''), text: String(text || ''), roll: 0, dc: 0, outcome: result.outcome, updateKind: 'combat', combatSummary: String(result.combatSummary || '') }
+      });
+      const narr = result.combatSummary ? `Wizard: ${result.combatSummary}` : 'Wizard: You trade blows.';
+      return { world: w, output: { narration: narr, mechanics: result.mechanicsLine, combatSummary: String(result.combatSummary || '') } };
+    }
+
     // Flee / retreat: deterministic exit, costs 1 stress and 1 pressure clock.
     if (isFleeIntent(text)) {
       let wf = endCombat(w, { reason: 'player-flee' });
@@ -1959,6 +2012,42 @@ function maybeCheckGoals(world) {
     w = pushEvent(w, { kind: 'endingTriggered', data: { endingType: 'Narrow Escape', epilogueLine: 'escaped' } });
   }
   return w;
+}
+
+// v1 Escape: the journey needs stakes. The base encounter system keys off
+// dread, which escape mode never raises — so without this, travel is risk-free.
+// On each inter-node move (not the winning arrival), roll a deterministic chance
+// of a creature ambush scaled to player level. Losing the fight locks the loss
+// ending (combatResolve); winning lets the player press on. No-op outside escape
+// mode, so engine tests (mode '') are untouched.
+function maybeSpawnEscapeEncounter(world, before) {
+  const w = world;
+  if (w.meta?.mode !== 'escape') return w;
+  if (w.combat?.active || w.ending?.locked) return w;
+  const after = String(w.map?.currentNodeId || '');
+  if (!after || after === String(before || '')) return w;
+
+  const rng = makeRng(seedFromString(`${w.meta.seed}|escapeEncounter|${after}|${w.timeline.length}`));
+  if (rng.nextFloat() >= ESCAPE_ENCOUNTER_CHANCE) return w;
+
+  // Borrow a bestiary creature for its name/flavor only, then fight it with a
+  // tamed classic-D&D profile resolved by escapeCombat.js. We deliberately do
+  // NOT use the creature's real stats/actions — escape combat is plain HP, a
+  // fixed enemy to-hit, and `damage` as the damage-die max. These are the only
+  // fields that survive ensureCombat's enemy whitelist.
+  const node = (w.map?.nodes || []).find(n => n && n.id === after) || null;
+  const region = node?.settlement?.region || null;
+  const flavor = selectCreatures(0.25, 1, region, rng)[0] || { name: 'Lurker' };
+  const tamed = {
+    name: String(flavor.name || 'Lurker'),
+    ref: String(flavor.ref || 'lurker'),
+    cr: 0.125,
+    maxHp: ESCAPE_ENEMY_HP,
+    ac: 12,
+    damage: 4,        // damage-die max (d4) for escapeCombat
+    canParley: false
+  };
+  return spawnEncounter(w, [tamed], { ambush: true, reason: 'escape-ambush' }, rng);
 }
 
 function uniq(arr) {

@@ -53,7 +53,13 @@ export function ensureWorld(partial) {
       // v1 game mode. '' = open sandbox (default; all engine tests). 'escape' =
       // the shippable "Escape" game: begin seeds a reach goal + objective and
       // reaching it locks a clean victory ending. Opt-in, set by the UI.
-      mode: String(meta.mode ?? '')
+      mode: String(meta.mode ?? ''),
+      // v1 Escape combat: classic-D&D hit points for the player, carried across
+      // fights (attrition). 0 = uninitialized / not escape mode. Set at
+      // beginAdventure when mode === 'escape'. Sandbox worlds keep these at 0,
+      // so the open engine and its determinism hashes are untouched.
+      escapeHp: clampIntMin(meta.escapeHp ?? 0, 0),
+      escapeMaxHp: clampIntMin(meta.escapeMaxHp ?? 0, 0)
     },
     ruleset: w.ruleset && typeof w.ruleset === 'object' ? w.ruleset : { id: 'core', version: 1 },
     pack: w.pack && typeof w.pack === 'object' ? w.pack : { primaryId: 'fantasy', mixerId: null },

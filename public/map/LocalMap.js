@@ -350,7 +350,11 @@ export function renderLocalMap(world, opts = {}) {
 
   const structures = structuresAtCurrentNode(world);
   const npcs = npcsAtCurrentNode(world);
-  const nodeName = String(world?.map?.currentNodeId || 'unknown');
+  // Use the location's readable name, never the raw internal node id. The id is
+  // an engine handle (e.g. "n5_1557310534") and must never surface in the UI.
+  const curId = String(world?.map?.currentNodeId || '');
+  const curNode = (world?.map?.nodes || []).find(n => n && String(n.id) === curId) || null;
+  const nodeName = String(curNode?.name || '').trim() || 'Uncharted';
 
   if (compact) {
     // Compact mode: map canvas only, minimal chrome

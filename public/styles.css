@@ -430,6 +430,16 @@ a{color:var(--accent)}
 .paths-label{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 .path-btn{padding:7px 14px;font-size:13px}
 
+/* ── Compass (cardinal navigation) ──────────────────────────────── */
+.compass-bar{justify-content:flex-start}
+.compass{display:grid;grid-template-columns:repeat(3,34px);grid-template-rows:repeat(3,34px);gap:3px;align-items:center;justify-items:center}
+.compass-btn{width:34px;height:34px;padding:0;font-size:13px;font-weight:600;line-height:1;display:flex;align-items:center;justify-content:center}
+.compass-n{grid-column:2;grid-row:1}
+.compass-w{grid-column:1;grid-row:2}
+.compass-e{grid-column:3;grid-row:2}
+.compass-s{grid-column:2;grid-row:3}
+.compass-hub{grid-column:2;grid-row:2;color:var(--muted);font-size:14px;opacity:.6}
+
 /* ── Escape mode: win/lose end screen ───────────────────────────── */
 .escape-end-overlay{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;background:rgba(8,8,8,.82);backdrop-filter:blur(3px)}
 .escape-end-card{max-width:460px;width:88%;padding:36px 32px;text-align:center;border-radius:8px;border:1px solid var(--border);background:var(--panel)}

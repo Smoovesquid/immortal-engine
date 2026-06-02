@@ -1,7 +1,6 @@
 import { normalizeManifest, normalizePack } from '../engine/rulesets.js';
 import { newWorld, ensureWorld } from '../engine/state.js';
 import { beginAdventure, playerMove, newScene } from '../engine/playloop.js';
-import { neighbors } from '../engine/map/mapState.js';
 import { escapeOutcome } from '../engine/victory.js';
 import { hasSlot, loadSlot, saveSlot, exportWorld, importWorld } from '../engine/save.js';
 import { worldHash as worldHashAsync } from '../engine/worldHash.browser.js';
@@ -10,6 +9,7 @@ import { generateTriadFrames, deriveInvocationFromFrame } from '../engine/triad.
 import { deriveSequelInvocation } from '../engine/sequel.js';
 import { renderMapView } from './map/MapView.js';
 import { renderLocalMap } from './map/LocalMap.js';
+import { renderRegionMap } from './map/RegionMap.js';
 import { renderSpellbookSection } from './panels/spellbook.js';
 import { renderCombatHudSection } from './panels/combatHud.js';
 import { renderInitiativeBar } from './panels/initiativeBar.js';
@@ -1120,23 +1120,38 @@ function renderPartySection(world) {
         el('span', { class: 'home-badge', 'aria-label': 'At home' }, 'HOME'))
     : el('h3', { class: 'status-heading' }, 'Party');
 
+  // v1 Escape: show classic-D&D hit points instead of the wound/stress pool.
+  const isEscape = world?.meta?.mode === 'escape';
+  const escMaxHp = Math.max(0, Number(world?.meta?.escapeHp) || 0);
+  const escHpMax = Math.max(0, Number(world?.meta?.escapeMaxHp) || 0);
+  const playerVitals = isEscape && escHpMax > 0
+    ? el('div', { class: 'party-bar hp' },
+        el('span', { class: 'party-bar-label' }, 'HP'),
+        el('span', { class: 'party-bar-dots', 'aria-label': `${escMaxHp} of ${escHpMax} hit points` }, `${escMaxHp}/${escHpMax}`)
+      )
+    : el('div', { class: 'party-bar wounds' },
+        el('span', { class: 'party-bar-label' }, 'wounds'),
+        el('span', { class: 'party-bar-dots', 'aria-label': `${wounds} of 6 wounds` }, dots(wounds, 6))
+      );
+
+  const secondaryVitals = isEscape && escHpMax > 0 ? null : [
+    el('div', { class: 'party-bar stress' },
+      el('span', { class: 'party-bar-label' }, 'stress'),
+      el('span', { class: 'party-bar-dots', 'aria-label': `${stress} of 6 stress` }, dots(stress, 6))
+    ),
+    el('div', { class: 'party-bar advantage' },
+      el('span', { class: 'party-bar-label' }, 'advantage'),
+      el('span', { class: 'party-bar-dots', 'aria-label': `${adv} advantage tokens` },
+        adv === 0 ? '—' : '◆'.repeat(adv))
+    )
+  ];
+
   return el('section', { class: 'status-section', 'aria-label': 'Party status' },
     heading,
     el('div', { class: 'party-strip' },
       el('div', { class: 'party-name' }, String(pc.name || 'Adventurer')),
-      el('div', { class: 'party-bar wounds' },
-        el('span', { class: 'party-bar-label' }, 'wounds'),
-        el('span', { class: 'party-bar-dots', 'aria-label': `${wounds} of 6 wounds` }, dots(wounds, 6))
-      ),
-      el('div', { class: 'party-bar stress' },
-        el('span', { class: 'party-bar-label' }, 'stress'),
-        el('span', { class: 'party-bar-dots', 'aria-label': `${stress} of 6 stress` }, dots(stress, 6))
-      ),
-      el('div', { class: 'party-bar advantage' },
-        el('span', { class: 'party-bar-label' }, 'advantage'),
-        el('span', { class: 'party-bar-dots', 'aria-label': `${adv} advantage tokens` },
-          adv === 0 ? '—' : '◆'.repeat(adv))
-      )
+      playerVitals,
+      ...(secondaryVitals || [])
     ),
     ...companionRows
   );
@@ -1308,8 +1323,15 @@ function renderPlay() {
     onKeydown: (e) => { if (e.key === 'Enter') doSubmitMove(); }
   });
 
-  // ── Compact local map ─────────────────────────────────────────────────
-  const playMap = w ? renderLocalMap(w, { compact: true }) : null;
+  // ── Compact map ───────────────────────────────────────────────────────
+  // Outside: a compact region map that labels every location you've discovered
+  // (names appear the moment you arrive). Inside a structure: the room layout,
+  // since the overland map isn't what you're navigating in there.
+  const playMap = w
+    ? (w.scene?.interior
+        ? renderLocalMap(w, { compact: true })
+        : renderRegionMap(w.map, { compact: true }))
+    : null;
 
   // ── Escape-mode chrome (objective banner + clickable paths) ───────────
   const isEscape = w?.meta?.mode === 'escape';
@@ -1320,20 +1342,34 @@ function renderPlay() {
         el('span', { class: 'objective-text' }, objective))
     : null;
 
-  const pathItems = (() => {
-    if (!w || !isEscape || ended || inCombat || w.scene?.interior) return [];
-    const m = w.map;
-    const here = String(m?.currentNodeId || '');
-    return neighbors(m, here).map(id => {
-      const node = (m.nodes || []).find(n => String(n.id) === String(id));
-      return { id, name: String(node?.name || 'Unknown') };
-    });
-  })();
-  const pathsBar = pathItems.length
-    ? el('div', { class: 'paths-bar' },
-        el('span', { class: 'paths-label' }, 'Travel:'),
-        ...pathItems.map(p =>
-          el('button', { class: 'btn path-btn', onClick: () => travelTo(`travel to ${p.name} ::${p.id}`) }, p.name)))
+  // ── Compass ───────────────────────────────────────────────────────────
+  // Four cardinal buttons, always shown — no preview of where they lead. You
+  // discover exits by trying them (a dead direction reports "no way"); the map
+  // fills in a location's name only once you've been there. Typing "north" /
+  // "go west" works identically. This keeps travel text-first and exploratory
+  // rather than a list of click-to-teleport place names.
+  const showCompass = w && isEscape && !ended && !inCombat;
+  const inInterior = Boolean(w?.scene?.interior);
+  const compassBar = showCompass
+    ? el('div', { class: 'paths-bar compass-bar' },
+        el('span', { class: 'paths-label' }, 'Go:'),
+        el('div', { class: 'compass' },
+          el('button', { class: 'btn compass-btn compass-n', onClick: () => travelTo('go north') }, 'N'),
+          el('button', { class: 'btn compass-btn compass-w', onClick: () => travelTo('go west') }, 'W'),
+          el('span', { class: 'compass-hub' }, '✶'),
+          el('button', { class: 'btn compass-btn compass-e', onClick: () => travelTo('go east') }, 'E'),
+          el('button', { class: 'btn compass-btn compass-s', onClick: () => travelTo('go south') }, 'S')),
+        inInterior
+          ? el('button', { class: 'btn path-btn compass-out', onClick: () => travelTo('leave') }, 'Out ⤴')
+          : null)
+    : null;
+
+  // Escape combat: a single clickable Attack resolves one round (the resolver
+  // ignores move text). Keeps the game playable by clicking, like travel.
+  const combatBar = (isEscape && inCombat && !ended)
+    ? el('div', { class: 'paths-bar combat-bar' },
+        el('span', { class: 'paths-label' }, 'Fight:'),
+        el('button', { class: 'btn path-btn attack-btn', onClick: () => travelTo('attack the creature') }, 'Attack'))
     : null;
 
   // ── Main panel (narration + map, no chrome) ───────────────────────────
@@ -1348,7 +1384,8 @@ function renderPlay() {
       playMap,
       renderTranscript(ui.play.lines)
     ),
-    pathsBar,
+    compassBar,
+    combatBar,
     el('div', { class: 'play-input-bar' },
       input,
       el('button', { class: 'btn primary', disabled: ended, onClick: () => doSubmitMove() }, 'Submit')

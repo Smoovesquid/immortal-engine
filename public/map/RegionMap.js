@@ -31,7 +31,8 @@ function el(tag, attrs = {}, ...children) {
   return node;
 }
 
-export function renderRegionMap(map) {
+export function renderRegionMap(map, opts = {}) {
+  const compact = Boolean(opts?.compact);
   // "10,000 ft" focuses on discovered nodes + current node.
   const { nodes, pos, hereId } = ringLayout(map);
   const discovered = new Set(Array.isArray(map?.discovered) ? map.discovered.map(String) : []);
@@ -43,7 +44,7 @@ export function renderRegionMap(map) {
   const svg = el('svg', {
     viewBox: '-450 -260 900 520',
     width: '100%',
-    height: '520',
+    height: compact ? '220' : '520',
     style: { display: 'block' }
   });
 
@@ -189,15 +190,32 @@ export function renderRegionMap(map) {
     }
 
     const name = String(n?.name || id);
-    const labelOpacity = isHere ? 1.0 : isDecompressed ? 0.72 : 0.4;
+    // Discovered nodes always read at full strength; in the compact play-screen
+    // view, undiscovered-but-current still shows so you always know where you are.
+    const labelOpacity = isHere ? 1.0 : isDecompressed ? 0.72 : (compact ? 0.8 : 0.4);
+    // The compact map scales a 520-unit viewBox into ~220px, so bump font sizes
+    // to keep discovered location names legible at a glance while playing.
+    const fontSize = compact ? (isHere ? 22 : 19) : (isHere ? 13 : 12);
     svg.appendChild(el('text', {
-      x: p.x + 14, y: p.y + 5,
+      x: p.x + (compact ? 16 : 14), y: p.y + (compact ? 7 : 5),
       fill: '#ffffff',
       'fill-opacity': labelOpacity,
-      'font-size': isHere ? 13 : 12,
+      'font-size': fontSize,
       'font-weight': isHere ? '700' : '400',
       'font-family': 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace'
     }, name));
+  }
+
+  if (compact) {
+    const hereNode = (Array.isArray(map?.nodes) ? map.nodes : []).find(n => n && String(n.id) === String(hereId)) || null;
+    const hereName = String(hereNode?.name || '').trim() || 'Uncharted';
+    return el('div', { class: 'play-map' },
+      el('div', { class: 'play-map-header' },
+        el('span', { class: 'play-map-label' }, hereName),
+        el('span', { class: 'play-map-tag' }, `${show.size} discovered`)
+      ),
+      svg
+    );
   }
 
   return el('div', { class: 'card stack' },

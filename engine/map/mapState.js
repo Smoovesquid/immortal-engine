@@ -31,6 +31,86 @@ export function neighbors(map, nodeId) {
   return [...out];
 }
 
+// ── Cardinal navigation ──────────────────────────────────────────────────────
+// The overworld is an abstract node graph with no real geometry, so "north" is
+// a label we assign, not a coordinate. compassLayout() assigns every edge a
+// compass slot at each of its two endpoints, deterministically and RECIPROCALLY:
+// if leaving A by "north" arrives at B, then leaving B by "south" returns to A.
+// This lets a player draw a stable map in their head (core to the explore feel).
+//
+// Reciprocity is free because each edge is assigned once, from a canonical
+// (lo,hi) endpoint ordering, writing opposite directions at both ends in the
+// same step. Collisions (two edges wanting the same slot at a node) are resolved
+// greedily; a saturated node (>4 edges, rare on the ring+chord map) may leave an
+// edge with no compass slot — that neighbor stays reachable by typed name.
+const DIRS = ['north', 'east', 'south', 'west'];
+const OPPOSITE = { north: 'south', south: 'north', east: 'west', west: 'east' };
+
+function edgeKey(a, b) {
+  return a < b ? `${a}|${b}` : `${b}|${a}`;
+}
+
+export function compassLayout(map) {
+  const m = ensureMap(map);
+  const exits = new Map();   // nodeId -> { north, east, south, west } (neighbor id or null)
+  const taken = new Map();   // nodeId -> Set<dir>
+  const ensure = (id) => {
+    if (!exits.has(id)) exits.set(id, { north: null, east: null, south: null, west: null });
+    if (!taken.has(id)) taken.set(id, new Set());
+  };
+
+  const edges = m.edges
+    .filter(e => e.a && e.b && e.a !== e.b)
+    .map(e => ({ lo: e.a < e.b ? e.a : e.b, hi: e.a < e.b ? e.b : e.a }))
+    .map(e => ({ ...e, key: edgeKey(e.lo, e.hi) }))
+    .sort((x, y) => (x.key < y.key ? -1 : x.key > y.key ? 1 : 0));
+
+  // Drop duplicate edges (same pair) so we don't waste two slots on one passage.
+  const seenKeys = new Set();
+
+  for (const e of edges) {
+    if (seenKeys.has(e.key)) continue;
+    seenKeys.add(e.key);
+    ensure(e.lo); ensure(e.hi);
+    const start = seedFromString(e.key) % 4;
+    for (let k = 0; k < 4; k++) {
+      const dLo = DIRS[(start + k) % 4];
+      const dHi = OPPOSITE[dLo];
+      if (!taken.get(e.lo).has(dLo) && !taken.get(e.hi).has(dHi)) {
+        exits.get(e.lo)[dLo] = e.hi;
+        exits.get(e.hi)[dHi] = e.lo;
+        taken.get(e.lo).add(dLo);
+        taken.get(e.hi).add(dHi);
+        break;
+      }
+    }
+  }
+  return exits;
+}
+
+// exitsFrom(map, nodeId) -> { north, east, south, west } neighbor id or null.
+export function exitsFrom(map, nodeId) {
+  const m = ensureMap(map);
+  const id = String(nodeId || m.currentNodeId || '');
+  return compassLayout(m).get(id) || { north: null, east: null, south: null, west: null };
+}
+
+// directionFromText(text) -> 'north'|'south'|'east'|'west'|'' for short, bare
+// movement commands only ("north", "n", "go west", "head south"). It deliberately
+// does NOT fire on longer named-destination intents like "travel to North Tower",
+// so cardinal nav and name travel stay distinct.
+export function directionFromText(text) {
+  const t = String(text || '').trim().toLowerCase();
+  const m = t.match(/^(?:go|head|move|walk|travel)?\s*(north|south|east|west|n|s|e|w)$/);
+  if (!m) return '';
+  const d = m[1];
+  if (d === 'north' || d === 'n') return 'north';
+  if (d === 'south' || d === 's') return 'south';
+  if (d === 'east' || d === 'e') return 'east';
+  if (d === 'west' || d === 'w') return 'west';
+  return '';
+}
+
 export function discoverNode(world, nodeId) {
   const w = ensureWorld(world);
   const m = ensureMap(w.map);
@@ -179,16 +259,13 @@ export function pickTravelDestination(world, playerText) {
 
   const t = String(playerText || '').toLowerCase();
 
-  // Directional shorthand: choose neighbor by stable index.
-  // neighbors() preserves deterministic insertion order based on edges traversal.
-  const dir = (t.match(/\\b(north|south|east|west|n|s|e|w)\\b/) || [])[1] || '';
+  // Directional command: resolve through the deterministic compass layout
+  // (reciprocal — north then south returns you). A bare direction that leads
+  // nowhere returns `here`, which the travel handler reports as a dead end.
+  const dir = directionFromText(t);
   if (dir) {
-    const idx =
-      (dir === 'north' || dir === 'n') ? 0 :
-      (dir === 'east'  || dir === 'e') ? 1 :
-      (dir === 'south' || dir === 's') ? 2 :
-      (dir === 'west'  || dir === 'w') ? 3 : 0;
-    return nbs[idx % nbs.length] || nbs[0];
+    const exits = exitsFrom(m, here);
+    return exits[dir] || here;
   }
 
   // Generic "exit"/"leave" with no named destination: deterministic first neighbor.

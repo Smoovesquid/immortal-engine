@@ -28,7 +28,7 @@ import { beginCombat, endCombat, mintEnemyFromNpc } from './combat/combatLifecyc
 import { resolveCompanionTurn } from './combat/companionTurn.js';
 import { castSpell } from './spell/castSpell.js';
 import { evaluateEncounter, selectCreatures, spawnEncounter } from './combat/encounterSpawn.js';
-import { resolveEscapeCombatTurn, initEscapeHp, shortRest } from './combat/escapeCombat.js';
+import { resolveEscapeCombatTurn, initEscapeHp, initEscapeKit, shortRest } from './combat/escapeCombat.js';
 import { statMod, maxWounds } from './ruleset/core/stats.js';
 
 // Pure-ish play loop: world -> {world, output}
@@ -174,8 +174,9 @@ export function beginAdventure(world, packsById) {
       w = created.world;
       w = { ...w, scene: { ...w.scene, objective: `Escape to ${targetName} — find the way out.` } };
     }
-    // Classic-D&D hit points for the escape PC (see escapeCombat.js).
+    // Classic-D&D hit points + hedge-caster kit for the escape PC (escapeCombat.js).
     w = initEscapeHp(w);
+    w = initEscapeKit(w);
   }
 
   // Build opening context with NPC presence
@@ -478,7 +479,10 @@ export function playerMove(world, packsById, text) {
   }
 
   // Free movement (within speed): deterministic travel without a roll unless explicit obstacle/risk language is present.
-  if (!w.scene?.interior && isFreeMovementIntent(text)) {
+  // Never while a fight is live — a bare direction mid-combat must not walk the
+  // player out of the encounter (escape combat has no flee by design; the input
+  // falls through to the combat branch instead).
+  if (!w.scene?.interior && !w.combat?.active && isFreeMovementIntent(text)) {
     const before = String(w.map?.currentNodeId || '');
     const nbs = neighbors(w.map, before);
     const t = String(text || '').toLowerCase();
@@ -583,7 +587,10 @@ export function playerMove(world, packsById, text) {
   // "cast <spell>" routes through the spell casting system. In combat, the
   // cast produces damage/effects and then falls through to the normal combat
   // turn flow. Outside combat, it resolves immediately.
-  {
+  // In escape mode the deep spell system is parked: cantrips are resolved by the
+  // escape combat resolver (which parses "fire bolt" / "cast fire bolt" itself),
+  // so skip this branch entirely and let the input fall through to combat.
+  if (w.meta?.mode !== 'escape') {
     const castMatch = String(text || '').match(/^cast\s+(.+?)(?:\s+(?:at|on|toward)\s+(.+))?$/i);
     if (castMatch) {
       const rawSpellName = castMatch[1].trim();
@@ -677,7 +684,7 @@ export function playerMove(world, packsById, text) {
     // the simple HP resolver; the deep wound/stress engine is bypassed. No
     // flee — the journey's stakes are the point.
     if (w.meta?.mode === 'escape') {
-      const { world: wAfter, result } = resolveEscapeCombatTurn(w);
+      const { world: wAfter, result } = resolveEscapeCombatTurn(w, String(text || ''));
       w = wAfter;
       const escMove = { actorId, intentText: String(text || ''), approachTag: 'force', stakeTag: 'survival' };
       const escResult = { outcome: result.outcome, mechanicsLine: result.mechanicsLine };
@@ -687,7 +694,7 @@ export function playerMove(world, packsById, text) {
         data: { actorId, intent: String(text || ''), text: String(text || ''), roll: 0, dc: 0, outcome: result.outcome, updateKind: 'combat', combatSummary: String(result.combatSummary || '') }
       });
       const narr = result.combatSummary ? `Wizard: ${result.combatSummary}` : 'Wizard: You trade blows.';
-      return { world: w, output: { narration: narr, mechanics: result.mechanicsLine, combatSummary: String(result.combatSummary || '') } };
+      return { world: w, output: { narration: narr, mechanics: result.mechanicsLine, combatSummary: String(result.combatSummary || ''), beats: Array.isArray(result.beats) ? result.beats : [] } };
     }
 
     // Flee / retreat: deterministic exit, costs 1 stress and 1 pressure clock.

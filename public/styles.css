@@ -440,6 +440,18 @@ a{color:var(--accent)}
 .compass-s{grid-column:2;grid-row:3}
 .compass-hub{grid-column:2;grid-row:2;color:var(--muted);font-size:14px;opacity:.6}
 
+/* ── Hedge-caster kit reference (text-only combat) ──────────────── */
+/* A non-interactive reference strip: it shows the verb to type for each item
+   so combat stays typed, not clicked. Highlighted when a fight is on. */
+.kit-bar{display:flex;flex-wrap:wrap;align-items:center;gap:14px;padding:10px 16px;border-top:1px solid var(--border);background:var(--panel2)}
+.kit-bar-combat{background:rgba(139,37,0,.10);border-top-color:rgba(192,80,47,.45)}
+.kit-group{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.kit-label{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.kit-chip{display:inline-flex;flex-direction:column;gap:1px;padding:5px 10px;border:1px solid var(--border);border-radius:6px;background:var(--panel);line-height:1.25;cursor:default}
+.kit-chip-name{font-size:13px;font-weight:600;color:var(--text)}
+.kit-chip-verb{font-size:11px;color:var(--accent);font-family:var(--mono,ui-monospace,Menlo,monospace)}
+.kit-hint{font-size:11px;color:var(--muted);font-style:italic}
+
 /* ── Escape mode: win/lose end screen ───────────────────────────── */
 .escape-end-overlay{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;background:rgba(8,8,8,.82);backdrop-filter:blur(3px)}
 .escape-end-card{max-width:460px;width:88%;padding:36px 32px;text-align:center;border-radius:8px;border:1px solid var(--border);background:var(--panel)}

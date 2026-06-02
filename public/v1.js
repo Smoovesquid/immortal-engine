@@ -2,6 +2,7 @@ import { normalizeManifest, normalizePack } from '../engine/rulesets.js';
 import { newWorld, ensureWorld } from '../engine/state.js';
 import { beginAdventure, playerMove, newScene } from '../engine/playloop.js';
 import { escapeOutcome } from '../engine/victory.js';
+import { escapeKitView } from '../engine/combat/escapeCombat.js';
 import { hasSlot, loadSlot, saveSlot, exportWorld, importWorld } from '../engine/save.js';
 import { worldHash as worldHashAsync } from '../engine/worldHash.browser.js';
 import { buildMythSpec, mythSpecJson } from '../engine/mythSpec.js';
@@ -420,8 +421,6 @@ async function doSubmitMove() {
   // (path buttons append it for unambiguous resolution; it must not be visible).
   const displayText = text.replace(/\s*::\S+\s*$/, '').trim();
   ui.play.lines.push({ who: 'you', text: displayText, mech: '' });
-  const wizardLine = { who: 'wizard', text: '', mech: output?.mechanics || '' };
-  ui.play.lines.push(wizardLine);
   ui.play.input = '';
   ui.play.lastResolutionKind = 'turn';
   ui.play.lastCombatSummary = output?.combatSummary || '';
@@ -437,6 +436,31 @@ async function doSubmitMove() {
   }
 
   persistAndRehash(world);
+
+  // ── Paced combat reveal ────────────────────────────────────────────────
+  // Escape combat returns a `beats` array — one short line per exchange. We
+  // reveal them one at a time instead of dumping the whole round, so a fight
+  // reads at an audiobook cadence rather than flashing past. With voice on, each
+  // beat is spoken and the next waits for it to finish; with voice off, a short
+  // fixed delay gives reading room. This is the fix for "combat is too fast."
+  const beats = Array.isArray(output?.beats) ? output.beats.filter(b => String(b || '').trim()) : [];
+  if (beats.length) {
+    setStatus('…');
+    for (let i = 0; i < beats.length; i++) {
+      const line = { who: 'wizard', text: String(beats[i]), mech: i === 0 ? (output?.mechanics || '') : '' };
+      ui.play.lines.push(line);
+      render();
+      const spoke = await tts.speakAndWait(line.text);
+      if (!spoke) await new Promise(r => setTimeout(r, 1100));
+      else await new Promise(r => setTimeout(r, 250));
+    }
+    setStatus('Move resolved.');
+    render();
+    return;
+  }
+
+  const wizardLine = { who: 'wizard', text: '', mech: output?.mechanics || '' };
+  ui.play.lines.push(wizardLine);
   setStatus('Narrating…');
   render();
 
@@ -1364,12 +1388,27 @@ function renderPlay() {
           : null)
     : null;
 
-  // Escape combat: a single clickable Attack resolves one round (the resolver
-  // ignores move text). Keeps the game playable by clicking, like travel.
-  const combatBar = (isEscape && inCombat && !ended)
-    ? el('div', { class: 'paths-bar combat-bar' },
-        el('span', { class: 'paths-label' }, 'Fight:'),
-        el('button', { class: 'btn path-btn attack-btn', onClick: () => travelTo('attack the creature') }, 'Attack'))
+  // Escape combat is text-only: you type what you do. The kit panel below is a
+  // reference, not a control surface — it shows the verb to type for each item
+  // (your blade, your cantrips) so you always know your options at a glance,
+  // without combat becoming a button-mashing clicker. Always visible in escape
+  // play so it reads as "this is what you have," in or out of a fight.
+  const kit = (isEscape && w?.party?.[0]) ? escapeKitView(w.party[0]) : null;
+  const hasKit = kit && (kit.weapons.length || kit.spells.length);
+  const kitChip = (entry) => el('div', { class: 'kit-chip', title: entry.note || '' },
+    el('span', { class: 'kit-chip-name' }, entry.name),
+    el('span', { class: 'kit-chip-verb' }, `type "${entry.verb}"`));
+  const kitBar = (hasKit && !ended)
+    ? el('div', { class: 'kit-bar' + (inCombat ? ' kit-bar-combat' : '') },
+        el('div', { class: 'kit-group' },
+          el('span', { class: 'kit-label' }, 'Blade'),
+          ...kit.weapons.map(kitChip)),
+        kit.spells.length
+          ? el('div', { class: 'kit-group' },
+              el('span', { class: 'kit-label' }, 'Cantrips'),
+              ...kit.spells.map(kitChip))
+          : null,
+        inCombat ? el('span', { class: 'kit-hint' }, 'or "ward" to defend') : null)
     : null;
 
   // ── Main panel (narration + map, no chrome) ───────────────────────────
@@ -1385,7 +1424,7 @@ function renderPlay() {
       renderTranscript(ui.play.lines)
     ),
     compassBar,
-    combatBar,
+    kitBar,
     el('div', { class: 'play-input-bar' },
       input,
       el('button', { class: 'btn primary', disabled: ended, onClick: () => doSubmitMove() }, 'Submit')

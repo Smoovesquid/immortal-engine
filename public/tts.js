@@ -55,6 +55,30 @@ const tts = {
     speechSynthesis.speak(utter);
   },
 
+  // Speak a line and resolve when it finishes (or on error). Resolves
+  // immediately when TTS is disabled/unsupported so callers can use it to pace a
+  // sequence of lines: with voice on, the cadence follows the narration; with
+  // voice off, the caller falls back to its own delay. Never rejects.
+  speakAndWait(text) {
+    return new Promise((resolve) => {
+      if (!this.enabled || !this.isSupported()) return resolve(false);
+      const clean = stripHtml(String(text || ''));
+      if (!clean) return resolve(false);
+      speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(clean);
+      utter.rate = 0.95;
+      utter.pitch = 1.0;
+      if (this._voice) utter.voice = this._voice;
+      let done = false;
+      const finish = () => { if (done) return; done = true; resolve(true); };
+      utter.onend = finish;
+      utter.onerror = finish;
+      // Safety net: some browsers drop onend for short utterances.
+      setTimeout(finish, Math.min(12000, 1200 + clean.length * 70));
+      speechSynthesis.speak(utter);
+    });
+  },
+
   stop() {
     if (!this.isSupported()) return;
     speechSynthesis.cancel();

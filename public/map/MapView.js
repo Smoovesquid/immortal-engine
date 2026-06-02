@@ -1,7 +1,7 @@
 
 import { renderWorldMap } from './WorldMap.js';
-import { renderRegionMap } from './RegionMap.js';
 import { renderLocalMap } from './LocalMap.js';
+import { renderOverworld } from './Overworld.js';
 
 function el(tag, attrs = {}, ...children) {
   const node = document.createElement(tag);
@@ -32,7 +32,7 @@ export function renderMapView(world, zoom, onZoom) {
   const body =
     z === 'world' ? renderWorldMap(world?.map) :
     z === 'local' ? renderLocalMap(world) :
-    renderRegionMap(world?.map);
+    renderOverworld(world);
 
   return el('div', { class: 'container stack' },
     el('div', { class: 'panel' },

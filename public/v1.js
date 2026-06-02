@@ -11,6 +11,7 @@ import { deriveSequelInvocation } from '../engine/sequel.js';
 import { renderMapView } from './map/MapView.js';
 import { renderLocalMap } from './map/LocalMap.js';
 import { renderRegionMap } from './map/RegionMap.js';
+import { renderOverworld } from './map/Overworld.js';
 import { renderSpellbookSection } from './panels/spellbook.js';
 import { renderCombatHudSection } from './panels/combatHud.js';
 import { renderInitiativeBar } from './panels/initiativeBar.js';
@@ -1354,7 +1355,7 @@ function renderPlay() {
   const playMap = w
     ? (w.scene?.interior
         ? renderLocalMap(w, { compact: true })
-        : renderRegionMap(w.map, { compact: true }))
+        : renderOverworld(w, { compact: true }))
     : null;
 
   // ── Escape-mode chrome (objective banner + clickable paths) ───────────

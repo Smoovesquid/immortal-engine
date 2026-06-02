@@ -586,14 +586,14 @@ export function playerMove(world, packsById, text) {
       return { world: w1, output: { narration, mechanics: '[ambush]' } };
     }
     if (newlySighted.length) {
-      const spot = newlySighted[0];
-      const bearing = cardinalToCell(toPos, { x: spot.x, y: spot.y });
-      const spotName = String(spot.name || '').trim();
-      if (spotName && bearing) {
-        narration += ` To the ${bearing} you make out ${spotName}.`;
-      } else if (bearing) {
-        narration += ` Something stands out to the ${bearing}.`;
-      }
+      // Spotting a new place is the headline of the step — an evocative pull
+      // toward the dim dot that just appeared on the map.
+      const line = sightingLine(w1.meta?.seed, toPos, newlySighted[0]);
+      if (line) narration += ` ${line}`;
+    } else {
+      // Quiet tile: maybe a little weather/atmosphere so empty country breathes.
+      const mood = wildAtmosphere(w1.meta?.seed, toPos);
+      if (mood) narration += ` ${mood}`;
     }
     return { world: w1, output: { narration, mechanics: '' } };
   }
@@ -1323,6 +1323,58 @@ function wildernessWord(seed, pos) {
     'a quiet hollow'
   ];
   return rng.pick(words) || 'open country';
+}
+
+// Evocative one-liner for a place spotted from afar. Turns a dim dot on the map
+// into a pull — a reason to set off toward it. Deterministic from seed + node so
+// the same ridge always reveals the same silhouette under replay. We only know
+// the node's name and kind out here (it isn't decompressed until you arrive), so
+// the line hints at presence and bearing, never invents facts about the place.
+function sightingLine(seed, fromPos, node) {
+  const name = String(node?.name || '').trim();
+  const bearing = cardinalToCell(fromPos, { x: node.x, y: node.y });
+  if (!name || !bearing) return '';
+  const rng = makeRng(seedFromString(`${String(seed || 'seed')}|sight|${String(node.id)}`));
+  const isTown = String(node?.nodeType) === 'settlement';
+  const townBank = [
+    `To the ${bearing}, smoke threads up from ${name}.`,
+    `${cap(bearing)}ward, the rooftops of ${name} catch the light.`,
+    `Far to the ${bearing} you make out the walls of ${name}.`,
+    `A scatter of lamplight to the ${bearing} — that would be ${name}.`
+  ];
+  const landmarkBank = [
+    `To the ${bearing}, a shape breaks the skyline: ${name}.`,
+    `${cap(bearing)}ward, ${name} hunches against the land.`,
+    `Something stands out to the ${bearing} — ${name}, if the maps are right.`,
+    `Far off to the ${bearing}, ${name} draws the eye.`
+  ];
+  return rng.pick(isTown ? townBank : landmarkBank) || `To the ${bearing} you make out ${name}.`;
+}
+
+// Occasional atmosphere for an otherwise-empty wild step — keeps the open road
+// from reading the same sentence every tile. Pure narration, deterministic by
+// cell, ~1 step in 3. Returns '' most of the time.
+function wildAtmosphere(seed, pos) {
+  const x = Number.isInteger(pos?.x) ? pos.x : 0;
+  const y = Number.isInteger(pos?.y) ? pos.y : 0;
+  const rng = makeRng(seedFromString(`${String(seed || 'seed')}|wildmood|${x}|${y}`));
+  if (rng.nextFloat() >= 0.34) return '';
+  const bank = [
+    'A cold wind worries at your cloak.',
+    'Somewhere ahead, crows lift and wheel.',
+    'The grass hisses, bending all one way.',
+    'Your boots find an old rut worn by other feet.',
+    'The light is going; shadows lean long.',
+    'Nothing moves but the weather.',
+    'A bird you cannot name calls once, then stops.',
+    'The quiet out here has a weight to it.'
+  ];
+  return rng.pick(bank) || '';
+}
+
+function cap(s) {
+  const str = String(s || '');
+  return str ? str[0].toUpperCase() + str.slice(1) : str;
 }
 
 function isFreeMovementIntent(text) {

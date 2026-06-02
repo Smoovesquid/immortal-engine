@@ -108,6 +108,39 @@ test('U90d: non-escape free-roam never spawns a wilderness encounter', () => {
   assert.equal(combatEver, false, 'the open sandbox stays quiet — wild encounters are escape-only');
 });
 
+test('U90f: wild-step narration (sighting/atmosphere) is deterministic across runs', () => {
+  const walkNarr = () => {
+    let w = twoNodeWorld('u90-narr'); // non-escape: no combat to interrupt the walk
+    const lines = [];
+    for (const d of ['go north', 'go east', 'go east', 'go south', 'go west']) {
+      const r = playerMove(w, packsById, d);
+      w = r.world;
+      lines.push(String(r.output?.narration || ''));
+    }
+    return lines;
+  };
+  assert.deepEqual(walkNarr(), walkNarr(), 'identical seed + steps => identical travel prose');
+});
+
+test('U90g: sighting a place names it in the travel narration (pull toward the dot)', () => {
+  // Step off n0 into a wild cell that does not land on n1; from there n1 should
+  // come into sight and be named in the line.
+  let w = twoNodeWorld('u90-pull');
+  const stepped = stepIntoWild(w);
+  assert.ok(stepped, 'stepped into open country');
+  // Re-derive the narration of that exact first wild step.
+  const m0 = ensureMap(twoNodeWorld('u90-pull').map);
+  const n1 = m0.nodes.find(n => n.id === 'n1');
+  let firstWildDir = null;
+  for (const d of ['go north', 'go south', 'go east', 'go west']) {
+    const c = stepCell(m0.pos, d.split(' ')[1]);
+    if (!(c.x === n1.x && c.y === n1.y)) { firstWildDir = d; break; }
+  }
+  const out = playerMove(twoNodeWorld('u90-pull'), packsById, firstWildDir).output.narration;
+  // n1 ("North") is one cell from n0, so it's within sight from the wild cell.
+  assert.match(out, /North/, 'the sighted place is named, giving the dot a pull');
+});
+
 test('U90e: escape-mode wandering can spawn an ambush (deterministic across seeds)', () => {
   let firedRuns = 0;
   let total = 0;

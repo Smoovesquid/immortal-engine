@@ -267,6 +267,27 @@ export function seeNode(world, nodeId) {
 }
 
 
+// v20 free-roam: discoverNode/seeNode both add a node to `discovered`, so that
+// list conflates "sighted from afar" with "actually stood on". visitNode is the
+// stronger signal — it marks a node in memory.visitedTurnByNodeId, which the
+// overworld renderer reads to draw a bright (visited) vs dim (sighted-only) icon.
+// Call this when the avatar lands on a node's cell (or starts standing on it).
+export function visitNode(world, nodeId) {
+  const id = String(nodeId || '').trim();
+  if (!id) return ensureWorld(world);
+  // Ensure it's discovered first (prepended, keeping discovered[0] === current).
+  const w = discoverNode(world, id);
+  const m = ensureMap(w.map);
+  const turn = w.time?.turn ?? 0;
+  const mem = m.memory && typeof m.memory === 'object' ? m.memory : {};
+  if (mem.visitedTurnByNodeId && mem.visitedTurnByNodeId[id] !== undefined) return w;
+  const visitedTurnByNodeId = {
+    ...(mem.visitedTurnByNodeId && typeof mem.visitedTurnByNodeId === 'object' ? mem.visitedTurnByNodeId : {}),
+    [id]: turn
+  };
+  return { ...w, map: { ...m, memory: { ...mem, visitedTurnByNodeId } } };
+}
+
 export function moveToNode(world, nodeId) {
   const w = ensureWorld(world);
   const m = ensureMap(w.map);

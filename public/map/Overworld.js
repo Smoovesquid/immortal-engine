@@ -69,6 +69,14 @@ export function renderOverworld(world, opts = {}) {
   // The node you're literally standing on (if any) — used for the header label.
   const standingNode = nodes.find(n => n.x === cx && n.y === cy) || null;
 
+  // Two tiers of knowledge: VISITED (you stood on it — bright icon + label) vs
+  // SIGHTED-ONLY (spotted from afar while roaming — a dim dot, no name yet). The
+  // node underfoot always counts as visited.
+  const visitedMem = (map.memory && typeof map.memory.visitedTurnByNodeId === 'object' && map.memory.visitedTurnByNodeId) || {};
+  const visited = new Set(Object.keys(visitedMem).map(String));
+  if (standingNode) visited.add(String(standingNode.id));
+  const isVisited = (id) => visited.has(String(id));
+
   // Nodes indexed by grid cell for fast lookup while painting tiles.
   const nodeAtCell = new Map();
   for (const n of nodes) {
@@ -129,7 +137,9 @@ export function renderOverworld(world, opts = {}) {
     if (!a || !b) continue;
     const key = a < b ? `${a}|${b}` : `${b}|${a}`;
     if (seenEdge.has(key)) continue; seenEdge.add(key);
-    if (!discovered.has(a) || !discovered.has(b)) continue;
+    // A road only reads once you've walked both ends — a place sighted from afar
+    // is just a dot on a ridge; you don't yet know what road runs to it.
+    if (!isVisited(a) || !isVisited(b)) continue;
     const na = byId.get(a); const nb = byId.get(b);
     if (!na || !nb || !Number.isInteger(na.x) || !Number.isInteger(nb.x)) continue;
     const pa = cellToPx(na.x, na.y); const pb = cellToPx(nb.x, nb.y);
@@ -148,15 +158,20 @@ export function renderOverworld(world, opts = {}) {
     // The avatar's own cell shows the @ instead of the node glyph, but the place
     // name still reads underneath so you know what you're standing on.
     const underAvatar = (n.x === cx && n.y === cy);
+    const seenOnly = !isVisited(id) && !underAvatar;
     const p = cellToPx(n.x, n.y);
     if (!underAvatar) {
       svg.appendChild(el('text', {
         x: p.x, y: p.y + tile * 0.3,
-        fill: '#c8a84e', 'font-size': Math.round(tile * 0.78),
+        // Sighted-only places read as a faint, muted dot until you reach them.
+        fill: seenOnly ? '#7e7456' : '#c8a84e',
+        'fill-opacity': seenOnly ? 0.5 : 1,
+        'font-size': Math.round(tile * (seenOnly ? 0.6 : 0.78)),
         'text-anchor': 'middle', 'font-family': 'ui-monospace, Menlo, monospace'
-      }, nodeGlyph(n)));
+      }, seenOnly ? '◌' : nodeGlyph(n)));
     }
-    const label = String(n.name || '').slice(0, 12);
+    // A name only appears once you've actually been there. From afar it's nameless.
+    const label = seenOnly ? '' : String(n.name || '').slice(0, 12);
     if (label) {
       glyphLayer.appendChild(el('text', {
         x: p.x, y: p.y + tile * 0.95,

@@ -8,7 +8,7 @@ import { triggerEnding } from './ending.js';
 import { compose } from './composer.js';
 import { planNextScene } from './sceneDirector.js';
 import { generateInitialMap } from './map/generateMap.js';
-import { ensureMap, pickTravelDestination, moveToNode, neighbors, exitsFrom, directionFromText, stepCell, nodeAtCell, nodesWithinSight, cardinalToCell, seeNode, SIGHT_RADIUS } from './map/mapState.js';
+import { ensureMap, pickTravelDestination, moveToNode, neighbors, exitsFrom, directionFromText, stepCell, nodeAtCell, nodesWithinSight, cardinalToCell, seeNode, visitNode, SIGHT_RADIUS } from './map/mapState.js';
 import { conductorDecision, applyConductorDeltas } from './conductor.js';
 import { worldTick } from './worldTick.js';
 import { resolveMove } from './resolve.js';
@@ -36,6 +36,10 @@ import { statMod, maxWounds } from './ruleset/core/stats.js';
 // v1 Escape: per-travel chance of a creature ambush. Tuned so the journey has
 // real risk without becoming a death-spiral — most hops are clear, some bite.
 const ESCAPE_ENCOUNTER_CHANCE = 0.4;
+// Wandering off-road into open country is riskier per step than reaching a refuge,
+// but lower than an arrival roll so the wild isn't a meat grinder — most tiles are
+// quiet, the empty stretches are where something occasionally finds you.
+const WILD_ENCOUNTER_CHANCE = 0.22;
 // Tamed foe HP for escape ambushes. Low enough that a gearless level-1 player
 // can usually drop it in a few swings before wounds pile up.
 const ESCAPE_ENEMY_HP = 5;
@@ -81,6 +85,13 @@ export function beginAdventure(world, packsById) {
     const startNode = settlements[0];
     w = { ...w, map: { ...w.map, currentNodeId: startNode.id } };
     w = discoverNode(w, startNode.id);
+    m = ensureMap(w.map);
+  }
+
+  // You begin standing on your start node — mark it visited so it always reads
+  // bright on the overworld (vs the dim icons of places merely sighted later).
+  if (w.map?.currentNodeId) {
+    w = visitNode(w, w.map.currentNodeId);
     m = ensureMap(w.map);
   }
 
@@ -522,7 +533,7 @@ export function playerMove(world, packsById, text) {
     if (landed) {
       // ── Arrival at a named node — run the existing node-entry pipeline. ──
       const nodeId = String(landed.id);
-      w1 = discoverNode({ ...w1, map: { ...ensureMap(w1.map), currentNodeId: nodeId } }, nodeId);
+      w1 = visitNode({ ...w1, map: { ...ensureMap(w1.map), currentNodeId: nodeId } }, nodeId);
       w1 = applyGeneratedStructuresForNode(w1, nodeId);
       // Decompress settlement on arrival (generates NPCs, history, buildings).
       const arrNode = w1.map?.nodes?.find(n => n && n.id === nodeId) || null;
@@ -563,7 +574,17 @@ export function playerMove(world, packsById, text) {
     const wildMove = { actorId: 'party', intentText: String(text || ''), approachTag: 'survival', stakeTag: 'time' };
     const wildResult = { outcome: 'success', mechanicsLine: '[travel | overworld-step]' };
     w1 = appendRecentBeat(w1, buildBeatFromTurn(w1, text, wildMove, wildResult));
+
+    // Wandering the open country carries a per-tile risk of being set upon.
+    w1 = maybeSpawnWildEncounter(w1, toPos);
+    const ambushed = Boolean(w1.combat?.active);
+
     let narration = `Wizard: You press ${dir} into ${locWord}.`;
+    if (ambushed) {
+      // Under attack — the sighting aside would only muddy the moment.
+      narration += ' The ground gives no warning before something is upon you.';
+      return { world: w1, output: { narration, mechanics: '[ambush]' } };
+    }
     if (newlySighted.length) {
       const spot = newlySighted[0];
       const bearing = cardinalToCell(toPos, { x: spot.x, y: spot.y });
@@ -2093,13 +2114,36 @@ function maybeSpawnEscapeEncounter(world, before) {
   const rng = makeRng(seedFromString(`${w.meta.seed}|escapeEncounter|${after}|${w.timeline.length}`));
   if (rng.nextFloat() >= ESCAPE_ENCOUNTER_CHANCE) return w;
 
-  // Borrow a bestiary creature for its name/flavor only, then fight it with a
-  // tamed classic-D&D profile resolved by escapeCombat.js. We deliberately do
-  // NOT use the creature's real stats/actions — escape combat is plain HP, a
-  // fixed enemy to-hit, and `damage` as the damage-die max. These are the only
-  // fields that survive ensureCombat's enemy whitelist.
   const node = (w.map?.nodes || []).find(n => n && n.id === after) || null;
   const region = node?.settlement?.region || null;
+  return spawnTamedAmbush(w, region, rng, 'escape-ambush');
+}
+
+// v20 free-roam: stepping into open country (no node underfoot) carries its own,
+// lower per-tile ambush chance. Keyed on the cell + timeline so the encounter is
+// a pure function of where and when you stepped — replay-stable. Escape mode only
+// for now (the live v1 loop); the open sandbox is left quiet.
+function maybeSpawnWildEncounter(world, pos) {
+  const w = world;
+  if (w.meta?.mode !== 'escape') return w;
+  if (w.combat?.active || w.ending?.locked) return w;
+  if (String(w.map?.currentNodeId || '')) return w; // only out in the wild
+  const x = Number(pos?.x), y = Number(pos?.y);
+  if (!Number.isInteger(x) || !Number.isInteger(y)) return w;
+
+  const rng = makeRng(seedFromString(`${w.meta.seed}|wildEncounter|${x}|${y}|${w.timeline.length}`));
+  if (rng.nextFloat() >= WILD_ENCOUNTER_CHANCE) return w;
+
+  // No node region out here — let selectCreatures fall back to the general pool.
+  return spawnTamedAmbush(w, null, rng, 'wild-ambush');
+}
+
+// Shared ambush spawner. Borrow a bestiary creature for its name/flavor only,
+// then fight it with a tamed classic-D&D profile resolved by escapeCombat.js. We
+// deliberately do NOT use the creature's real stats/actions — escape combat is
+// plain HP, a fixed enemy to-hit, and `damage` as the damage-die max. These are
+// the only fields that survive ensureCombat's enemy whitelist.
+function spawnTamedAmbush(w, region, rng, reason) {
   const flavor = selectCreatures(0.25, 1, region, rng)[0] || { name: 'Lurker' };
   const tamed = {
     name: String(flavor.name || 'Lurker'),
@@ -2110,7 +2154,7 @@ function maybeSpawnEscapeEncounter(world, before) {
     damage: 4,        // damage-die max (d4) for escapeCombat
     canParley: false
   };
-  return spawnEncounter(w, [tamed], { ambush: true, reason: 'escape-ambush' }, rng);
+  return spawnEncounter(w, [tamed], { ambush: true, reason }, rng);
 }
 
 function uniq(arr) {

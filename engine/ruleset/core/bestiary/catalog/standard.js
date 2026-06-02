@@ -1067,8 +1067,8 @@ export const standard = [
     lootTableRef: 'fiend_standard'
   },
   {
-    ref: 'salt_golem',
-    name: 'Salt Golem',
+    ref: 'greater_salt_golem',
+    name: 'Greater Salt Golem',
     cr: 4,
     tier: 'standard',
     maxHp: 92,
@@ -5378,8 +5378,8 @@ export const standard = [
     lootTableRef: 'humanoid_standard'
   },
   {
-    ref: 'mire_lurker',
-    name: 'Mire Lurker',
+    ref: 'elder_mire_lurker',
+    name: 'Elder Mire Lurker',
     cr: 3,
     tier: 'standard',
     maxHp: 62,
@@ -5496,8 +5496,8 @@ export const standard = [
     lootTableRef: 'plant_standard'
   },
   {
-    ref: 'iron_cobra',
-    name: 'Iron Cobra',
+    ref: 'iron_cobra_sentinel',
+    name: 'Iron Cobra Sentinel',
     cr: 3,
     tier: 'standard',
     maxHp: 55,
@@ -5610,8 +5610,8 @@ export const standard = [
     lootTableRef: 'beast_standard'
   },
   {
-    ref: 'shadow_dancer',
-    name: 'Shadow Dancer',
+    ref: 'umbral_dancer',
+    name: 'Umbral Dancer',
     cr: 4,
     tier: 'standard',
     maxHp: 62,
@@ -6905,8 +6905,8 @@ export const standard = [
     lootTableRef: 'undead_standard'
   },
   {
-    ref: 'venom_drake',
-    name: 'Venom Drake',
+    ref: 'greater_venom_drake',
+    name: 'Greater Venom Drake',
     cr: 4,
     tier: 'standard',
     maxHp: 78,
@@ -6943,8 +6943,8 @@ export const standard = [
     lootTableRef: 'dragon_standard'
   },
   {
-    ref: 'sand_wraith',
-    name: 'Sand Wraith',
+    ref: 'greater_sand_wraith',
+    name: 'Greater Sand Wraith',
     cr: 4,
     tier: 'standard',
     maxHp: 72,

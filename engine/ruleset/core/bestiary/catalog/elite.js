@@ -1148,8 +1148,8 @@ export const elite = [
     lootTableRef: 'plant_elite'
   },
   {
-    ref: 'pit_fiend_lesser',
-    name: 'Lesser Pit Fiend',
+    ref: 'greater_pit_fiend',
+    name: 'Greater Pit Fiend',
     cr: 10,
     tier: 'elite',
     maxHp: 195,

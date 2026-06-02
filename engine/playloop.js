@@ -15,7 +15,7 @@ import { resolveMove } from './resolve.js';
 import { applyDeltas } from './effectsCore.js';
 import { introduceThread, resolveThread, ensureInstrumentLayer } from './instrument.js';
 import { applyGeneratedStructuresForNode } from './structures/applyGeneratedStructuresForNode.js';
-import { enterStructureInterior, exitStructureInterior, moveWithinInterior, getInteriorView, resolveStructureSelection } from './structures/interiors.js';
+import { enterStructureInterior, exitStructureInterior, moveWithinInterior, getInteriorView, interiorDirectionalExits, resolveStructureSelection } from './structures/interiors.js';
 import { createCharacter } from './chargen/genesis.js';
 import { decompressAndCanonizeSync } from './decompression/decompress.js';
 import { discoverNode } from './map/mapState.js';
@@ -397,8 +397,12 @@ export function playerMove(world, packsById, text) {
     const wantsRiskyMove = isRiskyOrObstructedMoveIntent(text);
     if (!wantsRiskyMove) {
       const targetRoomId = interiorAction.toRoomId || pickAdjacentInteriorByDirection(w, interiorAction.direction);
-      const w1 = moveWithinInterior(w, targetRoomId);
-      if (w1 !== w) {
+      const fromRoomId = String(w.scene?.interior?.roomId || '');
+      const w1 = targetRoomId ? moveWithinInterior(w, targetRoomId) : w;
+      // Success is a real room change, not just a new object identity. moveWithinInterior
+      // calls ensureWorld() internally, so its no-op return is a fresh object that would
+      // fool a `w1 !== w` check into narrating a move that never happened.
+      if (targetRoomId && String(w1.scene?.interior?.roomId || '') !== fromRoomId) {
         let w2 = pushEvent(w1, {
           kind: 'move',
           data: {
@@ -414,7 +418,11 @@ export function playerMove(world, packsById, text) {
         const moveMsg = movedDir ? `Wizard: You move ${movedDir} into the next chamber.` : 'Wizard: You move into the next chamber.';
         return { world: w2, output: { narration: moveMsg, mechanics: '' } };
       }
-      return { world: w, output: { narration: 'Wizard: That way is blocked from here.', mechanics: '' } };
+      const blockedDir = normalizeDir(interiorAction.direction);
+      const blockedMsg = blockedDir
+        ? `Wizard: There is no way ${blockedDir} from here. The wall holds.`
+        : 'Wizard: That way is blocked from here.';
+      return { world: w, output: { narration: blockedMsg, mechanics: '' } };
     }
     // Risky/obstructed/special movement falls through to normal resolution (roll-capable path).
   }
@@ -1469,23 +1477,23 @@ function normalizeDir(d) {
   return s;
 }
 
+// Resolve a typed cardinal direction to the room it leads to inside an interior,
+// using the reciprocal interior compass. Returns '' when there is genuinely no
+// doorway that way — the caller reports a wall instead of folding the direction
+// onto some other door (the old `idx % exits.length` infinite-walk bug).
 function pickAdjacentInteriorByDirection(world, direction) {
-  const view = getInteriorView(world);
-  const exits = Array.isArray(view?.exits) ? view.exits.map(x => String(x?.id || '')).filter(Boolean) : [];
-  if (!exits.length) return '';
-
   const dir = normalizeDir(direction);
-  const idx = dir === 'north' ? 0 : dir === 'east' ? 1 : dir === 'south' ? 2 : dir === 'west' ? 3 : 0;
-  return exits[idx % exits.length] || exits[0];
+  if (!dir) return '';
+  const exits = interiorDirectionalExits(world);
+  return String(exits[dir] || '');
 }
 
-// Player-facing exit labels. Exits arrive sorted by id, and movement maps
-// direction → sorted index (north=0, east=1, south=2, west=3), so labeling by
-// the same order keeps "go north" consistent with the "Exits: north" the player sees.
-const EXIT_DIR_LABELS = ['north', 'east', 'south', 'west'];
+// Player-facing exit labels. Each exit now carries the compass direction it
+// leaves by (see getInteriorView), so the listed direction is the one that
+// actually moves you there.
 function exitDirectionLabels(view) {
   const exits = Array.isArray(view?.exits) ? view.exits : [];
-  return exits.map((x, i) => EXIT_DIR_LABELS[i] || `passage ${i + 1}`);
+  return exits.map((x, i) => String(x?.dir || `passage ${i + 1}`));
 }
 
 function isRiskyOrObstructedMoveIntent(text) {

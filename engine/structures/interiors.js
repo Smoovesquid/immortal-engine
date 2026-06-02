@@ -1,6 +1,6 @@
 import { ensureWorld } from '../state.js';
 import { ensureMap } from '../map/mapState.js';
-import { adjacentRooms, normalizeTopology } from './topology.js';
+import { adjacentRooms, normalizeTopology, interiorExitsFrom } from './topology.js';
 
 function sortedStructuresAtNode(world) {
   const w = ensureWorld(world);
@@ -129,6 +129,18 @@ export function moveWithinInterior(world, toRoomId) {
   };
 }
 
+// interiorDirectionalExits(world) -> { north, east, south, west } room id or null
+// for the room the player currently stands in. Built from the reciprocal interior
+// compass so "south" only resolves when a south doorway genuinely exists.
+export function interiorDirectionalExits(world) {
+  const w = ensureWorld(world);
+  const interior = (w.scene && typeof w.scene.interior === 'object' && w.scene.interior) ? w.scene.interior : null;
+  if (!interior) return { north: null, east: null, south: null, west: null };
+  const st = w.structures?.byId?.[String(interior.structureKey || '')];
+  if (!st) return { north: null, east: null, south: null, west: null };
+  return interiorExitsFrom(structureTopology(st), String(interior.roomId || ''));
+}
+
 export function getInteriorView(world) {
   const w = ensureWorld(world);
   const interior = (w.scene && typeof w.scene.interior === 'object' && w.scene.interior) ? w.scene.interior : null;
@@ -146,7 +158,17 @@ export function getInteriorView(world) {
   if (!st) return { active: false, structures: [] };
 
   const topo = structureTopology(st);
-  const exits = adjacentRooms(topo, roomId).map(id => ({ id })).sort((a, b) => a.id.localeCompare(b.id));
+  // Tag each doorway with the compass direction it leaves by, so the player-facing
+  // "Exits: north, east" matches the direction that actually moves you there.
+  const dirByRoom = interiorExitsFrom(topo, roomId);
+  const ORDER = ['north', 'east', 'south', 'west'];
+  const exits = adjacentRooms(topo, roomId)
+    .map(id => ({ id, dir: ORDER.find(d => dirByRoom[d] === id) || '' }))
+    .sort((a, b) => {
+      const ai = a.dir ? ORDER.indexOf(a.dir) : 99;
+      const bi = b.dir ? ORDER.indexOf(b.dir) : 99;
+      return ai - bi || a.id.localeCompare(b.id);
+    });
 
   return {
     active: true,

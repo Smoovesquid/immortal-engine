@@ -97,6 +97,7 @@ Run after any commit that touches state shape, playloop, or worldTick.
 | U##    | Unit / invariant          |
 | C#     | Campfire / NPC depth      |
 | G0#    | Goals                     |
+| UX#    | Play-experience / audit   |
 
 File convention: `{prefix}##.shortName.test.js`
 

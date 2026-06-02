@@ -12,7 +12,7 @@
  * over 'enemy' on equal modifier — the hero's advantage).
  */
 
-import { statMod } from '../ruleset/core/stats.js';
+import { statMod, maxWounds } from '../ruleset/core/stats.js';
 
 /**
  * buildCombatants(party, enemies) -> combatant[]
@@ -26,7 +26,8 @@ export function buildCombatants(party, enemies) {
   const partyArr = Array.isArray(party) ? party : [];
   for (const p of partyArr) {
     if (!p || typeof p !== 'object') continue;
-    if ((p.wounds ?? 0) >= 6) continue; // dead members don't roll
+    const cap = maxWounds(p.level ?? 1, statMod(p.stats?.GRIT ?? 10));
+    if ((p.wounds ?? 0) >= cap) continue; // dead members don't roll
     const mod = statMod(p.stats?.AGILITY ?? 10);
     out.push({ id: String(p.id ?? ''), type: 'party', modifier: mod });
   }

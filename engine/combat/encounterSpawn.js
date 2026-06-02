@@ -191,7 +191,10 @@ function mintEnemyFromDef(def) {
     legendaryActions: d.legendaryActions || null,
     reactions: d.reactions || null,
     lairActions: d.lairActions || null,
-    senses: d.senses || { darkvision: null, blindsight: null, tremorsense: null, truesight: null }
+    senses: d.senses || { darkvision: null, blindsight: null, tremorsense: null, truesight: null },
+    stats: d.stats || {},
+    traits: Array.isArray(d.traits) ? d.traits : [],
+    level: typeof d.level === 'number' ? d.level : Math.max(1, Math.ceil(typeof d.cr === 'number' ? d.cr : 1))
   };
 }
 

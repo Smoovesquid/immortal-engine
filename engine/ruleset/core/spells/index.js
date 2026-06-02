@@ -21,6 +21,50 @@ import { minor_illusion, blur, invisibility, mirror_image, phantasmal_killer } f
 import { cure_wounds, healing_word, lesser_restoration, greater_restoration, mass_healing_word } from './catalog/restoration.js';
 import { temporal_bolt, time_stop, age_ray, temporal_shield, entropic_decay } from './catalog/chronomancy.js';
 
+// CM8 ext — bestiary-referenced spells by school.
+import {
+  burning_hands, call_lightning, cone_of_cold, flame_strike, flaming_sphere,
+  gust_of_wind, heat_metal, hellish_rebuke, magic_missile, scorching_ray,
+  shatter, storm_sphere, thunderwave, wall_of_fire, wall_of_force, witch_bolt,
+  produce_flame
+} from './catalog/evocation_ext.js';
+
+import {
+  beacon_of_hope, armor_of_agathys, banishment, bless, death_ward,
+  protection_from_poison, remove_curse, shield_of_faith
+} from './catalog/abjuration_ext.js';
+
+import {
+  arms_of_hadar, cloudkill, dimension_door, entangle, fog_cloud, gaseous_form,
+  insect_plague, spike_growth, spirit_guardians, spiritual_weapon, plane_shift
+} from './catalog/conjuration_ext.js';
+
+import {
+  blindness_deafness, animate_dead, bestow_curse, contagion, false_life,
+  gentle_repose, ray_of_sickness
+} from './catalog/necromancy_ext.js';
+
+import {
+  blink, barkskin, enhance_ability, fly_spell, goodberry, polymorph,
+  telekinesis, water_breathing
+} from './catalog/transmutation_ext.js';
+
+import {
+  augury, comprehend_languages, contact_other_plane, detect_poison,
+  detect_poison_and_disease, detect_thoughts, legend_lore, nondetection, scrying
+} from './catalog/divination_ext.js';
+
+import {
+  animal_friendship, bane, cause_fear, crown_of_madness, dominate_person,
+  enemies_abound, enthrall, eyebite, hex, hypnotic_pattern, modify_memory,
+  sleep, suggestion
+} from './catalog/enchantment_ext.js';
+
+import {
+  dancing_lights, darkness, disguise_self, dream, faerie_fire, greater_invisibility,
+  mirage_arcane, phantasmal_force, project_image, silence, silent_image
+} from './catalog/illusion_ext.js';
+
 const ALL_SPELLS = [
   // Original 6
   fire_bolt, mage_armor, shield_spell, misty_step, fireball, counterspell,
@@ -43,7 +87,37 @@ const ALL_SPELLS = [
   // Restoration (+5)
   cure_wounds, healing_word, lesser_restoration, greater_restoration, mass_healing_word,
   // Chronomancy (+5)
-  temporal_bolt, time_stop, age_ray, temporal_shield, entropic_decay
+  temporal_bolt, time_stop, age_ray, temporal_shield, entropic_decay,
+
+  // --- CM8 ext: bestiary-referenced spells ---
+
+  // Evocation ext (+17)
+  burning_hands, call_lightning, cone_of_cold, flame_strike, flaming_sphere,
+  gust_of_wind, heat_metal, hellish_rebuke, magic_missile, scorching_ray,
+  shatter, storm_sphere, thunderwave, wall_of_fire, wall_of_force, witch_bolt,
+  produce_flame,
+  // Abjuration ext (+8)
+  beacon_of_hope, armor_of_agathys, banishment, bless, death_ward,
+  protection_from_poison, remove_curse, shield_of_faith,
+  // Conjuration ext (+11)
+  arms_of_hadar, cloudkill, dimension_door, entangle, fog_cloud, gaseous_form,
+  insect_plague, spike_growth, spirit_guardians, spiritual_weapon, plane_shift,
+  // Necromancy ext (+7)
+  blindness_deafness, animate_dead, bestow_curse, contagion, false_life,
+  gentle_repose, ray_of_sickness,
+  // Transmutation ext (+8)
+  blink, barkskin, enhance_ability, fly_spell, goodberry, polymorph,
+  telekinesis, water_breathing,
+  // Divination ext (+9)
+  augury, comprehend_languages, contact_other_plane, detect_poison,
+  detect_poison_and_disease, detect_thoughts, legend_lore, nondetection, scrying,
+  // Enchantment ext (+13)
+  animal_friendship, bane, cause_fear, crown_of_madness, dominate_person,
+  enemies_abound, enthrall, eyebite, hex, hypnotic_pattern, modify_memory,
+  sleep, suggestion,
+  // Illusion ext (+11)
+  dancing_lights, darkness, disguise_self, dream, faerie_fire, greater_invisibility,
+  mirage_arcane, phantasmal_force, project_image, silence, silent_image
 ];
 
 /** defRef -> spell definition (frozen) */

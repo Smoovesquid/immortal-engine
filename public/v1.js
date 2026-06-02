@@ -8,6 +8,7 @@ import { buildMythSpec, mythSpecJson } from '../engine/mythSpec.js';
 import { generateTriadFrames, deriveInvocationFromFrame } from '../engine/triad.js';
 import { deriveSequelInvocation } from '../engine/sequel.js';
 import { renderMapView } from './map/MapView.js';
+import { renderLocalMap } from './map/LocalMap.js';
 import { renderSpellbookSection } from './panels/spellbook.js';
 import { renderCombatHudSection } from './panels/combatHud.js';
 import { renderInitiativeBar } from './panels/initiativeBar.js';
@@ -93,6 +94,7 @@ const ui = {
   aiTest: { ok: null, text: '(not run)', ms: null },
   aiStatus: { ok: null, online: null, source: "(unknown)", mode: "(unknown)", envPresent: null, sessionPresent: null },
   devMode: false,
+  gearOpen: false,
   map: { zoom: 'region' },
   prevVitals: { wounds: 0, stress: 0 },
   auth: {
@@ -400,6 +402,9 @@ async function doSubmitMove() {
   const text = String(ui.play.input || '').trim();
   if (!text) return setStatus('');
 
+  // Capture node before move for auto scene transition
+  const prevNodeId = String(w.map?.currentNodeId ?? '');
+
   let world, output;
   try {
     ({ world, output } = playerMove(w, ui.packs.byId, text));
@@ -435,6 +440,13 @@ async function doSubmitMove() {
   tts.speak(wizardLine.text);
   setStatus('Move resolved.');
   render();
+
+  // Auto scene transition: if player moved to a new node, fire doNewScene()
+  // Queued after narration so the move's text is visible before the scene shifts
+  const newNodeId = String(world.map?.currentNodeId ?? '');
+  if (prevNodeId && newNodeId && prevNodeId !== newNodeId) {
+    await doNewScene();
+  }
 }
 
 async function doNewScene() {
@@ -1170,144 +1182,121 @@ function renderBeatsSection(world) {
 }
 
 function renderStatusPanels(world) {
-  // Pass S1 — slice spine. Order is intentional:
-  //   Character (the sheet you read at the top of your turn)
-  //   Party     (compact vitals + companions; survives from previous passes)
-  //   Inventory (loot, gear, soon-to-be-items)
-  //   Combat    (only when active; otherwise hidden)
-  //   Rumors    (the rumor board — soft goals that pull you outward)
-  //   Goals     (hard goals from the existing goal contract — stays for now)
-  //   Beats     (recent history)
-  return el('aside', { class: 'status-panels', 'aria-label': 'Status panels' },
+  // Stripped to D&D essentials: character sheet + combat (when active)
+  return el('aside', { class: 'status-panels', 'aria-label': 'Character info', role: 'complementary' },
     renderCharacterSheetSection(world),
     renderPartySection(world),
     renderInventorySection(world),
     renderCombatHudSection(world, el, {
       combatSummary: ui.play.lastCombatSummary || '',
       initiativeBar: renderInitiativeBar(world, el)
-    }),
-    renderSpellbookSection(world, el),
-    renderRumorBoardSection(world),
-    renderGoalsSection(world),
-    renderBeatsSection(world)
+    })
   );
 }
 
 function renderPlay() {
   const w = ui.world ? ensureWorld(ui.world) : null;
+  const ended = Boolean(w?.ending?.locked);
+  const inCombat = Boolean(w?.combat?.active);
+  const combatClass = inCombat ? ' combat-active' : '';
+
+  // ── Gear dropdown (top-right) ─────────────────────────────────────────
+  const gearOpen = Boolean(ui.gearOpen);
+  const devClass = ui.devMode ? 'dev-only dev-visible' : 'dev-only';
   const pack = w ? `${w.pack.primaryId}${w.pack.mixerId ? ` + ${w.pack.mixerId}` : ''}` : '';
   const seed = w ? String(w.meta.seed) : '';
   const fate = w ? String(w.meta.fate) : '';
   const hash = String(ui.worldHash || '');
 
-  const backBtn = el('button', {
-    class: 'btn ghost',
-    onClick: () => {
-      ui.world = null;
-      ui.worldHash = '';
-      ui.screen = 'invoke';
-      render();
-    }
-  }, 'Back');
+  const gearDropdown = el('div', { class: 'gear-dropdown' + (gearOpen ? ' open' : '') },
+    el('button', {
+      class: 'gear-btn',
+      title: 'Menu',
+      onClick: () => { ui.gearOpen = !ui.gearOpen; render(); }
+    }, '\u2699'),
+    gearOpen ? el('div', { class: 'gear-menu' },
+      el('button', { class: 'gear-item', onClick: () => {
+        if (!w) return setStatus('No world loaded.');
+        saveSlot(localStorage, w, 'slot1');
+        setStatus('Saved.'); ui.gearOpen = false; render();
+      }}, 'Save'),
+      el('button', { class: 'gear-item', onClick: () => {
+        const w2 = loadSlot(localStorage, 'slot1');
+        if (!w2) return setStatus('No slot found.');
+        startFromWorld(w2, { keepTranscript: true });
+        ui.gearOpen = false;
+      }}, 'Load'),
+      el('button', { class: 'gear-item', onClick: () => {
+        ui.devMode = !ui.devMode; ui.gearOpen = false; render();
+      }}, ui.devMode ? 'Hide Dev Info' : 'Show Dev Info'),
+      el('button', { class: 'gear-item', onClick: () => {
+        ui.world = null; ui.worldHash = '';
+        ui.screen = 'invoke'; ui.gearOpen = false; render();
+      }}, 'Exit to Menu')
+    ) : null
+  );
 
-  const reloadBtn = el('button', {
-    class: 'btn',
-    onClick: () => {
-      const w2 = loadSlot(localStorage, 'slot1');
-      if (!w2) return setStatus('No slot found.');
-      startFromWorld(w2, { keepTranscript: true });
-    }
-  }, 'Reload slot1');
-
-  const saveBtn = el('button', {
-    class: 'btn',
-    onClick: () => {
-      if (!w) return setStatus('No world loaded.');
-      saveSlot(localStorage, w, 'slot1');
-      setStatus('Saved slot1.');
-    }
-  }, 'Save');
-
-  const exportBtn = el('button', {
-    class: 'btn',
-    onClick: async () => {
-      if (!w) return setStatus('No world loaded.');
-      const txt = exportWorld(w);
-      try {
-        await navigator.clipboard.writeText(txt);
-        setStatus('Copied export JSON.');
-      } catch {
-        try { window.prompt('Copy export JSON:', txt); } catch {}
-        setStatus('Export ready.');
-      }
-    }
-  }, 'Export JSON');
-
-  const importBtn = el('button', {
-    class: 'btn',
-    onClick: () => {
-      let txt = '';
-      try { txt = String(window.prompt('Paste export JSON:', '') || ''); } catch {}
-      if (!txt.trim()) return;
-      try {
-        const w2 = importWorld(txt);
-        persistAndRehash(w2);
-        ui.play.lines.push({ who: 'wizard', text: 'Import accepted. What do you do?', mech: '' });
-        ui.play.input = '';
-        ui.play.lastResolutionKind = 'turn';
-        setStatus('Imported into slot1.');
-      } catch (e) {
-        setStatus(String(e && e.message ? e.message : e));
-      }
-    }
-  }, 'Import JSON');
-
-  const moveBtn = el('button', { class: 'btn primary', onClick: () => doSubmitMove() }, 'Submit Move');
-  const sceneBtn = el('button', { class: 'btn', onClick: () => doNewScene() }, 'New Scene');
-
-  const input = el('input', {
-    class: 'input',
-    value: ui.play.input,
-    placeholder: 'Type your move…',
-    onInput: (e) => { ui.play.input = String(e.target.value || ''); },
-    onKeydown: (e) => {
-      if (e.key === 'Enter') doSubmitMove();
-    }
-  });
-
-  const ended = Boolean(w?.ending?.locked);
-
-  const devClass = ui.devMode ? 'dev-only dev-visible' : 'dev-only';
-
-  const mainPanel = el('div', { class: 'panel' },
-    el('div', { class: 'header' },
-      el('div', {},
-        el('div', { class: 'title' }, 'Play Loop'),
-        el('div', { class: `sub ${devClass}` }, ended ? 'Ending locked: no further state mutation.' : 'Gate 2 acceptance: moves + scenes mutate deterministically; hash updates.')
-      )
-    ),
-    el('div', { class: 'card stack' },
-      el('div', { class: devClass },
-        ui.status ? el('div', { class: 'small' }, ui.status) : null,
-        el('div', {}, el('strong', {}, 'worldHash'), el('div', { class: 'mono small' }, hash || '(hash unavailable)')),
-        el('div', { class: 'small' }, `seed: ${seed}`),
-        el('div', { class: 'small' }, `fate: ${fate}`),
-        el('div', { class: 'small' }, `pack: ${pack}`),
-        el('div', { class: 'small' }, `tension: ${(w?.instrument?.inevitability ?? 0)}/12 | clocks: p${(w?.clocks?.pressure ?? 0)}/12 d${(w?.clocks?.dread ?? 0)}/12 r${(w?.clocks?.revelation ?? 0)}/12`),
-        el('div', { class: 'row' }, backBtn, reloadBtn, saveBtn, exportBtn, importBtn)
-      ),
-      renderTranscript(ui.play.lines),
-      el('div', { class: 'card stack' },
-        input,
-        el('div', { class: 'row' },
-          el('button', { class: 'btn', disabled: ended, onClick: () => doNewScene() }, 'New Scene'),
-          el('button', { class: 'btn primary', disabled: ended, onClick: () => doSubmitMove() }, 'Submit Move')
-        )
-      )
+  // ── Dev panel (hidden by default) ────────────────────────────────────
+  const devPanel = el('div', { class: devClass + ' gear-dev-panel' },
+    ui.status ? el('div', { class: 'small' }, ui.status) : null,
+    el('div', {}, el('strong', {}, 'worldHash'), el('div', { class: 'mono small' }, hash || '(hash unavailable)')),
+    el('div', { class: 'small' }, `seed: ${seed} | fate: ${fate} | pack: ${pack}`),
+    el('div', { class: 'small' }, `tension: ${(w?.instrument?.inevitability ?? 0)}/12 | clocks: p${(w?.clocks?.pressure ?? 0)}/12 d${(w?.clocks?.dread ?? 0)}/12 r${(w?.clocks?.revelation ?? 0)}/12`),
+    el('div', { class: 'row' },
+      el('button', { class: 'btn', onClick: () => {
+        const w2 = loadSlot(localStorage, 'slot1');
+        if (!w2) return setStatus('No slot found.');
+        startFromWorld(w2, { keepTranscript: true });
+      }}, 'Reload slot1'),
+      el('button', { class: 'btn', onClick: async () => {
+        if (!w) return; const txt = exportWorld(w);
+        try { await navigator.clipboard.writeText(txt); setStatus('Copied export JSON.'); }
+        catch { try { window.prompt('Copy export JSON:', txt); } catch {} setStatus('Export ready.'); }
+      }}, 'Export JSON'),
+      el('button', { class: 'btn', onClick: () => {
+        let txt = '';
+        try { txt = String(window.prompt('Paste export JSON:', '') || ''); } catch {}
+        if (!txt.trim()) return;
+        try {
+          const w2 = importWorld(txt); persistAndRehash(w2);
+          ui.play.lines.push({ who: 'wizard', text: 'Import accepted. What do you do?', mech: '' });
+          ui.play.input = ''; ui.play.lastResolutionKind = 'turn'; setStatus('Imported into slot1.');
+        } catch (e) { setStatus(String(e && e.message ? e.message : e)); }
+      }}, 'Import JSON')
     )
   );
 
-  const playRoot = el('div', { class: 'container stack' },
+  // ── Input bar (fixed bottom) ──────────────────────────────────────────
+  const input = el('input', {
+    class: 'input play-input',
+    value: ui.play.input,
+    placeholder: 'What do you do?',
+    role: 'search',
+    onInput: (e) => { ui.play.input = String(e.target.value || ''); },
+    onKeydown: (e) => { if (e.key === 'Enter') doSubmitMove(); }
+  });
+
+  // ── Compact local map ─────────────────────────────────────────────────
+  const playMap = w ? renderLocalMap(w, { compact: true }) : null;
+
+  // ── Main panel (narration + map, no chrome) ───────────────────────────
+  const mainPanel = el('div', { class: 'panel play-panel' },
+    el('div', { class: 'play-header' },
+      gearDropdown,
+      ended ? el('div', { class: 'play-ended' }, 'Journey complete.') : null
+    ),
+    devPanel,
+    el('div', { class: 'play-body' },
+      playMap,
+      renderTranscript(ui.play.lines)
+    ),
+    el('div', { class: 'play-input-bar' },
+      input,
+      el('button', { class: 'btn primary', disabled: ended, onClick: () => doSubmitMove() }, 'Submit')
+    )
+  );
+
+  const playRoot = el('div', { class: 'container stack play-container' + combatClass, role: 'main' },
     el('div', { class: 'play-layout' },
       el('div', { class: 'main-col' }, mainPanel),
       w ? renderStatusPanels(w) : null
@@ -1610,8 +1599,8 @@ function renderAi() {
 function render() {
   clear(app);
 
-  // Nav always present
-  app.append(renderNav());
+  // Nav hidden during play — game feels like a game, not a dashboard
+  if (ui.screen !== 'play') app.append(renderNav());
 
   if (!ui.packs.manifest) {
     app.append(el('div', { class: 'container stack' },

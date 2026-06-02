@@ -47,11 +47,11 @@ export function renderRegionMap(map) {
     style: { display: 'block' }
   });
 
-  // Background lattice (muted + filled, like Local map vibe)
+  // Background lattice — subtle blue-tinted hex field
   drawHexField(svg, view, fieldR, {
-    stroke: 'rgba(255,255,255,0.09)',
-    fill: 'rgba(255,255,255,0.02)',
-    strokeWidth: 1
+    stroke: 'rgba(200,168,78,0.06)',
+    fill: 'rgba(28,24,16,0.4)',
+    strokeWidth: 0.5
   });
 
   // Snap graph positions onto the lattice so node-hexes correspond
@@ -74,22 +74,22 @@ export function renderRegionMap(map) {
   const hexD  = 'M ' + boundaryPoints + ' Z';
   svg.appendChild(el('path', {
     d: rectD + ' ' + hexD,
-    fill: 'rgba(11,13,16,0.55)',
+    fill: 'rgba(13,13,13,0.7)',
     'fill-rule': 'evenodd'
   }));
 
-  // Soft silhouette border (2-pass)
+  // Soft silhouette border — accent-tinted glow
   svg.appendChild(el('polygon', {
     points: boundaryPoints,
     fill: 'none',
-    stroke: 'rgba(255,255,255,0.06)',
+    stroke: 'rgba(200,168,78,0.08)',
     'stroke-width': 6
   }));
   svg.appendChild(el('polygon', {
     points: boundaryPoints,
     fill: 'none',
-    stroke: 'rgba(255,255,255,0.12)',
-    'stroke-width': 2
+    stroke: 'rgba(200,168,78,0.18)',
+    'stroke-width': 1.5
   }));
 
 
@@ -108,9 +108,9 @@ export function renderRegionMap(map) {
   }
 
   drawHexHighlights(svg, view, fieldR, highlightCenters, {
-    currentFill: 'rgba(255,255,255,0.12)',
-    visitedFill: 'rgba(255,255,255,0.07)',
-    stroke: 'rgba(255,255,255,0.14)',
+    currentFill: 'rgba(200,168,78,0.12)',
+    visitedFill: 'rgba(200,168,78,0.05)',
+    stroke: 'rgba(200,168,78,0.18)',
     strokeWidth: 1
   });
 
@@ -121,9 +121,9 @@ export function renderRegionMap(map) {
     if (!pa || !pb) continue;
     svg.appendChild(el('line', {
       x1: pa.x, y1: pa.y, x2: pb.x, y2: pb.y,
-      stroke: '#ffffff',
-      'stroke-opacity': 0.22,
-      'stroke-width': 4,
+      stroke: '#c8a84e',
+      'stroke-opacity': 0.2,
+      'stroke-width': 3,
       'stroke-linecap': 'round'
     }));
   }
@@ -137,9 +137,8 @@ export function renderRegionMap(map) {
     if (!pa || !pb) continue;
     svg.appendChild(el('line', {
       x1: pa.x, y1: pa.y, x2: pb.x, y2: pb.y,
-      stroke: '#ffffff',
-      'stroke-opacity': 0.16,
-      'stroke-width': 2
+      stroke: 'rgba(200,168,78,0.12)',
+      'stroke-width': 1.5
     }));
   }
 
@@ -152,18 +151,17 @@ export function renderRegionMap(map) {
     const isHere = id === String(hereId ?? '');
     const isDecompressed = Boolean(n?.settlement?.decompressed);
 
-    // Pass S2 — differentiate discovered (decompressed) vs undiscovered nodes
     const nodeFill = isHere
-      ? 'rgba(103,212,255,0.25)'
+      ? 'rgba(200,168,78,0.3)'
       : isDecompressed
-        ? 'rgba(255,255,255,0.18)'
-        : 'rgba(255,255,255,0.08)';
+        ? 'rgba(200,168,78,0.1)'
+        : 'rgba(255,255,255,0.05)';
     const nodeStroke = isHere
-      ? 'rgba(103,212,255,0.6)'
+      ? 'rgba(200,168,78,0.7)'
       : isDecompressed
-        ? 'rgba(255,255,255,0.25)'
-        : 'rgba(255,255,255,0.12)';
-    const nodeR = isHere ? 8 : 5;
+        ? 'rgba(200,168,78,0.25)'
+        : 'rgba(255,255,255,0.1)';
+    const nodeR = isHere ? 9 : 6;
 
     svg.appendChild(el('polygon', {
       points: hexPath(p.x, p.y, nodeR),
@@ -172,13 +170,20 @@ export function renderRegionMap(map) {
       'stroke-width': isHere ? 2.5 : 1.5
     }));
 
-    // Pass S2 — current position pulsing ring indicator
     if (isHere) {
+      // Outer glow ring
+      svg.appendChild(el('polygon', {
+        points: hexPath(p.x, p.y, 14),
+        fill: 'none',
+        stroke: 'rgba(200,168,78,0.15)',
+        'stroke-width': 2
+      }));
+      // Inner pulse ring
       svg.appendChild(el('polygon', {
         points: hexPath(p.x, p.y, 12),
         fill: 'none',
-        stroke: 'rgba(103,212,255,0.35)',
-        'stroke-width': 1.5,
+        stroke: 'rgba(200,168,78,0.35)',
+        'stroke-width': 1,
         'stroke-dasharray': '4,3'
       }));
     }
@@ -196,8 +201,10 @@ export function renderRegionMap(map) {
   }
 
   return el('div', { class: 'card stack' },
-    el('div', {}, el('strong', {}, 'Region (10,000 ft)')),
-    el('div', { class: 'small' }, 'Discovered + current node, deterministic, with hex silhouette field + travel trail.'),
+    el('div', { class: 'local-map-header' },
+      el('strong', {}, 'Region'),
+      el('span', { class: 'small' }, `${show.size} locations discovered`)
+    ),
     svg
   );
 }

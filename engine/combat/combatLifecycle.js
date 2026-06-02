@@ -78,6 +78,11 @@ export function mintEnemyFromNpc(npc) {
   // CM9: lairActions and senses from bestiary or combatProfile.
   const lairActions = profile.lairActions ?? bestiary?.lairActions ?? null;
   const senses = profile.senses ?? bestiary?.senses ?? { darkvision: null, blindsight: null, tremorsense: null, truesight: null };
+  const stats = bestiary?.stats ?? profile.stats ?? {};
+  const traits = Array.isArray(bestiary?.traits) ? bestiary.traits : (Array.isArray(profile.traits) ? profile.traits : []);
+  const level = typeof bestiary?.level === 'number'
+    ? bestiary.level
+    : (typeof profile.level === 'number' ? profile.level : Math.max(1, Math.ceil(typeof cr === 'number' ? cr : 1)));
   const sourceNpcId = String(n.id ?? '');
   return {
     id: '', // assigned at begin
@@ -101,7 +106,10 @@ export function mintEnemyFromNpc(npc) {
     legendaryActions,
     reactions,
     lairActions,
-    senses
+    senses,
+    stats,
+    traits,
+    level
   };
 }
 

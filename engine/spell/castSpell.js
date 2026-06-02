@@ -13,6 +13,10 @@ import { applyDeltas } from '../effectsCore.js';
 import { lookupSpell } from '../ruleset/core/spells/index.js';
 import { statMod } from '../ruleset/core/stats.js';
 import { profBonusFor } from '../ruleset/core/levelTable.js';
+import { rollSave } from '../combat/savingThrows.js';
+import { maxWounds } from '../ruleset/core/stats.js';
+import { applyResistance } from '../combat/damageTypes.js';
+import { applyDamageTakenTraits } from '../combat/traitHooks.js';
 
 /**
  * Cast a spell. Returns { world, result }.
@@ -98,15 +102,6 @@ export function castSpell(world, { spellRef, targetId, slotLevel } = {}) {
           if (typeof scaled === 'string') diceStr = scaled;
         }
       }
-      // Upcast scaling for leveled spells.
-      if (!isCantrip && def.scalingByLevel?.extraDice && effectiveSlotLevel > def.level) {
-        const extraLevels = effectiveSlotLevel - def.level;
-        const extraDice = String(def.scalingByLevel.extraDice);
-        // e.g. fireball at 4th = 8d6 + 1d6 extra = 9d6
-        const extraTotal = rollDice(rng, extraDice) * extraLevels;
-        // We'll add the extra below after rolling the base.
-      }
-
       const baseDamage = rollDice(rng, diceStr);
 
       // Upcast extra damage for leveled spells.
@@ -123,9 +118,10 @@ export function castSpell(world, { spellRef, targetId, slotLevel } = {}) {
       // Saving throw (e.g. fireball DEX save for half).
       let saved = false;
       if (def.savingThrow && targetId) {
-        // Enemy saving throw — simplified: roll d20 vs spell DC.
-        const saveRoll = rng.int(1, 20);
-        saved = saveRoll >= spellDC;
+        const saveStat = String(def.savingThrow.stat || 'GRIT');
+        const enemies = Array.isArray(w.combat?.enemies) ? w.combat.enemies : [];
+        const targetEntity = enemies.find(e => String(e.id) === String(targetId)) || {};
+        saved = rollSave(targetEntity, saveStat, spellDC, rng).success;
         if (saved && def.savingThrow.halfOnSave) {
           totalDamage = Math.max(1, Math.floor(totalDamage / 2));
         } else if (saved) {
@@ -136,11 +132,16 @@ export function castSpell(world, { spellRef, targetId, slotLevel } = {}) {
       // Apply damage. If we have a targetId and combat is active, apply via
       // combatState enemyHpDelta. Otherwise apply as a wound to the target entity.
       const deltas = [];
+      const dmgType = effect.damageType || 'untyped';
+      let appliedDamage = totalDamage;
       if (targetId && w.combat?.active) {
         const enemies = Array.isArray(w.combat.enemies) ? w.combat.enemies : [];
         const targetEnemy = enemies.find(e => String(e.id) === String(targetId) && e.hp > 0);
         if (targetEnemy) {
-          deltas.push({ op: 'combatState', enemyHpDelta: [{ id: targetEnemy.id, by: -totalDamage }] });
+          const res = applyResistance(totalDamage, dmgType, targetEnemy.resistances);
+          const afterTraits = res.heals ? res.final : applyDamageTakenTraits(targetEnemy, res.final, dmgType);
+          appliedDamage = res.heals ? -afterTraits : afterTraits;
+          deltas.push({ op: 'combatState', enemyHpDelta: [{ id: targetEnemy.id, by: res.heals ? afterTraits : -afterTraits }] });
         }
       } else if (targetId) {
         deltas.push({ op: 'wound', entityId: String(targetId), by: totalDamage });
@@ -152,8 +153,8 @@ export function castSpell(world, { spellRef, targetId, slotLevel } = {}) {
       appliedEffects.push({
         kind: 'damage',
         dice: diceStr,
-        damageType: effect.damageType || 'untyped',
-        totalDamage,
+        damageType: dmgType,
+        totalDamage: appliedDamage,
         saved,
         targetId: targetId || null
       });
@@ -218,7 +219,12 @@ export function castSpell(world, { spellRef, targetId, slotLevel } = {}) {
         if (effect.target === 'party') {
           // Mass heal: reduce wounds on all living party members.
           const healDeltas = (w.party || [])
-            .filter(p => p && (p.wounds ?? 0) > 0 && (p.wounds ?? 0) < 6)
+            .filter(p => {
+              if (!p) return false;
+              const cap = maxWounds(p.level ?? 1, statMod(p.stats?.GRIT ?? 10));
+              const w0 = p.wounds ?? 0;
+              return w0 > 0 && w0 < cap;
+            })
             .map(p => ({ op: 'wound', entityId: String(p.id), by: -healAmount }));
           if (healDeltas.length) w = applyDeltas(w, healDeltas);
         } else {
@@ -269,8 +275,10 @@ export function castSpell(world, { spellRef, targetId, slotLevel } = {}) {
 
       let saved = false;
       if (def.savingThrow && targetId) {
-        const saveRoll = rng.int(1, 20);
-        saved = saveRoll >= spellDC;
+        const saveStat = String(def.savingThrow.stat || 'GRIT');
+        const enemies = Array.isArray(w.combat?.enemies) ? w.combat.enemies : [];
+        const targetEntity = enemies.find(e => String(e.id) === String(targetId)) || {};
+        saved = rollSave(targetEntity, saveStat, spellDC, rng).success;
         if (saved && def.savingThrow.halfOnSave) {
           totalDamage = Math.max(1, Math.floor(totalDamage / 2));
         } else if (saved) {
@@ -278,19 +286,24 @@ export function castSpell(world, { spellRef, targetId, slotLevel } = {}) {
         }
       }
 
+      const areaDmgType = effect.damageType || 'untyped';
+      let appliedAreaDamage = totalDamage;
       if (targetId && w.combat?.active) {
         const enemies = Array.isArray(w.combat.enemies) ? w.combat.enemies : [];
         const targetEnemy = enemies.find(e => String(e.id) === String(targetId) && e.hp > 0);
         if (targetEnemy) {
-          w = applyDeltas(w, [{ op: 'combatState', enemyHpDelta: [{ id: targetEnemy.id, by: -totalDamage }] }]);
+          const res = applyResistance(totalDamage, areaDmgType, targetEnemy.resistances);
+          const afterTraits = res.heals ? res.final : applyDamageTakenTraits(targetEnemy, res.final, areaDmgType);
+          appliedAreaDamage = res.heals ? -afterTraits : afterTraits;
+          w = applyDeltas(w, [{ op: 'combatState', enemyHpDelta: [{ id: targetEnemy.id, by: res.heals ? afterTraits : -afterTraits }] }]);
         }
       }
 
       appliedEffects.push({
         kind: 'area_damage',
         dice: diceStr,
-        damageType: effect.damageType || 'untyped',
-        totalDamage, saved, area: effect.area || null,
+        damageType: areaDmgType,
+        totalDamage: appliedAreaDamage, saved, area: effect.area || null,
         targetId: targetId || null
       });
     }
@@ -303,6 +316,15 @@ export function castSpell(world, { spellRef, targetId, slotLevel } = {}) {
         value: effect.value,
         target: effect.target || 'single',
         targetId: targetId || String(party0.id)
+      });
+    }
+
+    // CM8: barrier — wall/force-wall effect; record without applying world delta.
+    if (effect.kind === 'barrier') {
+      appliedEffects.push({
+        kind: 'barrier',
+        hp: effect.hp ?? 0,
+        area: effect.area || null
       });
     }
 

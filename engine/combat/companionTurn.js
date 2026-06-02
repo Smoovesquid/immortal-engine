@@ -26,6 +26,7 @@
 import { ensureWorld } from '../state.js';
 import { applyDeltas } from '../effectsCore.js';
 import { makeRng, seedFromString } from '../rng.js';
+import { statMod, maxWounds } from '../ruleset/core/stats.js';
 
 // Role → approachTag. Deterministic lookup. Default fallback is 'force'.
 // Covers every role in npcGenesis.js BUILDING_ARCHETYPES and GENERIC_ROLES.
@@ -75,8 +76,8 @@ export function resolveCompanionTurn(world, companion) {
     return { world: w, result: { skipped: true, reason: 'no-combat', mechanicsLine: '' } };
   }
 
-  // Down companions (wounds >= 6) do not act.
-  if ((companion?.wounds ?? 0) >= 6) {
+  // Down companions (wounds >= maxWounds) do not act.
+  if ((companion?.wounds ?? 0) >= maxWounds(companion?.level ?? 1, statMod(companion?.stats?.GRIT ?? 10))) {
     return { world: w, result: { skipped: true, reason: 'down', mechanicsLine: '' } };
   }
 

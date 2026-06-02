@@ -13,9 +13,9 @@ export const EVENT_DETECTORS = [
   { id: 'faction_arrival', test: (pre, post) => post.factions.length > pre.factions.length },
 
   // Scar events (irreversible thresholds)
-  { id: 'corruption_scar', test: (pre, post) => post.scars.some(s => s.id === 'corruption_shift') && !pre.scars.some(s => s.id === 'corruption_shift') },
-  { id: 'war_scar',        test: (pre, post) => post.scars.some(s => s.id === 'war_state') && !pre.scars.some(s => s.id === 'war_state') },
-  { id: 'famine_scar',     test: (pre, post) => post.scars.some(s => s.id === 'famine_arc') && !pre.scars.some(s => s.id === 'famine_arc') },
+  { id: 'corruption_scar', test: (pre, post) => post.scars.includes('corruption_shift') && !pre.scars.includes('corruption_shift') },
+  { id: 'war_scar',        test: (pre, post) => post.scars.includes('war_state') && !pre.scars.includes('war_state') },
+  { id: 'famine_scar',     test: (pre, post) => post.scars.includes('famine_arc') && !pre.scars.includes('famine_arc') },
 
   // Recovery events (from perturbations)
   { id: 'peace_period',    test: (pre, post) => post.factions.some((f, i) => f.hostility < (pre.factions[i]?.hostility ?? 0) - 5) },

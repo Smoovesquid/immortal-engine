@@ -27,6 +27,7 @@ import { beginCombat, endCombat, mintEnemyFromNpc } from './combat/combatLifecyc
 import { resolveCompanionTurn } from './combat/companionTurn.js';
 import { castSpell } from './spell/castSpell.js';
 import { evaluateEncounter, selectCreatures, spawnEncounter } from './combat/encounterSpawn.js';
+import { statMod, maxWounds } from './ruleset/core/stats.js';
 
 // Pure-ish play loop: world -> {world, output}
 
@@ -389,7 +390,8 @@ export function playerMove(world, packsById, text) {
   }
 
   // Surface-only exploration: list adjacent map nodes deterministically (no roll, no tick, no timeline).
-  if (isExploreIntent(text)) {
+  // Skipped when combat is active — during a fight, everything routes through the combat resolver.
+  if (!w.combat?.active && isExploreIntent(text)) {
     if (w.scene?.interior) {
       const view = getInteriorView(w);
       const exits = (view.exits || []).map(x => x.id);
@@ -1344,8 +1346,11 @@ function isExploreIntent(text) {
   if (/\b(look around|look about|survey|scan|search the area|where can i go|where do i go|options|exits|way out|how do i get out|get out of here|leave this place)\b/.test(t)) return true;
   // "What do I see / what's here / what is in this room / how big / what does X look like"
   if (/^(what|how|where|who|describe)\b/.test(t) && !/\b(pick|climb|force|break|fight|attack|try|attempt|sneak|steal|persuade|deceive|track|forage|decipher|calm|leap|jump)\b/.test(t)) return true;
+  // Yes/no DM questions: "Is there a window?", "Are there any people?", "Is the door open?"
+  if (/^(is\s+(there|the|it|this|that)|are\s+(there|they|the|these|those|any))\b/.test(t) && !/\b(try|attempt|pick|climb|force|break|fight|attack|sneak|steal|persuade|deceive)\b/.test(t)) return true;
   // "I look at X" / "I read X" / "I listen" / "I smell" / "I check my inventory"
-  if (/\bi\s+(look\s+at|read|listen|smell|check\s+(my\s+)?inventory|check\s+my|observe)\b/.test(t)) return true;
+  // "I examine X" / "I watch X" / "I peer" / "I inspect" / "I study" (passive)
+  if (/\bi\s+(look\s+at|read|listen|smell|check\s+(my\s+)?inventory|check\s+my|observe|examine|watch|peer|inspect|study|gaze|glance|scan|survey)\b/.test(t)) return true;
   return false;
 }
 
@@ -1354,7 +1359,21 @@ function isTrivialIntent(text) {
   if (!t) return false;
   // Trivial physical actions that auto-succeed: no risk, no uncertain outcome.
   // These are everyday actions any able-bodied person can do without a check.
-  return /\bi\s+(sit\s+down|stand\s+up|draw\s+(my\s+)?sword|draw\s+(my\s+)?weapon|put\s+away|sheathe|open\s+the\s+door|walk\s+to|eat|drink|light\s+a\s+torch|light\s+my|take\s+off|put\s+on|drop\s+(my\s+)?pack|drop\s+my|wave|kneel|rest|pray|bow|nod|stretch|yawn|close\s+the\s+door|pick\s+up\s+(the\s+)?rock|pick\s+up\s+(the\s+)?stone)\b/.test(t);
+  // 1. Basic body actions: sit, stand, kneel, bow, nod, wave, rest, stretch, yawn, pray, dismount
+  if (/\bi\s+(sit\s+down|stand\s+up|wave|kneel|rest|pray|bow|nod|stretch|yawn|dismount)\b/.test(t)) return true;
+  // 2. Equipment: draw/sheathe weapon, put on/take off gear, drop pack, open/close door
+  if (/\bi\s+(draw\s+(my\s+)?sword|draw\s+(my\s+)?weapon|put\s+away|sheathe|open\s+the\s+door|close\s+the\s+door|take\s+off|put\s+on|drop\s+(my\s+)?pack|drop\s+my)\b/.test(t)) return true;
+  // 3. Consume: eat, drink, light torch
+  if (/\bi\s+(eat|drink|light\s+a\s+torch|light\s+my)\b/.test(t)) return true;
+  // 4. Pick up / take / grab / pocket uncontested items (no skill verb like "steal" or "pickpocket")
+  if (/\bi\s+(take|pick\s+up|grab|pocket)\s+(the|a|my|some)\b/.test(t) && !/\b(steal|pickpocket|snatch|swipe|pilfer)\b/.test(t)) return true;
+  // 5. Walk to (local, not travel)
+  if (/\bi\s+walk\s+to\b/.test(t)) return true;
+  // 6. Social pleasantries: say hello, greet, introduce, thank, nod in agreement, whistle
+  if (/\bi\s+(say\s+hello|greet|introduce\s+myself|thank\s+them|thank\s+him|thank\s+her|whistle|hum|sing\s+a\s+tune|nod\s+in)\b/.test(t)) return true;
+  // 7. Legacy specific patterns
+  if (/\bi\s+(pick\s+up\s+(the\s+)?rock|pick\s+up\s+(the\s+)?stone)\b/.test(t)) return true;
+  return false;
 }
 
 function normalizeDir(d) {
@@ -1555,7 +1574,7 @@ function runCompanionTurns(world, beats) {
   for (let i = 1; i < party.length; i++) {
     if (!w.combat?.active) break;
     const companion = w.party?.[i];
-    if (!companion || (companion.wounds ?? 0) >= 6) continue;
+    if (!companion || (companion.wounds ?? 0) >= maxWounds(companion.level ?? 1, statMod(companion.stats?.GRIT ?? 10))) continue;
     const ct = resolveCompanionTurn(w, companion);
     w = ct.world;
     if (ct.result.skipped) continue;
@@ -1597,7 +1616,7 @@ function isFleeIntent(text) {
 function detectAttackBeginIntent(world, text) {
   const t = String(text || '').trim();
   if (!t) return null;
-  const m = t.match(/\b(attack|fight|kill|strike|assault)\s+(.+)/i);
+  const m = t.match(/\b(attack|fight|kill|strike|assault|punch|stab|hit|slash|swing\s+at|shoot|kick|tackle|charge)\s+(.+)/i);
   if (!m) return null;
   const ref = String(m[2] || '').trim().replace(/[.!?,;:]+$/, '').trim();
   if (!ref) return null;
@@ -1607,14 +1626,11 @@ function detectAttackBeginIntent(world, text) {
   const npcs = node?.settlement?.npcs || [];
   if (!Array.isArray(npcs) || !npcs.length) return null;
 
-  const norm = (s) => String(s || '').toLowerCase().trim();
-  const refLower = norm(ref);
-  const npc = npcs.find(n => n && n.hostile === true && (
-    norm(n.id) === refLower ||
-    norm(n.name) === refLower ||
-    norm(n.name).includes(refLower) ||
-    refLower.includes(norm(n.name))
-  ));
+  // Only consider hostile NPCs for the fast-path
+  const hostileNpcs = npcs.filter(n => n && n.hostile === true);
+  if (!hostileNpcs.length) return null;
+
+  const npc = fuzzyMatchNpc(hostileNpcs, ref);
   if (!npc) return null;
   return { npc };
 }
@@ -1622,10 +1638,14 @@ function detectAttackBeginIntent(world, text) {
 // CM11: Like detectAttackBeginIntent but matches ANY NPC at the current node
 // (not just hostile ones). Only called after the hostile-only check returned null,
 // so hostile NPCs still take the fast path.
+//
+// Fuzzy matching: tries name/id first, then role, then generic descriptors
+// ("woman", "man", "person", "stranger", "guard", etc.). If violence is
+// clearly intended and NPCs exist but no specific match, picks the first NPC.
 function detectAttackAnyIntent(world, text) {
   const t = String(text || '').trim();
   if (!t) return null;
-  const m = t.match(/\b(attack|fight|kill|strike|assault)\s+(.+)/i);
+  const m = t.match(/\b(attack|fight|kill|strike|assault|punch|stab|hit|slash|swing\s+at|shoot|kick|tackle|charge)\s+(.+)/i);
   if (!m) return null;
   const ref = String(m[2] || '').trim().replace(/[.!?,;:]+$/, '').trim();
   if (!ref) return null;
@@ -1635,16 +1655,65 @@ function detectAttackAnyIntent(world, text) {
   const npcs = node?.settlement?.npcs || [];
   if (!Array.isArray(npcs) || !npcs.length) return null;
 
+  const npc = fuzzyMatchNpc(npcs, ref);
+  if (!npc) return null;
+  return { npc };
+}
+
+// Shared fuzzy NPC resolution. Tries exact name, then role, then generic
+// descriptors, then first-NPC fallback for clearly generic refs.
+function fuzzyMatchNpc(npcs, ref) {
+  if (!Array.isArray(npcs) || !npcs.length || !ref) return null;
   const norm = (s) => String(s || '').toLowerCase().trim();
   const refLower = norm(ref);
-  const npc = npcs.find(n => n && (
+
+  // 1. Exact or substring match on name/id (existing behavior)
+  const byName = npcs.find(n => n && (
     norm(n.id) === refLower ||
     norm(n.name) === refLower ||
     norm(n.name).includes(refLower) ||
     refLower.includes(norm(n.name))
   ));
-  if (!npc) return null;
-  return { npc };
+  if (byName) return byName;
+
+  // 2. Role match: "guard" → role=guard, "merchant" → role=merchant, etc.
+  const byRole = npcs.find(n => n && (
+    norm(n.role) === refLower ||
+    norm(n.role).includes(refLower) ||
+    refLower.includes(norm(n.role)) ||
+    norm(n.role).replace(/_/g, ' ') === refLower
+  ));
+  if (byRole) return byRole;
+
+  // 3. Generic human descriptors → first available NPC
+  const GENERIC_REFS = new Set([
+    'woman', 'man', 'person', 'stranger', 'someone', 'them',
+    'her', 'him', 'lady', 'guy', 'fellow', 'figure',
+    'villager', 'townsperson', 'townsfolk', 'civilian', 'bystander',
+    'the woman', 'the man', 'the stranger', 'the person', 'the figure',
+    'the guard', 'the merchant', 'the innkeeper', 'the smith',
+    'the elder', 'the healer', 'the priest', 'the trader',
+  ]);
+  if (GENERIC_REFS.has(refLower)) return npcs[0];
+
+  // 4. "the <role>" pattern: "the guard captain" → guard_captain
+  const theMatch = refLower.match(/^the\s+(.+)/);
+  if (theMatch) {
+    const roleRef = theMatch[1].replace(/\s+/g, '_');
+    const byTheRole = npcs.find(n => n && (
+      norm(n.role) === roleRef ||
+      norm(n.role).includes(theMatch[1]) ||
+      theMatch[1].includes(norm(n.role).replace(/_/g, ' '))
+    ));
+    if (byTheRole) return byTheRole;
+  }
+
+  // 5. Last resort: if ref is a single common word that could describe
+  //    any person, pick first NPC. This catches "stab everyone" etc.
+  const ALWAYS_RESOLVE = /^(everyone|everybody|anyone|all|anything|everything)$/;
+  if (ALWAYS_RESOLVE.test(refLower)) return npcs[0];
+
+  return null;
 }
 
 // Translates free text into a combat-shaped move. Reuses the mainline
@@ -1674,11 +1743,12 @@ function inferCombatMoveFromText(world, pack, actorId, text) {
 function inferMoveFromText(world, pack, actorId, text) {
   const t = String(text || '').toLowerCase();
   const approachTag =
-    /\b(force|bash|break|kick|pry|smash)\b/.test(t) ? 'force' :
+    /\b(force|bash|break|kick|pry|smash|punch|stab|hit|slash|swing|tackle|charge|shove|grapple|wrestle)\b/.test(t) ? 'force' :
     /\b(sneak|quiet|hide|slip|crawl|shadow)\b/.test(t) ? 'finesse' :
-    /\b(aim|shoot|throw|strike|attack)\b/.test(t) ? 'focus' :
+    /\b(aim|shoot|throw)\b/.test(t) ? 'focus' :
     /\b(talk|convince|lie|threaten|charm)\b/.test(t) ? 'charm' :
     /\b(listen|watch|study|search|inspect)\b/.test(t) ? 'insight' :
+    /\b(strike|attack)\b/.test(t) ? 'force' :
     /\b(hack|wire|code|scan|calibrate|repair)\b/.test(t) ? 'tech' :
     /\b(ritual|curse|spirit|ward|summon)\b/.test(t) ? 'occult' :
     /\b(track|forage|camp|survive)\b/.test(t) ? 'survival' :

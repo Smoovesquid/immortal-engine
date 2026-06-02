@@ -17,6 +17,26 @@ function el(tag, attrs = {}, ...children) {
   return node;
 }
 
+// ── Theme colors ────────────────────────────────────────────────────────
+const THEME = {
+  bg: '#0d0d0d',
+  gridLine: 'rgba(200,168,78,0.06)',
+  gridFill: 'rgba(28,24,16,0.9)',
+  hexEdge: 'rgba(200,168,78,0.25)',
+  hexEdgeGlow: 'rgba(200,168,78,0.08)',
+  obstacle: 'rgba(200,168,78,0.15)',
+  structureFill: 'rgba(200,168,78,0.25)',
+  structureStroke: 'rgba(200,168,78,0.6)',
+  playerFill: '#c8a84e',
+  playerGlow: 'rgba(200,168,78,0.4)',
+  roomFloor: '#1c1810',
+  roomWall: 'rgba(200,168,78,0.35)',
+  doorStroke: '#c8a84e',
+  roomLabel: '#8a7e6a',
+  npcName: '#d4c5a9',
+};
+
+// ── Geometry helpers ────────────────────────────────────────────────────
 function inHexMask(dx, dy, R) {
   const r = dy;
   const q = dx - Math.floor(dy / 2);
@@ -80,6 +100,7 @@ function playerFeet(world) {
   return projectedFeetFromTimeline(world);
 }
 
+// ── Exterior drawing (hex-masked tactical grid) ─────────────────────────
 function drawExterior(ctx, world, w, size, cell) {
   const seed = String(world?.meta?.seed ?? 'seed');
   const nodeId = String(world?.map?.currentNodeId ?? '');
@@ -87,24 +108,33 @@ function drawExterior(ctx, world, w, size, cell) {
   const radius = 30;
   const mid = Math.floor(size / 2);
 
-  ctx.fillStyle = 'black';
+  // Dark background
+  ctx.fillStyle = THEME.bg;
   ctx.fillRect(0, 0, w, w);
 
+  // Draw hex-masked terrain cells
   for (let y = 0; y < size; y++) {
     for (let x = 0; x < size; x++) {
       const dx = x - mid;
       const dy = y - mid;
       if (!inHexMask(dx, dy, radius)) continue;
+
+      // Subtle cell fill
+      ctx.fillStyle = THEME.gridFill;
+      ctx.fillRect(x * cell + 1, y * cell + 1, cell - 2, cell - 2);
+
+      // Sparse obstacles / features
       const h = hash32(key + ':' + x + ',' + y);
       if ((h % 97) <= 1) {
-        ctx.fillStyle = 'white';
-        ctx.fillRect(x * cell + 1, y * cell + 1, cell - 2, cell - 2);
+        ctx.fillStyle = THEME.obstacle;
+        ctx.fillRect(x * cell + 2, y * cell + 2, cell - 4, cell - 4);
       }
     }
   }
 
-  ctx.strokeStyle = 'white';
-  ctx.lineWidth = 1;
+  // Subtle grid lines
+  ctx.strokeStyle = THEME.gridLine;
+  ctx.lineWidth = 0.5;
   for (let i = 0; i <= size; i++) {
     ctx.beginPath();
     ctx.moveTo(i * cell, 0);
@@ -116,8 +146,8 @@ function drawExterior(ctx, world, w, size, cell) {
     ctx.stroke();
   }
 
-  ctx.strokeStyle = '#00ffff';
-  ctx.lineWidth = 3;
+  // Hex boundary edge glow
+  ctx.lineWidth = 2;
   for (let y = 0; y < size; y++) {
     for (let x = 0; x < size; x++) {
       const dx = x - mid;
@@ -128,10 +158,20 @@ function drawExterior(ctx, world, w, size, cell) {
         !inHexMask(dx - 1, dy, radius) ||
         !inHexMask(dx, dy + 1, radius) ||
         !inHexMask(dx, dy - 1, radius);
-      if (edge) ctx.strokeRect(x * cell, y * cell, cell, cell);
+      if (edge) {
+        // Outer glow
+        ctx.strokeStyle = THEME.hexEdgeGlow;
+        ctx.lineWidth = 4;
+        ctx.strokeRect(x * cell, y * cell, cell, cell);
+        // Sharp edge
+        ctx.strokeStyle = THEME.hexEdge;
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(x * cell, y * cell, cell, cell);
+      }
     }
   }
 
+  // Structures
   const structures = structuresAtCurrentNode(world);
   if (structures.length) {
     for (let i = 0; i < structures.length; i++) {
@@ -142,27 +182,38 @@ function drawExterior(ctx, world, w, size, cell) {
       for (const r of layout) {
         const x = (baseCol + r.col * 2) * cell;
         const y = (baseRow + r.row * 2) * cell;
-        ctx.fillStyle = '#ffd166';
+        ctx.fillStyle = THEME.structureFill;
         ctx.fillRect(x + 1, y + 1, cell * 2 - 2, cell * 2 - 2);
-        ctx.strokeStyle = '#111';
-        ctx.lineWidth = 2;
+        ctx.strokeStyle = THEME.structureStroke;
+        ctx.lineWidth = 1.5;
         ctx.strokeRect(x + 1, y + 1, cell * 2 - 2, cell * 2 - 2);
       }
     }
   }
 
-  // Player marker from canonical local feet position (5 ft per square).
+  // Player marker with glow
   const { xFt, yFt } = playerFeet(world);
   const ox = (xFt / 5) * cell;
   const oy = (yFt / 5) * cell;
-  ctx.fillStyle = 'red';
+  const px = mid * cell + cell / 2 + ox;
+  const py = mid * cell + cell / 2 + oy;
+
+  // Glow
   ctx.beginPath();
-  ctx.arc(mid * cell + cell / 2 + ox, mid * cell + cell / 2 + oy, cell * 0.35, 0, Math.PI * 2);
+  ctx.arc(px, py, cell * 0.7, 0, Math.PI * 2);
+  ctx.fillStyle = THEME.playerGlow;
+  ctx.fill();
+
+  // Marker
+  ctx.beginPath();
+  ctx.arc(px, py, cell * 0.35, 0, Math.PI * 2);
+  ctx.fillStyle = THEME.playerFill;
   ctx.fill();
 }
 
+// ── Interior drawing (room-based dungeon layout) ────────────────────────
 function drawInterior(ctx, world, w) {
-  ctx.fillStyle = '#050607';
+  ctx.fillStyle = THEME.bg;
   ctx.fillRect(0, 0, w, w);
 
   const interior = world?.scene?.interior && typeof world.scene.interior === 'object' ? world.scene.interior : null;
@@ -189,49 +240,61 @@ function drawInterior(ctx, world, w) {
     const cy = startY + rr * spacing;
     centers.set(String(r.id), { cx, cy });
 
-    // room floor
-    ctx.fillStyle = '#1b1f24';
+    const isCurrent = String(r.id) === roomId;
+
+    // Room floor
+    ctx.fillStyle = isCurrent ? 'rgba(200,168,78,0.08)' : THEME.roomFloor;
     ctx.fillRect(cx - roomW / 2, cy - roomH / 2, roomW, roomH);
 
-    // walls
-    ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 4;
+    // Room walls
+    ctx.strokeStyle = isCurrent ? 'rgba(200,168,78,0.5)' : THEME.roomWall;
+    ctx.lineWidth = isCurrent ? 2.5 : 1.5;
     ctx.strokeRect(cx - roomW / 2, cy - roomH / 2, roomW, roomH);
 
-    // room id label
-    ctx.fillStyle = '#cfd8dc';
-    ctx.font = '12px ui-monospace, SFMono-Regular, Menlo, monospace';
-    ctx.fillText(String(r.id), cx - roomW / 2 + 8, cy - roomH / 2 + 16);
+    // Room label
+    ctx.fillStyle = THEME.roomLabel;
+    ctx.font = '11px ui-monospace, SFMono-Regular, Menlo, monospace';
+    ctx.fillText(String(r.id), cx - roomW / 2 + 8, cy - roomH / 2 + 14);
   });
 
-  // doors between adjacent rooms (from topology edges)
+  // Doors between rooms
   for (const e of edges) {
     const a = centers.get(String(e?.a || ''));
     const b = centers.get(String(e?.b || ''));
     if (!a || !b) continue;
 
-    ctx.strokeStyle = '#f4a261';
-    ctx.lineWidth = 6;
+    ctx.strokeStyle = THEME.doorStroke;
+    ctx.lineWidth = 3;
+    ctx.setLineDash([6, 4]);
     ctx.beginPath();
     ctx.moveTo(a.cx, a.cy);
     ctx.lineTo(b.cx, b.cy);
     ctx.stroke();
+    ctx.setLineDash([]);
   }
 
-  // Player marker (5 ft per square): offset inside current room by canonical feet position.
+  // Player marker
   const p = centers.get(roomId);
   if (p) {
     const { xFt, yFt } = playerFeet(world);
     const ox = (xFt / 5) * 12;
     const oy = (yFt / 5) * 12;
 
-    ctx.fillStyle = '#ff2d55';
+    // Glow
     ctx.beginPath();
-    ctx.arc(p.cx + ox, p.cy + oy, 10, 0, Math.PI * 2);
+    ctx.arc(p.cx + ox, p.cy + oy, 16, 0, Math.PI * 2);
+    ctx.fillStyle = THEME.playerGlow;
+    ctx.fill();
+
+    // Marker
+    ctx.beginPath();
+    ctx.arc(p.cx + ox, p.cy + oy, 8, 0, Math.PI * 2);
+    ctx.fillStyle = THEME.playerFill;
     ctx.fill();
   }
 }
 
+// ── NPC roster ──────────────────────────────────────────────────────────
 function npcsAtCurrentNode(world) {
   const nodeId = String(world?.map?.currentNodeId || '');
   const node = (world?.map?.nodes || []).find(n => n.id === nodeId);
@@ -241,7 +304,7 @@ function npcsAtCurrentNode(world) {
 function renderNpcRoster(world) {
   const npcs = npcsAtCurrentNode(world);
   if (!npcs.length) {
-    return el('div', { class: 'small', style: { opacity: '0.6' } }, 'No known persons here.');
+    return el('div', { class: 'small', style: { opacity: '0.5', fontStyle: 'italic' } }, 'No known persons here.');
   }
   const rows = npcs.map(n => {
     const name = String(n?.name || 'unknown').trim() || 'unknown';
@@ -252,21 +315,33 @@ function renderNpcRoster(world) {
     const tags = [
       role || null,
       disp || null,
-      met ? `met (trust ${trust}/10)` : null
-    ].filter(Boolean).join(' • ');
+      met ? `trust ${trust}/10` : null
+    ].filter(Boolean).join(' · ');
     return el('div', { class: 'small' },
       el('strong', {}, name),
       tags ? ` — ${tags}` : ''
     );
   });
-  return el('div', { class: 'stack', style: { gap: '4px' } }, ...rows);
+  return el('div', { class: 'stack', style: { gap: '3px' } }, ...rows);
 }
 
-export function renderLocalMap(world) {
-  const size = 61;
-  const cell = 14;
+// ── Public render function ──────────────────────────────────────────────
+/**
+ * @param {object} world
+ * @param {object} [opts]
+ * @param {boolean} [opts.compact] - If true, render a smaller map for embedding in the play screen
+ */
+export function renderLocalMap(world, opts = {}) {
+  const compact = Boolean(opts?.compact);
+  const size = compact ? 41 : 61;
+  const cell = compact ? 8 : 14;
   const w = size * cell;
-  const canvas = el('canvas', { width: String(w), height: String(w), 'data-local-map-debug': 'LOCAL_MAP_DEBUG_V1' });
+
+  const canvas = el('canvas', {
+    width: String(w),
+    height: String(w),
+    class: compact ? 'local-map-canvas compact' : 'local-map-canvas'
+  });
   const ctx = canvas.getContext('2d');
 
   const isInterior = Boolean(world?.scene?.interior);
@@ -275,17 +350,31 @@ export function renderLocalMap(world) {
 
   const structures = structuresAtCurrentNode(world);
   const npcs = npcsAtCurrentNode(world);
-  const info = isInterior
-    ? `Interior mode • structure=${String(world?.scene?.interior?.structureKey || '')} • room=${String(world?.scene?.interior?.roomId || '')}`
-    : `Exterior mode • structures here=${structures.length} • persons here=${npcs.length}`;
+  const nodeName = String(world?.map?.currentNodeId || 'unknown');
 
+  if (compact) {
+    // Compact mode: map canvas only, minimal chrome
+    return el('div', { class: 'play-map' },
+      el('div', { class: 'play-map-header' },
+        el('span', { class: 'play-map-label' }, isInterior ? 'Interior' : nodeName),
+        structures.length ? el('span', { class: 'play-map-tag' }, `${structures.length} structure${structures.length > 1 ? 's' : ''}`) : null,
+        npcs.length ? el('span', { class: 'play-map-tag' }, `${npcs.length} NPC${npcs.length > 1 ? 's' : ''}`) : null
+      ),
+      canvas
+    );
+  }
+
+  // Full mode (used on the dedicated Map screen)
   return el('div', { class: 'card stack' },
-    el('div', {}, el('strong', {}, 'Local (tactical)')),
-    el('div', { style: { color: '#00ffff', fontWeight: '700' } }, 'LOCAL_MAP_DEBUG_V1'),
-    el('div', { class: 'small' }, info),
+    el('div', { class: 'local-map-header' },
+      el('strong', {}, 'Local'),
+      el('span', { class: 'small' }, isInterior
+        ? `Interior · ${String(world?.scene?.interior?.structureKey || '')} · room ${String(world?.scene?.interior?.roomId || '')}`
+        : `${nodeName} · ${structures.length} structures · ${npcs.length} persons`)
+    ),
     canvas,
-    el('div', { class: 'stack' },
-      el('div', {}, el('strong', {}, 'Persons of note')),
+    el('div', { class: 'stack', style: { gap: '6px' } },
+      el('div', { class: 'local-map-header' }, el('strong', {}, 'Persons of note')),
       renderNpcRoster(world)
     )
   );

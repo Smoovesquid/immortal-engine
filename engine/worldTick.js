@@ -386,7 +386,7 @@ function tickMotifs(w, rng, severity) {
   const p = severity >= 1.3 ? 0.55 : severity >= 1.1 ? 0.4 : 0.25;
   if (rng.nextFloat() >= p) return w;
 
-  const m = active[rng.nextInt(active.length)];
+  const m = active[rng.int(0, active.length - 1)];
   const w2 = reinforceMotif(w, m, 1);
   return pushTickLog(w2, `[TICK] motif lingers: ${m}`);
 }

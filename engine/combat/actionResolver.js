@@ -11,6 +11,8 @@ import { rollDice } from './diceRoller.js';
 import { rollSave } from './savingThrows.js';
 import { applyResistance } from './damageTypes.js';
 import { applyCondition } from './conditions.js';
+import { applyToHitTraits, applyDamageDealtTraits } from './traitHooks.js';
+import { augmentActionConditions } from './conditionInference.js';
 
 /**
  * resolveAction(action, attacker, target, rng)
@@ -25,22 +27,22 @@ import { applyCondition } from './conditions.js';
  *   resistanceResult, conditionsApplied, saveResult, actionName
  * }
  */
-export function resolveAction(action, attacker, target, rng) {
-  const act = action && typeof action === 'object' ? action : {};
+export function resolveAction(action, attacker, target, rng, world) {
+  const act = augmentActionConditions(action && typeof action === 'object' ? action : {});
   const tgt = target && typeof target === 'object' ? target : {};
   const actionName = String(act.name ?? 'Attack');
   const damageType = String(act.type ?? 'bludgeoning');
 
   // Save-based action (breath weapon, area effect)
   if (act.save && typeof act.save === 'object') {
-    return resolveSaveAction(act, tgt, rng, actionName, damageType);
+    return resolveSaveAction(act, tgt, rng, actionName, damageType, attacker);
   }
 
   // Attack roll action (default)
-  return resolveAttackAction(act, tgt, rng, actionName, damageType);
+  return resolveAttackAction(act, tgt, rng, actionName, damageType, attacker, world);
 }
 
-function resolveSaveAction(act, tgt, rng, actionName, damageType) {
+function resolveSaveAction(act, tgt, rng, actionName, damageType, attacker) {
   const save = act.save;
   const stat = String(save.stat ?? 'AGILITY');
   const dc = typeof save.dc === 'number' ? save.dc : 10;
@@ -61,6 +63,9 @@ function resolveSaveAction(act, tgt, rng, actionName, damageType) {
     rawDmg = Math.max(0, Math.floor(damageRolls.total / 2));
   }
   // else: success + !halfOnSave = 0 damage
+
+  // Apply trait-based damage modifiers (Brute, Sneak Attack, etc.) before resistance.
+  if (attacker && rawDmg > 0) rawDmg = applyDamageDealtTraits(attacker, rawDmg);
 
   const resistanceResult = applyResistance(rawDmg, damageType, tgt.resistances);
   const finalDmg = resistanceResult.heals ? 0 : resistanceResult.final;
@@ -86,8 +91,9 @@ function resolveSaveAction(act, tgt, rng, actionName, damageType) {
   };
 }
 
-function resolveAttackAction(act, tgt, rng, actionName, damageType) {
-  const toHit = typeof act.toHit === 'number' ? act.toHit : 0;
+function resolveAttackAction(act, tgt, rng, actionName, damageType, attacker, world) {
+  const baseToHit = typeof act.toHit === 'number' ? act.toHit : 0;
+  const toHit = attacker ? applyToHitTraits(attacker, baseToHit, world) : baseToHit;
   const targetAc = typeof tgt.ac === 'number' ? tgt.ac : 10;
 
   const attackRoll = rng.int(1, 20);
@@ -123,6 +129,9 @@ function resolveAttackAction(act, tgt, rng, actionName, damageType) {
         modifier: damageRolls.modifier + critExtra.modifier
       };
     }
+
+    // Apply trait-based damage modifiers (Brute, Sneak Attack, etc.)
+    if (attacker) rawDmg = applyDamageDealtTraits(attacker, rawDmg);
 
     const res = applyResistance(rawDmg, damageType, tgt.resistances);
     damage = res.heals ? 0 : res.final;

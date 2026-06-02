@@ -270,8 +270,13 @@ test('CM10-09 legendary action points reset each round', () => {
 // ── Round 3: Victory, loot ──────────────────────────────────────────────
 
 test('CM10-10 killing the creature triggers victory and loot', () => {
-  // Give the enemy 1 HP so any hit kills it.
+  // Give the enemy 1 HP and low AC so any hit kills it.
+  // Strip lair/legendary/reactions so the player reliably kills and isn't killed.
   const enemy = mkLegendaryEnemy(1);
+  enemy.ac = 1;
+  enemy.lairActions = null;
+  enemy.legendaryActions = null;
+  enemy.reactions = null;
   let w = mkCombatWithInit('r3-victory', [enemy], STANDARD_INIT);
 
   const { world, result } = resolveCombatTurn(w, {

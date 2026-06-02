@@ -1,27 +1,28 @@
 :root{
-  --bg:#0b0f14;
-  --panel:#121826;
-  --panel2:#0f1522;
-  --text:#e7eefc;
-  --muted:#a9b4c8;
-  --accent:#67d4ff;
-  --danger:#ff6b6b;
-  --ok:#5cf2a7;
-  --amber:#ffc04d;
-  --gold:#ffd166;
-  --border:#23304a;
-  --shadow:0 12px 30px rgba(0,0,0,.45);
+  --bg:#0d0d0d;
+  --panel:#1c1810;
+  --panel2:#151208;
+  --text:#d4c5a9;
+  --muted:#8a7e6a;
+  --accent:#c8a84e;
+  --danger:#8b2500;
+  --ok:#6b8f4e;
+  --amber:#b8860b;
+  --gold:#c8a84e;
+  --border:#2a2318;
+  --shadow:0 12px 30px rgba(0,0,0,.6);
   --radius:14px;
   --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --serif: Georgia, "Crimson Text", "Times New Roman", serif;
   --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
 }
 *{box-sizing:border-box}
 html,body{height:100%}
-body{margin:0;background:radial-gradient(1200px 600px at 30% 0%, #14203a 0%, var(--bg) 60%);color:var(--text);font-family:var(--sans)}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans)}
 a{color:var(--accent)}
 
 .container{max-width:980px;margin:0 auto;padding:22px}
-.panel{background:linear-gradient(180deg, rgba(18,24,38,.9), rgba(15,21,34,.9));border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}
+.panel{background:linear-gradient(180deg, rgba(28,24,16,.95), rgba(21,18,8,.95));border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}
 .header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 18px;border-bottom:1px solid var(--border)}
 .title{font-size:22px;font-weight:800;letter-spacing:.2px}
 .sub{color:var(--muted);font-size:14px}
@@ -29,25 +30,25 @@ a{color:var(--accent)}
 .stack{display:flex;flex-direction:column;gap:14px}
 .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
 
-.btn{appearance:none;border:1px solid var(--border);background:#18213a;color:var(--text);padding:10px 14px;border-radius:12px;font-weight:700;cursor:pointer}
-.btn:hover{border-color:#2f4270}
-.btn.primary{background:linear-gradient(180deg,#2b6cff,#1b49d6);border-color:#2d59e6}
-.btn.primary:hover{filter:brightness(1.05)}
+.btn{appearance:none;border:1px solid var(--border);background:#201c12;color:var(--text);padding:10px 14px;border-radius:12px;font-weight:700;cursor:pointer}
+.btn:hover{border-color:#3d3528}
+.btn.primary{background:linear-gradient(180deg,#8b7530,#6b5a20);border-color:#9a8340}
+.btn.primary:hover{filter:brightness(1.1)}
 .btn.ghost{background:transparent}
-.btn.danger{background:linear-gradient(180deg,#ff6b6b,#d64242);border-color:#e14b4b}
+.btn.danger{background:linear-gradient(180deg,#8b2500,#6b1a00);border-color:#a03000}
 .btn:disabled{opacity:.45;cursor:not-allowed}
 
 .card{padding:16px 18px}
 .hr{height:1px;background:var(--border);margin:12px 0}
 
 .wizard-art{display:flex;gap:18px;align-items:flex-start}
-.wizard-stick{width:120px;height:120px;border:1px solid var(--border);border-radius:16px;background:radial-gradient(400px 160px at 20% 20%, rgba(103,212,255,.18), transparent 50%)}
+.wizard-stick{width:120px;height:120px;border:1px solid var(--border);border-radius:16px;background:radial-gradient(400px 160px at 20% 20%, rgba(200,168,78,.18), transparent 50%)}
 .wizard-stick svg{width:100%;height:100%}
 
 .kv{display:flex;flex-direction:column;gap:4px}
 .kv .k{font-family:var(--mono);color:var(--muted);font-size:12px}
 
-.input{width:100%;padding:12px 12px;border-radius:12px;border:1px solid var(--border);background:#0c1220;color:var(--text);font-family:var(--sans)}
+.input{width:100%;padding:12px 12px;border-radius:12px;border:1px solid var(--border);background:#110f08;color:var(--text);font-family:var(--sans)}
 .small{font-size:12px;color:var(--muted)}
 
 .transcript{padding:14px 18px;max-height:48vh;overflow:auto}
@@ -110,7 +111,7 @@ a{color:var(--accent)}
 .enemy-item .enemy-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
 .enemy-item .enemy-tag{font-family:var(--mono);font-size:10px;border:1px solid var(--border);border-radius:999px;padding:1px 6px;color:var(--muted)}
 .enemy-item .enemy-tag.hostile{color:var(--danger);border-color:rgba(255,107,107,.4)}
-.enemy-item .enemy-tag.parley{color:var(--accent);border-color:rgba(103,212,255,.4)}
+.enemy-item .enemy-tag.parley{color:var(--accent);border-color:rgba(200,168,78,.4)}
 .enemy-item .enemy-hp{font-family:var(--mono);font-size:13px;letter-spacing:1px;color:var(--ok)}
 .enemy-item.defeated .enemy-name{text-decoration:line-through;color:var(--muted)}
 .enemy-item.defeated .enemy-hp{color:var(--muted)}
@@ -222,7 +223,7 @@ a{color:var(--accent)}
 .combat-enemy-name{font-size:12px;font-weight:600;color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .combat-enemy-row.defeated .combat-enemy-name{text-decoration:line-through;color:var(--muted)}
 .combat-tag{font-family:var(--mono);font-size:9px;border:1px solid var(--border);border-radius:999px;padding:0 6px;color:var(--muted)}
-.combat-tag.parley{color:var(--accent);border-color:rgba(103,212,255,.4)}
+.combat-tag.parley{color:var(--accent);border-color:rgba(200,168,78,.4)}
 
 /* HP bars */
 .hp-bar-container{display:flex;align-items:center;gap:6px;flex:1;min-width:0}
@@ -247,10 +248,10 @@ a{color:var(--accent)}
 /* ── UI1 — Initiative Bar ──────────────────────────────────────────── */
 .initiative-bar{display:flex;gap:4px;overflow-x:auto;padding:4px 0 8px 0;margin-bottom:4px}
 .init-pill{display:flex;align-items:center;gap:4px;padding:3px 8px;border-radius:999px;font-family:var(--mono);font-size:11px;border:1px solid var(--border);background:rgba(255,255,255,.03);white-space:nowrap;transition:box-shadow .2s ease,opacity .2s ease}
-.init-pill.init-player{color:var(--accent);border-color:rgba(103,212,255,.3)}
+.init-pill.init-player{color:var(--accent);border-color:rgba(200,168,78,.3)}
 .init-pill.init-companion{color:var(--ok);border-color:rgba(92,242,167,.3)}
 .init-pill.init-enemy{color:var(--danger);border-color:rgba(255,107,107,.3)}
-.init-pill.init-current{box-shadow:0 0 8px rgba(103,212,255,.4);border-color:var(--accent)}
+.init-pill.init-current{box-shadow:0 0 8px rgba(200,168,78,.4);border-color:var(--accent)}
 .init-pill.init-current.init-enemy{box-shadow:0 0 8px rgba(255,107,107,.4);border-color:var(--danger)}
 .init-pill.init-current.init-companion{box-shadow:0 0 8px rgba(92,242,167,.4);border-color:var(--ok)}
 .init-pill.init-defeated{opacity:.4;text-decoration:line-through}
@@ -370,3 +371,70 @@ a{color:var(--accent)}
 /* ── UX1 — Wound/stress flash on party section ───────────────────── */
 @keyframes vitals-flash{0%{box-shadow:0 0 0 0 rgba(255,107,107,.5)}50%{box-shadow:0 0 8px 2px rgba(255,107,107,.3)}100%{box-shadow:0 0 0 0 transparent}}
 .party-strip.vitals-changed{animation:vitals-flash .5s ease}
+
+/* ── V2 — Play screen layout + embedded map ────────────────────────── */
+.play-container{max-width:1120px}
+.play-panel{border:none;background:transparent;box-shadow:none}
+
+/* Play-embedded local map */
+.play-map{display:flex;flex-direction:column;align-items:center;gap:6px;padding:8px 0;border-bottom:1px solid var(--border)}
+.play-map-header{display:flex;align-items:center;gap:8px;width:100%;font-family:var(--mono);font-size:11px}
+.play-map-label{color:var(--accent);font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.play-map-tag{color:var(--muted);font-size:10px;border:1px solid var(--border);border-radius:999px;padding:0 6px}
+.local-map-canvas{border-radius:10px;display:block}
+.local-map-canvas.compact{width:100%;max-width:328px;height:auto;aspect-ratio:1/1}
+.local-map-header{display:flex;align-items:baseline;gap:8px}
+
+/* Full-size local map on Map screen */
+.local-map-canvas:not(.compact){border-radius:12px;max-width:100%;height:auto}
+
+/* ── Play header (gear dropdown, no title) ──────────────────────── */
+.play-header{display:flex;align-items:center;justify-content:flex-end;gap:12px;padding:8px 12px;min-height:44px}
+.play-ended{color:var(--muted);font-family:var(--serif);font-style:italic;font-size:14px;margin-right:auto}
+
+/* ── Gear dropdown ──────────────────────────────────────────────── */
+.gear-dropdown{position:relative}
+.gear-btn{appearance:none;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:20px;width:44px;height:44px;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:color .15s,border-color .15s}
+.gear-btn:hover{color:var(--accent);border-color:var(--accent)}
+.gear-menu{position:absolute;top:100%;right:0;margin-top:6px;background:var(--panel);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow);z-index:100;min-width:160px;overflow:hidden}
+.gear-item{display:block;width:100%;appearance:none;border:none;background:transparent;color:var(--text);padding:10px 16px;font-size:13px;font-weight:600;text-align:left;cursor:pointer}
+.gear-item:hover{background:rgba(200,168,78,.1)}
+.gear-item+.gear-item{border-top:1px solid var(--border)}
+
+/* Dev panel inside gear area */
+.gear-dev-panel{padding:8px 16px;border-bottom:1px solid var(--border)}
+
+/* ── Play body (narration + map) ────────────────────────────────── */
+.play-body{padding:0 16px;flex:1;overflow-y:auto}
+
+/* Play input bar — fixed bottom feel */
+.play-input-bar{display:flex;gap:8px;align-items:center;padding:12px 16px;border-top:1px solid var(--border);background:var(--panel2)}
+.play-input-bar .input{flex:1;padding:10px 12px;font-size:14px}
+.play-input-bar .btn{flex:0 0 auto;padding:10px 16px;font-size:13px}
+
+/* ── Narration — serif font, DM voice ───────────────────────────── */
+.transcript{max-height:52vh;padding:10px 0}
+.line{padding:8px 0}
+.line-narration .text{font-family:var(--serif);font-size:15px;line-height:1.7;color:var(--text)}
+.line-player .text{font-family:var(--sans);font-size:14px;color:var(--accent)}
+.line-player .who{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.line .mech{font-family:var(--mono);font-size:12px;color:var(--muted)}
+
+/* ── Polished nav ────────────────────────────────────────────────── */
+.header .row .btn{padding:8px 12px;font-size:13px}
+
+/* ── Combat mode shift ──────────────────────────────────────────── */
+.combat-active .play-body{border-left:2px solid rgba(139,37,0,.4);border-right:2px solid rgba(139,37,0,.4)}
+.combat-active .transcript{border-color:rgba(139,37,0,.3)}
+.combat-active .play-input-bar{border-top-color:rgba(139,37,0,.5)}
+@keyframes combat-enter{0%{opacity:0;transform:translateY(-8px)}100%{opacity:1;transform:translateY(0)}}
+.combat-active .status-panels{animation:combat-enter .12s ease-out}
+
+/* ── Wider play layout ──────────────────────────────────────────── */
+@media (min-width: 1040px){
+  .play-layout{grid-template-columns:minmax(0,1fr) 300px}
+}
+@media (max-width: 860px){
+  .play-layout{grid-template-columns:1fr}
+  .local-map-canvas.compact{max-width:100%}
+}

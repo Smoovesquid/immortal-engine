@@ -53,6 +53,21 @@ function normalizeUntil(u) {
     const s = u.trim();
     if (s === 'end_of_next_turn' || s === 'save_ends' || s === 'permanent') return s;
   }
+  if (u && typeof u === 'object' && typeof u.type === 'string') {
+    switch (u.type) {
+      case 'concentration':
+      case 'duration':
+        return 'permanent';
+      case 'instant':
+        return 'end_of_next_turn';
+      case 'rounds': {
+        const n = Math.max(1, Math.trunc(Number(u.rounds) || 1));
+        return n === 1 ? 'end_of_next_turn' : n;
+      }
+      case 'save':
+        return 'save_ends';
+    }
+  }
   return 'save_ends';
 }
 

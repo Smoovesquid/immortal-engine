@@ -2,6 +2,8 @@ import { ensureWorld, ensureCombat, defaultCombat } from './state.js';
 import { addFact, addThreat, addQuestion } from './ledger.js';
 import { ensureEnv } from './env/envCore.js';
 import { ensureInstrumentLayer } from './instrument.js';
+import { statMod, maxWounds } from './ruleset/core/stats.js';
+import { applyCondition as applyConditionPure } from './combat/conditions.js';
 
 // Data-driven delta executor. Pure and deterministic.
 // Applies a list of ops to the world safely (clamps, initializes missing fields).
@@ -43,8 +45,11 @@ export function applyDeltas(world, deltas = []) {
       const by = toInt(op.by ?? 0);
       if (!entityId || !Number.isFinite(by) || by === 0) continue;
       w = mutateEntity(w, entityId, (e) => {
-        const cur = clampInt(e.wounds ?? 0, 0, 6);
-        const next = clampInt(cur + by, 0, 6);
+        const grit = e.stats?.GRIT ?? 10;
+        const lvl = e.level ?? 1;
+        const cap = maxWounds(lvl, statMod(grit));
+        const cur = clampInt(e.wounds ?? 0, 0, cap);
+        const next = clampInt(cur + by, 0, cap);
         return { ...e, wounds: next };
       });
       continue;
@@ -64,10 +69,17 @@ export function applyDeltas(world, deltas = []) {
 
     if (kind === 'condition') {
       const entityId = String(op.entityId || '');
+      if (!entityId) continue;
+      const fullCond = (op.cond && typeof op.cond === 'object') ? op.cond : null;
       const add = String(op.add || '').trim();
-      if (!entityId || !add) continue;
+      if (!fullCond && !add) continue;
       w = mutateEntity(w, entityId, (e) => {
         const conditions = Array.isArray(e.conditions) ? e.conditions : [];
+        if (fullCond) {
+          const next = applyConditionPure(conditions, fullCond, e.conditionImmunities);
+          if (next === conditions) return e;
+          return { ...e, conditions: next };
+        }
         if (conditions.some(c => String(c?.name) === add)) return e;
         const cond = { name: add, until: op.until ?? null };
         return { ...e, conditions: [cond, ...conditions].slice(0, 12) };
@@ -251,7 +263,7 @@ export function applyDeltas(world, deltas = []) {
             const maxHp = Number.isInteger(e.maxHp) ? e.maxHp : 1;
             const cur0 = Number.isInteger(e.hp) ? e.hp : maxHp;
             const next = clampInt(cur0 + by, 0, maxHp);
-            return { ...e, hp: next, defeated: next === 0 ? true : Boolean(e.defeated) };
+            return { ...e, hp: next, defeated: next === 0 };
           });
         }
       }

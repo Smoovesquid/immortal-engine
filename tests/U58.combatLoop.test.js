@@ -27,6 +27,7 @@ import { worldHash } from '../engine/worldHash.js';
 import { exportWorld, importWorld, loadSlot } from '../engine/save.js';
 import { playerMove } from '../engine/playloop.js';
 import { buildDMContext } from '../engine/ai/narratorContext.js';
+import { statMod, maxWounds } from '../engine/ruleset/core/stats.js';
 
 const packsById = {
   fantasy: {
@@ -420,14 +421,16 @@ test('U58-24: targetDefeated uses sourceNpcId when present', () => {
 
 // ── 25: player defeat ──────────────────────────────────────────────────────
 
-test('U58-25: when party wounds reach 6, combat ends and ending.locked with reason defeated-in-combat', () => {
+test('U58-25: when party wounds reach maxWounds, combat ends and ending.locked with reason defeated-in-combat', () => {
   let w = mkCombatWorld('defeat');
-  w = ensureWorld({ ...w, party: [{ ...w.party[0], wounds: 5 }] });
+  const grit = w.party[0].stats?.GRIT ?? 10;
+  const cap = maxWounds(w.party[0].level ?? 1, statMod(grit));
+  w = ensureWorld({ ...w, party: [{ ...w.party[0], wounds: cap - 1 }] });
   // Enemy that surely deals at least 1 damage on counter.
   w = startCombatDirectly(w, [mkEnemy({ damage: 3, hp: 20, maxHp: 20 })]);
   // Any non-terminal turn will trigger an enemy counter for ≥1 wound → death.
   const r = resolveCombatTurn(w, mkMove({ approachTag: 'finesse' }));
-  assert.equal(r.world.party[0].wounds, 6);
+  assert.equal(r.world.party[0].wounds, cap);
   assert.equal(r.world.combat.active, false);
   assert.equal(r.world.ending.locked, true);
   assert.equal(r.world.ending.reason, 'defeated-in-combat');

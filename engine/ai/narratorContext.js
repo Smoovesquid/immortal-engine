@@ -16,6 +16,7 @@ import { fateBand } from '../rulesets.js';
 import { filterContext, applyMoodOverlay } from '../npc/perspectiveFilter.js';
 import { availableTopics as dialogueAvailableTopics } from '../npc/dialogue.js';
 import { companionApproachForRole } from '../combat/companionTurn.js';
+import { statMod, maxWounds } from '../ruleset/core/stats.js';
 
 /**
  * buildNarratorContext(world, outcome) → NarratorContext (original slim context)
@@ -184,7 +185,7 @@ function buildCombatBlock(w) {
       role,
       approach: companionApproachForRole(role),
       wounds: Number(p.wounds ?? 0),
-      down: Number(p.wounds ?? 0) >= 6
+      down: Number(p.wounds ?? 0) >= maxWounds(p.level ?? 1, statMod(p.stats?.GRIT ?? 10))
     });
   }
 

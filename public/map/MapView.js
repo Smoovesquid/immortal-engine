@@ -38,8 +38,7 @@ export function renderMapView(world, zoom, onZoom) {
     el('div', { class: 'panel' },
       el('div', { class: 'header' },
         el('div', {},
-          el('div', { class: 'title' }, 'Map'),
-          el('div', { class: 'sub' }, 'Three zooms. Deterministic rendering; hex tiling and distance rules next.')
+          el('div', { class: 'title' }, 'Map')
         )
       ),
       el('div', { class: 'card stack' }, tabs),

@@ -19,7 +19,7 @@ import { resolveMove } from '../resolve.js';
 import { applyDeltas } from '../effectsCore.js';
 import { checkGoals } from '../goals/goalContract.js';
 import { makeRng, seedFromString } from '../rng.js';
-import { statMod } from '../ruleset/core/stats.js';
+import { statMod, maxWounds } from '../ruleset/core/stats.js';
 import { computeAttack, computeAC } from '../gear/gearProps.js';
 import { applyResistance } from './damageTypes.js';
 import { tickConditions, hasCondition, applyCondition } from './conditions.js';
@@ -29,6 +29,7 @@ import { rollLootForCR } from '../ruleset/core/loot/lootRoll.js';
 import { rollDice } from './diceRoller.js';
 import { rollSave } from './savingThrows.js';
 import { applySenseOverrides } from './senses.js';
+import { applyTurnStartTraits, applyDamageTakenTraits, applyACTraits, applyDeathTraits } from './traitHooks.js';
 
 const FORCE_BASE = 3;
 const FINESSE_BASE = 2;
@@ -105,6 +106,7 @@ export function resolveCombatTurn(world, move, opts = {}) {
 
   const summaryParts = [...condTickSummary, ...lairSummary];
   const playerId = String(w.party?.[0]?.id ?? 'party');
+  const playerWoundsAtStart = Number.isFinite(w.party?.[0]?.wounds) ? w.party[0].wounds : 0;
 
   // CM7: Pure initiative ordering. Walk initiativeOrder top-to-bottom.
   const initOrder = Array.isArray(w.combat?.initiativeOrder) ? w.combat.initiativeOrder : [];
@@ -157,15 +159,17 @@ export function resolveCombatTurn(world, move, opts = {}) {
 
           if (rawDmg > 0) {
             const res = applyResistance(rawDmg, dmgType, currentTargetEnemy.resistances);
+            // Apply trait-based damage reduction (Evasion, Uncanny Dodge, etc.)
+            const traitFinal = res.heals ? res.final : applyDamageTakenTraits(currentTargetEnemy, res.final, dmgType);
             if (res.heals) {
-              combatDeltas.push({ op: 'combatState', enemyHpDelta: [{ id: currentTargetEnemy.id, by: res.final }] });
-              summaryParts.push(`${m.approachTag} hit on ${currentTargetEnemy.name} — absorbed ${res.final} hp`);
-            } else if (res.final === 0) {
+              combatDeltas.push({ op: 'combatState', enemyHpDelta: [{ id: currentTargetEnemy.id, by: traitFinal }] });
+              summaryParts.push(`${m.approachTag} hit on ${currentTargetEnemy.name} — absorbed ${traitFinal} hp`);
+            } else if (traitFinal === 0) {
               summaryParts.push(`${m.approachTag} hit on ${currentTargetEnemy.name} — immune to ${dmgType}`);
             } else {
-              combatDeltas.push({ op: 'combatState', enemyHpDelta: [{ id: currentTargetEnemy.id, by: -res.final }] });
+              combatDeltas.push({ op: 'combatState', enemyHpDelta: [{ id: currentTargetEnemy.id, by: -traitFinal }] });
               const suffix = res.level !== 'normal' ? ` (${res.level})` : '';
-              summaryParts.push(`${m.approachTag} hit on ${currentTargetEnemy.name} for ${res.final}${suffix}`);
+              summaryParts.push(`${m.approachTag} hit on ${currentTargetEnemy.name} for ${traitFinal}${suffix}`);
             }
           } else {
             summaryParts.push(`${m.approachTag} attack on ${currentTargetEnemy.name} — parried`);
@@ -202,6 +206,8 @@ export function resolveCombatTurn(world, move, opts = {}) {
         break;
       }
 
+      // Check death traits before victory check.
+      w = processDeathTraits(w, summaryParts);
       // Check victory after player turn.
       const aliveAfterPlayer = (w.combat?.enemies || []).filter(e => e.hp > 0);
       if (aliveAfterPlayer.length === 0 && w.combat?.active) {
@@ -239,6 +245,8 @@ export function resolveCombatTurn(world, move, opts = {}) {
           w = pushTimeline(w, { kind: 'combat-end', data: { reason: endReason } });
           break;
         }
+        // Check death traits before companion victory check.
+        w = processDeathTraits(w, summaryParts);
         // Check victory after companion.
         const aliveAfterCompanion = (w.combat?.enemies || []).filter(e => e.hp > 0);
         if (aliveAfterCompanion.length === 0 && w.combat?.active) {
@@ -277,7 +285,14 @@ export function resolveCombatTurn(world, move, opts = {}) {
         continue;
       }
 
-      const livingParty = (w.party || []).filter(p => p && (p.wounds ?? 0) < 6);
+      // Trait hooks: onTurnStart (Regeneration, etc.)
+      const turnStartResult = applyTurnStartTraits(e, w);
+      if (turnStartResult.hpDelta !== 0) {
+        w = applyDeltas(w, [{ op: 'combatState', enemyHpDelta: [{ id: e.id, by: turnStartResult.hpDelta }] }]);
+      }
+      for (const sp of turnStartResult.summaryParts) summaryParts.push(sp);
+
+      const livingParty = (w.party || []).filter(p => p && (p.wounds ?? 0) < maxWounds(p.level ?? 1, statMod(p.stats?.GRIT ?? 10)));
       if (livingParty.length === 0) { legTriggerIndex++; continue; }
       const rawTarget = livingParty[partyIdx % livingParty.length];
       const baseAc = computeAC(rawTarget);
@@ -295,7 +310,7 @@ export function resolveCombatTurn(world, move, opts = {}) {
         const actionSummaries = [];
 
         for (const act of actionsToResolve) {
-          const res = resolveAction(act, e, targetMember, counterRng);
+          const res = resolveAction(act, e, targetMember, counterRng, w);
 
           if (res.hit) {
             totalDmg += res.damage;
@@ -309,6 +324,7 @@ export function resolveCombatTurn(world, move, opts = {}) {
               for (const cond of res.conditionsApplied) {
                 const applied = applyCondition(tgtConds, cond, tgtImmunities);
                 if (applied !== tgtConds) {
+                  counterDeltas.push({ op: 'condition', entityId: String(targetMember.id), cond });
                   actionSummaries.push(`applies ${cond.name}`);
                 }
               }
@@ -442,6 +458,8 @@ export function resolveCombatTurn(world, move, opts = {}) {
       };
     }
 
+    // Check death traits before fallback victory check.
+    w = processDeathTraits(w, summaryParts);
     // Check victory.
     const aliveAfterFallback = (w.combat?.enemies || []).filter(e => e.hp > 0);
     if (aliveAfterFallback.length === 0 && w.combat?.active) {
@@ -476,6 +494,8 @@ export function resolveCombatTurn(world, move, opts = {}) {
       }
     }
 
+    // Check death traits before companion victory check.
+    w = processDeathTraits(w, summaryParts);
     // Check victory after companion.
     if (!companionEndedCombat && w.combat?.active) {
       const aliveAfterComp = (w.combat?.enemies || []).filter(e => e.hp > 0);
@@ -505,7 +525,7 @@ export function resolveCombatTurn(world, move, opts = {}) {
           summaryParts.push(`${e.name} is incapacitated — skips counter`);
           continue;
         }
-        const livingParty = (w.party || []).filter(p => p && (p.wounds ?? 0) < 6);
+        const livingParty = (w.party || []).filter(p => p && (p.wounds ?? 0) < maxWounds(p.level ?? 1, statMod(p.stats?.GRIT ?? 10)));
         if (livingParty.length === 0) break;
         const rawTarget = livingParty[partyIdx % livingParty.length];
         const targetMember = { ...rawTarget, ac: computeAC(rawTarget) };
@@ -516,10 +536,28 @@ export function resolveCombatTurn(world, move, opts = {}) {
           let totalDmg = 0;
           const actionSummaries = [];
           for (const act of actionsToResolve) {
-            const res = resolveAction(act, e, targetMember, counterRng);
+            const res = resolveAction(act, e, targetMember, counterRng, w);
             if (res.hit) {
               totalDmg += res.damage;
               actionSummaries.push(`${res.actionName} ${res.damage} ${res.damageType}`);
+              if (res.conditionsApplied.length > 0) {
+                const tgtConds = Array.isArray(targetMember.conditions) ? targetMember.conditions : [];
+                const tgtImmunities = Array.isArray(targetMember.conditionImmunities) ? targetMember.conditionImmunities : [];
+                for (const cond of res.conditionsApplied) {
+                  const applied = applyCondition(tgtConds, cond, tgtImmunities);
+                  if (applied !== tgtConds) {
+                    fallbackDeltas.push({ op: 'condition', entityId: String(targetMember.id), cond });
+                    actionSummaries.push(`applies ${cond.name}`);
+                  }
+                }
+              }
+            } else if (res.saveResult) {
+              if (res.damage > 0) {
+                totalDmg += res.damage;
+                actionSummaries.push(`${res.actionName} (saved, half) ${res.damage} ${res.damageType}`);
+              } else {
+                actionSummaries.push(`${res.actionName} — ${targetMember.name} saves`);
+              }
             } else {
               actionSummaries.push(`${res.actionName} misses`);
             }
@@ -592,10 +630,11 @@ export function resolveCombatTurn(world, move, opts = {}) {
   // Concentration break check.
   {
     const playerEntity = w.party?.[0];
-    const playerDmgEstimate = summaryParts.filter(s => s.includes('→') && s.includes(String(playerEntity?.name))).length;
+    const playerWoundsNow = Number.isFinite(playerEntity?.wounds) ? playerEntity.wounds : 0;
+    const playerDmgTaken = Math.max(0, playerWoundsNow - playerWoundsAtStart);
     const conc = playerEntity?.spells?.concentration;
-    if (playerDmgEstimate > 0 && conc && conc.spellRef) {
-      const concDC = Math.max(10, Math.floor(playerDmgEstimate * 2 / 2));
+    if (playerDmgTaken > 0 && conc && conc.spellRef) {
+      const concDC = Math.max(10, Math.floor(playerDmgTaken * 2));
       const gritScore = playerEntity?.stats?.GRIT ?? 10;
       const gritMod = statMod(gritScore);
       const concSeed = seedFromString(`${w.meta?.seed || ''}|conc|${w.time?.turn ?? 0}|${w.combat?.round ?? 0}`);
@@ -609,8 +648,10 @@ export function resolveCombatTurn(world, move, opts = {}) {
   }
 
   // Check for player defeat.
-  const partyWounds = clampInt(w.party?.[0]?.wounds ?? 0, 0, 6);
-  if (partyWounds >= 6) {
+  const playerEntity0 = w.party?.[0];
+  const playerWoundCap = maxWounds(playerEntity0?.level ?? 1, statMod(playerEntity0?.stats?.GRIT ?? 10));
+  const partyWounds = clampInt(playerEntity0?.wounds ?? 0, 0, playerWoundCap);
+  if (partyWounds >= playerWoundCap) {
     w = applyPlayerDefeat(w);
     return {
       world: w,
@@ -662,14 +703,14 @@ function processLegendaryActions(world, triggerEntityId, rng, summaryParts, trig
     const chosen = affordable[0];
 
     // Resolve the legendary action against a party target.
-    const livingParty = (w.party || []).filter(p => p && (p.wounds ?? 0) < 6);
+    const livingParty = (w.party || []).filter(p => p && (p.wounds ?? 0) < maxWounds(p.level ?? 1, statMod(p.stats?.GRIT ?? 10)));
     if (livingParty.length === 0) continue;
     const rawTarget = livingParty[partyIdx % livingParty.length];
     const targetMember = { ...rawTarget, ac: computeAC(rawTarget) };
 
     const legSeed = seedFromString(`${w.meta?.seed || ''}|leg|${w.combat?.round ?? 0}|${e.id}|${triggerIndex}`);
     const legRng = makeRng(legSeed);
-    const res = resolveAction(chosen.action, e, targetMember, legRng);
+    const res = resolveAction(chosen.action, e, targetMember, legRng, w);
 
     // Decrement remaining.
     const newRemaining = la.remaining - chosen.cost;
@@ -821,7 +862,7 @@ function processLairActions(world, summaryParts) {
     if (!la) continue;
 
     // Resolve the lair action against ALL living party members.
-    const livingParty = (w.party || []).filter(p => p && (p.wounds ?? 0) < 6);
+    const livingParty = (w.party || []).filter(p => p && (p.wounds ?? 0) < maxWounds(p.level ?? 1, statMod(p.stats?.GRIT ?? 10)));
     if (livingParty.length === 0) break;
 
     const lairSeed = seedFromString(`${w.meta?.seed || ''}|lair|${round}|${e.id}`);
@@ -830,7 +871,7 @@ function processLairActions(world, summaryParts) {
 
     for (const rawTarget of livingParty) {
       const targetMember = { ...rawTarget, ac: computeAC(rawTarget) };
-      const res = resolveAction(la.action, e, targetMember, lairRng);
+      const res = resolveAction(la.action, e, targetMember, lairRng, w);
 
       if (res.hit && res.damage > 0) {
         w = applyDeltas(w, [{ op: 'wound', entityId: String(targetMember.id), by: res.damage }]);
@@ -908,6 +949,30 @@ function findLivingEnemy(combat, id) {
 function firstLivingEnemy(combat) {
   const list = Array.isArray(combat?.enemies) ? combat.enemies : [];
   return list.find(e => e.hp > 0) || null;
+}
+
+/**
+ * Check onDeath traits for enemies at 0 HP.
+ * If a trait revives the enemy, heal it. Returns updated world + summary parts.
+ * Tracks revived enemies via _traitRevived flag to prevent infinite revives.
+ */
+function processDeathTraits(world, summaryParts) {
+  let w = world;
+  const enemies = w.combat?.enemies || [];
+  for (const e of enemies) {
+    if (e.hp > 0 || e._traitRevived) continue;
+    const deathResult = applyDeathTraits(e, w);
+    for (const sp of deathResult.summaryParts) summaryParts.push(sp);
+    if (deathResult.revive) {
+      // Revive the enemy at the specified HP.
+      const updatedEnemies = (w.combat?.enemies || []).map(en => {
+        if (en.id !== e.id) return en;
+        return { ...en, hp: deathResult.hpIfRevived, _traitRevived: true };
+      });
+      w = applyDeltas(w, [{ op: 'combatState', set: { enemies: updatedEnemies } }]);
+    }
+  }
+  return w;
 }
 
 function applyVictory(world) {

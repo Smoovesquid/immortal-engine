@@ -83,9 +83,10 @@ export function addQuestion(world, text) {
   }
 
   // If a prior evolved version exists, evolve further.
+  const stem = t.replace(/\?+$/, '').toLowerCase();
   const priorLevel = ledger.questions.reduce((n, q) => {
-    const qt = normText(q?.text);
-    return qt.includes(t.replace(/\?+$/,'').toLowerCase()) ? n + 1 : n;
+    const qt = normText(q?.text).toLowerCase();
+    return qt.includes(stem) ? n + 1 : n;
   }, 0);
   const evolved = priorLevel > 0 ? escalateQuestionText(t, Math.min(4, priorLevel)) : t;
 

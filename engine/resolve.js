@@ -3,6 +3,8 @@ import { makeRng, seedFromString } from './rng.js';
 import { fateBand } from './rulesets.js';
 import { consequenceWeight } from './instrument.js';
 import { scoreInventorySignals } from './gear/gearProps.js';
+import { profBonusFor } from './ruleset/core/levelTable.js';
+import { maxWounds } from './ruleset/core/stats.js';
 
 // Universal resolution mechanic (v1).
 // resolveMove(world, move) -> { world2, result }
@@ -22,13 +24,18 @@ export function resolveMove(world, move) {
   const seed = seedFromString(`${w.meta.seed}|resolve|${w.scene.promptSeed}|${w.timeline.length}|${m.actorId}|${m.intentText}|${m.approachTag}|${m.stakeTag}|${m.targetId||''}|${m.toolTag||''}`);
   const rng = makeRng(seed);
 
-  let roll = rng.int(1, 20);
+  const rawDie = rng.int(1, 20);
+  let roll = rawDie;
 
   // Stat modifier (genre-agnostic): map approach -> stat.
   const statKey = statForApproach(m.approachTag);
   const statVal = actor?.stats?.[statKey];
   const statBonus = statMod(statVal);
-  roll = clampInt(roll + statBonus, 1, 30);
+
+  // Proficiency bonus: added when actor has a focus matching the approach.
+  const proficient = hasProficiency(actor, m.approachTag);
+  const profBonus = proficient ? profBonusFor(actor?.level ?? 1) : 0;
+  roll = clampInt(roll + statBonus + profBonus, 1, 30);
 
   // Advantage (0..2): global rule = +2 to roll, deterministic trigger.
   const advNow = clampInt((w.meta.advantageTokens?.[m.actorId] ?? 0), 0, 2);
@@ -44,17 +51,19 @@ export function resolveMove(world, move) {
 
   const margin = roll - dc;
 
-  const outcome = classifyOutcome({ band, margin, rng });
+  const outcome = classifyOutcome({ band, margin, rng, rawDie });
 
   const { gains, costs, deltas } = buildDeltas({ w, m, band, outcome, margin, rng, usedAdvantage, gearSignals });
 
-  const mechanicsLine = buildMechanicsLine({ roll, dc, outcome, m, margin, usedAdvantage, statKey, statBonus });
+  const mechanicsLine = buildMechanicsLine({ roll, dc, outcome, m, margin, usedAdvantage, statKey, statBonus, profBonus, rawDie });
 
   const result = {
     outcome,
+    rawDie,
     roll,
     dc,
     margin,
+    profBonus,
     gains,
     costs,
     deltas,
@@ -71,6 +80,37 @@ function statForApproach(approachTag) {
   if (a === 'endure') return 'GRIT';
   if (a === 'heart') return 'CHARM';
   return 'WITS';
+}
+
+// Focus → approach mapping (from CRUNCH_V1.md).
+// Each focus grants proficiency bonus when used with its matching approach.
+const FOCUS_APPROACH = {
+  athletics: 'force',
+  stealth: 'finesse',
+  arcana: 'focus',
+  insight: 'heart',
+  survival: 'endure',
+  intimidation: 'force',
+  acrobatics: 'finesse',
+  investigation: 'focus',
+  persuasion: 'heart',
+  medicine: 'endure',
+  perception: 'focus',
+  deception: 'heart',
+  nature: 'endure',
+  history: 'focus',
+  performance: 'heart',
+  religion: 'focus',
+  sleight_of_hand: 'finesse'
+};
+
+function hasProficiency(actor, approachTag) {
+  const foci = Array.isArray(actor?.foci) ? actor.foci : [];
+  const approach = String(approachTag || '');
+  for (const f of foci) {
+    if (FOCUS_APPROACH[f] === approach) return true;
+  }
+  return false;
 }
 
 function statMod(n) {
@@ -107,10 +147,12 @@ function computeDC({ w, m, band, gearSignals }) {
   const riskBump = Math.round(dreadRisk * 3);
 
   // Wounds/stress thresholds add +DC deterministically.
+  // Wound thresholds scale proportionally with maxWounds.
   const actor = findActor(w, m.actorId);
-  const wounds = clampInt(actor?.wounds ?? 0, 0, 6);
+  const woundCap = maxWounds(actor?.level ?? 1, statMod(actor?.stats?.GRIT ?? 10));
+  const wounds = clampInt(actor?.wounds ?? 0, 0, woundCap);
   const stress = clampInt(actor?.stress ?? 0, 0, 6);
-  const woundBump = wounds >= 4 ? 2 : wounds >= 2 ? 1 : 0;
+  const woundBump = wounds >= Math.ceil(woundCap * 2 / 3) ? 2 : wounds >= Math.ceil(woundCap / 3) ? 1 : 0;
   const stressBump = stress >= 4 ? 2 : stress >= 2 ? 1 : 0;
 
   // Blood is a hair harsher.
@@ -155,7 +197,13 @@ function computeDC({ w, m, band, gearSignals }) {
   return dc;
 }
 
-function classifyOutcome({ band, margin, rng }) {
+function classifyOutcome({ band, margin, rng, rawDie }) {
+  // Natural 1: automatic failure regardless of modifiers.
+  // Natural 20: automatic success regardless of modifiers.
+  // Matches D&D 5e ability check / attack roll convention.
+  if (rawDie === 1) return 'failure';
+  if (rawDie === 20) return 'success';
+
   // Guarantee mixed exists.
   // Success: margin >= 3
   // Mixed: margin in [-2..2]
@@ -359,7 +407,8 @@ function addApproachSignature({ w, m, outcome, band, deltas, gains, costs }) {
   if (a === 'endure') {
     if (o === 'success') {
       const stressCur = clampInt(actor?.stress ?? 0, 0, 6);
-      const woundCur = clampInt(actor?.wounds ?? 0, 0, 6);
+      const endureWoundCap = maxWounds(actor?.level ?? 1, statMod(actor?.stats?.GRIT ?? 10));
+      const woundCur = clampInt(actor?.wounds ?? 0, 0, endureWoundCap);
       if (stressCur > 0) {
         deltas.push({ op: 'stress', entityId: m.actorId, by: -1 });
         gains.push({ kind: 'stress', entityId: m.actorId, by: -1, note: 'held the line' });
@@ -481,11 +530,13 @@ function defaultCostText(w, band) {
   return band === 'blood' ? 'blood, betrayal, irreversible loss' : band === 'grim' ? 'time, blood, trust' : 'time, fatigue, pride';
 }
 
-function buildMechanicsLine({ roll, dc, outcome, m, margin, usedAdvantage, statKey = '', statBonus = 0 }) {
+function buildMechanicsLine({ roll, dc, outcome, m, margin, usedAdvantage, statKey = '', statBonus = 0, profBonus = 0, rawDie = 0 }) {
   const deltaNote = summarizeDeltasForLine(m);
   const sb = statBonus ? (statBonus > 0 ? `+${statBonus}` : String(statBonus)) : '';
   const stat = statKey ? ` | stat:${statKey}${sb}` : '';
-  return `[roll:${roll} vs DC:${dc} → ${outcome} | margin:${margin} | approach:${m.approachTag} | stake:${m.stakeTag} | risk:${m.risk.toFixed(2)}${stat}${usedAdvantage ? ' | adv:+2' : ''}${deltaNote ? ' | ' + deltaNote : ''}]`;
+  const prof = profBonus ? ` | prof:+${profBonus}` : '';
+  const nat = rawDie === 1 ? ' | NAT1' : rawDie === 20 ? ' | NAT20' : '';
+  return `[roll:${roll} vs DC:${dc} → ${outcome} | margin:${margin} | approach:${m.approachTag} | stake:${m.stakeTag} | risk:${m.risk.toFixed(2)}${stat}${prof}${usedAdvantage ? ' | adv:+2' : ''}${nat}${deltaNote ? ' | ' + deltaNote : ''}]`;
 }
 
 function moveAdvances(m) {

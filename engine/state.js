@@ -14,7 +14,11 @@ import { normalizeCondition } from './combat/conditions.js';
 
 // Pass R1 — bumped from 16 → 17. Adds rumor layer: world.rumors[],
 // npc.rumorIds[], npc.sophistication. See docs/RUMOR_LAYER.md.
-export const WORLD_VERSION = 18;
+// Overworld geometry — bumped 18 → 19. Every map node gains an integer grid
+// position (node.x, node.y) via the deterministic embedding (engine/map/embedding.js).
+// The compass now reads direction from coordinates instead of a hashed label, and
+// old saves backfill positions on load (ensureMap). See engine/map/mapState.js.
+export const WORLD_VERSION = 19;
 
 // Crunch caps (T1). Kept here so they're colocated with ensureEntity.
 const FOCI_CAP = 6;

@@ -1,10 +1,23 @@
 import { ensureWorld } from '../state.js';
 import { seedFromString, makeRng } from '../rng.js';
+import { embedNodes } from './embedding.js';
 
 export function ensureMap(map) {
   const m = map && typeof map === 'object' ? map : {};
-  const nodes = Array.isArray(m.nodes) ? m.nodes.map(ensureNode) : [];
+  let nodes = Array.isArray(m.nodes) ? m.nodes.map(ensureNode) : [];
   const edges = Array.isArray(m.edges) ? m.edges.map(ensureEdge) : [];
+
+  // Backfill overworld grid coordinates for any node missing them. Pre-v19 saves
+  // have no positions; the embedding is a pure function of the graph, so upgraded
+  // saves get the exact coordinates a fresh game would. Once every node has a
+  // position this is a no-op (the common path), so it stays cheap on hot calls.
+  if (nodes.length && nodes.some(n => !Number.isInteger(n.x) || !Number.isInteger(n.y))) {
+    const pos = embedNodes(nodes, edges);
+    nodes = nodes.map(n => {
+      const p = pos.get(String(n.id));
+      return p ? { ...n, x: p.x, y: p.y } : n;
+    });
+  }
   const discovered = Array.isArray(m.discovered) ? m.discovered.map(String) : [];
   const currentNodeId = String(m.currentNodeId || (nodes[0]?.id || ''));
 
@@ -32,57 +45,63 @@ export function neighbors(map, nodeId) {
 }
 
 // ── Cardinal navigation ──────────────────────────────────────────────────────
-// The overworld is an abstract node graph with no real geometry, so "north" is
-// a label we assign, not a coordinate. compassLayout() assigns every edge a
-// compass slot at each of its two endpoints, deterministically and RECIPROCALLY:
-// if leaving A by "north" arrives at B, then leaving B by "south" returns to A.
-// This lets a player draw a stable map in their head (core to the explore feel).
+// As of v19 every node carries an integer grid position (see embedding.js), so a
+// compass direction is no longer a hashed label — it's the actual geometry. The
+// direction from A to B is read straight off the delta of their coordinates, which
+// makes the on-screen map and the compass finally agree (north on screen = north
+// you walk) and makes reciprocity automatic: if B is east of A then A is west of
+// B, because the delta simply negates.
 //
-// Reciprocity is free because each edge is assigned once, from a canonical
-// (lo,hi) endpoint ordering, writing opposite directions at both ends in the
-// same step. Collisions (two edges wanting the same slot at a node) are resolved
-// greedily; a saturated node (>4 edges, rare on the ring+chord map) may leave an
-// edge with no compass slot — that neighbor stays reachable by typed name.
-const DIRS = ['north', 'east', 'south', 'west'];
+// When two neighbors fall in the same cardinal at a node, the nearer one wins the
+// slot (edges are processed nearest-first); the farther stays reachable by typed
+// name. Grid y grows downward, so south is +y.
 const OPPOSITE = { north: 'south', south: 'north', east: 'west', west: 'east' };
 
-function edgeKey(a, b) {
-  return a < b ? `${a}|${b}` : `${b}|${a}`;
+function cardinalOf(dx, dy) {
+  if (dx === 0 && dy === 0) return '';
+  if (Math.abs(dx) >= Math.abs(dy)) return dx > 0 ? 'east' : 'west';
+  return dy > 0 ? 'south' : 'north';
 }
 
 export function compassLayout(map) {
   const m = ensureMap(map);
   const exits = new Map();   // nodeId -> { north, east, south, west } (neighbor id or null)
-  const taken = new Map();   // nodeId -> Set<dir>
-  const ensure = (id) => {
-    if (!exits.has(id)) exits.set(id, { north: null, east: null, south: null, west: null });
-    if (!taken.has(id)) taken.set(id, new Set());
-  };
+  const pos = new Map();     // nodeId -> { x, y }
+  for (const n of m.nodes) {
+    const id = String(n.id);
+    exits.set(id, { north: null, east: null, south: null, west: null });
+    if (Number.isInteger(n.x) && Number.isInteger(n.y)) pos.set(id, { x: n.x, y: n.y });
+  }
 
-  const edges = m.edges
-    .filter(e => e.a && e.b && e.a !== e.b)
-    .map(e => ({ lo: e.a < e.b ? e.a : e.b, hi: e.a < e.b ? e.b : e.a }))
-    .map(e => ({ ...e, key: edgeKey(e.lo, e.hi) }))
-    .sort((x, y) => (x.key < y.key ? -1 : x.key > y.key ? 1 : 0));
-
-  // Drop duplicate edges (same pair) so we don't waste two slots on one passage.
-  const seenKeys = new Set();
+  // Canonical (lo,hi), de-duped edges. Sort nearest-first so a contested cardinal
+  // goes to the closer neighbor; key breaks ties deterministically.
+  const seen = new Set();
+  const edges = [];
+  for (const e of m.edges) {
+    const a = String(e.a), b = String(e.b);
+    if (!a || !b || a === b) continue;
+    const lo = a < b ? a : b;
+    const hi = a < b ? b : a;
+    const k = `${lo}|${hi}`;
+    if (seen.has(k)) continue;
+    seen.add(k);
+    const pa = pos.get(lo), pb = pos.get(hi);
+    const dist = (pa && pb) ? (Math.abs(pa.x - pb.x) + Math.abs(pa.y - pb.y)) : Infinity;
+    edges.push({ lo, hi, k, dist });
+  }
+  edges.sort((x, y) => (x.dist - y.dist) || (x.k < y.k ? -1 : x.k > y.k ? 1 : 0));
 
   for (const e of edges) {
-    if (seenKeys.has(e.key)) continue;
-    seenKeys.add(e.key);
-    ensure(e.lo); ensure(e.hi);
-    const start = seedFromString(e.key) % 4;
-    for (let k = 0; k < 4; k++) {
-      const dLo = DIRS[(start + k) % 4];
-      const dHi = OPPOSITE[dLo];
-      if (!taken.get(e.lo).has(dLo) && !taken.get(e.hi).has(dHi)) {
-        exits.get(e.lo)[dLo] = e.hi;
-        exits.get(e.hi)[dHi] = e.lo;
-        taken.get(e.lo).add(dLo);
-        taken.get(e.hi).add(dHi);
-        break;
-      }
+    const pa = pos.get(e.lo), pb = pos.get(e.hi);
+    if (!pa || !pb) continue; // no geometry — neighbor reachable by typed name only
+    const d = cardinalOf(pb.x - pa.x, pb.y - pa.y); // lo -> hi
+    if (!d) continue;
+    const od = OPPOSITE[d];                          // hi -> lo (exact opposite)
+    // Assign both ends together so reciprocity always holds. If either slot is
+    // already claimed by a nearer edge, skip — that neighbor stays name-reachable.
+    if (exits.get(e.lo)[d] === null && exits.get(e.hi)[od] === null) {
+      exits.get(e.lo)[d] = e.hi;
+      exits.get(e.hi)[od] = e.lo;
     }
   }
   return exits;
@@ -291,6 +310,12 @@ function ensureNode(n) {
     scars: Array.isArray(x.scars) ? x.scars.map(String).slice(0, 8) : []
   };
   if (x.nodeType) base.nodeType = String(x.nodeType);
+  // Overworld grid position (integer tile cell). Preserved when present; ensureMap
+  // backfills any node missing it via the deterministic embedding (old saves).
+  if (Number.isInteger(x.x) && Number.isInteger(x.y)) {
+    base.x = x.x;
+    base.y = x.y;
+  }
   // Preserve settlement data from decompression (NPCs, buildings, history, etc.)
   if (x.settlement && typeof x.settlement === 'object') {
     const s = x.settlement;
@@ -356,10 +381,18 @@ function dedupe(arr) {
 export function assertMapStructure(map) {
   const m = ensureMap(map);
   const ids = new Set();
+  const cells = new Set();
   for (const n of m.nodes) {
     if (!n.id) throw new Error('Map invariant: node without id');
     if (ids.has(n.id)) throw new Error('Map invariant: duplicate node id');
     ids.add(n.id);
+    // v19: every node sits on an integer grid cell, and no two share one.
+    if (!Number.isInteger(n.x) || !Number.isInteger(n.y)) {
+      throw new Error(`Map invariant: node ${n.id} missing integer grid position`);
+    }
+    const cell = `${n.x},${n.y}`;
+    if (cells.has(cell)) throw new Error(`Map invariant: two nodes share grid cell ${cell}`);
+    cells.add(cell);
   }
   if (m.currentNodeId && !ids.has(m.currentNodeId)) {
     throw new Error('Map invariant: invalid currentNodeId');

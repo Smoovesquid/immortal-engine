@@ -1,6 +1,7 @@
 import { assertMapStructure } from './mapState.js';
 import { seedFromString, makeRng } from '../rng.js';
 import { classifyNodeType } from './nodeType.js';
+import { embedNodes } from './embedding.js';
 
 // Living Terrain Engine v1 — deterministic narrative map graph.
 
@@ -73,8 +74,16 @@ export function generateInitialMap({ seed = 'seed', packId = 'fantasy', pack = {
 
   const startNodeId = nodes[0]?.id || '';
 
+  // v19: lay the graph onto an integer tile grid so the overworld has real
+  // geography. Pure function of the node/edge set — deterministic, integer-only.
+  const pos = embedNodes(nodes, edges);
+  const placedNodes = nodes.map(n => {
+    const p = pos.get(String(n.id));
+    return p ? { ...n, x: p.x, y: p.y } : n;
+  });
+
   const map = {
-    nodes,
+    nodes: placedNodes,
     edges,
     discovered: startNodeId ? [startNodeId] : [],
     currentNodeId: startNodeId

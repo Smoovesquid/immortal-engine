@@ -60,15 +60,30 @@ test('U86: no direction at a node points to two different neighbors', () => {
   }
 });
 
-test('U86: low-degree nodes (<=4 neighbors) get every neighbor a compass slot', () => {
+test('U86: every slotted exit points in the geometrically correct cardinal', () => {
+  // v19: direction is read from coordinates, so a slotted exit must agree with the
+  // actual delta between the two nodes' grid cells. (When two neighbors share a
+  // cardinal the farther one is left name-reachable — that's expected, so we only
+  // assert correctness of the slots that DID get assigned.)
+  const byId = (map) => new Map(map.nodes.map(n => [String(n.id), n]));
+  const cardinalOf = (dx, dy) => {
+    if (dx === 0 && dy === 0) return '';
+    if (Math.abs(dx) >= Math.abs(dy)) return dx > 0 ? 'east' : 'west';
+    return dy > 0 ? 'south' : 'north';
+  };
   for (const map of sampleMaps()) {
+    const nodes = byId(map);
     const layout = compassLayout(map);
     for (const node of map.nodes) {
-      const nbs = neighbors(map, node.id);
-      if (nbs.length > 4) continue; // saturated nodes may drop an exit (documented)
-      const assigned = new Set(DIRS.map(d => (layout.get(node.id) || {})[d]).filter(Boolean));
-      for (const nb of nbs) {
-        assert.ok(assigned.has(nb), `neighbor ${nb} of ${node.id} (degree ${nbs.length}) has no compass slot`);
+      const exits = layout.get(node.id) || {};
+      for (const dir of DIRS) {
+        const nbId = exits[dir];
+        if (!nbId) continue;
+        const a = nodes.get(String(node.id));
+        const b = nodes.get(String(nbId));
+        assert.ok(Number.isInteger(a.x) && Number.isInteger(b.x), 'nodes must have coords');
+        const want = cardinalOf(b.x - a.x, b.y - a.y);
+        assert.equal(dir, want, `${node.id} slots ${nbId} as ${dir} but geometry says ${want}`);
       }
     }
   }

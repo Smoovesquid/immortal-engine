@@ -33,15 +33,15 @@ test('U50: S3 node entry materializes generated structures once per node (id-bas
   // Travel to n1 => n1 structures materialize
   w = playerMove(w, packsById, 'travel to North').world;
   assert.equal(w.map.currentNodeId, 'n1');
-  assert.deepEqual(ids(), ['stgen:v18:n1:0']);
+  assert.deepEqual(ids(), ['stgen:v19:n1:0']);
 
   // Re-enter n1 via newScene (from n1, dest should be n0; then back to n1)
   w = newScene(w, packsById).world;
   assert.equal(w.map.currentNodeId, 'n0');
-  assert.deepEqual(ids().sort(), ['stgen:v18:n0:0', 'stgen:v18:n1:0']);
+  assert.deepEqual(ids().sort(), ['stgen:v19:n0:0', 'stgen:v19:n1:0']);
 
   // Travel north again (back to n1). Should NOT add a duplicate n1 structure.
   w = playerMove(w, packsById, 'travel to North').world;
   assert.equal(w.map.currentNodeId, 'n1');
-  assert.deepEqual(ids().sort(), ['stgen:v18:n0:0', 'stgen:v18:n1:0']);
+  assert.deepEqual(ids().sort(), ['stgen:v19:n0:0', 'stgen:v19:n1:0']);
 });

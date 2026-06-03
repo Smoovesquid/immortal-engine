@@ -488,6 +488,24 @@ a{color:var(--accent)}
 @media (min-width: 1040px){
   .play-layout{grid-template-columns:minmax(0,1fr) 300px}
 }
+
+/* ── Desktop: lock play view to the viewport so the map stays pinned ──
+   On a computer the whole play screen fills the window height. The map sits
+   fixed at the top of the panel and ONLY the narration transcript scrolls
+   underneath it — so you can always see where you are while reading. Mobile
+   (≤860px) keeps natural page scroll via the stacked layout below. */
+@media (min-width: 861px){
+  .play-container{height:100vh;max-height:100vh;display:flex;flex-direction:column;overflow:hidden}
+  .play-layout{flex:1 1 auto;min-height:0;align-items:stretch}
+  .main-col{min-height:0;display:flex;flex-direction:column}
+  .play-panel{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}
+  /* play-body no longer scrolls as a unit; it lays the map + transcript out */
+  .play-body{flex:1 1 auto;min-height:0;overflow:hidden;display:flex;flex-direction:column}
+  .play-body .play-map{flex:0 0 auto}
+  .play-body .transcript{flex:1 1 auto;min-height:0;max-height:none;overflow:auto}
+  /* right-hand status column scrolls on its own if it runs tall */
+  .status-panels{min-height:0;overflow:auto}
+}
 @media (max-width: 860px){
   .play-layout{grid-template-columns:1fr}
   .local-map-canvas.compact{max-width:100%}

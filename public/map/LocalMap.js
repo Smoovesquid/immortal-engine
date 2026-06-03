@@ -211,84 +211,238 @@ function drawExterior(ctx, world, w, size, cell) {
   ctx.fill();
 }
 
-// ── Interior drawing (room-based dungeon layout) ────────────────────────
+// ── Interior compass layout (mirrors engine/structures/topology.js) ──────
+// The engine pins every doorway to a reciprocal N/E/S/W slot deterministically.
+// We replicate that here (same hash, same algorithm) so the floor plan we draw
+// matches the actual movement: the room shown to your north is the one "go north"
+// reaches. seedFromString is copied verbatim from engine/rng.js (browser-safe).
+function seedFromString(str) {
+  const s = String(str ?? '');
+  let h = 1779033703 ^ s.length;
+  for (let i = 0; i < s.length; i++) {
+    h = Math.imul(h ^ s.charCodeAt(i), 3432918353);
+    h = (h << 13) | (h >>> 19);
+  }
+  h = Math.imul(h ^ (h >>> 16), 2246822507);
+  h = Math.imul(h ^ (h >>> 13), 3266489909);
+  h ^= h >>> 16;
+  return h >>> 0;
+}
+
+const I_DIRS = ['north', 'east', 'south', 'west'];
+const I_OPP = { north: 'south', south: 'north', east: 'west', west: 'east' };
+const I_VEC = { north: [0, -1], south: [0, 1], east: [1, 0], west: [-1, 0] };
+
+function edgeKeyOf(a, b) { return a < b ? `${a}|${b}` : `${b}|${a}`; }
+
+function interiorCompassLayout(rooms, edgesIn) {
+  const roomIds = new Set(rooms.map(r => String(r?.id || '')));
+  const exits = new Map();   // roomId -> { north, east, south, west }
+  const taken = new Map();   // roomId -> Set<dir>
+  const ensure = (id) => {
+    if (!exits.has(id)) exits.set(id, { north: null, east: null, south: null, west: null });
+    if (!taken.has(id)) taken.set(id, new Set());
+  };
+
+  const edges = (Array.isArray(edgesIn) ? edgesIn : [])
+    .map(e => ({ a: String(e?.a || ''), b: String(e?.b || '') }))
+    .filter(e => e.a && e.b && e.a !== e.b && roomIds.has(e.a) && roomIds.has(e.b))
+    .map(e => ({ lo: e.a < e.b ? e.a : e.b, hi: e.a < e.b ? e.b : e.a }))
+    .map(e => ({ ...e, key: edgeKeyOf(e.lo, e.hi) }));
+
+  // de-dupe by key, then sort by key (matches engine ordering)
+  const seen = new Set();
+  const uniq = [];
+  for (const e of edges) { if (!seen.has(e.key)) { seen.add(e.key); uniq.push(e); } }
+  uniq.sort((x, y) => (x.key < y.key ? -1 : x.key > y.key ? 1 : 0));
+
+  for (const e of uniq) {
+    ensure(e.lo); ensure(e.hi);
+    const start = seedFromString(e.key) % 4;
+    for (let k = 0; k < 4; k++) {
+      const dLo = I_DIRS[(start + k) % 4];
+      const dHi = I_OPP[dLo];
+      if (!taken.get(e.lo).has(dLo) && !taken.get(e.hi).has(dHi)) {
+        exits.get(e.lo)[dLo] = e.hi;
+        exits.get(e.hi)[dHi] = e.lo;
+        taken.get(e.lo).add(dLo);
+        taken.get(e.hi).add(dHi);
+        break;
+      }
+    }
+  }
+  for (const r of rooms) ensure(String(r?.id || ''));
+  return exits;
+}
+
+// Walk the compass graph from the entry room and assign each room an integer
+// grid cell (gx,gy). north = up, south = down, east = right, west = left. On a
+// collision (the graph isn't always planar) spiral out to the nearest free cell
+// so rooms never stack on top of each other.
+function placeRoomsOnGrid(rooms, exits, entryId) {
+  const pos = new Map();      // id -> {gx,gy}
+  const occupied = new Set(); // "gx,gy"
+  const key = (x, y) => `${x},${y}`;
+  const placed = (x, y) => occupied.has(key(x, y));
+  const put = (id, x, y) => { pos.set(id, { gx: x, gy: y }); occupied.add(key(x, y)); };
+
+  const nearestFree = (x, y) => {
+    if (!placed(x, y)) return [x, y];
+    for (let r = 1; r < 20; r++) {
+      for (let dy = -r; dy <= r; dy++) {
+        for (let dx = -r; dx <= r; dx++) {
+          if (Math.abs(dx) !== r && Math.abs(dy) !== r) continue;
+          if (!placed(x + dx, y + dy)) return [x + dx, y + dy];
+        }
+      }
+    }
+    return [x, y];
+  };
+
+  const queue = [];
+  if (entryId) { put(entryId, 0, 0); queue.push(entryId); }
+
+  while (queue.length) {
+    const id = queue.shift();
+    const here = pos.get(id);
+    const ex = exits.get(id) || {};
+    for (const dir of I_DIRS) {
+      const nb = ex[dir];
+      if (!nb || pos.has(nb)) continue;
+      const [vx, vy] = I_VEC[dir];
+      const [fx, fy] = nearestFree(here.gx + vx, here.gy + vy);
+      put(nb, fx, fy);
+      queue.push(nb);
+    }
+  }
+
+  // Any room not reachable from entry (disconnected): drop into a trailing row.
+  let stray = 0;
+  for (const r of rooms) {
+    const id = String(r?.id || '');
+    if (id && !pos.has(id)) {
+      const [fx, fy] = nearestFree(stray++, 99);
+      put(id, fx, fy);
+    }
+  }
+  return pos;
+}
+
+function roomLabel(room, index, isCurrent) {
+  if (isCurrent) return 'You are here';
+  const tags = Array.isArray(room?.tags) ? room.tags.map(t => String(t).toLowerCase()) : [];
+  const PRETTY = { entry: 'Entry', hall: 'Hall', stair: 'Stairs', vault: 'Vault', cell: 'Cell', shrine: 'Shrine', kitchen: 'Kitchen', exit: 'Exit' };
+  for (const t of tags) if (PRETTY[t]) return PRETTY[t];
+  return `Room ${index + 1}`;
+}
+
+// ── Interior drawing (true floor-plan layout) ───────────────────────────
 function drawInterior(ctx, world, w) {
   ctx.fillStyle = THEME.bg;
   ctx.fillRect(0, 0, w, w);
 
   const interior = world?.scene?.interior && typeof world.scene.interior === 'object' ? world.scene.interior : null;
-  const structureKey = String(interior?.structureKey || '');
   const roomId = String(interior?.roomId || '');
+  const structureKey = String(interior?.structureKey || '');
   const st = world?.structures?.byId?.[structureKey];
   const topo = st?.topology && typeof st.topology === 'object' ? st.topology : null;
-  const rooms = Array.isArray(topo?.rooms) ? topo.rooms : [];
+  const rooms = (Array.isArray(topo?.rooms) ? topo.rooms : []).filter(r => r && r.id != null);
   const edges = Array.isArray(topo?.edges) ? topo.edges : [];
 
-  const centers = new Map();
-  const cols = Math.max(1, Math.ceil(Math.sqrt(Math.max(1, rooms.length))));
-  const spacing = 190;
-  const roomW = 130;
-  const roomH = 90;
-  const startX = Math.floor((w - (Math.min(cols, rooms.length) * spacing)) / 2) + 95;
-  const rows = Math.max(1, Math.ceil(Math.max(1, rooms.length) / cols));
-  const startY = Math.floor((w - (rows * spacing)) / 2) + 95;
-
-  rooms.forEach((r, i) => {
-    const c = i % cols;
-    const rr = Math.floor(i / cols);
-    const cx = startX + c * spacing;
-    const cy = startY + rr * spacing;
-    centers.set(String(r.id), { cx, cy });
-
-    const isCurrent = String(r.id) === roomId;
-
-    // Room floor
-    ctx.fillStyle = isCurrent ? 'rgba(200,168,78,0.08)' : THEME.roomFloor;
-    ctx.fillRect(cx - roomW / 2, cy - roomH / 2, roomW, roomH);
-
-    // Room walls
-    ctx.strokeStyle = isCurrent ? 'rgba(200,168,78,0.5)' : THEME.roomWall;
-    ctx.lineWidth = isCurrent ? 2.5 : 1.5;
-    ctx.strokeRect(cx - roomW / 2, cy - roomH / 2, roomW, roomH);
-
-    // Room label — readable, never the raw internal id
+  if (!rooms.length) {
     ctx.fillStyle = THEME.roomLabel;
-    ctx.font = '11px ui-monospace, SFMono-Regular, Menlo, monospace';
-    ctx.fillText(isCurrent ? 'You are here' : `Room ${i + 1}`, cx - roomW / 2 + 8, cy - roomH / 2 + 14);
-  });
-
-  // Doors between rooms
-  for (const e of edges) {
-    const a = centers.get(String(e?.a || ''));
-    const b = centers.get(String(e?.b || ''));
-    if (!a || !b) continue;
-
-    ctx.strokeStyle = THEME.doorStroke;
-    ctx.lineWidth = 3;
-    ctx.setLineDash([6, 4]);
-    ctx.beginPath();
-    ctx.moveTo(a.cx, a.cy);
-    ctx.lineTo(b.cx, b.cy);
-    ctx.stroke();
-    ctx.setLineDash([]);
+    ctx.font = '12px ui-monospace, SFMono-Regular, Menlo, monospace';
+    ctx.fillText('Interior', 12, 20);
+    return;
   }
 
-  // Player marker
-  const p = centers.get(roomId);
-  if (p) {
-    const { xFt, yFt } = playerFeet(world);
-    const ox = (xFt / 5) * 12;
-    const oy = (yFt / 5) * 12;
+  // Stable index per room (sorted by id) for "Room N" labels.
+  const sortedIds = rooms.map(r => String(r.id)).sort((a, b) => a.localeCompare(b));
+  const indexOf = new Map(sortedIds.map((id, i) => [id, i]));
 
-    // Glow
+  // Entry = room tagged 'entry', else lexicographically first (matches engine's
+  // normalizeTopology rooms[0], which is where enterStructureInterior drops you).
+  const entryRoom = rooms.find(r => (r.tags || []).map(t => String(t).toLowerCase()).includes('entry'));
+  const entryId = String(entryRoom?.id || sortedIds[0] || '');
+
+  const exits = interiorCompassLayout(rooms, edges);
+  const pos = placeRoomsOnGrid(rooms, exits, entryId);
+
+  // Grid bounds → fit to canvas with padding.
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  for (const { gx, gy } of pos.values()) {
+    if (gx < minX) minX = gx; if (gx > maxX) maxX = gx;
+    if (gy < minY) minY = gy; if (gy > maxY) maxY = gy;
+  }
+  const gw = (maxX - minX) + 1;
+  const gh = (maxY - minY) + 1;
+  const pad = Math.max(10, Math.round(w * 0.06));
+  const pitch = Math.min((w - pad * 2) / gw, (w - pad * 2) / gh);
+  const room = pitch * 0.78;            // room box smaller than its cell → gaps read as walls/corridors
+  const offX = (w - gw * pitch) / 2 - minX * pitch;
+  const offY = (w - gh * pitch) / 2 - minY * pitch;
+  const cellCenter = (gx, gy) => ({ cx: offX + gx * pitch + pitch / 2, cy: offY + gy * pitch + pitch / 2 });
+
+  // 1) Corridors first (drawn under rooms): connect every doorway. Cardinally
+  //    adjacent rooms get a short door stub; non-adjacent (collision-spiraled)
+  //    neighbors get a connecting passage.
+  ctx.strokeStyle = THEME.doorStroke;
+  for (const r of rooms) {
+    const id = String(r.id);
+    const a = pos.get(id); if (!a) continue;
+    const ex = exits.get(id) || {};
+    for (const dir of I_DIRS) {
+      const nb = ex[dir]; if (!nb) continue;
+      if (id >= nb) continue; // draw each doorway once
+      const b = pos.get(nb); if (!b) continue;
+      const A = cellCenter(a.gx, a.gy);
+      const B = cellCenter(b.gx, b.gy);
+      const adjacent = Math.abs(a.gx - b.gx) + Math.abs(a.gy - b.gy) === 1;
+      ctx.lineWidth = adjacent ? room * 0.32 : 3;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(A.cx, A.cy);
+      ctx.lineTo(B.cx, B.cy);
+      ctx.stroke();
+    }
+  }
+  ctx.lineCap = 'butt';
+
+  // 2) Rooms on top (so the corridor reads as a door cut into the wall).
+  for (const r of rooms) {
+    const id = String(r.id);
+    const p = pos.get(id); if (!p) continue;
+    const { cx, cy } = cellCenter(p.gx, p.gy);
+    const x = cx - room / 2;
+    const y = cy - room / 2;
+    const isCurrent = id === roomId;
+
+    ctx.fillStyle = isCurrent ? 'rgba(200,168,78,0.10)' : THEME.roomFloor;
+    ctx.fillRect(x, y, room, room);
+    ctx.strokeStyle = isCurrent ? 'rgba(200,168,78,0.65)' : THEME.roomWall;
+    ctx.lineWidth = isCurrent ? 2.5 : 1.5;
+    ctx.strokeRect(x, y, room, room);
+
+    // Label only when the room box is big enough to hold text (full map).
+    if (room >= 56) {
+      ctx.fillStyle = isCurrent ? THEME.playerFill : THEME.roomLabel;
+      ctx.font = '11px ui-monospace, SFMono-Regular, Menlo, monospace';
+      const label = roomLabel(r, indexOf.get(id) ?? 0, isCurrent);
+      ctx.fillText(label, x + 6, y + 14);
+    }
+  }
+
+  // 3) Player marker in the current room.
+  const cur = pos.get(roomId);
+  if (cur) {
+    const { cx, cy } = cellCenter(cur.gx, cur.gy);
+    const dot = Math.max(4, room * 0.16);
     ctx.beginPath();
-    ctx.arc(p.cx + ox, p.cy + oy, 16, 0, Math.PI * 2);
+    ctx.arc(cx, cy, dot * 2, 0, Math.PI * 2);
     ctx.fillStyle = THEME.playerGlow;
     ctx.fill();
-
-    // Marker
     ctx.beginPath();
-    ctx.arc(p.cx + ox, p.cy + oy, 8, 0, Math.PI * 2);
+    ctx.arc(cx, cy, dot, 0, Math.PI * 2);
     ctx.fillStyle = THEME.playerFill;
     ctx.fill();
   }

@@ -35,6 +35,8 @@ import { applyDeltas } from '../effectsCore.js';
 import { endCombat } from './combatLifecycle.js';
 import { statMod } from '../ruleset/core/stats.js';
 import { makeRng, seedFromString } from '../rng.js';
+import { rollLootForCR } from '../ruleset/core/loot/lootRoll.js';
+import { rollDice } from './diceRoller.js';
 
 // ── Player build (level-1 hedge-caster escapee) ──────────────────────────────
 const PLAYER_BASE_HP = 14;   // + GRIT mod
@@ -300,8 +302,46 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
   // ── Victory check ──────────────────────────────────────────────────────────
   const anyAlive = enemies.some(e => e && !e.defeated && (Number(e.hp) || 0) > 0);
   if (!anyAlive) {
+    // Roll CR-scaled loot for the cleared foes BEFORE endCombat clears the enemy
+    // list. Tamed ambushers carry no lootTableRef, so this falls back to the CR
+    // band table (cr_0_4) — modest drops fitting their tamed difficulty. Mirrors
+    // the loot path in combatResolve.js so the existing loot popup just works.
+    // Deterministic: the rng is seeded from world seed + timeline length + round,
+    // so a replay yields identical drops (worldHash stays stable).
+    const lootRng = makeRng(seedFromString(`${w.meta?.seed || ''}|escapeLoot|${w.timeline.length}|r${round}`));
+    const lootResults = [];
+    const lootDeltas = [];
+    let lootCounter = 0;
+    for (const e of enemies) {
+      const drops = rollLootForCR(e.cr ?? 0, lootRng, e.lootTableRef || null);
+      for (const drop of drops) {
+        if (!drop) continue;
+        if (drop.kind === 'currency' && drop.currency && drop.amount) {
+          const amt = Math.max(0, rollDice(drop.amount, lootRng).total);
+          if (amt > 0) {
+            lootDeltas.push({ op: 'addCurrency', entityId: 'party', currency: drop.currency, amount: amt });
+            lootResults.push({ kind: 'currency', currency: drop.currency, amount: amt, source: e.name });
+          }
+        } else if (drop.kind === 'item' && drop.defRef) {
+          const itemId = `loot_${lootCounter++}_${String(e.id || e.name || 'foe')}`;
+          lootDeltas.push({ op: 'addItem', entityId: 'party', item: { id: itemId, defRef: drop.defRef, equipped: null } });
+          lootResults.push({ kind: 'item', defRef: drop.defRef, rarity: drop.rarity || 'common', source: e.name });
+        }
+      }
+    }
+    if (lootDeltas.length > 0) w = applyDeltas(w, lootDeltas);
+
     w = endCombat(w, { reason: 'enemies-defeated' });
-    beats.push('The way is clear.');
+
+    // Emit a combat-end event carrying the loot list so the UI loot popup fires.
+    // The UI scans the timeline for a combat-end with a `loot` field, so only
+    // push when something actually dropped (no empty popup on a dry fight).
+    if (lootResults.length > 0) {
+      const tl = Array.isArray(w.timeline) ? w.timeline : [];
+      w = { ...w, timeline: [...tl, { t: tl.length, kind: 'combat-end', data: { reason: 'combat-victory', loot: lootResults } }] };
+    }
+
+    beats.push(lootResults.length ? 'The way is clear. You search the fallen and pocket what they carried.' : 'The way is clear.');
     return {
       world: w,
       result: {

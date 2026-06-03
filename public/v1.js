@@ -409,6 +409,10 @@ async function doSubmitMove() {
 
   // Capture node before move for auto scene transition
   const prevNodeId = String(w.map?.currentNodeId ?? '');
+  // Capture timeline length so we only react to events this move appended —
+  // otherwise the loot scan below would re-fire a long-dismissed loot popup on
+  // every subsequent turn (the combat-end event stays in the timeline forever).
+  const prevTimelineLen = Array.isArray(w.timeline) ? w.timeline.length : 0;
 
   let world, output;
   try {
@@ -426,11 +430,11 @@ async function doSubmitMove() {
   ui.play.lastResolutionKind = 'turn';
   ui.play.lastCombatSummary = output?.combatSummary || '';
 
-  // Detect combat-end with loot in timeline
+  // Detect combat-end with loot among events appended THIS move only.
   const timeline = Array.isArray(world.timeline) ? world.timeline : [];
-  for (let i = timeline.length - 1; i >= 0; i--) {
+  for (let i = timeline.length - 1; i >= prevTimelineLen; i--) {
     const evt = timeline[i];
-    if (evt?.kind === 'combat-end' && evt.data?.loot) {
+    if (evt?.kind === 'combat-end' && Array.isArray(evt.data?.loot) && evt.data.loot.length > 0) {
       ui.play.pendingLoot = evt.data;
       break;
     }

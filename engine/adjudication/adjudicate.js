@@ -11,6 +11,7 @@ import { query } from '../objects/query.js';
 import { outcomes } from '../objects/outcomes.js';
 import { proposeRuling, validateRuling, logRuling, computeOutcome } from './ruling.js';
 import { getTemplate, renderTemplate } from './templates.js';
+import { findRuling, applyRuling, getRulingNarration } from './rulings.js';
 
 // Main adjudication loop
 export function adjudicate(world, playerText) {
@@ -24,6 +25,14 @@ export function adjudicate(world, playerText) {
       narration: 'You interact with the environment.',
       mechanics: '[adjudicate | no-match]'
     };
+  }
+
+  // ── Step 1b: Check for Rulings Match ──────────────────────────────────
+  // If a ruling applies to this action, use the ruling path instead
+  const matchedObject = detection.matches[0];
+  const ruling = findRuling(playerText, matchedObject);
+  if (ruling) {
+    return adjudicateWithRuling(w, playerText, detection, ruling);
   }
 
   // ── Step 2: Propose ───────────────────────────────────────────────────
@@ -69,7 +78,7 @@ export function adjudicate(world, playerText) {
   let w1 = applyDeltas(w, validation.deltas);
 
   // ── Step 6: Log Ruling ───────────────────────────────────────────────
-  const ruling = {
+  const rulingLog = {
     action: playerText,
     approach: proposal.approach,
     targetId: detection.matches[0]?.name || '',
@@ -80,7 +89,7 @@ export function adjudicate(world, playerText) {
     deltas: validation.deltas
   };
 
-  w1 = logRuling(w1, ruling);
+  w1 = logRuling(w1, rulingLog);
 
   // ── Step 7: Narrate from Log & Templates ────────────────────────────
   // Find the object to get material for templating
@@ -109,6 +118,71 @@ export function adjudicate(world, playerText) {
     world: w1,
     narration,
     mechanics: `[adjudicate | ${outcome}]`
+  };
+}
+
+// Adjudicate with a Ruling (codified DM adjudication)
+function adjudicateWithRuling(world, playerText, detection, ruling) {
+  const w = ensureWorld(world);
+
+  // Get the target object
+  const match = detection.matches[0];
+  if (!match) {
+    return {
+      world: w,
+      narration: 'You attempt that, but nothing happens.',
+      mechanics: '[ruling | no-target]'
+    };
+  }
+
+  // Get player stats for the ruling's stat
+  const party = Array.isArray(w.party) ? w.party : [];
+  const player = party[0] || {};
+  const stats = player.stats || {};
+  const modifier = statMod(stats[ruling.stat] ?? 10);
+
+  // Compute DC
+  const dcBase = ruling.dcBase || 10;
+  const dcMod = ruling.dcModifier ? ruling.dcModifier(match) : 0;
+  const dc = dcBase + dcMod;
+
+  // Roll d20
+  const rngSeed = seedFromString(`${w.meta.seed}|ruling|${w.timeline.length}|${playerText}`);
+  const rng = makeRng(rngSeed);
+  const roll = rng.int(1, 20);
+  const total = roll + modifier;
+
+  // Compute outcome
+  const outcome = computeOutcome(roll, modifier, dc);
+
+  // Get deltas from ruling
+  const rulingDeltas = applyRuling(ruling, outcome, match, { action: ruling.ruleType });
+
+  // Apply deltas to world
+  let w1 = applyDeltas(w, rulingDeltas);
+
+  // Log the ruling
+  const logEntry = {
+    action: playerText,
+    approach: ruling.approach,
+    targetId: match.name || '',
+    dcSuggestion: dc,
+    roll,
+    modifier,
+    outcome,
+    deltas: rulingDeltas,
+    rulingName: ruling.name
+  };
+
+  w1 = logRuling(w1, logEntry);
+
+  // Get narration from ruling
+  const narration = getRulingNarration(ruling, outcome, match, { action: ruling.ruleType });
+
+  return {
+    world: w1,
+    narration,
+    mechanics: `[ruling:${ruling.name} | ${outcome}]`
   };
 }
 

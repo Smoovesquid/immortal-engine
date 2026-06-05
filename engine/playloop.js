@@ -136,6 +136,8 @@ export function beginAdventure(world, packsById) {
   // topology guarantees room 2 is adjacent to room 1 (the entry). Graceful
   // degradation: if there are no structures or the structure has only the entry
   // room, stay outside and narrate as exterior.
+  // v21 — Also set player position (nodeId + interior state). Place coordinates
+  // (ux, uy) are client-side and will be initialized on first render.
   {
     const structuresHere = Object.values(w.structures?.byId || {}).filter(
       s => String(s?.nodeId || '') === String(w.map?.currentNodeId || '')
@@ -161,8 +163,34 @@ export function beginAdventure(world, packsById) {
         } else {
           w = w1;
         }
+        // v21 — Persist player location: set position with nodeId and interior state.
+        const finalInterior = w.scene?.interior || null;
+        if (finalInterior) {
+          w = applyDeltas(w, [{
+            op: 'position',
+            entityId: 'party',
+            set: {
+              zone: 'near',
+              nodeId: String(w.map?.currentNodeId || ''),
+              interior: { structureId: String(finalInterior.structureKey), roomId: String(finalInterior.roomId) }
+            }
+          }]);
+        }
       }
     }
+  }
+
+  // v21 — If player position is not yet set (no structures, etc.), set a default
+  // position at the starting node.
+  if (w.party && w.party[0] && (!w.party[0].position?.nodeId)) {
+    w = applyDeltas(w, [{
+      op: 'position',
+      entityId: 'party',
+      set: {
+        zone: 'far',
+        nodeId: String(w.map?.currentNodeId || '')
+      }
+    }]);
   }
 
   // Canon facts for guard.

@@ -23,7 +23,12 @@ import { normalizeCondition } from './combat/conditions.js';
 // avatar one cell across the grid, landing on a node's cell "arrives" there, and
 // stepping into open tiles leaves currentNodeId empty (the wild). Old saves
 // backfill pos to the current node's cell (ensureMap). See engine/map/mapState.js.
-export const WORLD_VERSION = 20;
+// Walk position persistence — bumped 20 → 21. Player position on the walkable
+// place now persists in party[0].position.{nodeId, ux, uy}. Interior state
+// (structureId, roomId) is stored in position.interior. Saves restore the
+// player's exact location (no reset on resume). scene.interior is derived
+// from position.interior, not stored separately.
+export const WORLD_VERSION = 21;
 
 // Crunch caps (T1). Kept here so they're colocated with ensureEntity.
 const FOCI_CAP = 6;
@@ -79,16 +84,27 @@ export function ensureWorld(partial) {
     party: ensureParty(w.party),
     map: ensureMap(w.map),
     env: ensureEnv(w.env),
-    scene: w.scene && typeof w.scene === 'object' ? {
-      location: String(w.scene.location ?? ''),
-      objective: String(w.scene.objective ?? ''),
-      time: String(w.scene.time ?? 'start'),
-      promptSeed: String(w.scene.promptSeed ?? ''),
-      tags: ensureTags(w.scene.tags),
-      thread: String(w.scene.thread ?? ''),
-      interior: ensureInteriorContext(w.scene.interior),
-      dialogue: ensureDialogueContext(w.scene.dialogue)
-    } : { location: '', objective: '', time: 'start', promptSeed: '', tags: [], thread: '', interior: null, dialogue: null },
+    scene: (() => {
+      const s = w.scene && typeof w.scene === 'object' ? w.scene : {};
+      let interior = ensureInteriorContext(s.interior);
+      // v21 — derive interior from position if not explicitly set
+      if (!interior && Array.isArray(w.party) && w.party[0]?.position?.interior) {
+        const posInterior = w.party[0].position.interior;
+        if (typeof posInterior === 'object' && posInterior.structureId && posInterior.roomId) {
+          interior = { structureKey: posInterior.structureId, roomId: posInterior.roomId, visited: [posInterior.roomId] };
+        }
+      }
+      return {
+        location: String(s.location ?? ''),
+        objective: String(s.objective ?? ''),
+        time: String(s.time ?? 'start'),
+        promptSeed: String(s.promptSeed ?? ''),
+        tags: ensureTags(s.tags),
+        thread: String(s.thread ?? ''),
+        interior,
+        dialogue: ensureDialogueContext(s.dialogue)
+      };
+    })(),
     time: ensureTime(w.time),
     ledger: ensureLedger(w.ledger),
     instrument: ensureInstrumentLayer(w.instrument),
@@ -511,7 +527,7 @@ function ensureEntity(e) {
     background: x.background && typeof x.background === 'object' ? x.background : { name: '', tags: [], hook: '' },
     signature: x.signature && typeof x.signature === 'object' ? x.signature : { itemName: '', meaning: '' },
 
-    position: x.position && typeof x.position === 'object' ? x.position : { zone: 'far' },
+    position: ensurePosition(x.position),
 
     // Pass C1 — companion marker. null for the player (party[0]) and for any
     // entity that has not been recruited as a traveling companion. A well-formed
@@ -520,6 +536,42 @@ function ensureEntity(e) {
     // removed from its settlement after recruit).
     companion: ensureCompanionMarker(x.companion)
   };
+}
+
+// ── Position v21 — normalized with place coordinates + optional interior ───
+
+function ensurePosition(pos) {
+  const p = pos && typeof pos === 'object' ? pos : {};
+  const zone = String(p.zone ?? 'far');
+  if (zone !== 'far' && zone !== 'near' && zone !== 'engaged') {
+    return { zone: 'far' };
+  }
+  const result = { zone };
+  if (typeof p.nodeId === 'string' && p.nodeId.trim()) {
+    result.nodeId = String(p.nodeId).trim();
+  }
+  const ux = Number(p.ux);
+  if (Number.isFinite(ux)) result.ux = ux;
+  const uy = Number(p.uy);
+  if (Number.isFinite(uy)) result.uy = uy;
+  // v20 local foot movement coordinates (preserved for backward compat)
+  const localFtX = Number(p.localFtX);
+  if (Number.isFinite(localFtX)) result.localFtX = localFtX;
+  const localFtY = Number(p.localFtY);
+  if (Number.isFinite(localFtY)) result.localFtY = localFtY;
+  if (p.interior && typeof p.interior === 'object') {
+    const interior = {};
+    if (typeof p.interior.structureId === 'string' && p.interior.structureId.trim()) {
+      interior.structureId = String(p.interior.structureId).trim();
+    }
+    if (typeof p.interior.roomId === 'string' && p.interior.roomId.trim()) {
+      interior.roomId = String(p.interior.roomId).trim();
+    }
+    if (Object.keys(interior).length > 0) {
+      result.interior = interior;
+    }
+  }
+  return result;
 }
 
 // ── Pass T1 crunch helpers ───────────────────────────────────────────────

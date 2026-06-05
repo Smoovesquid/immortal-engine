@@ -86,6 +86,33 @@ export function assertWorldInvariants(world) {
     seenCompanionSources.add(c.sourceNpcId);
   }
 
+  // v21 — position persistence. Player (party[0]) position includes place
+  // coordinates (nodeId, ux, uy) and optional interior state. Zone must be
+  // one of the valid values; ux/uy must be finite numbers if present.
+  const p0 = party[0];
+  if (p0 && p0.position && typeof p0.position === 'object') {
+    const pos = p0.position;
+    const validZones = ['far', 'near', 'engaged'];
+    if (!validZones.includes(String(pos.zone))) {
+      throw new Error(`Invariant: party[0].position.zone must be one of [${validZones.join(', ')}]`);
+    }
+    if ('ux' in pos && !Number.isFinite(pos.ux)) {
+      throw new Error('Invariant: party[0].position.ux must be finite number or absent');
+    }
+    if ('uy' in pos && !Number.isFinite(pos.uy)) {
+      throw new Error('Invariant: party[0].position.uy must be finite number or absent');
+    }
+    if (pos.interior && typeof pos.interior === 'object') {
+      const interior = pos.interior;
+      if ('structureId' in interior && typeof interior.structureId !== 'string') {
+        throw new Error('Invariant: party[0].position.interior.structureId must be string or absent');
+      }
+      if ('roomId' in interior && typeof interior.roomId !== 'string') {
+        throw new Error('Invariant: party[0].position.interior.roomId must be string or absent');
+      }
+    }
+  }
+
   const clocks = world.clocks || {};
   for (const k of ['dread', 'pressure', 'revelation']) {
     const v = clocks[k];

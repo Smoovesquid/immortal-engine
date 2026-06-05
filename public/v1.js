@@ -1320,8 +1320,22 @@ function renderWalkPlace(world) {
   let place; try { place = placeFromWorldNode(world, nodeId); } catch { place = null; }
   if (!place) { placeCtl = null; return renderLocalMap(world, { compact: true }); }
   const grid = buildPlaceGrid(place);
+  // v21 — restore position from world.party[0].position if present
   if (ui.place.nodeId !== nodeId || ui.place.ux == null) {
-    const s = homeStartPos(place); ui.place = { nodeId, ux: s.ux, uy: s.uy };
+    let restored = false;
+    const party = Array.isArray(world?.party) ? world.party : [];
+    const player = party[0];
+    if (player && player.position && typeof player.position === 'object') {
+      const pos = player.position;
+      // If position has matching nodeId and explicit coordinates, restore them
+      if (String(pos.nodeId) === nodeId && Number.isFinite(pos.ux) && Number.isFinite(pos.uy)) {
+        ui.place = { nodeId, ux: pos.ux, uy: pos.uy };
+        restored = true;
+      }
+    }
+    if (!restored) {
+      const s = homeStartPos(place); ui.place = { nodeId, ux: s.ux, uy: s.uy };
+    }
   }
   place.tokens = (place.tokens || []).filter(t => t.type !== 'player');
   place.tokens.unshift({ type: 'player', ux: ui.place.ux, uy: ui.place.uy });

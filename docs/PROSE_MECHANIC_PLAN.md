@@ -100,8 +100,23 @@ A stage is not closed until its `docs/playtests/<stage>-<date>.md` report is gre
      ("most of a day's walk; by dusk the shrine's arch rises ahead").
   5. The whole thing reads as a DM narrating a trip. The tile/cardinal overworld becomes an
      *aid*, not the gate — intent drives travel.
-- **Track:** elapsed **turns/time** and **distance** (per leg + cumulative), surfaced in
-  DM-natural language though stored as real values in state.
+- **Encounters, foes & ambush (locked 2026-06-05):**
+  - Encounter *chance* is weighted by terrain; the *kind* is drawn from the terrain's
+    table, not generic:
+    - **Road** → brigands, robbers, highwaymen, a toll-gang (humanoid / faction); plus
+      non-combat beats — a passing caravan, a wary traveler with a rumor, an abandoned cart.
+    - **Wood / wilds** → wolves, beasts, monsters (bestiary / ecology); plus non-combat —
+      fresh tracks, an eerie shrine, a hermit.
+    - **Settled / safe** → little or nothing.
+  - **Mixed outcomes** — a DM varies it: sometimes a fight, sometimes a beat you can talk,
+    pay, or slip past (routes through the dialogue / social systems).
+  - **Ambush = surprise:** when a travel encounter becomes a fight, the attacker has the
+    **element of surprise** — a surprise round / first move + initiative advantage (extends
+    the existing travel `ambushed` flag). You got caught on the road or in the trees.
+- **Distance & time (locked):** track real **elapsed hours** and **distance in leagues**
+  (~1 league/hour on foot; an adjacent place is a few leagues, multi-hop sums). Hours
+  advance the dawn→…→night cycle. Stored as numbers; spoken in DM language ("an hour down
+  the road", "most of a day's walk", "by dusk the arch rises ahead") — never a stat dump.
 - **Substrate that already exists:** overworld step-travel + `nodeAtCell` arrival, biomes
   (`biomeForNode`/`biomeFlavor`), `ecologyTravelLine`, **ambush-on-travel**, `world.time.turn`,
   the 6-step time-of-day cycle. C.2 assembles these over *intent* and adds distance/turn

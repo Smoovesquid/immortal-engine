@@ -111,31 +111,35 @@ export function getToneModifier(tone) {
   return modifiers[dominantTone] || modifiers.wonder;
 }
 
+// ── Meta-question taxonomy ──────────────────────────────────────────────────
+// The gate (isMetaQuestion) and the answerer (handleMetaQuestion) share these
+// regexes so they can never drift apart — every question the gate accepts has a
+// matching answer branch below. Order of evaluation in the handler matters:
+// LOCATION is checked before HEALTH so "what's around" can't be mistaken for a
+// status check.
+const META_LOCATION = /\bwhere am i\b|what (?:do|can) i see\b|\blook(?:ing)? around\b|\bsurvey\b|what'?s (?:around|here|nearby|out there)\b|who(?:'?s| is) (?:here|around|nearby)\b/;
+const META_HEALTH = /\bam i (?:hurt|wounded|damaged|injured|alive|ok|okay|alright|all right|fine|bleeding|dying)\b|\bhow am i (?:doing|holding up|feeling)\b|how(?:'?s| is) my (?:health|hp|status|condition|shape)\b|what(?:'?s| is) my (?:health|hp|status|condition|wounds|shape)\b|how much (?:health|hp|life)\b/;
+const META_RECAP = /what happened|what did i (?:just )?do\b/;
+const META_OUTCOME = /did i (?:succeed|fail|win|lose|make it)\b/;
+
 // Detect meta-questions (questions about state, not actions)
 export function isMetaQuestion(text) {
-  const lowerText = text.toLowerCase();
-
-  const metaPatterns = [
-    /am i (hurt|wounded|damaged|alive)/,
-    /what.*my (health|hp|status|condition)/,
-    /how much.*(health|hp)/,
-    /what happened/,
-    /what did i (do|just do)/,
-    /did i (succeed|fail)/,
-    /what.*the rules/,
-    /can i (do|try)/,
-    /where.*i/
-  ];
-
-  return metaPatterns.some(p => p.test(lowerText));
+  const t = String(text || '').toLowerCase();
+  return META_LOCATION.test(t) || META_HEALTH.test(t) || META_RECAP.test(t) || META_OUTCOME.test(t);
 }
 
-// Handle meta-questions (status checks, rule questions, etc.)
+// Handle meta-questions (status checks, location surveys, recaps, outcomes).
+// Returns null when the text isn't a recognized meta-question.
 export function handleMetaQuestion(text, world) {
-  const lowerText = text.toLowerCase();
+  const lowerText = String(text || '').toLowerCase();
+
+  // Location / survey — checked first (most specific phrasings).
+  if (META_LOCATION.test(lowerText)) {
+    return buildLocationSurvey(world);
+  }
 
   // Health/status check
-  if (/health|hurt|wounded|hp|alive/.test(lowerText)) {
+  if (META_HEALTH.test(lowerText)) {
     const party = world.party?.[0];
     const wounds = party?.wounds ?? 0;
     const stress = party?.stress ?? 0;
@@ -158,8 +162,8 @@ export function handleMetaQuestion(text, world) {
     }
   }
 
-  // What happened
-  if (/what happened|what did i do/.test(lowerText)) {
+  // What happened — recap the last thing the DM narrated.
+  if (META_RECAP.test(lowerText)) {
     const last = world.conversation?.lastNarration;
     if (last) {
       return `Here's what just happened: ${last}`;
@@ -168,7 +172,7 @@ export function handleMetaQuestion(text, world) {
   }
 
   // Did I succeed/fail
-  if (/did i.*succeed|did i.*fail/.test(lowerText)) {
+  if (META_OUTCOME.test(lowerText)) {
     const outcome = world.conversation?.lastOutcome;
     if (outcome) {
       if (outcome.includes('success')) {
@@ -180,11 +184,6 @@ export function handleMetaQuestion(text, world) {
       }
     }
     return `I'm not sure. What action were you asking about?`;
-  }
-
-  // Where am I — rich, grounded directional survey of surroundings
-  if (/where.*i|what.*location|what.*place|look around|what.*see|survey/.test(lowerText)) {
-    return buildLocationSurvey(world);
   }
 
   return null; // not a recognized meta-question
@@ -214,9 +213,10 @@ function joinList(items) {
 function describeNpc(npc) {
   const name = String(npc?.name ?? '').trim();
   const role = String(npc?.role ?? '').trim();
-  // If the name already embeds a title (e.g. "Brogan the Elder"), don't append
-  // the role — "Brogan the Elder the representative" reads badly. Use the name.
-  if (name && / the /i.test(name)) return name;
+  // If the name already contains "the" — an epithet ("Brogan the Elder") or a
+  // bare title used as a name ("the laborer") — don't append the role, or we get
+  // "Brogan the Elder the representative" / "the laborer the laborer".
+  if (name && /\bthe\b/i.test(name)) return name;
   if (name && role) return `${name} the ${role}`;
   if (name) return name;
   if (role) return `a ${role}`;

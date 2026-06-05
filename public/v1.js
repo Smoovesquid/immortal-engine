@@ -510,6 +510,16 @@ async function doSubmitMove() {
   wizardLine.text = aiText || baseNarration;
   tts.speak(wizardLine.text);
   setStatus('Move resolved.');
+
+  // Record the turn so meta-questions ("what happened?", "did I succeed?") can
+  // recall it. The grace layer reads world.conversation.{lastNarration,lastAction,
+  // lastOutcome}; nothing else in the live path writes them, so do it here.
+  if (world.conversation && typeof world.conversation === 'object') {
+    world.conversation.lastAction = displayText;
+    world.conversation.lastNarration = wizardLine.text;
+    world.conversation.lastOutcome = String(output?.mechanics || '');
+    persistAndRehash(world);
+  }
   render();
 
   // Auto scene transition: if player moved to a new node, fire doNewScene()

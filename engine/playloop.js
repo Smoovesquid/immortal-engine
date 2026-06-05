@@ -468,6 +468,18 @@ export function playerMove(world, packsById, text) {
     // Risky/obstructed/special movement falls through to normal resolution (roll-capable path).
   }
 
+  // Target-aware examination: "examine the table" / "look at the crate" / "inspect
+  // my blade". Observe-only (no roll, no state change). Describes the actual object
+  // named — real furniture (name/state/notes/parts) or an inventory item — and on
+  // a miss pivots to what IS present. Falls through to the room-overview explore
+  // branch below when no specific target is named ("examine" / "look around").
+  if (!w.combat?.active && !w.scene?.dialogue) {
+    const examined = tryExamineTarget(w, text);
+    if (examined) {
+      return { world: w, output: { narration: `Wizard: ${examined}`, mechanics: 'observe only — no roll, state unchanged' } };
+    }
+  }
+
   // Surface-only exploration: list adjacent map nodes deterministically (no roll, no tick, no timeline).
   // Skipped when combat is active — during a fight, everything routes through the combat resolver.
   if (!w.combat?.active && isExploreIntent(text)) {
@@ -654,7 +666,10 @@ export function playerMove(world, packsById, text) {
   // canonical dialogue mode with an NPC at the current settlement. If no NPC
   // resolves, fall through to generic resolution (preserves legacy behavior
   // for intents like "I talk to whoever is watching").
-  const talkRef = extractDialogueRef(text);
+  // Dialogue cannot begin mid-combat (the world invariant forbids combat.active
+  // and scene.dialogue coexisting). When fighting, a "talk to X" intent falls
+  // through to the combat turn rather than crashing. See prose-playtest finding.
+  const talkRef = !w.combat?.active ? extractDialogueRef(text) : null;
   if (talkRef) {
     const resolved = resolveNpcAtCurrentNode(w, talkRef);
     if (resolved) {
@@ -682,8 +697,9 @@ export function playerMove(world, packsById, text) {
         });
         w = maybeCheckGoals(w);
         // Skip the role suffix when the name already carries an epithet ("Dax the
-        // Wary"), so we don't read "Dax the Wary the elder".
-        const role = (begun.outcome.npcRole && !/ the /i.test(String(begun.outcome.npcName || '')))
+        // Wary") OR is itself a bare title ("the scholar"), so we never read
+        // "Dax the Wary the elder" or "the scholar the scholar".
+        const role = (begun.outcome.npcRole && !/\bthe\b/i.test(String(begun.outcome.npcName || '')))
           ? ` the ${begun.outcome.npcRole}` : '';
         // Living-World P4: surface the person's WANT on meeting (most are small and
         // mundane), and — for the perceptive (WITS) — an unreliable tell when they
@@ -1638,6 +1654,87 @@ function cleanDialogueRef(raw) {
     .trim()
     .replace(/[.!?,;:]+$/, '')
     .trim();
+}
+
+// Inspection verbs that ask to look closely AT a specific thing (as opposed to
+// the broad "look around" handled by isExploreIntent). Both bare-imperative
+// ("examine the table") and first-person ("I examine the table") forms.
+// NOTE: deliberately excludes "search" and "check" — those are skill checks
+// ("search for traps", "check for danger") that must roll, not passive looks.
+const INSPECT_VERB = /\b(?:examine|inspect|study|scrutinize|appraise|look\s+(?:at|over|inside|in|into)|peer\s+at|read)\b/i;
+// Generic "targets" that really mean the whole space — defer to room overview.
+const GENERIC_LOOK_TARGET = new Set([
+  'room', 'area', 'around', 'surroundings', 'place', 'here', 'everything',
+  'inventory', 'pack', 'bag', 'belongings', 'self', 'myself', 'me'
+]);
+
+function extractInspectTarget(text) {
+  const t = String(text || '').toLowerCase().trim();
+  const m = t.match(INSPECT_VERB);
+  if (!m) return '';
+  // Everything after the matched verb is the candidate target phrase.
+  let rest = t.slice((m.index ?? 0) + m[0].length).trim();
+  rest = rest.replace(/^(?:at|over|inside|in|into|the|a|an|my|this|that|these|those|some|your|for)\s+/i, '');
+  rest = rest.replace(/^(?:the|a|an|my|this|that|these|those|some|your)\s+/i, '');
+  rest = rest.replace(/[.?!,;:]+$/g, '').trim();
+  return rest;
+}
+
+function allInventoryItems(w) {
+  const inv = w.party?.[0]?.inventory || {};
+  return [].concat(
+    inv.weapons || [], inv.armor || [], inv.tools || [], inv.clothes || [],
+    inv.oddities || [], inv.consumables || [], inv.tech || [], inv.junk || [], inv.items || []
+  ).filter(Boolean);
+}
+
+function nameMatches(name, target, tail) {
+  const n = String(name || '').toLowerCase();
+  if (!n) return false;
+  return n === target || n.includes(target) || target.includes(n) || n.split(/\s+/).includes(tail);
+}
+
+// Returns a grounded examination line, or null to defer to the room-overview
+// explore branch (when there is no specific, resolvable target).
+function tryExamineTarget(w, text) {
+  if (!INSPECT_VERB.test(String(text || ''))) return null;
+  const target = extractInspectTarget(text);
+  if (!target || GENERIC_LOOK_TARGET.has(target)) return null; // bare look → overview
+  const tWords = target.split(/\s+/).filter(Boolean);
+  const tail = tWords[tWords.length - 1];
+
+  const node = (w.map?.nodes || []).find(n => n && n.id === w.map?.currentNodeId) || null;
+  const furniture = Array.isArray(node?.furniture) ? node.furniture : [];
+
+  // 1) Furniture present at the location.
+  const f = furniture.find(x => nameMatches(x?.name, target, tail));
+  if (f) {
+    const notes = String(f.notes || '').trim().replace(/[.?!]+$/, '');
+    const state = String(f.state || 'intact');
+    const stateClause = state && state !== 'intact' ? ` It looks ${state}.` : '';
+    const parts = Array.isArray(f.parts) ? f.parts.filter(Boolean).slice(0, 3) : [];
+    const partsClause = parts.length ? ` You make out its ${parts.join(', ')}.` : '';
+    return `You look the ${f.name} over${notes ? `: ${notes}.` : '.'}${stateClause}${partsClause}`;
+  }
+
+  // 2) Something the player is carrying.
+  const item = allInventoryItems(w).find(it => nameMatches(it?.name, target, tail));
+  if (item) {
+    const note = String(item.note || '').replace(/\s*Type\s+"[^"]*"\.?\s*$/i, '').trim().replace(/[.?!]+$/, '');
+    return `You turn the ${item.name} over in your hands${note ? `: ${note}.` : '.'}`;
+  }
+
+  // 3) Named but not here — pivot to what actually is, so the answer stays grounded.
+  if (furniture.length) {
+    const names = furniture.slice(0, 3).map(x => String(x.name)).filter(Boolean);
+    const list = names.length === 1 ? names[0]
+      : names.length === 2 ? `${names[0]} and ${names[1]}`
+      : `${names.slice(0, -1).join(', ')}, and ${names[names.length - 1]}`;
+    return `You look for ${target.match(/^[aeiou]/) ? 'an' : 'a'} ${target}, but what's here is ${list}.`;
+  }
+
+  // Nothing to anchor to — let the room-overview explore branch answer.
+  return null;
 }
 
 function isExploreIntent(text) {

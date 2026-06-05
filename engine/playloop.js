@@ -1070,7 +1070,12 @@ export function playerMove(world, packsById, text) {
   // Trivial-intent gate: everyday physical actions auto-succeed without a roll.
   // Placed after all specific gates (dialogue, interior, explore, movement, spells,
   // combat, physics) but before the general resolveMove() fallthrough.
-  if (isTrivialIntent(text)) {
+  // isTrivialIntent keeps the original "I …" boolean contract; classifyTrivial
+  // additionally recognizes bare imperatives ("open the crate", "draw my sword")
+  // and yields grounded, object-aware prose instead of "You do so without
+  // difficulty." Skill verbs (lock/force/pry/climb…) are deliberately excluded
+  // so they still roll — see UX2 roll-classification.
+  if (isTrivialIntent(text) || classifyTrivial(text)) {
     w = pushEvent(w, {
       kind: 'resolution',
       data: {
@@ -1083,7 +1088,7 @@ export function playerMove(world, packsById, text) {
         updateKind: 'trivial'
       }
     });
-    return { world: w, output: { narration: `Wizard: You do so without difficulty.`, mechanics: 'trivial action — no roll, auto-success' } };
+    return { world: w, output: { narration: `Wizard: ${trivialNarration(w, text)}`, mechanics: 'trivial action — no roll, auto-success' } };
   }
 
   const move = inferMoveFromText(w, pack, actorId, text);
@@ -1752,6 +1757,124 @@ function isExploreIntent(text) {
   // "I examine X" / "I watch X" / "I peer" / "I inspect" / "I study" (passive)
   if (/\bi\s+(look\s+at|read|listen|smell|check\s+(my\s+)?inventory|check\s+my|observe|examine|watch|peer|inspect|study|gaze|glance|scan|survey)\b/.test(t)) return true;
   return false;
+}
+
+// classifyTrivial — recognizes everyday auto-success actions in BOTH first-person
+// ("I open the crate") and bare-imperative ("open the crate") forms, returning
+// { cat, verb, object? } or null. Skill/risky verbs (lock, force, pry, break,
+// climb, pick the lock, …) are excluded so they continue to roll.
+function classifyTrivial(text) {
+  const t = String(text || '').toLowerCase().trim().replace(/[.!?]+$/, '');
+  if (!t) return null;
+  const L = '(?:i\\s+|i\'?d\\s+like\\s+to\\s+|let\\s+me\\s+)?'; // optional first-person lead
+
+  let m;
+  // Body / posture (no object)
+  m = t.match(new RegExp(`^${L}(sit\\s+down|sit|stand\\s+up|stand|kneel|bow|nod|wave|stretch|yawn|rest|pray|dismount|whistle|hum)\\b`));
+  if (m) return { cat: 'body', verb: m[1].replace(/\s+/g, ' ') };
+
+  // Draw / ready a weapon. WEAPON_NOUN covers the common armory so "draw my
+  // warhammer" works; restricted to a known list so "draw water"/"draw a map"
+  // don't get mistaken for equipping.
+  const WEAPON_NOUN = '(?:sword|weapon|blade|axe|dagger|mace|spear|knife|warhammer|hammer|flail|staff|wand|rapier|scimitar|sabre|saber|cutlass|club|glaive|halberd|bow|crossbow|sling|whip|longsword|shortsword|greatsword|rod|baton|pike|lance)';
+  m = t.match(new RegExp(`^${L}(draw|ready|unsheathe|raise)\\s+(?:my\\s+|the\\s+)?${WEAPON_NOUN}\\b`));
+  if (m) return { cat: 'draw', verb: m[1] };
+  // Sheathe / put away a weapon
+  m = t.match(new RegExp(`^${L}(sheathe|sheath|put\\s+away|lower)\\s+(?:my\\s+|the\\s+)?${WEAPON_NOUN}\\b`));
+  if (m) return { cat: 'sheathe', verb: m[1] };
+
+  // Open / close / shut an object — but never the risky variants (pick/force/pry).
+  m = t.match(new RegExp(`^${L}(open|close|shut)\\s+(?:the\\s+|a\\s+|an\\s+|my\\s+)?(.+)$`));
+  if (m && !/\b(lock|locked|force|pry|prise|break|bash|smash|jimmy)\b/.test(t)) {
+    return { cat: m[1] === 'open' ? 'open' : 'close', verb: m[1], object: m[2].replace(/[.!?,]+$/, '').trim() };
+  }
+
+  // Consume / light
+  m = t.match(new RegExp(`^${L}(eat|drink|light)\\b`));
+  if (m) return { cat: 'consume', verb: m[1] };
+
+  // Wear / remove / drop gear
+  m = t.match(new RegExp(`^${L}(put\\s+on|take\\s+off|drop)\\s+(?:my\\s+|the\\s+)?(.+)$`));
+  if (m) return { cat: 'gear', verb: m[1].replace(/\s+/g, ' '), object: m[2].replace(/[.!?,]+$/, '').trim() };
+
+  // Social pleasantries
+  m = t.match(new RegExp(`^${L}(say\\s+hello|greet|introduce\\s+myself|thank|nod\\s+in|sing)\\b`));
+  if (m) return { cat: 'social', verb: m[1].replace(/\s+/g, ' ') };
+
+  return null;
+}
+
+function playerWeaponName(w) {
+  const wpns = w?.party?.[0]?.inventory?.weapons;
+  return Array.isArray(wpns) && wpns[0]?.name ? String(wpns[0].name) : null;
+}
+
+function furnitureNameAt(w, target) {
+  if (!target) return null;
+  const tail = String(target).split(/\s+/).filter(Boolean).pop();
+  const node = (w?.map?.nodes || []).find(n => n && n.id === w?.map?.currentNodeId) || null;
+  const furn = Array.isArray(node?.furniture) ? node.furniture : [];
+  const f = furn.find(x => nameMatches(x?.name, target, tail));
+  return f ? String(f.name) : null;
+}
+
+// trivialNarration — grounded prose for a trivial action. Falls back to the
+// classic line when the action can't be parsed (covers legacy isTrivialIntent
+// cases like "I pick up the rock").
+function trivialNarration(w, text) {
+  const c = classifyTrivial(text);
+  if (!c) return 'You do so without difficulty.';
+  switch (c.cat) {
+    case 'body': {
+      const map = {
+        'sit down': 'You sit down.', 'sit': 'You sit down.',
+        'stand up': 'You rise to your feet.', 'stand': 'You stand.',
+        'kneel': 'You kneel.', 'bow': 'You bow.', 'nod': 'You nod.',
+        'wave': 'You raise a hand in a wave.', 'stretch': 'You stretch the stiffness from your limbs.',
+        'yawn': 'You stifle a yawn.', 'rest': 'You take a moment to catch your breath.',
+        'pray': 'You bow your head in a brief, private prayer.',
+        'dismount': 'You swing down from the saddle.',
+        'whistle': 'You whistle a few idle notes.', 'hum': 'You hum under your breath.'
+      };
+      return map[c.verb] || 'You do so without difficulty.';
+    }
+    case 'draw': {
+      const wn = playerWeaponName(w);
+      return wn ? `You draw the ${wn}, settling it ready in your grip.` : 'You draw your weapon, ready in your grip.';
+    }
+    case 'sheathe': {
+      const wn = playerWeaponName(w);
+      return wn ? `You sheathe the ${wn}.` : 'You put your weapon away.';
+    }
+    case 'open': {
+      const fn = furnitureNameAt(w, c.object) || c.object;
+      return `You open the ${fn}.`;
+    }
+    case 'close': {
+      const fn = furnitureNameAt(w, c.object) || c.object;
+      return `You ${c.verb === 'shut' ? 'shut' : 'close'} the ${fn}.`;
+    }
+    case 'consume':
+      return c.verb === 'eat' ? 'You eat a little of what you carry.'
+        : c.verb === 'drink' ? 'You take a drink.'
+        : 'You strike a light.';
+    case 'gear': {
+      const obj = c.object || 'it';
+      if (/put\s+on/.test(c.verb)) return `You put on the ${obj}.`;
+      if (/take\s+off/.test(c.verb)) return `You take off the ${obj}.`;
+      return `You set down the ${obj}.`;
+    }
+    case 'social': {
+      const map = {
+        'say hello': 'You offer a friendly hello.', 'greet': 'You offer a greeting.',
+        'introduce myself': 'You introduce yourself.', 'thank': 'You offer your thanks.',
+        'nod in': 'You nod in agreement.', 'sing': 'You sing a few bars.'
+      };
+      return map[c.verb] || 'You do so without difficulty.';
+    }
+    default:
+      return 'You do so without difficulty.';
+  }
 }
 
 function isTrivialIntent(text) {

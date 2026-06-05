@@ -105,6 +105,18 @@ const NATURAL = [
   'I would like to rest for a while',
 ];
 
+// Manipulation verbs — both bare-imperative and first-person, present + absent
+// objects. These previously fell through to the abstract composer floor.
+const MANIPULATION = [
+  'open the crate', 'open the table', 'close the door', 'shut the chest',
+  'draw my sword', 'ready my weapon', 'sheathe my blade', 'I draw my sword',
+  'sit down', 'stand up', 'kneel', 'rest', 'pray', 'I sit down',
+  'eat', 'drink', 'light a torch', 'put on my cloak', 'drop my pack',
+  'open the obsidian vault', 'draw my warhammer', 'close the chair',
+  // these MUST still roll / not be swallowed:
+  'force the door open', 'pick the lock', 'pry open the crate', 'climb the wall',
+];
+
 const DEGENERATE = [
   'the thing', 'do it', 'hmm', 'uh', 'yes', 'no', 'ok', 'go',
   'asdfghjkl', 'qwerty', '...', '!!!', '12345', 'a',
@@ -159,6 +171,7 @@ for (const seed of ['alpha', 'bravo', 'charlie']) {
   const { world } = beginAdventure(w0, packs);
   feed('isolated:meta', world, META, { mutate: false });
   feed('isolated:actions', world, ACTIONS, { mutate: false });
+  feed('isolated:manipulation', world, MANIPULATION, { mutate: false });
   feed('isolated:natural', world, NATURAL, { mutate: false });
   feed('isolated:degenerate', world, DEGENERATE, { mutate: false });
   feed('isolated:weird', world, WEIRD, { mutate: false });
@@ -195,6 +208,12 @@ for (const s of samples.filter(s => s.label === 'isolated:meta')) {
 console.log('── SAMPLE ACTION PROSE (isolated, first 12) ──');
 for (const s of samples.filter(s => s.label === 'isolated:actions').slice(0, 12)) {
   console.log(`> ${s.input}\n  ${s.narration}\n`);
+}
+
+console.log('── MANIPULATION PROSE (isolated) ──');
+for (const s of samples.filter(s => s.label === 'isolated:manipulation')) {
+  const mech = s.route === 'action' ? '' : ` [route=${s.route}]`;
+  console.log(`> ${s.input}\n  ${s.narration}${mech}\n`);
 }
 
 console.log('\nDONE.');

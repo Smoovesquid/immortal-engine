@@ -199,8 +199,8 @@ export function scoreConfidence(transcription, cleaned, action, target) {
   // Reduce confidence if very short (ambiguous)
   if (cleaned.length < 3) score -= 0.4;
 
-  // Reduce confidence if no clear action found
-  if (!action) score -= 0.4;
+  // Reduce confidence if no clear action found (strongest signal of ambiguity)
+  if (!action) score -= 0.5;
 
   // Reduce confidence if no target found
   if (!target) score -= 0.3;

@@ -138,6 +138,32 @@ export function ensureWorld(partial) {
     recentBeats: ensureRecentBeats(w.recentBeats),
 
     timeline: Array.isArray(w.timeline) ? w.timeline : [],
+
+    // Grace layer: conductor state for pacing and tone
+    conductor: (() => {
+      const c = w.conductor && typeof w.conductor === 'object' ? w.conductor : {};
+      return {
+        threat: {
+          severity: clamp01(c.threat?.severity ?? 0.3)
+        },
+        discovery: {
+          rate: clamp01(c.discovery?.rate ?? 0.2)
+        }
+      };
+    })(),
+
+    // Grace layer: conversation state for natural DM interaction
+    conversation: (() => {
+      const conv = w.conversation && typeof w.conversation === 'object' ? w.conversation : {};
+      return {
+        lastAction: conv.lastAction ? String(conv.lastAction) : null,
+        lastOutcome: conv.lastOutcome ? String(conv.lastOutcome) : null,
+        lastNarration: conv.lastNarration ? String(conv.lastNarration) : null,
+        pendingClarification: conv.pendingClarification ? String(conv.pendingClarification) : null,
+        clarificationAttempts: clampInt(conv.clarificationAttempts ?? 0, 0, 10)
+      };
+    })(),
+
     ui: {
       advanced: Boolean(ui.advanced),
       lastError: ui.lastError ? String(ui.lastError) : ''

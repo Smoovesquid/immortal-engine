@@ -55,9 +55,20 @@ export function computeTone(world) {
   const threat = world.conductor?.threat?.severity ?? 0; // 0-1
   const discovery = world.conductor?.discovery?.rate ?? 0; // 0-1
   const scars = (world.scars?.length ?? 0) / 10; // cumulative damage
-  const health = world.party?.[0]?.health?.current ?? 10;
-  const maxHealth = world.party?.[0]?.health?.max ?? 10;
-  const hope = Math.max(0.2, Math.min(1, health / maxHealth)); // 0.2-1
+
+  // Compute health from wounds (game's actual model)
+  const player = world.party?.[0];
+  const wounds = player?.wounds ?? 0;
+  const stress = player?.stress ?? 0;
+  const level = player?.level ?? 1;
+
+  // Rough max wounds calc: 6 + GRIT mod. Conservative estimate: 10 at level 1.
+  // Health is inverse of wounds: 10 wounds = 0 hope. Wounds weighted more heavily than stress.
+  const estimatedMaxWounds = 10;
+  const woundRatio = Math.max(0, 1 - (wounds / estimatedMaxWounds));
+  const stressRatio = Math.max(0, 1 - (stress / 6));
+  const health = (woundRatio * 0.7) + (stressRatio * 0.3); // wounds 70%, stress 30%
+  const hope = Math.max(0.2, Math.min(1, health)); // 0.2-1
 
   return {
     tension: Math.min(1, threat * 0.7),
@@ -125,20 +136,24 @@ export function handleMetaQuestion(text, world) {
   // Health/status check
   if (/health|hurt|wounded|hp|alive/.test(lowerText)) {
     const party = world.party?.[0];
-    const health = party?.health?.current ?? party?.stats?.MIGHT ?? 10;
-    const maxHealth = party?.health?.max ?? 30;
-    const percent = Math.round((health / maxHealth) * 100);
+    const wounds = party?.wounds ?? 0;
+    const stress = party?.stress ?? 0;
+    const maxWounds = 10; // conservative estimate
 
-    if (health === maxHealth) {
-      return `You're in perfect health. No injuries.`;
-    } else if (health > maxHealth * 0.75) {
-      return `You're mostly fine. Just a few scratches (${health}/${maxHealth} health).`;
-    } else if (health > maxHealth * 0.5) {
-      return `You've taken some damage (${health}/${maxHealth} health). Still in decent shape though.`;
-    } else if (health > maxHealth * 0.25) {
-      return `You're hurt (${health}/${maxHealth} health). Be careful.`;
+    const totalDamage = wounds + stress;
+    const maxDamage = maxWounds + 6;
+    const healthPercent = Math.max(0, (1 - (totalDamage / maxDamage)) * 100);
+
+    if (wounds === 0 && stress === 0) {
+      return `You're in perfect health. No wounds or strain.`;
+    } else if (wounds === 0 && stress <= 2) {
+      return `You're mostly fine. A bit stressed but no real injuries.`;
+    } else if (wounds <= 3 && stress <= 3) {
+      return `You've taken some bumps and bruises (${wounds} wounds, ${stress} stress). Still in decent shape.`;
+    } else if (wounds <= 6 || stress <= 5) {
+      return `You're hurt (${wounds} wounds, ${stress} stress). Be careful.`;
     } else {
-      return `You're badly wounded (${health}/${maxHealth} health). You need to rest or heal soon.`;
+      return `You're badly wounded (${wounds} wounds, ${stress} stress). You need to rest or heal soon.`;
     }
   }
 

@@ -12,6 +12,7 @@ import { createUser, findUser, userExists, validateUsername } from './server/use
 import { saveWorld, loadWorld, listWorlds, deleteWorld, isSafeId } from './server/worldStore.js';
 import { ensureWorld } from './engine/state.js';
 import { playerMove } from './engine/playloop.js';
+import { adjudicateWithGrace } from './engine/grace/gracefulAdjudication.js';
 import { normalizeManifest, normalizePack } from './engine/rulesets.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -272,15 +273,15 @@ return res.json({ ok:false, reason:safe });
     return byId;
   }
 
-  app.post('/api/move', requireAuth, (req, res) => {
+  app.post('/api/move', requireAuth, async (req, res) => {
     try {
       const worldId = String(req.body?.worldId || '').trim();
-      const action = String(req.body?.action || '').trim();
+      const transcription = String(req.body?.action || '').trim();
 
       if (!isSafeId(worldId)) {
         return res.status(400).json({ ok: false, error: 'invalid_world_id' });
       }
-      if (!action) {
+      if (!transcription) {
         return res.status(400).json({ ok: false, error: 'missing_action' });
       }
 
@@ -289,14 +290,69 @@ return res.json({ ok:false, reason:safe });
         return res.status(404).json({ ok: false, error: 'world_not_found' });
       }
 
-      const packsById = getServerPacks();
       const safeWorld = ensureWorld(currentState);
-      const { world: newState, output } = playerMove(safeWorld, packsById, action);
+      const packsById = getServerPacks();
 
-      saveWorld(req.user.username, worldId, newState);
-      return res.json({ ok: true, worldId, state: newState, output });
+      // Grace layer: process transcription with intent extraction, confidence checking, etc.
+      const graceResult = await adjudicateWithGrace(safeWorld, transcription);
+
+      // Handle different response types from grace layer
+      if (graceResult.type === 'meta') {
+        // Meta-question (status check, location query, etc.) — respond directly, no world mutation
+        return res.json({
+          ok: true,
+          worldId,
+          state: graceResult.world,
+          output: {
+            type: 'meta',
+            narration: graceResult.message,
+            mechanics: ''
+          }
+        });
+      }
+
+      if (graceResult.type === 'clarification') {
+        // Low confidence — ask for clarification instead of guessing
+        return res.json({
+          ok: true,
+          worldId,
+          state: graceResult.world,
+          output: {
+            type: 'clarification',
+            narration: graceResult.message,
+            mechanics: '',
+            suggesting: graceResult.suggesting,
+            confidence: graceResult.confidence,
+            allowRetry: graceResult.allowRetry
+          }
+        });
+      }
+
+      // Type === 'action' — adjudication already happened in grace layer, world is mutated
+      if (graceResult.type === 'action') {
+        const newState = graceResult.world;
+
+        saveWorld(req.user.username, worldId, newState);
+        return res.json({
+          ok: true,
+          worldId,
+          state: newState,
+          output: {
+            narration: graceResult.narration,
+            mechanics: graceResult.mechanics,
+            type: 'action',
+            pacingMs: graceResult.pacingMs,
+            confidence: graceResult.confidence,
+            tone: graceResult.tone
+          }
+        });
+      }
+
+      // Unexpected response type
+      return res.status(500).json({ ok: false, error: 'unexpected_grace_response' });
     } catch (e) {
-      return res.status(500).json({ ok: false, error: 'server_error' });
+      console.error('Move endpoint error:', e);
+      return res.status(500).json({ ok: false, error: 'server_error', details: String(e?.message || e) });
     }
   });
 

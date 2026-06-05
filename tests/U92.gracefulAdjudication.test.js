@@ -20,9 +20,11 @@ function makeTestWorld() {
     party: [{
       id: 'party',
       name: 'Hero',
+      level: 1,
+      wounds: 2,
+      stress: 1,
       stats: { MIGHT: 12, AGILITY: 11, WITS: 10, GRIT: 13, CHARM: 10 },
-      position: { ux: 30, uy: 50, elevation: 0, nodeId: 'n0' },
-      health: { current: 25, max: 30 }
+      position: { ux: 30, uy: 50, elevation: 0, nodeId: 'n0' }
     }],
     map: {
       nodes: [{
@@ -92,7 +94,7 @@ test('U92-06: computeTone from healthy world', () => {
 
 test('U92-07: computeTone reflects low health', () => {
   const w = makeTestWorld();
-  w.party[0].health.current = 3; // very low
+  w.party[0].wounds = 8; // very wounded
   const tone = computeTone(w);
   assert.ok(tone.hope < 0.4); // low hope when hurt
 });
@@ -144,12 +146,12 @@ test('U92-14: isMetaQuestion rejects action commands', () => {
 
 test('U92-15: handleMetaQuestion responds to health check', () => {
   const w = makeTestWorld();
-  w.party[0].health.current = 25;
-  w.party[0].health.max = 30;
+  w.party[0].wounds = 2;
+  w.party[0].stress = 1;
 
   const response = handleMetaQuestion('am I hurt?', w);
   assert.ok(response);
-  assert.ok(response.includes('25') || response.includes('scratch'));
+  assert.ok(response.includes('wounds') || response.includes('mostly') || response.includes('scratch'));
 });
 
 test('U92-16: handleMetaQuestion responds to status', () => {

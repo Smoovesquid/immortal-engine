@@ -64,11 +64,16 @@ test('U39c: overworld walking is deterministic (same seed + steps => same positi
   assert.deepEqual(walk(), walk(), 'identical seed + inputs => identical avatar cell');
 });
 
-test('U39d: non-cardinal travel phrasing does not move you (no teleport to named places)', () => {
+test('U39d: travel to an UNKNOWN place does not move you, and the DM clarifies in fiction', () => {
+  // Stage C.2 / THE_DM_TEST: a *known* neighbor by name now gets a journey (see
+  // the C.2 tests). An *unknown* place must still not teleport you — but instead
+  // of a bare "which way?" the DM says it knows of no such place and names the
+  // real roads.
   const outside = outsideWorld('u39d');
   const from = { ...ensureMap(outside.map).pos };
   const r = playerMove(outside, packsById, 'travel to the far tower');
   const after = ensureMap(r.world.map);
-  assert.deepEqual({ x: after.pos.x, y: after.pos.y }, from, 'no tile move without a cardinal');
-  assert.match(r.output.narration, /which way/i, 'prompts for a direction instead of teleporting');
+  assert.deepEqual({ x: after.pos.x, y: after.pos.y }, from, 'no tile move to an unknown place');
+  assert.match(r.output.narration, /no such place|where will you make for/i, 'DM clarifies in fiction');
+  assert.doesNotMatch(r.output.narration, /a step at a time/i, 'no machine-y deflection');
 });

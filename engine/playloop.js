@@ -567,7 +567,68 @@ export function playerMove(world, packsById, text) {
     // so non-cardinal travel phrasing just asks which way to set off.
     const dir = directionFromText(String(text || '').toLowerCase());
     if (!dir) {
-      return { world: w, output: { narration: 'Wizard: Out here you travel a step at a time. Which way — north, south, east, or west?', mechanics: '' } };
+      // ── Stage C.2: DM-resolved named travel. "I head to the Old Shrine" runs
+      // a journey to that place — never bounced back as "which way?". ──
+      const destId = resolveNamedNeighbor(w, text);
+      if (destId) {
+        const m0 = ensureMap(w.map);
+        const before = String(m0.currentNodeId || '');
+        const fromNode = (w.map?.nodes || []).find(n => n && String(n.id) === before) || null;
+        let w1 = moveToNode(w, destId);
+        if (String(ensureMap(w1.map).currentNodeId || '') === destId && destId !== before) {
+          const destNode0 = (w1.map?.nodes || []).find(n => n && String(n.id) === destId) || null;
+          // Distance + time elapsed by the journey (tracked in world.time).
+          const leagues = legLeagues(fromNode, destNode0);
+          const hours = leagues; // ~1 league/hour on foot
+          w1 = { ...w1, time: { ...(w1.time || {}), turn: (w1.time?.turn ?? 0) + 1, hours: (w1.time?.hours ?? 0) + hours, leagues: (w1.time?.leagues ?? 0) + leagues } };
+          // Arrival pipeline (mirror of the directional-arrival branch).
+          w1 = applyGeneratedStructuresForNode(w1, destId);
+          const arrN = w1.map?.nodes?.find(n => n && n.id === destId) || null;
+          if (arrN?.nodeType === 'settlement' && !arrN.settlement?.decompressed) {
+            w1 = decompressAndCanonizeSync(w1, destId, pack);
+          }
+          const here = w1.map?.nodes?.find(n => n && n.id === destId) || null;
+          const nextName = String(here?.name || '').trim();
+          if (nextName) w1 = { ...w1, scene: { ...w1.scene, location: nextName } };
+          w1 = setPrimaryPartyZone(w1, 'near');
+          w1 = pushEvent(w1, { kind: 'travel', data: { from: before, to: destId, intent: String(text || '') } });
+          const travelMove = { actorId: 'party', intentText: String(text || ''), approachTag: 'survival', stakeTag: 'time' };
+          w1 = appendRecentBeat(w1, buildBeatFromTurn(w1, text, travelMove, { outcome: 'success', mechanicsLine: '[travel | journey-arrive]' }));
+          w1 = maybeCheckGoals(w1);
+          // The journey may be set upon — terrain-typed (the ambusher is native to
+          // the country you crossed). NOTE: surprise-round mechanics are Stage C.2
+          // slice 2; for now the encounter is narrated plainly (no false surprise claim).
+          w1 = maybeSpawnEscapeEncounter(w1, before);
+          const ambushed = Boolean(w1.combat?.active);
+          const timeWord = travelTimeWord(hours);
+          const flavor = here ? biomeFlavor(w1.meta.seed, here) : '';
+          const arrivalLine = `Wizard: You set out, and after ${timeWord} you reach ${nextName || 'the place ahead'}${flavor ? `, ${flavor}` : ''}.`;
+          const ecoLine = (!ambushed && here) ? ecologyTravelLine(w1.meta.seed, biomeForNode(w1.meta.seed, here), w1.time?.turn ?? 0, destId) : '';
+          const narration = ambushed
+            ? `${arrivalLine} But you are not alone — something native to this country was waiting, and it means you harm.`
+            : (ecoLine ? `${arrivalLine} ${ecoLine}` : arrivalLine);
+          return { world: w1, output: { narration, mechanics: ambushed ? '[ambush]' : '[travel | journey-arrive]' } };
+        }
+      }
+
+      // No reachable place by that name. A DM clarifies in fiction and names the
+      // real roads — it does not bounce the player back to a bare compass prompt.
+      const mE = ensureMap(w.map);
+      const ex = exitsFrom(mE, String(mE.currentNodeId || ''));
+      const exitNames = ['north', 'east', 'south', 'west'].map(d => {
+        const id = ex?.[d]; if (!id) return null;
+        const n = (w.map?.nodes || []).find(x => x && String(x.id) === String(id)) || null;
+        const nm = String(n?.name || '').trim();
+        return nm ? `${nm} to the ${d}` : null;
+      }).filter(Boolean);
+      if (looksLikeNamedDestination(text)) {
+        const roads = exitNames.length
+          ? `From here the roads lead to ${joinNames(exitNames)}.`
+          : `No roads lead anywhere you'd know from here.`;
+        return { world: w, output: { narration: `Wizard: You know of no such place hereabouts. ${roads} Where will you make for?`, mechanics: '' } };
+      }
+      const roads = exitNames.length ? ` The roads lead to ${joinNames(exitNames)}.` : '';
+      return { world: w, output: { narration: `Wizard: Which way will you set off${roads ? ',' : ''}${roads}`, mechanics: '' } };
     }
 
     const m0 = ensureMap(w.map);
@@ -1491,6 +1552,64 @@ function wildAtmosphere(seed, pos) {
 function cap(s) {
   const str = String(s || '');
   return str ? str[0].toUpperCase() + str.slice(1) : str;
+}
+
+// Stage C.2 — DM-resolved named travel helpers.
+// Did the player name a reachable place (a neighbor by name), as opposed to a
+// bare direction? Returns the neighbor nodeId or null. No random fallback: a
+// non-match means "you know of no such place", which the DM clarifies in fiction.
+function resolveNamedNeighbor(world, text) {
+  const w = world;
+  const m = ensureMap(w.map);
+  const here = String(m.currentNodeId || '');
+  if (!here) return null;
+  const t = String(text || '').toLowerCase();
+  const nbs = neighbors(m, here);
+  let best = null, bestLen = 0;
+  for (const id of nbs) {
+    const node = (m.nodes || []).find(n => n && String(n.id) === String(id)) || null;
+    const name = String(node?.name || '').trim().toLowerCase();
+    if (name && name.length > bestLen && t.includes(name)) { best = String(id); bestLen = name.length; }
+  }
+  return best;
+}
+
+// Did the input look like an attempt to travel to a NAMED place (vs a bare
+// direction or vague "go")? Used to choose an in-fiction clarification over the
+// generic "which way?" prompt.
+function looksLikeNamedDestination(text) {
+  const t = String(text || '').toLowerCase().trim();
+  return /\b(?:go|head|travel|journey|make|set\s+out|set\s+off)\s+(?:to|for|toward|towards|over\s+to)\b/.test(t)
+    || /\b(?:to|toward|towards)\s+the\b/.test(t);
+}
+
+// Manhattan grid distance → leagues (min 1). The overworld grid is the unit; a
+// hop is "a few leagues". Falls back to a sensible default when coords are absent.
+function legLeagues(fromNode, toNode) {
+  const ax = Number(fromNode?.x), ay = Number(fromNode?.y);
+  const bx = Number(toNode?.x), by = Number(toNode?.y);
+  if ([ax, ay, bx, by].every(Number.isFinite)) {
+    return Math.max(1, Math.abs(ax - bx) + Math.abs(ay - by));
+  }
+  return 3;
+}
+
+// DM-natural phrasing for a travel duration (~1 league/hour on foot).
+function travelTimeWord(hours) {
+  const h = Math.max(1, Math.round(Number(hours) || 1));
+  if (h <= 1) return 'a short way';
+  if (h <= 3) return 'a few hours';
+  if (h <= 6) return 'most of the morning';
+  if (h <= 10) return 'the better part of a day';
+  return 'more than a day';
+}
+
+function joinNames(items) {
+  const a = items.filter(Boolean);
+  if (a.length === 0) return '';
+  if (a.length === 1) return a[0];
+  if (a.length === 2) return `${a[0]} and ${a[1]}`;
+  return `${a.slice(0, -1).join(', ')}, and ${a[a.length - 1]}`;
 }
 
 function isFreeMovementIntent(text) {

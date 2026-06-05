@@ -768,7 +768,11 @@ function ensureTime(t) {
   const x = t && typeof t === 'object' ? t : {};
   return {
     turn: clampInt(x.turn ?? 0, 0, 999999),
-    scene: clampInt(x.scene ?? 0, 0, 999999)
+    scene: clampInt(x.scene ?? 0, 0, 999999),
+    // Travel accounting (Stage C.2): cumulative in-world hours elapsed and
+    // distance covered in leagues. Advanced by journeys; surfaced in DM language.
+    hours: clampInt(x.hours ?? 0, 0, 9999999),
+    leagues: clampInt(x.leagues ?? 0, 0, 9999999)
   };
 }
 

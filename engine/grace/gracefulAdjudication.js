@@ -5,6 +5,7 @@
 
 import { extractIntent, getClarificationPrompt } from '../voice/intentExtraction.js';
 import { adjudicate } from '../adjudication/adjudicate.js';
+import { exitsFrom } from '../map/mapState.js';
 
 // Compute pacing delay based on action type
 export function computePacingDelay(action) {
@@ -181,13 +182,109 @@ export function handleMetaQuestion(text, world) {
     return `I'm not sure. What action were you asking about?`;
   }
 
-  // Where am I
-  if (/where.*i|what.*location|what.*place/.test(lowerText)) {
-    const location = world.scene?.location || 'unknown location';
-    return `You're in ${location}.`;
+  // Where am I — rich, grounded directional survey of surroundings
+  if (/where.*i|what.*location|what.*place|look around|what.*see|survey/.test(lowerText)) {
+    return buildLocationSurvey(world);
   }
 
   return null; // not a recognized meta-question
+}
+
+// ── Location Survey ─────────────────────────────────────────────────────────
+//
+// Answers "Where am I?" / "What do I see?" with a grounded survey of the
+// player's actual surroundings: place name, who's present, notable structures,
+// and exits by compass direction. Reads real world state — never invents
+// places, NPCs, or exits that don't exist.
+
+function titleCase(s) {
+  const str = String(s || '').trim();
+  return str ? str.charAt(0).toUpperCase() + str.slice(1) : str;
+}
+
+// Join a list with commas and a trailing "and": [a,b,c] -> "a, b, and c"
+function joinList(items) {
+  const arr = items.filter(Boolean);
+  if (arr.length === 0) return '';
+  if (arr.length === 1) return arr[0];
+  if (arr.length === 2) return `${arr[0]} and ${arr[1]}`;
+  return `${arr.slice(0, -1).join(', ')}, and ${arr[arr.length - 1]}`;
+}
+
+function describeNpc(npc) {
+  const name = String(npc?.name ?? '').trim();
+  const role = String(npc?.role ?? '').trim();
+  // If the name already embeds a title (e.g. "Brogan the Elder"), don't append
+  // the role — "Brogan the Elder the representative" reads badly. Use the name.
+  if (name && / the /i.test(name)) return name;
+  if (name && role) return `${name} the ${role}`;
+  if (name) return name;
+  if (role) return `a ${role}`;
+  return 'a stranger';
+}
+
+export function buildLocationSurvey(world) {
+  const w = world || {};
+  const nodeId = String(w.map?.currentNodeId ?? '');
+  const nodes = Array.isArray(w.map?.nodes) ? w.map.nodes : [];
+  const currentNode = nodes.find(n => String(n.id) === nodeId) ?? null;
+  const placeName = String(currentNode?.name ?? w.scene?.location ?? '').trim() || 'an unfamiliar place';
+  const nodeType = String(currentNode?.nodeType ?? 'wilderness');
+
+  const parts = [];
+
+  // Opening line — interior vs. exterior
+  const interior = w.scene?.interior;
+  const insideStructure = interior && typeof interior === 'object' && interior.structureKey;
+  if (insideStructure) {
+    parts.push(`You're inside ${placeName}.`);
+  } else {
+    const article = /^[aeiou]/i.test(nodeType) ? 'an' : 'a';
+    parts.push(`You're in ${placeName}, ${article} ${nodeType}.`);
+  }
+
+  // Who's present
+  const npcs = Array.isArray(currentNode?.settlement?.npcs) ? currentNode.settlement.npcs : [];
+  if (npcs.length) {
+    const named = npcs.slice(0, 4).map(describeNpc);
+    const remainder = npcs.length - named.length;
+    if (remainder > 0) {
+      named.push(`${remainder} other${remainder === 1 ? '' : 's'}`);
+    }
+    parts.push(`You see ${joinList(named)} here.`);
+  }
+
+  // Notable structures / landmarks at this node
+  const structures = Object.values(w.structures?.byId ?? {})
+    .filter(s => String(s?.nodeId ?? s?.anchors?.nodeId ?? '') === nodeId)
+    .map(s => String(s?.kind ?? 'structure'))
+    .filter(Boolean);
+  if (structures.length && !insideStructure) {
+    const uniq = [...new Set(structures)].slice(0, 4);
+    parts.push(`Nearby stand ${joinList(uniq.map(k => `a ${k}`))}.`);
+  }
+
+  // Exits by compass direction (grounded in real map geometry)
+  if (!insideStructure) {
+    const exits = exitsFrom(w.map, nodeId);
+    const dirLines = [];
+    for (const dir of ['north', 'east', 'south', 'west']) {
+      const targetId = exits?.[dir];
+      if (!targetId) continue;
+      const target = nodes.find(n => String(n.id) === String(targetId));
+      const tName = String(target?.name ?? '').trim();
+      dirLines.push(tName ? `to the ${dir} lies ${tName}` : `a path leads ${dir}`);
+    }
+    if (dirLines.length) {
+      parts.push(titleCase(joinList(dirLines)) + '.');
+    } else {
+      parts.push('The way onward is open in every direction, yet uncharted.');
+    }
+  } else {
+    parts.push('The way out leads back to the open air.');
+  }
+
+  return parts.join(' ');
 }
 
 // Main grace layer function

@@ -1,6 +1,7 @@
 import { normalizeManifest, normalizePack } from '../engine/rulesets.js';
 import { newWorld, ensureWorld } from '../engine/state.js';
 import { beginAdventure, playerMove, newScene } from '../engine/playloop.js';
+import { isMetaQuestion, handleMetaQuestion } from '../engine/grace/gracefulAdjudication.js';
 import { escapeOutcome } from '../engine/victory.js';
 import { escapeKitView } from '../engine/combat/escapeCombat.js';
 import { hasSlot, loadSlot, saveSlot, exportWorld, importWorld } from '../engine/save.js';
@@ -422,6 +423,23 @@ async function doSubmitMove() {
     if (mv) {
       const dir = { n: 'north', s: 'south', e: 'east', w: 'west', north: 'north', south: 'south', east: 'east', west: 'west' }[mv[1]];
       ui.play.input = ''; setStatus(''); placeWalk(dir); return;
+    }
+  }
+
+  // Grace layer: meta-questions ("where am I?", "am I hurt?", "what happened?")
+  // are answered directly from world state. They do NOT consume a turn or mutate
+  // the world — asking the DM a question shouldn't advance time. Combat is the
+  // exception: mid-fight we let everything flow to playerMove so initiative holds.
+  if (!w.combat?.active && isMetaQuestion(text)) {
+    const answer = handleMetaQuestion(text, w);
+    if (answer) {
+      ui.play.lines.push({ who: 'you', text, mech: '' });
+      ui.play.lines.push({ who: 'wizard', text: answer, mech: '' });
+      ui.play.input = '';
+      tts.speak(answer);
+      setStatus('');
+      render();
+      return;
     }
   }
 

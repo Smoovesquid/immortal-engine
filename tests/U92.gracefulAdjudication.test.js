@@ -165,6 +165,8 @@ test('U92-16: handleMetaQuestion responds to status', () => {
 
 test('U92-17: handleMetaQuestion responds to location', () => {
   const w = makeTestWorld();
+  // Node name is the authoritative source for the grounded survey.
+  w.map.nodes[0].name = 'the deep dungeon';
   w.scene.location = 'the deep dungeon';
 
   const response = handleMetaQuestion('where am I?', w);

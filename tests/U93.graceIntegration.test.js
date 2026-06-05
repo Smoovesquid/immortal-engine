@@ -2,9 +2,79 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { ensureWorld } from '../engine/state.js';
-import { adjudicateWithGrace } from '../engine/grace/gracefulAdjudication.js';
+import { adjudicateWithGrace, buildLocationSurvey, handleMetaQuestion } from '../engine/grace/gracefulAdjudication.js';
 
 // ── U93 — Grace Layer Integration (End-to-End Playtest) ──────────────
+
+// A world with a settlement (NPCs) and neighboring nodes laid out on the grid
+// so compass exits resolve to real directions.
+function makeSurveyWorld() {
+  return ensureWorld({
+    meta: { version: 21, seed: 'u93-survey', fate: 0.2 },
+    party: [{ id: 'party', name: 'Sera', level: 1, wounds: 0, stress: 0,
+      stats: { MIGHT: 10, AGILITY: 10, WITS: 10, GRIT: 10, CHARM: 10 },
+      position: { ux: 50, uy: 50, elevation: 0, nodeId: 'town' } }],
+    // NOTE: grid y grows DOWNWARD in this engine — south is +y, north is -y
+    // (engine/map/mapState.js). So the northern node has the SMALLER y.
+    map: {
+      currentNodeId: 'town',
+      nodes: [
+        { id: 'town', name: 'Buttnoid Village', nodeType: 'settlement', x: 5, y: 5,
+          settlement: { npcs: [
+            { id: 'mary', name: 'Mary Rottencrotch', role: 'barkeep' },
+            { id: 'gus', name: 'Gus', role: 'smith' }
+          ] } },
+        { id: 'north_node', name: 'the Old Tower', nodeType: 'ruin', x: 5, y: 2 },
+        { id: 'south_node', name: 'the Stone Well', nodeType: 'landmark', x: 5, y: 8 }
+      ],
+      edges: [
+        { a: 'town', b: 'north_node' },
+        { a: 'town', b: 'south_node' }
+      ]
+    },
+    timeline: [],
+    scene: { location: 'Buttnoid Village' }
+  });
+}
+
+test('U93-S1: survey names the current place', () => {
+  const w = makeSurveyWorld();
+  const survey = buildLocationSurvey(w);
+  assert.ok(survey.includes('Buttnoid Village'), survey);
+});
+
+test('U93-S2: survey lists NPCs present by name and role', () => {
+  const w = makeSurveyWorld();
+  const survey = buildLocationSurvey(w);
+  assert.ok(survey.includes('Mary Rottencrotch'), survey);
+  assert.ok(survey.includes('barkeep'), survey);
+  assert.ok(survey.includes('Gus'), survey);
+});
+
+test('U93-S3: survey reports exits by compass direction with destination names', () => {
+  const w = makeSurveyWorld();
+  const survey = buildLocationSurvey(w).toLowerCase();
+  // Tight, order-specific: the Old Tower (y=2) is north, the Stone Well (y=8) is south.
+  assert.ok(survey.includes('to the north lies the old tower'), survey);
+  assert.ok(survey.includes('to the south lies the stone well'), survey);
+});
+
+test('U93-S4: "where am I?" routes through survey via handleMetaQuestion', () => {
+  const w = makeSurveyWorld();
+  const answer = handleMetaQuestion('where am I?', w);
+  assert.ok(answer.includes('Buttnoid Village'), answer);
+  assert.ok(answer.includes('Mary Rottencrotch'), answer);
+});
+
+test('U93-S5: survey never invents exits that do not exist', () => {
+  const w = makeSurveyWorld();
+  // Remove all edges — no exits should be claimed.
+  w.map.edges = [];
+  const survey = buildLocationSurvey(w);
+  assert.ok(!survey.includes('Old Tower'), survey);
+  assert.ok(!survey.includes('Stone Well'), survey);
+});
+
 
 // Create a test world
 function makeTestWorld() {

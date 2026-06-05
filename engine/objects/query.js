@@ -1,0 +1,129 @@
+// Object Query Layer — deterministic access to physical world state
+// All functions are pure and use existing world data (no RNG, no IO).
+
+import { ensureWorld } from '../state.js';
+import { ensureMap } from '../map/mapState.js';
+import { schema } from './schema.js';
+
+// Get all objects at a specific node
+export function objectsAtNode(world, nodeId) {
+  const w = ensureWorld(world);
+  const m = ensureMap(w.map);
+  const node = m.nodes.find(n => n.id === String(nodeId));
+  if (!node) return [];
+
+  const objects = [];
+  const furniture = Array.isArray(node.furniture) ? node.furniture : [];
+  for (let i = 0; i < furniture.length; i++) {
+    const f = furniture[i];
+    objects.push({
+      type: 'furniture',
+      nodeId: String(nodeId),
+      index: i,
+      id: `furniture:${nodeId}:${i}`,
+      name: String(f.name || ''),
+      material: schema.inferMaterial(f.name, f.tags),
+      category: schema.inferCategory(f.name, f.tags),
+      state: String(f.state || 'intact'),
+      hp: 5, // TODO: store on furniture
+      parts: Array.isArray(f.parts) ? f.parts.map(String) : [],
+      tags: Array.isArray(f.tags) ? f.tags.map(String) : [],
+      weight: Number(f.weight) || 2,
+      bulk: Number(f.bulk) || 2,
+      noise: Number(f.noise) || 0,
+      light: Number(f.light) || 0
+    });
+  }
+  return objects;
+}
+
+// Get all objects in the current world (expensive — rarely used)
+export function allObjectsInWorld(world) {
+  const w = ensureWorld(world);
+  const m = ensureMap(w.map);
+  const all = [];
+  for (const node of (m.nodes || [])) {
+    all.push(...objectsAtNode(w, node.id));
+  }
+  return all;
+}
+
+// Query: can this object be broken?
+export function canBreak(obj) {
+  if (!obj) return false;
+  const material = obj.material || schema.MATERIALS.WOOD;
+  const progression = schema.getStateProgression(material);
+  return progression.length > 2; // has more than one state
+}
+
+// Query: can this object be taken (carried)?
+export function canTake(obj) {
+  if (!obj) return false;
+  return Number(obj.bulk || 2) <= 2;
+}
+
+// Query: can this object burn?
+export function canBurn(obj) {
+  if (!obj) return false;
+  const material = obj.material || schema.MATERIALS.WOOD;
+  const props = schema.MATERIAL_PROPERTIES[material];
+  return props && props.flammable > 0;
+}
+
+// Query: does this object have disassemblable parts?
+export function hasParts(obj) {
+  if (!obj) return false;
+  return Array.isArray(obj.parts) && obj.parts.length > 0;
+}
+
+// Query: is this object hollow (can contain items)?
+export function isHollow(obj) {
+  if (!obj) return false;
+  const material = obj.material || schema.MATERIALS.WOOD;
+  const props = schema.MATERIAL_PROPERTIES[material];
+  return props && props.hollow === true;
+}
+
+// Find objects by name (case-insensitive substring match)
+export function objectsByName(world, nodeId, searchStr) {
+  const objects = objectsAtNode(world, nodeId);
+  const search = String(searchStr || '').toLowerCase();
+  if (!search) return objects;
+  return objects.filter(obj => String(obj.name || '').toLowerCase().includes(search));
+}
+
+// Find objects by material
+export function objectsByMaterial(world, nodeId, material) {
+  const objects = objectsAtNode(world, nodeId);
+  return objects.filter(obj => obj.material === material);
+}
+
+// Find breakable objects at a node
+export function breakableObjects(world, nodeId) {
+  return objectsAtNode(world, nodeId).filter(canBreak);
+}
+
+// Find flammable objects at a node
+export function flammableObjects(world, nodeId) {
+  return objectsAtNode(world, nodeId).filter(canBurn);
+}
+
+// Find objects that can be taken at a node
+export function takeableObjects(world, nodeId) {
+  return objectsAtNode(world, nodeId).filter(canTake);
+}
+
+export const query = {
+  objectsAtNode,
+  allObjectsInWorld,
+  canBreak,
+  canTake,
+  canBurn,
+  hasParts,
+  isHollow,
+  objectsByName,
+  objectsByMaterial,
+  breakableObjects,
+  flammableObjects,
+  takeableObjects
+};

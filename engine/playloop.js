@@ -426,12 +426,20 @@ export function playerMove(world, packsById, text) {
       return { world: w, output: { narration: msg, mechanics: '' } };
     }
     const w1 = enterStructureInterior(wPrepared, interiorAction.structureRef);
-    if (w1 !== wPrepared) return { world: w1, output: { narration: 'Wizard: You enter the structure interior.', mechanics: '' } };
+    if (w1 !== wPrepared) {
+      // Record the transition so it replays from the timeline. Without an event,
+      // replay never re-enters and diverges from the live simulation (U21).
+      const w2 = pushEvent(w1, { kind: 'resolution', data: { actorId: 'party', text: String(text || ''), intent: String(text || ''), roll: 0, dc: 0, outcome: 'success', updateKind: 'interior-enter' } });
+      return { world: w2, output: { narration: 'Wizard: You enter the structure interior.', mechanics: '' } };
+    }
   }
 
   if (interiorAction.kind === 'exit') {
     const w1 = exitStructureInterior(w);
-    if (w1 !== w) return { world: w1, output: { narration: 'Wizard: You step back outside.', mechanics: '' } };
+    if (w1 !== w) {
+      const w2 = pushEvent(w1, { kind: 'resolution', data: { actorId: 'party', text: String(text || ''), intent: String(text || ''), roll: 0, dc: 0, outcome: 'success', updateKind: 'interior-exit' } });
+      return { world: w2, output: { narration: 'Wizard: You step back outside.', mechanics: '' } };
+    }
   }
 
   if (interiorAction.kind === 'move') {

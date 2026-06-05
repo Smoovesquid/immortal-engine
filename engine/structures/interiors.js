@@ -52,6 +52,27 @@ export function resolveStructureSelection(world, structureRef = '') {
   return resolveStructureForEnter(world, structureRef);
 }
 
+// Keep party[0].position.interior in sync with scene.interior. ensureWorld
+// (state.js) re-derives scene.interior FROM position.interior whenever
+// scene.interior is absent — so if the two ever disagree, the next ensureWorld()
+// snaps the player back inside. Enter sets it; exit clears it. (This was the
+// "go outside does nothing" bug: exit cleared scene.interior but not position.)
+function setPartyInterior(party, structureId, roomId) {
+  const arr = Array.isArray(party) ? party : [];
+  return arr.map(p => ({
+    ...p,
+    position: { ...(p && p.position ? p.position : {}), interior: { structureId: String(structureId), roomId: String(roomId) } }
+  }));
+}
+function clearPartyInterior(party) {
+  const arr = Array.isArray(party) ? party : [];
+  return arr.map(p => {
+    const pos = { ...(p && p.position ? p.position : {}) };
+    delete pos.interior;
+    return { ...p, position: pos };
+  });
+}
+
 export function enterStructureInterior(world, structureRef = '') {
   const w = ensureWorld(world);
   const sel = resolveStructureForEnter(w, structureRef);
@@ -62,8 +83,12 @@ export function enterStructureInterior(world, structureRef = '') {
   const firstRoomId = String(topo.rooms[0]?.id || '');
   if (!firstRoomId) return w;
 
-  return {
+  // Wrap in ensureWorld so the rewritten party positions are canonicalized
+  // (key order, field shape) identically to an export/import round-trip —
+  // otherwise worldHash diverges under replay (U21).
+  return ensureWorld({
     ...w,
+    party: setPartyInterior(w.party, st.id, firstRoomId),
     map: {
       ...ensureMap(w.map),
       currentStructureId: String(st.id),
@@ -77,14 +102,17 @@ export function enterStructureInterior(world, structureRef = '') {
         visited: [firstRoomId]
       }
     }
-  };
+  });
 }
 
 export function exitStructureInterior(world) {
   const w = ensureWorld(world);
   if (!w.scene?.interior) return w;
-  return {
+  // Wrap in ensureWorld so cleared positions canonicalize identically to an
+  // export/import round-trip (worldHash replay stability — U21).
+  return ensureWorld({
     ...w,
+    party: clearPartyInterior(w.party),
     map: {
       ...ensureMap(w.map),
       currentStructureId: '',
@@ -94,7 +122,7 @@ export function exitStructureInterior(world) {
       ...w.scene,
       interior: null
     }
-  };
+  });
 }
 
 export function moveWithinInterior(world, toRoomId) {

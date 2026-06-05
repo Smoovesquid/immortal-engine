@@ -509,6 +509,21 @@ a{color:var(--accent)}
   /* play-body no longer scrolls as a unit; it lays the map + transcript out */
   .play-body{flex:1 1 auto;min-height:0;overflow:hidden;display:flex;flex-direction:column}
   .play-body .play-map{flex:0 0 auto}
+  /* The walk-place view returns a bare <canvas class="local-map-canvas"> directly
+     into play-body (not wrapped in .play-map). Without this, its intrinsic square
+     size (~730px) fills the column and the narration transcript gets clipped to
+     nothing — so commands appear to "do nothing". Bound the map and let the story
+     take the rest. This is a prose-first game: the transcript is the main surface. */
+  .play-body > .local-map-canvas,
+  .play-body .play-map > .local-map-canvas{
+    flex:0 0 auto;
+    height:clamp(160px, 30vh, 340px);
+    width:auto;
+    max-width:100%;
+    min-height:0;
+    align-self:center;
+    margin-bottom:10px;
+  }
   .play-body .transcript{flex:1 1 auto;min-height:0;max-height:none;overflow:auto}
   /* right-hand status column scrolls on its own if it runs tall */
   .status-panels{min-height:0;overflow:auto}

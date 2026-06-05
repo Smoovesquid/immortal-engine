@@ -146,4 +146,11 @@ Surface: live v1.html (browser)   AI: on/off
 ```
 
 ## Progress log
-- (pending) Stage 1 — C: Movement & transitions — includes the "go outside" fix.
+- Stage 1 — C: Movement & transitions — **PARTIAL** (2026-06-05).
+  - ✅ Interior↔exterior transitions ("go outside"/"go inside"/"enter") fixed & verified
+    live. Root cause: scene.interior vs position.interior desync + missing replay events.
+    Report: `docs/playtests/stageC-movement-2026-06-05.md`.
+  - ❌ OPEN: node-to-node travel via prose. Engine has overworld step-travel but `v1.js`
+    intercepts cardinals as local place-walk, so you can't walk between settlements by
+    typing (only the Map tab travels). Needs a movement-model design pass — likely the
+    next slice before A.

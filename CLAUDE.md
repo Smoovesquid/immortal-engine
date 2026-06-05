@@ -1,6 +1,7 @@
 # Immortal Engine — Agent Guide
 
 ## Read first (durable docs)
+- **`docs/THE_DM_TEST.md` — THE governing principle. For any player input, do what a real DM would do; resolve intent in the fiction. Never bounce intent back as a game-mechanical prompt ("travel one tile at a time, which way?") or a system artifact. The DM is the interface; mechanics serve the fiction. This is the answer, as always — apply it before shipping any response.**
 - **`docs/PLAYTEST_PROTOCOL.md` — BEFORE handing Tim anything to playtest, I MUST play every new feature myself through the live `v1.html` browser surface and confirm it VISIBLY works (screenshot, not DOM dump). Default failure mode: handing over a broken game and debugging live. Don't.**
 - **`docs/PROSE_MECHANIC_PLAN.md` — active roadmap to perfect the prose mechanic (Stages C→A→B→F→D→E) + the per-stage Severe Playtest discipline. Each stage closes only with a committed live playtest report in `docs/playtests/`.**
 - `docs/ROADMAP.md` — the goal + the critical path (R0–R7) to voice-first, DM-adjudicated tabletop. The anchor against drift.

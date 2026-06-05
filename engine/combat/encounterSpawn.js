@@ -8,6 +8,7 @@
  */
 
 import { BESTIARY_CATALOG } from '../ruleset/core/bestiary/index.js';
+import { biomeOf } from '../ecology/foodweb.js';
 import { trivial } from '../ruleset/core/bestiary/catalog/trivial.js';
 import { minor } from '../ruleset/core/bestiary/catalog/minor.js';
 import { standard } from '../ruleset/core/bestiary/catalog/standard.js';
@@ -79,7 +80,7 @@ export function evaluateEncounter(world, _scenePlan, rng) {
  * @param {object} rng - seeded RNG
  * @returns {Array<object>} - array of creature definitions
  */
-export function selectCreatures(cr, count, region, rng) {
+export function selectCreatures(cr, count, region, rng, biome = null) {
   const targetCR = Number(cr) || 1;
   const n = Math.max(1, Math.min(4, Number(count) || 1));
 
@@ -102,6 +103,15 @@ export function selectCreatures(cr, count, region, rng) {
       c => Array.isArray(c.regions) && c.regions.includes(regionStr)
     );
     if (regional.length > 0) pool = regional;
+  }
+
+  // Living-World P2: prefer creatures native to this biome (plus biome-agnostic
+  // 'any' dwellers), so forests hold forest things and marshes hold marsh things.
+  // Falls back to the broader pool when nothing native is in CR budget.
+  if (biome) {
+    const b = String(biome);
+    const native = pool.filter(c => { const cb = biomeOf(c); return cb === b || cb === 'any'; });
+    if (native.length > 0) pool = native;
   }
 
   const picked = [];

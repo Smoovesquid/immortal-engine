@@ -2,6 +2,19 @@
 // Replaces the minimal S1 combat section with HP bars, player vitals,
 // and round counter. Only visible when world.combat.active === true.
 
+import { coverForRoom, bestCover } from '../../engine/structures/coverFeatures.js';
+
+// Best cover in the room the fight is in (null outdoors / when no room).
+function roomCoverOf(world) {
+  const interior = world?.scene?.interior;
+  if (!interior || typeof interior !== 'object') return null;
+  const st = world?.structures?.byId?.[String(interior.structureKey || '')];
+  const rooms = Array.isArray(st?.topology?.rooms) ? st.topology.rooms : [];
+  const room = rooms.find(r => String(r?.id) === String(interior.roomId || ''));
+  if (!room) return null;
+  return bestCover(coverForRoom(room));
+}
+
 /**
  * Build the combat HUD status-section element.
  * @param {object} world
@@ -86,9 +99,25 @@ export function renderCombatHudSection(world, el) {
     );
   }
 
+  // Cover line — surfaces the room's best cover and whether you're using it, so
+  // the tactic is legible during play (mirrors what the map glyph shows).
+  const beganAt = Number(combat.beganAt) || 0;
+  const sc = world?.meta?.escapeCover;
+  const inCover = sc && sc.active && sc.beganAt === beganAt ? sc : null;
+  const cover = roomCoverOf(world);
+  if (inCover) {
+    section.appendChild(
+      el('div', { class: 'combat-cover in-cover' }, `In cover — ${inCover.label} (+${inCover.bonus} AC)`)
+    );
+  } else if (cover) {
+    section.appendChild(
+      el('div', { class: 'combat-cover' }, `Cover here: ${cover.label} (+${cover.bonus} AC) — type "take cover"`)
+    );
+  }
+
   const isEscapeHint = world?.meta?.mode === 'escape' && Number(world?.meta?.escapeMaxHp) > 0;
   section.appendChild(
-    el('div', { class: 'combat-hint' }, isEscapeHint ? "type 'attack' to strike" : 'attack <name> | focus <name> | flee')
+    el('div', { class: 'combat-hint' }, isEscapeHint ? "type 'attack' to strike, 'take cover' to defend" : 'attack <name> | focus <name> | flee')
   );
 
   return section;

@@ -105,33 +105,73 @@ export function interiorCompassLayout(topology) {
   const t = normalizeTopology(topology);
   const exits = new Map();   // roomId -> { north, east, south, west } (room id or null)
   const taken = new Map();   // roomId -> Set<dir>
-  if (!t) return exits;
+  if (!t || !t.rooms.length) return exits;
 
   const ensure = (id) => {
     if (!exits.has(id)) exits.set(id, { north: null, east: null, south: null, west: null });
     if (!taken.has(id)) taken.set(id, new Set());
   };
+  for (const r of t.rooms) ensure(r.id);
 
-  // Edges are already normalized to (lo,hi) and de-duped by normalizeTopology,
-  // and sorted by key — but sort again on the local key form to be explicit.
-  const edges = t.edges
-    .filter(e => e.a && e.b && e.a !== e.b)
-    .map(e => ({ lo: e.a < e.b ? e.a : e.b, hi: e.a < e.b ? e.b : e.a }))
-    .map(e => ({ ...e, key: edgeKey(e.lo, e.hi) }))
+  // Adjacency (sorted, so iteration is deterministic).
+  const adj = new Map();
+  for (const r of t.rooms) adj.set(r.id, []);
+  for (const e of t.edges) {
+    if (adj.has(e.a)) adj.get(e.a).push(e.b);
+    if (adj.has(e.b)) adj.get(e.b).push(e.a);
+  }
+  for (const list of adj.values()) list.sort((a, b) => a.localeCompare(b));
+
+  const assign = (a, dirA, b) => {
+    const dirB = OPPOSITE[dirA];
+    exits.get(a)[dirA] = b; exits.get(b)[dirB] = a;
+    taken.get(a).add(dirA); taken.get(b).add(dirB);
+  };
+  // Per-room direction preference, rotated by a seed so a hub fans its spokes
+  // out in different orders building-to-building but identically every replay.
+  const order = (id) => {
+    const s = seedFromString('dir|' + id) % 4;
+    return [DIRS[s], DIRS[(s + 1) % 4], DIRS[(s + 2) % 4], DIRS[(s + 3) % 4]];
+  };
+
+  // Root = the entry-tagged room (matches floorPlan's entry), else the
+  // lexicographically smallest id — so the building grows out from its door.
+  const entryRoom = t.rooms.find(r => (r.tags || []).some(tag => String(tag).toLowerCase() === 'entry'));
+  const root = String(entryRoom?.id || t.rooms[0].id);
+
+  // Pass 1 — spanning tree via BFS. Each room hands its children the first free
+  // cardinal slot in its rotated preference order, so rooms branch off a spine
+  // (planar, building-like) instead of stacking on top of each other.
+  const visited = new Set([root]);
+  const queue = [root];
+  while (queue.length) {
+    const id = queue.shift();
+    for (const nb of adj.get(id) || []) {
+      if (visited.has(nb)) continue;            // tree edge only on first reach
+      for (const d of order(id)) {
+        if (!taken.get(id).has(d) && !taken.get(nb).has(OPPOSITE[d])) {
+          assign(id, d, nb); visited.add(nb); queue.push(nb); break;
+        }
+      }
+    }
+  }
+
+  // Pass 2 — the leftover (loop / cross) edges and any disconnected components.
+  // Sorted by key so it's deterministic; each gets whatever reciprocal slot is
+  // still free at both ends. None free → genuinely a wall there.
+  const pairKey = (a, b) => (a < b ? a + '|' + b : b + '|' + a);
+  const linked = new Set();
+  for (const [id, ex] of exits) for (const d of DIRS) if (ex[d]) linked.add(pairKey(id, ex[d]));
+  const loose = t.edges
+    .filter(e => e.a && e.b && e.a !== e.b && !linked.has(pairKey(e.a, e.b)))
+    .map(e => ({ ...e, key: edgeKey(e.a, e.b) }))
     .sort((x, y) => (x.key < y.key ? -1 : x.key > y.key ? 1 : 0));
-
-  for (const e of edges) {
-    ensure(e.lo); ensure(e.hi);
+  for (const e of loose) {
     const start = seedFromString(e.key) % 4;
     for (let k = 0; k < 4; k++) {
-      const dLo = DIRS[(start + k) % 4];
-      const dHi = OPPOSITE[dLo];
-      if (!taken.get(e.lo).has(dLo) && !taken.get(e.hi).has(dHi)) {
-        exits.get(e.lo)[dLo] = e.hi;
-        exits.get(e.hi)[dHi] = e.lo;
-        taken.get(e.lo).add(dLo);
-        taken.get(e.hi).add(dHi);
-        break;
+      const d = DIRS[(start + k) % 4];
+      if (!taken.get(e.a).has(d) && !taken.get(e.b).has(OPPOSITE[d])) {
+        assign(e.a, d, e.b); break;
       }
     }
   }

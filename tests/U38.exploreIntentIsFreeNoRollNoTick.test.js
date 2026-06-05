@@ -32,5 +32,6 @@ test('U38: explore intent is free (no resolution event, no clocks/timeline chang
   assert.deepEqual(c1, c0, 'clocks must not change');
   assert.equal(here1, here0, 'position must not change');
   assert.ok(String(t1.output?.mechanics || '').includes('no roll'), 'mechanics must signal no-roll observe');
-  assert.ok(String(t1.output?.narration || '').includes('Exits:'), 'must include Exits:');
+  // explore must still surface where the ways out lie (prose form, not a bare "Exits:" label).
+  assert.match(String(t1.output?.narration || ''), /\bway(s)?\b|north|south|east|west/i, 'must communicate the exits');
 });

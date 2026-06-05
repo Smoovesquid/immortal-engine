@@ -12,6 +12,9 @@ import { renderMapView } from './map/MapView.js';
 import { renderLocalMap } from './map/LocalMap.js';
 import { renderRegionMap } from './map/RegionMap.js';
 import { renderOverworld } from './map/Overworld.js';
+import { createPlaceMap } from './map/handDrawnPlace.js';
+import { placeFromWorldNode } from './map/placeFromNode.js';
+import { buildPlaceGrid, walkTo } from './map/placeNav.js';
 import { renderSpellbookSection } from './panels/spellbook.js';
 import { renderCombatHudSection } from './panels/combatHud.js';
 import { renderInitiativeBar } from './panels/initiativeBar.js';
@@ -99,6 +102,10 @@ const ui = {
   devMode: false,
   gearOpen: false,
   map: { zoom: 'region' },
+  // Continuous local-scale position: where your token stands on the one walkable
+  // place (village + building interiors). Persists across re-renders; resets when
+  // you move to a new node.
+  place: { nodeId: '', ux: null, uy: null },
   prevVitals: { wounds: 0, stress: 0 },
   auth: {
     token: localStorage.getItem('auth_token') || null,
@@ -407,6 +414,17 @@ async function doSubmitMove() {
   const text = String(ui.play.input || '').trim();
   if (!text) return setStatus('');
 
+  // One movement system: a bare cardinal ("go north" / "walk west" / "n") walks the
+  // SAME token the mouse and compass move — not the engine's legacy node/room step.
+  // (Talk/fight/travel/time still route to playerMove below.)
+  if (!w.combat?.active && placeCtl) {
+    const mv = text.toLowerCase().match(/^(?:go|walk|move|head|step)?\s*(north|south|east|west|n|e|s|w)\.?$/);
+    if (mv) {
+      const dir = { n: 'north', s: 'south', e: 'east', w: 'west', north: 'north', south: 'south', east: 'east', west: 'west' }[mv[1]];
+      ui.play.input = ''; setStatus(''); placeWalk(dir); return;
+    }
+  }
+
   // Capture node before move for auto scene transition
   const prevNodeId = String(w.map?.currentNodeId ?? '');
   // Capture timeline length so we only react to events this move appended —
@@ -580,10 +598,10 @@ function renderInvoke() {
       ),
       // ── One-click front door: start (or resume) the Escape game ──────
       el('div', { class: 'card stack front-door' },
-        el('div', { class: 'front-door-title' }, 'Escape the Dungeon'),
-        el('div', { class: 'front-door-sub' }, 'You wake somewhere you must not stay. Find the way out.'),
+        el('div', { class: 'front-door-title' }, 'An Ordinary Morning'),
+        el('div', { class: 'front-door-sub' }, 'You wake in your own bed, your own life. It will not stay ordinary.'),
         el('div', { class: 'row' },
-          el('button', { class: 'btn primary front-door-btn', onClick: () => playAgain() }, 'Begin Escape'),
+          el('button', { class: 'btn primary front-door-btn', onClick: () => playAgain() }, 'Begin'),
           has ? el('button', { class: 'btn front-door-btn', onClick: () => { ui.screen = 'play'; continueSlot1(); } }, 'Continue') : null
         )
       ),
@@ -864,7 +882,7 @@ function renderCharacterSheetSection(world) {
     el('span', { class: 'sheet-k' }, 'background'),
     el('span', { class: 'sheet-v' }, String(pc.background.name))
   ));
-  if (pc.signature?.itemName) identityRows.push(el('div', { class: 'sheet-row' },
+  if (pc.signature?.itemName && pc.signature.itemName !== 'Thing') identityRows.push(el('div', { class: 'sheet-row' },
     el('span', { class: 'sheet-k' }, 'signature'),
     el('span', { class: 'sheet-v' }, String(pc.signature.itemName))
   ));
@@ -1270,6 +1288,68 @@ function renderStatusPanels(world) {
   );
 }
 
+// The one walkable local map: a continuous hand-drawn place (village + building
+// interiors embedded) you move a token across. Click to walk; walls stop you,
+// doorways let you through, stepping through a door puts you inside — same scale,
+// no enter/leave seam. Position persists in ui.place across re-renders.
+function homeStartPos(place) {
+  for (const b of (place.buildings || [])) {
+    if (!b.structureKey) continue; // your real home structure
+    const bed = (b.plan.rooms || []).find(r => /bed/i.test(String(r.role || r.name || '')));
+    const r = bed || (b.plan.rooms || [])[0];
+    if (r) return { ux: r.cx + b.ox, uy: r.cy + b.oy };
+  }
+  const pl = (place.tokens || []).find(t => t.type === 'player');
+  return pl ? { ux: pl.ux, uy: pl.uy } : { ux: 2, uy: 12 };
+}
+
+// Live handle to the mounted walkable place so the compass and text input can move
+// the SAME token the mouse does (one movement system). Rebuilt each render.
+let placeCtl = null;
+const STRIDE = 3; // units per cardinal nudge
+const DIR_VEC = { north: [0, -STRIDE], south: [0, STRIDE], east: [STRIDE, 0], west: [-STRIDE, 0] };
+
+function placeWalk(dir) {
+  const v = DIR_VEC[dir];
+  if (placeCtl && v) placeCtl.walkStep(v[0], v[1]);
+  else travelTo('go ' + dir); // fallback: legacy node travel if no place mounted
+}
+
+function renderWalkPlace(world) {
+  const nodeId = String(world?.map?.currentNodeId || '');
+  let place; try { place = placeFromWorldNode(world, nodeId); } catch { place = null; }
+  if (!place) { placeCtl = null; return renderLocalMap(world, { compact: true }); }
+  const grid = buildPlaceGrid(place);
+  if (ui.place.nodeId !== nodeId || ui.place.ux == null) {
+    const s = homeStartPos(place); ui.place = { nodeId, ux: s.ux, uy: s.uy };
+  }
+  place.tokens = (place.tokens || []).filter(t => t.type !== 'player');
+  place.tokens.unshift({ type: 'player', ux: ui.place.ux, uy: ui.place.uy });
+
+  const W = 61 * 14;
+  const canvas = el('canvas', { width: String(W), height: String(W), class: 'local-map-canvas' });
+  let pm; try { pm = createPlaceMap(canvas, { seed: String(place.seed || 'place'), fog: true, sight: 8 }); } catch { placeCtl = null; return renderLocalMap(world, { compact: true }); }
+  const redraw = () => { try { pm.draw(place); } catch {} };
+  const applyMove = (np) => { ui.place.ux = np.ux; ui.place.uy = np.uy; place.tokens[0].ux = np.ux; place.tokens[0].uy = np.uy; redraw(); };
+  redraw();
+  placeCtl = {
+    nodeId,
+    walkToward: (ux, uy) => applyMove(walkTo(grid, ui.place.ux, ui.place.uy, ux, uy)),
+    walkStep: (dx, dy) => applyMove(walkTo(grid, ui.place.ux, ui.place.uy, ui.place.ux + dx, ui.place.uy + dy))
+  };
+  canvas.addEventListener('click', (e) => {
+    const t = pm.screenToUnit(e.clientX, e.clientY);
+    // Click on/near a token = interact (walk up to it, then the existing engine
+    // turn handles it): a person → talk, a creature → fight. Empty ground = walk.
+    let hit = null, hd = 1.3;
+    for (const tok of (place.tokens || [])) { if (tok.type === 'player') continue; const d = Math.hypot(tok.ux - t.ux, tok.uy - t.uy); if (d < hd) { hd = d; hit = tok; } }
+    if (hit && hit.type === 'npc' && hit.npc && hit.npc.name) { placeCtl.walkToward(hit.ux, hit.uy); travelTo('talk to ' + hit.npc.name); return; }
+    if (hit && hit.type === 'mon' && hit.info && hit.info.name) { placeCtl.walkToward(hit.ux, hit.uy); travelTo('attack ' + hit.info.name); return; }
+    placeCtl.walkToward(t.ux, t.uy);
+  });
+  return canvas;
+}
+
 function renderPlay() {
   const w = ui.world ? ensureWorld(ui.world) : null;
   const ended = Boolean(w?.ending?.locked);
@@ -1356,11 +1436,11 @@ function renderPlay() {
   // Outside: a compact region map that labels every location you've discovered
   // (names appear the moment you arrive). Inside a structure: the room layout,
   // since the overland map isn't what you're navigating in there.
-  const playMap = w
-    ? (w.scene?.interior
-        ? renderLocalMap(w, { compact: true })
-        : renderOverworld(w, { compact: true }))
-    : null;
+  // One scale: the local map. Inside a structure it draws the room layout; outside
+  // it draws the SAME hand-drawn local scale — a continuous walkable place with the
+  // settlement's buildings embedded — not a separate tile overworld. (The abstract
+  // region view lives only on the Map tab as a zoom-out.)
+  const playMap = w ? renderWalkPlace(w) : null;
 
   // ── Escape-mode chrome (objective banner + clickable paths) ───────────
   const isEscape = w?.meta?.mode === 'escape';
@@ -1383,14 +1463,11 @@ function renderPlay() {
     ? el('div', { class: 'paths-bar compass-bar' },
         el('span', { class: 'paths-label' }, 'Go:'),
         el('div', { class: 'compass' },
-          el('button', { class: 'btn compass-btn compass-n', onClick: () => travelTo('go north') }, 'N'),
-          el('button', { class: 'btn compass-btn compass-w', onClick: () => travelTo('go west') }, 'W'),
+          el('button', { class: 'btn compass-btn compass-n', onClick: () => placeWalk('north') }, 'N'),
+          el('button', { class: 'btn compass-btn compass-w', onClick: () => placeWalk('west') }, 'W'),
           el('span', { class: 'compass-hub' }, '✶'),
-          el('button', { class: 'btn compass-btn compass-e', onClick: () => travelTo('go east') }, 'E'),
-          el('button', { class: 'btn compass-btn compass-s', onClick: () => travelTo('go south') }, 'S')),
-        inInterior
-          ? el('button', { class: 'btn path-btn compass-out', onClick: () => travelTo('leave') }, 'Out ⤴')
-          : null)
+          el('button', { class: 'btn compass-btn compass-e', onClick: () => placeWalk('east') }, 'E'),
+          el('button', { class: 'btn compass-btn compass-s', onClick: () => placeWalk('south') }, 'S')))
     : null;
 
   // Escape combat is text-only: you type what you do. The kit panel below is a

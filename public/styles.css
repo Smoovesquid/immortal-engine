@@ -116,6 +116,8 @@ a{color:var(--accent)}
 .enemy-item.defeated .enemy-name{text-decoration:line-through;color:var(--muted)}
 .enemy-item.defeated .enemy-hp{color:var(--muted)}
 .combat-hint{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:8px}
+.combat-cover{font-family:var(--mono);font-size:11px;color:var(--amber);margin-top:6px;opacity:0.85}
+.combat-cover.in-cover{color:var(--ok);opacity:1;font-weight:600}
 
 /* Pass S1 — Character Sheet */
 .character-name{display:flex;align-items:baseline;gap:8px;margin-bottom:10px}
@@ -385,8 +387,13 @@ a{color:var(--accent)}
 .overworld svg{width:100%;height:auto;border:1px solid var(--border)}
 .overworld:not(.overworld-full) svg{max-width:328px}
 .local-map-canvas{border-radius:10px;display:block}
-.local-map-canvas.compact{width:100%;max-width:328px;height:auto;aspect-ratio:1/1}
+.local-map-canvas.compact{width:100%;max-width:460px;height:auto;aspect-ratio:1/1;image-rendering:auto}
 .local-map-header{display:flex;align-items:baseline;gap:8px}
+
+/* Floor-plan glyph legend (interiors only) */
+.map-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;font-family:var(--mono);font-size:10px;color:var(--muted)}
+.map-legend-chip{display:inline-flex;align-items:center;gap:4px}
+.map-legend-dot{display:inline-block;width:9px;height:9px;border-radius:50%}
 
 /* Full-size local map on Map screen */
 .local-map-canvas:not(.compact){border-radius:12px;max-width:100%;height:auto}

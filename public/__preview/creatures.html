@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Creature icons</title>
+<style>
+  html,body{margin:0;background:#3a3f37;color:#cdd2c4;font-family:ui-sans-serif,system-ui,sans-serif;padding:14px;}
+  h1{font-size:15px;opacity:.8;margin:0 0 4px;} h2{font-size:13px;opacity:.7;margin:16px 0 8px;}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:10px;}
+  .cell{background:#e8ecdd;border-radius:6px;padding:6px;text-align:center;color:#2a2e27;}
+  .cell .lbl{font-size:11px;margin-top:2px;}
+  .cell .sub{font-size:9px;opacity:.6;}
+  canvas{display:block;margin:0 auto;}
+</style></head>
+<body>
+<h1>Creature icon archetypes — top-down silhouettes (grubby graph-paper ink)</h1>
+<h2>Kinds &amp; feature modifiers</h2>
+<div class="grid" id="kinds"></div>
+<h2>Real bestiary creatures (classified → drawn)</h2>
+<div class="grid" id="real"></div>
+<script type="module">
+import { iconKindFor, drawCreatureIcon } from '/map/creatureIcons.js';
+
+const KIND_COLOR = { quadruped:'#6b4a2b', predator:'#6b4a2b', ursine:'#5a3a2b', serpent:'#3a6b3a', arachnid:'#2a2a2a', swarm:'#5a4a2b', biped:'#5a4a3a', brute:'#5a4a3a', fiend:'#7a2b2b', undead:'#8a8a78', wraith:'#6a7a8a', ooze:'#4a7a5a', flyer:'#5a4a3a', dragon:'#6b2b2b', construct:'#5a5a66', elemental:'#b5662e', aberration:'#5a3a6e', plant:'#3a6b3a', parasite:'#6b5a2b' };
+const KINDS = Object.keys(KIND_COLOR);
+
+function tile(parent, title, sub, drawFn) {
+  const cell = document.createElement('div'); cell.className = 'cell';
+  const cv = document.createElement('canvas'); cv.width = 96; cv.height = 84;
+  const ctx = cv.getContext('2d');
+  ctx.fillStyle = '#e8ecdd'; ctx.fillRect(0,0,cv.width,cv.height);
+  // faint quadrille
+  ctx.strokeStyle = 'rgba(92,134,120,0.25)'; ctx.lineWidth = 1;
+  for (let x=0;x<cv.width;x+=12){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,cv.height);ctx.stroke();}
+  for (let y=0;y<cv.height;y+=12){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(cv.width,y);ctx.stroke();}
+  drawFn(ctx);
+  cell.appendChild(cv);
+  const l = document.createElement('div'); l.className='lbl'; l.textContent = title; cell.appendChild(l);
+  if (sub){ const s=document.createElement('div'); s.className='sub'; s.textContent=sub; cell.appendChild(s); }
+  parent.appendChild(cell);
+}
+
+const kindsEl = document.getElementById('kinds');
+for (const k of KINDS) tile(kindsEl, k, '', ctx => drawCreatureIcon(ctx, 48, 40, 26, { kind:k, color:KIND_COLOR[k], seed:k }));
+// feature variants
+tile(kindsEl, 'quadruped', 'large', ctx => drawCreatureIcon(ctx,48,40,26,{kind:'quadruped',color:'#6b4a2b',large:true,seed:'q2'}));
+tile(kindsEl, 'fiend', 'horned', ctx => drawCreatureIcon(ctx,48,40,26,{kind:'fiend',color:'#7a2b2b',horned:true,seed:'f2'}));
+tile(kindsEl, 'quadruped', 'winged', ctx => drawCreatureIcon(ctx,48,40,26,{kind:'quadruped',color:'#6b4a2b',winged:true,seed:'q3'}));
+
+const SAMPLES = [
+  { ref:'dire_wolf', name:'Dire Wolf', tags:['beast'] },
+  { ref:'cave_bear', name:'Cave Bear', tags:['beast'] },
+  { ref:'giant_spider', name:'Giant Spider', tags:['beast'] },
+  { ref:'cave_viper', name:'Cave Viper', tags:['beast'] },
+  { ref:'goblin', name:'Goblin', tags:['humanoid'] },
+  { ref:'ogre', name:'Ogre', tags:['giant'] },
+  { ref:'skeleton', name:'Skeleton', tags:['undead'] },
+  { ref:'wraith', name:'Wraith', tags:['undead','spirit'] },
+  { ref:'gray_ooze', name:'Gray Ooze', tags:['ooze'] },
+  { ref:'fire_mote', name:'Fire Mote', tags:['elemental'] },
+  { ref:'gaze_horror', name:'Gaze Horror', tags:['aberration'] },
+  { ref:'iron_golem', name:'Iron Golem', tags:['construct'] },
+  { ref:'young_dragon', name:'Young Dragon', tags:['dragon'] },
+  { ref:'pit_fiend', name:'Pit Fiend', tags:['fiend'] },
+  { ref:'shrieker', name:'Shrieker', tags:['plant'] },
+  { ref:'rot_grub', name:'Rot Grub', tags:['beast','parasite'] },
+  { ref:'bat_swarm', name:'Bat Swarm', tags:['beast','swarm'] },
+  { ref:'raven', name:'Raven', tags:['beast'] }
+];
+const realEl = document.getElementById('real');
+for (const s of SAMPLES) { const ic = iconKindFor(s); tile(realEl, s.name, ic.kind + (ic.large?' · L':'') + (ic.winged?' · W':''), ctx => drawCreatureIcon(ctx, 48, 40, 26, { ...ic, seed: s.ref })); }
+window.__rendered = KINDS.length + SAMPLES.length;
+</script>
+</body></html>

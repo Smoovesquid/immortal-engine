@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>The living world — full loop</title>
+<style>
+  html,body{margin:0;background:#3a3f37;color:#cdd2c4;font-family:ui-sans-serif,system-ui,sans-serif;padding:12px;display:flex;flex-direction:column;align-items:center;gap:8px;}
+  h1{font-size:14px;opacity:.85;margin:0;}
+  .bar{display:flex;gap:8px;align-items:center;font-size:13px;flex-wrap:wrap;justify-content:center;}
+  button{font:inherit;background:#cdd2c4;color:#2a2e27;border:0;border-radius:6px;padding:6px 11px;cursor:pointer;}
+  #log{max-width:1080px;font-size:12px;opacity:.85;min-height:20px;text-align:center;}
+  canvas{box-shadow:0 14px 44px rgba(0,0,0,.55);border-radius:4px;cursor:pointer;}
+  #err{color:#e88;white-space:pre-wrap;font-size:12px;}
+</style></head>
+<body>
+<h1 id="title">The living world</h1>
+<div class="bar" id="bar"></div>
+<div id="log">Click a town to travel there.</div>
+<div id="err"></div>
+<canvas id="c" width="1080" height="620"></canvas>
+<script type="module">
+const err = document.getElementById('err'), log = document.getElementById('log'), title = document.getElementById('title'), bar = document.getElementById('bar');
+try {
+  const { newSession, enterPlace, recordKills, advanceTime } = await import('/public/map/worldSession.js');
+  const { createRegionSketch } = await import('/public/map/regionSketch.js');
+  const { createPlaceMap } = await import('/public/map/handDrawnPlace.js');
+  const cv = document.getElementById('c');
+
+  let session = newSession({ seed: 'mira', W: 50, H: 30, places: 8 });
+  let view = 'region', current = null, place = null, biome = null;
+  const region = createRegionSketch(cv);
+  const placeMap = createPlaceMap(cv, { fog: true, sight: 9 });
+
+  function setLog(s) { log.textContent = s; }
+  function renderRegion() {
+    view = 'region'; title.textContent = `The region of Mira — day ${session.time}`;
+    bar.innerHTML = ''; addBtn('Wait 10 days ⏳', wait);
+    region.draw(session.region);
+  }
+  function renderPlace() {
+    view = 'place'; const rp = session.region.places.find(p => p.id === current);
+    title.textContent = `${rp.nodeType} · tier ${rp.tier} · ${biome} — day ${session.time}`;
+    bar.innerHTML = ''; addBtn('← Leave', renderRegion); addBtn('Clear enemies ⚔', clearEnemies);
+    placeMap.draw(place);
+  }
+  function addBtn(label, fn) { const b = document.createElement('button'); b.textContent = label; b.onclick = fn; bar.appendChild(b); }
+
+  function wait() {
+    const r = advanceTime(session, 10); session = r.session;
+    setLog(r.events.length ? ('🌿 ' + r.events.slice(0, 3).map(e => e.text).join('  ·  ')) : 'The seasons turn quietly.');
+    renderRegion();
+  }
+  function clearEnemies() {
+    const refs = place.tokens.filter(t => t.type === 'mon').map(t => t.info.ref);
+    session = recordKills(session, biome, refs);
+    place.tokens = place.tokens.filter(t => t.type !== 'mon');
+    setLog(`You clear the ${biome}. The land will remember (${refs.length} slain).`);
+    renderPlace();
+  }
+
+  cv.addEventListener('click', e => {
+    if (view === 'region') {
+      const t = region.transform, rect = cv.getBoundingClientRect();
+      const mx = (e.clientX - rect.left) * cv.width / rect.width, my = (e.clientY - rect.top) * cv.height / rect.height;
+      let hit = null, bd = t.s * 1.2;
+      for (const p of session.region.places) { const X = t.ox + p.x * t.s + t.s / 2, Y = t.oy + p.y * t.s + t.s / 2; const d = Math.hypot(mx - X, my - Y); if (d < bd) { bd = d; hit = p; } }
+      if (hit) { current = hit.id; const r = enterPlace(session, current); place = r.place; biome = r.biome; setLog(`You arrive. Enemies here are drawn from the living ${biome}.`); renderPlace(); }
+    } else {
+      const { ux, uy } = placeMap.screenToUnit(e.clientX, e.clientY);
+      const p = place.tokens.find(t => t.type === 'player'); if (p) { p.ux = ux; p.uy = uy; placeMap.draw(place); }
+    }
+  });
+
+  renderRegion();
+  window.__ok = true; window.__demo = {
+    enter: id => { current = id; const r = enterPlace(session, id); place = r.place; biome = r.biome; renderPlace(); },
+    walkTo: (ux, uy) => { const p = place.tokens.find(t => t.type === 'player'); if (p) { p.ux = ux; p.uy = uy; placeMap.draw(place); } },
+    enemies: () => place.tokens.filter(t => t.type === 'mon').map(t => t.info.name),
+    wait, region: () => session.region
+  };
+} catch (e) { err.textContent = 'ERROR: ' + (e && e.stack || e); window.__ok = false; }
+</script>
+</body></html>

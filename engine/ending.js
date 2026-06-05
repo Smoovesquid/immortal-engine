@@ -78,7 +78,7 @@ export function makeEpilogueLine(world, type) {
   const ref = inst.promise ? `Promise: ${inst.promise}.` : inst.taboo ? `Taboo: ${inst.taboo}.` : 'Taboo: no easy rescues.';
 
   const base = {
-    'Pyrrhic Victory': `Wizard: You win—barely—and the dungeon remembers the debt. ${ref}`,
+    'Pyrrhic Victory': `Wizard: You win—barely—and the world remembers the debt. ${ref}`,
     'Horrible Truth': `Wizard: The truth surfaces like rot in clean water. ${ref}`,
     'Narrow Escape': `Wizard: You get out. Not unscarred—just out. ${ref}`,
     'The Cost Paid': `Wizard: The door opens, and the price is exactly what you feared. ${ref}`

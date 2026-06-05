@@ -73,7 +73,8 @@ export function enterStructureInterior(world, structureRef = '') {
       ...w.scene,
       interior: {
         structureKey: String(st.id),
-        roomId: firstRoomId
+        roomId: firstRoomId,
+        visited: [firstRoomId]
       }
     }
   };
@@ -112,6 +113,9 @@ export function moveWithinInterior(world, toRoomId) {
   const exits = adjacentRooms(structureTopology(st), fromRoomId);
   if (!exits.includes(targetRoomId)) return w;
 
+  const visited = Array.isArray(interior.visited) ? interior.visited.slice() : [];
+  if (!visited.includes(targetRoomId)) visited.push(targetRoomId);
+
   return {
     ...w,
     map: {
@@ -123,7 +127,8 @@ export function moveWithinInterior(world, toRoomId) {
       ...w.scene,
       interior: {
         structureKey,
-        roomId: targetRoomId
+        roomId: targetRoomId,
+        visited
       }
     }
   };

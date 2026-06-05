@@ -81,13 +81,15 @@ function applyTranscript(seed, transcript) {
 test('U53/S1: exit + re-enter same selector returns same structure/room deterministically', () => {
   const w0 = fixtureWorld('u53-s1');
   const w1 = playerMove(w0, packsById, 'enter 2').world;
-  assert.deepEqual(w1.scene.interior, { structureKey: 'st:bravo', roomId: 'b1' });
+  // Interior now also tracks `visited` (the rooms walked into, for the
+  // draw-as-you-explore map). On entry that's just the room you land in.
+  assert.deepEqual(w1.scene.interior, { structureKey: 'st:bravo', roomId: 'b1', visited: ['b1'] });
 
   const w2 = playerMove(w1, packsById, 'exit building').world;
   assert.equal(w2.scene.interior, null);
 
   const w3 = playerMove(w2, packsById, 'enter 2').world;
-  assert.deepEqual(w3.scene.interior, { structureKey: 'st:bravo', roomId: 'b1' });
+  assert.deepEqual(w3.scene.interior, { structureKey: 'st:bravo', roomId: 'b1', visited: ['b1'] });
 });
 
 test('U53/S2: look around outside is projection-only (no worldHash change)', () => {

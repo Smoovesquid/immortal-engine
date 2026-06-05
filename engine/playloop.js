@@ -8,6 +8,8 @@ import { triggerEnding } from './ending.js';
 import { compose } from './composer.js';
 import { planNextScene } from './sceneDirector.js';
 import { generateInitialMap } from './map/generateMap.js';
+import { biomeForNode, biomeFlavor } from './world/biome.js';
+import { ecologyTravelLine } from './ecology/snapshot.js';
 import { ensureMap, pickTravelDestination, moveToNode, neighbors, exitsFrom, directionFromText, stepCell, nodeAtCell, nodesWithinSight, cardinalToCell, seeNode, visitNode, SIGHT_RADIUS } from './map/mapState.js';
 import { conductorDecision, applyConductorDeltas } from './conductor.js';
 import { worldTick } from './worldTick.js';
@@ -21,8 +23,8 @@ import { decompressAndCanonizeSync } from './decompression/decompress.js';
 import { discoverNode } from './map/mapState.js';
 import { detectPhysicalInteraction, evaluatePhysicsSync } from './llmPhysics.js';
 import { createGoal, checkGoals } from './goals/goalContract.js';
-import { pickEscapeTarget } from './victory.js';
 import { beginDialogue, askNpc, endDialogue, resolveNpcAtCurrentNode, isRecruitIntent } from './npc/dialogue.js';
+import { resolveArc } from './npc/npcArc.js';
 import { resolveCombatTurn } from './combat/combatResolve.js';
 import { beginCombat, endCombat, mintEnemyFromNpc } from './combat/combatLifecycle.js';
 import { resolveCompanionTurn } from './combat/companionTurn.js';
@@ -139,12 +141,19 @@ export function beginAdventure(world, packsById) {
       s => String(s?.nodeId || '') === String(w.map?.currentNodeId || '')
     );
     if (structuresHere.length > 0) {
-      const w1 = enterStructureInterior(w, '#1');
+      let w1 = enterStructureInterior(w, '#1');
       const interior = w1.scene?.interior || null;
       if (interior) {
-        const st = w1.structures?.byId?.[interior.structureKey];
+        // Home is a cottage: it renders as a timber house and its first non-entry
+        // room is a bedchamber — so you wake in your own bed, not a cave.
+        const key = String(interior.structureKey);
+        const homeSt = w1.structures?.byId?.[key];
+        if (homeSt && homeSt.buildingType !== 'cottage') {
+          w1 = { ...w1, structures: { ...w1.structures, byId: { ...w1.structures.byId, [key]: { ...homeSt, buildingType: 'cottage' } } } };
+        }
+        const st = w1.structures?.byId?.[key];
         const rooms = Array.isArray(st?.topology?.rooms) ? st.topology.rooms : [];
-        // Find the first non-entry room (room index 1 in the stub).
+        // Find the first non-entry room (the bedchamber in a cottage plan).
         const nonEntry = rooms.find(r => !((Array.isArray(r?.tags) ? r.tags : []).includes('entry')));
         const bedroomId = nonEntry ? String(nonEntry.id) : '';
         if (bedroomId && bedroomId !== interior.roomId) {
@@ -171,21 +180,14 @@ export function beginAdventure(world, packsById) {
   // up with nothing to do; quests are discovered by leaving home and venturing
   // out. seedInitialGoal is still defined for save-resume semantics elsewhere.
 
-  // v1 "Escape" game mode: seed a single reach goal toward a far node and a
-  // player-facing objective. Reaching it locks a victory (see playerMove).
-  // Opt-in via meta.mode === 'escape'; the open sandbox (all engine tests) skips
-  // this entirely and keeps the goalless waking opening.
+  // v1 game mode: open-ended. You wake into your ordinary life with no single
+  // destination and no win-on-arrival — the journey itself is the game, and the
+  // world (biomes, ecology, people, the road's dangers) is yours to wander. We
+  // keep the classic-D&D HP + hedge-caster kit so the road still has teeth.
+  // Opt-in via meta.mode === 'escape'; the pure-engine tests (mode '') keep the
+  // goalless waking opening unchanged.
   if (w.meta?.mode === 'escape') {
-    const targetId = pickEscapeTarget(w);
-    if (targetId) {
-      const targetNode = w.map.nodes.find(n => String(n.id) === String(targetId));
-      const targetName = targetNode?.name || 'the open road';
-      w = discoverNode(w, targetId);
-      const created = createGoal(w, { kind: 'reach', targetRef: String(targetId), label: `Escape to ${targetName}` });
-      w = created.world;
-      w = { ...w, scene: { ...w.scene, objective: `Escape to ${targetName} — find the way out.` } };
-    }
-    // Classic-D&D hit points + hedge-caster kit for the escape PC (escapeCombat.js).
+    w = { ...w, scene: { ...w.scene, objective: 'Your life is your own. See where the road leads.' } };
     w = initEscapeHp(w);
     w = initEscapeKit(w);
   }
@@ -444,8 +446,17 @@ export function playerMove(world, packsById, text) {
     if (w.scene?.interior) {
       const view = getInteriorView(w);
       const labels = exitDirectionLabels(view);
-      const exitsLineTxt = labels.length ? `Exits: ${labels.join(', ')}.` : 'Exits: none.';
-      return { world: w, output: { narration: `Wizard: You scan the room. ${exitsLineTxt}`, mechanics: 'observe only — no roll, state unchanged' } };
+      const where = w.scene?.location ? `this corner of ${w.scene.location}` : 'the room';
+      const exitsTxt = labels.length
+        ? (labels.length === 1 ? `The only way on lies ${labels[0]}.` : `Ways lead off ${labels.slice(0, -1).join(', ')} and ${labels[labels.length - 1]}.`)
+        : `No way out shows itself — not yet.`;
+      const lookRng = makeRng(seedFromString(`${w.meta.seed}|look|${w.timeline.length}|${where}`));
+      const lead = lookRng.pick([
+        `You take the measure of ${where}.`,
+        `Your eyes move slow across ${where}.`,
+        `You stand still and read ${where}.`
+      ]);
+      return { world: w, output: { narration: `Wizard: ${lead} ${exitsTxt} What do you do?`, mechanics: 'observe only — no roll, state unchanged' } };
     }
 
     const exits = exitsLine(w);
@@ -558,10 +569,21 @@ export function playerMove(world, packsById, text) {
         const restRng = makeRng(seedFromString(`${w1.meta.seed}|shortRest|${nodeId}|${w1.timeline.length}`));
         w1 = shortRest(w1, restRng);
       }
-      const arrivalLine = nextName ? `Wizard: You reach ${nextName}.` : 'Wizard: You reach the place ahead.';
+      // Living-World P1: arrival reflects the land's biome, so the world reads as
+      // varied country rather than interchangeable nodes.
+      const arrivedNode = (w1.map?.nodes || []).find(n => n && n.id === nodeId) || null;
+      const flavor = arrivedNode ? biomeFlavor(w1.meta.seed, arrivedNode) : '';
+      const arrivalLine = nextName
+        ? `Wizard: You reach ${nextName}${flavor ? `, ${flavor}` : ''}.`
+        : `Wizard: You reach the place ahead${flavor ? `, ${flavor}` : ''}.`;
+      // Living-World P3: a quiet arrival may note the land's living state (sparse
+      // by design). Never on an ambush — danger shouldn't be buried under flavor.
+      const ecoLine = (!ambushed && arrivedNode)
+        ? ecologyTravelLine(w1.meta.seed, biomeForNode(w1.meta.seed, arrivedNode), w1.time?.turn ?? 0, nodeId)
+        : '';
       const narration = ambushed
         ? `${arrivalLine} Something is already here, and it means you harm.`
-        : arrivalLine;
+        : (ecoLine ? `${arrivalLine} ${ecoLine}` : arrivalLine);
       return { world: w1, output: { narration, mechanics: ambushed ? '[ambush]' : '' } };
     }
 
@@ -631,11 +653,23 @@ export function playerMove(world, packsById, text) {
           mechanics: `dialogue:enter:${begun.outcome.npcId}`
         });
         w = maybeCheckGoals(w);
-        const role = begun.outcome.npcRole ? ` the ${begun.outcome.npcRole}` : '';
+        // Skip the role suffix when the name already carries an epithet ("Dax the
+        // Wary"), so we don't read "Dax the Wary the elder".
+        const role = (begun.outcome.npcRole && !/ the /i.test(String(begun.outcome.npcName || '')))
+          ? ` the ${begun.outcome.npcRole}` : '';
+        // Living-World P4: surface the person's WANT on meeting (most are small and
+        // mundane), and — for the perceptive (WITS) — an unreliable tell when they
+        // carry a deeper thread from the Discovery Layer. Realistic distribution:
+        // most lead nowhere; a rare few hint at more.
+        const npcNow = resolveNpcAtCurrentNode(w, talkRef);
+        const wits = Number(w.party?.[0]?.stats?.WITS ?? 10);
+        const arc = npcNow ? resolveArc(npcNow, w.meta.seed, { wits }) : null;
+        const wantClause = arc?.surfaceWant ? ` There's a want in them, plain enough: ${arc.surfaceWant}.` : '';
+        const tellClause = (arc?.status === 'hinted' && arc.tell) ? ` ${arc.tell}` : '';
         return {
           world: w,
           output: {
-            narration: `Wizard: You approach ${begun.outcome.npcName}${role}; ${begun.outcome.mood} eyes meet yours.`,
+            narration: `Wizard: You approach ${begun.outcome.npcName}${role}; ${begun.outcome.mood} eyes meet yours.${wantClause}${tellClause}`,
             mechanics: `[dialogue enter | ${begun.outcome.npcName} | role:${begun.outcome.npcRole || 'unknown'} | trust:${begun.outcome.trustLevel}/10 | mood:${begun.outcome.mood}]`
           }
         };
@@ -673,10 +707,14 @@ export function playerMove(world, packsById, text) {
         }
       }
 
+      // Living-World P5: the hidden Will bends casting. Deeds shape which schools
+      // answer the caster — surfaced only as feel, never a readout. (Opt-in flag
+      // already built into castSpell; this turns it on for the live game.)
       const { world: wCast, result: castResult } = castSpell(w, {
         spellRef,
         targetId,
-        slotLevel: null
+        slotLevel: null,
+        will: true
       });
 
       if (!castResult.ok) {
@@ -918,6 +956,26 @@ export function playerMove(world, packsById, text) {
         }, { pack });
         w = applyComposerDelta(w, composed.ledgerDelta);
         return { world: w, output: { narration: composed.narrationLine, mechanics: result.mechanicsLine, combatSummary: String(result.combatSummary || '') } };
+      }
+    }
+  }
+
+  // "No one to fight": an attack aimed at a person/creature when none is here.
+  // Reached only after the attack-NPC branches above failed to start a fight, so
+  // if there were someone to fight, combat would already be live. Scoped to
+  // person/creature references (or a bare attack verb) so object attacks like
+  // "break the door" still fall through to the physical-interaction handler below.
+  if (!w.combat?.active && !w.ending?.locked) {
+    const tt = String(text || '').trim();
+    const ATTACK_V = '(attack|fight|kill|strike|assault|punch|stab|hit|slash|swing(?:\\s+at)?|shoot|kick|tackle|charge)';
+    const targeted = tt.match(new RegExp(`\\b${ATTACK_V}\\s+(.+)`, 'i'));
+    const bareAttack = new RegExp(`^${ATTACK_V}\\s*[.!]?$`, 'i').test(tt);
+    const personRef = targeted && /\b(figure|figures|enemy|enemies|foe|foes|man|woman|men|women|person|people|stranger|strangers|guard|guards|soldier|soldiers|them|him|her|someone|anyone|everyone|nobody|creature|creatures|beast|beasts|monster|monsters|attacker|assailant|thing|shape|shadow)\b/i.test(targeted[2]);
+    if (bareAttack || personRef) {
+      const nodeNow = (w.map?.nodes || []).find(n => n && n.id === String(w.map?.currentNodeId ?? '')) || null;
+      const npcsHere = nodeNow?.settlement?.npcs;
+      if (!Array.isArray(npcsHere) || !npcsHere.length) {
+        return { world: w, output: { narration: 'Wizard: No one to fight. What do you do?', mechanics: '' } };
       }
     }
   }
@@ -1183,7 +1241,8 @@ export function newScene(world, packsById, { lastResolutionKind = 'turn' } = {})
     const nodeId = String(w.map?.currentNodeId ?? '');
     const node = (w.map?.nodes || []).find(n => n && n.id === nodeId) || null;
     const region = node?.settlement?.region || null;
-    const creatures = selectCreatures(encounterEval.cr, encounterEval.count, region, encounterRng);
+    const biome = node ? biomeForNode(w.meta.seed, node) : null;
+    const creatures = selectCreatures(encounterEval.cr, encounterEval.count, region, encounterRng, biome);
     w = spawnEncounter(w, creatures, {
       ambush: encounterEval.ambush,
       reason: encounterEval.ambush ? 'ambush' : 'encounter'
@@ -1463,7 +1522,10 @@ function isDialogueExitIntent(text) {
 function isDialogueBreakingIntent(text, world) {
   const t = String(text || '');
   if (!t.trim()) return false;
-  if (isExploreIntent(t)) return true;
+  // NOTE: exploration/questions ("what's here", "the way out", "look around") do
+  // NOT break dialogue — while talking, those are questions put to the NPC and
+  // route to askNpc. Only actual movement/physics below ends the conversation.
+  // (A player asking "how do I get out?" should be answered, not ejected.)
   if (moveAdvancesScene(t)) return true;
   if (isFreeMovementIntent(t)) return true;
   // Interior transitions
@@ -1747,7 +1809,7 @@ function generateInstrument(pack, fate, rng) {
     ? ['no easy rescues', 'no clean endings', 'no painless truths']
     : ['no easy rescues', 'no mercy without consequence', 'no innocence survives untouched'];
   const promises = band === 'cooperative'
-    ? ['help will appear, but it must be earned', 'a secret will open a safer path', 'the dungeon will reward cleverness']
+    ? ['help will appear, but it must be earned', 'a secret will open a safer path', 'the world will reward cleverness']
     : band === 'grim'
     ? ['a revelation will demand sacrifice', 'someone’s choice will close a door forever', 'the truth will complicate the objective']
     : ['a revelation will demand blood or betrayal', 'the payoff will cost something you love', 'victory will come with a scar'];
@@ -1929,6 +1991,13 @@ function fuzzyMatchNpc(npcs, ref) {
     ));
     if (byTheRole) return byTheRole;
   }
+
+  // 4b. Any generic person/enemy descriptor word ANYWHERE in the ref → first NPC.
+  //     Catches adjective-qualified refs ("the nearest figure", "the lone man")
+  //     and combat words ("the enemy", "the foe", "the attacker") that the exact
+  //     descriptor set in step 3 misses. Role-specific refs already resolved above.
+  const GENERIC_WORD = /\b(woman|man|men|women|person|people|stranger|someone|anyone|everyone|them|her|him|lady|guy|fellow|figure|figures|villager|townsperson|townsfolk|civilian|bystander|enemy|enemies|foe|foes|attacker|assailant|creature|beast|monster|thing|shape|shadow)\b/;
+  if (GENERIC_WORD.test(refLower)) return npcs[0];
 
   // 5. Last resort: if ref is a single common word that could describe
   //    any person, pick first NPC. This catches "stab everyone" etc.
@@ -2129,24 +2198,9 @@ function maybeCheckGoals(world) {
   for (const g of completed) {
     w = pushEvent(w, { kind: 'goalCompleted', data: { goalId: g.id, kind: g.kind, targetRef: g.targetRef } });
   }
-  // v1 Escape: completing the reach goal (arriving at the far node) locks a
-  // clean victory. This lives here — the single goal-promotion seam — so it
-  // fires from every action path (travel, free-movement, etc.). Losing is the
-  // engine's existing combat-defeat ending; emergent endings are benched for v1.
-  if (w.meta?.mode === 'escape' && !w.ending?.locked
-      && (w.goals || []).some(g => g.kind === 'reach' && g.status === 'completed')) {
-    w = {
-      ...w,
-      ending: {
-        triggered: true,
-        type: 'Narrow Escape',
-        epilogueLine: 'Wizard: You break into open air and keep running. Behind you the dark closes on nothing. You made it out.',
-        locked: true,
-        reason: 'escaped'
-      }
-    };
-    w = pushEvent(w, { kind: 'endingTriggered', data: { endingType: 'Narrow Escape', epilogueLine: 'escaped' } });
-  }
+  // Open-ended: arriving anywhere is just arrival — no win-on-reach, no terminal
+  // lock. The world stays open and play continues. (Combat-defeat is still a real
+  // fail state; the road has teeth, it just has no finish line.)
   return w;
 }
 
@@ -2196,7 +2250,10 @@ function maybeSpawnWildEncounter(world, pos) {
 // plain HP, a fixed enemy to-hit, and `damage` as the damage-die max. These are
 // the only fields that survive ensureCombat's enemy whitelist.
 function spawnTamedAmbush(w, region, rng, reason) {
-  const flavor = selectCreatures(0.25, 1, region, rng)[0] || { name: 'Lurker' };
+  // Living-World P2: the ambusher is native to the land you're crossing.
+  const ambNode = (w.map?.nodes || []).find(n => n && n.id === String(w.map?.currentNodeId || '')) || null;
+  const ambBiome = ambNode ? biomeForNode(w.meta.seed, ambNode) : null;
+  const flavor = selectCreatures(0.25, 1, region, rng, ambBiome)[0] || { name: 'Lurker' };
   const tamed = {
     name: String(flavor.name || 'Lurker'),
     ref: String(flavor.ref || 'lurker'),

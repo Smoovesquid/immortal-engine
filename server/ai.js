@@ -32,6 +32,14 @@ export async function handleAiRequest({ client, body }) {
   const snapshot = body?.worldSnapshot && typeof body.worldSnapshot === 'object' ? body.worldSnapshot : null;
   const styleProfile = body?.styleProfile && typeof body.styleProfile === 'object' ? body.styleProfile : {};
 
+  // Drift attribution: record the canonical world hash this proposal was generated
+  // against, when the client supplies it. The server is a stateless proposer — it
+  // never applies deltas — so post_hash is always null here; the engine apply site
+  // records the after-hash. Sink stays backward-compatible (extra fields only).
+  const preHash = (snapshot && typeof snapshot.worldHash === 'string') ? snapshot.worldHash
+    : (typeof body?.worldHash === 'string' ? body.worldHash : null);
+  const trace = (rec) => appendAiTrace({ pre_hash: preHash, post_hash: null, ...rec });
+
   if (!client) return devFail('no_client');
   if (!composerLine && mode === 'POLISH') return devFail('missing_composerLine');
 
@@ -79,20 +87,20 @@ export async function handleAiRequest({ client, body }) {
       const worldProxy = { ledger: { facts: [] }, scene: { location: '' }, meta: { seed: 'seed', fate } };
       const v = validatePolish({ world: worldProxy, composerLine, candidateText: text });
       if (!v.ok) {
-        appendAiTrace({ requestHash, model, seed, mode, system_fingerprint, responseText: text, parsedProposal: null, validationResult: 'rejected', rejectionReason: `polish_validation:${v.reason || 'invalid'}` });
+        trace({ requestHash, model, seed, mode, system_fingerprint, responseText: text, parsedProposal: null, validationResult: 'rejected', rejectionReason: `polish_validation:${v.reason || 'invalid'}` });
         return devFail(`polish_validation:${v.reason || 'invalid'}`);
       }
-      appendAiTrace({ requestHash, model, seed, mode, system_fingerprint, responseText: text, parsedProposal: null, validationResult: 'accepted', rejectionReason: null });
+      trace({ requestHash, model, seed, mode, system_fingerprint, responseText: text, parsedProposal: null, validationResult: 'accepted', rejectionReason: null });
       return { ok: true, text: v.text };
     }
 
     if (mode === 'ADVISE') {
       const obj = parseJsonLenient(text);
       if (!obj || typeof obj !== 'object') {
-        appendAiTrace({ requestHash, model, seed, mode, system_fingerprint, responseText: text, parsedProposal: null, validationResult: 'rejected', rejectionReason: 'advise_parse_failed' });
+        trace({ requestHash, model, seed, mode, system_fingerprint, responseText: text, parsedProposal: null, validationResult: 'rejected', rejectionReason: 'advise_parse_failed' });
         return { ok: false };
       }
-      appendAiTrace({ requestHash, model, seed, mode, system_fingerprint, responseText: text, parsedProposal: obj, validationResult: 'accepted', rejectionReason: null });
+      trace({ requestHash, model, seed, mode, system_fingerprint, responseText: text, parsedProposal: obj, validationResult: 'accepted', rejectionReason: null });
       return { ok: true, text: JSON.stringify(obj), json: obj };
     }
 
@@ -101,10 +109,10 @@ export async function handleAiRequest({ client, body }) {
       const extracted = extractJsonObject(text);
       const parsed = parseConductJson(extracted || text);
       if (!parsed.ok) {
-        appendAiTrace({ requestHash, model, seed, mode, system_fingerprint, responseText: text, parsedProposal: null, validationResult: 'rejected', rejectionReason: `conduct_contract:${parsed.reason || 'invalid'}` });
+        trace({ requestHash, model, seed, mode, system_fingerprint, responseText: text, parsedProposal: null, validationResult: 'rejected', rejectionReason: `conduct_contract:${parsed.reason || 'invalid'}` });
         return devFail(`conduct_contract:${parsed.reason || 'invalid'}`);
       }
-      appendAiTrace({ requestHash, model, seed, mode, system_fingerprint, responseText: text, parsedProposal: parsed.value, validationResult: 'accepted', rejectionReason: null });
+      trace({ requestHash, model, seed, mode, system_fingerprint, responseText: text, parsedProposal: parsed.value, validationResult: 'accepted', rejectionReason: null });
       return { ok: true, text: JSON.stringify(parsed.value), json: parsed.value };
     }
 

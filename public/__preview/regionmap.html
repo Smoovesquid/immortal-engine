@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Region map</title>
+<style>
+  html,body{margin:0;background:#3a3f37;color:#cdd2c4;font-family:ui-sans-serif,system-ui,sans-serif;padding:14px;}
+  h1{font-size:14px;opacity:.8;margin:0 0 10px;}
+  .cell{margin-bottom:16px;background:#2a2e27;border-radius:8px;padding:8px;}
+  .cell h2{font-size:12px;margin:0 0 6px;}
+  canvas{width:100%;height:auto;display:block;box-shadow:0 10px 30px rgba(0,0,0,.5);border-radius:4px;}
+  #err{color:#e88;white-space:pre-wrap;font-size:12px;}
+</style></head>
+<body>
+<h1>Region geography — biomes · watershed · roads · bridges · tiered settlements (green=safe, red=deadly)</h1>
+<div id="err"></div>
+<div id="root"></div>
+<script type="module">
+const err = document.getElementById('err');
+try {
+  const { generateRegion } = await import('/engine/world/regionGen.js');
+  const { createRegionSketch } = await import('/public/map/regionSketch.js');
+  const root = document.getElementById('root');
+  let n = 0;
+  for (const seed of ['shire', 'ashmoor', 'gravenmoor']) {
+    const region = generateRegion({ seed, W: 52, H: 32, places: 8 });
+    const cell = document.createElement('div'); cell.className = 'cell';
+    const counts = {}; for (const b of region.biome) counts[b] = (counts[b] || 0) + 1;
+    cell.innerHTML = `<h2>${seed} — ${region.places.length} settlements · ${region.bridges.length} bridges · biomes: ${Object.entries(counts).sort((a,b)=>b[1]-a[1]).map(([k])=>k).join(', ')}</h2>`;
+    const cv = document.createElement('canvas'); cv.width = 1080; cv.height = 660; cell.appendChild(cv); root.appendChild(cell);
+    createRegionSketch(cv).draw(region); n++;
+  }
+  window.__ok = n;
+} catch (e) { err.textContent = 'ERROR: ' + (e && e.stack || e); window.__ok = false; }
+</script>
+</body></html>

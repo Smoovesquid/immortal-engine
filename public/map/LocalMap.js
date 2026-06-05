@@ -1,4 +1,11 @@
 import { hash32 } from './hash.js';
+import { floorPlan } from '../../engine/structures/floorPlan.js';
+import { buildingTypeFor } from '../../engine/structures/roomDetail.js';
+import { createInteriorMap, floorPlanToSceneModel, planToSceneModel } from './handDrawnInterior.js';
+import { createPlaceMap } from './handDrawnPlace.js';
+import { placeModelFromNode, placeFromWorldNode } from './placeFromNode.js';
+import { ALL_PLANS } from './plans/planTopology.js';
+import { seedFromString as seedStr } from '../../engine/rng.js';
 
 function el(tag, attrs = {}, ...children) {
   const node = document.createElement(tag);
@@ -32,9 +39,53 @@ const THEME = {
   roomFloor: '#1c1810',
   roomWall: 'rgba(200,168,78,0.35)',
   doorStroke: '#c8a84e',
-  roomLabel: '#8a7e6a',
+  roomLabel: '#b8a878',
   npcName: '#d4c5a9',
+  coverStroke: 'rgba(200,168,78,0.9)',
 };
+
+// ── Graph-paper palette ───────────────────────────────────────────────────
+// The interior map is a hand-drawn dungeon sketch on a cheap quadrille pad:
+// greenish-cream paper, faint grid rule, dark-blue ballpoint ink for walls,
+// graphite pencil for furniture, and a couple of colored-pencil accents. The
+// look is deliberately imperfect — every wobble is the feature, not a bug.
+const PAPER = {
+  paper:      '#e7ecdd',                  // cheap greenish-cream pad stock
+  gridMinor:  'rgba(92,134,120,0.22)',    // 1-square rule
+  gridMajor:  'rgba(92,134,120,0.40)',    // every 5th line, darker
+  ink:        'rgba(34,44,72,0.92)',      // dark-blue ballpoint walls
+  inkSoft:    'rgba(34,44,72,0.42)',      // unexplored hints / door stubs
+  pencil:     'rgba(74,78,92,0.80)',      // graphite furniture
+  pencilSoft: 'rgba(74,78,92,0.42)',
+  shade:      'rgba(74,78,92,0.16)',      // pencil shading for dark rooms
+  highlight:  'rgba(248,226,120,0.34)',   // highlighter wash on current room
+  token:      '#f6f4ea',                  // paper-white token fill
+  player:     '#c0392b',                  // red felt-tip "you are here"
+  npc:        '#2a6f8e',                  // blue pen for people
+  light:      '#e8902a',                  // orange pencil light marks
+  loot:       '#2e8b6f',                  // green pencil loot marks
+  cover:      'rgba(74,78,92,0.72)',      // pencil cover ring
+  label:      'rgba(34,44,72,0.92)',
+};
+
+// Casual marker/handwriting stack so labels read as hand-lettered, not typeset.
+const HAND_FONT = '"Bradley Hand","Comic Sans MS","Chalkboard SE","Marker Felt",ui-rounded,cursive';
+
+// Wall line character per outer shell — a stone chapel inks crisp and straight,
+// a cave or hive wobbles organically. Keeps "a church ≠ a cave" on paper too.
+function shellInk(shell) {
+  if (shell === 'cave' || shell === 'chitin' || shell === 'round') return { amp: 2.6, lw: 2.2, passes: 2 };
+  if (shell === 'open') return { amp: 1.0, lw: 1.6, passes: 1 };
+  if (shell === 'fortified') return { amp: 0.7, lw: 2.8, passes: 2 };
+  return { amp: 1.2, lw: 2.0, passes: 2 }; // stone / timber
+}
+
+// Deterministic signed jitter in [-amp, amp] from a stable string key. The map
+// re-renders every turn, so jitter MUST be keyed (never Math.random) or the
+// walls would shimmer between frames.
+function jit(key, amp) {
+  return (((seedStr('jit|' + key) % 2000) / 1000) - 1) * amp;
+}
 
 // ── Geometry helpers ────────────────────────────────────────────────────
 function inHexMask(dx, dy, R) {
@@ -211,240 +262,437 @@ function drawExterior(ctx, world, w, size, cell) {
   ctx.fill();
 }
 
-// ── Interior compass layout (mirrors engine/structures/topology.js) ──────
-// The engine pins every doorway to a reciprocal N/E/S/W slot deterministically.
-// We replicate that here (same hash, same algorithm) so the floor plan we draw
-// matches the actual movement: the room shown to your north is the one "go north"
-// reaches. seedFromString is copied verbatim from engine/rng.js (browser-safe).
-function seedFromString(str) {
-  const s = String(str ?? '');
-  let h = 1779033703 ^ s.length;
-  for (let i = 0; i < s.length; i++) {
-    h = Math.imul(h ^ s.charCodeAt(i), 3432918353);
-    h = (h << 13) | (h >>> 19);
-  }
-  h = Math.imul(h ^ (h >>> 16), 2246822507);
-  h = Math.imul(h ^ (h >>> 13), 3266489909);
-  h ^= h >>> 16;
-  return h >>> 0;
+
+// ── Hand-drawn primitives ─────────────────────────────────────────────────
+function circlePts(cx, cy, r, n) {
+  const out = [];
+  for (let i = 0; i < n; i++) { const a = (i / n) * Math.PI * 2; out.push({ x: cx + Math.cos(a) * r, y: cy + Math.sin(a) * r }); }
+  return out;
+}
+function rectPts(cx, cy, w, h) {
+  const hw = w / 2, hh = h / 2;
+  return [{ x: cx - hw, y: cy - hh }, { x: cx + hw, y: cy - hh }, { x: cx + hw, y: cy + hh }, { x: cx - hw, y: cy + hh }];
 }
 
-const I_DIRS = ['north', 'east', 'south', 'west'];
-const I_OPP = { north: 'south', south: 'north', east: 'west', west: 'east' };
-const I_VEC = { north: [0, -1], south: [0, 1], east: [1, 0], west: [-1, 0] };
-
-function edgeKeyOf(a, b) { return a < b ? `${a}|${b}` : `${b}|${a}`; }
-
-function interiorCompassLayout(rooms, edgesIn) {
-  const roomIds = new Set(rooms.map(r => String(r?.id || '')));
-  const exits = new Map();   // roomId -> { north, east, south, west }
-  const taken = new Map();   // roomId -> Set<dir>
-  const ensure = (id) => {
-    if (!exits.has(id)) exits.set(id, { north: null, east: null, south: null, west: null });
-    if (!taken.has(id)) taken.set(id, new Set());
-  };
-
-  const edges = (Array.isArray(edgesIn) ? edgesIn : [])
-    .map(e => ({ a: String(e?.a || ''), b: String(e?.b || '') }))
-    .filter(e => e.a && e.b && e.a !== e.b && roomIds.has(e.a) && roomIds.has(e.b))
-    .map(e => ({ lo: e.a < e.b ? e.a : e.b, hi: e.a < e.b ? e.b : e.a }))
-    .map(e => ({ ...e, key: edgeKeyOf(e.lo, e.hi) }));
-
-  // de-dupe by key, then sort by key (matches engine ordering)
-  const seen = new Set();
-  const uniq = [];
-  for (const e of edges) { if (!seen.has(e.key)) { seen.add(e.key); uniq.push(e); } }
-  uniq.sort((x, y) => (x.key < y.key ? -1 : x.key > y.key ? 1 : 0));
-
-  for (const e of uniq) {
-    ensure(e.lo); ensure(e.hi);
-    const start = seedFromString(e.key) % 4;
-    for (let k = 0; k < 4; k++) {
-      const dLo = I_DIRS[(start + k) % 4];
-      const dHi = I_OPP[dLo];
-      if (!taken.get(e.lo).has(dLo) && !taken.get(e.hi).has(dHi)) {
-        exits.get(e.lo)[dLo] = e.hi;
-        exits.get(e.hi)[dHi] = e.lo;
-        taken.get(e.lo).add(dLo);
-        taken.get(e.hi).add(dHi);
-        break;
-      }
-    }
+// Sample a room's outline as polygon corner points for the given architectural
+// shape (same shapes roomPath draws). Curved shapes return pre-densified loops.
+function roomCorners(shape, cx, cy, rw, rh, seed) {
+  const hw = rw / 2, hh = rh / 2;
+  const P = (x, y) => ({ x, y });
+  if (shape === 'round' || shape === 'oval') {
+    const ex = shape === 'round' ? Math.min(hw, hh) : hw;
+    const ey = shape === 'round' ? Math.min(hw, hh) : hh;
+    return circlePtsEll(cx, cy, ex, ey, 26);
   }
-  for (const r of rooms) ensure(String(r?.id || ''));
-  return exits;
+  if (shape === 'blob') {
+    const N = 14, out = [];
+    for (let i = 0; i < N; i++) { const a = (i / N) * Math.PI * 2; const j = 0.74 + (seedStr('blob|' + seed + '|' + i) % 100) / 100 * 0.34; out.push(P(cx + Math.cos(a) * hw * j, cy + Math.sin(a) * hh * j)); }
+    return out;
+  }
+  if (shape === 'octagon') {
+    const c = Math.min(hw, hh) * 0.42;
+    return [P(cx - hw + c, cy - hh), P(cx + hw - c, cy - hh), P(cx + hw, cy - hh + c), P(cx + hw, cy + hh - c), P(cx + hw - c, cy + hh), P(cx - hw + c, cy + hh), P(cx - hw, cy + hh - c), P(cx - hw, cy - hh + c)];
+  }
+  if (shape === 'cross') {
+    const ax = hw * 0.42, ay = hh * 0.42;
+    return [P(cx - ax, cy - hh), P(cx + ax, cy - hh), P(cx + ax, cy - ay), P(cx + hw, cy - ay), P(cx + hw, cy + ay), P(cx + ax, cy + ay), P(cx + ax, cy + hh), P(cx - ax, cy + hh), P(cx - ax, cy + ay), P(cx - hw, cy + ay), P(cx - hw, cy - ay), P(cx - ax, cy - ay)];
+  }
+  if (shape === 'ell') {
+    const nx = cx + hw * 0.10, ny = cy - hh * 0.10;
+    return [P(cx - hw, cy - hh), P(nx, cy - hh), P(nx, ny), P(cx + hw, ny), P(cx + hw, cy + hh), P(cx - hw, cy + hh)];
+  }
+  if (shape === 'apse') {
+    const r = hw, springY = cy - hh + r, out = [P(cx - hw, cy + hh), P(cx - hw, springY)];
+    const N = 12;
+    for (let i = 0; i <= N; i++) { const t = (i / N) * Math.PI; out.push(P(cx - Math.cos(t) * r, springY - Math.sin(t) * r)); }
+    out.push(P(cx + hw, cy + hh));
+    return out;
+  }
+  return [P(cx - hw, cy - hh), P(cx + hw, cy - hh), P(cx + hw, cy + hh), P(cx - hw, cy + hh)];
+}
+function circlePtsEll(cx, cy, ex, ey, n) {
+  const out = [];
+  for (let i = 0; i < n; i++) { const a = (i / n) * Math.PI * 2; out.push({ x: cx + Math.cos(a) * ex, y: cy + Math.sin(a) * ey }); }
+  return out;
 }
 
-// Walk the compass graph from the entry room and assign each room an integer
-// grid cell (gx,gy). north = up, south = down, east = right, west = left. On a
-// collision (the graph isn't always planar) spiral out to the nearest free cell
-// so rooms never stack on top of each other.
-function placeRoomsOnGrid(rooms, exits, entryId) {
-  const pos = new Map();      // id -> {gx,gy}
-  const occupied = new Set(); // "gx,gy"
-  const key = (x, y) => `${x},${y}`;
-  const placed = (x, y) => occupied.has(key(x, y));
-  const put = (id, x, y) => { pos.set(id, { gx: x, gy: y }); occupied.add(key(x, y)); };
-
-  const nearestFree = (x, y) => {
-    if (!placed(x, y)) return [x, y];
-    for (let r = 1; r < 20; r++) {
-      for (let dy = -r; dy <= r; dy++) {
-        for (let dx = -r; dx <= r; dx++) {
-          if (Math.abs(dx) !== r && Math.abs(dy) !== r) continue;
-          if (!placed(x + dx, y + dy)) return [x + dx, y + dy];
-        }
-      }
-    }
-    return [x, y];
-  };
-
-  const queue = [];
-  if (entryId) { put(entryId, 0, 0); queue.push(entryId); }
-
-  while (queue.length) {
-    const id = queue.shift();
-    const here = pos.get(id);
-    const ex = exits.get(id) || {};
-    for (const dir of I_DIRS) {
-      const nb = ex[dir];
-      if (!nb || pos.has(nb)) continue;
-      const [vx, vy] = I_VEC[dir];
-      const [fx, fy] = nearestFree(here.gx + vx, here.gy + vy);
-      put(nb, fx, fy);
-      queue.push(nb);
-    }
+// Subdivide a polygon's edges so wobble shows ALONG each wall, not just at the
+// corners. Returns a denser point loop.
+function densify(pts, segLen) {
+  const out = [], n = pts.length;
+  for (let i = 0; i < n; i++) {
+    const a = pts[i], b = pts[(i + 1) % n];
+    const dx = b.x - a.x, dy = b.y - a.y;
+    const steps = Math.max(1, Math.round(Math.hypot(dx, dy) / segLen));
+    for (let s = 0; s < steps; s++) out.push({ x: a.x + dx * (s / steps), y: a.y + dy * (s / steps) });
   }
-
-  // Any room not reachable from entry (disconnected): drop into a trailing row.
-  let stray = 0;
-  for (const r of rooms) {
-    const id = String(r?.id || '');
-    if (id && !pos.has(id)) {
-      const [fx, fy] = nearestFree(stray++, 99);
-      put(id, fx, fy);
-    }
-  }
-  return pos;
+  return out;
 }
 
-function roomLabel(room, index, isCurrent) {
-  if (isCurrent) return 'You are here';
-  const tags = Array.isArray(room?.tags) ? room.tags.map(t => String(t).toLowerCase()) : [];
-  const PRETTY = { entry: 'Entry', hall: 'Hall', stair: 'Stairs', vault: 'Vault', cell: 'Cell', shrine: 'Shrine', kitchen: 'Kitchen', exit: 'Exit' };
-  for (const t of tags) if (PRETTY[t]) return PRETTY[t];
-  return `Room ${index + 1}`;
+// Ink a closed wobbly outline with a hand-drawn overdraw (a couple of passes,
+// each jittered off a stable key) so the wall looks penned by hand.
+function inkOutline(ctx, pts, key, amp, lw, passes) {
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+  for (let p = 0; p < passes; p++) {
+    ctx.lineWidth = lw * (p === 0 ? 1 : 0.7);
+    ctx.beginPath();
+    for (let i = 0; i <= pts.length; i++) {
+      const a = pts[i % pts.length];
+      const x = a.x + jit(key + '|' + p + '|' + i + '|x', amp);
+      const y = a.y + jit(key + '|' + p + '|' + i + '|y', amp);
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+  }
 }
 
-// ── Interior drawing (true floor-plan layout) ───────────────────────────
+// A short wobbly open segment (corridors, door stubs).
+function inkSegment(ctx, x1, y1, x2, y2, key, amp) {
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  const N = 4;
+  for (let i = 0; i <= N; i++) {
+    const t = i / N;
+    const x = x1 + (x2 - x1) * t + jit(key + '|s|' + i + '|x', amp);
+    const y = y1 + (y2 - y1) * t + jit(key + '|s|' + i + '|y', amp);
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+}
+
+// ── Graph-paper plumbing ──────────────────────────────────────────────────
+// The quadrille rule, drawn edge-to-edge so the whole canvas reads as one pad.
+function drawGrid(ctx, w, step) {
+  ctx.lineWidth = 1;
+  for (let i = 0, x = 0; x <= w; i++, x += step) {
+    ctx.strokeStyle = (i % 5 === 0) ? PAPER.gridMajor : PAPER.gridMinor;
+    ctx.beginPath(); ctx.moveTo(x + 0.5, 0); ctx.lineTo(x + 0.5, w); ctx.stroke();
+  }
+  for (let i = 0, y = 0; y <= w; i++, y += step) {
+    ctx.strokeStyle = (i % 5 === 0) ? PAPER.gridMajor : PAPER.gridMinor;
+    ctx.beginPath(); ctx.moveTo(0, y + 0.5); ctx.lineTo(w, y + 0.5); ctx.stroke();
+  }
+}
+
+// The iconic geomorph hatch: a tiny repeating diagonal-stroke tile. This is the
+// SOLID ROCK the rooms are carved out of — the single most "hand-drawn dungeon"
+// cue there is. Cached: a pattern object is stable, so the rock never shimmers.
+let _hatch = null;
+function hatchPattern(ctx) {
+  if (_hatch) return _hatch;
+  const t = (typeof document !== 'undefined') ? document.createElement('canvas') : null;
+  if (!t) return PAPER.shade;
+  t.width = t.height = 6;
+  const c = t.getContext('2d');
+  c.strokeStyle = 'rgba(40,48,72,0.50)';
+  c.lineWidth = 0.9;
+  c.beginPath(); c.moveTo(-1, 7); c.lineTo(7, -1); c.stroke();           // main 45° stroke
+  c.beginPath(); c.moveTo(-1, 1); c.lineTo(1, -1); c.stroke();           // wrap corner
+  c.beginPath(); c.moveTo(5, 7); c.lineTo(7, 5); c.stroke();             // wrap corner
+  _hatch = ctx.createPattern(t, 'repeat');
+  return _hatch;
+}
+
+// Add a polygon / rect as a SUBPATH (no beginPath) so several can union.
+function addPoly(ctx, pts) {
+  for (let i = 0; i < pts.length; i++) { const p = pts[i]; if (i === 0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y); }
+  ctx.closePath();
+}
+function addRect(ctx, x, y, w, h) {
+  ctx.moveTo(x, y); ctx.lineTo(x + w, y); ctx.lineTo(x + w, y + h); ctx.lineTo(x, y + h); ctx.closePath();
+}
+// Axis-aligned segment → corridor rect of width cw.
+function rectFromSeg(x0, y0, x1, y1, cw) {
+  if (Math.abs(y1 - y0) < 0.5) return { x: Math.min(x0, x1), y: y0 - cw / 2, w: Math.abs(x1 - x0), h: cw };
+  return { x: x0 - cw / 2, y: Math.min(y0, y1), w: cw, h: Math.abs(y1 - y0) };
+}
+function rectHitsAny(rc, boxes) {
+  for (const b of boxes) {
+    const bx0 = b.cx - b.rw / 2, bx1 = b.cx + b.rw / 2, by0 = b.cy - b.rh / 2, by1 = b.cy + b.rh / 2;
+    if (rc.x < bx1 && rc.x + rc.w > bx0 && rc.y < by1 && rc.y + rc.h > by0) return true;
+  }
+  return false;
+}
+
+// A small hand-inked compass rose — the universal "this is a map" signature.
+function drawCompass(ctx, x, y, r) {
+  ctx.save();
+  ctx.strokeStyle = PAPER.ink; ctx.fillStyle = PAPER.ink; ctx.lineWidth = 1.3;
+  ctx.lineJoin = 'round';
+  ctx.beginPath(); ctx.moveTo(x, y - r); ctx.lineTo(x + r * 0.2, y); ctx.lineTo(x, y + r); ctx.lineTo(x - r * 0.2, y); ctx.closePath(); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x - r, y); ctx.lineTo(x, y + r * 0.2); ctx.lineTo(x + r, y); ctx.lineTo(x, y - r * 0.2); ctx.closePath(); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x, y - r); ctx.lineTo(x + r * 0.2, y); ctx.lineTo(x - r * 0.2, y); ctx.closePath(); ctx.fill(); // filled north tip
+  ctx.font = Math.max(9, Math.round(r * 0.62)) + 'px ' + HAND_FONT;
+  ctx.textAlign = 'center';
+  ctx.fillText('N', x, y - r - 3);
+  ctx.textAlign = 'left';
+  ctx.restore();
+}
+
+function drawStar(ctx, cx, cy, r, color) {
+  ctx.save(); ctx.fillStyle = color; ctx.beginPath();
+  for (let i = 0; i < 10; i++) { const a = (i / 10) * Math.PI * 2 - Math.PI / 2; const rr = i % 2 ? r * 0.45 : r; const x = cx + Math.cos(a) * rr, y = cy + Math.sin(a) * rr; if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y); }
+  ctx.closePath(); ctx.fill(); ctx.restore();
+}
+
+// Pencil furniture: simple graphite glyphs (the DM's quick sketches), with a
+// little colored-pencil accent for light, loot, and cover.
+function pencilFurniture(ctx, f, cx, cy, rw, rh) {
+  const u = Math.min(rw, rh);
+  const px = cx + (f.fx - 0.5) * rw, py = cy + (f.fy - 0.5) * rh;
+  const key = 'f|' + f.fx + '|' + f.fy;
+
+  if (f.flat) { // rug / runner — a dashed pencil rectangle on the floor
+    const wd = (f.w || 0.4) * rw, ht = (f.h || 0.3) * rh;
+    ctx.save();
+    ctx.strokeStyle = PAPER.pencilSoft;
+    ctx.lineWidth = Math.max(0.8, u * 0.02);
+    ctx.setLineDash([4, 3]);
+    ctx.strokeRect(px - wd / 2, py - ht / 2, wd, ht);
+    ctx.restore();
+    return;
+  }
+
+  ctx.save();
+  ctx.strokeStyle = PAPER.pencil;
+  const lw = Math.max(0.9, u * 0.022);
+  if (f.shape === 'circle') {
+    const r = Math.max(2, f.r * u);
+    inkOutline(ctx, circlePts(px, py, r, 14), key, 0.6, lw, 1);
+  } else if (f.shape === 'bed') {
+    const wd = f.w * u, ht = f.h * u;
+    inkOutline(ctx, rectPts(px, py, wd, ht), key, 0.6, lw, 1);
+    ctx.lineWidth = lw; ctx.beginPath();
+    ctx.moveTo(px - wd / 2, py - ht / 2 + ht * 0.3); ctx.lineTo(px + wd / 2, py - ht / 2 + ht * 0.3); ctx.stroke(); // pillow
+  } else {
+    const wd = (f.w || 0.16) * u, ht = (f.h || 0.16) * u;
+    inkOutline(ctx, rectPts(px, py, wd, ht), key, 0.6, lw, 1);
+  }
+  ctx.restore();
+
+  // Colored-pencil accents.
+  if (f.light) {
+    ctx.save();
+    ctx.strokeStyle = PAPER.light; ctx.fillStyle = PAPER.light; ctx.lineWidth = Math.max(1, u * 0.02);
+    const r = Math.max(2, u * 0.05);
+    ctx.beginPath(); ctx.arc(px, py, r, 0, Math.PI * 2); ctx.fill();
+    for (let i = 0; i < 6; i++) { const a = (i / 6) * Math.PI * 2; ctx.beginPath(); ctx.moveTo(px + Math.cos(a) * r * 1.5, py + Math.sin(a) * r * 1.5); ctx.lineTo(px + Math.cos(a) * r * 2.3, py + Math.sin(a) * r * 2.3); ctx.stroke(); }
+    ctx.restore();
+  }
+  if (f.cover) {
+    ctx.save();
+    ctx.strokeStyle = PAPER.cover; ctx.lineWidth = Math.max(1, u * 0.018);
+    ctx.setLineDash(f.cover === 'three-quarter' ? [] : [3, 3]);
+    ctx.beginPath(); ctx.arc(px, py, Math.max(3, u * 0.14), 0, Math.PI * 2); ctx.stroke();
+    ctx.restore();
+  }
+  if (f.loot) drawStar(ctx, px, py, Math.max(2.5, u * 0.06), PAPER.loot);
+}
+
+// ── Interior drawing (hand-drawn graph-paper dungeon map) ────────────────
+// An interior is a CONTINUOUS SPACE, not a bubble diagram: rooms and corridors
+// are one void CARVED OUT OF SOLID ROCK, and the rock is hand-hatched all around
+// it. The grid shows through the floor; the wall is just the edge where hatch
+// meets floor. The map fills in room-by-room as you explore (interior.visited).
+// Every wobble is seeded off stable ids so the rock never shimmers between turns.
 function drawInterior(ctx, world, w) {
-  ctx.fillStyle = THEME.bg;
+  const step = Math.max(13, Math.round(w / 30));
+
+  // ── 0) The pad: greenish-cream stock, grid, faint edge vignette. ─────────
+  ctx.fillStyle = PAPER.paper;
   ctx.fillRect(0, 0, w, w);
+  drawGrid(ctx, w, step);
 
   const interior = world?.scene?.interior && typeof world.scene.interior === 'object' ? world.scene.interior : null;
   const roomId = String(interior?.roomId || '');
   const structureKey = String(interior?.structureKey || '');
   const st = world?.structures?.byId?.[structureKey];
-  const topo = st?.topology && typeof st.topology === 'object' ? st.topology : null;
-  const rooms = (Array.isArray(topo?.rooms) ? topo.rooms : []).filter(r => r && r.id != null);
-  const edges = Array.isArray(topo?.edges) ? topo.edges : [];
 
-  if (!rooms.length) {
-    ctx.fillStyle = THEME.roomLabel;
-    ctx.font = '12px ui-monospace, SFMono-Regular, Menlo, monospace';
-    ctx.fillText('Interior', 12, 20);
-    return;
-  }
+  const noPlan = () => {
+    ctx.fillStyle = PAPER.label;
+    ctx.font = '16px ' + HAND_FONT;
+    ctx.fillText('Interior', 14, 26);
+  };
+  if (!st) { noPlan(); return; }
 
-  // Stable index per room (sorted by id) for "Room N" labels.
-  const sortedIds = rooms.map(r => String(r.id)).sort((a, b) => a.localeCompare(b));
-  const indexOf = new Map(sortedIds.map((id, i) => [id, i]));
+  const fp = floorPlan(st);
+  if (!fp.rooms.length) { noPlan(); return; }
 
-  // Entry = room tagged 'entry', else lexicographically first (matches engine's
-  // normalizeTopology rooms[0], which is where enterStructureInterior drops you).
-  const entryRoom = rooms.find(r => (r.tags || []).map(t => String(t).toLowerCase()).includes('entry'));
-  const entryId = String(entryRoom?.id || sortedIds[0] || '');
+  const visited = Array.isArray(interior.visited) && interior.visited.length ? interior.visited : [roomId];
+  const discovered = new Set(visited.map(String));
 
-  const exits = interiorCompassLayout(rooms, edges);
-  const pos = placeRoomsOnGrid(rooms, exits, entryId);
+  const ink = shellInk(fp.shell);
+  const margin = Math.max(10, w * 0.09);
+  const scale = Math.min((w - 2 * margin) / fp.footprint.w, (w - 2 * margin) / fp.footprint.h);
+  const offX = (w - fp.footprint.w * scale) / 2;
+  const offY = (w - fp.footprint.h * scale) / 2;
+  const PX = (u) => offX + u * scale;
+  const PY = (u) => offY + u * scale;
+  const unit = scale;
+  const big = unit >= 30; // furniture legible at this zoom?
 
-  // Grid bounds → fit to canvas with padding.
-  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-  for (const { gx, gy } of pos.values()) {
-    if (gx < minX) minX = gx; if (gx > maxX) maxX = gx;
-    if (gy < minY) minY = gy; if (gy > maxY) maxY = gy;
-  }
-  const gw = (maxX - minX) + 1;
-  const gh = (maxY - minY) + 1;
-  const pad = Math.max(10, Math.round(w * 0.06));
-  const pitch = Math.min((w - pad * 2) / gw, (w - pad * 2) / gh);
-  const room = pitch * 0.78;            // room box smaller than its cell → gaps read as walls/corridors
-  const offX = (w - gw * pitch) / 2 - minX * pitch;
-  const offY = (w - gh * pitch) / 2 - minY * pitch;
-  const cellCenter = (gx, gy) => ({ cx: offX + gx * pitch + pitch / 2, cy: offY + gy * pitch + pitch / 2 });
+  const roomRect = (r) => ({ cx: PX(r.cx), cy: PY(r.cy), rw: r.w * scale * 0.92, rh: r.h * scale * 0.92 });
 
-  // 1) Corridors first (drawn under rooms): connect every doorway. Cardinally
-  //    adjacent rooms get a short door stub; non-adjacent (collision-spiraled)
-  //    neighbors get a connecting passage.
-  ctx.strokeStyle = THEME.doorStroke;
-  for (const r of rooms) {
-    const id = String(r.id);
-    const a = pos.get(id); if (!a) continue;
-    const ex = exits.get(id) || {};
-    for (const dir of I_DIRS) {
-      const nb = ex[dir]; if (!nb) continue;
-      if (id >= nb) continue; // draw each doorway once
-      const b = pos.get(nb); if (!b) continue;
-      const A = cellCenter(a.gx, a.gy);
-      const B = cellCenter(b.gx, b.gy);
-      const adjacent = Math.abs(a.gx - b.gx) + Math.abs(a.gy - b.gy) === 1;
-      ctx.lineWidth = adjacent ? room * 0.32 : 3;
-      ctx.lineCap = 'round';
-      ctx.beginPath();
-      ctx.moveTo(A.cx, A.cy);
-      ctx.lineTo(B.cx, B.cy);
-      ctx.stroke();
+  // Only rooms we've actually entered get carved.
+  const drooms = fp.rooms.filter(r => discovered.has(r.id));
+  const pbox = new Map(drooms.map(r => [r.id, Object.assign(roomRect(r), { gx: r.gx, gy: r.gy, shape: r.shape, id: r.id })]));
+
+  // ── 1) Thread corridors. Grid-adjacent rooms join with a straight passage;
+  //       distant connections take a right-angle dog-leg through the rock IF it
+  //       clears every other room, else they fall back to a dashed door-stub. ─
+  const cw = Math.max(8, unit * 0.34);
+  const corridors = []; // {x,y,w,h} floor rects (also part of the void)
+  const stubs = [];     // {x0,y0,x1,y1,key} dashed hints into the unknown
+  for (const d of fp.doors) {
+    const aIn = discovered.has(String(d.a)), bIn = discovered.has(String(d.b));
+    if (aIn !== bIn) { // one side unexplored → trailing stub
+      const from = pbox.get(String(aIn ? d.a : d.b));
+      if (from) { const dx = PX(d.x), dy = PY(d.y); stubs.push({ x0: from.cx + (dx - from.cx) * 0.45, y0: from.cy + (dy - from.cy) * 0.45, x1: dx, y1: dy, key: 'stub|' + d.a + d.b }); }
+      continue;
     }
-  }
-  ctx.lineCap = 'butt';
-
-  // 2) Rooms on top (so the corridor reads as a door cut into the wall).
-  for (const r of rooms) {
-    const id = String(r.id);
-    const p = pos.get(id); if (!p) continue;
-    const { cx, cy } = cellCenter(p.gx, p.gy);
-    const x = cx - room / 2;
-    const y = cy - room / 2;
-    const isCurrent = id === roomId;
-
-    ctx.fillStyle = isCurrent ? 'rgba(200,168,78,0.10)' : THEME.roomFloor;
-    ctx.fillRect(x, y, room, room);
-    ctx.strokeStyle = isCurrent ? 'rgba(200,168,78,0.65)' : THEME.roomWall;
-    ctx.lineWidth = isCurrent ? 2.5 : 1.5;
-    ctx.strokeRect(x, y, room, room);
-
-    // Label only when the room box is big enough to hold text (full map).
-    if (room >= 56) {
-      ctx.fillStyle = isCurrent ? THEME.playerFill : THEME.roomLabel;
-      ctx.font = '11px ui-monospace, SFMono-Regular, Menlo, monospace';
-      const label = roomLabel(r, indexOf.get(id) ?? 0, isCurrent);
-      ctx.fillText(label, x + 6, y + 14);
+    if (!aIn) continue; // both unexplored
+    const a = pbox.get(String(d.a)), b = pbox.get(String(d.b));
+    const adj = Math.abs(a.gx - b.gx) + Math.abs(a.gy - b.gy) === 1;
+    if (adj) {
+      if (a.gx !== b.gx) { const L = a.cx < b.cx ? a : b, R = a.cx < b.cx ? b : a; const y = (a.cy + b.cy) / 2; corridors.push(rectFromSeg(L.cx + L.rw / 2 - 1, y, R.cx - R.rw / 2 + 1, y, cw)); }
+      else { const T = a.cy < b.cy ? a : b, B = a.cy < b.cy ? b : a; const x = (a.cx + b.cx) / 2; corridors.push(rectFromSeg(x, T.cy + T.rh / 2 - 1, x, B.cy - B.rh / 2 + 1, cw)); }
+    } else {
+      const obs = drooms.filter(r => r.id !== d.a && r.id !== d.b).map(roomRect);
+      const tryL = (horizFirst) => {
+        const ex = horizFirst ? b.cx : a.cx, ey = horizFirst ? a.cy : b.cy;
+        const r1 = rectFromSeg(a.cx, a.cy, ex, ey, cw), r2 = rectFromSeg(ex, ey, b.cx, b.cy, cw);
+        return (rectHitsAny(r1, obs) || rectHitsAny(r2, obs)) ? null : [r1, r2];
+      };
+      const L = tryL(true) || tryL(false);
+      if (L) corridors.push(...L);
+      else { const dx = PX(d.x), dy = PY(d.y); stubs.push({ x0: a.cx, y0: a.cy, x1: dx, y1: dy, key: 'sa|' + d.a + d.b }); stubs.push({ x0: b.cx, y0: b.cy, x1: dx, y1: dy, key: 'sb|' + d.a + d.b }); }
     }
   }
 
-  // 3) Player marker in the current room.
-  const cur = pos.get(roomId);
+  // ── 2) THE ROCK. Hatch a band hugging the carved void: fill each room/corridor
+  //       grown by the wall thickness with the geomorph hatch, then re-expose the
+  //       floor inside. What's left is hand-scratched stone around the rooms. ──
+  const hatch = hatchPattern(ctx);
+  const W = Math.max(7, unit * 0.36); // rock wall thickness
+  for (const r of drooms) {
+    const b = pbox.get(r.id);
+    ctx.save(); ctx.beginPath(); addPoly(ctx, roomCorners(r.shape, b.cx, b.cy, b.rw + 2 * W, b.rh + 2 * W, r.id)); ctx.clip();
+    ctx.fillStyle = hatch; ctx.fillRect(0, 0, w, w); ctx.restore();
+  }
+  for (const c of corridors) {
+    ctx.save(); ctx.beginPath(); addRect(ctx, c.x - W, c.y - W, c.w + 2 * W, c.h + 2 * W); ctx.clip();
+    ctx.fillStyle = hatch; ctx.fillRect(0, 0, w, w); ctx.restore();
+  }
+  // Re-expose the floor (paper + grid) inside every room and corridor.
+  const exposeFloor = (clipFn) => { ctx.save(); ctx.beginPath(); clipFn(); ctx.clip(); ctx.fillStyle = PAPER.paper; ctx.fillRect(0, 0, w, w); drawGrid(ctx, w, step); ctx.restore(); };
+  for (const r of drooms) { const b = pbox.get(r.id); exposeFloor(() => addPoly(ctx, roomCorners(r.shape, b.cx, b.cy, b.rw, b.rh, r.id))); }
+  for (const c of corridors) exposeFloor(() => addRect(ctx, c.x, c.y, c.w, c.h));
+
+  // ── 3) Room washes + pencil furniture (clipped to the room void). ────────
+  for (const r of drooms) {
+    const { cx, cy, rw, rh } = pbox.get(r.id);
+    const isCurrent = r.id === roomId;
+    ctx.save();
+    ctx.beginPath(); addPoly(ctx, roomCorners(r.shape, cx, cy, rw, rh, r.id)); ctx.clip();
+    if (isCurrent) { ctx.fillStyle = PAPER.highlight; ctx.fillRect(cx - rw, cy - rh, rw * 2, rh * 2); }
+    else if (r.dark) { ctx.fillStyle = PAPER.shade; ctx.fillRect(cx - rw, cy - rh, rw * 2, rh * 2); }
+    if (big) {
+      for (const f of r.furniture) if (f.flat) pencilFurniture(ctx, f, cx, cy, rw, rh);
+      for (const f of r.furniture) if (!f.flat) pencilFurniture(ctx, f, cx, cy, rw, rh);
+    } else {
+      for (const f of r.furniture) {
+        if (!f.cover) continue;
+        const px = cx + (f.fx - 0.5) * rw, py = cy + (f.fy - 0.5) * rh;
+        ctx.fillStyle = PAPER.cover;
+        ctx.beginPath(); ctx.arc(px, py, Math.max(1.5, unit * 0.06), 0, Math.PI * 2); ctx.fill();
+      }
+    }
+    ctx.restore();
+  }
+
+  // ── 4) Ink the walls (wobbly room outlines), then re-open the corridor mouths
+  //       and rail the corridor sides so passages read as carved hallways. ───
+  ctx.strokeStyle = PAPER.ink;
+  for (const r of drooms) {
+    const { cx, cy, rw, rh } = pbox.get(r.id);
+    const isCurrent = r.id === roomId;
+    const dense = densify(roomCorners(r.shape, cx, cy, rw, rh, r.id), Math.max(8, unit * 0.5));
+    inkOutline(ctx, dense, r.id, ink.amp, isCurrent ? ink.lw + 0.6 : ink.lw, ink.passes);
+  }
+  for (const c of corridors) exposeFloor(() => addRect(ctx, c.x, c.y, c.w, c.h)); // punch mouths through walls
+  ctx.strokeStyle = PAPER.ink; ctx.lineWidth = ink.lw;
+  for (let i = 0; i < corridors.length; i++) {
+    const c = corridors[i];
+    if (c.w >= c.h) { inkSegment(ctx, c.x, c.y, c.x + c.w, c.y, 'rl|' + i + '|t', 0.7); inkSegment(ctx, c.x, c.y + c.h, c.x + c.w, c.y + c.h, 'rl|' + i + '|b', 0.7); }
+    else { inkSegment(ctx, c.x, c.y, c.x, c.y + c.h, 'rl|' + i + '|l', 0.7); inkSegment(ctx, c.x + c.w, c.y, c.x + c.w, c.y + c.h, 'rl|' + i + '|r', 0.7); }
+  }
+
+  // ── 5) Dashed stubs into the unexplored dark. ────────────────────────────
+  ctx.strokeStyle = PAPER.inkSoft; ctx.lineWidth = ink.lw * 0.8;
+  ctx.setLineDash([4, 4]);
+  for (const s of stubs) inkSegment(ctx, s.x0, s.y0, s.x1, s.y1, s.key, 1.2);
+  ctx.setLineDash([]);
+
+  // ── 6) Handwritten room names, gently rotated. ───────────────────────────
+  if (unit >= 28) {
+    ctx.textAlign = 'center';
+    for (const r of drooms) {
+      const { cx, cy, rh } = pbox.get(r.id);
+      ctx.save();
+      ctx.translate(cx, cy - rh / 2 + Math.max(11, unit * 0.22));
+      ctx.rotate(jit('lab|' + r.id, 0.05));
+      ctx.font = Math.max(11, Math.round(unit * 0.26)) + 'px ' + HAND_FONT;
+      ctx.fillStyle = PAPER.label;
+      ctx.fillText(r.name || 'Room', 0, 0);
+      ctx.restore();
+    }
+    ctx.textAlign = 'left';
+  }
+
+  // ── 7) Title cartouche + compass rose — the "this is a map" signatures. ───
+  {
+    const title = fp.name || 'Building';
+    ctx.save();
+    ctx.translate(margin * 0.6, margin * 1.0);
+    ctx.rotate(-0.02);
+    ctx.font = Math.max(14, Math.round(w * 0.034)) + 'px ' + HAND_FONT;
+    ctx.fillStyle = PAPER.ink;
+    ctx.fillText(title, 0, 0);
+    const tw = ctx.measureText(title).width;
+    ctx.strokeStyle = PAPER.inkSoft; ctx.lineWidth = 1.4;
+    inkSegment(ctx, 0, 6, tw, 6, 'title|' + title, 1.0);
+    ctx.restore();
+  }
+  drawCompass(ctx, w - margin * 0.9, w - margin * 1.1, Math.max(10, w * 0.028));
+
+  // ── 8) People (blue-pen rings) in discovered rooms. ──────────────────────
+  const npcs = npcsAtCurrentNode(world);
+  const discIds = drooms.map(r => r.id);
+  if (npcs.length && unit >= 24 && discIds.length) {
+    for (let i = 0; i < npcs.length; i++) {
+      const n = npcs[i] || {};
+      const nkey = String(n.id || n.name || ('npc' + i));
+      const target = pbox.get(discIds[seedStr('npcroom|' + structureKey + '|' + nkey) % discIds.length]);
+      if (!target) continue;
+      const { cx, cy, rw, rh } = target;
+      const ang = (seedStr('npcang|' + nkey) % 360) * Math.PI / 180;
+      const m = Math.min(rw, rh) * (0.16 + (seedStr('npcrad|' + nkey) % 100) / 100 * 0.18);
+      const tx = cx + Math.cos(ang) * m, ty = cy + Math.sin(ang) * m;
+      const tok = Math.max(3, unit * 0.1);
+      ctx.beginPath(); ctx.arc(tx, ty, tok, 0, Math.PI * 2);
+      ctx.fillStyle = PAPER.token; ctx.fill();
+      ctx.strokeStyle = PAPER.npc; ctx.lineWidth = Math.max(1.4, tok * 0.4); ctx.stroke();
+    }
+  }
+
+  // ── 9) "You are here" — red felt-tip dot in the current room. ────────────
+  const cur = pbox.get(roomId);
   if (cur) {
-    const { cx, cy } = cellCenter(cur.gx, cur.gy);
-    const dot = Math.max(4, room * 0.16);
-    ctx.beginPath();
-    ctx.arc(cx, cy, dot * 2, 0, Math.PI * 2);
-    ctx.fillStyle = THEME.playerGlow;
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(cx, cy, dot, 0, Math.PI * 2);
-    ctx.fillStyle = THEME.playerFill;
-    ctx.fill();
+    const dot = Math.max(4, unit * 0.12);
+    ctx.beginPath(); ctx.arc(cur.cx, cur.cy, dot, 0, Math.PI * 2);
+    ctx.fillStyle = PAPER.player; ctx.fill();
+    ctx.strokeStyle = PAPER.token; ctx.lineWidth = Math.max(1.5, dot * 0.3); ctx.stroke();
   }
 }
 
@@ -479,15 +727,94 @@ function renderNpcRoster(world) {
   return el('div', { class: 'stack', style: { gap: '3px' } }, ...rows);
 }
 
+// A tiny glyph legend so the furnished floor plan is self-explaining: a colored
+// dot/ring next to its meaning. Only shown for interiors (the only view with
+// furniture, cover, loot, and people).
+function mapLegend() {
+  const chip = (color, label, ring) => el('span', { class: 'map-legend-chip' },
+    el('span', {
+      class: 'map-legend-dot',
+      style: ring
+        ? { border: `2px solid ${color}`, background: 'transparent' }
+        : { background: color }
+    }),
+    label
+  );
+  return el('div', { class: 'map-legend' },
+    chip(PAPER.cover, 'cover', true),
+    chip(PAPER.light, 'light'),
+    chip(PAPER.loot, 'loot'),
+    chip(PAPER.npc, 'person', true),
+    chip(PAPER.player, 'you')
+  );
+}
+
 // ── Public render function ──────────────────────────────────────────────
 /**
  * @param {object} world
  * @param {object} [opts]
  * @param {boolean} [opts.compact] - If true, render a smaller map for embedding in the play screen
  */
+// The polished shared renderer is now the DEFAULT for interiors (verified on real
+// floorPlan output via /public/__preview/live.html: hand-drawn carve-void, creature
+// icons, bent corridors, fog-of-war preserved). Falls back to the legacy drawInterior
+// on any error (see renderLocalMap). Disable with localStorage.setItem('handDrawnMapV2','0').
+function useHandDrawnV2(opts) {
+  if (opts && opts.handDrawnV2 != null) return Boolean(opts.handDrawnV2);
+  try { if (typeof localStorage !== 'undefined') { const v = localStorage.getItem('handDrawnMapV2'); if (v === '0' || v === 'false') return false; } } catch {}
+  return true;
+}
+
+// Interior render via the shared hand-drawn module (carve-void + materials +
+// windows + furniture + tokens), with fog-of-war from interior.visited and the
+// player token placed in the current room. Pure draw; never mutates world.
+// engine room ids end in ":<n>" (1-based; room 1 = entry).
+function engineRoomIndex(roomId) {
+  const m = String(roomId || '').match(/:(\d+)$/);
+  return m ? parseInt(m[1], 10) : null;
+}
+
+function drawInteriorV2(canvas, world) {
+  const interior = world?.scene?.interior;
+  const st = world?.structures?.byId?.[String(interior?.structureKey || '')];
+  if (!st) throw new Error('no structure');
+
+  // Prefer the authored building-catalog plan for this type — the good-looking
+  // hand-drawn buildings — mapping the engine's current/visited rooms onto the
+  // plan's rooms by index (engine room N ↔ plan room N-1). Fall back to the
+  // procedural floor plan only when no authored plan exists for the type.
+  const buildingType = st.buildingType || buildingTypeFor(String(st.id || ''));
+  const plan = ALL_PLANS.find(p => p.type === buildingType);
+  if (plan && Array.isArray(plan.rooms) && plan.rooms.length) {
+    const aRooms = plan.rooms;
+    const toAuthored = (engId) => { const n = engineRoomIndex(engId); const idx = (n != null ? n - 1 : 0); return aRooms[Math.max(0, Math.min(aRooms.length - 1, idx))]; };
+    const curA = toAuthored(interior?.roomId);
+    const visEng = Array.isArray(interior?.visited) && interior.visited.length ? interior.visited : [String(interior?.roomId || '')];
+    const visited = [...new Set(visEng.map(id => toAuthored(id)?.id).filter(Boolean))];
+    const tokens = curA ? [{ type: 'player', ux: curA.cx, uy: curA.cy }] : [];
+    const model = planToSceneModel(plan, { currentRoomId: curA?.id, visited, tokens });
+    const map = createInteriorMap(canvas, { seed: String(st.id || 'interior') });
+    map.draw(model);
+    return;
+  }
+
+  // Procedural fallback (no authored plan for this type).
+  const fp = floorPlan(st);
+  if (!fp.rooms.length) throw new Error('no rooms');
+  const roomId = String(interior?.roomId || '');
+  const visited = Array.isArray(interior?.visited) && interior.visited.length ? interior.visited : [roomId];
+  const cur = fp.rooms.find(r => String(r.id) === roomId);
+  const tokens = cur ? [{ type: 'player', ux: cur.cx, uy: cur.cy }] : [];
+  const model = floorPlanToSceneModel(fp, { currentRoomId: roomId, visited, tokens });
+  const map = createInteriorMap(canvas, { seed: String(interior?.structureKey || 'interior') });
+  map.draw(model);
+}
+
 export function renderLocalMap(world, opts = {}) {
   const compact = Boolean(opts?.compact);
-  const size = compact ? 41 : 61;
+  // Compact is rendered at a higher internal resolution than it displays (CSS
+  // scales it down), so the furnished floor plan stays crisp instead of blurry.
+  const size = compact ? 60 : 61;
   const cell = compact ? 8 : 14;
   const w = size * cell;
 
@@ -499,8 +826,32 @@ export function renderLocalMap(world, opts = {}) {
   const ctx = canvas.getContext('2d');
 
   const isInterior = Boolean(world?.scene?.interior);
-  if (isInterior) drawInterior(ctx, world, w);
-  else drawExterior(ctx, world, w, size, cell);
+  if (isInterior) {
+    // Opt-in: the polished shared hand-drawn renderer (materials/windows/furniture).
+    // Default OFF so the proven live path is untouched; flip on to A/B it:
+    //   localStorage.setItem('handDrawnMapV2','1')
+    // Falls back to the existing drawInterior on any error.
+    if (useHandDrawnV2(opts)) {
+      // If the rich renderer can't handle this world (e.g. a stale save whose
+      // structure shape predates the current floor-plan format), warn instead of
+      // failing silently, then fall back to the plain renderer.
+      try { drawInteriorV2(canvas, world); }
+      catch (e) { try { console.warn('[map] hand-drawn interior fell back to plain:', e && (e.message || e)); } catch {} drawInterior(ctx, world, w); }
+    } else {
+      drawInterior(ctx, world, w);
+    }
+  }
+  else {
+    // No exterior "mode" / tile overworld — outside is the SAME hand-drawn local
+    // scale as interiors: a continuous walkable place with the settlement's
+    // buildings embedded. (The abstract overworld tile view lives only on the Map
+    // tab as a zoom-out.) Falls back to the tile renderer on any error.
+    try {
+      const model = placeFromWorldNode(world, world?.map?.currentNodeId) || placeModelFromNode(world, world?.map?.currentNodeId);
+      if (model) { const pm = createPlaceMap(canvas, { seed: String(model.seed || 'place'), fog: false }); pm.draw(model); }
+      else drawExterior(ctx, world, w, size, cell);
+    } catch (e) { try { console.warn('[map] place render fell back to tiles:', e && (e.message || e)); } catch {} drawExterior(ctx, world, w, size, cell); }
+  }
 
   const structures = structuresAtCurrentNode(world);
   const npcs = npcsAtCurrentNode(world);
@@ -518,7 +869,8 @@ export function renderLocalMap(world, opts = {}) {
         structures.length ? el('span', { class: 'play-map-tag' }, `${structures.length} structure${structures.length > 1 ? 's' : ''}`) : null,
         npcs.length ? el('span', { class: 'play-map-tag' }, `${npcs.length} NPC${npcs.length > 1 ? 's' : ''}`) : null
       ),
-      canvas
+      canvas,
+      isInterior ? mapLegend() : null
     );
   }
 
@@ -531,6 +883,7 @@ export function renderLocalMap(world, opts = {}) {
         : `${nodeName} · ${structures.length} structures · ${npcs.length} persons`)
     ),
     canvas,
+    isInterior ? mapLegend() : null,
     el('div', { class: 'stack', style: { gap: '6px' } },
       el('div', { class: 'local-map-header' }, el('strong', {}, 'Persons of note')),
       renderNpcRoster(world)

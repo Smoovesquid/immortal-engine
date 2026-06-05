@@ -299,6 +299,9 @@ export function resolveCombatTurn(world, move, opts = {}) {
       // CM9: Apply sense overrides — enemy senses can adjust effective AC of target.
       const senseResult = applySenseOverrides(e, rawTarget);
       const targetMember = { ...rawTarget, ac: Math.max(0, baseAc - senseResult.toHitMod) };
+      // The player reads as "you" in summaries, never by name — otherwise an enemy
+      // sharing the PC's name produces "Sera hits Sera for 3".
+      const tLabel = String(targetMember.id) === playerId ? 'you' : String(targetMember.name);
       partyIdx++;
 
       const enemyActions = Array.isArray(e.actions) ? e.actions : [];
@@ -353,7 +356,7 @@ export function resolveCombatTurn(world, move, opts = {}) {
         if (dmg > 0) {
           counterDeltas.push({ op: 'wound', entityId: String(targetMember.id), by: dmg });
         }
-        summaryParts.push(`${e.name} → ${targetMember.name}: ${actionSummaries.join(', ')}`);
+        summaryParts.push(`${e.name} → ${tLabel}: ${actionSummaries.join(', ')}`);
       } else {
         // Legacy flat damage fallback.
         let rawDmg = clampInt(e.damage, 1, 9999);
@@ -369,13 +372,13 @@ export function resolveCombatTurn(world, move, opts = {}) {
           companionGuardConsumed = true;
         }
         if (eRes.heals) {
-          summaryParts.push(`${e.name} attacks ${targetMember.name} — ${eDmgType} absorbed`);
+          summaryParts.push(`${e.name} attacks ${tLabel} — ${eDmgType} absorbed`);
         } else if (eRes.final === 0) {
-          summaryParts.push(`${e.name} attacks ${targetMember.name} — immune to ${eDmgType}`);
+          summaryParts.push(`${e.name} attacks ${tLabel} — immune to ${eDmgType}`);
         } else if (dmg > 0) {
           counterDeltas.push({ op: 'wound', entityId: String(targetMember.id), by: dmg });
           const suffix = eRes.level !== 'normal' ? ` (${eRes.level})` : '';
-          summaryParts.push(`${e.name} hits ${targetMember.name} for ${dmg}${suffix}`);
+          summaryParts.push(`${e.name} hits ${tLabel} for ${dmg}${suffix}`);
         }
       }
 
@@ -1037,7 +1040,7 @@ function applyPlayerDefeat(world) {
   const ending = {
     triggered: true,
     type: 'The Cost Paid',
-    epilogueLine: 'Wizard: You fall in the fight. The world tilts grey, and the dungeon collects what was always its due.',
+    epilogueLine: 'Wizard: You fall in the fight. The world tilts grey, and the dark collects what was always its due.',
     locked: true,
     reason: 'defeated-in-combat'
   };

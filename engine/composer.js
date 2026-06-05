@@ -173,11 +173,15 @@ function pickMotifWithMemory(world, pack, rng, { prev }) {
 function mutateMotif(motif, rng) {
   const m = String(motif || '').trim();
   if (!m) return 'a low hum threads through the walls';
+  // Motifs are full clauses ("a low hum threads through the walls"), so only
+  // sentence-adverbial prefixes read cleanly — "the echo of <clause>" / "<clause>,
+  // again" garble. Prefixes also stay punctuation-safe (no em-dash/period) so they
+  // don't collide with the narration template's em-dash join.
   const variants = [
     (x) => x,
-    (x) => `the echo of ${x}`,
-    (x) => `${x}, again`,
-    (x) => `a trace of ${x}`
+    (x) => `again, ${x}`,
+    (x) => `still, ${x}`,
+    (x) => `even now, ${x}`
   ];
   const fn = variants[rng.int(0, variants.length - 1)] || variants[0];
   return fn(m);
@@ -287,6 +291,18 @@ function buildNarration({ band, tone, motifPhrase, clockShade, stakes, loc, obj,
     return `Wizard: At the ${loc}, ${tone} and alert, you notice ${motifPhrase}${clockShade ? `; ${clockShade}` : ''}${npcClause}${stressClause}${threadClause}; ${clause ? clause + ' ' : ''}objective: ${obj}; what do you do?`;
   }
 
+  // combat turn — the combat clause IS the action result, so drop the generic hit
+  // phrase and the scene motif (they contradict it: "it doesn't land, but you
+  // learn, the blow connects"). The enemy name is woven in up front instead of
+  // dangling after an em-dash.
+  if (String(resolution?.updateKind || '') === 'combat') {
+    const foe = String(resolution?.enemyName || '').trim();
+    const clauseRaw = String(approachPhrase || 'the exchange is joined');
+    const body = foe ? `against ${foe}, ${clauseRaw}` : clauseRaw;
+    const bodyCap = body.charAt(0).toUpperCase() + body.slice(1);
+    return `Wizard: ${bodyCap}; ${stakes}${clockShade ? `; ${clockShade}` : ''}${stressClause}${threadClause}; what do you do?`;
+  }
+
   // turn
   const success = Boolean(resolution?.success);
   const hit = success ? (band === 'cooperative' ? 'it lands clean' : band === 'grim' ? 'it works, narrowly' : 'it works, brutally')
@@ -294,7 +310,11 @@ function buildNarration({ band, tone, motifPhrase, clockShade, stakes, loc, obj,
 
   const approachClause = approachPhrase ? `, ${approachPhrase}` : '';
 
-  return `Wizard: In the ${loc}, ${motifPhrase} threads through your move—${hit}${approachClause}; ${stakes}${clockShade ? `; ${clockShade}` : ''}${stressClause}${threadClause}; what do you do?`;
+  // Motif phrases are full clauses (e.g. "a low hum threads through the walls"),
+  // so join with an em-dash rather than the old "…threads through your move"
+  // connector, which collided when the motif itself ended in that verb. Keep it a
+  // single sentence (no mid-period) — downstream narration is one-sentence.
+  return `Wizard: In the ${loc}, ${motifPhrase}—${hit}${approachClause}; ${stakes}${clockShade ? `; ${clockShade}` : ''}${stressClause}${threadClause}; what do you do?`;
 }
 
 // Approach-keyed phrase banks. Each entry is a short, lowercase clause the
@@ -396,11 +416,12 @@ export function buildCombatPhrase({ approach, outcome, parleyed, enemyName, rng 
 // Internal wrapper used by compose() so the call site mirrors
 // buildApproachPhrase's resolution-shaped signature.
 function buildCombatPhraseFromResolution(resolution, rng) {
+  // Return the bare combat clause; the combat-turn template weaves the enemy name
+  // in up front (no dangling "— Brennan" tail).
   return buildCombatPhrase({
     approach: resolution?.approach,
     outcome: resolution?.outcome || (resolution?.success ? 'success' : 'failure'),
     parleyed: Boolean(resolution?.parleyed),
-    enemyName: resolution?.enemyName,
     rng
   });
 }

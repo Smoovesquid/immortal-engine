@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Immortal Engine — play</title>
+<style>
+  html,body{margin:0;background:#3a3f37;color:#cdd2c4;font-family:ui-sans-serif,system-ui,sans-serif;padding:10px;display:flex;flex-direction:column;align-items:center;gap:6px;}
+  #title{font-size:14px;font-weight:600;opacity:.9;margin:0;}
+  .bar{display:flex;gap:7px;align-items:center;font-size:12px;flex-wrap:wrap;justify-content:center;max-width:900px;}
+  button{font:inherit;background:#cdd2c4;color:#2a2e27;border:0;border-radius:5px;padding:5px 10px;cursor:pointer;}
+  button.on{background:#c0392b;color:#fff;}
+  #hud{font-size:12px;opacity:.85;}
+  #log{max-width:880px;font-size:12px;opacity:.85;min-height:30px;text-align:center;line-height:1.4;}
+  canvas{box-shadow:0 12px 40px rgba(0,0,0,.5);border-radius:4px;cursor:pointer;}
+  #panel{position:fixed;right:14px;top:80px;width:280px;background:#e8ecdd;color:#16203a;border:2px solid #16203a;box-shadow:4px 5px 0 rgba(20,28,48,.22);padding:10px 12px;font-family:"Bradley Hand","Comic Sans MS",cursive;font-size:13px;display:none;z-index:20;}
+  #panel h3{margin:0 0 4px;font-size:15px;} #panel .sub{color:#5a6078;font-size:11px;margin-bottom:6px;}
+  #panel button{margin-top:6px;background:#16203a;color:#e8ecdd;}
+  #err{color:#e88;font-size:12px;white-space:pre-wrap;}
+  #cmdwrap{display:flex;gap:6px;width:860px;max-width:100%;margin-top:2px;}
+  #cmd{flex:1;font:inherit;font-size:13px;background:#2f342c;color:#e8ecdd;border:1px solid #555c4c;border-radius:5px;padding:7px 11px;outline:none;}
+  #cmd:focus{border-color:#8a937a;}
+  #cmd::placeholder{color:#7a8270;font-style:italic;}
+  #cmdgo{padding:7px 12px;}
+  .crunch{color:#7a8270;font-size:11px;opacity:.8;}
+</style></head>
+<body>
+<h1 id="title">Immortal Engine</h1>
+<div id="hud"></div>
+<div class="bar" id="bar"></div>
+<div id="log">You stand at the edge of the region of Mira. Say where you go, or click a settlement.</div>
+<div id="crunch" class="crunch"></div>
+<div id="err"></div>
+<canvas id="c" width="860" height="520"></canvas>
+<form id="cmdwrap" autocomplete="off"><input id="cmd" placeholder="say what you do…  (or click the map)"><button id="cmdgo" type="submit">↵</button></form>
+<div id="panel"></div>
+<script type="module">
+const err = document.getElementById('err'), logEl = document.getElementById('log'), hud = document.getElementById('hud'), bar = document.getElementById('bar'), titleEl = document.getElementById('title'), panel = document.getElementById('panel');
+try {
+  const { newSession, enterPlace, recordKills, advanceTime } = await import('/public/map/worldSession.js');
+  const { createRegionSketch } = await import('/public/map/regionSketch.js');
+  const { createPlaceMap } = await import('/public/map/handDrawnPlace.js');
+  const { iconKindFor, drawCreatureIcon } = await import('/public/map/creatureIcons.js');
+  const { makeGrid } = await import('/engine/tactical/visibility.js');
+  const { makeBattle, moveActor, attack, endPlayerTurn, visibility, reachableForActor, checkOver } = await import('/engine/tactical/battle.js');
+  const { resolveArc } = await import('/engine/npc/npcArc.js');
+  const { getMonsterDef } = await import('/engine/ruleset/core/bestiary/index.js');
+  const { willProfile } = await import('/engine/magic/will.js');
+  const { parseIntent } = await import('/engine/intent/parseIntent.js');
+  const { intentFromClick } = await import('/engine/intent/intentFromClick.js');
+  const { isTacticalVerb, verbPhrase } = await import('/engine/intent/intentSchema.js');
+
+  const cv = document.getElementById('c'), ctx = cv.getContext('2d');
+  const SEED = 'mira';
+  const G = {
+    session: newSession({ seed: SEED, W: 46, H: 28, places: 8 }),
+    view: 'world', place: null, biome: null, placeId: null, battle: null, ability: 'sword',
+    player: { hp: 30, maxHp: 30, wits: 15 }, deeds: [], log: []
+  };
+  const region = createRegionSketch(cv);
+  const placeMap = createPlaceMap(cv, { fog: true, sight: 9 });
+  const say = s => { G.log.push(s); logEl.textContent = G.log.slice(-4).join('   ·   '); };
+  const deed = t => G.deeds.push(t);
+  const willWorld = () => ({ meta: { seed: SEED }, timeline: G.deeds.map((text, i) => ({ t: i, kind: 'resolution', data: { text } })) });
+  function hudLine() { const nat = willProfile(willWorld()).dominant; hud.textContent = `HP ${G.player.hp}/${G.player.maxHp}  ·  day ${G.session.time}` + (nat ? `  ·  your nature leans ${nat}` : ''); }
+  function btn(label, fn, on) { const b = document.createElement('button'); b.textContent = label; if (on) b.className = 'on'; b.onclick = fn; bar.appendChild(b); }
+  const M2S = e => ({ x: (e.clientX - cv.getBoundingClientRect().left) * cv.width / cv.getBoundingClientRect().width, y: (e.clientY - cv.getBoundingClientRect().top) * cv.height / cv.getBoundingClientRect().height });
+  const crunchEl = document.getElementById('crunch');
+  const showCrunch = lines => { crunchEl.textContent = (lines && lines.length) ? lines.join('   ·   ') : ''; };
+
+  // ── DM voice: deterministic narration so it reads beautifully even with the
+  //    LLM off (silent-fallback architecture). Variety via a content hash, so the
+  //    same event always reads the same way (determinism) but different events vary.
+  const pick = (arr, key) => { let h = 2166136261; const s = String(key); for (let i = 0; i < s.length; i++) h = ((h ^ s.charCodeAt(i)) * 16777619) >>> 0; return arr[h % arr.length]; };
+  const cap = s => { s = String(s || ''); return s.charAt(0).toUpperCase() + s.slice(1); };
+
+  // Turn one mechanical battle-log line into prose + keep the raw crunch.
+  function narrateCombat(L) {
+    L = String(L); let m;
+    if (/hits you for \d+ — you fall/.test(L)) { const who = L.split(' hits you')[0]; return { prose: pick([`${who} lands the blow that drops you. The ground rushes up.`, `${who} strikes true — your legs fold, and the dark takes you.`], L), crunch: L }; }
+    if ((m = L.match(/^(.*?) (?:hits|crits) you for (\d+)/))) { const who = m[1], dmg = m[2], crit = /crits/.test(L); return { prose: pick(crit ? [`${who} catches you clean — pain flares white. (−${dmg})`, `${who} tears into you, vicious and deep. (−${dmg})`] : [`${who} gets past your guard. (−${dmg})`, `${who} draws blood; you grit your teeth. (−${dmg})`, `${who} lands a glancing hit. (−${dmg})`], L), crunch: L }; }
+    if (/ misses you$/.test(L)) { const who = L.replace(/ misses you$/, ''); return { prose: pick([`${who} lunges — air where you stood.`, `${who} comes up short. Not this time.`, `You read ${who}'s move and slip it.`], L), crunch: L }; }
+    if (/^Fireball /.test(L) && (m = L.match(/hits (.+?) for (\d+)/))) {
+      const t = m[1], d = m[2], slew = /slain/.test(L);
+      if (/^you$/i.test(t)) return { prose: pick([`Too close — the edge of your own blast scorches you. (−${d})`, `The fire blooms back over you; you should have left it room. (−${d})`], L), crunch: L };
+      return { prose: pick(slew ? [`Flame blooms — ${t} is caught in it and does not rise. (${d})`, `Your fire washes over ${t}; ash and silence. (${d})`] : [`Fire roars out and sears ${t}. (${d})`, `The blast catches ${t} — it shrieks in the heat. (${d})`], L), crunch: L };
+    }
+    if ((m = L.match(/(?:hits|crits) (.+?) for (\d+).* — slain!/))) { const t = m[1]; return { prose: pick([`You cut ${t} down — it folds into the dirt and goes still.`, `${cap(t)} drops, undone by your blow.`, `The killing stroke lands. ${cap(t)} falls.`], L), crunch: L }; }
+    if ((m = L.match(/crits (.+?) for (\d+)/))) { const t = m[1], d = m[2]; return { prose: pick([`A perfect strike — you tear into ${t}. (${d})`, `You find the gap and drive deep into ${t}. (${d})`], L), crunch: L }; }
+    if ((m = L.match(/hits (.+?) for (\d+)/))) { const t = m[1], d = m[2]; return { prose: pick([`Your blow bites into ${t}. (${d})`, `You connect — ${t} reels. (${d})`, `Steel meets ${t}. (${d})`], L), crunch: L }; }
+    if ((m = L.match(/misses (.+?) \[/))) { const t = m[1]; return { prose: pick([`Your strike goes wide of ${t}.`, `${cap(t)} ducks under your swing.`, `Almost — ${t} slips clear.`], L), crunch: L }; }
+    if (/out of range/.test(L)) return { prose: `Too far. You'll have to close the distance first.`, crunch: L };
+    if (/no line of sight/.test(L)) return { prose: `No clear path to strike — something's in the way.`, crunch: L };
+    if (/can't reach there/.test(L)) return { prose: `You can't make it that far this turn.`, crunch: L };
+    if (/: /.test(L)) return { prose: L.replace(/^[^:]+:\s*/, 'You hesitate — '), crunch: L };
+    return { prose: L, crunch: null };
+  }
+  function flushBattleLog(prevLen) {
+    const lines = G.battle.log.slice(prevLen); const crunch = [];
+    for (const L of lines) { const n = narrateCombat(L); if (n.prose) say(n.prose); if (n.crunch) crunch.push(n.crunch); }
+    showCrunch(crunch);
+  }
+
+  // ── context the parser reads to resolve targets/instruments, + an id→token map.
+  function placeCtx() {
+    const entities = [], map = {};
+    for (const t of G.place.tokens) {
+      if (t.type === 'npc') { const npc = ensureNpc(t); const id = 'npc:' + npc.id; entities.push({ id, ref: npc.role, name: npc.role }); map[id] = t; }
+      else if (t.type === 'mon') { const id = 'mon:' + t.info.ref; entities.push({ id, ref: t.info.ref, name: t.info.name }); map[id] = t; }
+    }
+    return { entities, abilities: ['sword', 'shortbow'], spells: ['fireball'], items: [], map };
+  }
+  function battleCtx() {
+    const b = G.battle, entities = [], map = {};
+    for (const a of Object.values(b.actors)) if (a.faction === 'enemy' && a.hp > 0) { entities.push({ id: a.id, ref: a.ref, name: a.name }); map[a.id] = a; }
+    return { entities, abilities: (b.actors.pc.abilities || ['sword']), spells: ['fireball'], items: [], map };
+  }
+  function worldCtx() {
+    const entities = G.session.region.places.map(p => ({ id: p.id, ref: p.nodeType, name: p.nodeType }));
+    return { entities, abilities: [], spells: [], items: [] };
+  }
+
+  const playerTok = () => G.place.tokens.find(t => t.type === 'player');
+  const nearestNpc = () => { const p = playerTok(); let best = null, bd = 1e9; for (const t of G.place.tokens) if (t.type === 'npc') { const d = p ? Math.hypot(t.ux - p.ux, t.uy - p.uy) : 0; if (d < bd) { bd = d; best = t; } } return best; };
+
+  // ── the dispatcher: every intent, whatever its source, routes through here.
+  function dispatchIntent(i, ctx) {
+    if (G.view === 'world') return dispatchWorld(i, ctx);
+    if (G.view === 'place') return dispatchPlace(i, ctx);
+    if (G.view === 'battle') return dispatchBattle(i, ctx);
+  }
+  function dispatchWorld(i, ctx) {
+    if (i.verb === 'wait') return rest();
+    if (i.target) { const p = G.session.region.places.find(x => x.id === i.target); if (p) return travel(p); }
+    if (i.verb === 'move') { say(pick([`You set out, but to where? Name a settlement, or click one.`, `The road forks. Say where you're bound.`], 'wmove' + G.log.length)); return; }
+    say(pick([`You scan the region of Mira — wooded ridges, the glint of a river, smoke rising from far-off roofs.`, `Mira spreads out before you: pale roads stitched between green hills, water threading the low ground.`], 'wask' + G.log.length));
+  }
+  function dispatchPlace(i, ctx) {
+    const tok = i.target && ctx.map[i.target];
+    if (i.verb === 'talk') { const n = (tok && tok.type === 'npc') ? tok : nearestNpc(); if (n) return talk(ensureNpc(n)); say(pick([`There's no one here to speak with.`, `You call out. Only the wind answers.`], 'notalk' + G.log.length)); return; }
+    if (i.verb === 'attack' || i.verb === 'cast') { if (G.place.tokens.some(t => t.type === 'mon')) return startBattle(); say(`Nothing here looks like it wants a fight.`); return; }
+    if (i.verb === 'search') { deed('you search and study your surroundings'); return doSearch(); }
+    if (i.verb === 'take') { say(pick([`You turn over what's loose nearby. Nothing worth pocketing.`, `Scraps and dust. Nothing to take here.`], 'take' + G.log.length)); return; }
+    if (i.verb === 'wait' || i.verb === 'flee') { const r = advanceTime(G.session, 1); G.session = r.session; say(r.events[0] ? ('🌿 ' + r.events[0].text) : pick([`You wait. The light shifts and the place breathes around you.`, `Time passes. Somewhere a door closes; a dog barks once.`], 'pwait' + G.log.length)); hudLine(); return; }
+    if (i.verb === 'move') {
+      if (tok) { const p = playerTok(); if (p) { p.ux = tok.ux; p.uy = tok.uy + 0.8; placeMap.draw(G.place); } say(`You make your way over.`); return; }
+      say(pick([`You wander the lanes a while, taking the place in.`, `You walk, in no hurry, reading the shape of the place.`], 'wander' + G.log.length)); return;
+    }
+    say(narratePlaceAsk());
+  }
+  function dispatchBattle(i, ctx) {
+    const b = G.battle; if (b.over) return;
+    if (i.verb === 'wait') { const prev = b.log.length; G.battle = endPlayerTurn(b); deed('you hold and watch for an opening'); return afterBattle(prev); }
+    if (i.verb === 'flee') return tryFlee();
+    if (i.verb === 'move') { if (i.at) { const prev = b.log.length; G.battle = moveActor(b, 'pc', i.at.x, i.at.y); deed('you reposition'); return afterBattle(prev); } say(`Where to? Tap a tile, or name a foe to close on.`); return; }
+    if (i.verb === 'attack' || i.verb === 'cast') {
+      const ability = i.with || (i.verb === 'cast' ? 'fireball' : (G.ability === 'fireball' ? 'sword' : G.ability));
+      if (i.at && ability === 'fireball' && !i.target) return blindFire(i.at);
+      let tgtId = (i.target && b.actors[i.target]) ? i.target : (i.target && ctx.map[i.target] ? ctx.map[i.target].id : null);
+      if (!tgtId) {
+        const vis = visibility(b), foes = Object.values(b.actors).filter(a => a.faction === 'enemy' && a.hp > 0);
+        const seen = foes.filter(a => vis.has(Math.round(a.x) + ',' + Math.round(a.y)));
+        if (seen.length === 1) tgtId = seen[0].id;
+        else if (seen.length > 1) { say(`Which one — ${seen.map(s => s.name).join(', ')}? Name it, or tap.`); return; }
+        else if (foes.length) tgtId = foes.sort((a, z) => Math.hypot(a.x - b.actors.pc.x, a.y - b.actors.pc.y) - Math.hypot(z.x - b.actors.pc.x, z.y - b.actors.pc.y))[0].id;
+        else { say(`Nothing left standing.`); return; }
+      }
+      return advanceAndStrike(tgtId, ability);
+    }
+    say(pick([`You take stock: ${battleStateLine()}.`, `Breath held, you read the field — ${battleStateLine()}.`], 'bask' + G.log.length));
+  }
+  function afterBattle(prevLen) { flushBattleLog(prevLen); G.battle = checkOver(G.battle); renderBattle(); }
+  // close the round: enemies answer, then narrate the whole exchange and redraw.
+  function roundFrom(prevLen) { G.battle = endPlayerTurn(G.battle); flushBattleLog(prevLen); G.battle = checkOver(G.battle); renderBattle(); }
+  // a declared attack: close if you must, strike if you can, then they answer.
+  function advanceAndStrike(tgtId, ability) {
+    let b = G.battle; const tg = b.actors[tgtId]; if (!tg || tg.hp <= 0) { say(`That one's already down.`); return; }
+    const reach = ability === 'sword' ? 1.6 : ability === 'shortbow' ? 6.5 : 8.5;
+    const prev = b.log.length;
+    let pc = b.actors.pc, dist = Math.hypot(tg.x - pc.x, tg.y - pc.y);
+    // fire is wide: if the foe's too close and you have room, step back before you throw.
+    if (ability === 'fireball' && dist < 3 && !b.moved.pc) {
+      const tiles = reachableForActor(b, 'pc').tiles; let bk = null, bScore = -1;
+      for (const key of tiles.keys()) { const [x, y] = key.split(',').map(Number); const dt = Math.hypot(tg.x - x, tg.y - y); if (dt >= 3 && dt <= reach && dt > bScore) { bScore = dt; bk = key; } }
+      if (bk) { const [x, y] = bk.split(',').map(Number); b = moveActor(b, 'pc', x, y); pc = b.actors.pc; dist = Math.hypot(tg.x - pc.x, tg.y - pc.y); }
+    }
+    if (dist > reach && !b.moved.pc) {
+      const tiles = reachableForActor(b, 'pc').tiles; let bk = null, bd = 1e9;
+      for (const key of tiles.keys()) { const [x, y] = key.split(',').map(Number); const d = Math.hypot(tg.x - x, tg.y - y); if (d < bd) { bd = d; bk = key; } }
+      if (bk) { const [x, y] = bk.split(',').map(Number); b = moveActor(b, 'pc', x, y); }
+      pc = b.actors.pc; dist = Math.hypot(tg.x - pc.x, tg.y - pc.y);
+    }
+    if (dist <= reach + 1e-9) {
+      G.ability = ability; b = attack(b, 'pc', tgtId, ability); G.battle = b;
+      deed(ability === 'fireball' ? 'you burn and blast your foes' : (ability === 'shortbow' ? 'you loose arrows with a cold eye' : 'you strike with steel'));
+    } else {
+      G.battle = b; say(pick([`You close the gap — not quite in reach. Blade up, you brace for them.`, `You drive forward; they give ground. Almost.`], 'close' + G.log.length)); deed('you press the attack across the field');
+    }
+    roundFrom(prev);
+  }
+  // a spell loosed at empty ground — the AoE finds whatever's there. Then they answer.
+  function blindFire(at) {
+    const b = G.battle, prev = b.log.length, fake = { id: '_', x: at.x, y: at.y };
+    let nb = attack({ ...b, actors: { ...b.actors, _: fake } }, 'pc', '_', 'fireball'); delete nb.actors._; G.battle = nb;
+    deed('you hurl fire into the dark'); roundFrom(prev);
+  }
+  function battleStateLine() { const b = G.battle, vis = visibility(b); const foes = Object.values(b.actors).filter(a => a.faction === 'enemy' && a.hp > 0 && vis.has(Math.round(a.x) + ',' + Math.round(a.y))); return foes.length ? `${foes.length} foe${foes.length > 1 ? 's' : ''} in sight` : `no foe in sight — the rest are out there, in the fog`; }
+  function tryFlee() {
+    const b = G.battle, pc = b.actors.pc;
+    if (pc.x <= 1) { G.battle = { ...b, over: 'flee' }; G.player.hp = Math.max(1, pc.hp); say(pick([`You break and run — branches tearing at you — and you're clear.`, `You melt back into the trees. Not today.`], 'fled')); showCrunch([]); renderPlace(); return; }
+    const prev = b.log.length; G.battle = moveActor(b, 'pc', Math.max(0, Math.round(pc.x) - pc.move), Math.round(pc.y)); deed('you give ground, hunting a way out'); say(`You give ground, edging toward the trees.`); roundFrom(prev);
+  }
+  function doSearch() {
+    const npcs = G.place.tokens.filter(t => t.type === 'npc').length, mons = G.place.tokens.filter(t => t.type === 'mon').length;
+    const bits = [];
+    if (npcs) bits.push(`${npcs} ${npcs > 1 ? 'folk going about their business' : 'soul going about their day'}`);
+    if (mons) bits.push(mons > 1 ? `movement in the green — things that haven't marked you yet` : `movement in the green — something that hasn't marked you yet`);
+    say(bits.length ? `You look careful and slow. You make out ${bits.join(', and ')}.` : pick([`You search the ground and the shadows. Quiet. Nothing stirs.`, `Nothing here but wind and the smell of the ${G.biome}.`], 'search' + G.log.length));
+  }
+  function narratePlaceAsk() { return pick([`The ${G.biome} presses close — ${G.place.tokens.filter(t => t.type === 'mon').length ? 'and not everything here is friendly' : 'still, for now'}.`, `You stand in the open. Roofs, a path, the edge of the wild beyond.`], 'pask' + G.log.length); }
+
+  // every typed line becomes an intent and runs through the same dispatcher.
+  function runCommand(text) {
+    const t = String(text || '').trim(); if (!t) return;
+    say('› ' + t);
+    const ctx = G.view === 'battle' ? battleCtx() : G.view === 'place' ? placeCtx() : worldCtx();
+    dispatchIntent(parseIntent(t, ctx), ctx);
+  }
+
+  // ── people: give each place a few NPCs with stable ids for the Discovery Layer
+  const ROLES = ['farmer', 'guard', 'healer', 'tavern keeper', 'merchant', 'scavenger'];
+  function addPeople(place, placeId) {
+    const path = (place.terrain.paths && place.terrain.paths[0]) || { pts: [[2, 12]] };
+    const py = path.pts[0][1];
+    for (let i = 0; i < 3; i++) {
+      const id = `npc_${placeId}_${i}`;
+      place.tokens.push({ type: 'npc', ux: 3 + i * 3.2, uy: py - 0.6, label: 'P', npc: { id, role: ROLES[(i + placeId.length) % ROLES.length], conversationState: { metPlayer: false, trustLevel: 5, topicsDiscussed: [] } } });
+    }
+  }
+
+  // ── WORLD ───────────────────────────────────────────────────────────────
+  function renderWorld() {
+    G.view = 'world'; panel.style.display = 'none';
+    titleEl.textContent = `The region of Mira — day ${G.session.time}`;
+    bar.innerHTML = ''; btn('Rest a tenday ⏳', rest); hudLine(); showCrunch([]);
+    region.draw(G.session.region);
+  }
+  function rest() { const r = advanceTime(G.session, 10); G.session = r.session; say(r.events.length ? ('🌿 ' + r.events[0].text) : 'The seasons turn quietly.'); renderWorld(); }
+  function travel(p) {
+    G.placeId = p.id; const r = enterPlace(G.session, p.id); G.place = r.place; G.biome = r.biome; addPeople(G.place, p.id);
+    deed('you travel the long road'); const t = advanceTime(G.session, 2); G.session = t.session;
+    say(`You reach a ${r.nodeType} in the ${r.biome}. ${t.events[0] ? '🌿 ' + t.events[0].text : ''}`);
+    renderPlace();
+  }
+
+  // ── PLACE ───────────────────────────────────────────────────────────────
+  function renderPlace() {
+    G.view = 'place'; panel.style.display = 'none';
+    const rp = G.session.region.places.find(x => x.id === G.placeId);
+    titleEl.textContent = `${rp.nodeType} · tier ${rp.tier} · ${G.biome} — day ${G.session.time}`;
+    bar.innerHTML = ''; btn('← Leave', renderWorld); hudLine(); showCrunch([]);
+    placeMap.draw(G.place);
+  }
+  function placeClick(e) {
+    const u = placeMap.screenToUnit(e.clientX, e.clientY);
+    let hit = null, hd = 1.4;
+    for (const t of G.place.tokens) { if (t.type === 'player') continue; const d = Math.hypot(t.ux - u.ux, t.uy - u.uy); if (d < hd) { hd = d; hit = t; } }
+    // a click on a thing is an unambiguous intent → through the spine.
+    if (hit && hit.type === 'npc') { const npc = ensureNpc(hit); return dispatchPlace(intentFromClick({ kind: 'npc', target: 'npc:' + npc.id }), placeCtx()); }
+    if (hit && hit.type === 'mon') return dispatchPlace(intentFromClick({ kind: 'enemy', target: 'mon:' + hit.info.ref, ability: G.ability }, placeCtx()), placeCtx());
+    // a click on empty ground is just repositioning — keep it precise + silent.
+    const p = playerTok(); if (p) { p.ux = u.ux; p.uy = u.uy; placeMap.draw(G.place); }
+  }
+
+  // some npc tokens come from the place generator with only a label — give them
+  // a stable Discovery-Layer identity the first time they're spoken to.
+  function ensureNpc(tok) {
+    if (tok.npc) return tok.npc;
+    const id = `npc_${G.placeId}_${Math.round(tok.ux)}_${Math.round(tok.uy)}`;
+    let h = 0; for (const ch of id) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+    tok.npc = { id, role: ROLES[h % ROLES.length], conversationState: { metPlayer: false, trustLevel: 5, topicsDiscussed: [] } };
+    return tok.npc;
+  }
+
+  // ── TALK (Discovery Layer) ────────────────────────────────────────────────
+  function talk(npc) {
+    npc.conversationState.metPlayer = true; deed('you ask and listen, learning what you can');
+    const r = resolveArc(npc, SEED, { wits: G.player.wits });
+    panel.style.display = 'block';
+    let body = `<h3>${npc.role}</h3><div class="sub">${r.met ? 'you have spoken' : 'a stranger'}</div>`;
+    body += `<div>They seem to want: <b>${r.surfaceWant || '…'}</b></div>`;
+    if (r.status === 'revealed') {
+      body += `<div style="margin-top:6px">🗝 ${r.beat}</div>`;
+      if (r.recruitOffer) body += `<button id="rec">Ask them to join you</button>`;
+    } else if (r.status === 'hinted') body += `<div style="margin-top:6px;color:#7a5a2a">${r.tell}</div>`;
+    else if (r.recruitable || true) body += `<div style="margin-top:6px;color:#5a6078"><i>There may be more here, with time and trust.</i></div>`;
+    body += `<button id="press">Spend time with them</button> <button id="done">Leave them be</button>`;
+    panel.innerHTML = body;
+    const rec = document.getElementById('rec'); if (rec) rec.onclick = () => { say(`${npc.role} joins you — a friend who'll walk the road at your side.`); panel.style.display = 'none'; };
+    document.getElementById('press').onclick = () => { npc.conversationState.trustLevel = Math.min(10, npc.conversationState.trustLevel + 1.2); npc.conversationState.topicsDiscussed = ['secret']; deed('you press gently for the truth'); talk(npc); };
+    document.getElementById('done').onclick = () => { panel.style.display = 'none'; };
+  }
+
+  // ── BATTLE (tactical) ─────────────────────────────────────────────────────
+  const BP = 46;
+  // The ecology spawns biome-true predators (a forest can hold a CR8 Yuan-Ti).
+  // The encounter builder is what makes a fight *fair*: a threat budget picks the
+  // weakest creatures present, caps the count, and brings elite stat blocks down
+  // to a starter-survivable shape — keeping each creature's name and identity.
+  const crDie = cr => cr <= 1 ? '1d4' : cr <= 3 ? '1d6' : cr <= 5 ? '1d8' : cr <= 7 ? '1d10' : '2d6';
+  function pickEncounter(mons) {
+    const lvl = G.player.level || 1;
+    const budget = 3 + lvl * 2;                 // total CR a party of this level can take
+    const scored = mons.map(t => { const d = getMonsterDef(t.info.ref) || {}; return { t, d, cr: d.cr ?? 1 }; })
+      .sort((a, b) => a.cr - b.cr);
+    const chosen = []; let spent = 0;
+    for (const o of scored) {
+      if (chosen.length >= 3) break;
+      if (chosen.length >= 1 && spent + Math.max(1, o.cr) > budget) break;
+      chosen.push(o); spent += Math.max(1, o.cr);
+    }
+    if (!chosen.length && scored.length) chosen.push(scored[0]);   // always at least one foe
+    return chosen;
+  }
+  function startBattle() {
+    const mons = G.place.tokens.filter(t => t.type === 'mon');
+    if (!mons.length) return;
+    const chosen = pickEncounter(mons);
+    G._enemyTokens = chosen.map(o => o.t);
+    const grid = makeGrid(14, 9);
+    [[5, 3], [5, 4], [8, 6], [8, 2], [10, 4], [3, 6]].forEach(([x, y]) => grid.set(x, y, 1));
+    const actors = [{ id: 'pc', faction: 'player', name: 'You', x: 1, y: 4, hp: G.player.hp, maxHp: G.player.maxHp, move: 5, aim: 78, abilities: ['sword', 'shortbow', 'fireball'], damage: '1d8', agility: 3, sight: 9 }];
+    chosen.forEach((o, i) => {
+      const cr = o.cr, effHp = Math.max(8, Math.min(o.d.maxHp || 8, 8 + cr * 3));   // elites come down to a fair fight
+      actors.push({ id: 'e' + i, faction: 'enemy', name: o.t.info.name, tags: o.t.info.tags, ref: o.t.info.ref,
+        x: 6 + (i % 3) * 2, y: 2 + i * 2, hp: effHp, maxHp: effHp, move: 5, aim: Math.min(62, 45 + cr * 2),
+        damage: crDie(cr), agility: 1, sight: 8 });
+    });
+    G.battle = makeBattle({ seed: SEED + '|' + G.session.time, grid, sight: 9, actors });
+    G.view = 'battle';
+    const names = chosen.map(o => o.t.info.name);
+    const foeList = names.length === 1 ? names[0] : names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1];
+    say(pick([`Steel out. ${foeList} ${names.length > 1 ? 'come' : 'comes'} for you across the broken ground.`, `No more talking. ${foeList} ${names.length > 1 ? 'close in' : 'closes in'}.`], 'fight' + G.session.time));
+    renderBattle();
+  }
+  function renderBattle() {
+    const b = G.battle, vis = visibility(b), reach = b.phase === 'player' && !b.over ? reachableForActor(b, 'pc').tiles : new Map();
+    titleEl.textContent = b.over ? (b.over === 'win' ? 'The field is yours.' : 'You have fallen.') : `Battle — round ${b.round}`;
+    ctx.fillStyle = '#e8ecdd'; ctx.fillRect(0, 0, cv.width, cv.height);
+    for (let y = 0; y < b.grid.H; y++) for (let x = 0; x < b.grid.W; x++) {
+      const X = x * BP, Y = y * BP, seen = vis.has(x + ',' + y);
+      ctx.fillStyle = '#efe9d6'; ctx.fillRect(X, Y, BP - 1, BP - 1);
+      if (b.grid.get(x, y)) { ctx.fillStyle = 'rgba(40,46,64,0.9)'; ctx.fillRect(X + 2, Y + 2, BP - 5, BP - 5); }
+      if (reach.has(x + ',' + y)) { ctx.fillStyle = 'rgba(46,139,87,0.22)'; ctx.fillRect(X, Y, BP - 1, BP - 1); }
+      if (!seen) { ctx.fillStyle = 'rgba(40,46,40,0.5)'; ctx.fillRect(X, Y, BP, BP); }
+    }
+    for (const a of Object.values(b.actors)) {
+      if (a.hp <= 0) continue; const seen = a.faction === 'player' || vis.has(Math.round(a.x) + ',' + Math.round(a.y)); if (!seen) continue;
+      const X = a.x * BP + BP / 2, Y = a.y * BP + BP / 2;
+      if (a.faction === 'player') { ctx.fillStyle = '#c0392b'; ctx.beginPath(); ctx.arc(X, Y, BP * 0.3, 0, 7); ctx.fill(); ctx.fillStyle = '#fff'; ctx.font = 'bold 18px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('@', X, Y + 1); }
+      else { ctx.fillStyle = 'rgba(107,43,43,0.16)'; ctx.beginPath(); ctx.arc(X, Y, BP * 0.32, 0, 7); ctx.fill(); drawCreatureIcon(ctx, X, Y, BP * 0.28, { ...iconKindFor(a), seed: a.id }); }
+      const w = BP * 0.6; ctx.fillStyle = 'rgba(20,20,20,0.5)'; ctx.fillRect(X - w / 2, Y - BP * 0.42, w, 4); ctx.fillStyle = a.faction === 'player' ? '#3a9' : '#c64'; ctx.fillRect(X - w / 2, Y - BP * 0.42, w * Math.max(0, a.hp) / a.maxHp, 4);
+    }
+    bar.innerHTML = '';
+    if (b.over) { btn(b.over === 'win' ? 'Take the spoils →' : 'Begin again', endBattle); }
+    else { for (const [id, lab] of [['sword', 'Sword'], ['shortbow', 'Bow'], ['fireball', 'Fireball🔥']]) btn(lab, () => { G.ability = id; renderBattle(); }, G.ability === id); btn('End Turn ⏭', () => dispatchBattle({ verb: 'wait' }, battleCtx())); }
+    hud.textContent = `HP ${Math.max(0, b.actors.pc.hp)}/${b.actors.pc.maxHp}  ·  round ${b.round}  ·  ${G.ability}`;
+  }
+  function battleClick(e) {
+    const b = G.battle; if (b.over) return;
+    const r = cv.getBoundingClientRect(); const x = Math.floor((e.clientX - r.left) * cv.width / r.width / BP), y = Math.floor((e.clientY - r.top) * cv.height / r.height / BP);
+    const tgt = Object.values(b.actors).find(a => a.hp > 0 && a.faction !== 'player' && Math.round(a.x) === x && Math.round(a.y) === y);
+    const click = tgt ? { kind: 'enemy', target: tgt.id, x, y, ability: G.ability } : { kind: 'tile', x, y, ability: G.ability };
+    dispatchBattle(intentFromClick(click, battleCtx()), battleCtx());
+  }
+  function endBattle() {
+    const b = G.battle;
+    if (b.over === 'win') {
+      const slain = G._enemyTokens.map(t => t.info.ref);
+      G.session = recordKills(G.session, G.biome, slain);     // the ecology remembers
+      const killed = new Set(G._enemyTokens);                 // only the foes you actually fought
+      G.place.tokens = G.place.tokens.filter(t => !killed.has(t));
+      G.player.hp = Math.max(1, b.actors.pc.hp);
+      const names = G._enemyTokens.map(t => t.info.name);
+      say(pick([`The last of them falls. You stand alone, breathing hard — the ${G.biome} will remember this killing.`, `It's over. You wipe your blade clean; the ${G.biome} keeps its dead, and its grudges.`], 'win' + G.session.time + names.join()));
+      renderPlace();
+    } else { say('Death takes you. The dark closes over Mira... and a new soul wakes at its edge.'); G.deeds = []; G.player.hp = G.player.maxHp; renderWorld(); }
+  }
+
+  cv.addEventListener('click', e => {
+    if (G.view === 'world') { const t = region.transform, r = cv.getBoundingClientRect(); const mx = (e.clientX - r.left) * cv.width / r.width, my = (e.clientY - r.top) * cv.height / r.height; let hit = null, bd = t.s * 1.3; for (const p of G.session.region.places) { const X = t.ox + p.x * t.s + t.s / 2, Y = t.oy + p.y * t.s + t.s / 2; const d = Math.hypot(mx - X, my - Y); if (d < bd) { bd = d; hit = p; } } if (hit) travel(hit); }
+    else if (G.view === 'place') placeClick(e);
+    else if (G.view === 'battle') battleClick(e);
+  });
+
+  // ── the text channel: say what you do ──────────────────────────────────────
+  const cmdEl = document.getElementById('cmd');
+  document.getElementById('cmdwrap').addEventListener('submit', e => { e.preventDefault(); const v = cmdEl.value; cmdEl.value = ''; runCommand(v); });
+
+  renderWorld();
+  window.__ok = true;
+  window.__g = G; window.__api = { travel, talk, startBattle, renderBattle, ensureNpc, runCommand, dispatchIntent };
+} catch (e) { err.textContent = 'ERROR: ' + (e && e.stack || e); window.__ok = false; }
+</script>
+</body></html>

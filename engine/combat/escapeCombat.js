@@ -37,6 +37,7 @@ import { statMod } from '../ruleset/core/stats.js';
 import { makeRng, seedFromString } from '../rng.js';
 import { rollLootForCR } from '../ruleset/core/loot/lootRoll.js';
 import { rollDice } from './diceRoller.js';
+import { coverForRoom, bestCover } from '../structures/coverFeatures.js';
 
 // ── Player build (level-1 hedge-caster escapee) ──────────────────────────────
 const PLAYER_BASE_HP = 14;   // + GRIT mod
@@ -113,6 +114,23 @@ function bladeDmgMod(pc) {
 function fireboltAtkBonus(pc) {
   const wits = pc?.stats?.WITS ?? 10;
   return FIREBOLT_ATK_BONUS + statMod(wits);
+}
+
+/**
+ * currentRoomCover(world) -> coverFeature | null
+ * The best piece of cover in the room the fight is happening in. Reads the
+ * current interior room (world.scene.interior) and asks the shared cover module
+ * what it holds. Returns null outdoors / when there's no room — outdoor cover is
+ * a later slice, so an open-road ambush simply offers nothing to hide behind.
+ */
+function currentRoomCover(world) {
+  const interior = world?.scene?.interior;
+  if (!interior || typeof interior !== 'object') return null;
+  const st = world?.structures?.byId?.[String(interior.structureKey || '')];
+  const rooms = Array.isArray(st?.topology?.rooms) ? st.topology.rooms : [];
+  const room = rooms.find(r => String(r?.id) === String(interior.roomId || ''));
+  if (!room) return null;
+  return bestCover(coverForRoom(room));
 }
 
 /**
@@ -194,12 +212,15 @@ export function escapeKitView(pc) {
 }
 
 /**
- * parseEscapeAction(text) -> { verb: 'strike'|'firebolt'|'ward' }
+ * parseEscapeAction(text) -> { verb: 'strike'|'firebolt'|'ward'|'cover' }
  * Map a typed line to one of the hedge-caster's light verbs. Unrecognized
  * combat input defaults to a blade strike so the round always advances.
  */
 export function parseEscapeAction(text) {
   const t = String(text || '').trim().toLowerCase();
+  // Cover is a positional move — duck behind the room's furniture for +AC. Check
+  // it before the attack verbs so "hide behind the pillar" reads as cover.
+  if (/\b(take\s+cover|cover|behind|duck|hunker)\b/.test(t)) return { verb: 'cover' };
   if (/\b(ward|shield|brace|defend|guard|block|parry)\b/.test(t)) return { verb: 'ward' };
   if (/\b(fire\s*bolt|firebolt|bolt|burn|flame|scorch|ignite)\b/.test(t)) return { verb: 'firebolt' };
   if (/\b(fire)\b/.test(t)) return { verb: 'firebolt' };
@@ -245,11 +266,28 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
   const { verb } = parseEscapeAction(actionText);
   let warded = false;
 
+  // ── Cover state ─────────────────────────────────────────────────────────────
+  // Cover persists across rounds within one fight, scoped to combat.beganAt so a
+  // fresh fight always starts in the open. The combatState delta whitelists its
+  // fields, so cover rides in meta alongside escapeHp instead of on combat.
+  const beganAt = Number(w.combat.beganAt) || 0;
+  const roomCover = currentRoomCover(w);
+  const savedCover = w.meta?.escapeCover;
+  let coverState = (savedCover && savedCover.active && savedCover.beganAt === beganAt)
+    ? { ...savedCover } : null;
+
   // ── Player turn ────────────────────────────────────────────────────────────
   let enemies = (Array.isArray(w.combat.enemies) ? w.combat.enemies : []).map(e => ({ ...e }));
   const targetIdx = enemies.findIndex(e => e && !e.defeated && (Number(e.hp) || 0) > 0);
 
-  if (verb === 'ward') {
+  if (verb === 'cover') {
+    if (roomCover) {
+      coverState = { active: true, bonus: Number(roomCover.bonus) || 0, label: roomCover.label, tier: roomCover.tier, beganAt };
+      beats.push(`You slip behind the ${roomCover.label} — ${roomCover.tier} cover (+${coverState.bonus} AC).`);
+    } else {
+      beats.push('There is nothing here to take cover behind.');
+    }
+  } else if (verb === 'ward') {
     warded = true;
     beats.push(`You raise a ward — a shimmer of force hardens the air around you (+${WARD_AC_BONUS} AC).`);
   } else if (targetIdx >= 0) {
@@ -291,6 +329,19 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
         beats.push(`You swing at the ${target.name} and miss.`);
       }
     }
+  }
+
+  // A blade strike means stepping out — melee breaks cover. Fire bolt is ranged,
+  // so you peek and loose a mote of flame while staying behind it (cover holds).
+  if (verb === 'strike' && coverState) {
+    beats.push('You break from cover to strike.');
+    coverState = null;
+  }
+
+  // Teach the tactic once: if the room offers cover and you haven't used it,
+  // nudge on the opening round so the surroundings register as a real option.
+  if (round === 1 && roomCover && !coverState && verb !== 'cover') {
+    beats.push(`(A ${roomCover.label} here offers cover — type "take cover" for +${roomCover.bonus} AC.)`);
   }
 
   // Commit enemy HP changes through the canonical combat-state delta.
@@ -355,7 +406,8 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
 
   // ── Enemy turns: each living enemy strikes the player ──────────────────────
   let hp = Number(w.meta.escapeHp) || 0;
-  const ac = playerAc(pc) + (warded ? WARD_AC_BONUS : 0);
+  const coverBonus = coverState ? (Number(coverState.bonus) || 0) : 0;
+  const ac = playerAc(pc) + (warded ? WARD_AC_BONUS : 0) + coverBonus;
   for (const e of enemies) {
     if (!e || e.defeated || (Number(e.hp) || 0) <= 0) continue;
     const roll = rng.int(1, 20);
@@ -390,7 +442,7 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
         ...(w.ending || {}),
         locked: true,
         reason: 'defeated-in-combat',
-        epilogueLine: 'Your strength fails. The dungeon keeps you.'
+        epilogueLine: 'Your strength fails. The dark keeps you.'
       }
     };
     beats.push('You fall.');
@@ -407,7 +459,10 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
 
   // ── Advance round ──────────────────────────────────────────────────────────
   w = applyDeltas(w, [{ op: 'combatState', set: { round: round + 1, turnIndex: 0 } }]);
-  beats.push(`(You: ${hp} HP)`);
+  w = { ...w, meta: { ...w.meta, escapeCover: coverState
+    ? { active: true, bonus: coverState.bonus, label: coverState.label, tier: coverState.tier, beganAt }
+    : { active: false, bonus: 0, label: '', tier: '', beganAt } } };
+  beats.push(coverState ? `(You: ${hp} HP, behind ${coverState.label})` : `(You: ${hp} HP)`);
   return {
     world: w,
     result: {

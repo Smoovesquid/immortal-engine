@@ -4,6 +4,8 @@
 
 import { ensureWorld } from './state.js';
 import { buildNarratorContext, buildDMContext } from './ai/narratorContext.js';
+import { renderAsciiMapBlock } from './ai/asciiMap.js';
+import { buildAiHashTrace } from './ai/aiHashTrace.js';
 
 const ANTHROPIC_API = 'https://api.anthropic.com/v1/messages';
 const ANTHROPIC_VERSION = '2023-06-01';
@@ -342,6 +344,7 @@ export function buildDMSystemPrompt(dmCtx) {
     : 'No NPCs present.';
 
   const threatLine = scene.activeThreat ? `ACTIVE THREAT: ${scene.activeThreat}` : '';
+  const mapBlock = renderAsciiMapBlock(dmCtx.asciiMap);
   const whisperLine = dmCtx.worldWhisper ? `OFFSCREEN CHANGE (mention naturally if relevant): ${dmCtx.worldWhisper}` : '';
   const goals = dmCtx.goals?.active ?? [];
   const goalLine = goals.length
@@ -441,6 +444,7 @@ export function buildDMSystemPrompt(dmCtx) {
     `- Time of day: ${scene.timeOfDay || 'unknown'}`,
     `- Exits: ${(loc.exits ?? []).join(', ') || 'none visible'}`,
     scene.interior ? `- Interior: room ${scene.interior.roomId}` : `- Outdoors`,
+    mapBlock,
     threatLine,
     goalLine,
     homeLine,
@@ -665,13 +669,22 @@ export async function callDM({
   pack = {},
   apiKey = '',
   model = DEFAULT_MODEL,
-  fetchImpl = globalThis.fetch
+  fetchImpl = globalThis.fetch,
+  onTrace = null
 } = {}) {
   if (!apiKey || typeof fetchImpl !== 'function') return null;
 
   const w = ensureWorld(world);
   const dmCtx = buildDMContext(w, outcome, pack);
   const sysPrompt = buildDMSystemPrompt(dmCtx);
+
+  // Drift attribution: the world hash this DM call ran against. callDM proposes
+  // deltas (applied downstream), so post_hash is unknown at this layer — the
+  // apply site records the after-hash. emit() is a no-op when no sink is wired.
+  const emit = (accepted, reason, applied) => {
+    if (typeof onTrace !== 'function') return;
+    try { onTrace(buildAiHashTrace({ worldBefore: w, mode: 'DM', model, accepted, reason, applied })); } catch {}
+  };
 
   // Wrap player text in safety tags
   const userMessage = `<player_input>${String(playerText)}</player_input>`;
@@ -701,11 +714,13 @@ export async function callDM({
       const { tags, narration } = parseStructuredTags(rawText);
       const deltas = tagsToDeltas(tags, w);
 
+      emit(true, null, Object.keys(tags || {}));
       return { narration, deltas, tags, raw: rawText };
     } catch {
-      if (attempt === MAX_DM_RETRIES) return null;
+      if (attempt === MAX_DM_RETRIES) { emit(false, 'request_failed', []); return null; }
     }
   }
 
+  emit(false, 'empty_response', []);
   return null;
 }

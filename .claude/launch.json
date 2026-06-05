@@ -6,6 +6,18 @@
       "runtimeExecutable": "node",
       "runtimeArgs": ["/Users/timothysmith/Projects/immortal-engine/server.js"],
       "port": 5179
+    },
+    {
+      "name": "dungeon-preview",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "5180", "--directory", "/Users/timothysmith/Projects/immortal-engine/public"],
+      "port": 5180
+    },
+    {
+      "name": "repo-root-preview",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "5181", "--directory", "/Users/timothysmith/Projects/immortal-engine"],
+      "port": 5181
     }
   ]
 }

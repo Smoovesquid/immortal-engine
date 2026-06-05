@@ -68,7 +68,11 @@ export function ensureWorld(partial) {
       // beginAdventure when mode === 'escape'. Sandbox worlds keep these at 0,
       // so the open engine and its determinism hashes are untouched.
       escapeHp: clampIntMin(meta.escapeHp ?? 0, 0),
-      escapeMaxHp: clampIntMin(meta.escapeMaxHp ?? 0, 0)
+      escapeMaxHp: clampIntMin(meta.escapeMaxHp ?? 0, 0),
+      // v1 Escape tactical cover: which piece of room cover the player is fighting
+      // behind, scoped to the current fight via beganAt (so a new fight starts in
+      // the open). null/absent = not in cover. Sandbox worlds never set it.
+      escapeCover: ensureEscapeCover(meta.escapeCover)
     },
     ruleset: w.ruleset && typeof w.ruleset === 'object' ? w.ruleset : { id: 'core', version: 1 },
     pack: w.pack && typeof w.pack === 'object' ? w.pack : { primaryId: 'fantasy', mixerId: null },
@@ -764,7 +768,28 @@ function ensureInteriorContext(x) {
   const structureKey = String(x.structureKey ?? '').trim();
   const roomId = String(x.roomId ?? '').trim();
   if (!structureKey || !roomId) return null;
-  return { structureKey, roomId };
+  // `visited` is the set of rooms the player has actually walked into, in
+  // first-seen order. The map draws itself room-by-room from this — the floor
+  // plan is revealed as you explore, the way a real dungeon map gets sketched.
+  // Always dedup and guarantee the current room is in it.
+  const seen = new Set();
+  const visited = [];
+  const push = (v) => { const s = String(v ?? '').trim(); if (s && !seen.has(s)) { seen.add(s); visited.push(s); } };
+  if (Array.isArray(x.visited)) for (const v of x.visited) push(v);
+  push(roomId);
+  return { structureKey, roomId, visited };
+}
+
+function ensureEscapeCover(x) {
+  if (!x || typeof x !== 'object') return null;
+  if (!x.active) return null;
+  return {
+    active: true,
+    bonus: clampIntMin(x.bonus ?? 0, 0),
+    label: String(x.label ?? ''),
+    tier: String(x.tier ?? ''),
+    beganAt: clampIntMin(x.beganAt ?? 0, 0)
+  };
 }
 
 // ensureInstrument moved to engine/instrument.js (ensureInstrumentLayer)

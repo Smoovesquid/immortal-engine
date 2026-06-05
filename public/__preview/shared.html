@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Shared renderer verification</title>
+<style>
+  html,body{margin:0;background:#3a3f37;display:flex;flex-direction:column;align-items:center;gap:12px;font-family:ui-sans-serif,system-ui,sans-serif;color:#cdd2c4;padding:16px 0;}
+  canvas{box-shadow:0 18px 60px rgba(0,0,0,.55);}
+  .bar{display:flex;gap:10px;align-items:center;font-size:13px;}
+  button{font:inherit;background:#cdd2c4;color:#2a2e27;border:0;border-radius:6px;padding:7px 13px;cursor:pointer;}
+  #tag{opacity:.7;}
+  .ins{position:fixed;z-index:30;display:none;background:#e8ecdd;color:#16203a;border:2px solid #16203a;box-shadow:4px 5px 0 rgba(20,28,48,.22);padding:9px 11px;max-width:230px;font-family:"Bradley Hand","Comic Sans MS",cursive;font-size:13px;line-height:1.34;pointer-events:none;}
+  .ins b{font-size:15px;} .ins .sub{display:block;color:#5a6078;font-size:11px;margin:1px 0 0;}
+</style></head>
+<body>
+<div class="bar"><button id="keep">Keep (scene model)</button><button id="fp">FloorPlan adapter</button><span id="tag"></span></div>
+<canvas id="c" width="1120" height="800"></canvas>
+<div id="tip" class="ins"></div>
+<script type="module">
+import { createInteriorMap, floorPlanToSceneModel } from '/map/handDrawnInterior.js';
+const cv = document.getElementById('c'), tag = document.getElementById('tag'), tip = document.getElementById('tip');
+const map = createInteriorMap(cv, { seed: 'sunken-keep' });
+
+// keep, expressed in the shared scene model (rect rooms use centre cx,cy + w,h)
+const KEEP = {
+  material: 'stone',
+  rooms: [
+    { id: '1', shape: 'rect', cx: 5, cy: 5, w: 6, h: 4, name: 'Entry Hall', current: true },
+    { id: '2', shape: 'rect', cx: 10, cy: 5, w: 4, h: 4, name: 'Kitchen' },
+    { id: '3', shape: 'rect', cx: 10, cy: 8.5, w: 4, h: 3, name: 'Larder' },
+    { id: '4', shape: 'rect', cx: 5, cy: 10, w: 6, h: 6, name: 'Great Hall' },
+    { id: '5', shape: 'rect', cx: 5, cy: 14.5, w: 6, h: 3, name: 'Cells' },
+    { id: '6', shape: 'round', cx: 18, cy: 6, r: 2.6, name: 'Shrine' },
+    { id: '7', shape: 'round', cx: 18, cy: 12.5, r: 2.1, name: 'Vault' }
+  ],
+  doors: [{ x: 8, y: 5, orient: 'v' }, { x: 5, y: 7, orient: 'h' }, { x: 10, y: 7, orient: 'h' }, { x: 4, y: 13, orient: 'h' }],
+  corridors: [{ pts: [[12, 5], [13.7, 5], [13.7, 6], [15.4, 6]], w: 0.8 }, { pts: [[18, 8.6], [18, 10.4]], w: 0.8 }],
+  mouths: [{ x: 12, y: 5, orient: 'v', len: 0.8 }, { x: 15.4, y: 6, orient: 'v', len: 0.8 }, { x: 18, y: 8.6, orient: 'h', len: 0.8 }, { x: 18, y: 10.4, orient: 'h', len: 0.8 }, { x: 2, y: 4.5, orient: 'v', len: 1 }],
+  windows: [{ x: 4, y: 3, orient: 'h', t: 'casement' }, { x: 6.5, y: 3, orient: 'h', t: 'casement' }, { x: 10, y: 3, orient: 'h', t: 'casement' }, { x: 12, y: 4, orient: 'v', t: 'slit' }, { x: 12, y: 6.2, orient: 'v', t: 'slit' }, { x: 2, y: 8.6, orient: 'v', t: 'casement' }, { x: 2, y: 11.4, orient: 'v', t: 'casement' }, { x: 2, y: 14.5, orient: 'v', t: 'barred' }, { x: 3.8, y: 16, orient: 'h', t: 'barred' }, { x: 6.2, y: 16, orient: 'h', t: 'barred' }],
+  furniture: [
+    { type: 'rug', ux: 3.2, uy: 4.2, uw: 3.6, uh: 1.6 }, { type: 'column', ux: 2.4, uy: 3.4, uw: 0.8, uh: 0.8 }, { type: 'column', ux: 7, uy: 3.4, uw: 0.8, uh: 0.8 }, { type: 'column', ux: 2.4, uy: 6, uw: 0.8, uh: 0.8 }, { type: 'column', ux: 7, uy: 6, uw: 0.8, uh: 0.8 },
+    { type: 'hearth', ux: 8.3, uy: 3.1, uw: 1.5, uh: 0.7 }, { type: 'table', ux: 9.3, uy: 4.8, uw: 1.8, uh: 1.4 }, { type: 'barrel', ux: 11, uy: 3.4, uw: 0.8, uh: 0.8 }, { type: 'barrel', ux: 11.1, uy: 6, uw: 0.8, uh: 0.8 },
+    { type: 'shelf', ux: 8.2, uy: 7.2, uw: 0.7, uh: 2.5 }, { type: 'crate', ux: 10.2, uy: 7.4, uw: 1, uh: 1 }, { type: 'crate', ux: 11, uy: 8.4, uw: 0.9, uh: 0.9 },
+    { type: 'longtable', ux: 2.6, uy: 8.4, uw: 4.8, uh: 1.1 }, { type: 'longtable', ux: 2.6, uy: 10.4, uw: 4.8, uh: 1.1 }, { type: 'throne', ux: 4.4, uy: 11.7, uw: 1.4, uh: 1.2 }, { type: 'brazier', ux: 2.5, uy: 7.5, uw: 0.8, uh: 0.8 }, { type: 'brazier', ux: 7.2, uy: 7.5, uw: 0.8, uh: 0.8 },
+    { type: 'bed', ux: 2.4, uy: 13.5, uw: 1.3, uh: 1.8 }, { type: 'bars', ux: 2.2, uy: 15.2, uw: 5.4, uh: 0.5 },
+    { type: 'altar', ux: 17.2, uy: 5.2, uw: 1.6, uh: 1.4 }, { type: 'chest', ux: 16.9, uy: 11.6, uw: 2.2, uh: 1 }, { type: 'chest', ux: 17.3, uy: 13.4, uw: 1.4, uh: 0.8 }
+  ],
+  tokens: [
+    { type: 'player', ux: 4, uy: 5.2 }, { type: 'npc', ux: 4.9, uy: 9.4, label: 'K', info: { name: 'Kessa' } },
+    { type: 'mon', ux: 6, uy: 14.4, label: 'r', info: { ref: 'gnaw_rat', name: 'Gnaw-Rat', tags: ['beast'] } },
+    { type: 'mon', ux: 6.7, uy: 14.4, label: 'r', info: { ref: 'cave_spider', name: 'Cave Spider', tags: ['beast'] } },
+    { type: 'mon', ux: 3.2, uy: 14.6, label: 's', info: { ref: 'bone_shambler', name: 'Bone Shambler', tags: ['undead'] } },
+    { type: 'loot', ux: 18, uy: 12.5 }, { type: 'light', ux: 8.3, uy: 3.4 }, { type: 'light', ux: 2.6, uy: 7.6 }, { type: 'light', ux: 7.2, uy: 7.6 }
+  ]
+};
+
+// a fake floorPlan-shaped object (mirrors engine floorPlan() output) -> adapter -> render
+const FAKE_FP = {
+  shell: 'fortified', name: 'Keep',
+  rooms: [
+    { id: 'a', shape: 'rect', cx: 3, cy: 3, w: 4, h: 3, role: 'hall', name: 'Gatehouse' },
+    { id: 'b', shape: 'rect', cx: 8, cy: 3, w: 4, h: 3, role: 'barracks', name: 'Barracks' },
+    { id: 'c', shape: 'rect', cx: 3, cy: 7, w: 4, h: 3, role: 'store', name: 'Stores' },
+    { id: 'd', shape: 'round', cx: 8.5, cy: 7.5, w: 4, h: 4, role: 'tower', name: 'Tower' }
+  ],
+  doors: [{ x: 5.5, y: 3, dir: 'east', a: 'a', b: 'b' }, { x: 3, y: 5, dir: 'south', a: 'a', b: 'c' }, { x: 6, y: 7.2, dir: 'east', a: 'c', b: 'd' }],
+  corridors: [{ ax: 5, ay: 7, bx: 6.5, by: 7.4 }]
+};
+
+let MODE = 'keep';
+function render() {
+  if (MODE === 'keep') { tag.textContent = 'shared renderer — KEEP scene model'; map.draw(KEEP); }
+  else { tag.textContent = 'shared renderer — FLOORPLAN adapter'; map.draw(floorPlanToSceneModel(FAKE_FP, { currentRoomId: 'a', tokens: [{ type: 'player', ux: 3, uy: 3 }] })); }
+}
+document.getElementById('keep').onclick = () => { MODE = 'keep'; render(); };
+document.getElementById('fp').onclick = () => { MODE = 'fp'; render(); };
+
+cv.addEventListener('mousemove', e => {
+  const { x, y } = map.screenToUnit(e.clientX, e.clientY);
+  let hit = null; for (const h of map.hitboxes) { if (Math.hypot(h.x - (map.transform.ox + x * map.transform.s), h.y - (map.transform.oy + y * map.transform.s)) <= h.r) { hit = h; break; } }
+  if (hit) { tip.innerHTML = `<b>${hit.token.type}</b><span class="sub">${hit.token.info?.name || hit.token.label || ''}</span>`; tip.style.display = 'block'; tip.style.left = (e.clientX + 14) + 'px'; tip.style.top = (e.clientY + 14) + 'px'; cv.style.cursor = 'pointer'; }
+  else { tip.style.display = 'none'; cv.style.cursor = 'default'; }
+});
+window.__render = render;
+render();
+</script>
+</body></html>

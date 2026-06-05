@@ -10,6 +10,8 @@
 import { ensureWorld } from '../state.js';
 import { makeRng, seedFromString } from '../rng.js';
 import { applyDeltas } from '../effectsCore.js';
+import { applyWillToCast } from '../magic/will.js';
+import { castMoralCost, applyCastCost } from '../magic/willCost.js';
 import { lookupSpell } from '../ruleset/core/spells/index.js';
 import { statMod } from '../ruleset/core/stats.js';
 import { profBonusFor } from '../ruleset/core/levelTable.js';
@@ -26,7 +28,7 @@ import { applyDamageTakenTraits } from '../combat/traitHooks.js';
  * each applied effect descriptor for downstream consumption (combat resolver,
  * composer, etc.).
  */
-export function castSpell(world, { spellRef, targetId, slotLevel } = {}) {
+export function castSpell(world, { spellRef, targetId, slotLevel, will = false, againstUnwilling = false } = {}) {
   let w = ensureWorld(world);
 
   const ref = String(spellRef ?? '').trim();
@@ -62,6 +64,23 @@ export function castSpell(world, { spellRef, targetId, slotLevel } = {}) {
     }
     w = applyDeltas(w, [{ op: 'consumeSpellSlot', level: effectiveSlotLevel }]);
     slotConsumed = true;
+  }
+
+  // ── Hidden Will (opt-in, default OFF) ────────────────────────────────────
+  // The caster's deed-shaped Will quietly shapes the cast: aligned magic lands,
+  // dissonant magic may fizzle or backfire, and coercive/forbidden casting stains
+  // the world (corruption + scars). When `will` is unset, the base resolver below
+  // runs exactly as before.
+  let willInfo = null;
+  if (will && def.school) {
+    const willTurn = toInt(w.time?.turn ?? 0);
+    const wc = applyWillToCast({ world: w, school: def.school, baseSuccess: 0.85, nonce: willTurn });
+    const cost = castMoralCost({ world: w, school: def.school, againstUnwilling });
+    if (cost.corruption || cost.instability || cost.scar) w = applyCastCost(w, cost);
+    willInfo = { school: def.school, feel: wc.feelText, affinity: wc.affinity, dissonance: wc.dissonance, backfired: wc.backfired, cost };
+    if (!wc.cast) {
+      return { world: w, result: { ok: true, miscast: true, reason: wc.backfired ? 'will-backfire' : 'will-fizzle', spellRef: ref, spellName: def.name, effects: [], slotConsumed, will: willInfo } };
+    }
   }
 
   // Concentration handling.
@@ -348,7 +367,8 @@ export function castSpell(world, { spellRef, targetId, slotLevel } = {}) {
       spellName: def.name,
       effects: appliedEffects,
       slotConsumed,
-      slotLevel: effectiveSlotLevel
+      slotLevel: effectiveSlotLevel,
+      will: willInfo
     }
   };
 }

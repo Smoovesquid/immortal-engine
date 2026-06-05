@@ -17,6 +17,7 @@ import { filterContext, applyMoodOverlay } from '../npc/perspectiveFilter.js';
 import { availableTopics as dialogueAvailableTopics } from '../npc/dialogue.js';
 import { companionApproachForRole } from '../combat/companionTurn.js';
 import { statMod, maxWounds } from '../ruleset/core/stats.js';
+import { buildAsciiMap } from './asciiMap.js';
 
 /**
  * buildNarratorContext(world, outcome) → NarratorContext (original slim context)
@@ -98,6 +99,7 @@ export function buildDMContext(world, outcome = {}, pack = {}) {
 
   return {
     scene,
+    asciiMap: buildAsciiMap(w),
     npcsPresent,
     worldPressure,
     player,

@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Live floorPlan render</title>
+<style>
+  html,body{margin:0;background:#3a3f37;color:#cdd2c4;font-family:ui-sans-serif,system-ui,sans-serif;padding:14px;}
+  h1{font-size:14px;opacity:.8;margin:0 0 10px;}
+  .row{display:flex;gap:16px;flex-wrap:wrap;}
+  .cell{background:#2a2e27;border-radius:8px;padding:8px;}
+  .cell h2{font-size:12px;margin:0 0 6px;}
+  canvas{box-shadow:0 8px 24px rgba(0,0,0,.45);border-radius:4px;}
+  #err{color:#e88;white-space:pre-wrap;font-size:12px;}
+</style></head>
+<body>
+<h1>Live render — REAL engine floorPlan() → handDrawnInterior (the live LocalMap path)</h1>
+<div id="err"></div>
+<div class="row" id="row"></div>
+<script type="module">
+const row = document.getElementById('row');
+try {
+  const { floorPlan } = await import('/engine/structures/floorPlan.js');
+  const { createInteriorMap, floorPlanToSceneModel } = await import('/public/map/handDrawnInterior.js');
+
+  // Two real structures with non-adjacent rooms (forces floorPlan corridors).
+  const structures = [
+    { id: 'keep_demo', kind: 'building', topology: { kind: 'rooms',
+        rooms: [{ id: 'greathall', tags: ['entry'] }, { id: 'kitchen' }, { id: 'armory' }, { id: 'tower' }, { id: 'dungeon' }],
+        edges: [{ a: 'greathall', b: 'kitchen' }, { a: 'greathall', b: 'armory' }, { a: 'armory', b: 'tower' }, { a: 'kitchen', b: 'dungeon' }] } },
+    { id: 'lair_demo', kind: 'building', topology: { kind: 'rooms',
+        rooms: [{ id: 'maw', tags: ['entry'] }, { id: 'den' }, { id: 'hoard' }, { id: 'warren' }],
+        edges: [{ a: 'maw', b: 'den' }, { a: 'den', b: 'hoard' }, { a: 'den', b: 'warren' }] } }
+  ];
+
+  for (const st of structures) {
+    const fp = floorPlan(st);
+    const entry = fp.rooms.find(r => r.isEntry) || fp.rooms[0];
+    const tokens = [
+      { type: 'player', ux: entry.cx, uy: entry.cy },
+      { type: 'mon', ux: fp.rooms[fp.rooms.length - 1].cx, uy: fp.rooms[fp.rooms.length - 1].cy, info: { ref: 'dire_wolf', name: 'Dire Wolf', tags: ['beast'] } }
+    ];
+    const cell = document.createElement('div'); cell.className = 'cell';
+    cell.innerHTML = `<h2>${st.id} — ${fp.type} (${fp.shell}) · ${fp.rooms.length} rooms · ${fp.corridors.length} corridors</h2>`;
+    const cv = document.createElement('canvas'); cv.width = 520; cv.height = 440; cell.appendChild(cv); row.appendChild(cell);
+    const map = createInteriorMap(cv, { seed: st.id });
+    map.draw(floorPlanToSceneModel(fp, { currentRoomId: entry.id, tokens }));
+  }
+  window.__ok = true;
+} catch (e) {
+  document.getElementById('err').textContent = 'ERROR: ' + (e && e.stack || e);
+  window.__ok = false;
+}
+</script>
+</body></html>

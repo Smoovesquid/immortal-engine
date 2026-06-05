@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Lair catalog</title>
+<style>
+  html,body{margin:0;background:#3a3f37;font-family:ui-sans-serif,system-ui,sans-serif;color:#cdd2c4;padding:14px;}
+  h1{font-size:15px;font-weight:600;opacity:.8;margin:0 0 12px;}
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+  .cell{background:#2a2e27;border-radius:8px;padding:7px;}
+  .cell h2{font-size:12px;margin:0 0 5px;font-weight:600;}
+  .cell .meta{font-size:10px;opacity:.6;float:right;font-weight:400;}
+  canvas{width:100%;height:auto;display:block;box-shadow:0 8px 24px rgba(0,0,0,.45);border-radius:4px;}
+</style></head>
+<body>
+<h1>Lair archetypes — organic homes (chambers + tunnels, no straight walls)</h1>
+<div class="grid" id="grid"></div>
+<script type="module">
+import { createInteriorMap, planToSceneModel } from '/map/handDrawnInterior.js';
+import { LAIRS } from '/map/plans/lairs.js';
+const grid = document.getElementById('grid');
+for (const lair of LAIRS) {
+  const cell = document.createElement('div'); cell.className = 'cell';
+  cell.innerHTML = `<h2>${lair.name} <span class="meta">${lair.archetype} · T${lair.tier}</span></h2>`;
+  const cv = document.createElement('canvas'); cv.width = 320; cv.height = 280; cell.appendChild(cv); grid.appendChild(cell);
+  const entry = lair.rooms.find(r => r.id === lair.entry) || lair.rooms[0];
+  const tokens = entry ? [{ type: 'player', ux: entry.cx, uy: entry.cy }] : [];
+  const map = createInteriorMap(cv, { seed: lair.id });
+  map.draw(planToSceneModel(lair, { currentRoomId: lair.entry, tokens }));
+}
+window.__rendered = LAIRS.length;
+</script>
+</body></html>

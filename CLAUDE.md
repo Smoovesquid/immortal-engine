@@ -1,5 +1,12 @@
 # Immortal Engine — Agent Guide
 
+## Read first (durable docs)
+- `docs/ROADMAP.md` — the goal + the critical path (R0–R7) to voice-first, DM-adjudicated tabletop. The anchor against drift.
+- `docs/REPO_MAP.md` — module map + the "two play surfaces" gotcha (v1 = trunk, `__preview/` = sandbox). Read before exploring.
+- `docs/IMMORTAL_INVARIANTS.md` — non-negotiables (determinism, narration≠canon, one walkable scale, open-ended, etc.).
+- `docs/PACKETS.md` — active queue + done-when. Spec a packet before editing; small bounded diffs.
+- `docs/LIVING_WORLD_MERGE.md` — region/ecology/discovery/will merge (P1–P6 done).
+
 ## Quick Reference
 
 ```

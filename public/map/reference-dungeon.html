@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reference — hand-drawn graph-paper dungeon</title>
+<style>
+  html,body{margin:0;background:#3a3f37;display:flex;flex-direction:column;align-items:center;gap:14px;font-family:ui-sans-serif,system-ui,sans-serif;color:#cdd2c4;padding:24px 0;}
+  canvas{box-shadow:0 18px 60px rgba(0,0,0,.55);border-radius:3px;}
+  .bar{display:flex;gap:10px;align-items:center;}
+  button{font:inherit;background:#cdd2c4;color:#2a2e27;border:0;border-radius:6px;padding:8px 14px;cursor:pointer;}
+  button:hover{background:#fff;}
+  .hint{opacity:.7;font-size:13px;}
+</style>
+</head>
+<body>
+<div class="bar">
+  <button id="re">Re-roll wobble</button>
+  <button id="save">Save PNG</button>
+  <span class="hint">a hand-drawn target to react to</span>
+</div>
+<canvas id="c" width="1100" height="820"></canvas>
+<script>
+const cv = document.getElementById('c');
+const ctx = cv.getContext('2d');
+
+// ---- deterministic wobble (seeded so it doesn't shimmer on redraw) ----
+let SEED = 1337;
+function hashStr(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return (h>>>0);}
+function jit(key, amp){ return (((hashStr(SEED+'|'+key)%2000)/1000)-1)*amp; }
+
+// ---- palette: grubby blue/green quadrille pad ----
+const PAPER='#e8ecdd';
+const GRID_MINOR='rgba(92,134,120,0.22)';
+const GRID_MAJOR='rgba(92,134,120,0.42)';
+const INK='rgba(30,40,66,0.92)';
+const INK_SOFT='rgba(30,40,66,0.5)';
+const HATCH='rgba(36,46,70,0.55)';
+const PENCIL='rgba(70,74,88,0.8)';
+const SHADE='rgba(70,74,88,0.14)';
+const HAND='"Bradley Hand","Comic Sans MS","Chalkboard SE","Marker Felt",cursive';
+
+const STEP=22;            // graph-paper square
+const U=STEP;             // one map unit == one square
+const OX=70, OY=70;       // origin offset on canvas
+function gx(x){return OX + x*U;}
+function gy(y){return OY + y*U;}
+
+// ---- the dungeon: hand-authored on a grid (units) ----
+// rooms: rectangular in grid squares. {id,x,y,w,h,name,shape}
+const ROOMS = [
+  {id:1, x:2,  y:2,  w:6, h:4, name:'GUARD ROOM', shape:'rect'},
+  {id:2, x:2,  y:9,  w:5, h:5, name:'CISTERN',     shape:'round'},
+  {id:3, x:12, y:2,  w:5, h:3, name:'ANTECHAMBER', shape:'rect'},
+  {id:4, x:11, y:8,  w:8, h:6, name:'GREAT HALL',  shape:'rect'},
+  {id:5, x:23, y:3,  w:5, h:4, name:'ARMORY',      shape:'rect'},
+  {id:6, x:24, y:10, w:6, h:5, name:'SHRINE',      shape:'apse'},
+  {id:7, x:14, y:17, w:5, h:4, name:'CELLS',       shape:'rect'},
+  {id:8, x:5,  y:18, w:5, h:3, name:'STORE',       shape:'rect'},
+];
+// corridors as polylines in grid units (run along square lines)
+const CORRIDORS = [
+  [[5,6],[5,9]],            // 1 -> 2
+  [[8,4],[12,3.5]],         // 1 -> 3
+  [[14,5],[15,8]],          // 3 -> 4
+  [[19,4],[23,5]],          // 3 -> 5
+  [[19,11],[24,12.5]],      // 4 -> 6
+  [[16,14],[16,17]],        // 4 -> 7
+  [[11,11],[10,19.5]],      // 4 -> 8 (dogleg-ish)
+];
+const CORR_W = 1.6; // corridor width in squares
+
+// ---- shape -> polygon point loop (in canvas px) ----
+function roomPts(r){
+  const cx=gx(r.x + r.w/2), cy=gy(r.y + r.h/2);
+  const rw=r.w*U/2, rh=r.h*U/2;
+  const k='r'+r.id;
+  if(r.shape==='round'||r.shape==='apse'){
+    const n=42, pts=[];
+    for(let i=0;i<n;i++){
+      const a=i/n*Math.PI*2;
+      let ex=Math.cos(a), ey=Math.sin(a);
+      // apse: flatten the west side into a wall
+      if(r.shape==='apse' && ex<-0.2){ ex=-0.2; }
+      pts.push([cx+ex*rw+jit(k+i+'x',1.4), cy+ey*rh+jit(k+i+'y',1.4)]);
+    }
+    return pts;
+  }
+  // rect with wobble + densified edges
+  const c=[[r.x,r.y],[r.x+r.w,r.y],[r.x+r.w,r.y+r.h],[r.x,r.y+r.h]];
+  const pts=[];
+  for(let e=0;e<4;e++){
+    const a=c[e], b=c[(e+1)%4];
+    const ax=gx(a[0]),ay=gy(a[1]),bx=gx(b[0]),by=gy(b[1]);
+    const segs=Math.max(2,Math.round(Math.hypot(bx-ax,by-ay)/16));
+    for(let s=0;s<segs;s++){
+      const t=s/segs;
+      pts.push([ax+(bx-ax)*t+jit(k+e+s+'x',1.2), ay+(by-ay)*t+jit(k+e+s+'y',1.2)]);
+    }
+  }
+  return pts;
+}
+
+function corridorPts(seg){
+  // build a thin rectangle band along the polyline, returned as one loop
+  const w = CORR_W*U/2;
+  const left=[], right=[];
+  for(let i=0;i<seg.length;i++){
+    const p=seg[i];
+    const prev=seg[Math.max(0,i-1)], next=seg[Math.min(seg.length-1,i+1)];
+    let dx=gx(next[0])-gx(prev[0]), dy=gy(next[1])-gy(prev[1]);
+    const len=Math.hypot(dx,dy)||1; dx/=len; dy/=len;
+    const nx=-dy, ny=dx;
+    const px=gx(p[0]), py=gy(p[1]);
+    left.push([px+nx*w, py+ny*w]);
+    right.push([px-nx*w, py-ny*w]);
+  }
+  return left.concat(right.reverse());
+}
+
+function pathPoly(pts, close=true){
+  ctx.beginPath();
+  ctx.moveTo(pts[0][0],pts[0][1]);
+  for(let i=1;i<pts.length;i++) ctx.lineTo(pts[i][0],pts[i][1]);
+  if(close) ctx.closePath();
+}
+
+// ---- hatch pattern (cached) ----
+let HATCH_PAT=null;
+function hatchPattern(){
+  if(HATCH_PAT) return HATCH_PAT;
+  const t=document.createElement('canvas'); t.width=t.height=7;
+  const tx=t.getContext('2d');
+  tx.strokeStyle=HATCH; tx.lineWidth=1;
+  tx.beginPath(); tx.moveTo(-1,8); tx.lineTo(8,-1); tx.stroke();
+  tx.beginPath(); tx.moveTo(-1,15); tx.lineTo(15,-1); tx.stroke();
+  HATCH_PAT=ctx.createPattern(t,'repeat');
+  return HATCH_PAT;
+}
+
+// ---- graph paper grid ----
+function drawGrid(){
+  ctx.fillStyle=PAPER; ctx.fillRect(0,0,cv.width,cv.height);
+  for(let x=0;x<=cv.width;x+=STEP){
+    ctx.strokeStyle = (Math.round((x-OX)/STEP))%5===0 ? GRID_MAJOR:GRID_MINOR;
+    ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(x+0.5,0); ctx.lineTo(x+0.5,cv.height); ctx.stroke();
+  }
+  for(let y=0;y<=cv.height;y+=STEP){
+    ctx.strokeStyle = (Math.round((y-OY)/STEP))%5===0 ? GRID_MAJOR:GRID_MINOR;
+    ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(0,y+0.5); ctx.lineTo(cv.width,y+0.5); ctx.stroke();
+  }
+}
+
+// ---- wobbly ink stroke of a closed loop, double pass ----
+function inkLoop(pts, lw, passes=2){
+  ctx.strokeStyle=INK; ctx.lineJoin='round'; ctx.lineCap='round';
+  for(let p=0;p<passes;p++){
+    ctx.lineWidth=lw + (p?0.4:0);
+    pathPoly(pts,true); ctx.stroke();
+  }
+}
+
+function draw(){
+  HATCH_PAT=null;
+  drawGrid();
+
+  const voids = [];           // all room+corridor loops
+  ROOMS.forEach(r=> voids.push({type:'room', r, pts:roomPts(r)}));
+  CORRIDORS.forEach(s=> voids.push({type:'corr', pts:corridorPts(s)}));
+
+  // 1) HATCH the rock: fill a dilated version of every void with diagonal hatch.
+  //    We draw hatch over the whole sheet, then carve the floor back out.
+  //    Simpler robust approach: build a big rock region = sheet minus voids, hatched.
+  ctx.save();
+  // clip OUT the voids by drawing hatch everywhere then re-laying paper inside voids
+  ctx.fillStyle=hatchPattern();
+  // dilate: stroke a fat band around each void to thicken rock edge
+  voids.forEach(v=>{
+    ctx.save();
+    pathPoly(v.pts,true);
+    ctx.lineWidth=14; ctx.strokeStyle=hatchPattern(); ctx.stroke();
+    ctx.restore();
+  });
+  // fill the rock field around everything: paint hatch over full sheet margin band
+  // (cheap + reads well): hatch a frame, then individual edge bands above already drawn.
+  ctx.restore();
+
+  // Better: paint hatch as full background band hugging the void.
+  // Do it by: fill whole canvas with hatch, then re-expose paper inside each void.
+  ctx.save();
+  ctx.fillStyle=hatchPattern();
+  ctx.fillRect(0,0,cv.width,cv.height);
+  ctx.restore();
+
+  // 2) Re-expose floor: paper + grid inside each void.
+  voids.forEach(v=>{
+    ctx.save();
+    pathPoly(v.pts,true); ctx.clip();
+    // paper
+    ctx.fillStyle=PAPER; ctx.fill();
+    // re-draw grid inside the clip
+    ctx.globalAlpha=1;
+    for(let x=0;x<=cv.width;x+=STEP){
+      ctx.strokeStyle = (Math.round((x-OX)/STEP))%5===0?GRID_MAJOR:GRID_MINOR;
+      ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(x+0.5,0); ctx.lineTo(x+0.5,cv.height); ctx.stroke();
+    }
+    for(let y=0;y<=cv.height;y+=STEP){
+      ctx.strokeStyle = (Math.round((y-OY)/STEP))%5===0?GRID_MAJOR:GRID_MINOR;
+      ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(0,y+0.5); ctx.lineTo(cv.width,y+0.5); ctx.stroke();
+    }
+    ctx.restore();
+  });
+
+  // 3) light shade in a couple of rooms for depth
+  [2,6].forEach(id=>{
+    const v=voids.find(o=>o.r&&o.r.id===id);
+    ctx.save(); pathPoly(v.pts,true); ctx.clip();
+    ctx.fillStyle=SHADE; ctx.fill(); ctx.restore();
+  });
+
+  // 4) ink the room walls + corridor rails
+  voids.forEach(v=>{
+    if(v.type==='room') inkLoop(v.pts, 2.0, 2);
+    else inkLoop(v.pts, 1.6, 1);
+  });
+
+  // 5) doors: little gaps drawn as two ticks where corridor meets room (decorative)
+  ctx.strokeStyle=INK; ctx.lineWidth=2; ctx.lineCap='round';
+  CORRIDORS.forEach(s=>{
+    [s[0], s[s.length-1]].forEach(end=>{
+      const ex=gx(end[0]), ey=gy(end[1]);
+      ctx.beginPath(); ctx.arc(ex,ey, CORR_W*U/2-1, 0, Math.PI*2);
+      // (no fill; the re-exposed floor already shows the opening)
+    });
+  });
+
+  // 6) room numbers + names (handwritten, slight rotate)
+  ROOMS.forEach(r=>{
+    const cx=gx(r.x+r.w/2), cy=gy(r.y+r.h/2);
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(jit('rot'+r.id, 0.04));
+    ctx.fillStyle=INK; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.font='bold 26px '+HAND;
+    ctx.fillText(String(r.id), 0, -6);
+    ctx.font='12px '+HAND;
+    ctx.fillStyle=INK_SOFT;
+    ctx.fillText(r.name, 0, 14);
+    ctx.restore();
+  });
+
+  // 7) some pencil furniture (tables/altar/well)
+  ctx.strokeStyle=PENCIL; ctx.fillStyle='rgba(70,74,88,0.10)'; ctx.lineWidth=1.4;
+  // great hall long tables
+  drawRectPencil(13,9.5,3,1); drawRectPencil(13,11.5,3,1);
+  // armory racks
+  drawRectPencil(23.5,3.5,0.6,3); drawRectPencil(27,3.5,0.6,3);
+  // cistern well
+  ctx.beginPath(); ctx.arc(gx(4.5),gy(11.5), U*0.7,0,Math.PI*2); ctx.stroke();
+  // shrine altar
+  drawRectPencil(26,11.5,2,1);
+
+  // 8) compass rose
+  drawCompass(cv.width-66, 78, 30);
+
+  // 9) title cartouche
+  titleBanner('— LEVEL ONE —', 'the sunken keep');
+
+  // 10) a stair glyph into room 1 (entrance) + "in" arrow
+  stairGlyph(0.4, 3.4, 2);
+}
+
+function drawRectPencil(ux,uy,uw,uh){
+  ctx.beginPath();
+  ctx.rect(gx(ux),gy(uy),uw*U,uh*U);
+  ctx.fill(); ctx.stroke();
+}
+
+function drawCompass(x,y,r){
+  ctx.save();
+  ctx.translate(x,y);
+  ctx.strokeStyle=INK; ctx.fillStyle=INK; ctx.lineWidth=1.6; ctx.lineCap='round';
+  ctx.beginPath(); ctx.arc(0,0,r,0,Math.PI*2); ctx.stroke();
+  ctx.beginPath(); ctx.arc(0,0,r*0.62,0,Math.PI*2); ctx.globalAlpha=.5; ctx.stroke(); ctx.globalAlpha=1;
+  // N arrow
+  ctx.beginPath(); ctx.moveTo(0,-r*0.9); ctx.lineTo(-5,0); ctx.lineTo(0,r*0.55); ctx.lineTo(5,0); ctx.closePath();
+  ctx.fillStyle='rgba(30,40,66,0.18)'; ctx.fill();
+  ctx.strokeStyle=INK; ctx.beginPath(); ctx.moveTo(0,-r*0.9); ctx.lineTo(0,r*0.55); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(-r*0.9,0); ctx.lineTo(r*0.9,0); ctx.globalAlpha=.4; ctx.stroke(); ctx.globalAlpha=1;
+  ctx.fillStyle=INK; ctx.font='bold 13px '+HAND; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText('N',0,-r-9);
+  ctx.restore();
+}
+
+function titleBanner(title, sub){
+  const x=70, y=cv.height-58, w=300, h=44;
+  ctx.save();
+  ctx.translate(x,y); ctx.rotate(jit('banner',0.012));
+  // parchment box
+  ctx.fillStyle='rgba(232,236,221,0.9)'; ctx.strokeStyle=INK; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.rect(0,0,w,h); ctx.fill(); ctx.stroke();
+  ctx.lineWidth=1; ctx.globalAlpha=.5; ctx.strokeRect(5,5,w-10,h-10); ctx.globalAlpha=1;
+  ctx.fillStyle=INK; ctx.textAlign='left'; ctx.textBaseline='middle';
+  ctx.font='bold 20px '+HAND; ctx.fillText(title, 16, 16);
+  ctx.font='13px '+HAND; ctx.fillStyle=INK_SOFT; ctx.fillText(sub, 16, 33);
+  ctx.restore();
+}
+
+function stairGlyph(ux,uy,n){
+  ctx.save();
+  ctx.strokeStyle=INK; ctx.lineWidth=1.6;
+  for(let i=0;i<n*3;i++){
+    const yy=gy(uy)+i*4;
+    ctx.beginPath(); ctx.moveTo(gx(ux),yy); ctx.lineTo(gx(ux)+30,yy); ctx.stroke();
+  }
+  ctx.fillStyle=INK_SOFT; ctx.font='11px '+HAND; ctx.fillText('in', gx(ux)-6, gy(uy)-8);
+  ctx.restore();
+}
+
+document.getElementById('re').onclick=()=>{ SEED=(Math.floor(Math.random()*99999)); draw(); };
+document.getElementById('save').onclick=()=>{
+  const a=document.createElement('a'); a.download='dungeon-reference.png'; a.href=cv.toDataURL('image/png'); a.click();
+};
+draw();
+</script>
+</body>
+</html>

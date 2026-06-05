@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Tactical battle</title>
+<style>
+  html,body{margin:0;background:#3a3f37;color:#cdd2c4;font-family:ui-sans-serif,system-ui,sans-serif;padding:12px;display:flex;flex-direction:column;align-items:center;gap:8px;}
+  h1{font-size:14px;margin:0;opacity:.85;}
+  .bar{display:flex;gap:8px;align-items:center;font-size:13px;flex-wrap:wrap;justify-content:center;}
+  button{font:inherit;background:#cdd2c4;color:#2a2e27;border:0;border-radius:6px;padding:6px 11px;cursor:pointer;}
+  button.on{background:#c0392b;color:#fff;}
+  #log{max-width:760px;font-size:12px;opacity:.9;min-height:34px;text-align:center;}
+  canvas{box-shadow:0 14px 44px rgba(0,0,0,.55);border-radius:4px;cursor:pointer;}
+  #err{color:#e88;font-size:12px;white-space:pre-wrap;}
+</style></head>
+<body>
+<h1 id="title">Skirmish — your turn</h1>
+<div class="bar" id="abilities"></div>
+<div class="bar"><button id="end">End Turn ⏭</button><span id="hp"></span></div>
+<div id="log">Click a green tile to move. Click an enemy to attack with the selected ability. Fireball can blind-fire into fog.</div>
+<div id="err"></div>
+<canvas id="c" width="704" height="440"></canvas>
+<script type="module">
+const err = document.getElementById('err');
+try {
+  const { makeGrid } = await import('/engine/tactical/visibility.js');
+  const { makeBattle, moveActor, attack, endPlayerTurn, visibility, reachableForActor, checkOver } = await import('/engine/tactical/battle.js');
+  const { iconKindFor, drawCreatureIcon } = await import('/public/map/creatureIcons.js');
+
+  const W = 16, H = 10, P = 44;
+  const grid = makeGrid(W, H);
+  // cover walls (blocks) scattered as cover + a dividing wall with a gap
+  [[5, 3], [5, 4], [9, 6], [9, 7], [11, 2], [12, 2], [7, 8], [3, 6]].forEach(([x, y]) => grid.set(x, y, 1));
+  for (let y = 0; y < H; y++) if (y !== 5) grid.set(13, y, 1); // wall with a doorway at y=5
+
+  let battle = makeBattle({ seed: 'skirmish', grid, sight: 8, actors: [
+    { id: 'pc', faction: 'player', name: 'You', x: 1, y: 5, hp: 30, maxHp: 30, move: 5, aim: 80, abilities: ['sword', 'shortbow', 'fireball'], damage: '1d8', agility: 3 },
+    { id: 'wolf', faction: 'enemy', name: 'Gray Wolf', tags: ['beast'], x: 7, y: 3, hp: 9, maxHp: 9, move: 6, aim: 55, damage: '1d6', agility: 2 },
+    { id: 'goblin', faction: 'enemy', name: 'Goblin', tags: ['humanoid'], x: 10, y: 7, hp: 8, maxHp: 8, move: 5, aim: 55, damage: '1d6', agility: 1 },
+    { id: 'ogre', faction: 'enemy', name: 'Ogre', tags: ['giant'], x: 15, y: 5, hp: 22, maxHp: 22, move: 4, aim: 60, damage: '1d12', agility: 0, sight: 9 }
+  ]});
+  const cv = document.getElementById('c'), ctx = cv.getContext('2d');
+  let ability = 'sword';
+
+  function abilBar() {
+    const el = document.getElementById('abilities'); el.innerHTML = '';
+    for (const [id, label] of [['sword', 'Sword (1)'], ['shortbow', 'Bow (12)'], ['fireball', 'Fireball 🔥 (blind)']]) {
+      const b = document.createElement('button'); b.textContent = label; b.className = id === ability ? 'on' : ''; b.onclick = () => { ability = id; abilBar(); }; el.appendChild(b);
+    }
+  }
+
+  function draw() {
+    const vis = visibility(battle), reach = battle.phase === 'player' && !battle.over ? reachableForActor(battle, 'pc').tiles : new Map();
+    ctx.fillStyle = '#e8ecdd'; ctx.fillRect(0, 0, cv.width, cv.height);
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+      const seen = vis.has(x + ',' + y), X = x * P, Y = y * P;
+      ctx.fillStyle = '#efe9d6'; ctx.fillRect(X, Y, P - 1, P - 1);
+      if (grid.get(x, y)) { ctx.fillStyle = 'rgba(40,46,64,0.9)'; ctx.fillRect(X + 2, Y + 2, P - 5, P - 5); }
+      if (reach.has(x + ',' + y)) { ctx.fillStyle = 'rgba(46,139,87,0.22)'; ctx.fillRect(X, Y, P - 1, P - 1); }
+      if (!seen) { ctx.fillStyle = 'rgba(40,46,40,0.55)'; ctx.fillRect(X, Y, P, P); }
+    }
+    ctx.strokeStyle = 'rgba(92,134,120,0.25)'; ctx.lineWidth = 1;
+    for (let x = 0; x <= W; x++) { ctx.beginPath(); ctx.moveTo(x * P, 0); ctx.lineTo(x * P, H * P); ctx.stroke(); }
+    for (let y = 0; y <= H; y++) { ctx.beginPath(); ctx.moveTo(0, y * P); ctx.lineTo(W * P, y * P); ctx.stroke(); }
+    for (const a of Object.values(battle.actors)) {
+      if (a.hp <= 0) continue;
+      const seen = a.faction === 'player' || vis.has(Math.round(a.x) + ',' + Math.round(a.y));
+      if (!seen) continue;
+      const X = a.x * P + P / 2, Y = a.y * P + P / 2;
+      if (a.faction === 'player') { ctx.fillStyle = '#c0392b'; ctx.beginPath(); ctx.arc(X, Y, P * 0.3, 0, 7); ctx.fill(); ctx.fillStyle = '#fff'; ctx.font = 'bold 18px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('@', X, Y + 1); }
+      else { ctx.fillStyle = 'rgba(107,43,43,0.16)'; ctx.beginPath(); ctx.arc(X, Y, P * 0.32, 0, 7); ctx.fill(); drawCreatureIcon(ctx, X, Y, P * 0.28, { ...iconKindFor(a), seed: a.id }); }
+      // hp bar
+      const w = P * 0.6, hpw = w * Math.max(0, a.hp) / a.maxHp;
+      ctx.fillStyle = 'rgba(20,20,20,0.5)'; ctx.fillRect(X - w / 2, Y - P * 0.42, w, 4);
+      ctx.fillStyle = a.faction === 'player' ? '#3a9' : '#c64'; ctx.fillRect(X - w / 2, Y - P * 0.42, hpw, 4);
+    }
+    document.getElementById('hp').textContent = `HP ${battle.actors.pc.hp}/${battle.actors.pc.maxHp} · round ${battle.round}`;
+    document.getElementById('title').textContent = battle.over ? (battle.over === 'win' ? 'Victory! ⚔' : 'You have fallen…') : 'Skirmish — your turn';
+  }
+  function setLog() { document.getElementById('log').textContent = battle.log.slice(-3).join('  ·  ') || '…'; }
+
+  cv.addEventListener('click', e => {
+    if (battle.over) return;
+    const rect = cv.getBoundingClientRect(); const x = Math.floor((e.clientX - rect.left) * cv.width / rect.width / P), y = Math.floor((e.clientY - rect.top) * cv.height / rect.height / P);
+    const tgt = Object.values(battle.actors).find(a => a.hp > 0 && a.faction !== 'player' && Math.round(a.x) === x && Math.round(a.y) === y);
+    const vis = visibility(battle);
+    if (tgt && (ability === 'fireball' || vis.has(x + ',' + y))) battle = attack(battle, 'pc', tgt.id, ability);
+    else if (ability === 'fireball') { /* blind-fire an empty fogged cell */ const fake = { id: '_', x, y }; battle = attack({ ...battle, actors: { ...battle.actors, _: fake } }, 'pc', '_', 'fireball'); delete battle.actors._; }
+    else battle = moveActor(battle, 'pc', x, y);
+    battle = checkOver(battle); draw(); setLog();
+  });
+  document.getElementById('end').onclick = () => { if (battle.over) return; battle = endPlayerTurn(battle); draw(); setLog(); };
+
+  abilBar(); draw();
+  window.__ok = true; window.__battle = () => battle; window.__do = { attack: (t, a) => { battle = attack(battle, 'pc', t, a); draw(); setLog(); }, move: (x, y) => { battle = moveActor(battle, 'pc', x, y); draw(); setLog(); }, end: () => { battle = endPlayerTurn(battle); draw(); setLog(); } };
+} catch (e) { err.textContent = 'ERROR: ' + (e && e.stack || e); window.__ok = false; }
+</script>
+</body></html>

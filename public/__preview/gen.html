@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Generated places</title>
+<style>
+  html,body{margin:0;background:#3a3f37;color:#cdd2c4;font-family:ui-sans-serif,system-ui,sans-serif;padding:14px;}
+  h1{font-size:14px;opacity:.8;margin:0 0 12px;}
+  .cell{background:#2a2e27;border-radius:8px;padding:8px;margin-bottom:14px;}
+  .cell h2{font-size:12px;margin:0 0 6px;}
+  canvas{width:100%;height:auto;display:block;box-shadow:0 8px 24px rgba(0,0,0,.45);border-radius:4px;}
+  #err{color:#e88;white-space:pre-wrap;font-size:12px;}
+</style></head>
+<body>
+<h1>Seeded place generation — catalog buildings + dressed enemies (fog off to show all)</h1>
+<div id="err"></div>
+<div id="root"></div>
+<script type="module">
+const err = document.getElementById('err');
+try {
+  const { generatePlace } = await import('/public/map/generatePlace.js');
+  const { createPlaceMap } = await import('/public/map/handDrawnPlace.js');
+  const root = document.getElementById('root');
+  const specs = [
+    { seed: 'oakhollow', nodeType: 'hamlet', tier: 1 },
+    { seed: 'kingsford', nodeType: 'town', tier: 2 },
+    { seed: 'gnarlwood', nodeType: 'wild', tier: 3 },
+    { seed: 'ravenkeep', nodeType: 'ruin', tier: 4 }
+  ];
+  let n = 0;
+  for (const s of specs) {
+    const place = generatePlace(s);
+    const cell = document.createElement('div'); cell.className = 'cell';
+    const mons = place.tokens.filter(t => t.type === 'mon').length;
+    cell.innerHTML = `<h2>${s.seed} — ${s.nodeType} · tier ${s.tier} · ${place.buildings.length} buildings · ${mons} enemies</h2>`;
+    const cv = document.createElement('canvas'); cv.width = 1100; cv.height = 360; cell.appendChild(cv); root.appendChild(cell);
+    const map = createPlaceMap(cv, { seed: s.seed, fog: false });
+    map.draw(place); n++;
+  }
+  window.__ok = n;
+} catch (e) { err.textContent = 'ERROR: ' + (e && e.stack || e); window.__ok = false; }
+</script>
+</body></html>

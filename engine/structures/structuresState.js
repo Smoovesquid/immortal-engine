@@ -78,6 +78,9 @@ function ensureStructure(v, fallbackId) {
 
   const surfaces = (x.surfaces && typeof x.surfaces === 'object') ? x.surfaces : {};
   const tags = uniqStrings(x.tags).sort((a, b) => a.localeCompare(b));
+  // Optional declared building type (e.g. the player's home cottage). Only kept
+  // when set so other structures' shape — and their worldHash — is unchanged.
+  const buildingType = (typeof x.buildingType === 'string' && x.buildingType) ? x.buildingType : null;
 
   return {
     id,
@@ -86,7 +89,8 @@ function ensureStructure(v, fallbackId) {
     anchors,
     topology,
     surfaces,
-    tags
+    tags,
+    ...(buildingType ? { buildingType } : {})
   };
 }
 

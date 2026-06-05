@@ -2,6 +2,7 @@
 
 ## Read first (durable docs)
 - **`docs/PLAYTEST_PROTOCOL.md` — BEFORE handing Tim anything to playtest, I MUST play every new feature myself through the live `v1.html` browser surface and confirm it VISIBLY works (screenshot, not DOM dump). Default failure mode: handing over a broken game and debugging live. Don't.**
+- **`docs/PROSE_MECHANIC_PLAN.md` — active roadmap to perfect the prose mechanic (Stages C→A→B→F→D→E) + the per-stage Severe Playtest discipline. Each stage closes only with a committed live playtest report in `docs/playtests/`.**
 - `docs/ROADMAP.md` — the goal + the critical path (R0–R7) to voice-first, DM-adjudicated tabletop. The anchor against drift.
 - `docs/REPO_MAP.md` — module map + the "two play surfaces" gotcha (v1 = trunk, `__preview/` = sandbox). Read before exploring.
 - `docs/IMMORTAL_INVARIANTS.md` — non-negotiables (determinism, narration≠canon, one walkable scale, open-ended, etc.).

@@ -47,17 +47,60 @@ DM-Test pass (would a DM do this)? · grounded? · visible on screen? · correct
 ---
 
 ## Investigation notes
-(filled during build)
+- Engine already had overworld step-travel (arrival pipeline + biome-typed
+  ambush via `maybeSpawnEscapeEncounter`/`spawnTamedAmbush`), but "go to X" was
+  caught by the directional free-movement branch and deflected ("which way?").
+- Replay constraint (U21): the directional branch pushes one travel event PER
+  cell-step, so it can't be looped for named travel. Slice-1 design = a single
+  node-graph hop via `moveToNode` + arrival pipeline = ONE travel event (replay
+  re-runs the named-travel call once → identical). `world.time` gained `hours` +
+  `leagues` accumulators (round-trip via ensureTime → determinism holds).
 
-## Transcript (input → response, screenshot IDs)
-(filled during live play)
+## Transcript (live v1.html, AI on — screenshots ss_96282pclx, ss_4396kl0wq)
+- `go outside` → exterior; `where am I?` → "…Wayfarers' Outpost… To the south lies
+  Black Orchard." (exterior survey names the neighbor)
+- `I head to Black Orchard` → "The road into Black Orchard brings you past
+  weathered timber and the smell of woodsmoke… but his eyes are already tracking
+  something… that does not belong. [ambush]" → a journey, interrupted by a
+  terrain encounter (Static Leech) → combat.
+- (in combat) `where am I?` / `go to …` → resolved as combat turns (you can't
+  stroll off mid-fight) — correct.
+- after winning, `where am I?` → "You're in Black Orchard, a settlement… To the
+  north lies Wayfarers' Outpost and to the east lies Dry Creek." (ARRIVED — new
+  node, new neighbors)
+- `let's travel to the Obsidian Spire` (unknown) → "Hael shakes her head… no place
+  called the Obsidian Spire lies within any road she knows from here." (in-fiction
+  clarification naming the real roads — NOT "which way?")
 
 ## Findings
 | input | result | DM-test? | grounded? | visible? | correct? | note |
 | --- | --- | --- | --- | --- | --- | --- |
+| I head to / go to <neighbor> | runs a journey, arrives at the place | ✅ | ✅ | ✅ | ✅ | time + distance advance |
+| journey through danger | terrain-typed ambush (Static Leech) interrupts the trip | ✅ | ✅ | ✅ | ✅ | the dangerous-journey model |
+| where am I? after arrival | survey shows the NEW place + its neighbors | ✅ | ✅ | ✅ | ✅ | real state change |
+| travel during combat | becomes a combat action | ✅ | ✅ | ✅ | ✅ | can't leave a fight |
+| travel to UNKNOWN place | NPC clarifies in fiction, names real roads | ✅ | ✅ | ✅ | ✅ | no "which way?" |
+| determinism | same seed + input → identical (U21 green, U96-C) | — | — | — | ✅ | |
 
-## Fixed / built this pass
+## Built this pass
+- DM-resolved named travel (slice 1): destination resolution, node-graph journey
+  with arrival pipeline, time (turns/hours) + distance (leagues) tracking,
+  terrain-typed ambush possible, in-fiction clarification for unknown places.
+- Tests U96 (new) + U39d updated. Full suite 7131/7131, U21 green,
+  playtest:quick clean, prose harness 0/0.
 
-## NOT verified / deferred (honest gaps)
+## NOT verified / deferred to Stage C.2 slice 2 (honest gaps)
+- **Ambush = surprise** — `beginCombat` still rolls normal initiative; the ambusher
+  does NOT yet get a surprise round / first move. (Prose deliberately does not
+  claim surprise.) Needs an escape-combat turn-flow change — the lead item for s2.
+- **Per-leg open-country journey** — the "dangerous wood *between* A and B" as a
+  distinct mid-journey encounter. Today the encounter resolves at arrival (typed to
+  the destination's land), not as a separate leg. The richer multi-cell journey
+  (and multi-hop routing) is s2.
+- **Non-combat travel beats** (traveler/rumor/toll you can talk/pay/slip past) — s2.
+- **Directional travel between settlements** ("go south" leaving a settlement) — still
+  intercepted by v1.js placeWalk (Stage C.1 report's open item).
 
-## Verdict: not yet
+## Verdict: GREEN for slice 1 (named travel is a real DM-run journey, live-verified).
+Stage C.2 remains OPEN overall — slice 2 (surprise, per-leg wood, non-combat beats,
+directional inter-node travel) is the remaining work.

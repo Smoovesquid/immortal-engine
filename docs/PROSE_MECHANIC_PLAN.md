@@ -201,7 +201,12 @@ Surface: live v1.html (browser)   AI: on/off
   - ✅ Interior↔exterior transitions ("go outside"/"go inside"/"enter") fixed & verified
     live. Root cause: scene.interior vs position.interior desync + missing replay events.
     Report: `docs/playtests/stageC-movement-2026-06-05.md`.
-  - ❌ OPEN: node-to-node travel via prose. Engine has overworld step-travel but `v1.js`
-    intercepts cardinals as local place-walk, so you can't walk between settlements by
-    typing (only the Map tab travels). Needs a movement-model design pass — likely the
-    next slice before A.
+  - C.2 slice 1 — **DONE** (2026-06-05): DM-resolved **named** travel. "I head to the
+    Old Shrine" runs a journey to a known neighbor — moves you there, advances time
+    (turns/hours) + distance (leagues), can be interrupted by a terrain-typed ambush,
+    and unknown places get an in-fiction clarification (no "which way?"). Live-verified.
+    Report: `docs/playtests/stageC2-travel-2026-06-05.md`. Tests: U96.
+  - ❌ C.2 slice 2 — OPEN: **ambush = surprise** (beginCombat rolls normal init today),
+    per-leg "dangerous wood *between* places", non-combat travel beats, multi-hop routing,
+    and directional inter-node travel ("go south" leaving a settlement — v1.js still
+    intercepts cardinals as local place-walk).

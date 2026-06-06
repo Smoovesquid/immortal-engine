@@ -30,7 +30,7 @@ import { beginCombat, endCombat, mintEnemyFromNpc } from './combat/combatLifecyc
 import { resolveCompanionTurn } from './combat/companionTurn.js';
 import { castSpell } from './spell/castSpell.js';
 import { evaluateEncounter, selectCreatures, spawnEncounter } from './combat/encounterSpawn.js';
-import { resolveEscapeCombatTurn, initEscapeHp, initEscapeKit, shortRest } from './combat/escapeCombat.js';
+import { resolveEscapeCombatTurn, initEscapeHp, initEscapeKit, shortRest, applySurpriseRound } from './combat/escapeCombat.js';
 import { statMod, maxWounds } from './ruleset/core/stats.js';
 
 // Pure-ish play loop: world -> {world, output}
@@ -603,11 +603,27 @@ export function playerMove(world, packsById, text) {
           const timeWord = travelTimeWord(hours);
           const flavor = here ? biomeFlavor(w1.meta.seed, here) : '';
           const arrivalLine = `Wizard: You set out, and after ${timeWord} you reach ${nextName || 'the place ahead'}${flavor ? `, ${flavor}` : ''}.`;
-          const ecoLine = (!ambushed && here) ? ecologyTravelLine(w1.meta.seed, biomeForNode(w1.meta.seed, here), w1.time?.turn ?? 0, destId) : '';
-          const narration = ambushed
-            ? `${arrivalLine} But you are not alone — something native to this country was waiting, and it means you harm.`
-            : (ecoLine ? `${arrivalLine} ${ecoLine}` : arrivalLine);
-          return { world: w1, output: { narration, mechanics: ambushed ? '[ambush]' : '[travel | journey-arrive]' } };
+          if (ambushed) {
+            // Surprise is contested: a wary/perceptive party catches the movement
+            // in time; a distracted one is caught flat-footed and eats a free strike.
+            const srng = makeRng(seedFromString(`${w1.meta.seed}|surprise|${destId}|${w1.timeline.length}`));
+            const surprised = isSurprisedByAmbush(w1, srng);
+            let lead, mech;
+            if (surprised) {
+              const sr = applySurpriseRound(w1, srng);
+              w1 = sr.world;
+              const blow = sr.beats.length ? ` ${sr.beats.join(' ')}` : '';
+              lead = `${arrivalLine} You never saw them — something native to this country was lying in wait.${blow}`;
+              mech = '[ambush | surprise]';
+            } else {
+              lead = `${arrivalLine} But you catch the movement at the edge of sight in time: something native to this country meant to take you unawares, and now you meet it ready.`;
+              mech = '[ambush | spotted]';
+            }
+            return { world: w1, output: { narration: lead, mechanics: mech } };
+          }
+          const ecoLine = here ? ecologyTravelLine(w1.meta.seed, biomeForNode(w1.meta.seed, here), w1.time?.turn ?? 0, destId) : '';
+          const narration = ecoLine ? `${arrivalLine} ${ecoLine}` : arrivalLine;
+          return { world: w1, output: { narration, mechanics: '[travel | journey-arrive]' } };
         }
       }
 
@@ -1592,6 +1608,29 @@ function legLeagues(fromNode, toNode) {
     return Math.max(1, Math.abs(ax - bx) + Math.abs(ay - by));
   }
   return 3;
+}
+
+// Stage C.2 slice 2 — surprise is CONTESTED. A perceptive/wary character is hard
+// to surprise. Vigilance = WITS modifier + a bonus if the build reads as watchful
+// (a scout/ranger/perception focus, a wary vibe, etc.). DC is the ambush's stealth.
+const SURPRISE_DC = 8;
+const VIGILANCE_RE = /\b(perceiv|percept|scout|surviv|alert|watch|wary|vigil|ranger|tracker|hunter|outrider|sentinel|guide|keen|sharp.?eyed|lookout|warden)\b/i;
+function hasVigilanceSkill(pc) {
+  if (!pc || typeof pc !== 'object') return false;
+  const bag = [];
+  if (Array.isArray(pc.foci)) bag.push(...pc.foci.map(String));
+  bag.push(String(pc.archetype || ''), String(pc.vibe || ''));
+  const tr = pc.traits || {};
+  bag.push(String(tr.vibe || ''), String(tr.ideal || ''), String(tr.detail || ''));
+  return VIGILANCE_RE.test(bag.join(' '));
+}
+// Returns true if the party is caught off guard by an ambush (failed the contest).
+function isSurprisedByAmbush(world, rng) {
+  const pc = world.party?.[0] || {};
+  const witsMod = statMod(Number(pc.stats?.WITS ?? 10));
+  const skillBonus = hasVigilanceSkill(pc) ? 3 : 0;
+  const vigilance = rng.int(1, 20) + witsMod + skillBonus;
+  return vigilance < SURPRISE_DC;
 }
 
 // DM-natural phrasing for a travel duration (~1 league/hour on foot).

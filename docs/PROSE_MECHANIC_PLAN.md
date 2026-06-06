@@ -110,9 +110,12 @@ A stage is not closed until its `docs/playtests/<stage>-<date>.md` report is gre
     - **Settled / safe** → little or nothing.
   - **Mixed outcomes** — a DM varies it: sometimes a fight, sometimes a beat you can talk,
     pay, or slip past (routes through the dialogue / social systems).
-  - **Ambush = surprise:** when a travel encounter becomes a fight, the attacker has the
-    **element of surprise** — a surprise round / first move + initiative advantage (extends
-    the existing travel `ambushed` flag). You got caught on the road or in the trees.
+  - **Ambush → surprise is CONTESTED (not automatic):** when a travel encounter becomes a
+    fight, roll the party's vigilance (WITS, plus any perception/scout/survival skill or a
+    wary/watchful trait — these make you *hard to surprise*) against the ambush. Win → you
+    catch the movement in time and fight on even footing. Lose → the attacker gets the
+    **element of surprise**: a free opening strike + initiative edge. So a sharp, wary
+    character is rarely surprised; a distracted one gets caught. Deterministic (seeded).
 - **Distance & time (locked):** track real **elapsed hours** and **distance in leagues**
   (~1 league/hour on foot; an adjacent place is a few leagues, multi-hop sums). Hours
   advance the dawn→…→night cycle. Stored as numbers; spoken in DM language ("an hour down

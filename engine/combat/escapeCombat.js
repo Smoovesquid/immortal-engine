@@ -244,6 +244,47 @@ export function shortRest(world, rng) {
 }
 
 /**
+ * applySurpriseRound(world, rng) -> { world, beats, hit }
+ *
+ * A surprise round before the victim can act: each living ambusher gets one free
+ * opening strike against the player. Used by travel ambushes the party FAILED to
+ * notice (the perception contest is decided by the caller in playloop). Reuses the
+ * same to-hit/damage math as a normal enemy turn. Deterministic via `rng`.
+ */
+export function applySurpriseRound(world, rng) {
+  const w0 = ensureWorld(world);
+  if (!w0.combat?.active) return { world: w0, beats: [], hit: false };
+  const pc = w0.party?.[0] || {};
+  const ac = playerAc(pc);
+  const enemies = Array.isArray(w0.combat.enemies) ? w0.combat.enemies : [];
+  let hp = Number(w0.meta.escapeHp) || 0;
+  const beats = [];
+  let hit = false;
+  for (const e of enemies) {
+    if (!e || e.defeated || (Number(e.hp) || 0) <= 0) continue;
+    const roll = rng.int(1, 20);
+    const total = roll + ENEMY_ATK_BONUS;
+    if (roll === 1) { beats.push(`The ${e.name} lunges from hiding but misses.`); continue; }
+    if (roll === 20 || total >= ac) {
+      const die = Math.max(2, Number(e.damage) || 4);
+      const crit = roll === 20;
+      let dmg = rng.int(1, die);
+      if (crit) dmg += rng.int(1, die);
+      dmg = Math.max(1, dmg);
+      hp = Math.max(0, hp - dmg);
+      beats.push(`The ${e.name} strikes from hiding for ${dmg}${crit ? ' (critical!)' : ''} before you can ready yourself.`);
+      hit = true;
+      if (hp <= 0) break;
+    } else {
+      beats.push(`The ${e.name} springs from cover, but you flinch aside just in time.`);
+    }
+  }
+  let w = { ...w0, meta: { ...w0.meta, escapeHp: hp } };
+  if (hp <= 0) w = endCombat(w, { reason: 'defeated-in-surprise' });
+  return { world: w, beats, hit };
+}
+
+/**
  * resolveEscapeCombatTurn(world, actionText) -> { world, result }
  *
  * One full round: the player acts (strike / fire bolt / ward) on their typed

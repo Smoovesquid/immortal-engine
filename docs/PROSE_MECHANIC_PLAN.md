@@ -154,6 +154,14 @@ A stage is not closed until its `docs/playtests/<stage>-<date>.md` report is gre
 - **Severe playtest:** every skill/risk verb against present and absent targets; success,
   mixed, and failure outcomes; confirm prose names the object and the result each time.
 
+### Stage 3 — B: Ground the floor — PHYSICAL DONE (2026-06-05)
+- ✅ Physical actions (force/break/smash/kick/pry/shove/push/pull/lift/climb/pick + target)
+  now read as a DM: name the object + concrete success/mixed/failure outcome, never the
+  "a low hum threads through the walls" floor. Live-verified (ss_26980ugeb). Tests: U101.
+  Report: `docs/playtests/stageB-groundfloor-2026-06-05.md`. Harness has a floor-leak grader.
+- ❌ Remaining: non-object skill verbs (search/sneak/hide/persuade/track/forage) still use
+  the composer's abstract line — a follow-up "ground the social/stealth floor" slice.
+
 ### Stage 4 — F: Standing prose gate
 - **Scope:** grow `scripts/prose-playtest.mjs` into the enforced pre-handoff gate; add a
   browser visible-output check and a "no unintentional floor" assertion.

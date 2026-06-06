@@ -213,7 +213,14 @@ Surface: live v1.html (browser)   AI: on/off
     WITS + a perception/scout/wary skill vs the ambush; lose → free opening strike. Sharp
     builds rarely surprised, oblivious caught more, ~half of trips no ambush. Live-verified
     (a WITS-6 char caught by a wolf). Tests: U97.
-  - ❌ C.2 slice 2b — OPEN: per-leg "dangerous wood *between* places" (encounter mid-journey,
-    not just at arrival), non-combat travel beats (talk/pay/slip past), multi-hop routing,
-    and directional inter-node travel ("go south" leaving a settlement — v1.js still
-    intercepts cardinals as local place-walk).
+  - C.2 slice 2b — **DONE** (2026-06-05): **non-combat travel beats.** ~40% of clear
+    journeys carry a terrain-typed observational beat (trader's cart, fresh tracks, a
+    cairn, gulls over the tideline). Journey now reads fight / beat / quiet. Live-verified.
+    Tests: U98. Report: `docs/playtests/stageC2-travelbeats-2026-06-05.md`.
+  - ❌ C.2 slice 2c — OPEN (next): **multi-hop named travel.** BUG found in playtest — the
+    survey advertises non-adjacent "(2)" places ("to the south lies Trader's Camp (2)") but
+    `go to <that place>` deflects because resolveNamedNeighbor is direct-neighbor-only.
+    Route multi-hop (or only advertise direct neighbors).
+  - ❌ C.2 slice 2d — OPEN: **interactive beats** (a toll you pay, brigands you talk/slip
+    past — needs a pending-choice state machine); per-leg "dangerous wood *between*";
+    directional inter-node travel ("go south" leaving a settlement — v1.js placeWalk).

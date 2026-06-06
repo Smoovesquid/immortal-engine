@@ -233,7 +233,13 @@ Surface: live v1.html (browser)   AI: on/off
   - C.2 per-leg "dangerous wood *between*" — **effectively DONE via multi-hop**: a journey
     can be ambushed at an intermediate leg and stops there (the wood between A and B),
     resumable. Live-verified in 2c.
-  - ❌ C.2 slice 2d — OPEN (lone remaining): **interactive beats** — a toll you *pay*,
-    brigands you *talk/slip past* — needs a pending-choice state machine (world.travel
-    pending + resolve player choice + resume). Has interaction-design forks (options +
-    costs: pay coin? talk = CHARM check? slip = AGILITY?) worth a quick confirm with Tim.
+  - C.2 slice 2d — **DONE (node/test); live partial** (2026-06-05): **interactive road
+    encounters.** Road-ish terrain (town/plains) throws brigands/a toll that PAUSES the
+    journey; the player chooses **Pay** (spend a coin) / **Talk** (CHARM) / **Slip**
+    (AGILITY) / **Fight**. Wild terrain keeps the beast ambush. world.travel.pending +
+    resolution at top of playerMove; one replayable event per choice. Tests: U100 (8/8),
+    full suite 7151. **Honest gap:** brigand scene not screenshotted live this session
+    (loaded worlds had wild routes) — reachable on any town/plains route.
+  - ✅ Stage C (movement & travel) COMPLETE: interior transitions, named travel,
+    multi-hop, directional, surprise (contested), beats, interactive road encounters,
+    balance. Remaining is polish (auto-resume after pass; live brigand screenshot).

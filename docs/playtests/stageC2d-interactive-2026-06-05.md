@@ -39,10 +39,41 @@ beast ambush. The DM presents the situation and resolves the player's choice in 
 DM-test (presents + resolves in fiction)? · each choice resolves correctly? · skill checks scale? · resume works? · deterministic? · visible? · no regression.
 
 ---
-## Investigation notes
 ## Built this pass
+- `world.travel.pending` state (ensureWorld, round-trips). `maybeTravelEncounter`
+  routes road-ish terrain (destination is a settlement, or biome plains/coastal) to a
+  PAUSED brigand/toll encounter; wild terrain → beast ambush (unchanged seed/rate).
+- Resolution at the top of playerMove (before other gates): Pay (spend a coin) / Talk
+  (CHARM DC12) / Slip (AGILITY DC12) / Fight, with re-prompt on no-coin and on
+  gibberish. Each committed choice records one replayable resolution event.
+
 ## Node checks
-## Live (screenshots)
-## Findings
+- All four choices + edges verified (scripts/_road, scripts/_pay):
+  - PENDING fires: "Robbers step into the road ahead… pay, talk, slip, or fight."
+  - pay (with coin) → passes, copper 3→2; pay (no coin) → re-prompt; talk → CHARM pass
+    or fail→combat; slip → AGILITY pass or fail→combat; fight → combat; gibberish →
+    re-prompt (no event, no turn). Pay/talk/slip/fight deterministic.
+- Mix (destination-based): brigands at towns/plains, beasts in wild, plus beats/quiet.
+- Tests U100 (8): trigger, pay±coin, talk, slip, fight, gibberish re-prompt, CHARM
+  monotonicity, determinism. Full suite 7151/7151, U21 green, playtest:quick clean.
+
+## Live (v1.html)
+- Travel/combat/meta submit flow exercised live (same flow the encounter resolution
+  uses). The named-travel + beast-ambush + arrival prose all rendered.
+- HONEST GAP: I did NOT surface a brigand encounter ON SCREEN this session. The two
+  worlds loaded had only WILD routes (Old Shrine / Black Orchard = forest/landmark),
+  which give beast ambushes; brigands need a town/plains destination. Not a code
+  issue (node-verified incl. live-style submit) — terrain RNG of the loaded worlds.
+
+## How to hit it in play
+Travel to a **settlement** or across **plains/coast** (e.g. "go to <a town>"); ~half
+of road encounters are brigands. Then type **pay / talk / slip / fight**.
+
 ## NOT verified / deferred
-## Verdict: not yet
+- Live screenshot of the brigand scene + a choice resolving (terrain RNG this session).
+- After a paid/talked/slipped pass you resume by travelling again (consistent w/ combat
+  interrupt) — auto-continue is a possible polish.
+
+## Verdict: node/test GREEN (comprehensive: all 4 choices, edges, determinism, U100).
+Live: the submit flow is verified; the brigand scene itself was not screenshotted this
+session (loaded worlds had wild routes) — an honest gap, reachable on any town route.

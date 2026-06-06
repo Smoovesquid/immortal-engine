@@ -217,10 +217,13 @@ Surface: live v1.html (browser)   AI: on/off
     journeys carry a terrain-typed observational beat (trader's cart, fresh tracks, a
     cairn, gulls over the tideline). Journey now reads fight / beat / quiet. Live-verified.
     Tests: U98. Report: `docs/playtests/stageC2-travelbeats-2026-06-05.md`.
-  - ❌ C.2 slice 2c — OPEN (next): **multi-hop named travel.** BUG found in playtest — the
-    survey advertises non-adjacent "(2)" places ("to the south lies Trader's Camp (2)") but
-    `go to <that place>` deflects because resolveNamedNeighbor is direct-neighbor-only.
-    Route multi-hop (or only advertise direct neighbors).
+  - C.2 slice 2c — **DONE (node/test); live partial** (2026-06-05): **multi-hop named
+    travel.** "go to <known place 2+ hops away>" runs a per-leg journey (BFS route; each
+    leg crosses terrain with its own ambush/surprise; interrupt stops you at a REAL node,
+    resumable; time+distance accrue). Fixes the survey-vs-reach bug. Node sweep 12 reached/
+    25 interrupted/0 stranded; deterministic; U99. **Honest gap:** clean multi-hop
+    far-arrival not screenshotted live this session (runs eaten by travel ambushes + a
+    death) — verify quickly with a sturdier char next time.
   - ❌ C.2 slice 2d — OPEN: **interactive beats** (a toll you pay, brigands you talk/slip
     past — needs a pending-choice state machine); per-leg "dangerous wood *between*";
     directional inter-node travel ("go south" leaving a settlement — v1.js placeWalk).

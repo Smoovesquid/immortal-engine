@@ -1410,7 +1410,7 @@ export function playerMove(world, packsById, text) {
   // override the composer's abstract narration with outcome-aware prose that names
   // the thing and says what happened (success/mixed/failure). Everything else keeps
   // the composer line. (Keeps composed.ledgerDelta either way.)
-  const grounded = physicalObjectOutcome(w, text, result.outcome);
+  const grounded = physicalObjectOutcome(w, text, result.outcome) || nonObjectSkillOutcome(text, result.outcome);
   const narration = grounded || composed.narrationLine;
 
   // Strict output discipline: 1 narration line + 1 bracket line.
@@ -2279,6 +2279,36 @@ function physicalObjectOutcome(world, text, outcome) {
   return o === 's' ? `Wizard: You set yourself and force the ${what}; it gives with a splintering crack and yields.`
     : o === 'm' ? `Wizard: The ${what} gives at last — but the wood splinters and the noise carries further than you'd like.`
     : `Wizard: You throw your weight against the ${what}, again and again, but it holds fast.`;
+}
+
+// Non-object MECHANICAL skills (search/sneak/hide/track/forage) — ground their
+// resolved outcome too, so they don't fall to the abstract floor. SOCIAL verbs
+// (persuade/intimidate/lie/calm) are intentionally NOT here: they want an NPC and
+// belong to a dialogue-integrated pass. Returns prose or null.
+function nonObjectSkillOutcome(text, outcome) {
+  const t = String(text || '').toLowerCase();
+  const o = outcome === 'success' ? 's' : outcome === 'failure' ? 'f' : 'm';
+  if (/\b(search|investigate|comb|scour|rummage|ransack|look for|hunt for|dig through|sift)\b/.test(t)) {
+    return o === 's' ? `Wizard: You search methodically, and your patience pays off — something turns up.`
+      : o === 'm' ? `Wizard: You find a little for your trouble, but the searching costs time you may not have.`
+      : `Wizard: You search high and low and turn up nothing worth the effort.`;
+  }
+  if (/\b(sneak|hide|creep|slink|skulk|stalk|steal past|stay hidden|keep to the shadows)\b/.test(t)) {
+    return o === 's' ? `Wizard: You move soft and low, keeping to cover — and pass unseen.`
+      : o === 'm' ? `Wizard: You make it, but a scuff of sound at the wrong moment nearly gives you away.`
+      : `Wizard: You misjudge a shadow and break cover at the worst moment.`;
+  }
+  if (/\b(track|trail|follow the|pick up the trail)\b/.test(t)) {
+    return o === 's' ? `Wizard: You read the ground — bent grass, a print in the mud — and pick up the trail.`
+      : o === 'm' ? `Wizard: You follow the trail a while before it grows faint and hard to hold.`
+      : `Wizard: The trail breaks up on hard ground and goes cold.`;
+  }
+  if (/\b(forage|scavenge|gather|hunt|fish)\b/.test(t)) {
+    return o === 's' ? `Wizard: You work the land patiently and come away with enough to get by.`
+      : o === 'm' ? `Wizard: You scrape together a little, though it costs you the better part of an hour.`
+      : `Wizard: The land offers nothing you can use.`;
+  }
+  return null;
 }
 
 // trivialNarration — grounded prose for a trivial action. Falls back to the

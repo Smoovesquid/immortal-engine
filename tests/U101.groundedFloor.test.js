@@ -57,6 +57,24 @@ describe('U101-B: absent target still grounded (no floor)', () => {
   });
 });
 
+describe('U101-BB: non-object mechanical skills are grounded (search/sneak/track/forage)', () => {
+  const cases = ['I search for hidden traps', 'sneak past the guard', 'hide in the shadows', 'track the creature', 'forage for food'];
+  for (const cmd of cases) {
+    it(`"${cmd}" → grounded, no abstract floor, still rolls`, () => {
+      for (const s of ['a', 'b', 'c']) {
+        const { output } = playerMove(begin(s), packs, cmd);
+        assert.doesNotMatch(output.narration, FLOOR, `floor leak: ${output.narration}`);
+        assert.ok(rolled(output), `should still roll: ${output.mechanics}`);
+      }
+    });
+  }
+  it('SOCIAL verbs (persuade) are intentionally NOT grounded here (deferred to dialogue)', () => {
+    // Just assert it still rolls / doesn't crash — prose left to a later social slice.
+    const { output } = playerMove(begin('soc'), packs, 'I try to persuade the guard');
+    assert.ok(rolled(output));
+  });
+});
+
 describe('U101-C: deterministic', () => {
   it('same seed + input → identical prose + mechanics', () => {
     const a = playerMove(begin('det'), packs, 'break the crate');

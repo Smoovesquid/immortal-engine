@@ -1298,6 +1298,15 @@ export function playerMove(world, packsById, text) {
     return { world: w, output: { narration: `Wizard: ${trivialNarration(w, text)}`, mechanics: 'trivial action — no roll, auto-success' } };
   }
 
+  // Crotchety-DM repair: a clearly-impossible feat (eat the sun, fly by flapping,
+  // become a god) doesn't get a d20 — a real DM resolves it in the fiction as a
+  // no-effect. This prevents the dice reporting "success" while the narration (rightly)
+  // says nothing happened. Placed before combat-less resolution paths.
+  if (!w.combat?.active) {
+    const impossible = tryImpossibleFeat(w, text);
+    if (impossible) return impossible;
+  }
+
   // ── Stage B: argued social adjudication. An influence attempt at an NPC
   // (intimidate/charm/deceive/persuade — by verb or by what you say) is resolved
   // against that NPC's personality, before falling to the generic resolver. Plain
@@ -2636,6 +2645,52 @@ function combatGroundedOutcome(world, enemyName, outcome) {
   return o === 's' ? V(`cb:s:${foe}`, [`Your strike lands true against ${foe}; they reel from the blow.`, `You catch ${foe} clean — they stagger back, hurting.`, `Your blow gets through ${foe}'s guard and tells.`])
     : o === 'm' ? V(`cb:m:${foe}`, [`You trade blows with ${foe} — your hit glances, theirs nearly answers.`, `You and ${foe} clash; neither of you gives ground cleanly.`])
     : V(`cb:f:${foe}`, [`${foe} turns your attack aside, and the opening costs you.`, `${foe} reads the strike and slips it; you pay for the miss.`]);
+}
+
+// ── Crotchety-DM repair: clearly-impossible feats don't get a d20 ────────────
+// A real DM doesn't roll to eat the sun or fly by flapping — he says it doesn't work,
+// in the fiction. Without this, an absurd feat rolls a normal check and can report
+// mechanical "success" while the (correct) narration says nothing happened — dice and
+// fiction contradicting. Catch cosmic / physically-impossible declarations and resolve
+// them deterministically as a grounded no-effect (no success tag, no RNG). Kept TIGHT
+// to avoid false positives (word-boundaried celestial nouns; sun/moon/sky only for the
+// reach/pull family so "star chart"/"moonstone" don't trip it).
+const IMPOSSIBLE_FEATS = [
+  { re: /\b(eat|swallow|devour|drink|bite|chew|gulp)\b.{0,20}\b(?:the\s+)?(?:sun|moon|stars?|sky|ocean|sea|world)\b/i, kind: 'reach' },
+  { re: /\b(tear|pull|rip|yank|grab|pluck|take|drag|haul|snatch)\b.{0,20}\b(?:the\s+)?(?:sun|moon|sky)\b/i, kind: 'reach' },
+  { re: /\b(touch|reach for|hold|catch|seize|grasp)\b.{0,20}\b(?:the\s+)?(?:sun|moon|sky)\b/i, kind: 'reach' },
+  { re: /\b(become|make myself|turn into|transform into|ascend to)\b.{0,24}\b(?:a\s+)?(?:god|goddess|deity|immortal|all-?powerful|omnipotent|divine being)\b/i, kind: 'godhood' },
+  { re: /\b(stop|reverse|rewind|turn back|freeze|halt)\b.{0,12}\btime\b/i, kind: 'time' },
+  { re: /\bflap\b.{0,20}\bfly\b|\bfly\b.{0,20}\bflap/i, kind: 'fly' },
+  { re: /\b(breathe|breath of|spew|belch)\b.{0,8}\bfire\b/i, kind: 'firebreath' },
+];
+function impossibleCelestialNoun(text) {
+  const m = String(text).match(/\b(sun|moon|stars?|sky|ocean|sea|world)\b/i);
+  return m ? m[1].toLowerCase() : 'it';
+}
+function tryImpossibleFeat(world, text) {
+  const t = String(text || '');
+  const hit = IMPOSSIBLE_FEATS.find(f => f.re.test(t));
+  if (!hit) return null;
+  const V = (key, variants) => `Wizard: ${pickVariant(variants, world, key)}`;
+  let line;
+  if (hit.kind === 'reach') {
+    const noun = impossibleCelestialNoun(t);
+    line = V(`imp:reach:${noun}`, [
+      `You reach for the ${noun}, but it hangs exactly where it always has, far beyond any grasp of yours.`,
+      `Whatever you intend, the ${noun} stays right where it is — indifferent, untouched, and utterly beyond you.`,
+    ]);
+  } else if (hit.kind === 'godhood') {
+    line = V('imp:god', [`You will yourself toward godhood, and nothing answers; you remain stubbornly, mortally yourself.`, `Divinity does not come at a word — you are exactly as mortal as you were a breath ago.`]);
+  } else if (hit.kind === 'time') {
+    line = V('imp:time', [`Time runs on exactly as it pleases, deaf to your demand.`, `The moment refuses to bend; time keeps its own counsel.`]);
+  } else if (hit.kind === 'fly') {
+    line = V('imp:fly', [`You flap and strain, but gravity keeps your boots flat on the ground.`, `Your arms windmill for nothing; you do not leave the floor.`]);
+  } else {
+    line = V('imp:fire', [`You huff and strain, but no flame comes — you've no dragon's gift in you.`, `Nothing but breath leaves you; the fire stays in your imagining.`]);
+  }
+  const w1 = pushEvent(world, { kind: 'resolution', data: { actorId: 'party', intent: t, text: t, roll: 0, dc: 0, outcome: 'failure', updateKind: 'impossible' } });
+  return { world: w1, output: { narration: line, mechanics: `[impossible — reality doesn't bend]` } };
 }
 
 // trivialNarration — grounded prose for a trivial action. Falls back to the

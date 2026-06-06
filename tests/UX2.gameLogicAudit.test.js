@@ -142,7 +142,9 @@ function getMechanics(output) {
 }
 
 function hasRoll(output) {
-  return /\[roll:\d+\s+vs\s+DC:\d+/.test(getMechanics(output));
+  // A roll is a d20 vs DC, whether reported as a bare [roll:..] or inside a
+  // structured social adjudication ([social:persuade|CHARM|roll:N vs DC:N → …]).
+  return /roll:\s*\d+\s+vs\s+DC:\d+/.test(getMechanics(output));
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -1279,9 +1281,15 @@ describe('UX2-AC: 50-turn logic stress test', () => {
           if (outcomeMatch[1] === 'failure') failureCount++;
         }
 
-        // Rule: rolled actions always have approach and stake
-        assert.ok(mechanics.includes('approach:'), `rolled action must have approach: ${mechanics}`);
-        assert.ok(mechanics.includes('stake:'), `rolled action must have stake: ${mechanics}`);
+        // Rule: rolled actions are well-formed. Generic skill checks report
+        // approach/stake; social adjudication ([social:approach|STAT|roll…]) is
+        // its own structured path with the approach named in the tag.
+        if (mechanics.includes('[social:')) {
+          assert.match(mechanics, /\[social:(intimidate|charm|deceive|persuade)\|[A-Z]+\|roll:/, `social roll malformed: ${mechanics}`);
+        } else {
+          assert.ok(mechanics.includes('approach:'), `rolled action must have approach: ${mechanics}`);
+          assert.ok(mechanics.includes('stake:'), `rolled action must have stake: ${mechanics}`);
+        }
       } else {
         noRollCount++;
       }

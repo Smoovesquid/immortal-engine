@@ -1290,6 +1290,15 @@ export function playerMove(world, packsById, text) {
     return { world: w, output: { narration: `Wizard: ${trivialNarration(w, text)}`, mechanics: 'trivial action — no roll, auto-success' } };
   }
 
+  // ── Stage B: argued social adjudication. An influence attempt at an NPC
+  // (intimidate/charm/deceive/persuade — by verb or by what you say) is resolved
+  // against that NPC's personality, before falling to the generic resolver. Plain
+  // "talk to X" already opened dialogue above; this is for trying to SWAY someone. ──
+  if (!w.combat?.active && !w.scene?.dialogue) {
+    const social = resolveSocialAdjudication(w, text);
+    if (social) return social;
+  }
+
   const move = inferMoveFromText(w, pack, actorId, text);
 
   const { world2, result } = resolveMove(w, move);
@@ -2279,6 +2288,160 @@ function physicalObjectOutcome(world, text, outcome) {
   return o === 's' ? `Wizard: You set yourself and force the ${what}; it gives with a splintering crack and yields.`
     : o === 'm' ? `Wizard: The ${what} gives at last — but the wood splinters and the noise carries further than you'd like.`
     : `Wizard: You throw your weight against the ${what}, again and again, but it holds fast.`;
+}
+
+// ── Stage B: argued SOCIAL adjudication ─────────────────────────────────────
+// The player speaks/argues at an NPC in their own words. We read the approach and
+// the lever they claim, judge plausibility + argument quality, and roll the fitting
+// stat against the NPC's PERSONALITY. Different people fold to different pressures.
+const SOCIAL_DEFAULT_STAT = { intimidate: 'GRIT', charm: 'CHARM', deceive: 'WITS', persuade: 'CHARM' };
+const SOCIAL_PLAUSIBLE = {
+  intimidate: new Set(['GRIT', 'MIGHT', 'CHARM', 'WITS']),
+  charm: new Set(['CHARM', 'WITS', 'AGILITY']),
+  deceive: new Set(['WITS', 'CHARM']),
+  persuade: new Set(['CHARM', 'WITS', 'GRIT'])
+};
+const LEVER_WORDS = {
+  MIGHT: /\b(strength|muscle|muscles|brawn|might|power|powerful|strong|raw force|sheer force|brute)\b/i,
+  AGILITY: /\b(agility|speed|quickness|nimbleness|grace|graceful|reflexes|deft|deftness|footwork|nimble)\b/i,
+  WITS: /\b(wit|wits|cleverness|clever|intellect|intelligence|mind|smarts|cunning|sharp tongue|quick tongue|brains|guile)\b/i,
+  GRIT: /\b(grit|will|willpower|resolve|nerve|nerves|toughness|steel|presence|force of will|steely|cold stare|hard eyes)\b/i,
+  CHARM: /\b(charm|charisma|looks|beauty|beautiful|handsome|good looks|smile|allure|magnetism|silver tongue|winning way)\b/i
+};
+
+function detectApproach(t) {
+  if (/\b(intimidate|threaten|menace|scare|frighten|cow|or i'?ll|or else|back off|out of my way|flay|kill you|hurt you|break you|gut you|make you regret|do as i say|or you'?ll regret)\b/i.test(t)) return 'intimidate';
+  if (/\b(deceive|\blie\b|bluff|trick|fool|mislead|pretend|claim\b|make .* believe|convince .* that i|(?:i'?m|i am) the (?:new|royal|king|lord|captain|sheriff|the|a)|tell (?:him|her|them|the \w+) (?:i'?m|i am|that))\b/i.test(t)) return 'deceive';
+  if (/\b(charm|flatter|flirt|seduce|sweet.?talk|compliment|woo|win .* over|befriend|make .* laugh|tell .* (a )?joke|hey (sexy|gorgeous|beautiful|handsome|cutie)|you look (great|lovely|beautiful|amazing|good)|buy you a|take you (out|to dinner)|dinner later)\b/i.test(t)) return 'charm';
+  if (/\b(persuade|convince|reason with|bargain|negotiate|appeal to|talk .* into|plead|beg|ask .* to let|let me (in|pass|through|by)|please let|hear me out)\b/i.test(t)) return 'persuade';
+  return null;
+}
+
+function detectLever(t) {
+  // A lever only counts when the player is clearly invoking an attribute.
+  if (!/\b(use|using|with|by|my|superior|awesome|sheer|raw|great|formidable|considerable)\b/i.test(t)) return null;
+  for (const [stat, re] of Object.entries(LEVER_WORDS)) { if (re.test(t)) return stat; }
+  return null;
+}
+
+function socialQuality(t) {
+  const claimsPerformance = /\b(joke|song|poem|story|riddle|speech|tale|ballad|verse)\b/i.test(t);
+  const hasContent = /["“'][^"”']{4,}["”']|:\s*\S+|—\s*["“']?\S/.test(t); // a quoted line or spoken content
+  const words = String(t).split(/\s+/).filter(Boolean).length;
+  if (claimsPerformance && !hasContent && words < 14) return -2; // "I tell a joke" with no joke
+  if (hasContent) return 2;        // they actually said it
+  if (words >= 14) return 2;       // a vivid, specific argument
+  if (words >= 9) return 1;
+  return 0;
+}
+
+function socialDC(approach, npc) {
+  const P = npc?.personality || { honesty: 0.5, trustOfOutsiders: 0.5, selfPreservation: 0.5 };
+  const trust = Number(npc?.conversationState?.trustLevel ?? 5); // 0-10
+  let dc = 12;
+  if (approach === 'intimidate') dc -= (P.selfPreservation - 0.5) * 12;            // fearful → easier; brave → harder
+  else if (approach === 'charm') dc -= (P.trustOfOutsiders - 0.5) * 8 + (trust - 5) * 0.6;
+  else if (approach === 'persuade') dc -= (P.trustOfOutsiders - 0.5) * 6 + (trust - 5) * 0.8;
+  else if (approach === 'deceive') dc -= (P.trustOfOutsiders - 0.5) * 8 - (0.5 - P.honesty) * 6; // trusting easier; street-smart harder
+  if (npc?.hostile) dc += 3;
+  return Math.max(5, Math.round(dc));
+}
+
+// Resolve who the player is addressing: the active dialogue NPC, an NPC named/role
+// in the text, or the first person at the node. Null if no one is here.
+function socialTarget(world, text) {
+  const nodeId = String(world?.map?.currentNodeId || '');
+  const node = (world?.map?.nodes || []).find(n => n && n.id === nodeId) || null;
+  const npcs = Array.isArray(node?.settlement?.npcs) ? node.settlement.npcs : [];
+  if (!npcs.length) return null;
+  const dlgId = world?.scene?.dialogue?.npcId;
+  if (dlgId) { const a = npcs.find(n => String(n.id) === String(dlgId)); if (a) return a; }
+  const t = String(text || '').toLowerCase();
+  const byName = npcs.find(n => { const nm = normName(n?.name).trim(); return nm && t.includes(nm); });
+  if (byName) return byName;
+  const byRole = npcs.find(n => { const r = String(n?.role || '').toLowerCase(); return r && t.includes(r); });
+  if (byRole) return byRole;
+  return npcs[0];
+}
+
+function setNpcTrust(world, npcId, delta) {
+  const nodeId = String(world?.map?.currentNodeId || '');
+  const nodes = Array.isArray(world?.map?.nodes) ? world.map.nodes : [];
+  const ni = nodes.findIndex(n => n && n.id === nodeId);
+  if (ni < 0) return world;
+  const node = nodes[ni];
+  const npcs = Array.isArray(node?.settlement?.npcs) ? node.settlement.npcs : [];
+  const pi = npcs.findIndex(n => String(n?.id) === String(npcId));
+  if (pi < 0) return world;
+  const npc = npcs[pi];
+  const cs = npc.conversationState || {};
+  const next = Math.max(0, Math.min(10, Number(cs.trustLevel ?? 5) + delta));
+  const newNpc = { ...npc, conversationState: { ...cs, trustLevel: next, metPlayer: true } };
+  const newNpcs = [...npcs]; newNpcs[pi] = newNpc;
+  const newNodes = [...nodes]; newNodes[ni] = { ...node, settlement: { ...node.settlement, npcs: newNpcs } };
+  return { ...world, map: { ...world.map, nodes: newNodes } };
+}
+
+function socialLeverClause(stat) {
+  return ({ MIGHT: ' with a display of raw strength', AGILITY: ' with effortless grace', WITS: ' with a sharp, clever turn', GRIT: ' on sheer force of presence', CHARM: ' on a silver tongue' })[stat] || '';
+}
+
+function socialNarration(approach, outcome, name, lever) {
+  const o = outcome;
+  if (approach === 'intimidate') {
+    return o === 'success' ? `${name} weighs you${lever}, and whatever they see is enough — the defiance drains out of them and they give way.`
+      : o === 'mixed' ? `${name} doesn't fold, but doesn't push back either — a wary stand-off, their eyes on your hands.`
+      : `${name} doesn't so much as blink. "Bigger than you have tried," and they mean it.`;
+  }
+  if (approach === 'charm') {
+    return o === 'success' ? `${name} warms despite themselves${lever}, a smile breaking through.`
+      : o === 'mixed' ? `${name} allows a thin smile but keeps their guard up — flattered, not won.`
+      : `${name} is unmoved; your charm slides off them like rain off slate.`;
+  }
+  if (approach === 'deceive') {
+    return o === 'success' ? `${name} buys it${lever}, nodding along to a story that isn't true.`
+      : o === 'mixed' ? `${name} half-believes you, but a flicker of doubt lingers.`
+      : `${name} sees right through it. "Try that on someone greener."`;
+  }
+  // persuade
+  return o === 'success' ? `${name} hears you out${lever} and comes around to your way of thinking.`
+    : o === 'mixed' ? `${name} won't commit, but you've planted a seed — they'll think on it.`
+    : `${name} shakes their head; your reasons don't land.`;
+}
+
+// Resolve a social influence attempt (intimidate/charm/deceive/persuade) against an
+// NPC, weighted by the NPC's personality and your argument. Returns {world,output}
+// or null (not a social attempt → let the normal resolver handle it).
+function resolveSocialAdjudication(world, text) {
+  const approach = detectApproach(text);
+  if (!approach) return null;
+  const npc = socialTarget(world, text);
+  if (!npc) {
+    return { world, output: { narration: `Wizard: There's no one here to sway.`, mechanics: '[social:no-target]' } };
+  }
+  const claimedLever = detectLever(text);
+  const plausible = Boolean(claimedLever && SOCIAL_PLAUSIBLE[approach].has(claimedLever));
+  const stat = plausible ? claimedLever : SOCIAL_DEFAULT_STAT[approach];
+  const quality = socialQuality(text);
+  const dc = socialDC(approach, npc);
+  const rng = makeRng(seedFromString(`${world.meta.seed}|social|${npc.id}|${approach}|${world.timeline.length}`));
+  const roll = rng.int(1, 20);
+  const total = roll + statMod(Number(world.party?.[0]?.stats?.[stat] ?? 10)) + quality;
+  const margin = total - dc;
+  const outcome = margin >= 2 ? 'success' : margin >= -3 ? 'mixed' : 'failure';
+  const trustDelta = {
+    intimidate: { success: -1, mixed: 0, failure: -2 },
+    charm: { success: 1, mixed: 0, failure: -1 },
+    persuade: { success: 1, mixed: 0, failure: -1 },
+    deceive: { success: 1, mixed: 0, failure: -2 }
+  }[approach][outcome];
+  let w1 = setNpcTrust(world, npc.id, trustDelta);
+  w1 = pushEvent(w1, { kind: 'resolution', data: { actorId: 'party', text: String(text || ''), intent: String(text || ''), roll, dc, outcome, updateKind: `social:${approach}` } });
+  const name = String(npc.name || `the ${npc.role || 'stranger'}`);
+  const lever = plausible ? socialLeverClause(stat) : '';
+  const line = socialNarration(approach, outcome, name, lever);
+  const q = quality ? ` | argued${quality > 0 ? '+' : ''}${quality}` : '';
+  return { world: w1, output: { narration: `Wizard: ${line}`, mechanics: `[social:${approach}|${stat}|roll:${roll} vs DC:${dc} → ${outcome}${q}]` } };
 }
 
 // Non-object MECHANICAL skills (search/sneak/hide/track/forage) — ground their

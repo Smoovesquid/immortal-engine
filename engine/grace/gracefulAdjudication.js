@@ -5,7 +5,7 @@
 
 import { extractIntent, getClarificationPrompt } from '../voice/intentExtraction.js';
 import { adjudicate } from '../adjudication/adjudicate.js';
-import { exitsFrom } from '../map/mapState.js';
+import { exitsFrom, cleanPlaceName } from '../map/mapState.js';
 
 // Compute pacing delay based on action type
 export function computePacingDelay(action) {
@@ -228,7 +228,7 @@ export function buildLocationSurvey(world) {
   const nodeId = String(w.map?.currentNodeId ?? '');
   const nodes = Array.isArray(w.map?.nodes) ? w.map.nodes : [];
   const currentNode = nodes.find(n => String(n.id) === nodeId) ?? null;
-  const placeName = String(currentNode?.name ?? w.scene?.location ?? '').trim() || 'an unfamiliar place';
+  const placeName = cleanPlaceName(currentNode?.name ?? w.scene?.location ?? '') || 'an unfamiliar place';
   const nodeType = String(currentNode?.nodeType ?? 'wilderness');
 
   const parts = [];
@@ -272,7 +272,7 @@ export function buildLocationSurvey(world) {
       const targetId = exits?.[dir];
       if (!targetId) continue;
       const target = nodes.find(n => String(n.id) === String(targetId));
-      const tName = String(target?.name ?? '').trim();
+      const tName = cleanPlaceName(target?.name);
       dirLines.push(tName ? `to the ${dir} lies ${tName}` : `a path leads ${dir}`);
     }
     if (dirLines.length) {

@@ -10,7 +10,7 @@ import { planNextScene } from './sceneDirector.js';
 import { generateInitialMap } from './map/generateMap.js';
 import { biomeForNode, biomeFlavor } from './world/biome.js';
 import { ecologyTravelLine } from './ecology/snapshot.js';
-import { ensureMap, pickTravelDestination, moveToNode, neighbors, bfsPath, exitsFrom, directionFromText, stepCell, nodeAtCell, nodesWithinSight, cardinalToCell, seeNode, visitNode, SIGHT_RADIUS } from './map/mapState.js';
+import { ensureMap, pickTravelDestination, moveToNode, neighbors, bfsPath, cleanPlaceName, exitsFrom, directionFromText, stepCell, nodeAtCell, nodesWithinSight, cardinalToCell, seeNode, visitNode, SIGHT_RADIUS } from './map/mapState.js';
 import { conductorDecision, applyConductorDeltas } from './conductor.js';
 import { worldTick } from './worldTick.js';
 import { resolveMove } from './resolve.js';
@@ -592,7 +592,7 @@ export function playerMove(world, packsById, text) {
             w1 = decompressAndCanonizeSync(w1, destId, pack);
           }
           const here = w1.map?.nodes?.find(n => n && n.id === destId) || null;
-          const nextName = String(here?.name || '').trim();
+          const nextName = cleanPlaceName(here?.name);
           if (nextName) w1 = { ...w1, scene: { ...w1.scene, location: nextName } };
           w1 = setPrimaryPartyZone(w1, 'near');
           w1 = pushEvent(w1, { kind: 'travel', data: { from: before, to: destId, intent: String(text || '') } });
@@ -665,14 +665,14 @@ export function playerMove(world, packsById, text) {
           const stopNode0 = (w1.map?.nodes || []).find(n => n && String(n.id) === stopId) || null;
           if (stopNode0?.nodeType === 'settlement' && !stopNode0.settlement?.decompressed) w1 = decompressAndCanonizeSync(w1, stopId, pack);
           const here2 = (w1.map?.nodes || []).find(n => n && String(n.id) === stopId) || null;
-          const stopName = String(here2?.name || '').trim();
+          const stopName = cleanPlaceName(here2?.name);
           if (stopName) w1 = { ...w1, scene: { ...w1.scene, location: stopName } };
           w1 = setPrimaryPartyZone(w1, 'near');
           w1 = pushEvent(w1, { kind: 'travel', data: { from: originId, to: stopId, intent: String(text || '') } });
           w1 = appendRecentBeat(w1, buildBeatFromTurn(w1, text, { actorId: 'party', intentText: String(text || ''), approachTag: 'survival', stakeTag: 'time' }, { outcome: 'success', mechanicsLine: '[travel | journey-arrive]' }));
           w1 = maybeCheckGoals(w1);
           const destNode = (w1.map?.nodes || []).find(n => n && String(n.id) === farId) || null;
-          const destName = String(destNode?.name || 'your destination').trim();
+          const destName = cleanPlaceName(destNode?.name) || 'your destination';
           const timeWord = travelTimeWord(hours);
           const afterWord = timeWord === 'a short way' ? 'A short way on' : `After ${timeWord} on the road`;
           const flavor = here2 ? biomeFlavor(w1.meta.seed, here2) : '';
@@ -702,7 +702,7 @@ export function playerMove(world, packsById, text) {
       const exitNames = ['north', 'east', 'south', 'west'].map(d => {
         const id = ex?.[d]; if (!id) return null;
         const n = (w.map?.nodes || []).find(x => x && String(x.id) === String(id)) || null;
-        const nm = String(n?.name || '').trim();
+        const nm = cleanPlaceName(n?.name);
         return nm ? `${nm} to the ${d}` : null;
       }).filter(Boolean);
       if (looksLikeNamedDestination(text)) {
@@ -1655,7 +1655,7 @@ function resolveNamedNeighbor(world, text) {
   let best = null, bestLen = 0;
   for (const id of nbs) {
     const node = (m.nodes || []).find(n => n && String(n.id) === String(id)) || null;
-    const name = normName(node?.name).trim();
+    const name = normName(cleanPlaceName(node?.name)).trim();
     if (name && name.length > bestLen && t.includes(name)) { best = String(id); bestLen = name.length; }
   }
   return best;
@@ -1675,7 +1675,7 @@ function resolveNamedDestination(world, text) {
     const id = String(node?.id || '');
     if (!id || id === here) continue;
     if (!known.has(id)) continue; // only places the player has seen/heard of
-    const name = normName(node?.name).trim();
+    const name = normName(cleanPlaceName(node?.name)).trim();
     if (name && name.length > bestLen && t.includes(name)) { best = id; bestLen = name.length; }
   }
   return best;

@@ -65,6 +65,14 @@ export function neighbors(map, nodeId) {
   return [...out];
 }
 
+// Node names can carry a "(N)" disambiguator suffix when display names collide
+// (e.g. two "Wayfarers' Outpost" → "Wayfarers' Outpost (2)"). Strip it for
+// player-facing prose AND for matching a typed destination, so "go to Wayfarers'
+// Outpost" resolves and the DM never says "(2)".
+export function cleanPlaceName(name) {
+  return String(name || '').replace(/\s*\(\d+\)\s*$/, '').trim();
+}
+
 // bfsPath(map, fromId, toId, cap) -> [next, ..., toId] (excludes `from`, includes
 // `to`) or null if unreachable within `cap` hops. Deterministic: neighbors are
 // visited in stable (sorted) order, so the shortest path is reproducible.

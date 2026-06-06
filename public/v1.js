@@ -2,6 +2,7 @@ import { normalizeManifest, normalizePack } from '../engine/rulesets.js';
 import { newWorld, ensureWorld } from '../engine/state.js';
 import { beginAdventure, playerMove, newScene } from '../engine/playloop.js';
 import { isMetaQuestion, handleMetaQuestion } from '../engine/grace/gracefulAdjudication.js';
+import { exitsFrom, ensureMap, cleanPlaceName } from '../engine/map/mapState.js';
 import { escapeOutcome } from '../engine/victory.js';
 import { escapeKitView } from '../engine/combat/escapeCombat.js';
 import { hasSlot, loadSlot, saveSlot, exportWorld, importWorld } from '../engine/save.js';
@@ -412,17 +413,33 @@ async function doSubmitMove() {
   if (!w) return setStatus('No world loaded.');
   if (Boolean(w.ending?.locked)) return setStatus('Session ended (ending locked).');
 
-  const text = String(ui.play.input || '').trim();
+  let text = String(ui.play.input || '').trim(); // may be rewritten (e.g. "head south" → "go to <place>")
   if (!text) return setStatus('');
 
-  // One movement system: a bare cardinal ("go north" / "walk west" / "n") walks the
-  // SAME token the mouse and compass move — not the engine's legacy node/room step.
-  // (Talk/fight/travel/time still route to playerMove below.)
+  // Movement: a typed direction WITH a verb ("head south", "go west", "travel north")
+  // is an intent to set off toward the place that way — it runs the engine's
+  // DM-resolved journey (time/distance/encounters/surprise/multi-hop). A BARE
+  // direction ("south", "s") and the compass buttons keep local place-walk (fine
+  // positioning). This honors "to the south lies X" instead of just nudging the avatar.
   if (!w.combat?.active && placeCtl) {
-    const mv = text.toLowerCase().match(/^(?:go|walk|move|head|step)?\s*(north|south|east|west|n|e|s|w)\.?$/);
+    const mv = text.toLowerCase().match(/^(go|walk|move|head|step|travel|make\s+for)?\s*(north|south|east|west|n|e|s|w)\.?$/);
     if (mv) {
-      const dir = { n: 'north', s: 'south', e: 'east', w: 'west', north: 'north', south: 'south', east: 'east', west: 'west' }[mv[1]];
-      ui.play.input = ''; setStatus(''); placeWalk(dir); return;
+      const dir = { n: 'north', s: 'south', e: 'east', w: 'west', north: 'north', south: 'south', east: 'east', west: 'west' }[mv[2]];
+      const hasVerb = Boolean(mv[1]);
+      // With a verb, if a known place lies that way, journey to it (named travel).
+      if (hasVerb) {
+        let target = null;
+        try {
+          const m = ensureMap(w.map);
+          const id = exitsFrom(m, String(m.currentNodeId || ''))[dir];
+          const node = id ? (w.map?.nodes || []).find(n => n && String(n.id) === String(id)) : null;
+          target = node ? cleanPlaceName(node.name) : null;
+        } catch {}
+        if (target) { text = `go to ${target}`; }     // fall through to playerMove (journey)
+        else { ui.play.input = ''; setStatus(''); placeWalk(dir); return; } // nothing that way → local nudge
+      } else {
+        ui.play.input = ''; setStatus(''); placeWalk(dir); return; // bare direction → local walk
+      }
     }
   }
 

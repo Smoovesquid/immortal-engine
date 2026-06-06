@@ -41,8 +41,13 @@ an API or running a Node harness alone.
 
 1. **Unit/contract tests green** — `node --test` full suite. New feature has its own tests.
 2. **Determinism/crash sweep** — `npm run playtest:quick` (0 crashes).
-3. **Prose/engine harness** (if prose touched) — `node scripts/prose-playtest.mjs`
-   (0 crashes, 0 issues). Drives realistic inputs through the real routing.
+3. **Prose gate** (if prose touched) — `npm run prose:gate`
+   (must print `✅ PROSE GATE: PASS`, exit 0). Drives ~200 realistic inputs through the
+   real v1.js routing and FAILS LOUDLY on any crash / invisible output / value leak /
+   abstract-floor leak on a resolved action / DM-TEST dead-end (intent bounced back as a
+   mechanical prompt) / formatting glitch. Graders live in `scripts/lib/proseGraders.mjs`
+   and are unit-tested in `tests/F1`. A red gate blocks handoff — fix the prose, don't
+   weaken the grader.
 4. **LIVE BROWSER WALKTHROUGH — the part I keep skipping:**
    - Load `http://localhost:5179/v1.html`, click **Begin** (note: often needs a
      second click after a fresh load).

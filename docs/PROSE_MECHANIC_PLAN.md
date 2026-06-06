@@ -170,13 +170,25 @@ A stage is not closed until its `docs/playtests/<stage>-<date>.md` report is gre
 - **Stage B (ground the floor) COMPLETE** — physical + mechanical-skill + social all
   resolve as a DM would; no abstract-floor dead-ends remain for resolved actions.
 
-### Stage 4 — F: Standing prose gate
+### Stage 4 — F: Standing prose gate — DONE (2026-06-06)
 - **Scope:** grow `scripts/prose-playtest.mjs` into the enforced pre-handoff gate; add a
   browser visible-output check and a "no unintentional floor" assertion.
 - **Lives:** `scripts/`, `tests/`, wired into PLAYTEST_PROTOCOL.
 - **Done when:** the gate fails loudly on dead-ends, floor leakage, value leaks, or
   invisible output.
 - **Severe playtest:** intentionally regress a handler and confirm the gate catches it.
+- ✅ **SHIPPED.** Graders extracted to `scripts/lib/proseGraders.mjs` (importable,
+  unit-tested). Gate exits NONZERO on ANY issue: CRASH / INVISIBLE / VALUE_LEAK / FLOOR
+  (any resolved action) / **DEAD_END (THE_DM_TEST bounce-back)** / FORMATTING.
+  `npm run prose:gate`. Self-test (`PROSE_GATE_SELFTEST`) + `tests/F1` (22) prove it
+  catches each planted regression and leaves good prose alone.
+- ✅ **The gate's first catch:** widening FLOOR from physical-only to any-resolved-action
+  exposed 54 real floor leaks Stage B's narrow grader had hidden (take/ask/listen/smell/
+  wait/cast/read/generic/travel/combat). **Fixed** by generalizing the grounding
+  (`genericGroundedOutcome` + `combatGroundedOutcome`, floor-replacement at the resolveMove
+  + 3 combat sites). So "Stage B complete" is now actually true: no abstract floor reaches
+  the player for any resolved action. Live-verified (take/cast/wait). Report:
+  `docs/playtests/stageF-prosegate-2026-06-06.md`. Suite 7183 green; gate 0/216.
 
 ### Stage 5 — D: Consequence & permanence (prose-to-world)
 - **Scope:** actions mutate the scene model (furniture state, contents, new exits, sensory

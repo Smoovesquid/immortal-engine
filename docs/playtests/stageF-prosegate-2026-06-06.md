@@ -42,8 +42,77 @@ self-test proves it catches a planted regression? · wired + documented? · dete
 
 ---
 ## Built this pass
+- `scripts/lib/proseGraders.mjs` — the importable heart of the gate. Pure graders:
+  `gradeCrash`, `gradeInvisible`, `gradeValueLeak`, `gradeFloor`, `gradeDeadEnd`,
+  `gradeFormatting` + `gradeAll`/`gradeNarration`. Both the gate and tests/F1 import them,
+  so the gate's judgment is itself unit-tested.
+- `scripts/prose-playtest.mjs` upgraded to the ENFORCED gate: exits NONZERO on ANY issue
+  (not just crashes); prints `✅ PROSE GATE: PASS` / `❌ PROSE GATE: FAIL`. Added a SOCIAL
+  + TRAVEL corpus and a `PROSE_GATE_SELFTEST=<class|all>` injection mode.
+- `npm run prose:gate` wired in package.json.
+- **The gate's first catch (the whole point):** with the FLOOR grader widened from
+  "physical inputs only" to "any resolved action", it exposed that the abstract floor
+  was NOT dead — it leaked on **54 / 216** inputs (take/grab/pickup, ask, listen/smell,
+  wait, cast, read, generic/garbage, travel variants, and combat). Stage B's grader had
+  been too narrow to see it.
+- **Fixed the leak it found** — generalized the Stage B grounding:
+  `genericGroundedOutcome(world,text,outcome)` (take/ask/listen/smell/wait/read/cast +
+  grounded generic last resort) and `combatGroundedOutcome(enemyName,outcome)`. Wired as
+  a floor-replacement: when the composer would emit the abstract floor, substitute
+  grounded, outcome-aware prose (specific handlers still win; good composer lines pass
+  through). Applied at the generic resolveMove site + all 3 combat-narration sites.
+  Narration-only (no state, no RNG) → determinism-safe.
+- Also caught + fixed a real bug: social narration started lowercase when the NPC's
+  "name" was an article ("the trader warms…" → "The trader warms…").
+
 ## Node checks
+- `npm run prose:gate` → **PASS, 0 issues across 216 inputs**, exit 0 (was 54 issues).
+- Self-test per class → exit 1 each (crash, invisible, value_leak, floor, dead_end,
+  formatting); `--selftest=all` reports every class; clean run → exit 0.
+- Full suite **7183/7183 green** (U21 determinism, U100/U101 floor, UX2, U102 social all
+  intact). `npm run playtest:quick` → 50 runs, 0 crashes, no bugs.
+
 ## Self-test (the severe playtest: regress → caught)
+`tests/F1.proseGate.test.js` (22): grader PRECISION (each class flagged; 7 known-good DM
+lines + non-prose routes clean — no false positives) + ENFORCEMENT (spawns the gate as a
+subprocess; clean corpus → exit 0; each planted regression class → exit 1; `all` reports
+every tag). This is "intentionally regress a handler and confirm the gate catches it,"
+made permanent as a test.
+
+## Live (v1.html, AI on — the floor-grounding is player-facing)
+- **(ss_4867p9590)** "take the torch" → *"At Wayfarers' Outpost, Yara watches with mild
+  curiosity as you tug at the wall-mounted torch, its iron bracket holding firm against
+  your grip."* (roll 3 vs DC 12 → failure) — grounded, names the torch, no floor.
+- **(ss_4731uwivg)** "cast fire bolt" → *"A tongue of flame sputters from your fingertips
+  and scorches the air inside Wayfarers' Outpost … burning through your focus like green
+  wood — wasteful and uneven at the edges."* (roll 10 vs DC 11 → mixed) — grounded.
+- **(ss_894815h2x)** "I wait and watch the room" → grounded wait beat (failure), tail
+  visible; transcript bounded/scrollable (no map-clip regression). No abstract floor on
+  any of the three. AI-on elaborates the grounded base, never invents.
+
 ## Findings
+| class | gate behavior | proof |
+| --- | --- | --- |
+| CRASH | exit 1 | selftest + F1-C |
+| INVISIBLE | exit 1 | selftest + F1 |
+| VALUE_LEAK | exit 1 | selftest + F1 |
+| FLOOR (resolved action) | exit 1 | selftest; caught 54 real leaks → fixed |
+| DEAD_END (THE_DM_TEST) | exit 1 | selftest + F1 (7 phrasings) |
+| FORMATTING | exit 1 | selftest; caught the lowercase social-name bug → fixed |
+| good DM prose | not flagged | F1-B (no false positives) |
+| live corpus | exit 0 | `npm run prose:gate` |
+
 ## NOT verified / deferred
-## Verdict: not yet
+- The gate is pure-node (AI-OFF deterministic base, per the bar). True browser-visibility
+  (CSS clipping, render) stays the HUMAN depth tier of PLAYTEST_PROTOCOL (screenshots) —
+  no headless-browser dep added (repo is deliberately dep-light). Live screenshots above
+  cover the depth tier for this stage's player-facing change.
+- The generic last-resort line is intentionally plain; specific verb classes read better.
+  Richer per-verb grounding can keep improving, but no leak remains (gate enforces it).
+- The DEAD_END grader covers known bounce-back phrasings; new ones can be added as found.
+
+## Verdict: GREEN — the standing prose gate ships. It fails loudly on crash / invisible /
+value-leak / floor / dead-end / formatting (proven by self-test + F1), passes the clean
+live corpus, is wired (`npm run prose:gate`) and documented. Its first act caught 54 real
+floor leaks Stage B's narrow grader had hidden; those are now grounded, so "Stage B
+complete" is finally true. Green means green.

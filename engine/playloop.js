@@ -1274,6 +1274,14 @@ export function playerMove(world, packsById, text) {
   // and yields grounded, object-aware prose instead of "You do so without
   // difficulty." Skill verbs (lock/force/pry/climb…) are deliberately excluded
   // so they still roll — see UX2 roll-classification.
+  // Stage D: open/close a real furniture piece here mutates + persists its state
+  // (an opened crate stays open). Falls through to the trivial gate for non-furniture
+  // targets ("open the door" when no such piece is present).
+  {
+    const fsc = tryFurnitureStateChange(w, text);
+    if (fsc) return fsc;
+  }
+
   if (isTrivialIntent(text) || classifyTrivial(text)) {
     w = pushEvent(w, {
       kind: 'resolution',
@@ -2144,7 +2152,9 @@ function tryExamineTarget(w, text) {
   if (f) {
     const notes = String(f.notes || '').trim().replace(/[.?!]+$/, '');
     const state = String(f.state || 'intact');
-    const stateClause = state && state !== 'intact' ? ` It looks ${state}.` : '';
+    const stateClause = state === 'open' || state === 'ajar' ? ` It stands open.`
+      : state === 'closed' ? ''
+      : state && state !== 'intact' ? ` It looks ${state}.` : '';
     const parts = Array.isArray(f.parts) ? f.parts.filter(Boolean).slice(0, 3) : [];
     const partsClause = parts.length ? ` You make out its ${parts.join(', ')}.` : '';
     return `You look the ${f.name} over${notes ? `: ${notes}.` : '.'}${stateClause}${partsClause}`;
@@ -2244,6 +2254,58 @@ function furnitureNameAt(w, target) {
   const furn = Array.isArray(node?.furniture) ? node.furniture : [];
   const f = furn.find(x => nameMatches(x?.name, target, tail));
   return f ? String(f.name) : null;
+}
+
+// ── Stage D: consequence & permanence — open/close persists ──────────────────
+// "open the crate" doesn't just narrate; it mutates the furniture's state to `open`
+// (close → `closed`) via a modifyFurniture delta, so a later examine, the room
+// overview, and a return visit all remember it. Re-doing it acknowledges the prior
+// state instead of repeating. Destructive verbs (break/smash/take) already persist
+// via the physics branch; force/pry persistence is a later slice. Determinism-safe:
+// replay re-runs the text → the same deterministic mutation; furniture isn't hashed.
+// Returns { world, output } when it handles a real furniture piece, else null (so the
+// trivial gate still handles "open the door" when no such piece is here).
+const OPENED_STATES = new Set(['open', 'ajar']);
+const DAMAGED_STATES = new Set(['broken', 'damaged', 'shattered', 'smashed']);
+
+function tryFurnitureStateChange(w, text) {
+  const c = classifyTrivial(text);
+  if (!c || (c.cat !== 'open' && c.cat !== 'close')) return null;
+  const target = String(c.object || '').trim();
+  if (!target) return null;
+  const node = (w.map?.nodes || []).find(n => n && n.id === w.map?.currentNodeId) || null;
+  const furniture = Array.isArray(node?.furniture) ? node.furniture : [];
+  if (!furniture.length) return null;
+  const tail = target.split(/\s+/).filter(Boolean).pop();
+  const idx = furniture.findIndex(x => nameMatches(x?.name, target, tail));
+  if (idx < 0) return null; // not a real piece here → let the trivial gate answer
+  const f = furniture[idx];
+  const name = String(f.name);
+  const cur = String(f.state || 'intact');
+  const wantOpen = c.cat === 'open';
+  const TRIVIAL_MECH = 'trivial action — no roll, auto-success';
+  const isOpen = OPENED_STATES.has(cur);
+
+  // Already in the requested state → acknowledge, don't re-mutate.
+  if (wantOpen && isOpen) {
+    return { world: w, output: { narration: `Wizard: The ${name} already stands open.`, mechanics: TRIVIAL_MECH } };
+  }
+  if (!wantOpen && !isOpen) {
+    const why = DAMAGED_STATES.has(cur) ? `The ${name} is too far gone to close.` : `The ${name} is already shut.`;
+    return { world: w, output: { narration: `Wizard: ${why}`, mechanics: TRIVIAL_MECH } };
+  }
+
+  const newState = wantOpen ? 'open' : 'closed';
+  let w1 = applyDeltas(w, [{ op: 'modifyFurniture', nodeId: String(node.id), furnitureId: idx, changes: { state: newState } }]);
+  w1 = pushEvent(w1, {
+    kind: 'resolution',
+    data: { actorId: 'party', intent: String(text || ''), text: String(text || ''), roll: 0, dc: 0, outcome: 'success', updateKind: `furniture:${newState}` }
+  });
+  const damaged = DAMAGED_STATES.has(cur);
+  const line = wantOpen
+    ? (damaged ? `You haul the ${name} open; battered as it is, it stays open now.` : `You open the ${name}; it stands open now.`)
+    : `You swing the ${name} shut.`;
+  return { world: w1, output: { narration: `Wizard: ${line}`, mechanics: TRIVIAL_MECH } };
 }
 
 // ── Stage B: ground the floor for resolved PHYSICAL actions ─────────────────

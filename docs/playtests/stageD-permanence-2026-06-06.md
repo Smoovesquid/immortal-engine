@@ -49,9 +49,63 @@ world remembers across turns AND moves? · re-attempt acknowledges prior state? 
 overview reflect it? · grounded (no floor/leak)? · deterministic? · visible on screen?
 
 ---
-## Built this pass
-## Node checks
-## Live (screenshots)
+## Built this pass (engine/playloop.js)
+- `tryFurnitureStateChange(world, text)` — gated before the trivial gate (after the
+  physics intercept). For open/close on a furniture piece PRESENT at the node:
+  applies a `modifyFurniture` delta (`state: open|closed`), pushes a replayable
+  `resolution` event (`updateKind: furniture:<state>`), and narrates the change naming
+  the piece. Already-in-state → acknowledges ("…already stands open.") with no
+  re-mutation. Not-a-real-piece → returns null so the trivial gate still answers.
+- `tryExamineTarget` state clause now reads naturally: `open`/`ajar` → "It stands open.",
+  `closed` → silent, other non-intact → "It looks <state>."
+- Bug fixed mid-build: my delta used `kind:` but `applyDeltas` reads `op.op` — the
+  mutation silently no-op'd until I matched the real delta shape (`op: 'modifyFurniture'`).
+  (Caught by the node probe before any test/live claim.)
+
+## Node checks (scripts, throwaway)
+- open crate → state `open`, "You open the wooden crate; it stands open now."
+- examine after open → "…It stands open. You make out its plank, lid, rope handle."
+- open again → "The wooden crate already stands open." (no re-mutation)
+- close → state `closed`, "You swing the wooden crate shut."; close again → "already shut"
+- **LEAVE (go outside) + RETURN (go inside) → crate state STILL `open`** (true permanence)
+- open a piece not here ("portcullis") → falls through to trivial, no crash, no furniture change
+- break still persists (physics path) → state `damaged`, parts removed (no regression)
+
+## Tests
+- U103 (8): open persists + names it · examine reflects open · re-open acknowledged ·
+  close reverses + acknowledged · permanence across leave/return · graceful absent +
+  break-still-persists · deterministic (prose+mechanics+state).
+- U21 determinism green (replay re-runs the text → same deterministic mutation; furniture
+  isn't in worldHash). UX2 + U100 + U101 green. Full suite **7205/7205**. Prose gate
+  PASS. `playtest:quick` clean.
+
+## Live (v1.html, AI on)
+- **(ss_2628slsu2)** "examine the crate" (intact) → grounded description, no state clause.
+- **(ss_98804d0xa)** after `open the crate` → `go outside` → `go inside` → "examine the
+  crate" → *"…you run your fingers along the crate's weathered planks … and the open lid
+  revealing whatever lies within."* — the crate REMEMBERED it was open after leaving the
+  building and returning. AI elaborated the grounded "it stands open" base. ✅
+
 ## Findings
-## NOT verified / deferred
-## Verdict: not yet
+| check | result |
+| --- | --- |
+| open mutates + persists | ✅ state=open |
+| examine reflects it | ✅ "It stands open" / AI "open lid revealing…" |
+| re-attempt acknowledges prior state | ✅ "already stands open" |
+| close reverses | ✅ state=closed |
+| permanence across MOVES (leave+return) | ✅ live-verified |
+| graceful on absent target | ✅ falls through, no crash |
+| break still persists | ✅ no regression |
+| deterministic | ✅ U21 + U103-E |
+
+## NOT verified / deferred (later slices)
+- **"A broken door becomes a real map exit"** — couples to map/interior topology
+  (doors aren't modeled as blocking exits yet); its own slice. This slice covers
+  furniture STATE permanence, not exit-graph mutation.
+- force/pry persistence via the resolveMove path (break already persists via physics).
+- Contents reveal on open — furniture has no `contents` field (no model); skipped honestly.
+- Sensory residue / consequence chaining (noise → response) — Stage D later slice.
+
+## Verdict: GREEN (slice 1) — the world remembers open/closed across turns AND moves.
+"An opened crate stays open" is true, live-verified. Destructive permanence (break) was
+already in place. Remaining Stage D scope (door-as-exit, residue chains) is tracked above.

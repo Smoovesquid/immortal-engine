@@ -190,14 +190,25 @@ A stage is not closed until its `docs/playtests/<stage>-<date>.md` report is gre
   the player for any resolved action. Live-verified (take/cast/wait). Report:
   `docs/playtests/stageF-prosegate-2026-06-06.md`. Suite 7183 green; gate 0/216.
 
-### Stage 5 — D: Consequence & permanence (prose-to-world)
+### Stage 5 — D: Consequence & permanence (prose-to-world) — SLICE 1 DONE (2026-06-06)
 - **Scope:** actions mutate the scene model (furniture state, contents, new exits, sensory
-  residue) and later prose reflects it. (Reconcile with `docs/PROSE_TO_WORLD.md` first.)
+  residue) and later prose reflects it. (PROSE_TO_WORLD.md is AUTHOR-time pack generation —
+  orthogonal to this RUNTIME scene-state work; no overlap.)
 - **Lives:** `effectsCore.js` deltas + scene model + `composer.js` reads state.
 - **Done when:** the world remembers — an opened crate stays open, a broken door is an exit,
   and narration acknowledges prior changes.
 - **Severe playtest:** long sessions; break/open/take things, leave, return, and verify the
   world and prose remember; chain consequences (noise → response).
+- ✅ **Slice 1 — open/close permanence (2026-06-06).** `tryFurnitureStateChange` mutates a
+  present furniture piece's `state` (open/closed) via a `modifyFurniture` delta + replayable
+  resolution event; examine/overview reflect it; re-attempts acknowledge the prior state.
+  **Live-verified the literal done-when: an opened crate stayed open after leaving the
+  building and returning.** Pre-existing: break/smash/take already persist via the physics
+  branch. Determinism-safe (replay re-runs text; furniture unhashed). U103 (8); suite 7205;
+  gate PASS. Report: `docs/playtests/stageD-permanence-2026-06-06.md`.
+- ⏳ **Remaining Stage D:** "a broken door becomes a real map EXIT" (couples to map/interior
+  topology — its own slice); force/pry persistence via the resolveMove path; sensory-residue
+  / consequence chaining (noise → response).
 
 ### Stage 6 — E: Voice, variation, pacing
 - **Scope:** world-tone into deterministic prose; seeded variation (no identical repeats);

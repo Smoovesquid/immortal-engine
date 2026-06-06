@@ -102,5 +102,46 @@ DM-Test pass (would a DM do this)? · grounded? · visible on screen? · correct
   intercepted by v1.js placeWalk (Stage C.1 report's open item).
 
 ## Verdict: GREEN for slice 1 (named travel is a real DM-run journey, live-verified).
-Stage C.2 remains OPEN overall — slice 2 (surprise, per-leg wood, non-combat beats,
-directional inter-node travel) is the remaining work.
+
+---
+
+# Slice 2 — Contested ambush surprise (2026-06-05)
+
+Surprise is no longer automatic: it's contested by vigilance (WITS + a perception/
+scout/wary skill or trait) vs the ambush. Win → spotted (fight ready); lose →
+a free opening strike + the fight starts with you already hurt.
+
+## Tuning (40-seed node sweeps, scripts/_surprise.mjs)
+- WITS 10, no skill: 5 surprised / 15 spotted / 20 no-ambush
+- WITS 16 + Scout: **1** surprised / 19 spotted — perceptive builds are rarely caught
+- WITS 6, no skill: 7 surprised — the oblivious get caught more
+→ surprise is the exception; skill makes you hard to surprise; ~half of trips have
+  no ambush at all. (Codified in U97.)
+
+## Live (v1.html, AI on — screenshot ss_9834wftst)
+- Character **Garr, WITS 6 (−2)** (low vigilance). Several round-trips: 3 clean
+  arrivals, then on the trip to Wayfarers' Outpost: `[ambush | surprise]` →
+  "The road to Wayfarers' Outpost delivers you breathless and shaken to its modest
+  grounds, a wolf's snarl still ringing in your ears…" → combat vs a Wolf with HP
+  already down (11/14). The surprise round landed before the first turn. ✓
+- (Travel typed during the ensuing combat → became a combat swing — correct.)
+
+## Findings
+| case | result | DM-test? | visible? | note |
+| --- | --- | --- | --- | --- |
+| ambush + low-WITS char | surprised, free opening strike, HP down | ✅ | ✅ | live |
+| surprise rate by WITS/skill | rare for sharp, more for oblivious | ✅ | — | node sweeps + U97 |
+| determinism | same seed/input → same outcome + HP | — | — | U97-C |
+
+## Built this pass (slice 2)
+- `applySurpriseRound()` in escapeCombat (free opening strike, reuses to-hit/damage).
+- Contested check in playloop (`isSurprisedByAmbush` / `hasVigilanceSkill`, WITS + skill
+  vs DC 8). Tests U97. Full suite 7135/7135, U21 green, sweeps clean.
+
+## NOT verified live / still deferred
+- `[ambush | spotted]` branch not *seen* live (sibling of surprise; covered by U97 +
+  sweeps). Would show with a higher-WITS character or more trips.
+- Per-leg "dangerous wood *between* places", non-combat travel beats, multi-hop routing,
+  and directional inter-node travel — still Stage C.2 follow-ups.
+
+## Verdict: Slice 2 (surprise) GREEN. Remaining C.2 follow-ups still OPEN.

@@ -209,7 +209,11 @@ Surface: live v1.html (browser)   AI: on/off
     (turns/hours) + distance (leagues), can be interrupted by a terrain-typed ambush,
     and unknown places get an in-fiction clarification (no "which way?"). Live-verified.
     Report: `docs/playtests/stageC2-travel-2026-06-05.md`. Tests: U96.
-  - ❌ C.2 slice 2 — OPEN: **ambush = surprise** (beginCombat rolls normal init today),
-    per-leg "dangerous wood *between* places", non-combat travel beats, multi-hop routing,
+  - C.2 slice 2a — **DONE** (2026-06-05): **contested ambush surprise.** Not automatic —
+    WITS + a perception/scout/wary skill vs the ambush; lose → free opening strike. Sharp
+    builds rarely surprised, oblivious caught more, ~half of trips no ambush. Live-verified
+    (a WITS-6 char caught by a wolf). Tests: U97.
+  - ❌ C.2 slice 2b — OPEN: per-leg "dangerous wood *between* places" (encounter mid-journey,
+    not just at arrival), non-combat travel beats (talk/pay/slip past), multi-hop routing,
     and directional inter-node travel ("go south" leaving a settlement — v1.js still
     intercepts cardinals as local place-walk).

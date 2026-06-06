@@ -65,6 +65,38 @@ export function neighbors(map, nodeId) {
   return [...out];
 }
 
+// bfsPath(map, fromId, toId, cap) -> [next, ..., toId] (excludes `from`, includes
+// `to`) or null if unreachable within `cap` hops. Deterministic: neighbors are
+// visited in stable (sorted) order, so the shortest path is reproducible.
+export function bfsPath(map, fromId, toId, cap = 8) {
+  const m = ensureMap(map);
+  const from = String(fromId || m.currentNodeId || '');
+  const to = String(toId || '');
+  if (!from || !to || from === to) return null;
+  const prev = new Map([[from, null]]);
+  let frontier = [from];
+  let depth = 0;
+  while (frontier.length && depth < cap) {
+    const next = [];
+    for (const id of frontier) {
+      for (const nb of neighbors(m, id).slice().sort()) {
+        if (prev.has(nb)) continue;
+        prev.set(nb, id);
+        if (nb === to) {
+          const path = [];
+          let cur = to;
+          while (cur && cur !== from) { path.unshift(cur); cur = prev.get(cur); }
+          return path;
+        }
+        next.push(nb);
+      }
+    }
+    frontier = next;
+    depth++;
+  }
+  return null;
+}
+
 // ── Cardinal navigation ──────────────────────────────────────────────────────
 // As of v19 every node carries an integer grid position (see embedding.js), so a
 // compass direction is no longer a hashed label — it's the actual geometry. The

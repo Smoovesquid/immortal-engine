@@ -10,7 +10,7 @@ import { planNextScene } from './sceneDirector.js';
 import { generateInitialMap } from './map/generateMap.js';
 import { biomeForNode, biomeFlavor } from './world/biome.js';
 import { ecologyTravelLine } from './ecology/snapshot.js';
-import { ensureMap, pickTravelDestination, moveToNode, neighbors, exitsFrom, directionFromText, stepCell, nodeAtCell, nodesWithinSight, cardinalToCell, seeNode, visitNode, SIGHT_RADIUS } from './map/mapState.js';
+import { ensureMap, pickTravelDestination, moveToNode, neighbors, bfsPath, exitsFrom, directionFromText, stepCell, nodeAtCell, nodesWithinSight, cardinalToCell, seeNode, visitNode, SIGHT_RADIUS } from './map/mapState.js';
 import { conductorDecision, applyConductorDeltas } from './conductor.js';
 import { worldTick } from './worldTick.js';
 import { resolveMove } from './resolve.js';
@@ -628,6 +628,66 @@ export function playerMove(world, packsById, text) {
           const extra = beat || ecoLine; // prefer the journey beat when one fires
           const narration = extra ? `${arrivalLine} ${extra}` : arrivalLine;
           return { world: w1, output: { narration, mechanics: beat ? '[travel | journey-arrive | beat]' : '[travel | journey-arrive]' } };
+        }
+      }
+
+      // ── Multi-hop: a KNOWN place a few hops away. Run the journey leg by leg —
+      // each leg crosses terrain (its own ambush chance), and an interrupt leaves
+      // you at a real node (never the void), so you can resume by travelling again. ──
+      const farId = resolveNamedDestination(w, text);
+      if (farId) {
+        const originId = String(ensureMap(w.map).currentNodeId || '');
+        const path = bfsPath(w.map, originId, farId, 8);
+        if (path && path.length) {
+          let w1 = w;
+          let prevNode = (w.map?.nodes || []).find(n => n && String(n.id) === originId) || null;
+          let leagues = 0, stoppedAt = null, ambushed = false;
+          for (const legId of path) {
+            const legNode = (w1.map?.nodes || []).find(n => n && String(n.id) === legId) || null;
+            leagues += legLeagues(prevNode, legNode);
+            const beforeLeg = prevNode ? String(prevNode.id) : originId;
+            w1 = moveToNode(w1, legId);
+            if (String(ensureMap(w1.map).currentNodeId || '') !== legId) break; // safety
+            stoppedAt = legId;
+            w1 = maybeSpawnEscapeEncounter(w1, beforeLeg); // per-leg terrain danger
+            if (w1.combat?.active) { ambushed = true; break; }
+            prevNode = legNode;
+          }
+          const hours = leagues;
+          w1 = { ...w1, time: { ...(w1.time || {}), turn: (w1.time?.turn ?? 0) + 1, hours: (w1.time?.hours ?? 0) + hours, leagues: (w1.time?.leagues ?? 0) + leagues } };
+          const stopId = stoppedAt || originId;
+          // Decompress + name wherever the journey actually stopped (arrival OR interrupt).
+          w1 = applyGeneratedStructuresForNode(w1, stopId);
+          const stopNode0 = (w1.map?.nodes || []).find(n => n && String(n.id) === stopId) || null;
+          if (stopNode0?.nodeType === 'settlement' && !stopNode0.settlement?.decompressed) w1 = decompressAndCanonizeSync(w1, stopId, pack);
+          const here2 = (w1.map?.nodes || []).find(n => n && String(n.id) === stopId) || null;
+          const stopName = String(here2?.name || '').trim();
+          if (stopName) w1 = { ...w1, scene: { ...w1.scene, location: stopName } };
+          w1 = setPrimaryPartyZone(w1, 'near');
+          w1 = pushEvent(w1, { kind: 'travel', data: { from: originId, to: stopId, intent: String(text || '') } });
+          w1 = appendRecentBeat(w1, buildBeatFromTurn(w1, text, { actorId: 'party', intentText: String(text || ''), approachTag: 'survival', stakeTag: 'time' }, { outcome: 'success', mechanicsLine: '[travel | journey-arrive]' }));
+          w1 = maybeCheckGoals(w1);
+          const destNode = (w1.map?.nodes || []).find(n => n && String(n.id) === farId) || null;
+          const destName = String(destNode?.name || 'your destination').trim();
+          const timeWord = travelTimeWord(hours);
+          const afterWord = timeWord === 'a short way' ? 'A short way on' : `After ${timeWord} on the road`;
+          const flavor = here2 ? biomeFlavor(w1.meta.seed, here2) : '';
+          if (ambushed) {
+            const srng = makeRng(seedFromString(`${w1.meta.seed}|surprise|${stopId}|${w1.timeline.length}`));
+            const surprised = isSurprisedByAmbush(w1, srng);
+            const where = (stopId === farId) ? `just short of ${destName}` : `near ${stopName}, still short of ${destName}`;
+            if (surprised) {
+              const sr = applySurpriseRound(w1, srng); w1 = sr.world;
+              const blow = sr.beats.length ? ` ${sr.beats.join(' ')}` : '';
+              return { world: w1, output: { narration: `Wizard: You set out for ${destName}. ${afterWord}, ${where}, you never see them — something native to this country was lying in wait.${blow}`, mechanics: '[ambush | surprise]' } };
+            }
+            return { world: w1, output: { narration: `Wizard: You set out for ${destName}. ${afterWord}, ${where}, you catch the movement in time and meet it ready: something native to this country meant to take you unawares.`, mechanics: '[ambush | spotted]' } };
+          }
+          const arrivalLine = `Wizard: You set out for ${destName}, and ${afterWord.toLowerCase()} you reach it${flavor ? `, ${flavor}` : ''}.`;
+          const beat = travelBeat(w1.meta.seed, here2, w1.timeline.length);
+          const ecoLine = here2 ? ecologyTravelLine(w1.meta.seed, biomeForNode(w1.meta.seed, here2), w1.time?.turn ?? 0, stopId) : '';
+          const extra = beat || ecoLine;
+          return { world: w1, output: { narration: extra ? `${arrivalLine} ${extra}` : arrivalLine, mechanics: beat ? '[travel | journey-arrive | beat]' : '[travel | journey-arrive]' } };
         }
       }
 
@@ -1578,18 +1638,41 @@ function cap(s) {
 // Did the player name a reachable place (a neighbor by name), as opposed to a
 // bare direction? Returns the neighbor nodeId or null. No random fallback: a
 // non-match means "you know of no such place", which the DM clarifies in fiction.
+// Normalize apostrophe variants so "Trader's Camp" matches regardless of curly/straight.
+function normName(s) { return String(s || '').toLowerCase().replace(/[‘’ʼ]/g, "'"); }
+
 function resolveNamedNeighbor(world, text) {
   const w = world;
   const m = ensureMap(w.map);
   const here = String(m.currentNodeId || '');
   if (!here) return null;
-  const t = String(text || '').toLowerCase();
+  const t = normName(text);
   const nbs = neighbors(m, here);
   let best = null, bestLen = 0;
   for (const id of nbs) {
     const node = (m.nodes || []).find(n => n && String(n.id) === String(id)) || null;
-    const name = String(node?.name || '').trim().toLowerCase();
+    const name = normName(node?.name).trim();
     if (name && name.length > bestLen && t.includes(name)) { best = String(id); bestLen = name.length; }
+  }
+  return best;
+}
+
+// Resolve a named destination among places the player KNOWS (discovered nodes),
+// not just direct neighbors — so "go to Trader's Camp" works even when it's a few
+// hops away. Returns the nodeId or null. (Direct neighbors are handled separately.)
+function resolveNamedDestination(world, text) {
+  const w = world;
+  const m = ensureMap(w.map);
+  const here = String(m.currentNodeId || '');
+  const t = normName(text);
+  const known = new Set([...(Array.isArray(m.discovered) ? m.discovered.map(String) : [])]);
+  let best = null, bestLen = 0;
+  for (const node of (m.nodes || [])) {
+    const id = String(node?.id || '');
+    if (!id || id === here) continue;
+    if (!known.has(id)) continue; // only places the player has seen/heard of
+    const name = normName(node?.name).trim();
+    if (name && name.length > bestLen && t.includes(name)) { best = id; bestLen = name.length; }
   }
   return best;
 }

@@ -621,9 +621,13 @@ export function playerMove(world, packsById, text) {
             }
             return { world: w1, output: { narration: lead, mechanics: mech } };
           }
+          // A clear journey may still have something on the road — a terrain-typed,
+          // non-combat beat (observational; doesn't presume the player's choices).
+          const beat = travelBeat(w1.meta.seed, here, w1.timeline.length);
           const ecoLine = here ? ecologyTravelLine(w1.meta.seed, biomeForNode(w1.meta.seed, here), w1.time?.turn ?? 0, destId) : '';
-          const narration = ecoLine ? `${arrivalLine} ${ecoLine}` : arrivalLine;
-          return { world: w1, output: { narration, mechanics: '[travel | journey-arrive]' } };
+          const extra = beat || ecoLine; // prefer the journey beat when one fires
+          const narration = extra ? `${arrivalLine} ${extra}` : arrivalLine;
+          return { world: w1, output: { narration, mechanics: beat ? '[travel | journey-arrive | beat]' : '[travel | journey-arrive]' } };
         }
       }
 
@@ -1631,6 +1635,56 @@ function isSurprisedByAmbush(world, rng) {
   const skillBonus = hasVigilanceSkill(pc) ? 3 : 0;
   const vigilance = rng.int(1, 20) + witsMod + skillBonus;
   return vigilance < SURPRISE_DC;
+}
+
+// Stage C.2 — non-combat travel beats. On a CLEAR journey (no ambush) the road
+// sometimes has something on it: terrain-typed, observational color that doesn't
+// presume the player's choices (interactive toll/parley beats are a later slice).
+// Deterministic via a seeded pick; narration-only (no state change).
+const TRAVEL_BEATS = {
+  forest: [
+    'Partway through, you cross fresh tracks pressed deep in the mud — something large passed not long ago, and you never see it.',
+    'A figure watches from the treeline, still as the trunks, and is gone when you look twice.',
+    'Old bones turn slowly on a low branch, strung up as a warning by someone who came before.'
+  ],
+  plains: [
+    "A trader's cart rattles past the other way; the driver gives you a wary nod and rolls on without a word.",
+    'You share the road a while with a lone traveler, who trades a scrap of news before parting at a fork.',
+    'Wagon ruts and bootprints crowd the track here — others came this way recently, and in numbers.'
+  ],
+  marsh: [
+    'Something slips beneath the black water as you pass, and the reeds go still.',
+    'A will-o-glow drifts at the edge of the path; you keep your eyes on solid ground and let it be.'
+  ],
+  mountains: [
+    'Wind funnels through the rocks like a voice — once you could swear it shaped your name.',
+    'A cairn marks the way, one stone added by every traveler who made it this far. You add yours.'
+  ],
+  coastal: [
+    'Gulls wheel and scream over something dead on the tideline; you give it a wide berth.',
+    'A fisherman mending nets on the strand lifts a hand, then goes back to his knots.'
+  ],
+  desert: [
+    'Heat-shimmer paints water that isn’t there across the horizon, always the same distance off.',
+    'Bleached bones and a half-buried wheel mark where someone else’s luck ran dry.'
+  ],
+  arctic: [
+    'Your breath cracks to frost on the air; the only tracks in the snow are old, and not quite human.',
+    'The cold has a silence to it that makes you keep glancing back the way you came.'
+  ],
+  wilderness: [
+    'The country here is trackless and watchful; twice you stop, sure you are followed, and find nothing.',
+    'A ring of cold ash and gnawed bones marks someone else’s camp, long abandoned.'
+  ]
+};
+const TRAVEL_BEAT_CHANCE = 0.4; // of clear (no-ambush) journeys
+
+function travelBeat(seed, destNode, timeline) {
+  const biome = destNode ? biomeForNode(seed, destNode) : 'wilderness';
+  const pool = TRAVEL_BEATS[biome] || TRAVEL_BEATS.wilderness;
+  const rng = makeRng(seedFromString(`${seed}|travelBeat|${String(destNode?.id || '')}|${timeline}`));
+  if (rng.nextFloat() >= TRAVEL_BEAT_CHANCE) return '';
+  return rng.pick(pool) || '';
 }
 
 // DM-natural phrasing for a travel duration (~1 league/hour on foot).

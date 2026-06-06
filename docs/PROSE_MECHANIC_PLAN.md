@@ -159,8 +159,10 @@ A stage is not closed until its `docs/playtests/<stage>-<date>.md` report is gre
   now read as a DM: name the object + concrete success/mixed/failure outcome, never the
   "a low hum threads through the walls" floor. Live-verified (ss_26980ugeb). Tests: U101.
   Report: `docs/playtests/stageB-groundfloor-2026-06-05.md`. Harness has a floor-leak grader.
-- ❌ Remaining: non-object skill verbs (search/sneak/hide/persuade/track/forage) still use
-  the composer's abstract line — a follow-up "ground the social/stealth floor" slice.
+- ✅ Non-object MECHANICAL skills (search/sneak/hide/track/forage) also grounded (2026-06-05).
+- ❌ Remaining: SOCIAL verbs (persuade/intimidate/lie/calm) still use the composer — they
+  want an NPC and belong to a dialogue-integrated slice (needs a design call). The lone
+  remaining floor.
 
 ### Stage 4 — F: Standing prose gate
 - **Scope:** grow `scripts/prose-playtest.mjs` into the enforced pre-handoff gate; add a

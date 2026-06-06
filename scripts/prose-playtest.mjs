@@ -74,7 +74,11 @@ function grade(input, res) {
   // Valid endings include . ! ? " ) — combat lines end with "(You: 14 HP)".
   if (!/[.!?")]$/.test(n)) issues.push('no end punctuation');
   if (/^[a-z]/.test(n)) issues.push('lowercase start');
-  // Repetitiveness / target-blindness flagged separately in analysis, not here.
+  // Stage B: a PHYSICAL action against an object must not fall to the abstract
+  // literary floor — it should name the thing and say what happened.
+  const PHYS = /\b(force|break|smash|bash|kick|pry|prise|wrench|shove|push|pull|lift|climb|scale)\b/i;
+  const FLOOR = /low hum threads|meaning slips|picture refuses|force bleeds out against stone/i;
+  if (PHYS.test(input) && FLOOR.test(n)) issues.push('ABSTRACT-FLOOR leak on physical action');
   return issues;
 }
 

@@ -1406,8 +1406,15 @@ export function playerMove(world, packsById, text) {
 
   w = applyComposerDelta(w, composed.ledgerDelta);
 
+  // Stage B: ground the floor. For a resolved PHYSICAL action against an object,
+  // override the composer's abstract narration with outcome-aware prose that names
+  // the thing and says what happened (success/mixed/failure). Everything else keeps
+  // the composer line. (Keeps composed.ledgerDelta either way.)
+  const grounded = physicalObjectOutcome(w, text, result.outcome);
+  const narration = grounded || composed.narrationLine;
+
   // Strict output discipline: 1 narration line + 1 bracket line.
-  return { world: w, output: { narration: composed.narrationLine, mechanics: result.mechanicsLine } };
+  return { world: w, output: { narration, mechanics: result.mechanicsLine } };
 }
 
 export function newScene(world, packsById, { lastResolutionKind = 'turn' } = {}) {
@@ -1854,6 +1861,9 @@ function maybeTravelEncounter(world, before, chance, destName) {
   if (rng.nextFloat() >= chance) return { world: w, kind: 'none' };
   const node = (w.map?.nodes || []).find(n => n && n.id === after) || null;
   const biome = node ? biomeForNode(w.meta.seed, node) : 'wilderness';
+  // "The road has brigands, the wood has beasts": arriving at a town, or crossing
+  // open plains/coast, is road country → brigands/toll. Arriving at a wild place is
+  // beast country → ambush. A natural ~half-and-half mix.
   const roadish = node?.nodeType === 'settlement' || biome === 'plains' || biome === 'coastal';
   if (roadish) {
     const foe = rng.pick(['Brigands', 'Robbers', 'Highwaymen', 'A toll-gang']) || 'Brigands';
@@ -2221,6 +2231,54 @@ function furnitureNameAt(w, target) {
   const furn = Array.isArray(node?.furniture) ? node.furniture : [];
   const f = furn.find(x => nameMatches(x?.name, target, tail));
   return f ? String(f.name) : null;
+}
+
+// ── Stage B: ground the floor for resolved PHYSICAL actions ─────────────────
+// "force the door", "break the crate", "climb the wall", "pick the lock" — a real
+// DM names the thing and says what happened. Returns outcome-aware prose (or null
+// to let the composer handle it — social/stealth/abstract intents). `outcome` is
+// 'success' | 'mixed' | 'failure' from resolveMove.
+const PHYS_FORCE = /\b(force|break|smash|bash|kick|shove|wrench|pry|prise|prize|budge|heave|topple|tip|knock|pull|lift|move|drag|haul|push|tear|rip|snap)\b/i;
+const PHYS_CLIMB = /\b(climb|scale|clamber|scramble up|scramble over)\b/i;
+const PHYS_PICK = /\bpick(?:ing)?\b/i;
+
+function physObjTarget(text) {
+  const t = String(text || '').toLowerCase();
+  const m = t.match(/(?:force|break|smash|bash|kick|shove|wrench|pry|prise|prize|budge|heave|topple|tip|knock|pull|lift|move|drag|haul|push|tear|rip|snap|climb|scale|clamber|pick|open|over|up|down|through|into|across)\s+(?:open\s+)?(?:the|a|an|that|this|my|some)?\s*([a-z][a-z' -]*?)(?:\s+(?:open|down|up|shut|apart|aside|over|loose|free))?\s*$/i);
+  if (!m) return '';
+  return m[1].replace(/\b(open|down|up|shut|apart|aside|over|loose|free|the|a|an)\b/gi, '').trim();
+}
+
+function physicalObjectOutcome(world, text, outcome) {
+  const t = String(text || '');
+  // "pick" only counts when it's a lock-type target (not "pick up" — that's a take).
+  const isPick = PHYS_PICK.test(t) && !/\bpick\s+up\b/i.test(t) && /\block|chest|door|gate|safe|strongbox|cabinet|drawer\b/i.test(t);
+  const isClimb = PHYS_CLIMB.test(t);
+  const isForce = PHYS_FORCE.test(t) && !/\bpick\s+up\b/i.test(t);
+  if (!isPick && !isClimb && !isForce) return null;
+
+  let target = physObjTarget(t);
+  if (!target || GENERIC_LOOK_TARGET.has(target)) target = '';
+  const named = (target && furnitureNameAt(world, target)) || target;
+  const o = outcome === 'success' ? 's' : outcome === 'failure' ? 'f' : 'm';
+
+  if (isClimb) {
+    const what = named || 'it';
+    return o === 's' ? `Wizard: You find your holds and haul yourself up the ${what} and over the top.`
+      : o === 'm' ? `Wizard: You make it up the ${what}, but it costs you — knuckles raw, breath ragged at the top.`
+      : `Wizard: You get a body-length up the ${what} before a hold crumbles and you slide back down.`;
+  }
+  if (isPick) {
+    const what = named || 'lock';
+    return o === 's' ? `Wizard: You feel the ${what} out pin by pin; the last one drops and it springs open.`
+      : o === 'm' ? `Wizard: The ${what} gives — but your pick bends in the doing and won't serve a second time.`
+      : `Wizard: The ${what} resists every twist and probe; it holds.`;
+  }
+  // force / move an object
+  const what = named || target || 'it';
+  return o === 's' ? `Wizard: You set yourself and force the ${what}; it gives with a splintering crack and yields.`
+    : o === 'm' ? `Wizard: The ${what} gives at last — but the wood splinters and the noise carries further than you'd like.`
+    : `Wizard: You throw your weight against the ${what}, again and again, but it holds fast.`;
 }
 
 // trivialNarration — grounded prose for a trivial action. Falls back to the

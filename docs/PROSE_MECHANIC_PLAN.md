@@ -226,6 +226,14 @@ Surface: live v1.html (browser)   AI: on/off
   - C.2 balance — **DONE** (2026-06-05): tamed travel danger (single-hop 0.4->0.3,
     multi-hop legs 0.15) so journeys aren't fight-every-leg. ~75%% of multi-hop trips now
     arrive. (Was a playtest finding.)
-  - ❌ C.2 slice 2d — OPEN: **interactive beats** (a toll you pay, brigands you talk/slip
-    past — needs a pending-choice state machine); per-leg "dangerous wood *between*";
-    directional inter-node travel ("go south" leaving a settlement — v1.js placeWalk).
+  - C.2 directional travel — **DONE + LIVE** (2026-06-05): "head south"/"go west"/"travel
+    north" journey to the place that way (reuses the journey); bare dir + compass stay
+    local. Also fixed the "(N)" disambiguator leak (matching + prose), which truly fixes
+    the original "go to Trader's Camp" deflection. Report: stageC2-directional.
+  - C.2 per-leg "dangerous wood *between*" — **effectively DONE via multi-hop**: a journey
+    can be ambushed at an intermediate leg and stops there (the wood between A and B),
+    resumable. Live-verified in 2c.
+  - ❌ C.2 slice 2d — OPEN (lone remaining): **interactive beats** — a toll you *pay*,
+    brigands you *talk/slip past* — needs a pending-choice state machine (world.travel
+    pending + resolve player choice + resume). Has interaction-design forks (options +
+    costs: pay coin? talk = CHARM check? slip = AGILITY?) worth a quick confirm with Tim.

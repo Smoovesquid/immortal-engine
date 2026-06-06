@@ -217,13 +217,15 @@ Surface: live v1.html (browser)   AI: on/off
     journeys carry a terrain-typed observational beat (trader's cart, fresh tracks, a
     cairn, gulls over the tideline). Journey now reads fight / beat / quiet. Live-verified.
     Tests: U98. Report: `docs/playtests/stageC2-travelbeats-2026-06-05.md`.
-  - C.2 slice 2c — **DONE (node/test); live partial** (2026-06-05): **multi-hop named
-    travel.** "go to <known place 2+ hops away>" runs a per-leg journey (BFS route; each
+  - C.2 slice 2c — **DONE + LIVE** (2026-06-05): **multi-hop named travel.** "go to <known place 2+ hops away>" runs a per-leg journey (BFS route; each
     leg crosses terrain with its own ambush/surprise; interrupt stops you at a REAL node,
     resumable; time+distance accrue). Fixes the survey-vs-reach bug. Node sweep 12 reached/
     25 interrupted/0 stranded; deterministic; U99. **Honest gap:** clean multi-hop
-    far-arrival not screenshotted live this session (runs eaten by travel ambushes + a
-    death) — verify quickly with a sturdier char next time.
+    Live-verified end to end after encounter tuning: journey -> interrupt at an
+    intermediate node -> resume -> arrival, all on screen (ss_20552859o).
+  - C.2 balance — **DONE** (2026-06-05): tamed travel danger (single-hop 0.4->0.3,
+    multi-hop legs 0.15) so journeys aren't fight-every-leg. ~75%% of multi-hop trips now
+    arrive. (Was a playtest finding.)
   - ❌ C.2 slice 2d — OPEN: **interactive beats** (a toll you pay, brigands you talk/slip
     past — needs a pending-choice state machine); per-leg "dangerous wood *between*";
     directional inter-node travel ("go south" leaving a settlement — v1.js placeWalk).

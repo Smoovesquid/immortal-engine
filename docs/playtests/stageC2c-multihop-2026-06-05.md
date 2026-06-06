@@ -69,6 +69,15 @@ DM-test? · arrives at the named place? · time/distance scale with hops? · int
   is in, but a FULL pending-choice encounter is still slice 2d.
 - Directional inter-node travel ("go south" leaving a settlement; v1.js placeWalk).
 
-## Verdict: node/test GREEN + determinism; the survey-vs-reach bug is FIXED. Live: the
-named-travel/ambush/surprise flow is verified; a clean multi-hop far-arrival is
-node-proven but not screenshotted this session (honest gap).
+## UPDATE — live gap CLOSED (after encounter-rate tuning, screenshot ss_20552859o)
+Full multi-hop flow verified live, end to end:
+- `go to Wayfarers' Outpost` from Riverside Inn (2 hops) → multi-hop journey →
+  interrupted at the INTERMEDIATE node: "After a few hours on the road, near Old
+  Shrine, still short of Wayfarers' Outpost, you never see them… [ambush | surprise]"
+  (stopped at a real node, not the void).
+- Fought there → re-issued `go to Wayfarers' Outpost` → RESUMED from Old Shrine and
+  ARRIVED: "The dusty road leads you into Wayfarers' Outpost… [travel | journey-arrive]".
+- Earlier clean single + multi hops also arrived (tuning made journeys mostly safe).
+
+## Verdict: GREEN — node/test + determinism + LIVE (journey, interrupt-at-intermediate,
+resume, arrival all on screen). Survey-vs-reach bug FIXED.

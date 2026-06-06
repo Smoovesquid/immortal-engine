@@ -37,7 +37,11 @@ import { statMod, maxWounds } from './ruleset/core/stats.js';
 
 // v1 Escape: per-travel chance of a creature ambush. Tuned so the journey has
 // real risk without becoming a death-spiral — most hops are clear, some bite.
-const ESCAPE_ENCOUNTER_CHANCE = 0.4;
+const ESCAPE_ENCOUNTER_CHANCE = 0.3;
+// Per-LEG chance during a multi-hop journey. Much lower than a single arrival so a
+// long trip doesn't compound to near-certain combat: e.g. a 3-leg journey is then
+// ~39% to be ambushed once (1-0.85^3), not ~78%. Longer trips stay modestly riskier.
+const MULTIHOP_LEG_CHANCE = 0.15;
 // Wandering off-road into open country is riskier per step than reaching a refuge,
 // but lower than an arrival roll so the wild isn't a meat grinder — most tiles are
 // quiet, the empty stretches are where something occasionally finds you.
@@ -649,7 +653,7 @@ export function playerMove(world, packsById, text) {
             w1 = moveToNode(w1, legId);
             if (String(ensureMap(w1.map).currentNodeId || '') !== legId) break; // safety
             stoppedAt = legId;
-            w1 = maybeSpawnEscapeEncounter(w1, beforeLeg); // per-leg terrain danger
+            w1 = maybeSpawnEscapeEncounter(w1, beforeLeg, MULTIHOP_LEG_CHANCE); // per-leg danger (low; doesn't compound)
             if (w1.combat?.active) { ambushed = true; break; }
             prevNode = legNode;
           }
@@ -2761,7 +2765,7 @@ function maybeCheckGoals(world) {
 // of a creature ambush scaled to player level. Losing the fight locks the loss
 // ending (combatResolve); winning lets the player press on. No-op outside escape
 // mode, so engine tests (mode '') are untouched.
-function maybeSpawnEscapeEncounter(world, before) {
+function maybeSpawnEscapeEncounter(world, before, chance = ESCAPE_ENCOUNTER_CHANCE) {
   const w = world;
   if (w.meta?.mode !== 'escape') return w;
   if (w.combat?.active || w.ending?.locked) return w;
@@ -2769,7 +2773,7 @@ function maybeSpawnEscapeEncounter(world, before) {
   if (!after || after === String(before || '')) return w;
 
   const rng = makeRng(seedFromString(`${w.meta.seed}|escapeEncounter|${after}|${w.timeline.length}`));
-  if (rng.nextFloat() >= ESCAPE_ENCOUNTER_CHANCE) return w;
+  if (rng.nextFloat() >= chance) return w;
 
   const node = (w.map?.nodes || []).find(n => n && n.id === after) || null;
   const region = node?.settlement?.region || null;

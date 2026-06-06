@@ -1099,7 +1099,7 @@ export function playerMove(world, packsById, text) {
     }, { pack });
     w = applyComposerDelta(w, composed.ledgerDelta);
 
-    return { world: w, output: { narration: composed.narrationLine, mechanics: result.mechanicsLine, combatSummary: String(result.combatSummary || '') } };
+    return { world: w, output: { narration: ABSTRACT_FLOOR_RE.test(composed.narrationLine) ? combatGroundedOutcome(result.targetEnemyName, result.outcome) : composed.narrationLine, mechanics: result.mechanicsLine, combatSummary: String(result.combatSummary || '') } };
   }
 
   // Combat-begin trigger (explicit intent only): "attack/fight <hostile NPC name>"
@@ -1147,7 +1147,7 @@ export function playerMove(world, packsById, text) {
           parleyed: typeof result.mechanicsLine === 'string' && result.mechanicsLine.includes('combat:parley')
         }, { pack });
         w = applyComposerDelta(w, composed.ledgerDelta);
-        return { world: w, output: { narration: composed.narrationLine, mechanics: result.mechanicsLine, combatSummary: String(result.combatSummary || '') } };
+        return { world: w, output: { narration: ABSTRACT_FLOOR_RE.test(composed.narrationLine) ? combatGroundedOutcome(result.targetEnemyName, result.outcome) : composed.narrationLine, mechanics: result.mechanicsLine, combatSummary: String(result.combatSummary || '') } };
       }
     }
   }
@@ -1198,7 +1198,7 @@ export function playerMove(world, packsById, text) {
           parleyed: typeof result.mechanicsLine === 'string' && result.mechanicsLine.includes('combat:parley')
         }, { pack });
         w = applyComposerDelta(w, composed.ledgerDelta);
-        return { world: w, output: { narration: composed.narrationLine, mechanics: result.mechanicsLine, combatSummary: String(result.combatSummary || '') } };
+        return { world: w, output: { narration: ABSTRACT_FLOOR_RE.test(composed.narrationLine) ? combatGroundedOutcome(result.targetEnemyName, result.outcome) : composed.narrationLine, mechanics: result.mechanicsLine, combatSummary: String(result.combatSummary || '') } };
       }
     }
   }
@@ -1420,7 +1420,11 @@ export function playerMove(world, packsById, text) {
   // the thing and says what happened (success/mixed/failure). Everything else keeps
   // the composer line. (Keeps composed.ledgerDelta either way.)
   const grounded = physicalObjectOutcome(w, text, result.outcome) || nonObjectSkillOutcome(text, result.outcome);
-  const narration = grounded || composed.narrationLine;
+  // Stage F: if the composer would fall to the abstract literary floor, replace it with
+  // grounded, outcome-aware prose (a DM never says "a low hum threads through the walls"
+  // for a resolved action). Specific handlers still win; good composer lines pass through.
+  const base = composed.narrationLine;
+  const narration = grounded || (ABSTRACT_FLOOR_RE.test(base) ? genericGroundedOutcome(w, text, result.outcome) : base);
 
   // Strict output discipline: 1 narration line + 1 bracket line.
   return { world: w, output: { narration, mechanics: result.mechanicsLine } };
@@ -2439,7 +2443,10 @@ function resolveSocialAdjudication(world, text) {
   w1 = pushEvent(w1, { kind: 'resolution', data: { actorId: 'party', text: String(text || ''), intent: String(text || ''), roll, dc, outcome, updateKind: `social:${approach}` } });
   const name = String(npc.name || `the ${npc.role || 'stranger'}`);
   const lever = plausible ? socialLeverClause(stat) : '';
-  const line = socialNarration(approach, outcome, name, lever);
+  let line = socialNarration(approach, outcome, name, lever);
+  // A DM's sentence starts with a capital, even when the NPC's "name" is an article
+  // ("the trader warms…" → "The trader warms…").
+  line = line.charAt(0).toUpperCase() + line.slice(1);
   const q = quality ? ` | argued${quality > 0 ? '+' : ''}${quality}` : '';
   return { world: w1, output: { narration: `Wizard: ${line}`, mechanics: `[social:${approach}|${stat}|roll:${roll} vs DC:${dc} → ${outcome}${q}]` } };
 }
@@ -2472,6 +2479,80 @@ function nonObjectSkillOutcome(text, outcome) {
       : `Wizard: The land offers nothing you can use.`;
   }
   return null;
+}
+
+// ── Stage F: general grounded fallback (kill the abstract floor everywhere) ──
+// The composer's deterministic narration, AI-off, falls to an abstract literary floor
+// ("a low hum threads through the walls … what do you do?") for any action without a
+// specific handler. THE_DM_TEST forbids that: a DM names the action and says what
+// happened. When the composed line IS that floor, we replace it with grounded,
+// outcome-aware prose. Narration only (no state, no RNG) → determinism-safe.
+const ABSTRACT_FLOOR_RE = /low hum threads|meaning slips|picture refuses|force bleeds out against stone|a thread of strain runs/i;
+
+function placeNameOf(world) {
+  const node = ((world?.map?.nodes) || []).find(n => n && n.id === world?.map?.currentNodeId) || null;
+  return cleanPlaceName(node?.name) || 'here';
+}
+
+function takeTargetOf(text) {
+  const m = String(text || '').toLowerCase().match(/\b(?:take|grab|pick up|snatch|seize|collect|loot|pocket|claim|lift)\s+(?:the|a|an|that|this|my|some)?\s*([a-z][a-z' -]*?)\s*$/i);
+  return m ? m[1].replace(/\b(up|the|a|an)\b/gi, '').trim() : '';
+}
+
+// Grounded prose for any resolved non-combat action that would otherwise floor.
+function genericGroundedOutcome(world, text, outcome) {
+  const t = String(text || '').toLowerCase().trim();
+  const o = outcome === 'success' ? 's' : outcome === 'failure' ? 'f' : 'm';
+  const place = placeNameOf(world);
+
+  if (/\b(take|grab|pick up|snatch|seize|collect|loot|pocket|claim)\b/.test(t)) {
+    const what = takeTargetOf(t) || 'it';
+    return o === 's' ? `Wizard: You take the ${what} and stow it.`
+      : o === 'm' ? `Wizard: You get a hand on the ${what}, though carrying it off is more awkward than you'd hoped.`
+      : `Wizard: You reach for the ${what}, but it doesn't come away so easily — it stays put.`;
+  }
+  if (/\b(ask|inquire|enquire|question|query)\b/.test(t)) {
+    return o === 's' ? `Wizard: You put the question to those nearby, and a useful answer comes back.`
+      : o === 'm' ? `Wizard: You ask around; what you get is partial, hedged, and slow in coming.`
+      : `Wizard: You ask, but no one here will give you a straight answer.`;
+  }
+  if (/\b(listen|hear|eavesdrop)\b/.test(t)) {
+    return o === 's' ? `Wizard: You go still and listen; ${place} gives up its small sounds, and one of them matters.`
+      : o === 'm' ? `Wizard: You listen hard, but the sounds of ${place} blur together.`
+      : `Wizard: You listen, and hear nothing that helps.`;
+  }
+  if (/\b(smell|sniff|scent)\b/.test(t)) {
+    return o === 's' ? `Wizard: You draw a slow breath; the air of ${place} carries something worth noting.`
+      : o === 'm' ? `Wizard: You catch a tangle of smells, nothing you can place.`
+      : `Wizard: The air tells you nothing new.`;
+  }
+  if (/\b(wait|linger|pause|bide|stay put|do nothing)\b/.test(t) || /\bhold (?:still|on)\b/.test(t)) {
+    return o === 'f' ? `Wizard: You wait, and the time you spend earns you nothing.`
+      : `Wizard: You wait, watchful, and let the moment in ${place} run on.`;
+  }
+  if (/\b(read|peruse)\b/.test(t) || /\bstudy the (?:sign|note|book|scroll|inscription|writing)\b/.test(t)) {
+    return o === 's' ? `Wizard: You read it through, and the meaning comes clear.`
+      : o === 'm' ? `Wizard: You make out most of it, though some of it stays murky.`
+      : `Wizard: The writing won't resolve into sense.`;
+  }
+  if (/\b(cast|invoke|channel|conjure|summon|chant|incant)\b/.test(t)) {
+    return o === 's' ? `Wizard: You shape the working, and it answers — power moving the way you intend.`
+      : o === 'm' ? `Wizard: The working takes, but rough; it costs more than it should and frays at the edges.`
+      : `Wizard: You reach for the working and it slips your grasp — nothing answers.`;
+  }
+  // Generic last resort: grounded, in-fiction, no abstract filler, no mechanical prompt.
+  return o === 's' ? `Wizard: You see it through, and it goes your way.`
+    : o === 'm' ? `Wizard: It half-works — you get part of what you were after, not all of it.`
+    : `Wizard: It doesn't come off the way you meant; the moment slips past you in ${place}.`;
+}
+
+// Grounded combat beat for when the composer floors during a combat turn.
+function combatGroundedOutcome(enemyName, outcome) {
+  const foe = String(enemyName || '').trim() || 'your foe';
+  const o = outcome === 'success' ? 's' : outcome === 'failure' ? 'f' : 'm';
+  return o === 's' ? `Wizard: Your strike lands true against ${foe}; they reel from the blow.`
+    : o === 'm' ? `Wizard: You trade blows with ${foe} — your hit glances, theirs nearly answers.`
+    : `Wizard: ${foe} turns your attack aside, and the opening costs you.`;
 }
 
 // trivialNarration — grounded prose for a trivial action. Falls back to the

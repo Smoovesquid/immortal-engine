@@ -1,18 +1,30 @@
-// Prose-system deep playtest harness.
+// The standing prose gate (Stage F) — breadth tier of PLAYTEST_PROTOCOL.
+//
 // Mirrors public/v1.js doSubmitMove() routing exactly:
 //   bare cardinal -> local walk (UI-only; recorded, not engine-run)
 //   meta-question -> handleMetaQuestion (no turn, no mutation)
 //   otherwise     -> playerMove (engine prose + would-be AI augmentation)
-// Feeds a large corpus of "things people say to a DM" and grades the prose.
+// Feeds a large corpus of "things people say to a DM" through the REAL routing and
+// grades the prose with scripts/lib/proseGraders.mjs (the same graders tests/F1 checks).
+//
+// ENFORCED: exits NONZERO on ANY issue (crash, invisible output, value leak, abstract-
+// floor leak on a resolved action, a DM-TEST dead-end, or a formatting glitch) — not
+// just on crashes. Green means green. The live browser Skeptic session is the separate
+// depth tier (PLAYTEST_PROTOCOL); this gate is fast breadth + regression protection.
+//
+// Self-test: `PROSE_GATE_SELFTEST=<class[,class...]>` (or `--selftest=<...>`) injects
+// deliberately-broken synthetic responses so tests/F1 can prove the gate catches each
+// regression class. `all` injects one of every class.
 
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { newWorld, ensureWorld } from '../engine/state.js';
+import { newWorld } from '../engine/state.js';
 import { beginAdventure, playerMove } from '../engine/playloop.js';
 import { isMetaQuestion, handleMetaQuestion } from '../engine/grace/gracefulAdjudication.js';
 import { normalizeManifest, normalizePack } from '../engine/rulesets.js';
+import { gradeAll } from './lib/proseGraders.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..');
@@ -35,7 +47,6 @@ function route(world, text, packs) {
   if (!t) return { route: 'empty', narration: '(no input)', world };
 
   if (!world.combat?.active && CARDINAL.test(t)) {
-    // UI sends this to placeWalk (local avatar move). Not engine prose.
     return { route: 'cardinal', narration: '(local walk — UI only)', world };
   }
   if (!world.combat?.active && isMetaQuestion(t)) {
@@ -43,7 +54,6 @@ function route(world, text, packs) {
     if (ans) return { route: 'meta', narration: ans, world }; // no mutation, no turn
   }
   const { world: w2, output } = playerMove(world, packs, t);
-  // Mirror v1.js: record the turn so recap meta-questions can recall it.
   if (w2.conversation && typeof w2.conversation === 'object') {
     w2.conversation.lastAction = t;
     w2.conversation.lastNarration = output?.narration ?? '';
@@ -52,37 +62,7 @@ function route(world, text, packs) {
   return { route: 'action', narration: output?.narration ?? '', mechanics: output?.mechanics ?? '', world: w2 };
 }
 
-// Strip the UI speaker prefix before grammar checks.
-function bare(s) { return String(s ?? '').replace(/^Wizard:\s*/, '').trim(); }
-
-// ── Prose graders ───────────────────────────────────────────────────────────
-function grade(input, res) {
-  const issues = [];
-  if (res.error) { issues.push(`CRASH: ${res.error.split('\n')[0]}`); return issues; }
-  if (res.route !== 'action' && res.route !== 'meta') return issues;
-
-  const n = bare(res.narration);
-  if (!n) { issues.push('EMPTY prose'); return issues; }
-  if (/^\.{1,3}$/.test(n)) issues.push('PLACEHOLDER "..."');
-  // formatting / value leaks
-  if (/\bundefined\b|\bnull\b|\bNaN\b|\[object Object\]/.test(n)) issues.push('RAW value leak');
-  if (/\b1 others\b/.test(n)) issues.push('plural "1 others"');
-  if (/\bthe the\b/i.test(n)) issues.push('"the the"');
-  if (/\b(\w+) the \1\b/i.test(n)) issues.push('"X the X" doubling');
-  if (/  +/.test(n)) issues.push('double space');
-  if (/\s[,;]/.test(n)) issues.push('space before punctuation');
-  // Valid endings include . ! ? " ) — combat lines end with "(You: 14 HP)".
-  if (!/[.!?")]$/.test(n)) issues.push('no end punctuation');
-  if (/^[a-z]/.test(n)) issues.push('lowercase start');
-  // Stage B: a PHYSICAL action against an object must not fall to the abstract
-  // literary floor — it should name the thing and say what happened.
-  const PHYS = /\b(force|break|smash|bash|kick|pry|prise|wrench|shove|push|pull|lift|climb|scale)\b/i;
-  const FLOOR = /low hum threads|meaning slips|picture refuses|force bleeds out against stone/i;
-  if (PHYS.test(input) && FLOOR.test(n)) issues.push('ABSTRACT-FLOOR leak on physical action');
-  return issues;
-}
-
-// ── Corpora ─────────────────────────────────────────────────────────────────
+// ── Corpora ───────────────────────────────────────────────────────────────────
 const META = [
   'where am I?', 'what do I see?', 'look around', 'survey the area',
   'am I hurt?', 'how am I doing?', "what's my health?", 'how much HP do I have?',
@@ -109,16 +89,25 @@ const NATURAL = [
   'I would like to rest for a while',
 ];
 
-// Manipulation verbs — both bare-imperative and first-person, present + absent
-// objects. These previously fell through to the abstract composer floor.
+const SOCIAL = [
+  'intimidate the elder', 'I threaten the guard, or else', 'charm the trader',
+  'Hey there, you look lovely today — let me through?', 'I tell him I am the new sheriff',
+  'persuade the merchant to lower the price', 'please let me pass, hear me out',
+  'I use my superior strength to intimidate the bandit', 'flatter the innkeeper',
+];
+
 const MANIPULATION = [
   'open the crate', 'open the table', 'close the door', 'shut the chest',
   'draw my sword', 'ready my weapon', 'sheathe my blade', 'I draw my sword',
   'sit down', 'stand up', 'kneel', 'rest', 'pray', 'I sit down',
   'eat', 'drink', 'light a torch', 'put on my cloak', 'drop my pack',
   'open the obsidian vault', 'draw my warhammer', 'close the chair',
-  // these MUST still roll / not be swallowed:
   'force the door open', 'pick the lock', 'pry open the crate', 'climb the wall',
+];
+
+const TRAVEL = [
+  'go to the Old Shrine', 'head south', 'travel to Trader\'s Camp', 'go west',
+  'I make my way to the ruined tower', 'journey to the distant keep',
 ];
 
 const DEGENERATE = [
@@ -133,39 +122,63 @@ const WEIRD = [
   'delete the world', 'I summon a dragon and ride it to victory',
 ];
 
+// ── Self-test injection ─────────────────────────────────────────────────────
+// Deliberately-broken synthetic responses, one per regression class, so the gate's
+// fail-loud behavior is itself testable. Returns [{label, input, res}].
+const SELFTEST_CASES = {
+  crash: { input: '[selftest] thrown handler', res: { route: 'action', narration: '', error: 'Error: synthetic handler crash' } },
+  invisible: { input: '[selftest] empty output', res: { route: 'action', narration: 'Wizard:   ' } },
+  value_leak: { input: '[selftest] value leak', res: { route: 'action', narration: 'Wizard: You enter n3_2068938136 and see [object Object].' } },
+  floor: { input: '[selftest] floor leak', res: { route: 'action', narration: 'Wizard: A low hum threads through the walls as the meaning slips.' } },
+  dead_end: { input: '[selftest] dead end', res: { route: 'action', narration: 'Wizard: Which way do you want to go? You can only travel one tile at a time.' } },
+  formatting: { input: '[selftest] formatting', res: { route: 'action', narration: 'Wizard: you stare at the the door' } },
+};
+function selftestInjections(spec) {
+  if (!spec) return [];
+  const want = spec.toLowerCase() === 'all' ? Object.keys(SELFTEST_CASES) : spec.toLowerCase().split(',').map(s => s.trim());
+  return want.filter(k => SELFTEST_CASES[k]).map(k => ({ label: `selftest:${k}`, input: SELFTEST_CASES[k].input, res: SELFTEST_CASES[k].res }));
+}
+
 // ── Run ─────────────────────────────────────────────────────────────────────
+const argSelftest = (process.argv.find(a => a.startsWith('--selftest')) || '').split('=')[1];
+const SELFTEST = process.env.PROSE_GATE_SELFTEST || argSelftest || '';
+
 const packs = loadPacks();
 const allIssues = [];
 const samples = [];
 let total = 0, crashes = 0, issueCount = 0;
 
+function record(label, input, res) {
+  total++;
+  if (res.error) crashes++;
+  const issues = gradeAll(input, res);
+  if (issues.length) {
+    issueCount++;
+    allIssues.push({ label, input, route: res.route, narration: res.narration, mechanics: res.mechanics, issues });
+  }
+  samples.push({ label, input, route: res.route, narration: res.narration });
+}
+
 function feed(label, world, inputs, { mutate }) {
   let w = world;
   for (const input of inputs) {
-    total++;
     let res;
     try {
       res = route(w, input, packs);
     } catch (e) {
       res = { route: 'action', narration: '', error: String(e?.stack || e?.message || e), world: w };
     }
-    if (res.error) crashes++;
     if (mutate && res.world) w = res.world;
-    const issues = grade(input, res);
-    if (issues.length) {
-      issueCount++;
-      allIssues.push({ label, input, route: res.route, narration: res.narration, mechanics: res.mechanics, issues });
-    }
-    samples.push({ label, input, route: res.route, narration: res.narration });
+    record(label, input, res);
   }
   return w;
 }
 
-// (A) Evolving session on one world per seed — simulates a real play session.
+// (A) Evolving sessions on one world per seed — simulates real play.
 for (const seed of ['alpha', 'bravo', 'charlie']) {
   const w0 = newWorld({ seed, fate: 0.2, campaignId: `c-${seed}`, pack: { primaryId: 'fantasy', mixerId: null }, mode: 'escape' });
   const { world } = beginAdventure(w0, packs);
-  const session = [...META.slice(0, 6), ...ACTIONS.slice(0, 16), ...NATURAL.slice(0, 3), ...META.slice(0, 4)];
+  const session = [...META.slice(0, 6), ...ACTIONS.slice(0, 16), ...SOCIAL.slice(0, 5), ...NATURAL.slice(0, 3), ...META.slice(0, 4)];
   feed(`session:${seed}`, world, session, { mutate: true });
 }
 
@@ -175,28 +188,34 @@ for (const seed of ['alpha', 'bravo', 'charlie']) {
   const { world } = beginAdventure(w0, packs);
   feed('isolated:meta', world, META, { mutate: false });
   feed('isolated:actions', world, ACTIONS, { mutate: false });
+  feed('isolated:social', world, SOCIAL, { mutate: false });
   feed('isolated:manipulation', world, MANIPULATION, { mutate: false });
+  feed('isolated:travel', world, TRAVEL, { mutate: false });
   feed('isolated:natural', world, NATURAL, { mutate: false });
   feed('isolated:degenerate', world, DEGENERATE, { mutate: false });
   feed('isolated:weird', world, WEIRD, { mutate: false });
 }
 
+// (C) Self-test injections (proves the gate fails loudly on each regression class).
+for (const inj of selftestInjections(SELFTEST)) record(inj.label, inj.input, inj.res);
+
 // ── Report ──────────────────────────────────────────────────────────────────
-console.log('\n══════════════════════ PROSE PLAYTEST REPORT ══════════════════════');
+console.log('\n══════════════════════ PROSE GATE ══════════════════════');
 console.log(`Total inputs run : ${total}`);
 console.log(`Crashes          : ${crashes}`);
 console.log(`Inputs w/ issues : ${issueCount}`);
+if (SELFTEST) console.log(`Self-test mode   : ${SELFTEST}`);
 
 console.log('\n── ROUTING SAMPLE (first of each route) ──');
 const seen = new Set();
 for (const s of samples) {
   if (seen.has(s.route)) continue;
   seen.add(s.route);
-  console.log(`[${s.route}] "${s.input}" -> ${s.narration?.slice(0, 160)}`);
+  console.log(`[${s.route}] "${s.input}" -> ${String(s.narration).slice(0, 160)}`);
 }
 
 if (allIssues.length) {
-  console.log('\n── ISSUES ──');
+  console.log('\n── ISSUES (gate FAILS) ──');
   for (const it of allIssues) {
     console.log(`\n• [${it.label}] input: "${it.input}"  (route=${it.route})`);
     console.log(`  issues: ${it.issues.join('; ')}`);
@@ -204,21 +223,7 @@ if (allIssues.length) {
   }
 }
 
-// Dump a readable transcript of meta + a slice of actions for eyeballing prose quality.
-console.log('\n── META PROSE (isolated) ──');
-for (const s of samples.filter(s => s.label === 'isolated:meta')) {
-  console.log(`Q: ${s.input}\nA: ${s.narration}\n`);
-}
-console.log('── SAMPLE ACTION PROSE (isolated, first 12) ──');
-for (const s of samples.filter(s => s.label === 'isolated:actions').slice(0, 12)) {
-  console.log(`> ${s.input}\n  ${s.narration}\n`);
-}
-
-console.log('── MANIPULATION PROSE (isolated) ──');
-for (const s of samples.filter(s => s.label === 'isolated:manipulation')) {
-  const mech = s.route === 'action' ? '' : ` [route=${s.route}]`;
-  console.log(`> ${s.input}\n  ${s.narration}${mech}\n`);
-}
-
-console.log('\nDONE.');
-process.exit(crashes > 0 ? 1 : 0);
+// FAIL LOUDLY: nonzero exit on ANY issue, not just crashes. Green means green.
+const failed = issueCount > 0;
+console.log(`\n${failed ? '❌ PROSE GATE: FAIL' : '✅ PROSE GATE: PASS'} (${issueCount} issue${issueCount === 1 ? '' : 's'} across ${total} inputs)\n`);
+process.exit(failed ? 1 : 0);

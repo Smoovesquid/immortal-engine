@@ -267,6 +267,43 @@ export function playerMove(world, packsById, text) {
   const mixer = w.pack.mixerId ? packsById[w.pack.mixerId] : null;
   const pack = mergePacks(primary, mixer);
 
+  // ── C.2d: a pending interactive road encounter (brigands/toll) intercepts the
+  // next input as the player's choice — before any other gate. ──
+  if (w.travel?.pending && !w.combat?.active) {
+    const pend = w.travel.pending;
+    const choice = parseEncounterChoice(text);
+    // No clear choice, or "pay" with no coin → re-prompt; no state change, no event.
+    if (!choice) {
+      return { world: w, output: { narration: `Wizard: ${pend.foeName} still block the way, waiting. Pay, talk your way past, slip by, or fight?`, mechanics: '[encounter:pending]' } };
+    }
+    if (choice === 'pay' && !payToll(w).paid) {
+      return { world: w, output: { narration: `Wizard: You turn out empty pockets — not a coin to your name, and ${pend.foeName} aren't amused. Talk your way past, slip by, or fight?`, mechanics: '[encounter:pending]' } };
+    }
+    // Commit: clear pending and record one replayable resolution event.
+    let w1 = pushEvent({ ...w, travel: { pending: null } }, { kind: 'resolution', data: { actorId: 'party', text: String(text || ''), intent: String(text || ''), roll: 0, dc: 0, outcome: 'success', updateKind: `encounter:${choice}` } });
+    const dest = pend.destName || 'the road ahead';
+    const erng = makeRng(seedFromString(`${w1.meta.seed}|roadEncounter|${w1.timeline.length}|${choice}`));
+    const startFight = () => {
+      const brig = { name: String(pend.foeName).replace(/^A\s+/i, '').replace(/s$/, ''), ref: 'brigand', cr: 0.125, maxHp: ESCAPE_ENEMY_HP, ac: 12, damage: 4, canParley: false };
+      return spawnEncounter(w1, [brig], { ambush: true, reason: 'brigand-fight' }, erng);
+    };
+    if (choice === 'pay') {
+      const { world: wp, coin } = payToll(w1);
+      return { world: wp, output: { narration: `Wizard: You hand over a ${coin} coin. ${pend.foeName} stand aside and wave you on; the way to ${dest} is clear.`, mechanics: '[encounter:paid]' } };
+    }
+    if (choice === 'talk') {
+      const total = erng.int(1, 20) + statMod(Number(w1.party?.[0]?.stats?.CHARM ?? 10));
+      if (total >= 12) return { world: w1, output: { narration: `Wizard: You talk fast and easy, and ${pend.foeName} decide you're more trouble than a coin's worth. They wave you through; the way to ${dest} is clear.`, mechanics: '[encounter:talked]' } };
+      return { world: startFight(), output: { narration: `Wizard: Your words fall flat — ${pend.foeName} draw steel and come at you.`, mechanics: '[encounter:talk-failed]' } };
+    }
+    if (choice === 'slip') {
+      const total = erng.int(1, 20) + statMod(Number(w1.party?.[0]?.stats?.AGILITY ?? 10));
+      if (total >= 12) return { world: w1, output: { narration: `Wizard: You bide your moment and slip past unseen; ${pend.foeName} are still eyeing the empty road as you go. The way to ${dest} is clear.`, mechanics: '[encounter:slipped]' } };
+      return { world: startFight(), output: { narration: `Wizard: A loose stone turns underfoot — ${pend.foeName} spot you and attack.`, mechanics: '[encounter:slip-failed]' } };
+    }
+    return { world: startFight(), output: { narration: `Wizard: You set yourself and meet ${pend.foeName} head-on.`, mechanics: '[encounter:fight]' } };
+  }
+
   const guard = guardPlayerText(w, text);
   if (!guard.ok) {
     const outcome = {
@@ -599,10 +636,13 @@ export function playerMove(world, packsById, text) {
           const travelMove = { actorId: 'party', intentText: String(text || ''), approachTag: 'survival', stakeTag: 'time' };
           w1 = appendRecentBeat(w1, buildBeatFromTurn(w1, text, travelMove, { outcome: 'success', mechanicsLine: '[travel | journey-arrive]' }));
           w1 = maybeCheckGoals(w1);
-          // The journey may be set upon — terrain-typed (the ambusher is native to
-          // the country you crossed). NOTE: surprise-round mechanics are Stage C.2
-          // slice 2; for now the encounter is narrated plainly (no false surprise claim).
-          w1 = maybeSpawnEscapeEncounter(w1, before);
+          // The journey may be set upon. Road-ish country → brigands/a toll (an
+          // interactive encounter: pay/talk/slip/fight). Wild country → a beast ambush.
+          const enc = maybeTravelEncounter(w1, before, ESCAPE_ENCOUNTER_CHANCE, nextName);
+          w1 = enc.world;
+          if (enc.kind === 'pending') {
+            return { world: w1, output: { narration: brigandSceneLine(w1.travel.pending.foeName, nextName), mechanics: '[encounter:pending]' } };
+          }
           const ambushed = Boolean(w1.combat?.active);
           const timeWord = travelTimeWord(hours);
           const flavor = here ? biomeFlavor(w1.meta.seed, here) : '';
@@ -645,7 +685,8 @@ export function playerMove(world, packsById, text) {
         if (path && path.length) {
           let w1 = w;
           let prevNode = (w.map?.nodes || []).find(n => n && String(n.id) === originId) || null;
-          let leagues = 0, stoppedAt = null, ambushed = false;
+          const farName = cleanPlaceName((w.map?.nodes || []).find(n => n && String(n.id) === farId)?.name) || 'your destination';
+          let leagues = 0, stoppedAt = null, ambushed = false, pendingEnc = false;
           for (const legId of path) {
             const legNode = (w1.map?.nodes || []).find(n => n && String(n.id) === legId) || null;
             leagues += legLeagues(prevNode, legNode);
@@ -653,7 +694,9 @@ export function playerMove(world, packsById, text) {
             w1 = moveToNode(w1, legId);
             if (String(ensureMap(w1.map).currentNodeId || '') !== legId) break; // safety
             stoppedAt = legId;
-            w1 = maybeSpawnEscapeEncounter(w1, beforeLeg, MULTIHOP_LEG_CHANCE); // per-leg danger (low; doesn't compound)
+            const enc = maybeTravelEncounter(w1, beforeLeg, MULTIHOP_LEG_CHANCE, farName); // road→brigands, wild→beast
+            w1 = enc.world;
+            if (enc.kind === 'pending') { pendingEnc = true; break; }
             if (w1.combat?.active) { ambushed = true; break; }
             prevNode = legNode;
           }
@@ -673,6 +716,9 @@ export function playerMove(world, packsById, text) {
           w1 = maybeCheckGoals(w1);
           const destNode = (w1.map?.nodes || []).find(n => n && String(n.id) === farId) || null;
           const destName = cleanPlaceName(destNode?.name) || 'your destination';
+          if (pendingEnc && w1.travel?.pending) {
+            return { world: w1, output: { narration: brigandSceneLine(w1.travel.pending.foeName, destName), mechanics: '[encounter:pending]' } };
+          }
           const timeWord = travelTimeWord(hours);
           const afterWord = timeWord === 'a short way' ? 'A short way on' : `After ${timeWord} on the road`;
           const flavor = here2 ? biomeFlavor(w1.meta.seed, here2) : '';
@@ -1790,6 +1836,58 @@ function joinNames(items) {
   if (a.length === 1) return a[0];
   if (a.length === 2) return `${a[0]} and ${a[1]}`;
   return `${a.slice(0, -1).join(', ')}, and ${a[a.length - 1]}`;
+}
+
+// ── C.2d: interactive road encounters ──────────────────────────────────────
+// On a journey leg, a road-ish stretch (plains/coastal/settlement) can be held by
+// brigands/a toll — an encounter the player CHOOSES how to handle (pay/talk/slip/
+// fight). Wild terrain keeps the beast ambush. Same seed/gate as the beast spawner
+// so the danger RATE is unchanged; only the KIND differs by terrain. Returns
+// { world, kind: 'pending' | 'combat' | 'none' }.
+function maybeTravelEncounter(world, before, chance, destName) {
+  const w = world;
+  if (w.meta?.mode !== 'escape') return { world: w, kind: 'none' };
+  if (w.combat?.active || w.ending?.locked || w.travel?.pending) return { world: w, kind: 'none' };
+  const after = String(w.map?.currentNodeId || '');
+  if (!after || after === String(before || '')) return { world: w, kind: 'none' };
+  const rng = makeRng(seedFromString(`${w.meta.seed}|escapeEncounter|${after}|${w.timeline.length}`));
+  if (rng.nextFloat() >= chance) return { world: w, kind: 'none' };
+  const node = (w.map?.nodes || []).find(n => n && n.id === after) || null;
+  const biome = node ? biomeForNode(w.meta.seed, node) : 'wilderness';
+  const roadish = node?.nodeType === 'settlement' || biome === 'plains' || biome === 'coastal';
+  if (roadish) {
+    const foe = rng.pick(['Brigands', 'Robbers', 'Highwaymen', 'A toll-gang']) || 'Brigands';
+    return { world: { ...w, travel: { pending: { kind: 'brigands', foeName: foe, destName: String(destName || '') } } }, kind: 'pending' };
+  }
+  const region = node?.settlement?.region || null;
+  return { world: spawnTamedAmbush(w, region, rng, 'journey-ambush'), kind: 'combat' };
+}
+
+function brigandSceneLine(foeName, destName) {
+  const tail = destName ? ` ${destName} lies just beyond them.` : '';
+  return `Wizard: ${foeName} step into the road ahead, hands on their hilts. "Toll's a coin to pass — or we take it the hard way."${tail} You can pay, talk your way past, slip by, or fight.`;
+}
+
+function parseEncounterChoice(text) {
+  const t = String(text || '').toLowerCase();
+  if (/\b(pay|coin|toll|bribe|hand it over|give them)\b/.test(t)) return 'pay';
+  if (/\b(talk|persuade|negotiate|parley|reason|convince|bargain|barter|charm|sweet.?talk)\b/.test(t)) return 'talk';
+  if (/\b(slip|sneak|evade|avoid|skirt|creep|go around|steal past|past them)\b/.test(t)) return 'slip';
+  if (/\b(fight|attack|draw|strike|kill|charge|swing|cut them down|refuse)\b/.test(t)) return 'fight';
+  return null;
+}
+
+// Spend the smallest available coin. Returns { world, paid, coin }.
+function payToll(world) {
+  const w = world;
+  const purse = w.party?.[0]?.purse || {};
+  const order = ['copper', 'silver', 'gold', 'platinum'];
+  const coin = order.find(c => (Number(purse[c]) || 0) > 0);
+  if (!coin) return { world: w, paid: false };
+  const nextParty = (w.party || []).map((m, i) => i === 0
+    ? { ...m, purse: { ...purse, [coin]: (Number(purse[coin]) || 0) - 1 } }
+    : m);
+  return { world: { ...w, party: nextParty }, paid: true, coin };
 }
 
 function isFreeMovementIntent(text) {

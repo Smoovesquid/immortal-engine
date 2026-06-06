@@ -164,6 +164,21 @@ export function ensureWorld(partial) {
       };
     })(),
 
+    // Travel state: a pending interactive road encounter (brigands/toll) that paused
+    // a journey and is waiting for the player's choice (pay/talk/slip/fight). C.2d.
+    travel: (() => {
+      const t = w.travel && typeof w.travel === 'object' ? w.travel : {};
+      const p = t.pending && typeof t.pending === 'object' ? t.pending : null;
+      if (!p) return { pending: null };
+      return {
+        pending: {
+          kind: String(p.kind || 'brigands'),
+          foeName: String(p.foeName || 'Brigands'),
+          destName: p.destName ? String(p.destName) : ''
+        }
+      };
+    })(),
+
     ui: {
       advanced: Boolean(ui.advanced),
       lastError: ui.lastError ? String(ui.lastError) : ''

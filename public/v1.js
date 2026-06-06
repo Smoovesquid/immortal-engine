@@ -522,8 +522,11 @@ async function doSubmitMove() {
   setStatus('Narrating…');
   render();
 
-  // Wait for AI narration; fall back to base if unavailable
-  const aiText = await tryAiNarration(world, baseNarration, { input: text });
+  // Wait for AI narration; fall back to base if unavailable. EXCEPTION: a sarcastic
+  // "ridiculous statement" comeback is the DM's own voice — send it verbatim, never let
+  // the polish layer earnestly rewrite the bite out of it.
+  const skipPolish = /the DM is unmoved|nice try/i.test(String(output?.mechanics || ''));
+  const aiText = skipPolish ? null : await tryAiNarration(world, baseNarration, { input: text });
   wizardLine.text = aiText || baseNarration;
   tts.speak(wizardLine.text);
   setStatus('Move resolved.');

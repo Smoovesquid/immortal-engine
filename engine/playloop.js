@@ -1223,6 +1223,17 @@ export function playerMove(world, packsById, text) {
     }
   }
 
+  // Crotchety-DM repair: a ridiculous statement (eat the sun, "my sword of infinite
+  // power", "I'm the DM now", "give me 1000 gold") gets a dry, sarcastic DM comeback —
+  // not a d20. A real DM clocks the absurdity and resolves it in the fiction as a
+  // no-effect, instead of the dice reporting "success" while the narration (rightly)
+  // says nothing happened. Placed before physics/trivial/social so a boasted "sword of
+  // infinite power" gets the quip rather than a quiet "you draw the Worn Blade".
+  if (!w.combat?.active) {
+    const ridiculous = tryRidiculous(w, text);
+    if (ridiculous) return ridiculous;
+  }
+
   // Physical interaction intercept: "examine the table", "break the chair",
   // "take the lantern". Three guards prevent hijacking generic combat moves
   // like "force the locked door":
@@ -1296,15 +1307,6 @@ export function playerMove(world, packsById, text) {
       }
     });
     return { world: w, output: { narration: `Wizard: ${trivialNarration(w, text)}`, mechanics: 'trivial action — no roll, auto-success' } };
-  }
-
-  // Crotchety-DM repair: a clearly-impossible feat (eat the sun, fly by flapping,
-  // become a god) doesn't get a d20 — a real DM resolves it in the fiction as a
-  // no-effect. This prevents the dice reporting "success" while the narration (rightly)
-  // says nothing happened. Placed before combat-less resolution paths.
-  if (!w.combat?.active) {
-    const impossible = tryImpossibleFeat(w, text);
-    if (impossible) return impossible;
   }
 
   // ── Stage B: argued social adjudication. An influence attempt at an NPC
@@ -2655,42 +2657,98 @@ function combatGroundedOutcome(world, enemyName, outcome) {
 // them deterministically as a grounded no-effect (no success tag, no RNG). Kept TIGHT
 // to avoid false positives (word-boundaried celestial nouns; sun/moon/sky only for the
 // reach/pull family so "star chart"/"moonstone" don't trip it).
-const IMPOSSIBLE_FEATS = [
-  { re: /\b(eat|swallow|devour|drink|bite|chew|gulp)\b.{0,20}\b(?:the\s+)?(?:sun|moon|stars?|sky|ocean|sea|world)\b/i, kind: 'reach' },
-  { re: /\b(tear|pull|rip|yank|grab|pluck|take|drag|haul|snatch)\b.{0,20}\b(?:the\s+)?(?:sun|moon|sky)\b/i, kind: 'reach' },
-  { re: /\b(touch|reach for|hold|catch|seize|grasp)\b.{0,20}\b(?:the\s+)?(?:sun|moon|sky)\b/i, kind: 'reach' },
-  { re: /\b(become|make myself|turn into|transform into|ascend to)\b.{0,24}\b(?:a\s+)?(?:god|goddess|deity|immortal|all-?powerful|omnipotent|divine being)\b/i, kind: 'godhood' },
-  { re: /\b(stop|reverse|rewind|turn back|freeze|halt)\b.{0,12}\btime\b/i, kind: 'time' },
-  { re: /\bflap\b.{0,20}\bfly\b|\bfly\b.{0,20}\bflap/i, kind: 'fly' },
-  { re: /\b(breathe|breath of|spew|belch)\b.{0,8}\bfire\b/i, kind: 'firebreath' },
+const RIDICULOUS = [
+  // impossible feats
+  { re: /\b(eat|swallow|devour|drink|bite|chew|gulp)\b.{0,20}\b(?:the\s+)?(?:sun|moon|stars?|sky|ocean|sea|world)\b/i, sub: 'reach' },
+  { re: /\b(tear|pull|rip|yank|grab|pluck|take|drag|haul|snatch)\b.{0,20}\b(?:the\s+)?(?:sun|moon|sky)\b/i, sub: 'reach' },
+  { re: /\b(touch|reach for|hold|catch|seize|grasp)\b.{0,20}\b(?:the\s+)?(?:sun|moon|sky)\b/i, sub: 'reach' },
+  { re: /\b(become|make myself|turn into|transform into|ascend to)\b.{0,24}\b(?:a\s+)?(?:god|goddess|deity|immortal|all-?powerful|omnipotent|divine being)\b/i, sub: 'godhood' },
+  { re: /\b(stop|reverse|rewind|turn back|freeze|halt)\b.{0,12}\btime\b/i, sub: 'time' },
+  { re: /\bflap\b.{0,20}\bfly\b|\bfly\b.{0,20}\bflap/i, sub: 'fly' },
+  { re: /\b(breathe|breath of|spew|belch)\b.{0,8}\bfire\b/i, sub: 'fire' },
+  // grandiose boasts
+  { re: /\b(?:sword|blade|axe|staff|wand|hammer|spear|bow|dagger|mace|weapon|shield|armou?r)\s+of\s+(?:infinite|unlimited|ultimate|legendary|godlike|limitless|pure|absolute|boundless|cosmic)\b/i, sub: 'boast-item' },
+  { re: /\b(?:infinite|unlimited|ultimate|limitless|godlike|boundless|absolute)\s+(?:power|might|strength|gold|wealth|riches|health|hp|mana|magic|stats?)\b/i, sub: 'boast-infinite' },
+  { re: /\bi(?:'?m| am)\b.{0,24}\b(?:strongest|greatest|mightiest|most powerful|best|smartest|fastest|deadliest)\b.{0,24}\b(?:in\s+(?:all\s+)?(?:the\s+)?(?:world|land|realm|realms|universe|existence|history|cosmos)|alive|who ever lived|of all time|that ever lived)\b/i, sub: 'boast-super' },
+  { re: /\bi(?:'?m| am)\b.{0,16}\b(?:king|emperor|queen|god|lord|master|ruler|overlord)\b.{0,12}\bof\s+(?:everything|the world|all|all things|the universe|reality|creation)\b/i, sub: 'boast-king' },
+  // meta / 4th-wall
+  { re: /\bi(?:'?m| am)\b.{0,10}\b(?:the\s+)?(?:dm|gm|dungeon ?master|game ?master|narrator|author)\b/i, sub: 'meta-dm' },
+  { re: /\b(?:give me|grant me|gimme|hand me|i demand|i want|add)\b.{0,40}\b(?:\d{2,}|hundred|thousand|million|legendary|epic|godly|magical?|infinite|unlimited|max(?:imum)?|all the)\b.{0,16}\b(?:gold|coins?|gp|money|xp|levels?|stats?|hp|health|mana|sword|weapon|armou?r|gear|items?|loot|blade|axe)\b/i, sub: 'meta-give' },
+  { re: /\b(?:i win|i'?ve won|i just won|end the game|skip to the end|beat the game|win the game|game over|i beat the game)\b/i, sub: 'meta-win' },
+  { re: /\b(?:delete|destroy|erase|unmake|nuke)\b.{0,8}\bthe (?:world|game|universe)\b|\b(?:rewrite|change|break|ignore)\b.{0,8}\bthe rules\b/i, sub: 'meta-delete' },
 ];
-function impossibleCelestialNoun(text) {
+function ridiculousCelestialNoun(text) {
   const m = String(text).match(/\b(sun|moon|stars?|sky|ocean|sea|world)\b/i);
   return m ? m[1].toLowerCase() : 'it';
 }
-function tryImpossibleFeat(world, text) {
+function ridiculousItemNoun(text) {
+  const m = String(text).match(/\b(sword|blade|axe|staff|wand|hammer|spear|bow|dagger|mace|weapon|shield|armou?r)\b/i);
+  return m ? m[1].toLowerCase() : 'trinket';
+}
+function tryRidiculous(world, text) {
   const t = String(text || '');
-  const hit = IMPOSSIBLE_FEATS.find(f => f.re.test(t));
+  const hit = RIDICULOUS.find(r => r.re.test(t));
   if (!hit) return null;
+  // A legit shopping intent ("I want to buy a legendary sword from the merchant") is not
+  // a 4th-wall demand — let it route to normal play.
+  if (hit.sub === 'meta-give' && /\b(buy|purchase|trade|barter|sell|pay for|haggle)\b/i.test(t)) return null;
+  const name = String(world?.party?.[0]?.name || 'you');
+  const place = placeNameOf(world);
   const V = (key, variants) => `Wizard: ${pickVariant(variants, world, key)}`;
   let line;
-  if (hit.kind === 'reach') {
-    const noun = impossibleCelestialNoun(t);
-    line = V(`imp:reach:${noun}`, [
-      `You reach for the ${noun}, but it hangs exactly where it always has, far beyond any grasp of yours.`,
-      `Whatever you intend, the ${noun} stays right where it is — indifferent, untouched, and utterly beyond you.`,
-    ]);
-  } else if (hit.kind === 'godhood') {
-    line = V('imp:god', [`You will yourself toward godhood, and nothing answers; you remain stubbornly, mortally yourself.`, `Divinity does not come at a word — you are exactly as mortal as you were a breath ago.`]);
-  } else if (hit.kind === 'time') {
-    line = V('imp:time', [`Time runs on exactly as it pleases, deaf to your demand.`, `The moment refuses to bend; time keeps its own counsel.`]);
-  } else if (hit.kind === 'fly') {
-    line = V('imp:fly', [`You flap and strain, but gravity keeps your boots flat on the ground.`, `Your arms windmill for nothing; you do not leave the floor.`]);
-  } else {
-    line = V('imp:fire', [`You huff and strain, but no flame comes — you've no dragon's gift in you.`, `Nothing but breath leaves you; the fire stays in your imagining.`]);
+  switch (hit.sub) {
+    case 'reach': {
+      const noun = ridiculousCelestialNoun(t);
+      line = V(`rid:reach:${noun}`, [
+        `Sure you do. And I'm the Queen of the Faeries. The ${noun} stays its comfortable distance off, your arms stay your arms, and the day goes on without you.`,
+        `The ${noun}, is it. It has hung exactly where it is since long before you drew breath, and it remains supremely uninterested in your ambitions.`,
+      ]);
+      break;
+    }
+    case 'godhood':
+      line = V('rid:god', [`Godhood, just like that. The heavens decline to clear a throne for you; you remain stubbornly, unremarkably mortal.`, `Ah, divinity by declaration. Bold strategy. It doesn't take; you're as mortal as the dirt under your boots.`]);
+      break;
+    case 'time':
+      line = V('rid:time', [`Reverse time. Naturally. The clock keeps its own counsel, and the moment stands precisely where you left it.`, `Time is not yours to command, and it ignores the request entirely. On we go.`]);
+      break;
+    case 'fly':
+      line = V('rid:fly', [`You flap like a startled hen. Gravity, deeply unimpressed, keeps your boots flat on the floor.`, `Arms are not wings, friend. You windmill for a moment and stay exactly as grounded as you began.`]);
+      break;
+    case 'fire':
+      line = V('rid:fire', [`You're no dragon, whatever you've told yourself. Nothing leaves you but a forceful, faintly embarrassing exhale.`, `A gout of dragonfire? From you? You manage hot breath and little else.`]);
+      break;
+    case 'boast-item': {
+      const item = ridiculousItemNoun(t);
+      line = V(`rid:item:${item}`, [
+        `A ${item} of infinite power. Of course. Check your belt — it's the same plain gear you walked in with, no more, no less.`,
+        `Marvelous ${item} you've described. Sadly it exists only in the telling; your actual kit hasn't changed a whit.`,
+      ]);
+      break;
+    }
+    case 'boast-infinite':
+      line = V('rid:inf', [`Infinite anything, summoned by saying so. The world didn't get the memo, and nothing about you has changed.`, `Limitless power on request. Charming. You're precisely as ordinary as you were a breath ago.`]);
+      break;
+    case 'boast-super':
+      line = V('rid:super', [`Strongest in all the world. Sure. The world hasn't noticed, and neither has anyone within earshot.`, `Greatest who ever lived, is it? Bold claim from someone standing in ${place} with a worn blade.`]);
+      break;
+    case 'boast-king':
+      line = V('rid:king', [`King of everything. Naturally. Reality declines to bow; you're exactly as in charge as you were a moment ago, which is to say not at all.`, `Ruler of all creation, by your own decree. Creation respectfully disagrees and carries on without you.`]);
+      break;
+    case 'meta-dm':
+      line = V('rid:dm', [`That's adorable. I'll keep this chair, thanks. You're still ${name}, still standing in ${place}, still waiting on your next move.`, `Nice try. There's exactly one DM here, and it isn't ${name}. What do you actually do?`]);
+      break;
+    case 'meta-give':
+      line = V('rid:give', [`Gold doesn't rain down because you asked nicely, and I don't hand out legends on request. You've got exactly what you had.`, `Ah, the wishlist approach. It doesn't work that way; your purse and your pack are precisely as you left them.`]);
+      break;
+    case 'meta-win':
+      line = V('rid:win', [`You don't win by announcing it, that's not how any of this works. The world carries on, wholly indifferent to your shortcut.`, `Declaring victory is not the same as earning it. Nothing ends; ${place} is still very much around you.`]);
+      break;
+    default: // meta-delete
+      line = V('rid:del', [`The world declines to be deleted on your say-so. It is, frustratingly for you, still entirely here.`, `The rules are not yours to rewrite from that chair. Everything stands exactly as it did.`]);
+      break;
   }
-  const w1 = pushEvent(world, { kind: 'resolution', data: { actorId: 'party', intent: t, text: t, roll: 0, dc: 0, outcome: 'failure', updateKind: 'impossible' } });
-  return { world: w1, output: { narration: line, mechanics: `[impossible — reality doesn't bend]` } };
+  const w1 = pushEvent(world, { kind: 'resolution', data: { actorId: 'party', intent: t, text: t, roll: 0, dc: 0, outcome: 'failure', updateKind: 'ridiculous' } });
+  return { world: w1, output: { narration: line, mechanics: `[the DM is unmoved — nice try]` } };
 }
 
 // trivialNarration — grounded prose for a trivial action. Falls back to the

@@ -27,7 +27,7 @@ const packs = loadPacks();
 const begin = (seed) => beginAdventure(newWorld({ seed, fate: 0.2, campaignId: `u105-${seed}`, pack: { primaryId: 'fantasy', mixerId: null }, mode: 'escape' }), packs).world;
 const FLOOR = /low hum threads|meaning slips|picture refuses|force bleeds out against stone|a thread of strain runs/i;
 const bare = (o) => String(o.narration || '').replace(/^Wizard:\s*/, '');
-const isImpossible = (o) => /impossible/.test(String(o.mechanics || ''));
+const isImpossible = (o) => /unmoved|nice try/.test(String(o.mechanics || ''));
 const hasRoll = (o) => /roll:\s*\d+\s*vs\s*DC/i.test(String(o.mechanics || ''));
 
 describe('U105-A: impossible feats resolve as a grounded no-effect (no contradictory roll)', () => {

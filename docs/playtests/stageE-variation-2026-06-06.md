@@ -36,9 +36,52 @@ repeats read differently? · still deterministic/replayable? · still grounded? 
 outcomes still distinguishable? · visible?
 
 ---
-## Built this pass
+## Built this pass (engine/playloop.js)
+- `pickVariant(variants, world, key)` — DETERMINISTIC ROTATION: index = (base offset from
+  seed+node+key + count of `resolution` events in the timeline) mod N. Same world-state +
+  key → same pick (replay-safe); each resolved action adds exactly one resolution event →
+  the ordinal advances by 1 → consecutive repeats rotate to the next variant. (First tried
+  `timeline.length`, but it jumps by varying amounts per turn and could land the same index
+  twice — switched to the resolution-event count for a reliable +1.)
+- Converted the grounded fallback families to 2–3 variants each, via pickVariant:
+  `genericGroundedOutcome` (take/ask/listen/smell/wait/read/cast + generic last resort) and
+  `combatGroundedOutcome` (now takes `world`; updated the 3 combat call sites). Every
+  variant stays grounded (names the place/thing, outcome-correct).
+
 ## Node checks
-## Live (screenshots)
+- `I wait quietly` ×5 → 3 distinct, 0 consecutive repeats.
+- `I do the thing` / `the thing` / `I improvise` ×5 → 4–5 distinct, 0 consecutive repeats.
+- DETERMINISM: same fresh state twice → identical prose+mechanics; an N-turn run reproduces
+  the exact same sequence (replay-safe).
+- U104 (7): vary-no-verbatim ×3 · deterministic (same-state + N-turn reproduce) · every
+  variant grounded (no floor, well-formed) · outcomes still distinguishable.
+- U21 determinism green; suite **7220/7220**; prose gate PASS; playtest:quick clean.
+
+## Live (v1.html, AI on)
+- **(ss_1027cb8bj / ss_7469cn28y)** "I wait and watch" ×3 → three DISTINCT responses on
+  screen: "The modest room within Roadside's single building holds a quiet stillness…" /
+  "The hum of Roadside's modest life carries on around you — Brennan's eyes flicker…" /
+  "Your gaze drifts slowly across the modest interior…". Repeated identical input no longer
+  echoes verbatim. (AI-on rides on the now-varied base.) ✅
+
 ## Findings
-## NOT verified / deferred
-## Verdict: not yet
+| check | result |
+| --- | --- |
+| repeated action varies | ✅ 0 consecutive verbatim repeats (rotation) |
+| deterministic / replay-safe | ✅ U104-B + U21 |
+| every variant grounded | ✅ U104-C, gate PASS |
+| outcomes distinguishable | ✅ U104-D |
+| visible | ✅ live, 3 distinct on screen |
+
+## NOT verified / deferred (later Stage E slices)
+- Variation NOT yet applied to `physicalObjectOutcome` (force/break/climb/pick) or the
+  legacy `trivialNarration` default ("You do so without difficulty.") — they still echo
+  verbatim on repeat. Next variation pass.
+- World-TONE vectors into prose (safe vs dire wording); `guard.js` AI-contradiction / id-
+  leak blocking; pacing/length shaping — remaining Stage E scope.
+- Found + flagged a pre-existing bug (spawn task): a targetless force/move verb (e.g. "I
+  ponder my next move" matches "move") yields "force the it" in `physicalObjectOutcome`.
+
+## Verdict: GREEN (slice 1) — repeated situations read differently, deterministically and
+replay-safe, every variant grounded. Live-verified. Remaining Stage E (tone, guard, more
+families) tracked above.

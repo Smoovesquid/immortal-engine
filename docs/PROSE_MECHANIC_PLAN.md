@@ -210,7 +210,7 @@ A stage is not closed until its `docs/playtests/<stage>-<date>.md` report is gre
   topology — its own slice); force/pry persistence via the resolveMove path; sensory-residue
   / consequence chaining (noise → response).
 
-### Stage 6 — E: Voice, variation, pacing
+### Stage 6 — E: Voice, variation, pacing — SLICE 1 DONE (2026-06-06)
 - **Scope:** world-tone into deterministic prose; seeded variation (no identical repeats);
   `guard.js` blocks id/mechanic leaks and contradictions; AI polishes a grounded skeleton.
 - **Lives:** `composer.js`, `llmAdapter.js`, `guard.js`.
@@ -218,6 +218,15 @@ A stage is not closed until its `docs/playtests/<stage>-<date>.md` report is gre
   contradicts the base.
 - **Severe playtest:** repeat the same action many times (variation?); push tone extremes
   (safe vs dire); AI-on vs AI-off side-by-side for faithfulness.
+- ✅ **Slice 1 — anti-repetition variation (2026-06-06).** `pickVariant` (deterministic
+  rotation keyed on seed+node+key + resolution-event ordinal) gives the grounded fallback
+  families (generic/take/ask/listen/smell/wait/read/cast + combat beats) 2–3 variants each.
+  Repeated actions read differently with **0 consecutive verbatim repeats**, fully
+  deterministic/replay-safe. Live-verified ("I wait and watch" ×3 → 3 distinct on screen).
+  U104 (8); suite 7220; gate PASS. Report: `docs/playtests/stageE-variation-2026-06-06.md`.
+- ⏳ **Remaining Stage E:** variation for `physicalObjectOutcome` + the legacy
+  `trivialNarration` default; world-TONE vectors into wording (safe vs dire); `guard.js`
+  AI-contradiction / id-leak blocking; pacing/length shaping.
 
 ---
 

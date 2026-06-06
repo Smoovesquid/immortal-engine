@@ -160,9 +160,15 @@ A stage is not closed until its `docs/playtests/<stage>-<date>.md` report is gre
   "a low hum threads through the walls" floor. Live-verified (ss_26980ugeb). Tests: U101.
   Report: `docs/playtests/stageB-groundfloor-2026-06-05.md`. Harness has a floor-leak grader.
 - ✅ Non-object MECHANICAL skills (search/sneak/hide/track/forage) also grounded (2026-06-05).
-- ❌ Remaining: SOCIAL verbs (persuade/intimidate/lie/calm) still use the composer — they
-  want an NPC and belong to a dialogue-integrated slice (needs a design call). The lone
-  remaining floor.
+- ✅ SOCIAL — argued adjudication DONE (2026-06-06). Speak/argue at an NPC in your own
+  words; the DM reads the APPROACH (intimidate/charm/deceive/persuade — explicit verbs OR
+  natural cues) and any claimed LEVER ("use my superior strength" → MIGHT), plausibility-
+  gates the lever, weighs argument quality, rolls vs a DC set by that NPC's PERSONALITY
+  (selfPreservation/trustOfOutsiders/honesty/trust), and the NPC reacts with a real trust
+  consequence. Plain "talk to X" unchanged. Both of Tim's signature lines live-verified.
+  Tests: U102 (17). Report: `docs/playtests/stageB-social-2026-06-05.md`. Suite 7183 green.
+- **Stage B (ground the floor) COMPLETE** — physical + mechanical-skill + social all
+  resolve as a DM would; no abstract-floor dead-ends remain for resolved actions.
 
 ### Stage 4 — F: Standing prose gate
 - **Scope:** grow `scripts/prose-playtest.mjs` into the enforced pre-handoff gate; add a

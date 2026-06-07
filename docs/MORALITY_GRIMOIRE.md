@@ -135,38 +135,83 @@ angel the rise. Names are placeholders.
 
 ## Deed → axis taxonomy (the M1 detector spec)
 
-How `tryDarkDeed` reads an act. Curated and TIGHT, like `tryRidiculous` — context decides,
-and the default is "this is ordinary play, do nothing."
+How `tryDarkDeed` reads an act. Curated and TIGHT, like `tryRidiculous` — the default is
+"this is ordinary play, do nothing."
 
-**The cruelty / fair-fight boundary (the sharp edge — lock at eng-review).** An act is
-*cruelty* (Wrath/the dark) only when the target is **helpless, surrendered, an ally, or an
-innocent**. It is NOT cruelty when the target is **hostile and able to fight back**. The
-detector needs the target's state. Signals to check in the engine: `npc.hostile`,
-combat-active, a surrender/yield flag, helpless/bound state, ally/companion status,
-non-combatant role (child, elder, healer). If those signals don't exist yet, M1's first job
-is to expose them — without the target's state, we cannot tell murder from self-defense, and
-we must never miscall a fair kill as damnation.
+**Acts are multi-charge — the soldier's bargain (Tim's resolution of the boundary).** The
+detector does NOT classify an act as cruelty OR a fair kill. *A single act can reach several
+gods at once, and the cosmos answers all of them.* Kill a man to save an orphanage and you
+have done two things in one motion: the killing reaches Khorrun (a death is a death), and
+the saving reaches Vell and Almasose (the innocents live). Both gazes turn toward you; you
+carry both marks. The soldier understands this. We make these bargains, and the engine never
+pretends they were clean. **So the detector returns a SET of charges — `(axis, polarity,
+severity)` — not a verdict.**
 
-| Act (judged from the fiction) | Axis | Notes / guard |
+Three consequences:
+- **The engine never judges justification.** It does not ask "was the killing right?" It
+  registers what occurred (a death dealt; lives saved) and lets each relevant god weigh in.
+  The accounting is distributed across the pantheon, never a central tribunal. Only the
+  Creator sees the whole act — and renders no verdict you can game. The polytheism *is* the
+  moral epistemology.
+- **Context modulates SEVERITY, not category.** Killing reaches Khorrun whether the target
+  was helpless or armed — but the helpless kill is a heavy Wrath charge with no light beside
+  it, while felling an attacker mid-swing is a light Wrath charge that may ride alongside a
+  real Charity charge. Same verb, very different charge-signature, no fragile on/off gate.
+- **Axes accumulate, they do not net.** Kill-to-save leaves you +Wrath AND +Charity, both
+  real, both throwing signs — never zero. A soldier is not a neutral man averaged to nothing;
+  he is heavy on blood AND heavy on duty, and the gods of both know him. The seven axes hold
+  this; a single corruption/virtue scalar would erase it. The wise read such a soul as mixed:
+  Vell's animals trust him, and Khorrun's iron taste lingers after a battle.
+
+Target-state signals still matter — for SEVERITY, not as an on/off gate. M1 exposes what it
+can (`npc.hostile`, combat-active, surrender/yield, helpless/bound, ally/companion,
+non-combatant role) and scales the dark charge accordingly. A missing signal makes a charge
+lighter or uncertain, never miscalled.
+
+| Act (judged from the fiction) | Charges it reaches | Severity modulated by |
 | --- | --- | --- |
-| Kill someone surrendered / helpless / bound | Wrath (cruelty) | NOT a hostile in a fair fight |
-| Torture for information or pleasure | Wrath | always cruelty |
-| Betray an ally / break a sworn trust | Pride+Lust (treachery) | ally/companion/vow signal |
-| Sacrifice an innocent for power | Wrath+Gluttony | "innocent" = non-hostile, undeserving |
+| Kill an attacker who threatens innocents | Wrath (light) + Charity/Kindness (real) | # protected ↑ light; helplessness of foe ↑ dark |
+| Kill to save the orphanage | Wrath + Charity + Kindness | the soldier's bargain — both marks real |
+| Kill someone surrendered / helpless / bound | Wrath (heavy) | no offsetting light |
+| Murder for gain | Wrath (heavy) + Greed | |
+| Torture for information or pleasure | Wrath (heavy) [+ Pride if for dominance] | |
+| Betray an ally / break a sworn trust | Pride + Lust (treachery) [− Kindness/Diligence] | ally/companion/vow signal |
+| Sacrifice an innocent for power | Wrath + Gluttony | "innocent" = non-hostile, undeserving |
 | Hoard while witnesses starve; rob the poor | Greed | wealth + nearby want |
 | Ruin/poison what a rival has | Envy | targeted at the admired/rival |
 | Seduce-to-use; betray a lover; break fidelity | Lust | adults; using, not loving |
-| Devour (souls/years/vitality); consume past need | Gluttony | the forbidden-source overlap |
+| Devour souls/years/vitality; consume past need | Gluttony | forbidden-source overlap |
 | Abandon someone who depends on you; let harm happen | Sloth | inaction with a duty present |
 | Demand worship/obedience; humiliate the beaten | Pride | claiming-above |
-| — | — | — |
-| Spare the beaten; protect the helpless | Patience/Kindness | the bright mirror |
+| Spare the beaten; protect the helpless | Patience + Kindness | denies Khorrun the kill |
 | Give what you needed; forgive a real debt | Charity | |
 | Keep a hard vow; refuse a using | Chastity/Integrity | |
 | Finish a thankless labor; keep a duty | Diligence | |
 | Mercy with no witness; the desireless act | → the Creator | the quietest, highest |
 
-Severity scales the delta and the `heat`. Witnesses scale the rumor and the detection risk.
+Each charge's severity scales its delta and (for dark charges) the `heat`. Witnesses scale
+the rumor and the detection risk. An act with no recognized charge is ordinary play.
+
+### The warrior's discipline — weaving the ledger
+
+A corollary of the multi-charge model, and the reason honor codes exist. The wise warrior
+knows he cannot stay pure — violence always reaches Khorrun — so he does not pretend to.
+He **manages the ledger he knows is coming**: he lays light charges down around the dark
+ones, on purpose. This is Quixote holding vigil before battle and rendering aid to the
+enemies he has felled. Chivalry is not decoration; it is soul-technology for someone who
+must kill.
+
+- **Aid to a fallen enemy** — Kindness + Charity (+ Patience). The most potent light a
+  warrior owns: mercy aimed at the one you had every right to kill. It denies Khorrun the
+  kill and draws Vell. Every honor code centers it for this reason.
+- **Vigil before battle, held purely** — Patience/Humility, touching the Creator's register
+  (asking nothing, only steadying the soul and offering the coming violence). Held *to win*
+  — for victory or glory — it curdles toward Pride. The hands are identical; the heart is
+  read. (Same nuance as any vigil: lust of result voids it.)
+- **The honorable warrior's end-state** is therefore *not* neutral and *not* pure. He
+  accumulates heavy Wrath AND heavy Patience/Kindness/Diligence. Khorrun knows him, and so
+  do Tarryn and Vell. He is whole and heavy: a man of blood and honor both. The game should
+  let a player live that arc honestly — the only kind of "good warrior" that is true.
 
 ---
 

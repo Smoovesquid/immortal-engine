@@ -298,6 +298,17 @@ a friend, earned by listening.
     to a person. The dark path can buy everything but this. Light compounds through
     relationship; companions are friends (choose you, losable forever) vs. the dark's
     thralls (bound, betray). This is the Camera Rule answered from the far side.
+14. **Acts are multi-charge — the soldier's bargain.** A single act reaches every god it
+    touches at once (kill-to-save = +Wrath AND +Charity). The engine never judges
+    justification; it registers what occurred and each god weighs in; only the Creator sees
+    the whole. Context modulates severity, not category. Axes accumulate, never net — a
+    soldier is heavy on blood AND on duty, not "neutral." (This is the decisive case for
+    the seven axes.)
+15. **The warrior's discipline — weaving the ledger.** You can lay light charges around the
+    dark ones you know are coming. Vigil before battle (held purely) and aid to the fallen
+    enemy are deliberate soul-management; mercy to the defeated is the warrior's most potent
+    light. Honor codes are soul-technology for those who must do violence. The honorable
+    warrior ends whole and heavy, not pure — and the game lets him live that arc honestly.
 
 ## Divine patrons, crime, and the shape of power
 
@@ -432,13 +443,18 @@ asymmetry: dark = power now, light = support that compounds.
   (M0.5) landed too: `corruptionDelta`/`virtueDelta`/`adjustHeat`/`setPatron`/
   `lockMorality`/`recordDeed`, pure and deterministic. U107 (15); suite 7276 green; U21
   determinism intact; playtest:quick 0 crashes; prose gate PASS. Invisible to the player.
-- **M1 — Deed detector + the seven-axis soul.** `tryDarkDeed` (ridiculous-gate pattern) +
-  canon-log deed entries. Deeds tune the **seven sin/virtue axes**; `corruption`/`virtue`
-  are recomputed as derived summaries (M0's scalars stay the gate inputs). Tight detection,
-  false-positive guarded (combat kills ≠ cruelty). **Done-when:** cruel/forbidden acts
-  record + move the right axis; ordinary play does not. NOTE: M0 stored corruption/virtue
-  as primary; M1 adds the seven axes as the source and makes the two scalars derived (a
-  small state migration within v22, or a v23 bump — decide at eng-review). Tests + probes.
+- **M1 — Deed detector (multi-charge) + the seven-axis soul.** `tryDarkDeed` (ridiculous-
+  gate pattern) returns a **SET of charges** `(axis, polarity, severity)` per act, not a
+  classification — the soldier's bargain (kill-to-save = +Wrath AND +Charity). Each charge
+  emits a delta and a canon-log deed entry; deeds tune the **seven sin/virtue axes**;
+  `corruption`/`virtue` are recomputed as derived summaries (M0's scalars stay the gate
+  inputs). Context (target-state signals: hostile/surrendered/helpless/ally/innocent)
+  modulates **severity, not category**. Includes the warrior's-discipline acts (aid to the
+  fallen, vigil before battle). **Done-when:** kill-to-save records BOTH marks; a fair kill
+  is lighter than a helpless kill but still reaches Khorrun; ordinary play records nothing.
+  NOTE: M0 stored corruption/virtue as primary; M1 adds the seven axes as the source and
+  makes the two scalars derived (small migration within v22, or a v23 bump — eng-review
+  call). Tests + probes.
 - **M2 — Consequences via existing organs.** Wire deeds → NPC trust crash (slow recovery)
   + faction disposition + rumor mint. Reputation lowers new-NPC starting trust. Help
   systems gate on virtue/disposition. **Done-when:** live — do a cruel act, walk to the
@@ -506,10 +522,13 @@ exclusion holds across all of them.
    detection risk; both power curves are uncapped, shaped differently. ✅
 
 ## Open questions (resolve at eng-review / before M1)
-- **Cruelty vs. combat boundary.** Killing a surrendered/helpless/ally NPC is cruelty;
-  killing a hostile in a fair fight is not. Detection needs the target's state (hostile?
-  surrendered? helpless? ally?). What signals does the engine already expose for that?
-  (This is the sharp edge of M1; lock it first.)
+- **Cruelty vs. combat boundary — RESOLVED (multi-charge / the soldier's bargain).** Not a
+  binary. A single act carries a SET of charges and the cosmos answers all of them; killing
+  to save the orphanage is +Wrath AND +Charity, both real. The engine never judges
+  justification — it registers what occurred and lets each god weigh in (only the Creator
+  sees the whole). Target-state signals modulate SEVERITY, not category. Axes accumulate,
+  never net. See `MORALITY_GRIMOIRE.md` → deed taxonomy + "the warrior's discipline." (M1's
+  remaining job: expose the target-state signals as severity inputs, not as an on/off gate.)
 - **Seven-axis state shape & math.** RESOLVED in principle (seven axes = source, two
   scalars = derived). Open: store as `morality.axes = {pride, greed, …}`? How do the seven
   collapse into corruption/virtue (max? weighted sum?)? Does this need a v23 bump or can it

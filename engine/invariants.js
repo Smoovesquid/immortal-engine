@@ -57,6 +57,30 @@ export function assertWorldInvariants(world) {
     // Pass T1 — crunch schema invariants.
     assertCrunchFields(member, i);
 
+    // v22 — morality (the Dark Path). See docs/MORALITY_SYSTEM.md.
+    const mo = member.morality;
+    if (!mo || typeof mo !== 'object') {
+      throw new Error(`Invariant: party[${i}].morality must be object`);
+    }
+    if (!Number.isInteger(mo.corruption) || mo.corruption < 0 || mo.corruption > 100) {
+      throw new Error(`Invariant: party[${i}].morality.corruption must be integer 0..100`);
+    }
+    if (!Number.isInteger(mo.virtue) || mo.virtue < 0 || mo.virtue > 100) {
+      throw new Error(`Invariant: party[${i}].morality.virtue must be integer 0..100`);
+    }
+    if (!Number.isInteger(mo.heat) || mo.heat < 0) {
+      throw new Error(`Invariant: party[${i}].morality.heat must be non-negative integer`);
+    }
+    if (typeof mo.locked !== 'boolean') {
+      throw new Error(`Invariant: party[${i}].morality.locked must be boolean`);
+    }
+    if (!mo.patrons || typeof mo.patrons !== 'object' || Array.isArray(mo.patrons)) {
+      throw new Error(`Invariant: party[${i}].morality.patrons must be a plain object`);
+    }
+    if (!Number.isInteger(mo.lastDeedT) || mo.lastDeedT < 0) {
+      throw new Error(`Invariant: party[${i}].morality.lastDeedT must be non-negative integer`);
+    }
+
     const c = member.companion;
     if (i === 0) {
       if (c != null) {
@@ -84,6 +108,29 @@ export function assertWorldInvariants(world) {
       throw new Error(`Invariant: duplicate companion sourceNpcId ${c.sourceNpcId}`);
     }
     seenCompanionSources.add(c.sourceNpcId);
+  }
+
+  // v22 — deeds index. Lightweight, well-formed, bounded. (Authoritative history
+  // is the canon log; this is the recency mirror the prose/rumor layers read.)
+  const deeds = world.deeds;
+  if (!Array.isArray(deeds)) {
+    throw new Error('Invariant: world.deeds must be an array');
+  }
+  if (deeds.length > 64) {
+    throw new Error(`Invariant: world.deeds.length ${deeds.length} exceeds cap 64`);
+  }
+  const VALID_DEED_KINDS = new Set(['cruelty', 'forbidden', 'mercy', 'aid', 'atonement']);
+  for (let i = 0; i < deeds.length; i++) {
+    const d = deeds[i];
+    if (!d || typeof d !== 'object') {
+      throw new Error(`Invariant: deeds[${i}] must be object`);
+    }
+    if (!VALID_DEED_KINDS.has(d.kind)) {
+      throw new Error(`Invariant: deeds[${i}].kind ${d.kind} not a valid deed kind`);
+    }
+    if (!Number.isInteger(d.severity) || d.severity < 0 || d.severity > 100) {
+      throw new Error(`Invariant: deeds[${i}].severity must be integer 0..100`);
+    }
   }
 
   // v21 — position persistence. Player (party[0]) position includes place

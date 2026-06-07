@@ -28,7 +28,7 @@ import { normalizeCondition } from './combat/conditions.js';
 // (structureId, roomId) is stored in position.interior. Saves restore the
 // player's exact location (no reset on resume). scene.interior is derived
 // from position.interior, not stored separately.
-export const WORLD_VERSION = 21;
+export const WORLD_VERSION = 22;
 
 // Crunch caps (T1). Kept here so they're colocated with ensureEntity.
 const FOCI_CAP = 6;
@@ -82,6 +82,10 @@ export function ensureWorld(partial) {
     ruleset: w.ruleset && typeof w.ruleset === 'object' ? w.ruleset : { id: 'core', version: 1 },
     pack: w.pack && typeof w.pack === 'object' ? w.pack : { primaryId: 'fantasy', mixerId: null },
     party: ensureParty(w.party),
+    // v22 — deeds: a lightweight, capped index of moral acts for fast lookup.
+    // The AUTHORITATIVE record is the canon log (added at M1); this mirror exists
+    // so the rumor/NPC-memory systems and prose layer can read recent deeds cheaply.
+    deeds: ensureDeeds(w.deeds),
     map: ensureMap(w.map),
     env: ensureEnv(w.env),
     scene: (() => {
@@ -575,8 +579,64 @@ function ensureEntity(e) {
     // marker carries enough provenance to render in the UI and the narrator
     // context without re-deriving from the source NPC (which may have been
     // removed from its settlement after recruit).
-    companion: ensureCompanionMarker(x.companion)
+    companion: ensureCompanionMarker(x.companion),
+
+    // v22 — morality (the Dark Path). First-class, replayable state. See
+    // docs/MORALITY_SYSTEM.md. corruption/virtue are two independent axes (not a
+    // slider): you can be feared and respected, or neither. heat is hidden
+    // investigation pressure (crime & detection). patrons maps a divine-patron id
+    // to standing. locked = the final line crossed (light path closed). All
+    // mutated only through effectsCore deltas; detection/consequences land in later
+    // milestones — M0 is just the safe, defaulted shape.
+    morality: ensureMorality(x.morality)
   };
+}
+
+// v22 — morality state. Safe defaults so old saves (no morality field) upgrade
+// to a clean, neutral slate. Bounds mirror the design: corruption/virtue 0..100,
+// heat >= 0, patrons a plain {id: number} map, locked a boolean.
+function ensureMorality(m) {
+  const x = m && typeof m === 'object' ? m : {};
+  const patrons = {};
+  if (x.patrons && typeof x.patrons === 'object') {
+    for (const [k, v] of Object.entries(x.patrons)) {
+      const n = Number(v);
+      if (Number.isFinite(n)) patrons[String(k)] = clampInt(n, -100, 100);
+    }
+  }
+  return {
+    corruption: clampInt(x.corruption ?? 0, 0, 100),
+    virtue: clampInt(x.virtue ?? 0, 0, 100),
+    heat: clampIntMin(x.heat ?? 0, 0),
+    locked: Boolean(x.locked ?? false),
+    patrons,
+    lastDeedT: clampIntMin(x.lastDeedT ?? 0, 0)
+  };
+}
+
+// v22 — deeds index. Each entry: { t, actorId, kind, severity, witnesses[], nodeId,
+// summary }. Capped (recency window); the canon log holds the full history. Kept
+// minimal and defensively normalized so malformed/old saves can't violate invariants.
+const DEEDS_CAP = 64;
+const DEED_KINDS = new Set(['cruelty', 'forbidden', 'mercy', 'aid', 'atonement']);
+function ensureDeeds(d) {
+  const arr = Array.isArray(d) ? d : [];
+  const out = [];
+  for (const e of arr) {
+    if (!e || typeof e !== 'object') continue;
+    const kind = String(e.kind || '');
+    if (!DEED_KINDS.has(kind)) continue;
+    out.push({
+      t: clampIntMin(e.t ?? 0, 0),
+      actorId: String(e.actorId || 'party'),
+      kind,
+      severity: clampInt(e.severity ?? 1, 0, 100),
+      witnesses: Array.isArray(e.witnesses) ? e.witnesses.map(String) : [],
+      nodeId: String(e.nodeId || ''),
+      summary: String(e.summary || '').slice(0, 200)
+    });
+  }
+  return out.slice(-DEEDS_CAP);
 }
 
 // ── Position v21 — normalized with place coordinates + optional interior ───

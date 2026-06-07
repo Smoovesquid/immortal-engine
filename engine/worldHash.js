@@ -14,6 +14,7 @@ function projectForHash(world) {
     // Pass T1: sort non-load-bearing party arrays (foci, items, known spells)
     // so trivial reorderings don't break replay hash equality.
     party: projectPartyForHash(w.party),
+    deeds: w.deeds,
     map: w.map,
     env: w.env,
     scene: w.scene,

@@ -276,11 +276,11 @@ test('U70-11: loading a v16 save upgrades to v21 with empty rumors', () => {
   try {
     const loaded = loadSlot(storage, 'slot1');
     assert.ok(loaded);
-    assert.equal(loaded.meta.version, 21);
+    assert.equal(loaded.meta.version, 22);
     assert.deepEqual(loaded.rumors, []);
     assert.ok(warnings.length > 0, 'expected a version-mismatch warning');
     assert.ok(warnings[0].includes('v16'));
-    assert.ok(warnings[0].includes('v21'));
+    assert.ok(warnings[0].includes('v22'));
   } finally {
     console.warn = origWarn;
   }

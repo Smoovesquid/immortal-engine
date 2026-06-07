@@ -67,6 +67,82 @@ export function applyDeltas(world, deltas = []) {
       continue;
     }
 
+    // ── v22 — morality (the Dark Path) deltas ──────────────────────────────
+    // Pure, deterministic mutations on party[i].morality and world.deeds. M0.5
+    // plumbing: wired here so later milestones (deed detector, consequences,
+    // patrons, crime) only emit deltas, never touch state directly. No RNG.
+    if (kind === 'corruptionDelta' || kind === 'virtueDelta') {
+      const field = kind === 'corruptionDelta' ? 'corruption' : 'virtue';
+      const entityId = String(op.entityId || 'party');
+      const by = toInt(op.by ?? 0);
+      if (by === 0) continue;
+      w = mutateEntity(w, entityId, (e) => {
+        const mo = (e.morality && typeof e.morality === 'object') ? e.morality : {};
+        const next = clampInt((mo[field] ?? 0) + by, 0, 100);
+        return { ...e, morality: { ...mo, [field]: next } };
+      });
+      continue;
+    }
+
+    if (kind === 'adjustHeat') {
+      const entityId = String(op.entityId || 'party');
+      const by = toInt(op.by ?? 0);
+      if (by === 0) continue;
+      w = mutateEntity(w, entityId, (e) => {
+        const mo = (e.morality && typeof e.morality === 'object') ? e.morality : {};
+        const next = Math.max(0, toInt(mo.heat ?? 0) + by);
+        return { ...e, morality: { ...mo, heat: next } };
+      });
+      continue;
+    }
+
+    if (kind === 'setPatron') {
+      const entityId = String(op.entityId || 'party');
+      const patronId = String(op.patronId || '');
+      const by = toInt(op.by ?? 0);
+      if (!patronId || by === 0) continue;
+      w = mutateEntity(w, entityId, (e) => {
+        const mo = (e.morality && typeof e.morality === 'object') ? e.morality : {};
+        const patrons = (mo.patrons && typeof mo.patrons === 'object') ? { ...mo.patrons } : {};
+        patrons[patronId] = clampInt((toInt(patrons[patronId] ?? 0)) + by, -100, 100);
+        return { ...e, morality: { ...mo, patrons } };
+      });
+      continue;
+    }
+
+    if (kind === 'lockMorality') {
+      const entityId = String(op.entityId || 'party');
+      w = mutateEntity(w, entityId, (e) => {
+        const mo = (e.morality && typeof e.morality === 'object') ? e.morality : {};
+        return { ...e, morality: { ...mo, locked: true } };
+      });
+      continue;
+    }
+
+    if (kind === 'recordDeed') {
+      const VALID = new Set(['cruelty', 'forbidden', 'mercy', 'aid', 'atonement']);
+      const deedKind = VALID.has(String(op.deedKind)) ? String(op.deedKind) : '';
+      if (!deedKind) continue;
+      const t = toInt(op.t ?? (Array.isArray(w.timeline) ? w.timeline.length : 0));
+      const deed = {
+        t: Math.max(0, t),
+        actorId: String(op.actorId || 'party'),
+        kind: deedKind,
+        severity: clampInt(toInt(op.severity ?? 1), 0, 100),
+        witnesses: Array.isArray(op.witnesses) ? op.witnesses.map(String) : [],
+        nodeId: String(op.nodeId || ''),
+        summary: String(op.summary || '').slice(0, 200)
+      };
+      const deeds = Array.isArray(w.deeds) ? [...w.deeds, deed].slice(-64) : [deed];
+      w = { ...w, deeds };
+      // Stamp lastDeedT on the actor so erosion/decay math has an anchor.
+      w = mutateEntity(w, deed.actorId, (e) => {
+        const mo = (e.morality && typeof e.morality === 'object') ? e.morality : {};
+        return { ...e, morality: { ...mo, lastDeedT: deed.t } };
+      });
+      continue;
+    }
+
     if (kind === 'condition') {
       const entityId = String(op.entityId || '');
       if (!entityId) continue;

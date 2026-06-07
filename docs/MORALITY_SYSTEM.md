@@ -235,9 +235,12 @@ asymmetry: dark = power now, light = support that compounds.
 
 ## Build phases (first-class, but shipped in slices — boil the lake, one bucket at a time)
 
-- **M0 — State + invariants + hash.** Bump WORLD_VERSION to 22; add `morality`/`deeds`
-  to `ensureWorld`; invariants; worldHash projection; save migration. Tests: determinism
-  (U21 family), round-trip. Ships invisibly. **Done-when:** suite green, replay equal.
+- **M0 — State + invariants + hash. ✅ DONE (2026-06-06, commit 4376cb7).** WORLD_VERSION
+  21→22; `party[i].morality` + `world.deeds` with safe defaults; invariants bound them;
+  both worldHash projections include them; old saves upgrade + auto-warn. Delta plumbing
+  (M0.5) landed too: `corruptionDelta`/`virtueDelta`/`adjustHeat`/`setPatron`/
+  `lockMorality`/`recordDeed`, pure and deterministic. U107 (15); suite 7276 green; U21
+  determinism intact; playtest:quick 0 crashes; prose gate PASS. Invisible to the player.
 - **M1 — Deed detector + deeds ledger.** `tryDarkDeed` + canon-log deed entries +
   `recordDeed`/`corruptionDelta`/`virtueDelta` deltas. Tight detection, false-positive
   guarded (combat kills ≠ cruelty). **Done-when:** cruel/forbidden acts record; ordinary

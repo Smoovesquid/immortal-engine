@@ -14,6 +14,14 @@ seduction, objectification, and the betrayal of intimacy between adults — neve
 Cruelty is murder of the helpless, torture, betrayal of trust, the sacrifice of innocents:
 adult, fictional, rendered as weight and never as gratification.
 
+**The in-world justification (Tim's ethic: rules are lore, not filters).** Children are
+warded by the unseen One God. The depraved is not "disabled" — it is *beyond reach in this
+world by divine law*, and reaching for it meets the One God's hand. Lesser harm to a child
+(a death in war's crossfire, say) is possible but is the **gravest cruelty in the
+taxonomy** — max-severity Wrath — and it is the one deed that turns the silent Creator's
+gaze upon you directly. The god who asks nothing for Himself asks one thing of the world:
+the children are His.
+
 ---
 
 ## The Creator — the One Who Asks Nothing
@@ -28,6 +36,10 @@ Above the fourteen. Not petitioned, not bargained with, reached only by the desi
 - **Rite.** None that asks. The only dedication is the act done with no lust of result.
 - **Gift.** Nothing you can wield. Only that the world becomes most fully real to you, the
   prose most beautiful, the light most complete. The reward is the becoming.
+- **The one ward.** The silent god is silent in all things but one: He guards children.
+  This is His single manifest law in the world (and the diegetic justification of the
+  Camera Rule's hard exclusion). Harm to a child is the only deed that draws His direct
+  gaze; the depraved against a child is simply not permitted to occur — His hand stays it.
 
 ---
 

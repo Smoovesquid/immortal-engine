@@ -40,10 +40,17 @@ as pleasure.** The first is art. The second is the thing we refuse.
 
 So, two clauses:
 
-1. **The hard exclusion (narrow, absolute).** The engine never depicts, describes,
-   simulates, or sexualizes the abuse of children, in any form, under any framing. That
-   one specific thing is a real-world harm, not a fictional register. It is out of the
-   mechanics entirely. This is one thing, not a fence around darkness.
+1. **The hard exclusion (narrow, absolute) — diegetically, the One God's ward.** The
+   engine never depicts, describes, simulates, or sexualizes the abuse of children, in any
+   form, under any framing. That one specific thing is a real-world harm, not a fictional
+   register, and it is out of the mechanics entirely. **In-world, this is not a content
+   filter — it is law.** Children are under the protection of the unseen One God (the
+   Creator who asks nothing). His single manifest act, the one place the silent god is not
+   silent, is the ward over the innocent. The unspeakable is simply beyond reach in this
+   world by divine law; reaching for it meets the One God's hand, not an error message.
+   (Design ethic, Tim: *every rule from the world should be justified by in-game lore.*
+   This is the model for all of them — a mechanic the player meets as cosmology, never as
+   an apology.)
 
 2. **The McCarthy law (the engine that does the real work).** The prose of evil is
    **engineered to withhold gratification.** The darker the act, the colder, flatter, and

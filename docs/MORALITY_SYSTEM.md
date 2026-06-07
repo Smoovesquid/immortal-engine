@@ -469,10 +469,14 @@ asymmetry: dark = power now, light = support that compounds.
   NOTE: M0 stored corruption/virtue as primary; M1 adds the seven axes as the source and
   makes the two scalars derived (small migration within v22, or a v23 bump — eng-review
   call). Tests + probes.
-- **M2 — Consequences via existing organs.** Wire deeds → NPC trust crash (slow recovery)
-  + faction disposition + rumor mint. Reputation lowers new-NPC starting trust. Help
-  systems gate on virtue/disposition. **Done-when:** live — do a cruel act, walk to the
-  next town, they already know, no help. ("Psychopath is never trusted for long.")
+- **M2 — Consequences via existing organs. ◑ SLICE 1 DONE (2026-06-07).** Shipped: (A)
+  witnessed deeds shift the witnesses' trust (`npcTrustDelta` from `applyDeedCharges` —
+  cruelty down, aid up); (B) corruption/virtue factor into the social DC (`socialDC`) so a
+  corrupt soul is harder to charm/persuade/deceive and easier to intimidate, virtue is
+  trusted. U109 (8); suite 7307; gate PASS; live-verified (trader trust 5→3 after witnessed
+  cruelty; charm rebuffed). Report: `docs/playtests/morality-M2-reaction-2026-06-07.md`.
+  REMAINING M2: rumor minting (reputation travels), faction disposition, help-gating
+  (healing/sanctuary/shops), new-NPC starting-trust by reputation.
 - **M3 — Prose encodes morality (the soul).** Corruption/virtue drive the Stage E tone
   layer: banal pools when dark, beautiful when light. AI polish tone instruction keyed to
   morality. **Done-when:** side-by-side a dark vs. light run of the same action reads

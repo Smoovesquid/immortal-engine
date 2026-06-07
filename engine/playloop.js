@@ -2425,7 +2425,7 @@ function socialQuality(t) {
   return 0;
 }
 
-function socialDC(approach, npc) {
+function socialDC(approach, npc, morality) {
   const P = npc?.personality || { honesty: 0.5, trustOfOutsiders: 0.5, selfPreservation: 0.5 };
   const trust = Number(npc?.conversationState?.trustLevel ?? 5); // 0-10
   let dc = 12;
@@ -2434,6 +2434,13 @@ function socialDC(approach, npc) {
   else if (approach === 'persuade') dc -= (P.trustOfOutsiders - 0.5) * 6 + (trust - 5) * 0.8;
   else if (approach === 'deceive') dc -= (P.trustOfOutsiders - 0.5) * 8 - (0.5 - P.honesty) * 6; // trusting easier; street-smart harder
   if (npc?.hostile) dc += 3;
+  // M2 — your soul precedes your words. A corrupt reputation makes the world warier
+  // (charm/persuade/deceive harder) and more cowed (intimidate easier); virtue is trusted.
+  const corr = Number(morality?.corruption ?? 0) / 100; // 0..1
+  const virt = Number(morality?.virtue ?? 0) / 100;     // 0..1
+  if (approach === 'intimidate') dc -= corr * 6;                  // the feared cow easily
+  else if (approach === 'deceive') dc += corr * 5;                // the known-corrupt are distrusted
+  else { dc += corr * 6; dc -= virt * 4; }                        // charm/persuade: corruption repels, virtue draws
   return Math.max(5, Math.round(dc));
 }
 
@@ -2513,7 +2520,7 @@ function resolveSocialAdjudication(world, text) {
   const plausible = Boolean(claimedLever && SOCIAL_PLAUSIBLE[approach].has(claimedLever));
   const stat = plausible ? claimedLever : SOCIAL_DEFAULT_STAT[approach];
   const quality = socialQuality(text);
-  const dc = socialDC(approach, npc);
+  const dc = socialDC(approach, npc, world?.party?.[0]?.morality);
   const rng = makeRng(seedFromString(`${world.meta.seed}|social|${npc.id}|${approach}|${world.timeline.length}`));
   const roll = rng.int(1, 20);
   const total = roll + statMod(Number(world.party?.[0]?.stats?.[stat] ?? 10)) + quality;
@@ -2844,6 +2851,16 @@ function applyDeedCharges(world, text, output) {
   const deltas = charges.map(c => ({ op: 'axisDelta', axis: c.axis, by: c.sev }));
   const dominant = charges.reduce((a, b) => (b.sev > a.sev ? b : a), charges[0]);
   deltas.push({ op: 'recordDeed', deedKind: dominant.kind, severity: dominant.sev, summary: t.slice(0, 200), nodeId, witnesses, t: Array.isArray(world?.timeline) ? world.timeline.length : 0 });
+  // M2 — witnesses remember. A cruelty/forbidden deed seen by NPCs crashes their trust;
+  // an aid/mercy/atonement deed seen raises it. Scaled by severity, bounded. The local
+  // "a psychopath is never trusted for long" loop. (No witnesses → no shift.)
+  const dark = dominant.kind === 'cruelty' || dominant.kind === 'forbidden';
+  const bright = dominant.kind === 'aid' || dominant.kind === 'mercy' || dominant.kind === 'atonement';
+  if (dark || bright) {
+    const mag = Math.max(1, Math.min(3, Math.round(dominant.sev / (dark ? 10 : 12))));
+    const by = dark ? -mag : mag;
+    for (const npcId of witnesses) deltas.push({ op: 'npcTrustDelta', npcId, by });
+  }
   return applyDeltas(world, deltas);
 }
 

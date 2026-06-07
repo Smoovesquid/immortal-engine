@@ -1,4 +1,4 @@
-import { ensureWorld, ensureCombat, defaultCombat } from './state.js';
+import { ensureWorld, ensureCombat, defaultCombat, VICE_AXES, VIRTUE_AXES, deriveCorruption, deriveVirtue } from './state.js';
 import { addFact, addThreat, addQuestion } from './ledger.js';
 import { ensureEnv } from './env/envCore.js';
 import { ensureInstrumentLayer } from './instrument.js';
@@ -71,9 +71,11 @@ export function applyDeltas(world, deltas = []) {
     // Pure, deterministic mutations on party[i].morality and world.deeds. M0.5
     // plumbing: wired here so later milestones (deed detector, consequences,
     // patrons, crime) only emit deltas, never touch state directly. No RNG.
+    // 'party' is the player SENTINEL used by events; the real entity id is pc_*,
+    // so resolve it to party[0] (else mutateEntity silently no-ops). See M1.
     if (kind === 'corruptionDelta' || kind === 'virtueDelta') {
       const field = kind === 'corruptionDelta' ? 'corruption' : 'virtue';
-      const entityId = String(op.entityId || 'party');
+      const entityId = resolvePlayerEntityId(w, op.entityId);
       const by = toInt(op.by ?? 0);
       if (by === 0) continue;
       w = mutateEntity(w, entityId, (e) => {
@@ -84,8 +86,26 @@ export function applyDeltas(world, deltas = []) {
       continue;
     }
 
+    if (kind === 'axisDelta') {
+      // v23 — bump one of the fourteen sin/virtue accumulators, then recompute the
+      // derived corruption/virtue summaries. The seven-axis soul is the source of truth.
+      const entityId = resolvePlayerEntityId(w, op.entityId);
+      const axis = String(op.axis || '');
+      const by = toInt(op.by ?? 0);
+      if (!axis || by === 0) continue;
+      if (!VICE_AXES.includes(axis) && !VIRTUE_AXES.includes(axis)) continue;
+      w = mutateEntity(w, entityId, (e) => {
+        const mo = (e.morality && typeof e.morality === 'object') ? e.morality : {};
+        const axes = { ...(mo.axes && typeof mo.axes === 'object' ? mo.axes : {}) };
+        for (const k of [...VICE_AXES, ...VIRTUE_AXES]) axes[k] = clampInt(axes[k] ?? 0, 0, 100);
+        axes[axis] = clampInt((axes[axis] ?? 0) + by, 0, 100);
+        return { ...e, morality: { ...mo, axes, corruption: deriveCorruption(axes), virtue: deriveVirtue(axes) } };
+      });
+      continue;
+    }
+
     if (kind === 'adjustHeat') {
-      const entityId = String(op.entityId || 'party');
+      const entityId = resolvePlayerEntityId(w, op.entityId);
       const by = toInt(op.by ?? 0);
       if (by === 0) continue;
       w = mutateEntity(w, entityId, (e) => {
@@ -97,7 +117,7 @@ export function applyDeltas(world, deltas = []) {
     }
 
     if (kind === 'setPatron') {
-      const entityId = String(op.entityId || 'party');
+      const entityId = resolvePlayerEntityId(w, op.entityId);
       const patronId = String(op.patronId || '');
       const by = toInt(op.by ?? 0);
       if (!patronId || by === 0) continue;
@@ -111,7 +131,7 @@ export function applyDeltas(world, deltas = []) {
     }
 
     if (kind === 'lockMorality') {
-      const entityId = String(op.entityId || 'party');
+      const entityId = resolvePlayerEntityId(w, op.entityId);
       w = mutateEntity(w, entityId, (e) => {
         const mo = (e.morality && typeof e.morality === 'object') ? e.morality : {};
         return { ...e, morality: { ...mo, locked: true } };
@@ -135,8 +155,9 @@ export function applyDeltas(world, deltas = []) {
       };
       const deeds = Array.isArray(w.deeds) ? [...w.deeds, deed].slice(-64) : [deed];
       w = { ...w, deeds };
-      // Stamp lastDeedT on the actor so erosion/decay math has an anchor.
-      w = mutateEntity(w, deed.actorId, (e) => {
+      // Stamp lastDeedT on the actor so erosion/decay math has an anchor (resolve the
+      // 'party' sentinel to the real player entity).
+      w = mutateEntity(w, resolvePlayerEntityId(w, op.actorId), (e) => {
         const mo = (e.morality && typeof e.morality === 'object') ? e.morality : {};
         return { ...e, morality: { ...mo, lastDeedT: deed.t } };
       });
@@ -507,7 +528,7 @@ export function applyDeltas(world, deltas = []) {
     // remain for backward compat.
 
     if (kind === 'addItem') {
-      const entityId = String(op.entityId || 'party');
+      const entityId = resolvePlayerEntityId(w, op.entityId);
       const item = op.item;
       if (!item || typeof item !== 'object') continue;
       const id = String(item.id ?? '').trim();
@@ -524,7 +545,7 @@ export function applyDeltas(world, deltas = []) {
     }
 
     if (kind === 'removeItemById') {
-      const entityId = String(op.entityId || 'party');
+      const entityId = resolvePlayerEntityId(w, op.entityId);
       const itemId = String(op.itemId ?? '').trim();
       if (!itemId) continue;
       w = mutateEntity(w, entityId, (e) => {
@@ -536,7 +557,7 @@ export function applyDeltas(world, deltas = []) {
     }
 
     if (kind === 'equipItem') {
-      const entityId = String(op.entityId || 'party');
+      const entityId = resolvePlayerEntityId(w, op.entityId);
       const itemId = String(op.itemId ?? '').trim();
       const slot = String(op.slot ?? '').trim();
       if (!itemId || !slot) continue;
@@ -554,7 +575,7 @@ export function applyDeltas(world, deltas = []) {
     }
 
     if (kind === 'unequipItem') {
-      const entityId = String(op.entityId || 'party');
+      const entityId = resolvePlayerEntityId(w, op.entityId);
       const itemId = String(op.itemId ?? '').trim();
       if (!itemId) continue;
       w = mutateEntity(w, entityId, (e) => {
@@ -569,7 +590,7 @@ export function applyDeltas(world, deltas = []) {
     // ── Pass CM5 — currency ops ──────────────────────────────────────────────
 
     if (kind === 'addCurrency') {
-      const entityId = String(op.entityId || 'party');
+      const entityId = resolvePlayerEntityId(w, op.entityId);
       const currency = String(op.currency ?? '').trim();
       const amount = Math.max(0, Math.trunc(Number(op.amount ?? 0)));
       if (!currency || amount <= 0) continue;
@@ -737,6 +758,15 @@ function mutateNpc(world, npcId, fn) {
   const nextNodes = [...nodes];
   nextNodes[nodeIdx] = { ...node, settlement: { ...node.settlement, npcs: nextNpcs } };
   return { ...world, map: { ...world.map, nodes: nextNodes } };
+}
+
+// Resolve the conventional player SENTINEL ('party', or empty) to the real player entity
+// id (party[0].id, e.g. pc_*). A concrete id is returned unchanged. Without this, morality
+// deltas aimed at 'party' silently no-op because no entity literally has id 'party'.
+function resolvePlayerEntityId(world, entityId) {
+  const id = String(entityId || 'party');
+  if (id !== 'party') return id;
+  return String(world?.party?.[0]?.id || 'party');
 }
 
 function mutateEntity(world, entityId, fn) {

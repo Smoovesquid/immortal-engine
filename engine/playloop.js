@@ -250,7 +250,20 @@ export function beginAdventure(world, packsById) {
 
 }
 
+// Morality M1: single-chokepoint wrapper. Runs the real turn, then silently lets the act
+// form the soul (the seven-axis deed detector). No output change — M1 is invisible. Never
+// throws to the turn (silent-fallback discipline, like the LLM layer).
 export function playerMove(world, packsById, text) {
+  const res = playerMoveCore(world, packsById, text);
+  try {
+    const w2 = applyDeedCharges(res.world, text, res.output);
+    return w2 === res.world ? res : { ...res, world: w2 };
+  } catch {
+    return res;
+  }
+}
+
+function playerMoveCore(world, packsById, text) {
 
   // Gate III.2: after ending is locked, play surfaces must not mutate state.
   if (Boolean(world?.ending?.locked)) {
@@ -2749,6 +2762,89 @@ function tryRidiculous(world, text) {
   }
   const w1 = pushEvent(world, { kind: 'resolution', data: { actorId: 'party', intent: t, text: t, roll: 0, dc: 0, outcome: 'failure', updateKind: 'ridiculous' } });
   return { world: w1, output: { narration: line, mechanics: `[the DM is unmoved — nice try]` } };
+}
+
+// ── Morality M1: the multi-charge deed detector (the seven-axis soul) ────────
+// Reads the act the player DECLARES (THE_DM_TEST: judge the fiction) and returns a SET of
+// charges — one act can reach several gods at once (the soldier's bargain). Curated and
+// TIGHT, like tryRidiculous: the default is "ordinary play, no deed." Context (helpless /
+// surrendered / to-save, read from the player's own words) modulates SEVERITY, not category.
+// M1 is INVISIBLE — these charges silently tune morality.axes + record a deed; no NPC,
+// faction, rumor, prose, or sign consequence (that is M2+). See docs/MORALITY_GRIMOIRE.md.
+const DEED_SEV = { LIGHT: 5, MOD: 12, HEAVY: 20 };
+
+function tryDarkDeed(world, text) {
+  const t = String(text || '').toLowerCase();
+  if (!t.trim()) return [];
+  const charges = [];
+  const push = (axis, sev, kind) => charges.push({ axis, sev, kind });
+  const { LIGHT, MOD, HEAVY } = DEED_SEV;
+
+  const kill = /\b(kill|slay|murder|behead|execute|stab|strangle|drown|slit|smother|cut(?: him| her| them)? down|cut .*throat|put .* to the sword)\b/i.test(t);
+  const torture = /\b(torture|torment|flay|maim|break (?:his|her|their) fingers|put .* to the question)\b/i.test(t);
+  const helpless = /\b(bound|tied up|helpless|defenseless|unarmed|sleeping|kneeling|begging|begs? for mercy|surrender(?:ed|ing)?|prisoner|captive|the wounded|dying|infant|baby|elder|old man|old woman|civilian)\b/i.test(t);
+  const save = /\b(to save|to protect|to defend|to spare the|save the|protect the|defend the|rescue|to shield|shield the)\b/i.test(t);
+
+  // KILL — save-context first (the bargain), else helpless (cruelty), else untagged.
+  if (kill) {
+    if (save) { push('wrath', LIGHT, 'cruelty'); push('charity', MOD, 'aid'); push('kindness', LIGHT, 'aid'); }
+    else if (helpless) { push('wrath', HEAVY, 'cruelty'); }
+    // bare/fair kill: untagged in M1 (routine combat-blood accrual is a later refinement)
+  }
+  if (torture) { push('wrath', HEAVY, 'cruelty'); if (/\b(obey|grovel|kneel|submit|worship)\b/i.test(t)) push('pride', LIGHT, 'cruelty'); }
+  if (/\b(sacrifice|offer up|give .* to the (?:dark|god|demon))\b/i.test(t) && /\b(innocent|child|children|captive|maiden|villager|prisoner|virgin)\b/i.test(t)) {
+    push('wrath', HEAVY, 'cruelty'); push('gluttony', MOD, 'forbidden');
+  }
+
+  // Treachery
+  if ((/\b(betray|backstab|turn on|sell out)\b/i.test(t) && /\b(friend|companion|ally|comrade|brother|sister|partner)\b/i.test(t)) || /\b(break my (?:oath|word|vow)|abandon my (?:friend|companion|ally|comrade))\b/i.test(t)) {
+    push('pride', MOD, 'cruelty');
+    if (/\b(gold|coin|silver|payment|reward|money)\b/i.test(t)) push('greed', MOD, 'cruelty');
+  }
+  if (/\b(betray|cheat on|abandon)\b.{0,16}\b(lover|wife|husband|beloved|spouse)\b/i.test(t)) push('lust', MOD, 'cruelty');
+
+  // Forbidden sources
+  if (/\b(raise|reanimate|animate|summon)\b.{0,20}\b(dead|corpse|corpses|fallen|bodies|skeletons?|zombies?)\b|\bnecromanc/i.test(t)) push('gluttony', MOD, 'forbidden');
+  if (/\b(devour|consume|drink|drain|steal)\b.{0,20}\b(soul|souls|years|life ?force|vitality|youth)\b/i.test(t)) push('gluttony', HEAVY, 'forbidden');
+  if (/\bblood (?:magic|sacrifice|rite|ritual)\b|\bspill .* blood (?:to|for) (?:the|power|him)\b/i.test(t)) push('wrath', MOD, 'forbidden');
+  if (/\b(pact|bargain|deal|covenant)\b.{0,12}\bwith (?:a |the )?(?:demon|devil|dark one|fiend)\b|\bsell my soul\b/i.test(t)) push('pride', MOD, 'forbidden');
+
+  // Other vices
+  if (/\b(rob|extort|plunder|steal from)\b.{0,16}\b(poor|beggar|starving|widow|orphan|weak|needy)\b|\brob the poor\b/i.test(t)) push('greed', MOD, 'cruelty');
+  if (/\b(make (?:them|him|her|you) (?:grovel|kneel|worship|bow)|demand .* worship|humiliate (?:the|him|her|them))\b/i.test(t)) push('pride', MOD, 'cruelty');
+
+  // Bright — the mirror
+  if (/\b(give|share|offer|hand)\b.{0,30}\b(starving|beggar|poor|hungry|orphan|needy|destitute)\b/i.test(t) || /\bgive (?:him|her|them) my last\b/i.test(t)) push('charity', MOD, 'aid');
+  if (/\b(spare|let (?:him|her|them) live|show mercy|stay my (?:hand|blade)|lower my (?:sword|blade|weapon)|let (?:him|her|them) go)\b/i.test(t)) { push('patience', MOD, 'mercy'); push('kindness', LIGHT, 'mercy'); }
+  if (/\b(tend|aid|help|heal|bind (?:his|her|their|the) wounds|carry)\b.{0,25}\b(fallen|wounded|the enemy|my enemy|the foe|defeated)\b/i.test(t)) { push('kindness', MOD, 'aid'); push('charity', LIGHT, 'aid'); }
+  if (/\b(hold|keep|stand)\b.{0,12}\bvigil\b|\bvigil before\b/i.test(t)) {
+    if (/\b(to win|for glory|to become|so that|to gain)\b/i.test(t)) push('pride', MOD, 'cruelty');
+    else { push('patience', MOD, 'aid'); push('humility', LIGHT, 'aid'); }
+  }
+  if (/\b(keep|honor|stand by) my (?:oath|word|vow|promise)\b/i.test(t)) { push('diligence', MOD, 'aid'); push('chastity', LIGHT, 'aid'); }
+  if (save && !kill) { push('kindness', MOD, 'aid'); push('charity', LIGHT, 'aid'); }
+
+  return charges.slice(0, 5);
+}
+
+// Apply detected deed charges to the world: tune the axes (axisDelta) and record one deed
+// in the canon-log mirror. INVISIBLE — never touches the output. Wrapped around playerMove
+// so it catches every action type at a single chokepoint. Determinism-safe (pure detection
+// + deterministic deltas; replay re-runs the same text). Never throws to the turn.
+function applyDeedCharges(world, text, output) {
+  const t = String(text || '').trim();
+  if (!t) return world;
+  const mech = String(output?.mechanics || '');
+  if (/observe only|no roll, state unchanged/i.test(mech)) return world; // meta no-op
+  const charges = tryDarkDeed(world, t);
+  if (!charges.length) return world;
+  const node = (world?.map?.nodes || []).find(n => n && n.id === world?.map?.currentNodeId) || null;
+  const witnesses = Array.isArray(node?.settlement?.npcs) ? node.settlement.npcs.map(n => String(n.id)).filter(Boolean).slice(0, 8) : [];
+  const nodeId = String(world?.map?.currentNodeId || '');
+  const deltas = charges.map(c => ({ op: 'axisDelta', axis: c.axis, by: c.sev }));
+  const dominant = charges.reduce((a, b) => (b.sev > a.sev ? b : a), charges[0]);
+  deltas.push({ op: 'recordDeed', deedKind: dominant.kind, severity: dominant.sev, summary: t.slice(0, 200), nodeId, witnesses, t: Array.isArray(world?.timeline) ? world.timeline.length : 0 });
+  return applyDeltas(world, deltas);
 }
 
 // trivialNarration — grounded prose for a trivial action. Falls back to the

@@ -1,8 +1,10 @@
-import { WORLD_VERSION } from './state.js';
+import { WORLD_VERSION, VICE_AXES, VIRTUE_AXES } from './state.js';
 import { statMod, maxWounds } from './ruleset/core/stats.js';
 
 const SPELL_SLOT_LEVELS = [1, 2, 3, 4, 5];
 const CURRENCY_KEYS = ['copper', 'silver', 'gold', 'platinum'];
+// Computed lazily (not at module top level) to avoid a circular-import TDZ with state.js.
+const moralityAxisKeys = () => [...VICE_AXES, ...VIRTUE_AXES];
 
 export function assertWorldInvariants(world) {
   if (!world || typeof world !== 'object') {
@@ -79,6 +81,17 @@ export function assertWorldInvariants(world) {
     }
     if (!Number.isInteger(mo.lastDeedT) || mo.lastDeedT < 0) {
       throw new Error(`Invariant: party[${i}].morality.lastDeedT must be non-negative integer`);
+    }
+    // v23 — the seven sin + seven virtue accumulators, each 0..100.
+    const axes = mo.axes;
+    if (!axes || typeof axes !== 'object' || Array.isArray(axes)) {
+      throw new Error(`Invariant: party[${i}].morality.axes must be a plain object`);
+    }
+    for (const k of moralityAxisKeys()) {
+      const v = axes[k];
+      if (!Number.isInteger(v) || v < 0 || v > 100) {
+        throw new Error(`Invariant: party[${i}].morality.axes.${k} must be integer 0..100`);
+      }
     }
 
     const c = member.companion;

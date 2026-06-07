@@ -28,7 +28,7 @@ import { normalizeCondition } from './combat/conditions.js';
 // (structureId, roomId) is stored in position.interior. Saves restore the
 // player's exact location (no reset on resume). scene.interior is derived
 // from position.interior, not stored separately.
-export const WORLD_VERSION = 22;
+export const WORLD_VERSION = 23;
 
 // Crunch caps (T1). Kept here so they're colocated with ensureEntity.
 const FOCI_CAP = 6;
@@ -592,9 +592,34 @@ function ensureEntity(e) {
   };
 }
 
-// v22 — morality state. Safe defaults so old saves (no morality field) upgrade
-// to a clean, neutral slate. Bounds mirror the design: corruption/virtue 0..100,
-// heat >= 0, patrons a plain {id: number} map, locked a boolean.
+// v22/v23 — morality state. Safe defaults so old saves upgrade to a neutral slate.
+// v23 adds `axes`: the seven sin poles + seven contrary-virtue poles, each 0..100,
+// that ACCUMULATE independently (a soldier is heavy on wrath AND patience — they never
+// net). corruption/virtue are DERIVED summaries (v1 collapse = max of the poles;
+// tunable) kept as cached fields so the existing gates and the M0 deltas keep working.
+export const VICE_AXES = ['pride', 'greed', 'wrath', 'envy', 'lust', 'gluttony', 'sloth'];
+export const VIRTUE_AXES = ['humility', 'charity', 'patience', 'kindness', 'chastity', 'temperance', 'diligence'];
+
+function ensureAxes(a) {
+  const x = a && typeof a === 'object' ? a : {};
+  const out = {};
+  for (const k of VICE_AXES) out[k] = clampInt(x[k] ?? 0, 0, 100);
+  for (const k of VIRTUE_AXES) out[k] = clampInt(x[k] ?? 0, 0, 100);
+  return out;
+}
+
+// v1 collapse of the fourteen accumulators into the two summary scalars: the dominant
+// pole defines you (a man of one great sin is corrupt; a saint of one great virtue is
+// good). Breadth-weighting is a future knob. Pure + deterministic.
+export function deriveCorruption(axes) {
+  const a = ensureAxes(axes);
+  return clampInt(Math.max(0, ...VICE_AXES.map(k => a[k])), 0, 100);
+}
+export function deriveVirtue(axes) {
+  const a = ensureAxes(axes);
+  return clampInt(Math.max(0, ...VIRTUE_AXES.map(k => a[k])), 0, 100);
+}
+
 function ensureMorality(m) {
   const x = m && typeof m === 'object' ? m : {};
   const patrons = {};
@@ -604,12 +629,18 @@ function ensureMorality(m) {
       if (Number.isFinite(n)) patrons[String(k)] = clampInt(n, -100, 100);
     }
   }
+  const axes = ensureAxes(x.axes);
+  // If axes carry any signal, the summaries derive from them (v23 source of truth).
+  // If they're all zero (a fresh world, or a v22 save with stored scalars and no axes),
+  // keep the stored corruption/virtue so no data is lost on upgrade.
+  const axesActive = VICE_AXES.concat(VIRTUE_AXES).some(k => axes[k] > 0);
   return {
-    corruption: clampInt(x.corruption ?? 0, 0, 100),
-    virtue: clampInt(x.virtue ?? 0, 0, 100),
+    corruption: axesActive ? deriveCorruption(axes) : clampInt(x.corruption ?? 0, 0, 100),
+    virtue: axesActive ? deriveVirtue(axes) : clampInt(x.virtue ?? 0, 0, 100),
     heat: clampIntMin(x.heat ?? 0, 0),
     locked: Boolean(x.locked ?? false),
     patrons,
+    axes,
     lastDeedT: clampIntMin(x.lastDeedT ?? 0, 0)
   };
 }

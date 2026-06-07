@@ -443,7 +443,14 @@ asymmetry: dark = power now, light = support that compounds.
   (M0.5) landed too: `corruptionDelta`/`virtueDelta`/`adjustHeat`/`setPatron`/
   `lockMorality`/`recordDeed`, pure and deterministic. U107 (15); suite 7276 green; U21
   determinism intact; playtest:quick 0 crashes; prose gate PASS. Invisible to the player.
-- **M1 — Deed detector (multi-charge) + the seven-axis soul.** `tryDarkDeed` (ridiculous-
+- **M1 — Deed detector (multi-charge) + the seven-axis soul. ✅ DONE (2026-06-07).**
+  Shipped: v23; `morality.axes` (7+7), corruption/virtue derived; `tryDarkDeed` multi-charge
+  detector; `applyDeedCharges` wrapper around `playerMove` (single chokepoint, invisible);
+  fixed the M0 'party'-sentinel no-op bug. The soldier's bargain works (kill-to-save → wrath
+  AND charity). Zero false positives on ordinary play. U108 (23) + U107 updated; suite 7299;
+  U21 intact; gate PASS; live-verified (cruel act reads ordinary; soul moves silently &
+  persists). Report: `docs/playtests/morality-M1-deeddetector-2026-06-07.md`. Original spec:
+- **M1 (spec) — Deed detector (multi-charge) + the seven-axis soul.** `tryDarkDeed` (ridiculous-
   gate pattern) returns a **SET of charges** `(axis, polarity, severity)` per act, not a
   classification — the soldier's bargain (kill-to-save = +Wrath AND +Charity). Each charge
   emits a delta and a canon-log deed entry; deeds tune the **seven sin/virtue axes**;

@@ -81,7 +81,13 @@ export function ensureWorld(partial) {
       // v1 Escape tactical cover: which piece of room cover the player is fighting
       // behind, scoped to the current fight via beganAt (so a new fight starts in
       // the open). null/absent = not in cover. Sandbox worlds never set it.
-      escapeCover: ensureEscapeCover(meta.escapeCover)
+      escapeCover: ensureEscapeCover(meta.escapeCover),
+      // v24 — class/species feature state for escape combat (rage, second wind,
+      // breath weapon, lay on hands, relentless endurance). Per-fight fields
+      // reset via beganAt scoping; layPool/relentlessUsed persist across fights
+      // and replenish on shortRest. null = no feature state yet (sandbox worlds
+      // and legacy characters never set it).
+      escapeFeats: ensureEscapeFeats(meta.escapeFeats)
     },
     ruleset: w.ruleset && typeof w.ruleset === 'object' ? w.ruleset : { id: 'core', version: 1 },
     pack: w.pack && typeof w.pack === 'object' ? w.pack : { primaryId: 'fantasy', mixerId: null },
@@ -986,6 +992,20 @@ function ensureEscapeCover(x) {
     label: String(x.label ?? ''),
     tier: String(x.tier ?? ''),
     beganAt: clampIntMin(x.beganAt ?? 0, 0)
+  };
+}
+
+// v24 — escape-combat feature state. layPool uses -1 as "uninitialized" so the
+// paladin's pool can be seeded lazily (5 × level) on first use.
+function ensureEscapeFeats(x) {
+  if (!x || typeof x !== 'object') return null;
+  return {
+    beganAt: clampIntMin(x.beganAt ?? 0, 0),
+    rageActive: Boolean(x.rageActive),
+    secondWindUsed: Boolean(x.secondWindUsed),
+    breathUsed: Boolean(x.breathUsed),
+    layPool: Number.isFinite(Number(x.layPool)) ? Math.max(-1, Math.trunc(Number(x.layPool))) : -1,
+    relentlessUsed: Boolean(x.relentlessUsed)
   };
 }
 

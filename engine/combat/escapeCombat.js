@@ -151,11 +151,11 @@ export function meleeProfile(pc) {
       }
     }
     if (best) {
-      return { name: best.name, die: best.die, atkBonus: d.profBonus + best.mod, dmgMod: best.mod, ranged: Boolean(best.ranged) };
+      return { name: best.name, die: best.die, atkBonus: d.profBonus + best.mod, dmgMod: best.mod, ranged: Boolean(best.ranged), finesse: Boolean(best.finesse), twoHanded: best.die >= 12 };
     }
     // Sheet but no table weapon (monk fists, darts): unarmed/simple strike.
     const mod = Math.max(d.mods.STR, d.mods.DEX);
-    return { name: 'Unarmed Strike', die: 4, atkBonus: d.profBonus + mod, dmgMod: mod, ranged: false };
+    return { name: 'Unarmed Strike', die: 4, atkBonus: d.profBonus + mod, dmgMod: mod, ranged: false, finesse: true, twoHanded: false };
   }
   const might = pc?.stats?.MIGHT ?? 10;
   return {
@@ -195,6 +195,79 @@ export function cantripProfile(pc) {
 
 function isCaster(pc) {
   return Boolean(cantripProfile(pc));
+}
+
+// ── Class & species features (v24) ──────────────────────────────────────────
+// Feature state lives in meta.escapeFeats. Per-fight fields (rageActive,
+// secondWindUsed, breathUsed) reset when combat.beganAt changes; layPool and
+// relentlessUsed persist across fights and replenish on shortRest.
+
+const LAY_ON_HANDS_PER_LEVEL = 5;
+const LAY_ON_HANDS_PER_USE = 5;
+const RAGE_DAMAGE_BONUS = 2;
+const SECOND_WIND_DIE = 10;
+
+function featState(w, beganAt) {
+  const f = w.meta?.escapeFeats;
+  if (f && f.beganAt === beganAt) return { ...f };
+  return {
+    beganAt,
+    rageActive: false,
+    secondWindUsed: false,
+    breathUsed: false,
+    layPool: Number.isFinite(Number(f?.layPool)) ? f.layPool : -1,
+    relentlessUsed: Boolean(f?.relentlessUsed)
+  };
+}
+
+function hasFeature(pc, type) {
+  const feats = pc?.dnd?.features;
+  if (!Array.isArray(feats)) return false;
+  return feats.some(f => f?.effect?.type === type);
+}
+
+function breathInfo(pc) {
+  const d = pc?.dnd;
+  if (!d || !hasFeature(pc, 'breathWeapon')) return null;
+  const damage = d.species?.ancestry?.damage || 'fire';
+  // Save DC 8 + CON mod + proficiency, per the SRD.
+  return { damage, dc: 8 + d.mods.CON + d.profBonus, die: 6, count: 2 };
+}
+
+function cureInfo(pc) {
+  const d = pc?.dnd;
+  if (!d || !d.spellcasting) return null;
+  const known = Array.isArray(pc?.spells?.known) ? pc.spells.known : [];
+  if (!known.includes('cure_wounds')) return null;
+  const mod = d.mods[d.spellcasting.ability] ?? 0;
+  // Life Domain's Disciple of Life: +2 + spell level on healing spells.
+  const discipleBonus = (d.class?.subclass === 'Life Domain') ? 3 : 0;
+  return { mod, discipleBonus, slotLevel: 1 };
+}
+
+/**
+ * featureActions(pc) -> [{id, name, verb, note}]
+ * The class/species feature actions available to this character, for the kit
+ * panel and the resolver. Empty for legacy (sheet-less) characters.
+ */
+export function featureActions(pc) {
+  const d = pc?.dnd;
+  if (!d) return [];
+  const out = [];
+  if (hasFeature(pc, 'rage')) {
+    out.push({ id: 'rage', name: 'Rage', verb: 'rage', note: `+${RAGE_DAMAGE_BONUS} melee damage, take half from blows, this fight. Type "rage".` });
+  }
+  if (hasFeature(pc, 'secondWind')) {
+    out.push({ id: 'secondWind', name: 'Second Wind', verb: 'second wind', note: `Catch your breath: heal 1d${SECOND_WIND_DIE}+${d.level}. Once per fight. Type "second wind".` });
+  }
+  const breath = breathInfo(pc);
+  if (breath) {
+    out.push({ id: 'breath', name: `Breath Weapon (${breath.damage})`, verb: 'breathe', note: `${breath.count}d${breath.die} ${breath.damage} to every foe, DC ${breath.dc} save for half. Once per fight. Type "breathe".` });
+  }
+  if (hasFeature(pc, 'layOnHands')) {
+    out.push({ id: 'layHands', name: 'Lay on Hands', verb: 'lay on hands', note: `A pool of ${LAY_ON_HANDS_PER_LEVEL * d.level} healing. Type "lay on hands".` });
+  }
+  return out;
 }
 
 /**
@@ -296,7 +369,8 @@ export function initEscapeKit(world) {
  * UI can render always-visible inventory + spellbook panels with typed verbs.
  */
 export function escapeKitView(pc) {
-  // 5e character: build the panel from the sheet's real weapon + class cantrip.
+  // 5e character: build the panel from the sheet's real weapon + class cantrip
+  // + class/species feature actions.
   if (pc?.dnd) {
     const melee = meleeProfile(pc);
     const cantrip = cantripProfile(pc);
@@ -324,6 +398,19 @@ export function escapeKitView(pc) {
         verb: 'guard',
         note: `Set your feet and defend. +${WARD_AC_BONUS} AC until your next turn. Type "guard".`
       });
+    }
+    // Slot spells the resolver knows how to cast.
+    const cure = cureInfo(pc);
+    if (cure) {
+      spells.push({
+        name: 'Cure Wounds',
+        verb: 'cure',
+        note: `Heal 1d8${fmtBonus(cure.mod + cure.discipleBonus)}. Uses a 1st-level slot. Type "cure".`
+      });
+    }
+    // Feature actions ride in the weapons column — they're things you DO.
+    for (const f of featureActions(pc)) {
+      weapons.push({ name: f.name, verb: f.verb, note: f.note });
     }
     return { weapons, spells };
   }
@@ -364,6 +451,13 @@ export function parseEscapeAction(text) {
   // Cover is a positional move — duck behind the room's furniture for +AC. Check
   // it before the attack verbs so "hide behind the pillar" reads as cover.
   if (/\b(take\s+cover|cover|behind|duck|hunker)\b/.test(t)) return { verb: 'cover' };
+  // Class/species features — checked before the generic verbs so "breathe fire"
+  // doesn't fall into the cantrip bucket and "rally" doesn't read as a guard.
+  if (/\b(rage|enrage|berserk)\b/.test(t)) return { verb: 'rage' };
+  if (/\b(second\s+wind|rally)\b/.test(t)) return { verb: 'secondwind' };
+  if (/\b(breathe|breath|exhale)\b/.test(t)) return { verb: 'breath' };
+  if (/\blay\s+(on\s+)?hands?\b/.test(t)) return { verb: 'layhands' };
+  if (/\b(cure|heal|mend)\b/.test(t)) return { verb: 'cure' };
   if (/\b(ward|shield|brace|defend|guard|block|parry)\b/.test(t)) return { verb: 'ward' };
   // Cantrip verbs — the hedge-caster's fire bolt plus every class cantrip
   // (eldritch blast, vicious mockery, sacred flame, produce flame) and the
@@ -386,12 +480,20 @@ function fmtBonus(n) {
 export function shortRest(world, rng) {
   const w = ensureWorld(world);
   if (w.meta?.mode !== 'escape') return w;
+  // Rest also restores class/species reserves: the paladin's healing pool
+  // refills (-1 = lazily re-seeded to full on next use) and relentless
+  // endurance resets.
+  const feats = w.meta?.escapeFeats
+    ? { ...w.meta.escapeFeats, layPool: -1, relentlessUsed: false }
+    : null;
   const max = Number(w.meta.escapeMaxHp) || 0;
   const cur = Number(w.meta.escapeHp) || 0;
-  if (max <= 0 || cur >= max) return w;
+  if (max <= 0 || cur >= max) {
+    return feats ? { ...w, meta: { ...w.meta, escapeFeats: feats } } : w;
+  }
   const heal = rng.int(1, REST_DIE) + REST_FLAT;
   const next = Math.min(max, cur + heal);
-  return { ...w, meta: { ...w.meta, escapeHp: next } };
+  return { ...w, meta: { ...w.meta, escapeHp: next, ...(feats ? { escapeFeats: feats } : {}) } };
 }
 
 /**
@@ -468,6 +570,11 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
   let coverState = (savedCover && savedCover.active && savedCover.beganAt === beganAt)
     ? { ...savedCover } : null;
 
+  // ── Feature state (v24) ─────────────────────────────────────────────────────
+  // Rage / second wind / breath reset per fight (beganAt scope); the paladin's
+  // pool and relentless endurance persist until a rest.
+  const feats = featState(w, beganAt);
+
   // ── Player turn ────────────────────────────────────────────────────────────
   let enemies = (Array.isArray(w.combat.enemies) ? w.combat.enemies : []).map(e => ({ ...e }));
   const targetIdx = enemies.findIndex(e => e && !e.defeated && (Number(e.hp) || 0) > 0);
@@ -479,6 +586,87 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
     } else {
       beats.push('There is nothing here to take cover behind.');
     }
+  } else if (verb === 'rage') {
+    if (hasFeature(pc, 'rage') && !feats.rageActive) {
+      feats.rageActive = true;
+      beats.push(`You let the red tide take you — RAGE. (+${RAGE_DAMAGE_BONUS} melee damage; blades and blows deal you half.)`);
+    } else if (feats.rageActive) {
+      beats.push('You are already raging.');
+    } else {
+      beats.push('You grit your teeth, but fury is not your discipline.');
+    }
+  } else if (verb === 'secondwind') {
+    if (hasFeature(pc, 'secondWind') && !feats.secondWindUsed) {
+      feats.secondWindUsed = true;
+      const heal = rng.int(1, SECOND_WIND_DIE) + (Number(pc.dnd?.level) || 1);
+      const maxHp = Number(w.meta.escapeMaxHp) || playerMaxHp(pc);
+      const before = Number(w.meta.escapeHp) || 0;
+      const after = Math.min(maxHp, before + heal);
+      w = { ...w, meta: { ...w.meta, escapeHp: after } };
+      beats.push(`You catch your second wind — ${after - before} HP back. (${after}/${maxHp})`);
+    } else if (feats.secondWindUsed) {
+      beats.push('You have no second wind left in this fight.');
+    } else {
+      beats.push('You suck air, but stamina like that is a fighter\'s trick.');
+    }
+  } else if (verb === 'layhands') {
+    if (hasFeature(pc, 'layOnHands')) {
+      if (feats.layPool < 0) feats.layPool = LAY_ON_HANDS_PER_LEVEL * (Number(pc.dnd?.level) || 1);
+      const maxHp = Number(w.meta.escapeMaxHp) || playerMaxHp(pc);
+      const before = Number(w.meta.escapeHp) || 0;
+      const heal = Math.min(LAY_ON_HANDS_PER_USE, feats.layPool, maxHp - before);
+      if (heal > 0) {
+        feats.layPool -= heal;
+        w = { ...w, meta: { ...w.meta, escapeHp: before + heal } };
+        beats.push(`Light pools under your palms — ${heal} HP restored. (${feats.layPool} left in the well.)`);
+      } else if (feats.layPool <= 0) {
+        beats.push('The well of light is empty until you rest.');
+      } else {
+        beats.push('You are already whole.');
+      }
+    } else {
+      beats.push('You press your hands to the wound, but no light answers.');
+    }
+  } else if (verb === 'cure') {
+    const cure = cureInfo(pc);
+    const slotLeft = Number(pc?.spells?.slots?.[1]) || 0;
+    if (cure && slotLeft > 0) {
+      const maxHp = Number(w.meta.escapeMaxHp) || playerMaxHp(pc);
+      const before = Number(w.meta.escapeHp) || 0;
+      const heal = Math.min(maxHp - before, Math.max(1, rng.int(1, 8) + cure.mod + cure.discipleBonus));
+      w = applyDeltas(w, [{ op: 'consumeSpellSlot', entityId: pc.id || 'party', level: 1 }]);
+      w = { ...w, meta: { ...w.meta, escapeHp: before + heal } };
+      const slotsAfter = Number(w.party?.[0]?.spells?.slots?.[1]) || 0;
+      beats.push(`Cure wounds knits you back together — ${heal} HP. (${before + heal}/${maxHp}; ${slotsAfter} slot${slotsAfter === 1 ? '' : 's'} left.)`);
+    } else if (cure) {
+      beats.push('Your spell slots are spent. Steel will have to do.');
+    } else if (hasFeature(pc, 'layOnHands')) {
+      beats.push('Your healing flows through your hands, not spells — try "lay on hands".');
+    } else {
+      beats.push('You know no healing magic.');
+    }
+  } else if (verb === 'breath') {
+    const breath = breathInfo(pc);
+    if (breath && !feats.breathUsed) {
+      feats.breathUsed = true;
+      let dropped = 0;
+      for (const e of enemies) {
+        if (!e || e.defeated || (Number(e.hp) || 0) <= 0) continue;
+        const save = rng.int(1, 20) + 2;
+        let dmg = rng.int(1, breath.die) + rng.int(1, breath.die);
+        if (save >= breath.dc) dmg = Math.floor(dmg / 2);
+        dmg = Math.max(save >= breath.dc ? 0 : 1, dmg);
+        const newHp = Math.max(0, (Number(e.hp) || 0) - dmg);
+        e.hp = newHp;
+        if (newHp <= 0) { e.defeated = true; dropped++; }
+        beats.push(`The ${e.name} ${save >= breath.dc ? 'twists half-clear of' : 'takes the full force of'} your ${breath.damage} breath — ${dmg} ${breath.damage}.${newHp <= 0 ? ' It drops.' : ''}`);
+      }
+      if (dropped === 0 && !beats.length) beats.push('Your breath scorches empty air.');
+    } else if (feats.breathUsed) {
+      beats.push('Your breath is spent — it will return when the fight is done.');
+    } else {
+      beats.push('You huff. Nothing comes out. (No draconic ancestry.)');
+    }
   } else if (verb === 'ward') {
     warded = true;
     beats.push(isCaster(pc)
@@ -487,7 +675,12 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
   } else if (targetIdx >= 0) {
     const target = enemies[targetIdx];
     const ac = Number(target.ac) || 10;
-    const roll = rng.int(1, 20);
+    let roll = rng.int(1, 20);
+    // Halfling Lucky: reroll any natural 1 on an attack roll (SRD).
+    if (roll === 1 && hasFeature(pc, 'rerollOnes')) {
+      roll = rng.int(1, 20);
+      beats.push(`(Lucky — the die clatters off the table on a 1; you roll again: ${roll}.)`);
+    }
     const cantrip = verb === 'firebolt' ? cantripProfile(pc) : null;
 
     if (cantrip) {
@@ -510,19 +703,42 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
     } else {
       // weapon strike (default — also where a cantrip-less martial's "cast" lands)
       const melee = meleeProfile(pc);
-      const total = roll + melee.atkBonus;
+      const style = pc?.dnd?.fightingStyle || null;
+      // Archery: +2 to ranged attack rolls. Dueling: +2 damage with a
+      // one-handed melee weapon.
+      const styleAtk = (style === 'Archery' && melee.ranged) ? 2 : 0;
+      const styleDmg = (style === 'Dueling' && !melee.ranged && !melee.twoHanded) ? 2 : 0;
+      const rageDmg = (feats.rageActive && !melee.ranged) ? RAGE_DAMAGE_BONUS : 0;
+      const total = roll + melee.atkBonus + styleAtk;
       const wname = melee.name.toLowerCase();
       if (roll === 1) {
         beats.push(`You swing your ${wname} at the ${target.name} and miss.`);
       } else if (roll === 20 || total >= ac) {
         const crit = roll === 20;
-        let dmg = rng.int(1, melee.die) + melee.dmgMod;
+        let dmg = rng.int(1, melee.die) + melee.dmgMod + styleDmg + rageDmg;
         if (crit) dmg += rng.int(1, melee.die);
+        // Half-Orc Savage Attacks: one extra weapon die on a melee crit.
+        if (crit && !melee.ranged && hasFeature(pc, 'critExtraDie')) {
+          dmg += rng.int(1, melee.die);
+        }
+        // Rogue Sneak Attack: +1d6 (doubled on crit) with a finesse or ranged
+        // weapon when the foe hasn't pinned you down — striking from cover, or
+        // in the opening exchange before they've sized you up.
+        let sneak = 0;
+        if (hasFeature(pc, 'sneakAttack') && (melee.finesse || melee.ranged) && (coverState || round === 1)) {
+          sneak = rng.int(1, 6) + (crit ? rng.int(1, 6) : 0);
+          dmg += sneak;
+        }
         dmg = Math.max(1, dmg);
         const newHp = Math.max(0, (Number(target.hp) || 0) - dmg);
         target.hp = newHp;
         if (newHp <= 0) target.defeated = true;
-        beats.push(`Your ${wname} hits the ${target.name} for ${dmg}${crit ? ' (critical!)' : ''}${newHp <= 0 ? ' — it drops.' : `. (${newHp} HP left)`}`);
+        const tags = [
+          crit ? 'critical!' : '',
+          sneak ? `sneak attack +${sneak}` : '',
+          rageDmg ? 'raging' : ''
+        ].filter(Boolean).join(', ');
+        beats.push(`Your ${wname} hits the ${target.name} for ${dmg}${tags ? ` (${tags})` : ''}${newHp <= 0 ? ' — it drops.' : `. (${newHp} HP left)`}`);
       } else {
         beats.push(`You swing your ${wname} at the ${target.name} and miss.`);
       }
@@ -547,11 +763,13 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
     beats.push(`(A ${roomCover.label} here offers cover — type "take cover" for +${roomCover.bonus} AC.)`);
   }
 
-  // Commit enemy HP changes through the canonical combat-state delta.
+  // Commit enemy HP changes through the canonical combat-state delta, and
+  // persist feature state (rage flags, healing pools) alongside.
   w = applyDeltas(w, [{
     op: 'combatState',
     set: { enemies, round, turnIndex: 0 }
   }]);
+  w = { ...w, meta: { ...w.meta, escapeFeats: { ...feats } } };
 
   // ── Victory check ──────────────────────────────────────────────────────────
   const anyAlive = enemies.some(e => e && !e.defeated && (Number(e.hp) || 0) > 0);
@@ -625,16 +843,26 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
       let dmg = rng.int(1, die);
       if (crit) dmg += rng.int(1, die);
       dmg = Math.max(1, dmg);
+      // Rage: resistance to weapon damage — the blow lands at half force.
+      if (feats.rageActive) dmg = Math.max(1, Math.floor(dmg / 2));
       hp = Math.max(0, hp - dmg);
-      beats.push(`The ${e.name} hits you for ${dmg}${crit ? ' (critical!)' : ''}.`);
+      // Half-Orc Relentless Endurance: the blow that would drop you leaves you
+      // standing at 1 HP instead. Once per rest.
+      if (hp <= 0 && hasFeature(pc, 'relentlessEndurance') && !feats.relentlessUsed) {
+        feats.relentlessUsed = true;
+        hp = 1;
+        beats.push(`The ${e.name} hits you for ${dmg}${feats.rageActive ? ' (halved by your rage)' : ''}${crit ? ' (critical!)' : ''} — you should fall, but you do not. You stay up on sheer spite. (1 HP)`);
+        continue;
+      }
+      beats.push(`The ${e.name} hits you for ${dmg}${feats.rageActive ? ' (halved by your rage)' : ''}${crit ? ' (critical!)' : ''}.`);
       if (hp <= 0) break;
     } else {
       beats.push(`The ${e.name} ${warded ? 'rakes the ward and finds no purchase' : 'lunges and misses'}.`);
     }
   }
 
-  // Commit player HP.
-  w = { ...w, meta: { ...w.meta, escapeHp: hp } };
+  // Commit player HP + feature state (relentless may have fired).
+  w = { ...w, meta: { ...w.meta, escapeHp: hp, escapeFeats: { ...feats } } };
 
   // ── Defeat check ───────────────────────────────────────────────────────────
   if (hp <= 0) {

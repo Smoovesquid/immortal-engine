@@ -243,6 +243,25 @@ export function createCharacter5e(picks = {}) {
   const legacyMods = {};
   for (const k of Object.keys(legacyStats)) legacyMods[k] = abilityMod(legacyStats[k]);
 
+  // Casters know their class cantrip(s) plus two signature level-1 spells, and
+  // carry real slots. The refs must exist in the spell catalog.
+  const CLASS_SPELLS = {
+    bard: ['vicious_mockery', 'cure_wounds', 'charm_person'],
+    cleric: ['sacred_flame', 'cure_wounds', 'bless'],
+    druid: ['produce_flame', 'cure_wounds', 'entangle'],
+    sorcerer: ['fire_bolt', 'magic_missile', 'shield'],
+    warlock: ['eldritch_blast', 'witch_bolt', 'armor_of_agathys'],
+    wizard: ['fire_bolt', 'magic_missile', 'shield']
+  };
+  const spellsBlock = klass.spellcasting
+    ? {
+        known: CLASS_SPELLS[klass.id] || [],
+        maxSlots: { ...(klass.spellcasting.slots || {}) },
+        slots: { ...(klass.spellcasting.slots || {}) },
+        concentration: null
+      }
+    : { known: [], maxSlots: {}, slots: {}, concentration: null };
+
   return {
     id: `pc_${seedFromString(`${seed}|srd|id|${name}`)}`,
     name,
@@ -252,6 +271,7 @@ export function createCharacter5e(picks = {}) {
     wounds: 0,
     level: 1,
     xp: 0,
+    spells: spellsBlock,
 
     stats: legacyStats,
     mods: legacyMods,

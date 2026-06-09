@@ -507,6 +507,10 @@ export function parseEscapeAction(text) {
   if (/\b(take\s+cover|cover|behind|duck|hunker)\b/.test(t)) return { verb: 'cover' };
   // Class/species features — checked before the generic verbs so "breathe fire"
   // doesn't fall into the cantrip bucket and "rally" doesn't read as a guard.
+  // Parley — talking is always an option at this table. Intimidation and
+  // persuasion are different levers; the resolver picks the matching skill.
+  if (/\b(intimidate|threaten|menace|scare\s+them|frighten)\b/.test(t)) return { verb: 'parley', mode: 'intimidate' };
+  if (/\b(parley|negotiate|talk|persuade|convince|reason|surrender|truce|stand\s+down|let\s+us\s+pass|spare|mercy|call\s+(it|them)\s+off)\b/.test(t)) return { verb: 'parley', mode: 'persuade' };
   if (/\b(rage|enrage|berserk)\b/.test(t)) return { verb: 'rage' };
   if (/\b(second\s+wind|rally)\b/.test(t)) return { verb: 'secondwind' };
   if (/\b(breathe|breath|exhale)\b/.test(t)) return { verb: 'breath' };
@@ -564,6 +568,30 @@ export function shortRest(world, rng) {
   const heal = rng.int(1, REST_DIE) + REST_FLAT;
   const next = Math.min(max, cur + heal);
   return { ...w, meta: { ...w.meta, escapeHp: next, ...(feats ? { escapeFeats: feats } : {}) } };
+}
+
+/**
+ * longRest(world) -> world
+ * A real night's sleep at a settlement: full HP, all spell slots back, every
+ * class/species reserve refilled. The long-rest counterpart to shortRest's
+ * catch-your-breath. Caller gates on location (settlement) and combat.
+ */
+export function longRest(world) {
+  const w = ensureWorld(world);
+  if (w.meta?.mode !== 'escape') return w;
+  const pc = w.party?.[0];
+  const max = Number(w.meta.escapeMaxHp) || (pc ? playerMaxHp(pc) : 0);
+  const feats = w.meta?.escapeFeats
+    ? { ...w.meta.escapeFeats, layPool: -1, relentlessUsed: false }
+    : null;
+  let out = {
+    ...w,
+    meta: { ...w.meta, escapeHp: max, escapeMaxHp: max, ...(feats ? { escapeFeats: feats } : {}) }
+  };
+  if (pc?.dnd?.spellcasting) {
+    out = applyDeltas(out, [{ op: 'restoreSpellSlots', entityId: pc.id || 'party' }]);
+  }
+  return out;
 }
 
 /**
@@ -627,7 +655,7 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
   const round = Number(w.combat.round) || 1;
   const rng = makeRng(seedFromString(`${w.meta?.seed || ''}|escapeCombat|${w.timeline.length}|r${round}`));
   const beats = [];
-  const { verb } = parseEscapeAction(actionText);
+  const { verb, mode } = parseEscapeAction(actionText);
   let warded = false;
   let wardBonus = 0;
 
@@ -772,6 +800,52 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
       beats.push('Your spell slots are spent. Cantrips will have to carry you.');
     } else {
       beats.push('You trace the sigil, but that spell is not yours.');
+    }
+  } else if (verb === 'parley') {
+    const living = enemies.filter(e => e && !e.defeated && (Number(e.hp) || 0) > 0);
+    const unbending = living.find(e => e.canParley === false);
+    if (!living.length) {
+      beats.push('There is no one left to talk to.');
+    } else if (unbending) {
+      beats.push(`The ${unbending.name} does not bargain. Words mean nothing to it.`);
+    } else {
+      // DC: 13 cold; 10 once you've dropped as many as still stand (they've
+      // seen what you can do); 8 if one of them is charmed (your "friend"
+      // vouches for you).
+      const downed = enemies.filter(e => e && e.defeated).length;
+      const anyCharmed = living.some(e => hasCondition(e.conditions, 'charmed'));
+      let dc = 13;
+      if (downed >= living.length && downed > 0) dc = 10;
+      if (anyCharmed) dc = 8;
+      // Skill off the sheet: Intimidation for threats, Persuasion for the
+      // rest. Legacy characters use raw CHARM.
+      const skill = mode === 'intimidate' ? 'Intimidation' : 'Persuasion';
+      const bonus = pc?.dnd ? (Number(pc.dnd.skills?.[skill]) || 0) : statMod(pc?.stats?.CHARM ?? 10);
+      const roll = rng.int(1, 20);
+      const total = roll + bonus + (feats.blessActive ? rng.int(1, 4) : 0);
+      if (roll !== 1 && total >= dc) {
+        beats.push(mode === 'intimidate'
+          ? `You let them see exactly what the next minute costs. (${skill} ${total} vs DC ${dc}) They weigh it — and back away, weapons low, until the dark takes them.`
+          : `You keep your hands open and your voice level. (${skill} ${total} vs DC ${dc}) A long beat — then they ease off, and the road is yours.`);
+        w = applyDeltas(w, [{
+          op: 'combatState',
+          set: { enemies, round, turnIndex: 0 }
+        }]);
+        w = { ...w, meta: { ...w.meta, escapeFeats: { ...feats } } };
+        w = endCombat(w, { reason: 'parley' });
+        return {
+          world: w,
+          result: {
+            beats,
+            combatSummary: beats.join(' '),
+            mechanicsLine: `[combat:parley | ${skill} ${total} vs DC ${dc}]`,
+            outcome: 'success'
+          }
+        };
+      }
+      beats.push(mode === 'intimidate'
+        ? `Your threat lands flat. (${skill} ${total} vs DC ${dc}) Steel answers.`
+        : `Words fail. (${skill} ${total} vs DC ${dc}) Steel answers.`);
     }
   } else if (verb === 'charm') {
     const spell = knownSlotSpell(pc, 'charm_person');

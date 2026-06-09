@@ -30,7 +30,7 @@ import { beginCombat, endCombat, mintEnemyFromNpc } from './combat/combatLifecyc
 import { resolveCompanionTurn } from './combat/companionTurn.js';
 import { castSpell } from './spell/castSpell.js';
 import { evaluateEncounter, selectCreatures, spawnEncounter } from './combat/encounterSpawn.js';
-import { resolveEscapeCombatTurn, initEscapeHp, initEscapeKit, shortRest, applySurpriseRound } from './combat/escapeCombat.js';
+import { resolveEscapeCombatTurn, initEscapeHp, initEscapeKit, shortRest, longRest, applySurpriseRound } from './combat/escapeCombat.js';
 import { statMod, maxWounds } from './ruleset/core/stats.js';
 
 // Pure-ish play loop: world -> {world, output}
@@ -315,6 +315,36 @@ function playerMoveCore(world, packsById, text) {
       return { world: startFight(), output: { narration: `Wizard: A loose stone turns underfoot — ${pend.foeName} spot you and attack.`, mechanics: '[encounter:slip-failed]' } };
     }
     return { world: startFight(), output: { narration: `Wizard: You set yourself and meet ${pend.foeName} head-on.`, mechanics: '[encounter:fight]' } };
+  }
+
+  // ── Long rest: a real night's sleep, settlements only ─────────────────────
+  // Full HP, all spell slots, every class reserve. The DM answer to "I sleep":
+  // in town you get a bed; in the wild the night is not your friend.
+  if (!w.combat?.active && w.meta?.mode === 'escape' && isLongRestIntent(text)) {
+    const hereId = w.map?.currentNodeId;
+    const here = (w.map?.nodes || []).find(n => n && n.id === hereId) || null;
+    if (here?.nodeType === 'settlement') {
+      const w1 = pushEvent(longRest(w), {
+        kind: 'resolution',
+        data: { actorId: 'party', text: String(text || ''), intent: String(text || ''), roll: 0, dc: 0, outcome: 'success', updateKind: 'long-rest' }
+      });
+      const pcRest = w1.party?.[0];
+      const slotsLine = pcRest?.dnd?.spellcasting ? ' Your magic settles back into reach.' : '';
+      return {
+        world: w1,
+        output: {
+          narration: `Wizard: You take a real bed and a real night. Sleep comes slow, then all at once. You wake whole — ${w1.meta.escapeHp}/${w1.meta.escapeMaxHp} HP.${slotsLine}`,
+          mechanics: '[rest:long]'
+        }
+      };
+    }
+    return {
+      world: w,
+      output: {
+        narration: 'Wizard: The open country is no bed — every sound out here has teeth. Find a settlement if you want real sleep.',
+        mechanics: '[rest:denied]'
+      }
+    };
   }
 
   const guard = guardPlayerText(w, text);
@@ -3185,6 +3215,13 @@ function runCompanionTurns(world, beats) {
 function isFleeIntent(text) {
   const t = String(text || '').toLowerCase();
   return /\b(flee|retreat|disengage|run\s+away|run\s+for\s+it|break\s+off)\b/.test(t);
+}
+
+// A LONG rest is deliberate language — 'sleep', 'make camp', 'turn in'.
+// A bare 'rest' stays a body action (sitting on a bench is not eight hours).
+function isLongRestIntent(text) {
+  const t = String(text || '').toLowerCase();
+  return /\b(sleep|long\s+rest|make\s+camp|camp\s+for\s+the\s+night|rest\s+for\s+the\s+night|bed\s+down|turn\s+in|get\s+some\s+sleep|spend\s+the\s+night)\b/.test(t);
 }
 
 // Detects "attack <name>" / "fight <name>" / "kill <name>" / "strike <name>"

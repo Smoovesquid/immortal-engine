@@ -1005,7 +1005,13 @@ function ensureEscapeFeats(x) {
     secondWindUsed: Boolean(x.secondWindUsed),
     breathUsed: Boolean(x.breathUsed),
     layPool: Number.isFinite(Number(x.layPool)) ? Math.max(-1, Math.trunc(Number(x.layPool))) : -1,
-    relentlessUsed: Boolean(x.relentlessUsed)
+    relentlessUsed: Boolean(x.relentlessUsed),
+    // Slot-spell battle state (per fight, beganAt-scoped like the rest):
+    // bless adds +1d4 to the player's attack rolls; armor of agathys grants
+    // temp HP and freezes melee attackers while it holds.
+    blessActive: Boolean(x.blessActive),
+    tempHp: clampIntMin(x.tempHp ?? 0, 0),
+    agathysActive: Boolean(x.agathysActive)
   };
 }
 

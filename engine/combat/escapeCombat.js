@@ -209,12 +209,20 @@ const SECOND_WIND_DIE = 10;
 
 function featState(w, beganAt) {
   const f = w.meta?.escapeFeats;
-  if (f && f.beganAt === beganAt) return { ...f };
+  if (f && f.beganAt === beganAt) {
+    // Older saved shapes may predate the slot-spell fields — default them.
+    return { blessActive: false, tempHp: 0, agathysActive: false, ...f };
+  }
+  // New fight: per-fight fields (rage, second wind, breath, bless, agathys)
+  // reset; the paladin pool and relentless endurance carry over.
   return {
     beganAt,
     rageActive: false,
     secondWindUsed: false,
     breathUsed: false,
+    blessActive: false,
+    tempHp: 0,
+    agathysActive: false,
     layPool: Number.isFinite(Number(f?.layPool)) ? f.layPool : -1,
     relentlessUsed: Boolean(f?.relentlessUsed)
   };
@@ -232,6 +240,29 @@ function breathInfo(pc) {
   const damage = d.species?.ancestry?.damage || 'fire';
   // Save DC 8 + CON mod + proficiency, per the SRD.
   return { damage, dc: 8 + d.mods.CON + d.profBonus, die: 6, count: 2 };
+}
+
+// Slot spells the escape resolver can cast directly. Each costs a 1st-level
+// slot (consumeSpellSlot). Anything not in this table is known-but-deep-engine
+// (charm person, entangle ride the full castSpell path, not the escape loop).
+const SLOT_SPELLS = {
+  magic_missile: { name: 'Magic Missile', verb: 'missile', kind: 'autohit', darts: 3, die: 4, flat: 1, type: 'force' },
+  witch_bolt: { name: 'Witch Bolt', verb: 'witch bolt', kind: 'attack', die: 12, type: 'lightning' },
+  bless: { name: 'Bless', verb: 'bless', kind: 'bless' },
+  shield: { name: 'Shield', verb: 'shield', kind: 'shield', acBonus: 5 },
+  armor_of_agathys: { name: 'Armor of Agathys', verb: 'agathys', kind: 'agathys', tempHp: 5, retaliate: 5 }
+};
+
+function knownSlotSpell(pc, ref) {
+  const d = pc?.dnd;
+  if (!d || !d.spellcasting) return null;
+  const known = Array.isArray(pc?.spells?.known) ? pc.spells.known : [];
+  if (!known.includes(ref) || !SLOT_SPELLS[ref]) return null;
+  return { ...SLOT_SPELLS[ref], ref, atkBonus: d.spellcasting.attackBonus };
+}
+
+function slotsLeft(pc) {
+  return Number(pc?.spells?.slots?.[1]) || 0;
 }
 
 function cureInfo(pc) {
@@ -408,6 +439,17 @@ export function escapeKitView(pc) {
         note: `Heal 1d8${fmtBonus(cure.mod + cure.discipleBonus)}. Uses a 1st-level slot. Type "cure".`
       });
     }
+    const slotNotes = {
+      magic_missile: 'Three darts, 1d4+1 each, never miss. Uses a slot. Type "missile".',
+      witch_bolt: 'Spell attack, 1d12 lightning. Uses a slot. Type "witch bolt".',
+      bless: '+1d4 on your attack rolls this fight. Uses a slot. Type "bless".',
+      shield: '+5 AC until your next turn. Uses a slot. Type "shield".',
+      armor_of_agathys: '5 temp HP; melee attackers take 5 cold. Uses a slot. Type "agathys".'
+    };
+    for (const ref of Object.keys(slotNotes)) {
+      const spell = knownSlotSpell(pc, ref);
+      if (spell) spells.push({ name: spell.name, verb: spell.verb, note: slotNotes[ref] });
+    }
     // Feature actions ride in the weapons column — they're things you DO.
     for (const f of featureActions(pc)) {
       weapons.push({ name: f.name, verb: f.verb, note: f.note });
@@ -458,7 +500,14 @@ export function parseEscapeAction(text) {
   if (/\b(breathe|breath|exhale)\b/.test(t)) return { verb: 'breath' };
   if (/\blay\s+(on\s+)?hands?\b/.test(t)) return { verb: 'layhands' };
   if (/\b(cure|heal|mend)\b/.test(t)) return { verb: 'cure' };
-  if (/\b(ward|shield|brace|defend|guard|block|parry)\b/.test(t)) return { verb: 'ward' };
+  // Slot spells. Witch bolt must outrank the generic "bolt" (a fire bolt
+  // verb); shield gets its own verb so the resolver can decide spell vs guard.
+  if (/\bwitch\s*bolt\b/.test(t)) return { verb: 'witchbolt' };
+  if (/\b(magic\s+missile|missiles?|darts?\s+of\s+force)\b/.test(t)) return { verb: 'missile' };
+  if (/\bbless\b/.test(t)) return { verb: 'bless' };
+  if (/\b(agathys|frost\s+armou?r|armou?r\s+of\s+agathys)\b/.test(t)) return { verb: 'agathys' };
+  if (/\bshield\b/.test(t)) return { verb: 'shield' };
+  if (/\b(ward|brace|defend|guard|block|parry)\b/.test(t)) return { verb: 'ward' };
   // Cantrip verbs — the hedge-caster's fire bolt plus every class cantrip
   // (eldritch blast, vicious mockery, sacred flame, produce flame) and the
   // generic "cast" so a player can just say "cast at it".
@@ -559,6 +608,7 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
   const beats = [];
   const { verb } = parseEscapeAction(actionText);
   let warded = false;
+  let wardBonus = 0;
 
   // ── Cover state ─────────────────────────────────────────────────────────────
   // Cover persists across rounds within one fight, scoped to combat.beganAt so a
@@ -667,11 +717,85 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
     } else {
       beats.push('You huff. Nothing comes out. (No draconic ancestry.)');
     }
-  } else if (verb === 'ward') {
-    warded = true;
-    beats.push(isCaster(pc)
-      ? `You raise a ward — a shimmer of force hardens the air around you (+${WARD_AC_BONUS} AC).`
-      : `You set your feet and raise your guard (+${WARD_AC_BONUS} AC).`);
+  } else if (verb === 'missile' || verb === 'witchbolt') {
+    const ref = verb === 'missile' ? 'magic_missile' : 'witch_bolt';
+    const spell = knownSlotSpell(pc, ref);
+    if (spell && slotsLeft(pc) > 0 && targetIdx >= 0) {
+      const target = enemies[targetIdx];
+      w = applyDeltas(w, [{ op: 'consumeSpellSlot', entityId: pc.id || 'party', level: 1 }]);
+      if (spell.kind === 'autohit') {
+        // Magic missile: every dart hits. No roll, no mercy.
+        let dmg = 0;
+        for (let i = 0; i < spell.darts; i++) dmg += rng.int(1, spell.die) + spell.flat;
+        const newHp = Math.max(0, (Number(target.hp) || 0) - dmg);
+        target.hp = newHp;
+        if (newHp <= 0) target.defeated = true;
+        beats.push(`Three darts of force streak unerringly into the ${target.name} — ${dmg} force${newHp <= 0 ? ' — it drops.' : `. (${newHp} HP left)`}`);
+      } else {
+        const roll = rng.int(1, 20);
+        const ac = Number(target.ac) || 10;
+        const total = roll + spell.atkBonus + (feats.blessActive ? rng.int(1, 4) : 0);
+        if (roll !== 1 && (roll === 20 || total >= ac)) {
+          const crit = roll === 20;
+          let dmg = rng.int(1, spell.die);
+          if (crit) dmg += rng.int(1, spell.die);
+          const newHp = Math.max(0, (Number(target.hp) || 0) - dmg);
+          target.hp = newHp;
+          if (newHp <= 0) target.defeated = true;
+          beats.push(`A crackling arc of lightning lashes the ${target.name} for ${dmg}${crit ? ' (critical!)' : ''}${newHp <= 0 ? ' — it drops.' : `. (${newHp} HP left)`}`);
+        } else {
+          beats.push(`Your witch bolt cracks past the ${target.name} and grounds out in the dirt.`);
+        }
+      }
+    } else if (spell && slotsLeft(pc) <= 0) {
+      beats.push('Your spell slots are spent. Cantrips will have to carry you.');
+    } else {
+      beats.push('You trace the sigil, but that spell is not yours.');
+    }
+  } else if (verb === 'bless') {
+    const spell = knownSlotSpell(pc, 'bless');
+    if (spell && slotsLeft(pc) > 0 && !feats.blessActive) {
+      w = applyDeltas(w, [{ op: 'consumeSpellSlot', entityId: pc.id || 'party', level: 1 }]);
+      feats.blessActive = true;
+      beats.push('A quiet radiance settles over you — Bless (+1d4 on your attack rolls this fight).');
+    } else if (feats.blessActive) {
+      beats.push('You are already blessed. Greed is unbecoming.');
+    } else if (spell) {
+      beats.push('Your spell slots are spent.');
+    } else {
+      beats.push('You mouth the litany, but no god is listening.');
+    }
+  } else if (verb === 'agathys') {
+    const spell = knownSlotSpell(pc, 'armor_of_agathys');
+    if (spell && slotsLeft(pc) > 0 && !feats.agathysActive) {
+      w = applyDeltas(w, [{ op: 'consumeSpellSlot', entityId: pc.id || 'party', level: 1 }]);
+      feats.agathysActive = true;
+      feats.tempHp += spell.tempHp;
+      beats.push(`Black ice sheathes you — Armor of Agathys (${spell.tempHp} temp HP; melee attackers take ${spell.retaliate} cold while it holds).`);
+    } else if (feats.agathysActive) {
+      beats.push('The ice already holds.');
+    } else if (spell) {
+      beats.push('Your spell slots are spent.');
+    } else {
+      beats.push('You whisper to the void. The void declines.');
+    }
+  } else if (verb === 'shield' || verb === 'ward') {
+    // "Shield" the word: if you know Shield the spell and have a slot, you get
+    // the spell (+5). Otherwise it's a plain ward/guard (+4) — the DM reads
+    // intent, not keywords.
+    const spell = verb === 'shield' ? knownSlotSpell(pc, 'shield') : null;
+    if (spell && slotsLeft(pc) > 0) {
+      w = applyDeltas(w, [{ op: 'consumeSpellSlot', entityId: pc.id || 'party', level: 1 }]);
+      warded = true;
+      wardBonus = spell.acBonus;
+      beats.push(`An invisible plane of force snaps into being — Shield (+${spell.acBonus} AC until your next turn).`);
+    } else {
+      warded = true;
+      wardBonus = WARD_AC_BONUS;
+      beats.push(isCaster(pc)
+        ? `You raise a ward — a shimmer of force hardens the air around you (+${WARD_AC_BONUS} AC).`
+        : `You set your feet and raise your guard (+${WARD_AC_BONUS} AC).`);
+    }
   } else if (targetIdx >= 0) {
     const target = enemies[targetIdx];
     const ac = Number(target.ac) || 10;
@@ -684,7 +808,7 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
     const cantrip = verb === 'firebolt' ? cantripProfile(pc) : null;
 
     if (cantrip) {
-      const total = roll + cantrip.atkBonus;
+      const total = roll + cantrip.atkBonus + (feats.blessActive ? rng.int(1, 4) : 0);
       const cname = cantrip.name.toLowerCase();
       if (roll === 1) {
         beats.push(`Your ${cname} sputters wide of the ${target.name}.`);
@@ -709,7 +833,7 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
       const styleAtk = (style === 'Archery' && melee.ranged) ? 2 : 0;
       const styleDmg = (style === 'Dueling' && !melee.ranged && !melee.twoHanded) ? 2 : 0;
       const rageDmg = (feats.rageActive && !melee.ranged) ? RAGE_DAMAGE_BONUS : 0;
-      const total = roll + melee.atkBonus + styleAtk;
+      const total = roll + melee.atkBonus + styleAtk + (feats.blessActive ? rng.int(1, 4) : 0);
       const wname = melee.name.toLowerCase();
       if (roll === 1) {
         beats.push(`You swing your ${wname} at the ${target.name} and miss.`);
@@ -828,7 +952,7 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
   // ── Enemy turns: each living enemy strikes the player ──────────────────────
   let hp = Number(w.meta.escapeHp) || 0;
   const coverBonus = coverState ? (Number(coverState.bonus) || 0) : 0;
-  const ac = playerAc(pc) + (warded ? WARD_AC_BONUS : 0) + coverBonus;
+  const ac = playerAc(pc) + (warded ? wardBonus : 0) + coverBonus;
   for (const e of enemies) {
     if (!e || e.defeated || (Number(e.hp) || 0) <= 0) continue;
     const roll = rng.int(1, 20);
@@ -845,6 +969,25 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
       dmg = Math.max(1, dmg);
       // Rage: resistance to weapon damage — the blow lands at half force.
       if (feats.rageActive) dmg = Math.max(1, Math.floor(dmg / 2));
+      // Armor of Agathys: while the black ice holds, it soaks the hit first
+      // and bites back at whoever struck it.
+      if (feats.tempHp > 0) {
+        let retaliated = false;
+        if (feats.agathysActive) {
+          const newEnemyHp = Math.max(0, (Number(e.hp) || 0) - 5);
+          e.hp = newEnemyHp;
+          retaliated = true;
+          if (newEnemyHp <= 0) e.defeated = true;
+        }
+        const soaked = Math.min(feats.tempHp, dmg);
+        feats.tempHp -= soaked;
+        dmg -= soaked;
+        if (feats.tempHp <= 0) feats.agathysActive = false;
+        if (soaked > 0) {
+          beats.push(`The ${e.name} cracks into the black ice — ${soaked} swallowed by the armor${retaliated ? `, and the ice bites back for 5 cold${e.defeated ? ' — it drops' : ''}` : ''}.`);
+        }
+        if (dmg <= 0) continue;
+      }
       hp = Math.max(0, hp - dmg);
       // Half-Orc Relentless Endurance: the blow that would drop you leaves you
       // standing at 1 HP instead. Once per rest.

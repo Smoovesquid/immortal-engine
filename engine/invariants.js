@@ -94,6 +94,33 @@ export function assertWorldInvariants(world) {
       }
     }
 
+    // v24 — SRD 5e sheet. null (legacy character) or a well-formed sheet:
+    // six abilities 1..20, positive maxHP, plausible AC, level 1..20.
+    const dnd = member.dnd;
+    if (dnd != null) {
+      if (typeof dnd !== 'object' || Array.isArray(dnd)) {
+        throw new Error(`Invariant: party[${i}].dnd must be object or null`);
+      }
+      const ab = dnd.abilities;
+      if (!ab || typeof ab !== 'object') {
+        throw new Error(`Invariant: party[${i}].dnd.abilities must be object`);
+      }
+      for (const k of ['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA']) {
+        if (!Number.isInteger(ab[k]) || ab[k] < 1 || ab[k] > 20) {
+          throw new Error(`Invariant: party[${i}].dnd.abilities.${k} must be integer 1..20`);
+        }
+      }
+      if (!Number.isInteger(dnd.maxHP) || dnd.maxHP < 1) {
+        throw new Error(`Invariant: party[${i}].dnd.maxHP must be positive integer`);
+      }
+      if (!Number.isInteger(dnd.ac) || dnd.ac < 5 || dnd.ac > 30) {
+        throw new Error(`Invariant: party[${i}].dnd.ac must be integer 5..30`);
+      }
+      if (!Number.isInteger(dnd.level) || dnd.level < 1 || dnd.level > 20) {
+        throw new Error(`Invariant: party[${i}].dnd.level must be integer 1..20`);
+      }
+    }
+
     const c = member.companion;
     if (i === 0) {
       if (c != null) {

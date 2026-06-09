@@ -28,7 +28,11 @@ import { normalizeCondition } from './combat/conditions.js';
 // (structureId, roomId) is stored in position.interior. Saves restore the
 // player's exact location (no reset on resume). scene.interior is derived
 // from position.interior, not stored separately.
-export const WORLD_VERSION = 23;
+// v24 — SRD character sheets. party members may carry a `dnd` block: the
+// canonical 5e sheet (six abilities, class/species, AC/HP/saves/skills).
+// Legacy five-stat block is DERIVED from it at chargen (see
+// engine/chargen/srd/abilities.js toLegacyStats). Old saves get dnd: null.
+export const WORLD_VERSION = 24;
 
 // Crunch caps (T1). Kept here so they're colocated with ensureEntity.
 const FOCI_CAP = 6;
@@ -588,7 +592,12 @@ function ensureEntity(e) {
     // to standing. locked = the final line crossed (light path closed). All
     // mutated only through effectsCore deltas; detection/consequences land in later
     // milestones — M0 is just the safe, defaulted shape.
-    morality: ensureMorality(x.morality)
+    morality: ensureMorality(x.morality),
+
+    // v24 — canonical SRD 5e sheet (or null for pre-v24 characters). Preserved
+    // verbatim: it is produced fully-formed by createCharacter5e and never
+    // partially mutated, so no per-field normalization here.
+    dnd: x.dnd && typeof x.dnd === 'object' ? x.dnd : null
   };
 }
 

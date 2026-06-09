@@ -22,10 +22,14 @@ import { renderCombatHudSection } from './panels/combatHud.js';
 import { renderInitiativeBar } from './panels/initiativeBar.js';
 import { renderLootPopup } from './panels/lootPopup.js';
 import tts from './tts.js';
-import { createWanderer } from '../engine/chargen/wanderer.js';
 import { rollDetailOptions } from '../engine/chargen/details.js';
-import { rollStats, STAT_KEYS } from '../engine/chargen/stats.js';
 import { seedFromString, makeRng } from '../engine/rng.js';
+import {
+  listSpecies, getSpecies, listClasses, getClass,
+  listBackgrounds5e, getBackground5e, listAlignments,
+  createCharacter5e, rollAbilityPools,
+  ABILITY_KEYS, ABILITY_NAMES, STANDARD_ARRAY, abilityMod, SKILL_KEYS
+} from '../engine/chargen/srd/index.js';
 
 tts.init();
 
@@ -327,33 +331,51 @@ function beginNewWorld() {
   const primaryId = String(ui.invoke.primaryId || 'fantasy');
   const mixerId = String(ui.invoke.mixerId || '').trim() || null;
 
-  // Preview stats for chargen display
-  const baseSeed = `${seed}|chargen|${primaryId}|f${Math.round(fate * 100)}|m:2d6+2`;
-  const statsRng = makeRng(seedFromString(`${baseSeed}|stats`));
-  const statsPreview = rollStats({ method: '2d6+2', rng: statsRng });
-
-  // Roll ritual options for player to pick from
-  const ritualRng = makeRng(seedFromString(`${baseSeed}|ritual`));
-  const ritualOptions = rollDetailOptions(primaryId, baseSeed, ritualRng);
+  // Ritual options — must mirror the seed path inside createCharacter5e so the
+  // options shown are the options the engine honors.
+  const ritualOptions = rollDetailOptions('fantasy', `${seed}|srd`, makeRng(seedFromString(`${seed}|srd|ritual`)));
 
   ui.chargen = {
+    step: 0,
     name: '',
     seed,
     fate,
     pack: { primaryId, mixerId },
+    reroll: 0,
+    pools: null, // rolled when the player reaches the dice step
+    fateRevealed: false,
     ritualOptions,
-    ritualPicks: { detail: null, keepsake: null, lineYouWontCross: null, rumor: null },
-    stats: statsPreview
+    picks: {
+      speciesId: null,
+      speciesChoices: { ancestry: null, asiChoice: [], skills: [] },
+      classId: null,
+      classChoices: { skills: [], fightingStyle: null, favoredEnemy: null, terrain: null, expertise: [], equipment: {} },
+      abilityMethod: '4d6',
+      abilityAssignment: {},
+      backgroundId: null,
+      alignmentId: null,
+      ritualPicks: { detail: null, keepsake: null, lineYouWontCross: null, rumor: null }
+    }
   };
   ui.screen = 'chargen';
   render();
 }
 
+function chargenPicksToCharacter() {
+  const cg = ui.chargen;
+  return createCharacter5e({
+    seed: cg.seed,
+    name: cg.name || undefined,
+    reroll: cg.reroll,
+    ...cg.picks
+  });
+}
+
 async function beginFromChargen() {
-  const { seed, fate, pack, ritualPicks, name } = ui.chargen;
+  const { seed, fate, pack } = ui.chargen;
   let pc, w0, w1, world, output;
   try {
-    pc = createWanderer({ seed, fate, name: name || undefined, ritualPicks });
+    pc = chargenPicksToCharacter();
 
     w0 = newWorld({
       seed,
@@ -589,10 +611,11 @@ function travelTo(text) {
 
 // Start a fresh Escape game with a new random seed (front door + Play Again).
 function playAgain() {
+  // Front door — roll up a character first, like a real table. A fresh random
+  // seed feeds the wizard; everything downstream is deterministic from it.
   const seed = `escape-${Date.now().toString(36)}-${Math.floor(Math.random() * 1e6).toString(36)}`;
-  ui.screen = 'play';
-  ui.play.lines = [];
-  beginFromInvocation({ seed, fate: 0.2, pack: { primaryId: 'fantasy', mixerId: null } });
+  ui.invoke.seed = seed;
+  beginNewWorld();
 }
 
 function renderInvoke() {
@@ -735,32 +758,334 @@ function renderInvoke() {
   );
 }
 
-function renderChargen() {
-  const cg = ui.chargen;
-  if (!cg) return el('div', {}, 'No chargen state.');
+// ---- Chargen wizard — rolling up a 5e character, PHB order ----
 
-  const stats = cg.stats;
-  const statOrder = ['MIGHT', 'AGILITY', 'WITS', 'GRIT', 'CHARM'];
+const CHARGEN_STEPS = ['Species', 'Class', 'Abilities', 'Origin', 'Ritual', 'Name & Sheet'];
 
-  const nameInput = el('input', {
-    class: 'input',
-    value: cg.name,
-    placeholder: 'Enter a name (or leave blank for a random one)',
-    onInput: (e) => { cg.name = String(e.target.value || ''); }
-  });
+function cgSelectableCard(label, sub, selected, onClick, body = null) {
+  return el('div', {
+    class: 'card',
+    style: {
+      cursor: 'pointer',
+      padding: '8px 10px',
+      border: selected ? '2px solid #c9a227' : '2px solid transparent'
+    },
+    onClick
+  },
+    el('div', { style: { fontWeight: 'bold' } }, label),
+    sub ? el('div', { class: 'small' }, sub) : null,
+    body
+  );
+}
 
-  const statRows = statOrder.map(k => {
-    const val = stats?.stats?.[k] ?? '?';
-    const mod = stats?.mods?.[k] ?? 0;
-    const modStr = (mod >= 0 ? '+' : '') + String(mod);
-    const dice = Array.isArray(stats?.dice?.[k]) ? stats.dice[k].join(', ') : '';
-    return el('div', { class: 'sheet-row' },
-      el('span', { class: 'sheet-k' }, k),
-      el('span', { class: 'sheet-v' }, `${val} (${modStr})`),
-      el('span', { class: 'small' }, ` [${dice}]`)
+function cgFmtMod(n) { return (n >= 0 ? '+' : '') + String(n); }
+
+function cgAsiText(sp) {
+  const parts = Object.entries(sp.asi).map(([k, v]) => `${k} +${v}`);
+  if (sp.asiChoice) parts.push(`+${sp.asiChoice.amount} to ${sp.asiChoice.count} others`);
+  return parts.join(', ');
+}
+
+function renderChargenSpecies(cg) {
+  const cards = listSpecies().map(sp => {
+    const selected = cg.picks.speciesId === sp.id;
+    return cgSelectableCard(
+      sp.subrace ? `${sp.name} (${sp.subrace})` : sp.name,
+      `${cgAsiText(sp)} · speed ${sp.speed} ft.`,
+      selected,
+      () => { cg.picks.speciesId = sp.id; render(); },
+      selected ? el('div', { class: 'stack', style: { marginTop: '6px' } },
+        ...sp.traits.map(t => el('div', { class: 'small' }, `• ${t.name} — ${t.text}`))
+      ) : null
     );
   });
 
+  const extra = [];
+  const sp = getSpecies(cg.picks.speciesId);
+  if (sp?.id === 'dragonborn') {
+    const choice = sp.choices.find(c => c.id === 'ancestry');
+    extra.push(el('div', { class: 'small', style: { marginTop: '8px' } }, 'Draconic Ancestry'));
+    extra.push(el('select', {
+      class: 'input',
+      onChange: (e) => { cg.picks.speciesChoices.ancestry = e.target.value; }
+    }, ...choice.options.map(o =>
+      el('option', { value: o.id, selected: cg.picks.speciesChoices.ancestry === o.id || undefined }, `${o.name} — ${o.breath}`)
+    )));
+  }
+  if (sp?.id === 'half-elf') {
+    extra.push(el('div', { class: 'small', style: { marginTop: '8px' } }, 'Ability Versatility: +1 to two abilities (not CHA)'));
+    const opts = ABILITY_KEYS.filter(k => k !== 'CHA');
+    for (let slot = 0; slot < 2; slot++) {
+      extra.push(el('select', {
+        class: 'input',
+        onChange: (e) => {
+          const arr = cg.picks.speciesChoices.asiChoice;
+          arr[slot] = e.target.value;
+          cg.picks.speciesChoices.asiChoice = [...new Set(arr.filter(Boolean))];
+          render();
+        }
+      },
+        el('option', { value: '' }, `— choose ability ${slot + 1} —`),
+        ...opts.map(k => el('option', {
+          value: k,
+          selected: cg.picks.speciesChoices.asiChoice[slot] === k || undefined
+        }, ABILITY_NAMES[k]))
+      ));
+    }
+    extra.push(el('div', { class: 'small', style: { marginTop: '8px' } }, 'Skill Versatility: any two skills'));
+    for (let slot = 0; slot < 2; slot++) {
+      extra.push(el('select', {
+        class: 'input',
+        onChange: (e) => {
+          const arr = cg.picks.speciesChoices.skills;
+          arr[slot] = e.target.value;
+          cg.picks.speciesChoices.skills = [...new Set(arr.filter(Boolean))];
+          render();
+        }
+      },
+        el('option', { value: '' }, `— choose skill ${slot + 1} —`),
+        ...SKILL_KEYS.map(s => el('option', {
+          value: s,
+          selected: cg.picks.speciesChoices.skills[slot] === s || undefined
+        }, s))
+      ));
+    }
+  }
+
+  return el('div', { class: 'stack' },
+    el('div', { class: 'small' }, 'Every adventurer starts somewhere. Choose your species.'),
+    ...cards,
+    ...extra
+  );
+}
+
+function renderChargenClass(cg) {
+  const cards = listClasses().map(c => {
+    const selected = cg.picks.classId === c.id;
+    const featureNames = [...c.features, ...(c.subclass?.features || [])].map(f => f.name).join(', ');
+    return cgSelectableCard(
+      c.name + (c.subclass ? ` (${c.subclass.name})` : ''),
+      `d${c.hitDie} hit die · saves ${c.saves.join('/')}${c.spellcasting ? ' · spellcaster (' + c.spellcasting.ability + ')' : ''}`,
+      selected,
+      () => {
+        if (cg.picks.classId !== c.id) {
+          cg.picks.classId = c.id;
+          cg.picks.classChoices = { skills: [], fightingStyle: null, favoredEnemy: null, terrain: null, expertise: [], equipment: {} };
+        }
+        render();
+      },
+      selected && featureNames ? el('div', { class: 'small', style: { marginTop: '6px' } }, `Level 1: ${featureNames}`) : null
+    );
+  });
+
+  const extra = [];
+  const c = getClass(cg.picks.classId);
+  if (c) {
+    // Skill choices
+    const from = c.skillChoices.from === 'any' ? SKILL_KEYS : c.skillChoices.from;
+    const chosen = cg.picks.classChoices.skills;
+    extra.push(el('div', { class: 'small', style: { marginTop: '8px' } }, `Choose ${c.skillChoices.count} skills (${chosen.length}/${c.skillChoices.count})`));
+    extra.push(el('div', { class: 'stack' }, ...from.map(s => {
+      const isOn = chosen.includes(s);
+      return el('label', { class: 'card', style: { cursor: 'pointer', display: 'block', padding: '2px 8px' } },
+        el('input', {
+          type: 'checkbox',
+          checked: isOn || undefined,
+          onChange: () => {
+            if (isOn) cg.picks.classChoices.skills = chosen.filter(x => x !== s);
+            else if (chosen.length < c.skillChoices.count) cg.picks.classChoices.skills = [...chosen, s];
+            render();
+          }
+        }), ' ' + s
+      );
+    })));
+
+    // Special choices (fighting style, favored enemy, terrain)
+    for (const choice of c.choices || []) {
+      if (choice.pickSkills) {
+        if (choice.id === 'expertise') {
+          extra.push(el('div', { class: 'small', style: { marginTop: '8px' } }, 'Expertise: double proficiency on two skills you know'));
+          for (let slot = 0; slot < choice.pickSkills; slot++) {
+            extra.push(el('select', {
+              class: 'input',
+              onChange: (e) => {
+                const arr = cg.picks.classChoices.expertise;
+                arr[slot] = e.target.value;
+                cg.picks.classChoices.expertise = [...new Set(arr.filter(Boolean))];
+                render();
+              }
+            },
+              el('option', { value: '' }, `— expertise ${slot + 1} —`),
+              ...cg.picks.classChoices.skills.map(s => el('option', {
+                value: s, selected: cg.picks.classChoices.expertise[slot] === s || undefined
+              }, s))
+            ));
+          }
+        }
+        continue;
+      }
+      extra.push(el('div', { class: 'small', style: { marginTop: '8px' } }, choice.name));
+      extra.push(el('select', {
+        class: 'input',
+        onChange: (e) => { cg.picks.classChoices[choice.id] = e.target.value; render(); }
+      },
+        ...choice.options.map(o => el('option', {
+          value: o.id,
+          selected: cg.picks.classChoices[choice.id] === o.id || undefined
+        }, o.text ? `${o.name} — ${o.text}` : o.name))
+      ));
+    }
+
+    // Equipment choices — the classic (a) or (b)
+    const slotsWithChoice = (c.equipment || []).filter(s => s.options.length > 1);
+    if (slotsWithChoice.length) {
+      extra.push(el('div', { class: 'small', style: { marginTop: '8px' } }, 'Starting equipment'));
+      for (const slot of slotsWithChoice) {
+        extra.push(el('select', {
+          class: 'input',
+          onChange: (e) => { cg.picks.classChoices.equipment[slot.id] = Number(e.target.value); render(); }
+        },
+          ...slot.options.map((opt, i) => el('option', {
+            value: String(i),
+            selected: (cg.picks.classChoices.equipment[slot.id] ?? 0) === i || undefined
+          }, `(${String.fromCharCode(97 + i)}) ${opt.join(', ')}`))
+        ));
+      }
+    }
+  }
+
+  return el('div', { class: 'stack' },
+    el('div', { class: 'small' }, 'Your class is what you do when the torch gutters out.'),
+    ...cards,
+    ...extra
+  );
+}
+
+function renderChargenAbilities(cg) {
+  const method = cg.picks.abilityMethod;
+  const sp = getSpecies(cg.picks.speciesId);
+
+  const methodRow = el('div', { class: 'row' },
+    el('button', {
+      class: 'btn' + (method === '4d6' ? ' primary' : ''),
+      onClick: () => { cg.picks.abilityMethod = '4d6'; cg.picks.abilityAssignment = {}; render(); }
+    }, 'Roll 4d6, drop lowest'),
+    el('button', {
+      class: 'btn' + (method === 'standard' ? ' primary' : ''),
+      onClick: () => { cg.picks.abilityMethod = 'standard'; cg.picks.abilityAssignment = {}; render(); }
+    }, 'Standard array (15 14 13 12 10 8)')
+  );
+
+  let totals;
+  const diceSection = [];
+  if (method === '4d6') {
+    if (!cg.pools) cg.pools = rollAbilityPools({ seed: cg.seed, reroll: cg.reroll });
+    totals = cg.pools.totals;
+    diceSection.push(el('div', { class: 'small', style: { marginTop: '8px' } }, 'Your rolls (lowest die dropped):'));
+    cg.pools.pools.forEach((p, i) => {
+      diceSection.push(el('div', { class: 'sheet-row' },
+        el('span', { class: 'sheet-k' }, `Pool ${i + 1}`),
+        el('span', { class: 'sheet-v' }, String(p.total)),
+        el('span', { class: 'small' }, `  [${p.dice.join(' ')}] — dropped ${p.dropped}`)
+      ));
+    });
+    if (cg.reroll === 0) {
+      diceSection.push(el('button', {
+        class: 'btn',
+        onClick: () => {
+          cg.reroll = 1;
+          cg.pools = rollAbilityPools({ seed: cg.seed, reroll: 1 });
+          cg.picks.abilityAssignment = {};
+          cg.picks.reroll = 1;
+          render();
+        }
+      }, 'Reroll all six (once — no take-backs)'));
+    } else {
+      diceSection.push(el('div', { class: 'small' }, 'You used your reroll. The dice are the dice.'));
+    }
+  } else {
+    totals = [...STANDARD_ARRAY];
+  }
+  cg.picks.reroll = cg.reroll;
+
+  // Assignment: each ability picks one of the totals; each total usable once.
+  const assignment = cg.picks.abilityAssignment;
+  const counts = {};
+  for (const t of totals) counts[t] = (counts[t] || 0) + 1;
+  const used = {};
+  for (const k of ABILITY_KEYS) {
+    const v = assignment[k];
+    if (v != null) used[v] = (used[v] || 0) + 1;
+  }
+
+  const assignRows = ABILITY_KEYS.map(k => {
+    const asiFixed = sp?.asi?.[k] || 0;
+    const chosenAsi = (sp?.asiChoice && cg.picks.speciesChoices.asiChoice.includes(k)) ? sp.asiChoice.amount : 0;
+    const bonus = asiFixed + chosenAsi;
+    const v = assignment[k];
+    const finalScore = v != null ? v + bonus : null;
+    const options = Object.keys(counts).map(Number).sort((a, b) => b - a).filter(t =>
+      (used[t] || 0) < counts[t] || v === t
+    );
+    return el('div', { class: 'sheet-row' },
+      el('span', { class: 'sheet-k' }, `${ABILITY_NAMES[k]} (${k})`),
+      el('select', {
+        class: 'input', style: { width: '90px', display: 'inline-block' },
+        onChange: (e) => {
+          const val = e.target.value === '' ? null : Number(e.target.value);
+          if (val === null) delete assignment[k];
+          else assignment[k] = val;
+          render();
+        }
+      },
+        el('option', { value: '' }, '—'),
+        ...options.map(t => el('option', { value: String(t), selected: v === t || undefined }, String(t)))
+      ),
+      el('span', { class: 'small' },
+        bonus ? `  +${bonus} species` : '',
+        finalScore != null ? `  → ${finalScore} (${cgFmtMod(abilityMod(finalScore))})` : ''
+      )
+    );
+  });
+
+  return el('div', { class: 'stack' },
+    el('div', { class: 'small' }, 'The dice decide what you have. You decide where it goes.'),
+    methodRow,
+    ...diceSection,
+    el('div', { class: 'small', style: { marginTop: '8px' } }, 'Assign your scores:'),
+    ...assignRows
+  );
+}
+
+function renderChargenOrigin(cg) {
+  const bgCards = listBackgrounds5e().map(b => {
+    const selected = cg.picks.backgroundId === b.id;
+    return cgSelectableCard(
+      b.name,
+      `${(b.skills || []).join(', ')} · ${b.feature.name}`,
+      selected,
+      () => { cg.picks.backgroundId = b.id; render(); },
+      selected ? el('div', { class: 'small', style: { marginTop: '6px' } }, `${b.feature.text} — "${b.hook}"`) : null
+    );
+  });
+
+  const grid = el('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '6px' } },
+    ...listAlignments().map(a => cgSelectableCard(
+      a.name, a.text,
+      cg.picks.alignmentId === a.id,
+      () => { cg.picks.alignmentId = a.id; render(); }
+    ))
+  );
+
+  return el('div', { class: 'stack' },
+    el('div', { class: 'small' }, 'Who were you before the road? Choose a background.'),
+    ...bgCards,
+    el('div', { class: 'small', style: { marginTop: '10px' } }, 'And where your compass points — alignment.'),
+    grid
+  );
+}
+
+function renderChargenRitual(cg) {
   const ritualCategories = ['detail', 'keepsake', 'lineYouWontCross', 'rumor'];
   const ritualLabels = {
     detail: 'A telling detail',
@@ -769,61 +1094,156 @@ function renderChargen() {
     rumor: 'A rumor you believe'
   };
 
-  const ritualSections = ritualCategories.map(cat => {
+  const sections = ritualCategories.map(cat => {
     const options = cg.ritualOptions?.[cat] || [];
     if (!options.length) return null;
-
-    const radios = options.map((opt, i) => {
-      const isSelected = cg.ritualPicks[cat] === opt;
+    const radios = options.map(opt => {
+      const isSelected = cg.picks.ritualPicks[cat] === opt;
       return el('label', { class: 'card', style: { cursor: 'pointer', display: 'block', padding: '4px 8px' } },
         el('input', {
           type: 'radio',
           name: `ritual-${cat}`,
           checked: isSelected || undefined,
-          onChange: () => { cg.ritualPicks[cat] = opt; render(); }
+          onChange: () => { cg.picks.ritualPicks[cat] = opt; render(); }
         }),
         ' ' + opt
       );
     });
-
     return el('div', { class: 'stack' },
-      el('div', { class: 'small' }, ritualLabels[cat] || cat),
+      el('div', { class: 'small', style: { marginTop: '6px' } }, ritualLabels[cat]),
       ...radios
     );
   });
 
-  const beginBtn = el('button', {
-    class: 'btn primary',
-    onClick: () => beginFromChargen()
-  }, 'Begin Adventure');
+  // Dark fate — flipped face-up as the capstone.
+  const preview = chargenPicksToCharacter();
+  const df = preview.background?.darkFate;
+  const fateCard = cg.fateRevealed
+    ? el('div', { class: 'card', style: { marginTop: '10px', border: '2px solid #7a2d2d' } },
+        el('div', { style: { fontWeight: 'bold' } }, `Dark Fate: ${df?.name || '?'}`),
+        el('div', { class: 'small' }, df?.text || ''))
+    : el('button', {
+        class: 'btn', style: { marginTop: '10px' },
+        onClick: () => { cg.fateRevealed = true; render(); }
+      }, 'Turn over the last card…');
+
+  return el('div', { class: 'stack' },
+    el('div', { class: 'small' }, 'The table quiets. Four small truths, then the card you don\'t get to choose.'),
+    ...sections.filter(Boolean),
+    fateCard
+  );
+}
+
+function renderChargenSheet(cg) {
+  const nameInput = el('input', {
+    class: 'input',
+    value: cg.name,
+    placeholder: 'Name your character (or take the suggestion)',
+    onInput: (e) => { cg.name = String(e.target.value || ''); }
+  });
+
+  const pc = chargenPicksToCharacter();
+  const d = pc.dnd;
+
+  const abilityRows = ABILITY_KEYS.map(k => el('div', { class: 'sheet-row' },
+    el('span', { class: 'sheet-k' }, k),
+    el('span', { class: 'sheet-v' }, `${d.abilities[k]} (${cgFmtMod(d.mods[k])})`),
+    el('span', { class: 'small' }, d.saveProfs.includes(k) ? `  save ${cgFmtMod(d.saves[k])} ●` : `  save ${cgFmtMod(d.saves[k])}`)
+  ));
+
+  const profSkills = d.skillProfs.map(s =>
+    `${s} ${cgFmtMod(d.skills[s])}${d.expertise.includes(s) ? ' ★' : ''}`
+  ).join(' · ');
+
+  return el('div', { class: 'stack' },
+    el('div', { class: 'small' }, 'Last thing on the sheet, first thing they\'ll carve on the stone.'),
+    nameInput,
+    el('div', { class: 'small' }, `Suggested: ${pc.name}`),
+
+    el('div', { class: 'card stack', style: { marginTop: '8px' } },
+      el('div', { style: { fontWeight: 'bold' } }, `${cg.name || pc.name} — ${pc.archetype}`),
+      el('div', { class: 'small' }, `${d.background.name} · ${d.alignment.name} · ${d.species.size}, ${d.speed} ft.`),
+      el('div', { class: 'sheet-row' },
+        el('span', { class: 'sheet-k' }, 'HP'), el('span', { class: 'sheet-v' }, String(d.maxHP)),
+        el('span', { class: 'sheet-k', style: { marginLeft: '12px' } }, 'AC'), el('span', { class: 'sheet-v' }, String(d.ac)),
+        el('span', { class: 'sheet-k', style: { marginLeft: '12px' } }, 'Init'), el('span', { class: 'sheet-v' }, cgFmtMod(d.initiative)),
+        el('span', { class: 'sheet-k', style: { marginLeft: '12px' } }, 'Prof'), el('span', { class: 'sheet-v' }, cgFmtMod(d.profBonus))
+      ),
+      ...abilityRows,
+      el('div', { class: 'small', style: { marginTop: '6px' } }, `Skills: ${profSkills}`),
+      el('div', { class: 'small' }, `Passive Perception ${d.passivePerception}`),
+      d.spellcasting ? el('div', { class: 'small' }, `Spellcasting (${d.spellcasting.ability}): DC ${d.spellcasting.saveDC}, attack ${cgFmtMod(d.spellcasting.attackBonus)}`) : null,
+      el('div', { class: 'small', style: { marginTop: '6px' } }, `Features: ${d.features.map(f => f.name).join(', ')}`),
+      el('div', { class: 'small', style: { marginTop: '6px' } }, `Gear: ${d.equipment.join(', ')}`)
+    )
+  );
+}
+
+function chargenStepComplete(cg) {
+  const step = cg.step;
+  if (step === 0) return Boolean(cg.picks.speciesId);
+  if (step === 1) {
+    const c = getClass(cg.picks.classId);
+    return Boolean(c) && cg.picks.classChoices.skills.length === c.skillChoices.count;
+  }
+  if (step === 2) return ABILITY_KEYS.every(k => cg.picks.abilityAssignment[k] != null);
+  if (step === 3) return Boolean(cg.picks.backgroundId) && Boolean(cg.picks.alignmentId);
+  if (step === 4) return cg.fateRevealed;
+  return true;
+}
+
+function renderChargen() {
+  const cg = ui.chargen;
+  if (!cg) return el('div', {}, 'No chargen state.');
+
+  const stepBody = [
+    renderChargenSpecies,
+    renderChargenClass,
+    renderChargenAbilities,
+    renderChargenOrigin,
+    renderChargenRitual,
+    renderChargenSheet
+  ][cg.step](cg);
+
+  const crumbs = el('div', { class: 'small' },
+    CHARGEN_STEPS.map((s, i) =>
+      i === cg.step ? `[${i + 1}. ${s}]` : `${i + 1}. ${s}`
+    ).join('  →  ')
+  );
+
+  const canAdvance = chargenStepComplete(cg);
+  const isLast = cg.step === CHARGEN_STEPS.length - 1;
 
   const backBtn = el('button', {
     class: 'btn',
-    onClick: () => { ui.screen = 'invoke'; render(); }
-  }, 'Back');
+    onClick: () => {
+      if (cg.step === 0) { ui.screen = 'invoke'; }
+      else cg.step -= 1;
+      render();
+    }
+  }, cg.step === 0 ? 'Back' : '← Back');
+
+  const nextBtn = el('button', {
+    class: 'btn primary',
+    disabled: canAdvance ? undefined : true,
+    onClick: () => {
+      if (!chargenStepComplete(cg)) return;
+      if (isLast) beginFromChargen();
+      else { cg.step += 1; render(); }
+    }
+  }, isLast ? 'Begin Adventure' : 'Next →');
 
   return el('div', { class: 'container stack' },
     el('div', { class: 'panel' },
       el('div', { class: 'header' },
         el('div', {},
-          el('div', { class: 'title' }, 'Create Your Wanderer'),
-          el('div', { class: 'sub' }, 'Immortal Engine — build 005')
+          el('div', { class: 'title' }, 'Roll Up Your Character'),
+          el('div', { class: 'sub' }, crumbs)
         )
       ),
       el('div', { class: 'card stack' },
-        el('div', { class: 'small' }, 'Name'),
-        nameInput,
-
-        el('div', { class: 'small', style: { marginTop: '8px' } }, 'Archetype'),
-        el('div', {}, 'Wanderer'),
-
-        el('div', { class: 'small', style: { marginTop: '8px' } }, 'Stats (2d6+2)'),
-        ...statRows,
-
-        el('div', { class: 'small', style: { marginTop: '12px' } }, 'Ritual Choices'),
-        ...ritualSections.filter(Boolean),
-
-        el('div', { class: 'row', style: { marginTop: '12px' } }, backBtn, beginBtn)
+        stepBody,
+        el('div', { class: 'row', style: { marginTop: '12px' } }, backBtn, nextBtn)
       )
     )
   );

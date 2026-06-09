@@ -670,6 +670,18 @@ export function applyDeltas(world, deltas = []) {
 
     // ── Pass T3 — spell slot & concentration ops ────────────────────────────
 
+    // v24 — XP award. party[0] only (solo advancement; companions later).
+    if (kind === 'gainXp') {
+      const amount = toInt(op.amount ?? 0);
+      if (amount <= 0) continue;
+      const party = Array.isArray(w.party) ? w.party : [];
+      if (!party[0]) continue;
+      const nextParty = [...party];
+      nextParty[0] = { ...party[0], xp: Math.max(0, toInt(party[0].xp ?? 0) + amount) };
+      w = { ...w, party: nextParty };
+      continue;
+    }
+
     if (kind === 'consumeSpellSlot') {
       const level = toInt(op.level ?? 0);
       if (level < 1 || level > 5) continue;

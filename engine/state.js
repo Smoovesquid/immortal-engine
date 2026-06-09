@@ -1004,6 +1004,7 @@ function ensureEscapeFeats(x) {
     rageActive: Boolean(x.rageActive),
     secondWindUsed: Boolean(x.secondWindUsed),
     breathUsed: Boolean(x.breathUsed),
+    actionSurgeUsed: Boolean(x.actionSurgeUsed),
     layPool: Number.isFinite(Number(x.layPool)) ? Math.max(-1, Math.trunc(Number(x.layPool))) : -1,
     relentlessUsed: Boolean(x.relentlessUsed),
     // Slot-spell battle state (per fight, beganAt-scoped like the rest):

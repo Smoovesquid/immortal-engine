@@ -39,6 +39,8 @@ import { rollLootForCR } from '../ruleset/core/loot/lootRoll.js';
 import { rollDice } from './diceRoller.js';
 import { coverForRoom, bestCover } from '../structures/coverFeatures.js';
 import { applyCondition, hasCondition, removeAllConditions } from './conditions.js';
+import { xpForEnemies } from '../ruleset/core/xp.js';
+import { levelUpSheet, levelForXp } from '../chargen/srd/levelUp.js';
 
 // ── Player build (level-1 hedge-caster escapee) ──────────────────────────────
 const PLAYER_BASE_HP = 14;   // + GRIT mod
@@ -212,7 +214,7 @@ function featState(w, beganAt) {
   const f = w.meta?.escapeFeats;
   if (f && f.beganAt === beganAt) {
     // Older saved shapes may predate the slot-spell fields — default them.
-    return { blessActive: false, tempHp: 0, agathysActive: false, ...f };
+    return { blessActive: false, tempHp: 0, agathysActive: false, actionSurgeUsed: false, ...f };
   }
   // New fight: per-fight fields (rage, second wind, breath, bless, agathys)
   // reset; the paladin pool and relentless endurance carry over.
@@ -221,6 +223,7 @@ function featState(w, beganAt) {
     rageActive: false,
     secondWindUsed: false,
     breathUsed: false,
+    actionSurgeUsed: false,
     blessActive: false,
     tempHp: 0,
     agathysActive: false,
@@ -307,6 +310,16 @@ export function featureActions(pc) {
   }
   if (hasFeature(pc, 'layOnHands')) {
     out.push({ id: 'layHands', name: 'Lay on Hands', verb: 'lay on hands', note: `A pool of ${LAY_ON_HANDS_PER_LEVEL * d.level} healing. Type "lay on hands".` });
+  }
+  // Level-2 actions earned through play.
+  if (hasFeature(pc, 'actionSurge')) {
+    out.push({ id: 'actionSurge', name: 'Action Surge', verb: 'surge', note: 'Two attacks this turn. Once per fight. Type "surge".' });
+  }
+  if (hasFeature(pc, 'recklessAttack')) {
+    out.push({ id: 'reckless', name: 'Reckless Attack', verb: 'reckless', note: 'Advantage on your melee swings; they get the same on you. Type "reckless".' });
+  }
+  if (hasFeature(pc, 'divineSmite')) {
+    out.push({ id: 'smite', name: 'Divine Smite', verb: 'smite', note: 'Strike, and burn a slot for +2d8 radiant on the hit. Type "smite".' });
   }
   return out;
 }
@@ -512,6 +525,9 @@ export function parseEscapeAction(text) {
   if (/\b(intimidate|threaten|menace|scare\s+them|frighten)\b/.test(t)) return { verb: 'parley', mode: 'intimidate' };
   if (/\b(parley|negotiate|talk|persuade|convince|reason|surrender|truce|stand\s+down|let\s+us\s+pass|spare|mercy|call\s+(it|them)\s+off)\b/.test(t)) return { verb: 'parley', mode: 'persuade' };
   if (/\b(rage|enrage|berserk)\b/.test(t)) return { verb: 'rage' };
+  if (/\b(action\s+surge|surge)\b/.test(t)) return { verb: 'surge' };
+  if (/\breckless/.test(t)) return { verb: 'reckless' };
+  if (/\bsmite\b/.test(t)) return { verb: 'smite' };
   if (/\b(second\s+wind|rally)\b/.test(t)) return { verb: 'secondwind' };
   if (/\b(breathe|breath|exhale)\b/.test(t)) return { verb: 'breath' };
   if (/\blay\s+(on\s+)?hands?\b/.test(t)) return { verb: 'layhands' };
@@ -565,9 +581,56 @@ export function shortRest(world, rng) {
   if (max <= 0 || cur >= max) {
     return feats ? { ...w, meta: { ...w.meta, escapeFeats: feats } } : w;
   }
-  const heal = rng.int(1, REST_DIE) + REST_FLAT;
+  // Song of Rest (bard 2): your music adds 1d6 to short-rest healing.
+  const song = (w.party?.[0]?.dnd?.features || []).some(f => f?.effect?.type === 'songOfRest') ? rng.int(1, 6) : 0;
+  const heal = rng.int(1, REST_DIE) + REST_FLAT + song;
   const next = Math.min(max, cur + heal);
   return { ...w, meta: { ...w.meta, escapeHp: next, ...(feats ? { escapeFeats: feats } : {}) } };
+}
+
+/**
+ * awardXpAndLevel(world, enemies, beats) -> world
+ * Overcoming an encounter — by steel or by talk — earns the XP. Level-ups
+ * apply immediately at the moment of triumph: HP/prof/slots/features
+ * recomputed by the pure levelUpSheet, escape HP raised by the gain.
+ */
+function awardXpAndLevel(world, enemies, beats) {
+  let w = world;
+  const pc = w.party?.[0];
+  if (!pc) return w;
+  const xp = xpForEnemies(enemies);
+  if (xp <= 0) return w;
+  w = applyDeltas(w, [{ op: 'gainXp', amount: xp }]);
+  beats.push(`(+${xp} XP)`);
+
+  let cur = w.party[0];
+  if (!cur.dnd) return w;
+  let leveled = false;
+  while (levelForXp(cur.xp) > cur.dnd.level && cur.dnd.level < 20) {
+    const before = cur.dnd.maxHP;
+    cur = levelUpSheet(cur);
+    const gained = Array.isArray(cur.gainedFeatures) && cur.gainedFeatures.length
+      ? ` New: ${cur.gainedFeatures.join(', ')}.`
+      : '';
+    beats.push(`LEVEL ${cur.dnd.level}! +${cur.dnd.maxHP - before} HP.${gained}`);
+    leveled = true;
+  }
+  if (leveled) {
+    const { gainedFeatures, ...clean } = cur;
+    const party = [...w.party];
+    party[0] = clean;
+    const hpGain = clean.dnd.maxHP - (Number(w.meta.escapeMaxHp) || clean.dnd.maxHP);
+    w = {
+      ...w,
+      party,
+      meta: {
+        ...w.meta,
+        escapeMaxHp: clean.dnd.maxHP,
+        escapeHp: Math.min(clean.dnd.maxHP, (Number(w.meta.escapeHp) || 0) + Math.max(0, hpGain))
+      }
+    };
+  }
+  return w;
 }
 
 /**
@@ -658,6 +721,7 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
   const { verb, mode } = parseEscapeAction(actionText);
   let warded = false;
   let wardBonus = 0;
+  let recklessThisRound = false;
 
   // ── Cover state ─────────────────────────────────────────────────────────────
   // Cover persists across rounds within one fight, scoped to combat.beganAt so a
@@ -832,6 +896,8 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
           set: { enemies, round, turnIndex: 0 }
         }]);
         w = { ...w, meta: { ...w.meta, escapeFeats: { ...feats } } };
+        // You overcame the encounter — talked past it, but overcame it. Full XP.
+        w = awardXpAndLevel(w, enemies, beats);
         w = endCombat(w, { reason: 'parley' });
         return {
           world: w,
@@ -966,6 +1032,8 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
         const crit = roll === 20;
         let dmg = rng.int(1, cantrip.die);
         if (crit) dmg += rng.int(1, cantrip.die);
+        // Agonizing Blast (warlock 2): CHA mod rides the eldritch blast.
+        if (cantrip.ref === 'eldritch_blast' && hasFeature(pc, 'agonizingBlast')) dmg += Math.max(0, pc.dnd.mods.CHA);
         dmg = Math.max(1, dmg);
         const newHp = Math.max(0, (Number(target.hp) || 0) - dmg);
         target.hp = newHp;
@@ -978,43 +1046,96 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
       // weapon strike (default — also where a cantrip-less martial's "cast" lands)
       const melee = meleeProfile(pc);
       const style = pc?.dnd?.fightingStyle || null;
-      // Archery: +2 to ranged attack rolls. Dueling: +2 damage with a
-      // one-handed melee weapon.
-      const styleAtk = (style === 'Archery' && melee.ranged) ? 2 : 0;
+      // Archery: +2 to ranged attack rolls (fighter style at 1, ranger at 2).
+      // Dueling: +2 damage with a one-handed melee weapon.
+      const archery = style === 'Archery' || hasFeature(pc, 'rangedAttackBonus');
+      const styleAtk = (archery && melee.ranged) ? 2 : 0;
       const styleDmg = (style === 'Dueling' && !melee.ranged && !melee.twoHanded) ? 2 : 0;
       const rageDmg = (feats.rageActive && !melee.ranged) ? RAGE_DAMAGE_BONUS : 0;
-      const total = roll + melee.atkBonus + styleAtk + (feats.blessActive ? rng.int(1, 4) : 0) + (hasCondition(target.conditions, 'restrained') ? RESTRAINED_PENALTY : 0);
       const wname = melee.name.toLowerCase();
-      if (roll === 1) {
-        beats.push(`You swing your ${wname} at the ${target.name} and miss.`);
-      } else if (roll === 20 || total >= ac) {
-        const crit = roll === 20;
-        let dmg = rng.int(1, melee.die) + melee.dmgMod + styleDmg + rageDmg;
-        if (crit) dmg += rng.int(1, melee.die);
-        // Half-Orc Savage Attacks: one extra weapon die on a melee crit.
-        if (crit && !melee.ranged && hasFeature(pc, 'critExtraDie')) {
-          dmg += rng.int(1, melee.die);
+
+      // Level-2 attack riders.
+      let swings = 1;
+      let recklessAtk = 0;
+      if (verb === 'surge') {
+        if (hasFeature(pc, 'actionSurge') && !feats.actionSurgeUsed) {
+          feats.actionSurgeUsed = true;
+          swings = 2;
+          beats.push('You push past your limits — ACTION SURGE. Two attacks.');
+        } else if (hasFeature(pc, 'actionSurge')) {
+          beats.push('Your surge is spent for this fight. One swing will have to do.');
+        } else {
+          beats.push('You strain for a second wind of violence, but that burst is a fighter\'s trick.');
         }
-        // Rogue Sneak Attack: +1d6 (doubled on crit) with a finesse or ranged
-        // weapon when the foe hasn't pinned you down — striking from cover, or
-        // in the opening exchange before they've sized you up.
-        let sneak = 0;
-        if (hasFeature(pc, 'sneakAttack') && (melee.finesse || melee.ranged) && (coverState || round === 1)) {
-          sneak = rng.int(1, 6) + (crit ? rng.int(1, 6) : 0);
-          dmg += sneak;
+      }
+      if (verb === 'reckless') {
+        if (hasFeature(pc, 'recklessAttack') && !melee.ranged) {
+          recklessAtk = 4;
+          recklessThisRound = true;
+          beats.push('You throw your guard wide and swing with everything behind it.');
+        } else if (!hasFeature(pc, 'recklessAttack')) {
+          beats.push('You swing wild — recklessness without the fury to back it.');
         }
-        dmg = Math.max(1, dmg);
-        const newHp = Math.max(0, (Number(target.hp) || 0) - dmg);
-        target.hp = newHp;
-        if (newHp <= 0) target.defeated = true;
-        const tags = [
-          crit ? 'critical!' : '',
-          sneak ? `sneak attack +${sneak}` : '',
-          rageDmg ? 'raging' : ''
-        ].filter(Boolean).join(', ');
-        beats.push(`Your ${wname} hits the ${target.name} for ${dmg}${tags ? ` (${tags})` : ''}${newHp <= 0 ? ' — it drops.' : `. (${newHp} HP left)`}`);
-      } else {
-        beats.push(`You swing your ${wname} at the ${target.name} and miss.`);
+      }
+      const wantSmite = verb === 'smite';
+
+      for (let swing = 0; swing < swings; swing++) {
+        const tIdx = enemies.findIndex(e => e && !e.defeated && (Number(e.hp) || 0) > 0);
+        if (tIdx < 0) break;
+        const tgt = enemies[tIdx];
+        const tAc = Number(tgt.ac) || 10;
+        let r = swing === 0 ? roll : rng.int(1, 20);
+        if (swing > 0 && r === 1 && hasFeature(pc, 'rerollOnes')) r = rng.int(1, 20);
+        const tot = r + melee.atkBonus + styleAtk + recklessAtk
+          + (feats.blessActive ? rng.int(1, 4) : 0)
+          + (hasCondition(tgt.conditions, 'restrained') ? RESTRAINED_PENALTY : 0);
+        if (r === 1) {
+          beats.push(`You swing your ${wname} at the ${tgt.name} and miss.`);
+          continue;
+        }
+        if (r === 20 || tot >= tAc) {
+          const crit = r === 20;
+          let dmg = rng.int(1, melee.die) + melee.dmgMod + styleDmg + rageDmg;
+          if (crit) dmg += rng.int(1, melee.die);
+          // Half-Orc Savage Attacks: one extra weapon die on a melee crit.
+          if (crit && !melee.ranged && hasFeature(pc, 'critExtraDie')) {
+            dmg += rng.int(1, melee.die);
+          }
+          // Rogue Sneak Attack: +1d6 (doubled on crit) with a finesse or ranged
+          // weapon when the foe hasn't pinned you down — striking from cover, or
+          // in the opening exchange before they've sized you up. Once per turn.
+          let sneak = 0;
+          if (swing === 0 && hasFeature(pc, 'sneakAttack') && (melee.finesse || melee.ranged) && (coverState || round === 1)) {
+            sneak = rng.int(1, 6) + (crit ? rng.int(1, 6) : 0);
+            dmg += sneak;
+          }
+          // Paladin Divine Smite: burn a slot on the hit for +2d8 radiant
+          // (doubled dice on a crit, like everything holy).
+          let smite = 0;
+          if (wantSmite && hasFeature(pc, 'divineSmite') && !melee.ranged && slotsLeft(pc) > 0) {
+            w = applyDeltas(w, [{ op: 'consumeSpellSlot', entityId: pc.id || 'party', level: 1 }]);
+            smite = rng.int(1, 8) + rng.int(1, 8) + (crit ? rng.int(1, 8) + rng.int(1, 8) : 0);
+            dmg += smite;
+          }
+          dmg = Math.max(1, dmg);
+          const newHp = Math.max(0, (Number(tgt.hp) || 0) - dmg);
+          tgt.hp = newHp;
+          if (newHp <= 0) tgt.defeated = true;
+          const tags = [
+            crit ? 'critical!' : '',
+            sneak ? `sneak attack +${sneak}` : '',
+            smite ? `divine smite +${smite}` : '',
+            rageDmg ? 'raging' : ''
+          ].filter(Boolean).join(', ');
+          beats.push(`Your ${wname} ${smite ? 'falls like judgment on' : 'hits'} the ${tgt.name} for ${dmg}${tags ? ` (${tags})` : ''}${newHp <= 0 ? ' — it drops.' : `. (${newHp} HP left)`}`);
+        } else {
+          beats.push(`You swing your ${wname} at the ${tgt.name} and miss.`);
+        }
+      }
+      if (wantSmite && hasFeature(pc, 'divineSmite') && slotsLeft(pc) <= 0) {
+        beats.push('(No slots left to fuel the smite — the blow was steel alone.)');
+      } else if (wantSmite && !hasFeature(pc, 'divineSmite')) {
+        beats.push('(You call on powers that have made you no promises. Steel alone answers.)');
       }
     }
   }
@@ -1024,7 +1145,7 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
   // martial whose "cast" resolved as a weapon attack follows the weapon:
   // melee breaks cover, a bow does not.
   const attackedInMelee = coverState && targetIdx >= 0
-    && (verb === 'strike' || (verb === 'firebolt' && !cantripProfile(pc)))
+    && (['strike', 'surge', 'reckless', 'smite'].includes(verb) || (verb === 'firebolt' && !cantripProfile(pc)))
     && !meleeProfile(pc).ranged;
   if (attackedInMelee) {
     beats.push('You break from cover to strike.');
@@ -1077,6 +1198,9 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
     }
     if (lootDeltas.length > 0) w = applyDeltas(w, lootDeltas);
 
+    // XP for the cleared encounter, level-ups at the moment of triumph.
+    w = awardXpAndLevel(w, enemies, beats);
+
     w = endCombat(w, { reason: 'enemies-defeated' });
 
     // Emit a combat-end event carrying the loot list so the UI loot popup fires.
@@ -1127,7 +1251,7 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
     // Restrained: it fights tangled, and spends its strength tearing free.
     const restrained = hasCondition(e.conditions, 'restrained');
     const roll = rng.int(1, 20);
-    const total = roll + ENEMY_ATK_BONUS - (restrained ? RESTRAINED_PENALTY : 0);
+    const total = roll + ENEMY_ATK_BONUS - (restrained ? RESTRAINED_PENALTY : 0) + (recklessThisRound ? 4 : 0);
     if (restrained) {
       const cond = (e.conditions || []).find(c => c.name === 'restrained');
       const dc = cond?.saveToEnd?.dc || 13;

@@ -104,3 +104,13 @@ export const suggestion = {
   savingThrow: { stat: 'WITS', halfOnSave: false },
   effects: [{ kind: 'conditions', condition: { name: 'suggested', until: { type: 'concentration' }, severity: 2, stackBehavior: 'replace' } }]
 };
+
+// SRD class cantrip — the chargen wizard hands this to level-1 bards.
+export const vicious_mockery = {
+  defRef: 'vicious_mockery', name: 'Vicious Mockery', level: 0, school: 'enchantment',
+  castingTime: 'action', range: '60ft', components: ['V'],
+  duration: 'instant', concentration: false,
+  savingThrow: { stat: 'WITS', halfOnSave: false },
+  effects: [{ kind: 'damage', dice: '1d4', damageType: 'psychic', target: 'single' }],
+  scalingByLevel: { extraDice: '1d4' }
+};

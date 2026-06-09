@@ -15,8 +15,8 @@ export const CLASSES = [
     weapons: ['simple', 'martial'],
     skillChoices: { count: 2, from: ['Animal Handling', 'Athletics', 'Intimidation', 'Nature', 'Perception', 'Survival'] },
     equipment: [
-      { id: 'weapon', options: [['greataxe'], ['any martial melee weapon']] },
-      { id: 'secondary', options: [['two handaxes'], ['any simple weapon']] },
+      { id: 'weapon', options: [['greataxe'], ['longsword'], ['warhammer']] },
+      { id: 'secondary', options: [['two handaxes'], ['spear']] },
       { id: 'fixed', options: [['explorer\'s pack', 'four javelins']] }
     ],
     features: [
@@ -34,7 +34,7 @@ export const CLASSES = [
     weapons: ['simple', 'hand crossbow', 'longsword', 'rapier', 'shortsword'],
     skillChoices: { count: 3, from: 'any' },
     equipment: [
-      { id: 'weapon', options: [['rapier'], ['longsword'], ['any simple weapon']] },
+      { id: 'weapon', options: [['rapier'], ['longsword'], ['dagger']] },
       { id: 'pack', options: [['diplomat\'s pack'], ['entertainer\'s pack']] },
       { id: 'fixed', options: [['lute', 'leather armor', 'dagger']] }
     ],
@@ -54,7 +54,7 @@ export const CLASSES = [
     equipment: [
       { id: 'weapon', options: [['mace'], ['warhammer (if proficient)']] },
       { id: 'armor', options: [['scale mail'], ['leather armor'], ['chain mail (if proficient)']] },
-      { id: 'ranged', options: [['light crossbow and 20 bolts'], ['any simple weapon']] },
+      { id: 'ranged', options: [['light crossbow and 20 bolts'], ['mace'], ['quarterstaff']] },
       { id: 'pack', options: [['priest\'s pack'], ['explorer\'s pack']] },
       { id: 'fixed', options: [['shield', 'holy symbol']] }
     ],
@@ -79,8 +79,8 @@ export const CLASSES = [
     weapons: ['clubs', 'daggers', 'darts', 'javelins', 'maces', 'quarterstaffs', 'scimitars', 'sickles', 'slings', 'spears'],
     skillChoices: { count: 2, from: ['Arcana', 'Animal Handling', 'Insight', 'Medicine', 'Nature', 'Perception', 'Religion', 'Survival'] },
     equipment: [
-      { id: 'shield', options: [['wooden shield'], ['any simple weapon']] },
-      { id: 'weapon', options: [['scimitar'], ['any simple melee weapon']] },
+      { id: 'shield', options: [['wooden shield'], ['sickle']] },
+      { id: 'weapon', options: [['scimitar'], ['spear'], ['quarterstaff']] },
       { id: 'fixed', options: [['leather armor', 'explorer\'s pack', 'druidic focus']] }
     ],
     features: [
@@ -98,7 +98,7 @@ export const CLASSES = [
     skillChoices: { count: 2, from: ['Acrobatics', 'Animal Handling', 'Athletics', 'History', 'Insight', 'Intimidation', 'Perception', 'Survival'] },
     equipment: [
       { id: 'armor', options: [['chain mail'], ['leather armor', 'longbow', '20 arrows']] },
-      { id: 'weapon', options: [['any martial weapon and a shield'], ['two martial weapons']] },
+      { id: 'weapon', options: [['longsword', 'shield'], ['greataxe'], ['rapier', 'shield'], ['two handaxes']] },
       { id: 'ranged', options: [['light crossbow and 20 bolts'], ['two handaxes']] },
       { id: 'pack', options: [['dungeoneer\'s pack'], ['explorer\'s pack']] }
     ],
@@ -128,7 +128,7 @@ export const CLASSES = [
     weapons: ['simple', 'shortswords'],
     skillChoices: { count: 2, from: ['Acrobatics', 'Athletics', 'History', 'Insight', 'Religion', 'Stealth'] },
     equipment: [
-      { id: 'weapon', options: [['shortsword'], ['any simple weapon']] },
+      { id: 'weapon', options: [['shortsword'], ['spear'], ['quarterstaff']] },
       { id: 'pack', options: [['dungeoneer\'s pack'], ['explorer\'s pack']] },
       { id: 'fixed', options: [['10 darts']] }
     ],
@@ -147,8 +147,8 @@ export const CLASSES = [
     weapons: ['simple', 'martial'],
     skillChoices: { count: 2, from: ['Athletics', 'Insight', 'Intimidation', 'Medicine', 'Persuasion', 'Religion'] },
     equipment: [
-      { id: 'weapon', options: [['a martial weapon and a shield'], ['two martial weapons']] },
-      { id: 'secondary', options: [['five javelins'], ['any simple melee weapon']] },
+      { id: 'weapon', options: [['longsword', 'shield'], ['warhammer', 'shield'], ['greataxe']] },
+      { id: 'secondary', options: [['five javelins'], ['mace']] },
       { id: 'pack', options: [['priest\'s pack'], ['explorer\'s pack']] },
       { id: 'fixed', options: [['chain mail', 'holy symbol']] }
     ],
@@ -168,7 +168,7 @@ export const CLASSES = [
     skillChoices: { count: 3, from: ['Animal Handling', 'Athletics', 'Insight', 'Investigation', 'Nature', 'Perception', 'Stealth', 'Survival'] },
     equipment: [
       { id: 'armor', options: [['scale mail'], ['leather armor']] },
-      { id: 'weapon', options: [['two shortswords'], ['two simple melee weapons']] },
+      { id: 'weapon', options: [['two shortswords'], ['two spears']] },
       { id: 'pack', options: [['dungeoneer\'s pack'], ['explorer\'s pack']] },
       { id: 'fixed', options: [['longbow and a quiver of 20 arrows']] }
     ],
@@ -229,7 +229,7 @@ export const CLASSES = [
     weapons: ['daggers', 'darts', 'slings', 'quarterstaffs', 'light crossbows'],
     skillChoices: { count: 2, from: ['Arcana', 'Deception', 'Insight', 'Intimidation', 'Persuasion', 'Religion'] },
     equipment: [
-      { id: 'weapon', options: [['light crossbow and 20 bolts'], ['any simple weapon']] },
+      { id: 'weapon', options: [['light crossbow and 20 bolts'], ['mace'], ['quarterstaff']] },
       { id: 'focus', options: [['component pouch'], ['arcane focus']] },
       { id: 'pack', options: [['dungeoneer\'s pack'], ['explorer\'s pack']] },
       { id: 'fixed', options: [['two daggers']] }
@@ -253,10 +253,10 @@ export const CLASSES = [
     weapons: ['simple'],
     skillChoices: { count: 2, from: ['Arcana', 'Deception', 'History', 'Intimidation', 'Investigation', 'Nature', 'Religion'] },
     equipment: [
-      { id: 'weapon', options: [['light crossbow and 20 bolts'], ['any simple weapon']] },
+      { id: 'weapon', options: [['light crossbow and 20 bolts'], ['mace'], ['quarterstaff']] },
       { id: 'focus', options: [['component pouch'], ['arcane focus']] },
       { id: 'pack', options: [['scholar\'s pack'], ['dungeoneer\'s pack']] },
-      { id: 'fixed', options: [['leather armor', 'any simple weapon', 'two daggers']] }
+      { id: 'fixed', options: [['leather armor', 'two daggers']] }
     ],
     subclass: {
       name: 'The Fiend',

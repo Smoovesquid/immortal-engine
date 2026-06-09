@@ -155,3 +155,23 @@ export const produce_flame = {
   effects: [{ kind: 'damage', dice: '1d8', damageType: 'fire', target: 'single' }],
   scalingByLevel: { 5: '2d8', 11: '3d8', 17: '4d8' }
 };
+
+// SRD class cantrips — the chargen wizard hands these to level-1 casters
+// (warlock: eldritch blast, cleric: sacred flame). Fire bolt and produce
+// flame already exist above/in fire_bolt.js.
+export const eldritch_blast = {
+  defRef: 'eldritch_blast', name: 'Eldritch Blast', level: 0, school: 'evocation',
+  castingTime: 'action', range: '120ft', components: ['V', 'S'],
+  duration: 'instant', concentration: false,
+  effects: [{ kind: 'damage', dice: '1d10', damageType: 'force', target: 'single' }],
+  scalingByLevel: { extraDice: '1d10' }
+};
+
+export const sacred_flame = {
+  defRef: 'sacred_flame', name: 'Sacred Flame', level: 0, school: 'evocation',
+  castingTime: 'action', range: '60ft', components: ['V', 'S'],
+  duration: 'instant', concentration: false,
+  savingThrow: { stat: 'AGILITY', halfOnSave: false },
+  effects: [{ kind: 'damage', dice: '1d8', damageType: 'radiant', target: 'single' }],
+  scalingByLevel: { extraDice: '1d8' }
+};

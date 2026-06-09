@@ -51,9 +51,9 @@ function mkCombatWorld(seedKey, knownSpells, enemies) {
 
 // ── registry tests ────────────────────────────────────────────────────────
 
-test('CM08-01 SPELL_REGISTRY contains exactly 134 spells', () => {
-  assert.equal(SPELL_COUNT, 134);
-  assert.equal(allSpellRefs().length, 134);
+test('CM08-01 SPELL_REGISTRY contains exactly 137 spells', () => {
+  assert.equal(SPELL_COUNT, 137);
+  assert.equal(allSpellRefs().length, 137);
 });
 
 test('CM08-02 all 10 schools are represented', () => {

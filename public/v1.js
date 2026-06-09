@@ -881,22 +881,34 @@ function renderChargenClass(cg) {
   const extra = [];
   const c = getClass(cg.picks.classId);
   if (c) {
-    // Skill choices
+    // Skill choices. Skills the species already grants (elf Perception,
+    // half-orc Intimidation, half-elf versatility picks) are grayed out —
+    // picking them twice would waste a slot.
+    const speciesGranted = new Set();
+    const spNow = getSpecies(cg.picks.speciesId);
+    for (const t of spNow?.traits || []) {
+      if (t.effect?.type === 'skillProficiency') speciesGranted.add(t.effect.skill);
+    }
+    for (const s of cg.picks.speciesChoices.skills || []) speciesGranted.add(s);
+
     const from = c.skillChoices.from === 'any' ? SKILL_KEYS : c.skillChoices.from;
     const chosen = cg.picks.classChoices.skills;
     extra.push(el('div', { class: 'small', style: { marginTop: '8px' } }, `Choose ${c.skillChoices.count} skills (${chosen.length}/${c.skillChoices.count})`));
     extra.push(el('div', { class: 'stack' }, ...from.map(s => {
       const isOn = chosen.includes(s);
-      return el('label', { class: 'card', style: { cursor: 'pointer', display: 'block', padding: '2px 8px' } },
+      const granted = speciesGranted.has(s);
+      return el('label', { class: 'card', style: { cursor: granted ? 'default' : 'pointer', display: 'block', padding: '2px 8px', opacity: granted ? '0.45' : '1' } },
         el('input', {
           type: 'checkbox',
-          checked: isOn || undefined,
+          checked: (granted || isOn) || undefined,
+          disabled: granted || undefined,
           onChange: () => {
+            if (granted) return;
             if (isOn) cg.picks.classChoices.skills = chosen.filter(x => x !== s);
             else if (chosen.length < c.skillChoices.count) cg.picks.classChoices.skills = [...chosen, s];
             render();
           }
-        }), ' ' + s
+        }), ' ' + s + (granted ? ' (already yours)' : '')
       );
     })));
 
@@ -1058,11 +1070,16 @@ function renderChargenAbilities(cg) {
 }
 
 function renderChargenOrigin(cg) {
+  const classSkills = new Set(cg.picks.classChoices.skills || []);
   const bgCards = listBackgrounds5e().map(b => {
     const selected = cg.picks.backgroundId === b.id;
+    const overlap = (b.skills || []).filter(s => classSkills.has(s));
+    const overlapNote = overlap.length
+      ? ` · overlaps your ${overlap.join(' + ')} — a replacement class skill will be assigned`
+      : '';
     return cgSelectableCard(
       b.name,
-      `${(b.skills || []).join(', ')} · ${b.feature.name}`,
+      `${(b.skills || []).join(', ')} · ${b.feature.name}${overlapNote}`,
       selected,
       () => { cg.picks.backgroundId = b.id; render(); },
       selected ? el('div', { class: 'small', style: { marginTop: '6px' } }, `${b.feature.text} — "${b.hook}"`) : null
@@ -1139,7 +1156,10 @@ function renderChargenSheet(cg) {
     class: 'input',
     value: cg.name,
     placeholder: 'Name your character (or take the suggestion)',
-    onInput: (e) => { cg.name = String(e.target.value || ''); }
+    onInput: (e) => { cg.name = String(e.target.value || ''); },
+    // Re-render on blur (not per keystroke — that would steal focus) so the
+    // sheet title reflects the typed name.
+    onBlur: () => render()
   });
 
   const pc = chargenPicksToCharacter();
@@ -1335,8 +1355,15 @@ function renderCharacterSheetSection(world) {
     );
   }
 
-  const stats = pc.stats && typeof pc.stats === 'object' ? pc.stats : {};
-  const STAT_ORDER = ['MIGHT', 'AGILITY', 'WITS', 'GRIT', 'CHARM'];
+  // 5e characters show their real six abilities; legacy characters keep the
+  // five-stat block.
+  const hasSheet = pc.dnd && typeof pc.dnd === 'object';
+  const stats = hasSheet
+    ? (pc.dnd.abilities || {})
+    : (pc.stats && typeof pc.stats === 'object' ? pc.stats : {});
+  const STAT_ORDER = hasSheet
+    ? ['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA']
+    : ['MIGHT', 'AGILITY', 'WITS', 'GRIT', 'CHARM'];
 
   const level = Number.isFinite(Number(pc.level)) ? Math.max(1, Math.trunc(Number(pc.level))) : 1;
   const xp = Number.isFinite(Number(pc.xp)) ? Math.max(0, Math.trunc(Number(pc.xp))) : 0;
@@ -1354,6 +1381,18 @@ function renderCharacterSheetSection(world) {
     el('span', { class: 'sheet-k' }, 'signature'),
     el('span', { class: 'sheet-v' }, String(pc.signature.itemName))
   ));
+
+  // v24 — 5e sheet rows: AC and alignment come off the canonical sheet.
+  if (hasSheet) {
+    identityRows.push(el('div', { class: 'sheet-row' },
+      el('span', { class: 'sheet-k' }, 'AC'),
+      el('span', { class: 'sheet-v' }, String(pc.dnd.ac))
+    ));
+    if (pc.dnd.alignment?.name) identityRows.push(el('div', { class: 'sheet-row' },
+      el('span', { class: 'sheet-k' }, 'alignment'),
+      el('span', { class: 'sheet-v' }, String(pc.dnd.alignment.name))
+    ));
+  }
 
   // QA1 — XP row
   identityRows.push(el('div', { class: 'sheet-row' },

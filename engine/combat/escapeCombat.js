@@ -87,33 +87,132 @@ export const ESCAPE_KIT = {
   ]
 };
 
+// ── SRD 5e sheet integration ─────────────────────────────────────────────────
+// When the PC carries a canonical 5e sheet (pc.dnd, WORLD_VERSION 24+), combat
+// reads it: real HP/AC, the class's actual weapon and damage die, the class's
+// own attack cantrip with the sheet's spell attack bonus. Legacy characters
+// (no sheet) keep the original hedge-caster math untouched.
+
+// SRD weapon dice for the kit weapons that chargen can hand out.
+const SRD_WEAPONS = [
+  { match: /greataxe/i, name: 'Greataxe', die: 12 },
+  { match: /greatsword/i, name: 'Greatsword', die: 12 },
+  { match: /longsword/i, name: 'Longsword', die: 8 },
+  { match: /battleaxe/i, name: 'Battleaxe', die: 8 },
+  { match: /warhammer/i, name: 'Warhammer', die: 8 },
+  { match: /rapier/i, name: 'Rapier', die: 8, finesse: true },
+  { match: /longbow/i, name: 'Longbow', die: 8, ranged: true },
+  { match: /light crossbow/i, name: 'Light Crossbow', die: 8, ranged: true },
+  { match: /shortsword/i, name: 'Shortsword', die: 6, finesse: true },
+  { match: /scimitar/i, name: 'Scimitar', die: 6, finesse: true },
+  { match: /shortbow/i, name: 'Shortbow', die: 6, ranged: true },
+  { match: /handaxe/i, name: 'Handaxe', die: 6 },
+  { match: /mace/i, name: 'Mace', die: 6 },
+  { match: /spear/i, name: 'Spear', die: 6 },
+  { match: /javelin/i, name: 'Javelin', die: 6 },
+  { match: /quarterstaff/i, name: 'Quarterstaff', die: 6 },
+  { match: /dagger/i, name: 'Dagger', die: 4, finesse: true },
+  { match: /club/i, name: 'Club', die: 4 },
+  { match: /sickle/i, name: 'Sickle', die: 4 }
+];
+
+// Per-class attack cantrips (SRD). Spell attack bonus comes off the sheet.
+const SRD_CANTRIPS = {
+  wizard: { ref: 'fire_bolt', name: 'Fire Bolt', die: 10, type: 'fire', verb: 'fire bolt' },
+  sorcerer: { ref: 'fire_bolt', name: 'Fire Bolt', die: 10, type: 'fire', verb: 'fire bolt' },
+  warlock: { ref: 'eldritch_blast', name: 'Eldritch Blast', die: 10, type: 'force', verb: 'blast' },
+  bard: { ref: 'vicious_mockery', name: 'Vicious Mockery', die: 4, type: 'psychic', verb: 'mock' },
+  cleric: { ref: 'sacred_flame', name: 'Sacred Flame', die: 8, type: 'radiant', verb: 'sacred flame' },
+  druid: { ref: 'produce_flame', name: 'Produce Flame', die: 8, type: 'fire', verb: 'flame' }
+};
+
+/**
+ * meleeProfile(pc) -> { name, die, atkBonus, dmgMod, ranged }
+ * The PC's best real weapon. 5e sheet: best die among kit weapons, finesse
+ * uses DEX when better, + proficiency. Legacy: the Worn Blade.
+ */
+export function meleeProfile(pc) {
+  const d = pc?.dnd;
+  if (d && Array.isArray(d.equipment)) {
+    // RAW ability per weapon: ranged uses DEX, finesse uses the better of
+    // STR/DEX, everything else STR. Pick the weapon with the best EXPECTED
+    // damage ((die+1)/2 + mod), not the biggest die — a STR cleric's mace
+    // beats a crossbow it would fire at -1.
+    let best = null;
+    for (const item of d.equipment) {
+      for (const wpn of SRD_WEAPONS) {
+        if (!wpn.match.test(String(item))) continue;
+        const mod = wpn.ranged ? d.mods.DEX
+          : wpn.finesse ? Math.max(d.mods.STR, d.mods.DEX)
+          : d.mods.STR;
+        const expected = (wpn.die + 1) / 2 + mod;
+        if (!best || expected > best.expected) best = { ...wpn, mod, expected };
+        break;
+      }
+    }
+    if (best) {
+      return { name: best.name, die: best.die, atkBonus: d.profBonus + best.mod, dmgMod: best.mod, ranged: Boolean(best.ranged) };
+    }
+    // Sheet but no table weapon (monk fists, darts): unarmed/simple strike.
+    const mod = Math.max(d.mods.STR, d.mods.DEX);
+    return { name: 'Unarmed Strike', die: 4, atkBonus: d.profBonus + mod, dmgMod: mod, ranged: false };
+  }
+  const might = pc?.stats?.MIGHT ?? 10;
+  return {
+    name: ESCAPE_KIT.weapon.name,
+    die: BLADE_DMG_DIE,
+    atkBonus: BLADE_ATK_BONUS + statMod(might),
+    dmgMod: statMod(might),
+    ranged: false
+  };
+}
+
+/**
+ * cantripProfile(pc) -> { ref, name, die, type, verb, atkBonus } | null
+ * The PC's attack cantrip. 5e sheet: the class cantrip with the sheet's spell
+ * attack bonus (high elves of martial classes know fire bolt, INT-based).
+ * Legacy: the hedge-caster's fire bolt. Martial sheets: null — no cantrip.
+ */
+export function cantripProfile(pc) {
+  const d = pc?.dnd;
+  if (d) {
+    const byClass = SRD_CANTRIPS[d.class?.id];
+    if (byClass && d.spellcasting) {
+      return { ...byClass, atkBonus: d.spellcasting.attackBonus };
+    }
+    // High Elf bonus cantrip (one wizard cantrip, INT-based) for non-casters.
+    if (d.species?.id === 'elf') {
+      return { ...SRD_CANTRIPS.wizard, atkBonus: d.profBonus + d.mods.INT };
+    }
+    return null;
+  }
+  const wits = pc?.stats?.WITS ?? 10;
+  return {
+    ref: 'fire_bolt', name: 'Fire Bolt', die: FIREBOLT_DMG_DIE, type: 'fire', verb: 'fire bolt',
+    atkBonus: FIREBOLT_ATK_BONUS + statMod(wits)
+  };
+}
+
+function isCaster(pc) {
+  return Boolean(cantripProfile(pc));
+}
+
 /**
  * playerMaxHp(pc) -> number
- * Classic hit points for the escape PC, scaled gently by GRIT.
+ * 5e sheet: the sheet's real maximum HP. Legacy: classic escape HP + GRIT.
  */
 export function playerMaxHp(pc) {
+  const sheetHP = Number(pc?.dnd?.maxHP);
+  if (Number.isInteger(sheetHP) && sheetHP > 0) return sheetHP;
   const grit = pc?.stats?.GRIT ?? 10;
   return Math.max(1, PLAYER_BASE_HP + statMod(grit));
 }
 
-function playerAc(pc) {
+export function playerAc(pc) {
+  const sheetAC = Number(pc?.dnd?.ac);
+  if (Number.isInteger(sheetAC) && sheetAC > 0) return sheetAC;
   const agi = pc?.stats?.AGILITY ?? 10;
   return PLAYER_BASE_AC + statMod(agi);
-}
-
-function bladeAtkBonus(pc) {
-  const might = pc?.stats?.MIGHT ?? 10;
-  return BLADE_ATK_BONUS + statMod(might);
-}
-
-function bladeDmgMod(pc) {
-  const might = pc?.stats?.MIGHT ?? 10;
-  return statMod(might);
-}
-
-function fireboltAtkBonus(pc) {
-  const wits = pc?.stats?.WITS ?? 10;
-  return FIREBOLT_ATK_BONUS + statMod(wits);
 }
 
 /**
@@ -158,6 +257,18 @@ export function initEscapeKit(world) {
   const pc = party[0];
   if (!pc) return w;
 
+  // 5e character: the class kit IS the kit. No found blade, no hedge-caster
+  // cantrips — just register the class's own cantrip refs (casters only) so
+  // the spellbook panel and combat verbs line up with the sheet.
+  if (pc.dnd) {
+    const cantrip = cantripProfile(pc);
+    const known = Array.isArray(pc.spells?.known) ? pc.spells.known.slice() : [];
+    if (cantrip && !known.includes(cantrip.ref)) known.push(cantrip.ref);
+    if (cantrip && !known.includes('ward')) known.push('ward'); // casters keep the defensive ward
+    party[0] = { ...pc, spells: { ...pc.spells, known } };
+    return { ...w, party };
+  }
+
   const weapons = Array.isArray(pc.inventory?.weapons) ? pc.inventory.weapons.slice() : [];
   const hasBlade = weapons.some(weapon => {
     const id = String(weapon?.id || '').toLowerCase();
@@ -185,6 +296,38 @@ export function initEscapeKit(world) {
  * UI can render always-visible inventory + spellbook panels with typed verbs.
  */
 export function escapeKitView(pc) {
+  // 5e character: build the panel from the sheet's real weapon + class cantrip.
+  if (pc?.dnd) {
+    const melee = meleeProfile(pc);
+    const cantrip = cantripProfile(pc);
+    const weapons = [{
+      name: melee.name,
+      verb: 'strike',
+      note: `d20${fmtBonus(melee.atkBonus)} vs AC, d${melee.die}${fmtBonus(melee.dmgMod)} damage. Type "strike".`
+    }];
+    const spells = [];
+    if (cantrip) {
+      spells.push({
+        name: cantrip.name,
+        verb: cantrip.verb,
+        note: `Ranged spell attack, d20${fmtBonus(cantrip.atkBonus)} vs AC, d${cantrip.die} ${cantrip.type}. Type "${cantrip.verb}".`
+      });
+      spells.push({
+        name: 'Ward',
+        verb: 'ward',
+        note: `A shimmer of force. +${WARD_AC_BONUS} AC until your next turn. Type "ward".`
+      });
+    } else {
+      // Martial classes guard with steel, not spells.
+      weapons.push({
+        name: 'Guard',
+        verb: 'guard',
+        note: `Set your feet and defend. +${WARD_AC_BONUS} AC until your next turn. Type "guard".`
+      });
+    }
+    return { weapons, spells };
+  }
+
   const weaponsOut = [];
   const seenW = new Set();
   for (const weapon of (Array.isArray(pc?.inventory?.weapons) ? pc.inventory.weapons : [])) {
@@ -222,10 +365,18 @@ export function parseEscapeAction(text) {
   // it before the attack verbs so "hide behind the pillar" reads as cover.
   if (/\b(take\s+cover|cover|behind|duck|hunker)\b/.test(t)) return { verb: 'cover' };
   if (/\b(ward|shield|brace|defend|guard|block|parry)\b/.test(t)) return { verb: 'ward' };
-  if (/\b(fire\s*bolt|firebolt|bolt|burn|flame|scorch|ignite)\b/.test(t)) return { verb: 'firebolt' };
+  // Cantrip verbs — the hedge-caster's fire bolt plus every class cantrip
+  // (eldritch blast, vicious mockery, sacred flame, produce flame) and the
+  // generic "cast" so a player can just say "cast at it".
+  if (/\b(fire\s*bolt|firebolt|bolt|burn|flame|scorch|ignite|blast|mock|cast|cantrip)\b/.test(t)) return { verb: 'firebolt' };
   if (/\b(fire)\b/.test(t)) return { verb: 'firebolt' };
   // strike verbs (and the default)
   return { verb: 'strike' };
+}
+
+function fmtBonus(n) {
+  const x = Math.trunc(Number(n)) || 0;
+  return (x >= 0 ? '+' : '') + String(x);
 }
 
 /**
@@ -330,51 +481,62 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
     }
   } else if (verb === 'ward') {
     warded = true;
-    beats.push(`You raise a ward — a shimmer of force hardens the air around you (+${WARD_AC_BONUS} AC).`);
+    beats.push(isCaster(pc)
+      ? `You raise a ward — a shimmer of force hardens the air around you (+${WARD_AC_BONUS} AC).`
+      : `You set your feet and raise your guard (+${WARD_AC_BONUS} AC).`);
   } else if (targetIdx >= 0) {
     const target = enemies[targetIdx];
     const ac = Number(target.ac) || 10;
     const roll = rng.int(1, 20);
+    const cantrip = verb === 'firebolt' ? cantripProfile(pc) : null;
 
-    if (verb === 'firebolt') {
-      const total = roll + fireboltAtkBonus(pc);
+    if (cantrip) {
+      const total = roll + cantrip.atkBonus;
+      const cname = cantrip.name.toLowerCase();
       if (roll === 1) {
-        beats.push(`Your fire bolt sputters wide of the ${target.name}.`);
+        beats.push(`Your ${cname} sputters wide of the ${target.name}.`);
       } else if (roll === 20 || total >= ac) {
         const crit = roll === 20;
-        let dmg = rng.int(1, FIREBOLT_DMG_DIE);
-        if (crit) dmg += rng.int(1, FIREBOLT_DMG_DIE);
+        let dmg = rng.int(1, cantrip.die);
+        if (crit) dmg += rng.int(1, cantrip.die);
         dmg = Math.max(1, dmg);
         const newHp = Math.max(0, (Number(target.hp) || 0) - dmg);
         target.hp = newHp;
         if (newHp <= 0) target.defeated = true;
-        beats.push(`Your fire bolt sears the ${target.name} for ${dmg} fire${crit ? ' (critical!)' : ''}${newHp <= 0 ? ' — it drops.' : `. (${newHp} HP left)`}`);
+        beats.push(`Your ${cname} sears the ${target.name} for ${dmg} ${cantrip.type}${crit ? ' (critical!)' : ''}${newHp <= 0 ? ' — it drops.' : `. (${newHp} HP left)`}`);
       } else {
-        beats.push(`Your fire bolt sputters wide of the ${target.name}.`);
+        beats.push(`Your ${cname} sputters wide of the ${target.name}.`);
       }
     } else {
-      // blade strike (default)
-      const total = roll + bladeAtkBonus(pc);
+      // weapon strike (default — also where a cantrip-less martial's "cast" lands)
+      const melee = meleeProfile(pc);
+      const total = roll + melee.atkBonus;
+      const wname = melee.name.toLowerCase();
       if (roll === 1) {
-        beats.push(`You swing at the ${target.name} and miss.`);
+        beats.push(`You swing your ${wname} at the ${target.name} and miss.`);
       } else if (roll === 20 || total >= ac) {
         const crit = roll === 20;
-        let dmg = rng.int(1, BLADE_DMG_DIE) + bladeDmgMod(pc);
-        if (crit) dmg += rng.int(1, BLADE_DMG_DIE);
+        let dmg = rng.int(1, melee.die) + melee.dmgMod;
+        if (crit) dmg += rng.int(1, melee.die);
         dmg = Math.max(1, dmg);
         const newHp = Math.max(0, (Number(target.hp) || 0) - dmg);
         target.hp = newHp;
         if (newHp <= 0) target.defeated = true;
-        beats.push(`You hit the ${target.name} for ${dmg}${crit ? ' (critical!)' : ''}${newHp <= 0 ? ' — it drops.' : `. (${newHp} HP left)`}`);
+        beats.push(`Your ${wname} hits the ${target.name} for ${dmg}${crit ? ' (critical!)' : ''}${newHp <= 0 ? ' — it drops.' : `. (${newHp} HP left)`}`);
       } else {
-        beats.push(`You swing at the ${target.name} and miss.`);
+        beats.push(`You swing your ${wname} at the ${target.name} and miss.`);
       }
     }
   }
 
-  // A blade strike means stepping out — melee breaks cover. Fire bolt is ranged,
-  // so you peek and loose a mote of flame while staying behind it (cover holds).
-  if (verb === 'strike' && coverState) {
+  // A melee strike means stepping out — it breaks cover. Ranged attacks
+  // (cantrips, bows) loose from behind it, so cover holds. A cantrip-less
+  // martial whose "cast" resolved as a weapon attack follows the weapon:
+  // melee breaks cover, a bow does not.
+  const attackedInMelee = coverState && targetIdx >= 0
+    && (verb === 'strike' || (verb === 'firebolt' && !cantripProfile(pc)))
+    && !meleeProfile(pc).ranged;
+  if (attackedInMelee) {
     beats.push('You break from cover to strike.');
     coverState = null;
   }

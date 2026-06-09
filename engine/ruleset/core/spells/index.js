@@ -26,7 +26,7 @@ import {
   burning_hands, call_lightning, cone_of_cold, flame_strike, flaming_sphere,
   gust_of_wind, heat_metal, hellish_rebuke, magic_missile, scorching_ray,
   shatter, storm_sphere, thunderwave, wall_of_fire, wall_of_force, witch_bolt,
-  produce_flame
+  produce_flame, eldritch_blast, sacred_flame
 } from './catalog/evocation_ext.js';
 
 import {
@@ -57,7 +57,7 @@ import {
 import {
   animal_friendship, bane, cause_fear, crown_of_madness, dominate_person,
   enemies_abound, enthrall, eyebite, hex, hypnotic_pattern, modify_memory,
-  sleep, suggestion
+  sleep, suggestion, vicious_mockery
 } from './catalog/enchantment_ext.js';
 
 import {
@@ -95,7 +95,7 @@ const ALL_SPELLS = [
   burning_hands, call_lightning, cone_of_cold, flame_strike, flaming_sphere,
   gust_of_wind, heat_metal, hellish_rebuke, magic_missile, scorching_ray,
   shatter, storm_sphere, thunderwave, wall_of_fire, wall_of_force, witch_bolt,
-  produce_flame,
+  produce_flame, eldritch_blast, sacred_flame, vicious_mockery,
   // Abjuration ext (+8)
   beacon_of_hope, armor_of_agathys, banishment, bless, death_ward,
   protection_from_poison, remove_curse, shield_of_faith,

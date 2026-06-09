@@ -38,6 +38,7 @@ import { makeRng, seedFromString } from '../rng.js';
 import { rollLootForCR } from '../ruleset/core/loot/lootRoll.js';
 import { rollDice } from './diceRoller.js';
 import { coverForRoom, bestCover } from '../structures/coverFeatures.js';
+import { applyCondition, hasCondition, removeAllConditions } from './conditions.js';
 
 // ── Player build (level-1 hedge-caster escapee) ──────────────────────────────
 const PLAYER_BASE_HP = 14;   // + GRIT mod
@@ -250,8 +251,17 @@ const SLOT_SPELLS = {
   witch_bolt: { name: 'Witch Bolt', verb: 'witch bolt', kind: 'attack', die: 12, type: 'lightning' },
   bless: { name: 'Bless', verb: 'bless', kind: 'bless' },
   shield: { name: 'Shield', verb: 'shield', kind: 'shield', acBonus: 5 },
-  armor_of_agathys: { name: 'Armor of Agathys', verb: 'agathys', kind: 'agathys', tempHp: 5, retaliate: 5 }
+  armor_of_agathys: { name: 'Armor of Agathys', verb: 'agathys', kind: 'agathys', tempHp: 5, retaliate: 5 },
+  charm_person: { name: 'Charm Person', verb: 'charm', kind: 'charm', rounds: 2 },
+  entangle: { name: 'Entangle', verb: 'entangle', kind: 'entangle' }
 };
+
+// Escape-model condition effects: a charmed foe won't raise a hand against
+// you; a restrained one fights tangled (-4 to hit, +4 to be hit) and tries a
+// STR save each round to rip free. Enemy save bonus is the flat +2 used
+// everywhere in the tamed escape model.
+const ENEMY_SAVE_BONUS = 2;
+const RESTRAINED_PENALTY = 4;
 
 function knownSlotSpell(pc, ref) {
   const d = pc?.dnd;
@@ -444,7 +454,9 @@ export function escapeKitView(pc) {
       witch_bolt: 'Spell attack, 1d12 lightning. Uses a slot. Type "witch bolt".',
       bless: '+1d4 on your attack rolls this fight. Uses a slot. Type "bless".',
       shield: '+5 AC until your next turn. Uses a slot. Type "shield".',
-      armor_of_agathys: '5 temp HP; melee attackers take 5 cold. Uses a slot. Type "agathys".'
+      armor_of_agathys: '5 temp HP; melee attackers take 5 cold. Uses a slot. Type "agathys".',
+      charm_person: 'WIS save or the target sees a friend (2 rounds). Uses a slot. Type "charm".',
+      entangle: 'Grasping weeds: STR save or restrained, every foe. Uses a slot. Type "entangle".'
     };
     for (const ref of Object.keys(slotNotes)) {
       const spell = knownSlotSpell(pc, ref);
@@ -506,6 +518,8 @@ export function parseEscapeAction(text) {
   if (/\b(magic\s+missile|missiles?|darts?\s+of\s+force)\b/.test(t)) return { verb: 'missile' };
   if (/\bbless\b/.test(t)) return { verb: 'bless' };
   if (/\b(agathys|frost\s+armou?r|armou?r\s+of\s+agathys)\b/.test(t)) return { verb: 'agathys' };
+  if (/\b(charm|beguile)\b/.test(t)) return { verb: 'charm' };
+  if (/\b(entangle|roots|vines|snare)\b/.test(t)) return { verb: 'entangle' };
   if (/\bshield\b/.test(t)) return { verb: 'shield' };
   if (/\b(ward|brace|defend|guard|block|parry)\b/.test(t)) return { verb: 'ward' };
   // Cantrip verbs — the hedge-caster's fire bolt plus every class cantrip
@@ -527,7 +541,7 @@ function fmtBonus(n) {
  * Recover hit points on a clear (no-ambush) hop. Caps at escapeMaxHp.
  */
 export function shortRest(world, rng) {
-  const w = ensureWorld(world);
+  let w = ensureWorld(world);
   if (w.meta?.mode !== 'escape') return w;
   // Rest also restores class/species reserves: the paladin's healing pool
   // refills (-1 = lazily re-seeded to full on next use) and relentless
@@ -535,6 +549,13 @@ export function shortRest(world, rng) {
   const feats = w.meta?.escapeFeats
     ? { ...w.meta.escapeFeats, layPool: -1, relentlessUsed: false }
     : null;
+  // Pact Magic (SRD): warlock spell slots come back on a SHORT rest — that is
+  // the entire deal with the patron. Other casters wait for a long rest
+  // (no long-rest surface yet; logged in the playtest report).
+  const pc0 = w.party?.[0];
+  if (pc0?.dnd?.spellcasting?.pact) {
+    w = applyDeltas(w, [{ op: 'restoreSpellSlots', entityId: pc0.id || 'party' }]);
+  }
   const max = Number(w.meta.escapeMaxHp) || 0;
   const cur = Number(w.meta.escapeHp) || 0;
   if (max <= 0 || cur >= max) {
@@ -734,7 +755,7 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
       } else {
         const roll = rng.int(1, 20);
         const ac = Number(target.ac) || 10;
-        const total = roll + spell.atkBonus + (feats.blessActive ? rng.int(1, 4) : 0);
+        const total = roll + spell.atkBonus + (feats.blessActive ? rng.int(1, 4) : 0) + (hasCondition(target.conditions, 'restrained') ? RESTRAINED_PENALTY : 0);
         if (roll !== 1 && (roll === 20 || total >= ac)) {
           const crit = roll === 20;
           let dmg = rng.int(1, spell.die);
@@ -751,6 +772,61 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
       beats.push('Your spell slots are spent. Cantrips will have to carry you.');
     } else {
       beats.push('You trace the sigil, but that spell is not yours.');
+    }
+  } else if (verb === 'charm') {
+    const spell = knownSlotSpell(pc, 'charm_person');
+    if (spell && slotsLeft(pc) > 0 && targetIdx >= 0) {
+      const target = enemies[targetIdx];
+      w = applyDeltas(w, [{ op: 'consumeSpellSlot', entityId: pc.id || 'party', level: 1 }]);
+      const dc = pc.dnd.spellcasting.saveDC;
+      const save = rng.int(1, 20) + ENEMY_SAVE_BONUS;
+      if (save < dc) {
+        target.conditions = applyCondition(
+          target.conditions || [],
+          { name: 'charmed', until: spell.rounds, source: 'charm_person', stackBehavior: 'replace' },
+          target.conditionImmunities || []
+        );
+        if (hasCondition(target.conditions, 'charmed')) {
+          beats.push(`The ${target.name}'s eyes soften — your charm takes hold. It sees a friend where you stand.`);
+        } else {
+          beats.push(`The ${target.name} is beyond charming — your magic slides off it.`);
+        }
+      } else {
+        beats.push(`The ${target.name} blinks hard and shakes off your charm — and it knows what you tried.`);
+      }
+    } else if (spell && slotsLeft(pc) <= 0) {
+      beats.push('Your spell slots are spent.');
+    } else {
+      beats.push('You smile your warmest smile. Nothing magical happens.');
+    }
+  } else if (verb === 'entangle') {
+    const spell = knownSlotSpell(pc, 'entangle');
+    if (spell && slotsLeft(pc) > 0) {
+      w = applyDeltas(w, [{ op: 'consumeSpellSlot', entityId: pc.id || 'party', level: 1 }]);
+      const dc = pc.dnd.spellcasting.saveDC;
+      let caught = 0;
+      for (const e of enemies) {
+        if (!e || e.defeated || (Number(e.hp) || 0) <= 0) continue;
+        const save = rng.int(1, 20) + ENEMY_SAVE_BONUS;
+        if (save < dc) {
+          e.conditions = applyCondition(
+            e.conditions || [],
+            { name: 'restrained', until: 'save_ends', source: 'entangle', saveToEnd: { stat: 'MIGHT', dc }, stackBehavior: 'replace' },
+            e.conditionImmunities || []
+          );
+          if (hasCondition(e.conditions, 'restrained')) {
+            caught++;
+            beats.push(`Grasping weeds erupt and lash around the ${e.name} — restrained.`);
+          }
+        } else {
+          beats.push(`The ${e.name} tears clear of the grasping weeds.`);
+        }
+      }
+      if (!caught) beats.push('The ground writhes, but nothing holds.');
+    } else if (spell && slotsLeft(pc) <= 0) {
+      beats.push('Your spell slots are spent.');
+    } else {
+      beats.push('You call to the green. The green does not answer you.');
     }
   } else if (verb === 'bless') {
     const spell = knownSlotSpell(pc, 'bless');
@@ -808,7 +884,7 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
     const cantrip = verb === 'firebolt' ? cantripProfile(pc) : null;
 
     if (cantrip) {
-      const total = roll + cantrip.atkBonus + (feats.blessActive ? rng.int(1, 4) : 0);
+      const total = roll + cantrip.atkBonus + (feats.blessActive ? rng.int(1, 4) : 0) + (hasCondition(target.conditions, 'restrained') ? RESTRAINED_PENALTY : 0);
       const cname = cantrip.name.toLowerCase();
       if (roll === 1) {
         beats.push(`Your ${cname} sputters wide of the ${target.name}.`);
@@ -833,7 +909,7 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
       const styleAtk = (style === 'Archery' && melee.ranged) ? 2 : 0;
       const styleDmg = (style === 'Dueling' && !melee.ranged && !melee.twoHanded) ? 2 : 0;
       const rageDmg = (feats.rageActive && !melee.ranged) ? RAGE_DAMAGE_BONUS : 0;
-      const total = roll + melee.atkBonus + styleAtk + (feats.blessActive ? rng.int(1, 4) : 0);
+      const total = roll + melee.atkBonus + styleAtk + (feats.blessActive ? rng.int(1, 4) : 0) + (hasCondition(target.conditions, 'restrained') ? RESTRAINED_PENALTY : 0);
       const wname = melee.name.toLowerCase();
       if (roll === 1) {
         beats.push(`You swing your ${wname} at the ${target.name} and miss.`);
@@ -955,8 +1031,38 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
   const ac = playerAc(pc) + (warded ? wardBonus : 0) + coverBonus;
   for (const e of enemies) {
     if (!e || e.defeated || (Number(e.hp) || 0) <= 0) continue;
+
+    // Charmed: it will not raise a hand against you. The charm fades on a
+    // countdown — when it breaks, the foe knows exactly what you did.
+    if (hasCondition(e.conditions, 'charmed')) {
+      const next = [];
+      let broke = false;
+      for (const c of (e.conditions || [])) {
+        if (c.name !== 'charmed') { next.push(c); continue; }
+        const left = (typeof c.until === 'number') ? c.until - 1 : 0;
+        if (left > 0) next.push({ ...c, until: left });
+        else broke = true;
+      }
+      e.conditions = next;
+      beats.push(broke
+        ? `The ${e.name}'s gaze hardens — the charm breaks, and it remembers.`
+        : `The ${e.name} stands easy, sword loose — your charm holds.`);
+      continue;
+    }
+
+    // Restrained: it fights tangled, and spends its strength tearing free.
+    const restrained = hasCondition(e.conditions, 'restrained');
     const roll = rng.int(1, 20);
-    const total = roll + ENEMY_ATK_BONUS;
+    const total = roll + ENEMY_ATK_BONUS - (restrained ? RESTRAINED_PENALTY : 0);
+    if (restrained) {
+      const cond = (e.conditions || []).find(c => c.name === 'restrained');
+      const dc = cond?.saveToEnd?.dc || 13;
+      const save = rng.int(1, 20) + ENEMY_SAVE_BONUS;
+      if (save >= dc) {
+        e.conditions = removeAllConditions(e.conditions || [], 'restrained');
+        beats.push(`The ${e.name} rips free of the weeds.`);
+      }
+    }
     if (roll === 1) {
       beats.push(`The ${e.name} lunges and misses.`);
       continue;

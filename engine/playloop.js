@@ -325,7 +325,16 @@ function playerMoveCore(world, packsById, text) {
     const hereId = w.map?.currentNodeId;
     const here = (w.map?.nodes || []).find(n => n && n.id === hereId) || null;
     if (here?.nodeType === 'settlement') {
-      const w1 = pushEvent(longRest(w), {
+      // The night passes: the clock rolls forward to the next first-light
+      // (hours are counted from dawn of day one, so the next multiple of 24
+      // is the next morning).
+      const slept = longRest(w);
+      const curHours = Number(slept.time?.hours) || 0;
+      const nextMorning = (Math.floor(curHours / 24) + 1) * 24;
+      const w1 = pushEvent({
+        ...slept,
+        time: { ...(slept.time || {}), hours: nextMorning }
+      }, {
         kind: 'resolution',
         data: { actorId: 'party', text: String(text || ''), intent: String(text || ''), roll: 0, dc: 0, outcome: 'success', updateKind: 'long-rest' }
       });
@@ -841,9 +850,15 @@ function playerMoveCore(world, packsById, text) {
     const beforeNodeId = String(m0.currentNodeId || '');
     const toPos = stepCell(fromPos, dir);
 
-    // Take the step: the avatar now stands on toPos. Whether that's a named place
-    // or open country is decided next.
-    let w1 = { ...w, map: { ...m0, pos: toPos } };
+    // Take the step: the avatar now stands on toPos. Whether that's a named
+    // place or open country is decided next. A hop across open country costs
+    // an hour and a league — the clock moves when you do (named journeys
+    // already account their own hours; this covers free-roam steps).
+    let w1 = {
+      ...w,
+      map: { ...m0, pos: toPos },
+      time: { ...(w.time || {}), hours: (w.time?.hours ?? 0) + 1, leagues: (w.time?.leagues ?? 0) + 1 }
+    };
 
     // Anything newly within sight is revealed (icons pop onto the map as you roam).
     const landed = nodeAtCell(w1.map, toPos.x, toPos.y);
@@ -1130,13 +1145,29 @@ function playerMoveCore(world, packsById, text) {
       // A question gets answered — unless it's a parley phrased as a question
       // ("can we talk about this?" is said TO the foes, not to the DM).
       const escVerb = parseEscapeAction(text).verb;
-      const explicitAction = /\b(strike|attack|swing|stab|shoot|slash|smite|fireball|blast|cast|rage|surge|flee|guard|ward|cover)\b/i.test(String(text || ''));
+      const explicitAction = /\b(strike|attack|swing|stab|shoot|slash|smite|fireball|blast|cast|rage|surge|guard|ward|cover)\b/i.test(String(text || ''));
       if (isMetaQuestion(text) || (isQuestionShaped(text) && escVerb !== 'parley' && !explicitAction)) {
         const metaAnswer = isMetaQuestion(text) ? handleMetaQuestion(text, w) : null;
         const answer = metaAnswer || combatStatusAnswer(w);
         return {
           world: w,
           output: { narration: `Wizard: ${answer}`, mechanics: '[combat:table-talk]' }
+        };
+      }
+      // Movement or flight mid-fight is not a strike. Escape-mode fights
+      // can't be fled (the journey's stakes are the point) — the DM says so
+      // in voice instead of letting the resolver swing your sword for you.
+      if (!explicitAction && (isFleeIntent(text) || isFreeMovementIntent(text))) {
+        return {
+          world: w,
+          output: { narration: 'Wizard: There\'s steel between you and the road — no running from this one. Strike, guard, cast, or talk.', mechanics: '[combat:table-talk]' }
+        };
+      }
+      // Resting mid-fight gets the obvious ruling, not a sword swing.
+      if (!explicitAction && isLongRestIntent(text)) {
+        return {
+          world: w,
+          output: { narration: 'Wizard: Not while something is trying to kill you. Finish this first.', mechanics: '[combat:table-talk]' }
         };
       }
       const { world: wAfter, result } = resolveEscapeCombatTurn(w, String(text || ''));
@@ -1327,13 +1358,30 @@ function playerMoveCore(world, packsById, text) {
     const ATTACK_V = '(attack|fight|kill|strike|assault|punch|stab|hit|slash|swing(?:\\s+at)?|shoot|kick|tackle|charge)';
     const targeted = tt.match(new RegExp(`\\b${ATTACK_V}\\s+(.+)`, 'i'));
     const bareAttack = new RegExp(`^${ATTACK_V}\\s*[.!]?$`, 'i').test(tt);
-    const personRef = targeted && /\b(figure|figures|enemy|enemies|foe|foes|man|woman|men|women|person|people|stranger|strangers|guard|guards|soldier|soldiers|them|him|her|someone|anyone|everyone|nobody|creature|creatures|beast|beasts|monster|monsters|attacker|assailant|thing|shape|shadow)\b/i.test(targeted[2]);
-    if (bareAttack || personRef) {
+    const personRef = targeted && /\b(figure|figures|enemy|enemies|foe|foes|man|woman|men|women|person|people|stranger|strangers|guard|guards|soldier|soldiers|them|him|her|someone|anyone|everyone|nobody|creature|creatures|beast|beasts|monster|monsters|attacker|assailant|thing|shape|shadow|biggest|big one|nearest)\b/i.test(targeted[2]);
+    // Combat-feature verbs and "strongest attack" out of combat are the same
+    // case: there's no fight to spend them on. A real DM says so — no d20 at
+    // an empty road. (In combat these route to the resolver and FIRE.)
+    const featureOutOfCombat = /^\s*(?:i\s+)?(?:rage|enrage|go\s+berserk|action\s+surge|surge|second\s+wind|rally|smite|reckless(?:\s+attack)?|breathe?\s*(?:fire|frost|acid|lightning|poison)?|lay\s+on\s+hands)\s*[.!]?\s*$/i.test(tt)
+      || /\b(strongest|hardest|best)\s+(attack|hit|blow)|with everything\b/i.test(tt);
+    if (bareAttack || personRef || featureOutOfCombat) {
       const nodeNow = (w.map?.nodes || []).find(n => n && n.id === String(w.map?.currentNodeId ?? '')) || null;
       const npcsHere = nodeNow?.settlement?.npcs;
-      if (!Array.isArray(npcsHere) || !npcsHere.length) {
-        return { world: w, output: { narration: 'Wizard: No one to fight. What do you do?', mechanics: '' } };
+      if (featureOutOfCombat || !Array.isArray(npcsHere) || !npcsHere.length) {
+        const line = featureOutOfCombat
+          ? 'Wizard: Save it — there\'s no fight here to spend that on. It\'ll be ready when one finds you.'
+          : 'Wizard: No one to fight. What do you do?';
+        return { world: w, output: { narration: line, mechanics: '[no-target]' } };
       }
+    }
+    // Looting the dead: victory loot is distributed when the fight ends, so
+    // "loot the bodies" afterward must not roll dice and claim you "stow the
+    // bodies". The fallen were picked clean at the moment of victory.
+    if (/\b(loot|search|strip|check|rifle)\b.*\b(bod(?:y|ies)|corpses?|the dead|the fallen|remains)\b/i.test(tt)) {
+      return {
+        world: w,
+        output: { narration: 'Wizard: You already went through them when the dust settled — anything worth taking is in your pack.', mechanics: 'observe only — no roll, state unchanged' }
+      };
     }
   }
 

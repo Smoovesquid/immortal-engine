@@ -653,7 +653,7 @@ export function combatStatusAnswer(world) {
   const kit = escapeKitView(pc);
   const verbs = [...kit.weapons, ...kit.spells].map(x => `"${x.verb}"`);
   const cover = currentRoomCover(w);
-  const options = `You can ${verbs.join(', ')}${cover ? `, "take cover" behind the ${cover.label}` : ''}, talk ("parley"), or run ("flee").`;
+  const options = `You can ${verbs.join(', ')}${cover ? `, "take cover" behind the ${cover.label}` : ''}, or talk ("parley"). No running from this one — they're already on you.`;
 
   return `${facing} ${you} ${options} Asking costs you nothing — the round waits.`;
 }

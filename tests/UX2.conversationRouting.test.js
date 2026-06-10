@@ -212,3 +212,51 @@ test('UX2-07: looksMultiAction fires on conjunctions of actions, nothing else', 
     assert.ok(!looksMultiAction(t), `should NOT fire: "${t}"`);
   }
 });
+
+// ── Shakedown round 2 (2026-06-10): findings from the full-game playthrough ──
+
+test('UX2-08: combat feature verbs out of combat get table-talk, not a d20', () => {
+  const w = freshWorld('fighter', 'ux2f');
+  for (const input of ['rage', 'second wind', 'use my strongest attack', 'smite']) {
+    const r = submit(w, input);
+    assert.match(r.mech, /no-target/, `"${input}" → ${r.mech}`);
+    assert.ok(/no fight here|No one to fight/i.test(r.narration), `"${input}" answered in voice`);
+    assert.equal(r.world.timeline.length, w.timeline.length, `"${input}" cost nothing`);
+  }
+});
+
+test('UX2-09: corpse-looting after victory is honest and free', () => {
+  const w = freshWorld('fighter', 'ux2l');
+  for (const input of ['loot the bodies', 'search the corpses', 'check the dead']) {
+    const r = submit(w, input);
+    assert.match(r.mech, /observe only/, `"${input}" → ${r.mech}`);
+    assert.ok(/already went through them/i.test(r.narration));
+  }
+});
+
+test('UX2-10: movement, flight, and rest mid-combat are redirected in voice', () => {
+  const w = combatWorld('fighter', 'ux2m');
+  for (const input of ['head north', 'travel east', 'flee', 'run away', 'sleep for the night', 'rest up']) {
+    const r = submit(w, input);
+    assert.match(r.mech, /combat:table-talk/, `"${input}" → ${r.mech}`);
+    assert.equal(r.world.meta.escapeHp, w.meta.escapeHp, `"${input}" cost no HP`);
+  }
+});
+
+test('UX2-11: the clock moves — hops cost an hour, long rest rolls to morning', () => {
+  const w = freshWorld('fighter', 'ux2t');
+  const r1 = submit(w, 'go outside');
+  const r2 = submit(r1.world, 'head north');
+  // A hop into open country advances time (arrivals at named nodes may layer
+  // journey time on top; >= 1 hour either way).
+  assert.ok((r2.world.time?.hours ?? 0) >= (r1.world.time?.hours ?? 0) + 1, 'hop advanced the clock');
+
+  const r3 = submit(r2.world, 'head south');
+  const back = r3.world;
+  if ((back.map?.nodes || []).find(n => n && n.id === back.map?.currentNodeId)?.nodeType === 'settlement') {
+    const r4 = submit(back, 'sleep for the night');
+    if (/rest:long/.test(r4.mech)) {
+      assert.equal((r4.world.time.hours) % 24, 0, 'long rest rolls the clock to next first light');
+    }
+  }
+});

@@ -103,6 +103,9 @@ const ui = {
   ai: { online: null, text: '(not loaded)' },
   aiKey: localStorage.getItem('anthropic_key') || '',
   aiKeyAck: '',
+  // Narration opt-in. Off by default so a fresh session never spends quietly;
+  // when ON with no session key, the server's env key carries it.
+  aiNarrationOn: localStorage.getItem('ai_narration_on') === '1',
   aiTest: { ok: null, text: '(not run)', ms: null },
   aiStatus: { ok: null, online: null, source: "(unknown)", mode: "(unknown)", envPresent: null, sessionPresent: null },
   devMode: false,
@@ -152,7 +155,9 @@ function setStatus(msg) {
 
 async function tryAiNarration(world, baseNarration, outcome) {
   const anthropicKey = String(ui.aiKey || '').trim();
-  if (!anthropicKey) return null;
+  // Narration runs when toggled on (server env key fallback) or when a
+  // session key is set. Both off -> no call, no spend.
+  if (!ui.aiNarrationOn && !anthropicKey) return null;
   try {
     const res = await fetch('/api/narrate', {
       method: 'POST',
@@ -1978,6 +1983,66 @@ function renderPlay() {
       el('button', { class: 'gear-item', onClick: () => {
         ui.devMode = !ui.devMode; ui.gearOpen = false; render();
       }}, ui.devMode ? 'Hide Dev Info' : 'Show Dev Info'),
+
+      // ── AI narration controls, reachable mid-game. The toggle uses the
+      // server's key when no session key is set; off by default so a fresh
+      // session never spends quietly.
+      el('div', { class: 'gear-item', style: { borderTop: '1px solid rgba(255,255,255,0.12)', paddingTop: '6px', cursor: 'default' } },
+        el('div', { class: 'small', style: { marginBottom: '4px' } }, 'AI Narration'),
+        el('button', {
+          class: 'btn' + (ui.aiNarrationOn ? ' primary' : ''),
+          style: { width: '100%', marginBottom: '4px' },
+          onClick: () => {
+            ui.aiNarrationOn = !ui.aiNarrationOn;
+            try { localStorage.setItem('ai_narration_on', ui.aiNarrationOn ? '1' : '0'); } catch {}
+            ui.aiKeyAck = ui.aiNarrationOn ? 'Narration ON — using your key, or the server\'s.' : 'Narration off.';
+            render();
+          }
+        }, ui.aiNarrationOn ? 'Narration: ON' : 'Narration: OFF'),
+        el('input', {
+          class: 'input',
+          type: 'password',
+          placeholder: 'Anthropic API key (optional)',
+          value: ui.aiKey || '',
+          style: { width: '100%', marginBottom: '4px' },
+          onInput: (e) => { ui.aiKey = String(e.target.value || ''); }
+        }),
+        el('button', {
+          class: 'btn',
+          style: { width: '100%' },
+          onClick: async () => {
+            const apiKey = String(ui.aiKey || '').trim();
+            if (!apiKey) { ui.aiKeyAck = 'No key entered (the toggle alone uses the server key).'; return render(); }
+            ui.aiKeyAck = 'Testing key…';
+            render();
+            try {
+              const res = await fetch('/api/anthropic-test', {
+                method: 'POST',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify({ anthropicKey: apiKey })
+              });
+              const data = await res.json();
+              if (data.ok) {
+                localStorage.setItem('anthropic_key', apiKey);
+                ui.aiNarrationOn = true;
+                try { localStorage.setItem('ai_narration_on', '1'); } catch {}
+                ui.aiKeyAck = '✓ Key works — narration enabled.';
+              } else {
+                ui.aiKeyAck = `✗ Key rejected: ${data.reason || 'unknown'}`;
+              }
+            } catch {
+              ui.aiKeyAck = '✗ Could not reach the server.';
+            }
+            render();
+          }
+        }, 'Test & Save Key'),
+        ui.aiKeyAck ? el('div', { class: 'small', style: { marginTop: '4px' } }, ui.aiKeyAck) : null
+      ),
+
+      tts.isSupported() ? el('button', { class: 'gear-item', onClick: () => {
+        tts.toggle(); render();
+      }}, tts.enabled ? 'Voice: ON (mute)' : 'Voice: OFF (enable)') : null,
+
       el('button', { class: 'gear-item', onClick: () => {
         ui.world = null; ui.worldHash = '';
         ui.screen = 'invoke'; ui.gearOpen = false; render();

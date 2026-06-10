@@ -668,7 +668,10 @@ async function doSubmitMove() {
     return;
   }
 
-  const wizardLine = { who: 'wizard', text: '', mech: output?.mechanics || '' };
+  // A dialogue reply is the NPC's line — attribute the speaker, not the DM.
+  const wizardLine = output?.dialogue?.npcName
+    ? { who: 'npc', name: output.dialogue.npcName, text: '', mech: output?.mechanics || '' }
+    : { who: 'wizard', text: '', mech: output?.mechanics || '' };
   ui.play.lines.push(wizardLine);
   setStatus('Narrating…');
   render();
@@ -1424,8 +1427,13 @@ function renderTranscript(lines) {
       ? text.slice(8)
       : text;
 
-    return el('div', { class: `line ${isPlayer ? 'line-player' : 'line-narration'}` },
-      isPlayer ? el('div', { class: 'who' }, 'You') : null,
+    const isNpc = who === 'npc';
+    return el('div', {
+      class: `line ${isPlayer ? 'line-player' : 'line-narration'}`,
+      style: isNpc ? { borderLeft: '3px solid #c9a227', paddingLeft: '10px' } : undefined
+    },
+      isPlayer ? el('div', { class: 'who' }, 'You')
+        : isNpc ? el('div', { class: 'who', style: { color: '#c9a227' } }, String(ln?.name || 'They')) : null,
       textIsDev
         ? el('div', { class: `text ${devClass}` }, displayText)
         : el('div', { class: 'text' }, displayText),
@@ -2136,10 +2144,43 @@ function renderPlay() {
   );
 
   // ── Input bar (fixed bottom) ──────────────────────────────────────────
+  // ── Dialogue mode banner: you KNOW you're in a conversation. ─────────
+  const dlg = w?.scene?.dialogue || null;
+  let dlgNpc = null;
+  if (dlg) {
+    const hereNode = (w.map?.nodes || []).find(n => n && n.id === w.map?.currentNodeId) || null;
+    dlgNpc = (hereNode?.settlement?.npcs || []).find(n => n && String(n.id) === String(dlg.npcId)) || null;
+  }
+  const dialogueBanner = dlg ? el('div', {
+    style: {
+      display: 'flex', alignItems: 'center', gap: '10px',
+      padding: '8px 12px', margin: '0 0 6px 0',
+      background: 'rgba(201,162,39,0.10)', borderLeft: '3px solid #c9a227', borderRadius: '4px'
+    }
+  },
+    el('div', {
+      style: {
+        width: '30px', height: '30px', borderRadius: '50%', background: '#c9a227',
+        color: '#1a1408', display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontWeight: 'bold', flex: '0 0 auto'
+      }
+    }, String(dlgNpc?.name || '?').trim().charAt(0).toUpperCase()),
+    el('div', { style: { flex: '1 1 auto' } },
+      el('div', { style: { fontWeight: 'bold', color: '#c9a227' } },
+        `In conversation with ${dlgNpc?.name || 'someone'}${dlgNpc?.role ? ` — ${dlgNpc.role}` : ''}`),
+      el('div', { class: 'small' },
+        `trust ${Math.round(((dlgNpc?.playerRelationship?.trust ?? 0.5)) * 10)}/10 · ${dlg.turnsInDialogue || 0} exchange${(dlg.turnsInDialogue || 0) === 1 ? '' : 's'} · everything you type is said to them`)
+    ),
+    el('button', {
+      class: 'btn',
+      onClick: () => { ui.play.input = 'goodbye'; doSubmitMove(); }
+    }, 'Step away')
+  ) : null;
+
   const input = el('input', {
     class: 'input play-input',
     value: ui.play.input,
-    placeholder: 'What do you do?',
+    placeholder: dlg ? `Say something to ${dlgNpc?.name || 'them'}\u2026 ("goodbye" to step away)` : 'What do you do?',
     role: 'search',
     onInput: (e) => { ui.play.input = String(e.target.value || ''); },
     onKeydown: (e) => { if (e.key === 'Enter') doSubmitMove(); }
@@ -2214,6 +2255,7 @@ function renderPlay() {
     ),
     objectiveBar,
     devPanel,
+    dialogueBanner,
     el('div', { class: 'play-body' },
       playMap,
       renderTranscript(ui.play.lines)

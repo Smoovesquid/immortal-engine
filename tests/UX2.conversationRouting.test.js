@@ -329,3 +329,35 @@ test('UX2-14: NPCs answer in direct speech', () => {
   const r = playerMove(w, packsById, 'what do you know about the well?');
   assert.ok(/"/.test(r.output.narration), `reply carries quoted speech: ${r.output.narration.slice(0, 80)}`);
 });
+
+// ── P4: morale — a broken foe runs, you get the XP, the DM marks last-seen ──
+
+test('UX2-15: a foe at low HP can break and flee with XP and a last-seen threat', async () => {
+  const { resolveEscapeCombatTurn: resolve } = await import('../engine/combat/escapeCombat.js');
+  const { initEscapeHp: ih, initEscapeKit: ik } = await import('../engine/combat/escapeCombat.js');
+  // Scan seeds: enemy at 2/20 HP must eventually fail the morale check.
+  let proven = false;
+  for (const salt of ['a','b','c','d','e','f','g','h']) {
+    const pc = createCharacter5e({ seed: `ux2flee|${salt}`, speciesId: 'human', classId: 'fighter', abilityMethod: 'standard' });
+    const w0 = newWorld({ seed: `ux2flee|${salt}`, campaignId: 'c', pack: { primaryId: 'fantasy', mixerId: null }, mode: 'escape' });
+    let w = beginAdventure(ensureWorld({ ...w0, party: [pc] }), packsById).world;
+    w = ik(ih(w));
+    w = ensureWorld({
+      ...w,
+      combat: { active: true, round: 1, turnIndex: 0, beganAt: w.timeline.length, enemies: [
+        { id: 'e0', name: 'bandit', hp: 2, maxHp: 20, ac: 30, damage: 2, defeated: false, cr: 0.5 }
+      ] }
+    });
+    const xpBefore = w.party[0].xp;
+    const r = resolve(w, 'guard');
+    if (/breaks and runs/.test(r.result.beats.join(' '))) {
+      assert.equal(r.world.party[0].xp, xpBefore + 100, 'driven-off foe pays its XP');
+      assert.ok(!r.world.combat?.active, 'fight ends when the last foe flees');
+      assert.ok((r.world.ledger?.threats || []).some(t => /fled — last seen/.test(String(t?.text || t))), 'last-seen threat recorded');
+      assert.match(r.result.beats.join(' '), /Last you saw|ducked/);
+      proven = true;
+      break;
+    }
+  }
+  assert.ok(proven, 'morale break observed across seeds');
+});

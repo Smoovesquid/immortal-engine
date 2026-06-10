@@ -1471,6 +1471,50 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
     };
   }
 
+  // ── Morale (P4): a badly wounded foe may break and run. ────────────────────
+  // At ≤25% HP a foe checks morale at the start of its turn (d20 vs 10,
+  // seeded). On a break it flees: you get its XP (driving a foe off IS
+  // overcoming it), no loot (it kept its pockets), and the DM marks the
+  // last-known position against a real cover feature — it may still be close.
+  // Things with legendary actions don't run. Fled foes leave the enemy list.
+  {
+    const fled = [];
+    for (const e of enemies) {
+      if (!e || e.defeated || (Number(e.hp) || 0) <= 0) continue;
+      if (Array.isArray(e.legendaryActions) && e.legendaryActions.length) continue;
+      const eMaxHp = Math.max(1, Number(e.maxHp) || 1);
+      if ((Number(e.hp) || 0) / eMaxHp > 0.25) continue;
+      if (rng.int(1, 20) >= 10) continue; // holds its nerve this round
+      fled.push(e);
+    }
+    if (fled.length) {
+      const where = roomCover ? `behind the ${roomCover.label}` : 'into the open country';
+      for (const e of fled) {
+        const xp = xpForEnemies([e]);
+        w = applyDeltas(w, [
+          { op: 'gainXp', amount: xp },
+          { op: 'ledger', addThreat: `the ${e.name} fled — last seen ${where}; it may still be close`, level: 1 }
+        ]);
+        beats.push(`The ${e.name} has had enough — it breaks and runs. Last you saw, it ducked ${where}. It may still be close. (+${xp} XP — driven off counts.)`);
+      }
+      const fledIds = new Set(fled.map(e => e.id));
+      enemies = enemies.filter(e => e && !fledIds.has(e.id));
+      // If that was everyone, the fight is over — end combat WITHOUT writing
+      // an empty enemy list into an active fight (invariant: active combat
+      // must hold at least one foe). No loot from the fled.
+      if (!enemies.some(e => e && !e.defeated && (Number(e.hp) || 0) > 0)) {
+        w = { ...w, meta: { ...w.meta, escapeFeats: { ...feats } } };
+        w = endCombat(w, { reason: 'enemies-fled' });
+        beats.push('The road is yours again — though something out there remembers you.');
+        return {
+          world: w,
+          result: { beats, combatSummary: beats.join(' '), mechanicsLine: '[combat:fled]', outcome: 'success' }
+        };
+      }
+      w = applyDeltas(w, [{ op: 'combatState', set: { enemies, round, turnIndex: 0 } }]);
+    }
+  }
+
   // ── Enemy turns: each living enemy strikes the player ──────────────────────
   let hp = Number(w.meta.escapeHp) || 0;
   const coverBonus = coverState ? (Number(coverState.bonus) || 0) : 0;

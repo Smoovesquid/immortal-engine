@@ -329,15 +329,31 @@ export function buildLocationSurvey(world) {
     parts.push(`You're in ${placeName}, ${article} ${nodeType}.`);
   }
 
-  // Who's present
-  const npcs = Array.isArray(currentNode?.settlement?.npcs) ? currentNode.settlement.npcs : [];
-  if (npcs.length) {
-    const named = npcs.slice(0, 4).map(describeNpc);
-    const remainder = npcs.length - named.length;
-    if (remainder > 0) {
-      named.push(`${remainder} other${remainder === 1 ? '' : 's'}`);
+  // Who's present — SIGHT-SCOPED. Indoors you cannot see the village roster
+  // through the walls; you see whoever shares your roof (today: no one is
+  // placed in interiors, so the honest answer is the quiet). Outdoors, the
+  // social roster (non-hostile) is who's about — the same people the local
+  // map draws. Hostiles aren't listed by name: a lurking bandit is not a
+  // neighbor; if he's visible at all he reads as a wary stranger.
+  const allNpcs = Array.isArray(currentNode?.settlement?.npcs) ? currentNode.settlement.npcs : [];
+  if (insideStructure) {
+    parts.push('No one else is under this roof.');
+  } else {
+    const sociable = allNpcs.filter(n => n && !n.hostile);
+    const lurkers = allNpcs.filter(n => n && n.hostile).length;
+    if (sociable.length) {
+      const named = sociable.slice(0, 4).map(describeNpc);
+      const remainder = sociable.length - Math.min(4, sociable.length);
+      if (remainder > 0) {
+        named.push(`${remainder} other${remainder === 1 ? '' : 's'}`);
+      }
+      parts.push(`You see ${joinList(named)} here.`);
     }
-    parts.push(`You see ${joinList(named)} here.`);
+    if (lurkers > 0) {
+      parts.push(lurkers === 1
+        ? 'And someone else — a stranger keeping to the edges, watching.'
+        : `And ${lurkers} strangers keeping to the edges, watching.`);
+    }
   }
 
   // Notable structures / landmarks at this node

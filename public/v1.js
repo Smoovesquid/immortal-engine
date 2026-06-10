@@ -1996,6 +1996,9 @@ function renderPlay() {
         ui.gearOpen = false;
       }}, 'Load'),
       el('button', { class: 'gear-item', onClick: () => {
+        ui.screen = 'map'; ui.gearOpen = false; render();
+      }}, 'Map (zoom levels)'),
+      el('button', { class: 'gear-item', onClick: () => {
         ui.devMode = !ui.devMode; ui.gearOpen = false; render();
       }}, ui.devMode ? 'Hide Dev Info' : 'Show Dev Info'),
 

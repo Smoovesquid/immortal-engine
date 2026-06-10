@@ -528,7 +528,7 @@ function playerMoveCore(world, packsById, text) {
       return {
         world: w,
         output: {
-          narration: dialogueAskNarration(asked.outcome),
+          narration: dialogueAskNarration(asked.outcome, w),
           mechanics: `[dialogue ask | ${asked.outcome.mode}${asked.outcome.factId ? ` | ${asked.outcome.factId}` : ''} | trust:${asked.outcome.trustLevel}]`
         }
       };
@@ -981,7 +981,9 @@ function playerMoveCore(world, packsById, text) {
     // intention — they name who's actually here and ask who you mean.
     if (/^(?:someone|anyone|somebody|anybody|people|folk|locals?|a local|villagers?|them|him|her)$/i.test(talkRef.trim())) {
       const hereNode = (w.map?.nodes || []).find(n => n && n.id === w.map?.currentNodeId) || null;
-      const npcsHere = (hereNode?.settlement?.npcs || []).map(n => String(n?.name || '').trim()).filter(Boolean);
+      // Hostiles don't make the social roster — you greet neighbors, not
+      // the bandit casing the well.
+      const npcsHere = (hereNode?.settlement?.npcs || []).filter(n => n && !n.hostile).map(n => String(n?.name || '').trim()).filter(Boolean);
       if (npcsHere.length) {
         const names = npcsHere.slice(0, 4).join(', ');
         return {
@@ -2256,31 +2258,86 @@ function askBeatOutcome(mode) {
   return 'mixed';
 }
 
-function dialogueAskNarration(outcome) {
+// Turn a knowledge-graph factId into something a person would SAY.
+// 'local_well_gossip' → 'the talk around the well'. Falls back to a plain
+// humanization so no fact is ever unspeakable.
+function factPhrase(factId) {
+  const id = String(factId || '');
+  let m = id.match(/^local_(\w+)_gossip$/);
+  if (m) return `the talk around the ${m[1].replace(/_/g, ' ')}`;
+  m = id.match(/^faction_(\w+)_standing$/);
+  if (m) return `where the ${m[1].replace(/_/g, ' ')} folk stand these days`;
+  m = id.match(/^neighbor_\d+_presence$/);
+  if (m) return 'who keeps house nearby';
+  m = id.match(/^role_(\w+)_trade_talk$/);
+  if (m) return `the ${m[1].replace(/_/g, ' ')}'s trade`;
+  return id.replace(/_/g, ' ').trim() || 'that';
+}
+
+function capFirst(s) {
+  const str = String(s || '');
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+// P5 — NPCs SPEAK. Direct speech with deterministic variation (pickVariant);
+// the brain's decision is unchanged underneath: the engine decides share/
+// deflect/lie, this layer only decides the words in their mouth.
+function dialogueAskNarration(outcome, world) {
   const name = outcome?.npcName || 'They';
+  const mood = String(outcome?.brainMood || '').trim();
+  const says = mood ? `${name} says, ${mood}` : `${name} says`;
+  const phrase = factPhrase(outcome?.factId);
+  const V = (key, variants) => `Wizard: ${pickVariant(variants, world, `say:${key}`)}`;
   switch (outcome?.mode) {
     case 'shared':
-      return `Wizard: ${name} answers plainly, offering what they know.`;
+      return V('shared', [
+        `${name} leans in. "${capFirst(phrase)}? Aye, I'll tell you what I know." And they do — plainly, holding nothing back.`,
+        `"You're asking about ${phrase}." ${says}. "Fair enough. Listen." What follows has the ring of truth.`,
+        `${name} glances round, then talks — ${phrase}, laid out straight.`
+      ]);
     case 'recruited':
-      return `Wizard: ${name} nods slowly and falls into step beside you.`;
+      return V('recruited', [
+        `"Alright." ${name} rolls their shoulders. "I'm with you. Lead on." They fall into step beside you.`,
+        `${name} looks you over once more, then nods. "You'll do. Let's walk."`
+      ]);
     case 'withheld':
-      return `Wizard: ${name} deflects, keeping the truth close.`;
+      return V('withheld', [
+        `"That I keep to myself," ${says}, eyes flat.`,
+        `${name} goes still. "Some things aren't for trading. Not yet."`,
+        `"Ask me about the weather," ${says}. "That one's free."`
+      ]);
     case 'lied':
-      return `Wizard: ${name} offers a smooth explanation that doesn't quite match what you feel.`;
+      return V('lied', [
+        `"Nothing to it," ${says} — a touch too smoothly. Something in it doesn't sit right.`,
+        `${name} answers without blinking: a clean, easy story. Too clean, maybe.`
+      ]);
     case 'deflected':
     default:
-      return `Wizard: ${name} changes the subject.`;
+      return V('deflected', [
+        `${name} waves it off. "You'd be asking the wrong one. I keep to my own affairs."`,
+        `"Hm." ${name} finds something to do with their hands. "Couldn't say. Try someone who minds other folks' business."`,
+        `${name} sidesteps it without breaking stride. "Weather's turning, though, isn't it."`
+      ]);
   }
 }
 
 function extractDialogueRef(text) {
   const t = String(text || '');
-  // "talk to X" / "speak to X" / "speak with X" / "chat with X"
+  // 'talk to X' / 'speak to X' / 'speak with X' / 'chat with X'
   const m1 = t.match(/\b(?:talk|speak|chat)\s+(?:to|with)\s+(.+)/i);
   if (m1 && m1[1]) return cleanDialogueRef(m1[1]);
-  // "approach X" (conservative — resolved NPC must exist or caller falls through)
+  // 'approach X' (conservative — resolved NPC must exist or caller falls through)
   const m2 = t.match(/\bapproach\s+(.+)/i);
   if (m2 && m2[1]) return cleanDialogueRef(m2[1]);
+  // Greetings ARE dialogue. 'Hello X' / 'hi X' / 'good morning X' / 'greet X'
+  // enters conversation with X — a greeting must NEVER be a d20 roll.
+  const m3 = t.match(/^\s*(?:hello|hi|hey|greetings|good\s+(?:morning|day|evening)|well met|greet)[,!.]?\s+(.+)/i);
+  if (m3 && m3[1]) return cleanDialogueRef(m3[1]);
+  // 'X, hello' / 'X, good morning'
+  const m4 = t.match(/^\s*([a-z][a-z' -]+?),\s*(?:hello|hi|hey|greetings|good\s+(?:morning|day|evening)|well met)\b/i);
+  if (m4 && m4[1]) return cleanDialogueRef(m4[1]);
+  // A bare greeting with no name: route to the who-do-you-mean clarify.
+  if (/^\s*(?:hello|hi|hey|greetings|good\s+(?:morning|day|evening)|well met)\s*(?:there|everyone|all|folks|friends)?\s*[!.?]*\s*$/i.test(t)) return 'someone';
   return '';
 }
 

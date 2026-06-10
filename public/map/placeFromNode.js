@@ -81,8 +81,10 @@ export function placeFromWorldNode(world, nodeId) {
   };
 
   tokens.push({ type: 'player', ux: 1.5, uy: pathY });
-  const shown = npcs.slice(0, 8);
-  shown.forEach((n, i) => { tokens.push({ type: 'npc', ux: 2 + (i + 1) * (endX - 3) / (shown.length + 1), uy: pathY - 0.7, label: 'V', npc: { id: n.id || ('npc' + i), name: n.name, role: n.role } }); });
+  // Neighbors get their initial; a lurking hostile reads as '?' at the edge —
+  // matching the survey's 'a stranger keeping to the edges'.
+  const shown = npcs.filter(n => n && !n.hostile).slice(0, 8).concat(npcs.filter(n => n && n.hostile).slice(0, 2).map(n => ({ ...n, name: '?' })));
+  shown.forEach((n, i) => { tokens.push({ type: 'npc', ux: 2 + (i + 1) * (endX - 3) / (shown.length + 1), uy: pathY - 0.7, label: String(n.name || 'V').trim().charAt(0).toUpperCase() || 'V', npc: { id: n.id || ('npc' + i), name: n.name, role: n.role } }); });
 
   return { nodeType: node.nodeType || 'settlement', tier: tierForNode(world, node), seed, terrain, buildings, tokens, footprintW: endX };
 }

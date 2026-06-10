@@ -256,8 +256,22 @@ const SLOT_SPELLS = {
   shield: { name: 'Shield', verb: 'shield', kind: 'shield', acBonus: 5 },
   armor_of_agathys: { name: 'Armor of Agathys', verb: 'agathys', kind: 'agathys', tempHp: 5, retaliate: 5 },
   charm_person: { name: 'Charm Person', verb: 'charm', kind: 'charm', rounds: 2 },
-  entangle: { name: 'Entangle', verb: 'entangle', kind: 'entangle' }
+  entangle: { name: 'Entangle', verb: 'entangle', kind: 'entangle' },
+  // Higher-tier spells learned through leveling. minSlot gates the cast: no
+  // 2nd-level slot, no scorching ray.
+  scorching_ray: { name: 'Scorching Ray', verb: 'scorch', kind: 'rays', minSlot: 2, rays: 3, dice: 2, die: 6, type: 'fire' },
+  hold_person: { name: 'Hold Person', verb: 'hold', kind: 'hold', minSlot: 2, rounds: 2 },
+  fireball: { name: 'Fireball', verb: 'fireball', kind: 'fireball', minSlot: 3, dice: 8, die: 6, type: 'fire' }
 };
+
+// Lowest live slot at or above a spell's tier (fireball needs a 3rd).
+function lowestSlotAtLeast(pc, min) {
+  const slots = pc?.spells?.slots || {};
+  for (let lvl = Math.max(1, min || 1); lvl <= 5; lvl++) {
+    if ((Number(slots[lvl]) || 0) > 0) return lvl;
+  }
+  return 0;
+}
 
 // Escape-model condition effects: a charmed foe won't raise a hand against
 // you; a restrained one fights tangled (-4 to hit, +4 to be hit) and tries a
@@ -478,9 +492,12 @@ export function escapeKitView(pc) {
       witch_bolt: 'Spell attack, 1d12 lightning. Uses a slot. Type "witch bolt".',
       bless: '+1d4 on your attack rolls this fight. Uses a slot. Type "bless".',
       shield: '+5 AC until your next turn. Uses a slot. Type "shield".',
-      armor_of_agathys: '5 temp HP; melee attackers take 5 cold. Uses a slot. Type "agathys".',
+      armor_of_agathys: '5 temp HP per slot level; melee attackers take 5 cold. Type "agathys".',
       charm_person: 'WIS save or the target sees a friend (2 rounds). Uses a slot. Type "charm".',
-      entangle: 'Grasping weeds: STR save or restrained, every foe. Uses a slot. Type "entangle".'
+      entangle: 'Grasping weeds: STR save or restrained, every foe. Uses a slot. Type "entangle".',
+      scorching_ray: 'Three rays, 2d6 fire each. Needs a 2nd-level slot. Type "scorch".',
+      hold_person: 'WIS save or paralyzed — melee hits crit. Needs a 2nd-level slot. Type "hold".',
+      fireball: '8d6 fire to every foe, DEX save for half. Needs a 3rd-level slot. Type "fireball".'
     };
     for (const ref of Object.keys(slotNotes)) {
       const spell = knownSlotSpell(pc, ref);
@@ -546,6 +563,9 @@ export function parseEscapeAction(text) {
   // Slot spells. Witch bolt must outrank the generic "bolt" (a fire bolt
   // verb); shield gets its own verb so the resolver can decide spell vs guard.
   if (/\bwitch\s*bolt\b/.test(t)) return { verb: 'witchbolt' };
+  if (/\bfireball\b/.test(t)) return { verb: 'fireball' };
+  if (/\b(scorch(ing)?\s*ray|scorch)\b/.test(t)) return { verb: 'scorch' };
+  if (/\b(hold\s+(person|him|her|them|it)|paralyz)\w*/.test(t)) return { verb: 'hold' };
   if (/\b(magic\s+missile|missiles?|darts?\s+of\s+force)\b/.test(t)) return { verb: 'missile' };
   if (/\bbless\b/.test(t)) return { verb: 'bless' };
   if (/\b(agathys|frost\s+armou?r|armou?r\s+of\s+agathys)\b/.test(t)) return { verb: 'agathys' };
@@ -990,6 +1010,96 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
     } else {
       beats.push('You call to the green. The green does not answer you.');
     }
+  } else if (verb === 'scorch') {
+    const spell = knownSlotSpell(pc, 'scorching_ray');
+    const slotLvl = spell ? lowestSlotAtLeast(pc, spell.minSlot) : 0;
+    if (spell && slotLvl > 0 && targetIdx >= 0) {
+      w = applyDeltas(w, [{ op: 'consumeSpellSlot', entityId: pc.id || 'party', level: slotLvl }]);
+      // Three rays (+1 per slot level above 2nd), each its own attack roll,
+      // walked across the line of foes — spillover rays seek the next target.
+      const rays = spell.rays + Math.max(0, slotLvl - spell.minSlot);
+      let anyBeat = false;
+      for (let i = 0; i < rays; i++) {
+        const tIdx = enemies.findIndex(e => e && !e.defeated && (Number(e.hp) || 0) > 0);
+        if (tIdx < 0) break;
+        const tgt = enemies[tIdx];
+        const r = rng.int(1, 20);
+        const tot = r + spell.atkBonus + (feats.blessActive ? rng.int(1, 4) : 0);
+        if (r !== 1 && (r === 20 || tot >= (Number(tgt.ac) || 10))) {
+          let dmg = rng.int(1, spell.die) + rng.int(1, spell.die);
+          if (r === 20) dmg += rng.int(1, spell.die) + rng.int(1, spell.die);
+          const newHp = Math.max(0, (Number(tgt.hp) || 0) - dmg);
+          tgt.hp = newHp;
+          if (newHp <= 0) tgt.defeated = true;
+          beats.push(`A ray of fire sears the ${tgt.name} for ${dmg}${r === 20 ? ' (critical!)' : ''}${newHp <= 0 ? ' — it drops.' : `. (${newHp} HP left)`}`);
+        } else {
+          beats.push(`A ray of fire hisses past the ${tgt.name}.`);
+        }
+        anyBeat = true;
+      }
+      if (!anyBeat) beats.push('Your rays sputter at empty air.');
+    } else if (spell && lowestSlot(pc) > 0) {
+      beats.push('Scorching ray needs a 2nd-level slot — yours are too thin.');
+    } else if (spell) {
+      beats.push('Your spell slots are spent.');
+    } else {
+      beats.push('You snap your fingers for the rays, but that spell is not yours.');
+    }
+  } else if (verb === 'hold') {
+    const spell = knownSlotSpell(pc, 'hold_person');
+    const slotLvl = spell ? lowestSlotAtLeast(pc, spell.minSlot) : 0;
+    if (spell && slotLvl > 0 && targetIdx >= 0) {
+      const target = enemies[targetIdx];
+      w = applyDeltas(w, [{ op: 'consumeSpellSlot', entityId: pc.id || 'party', level: slotLvl }]);
+      const dc = pc.dnd.spellcasting.saveDC;
+      const save = rng.int(1, 20) + ENEMY_SAVE_BONUS;
+      if (save < dc) {
+        target.conditions = applyCondition(
+          target.conditions || [],
+          { name: 'paralyzed', until: spell.rounds, source: 'hold_person', stackBehavior: 'replace' },
+          target.conditionImmunities || []
+        );
+        if (hasCondition(target.conditions, 'paralyzed')) {
+          beats.push(`The ${target.name} goes rigid mid-step — held fast, eyes wide, muscles locked.`);
+        } else {
+          beats.push(`The ${target.name} cannot be held — your magic finds nothing to grip.`);
+        }
+      } else {
+        beats.push(`The ${target.name} shudders, strains — and breaks your hold before it sets.`);
+      }
+    } else if (spell && lowestSlot(pc) > 0) {
+      beats.push('Hold person needs a 2nd-level slot — yours are too thin.');
+    } else if (spell) {
+      beats.push('Your spell slots are spent.');
+    } else {
+      beats.push('You clench a fist at them. Nothing holds.');
+    }
+  } else if (verb === 'fireball') {
+    const spell = knownSlotSpell(pc, 'fireball');
+    const slotLvl = spell ? lowestSlotAtLeast(pc, spell.minSlot) : 0;
+    if (spell && slotLvl > 0) {
+      w = applyDeltas(w, [{ op: 'consumeSpellSlot', entityId: pc.id || 'party', level: slotLvl }]);
+      const dc = pc.dnd.spellcasting.saveDC;
+      const dice = spell.dice + Math.max(0, slotLvl - spell.minSlot);
+      let base = 0;
+      for (let i = 0; i < dice; i++) base += rng.int(1, spell.die);
+      beats.push(`A bead of light streaks out and the world goes orange — FIREBALL (${dice}d6).`);
+      for (const e of enemies) {
+        if (!e || e.defeated || (Number(e.hp) || 0) <= 0) continue;
+        const save = rng.int(1, 20) + ENEMY_SAVE_BONUS;
+        const dmg = save >= dc ? Math.floor(base / 2) : base;
+        const newHp = Math.max(0, (Number(e.hp) || 0) - dmg);
+        e.hp = newHp;
+        if (newHp <= 0) e.defeated = true;
+        beats.push(`The ${e.name} ${save >= dc ? 'dives clear of the worst of it' : 'takes the blast full'} — ${dmg} fire.${newHp <= 0 ? ' It drops.' : ''}`);
+      }
+    } else if (spell && lowestSlot(pc) > 0) {
+      beats.push('Fireball needs a 3rd-level slot. The bead of light refuses to form.');
+    } else if (spell) {
+      beats.push('Your spell slots are spent.');
+    } else {
+      beats.push('You sketch the rune for fire and get smoke. That spell is not yours.');
+    }
   } else if (verb === 'bless') {
     const spell = knownSlotSpell(pc, 'bless');
     if (spell && slotsLeft(pc) > 0 && !feats.blessActive) {
@@ -1118,9 +1228,10 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
         const tAc = Number(tgt.ac) || 10;
         let r = swing === 0 ? roll : rng.int(1, 20);
         if (swing > 0 && r === 1 && hasFeature(pc, 'rerollOnes')) r = rng.int(1, 20);
+        const heldFast = hasCondition(tgt.conditions, 'paralyzed');
         const tot = r + melee.atkBonus + styleAtk + recklessAtk
           + (feats.blessActive ? rng.int(1, 4) : 0)
-          + (hasCondition(tgt.conditions, 'restrained') ? RESTRAINED_PENALTY : 0);
+          + ((hasCondition(tgt.conditions, 'restrained') || heldFast) ? RESTRAINED_PENALTY : 0);
         if (r === 1) {
           beats.push(`You swing your ${wname} at the ${tgt.name} and miss.`);
           continue;
@@ -1128,7 +1239,8 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
         // Champion fighters (3) crit on 19-20; a natural 19 still has to hit.
         const critOn = (d => d?.features?.some(f => f.effect?.type === 'improvedCritical') ? 19 : 20)(pc?.dnd);
         if (r === 20 || tot >= tAc) {
-          const crit = r >= critOn;
+          // A melee hit on a paralyzed foe is automatically a critical (SRD).
+          const crit = r >= critOn || (heldFast && !melee.ranged);
           let dmg = rng.int(1, melee.die) + melee.dmgMod + styleDmg + rageDmg;
           if (crit) dmg += rng.int(1, melee.die);
           // Half-Orc Savage Attacks: one extra weapon die on a melee crit.
@@ -1292,6 +1404,24 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
       beats.push(broke
         ? `The ${e.name}'s gaze hardens — the charm breaks, and it remembers.`
         : `The ${e.name} stands easy, sword loose — your charm holds.`);
+      continue;
+    }
+
+    // Paralyzed (hold person): locked rigid — no action, and every melee blow
+    // against it lands as a critical while it holds. Countdown like the charm.
+    if (hasCondition(e.conditions, 'paralyzed')) {
+      const next = [];
+      let broke = false;
+      for (const c of (e.conditions || [])) {
+        if (c.name !== 'paralyzed') { next.push(c); continue; }
+        const left = (typeof c.until === 'number') ? c.until - 1 : 0;
+        if (left > 0) next.push({ ...c, until: left });
+        else broke = true;
+      }
+      e.conditions = next;
+      beats.push(broke
+        ? `Feeling floods back into the ${e.name} — the hold breaks.`
+        : `The ${e.name} stands rigid as a post, held fast.`);
       continue;
     }
 

@@ -144,6 +144,55 @@ const HALF_CASTER_SPELLCASTING = {
   ranger: { ability: 'WIS', knownAtTwo: ['cure_wounds'] }
 };
 
+// Spells learned at each level — curated SRD picks per class (every ref
+// exists in the engine's spell catalog). Wizards copy two into the book per
+// level per the PHB; known-casters add their one; prepared casters get the
+// list staples as their slots unlock the tier.
+const SPELLS_LEARNED = {
+  wizard: {
+    2: ['burning_hands', 'mage_armor'],
+    3: ['scorching_ray', 'misty_step'],
+    4: ['hold_person', 'blink'],
+    5: ['fireball', 'counterspell']
+  },
+  sorcerer: {
+    2: ['burning_hands'],
+    3: ['scorching_ray'],
+    4: ['hold_person'],
+    5: ['fireball']
+  },
+  bard: {
+    2: ['hideous_laughter'],
+    3: ['hold_person'],
+    4: ['enthrall'],
+    5: ['hypnotic_pattern']
+  },
+  cleric: {
+    2: ['shield_of_faith'],
+    3: ['hold_person', 'spiritual_weapon'],
+    5: ['spirit_guardians']
+  },
+  druid: {
+    2: ['goodberry'],
+    3: ['barkskin', 'heat_metal'],
+    5: ['call_lightning']
+  },
+  warlock: {
+    2: ['hellish_rebuke'],
+    3: ['hold_person'],
+    4: ['fear'],
+    5: ['hypnotic_pattern']
+  },
+  paladin: {
+    3: ['shield_of_faith'],
+    5: ['protection_from_poison']
+  },
+  ranger: {
+    3: ['entangle'],
+    5: ['spike_growth']
+  }
+};
+
 export function xpToNext(level) {
   const next = LEVEL_TABLE.find(row => row.level === Math.min(20, (Math.trunc(Number(level)) || 1) + 1));
   return next ? next.xpToReach : Infinity;
@@ -254,9 +303,11 @@ export function levelUpSheet(pc) {
   // Mirror onto the legacy entity fields + spells block. New slot capacity per
   // spell level arrives ready to use; spent slots stay spent.
   const spells = pc.spells ? { ...pc.spells } : { known: [], slots: {}, maxSlots: {}, concentration: null };
+  // Spells learned at this level (in addition to a half-caster's awakening set).
+  const learned = (SPELLS_LEARNED[classId]?.[newLevel] || []);
   if (spellcasting) {
     const known = [...(spells.known || [])];
-    for (const ref of newKnown) if (!known.includes(ref)) known.push(ref);
+    for (const ref of [...newKnown, ...learned]) if (!known.includes(ref)) known.push(ref);
     spells.known = known;
     const maxSlots = { ...spells.maxSlots };
     const slots = { ...spells.slots };
@@ -282,6 +333,10 @@ export function levelUpSheet(pc) {
 
   const gainedNames = gained.map(g => g.name);
   if (asiNote) gainedNames.unshift(`Ability Score Improvement (${asiNote})`);
+  if (spellcasting && learned.length) {
+    const pretty = learned.map(r => String(r).replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()));
+    gainedNames.push(`Learned: ${pretty.join(', ')}`);
+  }
 
   return {
     ...pc,

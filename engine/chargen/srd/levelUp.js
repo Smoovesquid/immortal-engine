@@ -5,9 +5,10 @@
 //
 // Deterministic: no dice at level-up (average HP), no rng needed.
 
-import { ABILITY_KEYS, abilityMod } from './abilities.js';
+import { ABILITY_KEYS, abilityMod, clampScore } from './abilities.js';
 import { SKILLS, SKILL_KEYS } from './skills.js';
 import { LEVEL_TABLE, levelEntry } from '../../ruleset/core/levelTable.js';
+import { computeSheetAC } from './sheet.js';
 
 // SRD level-2 class features. `effect` tags the resolver understands fire in
 // combat (actionSurge, recklessAttack); the rest ride the sheet as real
@@ -54,16 +55,88 @@ const LEVEL2_FEATURES = {
   ]
 };
 
-// Spell slot progression (1st-level slots only — higher slots arrive with the
-// higher-level packet). Full casters: 2/3/4/4... Half casters (paladin,
-// ranger) gain spellcasting at 2. Warlock pact: 1/2/2/2...
-function slotsAtLevel(classId, level) {
-  const full = { bard: 1, cleric: 1, druid: 1, sorcerer: 1, wizard: 1 };
-  if (classId in full) return level >= 3 ? 4 : level === 2 ? 3 : 2;
-  if (classId === 'warlock') return level >= 2 ? 2 : 1;
-  if (classId === 'paladin' || classId === 'ranger') return level >= 3 ? 3 : level === 2 ? 2 : 0;
-  return 0;
+// SRD level-3 subclass features (the SRD subclass for each class) and the
+// level-5 pillar. Effects the resolver fires: improvedCritical, colossusSlayer,
+// extraAttack, sneak-attack scaling is derived from level directly.
+const LEVEL3_FEATURES = {
+  barbarian: [
+    { name: 'Frenzy (Path of the Berserker)', text: 'In a rage you can fight past all restraint.', effect: null }
+  ],
+  bard: [
+    { name: 'College of Lore: Cutting Words', text: 'Spend inspiration to subtract a d6 from an enemy roll.', effect: null }
+  ],
+  cleric: [],
+  druid: [
+    { name: 'Circle of the Land', text: 'Your magic draws from the land itself; recover slots on a short rest once per day.', effect: null }
+  ],
+  fighter: [
+    { name: 'Improved Critical (Champion)', text: 'Your weapon attacks crit on a 19 or 20.', effect: { type: 'improvedCritical', critOn: 19 } }
+  ],
+  monk: [
+    { name: 'Way of the Open Hand', text: 'Your flurries can topple, shove, or wind their target.', effect: null }
+  ],
+  paladin: [
+    { name: 'Oath of Devotion: Sacred Weapon', text: 'Channel divinity to add CHA to weapon attacks for a minute.', effect: null }
+  ],
+  ranger: [
+    { name: 'Colossus Slayer (Hunter)', text: 'Once per turn, +1d8 against a foe already below its hit point maximum.', effect: { type: 'colossusSlayer', die: 8 } }
+  ],
+  rogue: [
+    { name: 'Thief: Fast Hands', text: 'Cunning Action can pick locks, disarm traps, or use objects.', effect: null }
+  ],
+  sorcerer: [
+    { name: 'Metamagic', text: 'Twist your spells: twin, quicken, or subtle.', effect: null }
+  ],
+  warlock: [
+    { name: 'Pact Boon', text: 'Your patron grants a blade, a book, or a chain.', effect: null }
+  ],
+  wizard: [
+    { name: 'Arcane Tradition feature', text: 'Your school\'s second discipline.', effect: null }
+  ]
+};
+
+const MARTIAL_EXTRA_ATTACK = new Set(['barbarian', 'fighter', 'monk', 'paladin', 'ranger']);
+
+function level5Features(classId) {
+  if (MARTIAL_EXTRA_ATTACK.has(classId)) {
+    return [{ name: 'Extra Attack', text: 'You attack twice whenever you take the Attack action.', effect: { type: 'extraAttack' } }];
+  }
+  if (classId === 'rogue') {
+    return [{ name: 'Uncanny Dodge', text: 'Reaction: halve the damage of an attack you can see.', effect: null }];
+  }
+  return [];
 }
+
+function featuresForLevel(classId, level) {
+  if (level === 2) return LEVEL2_FEATURES[classId] || [];
+  if (level === 3) return LEVEL3_FEATURES[classId] || [];
+  if (level === 5) return level5Features(classId);
+  return [];
+}
+
+// Spell slot progression, levels 1..5 of slots up to 3rd-level spells.
+// Full casters follow the PHB table; warlock pact slots are few, high, and
+// short-rest refreshed; half-casters lag by the book.
+function slotsAtLevel(classId, level) {
+  const FULL = { 1: { 1: 2 }, 2: { 1: 3 }, 3: { 1: 4, 2: 2 }, 4: { 1: 4, 2: 3 }, 5: { 1: 4, 2: 3, 3: 2 } };
+  const HALF = { 1: {}, 2: { 1: 2 }, 3: { 1: 3 }, 4: { 1: 3 }, 5: { 1: 4, 2: 2 } };
+  // Pact magic: slot LEVEL rises (cast everything at the highest tier).
+  const PACT = { 1: { 1: 1 }, 2: { 1: 2 }, 3: { 2: 2 }, 4: { 2: 2 }, 5: { 3: 2 } };
+  const lv = Math.max(1, Math.min(5, level));
+  if (['bard', 'cleric', 'druid', 'sorcerer', 'wizard'].includes(classId)) return { ...FULL[lv] };
+  if (classId === 'warlock') return { ...PACT[lv] };
+  if (classId === 'paladin' || classId === 'ranger') return { ...HALF[lv] };
+  return {};
+}
+
+// ASI levels: +2 to the class's primary ability, applied deterministically
+// (the DM assigns sensibly; a choice UI can override later).
+const ASI_LEVELS = new Set([4, 8, 12, 16, 19]);
+const PRIMARY_ABILITY = {
+  barbarian: 'STR', bard: 'CHA', cleric: 'WIS', druid: 'WIS', fighter: 'STR',
+  monk: 'DEX', paladin: 'STR', ranger: 'DEX', rogue: 'DEX', sorcerer: 'CHA',
+  warlock: 'CHA', wizard: 'INT'
+};
 
 // Half-casters' spellcasting blocks, granted at level 2.
 const HALF_CASTER_SPELLCASTING = {
@@ -99,6 +172,23 @@ export function levelUpSheet(pc) {
   const profBonus = levelEntry(newLevel).profBonus;
   const classId = d.class.id;
 
+  // ── ASI levels: +2 to the class primary, applied BEFORE the HP roll so the
+  // new CON counts for this level — and retroactively for the levels behind
+  // you, per the book.
+  let abilities = { ...d.abilities };
+  let asiNote = null;
+  if (ASI_LEVELS.has(newLevel)) {
+    const primary = PRIMARY_ABILITY[classId] || 'STR';
+    const before = abilities[primary];
+    abilities[primary] = clampScore(before + 2);
+    if (abilities[primary] !== before) asiNote = `${primary} ${before} -> ${abilities[primary]}`;
+  }
+  const mods = {};
+  for (const k of ABILITY_KEYS) mods[k] = abilityMod(abilities[k]);
+  // Retroactive HP for a CON-mod increase (d.level levels already banked).
+  const conDelta = mods.CON - d.mods.CON;
+  const retroHP = conDelta > 0 ? conDelta * d.level : 0;
+
   // HP: fixed average (die/2 + 1) + CON mod + per-level bonuses already on
   // the sheet (Dwarven Toughness, Draconic Resilience).
   let hpBonusPerLevel = 0;
@@ -106,17 +196,17 @@ export function levelUpSheet(pc) {
     if (f.effect?.type === 'hpPerLevel') hpBonusPerLevel += f.effect.amount;
     if (f.effect?.type === 'draconicResilience') hpBonusPerLevel += f.effect.hpPerLevel;
   }
-  const hpGain = Math.max(1, Math.floor(d.class.hitDie / 2) + 1 + d.mods.CON + hpBonusPerLevel);
-  const maxHP = d.maxHP + hpGain;
+  const hpGain = Math.max(1, Math.floor(d.class.hitDie / 2) + 1 + mods.CON + hpBonusPerLevel);
+  const maxHP = d.maxHP + hpGain + retroHP;
 
-  // Recompute everything proficiency touches, from the proficiency lists the
-  // sheet already carries.
+  // Recompute everything proficiency or ability mods touch, from the
+  // proficiency lists the sheet already carries.
   const saves = {};
-  for (const k of ABILITY_KEYS) saves[k] = d.mods[k] + (d.saveProfs.includes(k) ? profBonus : 0);
+  for (const k of ABILITY_KEYS) saves[k] = mods[k] + (d.saveProfs.includes(k) ? profBonus : 0);
   const skills = {};
   for (const s of SKILL_KEYS) {
     const ab = SKILLS[s];
-    let bonus = d.mods[ab];
+    let bonus = mods[ab];
     if (d.skillProfs.includes(s)) bonus += profBonus * (d.expertise.includes(s) ? 2 : 1);
     skills[s] = bonus;
   }
@@ -131,21 +221,24 @@ export function levelUpSheet(pc) {
     spellcasting = { ability: half.ability, list: classId };
     newKnown = [...half.knownAtTwo];
   }
-  const slotCount = slotsAtLevel(classId, newLevel);
+  const newSlots = slotsAtLevel(classId, newLevel);
   if (spellcasting) {
-    spellcasting.saveDC = 8 + profBonus + d.mods[spellcasting.ability];
-    spellcasting.attackBonus = profBonus + d.mods[spellcasting.ability];
-    spellcasting.slots = { 1: slotCount };
+    spellcasting.saveDC = 8 + profBonus + mods[spellcasting.ability];
+    spellcasting.attackBonus = profBonus + mods[spellcasting.ability];
+    spellcasting.slots = { ...newSlots };
   }
 
-  // New class features for this level.
-  const gained = (newLevel === 2 ? (LEVEL2_FEATURES[classId] || []) : [])
+  // New class features for this level (2: class pillar, 3: subclass, 5: Extra
+  // Attack and friends).
+  const gained = featuresForLevel(classId, newLevel)
     .map(f => ({ source: `${d.class.name} ${newLevel}`, name: f.name, text: f.text, effect: f.effect || null }));
 
   const dnd = {
     ...d,
     level: newLevel,
     profBonus,
+    abilities,
+    mods,
     maxHP,
     saves,
     skills,
@@ -153,26 +246,50 @@ export function levelUpSheet(pc) {
     spellcasting,
     features: [...(d.features || []), ...gained]
   };
+  // AC can shift when an ASI moves DEX/CON (unarmored monks, draconic
+  // sorcerers, light-armor rogues). Recompute from the finished sheet.
+  dnd.ac = computeSheetAC(dnd);
+  dnd.initiative = mods.DEX;
 
-  // Mirror onto the legacy entity fields + spells block.
+  // Mirror onto the legacy entity fields + spells block. New slot capacity per
+  // spell level arrives ready to use; spent slots stay spent.
   const spells = pc.spells ? { ...pc.spells } : { known: [], slots: {}, maxSlots: {}, concentration: null };
   if (spellcasting) {
     const known = [...(spells.known || [])];
     for (const ref of newKnown) if (!known.includes(ref)) known.push(ref);
     spells.known = known;
-    spells.maxSlots = { ...spells.maxSlots, 1: slotCount };
-    // The new slot capacity arrives ready to use (you levelled, not rested —
-    // but the new slot itself is fresh). Current slots grow by the delta.
-    const prevMax = Number(pc.spells?.maxSlots?.[1]) || 0;
-    const cur = Number(pc.spells?.slots?.[1]) || 0;
-    spells.slots = { ...spells.slots, 1: Math.min(slotCount, cur + Math.max(0, slotCount - prevMax)) };
+    const maxSlots = { ...spells.maxSlots };
+    const slots = { ...spells.slots };
+    for (const lvl of [1, 2, 3, 4, 5]) {
+      const newMax = Number(newSlots[lvl]) || 0;
+      const prevMax = Number(pc.spells?.maxSlots?.[lvl]) || 0;
+      const cur = Number(pc.spells?.slots?.[lvl]) || 0;
+      maxSlots[lvl] = newMax;
+      slots[lvl] = Math.min(newMax, cur + Math.max(0, newMax - prevMax));
+    }
+    spells.maxSlots = maxSlots;
+    spells.slots = slots;
   }
+
+  // Legacy stat projection follows the new abilities (MIGHT<-STR etc.).
+  const legacyStats = {
+    MIGHT: abilities.STR, AGILITY: abilities.DEX,
+    WITS: Math.max(abilities.INT, abilities.WIS),
+    GRIT: abilities.CON, CHARM: abilities.CHA
+  };
+  const legacyMods = {};
+  for (const k of Object.keys(legacyStats)) legacyMods[k] = abilityMod(legacyStats[k]);
+
+  const gainedNames = gained.map(g => g.name);
+  if (asiNote) gainedNames.unshift(`Ability Score Improvement (${asiNote})`);
 
   return {
     ...pc,
     level: newLevel,
+    stats: legacyStats,
+    mods: legacyMods,
     dnd,
     spells,
-    gainedFeatures: gained.map(g => g.name) // transient, for narration; dropped by ensureEntity
+    gainedFeatures: gainedNames // transient, for narration; dropped by ensureEntity
   };
 }

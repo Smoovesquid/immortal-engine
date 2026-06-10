@@ -274,8 +274,19 @@ function knownSlotSpell(pc, ref) {
   return { ...SLOT_SPELLS[ref], ref, atkBonus: d.spellcasting.attackBonus };
 }
 
+// Lowest spell slot with a charge left (a level-3 warlock has ONLY 2nd-level
+// pact slots, so "any slot" must look upward). 0 = dry. Spells cast through a
+// higher slot upcast per the SRD (handled at each cast site).
+function lowestSlot(pc) {
+  const slots = pc?.spells?.slots || {};
+  for (const lvl of [1, 2, 3, 4, 5]) {
+    if ((Number(slots[lvl]) || 0) > 0) return lvl;
+  }
+  return 0;
+}
+
 function slotsLeft(pc) {
-  return Number(pc?.spells?.slots?.[1]) || 0;
+  return lowestSlot(pc) > 0 ? 1 : 0;
 }
 
 function cureInfo(pc) {
@@ -792,15 +803,19 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
     }
   } else if (verb === 'cure') {
     const cure = cureInfo(pc);
-    const slotLeft = Number(pc?.spells?.slots?.[1]) || 0;
-    if (cure && slotLeft > 0) {
+    if (cure && lowestSlot(pc) > 0) {
       const maxHp = Number(w.meta.escapeMaxHp) || playerMaxHp(pc);
       const before = Number(w.meta.escapeHp) || 0;
-      const heal = Math.min(maxHp - before, Math.max(1, rng.int(1, 8) + cure.mod + cure.discipleBonus));
-      w = applyDeltas(w, [{ op: 'consumeSpellSlot', entityId: pc.id || 'party', level: 1 }]);
+      const slotLvl = lowestSlot(pc);
+      // Upcast: +1d8 per slot level above 1st.
+      let healRoll = 0;
+      for (let i = 0; i < slotLvl; i++) healRoll += rng.int(1, 8);
+      const heal = Math.min(maxHp - before, Math.max(1, healRoll + cure.mod + cure.discipleBonus));
+      w = applyDeltas(w, [{ op: 'consumeSpellSlot', entityId: pc.id || 'party', level: slotLvl }]);
       w = { ...w, meta: { ...w.meta, escapeHp: before + heal } };
-      const slotsAfter = Number(w.party?.[0]?.spells?.slots?.[1]) || 0;
-      beats.push(`Cure wounds knits you back together — ${heal} HP. (${before + heal}/${maxHp}; ${slotsAfter} slot${slotsAfter === 1 ? '' : 's'} left.)`);
+      const slotObj = w.party?.[0]?.spells?.slots || {};
+      const slotsAfter = [1, 2, 3, 4, 5].reduce((a, l) => a + (Number(slotObj[l]) || 0), 0);
+      beats.push(`Cure wounds knits you back together — ${heal} HP${slotLvl > 1 ? ` (level-${slotLvl} slot)` : ''}. (${before + heal}/${maxHp}; ${slotsAfter} slot${slotsAfter === 1 ? '' : 's'} left.)`);
     } else if (cure) {
       beats.push('Your spell slots are spent. Steel will have to do.');
     } else if (hasFeature(pc, 'layOnHands')) {
@@ -835,27 +850,32 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
     const spell = knownSlotSpell(pc, ref);
     if (spell && slotsLeft(pc) > 0 && targetIdx >= 0) {
       const target = enemies[targetIdx];
-      w = applyDeltas(w, [{ op: 'consumeSpellSlot', entityId: pc.id || 'party', level: 1 }]);
+      const slotLvl = lowestSlot(pc);
+      w = applyDeltas(w, [{ op: 'consumeSpellSlot', entityId: pc.id || 'party', level: slotLvl }]);
       if (spell.kind === 'autohit') {
-        // Magic missile: every dart hits. No roll, no mercy.
+        // Magic missile: every dart hits. No roll, no mercy. Upcast: one
+        // extra dart per slot level above 1st.
+        const darts = spell.darts + Math.max(0, slotLvl - 1);
         let dmg = 0;
-        for (let i = 0; i < spell.darts; i++) dmg += rng.int(1, spell.die) + spell.flat;
+        for (let i = 0; i < darts; i++) dmg += rng.int(1, spell.die) + spell.flat;
         const newHp = Math.max(0, (Number(target.hp) || 0) - dmg);
         target.hp = newHp;
         if (newHp <= 0) target.defeated = true;
-        beats.push(`Three darts of force streak unerringly into the ${target.name} — ${dmg} force${newHp <= 0 ? ' — it drops.' : `. (${newHp} HP left)`}`);
+        beats.push(`${darts === 3 ? 'Three' : darts} darts of force streak unerringly into the ${target.name} — ${dmg} force${slotLvl > 1 ? ` (level-${slotLvl} slot)` : ''}${newHp <= 0 ? ' — it drops.' : `. (${newHp} HP left)`}`);
       } else {
         const roll = rng.int(1, 20);
         const ac = Number(target.ac) || 10;
         const total = roll + spell.atkBonus + (feats.blessActive ? rng.int(1, 4) : 0) + (hasCondition(target.conditions, 'restrained') ? RESTRAINED_PENALTY : 0);
         if (roll !== 1 && (roll === 20 || total >= ac)) {
           const crit = roll === 20;
-          let dmg = rng.int(1, spell.die);
-          if (crit) dmg += rng.int(1, spell.die);
+          // Witch bolt upcasts: +1d12 per slot level above 1st.
+          const dice = 1 + Math.max(0, slotLvl - 1);
+          let dmg = 0;
+          for (let i = 0; i < dice * (crit ? 2 : 1); i++) dmg += rng.int(1, spell.die);
           const newHp = Math.max(0, (Number(target.hp) || 0) - dmg);
           target.hp = newHp;
           if (newHp <= 0) target.defeated = true;
-          beats.push(`A crackling arc of lightning lashes the ${target.name} for ${dmg}${crit ? ' (critical!)' : ''}${newHp <= 0 ? ' — it drops.' : `. (${newHp} HP left)`}`);
+          beats.push(`A crackling arc of lightning lashes the ${target.name} for ${dmg}${crit ? ' (critical!)' : ''}${slotLvl > 1 ? ` (level-${slotLvl} slot)` : ''}${newHp <= 0 ? ' — it drops.' : `. (${newHp} HP left)`}`);
         } else {
           beats.push(`Your witch bolt cracks past the ${target.name} and grounds out in the dirt.`);
         }
@@ -917,7 +937,8 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
     const spell = knownSlotSpell(pc, 'charm_person');
     if (spell && slotsLeft(pc) > 0 && targetIdx >= 0) {
       const target = enemies[targetIdx];
-      w = applyDeltas(w, [{ op: 'consumeSpellSlot', entityId: pc.id || 'party', level: 1 }]);
+      const slotLvl = lowestSlot(pc);
+      w = applyDeltas(w, [{ op: 'consumeSpellSlot', entityId: pc.id || 'party', level: slotLvl }]);
       const dc = pc.dnd.spellcasting.saveDC;
       const save = rng.int(1, 20) + ENEMY_SAVE_BONUS;
       if (save < dc) {
@@ -942,7 +963,8 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
   } else if (verb === 'entangle') {
     const spell = knownSlotSpell(pc, 'entangle');
     if (spell && slotsLeft(pc) > 0) {
-      w = applyDeltas(w, [{ op: 'consumeSpellSlot', entityId: pc.id || 'party', level: 1 }]);
+      const slotLvl = lowestSlot(pc);
+      w = applyDeltas(w, [{ op: 'consumeSpellSlot', entityId: pc.id || 'party', level: slotLvl }]);
       const dc = pc.dnd.spellcasting.saveDC;
       let caught = 0;
       for (const e of enemies) {
@@ -971,7 +993,8 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
   } else if (verb === 'bless') {
     const spell = knownSlotSpell(pc, 'bless');
     if (spell && slotsLeft(pc) > 0 && !feats.blessActive) {
-      w = applyDeltas(w, [{ op: 'consumeSpellSlot', entityId: pc.id || 'party', level: 1 }]);
+      const slotLvl = lowestSlot(pc);
+      w = applyDeltas(w, [{ op: 'consumeSpellSlot', entityId: pc.id || 'party', level: slotLvl }]);
       feats.blessActive = true;
       beats.push('A quiet radiance settles over you — Bless (+1d4 on your attack rolls this fight).');
     } else if (feats.blessActive) {
@@ -984,10 +1007,14 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
   } else if (verb === 'agathys') {
     const spell = knownSlotSpell(pc, 'armor_of_agathys');
     if (spell && slotsLeft(pc) > 0 && !feats.agathysActive) {
-      w = applyDeltas(w, [{ op: 'consumeSpellSlot', entityId: pc.id || 'party', level: 1 }]);
+      const slotLvl = lowestSlot(pc);
+      w = applyDeltas(w, [{ op: 'consumeSpellSlot', entityId: pc.id || 'party', level: slotLvl }]);
       feats.agathysActive = true;
-      feats.tempHp += spell.tempHp;
-      beats.push(`Black ice sheathes you — Armor of Agathys (${spell.tempHp} temp HP; melee attackers take ${spell.retaliate} cold while it holds).`);
+      // Upcast: 5 temp HP per slot level — the warlock's pact slots make
+      // this the signature of a deeper bargain.
+      const ice = spell.tempHp * slotLvl;
+      feats.tempHp += ice;
+      beats.push(`Black ice sheathes you — Armor of Agathys (${ice} temp HP; melee attackers take ${spell.retaliate} cold while it holds).`);
     } else if (feats.agathysActive) {
       beats.push('The ice already holds.');
     } else if (spell) {
@@ -1001,7 +1028,8 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
     // intent, not keywords.
     const spell = verb === 'shield' ? knownSlotSpell(pc, 'shield') : null;
     if (spell && slotsLeft(pc) > 0) {
-      w = applyDeltas(w, [{ op: 'consumeSpellSlot', entityId: pc.id || 'party', level: 1 }]);
+      const slotLvl = lowestSlot(pc);
+      w = applyDeltas(w, [{ op: 'consumeSpellSlot', entityId: pc.id || 'party', level: slotLvl }]);
       warded = true;
       wardBonus = spell.acBonus;
       beats.push(`An invisible plane of force snaps into being — Shield (+${spell.acBonus} AC until your next turn).`);
@@ -1030,8 +1058,10 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
         beats.push(`Your ${cname} sputters wide of the ${target.name}.`);
       } else if (roll === 20 || total >= ac) {
         const crit = roll === 20;
-        let dmg = rng.int(1, cantrip.die);
-        if (crit) dmg += rng.int(1, cantrip.die);
+        // Cantrips scale with character level (SRD): two dice at 5th.
+        const cantripDice = ((pc?.dnd?.level || 1) >= 5 ? 2 : 1) * (crit ? 2 : 1);
+        let dmg = 0;
+        for (let i = 0; i < cantripDice; i++) dmg += rng.int(1, cantrip.die);
         // Agonizing Blast (warlock 2): CHA mod rides the eldritch blast.
         if (cantrip.ref === 'eldritch_blast' && hasFeature(pc, 'agonizingBlast')) dmg += Math.max(0, pc.dnd.mods.CHA);
         dmg = Math.max(1, dmg);
@@ -1054,14 +1084,16 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
       const rageDmg = (feats.rageActive && !melee.ranged) ? RAGE_DAMAGE_BONUS : 0;
       const wname = melee.name.toLowerCase();
 
-      // Level-2 attack riders.
-      let swings = 1;
+      // Attack riders, levels 2-5. Extra Attack (5) makes every Attack action
+      // two swings; Action Surge doubles whatever you have.
+      const baseSwings = hasFeature(pc, 'extraAttack') ? 2 : 1;
+      let swings = baseSwings;
       let recklessAtk = 0;
       if (verb === 'surge') {
         if (hasFeature(pc, 'actionSurge') && !feats.actionSurgeUsed) {
           feats.actionSurgeUsed = true;
-          swings = 2;
-          beats.push('You push past your limits — ACTION SURGE. Two attacks.');
+          swings = baseSwings * 2;
+          beats.push(`You push past your limits — ACTION SURGE. ${swings === 2 ? 'Two attacks' : `${swings} attacks`}.`);
         } else if (hasFeature(pc, 'actionSurge')) {
           beats.push('Your surge is spent for this fight. One swing will have to do.');
         } else {
@@ -1093,28 +1125,42 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
           beats.push(`You swing your ${wname} at the ${tgt.name} and miss.`);
           continue;
         }
+        // Champion fighters (3) crit on 19-20; a natural 19 still has to hit.
+        const critOn = (d => d?.features?.some(f => f.effect?.type === 'improvedCritical') ? 19 : 20)(pc?.dnd);
         if (r === 20 || tot >= tAc) {
-          const crit = r === 20;
+          const crit = r >= critOn;
           let dmg = rng.int(1, melee.die) + melee.dmgMod + styleDmg + rageDmg;
           if (crit) dmg += rng.int(1, melee.die);
           // Half-Orc Savage Attacks: one extra weapon die on a melee crit.
           if (crit && !melee.ranged && hasFeature(pc, 'critExtraDie')) {
             dmg += rng.int(1, melee.die);
           }
-          // Rogue Sneak Attack: +1d6 (doubled on crit) with a finesse or ranged
-          // weapon when the foe hasn't pinned you down — striking from cover, or
-          // in the opening exchange before they've sized you up. Once per turn.
+          // Rogue Sneak Attack: 1d6 per two levels rounded up (doubled on
+          // crit) with a finesse or ranged weapon when the foe hasn't pinned
+          // you down — striking from cover, or in the opening exchange before
+          // they've sized you up. Once per turn.
           let sneak = 0;
           if (swing === 0 && hasFeature(pc, 'sneakAttack') && (melee.finesse || melee.ranged) && (coverState || round === 1)) {
-            sneak = rng.int(1, 6) + (crit ? rng.int(1, 6) : 0);
+            const sneakDice = Math.ceil((pc?.dnd?.level || 1) / 2) * (crit ? 2 : 1);
+            for (let i = 0; i < sneakDice; i++) sneak += rng.int(1, 6);
             dmg += sneak;
           }
-          // Paladin Divine Smite: burn a slot on the hit for +2d8 radiant
-          // (doubled dice on a crit, like everything holy).
+          // Hunter ranger's Colossus Slayer (3): once per turn, +1d8 against
+          // a foe already off its hit point maximum.
+          let colossus = 0;
+          if (swing === 0 && hasFeature(pc, 'colossusSlayer') && (Number(tgt.hp) || 0) < (Number(tgt.maxHp) || 0)) {
+            colossus = rng.int(1, 8);
+            dmg += colossus;
+          }
+          // Paladin Divine Smite: burn a slot on the hit for 2d8 radiant +1d8
+          // per slot level above 1st (doubled dice on a crit, like everything
+          // holy).
           let smite = 0;
           if (wantSmite && hasFeature(pc, 'divineSmite') && !melee.ranged && slotsLeft(pc) > 0) {
-            w = applyDeltas(w, [{ op: 'consumeSpellSlot', entityId: pc.id || 'party', level: 1 }]);
-            smite = rng.int(1, 8) + rng.int(1, 8) + (crit ? rng.int(1, 8) + rng.int(1, 8) : 0);
+            const smiteLvl = lowestSlot(pc);
+            w = applyDeltas(w, [{ op: 'consumeSpellSlot', entityId: pc.id || 'party', level: smiteLvl }]);
+            const smiteDice = (2 + Math.max(0, smiteLvl - 1)) * (crit ? 2 : 1);
+            for (let i = 0; i < smiteDice; i++) smite += rng.int(1, 8);
             dmg += smite;
           }
           dmg = Math.max(1, dmg);
@@ -1124,6 +1170,7 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
           const tags = [
             crit ? 'critical!' : '',
             sneak ? `sneak attack +${sneak}` : '',
+            colossus ? `colossus slayer +${colossus}` : '',
             smite ? `divine smite +${smite}` : '',
             rageDmg ? 'raging' : ''
           ].filter(Boolean).join(', ');

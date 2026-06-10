@@ -326,6 +326,37 @@ function defaultAssignOrder(classId) {
   return orders[classId] || orders.fighter;
 }
 
+/**
+ * computeSheetAC(dnd) -> number
+ * Recompute AC from a finished sheet (used by level-ups when an ASI shifts
+ * DEX/CON, and by anything that changes equipment later). Mirrors the chargen
+ * derivation but reads everything off the sheet itself.
+ */
+export function computeSheetAC(d) {
+  if (!d || typeof d !== 'object') return 10;
+  const profs = (d.armorProfs || []).map(p => String(p).split(' ')[0]); // 'medium (nonmetal)' -> 'medium'
+  let worn = null;
+  for (const item of d.equipment || []) {
+    const a = findArmor(item);
+    if (!a) continue;
+    if (!profs.includes(a.category)) continue;
+    if (a.strReq && (d.abilities?.STR ?? 10) < a.strReq) continue;
+    if (!worn || a.base > worn.base) worn = a;
+  }
+  const hasShield = (d.equipment || []).some(e => /shield/i.test(String(e))) && profs.includes('shields');
+  const unarmored = (d.features || []).map(f => f.effect).find(e => e?.type === 'unarmoredDefense') || null;
+  const draconicBase = (d.features || []).map(f => f.effect).find(e => e?.type === 'draconicResilience')?.baseAC || 0;
+  const defenseStyle = (d.fightingStyle === 'Defense' || (d.features || []).some(f => f.effect?.type === 'acBonus')) && worn ? 1 : 0;
+  return computeAC({
+    armorName: worn?.name || null,
+    shield: hasShield,
+    mods: d.mods || {},
+    unarmoredDefense: worn ? null : unarmored,
+    draconicBase: worn ? 0 : draconicBase,
+    acBonus: defenseStyle
+  });
+}
+
 function pickWornArmor(equipment, klass, abilities) {
   // Best AC armor in the kit that the class can wear and the character can carry.
   const profs = klass.armor || [];

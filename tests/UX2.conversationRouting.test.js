@@ -1,0 +1,187 @@
+// UX2 — conversational routing regression. Every utterance from the
+// CONVERSATION_PUNCHLIST (and its descendants) as a table: input × context →
+// expected route class. THE DM TEST in test form. This table only grows.
+
+import test from 'node:test';
+import assert from 'node:assert/strict';
+
+import { createCharacter5e } from '../engine/chargen/srd/index.js';
+import { newWorld, ensureWorld } from '../engine/state.js';
+import { beginAdventure, playerMove } from '../engine/playloop.js';
+import { isMetaQuestion, handleMetaQuestion, isNullAction } from '../engine/grace/gracefulAdjudication.js';
+import { initEscapeHp, initEscapeKit } from '../engine/combat/escapeCombat.js';
+
+const packsById = { fantasy: { id: 'fantasy' } };
+
+function freshWorld(classId = 'fighter', seed = 'ux2') {
+  const pc = createCharacter5e({ seed, speciesId: 'human', classId, abilityMethod: 'standard' });
+  const w0 = newWorld({ seed, campaignId: 'c', pack: { primaryId: 'fantasy', mixerId: null }, mode: 'escape' });
+  return beginAdventure(ensureWorld({ ...w0, party: [pc] }), packsById).world;
+}
+
+function combatWorld(classId = 'paladin', seed = 'ux2c') {
+  let w = freshWorld(classId, seed);
+  w = initEscapeKit(initEscapeHp(w));
+  return ensureWorld({
+    ...w,
+    combat: { active: true, round: 1, turnIndex: 0, beganAt: w.timeline.length, enemies: [
+      { id: 'e0', name: 'bandit', hp: 200, maxHp: 200, ac: 10, damage: 4, defeated: false, cr: 0.5 },
+      { id: 'e1', name: 'wolf', hp: 200, maxHp: 200, ac: 10, damage: 4, defeated: false, cr: 0.25, canParley: false }
+    ] }
+  });
+}
+
+// The UI path: meta gate (out of combat), then playerMove.
+function submit(w, text) {
+  if (!w.combat?.active && isMetaQuestion(text)) {
+    return { mech: 'META', narration: String(handleMetaQuestion(text, w)), world: w };
+  }
+  const r = playerMove(w, packsById, text);
+  return { mech: String(r.output.mechanics || ''), narration: String(r.output.narration || ''), world: r.world };
+}
+
+// Route classes:
+//   META         — answered from state, no roll, no mutation
+//   TABLE-TALK   — null action / combat question, free
+//   CLARIFY      — DM asks a pointed question, free
+//   REST         — a rest applied
+//   COMBAT-TURN  — a combat round resolved
+//   FREE-ACTION  — observe/trivial, no roll
+//   ROLL         — adjudicated d20 (legitimate actions only!)
+function routeClass(res) {
+  const m = res.mech;
+  if (m === 'META') return 'META';
+  if (/table-talk/.test(m)) return 'TABLE-TALK';
+  if (/clarify/.test(m)) return 'CLARIFY';
+  if (/rest:(long|breather)/.test(m)) return 'REST';
+  if (/combat:r\d|combat:parley|combat:victory|ambush/.test(m)) return 'COMBAT-TURN';
+  if (/observe only|trivial/.test(m)) return 'FREE-ACTION';
+  if (/roll:\d+/.test(m)) return 'ROLL';
+  return `OTHER(${m})`;
+}
+
+// ── Out of combat ────────────────────────────────────────────────────────────
+
+const OUT_OF_COMBAT_TABLE = [
+  // [input, expected route class(es)]
+  ['where am I?', ['META']],
+  ['who is around?', ['META']],
+  ['what do I have in my pack?', ['META']],
+  ['how hurt am I?', ['META']],
+  ['what time is it?', ['META']],
+  ['whats my quest agian', ['META']],
+  ['hmm', ['TABLE-TALK']],
+  ['actually, never mind', ['TABLE-TALK']],
+  ['ok', ['TABLE-TALK']],
+  ['wait', ['TABLE-TALK']],
+  ['sleep', ['REST']],
+  ['I think we should rest up before going anywhere', ['REST']],
+  ['talk to someone', ['CLARIFY']],
+  ["let's get moving — head toward the forest", ['CLARIFY', 'OTHER']], // indoors → clarify; outdoors → travel
+  ['what can I do here?', ['FREE-ACTION', 'META']],
+  ['can I see the mountains from here?', ['ROLL']],            // a real perception ruling
+  ['pick up a rock and put it in my pocket', ['ROLL']],        // a real action, not an inventory check
+];
+
+test('UX2-01: out-of-combat routing table', () => {
+  const w = freshWorld();
+  for (const [input, expected] of OUT_OF_COMBAT_TABLE) {
+    const got = routeClass(submit(w, input));
+    assert.ok(
+      expected.some(e => got.startsWith(e)),
+      `"${input}" → ${got}, expected one of [${expected.join(', ')}]`
+    );
+  }
+});
+
+// ── In combat — the strike-default must never eat a question ────────────────
+
+const IN_COMBAT_TABLE = [
+  ['wait, what are my options?', ['TABLE-TALK']],
+  ['how many of them are there?', ['TABLE-TALK']],
+  ['how hurt am I?', ['TABLE-TALK']],
+  ['what is a sacred flame again?', ['TABLE-TALK']],
+  ['can I run away?', ['TABLE-TALK']],
+  ['help', ['TABLE-TALK']],
+  ['hold on', ['TABLE-TALK']],
+  ['hmm', ['TABLE-TALK']],
+  ['uh... strike I guess?', ['COMBAT-TURN']],   // explicit verb wins over the question mark
+  ['strike', ['COMBAT-TURN']],
+  ['I scream a prayer and bring my mace down on him', ['COMBAT-TURN']],
+  ['defend myself', ['COMBAT-TURN']],
+  ['I surrender', ['COMBAT-TURN']],
+  ["don't attack — try to talk them down", ['COMBAT-TURN']],
+];
+
+test('UX2-02: in-combat routing table', () => {
+  const w = combatWorld();
+  for (const [input, expected] of IN_COMBAT_TABLE) {
+    const got = routeClass(submit(w, input));
+    assert.ok(
+      expected.some(e => got.startsWith(e)),
+      `"${input}" → ${got}, expected one of [${expected.join(', ')}]`
+    );
+  }
+});
+
+test('UX2-03: combat questions cost nothing — same round, same HP, same world', () => {
+  const w = combatWorld();
+  const r = submit(w, 'wait, what are my options?');
+  assert.equal(r.world.combat.round, w.combat.round, 'round did not advance');
+  assert.equal(r.world.meta.escapeHp, w.meta.escapeHp, 'no damage taken');
+  assert.ok(/bandit/.test(r.narration) && /wolf/.test(r.narration), 'names the foes');
+  assert.ok(/\d+ of \d+ HP/.test(r.narration), 'states your HP');
+});
+
+test('UX2-04: named targeting — strikes land where the player pointed', () => {
+  const w = combatWorld();
+  const r = submit(w, 'attack the wolf');
+  const beat = r.narration;
+  assert.ok(/wolf/.test(beat) && !/hits the bandit/.test(beat), `targeted the wolf: ${beat.slice(0, 80)}`);
+
+  // Negation: "kill the wolf, not the bandit" must not hit the bandit.
+  const r2 = submit(w, 'kill the wolf first, not the bandit');
+  assert.ok(!/hits the bandit/.test(r2.narration), 'negated bandit not struck');
+});
+
+test('UX2-05: "use my strongest attack" picks the best available feature', async () => {
+  // Level-2 paladin with slots: strongest = divine smite.
+  const { levelUpSheet } = await import('../engine/chargen/srd/levelUp.js');
+  let pal = createCharacter5e({ seed: 'ux2s', speciesId: 'human', classId: 'paladin', abilityMethod: 'standard' });
+  pal = levelUpSheet({ ...pal, xp: 100 });
+  delete pal.gainedFeatures;
+  const w0 = newWorld({ seed: 'ux2s', campaignId: 'c', pack: { primaryId: 'fantasy', mixerId: null }, mode: 'escape' });
+  let w = beginAdventure(ensureWorld({ ...w0, party: [pal] }), packsById).world;
+  w = initEscapeKit(initEscapeHp(w));
+  w = ensureWorld({
+    ...w,
+    combat: { active: true, round: 1, turnIndex: 0, beganAt: w.timeline.length, enemies: [
+      { id: 'e0', name: 'bandit', hp: 300, maxHp: 300, ac: 5, damage: 2, defeated: false, cr: 0.5 }
+    ] }
+  });
+  // Low AC so hits land; scan a few attempts for the smite tag.
+  let smited = false;
+  let cur = w;
+  for (let i = 0; i < 4 && cur.combat?.active; i++) {
+    const r = submit(cur, 'use my strongest attack — with everything I have');
+    if (/divine smite \+\d+/.test(r.narration)) { smited = true; break; }
+    cur = r.world;
+    if ((Number(cur.party[0].spells?.slots?.[1]) || 0) <= 0) break;
+  }
+  assert.ok(smited, 'strongest attack resolved as a divine smite');
+});
+
+test('UX2-06: null actions cost nothing that matters', () => {
+  const w = freshWorld();
+  const r = submit(w, 'hmm');
+  // No timeline event, no clock movement, no env residue, no HP/XP change —
+  // the world "holds" in every way a player could feel.
+  assert.equal(r.world.timeline.length, w.timeline.length, 'no timeline event');
+  assert.deepEqual(r.world.clocks, w.clocks, 'clocks untouched');
+  assert.deepEqual(r.world.env, w.env, 'no env residue');
+  assert.equal(r.world.meta.escapeHp, w.meta.escapeHp, 'HP untouched');
+  assert.equal(r.world.party[0].xp, w.party[0].xp, 'XP untouched');
+  assert.match(r.mech, /table-talk/);
+  assert.ok(isNullAction('never mind') && isNullAction('  ok.  ') && isNullAction('wait'), 'null detector basics');
+  assert.ok(!isNullAction('strike the bandit'), 'real actions are not null');
+});

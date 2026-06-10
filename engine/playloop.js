@@ -30,7 +30,8 @@ import { beginCombat, endCombat, mintEnemyFromNpc } from './combat/combatLifecyc
 import { resolveCompanionTurn } from './combat/companionTurn.js';
 import { castSpell } from './spell/castSpell.js';
 import { evaluateEncounter, selectCreatures, spawnEncounter } from './combat/encounterSpawn.js';
-import { resolveEscapeCombatTurn, initEscapeHp, initEscapeKit, shortRest, longRest, applySurpriseRound } from './combat/escapeCombat.js';
+import { isMetaQuestion, handleMetaQuestion, isNullAction, isQuestionShaped } from './grace/gracefulAdjudication.js';
+import { resolveEscapeCombatTurn, initEscapeHp, initEscapeKit, shortRest, longRest, applySurpriseRound, parseEscapeAction, combatStatusAnswer } from './combat/escapeCombat.js';
 import { statMod, maxWounds } from './ruleset/core/stats.js';
 
 // Pure-ish play loop: world -> {world, output}
@@ -338,12 +339,30 @@ function playerMoveCore(world, packsById, text) {
         }
       };
     }
+    // No bed in the wild — but a breather is a breather. Short rest instead
+    // of a flat refusal: a real DM gives you SOMETHING for stopping.
+    const breatherRng = makeRng(seedFromString(`${w.meta.seed}|breather|${w.timeline.length}`));
+    const before = Number(w.meta.escapeHp) || 0;
+    const rested = shortRest(w, breatherRng);
+    const gained = (Number(rested.meta.escapeHp) || 0) - before;
+    return {
+      world: rested,
+      output: {
+        narration: gained > 0
+          ? `Wizard: No bed out here — every sound in the open country has teeth. You take what rest you can with your back to something solid. (+${gained} HP. For real sleep, find a settlement.)`
+          : 'Wizard: The open country is no bed. You rest your legs a while, but real sleep needs walls — find a settlement.',
+        mechanics: '[rest:breather]'
+      }
+    };
+  }
+
+  // ── Null actions: filler, acknowledgments, aborts. A real DM lets the
+  // moment breathe — no roll, no time cost, no consequence. Skipped in
+  // dialogue (a bare "yes" there is an answer, not filler).
+  if (!w.scene?.dialogue && isNullAction(text)) {
     return {
       world: w,
-      output: {
-        narration: 'Wizard: The open country is no bed — every sound out here has teeth. Find a settlement if you want real sleep.',
-        mechanics: '[rest:denied]'
-      }
+      output: { narration: 'Wizard: Take your time. The world holds.', mechanics: '[table-talk]' }
     };
   }
 
@@ -558,6 +577,19 @@ function playerMoveCore(world, packsById, text) {
       return { world: w, output: { narration: blockedMsg, mechanics: '' } };
     }
     // Risky/obstructed/special movement falls through to normal resolution (roll-capable path).
+  }
+
+  // Travel intent voiced while indoors ("head toward the forest" from inside
+  // the inn): a real DM bridges it — you're inside; the road starts at the
+  // door. Clarify rather than rolling dice at the idea of leaving.
+  if (w.scene?.interior && !w.combat?.active && isFreeMovementIntent(text) && /\b(toward|towards|make for|get moving|set (?:out|off)|head)\b/i.test(String(text || ''))) {
+    return {
+      world: w,
+      output: {
+        narration: 'Wizard: You\'re indoors — the road starts at the door. Say "go outside" and then name your heading.',
+        mechanics: '[clarify:indoors]'
+      }
+    };
   }
 
   // Target-aware examination: "examine the table" / "look at the crate" / "inspect
@@ -913,6 +945,23 @@ function playerMoveCore(world, packsById, text) {
   // through to the combat turn rather than crashing. See prose-playtest finding.
   const talkRef = !w.combat?.active ? extractDialogueRef(text) : null;
   if (talkRef) {
+    // "Talk to someone" with no name: a real DM doesn't roll dice at a vague
+    // intention — they name who's actually here and ask who you mean.
+    if (/^(?:someone|anyone|somebody|anybody|people|folk|locals?|a local|villagers?|them|him|her)$/i.test(talkRef.trim())) {
+      const hereNode = (w.map?.nodes || []).find(n => n && n.id === w.map?.currentNodeId) || null;
+      const npcsHere = (hereNode?.settlement?.npcs || []).map(n => String(n?.name || '').trim()).filter(Boolean);
+      if (npcsHere.length) {
+        const names = npcsHere.slice(0, 4).join(', ');
+        return {
+          world: w,
+          output: { narration: `Wizard: A few folk are about — ${names}. Who do you want to talk to?`, mechanics: '[clarify:who]' }
+        };
+      }
+      return {
+        world: w,
+        output: { narration: 'Wizard: There\'s no one within earshot here. The road might fix that.', mechanics: '[clarify:who]' }
+      };
+    }
     const resolved = resolveNpcAtCurrentNode(w, talkRef);
     if (resolved) {
       const begun = beginDialogue(w, talkRef);
@@ -1068,6 +1117,28 @@ function playerMoveCore(world, packsById, text) {
     // the simple HP resolver; the deep wound/stress engine is bypassed. No
     // flee — the journey's stakes are the point.
     if (w.meta?.mode === 'escape') {
+      // ── The table-talk gate (DM TEST). A question, a pause, or a "wait" is
+      // NOT an attack — answer it for free; the round holds. Without this,
+      // the resolver's strike-default makes "what are my options?" swing a
+      // sword.
+      if (isNullAction(text)) {
+        return {
+          world: w,
+          output: { narration: 'Wizard: The moment hangs — blades up, breath held. Take your time.', mechanics: '[combat:table-talk]' }
+        };
+      }
+      // A question gets answered — unless it's a parley phrased as a question
+      // ("can we talk about this?" is said TO the foes, not to the DM).
+      const escVerb = parseEscapeAction(text).verb;
+      const explicitAction = /\b(strike|attack|swing|stab|shoot|slash|smite|fireball|blast|cast|rage|surge|flee|guard|ward|cover)\b/i.test(String(text || ''));
+      if (isMetaQuestion(text) || (isQuestionShaped(text) && escVerb !== 'parley' && !explicitAction)) {
+        const metaAnswer = isMetaQuestion(text) ? handleMetaQuestion(text, w) : null;
+        const answer = metaAnswer || combatStatusAnswer(w);
+        return {
+          world: w,
+          output: { narration: `Wizard: ${answer}`, mechanics: '[combat:table-talk]' }
+        };
+      }
       const { world: wAfter, result } = resolveEscapeCombatTurn(w, String(text || ''));
       w = wAfter;
       const escMove = { actorId, intentText: String(text || ''), approachTag: 'force', stakeTag: 'survival' };
@@ -1983,7 +2054,7 @@ function isFreeMovementIntent(text) {
   if (/\b(within speed|30\s*ft)\b/.test(t)) return true;
 
   // Broad free movement / travel phrasing (deterministic: destination is still resolved by adjacency rules).
-  return /\b(travel|leave|exit|head\s+to|go\s+to|move\s+to|walk\s+to|walk|go\s+north|go\s+south|go\s+east|go\s+west|north|south|east|west|n|s|e|w)\b/.test(t);
+  return /\b(travel|leave|exit|head\s+(?:to|toward|towards|for)|go\s+(?:to|toward|towards)|move\s+to|walk\s+(?:to|toward|towards)|walk|make\s+for|set\s+(?:out|off)|get\s+moving|go\s+north|go\s+south|go\s+east|go\s+west|north|south|east|west|n|s|e|w)\b/.test(t);
 }
 
 function parseLocalFeetMove(text) {
@@ -3221,7 +3292,7 @@ function isFleeIntent(text) {
 // A bare 'rest' stays a body action (sitting on a bench is not eight hours).
 function isLongRestIntent(text) {
   const t = String(text || '').toLowerCase();
-  return /\b(sleep|long\s+rest|make\s+camp|camp\s+for\s+the\s+night|rest\s+for\s+the\s+night|bed\s+down|turn\s+in|get\s+some\s+sleep|spend\s+the\s+night)\b/.test(t);
+  return /\b(sleep|long\s+rest|make\s+camp|camp\s+for\s+the\s+night|rest\s+for\s+the\s+night|bed\s+down|turn\s+in|get\s+some\s+sleep|spend\s+the\s+night|rest\s+up|take\s+a\s+(rest|breather|nap)|catch\s+(my|our)\s+breath|recuperate)\b/.test(t);
 }
 
 // Detects "attack <name>" / "fight <name>" / "kill <name>" / "strike <name>"

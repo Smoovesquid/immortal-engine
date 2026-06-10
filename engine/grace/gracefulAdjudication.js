@@ -118,14 +118,39 @@ export function getToneModifier(tone) {
 // LOCATION is checked before HEALTH so "what's around" can't be mistaken for a
 // status check.
 const META_LOCATION = /\bwhere am i\b|what (?:do|can) i see\b|\blook(?:ing)? around\b|\bsurvey\b|what'?s (?:around|here|nearby|out there)\b|who(?:'?s| is) (?:here|around|nearby)\b/;
-const META_HEALTH = /\bam i (?:hurt|wounded|damaged|injured|alive|ok|okay|alright|all right|fine|bleeding|dying)\b|\bhow am i (?:doing|holding up|feeling)\b|how(?:'?s| is) my (?:health|hp|status|condition|shape)\b|what(?:'?s| is) my (?:health|hp|status|condition|wounds|shape)\b|how much (?:health|hp|life)\b/;
+const META_HEALTH = /\bam i (?:hurt|wounded|damaged|injured|alive|ok|okay|alright|all right|fine|bleeding|dying)\b|\bhow am i (?:doing|holding up|feeling)\b|how(?:'?s| is) my (?:health|hp|status|condition|shape)\b|what(?:'?s| is) my (?:health|hp|status|condition|wounds|shape)\b|how much (?:health|hp|life)\b|\bhow (?:hurt|wounded|injured|bad(?:ly)? (?:hurt|off))\b|how many (?:hit ?points|hp)\b/;
 const META_RECAP = /what happened|what did i (?:just )?do\b/;
 const META_OUTCOME = /did i (?:succeed|fail|win|lose|make it)\b/;
+// v24 conversation hardening — the questions players actually ask. The
+// inventory patterns are question/command-anchored so "put it in my pocket"
+// (an action) never reads as an inventory check.
+const META_INVENTORY = /\bwhat (?:do i have|am i carrying|have i got)\b|\bwhat'?s in my (?:pack|bag|inventory|pockets?)\b|\b(?:check|show|open|look in(?:to)?) (?:my )?(?:pack|bag|inventory|gear|equipment)\b|^\s*inventory\s*\??\s*$/;
+const META_TIME = /\bwhat time\b|\btime of day\b|\bis it (?:day|night|morning|evening|dark|light)(?:time)?\b/;
+const META_OBJECTIVE = /\b(?:what(?:'?s| is| was)? )?my (?:quest|objective|goal|mission|task)\b|\bwhat (?:am i|are we) (?:supposed to|meant to|trying to)\b|\bwhy am i here\b|\bwhat(?:'?s| is) the (?:quest|objective|goal|plan)\b|\bremind me\b/;
 
 // Detect meta-questions (questions about state, not actions)
 export function isMetaQuestion(text) {
   const t = String(text || '').toLowerCase();
-  return META_LOCATION.test(t) || META_HEALTH.test(t) || META_RECAP.test(t) || META_OUTCOME.test(t);
+  return META_LOCATION.test(t) || META_HEALTH.test(t) || META_RECAP.test(t) || META_OUTCOME.test(t)
+    || META_INVENTORY.test(t) || META_TIME.test(t) || META_OBJECTIVE.test(t);
+}
+
+// A null-action: filler, acknowledgment, or an abort. A real DM lets the
+// moment breathe — no roll, no time cost, no consequence. ("wait" and "hold
+// on" count: the player is thinking, not acting.)
+const NULL_ACTION = /^\s*(?:(?:and|so|well|actually|ok(?:ay)?|uh+|um+|hmm+)[,.\s]+)*(?:hmm+|huh|uh+|um+|ok(?:ay)?|right|cool|nice|yes|no|yeah|nah|wow|whoa|never\s*mind|nm|forget (?:it|that)|nothing|wait|hold on|one (?:sec(?:ond)?|moment|minute)|give me a (?:sec(?:ond)?|moment|minute)|let me think|thinking|\.+|\?+|!+)\s*[.!?…]*\s*$/i;
+
+export function isNullAction(text) {
+  return NULL_ACTION.test(String(text || ''));
+}
+
+// Question-shaped input that isn't a recognized meta-question. In combat this
+// gates the strike-default: a player asking ANYTHING gets an answer, not a
+// sword swing. Interrogative opener or a trailing question mark.
+const QUESTION_SHAPE = /^\s*(?:what|who|whose|where|when|why|how|which|can|could|should|would|will|do|does|did|am|is|are|was|were|help)\b|\?\s*$/i;
+
+export function isQuestionShaped(text) {
+  return QUESTION_SHAPE.test(String(text || ''));
 }
 
 // Handle meta-questions (status checks, location surveys, recaps, outcomes).
@@ -138,8 +163,54 @@ export function handleMetaQuestion(text, world) {
     return buildLocationSurvey(world);
   }
 
+  // Inventory — read the real pack, never invent contents.
+  if (META_INVENTORY.test(lowerText)) {
+    const inv = world.party?.[0]?.inventory || {};
+    const lines = [];
+    for (const [cat, items] of Object.entries(inv)) {
+      if (!Array.isArray(items) || !items.length || cat === 'items') continue;
+      const names = items.map(it => String(it?.name || it)).filter(Boolean);
+      if (names.length) lines.push(`${cat}: ${names.join(', ')}`);
+    }
+    return lines.length
+      ? `You go through your pack. ${lines.join('. ')}.`
+      : 'Your pack is light — nothing but lint and resolve.';
+  }
+
+  // Time of day — read the world clock (hours of travel since dawn of day 1).
+  if (META_TIME.test(lowerText)) {
+    const hours = Number(world.time?.hours) || 0;
+    const day = Math.floor(hours / 24) + 1;
+    const hourOfDay = (6 + (hours % 24)) % 24; // journeys start at first light
+    const seg = hourOfDay < 6 ? 'the small hours' : hourOfDay < 12 ? 'morning' : hourOfDay < 17 ? 'afternoon' : hourOfDay < 21 ? 'evening' : 'deep night';
+    return hours > 0
+      ? `It's ${seg} — day ${day} of your journey, ${world.time.leagues || 0} leagues behind you.`
+      : `It's early — ${seg} of your first day.`;
+  }
+
+  // Quest / objective recap — read the scene objective and any active goals.
+  if (META_OBJECTIVE.test(lowerText)) {
+    const objective = String(world.scene?.objective || '').trim();
+    const goals = (Array.isArray(world.goals) ? world.goals : [])
+      .filter(g => g && g.status === 'active')
+      .map(g => String(g.label || g.kind || '').trim())
+      .filter(Boolean);
+    const parts = [];
+    if (objective) parts.push(`Your aim: ${objective}.`);
+    if (goals.length) parts.push(`Open threads: ${goals.slice(0, 3).join('; ')}.`);
+    return parts.length ? parts.join(' ') : 'No charge hangs over you yet — your life is your own. See where the road leads.';
+  }
+
   // Health/status check
   if (META_HEALTH.test(lowerText)) {
+    // Escape mode runs on classic hit points — answer with the real numbers.
+    const escMax = Number(world.meta?.escapeMaxHp) || 0;
+    if (world.meta?.mode === 'escape' && escMax > 0) {
+      const hp = Number(world.meta?.escapeHp) || 0;
+      const frac = hp / escMax;
+      const word = frac >= 1 ? 'untouched' : frac > 0.75 ? 'lightly scuffed' : frac > 0.5 ? 'hurting but steady' : frac > 0.25 ? 'in real trouble' : 'one bad blow from the dark';
+      return `You're at ${hp} of ${escMax} hit points — ${word}.`;
+    }
     const party = world.party?.[0];
     const wounds = party?.wounds ?? 0;
     const stress = party?.stress ?? 0;

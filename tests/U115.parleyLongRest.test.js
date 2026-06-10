@@ -121,13 +121,16 @@ test('U115-07: "sleep" at a settlement long-rests via playerMove; in the wild it
   assert.equal(r.world.meta.escapeHp, r.world.meta.escapeMaxHp, 'woke up whole');
   assert.ok(/wake whole/i.test(r.output.narration));
 
-  // In the wild: move current node to a non-settlement and try again.
+  // In the wild: no bed, but the DM gives you a breather (short rest), not a
+  // flat refusal.
   const wild = (r.world.map?.nodes || []).find(n => n && n.nodeType !== 'settlement');
   if (wild) {
-    const w2 = ensureWorld({ ...r.world, map: { ...r.world.map, currentNodeId: wild.id } });
+    const w2 = ensureWorld({ ...r.world, map: { ...r.world.map, currentNodeId: wild.id }, meta: { ...r.world.meta, escapeHp: Math.max(1, r.world.meta.escapeMaxHp - 5) } });
     const r2 = playerMove(w2, packsById, 'make camp and sleep');
-    assert.match(r2.output.mechanics, /\[rest:denied\]/);
-    assert.ok(/no bed|teeth/i.test(r2.output.narration));
+    assert.match(r2.output.mechanics, /\[rest:breather\]/);
+    assert.ok(/no bed|teeth|rest you can/i.test(r2.output.narration));
+    assert.ok(r2.world.meta.escapeHp > w2.meta.escapeHp, 'breather healed something');
+    assert.ok(r2.world.meta.escapeHp <= r2.world.meta.escapeMaxHp);
   }
 });
 

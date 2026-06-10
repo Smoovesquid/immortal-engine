@@ -562,6 +562,9 @@ export function parseEscapeAction(text) {
   if (/\b(cure|heal|mend)\b/.test(t)) return { verb: 'cure' };
   // Slot spells. Witch bolt must outrank the generic "bolt" (a fire bolt
   // verb); shield gets its own verb so the resolver can decide spell vs guard.
+  // 'Strongest attack' / 'everything I've got' / 'holy fire' — the resolver
+  // picks the best available move for this character.
+  if (/\b(strongest|hardest|biggest|best)\s+(attack|hit|blow|shot|move)|with everything|all (my|your) (strength|might)|holy (fire|wrath|light|judgment|fury)|full (power|strength)|unleash\b/.test(t)) return { verb: 'strongest' };
   if (/\bwitch\s*bolt\b/.test(t)) return { verb: 'witchbolt' };
   if (/\bfireball\b/.test(t)) return { verb: 'fireball' };
   if (/\b(scorch(ing)?\s*ray|scorch)\b/.test(t)) return { verb: 'scorch' };
@@ -617,6 +620,75 @@ export function shortRest(world, rng) {
   const heal = rng.int(1, REST_DIE) + REST_FLAT + song;
   const next = Math.min(max, cur + heal);
   return { ...w, meta: { ...w.meta, escapeHp: next, ...(feats ? { escapeFeats: feats } : {}) } };
+}
+
+/**
+ * combatStatusAnswer(world) -> string
+ * A free, in-fiction answer to any question asked mid-combat: who's still
+ * standing and how they look, where you stand, and what you can do. Costs
+ * nothing — a real DM answers the table's questions without taking their turn.
+ */
+export function combatStatusAnswer(world) {
+  const w = ensureWorld(world);
+  const pc = w.party?.[0] || {};
+  const enemies = (w.combat?.enemies || []).filter(e => e && !e.defeated && (Number(e.hp) || 0) > 0);
+
+  const foeLines = enemies.map(e => {
+    const frac = (Number(e.hp) || 0) / Math.max(1, Number(e.maxHp) || 1);
+    const shape = frac >= 1 ? 'unhurt' : frac > 0.6 ? 'bloodied a little' : frac > 0.3 ? 'staggering' : 'nearly done';
+    const conds = [];
+    if (hasCondition(e.conditions, 'charmed')) conds.push('charmed');
+    if (hasCondition(e.conditions, 'restrained')) conds.push('tangled');
+    if (hasCondition(e.conditions, 'paralyzed')) conds.push('held rigid');
+    return `the ${e.name} (${shape}${conds.length ? ', ' + conds.join(', ') : ''})`;
+  });
+  const facing = foeLines.length
+    ? `Facing you: ${foeLines.join('; ')}.`
+    : 'Nothing still stands against you.';
+
+  const hp = Number(w.meta?.escapeHp) || 0;
+  const maxHp = Number(w.meta?.escapeMaxHp) || playerMaxHp(pc);
+  const you = `You're at ${hp} of ${maxHp} HP${(w.meta?.escapeFeats?.tempHp || 0) > 0 ? ` (+${w.meta.escapeFeats.tempHp} of ice)` : ''}.`;
+
+  const kit = escapeKitView(pc);
+  const verbs = [...kit.weapons, ...kit.spells].map(x => `"${x.verb}"`);
+  const cover = currentRoomCover(w);
+  const options = `You can ${verbs.join(', ')}${cover ? `, "take cover" behind the ${cover.label}` : ''}, talk ("parley"), or run ("flee").`;
+
+  return `${facing} ${you} ${options} Asking costs you nothing — the round waits.`;
+}
+
+// Pick the target the player MEANT. Named foes win ("the wolf"); "the big
+// one" reads size; "the weak/wounded one" reads hp. Default: first standing.
+function pickTargetIdx(enemies, text) {
+  const t = String(text || '').toLowerCase();
+  const alive = (i) => enemies[i] && !enemies[i].defeated && (Number(enemies[i].hp) || 0) > 0;
+  // Negated names don't count: 'kill the wolf, not the bandit' must not
+  // target the bandit. Strip negation clauses before matching.
+  const scrubbed = t.replace(/\b(?:not|don'?t|do not|except|leave|spare|ignore)\s+(?:the\s+|that\s+)?\w+/g, ' ');
+  // By name (longest names first so 'dire wolf' beats 'wolf').
+  const byName = enemies
+    .map((e, i) => ({ i, name: String(e?.name || '').toLowerCase() }))
+    .filter(x => x.name && alive(x.i))
+    .sort((a, b) => b.name.length - a.name.length);
+  for (const { i, name } of byName) {
+    if (name && scrubbed.includes(name)) return i;
+  }
+  if (/\b(big(gest)?|large|huge)\b/.test(t)) {
+    let best = -1;
+    for (let i = 0; i < enemies.length; i++) {
+      if (alive(i) && (best < 0 || (enemies[i].maxHp || 0) > (enemies[best].maxHp || 0))) best = i;
+    }
+    if (best >= 0) return best;
+  }
+  if (/\b(small(est)?|little|weak(est)?|wounded|hurt|bloodied)\b/.test(t)) {
+    let best = -1;
+    for (let i = 0; i < enemies.length; i++) {
+      if (alive(i) && (best < 0 || (enemies[i].hp || 0) < (enemies[best].hp || 0))) best = i;
+    }
+    if (best >= 0) return best;
+  }
+  return enemies.findIndex((e, i) => alive(i));
 }
 
 /**
@@ -749,7 +821,8 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
   const round = Number(w.combat.round) || 1;
   const rng = makeRng(seedFromString(`${w.meta?.seed || ''}|escapeCombat|${w.timeline.length}|r${round}`));
   const beats = [];
-  const { verb, mode } = parseEscapeAction(actionText);
+  const { verb: rawVerb, mode } = parseEscapeAction(actionText);
+  let verb = rawVerb;
   let warded = false;
   let wardBonus = 0;
   let recklessThisRound = false;
@@ -769,9 +842,24 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
   // pool and relentless endurance persist until a rest.
   const feats = featState(w, beganAt);
 
+  // "Use my strongest attack" / "with everything I've got" — the DM picks
+  // your best available move, in order of how hard it actually hits.
+  if (rawVerb === 'strongest') {
+    const m = meleeProfile(pc);
+    if (knownSlotSpell(pc, 'fireball') && lowestSlotAtLeast(pc, 3) > 0) verb = 'fireball';
+    else if (hasFeature(pc, 'divineSmite') && !m.ranged && slotsLeft(pc) > 0) verb = 'smite';
+    else if (hasFeature(pc, 'actionSurge') && !feats.actionSurgeUsed) verb = 'surge';
+    else if (knownSlotSpell(pc, 'scorching_ray') && lowestSlotAtLeast(pc, 2) > 0) verb = 'scorch';
+    else if (knownSlotSpell(pc, 'magic_missile') && lowestSlot(pc) > 0) verb = 'missile';
+    else if (hasFeature(pc, 'recklessAttack') && !m.ranged) verb = 'reckless';
+    else verb = 'strike';
+  }
+
   // ── Player turn ────────────────────────────────────────────────────────────
   let enemies = (Array.isArray(w.combat.enemies) ? w.combat.enemies : []).map(e => ({ ...e }));
-  const targetIdx = enemies.findIndex(e => e && !e.defeated && (Number(e.hp) || 0) > 0);
+  // Named targeting: 'the wolf', 'the big one', 'the wounded one' all land
+  // where the player pointed. Default: first standing foe.
+  const targetIdx = pickTargetIdx(enemies, actionText);
 
   if (verb === 'cover') {
     if (roomCover) {
@@ -1222,7 +1310,8 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
       const wantSmite = verb === 'smite';
 
       for (let swing = 0; swing < swings; swing++) {
-        const tIdx = enemies.findIndex(e => e && !e.defeated && (Number(e.hp) || 0) > 0);
+        const named = (targetIdx >= 0 && enemies[targetIdx] && !enemies[targetIdx].defeated && (Number(enemies[targetIdx].hp) || 0) > 0) ? targetIdx : -1;
+        const tIdx = named >= 0 ? named : enemies.findIndex(e => e && !e.defeated && (Number(e.hp) || 0) > 0);
         if (tIdx < 0) break;
         const tgt = enemies[tIdx];
         const tAc = Number(tgt.ac) || 10;

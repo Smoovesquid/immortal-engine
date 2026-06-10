@@ -147,6 +147,58 @@ return res.json({ ok:false, reason:safe });
     }
   });
 
+  // ── Conversational Tier B: the intent arbiter ─────────────────────────
+  // POST { text, context } → { ok, steps: [string, ...] }
+  // Splits ONE multi-action player input into 1-3 atomic commands the
+  // deterministic engine can route ("I dive behind the bar and shoot the big
+  // one" → ["take cover", "shoot the big one"]). Called rarely (the client
+  // gates on a conjunction heuristic), answers from the env key only, and
+  // NEVER throws to the caller — any failure returns ok:false and the client
+  // falls back to submitting the original text untouched.
+  app.post('/api/intent', async (req, res) => {
+    try {
+      const text = String(req.body?.text || '').trim().slice(0, 400);
+      const ctx = req.body?.context || {};
+      if (!text || !process.env.ANTHROPIC_API_KEY) return res.json({ ok: false, reason: 'unavailable' });
+
+      const inCombat = Boolean(ctx.inCombat);
+      const enemies = Array.isArray(ctx.enemies) ? ctx.enemies.map(String).slice(0, 6) : [];
+      const verbs = Array.isArray(ctx.verbs) ? ctx.verbs.map(String).slice(0, 24) : [];
+      const npcs = Array.isArray(ctx.npcs) ? ctx.npcs.map(String).slice(0, 6) : [];
+
+      const system = [
+        'You split a tabletop RPG player\'s typed input into sequential atomic commands for a deterministic game engine.',
+        'Rules:',
+        '- Return ONLY a JSON object: {"steps": ["...", "..."]}. 1 to 3 steps, each a short imperative in the player\'s own words where possible.',
+        '- Preserve order. Do not invent actions the player did not state. Do not embellish.',
+        '- If the input is a single action, return exactly one step (a light rewording toward a known verb is allowed).',
+        '- Respect negation: an action the player refused must NOT appear as a step.',
+        inCombat ? `- Combat is active. Known combat verbs: ${verbs.join(', ') || 'strike, ward, take cover, parley, flee'}. Foes present: ${enemies.join(', ') || 'unknown'}.` : `- Out of combat. People present: ${npcs.join(', ') || 'none'}.`
+      ].join('\n');
+
+      const { chatCompletion } = await import('./server/llmProvider.js');
+      const out = await chatCompletion({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 150,
+        temperature: 0,
+        messages: [
+          { role: 'system', content: system },
+          { role: 'user', content: text }
+        ]
+      });
+      const raw = String(out?.content || '');
+      const jsonText = raw.slice(raw.indexOf('{'), raw.lastIndexOf('}') + 1);
+      const parsed = JSON.parse(jsonText);
+      const steps = Array.isArray(parsed?.steps)
+        ? parsed.steps.map(s => String(s).trim()).filter(Boolean).slice(0, 3)
+        : [];
+      if (!steps.length) return res.json({ ok: false, reason: 'no_steps' });
+      return res.json({ ok: true, steps });
+    } catch (e) {
+      return res.json({ ok: false, reason: String(e?.message || 'error').slice(0, 80) });
+    }
+  });
+
   // ── Auth routes ───────────────────────────────────────────────────────
 
   app.post('/api/auth/register', async (req, res) => {

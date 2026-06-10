@@ -13,9 +13,14 @@ import { createApp } from '../server.js';
 let app;
 let baseUrl;
 let server;
+let savedKey;
 
-// Start a test server before all tests.
+// Start a test server before all tests. The suite asserts NO-KEY behavior, so
+// strip any real key from the environment (a dev .env must never make tests
+// place paid API calls — or change the contract under test).
 test.before(async () => {
+  savedKey = process.env.ANTHROPIC_API_KEY;
+  delete process.env.ANTHROPIC_API_KEY;
   app = createApp();
   await new Promise(resolve => {
     server = app.listen(0, '127.0.0.1', resolve);
@@ -24,6 +29,7 @@ test.before(async () => {
 });
 
 test.after(async () => {
+  if (savedKey !== undefined) process.env.ANTHROPIC_API_KEY = savedKey;
   await new Promise(resolve => server.close(resolve));
 });
 

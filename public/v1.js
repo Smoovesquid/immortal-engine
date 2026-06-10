@@ -1,7 +1,7 @@
 import { normalizeManifest, normalizePack } from '../engine/rulesets.js';
 import { newWorld, ensureWorld } from '../engine/state.js';
 import { beginAdventure, playerMove, newScene } from '../engine/playloop.js';
-import { isMetaQuestion, handleMetaQuestion } from '../engine/grace/gracefulAdjudication.js';
+import { isMetaQuestion, handleMetaQuestion, looksMultiAction } from '../engine/grace/gracefulAdjudication.js';
 import { exitsFrom, ensureMap, cleanPlaceName } from '../engine/map/mapState.js';
 import { escapeOutcome } from '../engine/victory.js';
 import { escapeKitView } from '../engine/combat/escapeCombat.js';
@@ -429,6 +429,49 @@ function persistAndRehash(world) {
   });
 }
 
+// ── Conversational Tier B: the intent arbiter ───────────────────────────────
+// Multi-action sentences ("I dive behind the bar and shoot the big one") are
+// split into atomic steps by ONE cheap LLM call, then each step runs through
+// the same deterministic playerMove path as typed input. Gated hard: only
+// fires on a conjunction-of-two-actions shape, and any failure (no key, no
+// server, bad JSON) falls back to submitting the original text untouched.
+
+async function tryIntentSplit(w, text) {
+  try {
+    const inCombat = Boolean(w.combat?.active);
+    let verbs = [];
+    try {
+      const kit = w.party?.[0] ? escapeKitView(w.party[0]) : null;
+      verbs = kit ? [...kit.weapons, ...kit.spells].map(x => x.verb) : [];
+    } catch {}
+    let npcs = [];
+    try {
+      const here = (w.map?.nodes || []).find(n => n && n.id === w.map?.currentNodeId);
+      npcs = (here?.settlement?.npcs || []).map(p => String(p?.name || '')).filter(Boolean);
+    } catch {}
+    const res = await fetch('/api/intent', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        text,
+        context: {
+          inCombat,
+          enemies: inCombat ? (w.combat.enemies || []).filter(e => e && !e.defeated).map(e => e.name) : [],
+          verbs,
+          npcs
+        }
+      })
+    });
+    const data = await res.json();
+    if (data.ok && Array.isArray(data.steps) && data.steps.length >= 2) {
+      return data.steps.map(s => String(s)).slice(0, 3);
+    }
+  } catch {
+    // silent fallback — the original text goes through unchanged
+  }
+  return null;
+}
+
 async function doSubmitMove() {
   setStatus('Submitting move…');
   const w = ui.world ? ensureWorld(ui.world) : null;
@@ -491,7 +534,36 @@ async function doSubmitMove() {
 
   let world, output;
   try {
-    ({ world, output } = playerMove(w, ui.packs.byId, text));
+    // Tier B: split a multi-action sentence into atomic steps and play them
+    // in order. The DM hears "duck behind the bar and shoot the big one" as
+    // two beats of the same turn — so does the engine now.
+    let steps = null;
+    if (looksMultiAction(text)) {
+      setStatus('Reading your intent…');
+      steps = await tryIntentSplit(w, text);
+    }
+    if (steps && steps.length >= 2) {
+      let cw = w;
+      const narrParts = [];
+      let lastOut = null;
+      for (let i = 0; i < steps.length; i++) {
+        const r = playerMove(cw, ui.packs.byId, steps[i]);
+        cw = r.world;
+        lastOut = r.output;
+        if (r.output?.narration) narrParts.push(String(r.output.narration).replace(/^Wizard:\s*/, ''));
+        // The world can interrupt the plan: an ambush mid-step or a locked
+        // ending stops the remaining steps — the DM narrates what happened.
+        if (cw.ending?.locked) break;
+        if (!w.combat?.active && cw.combat?.active && i < steps.length - 1) {
+          narrParts.push('(The rest of your plan will have to wait.)');
+          break;
+        }
+      }
+      world = cw;
+      output = { ...(lastOut || {}), narration: `Wizard: ${narrParts.join(' ')}` };
+    } else {
+      ({ world, output } = playerMove(w, ui.packs.byId, text));
+    }
   } catch (e) {
     return setStatus(`Move failed: ${e?.message || e}`);
   }

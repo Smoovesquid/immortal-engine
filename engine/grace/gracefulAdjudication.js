@@ -153,6 +153,21 @@ export function isQuestionShaped(text) {
   return QUESTION_SHAPE.test(String(text || ''));
 }
 
+// Tier B trigger: a conjunction of two distinct actions ("dive behind the bar
+// and shoot the big one"). Deliberately strict — this gates a paid LLM call,
+// so single actions, questions, and flavor text must NOT match.
+const INTENT_VERB = /(go|head|walk|run|dive|duck|hide|take cover|grab|pick|open|enter|leave|exit|ask|talk|speak|look|search|check|fire|shoot|cast|strike|attack|hit|swing|stab|smite|blast|burn|slay|kill|heal|cure|bless|charm|hold|mock|drink|eat|read|climb|sneak|rest|sleep|loot|pray|wait)/;
+
+export function looksMultiAction(text) {
+  const t = String(text || '').toLowerCase();
+  if (t.length < 12) return false;
+  if (isQuestionShaped(t) && !/\band\b/.test(t)) return false;
+  if (/\b(and then|, then)\b/.test(t)) return true;
+  const parts = t.split(/\b(?:and|then)\b/);
+  if (parts.length < 2) return false;
+  return INTENT_VERB.test(parts[0]) && INTENT_VERB.test(parts.slice(1).join(' '));
+}
+
 // Handle meta-questions (status checks, location surveys, recaps, outcomes).
 // Returns null when the text isn't a recognized meta-question.
 export function handleMetaQuestion(text, world) {

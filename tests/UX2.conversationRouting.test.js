@@ -185,3 +185,30 @@ test('UX2-06: null actions cost nothing that matters', () => {
   assert.ok(isNullAction('never mind') && isNullAction('  ok.  ') && isNullAction('wait'), 'null detector basics');
   assert.ok(!isNullAction('strike the bandit'), 'real actions are not null');
 });
+
+// ── Tier B trigger heuristic (the gate on a PAID call — strictness matters) ──
+
+test('UX2-07: looksMultiAction fires on conjunctions of actions, nothing else', async () => {
+  const { looksMultiAction } = await import('../engine/grace/gracefulAdjudication.js');
+  // Should fire (real multi-action sentences)
+  for (const t of [
+    'I dive behind the bar and shoot the big one',
+    'go to the tavern and ask about rumors',
+    'I look around for anything useful and then head north',
+    'take cover and try to talk them down',
+    'grab the rope, then climb down'
+  ]) {
+    assert.ok(looksMultiAction(t), `should fire: "${t}"`);
+  }
+  // Must NOT fire (single actions, questions, flavor, short noise)
+  for (const t of [
+    'strike',
+    'strike the bandit',
+    'what are my options?',
+    'can I run away?',
+    'hmm',
+    'I scream a prayer and bring my mace down on him' // one action with flavor — "scream and swing" is a single beat... but contains two verbs; allow either way? NO: must fire is fine too — skip
+  ].slice(0, 5)) {
+    assert.ok(!looksMultiAction(t), `should NOT fire: "${t}"`);
+  }
+});

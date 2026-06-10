@@ -2437,6 +2437,9 @@ function isExploreIntent(text) {
   // Broad observation/perception: anything that is purely sensory or informational
   // and requires no skill check. Covers "look around", "what do I see", "describe",
   // "listen", "smell", inventory/status checks, reading signs, etc.
+  // Searching for HIDDEN things is a skill check, not a free survey — the
+  // fiction resists (the tracks don't want to be found).
+  if (/\b(hidden|tracks?|trail|clues?|secret|conceal)\w*/.test(t)) return false;
   if (/\b(look around|look about|survey|scan|search the area|where can i go|where do i go|options|exits|way out|how do i get out|get out of here|leave this place)\b/.test(t)) return true;
   // "What do I see / what's here / what is in this room / how big / what does X look like"
   if (/^(what|how|where|who|describe)\b/.test(t) && !/\b(pick|climb|force|break|fight|attack|try|attempt|sneak|steal|persuade|deceive|track|forage|decipher|calm|leap|jump)\b/.test(t)) return true;
@@ -2604,7 +2607,7 @@ function physicalObjectOutcome(world, text, outcome) {
   const what = named || target || 'it';
   return o === 's' ? `Wizard: You set yourself and force the ${what}; it gives with a splintering crack and yields.`
     : o === 'm' ? `Wizard: The ${what} gives at last — but the wood splinters and the noise carries further than you'd like.`
-    : `Wizard: You throw your weight against the ${what}, again and again, but it holds fast.`;
+    : `Wizard: You throw your weight against ${/^(it|that|this|them)$/i.test(what) ? what : `the ${what}`}, again and again, but it holds fast.`;
 }
 
 // ── Stage B: argued SOCIAL adjudication ─────────────────────────────────────
@@ -3157,6 +3160,10 @@ function isTrivialIntent(text) {
   // These are everyday actions any able-bodied person can do without a check.
   // 1. Basic body actions: sit, stand, kneel, bow, nod, wave, rest, stretch, yawn, pray, dismount
   if (/\bi\s+(sit\s+down|stand\s+up|wave|kneel|rest|pray|bow|nod|stretch|yawn|dismount)\b/.test(t)) return true;
+  // 1b. Introspection and musing — thinking is never a d20 roll.
+  if (/\bi\s+(think|wonder|ponder|consider|reflect|muse|remember|recall)\b/.test(t)) return true;
+  // 1c. Social pleasantries and self-maintenance: smiles, nods at folk, gear-fussing, counting coin.
+  if (/\bi\s+(smile|wink|laugh|chuckle|shrug|sigh|hum|tighten|adjust|straighten|brush\s+off|dust\s+off|count\s+(my\s+)?coins?)\b/.test(t)) return true;
   // 2. Equipment: draw/sheathe weapon, put on/take off gear, drop pack, open/close door
   if (/\bi\s+(draw\s+(my\s+)?sword|draw\s+(my\s+)?weapon|put\s+away|sheathe|open\s+the\s+door|close\s+the\s+door|take\s+off|put\s+on|drop\s+(my\s+)?pack|drop\s+my)\b/.test(t)) return true;
   // 3. Consume: eat, drink, light torch

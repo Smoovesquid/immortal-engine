@@ -288,3 +288,44 @@ test('UX2-12: road encounters pay XP for clever solutions (talk/slip/pay)', () =
     assert.match(r.output.mechanics, /encounter:talk-failed/, 'talk either succeeds with XP or fails into a fight');
   }
 });
+
+// ── The dice pass (P2): a roll needs stakes + uncertainty + resistance ───────
+
+test('UX2-13: greetings and musings never roll; resisted actions always do', () => {
+  const w0 = freshWorld('rogue', 'ux2dice');
+  const w = playerMove(w0, packsById, 'go outside').world;
+  const here = (w.map?.nodes || []).find(n => n && n.id === w.map?.currentNodeId);
+  const npc = (here?.settlement?.npcs || []).filter(n => n && !n.hostile).map(n => n?.name).filter(Boolean)[0];
+
+  const FREE = [
+    npc ? `Hello ${npc}` : 'hello',
+    'I think about my next move',
+    'I wonder what my dark fate means',
+    'I smile at the passersby',
+    'I count my coins'
+  ];
+  for (const input of FREE) {
+    const r = submit(w, input);
+    assert.ok(!/roll:\d+/.test(r.mech), `"${input}" must not roll → ${r.mech}`);
+  }
+  const ROLLS = [
+    'I climb the wall of the meeting hall',
+    'I sneak past the guard',
+    'I search the area for hidden tracks'
+  ];
+  for (const input of ROLLS) {
+    const r = submit(w, input);
+    assert.ok(/roll:\d+/.test(r.mech), `"${input}" must roll → ${r.mech}`);
+  }
+});
+
+test('UX2-14: NPCs answer in direct speech', () => {
+  const w0 = freshWorld('bard', 'speak-1');
+  let w = playerMove(w0, packsById, 'go outside').world;
+  const here = (w.map?.nodes || []).find(n => n && n.id === w.map?.currentNodeId);
+  const npc = (here?.settlement?.npcs || []).filter(n => n && !n.hostile).map(n => n?.name).filter(Boolean)[0];
+  if (!npc) return;
+  w = playerMove(w, packsById, `Hello ${npc}`).world;
+  const r = playerMove(w, packsById, 'what do you know about the well?');
+  assert.ok(/"/.test(r.output.narration), `reply carries quoted speech: ${r.output.narration.slice(0, 80)}`);
+});

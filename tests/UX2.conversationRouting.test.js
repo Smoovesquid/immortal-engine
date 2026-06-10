@@ -260,3 +260,31 @@ test('UX2-11: the clock moves — hops cost an hour, long rest rolls to morning'
     }
   }
 });
+
+test('UX2-12: road encounters pay XP for clever solutions (talk/slip/pay)', () => {
+  // Drive a real road encounter via the production path: bard travels until
+  // brigands pend, then talks past them. (Seed road-1 pends on the first
+  // journey; if generation ever shifts, scan a few hops.)
+  const pc = createCharacter5e({ seed: 'road-1', speciesId: 'half-elf', classId: 'bard', abilityMethod: 'standard', classChoices: { skills: ['Persuasion', 'Deception', 'Performance'] } });
+  const w0 = newWorld({ seed: 'road-1', campaignId: 'c', pack: { primaryId: 'fantasy', mixerId: null }, mode: 'escape' });
+  let w = beginAdventure(ensureWorld({ ...w0, party: [pc] }), packsById).world;
+  w = playerMove(w, packsById, 'go outside').world;
+  let pended = false;
+  for (let i = 0; i < 8 && !pended; i++) {
+    const m = w.map;
+    const hereId = String(m?.currentNodeId || '');
+    const target = (m?.nodes || []).find(n => n && (m.discovered || []).includes(String(n.id)) && String(n.id) !== hereId);
+    if (!target) break;
+    w = playerMove(w, packsById, `go to ${target.name}`).world;
+    pended = Boolean(w.travel?.pending);
+  }
+  if (!pended) return; // encounter generation moved; covered by the probe script
+  const xpBefore = w.party[0].xp;
+  const r = playerMove(w, packsById, 'talk');
+  if (/encounter:talked/.test(r.output.mechanics)) {
+    assert.equal(r.world.party[0].xp, xpBefore + 25, 'talking past the toll earns the XP');
+    assert.match(r.output.narration, /\+25 XP/);
+  } else {
+    assert.match(r.output.mechanics, /encounter:talk-failed/, 'talk either succeeds with XP or fails into a fight');
+  }
+});

@@ -173,7 +173,8 @@ return res.json({ ok:false, reason:safe });
         '- Preserve order. Do not invent actions the player did not state. Do not embellish.',
         '- If the input is a single action, return exactly one step (a light rewording toward a known verb is allowed).',
         '- Respect negation: an action the player refused must NOT appear as a step.',
-        inCombat ? `- Combat is active. Known combat verbs: ${verbs.join(', ') || 'strike, ward, take cover, parley, flee'}. Foes present: ${enemies.join(', ') || 'unknown'}.` : `- Out of combat. People present: ${npcs.join(', ') || 'none'}.`
+        '- If the input is GENUINELY ambiguous (an unclear referent like "do the thing with the guy", or two readings with different consequences), do NOT guess: return {"clarify": "<one short pointed question, in a dry DM voice>"} instead of steps.',
+        inCombat ? `- Combat is active. Known combat verbs: ${verbs.join(', ') || 'strike, ward, take cover, parley'}. Foes present: ${enemies.join(', ') || 'unknown'}.` : `- Out of combat. People present: ${npcs.join(', ') || 'none'}.`
       ].join('\n');
 
       const { chatCompletion } = await import('./server/llmProvider.js');
@@ -189,6 +190,10 @@ return res.json({ ok:false, reason:safe });
       const raw = String(out?.content || '');
       const jsonText = raw.slice(raw.indexOf('{'), raw.lastIndexOf('}') + 1);
       const parsed = JSON.parse(jsonText);
+      // Tier C: a genuinely ambiguous input earns ONE pointed question
+      // instead of a guess.
+      const clarify = String(parsed?.clarify || '').trim().slice(0, 200);
+      if (clarify) return res.json({ ok: true, clarify });
       const steps = Array.isArray(parsed?.steps)
         ? parsed.steps.map(s => String(s).trim()).filter(Boolean).slice(0, 3)
         : [];

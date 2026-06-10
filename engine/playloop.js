@@ -301,18 +301,27 @@ function playerMoveCore(world, packsById, text) {
       const brig = { name: String(pend.foeName).replace(/^A\s+/i, '').replace(/s$/, ''), ref: 'brigand', cr: 0.125, maxHp: ESCAPE_ENEMY_HP, ac: 12, damage: 4, canParley: false };
       return spawnEncounter(w1, [brig], { ambush: true, reason: 'brigand-fight' }, erng);
     };
+    // Overcoming an encounter earns its XP however it's overcome — coin,
+    // tongue, or shadow. (The fight path earns through combat victory.)
+    const ROAD_XP = 25; // one brigand band, CR 1/8
+    const awardRoadXp = (ww) => applyDeltas(ww, [{ op: 'gainXp', amount: ROAD_XP }]);
+    // Skill checks read the 5e sheet when present (a bard's Persuasion, a
+    // rogue's Stealth), legacy stats otherwise.
+    const sheet = w1.party?.[0]?.dnd;
+    const talkBonus = sheet ? (Number(sheet.skills?.Persuasion) || 0) : statMod(Number(w1.party?.[0]?.stats?.CHARM ?? 10));
+    const slipBonus = sheet ? (Number(sheet.skills?.Stealth) || 0) : statMod(Number(w1.party?.[0]?.stats?.AGILITY ?? 10));
     if (choice === 'pay') {
       const { world: wp, coin } = payToll(w1);
-      return { world: wp, output: { narration: `Wizard: You hand over a ${coin} coin. ${pend.foeName} stand aside and wave you on; the way to ${dest} is clear.`, mechanics: '[encounter:paid]' } };
+      return { world: awardRoadXp(wp), output: { narration: `Wizard: You hand over a ${coin} coin. ${pend.foeName} stand aside and wave you on; the way to ${dest} is clear. (+${ROAD_XP} XP)`, mechanics: '[encounter:paid]' } };
     }
     if (choice === 'talk') {
-      const total = erng.int(1, 20) + statMod(Number(w1.party?.[0]?.stats?.CHARM ?? 10));
-      if (total >= 12) return { world: w1, output: { narration: `Wizard: You talk fast and easy, and ${pend.foeName} decide you're more trouble than a coin's worth. They wave you through; the way to ${dest} is clear.`, mechanics: '[encounter:talked]' } };
+      const total = erng.int(1, 20) + talkBonus;
+      if (total >= 12) return { world: awardRoadXp(w1), output: { narration: `Wizard: You talk fast and easy, and ${pend.foeName} decide you're more trouble than a coin's worth. They wave you through; the way to ${dest} is clear. (+${ROAD_XP} XP)`, mechanics: '[encounter:talked]' } };
       return { world: startFight(), output: { narration: `Wizard: Your words fall flat — ${pend.foeName} draw steel and come at you.`, mechanics: '[encounter:talk-failed]' } };
     }
     if (choice === 'slip') {
-      const total = erng.int(1, 20) + statMod(Number(w1.party?.[0]?.stats?.AGILITY ?? 10));
-      if (total >= 12) return { world: w1, output: { narration: `Wizard: You bide your moment and slip past unseen; ${pend.foeName} are still eyeing the empty road as you go. The way to ${dest} is clear.`, mechanics: '[encounter:slipped]' } };
+      const total = erng.int(1, 20) + slipBonus;
+      if (total >= 12) return { world: awardRoadXp(w1), output: { narration: `Wizard: You bide your moment and slip past unseen; behind you, ${pend.foeName} still eye the empty road. The way to ${dest} is clear. (+${ROAD_XP} XP)`, mechanics: '[encounter:slipped]' } };
       return { world: startFight(), output: { narration: `Wizard: A loose stone turns underfoot — ${pend.foeName} spot you and attack.`, mechanics: '[encounter:slip-failed]' } };
     }
     return { world: startFight(), output: { narration: `Wizard: You set yourself and meet ${pend.foeName} head-on.`, mechanics: '[encounter:fight]' } };
@@ -528,6 +537,11 @@ function playerMoveCore(world, packsById, text) {
 
   const interiorAction = inferInteriorAction(text, w.scene?.interior);
   if (interiorAction.kind === 'enter') {
+    // "Go inside" when already indoors gets the obvious answer, not the
+    // blocked-wall message.
+    if (w.scene?.interior) {
+      return { world: w, output: { narration: 'Wizard: You\'re already indoors. "Go outside" first if you\'re after a different roof.', mechanics: '' } };
+    }
     const nodeId = String(w.map?.currentNodeId || '');
     const wPrepared = nodeId ? applyGeneratedStructuresForNode(w, nodeId) : w;
     const sel = resolveStructureSelection(wPrepared, interiorAction.structureRef);
@@ -580,9 +594,12 @@ function playerMoveCore(world, packsById, text) {
         return { world: w2, output: { narration: moveMsg, mechanics: '' } };
       }
       const blockedDir = normalizeDir(interiorAction.direction);
-      const blockedMsg = blockedDir
-        ? `Wizard: There is no way ${blockedDir} from here. The wall holds.`
-        : 'Wizard: That way is blocked from here.';
+      // "Go inside" while already indoors gets the obvious answer.
+      const blockedMsg = (!blockedDir && /\b(inside|indoors|enter)\b/i.test(String(text || '')) && w.scene?.interior)
+        ? 'Wizard: You\'re already indoors. "Go outside" first if you\'re after a different roof.'
+        : blockedDir
+          ? `Wizard: There is no way ${blockedDir} from here. The wall holds.`
+          : 'Wizard: That way is blocked from here.';
       return { world: w, output: { narration: blockedMsg, mechanics: '' } };
     }
     // Risky/obstructed/special movement falls through to normal resolution (roll-capable path).
@@ -1148,7 +1165,11 @@ function playerMoveCore(world, packsById, text) {
       const explicitAction = /\b(strike|attack|swing|stab|shoot|slash|smite|fireball|blast|cast|rage|surge|guard|ward|cover)\b/i.test(String(text || ''));
       if (isMetaQuestion(text) || (isQuestionShaped(text) && escVerb !== 'parley' && !explicitAction)) {
         const metaAnswer = isMetaQuestion(text) ? handleMetaQuestion(text, w) : null;
-        const answer = metaAnswer || combatStatusAnswer(w);
+        let answer = metaAnswer || combatStatusAnswer(w);
+        // "Look around" mid-fight: the steel comes first, the scenery second.
+        if (metaAnswer && /\b(where am i|look|around|see)\b/i.test(String(text || ''))) {
+          answer = `${combatStatusAnswer(w)} Beyond the fight: ${metaAnswer}`;
+        }
         return {
           world: w,
           output: { narration: `Wizard: ${answer}`, mechanics: '[combat:table-talk]' }

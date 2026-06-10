@@ -468,8 +468,12 @@ async function tryIntentSplit(w, text) {
       })
     });
     const data = await res.json();
+    // Tier C: on genuinely ambiguous input the DM asks rather than guesses.
+    if (data.ok && data.clarify) {
+      return { clarify: String(data.clarify) };
+    }
     if (data.ok && Array.isArray(data.steps) && data.steps.length >= 2) {
-      return data.steps.map(s => String(s)).slice(0, 3);
+      return { steps: data.steps.map(s => String(s)).slice(0, 3) };
     }
   } catch {
     // silent fallback — the original text goes through unchanged
@@ -542,11 +546,22 @@ async function doSubmitMove() {
     // Tier B: split a multi-action sentence into atomic steps and play them
     // in order. The DM hears "duck behind the bar and shoot the big one" as
     // two beats of the same turn — so does the engine now.
-    let steps = null;
+    let split = null;
     if (looksMultiAction(text)) {
       setStatus('Reading your intent…');
-      steps = await tryIntentSplit(w, text);
+      split = await tryIntentSplit(w, text);
     }
+    // Tier C: the DM's clarifying question costs nothing — answer and retry.
+    if (split && split.clarify) {
+      ui.play.lines.push({ who: 'you', text, mech: '' });
+      ui.play.lines.push({ who: 'wizard', text: split.clarify, mech: '[clarify:intent]' });
+      ui.play.input = '';
+      tts.speak(split.clarify);
+      setStatus('');
+      render();
+      return;
+    }
+    const steps = split && Array.isArray(split.steps) ? split.steps : null;
     if (steps && steps.length >= 2) {
       let cw = w;
       const narrParts = [];

@@ -2169,7 +2169,7 @@ function renderPlay() {
       el('div', { style: { fontWeight: 'bold', color: '#c9a227' } },
         `In conversation with ${dlgNpc?.name || 'someone'}${dlgNpc?.role ? ` — ${dlgNpc.role}` : ''}`),
       el('div', { class: 'small' },
-        `trust ${Math.round(((dlgNpc?.playerRelationship?.trust ?? 0.5)) * 10)}/10 · ${dlg.turnsInDialogue || 0} exchange${(dlg.turnsInDialogue || 0) === 1 ? '' : 's'} · everything you type is said to them`)
+        'everything you type is said to them — "goodbye" to step away')
     ),
     el('button', {
       class: 'btn',

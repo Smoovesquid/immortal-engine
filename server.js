@@ -204,6 +204,49 @@ return res.json({ ok:false, reason:safe });
     }
   });
 
+  // ── P6 — local NPC voice (Gemma/Ollama). The engine has already DECIDED
+  // (share/deflect/lie); the local model only chooses the words in the NPC's
+  // mouth. Free, local, silent fallback to the deterministic voice templates.
+  // Swap models with LOCAL_LLM_MODEL=gemma3:12b (any Ollama tag).
+  app.post('/api/npc-voice', async (req, res) => {
+    try {
+      const npcName = String(req.body?.npcName || '').slice(0, 60);
+      const role = String(req.body?.role || '').slice(0, 40);
+      const mood = String(req.body?.mood || '').slice(0, 30);
+      const mode = String(req.body?.mode || '').slice(0, 20);
+      const factPhrase = String(req.body?.factPhrase || '').slice(0, 120);
+      const playerLine = String(req.body?.playerLine || '').slice(0, 200);
+      if (!npcName || !mode) return res.json({ ok: false, reason: 'bad_request' });
+
+      const DECISION = {
+        shared: `You have decided to SHARE what you know about ${factPhrase || 'the topic'} — answer helpfully and concretely (invent small local color but no names of people or places).`,
+        deflected: 'You have decided to DEFLECT — dodge the question without answering it, stay pleasant or gruff per your mood.',
+        withheld: 'You have decided to WITHHOLD — refuse plainly; you know something but will not say. Do not reveal anything.',
+        lied: 'You have decided to LIE — give a smooth false answer. Keep it vague; do not invent names.',
+        recruited: 'You have decided to JOIN the player — accept and fall in.'
+      }[mode];
+      if (!DECISION) return res.json({ ok: false, reason: 'bad_mode' });
+
+      const { queryLocal } = await import('./server/localLlmProvider.js');
+      const prompt = [
+        `You are ${npcName}, a ${role || 'villager'} in a low-fantasy village. Mood: ${mood || 'even'}.`,
+        `The player said to you: "${playerLine}"`,
+        DECISION,
+        'Reply with EXACTLY ONE line of spoken dialogue (under 30 words), in plain speech, no stage directions, no names of specific people or places.'
+      ].join('\n');
+      const out = await queryLocal({ prompt, schema: { line: 'one spoken line' }, timeout: 9000 });
+      if (!out?.ok) return res.json({ ok: false, reason: out?.reason || 'local_llm_unavailable' });
+
+      // The fence: one line, bounded length, no narration leakage.
+      let line = String(out.result?.line || '').split('\n')[0].trim()
+        .replace(/^["'“]+|["'”]+$/g, '').trim();
+      if (!line || line.length > 240) return res.json({ ok: false, reason: 'bad_line' });
+      return res.json({ ok: true, line });
+    } catch (e) {
+      return res.json({ ok: false, reason: String(e?.message || 'error').slice(0, 60) });
+    }
+  });
+
   // ── Auth routes ───────────────────────────────────────────────────────
 
   app.post('/api/auth/register', async (req, res) => {

@@ -529,7 +529,17 @@ function playerMoveCore(world, packsById, text) {
         world: w,
         output: {
           narration: dialogueAskNarration(asked.outcome, w),
-          mechanics: `[dialogue ask | ${asked.outcome.mode}${asked.outcome.factId ? ` | ${asked.outcome.factId}` : ''} | trust:${asked.outcome.trustLevel}]`
+          mechanics: `[dialogue ask | ${asked.outcome.mode}${asked.outcome.factId ? ` | ${asked.outcome.factId}` : ''} | trust:${asked.outcome.trustLevel}]`,
+          // P6 — structured handle for the local voice layer (presentation
+          // only; the decision above is already canon).
+          dialogue: {
+            npcName: String(asked.outcome.npcName || ''),
+            mode: String(asked.outcome.mode || ''),
+            mood: String(asked.outcome.brainMood || ''),
+            factPhrase: asked.outcome.factId ? factPhrase(asked.outcome.factId) : '',
+            trustLevel: Number(asked.outcome.trustLevel) || 0,
+            playerLine: String(text || '')
+          }
         }
       };
     }

@@ -481,6 +481,38 @@ async function tryIntentSplit(w, text) {
   return null;
 }
 
+
+// P6 — local NPC voice (Ollama/Gemma). Presentation-only: the engine already
+// decided share/deflect/lie; the local model only phrases the spoken line.
+// Silent fallback to the deterministic voice templates. One failed call
+// marks the channel down for the session (no latency tax when Ollama's off).
+let localVoiceDown = false;
+async function tryLocalNpcVoice(dialogue) {
+  if (localVoiceDown || !dialogue || !dialogue.npcName) return null;
+  try {
+    const res = await fetch('/api/npc-voice', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        npcName: dialogue.npcName,
+        mood: dialogue.mood || '',
+        mode: dialogue.mode,
+        factPhrase: dialogue.factPhrase || '',
+        playerLine: dialogue.playerLine || ''
+      })
+    });
+    const data = await res.json();
+    if (data.ok && data.line) {
+      const mood = dialogue.mood ? `, ${dialogue.mood}` : '';
+      return `Wizard: "${data.line}" ${dialogue.npcName} says${mood}.`;
+    }
+    if (data.reason === 'local_llm_unavailable' || data.reason === 'unavailable') localVoiceDown = true;
+  } catch {
+    localVoiceDown = true;
+  }
+  return null;
+}
+
 async function doSubmitMove() {
   setStatus('Submitting move…');
   const w = ui.world ? ensureWorld(ui.world) : null;
@@ -587,7 +619,12 @@ async function doSubmitMove() {
   } catch (e) {
     return setStatus(`Move failed: ${e?.message || e}`);
   }
-  const baseNarration = output?.narration || '...';
+  let baseNarration = output?.narration || '...';
+  // P6 — a dialogue reply gets the local NPC voice when available.
+  if (output?.dialogue) {
+    const spoken = await tryLocalNpcVoice(output.dialogue);
+    if (spoken) baseNarration = spoken;
+  }
 
   // Strip the internal "::<nodeId>" travel marker from the echoed player line
   // (path buttons append it for unambiguous resolution; it must not be visible).

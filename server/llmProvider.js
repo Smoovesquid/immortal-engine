@@ -70,12 +70,12 @@ export async function chatCompletion({
 
 async function callAnthropic({ messages, model, temperature, max_tokens, apiKey, fetchImpl }) {
   // Extract system message from the messages array (Anthropic uses a separate system param)
-  let system = '';
+  let systemText = '';
   const userMessages = [];
 
   for (const msg of messages) {
     if (msg.role === 'system') {
-      system += (system ? '\n\n' : '') + msg.content;
+      systemText += (systemText ? '\n\n' : '') + msg.content;
     } else {
       userMessages.push({ role: msg.role, content: msg.content });
     }
@@ -87,14 +87,17 @@ async function callAnthropic({ messages, model, temperature, max_tokens, apiKey,
     temperature,
     max_tokens: max_tokens || 1024
   };
-  if (system) body.system = system;
+  if (systemText) {
+    body.system = [{ type: 'text', text: systemText, cache_control: { type: 'ephemeral' } }];
+  }
 
   const res = await fetchImpl('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
-      'content-type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01'
+      'content-type':      'application/json',
+      'x-api-key':         apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-beta':    'prompt-caching-2024-07-31'
     },
     body: JSON.stringify(body)
   });

@@ -10,6 +10,7 @@ import { buildAiHashTrace } from './ai/aiHashTrace.js';
 const ANTHROPIC_API = 'https://api.anthropic.com/v1/messages';
 const ANTHROPIC_VERSION = '2023-06-01';
 const DEFAULT_MODEL = 'claude-sonnet-4-6';
+const NARRATION_MODEL = 'claude-haiku-4-5-20251001';
 
 // ── N3: Grounded system prompt ────────────────────────────────────────────────
 
@@ -128,7 +129,7 @@ export async function callLLM({
   ctx,
   baseNarration,
   apiKey,
-  model = DEFAULT_MODEL,
+  model = NARRATION_MODEL,
   fetchImpl = globalThis.fetch
 }) {
   const sys  = buildSystemPrompt(ctx);
@@ -141,14 +142,15 @@ export async function callLLM({
   const res = await fetchImpl(ANTHROPIC_API, {
     method: 'POST',
     headers: {
-      'content-type':    'application/json',
-      'x-api-key':       apiKey,
-      'anthropic-version': ANTHROPIC_VERSION
+      'content-type':      'application/json',
+      'x-api-key':         apiKey,
+      'anthropic-version': ANTHROPIC_VERSION,
+      'anthropic-beta':    'prompt-caching-2024-07-31'
     },
     body: JSON.stringify({
       model,
       max_tokens: 120,
-      system: sys,
+      system: [{ type: 'text', text: sys, cache_control: { type: 'ephemeral' } }],
       messages: [{ role: 'user', content: user }]
     })
   });
@@ -434,6 +436,14 @@ export function buildDMSystemPrompt(dmCtx) {
       ].filter(Boolean).join('\n')
     : '';
 
+  const factionLine   = wp.factionSummary  ? `- Factions: ${wp.factionSummary}`  : '';
+  const ecologyLine   = wp.ecologySummary && wp.ecologySummary !== 'stable' ? `- Ecology: ${wp.ecologySummary}` : '';
+  const weaponsLine   = (player.weapons ?? []).length ? `- Weapons: ${player.weapons.join(', ')}` : '';
+  const statsLine     = Object.keys(player.stats || {}).length ? `- Stats: ${Object.entries(player.stats).map(([k,v]) => `${k}:${v}`).join(' ')}` : '';
+  const woundLine     = ((player.wounds ?? 0) > 0 || (player.stress ?? 0) > 0)
+    ? `- Wounds: ${player.wounds ?? 0}/6, Stress: ${player.stress ?? 0}/6`
+    : '';
+
   return [
     `You are the Dungeon Master for a tabletop RPG session.`,
     ``,
@@ -441,8 +451,8 @@ export function buildDMSystemPrompt(dmCtx) {
     ``,
     `CURRENT SCENE:`,
     `- Location: "${loc.name}" (${loc.type})`,
-    `- Time of day: ${scene.timeOfDay || 'unknown'}`,
-    `- Exits: ${(loc.exits ?? []).join(', ') || 'none visible'}`,
+    scene.timeOfDay ? `- Time of day: ${scene.timeOfDay}` : '',
+    (loc.exits ?? []).length ? `- Exits: ${loc.exits.join(', ')}` : '',
     scene.interior ? `- Interior: room ${scene.interior.roomId}` : `- Outdoors`,
     mapBlock,
     threatLine,
@@ -454,17 +464,17 @@ export function buildDMSystemPrompt(dmCtx) {
     npcBlock,
     ``,
     `WORLD PRESSURE:`,
-    `- Factions: ${wp.factionSummary || 'none'}`,
-    `- Ecology: ${wp.ecologySummary || 'stable'}`,
+    factionLine,
+    ecologyLine,
     wp.activeScars?.length ? `- Scars: ${wp.activeScars.join('; ')}` : '',
     wp.activeThreads?.length ? `- Active threads: ${wp.activeThreads.map(t => `${t.label} (tension:${t.tension})`).join(', ')}` : '',
     whisperLine,
     ``,
     `PLAYER:`,
     `- Name: ${player.name}`,
-    `- Stats: ${Object.entries(player.stats || {}).map(([k,v]) => `${k}:${v}`).join(' ')}`,
-    `- Weapons: ${(player.weapons ?? []).join(', ') || 'none'}`,
-    `- Wounds: ${player.wounds ?? 0}/6, Stress: ${player.stress ?? 0}/6`,
+    statsLine,
+    weaponsLine,
+    woundLine,
     companionsBlock,
     beatsBlock,
     combatBlock,
@@ -670,7 +680,8 @@ export async function callDM({
   apiKey = '',
   model = DEFAULT_MODEL,
   fetchImpl = globalThis.fetch,
-  onTrace = null
+  onTrace = null,
+  onChunk = null
 } = {}) {
   if (!apiKey || typeof fetchImpl !== 'function') return null;
 
@@ -686,7 +697,7 @@ export async function callDM({
     try { onTrace(buildAiHashTrace({ worldBefore: w, mode: 'DM', model, accepted, reason, applied })); } catch {}
   };
 
-  // Wrap player text in safety tags
+  const streaming = typeof onChunk === 'function';
   const userMessage = `<player_input>${String(playerText)}</player_input>`;
 
   for (let attempt = 0; attempt <= MAX_DM_RETRIES; attempt++) {
@@ -694,21 +705,30 @@ export async function callDM({
       const res = await fetchImpl(ANTHROPIC_API, {
         method: 'POST',
         headers: {
-          'content-type': 'application/json',
-          'x-api-key': apiKey,
-          'anthropic-version': ANTHROPIC_VERSION
+          'content-type':      'application/json',
+          'x-api-key':         apiKey,
+          'anthropic-version': ANTHROPIC_VERSION,
+          'anthropic-beta':    'prompt-caching-2024-07-31'
         },
         body: JSON.stringify({
           model,
           max_tokens: 500,
-          system: sysPrompt,
+          stream: streaming,
+          system: [{ type: 'text', text: sysPrompt, cache_control: { type: 'ephemeral' } }],
           messages: [{ role: 'user', content: userMessage }]
         })
       });
 
       if (!res.ok) throw new Error(`API HTTP ${res.status}`);
-      const data = await res.json();
-      const rawText = String(data?.content?.[0]?.text ?? '').trim();
+
+      let rawText;
+      if (streaming) {
+        rawText = await consumeStream(res, onChunk);
+      } else {
+        const data = await res.json();
+        rawText = String(data?.content?.[0]?.text ?? '').trim();
+      }
+
       if (!rawText) continue;
 
       const { tags, narration } = parseStructuredTags(rawText);
@@ -723,4 +743,36 @@ export async function callDM({
 
   emit(false, 'empty_response', []);
   return null;
+}
+
+async function consumeStream(res, onChunk) {
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let accumulated = '';
+  let buf = '';
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buf += decoder.decode(value, { stream: true });
+
+    const lines = buf.split('\n');
+    buf = lines.pop(); // keep incomplete line
+
+    for (const line of lines) {
+      if (!line.startsWith('data: ')) continue;
+      const payload = line.slice(6).trim();
+      if (payload === '[DONE]') continue;
+      try {
+        const evt = JSON.parse(payload);
+        const chunk = evt?.delta?.text ?? '';
+        if (chunk) {
+          accumulated += chunk;
+          onChunk(chunk);
+        }
+      } catch { /* malformed SSE line — skip */ }
+    }
+  }
+
+  return accumulated.trim();
 }

@@ -13,8 +13,6 @@ import { generateTriadFrames, deriveInvocationFromFrame } from '../engine/triad.
 import { deriveSequelInvocation } from '../engine/sequel.js';
 import { renderMapView } from './map/MapView.js';
 import { renderLocalMap } from './map/LocalMap.js';
-import { renderRegionMap } from './map/RegionMap.js';
-import { renderOverworld } from './map/Overworld.js';
 import { createPlaceMap } from './map/handDrawnPlace.js';
 import { placeFromWorldNode } from './map/placeFromNode.js';
 import { buildPlaceGrid, walkTo } from './map/placeNav.js';

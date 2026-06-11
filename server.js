@@ -181,7 +181,7 @@ return res.json({ ok:false, reason:safe });
 
       const { chatCompletion } = await import('./server/llmProvider.js');
       const out = await chatCompletion({
-        model: 'claude-sonnet-4-6',
+        model: 'claude-haiku-4-5-20251001',
         max_tokens: 150,
         temperature: 0,
         messages: [

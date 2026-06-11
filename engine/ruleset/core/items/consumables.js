@@ -11,3 +11,16 @@ export const antidote = {
   slot: null, weight: 0, rarity: 'common', basePrice: 50,
   effect: { kind: 'removeCondition', condition: 'poisoned' }
 };
+
+// P-69 — the healing ladder.
+export const healing_potion_greater = {
+  defRef: 'healing_potion_greater', name: 'Greater Healing Potion', kind: 'consumable',
+  slot: null, weight: 0.5, rarity: 'uncommon', basePrice: 150,
+  effect: { kind: 'heal', amount: '4d4+4' }
+};
+
+export const healing_potion_superior = {
+  defRef: 'healing_potion_superior', name: 'Superior Healing Potion', kind: 'consumable',
+  slot: null, weight: 0.5, rarity: 'rare', basePrice: 450,
+  effect: { kind: 'heal', amount: '8d4+8' }
+};

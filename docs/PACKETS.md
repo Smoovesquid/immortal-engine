@@ -105,7 +105,19 @@ In combat it costs the action (RAW). Works for any `kind: 'consumable'` def.
 - done_when: potion heals mid-fight on the live surface; trying to drink a
   potion you don't have gets the DM's honest answer; suite green.
 
-### P-69 — Catalog growth + one item system
+### P-69 — Catalog growth + one item system ✅ DONE 2026-06-11
+**Shipped (WORLD_VERSION 25→26):** catalog 17 → 72 defs (full SRD simple+martial
+weapons, complete armor list + shield, healing-potion ladder, 18-item magic
+ladder across uncommon/rare/very-rare); CR loot bands rewired to the rarity
+curve (magic ~1% at CR 1, very-rares only CR 11+, ~17% of CR 20 fights);
+chargen mints typed item instances auto-equipped (AC/attack identical to the
+sheet at creation); meleeProfile/playerAc read EQUIPPED TYPED GEAR first
+(sheet strings remain fallback) so looted magic actually changes the swing;
+"I equip the X" intent moves pack→hand with the DM stating the new numbers;
+v26 adds party `conditions` (antidote cure branch now live, U120-05 restored);
+optional `qty` on item instances (P-70 materials ready). U121 ×9; suite 7,448
+green; playtest:full clean; live-verified (Sword of Morning equipped by name,
+attack line + MAIN HAND panel updated).
 **Why:** ~17 item defs total, two magic items, and loot lands in the typed
 system while combat reads the 5e sheet strings — a looted longsword doesn't
 become your wielded longsword.

@@ -416,6 +416,22 @@ export function assertWorldInvariants(world) {
     throw new Error('Invariant: combat.active and scene.dialogue are mutually exclusive');
   }
 
+  // ── v26 — party condition invariants ──────────────────────────────────────
+  for (const member of (Array.isArray(world.party) ? world.party : [])) {
+    if (!member || member.conditions == null) continue;
+    if (!Array.isArray(member.conditions)) {
+      throw new Error(`Invariant: party member ${member.id} conditions must be an array`);
+    }
+    if (member.conditions.length > 8) {
+      throw new Error(`Invariant: party member ${member.id} has ${member.conditions.length} conditions (cap 8)`);
+    }
+    for (const c of member.conditions) {
+      if (!c || typeof c !== 'object' || !c.name) {
+        throw new Error(`Invariant: party member ${member.id} has a malformed condition`);
+      }
+    }
+  }
+
   // ── v25 — story arc invariants (docs/STORYLINE_SPEC.md) ───────────────────
   const story = world.story;
   if (!story || typeof story !== 'object' || !story.arcs || typeof story.arcs !== 'object') {

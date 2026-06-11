@@ -58,6 +58,7 @@ function routeClass(res) {
   if (/observe only|trivial/.test(m)) return 'FREE-ACTION';
   if (/trade:/.test(m)) return 'TRADE';
   if (/consume/.test(m)) return 'CONSUME';
+  if (/equip/.test(m)) return 'EQUIP';
   if (/roll:\d+/.test(m)) return 'ROLL';
   return `OTHER(${m})`;
 }
@@ -91,6 +92,8 @@ const OUT_OF_COMBAT_TABLE = [
   // P-68 — drinking what you carry is item use, not dice or physics
   ['I drink my healing potion', ['CONSUME']],
   ['quaff a potion', ['CONSUME']],
+  // P-69 — gear you carry becomes gear you use, no dice
+  // (only typed carried gear routes here; unknown names fall through to physics)
 ];
 
 test('UX2-01: out-of-combat routing table', () => {

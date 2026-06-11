@@ -15,6 +15,7 @@ import { getSpecies } from './species.js';
 import { getClass } from './classes.js';
 import { getBackground5e } from './backgrounds5e.js';
 import { getAlignment } from './alignment.js';
+import { findDefByName } from '../../ruleset/core/items/index.js';
 import { computeAC, findArmor } from './armor.js';
 import { rollDarkFate } from '../fate.js';
 import { rollDetailOptions, normalizeRitualPicks } from '../details.js';
@@ -285,7 +286,7 @@ export function createCharacter5e(picks = {}) {
     mods: legacyMods,
     rollDetails: { method: method === '4d6' ? '4d6-drop-lowest' : 'standard-array', dice: pools ? Object.fromEntries(ABILITY_KEYS.map((k, i) => [k, pools.pools[i]?.dice || []])) : {} },
 
-    inventory: equipmentToInventory(equipment),
+    inventory: equipmentToInventory(equipment, mods),
 
     // P-67 — starting coin: every SRD background carries pocket money in its
     // gear list ("pouch (15 gp)"). Parse it; 10 gp if a background omits it.
@@ -383,7 +384,7 @@ function pickWornArmor(equipment, klass, abilities) {
   return best;
 }
 
-function equipmentToInventory(equipment) {
+function equipmentToInventory(equipment, mods = {}) {
   const inv = {
     weapons: [], armor: [], tools: [], clothes: [], spells: [], tech: [],
     oddities: [], consumables: [], junk: [], items: []
@@ -400,6 +401,32 @@ function equipmentToInventory(equipment) {
     else if (toolWords.test(item)) inv.tools.push(item);
     else inv.oddities.push(item);
   }
+
+  // P-69 — mint typed instances for every equipment string the catalog knows,
+  // and auto-equip the loadout: best weapon by expected damage, worn armor,
+  // shield. From here on, combat reads THESE; the strings remain flavor.
+  let bestWeapon = null;
+  equipment.forEach((raw, i) => {
+    const def = findDefByName(String(raw));
+    if (!def || (def.kind !== 'weapon' && def.kind !== 'armor')) return;
+    const inst = { id: `eq_${i}_${def.defRef}`, defRef: def.defRef, equipped: null };
+    inv.items.push(inst);
+    if (def.kind === 'weapon') {
+      const props = def.properties || [];
+      const md = props.includes('ranged') || def.stat === 'AGILITY' ? (mods.DEX ?? 0)
+        : props.includes('finesse') ? Math.max(mods.STR ?? 0, mods.DEX ?? 0)
+        : (mods.STR ?? 0);
+      const dm = String(def.damage?.dice || '1d6').match(/^(\d+)d(\d+)$/);
+      const die = dm ? parseInt(dm[1], 10) * parseInt(dm[2], 10) : 6;
+      const expected = (die + 1) / 2 + md;
+      if (!bestWeapon || expected > bestWeapon.expected) bestWeapon = { inst, expected };
+    } else if (def.shield) {
+      inst.equipped = 'off_hand';
+    } else if (!inv.items.some(x => x.equipped === 'armor')) {
+      inst.equipped = 'armor';
+    }
+  });
+  if (bestWeapon) bestWeapon.inst.equipped = 'main_hand';
   return inv;
 }
 

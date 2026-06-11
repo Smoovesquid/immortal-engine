@@ -21,23 +21,24 @@ const ECONOMY_SELL_MULT = { thriving: 0.5, stable: 0.5, struggling: 0.4, despera
 // What each shop type stocks (defRefs from the catalog) and what it buys.
 const SHOP_PROFILES = {
   'apothecary': {
-    stocks: ['healing_potion_minor', 'antidote'],
+    stocks: ['healing_potion_minor', 'antidote', 'healing_potion_greater'],
     buys: ['consumable']
   },
   'armorer': {
-    stocks: ['shortsword', 'longsword', 'longbow', 'leather_armor', 'studded_leather', 'hide_armor', 'scale_mail', 'chain_mail'],
+    stocks: ['shortsword', 'longsword', 'battleaxe', 'warhammer', 'rapier', 'spear', 'longbow', 'shortbow', 'light_crossbow',
+             'leather_armor', 'studded_leather', 'hide_armor', 'chain_shirt', 'scale_mail', 'breastplate', 'chain_mail', 'shield'],
     buys: ['weapon', 'armor']
   },
   'general store': {
-    stocks: ['healing_potion_minor', 'shortsword', 'leather_armor', 'antidote'],
+    stocks: ['healing_potion_minor', 'dagger', 'club', 'shortsword', 'leather_armor', 'shield', 'antidote', 'sling'],
     buys: ['weapon', 'armor', 'consumable', 'accessory', 'material']
   },
   'supply shop': {
-    stocks: ['healing_potion_minor', 'leather_armor', 'shortsword'],
+    stocks: ['healing_potion_minor', 'leather_armor', 'spear', 'handaxe', 'quarterstaff', 'shield'],
     buys: ['weapon', 'armor', 'consumable', 'material']
   },
   'provisioner': {
-    stocks: ['healing_potion_minor', 'antidote', 'hide_armor'],
+    stocks: ['healing_potion_minor', 'antidote', 'hide_armor', 'javelin', 'sling'],
     buys: ['consumable', 'material']
   }
 };

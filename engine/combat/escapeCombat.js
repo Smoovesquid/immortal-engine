@@ -137,6 +137,42 @@ const SRD_CANTRIPS = {
  */
 export function meleeProfile(pc) {
   const d = pc?.dnd;
+  // P-69 — a typed item equipped in the main hand outranks the sheet strings:
+  // loot you WIELD is what you swing, magic bonuses included.
+  const equippedDef = (() => {
+    const it = (pc?.inventory?.items || []).find(x => x.equipped === 'main_hand');
+    const def = it ? getItemDef(it.defRef) : null;
+    return def && def.kind === 'weapon' ? def : null;
+  })();
+  if (equippedDef) {
+    const mods = d?.mods || {
+      STR: statMod(pc?.stats?.MIGHT ?? 10),
+      DEX: statMod(pc?.stats?.AGILITY ?? 10)
+    };
+    const props = equippedDef.properties || [];
+    const ranged = props.includes('ranged');
+    const finesse = props.includes('finesse');
+    const statKey = equippedDef.stat === 'AGILITY' || ranged ? 'DEX'
+      : finesse ? (mods.DEX > mods.STR ? 'DEX' : 'STR')
+      : 'STR';
+    const mod = Number(mods[statKey]) || 0;
+    // 'NdM' → the resolver's single-die contract: N×M (2d6 → 12, same
+    // compromise as the legacy sheet table's greatsword entry).
+    const dm = String(equippedDef.damage?.dice || '1d6').match(/^(\d+)d(\d+)$/);
+    const die = dm ? parseInt(dm[1], 10) * parseInt(dm[2], 10) : 6;
+    const prof = d?.profBonus ?? 2;
+    const atkMagic = Number(equippedDef.bonus?.attack) || 0;
+    const dmgMagic = Number(equippedDef.bonus?.damage) || 0;
+    return {
+      name: equippedDef.name,
+      die,
+      atkBonus: prof + mod + atkMagic,
+      dmgMod: mod + dmgMagic,
+      ranged,
+      finesse,
+      twoHanded: props.includes('two-handed')
+    };
+  }
   if (d && Array.isArray(d.equipment)) {
     // RAW ability per weapon: ranged uses DEX, finesse uses the better of
     // STR/DEX, everything else STR. Pick the weapon with the best EXPECTED
@@ -382,10 +418,27 @@ export function playerMaxHp(pc) {
 }
 
 export function playerAc(pc) {
+  // P-69 — typed equipped gear first. Worn armor sets the base; an equipped
+  // shield and protective accessories stack on top of whichever base applies.
+  const items = pc?.inventory?.items || [];
+  const dexMod = pc?.dnd?.mods?.DEX ?? statMod(pc?.stats?.AGILITY ?? 10);
+  let bonus = 0;
+  let base = null;
+  for (const it of items) {
+    if (!it.equipped) continue;
+    const def = getItemDef(it.defRef);
+    if (!def) continue;
+    if (def.kind === 'armor' && def.shield) bonus += Number(def.ac) || 0;
+    else if (def.kind === 'armor' && it.equipped === 'armor') {
+      const dexCap = def.maxDexBonus == null ? Infinity : Number(def.maxDexBonus);
+      base = (Number(def.ac) || 10) + Math.min(dexMod, dexCap) + (Number(def.bonus?.ac) || 0);
+    } else if (def.acBonus) bonus += Number(def.acBonus) || 0;
+  }
+  if (base != null) return base + bonus;
   const sheetAC = Number(pc?.dnd?.ac);
-  if (Number.isInteger(sheetAC) && sheetAC > 0) return sheetAC;
+  if (Number.isInteger(sheetAC) && sheetAC > 0) return sheetAC + bonus;
   const agi = pc?.stats?.AGILITY ?? 10;
-  return PLAYER_BASE_AC + statMod(agi);
+  return PLAYER_BASE_AC + statMod(agi) + bonus;
 }
 
 /**

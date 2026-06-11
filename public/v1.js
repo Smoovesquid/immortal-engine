@@ -1558,10 +1558,11 @@ function renderCharacterSheetSection(world) {
   const equippedItems = items.filter(it => it.equipped);
   const equipRows = equippedItems.map(it => {
     const slotLabel = String(it.equipped).replace(/_/g, ' ');
-    const isMagical = Boolean(it.magical);
+    const def = getItemDef(it.defRef);
+    const isMagical = Boolean(it.magical) || Boolean(def?.bonus) || Boolean(def?.acBonus);
     return el('div', { class: 'sheet-equip-item' },
       el('span', { class: 'sheet-equip-slot' }, slotLabel),
-      el('span', { class: `sheet-equip-name${isMagical ? ' magical' : ''}` }, String(it.name || it.defRef || '?'))
+      el('span', { class: `sheet-equip-name${isMagical ? ' magical' : ''}` }, String(it.name || def?.name || it.defRef || '?'))
     );
   });
 

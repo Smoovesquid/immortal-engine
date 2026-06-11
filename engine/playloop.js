@@ -32,7 +32,7 @@ import { resolveCompanionTurn } from './combat/companionTurn.js';
 import { castSpell } from './spell/castSpell.js';
 import { evaluateEncounter, selectCreatures, spawnEncounter } from './combat/encounterSpawn.js';
 import { isMetaQuestion, handleMetaQuestion, isNullAction, isQuestionShaped } from './grace/gracefulAdjudication.js';
-import { resolveEscapeCombatTurn, initEscapeHp, initEscapeKit, shortRest, longRest, applySurpriseRound, parseEscapeAction, combatStatusAnswer } from './combat/escapeCombat.js';
+import { resolveEscapeCombatTurn, initEscapeHp, initEscapeKit, shortRest, longRest, applySurpriseRound, parseEscapeAction, combatStatusAnswer, meleeProfile, playerAc } from './combat/escapeCombat.js';
 import { statMod, maxWounds } from './ruleset/core/stats.js';
 import { shopsHere, stockFor, settlementStock, economyAt, priceToSell, shopBuys, restockEpoch, purseTotalCopper, pursePay, purseReceive, formatPrice, matchByName } from './economy/shop.js';
 import { getItemDef } from './ruleset/core/items/index.js';
@@ -656,6 +656,14 @@ function playerMoveCore(world, packsById, text) {
   if (!w.combat?.active && !w.scene?.dialogue) {
     const drank = tryUseConsumable(w, text);
     if (drank) return drank;
+  }
+
+  // P-69 — "I equip the sword of morning" / "wear the chain mail" / "put on
+  // the ring": gear you carry becomes gear you use, and the DM tells you what
+  // changed (attack line, AC).
+  if (!w.combat?.active && !w.scene?.dialogue) {
+    const geared = tryEquipItem(w, text);
+    if (geared) return geared;
   }
 
   if (!w.combat?.active && !w.scene?.dialogue) {
@@ -2445,6 +2453,39 @@ const TRADE_BROWSE_RE = /\b(?:what(?:'s| is| do you have| have they got)?\s+(?:f
 const TRADE_HAGGLE_RE = /\b(?:haggle|barter|talk\s+(?:\w+\s+)?down|discount|better price|best price|knock\s+\w+\s+off|drive a bargain)\b/i;
 
 // ── P-68 — usable consumables ────────────────────────────────────────────────
+
+const EQUIP_RE = /\b(?:equip|wield|don|wear|strap\s+on|put\s+on|ready|draw|brandish|slip\s+on)\b\s+(.+)/i;
+
+function tryEquipItem(w, text) {
+  const m = String(text || '').match(EQUIP_RE);
+  if (!m) return null;
+  const pc = w.party?.[0];
+  const carried = (pc?.inventory?.items || [])
+    .map(it => ({ it, def: getItemDef(it.defRef) }))
+    .filter(x => x.def && x.def.slot);
+  if (!carried.length) return null; // nothing equippable typed — let physics have it
+  const hit = matchByName(m[1], carried, (x) => x.def.name);
+  if (!hit) return null; // not something we know — fall through to adjudication
+
+  const slot = String(hit.def.slot);
+  if (hit.it.equipped === slot) {
+    return { world: w, output: { narration: `Wizard: The ${hit.def.name.toLowerCase()} is already in use.`, mechanics: '[equip:already]' } };
+  }
+  const w1 = applyDeltas(w, [{ op: 'equipItem', entityId: pc.id, itemId: hit.it.id, slot }]);
+  const pc1 = w1.party[0];
+  let line;
+  if (hit.def.kind === 'weapon') {
+    const prof = meleeProfile(pc1);
+    line = `You take up the ${hit.def.name.toLowerCase()}. It sits right in the hand — d${prof.die}${prof.dmgMod >= 0 ? '+' + prof.dmgMod : prof.dmgMod} when it lands, ${prof.atkBonus >= 0 ? '+' + prof.atkBonus : prof.atkBonus} to strike.`;
+  } else {
+    const ac = playerAc(pc1);
+    line = `You ${slot === 'armor' ? 'buckle into' : 'put on'} the ${hit.def.name.toLowerCase()}. AC ${ac}.`;
+  }
+  return {
+    world: pushEvent(w1, { kind: 'equip', data: { defRef: hit.def.defRef, slot } }),
+    output: { narration: `Wizard: ${line}`, mechanics: `[equip | ${hit.def.name} | ${slot}]` }
+  };
+}
 
 const CONSUME_RE = /\b(?:drink|quaff|swig|down|use|take|swallow|apply)\b.*\b(?:potion|draught|elixir|antidote|tonic|remedy)s?\b|\bdrink\b.*\bhealing\b/i;
 

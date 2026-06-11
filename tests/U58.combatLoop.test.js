@@ -120,8 +120,8 @@ function findCombatTurnOutcome(world, approach, targetOutcome, max = 80) {
 
 test('U58-01: newWorld combat shape is the inactive default and version is 23', () => {
   const w = newWorld({ seed: 'u58-fresh', fate: 0.2, campaignId: 'c', pack: { primaryId: 'fantasy', mixerId: null } });
-  assert.equal(w.meta.version, 25);
-  assert.equal(WORLD_VERSION, 25);
+  assert.equal(w.meta.version, 26);
+  assert.equal(WORLD_VERSION, 26);
   assert.deepEqual(w.combat, defaultCombat());
   assert.equal(w.combat.active, false);
   assert.deepEqual(w.combat.enemies, []);
@@ -701,11 +701,11 @@ test('U58-35: loading a v12 save warns and normalizes combat to default', () => 
   try {
     const loaded = loadSlot(storage, 'slot1');
     assert.ok(loaded);
-    assert.equal(loaded.meta.version, 25);
+    assert.equal(loaded.meta.version, 26);
     assert.deepEqual(loaded.combat, defaultCombat());
     assert.ok(warnings.length > 0);
     assert.ok(warnings[0].includes('v12'));
-    assert.ok(warnings[0].includes('v25'));
+    assert.ok(warnings[0].includes('v26'));
   } finally {
     console.warn = origWarn;
   }

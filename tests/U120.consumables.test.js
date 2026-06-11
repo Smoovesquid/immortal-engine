@@ -74,11 +74,16 @@ test('U120-04: in combat the potion heals, costs the action, and the enemy still
   assert.ok((result.beats || []).some(b => /bandit/.test(b)), 'the action was spent — the fight went on');
 });
 
-test('U120-05: an unneeded antidote stays corked', () => {
-  // NOTE: ensureWorld does not yet persist a `conditions` field on party
-  // members, so the player cannot currently BE poisoned — the cure branch in
-  // the consume path is dormant until party conditions land (P-69 unification
-  // is the natural home). When they do: add the poisoned→cured assertion here.
+test('U120-05: the antidote cures poison (v26: party conditions persist); unneeded it stays corked', () => {
+  // poisoned → cured
+  let w = withItems(begin('u120e'), [ANTIDOTE]);
+  w = { ...w, party: [{ ...w.party[0], conditions: [{ name: 'poisoned', source: 'test', severity: 1 }] }, ...w.party.slice(1)] };
+  const r = playerMove(w, packs, 'I take the antidote');
+  assert.match(r.output.mechanics, /consume \| Antidote \| cured poisoned/);
+  assert.ok(!(r.world.party[0].conditions || []).some(c => (c?.name || c) === 'poisoned'), 'poison gone');
+  assert.ok(!r.world.party[0].inventory.items.some(it => it.id === 'anti1'), 'vial spent');
+
+  // not poisoned → kept
   const w2 = withItems(begin('u120f'), [ANTIDOTE]);
   const r2 = playerMove(w2, packs, 'I drink the antidote');
   assert.match(r2.output.mechanics, /consume:unneeded/);

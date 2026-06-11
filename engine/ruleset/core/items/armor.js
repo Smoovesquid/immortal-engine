@@ -40,3 +40,29 @@ export const plate_armor = {
   defRef: 'plate_armor', name: 'Plate Armor', kind: 'armor', slot: 'armor',
   ac: 18, maxDexBonus: 0, weight: 65, rarity: 'rare', basePrice: 1500
 };
+
+// P-69 — the rest of the SRD armor list + the shield.
+export const chain_shirt = {
+  defRef: 'chain_shirt', name: 'Chain Shirt', kind: 'armor', slot: 'armor',
+  ac: 13, maxDexBonus: 2, weight: 20, rarity: 'common', basePrice: 50
+};
+
+export const breastplate = {
+  defRef: 'breastplate', name: 'Breastplate', kind: 'armor', slot: 'armor',
+  ac: 14, maxDexBonus: 2, weight: 20, rarity: 'common', basePrice: 400
+};
+
+export const ring_mail = {
+  defRef: 'ring_mail', name: 'Ring Mail', kind: 'armor', slot: 'armor',
+  ac: 14, maxDexBonus: 0, weight: 40, rarity: 'common', basePrice: 30
+};
+
+export const splint_armor = {
+  defRef: 'splint_armor', name: 'Splint Armor', kind: 'armor', slot: 'armor',
+  ac: 17, maxDexBonus: 0, weight: 60, rarity: 'common', basePrice: 200
+};
+
+export const shield = {
+  defRef: 'shield', name: 'Shield', kind: 'armor', slot: 'off_hand',
+  ac: 2, shield: true, weight: 6, rarity: 'common', basePrice: 10
+};

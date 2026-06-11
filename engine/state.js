@@ -32,7 +32,7 @@ import { normalizeCondition } from './combat/conditions.js';
 // canonical 5e sheet (six abilities, class/species, AC/HP/saves/skills).
 // Legacy five-stat block is DERIVED from it at chargen (see
 // engine/chargen/srd/abilities.js toLegacyStats). Old saves get dnd: null.
-export const WORLD_VERSION = 25;
+export const WORLD_VERSION = 26;
 
 // Crunch caps (T1). Kept here so they're colocated with ensureEntity.
 const FOCI_CAP = 6;
@@ -630,6 +630,14 @@ function ensureEntity(e) {
     // milestones — M0 is just the safe, defaulted shape.
     morality: ensureMorality(x.morality),
 
+    // v26 — conditions on party members (poisoned, restrained…), same shape
+    // as enemy conditions. Lets consumables/antidotes and enemy poison apply
+    // to the player. Old saves default to none.
+    conditions: (Array.isArray(x.conditions) ? x.conditions : [])
+      .map(c => normalizeCondition(c))
+      .filter(Boolean)
+      .slice(0, 8),
+
     // v24 — canonical SRD 5e sheet (or null for pre-v24 characters). Preserved
     // verbatim: it is produced fully-formed by createCharacter5e and never
     // partially mutated, so no per-field normalization here.
@@ -791,7 +799,9 @@ function ensureInventoryItems(items) {
       const s = String(it.equipped).trim();
       if (s) equipped = s;
     }
-    out.push({ id, defRef, equipped });
+    // v26 — optional stack count (materials, ammo). Absent means 1.
+    const qty = Math.trunc(Number(it.qty));
+    out.push(qty > 1 ? { id, defRef, equipped, qty } : { id, defRef, equipped });
   }
   return out;
 }

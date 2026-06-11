@@ -449,6 +449,13 @@ a{color:var(--accent)}
 .play-input-bar{display:flex;gap:8px;align-items:center;padding:12px 16px;border-top:1px solid var(--border);background:var(--panel2)}
 .play-input-bar .input{flex:1;padding:10px 12px;font-size:14px}
 .play-input-bar .btn{flex:0 0 auto;padding:10px 16px;font-size:13px}
+/* ── Voice input button ─────────────────────────────────────────── */
+.voice-btn{flex:0 0 auto;padding:9px 10px;display:flex;align-items:center;justify-content:center;color:var(--muted);background:transparent;border:1px solid var(--border);border-radius:6px;cursor:pointer;transition:color .15s,border-color .15s,box-shadow .15s}
+.voice-btn:hover{color:var(--text);border-color:var(--accent)}
+.voice-btn--listening{color:#e05050;border-color:#e05050;box-shadow:0 0 0 2px rgba(224,80,80,.25);animation:voice-pulse 1s ease-in-out infinite}
+.voice-btn--error{color:#ff8060;border-color:#ff8060}
+.voice-btn--unsupported{opacity:.35;cursor:not-allowed}
+@keyframes voice-pulse{0%,100%{box-shadow:0 0 0 2px rgba(224,80,80,.25)}50%{box-shadow:0 0 0 5px rgba(224,80,80,.1)}}
 
 /* ── One-click front door ───────────────────────────────────────── */
 .front-door{text-align:center;padding:32px 24px;border:1px solid var(--accent);background:rgba(200,168,78,.06)}

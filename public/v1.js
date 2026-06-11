@@ -23,6 +23,7 @@ import { renderLootPopup } from './panels/lootPopup.js';
 import { renderPaperDoll } from './panels/PaperDoll.js';
 import { renderDiabloOrbs } from './panels/DiabloOrbs.js';
 import { triggerFromMech } from './panels/DiceRoller.js';
+import { createVoiceButton } from './panels/VoiceInput.js';
 import tts from './tts.js';
 import { rollDetailOptions } from '../engine/chargen/details.js';
 import { seedFromString, makeRng } from '../engine/rng.js';
@@ -2303,6 +2304,16 @@ function renderPlay() {
       w ? renderDiabloOrbs(w) : null,
       el('div', { class: 'play-input-bar' },
         input,
+        (() => {
+          const voiceBtn = createVoiceButton((transcript) => {
+            ui.play.input = transcript;
+            // Patch the live input element so it reflects the spoken text
+            const liveInput = document.querySelector('.play-input');
+            if (liveInput) liveInput.value = transcript;
+            doSubmitMove();
+          });
+          return voiceBtn;
+        })(),
         el('button', { class: 'btn primary', disabled: ended, onClick: () => doSubmitMove() }, 'Submit')
       )
     )

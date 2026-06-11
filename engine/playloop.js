@@ -1570,12 +1570,25 @@ function playerMoveCore(world, packsById, text) {
           if (check.outcome === 'mixed') {
             // Partial: state change recorded, no item drops
             appliedDeltas = appliedDeltas.filter(d => d.op !== 'createItem');
-            physicsDesc = physicsDesc.replace(/\.\s*$/, '') + ', but not cleanly.';
+            const MIXED_SUFFIX = {
+              glass: ' The scatter was wider than you meant.',
+              iron:  ' You strained for it — the metal bent but wouldn\'t yield fully.',
+              cloth: ' It tears, though messily, not the clean strip you wanted.',
+              wood:  ' You had to really work it.',
+              stone: ' Your strike glances — the stone barely answers.'
+            };
+            const mixedSuffix = MIXED_SUFFIX[physics.material] || ' Not a clean hit, but it lands.';
+            physicsDesc = physicsDesc.replace(/\.\s*$/, '') + mixedSuffix;
           } else if (check.outcome === 'failure') {
             // Fumble: object holds, just noise
             appliedDeltas = [];
-            const targetName = (detection.matches[0]?.name || 'the object').toLowerCase();
-            physicsDesc = `You strike ${targetName} but it holds firm.`;
+            const targetName = (detection.matches[0]?.name || 'object').toLowerCase();
+            const FAILURE_LINES = [
+              `Your blow glances off. The ${targetName} doesn't budge.`,
+              `Not enough — the ${targetName} takes it and holds.`,
+              `You swing hard. The ${targetName} shudders but doesn't give.`
+            ];
+            physicsDesc = FAILURE_LINES[check.rawDie % FAILURE_LINES.length];
           }
 
           // Noise: rulings library already computed noiseBy for this material;
@@ -1626,7 +1639,7 @@ function playerMoveCore(world, packsById, text) {
         return {
           world: w,
           output: {
-            narration: `Wizard: ${physicsDesc}`,
+            narration: physicsDesc,
             mechanics: mechStr
           }
         };

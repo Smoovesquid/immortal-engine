@@ -31,7 +31,7 @@ export function resolveBreakRuling(f, { actorId, nodeId, fIdx, mentionedPart = n
           { op: 'createItem', entityId: actorId, bucket: 'junk',
             item: { name: 'glass shard', tags: ['glass', 'sharp'], weight: 0, noise: 0, light: 0, bulk: 0, notes: `from ${name}` } }
         ],
-        description: `${name} shatters. Glass shards scatter across the floor.`,
+        description: `The ${name} shatters — the sound sharp and immediate. Glass everywhere.`,
         noiseBy: 3
       };
     }
@@ -40,7 +40,7 @@ export function resolveBreakRuling(f, { actorId, nodeId, fIdx, mentionedPart = n
       // Too hard; nothing happens
       return {
         deltas: [],
-        description: `${name} is solid stone. It doesn't budge.`,
+        description: `Your blow rings off the ${name}. It doesn't give an inch.`,
         noiseBy: 0
       };
     }
@@ -52,7 +52,7 @@ export function resolveBreakRuling(f, { actorId, nodeId, fIdx, mentionedPart = n
           { op: 'modifyFurniture', nodeId, furnitureId: fIdx,
             changes: { state: 'damaged', notes: 'bent and dented' } }
         ],
-        description: `${name} bends slightly under the blow but holds. Your hands ache.`,
+        description: `The ${name} takes the blow and bends — but it holds. Your hands ring with it.`,
         noiseBy: 1
       };
     }
@@ -66,7 +66,7 @@ export function resolveBreakRuling(f, { actorId, nodeId, fIdx, mentionedPart = n
           { op: 'createItem', entityId: actorId, bucket: 'tools',
             item: { name: 'strip of cloth', tags: ['cloth'], weight: 0, noise: 0, light: 0, bulk: 0, notes: `torn from ${name}` } }
         ],
-        description: `${name} tears apart. You're left with a strip of cloth.`,
+        description: `The ${name} tears apart quietly. You're left with a strip of cloth.`,
         noiseBy: 0
       };
     }
@@ -87,7 +87,7 @@ export function resolveBreakRuling(f, { actorId, nodeId, fIdx, mentionedPart = n
             { op: 'createItem', entityId: actorId, bucket: 'weapons',
               item: { name: partToRemove, tags: ['wood', 'blunt'], weight: 1, noise: 0, light: 0, bulk: 1, notes: `torn from ${name}` } }
           ],
-          description: `You wrench the ${partToRemove} from ${name}. Wood splinters.`,
+          description: `You wrench the ${partToRemove} free from the ${name}. It comes away cracking.`,
           noiseBy: 2
         };
       }
@@ -98,7 +98,7 @@ export function resolveBreakRuling(f, { actorId, nodeId, fIdx, mentionedPart = n
           { op: 'modifyFurniture', nodeId, furnitureId: fIdx,
             changes: { state: 'damaged', notes: 'battered and cracked' } }
         ],
-        description: `${name} cracks but holds.`,
+        description: `The ${name} takes the blow. It cracks, but it holds.`,
         noiseBy: 2
       };
     }
@@ -126,7 +126,7 @@ export function resolveFireRuling(f, { nodeId, fIdx } = {}) {
         { op: 'env', key: 'light', by: 3 },
         { op: 'env', key: 'heat', by: 1 }
       ],
-      description: `${name} flickers to life. Warm light fills the area.`,
+      description: `The ${name} catches. Warm light spreads across the space.`,
       noiseBy: 0
     };
   }
@@ -141,7 +141,7 @@ export function resolveFireRuling(f, { nodeId, fIdx } = {}) {
         { op: 'env', key: 'heat', by: 2 },
         { op: 'env', key: 'light', by: 2 }
       ],
-      description: `${name} catches fire. Smoke and heat fill the air.`,
+      description: `The ${name} takes the flame quickly. Smoke begins to rise.`,
       noiseBy: 0
     };
   }
@@ -149,7 +149,7 @@ export function resolveFireRuling(f, { nodeId, fIdx } = {}) {
   // Non-flammable
   return {
     deltas: [],
-    description: `${name} won't catch fire.`,
+    description: `You try, but the ${name} won't light.`,
     noiseBy: 0
   };
 }
@@ -172,15 +172,15 @@ export function resolveCoverRuling(f, { actorId } = {}) {
   if (bulk < 2) {
     return {
       deltas: [],
-      description: `${name} is too small to hide behind.`,
+      description: `The ${name} is too small — you'd still be exposed.`,
       noiseBy: 0,
       verbClass: 'cover'
     };
   }
 
   const description = bulk >= 4
-    ? `You duck behind ${name}. It gives solid cover.`
-    : `You press against ${name}, shielding yourself from sight.`;
+    ? `You drop behind the ${name}. Solid. Nothing's getting through that.`
+    : `You press against the ${name} — not perfect cover, but enough to shield you from sight.`;
 
   return {
     deltas: [

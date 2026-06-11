@@ -106,7 +106,17 @@
     "a hillside vineyard where the harvest was interrupted (62)",
     "the estate kitchen where an old lord eats alone (63)",
     "a dock where someone claimed their twin's cargo (64)",
-    "a chapel alcove where a confession was written and never delivered (65)"
+    "a chapel alcove where a confession was written and never delivered (65)",
+    "the garrison shrine road where the Brotherhood gathers one by one (66)",
+    "a hill outside town where a woman reads the air and says god-names (67)",
+    "a chapter house vigil tower with one window dark when the others are lit (68)",
+    "a furrow field where someone has been working the same task for eight months (69)",
+    "a counting house where the ledger's first entry does not match any known patron (70)",
+    "a forge that has been cold since the rival's workshop burned (71)",
+    "an iron shrine on a battle road where the fire burns wrong (72)",
+    "a road where coins appear in your path and are cold to the touch (73)",
+    "a hall where every mirror faces inward (74)",
+    "a cellar below a chapter house that the novices will not explain (75)"
   ],
   "objectives": [
     "recover a stolen relic (before dawn 1)",
@@ -173,7 +183,17 @@
     "keep the courier hidden through the night watch's inspection (62)",
     "find who planted the suspicion in the lieutenant's mind (63)",
     "get the old lord's second will before the heirs do (64)",
-    "learn what the three at the crossroads have said about the succession (65)"
+    "learn what the three at the crossroads have said about the succession (65)",
+    "find why the garrison soldier will not say what happened three months ago (66)",
+    "bring the vigil-breaker back before the chapter's rite is void (67)",
+    "trace the coins before they complete their circuit (68)",
+    "prevent the iron shrine from being rededicated to the wrong name (69)",
+    "audit the guild ledger before the founding debt is called (70)",
+    "ask the augur the right question before she stops answering (71)",
+    "find what the laborer in the furrow fields is building and for whom (72)",
+    "complete the unfinished task before the consequence of leaving it arrives (73)",
+    "read the signs in the garrison air before the Brotherhood's purpose becomes visible (74)",
+    "reach the cellar before the prior decides you are not ready (75)"
   ],
   "complications": [
     "a clock starts when you arrive (1)",
@@ -240,7 +260,17 @@
     "the one person who could settle the succession refuses to be found (62)",
     "the faithful’s records were complete until three years ago and then simply stop (63)",
     "whoever is living in the east wing has been there long enough to know the staff’s schedule (64)",
-    "the regent’s council has already voted; the vote has not been announced (65)"
+    "the regent’s council has already voted; the vote has not been announced (65)",
+    "the soldier who was killed did not draw his weapon (66)",
+    "the vigil-breaker sat down in the road at the third hour and did not want to continue (67)",
+    "the coins in your path are cold to the touch in warm weather (68)",
+    "the shrine’s original inscription is still there; something is being carved above it (69)",
+    "the guild’s founding debt has never been called; that has begun to seem intentional (70)",
+    "four gods are active in the same region; the augur named them and did not explain (71)",
+    "the lord’s mirrors all face inward; he does not remember when he turned them (72)",
+    "the laborer has been at the same task for eight months and does not know what it is for (73)",
+    "the craftsman destroyed a rival’s work and has not been able to create since (74)",
+    "the Brotherhood members are arriving one at a time and not recruiting (75)"
   ],
   "npcArchetypes": [
     "wary guide with a secret (1)",
@@ -307,7 +337,17 @@
     "harbor pilot who has moved people with no questions and remembers all their faces (62)",
     "monk who collects last confessions from people who do not realize they are dying (63)",
     "former soldier still loyal to a house that no longer holds power (64)",
-    "minor courtier who overheard something and has not decided what to do with it (65)"
+    "minor courtier who overheard something and has not decided what to do with it (65)",
+    "veteran soldier who did something necessary and cannot understand why he cannot sleep (66)",
+    "chapter novice who saw something during a vigil and believes naming it will make it real (67)",
+    "merchant who is wealthier than the accounts explain and afraid to ask why (68)",
+    "lord so certain of his own importance that he has stopped being able to hear the word no (69)",
+    "craftsman who destroyed a rival's work and has been unable to make anything since (70)",
+    "augur who names what she sees and leaves the meaning as your problem (71)",
+    "shrine-keeper who knows which prayers the shrine answers and which it used to (72)",
+    "laborer working an unfinished task left by the dead, without knowing its purpose (73)",
+    "chapter prior who controls access to something and requires you to prove you can hold it (74)",
+    "guild heir who has found the founding entry and needs someone to tell her what she's reading (75)"
   ],
   "sensoryMotifs": [
     "air tastes of lanternlit dust (1)",
@@ -374,6 +414,16 @@
     "a letter in the grate, burned but not completely (62)",
     "the sound of a door closing further in than the corridor ends (63)",
     "a child's shoe in the garrison yard with no child in sight (64)",
-    "candlewax pooled at the base of a holder that has been cold for hours (65)"
+    "candlewax pooled at the base of a holder that has been cold for hours (65)",
+    "blood that dried faster than blood dries (66)",
+    "coins cold to the touch in a warm hand (67)",
+    "a reflection that holds a beat after you stop moving (68)",
+    "the smell of iron and something sweet underneath it (69)",
+    "a sound like very slow chewing, very far away (70)",
+    "dust settling on your shoulders though you have not been still (71)",
+    "a torch burning steady in a wind that moves everything else (72)",
+    "an animal sitting perfectly still, facing a direction nothing is in (73)",
+    "morning light that has the quality of late afternoon (74)",
+    "the same stranger's face in a place they could not have arrived at before you (75)"
   ]
 }

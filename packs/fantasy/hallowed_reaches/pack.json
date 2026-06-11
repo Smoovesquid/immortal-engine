@@ -1,0 +1,317 @@
+{
+  "id": "hallowed_reaches",
+  "name": "The Hallowed Reaches",
+  "toneWords": {
+    "cooperative": ["still", "augured", "charged"],
+    "grim": ["watched", "heavy", "ominous"],
+    "blood": ["claimed", "devoured", "forsaken"]
+  },
+  "toneVectors": {
+    "dread": 0.65,
+    "wonder": 0.7,
+    "warmth": 0.35,
+    "decay": 0.4,
+    "isolation": 0.5,
+    "mystery": 0.9
+  },
+  "starterLocations": [
+    "the road where the red-hour soldier was found",
+    "the long-watch chapter house at the hill's crest",
+    "a market road where a man counts coins no one remembers paying"
+  ],
+  "starterObjectives": [
+    "learn whose hand the soldier died by and why he did not fight back",
+    "find the novice who broke his vigil before dawn",
+    "follow the coins to wherever they are going"
+  ],
+  "skills": [
+    "Torchcraft",
+    "Steel",
+    "Wits",
+    "Charm"
+  ],
+  "locations": [
+    "the red-hour garrison (level 1)",
+    "the old chapter house of the long watch (level 2)",
+    "the counting road where wealth moves wrong (level 3)",
+    "the mirror-crowned lord's hall (level 4)",
+    "the green cup's vineyard where nothing grows right (level 5)",
+    "the grey tide barracks where the duty died (level 6)",
+    "the furrow fields of the unfinished labor (level 7)",
+    "the augur's hill outside town (level 8)",
+    "the iron shrine on the battle road (level 9)",
+    "the hollow merchant's counting house (level 10)",
+    "the river ford where the rival drowned (level 11)",
+    "the abandoned vigil tower at the pass (level 12)",
+    "the field of the unburied (level 13)",
+    "the road where the stranger follows three paces back (level 14)",
+    "the candled cellar below the chapter house (level 15)",
+    "the mountain pass with a door that opens before you knock (level 16)",
+    "the estate where mirrors face the wall (level 17)",
+    "the granary that fills and empties and no one can explain (level 18)",
+    "the garrison chapel where the fire burns wrong (level 19)",
+    "the crossroad where two pilgrims argue and cannot stop (level 20)"
+  ],
+  "objectives": [
+    "find who is profiting from the red garrison's mood (1)",
+    "bring the vigil-breaker back before the chapter's rite is void (2)",
+    "trace the coins before they complete their circuit (3)",
+    "reach the lord's hall before the mirror-crowned consolidates another ally (4)",
+    "learn what the rival had that the envious man destroyed (5)",
+    "determine what the garrison abandoned when it abandoned its post (6)",
+    "complete the unfinished labor before the consequence of leaving it arrives (7)",
+    "ask the augur the right question before they stop answering (8)",
+    "prevent the iron shrine from being consecrated to the wrong name (9)",
+    "audit the hollow merchant's books before the debt is called (10)",
+    "find the body at the ford and learn whether it was a drowning (11)",
+    "keep watch in the abandoned tower long enough to learn what it was watching (12)",
+    "bury the unburied before their names are lost entirely (13)",
+    "turn around and confront the stranger following three paces back (14)",
+    "find what is in the candled cellar that the long-watch novices will not say (15)"
+  ],
+  "complications": [
+    "the soldier who was killed did not draw his weapon (1)",
+    "the chapter's vigil-rite requires a full night; the novice left two hours before dawn (2)",
+    "the coin trail leads through three dead men before it reaches a living one (3)",
+    "the mirror-crowned lord has already chosen his next ally; you are it (4)",
+    "the envious man destroyed something that was also the last of its kind (5)",
+    "the garrison abandoned their post because something was in the dark that they saw (6)",
+    "the unfinished labor was begun by someone who is now dead; no one knows what it was for (7)",
+    "the augur's answer was correct; you were asking about the wrong person (8)",
+    "the iron shrine has been reconsecrated three times; the current inscription is fresh (9)",
+    "the merchant's debt is owed to someone who cannot be found in any record (10)",
+    "the ford drowning was witnessed by a child who has not spoken since (11)",
+    "the vigil tower was abandoned because something answered the watch (12)",
+    "the unburied are soldiers from both sides of a war that officially never happened (13)",
+    "the following stranger is not following you; you have been walking the same road (14)",
+    "the long-watch novices are afraid of the cellar but cannot agree on what they heard (15)"
+  ],
+  "npcArchetypes": [
+    "veteran warrior who killed without anger and cannot understand why he cannot sleep (1)",
+    "chapter novice who knows what broke his vigil but believes naming it will make it real (2)",
+    "merchant who has more money than he can account for and is afraid to spend it (3)",
+    "lord whose certainty that he is the most important thing in any room has become structural (4)",
+    "craftsman who destroyed a rival's work and is now unable to do his own (5)",
+    "soldier who abandoned a post and has been walking ever since (6)",
+    "laborer still working a task left by the dead for reasons no one has explained (7)",
+    "augur who reads correctly but refuses to interpret — that is your labor, not hers (8)",
+    "shrine-keeper who has tended the iron marks long enough to know which prayers are answered (9)",
+    "heir of a hollow merchant who suspects the fortune but needs someone to tell her what she's inheriting (10)",
+    "child who will not speak but will walk beside you to the ford if you do not ask why (11)",
+    "retired watch-commander who left the tower watch voluntarily and has slept badly since (12)",
+    "gravedigger who has run out of room and is petitioning someone, anyone, for authorization (13)",
+    "pilgrim who started walking toward the same chapter house as you but from the other direction (14)",
+    "long-watch prior who knows what is in the cellar and has decided it is not the player's business yet (15)"
+  ],
+  "sensoryMotifs": [
+    "blood that dried faster than blood dries (1)",
+    "coins cold to the touch in a warm hand (2)",
+    "a reflection that holds a beat after you stop moving (3)",
+    "the smell of iron and something sweet underneath (4)",
+    "a sound like chewing, very far away, very slow (5)",
+    "dust settling on your shoulders though you have not been still (6)",
+    "fields that look ready to harvest though no one planted them (7)",
+    "a torch that burns steady in a wind that moves everything else (8)",
+    "an animal that sits facing a direction nothing is in (9)",
+    "a well that rings on the wrong note when you drop the stone (10)",
+    "morning light that looks like late afternoon (11)",
+    "the same stranger's face, again, in a place they could not have arrived at before you (12)",
+    "text that was carved, and something rubbed into the letters that is not paint (13)",
+    "a meal that does not diminish no matter how much is taken (14)",
+    "silence that begins one step past the road's edge and stays there (15)"
+  ],
+  "regions": [
+    {
+      "id": "red-garrison",
+      "name": "The Red Garrison",
+      "description": "A military post where the mood is wrong, the fire burns iron-close, and soldiers yield before you speak.",
+      "adjacent": ["long-watch", "counting-roads"]
+    },
+    {
+      "id": "long-watch",
+      "name": "The Long Watch Chapter",
+      "description": "The hill-crest chapter house of the Order of the Long Watch, where vigils are kept and broken.",
+      "adjacent": ["red-garrison", "counting-roads", "grey-roads"]
+    },
+    {
+      "id": "counting-roads",
+      "name": "The Counting Roads",
+      "description": "Merchant roads where wealth moves in ways that do not add up, and the crows collect bright things.",
+      "adjacent": ["red-garrison", "long-watch", "grey-roads"]
+    },
+    {
+      "id": "grey-roads",
+      "name": "The Grey Roads",
+      "description": "The passes and furrows where duties were abandoned and the unfinished waits in the cold.",
+      "adjacent": ["long-watch", "counting-roads"]
+    }
+  ],
+  "factions": [
+    {
+      "id": "order-long-watch",
+      "name": "The Order of the Long Watch",
+      "description": "A scattered chapter of vigil-keepers dedicated to the virtue gods. They keep faith through the night, tend the shrines, and can read which god's signs are present in a place. Reliable, slow, and in danger of losing a chapter.",
+      "pressure": 25,
+      "hostility": 0,
+      "agenda": "Complete the vigil-rite before the chapter's authority lapses. Find the novice. Reconsecrate the iron shrine to the right name before the garrison's faith sets around the wrong one."
+    },
+    {
+      "id": "crimson-brotherhood",
+      "name": "The Crimson Brotherhood",
+      "description": "Former soldiers and devoted fighters who have let KHORRUN's gaze become their purpose. They believe violence is prayer. They are effective, terrifying, and heading toward something they call a final reckoning.",
+      "pressure": 70,
+      "hostility": 55,
+      "agenda": "Consecrate the iron shrine. Bring the garrison's mood to a point. The Red Hour's devotees believe they are preparing for a war; they are preparing for an offering."
+    },
+    {
+      "id": "hollow-guild",
+      "name": "The Hollow Merchant's Guild",
+      "description": "A trading consortium whose founding merchant was claimed by HAGRETH three generations ago. Most members do not know this. The signs are everywhere in their books if you know what to read. The wealth is real. The loyalty of it is not.",
+      "pressure": 45,
+      "hostility": 20,
+      "agenda": "Maintain the flow of trade. Find who has been drawing on the old accounts. Settle the debt that the founding merchant's heir does not know exists."
+    }
+  ],
+  "npcs": [
+    {
+      "id": "npc_harwick",
+      "name": "Sergeant Harwick",
+      "archetype": "veteran warrior who killed without anger and cannot understand why he cannot sleep",
+      "faction": "crimson-brotherhood",
+      "location": "red-garrison",
+      "personality": { "honesty": 0.8, "warmth": 0.3, "volatility": 0.6 },
+      "hook": "Killed a surrendered man three months ago. Did not enjoy it. Believed it was necessary. KHORRUN registered the deed with or without justification; Harwick has been Khorrun's since, and the Red Hour has been finding him at the garrison. He does not understand why the Brotherhood wants him; he has not said no."
+    },
+    {
+      "id": "npc_davin",
+      "name": "Novice Davin",
+      "archetype": "chapter novice who knows what broke his vigil but believes naming it will make it real",
+      "faction": "order-long-watch",
+      "location": "long-watch",
+      "personality": { "honesty": 0.55, "warmth": 0.6, "volatility": 0.7 },
+      "hook": "Left the vigil tower two hours before dawn. Claims he heard something and ran. What he heard was ACEDIEL's grey quiet — the numbness that feels like peace. He sat down in the road and stopped wanting to go back. This is not a crisis of faith; it is a visitation. He does not have a name for it."
+    },
+    {
+      "id": "npc_pellin",
+      "name": "Pellin Ousse",
+      "archetype": "merchant who has more money than he can account for and is afraid to spend it",
+      "faction": "hollow-guild",
+      "location": "counting-roads",
+      "personality": { "honesty": 0.7, "warmth": 0.5, "volatility": 0.2 },
+      "hook": "The guild's third-generation heir. The accounts do not balance in his favor — they balance in his favor MORE than they should. Coins arrive. Debts settle. He is afraid the luck will run out, not realizing the luck has a name and a cost that will not be presented until it cannot be refused."
+    },
+    {
+      "id": "npc_lord_verran",
+      "name": "Lord Verran",
+      "archetype": "lord whose certainty that he is the most important thing in any room has become structural",
+      "faction": null,
+      "location": "red-garrison",
+      "personality": { "honesty": 0.3, "warmth": 0.2, "volatility": 0.4 },
+      "hook": "VAUNTRETH's gaze has been on Verran for years. The mirrors in his hall all face inward. His name precedes him everywhere; he takes this as evidence of stature, not a sign. Has recently demanded the iron shrine be rededicated with his family's crest above the original inscription. The long-watch prior has refused once."
+    },
+    {
+      "id": "npc_cembra",
+      "name": "Cembra Vael",
+      "archetype": "craftsman who destroyed a rival's work and is now unable to do his own",
+      "faction": null,
+      "location": "counting-roads",
+      "personality": { "honesty": 0.65, "warmth": 0.4, "volatility": 0.5 },
+      "hook": "ISS has him. Burned a rival's workshop a season ago. The rival's best work was inside. Cembra has not finished a piece since. He does not draw the connection. He thinks he has lost inspiration; what he has lost is the ability to create something the Green Eye will not immediately want to consume."
+    },
+    {
+      "id": "npc_mira_ousse",
+      "name": "Mira Ousse",
+      "archetype": "heir of a hollow merchant who suspects the fortune but needs someone to tell her what she's inheriting",
+      "faction": "hollow-guild",
+      "location": "counting-roads",
+      "personality": { "honesty": 0.9, "warmth": 0.65, "volatility": 0.35 },
+      "hook": "Pellin's sister. Has read the founding accounts. Knows the first entry is wrong — a founding gift from an unnamed patron that does not correspond to any loan or partnership in the records. She has been calling it an accounting error. She would like someone to tell her it is not."
+    },
+    {
+      "id": "npc_augreth",
+      "name": "The Augur at the Hill",
+      "archetype": "augur who reads correctly but refuses to interpret — that is your labor, not hers",
+      "faction": "order-long-watch",
+      "location": "long-watch",
+      "personality": { "honesty": 1.0, "warmth": 0.4, "volatility": 0.0 },
+      "hook": "Has been reading signs on the hill outside town for thirty years. Will name the god whose signs she sees in a place, accurately, with no commentary. Has named HAGRETH on the counting roads, KHORRUN at the garrison, VAUNTRETH at the lord's hall, ISS at Cembra's forge. Has not said why this many gods are active in one region at the same time. Believes you already know."
+    },
+    {
+      "id": "npc_prior_essen",
+      "name": "Prior Essen",
+      "archetype": "long-watch prior who knows what is in the cellar and has decided it is not the player's business yet",
+      "faction": "order-long-watch",
+      "location": "long-watch",
+      "personality": { "honesty": 0.7, "warmth": 0.55, "volatility": 0.1 },
+      "hook": "The prior of the long-watch chapter. Has the cellar locked. Has a reason. Will tell the player what is down there when the player has demonstrated they can hold a difficult thing without breaking it. ERRAN has been with the prior for decades — a quiet fidelity to a laborious task. He is not hiding the cellar out of fear; he is gatekeeping out of craft."
+    }
+  ],
+  "threads": [
+    {
+      "id": "the-red-hours-mark",
+      "name": "The Red Hour's Mark",
+      "description": "KHORRUN's gaze has been on the garrison since a surrendered man was killed there three months ago. The mood is wrong, the shrine road is busy, and the Crimson Brotherhood is arriving in ones and twos. Nobody has connected the pattern yet. The garrison commander either has not noticed or has chosen not to.",
+      "tension": 70,
+      "factions": ["crimson-brotherhood", "order-long-watch"]
+    },
+    {
+      "id": "the-coinmother-debt",
+      "name": "The Coinmother's Debt",
+      "description": "HAGRETH claimed the guild's founder three generations ago. The debt has been compounding since. The founding patron entry in the ledger is the hook; the heir who reads it has not reported what she found; the coins are arriving more frequently now, which means the reckoning is approaching. What HAGRETH calls in her debts nobody has described and survived to document.",
+      "tension": 50,
+      "factions": ["hollow-guild"]
+    },
+    {
+      "id": "the-mirror-crowned",
+      "name": "The Mirror-Crowned",
+      "description": "Lord Verran has been feeding VAUNTRETH for years without knowing the name of what he was feeding. He is not a villain — he is a man whose self-importance has been reinforced at every turn until it is indistinguishable from his identity. The lord who wants the shrine rededicated is not acting from greed or malice; he genuinely believes his name belongs above the original inscription. VAUNTRETH has been slowly reducing his ability to hear the word no.",
+      "tension": 45,
+      "factions": ["order-long-watch"]
+    },
+    {
+      "id": "the-grey-tide",
+      "name": "The Grey Tide",
+      "description": "ACEDIEL found Novice Davin in the vigil tower. The grey quiet that stopped him two hours before dawn is not a personal failure; it is a visitation. The chapter does not know this. If the novice's vigil-break is treated as cowardice rather than a sign, something real will be missed — and the vigil-rite will be rendered void for reasons nobody understands. ACEDIEL does not act with force. It simply makes the next step feel impossible.",
+      "tension": 35,
+      "factions": ["order-long-watch"]
+    },
+    {
+      "id": "the-green-eye",
+      "name": "The Green Eye",
+      "description": "ISS turned its gaze on Cembra Vael when he burned his rival's workshop. The rival's best work was inside and is now gone from the world. Cembra has not completed a piece since. He thinks the block is his. ISS will continue consuming every thing Cembra tries to make until either Cembra understands what he did, or ISS grows bored and moves to someone with a more interesting rival to destroy.",
+      "tension": 30,
+      "factions": []
+    },
+    {
+      "id": "the-unbroken-furrow",
+      "name": "The Unbroken Furrow",
+      "description": "Somewhere in the grey roads, a labor was begun by a dead person and left unfinished. The laborer still working it does not know what it is for. ERRAN's presence is on it: tools that don't break, a second wind at exhaustion's edge, work that holds. The question is not whether the labor should be completed. The question is what completing it opens.",
+      "tension": 20,
+      "factions": ["order-long-watch"]
+    },
+    {
+      "id": "the-convergence",
+      "name": "The Convergence",
+      "description": "The augur at the hill has named four gods active in the same region at the same time and said nothing about why. This has not happened in her thirty years on the hill. She reads signs; she does not issue warnings. The four convergent gazes — KHORRUN, HAGRETH, VAUNTRETH, and ACEDIEL — suggest something approaching, not something already here. Whatever it is, the Order of the Long Watch is not large enough to meet it alone.",
+      "tension": 85,
+      "factions": ["order-long-watch", "crimson-brotherhood", "hollow-guild"]
+    }
+  ],
+  "seeds": [
+    { "id": "seed_harwick_sleep", "tag": "wrath", "hint": "Harwick has not slept more than two hours at a stretch since the killing. He describes the sound of iron in the dark." },
+    { "id": "seed_coins_cold", "tag": "greed", "hint": "The guild's coins are cold to the touch even in summer. Pellin has mentioned this to no one." },
+    { "id": "seed_shrine_inscription", "tag": "pride", "hint": "The iron shrine's original inscription reads: 'what was spent here was not wasted.' Lord Verran wants his family name beneath it." },
+    { "id": "seed_davin_road", "tag": "sloth", "hint": "Davin sat down in the road at the third hour and felt, for the first time in his life, that nothing he might do would matter. He sat there until dawn." },
+    { "id": "seed_cembra_fire", "tag": "envy", "hint": "The workshop burned in less than an hour. The rival's masterwork, a piece Cembra once said was better than anything he could do, was inside. It is not recoverable." },
+    { "id": "seed_founding_entry", "tag": "greed", "hint": "The guild's founding ledger entry reads: 'Gift from an unnamed patron, principal to be returned at the patron's request.' Three generations have passed. No request has been made yet." },
+    { "id": "seed_augur_count", "tag": "convergence", "hint": "The augur told the long-watch prior she has named four gods at once once before, forty years ago. She did not say what happened that year. She said it was not in the records." },
+    { "id": "seed_verran_mirrors", "tag": "pride", "hint": "Every mirror in Lord Verran's hall faces inward. He had them turned years ago. He does not remember why." },
+    { "id": "seed_brotherhood_arrival", "tag": "wrath", "hint": "The Crimson Brotherhood members are arriving alone, not in groups. Seven in the last month. They are not recruiting at the garrison; they are waiting for something." },
+    { "id": "seed_cellar_sound", "tag": "diligence", "hint": "The novices have heard something in the cellar on three separate nights. Prior Essen says it is the building settling. His expression when he says this does not match his words." },
+    { "id": "seed_grey_laborer", "tag": "diligence", "hint": "The laborer in the furrow fields has been at the same task for eight months. When asked what he is building, he says he does not know. He says the instructions were clear but the purpose was not written down." },
+    { "id": "seed_erran_tools", "tag": "diligence", "hint": "The grey-roads laborer's tools are old and should have broken by now. They have not. He has not thought to wonder about this." },
+    { "id": "seed_mira_entry", "tag": "greed", "hint": "Mira Ousse has written the founding entry out on a separate sheet and has been asking, quietly, whether anyone recognizes the patron's description. No one does." },
+    { "id": "seed_khorrun_taste", "tag": "wrath", "hint": "Three people at the garrison have independently described the air as tasting of iron at night. None of them know the others said this." },
+    { "id": "seed_four_gods", "tag": "convergence", "hint": "Four gods active in the same region is unusual. Seven would be the full half. The augur has not said how many more she would expect before she considers the region's soul in danger of settling permanently around its vices." }
+  ]
+}

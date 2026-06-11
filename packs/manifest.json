@@ -8,6 +8,7 @@
     { "id": "modern", "name": "Modern IRL", "path": "/packs/modern/pack.json" },
     { "id": "westmarch", "name": "The Westmarch", "path": "/packs/fantasy/westmarch/pack.json" },
     { "id": "ashenmoor", "name": "The Ashenmoor", "path": "/packs/fantasy/ashenmoor/pack.json" },
-    { "id": "crownlands", "name": "The Crownlands", "path": "/packs/fantasy/crownlands/pack.json" }
+    { "id": "crownlands", "name": "The Crownlands", "path": "/packs/fantasy/crownlands/pack.json" },
+    { "id": "hallowed_reaches", "name": "The Hallowed Reaches", "path": "/packs/fantasy/hallowed_reaches/pack.json" }
   ]
 }

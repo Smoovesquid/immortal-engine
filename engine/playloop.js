@@ -77,6 +77,10 @@ export function beginAdventure(world, packsById) {
   if (pack.id === 'fantasy' && packsById.crownlands) {
     pack = mergeSubRegion(pack, packsById.crownlands);
   }
+  // Hallowed Reaches sub-region — divine gaze, morality system threads.
+  if (pack.id === 'fantasy' && packsById.hallowed_reaches) {
+    pack = mergeSubRegion(pack, packsById.hallowed_reaches);
+  }
 
   const seed = seedFromString(`${w.meta.seed}|begin|${pack.id}`);
   const rng = makeRng(seed);

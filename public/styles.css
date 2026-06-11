@@ -241,6 +241,13 @@ a{color:var(--accent)}
 .sheet-equip-name.magical{color:var(--gold)}
 .sheet-spell-slots{font-family:var(--mono);font-size:11px;color:var(--accent);margin-top:4px}
 
+/* ── Dice roller overlay ─────────────────────────────────────────── */
+.dice-roller-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;z-index:80;gap:10px}
+.dice-roller-canvas{display:block;filter:drop-shadow(0 4px 18px rgba(0,0,0,0.7))}
+.dice-roller-result{display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center}
+.dice-roller-vs{font-family:var(--mono);font-size:13px;color:var(--muted);letter-spacing:.04em}
+.dice-roller-label{font-family:var(--mono);font-size:17px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}
+
 /* ── Paper-doll gear rack ──────────────────────────────────────────── */
 .paper-doll-section{}
 .paper-doll-rack{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:6px}

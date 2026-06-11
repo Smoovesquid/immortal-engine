@@ -22,6 +22,7 @@ import { renderInitiativeBar } from './panels/initiativeBar.js';
 import { renderLootPopup } from './panels/lootPopup.js';
 import { renderPaperDoll } from './panels/PaperDoll.js';
 import { renderDiabloOrbs } from './panels/DiabloOrbs.js';
+import { triggerFromMech } from './panels/DiceRoller.js';
 import tts from './tts.js';
 import { rollDetailOptions } from '../engine/chargen/details.js';
 import { seedFromString, makeRng } from '../engine/rng.js';
@@ -665,6 +666,7 @@ async function doSubmitMove() {
     for (let i = 0; i < beats.length; i++) {
       const line = { who: 'wizard', text: String(beats[i]), mech: i === 0 ? (output?.mechanics || '') : '' };
       ui.play.lines.push(line);
+      if (i === 0) triggerFromMech(line.mech);
       render();
       const spoke = await tts.speakAndWait(line.text);
       if (!spoke) await new Promise(r => setTimeout(r, 1100));
@@ -680,6 +682,7 @@ async function doSubmitMove() {
     ? { who: 'npc', name: output.dialogue.npcName, text: '', mech: output?.mechanics || '' }
     : { who: 'wizard', text: '', mech: output?.mechanics || '' };
   ui.play.lines.push(wizardLine);
+  triggerFromMech(output?.mechanics || '');
   setStatus('Narrating…');
   render();
 

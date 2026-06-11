@@ -3,6 +3,7 @@
 Inventory of the DM-adjudication machinery: what propose/resolve/delta infrastructure exists, which objects carry material/category, and what blocks the propose→resolve→log loop for "do anything" (R3).
 
 **Written:** 2026-06-05 (R1 pass, exploration mode)
+**Updated:** 2026-06-11 (deeper trace — exact line numbers, dead async path confirmed, env consumer gap confirmed)
 **Scope:** Read-only, no code changes, locates before building.
 
 ---
@@ -32,18 +33,18 @@ playerText → propose (AI or heuristic)
 ### 1. Physics Detection + Proposal (llmPhysics.js)
 
 **What it does:**
-- Detects player text references to furniture/items at current node (detectPhysicalInteraction)
-- Matches against furniture `name`, `parts`, `notes` and inventory `name`
-- Calls LLM (or offline fallback) with furniture + inventory context
-- LLM returns structured proposal: `{ plausible: bool, result: string, deltas: [] }`
+- `detectPhysicalInteraction` (lines 20–84): detects player text references to furniture at current node
+- Matches against furniture `name`, `parts`, `notes`; returns `{ detected, matches: [{ type, index, name, match }] }`
+- Called from `playloop.js:1542–1544` gated on `PHYSICS_VERB_RE`
 
-**Offline fallback (offlineFallback):**
-- Pattern matching: force words (rip, break, smash) → damage + extract part
-- Examine words (search, examine) → describe state + parts
-- Take words (take, grab) → pickup if `bulk <= 2`
-- Generic fallback: empty delta list, generic description
+**`evaluatePhysicsSync`** (lines 290–297):
+- Always uses offline fallback — **the LLM async path (`callPhysicsLLM`, lines 224–285) exists in this file but is never called from the sync entry point**
+- Classifies by regex: `FORCE_RE` / `EXAMINE_RE` / `TAKE_RE` (lines 376–378)
+- Force verbs: damages furniture + emits `createItem` for first part (lines 412–469)
+- Examine: no deltas, description only
+- Take: `removeFurniture` if `bulk <= 2`
 
-**Limitation:** Only triggers if furniture/item name is mentioned. No "what could I interact with?" query layer.
+**Limitation:** LLM async path is dead. "Smash the barrel" always yields a single hardcoded part as an improvised weapon. No variation, no noise delta, no sensory consequence.
 
 ### 2. Conductor Proposals (conductor.js)
 
@@ -62,11 +63,15 @@ playerText → propose (AI or heuristic)
 ## Existing Resolve Machinery
 
 ### D20 vs DC (engine/resolve.js)
-- Approaches: force/finesse/endure/heart/focus
-- Maps to stats: MIGHT/AGILITY/GRIT/CHARM/WITS
-- DC system exists, but not wired into physics yet
 
-**Limitation:** `evaluatePhysics()` bypasses DC check entirely; LLM decides plausibility.
+`resolveMove` (lines 13–74): input is `{ actorId, intentText, approachTag, stakeTag, risk, targetId, toolTag }`. Returns `{ outcome, roll, dc, margin, profBonus, gains, costs, deltas, mechanicsLine }`.
+
+- Approaches: force/finesse/endure/heart/focus → stats MIGHT/AGILITY/GRIT/CHARM/WITS (lines 76–83)
+- Gear signals from `gearProps.scoreInventorySignals()` feed DC (lines 135–172)
+- Emits env residue deltas per approach (lines 550–586)
+- Emits `mechanicsLine`: `[roll:N vs DC:M → outcome | margin:X | approach:Y | stat:KEY+N | nat:N]`
+
+**Wiring:** Called at `playloop.js:1620–1624` — **after** all specific gates including physics. Physics interactions skip `resolveMove` entirely, meaning "smash the barrel" triggers no d20, no stat check, no dice roller.
 
 ---
 
@@ -209,16 +214,71 @@ Two schemas coexist:
 
 ### Environmental Signals (envCore.js)
 
-World-wide 0..6 scalars:
-- `env.noise` — ambient sound level
-- `env.heat` — temperature/fire presence
-- `env.scent` — smell intensity
-- `env.light` — visibility
+World-wide 0..6 scalars: `env.noise`, `env.heat`, `env.scent`, `env.light`.
 
-**Gaps:**
-- No per-object light/heat/noise emission (only world-level)
-- No decay/diffusion (environmental is static)
-- No "what's the light source here?" query
+Mutated via `{ op: 'env', key, by }` deltas in effectsCore (lines 211–219). `resolve.js` emits env residue per approach (lines 379–396).
+
+**Confirmed gaps:**
+- Physics deltas never emit `{ op: 'env' }` — a barrel smash produces zero noise
+- `worldTick.js` does NOT read `env.noise` to escalate threats or trigger NPC reactions
+- Env is ephemeral: a scalar overwritten each turn with no decay, no per-node scope, no consumer
+- Infrastructure without a consumer until worldTick is wired to read it
+
+---
+
+## Canon Log (csl/canonLog.js)
+
+**Current event types** (lines 8–55):
+```js
+ALLOWED_CANON_EVENT_TYPES = [
+  'CANON_CREATE',
+  'rumor.minted', 'rumor.propagated', 'rumor.verified', 'rumor.forgotten',
+  'npcDecision'
+]
+```
+
+Append-only, deduplicated by id, stored in `world.canonLog.events[]`.
+
+**Confirmed gap:** Physics events are not canonical. "Smash the barrel" mutates world state but leaves no canon record. The barrel can reappear under replay. R3 needs `'dm.ruling'` and `'object.destroyed'` added to `ALLOWED_CANON_EVENT_TYPES`.
+
+---
+
+## "Smash the Barrel" Today — Full Trace
+
+```
+Player: "smash the barrel"
+  ↓
+playloop.js:1542  PHYSICS_VERB_RE.test("smash the barrel") → true
+  ↓
+playloop.js:1544  detectPhysicalInteraction(w, text)
+                  → { detected: true, matches: [{ type:'furniture', name:'barrel' }] }
+  ↓
+playloop.js:1547  evaluatePhysicsSync(w, text) — offline fallback only
+                  → FORCE_RE match → picks first barrel part (e.g. "hoop")
+                  → returns {
+                      plausible: true, fallbackUsed: true,
+                      deltas: [
+                        { op:'modifyFurniture', nodeId:'n1', furnitureId:2,
+                          changes:{ state:'damaged', parts:[], notes:'hoops scattered' } },
+                        { op:'createItem', entityId:'pc_1', bucket:'weapons',
+                          item:{ name:'barrel hoop', weight:1, noise:0, light:0, bulk:1 } }
+                      ]
+                    }
+  ↓
+playloop.js:1549  applyDeltas(w, physics.deltas)
+  ↓
+Output: description string → narration
+        mechanics: "[physics:barrel | deltas:2 | offline]"
+
+NOT HAPPENING:
+  ✗ No d20 roll (resolveMove skipped)
+  ✗ No dice roller trigger (no mechanicsLine)
+  ✗ No env.noise delta (guards deaf)
+  ✗ No canon log entry (not canonical, can replay differently)
+  ✗ No conductor escalation (noise never reaches worldTick)
+  ✗ No gear-noise penalty (plate armor silent while smashing)
+  ✗ LLM never consulted — behavior fully hardcoded
+```
 
 ---
 
@@ -333,46 +393,29 @@ World-wide 0..6 scalars:
 
 ---
 
-## How to Build R2 (Object Model)
+## Files to Touch Per R-step
 
-From the gaps above, R2 needs:
-
-1. **Unified object schema:** `{ id, material, category, state, properties: {}, furniture/item-specific fields }`
-2. **Query layer:** "what's at this node?", "what's in my inventory?", "can I interact with X?"
-3. **Material+category inference:** wood/stone/metal/cloth/glass → inferred outcomes
-4. **State machine:** per category (e.g., wood: intact → damaged → destroyed; glass: intact → shattered; door: closed → open → broken)
-5. **Property scoring:** centralize the signal derivation (weight, noise, light, bulk, breakability, flammability, etc.)
-6. **Inferred behavior ops:** "break → extract part + noise", "take → check bulk", etc.
-7. **Node object cache:** decompression pre-loads node.furniture with deterministic generation
-8. **Prop templates:** building type → embedded furniture hints (smithy gets forge, anvil, tongs)
+| R-step | What | Primary files |
+|--------|------|--------------|
+| R2 | Add `material` + `category` to furniture schema; infer from existing `tags`/`name` | `engine/decompression/furniture.js`, `engine/effectsCore.js` (preserve new fields through modifyFurniture) |
+| R3 | Enable llmPhysics async path; thread physics through resolveMove; canon log entries | `engine/llmPhysics.js` (lines 224–285), `engine/playloop.js` (physics gate → resolve), `engine/csl/canonLog.js` (new event types) |
+| R4 | Standard rulings library; new delta ops (createDebris, addCover) | `engine/effectsCore.js`, new `engine/rulings/` module |
+| R5 | Spatial adjudication: "hide behind barrels" → cover token + LOS math | `engine/map/spatial/`, `engine/effectsCore.js`, `engine/resolve.js` (cover→DC) |
 
 ---
 
-## How to Build R3 (DM Adjudication Engine)
+## What Not to Touch
 
-Once R2 object model exists:
-
-1. **Plausibility check:** AI (or local heuristic) proposes approach + DC
-2. **Validate against objects:** do the referenced objects exist? can the approach physically work?
-3. **Roll (if needed):** d20 vs DC, apply approach modifier
-4. **Generate deltas:** map approach + roll outcome to delta ops
-5. **Log the ruling:** add timeline entry: `{ kind: 'ruling', action, approach, dc, roll, outcome, deltas }`
-6. **Apply deltas:** effectsCore.applyDeltas
-7. **Narrate:** from timeline ruling entry (replay reads the ruling, not LLM)
+- `engine/rng.js` — determinism must hold
+- `engine/worldHash.js` — new furniture fields (`material`, `category`) need to be verified against `crunchHashProjection.js` before adding; if they're mutable mid-scene they must be excluded
+- `engine/csl/` schema — only add event types, never remove
+- `public/v1.js` — already handles `mech` strings from resolve; wiring physics through resolve is sufficient to get the dice roller firing on smashes without touching the front end
 
 ---
 
-## Next Steps
+## Open Questions
 
-- **R2:** Write object schema, build query layer, unify item schemas
-- **R3:** Wire llmPhysics into ruling logger; build compact ruling inliner for replay
-- **R4:** Rulings library; expand delta vocab to match common cases
-- **R5:** Spatial adjudication; placeNav integration
-
----
-
-**Questions for code review:**
-- Should R2 create a separate `objects.js` module, or extend state.js?
-- Should node.furniture be pre-generated at newWorld() or lazily at decompression?
-- Should object properties be stored as fields or computed on-the-fly?
-- How do we handle durability progression (wood: intact → splintered → gone)?
+- Should R2 create a `materials.js` module or extend furniture generation inline?
+- Should `env.noise` decay per-turn in worldTick, or reset each turn (current behavior)?
+- Should the rulings library (R4) be a static map or a scored heuristic per verb class?
+- How does `'object.destroyed'` interact with determinism — if the object is gone on replay turn N, and future turns reference it, does that break worldHash?

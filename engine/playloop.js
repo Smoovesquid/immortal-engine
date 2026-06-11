@@ -1571,14 +1571,14 @@ function playerMoveCore(world, packsById, text) {
             // Partial: state change recorded, no item drops
             appliedDeltas = appliedDeltas.filter(d => d.op !== 'createItem');
             const MIXED_SUFFIX = {
-              glass: ' The scatter was wider than you meant.',
-              iron:  ' You strained for it — the metal bent but wouldn\'t yield fully.',
-              cloth: ' It tears, though messily, not the clean strip you wanted.',
-              wood:  ' You had to really work it.',
-              stone: ' Your strike glances — the stone barely answers.'
+              glass: 'The scatter goes wider than you meant.',
+              iron:  'You strained for it — the iron bent but wouldn\'t fully give.',
+              cloth: 'Not as clean as you wanted.',
+              wood:  'You had to really work it.',
+              stone: 'Your strike glances, barely answering.'
             };
-            const mixedSuffix = MIXED_SUFFIX[physics.material] || ' Not a clean hit, but it lands.';
-            physicsDesc = physicsDesc.replace(/\.\s*$/, '') + mixedSuffix;
+            const mixedSuffix = MIXED_SUFFIX[physics.material] || 'Not a clean hit, but it lands.';
+            physicsDesc = physicsDesc.replace(/[.\s]+$/, '') + '. ' + mixedSuffix;
           } else if (check.outcome === 'failure') {
             // Fumble: object holds, just noise
             appliedDeltas = [];

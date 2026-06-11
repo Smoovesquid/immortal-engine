@@ -12,3 +12,4 @@ yarn-error.log*
 *.bak
 .pack-cache/
 data/
+.gstack/

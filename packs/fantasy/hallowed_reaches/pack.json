@@ -50,7 +50,11 @@
     "the estate where mirrors face the wall (level 17)",
     "the granary that fills and empties and no one can explain (level 18)",
     "the garrison chapel where the fire burns wrong (level 19)",
-    "the crossroad where two pilgrims argue and cannot stop (level 20)"
+    "the crossroad where two pilgrims argue and cannot stop (level 20)",
+    "the old battle bridge where Aldous Vane recommends you read the stonework up close (level 21)",
+    "the undermined tower keep that Aldous Vane calls architecturally significant (level 22)",
+    "the collapsed mine passage Aldous Vane says has remarkable acoustic properties (level 23)",
+    "the contested ford Aldous Vane describes as the most historically rich crossing in the region (level 24)"
   ],
   "objectives": [
     "find who is profiting from the red garrison's mood (1)",
@@ -67,7 +71,10 @@
     "keep watch in the abandoned tower long enough to learn what it was watching (12)",
     "bury the unburied before their names are lost entirely (13)",
     "turn around and confront the stranger following three paces back (14)",
-    "find what is in the candled cellar that the long-watch novices will not say (15)"
+    "find what is in the candled cellar that the long-watch novices will not say (15)",
+    "find Aldous Vane's notebook before the next tour group departs (16)",
+    "count how many of Vane's previous tour guests are still alive and in one piece (17)",
+    "bring Vane's tour pamphlet to the long-watch prior and watch his expression (18)"
   ],
   "complications": [
     "the soldier who was killed did not draw his weapon (1)",
@@ -84,7 +91,10 @@
     "the vigil tower was abandoned because something answered the watch (12)",
     "the unburied are soldiers from both sides of a war that officially never happened (13)",
     "the following stranger is not following you; you have been walking the same road (14)",
-    "the long-watch novices are afraid of the cellar but cannot agree on what they heard (15)"
+    "the long-watch novices are afraid of the cellar but cannot agree on what they heard (15)",
+    "Aldous Vane has already offered a tour to two other newcomers in the village (16)",
+    "the Brotherhood's next consecration site requires a fresh death at a location Vane has not yet toured (17)",
+    "Vane's notebook is locked; he keeps the key on his person and the book inside his coat (18)"
   ],
   "npcArchetypes": [
     "veteran warrior who killed without anger and cannot understand why he cannot sleep (1)",
@@ -101,7 +111,8 @@
     "retired watch-commander who left the tower watch voluntarily and has slept badly since (12)",
     "gravedigger who has run out of room and is petitioning someone, anyone, for authorization (13)",
     "pilgrim who started walking toward the same chapter house as you but from the other direction (14)",
-    "long-watch prior who knows what is in the cellar and has decided it is not the player's business yet (15)"
+    "long-watch prior who knows what is in the cellar and has decided it is not the player's business yet (15)",
+    "village historian who approaches newcomers with an offer to see the region's most historically significant — and most dangerous — sites (16)"
   ],
   "sensoryMotifs": [
     "blood that dried faster than blood dries (1)",
@@ -244,6 +255,15 @@
       "location": "long-watch",
       "personality": { "honesty": 0.7, "warmth": 0.55, "volatility": 0.1 },
       "hook": "The prior of the long-watch chapter. Has the cellar locked. Has a reason. Will tell the player what is down there when the player has demonstrated they can hold a difficult thing without breaking it. ERRAN has been with the prior for decades — a quiet fidelity to a laborious task. He is not hiding the cellar out of fear; he is gatekeeping out of craft."
+    },
+    {
+      "id": "npc_aldous_vane",
+      "name": "Aldous Vane",
+      "archetype": "village historian who approaches newcomers with an offer to see the region's most historically significant — and most dangerous — sites",
+      "faction": "crimson-brotherhood",
+      "location": "first-settlement",
+      "personality": { "honesty": 0.15, "warmth": 0.95, "volatility": 0.05 },
+      "hook": "Approaches newcomers in the first village with genuine enthusiasm and a pamphlet. His historical knowledge is real and his interest in the player is real. So is his reason for the tour. He has been mapping KHORRUN's consecration sites through guided historical tours for nine years — deaths at places made holy by prior violence are, in the theology he practices quietly, a form of annotation. He always has a reason to wait at the entrance: the old knee, the acoustics are better from here, he has seen this one many times already. He takes notes in a small leather book he keeps inside his coat. The early pages are pure history. The recent pages describe each death — manner, location, approximate time — in the same even tone. The Brotherhood uses his route pamphlets as their consecration schedule. He does not consider himself a murderer. He considers himself a historian who understands that history requires witnesses. The augur at the hill named KHORRUN in the first village before anyone told her about the Brotherhood. She checked the inn register first."
     }
   ],
   "threads": [
@@ -290,6 +310,13 @@
       "factions": ["order-long-watch"]
     },
     {
+      "id": "the-surveyors-route",
+      "name": "The Surveyor's Route",
+      "description": "Aldous Vane approaches newcomers in the first village with warm enthusiasm, genuine historical knowledge, and a tour pamphlet. He is the single most dangerous person in the settlement and also the most useful: every site he recommends is real, historically significant, and lethal. He always waits at the entrance. He takes notes. He has been quietly feeding KHORRUN's consecration calendar for nine years through guided tours of places made holy by prior violence, treating each death as a form of historical annotation. The notebook is the investigation key — early pages are pure history, recent pages describe deaths in the same tone. The Brotherhood's consecration route maps are his pamphlets. The arc runs from charming local color to revealed Brotherhood logistics arm entirely at the player's pace: the player may take three tours and never look sideways, or look sideways on the first one. The augur knows; the prior does not.",
+      "tension": 40,
+      "factions": ["crimson-brotherhood"]
+    },
+    {
       "id": "the-convergence",
       "name": "The Convergence",
       "description": "The augur at the hill has named four gods active in the same region at the same time and said nothing about why. This has not happened in her thirty years on the hill. She reads signs; she does not issue warnings. The four convergent gazes — KHORRUN, HAGRETH, VAUNTRETH, and ACEDIEL — suggest something approaching, not something already here. Whatever it is, the Order of the Long Watch is not large enough to meet it alone.",
@@ -312,6 +339,11 @@
     { "id": "seed_erran_tools", "tag": "diligence", "hint": "The grey-roads laborer's tools are old and should have broken by now. They have not. He has not thought to wonder about this." },
     { "id": "seed_mira_entry", "tag": "greed", "hint": "Mira Ousse has written the founding entry out on a separate sheet and has been asking, quietly, whether anyone recognizes the patron's description. No one does." },
     { "id": "seed_khorrun_taste", "tag": "wrath", "hint": "Three people at the garrison have independently described the air as tasting of iron at night. None of them know the others said this." },
-    { "id": "seed_four_gods", "tag": "convergence", "hint": "Four gods active in the same region is unusual. Seven would be the full half. The augur has not said how many more she would expect before she considers the region's soul in danger of settling permanently around its vices." }
+    { "id": "seed_four_gods", "tag": "convergence", "hint": "Four gods active in the same region is unusual. Seven would be the full half. The augur has not said how many more she would expect before she considers the region's soul in danger of settling permanently around its vices." },
+    { "id": "seed_vane_notebook", "tag": "chronicler", "hint": "Vane's notebook splits in character at page forty-three. The first half is meticulous history. The last dozen entries describe the manner, location, and approximate time of each death on his tours, in the same even handwriting." },
+    { "id": "seed_vane_never_inside", "tag": "chronicler", "hint": "Aldous Vane has given tours for forty years. He has never entered any dangerous site he recommends. He has a specific, reasonable explanation ready for every occasion this has come up." },
+    { "id": "seed_vane_route_maps", "tag": "chronicler", "hint": "The Crimson Brotherhood's consecration route maps match Vane's published tour pamphlets exactly, including three sites he only identified this season and has not yet toured." },
+    { "id": "seed_vane_annotation", "tag": "chronicler", "hint": "When asked what he means by 'history requires witnesses,' Vane smiles and says places do not remember themselves. He means something else. His expression does not change when he says it." },
+    { "id": "seed_vane_augur", "tag": "chronicler", "hint": "The augur named KHORRUN in the first village before anyone told her about the Brotherhood. She consulted the inn register first. She has not said Aldous Vane's name directly. She has not needed to." }
   ]
 }

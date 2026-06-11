@@ -4,6 +4,7 @@ import { ensureEnv } from './env/envCore.js';
 import { ensureInstrumentLayer } from './instrument.js';
 import { statMod, maxWounds } from './ruleset/core/stats.js';
 import { applyCondition as applyConditionPure } from './combat/conditions.js';
+import { ensureStructures } from './structures/structuresState.js';
 
 // Data-driven delta executor. Pure and deterministic.
 // Applies a list of ops to the world safely (clamps, initializes missing fields).
@@ -783,6 +784,19 @@ export function applyDeltas(world, deltas = []) {
         furniture.splice(furnitureId, 1);
         return { ...node, furniture };
       });
+      continue;
+    }
+
+    // P-72 — write a player-built structure (lean-to, palisade…) into the world.
+    // id is minted from nextId; the structure persists, joins worldHash, and is
+    // a real structure that can later shelter NPCs, be entered, or be burned.
+    if (kind === 'buildStructure') {
+      const src = (op.structure && typeof op.structure === 'object') ? op.structure : null;
+      if (!src || !String(src.nodeId || '')) continue;
+      const cur = ensureStructures(w.structures);
+      const id = `pb:${cur.nextId}`;
+      const byId = { ...cur.byId, [id]: { ...src, id } };
+      w = { ...w, structures: { ...cur, byId, nextId: cur.nextId + 1 } };
       continue;
     }
   }

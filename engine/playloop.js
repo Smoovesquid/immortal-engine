@@ -38,6 +38,7 @@ import { shopsHere, stockFor, settlementStock, economyAt, priceToSell, shopBuys,
 import { getItemDef } from './ruleset/core/items/index.js';
 import { salvageYield } from './ruleset/core/items/materials.js';
 import { matchRecipe, missingInputs, resolveCraft } from './craft/craft.js';
+import { matchBuildPlan, missingBuildInputs, resolveBuild, makePlayerStructure, laborPlan, shelterAt } from './structures/playerBuilt.js';
 
 // Pure-ish play loop: world -> {world, output}
 
@@ -363,6 +364,49 @@ function playerMoveCore(world, packsById, text) {
         output: {
           narration: `Wizard: You take a real bed and a real night. Sleep comes slow, then all at once. You wake whole — ${w1.meta.escapeHp}/${w1.meta.escapeMaxHp} HP.${slotsLine}`,
           mechanics: '[rest:long]'
+        }
+      };
+    }
+    // P-72 — a shelter you raised here upgrades the wild night. A sound roof
+    // (lean-to, sound/fine) gives a true long rest, like a settlement bed; a
+    // rough one (poor) beats bare ground but isn't a real night's sleep.
+    const shelter = shelterAt(w, hereId);
+    const band = shelter?.build?.restBand;
+    if (band === 'long') {
+      const slept = longRest(w);
+      const curHours = Number(slept.time?.hours) || 0;
+      const nextMorning = (Math.floor(curHours / 24) + 1) * 24;
+      const w1 = pushEvent({
+        ...slept,
+        time: { ...(slept.time || {}), hours: nextMorning }
+      }, {
+        kind: 'resolution',
+        data: { actorId: 'party', text: String(text || ''), intent: String(text || ''), roll: 0, dc: 0, outcome: 'success', updateKind: 'long-rest' }
+      });
+      const bt = shelter.buildingType || 'shelter';
+      const slotsLine = w1.party?.[0]?.dnd?.spellcasting ? ' Your magic settles back into reach.' : '';
+      return {
+        world: w1,
+        output: {
+          narration: `Wizard: The ${bt} you raised keeps the weather and the dark at bay. Sleep comes, and you wake whole — ${w1.meta.escapeHp}/${w1.meta.escapeMaxHp} HP.${slotsLine}`,
+          mechanics: '[rest:long]'
+        }
+      };
+    }
+    if (band === 'good') {
+      const sRng = makeRng(seedFromString(`${w.meta.seed}|shelterRest|${w.timeline.length}`));
+      const before = Number(w.meta.escapeHp) || 0;
+      let rested = shortRest(w, sRng);
+      rested = shortRest(rested, sRng); // a second wind, under your own roof
+      const gained = (Number(rested.meta.escapeHp) || 0) - before;
+      const bt = shelter.buildingType || 'shelter';
+      return {
+        world: rested,
+        output: {
+          narration: gained > 0
+            ? `Wizard: Your ${bt} is a rough thing, but it keeps the worst off — you rest better than open ground allows. (+${gained} HP. A sounder shelter would buy a full night.)`
+            : `Wizard: You hole up in your ${bt} a while. Rough as it is, it beats the open — but you're already as rested as it can give.`,
+          mechanics: '[rest:breather]'
         }
       };
     }
@@ -1464,6 +1508,15 @@ function playerMoveCore(world, packsById, text) {
     if (ridiculous) return ridiculous;
   }
 
+  // P-72 — building: "I spend two days raising a lean-to". Stockpile + days +
+  // labor → a persistent shelter that improves rest. One check gates QUALITY;
+  // the world ticks while you work; an honest answer when the pile's short.
+  // Placed before salvage/craft so a known build noun is claimed first.
+  if (!w.combat?.active && !w.scene?.dialogue) {
+    const built = tryBuild(w, text);
+    if (built) return built;
+  }
+
   // P-70 — salvage: a destructive intent aimed at a whole object breaks it
   // down for MATERIALS (typed, stackable). "Rip the leg off the table" still
   // goes to the physics part-extraction below; "smash the crate" comes here.
@@ -2522,6 +2575,99 @@ function tryCraft(w, text) {
     output: {
       narration: `Wizard: ${qLine} (${recipe.check.skill} ${total} vs DC ${dc}${toolUsed ? ', tools +2' : ''}; ${recipe.hours} hour${recipe.hours === 1 ? '' : 's'} gone.)`,
       mechanics: `[craft | ${recipe.name} ×${qty} | ${quality} | ${recipe.check.skill} ${total} vs DC ${dc}]`
+    }
+  };
+}
+
+const BUILD_RE = /\b(?:build|building|raise|raising|put\s+up|throw\s+up|construct|constructing|erect)\b/i;
+
+function tryBuild(w, text) {
+  const t = String(text || '');
+  if (!BUILD_RE.test(t)) return null;
+  const plan = matchBuildPlan(t);
+  if (!plan) return null; // not something we know how to build — let it fall through
+  const pc = w.party?.[0];
+
+  // Missing materials: an honest, itemized answer — no roll, no days lost.
+  const missing = missingBuildInputs(pc, plan);
+  if (missing.length) {
+    const needTxt = missing.map(m => `${m.need > 1 ? m.need + ' ' : 'a '}${m.name.toLowerCase()}${m.need > 1 ? 's' : ''}${m.have ? ` (you have ${m.have})` : ''}`).join(' and ');
+    return {
+      world: w,
+      output: {
+        narration: `Wizard: You pace out where the ${plan.name.toLowerCase()} would stand, but the stockpile's short — it wants ${needTxt} before a post goes in.`,
+        mechanics: `[build:missing | ${plan.id} | ${missing.map(m => `${m.defRef} ${m.have}/${m.need}`).join(' ')}]`
+      }
+    };
+  }
+
+  // Labor fork (v1): solo by default. "hire a crew", "pay the sawyer" etc. engage
+  // a settlement's labor pool — faster and more skilled, but it costs coin.
+  // Coerced labor is P-73's moral fork.
+  const here = (w.map?.nodes || []).find(n => n && n.id === w.map?.currentNodeId) || null;
+  const wantsHired = /\b(hir(?:e|ing)|crew|laborers?|labourers?|sawyer|workmen|pay\s+(?:for\s+)?(?:help|labou?r|men|hands)|with\s+help)\b/i.test(t);
+  let labor = laborPlan(plan, 'solo');
+  let laborNote = '';
+  if (wantsHired) {
+    if (here?.nodeType !== 'settlement') {
+      laborNote = ' (No crew to hire out here — you raise it with your own hands.)';
+    } else {
+      const hired = laborPlan(plan, 'hired');
+      if (purseTotalCopper(pc?.purse) < hired.costCopper) {
+        laborNote = ` (You can't cover a crew's wages — ${formatPrice(hired.costCopper)} — so you see to it yourself.)`;
+      } else {
+        labor = hired;
+      }
+    }
+  }
+
+  const rng = makeRng(seedFromString(`${w.meta.seed}|build|${plan.id}|${w.timeline.length}`));
+  const roll = rng.int(1, 20);
+  const { quality, restBand, total, dc, toolUsed } = resolveBuild(pc, plan, roll, labor);
+
+  const hours = labor.days * 24;
+  const builtDay = Math.floor(((Number(w.time?.hours) || 0) + hours) / 24);
+  const materials = {};
+  for (const inp of plan.inputs) materials[inp.defRef] = (materials[inp.defRef] || 0) + inp.qty;
+  const nodeId = here?.id || w.map?.currentNodeId;
+  const structure = makePlayerStructure({ plan, quality, restBand, labor: labor.mode, builtDay, materials, nodeId });
+
+  const deltas = plan.inputs.map(inp => ({ op: 'consumeItems', entityId: pc.id, defRef: inp.defRef, qty: inp.qty }));
+  if (labor.mode === 'hired' && labor.costCopper > 0) {
+    deltas.push({ op: 'setPurse', entityId: pc.id, purse: pursePay(pc.purse, labor.costCopper) });
+  }
+  deltas.push({ op: 'time', key: 'hours', by: hours });
+  deltas.push({ op: 'buildStructure', structure });
+  let w1 = applyDeltas(w, deltas);
+
+  // Downtime: the world moves while you work — one tick per day of labor (the
+  // long-rest precedent jumps the clock; building also lets factions/threads/
+  // rumors breathe). Bounded so an outsized project can't run away.
+  for (let d = 0; d < Math.min(labor.days, 30); d++) {
+    w1 = worldTick(w1, `${w1.meta.seed}|build-downtime|${plan.id}|${w.timeline.length}|${d}`);
+  }
+  w1 = pushEvent(w1, { kind: 'build', data: { plan: plan.id, quality, labor: labor.mode, days: labor.days, nodeId, roll: total, dc } });
+
+  // Prose — quality is provenance; the rest payoff is stated plainly.
+  const name = plan.name.toLowerCase();
+  const qLine = quality === 'fine'
+    ? `It comes together square and snug${toolUsed ? ', the tools earning their weight' : ''} — a ${name} you'd not be ashamed of.`
+    : quality === 'sound'
+      ? `Post by post it goes up, sound and serviceable — a fair ${name}.`
+      : `It leans more than you'd like and the wind finds the gaps, but it stands — a rough ${name}.`;
+  const restLine = plan.shelter
+    ? (restBand === 'long'
+        ? ` Under this roof you could sleep a real night.`
+        : ` It'll break the weather — better rest than bare ground, if not a true bed.`)
+    : ` It won't shelter you, but it'll slow whatever comes at this place.`;
+  const laborLine = labor.mode === 'hired'
+    ? ` A hired crew makes short work of it — ${labor.days} day${labor.days === 1 ? '' : 's'}, and ${formatPrice(labor.costCopper)} lighter.`
+    : ` ${labor.days} day${labor.days === 1 ? '' : 's'} of your own sweat.`;
+  return {
+    world: w1,
+    output: {
+      narration: `Wizard: ${qLine}${restLine}${laborLine}${laborNote} (${plan.check.skill} ${total} vs DC ${dc}${toolUsed ? ', tools +2' : ''}${labor.mode === 'hired' ? ', crew +2' : ''}.)`,
+      mechanics: `[build | ${plan.name} | ${quality} | ${labor.mode} ${labor.days}d | ${plan.check.skill} ${total} vs DC ${dc}]`
     }
   };
 }

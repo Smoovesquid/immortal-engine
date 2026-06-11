@@ -176,7 +176,33 @@ what?"); never a menu.
   time, and a character with carpenter's tools makes visibly better output
   (prose + mechanics); suite green.
 
-### P-72 — Building (shelter → palisade → house)
+### P-72 — Building (shelter → palisade → house) ✅ DONE 2026-06-11
+**Shipped:** `engine/structures/playerBuilt.js` (build plans as data — lean-to,
+palisade — with validate/match/missing/laborPlan/resolveBuild/makePlayerStructure/
+shelterAt, mirroring the craft module); a `buildStructure` delta op in
+`effectsCore.js` (mints `pb:<n>` ids, persistent, worldHash-covered); an optional
+`build` provenance field on structures (`structuresState.js`, only-when-set like
+`buildingType` — no WORLD_VERSION bump, existing structures byte-identical, old
+saves carry no player builds); a `tryBuild` playloop gate ("I spend two days
+building a lean-to" → consumeItems + the time op for the day-jump + buildStructure
++ one worldTick per day so the world moves while you work; an honest itemized
+answer when the stockpile's short, no days lost, no menu); shelter-aware wild rest
+(sound/fine lean-to = a true long rest like a settlement bed, poor = a strong
+short rest, bare ground = a breather); labor fork v1 (solo by default; "hire a
+crew" at a settlement halves the days at 2gp/day RAW and is +2 on the check;
+coerced deferred to P-73). Quality is provenance — a barrel-board lean-to is a
+poor lean-to, and the prose + rest band say so. U124 ×9; UX2 +BUILD class +2 rows;
+suite 7,472 green; playtest:full clean; prose:gate PASS; live-verified (planted
+wild node at 4/13 HP → built a lean-to: two days passed, board 8→4 / cordage 4→3,
+"a rough lean-to … 2 days of your own sweat (Survival 2 vs DC 10)"; slept under it
+to 13/13 with "+9 HP, a sounder shelter would buy a full night"; survived a
+reload, still standing).
+**Known gap (deferred):** player-built structures render on the local map via the
+cottage-plan fallback — no `lean-to` place-art exists yet (`public/map` is outside
+this packet's engine scope, and SALVAGE_AND_BUILD defers building UI to
+out-of-scope-v1). Cosmetic only; engine canon, rest, and persistence are correct,
+and the prose (the DM interface) names the lean-to properly. Belongs with a
+structures-render visual pass.
 **Why:** third rung; the loop becomes a place.
 **Objective:** construction projects: stockpile + days + labor → `buildStructure`
 delta op writing persistent structures (map anchor, enterable, burnable).

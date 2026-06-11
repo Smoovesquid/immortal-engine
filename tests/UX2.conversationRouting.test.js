@@ -61,6 +61,7 @@ function routeClass(res) {
   if (/equip/.test(m)) return 'EQUIP';
   if (/salvage/.test(m)) return 'SALVAGE';
   if (/craft/.test(m)) return 'CRAFT';
+  if (/build/.test(m)) return 'BUILD';
   if (/roll:\d+/.test(m)) return 'ROLL';
   return `OTHER(${m})`;
 }
@@ -99,6 +100,9 @@ const OUT_OF_COMBAT_TABLE = [
   // P-71 — known recipes route to crafting (honest missing-materials answer, never a menu)
   ['I make a torch', ['CRAFT']],
   ['whittle a stake from this wood', ['CRAFT']],
+  // P-72 — known build plans route to construction (honest missing-materials answer, never a menu)
+  ['I build a lean-to', ['BUILD']],
+  ['I spend two days raising a shelter', ['BUILD']],
 ];
 
 test('UX2-01: out-of-combat routing table', () => {

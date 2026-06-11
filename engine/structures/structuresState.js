@@ -81,6 +81,10 @@ function ensureStructure(v, fallbackId) {
   // Optional declared building type (e.g. the player's home cottage). Only kept
   // when set so other structures' shape — and their worldHash — is unchanged.
   const buildingType = (typeof x.buildingType === 'string' && x.buildingType) ? x.buildingType : null;
+  // P-72 — provenance for player-built structures (lean-to, palisade…). Like
+  // buildingType, kept only when set so existing structures' shape and hash are
+  // untouched (no WORLD_VERSION bump: old saves carry no player builds).
+  const build = ensureBuild(x.build);
 
   return {
     id,
@@ -90,7 +94,35 @@ function ensureStructure(v, fallbackId) {
     topology,
     surfaces,
     tags,
-    ...(buildingType ? { buildingType } : {})
+    ...(buildingType ? { buildingType } : {}),
+    ...(build ? { build } : {})
+  };
+}
+
+// P-72 — normalize a player-built structure's provenance. quality is the
+// material+skill+time outcome; restBand is the rest payoff (shelters only);
+// labor records the moral fork (solo/hired/coerced); materials is the bill.
+function ensureBuild(b) {
+  if (!b || typeof b !== 'object') return null;
+  const plan = String(b.plan ?? '');
+  if (!plan) return null;
+  const quality = ['poor', 'sound', 'fine'].includes(b.quality) ? b.quality : 'sound';
+  const labor = ['solo', 'hired', 'coerced'].includes(b.labor) ? b.labor : 'solo';
+  const builtDay = clampInt(b.builtDay ?? 0, 0, 999999999);
+  const restBand = ['short', 'good', 'long'].includes(b.restBand) ? b.restBand : null;
+  const matsIn = (b.materials && typeof b.materials === 'object') ? b.materials : {};
+  const materials = {};
+  for (const k of Object.keys(matsIn).sort((a, c) => a.localeCompare(c))) {
+    const v = clampInt(matsIn[k] ?? 0, 0, 1000000000);
+    if (v > 0) materials[String(k)] = v;
+  }
+  return {
+    plan,
+    quality,
+    ...(restBand ? { restBand } : {}),
+    labor,
+    builtDay,
+    materials
   };
 }
 

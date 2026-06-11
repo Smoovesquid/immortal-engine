@@ -7,6 +7,7 @@
     { "id": "haunted", "name": "Haunted House", "path": "/packs/haunted/pack.json" },
     { "id": "modern", "name": "Modern IRL", "path": "/packs/modern/pack.json" },
     { "id": "westmarch", "name": "The Westmarch", "path": "/packs/fantasy/westmarch/pack.json" },
-    { "id": "ashenmoor", "name": "The Ashenmoor", "path": "/packs/fantasy/ashenmoor/pack.json" }
+    { "id": "ashenmoor", "name": "The Ashenmoor", "path": "/packs/fantasy/ashenmoor/pack.json" },
+    { "id": "crownlands", "name": "The Crownlands", "path": "/packs/fantasy/crownlands/pack.json" }
   ]
 }

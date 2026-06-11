@@ -73,6 +73,10 @@ export function beginAdventure(world, packsById) {
   if (pack.id === 'fantasy' && packsById.ashenmoor) {
     pack = mergeSubRegion(pack, packsById.ashenmoor);
   }
+  // Crownlands sub-region — Shakespeare-flavored political threads.
+  if (pack.id === 'fantasy' && packsById.crownlands) {
+    pack = mergeSubRegion(pack, packsById.crownlands);
+  }
 
   const seed = seedFromString(`${w.meta.seed}|begin|${pack.id}`);
   const rng = makeRng(seed);
@@ -125,6 +129,25 @@ export function beginAdventure(world, packsById) {
   // Ensure instrument exists (deterministic).
   if (!w.instrument?.theme) {
     w = { ...w, instrument: generateInstrument(pack, w.meta.fate, rng) };
+  }
+
+  // Seed pack threads into the instrument (crownlands + ashenmoor long-arc threads).
+  if (Array.isArray(pack.threads) && pack.threads.length) {
+    const existingLabels = new Set((w.instrument?.threads || []).map(t => t.label));
+    const threadRng = makeRng(seedFromString(`${w.meta.seed}|pack-threads`));
+    const fate = Number(w.meta?.fate ?? 0.2);
+    const count = fate >= 0.7 ? 3 : fate >= 0.4 ? 2 : 1;
+    const shuffled = [...pack.threads].sort(() => threadRng.float() - 0.5);
+    for (const pt of shuffled.slice(0, count)) {
+      if (!existingLabels.has(pt.name)) {
+        w = introduceThread(w, pt.name);
+      }
+    }
+  }
+
+  // Seed pack factions into world state (safe — does not overwrite existing factions).
+  if (Array.isArray(pack.factions) && pack.factions.length && !Array.isArray(w.factions)) {
+    w = { ...w, factions: pack.factions };
   }
 
   // Tactical zoom defaults off at start.
@@ -4285,7 +4308,11 @@ export function mergeSubRegion(basePack, regionPack) {
     npcArchetypes: append('npcArchetypes'),
     objectives: append('objectives'),
     complications: append('complications'),
-    sensoryMotifs: append('sensoryMotifs')
+    sensoryMotifs: append('sensoryMotifs'),
+    threads: append('threads'),
+    seeds: append('seeds'),
+    factions: append('factions'),
+    npcs: append('npcs')
   };
 }
 

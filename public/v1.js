@@ -20,6 +20,8 @@ import { renderSpellbookSection } from './panels/spellbook.js';
 import { renderCombatHudSection } from './panels/combatHud.js';
 import { renderInitiativeBar } from './panels/initiativeBar.js';
 import { renderLootPopup } from './panels/lootPopup.js';
+import { renderPaperDoll } from './panels/PaperDoll.js';
+import { renderDiabloOrbs } from './panels/DiabloOrbs.js';
 import tts from './tts.js';
 import { rollDetailOptions } from '../engine/chargen/details.js';
 import { seedFromString, makeRng } from '../engine/rng.js';
@@ -1932,9 +1934,11 @@ function renderBeatsSection(world) {
 
 function renderStatusPanels(world) {
   // Stripped to D&D essentials: character sheet + combat (when active)
+  const dollSection = renderPaperDoll(world);
   return el('aside', { class: 'status-panels', 'aria-label': 'Character info', role: 'complementary' },
     renderCharacterSheetSection(world),
     renderPartySection(world),
+    dollSection || null,
     renderInventorySection(world),
     renderCombatHudSection(world, el, {
       combatSummary: ui.play.lastCombatSummary || '',
@@ -2273,9 +2277,12 @@ function renderPlay() {
     ),
     compassBar,
     kitBar,
-    el('div', { class: 'play-input-bar' },
-      input,
-      el('button', { class: 'btn primary', disabled: ended, onClick: () => doSubmitMove() }, 'Submit')
+    el('div', { class: 'play-hud-row' },
+      w ? renderDiabloOrbs(w) : null,
+      el('div', { class: 'play-input-bar' },
+        input,
+        el('button', { class: 'btn primary', disabled: ended, onClick: () => doSubmitMove() }, 'Submit')
+      )
     )
   );
 

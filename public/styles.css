@@ -241,6 +241,27 @@ a{color:var(--accent)}
 .sheet-equip-name.magical{color:var(--gold)}
 .sheet-spell-slots{font-family:var(--mono);font-size:11px;color:var(--accent);margin-top:4px}
 
+/* ── Paper-doll gear rack ──────────────────────────────────────────── */
+.paper-doll-section{}
+.paper-doll-rack{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:6px}
+.doll-slot{background:#0d0b08;border:1px solid var(--border);border-radius:8px;padding:6px 4px;display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0}
+.doll-slot-filled{border-color:rgba(200,168,78,0.35)}
+.doll-slot-label{font-family:var(--mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
+.doll-slot-value{font-size:11px;color:var(--text);text-align:center;width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 2px}
+.doll-slot-value.magical{color:var(--gold)}
+.doll-slot:not(.doll-slot-filled) .doll-slot-value{color:var(--muted);opacity:.45}
+.doll-pack-heading{font-family:var(--mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:2px}
+.doll-pack{display:flex;flex-direction:column;gap:2px;margin-top:3px}
+.doll-pack-item{font-size:11px;color:var(--text);padding:1px 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ── Diablo HUD orbs ─────────────────────────────────────────────── */
+.play-hud-row{display:flex;align-items:flex-end;gap:0;border-top:1px solid var(--border);background:var(--panel2)}
+.play-hud-row .play-input-bar{flex:1 1 auto;border-top:none;background:transparent;padding:10px 12px}
+.diablo-orbs-row{display:flex;flex-direction:column;gap:0;align-items:center;padding:6px 10px;gap:2px;flex:0 0 auto}
+.diablo-orb{display:flex;flex-direction:column;align-items:center;gap:1px}
+.diablo-orb-label{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;text-align:center}
+.diablo-orb-sub{font-family:var(--mono);font-size:9px;color:var(--text);text-align:center}
+
 /* ── Pass S2 — Enhanced Rumor Board ─────────────────────────────────── */
 .rumor-item.tier-1 .rumor-body,.rumor-item.tier-2 .rumor-body{opacity:.85}
 .rumor-verified-badge{font-family:var(--mono);font-size:10px;padding:0 5px;border:1px solid var(--border);border-radius:999px;flex:0 0 auto}

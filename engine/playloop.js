@@ -37,6 +37,7 @@ import { statMod, maxWounds } from './ruleset/core/stats.js';
 import { shopsHere, stockFor, settlementStock, economyAt, priceToSell, shopBuys, restockEpoch, purseTotalCopper, pursePay, purseReceive, formatPrice, matchByName } from './economy/shop.js';
 import { getItemDef } from './ruleset/core/items/index.js';
 import { salvageYield } from './ruleset/core/items/materials.js';
+import { matchRecipe, missingInputs, resolveCraft } from './craft/craft.js';
 
 // Pure-ish play loop: world -> {world, output}
 
@@ -1471,6 +1472,14 @@ function playerMoveCore(world, packsById, text) {
     if (salvaged) return salvaged;
   }
 
+  // P-71 — field crafting: "I make a torch from a board and a strip of cloth".
+  // One check gates QUALITY, never possibility; time always passes; the DM
+  // says what was made and how well.
+  if (!w.combat?.active && !w.scene?.dialogue) {
+    const crafted = tryCraft(w, text);
+    if (crafted) return crafted;
+  }
+
   // Physical interaction intercept: "examine the table", "break the chair",
   // "take the lantern". Three guards prevent hijacking generic combat moves
   // like "force the locked door":
@@ -2465,6 +2474,58 @@ const TRADE_HAGGLE_RE = /\b(?:haggle|barter|talk\s+(?:\w+\s+)?down|discount|bett
 
 // ── P-70 — salvage (docs/SALVAGE_AND_BUILD.md, rung one) ─────────────────────
 
+// ── P-71 — field crafting ────────────────────────────────────────────────────
+
+const CRAFT_RE = /\b(?:make|craft|fashion|whittle|carve|assemble|put\s+together|lash\s+(?:up|together)|fletch|rig\s+up)\b/i;
+
+function tryCraft(w, text) {
+  const t = String(text || '');
+  if (!CRAFT_RE.test(t)) return null;
+  const recipe = matchRecipe(t);
+  if (!recipe) return null; // not something we know how to make — physics' problem
+  const pc = w.party?.[0];
+
+  const missing = missingInputs(pc, recipe);
+  if (missing.length) {
+    const needTxt = missing.map(m => `${m.need > 1 ? m.need + ' ' : 'a '}${m.name.toLowerCase()}${m.need > 1 ? 's' : ''}${m.have ? ` (you have ${m.have})` : ''}`).join(' and ');
+    return {
+      world: w,
+      output: {
+        narration: `Wizard: You lay out what you have, and it isn't enough — a ${recipe.name.toLowerCase()} wants ${needTxt}.`,
+        mechanics: `[craft:missing | ${recipe.id} | ${missing.map(m => `${m.defRef} ${m.have}/${m.need}`).join(' ')}]`
+      }
+    };
+  }
+
+  const rng = makeRng(seedFromString(`${w.meta.seed}|craft|${recipe.id}|${w.timeline.length}`));
+  const roll = rng.int(1, 20);
+  const { quality, qty, total, dc, toolUsed } = resolveCraft(pc, recipe, roll);
+
+  const deltas = recipe.inputs.map(inp => ({ op: 'consumeItems', entityId: pc.id, defRef: inp.defRef, qty: inp.qty }));
+  for (let i = 0; i < qty; i++) {
+    deltas.push({ op: 'addItem', entityId: pc.id, merge: true, item: { id: `cr_${recipe.id}_${w.timeline.length}_${i}`, defRef: recipe.output.defRef, qty: 1, equipped: null } });
+  }
+  if (recipe.hours > 0) deltas.push({ op: 'time', key: 'hours', by: recipe.hours });
+  let w1 = applyDeltas(w, deltas);
+  w1 = pushEvent(w1, { kind: 'craft', data: { recipe: recipe.id, qty, quality, roll: total, dc } });
+
+  const outName = String(recipe.name).toLowerCase();
+  const plural = /(?:ch|sh|s|x|z)$/.test(outName) ? `${outName}es` : `${outName}s`;
+  const made = qty > 1 ? `${qty} ${plural}` : `a ${outName}`;
+  const qLine = quality === 'fine'
+    ? `The work comes out better than it has any right to${toolUsed ? ' — the right tools tell' : ''}: ${made}, tight and true.`
+    : quality === 'sound'
+      ? `Steady hands, fair work: ${made}, fit for use.`
+      : `It fights you the whole way, but you end up with ${made}. It'll serve. Barely.`;
+  return {
+    world: w1,
+    output: {
+      narration: `Wizard: ${qLine} (${recipe.check.skill} ${total} vs DC ${dc}${toolUsed ? ', tools +2' : ''}; ${recipe.hours} hour${recipe.hours === 1 ? '' : 's'} gone.)`,
+      mechanics: `[craft | ${recipe.name} ×${qty} | ${quality} | ${recipe.check.skill} ${total} vs DC ${dc}]`
+    }
+  };
+}
+
 const SALVAGE_RE = /\b(?:smash|demolish|destroy|wreck|dismantle|salvage|bust(?:\s+up)?|break(?:\s+(?:up|down|apart))|tear\s+(?:apart|down)|rip\s+apart|reduce .* to)\b/i;
 
 function trySalvage(w, text) {
@@ -2547,7 +2608,7 @@ function tryEquipItem(w, text) {
   };
 }
 
-const CONSUME_RE = /\b(?:drink|quaff|swig|down|use|take|swallow|apply)\b.*\b(?:potion|draught|elixir|antidote|tonic|remedy)s?\b|\bdrink\b.*\bhealing\b/i;
+const CONSUME_RE = /\b(?:drink|quaff|swig|down|use|take|swallow|apply|bind|wrap)\b.*\b(?:potion|draught|elixir|antidote|tonic|remedy|splint|dressing|bandage)s?\b|\bdrink\b.*\bhealing\b/i;
 
 function tryUseConsumable(w, text) {
   const t = String(text || '');
@@ -2575,15 +2636,17 @@ function tryUseConsumable(w, text) {
     heal = Math.max(1, heal);
     let w1 = applyDeltas(w, [{ op: 'removeItemById', entityId: pc.id, itemId: found.it.id }]);
     let line;
+    const applied = Boolean(found.def.effect.applied);
+    const took = applied ? `You bind the ${found.def.name.toLowerCase()} on tight` : `You drink the ${found.def.name.toLowerCase()} down`;
     if (maxHp > 0) {
       const after = Math.min(maxHp, before + heal);
       w1 = { ...w1, meta: { ...w1.meta, escapeHp: after } };
-      line = `You drink the ${found.def.name.toLowerCase()} down. Warmth spreads from the chest out — ${after - before} HP back. (${after}/${maxHp}.)`;
+      line = `${took}. ${applied ? 'The ache settles to something you can walk on' : 'Warmth spreads from the chest out'} — ${after - before} HP back. (${after}/${maxHp}.)`;
     } else if ((pc.wounds || 0) > 0) {
       w1 = applyDeltas(w1, [{ op: 'wound', entityId: pc.id, amount: -1 }]);
-      line = `You drink the ${found.def.name.toLowerCase()} down, and one of your wounds closes to a pale seam.`;
+      line = `${took}, and one of your wounds closes to a pale seam.`;
     } else {
-      line = `You drink the ${found.def.name.toLowerCase()} down. Warmth, and the day looks slightly more survivable.`;
+      line = `${took}. ${applied ? 'Better safe than sorry' : 'Warmth, and the day looks slightly more survivable'}.`;
     }
     w1 = pushEvent(w1, { kind: 'consume', data: { defRef: found.def.defRef, effect: 'heal', amount: heal } });
     return { world: w1, output: { narration: `Wizard: ${line}`, mechanics: `[consume | ${found.def.name} | heal ${heal}]` } };

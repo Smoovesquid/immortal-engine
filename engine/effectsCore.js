@@ -567,6 +567,28 @@ export function applyDeltas(world, deltas = []) {
       continue;
     }
 
+    // P-71 — consume N of a defRef across unequipped stacks (crafting inputs).
+    if (kind === 'consumeItems') {
+      const entityId = resolvePlayerEntityId(w, op.entityId);
+      const defRef = String(op.defRef ?? '').trim();
+      let need = Math.max(0, Math.trunc(Number(op.qty)) || 0);
+      if (!defRef || need <= 0) continue;
+      w = mutateEntity(w, entityId, (e) => {
+        const inv = e.inventory || {};
+        const items = [];
+        for (const it of (Array.isArray(inv.items) ? inv.items : [])) {
+          if (need <= 0 || it.defRef !== defRef || it.equipped) { items.push(it); continue; }
+          const have = Math.max(1, Number(it.qty) || 1);
+          const take = Math.min(have, need);
+          need -= take;
+          const left = have - take;
+          if (left > 0) items.push(left > 1 ? { ...it, qty: left } : { id: it.id, defRef: it.defRef, equipped: it.equipped });
+        }
+        return { ...e, inventory: { ...inv, items } };
+      });
+      continue;
+    }
+
     if (kind === 'equipItem') {
       const entityId = resolvePlayerEntityId(w, op.entityId);
       const itemId = String(op.itemId ?? '').trim();

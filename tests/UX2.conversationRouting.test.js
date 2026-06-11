@@ -60,6 +60,7 @@ function routeClass(res) {
   if (/consume/.test(m)) return 'CONSUME';
   if (/equip/.test(m)) return 'EQUIP';
   if (/salvage/.test(m)) return 'SALVAGE';
+  if (/craft/.test(m)) return 'CRAFT';
   if (/roll:\d+/.test(m)) return 'ROLL';
   return `OTHER(${m})`;
 }
@@ -95,6 +96,9 @@ const OUT_OF_COMBAT_TABLE = [
   ['quaff a potion', ['CONSUME']],
   // P-69 — gear you carry becomes gear you use, no dice
   // (only typed carried gear routes here; unknown names fall through to physics)
+  // P-71 — known recipes route to crafting (honest missing-materials answer, never a menu)
+  ['I make a torch', ['CRAFT']],
+  ['whittle a stake from this wood', ['CRAFT']],
 ];
 
 test('UX2-01: out-of-combat routing table', () => {

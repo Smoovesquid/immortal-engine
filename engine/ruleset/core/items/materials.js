@@ -31,6 +31,27 @@ export const glass_shard = mat('glass_shard', 'Glass Shard', 0.1, 0.01, {
 });
 export const oil_flask_salvaged = mat('oil_flask_salvaged', 'Flask of Lamp Oil', 1, 0.1);
 
+// ── crafted field goods (P-71 outputs; defined here with their inputs) ──────
+
+export const torch = {
+  defRef: 'torch', name: 'Torch', kind: 'tool', slot: null,
+  weight: 1, rarity: 'common', basePrice: 0.01,
+  light: 3, burnsHours: 2
+};
+
+export const sharpened_stake = {
+  defRef: 'sharpened_stake', name: 'Sharpened Stake', kind: 'weapon', slot: 'main_hand',
+  damage: { dice: '1d6', type: 'piercing' }, weight: 2,
+  properties: ['thrown'], rarity: 'common', basePrice: 0.05,
+  improvisedCraft: true
+};
+
+export const splint = {
+  defRef: 'splint', name: 'Splint', kind: 'consumable', slot: null,
+  weight: 1, rarity: 'common', basePrice: 0.1,
+  effect: { kind: 'heal', amount: '1d4', applied: true }
+};
+
 // ── salvage yields ───────────────────────────────────────────────────────────
 // What a destroyed object gives up, derived from its TAGS (so every piece of
 // furniture ever generated — including ones in old saves — salvages without a

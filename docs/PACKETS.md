@@ -155,7 +155,17 @@ HP by size) feeds the existing physics adjudication.
 - done_when: live: smash a barrel → boards in inventory → club a bandit with
   one at 1d4; suite green; G/UX rows lock the loop.
 
-### P-71 — Field crafting
+### P-71 — Field crafting ✅ DONE 2026-06-11
+**Shipped:** `engine/craft/craft.js` (recipe validation, prose matching,
+quality resolution) + `content/recipes/field_recipes.recipe.js` (torch,
+sharpened stake, splint, cordage — data files like arcs). One check gates
+QUALITY never possibility (poor work still produces, prose says so; DC+5 =
+fine = bonus output); carrying the named tool is +2; time always passes via
+the time op; inputs consumed through the new `consumeItems` stack-decrement
+op. Missing materials get an itemized honest answer, no menu, no time cost.
+Splints bind on (applied prose), stakes wield at d6. U123 ×8; UX2 +2 CRAFT
+rows; suite 7,463 green; playtest:full clean; live-verified (2 torches,
+poor quality, "Survival 5 vs DC 8; 1 hour gone").
 **Why:** second rung; materials need somewhere to go.
 **Objective:** recipe layer (data files, like arcs): materials + skill-or-tool
 check + time → small goods (torch, splint, barricade, raft). Tool proficiencies

@@ -1547,7 +1547,7 @@ function playerMoveCore(world, packsById, text) {
   //   success → full damage (all deltas)
   //   mixed   → state change only (no item extraction)
   //   failure → no furniture change, but still loud
-  const PHYSICS_VERB_RE = /\b(examine|inspect|search|look at|check|rip|break|smash|tear|kick|punch|shatter|take|grab|pick up|steal)\b/i;
+  const PHYSICS_VERB_RE = /\b(examine|inspect|search|look at|check|rip|break|smash|tear|kick|punch|shatter|take|grab|pick up|steal|light|ignite|set fire|torch|kindle|burn)\b/i;
   const FORCE_VERB_RE   = /\b(rip|break|smash|tear|kick|punch|shatter)\b/i;
   if (PHYSICS_VERB_RE.test(String(text || ''))) {
     const detection = detectPhysicalInteraction(w, text);
@@ -1578,9 +1578,9 @@ function playerMoveCore(world, packsById, text) {
             physicsDesc = `You strike ${targetName} but it holds firm.`;
           }
 
-          // Noise: material drives base level, failure is messier
-          const MATERIAL_NOISE = { glass: 3, stone: 1, iron: 1, cloth: 0, wood: 2 };
-          const noiseBase = MATERIAL_NOISE[String(physics.material || 'wood')] ?? 2;
+          // Noise: rulings library already computed noiseBy for this material;
+          // failure is messier (clumsy swing still makes sound)
+          const noiseBase = typeof physics.noiseBy === 'number' ? physics.noiseBy : 2;
           const noiseBy = check.outcome === 'failure' ? noiseBase + 1 : noiseBase;
           if (noiseBy > 0) {
             appliedDeltas.push({ op: 'env', key: 'noise', by: Math.min(3, noiseBy) });

@@ -5,6 +5,7 @@
 import { clampInt } from './util.js';
 import { ensureWorld } from './state.js';
 import { ensureMap } from './map/mapState.js';
+import { resolveBreakRuling, resolveFireRuling } from './rulings/index.js';
 
 // Banned words in LLM-generated notes (Heartbreak Principle: no dramatic editorializing).
 const BANNED_WORDS = [
@@ -373,9 +374,10 @@ export function validateDeltas(deltas, world) {
 
 // --- Offline Fallback ---
 
-const FORCE_RE = /\b(rip|break|smash|tear|kick|punch|shatter)\b/;
+const FORCE_RE  = /\b(rip|break|smash|tear|kick|punch|shatter)\b/;
 const EXAMINE_RE = /\b(search|examine|inspect|look at|check)\b/;
-const TAKE_RE = /\b(take|grab|pick up|steal)\b/;
+const TAKE_RE   = /\b(take|grab|pick up|steal)\b/;
+const FIRE_RE   = /\b(light|ignite|set fire|torch|kindle|burn)\b/i;
 
 function offlineFallback(world, playerText, detection) {
   const w = ensureWorld(world);
@@ -411,68 +413,36 @@ function offlineFallback(world, playerText, detection) {
   const fMaterial = String(f.material || 'wood');
   const fHardness = typeof f.hardness === 'number' ? f.hardness : 2;
 
-  // Force words: damage furniture, extract a part
+  // Force words: delegate to material-aware break ruling
   if (FORCE_RE.test(text)) {
-    const deltas = [];
-    // Find which part was mentioned, or pick the first one
-    let removedPart = parts[0] || null;
+    let mentionedPart = null;
     for (const p of parts) {
-      if (text.includes(String(p).toLowerCase())) {
-        removedPart = p;
-        break;
-      }
+      if (text.includes(String(p).toLowerCase())) { mentionedPart = p; break; }
     }
-
-    if (removedPart && parts.length > 0) {
-      const remaining = parts.filter(p => p !== removedPart);
-      deltas.push({
-        op: 'modifyFurniture',
-        nodeId,
-        furnitureId: fIdx,
-        changes: {
-          state: 'damaged',
-          parts: remaining,
-          notes: `${removedPart} torn off`
-        }
-      });
-      deltas.push({
-        op: 'createItem',
-        entityId: actorId,
-        bucket: 'weapons',
-        item: {
-          name: removedPart,
-          tags: Array.isArray(f.tags) ? f.tags.slice(0, 2) : [],
-          weight: clampInt(Math.ceil((f.weight || 2) / 2), 0, 5),
-          noise: 0,
-          light: 0,
-          bulk: clampInt(1, 0, 5),
-          notes: `torn from ${targetName}`
-        }
-      });
-      return {
-        plausible: true,
-        deltas,
-        description: `You wrench the ${removedPart} from ${targetName}. It splinters.`,
-        fallbackUsed: true,
-        hardness: fHardness,
-        material: fMaterial
-      };
-    }
-
-    // No parts to remove — just damage it
-    deltas.push({
-      op: 'modifyFurniture',
-      nodeId,
-      furnitureId: fIdx,
-      changes: { state: 'damaged', notes: 'battered by force' }
-    });
+    const ruling = resolveBreakRuling(f, { actorId, nodeId, fIdx, mentionedPart });
     return {
       plausible: true,
-      deltas,
-      description: `You apply force to ${targetName}. It cracks.`,
+      deltas: ruling.deltas,
+      description: ruling.description,
       fallbackUsed: true,
       hardness: fHardness,
-      material: fMaterial
+      material: fMaterial,
+      noiseBy: ruling.noiseBy
+    };
+  }
+
+  // Fire/ignite words: delegate to material-aware fire ruling (no d20, auto-resolves)
+  if (FIRE_RE.test(text)) {
+    const ruling = resolveFireRuling(f, { actorId, nodeId, fIdx });
+    return {
+      plausible: true,
+      deltas: ruling.deltas,
+      description: ruling.description,
+      fallbackUsed: true,
+      hardness: fHardness,
+      material: fMaterial,
+      noiseBy: ruling.noiseBy,
+      verbClass: 'fire'
     };
   }
 

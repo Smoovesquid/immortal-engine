@@ -32,7 +32,7 @@ import { normalizeCondition } from './combat/conditions.js';
 // canonical 5e sheet (six abilities, class/species, AC/HP/saves/skills).
 // Legacy five-stat block is DERIVED from it at chargen (see
 // engine/chargen/srd/abilities.js toLegacyStats). Old saves get dnd: null.
-export const WORLD_VERSION = 24;
+export const WORLD_VERSION = 25;
 
 // Crunch caps (T1). Kept here so they're colocated with ensureEntity.
 const FOCI_CAP = 6;
@@ -149,6 +149,10 @@ export function ensureWorld(partial) {
 
     goals: ensureGoals(w.goals),
 
+    // v25 — story arcs (docs/STORYLINE_SPEC.md). Per-arc state only; arc
+    // definitions live in content/arcs/ and load via engine/story/registry.js.
+    story: ensureStory(w.story),
+
     recentBeats: ensureRecentBeats(w.recentBeats),
 
     timeline: Array.isArray(w.timeline) ? w.timeline : [],
@@ -227,6 +231,7 @@ export function newWorld({ seed, fate, campaignId, pack, mode }) {
     combat: defaultCombat(),
     rumors: [],
     goals: [],
+    story: { arcs: {} },
     recentBeats: [],
     timeline: [],
     ui: { advanced: false, lastError: '' }
@@ -467,6 +472,31 @@ function ensureRumors(rumors) {
     if (out.length >= RUMORS_CAP) break;
   }
   return out;
+}
+
+// v25 — story arc state normalizer. Each entry:
+// { status, castIds: {role: 'npcId@nodeId'}, stage, heardAtHours, branch }
+const STORY_STATUSES = new Set(['dormant', 'cast', 'active', 'resolved', 'abandoned']);
+function ensureStory(story) {
+  const s = story && typeof story === 'object' ? story : {};
+  const arcsIn = s.arcs && typeof s.arcs === 'object' ? s.arcs : {};
+  const arcs = {};
+  for (const [id, a] of Object.entries(arcsIn)) {
+    if (!a || typeof a !== 'object') continue;
+    if (!STORY_STATUSES.has(a.status)) continue;
+    const castIds = {};
+    for (const [role, ref] of Object.entries(a.castIds && typeof a.castIds === 'object' ? a.castIds : {})) {
+      if (/^.+@.+$/.test(String(ref))) castIds[role] = String(ref);
+    }
+    arcs[id] = {
+      status: a.status,
+      castIds,
+      stage: String(a.stage ?? ''),
+      heardAtHours: clampInt(a.heardAtHours ?? -1, -1, 9999999),
+      branch: String(a.branch ?? '')
+    };
+  }
+  return { arcs };
 }
 
 function ensureGoals(goals) {

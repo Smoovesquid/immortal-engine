@@ -553,7 +553,11 @@ async function doSubmitMove() {
   // are answered directly from world state. They do NOT consume a turn or mutate
   // the world — asking the DM a question shouldn't advance time. Combat is the
   // exception: mid-fight we let everything flow to playerMove so initiative holds.
-  if (!w.combat?.active && isMetaQuestion(text)) {
+  // Dialogue is the other exception: everything you type is said to THEM —
+  // "What happened with the cold well?" is a question for the NPC, not the DM
+  // ("what happened" was shadowing dialogue asks as a recap request).
+  const inDialogue = Boolean(w.scene?.dialogue?.npcId);
+  if (!w.combat?.active && !inDialogue && isMetaQuestion(text)) {
     const answer = handleMetaQuestion(text, w);
     if (answer) {
       ui.play.lines.push({ who: 'you', text, mech: '' });

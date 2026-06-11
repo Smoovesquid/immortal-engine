@@ -36,6 +36,7 @@ function projectForHash(world) {
     // Pass R1: project rumors for hash — exclude body (immutable prose).
     rumors: (w.rumors || []).map(r => ({ id: r.id, tier: r.tier, age: r.age })),
     goals: w.goals,
+    story: w.story,
     recentBeats: w.recentBeats,
     timeline: w.timeline
   };

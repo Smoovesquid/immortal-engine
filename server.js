@@ -29,6 +29,8 @@ export function createApp() {
   app.use('/', express.static(path.join(__dirname, 'public')));
   app.use('/engine', express.static(path.join(__dirname, 'engine')));
   app.use('/packs', express.static(path.join(__dirname, 'packs')));
+  // v25 — story arc data modules (imported by engine/story/registry.js)
+  app.use('/content', express.static(path.join(__dirname, 'content')));
 
   app.get('/healthz', (_req, res) => res.type('text').send('ok'));
 

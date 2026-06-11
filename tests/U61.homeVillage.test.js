@@ -29,8 +29,8 @@ function begin(seed = 'u61') {
 }
 
 // U61-01 — WORLD_VERSION is at the overworld-geometry bump.
-test('U61-01: WORLD_VERSION is 24', () => {
-  assert.equal(WORLD_VERSION, 24);
+test('U61-01: WORLD_VERSION is 25', () => {
+  assert.equal(WORLD_VERSION, 25);
 });
 
 // U61-02 — beginAdventure sets meta.homeNodeId to the starting settlement.

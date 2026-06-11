@@ -23,6 +23,7 @@ import { decompressAndCanonizeSync } from './decompression/decompress.js';
 import { discoverNode } from './map/mapState.js';
 import { detectPhysicalInteraction, evaluatePhysicsSync } from './llmPhysics.js';
 import { createGoal, checkGoals } from './goals/goalContract.js';
+import { castArcs, tickArcs } from './story/storyEngine.js';
 import { beginDialogue, askNpc, endDialogue, resolveNpcAtCurrentNode, isRecruitIntent } from './npc/dialogue.js';
 import { resolveArc } from './npc/npcArc.js';
 import { resolveCombatTurn } from './combat/combatResolve.js';
@@ -244,6 +245,10 @@ export function beginAdventure(world, packsById) {
   };
 
   w = pushEvent(w, { kind: 'begin', data: { location, objective, pack: pack.id, refKind, npcsPresent: npcNames } });
+
+  // v25 — cast story arcs onto the freshly decompressed home settlement so the
+  // first tavern rumor is already in the air when the adventure opens.
+  w = castArcs(w);
 
   const composed = compose(w, '', outcome, { pack });
   w = applyComposerDelta(w, composed.ledgerDelta);
@@ -3742,6 +3747,15 @@ function maybeCheckGoals(world) {
   let w = next;
   for (const g of completed) {
     w = pushEvent(w, { kind: 'goalCompleted', data: { goalId: g.id, kind: g.kind, targetRef: g.targetRef } });
+  }
+  // v25 — story arcs ride the same tick: cast dormant arcs onto whatever NPCs
+  // have materialized, then advance any stage whose done-when now holds.
+  // (docs/STORYLINE_SPEC.md — surfaces only diegetically, via rumors/NPCs.)
+  w = castArcs(w);
+  const arcTick = tickArcs(w);
+  w = arcTick.world;
+  for (const ev of arcTick.events) {
+    w = pushEvent(w, ev);
   }
   // Open-ended: arriving anywhere is just arrival — no win-on-reach, no terminal
   // lock. The world stays open and play continues. (Combat-defeat is still a real

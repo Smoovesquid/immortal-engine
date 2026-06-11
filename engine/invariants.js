@@ -416,6 +416,32 @@ export function assertWorldInvariants(world) {
     throw new Error('Invariant: combat.active and scene.dialogue are mutually exclusive');
   }
 
+  // ── v25 — story arc invariants (docs/STORYLINE_SPEC.md) ───────────────────
+  const story = world.story;
+  if (!story || typeof story !== 'object' || !story.arcs || typeof story.arcs !== 'object') {
+    throw new Error('Invariant: story.arcs must be an object');
+  }
+  const STORY_STATUSES = new Set(['dormant', 'cast', 'active', 'resolved', 'abandoned']);
+  const arcEntries = Object.entries(story.arcs);
+  if (arcEntries.length > 8) {
+    throw new Error(`Invariant: story.arcs count ${arcEntries.length} exceeds cap 8`);
+  }
+  let activeArcs = 0;
+  for (const [arcId, a] of arcEntries) {
+    if (!a || typeof a !== 'object') throw new Error(`Invariant: story.arcs[${arcId}] must be object`);
+    if (!STORY_STATUSES.has(a.status)) throw new Error(`Invariant: story arc ${arcId} bad status ${a.status}`);
+    if (typeof a.stage !== 'string') throw new Error(`Invariant: story arc ${arcId} stage must be string`);
+    if (a.status === 'cast' || a.status === 'active') activeArcs++;
+    for (const [role, ref] of Object.entries(a.castIds && typeof a.castIds === 'object' ? a.castIds : {})) {
+      if (!/^.+@.+$/.test(String(ref))) {
+        throw new Error(`Invariant: story arc ${arcId} castIds[${role}] must be npcId@nodeId (got ${ref})`);
+      }
+    }
+  }
+  if (activeArcs > 3) {
+    throw new Error(`Invariant: ${activeArcs} simultaneously cast/active story arcs exceeds cap 3`);
+  }
+
   // ── Pass R1 — rumor layer invariants ──────────────────────────────────────
   const rumors = world.rumors;
   if (!Array.isArray(rumors)) {

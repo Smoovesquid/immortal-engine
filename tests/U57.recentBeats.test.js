@@ -42,8 +42,8 @@ function mkMainlineWorld(seedKey, fate = 0.3) {
 
 test('U57: newWorld produces empty recentBeats and version 24', () => {
   const w = newWorld({ seed: 'u57-fresh', fate: 0.2, campaignId: 'c', pack: { primaryId: 'fantasy', mixerId: null } });
-  assert.equal(w.meta.version, 24);
-  assert.equal(WORLD_VERSION, 24);
+  assert.equal(w.meta.version, 25);
+  assert.equal(WORLD_VERSION, 25);
   assert.deepEqual(w.recentBeats, []);
 });
 
@@ -275,10 +275,10 @@ test('U57: loading a v12 save warns about version mismatch', () => {
   try {
     const loaded = loadSlot(storage, 'slot1');
     assert.ok(loaded);
-    assert.equal(loaded.meta.version, 24);
+    assert.equal(loaded.meta.version, 25);
     assert.ok(warnings.length > 0, 'expected a warning');
     assert.ok(warnings[0].includes('v12'));
-    assert.ok(warnings[0].includes('v24'));
+    assert.ok(warnings[0].includes('v25'));
   } finally {
     console.warn = origWarn;
   }

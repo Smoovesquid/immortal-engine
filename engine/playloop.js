@@ -36,6 +36,7 @@ import { resolveEscapeCombatTurn, initEscapeHp, initEscapeKit, shortRest, longRe
 import { statMod, maxWounds } from './ruleset/core/stats.js';
 import { shopsHere, stockFor, settlementStock, economyAt, priceToSell, shopBuys, restockEpoch, purseTotalCopper, pursePay, purseReceive, formatPrice, matchByName } from './economy/shop.js';
 import { getItemDef } from './ruleset/core/items/index.js';
+import { salvageYield } from './ruleset/core/items/materials.js';
 
 // Pure-ish play loop: world -> {world, output}
 
@@ -1462,6 +1463,14 @@ function playerMoveCore(world, packsById, text) {
     if (ridiculous) return ridiculous;
   }
 
+  // P-70 — salvage: a destructive intent aimed at a whole object breaks it
+  // down for MATERIALS (typed, stackable). "Rip the leg off the table" still
+  // goes to the physics part-extraction below; "smash the crate" comes here.
+  if (!w.combat?.active && !w.scene?.dialogue) {
+    const salvaged = trySalvage(w, text);
+    if (salvaged) return salvaged;
+  }
+
   // Physical interaction intercept: "examine the table", "break the chair",
   // "take the lantern". Three guards prevent hijacking generic combat moves
   // like "force the locked door":
@@ -2454,6 +2463,57 @@ const TRADE_HAGGLE_RE = /\b(?:haggle|barter|talk\s+(?:\w+\s+)?down|discount|bett
 
 // ── P-68 — usable consumables ────────────────────────────────────────────────
 
+// ── P-70 — salvage (docs/SALVAGE_AND_BUILD.md, rung one) ─────────────────────
+
+const SALVAGE_RE = /\b(?:smash|demolish|destroy|wreck|dismantle|salvage|bust(?:\s+up)?|break(?:\s+(?:up|down|apart))|tear\s+(?:apart|down)|rip\s+apart|reduce .* to)\b/i;
+
+function trySalvage(w, text) {
+  const t = String(text || '');
+  if (!SALVAGE_RE.test(t)) return null;
+  const detection = detectPhysicalInteraction(w, t);
+  const hit = (detection.matches || []).find(m => m.type === 'furniture' && (m.match === 'name' || m.match === 'part'));
+  if (!detection.detected || !hit) return null;
+
+  const node = (w.map?.nodes || []).find(n => n.id === w.map?.currentNodeId);
+  const furniture = Array.isArray(node?.furniture) ? node.furniture : [];
+  const f = furniture[hit.index];
+  if (!f) return null;
+
+  // Naming a specific PART ("tear the leg off…") is extraction, not salvage —
+  // the physics path below owns that.
+  const tl = t.toLowerCase();
+  if ((f.parts || []).some(p => tl.includes(String(p).toLowerCase())) && !/\b(whole|entire|all of)\b/i.test(t)) return null;
+
+  const pc = w.party?.[0];
+  const rng = makeRng(seedFromString(`${w.meta.seed}|salvage|${node.id}|${w.timeline.length}`));
+  const yields = salvageYield(f, rng);
+  const name = String(f.name || 'the thing');
+
+  const deltas = [{ op: 'removeFurniture', nodeId: node.id, furnitureId: hit.index }];
+  yields.forEach((y, i) => {
+    deltas.push({
+      op: 'addItem', entityId: pc.id, merge: true,
+      item: { id: `sv_${node.id}_${w.timeline.length}_${i}`, defRef: y.defRef, qty: y.qty, equipped: null }
+    });
+  });
+  let w1 = applyDeltas(w, deltas);
+  w1 = pushEvent(w1, { kind: 'salvage', data: { nodeId: node.id, target: name, yields } });
+
+  const haul = yields.map(y => {
+    const def = getItemDef(y.defRef);
+    return `${y.qty > 1 ? y.qty + ' ' : ''}${(def?.name || y.defRef).toLowerCase()}${y.qty > 1 ? 's' : ''}`;
+  });
+  const haulTxt = haul.length === 1 ? haul[0] : haul.slice(0, -1).join(', ') + ' and ' + haul[haul.length - 1];
+  const heavy = (Number(f.bulk) || 2) >= 4;
+  return {
+    world: w1,
+    output: {
+      narration: `Wizard: ${heavy ? `It takes real work, but the ${name.replace(/^the /, '')} comes apart` : `The ${name.replace(/^the /, '')} comes apart under your hands`} — you're left with ${haulTxt}, and the floor is left with the rest.`,
+      mechanics: `[salvage | ${name} | ${yields.map(y => `${y.defRef}×${y.qty}`).join(' ')}]`
+    }
+  };
+}
+
 const EQUIP_RE = /\b(?:equip|wield|don|wear|strap\s+on|put\s+on|ready|draw|brandish|slip\s+on)\b\s+(.+)/i;
 
 function tryEquipItem(w, text) {
@@ -2474,7 +2534,7 @@ function tryEquipItem(w, text) {
   const w1 = applyDeltas(w, [{ op: 'equipItem', entityId: pc.id, itemId: hit.it.id, slot }]);
   const pc1 = w1.party[0];
   let line;
-  if (hit.def.kind === 'weapon') {
+  if (hit.def.kind === 'weapon' || (hit.def.kind === 'material' && hit.def.improvised)) {
     const prof = meleeProfile(pc1);
     line = `You take up the ${hit.def.name.toLowerCase()}. It sits right in the hand — d${prof.die}${prof.dmgMod >= 0 ? '+' + prof.dmgMod : prof.dmgMod} when it lands, ${prof.atkBonus >= 0 ? '+' + prof.atkBonus : prof.atkBonus} to strike.`;
   } else {

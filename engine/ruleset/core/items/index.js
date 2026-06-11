@@ -5,9 +5,10 @@ import * as armor from './armor.js';
 import * as consumables from './consumables.js';
 import * as magic from './magic.js';
 import * as quest from './quest.js';
+import * as materials from './materials.js';
 
 export const ITEM_CATALOG = {};
-for (const mod of [weapons, armor, consumables, magic, quest]) {
+for (const mod of [weapons, armor, consumables, magic, quest, materials]) {
   for (const def of Object.values(mod)) {
     if (def && typeof def === 'object' && def.defRef) ITEM_CATALOG[def.defRef] = def;
   }

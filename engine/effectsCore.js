@@ -538,7 +538,18 @@ export function applyDeltas(world, deltas = []) {
         const inv = e.inventory || {};
         const items = Array.isArray(inv.items) ? [...inv.items] : [];
         if (items.some(it => it.id === id)) return e; // no dupes
-        items.push({ id, defRef, equipped: item.equipped ?? null });
+        const qty = Math.max(1, Math.trunc(Number(item.qty)) || 1);
+        // v26 — stackables: merge into an existing unequipped stack of the
+        // same defRef instead of minting a parallel instance.
+        if (op.merge) {
+          const idx = items.findIndex(it => it.defRef === defRef && !it.equipped);
+          if (idx !== -1) {
+            const cur = items[idx];
+            items[idx] = { ...cur, qty: Math.max(1, Number(cur.qty) || 1) + qty };
+            return { ...e, inventory: { ...inv, items } };
+          }
+        }
+        items.push(qty > 1 ? { id, defRef, equipped: item.equipped ?? null, qty } : { id, defRef, equipped: item.equipped ?? null });
         return { ...e, inventory: { ...inv, items } };
       });
       continue;

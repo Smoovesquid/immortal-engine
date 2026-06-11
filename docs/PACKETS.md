@@ -132,7 +132,17 @@ rarity tiers wired into the CR loot bands.
 - done_when: a looted +1 sword, equipped by saying so, changes the attack line;
   loot across 100 seeded fights shows the rarity curve; suite + playtest:full green.
 
-### P-70 — Salvage slice (destroy → materials → improvise)
+### P-70 — Salvage slice (destroy → materials → improvise) ✅ DONE 2026-06-11
+**Shipped:** `materials.js` (11 typed materials, stackable; board/stone/shard
+carry RAW improvised profiles), tag-driven `salvageYield` (works on every
+piece of furniture ever generated — no migration; untagged junk still yields,
+destruction is never a dead end), `trySalvage` playloop gate ("smash the
+crate" → removeFurniture + merged stacks + salvage timeline event; naming a
+part still routes to physics extraction), addItem qty-merge, improvised
+weapons in meleeProfile (die, STR, NO proficiency), materials sell for
+coppers (price floor dropped to 1cp). U122 ×7; suite 7,455 green;
+playtest:full clean; live-verified (iron-bound chest → board + 2 iron
+fittings → "I wield the board" → d4+1, +1 to strike, MAIN HAND Board).
 **Why:** first rung of `docs/SALVAGE_AND_BUILD.md`; destruction currently
 yields nothing.
 **Objective:** destroying furniture/objects yields deterministic `kind:

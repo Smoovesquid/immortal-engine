@@ -142,7 +142,14 @@ export function meleeProfile(pc) {
   const equippedDef = (() => {
     const it = (pc?.inventory?.items || []).find(x => x.equipped === 'main_hand');
     const def = it ? getItemDef(it.defRef) : null;
-    return def && def.kind === 'weapon' ? def : null;
+    if (!def) return null;
+    if (def.kind === 'weapon') return def;
+    // P-70 — an improvised material in hand (a board, a stone) is a weapon
+    // by RAW improvised rules: its die, your STR, no proficiency bonus.
+    if (def.kind === 'material' && def.improvised) {
+      return { ...def, damage: def.improvised, properties: [], improvisedWeapon: true };
+    }
+    return null;
   })();
   if (equippedDef) {
     const mods = d?.mods || {
@@ -160,7 +167,7 @@ export function meleeProfile(pc) {
     // compromise as the legacy sheet table's greatsword entry).
     const dm = String(equippedDef.damage?.dice || '1d6').match(/^(\d+)d(\d+)$/);
     const die = dm ? parseInt(dm[1], 10) * parseInt(dm[2], 10) : 6;
-    const prof = d?.profBonus ?? 2;
+    const prof = equippedDef.improvisedWeapon ? 0 : (d?.profBonus ?? 2);
     const atkMagic = Number(equippedDef.bonus?.attack) || 0;
     const dmgMagic = Number(equippedDef.bonus?.damage) || 0;
     return {

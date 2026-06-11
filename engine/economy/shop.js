@@ -127,12 +127,12 @@ export function settlementStock(world) {
 // ── prices ──────────────────────────────────────────────────────────────────
 
 export function priceToBuy(def, economy) {
-  const base = Math.max(1, Number(def?.basePrice ?? 1)) * 100; // basePrice is gp
+  const base = Math.max(0.01, Number(def?.basePrice ?? 1)) * 100; // basePrice is gp; materials cost coppers
   return Math.max(1, Math.round(base * (ECONOMY_BUY_MULT[economy] ?? 1)));
 }
 
 export function priceToSell(def, economy) {
-  const base = Math.max(1, Number(def?.basePrice ?? 1)) * 100;
+  const base = Math.max(0.01, Number(def?.basePrice ?? 1)) * 100;
   return Math.max(1, Math.round(base * (ECONOMY_SELL_MULT[economy] ?? 0.5)));
 }
 

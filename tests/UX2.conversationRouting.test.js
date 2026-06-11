@@ -59,6 +59,7 @@ function routeClass(res) {
   if (/trade:/.test(m)) return 'TRADE';
   if (/consume/.test(m)) return 'CONSUME';
   if (/equip/.test(m)) return 'EQUIP';
+  if (/salvage/.test(m)) return 'SALVAGE';
   if (/roll:\d+/.test(m)) return 'ROLL';
   return `OTHER(${m})`;
 }

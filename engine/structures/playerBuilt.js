@@ -35,6 +35,30 @@ const BUILD_PLANS = [
     days: 5,
     check: { skill: 'Survival', dc: 12, tool: "carpenter's tools" },
     shelter: null // defense, not rest (siege deferred; burnable from day one)
+  },
+  // ── Stronghold tier — the endgame sink. Seasons of labor or a season of
+  // cruelty (P-73). DMG anchor: a keep is ≈400 days; scaled to playable here.
+  {
+    id: 'watchtower',
+    name: 'Watchtower',
+    type: 'watchtower',
+    aliases: ['watch tower', 'guard tower', 'lookout tower', 'tower'],
+    inputs: [{ defRef: 'timber', qty: 12 }, { defRef: 'stone_chunk', qty: 16 }, { defRef: 'nails', qty: 4 }],
+    days: 30,
+    tier: 'stronghold',
+    check: { skill: 'Survival', dc: 13, tool: "mason's tools" },
+    shelter: { poor: 'good', sound: 'long', fine: 'long' }
+  },
+  {
+    id: 'keep',
+    name: 'Keep',
+    type: 'keep',
+    aliases: ['fort', 'fortress', 'stronghold', 'castle', 'hold'],
+    inputs: [{ defRef: 'timber', qty: 30 }, { defRef: 'stone_chunk', qty: 50 }, { defRef: 'iron_fitting', qty: 10 }, { defRef: 'nails', qty: 12 }],
+    days: 120,
+    tier: 'stronghold',
+    check: { skill: 'Survival', dc: 15, tool: "mason's tools" },
+    shelter: { poor: 'long', sound: 'long', fine: 'long' } // any keep is walls and a bed
   }
 ];
 
@@ -79,14 +103,20 @@ export { missingInputs as missingBuildInputs, carriedQty };
 
 /**
  * laborPlan(plan, mode) -> { mode, days, costCopper, checkBonus }.
- * Solo = the full days, no coin, your own hands. Hired = half the days (skilled
- * crew, min 1) at the RAW skilled-hireling rate (2gp per day of the FULL job),
- * and the crew's craft is worth +2 on the quality check. Coerced is P-73's fork.
+ * The moral fork (docs/SALVAGE_AND_BUILD.md): enough time, enough gold, or
+ * enough slaves. Solo = the full days, no coin, your own hands. Hired = half the
+ * days (skilled crew, min 1) at the RAW skilled-hireling rate (2gp per day of the
+ * FULL job), worth +2 on the quality check. Coerced = a THIRD of the days, free,
+ * unskilled (no bonus) — and an atrocity the soul pays for (priced by the caller
+ * against the morality engine, not here).
  */
 export function laborPlan(plan, mode) {
   const fullDays = Math.max(1, Math.floor(Number(plan.days) || 1));
   if (mode === 'hired') {
     return { mode: 'hired', days: Math.max(1, Math.ceil(fullDays / 2)), costCopper: 200 * fullDays, checkBonus: 2 };
+  }
+  if (mode === 'coerced') {
+    return { mode: 'coerced', days: Math.max(1, Math.ceil(fullDays / 3)), costCopper: 0, checkBonus: 0 };
   }
   return { mode: 'solo', days: fullDays, costCopper: 0, checkBonus: 0 };
 }

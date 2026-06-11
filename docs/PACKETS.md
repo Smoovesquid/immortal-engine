@@ -216,6 +216,7 @@ time, surfaced in prose and rest mechanics.
   still there after save/reload; playtest:full green.
 
 ### P-73 — Stronghold tier + the labor fork
+**Status:** ◑ P-73a ✅ DONE 2026-06-11 · P-73b ⏳ (player forts as story-arc anchors).
 **Why:** the endgame sink and the moral instrument.
 **Objective:** multi-season projects (fort, keep), crews, the sawyer economy.
 Coerced labor: possible, fast, cheap — writes `cruelty` deeds, witnesses
@@ -225,6 +226,32 @@ become story-arc anchors (arcs can bind to them).
 - done_when: a keep can be raised honestly over seasons OR monstrously fast,
   and the county's treatment of you afterward differs visibly; an authored arc
   binds to a player fort.
+
+**P-73a — Stronghold tier + the coerced-labor moral fork ✅ DONE 2026-06-11.**
+Shipped: two stronghold-tier build plans in `engine/structures/playerBuilt.js`
+(watchtower ~30d, keep ~120d — DMG-scaled; a keep is a `long`-rest shelter,
+walls and a bed); a `coerced` labor mode in `laborPlan` (a THIRD of the days,
+free, unskilled). The moral fork is "enough time (solo), enough gold (hired),
+or enough slaves (coerced)": the coerced path in `tryBuild` emits the cruelty
+package through the existing morality organs — `axisDelta` wrath/pride/greed
+(the seven-axis soul, → corruption), `recordDeed` cruelty, `npcTrustDelta` on
+the settlement witnesses (their trust craters), `adjustHeat` (investigation
+pressure). `applyDeedCharges` skips its `tryDarkDeed` pass on the coerced marker
+so the deed is the construction itself and is never double-counted. Coercion
+needs people — out in the wild it falls to solo with no atrocity. Camera-Rule
+prose: the coerced raise reads as weight ("raised on the labor of people who
+were never asked … and so will the county"), never gratification. U125 ×8;
+UX2 +1 BUILD row; suite 7,480 green; playtest:full clean; prose:gate PASS.
+Live-verified (home village, full purse + a keep's worth of timber/stone):
+coerced keep = 40 days, free, corruption 0→12, heat 0→8, one cruelty deed,
+witness trust 5→2; the honest hired keep = 60 days, 240g, soul clean (corruption
+0), witness trust intact — the fork differs visibly.
+**P-73b — Player forts as story-arc anchors (remaining).** An authored arc can
+bind to a player-built structure (`engine/story/storyEngine.js` + a
+`content/arcs/*.arc.js`); things come TO the fort. Also remaining from the
+broader objective: rumor propagation of the atrocity (rides on the M2-remaining
+"deeds mint rumors" work) and faction-disposition shifts — the local witness
+trust crash is the current visible county reaction.
 
 ### Content track (parallel, any time)
 - **More story arcs** — the format is proven (4 live); each new arc is one data

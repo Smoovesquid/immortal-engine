@@ -2601,15 +2601,39 @@ function tryBuild(w, text) {
     };
   }
 
-  // Labor fork (v1): solo by default. "hire a crew", "pay the sawyer" etc. engage
-  // a settlement's labor pool — faster and more skilled, but it costs coin.
-  // Coerced labor is P-73's moral fork.
+  // Labor fork (the moral instrument, docs/SALVAGE_AND_BUILD.md): enough time
+  // (solo), enough gold (hired), or enough slaves (coerced). Solo is the default.
+  // Coerced is a third of the days and free — and an atrocity: the soul pays,
+  // the witnesses remember, and the county treats you differently after.
   const here = (w.map?.nodes || []).find(n => n && n.id === w.map?.currentNodeId) || null;
+  const atSettlement = here?.nodeType === 'settlement';
+  const wantsCoerced = /\b(?:force|forc(?:e|ing)|enslave|enslav\w*|conscript|press[-\s]?gang|impress|compel|coerce|drive|whip)\b[^.]{0,40}\b(?:villagers?|locals?|peasants?|townsfolk|townspeople|prisoners?|captives?|slaves?|people|men|folk|them)\b|\b(?:slave|forced|unfree)\s+labou?r\b/i.test(t);
   const wantsHired = /\b(hir(?:e|ing)|crew|laborers?|labourers?|sawyer|workmen|pay\s+(?:for\s+)?(?:help|labou?r|men|hands)|with\s+help)\b/i.test(t);
   let labor = laborPlan(plan, 'solo');
   let laborNote = '';
-  if (wantsHired) {
-    if (here?.nodeType !== 'settlement') {
+  let coercedDeltas = [];
+  if (wantsCoerced) {
+    if (!atSettlement) {
+      laborNote = ' (No one to press into labor out here — you raise it with your own hands.)';
+    } else {
+      labor = laborPlan(plan, 'coerced');
+      const witnesses = Array.isArray(here?.settlement?.npcs) ? here.settlement.npcs.map(n => String(n.id)).filter(Boolean).slice(0, 8) : [];
+      // Forcing people is cruelty: the seven-axis soul pays (wrath/pride/greed),
+      // the deed goes on the ledger, the witnesses' trust craters, and the act
+      // draws investigation pressure. Recorded HERE — applyDeedCharges skips its
+      // tryDarkDeed pass on the coerced marker so the deed is the construction
+      // itself and is never double-counted.
+      coercedDeltas = [
+        { op: 'axisDelta', axis: 'wrath', by: DEED_SEV.MOD },
+        { op: 'axisDelta', axis: 'pride', by: DEED_SEV.MOD },
+        { op: 'axisDelta', axis: 'greed', by: DEED_SEV.LIGHT },
+        { op: 'recordDeed', deedKind: 'cruelty', severity: DEED_SEV.HEAVY, summary: t.slice(0, 200), nodeId: here.id, witnesses, t: w.timeline.length },
+        ...witnesses.map(npcId => ({ op: 'npcTrustDelta', npcId, by: -3 })),
+        { op: 'adjustHeat', by: 8 }
+      ];
+    }
+  } else if (wantsHired) {
+    if (!atSettlement) {
       laborNote = ' (No crew to hire out here — you raise it with your own hands.)';
     } else {
       const hired = laborPlan(plan, 'hired');
@@ -2638,6 +2662,7 @@ function tryBuild(w, text) {
   }
   deltas.push({ op: 'time', key: 'hours', by: hours });
   deltas.push({ op: 'buildStructure', structure });
+  if (coercedDeltas.length) deltas.push(...coercedDeltas);
   let w1 = applyDeltas(w, deltas);
 
   // Downtime: the world moves while you work — one tick per day of labor (the
@@ -2660,9 +2685,11 @@ function tryBuild(w, text) {
         ? ` Under this roof you could sleep a real night.`
         : ` It'll break the weather — better rest than bare ground, if not a true bed.`)
     : ` It won't shelter you, but it'll slow whatever comes at this place.`;
-  const laborLine = labor.mode === 'hired'
-    ? ` A hired crew makes short work of it — ${labor.days} day${labor.days === 1 ? '' : 's'}, and ${formatPrice(labor.costCopper)} lighter.`
-    : ` ${labor.days} day${labor.days === 1 ? '' : 's'} of your own sweat.`;
+  const laborLine = labor.mode === 'coerced'
+    ? ` It goes up fast — ${labor.days} day${labor.days === 1 ? '' : 's'} — raised on the labor of people who were never asked. No coin changes hands. Some of them will remember your face, and so will the county.`
+    : labor.mode === 'hired'
+      ? ` A hired crew makes short work of it — ${labor.days} day${labor.days === 1 ? '' : 's'}, and ${formatPrice(labor.costCopper)} lighter.`
+      : ` ${labor.days} day${labor.days === 1 ? '' : 's'} of your own sweat.`;
   return {
     world: w1,
     output: {
@@ -3615,6 +3642,9 @@ function applyDeedCharges(world, text, output) {
   if (!t) return world;
   const mech = String(output?.mechanics || '');
   if (/observe only|no roll, state unchanged/i.test(mech)) return world; // meta no-op
+  // A coerced build (P-73) already records its own cruelty deed (the construction
+  // IS the atrocity); skip the text pass so it's never counted twice.
+  if (/\bcoerced\b/.test(mech)) return world;
   const charges = tryDarkDeed(world, t);
   if (!charges.length) return world;
   const node = (world?.map?.nodes || []).find(n => n && n.id === world?.map?.currentNodeId) || null;

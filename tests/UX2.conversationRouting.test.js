@@ -103,6 +103,9 @@ const OUT_OF_COMBAT_TABLE = [
   // P-72 — known build plans route to construction (honest missing-materials answer, never a menu)
   ['I build a lean-to', ['BUILD']],
   ['I spend two days raising a shelter', ['BUILD']],
+  // P-73a — a coerced stronghold build still routes to BUILD; the cruelty rides
+  // along invisibly (deed/soul/trust), it is not a separate player-facing route.
+  ['I force the villagers to build a keep', ['BUILD']],
 ];
 
 test('UX2-01: out-of-combat routing table', () => {

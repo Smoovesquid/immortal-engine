@@ -20,6 +20,15 @@ const BUILDING_ARCHETYPES = {
 };
 
 // Roles used when no building-specific archetype applies.
+
+// Mint one deterministic NPC name for overflow cases (a settlement extracted
+// more people than genesis named). Seeded — same world, same name.
+export function mintNpcName(seedStr) {
+  const r = makeRng(seedFromString(`${String(seedStr)}|mintName`));
+  const first = r.pick(FIRST_NAMES);
+  return r.nextFloat() < 0.4 ? `${first} ${r.pick(EPITHETS)}` : first;
+}
+
 const GENERIC_ROLES = [
   'elder', 'laborer', 'veteran', 'trader', 'healer',
   'scavenger', 'mediator', 'guard', 'artisan', 'representative'

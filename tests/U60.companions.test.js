@@ -41,6 +41,11 @@ const packsById = {
 // position sync, goal checks, etc.).
 function walkToNode(w, packs, targetId) {
   for (let i = 0; i < 100; i++) {
+    // County-scale roads have ambushes; a walker fights through them.
+    let guard = 0;
+    while (w.combat?.active && guard++ < 30) {
+      w = playerMove(w, packs, 'strike').world;
+    }
     const m = ensureMap(w.map);
     const target = m.nodes.find(n => String(n.id) === String(targetId));
     const { x, y } = m.pos;
@@ -86,7 +91,9 @@ function makeWorldWithSettlement(seed = 'u60-seed', { requireNeighbor = false } 
     ? (settlements.find(s => edges.some(e => e.a === s.id || e.b === s.id)) || settlements[0])
     : settlements[0];
   const nodeId = pick.id;
-  w = { ...w, map: { ...w.map, currentNodeId: nodeId } };
+  // Teleporting the test to a settlement must move BOTH the node pointer and
+  // the avatar's cell — they are separate state (pos persists by design).
+  w = { ...w, map: { ...w.map, currentNodeId: nodeId, pos: { x: pick.x, y: pick.y } } };
   const pack = { objectives: ['survive'], factionPool: [{ id: 'civic', type: 'civic' }] };
   w = decompressAndCanonizeSync(w, nodeId, pack);
   w = seedPlayer(w);

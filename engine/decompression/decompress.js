@@ -6,7 +6,7 @@ import { extractPresent } from './extractPresent.js';
 import { texturize } from './texturize.js';
 import { seedFromString, makeRng } from '../rng.js';
 import { computeNpcDepth } from '../npc/npcDepth.js';
-import { generateSettlementNPCs } from '../npc/npcGenesis.js';
+import { generateSettlementNPCs, mintNpcName } from '../npc/npcGenesis.js';
 import { generateNodeFurniture } from './generateFurniture.js';
 import { verifyRumorsForSeed } from '../rumor/verify.js';
 
@@ -90,9 +90,35 @@ export function decompressAndCanonizeSync(world, nodeId, pack) {
   // Pass C1.1 — also merge genesis knowledgeGraph. Genesis seeds deterministic
   // public facts so fresh-world NPCs have shareable topics; without this merge
   // the seeds never reach askNpc and dialogue always deflects.
+  // First-name tokens already in use at this node — overflow minting must not
+  // collide with them, or name-based resolution (dialogue, social) splits
+  // between two NPCs answering to the same name.
+  const usedFirstNames = new Set(
+    [...genesisNpcs, ...deepNpcs]
+      .map(n => String(n?.name || '').split(/\s+/)[0].toLowerCase())
+      .filter(t => t && t !== 'the')
+  );
+  const mintUnique = (base) => {
+    for (let salt = 0; salt < 24; salt++) {
+      const candidate = mintNpcName(salt === 0 ? base : `${base}|salt${salt}`);
+      const first = candidate.split(/\s+/)[0].toLowerCase();
+      if (!usedFirstNames.has(first)) { usedFirstNames.add(first); return candidate; }
+    }
+    return mintNpcName(base);
+  };
   const namedNpcs = deepNpcs.map((npc, i) => {
     const gen = genesisNpcs[i];
-    if (!gen) return { ...npc, name: npc.name || `the ${npc.role}`, description: '', factualDetail: '' };
+    if (!gen) {
+      // Overflow beyond genesis count: mint a deterministic name AND a full
+      // conversation state — a person without one can't accrue trust.
+      return {
+        ...npc,
+        name: npc.name && !/^the /.test(npc.name) ? npc.name : mintUnique(`${nodeId}|${world.meta.seed}|overflow|${i}`),
+        conversationState: npc.conversationState || { metPlayer: false, topicsDiscussed: [], trustLevel: 5, lastInteraction: null },
+        description: '',
+        factualDetail: ''
+      };
+    }
     const mergedKg = mergeKnowledgeGraphs(npc.knowledgeGraph, gen.knowledgeGraph);
     return {
       ...npc,

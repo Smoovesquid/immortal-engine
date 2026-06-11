@@ -9,22 +9,46 @@ export function generateInitialMap({ seed = 'seed', packId = 'fantasy', pack = {
   const rng = makeRng(seedFromString(`${seed}|map|${packId}`));
 
   const names = Array.isArray(pack.locations) ? pack.locations.map(String).filter(Boolean) : [];
-  const fallback = ['Roadside', 'Ruined Tower', 'Dry Creek', 'Old Shrine', 'Sooted Bridge', 'Salt Flats', 'Black Orchard', 'Hollow Chapel'];
-  // Settlement-keyword names injected so at least some nodes classify as settlements.
-  const settlementNames = ['Trader\'s Camp', 'Riverside Inn', 'Wayfarers\' Outpost'];
+  // County-scale name pool: enough distinct ground that a day's travel reads
+  // as country, not a loop of eight tiles.
+  const fallback = [
+    'Roadside', 'Ruined Tower', 'Dry Creek', 'Old Shrine', 'Sooted Bridge',
+    'Salt Flats', 'Black Orchard', 'Hollow Chapel', 'Gallows Hill', 'Reedmere',
+    'Stonebridge', 'Howling Pass', 'Witchlight Fen', 'Cairn Field',
+    'Old Mill Ruin', 'The Standing Stones', 'Drowned Coppice', 'Beacon Tor',
+    'Foxglove Hollow', 'The Sunken Road'
+  ];
+  // Settlement-keyword names injected so nodes classify as settlements — each
+  // a distinct archetype (market, port, shrine-stop, mining camp, crossroads)
+  // so the county's towns aren't interchangeable.
+  const settlementNames = [
+    'Trader\'s Camp', 'Riverside Inn', 'Wayfarers\' Outpost',
+    'Saltmarket Town', 'Pilgrim\'s Rest Village', 'Ferry Landing',
+    'Deepvein Camp', 'Crossway Village'
+  ];
   const pool = (names.length ? names : fallback).slice();
   // Ensure settlement names are in the pool so the classifier can assign nodeType 'settlement'.
   for (const sn of settlementNames) {
     if (!pool.some(n => String(n).toLowerCase() === sn.toLowerCase())) pool.push(sn);
   }
 
-  const nodeCountBase = 12 + (seedFromString(`${seed}|mapN|${packId}`) % 10);
+  // County scale: 24-39 nodes (was 12-21). Lazy decompression keeps the cost
+  // of a bigger county at zero until you actually walk it.
+  const nodeCountBase = 24 + (seedFromString(`${seed}|mapN|${packId}`) % 16);
   const nodeCount = clampInt((nodeCountOverride == null ? nodeCountBase : Number(nodeCountOverride)), 12, 200);
+
+  // Deterministic shuffle so the county draws across the WHOLE pool (the old
+  // stride-7 pick collided with larger pools and named every town the same).
+  const shuffleRng = makeRng(seedFromString(`${seed}|mapShuffle|${packId}`));
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = shuffleRng.int(0, i);
+    const t = pool[i]; pool[i] = pool[j]; pool[j] = t;
+  }
 
   const nodes = [];
   const used = new Set();
   for (let i = 0; i < nodeCount; i++) {
-    const base = pool.length ? (pool[(i * 7) % pool.length] || rng.pick(pool)) : `Place ${i + 1}`;
+    const base = pool.length ? (pool[i % pool.length] || rng.pick(pool)) : `Place ${i + 1}`;
     const name = uniquify(String(base || `Place ${i + 1}`), used);
     used.add(name);
 
@@ -61,8 +85,9 @@ export function generateInitialMap({ seed = 'seed', packId = 'fantasy', pack = {
   // enough, forcibly reclassify the 2nd and 3rd nodes (index 1,2) as settlements
   // so NPC genesis can trigger on arrival.
   const settlementCount = nodes.filter(n => n.nodeType === 'settlement').length;
-  if (settlementCount < 2) {
-    const need = 2 - settlementCount;
+  const MIN_SETTLEMENTS = nodeCount >= 24 ? 4 : 2;
+  if (settlementCount < MIN_SETTLEMENTS) {
+    const need = MIN_SETTLEMENTS - settlementCount;
     let patched = 0;
     for (let i = 1; i < nodes.length && patched < need; i++) {
       if (nodes[i].nodeType !== 'settlement') {

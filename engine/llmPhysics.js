@@ -408,6 +408,9 @@ function offlineFallback(world, playerText, detection) {
   const targetName = f.name || 'the object';
   const parts = Array.isArray(f.parts) ? f.parts : [];
 
+  const fMaterial = String(f.material || 'wood');
+  const fHardness = typeof f.hardness === 'number' ? f.hardness : 2;
+
   // Force words: damage furniture, extract a part
   if (FORCE_RE.test(text)) {
     const deltas = [];
@@ -450,7 +453,9 @@ function offlineFallback(world, playerText, detection) {
         plausible: true,
         deltas,
         description: `You wrench the ${removedPart} from ${targetName}. It splinters.`,
-        fallbackUsed: true
+        fallbackUsed: true,
+        hardness: fHardness,
+        material: fMaterial
       };
     }
 
@@ -465,7 +470,9 @@ function offlineFallback(world, playerText, detection) {
       plausible: true,
       deltas,
       description: `You apply force to ${targetName}. It cracks.`,
-      fallbackUsed: true
+      fallbackUsed: true,
+      hardness: fHardness,
+      material: fMaterial
     };
   }
 
@@ -477,7 +484,9 @@ function offlineFallback(world, playerText, detection) {
       plausible: true,
       deltas: [],
       description: `You examine ${targetName} closely. ${stateDesc} ${partsDesc}`.trim(),
-      fallbackUsed: true
+      fallbackUsed: true,
+      hardness: fHardness,
+      material: fMaterial
     };
   }
 
@@ -506,14 +515,18 @@ function offlineFallback(world, playerText, detection) {
         plausible: true,
         deltas,
         description: `You take the ${targetName}.`,
-        fallbackUsed: true
+        fallbackUsed: true,
+        hardness: fHardness,
+        material: fMaterial
       };
     }
     return {
       plausible: true,
       deltas: [],
       description: `You try to take ${targetName}, but it's too heavy to carry.`,
-      fallbackUsed: true
+      fallbackUsed: true,
+      hardness: fHardness,
+      material: fMaterial
     };
   }
 
@@ -522,7 +535,9 @@ function offlineFallback(world, playerText, detection) {
     plausible: true,
     deltas: [],
     description: `You interact with ${targetName}.`,
-    fallbackUsed: true
+    fallbackUsed: true,
+    hardness: fHardness,
+    material: fMaterial
   };
 }
 

@@ -13,7 +13,9 @@ const ALLOWED_CANON_EVENT_TYPES = [
   'rumor.verified',
   'rumor.forgotten',
   // Pass O2 — NPC brain decisions
-  'npcDecision'
+  'npcDecision',
+  // Pass R3 — DM adjudication rulings (physics interactions that mutate world state)
+  'dm.ruling'
 ];
 function validateCanonEvent(event) {
     if (!event || typeof event !== 'object') {

@@ -22,6 +22,8 @@ import { createCharacter } from './chargen/genesis.js';
 import { decompressAndCanonizeSync } from './decompression/decompress.js';
 import { discoverNode } from './map/mapState.js';
 import { detectPhysicalInteraction, evaluatePhysicsSync } from './llmPhysics.js';
+import { rollPhysicsCheck } from './resolve.js';
+import { appendCanonEvent } from './csl/canonLog.js';
 import { createGoal, checkGoals } from './goals/goalContract.js';
 import { castArcs, tickArcs } from './story/storyEngine.js';
 import { beginDialogue, askNpc, endDialogue, resolveNpcAtCurrentNode, isRecruitIntent } from './npc/dialogue.js';
@@ -1539,17 +1541,70 @@ function playerMoveCore(world, packsById, text) {
   //   1. The player text must contain a physics verb (examine/break/take/etc.)
   //   2. Detection must match a furniture/item name (not just a notes substring)
   //   3. The offline fallback must produce real deltas (not a no-op)
+  //
+  // Force verbs (rip/break/smash/etc.) additionally roll d20 vs hardness-derived
+  // DC so the dice roller fires. Outcome gates the delta application:
+  //   success → full damage (all deltas)
+  //   mixed   → state change only (no item extraction)
+  //   failure → no furniture change, but still loud
   const PHYSICS_VERB_RE = /\b(examine|inspect|search|look at|check|rip|break|smash|tear|kick|punch|shatter|take|grab|pick up|steal)\b/i;
+  const FORCE_VERB_RE   = /\b(rip|break|smash|tear|kick|punch|shatter)\b/i;
   if (PHYSICS_VERB_RE.test(String(text || ''))) {
     const detection = detectPhysicalInteraction(w, text);
     const nameMatch = (detection.matches || []).some(m => m.match === 'name' || m.match === 'part');
     if (detection.detected && nameMatch) {
       const physics = evaluatePhysicsSync(w, text);
       if (physics && physics.plausible) {
-        w = applyDeltas(w, physics.deltas || []);
-        // Emit a 'resolution' event (not a custom kind) so deterministic replay
-        // — which only re-runs begin/scene/travel/resolution/blocked — re-executes
-        // the same text and follows the same physics path on playback.
+        const isForce = FORCE_VERB_RE.test(String(text || ''));
+        let appliedDeltas = physics.deltas ? [...physics.deltas] : [];
+        let mechStr;
+        let physicsDesc = physics.description;
+
+        if (isForce) {
+          const check = rollPhysicsCheck(w, {
+            actorId,
+            hardness: physics.hardness ?? 2,
+            intentText: String(text || '')
+          });
+
+          if (check.outcome === 'mixed') {
+            // Partial: state change recorded, no item drops
+            appliedDeltas = appliedDeltas.filter(d => d.op !== 'createItem');
+            physicsDesc = physicsDesc.replace(/\.\s*$/, '') + ', but not cleanly.';
+          } else if (check.outcome === 'failure') {
+            // Fumble: object holds, just noise
+            appliedDeltas = [];
+            const targetName = (detection.matches[0]?.name || 'the object').toLowerCase();
+            physicsDesc = `You strike ${targetName} but it holds firm.`;
+          }
+
+          // Noise: material drives base level, failure is messier
+          const MATERIAL_NOISE = { glass: 3, stone: 1, iron: 1, cloth: 0, wood: 2 };
+          const noiseBase = MATERIAL_NOISE[String(physics.material || 'wood')] ?? 2;
+          const noiseBy = check.outcome === 'failure' ? noiseBase + 1 : noiseBase;
+          if (noiseBy > 0) {
+            appliedDeltas.push({ op: 'env', key: 'noise', by: Math.min(3, noiseBy) });
+          }
+
+          mechStr = check.mechanicsLine;
+        } else {
+          // Non-force physics (examine, take) — no roll
+          const matchSummary = detection.matches.map(m => m.name).filter(Boolean).slice(0, 2).join(', ');
+          mechStr = `[physics:${matchSummary || 'object'} | deltas:${appliedDeltas.length} | offline]`;
+        }
+
+        w = applyDeltas(w, appliedDeltas);
+
+        // Canon log: record ruling for force actions that mutated the world
+        if (isForce && appliedDeltas.some(d => d.op === 'modifyFurniture' || d.op === 'removeFurniture')) {
+          const fMatch = detection.matches.find(m => m.type === 'furniture');
+          const targetId = `${(w.map && w.map.currentNodeId) || 'node'}:furniture:${fMatch?.index ?? 0}`;
+          const rulingId = `dm.ruling:${w.meta?.seed || ''}:${(w.timeline || []).length}`;
+          const cl = w.canonLog && typeof w.canonLog === 'object' ? w.canonLog : { events: [] };
+          w = { ...w, canonLog: appendCanonEvent(cl, { id: rulingId, type: 'dm.ruling', targetId }) };
+        }
+
+        // Emit a 'resolution' event so deterministic replay re-executes this physics path.
         w = pushEvent(w, {
           kind: 'resolution',
           data: {
@@ -1561,15 +1616,15 @@ function playerMoveCore(world, packsById, text) {
             outcome: 'physics',
             updateKind: 'physics',
             matches: detection.matches.map(m => ({ type: m.type, name: m.name })),
-            deltaCount: (physics.deltas || []).length
+            deltaCount: appliedDeltas.length
           }
         });
-        const matchSummary = detection.matches.map(m => m.name).filter(Boolean).slice(0, 2).join(', ');
+
         return {
           world: w,
           output: {
-            narration: `Wizard: ${physics.description}`,
-            mechanics: `[physics:${matchSummary || 'object'} | deltas:${(physics.deltas || []).length} | offline]`
+            narration: `Wizard: ${physicsDesc}`,
+            mechanics: mechStr
           }
         };
       }

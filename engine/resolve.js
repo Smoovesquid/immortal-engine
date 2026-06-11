@@ -618,3 +618,41 @@ function clampInt(n, lo, hi) {
   if (!Number.isFinite(x)) return lo;
   return Math.max(lo, Math.min(hi, x));
 }
+
+/**
+ * Thin physics check: d20 + MIGHT vs hardness-derived DC.
+ * Returns roll data + a mechanicsLine in the same format as resolveMove,
+ * so the front-end dice roller fires on physical interactions.
+ * No narrative deltas — only the roll math.
+ */
+export function rollPhysicsCheck(world, { actorId = 'party', hardness = 2, intentText = '' } = {}) {
+  const w = ensureWorld(world);
+  const actor = findActor(w, actorId);
+
+  // DC 8 (cloth/trivial) → DC 18 (stone/near-impossible)
+  const dc = clampInt(8 + Math.round(clampInt(hardness, 0, 5) * 2), 6, 20);
+
+  const seed = seedFromString(
+    `${w.meta.seed}|physics|${w.scene?.promptSeed ?? 0}|${(w.timeline || []).length}|${actorId}|${intentText}`
+  );
+  const rng = makeRng(seed);
+  const rawDie = rng.int(1, 20);
+
+  const statBonus = statMod(actor?.stats?.MIGHT);
+  const roll = clampInt(rawDie + statBonus, 1, 30);
+  const margin = roll - dc;
+
+  const outcome =
+    rawDie === 1 ? 'failure' :
+    rawDie === 20 ? 'success' :
+    margin >= 2 ? 'success' :
+    margin >= -2 ? 'mixed' :
+    'failure';
+
+  const sb = statBonus ? (statBonus > 0 ? `+${statBonus}` : String(statBonus)) : '';
+  const nat = rawDie === 1 ? ' | NAT1' : rawDie === 20 ? ' | NAT20' : '';
+  const risk = (hardness / 5).toFixed(2);
+  const mechanicsLine = `[roll:${roll} vs DC:${dc} → ${outcome} | margin:${margin} | approach:force | stake:action | risk:${risk} | stat:MIGHT${sb}${nat}]`;
+
+  return { roll, rawDie, dc, outcome, margin, mechanicsLine };
+}

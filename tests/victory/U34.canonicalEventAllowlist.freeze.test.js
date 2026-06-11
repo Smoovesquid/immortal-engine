@@ -16,7 +16,7 @@ test('canonical event allowlist freeze', () => {
     .map(s => s.replace(/['"`\s]/g, ''))
     .filter(Boolean);
 
-  const frozen = ['CANON_CREATE', 'rumor.minted', 'rumor.propagated', 'rumor.verified', 'rumor.forgotten', 'npcDecision'];
+  const frozen = ['CANON_CREATE', 'rumor.minted', 'rumor.propagated', 'rumor.verified', 'rumor.forgotten', 'npcDecision', 'dm.ruling'];
 
   assert.deepEqual(types, frozen, 'Canonical event allowlist changed');
 });

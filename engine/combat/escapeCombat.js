@@ -40,6 +40,7 @@ import { rollDice } from './diceRoller.js';
 import { coverForRoom, bestCover } from '../structures/coverFeatures.js';
 import { applyCondition, hasCondition, removeAllConditions } from './conditions.js';
 import { xpForEnemies } from '../ruleset/core/xp.js';
+import { getItemDef } from '../ruleset/core/items/index.js';
 import { levelUpSheet, levelForXp } from '../chargen/srd/levelUp.js';
 
 // ── Player build (level-1 hedge-caster escapee) ──────────────────────────────
@@ -303,6 +304,26 @@ function slotsLeft(pc) {
   return lowestSlot(pc) > 0 ? 1 : 0;
 }
 
+// P-68 — the bottle in your pack. Prefers what the text names; otherwise the
+// first consumable that would do something right now.
+function findConsumable(pc, text) {
+  const t = String(text || '').toLowerCase();
+  const items = (pc?.inventory?.items || [])
+    .map(it => ({ it, def: getItemDef(it.defRef) }))
+    .filter(x => x.def && x.def.kind === 'consumable' && x.def.effect);
+  if (!items.length) return null;
+  const named = items.find(x => x.def.name.toLowerCase().split(/\s+/).some(wd => wd.length > 3 && t.includes(wd)));
+  return named || items[0];
+}
+
+function rollAmount(rng, spec) {
+  const m = String(spec || '').match(/^(\d+)d(\d+)([+-]\d+)?$/);
+  if (!m) return Math.max(1, Math.trunc(Number(spec)) || 1);
+  let total = parseInt(m[3] || '0', 10);
+  for (let i = 0; i < parseInt(m[1], 10); i++) total += rng.int(1, parseInt(m[2], 10));
+  return Math.max(1, total);
+}
+
 function cureInfo(pc) {
   const d = pc?.dnd;
   if (!d || !d.spellcasting) return null;
@@ -559,6 +580,10 @@ export function parseEscapeAction(text) {
   if (/\b(second\s+wind|rally)\b/.test(t)) return { verb: 'secondwind' };
   if (/\b(breathe|breath|exhale)\b/.test(t)) return { verb: 'breath' };
   if (/\blay\s+(on\s+)?hands?\b/.test(t)) return { verb: 'layhands' };
+  // P-68 — drinking something you carry beats casting: "drink the potion",
+  // "quaff", "use the antidote". Checked before 'cure' so "drink a healing
+  // potion" reaches the bottle, not the spell list.
+  if (/\b(potions?|draught|quaff|elixir|antidote)\b/.test(t) || /\bdrink\b/.test(t)) return { verb: 'potion' };
   if (/\b(cure|heal|mend)\b/.test(t)) return { verb: 'cure' };
   // Slot spells. Witch bolt must outrank the generic "bolt" (a fire bolt
   // verb); shield gets its own verb so the resolver can decide spell vs guard.
@@ -908,6 +933,35 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
       }
     } else {
       beats.push('You press your hands to the wound, but no light answers.');
+    }
+  } else if (verb === 'potion') {
+    const found = findConsumable(pc, actionText);
+    if (!found) {
+      beats.push('You slap your pockets — no potion, no draught, nothing to drink but resolve.');
+    } else if (found.def.effect.kind === 'heal') {
+      const maxHp = Number(w.meta.escapeMaxHp) || playerMaxHp(pc);
+      const before = Number(w.meta.escapeHp) || 0;
+      if (before >= maxHp) {
+        beats.push(`You're already whole — the ${found.def.name.toLowerCase()} stays corked.`);
+      } else {
+        const heal = Math.min(maxHp - before, rollAmount(rng, found.def.effect.amount));
+        w = applyDeltas(w, [{ op: 'removeItemById', entityId: pc.id || 'party', itemId: found.it.id }]);
+        w = { ...w, meta: { ...w.meta, escapeHp: before + heal } };
+        beats.push(`You pull the cork with your teeth and drink. The ${found.def.name.toLowerCase()} burns going down — ${heal} HP back. (${before + heal}/${maxHp}.)`);
+      }
+    } else if (found.def.effect.kind === 'removeCondition') {
+      const cond = String(found.def.effect.condition || '');
+      const had = hasCondition(pc.conditions, cond);
+      w = applyDeltas(w, [{ op: 'removeItemById', entityId: pc.id || 'party', itemId: found.it.id }]);
+      if (had) {
+        const conditions = (pc.conditions || []).filter(c => String(c?.name || c) !== cond);
+        w = { ...w, party: [{ ...w.party[0], conditions }, ...w.party.slice(1)] };
+        beats.push(`The ${found.def.name.toLowerCase()} is bitter as bad news, but the ${cond} lifts like fog off a field.`);
+      } else {
+        beats.push(`You drink the ${found.def.name.toLowerCase()}. Bitter — and, as far as you can tell, unnecessary.`);
+      }
+    } else {
+      beats.push(`The ${found.def.name.toLowerCase()} stays in your pack — no use for it here.`);
     }
   } else if (verb === 'cure') {
     const cure = cureInfo(pc);

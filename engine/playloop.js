@@ -650,6 +650,14 @@ function playerMoveCore(world, packsById, text) {
     if (traded) return traded;
   }
 
+  // P-68 — "I drink the healing potion" out of combat: consume the item,
+  // apply its effect. In combat the escape resolver owns the bottle (it
+  // costs the action there, RAW).
+  if (!w.combat?.active && !w.scene?.dialogue) {
+    const drank = tryUseConsumable(w, text);
+    if (drank) return drank;
+  }
+
   if (!w.combat?.active && !w.scene?.dialogue) {
     const examined = tryExamineTarget(w, text);
     if (examined) {
@@ -2435,6 +2443,66 @@ const TRADE_BUY_RE = /\b(?:buy|purchase)\b\s+(.+)/i;
 const TRADE_SELL_RE = /\b(?:sell)\b\s+(.+)/i;
 const TRADE_BROWSE_RE = /\b(?:what(?:'s| is| do you have| have they got)?\s+(?:for sale|in stock|to sell|do .* sell)|browse\b|see (?:the |your )?wares|look at (?:the |your )?wares|any(?:thing)? for sale|visit the (?:shop|store|market)|check (?:the )?(?:shop|store|market))/i;
 const TRADE_HAGGLE_RE = /\b(?:haggle|barter|talk\s+(?:\w+\s+)?down|discount|better price|best price|knock\s+\w+\s+off|drive a bargain)\b/i;
+
+// ── P-68 — usable consumables ────────────────────────────────────────────────
+
+const CONSUME_RE = /\b(?:drink|quaff|swig|down|use|take|swallow|apply)\b.*\b(?:potion|draught|elixir|antidote|tonic|remedy)s?\b|\bdrink\b.*\bhealing\b/i;
+
+function tryUseConsumable(w, text) {
+  const t = String(text || '');
+  if (!CONSUME_RE.test(t)) return null;
+  const pc = w.party?.[0];
+  const carried = (pc?.inventory?.items || [])
+    .map(it => ({ it, def: getItemDef(it.defRef) }))
+    .filter(x => x.def && x.def.kind === 'consumable' && x.def.effect);
+  if (!carried.length) {
+    return { world: w, output: { narration: `Wizard: You turn out your pack — no potion, no draught, nothing to drink but water and resolve.`, mechanics: '[consume:none]' } };
+  }
+  const tl = t.toLowerCase();
+  const found = carried.find(x => x.def.name.toLowerCase().split(/\s+/).some(wd => wd.length > 3 && tl.includes(wd))) || carried[0];
+
+  if (found.def.effect.kind === 'heal') {
+    const maxHp = Number(w.meta?.escapeMaxHp) || 0;
+    const before = Number(w.meta?.escapeHp) || 0;
+    if (maxHp > 0 && before >= maxHp) {
+      return { world: w, output: { narration: `Wizard: You're already whole — the ${found.def.name.toLowerCase()} keeps better in the pack than in you.`, mechanics: '[consume:unneeded]' } };
+    }
+    const rng = makeRng(seedFromString(`${w.meta.seed}|consume|${w.timeline.length}`));
+    const m = String(found.def.effect.amount || '1d4').match(/^(\d+)d(\d+)([+-]\d+)?$/);
+    let heal = m ? parseInt(m[3] || '0', 10) : Math.max(1, Number(found.def.effect.amount) || 1);
+    if (m) for (let i = 0; i < parseInt(m[1], 10); i++) heal += rng.int(1, parseInt(m[2], 10));
+    heal = Math.max(1, heal);
+    let w1 = applyDeltas(w, [{ op: 'removeItemById', entityId: pc.id, itemId: found.it.id }]);
+    let line;
+    if (maxHp > 0) {
+      const after = Math.min(maxHp, before + heal);
+      w1 = { ...w1, meta: { ...w1.meta, escapeHp: after } };
+      line = `You drink the ${found.def.name.toLowerCase()} down. Warmth spreads from the chest out — ${after - before} HP back. (${after}/${maxHp}.)`;
+    } else if ((pc.wounds || 0) > 0) {
+      w1 = applyDeltas(w1, [{ op: 'wound', entityId: pc.id, amount: -1 }]);
+      line = `You drink the ${found.def.name.toLowerCase()} down, and one of your wounds closes to a pale seam.`;
+    } else {
+      line = `You drink the ${found.def.name.toLowerCase()} down. Warmth, and the day looks slightly more survivable.`;
+    }
+    w1 = pushEvent(w1, { kind: 'consume', data: { defRef: found.def.defRef, effect: 'heal', amount: heal } });
+    return { world: w1, output: { narration: `Wizard: ${line}`, mechanics: `[consume | ${found.def.name} | heal ${heal}]` } };
+  }
+
+  if (found.def.effect.kind === 'removeCondition') {
+    const cond = String(found.def.effect.condition || '');
+    const had = (pc.conditions || []).some(c => String(c?.name || c) === cond);
+    let w1 = applyDeltas(w, [{ op: 'removeItemById', entityId: pc.id, itemId: found.it.id }]);
+    if (had) {
+      const conditions = (pc.conditions || []).filter(c => String(c?.name || c) !== cond);
+      w1 = { ...w1, party: [{ ...w1.party[0], conditions }, ...w1.party.slice(1)] };
+      w1 = pushEvent(w1, { kind: 'consume', data: { defRef: found.def.defRef, effect: 'removeCondition', condition: cond } });
+      return { world: w1, output: { narration: `Wizard: The ${found.def.name.toLowerCase()} is bitter as bad news, but the ${cond} lifts like fog off a field.`, mechanics: `[consume | ${found.def.name} | cured ${cond}]` } };
+    }
+    return { world: w, output: { narration: `Wizard: Nothing ails you that a ${found.def.name.toLowerCase()} would fix — it keeps better corked.`, mechanics: '[consume:unneeded]' } };
+  }
+
+  return { world: w, output: { narration: `Wizard: The ${found.def.name.toLowerCase()} isn't something you can just drink to advantage right now.`, mechanics: '[consume:no-effect]' } };
+}
 
 function tryTrade(w, text) {
   const t = String(text || '').trim();

@@ -87,7 +87,16 @@ clock. Prices: basePrice modulated by settlement economy.
   when the shop wouldn't want it; UX2 routing rows for trade utterances;
   suite + playtest:quick green.
 
-### P-68 — Usable consumables
+### P-68 — Usable consumables ✅ DONE 2026-06-11
+**Shipped:** out of combat, `tryUseConsumable` in playloop ("I drink the healing
+potion" → removeItemById + effect; full-HP keeps the cork in; honest answer
+when you have none; named bottle picked from a mixed pack). In combat, a
+`potion` verb in the escape resolver (checked before 'cure' so "drink a healing
+potion" reaches the bottle, not the spell list) — heals capped, costs the
+action, enemies still swing. Antidote cure branch wired but dormant until
+party `conditions` persist (noted in U120-05; P-69's natural cargo). U120 ×6,
+UX2 +2 CONSUME rows, suite 7,439 green, playtest:quick clean, live-verified
+(bought at 4/11 HP, drank to 8/11, purse and pack updated on screen).
 **Why:** potions drop from loot but can't be drunk. Table-stakes D&D.
 **Objective:** "I drink the healing potion" (in and out of combat) consumes the
 item via `removeItemById` and applies `effect` (heal 2d4+2, cure poisoned).

@@ -57,6 +57,7 @@ function routeClass(res) {
   if (/combat:r\d|combat:parley|combat:victory|ambush/.test(m)) return 'COMBAT-TURN';
   if (/observe only|trivial/.test(m)) return 'FREE-ACTION';
   if (/trade:/.test(m)) return 'TRADE';
+  if (/consume/.test(m)) return 'CONSUME';
   if (/roll:\d+/.test(m)) return 'ROLL';
   return `OTHER(${m})`;
 }
@@ -87,6 +88,9 @@ const OUT_OF_COMBAT_TABLE = [
   ['I buy a healing potion', ['TRADE']],
   ['sell the rusty dagger', ['TRADE']],
   ['I want to browse the wares', ['TRADE']],
+  // P-68 — drinking what you carry is item use, not dice or physics
+  ['I drink my healing potion', ['CONSUME']],
+  ['quaff a potion', ['CONSUME']],
 ];
 
 test('UX2-01: out-of-combat routing table', () => {

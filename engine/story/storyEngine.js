@@ -10,7 +10,7 @@ import { getArcs } from './registry.js';
 import { applyDeltas } from '../effectsCore.js';
 import { hasFact } from '../ledgerUtils.js';
 
-const MAX_ACTIVE = 3;
+const MAX_ACTIVE = 4;
 
 // ── helpers ─────────────────────────────────────────────────────────────────
 
@@ -125,6 +125,7 @@ function plantKnows(w, arc, castIds) {
           factId: k.factId,
           source: k.guard === 'trust' ? 'witnessed' : 'public',
           confidence: 0.95,
+          body: String(k.body || ''),
           event: { era: 0, eventId: k.factId, worldState: null }
         }));
         return fresh.length ? { ...npc, knowledgeGraph: [...kg, ...fresh] } : npc;
@@ -184,14 +185,20 @@ function partyHasItem(w, itemId) {
  */
 export function castArcs(world) {
   let w = world;
-  const story = w.story || { arcs: {} };
   for (const arc of getArcs()) {
-    const st = story.arcs[arc.arc];
+    // Read story state from the LIVE world — earlier iterations of this loop
+    // may have cast an arc, and we must see those castIds and counts.
+    const arcs = (w.story && w.story.arcs) || {};
+    const st = arcs[arc.arc];
     if (st && st.status !== 'dormant') continue;
-    const activeCount = Object.values(story.arcs).filter(a => a.status === 'cast' || a.status === 'active').length;
+    const activeCount = Object.values(arcs).filter(a => a.status === 'cast' || a.status === 'active').length;
     if (activeCount >= MAX_ACTIVE) break;
 
-    const taken = new Set();
+    // An NPC can star in only one arc at a time — seed `taken` with every
+    // ref already cast by other arcs, then add this arc's picks as we go.
+    const taken = new Set(
+      Object.values(arcs).flatMap(a => Object.values(a.castIds || {}))
+    );
     const castIds = {};
     let ok = true;
     for (const c of arc.cast) {

@@ -121,7 +121,7 @@ story: {
 }
 ```
 
-Caps: ≤8 loaded arcs, ≤3 simultaneously `active`. Invariants assert status
+Caps: ≤8 loaded arcs, ≤4 simultaneously cast/`active`. Invariants assert status
 enum, stage exists in the arc file, castIds point at real NPCs.
 
 ## Tick points

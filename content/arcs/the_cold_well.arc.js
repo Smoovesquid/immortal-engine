@@ -17,7 +17,7 @@ export default {
     {
       role: 'the-witness',
       bind: {
-        roles: ['laborer', 'trader', 'innkeeper', 'elder', 'artisan', 'healer'],
+        roles: ['laborer', 'trader', 'innkeeper', 'elder', 'artisan', 'healer', 'scavenger', 'mediator', 'scholar'],
         personality: { honesty: '>0.4' }
       },
       knows: [

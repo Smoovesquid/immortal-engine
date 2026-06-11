@@ -625,7 +625,9 @@ async function doSubmitMove() {
   }
   let baseNarration = output?.narration || '...';
   // P6 — a dialogue reply gets the local NPC voice when available.
-  if (output?.dialogue) {
+  // EXCEPTION: authored testimony (story arcs) is spoken verbatim — the
+  // writer's words are the content; no model paraphrases them.
+  if (output?.dialogue && !output.dialogue.factBody) {
     const spoken = await tryLocalNpcVoice(output.dialogue);
     if (spoken) baseNarration = spoken;
   }

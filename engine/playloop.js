@@ -542,6 +542,7 @@ function playerMoveCore(world, packsById, text) {
             mode: String(asked.outcome.mode || ''),
             mood: String(asked.outcome.brainMood || ''),
             factPhrase: asked.outcome.factId ? factPhrase(asked.outcome.factId) : '',
+            factBody: String(asked.outcome.factBody || ''),
             trustLevel: Number(asked.outcome.trustLevel) || 0,
             playerLine: String(text || '')
           }
@@ -2304,12 +2305,23 @@ function dialogueAskNarration(outcome, world) {
   const phrase = factPhrase(outcome?.factId);
   const V = (key, variants) => `Wizard: ${pickVariant(variants, world, `say:${key}`)}`;
   switch (outcome?.mode) {
-    case 'shared':
+    case 'shared': {
+      // Authored testimony (story arcs): the words are the content. Speak them
+      // verbatim, framed flat — no template can carry what the writer wrote.
+      const body = String(outcome?.factBody || '').trim();
+      if (body) {
+        return V('sharedBody', [
+          `Wizard: ${name} is quiet a moment. Then they tell it, plainly: "${body}"`,
+          `Wizard: ${name} looks at you a while before answering. "${body}"`,
+          `Wizard: ${says}: "${body}"`
+        ].map(t => t.replace(/^Wizard: /, '')));
+      }
       return V('shared', [
         `${name} leans in. "${capFirst(phrase)}? Aye, I'll tell you what I know." And they do — plainly, holding nothing back.`,
         `"You're asking about ${phrase}." ${says}. "Fair enough. Listen." What follows has the ring of truth.`,
         `${name} glances round, then talks — ${phrase}, laid out straight.`
       ]);
+    }
     case 'recruited':
       return V('recruited', [
         `"Alright." ${name} rolls their shoulders. "I'm with you. Lead on." They fall into step beside you.`,

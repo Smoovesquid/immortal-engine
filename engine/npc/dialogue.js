@@ -313,6 +313,9 @@ export function askNpc(world, text) {
       topic: factId || '',
       mode,
       factId: factId || '',
+      // Authored facts (story arcs) carry verbatim testimony — the words ARE
+      // the content, so the narration layer speaks them instead of a template.
+      factBody: String((npc.knowledgeGraph || []).find(f => f.factId === factId)?.body || ''),
       trustLevel: nextTrust,
       trustDelta,
       text: String(text || ''),

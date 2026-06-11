@@ -438,8 +438,8 @@ export function assertWorldInvariants(world) {
       }
     }
   }
-  if (activeArcs > 3) {
-    throw new Error(`Invariant: ${activeArcs} simultaneously cast/active story arcs exceeds cap 3`);
+  if (activeArcs > 4) {
+    throw new Error(`Invariant: ${activeArcs} simultaneously cast/active story arcs exceeds cap 4`);
   }
 
   // ── Pass R1 — rumor layer invariants ──────────────────────────────────────

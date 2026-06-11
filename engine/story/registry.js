@@ -5,8 +5,12 @@
 // the same set loads in node and the browser. Cap: 8 loaded arcs.
 
 import theColdWell from '../../content/arcs/the_cold_well.arc.js';
+import whatTheFireLeft from '../../content/arcs/what_the_fire_left.arc.js';
+import theJudgePasses from '../../content/arcs/the_judge_passes.arc.js';
+import theWagesOfBlood from '../../content/arcs/the_wages_of_blood.arc.js';
 
-const BUILTIN_ARCS = [theColdWell];
+// Order is casting priority when active slots are scarce.
+const BUILTIN_ARCS = [theColdWell, whatTheFireLeft, theJudgePasses, theWagesOfBlood];
 
 const MAX_ARCS = 8;
 const VALID_SCALES = new Set(['village', 'county', 'realm']);

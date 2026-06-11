@@ -148,7 +148,10 @@ test('G10-08: castArcs is idempotent and story state survives ensureWorld + hash
   const w = begin(SEED);
   const again = castArcs(w);
   assert.deepEqual(stateOf(again), stateOf(w));
-  assert.equal(w.rumors.filter(r => r.id.startsWith('rumor:arc:')).length, 1, 'no duplicate hook rumors');
+  const hookIds = w.rumors.filter(r => r.id.startsWith('rumor:arc:')).map(r => r.id);
+  assert.equal(new Set(hookIds).size, hookIds.length, 'no duplicate hook rumors');
+  const castCount = Object.values(w.story.arcs).filter(a => a.status === 'cast').length;
+  assert.equal(hookIds.length, castCount, 'exactly one hook rumor per cast arc');
 
   const roundTrip = ensureWorld(JSON.parse(JSON.stringify(w)));
   assert.deepEqual(roundTrip.story, w.story);

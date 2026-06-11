@@ -425,6 +425,14 @@ function continueSlot1() {
 }
 
 function persistAndRehash(world) {
+  // R0 — carry walk position from ui.place into the world before saving,
+  // so a playerMove doesn't clobber where the player physically stood.
+  if (ui.place.ux != null && ui.place.nodeId && Array.isArray(world?.party) && world.party[0]) {
+    const prev = world.party[0].position || {};
+    if (String(prev.nodeId ?? '') === ui.place.nodeId || !prev.nodeId) {
+      world.party[0].position = { ...prev, nodeId: ui.place.nodeId, ux: ui.place.ux, uy: ui.place.uy };
+    }
+  }
   saveSlot(localStorage, world, 'slot1');
   ui.world = ensureWorld(world);
   ui.worldHash = '(computing...)';
@@ -2006,7 +2014,18 @@ function renderWalkPlace(world) {
   const canvas = el('canvas', { width: String(W), height: String(W), class: 'local-map-canvas' });
   let pm; try { pm = createPlaceMap(canvas, { seed: String(place.seed || 'place'), fog: true, sight: 8 }); } catch { placeCtl = null; return renderLocalMap(world, { compact: true }); }
   const redraw = () => { try { pm.draw(place); } catch {} };
-  const applyMove = (np) => { ui.place.ux = np.ux; ui.place.uy = np.uy; place.tokens[0].ux = np.ux; place.tokens[0].uy = np.uy; redraw(); };
+  const applyMove = (np) => {
+    ui.place.ux = np.ux; ui.place.uy = np.uy;
+    place.tokens[0].ux = np.ux; place.tokens[0].uy = np.uy;
+    // R0 — persist walk position so reload restores exactly where you stood.
+    // Does NOT trigger render() or change worldHash (position is excluded from hash projection).
+    if (ui.world?.party?.[0]) {
+      const prev = ui.world.party[0].position || {};
+      ui.world.party[0].position = { ...prev, nodeId, ux: np.ux, uy: np.uy };
+      try { saveSlot(localStorage, ui.world, 'slot1'); } catch {}
+    }
+    redraw();
+  };
   redraw();
   placeCtl = {
     nodeId,

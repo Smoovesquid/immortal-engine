@@ -5,7 +5,7 @@
 import { clampInt } from './util.js';
 import { ensureWorld } from './state.js';
 import { ensureMap } from './map/mapState.js';
-import { resolveBreakRuling, resolveFireRuling } from './rulings/index.js';
+import { resolveBreakRuling, resolveFireRuling, resolveCoverRuling } from './rulings/index.js';
 
 // Banned words in LLM-generated notes (Heartbreak Principle: no dramatic editorializing).
 const BANNED_WORDS = [
@@ -378,6 +378,7 @@ const FORCE_RE  = /\b(rip|break|smash|tear|kick|punch|shatter)\b/;
 const EXAMINE_RE = /\b(search|examine|inspect|look at|check)\b/;
 const TAKE_RE   = /\b(take|grab|pick up|steal)\b/;
 const FIRE_RE   = /\b(light|ignite|set fire|torch|kindle|burn)\b/i;
+const COVER_RE  = /\b(hide\s+behind|duck\s+behind|crouch\s+behind|brace\s+against|shelter\s+behind|press\s+against|take\s+cover)\b/i;
 
 function offlineFallback(world, playerText, detection) {
   const w = ensureWorld(world);
@@ -443,6 +444,21 @@ function offlineFallback(world, playerText, detection) {
       material: fMaterial,
       noiseBy: ruling.noiseBy,
       verbClass: 'fire'
+    };
+  }
+
+  // Cover/hide words: delegate to cover ruling (no d20, auto-resolves)
+  if (COVER_RE.test(text)) {
+    const ruling = resolveCoverRuling(f, { actorId });
+    return {
+      plausible: true,
+      deltas: ruling.deltas,
+      description: ruling.description,
+      fallbackUsed: true,
+      hardness: fHardness,
+      material: fMaterial,
+      noiseBy: ruling.noiseBy,
+      verbClass: 'cover'
     };
   }
 

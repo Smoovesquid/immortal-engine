@@ -154,6 +154,47 @@ export function resolveFireRuling(f, { nodeId, fIdx } = {}) {
   };
 }
 
+// ── Cover ────────────────────────────────────────────────────────────────────
+
+/**
+ * resolveCoverRuling(f, ctx)
+ * What happens when the player tries to hide behind or brace against f?
+ * ctx: { actorId }
+ *
+ * Grants advantage (+2 to next finesse/stealth roll) and moves player zone
+ * to 'near'. Fails silently for objects too small to provide cover.
+ */
+export function resolveCoverRuling(f, { actorId } = {}) {
+  const name = String(f.name || 'the object');
+  const bulk = typeof f.bulk === 'number' ? f.bulk : 2;
+
+  // Objects with bulk < 2 (lantern, small items) are too small
+  if (bulk < 2) {
+    return {
+      deltas: [],
+      description: `${name} is too small to hide behind.`,
+      noiseBy: 0,
+      verbClass: 'cover'
+    };
+  }
+
+  const description = bulk >= 4
+    ? `You duck behind ${name}. It gives solid cover.`
+    : `You press against ${name}, shielding yourself from sight.`;
+
+  return {
+    deltas: [
+      // Move player into the near zone (crouching by the object)
+      { op: 'position', entityId: actorId, set: { zone: 'near' } },
+      // Advantage token: +2 to their next finesse/stealth roll
+      { op: 'advantage', actorId, by: +1 }
+    ],
+    description,
+    noiseBy: 0,
+    verbClass: 'cover'
+  };
+}
+
 // ── Noise ────────────────────────────────────────────────────────────────────
 
 /**

@@ -1547,7 +1547,7 @@ function playerMoveCore(world, packsById, text) {
   //   success → full damage (all deltas)
   //   mixed   → state change only (no item extraction)
   //   failure → no furniture change, but still loud
-  const PHYSICS_VERB_RE = /\b(examine|inspect|search|look at|check|rip|break|smash|tear|kick|punch|shatter|take|grab|pick up|steal|light|ignite|set fire|torch|kindle|burn)\b/i;
+  const PHYSICS_VERB_RE = /\b(examine|inspect|search|look at|check|rip|break|smash|tear|kick|punch|shatter|take|grab|pick up|steal|light|ignite|set fire|torch|kindle|burn|hide\s+behind|duck\s+behind|crouch\s+behind|brace\s+against|shelter\s+behind|press\s+against|take\s+cover)\b/i;
   const FORCE_VERB_RE   = /\b(rip|break|smash|tear|kick|punch|shatter)\b/i;
   if (PHYSICS_VERB_RE.test(String(text || ''))) {
     const detection = detectPhysicalInteraction(w, text);
@@ -1595,8 +1595,11 @@ function playerMoveCore(world, packsById, text) {
 
         w = applyDeltas(w, appliedDeltas);
 
-        // Canon log: record ruling for force actions that mutated the world
-        if (isForce && appliedDeltas.some(d => d.op === 'modifyFurniture' || d.op === 'removeFurniture')) {
+        // Canon log: record ruling for force actions that mutated the world,
+        // and for cover actions (position change is a canonical ruling)
+        const isCover = String(physics.verbClass || '') === 'cover';
+        if ((isForce && appliedDeltas.some(d => d.op === 'modifyFurniture' || d.op === 'removeFurniture'))
+          || (isCover && appliedDeltas.some(d => d.op === 'position'))) {
           const fMatch = detection.matches.find(m => m.type === 'furniture');
           const targetId = `${(w.map && w.map.currentNodeId) || 'node'}:furniture:${fMatch?.index ?? 0}`;
           const rulingId = `dm.ruling:${w.meta?.seed || ''}:${(w.timeline || []).length}`;

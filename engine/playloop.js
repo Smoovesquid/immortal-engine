@@ -34,6 +34,8 @@ import { evaluateEncounter, selectCreatures, spawnEncounter } from './combat/enc
 import { isMetaQuestion, handleMetaQuestion, isNullAction, isQuestionShaped } from './grace/gracefulAdjudication.js';
 import { resolveEscapeCombatTurn, initEscapeHp, initEscapeKit, shortRest, longRest, applySurpriseRound, parseEscapeAction, combatStatusAnswer } from './combat/escapeCombat.js';
 import { statMod, maxWounds } from './ruleset/core/stats.js';
+import { shopsHere, stockFor, settlementStock, economyAt, priceToSell, shopBuys, restockEpoch, purseTotalCopper, pursePay, purseReceive, formatPrice, matchByName } from './economy/shop.js';
+import { getItemDef } from './ruleset/core/items/index.js';
 
 // Pure-ish play loop: world -> {world, output}
 
@@ -639,6 +641,15 @@ function playerMoveCore(world, packsById, text) {
   // named — real furniture (name/state/notes/parts) or an inventory item — and on
   // a miss pivots to what IS present. Falls through to the room-overview explore
   // branch below when no specific target is named ("examine" / "look around").
+  // P-67 — trade: "I buy a healing potion" / "sell the shortsword" / "what's
+  // for sale?" resolve in prose at a settlement with shops. No menus; the DM
+  // counts coins. Skipped in combat (nobody trades mid-fight) and dialogue
+  // (everything typed there is said to the NPC).
+  if (!w.combat?.active && !w.scene?.dialogue) {
+    const traded = tryTrade(w, text);
+    if (traded) return traded;
+  }
+
   if (!w.combat?.active && !w.scene?.dialogue) {
     const examined = tryExamineTarget(w, text);
     if (examined) {
@@ -2415,6 +2426,132 @@ function nameMatches(name, target, tail) {
 
 // Returns a grounded examination line, or null to defer to the room-overview
 // explore branch (when there is no specific, resolvable target).
+// ── P-67 — the spend loop ────────────────────────────────────────────────────
+// Buy/sell/browse at settlement shops, resolved in prose. Stock and prices come
+// from engine/economy/shop.js (deterministic, economy-modulated). Trades are
+// canon: a 'trade' timeline event both records the deal and depletes shelves.
+
+const TRADE_BUY_RE = /\b(?:buy|purchase)\b\s+(.+)/i;
+const TRADE_SELL_RE = /\b(?:sell)\b\s+(.+)/i;
+const TRADE_BROWSE_RE = /\b(?:what(?:'s| is| do you have| have they got)?\s+(?:for sale|in stock|to sell|do .* sell)|browse\b|see (?:the |your )?wares|look at (?:the |your )?wares|any(?:thing)? for sale|visit the (?:shop|store|market)|check (?:the )?(?:shop|store|market))/i;
+const TRADE_HAGGLE_RE = /\b(?:haggle|barter|talk\s+(?:\w+\s+)?down|discount|better price|best price|knock\s+\w+\s+off|drive a bargain)\b/i;
+
+function tryTrade(w, text) {
+  const t = String(text || '').trim();
+  if (!t) return null;
+  const buyM = t.match(TRADE_BUY_RE);
+  const sellM = t.match(TRADE_SELL_RE);
+  const browse = TRADE_BROWSE_RE.test(t);
+  if (!buyM && !sellM && !browse) return null;
+  // "buy you a drink" is charm, not commerce — leave it to the social layer.
+  if (/\bbuy\s+(?:you|him|her|them|us)\b/i.test(t)) return null;
+
+  const { node, shops } = shopsHere(w);
+  if (!shops.length) {
+    const where = node?.settlement ? 'No shop keeps a counter here' : 'There is no market out here';
+    return { world: w, output: { narration: `Wizard: ${where} — coin is just weight until you reach a settlement with a shopfront.`, mechanics: '[trade:no-shop]' } };
+  }
+  const economy = economyAt(node);
+  const pc = w.party?.[0];
+
+  // ── browse ──
+  if (browse && !buyM && !sellM) {
+    const stock = settlementStock(w);
+    if (!stock.length) {
+      return { world: w, output: { narration: `Wizard: Shelves stand near bare — ${economy === 'desperate' ? 'this place is down to what it cannot spare' : 'nothing worth your coin today'}. Trade turns with the week.`, mechanics: '[trade:browse|empty]' } };
+    }
+    const byShop = {};
+    for (const line of stock) (byShop[line.shopType] = byShop[line.shopType] || []).push(line);
+    const parts = Object.entries(byShop).map(([type, lines]) =>
+      `the ${type} has ${lines.map(l => `${l.name}${l.qty > 1 ? ` (×${l.qty})` : ''} at ${formatPrice(l.priceCopper)}`).join(', ')}`);
+    return { world: w, output: { narration: `Wizard: ${capFirst(parts.join('; and '))}.`, mechanics: '[trade:browse]' } };
+  }
+
+  // ── sell ──
+  if (sellM) {
+    const items = pc?.inventory?.items || [];
+    const owned = items.map(it => ({ ...it, def: getItemDef(it.defRef) })).filter(it => it.def);
+    const hit = matchByName(sellM[1], owned, (it) => it.def.name);
+    if (!hit) {
+      return { world: w, output: { narration: `Wizard: You turn out your pack — nothing by that name you could put on a counter.`, mechanics: '[trade:sell|not-owned]' } };
+    }
+    const buyerIdx = shops.findIndex(sh => shopBuys(sh.type, hit.def));
+    if (buyerIdx === -1) {
+      const why = hit.def.kind === 'quest' ? 'turns it over once and slides it back — some things have no price here' : `has no use for a ${hit.def.name.toLowerCase()}`;
+      return { world: w, output: { narration: `Wizard: The ${shops[0].type} keeper ${why}. No sale.`, mechanics: '[trade:sell|refused]' } };
+    }
+    const price = priceToSell(hit.def, economy);
+    let w1 = applyDeltas(w, [
+      { op: 'removeItemById', entityId: pc.id, itemId: hit.id },
+      { op: 'setPurse', entityId: pc.id, purse: purseReceive(pc.purse, price) }
+    ]);
+    w1 = pushEvent(w1, { kind: 'trade', data: { action: 'sell', nodeId: node.id, shopIdx: buyerIdx, epoch: restockEpoch(w), defRef: hit.defRef, qty: 1, priceCopper: price } });
+    return {
+      world: w1,
+      output: {
+        narration: `Wizard: The ${shops[buyerIdx].type} keeper looks the ${hit.def.name.toLowerCase()} over${economy === 'desperate' ? ', sighs at the times,' : ''} and counts out ${formatPrice(price)}. It's theirs now.`,
+        mechanics: `[trade:sell | ${hit.def.name} | +${formatPrice(price)}]`
+      }
+    };
+  }
+
+  // ── buy ──
+  const stock = settlementStock(w);
+  if (!stock.length) {
+    return { world: w, output: { narration: `Wizard: The shelves are bare this week — nothing here to buy until stock turns.`, mechanics: '[trade:buy|empty]' } };
+  }
+  const want = matchByName(buyM[1], stock, (l) => l.name);
+  if (!want) {
+    const have = stock.slice(0, 4).map(l => l.name).join(', ');
+    return { world: w, output: { narration: `Wizard: Nobody here sells that. What's on offer: ${have}.`, mechanics: '[trade:buy|not-stocked]' } };
+  }
+  const qtyM = buyM[1].match(/\b(\d+)\b/);
+  const qty = Math.max(1, Math.min(want.qty, qtyM ? parseInt(qtyM[1], 10) : 1));
+
+  // Haggle: one Persuasion check, priced by how badly the place needs coin.
+  let unitPrice = want.priceCopper;
+  let haggleNote = '';
+  if (TRADE_HAGGLE_RE.test(t)) {
+    const dc = economy === 'thriving' ? 12 : economy === 'stable' ? 13 : 15;
+    const bonus = pc?.dnd ? (Number(pc.dnd.skills?.Persuasion) || 0) : statMod(pc?.stats?.CHARM ?? 10);
+    const rng = makeRng(seedFromString(`${w.meta.seed}|haggle|${node.id}|${w.timeline.length}`));
+    const roll = rng.int(1, 20);
+    if (roll !== 1 && roll + bonus >= dc) {
+      unitPrice = Math.max(1, Math.round(unitPrice * 0.85));
+      haggleNote = ` You talk them down (Persuasion ${roll + bonus} vs DC ${dc}).`;
+    } else {
+      haggleNote = ` The keeper won't budge on the price (Persuasion ${roll + bonus} vs DC ${dc}).`;
+    }
+  }
+
+  const cost = unitPrice * qty;
+  const purseAfter = pursePay(pc?.purse, cost);
+  if (!purseAfter) {
+    const holding = purseTotalCopper(pc?.purse);
+    return {
+      world: w,
+      output: {
+        narration: `Wizard: The ${want.name.toLowerCase()} runs ${formatPrice(cost)}${qty > 1 ? ' for the lot' : ''} — and you're holding ${holding ? formatPrice(holding) : 'an empty purse'}. The keeper is sympathetic, not charitable.`,
+        mechanics: `[trade:buy | ${want.name} ×${qty} | short ${formatPrice(cost - holding)}]`
+      }
+    };
+  }
+
+  const deltas = [{ op: 'setPurse', entityId: pc.id, purse: purseAfter }];
+  for (let i = 0; i < qty; i++) {
+    deltas.push({ op: 'addItem', entityId: pc.id, item: { id: `buy_${node.id}_${w.timeline.length}_${i}`, defRef: want.defRef, equipped: null } });
+  }
+  let w1 = applyDeltas(w, deltas);
+  w1 = pushEvent(w1, { kind: 'trade', data: { action: 'buy', nodeId: node.id, shopIdx: want.shopIdx, epoch: restockEpoch(w), defRef: want.defRef, qty, priceCopper: cost } });
+  return {
+    world: w1,
+    output: {
+      narration: `Wizard: You count out ${formatPrice(cost)} onto the ${want.shopType} counter.${haggleNote} ${qty > 1 ? `${qty} of them, wrapped and handed over` : `The ${want.name.toLowerCase()} is yours`}.`,
+      mechanics: `[trade:buy | ${want.name} ×${qty} | -${formatPrice(cost)}]`
+    }
+  };
+}
+
 function tryExamineTarget(w, text) {
   if (!INSPECT_VERB.test(String(text || ''))) return null;
   const target = extractInspectTarget(text);

@@ -5,6 +5,7 @@ import { isMetaQuestion, handleMetaQuestion, looksMultiAction } from '../engine/
 import { exitsFrom, ensureMap, cleanPlaceName } from '../engine/map/mapState.js';
 import { escapeOutcome } from '../engine/victory.js';
 import { escapeKitView } from '../engine/combat/escapeCombat.js';
+import { getItemDef } from '../engine/ruleset/core/items/index.js';
 import { hasSlot, loadSlot, saveSlot, exportWorld, importWorld } from '../engine/save.js';
 import { worldHash as worldHashAsync } from '../engine/worldHash.browser.js';
 import { buildMythSpec, mythSpecJson } from '../engine/mythSpec.js';
@@ -1623,7 +1624,11 @@ function inventoryItemLabel(raw) {
   if (typeof raw === 'string') return raw;
   if (typeof raw === 'object') {
     if (raw.name) return String(raw.name);
-    if (raw.defRef) return String(raw.defRef);
+    // typed items carry only a defRef — show the catalog name, not the slug
+    if (raw.defRef) {
+      const def = getItemDef(raw.defRef);
+      return def?.name ? String(def.name) : String(raw.defRef);
+    }
   }
   return String(raw);
 }
@@ -1673,7 +1678,8 @@ function renderInventorySection(world) {
           ),
           el('ul', { class: 'inv-list' },
             unifiedItems.map(it => {
-              const label = String(it.defRef || it.id);
+              const def = getItemDef(it.defRef);
+              const label = def?.name ? String(def.name) : String(it.defRef || it.id);
               const eqTag = it.equipped ? ` [${it.equipped}]` : '';
               return el('li', { class: 'inv-item' }, label + eqTag);
             })

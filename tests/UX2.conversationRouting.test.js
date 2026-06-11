@@ -56,6 +56,7 @@ function routeClass(res) {
   if (/rest:(long|breather)/.test(m)) return 'REST';
   if (/combat:r\d|combat:parley|combat:victory|ambush/.test(m)) return 'COMBAT-TURN';
   if (/observe only|trivial/.test(m)) return 'FREE-ACTION';
+  if (/trade:/.test(m)) return 'TRADE';
   if (/roll:\d+/.test(m)) return 'ROLL';
   return `OTHER(${m})`;
 }
@@ -81,6 +82,11 @@ const OUT_OF_COMBAT_TABLE = [
   ['what can I do here?', ['FREE-ACTION', 'META']],
   ['can I see the mountains from here?', ['ROLL']],            // a real perception ruling
   ['pick up a rock and put it in my pocket', ['ROLL']],        // a real action, not an inventory check
+  // P-67 — trade routes to the spend loop, never to dice or physics
+  ['what do you have for sale?', ['TRADE']],
+  ['I buy a healing potion', ['TRADE']],
+  ['sell the rusty dagger', ['TRADE']],
+  ['I want to browse the wares', ['TRADE']],
 ];
 
 test('UX2-01: out-of-combat routing table', () => {

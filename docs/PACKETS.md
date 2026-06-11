@@ -66,7 +66,14 @@ Source discussions: items/loot/crafting audit + `docs/SALVAGE_AND_BUILD.md`.
 Order matters: gold must mean something before the catalog grows; salvage must
 yield materials before crafting; crafting before construction.
 
-### P-67 — The spend loop (shops buy/sell)
+### P-67 — The spend loop (shops buy/sell) ✅ DONE 2026-06-11
+**Shipped:** `engine/economy/shop.js` (deterministic weekly stock by shop type +
+economy-modulated prices + purse math with change), `tryTrade` in playloop
+(buy/sell/browse/haggle in prose), `setPurse` op, background pocket money at
+chargen, inventory panel shows catalog names. Trades are timeline canon and
+deplete shelves until the weekly restock. U119 ×11, UX2 +4 rows, suite 7,433
+green, playtest:quick clean, live-verified (browse listed two shops; haggled
+a potion to 42g5s with the Persuasion line shown; purse chips updated).
 **Why:** loot is only satisfying when gold means something. Every piece exists
 (settlement `shops` data, `basePrice` on item defs, purse + `addCurrency` op) —
 nothing connects them.

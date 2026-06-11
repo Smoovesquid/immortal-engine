@@ -604,6 +604,20 @@ export function applyDeltas(world, deltas = []) {
       continue;
     }
 
+    // P-67 — replace the whole purse (trade settlements: pay + change in one
+    // atomic write; the playloop validates affordability BEFORE issuing this).
+    if (kind === 'setPurse') {
+      const entityId = resolvePlayerEntityId(w, op.entityId);
+      const src = (op.purse && typeof op.purse === 'object') ? op.purse : null;
+      if (!src) continue;
+      const purse = {};
+      for (const c of ['copper', 'silver', 'gold', 'platinum']) {
+        purse[c] = Math.max(0, Math.trunc(Number(src[c] ?? 0)));
+      }
+      w = mutateEntity(w, entityId, (e) => ({ ...e, purse }));
+      continue;
+    }
+
     // ── Pass R1 — rumor ops ─────────────────────────────────────────────────
 
     if (kind === 'mintRumor') {

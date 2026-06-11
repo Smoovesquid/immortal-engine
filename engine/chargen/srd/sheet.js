@@ -42,6 +42,14 @@ export function rollAbilityPools({ seed = 'seed', reroll = 0 } = {}) {
  *   ritualPicks: { detail, keepsake, lineYouWontCross, rumor }
  * }
  */
+function startingGold(background) {
+  for (const g of (background?.gear || [])) {
+    const m = String(g).match(/(\d+)\s*gp/i);
+    if (m) return Math.max(0, parseInt(m[1], 10));
+  }
+  return 10;
+}
+
 export function createCharacter5e(picks = {}) {
   const seed = String(picks.seed || 'seed');
   const species = getSpecies(picks.speciesId) || getSpecies('human');
@@ -278,6 +286,10 @@ export function createCharacter5e(picks = {}) {
     rollDetails: { method: method === '4d6' ? '4d6-drop-lowest' : 'standard-array', dice: pools ? Object.fromEntries(ABILITY_KEYS.map((k, i) => [k, pools.pools[i]?.dice || []])) : {} },
 
     inventory: equipmentToInventory(equipment),
+
+    // P-67 — starting coin: every SRD background carries pocket money in its
+    // gear list ("pouch (15 gp)"). Parse it; 10 gp if a background omits it.
+    purse: { copper: 0, silver: 0, gold: startingGold(background), platinum: 0 },
 
     traits: {
       vibe: alignment.name.toLowerCase(),

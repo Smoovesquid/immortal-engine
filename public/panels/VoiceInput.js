@@ -23,11 +23,14 @@ const SR = typeof window !== 'undefined'
   : null;
 
 /**
- * createVoiceButton(onResult)
+ * createVoiceButton(onResult, opts?)
  * @param {(transcript: string) => void} onResult  called with final transcript
- * @returns {HTMLButtonElement}
+ * @param {{ onSilence?: () => void }} opts  onSilence fires when recognition
+ *   ends without hearing anything (converse mode re-arms the mic from it)
+ * @returns {HTMLButtonElement}  with .startListening() / .stopListening()
+ *   exposed so converse mode can drive the mic programmatically
  */
-export function createVoiceButton(onResult) {
+export function createVoiceButton(onResult, opts = {}) {
   const btn = document.createElement('button');
   btn.className = 'btn voice-btn';
   btn.setAttribute('aria-label', 'Voice input');
@@ -44,6 +47,8 @@ export function createVoiceButton(onResult) {
   let listening = false;
   // Interim transcript shown in the input while the user speaks
   let lastInterim = '';
+  // Whether this listening session produced a transcript (for onSilence).
+  let gotResult = false;
 
   function setListening(v) {
     listening = v;
@@ -55,6 +60,7 @@ export function createVoiceButton(onResult) {
   function start() {
     if (listening) { stop(); return; }
 
+    gotResult = false;
     recognition = new SR();
     recognition.continuous = false;
     recognition.interimResults = true;
@@ -74,6 +80,7 @@ export function createVoiceButton(onResult) {
       if (interim) lastInterim = interim;
       if (final.trim()) {
         lastInterim = '';
+        gotResult = true;
         onResult(final.trim());
       }
     };
@@ -91,8 +98,12 @@ export function createVoiceButton(onResult) {
       setListening(false);
       // If we got an interim but no final result (quick tap), submit the interim
       if (lastInterim.trim()) {
+        gotResult = true;
         onResult(lastInterim.trim());
         lastInterim = '';
+      } else if (!gotResult && typeof opts.onSilence === 'function') {
+        // Heard nothing at all — let converse mode decide whether to re-arm.
+        opts.onSilence();
       }
     };
 
@@ -114,6 +125,10 @@ export function createVoiceButton(onResult) {
   btn.addEventListener('click', () => {
     start();
   });
+
+  // Converse mode drives the mic without a click.
+  btn.startListening = () => { if (!listening) start(); };
+  btn.stopListening = stop;
 
   // Cleanup: stop if the button is removed from the DOM
   btn.addEventListener('disconnectedCallback', stop);

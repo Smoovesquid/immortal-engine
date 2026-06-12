@@ -37,6 +37,19 @@ import {
 
 tts.init();
 
+// ── Converse mode: the table loop (DM speaks → listens → you speak) ─────────
+// The mic button is recreated on every render; this ref always points at the
+// live one. tts.onIdle fires when the DM's voice actually goes quiet.
+let voiceBtnRef = null;
+let converseSilentRetries = 0;
+tts.onIdle = () => {
+  if (!ui.play?.converse || ui.screen !== 'play') return;
+  if (ui.world?.ending?.locked) return;
+  if (voiceBtnRef && typeof voiceBtnRef.startListening === 'function') {
+    voiceBtnRef.startListening();
+  }
+};
+
 // ?reset — wipe all saved state and start fresh
 if (new URLSearchParams(location.search).has('reset')) {
   Object.keys(localStorage)
@@ -98,7 +111,11 @@ const ui = {
     lines: [],
     lastResolutionKind: 'turn',
     lastCombatSummary: '',
-    pendingLoot: null
+    pendingLoot: null,
+    // Converse mode: the DM speaks, then listens — narration end reopens the
+    // mic, the transcript submits, the reply speaks, repeat. Presentation
+    // only; the engine never knows the difference.
+    converse: (() => { try { return localStorage.getItem('ie_converse') === '1'; } catch { return false; } })()
   },
 
   world: null,
@@ -2323,13 +2340,47 @@ function renderPlay() {
         input,
         (() => {
           const voiceBtn = createVoiceButton((transcript) => {
+            converseSilentRetries = 0;
             ui.play.input = transcript;
             // Patch the live input element so it reflects the spoken text
             const liveInput = document.querySelector('.play-input');
             if (liveInput) liveInput.value = transcript;
             doSubmitMove();
+          }, {
+            // Converse: heard nothing — keep listening a couple of times (you
+            // were thinking), then rest until the DM speaks again or you tap.
+            onSilence: () => {
+              if (!ui.play.converse || ui.screen !== 'play') return;
+              if (converseSilentRetries >= 2) { converseSilentRetries = 0; return; }
+              converseSilentRetries++;
+              if (voiceBtnRef && typeof voiceBtnRef.startListening === 'function') voiceBtnRef.startListening();
+            }
           });
+          voiceBtnRef = voiceBtn;
           return voiceBtn;
+        })(),
+        (() => {
+          // Converse toggle: hands(ish)-free play. Turning it on enables the
+          // DM voice (a conversation needs one) and opens the mic now — this
+          // click is the user gesture browsers want for mic permission.
+          const on = Boolean(ui.play.converse);
+          return el('button', {
+            class: 'btn converse-toggle' + (on ? ' primary' : ''),
+            title: on ? 'Converse mode on — the DM speaks, then listens. Click to stop.' : 'Converse mode: speak with the DM hands-free',
+            onClick: () => {
+              ui.play.converse = !on;
+              try { localStorage.setItem('ie_converse', ui.play.converse ? '1' : '0'); } catch {}
+              if (ui.play.converse) {
+                if (!tts.enabled) tts.toggle();
+                converseSilentRetries = 0;
+                if (voiceBtnRef && typeof voiceBtnRef.startListening === 'function') voiceBtnRef.startListening();
+              } else {
+                if (voiceBtnRef && typeof voiceBtnRef.stopListening === 'function') voiceBtnRef.stopListening();
+                tts.stop();
+              }
+              render();
+            }
+          }, '\u{1F5E3}\u{FE0F}');
         })(),
         el('button', { class: 'btn primary', disabled: ended, onClick: () => doSubmitMove() }, 'Submit')
       )

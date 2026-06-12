@@ -10,6 +10,7 @@ import { filterRumors } from './perspectiveFilter.js';
 import { appendCanonEvent } from '../csl/canonLog.js';
 import { buildNpcContext, fallbackRules, findCachedDecision } from './npcBrain.js';
 import { extractMemory } from './npcMemory.js';
+import { exitsFrom } from '../map/mapState.js';
 
 const TRUST_REVEAL_PUBLIC = 4;
 const TRUST_REVEAL_SECRET = 7;
@@ -102,6 +103,143 @@ export function beginDialogue(world, npcRef) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Common knowledge — what any villager answers without a check.
+//
+// THE DM TEST: a DM playing an innkeeper answers "what's your name?" with a
+// name, "any news?" with a rumor, "which way to town?" with directions. The
+// knowledge graph holds the PERSONAL facts (it outranks this tier and keeps
+// its trust/secret gates); this tier answers from world data the NPC plainly
+// has: themselves, their village, the roads, the rumors they carry. Floor
+// stays deflection — for things they genuinely wouldn't know. Deterministic:
+// fixed templates over world state, no rng.
+
+const ROLE_LINES = {
+  smith: 'I keep the forge here',
+  blacksmith: 'I keep the forge here',
+  innkeeper: 'I keep the inn — beds, beer, and other people\'s business',
+  representative: 'I speak for the caravans that come through',
+  farmer: 'I work the fields, same as my father did',
+  healer: 'I patch up what the road sends me',
+  trader: 'I buy what travels and sell what doesn\'t',
+  merchant: 'I buy what travels and sell what doesn\'t',
+  priest: 'I keep the shrine and the prayers',
+  elder: 'I remember things for people, mostly',
+  hunter: 'I keep the woods honest',
+  guard: 'I watch the road so others don\'t have to'
+};
+
+function bearingBetween(from, to) {
+  const dx = (Number(to?.x) || 0) - (Number(from?.x) || 0);
+  const dy = (Number(to?.y) || 0) - (Number(from?.y) || 0);
+  return Math.abs(dx) >= Math.abs(dy) ? (dx >= 0 ? 'east' : 'west') : (dy >= 0 ? 'south' : 'north');
+}
+
+function distanceWord(from, to) {
+  const d = Math.abs((Number(to?.x) || 0) - (Number(from?.x) || 0)) + Math.abs((Number(to?.y) || 0) - (Number(from?.y) || 0));
+  if (d <= 6) return 'a day\'s walk, maybe less';
+  if (d <= 12) return 'two or three days on the road';
+  return 'a long road — provision for it';
+}
+
+export function commonKnowledgeAnswer(world, npc, text) {
+  const t = String(text || '').toLowerCase();
+  if (!t.trim() || !npc) return null;
+  const w = world || {};
+  const nodes = Array.isArray(w.map?.nodes) ? w.map.nodes : [];
+  const here = nodes.find(n => n && n.id === w.map?.currentNodeId) || null;
+  const trust = Number(npc.conversationState?.trustLevel ?? 5);
+
+  // ── self: they know their own name and trade ──
+  if (/\b(?:who are you|what(?:'s| is) your name|your name\b|what are you called|what do you do(?:\s+here)?\??$|your trade)\b/.test(t)) {
+    const role = String(npc.role || '').toLowerCase();
+    const roleLine = ROLE_LINES[role] || (role ? `I'm the ${role} here, such as it is` : 'I get by');
+    return { mode: 'self', body: `${npc.name}. ${roleLine}.` };
+  }
+
+  // ── news: the rumors they actually carry ──
+  if (/\b(?:any news|the news|news\?|heard anything|anything strange|strange (?:lately|going on)|been happening|goings.?on|rumou?rs?|gossip|tell me a story|tell me something)\b/.test(t)) {
+    const { surfacedRumors } = filterRumors(npc, Array.isArray(w.rumors) ? w.rumors : [], { trust });
+    const freshest = [...surfacedRumors].sort((a, b) => (Number(a.age) || 0) - (Number(b.age) || 0))[0];
+    if (freshest?.body) {
+      return { mode: 'news', body: `You didn't hear it from me — ${String(freshest.body).replace(/[.?!]\s*$/, '')}. Make of that what you will.` };
+    }
+    return { mode: 'news', body: 'Quiet, lately. The kind of quiet folk don\'t quite trust, but quiet.' };
+  }
+
+  // ── directions: the roads they walk (also lore-of-known-places: "what do
+  // you know about <somewhere real>" earns a bearing; unknown names fall
+  // through to place/deflection) ──
+  const wantsDirections = /\b(?:way to|road to|how do i get to|where is|which way|next town|nearest (?:town|village|settlement)|know about|tell me about)\b/.test(t);
+  if (wantsDirections && here) {
+    // A named place they know of?
+    const named = nodes
+      .filter(n => n && n.id !== here.id && n.name && t.includes(String(n.name).toLowerCase()))
+      .sort((a, b) => String(b.name).length - String(a.name).length)[0] || null;
+    const generic = /\b(?:next town|nearest (?:town|village|settlement))\b/.test(t);
+    let dest = named;
+    if (!dest && generic) {
+      dest = nodes
+        .filter(n => n && n.id !== here.id && n.nodeType === 'settlement')
+        .sort((a, b) => (Math.abs((a.x || 0) - (here.x || 0)) + Math.abs((a.y || 0) - (here.y || 0))) - (Math.abs((b.x || 0) - (here.x || 0)) + Math.abs((b.y || 0) - (here.y || 0))))[0] || null;
+    }
+    if (dest) {
+      const exits = exitsFrom(w.map, String(here.id));
+      const adjacentDir = Object.keys(exits || {}).find(dir => String(exits[dir] || '') === String(dest.id));
+      const dir = adjacentDir || bearingBetween(here, dest);
+      const span = adjacentDir ? 'the next road over' : distanceWord(here, dest);
+      return { mode: 'directions', body: `${dest.name}? ${capitalize(dir)} of here — ${span}. The road knows the way better than I can tell it.` };
+    }
+    if (named === null && !generic && /\b(?:way to|road to|how do i get to)\b/.test(t)) {
+      return { mode: 'directions', body: 'Can\'t say I know the place. Roads out of here run the four winds — someone in the next town might know it.' };
+    }
+  }
+
+  // ── services: who sells what, where the work is ──
+  if (/\b(?:selling|for sale|wares|what do you sell|buy (?:something|supplies|gear)|where can i buy|supplies|provisions|equipment)\b/.test(t) && here?.settlement) {
+    const shops = Array.isArray(here.settlement.shops) ? here.settlement.shops.map(s => String(s?.type || '')).filter(Boolean) : [];
+    if (shops.length === 1) {
+      return { mode: 'services', body: `No counter of mine. The ${shops[0]} keeps stock here — coin talks.` };
+    }
+    if (shops.length > 1) {
+      return { mode: 'services', body: `No counter of mine. The ${shops.slice(0, 3).join(' and the ')} keep stock here — coin talks at any of them.` };
+    }
+    return { mode: 'services', body: 'Nothing changes hands here but favors. For shopping you want a bigger town.' };
+  }
+  if (/\b(?:looking for work|need (?:any )?(?:help|a hand)|any work|hiring)\b/.test(t) && here?.settlement) {
+    return { mode: 'services', body: 'Work follows need. Ask where the counters are, or whoever looks busiest — someone always wants a back that bends.' };
+  }
+
+  // ── place: the ground under their feet ──
+  if (/\b(?:this place|this village|this town|about (?:the )?(?:village|town|place)|what is this place|around here|liv(?:e|ed) here|been here long)\b/.test(t) && here) {
+    const st = here.settlement;
+    if (st) {
+      const buildings = (Array.isArray(st.buildings) ? st.buildings : []).map(b => String(b?.name || '')).filter(Boolean).slice(0, 3);
+      const folk = (Array.isArray(st.npcs) ? st.npcs : []).filter(n => n && n.name && !n.hostile && n.id !== npc.id).map(n => String(n.name)).slice(0, 3);
+      const bits = [];
+      if (buildings.length) bits.push(`You'll find ${buildings.join(', ').toLowerCase()}`);
+      if (folk.length) bits.push(`folk worth knowing: ${folk.join(', ')}`);
+      return { mode: 'place', body: `This is ${here.name}. Small, but it holds. ${bits.join('; ')}${bits.length ? '.' : ''}`.trim() };
+    }
+    return { mode: 'place', body: `Not much to tell — ${here.name || 'this stretch'} is what you see. The road brought you; it'll take you on, too.` };
+  }
+
+  // ── small talk: a greeting gets a greeting, a courtesy gets one back ──
+  if (/\b(?:take care|safe travels|mind yourself|good luck|be well)\b/.test(t)) {
+    return { mode: 'smalltalk', body: 'And you. Mind the road after dark.' };
+  }
+  if (/^(?:hello|hi|hey|greetings|good (?:morning|day|evening)|well met)\b/.test(t) || /\b(?:how are you|how('s| is) (?:it going|life|business)|nice weather|fine (?:day|morning)|can i ask you something|what brings you)\b/.test(t)) {
+    const body = trust >= 7 ? 'Good to see a friendly face. What can I do for you?'
+      : trust >= 4 ? 'Well met. Quiet day, as they go. Ask what you came to ask.'
+      : 'Mm. Day\'s a day. Something you want?';
+    return { mode: 'smalltalk', body };
+  }
+
+  return null;
+}
+
+function capitalize(s) { const x = String(s || ''); return x.charAt(0).toUpperCase() + x.slice(1); }
+
+// ─────────────────────────────────────────────────────────────────────────────
 // askNpc
 
 export function askNpc(world, text) {
@@ -187,9 +325,19 @@ export function askNpc(world, text) {
 
   let mode;
   let factId = null;
+  let commonBody = '';
 
   if (!topic || !knownIds.has(topic)) {
-    mode = 'deflected';
+    // Common knowledge before deflection: name, village, roads, news. The
+    // knowledge graph (personal facts, secrets, trust gates) outranks this —
+    // we only get here when no fact matched.
+    const common = commonKnowledgeAnswer(w, npc, text);
+    if (common) {
+      mode = common.mode;
+      commonBody = common.body;
+    } else {
+      mode = 'deflected';
+    }
     factId = null;
   } else if (secrets.has(topic)) {
     if (trust >= TRUST_REVEAL_SECRET) {
@@ -287,12 +435,15 @@ export function askNpc(world, text) {
   // ── Pass O3 — NPC persistent memory ────────────────────────────────────
   // Record what happened from the NPC's perspective.
   // Pass D2 — pass currentTurn for memory timestamping.
-  const memoryEntry = extractMemory(npc, text, brainDecision, {
+  // Common-knowledge pleasantries don't mint memories — an NPC remembers what
+  // you traded in trust, not that you asked their name or about the weather.
+  const CLASSIC_MODES = new Set(['shared', 'lied', 'withheld', 'deflected', 'recruited']);
+  const memoryEntry = CLASSIC_MODES.has(mode) ? extractMemory(npc, text, brainDecision, {
     mode,
     topic: factId || '',
     trustLevel: nextTrust,
     trustDelta
-  }, curTurn);
+  }, curTurn) : null;
   let w3 = w2;
   if (memoryEntry) {
     w3 = applyDeltas(w2, [{ op: 'npcMemoryAdd', npcId: d.npcId, entry: memoryEntry }]);
@@ -316,6 +467,7 @@ export function askNpc(world, text) {
       // Authored facts (story arcs) carry verbatim testimony — the words ARE
       // the content, so the narration layer speaks them instead of a template.
       factBody: String((npc.knowledgeGraph || []).find(f => f.factId === factId)?.body || ''),
+      commonBody,
       trustLevel: nextTrust,
       trustDelta,
       text: String(text || ''),

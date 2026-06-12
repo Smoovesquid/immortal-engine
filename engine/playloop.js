@@ -2575,6 +2575,8 @@ function buildBeatFromTurn(world, text, move, result) {
 function askBeatOutcome(mode) {
   const m = String(mode || '');
   if (m === 'shared' || m === 'recruited') return 'success';
+  // Common knowledge answered plainly is a successful exchange.
+  if (['smalltalk', 'self', 'place', 'directions', 'services', 'news'].includes(m)) return 'success';
   if (m === 'refused-hard') return 'failure';
   if (m === 'deflected') return 'mixed';
   return 'mixed';
@@ -2633,6 +2635,28 @@ function dialogueAskNarration(outcome, world) {
         `"Alright." ${name} rolls their shoulders. "I'm with you. Lead on." They fall into step beside you.`,
         `${name} looks you over once more, then nods. "You'll do. Let's walk."`
       ]);
+    // Common knowledge — name, village, roads, news. The body IS the answer
+    // (composed deterministically from world data); speak it in their voice.
+    case 'smalltalk':
+    case 'self':
+    case 'place':
+    case 'directions':
+    case 'services':
+    case 'news': {
+      const body = String(outcome?.commonBody || '').trim();
+      if (body) {
+        return V(`common:${outcome.mode}`, [
+          `${says}: "${body}"`,
+          `${name} considers you a moment. "${body}"`,
+          `"${body}" ${name} watches to see what you make of that.`
+        ]);
+      }
+      // No body composed — deflect honestly rather than return nothing.
+      return V('deflected', [
+        `${name} waves it off. "You'd be asking the wrong one. I keep to my own affairs."`,
+        `"Hm." ${name} finds something to do with their hands. "Couldn't say."`
+      ]);
+    }
     case 'withheld':
       return V('withheld', [
         `"That I keep to myself," ${says}, eyes flat.`,

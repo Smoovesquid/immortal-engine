@@ -42,6 +42,7 @@ import { applyCondition, hasCondition, removeAllConditions } from './conditions.
 import { xpForEnemies } from '../ruleset/core/xp.js';
 import { getItemDef } from '../ruleset/core/items/index.js';
 import { levelUpSheet, levelForXp } from '../chargen/srd/levelUp.js';
+import { resolveBossActionPayload, resolveLairActionPayload, bossPhase, detectPhaseCrossings } from './bossActions.js';
 
 // ── Player build (level-1 hedge-caster escapee) ──────────────────────────────
 const PLAYER_BASE_HP = 14;   // + GRIT mod
@@ -942,6 +943,8 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
 
   // ── Player turn ────────────────────────────────────────────────────────────
   let enemies = (Array.isArray(w.combat.enemies) ? w.combat.enemies : []).map(e => ({ ...e }));
+  // P-75: snapshot boss hp before the player's strike for phase-crossing detection.
+  const bossHpAtStart = new Map(enemies.map(e => [e.id, Number(e.hp) || 0]));
   // Named targeting: 'the wolf', 'the big one', 'the wounded one' all land
   // where the player pointed. Default: first standing foe.
   const targetIdx = pickTargetIdx(enemies, actionText);
@@ -1528,6 +1531,13 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
   }]);
   w = { ...w, meta: { ...w.meta, escapeFeats: { ...feats } } };
 
+  // P-75: a boss crossing its phase threshold this turn announces it — the
+  // authored beat from the catalog, or the default bloodied line. Fires once
+  // per crossing (detection compares turn-start hp), never for non-bosses.
+  for (const crossing of detectPhaseCrossings(bossHpAtStart, enemies)) {
+    beats.push(`${crossing.narration}.`);
+  }
+
   // ── Victory check ──────────────────────────────────────────────────────────
   const anyAlive = enemies.some(e => e && !e.defeated && (Number(e.hp) || 0) > 0);
   if (!anyAlive) {
@@ -1595,7 +1605,10 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
     const fled = [];
     for (const e of enemies) {
       if (!e || e.defeated || (Number(e.hp) || 0) <= 0) continue;
-      if (Array.isArray(e.legendaryActions) && e.legendaryActions.length) continue;
+      // P-75: things with legendary actions don't run — match the NORMALIZED
+      // shape ({perRound, options}, see ensureCombat), not just raw arrays.
+      const eLeg = e.legendaryActions;
+      if (eLeg && (Array.isArray(eLeg) ? eLeg.length > 0 : (Number(eLeg.perRound) || 0) > 0)) continue;
       const eMaxHp = Math.max(1, Number(e.maxHp) || 1);
       if ((Number(e.hp) || 0) / eMaxHp > 0.25) continue;
       if (rng.int(1, 20) >= 10) continue; // holds its nerve this round
@@ -1633,7 +1646,76 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
   let hp = Number(w.meta.escapeHp) || 0;
   const coverBonus = coverState ? (Number(coverState.bonus) || 0) : 0;
   const ac = playerAc(pc) + (warded ? wardBonus : 0) + coverBonus;
+
+  // ── P-75: boss beats between turns ──────────────────────────────────────────
+  // The boss answers your turn (legendary action: one option per round, the
+  // priciest its budget affords) and its seat fights beside it (lair action:
+  // one per round, only at the lair). Payloads resolve through the same
+  // machinery as the party-combat path. Save effects ignore AC and ward —
+  // you dodge them with your body, not your guard. Non-boss fights take no
+  // extra rng draws, so their streams stay byte-identical.
+  const bossPayloadVsYou = (payload) => {
+    if (payload.save && typeof payload.save.dc === 'number') {
+      const stat = String(payload.save.stat || 'GRIT');
+      const save = rng.int(1, 20) + statMod(pc?.stats?.[stat] ?? 10);
+      const rolled = Math.max(1, rollDice(String(payload.damage || '1d6'), rng).total);
+      if (save >= payload.save.dc) {
+        const half = payload.save.halfOnSave ? Math.max(1, Math.floor(rolled / 2)) : 0;
+        return { dmg: half, text: half > 0 ? `you twist aside (${stat} save ${save} vs DC ${payload.save.dc}) — half, ${half} ${payload.type || 'force'}` : `you shake it off (${stat} save ${save} vs DC ${payload.save.dc})` };
+      }
+      return { dmg: rolled, text: `${stat} save ${save} vs DC ${payload.save.dc} fails — ${rolled} ${payload.type || 'force'}` };
+    }
+    const atk = rng.int(1, 20) + (Number(payload.toHit) || 0);
+    if (atk < ac) return { dmg: 0, text: 'it misses' };
+    const rolled = Math.max(1, rollDice(String(payload.damage || '1d6'), rng).total);
+    return { dmg: rolled, text: `hits you for ${rolled} ${payload.type || 'bludgeoning'}` };
+  };
+
   for (const e of enemies) {
+    if (hp <= 0) break;
+    if (!e || e.defeated || (Number(e.hp) || 0) <= 0) continue;
+    if (hasCondition(e.conditions, 'charmed') || hasCondition(e.conditions, 'paralyzed')) continue;
+    const la = e.legendaryActions;
+    const budget = (la && !Array.isArray(la)) ? (Number(la.perRound) || 0) : 0;
+    const options = budget > 0 && Array.isArray(la.options)
+      ? la.options.filter(o => o && Math.max(1, Number(o.cost) || 1) <= budget)
+      : [];
+    if (!options.length) continue;
+    const chosen = [...options].sort((a, b) => (Number(b.cost) || 1) - (Number(a.cost) || 1))[0];
+    const r = bossPayloadVsYou(resolveBossActionPayload(e, chosen));
+    if (r.dmg > 0) hp = Math.max(0, hp - r.dmg);
+    beats.push(`The ${e.name} steals a beat that isn't its turn — ${chosen.name} (legendary): ${r.text}.`);
+    if (hp <= 0 && hasFeature(pc, 'relentlessEndurance') && !feats.relentlessUsed) {
+      feats.relentlessUsed = true; hp = 1;
+      beats.push('You should fall — you do not. Sheer spite keeps you up. (1 HP)');
+    }
+  }
+
+  {
+    const hereNode = (w.map?.nodes || []).find(n => n && n.id === w.map?.currentNodeId) || null;
+    const atSeat = /dungeon|lair/i.test(String(hereNode?.nodeType || ''))
+      || (Array.isArray(hereNode?.tags) && hereNode.tags.some(t => /lair/i.test(String(t))))
+      || /\blair\b/i.test(String(w.scene?.location || ''));
+    if (atSeat && hp > 0) {
+      for (const e of enemies) {
+        if (!e || e.defeated || (Number(e.hp) || 0) <= 0) continue;
+        if (!Array.isArray(e.lairActions) || !e.lairActions.length) continue;
+        const lairEntry = e.lairActions[(round - 1) % e.lairActions.length];
+        if (!lairEntry) continue;
+        const r = bossPayloadVsYou(resolveLairActionPayload(e, lairEntry));
+        if (r.dmg > 0) hp = Math.max(0, hp - r.dmg);
+        beats.push(`The lair itself answers its master — ${lairEntry.name}: ${r.text}.`);
+        if (hp <= 0 && hasFeature(pc, 'relentlessEndurance') && !feats.relentlessUsed) {
+          feats.relentlessUsed = true; hp = 1;
+          beats.push('You should fall — you do not. Sheer spite keeps you up. (1 HP)');
+        }
+        break; // one lair action per round
+      }
+    }
+  }
+
+  for (const e of enemies) {
+    if (hp <= 0) break;
     if (!e || e.defeated || (Number(e.hp) || 0) <= 0) continue;
 
     // Charmed: it will not raise a hand against you. The charm fades on a
@@ -1690,7 +1772,9 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
       continue;
     }
     if (roll === 20 || total >= ac) {
-      const die = Math.max(2, Number(e.damage) || 4);
+      // P-75: a bloodied boss fights wilder — its die runs two heavier.
+      const fury = bossPhase(e) === 2;
+      const die = Math.max(2, Number(e.damage) || 4) + (fury ? 2 : 0);
       const crit = roll === 20;
       let dmg = rng.int(1, die);
       if (crit) dmg += rng.int(1, die);
@@ -1725,7 +1809,7 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
         beats.push(`The ${e.name} hits you for ${dmg}${feats.rageActive ? ' (halved by your rage)' : ''}${crit ? ' (critical!)' : ''} — you should fall, but you do not. You stay up on sheer spite. (1 HP)`);
         continue;
       }
-      beats.push(`The ${e.name} hits you for ${dmg}${feats.rageActive ? ' (halved by your rage)' : ''}${crit ? ' (critical!)' : ''}.`);
+      beats.push(`The ${e.name} hits you for ${dmg}${feats.rageActive ? ' (halved by your rage)' : ''}${crit ? ' (critical!)' : ''}${fury && !crit ? ' (bloodied fury)' : ''}.`);
       if (hp <= 0) break;
     } else {
       beats.push(`The ${e.name} ${warded ? 'rakes the ward and finds no purchase' : 'lunges and misses'}.`);

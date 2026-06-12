@@ -307,7 +307,29 @@ the gods). Sub-packets, in order:
 **Forbidden:** narrator names the villain before canon discovery; `Math.random`;
 a second mutation path.
 
-### P-75 — Boss mechanics (legendary + lair actions, phases)
+### P-75 — Boss mechanics (legendary + lair actions, phases) ✅ DONE 2026-06-11
+**Shipped:** `engine/combat/bossActions.js` (payload resolution: authored action >
+name-matched enemy action > deterministic CR-scaled synthesis; `bossPhase` derived
+purely from hp — nothing persisted, worldHash untouched; `applyBossPhase` phase-2
+behavior: authored phase action joins the routine or strikes run heavier;
+`detectPhaseCrossings` with authored-or-default narration). Party path
+(`combatResolve.js`): CM7/CM9 legendary/lair duds now resolve real payloads; phase
+beats surface in the summary. LIVE path (`escapeCombat.js`): legendary answers the
+player's turn (one option/round, priciest affordable), lair fights only at the
+seat (one/round, cycling), bloodied bosses swing with visible fury, phase
+crossings push the authored beat; morale gate fixed to the normalized
+legendaryActions shape (bosses hold the field); Relentless Endurance honored on
+boss damage. Authored `phases` on entropic_sphinx + necropolis gate (B05 contract
++optional field). Non-boss fights draw nothing new — byte-identical (replay suite
+green). CM10 ×17 (12 from Tim's in-flight start + 5 escape-path); suite 7,497
+green; playtest:full clean; prose:gate PASS; live-verified (planted sphinx fight
+in v1.html: "Entropy Pulse (legendary): hits you for 14 entropic", "The lair
+itself answers its master — Time Dilation…", and the authored Unraveling beat on
+the 95/190 crossing — screenshots taken).
+**Deviation from spec:** allowed_files named `initiative.js` (untouched — no hook
+needed) and not `escapeCombat.js`; the live surface runs escape combat, so the
+done_when ("live combat prose") is unreachable without hooking it. Hooks only, in
+the spec's spirit. `tests/B05` updated for the optional `phases` field.
 **Why:** "legendary" exists only in bestiary flavor text. A CR-17 fight is
 structurally a wolf fight with bigger numbers. One module changes how climactic
 fights feel more than 200 more creatures would.

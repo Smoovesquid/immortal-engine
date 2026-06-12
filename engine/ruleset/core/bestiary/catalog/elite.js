@@ -116,6 +116,12 @@ export const elite = [
       { name: 'Time Dilation', effect: 'One creature in the lair must make DC 16 WITS save or lose its next turn (time skips around it)' },
       { name: 'Decay Zone', effect: 'A 20-foot area ages rapidly — equipment must save DC 15 or degrade, vegetation dies, stone crumbles' }
     ],
+    phases: [{
+      at: 0.5,
+      name: 'Unraveling',
+      narration: 'The sphinx\'s shifting face fractures across a dozen ages at once — time itself bleeds from its wounds, and the air around it begins to curdle and decay',
+      action: { name: 'Entropy Cascade', toHit: null, damage: '3d8', type: 'entropic', range: 20, save: { stat: 'GRIT', dc: 16, halfOnSave: true }, conditions: ['weakened'], recharge: null }
+    }],
     reactions: [{ name: 'Paradox', trigger: 'A creature answers its riddle incorrectly', effect: 'Target takes 4d10 psychic damage and is aged 5 years' }],
     traits: ['Legendary Resistance (3/day)', 'Magic Resistance', 'Entropy Aura (10 ft. — aging and decay)', 'Sphinx\'s Riddle', 'Temporal Sight'],
     spellcasting: {
@@ -170,6 +176,12 @@ export const elite = [
       { name: 'Tombstone Eruption', effect: 'Gravestones erupt from the ground in a 20-foot area — difficult terrain and 2d6 bludgeoning damage (AGILITY DC 16 to avoid)' },
       { name: 'Necrotic Fog', effect: 'Fog fills a 30-foot area — living creatures inside take 2d6 necrotic damage at start of turn, undead heal 2d6' }
     ],
+    phases: [{
+      at: 0.5,
+      name: 'The Gate Opens Wider',
+      narration: 'Cracks spider across the gate\'s arch and a cold light pours through from the other side — the dead beyond press closer, and the whole necropolis seems to inhale',
+      action: { name: 'Breath of the Far Shore', toHit: null, damage: '3d8', type: 'necrotic', range: 30, save: { stat: 'GRIT', dc: 16, halfOnSave: true }, conditions: ['frightened'], recharge: null }
+    }],
     reactions: [{ name: 'Death Ward', trigger: 'An undead ally within 30 feet is destroyed', effect: 'Absorbs the energy — heals 20 HP' }],
     traits: ['Immovable', 'Gate Between Worlds (portal to the realm of the dead)', 'Command Undead (all undead within 120 ft.)', 'Legendary Resistance (3/day)', 'Necrotic Empowerment'],
     spellcasting: null,

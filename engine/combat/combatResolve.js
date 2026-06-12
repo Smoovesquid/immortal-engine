@@ -30,6 +30,7 @@ import { rollDice } from './diceRoller.js';
 import { rollSave } from './savingThrows.js';
 import { applySenseOverrides } from './senses.js';
 import { applyTurnStartTraits, applyDamageTakenTraits, applyACTraits, applyDeathTraits } from './traitHooks.js';
+import { resolveBossActionPayload, resolveLairActionPayload, applyBossPhase, detectPhaseCrossings } from './bossActions.js';
 
 const FORCE_BASE = 3;
 const FINESSE_BASE = 2;
@@ -65,6 +66,9 @@ export function resolveCombatTurn(world, move, opts = {}) {
       }
     };
   }
+
+  // P-75: snapshot enemy hp at turn start for phase-crossing detection.
+  const bossHpAtStart = new Map((w.combat?.enemies || []).map(e => [e.id, e.hp]));
 
   const m = normalizeCombatMove(move, w.combat);
   const targetId = m.targetId;
@@ -304,16 +308,18 @@ export function resolveCombatTurn(world, move, opts = {}) {
       const tLabel = String(targetMember.id) === playerId ? 'you' : String(targetMember.name);
       partyIdx++;
 
-      const enemyActions = Array.isArray(e.actions) ? e.actions : [];
+      // P-75: phase-2 bosses fight differently (derived from hp, not stored).
+      const ePhased = applyBossPhase(e);
+      const enemyActions = Array.isArray(ePhased.actions) ? ePhased.actions : [];
       const counterDeltas = [];
 
       if (enemyActions.length > 0) {
-        const actionsToResolve = pickActions(e, enemyActions);
+        const actionsToResolve = pickActions(ePhased, enemyActions);
         let totalDmg = 0;
         const actionSummaries = [];
 
         for (const act of actionsToResolve) {
-          const res = resolveAction(act, e, targetMember, counterRng, w);
+          const res = resolveAction(act, ePhased, targetMember, counterRng, w);
 
           if (res.hit) {
             totalDmg += res.damage;
@@ -533,13 +539,14 @@ export function resolveCombatTurn(world, move, opts = {}) {
         const rawTarget = livingParty[partyIdx % livingParty.length];
         const targetMember = { ...rawTarget, ac: computeAC(rawTarget) };
         partyIdx++;
-        const enemyActions = Array.isArray(e.actions) ? e.actions : [];
+        const ePhased = applyBossPhase(e);
+        const enemyActions = Array.isArray(ePhased.actions) ? ePhased.actions : [];
         if (enemyActions.length > 0) {
-          const actionsToResolve = pickActions(e, enemyActions);
+          const actionsToResolve = pickActions(ePhased, enemyActions);
           let totalDmg = 0;
           const actionSummaries = [];
           for (const act of actionsToResolve) {
-            const res = resolveAction(act, e, targetMember, counterRng, w);
+            const res = resolveAction(act, ePhased, targetMember, counterRng, w);
             if (res.hit) {
               totalDmg += res.damage;
               actionSummaries.push(`${res.actionName} ${res.damage} ${res.damageType}`);
@@ -668,6 +675,11 @@ export function resolveCombatTurn(world, move, opts = {}) {
     };
   }
 
+  // P-75: surface boss phase crossings as a narration beat, once per crossing.
+  for (const crossing of detectPhaseCrossings(bossHpAtStart, w.combat?.enemies)) {
+    summaryParts.push(crossing.narration);
+  }
+
   // Advance round counter.
   w = applyDeltas(w, [{ op: 'combatState', set: { round: clampInt((w.combat?.round ?? 1) + 1, 0, 99), turnIndex: 0 } }]);
 
@@ -713,7 +725,8 @@ function processLegendaryActions(world, triggerEntityId, rng, summaryParts, trig
 
     const legSeed = seedFromString(`${w.meta?.seed || ''}|leg|${w.combat?.round ?? 0}|${e.id}|${triggerIndex}`);
     const legRng = makeRng(legSeed);
-    const res = resolveAction(chosen.action, e, targetMember, legRng, w);
+    // P-75: fill flavor-only catalog payloads so legendary actions resolve.
+    const res = resolveAction(resolveBossActionPayload(e, chosen), e, targetMember, legRng, w);
 
     // Decrement remaining.
     const newRemaining = la.remaining - chosen.cost;
@@ -874,7 +887,7 @@ function processLairActions(world, summaryParts) {
 
     for (const rawTarget of livingParty) {
       const targetMember = { ...rawTarget, ac: computeAC(rawTarget) };
-      const res = resolveAction(la.action, e, targetMember, lairRng, w);
+      const res = resolveAction(resolveLairActionPayload(e, la), e, targetMember, lairRng, w);
 
       if (res.hit && res.damage > 0) {
         w = applyDeltas(w, [{ op: 'wound', entityId: String(targetMember.id), by: res.damage }]);

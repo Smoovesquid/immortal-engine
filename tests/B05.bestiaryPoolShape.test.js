@@ -40,6 +40,12 @@ const UNIVERSAL_FIELDS = [
   'stats', 'tags', 'tier', 'traits', 'weakness'
 ];
 
+// P-75: boss-tier creatures may additionally author `phases` — a ½-HP phase
+// trigger with a narration beat and an unlocked action (see
+// engine/combat/bossActions.js). Optional: absent entries get the default
+// bloodied phase at runtime, so there is nothing to backfill.
+const OPTIONAL_FIELDS = ['phases'];
+
 // CR bands per tier (inclusive). Elite allows 6 per its documented header even
 // though the current floor sits at 7.
 const CR_BANDS = {
@@ -81,7 +87,7 @@ describe('B05 — full tier-pool shape', () => {
           it('carries exactly the 32-field universal contract', () => {
             const keys = Object.keys(c);
             const missing = UNIVERSAL_FIELDS.filter(f => !(f in c));
-            const extra = keys.filter(k => !UNIVERSAL_FIELDS.includes(k));
+            const extra = keys.filter(k => !UNIVERSAL_FIELDS.includes(k) && !OPTIONAL_FIELDS.includes(k));
             assert.deepEqual(missing, [], `missing fields: ${missing.join(', ')}`);
             assert.deepEqual(extra, [], `unexpected fields: ${extra.join(', ')}`);
           });

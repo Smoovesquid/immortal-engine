@@ -11,6 +11,7 @@ import { ensureStructures } from './structures/structuresState.js';
 import { statMod, maxWounds } from './ruleset/core/stats.js';
 import { normalizeResistances, isValidDamageType } from './combat/damageTypes.js';
 import { normalizeCondition } from './combat/conditions.js';
+import { ensureVillain } from './story/villain.js';
 
 // Pass R1 — bumped from 16 → 17. Adds rumor layer: world.rumors[],
 // npc.rumorIds[], npc.sophistication. See docs/RUMOR_LAYER.md.
@@ -32,7 +33,11 @@ import { normalizeCondition } from './combat/conditions.js';
 // canonical 5e sheet (six abilities, class/species, AC/HP/saves/skills).
 // Legacy five-stat block is DERIVED from it at chargen (see
 // engine/chargen/srd/abilities.js toLegacyStats). Old saves get dnd: null.
-export const WORLD_VERSION = 26;
+// v27 — the Adversary (P-74a). world.villain: one deterministic villain per
+// seed — identity, seat, staged agenda — minted at beginAdventure, advanced
+// by worldTick (P-74b). Old saves get villain: null (minted on next begin —
+// i.e., existing campaigns simply have no adversary; new ones do).
+export const WORLD_VERSION = 27;
 
 // Crunch caps (T1). Kept here so they're colocated with ensureEntity.
 const FOCI_CAP = 6;
@@ -153,6 +158,9 @@ export function ensureWorld(partial) {
     // definitions live in content/arcs/ and load via engine/story/registry.js.
     story: ensureStory(w.story),
 
+    // v27 — the Adversary (P-74a). null until minted; see engine/story/villain.js.
+    villain: ensureVillain(w.villain),
+
     recentBeats: ensureRecentBeats(w.recentBeats),
 
     timeline: Array.isArray(w.timeline) ? w.timeline : [],
@@ -232,6 +240,7 @@ export function newWorld({ seed, fate, campaignId, pack, mode }) {
     rumors: [],
     goals: [],
     story: { arcs: {} },
+    villain: null,
     recentBeats: [],
     timeline: [],
     ui: { advanced: false, lastError: '' }

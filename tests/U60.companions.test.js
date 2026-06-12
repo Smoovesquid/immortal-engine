@@ -147,10 +147,10 @@ function addCompanionDirect(w, opts = {}) {
 
 // ── 01-07: state shape + invariants ─────────────────────────────────────
 
-test('U60-01: WORLD_VERSION is 26', () => {
-  assert.equal(WORLD_VERSION, 26);
+test('U60-01: WORLD_VERSION is 27', () => {
+  assert.equal(WORLD_VERSION, 27);
   const w = newWorld({ seed: 'u60-01', fate: 0.2, pack: { primaryId: 'fantasy', mixerId: null } });
-  assert.equal(w.meta.version, 26);
+  assert.equal(w.meta.version, 27);
 });
 
 test('U60-02: ensureEntity normalizes companion: null when field is missing', () => {

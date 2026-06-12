@@ -458,6 +458,45 @@ export function assertWorldInvariants(world) {
     throw new Error(`Invariant: ${activeArcs} simultaneously cast/active story arcs exceeds cap 4`);
   }
 
+  // ── v27 — the Adversary (P-74a) ────────────────────────────────────────────
+  // world.villain is null (not yet minted) or one well-formed villain: a real
+  // identity, a staged agenda with the stage cursor in bounds, a seat that
+  // exists on the map. Flags are booleans — `discovered` gates the narrator
+  // ever naming them (rumor-first law).
+  const villain = world.villain;
+  if (villain !== null && villain !== undefined) {
+    if (typeof villain !== 'object') throw new Error('Invariant: villain must be null or object');
+    if (typeof villain.ref !== 'string' || !villain.ref) throw new Error('Invariant: villain.ref must be non-empty string');
+    if (typeof villain.name !== 'string' || !villain.name) throw new Error('Invariant: villain.name must be non-empty string');
+    if (typeof villain.discovered !== 'boolean') throw new Error('Invariant: villain.discovered must be boolean');
+    if (typeof villain.defeated !== 'boolean') throw new Error('Invariant: villain.defeated must be boolean');
+    const agenda = villain.agenda;
+    if (!agenda || typeof agenda !== 'object' || !Array.isArray(agenda.stages)) {
+      throw new Error('Invariant: villain.agenda.stages must be an array');
+    }
+    if (agenda.stages.length < 3 || agenda.stages.length > 6) {
+      throw new Error(`Invariant: villain agenda has ${agenda.stages.length} stages (want 3..6)`);
+    }
+    if (!Number.isInteger(agenda.stage) || agenda.stage < 0 || agenda.stage >= agenda.stages.length) {
+      throw new Error(`Invariant: villain agenda.stage ${agenda.stage} out of bounds 0..${agenda.stages.length - 1}`);
+    }
+    if (!Number.isInteger(agenda.clock) || agenda.clock < 0) {
+      throw new Error(`Invariant: villain agenda.clock must be a non-negative integer (got ${agenda.clock})`);
+    }
+    for (const s of agenda.stages) {
+      if (!s || typeof s !== 'object' || typeof s.id !== 'string' || !s.id) {
+        throw new Error('Invariant: villain agenda stage must have a non-empty id');
+      }
+    }
+    if (typeof villain.seatNodeId !== 'string' || !villain.seatNodeId) {
+      throw new Error('Invariant: villain.seatNodeId must be non-empty string');
+    }
+    const seatExists = (Array.isArray(world.map?.nodes) ? world.map.nodes : []).some(n => n && String(n.id) === villain.seatNodeId);
+    if (!seatExists) {
+      throw new Error(`Invariant: villain.seatNodeId ${villain.seatNodeId} not on the map`);
+    }
+  }
+
   // ── Pass R1 — rumor layer invariants ──────────────────────────────────────
   const rumors = world.rumors;
   if (!Array.isArray(rumors)) {

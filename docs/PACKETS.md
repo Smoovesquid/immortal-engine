@@ -284,9 +284,11 @@ endingArchitect); nothing composes them into a BBEG with an agenda.
 responds to player-visible events (goal completions, corruption, faction hits).
 The villain is never named by the narrator until discovered (rumor-first, like
 the gods). Sub-packets, in order:
-- **P-74a — Villain genesis + agenda state.** `engine/story/villain.js` (new):
+- **P-74a — Villain genesis + agenda state. ✅ DONE 2026-06-12** `engine/story/villain.js` (new):
   seed-deterministic villain (drawn from bestiary elite tier or npcGenesis),
   a 4–5 stage agenda, persisted in world state behind `ensureWorld` defaults.
+  Landed: WORLD_VERSION 27, `world.villain` (null until minted), villainGenesis/
+  mintVillain/ensureVillain, invariants, U128 ×7. Minting wires in at P-74b.
   - allowed: `engine/story/villain.js` (new), `engine/state.js`, `engine/invariants.js`
   - invariants: WORLD_VERSION checklist (inv #8, #11); worldHash stable under replay.
   - done_when: same seed → same villain + agenda; determinism suite green.

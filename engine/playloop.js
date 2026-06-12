@@ -26,7 +26,7 @@ import { rollPhysicsCheck } from './resolve.js';
 import { appendCanonEvent } from './csl/canonLog.js';
 import { createGoal, checkGoals } from './goals/goalContract.js';
 import { castArcs, tickArcs } from './story/storyEngine.js';
-import { beginDialogue, askNpc, endDialogue, resolveNpcAtCurrentNode, isRecruitIntent } from './npc/dialogue.js';
+import { beginDialogue, askNpc, endDialogue, resolveNpcAtCurrentNode, isRecruitIntent, npcVoice, voiceManner } from './npc/dialogue.js';
 import { resolveArc } from './npc/npcArc.js';
 import { companionPass } from './npc/companionVoice.js';
 import { checkMilestone, buildLevelUpLine } from './advancement/milestones.js';
@@ -1229,10 +1229,20 @@ function playerMoveCore(world, packsById, text) {
         const arc = npcNow ? resolveArc(npcNow, w.meta.seed, { wits }) : null;
         const wantClause = arc?.surfaceWant ? ` There's a want in them, plain enough: ${arc.surfaceWant}.` : '';
         const tellClause = (arc?.status === 'hinted' && arc.tell) ? ` ${arc.tell}` : '';
+        // Voice: the first impression carries the personality — how they
+        // RECEIVE you is who they are (manner derives from npc personality).
+        const openerByManner = {
+          guarded: " They don't step closer, and they don't ask your name.",
+          skittish: ' They startle slightly before settling, hands finding one another.',
+          blunt: " They size you up in one pass and don't pretend otherwise.",
+          open: ' "Well now," they say, already half-smiling.',
+          even: ''
+        };
+        const opener = npcNow ? (openerByManner[voiceManner(npcVoice(npcNow))] || '') : '';
         return {
           world: w,
           output: {
-            narration: `Wizard: You approach ${begun.outcome.npcName}${role}; ${begun.outcome.mood} eyes meet yours.${wantClause}${tellClause}`,
+            narration: `Wizard: You approach ${begun.outcome.npcName}${role}; ${begun.outcome.mood} eyes meet yours.${opener}${wantClause}${tellClause}`,
             mechanics: `[dialogue enter | ${begun.outcome.npcName} | role:${begun.outcome.npcRole || 'unknown'} | trust:${begun.outcome.trustLevel}/10 | mood:${begun.outcome.mood}]`
           }
         };
@@ -2657,24 +2667,66 @@ function dialogueAskNarration(outcome, world) {
         `"Hm." ${name} finds something to do with their hands. "Couldn't say."`
       ]);
     }
-    case 'withheld':
-      return V('withheld', [
-        `"That I keep to myself," ${says}, eyes flat.`,
-        `${name} goes still. "Some things aren't for trading. Not yet."`,
-        `"Ask me about the weather," ${says}. "That one's free."`
-      ]);
+    case 'withheld': {
+      // The refusal in THEIR manner — a guarded clerk and a blunt farmhand
+      // keep secrets differently (manner derives from npc personality).
+      const pools = {
+        guarded: [
+          `${name}'s face closes like a shutter. "No."`,
+          `"You'd do well not to ask that here," ${says}, very quietly.`
+        ],
+        skittish: [
+          `${name} glances at the door before answering. "I — no. Don't ask me that. Please."`,
+          `${name} laughs, too quickly. "Who told you to ask ME that?"`
+        ],
+        blunt: [
+          `"Not yours to know," ${says}, and that is plainly the end of it.`,
+          `${name} folds their arms. "Ask something else or ask someone else."`
+        ],
+        open: [
+          `${name}'s easy manner falters, just for a beat. "Ah. That one I sit on, friend. Even for you."`,
+          `"Anything but that," ${says}, with a smile that doesn't quite hold.`
+        ],
+        even: [
+          `"That I keep to myself," ${says}, eyes flat.`,
+          `${name} goes still. "Some things aren't for trading. Not yet."`,
+          `"Ask me about the weather," ${says}. "That one's free."`
+        ]
+      };
+      return V(`withheld:${outcome?.manner || 'even'}`, pools[outcome?.manner] || pools.even);
+    }
     case 'lied':
       return V('lied', [
         `"Nothing to it," ${says} — a touch too smoothly. Something in it doesn't sit right.`,
         `${name} answers without blinking: a clean, easy story. Too clean, maybe.`
       ]);
     case 'deflected':
-    default:
-      return V('deflected', [
-        `${name} waves it off. "You'd be asking the wrong one. I keep to my own affairs."`,
-        `"Hm." ${name} finds something to do with their hands. "Couldn't say. Try someone who minds other folks' business."`,
-        `${name} sidesteps it without breaking stride. "Weather's turning, though, isn't it."`
-      ]);
+    default: {
+      const pools = {
+        guarded: [
+          `${name} looks you over before deciding you're worth four words. "Couldn't say. Good day."`,
+          `"That's not a thing I talk about with strangers," ${says}, and turns half away.`
+        ],
+        skittish: [
+          `${name} drops their voice. "Couldn't say. And if anyone asks — you didn't ask, and I didn't say."`,
+          `${name} busies their hands with nothing. "Don't know. Honest. Why — what have you heard?"`
+        ],
+        blunt: [
+          `"No idea," ${name} says, flat as a board. "Next question."`,
+          `${name} shrugs. "Wrong person. I dig, I eat, I sleep. Ask me about those."`
+        ],
+        open: [
+          `${name} spreads their hands, cheerful and useless. "Couldn't tell you! But stay a while — somebody around here will know."`,
+          `"Ha — you've got the wrong gossip, friend," ${says}. "Now if you'd asked me about the WEATHER…"`
+        ],
+        even: [
+          `${name} waves it off. "You'd be asking the wrong one. I keep to my own affairs."`,
+          `"Hm." ${name} finds something to do with their hands. "Couldn't say. Try someone who minds other folks' business."`,
+          `${name} sidesteps it without breaking stride. "Weather's turning, though, isn't it."`
+        ]
+      };
+      return V(`deflected:${outcome?.manner || 'even'}`, pools[outcome?.manner] || pools.even);
+    }
   }
 }
 

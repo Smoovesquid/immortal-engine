@@ -113,6 +113,43 @@ export function beginDialogue(world, npcRef) {
 // stays deflection — for things they genuinely wouldn't know. Deterministic:
 // fixed templates over world state, no rng.
 
+// ── Voice: how THIS person talks ─────────────────────────────────────────────
+// Derived purely from the personality floats every NPC already carries (no new
+// state, no version bump): trustOfOutsiders → warmth, selfPreservation →
+// nerve, honesty → candor. Banded so a guarded skittish clerk and a blunt open
+// farmhand answer the same question in different words. Deterministic: same
+// NPC, same voice, forever.
+
+export function npcVoice(npc) {
+  const p = npc?.personality || {};
+  const band = (v) => (v < 0.4 ? 0 : v > 0.6 ? 2 : 1);
+  return {
+    warmth: band(Number(p.trustOfOutsiders ?? 0.5)),   // 0 guarded · 1 even · 2 open
+    nerve: band(1 - Number(p.selfPreservation ?? 0.5)), // 0 skittish · 1 steady · 2 blunt
+    candor: band(Number(p.honesty ?? 0.5)),             // 0 sly · 1 plain · 2 forthright
+    // Leanings from center — voiceManner picks the dominant one.
+    dWarm: Number(p.trustOfOutsiders ?? 0.5) - 0.5,
+    dNerve: (1 - Number(p.selfPreservation ?? 0.5)) - 0.5,
+    role: String(npc?.role || '')
+  };
+}
+
+/**
+ * The dominant manner for prose-pool selection: one word, never a matrix.
+ * Genesis floats cluster near 0.5, so hard bands would make most of a village
+ * sound the same — instead the LARGEST leaning decides (with a small dead
+ * zone for the genuinely middling). Whoever is relatively most guarded
+ * speaks guarded; truly even people stay even.
+ */
+export function voiceManner(voice) {
+  const v = voice || {};
+  const dWarm = Number(v.dWarm ?? 0);
+  const dNerve = Number(v.dNerve ?? 0);
+  if (Math.max(Math.abs(dWarm), Math.abs(dNerve)) < 0.05) return 'even';
+  if (Math.abs(dWarm) >= Math.abs(dNerve)) return dWarm > 0 ? 'open' : 'guarded';
+  return dNerve > 0 ? 'blunt' : 'skittish';
+}
+
 const ROLE_LINES = {
   smith: 'I keep the forge here',
   blacksmith: 'I keep the forge here',
@@ -160,10 +197,32 @@ export function commonKnowledgeAnswer(world, npc, text) {
   if (/\b(?:any news|the news|news\?|heard anything|anything strange|strange (?:lately|going on)|been happening|goings.?on|rumou?rs?|gossip|tell me a story|tell me something)\b/.test(t)) {
     const { surfacedRumors } = filterRumors(npc, Array.isArray(w.rumors) ? w.rumors : [], { trust });
     const freshest = [...surfacedRumors].sort((a, b) => (Number(a.age) || 0) - (Number(b.age) || 0))[0];
+    const manner = voiceManner(npcVoice(npc));
     if (freshest?.body) {
-      return { mode: 'news', body: `You didn't hear it from me — ${String(freshest.body).replace(/[.?!]\s*$/, '')}. Make of that what you will.` };
+      // The wraps carry their own attribution — strip the rumor's, and
+      // re-lowercase the orphaned head ONLY when it's a safe sentence-starter
+      // (never a name: "Orla sat with him" keeps her O).
+      const stripped = String(freshest.body).replace(/[.?!]\s*$/, '').replace(/^(?:they say|folk say|word is|people say|i hear(?:d)?|rumor has it)[,:]?\s+/i, '');
+      const rumorBody = /^(?:The|A|An|Some(?:one|thing|body)?|There|It|That|Last|Every)\b/.test(stripped)
+        ? stripped.charAt(0).toLowerCase() + stripped.slice(1)
+        : stripped;
+      const wrap = {
+        guarded: `I'll say it once and you never heard it: ${rumorBody}.`,
+        skittish: `Keep your voice down. ${rumorBody} — that's all I know, and I wish I knew less.`,
+        blunt: `${rumorBody}. That's the talk. Believe what you like.`,
+        open: `Oh, there's talk all right — ${rumorBody}! Everyone's chewing on it.`,
+        even: `You didn't hear it from me — ${rumorBody}. Make of that what you will.`
+      };
+      return { mode: 'news', body: wrap[manner] || wrap.even };
     }
-    return { mode: 'news', body: 'Quiet, lately. The kind of quiet folk don\'t quite trust, but quiet.' };
+    const quiet = {
+      guarded: 'If there were news, I wouldn\'t be the one spreading it.',
+      skittish: 'Quiet. Too quiet, if you ask me — and I\'d rather you didn\'t.',
+      blunt: 'No news. When there is, you\'ll hear it same as everyone.',
+      open: 'Quiet as a held breath, friend — first interesting thing today is you.',
+      even: 'Quiet, lately. The kind of quiet folk don\'t quite trust, but quiet.'
+    };
+    return { mode: 'news', body: quiet[manner] || quiet.even };
   }
 
   // ── directions: the roads they walk (also lore-of-known-places: "what do
@@ -224,14 +283,29 @@ export function commonKnowledgeAnswer(world, npc, text) {
   }
 
   // ── small talk: a greeting gets a greeting, a courtesy gets one back ──
+  // Manner sets the base; earned trust warms or cools it one step.
   if (/\b(?:take care|safe travels|mind yourself|good luck|be well)\b/.test(t)) {
-    return { mode: 'smalltalk', body: 'And you. Mind the road after dark.' };
+    const courtesy = {
+      guarded: 'Mm.',
+      skittish: 'And you. Careful who you say that to.',
+      blunt: 'Aye. Don\'t die stupid.',
+      open: 'And you, friend! Roads be kind.',
+      even: 'And you. Mind the road after dark.'
+    };
+    return { mode: 'smalltalk', body: courtesy[voiceManner(npcVoice(npc))] || courtesy.even };
   }
   if (/^(?:hello|hi|hey|greetings|good (?:morning|day|evening)|well met)\b/.test(t) || /\b(?:how are you|how('s| is) (?:it going|life|business)|nice weather|fine (?:day|morning)|can i ask you something|what brings you)\b/.test(t)) {
-    const body = trust >= 7 ? 'Good to see a friendly face. What can I do for you?'
-      : trust >= 4 ? 'Well met. Quiet day, as they go. Ask what you came to ask.'
-      : 'Mm. Day\'s a day. Something you want?';
-    return { mode: 'smalltalk', body };
+    const greet = {
+      guarded: ['State your business.', 'Mm. Day\'s a day. Something you want?', 'You again. Well — out with it, then.'],
+      skittish: ['Oh — hello. You startled me. What is it?', 'Hello, hello. Nothing\'s wrong, I hope?', 'Good of you to come to ME with it, whatever it is.'],
+      blunt: ['Talk if you\'re talking.', 'Well met. Skip the weather — what do you need?', 'You found me. Go on.'],
+      open: ['Well met, stranger! Don\'t get many new faces — what can I do for you?', 'Ha — good day to you too! Ask away.', 'There\'s a friendly face. What\'s on your mind?'],
+      even: ['Mm. Day\'s a day. Something you want?', 'Well met. Quiet day, as they go. Ask what you came to ask.', 'Good to see a friendly face. What can I do for you?']
+    };
+    const manner = voiceManner(npcVoice(npc));
+    const pool = greet[manner] || greet.even;
+    const step = Math.max(0, Math.min(pool.length - 1, 1 + (trust >= 7 ? 1 : trust < 4 ? -1 : 0)));
+    return { mode: 'smalltalk', body: pool[step] };
   }
 
   return null;
@@ -263,6 +337,7 @@ export function askNpc(world, text) {
 
   const trust = Number(npc.conversationState?.trustLevel ?? 5);
   const honesty = Number(npc.personality?.honesty ?? 0.5);
+  const manner = voiceManner(npcVoice(npc));
   const knownIds = new Set((npc.knowledgeGraph || []).map(f => String(f.factId || '')));
   const secrets = new Set(Array.isArray(npc.secrets) ? npc.secrets.map(String) : []);
 
@@ -468,6 +543,7 @@ export function askNpc(world, text) {
       // the content, so the narration layer speaks them instead of a template.
       factBody: String((npc.knowledgeGraph || []).find(f => f.factId === factId)?.body || ''),
       commonBody,
+      manner,
       trustLevel: nextTrust,
       trustDelta,
       text: String(text || ''),

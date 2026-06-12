@@ -164,7 +164,9 @@ export function createPlaceMap(canvas, opts = {}) {
   }
 
   // ── fog of war (XCom-style line-of-sight) ──────────────────────────────────
-  let EXPLORED = new Set(), LASTPLACE = null, OPAC = null, BOUNDS = null, LASTBLAST = null, CURRENTPLACE = null;
+  // opts.explored: caller-supplied Set so fog memory survives canvas recreations.
+  let EXPLORED = (opts.explored instanceof Set) ? opts.explored : new Set();
+  let LASTPLACE = null, OPAC = null, BOUNDS = null, LASTBLAST = null, CURRENTPLACE = null;
   let SIGHT = opts.sight || 9;
 
   function placeBounds(place) {
@@ -213,7 +215,7 @@ export function createPlaceMap(canvas, opts = {}) {
   }
 
   function computeFog(place) {
-    if (place !== LASTPLACE) { EXPLORED = new Set(); LASTPLACE = place; BOUNDS = placeBounds(place); OPAC = buildOpacity(place, BOUNDS); LASTBLAST = null; }
+    if (place !== LASTPLACE) { LASTPLACE = place; BOUNDS = placeBounds(place); OPAC = buildOpacity(place, BOUNDS); LASTBLAST = null; }
     const pl = (place.tokens || []).find(t => t.type === 'player'); const px = pl ? pl.ux : BOUNDS.minX, py = pl ? pl.uy : BOUNDS.minY;
     const visible = visibleFrom(OPAC, px, py, SIGHT);
     if (LASTBLAST) { const bi = Math.floor(LASTBLAST.ux - BOUNDS.minX), bj = Math.floor(LASTBLAST.uy - BOUNDS.minY), rr = Math.ceil(LASTBLAST.r); for (let i = -rr; i <= rr; i++) for (let j = -rr; j <= rr; j++) if (i * i + j * j <= LASTBLAST.r * LASTBLAST.r) visible.add((bi + i) + '_' + (bj + j)); }

@@ -136,6 +136,9 @@ const ui = {
   // place (village + building interiors). Persists across re-renders; resets when
   // you move to a new node or interior state changes.
   place: { nodeId: '', ux: null, uy: null, interiorKey: '' },
+  // Cached place object + PlaceMap instance keyed by nodeId:interiorKey.
+  // Reusing the same place reference keeps EXPLORED (fog memory) alive across renders.
+  placeCache: null,
   prevVitals: { wounds: 0, stress: 0 },
   auth: {
     token: localStorage.getItem('auth_token') || null,
@@ -2026,20 +2029,27 @@ function placeWalk(dir) {
 
 function renderWalkPlace(world) {
   const nodeId = String(world?.map?.currentNodeId || '');
-  let place; try { place = placeFromWorldNode(world, nodeId); } catch { place = null; }
-  if (!place) { placeCtl = null; return renderLocalMap(world, { compact: true }); }
-  const grid = buildPlaceGrid(place);
-  // Track interior state so the token snaps when you enter/exit a structure.
   const interior = world?.scene?.interior;
   const curInteriorKey = interior ? `${interior.structureKey}:${interior.roomId}` : '';
+  const cacheKey = `${nodeId}:${curInteriorKey}`;
+
+  let place; try { place = placeFromWorldNode(world, nodeId); } catch { place = null; }
+  if (!place) { placeCtl = null; ui.placeCache = null; return renderLocalMap(world, { compact: true }); }
+  const grid = buildPlaceGrid(place);
+
+  // Fog memory: reuse the same Set across renders so cells seen on previous
+  // renders are still remembered. Reset only when the location actually changes.
   const nodeChanged = ui.place.nodeId !== nodeId || ui.place.ux == null;
   const interiorChanged = ui.place.interiorKey !== curInteriorKey;
+  const locationChanged = nodeChanged || interiorChanged;
+  if (locationChanged || ui.placeCache?.key !== cacheKey) {
+    ui.placeCache = { key: cacheKey, explored: new Set() };
+  }
+  const exploredSet = ui.placeCache.explored;
 
-  if (nodeChanged || interiorChanged) {
+  if (locationChanged) {
     if (!nodeChanged && interiorChanged) {
-      // Interior changed within the same settlement — snap token to new location.
       if (!interior) {
-        // Exited to street: center on the path.
         const fw = place.footprintW || 8;
         ui.place = { nodeId, ux: fw / 2, uy: 12, interiorKey: curInteriorKey };
       } else {
@@ -2048,7 +2058,6 @@ function renderWalkPlace(world) {
         ui.place = { nodeId, ux: s.ux, uy: s.uy, interiorKey: curInteriorKey };
       }
     } else {
-      // Node changed or first render — restore from saved position or compute.
       let restored = false;
       const party = Array.isArray(world?.party) ? world.party : [];
       const player = party[0];
@@ -2078,7 +2087,8 @@ function renderWalkPlace(world) {
     width: String(W), height: String(W), class: 'local-map-canvas',
     style: 'height:min(clamp(160px, 30vh, 340px), calc(100% - 128px)); min-height:120px'
   });
-  let pm; try { pm = createPlaceMap(canvas, { seed: String(place.seed || 'place'), fog: true, sight: 8 }); } catch { placeCtl = null; return renderLocalMap(world, { compact: true }); }
+  let pm; try { pm = createPlaceMap(canvas, { seed: String(place.seed || 'place'), fog: true, sight: 8, explored: exploredSet }); }
+  catch { placeCtl = null; ui.placeCache = null; return renderLocalMap(world, { compact: true }); }
   const redraw = () => { try { pm.draw(place); } catch {} };
   const applyMove = (np) => {
     ui.place.ux = np.ux; ui.place.uy = np.uy;

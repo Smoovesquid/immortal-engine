@@ -2031,19 +2031,18 @@ function renderWalkPlace(world) {
   const nodeId = String(world?.map?.currentNodeId || '');
   const interior = world?.scene?.interior;
   const curInteriorKey = interior ? `${interior.structureKey}:${interior.roomId}` : '';
-  const cacheKey = `${nodeId}:${curInteriorKey}`;
-
   let place; try { place = placeFromWorldNode(world, nodeId); } catch { place = null; }
   if (!place) { placeCtl = null; ui.placeCache = null; return renderLocalMap(world, { compact: true }); }
   const grid = buildPlaceGrid(place);
 
-  // Fog memory: reuse the same Set across renders so cells seen on previous
-  // renders are still remembered. Reset only when the location actually changes.
+  // Fog memory is keyed by nodeId only — the street and inn are on the same
+  // physical map, so going inside/outside must not wipe what you've already seen.
+  // Only reset when you actually travel to a different node.
   const nodeChanged = ui.place.nodeId !== nodeId || ui.place.ux == null;
   const interiorChanged = ui.place.interiorKey !== curInteriorKey;
   const locationChanged = nodeChanged || interiorChanged;
-  if (locationChanged || ui.placeCache?.key !== cacheKey) {
-    ui.placeCache = { key: cacheKey, explored: new Set() };
+  if (nodeChanged || ui.placeCache?.key !== nodeId) {
+    ui.placeCache = { key: nodeId, explored: new Set() };
   }
   const exploredSet = ui.placeCache.explored;
 

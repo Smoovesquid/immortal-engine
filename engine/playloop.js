@@ -2497,6 +2497,14 @@ function inferInteriorAction(text, interior) {
     if (t === 'enter') return { kind: 'enter', structureRef: '' };
     if (/\b(go inside|enter building|enter structure|go indoors)\b/.test(t)) return { kind: 'enter', structureRef: '' };
 
+    // "go back inside", "step back inside", "head inside", "I go back inside the inn" etc.
+    const backIn = t.match(/\b(?:go|step|head)\s+(?:back\s+)?(?:inside|in(?:doors)?)\b(?:\s+(?:the\s+)?(\w[\w\s]*))?$/i);
+    if (backIn) {
+      const raw = String(backIn[1] || '').trim();
+      const ref = (raw === 'building' || raw === 'structure') ? '' : raw;
+      return { kind: 'enter', structureRef: ref };
+    }
+
     const m = t.match(/^enter\s+(.+)$/i);
     if (m) {
       const ref = String(m[1] || '').trim();

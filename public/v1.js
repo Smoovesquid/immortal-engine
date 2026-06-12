@@ -134,8 +134,8 @@ const ui = {
   map: { zoom: 'region' },
   // Continuous local-scale position: where your token stands on the one walkable
   // place (village + building interiors). Persists across re-renders; resets when
-  // you move to a new node.
-  place: { nodeId: '', ux: null, uy: null },
+  // you move to a new node or interior state changes.
+  place: { nodeId: '', ux: null, uy: null, interiorKey: '' },
   prevVitals: { wounds: 0, stress: 0 },
   auth: {
     token: localStorage.getItem('auth_token') || null,
@@ -2006,6 +2006,12 @@ function homeStartPos(place) {
   return pl ? { ux: pl.ux, uy: pl.uy } : { ux: 2, uy: 12 };
 }
 
+function snapToBuildingRoom(bld, roomId) {
+  const room = (bld.plan.rooms || []).find(r => String(r.id || '') === String(roomId || '')) || bld.plan.rooms?.[0];
+  if (room) return { ux: room.cx + bld.ox, uy: room.cy + bld.oy };
+  return { ux: bld.ox, uy: (bld.plan.rooms?.[0]?.cy ?? 0) + bld.oy };
+}
+
 // Live handle to the mounted walkable place so the compass and text input can move
 // the SAME token the mouse does (one movement system). Rebuilt each render.
 let placeCtl = null;
@@ -2023,21 +2029,41 @@ function renderWalkPlace(world) {
   let place; try { place = placeFromWorldNode(world, nodeId); } catch { place = null; }
   if (!place) { placeCtl = null; return renderLocalMap(world, { compact: true }); }
   const grid = buildPlaceGrid(place);
-  // v21 — restore position from world.party[0].position if present
-  if (ui.place.nodeId !== nodeId || ui.place.ux == null) {
-    let restored = false;
-    const party = Array.isArray(world?.party) ? world.party : [];
-    const player = party[0];
-    if (player && player.position && typeof player.position === 'object') {
-      const pos = player.position;
-      // If position has matching nodeId and explicit coordinates, restore them
-      if (String(pos.nodeId) === nodeId && Number.isFinite(pos.ux) && Number.isFinite(pos.uy)) {
-        ui.place = { nodeId, ux: pos.ux, uy: pos.uy };
-        restored = true;
+  // Track interior state so the token snaps when you enter/exit a structure.
+  const interior = world?.scene?.interior;
+  const curInteriorKey = interior ? `${interior.structureKey}:${interior.roomId}` : '';
+  const nodeChanged = ui.place.nodeId !== nodeId || ui.place.ux == null;
+  const interiorChanged = ui.place.interiorKey !== curInteriorKey;
+
+  if (nodeChanged || interiorChanged) {
+    if (!nodeChanged && interiorChanged) {
+      // Interior changed within the same settlement — snap token to new location.
+      if (!interior) {
+        // Exited to street: center on the path.
+        const fw = place.footprintW || 8;
+        ui.place = { nodeId, ux: fw / 2, uy: 12, interiorKey: curInteriorKey };
+      } else {
+        const bld = (place.buildings || []).find(b => String(b.structureKey || '') === String(interior.structureKey || ''));
+        const s = bld ? snapToBuildingRoom(bld, interior.roomId) : homeStartPos(place);
+        ui.place = { nodeId, ux: s.ux, uy: s.uy, interiorKey: curInteriorKey };
       }
-    }
-    if (!restored) {
-      const s = homeStartPos(place); ui.place = { nodeId, ux: s.ux, uy: s.uy };
+    } else {
+      // Node changed or first render — restore from saved position or compute.
+      let restored = false;
+      const party = Array.isArray(world?.party) ? world.party : [];
+      const player = party[0];
+      if (player && player.position && typeof player.position === 'object') {
+        const pos = player.position;
+        if (String(pos.nodeId) === nodeId && Number.isFinite(pos.ux) && Number.isFinite(pos.uy)) {
+          ui.place = { nodeId, ux: pos.ux, uy: pos.uy, interiorKey: curInteriorKey };
+          restored = true;
+        }
+      }
+      if (!restored) {
+        const bld = interior && (place.buildings || []).find(b => String(b.structureKey || '') === String(interior.structureKey || ''));
+        const s = bld ? snapToBuildingRoom(bld, interior.roomId) : (!interior ? { ux: (place.footprintW || 8) / 2, uy: 12 } : homeStartPos(place));
+        ui.place = { nodeId, ux: s.ux, uy: s.uy, interiorKey: curInteriorKey };
+      }
     }
   }
   place.tokens = (place.tokens || []).filter(t => t.type !== 'player');

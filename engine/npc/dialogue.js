@@ -178,10 +178,21 @@ function distanceWord(from, to) {
   return 'a long road — provision for it';
 }
 
+function playerCtx(world) {
+  const homeNodeId = String(world?.meta?.homeNodeId || '');
+  const curNodeId = String(world?.map?.currentNodeId || '');
+  const atHome = Boolean(homeNodeId) && homeNodeId === curNodeId;
+  const alignId = String(world?.party?.[0]?.sheet?.alignment?.id || '');
+  const corruption = Number(world?.meta?.soul?.corruption ?? 0);
+  const isEvil = ['le', 'ne', 'ce'].includes(alignId) || corruption >= 2;
+  return { atHome, isEvil };
+}
+
 export function commonKnowledgeAnswer(world, npc, text) {
   const t = String(text || '').toLowerCase();
   if (!t.trim() || !npc) return null;
   const w = world || {};
+  const ctx = playerCtx(w);
   const nodes = Array.isArray(w.map?.nodes) ? w.map.nodes : [];
   const here = nodes.find(n => n && n.id === w.map?.currentNodeId) || null;
   const trust = Number(npc.conversationState?.trustLevel ?? 5);
@@ -295,12 +306,39 @@ export function commonKnowledgeAnswer(world, npc, text) {
     return { mode: 'smalltalk', body: courtesy[voiceManner(npcVoice(npc))] || courtesy.even };
   }
   if (/^(?:hello|hi|hey|greetings|good (?:morning|day|evening)|well met)\b/.test(t) || /\b(?:how are you|how('s| is) (?:it going|life|business)|nice weather|fine (?:day|morning)|can i ask you something|what brings you)\b/.test(t)) {
+    // Home village: the player is a known face — no "stranger" language, but
+    // manner still colours the delivery (guarded stays curt, open stays warm).
+    if (ctx.atHome) {
+      const manner = voiceManner(npcVoice(npc));
+      if (ctx.isEvil) {
+        const wary = {
+          guarded: ["What do you want.", "State it and be done.", "Out with it."],
+          skittish: ["Oh — it's you. What now.", "Don't start anything. What is it.", "Keep it short. What do you need."],
+          blunt: ["What.", "Talk.", "Quickly."],
+          open: ["And here's trouble. What can I do for you.", "Morning. Try not to cause a scene. What is it.", "Oh, it's you. What now."],
+          even: ["What do you want this time.", "Here you are. What now.", "Watch yourself today. What do you need."]
+        };
+        const pool = wary[manner] || wary.even;
+        const step = Math.max(0, Math.min(pool.length - 1, 1 + (trust >= 7 ? 1 : trust < 4 ? -1 : 0)));
+        return { mode: 'smalltalk', body: pool[step] };
+      }
+      const homeGreet = {
+        guarded: ["What is it.", "Morning. Something you need.", "Mm. Out with it."],
+        skittish: ["Oh — it's you. What is it?", "Morning, morning. Nothing wrong, I hope?", "Good of you to find me. What is it."],
+        blunt: ["Talk.", "Morning. What do you need.", "What."],
+        open: ["There you are! What can I do for you?", "Morning! Ask away.", "Good to see you up. What is it?"],
+        even: ["Morning. What is it?", "You're about early. Ask away.", "Mm. What can I do for you."]
+      };
+      const pool = homeGreet[manner] || homeGreet.even;
+      const step = Math.max(0, Math.min(pool.length - 1, 1 + (trust >= 7 ? 1 : trust < 4 ? -1 : 0)));
+      return { mode: 'smalltalk', body: pool[step] };
+    }
     const greet = {
       guarded: ['State your business.', 'Mm. Day\'s a day. Something you want?', 'You again. Well — out with it, then.'],
       skittish: ['Oh — hello. You startled me. What is it?', 'Hello, hello. Nothing\'s wrong, I hope?', 'Good of you to come to ME with it, whatever it is.'],
       blunt: ['Talk if you\'re talking.', 'Well met. Skip the weather — what do you need?', 'You found me. Go on.'],
-      open: ['Well met, stranger! Don\'t get many new faces — what can I do for you?', 'Ha — good day to you too! Ask away.', 'There\'s a friendly face. What\'s on your mind?'],
-      even: ['Mm. Day\'s a day. Something you want?', 'Well met. Quiet day, as they go. Ask what you came to ask.', 'Good to see a friendly face. What can I do for you?']
+      open: ['Well met! Don\'t get many travelers — what can I do for you?', 'Ha — good day to you! Ask away.', 'There\'s a friendly face. What\'s on your mind?'],
+      even: ['Mm. Day\'s a day. Something you want?', 'Well met. Quiet day, as they go. Ask what you came to ask.', 'Good to see you. What can I do for you?']
     };
     const manner = voiceManner(npcVoice(npc));
     const pool = greet[manner] || greet.even;

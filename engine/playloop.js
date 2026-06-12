@@ -1236,6 +1236,10 @@ function playerMoveCore(world, packsById, text) {
         const tellClause = (arc?.status === 'hinted' && arc.tell) ? ` ${arc.tell}` : '';
         // Voice: the first impression carries the personality — how they
         // RECEIVE you is who they are (manner derives from npc personality).
+        const atHome = Boolean(w.meta?.homeNodeId) && w.meta.homeNodeId === w.map?.currentNodeId;
+        const alignId = String(w.party?.[0]?.sheet?.alignment?.id || '');
+        const corruption = Number(w.meta?.soul?.corruption ?? 0);
+        const isEvil = ['le', 'ne', 'ce'].includes(alignId) || corruption >= 2;
         const openerByManner = {
           guarded: " They don't step closer, and they don't ask your name.",
           skittish: ' They startle slightly before settling, hands finding one another.',
@@ -1243,11 +1247,19 @@ function playerMoveCore(world, packsById, text) {
           open: ' "Well now," they say, already half-smiling.',
           even: ''
         };
-        const opener = npcNow ? (openerByManner[voiceManner(npcVoice(npcNow))] || '') : '';
+        const homeEvilOpener = ' A beat of silence. Then a small, weary exhale.';
+        const manner = npcNow ? voiceManner(npcVoice(npcNow)) : 'even';
+        let opener;
+        if (atHome && isEvil) {
+          opener = homeEvilOpener;
+        } else {
+          opener = npcNow ? (openerByManner[manner] || '') : '';
+        }
+        const eyeDesc = atHome && isEvil ? 'flat' : begun.outcome.mood;
         return {
           world: w,
           output: {
-            narration: `Wizard: You approach ${begun.outcome.npcName}${role}; ${begun.outcome.mood} eyes meet yours.${opener}${wantClause}${tellClause}`,
+            narration: `Wizard: You approach ${begun.outcome.npcName}${role}; ${eyeDesc} eyes meet yours.${opener}${wantClause}${tellClause}`,
             mechanics: `[dialogue enter | ${begun.outcome.npcName} | role:${begun.outcome.npcRole || 'unknown'} | trust:${begun.outcome.trustLevel}/10 | mood:${begun.outcome.mood}]`
           }
         };

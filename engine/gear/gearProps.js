@@ -28,12 +28,14 @@ export function computeAttack(entity) {
   const statKey = def.stat || (def.properties?.includes('finesse') ? 'AGILITY' : 'MIGHT');
   const mod = statMod(entity?.stats?.[statKey] ?? 10);
   const prof = profBonusFor(entity?.level ?? 1);
-  const weaponBonus = def.bonus?.attack ?? 0;
+  // P-77 — attunement gates the magic: unbonded, the weapon swings as steel.
+  const asleep = def.attunement && !weapon.attuned;
+  const weaponBonus = asleep ? 0 : (def.bonus?.attack ?? 0);
 
   return {
     attackBonus: mod + prof + weaponBonus,
     damageDice: def.damage?.dice ?? '1d4',
-    damageBonus: mod + (def.bonus?.damage ?? 0),
+    damageBonus: mod + (asleep ? 0 : (def.bonus?.damage ?? 0)),
     damageType: def.damage?.type ?? 'bludgeoning'
   };
 }
@@ -57,11 +59,11 @@ export function computeAC(entity) {
     }
   }
 
-  // Check for ring/accessory AC bonuses
+  // Check for ring/accessory AC bonuses (P-77: only if attuned when required)
   for (const it of items) {
     if (!it.equipped) continue;
     const def = getItemDef(it.defRef);
-    if (def?.acBonus) baseAC += def.acBonus;
+    if (def?.acBonus && !(def.attunement && !it.attuned)) baseAC += def.acBonus;
   }
 
   return baseAC;

@@ -801,7 +801,14 @@ function ensureInventoryItems(items) {
     }
     // v26 — optional stack count (materials, ammo). Absent means 1.
     const qty = Math.trunc(Number(it.qty));
-    out.push(qty > 1 ? { id, defRef, equipped, qty } : { id, defRef, equipped });
+    const base = qty > 1 ? { id, defRef, equipped, qty } : { id, defRef, equipped };
+    // P-77 — optional identity fields, kept only when set (old saves carry
+    // neither, so existing worlds' shape and hash are untouched): `sealedRef`
+    // is the true def of an unidentified drop; `attuned` marks the bond.
+    const sealedRef = String(it.sealedRef ?? '').trim();
+    if (sealedRef) base.sealedRef = sealedRef;
+    if (it.attuned === true) base.attuned = true;
+    out.push(base);
   }
   return out;
 }

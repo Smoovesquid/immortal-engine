@@ -43,6 +43,7 @@ import { xpForEnemies } from '../ruleset/core/xp.js';
 import { getItemDef } from '../ruleset/core/items/index.js';
 import { levelUpSheet, levelForXp } from '../chargen/srd/levelUp.js';
 import { resolveBossActionPayload, resolveLairActionPayload, bossPhase, detectPhaseCrossings } from './bossActions.js';
+import { sealLoot } from '../ruleset/core/items/magic.js';
 
 // ── Player build (level-1 hedge-caster escapee) ──────────────────────────────
 const PLAYER_BASE_HP = 14;   // + GRIT mod
@@ -144,7 +145,11 @@ export function meleeProfile(pc) {
     const it = (pc?.inventory?.items || []).find(x => x.equipped === 'main_hand');
     const def = it ? getItemDef(it.defRef) : null;
     if (!def) return null;
-    if (def.kind === 'weapon') return def;
+    // P-77 — an attunement item answers only to an attuned bearer: unbonded,
+    // it swings as plain steel (the magic bonus stays asleep).
+    if (def.kind === 'weapon') {
+      return (def.attunement && !it.attuned) ? { ...def, bonus: null } : def;
+    }
     // P-70 — an improvised material in hand (a board, a stone) is a weapon
     // by RAW improvised rules: its die, your STR, no proficiency bonus.
     if (def.kind === 'material' && def.improvised) {
@@ -436,11 +441,14 @@ export function playerAc(pc) {
     if (!it.equipped) continue;
     const def = getItemDef(it.defRef);
     if (!def) continue;
-    if (def.kind === 'armor' && def.shield) bonus += Number(def.ac) || 0;
+    // P-77 — attunement gates the MAGIC, not the steel: unbonded armor still
+    // armors at its base; the bonus and accessory protection stay asleep.
+    const asleep = def.attunement && !it.attuned;
+    if (def.kind === 'armor' && def.shield) bonus += asleep ? Math.min(2, Number(def.ac) || 0) : Number(def.ac) || 0;
     else if (def.kind === 'armor' && it.equipped === 'armor') {
       const dexCap = def.maxDexBonus == null ? Infinity : Number(def.maxDexBonus);
-      base = (Number(def.ac) || 10) + Math.min(dexMod, dexCap) + (Number(def.bonus?.ac) || 0);
-    } else if (def.acBonus) bonus += Number(def.acBonus) || 0;
+      base = (Number(def.ac) || 10) + Math.min(dexMod, dexCap) + (asleep ? 0 : Number(def.bonus?.ac) || 0);
+    } else if (def.acBonus && !asleep) bonus += Number(def.acBonus) || 0;
   }
   if (base != null) return base + bonus;
   const sheetAC = Number(pc?.dnd?.ac);
@@ -1563,8 +1571,11 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
           }
         } else if (drop.kind === 'item' && drop.defRef) {
           const itemId = `loot_${lootCounter++}_${String(e.id || e.name || 'foe')}`;
-          lootDeltas.push({ op: 'addItem', entityId: 'party', item: { id: itemId, defRef: drop.defRef, equipped: null } });
-          lootResults.push({ kind: 'item', defRef: drop.defRef, rarity: drop.rarity || 'common', source: e.name });
+          // P-77 — magic gear lands SEALED: the pack holds something humming,
+          // not a name the table hasn't earned. Identification opens it.
+          const sealed = sealLoot({ id: itemId, defRef: drop.defRef, equipped: null }, getItemDef(drop.defRef));
+          lootDeltas.push({ op: 'addItem', entityId: 'party', item: sealed });
+          lootResults.push({ kind: 'item', defRef: sealed.defRef, rarity: drop.rarity || 'common', source: e.name });
         }
       }
     }

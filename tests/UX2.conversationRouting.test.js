@@ -62,6 +62,8 @@ function routeClass(res) {
   if (/salvage/.test(m)) return 'SALVAGE';
   if (/craft/.test(m)) return 'CRAFT';
   if (/build/.test(m)) return 'BUILD';
+  if (/identify/.test(m)) return 'IDENTIFY';
+  if (/attune/.test(m)) return 'ATTUNE';
   if (/roll:\d+/.test(m)) return 'ROLL';
   return `OTHER(${m})`;
 }
@@ -106,6 +108,9 @@ const OUT_OF_COMBAT_TABLE = [
   // P-73a — a coerced stronghold build still routes to BUILD; the cruelty rides
   // along invisibly (deed/soul/trust), it is not a separate player-facing route.
   ['I force the villagers to build a keep', ['BUILD']],
+  // P-77 — identity intents route to item machinery (honest none-answers, never dice)
+  ['I identify the humming blade', ['IDENTIFY']],
+  ['attune to the ring', ['ATTUNE']],
 ];
 
 test('UX2-01: out-of-combat routing table', () => {

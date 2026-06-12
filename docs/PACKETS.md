@@ -364,7 +364,35 @@ chase, ritual), adjudicated in prose per THE_DM_TEST.
   disarmed, or sprung — all four paths in prose with real consequences;
   determinism suite green.
 
-### P-77 — Magic item identity (attunement + named items)
+### P-77 — Magic item identity (attunement + named items) ✅ DONE 2026-06-11
+**Shipped:** magic gear lands SEALED — the instance's defRef points at a humming
+placeholder (`unidentified_blade`/`armor`/`trinket`) and the truth rides in
+`sealedRef`, so no surface (panel, equip, sell, combat) can leak a name the
+table hasn't earned. Identify: an hour + Arcana vs rarity DC (failure keeps the
+secret honestly, hour still gone), or pay a settlement scholar the rarity fee.
+Attunement: `attuned` on the instance, an hour of your undivided self, cap 3
+(invariant-enforced), and the BIG effects sleep without it — accessories (RAW)
+and all named uniques gate their bonuses in meleeProfile/playerAc/gearProps;
++N weapons/armor stay attunement-free (RAW). Eight named uniques with one-line
+histories (Greyfang, The Dawn Was Late, Thirteen Sparrows, Coat of the Quiet
+House, The Wall of Wens, Ring of the Unspent Hour, Lantern-Heart, Boots of the
+Unmissed Step); milestone levels 3 and 5 pay one seed-deterministically, never
+a duplicate ("The road pays its debts: …"). Obtain-goals now satisfy by defRef
+(typed items; a sealed item correctly does NOT count until named), so
+"recover the blade" completes at the moment of identification. Instance fields
+are only-when-set (P-72 precedent — NO WORLD_VERSION bump; old saves carry
+neither; normalizer + addItem pass them through; invariants guard them).
+U126 ×9; UX2 +IDENTIFY/ATTUNE rows; R05-11/U121-07 updated to attune the ring
+(the behavior change is the packet); suite 7,506 green; playtest:quick clean;
+prose:gate PASS; live-verified in v1.html (equip hum → sage names Greyfang +
+history → quest completes → Level 3 + "Coat of the Quiet House comes to your
+hand" → attune → d6+3 wakes to d8+5/+7; MAIN HAND panel + quick-button read
+Greyfang; screenshots).
+**Deviations:** beyond allowed_files — `effectsCore.js` (addItem must carry the
+fields; sole-mutation-path law), `escapeCombat.js`/`combatResolve.js` (loot-mint
+seal + live combat math; same justification as P-75), `invariants.js`
+(checklist-mandated for new fields), `goals/goalContract.js` (obtain-by-defRef
+— the milestone/goal vocabulary the spec's (d) asked to extend).
 **Why:** the magic catalog exists but `attunement` greps to zero. No
 identification, no attunement choice, no signature item that grows. In
 tabletop, the named +1 sword with a history is half the reward economy.

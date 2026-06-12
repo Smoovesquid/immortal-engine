@@ -148,6 +148,9 @@ function partyHasItem(w, itemId) {
     for (const it of list) {
       const id = String(it?.id ?? it?.name ?? it ?? '');
       if (id && id === ref) return true;
+      // P-77 — typed items satisfy obtain-goals by defRef. A SEALED item does
+      // not (its defRef still hums): you haven't "obtained" what you can't name.
+      if (it && typeof it === 'object' && String(it.defRef ?? '') === ref) return true;
     }
   }
   return false;

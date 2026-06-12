@@ -123,7 +123,7 @@ test('U121-07: AC stacks the D&D way — armor base, shield +2, ring +1', () => 
   const items = [
     { id: 'a1', defRef: 'chain_mail', equipped: 'armor' },
     { id: 's1', defRef: 'shield', equipped: 'off_hand' },
-    { id: 'r1', defRef: 'ring_of_protection', equipped: 'ring' }
+    { id: 'r1', defRef: 'ring_of_protection', equipped: 'ring', attuned: true } // P-77: the ring protects only its bonded bearer
   ];
   w = { ...w, party: [{ ...w.party[0], inventory: { ...w.party[0].inventory, items } }, ...w.party.slice(1)] };
   // chain mail 16 (dex cap 0) + shield 2 + ring 1

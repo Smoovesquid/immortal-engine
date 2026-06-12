@@ -615,6 +615,18 @@ function assertCrunchFields(member, i) {
     if (it.equipped !== null && (typeof it.equipped !== 'string' || !it.equipped)) {
       throw new Error(`Invariant: party[${i}].inventory.items[${j}].equipped must be non-empty string or null`);
     }
+    // P-77 — identity fields are only-when-set: sealedRef a non-empty string,
+    // attuned strictly true. (Absent on old saves; never null/false/empty.)
+    if ('sealedRef' in it && (typeof it.sealedRef !== 'string' || !it.sealedRef)) {
+      throw new Error(`Invariant: party[${i}].inventory.items[${j}].sealedRef must be non-empty string when present`);
+    }
+    if ('attuned' in it && it.attuned !== true) {
+      throw new Error(`Invariant: party[${i}].inventory.items[${j}].attuned must be true when present`);
+    }
+  }
+  // P-77 — three bonds to a soul (RAW attunement cap).
+  if (items.filter(it => it && it.attuned === true).length > 3) {
+    throw new Error(`Invariant: party[${i}] holds more than 3 attuned items`);
   }
 
   // spells block

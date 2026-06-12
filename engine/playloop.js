@@ -40,6 +40,7 @@ import { resolveEscapeCombatTurn, initEscapeHp, initEscapeKit, shortRest, longRe
 import { statMod, maxWounds } from './ruleset/core/stats.js';
 import { shopsHere, stockFor, settlementStock, economyAt, priceToSell, shopBuys, restockEpoch, purseTotalCopper, pursePay, purseReceive, formatPrice, matchByName } from './economy/shop.js';
 import { getItemDef } from './ruleset/core/items/index.js';
+import { identifyDc, sageFeeCopper, pickNamedReward } from './ruleset/core/items/magic.js';
 import { salvageYield } from './ruleset/core/items/materials.js';
 import { matchRecipe, missingInputs, resolveCraft } from './craft/craft.js';
 import { matchBuildPlan, missingBuildInputs, resolveBuild, makePlayerStructure, laborPlan, shelterAt } from './structures/playerBuilt.js';
@@ -316,7 +317,19 @@ export function playerMove(world, packsById, text) {
 
     // Milestone level-up check
     const milestone = checkMilestone(w3);
-    const w4 = milestone.world;
+    let w4 = milestone.world;
+
+    // P-77 — the bigger milestones pay in story, not gold: a named unique
+    // with its history, seed-deterministic, never a duplicate.
+    let rewardText = null;
+    if (milestone.leveled && (milestone.newLevel === 3 || milestone.newLevel === 5)) {
+      const namedDef = pickNamedReward(w4, `L${milestone.newLevel}`, seedFromString);
+      if (namedDef) {
+        w4 = applyDeltas(w4, [{ op: 'addItem', entityId: w4.party?.[0]?.id || 'party', item: { id: `named_${milestone.newLevel}`, defRef: namedDef.defRef, equipped: null } }]);
+        w4 = { ...w4, timeline: [...w4.timeline, { t: w4.timeline.length, kind: 'namedReward', data: { defRef: namedDef.defRef, level: milestone.newLevel } }] };
+        rewardText = `The road pays its debts: ${namedDef.name} comes to your hand. ${namedDef.history}`;
+      }
+    }
 
     // Append dark gift / level-up narration if anything fired
     if (!darkGiftText && !milestone.leveled) {
@@ -326,6 +339,7 @@ export function playerMove(world, packsById, text) {
     let narration = res.output?.narration ?? '';
     if (darkGiftText) narration = narration + '\n\n' + darkGiftText;
     if (milestone.leveled) narration = narration + '\n\n' + buildLevelUpLine(milestone.newLevel, milestone.gainedFeatures);
+    if (rewardText) narration = narration + '\n' + rewardText;
 
     return { ...res, world: w4, output: { ...res.output, narration } };
   } catch {
@@ -769,6 +783,16 @@ function playerMoveCore(world, packsById, text) {
   if (!w.combat?.active && !w.scene?.dialogue) {
     const geared = tryEquipItem(w, text);
     if (geared) return geared;
+  }
+
+  // P-77 — "I identify the humming blade" / "pay the sage to name it" /
+  // "I attune to Greyfang": mysteries open for an hour or a fee; the old and
+  // the named bond at the cost of an hour, three bonds to a soul.
+  if (!w.combat?.active && !w.scene?.dialogue) {
+    const known = tryIdentify(w, text);
+    if (known) return known;
+    const bonded = tryAttune(w, text);
+    if (bonded) return bonded;
   }
 
   if (!w.combat?.active && !w.scene?.dialogue) {
@@ -2906,6 +2930,141 @@ function tryEquipItem(w, text) {
   return {
     world: pushEvent(w1, { kind: 'equip', data: { defRef: hit.def.defRef, slot } }),
     output: { narration: `Wizard: ${line}`, mechanics: `[equip | ${hit.def.name} | ${slot}]` }
+  };
+}
+
+// ── P-77: item identity — identify the humming thing, attune to the named ────
+
+const IDENTIFY_RE = /\bidentify\b|\b(?:decipher|study|divine|work\s+out|figure\s+out)\b.*\b(?:humming|unmarked|strange|sealed|unidentified)\b/i;
+
+function tryIdentify(w, text) {
+  const t = String(text || '');
+  if (!IDENTIFY_RE.test(t)) return null;
+  const pc = w.party?.[0];
+  const sealed = (pc?.inventory?.items || []).filter(it => it.sealedRef);
+  if (!sealed.length) {
+    if (!/\bidentify\b/i.test(t)) return null; // vague study of nothing — not ours
+    return { world: w, output: { narration: `Wizard: You turn out the pack — nothing in it keeps secrets from you. What you carry, you know.`, mechanics: '[identify:none]' } };
+  }
+  // Pick the named mystery, else the first one humming.
+  const tl = t.toLowerCase();
+  const target = sealed.find(it => {
+    const myst = getItemDef(it.defRef);
+    return myst && myst.name.toLowerCase().split(/\s+/).some(wd => wd.length > 3 && tl.includes(wd));
+  }) || sealed[0];
+  const realDef = getItemDef(target.sealedRef);
+  if (!realDef) return null;
+  const mystName = (getItemDef(target.defRef)?.name || 'humming thing').toLowerCase();
+
+  // Revealing the true item can complete an obtain-goal ("recover the blade")
+  // the moment you learn you hold it — so the goal check rides the reveal.
+  const reveal = (base) => maybeCheckGoals(applyDeltas(base, [
+    { op: 'removeItemById', entityId: pc.id, itemId: target.id },
+    { op: 'addItem', entityId: pc.id, item: { id: target.id, defRef: target.sealedRef, equipped: target.equipped ?? null } },
+    { op: 'time', key: 'hours', by: 1 }
+  ]));
+  const historyLine = realDef.history ? ` ${realDef.history}` : '';
+
+  // The sage path: coin buys certainty at any settlement counter.
+  const wantsSage = /\b(?:pay|hire|sage|scholar|priest|wise\s+woman|apothecary)\b/i.test(t);
+  if (wantsSage) {
+    const { shops } = shopsHere(w);
+    if (!shops.length) {
+      return { world: w, output: { narration: `Wizard: No learned counter out here to take your coin — identify it yourself, or carry it to a settlement.`, mechanics: '[identify:no-sage]' } };
+    }
+    const fee = sageFeeCopper(realDef);
+    const paid = pursePay(pc.purse, fee);
+    if (!paid) {
+      return { world: w, output: { narration: `Wizard: The scholar names the price without looking up: ${formatPrice(fee)}. Your purse says no.`, mechanics: '[identify:cant-pay]' } };
+    }
+    let w1 = applyDeltas(w, [{ op: 'setPurse', entityId: pc.id, purse: paid }]);
+    w1 = reveal(w1);
+    w1 = pushEvent(w1, { kind: 'identify', data: { defRef: target.sealedRef, via: 'sage', fee } });
+    return {
+      world: w1,
+      output: {
+        narration: `Wizard: The scholar turns the ${mystName} over twice, hums once, and names it: ${realDef.name}.${historyLine} (${formatPrice(fee)} lighter.)`,
+        mechanics: `[identify | ${realDef.name} | sage ${formatPrice(fee)}]`
+      }
+    };
+  }
+
+  // Your own hour with the thing: Arcana gates the knowing, not the trying.
+  const dc = identifyDc(realDef);
+  const rng = makeRng(seedFromString(`${w.meta.seed}|identify|${target.id}|${w.timeline.length}`));
+  const roll = rng.int(1, 20);
+  const bonus = pc?.dnd ? (Number(pc.dnd.skills?.Arcana) || 0) : Math.floor(((pc?.stats?.WITS ?? 10) - 10) / 2);
+  const total = roll + bonus;
+  if (total >= dc) {
+    let w1 = reveal(w);
+    w1 = pushEvent(w1, { kind: 'identify', data: { defRef: target.sealedRef, via: 'check', roll: total, dc } });
+    return {
+      world: w1,
+      output: {
+        narration: `Wizard: An hour with the ${mystName} — turning it to the light, listening to the hum — and the knowing arrives all at once: ${realDef.name}.${historyLine} (Arcana ${total} vs DC ${dc}.)`,
+        mechanics: `[identify | ${realDef.name} | Arcana ${total} vs DC ${dc}]`
+      }
+    };
+  }
+  let w1 = applyDeltas(w, [{ op: 'time', key: 'hours', by: 1 }]);
+  w1 = pushEvent(w1, { kind: 'identify', data: { defRef: null, via: 'check', roll: total, dc } });
+  return {
+    world: w1,
+    output: {
+      narration: `Wizard: An hour gone and the ${mystName} keeps its secret — the hum neither rises nor falls. (Arcana ${total} vs DC ${dc}. A scholar in town would know it for a fee.)`,
+      mechanics: `[identify:fail | Arcana ${total} vs DC ${dc}]`
+    }
+  };
+}
+
+const ATTUNE_RE = /\battune\b|\bbond\b\s+(?:with|to)\b/i;
+
+function tryAttune(w, text) {
+  const t = String(text || '');
+  if (!ATTUNE_RE.test(t)) return null;
+  const pc = w.party?.[0];
+  const items = pc?.inventory?.items || [];
+  const candidates = items
+    .map(it => ({ it, def: getItemDef(it.defRef) }))
+    .filter(x => x.def && x.def.attunement && !x.it.sealedRef);
+  if (!candidates.length) {
+    return { world: w, output: { narration: `Wizard: Nothing you carry asks for that kind of bond — attunement is for the old and the named, and your pack holds neither.`, mechanics: '[attune:none]' } };
+  }
+  const hit = matchByName(t, candidates, (x) => x.def.name) || (candidates.length === 1 ? candidates[0] : null);
+  if (!hit) {
+    const names = candidates.map(c => c.def.name).join(', ');
+    return { world: w, output: { narration: `Wizard: More than one thing in your pack would take the bond — which? (${names}.)`, mechanics: '[attune:which]' } };
+  }
+  if (hit.it.attuned) {
+    return { world: w, output: { narration: `Wizard: The ${hit.def.name} is already yours in the way that matters — the bond holds.`, mechanics: '[attune:already]' } };
+  }
+  const attunedNow = items.filter(it => it.attuned);
+  if (attunedNow.length >= 3) {
+    const held = attunedNow.map(it => getItemDef(it.defRef)?.name || it.defRef).join(', ');
+    return { world: w, output: { narration: `Wizard: Three bonds is all one soul can hold — ${held} already have their hooks in you. Let one go first.`, mechanics: '[attune:cap]' } };
+  }
+  let w1 = applyDeltas(w, [
+    { op: 'removeItemById', entityId: pc.id, itemId: hit.it.id },
+    { op: 'addItem', entityId: pc.id, item: { id: hit.it.id, defRef: hit.it.defRef, equipped: hit.it.equipped ?? null, attuned: true } },
+    { op: 'time', key: 'hours', by: 1 }
+  ]);
+  w1 = pushEvent(w1, { kind: 'attune', data: { defRef: hit.it.defRef } });
+  const pc1 = w1.party[0];
+  let payoff = '';
+  if (hit.def.kind === 'weapon' && hit.it.equipped === 'main_hand') {
+    const prof = meleeProfile(pc1);
+    payoff = ` In your grip it wakes: d${prof.die}${prof.dmgMod >= 0 ? '+' + prof.dmgMod : prof.dmgMod}, ${prof.atkBonus >= 0 ? '+' + prof.atkBonus : prof.atkBonus} to strike.`;
+  } else if (hit.it.equipped) {
+    payoff = ` Worn, it wakes: AC ${playerAc(pc1)}.`;
+  } else {
+    payoff = ' It will wake the moment you take it up.';
+  }
+  return {
+    world: w1,
+    output: {
+      narration: `Wizard: You give the ${hit.def.name} an hour of your undivided self, and something in it turns toward you like a face.${payoff}`,
+      mechanics: `[attune | ${hit.def.name}]`
+    }
   };
 }
 

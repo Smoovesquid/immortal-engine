@@ -31,6 +31,8 @@ import { rollSave } from './savingThrows.js';
 import { applySenseOverrides } from './senses.js';
 import { applyTurnStartTraits, applyDamageTakenTraits, applyACTraits, applyDeathTraits } from './traitHooks.js';
 import { resolveBossActionPayload, resolveLairActionPayload, applyBossPhase, detectPhaseCrossings } from './bossActions.js';
+import { sealLoot } from '../ruleset/core/items/magic.js';
+import { getItemDef } from '../ruleset/core/items/index.js';
 
 const FORCE_BASE = 3;
 const FINESSE_BASE = 2;
@@ -1028,8 +1030,10 @@ function applyVictory(world) {
       } else if (drop.kind === 'item' && drop.defRef) {
         const itemId = `loot_${lootItemCounter}_${e.id}`;
         lootItemCounter++;
-        lootDeltas.push({ op: 'addItem', entityId: 'party', item: { id: itemId, defRef: drop.defRef, equipped: null } });
-        lootResults.push({ kind: 'item', defRef: drop.defRef, rarity: drop.rarity || 'common', source: e.name });
+        // P-77 — magic gear lands sealed (parity with the live escape path).
+        const sealed = sealLoot({ id: itemId, defRef: drop.defRef, equipped: null }, getItemDef(drop.defRef));
+        lootDeltas.push({ op: 'addItem', entityId: 'party', item: sealed });
+        lootResults.push({ kind: 'item', defRef: sealed.defRef, rarity: drop.rarity || 'common', source: e.name });
       }
     }
   }

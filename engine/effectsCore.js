@@ -550,7 +550,12 @@ export function applyDeltas(world, deltas = []) {
             return { ...e, inventory: { ...inv, items } };
           }
         }
-        items.push(qty > 1 ? { id, defRef, equipped: item.equipped ?? null, qty } : { id, defRef, equipped: item.equipped ?? null });
+        const minted = qty > 1 ? { id, defRef, equipped: item.equipped ?? null, qty } : { id, defRef, equipped: item.equipped ?? null };
+        // P-77 — identity fields ride through the sole mutation path.
+        const sealedRef = String(item.sealedRef ?? '').trim();
+        if (sealedRef) minted.sealedRef = sealedRef;
+        if (item.attuned === true) minted.attuned = true;
+        items.push(minted);
         return { ...e, inventory: { ...inv, items } };
       });
       continue;

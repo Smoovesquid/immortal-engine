@@ -115,7 +115,7 @@ test('R05-10: chain mail AC = 16 + 0 (maxDexBonus: 0)', () => {
 test('R05-11: ring of protection adds +1 AC', () => {
   const e = mkEntity({ AGILITY: 14 }, [
     { id: 'a1', defRef: 'leather_armor', equipped: 'armor' },
-    { id: 'r1', defRef: 'ring_of_protection', equipped: 'ring' }
+    { id: 'r1', defRef: 'ring_of_protection', equipped: 'ring', attuned: true } // P-77: the ring protects only its bonded bearer
   ]);
   assert.equal(computeAC(e), 11 + statMod(14) + 1); // 11 + 2 + 1 = 14
 });

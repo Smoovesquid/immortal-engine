@@ -301,10 +301,14 @@ the gods). Sub-packets, in order:
   - allowed: `engine/worldTick.js`, `engine/story/villain.js`, `engine/rumor/`, `engine/ledger.js`
   - done_when: headless 200-turn run shows agenda advancing + ≥2 distinct
     reactions to player actions in the timeline; playtest:full green.
-- **P-74c — Confrontation arc.** An authored arc binds to the villain (the
+- **P-74c — Confrontation arc. ✅ DONE 2026-06-12** An authored arc binds to the villain (the
   existing `content/arcs/*.arc.js` format): discovery → lieutenants →
   confrontation at the villain's seat. Defeating them is a real ending-shaped
   event in an open-ended world (the world notes it; play continues).
+  Landed: the-named-dark arc (requiresVillain, trust-gated discovery →
+  silencer → seat → end-it), storyEngine villain bindings ({villainName} etc.,
+  @villainSeat/@plant predicates, discover/defeat flips, hostile planting),
+  U130 ×8. Lowest casting priority — waits for a free arc slot (act-3 pacing).
   - allowed: `content/arcs/` (new arc), `engine/story/storyEngine.js` (binding only)
   - done_when: live playthrough reaches and resolves the confrontation; the
     county's rumors reflect the outcome.

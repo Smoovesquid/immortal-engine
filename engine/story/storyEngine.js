@@ -70,7 +70,96 @@ function fillTemplate(text, w, arc, castIds) {
     .replace(/\{carrier\}/g, () => {
       const c = resolveCast(w, castIds, (arc.hooks?.[0]?.carrier) || arc.cast[0].role);
       return c?.npc?.name || 'someone';
-    });
+    })
+    // P-74c — villain bindings. Arc data may name the adversary ONLY in
+    // trust-guarded knowledge and post-defeat talk (rumor-first law lives in
+    // the arc authoring, not here).
+    .replace(/\{villainName\}/g, () => String(w.villain?.name || 'the adversary'))
+    .replace(/\{villainEpithet\}/g, () => String(w.villain?.epithet || ''))
+    .replace(/\{villainSeat\}/g, () => {
+      const seat = (w.map?.nodes || []).find(n => n && String(n.id) === String(w.villain?.seatNodeId || ''));
+      return seat?.name || seat?.label || 'the far place';
+    })
+    .replace(/\s{2,}/g, ' ');
+}
+
+// ── P-74c — villain bindings ────────────────────────────────────────────────
+
+/** Deterministic id for an arc-planted hostile NPC. */
+function plantedNpcId(arc, key) {
+  return `npc_arc_${String(arc.arc).replace(/-/g, '_')}_${String(key)}`;
+}
+
+/** Resolve a plant's target node id ('@villainSeat' | '@castNode:<role>'). */
+function plantNodeId(w, st, at) {
+  const s = String(at || '');
+  if (s === '@villainSeat') return String(w.villain?.seatNodeId || '');
+  const m = s.match(/^@castNode:(.+)$/);
+  if (m) return String(st.castIds?.[m[1]] || '').split('@')[1] || '';
+  return s;
+}
+
+/**
+ * Plant a stage's hostile NPC (lieutenant / villain incarnate) at its node.
+ * Shape mirrors encounterSpawn's hostile-NPC mint so the attack intent and
+ * mintEnemyFromNpc treat it like any other foe. Idempotent by id.
+ */
+function plantHostile(w, arc, st, stage) {
+  const plan = stage?.plant;
+  if (!plan || typeof plan !== 'object') return w;
+  const nodeId = plantNodeId(w, st, plan.at);
+  if (!nodeId) return w;
+  const id = plantedNpcId(arc, plan.key);
+  const nodes = Array.isArray(w.map?.nodes) ? w.map.nodes : [];
+  const idx = nodes.findIndex(n => n && String(n.id) === nodeId);
+  if (idx === -1) return w;
+  const node = nodes[idx];
+  const existing = node.settlement?.npcs || [];
+  if (existing.some(n => String(n?.id) === id)) return w;
+
+  const bestiaryRef = String(plan.bestiaryRef || '') === '@villainCreature'
+    ? String(w.villain?.ref || '').replace(/^villain:/, '')
+    : (plan.bestiaryRef || null);
+
+  const npc = {
+    id,
+    name: fillTemplate(String(plan.name || 'a hostile figure'), w, arc, st.castIds),
+    role: 'hostile',
+    archetypeDesc: '',
+    factionId: null,
+    originTick: Number(w.time?.turn ?? 0),
+    disposition: {},
+    hostile: true,
+    bestiaryRef,
+    combatProfile: {
+      maxHp: Math.max(1, Number(plan.maxHp) || 12),
+      damage: Math.max(1, Number(plan.damage) || 4),
+      canParley: false
+    },
+    knowledgeGraph: [],
+    conversationState: { metPlayer: false, topicsDiscussed: [], trustLevel: 0, lastInteraction: null },
+    personality: { honesty: 0.1, trustOfOutsiders: 0, selfPreservation: 0.2 },
+    witnessedEvents: [],
+    secrets: [],
+    playerRelationship: { trust: 0, meetings: 0, sharedFacts: [] }
+  };
+
+  const updated = { ...node, settlement: { ...(node.settlement || {}), npcs: [...existing, npc] } };
+  const nextNodes = [...nodes];
+  nextNodes[idx] = updated;
+  return { ...w, map: { ...w.map, nodes: nextNodes } };
+}
+
+/** Apply a stage/branch villainBind ('discover' | 'defeat') to world.villain. */
+function applyVillainBind(w, bind) {
+  if (!w.villain) return w;
+  if (bind === 'discover' && !w.villain.discovered) {
+    return { ...w, villain: { ...w.villain, discovered: true } };
+  }
+  if (bind === 'defeat' && !w.villain.defeated) {
+    return { ...w, villain: { ...w.villain, discovered: true, defeated: true } };
+  }
+  return w;
 }
 
 function mintArcRumor(w, arc, castIds, body, n) {
@@ -125,7 +214,8 @@ function plantKnows(w, arc, castIds) {
           factId: k.factId,
           source: k.guard === 'trust' ? 'witnessed' : 'public',
           confidence: 0.95,
-          body: String(k.body || ''),
+          // P-74c: knowledge bodies may carry villain/cast template vars.
+          body: fillTemplate(String(k.body || ''), next, arc, castIds),
           event: { era: 0, eventId: k.factId, worldState: null }
         }));
         return fresh.length ? { ...npc, knowledgeGraph: [...kg, ...fresh] } : npc;
@@ -148,6 +238,7 @@ function stageDone(w, arc, st, stage) {
   }
   if (dw.reached) {
     let target = String(dw.reached);
+    if (target === '@villainSeat') target = String(w.villain?.seatNodeId || '');
     const m = target.match(/^@castNode:(.+)$/);
     if (m) target = String(st.castIds?.[m[1]] || '').split('@')[1] || '';
     return target !== '' && String(w.map?.currentNodeId || '') === target;
@@ -158,9 +249,21 @@ function stageDone(w, arc, st, stage) {
     return c?.npc?.conversationState?.metPlayer === true;
   }
   if (dw.defeated) {
+    const ref0 = String(dw.defeated);
+    // P-74c: '@plant:<key>' resolves to the arc-planted hostile's npc id, and
+    // checks world state instead of timeline kinds — after a victory the dead
+    // enemy (sourceNpcId, hp 0) persists in world.combat.enemies until the
+    // next fight begins, in both combat engines.
+    const m = ref0.match(/^@plant:(.+)$/);
+    if (m) {
+      const ref = plantedNpcId(arc, m[1]);
+      if (w.combat?.active) return false;
+      return (w.combat?.enemies || []).some(e =>
+        String(e?.sourceNpcId || '') === ref && (Number(e?.hp) || 0) <= 0
+      );
+    }
     const tl = Array.isArray(w.timeline) ? w.timeline : [];
-    const ref = String(dw.defeated);
-    return tl.some(e => e?.kind === 'combatResolve' && JSON.stringify(e.data || {}).includes(ref));
+    return tl.some(e => e?.kind === 'combatResolve' && JSON.stringify(e.data || {}).includes(ref0));
   }
   return false;
 }
@@ -191,6 +294,8 @@ export function castArcs(world) {
     const arcs = (w.story && w.story.arcs) || {};
     const st = arcs[arc.arc];
     if (st && st.status !== 'dormant') continue;
+    // P-74c: villain-bound arcs wait for the adversary to exist.
+    if (arc.requiresVillain && !w.villain) continue;
     const activeCount = Object.values(arcs).filter(a => a.status === 'cast' || a.status === 'active').length;
     if (activeCount >= MAX_ACTIVE) break;
 
@@ -250,6 +355,9 @@ export function tickArcs(world) {
     if (!stageDone(w, arc, st, stage)) continue;
 
     w = applyDeltas(w, stage.worldEffects || []);
+    // P-74c: a completing stage may bind to the villain (discovery is canon
+    // the moment the name is learned).
+    if (stage.villainBind) w = applyVillainBind(w, stage.villainBind);
     const isLast = idx === arc.stages.length - 1;
     if (!isLast) {
       const next = {
@@ -259,6 +367,10 @@ export function tickArcs(world) {
         heardAtHours: idx === 0 ? Math.max(0, Number(w.time?.hours ?? 0)) : st.heardAtHours
       };
       w = writeArcState(w, arc.arc, next);
+      // P-74c: the incoming stage may plant a hostile (the silencer, the
+      // villain incarnate at its seat) — placed the moment the stage opens.
+      const incoming = arc.stages.find(s => s.id === next.stage);
+      if (incoming?.plant) w = plantHostile(w, arc, next, incoming);
       events.push({ kind: 'arcStage', data: { arc: arc.arc, done: stage.id, now: next.stage } });
     } else {
       const branchKey = 'default'; // v1: single-branch resolution; predicates later
@@ -272,6 +384,9 @@ export function tickArcs(world) {
         summary: d.summary
       }));
       w = applyDeltas(w, [...deeds, ...(branch.worldEffects || [])]);
+      // P-74c: resolving the confrontation marks the villain defeated — an
+      // ending-shaped event the world notes while play continues.
+      if (branch.villainBind) w = applyVillainBind(w, branch.villainBind);
       if (branch.rumorSeed) w = mintArcRumor(w, arc, st.castIds, branch.rumorSeed, 91);
       w = writeArcState(w, arc.arc, { ...st, status: 'resolved', branch: branchKey });
       events.push({ kind: 'arcResolved', data: { arc: arc.arc, branch: branchKey } });

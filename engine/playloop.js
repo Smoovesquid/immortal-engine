@@ -616,8 +616,8 @@ function playerMoveCore(world, packsById, text) {
 
     if (breakingIntent) {
       const ended = endDialogue(w);
-      w = ended.world;
-      w = pushEvent(w, {
+      let wEnded = ended.world;
+      wEnded = pushEvent(wEnded, {
         kind: 'dialogueExit',
         data: {
           npcId: ended.outcome.npcId || '',
@@ -625,7 +625,21 @@ function playerMoveCore(world, packsById, text) {
           topicsCount: ended.outcome.topicsCount || 0
         }
       });
-      // Fall through — continue processing the rest of playerMove with dialogue cleared.
+      // The conversation closes OUT LOUD, then the action resolves — a real DM
+      // says you've stepped away before narrating the walk. (The old silent
+      // fall-through resolved the action with no acknowledgment; the player
+      // experienced the game forgetting they were mid-conversation.) Dialogue
+      // is null on wEnded, so the recursive resolve cannot re-enter here.
+      const name = ended.outcome.npcName || 'them';
+      const after = playerMoveCore(wEnded, packsById, text);
+      const rest = String(after.output?.narration || '').replace(/^Wizard:\s*/, '');
+      return {
+        world: after.world,
+        output: {
+          ...after.output,
+          narration: `Wizard: You step away from ${name}. ${rest}`
+        }
+      };
     } else {
       // Treat input as an ask inside the current dialogue.
       const asked = askNpc(w, text);
@@ -2117,7 +2131,11 @@ function moveAdvancesScene(text) {
   const t = String(text || "").toLowerCase();
   // Travel intents: named destinations OR directional/exit shorthand.
   // Shorthand destination resolution happens in pickTravelDestination().
-  return /\b(travel|leave|exit|head to|go to|move to|escape|journey|walk to|go north|go south|go east|go west|north|south|east|west|n|s|e|w)\b/.test(t);
+  // Single-letter compass tokens must not match after an apostrophe — an
+  // apostrophe is a word boundary, so "what's"/"it's"/"let's" used to read
+  // as the compass "s" and misroute conversation into travel.
+  return /\b(travel|leave|exit|head to|go to|move to|escape|journey|walk to|go north|go south|go east|go west|north|south|east|west)\b/.test(t)
+    || /(?<!['’])\b(n|s|e|w)\b/.test(t);
 }
 
 // Deterministic flavor for a wilderness cell (no named node here). Seeded by
@@ -2406,7 +2424,9 @@ function isFreeMovementIntent(text) {
   if (/\b(within speed|30\s*ft)\b/.test(t)) return true;
 
   // Broad free movement / travel phrasing (deterministic: destination is still resolved by adjacency rules).
-  return /\b(travel|leave|exit|head\s+(?:to|toward|towards|for)|go\s+(?:to|toward|towards)|move\s+to|walk\s+(?:to|toward|towards)|walk|make\s+for|set\s+(?:out|off)|get\s+moving|go\s+north|go\s+south|go\s+east|go\s+west|north|south|east|west|n|s|e|w)\b/.test(t);
+  // Single-letter compass guarded against apostrophe contractions ("what's" ≠ south).
+  return /\b(travel|leave|exit|head\s+(?:to|toward|towards|for)|go\s+(?:to|toward|towards)|move\s+to|walk\s+(?:to|toward|towards)|walk|make\s+for|set\s+(?:out|off)|get\s+moving|go\s+north|go\s+south|go\s+east|go\s+west|north|south|east|west)\b/.test(t)
+    || /(?<!['’])\b(n|s|e|w)\b/.test(t);
 }
 
 function parseLocalFeetMove(text) {
@@ -2478,7 +2498,10 @@ const DIALOGUE_PHYSICS_VERB_RE = /\b(examine|inspect|search|look at|check|rip|br
 function isDialogueExitIntent(text) {
   const t = String(text || '').toLowerCase().trim();
   if (!t) return false;
-  return /\b(leave|walk away|step away|end conversation|end conversation\.|stop talking|goodbye|good\s?bye|farewell|done talking)\b/.test(t);
+  // "leave" exits only as a COMMAND ("leave", "I leave") — "when does the
+  // caravan leave?" is a question for the NPC, not a goodbye.
+  if (/^(?:i\s+)?leave\b/.test(t)) return true;
+  return /\b(walk away|step away|end conversation|end conversation\.|stop talking|goodbye|good\s?bye|farewell|done talking)\b/.test(t);
 }
 
 function isDialogueBreakingIntent(text, world) {
@@ -2488,15 +2511,33 @@ function isDialogueBreakingIntent(text, world) {
   // NOT break dialogue — while talking, those are questions put to the NPC and
   // route to askNpc. Only actual movement/physics below ends the conversation.
   // (A player asking "how do I get out?" should be answered, not ejected.)
-  if (moveAdvancesScene(t)) return true;
-  if (isFreeMovementIntent(t)) return true;
-  // Interior transitions
+  //
+  // The bar in here is COMMANDED intent, not mentioned words. The old token
+  // tests ejected the player for saying "what's your name?" (apostrophe makes
+  // the "s" read as a compass), "is the road north safe?" (direction as a
+  // noun), and "take care of yourself" ("take" as a physics verb). A real DM
+  // doesn't hang up the conversation because you used a word.
+  const tl = t.toLowerCase().trim();
+
+  // Movement: a bare compass command, or a movement VERB aimed somewhere.
+  const bareCompass = /^(?:go\s+|head\s+|walk\s+)?(?:north|south|east|west|n|s|e|w)[.!]?$/.test(tl);
+  const commandedMove =
+    /\b(?:go|head|walk|run|ride|travel|journey|move|escape|set\s+(?:out|off)|make\s+for|press\s+on|take\s+me)\b[^.!?]*\b(?:to|toward|towards|for|into|north|south|east|west)\b/i.test(t)
+    || /^(?:i\s+)?(?:leave|exit|go|head\s+out|set\s+out)\b/.test(tl);
+  if (bareCompass || commandedMove) return true;
+
+  // Interior transitions (already command-shaped: "enter the mill", "go outside")
   const ia = inferInteriorAction(t, world?.scene?.interior);
   if (ia && ia.kind && ia.kind !== 'none') return true;
-  // Local feet moves
+  // Local feet moves ("move 30ft north")
   if (parseLocalFeetMove(t)) return true;
-  // Physics interactions
-  if (DIALOGUE_PHYSICS_VERB_RE.test(t)) return true;
+  // Physics interactions break only when they NAME something real — the same
+  // contract as the main physics gate. "take care of yourself" names nothing
+  // and stays a conversation; "smash the table" with a table present breaks.
+  if (DIALOGUE_PHYSICS_VERB_RE.test(t)) {
+    const detection = detectPhysicalInteraction(world, t);
+    if (detection.detected && (detection.matches || []).some(m => m.match === 'name' || m.match === 'part')) return true;
+  }
   return false;
 }
 

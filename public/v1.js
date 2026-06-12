@@ -545,7 +545,10 @@ async function doSubmitMove() {
   // DM-resolved journey (time/distance/encounters/surprise/multi-hop). A BARE
   // direction ("south", "s") and the compass buttons keep local place-walk (fine
   // positioning). This honors "to the south lies X" instead of just nudging the avatar.
-  if (!w.combat?.active && placeCtl) {
+  // Mid-DIALOGUE, directions skip the local-walk shim entirely: walking off is
+  // a conversation-breaking intent the engine must adjudicate ("You step away
+  // from X…"), not a silent token nudge behind the NPC's back.
+  if (!w.combat?.active && !w.scene?.dialogue && placeCtl) {
     const mv = text.toLowerCase().match(/^(go|walk|move|head|step|travel|make\s+for)?\s*(north|south|east|west|n|e|s|w)\.?$/);
     if (mv) {
       const dir = { n: 'north', s: 'south', e: 'east', w: 'west', north: 'north', south: 'south', east: 'east', west: 'west' }[mv[2]];

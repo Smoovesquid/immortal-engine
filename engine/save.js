@@ -57,3 +57,12 @@ export function importWorld(text) {
   if (parsed?.kind !== 'ai-dm-v2-export') throw new Error('Not an ai-dm-v2 export.');
   return ensureWorld(parsed.world);
 }
+
+// P-79 — the resume hook: stamp a session boundary into the timeline so the
+// recap knows where "last time" ended. Canon (a session really happened);
+// replay ignores unknown kinds, same as craft/salvage events.
+export function markResume(world) {
+  const w = ensureWorld(world);
+  const t = w.timeline.length;
+  return { ...w, timeline: [...w.timeline, { t, kind: 'sessionResume', data: {} }] };
+}

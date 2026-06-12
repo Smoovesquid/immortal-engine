@@ -513,3 +513,87 @@ function dedupe(arr) {
   }
   return out;
 }
+
+// ── P-79: the session recap ("previously, at this table…") ───────────────────
+// Built deterministically from the timeline since the last resume; the LLM
+// polish layer may smooth it downstream (silent fallback = this text). Returns
+// null for a world too young to have a past.
+
+function recapNodeName(world, nodeId) {
+  const n = (world.map?.nodes || []).find(x => x && x.id === nodeId);
+  return n?.name ? String(n.name) : null;
+}
+
+function recapItemName(defRef, getDef) {
+  const d = getDef ? getDef(defRef) : null;
+  return d?.name ? String(d.name) : String(defRef || 'something');
+}
+
+/**
+ * buildRecap(world, { getItemDef }) -> string | null
+ * 3–4 sentences: the salient deeds of the last session, then the hook — the
+ * hottest open threat (or question) named as the unfinished business.
+ */
+export function buildRecap(world, { getItemDef } = {}) {
+  const w = world && typeof world === 'object' ? world : {};
+  const tl = Array.isArray(w.timeline) ? w.timeline : [];
+  if (tl.length < 3) return null;
+
+  let from = 0;
+  for (let i = tl.length - 1; i >= 0; i--) {
+    if (tl[i]?.kind === 'sessionResume') { from = i + 1; break; }
+  }
+  const slice = tl.slice(from);
+
+  const sentences = [];
+  const push = (s) => { if (s && !sentences.includes(s)) sentences.push(s); };
+  for (const e of slice) {
+    const d = e?.data || {};
+    switch (e?.kind) {
+      case 'travel': {
+        const name = recapNodeName(w, d.to);
+        if (name) push(`The road brought you to ${name}.`);
+        break;
+      }
+      case 'goalCompleted': {
+        const g = (w.goals || []).find(x => x.id === d.goalId);
+        push(g?.label ? `You settled the matter of "${g.label}".` : 'You settled an old matter.');
+        break;
+      }
+      case 'build':
+        push(`You raised a ${String(d.plan || 'shelter').replace(/-/g, ' ')}${d.labor === 'coerced' ? ' — and not with willing hands' : ''}.`);
+        break;
+      case 'identify':
+        if (d.defRef) push(`The humming thing gave up its name: ${recapItemName(d.defRef, getItemDef)}.`);
+        break;
+      case 'attune':
+        push(`You bonded the ${recapItemName(d.defRef, getItemDef)}.`);
+        break;
+      case 'namedReward':
+        push(`The road paid its debts: ${recapItemName(d.defRef, getItemDef)} came to your hand.`);
+        break;
+      case 'combat-end':
+        if (Array.isArray(d.loot) && d.loot.length) push('Steel was drawn; you kept your feet and searched the fallen.');
+        else push('Steel was drawn, and you kept your feet.');
+        break;
+      case 'downtime':
+        push(`You gave ${d.days === 7 ? 'a week' : `${d.days} days`} to ${String(d.verb || 'quiet work')}.`);
+        break;
+      default:
+        break;
+    }
+  }
+
+  const deeds = sentences.slice(-3);
+  if (!deeds.length) return null;
+
+  // The hook: hottest open threat, else the oldest open question.
+  const threats = Array.isArray(w.ledger?.threats) ? [...w.ledger.threats] : [];
+  threats.sort((a, b) => (Number(b?.level) || 0) - (Number(a?.level) || 0));
+  const hook = threats[0]?.text
+    || (Array.isArray(w.ledger?.questions) ? w.ledger.questions[0]?.text : null);
+
+  const opener = 'When the candle last burned at this table:';
+  const hookLine = hook ? ` And one thing has not finished happening: ${String(hook).replace(/[.?!]\s*$/, '')}.` : '';
+  return `${opener} ${deeds.join(' ')}${hookLine}`;
+}

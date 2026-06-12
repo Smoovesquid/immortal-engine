@@ -6,7 +6,8 @@ import { exitsFrom, ensureMap, cleanPlaceName } from '../engine/map/mapState.js'
 import { escapeOutcome } from '../engine/victory.js';
 import { escapeKitView } from '../engine/combat/escapeCombat.js';
 import { getItemDef } from '../engine/ruleset/core/items/index.js';
-import { hasSlot, loadSlot, saveSlot, exportWorld, importWorld } from '../engine/save.js';
+import { hasSlot, loadSlot, saveSlot, exportWorld, importWorld, markResume } from '../engine/save.js';
+import { buildRecap } from '../engine/composer.js';
 import { worldHash as worldHashAsync } from '../engine/worldHash.browser.js';
 import { buildMythSpec, mythSpecJson } from '../engine/mythSpec.js';
 import { generateTriadFrames, deriveInvocationFromFrame } from '../engine/triad.js';
@@ -419,10 +420,16 @@ async function beginFromChargen() {
 function continueSlot1() {
   const w = loadSlot(localStorage, 'slot1');
   if (!w) return setStatus('No slot found.');
-  ui.play.lines = [{ who: 'wizard', text: 'Welcome back. What do you do?', mech: '' }];
+  // P-79 — open like a DM: "previously, at this table…", closing on the
+  // hottest unfinished business. Deterministic base text (LLM may polish
+  // downstream); the resume stamp makes the NEXT recap start where this
+  // session begins.
+  let recap = null; try { recap = buildRecap(w, { getItemDef }); } catch { recap = null; }
+  const w2 = markResume(w);
+  ui.play.lines = [{ who: 'wizard', text: recap ? `${recap}\n\nWhat do you do?` : 'Welcome back. What do you do?', mech: recap ? '[recap]' : '' }];
   ui.play.input = '';
   ui.play.lastResolutionKind = 'turn';
-  startFromWorld(w, { keepTranscript: true });
+  startFromWorld(w2, { keepTranscript: true });
 }
 
 function persistAndRehash(world) {
@@ -2012,7 +2019,14 @@ function renderWalkPlace(world) {
   place.tokens.unshift({ type: 'player', ux: ui.place.ux, uy: ui.place.uy });
 
   const W = 61 * 14;
-  const canvas = el('canvas', { width: String(W), height: String(W), class: 'local-map-canvas' });
+  // P-79 — prose first (DESIGN.md): the map yields to the story. On short
+  // columns (compass + bars eat the height) the 30vh clamp alone starved the
+  // transcript to a 20px sliver — the recap/narration was in the DOM but
+  // invisible. Cap the canvas to leave the transcript a real floor.
+  const canvas = el('canvas', {
+    width: String(W), height: String(W), class: 'local-map-canvas',
+    style: 'height:min(clamp(160px, 30vh, 340px), calc(100% - 128px)); min-height:120px'
+  });
   let pm; try { pm = createPlaceMap(canvas, { seed: String(place.seed || 'place'), fog: true, sight: 8 }); } catch { placeCtl = null; return renderLocalMap(world, { compact: true }); }
   const redraw = () => { try { pm.draw(place); } catch {} };
   const applyMove = (np) => {

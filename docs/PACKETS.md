@@ -433,7 +433,32 @@ quest in the arc format.
   coerced-labor build (P-73a) with a companion present triggers the objection;
   ignoring it twice loses them, and the timeline says so; suite green.
 
-### P-79 — Session rhythm (recap, cliffhanger, downtime)
+### P-79 — Session rhythm (recap, cliffhanger, downtime) ✅ DONE 2026-06-11
+**Shipped:** `buildRecap` in composer.js — deterministic 3-sentence "When the
+candle last burned at this table…" from the timeline since the last resume
+(travel/goals/build/identify/attune/named-reward/combat/downtime templates),
+closing on the HOTTEST open threat (else oldest question) as the cliffhanger
+hook; `markResume` in save.js stamps the session boundary (canon, not
+replayed); v1.js surfaces the recap on Continue (LLM may polish downstream,
+silent fallback = base text). Downtime verbs in playloop (`tryDowntime`, after
+tryBuild so "spend a week raising a palisade" stays construction): training
+banks an advantage token + a fact; research lands a concrete ledger fact named
+from the player's own subject (anchored to a real node when one matches);
+carousing needs a settlement and pays an NPC trust bump (the contact) + a
+tavern-talk ledger question — honest refusal in the wild, no days lost. Days
+pass via the time op with one worldTick per day (bounded 30) — the world does
+not wait. U127 ×8; UX2 +DOWNTIME rows; suite 7,514 green; playtest:quick clean;
+prose:gate PASS; live-verified (planted world with a built lean-to + a level-4
+threat → Continue showed the recap naming both; "I spend a week researching the
+old shrine" passed 168 hours and landed "the county once paid good coin to keep
+old shrine quiet" in the ledger; screenshots).
+**Bonus fix (protocol bug class):** the walk-place canvas's 30vh clamp starved
+the transcript to a 20px sliver on short columns (narration in DOM, invisible
+on screen — the PLAYTEST_PROTOCOL's documented failure mode, surfaced by the
+resume render). The canvas now yields to a ~120px prose floor (v1.js inline
+style; prose-first per DESIGN.md).
+**Deviation:** `worldTick.js` (allowed) needed no changes — ticks are invoked
+from playloop per the P-72 precedent. No engine/save shape change.
 **Why:** cheap to build, large feel payoff. A great DM opens with "previously
 on…" and ends on a hook; between adventures there's downtime.
 **Objective:** (a) recap on resume — composer builds 3–4 sentences from the

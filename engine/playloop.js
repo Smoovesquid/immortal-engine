@@ -1600,6 +1600,13 @@ function playerMoveCore(world, packsById, text) {
     if (built) return built;
   }
 
+  // P-79 — downtime: "I spend a week training / researching / carousing".
+  // After tryBuild so "spend a week raising a palisade" stays construction.
+  if (!w.combat?.active && !w.scene?.dialogue) {
+    const passed = tryDowntime(w, text);
+    if (passed) return passed;
+  }
+
   // P-70 — salvage: a destructive intent aimed at a whole object breaks it
   // down for MATERIALS (typed, stackable). "Rip the leg off the table" still
   // goes to the physics part-extraction below; "smash the crate" comes here.
@@ -2847,6 +2854,100 @@ function tryBuild(w, text) {
     output: {
       narration: `Wizard: ${qLine}${restLine}${laborLine}${laborNote} (${plan.check.skill} ${total} vs DC ${dc}${toolUsed ? ', tools +2' : ''}${labor.mode === 'hired' ? ', crew +2' : ''}.)`,
       mechanics: `[build | ${plan.name} | ${quality} | ${labor.mode} ${labor.days}d | ${plan.check.skill} ${total} vs DC ${dc}]`
+    }
+  };
+}
+
+// ── P-79: downtime — a week given to training, research, or the tavern ───────
+// "I spend a week researching the tower": days pass with the world ticking,
+// and each verb pays ONE concrete outcome — training steadies the next
+// contested moment, research yields a fact in the ledger, carousing buys a
+// contact and a question worth asking. Never a menu; honest refusals.
+
+const DOWNTIME_SPAN_RE = /\b(?:spend|pass|take|give)\b[^.!?]*?\b(a\s+week|the\s+week|a\s+month|a\s+few\s+days|(\d+)\s+days?)\b/i;
+const DOWNTIME_VERBS = [
+  { verb: 'training', re: /\btrain(?:ing)?\b|\bdrill(?:ing)?\b|\bpractic(?:e|ing)\b|\bspar(?:ring)?\b/i },
+  { verb: 'research', re: /\bresearch(?:ing)?\b|\bstud(?:y|ying)\b|\bpor(?:e|ing)\s+over\b|\bdig(?:ging)?\s+into\b|\bin\s+the\s+archives\b/i },
+  { verb: 'carousing', re: /\bcarous(?:e|ing)\b|\brevel(?:ing|ling)?\b|\bdrink(?:ing)?\s+(?:with|at|in)\b|\bmake\s+merry\b|\btavern\s+crawl\b/i }
+];
+
+function tryDowntime(w, text) {
+  const t = String(text || '');
+  const span = t.match(DOWNTIME_SPAN_RE);
+  if (!span) return null;
+  const mode = DOWNTIME_VERBS.find(v => v.re.test(t));
+  if (!mode) return null;
+
+  const spanTxt = span[1].toLowerCase();
+  const days = span[2] ? Math.max(1, Math.min(30, parseInt(span[2], 10)))
+    : /month/.test(spanTxt) ? 30
+    : /few/.test(spanTxt) ? 3
+    : 7;
+  const pc = w.party?.[0];
+  const here = (w.map?.nodes || []).find(n => n && n.id === w.map?.currentNodeId) || null;
+  const rng = makeRng(seedFromString(`${w.meta.seed}|downtime|${mode.verb}|${w.timeline.length}`));
+  const spanWord = days === 7 ? 'A week' : days === 30 ? 'A month' : `${days} days`;
+
+  // Carousing needs people; the wild has none to buy a round for.
+  if (mode.verb === 'carousing' && !here?.settlement) {
+    return { world: w, output: { narration: `Wizard: Out here there is no one to drink with but the wind, and it never buys a round. Find a settlement.`, mechanics: '[downtime:no-tavern]' } };
+  }
+
+  const deltas = [{ op: 'time', key: 'hours', by: days * 24 }];
+  let outcomeLine = '';
+  let outcomeTag = '';
+
+  if (mode.verb === 'training') {
+    deltas.push({ op: 'advantage', actorId: pc.id, by: 1 });
+    deltas.push({ op: 'ledger', addFact: `trained hard for ${days} days — the work is in the hands now`, source: 'downtime' });
+    outcomeLine = `The drills wear grooves into you until the moves live below thought. The next time it matters, you'll be the steadier one. (Advantage banked.)`;
+    outcomeTag = 'advantage+1';
+  } else if (mode.verb === 'research') {
+    // Name the subject from the player's own words; tie it to a real nearby
+    // place when one matches, so the fact has an address.
+    const subjM = t.match(/\b(?:research(?:ing)?|stud(?:y|ying)|dig(?:ging)?\s+into|por(?:e|ing)\s+over)\s+(?:the\s+)?([a-z' -]{3,40}?)(?:\s+(?:for|until|over|while)\b|[.?!,]|$)/i);
+    const subject = (subjM ? subjM[1] : 'the matter').trim();
+    const known = (w.map?.nodes || []).filter(n => n?.name && t.toLowerCase().includes(String(n.name).toLowerCase()));
+    const anchor = known[0] || null;
+    const findings = [
+      `the oldest accounts disagree about ${subject} — and the disagreement itself is the clue`,
+      `${subject} appears in the records twice under two different names`,
+      `whoever wrote the surviving page about ${subject} stopped mid-sentence`,
+      `the county once paid good coin to keep ${subject} quiet`
+    ];
+    const finding = findings[rng.int(0, findings.length - 1)];
+    deltas.push({ op: 'ledger', addFact: `research: ${finding}${anchor ? ` (see ${anchor.name})` : ''}`, source: 'downtime' });
+    outcomeLine = `By the end your eyes ache and your notes contradict each other — except on one point, which holds: ${finding}.`;
+    outcomeTag = 'fact';
+  } else {
+    const npcs = (here.settlement.npcs || []).filter(n => n && n.name && !n.hostile);
+    const contact = npcs.length ? npcs[rng.int(0, npcs.length - 1)] : null;
+    if (contact) deltas.push({ op: 'npcTrustDelta', npcId: contact.id, by: 2 });
+    const heard = [
+      'someone has been paying for silence on the edge of the county',
+      'a road that used to be safe is not anymore, and nobody will say which',
+      'something was sold in the night market that should have stayed buried'
+    ];
+    const q = `tavern talk: ${heard[rng.int(0, heard.length - 1)]}?`;
+    deltas.push({ op: 'ledger', addQuestion: q });
+    outcomeLine = contact
+      ? `${spanWord} of bought rounds and listened stories. ${contact.name} warms to you — a friend worth having — and one thread of talk refuses to lie flat: ${q.replace(/^tavern talk: /, '')}`
+      : `${spanWord} of bought rounds. The talk runs shallow, but one thread refuses to lie flat: ${q.replace(/^tavern talk: /, '')}`;
+    outcomeTag = contact ? `contact:${contact.name}` : 'question';
+  }
+
+  let w1 = applyDeltas(w, deltas);
+  // The world does not wait while you work — one tick per day, bounded.
+  for (let d = 0; d < Math.min(days, 30); d++) {
+    w1 = worldTick(w1, `${w1.meta.seed}|downtime|${mode.verb}|${w.timeline.length}|${d}`);
+  }
+  w1 = pushEvent(w1, { kind: 'downtime', data: { verb: mode.verb, days, outcome: outcomeTag } });
+
+  return {
+    world: w1,
+    output: {
+      narration: `Wizard: ${mode.verb === 'training' ? `${spanWord} of drill, sweat, and repetition. ` : ''}${outcomeLine} (${spanWord} passes; the world did not wait.)`,
+      mechanics: `[downtime | ${mode.verb} | ${days}d | ${outcomeTag}]`
     }
   };
 }

@@ -64,6 +64,7 @@ function routeClass(res) {
   if (/build/.test(m)) return 'BUILD';
   if (/identify/.test(m)) return 'IDENTIFY';
   if (/attune/.test(m)) return 'ATTUNE';
+  if (/downtime/.test(m)) return 'DOWNTIME';
   if (/roll:\d+/.test(m)) return 'ROLL';
   return `OTHER(${m})`;
 }
@@ -111,6 +112,9 @@ const OUT_OF_COMBAT_TABLE = [
   // P-77 — identity intents route to item machinery (honest none-answers, never dice)
   ['I identify the humming blade', ['IDENTIFY']],
   ['attune to the ring', ['ATTUNE']],
+  // P-79 — downtime spans route to the week-passing machinery, never to dice
+  ['I spend a week training with the blade', ['DOWNTIME']],
+  ['spend a few days researching the old shrine', ['DOWNTIME']],
 ];
 
 test('UX2-01: out-of-combat routing table', () => {

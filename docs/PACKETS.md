@@ -292,10 +292,12 @@ the gods). Sub-packets, in order:
   - allowed: `engine/story/villain.js` (new), `engine/state.js`, `engine/invariants.js`
   - invariants: WORLD_VERSION checklist (inv #8, #11); worldHash stable under replay.
   - done_when: same seed → same villain + agenda; determinism suite green.
-- **P-74b — The reaction loop.** worldTick advances the agenda on its clock AND
+- **P-74b — The reaction loop. ✅ DONE 2026-06-12** worldTick advances the agenda on its clock AND
   reacts: player completes goals → villain accelerates/adapts; player corruption
   crosses tiers → recruitment overture (ties into M4 dark gifts); villain stage
   changes mint rumors + ledger threats.
+  Landed: tickVillain in worldTick (lazy mint, pure arithmetic, no rng drawn),
+  villainAdapts/villainOverture/villainStage timeline events, U129 ×7.
   - allowed: `engine/worldTick.js`, `engine/story/villain.js`, `engine/rumor/`, `engine/ledger.js`
   - done_when: headless 200-turn run shows agenda advancing + ≥2 distinct
     reactions to player actions in the timeline; playtest:full green.

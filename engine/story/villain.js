@@ -60,8 +60,35 @@ export function ensureVillain(x) {
     seatNodeId: String(x.seatNodeId ?? ''),
     discovered: x.discovered === true,
     defeated: x.defeated === true,
-    agenda: { stage, clock, stages }
+    agenda: { stage, clock, stages },
+    // P-74b — reaction bookkeeping: high-water marks of what the villain has
+    // already noticed (goal completions counted, corruption tier seen, last
+    // tier an overture was sent for). Monotonic, so reactions fire once.
+    seen: {
+      goals: clampInt(x.seen?.goals ?? 0, 0, 999999),
+      corruptionTier: clampInt(x.seen?.corruptionTier ?? 0, 0, 3),
+      overtureTier: clampInt(x.seen?.overtureTier ?? 0, 0, 3)
+    }
   };
+}
+
+// ── P-74b — reaction-loop constants + helpers (pure; worldTick drives) ─────
+
+// Ticks of patient work per agenda stage; completed player goals feed the
+// clock (the villain accelerates when you prove dangerous).
+export const VILLAIN_STAGE_COST = 25;
+export const VILLAIN_GOAL_ACCEL = 3;
+
+// Mirrors the M4 dark-gift thresholds (engine/magic/forbiddenGates.js):
+// corruption 20/40/60. Tier = how many lines have been crossed.
+const CORRUPTION_TIERS = [20, 40, 60];
+
+/** corruptionTier(corruption) -> 0..3 — M4 thresholds crossed. */
+export function corruptionTier(corruption) {
+  const c = Number(corruption) || 0;
+  let tier = 0;
+  for (const t of CORRUPTION_TIERS) if (c >= t) tier++;
+  return tier;
 }
 
 /**

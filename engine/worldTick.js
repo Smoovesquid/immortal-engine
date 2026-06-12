@@ -6,6 +6,8 @@ import { fateBand } from './rulesets.js';
 import { scoreInventorySignals } from './gear/gearProps.js';
 import { scarifyNode, ensureMap } from './map/mapState.js';
 import { propagateRumors } from './rumor/propagate.js';
+import { mintVillain, corruptionTier, VILLAIN_STAGE_COST, VILLAIN_GOAL_ACCEL } from './story/villain.js';
+import { addThreat } from './ledger.js';
 
 // Living System Core — deterministic world evolution.
 
@@ -22,6 +24,11 @@ export function worldTick(world, seed = '') {
 
   // 1) Advance faction agendas
   w = tickFactions(w, rng, severity);
+
+  // 1.5) The Adversary (P-74b): mint lazily, advance the agenda, react to the
+  // player. Pure arithmetic — no rng consumed, so existing streams are
+  // untouched.
+  w = tickVillain(w);
 
   // 2) Increase tension in active living threads; escalate/mutate deterministically.
   w = tickLivingThreads(w, rng, severity);
@@ -62,6 +69,88 @@ export function worldTick(world, seed = '') {
   // 8) Apply fate weighting already expressed via severity.
   assertWorldInvariants(w);
   return w;
+}
+
+// ── P-74b — the Adversary's reaction loop ───────────────────────────────────
+// The villain works its agenda on a patient clock and REACTS: completed player
+// goals feed the clock (you proved dangerous — it adapts), and crossing an M4
+// corruption tier earns a recruitment overture (it would rather own you than
+// fight you). Stage changes surface as county-visible symptoms: a rumor and a
+// ledger threat, never the name (rumor-first; discovery is P-74c's business).
+function tickVillain(w) {
+  let next = mintVillain(w);
+  const v = next.villain;
+  if (!v || v.defeated) return next;
+
+  const goalsDone = (next.timeline || []).reduce((n, e) => n + (e?.kind === 'goalCompleted' ? 1 : 0), 0);
+  const newGoals = Math.max(0, goalsDone - (v.seen?.goals ?? 0));
+
+  const corruption = Number(next.party?.[0]?.morality?.corruption ?? 0);
+  const tier = corruptionTier(corruption);
+  const seenTier = v.seen?.corruptionTier ?? 0;
+  let overtureTier = v.seen?.overtureTier ?? 0;
+
+  let stage = v.agenda.stage;
+  let clock = v.agenda.clock + 1 + newGoals * VILLAIN_GOAL_ACCEL;
+  const lastStage = v.agenda.stages.length - 1;
+
+  // Reaction 1 — the player completes goals; the villain adapts and hurries.
+  if (newGoals > 0) {
+    next = pushEvent(next, { kind: 'villainAdapts', data: { goals: newGoals, stage } });
+    next = pushTickLog(next, '[TICK] something out in the county adjusts its plans around you');
+  }
+
+  // Reaction 2 — corruption crosses an M4 tier; one overture per tier, ever.
+  if (tier > seenTier && tier > overtureTier) {
+    overtureTier = tier;
+    const overture = 'someone has been watching what you are becoming — old coin and a patient offer wait for those willing to go further';
+    next = appendVillainRumor(next, `rumor_villain_overture_t${tier}`, overture, ['villain', 'overture']);
+    next = addThreat(next, overture, clampInt(1 + tier, 1, 5));
+    next = pushEvent(next, { kind: 'villainOverture', data: { tier } });
+    next = pushTickLog(next, '[TICK] an overture is being prepared for you');
+  }
+
+  // The agenda grinds forward; each stage lands as a symptom the county can feel.
+  if (clock >= VILLAIN_STAGE_COST && stage < lastStage) {
+    stage += 1;
+    clock = 0;
+    const sign = String(v.agenda.stages[stage]?.sign || '');
+    if (sign) {
+      next = appendVillainRumor(next, `rumor_villain_stage_${stage}`, sign, ['villain', 'stage']);
+      next = addThreat(next, sign, clampInt(1 + stage, 1, 5));
+    }
+    next = pushEvent(next, { kind: 'villainStage', data: { stage, sign } });
+    next = pushTickLog(next, "[TICK] the county's trouble deepens");
+  } else if (clock > VILLAIN_STAGE_COST && stage >= lastStage) {
+    clock = VILLAIN_STAGE_COST; // poised at the brink — the arc (P-74c) resolves it
+  }
+
+  const villain = {
+    ...v,
+    agenda: { ...v.agenda, stage, clock },
+    seen: { goals: goalsDone, corruptionTier: Math.max(tier, seenTier), overtureTier }
+  };
+  return { ...next, villain };
+}
+
+// Villain rumors carry no carrier NPC (the county itself is muttering) and a
+// deterministic id, so re-ticks never duplicate. Shape mirrors the mintRumor
+// delta op; ensureRumors re-normalizes on the next ensureWorld pass.
+function appendVillainRumor(w, id, body, tags) {
+  const rumors = Array.isArray(w.rumors) ? w.rumors : [];
+  if (rumors.some(r => r.id === id) || rumors.length >= 64) return w;
+  const rumor = {
+    id,
+    sourceSeedId: id,
+    carrierNpcId: '',
+    hopCount: 1,
+    tier: 1,
+    age: 0,
+    mintedAt: clampInt(w.timeline?.length ?? 0, 0, 999999),
+    body: String(body),
+    tags: Array.isArray(tags) ? tags : []
+  };
+  return { ...w, rumors: [...rumors, rumor] };
 }
 
 function tickFactions(w, rng, severity) {

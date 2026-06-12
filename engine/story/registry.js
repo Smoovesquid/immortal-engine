@@ -9,9 +9,10 @@ import whatTheFireLeft from '../../content/arcs/what_the_fire_left.arc.js';
 import theJudgePasses from '../../content/arcs/the_judge_passes.arc.js';
 import theWagesOfBlood from '../../content/arcs/the_wages_of_blood.arc.js';
 import theNamedDark from '../../content/arcs/the_named_dark.arc.js';
+import theDebtThatWalks from '../../content/arcs/the_debt_that_walks.arc.js';
 
 // Order is casting priority when active slots are scarce.
-const BUILTIN_ARCS = [theColdWell, whatTheFireLeft, theJudgePasses, theWagesOfBlood, theNamedDark];
+const BUILTIN_ARCS = [theColdWell, whatTheFireLeft, theJudgePasses, theWagesOfBlood, theNamedDark, theDebtThatWalks];
 
 const MAX_ARCS = 8;
 const VALID_SCALES = new Set(['village', 'county', 'realm']);

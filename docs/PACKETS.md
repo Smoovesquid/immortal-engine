@@ -421,7 +421,7 @@ machinery's reward vocabulary).
   effect in combat math; a quest pays a named item with its history line;
   suite + playtest:quick green.
 
-### P-78 — Companions as people
+### P-78 — Companions as people ✅ DONE 2026-06-12
 **Why:** `companionTurn.js` runs their combat actions and npcArc/npcDepth
 exist, but the BG3-grade layer — companions who interject, object, have their
 own quests, and can leave — isn't composed. M4 corruption is begging for a

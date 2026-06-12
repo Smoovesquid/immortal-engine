@@ -49,10 +49,10 @@ const npcOf = (w, arcId, role) => {
   return { npc: node?.settlement?.npcs?.find(n => String(n.id) === npcId) || null, nodeId };
 };
 
-test('G11-01: all three McCarthy arcs validate and load (5 arcs total with the-named-dark)', () => {
+test('G11-01: all three McCarthy arcs validate and load (6 arcs total)', () => {
   for (const a of [theJudge, theWages, theFire]) assert.deepEqual(validateArc(a), [], a.arc);
   const ids = getArcs().map(a => a.arc);
-  assert.deepEqual(ids, ['the-cold-well', 'what-the-fire-left', 'the-judge-passes', 'the-wages-of-blood', 'the-named-dark']);
+  assert.deepEqual(ids, ['the-cold-well', 'what-the-fire-left', 'the-judge-passes', 'the-wages-of-blood', 'the-named-dark', 'the-debt-that-walks']);
 });
 
 test('G11-02: on a materialized county every arc casts, with no shared NPCs', () => {

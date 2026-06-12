@@ -296,6 +296,8 @@ export function castArcs(world) {
     if (st && st.status !== 'dormant') continue;
     // P-74c: villain-bound arcs wait for the adversary to exist.
     if (arc.requiresVillain && !w.villain) continue;
+    // P-78: companion side quests wait until someone actually travels with you.
+    if (arc.requiresCompanion && !(w.party || []).some((p, i) => i > 0 && p?.companion)) continue;
     const activeCount = Object.values(arcs).filter(a => a.status === 'cast' || a.status === 'active').length;
     if (activeCount >= MAX_ACTIVE) break;
 

@@ -28,6 +28,7 @@ import { createGoal, checkGoals } from './goals/goalContract.js';
 import { castArcs, tickArcs } from './story/storyEngine.js';
 import { beginDialogue, askNpc, endDialogue, resolveNpcAtCurrentNode, isRecruitIntent } from './npc/dialogue.js';
 import { resolveArc } from './npc/npcArc.js';
+import { companionPass } from './npc/companionVoice.js';
 import { checkMilestone, buildLevelUpLine } from './advancement/milestones.js';
 import { darkGiftForThreshold } from './magic/forbiddenGates.js';
 import { resolveCombatTurn } from './combat/combatResolve.js';
@@ -331,17 +332,24 @@ export function playerMove(world, packsById, text) {
       }
     }
 
-    // Append dark gift / level-up narration if anything fired
-    if (!darkGiftText && !milestone.leveled) {
-      return w2 === res.world ? res : { ...res, world: w2 };
+    // P-78 — companions are people: they witness deeds (loyalty), they speak
+    // at scene-shaped moments (one line, deterministic), and they object to
+    // the dark path — twice ignored, they leave.
+    const comp = companionPass(w4, { prevWorld: world, oldCorruption, newCorruption });
+    const w5 = comp.world;
+
+    // Append dark gift / level-up / companion narration if anything fired
+    if (!darkGiftText && !milestone.leveled && !comp.line) {
+      return w5 === res.world ? res : { ...res, world: w5 };
     }
 
     let narration = res.output?.narration ?? '';
     if (darkGiftText) narration = narration + '\n\n' + darkGiftText;
     if (milestone.leveled) narration = narration + '\n\n' + buildLevelUpLine(milestone.newLevel, milestone.gainedFeatures);
     if (rewardText) narration = narration + '\n' + rewardText;
+    if (comp.line) narration = narration + '\n\n' + comp.line;
 
-    return { ...res, world: w4, output: { ...res.output, narration } };
+    return { ...res, world: w5, output: { ...res.output, narration } };
   } catch {
     return res;
   }

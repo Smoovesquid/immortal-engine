@@ -28,6 +28,8 @@ import { createGoal, checkGoals } from './goals/goalContract.js';
 import { castArcs, tickArcs } from './story/storyEngine.js';
 import { beginDialogue, askNpc, endDialogue, resolveNpcAtCurrentNode, isRecruitIntent } from './npc/dialogue.js';
 import { resolveArc } from './npc/npcArc.js';
+import { checkMilestone, buildLevelUpLine } from './advancement/milestones.js';
+import { darkGiftForThreshold } from './magic/forbiddenGates.js';
 import { resolveCombatTurn } from './combat/combatResolve.js';
 import { beginCombat, endCombat, mintEnemyFromNpc } from './combat/combatLifecycle.js';
 import { resolveCompanionTurn } from './combat/companionTurn.js';
@@ -296,8 +298,36 @@ export function beginAdventure(world, packsById) {
 export function playerMove(world, packsById, text) {
   const res = playerMoveCore(world, packsById, text);
   try {
+    const oldCorruption = Number(world?.party?.[0]?.morality?.corruption ?? 0);
     const w2 = applyDeedCharges(res.world, text, res.output);
-    return w2 === res.world ? res : { ...res, world: w2 };
+    const newCorruption = Number(w2?.party?.[0]?.morality?.corruption ?? 0);
+
+    // M4: dark gift on threshold crossing
+    let w3 = w2;
+    let darkGiftText = null;
+    const gift = darkGiftForThreshold(oldCorruption, newCorruption);
+    if (gift) {
+      const known = w3.party?.[0]?.spells?.known;
+      if (Array.isArray(known) && !known.includes(gift.ref)) {
+        w3 = applyDeltas(w3, [{ op: 'learnSpell', spellRef: gift.ref }]);
+        darkGiftText = gift.text;
+      }
+    }
+
+    // Milestone level-up check
+    const milestone = checkMilestone(w3);
+    const w4 = milestone.world;
+
+    // Append dark gift / level-up narration if anything fired
+    if (!darkGiftText && !milestone.leveled) {
+      return w2 === res.world ? res : { ...res, world: w2 };
+    }
+
+    let narration = res.output?.narration ?? '';
+    if (darkGiftText) narration = narration + '\n\n' + darkGiftText;
+    if (milestone.leveled) narration = narration + '\n\n' + buildLevelUpLine(milestone.newLevel, milestone.gainedFeatures);
+
+    return { ...res, world: w4, output: { ...res.output, narration } };
   } catch {
     return res;
   }

@@ -18,6 +18,7 @@ import { profBonusFor } from '../ruleset/core/levelTable.js';
 import { rollSave } from '../combat/savingThrows.js';
 import { maxWounds } from '../ruleset/core/stats.js';
 import { applyResistance } from '../combat/damageTypes.js';
+import { canAccessForbiddenSpell } from '../magic/forbiddenGates.js';
 import { applyDamageTakenTraits } from '../combat/traitHooks.js';
 
 /**
@@ -44,8 +45,8 @@ export function castSpell(world, { spellRef, targetId, slotLevel, will = false, 
 
   const spells = party0.spells || { known: [], slots: {}, maxSlots: {}, concentration: null };
 
-  // Check if spell is known (cantrips and known spells).
-  if (!spells.known.includes(ref)) {
+  // Check if spell is known, or accessible via dark gift (M4 forbidden gates).
+  if (!spells.known.includes(ref) && !canAccessForbiddenSpell(party0, ref)) {
     return { world: w, result: { ok: false, reason: 'not-known', spellRef: ref, effects: [], slotConsumed: false } };
   }
 

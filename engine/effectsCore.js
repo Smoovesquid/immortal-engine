@@ -730,6 +730,20 @@ export function applyDeltas(world, deltas = []) {
       continue;
     }
 
+    if (kind === 'learnSpell') {
+      const spellRef = String(op.spellRef || '').trim();
+      if (!spellRef) continue;
+      const party = Array.isArray(w.party) ? w.party : [];
+      if (!party[0]) continue;
+      const spells = party[0].spells || { known: [], slots: {}, maxSlots: {}, concentration: null };
+      if (spells.known.includes(spellRef)) continue;
+      const nextSpells = { ...spells, known: [...spells.known, spellRef] };
+      const nextParty = [...party];
+      nextParty[0] = { ...party[0], spells: nextSpells };
+      w = { ...w, party: nextParty };
+      continue;
+    }
+
     if (kind === 'consumeSpellSlot') {
       const level = toInt(op.level ?? 0);
       if (level < 1 || level > 5) continue;

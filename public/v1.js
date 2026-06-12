@@ -730,10 +730,11 @@ async function doSubmitMove() {
   setStatus('Narrating…');
   render();
 
-  // Wait for AI narration; fall back to base if unavailable. EXCEPTION: a sarcastic
-  // "ridiculous statement" comeback is the DM's own voice — send it verbatim, never let
-  // the polish layer earnestly rewrite the bite out of it.
-  const skipPolish = /the DM is unmoved|nice try/i.test(String(output?.mechanics || ''));
+  // Wait for AI narration; fall back to base if unavailable. EXCEPTIONS: sarcastic
+  // comebacks must not be earnestly rewritten; dialogue exits must not have their
+  // NPC attribution confused by the LLM seeing other NPCs in context.
+  const skipPolish = /the DM is unmoved|nice try/i.test(String(output?.mechanics || ''))
+    || /\[dialogue exit/.test(String(output?.mechanics || ''));
   const aiText = skipPolish ? null : await tryAiNarration(world, baseNarration, { input: text });
   wizardLine.text = aiText || baseNarration;
   tts.speak(wizardLine.text);
@@ -2090,6 +2091,24 @@ function renderWalkPlace(world) {
   catch { placeCtl = null; ui.placeCache = null; return renderLocalMap(world, { compact: true }); }
   const redraw = () => { try { pm.draw(place); } catch {} };
   const applyMove = (np) => {
+    // Walk off the edge → if there's a road exit that way, travel there instead
+    // of silently moving into the void. Only fires outside (interior has no exits).
+    if (!ui.world?.scene?.interior) {
+      const B = grid.B;
+      const EDGE = 1.5;
+      let edgeDir = null;
+      if (np.ux <= B.minX + EDGE) edgeDir = 'west';
+      else if (np.ux >= B.maxX - EDGE) edgeDir = 'east';
+      else if (np.uy <= B.minY + EDGE) edgeDir = 'north';
+      else if (np.uy >= B.maxY - EDGE) edgeDir = 'south';
+      if (edgeDir) {
+        const wExits = exitsFrom(ensureMap(ui.world.map), String(ui.world.map?.currentNodeId || ''));
+        if (wExits[edgeDir]) {
+          travelTo('go ' + edgeDir);
+          return;
+        }
+      }
+    }
     ui.place.ux = np.ux; ui.place.uy = np.uy;
     place.tokens[0].ux = np.ux; place.tokens[0].uy = np.uy;
     // R0 — persist walk position so reload restores exactly where you stood.

@@ -14,6 +14,7 @@
 import { generatePlace } from './generatePlace.js';
 import { getPlan } from './plans/index.js';
 import { buildingTypeFor } from '../../engine/structures/roomDetail.js';
+import { exitsFrom, ensureMap } from '../../engine/map/mapState.js';
 
 const TIER_STEP = 5; // grid-distance per danger rung
 
@@ -74,10 +75,22 @@ export function placeFromWorldNode(world, nodeId) {
   if (!buildings.length) return generatePlace({ seed, nodeType: nodeTypeFor(node), tier: tierForNode(world, node) });
 
   const endX = Math.max(8, cursor);
+  const midX = Math.round(endX / 2);
+
+  // Roads extend to the map edge in every direction that has an adjacent node,
+  // so the player can walk to the edge and travel onward. The horizontal road
+  // runs the full street; vertical spurs break off the midpoint for N/S exits.
+  const exits = exitsFrom(ensureMap(world && world.map), id);
+  const mainRoadX0 = exits.west ? -3 : 0;
+  const mainRoadX1 = exits.east ? endX + 3 : endX;
+  const paths = [{ pts: [[mainRoadX0, pathY], [mainRoadX1, pathY]], w: 1.3 }];
+  if (exits.north) paths.push({ pts: [[midX, pathY], [midX, pathY - 14]], w: 1.1 });
+  if (exits.south) paths.push({ pts: [[midX, pathY], [midX, pathY + 10]], w: 1.1 });
+
   const terrain = {
-    paths: [{ pts: [[0, pathY], [endX, pathY]], w: 1.3 }],
+    paths,
     groves: [{ cx: 3, cy: pathY + 3.5, r: 2.2, n: 9 }, { cx: endX - 3, cy: pathY + 3, r: 1.8, n: 6 }],
-    props: [{ type: 'well', ux: Math.round(endX / 2), uy: pathY + 1.4 }]
+    props: [{ type: 'well', ux: midX, uy: pathY + 1.4 }]
   };
 
   tokens.push({ type: 'player', ux: 1.5, uy: pathY });

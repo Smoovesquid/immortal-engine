@@ -530,7 +530,9 @@ async function tryLocalNpcVoice(dialogue) {
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({
         npcName: dialogue.npcName,
+        role: dialogue.npcRole || '',
         mood: dialogue.mood || '',
+        manner: dialogue.manner || '',
         mode: dialogue.mode,
         factPhrase: dialogue.factPhrase || '',
         playerLine: dialogue.playerLine || ''
@@ -663,9 +665,12 @@ async function doSubmitMove() {
   }
   let baseNarration = output?.narration || '...';
   // P6 — a dialogue reply gets the local NPC voice when available.
-  // EXCEPTION: authored testimony (story arcs) is spoken verbatim — the
-  // writer's words are the content; no model paraphrases them.
-  if (output?.dialogue && !output.dialogue.factBody) {
+  // EXCEPTIONS spoken verbatim, never paraphrased by a model: authored
+  // testimony (the writer's words ARE the content) and common-knowledge
+  // answers (real names/bearings/rumors the model would replace with
+  // invention — and a doomed round-trip besides: the server has no
+  // decision text for those modes).
+  if (output?.dialogue && !output.dialogue.factBody && !output.dialogue.commonBody) {
     const spoken = await tryLocalNpcVoice(output.dialogue);
     if (spoken) baseNarration = spoken;
   }

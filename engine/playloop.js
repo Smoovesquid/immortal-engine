@@ -679,13 +679,18 @@ function playerMoveCore(world, packsById, text) {
           narration: dialogueAskNarration(asked.outcome, w),
           mechanics: `[dialogue ask | ${asked.outcome.mode}${asked.outcome.factId ? ` | ${asked.outcome.factId}` : ''} | trust:${asked.outcome.trustLevel}]`,
           // P6 — structured handle for the local voice layer (presentation
-          // only; the decision above is already canon).
+          // only; the decision above is already canon). `manner` styles the
+          // LLM delivery; `commonBody` carries data-true answers (names,
+          // bearings) the voice layer must NOT replace with invention.
           dialogue: {
             npcName: String(asked.outcome.npcName || ''),
+            npcRole: String(asked.outcome.npcRole || ''),
             mode: String(asked.outcome.mode || ''),
             mood: String(asked.outcome.brainMood || ''),
+            manner: String(asked.outcome.manner || 'even'),
             factPhrase: asked.outcome.factId ? factPhrase(asked.outcome.factId) : '',
             factBody: String(asked.outcome.factBody || ''),
+            commonBody: String(asked.outcome.commonBody || ''),
             trustLevel: Number(asked.outcome.trustLevel) || 0,
             playerLine: String(text || '')
           }
@@ -2625,20 +2630,59 @@ function dialogueAskNarration(outcome, world) {
   switch (outcome?.mode) {
     case 'shared': {
       // Authored testimony (story arcs): the words are the content. Speak them
-      // verbatim, framed flat — no template can carry what the writer wrote.
+      // verbatim — the MANNER flavors only how they hand it over.
       const body = String(outcome?.factBody || '').trim();
+      const manner = outcome?.manner || 'even';
       if (body) {
-        return V('sharedBody', [
-          `Wizard: ${name} is quiet a moment. Then they tell it, plainly: "${body}"`,
-          `Wizard: ${name} looks at you a while before answering. "${body}"`,
-          `Wizard: ${says}: "${body}"`
-        ].map(t => t.replace(/^Wizard: /, '')));
+        const frames = {
+          guarded: [
+            `${name} weighs you a long moment. Then, quietly: "${body}"`,
+            `${name} checks who's in earshot first. "${body}"`
+          ],
+          skittish: [
+            `${name} leans close, voice dropped to almost nothing. "${body}"`,
+            `${name} tells it in a rush, like a thing held too long. "${body}"`
+          ],
+          blunt: [
+            `"${body}" ${name} says it like weather — take it or don't.`,
+            `${name} doesn't dress it up. "${body}"`
+          ],
+          open: [
+            `${name} brightens — a question they LIKE. "${body}"`,
+            `${name} pulls you half a step closer, glad of the telling. "${body}"`
+          ],
+          even: [
+            `${name} is quiet a moment. Then they tell it, plainly: "${body}"`,
+            `${name} looks at you a while before answering. "${body}"`,
+            `${says}: "${body}"`
+          ]
+        };
+        return V(`sharedBody:${manner}`, frames[manner] || frames.even);
       }
-      return V('shared', [
-        `${name} leans in. "${capFirst(phrase)}? Aye, I'll tell you what I know." And they do — plainly, holding nothing back.`,
-        `"You're asking about ${phrase}." ${says}. "Fair enough. Listen." What follows has the ring of truth.`,
-        `${name} glances round, then talks — ${phrase}, laid out straight.`
-      ]);
+      const pools = {
+        guarded: [
+          `${name} considers the cost of it, then talks — ${phrase}, in fewer words than it deserves, every one of them true.`,
+          `"${capFirst(phrase)}." ${says}. "You'll hear it once." And you do.`
+        ],
+        skittish: [
+          `${name} talks fast and low — ${phrase}, all of it, like saying it slower would hurt.`,
+          `"You didn't get this from me." Then it comes, hurried but whole: ${phrase}.`
+        ],
+        blunt: [
+          `"${capFirst(phrase)}? Fine." ${name} lays it out flat, no varnish, all of it.`,
+          `${name} gives it to you straight — ${phrase} — and watches it land.`
+        ],
+        open: [
+          `${name} warms to it like a told-twice story. "${capFirst(phrase)}? Sit a moment, then." And they give you the whole of it.`,
+          `"Ha — now THAT I can help with." ${name} talks ${phrase} with both hands, holding nothing back.`
+        ],
+        even: [
+          `${name} leans in. "${capFirst(phrase)}? Aye, I'll tell you what I know." And they do — plainly, holding nothing back.`,
+          `"You're asking about ${phrase}." ${says}. "Fair enough. Listen." What follows has the ring of truth.`,
+          `${name} glances round, then talks — ${phrase}, laid out straight.`
+        ]
+      };
+      return V(`shared:${manner}`, pools[manner] || pools.even);
     }
     case 'recruited':
       return V('recruited', [
@@ -2695,11 +2739,31 @@ function dialogueAskNarration(outcome, world) {
       };
       return V(`withheld:${outcome?.manner || 'even'}`, pools[outcome?.manner] || pools.even);
     }
-    case 'lied':
-      return V('lied', [
-        `"Nothing to it," ${says} — a touch too smoothly. Something in it doesn't sit right.`,
-        `${name} answers without blinking: a clean, easy story. Too clean, maybe.`
-      ]);
+    case 'lied': {
+      const pools = {
+        guarded: [
+          `"No," ${name} says — just that, and a beat too fast. A door closes somewhere behind the word.`,
+          `${name} gives you four flat words that answer nothing. The eyes are doing different arithmetic.`
+        ],
+        skittish: [
+          `${name} answers in a tumble — too many details, none that matter, and a laugh in the wrong place.`,
+          `"Why would I know that? I don't. Who said I did?" ${name} smooths their sleeve twice.`
+        ],
+        blunt: [
+          `"Nothing to it," ${name} says, square as a brick. Almost convincing — almost.`,
+          `${name} states it like a fact you'd be a fool to question. Something underneath says question it.`
+        ],
+        open: [
+          `${name} laughs it off, easy and warm, and pours you a story smooth as cream. It goes down too easily.`,
+          `The friendliest answer you've gotten all day — and the only one that doesn't quite meet your eye.`
+        ],
+        even: [
+          `"Nothing to it," ${says} — a touch too smoothly. Something in it doesn't sit right.`,
+          `${name} answers without blinking: a clean, easy story. Too clean, maybe.`
+        ]
+      };
+      return V(`lied:${outcome?.manner || 'even'}`, pools[outcome?.manner] || pools.even);
+    }
     case 'deflected':
     default: {
       const pools = {

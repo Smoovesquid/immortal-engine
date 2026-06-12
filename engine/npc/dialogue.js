@@ -536,6 +536,7 @@ export function askNpc(world, text) {
       ok: true,
       npcId: d.npcId,
       npcName: String(npc.name || ''),
+      npcRole: String(npc.role || ''),
       topic: factId || '',
       mode,
       factId: factId || '',

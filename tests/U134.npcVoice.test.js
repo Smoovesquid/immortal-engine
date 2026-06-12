@@ -16,6 +16,7 @@ import { beginAdventure, playerMove } from '../engine/playloop.js';
 import { normalizeManifest, normalizePack } from '../engine/rulesets.js';
 import { assertWorldInvariants } from '../engine/invariants.js';
 import { npcVoice, voiceManner } from '../engine/npc/dialogue.js';
+import { buildNpcVoicePrompt } from '../server/npcVoicePrompt.js';
 
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
 function loadPacks() {
@@ -103,6 +104,62 @@ test('U134-04: voice is stable — same NPC, same manner, same words, every time
   const twice = playerMove(playerMove(planted, packs, `talk to ${guarded.name}`).world, packs, 'hello');
   assert.equal(once.output.narration, twice.output.narration);
   assertWorldInvariants(once.world);
+});
+
+test('U134-06: shared facts and lies are delivered in the manner too', () => {
+  // Same fact, same secret, two personalities: the guarded one hands truth
+  // over in fewer words; the open one lies warmly. Constructed directly.
+  const hereId = planted.map.currentNodeId;
+  const fact = { factId: 'well_water_talk', body: 'The well went bad the night the surveyor left town.' };
+  const withGraph = (npc, extra) => ({
+    ...npc, ...extra,
+    knowledgeGraph: [fact],
+    conversationState: { ...(npc.conversationState || {}), trustLevel: 6, metPlayer: true, topicsDiscussed: [], lastInteraction: null }
+  });
+  const world2 = {
+    ...planted,
+    map: {
+      ...planted.map,
+      nodes: planted.map.nodes.map(n => n.id !== hereId ? n : {
+        ...n,
+        settlement: {
+          ...n.settlement,
+          npcs: n.settlement.npcs.map((x, i) => {
+            if (i === 0) return withGraph(x, { secrets: [] });                                  // guarded sharer
+            if (i === 1) return withGraph(x, { secrets: ['well_water_talk'], personality: { ...x.personality, honesty: 0.1 } }); // open liar
+            return x;
+          })
+        }
+      })
+    }
+  };
+  const askWell = (npc) => playerMove(playerMove(world2, packs, `talk to ${npc.name}`).world, packs, 'tell me about the well water');
+  const sharedR = askWell(guarded);
+  assert.match(sharedR.output.mechanics, /dialogue ask \| shared/);
+  assert.match(sharedR.output.narration, /surveyor left town/, 'testimony verbatim');
+  assert.match(sharedR.output.narration, /weighs you a long moment|checks who's in earshot/, 'guarded hand-over');
+  const liedR = askWell(open);
+  assert.match(liedR.output.mechanics, /dialogue ask \| lied/);
+  assert.match(liedR.output.narration, /smooth as cream|doesn't quite meet your eye/i, 'an open liar lies warmly');
+});
+
+test('U134-07: the voice handle carries manner/role and shields data-true bodies', () => {
+  const r = playerMove(playerMove(planted, packs, `talk to ${guarded.name}`).world, packs, 'any news?');
+  const d = r.output.dialogue;
+  assert.ok(d, 'handle present');
+  assert.equal(d.manner, 'guarded');
+  assert.equal(d.npcRole, guarded.role);
+  assert.ok(d.commonBody.length > 0, 'common answers ride the handle so the voice layer can step aside');
+});
+
+test('U134-08: the LLM voice prompt styles delivery by manner — and refuses unknown modes', () => {
+  const p = buildNpcVoicePrompt({ npcName: 'Torva', role: 'innkeeper', mood: 'wary', manner: 'skittish', mode: 'deflected', playerLine: 'who runs this town?' });
+  assert.match(p, /SKITTISH/, 'manner styles the delivery');
+  assert.match(p, /DEFLECT/, 'the engine decision stays the law');
+  const even = buildNpcVoicePrompt({ npcName: 'Torva', mode: 'deflected', manner: 'even', playerLine: 'x' });
+  assert.ok(!/manner:/i.test(even), 'even adds no style line');
+  assert.equal(buildNpcVoicePrompt({ npcName: 'Torva', mode: 'news', manner: 'open' }), null, 'common modes are not for the model');
+  assert.equal(buildNpcVoicePrompt({ npcName: '', mode: 'deflected' }), null);
 });
 
 test('U134-05: a real village is not a chorus — manners vary across seeds', () => {

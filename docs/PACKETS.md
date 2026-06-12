@@ -258,6 +258,154 @@ trust crash is the current visible county reaction.
   file + a casting probe across seeds. Candidates: a Church of Incrementalism
   thread, a bestiary-outer-reaches arc, a patron/angel-demon evidence arc.
 
+## QUEUE — Incredible-RPG track (gap analysis, specced 2026-06-11)
+
+Source: full-engine gap analysis vs. "what makes a great tabletop D&D campaign."
+The verdict: content is deep (642 creatures, 18 spell schools, loot/items/shops,
+conditions, companions, morality); the gaps are COMPOSITION — systems that make
+the player feel someone is running a game *for them*.
+
+**Ordering rule (anti-drift):** the ROADMAP critical path (R0→R3, the DM
+adjudication soul) outranks everything here. These are the parallel-track
+packets; pull them when a worker window wants bounded work that doesn't touch
+the adjudication spine. Within this track: P-75 and P-77 are independent and
+small (start anywhere); P-74 is the big one (sub-packets in order); P-76 pairs
+naturally with R2/R3 and should wait for the object model; P-78 builds on P-74's
+reaction machinery; P-79 is composer-layer, any time.
+
+### P-74 — The Adversary (a villain you hate)
+**Why:** threads, factions, and the inevitability meter exist, but no persistent
+named antagonist reacts to the player — escalates when you win, recruits when
+you're weak, is the face of the third act. Great campaigns are remembered by
+their Strahd. All the organs exist (npcArc, worldTick, instrument.js,
+endingArchitect); nothing composes them into a BBEG with an agenda.
+**Objective:** one deterministic villain per world seed: identity, agenda
+(staged plan), and a reaction loop in worldTick that advances the agenda and
+responds to player-visible events (goal completions, corruption, faction hits).
+The villain is never named by the narrator until discovered (rumor-first, like
+the gods). Sub-packets, in order:
+- **P-74a — Villain genesis + agenda state.** `engine/story/villain.js` (new):
+  seed-deterministic villain (drawn from bestiary elite tier or npcGenesis),
+  a 4–5 stage agenda, persisted in world state behind `ensureWorld` defaults.
+  - allowed: `engine/story/villain.js` (new), `engine/state.js`, `engine/invariants.js`
+  - invariants: WORLD_VERSION checklist (inv #8, #11); worldHash stable under replay.
+  - done_when: same seed → same villain + agenda; determinism suite green.
+- **P-74b — The reaction loop.** worldTick advances the agenda on its clock AND
+  reacts: player completes goals → villain accelerates/adapts; player corruption
+  crosses tiers → recruitment overture (ties into M4 dark gifts); villain stage
+  changes mint rumors + ledger threats.
+  - allowed: `engine/worldTick.js`, `engine/story/villain.js`, `engine/rumor/`, `engine/ledger.js`
+  - done_when: headless 200-turn run shows agenda advancing + ≥2 distinct
+    reactions to player actions in the timeline; playtest:full green.
+- **P-74c — Confrontation arc.** An authored arc binds to the villain (the
+  existing `content/arcs/*.arc.js` format): discovery → lieutenants →
+  confrontation at the villain's seat. Defeating them is a real ending-shaped
+  event in an open-ended world (the world notes it; play continues).
+  - allowed: `content/arcs/` (new arc), `engine/story/storyEngine.js` (binding only)
+  - done_when: live playthrough reaches and resolves the confrontation; the
+    county's rumors reflect the outcome.
+**Forbidden:** narrator names the villain before canon discovery; `Math.random`;
+a second mutation path.
+
+### P-75 — Boss mechanics (legendary + lair actions, phases)
+**Why:** "legendary" exists only in bestiary flavor text. A CR-17 fight is
+structurally a wolf fight with bigger numbers. One module changes how climactic
+fights feel more than 200 more creatures would.
+**Objective:** `engine/combat/bossActions.js` (new): creatures flagged
+boss-tier get legendary actions (act between player turns, budget 2–3/round),
+a lair action on initiative 20 when fighting at their seat, and one phase
+trigger (at ½ HP: new behavior + a narration beat). Data-driven from bestiary
+entries (extend elite-tier defs); the dice stay in `diceRoller.js`.
+- allowed: `engine/combat/bossActions.js` (new), `engine/combat/combatResolve.js`
+  + `initiative.js` (hooks only), `engine/ruleset/core/bestiary/catalog/elite.js`
+- depends: nothing — independent, start any time.
+- done_when: a flagged elite fight shows legendary actions interleaving and a
+  visible phase turn in live combat prose; non-boss fights byte-identical
+  (worldHash + replay green); suite green.
+
+### P-76 — Traps, hazards & skill challenges (the third pillar)
+**Why:** sessions are roughly thirds — combat, social, exploration-with-
+obstacles. The first two exist; the third is narration-only. No trap system,
+no puzzle structure, no skill-challenge frame.
+**Objective:** traps as first-class objects `{trigger, hidden, dc, effect,
+state}` placed deterministically in structures/dungeons; passive-Perception
+reveals on approach, search reveals on intent, disarm is a check, springing
+applies real deltas (damage/condition/noise). Skill-challenge frame v1:
+N-successes-before-3-failures for multi-step obstacles (chasm crossing,
+chase, ritual), adjudicated in prose per THE_DM_TEST.
+- allowed: `engine/objects/` or `engine/structures/` (trap placement),
+  `engine/playloop.js` (search/disarm intents), `engine/resolve.js`,
+  `engine/effectsCore.js` (only if a new op is genuinely needed)
+- depends: **wait for R2 (object model)** — a trap is exactly the kind of
+  first-class object R2 defines; building it before R2 means rebuilding it.
+- done_when: live: a dungeon corridor trap can be spotted, searched out,
+  disarmed, or sprung — all four paths in prose with real consequences;
+  determinism suite green.
+
+### P-77 — Magic item identity (attunement + named items)
+**Why:** the magic catalog exists but `attunement` greps to zero. No
+identification, no attunement choice, no signature item that grows. In
+tabletop, the named +1 sword with a history is half the reward economy.
+Quest payoffs now grant levels (P-milestones, c254b43); the next payoff tier
+is unique items and titles, not gold.
+**Objective:** (a) unidentified drops — magic items land as "something
+humming"; identify via short rest + check, or a sage/shop service (P-67
+economy). (b) Attunement: cap 3, chosen at rest, required for the big
+effects. (c) Named uniques: ~8 seed-deterministic named items with one-line
+histories, placed as quest/boss rewards (P-74c's confrontation should pay
+one). (d) Goal completion can reward a named item (extend the milestone
+machinery's reward vocabulary).
+- allowed: `engine/ruleset/core/items/magic.js`, `engine/gear/gearProps.js`,
+  `engine/playloop.js` (identify/attune intents), `engine/state.js` if
+  attunement persists on the sheet (WORLD_VERSION checklist applies)
+- depends: P-67 (done) for the sage-service price path.
+- done_when: live: loot an unknown item, identify it, attune at rest, see the
+  effect in combat math; a quest pays a named item with its history line;
+  suite + playtest:quick green.
+
+### P-78 — Companions as people
+**Why:** `companionTurn.js` runs their combat actions and npcArc/npcDepth
+exist, but the BG3-grade layer — companions who interject, object, have their
+own quests, and can leave — isn't composed. M4 corruption is begging for a
+companion who notices.
+**Objective:** companions get (a) interjections: scene-triggered one-liners
+through perspectiveFilter (cap: ≤1 per scene, deterministic trigger);
+(b) loyalty: a per-companion disposition that moves on witnessed deeds
+(reuses the morality witness machinery from P-73a); (c) the objection arc:
+crossing a corruption tier with a good-aligned companion present triggers
+confrontation → ultimatum → departure if ignored; (d) one companion side
+quest in the arc format.
+- allowed: `engine/npc/` (companion modules), `engine/playloop.js` (hooks),
+  `content/arcs/` (one arc)
+- depends: P-74b's reaction-loop patterns help but aren't required; the
+  morality witness organs (done) are the real dependency.
+- done_when: live: a companion comments unprompted at a fitting moment; the
+  coerced-labor build (P-73a) with a companion present triggers the objection;
+  ignoring it twice loses them, and the timeline says so; suite green.
+
+### P-79 — Session rhythm (recap, cliffhanger, downtime)
+**Why:** cheap to build, large feel payoff. A great DM opens with "previously
+on…" and ends on a hook; between adventures there's downtime.
+**Objective:** (a) recap on resume — composer builds 3–4 sentences from the
+timeline's last session (deterministic selection, polished by the LLM layer
+with silent fallback); (b) cliffhanger surfacing — on save/quit, the ledger's
+hottest open threat/question is named as the closing line; (c) downtime verbs —
+"I spend a week training / researching / carousing" resolve as world-tick
+passage with one concrete outcome each (skill progress hook, a lore fact, a
+rumor + contact).
+- allowed: `engine/composer.js`, `engine/playloop.js` (downtime intents),
+  `engine/worldTick.js`, `engine/save.js` (resume hook), `public/v1.js`
+  (surfacing only)
+- depends: nothing — composer-layer, any time.
+- done_when: live: quit mid-thread → resume shows a recap naming that thread;
+  "I spend a week researching the tower" passes 7 days with a concrete fact
+  learned; suite + playtest:quick green.
+
+**Track-wide forbidden:** touching the R0–R3 adjudication spine while it's in
+flight; `Math.random`; mutations outside `applyDeltas`; narrator-as-canon.
+**Track-wide rollback:** every packet is new-module + named hook lines; revert
+the named files.
+
 ## DONE (recent)
 - **Living-World Merge P1–P6** (`docs/LIVING_WORLD_MERGE.md`): biomes, biome encounters,
   living ecology, NPC wants/discovery, hidden Will in casting, open-ended (no win).

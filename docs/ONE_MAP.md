@@ -91,12 +91,20 @@ rumors (faint, unnamed); the rest is unpainted parchment.
   sits where you stand, not at the node midpoint. No WORLD_VERSION bump, no
   determinism risk, revertable by file. The old renderers stay on disk (v1
   still uses `renderLocalMap` as the in-play walkable-map fallback).
-- **M4b — one canonical position (engine). ⏳ DEFERRED.** The single wu
-  coordinate field in `engine/state.js` (WORLD_VERSION bump, ensureWorld +
-  invariants + determinism replay; structurally closes the token-desync bug
-  class) is its own careful pass — same reasoning P-66c was deferred. Not
-  started; pull when a worker window can give the version-bump checklist full
-  attention.
+- **M4b — one canonical position (engine). ✅ SATISFIED BY v21 (no bump).**
+  Investigated 2026-06-12: the canonical field M4b meant to add already exists.
+  `party[0].position.{zone, nodeId, ux, uy, interior}` was formalized at
+  WORLD_VERSION 21 — normalized by `ensurePosition`, persisted through
+  save/load, and `scene.interior` is already *derived* from `position.interior`
+  (state.js ~v21). A bump now would be ceremony (every save migrates, the
+  determinism suite churns, zero shape change), so it's explicitly NOT done.
+  The tempting "single (wx,wy) wu coordinate" is strictly worse — gameplay keys
+  off `nodeId`, so wu-only would lose info and need reverse-mapping; `nodeId` +
+  place-units is the right representation. The only residual seam — the client
+  `ui.place` being a parallel copy reconciled at save time (`persistAndRehash`)
+  — is a *client* write-path projection, not an engine field; left as-is since
+  the acute desync it caused is already fixed (`39315d3`) and the refactor
+  touches the core movement loop for preventive-only benefit (Tim's call).
 - **M5 — the beauty pass.** Tim's satellite-map dream on this camera:
   terrain texture, grove art, per-material building fills (timber/stone/
   fortified), player-built quality visible. Rich illustrated parchment per

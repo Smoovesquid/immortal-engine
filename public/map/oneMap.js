@@ -18,6 +18,8 @@ import {
 } from './worldSpace.js';
 import { worldGeography, terrainStamps } from './geography.js';
 import { placeFromWorldNode } from './placeFromNode.js';
+import { isDungeonStructureId } from '../../engine/dungeon/generate.js';
+import { interiorCompassLayout } from '../../engine/structures/topology.js';
 
 const PAPER = '#e8ecdd';
 const INK = 'rgba(18,26,48,0.96)', INKSOFT = 'rgba(18,26,48,0.5)';
@@ -374,6 +376,89 @@ function drawGeography(ctx, geo, stamps, toPx, W, H, z) {
   if (geo.heath?.poly?.length) drawHeath(ctx, geo.heath, P);
 }
 
+// ── D0: the underworld cutaway — dark chambers inked on the parchment when you
+// descend (docs/WORLD_AND_DUNGEONS.md Part B). The dungeon is a structure with a
+// room graph; we lay its rooms on a compass grid (matching how you navigate it)
+// and draw each as a chamber, the current one holding the player marker. Fog law:
+// register only what you've SEEN — but DEV EXCEPTION (now) renders all unfogged
+// so Tim can see the whole place; the fog hood goes back on before play.
+const DUNG_FLOOR = 'rgba(30,28,36,0.88)', DUNG_FLOOR_FOG = 'rgba(30,28,36,0.30)';
+const DUNG_WALL = 'rgba(16,14,20,0.96)', DUNG_DOOR = 'rgba(74,62,46,0.92)';
+const DUNG_LABEL = 'rgba(228,224,212,0.92)', DUNG_FEATURE = 'rgba(208,150,68,0.96)';
+const DUNG_FOG = false;            // dev: render everything unfogged (see the spec)
+const ROOM_WU = 360;               // grid spacing between dungeon rooms (wu)
+const ROOM_BOX = 250;              // a chamber's drawn size (wu)
+
+function dungeonRoomGrid(topology) {
+  const layout = interiorCompassLayout(topology);
+  const rooms = Array.isArray(topology?.rooms) ? topology.rooms : [];
+  const pos = new Map();
+  if (!rooms.length) return pos;
+  const entry = (rooms.find(r => (r.tags || []).includes('entry')) || rooms[0]).id;
+  pos.set(entry, { c: 0, r: 0 });
+  const queue = [entry];
+  const STEP = { north: [0, -1], east: [1, 0], south: [0, 1], west: [-1, 0] };
+  while (queue.length) {
+    const id = queue.shift();
+    const ex = layout.get(id) || {};
+    for (const d of ['north', 'east', 'south', 'west']) {
+      const nb = ex[d];
+      if (nb && !pos.has(nb)) {
+        const here = pos.get(id), [dc, dr] = STEP[d];
+        pos.set(nb, { c: here.c + dc, r: here.r + dr });
+        queue.push(nb);
+      }
+    }
+  }
+  let extra = 1;
+  for (const rm of rooms) if (!pos.has(rm.id)) pos.set(rm.id, { c: 0, r: extra++ });
+  return pos;
+}
+
+function drawDungeonCutaway(ctx, world, interior, nodes, toPx, W, H, z) {
+  const st = world.structures?.byId?.[String(interior.structureKey)];
+  if (!st || !st.topology) return;
+  const node = nodes.find(n => String(n?.id || '') === String(st.nodeId || ''));
+  if (!node) return;
+  const c = nodeToWu(node);
+  const grid = dungeonRoomGrid(st.topology);
+  const rooms = st.topology.rooms || [];
+  const visited = new Set(Array.isArray(interior.visited) ? interior.visited : []);
+  const P = (cc, rr) => toPx(c.x + cc * ROOM_WU, c.y + rr * ROOM_WU, W, H);
+  const s = ROOM_BOX * z;
+  // corridors between connected rooms, under the chambers
+  ctx.strokeStyle = DUNG_DOOR; ctx.lineWidth = Math.max(1.5, s * 0.1); ctx.lineCap = 'round';
+  for (const e of (st.topology.edges || [])) {
+    const ga = grid.get(e.a), gb = grid.get(e.b); if (!ga || !gb) continue;
+    const [ax, ay] = P(ga.c, ga.r), [bx, by] = P(gb.c, gb.r);
+    ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(bx, by); ctx.stroke();
+  }
+  ctx.lineCap = 'butt';
+  for (const rm of rooms) {
+    const g = grid.get(rm.id) || { c: 0, r: 0 };
+    const [px, py] = P(g.c, g.r);
+    if (s < 3 || px < -s || px > W + s || py < -s || py > H + s) continue;
+    const seen = !DUNG_FOG || visited.has(rm.id);
+    ctx.fillStyle = seen ? DUNG_FLOOR : DUNG_FLOOR_FOG;
+    ctx.fillRect(px - s / 2, py - s / 2, s, s);
+    ctx.strokeStyle = DUNG_WALL; ctx.lineWidth = Math.max(1, s * 0.045);
+    ctx.strokeRect(px - s / 2, py - s / 2, s, s);
+    if (s > 26 && seen) {
+      const role = (rm.tags || []).find(t => !['entry', 'stairs-down', 'stairs-up'].includes(t)) || 'chamber';
+      ctx.fillStyle = DUNG_FEATURE;     // a feature glyph at the room's heart
+      ctx.beginPath();
+      ctx.moveTo(px, py - s * 0.14); ctx.lineTo(px + s * 0.12, py); ctx.lineTo(px, py + s * 0.14); ctx.lineTo(px - s * 0.12, py); ctx.closePath(); ctx.fill();
+      inkLabel(ctx, role, px, py - s * 0.22, `${Math.round(Math.min(15, s * 0.14))}px ${HAND}`, DUNG_LABEL, 'center', 'bottom', 2.4);
+    }
+    if (rm.id === String(interior.roomId)) {
+      const my = py + s * 0.3;
+      ctx.strokeStyle = PLAYER; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(px, my, Math.max(4, s * 0.08), 0, 7); ctx.stroke();
+      ctx.fillStyle = PLAYER; ctx.beginPath(); ctx.arc(px, my, Math.max(1.5, s * 0.032), 0, 7); ctx.fill();
+    }
+  }
+}
+
 // A road bows gently and identically forever: bow from the edge key's hash.
 function roadBow(aId, bId) {
   const k = aId < bId ? `${aId}|${bId}` : `${bId}|${aId}`;
@@ -719,13 +804,19 @@ export function renderOneMap(world, opts = {}) {
       }
     }
 
+    // ── D0: the dungeon cutaway, when you're below ground ──
+    const dintr = (world.scene && typeof world.scene.interior === 'object') ? world.scene.interior : null;
+    const inDungeon = dintr && isDungeonStructureId(dintr.structureKey);
+    if (inDungeon) drawDungeonCutaway(ctx, world, dintr, nodes, toPx, W, H, z);
+
     // ── the player ──
     // M4: place the marker where you actually STAND when the live walk
     // position is known (opts.playerPos from ui.place, in place units), so the
     // dot sits in your room/street — not at the node midpoint. Falls back to
     // node-center when no walk position is available (e.g. viewing a far node).
+    // (In a dungeon the cutaway above draws its own marker.)
     const here = nodes.find(n => String(n.id) === hereId);
-    if (here) {
+    if (here && !inDungeon) {
       let p = nodeToWu(here);
       const pos = opts.playerPos;
       if (pos && String(pos.nodeId || '') === hereId && Number.isFinite(+pos.ux) && Number.isFinite(+pos.uy)) {

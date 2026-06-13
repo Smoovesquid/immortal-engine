@@ -252,6 +252,25 @@ already encoded in the bestiary (CR bands), loot tables, and P-75.
   shrine** (smallest scale) reachable from a `dungeon_entrance` (or a building
   basement), rendered as a cutaway on the one-map with fog-reveal, navigated by
   conversation. Proves the whole spine end-to-end at minimum scale.
+  ✅ **DONE 2026-06-13.** The spine is proven end-to-end:
+  `engine/dungeon/schema.js` is the CONTRACT (Dungeon/Level/Room + normalize +
+  validate — the gate for both the generator and the D5 canvas);
+  `engine/dungeon/generate.js` is the one author — `generateDungeon(seed,
+  entranceNodeId, {biome})` emits a deterministic shrine (theme tracks the
+  surface biome), `dungeonLevelToStructure` projects a level onto the existing
+  interior-crawl topology, and rich room data (the feature) is re-derived on
+  demand (never persisted — engine topology keeps only id+tags). A new idempotent
+  `addStructure` op (effectsCore) reveals the dungeon under a seed-derived id, so
+  re-descending is a no-op and `worldHash` stays replay-stable (no WORLD_VERSION
+  bump — reuses the structures shape). playloop wires the DM-only verbs: "I climb
+  down into the shrine" → descend + enter; "examine the altar" → the feature;
+  "climb back out" → ascend. oneMap draws the cutaway — the room graph laid on a
+  compass grid, dark chambers inked on the parchment, role label, feature glyph,
+  player marker (DEV: unfogged; the fog hood returns before play). U137 ×7; suite
+  7,585 green; playtest:full clean (500 runs, determinism intact); live-verified
+  in v1.html (descended into "Howling Pass" → the shrine cutaway on the map →
+  examined the votive grate → climbed back out — screenshots). Reuses
+  interiors.js room-nav, topology compass layout, the M3 cutaway camera.
 - **D1** — the **small multi-room dungeon** generator (D&D room graph, themed) +
   **population** (encounters + treasure, reusing bestiary/loot) + the **crawl
   loop**. A real short crawl, fog-revealed, conversational.

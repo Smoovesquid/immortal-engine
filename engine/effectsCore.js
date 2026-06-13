@@ -818,6 +818,21 @@ export function applyDeltas(world, deltas = []) {
       w = { ...w, structures: { ...cur, byId, nextId: cur.nextId + 1 } };
       continue;
     }
+
+    // D0 — reveal a deterministic structure (a dungeon level) under its OWN id.
+    // Unlike buildStructure the id is supplied (seed-derived), and the op is
+    // IDEMPOTENT: re-descending a dungeon you've already opened is a no-op, so
+    // the lazy materialization stays replay-stable under worldHash.
+    if (kind === 'addStructure') {
+      const src = (op.structure && typeof op.structure === 'object') ? op.structure : null;
+      const sid = src ? String(src.id || '') : '';
+      if (!src || !sid || !String(src.nodeId || '')) continue;
+      const cur = ensureStructures(w.structures);
+      if (cur.byId[sid]) continue;                 // already revealed — idempotent
+      const byId = { ...cur.byId, [sid]: { ...src, id: sid } };
+      w = { ...w, structures: { ...cur, byId } };
+      continue;
+    }
   }
 
   return w;

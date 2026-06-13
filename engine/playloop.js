@@ -18,6 +18,7 @@ import { applyDeltas } from './effectsCore.js';
 import { introduceThread, resolveThread, ensureInstrumentLayer } from './instrument.js';
 import { applyGeneratedStructuresForNode } from './structures/applyGeneratedStructuresForNode.js';
 import { enterStructureInterior, exitStructureInterior, moveWithinInterior, getInteriorView, interiorDirectionalExits, resolveStructureSelection } from './structures/interiors.js';
+import { generateDungeon, dungeonLevelToStructure, isDungeonStructureId, dungeonRoomAt } from './dungeon/generate.js';
 import { createCharacter } from './chargen/genesis.js';
 import { decompressAndCanonizeSync } from './decompression/decompress.js';
 import { discoverNode } from './map/mapState.js';
@@ -699,6 +700,43 @@ function playerMoveCore(world, packsById, text) {
     }
   }
 
+  // ── D0: the Underworld — descend & look (docs/WORLD_AND_DUNGEONS.md Part B).
+  // The DM is the only verb: at a dungeon entrance, a descend/enter intent takes
+  // you down (the dungeon is generated deterministically from seed+node+biome and
+  // entered as a structure); inside, a look/examine intent describes the room and
+  // its feature. Movement and exit reuse the existing interior crawl below.
+  {
+    const dnodes = Array.isArray(w.map?.nodes) ? w.map.nodes : [];
+    const cnode = dnodes.find(n => String(n?.id || '') === String(w.map?.currentNodeId || '')) || null;
+    const inside = (w.scene && typeof w.scene.interior === 'object') ? w.scene.interior : null;
+    const inDungeon = inside && isDungeonStructureId(inside.structureKey);
+
+    if (!inside && !w.combat?.active && cnode && String(cnode.nodeType || '') === 'dungeon_entrance' && isDescendIntent(text)) {
+      const nodeId = String(cnode.id);
+      const biome = biomeForNode(w.meta.seed, cnode);
+      const dungeon = generateDungeon(w.meta.seed, nodeId, { biome });
+      const st = dungeonLevelToStructure(dungeon, 0);
+      if (st) {
+        let w1 = applyDeltas(w, [{ op: 'addStructure', structure: st }]);
+        w1 = enterStructureInterior(w1, st.id);
+        if (w1.scene?.interior) {
+          const room = dungeon.levels[0]?.rooms?.[w1.scene.interior.roomId] || null;
+          const w2 = pushEvent(w1, { kind: 'resolution', data: { actorId: 'party', text: String(text || ''), intent: String(text || ''), roll: 0, dc: 0, outcome: 'success', updateKind: 'dungeon-descend' } });
+          return { world: w2, output: { narration: dungeonDescendNarration(dungeon, room), mechanics: '[descend]' } };
+        }
+      }
+    }
+
+    if (inDungeon && !w.combat?.active && isDungeonLookIntent(text)) {
+      const st = w.structures?.byId?.[String(inside.structureKey)];
+      const nodeId = String(st?.nodeId || '');
+      const cn = dnodes.find(n => String(n?.id || '') === nodeId) || null;
+      const biome = cn ? biomeForNode(w.meta.seed, cn) : 'wilderness';
+      const room = dungeonRoomAt(w.meta.seed, nodeId, String(inside.roomId), { biome });
+      if (room) return { world: w, output: { narration: dungeonLookNarration(room, text), mechanics: '' } };
+    }
+  }
+
   const interiorAction = inferInteriorAction(text, w.scene?.interior);
   if (interiorAction.kind === 'enter') {
     // "Go inside" when already indoors gets the obvious answer, not the
@@ -725,10 +763,14 @@ function playerMoveCore(world, packsById, text) {
   }
 
   if (interiorAction.kind === 'exit') {
+    const wasDungeon = isDungeonStructureId(w.scene?.interior?.structureKey);
     const w1 = exitStructureInterior(w);
     if (w1 !== w) {
       const w2 = pushEvent(w1, { kind: 'resolution', data: { actorId: 'party', text: String(text || ''), intent: String(text || ''), roll: 0, dc: 0, outcome: 'success', updateKind: 'interior-exit' } });
-      return { world: w2, output: { narration: 'Wizard: You step back outside.', mechanics: '' } };
+      const msg = wasDungeon
+        ? 'Wizard: You climb back up and out into the open air; the dark closes behind you.'
+        : 'Wizard: You step back outside.';
+      return { world: w2, output: { narration: msg, mechanics: '' } };
     }
   }
 
@@ -2514,7 +2556,10 @@ function inferInteriorAction(text, interior) {
     return { kind: 'none' };
   }
 
-  if (/\b(leave|exit|go outside|step outside)\b/.test(t)) return { kind: 'exit' };
+  if (
+    /\b(leave|exit|go outside|step outside|ascend|to the surface|get out|out of here|head out|back out|back up|up and out|go up|head up)\b/.test(t) ||
+    /\bclimb\b[^.!?]*\b(out|up|back|surface|stairs?|steps?)\b/.test(t)
+  ) return { kind: 'exit' };
   const moveFtDir = t.match(/\b(?:move|step|go)\s+\d+\s*ft\s+(north|south|east|west|n|s|e|w)\b/i);
   if (moveFtDir) return { kind: 'move', toRoomId: '', direction: normalizeDir(moveFtDir[1]) };
 
@@ -2524,6 +2569,46 @@ function inferInteriorAction(text, interior) {
   const goMatch = t.match(/\bgo\s+([a-z0-9:_-]+)/i);
   if (goMatch) return { kind: 'move', toRoomId: String(goMatch[1] || ''), direction: '' };
   return { kind: 'none' };
+}
+
+// ── D0: the Underworld — intent + narration helpers (docs/WORLD_AND_DUNGEONS.md).
+// At a dungeon entrance the DM resolves "I go down" in the fiction; inside, the
+// DM describes the room and what you examine. Never a "which way?" system prompt.
+function isDescendIntent(text) {
+  const t = String(text || '').toLowerCase().trim();
+  if (!t) return false;
+  if (/\b(descend|delve|go down|climb down|head down|venture (?:in|down|inside)|go below|down into|into the (?:dark|depths|earth|deep|gloom))\b/.test(t)) return true;
+  if (/^(?:i\s+)?(?:enter|go in|go inside|go down|down|head in|step in|head inside|drop in)\b/.test(t)) return true;
+  if (/\benter\b[\s\S]*\b(shrine|crypt|dungeon|cave|cavern|mine|tomb|hold|sewer|ruin|vault|barrow|hole|pit|stair|stairs|entrance|door|opening|depths)\b/.test(t)) return true;
+  return false;
+}
+
+function isDungeonLookIntent(text) {
+  const t = String(text || '').toLowerCase().trim();
+  if (!t) return false;
+  if (/\b(my|inventory|sheet|pack|spellbook|character)\b/.test(t)) return false;   // those aren't the room
+  if (/\b(look around|look round|look about|survey|what'?s here|where am i|look here|study the room|examine the room)\b/.test(t)) return true;
+  if (/^(?:i\s+)?(?:look|examine|inspect|study|read|investigate|search)\b/.test(t)) return true;
+  if (/\b(examine|inspect|study|read|look at|approach|investigate|touch)\b[\s\S]*\b(altar|shrine|sarcophagus|coffin|seam|ore|vein|banner|chair|grate|nest|sigil|circle|feature|room|chamber|inscription|carving|walls?|floor|it|here|around)\b/.test(t)) return true;
+  return false;
+}
+
+function dungeonDescendNarration(dungeon, room) {
+  const feat = room?.contents?.find(c => c.kind === 'feature');
+  const dark = (room?.light === 'dark') ? 'into close dark' : 'into the dim';
+  const lead = `Wizard: Worn steps drop away beneath your feet ${dark}. The air turns cold and unmoving, thick with dust and old stone.`;
+  return feat ? `${lead} ${feat.look}.` : lead;
+}
+
+function dungeonLookNarration(room, text) {
+  const feat = room?.contents?.find(c => c.kind === 'feature');
+  const t = String(text || '').toLowerCase();
+  const around = /\b(look around|look round|look about|survey|what'?s here|where am i)\b/.test(t);
+  const targeted = feat && !around && /\b(examine|inspect|study|read|look at|approach|investigate|touch)\b/.test(t);
+  if (targeted) return `Wizard: ${feat.look}. ${feat.detail}`;
+  const shadow = (room?.light === 'dark') ? ' Your light throws long shadows up the walls.' : '';
+  const here = feat ? ` At its heart, ${feat.look.charAt(0).toLowerCase()}${feat.look.slice(1)}.` : '';
+  return `Wizard: A still, low chamber of cold stone.${shadow}${here}`;
 }
 
 // ── Dialogue intent helpers ────────────────────────────────────────────────

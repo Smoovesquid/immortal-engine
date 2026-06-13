@@ -33,6 +33,15 @@ const ROOF = {
   fortified: 'rgba(106,108,118,0.95)'
 };
 
+// M3 — roof-cutaway palette (matched to handDrawnInterior.js so a building's
+// lifted lid reads the same as standing inside it).
+const FLOOR_WARM = 'rgba(232,160,60,0.14)';
+const WOODI = 'rgba(96,62,32,0.92)', WOODF = 'rgba(150,96,48,0.30)';
+const STONEI = 'rgba(70,78,98,0.92)', STONEF = 'rgba(70,78,98,0.22)';
+const METAL = 'rgba(34,40,54,0.95)', CLOTH = 'rgba(232,236,221,0.85)';
+const STONE_FURN = new Set(['hearth', 'altar', 'statue', 'column', 'brazier']);
+const SKIP_FURN = new Set(['rug']);
+
 // Camera survives v1's full-DOM re-renders: module singleton, per campaign.
 const CAMS = new Map();
 
@@ -150,30 +159,77 @@ export function renderOneMap(world, opts = {}) {
       ctx.beginPath(); ctx.arc(wx, wy, wr, 0, 7); ctx.stroke();
     }
 
-    // buildings: each room a material-roofed shape with an ink wall line.
+    // buildings: a material roof, OR — for the building you're in or your own
+    // home (the only ones you've honestly seen inside) — the roof lifts off at
+    // street zoom to a furnished floor (M3). Settlement buildings you've never
+    // entered stay roofed: the map is no spoiler.
+    const homeNodeId = String(world?.meta?.homeNodeId || '');
+    const interiorKey = String(world?.scene?.interior?.structureKey || '');
     const labelAlpha = fadeIn(z, 2.2, 3.6);
+    const wall = Math.max(0.8, Math.min(2.6, z * 0.5));
     for (const b of (place.buildings || [])) {
       const material = String(b?.plan?.material || 'timber');
-      ctx.fillStyle = ROOF[material] || ROOF.timber;
-      ctx.strokeStyle = INK;
-      ctx.lineWidth = Math.max(0.8, Math.min(2.6, z * 0.5));
+      const openable = b.structureKey && (b.structureKey === interiorKey || String(node.id) === homeNodeId);
+      const cut = openable ? fadeIn(z, BAND.street, BAND.street * 1.8) : 0;
+
+      // helper: project a room/furniture rect to px corners.
+      const rectPx = (ux, uy, w, h) => {
+        const [x0, y0] = P(ux, uy); const [x1, y1] = P(ux + w, uy + h);
+        return [Math.min(x0, x1), Math.min(y0, y1), Math.abs(x1 - x0), Math.abs(y1 - y0)];
+      };
+
       let bx0 = Infinity, by0 = Infinity, bx1 = -Infinity;
       for (const r of (b.plan?.rooms || [])) {
-        if (r.shape === 'round') {
-          const [cx2, cy2] = P(b.ox + r.cx, b.oy + r.cy);
-          const rr = (r.r || 1) * PLACE_WU * z;
-          ctx.beginPath(); ctx.arc(cx2, cy2, rr, 0, 7); ctx.fill(); ctx.stroke();
-          bx0 = Math.min(bx0, cx2 - rr); by0 = Math.min(by0, cy2 - rr); bx1 = Math.max(bx1, cx2 + rr);
-        } else {
-          const [x0, y0] = P(b.ox + r.cx - (r.w || 2) / 2, b.oy + r.cy - (r.h || 2) / 2);
-          const [x1, y1] = P(b.ox + r.cx + (r.w || 2) / 2, b.oy + r.cy + (r.h || 2) / 2);
-          ctx.beginPath(); ctx.rect(x0, y0, x1 - x0, y1 - y0); ctx.fill(); ctx.stroke();
-          bx0 = Math.min(bx0, x0); by0 = Math.min(by0, y0); bx1 = Math.max(bx1, x1);
+        const isRound = r.shape === 'round';
+        // floor (cutaway) under roof, so the fade reads as the lid lifting.
+        if (cut > 0) {
+          ctx.globalAlpha = alpha * cut;
+          ctx.fillStyle = FLOOR_WARM; ctx.strokeStyle = INK; ctx.lineWidth = wall;
+          if (isRound) { const [cx2, cy2] = P(b.ox + r.cx, b.oy + r.cy); const rr = (r.r || 1) * PLACE_WU * z; ctx.beginPath(); ctx.arc(cx2, cy2, rr, 0, 7); ctx.fill(); ctx.stroke(); }
+          else { const [x, y, w, h] = rectPx(b.ox + r.cx - (r.w || 2) / 2, b.oy + r.cy - (r.h || 2) / 2, (r.w || 2), (r.h || 2)); ctx.beginPath(); ctx.rect(x, y, w, h); ctx.fill(); ctx.stroke(); }
         }
+        // roof on top, fading out as the cutaway fades in.
+        if (cut < 1) {
+          ctx.globalAlpha = alpha * (1 - cut);
+          ctx.fillStyle = ROOF[material] || ROOF.timber; ctx.strokeStyle = INK; ctx.lineWidth = wall;
+          if (isRound) { const [cx2, cy2] = P(b.ox + r.cx, b.oy + r.cy); const rr = (r.r || 1) * PLACE_WU * z; ctx.beginPath(); ctx.arc(cx2, cy2, rr, 0, 7); ctx.fill(); ctx.stroke(); }
+          else { const [x, y, w, h] = rectPx(b.ox + r.cx - (r.w || 2) / 2, b.oy + r.cy - (r.h || 2) / 2, (r.w || 2), (r.h || 2)); ctx.beginPath(); ctx.rect(x, y, w, h); ctx.fill(); ctx.stroke(); }
+        }
+        const [bxx, byy] = P(b.ox + r.cx - (r.w || (r.r || 1) * 2) / 2, b.oy + r.cy - (r.h || (r.r || 1) * 2) / 2);
+        bx0 = Math.min(bx0, bxx); by0 = Math.min(by0, byy);
+        const [bxe] = P(b.ox + r.cx + (r.w || (r.r || 1) * 2) / 2, b.oy + r.cy);
+        bx1 = Math.max(bx1, bxe);
       }
+      ctx.globalAlpha = alpha;
+
+      // furniture marks, once the roof is mostly off (the lid-lifted reveal).
+      if (cut > 0.15) {
+        for (const f of (b.plan?.furniture || [])) {
+          const t = String(f.type || '');
+          if (SKIP_FURN.has(t)) continue;
+          const [fx, fy, fw, fh] = rectPx(b.ox + f.ux, b.oy + f.uy, (f.uw || 0.6), (f.uh || 0.6));
+          if (fw < 1.2 && fh < 1.2) continue;
+          ctx.globalAlpha = alpha * cut;
+          const stone = STONE_FURN.has(t), bars = t === 'bars';
+          ctx.fillStyle = bars ? 'rgba(34,40,54,0.12)' : stone ? STONEF : WOODF;
+          ctx.strokeStyle = bars ? METAL : stone ? STONEI : WOODI;
+          ctx.lineWidth = Math.max(0.6, wall * 0.6);
+          ctx.beginPath(); ctx.rect(fx, fy, fw, fh); ctx.fill(); ctx.stroke();
+          if (t === 'bed') { ctx.fillStyle = CLOTH; ctx.fillRect(fx + fw * 0.18, fy + fh * 0.28, fw * 0.64, fh * 0.6); }
+        }
+        // room names at the deepest zoom — you're reading the floor plan now.
+        if (z >= 6) {
+          ctx.globalAlpha = alpha * cut;
+          ctx.fillStyle = 'rgba(18,26,48,0.66)'; ctx.font = `${Math.round(Math.min(14, 1.1 * PLACE_WU * z))}px ${HAND}`;
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          for (const r of (b.plan?.rooms || [])) { if (!r.name) continue; const [rx, ry] = P(b.ox + r.cx, b.oy + r.cy); ctx.fillText(String(r.name), rx, ry); }
+        }
+        ctx.globalAlpha = alpha;
+      }
+
       const label = String(b.name || b.buildingName || '');
-      if (label && labelAlpha > 0 && Number.isFinite(bx0)) {
-        ctx.globalAlpha = alpha * labelAlpha;
+      if (label && labelAlpha > 0 && cut < 0.5 && Number.isFinite(bx0)) {
+        ctx.globalAlpha = alpha * labelAlpha * (1 - cut * 2 > 0 ? 1 - cut * 2 : 0);
         ctx.fillStyle = INKSOFT;
         ctx.font = `10px ${HAND}`;
         ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
@@ -264,7 +320,11 @@ export function renderOneMap(world, opts = {}) {
       if (tier === 'dark') continue;
       const p = nodeToWu(n);
       const [x, y] = toPx(p.x, p.y, W, H);
-      if (x < -40 || x > W + 40 || y < -40 || y > H + 40) continue;
+      // Cull by node center — but a settlement's layout extends ~120 wu out, so
+      // a village can be on-screen while its node center isn't (zoomed in at the
+      // edge). Give settlements a layout-sized margin or the whole place vanishes.
+      const margin = 40 + (String(n.nodeType || '') === 'settlement' ? 200 * z : 0);
+      if (x < -margin || x > W + margin || y < -margin || y > H + margin) continue;
       const ghost = tier === 'rumor';
       const type = String(n.nodeType || '');
       const r = Math.max(3, Math.min(13, 3 + z * 18));
@@ -380,5 +440,13 @@ export function renderOneMap(world, opts = {}) {
 
   // First paint after mount (clientWidth needs layout).
   requestAnimationFrame(draw);
+  // A camera-focus seam: deep-link the view to a world point + zoom. Future
+  // "show me on the map" / quest pins use this; tests drive it directly.
+  wrap.__oneMapFocus = (wx, wy, zz) => {
+    if (Number.isFinite(wx)) cam.cx = wx;
+    if (Number.isFinite(wy)) cam.cy = wy;
+    if (Number.isFinite(zz)) cam.z = Math.max(Z_MIN, Math.min(Z_MAX, zz));
+    draw();
+  };
   return wrap;
 }

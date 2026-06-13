@@ -70,8 +70,20 @@ rumors (faint, unnamed); the rest is unpainted parchment.
   mount (deterministic). Live-verified: continuous dive county → "Wayfarers'
   Outpost" (cottage + 2 storehouses + workshop) → street, no cuts.
   *(Local view still present as a tab; it retires with the others at M4.)*
-- **M3 — roofs come off.** Past the interior threshold, building plans render
-  inside their footprints (cutaway), with interior fog/visited state intact.
+- **M3 — roofs come off. ✅ DONE 2026-06-12.** Past the street threshold
+  (z≥4, full by ~7.2) an openable building's material roof fades to a furnished
+  floor cutaway (rooms, ink walls, material-marked furniture, the bed's cloth,
+  room-name labels at z≥6). Fog is honest: "openable" = the building you're
+  *inside* (`scene.interior.structureKey`) or your *home* (node === homeNodeId,
+  real structure) — settlement buildings you've never entered stay roofed, no
+  map-spoiler. `interiorDiscovery` is empty in the live path, so it's NOT the
+  fog source (would've shown nothing); the two presence-rules are. Fixed a
+  frustum-cull bug surfaced here (node-center cull hid a village whose center
+  sat off-screen at edge zoom — settlements now get a layout-sized margin).
+  Added `wrap.__oneMapFocus(wx,wy,z)` — a camera deep-link seam (quest pins /
+  "show me here" / tests). U135 ×6 locks the embedding contract. Live-verified:
+  cottage lifts to Hearth Room + Larder + Bedroom (bed visible) while the
+  next-door storehouse stays roofed.
 - **M4 — one position, no tabs.** Player position becomes a single wu
   coordinate (engine field; WORLD_VERSION checklist); walk/travel/interior
   transitions all move the same dot on the same map; World/Region/Local

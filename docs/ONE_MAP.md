@@ -57,15 +57,19 @@ rumors (faint, unnamed); the rest is unpainted parchment.
 
 ## Stages (each ships green + live-verified, PACKETS discipline)
 
-- **M1 — the camera.** `public/map/oneMap.js`: one canvas in the Map tab
-  (fourth button; old tabs stay as escape hatch). Real geography for the first
-  time (`node.x,y`, not ringLayout), wheel zoom, drag pan, fit-to-player init,
-  world/region bands, roads, discovery fog, player marker.
-  *Done-when:* continuous zoom whole-world → node scale in the live browser;
-  deterministic; suite + playtest:quick green.
-- **M2 — villages in world space.** Embed `placeFromNode` layouts at their
-  nodes; the settlement band shows real buildings; the street band shows the
-  current village exactly as the walkable place draws it today. Local merges in.
+- **M1 — the camera. ✅ DONE 2026-06-12** (`80ef24f`). `public/map/oneMap.js`:
+  one canvas in the Map tab (now the default; old tabs stay as escape hatch).
+  Real geography for the first time (`node.x,y`, not ringLayout), wheel zoom,
+  drag pan, world/region bands, roads, discovery fog, player marker, scale bar.
+- **M2 — villages in world space. ✅ DONE 2026-06-12.** `worldSpace.placeFrame`
+  / `placeUnitToWu` embed `placeFromWorldNode` layouts midpoint-on-node;
+  `oneMap.drawLayout` draws them across the settlement band (fade-in 0.55→1.1
+  px/wu), handing the abstract glyph + footprint disc over to the real village
+  — material-true roofs (timber/stone/fortified), multi-room footprints, paths,
+  groves, capped well, NPC dots + labels at street zoom. Layouts cached per
+  mount (deterministic). Live-verified: continuous dive county → "Wayfarers'
+  Outpost" (cottage + 2 storehouses + workshop) → street, no cuts.
+  *(Local view still present as a tab; it retires with the others at M4.)*
 - **M3 — roofs come off.** Past the interior threshold, building plans render
   inside their footprints (cutaway), with interior fog/visited state intact.
 - **M4 — one position, no tabs.** Player position becomes a single wu

@@ -12,17 +12,26 @@
 
 import { seedFromString, makeRng } from '../../engine/rng.js';
 import {
-  NODE_WU, Z_MIN, Z_MAX, BAND,
-  nodeToWu, worldBounds, fadeIn, discoveryTiers
+  NODE_WU, PLACE_WU, Z_MIN, Z_MAX, BAND,
+  nodeToWu, worldBounds, fadeIn, discoveryTiers,
+  placeFrame, placeUnitToWu
 } from './worldSpace.js';
+import { placeFromWorldNode } from './placeFromNode.js';
 
 const PAPER = '#e8ecdd';
 const INK = 'rgba(18,26,48,0.96)', INKSOFT = 'rgba(18,26,48,0.5)';
 const ROAD = 'rgba(110,84,52,0.55)', ROAD_GHOST = 'rgba(110,84,52,0.22)';
 const GROVE = 'rgba(92,134,120,0.16)', GROVE_DARK = 'rgba(74,112,98,0.28)';
 const WATERY = 'rgba(96,128,148,0.12)';
-const PLAYER = '#c0392b';
+const PLAYER = '#c0392b', NPC = '#2a6f8e';
 const HAND = '"Iowan Old Style","Palatino",Georgia,serif';
+
+// M2 — building fills by plan material (M3 lifts these roofs into cutaways).
+const ROOF = {
+  timber: 'rgba(158,134,94,0.92)',
+  stone: 'rgba(150,150,142,0.92)',
+  fortified: 'rgba(106,108,118,0.95)'
+};
 
 // Camera survives v1's full-DOM re-renders: module singleton, per campaign.
 const CAMS = new Map();
@@ -88,6 +97,112 @@ export function renderOneMap(world, opts = {}) {
 
   const toPx = (wx, wy, W, H) => [W / 2 + (wx - cam.cx) * cam.z, H / 2 + (wy - cam.cy) * cam.z];
 
+  // M2 — village layouts, computed once per mount (deterministic per world;
+  // a turn re-renders the whole view, so the cache lifetime is exactly right).
+  const placeCache = new Map();
+  function layoutFor(node) {
+    const id = String(node.id);
+    if (!placeCache.has(id)) {
+      let entry = null;
+      try {
+        const place = node.settlement ? placeFromWorldNode(world, id) : null;
+        if (place && Array.isArray(place.buildings) && place.buildings.length) {
+          entry = { place, frame: placeFrame(place) };
+        }
+      } catch { entry = null; }
+      placeCache.set(id, entry);
+    }
+    return placeCache.get(id);
+  }
+
+  // Draw one settlement's real layout in world space. Roofs stay ON in M2
+  // (material fills); M3 lifts them into cutaways at the deepest zoom.
+  function drawLayout(node, layout, alpha, W, H, z) {
+    const { place, frame } = layout;
+    const P = (ux, uy) => { const p = placeUnitToWu(node, frame, ux, uy); return toPx(p.x, p.y, W, H); };
+    ctx.globalAlpha = alpha;
+
+    // ground: paths first, then groves, then the well.
+    for (const path of (place.terrain?.paths || [])) {
+      const pts = path?.pts || [];
+      if (pts.length < 2) continue;
+      ctx.strokeStyle = ROAD;
+      ctx.lineWidth = Math.max(1, (path.w || 1) * PLACE_WU * z * 0.6);
+      ctx.beginPath();
+      const [sx, sy] = P(pts[0][0], pts[0][1]);
+      ctx.moveTo(sx, sy);
+      for (let i = 1; i < pts.length; i++) { const [px, py] = P(pts[i][0], pts[i][1]); ctx.lineTo(px, py); }
+      ctx.stroke();
+    }
+    for (const g of (place.terrain?.groves || [])) {
+      const [gx, gy] = P(g.cx, g.cy);
+      const gr = g.r * PLACE_WU * z;
+      if (gr < 1) continue;
+      ctx.fillStyle = GROVE_DARK;
+      ctx.beginPath(); ctx.ellipse(gx, gy, gr, gr * 0.8, 0, 0, 7); ctx.fill();
+    }
+    for (const prop of (place.terrain?.props || [])) {
+      if (prop?.type !== 'well') continue;
+      const [wx, wy] = P(prop.ux, prop.uy);
+      // A well is a small thing — cap it so deep zoom doesn't make a plaza of it.
+      const wr = Math.max(1.5, Math.min(10, 0.45 * PLACE_WU * z));
+      ctx.strokeStyle = INKSOFT; ctx.lineWidth = Math.max(1, wr * 0.28);
+      ctx.beginPath(); ctx.arc(wx, wy, wr, 0, 7); ctx.stroke();
+    }
+
+    // buildings: each room a material-roofed shape with an ink wall line.
+    const labelAlpha = fadeIn(z, 2.2, 3.6);
+    for (const b of (place.buildings || [])) {
+      const material = String(b?.plan?.material || 'timber');
+      ctx.fillStyle = ROOF[material] || ROOF.timber;
+      ctx.strokeStyle = INK;
+      ctx.lineWidth = Math.max(0.8, Math.min(2.6, z * 0.5));
+      let bx0 = Infinity, by0 = Infinity, bx1 = -Infinity;
+      for (const r of (b.plan?.rooms || [])) {
+        if (r.shape === 'round') {
+          const [cx2, cy2] = P(b.ox + r.cx, b.oy + r.cy);
+          const rr = (r.r || 1) * PLACE_WU * z;
+          ctx.beginPath(); ctx.arc(cx2, cy2, rr, 0, 7); ctx.fill(); ctx.stroke();
+          bx0 = Math.min(bx0, cx2 - rr); by0 = Math.min(by0, cy2 - rr); bx1 = Math.max(bx1, cx2 + rr);
+        } else {
+          const [x0, y0] = P(b.ox + r.cx - (r.w || 2) / 2, b.oy + r.cy - (r.h || 2) / 2);
+          const [x1, y1] = P(b.ox + r.cx + (r.w || 2) / 2, b.oy + r.cy + (r.h || 2) / 2);
+          ctx.beginPath(); ctx.rect(x0, y0, x1 - x0, y1 - y0); ctx.fill(); ctx.stroke();
+          bx0 = Math.min(bx0, x0); by0 = Math.min(by0, y0); bx1 = Math.max(bx1, x1);
+        }
+      }
+      const label = String(b.name || b.buildingName || '');
+      if (label && labelAlpha > 0 && Number.isFinite(bx0)) {
+        ctx.globalAlpha = alpha * labelAlpha;
+        ctx.fillStyle = INKSOFT;
+        ctx.font = `10px ${HAND}`;
+        ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+        ctx.fillText(label, (bx0 + bx1) / 2, by0 - 2);
+        ctx.globalAlpha = alpha;
+      }
+    }
+
+    // people: dots at street approach (the village is inhabited, visibly).
+    const npcAlpha = fadeIn(z, 1.4, 2.4);
+    if (npcAlpha > 0) {
+      for (const t of (place.tokens || [])) {
+        if (t?.type !== 'npc') continue;
+        const [nx, ny] = P(t.ux, t.uy);
+        const nr = Math.max(2, Math.min(6, 0.5 * PLACE_WU * z));
+        ctx.globalAlpha = alpha * npcAlpha;
+        ctx.fillStyle = PAPER;
+        ctx.beginPath(); ctx.arc(nx, ny, nr, 0, 7); ctx.fill();
+        ctx.strokeStyle = NPC; ctx.lineWidth = Math.max(1, nr * 0.35); ctx.stroke();
+        if (z >= 6 && t.label) {
+          ctx.fillStyle = NPC; ctx.font = `bold ${Math.round(nr * 1.1)}px ${HAND}`;
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText(String(t.label), nx, ny + 0.5);
+        }
+      }
+    }
+    ctx.globalAlpha = 1;
+  }
+
   function draw() {
     const cssW = Math.max(200, canvas.clientWidth || 700);
     if (canvas.width !== Math.round(cssW * dpr)) canvas.width = Math.round(cssW * dpr);
@@ -151,23 +266,30 @@ export function renderOneMap(world, opts = {}) {
       const [x, y] = toPx(p.x, p.y, W, H);
       if (x < -40 || x > W + 40 || y < -40 || y > H + 40) continue;
       const ghost = tier === 'rumor';
-      ctx.globalAlpha = ghost ? 0.28 : 1;
-
       const type = String(n.nodeType || '');
       const r = Math.max(3, Math.min(13, 3 + z * 18));
 
-      // Settlement footprint hint — lives only in the settlement band window
-      // (M2 replaces it with the real layout; at street zoom a 2000px ink
-      // disc is just a grey screen).
-      const footWindow = footAlpha * (1 - fadeIn(z, BAND.street * 0.5, BAND.street * 1.5));
-      if (type === 'settlement' && footWindow > 0.02 && !ghost) {
+      // M2 — the real village arrives across the settlement band, and the
+      // abstract glyph + footprint disc hand over to it (fade, never pop).
+      const layout = (type === 'settlement' && !ghost) ? layoutFor(n) : null;
+      const layoutAlpha = layout ? fadeIn(z, 0.55, 1.1) : 0;
+      if (layoutAlpha > 0.02) drawLayout(n, layout, layoutAlpha, W, H, z);
+
+      ctx.globalAlpha = ghost ? 0.28 : 1;
+
+      const footWindow = footAlpha * (1 - layoutAlpha);
+      if (type === 'settlement' && footWindow > 0.02 && !ghost && !layout) {
         ctx.globalAlpha = footWindow * 0.18;
         ctx.fillStyle = INK;
         ctx.beginPath(); ctx.arc(x, y, 122 * z, 0, 7); ctx.fill();
-        ctx.globalAlpha = 1;
+        ctx.globalAlpha = ghost ? 0.28 : 1;
       }
 
-      if (type === 'settlement') {
+      const glyphAlpha = (ghost ? 0.28 : 1) * (1 - layoutAlpha);
+      ctx.globalAlpha = glyphAlpha;
+      if (glyphAlpha < 0.03) {
+        // glyph fully handed over to the layout — name still draws below.
+      } else if (type === 'settlement') {
         ctx.fillStyle = INK;
         const s = r * 0.9;
         ctx.fillRect(x - s, y - s * 0.4, s * 0.85, s * 0.85);

@@ -52,6 +52,44 @@ export function worldBounds(nodes, marginWu = 2 * NODE_WU) {
   return { minX: minX - marginWu, minY: minY - marginWu, maxX: maxX + marginWu, maxY: maxY + marginWu };
 }
 
+/**
+ * placeFrame(place) — the bounding frame of a placeFromWorldNode model in its
+ * own place units, plus its midpoint. M2 anchors the midpoint on the node's
+ * wu position; M4 will reuse this same frame as the position-unification
+ * contract (one frame, one truth — keep this the only extent logic).
+ */
+export function placeFrame(place) {
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  const grow = (x, y) => {
+    if (x < minX) minX = x; if (x > maxX) maxX = x;
+    if (y < minY) minY = y; if (y > maxY) maxY = y;
+  };
+  for (const b of (place?.buildings || [])) {
+    for (const r of (b?.plan?.rooms || [])) {
+      const rw = (r.w ?? (r.r ?? 1) * 2) / 2, rh = (r.h ?? (r.r ?? 1) * 2) / 2;
+      grow(b.ox + r.cx - rw, b.oy + r.cy - rh);
+      grow(b.ox + r.cx + rw, b.oy + r.cy + rh);
+    }
+  }
+  for (const g of (place?.terrain?.groves || [])) {
+    grow(g.cx - g.r, g.cy - g.r); grow(g.cx + g.r, g.cy + g.r);
+  }
+  for (const p of (place?.terrain?.paths || [])) {
+    for (const [x, y] of (p?.pts || [])) grow(x, y);
+  }
+  if (!Number.isFinite(minX)) { minX = 0; minY = 0; maxX = 1; maxY = 1; }
+  return { minX, minY, maxX, maxY, cx: (minX + maxX) / 2, cy: (minY + maxY) / 2 };
+}
+
+/** Place-units → wu for a model anchored midpoint-on-node. */
+export function placeUnitToWu(node, frame, ux, uy) {
+  const c = nodeToWu(node);
+  return {
+    x: c.x + (Number(ux) - frame.cx) * PLACE_WU,
+    y: c.y + (Number(uy) - frame.cy) * PLACE_WU
+  };
+}
+
 /** 0→1 fade as z crosses [a..b] (band transitions, never a pop). */
 export function fadeIn(z, a, b) {
   if (z <= a) return 0;

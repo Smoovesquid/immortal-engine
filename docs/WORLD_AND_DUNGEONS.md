@@ -217,7 +217,24 @@ already encoded in the bestiary (CR bands), loot tables, and P-75.
 ## Staged packets (the new window executes these in order, airlock discipline)
 
 - **M6** — finish the surface geography (Part A): every feature present & correct.
-  *Prereq + in-flight; do first.*
+  ✅ **DONE 2026-06-13.** `public/map/geography.js` (new) is the pure, seeded
+  *author* — it emits the world as drawable DATA and draws nothing itself: world
+  rect, a ragged ocean coast + offshore islands on a seeded edge (proven never to
+  swallow a node), the mountain RANGE as a banded ridge-spine, the far Blasted
+  Heath, rivers tracing high→sea, lakes pocketed by biome wetness, and
+  domain-warped biome terrain STAMPS (organic, interlocking, no lollipops).
+  `worldSpace.biomeAtWorld(seed,wx,wy)` is the ONE-truth projection of the LIVE
+  `biomeForNode`, so the painted ground AGREES with what the DM narrates (and the
+  future species/travel logic reads the same truth). `oneMap.js` is the *pen*:
+  per-biome motifs (conifer + deciduous firs, reeds over black standing water,
+  dune hatch, snow-capped peaks, scrub, grass), faint regional fills, fading out
+  across the settlement band so M2/M3 village layouts own the close ground.
+  `Z_MIN`→0.012 frames the whole world. Pure viewer (pan/zoom only); deterministic
+  (`makeRng`/seeded value-noise, no `Math.random`); client-side, so `worldHash` is
+  untouched. U136 ×7; suite 7,578 green; playtest:quick clean; live-verified in
+  v1.html on the `blackvale` demo seed — ocean coast, the snow-capped range band,
+  two forest types, lakes, rivers, the cracked Heath, all eight biomes present;
+  settlement-band layouts confirmed intact (screenshots). **M7 makes it beautiful.**
 - **M7** — the finish (beautification): the dedicated art pass that makes it
   award-winning. Taste-driven — iterate with Tim over screenshots. Can run right
   after M6, and again later to beautify the dungeon interiors once D0–D3 land.

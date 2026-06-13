@@ -6,10 +6,12 @@
 // only — the engine's canon coordinates (node.x,y, place units, plan units)
 // are untouched, and nothing here is ever serialized or hashed.
 
+import { biomeForNode } from '../../engine/world/biome.js';
+
 export const NODE_WU = 1000;  // one node-lattice step ≈ 1 km (1 wu ≈ 1 m)
 export const PLACE_WU = 4;    // one village place-unit ≈ 4 m (61-unit village ≈ 244 wu)
 
-export const Z_MIN = 0.02;    // whole world in frame
+export const Z_MIN = 0.012;   // whole world in frame (M6: ocean + far Heath fit at this zoom-out)
 export const Z_MAX = 16;      // street band, 1 place-unit = 64 px
 
 // Semantic LOD thresholds (px per wu). Representations fade in across an
@@ -23,6 +25,17 @@ export const BAND = {
 /** Node lattice → world units. */
 export function nodeToWu(node) {
   return { x: (Number(node?.x) || 0) * NODE_WU, y: (Number(node?.y) || 0) * NODE_WU };
+}
+
+/**
+ * biomeAtWorld(seed, wx, wy) -> biome string. The `biomeForNode` projection in
+ * world units: the ONE biome truth the map paints AND (later) the species/
+ * travel-reaction logic reads. A node's wu position maps back through NODE_WU
+ * to its exact node biome, so the painted ground AGREES with what the DM
+ * narrates on arrival. Pure + deterministic; never serialized or hashed.
+ */
+export function biomeAtWorld(seed, wx, wy) {
+  return biomeForNode(seed, { x: (Number(wx) || 0) / NODE_WU, y: (Number(wy) || 0) / NODE_WU });
 }
 
 /**

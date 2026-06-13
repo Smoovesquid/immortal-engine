@@ -13,9 +13,10 @@
 import { seedFromString, makeRng } from '../../engine/rng.js';
 import {
   NODE_WU, PLACE_WU, Z_MIN, Z_MAX, BAND,
-  nodeToWu, worldBounds, fadeIn, discoveryTiers,
+  nodeToWu, fadeIn, discoveryTiers,
   placeFrame, placeUnitToWu
 } from './worldSpace.js';
+import { worldGeography, terrainStamps } from './geography.js';
 import { placeFromWorldNode } from './placeFromNode.js';
 
 const PAPER = '#e8ecdd';
@@ -26,19 +27,64 @@ const WATERY = 'rgba(96,128,148,0.12)';
 const PLAYER = '#c0392b', NPC = '#2a6f8e';
 const HAND = '"Iowan Old Style","Palatino",Georgia,serif';
 
-// M5 — the Lord-of-the-Rings hand-drawn palette (sepia ink on aged parchment).
+// M5/M6 — the Lord-of-the-Rings hand-drawn palette (sepia ink on aged parchment).
 const SEPIA = 'rgba(96,72,44,0.85)', SEPIA_SOFT = 'rgba(96,72,44,0.45)';
-const FOREST_FILL = 'rgba(120,150,118,0.18)', FOREST_TREE = 'rgba(58,96,74,0.62)';
-const HILL_INK = 'rgba(120,92,56,0.6)';
 const WATER_FILL = 'rgba(120,156,176,0.22)', WATER_LINE = 'rgba(86,124,150,0.5)';
 
-// A wee map-tree: a stippled canopy dot over a hair of trunk. The classic
-// forest stipple — a hundred of these read as woods at a glance.
-function drawTree(ctx, x, y, s) {
-  ctx.strokeStyle = 'rgba(74,52,30,0.5)'; ctx.lineWidth = Math.max(0.5, s * 0.18);
+// M6 — biome inks. Each canonical biome (biomeForNode) gets a hand-drawn motif
+// so the painted ground AGREES with what the DM narrates. Fills stay faint —
+// the parchment shows through; M7 does the cohesive color grade.
+const BIOME_INK = {
+  conifer: 'rgba(46,82,58,0.66)', decid: 'rgba(92,124,82,0.62)', trunk: 'rgba(74,52,30,0.5)',
+  reed: 'rgba(96,112,66,0.66)', marshWater: 'rgba(40,54,50,0.42)',
+  dune: 'rgba(150,120,72,0.55)', rock: 'rgba(110,98,86,0.74)', rockShadow: 'rgba(96,80,60,0.34)',
+  snow: 'rgba(244,248,250,0.9)', arcticDot: 'rgba(150,178,196,0.62)',
+  grass: 'rgba(140,142,86,0.46)', scrub: 'rgba(120,108,78,0.5)'
+};
+const BIOME_FILL = {
+  forest: 'rgba(110,144,110,0.13)', marsh: 'rgba(92,108,84,0.14)', desert: 'rgba(208,182,126,0.12)',
+  mountains: 'rgba(150,140,128,0.06)', arctic: 'rgba(212,228,238,0.13)', plains: 'rgba(178,176,120,0.045)',
+  coastal: 'rgba(206,194,150,0.05)', wilderness: 'rgba(150,140,104,0.045)'
+};
+const OCEAN_FILL = 'rgba(108,148,170,0.30)', WAVE = 'rgba(78,116,142,0.42)';
+const RANGE_INK = 'rgba(66,54,42,0.82)', RANGE_FILL = 'rgba(122,110,94,0.4)';
+const HEATH_FILL = 'rgba(44,38,42,0.62)', HEATH_EDGE = 'rgba(26,22,26,0.72)', HEATH_CRACK = 'rgba(112,38,32,0.62)';
+const RIVER_INK = 'rgba(96,140,168,0.64)';
+
+// ── biome motif drawers (px-space; called when a clump is big enough to read) ─
+// A conifer: a fir silhouette over a hair of trunk.
+function drawConifer(ctx, x, y, s) {
+  ctx.strokeStyle = BIOME_INK.trunk; ctx.lineWidth = Math.max(0.4, s * 0.16);
+  ctx.beginPath(); ctx.moveTo(x, y + s * 0.5); ctx.lineTo(x, y + s); ctx.stroke();
+  ctx.fillStyle = BIOME_INK.conifer;
+  ctx.beginPath();
+  ctx.moveTo(x, y - s); ctx.lineTo(x + s * 0.6, y + s * 0.55); ctx.lineTo(x - s * 0.6, y + s * 0.55);
+  ctx.closePath(); ctx.fill();
+}
+// A deciduous: an irregular blobby crown over a trunk (three lobes, no lollipop).
+function drawDeciduous(ctx, x, y, s) {
+  ctx.strokeStyle = BIOME_INK.trunk; ctx.lineWidth = Math.max(0.4, s * 0.16);
   ctx.beginPath(); ctx.moveTo(x, y + s * 0.2); ctx.lineTo(x, y + s); ctx.stroke();
-  ctx.fillStyle = FOREST_TREE;
-  ctx.beginPath(); ctx.arc(x, y - s * 0.1, s * 0.72, 0, 7); ctx.fill();
+  ctx.fillStyle = BIOME_INK.decid;
+  ctx.beginPath();
+  ctx.arc(x - s * 0.34, y - s * 0.02, s * 0.5, 0, 7);
+  ctx.arc(x + s * 0.32, y, s * 0.46, 0, 7);
+  ctx.arc(x, y - s * 0.4, s * 0.5, 0, 7);
+  ctx.fill();
+}
+// A peak: a ridged triangle with a snow cap and a shadow flank.
+function drawPeak(ctx, x, y, s, snow) {
+  ctx.fillStyle = RANGE_FILL;
+  ctx.beginPath(); ctx.moveTo(x, y - s); ctx.lineTo(x + s * 0.8, y + s * 0.7); ctx.lineTo(x - s * 0.8, y + s * 0.7); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = RANGE_INK; ctx.lineWidth = Math.max(0.5, s * 0.1); ctx.lineJoin = 'round';
+  ctx.beginPath(); ctx.moveTo(x - s * 0.8, y + s * 0.7); ctx.lineTo(x, y - s); ctx.lineTo(x + s * 0.8, y + s * 0.7); ctx.stroke();
+  // inner shadow flank
+  ctx.strokeStyle = BIOME_INK.rockShadow; ctx.lineWidth = Math.max(0.4, s * 0.08);
+  ctx.beginPath(); ctx.moveTo(x, y - s); ctx.lineTo(x + s * 0.28, y + s * 0.1); ctx.stroke();
+  if (snow && s > 3) {
+    ctx.fillStyle = BIOME_INK.snow;
+    ctx.beginPath(); ctx.moveTo(x, y - s); ctx.lineTo(x + s * 0.26, y - s * 0.5); ctx.lineTo(x, y - s * 0.36); ctx.lineTo(x - s * 0.26, y - s * 0.5); ctx.closePath(); ctx.fill();
+  }
 }
 
 // A wobbly hand-inked ellipse — the look of a circle drawn with a real nib.
@@ -84,47 +130,160 @@ function cameraFor(world) {
   return CAMS.get(key);
 }
 
-// Deterministic terrain: forests (tree stipple), hills (hatched chevrons), and
-// water (feathered shorelines) scattered over the world bounds — the illustrated
-// backdrop of a hand-drawn map. Pure function of the seed; detail offsets are
-// pre-generated on a unit disc and scaled at draw time. NOT gameplay terrain —
-// it's the parchment's painted ground, identical every render.
-function terrainFor(world, bounds) {
+// M6 — the illustrated geography, computed once per world (deterministic, pure;
+// docs/WORLD_AND_DUNGEONS.md Part A). geography.js is the "author" (data); this
+// file is the pen. Cached like the camera so v1's per-turn re-render doesn't
+// regenerate ~5k stamps each frame.
+const GEO = new Map();
+function geoFor(world) {
   const seed = String(world?.meta?.seed || 'seed');
-  const rng = makeRng(seedFromString(`${seed}|onemap|terrain`));
-  const w = bounds.maxX - bounds.minX, h = bounds.maxY - bounds.minY;
-  const feats = [];
-  const n = 110;
-  for (let i = 0; i < n; i++) {
-    const roll = rng.nextFloat();
-    const kind = roll < 0.14 ? 'water' : roll < 0.36 ? 'hills' : 'forest';
-    const f = {
-      kind,
-      x: bounds.minX + rng.nextFloat() * w,
-      y: bounds.minY + rng.nextFloat() * h,
-      r: NODE_WU * (0.12 + rng.nextFloat() * 0.5),
-      squash: 0.6 + rng.nextFloat() * 0.55
-    };
-    const dr = makeRng(seedFromString(`tfeat|${seed}|${i}`));
-    f.seedKey = `${seed}|${i}`;
-    if (kind === 'forest') {
-      f.trees = [];
-      const m = 7 + dr.int(0, 12);
-      for (let k = 0; k < m; k++) {
-        const a = dr.nextFloat() * Math.PI * 2, rad = Math.sqrt(dr.nextFloat());
-        f.trees.push([Math.cos(a) * rad, Math.sin(a) * rad * f.squash, 0.55 + dr.nextFloat() * 0.6]);
-      }
-    } else if (kind === 'hills') {
-      f.bumps = [];
-      const m = 3 + dr.int(0, 4);
-      for (let k = 0; k < m; k++) {
-        const a = dr.nextFloat() * Math.PI * 2, rad = Math.sqrt(dr.nextFloat());
-        f.bumps.push([Math.cos(a) * rad * 0.85, Math.sin(a) * rad * 0.6, 0.6 + dr.nextFloat() * 0.5]);
-      }
-    }
-    feats.push(f);
+  const key = String(world?.meta?.campaignId || seed) + '|' + seed;
+  if (!GEO.has(key)) {
+    const nodes = Array.isArray(world?.map?.nodes) ? world.map.nodes : [];
+    const geo = worldGeography(seed, nodes);
+    GEO.set(key, { geo, stamps: terrainStamps(seed, geo) });
   }
-  return feats;
+  return GEO.get(key);
+}
+
+// A wobbled ellipse path from per-vertex radius multipliers (organic, never clean).
+function blobPath(ctx, x, y, rx, ry, radii) {
+  const n = radii.length; ctx.beginPath();
+  for (let i = 0; i <= n; i++) {
+    const a = ((i % n) / n) * Math.PI * 2, m = radii[i % n];
+    const px = x + Math.cos(a) * rx * m, py = y + Math.sin(a) * ry * m;
+    if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+  }
+  ctx.closePath();
+}
+function blobFill(ctx, x, y, rx, ry, radii, fill) { ctx.fillStyle = fill; blobPath(ctx, x, y, rx, ry, radii); ctx.fill(); }
+
+// One biome clump in px. Far zoom: a faint regional fill (no blank parchment);
+// closer: the hand-drawn motifs read.
+function drawStamp(ctx, st, cx, cy, rPx) {
+  const b = st.biome;
+  const fill = BIOME_FILL[b];
+  if (fill) { ctx.fillStyle = fill; ctx.beginPath(); ctx.ellipse(cx, cy, rPx * 0.92, rPx * 0.78, 0, 0, 7); ctx.fill(); }
+  if (rPx < 7) return;
+  if (b === 'marsh') { // black standing water under the reeds
+    ctx.fillStyle = BIOME_INK.marshWater; ctx.beginPath(); ctx.ellipse(cx, cy, rPx * 0.3, rPx * 0.2, 0, 0, 7); ctx.fill();
+  }
+  for (const [ox, oy, s, aux] of st.pts) {
+    const x = cx + ox * rPx, y = cy + oy * rPx, sz = Math.max(1, s * rPx * 0.4);
+    if (b === 'forest') { (aux ? drawConifer : drawDeciduous)(ctx, x, y, sz); }
+    else if (b === 'marsh') {
+      ctx.strokeStyle = BIOME_INK.reed; ctx.lineWidth = Math.max(0.5, sz * 0.16); ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(x, y + sz * 0.7); ctx.quadraticCurveTo(x + sz * 0.16, y, x + (aux - 0.5) * sz, y - sz); ctx.stroke();
+      ctx.lineCap = 'butt';
+    } else if (b === 'desert') {
+      const a = (aux - 0.5) * 0.7; ctx.strokeStyle = BIOME_INK.dune; ctx.lineWidth = Math.max(0.5, sz * 0.18); ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(x - sz, y + a * sz); ctx.quadraticCurveTo(x, y - sz * 0.5, x + sz, y - a * sz); ctx.stroke();
+      ctx.lineCap = 'butt';
+    } else if (b === 'mountains') { drawPeak(ctx, x, y, sz * 0.8, s > 0.85); }
+    else if (b === 'arctic') {
+      ctx.fillStyle = BIOME_INK.arcticDot; ctx.beginPath(); ctx.arc(x, y, Math.max(0.6, sz * 0.3), 0, 7); ctx.fill();
+    } else if (b === 'plains' || b === 'coastal') {
+      ctx.strokeStyle = BIOME_INK.grass; ctx.lineWidth = Math.max(0.4, sz * 0.12); ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(x, y + sz * 0.3); ctx.lineTo(x - sz * 0.3, y - sz * 0.5);
+      ctx.moveTo(x, y + sz * 0.3); ctx.lineTo(x, y - sz * 0.6);
+      ctx.moveTo(x, y + sz * 0.3); ctx.lineTo(x + sz * 0.3, y - sz * 0.5);
+      ctx.stroke(); ctx.lineCap = 'butt';
+    } else if (b === 'wilderness') {
+      ctx.strokeStyle = BIOME_INK.scrub; ctx.lineWidth = Math.max(0.4, sz * 0.14);
+      ctx.beginPath();
+      ctx.moveTo(x - sz * 0.4, y); ctx.lineTo(x + sz * 0.4, y);
+      ctx.moveTo(x, y - sz * 0.4); ctx.lineTo(x, y + sz * 0.4);
+      ctx.stroke();
+    }
+  }
+}
+
+// The sea on its seeded edge: fill the water side of the ragged coast, ink the
+// shore + a couple of wave contours, set the offshore islands.
+function drawOcean(ctx, geo, P, W, H, z) {
+  const o = geo.ocean, rect = geo.rect;
+  const seaExtreme = o.axis === 'x' ? (o.sign > 0 ? rect.maxX : rect.minX) : (o.sign > 0 ? rect.maxY : rect.minY);
+  const a0 = o.along === 'x' ? rect.minX : rect.minY;
+  const a1 = o.along === 'x' ? rect.maxX : rect.maxY;
+  const cLo = o.axis === 'x' ? [seaExtreme, a0] : [a0, seaExtreme];
+  const cHi = o.axis === 'x' ? [seaExtreme, a1] : [a1, seaExtreme];
+  ctx.fillStyle = OCEAN_FILL; ctx.beginPath();
+  for (let i = 0; i < o.coast.length; i++) { const [x, y] = P(o.coast[i][0], o.coast[i][1]); if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y); }
+  { const [x, y] = P(cHi[0], cHi[1]); ctx.lineTo(x, y); }
+  { const [x, y] = P(cLo[0], cLo[1]); ctx.lineTo(x, y); }
+  ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = WAVE; ctx.lineCap = 'round';
+  for (let k = 0; k < 3; k++) {
+    const off = k * o.sign * NODE_WU * 0.85;
+    ctx.lineWidth = Math.max(0.5, z * (k === 0 ? 9 : 5));
+    ctx.beginPath();
+    for (let i = 0; i < o.coast.length; i++) {
+      let wx = o.coast[i][0], wy = o.coast[i][1];
+      if (o.axis === 'x') wx += off; else wy += off;
+      const [x, y] = P(wx, wy); if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+  }
+  ctx.lineCap = 'butt';
+  for (const isl of (o.islands || [])) {
+    const [x, y] = P(isl.cx, isl.cy), rr = isl.r * z;
+    if (rr < 1) continue;
+    blobFill(ctx, x, y, rr, rr * 0.82, isl.blob, 'rgba(150,140,104,0.5)');
+    ctx.strokeStyle = SEPIA_SOFT; ctx.lineWidth = Math.max(0.4, rr * 0.06); blobPath(ctx, x, y, rr, rr * 0.82, isl.blob); ctx.stroke();
+  }
+}
+
+// The Blasted Heath: dead, cracked, deliberately wrong against the warm parchment.
+function drawHeath(ctx, heath, P) {
+  ctx.fillStyle = HEATH_FILL; ctx.beginPath();
+  for (let i = 0; i < heath.poly.length; i++) { const [x, y] = P(heath.poly[i][0], heath.poly[i][1]); if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y); }
+  ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = HEATH_EDGE; ctx.lineWidth = 1.4; ctx.stroke();
+  ctx.strokeStyle = HEATH_CRACK; ctx.lineWidth = 1; ctx.lineCap = 'round';
+  for (const cr of (heath.cracks || [])) {
+    if (cr.length < 2) continue;
+    ctx.beginPath();
+    for (let i = 0; i < cr.length; i++) { const [x, y] = P(cr[i][0], cr[i][1]); if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y); }
+    ctx.stroke();
+  }
+  ctx.lineCap = 'butt';
+}
+
+// Paint the whole illustrated ground: ocean → biome clumps → lakes → rivers →
+// the mountain range backbone → the dead Heath. All under the caller's alpha
+// (it fades out across the settlement band so village layouts own the close ground).
+function drawGeography(ctx, geo, stamps, toPx, W, H, z) {
+  const P = (wx, wy) => toPx(wx, wy, W, H);
+  if (geo.ocean) drawOcean(ctx, geo, P, W, H, z);
+  const cull = 60;
+  for (const st of stamps) {
+    const [cx, cy] = P(st.wx, st.wy), rPx = st.r * z;
+    if (cx < -cull - rPx || cx > W + cull + rPx || cy < -cull - rPx || cy > H + cull + rPx) continue;
+    drawStamp(ctx, st, cx, cy, rPx);
+  }
+  for (const lk of (geo.lakes || [])) {
+    const [x, y] = P(lk.cx, lk.cy), rx = lk.rx * z, ry = lk.ry * z;
+    if (rx < 1.2 || x < -rx || x > W + rx || y < -ry || y > H + ry) continue;
+    blobFill(ctx, x, y, rx, ry, lk.blob, WATER_FILL);
+    ctx.strokeStyle = WATER_LINE; ctx.lineWidth = Math.max(0.5, rx * 0.045);
+    blobPath(ctx, x, y, rx * 0.86, ry * 0.86, lk.blob); ctx.stroke();
+  }
+  ctx.strokeStyle = RIVER_INK; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  for (const rv of (geo.rivers || [])) {
+    if (rv.length < 2) continue;
+    ctx.lineWidth = Math.max(0.7, Math.min(4, z * 80));
+    ctx.beginPath();
+    for (let i = 0; i < rv.length; i++) { const [x, y] = P(rv[i][0], rv[i][1]); if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y); }
+    ctx.stroke();
+  }
+  ctx.lineCap = 'butt';
+  for (const pk of (geo.range?.peaks || [])) {
+    const [x, y] = P(pk.x, pk.y), s = pk.r * z;
+    if (s < 1 || x < -s * 2 || x > W + s * 2 || y < -s * 2 || y > H + s * 2) continue;
+    drawPeak(ctx, x, y, s, pk.snow);
+  }
+  if (geo.heath?.poly?.length) drawHeath(ctx, geo.heath, P);
 }
 
 // A road bows gently and identically forever: bow from the edge key's hash.
@@ -137,8 +296,7 @@ export function renderOneMap(world, opts = {}) {
   const map = world?.map || {};
   const nodes = Array.isArray(map.nodes) ? map.nodes : [];
   const cam = cameraFor(world);
-  const bounds = worldBounds(nodes);
-  const terrain = terrainFor(world, bounds);
+  const { geo, stamps } = geoFor(world);
   const { known, rumor } = discoveryTiers(map);
   const hereId = String(map.currentNodeId || '');
 
@@ -322,46 +480,12 @@ export function renderOneMap(world, opts = {}) {
     ctx.fillStyle = PAPER;
     ctx.fillRect(0, 0, W, H);
 
-    // ── terrain — the hand-drawn ground (forests/hills/water). Fades OUT across
-    // the settlement band (real layouts own the ground there, M2) so the street
-    // band is clean parchment, not painted-over woods.
+    // ── M6: the illustrated biome ground + set-pieces (geography.js). Fades OUT
+    // across the settlement band so real village layouts own the close ground (M2).
     const washAlpha = 1 - fadeIn(z, BAND.settlement * 0.7, BAND.settlement * 4);
     if (washAlpha > 0.02) {
       ctx.globalAlpha = washAlpha;
-      for (const f of terrain) {
-        const [x, y] = toPx(f.x, f.y, W, H);
-        const r = f.r * z, ry = r * f.squash;
-        if (x < -r - 24 || x > W + r + 24 || y < -r - 24 || y > H + r + 24 || r < 1) continue;
-        if (f.kind === 'water') {
-          ctx.fillStyle = WATER_FILL;
-          ctx.beginPath(); ctx.ellipse(x, y, r, ry, 0, 0, 7); ctx.fill();
-          if (r > 7) {
-            ctx.strokeStyle = WATER_LINE;
-            for (let s = 1; s <= 2; s++) {
-              ctx.lineWidth = Math.max(0.6, r * 0.012);
-              ctx.beginPath(); ctx.ellipse(x, y, r * (1 - 0.14 * s), ry * (1 - 0.14 * s), 0, 0, 7); ctx.stroke();
-            }
-          }
-        } else if (f.kind === 'hills') {
-          // bare chevrons on the parchment — the classic map hill hatch.
-          if (r > 5) {
-            ctx.strokeStyle = HILL_INK; ctx.lineCap = 'round';
-            for (const [ox, oy, s] of f.bumps) {
-              const hx = x + ox * r, hy = y + oy * ry, hs = Math.max(2, s * r * 0.34);
-              ctx.lineWidth = Math.max(0.7, hs * 0.16);
-              ctx.beginPath(); ctx.moveTo(hx - hs, hy + hs * 0.45);
-              ctx.quadraticCurveTo(hx, hy - hs * 0.75, hx + hs, hy + hs * 0.45); ctx.stroke();
-            }
-            ctx.lineCap = 'butt';
-          }
-        } else { // forest
-          ctx.fillStyle = FOREST_FILL;
-          ctx.beginPath(); ctx.ellipse(x, y, r, ry, 0, 0, 7); ctx.fill();
-          if (r > 9) for (const [ox, oy, s] of f.trees) {
-            drawTree(ctx, x + ox * r, y + oy * ry, Math.max(1.4, s * r * 0.17));
-          }
-        }
-      }
+      drawGeography(ctx, geo, stamps, toPx, W, H, z);
       ctx.globalAlpha = 1;
     }
 

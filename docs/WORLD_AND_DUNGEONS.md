@@ -238,6 +238,16 @@ already encoded in the bestiary (CR bands), loot tables, and P-75.
 - **M7** — the finish (beautification): the dedicated art pass that makes it
   award-winning. Taste-driven — iterate with Tim over screenshots. Can run right
   after M6, and again later to beautify the dungeon interiors once D0–D3 land.
+  ◑ **SURFACE FIRST PASS SHIPPED 2026-06-13, iterating (Tim's eye next).**
+  `oneMap.js` now renders real parchment (per-pixel fibre grain + soft age stains,
+  cached offscreen per seed+size), an aged grade with corner edge-wear, a compass
+  rose on a paper medallion (north up, legible over any terrain), paper-haloed
+  calligraphic labels (towns upright / features italic), and a darker, sicklier
+  Blasted Heath with a blight haze. Deterministic, pure viewer, suite 7,578 +
+  playtest:quick green, live-verified on the `blackvale` demo seed. STILL TO TASTE
+  with Tim: tame the biome-fill blotch into a true color grade; a title cartouche;
+  a range that reads less fir-like; curved coast/range labels; parchment edge
+  tatter. The dungeon-interior M7 pass runs after D3.
 - **D0** — the dungeon **data schema** + a trivial generator + the **one-room
   shrine** (smallest scale) reachable from a `dungeon_entrance` (or a building
   basement), rendered as a cutaway on the one-map with fog-reveal, navigated by

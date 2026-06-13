@@ -48,7 +48,7 @@ const BIOME_FILL = {
 };
 const OCEAN_FILL = 'rgba(108,148,170,0.30)', WAVE = 'rgba(78,116,142,0.42)';
 const RANGE_INK = 'rgba(66,54,42,0.82)', RANGE_FILL = 'rgba(122,110,94,0.4)';
-const HEATH_FILL = 'rgba(44,38,42,0.62)', HEATH_EDGE = 'rgba(26,22,26,0.72)', HEATH_CRACK = 'rgba(112,38,32,0.62)';
+const HEATH_FILL = 'rgba(36,30,34,0.74)', HEATH_EDGE = 'rgba(24,20,24,0.78)', HEATH_CRACK = 'rgba(122,40,32,0.66)', HEATH_GLOW = 'rgba(120,40,30,0.14)';
 const RIVER_INK = 'rgba(96,140,168,0.64)';
 
 // ── biome motif drawers (px-space; called when a clump is big enough to read) ─
@@ -128,6 +128,87 @@ function cameraFor(world) {
     CAMS.set(key, { cx: c.x, cy: c.y, z: 0.12 }); // region band — the county frames on open
   }
   return CAMS.get(key);
+}
+
+// M7 — beautification (docs/WORLD_AND_DUNGEONS.md). The pen turns ink-on-paper
+// into illustrated antique cartography: real parchment fiber/stain, a compass
+// rose, paper-haloed calligraphic labels, an aged grade. Pure + deterministic.
+const HALO = 'rgba(233,237,222,0.92)';  // paper-coloured halo so names read over terrain
+
+// A name in a cartographer's hand: a soft paper halo, then the ink.
+function inkLabel(ctx, text, x, y, font, fill, align, baseline, haloW = 3.2) {
+  ctx.font = font; ctx.textAlign = align; ctx.textBaseline = baseline;
+  ctx.lineJoin = 'round'; ctx.miterLimit = 2;
+  ctx.strokeStyle = HALO; ctx.lineWidth = haloW; ctx.strokeText(text, x, y);
+  ctx.fillStyle = fill; ctx.fillText(text, x, y);
+}
+
+// A real parchment sheet: base paper + per-pixel fibre grain + a few age stains.
+// Rendered ONCE to an offscreen canvas (screen-space, so panning doesn't churn
+// it), cached per seed+size. Deterministic: seeded rng, drawn in a fixed order.
+const PARCH = new Map();
+function parchmentFor(seed, W, H, dpr) {
+  const cw = Math.max(1, Math.round(W * dpr)), ch = Math.max(1, Math.round(H * dpr));
+  const key = `${seed}|${cw}x${ch}`;
+  if (PARCH.has(key)) return PARCH.get(key);
+  const oc = (typeof document !== 'undefined') ? document.createElement('canvas') : null;
+  if (!oc) return null;
+  oc.width = cw; oc.height = ch;
+  const o = oc.getContext('2d');
+  o.fillStyle = PAPER; o.fillRect(0, 0, cw, ch);
+  const rng = makeRng(seedFromString(`${seed}|parchment`));
+  const img = o.getImageData(0, 0, cw, ch), d = img.data;
+  for (let i = 0; i < d.length; i += 4) {
+    const n = (rng.nextFloat() - 0.5) * 16;            // subtle fibre flecking
+    d[i] = Math.max(0, Math.min(255, d[i] + n));
+    d[i + 1] = Math.max(0, Math.min(255, d[i + 1] + n));
+    d[i + 2] = Math.max(0, Math.min(255, d[i + 2] + n * 0.85));
+  }
+  o.putImageData(img, 0, 0);
+  const stains = 8 + rng.int(0, 6);                     // soft age blotches
+  for (let i = 0; i < stains; i++) {
+    const sx = rng.nextFloat() * cw, sy = rng.nextFloat() * ch;
+    const sr = (0.1 + rng.nextFloat() * 0.28) * Math.min(cw, ch);
+    const a = 0.03 + rng.nextFloat() * 0.05;
+    const g = o.createRadialGradient(sx, sy, 0, sx, sy, sr);
+    g.addColorStop(0, `rgba(122,92,46,${a})`); g.addColorStop(1, 'rgba(122,92,46,0)');
+    o.fillStyle = g; o.beginPath(); o.arc(sx, sy, sr, 0, 7); o.fill();
+  }
+  PARCH.set(key, oc);
+  return oc;
+}
+
+// A cartographer's compass rose (screen-space, north up) on a paper medallion
+// so it reads over any terrain (ocean, the dead Heath, a forest).
+function drawCompass(ctx, cx, cy, R) {
+  ctx.save(); ctx.translate(cx, cy);
+  ctx.fillStyle = 'rgba(233,237,222,0.84)';
+  ctx.beginPath(); ctx.arc(0, 0, R * 1.46, 0, 7); ctx.fill();
+  ctx.strokeStyle = SEPIA_SOFT; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(0, 0, R * 1.46, 0, 7); ctx.stroke();
+  ctx.strokeStyle = SEPIA; ctx.lineWidth = 1.1;
+  ctx.beginPath(); ctx.arc(0, 0, R, 0, 7); ctx.stroke();
+  ctx.beginPath(); ctx.arc(0, 0, R * 0.74, 0, 7); ctx.stroke();
+  // four diagonal minor rays
+  ctx.strokeStyle = SEPIA_SOFT; ctx.lineWidth = 0.8;
+  for (let k = 0; k < 4; k++) {
+    const a = k * Math.PI / 2 + Math.PI / 4;
+    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(Math.cos(a) * R * 0.72, Math.sin(a) * R * 0.72); ctx.stroke();
+  }
+  // four cardinal star points (N emphasised, dark)
+  for (let k = 0; k < 4; k++) {
+    const a = -Math.PI / 2 + k * Math.PI / 2;            // start at N (up)
+    ctx.fillStyle = k === 0 ? 'rgba(86,62,36,0.95)' : SEPIA_SOFT;
+    ctx.beginPath();
+    ctx.moveTo(Math.cos(a) * R, Math.sin(a) * R);
+    ctx.lineTo(Math.cos(a + 0.16) * R * 0.3, Math.sin(a + 0.16) * R * 0.3);
+    ctx.lineTo(Math.cos(a - 0.16) * R * 0.3, Math.sin(a - 0.16) * R * 0.3);
+    ctx.closePath(); ctx.fill();
+  }
+  ctx.fillStyle = 'rgba(86,62,36,0.95)';
+  ctx.font = `bold ${Math.round(R * 0.36)}px ${HAND}`;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('N', 0, -R * 1.16);
+  ctx.restore();
 }
 
 // M6 — the illustrated geography, computed once per world (deterministic, pure;
@@ -234,12 +315,19 @@ function drawOcean(ctx, geo, P, W, H, z) {
   }
 }
 
-// The Blasted Heath: dead, cracked, deliberately wrong against the warm parchment.
+// The Blasted Heath: dead, ashen, cracked — deliberately WRONG against the warm
+// parchment, with a sickly blight haze creeping at its edge.
 function drawHeath(ctx, heath, P) {
-  ctx.fillStyle = HEATH_FILL; ctx.beginPath();
-  for (let i = 0; i < heath.poly.length; i++) { const [x, y] = P(heath.poly[i][0], heath.poly[i][1]); if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y); }
-  ctx.closePath(); ctx.fill();
-  ctx.strokeStyle = HEATH_EDGE; ctx.lineWidth = 1.4; ctx.stroke();
+  const pts = heath.poly.map(([wx, wy]) => P(wx, wy));
+  const path = () => { ctx.beginPath(); pts.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y))); ctx.closePath(); };
+  ctx.lineJoin = 'round';
+  // a sickly red-black blight bleeding past the edge
+  path(); ctx.strokeStyle = HEATH_GLOW; ctx.lineWidth = 16; ctx.stroke();
+  // the dead ashen ground
+  path(); ctx.fillStyle = HEATH_FILL; ctx.fill();
+  // the burnt rim
+  path(); ctx.strokeStyle = HEATH_EDGE; ctx.lineWidth = 1.5; ctx.stroke();
+  // the red-black fissures
   ctx.strokeStyle = HEATH_CRACK; ctx.lineWidth = 1; ctx.lineCap = 'round';
   for (const cr of (heath.cracks || [])) {
     if (cr.length < 2) continue;
@@ -296,6 +384,7 @@ export function renderOneMap(world, opts = {}) {
   const map = world?.map || {};
   const nodes = Array.isArray(map.nodes) ? map.nodes : [];
   const cam = cameraFor(world);
+  const seed = String(world?.meta?.seed || 'seed');
   const { geo, stamps } = geoFor(world);
   const { known, rumor } = discoveryTiers(map);
   const hereId = String(map.currentNodeId || '');
@@ -440,10 +529,7 @@ export function renderOneMap(world, opts = {}) {
       const label = String(b.name || b.buildingName || '');
       if (label && labelAlpha > 0 && cut < 0.5 && Number.isFinite(bx0)) {
         ctx.globalAlpha = alpha * labelAlpha * (1 - cut * 2 > 0 ? 1 - cut * 2 : 0);
-        ctx.fillStyle = INKSOFT;
-        ctx.font = `10px ${HAND}`;
-        ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
-        ctx.fillText(label, (bx0 + bx1) / 2, by0 - 2);
+        inkLabel(ctx, label, (bx0 + bx1) / 2, by0 - 2, `10px ${HAND}`, INKSOFT, 'center', 'bottom', 2.4);
         ctx.globalAlpha = alpha;
       }
     }
@@ -479,6 +565,9 @@ export function renderOneMap(world, opts = {}) {
 
     ctx.fillStyle = PAPER;
     ctx.fillRect(0, 0, W, H);
+    // M7 — real parchment under the ink (fibre grain + soft age stains).
+    const parch = parchmentFor(seed, W, H, dpr);
+    if (parch) ctx.drawImage(parch, 0, 0, W, H);
 
     // ── M6: the illustrated biome ground + set-pieces (geography.js). Fades OUT
     // across the settlement band so real village layouts own the close ground (M2).
@@ -489,12 +578,13 @@ export function renderOneMap(world, opts = {}) {
       ctx.globalAlpha = 1;
     }
 
-    // ── aged-parchment vignette: edges darken to old-paper sepia. Cheap, and
-    // it's most of the "this is a real map" feeling.
+    // ── M7: aged grade + edge wear — a warm sepia bloom into the corners that
+    // ties the biome inks into one antique palette. Over the ground, under roads.
     {
-      const g = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.32, W / 2, H / 2, Math.max(W, H) * 0.72);
-      g.addColorStop(0, 'rgba(120,96,52,0)');
-      g.addColorStop(1, 'rgba(96,74,40,0.16)');
+      const g = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.26, W / 2, H / 2, Math.max(W, H) * 0.78);
+      g.addColorStop(0, 'rgba(122,98,52,0.015)');
+      g.addColorStop(0.66, 'rgba(110,84,44,0.07)');
+      g.addColorStop(1, 'rgba(70,50,26,0.26)');
       ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
     }
 
@@ -586,10 +676,10 @@ export function renderOneMap(world, opts = {}) {
       const showName = !ghost && n.name && (type === 'settlement' || nameAllAlpha > 0);
       if (showName) {
         ctx.globalAlpha = type === 'settlement' ? 1 : nameAllAlpha;
-        ctx.fillStyle = INK;
-        ctx.font = `${type === 'settlement' ? 13 : 11}px ${HAND}`;
-        ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-        ctx.fillText(String(n.name), x, y + r + 3);
+        // calligrapher's registers: towns upright, everything else italic — each
+        // on a paper halo so the name reads cleanly over terrain.
+        const font = type === 'settlement' ? `13px ${HAND}` : `italic 11px ${HAND}`;
+        inkLabel(ctx, String(n.name), x, y + r + 3, font, INK, 'center', 'top');
       }
       ctx.globalAlpha = 1;
     }
@@ -621,10 +711,7 @@ export function renderOneMap(world, opts = {}) {
         const noun = type === 'settlement' ? 'a village' : /dungeon/.test(type) ? 'something' : type === 'landmark' ? 'a landmark' : 'a place';
         const line1 = n.name ? `${n.name}?` : `${noun}?`;
         const fs = Math.max(9, Math.min(14, rPx * 0.16));
-        ctx.fillStyle = SEPIA;
-        ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-        ctx.font = `italic ${Math.round(fs)}px ${HAND}`;
-        ctx.fillText(line1, x, y + rPx * 0.82 + 3);
+        inkLabel(ctx, line1, x, y + rPx * 0.82 + 3, `italic ${Math.round(fs)}px ${HAND}`, SEPIA, 'center', 'top', 2.4);
         ctx.font = `italic ${Math.round(fs * 0.82)}px ${HAND}`;
         ctx.fillStyle = SEPIA_SOFT;
         ctx.fillText('— up here somewhere', x, y + rPx * 0.82 + 3 + fs * 1.1);
@@ -654,6 +741,9 @@ export function renderOneMap(world, opts = {}) {
       ctx.fillStyle = PLAYER;
       ctx.beginPath(); ctx.arc(x, y, 3, 0, 7); ctx.fill();
     }
+
+    // ── M7: the compass rose (screen-space, lower-right) ──
+    drawCompass(ctx, W - 48, H - 54, 25);
 
     // ── HUD: a Google-maps scale bar (1 wu ≈ 1 m) ──
     const target = 100 / z; // ~100 px worth of wu

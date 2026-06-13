@@ -20,11 +20,40 @@ import { placeFromWorldNode } from './placeFromNode.js';
 
 const PAPER = '#e8ecdd';
 const INK = 'rgba(18,26,48,0.96)', INKSOFT = 'rgba(18,26,48,0.5)';
-const ROAD = 'rgba(110,84,52,0.55)', ROAD_GHOST = 'rgba(110,84,52,0.22)';
+const ROAD = 'rgba(110,84,52,0.62)', ROAD_GHOST = 'rgba(110,84,52,0.22)';
 const GROVE = 'rgba(92,134,120,0.16)', GROVE_DARK = 'rgba(74,112,98,0.28)';
 const WATERY = 'rgba(96,128,148,0.12)';
 const PLAYER = '#c0392b', NPC = '#2a6f8e';
 const HAND = '"Iowan Old Style","Palatino",Georgia,serif';
+
+// M5 — the Lord-of-the-Rings hand-drawn palette (sepia ink on aged parchment).
+const SEPIA = 'rgba(96,72,44,0.85)', SEPIA_SOFT = 'rgba(96,72,44,0.45)';
+const FOREST_FILL = 'rgba(120,150,118,0.18)', FOREST_TREE = 'rgba(58,96,74,0.62)';
+const HILL_INK = 'rgba(120,92,56,0.6)';
+const WATER_FILL = 'rgba(120,156,176,0.22)', WATER_LINE = 'rgba(86,124,150,0.5)';
+
+// A wee map-tree: a stippled canopy dot over a hair of trunk. The classic
+// forest stipple — a hundred of these read as woods at a glance.
+function drawTree(ctx, x, y, s) {
+  ctx.strokeStyle = 'rgba(74,52,30,0.5)'; ctx.lineWidth = Math.max(0.5, s * 0.18);
+  ctx.beginPath(); ctx.moveTo(x, y + s * 0.2); ctx.lineTo(x, y + s); ctx.stroke();
+  ctx.fillStyle = FOREST_TREE;
+  ctx.beginPath(); ctx.arc(x, y - s * 0.1, s * 0.72, 0, 7); ctx.fill();
+}
+
+// A wobbly hand-inked ellipse — the look of a circle drawn with a real nib.
+// Seeded jitter so the same mark wavers identically every render.
+function inkEllipse(ctx, x, y, rx, ry, seed) {
+  const jr = makeRng(seedFromString(`ink|${seed}`));
+  const segs = 26;
+  ctx.beginPath();
+  for (let i = 0; i <= segs; i++) {
+    const a = (i / segs) * Math.PI * 2;
+    const w = 1 + (jr.nextFloat() - 0.5) * 0.12;
+    const px = x + Math.cos(a) * rx * w, py = y + Math.sin(a) * ry * w;
+    if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+  }
+}
 
 // M2 — building fills by plan material (M3 lifts these roofs into cutaways).
 const ROOF = {
@@ -55,24 +84,47 @@ function cameraFor(world) {
   return CAMS.get(key);
 }
 
-// Deterministic terrain wash: soft groves and pools scattered over the world
-// bounds. Pure function of the seed — identical every render, every session.
+// Deterministic terrain: forests (tree stipple), hills (hatched chevrons), and
+// water (feathered shorelines) scattered over the world bounds — the illustrated
+// backdrop of a hand-drawn map. Pure function of the seed; detail offsets are
+// pre-generated on a unit disc and scaled at draw time. NOT gameplay terrain —
+// it's the parchment's painted ground, identical every render.
 function terrainFor(world, bounds) {
-  const rng = makeRng(seedFromString(`${String(world?.meta?.seed || 'seed')}|onemap|terrain`));
+  const seed = String(world?.meta?.seed || 'seed');
+  const rng = makeRng(seedFromString(`${seed}|onemap|terrain`));
   const w = bounds.maxX - bounds.minX, h = bounds.maxY - bounds.minY;
-  const blobs = [];
-  const n = 140;
+  const feats = [];
+  const n = 110;
   for (let i = 0; i < n; i++) {
-    const kind = rng.nextFloat() < 0.12 ? 'water' : rng.nextFloat() < 0.3 ? 'darkGrove' : 'grove';
-    blobs.push({
+    const roll = rng.nextFloat();
+    const kind = roll < 0.14 ? 'water' : roll < 0.36 ? 'hills' : 'forest';
+    const f = {
       kind,
       x: bounds.minX + rng.nextFloat() * w,
       y: bounds.minY + rng.nextFloat() * h,
-      r: NODE_WU * (0.12 + rng.nextFloat() * 0.55),
-      squash: 0.55 + rng.nextFloat() * 0.6
-    });
+      r: NODE_WU * (0.12 + rng.nextFloat() * 0.5),
+      squash: 0.6 + rng.nextFloat() * 0.55
+    };
+    const dr = makeRng(seedFromString(`tfeat|${seed}|${i}`));
+    f.seedKey = `${seed}|${i}`;
+    if (kind === 'forest') {
+      f.trees = [];
+      const m = 7 + dr.int(0, 12);
+      for (let k = 0; k < m; k++) {
+        const a = dr.nextFloat() * Math.PI * 2, rad = Math.sqrt(dr.nextFloat());
+        f.trees.push([Math.cos(a) * rad, Math.sin(a) * rad * f.squash, 0.55 + dr.nextFloat() * 0.6]);
+      }
+    } else if (kind === 'hills') {
+      f.bumps = [];
+      const m = 3 + dr.int(0, 4);
+      for (let k = 0; k < m; k++) {
+        const a = dr.nextFloat() * Math.PI * 2, rad = Math.sqrt(dr.nextFloat());
+        f.bumps.push([Math.cos(a) * rad * 0.85, Math.sin(a) * rad * 0.6, 0.6 + dr.nextFloat() * 0.5]);
+      }
+    }
+    feats.push(f);
   }
-  return blobs;
+  return feats;
 }
 
 // A road bows gently and identically forever: bow from the edge key's hash.
@@ -270,29 +322,66 @@ export function renderOneMap(world, opts = {}) {
     ctx.fillStyle = PAPER;
     ctx.fillRect(0, 0, W, H);
 
-    // ── terrain wash — the far-band texture. It fades OUT entirely across
-    // the settlement band (real layouts own the ground there, M2): overlapping
-    // giant ellipses re-stack any residual alpha to solid at street zoom, so
-    // the only honest floor is zero.
+    // ── terrain — the hand-drawn ground (forests/hills/water). Fades OUT across
+    // the settlement band (real layouts own the ground there, M2) so the street
+    // band is clean parchment, not painted-over woods.
     const washAlpha = 1 - fadeIn(z, BAND.settlement * 0.7, BAND.settlement * 4);
     if (washAlpha > 0.02) {
       ctx.globalAlpha = washAlpha;
-      for (const b of terrain) {
-        const [x, y] = toPx(b.x, b.y, W, H);
-        const r = b.r * z;
-        if (x < -r || x > W + r || y < -r || y > H + r || r < 1.2) continue;
-        ctx.fillStyle = b.kind === 'water' ? WATERY : b.kind === 'darkGrove' ? GROVE_DARK : GROVE;
-        ctx.beginPath();
-        ctx.ellipse(x, y, r, r * b.squash, 0, 0, 7);
-        ctx.fill();
+      for (const f of terrain) {
+        const [x, y] = toPx(f.x, f.y, W, H);
+        const r = f.r * z, ry = r * f.squash;
+        if (x < -r - 24 || x > W + r + 24 || y < -r - 24 || y > H + r + 24 || r < 1) continue;
+        if (f.kind === 'water') {
+          ctx.fillStyle = WATER_FILL;
+          ctx.beginPath(); ctx.ellipse(x, y, r, ry, 0, 0, 7); ctx.fill();
+          if (r > 7) {
+            ctx.strokeStyle = WATER_LINE;
+            for (let s = 1; s <= 2; s++) {
+              ctx.lineWidth = Math.max(0.6, r * 0.012);
+              ctx.beginPath(); ctx.ellipse(x, y, r * (1 - 0.14 * s), ry * (1 - 0.14 * s), 0, 0, 7); ctx.stroke();
+            }
+          }
+        } else if (f.kind === 'hills') {
+          // bare chevrons on the parchment — the classic map hill hatch.
+          if (r > 5) {
+            ctx.strokeStyle = HILL_INK; ctx.lineCap = 'round';
+            for (const [ox, oy, s] of f.bumps) {
+              const hx = x + ox * r, hy = y + oy * ry, hs = Math.max(2, s * r * 0.34);
+              ctx.lineWidth = Math.max(0.7, hs * 0.16);
+              ctx.beginPath(); ctx.moveTo(hx - hs, hy + hs * 0.45);
+              ctx.quadraticCurveTo(hx, hy - hs * 0.75, hx + hs, hy + hs * 0.45); ctx.stroke();
+            }
+            ctx.lineCap = 'butt';
+          }
+        } else { // forest
+          ctx.fillStyle = FOREST_FILL;
+          ctx.beginPath(); ctx.ellipse(x, y, r, ry, 0, 0, 7); ctx.fill();
+          if (r > 9) for (const [ox, oy, s] of f.trees) {
+            drawTree(ctx, x + ox * r, y + oy * ry, Math.max(1.4, s * r * 0.17));
+          }
+        }
       }
       ctx.globalAlpha = 1;
     }
 
-    // ── roads (fade in entering the region band) ──
+    // ── aged-parchment vignette: edges darken to old-paper sepia. Cheap, and
+    // it's most of the "this is a real map" feeling.
+    {
+      const g = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.32, W / 2, H / 2, Math.max(W, H) * 0.72);
+      g.addColorStop(0, 'rgba(120,96,52,0)');
+      g.addColorStop(1, 'rgba(96,74,40,0.16)');
+      ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    }
+
+    // ── roads — dashed sepia, the way a cartographer dots a track between
+    // towns. (fade in entering the region band) ──
     const roadAlpha = fadeIn(z, BAND.region * 0.75, BAND.region * 1.9);
     if (roadAlpha > 0) {
-      ctx.lineWidth = Math.max(1, Math.min(3.2, z * 14));
+      const dash = Math.max(3, Math.min(10, z * 26));
+      ctx.lineWidth = Math.max(0.8, Math.min(2, z * 9));
+      ctx.lineCap = 'round';
+      ctx.setLineDash([dash, dash * 0.8]);
       for (const e of (Array.isArray(map.edges) ? map.edges : [])) {
         const a = nodes.find(n => n.id === e.a), b = nodes.find(n => n.id === e.b);
         if (!a || !b) continue;
@@ -305,9 +394,10 @@ export function renderOneMap(world, opts = {}) {
         const bow = roadBow(String(a.id), String(b.id));
         const mx = (x1 + x2) / 2 - (y2 - y1) * bow, my = (y1 + y2) / 2 + (x2 - x1) * bow;
         ctx.strokeStyle = (aKnown && bKnown) ? ROAD : ROAD_GHOST;
-        ctx.globalAlpha = roadAlpha * ((aKnown && bKnown) ? 1 : 0.8);
+        ctx.globalAlpha = roadAlpha * ((aKnown && bKnown) ? 1 : 0.7);
         ctx.beginPath(); ctx.moveTo(x1, y1); ctx.quadraticCurveTo(mx, my, x2, y2); ctx.stroke();
       }
+      ctx.setLineDash([]); ctx.lineCap = 'butt';
       ctx.globalAlpha = 1;
     }
 
@@ -316,8 +406,10 @@ export function renderOneMap(world, opts = {}) {
     const footAlpha = fadeIn(z, BAND.settlement * 0.8, BAND.settlement * 1.8);
     for (const n of nodes) {
       const id = String(n.id);
-      const tier = known.has(id) ? 'known' : rumor.has(id) ? 'rumor' : 'dark';
-      if (tier === 'dark') continue;
+      // Only WITNESSED places get inked here. Heard-of (rumor) places are your
+      // own scrawled annotations, drawn in a separate pass below; the unknown
+      // stays blank parchment. (The map shows only what you've earned.)
+      if (!known.has(id)) continue;
       const p = nodeToWu(n);
       const [x, y] = toPx(p.x, p.y, W, H);
       // Cull by node center — but a settlement's layout extends ~120 wu out, so
@@ -325,7 +417,7 @@ export function renderOneMap(world, opts = {}) {
       // edge). Give settlements a layout-sized margin or the whole place vanishes.
       const margin = 40 + (String(n.nodeType || '') === 'settlement' ? 200 * z : 0);
       if (x < -margin || x > W + margin || y < -margin || y > H + margin) continue;
-      const ghost = tier === 'rumor';
+      const ghost = false;
       const type = String(n.nodeType || '');
       const r = Math.max(3, Math.min(13, 3 + z * 18));
 
@@ -376,6 +468,44 @@ export function renderOneMap(world, opts = {}) {
         ctx.fillText(String(n.name), x, y + r + 3);
       }
       ctx.globalAlpha = 1;
+    }
+
+    // ── heard-of places — your own annotations ──────────────────────────────
+    // Someone told you of a shrine to the north; we pretend they tapped your
+    // map and you drew a loose circle and scrawled a guess. A rumor in your
+    // own hand — uncertain, wobbly, never the clean ink of a place you've SEEN.
+    // (The map gives you a destination, never the answers waiting there.)
+    const annotAlpha = fadeIn(z, BAND.region * 0.4, BAND.region * 1.1);
+    if (annotAlpha > 0.02) {
+      for (const n of nodes) {
+        const id = String(n.id);
+        if (!rumor.has(id) || known.has(id)) continue;
+        const p = nodeToWu(n);
+        const [x, y] = toPx(p.x, p.y, W, H);
+        if (x < -60 || x > W + 60 || y < -60 || y > H + 60) continue;
+        const rPx = Math.max(16, Math.min(120, 0.5 * NODE_WU * z));
+        ctx.globalAlpha = annotAlpha;
+        ctx.strokeStyle = SEPIA_SOFT;
+        ctx.lineWidth = Math.max(1, rPx * 0.018);
+        ctx.lineCap = 'round';
+        inkEllipse(ctx, x, y, rPx, rPx * 0.82, n.id);
+        ctx.stroke();
+        ctx.lineCap = 'butt';
+        // the scrawl: a name if you caught one, else the kind, always with a
+        // hand-written shrug of uncertainty.
+        const type = String(n.nodeType || '');
+        const noun = type === 'settlement' ? 'a village' : /dungeon/.test(type) ? 'something' : type === 'landmark' ? 'a landmark' : 'a place';
+        const line1 = n.name ? `${n.name}?` : `${noun}?`;
+        const fs = Math.max(9, Math.min(14, rPx * 0.16));
+        ctx.fillStyle = SEPIA;
+        ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+        ctx.font = `italic ${Math.round(fs)}px ${HAND}`;
+        ctx.fillText(line1, x, y + rPx * 0.82 + 3);
+        ctx.font = `italic ${Math.round(fs * 0.82)}px ${HAND}`;
+        ctx.fillStyle = SEPIA_SOFT;
+        ctx.fillText('— up here somewhere', x, y + rPx * 0.82 + 3 + fs * 1.1);
+        ctx.globalAlpha = 1;
+      }
     }
 
     // ── the player ──

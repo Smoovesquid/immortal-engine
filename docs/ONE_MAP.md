@@ -105,7 +105,22 @@ rumors (faint, unnamed); the rest is unpainted parchment.
   — is a *client* write-path projection, not an engine field; left as-is since
   the acute desync it caused is already fixed (`39315d3`) and the refactor
   touches the core movement loop for preventive-only benefit (Tim's call).
-- **M5 — the beauty pass.** Tim's satellite-map dream on this camera:
+- **M5 — the beauty pass. ◑ FIRST PASS SHIPPED 2026-06-12, iterating.**
+  Reframed (Tim): NOT satellite-photoreal — a **continuously-zooming Lord of
+  the Rings map**, beautifully hand-drawn, and the OPPOSITE of the Marauder's
+  Map (it has no eyes of its own; it registers ONLY what you've witnessed —
+  see [[project-map-beauty-dream]], [[project-dm-only-verb]]). First pass:
+  forests as tree-stipple, hills as chevron hatch, water with feathered
+  shorelines, dashed sepia roads, aged-parchment vignette, and — the new
+  knowledge tier — **heard-of places as your own scrawled annotation** (a
+  wobbly ink circle + "{name}? — up here somewhere", never the clean ink of a
+  seen place). Map is a PURE VIEWER (pan/zoom only; no click-to-travel — Tim
+  killed it). Still to iterate per Tim's eye: forest density, calligraphic
+  label halos, parchment grain, town glyphs, near-band ink consistency.
+  **Future mechanic (not built):** found maps (cartography as loot) expand the
+  view — a chart you acquire inks regions your boots never walked (and may be
+  stale/wrong). Original framing kept below for history:
+  satellite-map dream on this camera:
   terrain texture, grove art, per-material building fills (timber/stone/
   fortified), player-built quality visible. Rich illustrated parchment per
   DESIGN.md — *reads* satellite-real, never literal photography.

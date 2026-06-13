@@ -2610,10 +2610,9 @@ function renderMap() {
     );
   }
 
-  return renderMapView(w, ui.map?.zoom || "one", (z) => {
-    ui.map = { zoom: z };
-    render();
-  });
+  // ONE MAP (M4): no more scale tabs — one continuous map. Hand it the live
+  // walk position so the marker sits where you actually stand.
+  return renderMapView(w, { playerPos: ui.place });
 }
 
 let _lpReqToken = 0;

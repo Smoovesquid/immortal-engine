@@ -1,7 +1,10 @@
 
-import { renderWorldMap } from './WorldMap.js';
-import { renderLocalMap } from './LocalMap.js';
-import { renderFogMap } from './FogMap.js';
+// ONE MAP (docs/ONE_MAP.md) — M4: the scale tabs are retired. There is no
+// "World (30k) / Region (10k) / Local" any more; there is one continuous map,
+// scroll to zoom, drag to pan. The old fixed-scale renderers stay on disk
+// (WorldMap/RegionMap/FogMap/LocalMap) — v1 still uses renderLocalMap as the
+// in-play walkable-map fallback — but the Map TAB now shows only the one map.
+
 import { renderOneMap } from './oneMap.js';
 
 function el(tag, attrs = {}, ...children) {
@@ -21,33 +24,18 @@ function el(tag, attrs = {}, ...children) {
   return node;
 }
 
-export function renderMapView(world, zoom, onZoom) {
-  const z = zoom || 'one';
-
-  // ONE MAP (docs/ONE_MAP.md): the continuous camera is the default; the old
-  // fixed-scale views stay as escape hatches until M4 retires them.
-  const tabs = el('div', { class: 'row' },
-    el('button', { class: z === 'one' ? 'btn primary' : 'btn', onClick: () => onZoom('one') }, 'One Map'),
-    el('button', { class: z === 'world' ? 'btn primary' : 'btn', onClick: () => onZoom('world') }, 'World (30k)'),
-    el('button', { class: z === 'region' ? 'btn primary' : 'btn', onClick: () => onZoom('region') }, 'Region (10k)'),
-    el('button', { class: z === 'local' ? 'btn primary' : 'btn', onClick: () => onZoom('local') }, 'Local')
-  );
-
-  const body =
-    z === 'world' ? renderWorldMap(world?.map) :
-    z === 'local' ? renderLocalMap(world) :
-    z === 'region' ? renderFogMap(world, { fovRadius: 3 }) :
-    renderOneMap(world);
-
+// renderMapView(world, opts) — opts.playerPos = { nodeId, ux, uy } (the live
+// walk position, so the marker sits where you stand).
+export function renderMapView(world, opts = {}) {
   return el('div', { class: 'container stack' },
     el('div', { class: 'panel' },
       el('div', { class: 'header' },
         el('div', {},
-          el('div', { class: 'title' }, 'Map')
+          el('div', { class: 'title' }, 'Map'),
+          el('div', { class: 'small' }, 'Scroll to zoom · drag to pan')
         )
       ),
-      el('div', { class: 'card stack' }, tabs),
-      body
+      renderOneMap(world, { playerPos: opts.playerPos })
     )
   );
 }

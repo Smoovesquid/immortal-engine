@@ -84,10 +84,19 @@ rumors (faint, unnamed); the rest is unpainted parchment.
   "show me here" / tests). U135 ×6 locks the embedding contract. Live-verified:
   cottage lifts to Hearth Room + Larder + Bedroom (bed visible) while the
   next-door storehouse stays roofed.
-- **M4 — one position, no tabs.** Player position becomes a single wu
-  coordinate (engine field; WORLD_VERSION checklist); walk/travel/interior
-  transitions all move the same dot on the same map; World/Region/Local
-  buttons retire. The token-desync bug class closes structurally here.
+- **M4 — no tabs (client). ✅ DONE 2026-06-12.** Scope split (Tim's call):
+  the SAFE client-side half shipped — the World/Region/Local scale tabs are
+  retired, the Map tab is one continuous map (scroll/drag), and the player
+  marker reads the live walk position (`ui.place` → `placeUnitToWu`) so the dot
+  sits where you stand, not at the node midpoint. No WORLD_VERSION bump, no
+  determinism risk, revertable by file. The old renderers stay on disk (v1
+  still uses `renderLocalMap` as the in-play walkable-map fallback).
+- **M4b — one canonical position (engine). ⏳ DEFERRED.** The single wu
+  coordinate field in `engine/state.js` (WORLD_VERSION bump, ensureWorld +
+  invariants + determinism replay; structurally closes the token-desync bug
+  class) is its own careful pass — same reasoning P-66c was deferred. Not
+  started; pull when a worker window can give the version-bump checklist full
+  attention.
 - **M5 — the beauty pass.** Tim's satellite-map dream on this camera:
   terrain texture, grove art, per-material building fills (timber/stone/
   fortified), player-built quality visible. Rich illustrated parchment per

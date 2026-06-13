@@ -379,9 +379,18 @@ export function renderOneMap(world, opts = {}) {
     }
 
     // ── the player ──
+    // M4: place the marker where you actually STAND when the live walk
+    // position is known (opts.playerPos from ui.place, in place units), so the
+    // dot sits in your room/street — not at the node midpoint. Falls back to
+    // node-center when no walk position is available (e.g. viewing a far node).
     const here = nodes.find(n => String(n.id) === hereId);
     if (here) {
-      const p = nodeToWu(here);
+      let p = nodeToWu(here);
+      const pos = opts.playerPos;
+      if (pos && String(pos.nodeId || '') === hereId && Number.isFinite(+pos.ux) && Number.isFinite(+pos.uy)) {
+        const layout = layoutFor(here);
+        if (layout) p = placeUnitToWu(here, layout.frame, +pos.ux, +pos.uy);
+      }
       const [x, y] = toPx(p.x, p.y, W, H);
       ctx.strokeStyle = PLAYER; ctx.lineWidth = 2;
       ctx.beginPath(); ctx.arc(x, y, 9, 0, 7); ctx.stroke();

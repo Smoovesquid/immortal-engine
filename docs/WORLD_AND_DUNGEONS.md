@@ -84,11 +84,39 @@ The renderer (`public/map/oneMap.js`) paints the coarse canonical biome richly:
 for now. If they should become distinct canonical biomes the game knows about,
 that's a small `biome.js` addition (decision deferred to Tim).
 
-**Done-when (M6):** open the map → a continuous, hand-drawn, wall-to-wall
-illustrated world: two forest types, desert, swamp, lakes/rivers/ponds, a
-mountain range, an ocean coast with islands, a far Blasted Heath — all
-deterministic per seed, organic, no lollipops. Suite + playtest:quick green;
+**Done-when (M6):** open the map → a continuous, wall-to-wall world with every
+feature PRESENT and correct: two forest types, desert, swamp, lakes/rivers/ponds,
+a mountain range, an ocean coast with islands, a far Blasted Heath — all
+deterministic per seed, organic, no lollipops. (M6 is about the geography being
+THERE and right; M7 makes it beautiful.) Suite + playtest:quick green;
 live-verified with screenshots (curate a biome-spanning demo seed). Pure viewer.
+
+## M7 — the finish (beautification): make it award-winning
+
+M6 gets every feature on the parchment; **M7 is the dedicated art pass that makes
+it gorgeous** — Tim's founding ask was "make it more beautiful, like award
+winning," and that is a tracked deliverable, not a side effect of M6. Beauty is
+TASTE: screenshot every pass and iterate with Tim's eye; "geographically complete
+but programmer-art" is NOT done.
+
+The finish checklist (carry-over from the ONE_MAP M5 iteration list, plus):
+- **Trees** — denser, varied conifer/deciduous clumping; organic, never lollipops.
+- **Labels** — a calligrapher's hand: paper-colored halo so names read over
+  terrain; small-caps/italic registers per feature type (settlement vs region vs
+  water); curved labels following coasts/ranges where it sings.
+- **Parchment** — real fiber/stain/age texture and edge wear, beyond the vignette.
+- **Glyphs** — proper cartographer's marks for towns/POIs (cluster-of-roofs,
+  ringed dots), a compass rose, a scale cartouche, maybe a title frame.
+- **Ink consistency** — unify the near-band village/cutaway buildings (M2/M3,
+  cleaner-edged) with the sepia hand-drawn world: one pen drew the whole map.
+- **Color & light** — cohesive aged-map grade across all bands; biome palettes
+  that harmonize; the Blasted Heath genuinely *wrong* against the warm parchment.
+- **Heard-of annotations** — refine the scrawl (varied hands, ink bleed) so it
+  reads unmistakably as the player's own uncertain pencil.
+
+**Done-when (M7):** the map reads as illustrated antique cartography you'd frame
+on a wall — at every zoom band, surface and (later) underground. Verified with
+Tim's eye over screenshots; deterministic; pure viewer; suite + playtest green.
 
 ---
 
@@ -188,7 +216,11 @@ already encoded in the bestiary (CR bands), loot tables, and P-75.
 
 ## Staged packets (the new window executes these in order, airlock discipline)
 
-- **M6** — finish the surface geography (Part A). *Prereq + in-flight; do first.*
+- **M6** — finish the surface geography (Part A): every feature present & correct.
+  *Prereq + in-flight; do first.*
+- **M7** — the finish (beautification): the dedicated art pass that makes it
+  award-winning. Taste-driven — iterate with Tim over screenshots. Can run right
+  after M6, and again later to beautify the dungeon interiors once D0–D3 land.
 - **D0** — the dungeon **data schema** + a trivial generator + the **one-room
   shrine** (smallest scale) reachable from a `dungeon_entrance` (or a building
   basement), rendered as a cutaway on the one-map with fog-reveal, navigated by

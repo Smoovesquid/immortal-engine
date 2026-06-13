@@ -131,7 +131,7 @@ const ui = {
   aiStatus: { ok: null, online: null, source: "(unknown)", mode: "(unknown)", envPresent: null, sessionPresent: null },
   devMode: false,
   gearOpen: false,
-  map: { zoom: 'region' },
+  map: { zoom: 'one' }, // ONE MAP default (docs/ONE_MAP.md); old scales remain as tabs
   // Continuous local-scale position: where your token stands on the one walkable
   // place (village + building interiors). Persists across re-renders; resets when
   // you move to a new node or interior state changes.
@@ -2610,7 +2610,7 @@ function renderMap() {
     );
   }
 
-  return renderMapView(w, ui.map?.zoom || "region", (z) => {
+  return renderMapView(w, ui.map?.zoom || "one", (z) => {
     ui.map = { zoom: z };
     render();
   });

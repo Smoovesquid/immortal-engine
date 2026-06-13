@@ -2,6 +2,7 @@
 import { renderWorldMap } from './WorldMap.js';
 import { renderLocalMap } from './LocalMap.js';
 import { renderFogMap } from './FogMap.js';
+import { renderOneMap } from './oneMap.js';
 
 function el(tag, attrs = {}, ...children) {
   const node = document.createElement(tag);
@@ -21,9 +22,12 @@ function el(tag, attrs = {}, ...children) {
 }
 
 export function renderMapView(world, zoom, onZoom) {
-  const z = zoom || 'region';
+  const z = zoom || 'one';
 
+  // ONE MAP (docs/ONE_MAP.md): the continuous camera is the default; the old
+  // fixed-scale views stay as escape hatches until M4 retires them.
   const tabs = el('div', { class: 'row' },
+    el('button', { class: z === 'one' ? 'btn primary' : 'btn', onClick: () => onZoom('one') }, 'One Map'),
     el('button', { class: z === 'world' ? 'btn primary' : 'btn', onClick: () => onZoom('world') }, 'World (30k)'),
     el('button', { class: z === 'region' ? 'btn primary' : 'btn', onClick: () => onZoom('region') }, 'Region (10k)'),
     el('button', { class: z === 'local' ? 'btn primary' : 'btn', onClick: () => onZoom('local') }, 'Local')
@@ -32,7 +36,8 @@ export function renderMapView(world, zoom, onZoom) {
   const body =
     z === 'world' ? renderWorldMap(world?.map) :
     z === 'local' ? renderLocalMap(world) :
-    renderFogMap(world, { fovRadius: 3 });
+    z === 'region' ? renderFogMap(world, { fovRadius: 3 }) :
+    renderOneMap(world);
 
   return el('div', { class: 'container stack' },
     el('div', { class: 'panel' },

@@ -252,10 +252,20 @@ already encoded in the bestiary (CR bands), loot tables, and P-75.
   so the close view is clean parchment + hand-drawn motifs (no blob soup), while
   the whole-world view still reads as colored country. STILL TO TASTE: marsh-pool
   density, a title cartouche, a range that reads less fir-like, curved labels +
-  de-collision, parchment edge tatter. **Settlement variety (M7-S3) is next** —
-  hamlet → village → town → city *seat*, varied building counts, a 2-D town layout
-  (today every village renders as one left-to-right street). The dungeon-interior
-  M7 pass runs after D3.
+  de-collision, parchment edge tatter.
+  **M7-S3 settlement variety ✅ DONE 2026-06-13.** Root cause was that settlement
+  nodes got NO size tag → every one defaulted to the same tiny 'village'. Now
+  `nodeType.settlementTier` + a generateMap pass assign seeded size tiers (mostly
+  hamlets/villages, some towns) and exactly ONE city **seat** (the kingdom — the
+  best-connected settlement) per world; the player's home is always ≥ village.
+  `extractPresent` widens BUILDING counts per tier (~1 → ~45) — NPC counts left
+  UNCHANGED on purpose, so the villain's witness still casts onto the home exactly
+  as before (the cast reads NPCs, generated before buildings in the rng stream).
+  `placeFromWorldNode` lays buildings in a 2-D cluster straddling the road, so a
+  hamlet is a couple of roofs and the seat a real town (verified: 0 footprint
+  overlaps, walkable place intact). Deterministic; suite 7,585 + playtest:full
+  green; live-verified (city seat vs hamlet on the map). The dungeon-interior M7
+  pass runs after D3.
 - **D0** — the dungeon **data schema** + a trivial generator + the **one-room
   shrine** (smallest scale) reachable from a `dungeon_entrance` (or a building
   basement), rendered as a cutaway on the one-map with fog-reveal, navigated by

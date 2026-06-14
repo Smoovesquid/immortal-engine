@@ -1,11 +1,18 @@
 // Present-State Extractor — derives settlement entities from history ticks + final worldTick state.
 // NPCs, buildings, shops, factions, tensions, ruins, secrets. All from simulation output.
 
-const NPC_COUNT = { wilderness: [1, 2], village: [3, 5], town: [8, 12], city: [15, 20] };
-const BUILDING_COUNT = { wilderness: [0, 1], village: [2, 3], town: [5, 8], city: [10, 15] };
+// M7-S3 — size tiers drive a real spread: a hamlet is a handful of roofs, the
+// city 'seat' a kingdom of dozens. Keyed by the node's size tag (assigned in
+// generateMap); falls through to 'village' when untagged (back-compat).
+// NPC counts stay as they were so settlement decompression's rng stream — and
+// everything cast onto it (the villain's witness, dialogue) — is unchanged; only
+// the SIZE the player sees (buildings) varies by tier. (Bigger living populations
+// for cities are a later, separately-verified pass.)
+const NPC_COUNT = { wilderness: [1, 2], hamlet: [2, 4], village: [3, 5], town: [8, 12], city: [15, 20] };
+const BUILDING_COUNT = { wilderness: [0, 1], hamlet: [1, 3], village: [4, 9], town: [12, 22], city: [28, 45] };
 
 function rangeForTag(tags, table, rng) {
-  for (const key of ['city', 'town', 'village', 'wilderness']) {
+  for (const key of ['city', 'town', 'village', 'hamlet', 'wilderness']) {
     if (tags.includes(key)) {
       const [lo, hi] = table[key];
       return rng.int(lo, hi);
@@ -249,9 +256,10 @@ function deriveSecrets(history) {
 }
 
 function derivePopulation(tags, rng) {
-  if (tags.includes('city')) return rng.int(200, 500);
-  if (tags.includes('town')) return rng.int(50, 200);
-  if (tags.includes('village')) return rng.int(10, 50);
+  if (tags.includes('city')) return rng.int(400, 1200);   // the seat — a city / kingdom
+  if (tags.includes('town')) return rng.int(80, 300);
+  if (tags.includes('village')) return rng.int(20, 80);
+  if (tags.includes('hamlet')) return rng.int(5, 20);
   return rng.int(0, 5);
 }
 

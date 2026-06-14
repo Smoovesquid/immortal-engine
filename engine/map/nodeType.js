@@ -65,3 +65,19 @@ export function classifyNodeType({ seed, nodeId, name }) {
   }
   return 'wilderness';
 }
+
+// M7-S3 — a settlement's SIZE tier (the kingdom seat is assigned separately, in
+// generateMap, as the single best-connected settlement). Most places are small:
+// hamlets and villages common, towns the exception. Deterministic per node; the
+// tier tag drives extractPresent's building/NPC/population ranges, so a world
+// holds a real spread of sizes rather than identical villages everywhere.
+const SETTLEMENT_TIER_THRESHOLDS = [
+  { tier: 'hamlet', max: 50 },
+  { tier: 'village', max: 85 },
+  { tier: 'town', max: 100 },
+];
+export function settlementTier({ seed, nodeId }) {
+  const h = Math.abs(seedFromString(`${seed}|tier|${nodeId}`)) % 100;
+  for (const { tier, max } of SETTLEMENT_TIER_THRESHOLDS) if (h < max) return tier;
+  return 'village';
+}

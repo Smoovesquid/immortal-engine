@@ -1,6 +1,6 @@
 import { assertMapStructure } from './mapState.js';
 import { seedFromString, makeRng } from '../rng.js';
-import { classifyNodeType } from './nodeType.js';
+import { classifyNodeType, settlementTier } from './nodeType.js';
 import { embedNodes } from './embedding.js';
 
 // Living Terrain Engine v1 — deterministic narrative map graph.
@@ -94,6 +94,35 @@ export function generateInitialMap({ seed = 'seed', packId = 'fantasy', pack = {
         nodes[i] = { ...nodes[i], nodeType: 'settlement' };
         patched++;
       }
+    }
+  }
+
+  // M7-S3 — settlement size tiers. Most settlements are hamlets/villages, some
+  // towns, and exactly ONE city 'seat' (the kingdom) per world: the highest-scored,
+  // best-connected settlement. These tags drive extractPresent's building / NPC /
+  // population ranges, so a county holds a real spread of sizes — one to dozens.
+  {
+    // beginAdventure homes the player at the first settlement node — keep that one
+    // a real village or better so you wake in a populated home and arcs can cast.
+    const homeId = (nodes.find(n => n.nodeType === 'settlement') || {}).id || '';
+    const degree = (id) => edges.reduce((d, e) => d + (e.a === id || e.b === id ? 1 : 0), 0);
+    let seatId = '', seatScore = -1;
+    for (const n of nodes) {
+      if (n.nodeType !== 'settlement') continue;
+      const score = (Math.abs(seedFromString(`${seed}|capital|${n.id}`)) % 1000) + degree(n.id) * 40;
+      if (score > seatScore) { seatScore = score; seatId = n.id; }
+    }
+    for (let i = 0; i < nodes.length; i++) {
+      const n = nodes[i];
+      if (n.nodeType !== 'settlement') continue;
+      let tier = n.id === seatId ? 'city' : settlementTier({ seed, nodeId: n.id });
+      // The player's home is always a real village or better — you wake in a
+      // populated home, and arcs/NPCs need a settlement to cast onto.
+      if (n.id === homeId && tier === 'hamlet') tier = 'village';
+      const tags = Array.isArray(n.tags) ? n.tags.slice() : [];
+      if (!tags.includes(tier)) tags.push(tier);
+      if (n.id === seatId && !tags.includes('seat')) tags.push('seat');
+      nodes[i] = { ...n, tags };
     }
   }
 

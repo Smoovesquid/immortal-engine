@@ -59,44 +59,70 @@ export function placeFromWorldNode(world, nodeId) {
   const npcs = Array.isArray(node.settlement && node.settlement.npcs) ? node.settlement.npcs : [];
 
   const buildings = [], tokens = [];
-  const pathY = 12, gap = 3; let cursor = 1;
-  const place = (plan, meta) => { if (!plan || !plan.rooms) return; const ext = planExtent(plan); buildings.push({ plan, ox: cursor - ext.minX, oy: pathY - ext.maxY - 0.8, ...meta }); cursor += ext.w + gap; };
+  const pathY = 12;
 
-  // Real structures first (your home is a real, enterable structure).
+  // Collect every building (the player's real structures first, then the
+  // settlement's). Count varies by size tier now (M7-S3), so a hamlet is a couple
+  // of roofs and the city seat is dozens.
+  const entries = [];
   for (const st of structs) {
     const type = st.buildingType || buildingTypeFor(String(st.id || ''));
-    place(getPlan(type) || getPlan('cottage'), { structureKey: st.id, name: type });
+    const plan = getPlan(type) || getPlan('cottage');
+    if (plan && plan.rooms) entries.push({ plan, meta: { structureKey: st.id, name: type } });
   }
-  // The settlement's other buildings (by name) — drawn from the catalog. Try the
-  // name as a plan type directly (a "smithy" IS a smithy), then a fallback map.
   for (const b of sbld) {
-    place(planForBuildingName(String(b && b.name || '').toLowerCase()), { buildingName: b.name });
+    const plan = planForBuildingName(String(b && b.name || '').toLowerCase());
+    if (plan && plan.rooms) entries.push({ plan, meta: { buildingName: b.name } });
   }
-  if (!buildings.length) return generatePlace({ seed, nodeType: nodeTypeFor(node), tier: tierForNode(world, node) });
+  if (!entries.length) return generatePlace({ seed, nodeType: nodeTypeFor(node), tier: tierForNode(world, node) });
 
-  const endX = Math.max(8, cursor);
+  // M7-S3 — 2-D town layout: buildings fill rows straddling the main east-west
+  // road, alternating above/below and expanding outward, so a town reads as a
+  // cluster (not a single-file street). Row width ~sqrt(count) for a squarish
+  // footprint. rowGap clears the tallest plans so footprints never overlap.
+  const colGap = 3.2, rowGap = 8.5;
+  const perRow = Math.max(3, Math.round(Math.sqrt(entries.length * 1.7)));
+  const rowCursorX = [];
+  let maxX = 8, minRowY = pathY, maxRowY = pathY;
+  for (let i = 0; i < entries.length; i++) {
+    const e = entries[i];
+    const ext = planExtent(e.plan);
+    const row = Math.floor(i / perRow);
+    const band = Math.ceil((row + 1) / 2);            // 1,1,2,2,3,3…
+    const side = (row % 2 === 0) ? -1 : 1;            // even rows above the road, odd below
+    const rowCenterY = pathY + side * rowGap * band;
+    if (rowCursorX[row] == null) rowCursorX[row] = 2;
+    const ox = rowCursorX[row] - ext.minX;
+    const oy = rowCenterY - (ext.minY + ext.maxY) / 2; // centre the plan on its row
+    buildings.push({ plan: e.plan, ox, oy, ...e.meta });
+    rowCursorX[row] += ext.w + colGap;
+    maxX = Math.max(maxX, rowCursorX[row]);
+    minRowY = Math.min(minRowY, rowCenterY - ext.h / 2);
+    maxRowY = Math.max(maxRowY, rowCenterY + ext.h / 2);
+  }
+
+  const endX = Math.max(8, maxX);
   const midX = Math.round(endX / 2);
 
-  // Roads extend to the map edge in every direction that has an adjacent node,
-  // so the player can walk to the edge and travel onward. The horizontal road
-  // runs the full street; vertical spurs break off the midpoint for N/S exits.
+  // Roads reach the map edge wherever a neighbor lies, so you can walk onward; a
+  // cross street stitches the rows together when the town spreads beyond one band.
   const exits = exitsFrom(ensureMap(world && world.map), id);
   const mainRoadX0 = exits.west ? -3 : 0;
   const mainRoadX1 = exits.east ? endX + 3 : endX;
-  const paths = [{ pts: [[mainRoadX0, pathY], [mainRoadX1, pathY]], w: 1.3 }];
-  if (exits.north) paths.push({ pts: [[midX, pathY], [midX, pathY - 14]], w: 1.1 });
-  if (exits.south) paths.push({ pts: [[midX, pathY], [midX, pathY + 10]], w: 1.1 });
+  const paths = [{ pts: [[mainRoadX0, pathY], [mainRoadX1, pathY]], w: 1.4 }];
+  if (maxRowY - minRowY > rowGap * 1.5) paths.push({ pts: [[midX, minRowY - 2], [midX, maxRowY + 2]], w: 1.1 });
+  if (exits.north) paths.push({ pts: [[midX, pathY], [midX, minRowY - 6]], w: 1.1 });
+  if (exits.south) paths.push({ pts: [[midX, pathY], [midX, maxRowY + 6]], w: 1.1 });
 
   const terrain = {
     paths,
-    groves: [{ cx: 3, cy: pathY + 3.5, r: 2.2, n: 9 }, { cx: endX - 3, cy: pathY + 3, r: 1.8, n: 6 }],
+    groves: [{ cx: 3, cy: maxRowY + 2.5, r: 2.2, n: 9 }, { cx: endX - 3, cy: minRowY - 2, r: 1.8, n: 6 }],
     props: [{ type: 'well', ux: midX, uy: pathY + 1.4 }]
   };
 
   tokens.push({ type: 'player', ux: 1.5, uy: pathY });
-  // Neighbors get their initial; a lurking hostile reads as '?' at the edge —
-  // matching the survey's 'a stranger keeping to the edges'.
-  const shown = npcs.filter(n => n && !n.hostile).slice(0, 8).concat(npcs.filter(n => n && n.hostile).slice(0, 2).map(n => ({ ...n, name: '?' })));
+  // Neighbors get their initial; a lurking hostile reads as '?' at the edge.
+  const shown = npcs.filter(n => n && !n.hostile).slice(0, 12).concat(npcs.filter(n => n && n.hostile).slice(0, 2).map(n => ({ ...n, name: '?' })));
   shown.forEach((n, i) => { tokens.push({ type: 'npc', ux: 2 + (i + 1) * (endX - 3) / (shown.length + 1), uy: pathY - 0.7, label: String(n.name || 'V').trim().charAt(0).toUpperCase() || 'V', npc: { id: n.id || ('npc' + i), name: n.name, role: n.role } }); });
 
   return { nodeType: node.nodeType || 'settlement', tier: tierForNode(world, node), seed, terrain, buildings, tokens, footprintW: endX };

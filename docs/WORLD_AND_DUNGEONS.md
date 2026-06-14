@@ -244,10 +244,18 @@ already encoded in the bestiary (CR bands), loot tables, and P-75.
   rose on a paper medallion (north up, legible over any terrain), paper-haloed
   calligraphic labels (towns upright / features italic), and a darker, sicklier
   Blasted Heath with a blight haze. Deterministic, pure viewer, suite 7,578 +
-  playtest:quick green, live-verified on the `blackvale` demo seed. STILL TO TASTE
-  with Tim: tame the biome-fill blotch into a true color grade; a title cartouche;
-  a range that reads less fir-like; curved coast/range labels; parchment edge
-  tatter. The dungeon-interior M7 pass runs after D3.
+  playtest:quick green, live-verified on the `blackvale` demo seed.
+  **Round 2 (Tim's feedback 2026-06-13):** explicit zoom controls (+ / − / fit)
+  plus a lower `Z_MIN` fix "couldn't zoom out again" (wheel-only zoom was getting
+  swallowed by trackpad/page-scroll); roads now meander organically across the
+  country instead of single arcs; the regional biome fills fade out as you zoom in
+  so the close view is clean parchment + hand-drawn motifs (no blob soup), while
+  the whole-world view still reads as colored country. STILL TO TASTE: marsh-pool
+  density, a title cartouche, a range that reads less fir-like, curved labels +
+  de-collision, parchment edge tatter. **Settlement variety (M7-S3) is next** —
+  hamlet → village → town → city *seat*, varied building counts, a 2-D town layout
+  (today every village renders as one left-to-right street). The dungeon-interior
+  M7 pass runs after D3.
 - **D0** — the dungeon **data schema** + a trivial generator + the **one-room
   shrine** (smallest scale) reachable from a `dungeon_entrance` (or a building
   basement), rendered as a cutaway on the one-map with fog-reveal, navigated by

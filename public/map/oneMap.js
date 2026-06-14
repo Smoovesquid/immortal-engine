@@ -243,10 +243,17 @@ function blobFill(ctx, x, y, rx, ry, radii, fill) { ctx.fillStyle = fill; blobPa
 
 // One biome clump in px. Far zoom: a faint regional fill (no blank parchment);
 // closer: the hand-drawn motifs read.
-function drawStamp(ctx, st, cx, cy, rPx) {
+function drawStamp(ctx, st, cx, cy, rPx, fillScale = 1) {
   const b = st.biome;
   const fill = BIOME_FILL[b];
-  if (fill) { ctx.fillStyle = fill; ctx.beginPath(); ctx.ellipse(cx, cy, rPx * 0.92, rPx * 0.78, 0, 0, 7); ctx.fill(); }
+  // The soft regional fill reads as colored country when the whole world is in
+  // frame, but turns to overlapping blobs up close — so fade it out as motifs
+  // (the trees/dunes/peaks) grow in to carry the biome read (M7-S4).
+  if (fill && fillScale > 0.01) {
+    const pa = ctx.globalAlpha; ctx.globalAlpha = pa * fillScale;
+    ctx.fillStyle = fill; ctx.beginPath(); ctx.ellipse(cx, cy, rPx * 0.92, rPx * 0.78, 0, 0, 7); ctx.fill();
+    ctx.globalAlpha = pa;
+  }
   if (rPx < 7) return;
   if (b === 'marsh') { // black standing water under the reeds
     ctx.fillStyle = BIOME_INK.marshWater; ctx.beginPath(); ctx.ellipse(cx, cy, rPx * 0.3, rPx * 0.2, 0, 0, 7); ctx.fill();
@@ -347,10 +354,13 @@ function drawGeography(ctx, geo, stamps, toPx, W, H, z) {
   const P = (wx, wy) => toPx(wx, wy, W, H);
   if (geo.ocean) drawOcean(ctx, geo, P, W, H, z);
   const cull = 60;
+  // regional fills full when the whole world frames; gone by the region band so
+  // the close view is clean parchment + hand-drawn motifs (no blob soup).
+  const fillScale = 1 - fadeIn(z, 0.05, 0.13);
   for (const st of stamps) {
     const [cx, cy] = P(st.wx, st.wy), rPx = st.r * z;
     if (cx < -cull - rPx || cx > W + cull + rPx || cy < -cull - rPx || cy > H + cull + rPx) continue;
-    drawStamp(ctx, st, cx, cy, rPx);
+    drawStamp(ctx, st, cx, cy, rPx, fillScale);
   }
   for (const lk of (geo.lakes || [])) {
     const [x, y] = P(lk.cx, lk.cy), rx = lk.rx * z, ry = lk.ry * z;
@@ -459,10 +469,43 @@ function drawDungeonCutaway(ctx, world, interior, nodes, toPx, W, H, z) {
   }
 }
 
-// A road bows gently and identically forever: bow from the edge key's hash.
-function roadBow(aId, bId) {
-  const k = aId < bId ? `${aId}|${bId}` : `${bId}|${aId}`;
-  return ((seedFromString(`road|${k}`) % 1000) / 1000 - 0.5) * 0.3;
+// M7 — an organic road: a seeded meandering polyline, not a single clean arc.
+// Wander is a few low-frequency anchors (the road choosing its way around the
+// country) plus a touch of high-frequency jitter, tapered to meet both nodes.
+// Computed in px so the shape stays consistent across zoom; identical every
+// render (seeded by the sorted edge key).
+function roadMeanderPts(aId, bId, x1, y1, x2, y2) {
+  const key = aId < bId ? `${aId}|${bId}` : `${bId}|${aId}`;
+  const dx = x2 - x1, dy = y2 - y1, len = Math.hypot(dx, dy) || 1;
+  const nx = -dy / len, ny = dx / len;                 // perpendicular unit
+  const N = Math.max(8, Math.min(24, Math.round(len / 34)));
+  const amp = Math.min(len * 0.16, 90);                // wander, capped
+  const A = 5;
+  const anchor = [];
+  for (let i = 0; i <= A; i++) anchor.push(((seedFromString(`${key}|rd|${i}`) % 2000) / 2000 - 0.5) * 2);
+  const pts = [];
+  for (let i = 0; i <= N; i++) {
+    const t = i / N;
+    const env = Math.sin(Math.PI * t);                 // 0 at the nodes, max mid-route
+    const k = t * A, k0 = Math.floor(k), f = k - k0;
+    const lo = anchor[k0] ?? 0, hi = anchor[k0 + 1] ?? lo, sm = f * f * (3 - 2 * f);
+    const low = lo * (1 - sm) + hi * sm;
+    const high = ((seedFromString(`${key}|h|${i}`) % 1000) / 1000 - 0.5) * 0.4;
+    const off = (low + high) * amp * env;
+    pts.push([x1 + dx * t + nx * off, y1 + dy * t + ny * off]);
+  }
+  return pts;
+}
+// Stroke a polyline as a smooth curve (quadratics through the midpoints).
+function strokeSmooth(ctx, pts) {
+  if (!pts || pts.length < 2) return;
+  ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]);
+  for (let i = 1; i < pts.length - 1; i++) {
+    const mx = (pts[i][0] + pts[i + 1][0]) / 2, my = (pts[i][1] + pts[i + 1][1]) / 2;
+    ctx.quadraticCurveTo(pts[i][0], pts[i][1], mx, my);
+  }
+  ctx.lineTo(pts[pts.length - 1][0], pts[pts.length - 1][1]);
+  ctx.stroke();
 }
 
 export function renderOneMap(world, opts = {}) {
@@ -690,11 +733,9 @@ export function renderOneMap(world, opts = {}) {
         const [x1, y1] = toPx(pa.x, pa.y, W, H);
         const [x2, y2] = toPx(pb.x, pb.y, W, H);
         if (Math.max(x1, x2) < 0 || Math.min(x1, x2) > W || Math.max(y1, y2) < 0 || Math.min(y1, y2) > H) continue;
-        const bow = roadBow(String(a.id), String(b.id));
-        const mx = (x1 + x2) / 2 - (y2 - y1) * bow, my = (y1 + y2) / 2 + (x2 - x1) * bow;
         ctx.strokeStyle = (aKnown && bKnown) ? ROAD : ROAD_GHOST;
         ctx.globalAlpha = roadAlpha * ((aKnown && bKnown) ? 1 : 0.7);
-        ctx.beginPath(); ctx.moveTo(x1, y1); ctx.quadraticCurveTo(mx, my, x2, y2); ctx.stroke();
+        strokeSmooth(ctx, roadMeanderPts(String(a.id), String(b.id), x1, y1, x2, y2));
       }
       ctx.setLineDash([]); ctx.lineCap = 'butt';
       ctx.globalAlpha = 1;
@@ -881,6 +922,32 @@ export function renderOneMap(world, opts = {}) {
   const endDrag = (ev) => { dragging = null; canvas.style.cursor = 'grab'; };
   canvas.addEventListener('pointerup', endDrag);
   canvas.addEventListener('pointercancel', endDrag);
+
+  // ── M7-S1: explicit zoom controls. Wheel/trackpad zoom can get swallowed by
+  // page-scroll or pinch gestures, leaving no way back out — so give buttons (the
+  // reliable path): + / − step the zoom about the view centre, ⤢ fits the whole
+  // world (the far Heath included). Screen-space, top-right.
+  const zc = document.createElement('div');
+  zc.style.cssText = 'position:absolute;right:10px;top:10px;display:flex;flex-direction:column;gap:6px;z-index:3;';
+  const zbtn = (label, title, fn) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.textContent = label; b.title = title;
+    b.style.cssText = `width:34px;height:34px;line-height:30px;text-align:center;font:20px ${HAND};color:rgba(18,26,48,0.85);background:rgba(233,237,222,0.94);border:1px solid rgba(96,72,44,0.55);border-radius:7px;cursor:pointer;box-shadow:0 1px 2px rgba(40,30,16,0.25);user-select:none;padding:0;`;
+    b.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); fn(); });
+    return b;
+  };
+  const zoomCenter = (factor) => { cam.z = Math.max(Z_MIN, Math.min(Z_MAX, cam.z * factor)); draw(); };
+  const fitWorld = () => {
+    const r = geo.rect, W = Math.max(200, canvas.clientWidth || 700), H = cssH;
+    const rw = (r.maxX - r.minX) || 1, rh = (r.maxY - r.minY) || 1;
+    cam.cx = (r.minX + r.maxX) / 2; cam.cy = (r.minY + r.maxY) / 2;
+    cam.z = Math.max(Z_MIN, Math.min(Z_MAX, Math.min(W / rw, H / rh) * 0.96));
+    draw();
+  };
+  zc.appendChild(zbtn('+', 'Zoom in', () => zoomCenter(1.5)));
+  zc.appendChild(zbtn('−', 'Zoom out', () => zoomCenter(1 / 1.5)));
+  zc.appendChild(zbtn('⤢', 'Fit the whole world', fitWorld));
+  wrap.appendChild(zc);
 
   // First paint after mount (clientWidth needs layout).
   requestAnimationFrame(draw);

@@ -11,7 +11,7 @@ import { biomeForNode } from '../../engine/world/biome.js';
 export const NODE_WU = 1000;  // one node-lattice step ≈ 1 km (1 wu ≈ 1 m)
 export const PLACE_WU = 4;    // one village place-unit ≈ 4 m (61-unit village ≈ 244 wu)
 
-export const Z_MIN = 0.012;   // whole world in frame (M6: ocean + far Heath fit at this zoom-out)
+export const Z_MIN = 0.008;   // whole world in frame incl. the far Heath ("fit" button frames it all)
 export const Z_MAX = 16;      // street band, 1 place-unit = 64 px
 
 // Semantic LOD thresholds (px per wu). Representations fade in across an

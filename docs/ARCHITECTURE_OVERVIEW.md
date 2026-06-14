@@ -73,3 +73,9 @@ Explicit state.
 Deterministic pressure.
 Emergent narrative.
 Zero drift.
+
+---
+
+## 7) Parked / Deferred
+
+**Remnant economy.** Common, depleted magic-remnants (NOT the witness-orb) may later be tradable goods used to learn or power spells. Their meaning is NPC interpretation — distorted claims that propagate and fracture, never confirmed by the engine. The common trade in cheap remnants camouflages the singular, awake, incomprehensible witness-objects: the market noise is the cover. Deferred until after the First Aperture slice is played and validated.

@@ -97,9 +97,9 @@ function buildSliceWorld() {
 
   // The witness-object — true edge pointing at FOUNDATION_EVENT_ID.
   w = mintThing(w, {
-    id:          'thing:iron_disc',
-    name:        'the iron disc',
-    description: 'A small iron disc, its face covered in fine scratched lettering.',
+    id:          'thing:witness_orb',
+    name:        'the witness orb',
+    description: 'A sphere of dark material that seems to hold light inside it.',
     nodeId,
     trueEdge: {
       eventRef:    FOUNDATION_EVENT_ID,
@@ -202,17 +202,17 @@ async function main() {
   // ── BEAT 4: OBJECT ───────────────────────────────────────────────────────────
   sep();
   console.log(' BEAT 4 — WITNESS-OBJECT');
-  console.log('  The player examines the iron disc. The shard is now legible.');
+  console.log('  The player examines the witness orb. The shard is now legible.');
   console.log('  One piece of town belief is quietly falsified.');
   rule();
 
-  const res4 = playerMove(w2, MINIMAL_PACK, 'examine the iron disc');
+  const res4 = playerMove(w2, MINIMAL_PACK, 'examine the witness orb');
   const w4   = res4.world;
 
   console.log(`  mechanics tag     : "${res4.output.mechanics}"`);
   console.log(`  wall status       : ${res4.output.mechanics === '[reveal:true-edge]' ? '✓ [reveal:true-edge] — augmentation bypassed' : '✗ WRONG TAG'}`);
 
-  const discAfter = w4.things.find(t => t.id === 'thing:iron_disc');
+  const discAfter = w4.things.find(t => t.id === 'thing:witness_orb');
   console.log(`  trueEdge.discovered : ${discAfter?.trueEdge?.discovered}`);
   console.log(`  claims unchanged    : ${w4.claims.length === w2.claims.length ? '✓' : '✗'} (${w2.claims.length} before, ${w4.claims.length} after)`);
   console.log();

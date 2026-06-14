@@ -19,7 +19,7 @@ import { applyDeltas } from '../engine/effectsCore.js';
 // ── shared fixture ────────────────────────────────────────────────────────────
 
 const SHARD_TEXT = 'Entry 1: no breach detected. Whatever came in, came from within.';
-const THING_ID   = 'thing:iron_disc';
+const THING_ID   = 'thing:witness_orb';
 const NODE_ID    = 'first-settlement';
 
 const PACKS = { fantasy: { id: 'fantasy', toneWords: { cooperative: ['warm'], grim: ['cold'], blood: ['black'] }, starterLocations: ['t'], starterObjectives: ['k'], skills: ['S'], locations: ['t'], objectives: ['k'], complications: ['c'], npcArchetypes: ['g'], sensoryMotifs: ['d'] } };
@@ -41,8 +41,8 @@ function baseWorld() {
   // Mint the witness-object with a trueEdge pointing at the foundation event.
   w = mintThing(w, {
     id:          THING_ID,
-    name:        'the iron disc',
-    description: 'A small iron disc, its face covered in fine scratched lettering.',
+    name:        'the witness orb',
+    description: 'A sphere of dark material that seems to hold light inside it.',
     nodeId:      NODE_ID,
     trueEdge: {
       eventRef:    FOUNDATION_EVENT_ID,

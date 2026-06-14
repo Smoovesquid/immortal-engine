@@ -436,22 +436,43 @@ export function askNpc(world, text) {
     }
   }
 
+  // Claim channel: parallel to the knowledge graph. Claims arrive via social
+  // propagation (world.claims), not assignment at decompression. We check here,
+  // before the knowledge-graph path, so a witnessed/heard event can surface even
+  // when it was never formally added to the NPC's knowledgeGraph.
+  //
+  // Two-variance wall: we surface the NPC's distorted belief, never the engine's
+  // truth. resolveClaimContext packs distortion + the raw event description so the
+  // voice layer can render the NPC's MAP, not the territory.
+  const heldClaim = findClaimForText(String(text || ''), w, npc.id);
+
   let mode;
   let factId = null;
   let commonBody = '';
+  let claimData = null;
 
   if (!topic || !knownIds.has(topic)) {
-    // Common knowledge before deflection: name, village, roads, news. The
-    // knowledge graph (personal facts, secrets, trust gates) outranks this —
-    // we only get here when no fact matched.
-    const common = commonKnowledgeAnswer(w, npc, text);
-    if (common) {
-      mode = common.mode;
-      commonBody = common.body;
+    // Vision recognition — heretic NPC gate. Fires before trust check: if this
+    // NPC is flagged heretic AND the player carries the vision mark AND the NPC
+    // holds a claim about the subject, switch to recognition mode. The heretic
+    // speaks to shared witness, not to the claim's epistemic content.
+    if (heldClaim && npc.heretic && playerCarriesMark(w, 'vision:root')) {
+      mode      = 'vision_recognition';
+      factId    = heldClaim.subject;
+      claimData = resolveClaimContext(w, heldClaim);
+    } else if (heldClaim && trust >= TRUST_REVEAL_PUBLIC) {
+      // Claim channel takes priority over common-knowledge / deflection when the
+      // NPC holds a belief about the subject and trust is high enough.
+      mode    = 'claim_recall';
+      factId  = heldClaim.subject;
+      claimData = resolveClaimContext(w, heldClaim);
     } else {
-      mode = 'deflected';
+      // Common knowledge before deflection: name, village, roads, news.
+      const common = commonKnowledgeAnswer(w, npc, text);
+      if (common) { mode = common.mode; commonBody = common.body; }
+      else { mode = 'deflected'; }
+      factId = null;
     }
-    factId = null;
   } else if (secrets.has(topic)) {
     if (trust >= TRUST_REVEAL_SECRET) {
       mode = 'shared';
@@ -550,7 +571,7 @@ export function askNpc(world, text) {
   // Pass D2 — pass currentTurn for memory timestamping.
   // Common-knowledge pleasantries don't mint memories — an NPC remembers what
   // you traded in trust, not that you asked their name or about the weather.
-  const CLASSIC_MODES = new Set(['shared', 'lied', 'withheld', 'deflected', 'recruited']);
+  const CLASSIC_MODES = new Set(['shared', 'lied', 'withheld', 'deflected', 'recruited', 'claim_recall']);
   const memoryEntry = CLASSIC_MODES.has(mode) ? extractMemory(npc, text, brainDecision, {
     mode,
     topic: factId || '',
@@ -589,8 +610,59 @@ export function askNpc(world, text) {
       brainDecision: brainDecision || null,
       brainMood: brainDecision?.mood || null,
       rumorBodies: rumorSurface.bodies,
-      rumorMintHint: rumorSurface.mintHint
+      rumorMintHint: rumorSurface.mintHint,
+      historicalFigureId: String(npc.historicalFigure || ''),
+      // Claim context — present only when mode === 'claim_recall'.
+      // Contains the NPC's distorted belief about the subject; the voice layer
+      // uses this to render their MAP of the event, not the engine's truth.
+      claim: claimData
     }
+  };
+}
+
+// ── Claim helpers ─────────────────────────────────────────────────────────────
+
+// Token-score claim subjects against player text, same approach as extractTopic.
+// Returns the strongest-matching claim this NPC holds, or null.
+function findClaimForText(text, world, npcId) {
+  const claims = Array.isArray(world.claims)
+    ? world.claims.filter(c => c.holderNpcId === npcId)
+    : [];
+  if (!claims.length) return null;
+  const t = text.toLowerCase();
+  let best = null, bestScore = 0;
+  for (const c of claims) {
+    const tokens = String(c.subject || '').toLowerCase()
+      .split(/[^a-z0-9]+/)
+      .filter(tok => tok.length >= 3 && !STOP_TOKENS.has(tok));
+    let score = 0;
+    for (const tok of tokens) { if (t.includes(tok)) score++; }
+    if (score > bestScore) { bestScore = score; best = c; }
+  }
+  return bestScore > 0 ? best : null;
+}
+
+// True iff party[0] carries the experiential mark (set by setPartyMark delta).
+// Defined locally to avoid a circular import with playloop.js.
+function playerCarriesMark(w, mark) {
+  const marks = Array.isArray(w.party?.[0]?.marks) ? w.party[0].marks : [];
+  return marks.includes(mark);
+}
+
+// Resolve the claim into voice-layer context. Pulls the raw event description
+// from the timeline so the voice prompt has something to distort — but the
+// LLM is instructed to render the NPC's map of it, not the truth itself.
+function resolveClaimContext(world, claim) {
+  const event = claim.eventRef
+    ? (world.timeline ?? []).find(e => e.id === claim.eventRef)
+    : null;
+  return {
+    subject:          claim.subject,
+    distortion:       claim.distortion ?? 0,
+    weight:           claim.weight     ?? 1,
+    eventRef:         claim.eventRef   ?? null,
+    provenance:       claim.provenance ?? [],
+    eventDescription: event?.data?.description ?? event?.data?.text ?? null,
   };
 }
 

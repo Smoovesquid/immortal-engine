@@ -833,6 +833,44 @@ export function applyDeltas(world, deltas = []) {
       w = { ...w, structures: { ...cur, byId } };
       continue;
     }
+
+    // D1b — tag a structure's room (e.g. 'cleared' once its denizen is roused,
+    // 'looted' once its treasure is taken). Persisted in the topology (tags
+    // survive normalizeTopology), so the crawl's progress is canon + replay-stable.
+    // Idempotent: re-tagging is a no-op.
+    if (kind === 'tagRoom') {
+      const sid = String(op.structureId || ''), rid = String(op.roomId || ''), tag = String(op.tag || '');
+      if (!sid || !rid || !tag) continue;
+      const cur = ensureStructures(w.structures);
+      const st = cur.byId[sid];
+      if (!st || !st.topology || !Array.isArray(st.topology.rooms)) continue;
+      let changed = false;
+      const rooms = st.topology.rooms.map(r => {
+        if (r.id !== rid || (r.tags || []).includes(tag)) return r;
+        changed = true; return { ...r, tags: [...(r.tags || []), tag] };
+      });
+      if (!changed) continue;
+      const byId = { ...cur.byId, [sid]: { ...st, topology: { ...st.topology, rooms } } };
+      w = { ...w, structures: { ...cur, byId } };
+      continue;
+    }
+
+    // setPartyMark — append a one-way experiential mark to party[0].marks[].
+    // Used by the aperture slice: 'vision:root' is set when the player takes
+    // the pale root, gating witness-object reveal and heretic recognition.
+    // Idempotent — re-marking is a no-op.
+    if (kind === 'setPartyMark') {
+      const mark = String(op.mark || '').trim();
+      if (!mark) continue;
+      const party = Array.isArray(w.party) ? w.party : [];
+      if (!party[0]) continue;
+      const existing = Array.isArray(party[0].marks) ? party[0].marks : [];
+      if (existing.includes(mark)) continue;
+      const nextParty = [...party];
+      nextParty[0] = { ...party[0], marks: [...existing, mark] };
+      w = { ...w, party: nextParty };
+      continue;
+    }
   }
 
   return w;

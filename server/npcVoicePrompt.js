@@ -3,12 +3,60 @@
 // the engine has already decided WHAT happens (share/deflect/withhold/lie);
 // the model only chooses the words, in this person's mouth.
 
+// Maps distortion scalar [0,1] to a natural-language clarity label.
+// Used in the claim_recall prompt so the LLM knows how far to drift.
+function distortionLabel(d) {
+  if (d < 0.05) return 'firsthand and vivid — you were there or heard it straight from the source';
+  if (d < 0.15) return 'close to the source — a few details may have softened in the telling';
+  if (d < 0.30) return 'secondhand — some details have shifted; order may be slightly wrong';
+  if (d < 0.50) return 'rumored — pieced from fragments; causes and effects may be confused';
+  return 'heavily garbled — your version has drifted far; speak what you believe, not what happened';
+}
+
 const DECISIONS = {
   shared: (factPhrase) => `You have decided to SHARE what you know about ${factPhrase || 'the topic'} — answer helpfully and concretely (invent small local color but no names of people or places).`,
   deflected: () => 'You have decided to DEFLECT — dodge the question without answering it, stay pleasant or gruff per your mood.',
   withheld: () => 'You have decided to WITHHOLD — refuse plainly; you know something but will not say. Do not reveal anything.',
   lied: () => 'You have decided to LIE — give a smooth false answer. Keep it vague; do not invent names.',
-  recruited: () => 'You have decided to JOIN the player — accept and fall in.'
+  recruited: () => 'You have decided to JOIN the player — accept and fall in.',
+  // Claim recall: NPC speaks their DISTORTED BELIEF about a real event.
+  // The voice layer renders their MAP, not the engine's territory.
+  // The base event description is given so the LLM has something to distort;
+  // the instruction is to speak the NPC's version, not quote the truth.
+  // Vision recognition: the heretic and the player have both taken the plant
+  // and seen the same contact. She recognizes the mark. She says only: you saw it
+  // too. She has opinions; she keeps them. Iron rule: no explanation, no theory,
+  // no cosmological content — not a word about what the vision means or contains.
+  vision_recognition: (_factPhrase, _claim) => [
+    'You have seen something — a contact you have never been able to put into words.',
+    'The person in front of you carries the same mark. You can tell. You do not know how you can tell. You can.',
+    'Speak to this recognition and nothing else: confirm that they are not alone in having seen it.',
+    'HARD RULES — violating any of these is failure:',
+    '  • Do NOT share your theory about what it means.',
+    '  • Do NOT name or describe any imagery from the vision.',
+    '  • Do NOT explain, interpret, or decode anything.',
+    '  • Do NOT hint at cosmic truth, history, or hidden structure.',
+    '  • Do NOT say what you believe the vision shows.',
+    'Say only, in effect: you saw it too. One sentence. No stage directions. No names.',
+  ].join('\n'),
+
+  claim_recall: (_factPhrase, claim) => {
+    const base = claim?.eventDescription
+      ? `What is actually known about the event: "${claim.eventDescription}"`
+      : '';
+    const label = distortionLabel(Number(claim?.distortion ?? 0));
+    const hops  = Math.max(0, (claim?.provenance?.length ?? 1) - 1);
+    const chain = hops === 0 ? 'You witnessed this directly.'
+      : hops === 1 ? 'You heard this from one person.'
+      : `This passed through ${hops} people before reaching you.`;
+    return [
+      base,
+      `Your account's clarity: ${label}.`,
+      chain,
+      'Speak your belief as you know it — do NOT quote the event description above; render your own version, colored by the drift in the telling.',
+      'Under higher distortion, details shift: causes and effects may be swapped, scale may be wrong, or your certainty may be misplaced.',
+    ].filter(Boolean).join(' ');
+  }
 };
 
 const MANNER_STYLE = {
@@ -20,19 +68,36 @@ const MANNER_STYLE = {
 };
 
 /**
- * buildNpcVoicePrompt({npcName, role, mood, manner, mode, factPhrase, playerLine})
+ * buildNpcVoicePrompt({npcName, role, mood, manner, mode, factPhrase, playerLine, ragChunks, claim})
  *   -> string | null  (null = mode the voice layer must not speak for)
+ *
+ * ragChunks: [{text, source}, ...] — primary source excerpts from this person's actual words.
+ * claim: { distortion, weight, eventRef, eventDescription, provenance } — present only when
+ *   mode === 'claim_recall'. The voice layer renders the NPC's distorted belief, not the truth.
  */
 export function buildNpcVoicePrompt(p = {}) {
   const mode = String(p.mode || '');
   const decision = DECISIONS[mode];
   if (!decision || !p.npcName) return null;
   const style = MANNER_STYLE[String(p.manner || '')] || '';
+  const chunks = Array.isArray(p.ragChunks) ? p.ragChunks.filter(c => c?.text) : [];
+  const archiveHeader = p.ragReconstructed
+    ? 'VOICE ARCHIVE — historically grounded speech, reconstructed to match this person\'s known character and values:'
+    : 'VOICE ARCHIVE — authentic words written or spoken by this person:';
+  const archiveFooter = p.ragReconstructed
+    ? 'Speak as this person would have spoken: capture their known temperament and worldview. Do not reference modern concepts.'
+    : 'Let the vocabulary, rhythm, and cadence of these excerpts shape your word choices. Do not quote them directly.';
+  const archive = chunks.length > 0
+    ? [archiveHeader, ...chunks.map(c => `[${c.source}] "${c.text}"`), archiveFooter].join('\n')
+    : null;
+  // claim_recall passes two args; all other modes ignore the second.
+  const decisionText = decision(String(p.factPhrase || ''), p.claim ?? null);
   return [
     `You are ${p.npcName}, a ${p.role || 'villager'} in a low-fantasy village. Mood: ${p.mood || 'even'}.`,
+    ...(archive ? [archive] : []),
     ...(style ? [style] : []),
     `The player said to you: "${p.playerLine || ''}"`,
-    decision(String(p.factPhrase || '')),
+    decisionText,
     'Reply with EXACTLY ONE line of spoken dialogue (under 30 words), in plain speech, no stage directions, no names of specific people or places.'
   ].join('\n');
 }

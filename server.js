@@ -135,10 +135,36 @@ return res.json({ ok:false, reason:safe });
       const outcome      = req.body?.outcome      ?? {};
       const anthropicKey = String(req.body?.anthropicKey || process.env.ANTHROPIC_API_KEY || '').trim();
 
+      // Place RAG: retrieve engine-owned place chunks for the current location.
+      // Only wired for dungeon interiors for now; settlement/outdoor place files
+      // will slot in here once authored. Fails silently — missing file = no chunks.
+      let placeChunks = [];
+      if (world) {
+        try {
+          const interior = world?.scene?.interior;
+          if (interior?.structureKey) {
+            // dungeon:nodeId → dungeon_nodeId (colon not valid in filenames)
+            const placeId = String(interior.structureKey).replace(/:/g, '_').replace(/[^a-z0-9_-]/gi, '_');
+            const { retrieveChunks } = await import('./server/rag/ragRetriever.js');
+            const query = baseNarration + ' ' + String(outcome?.input ?? '');
+            ({ chunks: placeChunks } = retrieveChunks(placeId, query, 3));
+          }
+        } catch {}
+      }
+
+      // [vision:raw] — the iron rule. The root-vision text is engine-owned and
+      // must never reach augmentNarration or any LLM. Return verbatim and stop.
+      // [reveal:true-edge] — same: the true edge is engine-authored, not a canvas.
+      const mech = String(outcome?.mechanics || '');
+      if (mech.includes('[vision:raw]') || mech.includes('[reveal:true-edge]')) {
+        return res.json({ ok: true, narration: baseNarration });
+      }
+
       const narration = await augmentNarration({
         world,
         outcome,
         baseNarration,
+        placeChunks,
         enabled: Boolean(anthropicKey),
         apiKey:  anthropicKey
       });
@@ -219,10 +245,29 @@ return res.json({ ok:false, reason:safe });
       const mode = String(req.body?.mode || '').slice(0, 20);
       const factPhrase = String(req.body?.factPhrase || '').slice(0, 120);
       const playerLine = String(req.body?.playerLine || '').slice(0, 200);
+      const historicalFigureId = String(req.body?.historicalFigureId || '').slice(0, 40).replace(/[^a-z0-9_-]/gi, '');
+      // Claim context — present only when mode === 'claim_recall'. The client
+      // passes the resolved claim object from the askNpc outcome. We validate
+      // shape here so the voice prompt builder can trust the fields.
+      const rawClaim = req.body?.claim && typeof req.body.claim === 'object' ? req.body.claim : null;
+      const claim = rawClaim ? {
+        subject:          String(rawClaim.subject          || ''),
+        distortion:       Number(rawClaim.distortion       ?? 0),
+        weight:           Number(rawClaim.weight           ?? 1),
+        eventRef:         rawClaim.eventRef ? String(rawClaim.eventRef) : null,
+        eventDescription: rawClaim.eventDescription ? String(rawClaim.eventDescription).slice(0, 300) : null,
+        provenance:       Array.isArray(rawClaim.provenance) ? rawClaim.provenance.map(String) : [],
+      } : null;
       if (!npcName || !mode) return res.json({ ok: false, reason: 'bad_request' });
 
       const { buildNpcVoicePrompt } = await import('./server/npcVoicePrompt.js');
-      const prompt = buildNpcVoicePrompt({ npcName, role, mood, manner, mode, factPhrase, playerLine });
+      let ragChunks = [];
+      let ragReconstructed = false;
+      if (historicalFigureId) {
+        const { retrieveChunks } = await import('./server/rag/ragRetriever.js');
+        ({ chunks: ragChunks, reconstructed: ragReconstructed } = retrieveChunks(historicalFigureId, playerLine, 4));
+      }
+      const prompt = buildNpcVoicePrompt({ npcName, role, mood, manner, mode, factPhrase, playerLine, ragChunks, ragReconstructed, claim });
       if (!prompt) return res.json({ ok: false, reason: 'bad_mode' });
 
       const { queryLocal } = await import('./server/localLlmProvider.js');

@@ -161,6 +161,16 @@ export function ensureWorld(partial) {
     // v27 — the Adversary (P-74a). null until minted; see engine/story/villain.js.
     villain: ensureVillain(w.villain),
 
+    // Epistemic layer — claims NPCs hold about subjects (events, places, people).
+    // Each entry is one NPC's belief; propagation is deterministic, zero LLM calls.
+    // Old saves get [] on load; no version bump required (additive with safe default).
+    claims: Array.isArray(w.claims) ? w.claims : [],
+
+    // Things — objects with immutable true edges (territory-fragments).
+    // thing.trueEdge is engine-owned and never rewritten by claims or the LLM.
+    // Old saves get [] on load; no version bump required.
+    things: Array.isArray(w.things) ? w.things : [],
+
     recentBeats: ensureRecentBeats(w.recentBeats),
 
     timeline: Array.isArray(w.timeline) ? w.timeline : [],
@@ -650,7 +660,11 @@ function ensureEntity(e) {
     // v24 — canonical SRD 5e sheet (or null for pre-v24 characters). Preserved
     // verbatim: it is produced fully-formed by createCharacter5e and never
     // partially mutated, so no per-field normalization here.
-    dnd: x.dnd && typeof x.dnd === 'object' ? x.dnd : null
+    dnd: x.dnd && typeof x.dnd === 'object' ? x.dnd : null,
+
+    // Experiential marks — one-way flags set by engine events (vision:root, etc.).
+    // Append-only via setPartyMark delta; never cleared. Old saves default to [].
+    marks: Array.isArray(x.marks) ? x.marks.filter(m => typeof m === 'string') : [],
   };
 }
 

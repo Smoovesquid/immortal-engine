@@ -76,6 +76,12 @@ Zero drift.
 
 ---
 
-## 7) Parked / Deferred
+## 7) Walls and Invariants
+
+**WITNESS-OBJECT / GOD-FRAME WALL:** Witness-objects (things with true edges) predate and underlie the gods' frame of reference — the gods are themselves downstream of the catastrophe that produced such objects. Therefore no god-relationship mechanic (divine patrons M7, manifest signs M8, dedication rites M10, the friend/thrall keystone M11) may read, categorize, respond to, or interpret a witness-object as a religious artifact, patron-signal, sign-trigger, or relic. The gods cannot recognize the orb as sacred because the orb is upstream of the gods. The gods are map; witness-objects are territory; the map may never reach down and claim the territory. Things and morality share an epistemological tier (canon-truth vs. NPC-claim) but must never share a code wire that lets the god-frame categorize a thing.
+
+---
+
+## 8) Parked / Deferred
 
 **Remnant economy.** Common, depleted magic-remnants (NOT the witness-orb) may later be tradable goods used to learn or power spells. Their meaning is NPC interpretation — distorted claims that propagate and fracture, never confirmed by the engine. The common trade in cheap remnants camouflages the singular, awake, incomprehensible witness-objects: the market noise is the cover. Deferred until after the First Aperture slice is played and validated.

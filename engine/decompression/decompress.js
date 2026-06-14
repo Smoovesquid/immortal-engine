@@ -9,6 +9,7 @@ import { computeNpcDepth } from '../npc/npcDepth.js';
 import { generateSettlementNPCs, mintNpcName } from '../npc/npcGenesis.js';
 import { generateNodeFurniture } from './generateFurniture.js';
 import { verifyRumorsForSeed } from '../rumor/verify.js';
+import { ensureNodeSubstrate } from '../substrate.js';
 
 export async function decompressAndCanonize(world, nodeId, pack, llmOptions = {}) {
   const node = world.map.nodes.find(n => n.id === nodeId);
@@ -68,6 +69,10 @@ export function decompressAndCanonizeSync(world, nodeId, pack) {
   const node = world.map.nodes.find(n => n.id === nodeId);
   if (!node) return world;
   if (node.settlement?.decompressed) return world;
+
+  // Seed this node's local substrate events before the generators run.
+  // Idempotent — no-op if already seeded. NEVER touches world.timeline.
+  world = ensureNodeSubstrate(world, nodeId);
 
   const { finalState, history, tickCount, tags } = runSettlementHistory(node, world, pack);
 

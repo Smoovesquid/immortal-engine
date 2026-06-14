@@ -30,6 +30,7 @@ import { castArcs, tickArcs } from './story/storyEngine.js';
 import { beginDialogue, askNpc, endDialogue, resolveNpcAtCurrentNode, isRecruitIntent, npcVoice, voiceManner } from './npc/dialogue.js';
 import { mintThing, revealTrueEdge } from './things.js';
 import { mintClaim } from './claims.js';
+import { generateSubstrate, ensureNodeSubstrate } from './substrate.js';
 import { resolveArc } from './npc/npcArc.js';
 import { companionPass } from './npc/companionVoice.js';
 import { checkMilestone, buildLevelUpLine } from './advancement/milestones.js';
@@ -368,6 +369,13 @@ export function beginAdventure(world, packsById) {
   };
 
   w = pushEvent(w, { kind: 'begin', data: { location, objective, pack: pack.id, refKind, npcsPresent: npcNames } });
+
+  // Generate the true-event substrate — cosmology and region layers.
+  // Node events are seeded lazily in ensureNodeSubstrate (called at decompression).
+  w = generateSubstrate(w);
+
+  // Seed the starting node's substrate events now (player begins here).
+  if (w.map?.currentNodeId) w = ensureNodeSubstrate(w, w.map.currentNodeId);
 
   // Seed First Aperture objects into the live starting settlement.
   // Gated on hallowed_reaches pack — the slice's intended setting.

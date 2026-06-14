@@ -28,7 +28,8 @@ import { appendCanonEvent } from './csl/canonLog.js';
 import { createGoal, checkGoals } from './goals/goalContract.js';
 import { castArcs, tickArcs } from './story/storyEngine.js';
 import { beginDialogue, askNpc, endDialogue, resolveNpcAtCurrentNode, isRecruitIntent, npcVoice, voiceManner } from './npc/dialogue.js';
-import { revealTrueEdge } from './things.js';
+import { mintThing, revealTrueEdge } from './things.js';
+import { mintClaim } from './claims.js';
 import { resolveArc } from './npc/npcArc.js';
 import { companionPass } from './npc/companionVoice.js';
 import { checkMilestone, buildLevelUpLine } from './advancement/milestones.js';
@@ -60,6 +61,77 @@ export const FOUNDATION_EVENT_ID = 'deep:foundation';
 // any LLM-bound context. The [vision:raw] mechanics tag causes server.js to
 // return it verbatim, bypassing augmentNarration entirely.
 export const VISION_TEXT = 'You are inside something that is awake. There is a running — a vast figuring that goes on in a language made of itself, slow light crossing and gathering and crossing again — and it turns toward you, or you were always inside the part of it that was already turned, and you understand for one moment that it is counting you, has been counting you the whole time, patient about it. Then the count is everywhere: in your hands, in the floor, in the light, the same shapes folding through everything, enormous and unhurried and not unkind and not anything. You reach for what it means and there is no what. There is only the folding, the bright machinery turning over and over with no one running it, alive the way nothing is supposed to be alive. And then it lets you go, and you are on the ground, and your mouth tastes like metal, and you cannot say what you saw.';
+
+export const SHARD_TEXT = 'It is not metal and not stone. It is a sphere of something held in the shape of a sphere by nothing you can see — dark and clear at once, like water that has decided to be still — and inside it a slow light moves of its own accord, gathering and dimming and crossing itself in ways that answer when you lean closer, as though it marks you, as though it has been waiting and is patient about it. It is warm. It is older than the chapter house that keeps it, older than the founding the Long Watch teaches. Nothing in the world is made this way; nothing in the world is alive this way. It was set down here, on purpose, in an age the town\'s own story says had no one in it — and it has been awake the whole time.';
+
+// seedFirstAperture — seeds the three First Aperture objects into the live
+// world at the starting settlement node. Idempotent: safe to call on any
+// beginAdventure pass, including save-resume. Only seeds if not yet present.
+function seedFirstAperture(w) {
+  if (!w.map?.currentNodeId) return w;
+  // Guard: if already seeded, do nothing.
+  if (Array.isArray(w.things) && w.things.some(t => t.id === 'thing:pale_root')) return w;
+
+  const nodeId = String(w.map.currentNodeId);
+
+  // 1. The pale root — a vision-bearing consumable at the settlement node.
+  // (No timeline stub for deep:foundation — adding events would shift timeline.length
+  // and corrupt the RNG seed in resolve.js. The eventRef is a stable well-known id
+  // that things and claims reference without requiring a timeline entry.)
+  w = mintThing(w, {
+    id:          'thing:pale_root',
+    name:        'the pale root',
+    description: 'A dried, bitter-smelling root sold by an herbalist at the edge of the settlement.',
+    nodeId,
+    vision:      true,
+  });
+
+  // 2. The witness orb — true edge pointing at the foundation event.
+  w = mintThing(w, {
+    id:          'thing:witness_orb',
+    name:        'the witness orb',
+    description: 'A sphere of dark material that seems to hold light inside it, kept in the chapter house.',
+    nodeId,
+    trueEdge: {
+      eventRef:    FOUNDATION_EVENT_ID,
+      description: SHARD_TEXT,
+    },
+  });
+
+  // 3. The Lingerer — inject into the settlement's NPC list if not already present.
+  const nodes = w.map?.nodes || [];
+  const nodeIdx = nodes.findIndex(n => n.id === nodeId);
+  if (nodeIdx !== -1) {
+    const node = nodes[nodeIdx];
+    const npcs = Array.isArray(node?.settlement?.npcs) ? node.settlement.npcs : [];
+    if (!npcs.some(n => n.id === 'npc_lingerer')) {
+      const lingerer = {
+        id:       'npc_lingerer',
+        name:     'the Lingerer',
+        role:     'a wanderer who has stayed too long, asking questions no one wants to answer',
+        heretic:  true,
+        personality: { honesty: 0.7, influence: 0.3 },
+        conversationState: { metPlayer: false, topicsDiscussed: [], trustLevel: 5, lastInteraction: null },
+      };
+      const updatedNode = { ...node, settlement: { ...node.settlement, npcs: [...npcs, lingerer] } };
+      const updatedNodes = [...nodes];
+      updatedNodes[nodeIdx] = updatedNode;
+      w = { ...w, map: { ...w.map, nodes: updatedNodes } };
+    }
+  }
+
+  // 4. The Lingerer's heretic claim — near-floor weight, max distortion.
+  if (!Array.isArray(w.claims) || !w.claims.some(c => c.holderNpcId === 'npc_lingerer')) {
+    w = mintClaim(w, {
+      subject:           'the_shallow_past',
+      eventRef:          FOUNDATION_EVENT_ID,
+      witnessNpcId:      'npc_lingerer',
+      initialDistortion: 0.92,
+    });
+  }
+
+  return w;
+}
 
 // ── v1 Escape: per-travel chance of a creature ambush. Tuned so the journey has
 // real risk without becoming a death-spiral — most hops are clear, some bite.
@@ -296,6 +368,11 @@ export function beginAdventure(world, packsById) {
   };
 
   w = pushEvent(w, { kind: 'begin', data: { location, objective, pack: pack.id, refKind, npcsPresent: npcNames } });
+
+  // Seed First Aperture objects into the live starting settlement.
+  // Gated on hallowed_reaches pack — the slice's intended setting.
+  // Test worlds use minimal packs without it and are unaffected.
+  if (packsById.hallowed_reaches) w = seedFirstAperture(w);
 
   // v25 — cast story arcs onto the freshly decompressed home settlement so the
   // first tavern rumor is already in the air when the adventure opens.

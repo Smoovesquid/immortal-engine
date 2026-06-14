@@ -18,7 +18,7 @@
 
 import { readFileSync } from 'fs';
 import { newWorld } from '../engine/state.js';
-import { beginAdventure, playerMove, FOUNDATION_EVENT_ID, VISION_TEXT } from '../engine/playloop.js';
+import { beginAdventure, playerMove, FOUNDATION_EVENT_ID, VISION_TEXT, SHARD_TEXT } from '../engine/playloop.js';
 import { mintThing } from '../engine/things.js';
 import { mintClaim } from '../engine/claims.js';
 import { buildNpcVoicePrompt } from '../server/npcVoicePrompt.js';
@@ -68,8 +68,7 @@ const MINIMAL_PACK = {
   }
 };
 
-const SHARD_TEXT =
-  'It is not metal and not stone. It is a sphere of something held in the shape of a sphere by nothing you can see — dark and clear at once, like water that has decided to be still — and inside it a slow light moves of its own accord, gathering and dimming and crossing itself in ways that answer when you lean closer, as though it marks you, as though it has been waiting and is patient about it. It is warm. It is older than the chapter house that keeps it, older than the founding the Long Watch teaches. Nothing in the world is made this way; nothing in the world is alive this way. It was set down here, on purpose, in an age the town\'s own story says had no one in it — and it has been awake the whole time.';
+// SHARD_TEXT is now canonical in engine/playloop.js — imported above.
 
 function buildSliceWorld() {
   let w = beginAdventure(

@@ -722,7 +722,7 @@ function playerMoveCore(world, packsById, text) {
         if (w1.scene?.interior) {
           const room = dungeon.levels[0]?.rooms?.[w1.scene.interior.roomId] || null;
           const w2 = pushEvent(w1, { kind: 'resolution', data: { actorId: 'party', text: String(text || ''), intent: String(text || ''), roll: 0, dc: 0, outcome: 'success', updateKind: 'dungeon-descend' } });
-          return { world: w2, output: { narration: dungeonDescendNarration(dungeon, room), mechanics: '[descend]' } };
+          return { world: w2, output: { narration: dungeonDescendNarration(dungeon, room) + dungeonExitsLine(w2), mechanics: '[descend]' } };
         }
       }
     }
@@ -733,7 +733,7 @@ function playerMoveCore(world, packsById, text) {
       const cn = dnodes.find(n => String(n?.id || '') === nodeId) || null;
       const biome = cn ? biomeForNode(w.meta.seed, cn) : 'wilderness';
       const room = dungeonRoomAt(w.meta.seed, nodeId, String(inside.roomId), { biome });
-      if (room) return { world: w, output: { narration: dungeonLookNarration(room, text), mechanics: '' } };
+      if (room) return { world: w, output: { narration: dungeonLookNarration(room, text) + dungeonExitsLine(w), mechanics: '' } };
     }
   }
 
@@ -796,6 +796,18 @@ function playerMoveCore(world, packsById, text) {
         });
         w2 = worldTick(w2, `${w2.meta.seed}|tick|interior-move|turn${w2.time.turn}|tl${w2.timeline.length}`);
         const movedDir = normalizeDir(interiorAction.direction);
+        // In a dungeon a real DM describes the chamber you step into and the ways
+        // onward; in a building the brief move line is enough.
+        if (isDungeonStructureId(w2.scene?.interior?.structureKey)) {
+          const st = w2.structures?.byId?.[String(w2.scene.interior.structureKey)];
+          const nodeId = String(st?.nodeId || '');
+          const cn = (w2.map?.nodes || []).find(n => String(n?.id || '') === nodeId) || null;
+          const biome = cn ? biomeForNode(w2.meta.seed, cn) : 'wilderness';
+          const room = dungeonRoomAt(w2.meta.seed, nodeId, String(w2.scene.interior.roomId), { biome });
+          const lead = movedDir ? `You move ${movedDir}.` : 'You move on.';
+          const body = room ? dungeonLookNarration(room, 'look around').replace(/^Wizard:\s*/, '') : '';
+          return { world: w2, output: { narration: `Wizard: ${lead} ${body}${dungeonExitsLine(w2)}`.trim(), mechanics: '' } };
+        }
         const moveMsg = movedDir ? `Wizard: You move ${movedDir} into the next chamber.` : 'Wizard: You move into the next chamber.';
         return { world: w2, output: { narration: moveMsg, mechanics: '' } };
       }
@@ -2609,6 +2621,15 @@ function dungeonLookNarration(room, text) {
   const shadow = (room?.light === 'dark') ? ' Your light throws long shadows up the walls.' : '';
   const here = feat ? ` At its heart, ${feat.look.charAt(0).toLowerCase()}${feat.look.slice(1)}.` : '';
   return `Wizard: A still, low chamber of cold stone.${shadow}${here}`;
+}
+
+// The ways onward, so the crawl is never a guessing game — a DM names the exits.
+function dungeonExitsLine(w) {
+  const ex = interiorDirectionalExits(w);
+  const dirs = ['north', 'east', 'south', 'west'].filter(d => ex && ex[d]);
+  if (!dirs.length) return ' There is no way on — this is a dead end.';
+  const list = dirs.length === 1 ? dirs[0] : `${dirs.slice(0, -1).join(', ')} and ${dirs[dirs.length - 1]}`;
+  return ` Passage${dirs.length > 1 ? 's' : ''} lead${dirs.length > 1 ? '' : 's'} ${list}.`;
 }
 
 // ── Dialogue intent helpers ────────────────────────────────────────────────

@@ -292,6 +292,18 @@ already encoded in the bestiary (CR bands), loot tables, and P-75.
 - **D1** — the **small multi-room dungeon** generator (D&D room graph, themed) +
   **population** (encounters + treasure, reusing bestiary/loot) + the **crawl
   loop**. A real short crawl, fog-revealed, conversational.
+  ◑ **D1a DONE 2026-06-13 (generator + crawl spine).** `generate.buildSmall`
+  emits a real room graph (5–12 rooms, a branching tree off the entry with a loop
+  or two, the deepest room its vault) — `small` is now the default scale, so a
+  `dungeon_entrance` descends into a real dungeon (the 1-room shrine is an explicit
+  scale for basements). Each room carries a themed feature (vault centerpiece,
+  cache stash, chamber dressing). The crawl reuses the interior primitive: descend
+  → move room to room ("go north"), each chamber described on arrival with its
+  exits named (`dungeonExitsLine`), dead-ends held, climb back out. The cutaway
+  inks the room graph on a compass grid (DEV-unfogged). U138 ×6; U137 updated;
+  suite 7,591 green; playtest:quick clean; live-verified (descended Howling Pass,
+  9-room sewer, walked the graph). **D1b next: population — encounters (combat on
+  entry) + treasure + cleared/looted room state.**
 - **D2** — **traps, locked/secret doors, light/dark** (P-76 lean + env).
 - **D3** — **multi-level + descent** + **boss climax** (P-75) + **reward** (P-77
   named loot) + optional villain-seat binding (P-74c).

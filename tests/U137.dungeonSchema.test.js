@@ -38,7 +38,7 @@ test('U137-03: generateDungeon is deterministic for the same seed + node + biome
 });
 
 test('U137-04: the shrine is the smallest valid dungeon — one level, one room, one feature', () => {
-  const d = generateDungeon('blackvale', 'nShrine', { biome: 'forest' });
+  const d = generateDungeon('blackvale', 'nShrine', { biome: 'forest', scale: 'shrine' });
   assert.equal(d.scale, 'shrine');
   assert.equal(d.levels.length, 1);
   const rooms = Object.values(d.levels[0].rooms);
@@ -61,7 +61,7 @@ test('U137-05: theme tracks the surface biome deterministically', () => {
 });
 
 test('U137-06: dungeonLevelToStructure projects a navigable structure the crawl accepts', () => {
-  const d = generateDungeon('mira', 'n3', { biome: 'desert' });
+  const d = generateDungeon('mira', 'n3', { biome: 'desert', scale: 'shrine' });
   const st = dungeonLevelToStructure(d, 0);
   assert.equal(st.kind, 'dungeon');
   assert.equal(st.nodeId, 'n3');
@@ -75,10 +75,10 @@ test('U137-06: dungeonLevelToStructure projects a navigable structure the crawl 
 });
 
 test('U137-07: dungeonRoomAt re-derives the room\'s rich data on demand (never persisted)', () => {
-  const room = dungeonRoomAt('blackvale', 'nShrine', 'r:shrine', { biome: 'forest' });
+  const room = dungeonRoomAt('blackvale', 'nShrine', 'r:shrine', { biome: 'forest', scale: 'shrine' });
   assert.ok(room, 'room re-derived from seed+node+roomId');
   assert.equal(room.role, 'shrine');
   assert.ok(room.contents.some(c => c.kind === 'feature'));
   // a roomId that does not exist returns null (no throw)
-  assert.equal(dungeonRoomAt('blackvale', 'nShrine', 'r:nope', { biome: 'forest' }), null);
+  assert.equal(dungeonRoomAt('blackvale', 'nShrine', 'r:nope', { biome: 'forest', scale: 'shrine' }), null);
 });

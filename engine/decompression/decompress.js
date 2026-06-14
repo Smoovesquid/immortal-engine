@@ -17,7 +17,7 @@ export async function decompressAndCanonize(world, nodeId, pack, llmOptions = {}
   if (node.settlement?.decompressed) return world;
 
   // Step 1: Run history simulation
-  const { finalState, history, tickCount, tags } = runSettlementHistory(node, world, pack);
+  const { finalState, history, tickCount, tags, nodeFoundingRef } = runSettlementHistory(node, world, pack);
 
   // Step 2: Extract present-state entities
   const extractRng = makeRng(seedFromString(`${nodeId}|${world.meta.seed}|extract`));
@@ -40,7 +40,8 @@ export async function decompressAndCanonize(world, nodeId, pack, llmOptions = {}
     ...texturedWithHostile,
     decompressed: true,
     decompressedAt: world.time?.scene ?? 0,
-    tickCount
+    tickCount,
+    ...(nodeFoundingRef ? { eventRef: nodeFoundingRef } : {}),
   };
 
   const furniture = generateNodeFurniture(nodeId, world.meta.seed);
@@ -74,7 +75,7 @@ export function decompressAndCanonizeSync(world, nodeId, pack) {
   // Idempotent — no-op if already seeded. NEVER touches world.timeline.
   world = ensureNodeSubstrate(world, nodeId);
 
-  const { finalState, history, tickCount, tags } = runSettlementHistory(node, world, pack);
+  const { finalState, history, tickCount, tags, nodeFoundingRef } = runSettlementHistory(node, world, pack);
 
   const extractRng = makeRng(seedFromString(`${nodeId}|${world.meta.seed}|extract`));
   const settlement = extractPresent(history, finalState, tags, pack, extractRng);
@@ -148,7 +149,8 @@ export function decompressAndCanonizeSync(world, nodeId, pack) {
     textured: false,
     decompressed: true,
     decompressedAt: world.time?.scene ?? 0,
-    tickCount
+    tickCount,
+    ...(nodeFoundingRef ? { eventRef: nodeFoundingRef } : {}),
   };
 
   const furniture = generateNodeFurniture(nodeId, world.meta.seed);

@@ -35,10 +35,82 @@ const SHRINE_FEATURE = {
 };
 
 function pick(rng, arr) { return arr[Math.floor(rng.nextFloat() * arr.length)] || arr[0]; }
+function pickDistinct(rng, arr, k) {
+  const pool = arr.slice(), out = [];
+  for (let i = 0; i < k && pool.length; i++) out.push(pool.splice(Math.floor(rng.nextFloat() * pool.length), 1)[0]);
+  return out;
+}
 
 function themeFor(rng, biome) {
   const bank = THEME_BY_BIOME[biome] || THEME_BY_BIOME.wilderness;
   return pick(rng, bank);
+}
+
+// The source of a dungeon's dread (the Underworld-is-horror law). A deterministic
+// history per theme — what it was, what went wrong, what dwells here now, and the
+// specific SIGNS (echoes) the crawl reads room by room. This is the corpus a RAG
+// layer would retrieve over; the narration grounds itself here, never the reverse.
+const DUNGEON_NAMES = ['the Deepdark', 'Hollowmar', 'the Gullet', 'Blackmoor Below', 'the Underchapel', 'Wormcross', 'the Sunken Tier', 'Gravewater', 'the Maw', 'Sorrow Deep'];
+const HISTORY = {
+  mine: {
+    origin: ['the silver mine they called Deepcut', 'an old iron working, long played out', 'the deep gallery beneath a dead pit-town'],
+    catastrophe: ['the diggers cut into a cavity that should have stayed sealed', 'a collapse trapped a whole shift that never came back up', 'they went too deep, and woke what slept in the rock'],
+    denizen: ['the things that came up through the breach', 'what the dark made of the men it kept'],
+    echoes: ['pickaxes dropped mid-swing, rusting where they fell', 'a tally of names scratched by the cage — the last few clawed through', 'ore-carts left loaded, wheels seized with rust', 'gouges shoulder-high in the rock that no tool made', 'a lantern, its oil long gone, set down and never lifted']
+  },
+  crypt: {
+    origin: ['a barrow of kings whose line is forgotten', 'the catacombs below a burned abbey', 'a plague-pit consecrated in a bad year'],
+    catastrophe: ['the long winter cracked the seal that held the dead', 'robbers broke the wards and did not leave', 'the abbey burned, and its dead would not lie still'],
+    denizen: ['the unquiet dead', 'what the broken seal let walk'],
+    echoes: ['niches emptied from the inside', 'grave-goods scattered, but none of them taken', 'scratch-marks worn into the inside of a lid', 'a child\'s shoe, small in the grey dust', 'dried garlands still hung for a feast of the dead']
+  },
+  sewer: {
+    origin: ['the undercrofts beneath a drowned chapel', 'the storm-drains of a quarter the river took', 'a flooded cistern-works'],
+    catastrophe: ['the floodgates failed, and something came up with the water', 'a cult worked down here until the dark water took them', 'the drains backed up on a year of plague-dead'],
+    denizen: ['things that swim in the black water', 'what fed on all that washed down here'],
+    echoes: ['tide-lines of grease and bone on the walls', 'votive candles guttered to cold stubs', 'a bloated coracle wedged in a grate', 'pale handprints below the waterline', 'a drain choked with hair and small bones']
+  },
+  hold: {
+    origin: ['the border keep they called Gallows Watch', 'a fallen garrison-fort of the old march', 'a watchtower that held the pass, once'],
+    catastrophe: ['the garrison was betrayed from within and butchered to the last', 'a siege ended in something worse than surrender', 'the captain struck a bargain to save the hold — and lost'],
+    denizen: ['what wears the dead garrison\'s harness now', 'the thing the captain\'s bargain bought'],
+    echoes: ['a mess-table set for a meal no one ate', 'arms-racks emptied in a hurry', 'a war-banner bearing a sigil you do not know', 'dark stains fanned across the muster-yard', 'a sentry\'s spear still propped at a cold post']
+  },
+  lair: {
+    origin: ['a warren dug deep into the hill', 'a predator\'s den under the old roots', 'a hollow that something large has claimed'],
+    catastrophe: ['it grew too great for the country above and drew its prey down here', 'a hunting party went in, and the hill kept them', 'it has denned here for generations, fattening'],
+    denizen: ['the thing that dens here', 'the brood it guards'],
+    echoes: ['a midden of cracked and gnawed bone', 'nesting matted from hide and human hair', 'drag-trails worn smooth into the stone', 'a stench that coats the back of your throat', 'a boot, still laced, with nothing left inside it']
+  },
+  shrine: {
+    origin: ['a hill-shrine to a god whose name is worn away', 'a hermit\'s rock-cell turned to worse use', 'an oracle\'s grotto, gone silent'],
+    catastrophe: ['the last devotees offered something, and something answered', 'the god was forgotten, and a squatter took the empty altar', 'a pilgrimage came here and never went home'],
+    denizen: ['what answered the last prayer', 'the squatter in the holy dark'],
+    echoes: ['offerings rotted to black sludge in the basin', 'a name chiselled out of every inscription', 'kneeling-marks worn deep before the altar', 'tallow handprints climbing the wall toward the dark', 'a collection-box split open, the coins left scattered']
+  },
+  infernal: {
+    origin: ['a circle where a bargain was struck', 'a warlock\'s working-vault', 'a sanctum scorched from within'],
+    catastrophe: ['the bargain came due, and the price was the place itself', 'a summoning slipped its bindings', 'the warlock paid in the only coin left — everyone here'],
+    denizen: ['what the circle still holds, barely', 'the collector, come for the debt'],
+    echoes: ['a circle burned black into the floor, still warm to the hand', 'chalk diagrams half-scuffed away in panic', 'a ledger of names, the last entry unfinished', 'the air tastes of struck flint and old blood', 'a mirror gone black, that does not show the room']
+  }
+};
+function generateHistory(rng, theme, substrateEvents) {
+  const b = HISTORY[theme] || HISTORY.crypt;
+  // Sparse anchor: ~5% of generated lore points at a substrate event.
+  // Prefer a region crisis (dungeon themes emerge from regional trauma); fall back to any founding.
+  const events = Array.isArray(substrateEvents) ? substrateEvents : [];
+  const anchor = events.find(e => e.kind === 'crisis' && e.layer === 'region')
+               || events.find(e => e.kind === 'founding')
+               || null;
+  return {
+    name:        pick(rng, DUNGEON_NAMES),
+    origin:      pick(rng, b.origin),
+    catastrophe: pick(rng, b.catastrophe),
+    denizen:     pick(rng, b.denizen),
+    echoes:      pickDistinct(rng, b.echoes, 3 + rng.int(0, 1)),
+    ...(anchor ? { eventRef: anchor.id } : {}),
+  };
 }
 
 // Build the one-room shrine level. The room is dark, holds the feature, and has
@@ -113,10 +185,31 @@ function buildSmall(rng, theme) {
   for (const id of ids) {
     const deg = adj.get(id).size;
     const role = id === 'r:entry' ? 'entry' : id === vault ? 'vault' : deg === 1 ? 'cache' : deg >= 3 ? 'chamber' : 'corridor';
+    const contents = [...roomContents(role, theme)];
+    // D1b — population (deterministic; rng drawn in a fixed order per room).
+    // A denizen guards the vault always, and chambers/corridors sometimes; the
+    // safe entry never. CR is low (a small dungeon); depth-scaling comes with D4.
+    if (role !== 'entry') {
+      const roll = rng.nextFloat();
+      const wants = role === 'vault' || ((role === 'chamber' || role === 'corridor') && roll < 0.45);
+      if (wants) {
+        // A small dungeon is LOW tier — a starting party should be able to win or
+        // flee. The vault holds the toughest (CR 1–2); other rooms CR 1 or weaker.
+        // (Depth/geographic-tier scaling arrives with D3/D4.)
+        const cr = role === 'vault' ? 1 + rng.int(0, 1) : 1;
+        const count = 1;
+        contents.push({ kind: 'encounter', cr, count });
+      }
+    }
+    // Treasure rests in the vault (the hoard) and the caches (forgotten stashes).
+    if (role === 'vault' || role === 'cache') {
+      const gold = (role === 'vault' ? 15 : 4) + rng.int(0, role === 'vault' ? 45 : 14);
+      contents.push({ kind: 'treasure', gold });
+    }
     rooms[id] = {
       id, role,
       exits: [...adj.get(id)].sort((a, b) => a.localeCompare(b)),
-      contents: roomContents(role, theme),
+      contents,
       dressing: ['cold stone', 'dust', 'still air'],
       light: 'dark'
     };
@@ -139,9 +232,10 @@ export function generateDungeon(seed, entranceNodeId, opts = {}) {
   const rng = makeRng(seedFromString(`${seed}|dungeon|${nodeId}`));
   const theme = opts.theme || themeFor(rng, biome);
 
-  const levels = (scale === 'shrine') ? buildShrine(rng, theme) : buildSmall(rng, theme);
+  const levels  = (scale === 'shrine') ? buildShrine(rng, theme) : buildSmall(rng, theme);
+  const history = generateHistory(rng, theme, opts.substrateEvents);
 
-  return normalizeDungeon({ id: `dungeon:${nodeId}`, seed: String(seed), entranceNodeId: nodeId, scale, theme, biome, levels });
+  return normalizeDungeon({ id: `dungeon:${nodeId}`, seed: String(seed), entranceNodeId: nodeId, scale, theme, biome, history, levels });
 }
 
 /** Deterministic structure id for a dungeon level (the runtime crawl artifact). */

@@ -5,6 +5,7 @@ import { ensureWorld } from '../state.js';
 import { worldTick } from '../worldTick.js';
 import { seedFromString, makeRng } from '../rng.js';
 import { detectEvents } from './detectEvents.js';
+import { substrateEventsFor } from '../substrate.js';
 
 const TAG_TICK_MAP = {
   wilderness: [0, 1],
@@ -167,10 +168,21 @@ export function runSettlementHistory(node, world, pack) {
     }
   }
 
+  // Sparse substrate anchor: the node's founding event (or region founding as fallback).
+  // Stored as nodeFoundingRef — decompress stamps it on the settlement as eventRef.
+  // Safe fallback to null if substrate not yet generated for this node.
+  const subEvents = substrateEventsFor(world, node.id);
+  const nodeFoundingRef = (
+    subEvents.find(e => e.kind === 'founding' && e.layer === 'node')
+    || subEvents.find(e => e.kind === 'founding')
+    || null
+  )?.id ?? null;
+
   return {
     finalState: state,
     history: allEvents,
     tickCount,
-    tags
+    tags,
+    nodeFoundingRef,
   };
 }

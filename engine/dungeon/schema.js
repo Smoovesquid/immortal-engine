@@ -83,7 +83,28 @@ export function normalizeDungeon(d) {
     scale,
     theme,
     biome: str(dd.biome || 'wilderness'),
+    history: normalizeHistory(dd.history),
     levels
+  };
+}
+
+/**
+ * A dungeon's HISTORY (the source of its dread — see the Underworld-is-horror law).
+ *   { name, origin, catastrophe, denizen, echoes:[string] }
+ * what it was · what went wrong · what dwells here now · 3–4 specific signs the
+ * crawl reads (dressing, telegraph, the reveal). Deterministic data, authorable
+ * by the D5 canvas, and the corpus the RAG layer retrieves over. Narration grounds
+ * itself in this; never the reverse.
+ */
+export function normalizeHistory(h) {
+  const hh = isObj(h) ? h : {};
+  return {
+    name:        str(hh.name),
+    origin:      str(hh.origin),
+    catastrophe: str(hh.catastrophe),
+    denizen:     str(hh.denizen),
+    echoes:      arrStr(hh.echoes).slice(0, 8),
+    eventRef:    hh.eventRef ? str(hh.eventRef) : null,
   };
 }
 

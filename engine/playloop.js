@@ -30,7 +30,7 @@ import { castArcs, tickArcs } from './story/storyEngine.js';
 import { beginDialogue, askNpc, endDialogue, resolveNpcAtCurrentNode, isRecruitIntent, npcVoice, voiceManner } from './npc/dialogue.js';
 import { mintThing, revealTrueEdge } from './things.js';
 import { mintClaim } from './claims.js';
-import { generateSubstrate, ensureNodeSubstrate } from './substrate.js';
+import { generateSubstrate, ensureNodeSubstrate, substrateEventsFor } from './substrate.js';
 import { resolveArc } from './npc/npcArc.js';
 import { companionPass } from './npc/companionVoice.js';
 import { checkMilestone, buildLevelUpLine } from './advancement/milestones.js';
@@ -209,6 +209,12 @@ export function beginAdventure(world, packsById) {
   }
 
   const here = m.nodes.find(n => n.id === m.currentNodeId);
+
+  // Substrate must exist before settlement decompression — decompressAndCanonizeSync
+  // calls ensureNodeSubstrate and substrateEventsFor. Generate both layers now so
+  // the starting node's eventRef is stamped correctly.
+  w = generateSubstrate(w);
+  if (w.map?.currentNodeId) w = ensureNodeSubstrate(w, w.map.currentNodeId);
 
   // Run settlement decompression for the starting node (generates NPCs, history, buildings).
   if (here?.nodeType === 'settlement' && !here.settlement?.decompressed) {
@@ -812,7 +818,7 @@ function playerMoveCore(world, packsById, text) {
     if (!inside && !w.combat?.active && cnode && String(cnode.nodeType || '') === 'dungeon_entrance' && isDescendIntent(text)) {
       const nodeId = String(cnode.id);
       const biome = biomeForNode(w.meta.seed, cnode);
-      const dungeon = generateDungeon(w.meta.seed, nodeId, { biome });
+      const dungeon = generateDungeon(w.meta.seed, nodeId, { biome, substrateEvents: substrateEventsFor(w, nodeId) });
       const st = dungeonLevelToStructure(dungeon, 0);
       if (st) {
         let w1 = applyDeltas(w, [{ op: 'addStructure', structure: st }]);

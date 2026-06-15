@@ -5140,14 +5140,16 @@ function detectAttackBeginIntent(world, text) {
 // mediated verbs (swing/throw/hurl/slam/smash/cut/hit) are deliberately excluded
 // here — they reach a person only via an aggression preposition ("swing it AT
 // him"), handled separately, so "throw a coin to Corwin" never reads as an attack.
-const DIRECT_ATTACK_VERB = /\b(attack|fight|kill|murder|assault|strike|stab|slash|punch|kick|tackle|charge|bash|club|clobber|whack|brain|throttle|choke|strangle|knife|gut|maim|behead|lunge|headbutt|grapple|shoot|hit)\s+(.+)/i;
+// Includes unarmed/natural strikes (bite, knee, elbow, sweep, …) — by SRD they're
+// unarmed strikes (damage) or a shove-to-prone (sweep/trip); either way an attack.
+const DIRECT_ATTACK_VERB = /\b(attack|fight|kill|murder|assault|strike|stab|slash|punch|kick|tackle|charge|bash|club|clobber|whack|brain|throttle|choke|strangle|knife|gut|maim|behead|lunge|headbutt|grapple|shoot|hit|bite|claw|gnaw|scratch|knee|elbow|stomp|sweep|trip|gore|butt|throttle)\s+(.+)/i;
 // Attack idioms ("come at her", "set upon the elder", "lay into him"). NOTE:
 // "go for X" is intentionally omitted — "go" is consumed by the movement gate
 // (which runs before combat-begin), so it can't reach here. Logged for punchlist.
 const ATTACK_IDIOM = /\b(?:come\s+at|lunge\s+(?:at|for)|set\s+(?:upon|on)|lay\s+into|rush\s+at)\s+(.+)/i;
 // Any violence at all (gate). Broad — recall here is fine because the target
 // must still resolve to a PRESENT NPC below (objects/empty refs → no match).
-const ANY_VIOLENCE = /\b(attack|fight|kill|murder|assault|strike|stab|slash|punch|kick|tackle|charge|bash|club|clobber|whack|brain|throttle|choke|strangle|knife|gut|maim|behead|lunge|headbutt|grapple|shoot|swing|hurl|throw|lob|slam|smash|hit|beat|come\s+at|set\s+(?:upon|on)|lay\s+into|rush\s+at)\b/i;
+const ANY_VIOLENCE = /\b(attack|fight|kill|murder|assault|strike|stab|slash|punch|kick|tackle|charge|bash|club|clobber|whack|brain|throttle|choke|strangle|knife|gut|maim|behead|lunge|headbutt|grapple|shoot|swing|hurl|throw|lob|slam|smash|hit|beat|bite|claw|gnaw|scratch|knee|elbow|stomp|sweep|trip|gore|butt|come\s+at|set\s+(?:upon|on)|lay\s+into|rush\s+at)\b/i;
 // Unambiguously hostile verbs — only these license matching an NPC named anywhere
 // in the sentence (so "throw a coin to Corwin" can't, but "Corwin, I'll kill you" can).
 const UNAMBIGUOUS_VIOLENCE = /\b(attack|kill|murder|assault|stab|slash|punch|kick|tackle|charge|bash|club|clobber|whack|brain|throttle|choke|strangle|knife|gut|maim|behead|lunge)\b/i;
@@ -5220,6 +5222,10 @@ function detectPhysicalAssault(world, text) {
   // D — hostage / human shield.
   if (/\b(?:shield|hostage)\b/i.test(t)
       && (m = t.match(/\b(?:grab|drag|haul|use|hold|take|seize|snatch|yank)\s+(.+?)\s+(?:as|for|in\s+front)/i))) {
+    const npc = hit(m[1]); if (npc) return { npc };
+  }
+  // E — natural weapon: "sink/bury my teeth|fangs|claws into <NPC>".
+  if ((m = t.match(/\b(?:sink|bury|dig)\s+(?:my\s+|your\s+)?(?:teeth|fangs|nails|claws|talons|tusks)\s+(?:in|into)\s+(.+)/i))) {
     const npc = hit(m[1]); if (npc) return { npc };
   }
   return null;
@@ -5306,17 +5312,15 @@ function fuzzyMatchNpc(npcs, ref) {
   ));
   if (byName) return byName;
 
-  // 1b. Token match: a distinctive name token shared with the ref. Lets
-  //     "Corwin's head" / "old Corwin there" resolve to "Corwin Boneknit"
-  //     (the multi-word name shares no substring with the ref, but shares the
-  //     token "corwin"). Names are distinctive enough that this is safe.
-  const refToks = new Set(refLower.split(/[^a-z0-9]+/).filter(x => x.length >= 3));
+  // 1b. Token match: a DISTINCTIVE name token shared with the ref. Lets
+  //     "Corwin's head" / "old Corwin there" resolve to "Corwin Boneknit".
+  //     Stopwords are excluded — else "the door" matches "Brennan the Fox" on
+  //     the shared token "the" (epithet names like "X the Fox" / "the Lingerer").
+  const TOKEN_STOPWORDS = new Set(['the', 'and', 'for', 'with', 'into', 'onto', 'over', 'out', 'off', 'his', 'her', 'him', 'you', 'your', 'this', 'that', 'these', 'those', 'are', 'was', 'were', 'their', 'them', 'who', 'old', 'one']);
+  const distinct = (s) => s.split(/[^a-z0-9]+/).filter(x => x.length >= 3 && !TOKEN_STOPWORDS.has(x));
+  const refToks = new Set(distinct(refLower));
   if (refToks.size) {
-    const byToken = npcs.find(n => {
-      if (!n) return false;
-      const nameToks = norm(n.name).split(/[^a-z0-9]+/).filter(x => x.length >= 3);
-      return nameToks.some(tok => refToks.has(tok));
-    });
+    const byToken = npcs.find(n => n && distinct(norm(n.name)).some(tok => refToks.has(tok)));
     if (byToken) return byToken;
   }
 

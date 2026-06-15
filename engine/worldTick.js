@@ -6,6 +6,7 @@ import { fateBand } from './rulesets.js';
 import { scoreInventorySignals } from './gear/gearProps.js';
 import { scarifyNode, ensureMap } from './map/mapState.js';
 import { propagateRumors } from './rumor/propagate.js';
+import { propagateClaims } from './claims.js';
 import { mintVillain, corruptionTier, VILLAIN_STAGE_COST, VILLAIN_GOAL_ACCEL } from './story/villain.js';
 import { addThreat } from './ledger.js';
 
@@ -59,6 +60,10 @@ export function worldTick(world, seed = '') {
 
   // 5.7) Age and propagate rumors
   w = tickRumors(w, rng);
+
+  // 5.8) Propagate epistemic claims along the social graph (deterministic, zero LLM calls).
+  // Epistemic variance lives here — claims drift and fracture; engine truth is never touched.
+  w = propagateClaims(w, rng);
 
   // 6) Modify reputation + alignment state
   w = tickReputation(w, severity);
@@ -574,7 +579,7 @@ function pushTickLog(w, line) {
 
 function pushEvent(world, { kind, data }) {
   const t = world.timeline.length;
-  const e = { t, kind: String(kind), data: data ?? {} };
+  const e = { id: `${kind}:${t}`, t, kind: String(kind), data: data ?? {} };
   return { ...world, timeline: [...world.timeline, e] };
 }
 

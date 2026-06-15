@@ -287,7 +287,11 @@ return res.json({ ok:false, reason:safe });
       if (!prompt) return res.json({ ok: false, reason: 'bad_mode' });
 
       const { queryLocal } = await import('./server/localLlmProvider.js');
-      const out = await queryLocal({ prompt, schema: { line: 'one spoken line' }, timeout: 9000 });
+      // A warm local 8B with RAG-grounded context can take ~10–12s; the old 9s cap
+      // cut those off (silent fallback to base dialogue). Give it real headroom and
+      // bound the reply (one line) so the call still lands. Env-tunable.
+      const voiceTimeout = Number(process.env.NPC_VOICE_TIMEOUT || 18000);
+      const out = await queryLocal({ prompt, schema: { line: 'one spoken line' }, timeout: voiceTimeout, maxTokens: 120 });
       if (!out?.ok) return res.json({ ok: false, reason: out?.reason || 'local_llm_unavailable' });
 
       // The fence: one line, bounded length, no narration leakage.
@@ -485,8 +489,14 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const PORT = Number(process.env.PORT || 5179);
   const HOST = process.env.HOST || '0.0.0.0';
   const app = createApp();
-  app.listen(PORT, HOST, () => {
+  app.listen(PORT, HOST, async () => {
     console.log(`ai-dm-v2 dev server: http://localhost:${PORT}`);
+    // Warm the local LLM at boot so the first NPC conversation isn't a cold-load
+    // timeout. Best-effort: skipped silently if Ollama isn't running.
+    try {
+      const { checkHealth, warmModel } = await import('./server/localLlmProvider.js');
+      if (await checkHealth()) { warmModel(); console.log('Local LLM warming (NPC voice will be ready shortly)'); }
+    } catch { /* no local LLM — base dialogue path, no warmup needed */ }
   });
 
   app.on('error', (e) => {

@@ -25,6 +25,13 @@ function getContextWindow() {
   return 4096;
 }
 
+// How long Ollama keeps the model resident after a call. Without this it unloads
+// on the default idle timeout, so the next conversation cold-loads (10–30s) and
+// blows the request timeout. '30m' keeps it warm across a play session.
+function getKeepAlive() {
+  return (process.env.LOCAL_LLM_KEEP_ALIVE || '').trim() || '30m';
+}
+
 export async function checkHealth(fetchImpl = globalThis.fetch) {
   try {
     const endpoint = getEndpoint();
@@ -55,7 +62,7 @@ export function isAvailable() {
   return _available === true;
 }
 
-export async function queryLocal({ prompt, schema, model, timeout, fetchImpl } = {}) {
+export async function queryLocal({ prompt, schema, model, timeout, maxTokens, fetchImpl } = {}) {
   const resolvedModel = model || getModel();
   const resolvedTimeout = timeout ?? DEFAULT_TIMEOUT;
   const endpoint = getEndpoint();
@@ -81,8 +88,13 @@ export async function queryLocal({ prompt, schema, model, timeout, fetchImpl } =
         prompt: fullPrompt,
         format: 'json',
         stream: false,
+        keep_alive: getKeepAlive(),
         options: {
-          num_ctx: getContextWindow()
+          num_ctx: getContextWindow(),
+          // Cap the reply length when the caller knows the output is short (e.g. a
+          // one-line NPC voice). Bounds the generation tail — the slow part — so a
+          // warm call lands well under the timeout. Omitted → Ollama's default.
+          ...(Number.isFinite(maxTokens) && maxTokens > 0 ? { num_predict: Math.trunc(maxTokens) } : {})
         }
       }),
       signal: controller.signal
@@ -109,6 +121,22 @@ export async function queryLocal({ prompt, schema, model, timeout, fetchImpl } =
       return { ok: false, reason: 'timeout' };
     }
     return { ok: false, reason: 'unavailable' };
+  }
+}
+
+// Proactively load the model into memory (and pin it via keep_alive) so the first
+// real conversation isn't a cold-load timeout. Fire-and-forget; never throws.
+export async function warmModel(fetchImpl = globalThis.fetch) {
+  try {
+    const endpoint = getEndpoint();
+    await fetchImpl(`${endpoint}/api/generate`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ model: getModel(), prompt: 'ok', stream: false, keep_alive: getKeepAlive(), options: { num_predict: 1 } })
+    });
+    return true;
+  } catch {
+    return false;
   }
 }
 

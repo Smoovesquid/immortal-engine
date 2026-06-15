@@ -361,7 +361,14 @@ export function buildLocationSurvey(world) {
   // neighbor; if he's visible at all he reads as a wary stranger.
   const allNpcs = Array.isArray(currentNode?.settlement?.npcs) ? currentNode.settlement.npcs : [];
   if (insideStructure) {
-    parts.push('No one else is under this roof.');
+    // Sight-scoped: you don't SEE the village roster through the walls, but if
+    // the settlement is peopled you can hear it — so a player inside a building
+    // isn't told they're alone in an empty world (Opus gate: "where am I?" read
+    // as an unsupported emptiness claim with seven NPCs in the settlement).
+    const sociableNearby = allNpcs.filter(n => n && !n.hostile).length;
+    parts.push(sociableNearby > 0
+      ? 'No one else is under this roof, though you can hear the settlement stirring beyond the walls.'
+      : 'No one else is under this roof.');
   } else {
     const sociable = allNpcs.filter(n => n && !n.hostile);
     const lurkers = allNpcs.filter(n => n && n.hostile).length;

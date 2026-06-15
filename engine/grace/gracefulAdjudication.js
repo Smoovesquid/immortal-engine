@@ -129,6 +129,12 @@ const META_INVENTORY = /\bwhat (?:do i have|am i carrying|have i got)\b|\bwhat'?
 // request, never a dice roll. Answered in-voice from real canon (an empty
 // loadout is reported honestly, never invented as "a short sword").
 const META_EQUIPMENT = /\bwhat(?:'?s| is)\s+my\s+(?:weapon|blade|sword|armou?r|gear|equipment|loadout)\b|\bname\s+my\s+(?:weapon|blade|sword|armou?r)\b|\bwhat\s+am\s+i\s+(?:wielding|wearing|armed\s+with)\b|\bwhat(?:'?s| is)\s+on\s+my\s+(?:character\s+)?sheet\b|\bwhat\s+(?:weapon|armou?r)\s+(?:do|am)\s+i\b/;
+// Character identity / build — "who am I", "what's my class/level", "what are my
+// stats". A player learning their own character is an information request, not a
+// fiction beat and never a dice roll. Identity is answered in-voice; an explicit
+// stats/scores ask gets the actual numbers (it's your own sheet — a table DM tells you).
+const META_CHARACTER = /\bwho\s+am\s+i\b|\bwhat(?:'?s| is)\s+my\s+(?:class|archetype|level|background|build|character)\b|\bwhat\s+(?:kind\s+of\s+)?(?:character|class)\s+am\s+i\b|\bwhat\s+am\s+i\b(?!\s+(?:wielding|wearing|carrying|holding|armed|doing|looking|supposed|meant|going|here))|\b(?:what\s+are|tell\s+me|give\s+me|list)\s+my\s+(?:stats|abilities|attributes|scores|ability\s+scores)\b/i;
+const META_STATS_REQ = /\b(?:stats|attributes|scores|ability\s+scores)\b/i;
 const META_TIME = /\bwhat time\b|\btime of day\b|\bis it (?:day|night|morning|evening|dark|light)(?:time)?\b/;
 const META_OBJECTIVE = /\b(?:what(?:'?s| is| was)? )?my (?:quest|objective|goal|mission|task)\b|\bwhat (?:am i|are we) (?:supposed to|meant to|trying to)\b|\bwhy am i here\b|\bwhat(?:'?s| is) the (?:quest|objective|goal|plan)\b|\bremind me\b/;
 
@@ -136,7 +142,7 @@ const META_OBJECTIVE = /\b(?:what(?:'?s| is| was)? )?my (?:quest|objective|goal|
 export function isMetaQuestion(text) {
   const t = String(text || '').toLowerCase();
   return META_LOCATION.test(t) || META_HEALTH.test(t) || META_RECAP.test(t) || META_OUTCOME.test(t)
-    || META_INVENTORY.test(t) || META_EQUIPMENT.test(t) || META_TIME.test(t) || META_OBJECTIVE.test(t);
+    || META_INVENTORY.test(t) || META_EQUIPMENT.test(t) || META_CHARACTER.test(t) || META_TIME.test(t) || META_OBJECTIVE.test(t);
 }
 
 // A null-action: filler, acknowledgment, or an abort. A real DM lets the
@@ -214,6 +220,31 @@ export function handleMetaQuestion(text, world) {
     else parts.push(`Nothing but your own clothes stand between you and a blade.`);
     if (sigName) parts.push(`And you carry ${sigName}, which means something to you.`);
     return parts.join(' ');
+  }
+
+  // Character identity / build — answer who you are from canon. Identity in-voice;
+  // an explicit stats ask gets the real scores (your own sheet, no fiction to dodge).
+  if (META_CHARACTER.test(lowerText)) {
+    const p = world.party?.[0] || {};
+    const name = String(p.name || '').trim();
+    const arch = String(p.archetype || '').trim();
+    const level = Number(p.level) || null;
+    const hook = String(p.background?.hook || '').trim();
+    const ideal = String(p.traits?.ideal || '').trim();
+    const flaw = String(p.traits?.flaw || '').trim();
+    const out = [];
+    const who = [name && `You're ${name}`, arch && `a ${arch.toLowerCase()}`].filter(Boolean).join(', ');
+    out.push((who || "You're yourself") + (level ? ` — and by the count, you're level ${level}` : '') + '.');
+    if (hook) out.push(hook.replace(/[.?!]*$/, '.'));
+    if (ideal || flaw) out.push(`You hold to ${ideal || 'your own code'}${flaw ? `, for all that you're ${flaw}` : ''}.`);
+    if (META_STATS_REQ.test(lowerText) && p.stats && typeof p.stats === 'object') {
+      const order = ['MIGHT', 'AGILITY', 'WITS', 'GRIT', 'CHARM'];
+      const line = order.filter(k => k in p.stats).map(k => `${k} ${p.stats[k]}`).join(', ');
+      if (line) out.push(`Your measures: ${line}.`);
+    } else {
+      out.push(`The fine print — your scores and your kit — is yours to read on your sheet.`);
+    }
+    return out.join(' ');
   }
 
   // Time of day — read the world clock (hours of travel since dawn of day 1).

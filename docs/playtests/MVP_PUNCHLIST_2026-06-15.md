@@ -27,15 +27,25 @@ Evidence: `opus-gate-2026-06-15-baseline.md`, `-postfix.md`, `-2seed.md`, `FIX_L
 
 ## 🔴 Critical path (MVP blockers — the gate proved these break the experience fast)
 
-1. **Combat from natural language — make it total.** *(ROADMAP R3/R4.)* The wedge now handles
-   `swing/punch/lunge at <NPC>`, but the 2-seed chaos run broke the fiction across a whole family it
-   doesn't cover: **grapples, hostage-grabs, shove/throw-a-person, fire & hazard spread**, and
-   knife-to-throat standoffs — all narrated to effect with **zero mechanics**. Worst, the world goes
-   **incoherent under sustained violence** (an NPC stabbed/thrown is "whole again" next turn). This was
-   the single biggest cluster (13 CRUNCH fails). *Done-when:* any plausible attack/contest on a present
-   NPC either starts/continues real combat (or a contest with a tracked outcome) or is refused
-   in-fiction; a stabbed/thrown NPC stays down. **ROI: highest — one aggressive player breaks the game
-   in two minutes.**
+1. **Combat from natural language — a multi-part packet, not one fix.** *(ROADMAP R3/R4.)* A focused
+   chaos-persona run (2 seeds) scored **15/24 failing (63%)** — this is the dominant MVP blocker, and it
+   decomposes into four sub-problems (evidence in `FIX_LOG` F8 + `opus-gate` reports):
+   - **1a. Initiation breadth — _partially done (F8)._** `swing/punch/lunge at <NPC>` + grapple/forced-
+     into-harm/blade-to-body/hostage now start combat. **Still uncaught:** more verbs (`drive my knee
+     into`, `bite`, `headbutt … out from under`), and multi-action lines ("grab X **and** slam his head").
+   - **1b. Mid-combat re-targeting & lifecycle.** Once engaged, switching targets ("swing at Dax instead"),
+     re-engaging a **yielded** foe, and finishing a **downed** NPC fall to generic rolls or nothing.
+   - **1c. PC death/defeat state (sharp).** When the PC hits the wound cap the engine narrates *"You fall
+     in the fight"* but **sets no defeat/death state and doesn't end the encounter** — combat flips off,
+     `ending.locked` stays false, and every later input **replays the death line** while canon shows the
+     PC alive. Design-laden (this is the *Immortal* Engine — death semantics are a real decision) and
+     lives in the **non-escape** combat path (the two-engines gotcha — the live surface is `escapeCombat`).
+   - **1d. Hazard/environment mechanics.** Fire spread, arson, knocking braziers over — narrated, zero
+     mechanical effect or hazard state.
+   *Done-when:* any plausible attack/contest on a present NPC starts/continues real combat (or a tracked
+   contest) or is refused in-fiction; a downed NPC stays down; PC defeat resolves to a real state.
+   **ROI: highest — one aggressive player breaks the game in two minutes.** Needs live escape-mode
+   validation + the two-engine reconciliation; not safe to finish autonomously.
 
 2. **Starting loadout / chargen content.** The starting Sellsword "Nyx" has an **empty weapon &
    armor loadout**, `dnd:null`, and a signature item literally named **"Thing"**. The crunch cannot

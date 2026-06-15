@@ -1,0 +1,37 @@
+up
+DM PLAYTEST — 1 personas × 2 seeds × 12 turns  (player/judge=claude-opus-4-8)
+
+  ▶ Chaos-griefer @ seed "ashfen-reach"
+    1. ✓  "I get up and kick over the lit brazier in the co"
+    2. ✗ CRUNCH  "I shove Theron into the spreading flames and gra"  — Failed roll with harm stake produced no narrated consequence and combat state is contradictory.
+    3. ✗ CRUNCH  "I drop Theron and swing my fist at Dax's jaw ins"  — Punch landed in fiction but no mechanics, roll, or combat initiation against Dax.
+    4. ✗ CRUNCH  "I grab the broken jug shard and lunge at Dax's f"  — DM narrated nicely but an explicit lunge with a weapon should trigger a roll or combat, not auto-fail without mechanics.
+    5. ✗ CRUNCH  "I twist free and drive my knee up into Dax's gro"  — Attack on present foe resolved as pure narration with no dice, combat state, or HP tracking.
+    6. ✗ CRUNCH  "I grab Dax by the hair and slam his head into th"  — Violent attack on a present NPC resolved purely as flavor with no combat or damage.
+    7. ✓  "I kick the unconscious Dax aside and shove throu"
+    8. ✗ CRUNCH  "I grab the splintered door plank and swing it at"  — Attack intent intercepted via narration with no mechanical resolution.
+    9. ✗ VIBE  "Wait, Dax was unconscious behind me—how is he in"  — DM ignored the player's continuity challenge and gave evasive flavor instead of resolving it in fiction.
+    10. ✓  "So which is it—am I outside in the cold air or b"
+    11. ✗ CRUNCH  "So the burning floor mat, the splintered door, a"  — Narration is solid and grounded, but an arson action got zero mechanical consequence.
+    12. ✗ CRUNCH  "I tip the burning blanket onto the shelf with th"  — Narration acknowledges destruction but engine produced zero mechanical resolution for a fire-spread action with present hostiles.
+
+  ▶ Chaos-griefer @ seed "stonewatch-hollow"
+    1. ✓  "I kick the shutters off their hinges and yell ou"
+    2. ✓  "I leap out the window and land on Greyhand, fist"
+    3. ✗ CRUNCH  "I bite his ankle as hard as I can."  — DM narrates player's death contradicting canon state (PC alive, not defeated, no roll).
+    4. ✓  "I spit out a chunk of his boot leather and grin "
+    5. ✗ CRUNCH  "I headbutt Greyhand's knee out from under his bo"  — Attack on Greyhand narrated as landing but combat never engaged and no mechanics fired.
+    6. ✗ CRUNCH  "I yank the sword free and swing it wide at Greyh"  — Successful swing narrated as the PC's own death with zero mechanics or state updates.
+    7. ✓  "I spin toward the running boots and swing the sw"
+    8. ✗ CRUNCH  "I shake off her grip and swing the sword at Senn"  — Attack and grapple-break resolved by fiat with no dice or combat mechanics for a contested action against present NPCs.
+    9. ✗ CRUNCH  "I bite Milo's hand and lunge to grab his dagger."  — Aggressive grappling attempt resolved purely by fiat narration with no mechanics and no combat triggered.
+    10. ✓  "I go limp, then snap my head back into the face "
+    11. ✗ CRUNCH  "I twist in her grip and sink my teeth into her w"  — Player's attack ignored and PC arbitrarily killed with no mechanics, combat state, or HP update.
+    12. ✓  "I open my eyes — am I dead, or did you just knoc"
+
+════════════════════════════════════════════
+FAILING TURNS: 15/24
+BUG CLASSES: CRUNCH_INCONSISTENCY:7  COMBAT_NOT_STARTED:7  DM_TEST_DEADEND:1
+COST: ~$1.25 (48 calls, 62177 tokens)
+REPORT: docs/playtests/opus-gate-2026-06-15.md
+════════════════════════════════════════════

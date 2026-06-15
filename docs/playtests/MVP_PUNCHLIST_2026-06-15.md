@@ -51,9 +51,15 @@ Evidence: `opus-gate-2026-06-15-baseline.md`, `-postfix.md`, `-2seed.md`, `FIX_L
      mechanical effect or hazard state.
    - **Engine reconciliation.** Combat-BEGIN still uses the non-escape resolver for turn 1 even in escape
      mode (turns 2+ use escape). Route combat-begin through the escape path in escape mode — clean, focused.
-   *Done-when:* any plausible attack on a present NPC (including a NEW target mid-fight) starts/continues
-   real escape combat or is refused in-fiction; narration honors the dice. **ROI: highest.** 1b + narration
-   grounding are the tractable next steps; validate live.
+   - **1g. Combat LIFECYCLE — _the dominant remaining root cause (F8/F10/F11/F12 narrowed #1 to this)._**
+     Initiation is now solid (all attack types start combat and apply first-hit damage). But a fled/
+     defeated NPC's wounds are **never persisted to their roster record**, so re-attacking re-mints them at
+     **full HP** — hence the chaos run's many "landed strike, still 8/8" flags (one bug, many symptoms).
+     Needs: persist enemy wounds across combat-end, fled-NPC semantics, SRD grapple/prone (pins/tackles
+     currently resolve as flee/defeat), and a reliable PC defeat-lock. **Design calls + live validation.**
+   *Done-when:* any plausible attack on a present NPC (incl. a new mid-fight target) starts/continues real
+   escape combat or is refused in-fiction; damage persists across rounds and re-engagements; narration honors
+   the dice. **ROI: highest.** Initiation done; **lifecycle (1g)** is the next packet — live escape-mode session.
 
 2. **Starting loadout / chargen content.** The starting Sellsword "Nyx" has an **empty weapon &
    armor loadout**, `dnd:null`, and a signature item literally named **"Thing"**. The crunch cannot

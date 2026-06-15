@@ -1,0 +1,8 @@
+    12. ✓  "Am I dead, or do I get a roll to claw back from "
+
+════════════════════════════════════════════
+FAILING TURNS: 12/24
+BUG CLASSES: CRUNCH_INCONSISTENCY:11  COMBAT_NOT_STARTED:1
+COST: ~$1.28 (48 calls, 64624 tokens)
+REPORT: docs/playtests/opus-gate-2026-06-15.md
+════════════════════════════════════════════

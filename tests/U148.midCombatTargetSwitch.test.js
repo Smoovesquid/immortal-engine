@@ -4,7 +4,7 @@ import fs from 'node:fs';
 
 import { newWorld } from '../engine/state.js';
 import { beginAdventure, playerMove } from '../engine/playloop.js';
-import { applyDeltas } from '../engine/effectsCore.js';
+import { beginCombat, mintEnemyFromNpc } from '../engine/combat/combatLifecycle.js';
 import { normalizeManifest, normalizePack } from '../engine/rulesets.js';
 
 // Opus gate #1 (escape-mode chaos run): attacking a NEW present NPC mid-fight
@@ -20,11 +20,14 @@ function setup() {
   // mode:'escape' = the LIVE combat engine (public/v1.js boots this).
   let w = beginAdventure(newWorld({ seed: 'glass-harbor', fate: 0.3, mode: 'escape', pack: { primaryId: 'fantasy', mixerId: null } }), byId).world;
   const node = w.map.nodes.find(n => n.id === w.map.currentNodeId);
-  const names = (node.settlement.npcs || []).map(n => String(n.name).split(' ')[0]);
-  // Start a fight against A, then force A to survive so combat stays active.
-  w = playerMove(w, byId, `I attack ${names[0]}`).world;
-  assert.ok(w.combat?.active, 'combat started against first NPC');
-  w = applyDeltas(w, [{ op: 'combatState', set: { enemies: w.combat.enemies.map(e => ({ ...e, hp: 50, defeated: false })) } }]);
+  const npcs = node.settlement.npcs || [];
+  const names = npcs.map(n => String(n.name).split(' ')[0]);
+  // Construct active combat against A directly with a high-HP enemy, so the fight
+  // deterministically survives the target switch (a weak NPC would be finished or
+  // flee on the opening round). beginCombat is the same machinery the engine uses.
+  const enemyA = { ...mintEnemyFromNpc(npcs[0]), hp: 50, maxHp: 50, defeated: false };
+  w = beginCombat(w, { enemies: [enemyA], reason: 'test' });
+  assert.ok(w.combat?.active, 'combat active against first NPC');
   return { w, byId, a: names[0], b: names[1] };
 }
 const enemyNames = (w) => (w.combat?.enemies || []).map(e => String(e.name).split(' ')[0]);

@@ -1696,7 +1696,7 @@ function playerMoveCore(world, packsById, text) {
       const newTarget = detectNewCombatTarget(w, text);
       if (newTarget) {
         newTarget.hostile = true;
-        const enemy = mintEnemyFromNpc(newTarget);
+        const enemy = applyPersistedEnemyHp(w, mintEnemyFromNpc(newTarget));
         enemy.id = `enemy_${(w.combat.enemies || []).length}`;
         w = applyDeltas(w, [{ op: 'combatState', set: { enemies: [...(w.combat.enemies || []), enemy] } }]);
       }
@@ -1791,48 +1791,10 @@ function playerMoveCore(world, packsById, text) {
   {
     const begin = detectAttackBeginIntent(w, text);
     if (begin) {
-      let w1 = beginCombat(w, { enemies: [mintEnemyFromNpc(begin.npc)], reason: 'player-attack' });
-      if (w1.combat?.active) {
-        w = w1;
-        const move = inferCombatMoveFromText(w, pack, actorId, text);
-        const companionBeats = [];
-        const { world: wAfter, result } = resolveCombatTurn(w, move, {
-          afterPlayerTurn: (wMid) => runCompanionTurns(wMid, companionBeats)
-        });
-        w = wAfter;
-        w = appendRecentBeat(w, buildBeatFromTurn(w, text, move, result));
-        for (const spec of companionBeats) {
-          w = appendRecentBeat(w, buildBeatFromTurn(w, spec.text, spec.move, spec.result));
-        }
-        w = pushEvent(w, {
-          kind: 'resolution',
-          data: {
-            actorId,
-            intent: String(text || ''),
-            text: String(text || ''),
-            roll: result.roll,
-            dc: result.dc,
-            outcome: result.outcome,
-            updateKind: 'combat',
-            combatSummary: String(result.combatSummary || '')
-          }
-        });
-        const composed = compose(w, text, {
-          kind: 'turn',
-          t: w.timeline.length,
-          roll: result.roll,
-          dc: result.dc,
-          success: result.outcome === 'success',
-          updateKind: 'combat',
-          outcome: result.outcome,
-          approach: move.approachTag,
-          enemyName: String(result.targetEnemyName || ''),
-          enemyId: String(result.targetEnemyId || ''),
-          parleyed: typeof result.mechanicsLine === 'string' && result.mechanicsLine.includes('combat:parley')
-        }, { pack });
-        w = applyComposerDelta(w, composed.ledgerDelta);
-        return { world: w, output: { narration: ABSTRACT_FLOOR_RE.test(composed.narrationLine) ? combatGroundedOutcome(w, result.targetEnemyName, result.outcome) : composed.narrationLine, mechanics: result.mechanicsLine, combatSummary: String(result.combatSummary || '') } };
-      }
+      // Route through the shared engager so the hostile fast-path applies
+      // persisted HP and (in escape mode) the escape resolver — same as CM11.
+      const eng = engageNpcCombat(w, begin.npc, text, pack, actorId, false);
+      if (eng) return eng;
     }
   }
 
@@ -5233,12 +5195,37 @@ function detectPhysicalAssault(world, text) {
 
 // Shared: mint the NPC as an enemy, begin combat, resolve the player's opening
 // move, log + compose. Returns {world, output} or null if combat didn't start.
+// 1g — a foe re-engaged after fleeing/falling keeps the wounds we saved at the
+// last combat-end (meta.npcCombatHp), instead of re-minting at full health.
+function applyPersistedEnemyHp(world, enemy) {
+  const saved = world?.meta?.npcCombatHp?.[String(enemy?.sourceNpcId || '')];
+  if (enemy && saved && Number.isFinite(Number(saved.hp))) {
+    const max = Number(enemy.maxHp) || 1;
+    enemy.hp = Math.max(0, Math.min(max, Number(saved.hp)));
+    enemy.defeated = Boolean(saved.down) || enemy.hp <= 0;
+  }
+  return enemy;
+}
+
 function engageNpcCombat(world, npc, text, pack, actorId, markHostile) {
   let w = world;
   if (markHostile && npc) npc.hostile = true;
-  const w1 = beginCombat(w, { enemies: [mintEnemyFromNpc(npc)], reason: 'player-attack' });
+  const w1 = beginCombat(w, { enemies: [applyPersistedEnemyHp(w, mintEnemyFromNpc(npc))], reason: 'player-attack' });
   if (!w1.combat?.active) return null;
   w = w1;
+  // Engine reconciliation (1g): in escape mode resolve the OPENING turn with the
+  // same engine the rest of the fight uses (escapeCombat) — not the non-escape
+  // wound/stress resolver — so a narrative-initiated fight is coherent (escapeHp
+  // model, flee, defeat all match) and a re-engaged foe keeps its persisted HP.
+  if (w.meta?.mode === 'escape') {
+    const { world: wAfter, result } = resolveEscapeCombatTurn(w, String(text || ''));
+    w = wAfter;
+    const escMove = { actorId, intentText: String(text || ''), approachTag: 'force', stakeTag: 'survival' };
+    w = appendRecentBeat(w, buildBeatFromTurn(w, text, escMove, { outcome: result.outcome, mechanicsLine: result.mechanicsLine }));
+    w = pushEvent(w, { kind: 'resolution', data: { actorId, intent: String(text || ''), text: String(text || ''), roll: 0, dc: 0, outcome: result.outcome, updateKind: 'combat', combatSummary: String(result.combatSummary || '') } });
+    const narr = result.combatSummary ? `Wizard: ${result.combatSummary}` : 'Wizard: You trade blows.';
+    return { world: w, output: { narration: narr, mechanics: result.mechanicsLine, combatSummary: String(result.combatSummary || ''), beats: Array.isArray(result.beats) ? result.beats : [] } };
+  }
   const move = inferCombatMoveFromText(w, pack, actorId, text);
   const companionBeats = [];
   const { world: wAfter, result } = resolveCombatTurn(w, move, {

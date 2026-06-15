@@ -92,7 +92,11 @@ export function ensureWorld(partial) {
       // reset via beganAt scoping; layPool/relentlessUsed persist across fights
       // and replenish on shortRest. null = no feature state yet (sandbox worlds
       // and legacy characters never set it).
-      escapeFeats: ensureEscapeFeats(meta.escapeFeats)
+      escapeFeats: ensureEscapeFeats(meta.escapeFeats),
+      // 1g — persisted enemy HP across combats, keyed by source NPC id, so a
+      // fled/fallen foe stays wounded when re-engaged instead of re-minting at
+      // full health. {} when none. Additive + defaulted (backward-compatible).
+      npcCombatHp: (meta.npcCombatHp && typeof meta.npcCombatHp === 'object') ? meta.npcCombatHp : {}
     },
     ruleset: w.ruleset && typeof w.ruleset === 'object' ? w.ruleset : { id: 'core', version: 1 },
     pack: w.pack && typeof w.pack === 'object' ? w.pack : { primaryId: 'fantasy', mixerId: null },
@@ -334,7 +338,11 @@ export function ensureCombat(c) {
   for (const eRaw of enemiesIn) {
     if (!eRaw || typeof eRaw !== 'object') continue;
     const id = String(eRaw.id ?? '').trim();
-    const name = String(eRaw.name ?? '').trim();
+    // Strip a leading article from combat enemy names: the escape-combat beats
+    // all read "the ${name}", so a foe named "The Thorn" would double into "the
+    // The Thorn". Normalizing here (the single chokepoint for every enemy) keeps
+    // every "the ${name}" template correct.
+    const name = String(eRaw.name ?? '').trim().replace(/^(?:the|a|an)\s+/i, '');
     if (!id || !name) continue;
     const maxHp = clampInt(eRaw.maxHp ?? 1, 1, 9999);
     const hpRaw = clampInt(eRaw.hp ?? maxHp, 0, 9999);

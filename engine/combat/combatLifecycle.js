@@ -182,6 +182,18 @@ export function endCombat(world, { reason } = {}) {
   let w = ensureWorld(world);
   const reasonStr = String(reason ?? '');
   w = pushCombatEvent(w, 'combat-end', { reason: reasonStr });
+  // 1g — persist each enemy's final HP/defeated, keyed by source NPC, so a foe
+  // who FLED or fell stays wounded when re-engaged instead of re-minting at full
+  // health (the dominant combat-lifecycle bug). Lives on meta (survives
+  // ensureWorld), read by engageNpcCombat when re-minting.
+  const npcCombatHp = { ...(w.meta?.npcCombatHp || {}) };
+  for (const e of (Array.isArray(w.combat?.enemies) ? w.combat.enemies : [])) {
+    if (e && e.sourceNpcId) {
+      const hp = Math.max(0, Number(e.hp) || 0);
+      npcCombatHp[String(e.sourceNpcId)] = { hp, down: Boolean(e.defeated) || hp <= 0 };
+    }
+  }
+  w = { ...w, meta: { ...w.meta, npcCombatHp } };
   w = applyDeltas(w, [{
     op: 'combatState',
     set: {

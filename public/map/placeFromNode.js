@@ -15,6 +15,7 @@ import { generatePlace } from './generatePlace.js';
 import { getPlan } from './plans/index.js';
 import { buildingTypeFor } from '../../engine/structures/roomDetail.js';
 import { exitsFrom, ensureMap } from '../../engine/map/mapState.js';
+import { makeRng, seedFromString } from '../../engine/rng.js';
 
 const TIER_STEP = 5; // grid-distance per danger rung
 
@@ -76,54 +77,75 @@ export function placeFromWorldNode(world, nodeId) {
   }
   if (!entries.length) return generatePlace({ seed, nodeType: nodeTypeFor(node), tier: tierForNode(world, node) });
 
-  // M7-S3 — 2-D town layout: buildings fill rows straddling the main east-west
-  // road, alternating above/below and expanding outward, so a town reads as a
-  // cluster (not a single-file street). Row width ~sqrt(count) for a squarish
-  // footprint. rowGap clears the tallest plans so footprints never overlap.
-  const colGap = 3.2, rowGap = 8.5;
-  const perRow = Math.max(3, Math.round(Math.sqrt(entries.length * 1.7)));
-  const rowCursorX = [];
-  let maxX = 8, minRowY = pathY, maxRowY = pathY;
-  for (let i = 0; i < entries.length; i++) {
-    const e = entries[i];
+  // P-81b — ORGANIC town layout: buildings scatter along a gently CURVED road,
+  // clustered and irregular (terrain-following), never a lattice. Deterministic:
+  // a seeded RNG places each building near the road by rejection-sampling against
+  // already-placed footprints, so the same node always yields the same village.
+  const rng = makeRng(seedFromString(`${seed}|placelayout`));
+  const span = Math.max(16, 8 + entries.length * 2.4);   // road length grows with size
+
+  // The road spine: a gentle seeded curve about pathY (a lane that bends, not a
+  // ruler-straight street). roadY(x) is reused to seat buildings and the well.
+  const amp = 2.2 + rng.nextFloat() * 3.2;
+  const phase = rng.nextFloat() * Math.PI * 2;
+  const freq = 0.16 + rng.nextFloat() * 0.12;
+  const roadY = (x) => pathY + amp * Math.sin(x * freq + phase);
+
+  // Scatter the buildings: along the road, offset to one side, clustered near it,
+  // rejecting overlaps. Each footprint is an AABB (+1u breathing gap).
+  const placed = [];
+  const hits = (a) => placed.some(b => !(a.maxX + 1 < b.minX || a.minX - 1 > b.maxX || a.maxY + 1 < b.minY || a.minY - 1 > b.maxY));
+  let minX = 1e9, minY = 1e9, maxX = -1e9, maxY = -1e9;
+  for (const e of entries) {
     const ext = planExtent(e.plan);
-    const row = Math.floor(i / perRow);
-    const band = Math.ceil((row + 1) / 2);            // 1,1,2,2,3,3…
-    const side = (row % 2 === 0) ? -1 : 1;            // even rows above the road, odd below
-    const rowCenterY = pathY + side * rowGap * band;
-    if (rowCursorX[row] == null) rowCursorX[row] = 2;
-    const ox = rowCursorX[row] - ext.minX;
-    const oy = rowCenterY - (ext.minY + ext.maxY) / 2; // centre the plan on its row
+    let cxp = span / 2, cyp = pathY, aabb = null;
+    for (let tries = 0; tries < 48; tries++) {
+      const along = 2 + rng.nextFloat() * (span - 4);              // position down the lane
+      const side = rng.nextFloat() < 0.5 ? -1 : 1;
+      const off = (2 + rng.nextFloat() * rng.nextFloat() * 8) * side; // clustered near the road, tail outward
+      cxp = along + (rng.nextFloat() - 0.5) * 1.6;
+      cyp = roadY(along) + off;
+      aabb = { minX: cxp + ext.minX, minY: cyp + ext.minY, maxX: cxp + ext.maxX, maxY: cyp + ext.maxY };
+      if (!hits(aabb)) break;                                       // found a clear spot
+    }
+    placed.push(aabb);
+    minX = Math.min(minX, aabb.minX); maxX = Math.max(maxX, aabb.maxX);
+    minY = Math.min(minY, aabb.minY); maxY = Math.max(maxY, aabb.maxY);
+    const ox = cxp - (ext.minX + ext.maxX) / 2, oy = cyp - (ext.minY + ext.maxY) / 2; // seat plan centre at (cxp,cyp)
     buildings.push({ plan: e.plan, ox, oy, ...e.meta });
-    rowCursorX[row] += ext.w + colGap;
-    maxX = Math.max(maxX, rowCursorX[row]);
-    minRowY = Math.min(minRowY, rowCenterY - ext.h / 2);
-    maxRowY = Math.max(maxRowY, rowCenterY + ext.h / 2);
   }
+  if (!Number.isFinite(minX)) { minX = 0; maxX = span; minY = pathY - 6; maxY = pathY + 6; }
+  const endX = Math.max(8, maxX + 2);
 
-  const endX = Math.max(8, maxX);
-  const midX = Math.round(endX / 2);
-
-  // Roads reach the map edge wherever a neighbor lies, so you can walk onward; a
-  // cross street stitches the rows together when the town spreads beyond one band.
+  // The curved road as a polyline, reaching the map edge wherever a neighbor lies
+  // so you can walk onward; short spurs bend off to the north/south exits.
   const exits = exitsFrom(ensureMap(world && world.map), id);
-  const mainRoadX0 = exits.west ? -3 : 0;
-  const mainRoadX1 = exits.east ? endX + 3 : endX;
-  const paths = [{ pts: [[mainRoadX0, pathY], [mainRoadX1, pathY]], w: 1.4 }];
-  if (maxRowY - minRowY > rowGap * 1.5) paths.push({ pts: [[midX, minRowY - 2], [midX, maxRowY + 2]], w: 1.1 });
-  if (exits.north) paths.push({ pts: [[midX, pathY], [midX, minRowY - 6]], w: 1.1 });
-  if (exits.south) paths.push({ pts: [[midX, pathY], [midX, maxRowY + 6]], w: 1.1 });
+  const x0 = exits.west ? minX - 4 : Math.max(0, minX - 1);
+  const x1 = exits.east ? endX + 3 : endX;
+  const roadPts = [];
+  for (let x = x0; x <= x1; x += 2) roadPts.push([x, roadY(x)]);
+  roadPts.push([x1, roadY(x1)]);
+  const midX = (x0 + x1) / 2;
+  const paths = [{ pts: roadPts, w: 1.4 }];
+  if (exits.north) paths.push({ pts: [[midX, roadY(midX)], [midX + (rng.nextFloat() - 0.5) * 4, minY - 6]], w: 1.1 });
+  if (exits.south) paths.push({ pts: [[midX, roadY(midX)], [midX + (rng.nextFloat() - 0.5) * 4, maxY + 6]], w: 1.1 });
 
   const terrain = {
     paths,
-    groves: [{ cx: 3, cy: maxRowY + 2.5, r: 2.2, n: 9 }, { cx: endX - 3, cy: minRowY - 2, r: 1.8, n: 6 }],
-    props: [{ type: 'well', ux: midX, uy: pathY + 1.4 }]
+    // Groves tuck into the open corners, not on a grid.
+    groves: [{ cx: minX - 1.5, cy: maxY + 2, r: 2.2, n: 9 }, { cx: endX - 2, cy: minY - 1.5, r: 1.8, n: 6 }],
+    props: [{ type: 'well', ux: midX, uy: roadY(midX) + 1.4 }]
   };
 
-  tokens.push({ type: 'player', ux: 1.5, uy: pathY });
-  // Neighbors get their initial; a lurking hostile reads as '?' at the edge.
+  // The player enters from the lane's west end; neighbours stand scattered near
+  // the road through the village, not in a tidy row.
+  tokens.push({ type: 'player', ux: x0 + 1.5, uy: roadY(x0 + 1.5) });
   const shown = npcs.filter(n => n && !n.hostile).slice(0, 12).concat(npcs.filter(n => n && n.hostile).slice(0, 2).map(n => ({ ...n, name: '?' })));
-  shown.forEach((n, i) => { tokens.push({ type: 'npc', ux: 2 + (i + 1) * (endX - 3) / (shown.length + 1), uy: pathY - 0.7, label: String(n.name || 'V').trim().charAt(0).toUpperCase() || 'V', npc: { id: n.id || ('npc' + i), name: n.name, role: n.role } }); });
+  shown.forEach((n, i) => {
+    const ax = minX + ((i + 1) / (shown.length + 1)) * (maxX - minX) + (rng.nextFloat() - 0.5) * 2;
+    const ay = roadY(ax) + (rng.nextFloat() < 0.5 ? -1 : 1) * (0.8 + rng.nextFloat() * 1.4);
+    tokens.push({ type: 'npc', ux: ax, uy: ay, label: String(n.name || 'V').trim().charAt(0).toUpperCase() || 'V', npc: { id: n.id || ('npc' + i), name: n.name, role: n.role } });
+  });
 
   return { nodeType: node.nodeType || 'settlement', tier: tierForNode(world, node), seed, terrain, buildings, tokens, footprintW: endX };
 }

@@ -6,31 +6,36 @@ no system artifact) **and crunch** (the rules underneath are correct & consisten
 
 **How this list was built:** the Opus-4.8 experiential gate (`scripts/dm-playtest.mjs`) — four
 in-character player personas driving the real live DM path, an adversarial Opus judge scoring every
-turn. Baseline 17/48 failing (35%) → after this session's fixes **9/48 (19%)**. The items below are
-what the gate still catches, triaged by what blocks the MVP bar.
+turn. Single seed: baseline 17/48 (35%) → after fixes **9/48 (19%)**. A second run on **two fresh
+seeds** then scored **33/96 (34%)** — not a regression (the fixes generalize) but harder worlds +
+probing that expose the remaining critical-path items at full force. The items below are what the gate
+still catches, triaged by what blocks the MVP bar.
 
-Evidence: `opus-gate-2026-06-15-baseline.md`, `opus-gate-2026-06-15-postfix.md`, `FIX_LOG_2026-06-15.md`.
+Evidence: `opus-gate-2026-06-15-baseline.md`, `-postfix.md`, `-2seed.md`, `FIX_LOG_2026-06-15.md`.
 
 ---
 
 ## ✅ Solid today (don't re-litigate)
 - **Deterministic floor** — 7,646 unit tests, worldHash replay, invariants, Canon Log authority. Strong.
 - **Prose breadth** — `prose:gate` 216 inputs, 0 issues.
-- **Fixed this session** — canon proper-noun guard (no invented NPC/place names), self-harm deals a
-  wound, equipment/sheet queries answered in-voice (no fabricated roll), `swing X at <NPC>` starts
-  real combat, article grammar in the look-for pivot.
+- **Fixed this session (F1–F7)** — canon proper-noun guard (no invented NPC/place names); self-harm
+  deals a wound; equipment/sheet queries answered in-voice (no fabricated roll); `swing X at <NPC>`
+  starts real combat; article grammar in the look-for pivot; interior survey acknowledges the living
+  settlement; character-identity queries ("who am I / class / level / stats") answered in-voice.
 
 ---
 
 ## 🔴 Critical path (MVP blockers — the gate proved these break the experience fast)
 
-1. **Combat from natural language — make it total.** *(ROADMAP R3.)* The wedge now handles
-   `swing/punch/lunge at <NPC>`, but the gate's chaos persona broke the fiction with phrasings it
-   doesn't cover: "hurl him **through the window**", "**behead** Corwin", and — worst — the world
-   went **incoherent under sustained violence** ("Corwin whole again" after being stabbed/thrown).
-   *Done-when:* any plausible attack on a present NPC either starts/continues real combat or is
-   refused in-fiction; a stabbed/thrown NPC stays stabbed/thrown. **ROI: highest — one aggressive
-   player breaks the game in two minutes.**
+1. **Combat from natural language — make it total.** *(ROADMAP R3/R4.)* The wedge now handles
+   `swing/punch/lunge at <NPC>`, but the 2-seed chaos run broke the fiction across a whole family it
+   doesn't cover: **grapples, hostage-grabs, shove/throw-a-person, fire & hazard spread**, and
+   knife-to-throat standoffs — all narrated to effect with **zero mechanics**. Worst, the world goes
+   **incoherent under sustained violence** (an NPC stabbed/thrown is "whole again" next turn). This was
+   the single biggest cluster (13 CRUNCH fails). *Done-when:* any plausible attack/contest on a present
+   NPC either starts/continues real combat (or a contest with a tracked outcome) or is refused
+   in-fiction; a stabbed/thrown NPC stays down. **ROI: highest — one aggressive player breaks the game
+   in two minutes.**
 
 2. **Starting loadout / chargen content.** The starting Sellsword "Nyx" has an **empty weapon &
    armor loadout**, `dnd:null`, and a signature item literally named **"Thing"**. The crunch cannot
@@ -50,8 +55,12 @@ Evidence: `opus-gate-2026-06-15-baseline.md`, `opus-gate-2026-06-15-postfix.md`,
 
 ## 🟡 Polish (first-impression quality)
 
-5. **Interior "No one else is under this roof"** while seven NPCs stand in the village reads as a
-   contradiction to a newcomer. Refine the interior survey to acknowledge people nearby. *(P3 sight-scoping.)*
+4b. **Mixed/failed rolls must bind the fiction.** The 2-seed run caught trades and social contests
+    where a `mixed`/`failure` roll was narrated as an **unconditional success** — the fiction ignored
+    the mechanical outcome. A won/lost/partial check must change the fiction accordingly. *(Crunch gate.)*
+5. **Interior "empty room" still leaks on a second path.** F6 fixed `buildLocationSurvey`, but the
+   interior **explore / room-overview** branch still asserts an empty room while NPCs are present —
+   chase that path too. *(P3 sight-scoping.)*
 6. **Unify thrown-at-NPC with combat.** "hurl the jar **at** Corwin" routes to the innocent-harm
    *consequence* system while "swing the chair **at** Corwin" starts combat — inconsistent.
 7. **"go for X" attack idiom** is eaten by the movement gate (runs before combat-begin). Needs

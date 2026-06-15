@@ -26,6 +26,18 @@ Two commitments fall out of that:
 
 ## Inherited laws (non-negotiable — see CLAUDE.md, docs/THE_DM_TEST.md)
 
+- **The Underworld is HORROR (Tim, 2026-06-13).** A dungeon is the game's horror
+  movement — the story goes underground to face dark things in the dark. The
+  substance is ATMOSPHERE and DREAD (the cold, the pressing dark, the reach of
+  your light and what waits beyond it, the SIGNS of a threat — old blood, dragged
+  bones, a stench, a sound ahead). Tension ACCUMULATES as you descend. The FIGHT
+  is the PAYOFF — earned, climactic, the release of carried dread — NEVER the
+  thing you trip over on entry. So: most rooms are dread + discovery, not combat;
+  encounters are TELEGRAPHED (sensed on the approach, then revealed) and SPARSE +
+  DEEP (no fights near the entrance; the vault guardian is the climax); the dark
+  and your light are felt. "Enter the dungeon and fight immediately" is the
+  anti-pattern. This governs every dungeon packet (D0–D5) like THE_DM_TEST governs
+  the surface.
 - **The DM is the only verb.** Movement and action are conversation. The map is a
   PURE VIEWER (pan/zoom). No click-to-travel, no click-to-move. Navigate a
   dungeon by telling the DM ("I take the dark stairs down"). See

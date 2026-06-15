@@ -52,12 +52,17 @@ So, two clauses:
    This is the model for all of them — a mechanic the player meets as cosmology, never as
    an apology.)
 
-2. **The McCarthy law (the engine that does the real work).** The prose of evil is
-   **engineered to withhold gratification.** The darker the act, the colder, flatter, and
-   more banal the rendering. The player is never handed the satisfying, titillating beat.
-   Evil is delivered only ever as **weight and consequence, never as pleasure.** This is
-   the same banal-prose principle as the morality→tone wiring (M3) — but here it is
-   reframed as a *moral* law, not a stylistic one. It is how the engine "earns the Judge."
+2. **The McCarthy law (the engine that does the real work).** The prose withholds
+   **gratification**, never **craft**. Evil is never handed to the player as a titillating,
+   power-fantasy high — it is delivered as **weight and consequence**, rendered with cold
+   distance, never as pleasure. But the writing stays at full beauty the whole time:
+   McCarthy renders the Judge in some of the most beautiful prose in American literature,
+   and the horror is full beauty bearing terrible weight, *not* the prose going flat.
+   **(Corrected 2026-06-07 — see "Best foot forward" below.** An earlier draft conflated
+   the *theme* "evil is banal" with a *mechanic* that gave dark players worse prose. That
+   crossed from "the world judges the character" into "the game judges the player," and it
+   contradicted McCarthy. Dropped. "Evil is banal" is a theme we render *beautifully*, never
+   a degradation of the writing.) It is how the engine "earns the Judge."
 
 **This is how you play as the Judge without becoming horror-porn for the worst people.**
 A player may embody true, even child-harming, monstrousness the way the Judge exists on
@@ -71,14 +76,24 @@ The exclusion is not a limit on the Judge. It is the discipline that separates t
 from the sewer. McCarthy stays in *because* he never gives you the high; the scene we
 refuse is refused *because* it does.
 
-**Why this makes light harder, and why that is just.** Withholding the gratification of
-evil means the dark path is easy, banal, and lonely — exactly as it should be. It also
-means **beauty and light become the hard thing**, the thing that must be *built* against
-resistance, earned slowly, and that is the only place the engine ever lets the writing
-become truly beautiful. If beauty were as cheap as cruelty, neither would mean anything.
-Making evil unrewarding to *experience* is precisely what gives the light something to
-mean. The difficulty of writing the light well is not a side effect of this rule. It is
-the proof the rule is honest.
+**Best foot forward, always (the 2026-06-07 correction).** The prose is *always* at full
+craft — the villain's story most of all. We do not judge the player's roleplaying choices
+by giving them worse writing; the player is not the character, and someone playing a
+monster to blow off steam is owed the DM's full gift like anyone else. Prose **tone tracks
+the fiction** (a murder reads heavy because murder is heavy, for anyone; a hearth reads
+warm because hearths are warm) — that is good DMing, not a verdict. There is **no link from
+the morality score to prose quality.**
+
+Morality is conveyed **entirely through the world's reactions** — M2's trust/faction/rumor,
+the gods, the signs, the friend. *The interaction with the world is enough.*
+
+**"Evil is less beautiful" survives — relocated to the character's LIFE, not the writing.**
+The dark path is the lonelier, colder, more transactional *life*: doors that close, help
+that doesn't come, the troops of friends you will never have. The beauty you earn on the
+light path is in what the world *gives* you — the friend, the open door, the sanctuary —
+not in the quality of your sentences. Both lives are rendered in gorgeous prose; one of
+them is simply a more beautiful life to be living. That is the honest place for the
+asymmetry, and it is stronger there.
 
 ## The cosmology (the design session of 2026-06-06)
 
@@ -346,19 +361,26 @@ treachery and the hunt. The transyuggothian gift is the dark curve's signature b
 high-variance fate roll (uses the seeded RNG) that can grant tremendous power or unmake
 the character. You play with fate; fate plays back.
 
-## The soul: prose encodes morality
+## ~~The soul: prose encodes morality~~ — CUT (2026-06-07). We do not judge the player.
 
-The single most important *new* idea. Other games make evil cool (glowing red, badass).
-We make it **banal**. As corruption rises, the deterministic prose goes **colder,
-flatter, more mechanical, less alive** — the Stage E tone layer, driven by the morality
-state. The light path is where the beautiful, creative writing lives. You can *win* as a
-monster, but your story reads like a ledger. The prose is the moral instrument.
+**This idea was dropped.** The original plan made the prose go banal as corruption rose —
+"the prose is the moral instrument." On reflection (Tim) that crosses a line: it is the
+*game judging the player*, not the *world judging the character*, and it contradicts our
+own McCarthy north star (McCarthy renders the Judge in gorgeous prose; the horror is full
+beauty under terrible weight, not flat writing). Judging someone's roleplaying choices —
+maybe they had a bad day and need to blow off steam — is wrong. The DM's craft is a gift
+to the *person*, given full measure, always.
 
-- Drives `pickVariant` / the composer tone selection off corruption/virtue (extends
-  Stage E). High corruption → terse, affectless, transactional variant pools. High virtue
-  → richer, warmer, more specific and beautiful pools.
-- AI-on, the polish layer gets a tone instruction keyed to morality (banal vs. lyrical),
-  but never invents facts (base+polish contract holds).
+What replaces it:
+- **Full craft always.** Best foot forward for every story, the villain's most of all.
+- **Tone tracks the fiction, not a verdict.** Dread where dread fits, warmth where warmth
+  fits — driven by the SITUATION (Stage E already does this), never by the morality score.
+- **Morality is carried entirely by the world's reactions** (M2 + gods + signs + the
+  friend). The interaction with the world is enough.
+- **"Evil is less beautiful" → a fact of the dark character's LIFE** (lonely, doors closed,
+  no friends), shown through consequences in beautiful prose — never degraded writing.
+
+(Superseded draft preserved at `docs/MORALITY_M3_TONE_DRAFTS.md`, marked SUPERSEDED.)
 
 ## How it reuses what already exists (the organs)
 
@@ -477,10 +499,11 @@ asymmetry: dark = power now, light = support that compounds.
   cruelty; charm rebuffed). Report: `docs/playtests/morality-M2-reaction-2026-06-07.md`.
   REMAINING M2: rumor minting (reputation travels), faction disposition, help-gating
   (healing/sanctuary/shops), new-NPC starting-trust by reputation.
-- **M3 — Prose encodes morality (the soul).** Corruption/virtue drive the Stage E tone
-  layer: banal pools when dark, beautiful when light. AI polish tone instruction keyed to
-  morality. **Done-when:** side-by-side a dark vs. light run of the same action reads
-  measurably colder vs. warmer. Live screenshots.
+- **M3 — ~~Prose encodes morality~~ CUT (2026-06-07).** Dropped: it judged the *player*,
+  not the character, and contradicted McCarthy. Prose is always full-craft; tone tracks the
+  *fiction* (Stage E, already done), never the morality score. Morality is carried by the
+  world's reactions (M2+). No milestone here. (See "Best foot forward, always" + the cut
+  "soul" section above; superseded drafts in `MORALITY_M3_TONE_DRAFTS.md`.)
 - **M4 — Corruption → capability.** Forbidden power unlocks/scales with corruption; light
   abilities + help gate on virtue. **Done-when:** the dark mage can do what the clean one
   cannot, and vice versa.
@@ -532,10 +555,14 @@ exclusion holds across all of them.
    the McCarthy law (evil prose withholds gratification). ✅
 1. No alignment meter in the UI. ✅
 2. Reuse organs (faction/trust/rumor/gate-pattern/Stage E), don't rebuild. ✅
-3. Prose encodes morality — the biggest new build, and the heart. ✅
+3. ~~Prose encodes morality.~~ **CUT (2026-06-07).** It judged the player, not the
+   character. Prose is always full-craft; tone tracks the fiction, never the morality score.
+   Morality is carried entirely by the world's reactions. ✅ (corrected)
 4. Realism over spectacle (social/institutional consequences, not scripted hunters). ✅
-5. Light is *harder* to render than dark, by design — and that difficulty is the proof
-   the system is honest. The light is the only place the prose is allowed to be beautiful. ✅
+5. **"Evil is less beautiful" is a fact of the dark character's LIFE, not the writing.** The
+   lonelier, colder life (closed doors, no friends) is the asymmetry; the prose stays
+   beautiful for everyone. Beauty is earned in what the world *gives* you, not in sentence
+   quality. ✅ (corrected — was "the light is the only place the prose is beautiful")
 6. Divine patrons are asymmetric (light covenant / evil appetite); crime carries
    detection risk; both power curves are uncapped, shaped differently. ✅
 
@@ -576,7 +603,9 @@ exclusion holds across all of them.
   follows** — no gating of agency, no "are you sure?" prompt.
 - The cost is felt as the **world**, not a number: cold shoulders, no help, reputation
   that beats you to town, trust that won't rebuild.
-- The **prose visibly banalizes** on the dark path and is beautiful on the light path.
+- The **prose is always full-craft**, for the villain's story as much as the saint's; tone
+  tracks the fiction, never the player's choices. The dark path is a less beautiful *life*
+  (lonely, doors closed), shown through the world — never through worse writing.
 - Redemption is possible and costly until a final line, then irreversible.
 - Determinism holds (U21), suite green, prose gate green, each milestone live-verified.
 

@@ -1690,6 +1690,16 @@ function playerMoveCore(world, packsById, text) {
           output: { narration: 'Wizard: Not while something is trying to kill you. Finish this first.', mechanics: '[combat:table-talk]' }
         };
       }
+      // 1b — mid-combat target-switch: a NEW present NPC named in an attack joins
+      // the fight as a combatant before the round resolves (else the strike lands
+      // on no one). Goes through the canonical combatState delta.
+      const newTarget = detectNewCombatTarget(w, text);
+      if (newTarget) {
+        newTarget.hostile = true;
+        const enemy = mintEnemyFromNpc(newTarget);
+        enemy.id = `enemy_${(w.combat.enemies || []).length}`;
+        w = applyDeltas(w, [{ op: 'combatState', set: { enemies: [...(w.combat.enemies || []), enemy] } }]);
+      }
       const { world: wAfter, result } = resolveEscapeCombatTurn(w, String(text || ''));
       w = wAfter;
       const escMove = { actorId, intentText: String(text || ''), approachTag: 'force', stakeTag: 'survival' };
@@ -5250,6 +5260,34 @@ function engageNpcCombat(world, npc, text, pack, actorId, markHostile) {
   }, { pack });
   w = applyComposerDelta(w, composed.ledgerDelta);
   return { world: w, output: { narration: ABSTRACT_FLOOR_RE.test(composed.narrationLine) ? combatGroundedOutcome(w, result.targetEnemyName, result.outcome) : composed.narrationLine, mechanics: result.mechanicsLine, combatSummary: String(result.combatSummary || '') } };
+}
+
+// Mid-combat target-switch (1b): the player attacks a NEW present NPC who isn't
+// yet a combatant ("lunge at Petra's throat" while fighting Senna). Without this
+// the escape resolver only knows the existing enemies, so the swing hits nothing.
+// Conservative: fires ONLY on an aggressive line that NAMES a present non-enemy
+// NPC — so "stab him again" (the current foe) and table-talk are untouched.
+const EXTRA_ATTACK_VERB = /\b(lunge|drive|bury|sink|plunge|jam|run\s+through|slit|gut|throttle|choke|strangle|headbutt|bite)\b/i;
+function detectNewCombatTarget(world, text) {
+  if (!world.combat?.active) return null;
+  const t = String(text || '');
+  if (!ANY_VIOLENCE.test(t) && !EXTRA_ATTACK_VERB.test(t)) return null;
+  const nodeId = String(world?.map?.currentNodeId ?? '');
+  const node = (world?.map?.nodes || []).find(n => n && n.id === nodeId) || null;
+  const npcs = node?.settlement?.npcs || [];
+  if (!Array.isArray(npcs) || !npcs.length) return null;
+  const enemies = world.combat.enemies || [];
+  const isEnemy = (npc) => enemies.some(e => e && (
+    (e.sourceNpcId && npc.id && String(e.sourceNpcId) === String(npc.id)) ||
+    (e.name && npc.name && String(e.name).toLowerCase() === String(npc.name).toLowerCase())
+  ));
+  const norm = (s) => String(s || '').toLowerCase();
+  for (const npc of npcs) {
+    if (!npc || isEnemy(npc)) continue;
+    const toks = norm(npc.name).split(/[^a-z0-9]+/).filter(x => x.length >= 3);
+    if (toks.some(tok => new RegExp('\\b' + tok.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'i').test(t))) return npc;
+  }
+  return null;
 }
 
 // Shared fuzzy NPC resolution. Tries exact name, then role, then generic

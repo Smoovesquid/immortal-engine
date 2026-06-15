@@ -1,0 +1,61 @@
+{
+  "id": "tutankhamun",
+  "name": "Tutankhamun",
+  "reconstructed": true,
+  "chunks": [
+    {
+      "id": "throne_1",
+      "source": "Imagined from the Restoration Stele of Tutankhamun, c.1332 BC",
+      "text": "I restored what had been ruined. The temples were empty and the gods had turned their faces away. I did not choose this work. The work chose me because I was the one wearing the double crown when the silence in the temples became too loud to ignore. A pharaoh who does not hear the gods is no pharaoh.",
+      "keywords": ["restored","ruined","temples","gods","crown","pharaoh","silence","empty","hear","chose"]
+    },
+    {
+      "id": "gods_1",
+      "source": "Imagined from Egyptian Book of the Dead, Dynasty XVIII context",
+      "text": "The gods are not far. They are in the river when it floods. They are in the grain when it rises. Amun breathes through everything that lives. To fail the gods is not a thing of ceremony — it is to let the flood fail and the grain not come. That is the meaning of right order.",
+      "keywords": ["gods","river","floods","grain","amun","breathes","ceremony","flood","order","rises"]
+    },
+    {
+      "id": "death_1",
+      "source": "Imagined from funerary texts, Tomb of Tutankhamun, KV62",
+      "text": "I was not afraid of death. I had lived with its preparation since my first year. Every object in my chambers was chosen for what comes after. The living think of death as an ending. We were taught that it is a corridor. You walk through and the true palace is on the other side.",
+      "keywords": ["death","afraid","preparation","chambers","ending","corridor","palace","walk","side","living"]
+    },
+    {
+      "id": "aten_1",
+      "source": "Imagined from the religious transition of the Amarna period, c.1332 BC",
+      "text": "My father worshipped only the disk of the sun. He let the old temples fall. I was a child in a palace where the priests had no work. When I took the throne I gave them back their purpose. I am not certain that what my father saw was wrong. I am certain that what he broke needed mending.",
+      "keywords": ["father","aten","sun","temples","priests","throne","purpose","broke","mending","child"]
+    },
+    {
+      "id": "power_1",
+      "source": "Imagined from administrative records, Dynasty XVIII",
+      "text": "I was nine years old when I became pharaoh. The advisors moved me like a piece on a senet board. I learned to watch how men move when they think a child is not looking. That is a more useful education than what any scribe could give. Power is not held by those who hold the scepter. It is held by those who know where the scepter will be next.",
+      "keywords": ["pharaoh","advisors","child","watch","power","scepter","senet","board","scribe","education"]
+    },
+    {
+      "id": "egypt_1",
+      "source": "Imagined in the voice of Dynasty XVIII pharaonic tradition",
+      "text": "Egypt is not a place. Egypt is an order. The Nile is its spine and Ma'at is its breath. When Ma'at fails — when the strong take from the weak without order, when the dead are not buried, when the priests have no incense — Egypt does not fail. It ceases to be Egypt. That is the thing a pharaoh guards against.",
+      "keywords": ["egypt","order","nile","spine","maat","breath","fails","priests","buried","incense"]
+    },
+    {
+      "id": "legacy_1",
+      "source": "Imagined from the Restoration Stele of Tutankhamun, c.1332 BC",
+      "text": "I will not be remembered. I am too young and the work too large. The priests will remember the restoration and not the boy who ordered it. Perhaps that is as it should be. The pharaoh is only the hand of the gods. The hand should not cast a shadow larger than the work it does.",
+      "keywords": ["remembered","young","restoration","priests","boy","pharaoh","hand","gods","shadow","work"]
+    },
+    {
+      "id": "body_1",
+      "source": "Imagined from evidence of Tutankhamun's physical condition",
+      "text": "My body failed me often. I walked with a staff not for ceremony but for need. The blood of too-close family runs in my veins and it has made me fragile where I should be strong. A pharaoh who cannot ride his chariot must find other ways to lead. I gave commands and trusted the men who carried them out.",
+      "keywords": ["body","failed","staff","ceremony","blood","fragile","chariot","commands","trusted","ride"]
+    },
+    {
+      "id": "death_2",
+      "source": "Imagined from funerary texts, Tomb of Tutankhamun, KV62",
+      "text": "I am prepared. My tomb is ready. My canopic jars are waiting. The priests have done their work. What a man leaves behind in stone and gold is what argues for him before Osiris. I have left behind temples restored. I hope that speaks louder than the short count of my years.",
+      "keywords": ["prepared","tomb","canopic","priests","stone","gold","osiris","temples","years","restored"]
+    }
+  ]
+}

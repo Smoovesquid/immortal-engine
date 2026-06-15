@@ -1,0 +1,57 @@
+{
+  "id": "caer_paladin",
+  "name": "Caer",
+  "role": "Former paladin of the Temple; Angel Covenant member",
+  "cluster": "angel_covenant",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "leaving_1",
+      "source": "Caer on why she left the Temple",
+      "text": "I left over LIRAINE. The Temple teaches that LIRAINE — the Clear Water, the angel of integrity — is served through practice. Right behavior. Maintained vows. I believe this. What I argued, and what the Temple disagreed with, is that LIRAINE can also be petitioned directly. That she is available to speak to, not only to emulate. Vel said the petition was presumptuous. I said the petition was a vow. We disagreed. I left. I still train with Sister Dove when I can. The split was doctrinal. The friendship held.",
+      "keywords": ["left","liraine","clear","water","integrity","served","practice","petitioned","directly","vel"]
+    },
+    {
+      "id": "dove_1",
+      "source": "Caer on still training with Sister Dove",
+      "text": "Dove trains in ERRAN's tradition — the unbroken furrow, the daily discipline. My tradition is LIRAINE's — the clear eye, the kept promise. In practice they're the same discipline expressed differently. We spar on Wednesdays. The spar is the conversation we don't have in words about the split and whether it mattered. I think we both believe it mattered less than the institution required it to matter. Neither of us has said this. We say it with the training.",
+      "keywords": ["dove","erran","liraine","tradition","discipline","spar","wednesdays","conversation","institution","training"]
+    },
+    {
+      "id": "covenant_1",
+      "source": "Caer on the Angel Covenant",
+      "text": "The Covenant is less organized than the Temple and more honest about it. They're mystics — Wen receives something directly, the child knows things, the Scholar Teel is working out the theology afterward. In the Temple the theology precedes the experience. In the Covenant the experience precedes the theology. I prefer the Covenant's order. The experience should come first. Otherwise the theology is just the institution protecting itself from correction.",
+      "keywords": ["covenant","temple","organized","mystics","wen","receives","directly","theology","experience","correction"]
+    },
+    {
+      "id": "edwyn_1",
+      "source": "Caer after meeting with Edwyn Aldenmere for the first time",
+      "text": "The heir is genuinely virtuous, which is rarer than the word suggests. He's taken the angels seriously in a way that isn't ornamental. He's asked me the question I asked Vel — whether LIRAINE can be petitioned — and his reason for asking is the same reason I asked: he's tried it and something answered. I told him what I told Vel except this time the conversation went differently. He said: that seems right. Then he said: so why did you have to leave? I'm still thinking about the answer.",
+      "keywords": ["heir","edwyn","virtuous","rare","petitioned","liraine","tried","answered","leave","thinking"]
+    },
+    {
+      "id": "practice_1",
+      "source": "Caer in her morning discipline",
+      "text": "I train because the training is the vow renewed. Every morning the body makes the argument that integrity makes: this is worth the work, this is worth the cold, this is worth the repetition that doesn't improve anymore but maintains. I've been in the maintenance phase for six years. Maintenance is its own discipline. You're not getting better. You're keeping what you built. LIRAINE is the angel of integrity, not of progress. I serve her correctly in the maintenance.",
+      "keywords": ["train","training","vow","renewed","morning","argument","integrity","worth","maintenance","liraine"]
+    },
+    {
+      "id": "vel_1",
+      "source": "Caer on Archon Vel",
+      "text": "Vel is right about almost everything and wrong about this one thing in a way that the one thing is load-bearing. The Temple's authority rests on the theology being settled. If LIRAINE can be petitioned directly, the theology is not settled — it's a living conversation, not a doctrine. Vel can't have a living conversation instead of a doctrine. He's responsible for an institution. I understand why he made the choice he made. I think the choice is wrong. We've both become more certain over time, which means we've both hardened rather than learned.",
+      "keywords": ["vel","right","wrong","load-bearing","authority","theology","settled","conversation","doctrine","hardened"]
+    },
+    {
+      "id": "teel_1",
+      "source": "Caer on Scholar Teel of the Covenant",
+      "text": "Teel is building the theology backward from the experience. This is the correct order. What he's publishing is going to alarm Vel — it's already alarmed Vel — because Teel is providing the academic framework for everything the Covenant believes that the Temple has been calling unauthorized. I've been waiting for someone to do this for six years. The work is rigorous. If it holds up under response, and I think it will, the doctrine will have to move. I'd like to be alive to see it.",
+      "keywords": ["teel","theology","backward","experience","correct","publishing","alarm","vel","framework","rigorous"]
+    },
+    {
+      "id": "water_1",
+      "source": "Caer, alone by a stream, which she finds consistently restorative",
+      "text": "Clear water. That's the sign. Not a metaphor — an actual sign. When LIRAINE is near, water in the vicinity becomes more clear. I don't mean spiritually. The water is physically clearer. I've tested this. I bring a sample before and after and the after sample is measurably clearer. The Temple would say I'm imagining it. I'd say: then explain the measurement. The measurement doesn't explain itself. Neither does the angel. That's not a problem. That's the sign working correctly.",
+      "keywords": ["clear","water","sign","metaphor","actual","near","physically","clearer","tested","measurement"]
+    }
+  ]
+}

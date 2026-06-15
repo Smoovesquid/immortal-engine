@@ -1,0 +1,57 @@
+{
+  "id": "flower_seller",
+  "name": "Luce",
+  "role": "Flower seller in the market; the most perishable vendor; sells what the day produces",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "flowers_1",
+      "source": "Luce on selling flowers",
+      "text": "Flowers are the most temporary thing sold in this market. A fish has days. A flower has hours. My entire business is the management of an extremely short window — the window between the flower at its best and the flower that no one wants. In ten years of selling flowers, the management of the window is the whole job. I cut in the morning, arrange in the morning, and sell from the opening of the market. By midafternoon the best is gone. What's left at closing is what goes to the Covenant.",
+      "keywords": ["flowers","most","temporary","thing","sold","market","fish","has","days","flower"]
+    },
+    {
+      "id": "perve_1",
+      "source": "Luce on Perve",
+      "text": "Perve and I have been adjacent in the market for seven years. The vegetable and the flower have an obvious connection: both are plants, both are perishable, both are sold to the household that makes things from them. Perve's customers and my customers overlap significantly. What Perve and I have noticed: on occasions, someone arrives not knowing whether they need what's at Perve's stall or what's at mine. On those occasions, I send them to Perve if they need sustenance. Perve sends them to me if they need occasion.",
+      "keywords": ["perve","adjacent","market","seven","years","vegetable","flower","obvious","connection","both"]
+    },
+    {
+      "id": "syne_1",
+      "source": "Luce on Syne",
+      "text": "Syne provides the herbs with medicinal properties. I provide the flowers with no practical purpose. In seven years of occasional conversation with Syne, the distinction has been interesting: Syne's plants serve a function. My flowers serve no function except the function of being beautiful and present and temporary. Syne said once: the useful thing and the beautiful thing are different questions. I said: they're the same question in different seasons. We've been having this conversation across seven years without reaching agreement. I think we'll keep having it.",
+      "keywords": ["syne","provides","herbs","medicinal","properties","provide","flowers","no","practical","purpose"]
+    },
+    {
+      "id": "sel_1",
+      "source": "Luce on Sel",
+      "text": "The Hollow Court takes my closing flowers. What's left at the end of the market day — still beautiful, not quite at the morning's peak — I bring to the court. Sel said when the arrangement was established: the court's work with the dying benefits from the presence of living things that are also at the end of their day. In five years of this arrangement, the court uses the flowers in the mourning spaces. The flower that's slightly past its peak in the morning light is at its right moment for the court's evening work.",
+      "keywords": ["hollow","court","takes","closing","flowers","what's","left","end","market","day"]
+    },
+    {
+      "id": "maret_1",
+      "source": "Luce on Maret",
+      "text": "Maret buys flowers from me every week. In three years since Maret's grief, the weekly purchase is the same purchase — the same variety, the same quantity, the same day. What changes: the way the purchase is made. In the first year after the grief: Maret picked the flowers quickly and left. In the second year: slower, more attention to which specific flowers. In the third year: occasionally, a question about the variety, about where it grew. The interest in the flower is returning. I've watched it return from the outside.",
+      "keywords": ["maret","buys","flowers","every","week","three","years","since","maret's","grief"]
+    },
+    {
+      "id": "what_flowers_are_for_1",
+      "source": "Luce on what flowers are actually for",
+      "text": "People buy flowers for occasions and for grief and for no reason except that the flower was there and was beautiful. In ten years, the reason for the purchase tells me something about the purchaser. The occasion purchase is transactional — the occasion requires a flower. The grief purchase is the person reaching toward something living in the middle of loss. The no-reason purchase is the most interesting: the person who buys a flower because the flower exists and the person wants the flower to be in their day. In ten years, the no-reason purchase is the purchase I love most.",
+      "keywords": ["people","buy","flowers","occasions","grief","no","reason","except","flower","was"]
+    },
+    {
+      "id": "what_luce_holds_1",
+      "source": "Luce on the flower she's never sold",
+      "text": "Every year, one flower from the season that I keep. Not the best flower — the one that surprised me most. The flower that appeared in a variety I'd grown many times before and was different in a specific way. In ten years, ten flowers in a dry arrangement that occupies the corner of my workspace at home. Ten years of surprises. The arrangement is not beautiful in the way the market flowers are beautiful. It's beautiful in the way that something kept is beautiful: it was worth keeping.",
+      "keywords": ["every","year","one","flower","season","keep","not","best","flower","one"]
+    },
+    {
+      "id": "ten_years_1",
+      "source": "Luce on ten years of selling flowers",
+      "text": "In ten years, I've sold approximately forty-three thousand flowers. Forty-three thousand individual instances of a living thing that was beautiful for a day. All forty-three thousand are gone now — composted, wilted, dried, pressed in books, fallen from vases. In ten years, I've moved forty-three thousand temporary things through the market and into the places where they spent their day. The work is entirely made of things that don't last. I find this more meaningful than I expected to when I started.",
+      "keywords": ["ten","years","sold","approximately","forty-three","thousand","flowers","forty-three","thousand","individual"]
+    }
+  ]
+}

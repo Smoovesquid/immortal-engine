@@ -1,0 +1,57 @@
+{
+  "id": "vell_keeper",
+  "name": "Beret",
+  "role": "VELL devotee (Kindness); runs a travelers' shelter; Harbor Quarter adjacent",
+  "cluster": "harbor_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "vell_1",
+      "source": "Beret explaining VELL to a curious traveler",
+      "text": "VELL is not the angel of niceness. Niceness is a social behavior. Kindness is a commitment to a specific kind of attention — you see the person in front of you as a person with specific needs in a specific moment, and you address what you see rather than what would be convenient for you to address. The unkind version of the same behavior is: you see a category of person and you apply the category's treatment. VELL requires you to see the specific person and respond to the specifics.",
+      "keywords": ["vell","not","niceness","social","behavior","kindness","commitment","attention","person","specific"]
+    },
+    {
+      "id": "shelter_1",
+      "source": "Beret at the shelter, receiving a new arrival",
+      "text": "The shelter has eleven beds and a common room. I run it on what the Temple allocates and what the merchants who've used the harbor for long enough give when I ask them. The people who stay here are people in transit who don't have the money for the Anchor & Argument or the connections for a household. I ask three questions: where are you going, what do you need tonight, and is there anyone who needs to know you're here. The third question is either necessary or it isn't.",
+      "keywords": ["shelter","eleven","beds","common","room","temple","allocates","merchants","harbor","transit"]
+    },
+    {
+      "id": "almas_1",
+      "source": "Beret on the Temple almskeeper Almas",
+      "text": "Almas and I do adjacent work. She gives bread at the door; I give beds at the shelter. The people who come to me have already been to her door, usually — the bread comes first and the bed comes after. We've coordinated informally for six years. She knows I have beds. I know she has bread. When someone needs both, she tells them where I am, and I send people who are stable enough to walk to her door. The circuit is: hunger resolved, then shelter, then whatever comes next.",
+      "keywords": ["almas","adjacent","work","bread","door","beds","shelter","coordinated","informally","six"]
+    },
+    {
+      "id": "rook_1",
+      "source": "Beret on Rook's Orphan Roads network",
+      "text": "Rook and I have a standing arrangement: orphaned children who wash up at the harbor go to Rook, not to institutions. The institutions are not unkind but they're categorical — the child goes into the category, the category determines the treatment, the treatment is correct for the category but not for the child. Rook's network keeps the children specific. I'm the person at the harbor end who makes the referral. I've made twenty-three referrals in seven years. Rook says she knows where each of the twenty-three are.",
+      "keywords": ["rook","standing","arrangement","orphaned","children","harbor","institutions","categorical","treatment","specific"]
+    },
+    {
+      "id": "nessa_1",
+      "source": "Beret on Nessa at the Anchor & Argument",
+      "text": "Nessa and I have an understanding: people who arrive at the Anchor with no money and no place to sleep get sent to me. This means I sometimes receive people late at night who've been at the bar for several hours before Nessa redirected them. Nessa sends them with a cup of water and a specific piece of information: where the shelter is and that it has a bed available. She doesn't promise the bed will be comfortable. The bed is clean. Clean is what I can promise.",
+      "keywords": ["nessa","understanding","anchor","money","sleep","sent","late","night","bar","redirected"]
+    },
+    {
+      "id": "what_kindness_1",
+      "source": "Beret explaining why they do this work",
+      "text": "VELL requires seeing the person. The person requires something to see them correctly. I am somewhere between an instrument of VELL and a person practicing VELL's practice. On the good days I can't tell the difference. On the harder days I feel the difference very clearly — the kindness takes effort and the effort is real and VELL's practice says the effort is part of the point. You're not kind when it's free. You're kind when there's a cost to it.",
+      "keywords": ["vell","requires","seeing","person","instrument","practicing","good","days","difference","effort"]
+    },
+    {
+      "id": "harbor_1",
+      "source": "Beret on why they chose the harbor area",
+      "text": "The harbor is where people arrive not knowing what comes next. It's the transitional geography — you were at sea and now you're not at sea and the place you're arriving in may or may not be the place you intended to arrive in. Some people have a destination and the harbor is a waypoint. Some people have no destination and the harbor is the destination. Both kinds need kindness in the transitional geography. The harbor needs a shelter in the way that transitions need witnesses.",
+      "keywords": ["harbor","people","arrive","knowing","transitional","geography","sea","destination","waypoint","witnesses"]
+    },
+    {
+      "id": "hetch_1",
+      "source": "Beret on the sailor Hetch",
+      "text": "Hetch doesn't need the shelter — he has money and a room. What he needs is what some of my overnight guests need and some don't: a place to be that asks nothing of him. The Anchor & Argument asks him to be a person who has stories. The harbor asks him to be a sailor between ships. I haven't met Hetch but Nessa has told me about him and I've thought about him. Some people need a shelter even when they don't need a bed. I don't know how to give them what they need without the bed being part of it.",
+      "keywords": ["hetch","shelter","money","room","needs","overnight","guests","place","asks","nothing"]
+    }
+  ]
+}

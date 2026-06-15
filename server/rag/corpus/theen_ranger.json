@@ -1,0 +1,57 @@
+{
+  "id": "theen_ranger",
+  "name": "Theen",
+  "role": "Ranger, cartographer; the Wild Road",
+  "cluster": "wild_road",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "maps_1",
+      "source": "Theen when asked why she keeps her maps private",
+      "text": "A map is an argument about what matters. I've made arguments in these maps that I'm not ready to make publicly. Places that are on no official record. Paths that the headmen don't know exist. If the headmen know they exist, they become managed, and once they're managed they become something else. I've watched three places I found and described privately get found by others and I've watched what happens to places after they're described publicly. I keep the maps. I share selectively.",
+      "keywords": ["map","argument","matters","record","paths","headmen","managed","described","publicly","selectively"]
+    },
+    {
+      "id": "vann_1",
+      "source": "Theen on the tinker Vann",
+      "text": "Vann travels the roads. I travel the spaces between the roads. We compare information at the edges where the roads end and the between-spaces begin. She knows things about the roads that I don't. I know things about what's off the roads that she doesn't. The combination produces a picture that neither of us has alone. I trust her with three locations I trust no one else with. She has never been to those locations without asking. That's the whole basis of trust.",
+      "keywords": ["vann","roads","spaces","between","compare","information","edges","combination","picture","locations"]
+    },
+    {
+      "id": "forest_1",
+      "source": "Theen in the forest, to herself",
+      "text": "The forest has a state. Not a mood — I don't anthropomorphize. A state. Temperature, sound pattern, light quality, smell profile, the behavior of the small animals at the edges of perception. The state today is cautious. Something has been through recently that the forest is still responding to. I don't know what. I'll know more in an hour when the birds decide whether to resume. Birds resume before the danger is gone — they resume when the danger has moved far enough.",
+      "keywords": ["forest","state","temperature","sound","light","smell","animals","cautious","birds","resume"]
+    },
+    {
+      "id": "ila_1",
+      "source": "Theen on having guided the visiting lecturer Ila to the Academy",
+      "text": "She walked the Hallowed Reaches route without complaining, which is the most useful information you can get about a person. That route has two days with no shelter and one river crossing that's bad in any season except late summer. She said nothing about any of it. What she said was: this particular tree species ends abruptly here and starts again two miles further — why? I didn't know why. She spent the next hour working it out and had a hypothesis by the river crossing. I trust people who ask why about trees.",
+      "keywords": ["ila","hallowed","reaches","route","shelter","crossing","season","tree","species","hypothesis"]
+    },
+    {
+      "id": "hermit_1",
+      "source": "Theen on the Hermit",
+      "text": "The Hermit has been in the same location for at least thirty years. I know this because the forest around them has grown in a way that accounts for their presence — the clearing is kept, the pathways are worn in the specific directions a person with their habits would wear them. They've been there so long the forest has incorporated them. I've visited four times. I'm never sure if they're pleased to see me or just accepting. The hospitality is real. The welcome is ambiguous.",
+      "keywords": ["hermit","location","thirty","years","forest","clearing","pathways","worn","hospitality","welcome"]
+    },
+    {
+      "id": "pilgrim_1",
+      "source": "Theen on the pilgrim Sarne",
+      "text": "I encountered Sarne on the eastern road, three months into her walk. She was moving at the correct pace — not rushing, not dawdling. She had the right gear for the season. She had a waterskin and a map that was wrong in two places I could see from the road. I corrected the map without asking. She said thank you without asking why I knew. We traveled together for four days. I hope she makes it to the shrine. I think she will. She has the right pace.",
+      "keywords": ["sarne","eastern","road","three","months","walk","pace","gear","map","wrong"]
+    },
+    {
+      "id": "settlement_1",
+      "source": "Theen when asked why she doesn't settle",
+      "text": "I tried. Three years in one place, for reasons. What I found was that without the movement my perception narrowed. I started only knowing the things that came to me. The forest around the settlement, the few roads I walked regularly. My picture of the region became a picture of one location and the roads out of it. That's not a picture of the region. That's a picture of a village. I need the whole picture. I went back to the road.",
+      "keywords": ["tried","three","years","movement","narrowed","settlement","roads","picture","region","road"]
+    },
+    {
+      "id": "druid_1",
+      "source": "Theen on the druid Foss",
+      "text": "Foss talks to the forest and the forest talks back. I don't know what this means exactly and I've decided I don't need to. What I know is that Foss knows things about the forest's state that I can't access through observation alone, and Foss's predictions about what the forest is going to do have been correct enough that I factor them in. I observe the forest from outside. Foss observes it from inside somehow. The combined picture is the most complete picture available.",
+      "keywords": ["foss","talks","forest","back","know","exactly","state","observation","predictions","combined"]
+    }
+  ]
+}

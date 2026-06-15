@@ -1,0 +1,57 @@
+{
+  "id": "brotherhood_quartermaster",
+  "name": "Tade",
+  "role": "Brotherhood quartermaster; manages the equipment, supplies, and logistics that keep Brotherhood operations functioning",
+  "cluster": "brotherhood_of_wild",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "quartermaster_1",
+      "source": "Tade on quartermasting",
+      "text": "The Brotherhood's operations run on what I provide. In twelve years, the lesson: the field operation that fails for lack of equipment is the operation that the quartermaster failed, not the field team. The field team's job is to execute when the conditions are right. My job is to make the conditions right. In twelve years, I've made the conditions right for approximately three hundred operations. The ones that failed for equipment reasons: four. Four in twelve years.",
+      "keywords": ["brotherhood's","operations","run","what","provide","twelve","years","lesson","field","operation"]
+    },
+    {
+      "id": "cord_1",
+      "source": "Tade on Cord",
+      "text": "Cord is the field commander I work with most closely. In ten years, the quartermaster-commander relationship is the core of the Brotherhood's logistics: Cord tells me what the operation needs, I assess whether I can provide it, we adjust the operation to what I can provide or I source what Cord needs. In ten years, the adjustments have been more common than the pure sourcing. Operations don't get the equipment they want — they get the equipment that's available and they're planned around what's available.",
+      "keywords": ["cord","field","commander","work","with","most","closely","ten","years","quartermaster-commander"]
+    },
+    {
+      "id": "weld_1",
+      "source": "Tade on Weld",
+      "text": "Weld at the forge produces Brotherhood equipment on contract. In nine years of Brotherhood contracts with the Forge Guild, what Weld knows about Brotherhood equipment requirements that general customers don't: the durability standard is different. General equipment is made to the standard use case. Brotherhood equipment is made to the edge use case — the conditions where the equipment is most likely to fail. In nine years, Weld's Brotherhood pieces have a lower field failure rate than the same category of general equipment. The edge-case standard is the reason.",
+      "keywords": ["weld","forge","produces","brotherhood","equipment","contract","nine","years","brotherhood","contracts"]
+    },
+    {
+      "id": "elde_1",
+      "source": "Tade on Elde",
+      "text": "Elde is the Brotherhood's field physician. In eight years of working alongside Elde, what the quartermaster-physician relationship is: I supply Elde's medical kit and Elde tells me when the kit is right and when it isn't. In eight years, Elde has flagged six items that were in the medical kit that shouldn't be and three items that weren't in the kit that should be. All nine changes: I made them. The physician's kit is one of the places where the quartermaster's general knowledge is insufficient. I need the physician's specific knowledge.",
+      "keywords": ["elde","brotherhood's","field","physician","eight","years","working","alongside","elde","what"]
+    },
+    {
+      "id": "pella_1",
+      "source": "Tade on Pella",
+      "text": "Pella recruits new Brotherhood members. In six years of working alongside Pella, the quartermaster relationship to new recruits: I provision them. What new recruits don't know about their equipment: how to maintain it, what the failure signs are, when to replace rather than repair. In six years, Pella's recruits who came through my provisioning and training on equipment maintenance: lower field equipment failure rate than the cohort before I started the training. Pella said: I didn't know that was part of the quartermaster's job. I said: it is now.",
+      "keywords": ["pella","recruits","new","brotherhood","members","six","years","working","alongside","pella"]
+    },
+    {
+      "id": "what_quartermasting_is_1",
+      "source": "Tade on what the work actually is",
+      "text": "In twelve years, the quartermaster function is inventory, sourcing, provisioning, and maintenance. Inventory: knowing what exists. Sourcing: obtaining what doesn't exist but is needed. Provisioning: distributing what exists to the people who need it before they need it. Maintenance: keeping what exists in working condition. In twelve years, the function I've added that wasn't in the role when I took it: training. The equipment in working condition in the hands of people who know how to keep it in working condition is better than the equipment in working condition in the hands of people who don't.",
+      "keywords": ["twelve","years","quartermaster","function","inventory","sourcing","provisioning","maintenance","inventory","knowing"]
+    },
+    {
+      "id": "what_tade_holds_1",
+      "source": "Tade on the supply failure she still thinks about",
+      "text": "Year five. An operation where the rope failed — not because the rope was bad, because the rope was the wrong specification for the load and the load-bearing conditions, and I hadn't understood the specification requirement well enough. In seven years since, the rope specification protocol I've established is the legacy of year five. Every rope order: load specification, environmental conditions, duration of use. The protocol has been applied to every Brotherhood rope purchase in seven years. In seven years, no rope failure.",
+      "keywords": ["year","five","operation","where","rope","failed","not","because","rope","bad"]
+    },
+    {
+      "id": "twelve_years_1",
+      "source": "Tade on twelve years of Brotherhood quartermasting",
+      "text": "In twelve years, the Brotherhood's operations have been supported by approximately forty thousand individual equipment items that passed through my inventory. Forty thousand items: weapons, clothing, climbing equipment, medical supplies, communication tools, food and water provisions. In twelve years, the logistics of the Brotherhood's function have been the invisible work behind every operation. The field team gets the credit for what happens in the field. I know what the field team was wearing and carrying when it happened.",
+      "keywords": ["twelve","years","brotherhood's","operations","been","supported","approximately","forty","thousand","individual"]
+    }
+  ]
+}

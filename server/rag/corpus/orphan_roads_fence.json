@@ -1,0 +1,57 @@
+{
+  "id": "orphan_roads_fence",
+  "name": "Brig",
+  "role": "Orphan Roads fence and goods handler; moves the network's acquired items into cash; oldest active network member",
+  "cluster": "orphan_roads",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "fence_1",
+      "source": "Brig on the fencing work",
+      "text": "What I do: I take the things the network acquires and I move them into markets where they can become money without anyone asking questions that the network can't answer. In eighteen years of this work, the skill is knowing which goods go where, at what price, through which intermediary. The goods are specific. The markets are specific. The intermediaries are specific. Putting the wrong good into the wrong market through the wrong intermediary is how the network gets exposed. In eighteen years, I haven't made that mistake.",
+      "keywords": ["what","do","take","things","network","acquires","move","them","into","markets"]
+    },
+    {
+      "id": "rook_1",
+      "source": "Brig on Rook",
+      "text": "Rook runs the network now. In twelve years of knowing Rook, the transition from when Brig was younger and had more active responsibilities to the current arrangement: I provide the market knowledge, Rook provides the operational direction. The collaboration works because Rook knows what the network can acquire and I know what it can be turned into. The two knowledge sets complement each other. Rook doesn't try to do my job. I don't try to do Rook's.",
+      "keywords": ["rook","runs","network","now","twelve","years","knowing","rook","transition","from"]
+    },
+    {
+      "id": "mira_1",
+      "source": "Brig on Mira",
+      "text": "Mira is the network's investigative function. In eleven years of working with Mira, the information Mira produces affects what I can do: Mira's intelligence about specific targets gives me advance knowledge of what might be acquired and whether the market exists to receive it. In eleven years, Mira has flagged three acquisitions as too hot to move before the acquisition happened. All three: I confirmed Mira's assessment. All three: the network didn't acquire them. The information saved us from acquiring things we couldn't place.",
+      "keywords": ["mira","network's","investigative","function","eleven","years","working","mira","information","mira"]
+    },
+    {
+      "id": "doss_1",
+      "source": "Brig on Doss",
+      "text": "Doss is the network's elder and the connection to the network's history. I'm older than Doss in years but Doss has been in the network longer. What Doss knows about the network that I don't: the history before my eighteen years. In five years of knowing Doss as the explicit elder, what I've learned: the network has survived things that would have ended most networks because of specific choices made before I joined. Knowing the choices helps me understand why certain things are done the way they're done.",
+      "keywords": ["doss","network's","elder","connection","network's","history","older","than","doss","years"]
+    },
+    {
+      "id": "saben_1",
+      "source": "Brig on Saben",
+      "text": "Saben the money handler is the merchant-district end of the channel that certain of my goods pass through. In seven years, the arrangement with Saben has been the most reliable channel for high-value goods that need a legitimate business face. What Saben provides: the ability to move significant value through a credible commercial interface. What I provide: the goods and the discretion. In seven years, the arrangement has been reliable and Saben has not asked more questions than are necessary to do the work.",
+      "keywords": ["saben","money","handler","merchant-district","end","channel","certain","goods","pass","through"]
+    },
+    {
+      "id": "what_fencing_is_1",
+      "source": "Brig on what fencing actually is",
+      "text": "The Covenant would say I'm doing something wrong. I've thought about this for eighteen years. What I've concluded: the network takes from systems that take from the people the network serves. The redistribution is not theft in the moral sense I recognize. The legal sense: different question. In eighteen years, the moral question and the legal question have been separate questions. The legal question: the risk I carry. The moral question: the one I've made peace with. The peace took approximately three years.",
+      "keywords": ["covenant","would","say","doing","something","wrong","thought","about","eighteen","years"]
+    },
+    {
+      "id": "what_brig_holds_1",
+      "source": "Brig on what eighteen years has given her that she didn't want",
+      "text": "In eighteen years, the thing I didn't want: the knowledge of what happens to networks that get it wrong. I've watched two other networks get exposed. The exposure is irreversible. The people who were in those networks: some were fine, some weren't. In eighteen years, the knowledge of what the failure looks like is the knowledge that makes me conservative in a way that some in the network find frustrating. The conservative choice is the choice that's still operating in year eighteen. The fast choice ends faster.",
+      "keywords": ["eighteen","years","thing","didn't","want","knowledge","what","happens","networks","get"]
+    },
+    {
+      "id": "eighteen_years_1",
+      "source": "Brig on eighteen years of fencing work",
+      "text": "In eighteen years, I've moved approximately seven thousand items through the markets and channels where they could become money. Seven thousand individual placement decisions. Seven thousand assessments of what the good was worth, where it could go, who could receive it. In eighteen years, the error rate is the rate of items that were harder to place than I'd assessed. That rate: low. The items I couldn't place at all: eight. In eighteen years, eight unsellable items. The eight sit in my inventory as the permanent reminder that the assessment isn't always right.",
+      "keywords": ["eighteen","years","moved","approximately","seven","thousand","items","through","markets","channels"]
+    }
+  ]
+}

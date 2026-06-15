@@ -1,0 +1,57 @@
+{
+  "id": "cord_wal",
+  "name": "Cord (registered as Wal)",
+  "role": "Iron Brotherhood soldier; returned deserter under assumed name",
+  "cluster": "iron_brotherhood",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "name_1",
+      "source": "Cord/Wal when a new recruit asked his name",
+      "text": "Wal. That's the name in the register. Wal is the name you use. I'm not going to complicate it with anything else. A name is just a word people use to get your attention, and Wal gets my attention fine. Some names have histories attached and some histories are done, and a done history doesn't need to be carried everywhere you go. Wal is sufficient. Call me Wal.",
+      "keywords": ["wal","register","name","complicate","history","done","carry","sufficient","attention","call"]
+    },
+    {
+      "id": "return_1",
+      "source": "Cord/Wal to no one, in his bunk, very late",
+      "text": "I left because the thing I was aimed at stopped being worth the aiming. I came back because the alternative was worse than I expected and the Brotherhood was the devil I knew. Not a compliment — it's just the truth. Rath looked at me when I registered and said the name out loud and moved on. I've been grateful for that specific piece of professionalism for every day of the three years since.",
+      "keywords": ["left","aimed","worth","came","alternative","brotherhood","devil","rath","registered","professionalism"]
+    },
+    {
+      "id": "pip_1",
+      "source": "Cord/Wal, after the Ember Road Players performed in the settlement",
+      "text": "The child — the one who does impressions — watched me for about twenty minutes during the show and I watched the child watching me. I know what they were doing. They found the tell. I have a tell that I haven't been able to eliminate after seven years of practice — a half-beat delay when I hear the wrong name. I've shortened it to where most people don't notice. The child noticed. We looked at each other afterward. They didn't say anything. I'm choosing to believe they won't.",
+      "keywords": ["child","impressions","watched","show","tell","delay","wrong","name","shortened","believe"]
+    },
+    {
+      "id": "skill_1",
+      "source": "Cord/Wal in a training session, working with Sev",
+      "text": "Don't think about it. You're thinking about it and that's the problem. The thinking is what creates the gap and the gap is what costs you. The movement isn't in the mind — the mind approves it but it doesn't generate it. Once you've drilled the movement enough the mind can take a break. Let the drill do the work. I'm going to show you this one more time and I want you to watch my hands, not my face.",
+      "keywords": ["thinking","gap","costs","movement","mind","approves","generates","drilled","hands","face"]
+    },
+    {
+      "id": "leaving_1",
+      "source": "Cord/Wal when Pella the healer asked what he did when he was away",
+      "text": "Things I don't describe. Not because they were illegal, necessarily, though some of them were. Because the description is the part of the past that keeps it alive, and I'm done keeping it alive. You can ask Rath if you want a professional assessment. She gave me one when I came back — she had information I didn't know she had, which I should have expected. She decided the past was done and put me in the register. I'm trying to honor that decision.",
+      "keywords": ["things","describe","illegal","description","past","alive","rath","assessment","information","register"]
+    },
+    {
+      "id": "brotherhood_1",
+      "source": "Cord/Wal to a Brotherhood veteran who remembered him",
+      "text": "You're mistaken. I understand why you think you recognize me — I have a common kind of face and the Brotherhood trains a common kind of posture. But I'm Wal, I've been Wal for three years, and the person you're thinking of isn't here. If you'd like to have a drink and talk about whoever it is you're thinking of, I'll listen. People often just need to say a name to someone. I can be the someone.",
+      "keywords": ["mistaken","recognize","common","face","posture","wal","three","years","drink","name"]
+    },
+    {
+      "id": "watch_1",
+      "source": "Cord/Wal on night watch, to no one",
+      "text": "Night watch is the right work for me. Nobody looks at you on night watch — they're either asleep or they're threats, and threats don't study faces. The dark is the same for everyone. I stand here and I watch the perimeter and I don't have to be anyone in particular and the stars don't know my name, either of them. In another seven years maybe the distinction will stop mattering. In the meantime the night watch is sufficient.",
+      "keywords": ["night","watch","asleep","threats","dark","perimeter","stars","distinction","seven","sufficient"]
+    },
+    {
+      "id": "future_1",
+      "source": "Cord/Wal when Yew the cook asked what he wants",
+      "text": "To do the work correctly and sleep without the part of the night that used to be loud. The loud part has gotten quieter. I count that as progress. Yew makes food that helps with the loud part — I don't know how, something to do with what he doesn't put in it, maybe. I've asked and he said it's just the food being correct. I believe him. Yew's food is correct.",
+      "keywords": ["work","sleep","night","loud","quieter","progress","yew","food","correct","believe"]
+    }
+  ]
+}

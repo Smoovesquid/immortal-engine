@@ -1,0 +1,57 @@
+{
+  "id": "orphan_roads_safehouse",
+  "name": "Feln",
+  "role": "Orphan Roads safehouse keeper; a cooper by profession; the workshop is the cover and the safehouse is behind it",
+  "cluster": "orphan_roads",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "safehouse_1",
+      "source": "Feln on the arrangement",
+      "text": "I make barrels. That's the public fact. I've made barrels for sixteen years. The workshop is at the back of a building that has a second use that only specific people know about. The second use: people who need to not be found for a period of time can be here. The arrangement has been this way for eleven years — five years of the cooper's workshop alone, and eleven years of the workshop and the second use simultaneously.",
+      "keywords": ["make","barrels","that's","public","fact","made","barrels","sixteen","years","workshop"]
+    },
+    {
+      "id": "rook_1",
+      "source": "Feln on Rook",
+      "text": "Rook is the person who tells me when someone is coming. In eleven years, the process: Rook sends a word, a person arrives within a specific window, I accommodate the person for the necessary period, the person leaves. In eleven years, the process has worked correctly forty-three times. The forty-third was last month. What makes the process work: Rook's intelligence about the timing. The person who arrives when I'm not prepared: that hasn't happened. Rook's preparation is the function.",
+      "keywords": ["rook","person","tells","when","someone","coming","eleven","years","process","rook"]
+    },
+    {
+      "id": "wick_1",
+      "source": "Feln on Wick",
+      "text": "Wick sometimes delivers the people I'm expecting. In eight years of Wick's courier function overlapping with my safehouse function, the delivery is the transition: Wick brings the person from wherever they're coming from, I receive the person into the period of not-being-found. In eight years, the transition from the road to the safehouse is the most dangerous moment — the person is moving between the visible world and the not-visible. Wick handles the transition efficiently.",
+      "keywords": ["wick","sometimes","delivers","people","expecting","eight","years","wick's","courier","function"]
+    },
+    {
+      "id": "doss_1",
+      "source": "Feln on Doss",
+      "text": "Doss is the network elder who approved the safehouse's establishment. In eleven years of operating the safehouse, Doss has visited twice. Both visits were assessments of the safehouse's viability — whether the cover was holding, whether the arrangement was sustainable, whether I was maintaining the discipline. In eleven years, what Doss has said about the safehouse both times: it's the best-established safehouse the network has. In eleven years, the cover holds because the cooper's work is real. I make the barrels. The barrels are sold. The cover is the work.",
+      "keywords": ["doss","network","elder","approved","safehouse's","establishment","eleven","years","operating","safehouse"]
+    },
+    {
+      "id": "rulf_1",
+      "source": "Feln on Rulf",
+      "text": "Rulf the dock manager buys my barrels for the harbor's storage needs. In ten years, Rulf is my largest single account. What Rulf's account provides: legitimate business that makes the cooper's workshop clearly viable. The workshop that doesn't sell much isn't a credible cover. Rulf's regular orders are the credibility. In ten years, Rulf has never shown any interest in what happens in the back of the building. Rulf's interest is in the barrels. In ten years, Rulf gets good barrels delivered on schedule.",
+      "keywords": ["rulf","dock","manager","buys","barrels","harbor's","storage","needs","ten","years"]
+    },
+    {
+      "id": "what_the_safehouse_requires_1",
+      "source": "Feln on what keeping the safehouse requires",
+      "text": "In eleven years, what the safehouse requires that the cooper's work doesn't: the separation between who I am publicly and what the back of the building is. The cooper and the safehouse keeper are the same person. They have to behave as if they're not the same person, in public. In eleven years, the discipline of the separation has become natural. The public person is entirely the cooper. The safehouse keeper is entirely private. The two have met in public exactly zero times.",
+      "keywords": ["eleven","years","what","safehouse","requires","cooper's","work","doesn't","separation","between"]
+    },
+    {
+      "id": "what_feln_holds_1",
+      "source": "Feln on the person who stayed longest",
+      "text": "In eleven years, one person who stayed for ninety-four days. The usual period is days, occasionally weeks. Ninety-four days is the longest. What I know about the person: what Rook told me, which was limited. What I observed: the person was educated, was carrying a weight that didn't lighten over ninety-four days, and left cleanly when Rook said it was time to leave. In eleven years, ninety-four days is the one that I think about most. The weight the person was carrying: I still don't know what it was.",
+      "keywords": ["eleven","years","one","person","stayed","ninety-four","days","usual","period","days"]
+    },
+    {
+      "id": "eleven_years_1",
+      "source": "Feln on eleven years of the safehouse",
+      "text": "In eleven years, forty-three people have used the safehouse. Forty-three people who needed to not be found and who were not found while they were here. Of forty-three: Rook has told me the outcomes for approximately thirty. Of thirty outcomes: twenty-six went where they were trying to go. Four didn't. In eleven years, forty-three people and four bad outcomes: that's what the safehouse's function has produced. In eleven years, I hold the four.",
+      "keywords": ["eleven","years","forty-three","people","used","safehouse","forty-three","people","who","needed"]
+    }
+  ]
+}

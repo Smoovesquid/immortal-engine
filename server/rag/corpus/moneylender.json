@@ -1,0 +1,57 @@
+{
+  "id": "moneylender",
+  "name": "Pek",
+  "role": "Moneylender; makes loans that keep businesses alive and takes interest that keeps Pek alive",
+  "cluster": "merchant_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "lending_1",
+      "source": "Pek on moneylending",
+      "text": "I lend what people need now against what they'll have later. The gap between now and later is what they pay me for. In sixteen years of moneylending, I've learned to read the gap: how long between the loan and the repayment, how certain the repayment is, how much uncertainty to price into the interest. The gap and the certainty are the two variables. The interest is the price of both. In sixteen years, the price I charge is the price I've learned to charge to remain a viable lender across the full portfolio.",
+      "keywords": ["lend","what","people","need","now","against","what","they'll","have","later"]
+    },
+    {
+      "id": "saben_1",
+      "source": "Pek on Saben Fenn",
+      "text": "The Fenn house has never borrowed from me. In sixteen years, this is notable. The Fenn house does business at a scale where lending would be a useful tool. What Saben Fenn does instead: structures the business so that the need for borrowed capital doesn't arise. I know this because I understand cash flow well enough to see that the Fenn house timing is deliberate — sales and purchases structured to ensure the house never needs a loan. It's the most sophisticated cash management in the district and it's structured around not needing me.",
+      "keywords": ["fenn","house","never","borrowed","sixteen","years","notable","fenn","house","does"]
+    },
+    {
+      "id": "grav_1",
+      "source": "Pek on Grav",
+      "text": "The Coin Cult's treasurer and I have a complicated professional relationship. HAGRETH's doctrine says acquisition is the truth. My business is acquisition through interest. In theory, this should make the cult and my business natural allies. In practice, Grav has never borrowed from me and has twice approached me as a potential investor rather than a potential borrower. Both approaches I declined: I know what the cult's financial instruments look like and I don't understand them well enough to invest in them. Grav accepted both declinations without comment.",
+      "keywords": ["coin","cult's","treasurer","complicated","professional","relationship","hagreth's","doctrine","says","acquisition"]
+    },
+    {
+      "id": "osric_1",
+      "source": "Pek on Osric",
+      "text": "Osric is my most reliable borrower. In eleven years, Osric has borrowed eighteen times. All eighteen: repaid on the agreed date or before. The reliable borrower is more valuable to a moneylender than the borrower who needs a large loan — the reliable pattern is predictable cash flow. Osric's borrowing pattern: short-term loans for inventory purchases when a specific opportunity arises that the operating cash doesn't cover. The specific opportunity, the short duration, the reliable repayment: this is the borrower that a lender can sustain indefinitely.",
+      "keywords": ["osric","most","reliable","borrower","eleven","years","osric","borrowed","eighteen","times"]
+    },
+    {
+      "id": "liss_1",
+      "source": "Pek on Liss",
+      "text": "Every loan I make is notarized through Liss. The notarial record is what makes the loan enforceable. In sixteen years of moneylending, the notarial record has been primary evidence in three enforcement cases. All three: the record was accepted. The enforcement rate against the notarial record is one hundred percent. What this means for the lending: the loan with the notarial record is a loan I can enforce. The loan without it: unenforceable. In sixteen years, I've made no unrecorded loans.",
+      "keywords": ["every","loan","make","notarized","through","liss","notarial","record","makes","loan"]
+    },
+    {
+      "id": "what_interest_is_1",
+      "source": "Pek on what interest actually is",
+      "text": "Interest is the rental fee for money. When you rent a space, you pay for the time you're in it. When you borrow money, you pay for the time you're using it. The rental fee for space is set by the market for space. The rental fee for money is set by the risk of not getting the money back, multiplied by the time the borrower has it. In sixteen years, I've priced the risk incorrectly six times. Five times the risk was lower than I priced it — I charged more than the risk warranted. Once it was higher — I didn't charge enough and absorbed the loss.",
+      "keywords": ["interest","rental","fee","money","when","rent","space","pay","time","you're"]
+    },
+    {
+      "id": "what_pek_holds_1",
+      "source": "Pek on the loan she shouldn't have made",
+      "text": "Year five. A loan that I made to someone whose repayment capacity I assessed as adequate. The assessment was wrong — not because the person was dishonest, but because something I hadn't known about their situation changed the repayment capacity after the loan was made. The loan wasn't repaid. I took the loss. In sixteen years, this is the one case where my assessment was wrong in a way that wasn't recoverable. I've thought about what I missed in the assessment many times. What I missed: a dependency on a third party's performance that I hadn't evaluated.",
+      "keywords": ["year","five","loan","made","someone","whose","repayment","capacity","assessed","adequate"]
+    },
+    {
+      "id": "sixteen_years_1",
+      "source": "Pek on sixteen years of moneylending",
+      "text": "In sixteen years I've made two hundred and forty-seven loans. Of the two hundred and forty-seven: two hundred and forty-one have been fully repaid. Three are currently in repayment on schedule. Two are in default and subject to enforcement proceedings. One was written off as a loss — the year-five case. Two hundred and forty-one repaid, three in process, three in problem. The two hundred and forty-one are the business. The three in problem are what I think about.",
+      "keywords": ["sixteen","years","made","two","hundred","forty-seven","loans","two","hundred","forty-seven"]
+    }
+  ]
+}

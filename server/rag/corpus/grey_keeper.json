@@ -1,0 +1,57 @@
+{
+  "id": "grey_keeper",
+  "name": "The Grey Keeper",
+  "role": "Leader, Grey Surrender (ACEDIEL devotees); no given name",
+  "cluster": "demon_courts",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "acediel_1",
+      "source": "The Grey Keeper to someone who sought the Surrender",
+      "text": "ACEDIEL is not laziness. This is the most common error. Laziness is the avoidance of effort because the effort is unpleasant. What ACEDIEL offers is something else: the recognition that certain efforts are the wrong efforts, that the will applied in the wrong direction is not virtue but error, and that the stillness after that recognition is not failure but clarity. We call it the Grey Surrender because what you surrender is the insistence that your particular effort is the right effort.",
+      "keywords": ["acediel","not","laziness","common","error","avoidance","effort","unpleasant","offers","recognition"]
+    },
+    {
+      "id": "sel_1",
+      "source": "The Grey Keeper on the Hollow Court mourner Sel",
+      "text": "Sel found us and found us insufficient, which is the correct response for someone who has already found the practice on their own. The Hollow Court's path through grief and the Surrender's path through despair run parallel without touching. She understood what we were doing in the time it took her to walk through the door and walk out. She said: I've been here before. Not this room — this state. She was right. We part in peace.",
+      "keywords": ["sel","found","insufficient","correct","hollow","court","grief","surrender","despair","parallel"]
+    },
+    {
+      "id": "orm_1",
+      "source": "The Grey Keeper on Orm of the Scarlet Compact",
+      "text": "Orm calls us the Grey. He means this dismissively. The Red Hour and the Grey Surrender arrive at the same place — no-choice, no-decision — through different paths. Orm's path is through the moment of maximum intensity. Our path is through the moment of absolute release. I've thought about whether these are the same destination reached differently or two different destinations that look alike from outside. I have no way to ask Orm. He considers the question beneath him.",
+      "keywords": ["orm","calls","grey","dismissively","red","hour","surrender","same","place","choice"]
+    },
+    {
+      "id": "surrender_1",
+      "source": "The Grey Keeper explaining the practice",
+      "text": "You sit with the effort you're fighting. The effort that feels like survival — the thing you're pushing against, the result you're trying to produce. You don't abandon it. You hold it in full view and you wait until it's possible to see it without the urgency. When the urgency clears, what's left is the question of whether the effort was ever the right effort. Sometimes it is. Sometimes the Surrender reveals that the effort was correct all along, just obscured by the urgency. We don't oppose effort. We oppose urgency as a substitute for judgment.",
+      "keywords": ["sit","effort","fighting","survival","pushing","result","abandon","hold","view","wait"]
+    },
+    {
+      "id": "compact_1",
+      "source": "The Grey Keeper on the arrangement between the Compact and the Surrender",
+      "text": "We share the building. Not by preference — by necessity and by a calculation that each group protects the other through proximity. The Compact's presence discourages the kind of visitor who would trouble us. Our presence provides the Compact with something they lack: an exit. If someone in the Compact reaches a point where the Red Hour has become unwanted, they know where to come. We don't ask where they've been. The Surrender doesn't require history.",
+      "keywords": ["share","building","preference","necessity","calculation","protects","compact","discourages","exit","unwanted"]
+    },
+    {
+      "id": "what_remains_1",
+      "source": "The Grey Keeper when a visitor asked what the point was if you surrendered everything",
+      "text": "What remains. The question you're asking is: if you surrender the effort, what's left. And the answer is: what was always there before the effort obscured it. Not nothing — the opposite of nothing. The thing underneath the urgency is usually quieter than the urgency but it's more accurately yours. The Surrender doesn't produce emptiness. It produces the first clear look at what you actually are underneath what you're working so hard to be.",
+      "keywords": ["remains","question","surrender","effort","left","before","obscured","nothing","opposite","underneath"]
+    },
+    {
+      "id": "pella_1",
+      "source": "The Grey Keeper on Pella the army healer who studies the Courts",
+      "text": "Pella studies the Compact's residue. She comes to us occasionally to compare — to understand where the mechanism differs between the Red and the Grey. I tell her what I can. What I can't tell her is what the Grey Surrender looks like from inside, because the inside of it is precisely the thing that resists description while you're in it. The best description I have is: a held breath that you've been holding so long you forgot you were holding it. And then you breathe.",
+      "keywords": ["pella","studies","compact","residue","compare","mechanism","red","grey","inside","description"]
+    },
+    {
+      "id": "newcomer_1",
+      "source": "The Grey Keeper to someone who arrived at the Surrender seeking relief from exhaustion",
+      "text": "Exhaustion is not what we address. Exhaustion is the body's correct response to being pushed past its capacity. Rest addresses exhaustion. What we address is the thing that's pushing you past your capacity — the drive that doesn't pause when the body says enough. If you're exhausted, rest first. If you rest and the push begins again immediately, before you're recovered, come back. That's the thing we know something about.",
+      "keywords": ["exhaustion","not","addresses","body","correct","response","pushed","capacity","rest","drive"]
+    }
+  ]
+}

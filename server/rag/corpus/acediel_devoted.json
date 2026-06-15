@@ -1,0 +1,57 @@
+{
+  "id": "acediel_devoted",
+  "name": "Gund",
+  "role": "ERRAN devotee; the angel of diligence; believes work done completely is the highest form of prayer",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "erran_1",
+      "source": "Gund on ERRAN",
+      "text": "ERRAN is the angel of diligence. What ERRAN teaches: the work that is done completely, without shortcuts, without stopping at good-enough — this is the form of attention that the world deserves. Not perfectionism, which is the work stopped because no version is good enough. Diligence: the work continued until the work is actually done. The difference between done and stopped is the angel's question. In fourteen years of practicing ERRAN's principle, the question I ask of every task: is this done or have I stopped.",
+      "keywords": ["erran","angel","diligence","what","erran","teaches","work","done","completely","without"]
+    },
+    {
+      "id": "weld_1",
+      "source": "Gund on Weld",
+      "text": "Weld the forge master practices diligence without the theological frame. In nine years of knowing Weld, what I've observed: Weld doesn't deliver work that isn't done. The work is done when the work is done, not when the time has run out. In nine years, I've seen Weld turn down commissions that couldn't be done correctly in the time the commissioner wanted them. The turndown is the diligent choice: the undone work is worse than the unstarted work. ERRAN would recognize Weld.",
+      "keywords": ["weld","forge","master","practices","diligence","without","theological","frame","nine","years"]
+    },
+    {
+      "id": "father_len_1",
+      "source": "Gund on Father Len",
+      "text": "Father Len and I have discussed ERRAN's place in the Covenant's theology twice. What Father Len said: ERRAN's diligence and ACEDIEL's sloth are the opposition that structures how the Covenant understands effort. The demon of sloth — ACEDIEL — is the force that stops the work before it's done. ERRAN is the angel that continues. In the Covenant's theology, the daily choice between ERRAN and ACEDIEL is the daily choice between completion and stopping. Father Len said: this is where the angel and the demon meet most directly in everyday life.",
+      "keywords": ["father","len","discussed","erran's","place","covenant's","theology","twice","what","father"]
+    },
+    {
+      "id": "mast_1",
+      "source": "Gund on Mast",
+      "text": "Mast the council clerk practices something adjacent to ERRAN's principle: the records are complete or they're not records. In six years of occasionally encountering Mast's work product, the council records are consistently complete. Not just the content — the documentation that the content is complete. The record that proves the record is done. In ERRAN's terms: Mast does the meta-work of demonstrating completion, not just the work of completion. Both are the diligent practice.",
+      "keywords": ["mast","council","clerk","practices","something","adjacent","erran's","principle","records","complete"]
+    },
+    {
+      "id": "bale_1",
+      "source": "Gund on Bale",
+      "text": "Bale the water carrier embodies ERRAN's principle without knowing it. In ten years of watching Bale work the route, the route is done when the route is done. Not when Bale is tired. Not when the weather is bad. Not when it would be easier to stop. The route is done when every delivery on the route is complete. In ERRAN's terms: the task's natural completion point is the point at which the task is done. Stopping before that point is the demon's choice. Bale doesn't stop before the route is done.",
+      "keywords": ["bale","water","carrier","embodies","erran's","principle","without","knowing","ten","years"]
+    },
+    {
+      "id": "what_diligence_costs_1",
+      "source": "Gund on what ERRAN's diligence costs",
+      "text": "In fourteen years, the practice of diligence has cost me relationships with people who wanted work done at a specific time regardless of the work's state. The work that isn't done isn't done. Declaring it done doesn't complete it. The people who couldn't accept that: they wanted the declaration, not the work. I couldn't provide the declaration for undone work. What ERRAN's principle costs: the relationships with people who prefer the declaration to the work.",
+      "keywords": ["fourteen","years","practice","diligence","cost","relationships","people","wanted","work","done"]
+    },
+    {
+      "id": "what_gund_holds_1",
+      "source": "Gund on the work he almost stopped at",
+      "text": "Year nine. A task that was eighty percent complete and where the remaining twenty percent was harder than everything that came before it. I understood why people stop at eighty percent. The eighty percent looks like enough. In year nine, I stayed with the twenty percent for three additional months beyond when I thought I was close. The complete task is different from the eighty-percent task in ways that the person who stopped at eighty percent doesn't know. I know. Year nine is when I understood ERRAN's teaching from the inside.",
+      "keywords": ["year","nine","task","eighty","percent","complete","where","remaining","twenty","percent"]
+    },
+    {
+      "id": "fourteen_years_1",
+      "source": "Gund on fourteen years of ERRAN's practice",
+      "text": "In fourteen years, the principle has made my work slower and better. The work that's actually done takes longer than the work that's declared done. The better work is the output of the longer process. In fourteen years, the people who've returned to me after receiving my work have done so because the work held. The work that holds is the work that was done. The work that doesn't hold: some of that is the work that stopped at good-enough. In fourteen years, my failure rate is the failure rate of done work. It's lower than the good-enough rate.",
+      "keywords": ["fourteen","years","principle","made","work","slower","better","work","actually","done"]
+    }
+  ]
+}

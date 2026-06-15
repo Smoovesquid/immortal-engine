@@ -1,0 +1,57 @@
+{
+  "id": "thornwall_lamplighter",
+  "name": "Floss",
+  "role": "Settlement lamplighter; the function that makes the settlement's common spaces usable after dark",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "lamplighter_1",
+      "source": "Floss on the lamplighter's function",
+      "text": "In eighteen years of lighting the settlement's lamps, what the lamplighter is: the function that makes the settlement's evening and night life possible. In eighteen years, the settlement without its lamps is the settlement where evening commerce ends at sundown, evening movement is hazardous, and evening community is constrained to what can be done by household fire. In eighteen years, the lit settlement is a different kind of settlement from the unlit settlement. In eighteen years, I've been the difference between the lit and the unlit.",
+      "keywords": ["eighteen","years","lighting","settlement's","lamps","what","lamplighter","function","makes","settlement's"]
+    },
+    {
+      "id": "odde_1",
+      "source": "Floss on Odde",
+      "text": "Odde makes the candles and tallow lamps that I light. In fifteen years of the Floss-Odde lamplighter-candle maker relationship, what the candle maker's quality means for the lamplighter: the lamp that stays lit through the evening versus the lamp that requires re-lighting because the candle has failed. In fifteen years, Odde's candles have a failure rate I've tracked: approximately three percent of Odde's candles require re-lighting before the standard four-hour burn. In fifteen years, three percent is the number Odde knows I track. In fifteen years, the three percent has not increased.",
+      "keywords": ["odde","makes","candles","tallow","lamps","light","fifteen","years","floss-odde","lamplighter-candle"]
+    },
+    {
+      "id": "vorn_1",
+      "source": "Floss on Vorn",
+      "text": "Vorn keeps the harbor lighthouse and the lighthouse is the lamplighter's function at the scale where the failure has consequences that the settlement's street lamps don't. In twelve years of knowing Vorn's lighthouse function alongside my lamplighting function, what the lighthouse-lamplighter relationship is in the settlement's light provision: both are the human function that makes darkness navigable. In twelve years, the difference in scale is the difference in consequences. In twelve years, Vorn's lamp and my lamps are the same function at different stakes.",
+      "keywords": ["vorn","keeps","harbor","lighthouse","lighthouse","lamplighter's","function","scale","where","failure"]
+    },
+    {
+      "id": "gonn_1",
+      "source": "Floss on Gonn",
+      "text": "Gonn occupies the corner near the lamp I light on the main market path. In eighteen years of lighting the lamp that illuminates Gonn's corner, what the relationship between the lamplighter and the beggar at the lamp's base is: the consistent human presence that makes the lit corner a safer corner. In eighteen years, Gonn has been at the corner for approximately sixteen years. In eighteen years, the lit corner with a person present is the corner where trouble is less frequent. In eighteen years, the combination of the lamp and Gonn's presence has been the corner's safety.",
+      "keywords": ["gonn","occupies","corner","near","lamp","light","main","market","path","eighteen"]
+    },
+    {
+      "id": "conn_1",
+      "source": "Floss on Conn",
+      "text": "Conn the town crier makes his evening announcements before I've finished lighting the evening lamps. In eight years of the Floss-Conn lamplighter-crier evening relationship, what the sequence of the crier's announcement and the lamplighter's lighting produces: the settlement's transition from the day's activity to the evening's activity. In eight years, Conn announces the evening's information and the lamps come up as the settlement adjusts to what the announcement contained. In eight years, twice the announcement was significant enough that the evening's settlement was quieter than usual after it. Both times, the lamps were still lit.",
+      "keywords": ["conn","town","crier","makes","evening","announcements","before","finished","lighting","evening"]
+    },
+    {
+      "id": "what_floss_holds_1",
+      "source": "Floss on what eighteen years of lamplighting holds",
+      "text": "In eighteen years, approximately twenty-two thousand individual lamp lightings. In eighteen years, the settlement's evenings have been illuminated by the function I've performed approximately twenty-two thousand times. In eighteen years, the lamplighter is the most repetitive function in the settlement — the same function performed in the same way in the same locations on the same schedule, every evening. In eighteen years, what the repetitive function produces that the varied function doesn't: the total reliability. The settlement knows when the lamps will be lit. In eighteen years, the settlement has been right to know.",
+      "keywords": ["eighteen","years","approximately","twenty-two","thousand","individual","lamp","lightings","eighteen","years"]
+    },
+    {
+      "id": "the_evening_the_lamps_failed_1",
+      "source": "Floss on the evening the lamps failed",
+      "text": "Year seven. An evening when the oil supply failed and I couldn't complete the lighting circuit. The settlement's main market path and three connecting passages were unlit from sundown until the oil supply was restored at approximately the third hour of evening. In eleven years since, what year seven produced: the reserve oil supply that the lamplighter maintains independent of the main supply chain. In eleven years, the reserve has been used twice. Both times, the lamps went up on schedule. In eleven years, the reserve is the settlement's insurance against year seven's repetition.",
+      "keywords": ["year","seven","evening","oil","supply","failed","couldn't","complete","lighting","circuit"]
+    },
+    {
+      "id": "eighteen_years_1",
+      "source": "Floss on eighteen years as the settlement's lamplighter",
+      "text": "In eighteen years, the settlement's evening life and my lamplighting function have been in relationship. In eighteen years, the merchants who extend their evening hours because the market path is lit, the people who gather in the evening because the common spaces are accessible, the movement through the settlement after dark that the lamps make safe: all of this is possible because I light the lamps every evening. In eighteen years, the settlement's evening life is the product of the lamplighter's function. In eighteen years, the function's product is visible every evening in the settlement that is lit.",
+      "keywords": ["eighteen","years","settlement's","evening","life","lamplighting","function","been","relationship","eighteen"]
+    }
+  ]
+}

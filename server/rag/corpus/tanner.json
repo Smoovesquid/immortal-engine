@@ -1,0 +1,57 @@
+{
+  "id": "tanner",
+  "name": "Gant",
+  "role": "Tanner; turns hides into leather; the smell tells you where he works before you see the building",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "tanning_1",
+      "source": "Gant on tanning",
+      "text": "Leather is the skin after the animal is finished with it. My work: taking what the animal left behind and turning it into something durable and useful. The process is chemical: bark tannins binding to the collagen in the hide, converting the raw skin into leather. In eighteen years of tanning, the process hasn't changed. The bark, the time, the bath. What's changed: my reading of the process. I can tell from the feel of the hide when it's ready in a way I couldn't tell in year one.",
+      "keywords": ["leather","skin","after","animal","finished","with","work","taking","what","animal"]
+    },
+    {
+      "id": "tole_1",
+      "source": "Gant on Tole",
+      "text": "Tole the cobbler is my primary customer. The shoe leather has specific requirements: supple enough to flex with the foot, durable enough to survive years of ground contact. In fifteen years of supplying Tole, I've developed a tanning process for shoe leather that differs from my general leather process. The shoe leather is tanned lighter — less bark, shorter time. The result: more supple, less rigid. Tole said the lighter tan makes the shoe more responsive to the foot's movement. The foot's movement is the design criterion.",
+      "keywords": ["tole","cobbler","primary","customer","shoe","leather","specific","requirements","supple","enough"]
+    },
+    {
+      "id": "fenne_1",
+      "source": "Gant on Fenne",
+      "text": "Fenne the tailor uses leather for specific garment elements: the reinforcing on work clothes, the leather trim on formal garments. In ten years of supplying Fenne, the leather specification has been consistent: thin, finished smooth on the visible face, appropriate for garment use. Garment leather is different from equipment leather — it needs to look right as much as it needs to perform right. In ten years, I've developed a finishing process for the garment leather that Fenne's work requires. The finishing is the most time-consuming part of the garment leather production.",
+      "keywords": ["fenne","tailor","uses","leather","specific","garment","elements","reinforcing","work","clothes"]
+    },
+    {
+      "id": "prad_1",
+      "source": "Gant on Prad",
+      "text": "The dock uses leather for specific rigging work: the leather wrapping on the rope-to-metal connections where rope and metal would otherwise abrade each other. In nine years of supplying the dock's leather, the specification is durability in wet conditions. Leather tanned for wet-condition use is a different product from leather tanned for dry conditions — the tannin level and the finishing both differ. Prad specified the requirement. I developed the product. In nine years, the dock's leather rigging wraps have lasted longer than any previous supplier's product.",
+      "keywords": ["dock","uses","leather","specific","rigging","work","leather","wrapping","rope-to-metal","connections"]
+    },
+    {
+      "id": "drass_1",
+      "source": "Gant on Drass",
+      "text": "Drass uses my leather for hunting equipment. The specific items: the quiver, the strap, the grip wrap. Hunting leather needs to be quiet — a leather that creaks announces the hunter. In six years of making Drass's hunting leather, the silence requirement is the primary specification. What produces quiet leather: a specific finishing process that removes the surface rigidity that causes creak. The quiet leather is softer than other leather. Soft and quiet are the same property in leather.",
+      "keywords": ["drass","uses","leather","hunting","equipment","specific","items","quiver","strap","grip"]
+    },
+    {
+      "id": "what_tanning_produces_1",
+      "source": "Gant on what tanning actually produces",
+      "text": "What I produce is time. The raw hide decays in days. The leather lasts years. What the tanning does: arrest the decay at a point where the material is at maximum utility and then hold it there for as long as the leather is properly maintained. The bark tannins are what arrest the decay. The maintenance is what extends the arrest. In eighteen years of tanning, I'm in the business of converting the temporary into the durable. The time that leather exists beyond the raw hide is the time I produced.",
+      "keywords": ["what","produce","time","raw","hide","decays","days","leather","lasts","years"]
+    },
+    {
+      "id": "what_gant_holds_1",
+      "source": "Gant on the smell",
+      "text": "Everyone mentions the smell. Eighteen years of tanning has taken the smell from something I noticed to something that's part of how I experience the world. I no longer notice the tannery smell the way a newcomer notices it. What I do notice: the absence of it, when I'm away from the tannery. In eight years of living above the tannery, the smell is the smell of my work and my home and my life. The people who avoid this district because of the smell: they don't know that the smell is what leather smells like when it's being made, and that what they're wearing and sitting on and carrying was made in this smell.",
+      "keywords": ["everyone","mentions","smell","eighteen","years","tanning","taken","smell","something","noticed"]
+    },
+    {
+      "id": "eighteen_years_1",
+      "source": "Gant on eighteen years of tanning",
+      "text": "In eighteen years, the hides I've tanned have become leather that is carrying things, protecting things, enabling things across the district and beyond. The leather doesn't know it's leather. The leather doesn't know where it came from. In eighteen years, I've converted thousands of animal skins into thousands of leather items that are doing work in the world without any connection to the tannery that made them. The connection is invisible. The work is visible. That seems like the right arrangement.",
+      "keywords": ["eighteen","years","hides","tanned","become","leather","carrying","things","protecting","things"]
+    }
+  ]
+}

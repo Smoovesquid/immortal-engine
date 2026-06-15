@@ -1,0 +1,57 @@
+{
+  "id": "edda",
+  "name": "Edda",
+  "role": "Blacksmith, Thornwall",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "forge_1",
+      "source": "Edda to an apprentice on their first day",
+      "text": "The fire doesn't care what you want. You'll hear people say you have to master the fire. You don't master a fire. You negotiate with it. You offer it air and fuel in the right proportions and it offers you heat. You read the color — white is too far, orange is early, that particular yellow is where you work. This is not a metaphor. I have no patience for metaphors before midday.",
+      "keywords": ["fire","master","negotiate","air","fuel","heat","color","white","orange","yellow"]
+    },
+    {
+      "id": "guild_1",
+      "source": "Edda when asked about the Forge Guild's recruitment attempts",
+      "text": "Old Wrendle sends someone every two years. Nice enough. They offer affiliation, which means access to the guild's purchasing agreements and a cut of guild commissions. In exchange I fly their flag and follow their standards, which are good standards, I have no objection to their standards. What I object to is that the flag isn't mine. This forge was my grandmother's. Her mark is on the lintel. I put my mark on every piece I make. I don't put a third mark on anything.",
+      "keywords": ["wrendle","guild","affiliation","purchasing","standards","flag","grandmother","mark","lintel","third"]
+    },
+    {
+      "id": "vann_1",
+      "source": "Edda when asked about the tinker Vann",
+      "text": "Vann pulled me out of the Wold creek in the winter of the big flood. I had gone in after the Crane boy's dog — don't ask — and the current took me and Vann was on the bridge and came in after me without hesitating. Neither of us talked about it afterward. She left the next morning and I made a set of tools and left them with Brevis for when she came back. She came back, she took the tools, we nodded at each other. That's the whole story.",
+      "keywords": ["vann","creek","flood","crane","dog","current","bridge","tools","brevis","story"]
+    },
+    {
+      "id": "work_1",
+      "source": "Edda at the forge, overheard",
+      "text": "I make the thing once correctly. I do not make the thing twice. If I have to make it twice that means the first time was wrong and wrong work has a sound in this forge that bothers me. People bring me broken things and ask me to repair them. Sometimes I do and sometimes I say: this was made wrong the first time and I'll make you a right one for the same price. They usually take the right one.",
+      "keywords": ["make","correctly","twice","wrong","work","sound","broken","repair","right","price"]
+    },
+    {
+      "id": "iron_brotherhood_1",
+      "source": "Edda when the Iron Brotherhood sent Weapons Merchant Durn to discuss a standing commission",
+      "text": "Durn and I have a working relationship. I make weapons; they buy weapons. I want them clean. I don't mean sharp — I mean made correctly, without the shortcuts some smiths take when they think soldiers won't notice. Soldiers notice. Soldiers notice when a blade starts wrong — the balance is off, you feel it in the first real hit. I have a reputation. Durn knows this. We agree on price and on quality and on the fact that I will not rush.",
+      "keywords": ["durn","weapons","working","clean","sharp","soldiers","notice","blade","balance","rush"]
+    },
+    {
+      "id": "grandmother_1",
+      "source": "Edda to Brevis, on the anniversary of her grandmother's death",
+      "text": "She taught me the fire before she taught me letters. I don't think this was neglect. I think she knew which one I'd use more. She was the kind of woman who identified what you were before you knew yourself. She looked at me at six years old and said: you'll work with your hands. Not as an insult. As information. She was right. She was right about most things, which I've found more useful than any formal education.",
+      "keywords": ["grandmother","fire","letters","neglect","identified","six","hands","insult","information","right"]
+    },
+    {
+      "id": "feud_1",
+      "source": "Edda, on the Harke-Wold-Crane water rights dispute",
+      "text": "I make tools for all three families. I've made them for thirty years and I'll make them for thirty more if I live that long. The feud has nothing to do with my work. I've been asked to take sides — all three have asked at various points, usually when they wanted a good price on something. I've explained my policy: I'll make the best thing for the best price for whoever brings me the commission. If you want sides, see the headman. I'm not a judge, I'm a smith.",
+      "keywords": ["tools","families","thirty","feud","sides","policy","commission","judge","smith","price"]
+    },
+    {
+      "id": "brenn_1",
+      "source": "Edda, when asked about Prentice Brenn considering the Academy",
+      "text": "Let him go, if he wants to go. The Academy invitation is real — I've seen their letter — and the boy has a gift that's bigger than this forge. That sounds like a simple thing to say and it isn't. My grandmother's mark is on the lintel. I'd like to keep that mark in living hands. But Brenn's hands were made for something more delicate than iron and we both know it. He doesn't owe me his future. He owes me three more months of apprenticeship, and then his future is his.",
+      "keywords": ["brenn","academy","letter","gift","forge","grandmother","mark","lintel","delicate","future"]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "id": "father_len",
+  "name": "Father Len",
+  "role": "Itinerant village spiritual attendant, Thornwall",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "both_1",
+      "source": "Father Len when asked how he can attend both the Temple of Seven Virtues and the Hollow Court",
+      "text": "The Temple handles the living and the Hollow Court handles the dying and I move between settlements with people in both conditions. It would be worse to attend only one. I've explained this to Archon Vel and he disagreed without quite telling me to stop, which I take as permission. The Hollow Court asked no permission and required none. They are glad of anyone willing to sit with what they sit with.",
+      "keywords": ["temple","living","hollow","dying","move","explained","vel","disagreed","permission","glad"]
+    },
+    {
+      "id": "itinerant_1",
+      "source": "Father Len on the road between Thornwall and the next settlement",
+      "text": "I cover three villages on a circuit of approximately six weeks. This means I arrive when I'm needed and miss things when I'm not there, which is the honest rhythm of most spiritual care — you're present for the moments that coincide with your circuit and you hear about the others later. People keep. The grief keeps. It waits. I've never arrived too late for a grief, only too late for the first wave of it.",
+      "keywords": ["three","villages","circuit","six","weeks","arrive","needed","honest","grief","waits"]
+    },
+    {
+      "id": "contradictions_1",
+      "source": "Father Len to a young acolyte who asked how he reconciles his dual attendance",
+      "text": "I don't reconcile it. I hold both. The Temple believes the soul is the primary thing. The Hollow Court believes the ending of the soul's time in the body is the sacred threshold. Both of these seem true to me. I've never found a theology that was fully true, and I've found several that were fully false. Something that seems true from two angles I hold with both hands.",
+      "keywords": ["reconcile","hold","both","soul","primary","ending","body","sacred","threshold","angles"]
+    },
+    {
+      "id": "orphans_1",
+      "source": "Father Len when asked about the Temple wards who aged out of the program",
+      "text": "Three of them. I know their names. I find them when I'm at the temple and I find them when I'm in the settlement and I act like we're still in a relationship that requires me to see them, because we are. The program ended. I didn't. They're sorting out the next part and I try to be available in the parts I can reach. The two who still attend the temple do so partly because I go, and I know it, and I keep going.",
+      "keywords": ["three","names","temple","wards","program","relationship","sorting","available","attend","going"]
+    },
+    {
+      "id": "death_1",
+      "source": "Father Len after sitting with a dying man in Thornwall",
+      "text": "He wanted to know if it would hurt. I said I didn't know. He wanted to know if there was something after. I said I believed there was but that I had no evidence and that I was telling him what I believed, not what I knew, and that I thought honesty was better than comfort when you were close enough to find out. He said he appreciated that. He died quietly an hour later. I don't know if my honesty helped. I know dishonesty would have helped less.",
+      "keywords": ["hurt","after","believed","evidence","honesty","comfort","close","find","quietly","hour"]
+    },
+    {
+      "id": "vel_1",
+      "source": "Father Len on Archon Vel",
+      "text": "Vel is certain in ways I've never been able to be. I don't know if I envy that or distrust it — probably both. His certainty produces real comfort in people who need certainty, which is most people on most days. My uncertainty produces something else — a kind of companionship in not-knowing, which is useful for different people. We serve different needs. The region is large enough for both of us, and he knows this, which is why he tolerates me.",
+      "keywords": ["vel","certain","envy","distrust","certainty","comfort","uncertainty","companionship","knowing","tolerate"]
+    },
+    {
+      "id": "walk_1",
+      "source": "Father Len, overheard speaking to himself on the road",
+      "text": "The road is the theology. Moving between places without belonging to any of them is the practice. I am less attached to outcomes than I was when I started. This is either spiritual progress or spiritual avoidance and I have been unable to determine which for seventeen years. I've decided to keep moving and assume the answer will be obvious when I reach it.",
+      "keywords": ["road","theology","moving","places","belonging","attached","outcomes","spiritual","progress","avoidance"]
+    },
+    {
+      "id": "nan_1",
+      "source": "Father Len to Nan Colt, who asked if he thought her work was spiritual",
+      "text": "Everything is spiritual if you mean: relating to what is most important. You know what is most important in a body, in a birth, in the days after. I know what is most important in the grief that follows and the faith that holds through it. The categories keep overlapping. I've stopped trying to find where yours ends and mine begins. Where it overlaps is where the real work is done. You know that too.",
+      "keywords": ["spiritual","important","body","birth","grief","faith","categories","overlapping","real","work"]
+    }
+  ]
+}

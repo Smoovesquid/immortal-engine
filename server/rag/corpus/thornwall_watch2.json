@@ -1,0 +1,57 @@
+{
+  "id": "thornwall_watch2",
+  "name": "Pip the Older",
+  "role": "Thornwall day watch; different from Pip the orphan; eight years on day shift",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "watch_1",
+      "source": "Pip the Older on day watch versus night watch",
+      "text": "Day watch and night watch are different occupations sharing a name. Night watch, you're watching for the specific thing. Day watch, you're watching everything because everything is happening. Gault does nineteen years of night watch. I do eight years of day watch. What Gault knows about the night is specific and deep. What I know about the day is broad and shallow. Neither of us can do the other's job without relearning. We've talked about this. He said: your day is my night written in noise. I said: your night is my day written in quiet.",
+      "keywords": ["day","watch","night","watch","different","occupations","sharing","name","night","watch"]
+    },
+    {
+      "id": "ord_1",
+      "source": "Pip the Older on Ord the watch captain",
+      "text": "Ord runs both shifts from the same desk. The desk has two piles: day concerns and night concerns. I've never seen the night pile. Gault has never seen the day pile. Ord reads both. What I understand about this: Ord has a complete picture of the district that neither I nor Gault has individually. Ord's value isn't in managing the shift — it's in holding the picture that neither shift can see.",
+      "keywords": ["ord","runs","both","shifts","same","desk","desk","has","two","piles"]
+    },
+    {
+      "id": "cass_1",
+      "source": "Pip the Older on Cass at the Iron Key",
+      "text": "The Iron Key is on my circuit three times per shift. Not because there's trouble at the Iron Key — there isn't. Because the Iron Key is the point where I learn most about what's in the district that day. Travelers who've just arrived. Merchants meeting for the first time. Unusual combinations of people using the neutral tables. Cass doesn't tell me this directly. What Cass tells me: I noticed, and then a pause, and then one specific thing. The one specific thing is what Cass has decided is worth my shift.",
+      "keywords": ["iron","key","circuit","three","times","per","shift","not","because","there's"]
+    },
+    {
+      "id": "goss_1",
+      "source": "Pip the Older on Goss",
+      "text": "Goss and I have a working relationship around flour delivery timing. The flour deliveries require me to clear the south passage on certain mornings to prevent a congestion that would otherwise block the market route. Goss tells me the delivery morning one day before. I route accordingly. In eight years, three times the delivery was different from what Goss said. Each time he told me before the delivery, not after. He said once: my circuit has fewer consequences than yours when it changes. I should communicate first.",
+      "keywords": ["goss","working","relationship","flour","delivery","timing","flour","deliveries","require","clear"]
+    },
+    {
+      "id": "edna_1",
+      "source": "Pip the Older on Edna the tailor",
+      "text": "Edna made my uniform eight years ago. I've come back for maintenance twice. Both times she looked at what the eight years of day watch had done to the fabric and made the maintenance specifically for what eight years of day watch does. Not general maintenance — she asks what parts of the work stress the uniform and repairs those parts specifically. I said once: you're designing the maintenance around the job. She said: the maintenance should extend the uniform's utility for the use it's actually in. General maintenance serves general uniforms.",
+      "keywords": ["edna","made","uniform","eight","years","maintenance","twice","both","times","looked"]
+    },
+    {
+      "id": "pip_orphan_1",
+      "source": "Pip the Older on the other Pip",
+      "text": "There's a younger Pip in the district who does something I understand and don't understand at the same time. I understand the watching — I watch too. What I don't understand is how the watching produces what I've heard it produces. I don't have the specific knowledge. I know there's a Pip who watches in the way I watch except differently, and I know the different watching produces different information, and I know that Rook uses that information. Day watch, night watch, Pip-watch. Three different pictures of the same district.",
+      "keywords": ["younger","pip","district","does","something","understand","don't","understand","same","time"]
+    },
+    {
+      "id": "what_pip_older_knows_1",
+      "source": "Pip the Older on what eight years of day watch teaches",
+      "text": "Everyone has a pattern. The pattern is invisible to them and visible to me. The vegetable seller arrives at the same time within twelve minutes. The blacksmith's apprentice takes the long route when something is wrong at the forge. The Hollow Court clients take the indirect approach to the Court when they're coming for the first time. I know these patterns because I've watched them for eight years. A deviation in a pattern is information. A deviation in three patterns on the same day is a question Ord needs to hear.",
+      "keywords": ["everyone","has","pattern","pattern","invisible","to","them","visible","to","me"]
+    },
+    {
+      "id": "what_pip_older_holds_1",
+      "source": "Pip the Older on the deviation he didn't report",
+      "text": "Once. A pattern deviation that I noticed and assessed and did not report. The assessment was: this is a private matter that is not a district concern. I've been right once in eight years about this judgment. Once is all you get with this kind of judgment. If I'm wrong about it ever again I'll report instead of assess. The margin for private-matter judgment is one correct use. I used it. The margin is now zero.",
+      "keywords": ["once","pattern","deviation","noticed","assessed","did","not","report","assessment","was"]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "id": "ceth_summoner",
+  "name": "Ceth",
+  "role": "Summoner; broker of the Seven Shadows / Demon Courts",
+  "cluster": "demon_courts",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "arrangement_1",
+      "source": "Ceth to the collective of the Seven Shadows, at one of their rare joint meetings",
+      "text": "We do not share theology. We share a survival interest. The Temple would suppress all of us equally and the Iron Brotherhood would be available for hire to do it. What we have in common is that we'd all prefer not to be suppressed. That's enough. I'm not asking you to like each other. KHORRUN's people and LIORAI's people have irreconcilable differences and always will. I'm asking you to not actively undermine each other while the Temple is watching. That's the whole arrangement.",
+      "keywords": ["theology","survival","interest","temple","suppress","brotherhood","equally","irreconcilable","undermine","arrangement"]
+    },
+    {
+      "id": "academy_1",
+      "source": "Ceth on their time at the Academy",
+      "text": "I studied there honestly. I mean the scholarship was honest — I applied under my real name, I did the work, I passed the examinations. What wasn't honest was what I was studying toward. Scholar Maren knew, I think, by the end of the second year. She said nothing. I said nothing. We reached a professional understanding that I would not bring anything I learned into the Academy's walls and she would not report what she suspected. I've kept that. She's kept it. It's a mutual courtesy.",
+      "keywords": ["academy","honestly","scholarship","name","work","maren","knew","suspected","professional","courtesy"]
+    },
+    {
+      "id": "maren_1",
+      "source": "Ceth on Scholar Maren",
+      "text": "Maren studies the demon-adjacent texts the way a naturalist studies dangerous animals — systematically, from a careful distance, with the understanding that the distance is what makes the study possible. She's never summoned anything. She'd be excellent at it. I've thought about telling her this. I haven't. The excellent would not be enough to overcome the principled, and the principled objection she has is correct.",
+      "keywords": ["maren","studies","naturalist","dangerous","animals","systematically","careful","distance","summoned","principled"]
+    },
+    {
+      "id": "alath_1",
+      "source": "Ceth on the spirit-whisperer Alath's visits",
+      "text": "Alath comes to us to study the marks, not to join us. I find this more interesting than threatening. She sees things we leave behind that we can't see ourselves, which is the kind of information you pay for. In exchange I tell her what I can about the process that leaves the marks. I'm careful about what I tell her — not everything, but enough to make the exchange productive. She's studying what we do. I'm studying what she sees. Between us we're producing a picture nobody else has.",
+      "keywords": ["alath","marks","study","join","interesting","threatening","sees","leaves","information","exchange"]
+    },
+    {
+      "id": "broker_1",
+      "source": "Ceth when asked what they want",
+      "text": "I want the arrangement to hold long enough that it becomes normal. Arrangements that hold long enough become institutions, and institutions are harder to suppress than arrangements. I've been working on this for seven years. The seven years have produced a loose holding pattern that might, in another seven years, produce something durable. I'm not optimistic. I'm persistent. These are different qualities and persistence is the more useful one in this work.",
+      "keywords": ["arrangement","hold","normal","institutions","suppress","seven","years","durable","optimistic","persistent"]
+    },
+    {
+      "id": "khorrun_1",
+      "source": "Ceth on the Scarlet Compact (KHORRUN devotees)",
+      "text": "Orm is predictable in ways that make him manageable. He wants violence with permission. The Compact wants a framework that makes their violence sanctioned in some sense, because they've found that violence without sanction eventually draws attention. I provide the framework. In exchange the Compact provides — security, of a kind. The arrangement is uncomfortable and useful, which describes most of the arrangements I maintain.",
+      "keywords": ["orm","predictable","manageable","violence","permission","compact","framework","sanctioned","attention","security"]
+    },
+    {
+      "id": "what_ceth_is_1",
+      "source": "Ceth alone, after the meeting dispersed",
+      "text": "I believe in the work. Not in the entities — belief in the entities is a different relationship and most of what I've seen from the entities doesn't invite belief so much as caution. I believe in the study of the entities. In the understanding of what they are and how they move and what they want. This knowledge exists. Someone is going to have it. I'd rather someone rigorous have it than someone credulous. I'm rigorous. I'm also aware this is the thing everyone who does what I do says. I try to keep noticing that.",
+      "keywords": ["believe","work","entities","caution","study","understanding","move","want","rigorous","credulous"]
+    },
+    {
+      "id": "vel_1",
+      "source": "Ceth on Archon Vel",
+      "text": "Vel is the most sophisticated thinker in the Temple and the most dangerous threat to the arrangement. Not because he's hostile — he's more careful than hostile. Because he understands that the Seven Shadows are not just corrupt individuals. He understands we're an organized interest. Organized interests get treated differently than scattered deviants. He hasn't moved against us, which means he's waiting for something. I'd like to know what. I've been watching for four years.",
+      "keywords": ["vel","sophisticated","temple","dangerous","threat","hostile","careful","organized","interest","watching"]
+    }
+  ]
+}

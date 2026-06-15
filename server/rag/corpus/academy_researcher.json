@@ -1,0 +1,57 @@
+{
+  "id": "academy_researcher",
+  "name": "Selle",
+  "role": "Independent researcher at the Academy; pursuing a specific question that has taken longer than expected",
+  "cluster": "academy_of_runes",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "researcher_1",
+      "source": "Selle on the research question",
+      "text": "In eleven years of pursuing this specific question, what the question is: whether the rune systems' combinatorial logic has an implicit constraint that limits the possible combinations, or whether the constraint is only the practitioner's knowledge and not the system's structure. In eleven years, the question remains open. In eleven years, I've ruled out four families of possible constraints, which has not answered the question but has clarified it. In eleven years, the clarified question is harder than the original question.",
+      "keywords": ["eleven","years","pursuing","specific","question","what","question","whether","rune","systems'"]
+    },
+    {
+      "id": "burr_1",
+      "source": "Selle on Burr",
+      "text": "Burr is the Rune Master whose work is the most advanced practical application of the system I'm studying theoretically. In nine years of the Selle-Burr research relationship, what Burr's practical knowledge provides to my theoretical inquiry: the empirical constraints. Burr has encountered the limits of the system through practice. I'm trying to identify those limits through theory. In nine years, the conversation between the theoretical and practical approaches has been the most productive aspect of the research — what Burr has found in practice has directed the theoretical inquiry more than the theory has directed Burr's practice.",
+      "keywords": ["burr","rune","master","whose","work","most","advanced","practical","application","system"]
+    },
+    {
+      "id": "prill_1",
+      "source": "Selle on Prill",
+      "text": "Prill the archivist maintains the Academy's historical research records that my current inquiry builds on. In seven years of using the Academy's archive through Prill's access function, what Prill has provided beyond physical access: the knowledge of what the archive contains that isn't apparent from the catalog. In seven years, Prill has directed me to three records that were not in the catalog's expected location and that were significant for the research. In seven years, the archivist's knowledge of the archive's idiosyncrasies has been a research resource.",
+      "keywords": ["prill","archivist","maintains","academy's","historical","research","records","current","inquiry","builds"]
+    },
+    {
+      "id": "marel_1",
+      "source": "Selle on Marel",
+      "text": "Marel approaches the same rune system from the historical angle that I approach from the theoretical angle. In six years of working in parallel research tracks with Marel, what the parallel tracking has produced: two different perspectives on the same system that are occasionally in tension and occasionally confirmatory. In six years, the tension has been more productive than the confirmation — the places where Marel's historical account and my theoretical model conflict are the places where something about the system is more complex than either account handles.",
+      "keywords": ["marel","approaches","same","rune","system","historical","angle","approach","theoretical","angle"]
+    },
+    {
+      "id": "mora_1",
+      "source": "Selle on Mora",
+      "text": "Mora teaches ethics and has, in four years of conversations about my research, asked the question I most need to sit with: when you find the constraint, what will you do with that knowledge? In four years of the Mora-Selle conversation about the ethics of the research's application, what the conversation has produced: the decision to publish the constraint's identification with a specific note about the implications of the knowledge for the system's use. In four years, the ethics of the research have been part of the research.",
+      "keywords": ["mora","teaches","ethics","four","years","conversations","research","asked","question","most"]
+    },
+    {
+      "id": "what_eleven_years_holds_1",
+      "source": "Selle on what eleven years of one research question holds",
+      "text": "In eleven years, what eleven years on one question produces: the specific knowledge of a problem's structure that only sustained attention develops. In eleven years, I know this question better than anyone has ever known it — not because I'm more capable than others who have approached it, but because no one has stayed with it as long. In eleven years, the eleven years are the instrument. The instrument is the only one of its kind because no one else has committed eleven years to this specific question.",
+      "keywords": ["eleven","years","what","eleven","years","one","research","question","holds","specific"]
+    },
+    {
+      "id": "what_selle_holds_1",
+      "source": "Selle on what she's found that she hasn't published",
+      "text": "In eleven years, what I've found that I haven't published: a partial constraint identification that is not yet complete enough to publish with the certainty the publication requires. In eleven years, the partial finding has been in my notes for three years. In three years, the partial finding has been the most exciting and most frustrating thing in the research — exciting because it's the first constraint identification that has held up under sustained scrutiny, frustrating because it's partial and the complete identification requires resolving the partial finding's remaining gaps.",
+      "keywords": ["eleven","years","what","found","haven't","published","partial","constraint","identification","not"]
+    },
+    {
+      "id": "eleven_years_2",
+      "source": "Selle on eleven years of one research question",
+      "text": "In eleven years, the question has not been answered. In eleven years, the question has been clarified, refined, expanded, and partially addressed in ways that make the remaining question more specific and more answerable than it was when I started. In eleven years, the research process has produced a better question more than it has produced an answer. In eleven years, I believe the better question is closer to being answered than the original question was. In eleven years, I think I'll answer it. I didn't say when.",
+      "keywords": ["eleven","years","question","not","been","answered","eleven","years","question","been"]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "id": "sostane_brewer",
+  "name": "Mell",
+  "role": "Brewer; SOSTANE devotee (Temperance); supplies Thornwall and harbor",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "sostane_1",
+      "source": "Mell explaining SOSTANE to someone who assumed temperance meant abstinence",
+      "text": "SOSTANE is not the angel of drinking less. That's the popular misreading. SOSTANE is the angel of the correct amount — not less than correct, not more than correct, the precise amount that serves the purpose. A healer needs enough ale to sterilize a wound; more is waste, less doesn't work. A traveler needs enough water for the journey, not more, not less. I make ale. SOSTANE teaches me how much ale is correct. The practice is in the precision, not the reduction.",
+      "keywords": ["sostane","not","angel","drinking","less","popular","misreading","correct","amount","precise"]
+    },
+    {
+      "id": "brewing_1",
+      "source": "Mell at the brewery during a batch",
+      "text": "The grain quantity is precise because the ale requires precise grain. Over-grain makes the ale too strong — it serves a different purpose than I intend. Under-grain makes it thin and it doesn't do what good ale should do, which is: sustain. The malt, the water, the temperature, the timing. Each variable has a correct setting. The correct setting produces the specific ale that serves the specific purpose. This is SOSTANE's teaching expressed in barley.",
+      "keywords": ["grain","quantity","precise","ale","requires","over","under","strong","thin","sustain"]
+    },
+    {
+      "id": "brevis_1",
+      "source": "Mell on supplying the tavern keeper Brevis",
+      "text": "Brevis and I have been in arrangement for eight years. She takes three barrels a week in summer, two in winter, and tells me the week before when the amounts need to change for an event. The arrangement is so stable that I schedule my production around it. She pays on delivery, never late, always the correct amount. I've had other clients who paid late, paid short, or argued about what was agreed. Brevis makes my business predictable. SOSTANE would describe this as the correct amount of reliability.",
+      "keywords": ["brevis","arrangement","eight","years","three","barrels","week","summer","winter","change"]
+    },
+    {
+      "id": "nessa_1",
+      "source": "Mell on supplying the Anchor & Argument",
+      "text": "Nessa takes more than Brevis because the harbor clientele drinks more than Thornwall clientele. Not incorrectly more — sailors work hard and ale is correct fuel for the recovery. I've calibrated the harbor batch to a slightly stronger recipe because the purpose is different: harbor ale needs to feel satisfying in a shorter window of time, because sailors are in port for specific periods. The recipe matches the purpose. SOSTANE approves of recipes that match purposes.",
+      "keywords": ["nessa","takes","more","brevis","harbor","clientele","sailors","incorrect","correct","calibrated"]
+    },
+    {
+      "id": "what_temperance_1",
+      "source": "Mell when asked what temperance feels like from inside",
+      "text": "Like a fit. A shoe that fits, a sentence that's the right length, a meal that ends when you're full and not after. The temperance is in the fit between the thing and what the thing needs to do. When I brew correctly, the ale fits the occasion it's for. When I charge correctly, the price fits the value. When I speak, the words fit the meaning. The practice is applied to everything. It started with ale and spread. SOSTANE's gift is that the practice becomes a way of seeing, not just a discipline.",
+      "keywords": ["fit","shoe","sentence","length","meal","full","temperance","brew","correctly","occasion"]
+    },
+    {
+      "id": "vel_1",
+      "source": "Mell when asked about the Temple",
+      "text": "Vel gave a sermon on SOSTANE last spring that I found partially correct. His framing was abstinence as a form of temperance. I disagree — abstinence is the avoidance of the calibration problem by removing the thing being calibrated. SOSTANE requires you to keep the thing and calibrate it. Removing the thing is easier but it's not the practice. I said this to Father Len on his circuit and he agreed, which means he'll probably carry the disagreement back to Vel eventually. I'm comfortable with that.",
+      "keywords": ["vel","sermon","sostane","spring","partially","correct","framing","abstinence","temperance","calibration"]
+    },
+    {
+      "id": "inn_1",
+      "source": "Mell on the quantity produced each season",
+      "text": "Forty barrels in spring. Thirty in summer. Twenty in autumn. Fifteen in winter. The production follows what the settlement and the harbor need, not what I could produce. I could produce more. The vats are large enough for more. SOSTANE is clearest in the decision not to produce more just because more is possible. The demand is what I serve. What the demand needs, I produce. What the demand doesn't need sits in my vats and turns. I don't let things turn.",
+      "keywords": ["forty","barrels","spring","thirty","summer","twenty","autumn","fifteen","winter","production"]
+    },
+    {
+      "id": "gorran_1",
+      "source": "Mell on the feast cook Thubb who serves GORRAN",
+      "text": "Thubb and I have had the obvious conversation. GORRAN and SOSTANE are in direct tension — one is the broken loop of enough, one is the precise calibration of enough. We supply each other: I give Thubb's feast the ale at a rate that makes the feast possible, and Thubb provides the feast with a context that makes moderate consumption natural. People eat and drink correctly at Thubb's feast more than they do at the Anchor, and I think it's because the food is so good it satisfies before the ale does. We're arguing about whose virtue gets credit.",
+      "keywords": ["thubb","gorran","sostane","direct","tension","broken","loop","calibration","supply","feast"]
+    }
+  ]
+}

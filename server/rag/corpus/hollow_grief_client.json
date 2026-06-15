@@ -1,0 +1,57 @@
+{
+  "id": "hollow_grief_client",
+  "name": "Maret",
+  "role": "Widow; Hollow Court regular; harbor merchant's wife",
+  "cluster": "hollow_court",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "grief_1",
+      "source": "Maret when asked why she still attends the Hollow Court three years after",
+      "text": "The grief changed shape. Year one it was everywhere and loud. Year two it was quieter but it would arrive without warning. Year three it's specific — I know what triggers it and when and roughly how long it will last. The Hollow Court's rites help me work with the specific version. I don't need the rites for the loud everywhere version anymore. I need them for the specific version because the specific version is harder to process alone.",
+      "keywords": ["grief","changed","shape","year","one","everywhere","loud","two","quieter","warning"]
+    },
+    {
+      "id": "sel_1",
+      "source": "Maret on Sel the mourner",
+      "text": "Sel doesn't try to resolve the grief. This is the thing about her that's most valuable. She creates space for it to exist as what it is — not as a problem to be fixed, not as an obstacle to be overcome. Just: this is here. She witnesses it being here. The witnessing is the help. I spent the first year trying to find people who would help me fix it. Sel was the first person who helped me stop trying to fix it.",
+      "keywords": ["sel","doesn't","try","resolve","grief","valuable","creates","space","exist","problem"]
+    },
+    {
+      "id": "cree_1",
+      "source": "Maret on the grief singer Cree",
+      "text": "Cree's singing does something I can't explain and have stopped trying to explain. It moves something that doesn't have a location. Three years ago I would have found this description embarrassing. Now I find it accurate. After the singing I'm different than I was before in a specific way that wears off over time and requires being renewed. The singing renews it. I come monthly.",
+      "keywords": ["cree","singing","does","something","can't","explain","stopped","moves","location","three"]
+    },
+    {
+      "id": "harbor_1",
+      "source": "Maret on her late husband's shipping business",
+      "text": "My husband ran a small shipping operation. Not as large as Fenn's. After he died I had to decide whether to sell or continue. Keris walked me through what I'd need to do to continue. Nessa let me use the Anchor & Argument for the first set of business meetings because my husband had always used it and I didn't know where else to have them. Captain Harrow agreed to continue the existing contracts for one year while I found my footing. The harbor took care of me. I didn't expect it.",
+      "keywords": ["husband","shipping","operation","fenn","died","decide","sell","continue","keris","meetings"]
+    },
+    {
+      "id": "porde_1",
+      "source": "Maret on the death sitter Porde",
+      "text": "Porde was there when my husband died. I don't remember much of those hours — they're compressed in my memory into images rather than sequence. What I remember clearly is that Porde was in the room and that her being there meant I didn't have to be present in a way I wasn't capable of. She was present so I could be less than present. I've thanked her since. She said: that's what I was there for. The plainness of this answer is the right answer.",
+      "keywords": ["porde","there","husband","died","don't","remember","hours","compressed","images","sequence"]
+    },
+    {
+      "id": "what_continues_1",
+      "source": "Maret on running the business alone",
+      "text": "I run it differently than he did. He was the relationship person. I'm more procedural — I've systemized things he did instinctively. The business is smaller and more reliable. I've let go of two routes that weren't sustainable at my scale and focused on three that are. Osric the rival merchant has been fair to me — he's taken two things I had to hand off rather than let them fail. I don't know why he did this. He hasn't asked for anything in return.",
+      "keywords": ["run","differently","relationship","person","procedural","systemized","instinctively","smaller","reliable","two"]
+    },
+    {
+      "id": "children_1",
+      "source": "Maret when asked about her children",
+      "text": "Two. Both in the harbor district now, working. The older one works the docks for Rulf — she knew ships before her father died and she wanted to stay near them. The younger one is learning the accounts from Saben Fenn as an arrangement I worked out with Aldous. The children knew what they wanted. I helped them get there. This is the thing I'm most certain I did correctly in the three years since.",
+      "keywords": ["two","harbor","district","working","older","docks","rulf","ships","father","died"]
+    },
+    {
+      "id": "what_grief_1",
+      "source": "Maret on what grief actually is",
+      "text": "It's the space the person left. Not their absence exactly — the specific shape of the space where they were. The shape changes over time. Year one the shape was their exact outline. Year three the shape is less precise but still specific. I still know which seat at the table they used. I'll probably always know that. Sel says: some shapes are permanent. The practice isn't making the shape go away. It's learning to move around it without tripping.",
+      "keywords": ["space","person","left","absence","specific","shape","changes","time","year","one"]
+    }
+  ]
+}

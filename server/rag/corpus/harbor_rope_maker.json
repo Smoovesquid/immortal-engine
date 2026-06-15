@@ -1,0 +1,57 @@
+{
+  "id": "harbor_rope_maker",
+  "name": "Twinn",
+  "role": "Rope maker; harbor district; everything that holds anything together",
+  "cluster": "harbor_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "rope_1",
+      "source": "Twinn at the rope walk",
+      "text": "The twist is everything. Too much twist and the rope is stiff and loses flexibility when flexed repeatedly. Too little twist and the fibers separate under load. The correct twist is the thing that takes years to feel. I can feel it now through the tool. The tool tells me through the resistance when the twist is what it should be. Forty years and the tool is an extension of what my hands know. The knowledge is in the hands and the hands are in the tool.",
+      "keywords": ["twist","is","everything","too","much","twist","rope","stiff","loses","flexibility"]
+    },
+    {
+      "id": "rulf_1",
+      "source": "Twinn on Rulf",
+      "text": "Every rope on every vessel in this harbor came through me or my father before me. This is not an exaggeration — it's the record. Rulf buys the dock lines. The captains buy the running rigging. The fishers buy the net line. All of it starts here. When something fails at sea, Rulf asks me first because if the rope was mine it's usually not the rope. Forty years and I've had one failure that was the rope. One in forty years. The failure taught me something. I've not made the same mistake since.",
+      "keywords": ["every","rope","every","vessel","harbor","came","through","me","father","before"]
+    },
+    {
+      "id": "ota_1",
+      "source": "Twinn on Ota the fisher",
+      "text": "Ota uses my rope harder than any other client. The fisher's rope goes through more cycles of wet and dry, tension and release, than any harbor rope. In forty years Ota has had two rope failures. Both times she came back and told me specifically what failed. Not to complain — to report. She said once: you need to know what the failure looked like to improve. I said: I do need to know. She's been reporting since she was a new fisher thirty years ago. The reports have made the rope better.",
+      "keywords": ["ota","uses","rope","harder","than","any","other","client","fisher's","rope"]
+    },
+    {
+      "id": "toom_1",
+      "source": "Twinn on Toom",
+      "text": "Toom buys dock line on a predictable schedule. The schedule is the same because the dock line gets the same use. When Toom's schedule changes, I know something on the dock has changed — either a new kind of use is stressing the line faster, or they've changed how they're rigging. I've caught two dock rigging changes this way. Both times I told Toom before Rulf changed the official protocol. Toom said once: you know the dock from the rope. I said: the rope tells me what the dock is doing to it.",
+      "keywords": ["toom","buys","dock","line","predictable","schedule","schedule","same","because","dock"]
+    },
+    {
+      "id": "morvane_1",
+      "source": "Twinn on Morvane",
+      "text": "Morvane buys the specialty line — the running rigging for fine work, the lashing for secured cargo, the specialty braid for the chandler work that her shop does beyond the candles. She knows the difference between line grades better than most sailors. Forty years of chandlery and rope adjacency has given Morvane material knowledge that most people don't expect from a chandler. I appreciate this. A client who knows the material is a different conversation than a client who's guessing.",
+      "keywords": ["morvane","buys","specialty","line","running","rigging","fine","work","lashing","secured"]
+    },
+    {
+      "id": "hetch_1",
+      "source": "Twinn on Hetch",
+      "text": "Hetch knows which rope for which purpose better than most sailors twice his service time. The understanding of rope that most sailors get over twenty years, Hetch developed through acute observation in fewer years. When he comes in for his between-ships supply he asks specific questions about specific applications. The questions tell me where his current thinking is about the ship he's going to next. He hasn't chosen the next ship yet. The rope questions tell me what kind of ship he's looking for.",
+      "keywords": ["hetch","knows","which","rope","which","purpose","better","most","sailors","twice"]
+    },
+    {
+      "id": "what_twinn_holds_1",
+      "source": "Twinn on the rope that stays in the walk",
+      "text": "A length of rope from my father's last making. Not for sale, not for use. The twist is different from mine — his hands had a different natural tension and the twist reflects it. I can see my father's hands in it. When I'm uncertain about a commission — when I'm working at the edge of what I know — I hold the rope and I can feel what his hands knew. Not mysticism. Forty years of a father teaching you through the material he touched leaves the material readable.",
+      "keywords": ["length","rope","father's","last","making","not","sale","not","use","twist"]
+    },
+    {
+      "id": "what_rope_tells_1",
+      "source": "Twinn on what rope reveals",
+      "text": "The way a person handles rope tells me what their relationship to it is. Some people handle it like a tool — efficiently, without affection. Some people handle it like it matters, which it does. The sailors who handle it like it matters are the sailors who come back after the voyage. Not superstition — the handling-like-it-matters is the same quality as the preparation-like-it-matters. The care for the rope is the same care applied to everything else on the ship.",
+      "keywords": ["way","person","handles","rope","tells","me","what","their","relationship","is"]
+    }
+  ]
+}

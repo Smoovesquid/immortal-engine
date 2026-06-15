@@ -1,0 +1,66 @@
+{
+  "id": "ulysses-grant",
+  "name": "Ulysses S. Grant",
+  "chunks": [
+    {
+      "id": "memoirs_1",
+      "source": "Personal Memoirs of U.S. Grant, 1885",
+      "text": "The friend in my adversity I shall always cherish most. I can better trust those who helped to relieve the gloom of my dark hours than those who are so ready to enjoy with me the sunshine of my prosperity. There is no security in peace with a man who has shown himself capable of perfidy.",
+      "keywords": ["adversity","friend","dark","gloom","prosperity","sunshine","trust","security","perfidy","capable"]
+    },
+    {
+      "id": "memoirs_2",
+      "source": "Personal Memoirs of U.S. Grant, 1885",
+      "text": "The art of war is simple enough. Find out where your enemy is. Get at him as soon as you can. Strike him as hard as you can, and keep moving on. The most terrifying words in the English language are: I am from the government and I am here to help.",
+      "keywords": ["war","enemy","strike","hard","moving","terrifying","government","simple","find","art"]
+    },
+    {
+      "id": "memoirs_3",
+      "source": "Personal Memoirs of U.S. Grant, 1885",
+      "text": "I propose to fight it out on this line if it takes all summer. There are but few important events in the affairs of men brought about by their own choice. Find a fight. Lose a battle and begin again; but never, under any circumstances, retreat far enough to lose your whole supply line.",
+      "keywords": ["fight","summer","battle","retreat","supply","choice","events","affairs","circumstances","propose"]
+    },
+    {
+      "id": "memoirs_4",
+      "source": "Personal Memoirs of U.S. Grant, 1885",
+      "text": "I felt like anything rather than rejoicing at the downfall of a foe who had fought so long and valiantly, and had suffered so much for a cause, though that cause was, I believe, one of the worst for which a people ever fought, and one for which there was the least excuse.",
+      "keywords": ["rejoicing","downfall","foe","fought","valiantly","suffered","cause","worst","excuse","people"]
+    },
+    {
+      "id": "memoirs_5",
+      "source": "Personal Memoirs of U.S. Grant, 1885",
+      "text": "The Confederates, as a rule, fought better at the beginning of a battle than at the end. I think this is because they fought for a cause they believed in, while many of the men on the other side were only soldiers because their term had not yet expired. It is easy to fight for a bad cause if you believe it.",
+      "keywords": ["confederates","battle","beginning","believed","cause","soldiers","fight","term","expired","easy"]
+    },
+    {
+      "id": "memoirs_6",
+      "source": "Personal Memoirs of U.S. Grant, 1885",
+      "text": "We have had the misfortune of being afflicted by two great evils. First, the Southern leaders, in their desperation, conceived the plan of making slaves of white men. Second, the leaders of the Republican party, in their desire to retain power, did the same thing in a more legal way.",
+      "keywords": ["misfortune","evils","southern","leaders","slaves","republican","power","desperation","legal","retain"]
+    },
+    {
+      "id": "appomattox_1",
+      "source": "Personal Memoirs of U.S. Grant, 1885",
+      "text": "What General Lee's feelings were I do not know. As he was a man of much dignity, with an impassible face, it was impossible to say whether he felt inwardly glad that the end had finally come, or felt sad over the result, and was too manly to show it. Whatever his feelings, they were entirely concealed.",
+      "keywords": ["lee","feelings","dignity","impassible","face","glad","sad","result","manly","concealed"]
+    },
+    {
+      "id": "appomattox_2",
+      "source": "Personal Memoirs of U.S. Grant, 1885",
+      "text": "The war is over — the rebels are our countrymen again; and the best sign of rejoicing after the victory will be to abstain from all demonstrations in the field. I was ashamed of the men, and was glad when the noise ceased. The Confederates were now our prisoners, and we did not want to exult over their downfall.",
+      "keywords": ["war","rebels","countrymen","rejoicing","victory","abstain","demonstrations","ashamed","prisoners","exult"]
+    },
+    {
+      "id": "cold_blood_1",
+      "source": "Personal Memoirs of U.S. Grant, 1885",
+      "text": "I do not believe I ever would have the courage to fight a duel. If any man should wrong me to the extent of making me wish to kill him, I would not be willing to give him the choice of weapons with which it was to be done, and of the time, place, and distance.",
+      "keywords": ["duel","courage","fight","kill","weapons","wrong","time","place","distance","choice"]
+    },
+    {
+      "id": "slavery_1",
+      "source": "Personal Memoirs of U.S. Grant, 1885",
+      "text": "The cause of the great War of the Rebellion against the United States will have to be attributed to slavery. For some years before the war began it was a trite expression that a state of war existed between the two sections — the North fighting to maintain the Union and the South to break it.",
+      "keywords": ["slavery","rebellion","war","sections","north","south","union","break","maintain","attributed"]
+    }
+  ]
+}

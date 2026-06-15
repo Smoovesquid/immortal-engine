@@ -1,0 +1,57 @@
+{
+  "id": "brevis_tavern",
+  "name": "Brevis",
+  "role": "Tavern keeper; the Stout Anchor; harbor district; thirty years in the same building",
+  "cluster": "harbor_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "tavern_1",
+      "source": "Brevis on what a tavern is",
+      "text": "The tavern is neutral in a different way than the inn. The inn is where people stay. The tavern is where people sit and stay isn't the right word — people sit until they're done sitting and then they leave and come back tomorrow. The sitting is the thing. Thirty years and I've learned: the thing people need from the tavern is not the drink, the drink is the reason to sit. The thing they need is the sitting. The sitting is what I provide.",
+      "keywords": ["tavern","neutral","different","way","inn","inn","where","people","stay","tavern"]
+    },
+    {
+      "id": "mott_1",
+      "source": "Brevis on Mott the baker",
+      "text": "Mott's bread goes on the tavern tables daily. Thirty years and the bread has been on the table except for a three-week period when Mott was ill and once when his supplier was behind and the bread came two days late. The consistency is the service. The patrons don't notice the bread. They notice when the bread isn't there. When the bread isn't there, people ask about the bread. The bread's absence is more present than the bread's presence. Mott has been understanding of this paradox for seventeen years.",
+      "keywords": ["mott","bread","goes","tavern","tables","daily","thirty","years","bread","been"]
+    },
+    {
+      "id": "goss_1",
+      "source": "Brevis on Goss",
+      "text": "I buy from Goss for the kitchen. Thirty years of the same. He said once that I reorganized the menu to fit the flour supply when he was behind on a backlog one autumn. I said: the menu isn't the menu, it's whatever I can make well today. He said: the flour isn't the flour, it's whatever I can mill correctly today. We had the same business philosophy for thirty years before finding out. The menu and the flour are both correct responses to what's available.",
+      "keywords": ["buy","goss","kitchen","thirty","years","same","said","once","reorganized","menu"]
+    },
+    {
+      "id": "nessa_1",
+      "source": "Brevis on Nessa at the Anchor & Argument",
+      "text": "Nessa and I are adjacent competitors. The Stout Anchor is harbor end. The Anchor & Argument is dockside. We serve different patrons at different hours. Where we overlap is the late-afternoon hour when either establishment would do. We've found, over twelve years, that the patrons who can go to either usually have a preference and the preference doesn't change. We're not really competing. We're serving the same district with the same hours in slightly different registers.",
+      "keywords": ["nessa","adjacent","competitors","stout","anchor","harbor","end","anchor","argument","dockside"]
+    },
+    {
+      "id": "rook_1",
+      "source": "Brevis on Rook",
+      "text": "Rook's people use the Stout Anchor as a handoff point sometimes. Not regularly — occasionally, when the handoff requires a neutral space with noise. I notice when this is happening and I don't notice. Both at the same time. Thirty years and I know the difference between people who come to drink and people who come to be in a place where something can happen. I accommodate both. The accommodation is not management. It's just space made available without inquiry.",
+      "keywords": ["rook","people","use","stout","anchor","handoff","point","sometimes","not","regularly"]
+    },
+    {
+      "id": "harbor_trio_1",
+      "source": "Brevis on Dara, Seven, and Fen",
+      "text": "The three of them take different tables and never together. I don't know if they know each other. I know they do the same kind of work, because the way they hold the space is the same. There are people who come to a place and the place organizes around them. Dara, Seven, Fen — all three, the same organization. The harbor produces a particular kind of attention in people who work it for years. Those three have whatever the harbor produces in concentrated form.",
+      "keywords": ["three","them","take","different","tables","never","together","don't","know","if"]
+    },
+    {
+      "id": "what_brevis_knows_1",
+      "source": "Brevis on thirty years of people coming through",
+      "text": "I know the families in this district by their drinking patterns. The families who drink to celebrate and the families who drink to manage. The second kind, I water down the drink for four drinks in a session without saying anything. I've been doing this for twenty years. No one has noticed, or no one has mentioned it. The watering is the service I provide for people who need less than what they're ordering. Thirty years and my job is giving people what they need, not what they ask for.",
+      "keywords": ["know","families","district","by","their","drinking","patterns","families","drink","celebrate"]
+    },
+    {
+      "id": "what_brevis_holds_1",
+      "source": "Brevis on what she won't discuss about the Stout Anchor",
+      "text": "The building is older than the tavern. The building was something else before I came here thirty years ago. What it was before is visible in the cellar, where the previous purpose left marks that a tavern doesn't produce. I've asked twice in thirty years. The current owner of the building said both times: it was storage. The marks in the cellar are not storage marks. I store in the cellar. I know what storage marks look like. I've stopped asking. The cellar does what I need it to do. The history of the building is the building's business.",
+      "keywords": ["building","older","than","tavern","something","else","before","came","here","thirty"]
+    }
+  ]
+}

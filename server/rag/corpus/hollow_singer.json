@@ -1,0 +1,57 @@
+{
+  "id": "hollow_singer",
+  "name": "Cree",
+  "role": "Hollow Court; grief singer; leads the mourning rites",
+  "cluster": "hollow_court",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "singing_1",
+      "source": "Cree before a mourning rite",
+      "text": "The song isn't for the dead. The dead don't hear it. The song is for the people in the room who need permission to feel what they're feeling. The sound gives the grief somewhere to go — outside the body and into the air. What comes out in the sound is what couldn't come out any other way. I'm not performing. I'm providing a container. The grief fills the container and then it's a smaller thing than it was.",
+      "keywords": ["song","not","dead","hear","people","room","permission","feel","sound","grief"]
+    },
+    {
+      "id": "sel_1",
+      "source": "Cree on Sel the mourner",
+      "text": "Sel has the most precise understanding of grief I've encountered. She knows which kind is in the room before the rite starts — the fresh kind that needs to move fast, the held kind that needs to be coaxed, the complicated kind that has anger underneath it. I sing differently for each. Sel tells me which before we begin. We've been working together for four years and her read is never wrong.",
+      "keywords": ["sel","most","precise","understanding","grief","encountered","knows","kind","room","rite"]
+    },
+    {
+      "id": "alath_1",
+      "source": "Cree on Alath the whisperer",
+      "text": "Alath attends some of our rites. Not all — only the ones where the recently dead are, as she says, insistent. I've learned to tell when Alath senses something I can't — she stands differently at the edge of the room. She's told me my singing affects the edge of what she works with. I don't fully understand what she means. I keep singing the same way. She keeps standing at the edge. We've made something workable out of two practices that don't usually overlap.",
+      "keywords": ["alath","attends","some","rites","recently","dead","insistent","singing","affects","edge"]
+    },
+    {
+      "id": "bram_1",
+      "source": "Cree on Bram the undertaker",
+      "text": "Bram prepares the body and I prepare the room. We've divided the work without discussing the division — it was obvious from the first time we worked the same death. He does what's physical and I do what's acoustic. On the rare occasion when we've had to discuss it, the conversation has been two sentences. He's the most economical person I know. The economy extends to everything, including grief. He grieves correctly and briefly.",
+      "keywords": ["bram","prepares","body","prepares","room","divided","work","discussing","physical","acoustic"]
+    },
+    {
+      "id": "what_singing_1",
+      "source": "Cree when a visitor asked how she learned to sing for grief",
+      "text": "I sang at my father's death when I was fourteen because someone had to and no one else in the family could and I opened my mouth and what came out was the right thing. I didn't know it was the right thing until I saw the room change. Something loosened. I've been trying to reproduce that loosening on purpose ever since. I'm better at it now than I was. I'm not as good as I was at fourteen because at fourteen I wasn't trying to do it. I was just doing it.",
+      "keywords": ["sang","father's","death","fourteen","someone","family","opened","mouth","right","loosened"]
+    },
+    {
+      "id": "hollow_1",
+      "source": "Cree on the Hollow Court's practice",
+      "text": "The Hollow Court is not a death cult. People say this and I say: correct, it isn't. The death is the occasion. What we practice is presence — the specific kind of presence that doesn't run from the hard thing and doesn't force the hard thing to resolve faster than it resolves. The grief has a pace. The practice is: let it go at its pace. I provide the container. Sel provides the guidance. Bram provides the preparation. We're all doing the same thing from different angles.",
+      "keywords": ["hollow","court","not","death","cult","occasion","practice","presence","specific","hard"]
+    },
+    {
+      "id": "acediel_1",
+      "source": "Cree on ACEDIEL and the grief that doesn't move",
+      "text": "Sel explained ACEDIEL to me three years ago. Not the temple version, which I already knew — the real version, which is the despair that stops motion. What I watch for in a rite is grief that won't flow. The flowing kind I can move with song. The stopped kind is something different — it isn't grief anymore, it's ACEDIEL's specific territory. When I see stopped grief I tell Sel. She knows what to do next. I don't.",
+      "keywords": ["sel","explained","acediel","three","years","temple","despair","stops","motion","flowing"]
+    },
+    {
+      "id": "almas_1",
+      "source": "Cree on the almskeeper Almas",
+      "text": "Almas gives bread. I give song. We're both in the business of giving people something they can't give themselves in the moment they need it. The difference is that bread is the same bread every day and grief is different every time. Almas has the sustainable practice — the same thing done correctly, repeatedly. Mine requires me to be present in a specific way each time, which is more demanding. I've thought about whether I'm doing this sustainably. I think I am. I'll know when I'm not.",
+      "keywords": ["almas","gives","bread","song","business","giving","people","something","bread","same"]
+    }
+  ]
+}

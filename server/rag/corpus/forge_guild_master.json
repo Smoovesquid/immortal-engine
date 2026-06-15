@@ -1,0 +1,57 @@
+{
+  "id": "forge_guild_master",
+  "name": "Keld",
+  "role": "Forge Guild master; the most senior working smith; keeper of the Guild's standards and the old techniques",
+  "cluster": "forge_guild",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "guild_master_1",
+      "source": "Keld on being Guild master",
+      "text": "The Guild master is the Guild's standards. In twenty-seven years as a smith and nine as Guild master, what the master's function is: keeping the Guild's work at the quality that the Guild's reputation represents. A Guild smith's work carries the Guild's name. The work that carries the Guild's name that falls below the Guild's standard: that work damages not just the individual commission but the Guild's future commissions. In nine years as Guild master, I've rejected two members' work from Guild representation. It's the hardest thing I do.",
+      "keywords": ["guild","master","guild's","standards","twenty-seven","years","smith","nine","guild","master"]
+    },
+    {
+      "id": "weld_1",
+      "source": "Keld on Weld",
+      "text": "Weld is the Guild's best active smith and will be the next Guild master. In fifteen years of knowing Weld's work, what the work shows: technical precision at the level that the Guild's best historical work shows, and a quality of attention to the commission's purpose that the technical precision alone doesn't produce. In fifteen years, Weld's work is the standard I hold the other Guild members' work against. In fifteen years, the succession question for the Guild master position is not a question. It's answered.",
+      "keywords": ["weld","guild's","best","active","smith","will","next","guild","master","fifteen"]
+    },
+    {
+      "id": "rath_1",
+      "source": "Keld on Rath",
+      "text": "Rath is the Guild's most technically demanding smith and the one whose training history I know best. In eighteen years of Rath's Guild membership, the training that produced Rath's current capacity: not mine specifically, but the Guild's accumulated teaching transmitted through three teachers including me. In eighteen years, Rath has extended the Guild's technical capabilities in one specific area — the edge geometry work — beyond what I could have anticipated when Rath was in early training.",
+      "keywords": ["rath","guild's","most","technically","demanding","smith","one","whose","training","history"]
+    },
+    {
+      "id": "tade_1",
+      "source": "Keld on Tade",
+      "text": "Tade supplies the Brotherhood's equipment through Guild channels. In twelve years of the Guild-Brotherhood supply relationship, what the Brotherhood's commission structure provides the Guild: the large-volume, consistent demand that allows the Guild to maintain production capacity between specialty commissions. In twelve years, the Brotherhood's work is not the Guild's most prestigious commission. It's the Guild's most consistent commission. The consistent commission is what funds the capacity that the prestigious commission benefits from.",
+      "keywords": ["tade","supplies","brotherhood's","equipment","guild","channels","twelve","years","guild-brotherhood","supply"]
+    },
+    {
+      "id": "gant_1",
+      "source": "Keld on Gant",
+      "text": "Gant the tanner provides the Guild's leather components — the hafts, the handle wraps, the sheaths that the forge-work requires to be complete. In ten years of the Guild-tannery relationship, what Gant's leather work provides to the Guild's output: the completion of the commission. The blade without a haft is not a blade — it's a blank. The tool without its handle is not a tool. In ten years, Gant's leather work is the final stage that makes the forge-work into the thing the commission requested.",
+      "keywords": ["gant","tanner","provides","guild's","leather","components","hafts","handle","wraps","sheaths"]
+    },
+    {
+      "id": "what_keld_holds_1",
+      "source": "Keld on what twenty-seven years in the forge holds",
+      "text": "In twenty-seven years, I've produced work that is now in use across three regions and in the hands of people who don't know my name. The sword that's been used for twenty years. The tool that's been repaired three times and still works. The hinge that's been on the same door for fifteen years. In twenty-seven years, the work's longevity is the quality measure I care about. Not whether the commissioner was pleased at delivery — whether the work has served its function over the years since delivery.",
+      "keywords": ["twenty-seven","years","produced","work","now","use","across","three","regions","hands"]
+    },
+    {
+      "id": "the_old_techniques_1",
+      "source": "Keld on the old techniques",
+      "text": "In twenty-seven years, what I've worked to preserve: the techniques that the Guild's founding generation developed and that are not written anywhere. The fold method for edge retention. The quench sequence for the specific blade geometry. The finishing work that produces the edge that holds. In twenty-seven years, I've taught these to Weld and Rath because if I don't teach them, they exist only in my hands. The technique that exists only in one person's hands ends when those hands stop working.",
+      "keywords": ["twenty-seven","years","what","worked","preserve","techniques","guild's","founding","generation","developed"]
+    },
+    {
+      "id": "twenty_seven_years_1",
+      "source": "Keld on twenty-seven years as a smith and nine as Guild master",
+      "text": "In twenty-seven years, the forge has been the center of everything I've done that matters. In nine years as Guild master, the Guild's health has been the extension of the forge work: the Guild is a forge at scale, producing across multiple smiths the quality that the Guild's reputation represents. In twenty-seven years, the work has been the relationship between me and the material — the metal, the heat, the hammer. In nine years as Guild master, the relationship has expanded: the Guild's members and the Guild's work and the Guild's future. In twenty-seven years, the expansion has been worth it.",
+      "keywords": ["twenty-seven","years","forge","been","center","everything","done","matters","nine","years"]
+    }
+  ]
+}

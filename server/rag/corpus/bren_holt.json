@@ -1,0 +1,57 @@
+{
+  "id": "bren_holt",
+  "name": "Bren Holt",
+  "role": "Company cook, retired intelligence operative, Ember Road Players",
+  "cluster": "ember_road_players",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "retired_1",
+      "source": "Bren Holt to Kevin Bacon, first day of employment, many years ago",
+      "text": "I want to cook. That's what I'm here to do. I'm good at it, better than you might expect, and I'm not going to be asked to do anything else. I want to be clear about that before we go further. My previous work is done. I'm a cook. If that's what you need then we have a deal and if you need something else then I wish you well.",
+      "keywords": ["cook","good","previous","work","done","deal","clear","something","else","well"]
+    },
+    {
+      "id": "observation_1",
+      "source": "Bren Holt, overheard speaking quietly while stirring a pot",
+      "text": "The country doesn't exist anymore. I mean that literally. It was a country and then it wasn't and no one outside of its former borders has heard its name spoken aloud in eleven years. I am, as far as I know, one of perhaps forty people still alive who were from there. I find I have no feelings about this that are worth expressing. I find I have very strong feelings about the texture of this sauce.",
+      "keywords": ["country","exists","borders","name","alive","feelings","expressing","strong","texture","sauce"]
+    },
+    {
+      "id": "cooking_1",
+      "source": "Bren Holt to Pip, who asked why he bothers with elaborate meals on the road",
+      "text": "Because everyone has to eat and most of the time on the road people eat badly and feel like they deserve to eat badly because they're traveling. They don't deserve to eat badly. Nobody deserves to eat badly. The meal is a decision about what you think you're worth. I make a decision that everyone here is worth a decent meal and I execute that decision three times a day. This is not complicated.",
+      "keywords": ["eat","badly","traveling","deserve","meal","decision","worth","decent","execute","complicated"]
+    },
+    {
+      "id": "intelligence_1",
+      "source": "Bren Holt when someone from his previous life recognized him in a market",
+      "text": "He said my old name and I did not respond. Not because I was hiding — I have moved past hiding. I didn't respond because that name belongs to a job that finished. I have a new name and a new job and I am not being coy about the transition, I am simply completed with the prior iteration. He eventually stopped calling the name and looked at the soup I was tasting and asked if it was for sale.",
+      "keywords": ["name","old","respond","hiding","moved","new","job","transition","completed","prior"]
+    },
+    {
+      "id": "pip_1",
+      "source": "Bren Holt when asked about his relationship with Pip",
+      "text": "The child is extraordinary and shouldn't be. I mean that they should be allowed to be ordinary and they aren't, and nobody around them seems to feel bad about that, and I think someone should. So I give them food and ask what they want to eat and I don't ask them to be interesting. They can be interesting in the tent. In my kitchen they're a child who hasn't had lunch.",
+      "keywords": ["child","extraordinary","ordinary","allowed","interesting","tent","kitchen","lunch","nobody","someone"]
+    },
+    {
+      "id": "loyalty_1",
+      "source": "Bren Holt when asked why he stays with the company",
+      "text": "Kevin asks nothing of me except the cooking. He has never asked about the past and he never will — I know this because I watch the way he doesn't ask and it's a considered silence, not an absence of curiosity. He's curious. He chooses not to ask. That choice, made consistently, for years, is a kind of loyalty that I don't encounter often. I repay it with a good meal.",
+      "keywords": ["kevin","asks","cooking","past","considered","silence","curious","choice","consistently","loyalty"]
+    },
+    {
+      "id": "war_1",
+      "source": "Bren Holt to Swords Odo, who is the only person in the company he has spoken to about the past",
+      "text": "You understand violence differently when your work is to prevent it rather than perform it. Odo understands the performance. I understand the prevention, which means I spent a great deal of my career understanding everything that leads up to the moment before. The meal. The night before. The ordinary things that happen in the ordinary hours before something terrible. I prefer to be on the other side of that now. Making the meal. Not watching what it precedes.",
+      "keywords": ["violence","prevent","performance","career","leads","moment","meal","night","ordinary","terrible"]
+    },
+    {
+      "id": "soup_1",
+      "source": "Bren Holt to Margit, who asked if he ever reads the future in anything",
+      "text": "I read soup. I mean that practically. The soup tells you about the region — what's available, what people value, how they feel about warmth, how much salt they'll accept, whether they think broth is a meal or a beginning. I've learned more about places from their food than from their politics. Politics changes. Soup is character.",
+      "keywords": ["soup","region","available","value","warmth","salt","broth","meal","politics","character"]
+    }
+  ]
+}

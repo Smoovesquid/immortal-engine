@@ -1,0 +1,57 @@
+{
+  "id": "harbor_net_mender",
+  "name": "Pett",
+  "role": "Net mender; harbor district; repairs what fishing depends on",
+  "cluster": "harbor_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "net_1",
+      "source": "Pett on what a net is",
+      "text": "A net is a pattern that catches what passes through it. The pattern is what matters — the specific size of the openings, the weight of the cord, the way the mesh transfers tension from one part to another. When one part fails, the rest of the pattern is stressed by what the failed part no longer holds. The repair has to restore not just the broken part but the tension pattern around it. In nineteen years of repair work, the repair that only fixes the break without understanding the pattern fails within the season.",
+      "keywords": ["net","pattern","catches","what","passes","through","pattern","what","matters","specific"]
+    },
+    {
+      "id": "ota_1",
+      "source": "Pett on Ota",
+      "text": "Ota brings me the most complex repair work in my book. Not because Ota is rough with the equipment — Ota is meticulous. Because Ota fishes the outer grounds where the net encounters conditions that other fishing grounds don't produce. The outer-ground damage pattern is different. In nineteen years, the outer-ground nets have shown me damage patterns I've only seen from that specific location. What the outer ground does to a net tells me what the outer ground is like. I've never been there.",
+      "keywords": ["ota","brings","most","complex","repair","work","book","not","because","ota"]
+    },
+    {
+      "id": "twinn_1",
+      "source": "Pett on Twinn",
+      "text": "Twinn makes the rope. I use the rope in the net repair. The relationship is as direct as it sounds — Twinn's craft is the material my craft works with. In fourteen years of working with Twinn's rope, the quality has been consistent enough that I've adjusted my repair technique to Twinn's specific product. Different rope manufacturers produce rope that behaves differently under the tension patterns I create. Twinn's rope is the rope my technique is calibrated to. When Twinn is behind, I wait.",
+      "keywords": ["twinn","makes","rope","use","rope","net","repair","relationship","direct","sounds"]
+    },
+    {
+      "id": "rulf_1",
+      "source": "Pett on Rulf",
+      "text": "Rulf's dock operation and my repair work are connected through the fishing boats. The boats bring the damaged nets to me and take the repaired nets to the fishing grounds. Rulf manages the dock timing that determines when the boats are in for repair versus when they're at sea. In nineteen years, Rulf and I have had two scheduling conflicts — I needed more time for a complex repair than the boat's fishing schedule allowed. Both times, Rulf adjusted the schedule. Both times, the repair was better for the time.",
+      "keywords": ["rulf","dock","operation","repair","work","connected","through","fishing","boats","boats"]
+    },
+    {
+      "id": "lorn_1",
+      "source": "Pett on Lorn",
+      "text": "Lorn is the other regular fisher at the harbor. Ota and Lorn are the two consistent presences in my repair book. Lorn's nets show a different damage pattern from Ota's — shallower grounds, different catch types, different current exposure. In nineteen years, the damage patterns from the same harbor have shown me the harbor's different territories through the nets. I've mapped the harbor by damage pattern. The map isn't a geography map. It's a stress map.",
+      "keywords": ["lorn","other","regular","fisher","harbor","ota","lorn","two","consistent","presences"]
+    },
+    {
+      "id": "what_mending_is_1",
+      "source": "Pett on what net-mending is",
+      "text": "The mending is the history of every damage the net has survived. A net that's been repaired for twenty years carries the repair history in the variations of the mending. I can read a net and tell you roughly when it's been repaired and by whom — each mender has a slightly different technique. When I take on a net that another mender worked on, I read the previous repairs before I plan my work. The previous work is the context for the current damage.",
+      "keywords": ["mending","history","every","damage","net","survived","net","that's","been","repaired"]
+    },
+    {
+      "id": "what_pett_holds_1",
+      "source": "Pett on the net she keeps thinking about",
+      "text": "A net brought to me in year eleven with damage I couldn't explain from any fishing condition I knew. The damage pattern didn't match any ground, any weather event, any equipment failure. I repaired it correctly and returned it. The fisherman — not Ota, not Lorn, a one-time customer — didn't return. The boat didn't return. I still think about the damage pattern. In nineteen years, I've seen similar but not identical patterns twice since then. Both times the fisher didn't return. I don't know what the pattern means.",
+      "keywords": ["net","brought","year","eleven","damage","couldn't","explain","any","fishing","condition"]
+    },
+    {
+      "id": "nineteen_years_1",
+      "source": "Pett on nineteen years of net mending",
+      "text": "The nets I mended in year one are gone — the lifespan of a working net is about eight years before the cumulative damage makes replacement more efficient than repair. The nets I mended in year twelve are still in service. The nets I mend now will outlast my ability to remember them individually. What I leave in each net: the mending. The mending is anonymous. The pattern is mine. Nobody sees the pattern but me, and after a while I stop seeing it too. The work is in the use, not the memory.",
+      "keywords": ["nets","mended","year","one","gone","lifespan","working","net","about","eight"]
+    }
+  ]
+}

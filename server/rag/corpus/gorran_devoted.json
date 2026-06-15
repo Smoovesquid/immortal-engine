@@ -1,0 +1,57 @@
+{
+  "id": "gorran_devoted",
+  "name": "Swel",
+  "role": "GORRAN devotee; the demon of gluttony; believes appetite honestly named is the beginning of knowledge",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "gorran_1",
+      "source": "Swel on GORRAN",
+      "text": "GORRAN is the demon of gluttony. What the Covenant teaches about gluttony: the excess desire that consumes beyond need. What GORRAN actually teaches: the appetite is the information. The appetite for food, for experience, for knowledge, for sensation — all appetite is the body and mind reporting what they need. The gluttony that is sin is the appetite that consumes without awareness. The appetite with awareness is not gluttony. It's desire that knows itself.",
+      "keywords": ["gorran","demon","gluttony","what","covenant","teaches","about","gluttony","excess","desire"]
+    },
+    {
+      "id": "vel_vintner_1",
+      "source": "Swel on Vel the Vintner",
+      "text": "Vel makes things that feed specific appetites — the taste appetite, the experience of flavor, the pleasure of a thing well made. In five years of knowing Vel, Vel is the person in this settlement who most naturally practices GORRAN's principle without the theological frame. What Vel does: attends to the quality of the thing being consumed, so that the consumption is an act of attention rather than an act of filling. GORRAN says: the quality of the consumption transforms the appetite. Vel makes high-quality things. The consumption of Vel's work is the consumption GORRAN would recognize.",
+      "keywords": ["vel","makes","things","feed","specific","appetites","taste","appetite","experience","flavor"]
+    },
+    {
+      "id": "rem_1",
+      "source": "Swel on Rem",
+      "text": "Rem the Aldenmere cook and I have discussed the kitchen's approach to food twice. What Rem said: the household eats well because well-prepared food is part of the house's standing. GORRAN's frame: the household eats well because the appetite for well-prepared food is an appetite worth serving. The result is the same. The frame is different. Rem serves the appetite as a professional function. GORRAN says: serving the appetite well is a spiritual function. The food is the same food.",
+      "keywords": ["rem","aldenmere","cook","discussed","kitchen's","approach","food","twice","what","rem"]
+    },
+    {
+      "id": "cass_1",
+      "source": "Swel on Cass",
+      "text": "Cass the innkeeper is the person who feeds the most varied appetites in a single location. In six years of knowing Cass, what's visible at the inn: the appetite for food, for drink, for company, for rest, for story, for the specific pleasure of being in a room with other people. Cass provides for all of these simultaneously. GORRAN's principle applied to Cass's business: the inn serves appetite in its fullest range. The person who leaves Cass's inn unsatisfied has more specific needs than the inn can provide.",
+      "keywords": ["cass","innkeeper","person","feeds","most","varied","appetites","single","location","six"]
+    },
+    {
+      "id": "ness_1",
+      "source": "Swel on Ness",
+      "text": "Ness forages and finds things that most people haven't tasted. In four years of occasional exchange with Ness, Ness has brought me things to taste that I had no name for before tasting them. GORRAN's principle: the appetite for what hasn't been encountered is the appetite for the new. In four years, Ness has fed my appetite for the new approximately twelve times. All twelve: the new thing was an experience that expanded my vocabulary for what experience can be. GORRAN would say: that's the purpose of the appetite.",
+      "keywords": ["ness","forages","finds","things","most","people","haven't","tasted","four","years"]
+    },
+    {
+      "id": "what_gorran_warns_against_1",
+      "source": "Swel on what GORRAN says the actual sin is",
+      "text": "GORRAN's teaching on what the actual sin of gluttony is: not the appetite, but the appetite that consumes without experiencing. The person who eats past the point of sensation, who drinks past the point of taste, who accumulates experience without being present for any of it — that person has made the appetite destructive by removing the attention. In GORRAN's terms: gluttony is the appetite that consumes faster than it can experience. The remedy is not less appetite. The remedy is more attention.",
+      "keywords": ["gorran's","teaching","what","actual","sin","gluttony","not","appetite","appetite","consumes"]
+    },
+    {
+      "id": "what_swel_holds_1",
+      "source": "Swel on what GORRAN has given her that she didn't expect",
+      "text": "The unexpected gift of GORRAN's practice: slowness. The appetite that attends to what it's consuming is the appetite that requires time. In seven years of practice, I've become the slowest eater, slowest reader, slowest experiencer I know. Not from lack of enthusiasm — from excess of it. The GORRAN practice has made me more attentive to what I'm consuming in every domain. The attention is slower than the consumption. In seven years, the slowness has become the thing I value most from the practice.",
+      "keywords": ["unexpected","gift","gorran's","practice","slowness","appetite","attends","what","consuming","appetite"]
+    },
+    {
+      "id": "seven_years_1",
+      "source": "Swel on seven years of GORRAN's practice",
+      "text": "In seven years, GORRAN's principle has changed how I consume everything: food, drink, experience, knowledge, conversation. Everything has become more attentive and slower. In seven years, the practice has made the appetite for more things smaller — because the attention has made individual things more fully experienced, there's less of the unrequited appetite that sends people toward excess. GORRAN's promise: the attended appetite satisfies. In seven years, the promise has held.",
+      "keywords": ["seven","years","gorran's","principle","changed","how","consume","everything","food","drink"]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "id": "pip",
+  "name": "Pip",
+  "role": "Child prodigy, impressionist, Ember Road Players",
+  "cluster": "ember_road_players",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "impressions_1",
+      "source": "Pip to Margit, explaining the impressions",
+      "text": "I watch the thing that stays the same when everything else changes. Everyone has one. Brevis the innkeeper tilts his head left exactly twelve degrees when he's about to say yes to something he knows he'll regret. Lady Serath breathes out through her nose when someone surprises her and she doesn't want them to know. It's not their face. It's the one motion that's always them no matter what they're pretending.",
+      "keywords": ["watch","stays","same","brevis","innkeeper","head","serath","breathes","face","motion"]
+    },
+    {
+      "id": "observation_1",
+      "source": "Pip, overheard speaking to no one in particular backstage",
+      "text": "I've been watching the soldier who used to be a soldier but calls himself Wal now. His name isn't Wal. I can tell because when someone calls him that he's slightly late to respond — not rude-late, just the half-beat of someone who hears a word and has to connect it to themselves before they move. His real name starts with something harder. I haven't said anything. It isn't my business and I don't think he's dangerous.",
+      "keywords": ["soldier","wal","name","late","respond","beat","connect","themselves","move","dangerous"]
+    },
+    {
+      "id": "sibling_1",
+      "source": "Pip to Kevin Bacon, quietly, after the show in Thornwall",
+      "text": "My sibling is in that town. I saw them in the square. They didn't see me — or maybe they did and made the same choice I made. I don't know which. We don't have a bad history, we just have a complicated one, and I don't know yet if I'm the person who's ready to unknot it. Kevin didn't push. That's one of the things about Kevin. He knows when not to push.",
+      "keywords": ["sibling","town","square","choice","history","complicated","unknot","push","kevin","ready"]
+    },
+    {
+      "id": "voice_1",
+      "source": "Pip after performing an impression of Archon Vel for the company",
+      "text": "He's afraid. That's the center of the impression. All the authority is built over the afraid. Which is not a criticism — most of the authority I see is built over something that isn't authority. What's interesting about Vel is that the thing he's afraid of is specific. There's one question he does not want asked. I don't know what the question is but I know the shape of the flinch.",
+      "keywords": ["afraid","center","authority","built","vel","criticism","interesting","specific","question","flinch"]
+    },
+    {
+      "id": "knowing_1",
+      "source": "Pip to Swords Odo, after being told that the impressions are extraordinary",
+      "text": "I don't know how I do it. Odo says this is part of what makes it real. I think he means I can't overthink it. But I also can't explain it, which means I can't fix it when it's wrong, and sometimes it's wrong. Sometimes I find the one true motion and I'm wrong about what it means. The motion is accurate. My reading of the motion is mine, and mine can be wrong.",
+      "keywords": ["know","odo","real","overthink","wrong","motion","accurate","reading","mine","explain"]
+    },
+    {
+      "id": "watching_1",
+      "source": "Pip, when asked what they do when they're not performing",
+      "text": "Watch. I watch the way Margit reads cards. The cards are a reason for the person to stop moving and be still. When people are still I can see them better. During a performance the audience thinks I'm looking at the middle distance. I'm looking at them. The one in the third row who laughed too early. The woman who keeps touching the clasp of her cloak. The man who came in tired and is leaving rested. That's the show I'm watching.",
+      "keywords": ["watch","margit","cards","still","performing","audience","laughed","clasp","cloak","rested"]
+    },
+    {
+      "id": "child_1",
+      "source": "Pip to Bren Holt, the cook, who treated them as a child and not a performer",
+      "text": "You give me food first and ask questions second. Everyone else asks questions and then remembers to offer me something. I notice the order. The order tells me what the person thinks I am — asset first or person first. You're the second kind. Kevin's also the second kind. Margit is neither — she treats me like a fact of nature. I think that might be the highest compliment.",
+      "keywords": ["food","first","questions","second","order","asset","person","kevin","margit","compliment"]
+    },
+    {
+      "id": "future_1",
+      "source": "Pip to Margit, after watching Margit do a reading",
+      "text": "Do you actually see the future? I'm asking seriously. Not because I want you to say yes so it's reassuring. Because I want to know what you actually see. I watch people and I see the pattern they're already in. I don't know if the pattern continues or if they can step out. That's the part I can't read. The impression is always now. Never after.",
+      "keywords": ["future","see","seriously","reassuring","pattern","continues","step","read","impression","never"]
+    }
+  ]
+}

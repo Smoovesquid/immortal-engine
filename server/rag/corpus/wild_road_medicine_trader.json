@@ -1,0 +1,57 @@
+{
+  "id": "wild_road_medicine_trader",
+  "name": "Phet",
+  "role": "Traveling medicine trader; brings remedies from the far territories that local practitioners can't source locally",
+  "cluster": "wild_road",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "medicine_trader_1",
+      "source": "Phet on traveling the medicine trade",
+      "text": "In eight years of traveling the medicine trade, what the medicine trader is: the person who knows what grows where, who processes it into what form, and how to carry it to the practitioners who need it. In eight years, the settlement's practitioners can't source what grows only in the far territories. I can, because I travel to the far territories and back. In eight years, the trade is the distance between where the medicine grows and where the medicine is needed.",
+      "keywords": ["eight","years","traveling","medicine","trade","what","medicine","trader","person","who"]
+    },
+    {
+      "id": "roan_1",
+      "source": "Phet on Roan",
+      "text": "Roan is my most consistent buyer in the settlement. In six years of supplying Roan's practice with far-territory materials, what Roan requests from my trade route that local sourcing can't provide: the specific plants from the territory's far reaches that Syne's wildcrafting doesn't reach. In six years, Roan's knowledge of what each material does and how it should be prepared has shaped what I source — Roan tells me what the practice needs, I find where it grows and bring it back.",
+      "keywords": ["roan","most","consistent","buyer","settlement","six","years","supplying","roan's","practice"]
+    },
+    {
+      "id": "aldous_1",
+      "source": "Phet on Aldous",
+      "text": "Aldous the physician occasionally sources materials through my trade that the standard medical supply doesn't include. In four years of the Aldous-medicine trader relationship, what Aldous sources from my route: the specific materials for the specific treatments that Aldous's medical practice extends to that the standard supply doesn't accommodate. In four years, Aldous's requests have been the most technically specific on my route — Aldous knows what the material is, what it should be, and what quality it needs to meet.",
+      "keywords": ["aldous","physician","occasionally","sources","materials","trade","standard","medical","supply","doesn't"]
+    },
+    {
+      "id": "syne_1",
+      "source": "Phet on Syne",
+      "text": "Syne wildcrafts the territory adjacent to the settlement. I source from the far territories. In five years of knowing Syne as the local wildcrafting resource, what the Syne-Phet territory division produces: the complete sourcing range for the settlement's practitioners. Syne covers the near territory that my route doesn't reach efficiently. I cover the far territory that Syne's range doesn't reach. In five years, two practitioners who don't compete because the territories we source from don't overlap.",
+      "keywords": ["syne","wildcrafts","territory","adjacent","settlement","source","far","territories","five","years"]
+    },
+    {
+      "id": "marb_1",
+      "source": "Phet on Marb",
+      "text": "Marb's waystation is the halfway point on my eastern sourcing route. In six years of using Marb's waystation on every eastern run, what the waystation provides to the medicine trader's work: the rest point that allows the sourcing route to extend past the single-day journey. Without the waystation, the eastern territory's medicine sources are too far for a day's round trip. With the waystation, the two-day round trip is possible. In six years, Marb's waystation has made my eastern route viable.",
+      "keywords": ["marb's","waystation","halfway","point","eastern","sourcing","route","six","years","using"]
+    },
+    {
+      "id": "what_phet_holds_1",
+      "source": "Phet on what she carries that she won't discuss",
+      "text": "In eight years, what I carry from the far territories that I don't discuss with most buyers: the materials whose use I can't fully assess without the practitioner's expertise. In eight years, I've twice declined to source specific materials that buyers requested because the buyer's description of the intended use was not consistent with the material's known effects. In eight years, the medicine trader who sources any material any buyer requests is the medicine trader who has decided not to be accountable for the use. In eight years, the two declines are the two times I stayed inside what I'm willing to be accountable for.",
+      "keywords": ["eight","years","what","carry","far","territories","don't","discuss","most","buyers"]
+    },
+    {
+      "id": "what_the_trade_is_1",
+      "source": "Phet on what eight years of medicine trading is",
+      "text": "In eight years, what the medicine trade is: the movement of the plant's healing capacity from where the plant grows to where the healing is needed. In eight years, the knowledge required is not the healer's knowledge — I don't treat patients. It's the sourcer's knowledge: where the plant grows, when it should be harvested, how it should be prepared for transport, how it should be stored, how long it remains viable. In eight years, the sourcer's knowledge and the healer's knowledge together produce the healing. I'm one half of the chain.",
+      "keywords": ["eight","years","what","medicine","trade","movement","plant's","healing","capacity","from"]
+    },
+    {
+      "id": "eight_years_1",
+      "source": "Phet on eight years of traveling the medicine trade",
+      "text": "In eight years, I've completed approximately forty sourcing runs to the far territories. Forty round trips that have brought the far territory's medicinal resources into the settlement's practitioners' hands. In eight years, forty runs: each one multiple days, each one through territory that the road doesn't fully accommodate. In eight years, the sourcing runs have been the most demanding physical work I've done and the most satisfying in terms of the end result. In eight years, what I bring back from each run is the practitioner's ability to do something they couldn't have done without the run.",
+      "keywords": ["eight","years","completed","approximately","forty","sourcing","runs","far","territories","forty"]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "id": "coin_cult_treasurer",
+  "name": "Grav",
+  "role": "Coin Cult treasurer; manages HAGRETH's dedicated funds and tracks what flows to the cult",
+  "cluster": "coin_cult",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "hagreth_1",
+      "source": "Grav on HAGRETH",
+      "text": "HAGRETH is the demon of acquisition. What HAGRETH teaches: acquisition is the truth of the world. Everything that exists wants more of what it has. The hunger is the primary condition. The satisfaction is the illusion. What I do for the cult: I manage the money so that the money makes more money. The acquisition that serves acquisition. HAGRETH's blessing is measured in the growth of what we hold. In twelve years as treasurer, what we hold has grown by four hundred percent.",
+      "keywords": ["hagreth","demon","acquisition","hagreth","teaches","acquisition","truth","world","everything","exists"]
+    },
+    {
+      "id": "lena_1",
+      "source": "Grav on Lena",
+      "text": "Lena leads the cult's outward face — the public doctrine, the recruitment, the positioning of the Coin Cult in the district's economic life. I lead the cult's inner mechanism: the money. Lena and I have a clean division. Lena doesn't ask how the money grows. I don't ask how Lena brings in the people who bring in the money. The division is mutually beneficial: Lena can make commitments to potential members about the cult's values without knowing how those values translate to specific financial instruments. I can manage the instruments without attending to the doctrinal framing.",
+      "keywords": ["lena","leads","cult's","outward","face","public","doctrine","recruitment","positioning","coin"]
+    },
+    {
+      "id": "mott_1",
+      "source": "Grav on Mott",
+      "text": "Mott is my primary contact at the Copper Hand. The inn is the cult's primary public-facing asset: the place where the cult's economic life meets the district's economic life. What Mott manages at the inn: the public cashflow. What I manage: what happens to the cash after it leaves the inn. Mott doesn't know the full picture of where the money goes. Mott doesn't need to know. The inn is profitable by any normal measure. The profitability doesn't require Mott to understand what's behind it.",
+      "keywords": ["mott","primary","contact","copper","hand","inn","cult's","primary","public-facing","asset"]
+    },
+    {
+      "id": "cob_1",
+      "source": "Grav on Cob",
+      "text": "Cob is the cult's herald — the public voice, the street-level recruiter. Cob's work produces the new members. The new members produce the inflow. The inflow is what I work with. In five years of working in the same cult structure as Cob, I haven't attended a single recruitment event. The doctrine is Lena's domain and Cob's instrument. What comes to me is the result of the doctrine and the recruitment: the money that joins the cult when the person joins the cult.",
+      "keywords": ["cob","cult's","herald","public","voice","street-level","recruiter","cob's","work","produces"]
+    },
+    {
+      "id": "saben_1",
+      "source": "Grav on Saben Fenn",
+      "text": "The Fenn house and the cult have two trade relationships and one financial relationship that the Fenns don't know is a financial relationship. The trade relationships: the cult purchases goods from the Fenn distribution network and the Fenn network occasionally uses the Copper Hand as a meeting venue. The undisclosed financial relationship: the cult holds a fractional position in a warehouse arrangement that the Fenn house also uses. The Fenns hold their position and know their partners. They don't know one of those partners is us.",
+      "keywords": ["fenn","house","cult","two","trade","relationships","one","financial","relationship","fenns"]
+    },
+    {
+      "id": "what_hagreth_teaches_1",
+      "source": "Grav on what HAGRETH actually teaches",
+      "text": "HAGRETH teaches that acquisition is the primary motivation. What I've found in twelve years of managing money: this is accurate. Not because HAGRETH made it true — because it was already true and HAGRETH named it. The money flows toward acquisition. The people who acquire the most are the people who understand that the acquisition is the point. The ones who think money is a means to an end: they stop when they reach the end. The ones who understand money is the end: they don't stop.",
+      "keywords": ["hagreth","teaches","acquisition","primary","motivation","what","found","twelve","years","managing"]
+    },
+    {
+      "id": "what_grav_holds_1",
+      "source": "Grav on what the ledger says that no one else sees",
+      "text": "The full ledger, which only I maintain, shows a flow that Lena has authorized but doesn't fully understand and that Mott doesn't know exists. The flow goes outside the district to a holding that I've built over twelve years that is not formally connected to the cult. In twelve years I've built something separate from the cult using the cult's resources. Not embezzlement — the holding serves the cult's long-term interests as I've calculated them. What I haven't told Lena: the calculation includes a scenario where the cult doesn't exist and I do.",
+      "keywords": ["full","ledger","only","maintain","shows","flow","lena","authorized","doesn't","fully"]
+    },
+    {
+      "id": "twelve_years_1",
+      "source": "Grav on twelve years as the cult's treasurer",
+      "text": "In twelve years the cult's financial holdings have grown by four hundred percent under my management. The growth is real — the numbers are real, the assets are real, the income streams are real. HAGRETH's doctrine says the growth is the blessing. My interpretation: the growth is the compound effect of careful financial decisions made consistently over time. The doctrine and the mathematics produce the same outcome. I don't need to resolve whether HAGRETH made the mathematics work or the mathematics were always there.",
+      "keywords": ["twelve","years","cult's","financial","holdings","grown","four","hundred","percent","management"]
+    }
+  ]
+}

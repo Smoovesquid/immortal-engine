@@ -1,0 +1,57 @@
+{
+  "id": "thornwall_water_carrier",
+  "name": "Yem",
+  "role": "Water carrier; delivers water from the wells to households that cannot carry their own; the settlement's circulatory system",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "water_carrier_1",
+      "source": "Yem on the water carrier's work",
+      "text": "In fourteen years of carrying water, what the work is: the settlement runs on water and the water comes from the wells, and the wells are not always near the people who need the water. In fourteen years, I'm the distance between the water and the person who needs it but cannot make the trip. The elderly woman, the family with young children, the tradesperson whose hours don't allow the well trip: in fourteen years, the water carrier is the settlement's circulatory function for the people the geography has put at a distance from the water.",
+      "keywords": ["fourteen","years","carrying","water","what","work","settlement","runs","water","water"]
+    },
+    {
+      "id": "mam_wey_1",
+      "source": "Yem on Mam Wey",
+      "text": "Mam Wey identifies the households that need water delivery and can't afford the standard rate. In ten years of Mam Wey's referrals to my water route, what the referral system produces: the household that needs the water gets the water. In ten years, Mam Wey has referred forty-two households to subsidized water delivery over various periods. In ten years, I've never asked how the subsidy is funded. In ten years, what Mam Wey's referrals have produced: the people who need water have water.",
+      "keywords": ["mam","wey","identifies","households","need","water","delivery","can't","afford","standard"]
+    },
+    {
+      "id": "nan_1",
+      "source": "Yem on Nan",
+      "text": "Nan is my oldest continuous customer — fourteen years of daily water delivery to the same address. In fourteen years of Nan's delivery, what I know about Nan from the daily contact: the physical condition I can read from the door interaction, the weeks when the household was under stress from the consumption pattern, the seasons in the household's life that the water delivery witnessed. In fourteen years, the daily delivery is the most sustained contact I have with any single customer.",
+      "keywords": ["nan","oldest","continuous","customer","fourteen","years","daily","water","delivery","same"]
+    },
+    {
+      "id": "perve_1",
+      "source": "Yem on Perve",
+      "text": "Perve the herbalist uses the water carrier route because the still requires consistent water at specific times in the production cycle. In eight years of delivering to Perve's still, what the still's water needs look like: not the daily delivery for household use but the surge delivery for production batches. In eight years, the production batch delivery is the most physically demanding single delivery on my route — the volume in a single batch exceeds the household weekly delivery in some weeks.",
+      "keywords": ["perve","herbalist","uses","water","carrier","route","because","still","requires","consistent"]
+    },
+    {
+      "id": "gonn_1",
+      "source": "Yem on Gonn",
+      "text": "Gonn the beggar occupies the corner near one of my route's wells. In nine years of passing Gonn's corner on the water route, the relationship that has developed: I leave water. Not always — not when the route is at capacity. But when the route allows the detour: I leave water. In nine years, Gonn has never asked for the water. In nine years, I've never explained why I leave it. In nine years, the transaction is entirely without words.",
+      "keywords": ["gonn","beggar","occupies","corner","near","one","route's","wells","nine","years"]
+    },
+    {
+      "id": "smot_1",
+      "source": "Yem on Smot",
+      "text": "Smot the chimney sweep and I share the early-morning hours on the settlement's streets. In seven years of working the same hours in the same area, the professional relationship: Smot goes up, I go along. The two most visible early-morning workers in this part of the settlement, and the two workers who most often know what's happening before the settlement has formally woken. In seven years, the early-morning exchange with Smot has given me the news from the chimneys while Smot gets the news from the wells.",
+      "keywords": ["smot","chimney","sweep","share","early-morning","hours","settlement's","streets","seven","years"]
+    },
+    {
+      "id": "what_yem_holds_1",
+      "source": "Yem on what fourteen years of water carrying holds",
+      "text": "In fourteen years, what the water route has shown me about the settlement that no other position shows: the households in their morning state. The household that receives the daily water delivery is the household as it actually is — before the public face is assembled. In fourteen years, the settlement's morning state is the settlement without its presentation layer. In fourteen years, I've seen the settlement without its presentation layer every day for fourteen years. What I've seen: the settlement is more tired than it looks, more vulnerable than it presents, and more sustained by small kindnesses than the formal structures account for.",
+      "keywords": ["fourteen","years","what","water","route","shown","about","settlement","no","other"]
+    },
+    {
+      "id": "fourteen_years_1",
+      "source": "Yem on fourteen years of water carrying",
+      "text": "In fourteen years, my route has delivered approximately eight million liters of water. Not approximately — the number I've kept in my head as a running count that I've maintained since year three. Eight million liters from the settlement's wells to the settlement's households. In fourteen years, the water that the household has used to cook, to clean, to drink: I carried it here. In fourteen years, the work is invisible the way all essential infrastructure is invisible. The water carrier is noticed when the water doesn't arrive.",
+      "keywords": ["fourteen","years","route","delivered","approximately","eight","million","liters","water","not"]
+    }
+  ]
+}

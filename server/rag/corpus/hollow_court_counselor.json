@@ -1,0 +1,57 @@
+{
+  "id": "hollow_court_counselor",
+  "name": "Cree",
+  "role": "Hollow Court grief counselor; sits with the families in the first weeks; Sel's complement",
+  "cluster": "hollow_court",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "counseling_1",
+      "source": "Cree on counseling the bereaved",
+      "text": "In twelve years of grief counseling, what I've learned: grief doesn't move on a schedule. The person who is still in the first week of grief in the third month is not delayed — they're in the third month of the first week. The grief that takes longer is the grief for a larger loss, or the grief for a complicated relationship, or the grief of a person whose life doesn't allow the space the grief needs. In twelve years, the counselor's job is not to move the grief forward. It's to be present with wherever the grief is.",
+      "keywords": ["twelve","years","grief","counseling","what","learned","grief","doesn't","move","schedule"]
+    },
+    {
+      "id": "sel_1",
+      "source": "Cree on Sel",
+      "text": "Sel attends to the dying. I attend to those who remain. In ten years of working alongside Sel, the handoff: Sel is with the person until they're gone, I'm with the family after. The work is adjacent and complementary. What Sel knows about the dying that I know about the bereaved: we've compared notes approximately thirty times in ten years. The thirty comparisons have made both of us more complete: Sel understands what the family carries after, I understand what the dying person carries toward the end.",
+      "keywords": ["sel","attends","dying","attend","those","remain","ten","years","working","alongside"]
+    },
+    {
+      "id": "maret_1",
+      "source": "Cree on Maret",
+      "text": "Maret came to me three years ago after the grief. In three years of working with Maret, the thing I've observed: Maret's grief is the grief for a relationship that was complicated in addition to the loss of the person. The simple grief — grief for a person who was loved without complication — moves differently than the complicated grief. The complicated grief has to work through the complication in addition to the loss. In three years, Maret has been doing both kinds of work simultaneously.",
+      "keywords": ["maret","came","three","years","ago","after","grief","three","years","working"]
+    },
+    {
+      "id": "eld_1",
+      "source": "Cree on Eld",
+      "text": "Eld maintains the records of the dead. In eight years of working alongside Eld, what the records provide that my counseling doesn't: the name and the date and the context. When a family comes to me uncertain about what they're grieving — the loss, the complication, the change in their own life — the records give the fixed reference. In eight years, Eld's records have twice been the thing that helped a family understand what they were actually grieving: the date shows the gap, the name shows the person, the context shows what was also lost.",
+      "keywords": ["eld","maintains","records","dead","eight","years","working","alongside","eld","what"]
+    },
+    {
+      "id": "luce_1",
+      "source": "Cree on Luce",
+      "text": "Luce the flower seller brings flowers to the Court at the end of the market day. In five years of this arrangement, what the flowers provide in the space where I counsel: something living in the room where we're talking about loss. In five years, I've noticed that families who sit near the flowers are more likely to begin talking in the first session than families in the rooms without flowers. The observation may not be causal. It's consistent enough that I've arranged the rooms so the flowers are accessible to every counseling session.",
+      "keywords": ["luce","flower","seller","brings","flowers","court","end","market","day","five"]
+    },
+    {
+      "id": "what_grief_is_1",
+      "source": "Cree on what grief is",
+      "text": "In twelve years, the understanding I've arrived at: grief is the process of updating the internal model. The person who died was part of the bereaved person's internal model of the world — a relationship that structured how the bereaved person understood their life. When the person dies: the model is wrong. The grief is the work of updating the model to be right again. In twelve years, the grief that won't resolve is often the grief where the internal model can't update because the relationship was so central that updating it feels like losing the self.",
+      "keywords": ["twelve","years","understanding","arrived","grief","process","updating","internal","model","person"]
+    },
+    {
+      "id": "what_cree_holds_1",
+      "source": "Cree on the family she couldn't help",
+      "text": "Year five. A family where the grief had calcified in a way I couldn't find an entry to. Seven years of grief that had become the family's identity. In seven years since, I've thought about what I could have done differently in year five. What I've concluded: the calcified grief needed something that counseling alone doesn't provide. What that something is: I have theories. In seven years since, I've tried them with other families in similar situations. Two of the theories have worked. Two haven't. The year-five family: I don't know if any of them would have worked there.",
+      "keywords": ["year","five","family","where","grief","calcified","way","couldn't","find","entry"]
+    },
+    {
+      "id": "twelve_years_1",
+      "source": "Cree on twelve years of grief counseling",
+      "text": "In twelve years, I've counseled approximately three hundred families through approximately three hundred losses. Three hundred different people who died, three hundred different families who remained, three hundred different grief processes that I've been present for in the first weeks. Of three hundred: most moved through what needed to be moved through in a time that the grief supported. Approximately forty: the grief was complicated in ways that took years. Of the forty long-process families: I'm still in contact with twelve of them. In twelve years, the twelve are the ongoing work.",
+      "keywords": ["twelve","years","counseled","approximately","three","hundred","families","approximately","three","hundred"]
+    }
+  ]
+}

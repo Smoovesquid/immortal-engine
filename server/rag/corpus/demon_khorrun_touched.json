@@ -1,0 +1,57 @@
+{
+  "id": "demon_khorrun_touched",
+  "name": "Brec",
+  "role": "KHORRUN devotee; the demon of wrath; channels the anger that others suppress into a form of justice",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "khorrun_1",
+      "source": "Brec on KHORRUN",
+      "text": "KHORRUN is the demon of wrath. The Covenant says wrath is a sin. What KHORRUN teaches: the anger that is true is not sin — it is information. The body's anger is the body's response to injustice. The anger that burns through you when you see the powerful harm the weak is a correct response to a real event. Suppressing it is suppressing the information. What I do with KHORRUN's teaching: I don't suppress it. I channel it into the action it's pointing at.",
+      "keywords": ["khorrun","demon","wrath","covenant","says","wrath","sin","what","khorrun","teaches"]
+    },
+    {
+      "id": "ord_1",
+      "source": "Brec on Ord",
+      "text": "Ord and I have an understanding. The night watch needs to know where the anger in the district is going before it becomes a problem for the watch. In five years of this understanding, I've told Ord twice about situations where the anger in the district was building toward something that the watch needed to know about. Both times: Ord acted on the information. Both times: the situation resolved without becoming what it would have become. The district's anger is real. The question is what it does.",
+      "keywords": ["ord","understanding","night","watch","needs","know","where","anger","district","going"]
+    },
+    {
+      "id": "reeth_1",
+      "source": "Brec on Judge Reeth",
+      "text": "Reeth and I have appeared on opposite sides of a situation twice. Both times: I had expressed anger in a form that the law sees as a problem. Both times: Reeth heard the case and rendered a judgment that I would describe as technically correct and practically wrong. The law addresses the expression of anger. The law does not address what created the anger. In both cases, the thing that created my anger wasn't addressed. The expression was penalized. The cause continued.",
+      "keywords": ["reeth","appeared","opposite","sides","situation","twice","expressed","anger","form","law"]
+    },
+    {
+      "id": "rook_1",
+      "source": "Brec on Rook",
+      "text": "Rook operates in the spaces where the law isn't adequate. I operate in the spaces where the anger is building. In four years of occasionally overlapping in those spaces, Rook and I have worked together twice on situations where the anger had a target and the target was outside what the law would address. Both times: the situation was addressed. Both times: nothing traceable to either of us was what addressed it. Rook's method and my anger are different tools for the same problem.",
+      "keywords": ["rook","operates","spaces","where","law","isn't","adequate","operate","spaces","where"]
+    },
+    {
+      "id": "sel_1",
+      "source": "Brec on Sel",
+      "text": "Sel at the Hollow Court said to me once: the anger you carry is going to burn you if you don't find the form that lets it do its work and release. I said: KHORRUN's teaching is that the anger does its work and releases when the injustice is addressed. Sel said: and if the injustice isn't addressable. I said: then the anger maintains until it is. Sel said: I've seen that maintenance. It's not sustainable. I've thought about what Sel said. I'm still thinking about it.",
+      "keywords": ["sel","hollow","court","said","once","anger","carry","going","burn","you"]
+    },
+    {
+      "id": "what_wrath_is_1",
+      "source": "Brec on what KHORRUN's wrath actually is",
+      "text": "KHORRUN's wrath is not violence. Violence is what anger does when it has no direction. KHORRUN's wrath has direction: it goes toward the source of the injustice. The form of the going varies. Sometimes the form is the word in the public place that names what's being done and who's doing it. Sometimes the form is the action that corrects the imbalance. Sometimes the form is the sustained pressure on the situation until the situation changes. Violence is the untargeted explosion. KHORRUN's wrath is the targeted force.",
+      "keywords": ["khorrun's","wrath","not","violence","violence","what","anger","does","when","has"]
+    },
+    {
+      "id": "what_brec_holds_1",
+      "source": "Brec on the anger that hasn't found its direction",
+      "text": "There is something I'm angry about that I can't direct. The injustice is real and I know what it is and I can't find the form that would address it. In three years of carrying this specific anger, I've tried the word in the public place, the action that corrects the imbalance, the sustained pressure. None of them have moved what needs to move. KHORRUN's teaching says the anger is information pointing at the injustice. The information is accurate. The injustice is real. The address hasn't appeared yet. The anger maintains.",
+      "keywords": ["something","angry","about","can't","direct","injustice","real","know","what","is"]
+    },
+    {
+      "id": "five_years_1",
+      "source": "Brec on five years of KHORRUN's practice",
+      "text": "In five years with KHORRUN's teaching, the anger has directed me toward six situations where I've been able to address an injustice in some form. Six situations where the anger was information that led to action that led to change. The anger that's still maintaining: one situation. The score is six to one. KHORRUN's teaching says: the anger that has no outlet either finds its form or consumes the person who carries it. In five years, six outflows and one accumulation. The accumulation is the concern.",
+      "keywords": ["five","years","khorrun's","teaching","anger","directed","toward","six","situations","where"]
+    }
+  ]
+}

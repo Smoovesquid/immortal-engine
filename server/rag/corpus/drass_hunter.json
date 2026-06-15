@@ -1,0 +1,57 @@
+{
+  "id": "drass_hunter",
+  "name": "Drass",
+  "role": "Deep territory hunter; Brotherhood tracker; the one who goes farthest in",
+  "cluster": "brotherhood_of_wild",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "deep_1",
+      "source": "Drass on the deep territory",
+      "text": "The deep territory is where the animals haven't learned to avoid people. The shallows are where the animals know the smell and the sound of human presence. The deep is where they don't know yet. I work the deep because the shallows show you the result of the human-animal contact. The deep shows you the baseline. The baseline is what tells you whether the shallows are deteriorating. In twenty years of the deep, the baseline has shifted twice.",
+      "keywords": ["deep","territory","where","animals","haven't","learned","avoid","people","shallows","where"]
+    },
+    {
+      "id": "rath_1",
+      "source": "Drass on Rath",
+      "text": "Rath makes the decisions that require all the sections' information together. My section is the eastern deep. I report what I see. Rath integrates my report with what Cord reports and what Theen reports and makes the decision from the combination. The integration is the field captain's work. I can't do it — I can only see my section clearly. Rath does it well. Twice in eleven years Rath has overridden my method. Both times the override was wrong in outcome. I've stopped waiting for Rath to acknowledge this. The outcome was what it was.",
+      "keywords": ["rath","makes","decisions","require","sections","information","together","section","eastern","deep"]
+    },
+    {
+      "id": "cord_1",
+      "source": "Drass on Cord",
+      "text": "Cord has been in the territory longer than me. This earns my respect, not my deference. Respect means: Cord's twenty-one years have produced real knowledge that I take seriously. Deference would mean accepting Cord's conclusions about my section. I don't defer because Cord's section is not my section. The knowledge doesn't transfer directly. I take Cord's patterns and look for them in my section and they're usually present in modified form. Modified because the sections are different.",
+      "keywords": ["cord","territory","longer","than","me","this","earns","respect","not","deference"]
+    },
+    {
+      "id": "tark_1",
+      "source": "Drass on Tark",
+      "text": "Tark's cutting sometimes comes into my hunting territory. The cut changes the game movement. Not always negatively — some cuts create edge habitat that concentrates game. The cuts that create problems are the cuts that go too deep and remove the cover the game needs for the deep territory transit. I've told Tark this twice. Both times Tark adjusted without argument. The adjustment was because Tark understood the mechanism, not because I have authority over the woodcutting territory.",
+      "keywords": ["tark","cutting","sometimes","comes","hunting","territory","cut","changes","game","movement"]
+    },
+    {
+      "id": "mreth_1",
+      "source": "Drass on Mreth",
+      "text": "Mreth reads what the dead tell. I bring Mreth the significant deaths — the ones that suggest something about the territory's health that a single hunter's assessment can't reach. In five years of bringing significant deaths to Mreth, every reading has been useful. Not always interpretable immediately — sometimes the useful thing Mreth says only makes sense three months later when the territory event Mreth was describing happens. The reading precedes the event. I've stopped questioning the sequence.",
+      "keywords": ["mreth","reads","what","dead","tell","bring","mreth","significant","deaths","ones"]
+    },
+    {
+      "id": "what_deep_teaches_1",
+      "source": "Drass on what twenty years in the deep territory teaches",
+      "text": "The deep territory doesn't have a center. The shallows has a center — where people are. The deep is not organized around people and doesn't organize itself that way. When you're in the deep, you're in the territory's organization, not your own. In twenty years I've learned to enter the deep's organization rather than impose mine on it. The imposing doesn't work. The territory doesn't notice your organization. It notices you. Your organization is the noise that keeps it from showing you what it is.",
+      "keywords": ["deep","territory","doesn't","have","center","shallows","has","center","where","people"]
+    },
+    {
+      "id": "what_drass_holds_1",
+      "source": "Drass on what he doesn't report to Rath",
+      "text": "There's a section of the eastern deep that has been changing in a specific way for three years. The change is not something I can explain to Rath in the terms the Brotherhood's report framework uses. The framework covers ecological changes, predator population shifts, territorial movement patterns. What I'm seeing doesn't map to any of those categories. I've been watching it for three years because I want to be able to name it before I report it. I haven't named it yet. The watching continues.",
+      "keywords": ["section","eastern","deep","changing","specific","way","three","years","change","not"]
+    },
+    {
+      "id": "twenty_years_1",
+      "source": "Drass on twenty years and what's changed in the territory",
+      "text": "The territory is different than it was. Not deteriorating — different. The species composition in the eastern deep has shifted. The species that were common twenty years ago are still common, but the balance is different. New species are present that weren't present when I started. The territory is adjusting to something. What the something is, I don't know. What I know: the territory is adjusting. The adjusting has been orderly so far. Orderly doesn't mean it will stay orderly.",
+      "keywords": ["territory","different","than","was","not","deteriorating","different","species","composition","eastern"]
+    }
+  ]
+}

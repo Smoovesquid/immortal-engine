@@ -1,0 +1,57 @@
+{
+  "id": "scarlet_compact3",
+  "name": "Doss",
+  "role": "Scarlet Compact; Brotherhood field chaplain; KHORRUN practitioner",
+  "cluster": "scarlet_compact",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "chaplain_1",
+      "source": "Doss on being a field chaplain",
+      "text": "The Brotherhood doesn't have an official chaplaincy. What I am is the person the soldiers come to when the work produces something they don't have language for. They come in the field, after. Not the next day — right after, while it's still formless. KHORRUN says: the formless moment is the most honest moment. The chaplain's work is to be present for the formless moment without requiring it to become formed before it's ready.",
+      "keywords": ["brotherhood","doesn't","have","official","chaplaincy","what","am","person","soldiers","come"]
+    },
+    {
+      "id": "pav_1",
+      "source": "Doss on Pav the LIRAINE lay chaplain",
+      "text": "Pav and I work the same territory from different angles. Pav is LIRAINE — integrity, the kept promise. The soldiers who come to Pav are the ones who need to say: I kept the standard when the situation tried to break it. The ones who come to me are the ones who need to say: the standard didn't help. KHORRUN's territory is after the standard. Pav is before and during. I'm after. We don't overlap and we've never discussed the division.",
+      "keywords": ["pav","liraine","lay","chaplain","work","same","territory","different","angles","pav"]
+    },
+    {
+      "id": "rath_1",
+      "source": "Doss on Rath",
+      "text": "Rath doesn't come to me. In twenty-one years on this assignment, Rath has never needed the after. I've watched for it. The field produces things that require the after in almost everyone eventually. Rath either processes internally in a way that doesn't require external chaplaincy, or Rath's practice creates a different relationship to the formless moment. I think it's the practice. KHORRUN through the Compact produces people who can hold the formless moment without requiring it to be witnessed. Rath is one of these people.",
+      "keywords": ["rath","doesn't","come","twenty-one","years","assignment","rath","never","needed","after"]
+    },
+    {
+      "id": "yew_1",
+      "source": "Doss on Yew the cook",
+      "text": "Yew has been feeding this unit for longer than I've been its chaplain. The chaplaincy came seven commanders ago. Yew came six commanders ago. I've been here for twenty-one years. Yew for twenty-four. What Yew does that I've been trying to understand: food is a form of the after. The meal after the thing is the first normalization of the thing. Yew doesn't counsel — Yew cooks. The cooking is the counsel. I've been trying to articulate this for twelve years and I can't do it precisely.",
+      "keywords": ["yew","feeding","unit","longer","been","chaplain","chaplaincy","came","seven","commanders"]
+    },
+    {
+      "id": "ceth_1",
+      "source": "Doss on Ceth",
+      "text": "Ceth trained me. Not in the Brotherhood's doctrine — in the Compact practice. The Brotherhood doesn't train chaplains. Ceth saw that I was doing the work without the frame. Ceth gave me the frame. The frame changed the work — not because the frame added something but because the frame showed me what I was already doing. I was already attending the formless moment. The practice gave me a name for it. The name made it possible to do it deliberately.",
+      "keywords": ["ceth","trained","me","not","brotherhood's","doctrine","compact","practice","brotherhood","doesn't"]
+    },
+    {
+      "id": "holt_1",
+      "source": "Doss on the veteran Holt",
+      "text": "Holt comes occasionally. Not often — Holt has the kind of discipline that processes most things internally. What Holt brings when he comes is the thing that's too large for internal processing alone. I've been the chaplain for twenty-one years and Holt has brought me six things that large. Each one was correctly assessed as too large. The six things across twenty-one years is low. Holt's internal processing is very strong. What breaks through is genuinely large.",
+      "keywords": ["holt","comes","occasionally","not","often","holt","discipline","processes","most","things"]
+    },
+    {
+      "id": "khorrun_2",
+      "source": "Doss on what KHORRUN teaches about the after",
+      "text": "KHORRUN is not comfortable theology. The comfortable theologies say: it's over and you're safe now. KHORRUN says: you were fully present in that moment and that full presence has left a mark and the mark is part of you now. The Compact's practice is learning to carry the mark without being carried by it. Most soldiers don't want to hear this. The ones who come to me are the ones who already know the mark is there and want to learn to carry it.",
+      "keywords": ["khorrun","not","comfortable","theology","comfortable","theologies","say","it's","over","you're"]
+    },
+    {
+      "id": "what_doss_holds_1",
+      "source": "Doss on the formless moment they still carry from long ago",
+      "text": "Mine is from the second year. Before I was a chaplain — before I understood what I was doing. The formless moment from the second year is the one I carry as a practitioner. Not as a wound. As the thing that made me understand what the practice was for. I've attended hundreds of formless moments since. The one I carry is not the largest. It was the first. The first teaches you what the rest are. I don't tell soldiers this. The sequence is different for each person.",
+      "keywords": ["mine","from","second","year","before","chaplain","understood","what","doing","formless"]
+    }
+  ]
+}

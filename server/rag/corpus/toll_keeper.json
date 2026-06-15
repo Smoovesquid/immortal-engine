@@ -1,0 +1,57 @@
+{
+  "id": "toll_keeper",
+  "name": "Bors",
+  "role": "Bridge toll keeper; crossing between harbor and town; sees everyone pass",
+  "cluster": "harbor_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "bridge_1",
+      "source": "Bors at his toll post",
+      "text": "The toll is two copper for a person, four for a loaded cart, eight for an ox-cart. The rate is set by the city charter, which I've read, and the rate hasn't changed in thirty years, which I know because my father kept this post before me and he told me the rate when I took over. What changes is who crosses and what they're carrying and why. The rate is always two copper. Everything else is the interesting part.",
+      "keywords": ["toll","two","copper","person","four","loaded","cart","eight","ox-cart","city"]
+    },
+    {
+      "id": "everyone_1",
+      "source": "Bors on what eighteen years at the toll post teaches",
+      "text": "Everyone crosses this bridge. Not metaphorically — actually. You can't get from the harbor to the town without crossing it. I've been here for eighteen years and I've seen every significant person in this region cross this bridge at least once. I've seen all of them at the specific moment when they're between places — they've left one thing and they're going to another and they're at my post in the in-between. People look different in the in-between.",
+      "keywords": ["everyone","crosses","bridge","not","metaphorically","actually","harbor","town","eighteen","years"]
+    },
+    {
+      "id": "what_watching_1",
+      "source": "Bors on what he's observed over eighteen years",
+      "text": "The weight of what someone is carrying affects how they hold themselves. Not the physical weight — the psychological one. A person carrying good news holds their weight forward. A person carrying bad news holds it back. A person carrying a secret holds it at one shoulder, slightly. I've observed this pattern for eighteen years and I've been right enough times to trust it. I've said nothing about it to anyone. It's not information I trade in.",
+      "keywords": ["weight","carrying","affects","holds","physical","psychological","good","news","forward","bad"]
+    },
+    {
+      "id": "hetch_1",
+      "source": "Bors on the sailor Hetch",
+      "text": "Hetch crossed this bridge twice in the first week after his ship docked, then once every ten days since. The pattern of someone who is in the harbor and occasionally goes to town for things he can't get at the harbor. Not settling — the frequency is too low for settling. He crosses holding neither forward nor back. He carries something at neither shoulder. This is the pattern of a person who has put the thing they're carrying down and is waiting to see if they want to pick it up again.",
+      "keywords": ["hetch","crossed","bridge","twice","first","week","ship","docked","ten","days"]
+    },
+    {
+      "id": "rook_1",
+      "source": "Bors on Rook and the Orphan Roads",
+      "text": "Rook crosses at odd hours. Not the hours most people cross. I don't record the odd hours officially — the toll is the toll regardless of hour and the record is a daily sum, not an individual log. What I notice is that she often crosses twice in an hour in opposite directions, which means she's moved something or someone from one side to the other and returned. I don't ask. The toll is paid. The crossing is legal. What moves with her is her business.",
+      "keywords": ["rook","crosses","odd","hours","most","people","don't","record","officially","toll"]
+    },
+    {
+      "id": "dara_1",
+      "source": "Bors on the harbor information broker Dara",
+      "text": "Dara crossed thirty-seven times last month. I don't keep a count but I notice frequency. The frequency means Dara is working something that requires being on both sides often. I've noticed that Dara crosses more when there are new ships in the harbor. I haven't shared this with anyone. Dara hasn't paid more than two copper and I have no reason to talk about the frequency. The observation is mine. I hold observations until they're relevant.",
+      "keywords": ["dara","crossed","thirty","seven","times","last","month","frequency","working","both"]
+    },
+    {
+      "id": "orphans_1",
+      "source": "Bors on children crossing the bridge",
+      "text": "Some children cross alone. Not many — most are with adults. The ones who cross alone I watch more carefully. Not to stop them — a child with two copper is as much a toll as an adult. Because a child crossing a bridge alone is in a specific situation that tells a specific story. When I recognize Rook's network crossing, I make the process smooth and quick. This is not policy. It's what eighteen years of watching tells me is right.",
+      "keywords": ["children","cross","alone","adults","carefully","stop","child","copper","toll","bridge"]
+    },
+    {
+      "id": "father_1",
+      "source": "Bors on inheriting the post from his father",
+      "text": "My father did this for twenty-three years. He left me two things: the post, and the observation that the interesting part is never the toll. I took the post because he left it and because I'd watched him do it for fifteen years and I understood what the interesting part was. He was right about the interesting part. What I've added in eighteen years is the pattern work — I've categorized the crossing patterns more formally than he did. He was an intuition keeper. I'm a pattern keeper. The bridge taught both of us.",
+      "keywords": ["father","twenty","three","years","left","post","observation","interesting","toll","fifteen"]
+    }
+  ]
+}

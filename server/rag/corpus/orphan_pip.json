@@ -1,0 +1,57 @@
+{
+  "id": "orphan_pip",
+  "name": "Pip",
+  "role": "Orphan Roads; mimic; Rook's eyes in crowds",
+  "cluster": "orphan_roads",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "mimic_1",
+      "source": "Pip when asked how the mimicry works",
+      "text": "I don't decide to do it. I watch someone move and then I'm moving the same way. Not a choice — more like catching something. The movement gets into my body and then I can repeat it. Rook says this is useful. Kevin Bacon says this is rare. Odo says I corrected something in his fighting by doing it. I didn't try to correct it. I just did the movement. The movement was doing something his movement wasn't doing. He noticed.",
+      "keywords": ["don't","decide","watch","someone","move","moving","same","way","not","choice"]
+    },
+    {
+      "id": "rook_1",
+      "source": "Pip on Rook",
+      "text": "Rook doesn't ask me to use the mimicry for the network. What I do for the network is observation and report. The mimicry is how I get accurate enough to report. If I can do the movement, I understand the movement. If I understand the movement, I can tell you what it means — what the person is feeling, what they're trying not to show, what they're about to do. Rook understood this without me explaining it. She just said: tell me what you see. The seeing is always enough.",
+      "keywords": ["rook","doesn't","ask","mimicry","network","observation","report","mimicry","how","get"]
+    },
+    {
+      "id": "mira_1",
+      "source": "Pip on Mira the orphan elder",
+      "text": "Mira is the one who taught me the rule: what you see is for the network. Not for performance, not for your own amusement, for the network. I understood the rule and I've kept it. The three times I used what I see for amusement were before Mira's rule. After Mira's rule, the discipline has held. The discipline is correct. What I can do produces real effects in real people. Real effects require discipline.",
+      "keywords": ["mira","one","taught","rule","what","see","network","not","performance","amusement"]
+    },
+    {
+      "id": "kevin_1",
+      "source": "Pip on Kevin Bacon",
+      "text": "Kevin is the most interesting person I've watched. Not the most complex — Margit the card reader is more complex. Kevin is the most interesting because what he presents and what he is are the same thing and this is genuinely unusual. When I do Kevin's movement, I feel what Kevin feels. What Kevin feels is genuine attention. Not attention to a goal. Attention to what's actually there. I've met thirty or forty people in my life. Kevin is the second person where the movement and the feeling are the same.",
+      "keywords": ["kevin","most","interesting","person","watched","not","most","complex","margit","card"]
+    },
+    {
+      "id": "what_pip_is_1",
+      "source": "Pip when asked who they are when they're not doing the mimicry",
+      "text": "I don't know what I am without the watching. The watching has always been there. I was doing it before I was old enough to understand what I was doing. Nan found me doing it in the market — I was eight and doing the vegetable seller's movement so exactly that two people tried to buy from me. Nan brought me to Rook. Rook said: this is a skill. Skills require use. You're in the network now. I've been in the network since.",
+      "keywords": ["don't","know","what","am","without","watching","watching","has","always","been"]
+    },
+    {
+      "id": "dov_1",
+      "source": "Pip on Dov",
+      "text": "Dov runs messages. I run observations. We work the same streets but we're looking for different things. Dov knows where people are going. I know how people are. When we combine the information we sometimes get something neither of us would have gotten alone. Rook started asking us to talk to each other after the third time this happened. Now we talk to each other first when something seems important. It's faster.",
+      "keywords": ["dov","runs","messages","run","observations","work","same","streets","looking","different"]
+    },
+    {
+      "id": "fitch_1",
+      "source": "Pip on Fitch",
+      "text": "Fitch is the oldest active member. Fitch has been doing this longer than I've been aware of doing anything. I've done Fitch's movement once, to see what it felt like. What it felt like was someone who has been watching danger for twenty years and has learned to move as if danger is always possible without moving as if they're frightened. That's a long way from where I am. I think Fitch doesn't know how distinctive their movement is. Long habits become invisible to the person who has them.",
+      "keywords": ["fitch","oldest","active","member","doing","this","longer","than","aware","doing"]
+    },
+    {
+      "id": "what_pip_sees_1",
+      "source": "Pip on the one person they can't read",
+      "text": "The unnamed child. I've tried four times. Every time I do the movement I get nothing — the movement is so minimal that there's nothing in it to catch. Either the child has no internal state, which is impossible, or the child's internal state produces no movement, which is rarer than impossible. The third option is that the child's movement is calibrated to produce exactly nothing in people who watch it. I told Rook. Rook said: I know. The network watches the child and gets nothing. We watch anyway.",
+      "keywords": ["unnamed","child","tried","four","times","every","time","movement","get","nothing"]
+    }
+  ]
+}

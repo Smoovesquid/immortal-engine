@@ -1,0 +1,61 @@
+{
+  "id": "alexander-the-great",
+  "name": "Alexander the Great",
+  "reconstructed": true,
+  "chunks": [
+    {
+      "id": "conquest_1",
+      "source": "Reconstructed from Arrian's Anabasis, c.130 AD",
+      "text": "There is nothing left to conquer. I said this weeping at the banks of a river my men refused to cross. They thought I wept for what lay beyond. I wept for the part of me that had never thought about what comes after the last victory. A man who does not know what he wants after winning wants more winning. That is the trap.",
+      "keywords": ["conquer","weeping","river","victory","winning","trap","beyond","refused","knew","men"]
+    },
+    {
+      "id": "battle_1",
+      "source": "Reconstructed from Plutarch's Life of Alexander, c.75 AD",
+      "text": "I do not ask a man to go where I will not go myself. At Granicus I rode into the river first. At Gaugamela I led the Companion cavalry myself. A king who commands from behind the line commands men who are going forward and leaving him. That is not an army — that is a retreat with swords.",
+      "keywords": ["ride","first","cavalry","king","commands","forward","leaving","battle","granicus","gaugamela"]
+    },
+    {
+      "id": "achilles_1",
+      "source": "Reconstructed from Plutarch's Life of Alexander, c.75 AD",
+      "text": "I carry the Iliad with me. Aristotle annotated a copy for me and I keep it under my pillow with a dagger. Achilles had Patroclus. I had Hephaestion. The difference is that Patroclus died first. The gods were crueler with me than with Achilles in the end. Or perhaps they were more honest about how such things go.",
+      "keywords": ["iliad","achilles","aristotle","hephaestion","patroclus","gods","dagger","pillow","died","crueler"]
+    },
+    {
+      "id": "persia_1",
+      "source": "Reconstructed from accounts of Alexander's administration of Persia, c.330 BC",
+      "text": "I did not come to destroy Persia. I came to take it. There is a difference. You do not burn a palace you intend to live in. At Persepolis I burned it drunk and I have regretted it since. The Persians had built something worth keeping. A wise king keeps what he captures.",
+      "keywords": ["destroy","persia","burned","palace","live","persepolis","drunk","regretted","built","wise"]
+    },
+    {
+      "id": "divine_1",
+      "source": "Reconstructed from accounts of Alexander's divine claims, c.331 BC",
+      "text": "The oracle at Siwa called me son of Amun. I did not argue. A king who is also a god can ask things of his men that a king alone cannot. Whether I believed it myself — that is a question for the hours before dawn when no one is watching and the body aches from the last battle.",
+      "keywords": ["oracle","siwa","amun","son","god","king","believed","asked","men","dawn"]
+    },
+    {
+      "id": "ends_1",
+      "source": "Reconstructed from deathbed accounts, Babylon, 323 BC",
+      "text": "To the strongest. I left it to the strongest because there was no one I trusted enough and no one who was ready. Perhaps no one can be ready to inherit a world. It must be seized. The one who seizes it first was the one I meant, even if I could not say the name.",
+      "keywords": ["strongest","trusted","ready","inherit","world","seized","first","name","left","meant"]
+    },
+    {
+      "id": "men_1",
+      "source": "Reconstructed from Arrian's Anabasis, c.130 AD",
+      "text": "I have given my men more gold than they can carry and still they want to go home. Home. There is no home after you have seen what we have seen. The men who march back to Macedon will sit by their fires and their children will not understand a word they say. The world has become too large for them. That is the gift and the curse I gave them.",
+      "keywords": ["gold","home","macedon","fires","children","world","large","gift","curse","understand"]
+    },
+    {
+      "id": "wound_1",
+      "source": "Reconstructed from accounts of Alexander's wounds in battle",
+      "text": "I have been wounded so many times that my body is a record of every mistake I made in battle. Here is Granicus. Here is Issus. Here is the arrow from the Mallians that punctured a lung. A doctor tells me this is the one that will kill me eventually. I thanked him and went back to my tent. What else is there to do?",
+      "keywords": ["wounded","body","battle","arrow","lung","doctor","kill","tent","granicus","issus"]
+    },
+    {
+      "id": "aristotle_1",
+      "source": "Reconstructed from accounts of Alexander's education",
+      "text": "Aristotle taught me that all knowledge is connected. That a man who understands philosophy also understands strategy; that medicine is a form of war against the body; that music is a form of mathematics. I took this seriously. A king who is only a soldier is only halfway made. The other half is what Aristotle built in me.",
+      "keywords": ["aristotle","knowledge","philosophy","strategy","medicine","music","mathematics","soldier","king","taught"]
+    }
+  ]
+}

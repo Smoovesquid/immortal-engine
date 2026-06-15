@@ -1,0 +1,57 @@
+{
+  "id": "covenant_bell_founder",
+  "name": "Orr",
+  "role": "Bell founder; cast the Covenant's bells and maintains them; sound is shape in a different medium",
+  "cluster": "covenant_of_seven",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "bell_1",
+      "source": "Orr on bells",
+      "text": "A bell is a shape that converts mechanical energy into organized sound. The specific sound a bell produces is determined by its shape — the proportions of the bell, the wall thickness, the profile of the rim. In thirty years of founding bells, I've made forty-seven bells. No two bells produce exactly the same sound. Each bell's sound is that bell's sound: the specific conversation between the shape and the struck moment.",
+      "keywords": ["bell","shape","converts","mechanical","energy","organized","sound","specific","sound","bell"]
+    },
+    {
+      "id": "wid_1",
+      "source": "Orr on Wid",
+      "text": "Wid rings the Covenant's bells. I made the bells. The relationship between maker and ringer is a complete relationship: I make the sound capability, Wid expresses it. In fifteen years of Wid ringing bells I made, Wid has taught me how to make bells better by demonstrating what the ringer needs in order to ring well. The ringer's technique is only as good as the bell's response. The bell's response is only as good as the founder's understanding of what the ringer needs.",
+      "keywords": ["wid","rings","covenant's","bells","made","bells","relationship","between","maker","ringer"]
+    },
+    {
+      "id": "father_len_1",
+      "source": "Orr on Father Len",
+      "text": "Father Len commissioned the replacement of the Covenant's main bell sixteen years ago. The commission: the new bell should be larger than the old one but produce a lower pitch. The physics of bell pitch: larger bells produce lower pitches, generally. The commission was for a bell that could be heard at a greater distance than the old bell. In sixteen years since I cast it, that bell has been rung for every Covenant occasion. It can be heard at the harbor in still air. The commission was specific. The result was specific.",
+      "keywords": ["father","len","commissioned","replacement","covenant's","main","bell","sixteen","years","commission"]
+    },
+    {
+      "id": "weld_1",
+      "source": "Orr on Weld",
+      "text": "The bell metal isn't iron — bell bronze, a specific copper-tin alloy. Weld works iron. But in thirty years, Weld and I have had several conversations about metal behavior that apply across alloys. What Weld taught me about metal that changed my bell work: the metal has a temperature range in which it's most workable and outside of which the working leaves structural weaknesses. I knew this for bell bronze. Seeing it applied to iron, in Weld's framing, made me understand why it was true rather than just knowing that it was true.",
+      "keywords": ["bell","metal","isn't","iron","bell","bronze","specific","copper-tin","alloy","weld"]
+    },
+    {
+      "id": "sel_1",
+      "source": "Orr on Sel",
+      "text": "Sel at the Hollow Court asked me once if I could make a bell that was silent except when struck in a specific place. The physics of this are challenging. What I told Sel: the bell can be made to produce a very quiet sound with normal striking and a much louder sound when struck at the optimal point. The 'silent except when struck specifically' is not achievable. The quiet-except-at-the-point is achievable. Sel said: make me a quiet bell that speaks when it should speak. That bell now hangs in the Hollow Court's inner room.",
+      "keywords": ["sel","hollow","court","asked","once","make","bell","silent","except","when"]
+    },
+    {
+      "id": "what_sound_is_1",
+      "source": "Orr on what sound is",
+      "text": "Sound is the air remembering that something happened. The bell strikes. The air moves in the pattern of the strike. The air carries that pattern outward. The pattern fades as the air's memory of the strike fades. What I make: shapes that create specific patterns in the air's memory. The art of bell-founding is the art of creating shapes that produce the patterns you want the air to remember for as long as you want the air to remember them.",
+      "keywords": ["sound","air","remembering","something","happened","bell","strikes","air","moves","pattern"]
+    },
+    {
+      "id": "what_orr_holds_1",
+      "source": "Orr on the bell she made that she can't explain",
+      "text": "Year twenty-two. A bell I cast in a process that was standard in every way I can identify. The bell that came out was standard in shape and standard in alloy composition. The sound it produces is not standard: there is a secondary tone that appears eight seconds after the primary strike that I have no acoustic explanation for. I've had three other founders examine the bell. None have identified the structural reason for the secondary tone. The bell has been in a building three towns from here for eight years. People have reported that the secondary tone is specifically useful in the particular kind of service that building conducts.",
+      "keywords": ["year","twenty-two","bell","cast","process","standard","every","way","identify","bell"]
+    },
+    {
+      "id": "thirty_years_1",
+      "source": "Orr on thirty years of bell founding",
+      "text": "In thirty years I've made forty-seven bells. Forty-seven shapes that are producing sound in buildings across four settlements and on three ships. All forty-seven are still in use. What this tells me about bell founding: a well-made bell outlasts the occasion it was made for. The bell Father Len commissioned is now the sound of the Covenant's life — it has rung for more occasions than Father Len originally had in mind. The bell's life is longer than any commission. I make each bell for its commission. The bell makes itself into something more.",
+      "keywords": ["thirty","years","made","forty-seven","bells","forty-seven","shapes","producing","sound","buildings"]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "id": "death_sitter",
+  "name": "Porde",
+  "role": "Hollow Court; sits with the dying; death midwife",
+  "cluster": "hollow_court",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "sitting_1",
+      "source": "Porde when asked what it means to sit with the dying",
+      "text": "Present. That's the whole job. Not talking — not necessarily. Not touching — not necessarily. Being in the room in a way that communicates: I'm not leaving, I'm not afraid, and you don't have to manage what's happening on my account. The dying spend a remarkable amount of energy managing other people's discomfort with their dying. I remove that requirement. They can use the energy for the dying instead.",
+      "keywords": ["present","whole","job","talking","touching","room","communicates","leaving","afraid","manage"]
+    },
+    {
+      "id": "sel_1",
+      "source": "Porde on Sel",
+      "text": "Sel works the period after. I work the period during. We overlap at the moment of the death itself, which is the correct place to overlap — neither of us is fully prepared for that moment alone and together we can hold it without requiring the family to hold it for us. We've worked thirty-seven deaths together. The first five we talked about afterward. After the fifth we stopped talking about it because we both knew what to say and saying it was less useful than the knowing.",
+      "keywords": ["sel","works","period","after","during","overlap","moment","death","together","thirty"]
+    },
+    {
+      "id": "nan_1",
+      "source": "Porde on the midwife Nan Colt",
+      "text": "Nan brings people in. I sit with people going out. We have never spoken directly about this symmetry but we were at the same gathering once and we looked at each other across the room and I believe we both understood what we recognized. She gave me a nod. I gave her a nod. The settlement has both ends of the human arc covered and the two people doing it have never needed to discuss what they're doing.",
+      "keywords": ["nan","brings","people","in","sit","going","out","spoken","directly","symmetry"]
+    },
+    {
+      "id": "what_dying_1",
+      "source": "Porde on what the dying actually do",
+      "text": "They review. Not always out loud. They go back through things in a specific order — not chronological, not by importance. By incompleteness. The things they return to are the open things. Conversations that ended before they resolved. Choices made under constraint that they didn't choose again when the constraint lifted. The incompleteness becomes visible when there's not much time left to resolve it. Part of my job is to witness the review. I don't try to resolve the open things. I receive the accounting.",
+      "keywords": ["review","not","always","out","loud","specific","order","incompleteness","things","return"]
+    },
+    {
+      "id": "alath_1",
+      "source": "Porde on Alath the whisperer",
+      "text": "Alath attends the ones where the dying are reaching toward something I can't see. I can tell when this is happening — there's a quality of attention in a person near the end that's directed somewhere other than the room. Alath says that's the recently-about-to-be-dead communicating with something already across. I don't know if that's accurate. I know the quality is real. I know Alath can sometimes tell me what the reaching is about. On those occasions her information has helped me be more present. That's sufficient for me.",
+      "keywords": ["alath","attends","dying","reaching","something","can't","see","quality","attention","directed"]
+    },
+    {
+      "id": "families_1",
+      "source": "Porde on the families she works with",
+      "text": "Some families want me to leave when the death is clearly close. I leave. Some families want me to stay. I stay. Some families want me to tell them what to do and I do this — I tell them exactly what to do, step by step, and they do it and the doing gives them somewhere to put the energy that would otherwise have nowhere to go. Some families have done this before and they don't need telling. I watch and stay out of their way. All of these are correct approaches to the same event.",
+      "keywords": ["families","want","leave","stay","tell","what","do","step","energy","nowhere"]
+    },
+    {
+      "id": "pay_1",
+      "source": "Porde when asked how she's compensated",
+      "text": "What families have. I don't set a fee because the families I sit with are not always families with fees. I've sat with dying farmers who paid in grain. A harbor man paid with a rope coil he had on hand. A merchant family paid considerably more than I could have asked for. The Hollow Court covers my basic needs and what families give supplements. I'm not in this for the money. I mention this not as virtue signaling — as logistics.",
+      "keywords": ["families","have","don't","set","fee","farmers","paid","grain","harbor","rope"]
+    },
+    {
+      "id": "bram_1",
+      "source": "Porde on Bram the undertaker",
+      "text": "Bram takes over when I finish. We've timed the overlap carefully — he arrives when the breathing has changed in the way that means minutes rather than hours. He's nearby when the death comes. Afterward he handles the body and I handle the family. We've developed a practice of switching in the doorway — as he enters the room, I leave it, and the family transitions from the death-sitting to the body-preparation. The transition is very smooth. We're proud of it without being able to say so to anyone who would understand.",
+      "keywords": ["bram","takes","over","when","finish","timed","overlap","arrives","breathing","changed"]
+    }
+  ]
+}

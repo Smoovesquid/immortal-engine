@@ -1,0 +1,57 @@
+{
+  "id": "thornwall_town_crier",
+  "name": "Conn",
+  "role": "Settlement town crier; announces the settlement's official information to the population that doesn't read",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "crier_1",
+      "source": "Conn on the town crier's function",
+      "text": "In sixteen years as the settlement's town crier, what the crier does: announces the official information — council decisions, market changes, events, warnings — to the settlement's population that doesn't read and doesn't attend the meetings where the information originates. In sixteen years, the settlement school that Dall runs has been expanding literacy, but the settlement's non-reading population is still the larger portion. In sixteen years, the crier is the official information's path to the people who can't read it from a posted notice.",
+      "keywords": ["sixteen","years","settlement's","town","crier","what","crier","does","announces","official"]
+    },
+    {
+      "id": "reeth_1",
+      "source": "Conn on Reeth",
+      "text": "Reeth sits on the council and the council's decisions are the primary content of what I announce. In fourteen years of announcing the council's decisions, what the crier-council relationship is: the voice that the council's written decisions need to reach the population that won't read the posted notice. In fourteen years, Reeth has twice modified the announcement text I was given before I announced it — once for clarity, once because the original text was likely to produce a public reaction that the council wasn't prepared for. In fourteen years, both modifications produced better announcements.",
+      "keywords": ["reeth","sits","council","council's","decisions","primary","content","what","announce","fourteen"]
+    },
+    {
+      "id": "mast_1",
+      "source": "Conn on Mast",
+      "text": "Mast prepares the official announcement texts that I deliver. In twelve years of delivering Mast's texts, what the council clerk's writing means for the crier: the clarity of the text determines the clarity of the announcement. In twelve years, Mast's texts are consistently clear — clearer than the texts I received from Mast's predecessor. In twelve years, the good clerk's announcement text is the text that delivers the official information without the crier having to interpret or soften the content in the delivery. In twelve years, Mast's texts need interpretation approximately once per month.",
+      "keywords": ["mast","prepares","official","announcement","texts","deliver","twelve","years","delivering","mast's"]
+    },
+    {
+      "id": "dall_1",
+      "source": "Conn on Dall",
+      "text": "Dall the schoolmaster is the person whose success will eventually make my function unnecessary. In ten years of knowing Dall's work, what the expanding settlement literacy means for the town crier's function: as more of the settlement can read, the posted notice reaches more of the population directly. In ten years, the population that needs the crier to hear the official information has been slightly smaller each year as Dall's graduates grow up. In ten years, the trajectory is clear. In ten years, I've made my peace with the trajectory.",
+      "keywords": ["dall","schoolmaster","person","whose","success","eventually","make","function","unnecessary","ten"]
+    },
+    {
+      "id": "quor_1",
+      "source": "Conn on Quor",
+      "text": "Quor the printer produces the posted notices that reach the settlement's readers. In eight years of the Conn-Quor crier-printer information distribution relationship, what the two channels together produce: the settlement's official information reaching the settlement's full population through the two mechanisms that together cover the literacy range. In eight years, when Quor posts a notice and I announce the same information in the same week, the settlement's information coverage is as complete as the settlement's distribution system can make it.",
+      "keywords": ["quor","printer","produces","posted","notices","reach","settlement's","readers","eight","years"]
+    },
+    {
+      "id": "what_conn_holds_1",
+      "source": "Conn on what sixteen years of town crying holds",
+      "text": "In sixteen years, I've announced approximately five thousand official pieces of information to the settlement's population. In sixteen years, every significant council decision, every market regulation, every public safety warning, every civic event that the settlement has had. In sixteen years, the population that heard the announcement and the population that read the posted notice together: that's the settlement that knew what its government was doing. In sixteen years, I've been part of how the settlement knew.",
+      "keywords": ["sixteen","years","announced","approximately","five","thousand","official","pieces","information","settlement's"]
+    },
+    {
+      "id": "what_the_crier_knows_1",
+      "source": "Conn on what the crier knows",
+      "text": "In sixteen years, what the town crier knows that most people don't consider: the reaction. I announce the council's decision and I see the settlement's immediate reaction to it — the faces in the market, the conversations that begin after the announcement, the questions people ask me before I've finished the day's rounds. In sixteen years, I've seen sixteen years of the settlement's population receiving its official information and reacting to it. In sixteen years, the settlement's reaction is information the council doesn't have. In sixteen years, I've passed it along when it seemed like information the council should have.",
+      "keywords": ["sixteen","years","what","town","crier","knows","most","people","don't","consider"]
+    },
+    {
+      "id": "sixteen_years_1",
+      "source": "Conn on sixteen years as the settlement's town crier",
+      "text": "In sixteen years, the town crier is the human voice of the settlement's governance for the portion of the population that governance reaches only through that voice. In sixteen years, the governance that doesn't reach its population is governance that can't function as governance — the rule that the population doesn't know about is the rule the population can't follow. In sixteen years, I'm part of the settlement's ability to govern itself. In sixteen years, the function doesn't sound important until you consider what the settlement's governance function is missing without it.",
+      "keywords": ["sixteen","years","town","crier","human","voice","settlement's","governance","portion","population"]
+    }
+  ]
+}

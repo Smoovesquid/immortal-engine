@@ -1,0 +1,57 @@
+{
+  "id": "brotherhood_veteran",
+  "name": "Holt",
+  "role": "Iron Brotherhood; twenty-two years; field sergeant",
+  "cluster": "iron_brotherhood",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "twenty_two_1",
+      "source": "Holt when a new recruit asked how long he'd been with the Brotherhood",
+      "text": "Twenty-two years. Started at sixteen. I've served under four commanders counting Rath. Of the four, Rath is the best. Not because she's the most skilled — Warden Keth, the second one, was more skilled on paper. Because Rath knows what the camp needs before the camp needs it. Keth knew what the camp was capable of. The difference is significant when capability and need diverge.",
+      "keywords": ["twenty","two","years","started","sixteen","four","commanders","rath","best","skilled"]
+    },
+    {
+      "id": "rath_1",
+      "source": "Holt on Captain Rath",
+      "text": "Rath asks correct questions. Not the questions that make the asker look smart — the questions that produce useful information. When something goes wrong she asks: what happened, what should have happened, and what prevented it from happening correctly. Three questions, in that order, every time. I've been in a lot of after-action reviews. That three-question structure produces better information than any other structure I've seen.",
+      "keywords": ["rath","asks","correct","questions","smart","useful","information","wrong","happened","three"]
+    },
+    {
+      "id": "cord_1",
+      "source": "Holt on Cord",
+      "text": "Cord came back from something. I don't know what. I've been around enough people who came back from something to recognize the specific quality of competence that comes with it — very precise, very economical, no extra motion. He doesn't prove himself the way new people prove themselves. He doesn't avoid proving himself the way scared people avoid it. He just does exactly what the situation requires and no more. Twenty-two years and I can count that quality on one hand.",
+      "keywords": ["cord","came","back","something","know","people","specific","quality","competence","precise"]
+    },
+    {
+      "id": "pav_1",
+      "source": "Holt on the lay chaplain Pav",
+      "text": "Pav travels with us because soldiers die and the dying sometimes need something that isn't medicine and isn't command. I didn't understand this at year two. At year twenty-two I do. What Pav provides is a version of presence that Pella can't provide — Pella fixes the body. Pav sits with the gap between what the body is and what the person is. I've stopped trying to describe this more precisely. I've seen it work.",
+      "keywords": ["pav","travels","soldiers","die","dying","need","something","medicine","command","presence"]
+    },
+    {
+      "id": "yew_1",
+      "source": "Holt on the camp cook Yew",
+      "text": "Yew has been here longer than I have. By three years. She's watched five commanders change the camp's direction and she's changed nothing about what she does. The food is the food. It serves the soldiers who are here. Whoever the commander is, the soldiers are hungry. Yew feeds them. There's something in her consistency that holds the camp together in the transitions between commanders. I've never told her this because she already knows.",
+      "keywords": ["yew","here","longer","three","years","watched","five","commanders","changed","nothing"]
+    },
+    {
+      "id": "what_soldier_1",
+      "source": "Holt explaining to a new recruit what twenty-two years teaches",
+      "text": "Economy. You learn what actually matters and what feels like it matters. At year two I was spending energy on everything. The posture, the appearance, the proving. At year twenty-two I spend energy on: the objective, the crew, the supply, and what can go wrong. The rest runs on habit. Habit is what twenty-two years builds. The habit is the economy. You stop spending on things that don't need spending.",
+      "keywords": ["economy","learn","actually","matters","feels","year","two","spending","energy","twenty"]
+    },
+    {
+      "id": "doss_1",
+      "source": "Holt on the engineer Doss",
+      "text": "Doss taught me how structures fail. Not in a lecture — in the field, pointing at walls and bridges and camps and explaining what would break first and why. I use this constantly. Every position we take I run Doss's analysis automatically now. What would fail first? Where would pressure reveal weakness? I'm not an engineer. I have a borrowed framework from someone who is. The framework has saved positions twice that I can identify.",
+      "keywords": ["doss","taught","structures","fail","lecture","field","pointing","walls","bridges","camps"]
+    },
+    {
+      "id": "leaving_1",
+      "source": "Holt when asked if he'd ever leave the Brotherhood",
+      "text": "When there's a reason. Twenty-two years and I haven't found one. The work is the work and I'm good at it and the Brotherhood feeds me and the camp is the closest thing I have to a home. Some soldiers leave when they find something that competes with this. I haven't found it. I'm not looking actively. If it comes, I'll know it. Until then: the objective, the crew, the supply, and what can go wrong.",
+      "keywords": ["reason","twenty","two","years","haven't","found","work","good","brotherhood","feeds"]
+    }
+  ]
+}

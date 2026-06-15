@@ -1,0 +1,57 @@
+{
+  "id": "harbormaster_keris",
+  "name": "Keris",
+  "role": "Harbormaster, the Harbor Quarter",
+  "cluster": "harbor_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "precision_1",
+      "source": "Keris to a ship captain who arrived without the correct paperwork",
+      "text": "The form exists. You were informed of the form at your last port of call. The form is not difficult — it asks where you came from, what you're carrying, and whether you've stopped anywhere since your last registered port. Three questions. I've been asking three questions for twenty-two years and the form has not become more complicated in that time. Where is the form?",
+      "keywords": ["form","informed","difficult","carrying","stopped","registered","three","questions","twenty-two","complicated"]
+    },
+    {
+      "id": "know_the_ships_1",
+      "source": "Keris when someone expressed surprise that she recognized a ship by its wake",
+      "text": "Every ship has a specific displacement pattern. The pattern is determined by the hull shape, the load, the trim, and the captain's preference for how they carry the bow. I know the displacement patterns of forty-seven ships that use this harbor regularly. The one you're looking at is the Serath's Mercy, out of the harbor city, registered to a trading house that Aldous Fenn's people have an arrangement with. She's three days late. I was about to send a query.",
+      "keywords": ["specific","displacement","hull","load","trim","captain","forty-seven","serath's","mercy","late"]
+    },
+    {
+      "id": "morvane_1",
+      "source": "Keris on the retired pirate Morvane",
+      "text": "Morvane keeps the best chandlery in this harbor and has kept it for eleven years. I have no record of anyone named Morvane prior to eleven years ago. This is the extent of my official knowledge. Unofficially: I've seen two ships avoid this harbor that would otherwise have stopped here, and when I looked into why, the captains described a history with someone who matched Morvane's description operating in a different capacity. I've noted this in my personal records, not the official ones. She runs a good chandlery.",
+      "keywords": ["morvane","chandlery","eleven","years","record","unofficial","ships","avoid","captains","description"]
+    },
+    {
+      "id": "grief_1",
+      "source": "Keris alone in the harbormaster's office, watching a ship sail",
+      "text": "The hardest part of the work is the ships that come back without someone who left on them. I've processed the paperwork for this thirty-one times. Each time the form is the same. The person's name goes in a column. The cause goes in another column. The ship's captain signs. I file it. The form is a good form — it asks the right things. The form does not ask how long the person was known here or who is waiting on the dock. I know both. I keep that in a different record.",
+      "keywords": ["ships","back","without","someone","thirty-one","form","column","captain","signs","record"]
+    },
+    {
+      "id": "rulf_1",
+      "source": "Keris on the dock boss Rulf",
+      "text": "Rulf runs the dock crew in a way that produces excellent throughput and that I have chosen not to examine closely. I know what examining it closely would reveal and I know what revealing it would require me to do. What I know is: the dock is the most efficient I've seen in any harbor I've visited, the crew is treated well by any reasonable standard, and the cargoes flow through correctly. I file what the forms require. The forms don't ask about the rest.",
+      "keywords": ["rulf","dock","crew","throughput","chosen","examine","closely","efficient","harbor","forms"]
+    },
+    {
+      "id": "fenn_1",
+      "source": "Keris on the Merchant Consortium",
+      "text": "Aldous Fenn's ships are always in compliance. Always. Not usually — always. The paperwork is complete, the declarations are accurate, the cargo matches the manifest. In twenty-two years I have found one discrepancy in a Fenn-affiliated shipment and when I flagged it, it was corrected within the hour with an explanation and an apology. I've worked with merchants my entire career. Fenn's compliance is either genuine or so expensive to maintain that the cost itself is informative.",
+      "keywords": ["fenn","ships","compliance","always","paperwork","accurate","cargo","manifest","discrepancy","corrected"]
+    },
+    {
+      "id": "tide_1",
+      "source": "Keris to the dock crew at the start of the day",
+      "text": "Tide in at sixth hour. Two ships clearing before noon. The Merchant's Friend has priority — she's been waiting four days with perishable cargo and the smell is becoming a factor. After the Friend, first-come order. Any disputes about queue position come to me, not to each other. The queue is not a negotiation. It's a record. I keep the record.",
+      "keywords": ["tide","sixth","ships","clearing","noon","priority","perishable","cargo","queue","record"]
+    },
+    {
+      "id": "hetch_1",
+      "source": "Keris on the sailor Hetch",
+      "text": "Hetch has been between ships in this harbor for four months, which is longer than between-ships usually takes. He talks about the Hallowed Reaches when he's been drinking, which is often enough that I've heard most of the story in pieces. The pieces suggest something happened there that he's processing. I don't ask. Sailors process in their own time and the harbor is a good place to do it — constant motion, but you're not in it, you're watching it. That can help.",
+      "keywords": ["hetch","between","ships","four","months","hallowed","reaches","drinking","story","processing"]
+    }
+  ]
+}

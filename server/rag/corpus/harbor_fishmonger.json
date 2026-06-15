@@ -1,0 +1,57 @@
+{
+  "id": "harbor_fishmonger",
+  "name": "Goss",
+  "role": "Fishmonger; first retail point between the boats and the settlement's kitchens",
+  "cluster": "harbor_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "fishmonger_1",
+      "source": "Goss on the fishmonger's position",
+      "text": "In sixteen years, the fishmonger's position is the translation point between what the sea produced and what the settlement can use. The fish comes off the boat — it has hours. What I do in those hours determines whether the fish arrives at the kitchen as the thing it could be or as something less. In sixteen years, the translation is time-critical. The fishmonger who manages the time manages the product.",
+      "keywords": ["sixteen","years","fishmonger's","position","translation","point","between","what","sea","produced"]
+    },
+    {
+      "id": "ota_1",
+      "source": "Goss on Ota",
+      "text": "Ota manages the fleet's catch scheduling and what comes to my stall is Ota's catch decision. In twelve years of working from Ota's catch schedule, what the schedule provides: the advance knowledge of what's coming and in what quantity. The fishmonger who knows two days in advance that the fleet is targeting one species versus another can prepare the stall accordingly. In twelve years, Ota's catch schedule is the planning input that allows me to anticipate rather than react to what arrives.",
+      "keywords": ["ota","manages","fleet's","catch","scheduling","what","comes","stall","ota's","catch"]
+    },
+    {
+      "id": "prad_1",
+      "source": "Goss on Prad",
+      "text": "Prad fishes the deep water and Prad's catch is consistently the most premium product that comes to my stall. In fourteen years of handling Prad's deep-water catch, what the deep-water fish provides: the species that the settlement's premium buyers want and that the near-shore fishing can't consistently provide. In fourteen years, Prad's catch is the reason the buyers who will pay for quality come to this stall rather than to the general market. In fourteen years, Prad and my stall are commercially linked.",
+      "keywords": ["prad","fishes","deep","water","prad's","catch","consistently","most","premium","product"]
+    },
+    {
+      "id": "sona_1",
+      "source": "Goss on Sona",
+      "text": "Sona manages Prad's shore-side operation and handles the catch hand-off to my stall. In twelve years of working with Sona's hand-off function, what Sona provides beyond the physical transfer: the specific knowledge of what the catch is, how the set went, and what the catch's quality level is. In twelve years, Sona's briefing on each catch has allowed me to price more accurately and present more honestly: the buyer who asks about the catch hears something specific rather than a general description.",
+      "keywords": ["sona","manages","prad's","shore-side","operation","handles","catch","hand-off","stall","twelve"]
+    },
+    {
+      "id": "twinn_1",
+      "source": "Goss on Twinn",
+      "text": "Twinn fishes in the traditional areas and produces catch that comes to my stall alongside Prad's. In thirteen years of handling Twinn's catch, what Twinn's fifty years of fishing experience produces in terms of catch quality: the consistent quality from the consistent fishing practice. Twinn doesn't push for the exceptional catch at the expense of the reliable catch. In thirteen years, Twinn's catch is what I can count on when the other boats have a difficult week. In thirteen years, Twinn's catch is the stall's floor.",
+      "keywords": ["twinn","fishes","traditional","areas","produces","catch","comes","stall","alongside","prad's"]
+    },
+    {
+      "id": "what_goss_holds_1",
+      "source": "Goss on what sixteen years of fishmonger work holds",
+      "text": "In sixteen years, what the fishmonger knows that other people in the settlement don't: the real rhythm of the sea's production. The fishing calendar is not the market calendar. The sea produces when the sea produces, not when the market expects the product. In sixteen years, managing the mismatch between when the sea produces and when the market wants what the sea produces: that's the fishmonger's perpetual challenge. In sixteen years, the challenge doesn't resolve. The fishmonger manages it.",
+      "keywords": ["sixteen","years","what","fishmonger","knows","other","people","settlement","don't","real"]
+    },
+    {
+      "id": "grenn_1",
+      "source": "Goss on Grenn",
+      "text": "Grenn harvests the ice that keeps my product viable. In ten years of working with Grenn's ice supply, the dependency: without the ice, the hours I have with the catch shrink dramatically. The ice doubles or triples the viable window. In ten years, Grenn's ice is not a supply item — it's a production input. The quality of my product at the end of the day is partly a function of the quality and quantity of Grenn's ice at the beginning of the day.",
+      "keywords": ["grenn","harvests","ice","keeps","product","viable","ten","years","working","grenn's"]
+    },
+    {
+      "id": "sixteen_years_1",
+      "source": "Goss on sixteen years of fishmonger work",
+      "text": "In sixteen years, I've handled approximately eight hundred thousand individual fish across several hundred species. Eight hundred thousand fish from the harbor's fishing ground to the settlement's kitchens. In sixteen years, the work is the translation of the sea's production into the settlement's sustenance. In sixteen years, the fishmonger is a daily operation with no days off — the catch arrives when the fleet comes in, regardless of the day. In sixteen years, the daily operation has been the constant. The fish determines the schedule. Not the other way around.",
+      "keywords": ["sixteen","years","handled","approximately","eight","hundred","thousand","individual","fish","across"]
+    }
+  ]
+}

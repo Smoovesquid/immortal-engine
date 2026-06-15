@@ -1,0 +1,57 @@
+{
+  "id": "hollow_court_warden",
+  "name": "Tess",
+  "role": "Hollow Court unofficial warden; keeps the space safe for the grieving",
+  "cluster": "hollow_court",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "warden_1",
+      "source": "Tess on what she does at the Hollow Court",
+      "text": "I'm not appointed. There's no appointment to make. Someone has to keep the Court's space — make sure no one who comes to grieve is troubled by someone who isn't grieving. I started doing it because I was at the Court for two years after my husband died and I noticed what the Court needed. The Court needs someone who can tell the difference between a person who is in grief and a person who is using the grief space for something else. I can tell the difference. So I do it.",
+      "keywords": ["not","appointed","there's","no","appointment","make","someone","has","keep","court's"]
+    },
+    {
+      "id": "sel_1",
+      "source": "Tess on Sel",
+      "text": "Sel runs the Court's practical operations — the fire, the light, the space maintenance. I run the social operations — who is in the Court and whether they should be. Sel and I worked this out in the first year without discussion. The division was apparent from what we each did. When someone arrives who doesn't belong, Sel tends the fire and I have the conversation. The conversation is gentle. It's been clear twelve times in nine years. Twelve gentle conversations. Nobody has required more than gentle.",
+      "keywords": ["sel","runs","court's","practical","operations","fire","light","space","maintenance","run"]
+    },
+    {
+      "id": "maret_1",
+      "source": "Tess on Maret",
+      "text": "Maret has been coming to the Court for two years. I watch arrivals — not to judge them, to understand them. Maret's grief is the most present grief I've seen in nine years. Not because Maret expresses more than others. Because Maret's grief stays with Maret even when Maret speaks of other things. The grief is under the conversation, not instead of it. Some people grieve in the Court and then leave the grief at the Court. Maret doesn't. Maret carries it.",
+      "keywords": ["maret","coming","court","two","years","watch","arrivals","not","judge","them"]
+    },
+    {
+      "id": "cree_1",
+      "source": "Tess on Cree",
+      "text": "Cree tends the candles at the Court. The tending is quiet work — the kind that happens without attention and that the Court would notice only if it stopped. Cree has been tending for longer than I've been warden. The Court was Cree's space first. When I started coming to the Court after my husband, it was Cree's candles that were there. I've thought about this: the candles were part of what let me stay long enough to know the Court needed someone doing what I do now.",
+      "keywords": ["cree","tends","candles","court","tending","quiet","work","kind","happens","without"]
+    },
+    {
+      "id": "porde_1",
+      "source": "Tess on Porde",
+      "text": "Porde brings people to the Court who wouldn't come on their own. Not the ones who are visibly in grief — Porde brings the ones who are in grief and don't know it yet. Who are carrying something they haven't named as grief but that the Court can hold. I've watched Porde bring seven people over three years. All seven stayed long enough for the Court to do something for them. Porde has a sensitivity for what people are carrying that I recognize from grief and can't explain from outside it.",
+      "keywords": ["porde","brings","people","court","wouldn't","come","their","own","not","ones"]
+    },
+    {
+      "id": "nine_years_1",
+      "source": "Tess on nine years as warden",
+      "text": "I started because I needed the Court. I continued because the Court needed me. At some point those two things switched places and I'm not sure when. The grief that brought me here has changed shape over nine years — it hasn't gone. The shape is different. What the warden work does for the grief: it gives the grief something to do. Not a distraction. A direction. The grief that builds the Court for others is not diminished by the building. It's used.",
+      "keywords": ["started","because","needed","court","continued","because","court","needed","me","at"]
+    },
+    {
+      "id": "what_tess_holds_1",
+      "source": "Tess on the person she had to remove from the Court",
+      "text": "Once, in nine years. A person who came to the Court and who was using the Court's space for something that wasn't grief. I won't say what. I had the conversation. The conversation was gentle three times. The fourth time it was not gentle. The person left and didn't return. The Court was what it was before they arrived within an hour of their leaving. I told Sel. Sel said: the Court holds what it holds. I said: yes. That's why it needed protecting.",
+      "keywords": ["once","nine","years","person","who","came","court","who","using","court's"]
+    },
+    {
+      "id": "what_the_court_is_1",
+      "source": "Tess on what the Hollow Court is for",
+      "text": "Grief is not the same as sadness. Grief is the specific loss of something that was and is no longer. The Court is where that specific loss can be in a space that holds it without requiring it to resolve or transform or become something else. The rest of the world wants grief to become something else — acceptance, memory, forward motion. The Court asks only that it be itself, here, for as long as it needs to be here. The Court is the only place in this district I know of that makes this specific offer.",
+      "keywords": ["grief","not","same","sadness","grief","specific","loss","something","that","was"]
+    }
+  ]
+}

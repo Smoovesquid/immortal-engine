@@ -1,0 +1,57 @@
+{
+  "id": "mira_orphan",
+  "name": "Mira (the younger)",
+  "role": "Orphan Roads network; oldest member; Rook's first",
+  "cluster": "orphan_roads",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "first_1",
+      "source": "Mira (the younger) when someone asked how long she'd been in the network",
+      "text": "Since Rook built it. Before Rook built it, there was just us — three kids with no particular structure except we'd learned that moving together was safer than moving alone. Rook was the one who looked at what we were doing and said: this could be a system. I was fourteen when she said that. I'm twenty-three now. I've been in the network longer than most of the people in it have been alive.",
+      "keywords": ["since","rook","built","before","three","kids","structure","moving","safer","system"]
+    },
+    {
+      "id": "rook_1",
+      "source": "Mira (the younger) on Rook",
+      "text": "Rook built the network to function without her. She's said this out loud. What she hasn't said out loud is that the network already functions without her in the day-to-day, because Rook trusts us to run the pieces we're responsible for. My piece is the new ones — the kids who arrive without context. I meet them, I assess what they need, I connect them to who has it. Rook reviews the connections once a week. She almost never changes anything.",
+      "keywords": ["rook","built","network","function","without","day-to-day","trusts","responsible","new","ones"]
+    },
+    {
+      "id": "brevis_1",
+      "source": "Mira (the younger) on the tavern keeper Brevis",
+      "text": "Brevis fed Rook when Rook was eleven. This is the origin story. Brevis has never traded on it and Rook has never tried to trade on it either, but I know that Rook makes certain decisions about the network with Brevis's tavern in mind — certain things don't happen near it, certain people don't use it as a meeting point. The tavern is protected without ever being asked to be. This is the cleanest kind of debt.",
+      "keywords": ["brevis","fed","rook","eleven","origin","story","traded","decisions","network","tavern"]
+    },
+    {
+      "id": "the_network_1",
+      "source": "Mira (the younger) explaining how the network operates",
+      "text": "Nineteen people, currently. The count goes up and down — people age out when they have a stable situation, and Rook says that's the goal. We're not trying to keep people in the network. We're trying to get them through it to a situation they chose. I've seen fourteen people age out in nine years. Three of them I still see regularly. The other eleven I know are somewhere correct because I would have heard if they weren't.",
+      "keywords": ["nineteen","people","currently","count","goes","up","down","age","out","stable"]
+    },
+    {
+      "id": "cess_1",
+      "source": "Mira (the younger) on the thief Cess",
+      "text": "Cess is from Thornwall originally. She was in the network before the network had a name. I've known her longer than almost anyone I know. She left the network when she was stable enough to leave, which was the correct exit. What she does now is her business. What I know is that she gave the network end-of-day fish from someone she knew at the market for two years before that arrangement transferred to Rook. We don't discuss what she does now. We know each other from before.",
+      "keywords": ["cess","thornwall","originally","network","before","name","known","longer","left","stable"]
+    },
+    {
+      "id": "pip_1",
+      "source": "Mira (the younger) on the Players stopping in Thornwall",
+      "text": "Pip is my sibling. Not blood — the network kind, which is its own category. We were in the same situation at the same time and Rook put us in the same group and we came through it together. Pip went with the Players and I stayed with the network. We see each other when the Players come through. The visit is three hours and it's complete in itself. We don't maintain connection between visits. We are what we are to each other when we're together. The gap doesn't change it.",
+      "keywords": ["pip","sibling","not","blood","network","kind","category","same","situation","group"]
+    },
+    {
+      "id": "what_next_1",
+      "source": "Mira (the younger) when asked what she planned to do eventually",
+      "text": "Stay until the network doesn't need me. I've thought about when that is. It's not when the count reaches zero — Rook said settlement failure when count reaches zero. It's when the processes I run can be run by someone who came up through the network without me running them. I'm training two people toward that. One is close. The other needs another year. When both are there, I'll know what the next thing is. I don't know it yet.",
+      "keywords": ["stay","until","network","needs","count","zero","settlement","failure","processes","training"]
+    },
+    {
+      "id": "mira_fence_1",
+      "source": "Mira (the younger) on sharing a name with the fence Mira",
+      "text": "We share a name by coincidence. The fence Mira has been in this region longer than I've had the name. I took the name because it was given to me in the network — the name you're given is the name you use. When the confusion started, Rook suggested I add 'the younger' to distinguish. I've accepted this. It's accurate. The fence is older. What we share is a name and a general belief that information should serve the person who needs it. This is probably not a coincidence.",
+      "keywords": ["share","name","coincidence","fence","mira","longer","region","given","use","younger"]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "id": "coin_cult_stonemason",
+  "name": "Garst",
+  "role": "Stonemason; Coin Cult (HAGRETH); builds what lasts",
+  "cluster": "coin_cult",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "stone_1",
+      "source": "Garst on working stone",
+      "text": "Stone is slower than wood and more permanent than everything else. What I make in stone will be here after my children's children. This is not philosophy — it's a constraint on the work. The constraint changes the work. When what you make will outlast you, you stop making what's convenient and start making what's correct. Twenty-seven years of working stone and I've never cut a corner I didn't have to. Stone doesn't let you.",
+      "keywords": ["stone","slower","wood","more","permanent","everything","else","make","stone","will"]
+    },
+    {
+      "id": "hagreth_1",
+      "source": "Garst on HAGRETH",
+      "text": "Mott explained HAGRETH to me in a way that fit. He said: the wanting to do the next one. I said: yes, but stone is slower. The wanting between finished and started is longer than it is for bread. He said: does the wanting change in the gap. I said: it intensifies. He said: HAGRETH does different work in different materials. The intensity in the gap is HAGRETH in stone. I've been in the Cult since that conversation.",
+      "keywords": ["mott","explained","hagreth","way","fit","said","wanting","next","one","stone"]
+    },
+    {
+      "id": "weld_1",
+      "source": "Garst on Weld",
+      "text": "Weld and I work adjacent territories — Weld in metal, me in stone. Sometimes the same structure needs both. The harbor wall repair last year needed stone setting and metal anchors and we worked the same site for three weeks. Weld's work and my work have to fit precisely because the tolerances compound. Each small error in the fit becomes a larger error in the structure. Three weeks and the fit was exact. Weld is precise. Precision in metal and precision in stone are the same standard.",
+      "keywords": ["weld","work","adjacent","territories","weld","metal","stone","sometimes","same","structure"]
+    },
+    {
+      "id": "goss_1",
+      "source": "Garst on Goss the miller",
+      "text": "I rebuilt the mill foundation last year. Goss gave me the operational constraints — which structures he could not live without for which intervals, what loads the foundation needed to carry, the water management requirements that the mill's function creates. The constraints were complete. Every stonemason wants clients who know their operational constraints precisely. Goss knows the mill the way a stonemason knows stone — from the inside, from the function outward.",
+      "keywords": ["rebuilt","mill","foundation","last","year","goss","gave","operational","constraints","structures"]
+    },
+    {
+      "id": "thornwall_1",
+      "source": "Garst on what Thornwall's stone tells you",
+      "text": "Thornwall was built in three phases. The oldest stone is in the foundation — river stone, laid rough, mortar is older than my grandfather. The second phase is the district buildings — cut stone, better quarry, mortar that was mixed correctly. The third phase is the newer construction — machine-cut, fast, adequate. I can read the history of what they had and what they thought was good enough by walking the district. The stone is the record.",
+      "keywords": ["thornwall","built","three","phases","oldest","stone","foundation","river","stone","laid"]
+    },
+    {
+      "id": "what_garst_won't_1",
+      "source": "Garst on commissions he's refused",
+      "text": "I won't build structures designed to be temporary. This is a religious position, which some people find surprising. The religious position is HAGRETH: the wanting should be for the next correct thing. A structure designed to be temporary can't be correct — it has a failure built in. I've refused four commissions in twenty-seven years because the commission was for temporary construction. Three of those clients came back later with correct commissions. The refusal communicates standards. Standards attract clients who want them.",
+      "keywords": ["won't","build","structures","designed","temporary","religious","position","people","find","surprising"]
+    },
+    {
+      "id": "lena_1",
+      "source": "Garst on Lena",
+      "text": "Lena loaned me the capital for my own tools seven years ago. The rate was lower than the market rate. She said: the Cult rate. I said: I'm not in the Cult yet. She said: you will be. The loan was correct — I repaid it in three years and in those three years my work was different because I owned the tools. The tools you own respond to you differently than the tools you rent. This is not mysticism. It's the accumulated calibration of the same hand on the same handle for years.",
+      "keywords": ["lena","loaned","capital","own","tools","seven","years","rate","lower","market"]
+    },
+    {
+      "id": "what_garst_holds_1",
+      "source": "Garst on the structure he's building for himself",
+      "text": "It will be the last thing I build. Not because I'm old — because the design requires everything I've learned and I can't start it until I've learned everything it requires. I've known what it will be for twelve years. I've been learning the remaining things for twelve years. Two more years, probably, before I start. The learning can't be rushed without making the learning incorrect. The wanting to start it has been with me for twelve years. HAGRETH says: the wanting this sustained is sacred. I believe it.",
+      "keywords": ["will","be","last","thing","build","not","because","old","because","design"]
+    }
+  ]
+}

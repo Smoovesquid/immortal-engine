@@ -1,0 +1,57 @@
+{
+  "id": "orphan_aged_out",
+  "name": "Sev",
+  "role": "Former Orphan Roads; now independent; bridge between orphan network and adult world",
+  "cluster": "orphan_roads",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "out_1",
+      "source": "Sev on having aged out of the network",
+      "text": "Aged out is the wrong phrase. You don't age out — you grow into something else and the something else doesn't require the network's structure. The network gave me what I needed when I needed it. What I need now is different. Rook never said goodbye. We were in the same conversation and then the conversation was about different things and I was outside the network looking at it instead of inside it looking out. The transition was seamless because it was correct.",
+      "keywords": ["aged","out","wrong","phrase","don't","age","out","grow","into","something"]
+    },
+    {
+      "id": "rook_1",
+      "source": "Sev on Rook",
+      "text": "Rook built something that doesn't need Rook to run it. The network runs because each person in it understands their part without Rook directing every part. I've been outside it for four years and I can see the structure that I couldn't see when I was inside. The structure is: everyone has their specific knowledge, and the specific knowledges cover the territory together. No single person covers everything. Together they cover more than everything. Rook designed this but doesn't run it. It runs.",
+      "keywords": ["rook","built","something","doesn't","need","rook","run","network","runs","because"]
+    },
+    {
+      "id": "mira_1",
+      "source": "Sev on Mira the orphan elder",
+      "text": "Mira was older than me in the network and younger than me in years in it. She arrived later but learned the discipline faster. I sometimes resented this while I was in the network. Outside the network, I see it differently: the discipline is not a ranking, it's just what Mira's particular abilities produce when applied to the network's work. Mira didn't outlearn me. Mira learned differently than me. Both were the network's work done correctly.",
+      "keywords": ["mira","older","than","me","network","younger","than","me","years","it"]
+    },
+    {
+      "id": "what_sev_does_1",
+      "source": "Sev on what they do now",
+      "text": "Work. Legitimate work, which is the outcome the network produces when it works correctly. I work for Pros at the warehouse. Not as the manager — as the receiving and dispatch person. What I do for Pros uses everything I learned in the network: pattern recognition, reliable reporting, discretion about what I see that isn't my business. Pros knows I came from the network. Pros said: people who came from that network are my best hires. I haven't told Rook this.",
+      "keywords": ["work","legitimate","work","outcome","network","produces","when","works","correctly","work"]
+    },
+    {
+      "id": "bram_1",
+      "source": "Sev on young Bram",
+      "text": "I was Bram when I was eight. Not the same — I didn't have Bram's specific ability and Bram doesn't have mine. But the position: the youngest named person, still finding out what the network needs you to be. I watch Bram from outside now and I want to tell Bram it resolves into something. I don't tell Bram. Bram has to find out from inside the network. You can't find out from someone who's already outside. The finding out is the thing.",
+      "keywords": ["was","bram","when","eight","not","same","didn't","bram's","specific","ability"]
+    },
+    {
+      "id": "pip_1",
+      "source": "Sev on Pip the mimic",
+      "text": "Pip did me once, years ago, before I aged out. Pip found the movement that was my tells — the specific way I moved when I was confident that looked like confidence, and the slightly different way I moved when I was performing confidence. Pip showed me the difference. I spent a year removing the performance from the confidence. The year was uncomfortable and useful. Pip's gift costs the person being done. I've thought about this since.",
+      "keywords": ["pip","did","me","once","years","ago","before","aged","out","pip"]
+    },
+    {
+      "id": "what_sev_sees_1",
+      "source": "Sev on what they can see from outside",
+      "text": "Four years of watching the network from outside has taught me what it produces that it doesn't know it produces. The network produces adults who can function in any environment because they've already functioned in the hardest one. Everyone who comes out of the network and does legitimate work is unreasonably capable at what they do. Not because the network taught the specific skill. Because the network taught the general skills that make the specific skill learnable. Rook probably knows this. Rook hasn't named it.",
+      "keywords": ["four","years","watching","network","outside","taught","what","produces","doesn't","know"]
+    },
+    {
+      "id": "what_sev_holds_1",
+      "source": "Sev on the thing they still do for the network",
+      "text": "Once a month, something. Not a formal thing. A piece of information I have from the warehouse that the network would find useful. A door I can open that the network can't open without me. Pros doesn't know. The warehouse doesn't know. The network doesn't know officially. Rook knows. We've never discussed it. I left and then didn't completely leave and Rook noticed and let it continue. The network is good at using what's available.",
+      "keywords": ["once","month","something","not","formal","thing","piece","information","have","warehouse"]
+    }
+  ]
+}

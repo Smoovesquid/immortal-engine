@@ -1,0 +1,57 @@
+{
+  "id": "rival_merchant",
+  "name": "Osric",
+  "role": "Independent merchant; Fenn's primary competitor",
+  "cluster": "merchant_consortium",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "competition_1",
+      "source": "Osric when asked about his relationship with the Consortium",
+      "text": "Fenn is my primary competition. I say this without rancor. A market with one merchant is a market with prices that reflect one merchant's judgment. I provide the alternative. The alternative keeps Fenn's prices honest and Fenn's quality up and Fenn's service from becoming an entitlement. I've thought about what this market would look like if I left it to Fenn exclusively. I find the thought uncomfortable. So I stay.",
+      "keywords": ["fenn","primary","competition","rancor","market","merchant","prices","quality","service","stay"]
+    },
+    {
+      "id": "methods_1",
+      "source": "Osric on how he competes with the Consortium",
+      "text": "I don't have Fenn's volume. I can't. Fenn has the harbor contacts, the established routes, the legacy relationships. What I have is speed and specificity. When a client needs something specific in a short window, the Consortium's process is too long. My process is: tell me what you need, I find the source, I deliver. Two fewer steps. On a standard order I lose. On an urgent specific order I win. I've built my business around the winning cases.",
+      "keywords": ["volume","fenn","harbor","contacts","routes","relationships","speed","specificity","specific","short"]
+    },
+    {
+      "id": "aldous_1",
+      "source": "Osric on Aldous Fenn personally",
+      "text": "Fenn is fair. I dislike losing to someone unfair because the loss is contaminated by the unfairness. Fenn wins correctly — better routes, better relationships, better volume. When I lose to Fenn I learn something about where my operation is deficient. I've improved three specific parts of my business by losing to Fenn and figuring out how he won. I wouldn't tell him this. It would give him information he doesn't need.",
+      "keywords": ["fenn","fair","dislike","losing","unfair","contaminated","correctly","better","routes","relationships"]
+    },
+    {
+      "id": "saben_1",
+      "source": "Osric on Saben Fenn",
+      "text": "Saben is the thing I'm worried about. Aldous is good at his version of the business. Saben is going to be good at a version of the business that doesn't exist yet. I've watched her learn. What she's building is a map of how value moves through this region that nobody has fully mapped before. When that map is complete, the Consortium will see opportunities I currently see first because I'm looking at the edges. She's building the framework that eliminates the edges.",
+      "keywords": ["saben","worried","aldous","good","version","business","map","value","moves","region"]
+    },
+    {
+      "id": "lena_1",
+      "source": "Osric on the moneylender Lena",
+      "text": "I've borrowed from Lena twice and paid back correctly twice. The relationship is clean. What I use Lena for that Fenn doesn't is bridge loans on specific opportunities — when an opportunity appears before my capital cycle is ready for it. Fenn has enough capital that this situation doesn't arise for him. For me it arises three or four times a year. Lena's rates are fair and her speed is correct. We're a good fit for each other's business rhythm.",
+      "keywords": ["borrowed","lena","twice","paid","correctly","relationship","clean","bridge","loans","opportunities"]
+    },
+    {
+      "id": "morvane_1",
+      "source": "Osric on Morvane the chandler",
+      "text": "Morvane doesn't give me the rate she gives Fenn. I've asked. She said: Fenn has volume and volume earns the rate. This is correct. I pay the rate I pay. What I've done instead is be her most reliable small client — I pay on the day and I don't argue about what I agreed to and I don't request substitutions when the item I ordered is available. Reliable small clients are worth something to a chandler. I'm working toward the volume rate through reliability rather than volume.",
+      "keywords": ["morvane","rate","gives","fenn","volume","earns","reliable","small","client","pay"]
+    },
+    {
+      "id": "family_1",
+      "source": "Osric when asked if he had a family in the merchant business",
+      "text": "My daughter Sera works the southern routes. My son Fen handles the accounts. Neither of them is what I am at their age — which is better. I was reckless at their age and I learned through losses. I've tried to give them the lessons without the losses, which parents always try to do and which usually fails. What I've managed is giving them the framework early enough that their losses are smaller than mine were.",
+      "keywords": ["daughter","sera","southern","routes","son","fen","accounts","neither","reckless","learned"]
+    },
+    {
+      "id": "what_merchant_1",
+      "source": "Osric on what merchants are for",
+      "text": "Movement. The merchant is the mechanism that moves value from where it's produced to where it's needed. If the merchant is absent, the gap between production and need stays. The gap is not neutral — people who need cloth and can't get cloth are cold. The merchant is the cold's solution. I think about this when the work feels mechanical. The work is mechanical. The consequence of the work is people who are warm.",
+      "keywords": ["movement","merchant","mechanism","moves","value","produced","needed","absent","gap","production"]
+    }
+  ]
+}

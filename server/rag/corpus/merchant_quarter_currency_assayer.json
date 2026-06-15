@@ -1,0 +1,57 @@
+{
+  "id": "merchant_quarter_currency_assayer",
+  "name": "Yar the Assayer",
+  "role": "Currency assayer for the merchant quarter; tests the coinage that circulates through the district's commerce",
+  "cluster": "merchant_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "assayer_1",
+      "source": "Yar the Assayer on currency assaying",
+      "text": "In fourteen years of currency assaying in the merchant quarter, what the assayer does: tests the coinage that circulates through the district's commerce for authenticity and proper metal content. In fourteen years, the coin that looks like currency and isn't is the coin that damages the commercial system if it circulates as currency. In fourteen years, the assayer is the filter between the appearance of value and the actual value. In fourteen years, the filter has processed approximately two hundred thousand coins.",
+      "keywords": ["fourteen","years","currency","assaying","merchant","quarter","what","assayer","does","tests"]
+    },
+    {
+      "id": "grav_1",
+      "source": "Yar the Assayer on Grav",
+      "text": "Grav's Coin Cult handles significant coin volume and the assaying function and the Coin Cult have a working relationship that the Cult values more than most observers would expect. In ten years of the Yar-Grav assayer-credit administrator relationship, what the assayer's function provides to the Coin Cult: the verification that the currency the Cult handles is the currency it appears to be. In ten years, the Coin Cult that handles verified currency is the Coin Cult whose credit operations rest on a solid foundation. In ten years, Grav has referenced my verification function once in a conversation about the Cult's risk management.",
+      "keywords": ["grav's","coin","cult","handles","significant","coin","volume","assaying","function","coin"]
+    },
+    {
+      "id": "saben_1",
+      "source": "Yar the Assayer on Saben",
+      "text": "Saben's commercial operation generates the district's highest coin volume and the assayer-Saben relationship is the district's most demanding assaying relationship. In eleven years of assaying Saben's coin volume, what the high-volume assaying produces: the pattern recognition that the lower-volume assaying doesn't develop. In eleven years, the pattern in Saben's coin volume that has twice indicated a circulation anomaly — not fraud from Saben's side, but fraud upstream in Saben's supply chain. In eleven years, two upstream anomalies detected through Saben's volume. Both were addressed.",
+      "keywords": ["saben's","commercial","operation","generates","district's","highest","coin","volume","assayer-saben","relationship"]
+    },
+    {
+      "id": "liss_notary_1",
+      "source": "Yar the Assayer on Liss the Notary",
+      "text": "Liss's commercial records and my assay records serve as cross-references in the district's commercial integrity system. In nine years of the Yar-Liss assayer-notary relationship, what the cross-reference produces: the ability to trace a commercial anomaly through both the transaction record and the coin record. In nine years, twice a commercial dispute was resolved through the cross-reference of the notary record and the assay record. In nine years, twice. In nine years, the cross-reference has been the most powerful instrument in the district's commercial integrity system.",
+      "keywords": ["liss's","commercial","records","assay","records","serve","cross-references","district's","commercial","integrity"]
+    },
+    {
+      "id": "pol_1",
+      "source": "Yar the Assayer on Pol",
+      "text": "Pol the tax assessor and I share the function of maintaining the accuracy of the district's declared commercial value. In eight years of the Yar-Pol assayer-assessor relationship, what the two accuracy functions together produce: the commercial district where the coin is genuine and the commercial activity is assessed accurately. In eight years, the district where both functions operate with integrity is the district where the settlement's revenue is reliable. In eight years, Pol and I have had six conversations about specific commercial situations where our respective data overlapped. All six were productive.",
+      "keywords": ["pol","tax","assessor","share","function","maintaining","accuracy","district's","declared","commercial"]
+    },
+    {
+      "id": "what_yar_holds_1",
+      "source": "Yar the Assayer on what fourteen years of assaying holds",
+      "text": "In fourteen years and approximately two hundred thousand coins, what the assaying function has produced: the ability to identify a counterfeit coin within a thirty-second examination in most cases. In fourteen years, the counterfeit detection rate: I've found one hundred and forty-seven counterfeit coins in two hundred thousand. One hundred and forty-seven coins that would have circulated as currency if the assayer wasn't filtering. In fourteen years, the one hundred and forty-seven represent a specific value of fraud prevented. In fourteen years, the filter justifies itself.",
+      "keywords": ["fourteen","years","approximately","two","hundred","thousand","coins","what","assaying","function"]
+    },
+    {
+      "id": "the_one_that_troubled_1",
+      "source": "Yar the Assayer on the counterfeit that troubled him most",
+      "text": "In fourteen years, the counterfeit that troubled me most: year eleven, a coin so well made that the thirty-second examination almost passed it. The coin that almost passes is more dangerous than the coin that fails immediately — it means there's a counterfeiter operating at a level that the filter barely catches. In three years since year eleven, four more coins from the same production have come through the district. All four I caught. In three years, the production is still operating somewhere. The five I've caught are five fewer in circulation.",
+      "keywords": ["fourteen","years","counterfeit","troubled","most","year","eleven","coin","well","made"]
+    },
+    {
+      "id": "fourteen_years_1",
+      "source": "Yar the Assayer on fourteen years of currency assaying",
+      "text": "In fourteen years, the merchant quarter's commercial integrity has partly depended on the assaying function. In fourteen years, the district's reputation for reliable commercial dealing rests on the coin being genuine and the transactions being accurately recorded. In fourteen years, I've been the coin-genuine side of that reputation. In fourteen years, the commercial district that can assure its trading partners that the coin is genuine has a commercial advantage that the district without the assurance doesn't. In fourteen years, the assayer's function is the district's commercial credibility at the coin level.",
+      "keywords": ["fourteen","years","merchant","quarter's","commercial","integrity","partly","depended","assaying","function"]
+    }
+  ]
+}

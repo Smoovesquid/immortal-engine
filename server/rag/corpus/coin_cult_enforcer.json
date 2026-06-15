@@ -1,0 +1,57 @@
+{
+  "id": "coin_cult_enforcer",
+  "name": "Jeck",
+  "role": "Coin Cult debt enforcer; HAGRETH's instrument; makes sure obligations to the cult are honored",
+  "cluster": "coin_cult",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "enforcement_1",
+      "source": "Jeck on the work",
+      "text": "The work is simple: obligations have been made, obligations must be honored. The cult extends credit. The credit creates an obligation. The obligation has terms. When the terms aren't met, I'm the terms. In nine years of this work, I've had approximately four hundred conversations about obligations. Most of them end with the obligation honored. The ones that don't: the terms have a further consequence. Most people prefer to honor the obligation before the further consequence.",
+      "keywords": ["work","simple","obligations","been","made","obligations","must","honored","cult","extends"]
+    },
+    {
+      "id": "grav_1",
+      "source": "Jeck on Grav",
+      "text": "Grav gives me the accounts. The treasurer's role and my role are the two parts of the same system: Grav tracks what's owed, I collect it. In nine years, the accounts Grav sends me are accurate. Grav's accurate accounting is what makes my work navigable — I know exactly what's owed, by whom, under what terms. The enforcer without accurate accounts is an enforcer who makes mistakes. I haven't made a mistake about the amount owed in nine years. Grav's numbers are reliable.",
+      "keywords": ["grav","gives","accounts","treasurer's","role","role","two","parts","same","system"]
+    },
+    {
+      "id": "hagreth_1",
+      "source": "Jeck on HAGRETH",
+      "text": "HAGRETH is the principle behind the work. What HAGRETH teaches: the material obligation is not profane — it's the form that commitment takes in the physical world. A promise to repay is a promise. A promise not kept is a lie given the shape of a promise. In HAGRETH's terms: the enforcement of the obligation is the enforcement of the word. In nine years, I've understood my work not as coercion but as the honoring of what was agreed.",
+      "keywords": ["hagreth","principle","behind","work","what","hagreth","teaches","material","obligation","not"]
+    },
+    {
+      "id": "lena_1",
+      "source": "Jeck on Lena",
+      "text": "Lena is the face of the cult that makes the initial offer. I'm the face that appears when the offer's terms haven't been met. In six years of working on accounts that Lena originated, the accounts Lena writes have a specific structure that I've learned to read: Lena's terms are generous in the short term and specific in the long term. The people who take Lena's offers without reading the long-term terms: those are the accounts that come to me.",
+      "keywords": ["lena","face","cult","makes","initial","offer","face","appears","when","offer's"]
+    },
+    {
+      "id": "pek_1",
+      "source": "Jeck on Pek",
+      "text": "Pek operates the moneylending business that exists alongside the Coin Cult's credit system. In seven years, Pek and I have occasionally needed to coordinate on accounts that owed to both systems simultaneously. What Pek and I have worked out: the sequence of obligation collection. In seven years, the coordination has been professional. Pek's accounts and the cult's accounts don't overlap in purpose — Pek's lending is secular commercial, the cult's is HAGRETH's mandate. We serve different purposes with similar instruments.",
+      "keywords": ["pek","operates","moneylending","business","exists","alongside","coin","cult's","credit","system"]
+    },
+    {
+      "id": "what_enforcement_is_1",
+      "source": "Jeck on what the work actually is",
+      "text": "The work is not violence. In nine years, I've used physical force three times. Three times in nine years, and each time the force was the minimum necessary to establish the seriousness of the conversation. What the work mostly is: presence. I arrive. The person I'm arriving to see understands what my arrival means. That understanding is usually sufficient. The obligation gets honored. I leave. In nine years, the presence is the instrument, not the force.",
+      "keywords": ["work","not","violence","nine","years","used","physical","force","three","times"]
+    },
+    {
+      "id": "what_jeck_holds_1",
+      "source": "Jeck on the account he couldn't collect",
+      "text": "Year five. An account where the debtor had genuinely lost the capacity to pay — not through avoidance, but through a sequence of events that left the person with nothing. The obligation was real. The capacity was gone. I reported the situation to Grav. Grav escalated to the cult's leadership. The leadership's decision: the account was closed at a loss. HAGRETH's principle covers the person who won't pay. It's harder to apply to the person who can't. In four years since, I've thought about year five when I'm assessing a new account.",
+      "keywords": ["year","five","account","where","debtor","genuinely","lost","capacity","pay","not"]
+    },
+    {
+      "id": "nine_years_1",
+      "source": "Jeck on nine years of enforcement",
+      "text": "In nine years, I've collected approximately eight hundred accounts. Eight hundred obligations that the cult was owed. Eight hundred conversations with people who had borrowed something and needed to return it. The conversations range from immediate and uneventful to extended and complicated. In nine years, what has never changed: the obligation was real. The person who took the credit took something real. The collection is the return of something real. I've never had to believe otherwise.",
+      "keywords": ["nine","years","collected","approximately","eight","hundred","accounts","eight","hundred","obligations"]
+    }
+  ]
+}

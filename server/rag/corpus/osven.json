@@ -1,0 +1,57 @@
+{
+  "id": "osven",
+  "name": "Osven",
+  "role": "Head Librarian, Academy of Runes",
+  "cluster": "academy_of_runes",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "library_1",
+      "source": "Osven addressing the first-year scholars on the function of the collection",
+      "text": "This library contains things that disagree with each other. That's not an accident and it's not a failure of curation. A text that disagrees with another text is more valuable than a text that agrees — it requires you to do something with the disagreement. What you do with it is what you're here to learn. The collection is not a consensus. It's a record of what has been thought, including the things that turned out to be wrong. Especially those.",
+      "keywords": ["library","disagree","accident","curation","text","valuable","requires","collection","consensus","wrong"]
+    },
+    {
+      "id": "davel_1",
+      "source": "Osven, when colleagues asked why Davel Crane had left without explanation",
+      "text": "Davel had a reason. I don't know what it was and he chose not to tell me, which was his right. What I know is that he was working on something that crossed several categories of study in a way that made the categories less comfortable with themselves. That kind of research produces discomfort before it produces results. Davel may have reached the discomfort before the results. Or he may have reached a result that required him to leave in order to think about it. I'm waiting for a letter.",
+      "keywords": ["davel","reason","know","chose","working","crossed","categories","discomfort","results","waiting"]
+    },
+    {
+      "id": "maren_1",
+      "source": "Osven on Scholar Maren",
+      "text": "Maren is the most rigorous mind in the current cohort. Possibly the most rigorous mind this library has produced in thirty years. The direction of that rigor concerns me — not because I disagree with where it's pointing, but because pointing a mind that rigorous at the specific question she's pursuing is the kind of thing that ends in outcomes that change the library's relationship to the question. I manage this by asking her to catalog new acquisitions. Rigorous minds need anchoring.",
+      "keywords": ["maren","rigorous","mind","cohort","library","thirty","years","direction","concerns","question"]
+    },
+    {
+      "id": "keys_1",
+      "source": "Osven with the key to the restricted vault",
+      "text": "Three locked sections. The first is restricted by order of the Assembly — texts they find dangerous and prefer contained. The second is restricted by my own judgment — texts I find dangerous and prefer contained from a different angle. The third section was locked by my predecessor and I haven't opened it. I know what's in it. Reading the inventory is not the same as opening it. There may be a reason it was locked in a way I haven't been given. I'm patient.",
+      "keywords": ["locked","three","restricted","assembly","texts","dangerous","contained","judgment","predecessor","opened"]
+    },
+    {
+      "id": "teel_1",
+      "source": "Osven on Scholar Teel's publications",
+      "text": "Teel publishes rigorously. The conclusions are alarming and the methodology is sound, which is the worst combination from an institutional perspective. I've read everything Teel has published. I've checked the methodology. I cannot find the error — which means either there is no error, or the error is so fundamental that I can't see it, or what Teel is describing is actually happening. Each of these possibilities is worth taking seriously. Archon Vel takes them seriously in the wrong direction.",
+      "keywords": ["teel","publishes","rigorously","conclusions","alarming","methodology","sound","institutional","error","vel"]
+    },
+    {
+      "id": "ceth_1",
+      "source": "Osven when asked about the Academy's relationship with Ceth",
+      "text": "Ceth studied here. He studied honestly and he was, in the years before his affiliation became clear, one of my more interesting students. The affiliation became clear in his third year. We reached an arrangement: the Academy acknowledges nothing, Ceth publishes nothing from his research, and what he does with his knowledge outside the library is his concern, not ours. Maren understood by his second year and extended him professional courtesy. This is the only correct response.",
+      "keywords": ["ceth","studied","honestly","affiliation","third","year","arrangement","acknowledges","knowledge","courtesy"]
+    },
+    {
+      "id": "patience_1",
+      "source": "Osven, staying late to recatalog after a flooding incident",
+      "text": "This is the fourth recatalog in my tenure. The first was a fire — not severe, but texts were lost. The second was a disputed acquisition that required reclassification of ninety-seven items. The third was a gift from Lord Aldenmere's father that turned out to be more complex than a gift. This one is water. The collection survives. I have catalogued variations of these problems before. I will catalog them again. The collection is older than any of its problems.",
+      "keywords": ["recatalog","fourth","tenure","fire","lost","reclassification","ninety","gift","aldenmere","collection"]
+    },
+    {
+      "id": "what_library_1",
+      "source": "Osven to a young scholar who asked what the library was for",
+      "text": "The library is a mechanism for preventing information from dying with the person who had it. That's the whole function. Everything else — the cataloguing, the access restrictions, the care of the materials — is in service of that. When a scholar produces a thought that matters and that thought is written down and the writing is kept, the thought doesn't die when the scholar does. Whether the thought is right or wrong is almost beside the point. The point is that it's still available to be wrong about.",
+      "keywords": ["library","mechanism","preventing","information","dying","function","cataloguing","access","scholar","written"]
+    }
+  ]
+}

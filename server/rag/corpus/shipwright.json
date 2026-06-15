@@ -1,0 +1,57 @@
+{
+  "id": "shipwright",
+  "name": "Baln",
+  "role": "Shipwright; builds and repairs the harbor's vessels; the ships live as long as Baln's work holds",
+  "cluster": "harbor_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "shipwright_1",
+      "source": "Baln on building ships",
+      "text": "A ship is a container that must float and move and survive the water trying to get in. In twenty-six years of building and repairing ships, every problem comes down to the same set of forces: the water pressure on the hull, the load pressure on the structure, the movement forces on the joints. The ship that survives is the ship where those forces are managed in the design. The ship that fails is the ship where one of the forces was underestimated.",
+      "keywords": ["ship","container","must","float","move","survive","water","trying","get","twenty-six"]
+    },
+    {
+      "id": "keris_1",
+      "source": "Baln on Keris",
+      "text": "Keris sends me the ships that need work. In twenty-six years, Keris has been the harbor master I work with for eighteen of them. The workflow: Keris identifies that a ship needs structural attention, I assess the ship's condition and propose the work, Keris coordinates with the captain on the schedule, I do the work. In eighteen years, the workflow has had one breakdown: a captain who disputed my assessment of required work and departed before the work was done. The ship returned three weeks later having encountered exactly what I'd assessed.",
+      "keywords": ["keris","sends","ships","need","work","twenty-six","years","keris","been","harbor"]
+    },
+    {
+      "id": "harrow_1",
+      "source": "Baln on Harrow",
+      "text": "Captain Harrow's ship has been in my yard for scheduled maintenance every two years for fifteen years. In fifteen years, the scheduled maintenance has identified two structural issues before they became failures. Both times: I found the issue during scheduled maintenance, we addressed it during the maintenance period, and the ship went back to sea without incident. Harrow said once: scheduled maintenance is what my ship costs. An unscheduled breakdown at sea is what the ship could cost. The scheduled cost is the insurance against the unscheduled cost.",
+      "keywords": ["captain","harrow","ship","been","yard","scheduled","maintenance","every","two","years"]
+    },
+    {
+      "id": "weld_1",
+      "source": "Baln on Weld",
+      "text": "The metal fittings on ships — the iron work, the hardware — comes from the Forge Guild. In sixteen years of working with the Guild's output, Weld specifically understands marine requirements. The marine environment is harder on iron than most applications: the salt and moisture accelerate corrosion. In sixteen years, the fittings Weld makes for my ships have had a lower replacement rate than the general forge output would produce because Weld uses a finishing process specifically for marine application. I asked for the process once. Weld said: the finish is the trade knowledge. I accepted that.",
+      "keywords": ["metal","fittings","ships","iron","work","hardware","comes","forge","guild","sixteen"]
+    },
+    {
+      "id": "prad_1",
+      "source": "Baln on Prad",
+      "text": "The rigging rope on ships comes from Prad's rope making. In twelve years of using Prad's rope for the ships I build and repair, the rope quality has been consistent for the marine application. What Prad understands about marine rope that some rope makers don't: the marine rope operates under load in wet conditions repeatedly. The test for marine rope isn't the dry load test — it's the wet load test under cycling conditions. Prad tests for the cycling. The rope holds.",
+      "keywords": ["rigging","rope","ships","comes","prad's","rope","making","twelve","years","using"]
+    },
+    {
+      "id": "gid_1",
+      "source": "Baln on Gid",
+      "text": "Gid and I share a professional interest in the harbor channel's depth requirements. The ships I build are built to specific draft specifications. The channel Gid pilots must be deep enough to accommodate the draft. In fourteen years, Gid and I have coordinated on two new-build specifications where the question was whether the channel would accommodate the ship's draft. Both times: the channel accommodated. Both times: I had checked with Gid before committing to the draft. The check is the safety margin.",
+      "keywords": ["gid","share","professional","interest","harbor","channel's","depth","requirements","ships","build"]
+    },
+    {
+      "id": "what_baln_holds_1",
+      "source": "Baln on the repair she refused",
+      "text": "Year eleven. A ship I assessed as beyond viable repair. The owner wanted the repair done. I said: the repair would cost more than the ship's value in its repaired state, and the result would be a ship that was structurally compromised in ways that the repair wouldn't fully address. The owner found a different shipwright in another harbor. The ship was repaired elsewhere. Three years later: the ship went down in conditions that the repaired structure couldn't handle. No loss of life — the weather gave enough warning. I've held the assessment and the outcome together for fifteen years.",
+      "keywords": ["year","eleven","ship","assessed","beyond","viable","repair","owner","wanted","repair"]
+    },
+    {
+      "id": "twenty_six_years_1",
+      "source": "Baln on twenty-six years of shipwright work",
+      "text": "In twenty-six years, the ships I've built are on the water and the ships I've repaired are on the water and the ships I've extended the life of are on the water. All of them are doing what ships do: carrying people and goods across water that would otherwise stop the carrying. In twenty-six years, I've contributed to the movement of more goods and people than I can count, through the medium of the ships I've built and maintained. The movement is invisible from here. The ships are the thing I can see.",
+      "keywords": ["twenty-six","years","ships","built","water","ships","repaired","water","ships","extended"]
+    }
+  ]
+}

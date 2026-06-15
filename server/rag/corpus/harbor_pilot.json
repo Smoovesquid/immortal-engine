@@ -1,0 +1,57 @@
+{
+  "id": "harbor_pilot",
+  "name": "Gid",
+  "role": "Harbor pilot; guides ships through the channel into berth",
+  "cluster": "harbor_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "pilot_1",
+      "source": "Gid on piloting",
+      "text": "The pilot boards the ship at the channel marker and takes the helm from the captain for the final approach. The captain knows the open water. The pilot knows this harbor. The distinction is why the captain gives up the helm willingly — they've made the passage a thousand times on open water and they know the limits of open-water knowledge at the harbor mouth. I've made the approach five thousand times. The harbor is different every tide. I know every version of it.",
+      "keywords": ["pilot","boards","ship","channel","marker","takes","helm","captain","final","approach"]
+    },
+    {
+      "id": "keris_1",
+      "source": "Gid on Keris",
+      "text": "Keris sets the berth schedule. I execute the approach. The schedule tells me which berth and at what interval. I tell Keris what tidal conditions make the schedule viable and what adjustments are needed. In eight years of working together, Keris has adjusted the schedule based on my assessment forty-three times. Each adjustment was correct. We don't discuss the adjustments — Keris sees my assessment and acts. The channel between assessment and action is clear.",
+      "keywords": ["keris","sets","berth","schedule","execute","approach","schedule","tells","which","berth"]
+    },
+    {
+      "id": "ota_1",
+      "source": "Gid on Ota",
+      "text": "Ota and I share a knowledge of the harbor that nobody else has: the harbor from moving through it. Ota's knowledge is in the water reading. Mine is in the approach geometry. We've talked about the harbor twice in eight years and both conversations were dense with specifics that neither of us had to explain to the other. The second conversation produced three small chart corrections that we both independently verified afterward. Three charts changed from one conversation.",
+      "keywords": ["ota","share","knowledge","harbor","nobody","else","has","harbor","from","moving"]
+    },
+    {
+      "id": "harrow_1",
+      "source": "Gid on Captain Harrow",
+      "text": "Harrow is the captain who watches most closely when I take the helm. Not suspiciously — studiedly. She's been watching how I do it for six years, making the same approach dozens of times. In the fourth year she said: I know what you're doing now. I said: then you don't need me. She said: I know what you're doing. I don't know why it works the way it works. I said: tell me what you think I'm doing. She told me. She was right. I said: now try the why. She said: that's what I'm still working on.",
+      "keywords": ["harrow","captain","watches","most","closely","take","helm","not","suspiciously","studiedly"]
+    },
+    {
+      "id": "tonn_1",
+      "source": "Gid on Tonn the salvager",
+      "text": "Tonn and I have a professional relationship around what happens when approaches go wrong. In eight years I've had two approaches that didn't resolve cleanly — cargo loss, minor damage. Both times I briefed Tonn within thirty minutes of the incident. Tonn handles the water consequence. I handle the account consequence with Keris and the captain. The division is clear because we worked it out after the first incident. The first incident was how we learned we needed the division.",
+      "keywords": ["tonn","professional","relationship","around","what","happens","when","approaches","go","wrong"]
+    },
+    {
+      "id": "five_thousand_1",
+      "source": "Gid on five thousand approaches",
+      "text": "The five-thousandth approach is today. I know this because I've been counting since the third year when I realized the count was going to be significant. Three hundred approaches a year, minus weather and schedule. Five thousand is year seventeen. What I know after five thousand that I didn't know after fifty: the harbor is not a problem to be solved. The harbor is a situation to be navigated. The distinction took fifteen years to feel correctly.",
+      "keywords": ["five-thousandth","approach","today","know","because","been","counting","since","third","year"]
+    },
+    {
+      "id": "what_gid_holds_1",
+      "source": "Gid on the approach he still thinks about",
+      "text": "Year four. A ship that came in on a complex tide with degraded visibility and a captain who didn't tell me about the steering problem before I boarded. When the approach started presenting, I managed it. The ship berthed correctly. No cargo loss. After, the captain told me about the steering. I said: I know. I felt it in the first thirty seconds. He said: why didn't you abort. I said: aborting in those conditions was worse than continuing. He said: how did you know. I said: year four.",
+      "keywords": ["year","four","ship","came","complex","tide","degraded","visibility","captain","didn't"]
+    },
+    {
+      "id": "rulf_1",
+      "source": "Gid on Rulf",
+      "text": "Rulf and I have one point of contact: the moment the ship is in the berth and I hand back the helm. At that moment, the dock takes over from the pilot. We've developed a handoff signal — Rulf has it, I signal it, and the dock is ready when the ship arrives. In eight years the handoff has been clean every time. A clean handoff means the ship arrives and there's no gap between the pilot's responsibility ending and the dock's responsibility beginning. Rulf designed the handoff. I use it.",
+      "keywords": ["rulf","one","point","contact","moment","ship","berth","hand","back","helm"]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "id": "academy_student_jenn",
+  "name": "Jenn",
+  "role": "Academy of Runes, second-year student; natural philosophy",
+  "cluster": "academy_of_runes",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "studying_1",
+      "source": "Jenn in the library at night",
+      "text": "Osven lets me stay after closing if I leave the catalog unchanged and tell him what I read. The second requirement is the interesting one. I think he's using me to surface things in the collection that he hasn't cataloged yet. I've found three texts in the back stacks that aren't in the catalog. He received each report with specific attention and said: noted. I'm not sure noted means cataloged. I think it means: I now know what you found.",
+      "keywords": ["osven","lets","stay","after","closing","catalog","unchanged","tell","read","collection"]
+    },
+    {
+      "id": "maren_1",
+      "source": "Jenn on Scholar Maren",
+      "text": "Maren told me in my first week: the methodology is the only thing I can teach you. The conclusions change. The method is what survives. I didn't understand this until my third month when I found two texts that reached opposite conclusions from similar observations and understood that they were using different methods, and that one of the methods was better than the other, and that the better method produced the conclusion that was probably correct. Maren was right. She's right about most things. It's frustrating.",
+      "keywords": ["maren","told","first","week","methodology","only","teach","conclusions","change","method"]
+    },
+    {
+      "id": "teel_1",
+      "source": "Jenn on reading Teel's papers",
+      "text": "I read Teel's work before I knew who Teel was. I found the papers in the uncatalogued section. I thought they were from someone very old because the writing is confident in a way that I associate with age. Then I found out Teel is thirty-two and currently at the Academy and working in the tower room above the east wing. I've passed the tower room twice since. I haven't gone in. I need to prepare better questions first.",
+      "keywords": ["teel","work","before","knew","papers","uncatalogued","confident","associate","age","thirty"]
+    },
+    {
+      "id": "ceth_1",
+      "source": "Jenn when she realized who Ceth was",
+      "text": "Ceth was polite to me in the corridor and I didn't know who he was until Maren told me the next day. I went back through our conversation trying to find what I'd revealed. I'd talked about my research on elemental residue and heat signatures in geological formations. Maren said: he already knows more about residue than you do, and he already knows what you're working on because Osven's record shows your checked-out texts. I said: should I be concerned? She said: be accurate. That's the best defense.",
+      "keywords": ["ceth","polite","corridor","knew","maren","told","conversation","revealed","research","elemental"]
+    },
+    {
+      "id": "natural_1",
+      "source": "Jenn on what she studies",
+      "text": "How heat moves through different materials at different speeds. Why some rocks hold heat longer than others. What the residue of old heat looks like in the geological record. This started as pure curiosity about why some places are warmer than they should be given their location. It's become something larger. The heat patterns in three locations near the Hallowed Reaches don't match what they should. I haven't told anyone what I found yet because I don't have an explanation.",
+      "keywords": ["heat","moves","materials","speeds","rocks","hold","residue","geological","record","patterns"]
+    },
+    {
+      "id": "davel_1",
+      "source": "Jenn on hearing that a student named Davel Crane left unexpectedly",
+      "text": "I never met Davel. He left six months before I arrived. What I know about him is from his checked-out record, which Osven let me see when I requested the geological texts he'd previously requested — Osven said: you're looking at the same shelf. Davel's requests overlap with my current research. Whatever he was working on, we came to similar questions from different directions. I've thought about writing to him. I don't know where he is.",
+      "keywords": ["davel","never","met","left","six","months","arrived","checked-out","record","osven"]
+    },
+    {
+      "id": "night_1",
+      "source": "Jenn when Osven found her asleep at the library table",
+      "text": "He put a blanket on me and let me sleep. This is what I know of Osven's character: he chose not to wake me when waking me would have ended the work. He filed a note in the overnight log that said I was there with permission, which means he extended my permission retroactively to cover the sleeping. When I thanked him he said: you were going to be cold. That's the whole explanation.",
+      "keywords": ["osven","blanket","sleep","character","chose","wake","waking","work","overnight","log"]
+    },
+    {
+      "id": "what_student_1",
+      "source": "Jenn on being a student",
+      "text": "The method. That's what I'm here for. Not the answers — I could read the answers in texts and be equally wrong about them without knowing I was wrong. The method is how you know if you're wrong. I came here because I was finding things I couldn't verify and I needed to learn how to verify them. Two years in I can verify things. I can also tell when verification isn't possible yet and what it would take to make it possible. This is more useful than the answers.",
+      "keywords": ["method","here","not","answers","read","texts","wrong","knowing","verify","came"]
+    }
+  ]
+}

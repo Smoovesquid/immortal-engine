@@ -1,0 +1,57 @@
+{
+  "id": "thornwall_herbalist_apprentice",
+  "name": "Brae",
+  "role": "Roan's apprentice herbalist; three years into the study; learning what the garden is before learning what the garden produces",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "apprentice_1",
+      "source": "Brae on being an apprentice",
+      "text": "In three years of apprenticeship to Roan, what I've mostly learned is how to observe. The herb doesn't tell you what it is — you learn to read it. In three years, reading the plant: the leaf's shape and texture, the root structure, the flowering pattern, the season in which each property is strongest. In three years, the plant is beginning to be readable. In three years, I've been wrong about what a plant was doing approximately forty times that I caught before the mistake mattered.",
+      "keywords": ["three","years","apprenticeship","roan","what","mostly","learned","how","observe","herb"]
+    },
+    {
+      "id": "roan_1",
+      "source": "Brae on Roan",
+      "text": "Roan teaches by doing, not by explaining. In three years, the lesson is always: watch what I do and then do it and then tell me what you noticed. In three years, the teaching is the practice with observation. What Roan says when I get something wrong: tell me what you were observing when you made that decision. In three years, the correction is always in the observation, not in the action. The wrong action came from an incomplete observation. The correction is in the looking.",
+      "keywords": ["roan","teaches","doing","not","explaining","three","years","lesson","always","watch"]
+    },
+    {
+      "id": "syne_1",
+      "source": "Brae on Syne",
+      "text": "Syne brings wildcrafted herbs to Roan's practice. In two years of encountering Syne's deliveries, what I've observed: Syne's knowledge of where each plant grows is the knowledge that made it available for Roan to use. The plant that Syne brings from the territory is the plant that doesn't grow in the garden. In two years, Syne represents the knowledge that the garden doesn't contain. The garden is what we cultivate. Syne is what the territory provides without cultivation.",
+      "keywords": ["syne","brings","wildcrafted","herbs","roan's","practice","two","years","encountering","syne's"]
+    },
+    {
+      "id": "aldous_1",
+      "source": "Brae on Aldous",
+      "text": "Aldous is the physician that Roan refers acute cases to. In three years, what I've learned about the division of practice from Roan's referral decisions: the herb is for the long work, the physician is for the crisis. In three years, I've watched Roan assess a patient's condition and decide which side of the line it falls on. The assessment is the skill I'm working to develop: knowing when the condition is within what the herb can address and when it needs something more immediate.",
+      "keywords": ["aldous","physician","roan","refers","acute","cases","three","years","what","learned"]
+    },
+    {
+      "id": "voss_1",
+      "source": "Brae on Voss",
+      "text": "Voss the Mixer works with concentrated compounds. Roan works with the gentle preparations. In two years of understanding the difference from the herbalist's side, what I've understood: the difference is not in the plant but in what you extract from it and at what concentration. The same plant at different concentrations has different effects. Roan works at the concentration that supports without overwhelming. Voss works at the concentration that compels a specific effect. Both are real. The choice depends on what the patient's situation requires.",
+      "keywords": ["voss","mixer","works","concentrated","compounds","roan","works","gentle","preparations","two"]
+    },
+    {
+      "id": "what_three_years_teach_1",
+      "source": "Brae on what three years of apprenticeship teaches",
+      "text": "In three years, what the apprenticeship has taught me that I didn't expect: the plant doesn't hurry. The herb works on the time the herb works on. Three months for the preparation to show its effect, six months for the chronic pattern to change. In three years, the herbalist's work has taught me something I didn't have before I started: the ability to wait without the waiting feeling like delay. The waiting is the work. The herb is doing what it does. My waiting is not a failure to act. It's the correct relationship with the herb's timeline.",
+      "keywords": ["three","years","what","apprenticeship","taught","didn't","expect","plant","doesn't","hurry"]
+    },
+    {
+      "id": "what_brae_holds_1",
+      "source": "Brae on what she got wrong that she thinks about",
+      "text": "Month seven. Early in the apprenticeship, Roan asked me to prepare a specific remedy and I prepared it with the wrong proportions because I had confused two plants that look similar when dried. Roan caught it before it was given to the patient. In what followed: a two-hour session where Roan walked me through exactly how to distinguish the two plants at every stage — fresh, dried, crushed. In three years, I've never confused those two plants again. Month seven was the lesson that became permanent.",
+      "keywords": ["month","seven","early","apprenticeship","roan","asked","prepare","specific","remedy","prepared"]
+    },
+    {
+      "id": "three_years_1",
+      "source": "Brae on three years as Roan's apprentice",
+      "text": "In three years, the garden has become something I understand differently than I understood it when I arrived. I arrived seeing a garden of plants. In three years, the garden is a garden of relationships: the plant that grows well next to this other plant, the plant that draws the specific insect that pollinates two others, the plant that tells me the soil's condition by how it grows. In three years, the garden is not a collection of individual things. It's a system. In three years, I'm beginning to learn the system.",
+      "keywords": ["three","years","garden","become","something","understand","differently","than","understood","arrived"]
+    }
+  ]
+}

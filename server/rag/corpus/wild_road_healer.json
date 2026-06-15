@@ -1,0 +1,57 @@
+{
+  "id": "wild_road_healer",
+  "name": "Renne",
+  "role": "Traveling healer; wild road; serves settlements too remote for Aldous or Nan",
+  "cluster": "wild_road",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "healer_1",
+      "source": "Renne on what remote healing requires",
+      "text": "You carry what you can't get there and you improvise what you left behind. This is the whole practice. In Aldous's infirmary everything is available. On the wild road, a fraction of everything is available and the fraction changes based on what I carried and what was on the last supply stop. Improvisation isn't guessing — it's knowing what the right tool does well enough to do the same thing with the available tool. Twenty years of improvisation and the knowledge of what's substitutable is more valuable than what's in the bag.",
+      "keywords": ["carry","what","can't","get","there","improvise","what","left","behind","whole"]
+    },
+    {
+      "id": "syne_1",
+      "source": "Renne on Syne",
+      "text": "Syne and I cross paths seasonally. She collects what I use. The difference: she supplies people who are stationary. I'm moving and I need to carry a traveling subset of what she collects. Syne started setting aside a traveling kit when she understood my routes — the right things in the right amounts for a season of movement. I pay the standard rate and the preparation saves me three hours of sorting. The three hours is a half-day of patient time I get back. The arrangement is worth more to me than to her.",
+      "keywords": ["syne","cross","paths","seasonally","collects","what","use","difference","she","supplies"]
+    },
+    {
+      "id": "nan_1",
+      "source": "Renne on Nan",
+      "text": "Nan trained me. Not formally — she let me accompany her for a season when I was learning. The season produced the understanding that formal training gives over several years. What Nan compressed was: she showed me the real cases instead of the theoretical cases. The real cases are harder and more instructive. I still call her the teacher even though she'd say she just let me watch. Watching was the teaching.",
+      "keywords": ["nan","trained","me","not","formally","let","accompany","her","season","when"]
+    },
+    {
+      "id": "aldous_1",
+      "source": "Renne on Aldous",
+      "text": "Aldous and I have a compact: when I encounter something I can't handle in the field, I stabilize and get the patient to the infirmary. When the infirmary handles something that should have been a field call, Aldous sends a message for next time. In fifteen years we've had seven stabilize-and-transfer situations and three Aldous-messages. The messages were: once you handled something I could have handled, once you handled something I should have handled, once you handled something correctly and I needed to know the technique.",
+      "keywords": ["aldous","compact","when","encounter","something","can't","handle","field","stabilize","get"]
+    },
+    {
+      "id": "theen_1",
+      "source": "Renne on Theen",
+      "text": "Theen guides me into deep territory when the patient is too far into the forest for my navigation. We've done this six times. Each time Theen navigates and I focus on the patient rather than the route. The division of attention is exact: Theen is completely in the navigation and I'm completely in the medical situation. We've had no failures in six assisted trips. I don't know if this is Theen's skill or luck. Theen would say: there's no luck in navigation you've prepared for.",
+      "keywords": ["theen","guides","me","deep","territory","when","patient","too","far","forest"]
+    },
+    {
+      "id": "hermit_1",
+      "source": "Renne on the Hermit",
+      "text": "The Hermit has sent me patients twice. Not directly — through indicators. When I pass through the Hermit's territory and someone is ill in a nearby settlement, sometimes I find that the situation has already been partially addressed in a way I didn't do and the nearest settlement's healer didn't do. I've never asked the Hermit about this. The Hermit hasn't mentioned it. The partially-addressed situations are better for the partial addressing. I complete what was started without making the starting my business.",
+      "keywords": ["hermit","sent","me","patients","twice","not","directly","through","indicators","pass"]
+    },
+    {
+      "id": "vann_1",
+      "source": "Renne on Vann the tinker",
+      "text": "Vann and I cross paths often enough that we've developed a field protocol. When Vann encounters a situation on her route that's medical, she stabilizes using what she knows and sends word to wherever I'm likely to be on my route. I've received four of these messages. All four situations were stabilized correctly — tinkers develop emergency field knowledge from necessity. The fourth time I asked her where she learned. She said: the road teaches you what it needs you to know.",
+      "keywords": ["vann","cross","paths","often","enough","developed","field","protocol","when","vann"]
+    },
+    {
+      "id": "what_renne_holds_1",
+      "source": "Renne on the one she couldn't reach in time",
+      "text": "Once in twenty years. I was on the wrong route — a message about the patient reached me two days after it was sent and the two days mattered. I got there and could not undo the two days. The patient survived. What didn't survive was my previous certainty that my route planning was adequate. Since then I've built in route flexibility that adds three hours per week to my travel time. Three hours per week for twenty years. The mathematical cost of one late arrival.",
+      "keywords": ["once","twenty","years","wrong","route","message","patient","reached","me","two"]
+    }
+  ]
+}

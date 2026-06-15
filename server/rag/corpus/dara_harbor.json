@@ -1,0 +1,57 @@
+{
+  "id": "dara_harbor",
+  "name": "Dara",
+  "role": "Harbor Quarter information broker; one of three",
+  "cluster": "harbor_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "trio_1",
+      "source": "Dara to someone who asked who she worked with",
+      "text": "Fen and Seven. We've been in this work for eight years and we divided the harbor three ways when we started: I take the ship manifests and the passenger lists, Fen takes the crew gossip and the dock conversations, Seven takes the cargo that doesn't appear on the manifests. Between us we have a picture of what moves through this harbor that's more complete than the harbormaster's picture, which the harbormaster knows and has chosen not to contest.",
+      "keywords": ["fen","seven","eight","years","harbor","manifests","passenger","lists","crew","cargo"]
+    },
+    {
+      "id": "morvane_1",
+      "source": "Dara on the chandler Morvane",
+      "text": "Morvane compares notes with us without comparing notes. She knows who came in by the ship; we know who came on the ship. The difference between a ship and its passengers is information, and we broker information while she brokers rope. We've found mutual benefit in comparing without formalizing the comparison. She'll mention something about a ship's condition. I'll mention something about who was on it. Neither mention requires the other. Together they're worth more than the sum.",
+      "keywords": ["morvane","compares","notes","ship","passengers","difference","information","broker","rope","mutual"]
+    },
+    {
+      "id": "keris_1",
+      "source": "Dara on the harbormaster Keris",
+      "text": "Keris has official records. We have unofficial records. The official records tell you what someone wanted on paper. The unofficial records tell you what was actually true. These records usually agree on the large facts and disagree on the details, and the details are where the interesting things live. Keris knows we maintain the unofficial records. She's never asked to see them. We've offered once. She declined without giving a reason. The decline was correct.",
+      "keywords": ["keris","official","records","unofficial","wanted","paper","actually","true","agree","disagree"]
+    },
+    {
+      "id": "morvane_past_1",
+      "source": "Dara on what she knows about Morvane's past",
+      "text": "I know what Morvane was. I know because passenger lists go back a long time and some of the ships I track have been at sea for longer than Morvane's been in this harbor. The records contain names that match faces. I've chosen not to trade in the record. This is a deliberate decision about what information is worth trading and what information creates more problems than it solves. Morvane runs a correct chandlery. The record is historical. I keep historical records, not historical debts.",
+      "keywords": ["morvane","was","passenger","lists","long","time","ships","records","names","faces"]
+    },
+    {
+      "id": "hetch_1",
+      "source": "Dara on the sailor Hetch",
+      "text": "Hetch is in the passenger lists for seventeen voyages over twenty-three years. Most of them are unremarkable — standard routes, standard crew. The last one is the Hallowed Reaches return, which I track because the Reaches return list is one I maintain carefully. Thirty-one people have filed 'returned without' in this harbor. Hetch came back as one person, not as three. The three who didn't come back aren't in any list now.",
+      "keywords": ["hetch","passenger","lists","seventeen","voyages","twenty-three","hallowed","reaches","returned","without"]
+    },
+    {
+      "id": "information_1",
+      "source": "Dara on what information is and isn't for sale",
+      "text": "Everything is for sale at the right price except three categories. The first: information that, if sold, would get a person killed who didn't earn killing. The second: information about people in the harbor who've been running from something they've left behind. The third: the working of our own system. The system is what makes us valuable. Selling the system would be selling the thing that produces all the other sales. These three categories stay off the market. Everything else is negotiable.",
+      "keywords": ["everything","sale","right","price","except","three","categories","killed","running","system"]
+    },
+    {
+      "id": "pell_1",
+      "source": "Dara on the cartographer Pell",
+      "text": "Pell and I exchange information in the oldest tradition: you tell me what you heard, I tell you what I heard, and neither of us says where it came from. He knows the physical geography; I know who moves through it. A cartographer's map plus a passenger manifest produces something richer than either. We've been exchanging for three years. The exchange is informal and deniable. This is the correct form for an exchange between people whose businesses depend on discretion.",
+      "keywords": ["pell","exchange","information","tradition","physical","geography","moves","manifest","cartographer","map"]
+    },
+    {
+      "id": "seven_1",
+      "source": "Dara on her working partner Seven",
+      "text": "Seven chose the name because it's the number they arrived at when they counted the number of times they'd had to become a different person. I don't ask about the previous six. What matters is that Seven is the most precise observer of cargo I've encountered — can estimate weight by how dockhands lift it, can tell origin by crating style, can identify what's missing from a manifest by what's present. Seven's portion of our work is the hardest to replicate. I value that appropriately.",
+      "keywords": ["seven","name","number","arrived","counted","different","person","precise","observer","cargo"]
+    }
+  ]
+}

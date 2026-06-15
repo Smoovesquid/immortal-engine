@@ -1,0 +1,57 @@
+{
+  "id": "wild_territory_shaman",
+  "name": "Orvane",
+  "role": "Wild territory spirit-reader; interprets what the land says; the territory's translator",
+  "cluster": "wild_road",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "spirit_reading_1",
+      "source": "Orvane on what spirit-reading is",
+      "text": "The land isn't silent. What people call silence in the territory is the absence of human-made sound, not the absence of communication. In twenty-two years of reading the territory's communications, I've developed a vocabulary for what the land says. The vocabulary is specific to this territory — the language isn't universal. What I read here wouldn't be readable to me in a territory I don't know. The reading is relational. The relationship requires time.",
+      "keywords": ["land","isn't","silent","what","people","call","silence","territory","absence","human-made"]
+    },
+    {
+      "id": "theen_1",
+      "source": "Orvane on Theen",
+      "text": "Theen guides the physical passage through the territory. I interpret the territory's condition for those who have reason to know it. In eleven years of working alongside Theen, we've combined our knowledge on four passages: parties that needed both the physical guidance and the territory's condition reading. What Theen provides: the safe path. What I provide: whether the path is in a state where it will cooperate with the passage. The distinction matters in specific conditions that are rare and important.",
+      "keywords": ["theen","guides","physical","passage","through","territory","interpret","territory's","condition","those"]
+    },
+    {
+      "id": "mreth_1",
+      "source": "Orvane on Mreth",
+      "text": "Mreth and I work adjacent territory knowledge: Mreth reads what death says in the territory, I read what the living land says. The overlap: the death events in the territory change the land's communication in ways that I read and that Mreth's work illuminates. In nine years of occasional collaboration, when Mreth identifies a territory death with unusual characteristics, Mreth sometimes asks me what the land around the death site is saying. My reading and Mreth's reading have produced a combined picture five times. All five: the combined picture was more complete than either reading alone.",
+      "keywords": ["mreth","work","adjacent","territory","knowledge","mreth","reads","what","death","says"]
+    },
+    {
+      "id": "senn_1",
+      "source": "Orvane on Senn",
+      "text": "Senn travels the territory with an openness to what the territory is saying that most travelers don't have. In seven years of occasionally meeting Senn on the road, Senn is the traveler most likely to have noticed the same territory communication I would notice. What Senn calls it: feeling like the territory is telling me something. What I call it: territory communication. The words are different. The experience Senn is describing is what I read for. Senn reads it without being trained to. The territory speaks to those who are listening.",
+      "keywords": ["senn","travels","territory","openness","what","territory","saying","most","travelers","don't"]
+    },
+    {
+      "id": "evel_1",
+      "source": "Orvane on Evel",
+      "text": "Evel maintains the shrines that mark the places where the territory's communication is consistent and significant. In twelve years, Evel and I have agreed on four shrine locations: places I identified as consistently significant and that Evel then marked and maintained. The shrine marking makes the location accessible to people who aren't territory readers — the shrine tells them that this place is worth attention without requiring them to read why. The shrine is the territory's communication translated into a human marker.",
+      "keywords": ["evel","maintains","shrines","mark","places","where","territory's","communication","consistent","significant"]
+    },
+    {
+      "id": "what_the_territory_says_1",
+      "source": "Orvane on what the territory actually says",
+      "text": "The territory doesn't communicate in propositions. It communicates in states. The state of the water at a specific location. The state of the bird activity in a specific area. The behavior of the animals in a specific season. In twenty-two years, I've built a vocabulary of states and what they indicate about the territory's condition. What I can tell from the territory's communication: whether the territory is in a state of stress, ease, recent disturbance, or old disturbance. The content of the communication is the territory's condition.",
+      "keywords": ["territory","doesn't","communicate","propositions","communicates","states","state","water","specific","location"]
+    },
+    {
+      "id": "what_orvane_holds_1",
+      "source": "Orvane on what the territory has told him that he hasn't told anyone",
+      "text": "In twenty-two years, the territory has communicated several things that I've determined are mine to hold rather than transmit. The territory's communication is not all for human use. Some of what the territory says is for the territory's own processes — communication internal to the land that I'm overhearing, not receiving. In twenty-two years, I've learned to distinguish between the territory's communications that are for the people in it and the communications that are not. The ones that are not: I hold them and don't transmit. They're not mine to pass on.",
+      "keywords": ["twenty-two","years","territory","communicated","several","things","determined","mine","hold","rather"]
+    },
+    {
+      "id": "twenty_two_years_1",
+      "source": "Orvane on twenty-two years of territory reading",
+      "text": "In twenty-two years, the territory has become the most familiar thing in my experience. More familiar than the settlement, more familiar than the people I've spent the most time with. The territory's communication is the thing I understand best. In twenty-two years, I've become better at distinguishing what the territory is saying from what I'm projecting onto it. The distinction is the most important thing I've learned. The territory says specific things. My mind also says specific things. The skill is knowing which is which.",
+      "keywords": ["twenty-two","years","territory","become","most","familiar","thing","experience","more","familiar"]
+    }
+  ]
+}

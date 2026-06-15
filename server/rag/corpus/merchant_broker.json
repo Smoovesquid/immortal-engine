@@ -1,0 +1,57 @@
+{
+  "id": "merchant_broker",
+  "name": "Yar",
+  "role": "Independent broker; connects buyers and sellers who don't know each other yet; earns a cut from both sides",
+  "cluster": "merchant_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "brokering_1",
+      "source": "Yar on brokering",
+      "text": "The broker's value is knowing two parties that each other needs. In twelve years, the value has been: I know who has what and who needs what and how to introduce them in a way that produces the transaction. The fee is the value of the introduction. The party that could have found each other without me: they pay nothing to me. The party that couldn't have found each other in reasonable time without me: they each pay a percentage of the transaction. In twelve years, most people who come to me couldn't have found each other efficiently.",
+      "keywords": ["broker's","value","knowing","two","parties","each","other","needs","twelve","years"]
+    },
+    {
+      "id": "saben_1",
+      "source": "Yar on Saben",
+      "text": "Saben is both a source and a destination — the person who sometimes needs what I can find, and the person who sometimes has what I can place. In ten years of working with Saben, the relationship is multi-directional: Saben commissions me, I commission Saben, and occasionally we're on opposite sides of the same transaction. In ten years, the multi-directionality has been reliable because Saben is consistent: what Saben says about a good is what the good is.",
+      "keywords": ["saben","both","source","destination","person","sometimes","needs","what","can","find"]
+    },
+    {
+      "id": "comus_1",
+      "source": "Yar on Comus",
+      "text": "Comus reaches markets that most settlement-based merchants don't. In nine years of working alongside Comus's trading circuit, the goods that Comus can source and the buyers I can connect them to: a productive pairing. What Comus brings that local merchants don't: the product that isn't available locally. What I bring to Comus's circuit: the buyer who wants that product specifically and couldn't find it without Comus's reach. In nine years, the combination has produced thirty-one transactions that neither of us could have produced alone.",
+      "keywords": ["comus","reaches","markets","most","settlement-based","merchants","don't","nine","years","working"]
+    },
+    {
+      "id": "lark_1",
+      "source": "Yar on Lark",
+      "text": "Lark's auction and my brokering serve different market needs. The auction is for the goods where the price should be discovered publicly — where competitive bidding produces the fairest price. Brokering is for the transaction where the specific match between a specific seller and a specific buyer is the value, not the competitive price. In seven years of operating in the same market, Lark and I occasionally refer to each other: the good that's better suited for auction, the transaction that's better suited for a private match.",
+      "keywords": ["lark's","auction","brokering","serve","different","market","needs","auction","goods","where"]
+    },
+    {
+      "id": "tav_1",
+      "source": "Yar on Tav",
+      "text": "Tav the cartographer uses the network I maintain for a specific purpose: the historical maps that Tav needs reference to. In five years of connecting Tav with sources, the brokering for knowledge access is different from brokering for goods but similar in structure: I know who has the map Tav needs and I know how to make the introduction. In five years, the knowledge transactions have been the most interesting I've done because the knowledge exists only once in many cases — the specific map or text or record that only one person has.",
+      "keywords": ["tav","cartographer","uses","network","maintain","specific","purpose","historical","maps","tav"]
+    },
+    {
+      "id": "what_brokering_requires_1",
+      "source": "Yar on what brokering requires",
+      "text": "In twelve years, what the work requires: the network and the memory. The network is the relationships that produce the knowledge of who has what. The memory is the retention of who has what across years of relationship, so that when a need appears I can search the network I've built. In twelve years, the network is approximately four hundred active relationships across the region. Four hundred people who know what they have and tell me when something new appears. The memory is twelve years of what they've told me.",
+      "keywords": ["twelve","years","what","work","requires","network","memory","network","relationships","produce"]
+    },
+    {
+      "id": "what_yar_holds_1",
+      "source": "Yar on the transaction he refused to complete",
+      "text": "Year eight. A transaction where both parties were willing and the good was real and the price was fair, and I stopped it anyway when I realized what the good was going to be used for. The parties went and found each other without me. The transaction happened. What I prevented: nothing, in the end. What I preserved: the knowledge that I don't broker transactions for specific uses regardless of the fee. In four years since, the refusal has cost me twice. The line has held both times.",
+      "keywords": ["year","eight","transaction","where","both","parties","willing","good","was","real"]
+    },
+    {
+      "id": "twelve_years_1",
+      "source": "Yar on twelve years of brokering",
+      "text": "In twelve years, I've brokered approximately six hundred transactions. Six hundred meetings between parties who needed each other. Of six hundred: the ones that produced what both parties hoped for, approximately five hundred and forty. The sixty that didn't: either the good wasn't what was expected, the buyer's situation changed, or the match was right but the timing was wrong. In twelve years, sixty failures from six hundred transactions is a rate I can accept. The six hundred network is what made the five hundred and forty possible.",
+      "keywords": ["twelve","years","brokered","approximately","six","hundred","transactions","six","hundred","meetings"]
+    }
+  ]
+}

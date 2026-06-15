@@ -1,0 +1,57 @@
+{
+  "id": "harbor_boatwright",
+  "name": "Clem",
+  "role": "Boatwright; harbor; builds and maintains the small harbor craft",
+  "cluster": "harbor_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "boat_1",
+      "source": "Clem on what small harbor craft need to do",
+      "text": "The large ships are about the ocean. The small craft are about the harbor — the tenders, the work boats, the shallow-draft vessels that the large ships need and can't be themselves. The small craft do the work the large ships depend on. I build the work the deep-water people take for granted. Thirty years and the fleet of small craft in this harbor is almost entirely my work or the work I trained into the people who came after me.",
+      "keywords": ["large","ships","ocean","small","craft","harbor","tenders","work","boats","shallow-draft"]
+    },
+    {
+      "id": "rulf_1",
+      "source": "Clem on Rulf",
+      "text": "Rulf keeps the dock. I keep what runs between the dock and the ship. The dock needs the vessels I build to function — without the tenders, ships can't be loaded or unloaded at anchor. Rulf and I have worked the same harbor for twenty-two years without needing to formalize how we work together. The dock tells me what small craft it needs. I build what the dock needs. The relationship is the harbor's infrastructure. Neither of us is visible in it.",
+      "keywords": ["rulf","keeps","dock","keep","what","runs","between","dock","ship","dock"]
+    },
+    {
+      "id": "twinn_1",
+      "source": "Clem on Twinn the rope maker",
+      "text": "Twinn's rope is in everything I build. In thirty years I've used three other rope sources when Twinn was behind on supply. Each time the work told me. Not in failure — in feel. The rope that isn't Twinn's has the correct specifications but lacks whatever forty years of craft knowledge produces in the twist. I've told Twinn this once. She said: what the rope feels like is the forty years, yes. I build boats. The forty years of rope is why the boats feel right when they're worked.",
+      "keywords": ["twinn","rope","in","everything","build","thirty","years","used","three","other"]
+    },
+    {
+      "id": "tonn_1",
+      "source": "Clem on Tonn the salvager",
+      "text": "Tonn uses my craft for the shallow recovery work. The recovery skiff is a specific design I built for salvage use: low freeboard, stable, maneuverable in tight harbor spaces. Tonn has had the same skiff for eleven years. In eleven years I've rebuilt two components and the skiff is otherwise original. When Tonn brings it in for inspection, the inspection is a conversation between two people who know the same object from different uses. I know it as the built object. Tonn knows it as the working object.",
+      "keywords": ["tonn","uses","craft","shallow","recovery","work","recovery","skiff","specific","design"]
+    },
+    {
+      "id": "harrow_1",
+      "source": "Clem on Captain Harrow",
+      "text": "Harrow uses my tender design for her ship's tender. Not standard — she had specific requirements that the standard design didn't meet. The requirements were operational: the tender needed to be faster than standard, able to carry a specific load at a specific draft, storable in a specific space on the ship. I designed to those requirements. The tender has been on Harrow's ship for six years. Harrow has not come back to me with a complaint. Six years of silence is a complete endorsement.",
+      "keywords": ["harrow","uses","tender","design","ship's","tender","not","standard","specific","requirements"]
+    },
+    {
+      "id": "ota_1",
+      "source": "Clem on Ota the fisher",
+      "text": "Ota's fishing boat is thirty years old. I didn't build it — it was built before I came to this harbor. I maintain it. What I've learned from thirty years of maintaining a thirty-year-old boat: the original builder understood what fishing in this harbor does to a hull. The design is still correct. I've made one structural modification in thirty years of maintenance. Ota noticed before I told her. She said: the boat handles differently. I said: I made one change. She said: it's better. The modification was correct.",
+      "keywords": ["ota","fishing","boat","thirty","years","old","didn't","build","built","before"]
+    },
+    {
+      "id": "what_clem_holds_1",
+      "source": "Clem on the boat under construction in the back of the shed",
+      "text": "Eight years in construction. Not because the build is slow — because the design keeps improving and I keep rebuilding the sections I've completed to match the improved design. The design improves because I'm still learning what the design needs to do. The boat is for a purpose I've had in mind for thirty years and never done. When the design is complete and the build is done, I'll do the thirty-year purpose. The build is also the preparation. I don't have a timeline.",
+      "keywords": ["eight","years","construction","not","because","build","slow","because","design","keeps"]
+    },
+    {
+      "id": "wood_teaches_1",
+      "source": "Clem on working wood over thirty years",
+      "text": "Wood remembers the tree. The grain tells you where the stress went when the tree was growing. Where the tree bent in wind, where it grew toward light, where a branch left a node — all of it is in the grain. When I cut and shape the wood, I work with the grain's memory, not against it. A boat made by working with the grain's memory lasts differently than a boat made by working against it. Thirty years and I know the difference by touch before the cut.",
+      "keywords": ["wood","remembers","tree","grain","tells","you","where","stress","went","tree"]
+    }
+  ]
+}

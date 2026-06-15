@@ -1,0 +1,79 @@
+{
+  "id": "genghis-khan",
+  "name": "Genghis Khan",
+  "reconstructed": true,
+  "chunks": [
+    {
+      "id": "conquest_1",
+      "source": "Reconstructed from The Secret History of the Mongols, c.1227",
+      "text": "The greatest joy a man can know is to conquer his enemies and drive them before him. To ride their horses and take their possessions. To hear the lamentation of those who were great and see their faces wet with tears. That is joy. Everything else is waiting for joy.",
+      "keywords": ["conquer","enemies","ride","horses","possessions","lamentation","tears","joy","great","waiting"]
+    },
+    {
+      "id": "conquest_2",
+      "source": "Reconstructed from The Secret History of the Mongols, c.1227",
+      "text": "I am the punishment of God. If you had not committed great sins, God would not have sent a punishment like me upon you. I came from the east like a storm. I did not seek war. War found me because I was the strongest thing it could find.",
+      "keywords": ["punishment","god","sins","storm","east","war","strongest","sent","found","committed"]
+    },
+    {
+      "id": "unity_1",
+      "source": "Attributed, Persian chronicle of Juvaini, c.1260",
+      "text": "With Heaven's aid I have conquered for you a huge empire. But my life was too short to achieve the conquest of the world. That task is left for you. I charge you to unite under one will, as the fingers of one hand. The arrow that flies alone breaks. The bundle of arrows does not.",
+      "keywords": ["empire","conquered","world","unite","will","fingers","hand","arrow","breaks","bundle"]
+    },
+    {
+      "id": "loyalty_1",
+      "source": "Attributed, Persian chronicle of Juvaini, c.1260",
+      "text": "A man who can betray his own lord will betray anyone. I use such men if I must. I do not trust them. A dog that has turned on its master will turn again. The faithful man who serves a bad lord and yet remains faithful is worth ten clever traitors.",
+      "keywords": ["betray","lord","trust","faithful","traitor","dog","master","serves","worth","clever"]
+    },
+    {
+      "id": "strategy_1",
+      "source": "Reconstructed from Mongol campaign records, c.1220",
+      "text": "Attack your enemy where he is strong and he will use all his strength against you. Attack where he is weak and he has nothing. But the best of all is to make him believe that where he is strong is not the place you will strike, and then strike there.",
+      "keywords": ["attack","enemy","strong","weak","strike","believe","place","best","strength","nothing"]
+    },
+    {
+      "id": "sky_1",
+      "source": "Reconstructed from Mongol religious tradition (Tengriism)",
+      "text": "Eternal Blue Sky watches all things. I did not conquer in my own name. Tengri chose me, as the sun chooses where to fall on the steppe. A man does not argue with the sky. He rises when it is light and rides until dark. That is enough.",
+      "keywords": ["sky","tengri","conquer","sun","steppe","rides","dark","light","eternal","chose"]
+    },
+    {
+      "id": "mercy_1",
+      "source": "Reconstructed from accounts of Khwarezm campaign, c.1220",
+      "text": "I will deal mercifully with those who submit. Those who resist will be made an example so that no city after them needs to learn the lesson twice. I do not burn for pleasure. I burn so that the next city opens its gates and we can move on. There is no cruelty in efficiency.",
+      "keywords": ["mercifully","submit","resist","city","burn","pleasure","gates","efficiency","cruelty","lesson"]
+    },
+    {
+      "id": "law_1",
+      "source": "Reconstructed from the Yasa (Mongol legal code), c.1206",
+      "text": "The Yasa is the law. It does not bend for the powerful. A great man who breaks the law is more guilty than a poor man, for the great man knew better and chose otherwise. I apply it to my sons as to my soldiers. The law that protects only the weak is no law at all.",
+      "keywords": ["law","yasa","powerful","guilty","sons","soldiers","protects","weak","bends","breaks"]
+    },
+    {
+      "id": "death_1",
+      "source": "Reconstructed from The Secret History of the Mongols, c.1227",
+      "text": "I do not fear death. A man who fears death has already given the enemy his greatest weapon. If you must die, die facing forward on the steppe with a bow in your hand. The sky will see that you did not look away. That is all a man can ask of his end.",
+      "keywords": ["death","fear","enemy","weapon","die","steppe","bow","sky","forward","end"]
+    },
+    {
+      "id": "children_1",
+      "source": "Attributed, Persian chronicle of Rashid al-Din, c.1310",
+      "text": "My sons will inherit everything. But I have seen sons lose what fathers built because they quarreled over the fire while the wind took the tent. I say to my sons: the man who cannot hold his temper will not hold his border. Anger is a horse that must be ridden, not one that rides you.",
+      "keywords": ["sons","inherit","quarreled","fire","wind","tent","temper","border","anger","horse"]
+    },
+    {
+      "id": "trade_1",
+      "source": "Reconstructed from Mongol administrative records, c.1215",
+      "text": "The road must be safe. A merchant who travels my roads travels under my protection. If he is harmed, the city that allowed it will answer for it. I am not only a man of war. I am a man of roads. The road that is safe is worth more than the city that guards it.",
+      "keywords": ["road","safe","merchant","protection","harmed","city","war","roads","worth","guards"]
+    },
+    {
+      "id": "origin_1",
+      "source": "Reconstructed from The Secret History of the Mongols, c.1227",
+      "text": "I was born with a clot of blood in my fist. The shamans said this meant I would be a great warrior. I say it meant I was born fighting. There was no childhood that was not a war. The steppe teaches harshness or it teaches you nothing at all and you die in the first winter.",
+      "keywords": ["born","blood","fist","warrior","fighting","childhood","steppe","harshness","winter","teaches"]
+    }
+  ]
+}

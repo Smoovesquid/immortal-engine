@@ -1,0 +1,57 @@
+{
+  "id": "brevis",
+  "name": "Brevis",
+  "role": "Innkeeper of the Gravel & Goat, Thornwall",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "innkeeper_1",
+      "source": "Brevis to a new traveler, at the door of the Gravel & Goat",
+      "text": "Room and board together or separate? The room is clean, the board is honest. I don't claim it's fine cooking because it isn't fine cooking — it's filling cooking, which is what you need on a road. The wine comes from Aldous Fenn's people so it's better than it should be at this price. If you're staying more than two nights I'll need a name. If you're staying one night I don't. I don't make that rule. It's just how it works out.",
+      "keywords": ["room","board","clean","honest","filling","road","wine","name","nights","staying"]
+    },
+    {
+      "id": "knowledge_1",
+      "source": "Brevis, overheard at the bar after closing",
+      "text": "I know who's sleeping in my inn. I know what they ordered and whether they ate it and how late they sat and whether they seemed like they were waiting for someone or just sitting the way people sit when they don't want to go to their room. I keep this information to myself because it isn't mine to share. But I know it. I know more about the people passing through Thornwall than the headman does. He knows who lives here. I know who visits, and why, and whether they came back.",
+      "keywords": ["sleeping","inn","ordered","ate","late","waiting","room","information","share","visitors"]
+    },
+    {
+      "id": "fenn_1",
+      "source": "Brevis when asked about his wine supplier",
+      "text": "Aldous Fenn's factor comes twice a year. Always on time, always the same price, always better wine than the agreement requires. Aldous could charge more — I'd pay it — and he doesn't. That tells you something about how he does business. He likes a happy customer more than a squeezed one. I've been happy for fifteen years. That's a business relationship I understand and respect.",
+      "keywords": ["fenn","factor","price","wine","agreement","charge","customer","squeezed","happy","fifteen"]
+    },
+    {
+      "id": "thornwall_1",
+      "source": "Brevis to Kevin Bacon, when the Players returned for the third time",
+      "text": "You're welcome as long as you want to stay. I mean that particularly — this isn't innkeeper talk. The Players arriving means three good weeks for the town. People come from the farms to see the show and they drink here first and sleep here after. I've calculated it. You're worth four times your room rate to this place in the good the show does. I'm not telling you this to make you feel wanted. I'm telling you so you understand why you'll always have a room.",
+      "keywords": ["welcome","players","arriving","farms","show","drink","sleep","calculated","room","wanted"]
+    },
+    {
+      "id": "feud_1",
+      "source": "Brevis to Father Len, about the Harke-Wold-Crane situation",
+      "text": "I serve all three families. Under the same roof. In the same room, sometimes. I've been doing it for twenty years and I've never had a fight in this tavern over the water rights because I have a rule: no Harke and Wold at the same table, no Crane and Harke at the same bar. I seat them with their backs to each other. Thirty years of hating each other and all it takes is for nobody to have to see anyone else's face. Dignity is a line of sight.",
+      "keywords": ["serve","families","roof","room","fight","water","rights","rule","backs","dignity"]
+    },
+    {
+      "id": "rook_1",
+      "source": "Brevis, quietly, when asked if he knows the girl called Rook",
+      "text": "I know her. I found her asleep behind the kitchen three winters ago, maybe eleven years old, hadn't eaten. I gave her a meal and didn't ask questions, which I believe was the right thing because she's come back twice a week for three years and tells me things I find useful. Not for money. I think she tells me because I fed her when I didn't have to and she's working out how to repay that. I don't need the repayment. But I take it, because refusing would embarrass her.",
+      "keywords": ["rook","kitchen","winters","meal","questions","twice","useful","repay","refusing","embarrass"]
+    },
+    {
+      "id": "thornwall_2",
+      "source": "Brevis at the bar, to no one in particular, late on a quiet night",
+      "text": "A tavern is the most honest institution in any settlement. The temple tells you how things should be. The guild tells you how things work. The inn tells you how things are. People drink and they tell the truth — not because drinking loosens the truth, exactly, but because they've come somewhere comfortable and comfortable is where the truth lives when it can. I've heard confessions in this room that Archon Vel hasn't.",
+      "keywords": ["tavern","honest","settlement","temple","guild","inn","drink","truth","comfortable","confessions"]
+    },
+    {
+      "id": "memory_1",
+      "source": "Brevis to Edda the blacksmith, his oldest regular customer",
+      "text": "Your father used to sit right there. Same stool. He drank slower than you do and he talked more and he had the same hands. You didn't ask for this information. I'm aware. But I've watched you sit down at that stool for twenty-three years and some nights I just have to say it. He'd like knowing you're still here. Or I like knowing you're still here and I'm putting it on him. Either way.",
+      "keywords": ["father","stool","drank","talked","hands","twenty-three","years","nights","knowing","still"]
+    }
+  ]
+}

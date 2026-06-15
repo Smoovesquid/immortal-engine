@@ -1,0 +1,57 @@
+{
+  "id": "bookbinder",
+  "name": "Odda",
+  "role": "Bookbinder; works between the Academy and the general trade; makes books last",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "binding_1",
+      "source": "Odda on what a bookbinder does",
+      "text": "A book that isn't bound is pages. The binding is what makes pages into something that can be used repeatedly and passed between hands and still be the same text after a hundred years. I've been binding for twenty-three years. The bindings I made in my first year are still in use. The test of a binding is time. The test hasn't finished for most of what I've made, and the ones that have been tested have passed.",
+      "keywords": ["book","isn't","bound","pages","binding","what","makes","pages","something","used"]
+    },
+    {
+      "id": "osven_1",
+      "source": "Odda on Osven",
+      "text": "The Academy brings me the damaged texts. The ones that have been used to the point of failure — the original binding is gone, the pages are loose and fragile, and what's needed is a new binding that protects what the text contains without the new binding imposing on the text. Osven gives me the damaged texts with a specification: what the text is, how it's used, what it needs to survive. He's never wrong about the specification. Twenty-three years and his specifications have always been accurate.",
+      "keywords": ["academy","brings","damaged","texts","ones","been","used","point","failure","original"]
+    },
+    {
+      "id": "ink_1",
+      "source": "Odda on Ink",
+      "text": "Ink copies documents. I bind what Ink copies when the copy needs to survive long-term. We've worked together four times — three Academy commissions and one for the network. The network commission was for a copy of something that needed to survive for a specific period and then not survive. I bound it correctly for the period and Ink told me the lifespan. I built a binding that would last exactly what was needed. Ink said: you built it to die. I said: I built it to last what it needed to last. The difference matters to me.",
+      "keywords": ["ink","copies","documents","bind","what","ink","copies","copy","needs","survive"]
+    },
+    {
+      "id": "wiss_1",
+      "source": "Odda on Wiss",
+      "text": "Wiss describes what a text needs before she brings it to me. The description is always useful — she knows the text's use pattern, its current condition, and what the Academy wants it to be able to do in the future. A binding commission with Wiss's description takes half the consultation time of a commission without it. I've told her this. She said: I catalog what things are. A thing's condition and requirements are part of what it is.",
+      "keywords": ["wiss","describes","what","text","needs","before","brings","me","description","always"]
+    },
+    {
+      "id": "beld_1",
+      "source": "Odda on Beld",
+      "text": "Beld supplies the leather I use for the stronger bindings. The cloth for the cloth bindings comes from a different supplier. Beld's leather is consistent — the specific grade I need is available when I need it. In twenty-three years I've had three supply interruptions. Beld handled two of them by substituting from his other inventory. The substitutions required adjustment in my work, which Beld facilitated by telling me the specific characteristics of the substitute before I started. Two out of three handled correctly is the relationship I have.",
+      "keywords": ["beld","supplies","leather","use","stronger","bindings","cloth","cloth","bindings","comes"]
+    },
+    {
+      "id": "what_odda_holds_1",
+      "source": "Odda on the text she bound that she still thinks about",
+      "text": "A commission in the seventh year. A text I was given to bind without seeing the text's content — the pages were already assembled and sealed, and I was to bind without reading. I bound without reading. What I noticed through the binding process: the paper was wrong for the content it claimed to be. I know paper from twenty-three years of handling it. The paper was new in a way that the content's claimed age would make impossible. I bound it. I told no one. I still think about what was in it.",
+      "keywords": ["commission","seventh","year","text","given","bind","without","seeing","text's","content"]
+    },
+    {
+      "id": "century_1",
+      "source": "Odda on books that outlast their makers",
+      "text": "In twenty-three years I've rebound books that were first bound a hundred years ago. The books are older than anyone who knows the stories of their first binding. The text inside is the same — the content has a continuity that outlasts everyone who's held it. I'm adding a layer to that continuity when I rebind. When I die, the bindings I've made will still be in use. The thought that I'm still involved in a text's life after I'm not here is the closest thing I have to a religion.",
+      "keywords": ["twenty-three","years","rebound","books","first","bound","hundred","years","books","older"]
+    },
+    {
+      "id": "what_binding_is_1",
+      "source": "Odda on what a binding is",
+      "text": "Respect for what the text contains, expressed in the physical form that protects it. The binding says: this matters enough to be kept. Not all texts matter enough to be kept. I've refused to bind two texts in twenty-three years because I didn't believe the binding would be serving the text. In both cases the clients found other binders. Both texts are bound now. I don't know if the binding serves them. I made the decision with the information I had.",
+      "keywords": ["respect","what","text","contains","expressed","physical","form","protects","binding","says"]
+    }
+  ]
+}

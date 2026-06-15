@@ -1,0 +1,57 @@
+{
+  "id": "nell_orphan",
+  "name": "Nell",
+  "role": "Orphan Roads network; animal work; stables and farms",
+  "cluster": "orphan_roads",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "animals_1",
+      "source": "Nell in the stables at dawn",
+      "text": "Horses tell you things with their ears. Forward and together means something interesting is ahead. Flat back means fear or anger, and you figure out which by what else they're doing. One ear forward and one back means they're tracking two things at once. I learned this before I learned to read. Fitch says it's why I'm good at the stable work — I understand a language that doesn't require me to speak first.",
+      "keywords": ["horses","tell","things","ears","forward","together","interesting","flat","back","fear"]
+    },
+    {
+      "id": "rook_1",
+      "source": "Nell on Rook",
+      "text": "Rook found me at a farm outside Thornwall where I was sleeping in a horse stall. Not because I was homeless — because the horse was nervous and I'd been staying near her for two days to keep her calm. Rook saw me there and asked if I wanted to stay there or if I wanted options. I said: what are the options. She listed four. I picked the one that involved the most animals. She said: good, I thought you would.",
+      "keywords": ["rook","found","farm","thornwall","sleeping","horse","stall","nervous","calm","options"]
+    },
+    {
+      "id": "sol_1",
+      "source": "Nell on the farmer Sol",
+      "text": "Sol lets me work his draft horses two mornings a week in exchange for the market fee he doesn't have to pay someone else. We don't have a formal arrangement. It started when I noticed one of his animals was favoring a foreleg and I told him and he let me fix it and afterward he said: come back when you want. I've been coming back for a year. The horses know me now. I know them. This is a sufficient relationship.",
+      "keywords": ["sol","lets","work","draft","horses","two","mornings","week","exchange","market"]
+    },
+    {
+      "id": "theen_1",
+      "source": "Nell when Theen the ranger asked about tracking",
+      "text": "I don't track the way Theen tracks. Theen reads land — soil compression, bent grass, broken branches. I read response — what the animals near a thing are doing. If there's something wrong ahead, the birds change first, then the small animals, then the large ones. By the time you can see what's wrong, the animals have known for an hour. Theen said: that's tracking forward. I track backward. Between us it's complete.",
+      "keywords": ["theen","tracks","land","soil","compression","bent","grass","birds","change","small"]
+    },
+    {
+      "id": "the_network_1",
+      "source": "Nell on what she contributes to Orphan Roads",
+      "text": "I move things that can't go through human channels without notice. A package on a horse cart with a working stable hand is the most invisible thing in a settlement. Nobody looks twice. I've moved four things for Mira's network and three for Rook directly and never been asked about any of them at a checkpoint. The horse is the disguise. The work is real.",
+      "keywords": ["move","things","human","channels","notice","package","horse","cart","stable","invisible"]
+    },
+    {
+      "id": "foss_1",
+      "source": "Nell after talking with the druid Foss",
+      "text": "Foss speaks to the forest. I speak to animals inside the forest. We found out we're both listening to the same thing at different scales. Foss hears what the forest does. I hear what the animals do within the forest. The animals are part of the forest and they're reporting what the forest reports and also what they specifically know. We compare notes. Foss said: you're the translation layer. I said: so are you.",
+      "keywords": ["foss","speaks","forest","animals","inside","listening","same","scales","hears","reporting"]
+    },
+    {
+      "id": "aging_1",
+      "source": "Nell when Fitch asked about her plans",
+      "text": "I'll work with animals. I don't know for who or where. Every farm needs someone who can do what I do and most farms can't find that person. Rook says I could build something around the skill — a route between farms where I'm the person they call when an animal is wrong. I've been thinking about this for six months. It's the first plan I've had that feels like something I chose instead of something that happened to me.",
+      "keywords": ["work","animals","don't","know","farm","needs","skill","route","farms","plan"]
+    },
+    {
+      "id": "dog_1",
+      "source": "Nell on the dog that followed her for three weeks",
+      "text": "The dog arrived and decided to follow me for three weeks and then decided not to. I didn't name it. Fitch said I should name it. I said: it's not mine to name, it's just here right now. The dog left on a Tuesday. I missed it for one day and then I didn't. Rook saw me not miss it after day two and said: that's the correct approach to things that are here and then aren't. I wasn't trying to demonstrate anything. I just wasn't missing it.",
+      "keywords": ["dog","arrived","decided","follow","three","weeks","name","fitch","miss","tuesday"]
+    }
+  ]
+}

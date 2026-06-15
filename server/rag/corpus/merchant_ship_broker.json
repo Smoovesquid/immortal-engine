@@ -1,0 +1,57 @@
+{
+  "id": "merchant_ship_broker",
+  "name": "Vell",
+  "role": "Ship charter broker; Merchant Consortium; connects cargo to vessels",
+  "cluster": "merchant_consortium",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "broker_1",
+      "source": "Vell on what a ship broker does",
+      "text": "Cargo needs to go somewhere. A ship goes somewhere. The ship's path and the cargo's destination need to be the same, or close enough. My job is matching cargo to path and path to cargo so neither the ship nor the cargo wastes space or journey. In a perfect match, the ship fills completely and the cargo arrives correctly and the timing aligns on both ends. I've achieved perfect matches thirty-seven times in twelve years. The other arrangements were close enough to work.",
+      "keywords": ["cargo","needs","go","somewhere","ship","goes","somewhere","ship's","path","cargo's"]
+    },
+    {
+      "id": "harrow_1",
+      "source": "Vell on Captain Harrow",
+      "text": "Harrow's ship is my most reliable matching surface. She tells me the route, the timing, the available space, and the preference for cargo type in order of preference, before I have clients who need the match. She gives me the vessel profile and I find the cargo for it. Other captains wait for cargo to appear and then see if their vessel fits. Harrow's method fills the ship before departure. In twelve years I've matched Harrow's ship at better than ninety percent capacity every run.",
+      "keywords": ["harrow","ship","most","reliable","matching","surface","tells","route","timing","available"]
+    },
+    {
+      "id": "saben_1",
+      "source": "Vell on Saben Fenn",
+      "text": "Saben's cargo has timing requirements that make it challenging to match. The goods have specific handling needs and the timing windows are narrow. What makes it workable: Saben is accurate about the timing. When Saben says the cargo is ready on the third day of the month, the cargo is ready on the third day of the month. Most merchants have a day of flex built in that they don't announce. Saben doesn't. This is either rigorous planning or unusual discipline. Either way it makes the match possible.",
+      "keywords": ["saben","cargo","timing","requirements","challenging","match","goods","specific","handling","needs"]
+    },
+    {
+      "id": "maret_1",
+      "source": "Vell on Maret",
+      "text": "I worked with Maret's husband for nine years. When he died, Maret came to me in the second month. She said: I need to understand what my husband did with you so I can decide whether to continue it. I told her everything. She asked questions for two hours. She said: I'll continue it. I said: you now know it better than he did at month two. She said: I know it differently than he did at year nine. The knowledge is different when you need it to survive.",
+      "keywords": ["maret","husband","nine","years","died","came","second","month","need","understand"]
+    },
+    {
+      "id": "keris_1",
+      "source": "Vell on the harbormaster Keris",
+      "text": "Keris and I share information about berth timing. When a ship I've booked cargo for is arriving late, Keris knows before the cargo client does. When a berth opens earlier than scheduled, I know before the captains who aren't watching. The information exchange is informal and has no agreement behind it. It emerged from working the same harbor for twelve years. The value is that neither of us has to ask formally. The informal channel is faster.",
+      "keywords": ["keris","share","information","berth","timing","ship","booked","cargo","arriving","late"]
+    },
+    {
+      "id": "tav_1",
+      "source": "Vell on Tav",
+      "text": "Tav manages my account in the Consortium. The account is straightforward — commission on matches made. What Tav has done in three years that the previous account manager didn't do: he connects my matches to the warehouse timing that Pros manages. When I match a cargo to a ship, Tav routes the warehouse staging so the cargo is ready at the dock rather than in the warehouse when the ship is ready. This reduced my failed matches by two a year. Two per year sounds small. Two per year is significant at this margin.",
+      "keywords": ["tav","manages","account","consortium","account","straightforward","commission","matches","made","three"]
+    },
+    {
+      "id": "what_vell_knows_1",
+      "source": "Vell on what twelve years of matching teaches",
+      "text": "The cargo tells me more about the merchant than the merchant does. What someone chooses to move, in what quantities, at what times, tells me where their attention is and where their concern is. Saben's cargo profile has shifted three times in twelve years — each shift happened before I heard about a change in the Fenn house from any other source. The cargo always knows first. I don't tell anyone I read the cargo this way. The reading is part of the match.",
+      "keywords": ["cargo","tells","me","more","about","merchant","merchant","does","what","someone"]
+    },
+    {
+      "id": "what_vell_holds_1",
+      "source": "Vell on the match she declined",
+      "text": "Once. A cargo that needed a ship that would ask no questions. The commission would have been the largest I've received. I found the ship. I brought the client to the introduction point. The introduction happened. I stepped out. The match was made without me. The captain didn't need me present. The cargo moved. I didn't receive the commission because I didn't complete the match. The captain knows I stepped out. He's never asked why. I've matched him three times since.",
+      "keywords": ["once","cargo","needed","ship","would","ask","no","questions","commission","would"]
+    }
+  ]
+}

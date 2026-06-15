@@ -1,0 +1,57 @@
+{
+  "id": "inn_cook",
+  "name": "Dorr",
+  "role": "Cook at Cass's inn; feeds everyone from the road; the kitchen is the inn's actual heart",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "inn_cooking_1",
+      "source": "Dorr on cooking for the road trade",
+      "text": "Road travelers are hungry in a specific way. The person who's been walking or riding for days has a hunger that's different from the person who's been at their desk. The body that's been working outdoors wants something substantial and warm and uncomplicated. In fourteen years of cooking for the inn, the menu I've maintained is the menu that the road trade needs: food that restores rather than entertains. The traveler who's genuinely road-weary doesn't want to think about the food.",
+      "keywords": ["road","travelers","hungry","specific","way","person","been","walking","riding","days"]
+    },
+    {
+      "id": "cass_1",
+      "source": "Dorr on Cass",
+      "text": "Cass runs the inn and tells me what the inn needs. In fourteen years, Cass's direction to the kitchen has been consistent: the food is the reason people come back. In fourteen years, Cass has never told me what to cook — only that the cooking needs to make people want to come back. In fourteen years, the returning customers are the evidence that the cooking has been right. What Cass provides: the authority and the trust. What I provide: the kitchen that makes the trust worth having.",
+      "keywords": ["cass","runs","inn","tells","what","inn","needs","fourteen","years","cass's"]
+    },
+    {
+      "id": "bale_1",
+      "source": "Dorr on Bale",
+      "text": "Bale delivers water to the kitchen daily. In twelve years of Bale's route including the inn, the kitchen's water use is the second highest on the block — the laundry is higher. What I use water for: the cooking water, the washing, the stock that runs continuously in the kitchen. In twelve years, Bale's delivery is the first kitchen arrival every morning. The kitchen's day starts with Bale's water.",
+      "keywords": ["bale","delivers","water","kitchen","daily","twelve","years","bale's","route","including"]
+    },
+    {
+      "id": "perve_1",
+      "source": "Dorr on Perve",
+      "text": "Perve supplies the inn's vegetable needs. In ten years of purchasing from Perve's stall, the relationship is: I know what Perve will have by the week and the season, and the menu reflects what Perve has rather than what I'd have if I could choose freely. The kitchen that cooks from what's available rather than what's planned is the kitchen that produces better food on average — the available goods are the fresh goods, not the planned goods that have traveled or been stored.",
+      "keywords": ["perve","supplies","inn's","vegetable","needs","ten","years","purchasing","perve's","stall"]
+    },
+    {
+      "id": "kett_1",
+      "source": "Dorr on Kett",
+      "text": "Kett supplies the fish. In nine years of the inn serving fish, Kett and I have a daily morning transaction: I assess what Kett has, Kett describes the day's catch, I select for the evening menu. In nine years, the menu on the days when Kett's catch is exceptional is always better than the planned menu because the exceptional catch is prepared the same day. In nine years, the best fish nights at the inn are the nights when Kett arrived with something unusual.",
+      "keywords": ["kett","supplies","fish","nine","years","inn","serving","fish","kett","daily"]
+    },
+    {
+      "id": "what_the_kitchen_produces_1",
+      "source": "Dorr on what fourteen years in the inn kitchen produces",
+      "text": "In fourteen years, I've fed approximately forty thousand individual meals. Forty thousand people who were hungry when they sat down and not hungry when they left. The forty thousand are the road trade, the settlement's people who come for the evening meal, the events that Cass hosts. In fourteen years, the work is entirely in the present: the meal that's being prepared is the work. The meals that are done are done. In fourteen years, I don't think about the forty thousand. I think about tonight's service.",
+      "keywords": ["fourteen","years","fed","approximately","forty","thousand","individual","meals","forty","thousand"]
+    },
+    {
+      "id": "what_dorr_holds_1",
+      "source": "Dorr on the meal she's most proud of",
+      "text": "Year six. A night when everything was wrong: the deliveries were late, the fire was difficult, two of the three people I was cooking with were sick. I cooked the entire service alone with late supplies and a difficult fire. The food that came out of the kitchen that night was — by the feedback from the tables — some of the best food I'd produced in six years. In eight years since, year six is the night I return to when I'm working under difficult conditions. The conditions produced the best work. I don't know why. I've been trying to recreate the conditions without the difficulty.",
+      "keywords": ["year","six","night","when","everything","wrong","deliveries","late","fire","difficult"]
+    },
+    {
+      "id": "fourteen_years_1",
+      "source": "Dorr on fourteen years in Cass's kitchen",
+      "text": "In fourteen years, the kitchen has changed: better equipment, more reliable supply, the menu refined through fourteen years of knowing what the road trade wants. The thing that hasn't changed: the kitchen is the place where the food comes from and the food is the place where people come from the road to. In fourteen years, the kitchen is the same work it was in year one. The work is better. The work is the same.",
+      "keywords": ["fourteen","years","kitchen","changed","better","equipment","more","reliable","supply","menu"]
+    }
+  ]
+}

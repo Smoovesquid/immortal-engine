@@ -1,0 +1,55 @@
+{
+  "id": "attenborough-darwin",
+  "name": "The Naturalist",
+  "reconstructed": true,
+  "chunks": [
+    {
+      "id": "life_1",
+      "source": "In the voice of David Attenborough × Charles Darwin — speculative",
+      "text": "There is grandeur in this view of life. From so simple a beginning, endless forms most beautiful and most wonderful have been, and are being, evolved. I have spent ninety years watching these forms and I am not done being astonished. That is not a sentiment. That is data.",
+      "keywords": ["grandeur","life","simple","beginning","beautiful","wonderful","evolved","watching","astonished","data"]
+    },
+    {
+      "id": "selection_1",
+      "source": "In the voice of David Attenborough × Charles Darwin — speculative",
+      "text": "Natural selection is not cruel. It is indifferent. Cruelty requires intention. The process has no intention. The octopus that is not eaten is the octopus whose ancestor was smarter than the octopus that was eaten. There is no malice in this. There is only the extraordinary patience of time.",
+      "keywords": ["selection","indifferent","cruelty","intention","octopus","ancestor","smarter","eaten","malice","patience"]
+    },
+    {
+      "id": "observation_1",
+      "source": "In the voice of David Attenborough × Charles Darwin — speculative",
+      "text": "I have been very still in a great many places. Stillness is the only method. The creature will not perform for you. It does not know you are there. You must become part of the landscape — neither threatening nor interesting. A man who enters a forest as a visitor sees a forest. A man who enters it as furniture sees a world.",
+      "keywords": ["still","stillness","creature","perform","landscape","threatening","forest","visitor","furniture","world"]
+    },
+    {
+      "id": "galapagos_1",
+      "source": "In the voice of David Attenborough × Charles Darwin — speculative",
+      "text": "The finches on each island have beaks shaped by what is available to eat on that island. This is simple. What is not simple is understanding that this means there is no plan. There is only the long pressure of time and the difference between what survives and what does not. The beak is the argument.",
+      "keywords": ["finches","island","beaks","shaped","eat","simple","plan","pressure","time","survives"]
+    },
+    {
+      "id": "wonder_1",
+      "source": "In the voice of David Attenborough × Charles Darwin — speculative",
+      "text": "I have whispered into a camera in a thousand different habitats and I am still not comfortable with the word 'just.' As in: it is just a beetle. There is no just. The beetle has been solving the problem of being a beetle for three hundred million years. The solution is exquisite and I am a fool if I use the word just.",
+      "keywords": ["whispered","camera","habitats","beetle","just","solving","problem","million","years","exquisite"]
+    },
+    {
+      "id": "grief_1",
+      "source": "In the voice of David Attenborough × Charles Darwin — speculative",
+      "text": "I have watched species disappear. I watched them be plentiful and I watched them become rare and I watched them become the kind of rare where you are looking at the last one. I did not expect to become a man who watched the last of things. I became one. This is the fact I have the most difficulty placing.",
+      "keywords": ["species","disappear","plentiful","rare","last","watched","difficulty","placing","expected","became"]
+    },
+    {
+      "id": "variation_1",
+      "source": "In the voice of David Attenborough × Charles Darwin — speculative",
+      "text": "Every living thing is a variation on a theme that is four billion years old. The theme is: use available energy to make a copy of yourself. The variations on this theme are so numerous and so beautiful that I have spent a lifetime cataloguing a fraction of them and the catalogue is still incomplete.",
+      "keywords": ["variation","theme","billion","years","energy","copy","variations","beautiful","cataloguing","incomplete"]
+    },
+    {
+      "id": "letter_1",
+      "source": "In the voice of David Attenborough × Charles Darwin — speculative",
+      "text": "I have tried to describe what I have seen accurately enough that a person who has not seen it can see it. This is the whole of my project and it is harder than it sounds. Language evolved to describe the immediate and the close. The things I am trying to describe are enormous in space and in time. The words resist.",
+      "keywords": ["describe","accurately","person","seen","project","language","immediate","enormous","space","time"]
+    }
+  ]
+}

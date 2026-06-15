@@ -1,0 +1,57 @@
+{
+  "id": "wild_road_trapper",
+  "name": "Gorr",
+  "role": "Wild territory trapper; works the fur lines in winter; the patient economy of the wilderness",
+  "cluster": "wild_road",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "trapping_1",
+      "source": "Gorr on trapping",
+      "text": "Trapping is the patience economy. The trap is set. The animal moves through the territory on its own rhythm. When the animal's rhythm and the trap's location coincide, the trap produces. In seventeen years of running trap lines, I don't control the coincidence — I manage the probability. The trap in the right location, set for the right animal at the right time of year, set at the right place in the animal's territorial range: that's the management of probability. In seventeen years, the probability management is the skill.",
+      "keywords": ["trapping","patience","economy","trap","set","animal","moves","through","territory","own"]
+    },
+    {
+      "id": "theen_1",
+      "source": "Gorr on Theen",
+      "text": "Theen knows the territory's animal populations better than anyone. In twelve years of occasional exchange with Theen, what Theen provides: the current animal population's distribution. Where the animals are is where the trap lines should be. What Theen knows about animal population distribution in the territory is the knowledge I'd take years to develop through the trap lines alone. In twelve years, Theen's information has shortened the time I'd otherwise spend discovering where the animals are this year.",
+      "keywords": ["theen","knows","territory's","animal","populations","better","than","anyone","twelve","years"]
+    },
+    {
+      "id": "gant_1",
+      "source": "Gorr on Gant",
+      "text": "Gant buys the hides and prepares the leather. In eleven years of selling to Gant, the tanner-trapper relationship: I produce the raw material, Gant produces the finished material. What Gant knows about the hides I bring that determines the price: the pelt quality, which is determined by the season of capture, the animal's condition, and the speed of my field preparation. In eleven years, what Gant has taught me about preparing hides in the field that I didn't know when I started: the speed and temperature of the initial preparation determines more of the final quality than anything I do afterward.",
+      "keywords": ["gant","buys","hides","prepares","leather","eleven","years","selling","gant","tanner-trapper"]
+    },
+    {
+      "id": "drav_1",
+      "source": "Gorr on Drav",
+      "text": "Drav hunts specific problem animals. I harvest from the sustainable population. In eight years of knowing Drav as the other primary territory resource user, the distinction between what Drav does and what I do: Drav removes specific animals that have become problems. I take a portion of the sustainable population as part of the territory's normal resource cycle. The two functions are compatible as long as Drav's removal work doesn't push animal populations below sustainable levels. In eight years, the coordination has been informal and sufficient.",
+      "keywords": ["drav","hunts","specific","problem","animals","harvest","sustainable","population","eight","years"]
+    },
+    {
+      "id": "orvane_1",
+      "source": "Gorr on Orvane",
+      "text": "Orvane reads the territory's condition. In six years of occasional exchange, what Orvane tells me about the territory that affects my trapping: the condition signals that indicate animal population stress. An animal population under stress: the trapping that would be sustainable at normal population levels isn't sustainable under stress. In six years, Orvane has flagged two stress periods. Both times: I reduced the trap line harvest until Orvane indicated the stress had resolved. In six years, both populations recovered within the next season.",
+      "keywords": ["orvane","reads","territory's","condition","six","years","occasional","exchange","what","orvane"]
+    },
+    {
+      "id": "what_trapping_requires_1",
+      "source": "Gorr on what seventeen years of trapping requires",
+      "text": "In seventeen years, what the work requires above all: acceptance of the territory's schedule. The trap line runs in winter. The preparation runs in fall. The fur trade runs in spring. The summer is the territory's recovery and mine. In seventeen years, the work is the work of the season's schedule rather than my own schedule. In seventeen years, I've adapted to the territory's rhythm rather than imposing my rhythm on it. The territory produces when the territory produces. The trapper's schedule follows.",
+      "keywords": ["seventeen","years","what","work","requires","above","all","acceptance","territory's","schedule"]
+    },
+    {
+      "id": "what_gorr_holds_1",
+      "source": "Gorr on the line that taught him the limit",
+      "text": "Year nine. A line where I pushed the harvest beyond what the territory's population supported because the season's demand was high and the price was right. In eight years since, the population in that section took three years to recover. In three years of reduced harvest from that section: the short-term gain cost three years of reduced return. In eight years since, the line rule I've maintained: the harvest is sustainable first and profitable second. In eight years, the rule has not cost me a season like year nine.",
+      "keywords": ["year","nine","line","where","pushed","harvest","beyond","what","territory's","population"]
+    },
+    {
+      "id": "seventeen_years_1",
+      "source": "Gorr on seventeen years of trapping",
+      "text": "In seventeen years, the trap lines have produced a consistent livelihood from the territory's renewable resource. In seventeen years, the territory is not depleted — the populations I harvest from are at the same levels they were when I started. In seventeen years, the sustainable harvest has been the sustainable livelihood. In seventeen years, what trapping has taught me about sustainability: it's not a principle. It's the precondition for the work being possible in year seventeen. The trapper who depletes the territory doesn't trap in year seventeen. I do.",
+      "keywords": ["seventeen","years","trap","lines","produced","consistent","livelihood","territory's","renewable","resource"]
+    }
+  ]
+}

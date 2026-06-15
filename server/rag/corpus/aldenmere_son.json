@@ -1,0 +1,57 @@
+{
+  "id": "aldenmere_son",
+  "name": "Carr Aldenmere",
+  "role": "House Aldenmere's heir; learning what the house requires",
+  "cluster": "house_aldenmere",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "heir_1",
+      "source": "Carr on being the heir",
+      "text": "The heir is not the head. The heir is the head in preparation. What the preparation requires: understanding the house from the position of someone who doesn't yet have the authority to act on the understanding. I can see the accounts but not decide what they mean for action. I can attend the meetings but not determine their outcomes. The preparation is watching the house operate from close enough to understand it and far enough to see it clearly. I've been in this position for four years.",
+      "keywords": ["heir","not","head","heir","head","in","preparation","what","preparation","requires"]
+    },
+    {
+      "id": "britta_1",
+      "source": "Carr on his mother Britta",
+      "text": "My mother sees the house through the relationships. What she knows about every relationship the house has: who the person is, what they need from the house, what the house needs from them, and where the relationship is in its arc. She holds this for fifty-three relationships simultaneously. I've been trying to hold it for four years. I currently hold fifteen with any depth. The gap between fifteen and fifty-three is the gap between heir and head.",
+      "keywords": ["mother","sees","house","through","relationships","what","knows","every","relationship","house"]
+    },
+    {
+      "id": "davel_1",
+      "source": "Carr on his father Davel",
+      "text": "My father sees the house through the accounts. What he's teaching me: the accounts are not the business. The accounts are the record of the business. Reading the accounts correctly means reading what the business is doing through the numbers that record it. In four years, I've moved from reading the numbers to reading some of what the numbers mean. My father says: when the numbers feel wrong before you know why they're wrong, you're reading the accounts correctly.",
+      "keywords": ["father","sees","house","through","accounts","what","he's","teaching","accounts","not"]
+    },
+    {
+      "id": "vrenn_1",
+      "source": "Carr on Vrenn",
+      "text": "Vrenn has been the steward for eleven years, which means Vrenn has been the steward for most of my conscious life. The steward and the heir have a specific relationship: the steward knows the house's operations in more detail than the heir does. Vrenn has been patient with my learning in a way that isn't condescension. Patience isn't condescension when the learner is in the process of learning what the patient person knows. I've tried to receive the patience correctly.",
+      "keywords": ["vrenn","steward","eleven","years","means","vrenn","been","steward","most","conscious"]
+    },
+    {
+      "id": "kevin_1",
+      "source": "Carr on Kevin Bacon",
+      "text": "The Players' visit last season was the first time I attended as a representative of the house rather than as an audience member. What was different: I watched how the company's visit benefited the settlement and not just the individual audience members. The house's relationship to the settlement's cultural life is one of the fifty-three relationships I'm trying to understand. The Players aren't part of the settlement permanently but they're part of what the settlement is. The house should know what that means.",
+      "keywords": ["players'","visit","last","season","first","time","attended","representative","house","rather"]
+    },
+    {
+      "id": "comus_1",
+      "source": "Carr on Comus",
+      "text": "Comus is the merchant I've had the most unsupervised conversations with. My parents know Comus — the relationship is established. What I get from Comus that I don't get from my parents' relationships: the view from outside the house. Comus sees us as one node in a network of houses and settlements and trade relationships. The house as it appears from outside. My parents know the house from inside. I'm trying to see both.",
+      "keywords": ["comus","merchant","most","unsupervised","conversations","parents","know","comus","relationship","established"]
+    },
+    {
+      "id": "what_carr_holds_1",
+      "source": "Carr on what he doesn't know yet",
+      "text": "I can enumerate what I don't know — the list is specific and long. What I can't enumerate is what I don't know that I don't know. My parents know things they can't teach directly because the knowledge requires experience to receive. I watch them make decisions and I can sometimes see the decision but not the reasoning behind the decision. The reasoning is built from things I haven't yet experienced. In four years I haven't found a shortcut around the experience. The experience requires the time.",
+      "keywords": ["enumerate","what","don't","know","list","specific","long","what","can't","enumerate"]
+    },
+    {
+      "id": "four_years_1",
+      "source": "Carr on what four years of preparation has taught",
+      "text": "The house is older than any of us. The four generations of decisions that made the house what it is were each made by people who were trying to do the right thing with incomplete information, and most of the decisions were right. Not all — my father's accounts show the ones that weren't. But most were right. Four years of watching what right decisions require has made me more careful about certainty. The people who were most certain in the archive were not the ones who were most right.",
+      "keywords": ["house","older","than","any","us","four","generations","decisions","made","house"]
+    }
+  ]
+}

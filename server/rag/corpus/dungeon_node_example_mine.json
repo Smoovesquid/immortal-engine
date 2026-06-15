@@ -1,0 +1,82 @@
+{
+  "_generated_from": {
+    "dungeon_id": "dungeon:node_example_mine",
+    "theme": "mine",
+    "history": {
+      "name": "the Gullet",
+      "origin": "the silver mine they called Deepcut",
+      "catastrophe": "the diggers cut into a cavity that should have stayed sealed",
+      "denizen": "the things that came up through the breach",
+      "echoes": [
+        "pickaxes dropped mid-swing, rusting where they fell",
+        "a tally of names scratched by the cage — the last few clawed through",
+        "ore-carts left loaded, wheels seized with rust",
+        "gouges shoulder-high in the rock that no tool made",
+        "a lantern, its oil long gone, set down and never lifted"
+      ]
+    },
+    "mapping": "origin→founding_1, catastrophe→catastrophe_1, echoes[0..4]→echo_0..echo_4 (latent:true)"
+  },
+  "id": "dungeon_node_example_mine",
+  "name": "the Gullet",
+  "place_type": "dungeon",
+  "theme": "mine",
+  "chunks": [
+    {
+      "id": "founding_1",
+      "source": "Deepcut mine — establishment and operation",
+      "text": "The mine called Deepcut was sunk for silver ore. The main gallery follows a seam that dips steeply toward the east; the entry shaft is vertical, with cage-and-rope infrastructure at the top. Timbering in the upper galleries is substantial — the builders expected long operation. The ore was processed at surface level, not underground; ore-cart tracks run from the working faces back to the shaft base. Side galleries were cut at intervals to chase secondary veins. The timbers are still standing in the upper levels; deeper, the weight of the rock has begun to close the cuts.",
+      "era": "founding",
+      "keywords": ["mine","deepcut","silver","gallery","seam","shaft","cage","timbering","ore","carts","tracks","veins"],
+      "latent": false
+    },
+    {
+      "id": "catastrophe_1",
+      "source": "Deepcut mine — the breach",
+      "text": "A working face in the lower gallery broke through into a cavity that had not appeared on any survey. The cavity was large — voices in it produced no echo — and the air that came out was cold and smelled of nothing, not of rock or water. The shift working the face did not come back up. The cage was found at the shaft base, empty, with the rope cut from below rather than frayed. The upper galleries were abandoned the same day. No formal closure was made; the shaft was left open. What came up through the breach left marks on the gallery walls at irregular heights that no mining tool produced.",
+      "era": "breach-event",
+      "keywords": ["breach","cavity","survey","shift","cage","rope","cut","abandoned","shaft","open","marks","walls","irregular"],
+      "latent": false
+    },
+    {
+      "id": "echo_0",
+      "source": "Physical evidence — pickaxes at point of abandonment",
+      "text": "In several of the working faces, pickaxes lie where they fell mid-swing: some are still embedded in the rock face at the angle of the last strike, some are on the ground at the base of the wall. They are rusted past use. The rust pattern is uneven — the pick-heads show more oxidation than the handles, which is the normal pattern when a tool lies still in wet air for years. No tool was removed by whoever left. The placement is consistent with people stopping work suddenly rather than setting tools down.",
+      "era": "breach-event",
+      "keywords": ["pickaxes","fell","mid-swing","embedded","rock","angle","rusted","oxidation","handles","sudden","abandonment"],
+      "latent": true
+    },
+    {
+      "id": "echo_1",
+      "source": "Physical evidence — shift tally at the cage station",
+      "text": "A wooden board mounted at the shaft base near the cage platform carries a shift tally: names scratched into the surface in columns, checked off at start and end of each shift. The last column has twelve names marked in at the start. None are checked off at the end. The last three names are scratched through with a single heavy line rather than the checkmark style used for the others — a different mark, made differently, at a different time. The board is still mounted. Nothing was done with it after.",
+      "era": "breach-event",
+      "keywords": ["tally","board","shaft","cage","names","columns","checked","shift","twelve","scratched","line","mark"],
+      "latent": true
+    },
+    {
+      "id": "echo_2",
+      "source": "Physical evidence — ore-carts on the main gallery track",
+      "text": "Three ore-carts remain on the main gallery track, loaded. The ore is still in them. The wheels have seized with rust; the carts have not moved since they were left. Two are positioned mid-track between working faces, as if caught in transit. One is at the shaft base, fully loaded, positioned for the cage lift. The cage lift hardware at the shaft base is intact. The ore was never lifted. Nothing about the carts was disturbed; they were not emptied or overturned.",
+      "era": "breach-event",
+      "keywords": ["ore-carts","track","loaded","wheels","seized","rust","transit","shaft","cage","lift","intact","loaded"],
+      "latent": true
+    },
+    {
+      "id": "echo_3",
+      "source": "Physical evidence — wall gouges, lower gallery",
+      "text": "In the lower gallery and in the side passages near the breach, the rock walls carry gouges at a consistent height — roughly shoulder-level for a standing person, but running in continuous arcs rather than the interrupted percussion pattern of a pick or chisel. The gouges are not on the working faces where ore was extracted; they are on the smooth walls of transit passages. The depth and width are inconsistent with any mining tool in the abandoned kit. The marks run in both directions along the passage — toward the breach and away from it.",
+      "era": "breach-event",
+      "keywords": ["gouges","wall","lower","gallery","shoulder","arcs","continuous","pick","chisel","transit","passage","marks","direction"],
+      "latent": true
+    },
+    {
+      "id": "echo_4",
+      "source": "Physical evidence — lantern at the last rest point",
+      "text": "A miner's lantern sits on a flat shelf of rock near the junction of the main gallery and the passage that leads to the breach. The oil reservoir is empty and dry; it was not refilled after the last use. The wick is intact. The lantern was set down deliberately — placed on the shelf with the handle folded, not dropped or knocked over. It is the last point before the passage narrows toward the breach. Whatever happened happened after this point. The lantern marks the edge of the record.",
+      "era": "breach-event",
+      "keywords": ["lantern","shelf","oil","empty","dry","wick","set","junction","gallery","passage","breach","narrows","edge"],
+      "latent": true
+    }
+  ]
+}

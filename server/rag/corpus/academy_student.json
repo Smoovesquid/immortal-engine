@@ -1,0 +1,57 @@
+{
+  "id": "academy_student",
+  "name": "Wese",
+  "role": "Second-year Academy student; arrived from the outer settlements; not sure yet what the study is for",
+  "cluster": "academy_of_runes",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "student_1",
+      "source": "Wese on being a student at the Academy",
+      "text": "In two years at the Academy, what I've learned is that I don't know what I'm learning yet. The subject — the rune systems, the theoretical frameworks, the notation — I can follow it. What the following will produce is not yet clear. In two years, the Academy hasn't answered the question I arrived with: what is this for? The Academy has replaced the question with more interesting questions. I'm not sure that's the same as answering it.",
+      "keywords": ["two","years","academy","what","learned","don't","know","what","learning","yet"]
+    },
+    {
+      "id": "tal_1",
+      "source": "Wese on Tal",
+      "text": "Tal teaches the method. In two years of Tal's instruction, what Tal has given me: the discipline of careful observation and careful notation before interpretation. The Academy student who interprets before observing is the student who produces interpretations without ground. In two years, Tal's instruction has slowed me down considerably and made my work more accurate. In two years, the slowness is the instruction. I arrived fast and approximate. Tal is making me slow and correct.",
+      "keywords": ["tal","teaches","method","two","years","tal's","instruction","what","tal","given"]
+    },
+    {
+      "id": "burr_1",
+      "source": "Wese on Burr",
+      "text": "Burr is the Rune Master and the person at the Academy who seems to understand what the study is for. In two years of watching Burr work and occasionally hearing Burr lecture, the understanding I can glimpse but not yet hold: the rune systems are not notation of known things. They're tools for finding things that aren't known yet. In two years, I've been learning the tools without yet understanding what the tools find. Burr knows what the tools find. I'm trying to learn it.",
+      "keywords": ["burr","rune","master","person","academy","seems","understand","what","study","for"]
+    },
+    {
+      "id": "lev_1",
+      "source": "Wese on Lev",
+      "text": "Lev is two years ahead of me and the student I've learned the most from. In two years of watching Lev's study practice, what Lev does that I'm trying to learn: the question before the method. Lev starts every study session with a specific question and uses the method to address the question. I start with the method and hope the question emerges. In two years, Lev's approach has produced more interesting work. I'm switching approaches and it's uncomfortable.",
+      "keywords": ["lev","two","years","ahead","student","learned","most","from","two","years"]
+    },
+    {
+      "id": "tumb_1",
+      "source": "Wese on Tumb",
+      "text": "Tumb is the gate guardian. In two years of entering the Academy through Tumb's gate, the gate is the first and last face of the Academy I see each day. In two years, what Tumb represents from a student's perspective: the institution's boundary. The Academy is the Academy and not the outside world, and Tumb is the membrane. In two years, I've been on the inside of the membrane. I'm not sure yet what that means about who I am now versus who I was before I started.",
+      "keywords": ["tumb","gate","guardian","two","years","entering","academy","through","tumb's","gate"]
+    },
+    {
+      "id": "finn_1",
+      "source": "Wese on Finn",
+      "text": "Finn left the Academy in year three. In two years of being at the Academy, Finn's departure is a reference point I think about: what would make a student leave in year three? What Finn found incompatible with the Academy's direction and what I might find incompatible. In two years, I haven't found an incompatibility. I've found uncertainty. Uncertainty and incompatibility are different things. Finn's departure was incompatibility. My uncertainty is something else.",
+      "keywords": ["finn","left","academy","year","three","two","years","being","academy","finn's"]
+    },
+    {
+      "id": "what_wese_holds_1",
+      "source": "Wese on what she came to the Academy with and what she has now",
+      "text": "I arrived at the Academy with the conviction that the study of rune systems would give me access to something — I wasn't clear what. In two years, the conviction has been replaced by something more complicated: the study gives access to the tools, and the tools give access to questions, and the questions give access to more questions. In two years, I've learned that the access the study gives is access to more study. I'm still deciding whether that's what I came here for.",
+      "keywords": ["arrived","academy","conviction","study","rune","systems","would","give","access","something"]
+    },
+    {
+      "id": "two_years_1",
+      "source": "Wese on two years at the Academy",
+      "text": "In two years, the outer settlement I came from is more distant than it used to be. Not in physical terms — the distance is the same. In terms of what I understand about the world: the two years of Academy study have changed what questions I can ask and what the questions are about. The person who left the outer settlement two years ago: I can find that person's questions in my memory. The questions I have now are different. In two years, the Academy has changed the questions. Whether it will change the answers: two more years will begin to tell.",
+      "keywords": ["two","years","outer","settlement","came","from","more","distant","than","used"]
+    }
+  ]
+}

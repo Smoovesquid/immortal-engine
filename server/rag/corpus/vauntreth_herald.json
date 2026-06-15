@@ -1,0 +1,57 @@
+{
+  "id": "vauntreth_herald",
+  "name": "Orynn",
+  "role": "VAUNTRETH devotee; believes the self well-known is the self well-made; preaches visible excellence",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "vauntreth_1",
+      "source": "Orynn on VAUNTRETH",
+      "text": "VAUNTRETH is the demon of pride. What the Covenant says: pride is a sin. What VAUNTRETH teaches: pride is the recognition of genuine excellence. The false version — the pride that claims more than the self has earned — is the problem. The true version: the self that has worked and achieved and knows it has. The knowledge of genuine achievement is not a sin. It's the correct relationship to one's own work. In eight years of VAUNTRETH's teaching, I've tried to keep the distinction clear.",
+      "keywords": ["vauntreth","demon","pride","what","covenant","says","pride","sin","what","vauntreth"]
+    },
+    {
+      "id": "kevin_1",
+      "source": "Orynn on Kevin Bacon",
+      "text": "Kevin Bacon understands VAUNTRETH's principle without knowing it. The performer who takes the stage is claiming: I am worth watching. The claim is only false when the performance doesn't deliver. Kevin's performances deliver. The claim is true. That is VAUNTRETH's pride: the claim that is backed by the work. I've seen the Players perform four times. Four times the claim was backed. Four times the pride was justified. Kevin has never heard of VAUNTRETH. Kevin practices VAUNTRETH's principle without the name.",
+      "keywords": ["kevin","bacon","understands","vauntreth's","principle","without","knowing","it","performer","takes"]
+    },
+    {
+      "id": "avel_1",
+      "source": "Orynn on Avel",
+      "text": "Avel and I have spoken once. Avel is MERETH's devotee — the opposite principle. What Avel said: MERETH's humility is not self-diminishment. What I said: VAUNTRETH's pride is not arrogance. We found more agreement than disagreement in the opposition. What I think now: VAUNTRETH and MERETH are addressing the same question from different sides — what is the correct relationship to one's own capabilities and work. VAUNTRETH says: know it and claim it. MERETH says: know it and release the claim. The knowing is shared. The claim is what differs.",
+      "keywords": ["avel","spoken","once","avel","mereth's","devotee","opposite","principle","what","avel"]
+    },
+    {
+      "id": "vane_1",
+      "source": "Orynn on Vane",
+      "text": "Vane is the district's other visible VAUNTRETH connection. But Vane's VAUNTRETH is a different orientation from mine. Vane's relationship to VAUNTRETH: the claiming before the work is done. The pride that asserts itself in advance of the achievement. My VAUNTRETH: the pride that follows the work. The sequence matters. Vane would say the pride is the fuel. I would say the pride is the recognition of the fuel's output. We haven't had this conversation. I've watched Vane and reached this conclusion from the watching.",
+      "keywords": ["vane","district's","other","visible","vauntreth","connection","vane's","vauntreth","different","orientation"]
+    },
+    {
+      "id": "weld_1",
+      "source": "Orynn on Weld",
+      "text": "Weld the forge master practices VAUNTRETH's principle without the theological frame. In twelve years of knowing Weld, the forge master's assessment of the work is precise: good work is identified as good work, poor work is identified as poor work, the assessment doesn't soften for the audience. What this is: the recognition of genuine excellence and genuine failure, which is VAUNTRETH's demand — know the quality accurately. Weld is the most accurate self-assessor I know. The accuracy is the practice.",
+      "keywords": ["weld","forge","master","practices","vauntreth's","principle","without","theological","frame","twelve"]
+    },
+    {
+      "id": "what_pride_is_1",
+      "source": "Orynn on what VAUNTRETH's pride actually is",
+      "text": "VAUNTRETH's pride is the refusal to misrepresent the self in either direction. The self that claims too much is false pride. The self that claims too little is false humility. Both are misrepresentations. VAUNTRETH's demand: accurate self-representation. Know what you've done, what you can do, what you've built. Claim exactly that and nothing more or less. In eight years of practice, the direction that's hardest: claiming exactly what I've done without adding or subtracting. The addition is easy. The subtraction is also easy. The exact claim is the practice.",
+      "keywords": ["vauntreth's","pride","refusal","misrepresent","self","either","direction","self","claims","too"]
+    },
+    {
+      "id": "what_orynn_holds_1",
+      "source": "Orynn on the failure that tested the practice",
+      "text": "Year four. A project I undertook that I failed at. Not partially failed — failed. The project was in public view. The failure was in public view. VAUNTRETH's principle required me to acknowledge the failure with the same accuracy I acknowledge the successes. In public, in front of people who had watched me claim the ability to succeed at this project. The acknowledgment of failure under VAUNTRETH's principle is harder than the acknowledgment of success. I acknowledged it. What happened: the acknowledgment produced more respect than the success would have. This surprised me. I've thought about why it surprised me since.",
+      "keywords": ["year","four","project","undertook","failed","at","not","partially","failed","failed"]
+    },
+    {
+      "id": "eight_years_1",
+      "source": "Orynn on eight years of VAUNTRETH's practice",
+      "text": "In eight years, the practice has made me a more accurate self-assessor than I was before it. What changed: the self-assessment that was distorted by the desire to be seen correctly is now less distorted. I want to be seen correctly because VAUNTRETH demands accurate representation. The want to be seen correctly and the practice of accurate representation are aligned. Before the practice, they were in tension. The tension created distortion. The alignment creates clarity. Clarity is what I'm practicing toward.",
+      "keywords": ["eight","years","practice","made","more","accurate","self-assessor","than","was","before"]
+    }
+  ]
+}

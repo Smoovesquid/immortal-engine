@@ -1,0 +1,57 @@
+{
+  "id": "seer_wen",
+  "name": "Wen",
+  "role": "Seer, the Angel Covenant; has not slept more than two hours at a stretch in three years",
+  "cluster": "angel_covenant",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "sleep_1",
+      "source": "Wen when asked about the sleep",
+      "text": "Two hours is sufficient for the body. I was afraid it wouldn't be at the start. The start was sixteen months ago when the reception became continuous. Before the reception was intermittent — I'd receive and then I'd rest and then I'd receive again. Now it doesn't stop. I've adapted. The two hours the body takes is enough. The rest of the night is reception. I'm not distressed about it. The reception is — I don't have a word for what it is. Not pleasant. Necessary.",
+      "keywords": ["two","hours","sufficient","body","afraid","reception","continuous","intermittent","rest","adapted"]
+    },
+    {
+      "id": "angels_1",
+      "source": "Wen when asked which angel she receives from",
+      "text": "All seven. Not simultaneously — they don't overlap, they take turns, which I've found interesting. The Covenant expected me to have a primary, which is how the formal doctrine describes the celestial relationship. I don't have a primary. MERETH comes when someone nearby is about to miss something important about themselves. TARRYN comes when something difficult is going to require waiting. ERRAN comes before work that matters. Each comes for their specific reason and leaves when it's done. I'm not special. I'm a junction.",
+      "keywords": ["seven","simultaneously","turns","primary","doctrine","mereth","tarryn","erran","specific","junction"]
+    },
+    {
+      "id": "oss_1",
+      "source": "Wen on the dreamer Oss",
+      "text": "Oss and I receive from the same direction. I've told the Covenant this and it makes them uncomfortable because Oss doesn't have a theology and the Covenant is built on theology. My position is: the direction doesn't care about the theology. The direction is the direction. What arrives along that direction is real regardless of whether the receiver has a framework for it. Oss doesn't have a framework and receives accurately. I have a framework and receive accurately. The accuracy is the thing that matters.",
+      "keywords": ["oss","direction","theology","covenant","uncomfortable","framework","real","receiver","accurately","matters"]
+    },
+    {
+      "id": "three_years_1",
+      "source": "Wen on what changed three years ago",
+      "text": "Something opened that hadn't been open before. Not in me — in the direction. I was a periodic receiver for eleven years before this. One morning three years ago the direction opened fully and hasn't closed. I've asked — not prayed, asked, directly — why now. I haven't received an answer to that question specifically, which I've decided means the question is either wrong or unnecessary. I've stopped asking why. I've started asking what.",
+      "keywords": ["opened","hadn't","direction","periodic","eleven","years","morning","three","closed","asking"]
+    },
+    {
+      "id": "caer_1",
+      "source": "Wen on the former paladin Caer",
+      "text": "Caer is the most technically informed person in the Covenant about the formal theology, and also the person most likely to say the formal theology is wrong about specific points. She left the Temple over a question I find genuinely interesting: can you petition LIRAINE directly, or only serve her? My reception suggests the answer is you can do both and they feel different and the direct petition is, for most people, premature. Caer says that's correct. She'd like it to be in the doctrine. It isn't.",
+      "keywords": ["caer","technically","informed","theology","wrong","specific","temple","petition","liraine","serve"]
+    },
+    {
+      "id": "child_1",
+      "source": "Wen on the unnamed child in the Covenant",
+      "text": "The child knows things. I've watched them know things and I can't explain the knowing. It's not the same as my reception — mine has a direction, a source quality. Theirs seems more like memory. The memory of things that haven't happened yet, or the memory of things that happened in a different version of events. I've compared notes with the child twice. They communicate in fragments. The fragments are always accurate. I find this more remarkable than my own situation, which I've had time to normalize.",
+      "keywords": ["child","knows","watching","reception","direction","source","memory","version","fragments","accurate"]
+    },
+    {
+      "id": "rem_1",
+      "source": "Wen on the astrologer Rem, who serves the House of Aldenmere",
+      "text": "Rem reads the stars for Lady Serath and the stars say things that Rem then translates for a specific purpose. My reception doesn't come from the stars — I want to be clear about that — but Rem's reading of the stars and my reception occasionally converge on the same fact from different angles. When they converge I find it interesting and Rem finds it alarming. Rem believes the stars should be sufficient. They are sufficient. The sufficiency doesn't preclude other sources.",
+      "keywords": ["rem","stars","serath","translates","specific","reception","converge","fact","interesting","alarming"]
+    },
+    {
+      "id": "function_1",
+      "source": "Wen to someone who worried about her wellbeing",
+      "text": "I'm functioning correctly. I understand why you're concerned — the not-sleeping looks like distress from the outside and most situations that involve not-sleeping are distress. This one isn't. The body is rested. The reception is work that the reception does, not work that I do. I'm the place the reception happens in. The place doesn't get tired from being the place. What I get tired from is the secondary things — explaining myself, the concern of people around me, that kind of thing. This conversation is the tiring part.",
+      "keywords": ["functioning","concerned","sleeping","distress","outside","body","rested","reception","work","tiring"]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "id": "toll_collector",
+  "name": "Mogg",
+  "role": "Toll collector at the north gate; counts what comes and goes; the gate's memory",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "toll_1",
+      "source": "Mogg on toll collection",
+      "text": "The toll is the settlement's tax on movement. What moves through the gate contributes to the maintenance of the road and the gate and the district that the road leads to. In twenty-two years at the north gate, I've collected tolls from everything that moves: carts, animals, travelers, goods. The toll is the same relationship in every case: movement through has a cost, the cost contributes to the thing being moved through. I'm the mechanism of that relationship.",
+      "keywords": ["toll","settlement's","tax","movement","what","moves","through","gate","contributes","maintenance"]
+    },
+    {
+      "id": "comus_1",
+      "source": "Mogg on Comus",
+      "text": "Comus is the most frequent trader I see at the north gate. In twelve years, Comus has passed through my gate on approximately two hundred and forty occasions in and out. The passing is so routine that Comus doesn't stop for the toll — the toll is paid by a running account that Comus settles monthly. The running account is a system I developed for frequent travelers to avoid the delay of individual toll collection. Comus was the first account to use it. The system now covers six frequent users.",
+      "keywords": ["comus","most","frequent","trader","see","north","gate","twelve","years","comus"]
+    },
+    {
+      "id": "senn_1",
+      "source": "Mogg on Senn",
+      "text": "Senn passes through my gate more than any other individual traveler — not for trading, for walking. Senn the wanderer uses the north gate as the main departure point in every direction. In eight years, I've seen Senn leave and return more times than I've counted. What Senn carries coming in versus going out: lighter going out, almost always. Heavier coming in, more often than not. The walking produces things that the walking doesn't leave behind.",
+      "keywords": ["senn","passes","through","gate","more","than","any","other","individual","traveler"]
+    },
+    {
+      "id": "mam_wey_1",
+      "source": "Mogg on Mam Wey",
+      "text": "Mam Wey passed through this gate for sixty years before I worked here. In the twenty-two years I've been at this gate, I've seen Mam Wey pass through only twice — the walks became shorter as the years accumulated. What Mam Wey said the last time: this gate hasn't changed in sixty years. I said: I've maintained it as it was. Mam Wey said: the gate being the same is the important thing. I've thought about that. I think it's about the gate being a fixed point when everything else moves.",
+      "keywords": ["mam","wey","passed","through","gate","sixty","years","before","worked","here"]
+    },
+    {
+      "id": "reeth_1",
+      "source": "Mogg on Judge Reeth",
+      "text": "Reeth uses the toll record as evidence in disputed movement cases — cases where someone claims they passed through the gate or didn't pass through the gate at a specific time. In twenty-two years, Reeth has requested the toll record twelve times. All twelve: the record was accurate and provided the information Reeth needed. What the toll record contains: the time, the traveler (if known), the toll paid, and what was declared. The declared goods are what create the disputes — what someone said they were carrying and what the district's tax laws require.",
+      "keywords": ["reeth","uses","toll","record","evidence","disputed","movement","cases","cases","where"]
+    },
+    {
+      "id": "what_the_gate_sees_1",
+      "source": "Mogg on what twenty-two years at the gate sees",
+      "text": "The gate is the district's membrane. Everything that enters or leaves passes through this point. In twenty-two years, I've seen the district's relationship with the wider world expressed in what passes through the gate. The goods that come in tell me what the district needs. The goods that go out tell me what the district produces. The people who come in and don't leave tell me about the district's pull. The people who leave and don't come back tell me about what the district isn't providing. The gate is the district's autobiography, written in movement.",
+      "keywords": ["gate","district's","membrane","everything","enters","leaves","passes","through","point","twenty-two"]
+    },
+    {
+      "id": "what_mogg_holds_1",
+      "source": "Mogg on what she let through without record",
+      "text": "Year three. Someone I let through the gate without collecting the toll and without making a record. The reason: the person was in a condition where the delay of the toll collection would have been harmful. I let them through, reported the unpaid toll to the district office, and absorbed the administrative consequence. The administrative consequence: a formal note in my record for the one unrecorded passage in twenty-two years. The note is accurate. The decision was correct. The formal note and the correct decision coexist in my record.",
+      "keywords": ["year","three","someone","let","through","gate","without","collecting","toll","without"]
+    },
+    {
+      "id": "twenty_two_years_1",
+      "source": "Mogg on twenty-two years at the north gate",
+      "text": "In twenty-two years I've collected tolls from approximately four hundred thousand individual movements through this gate. The number is an estimate — the precise count is in the records, but I've never added it up. Four hundred thousand movements. The district is connected to the world through this gate, and the world is connected to the district. In twenty-two years at the membrane, I've seen more of the world than most people who travel it — not by going out, but by watching everything that comes through.",
+      "keywords": ["twenty-two","years","collected","tolls","approximately","four","hundred","thousand","individual","movements"]
+    }
+  ]
+}

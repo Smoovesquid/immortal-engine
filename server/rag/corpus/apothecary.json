@@ -1,0 +1,57 @@
+{
+  "id": "apothecary",
+  "name": "Voss the Mixer",
+  "role": "Apothecary; compounds what physicians prescribe and what people need without a prescription",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "apothecary_1",
+      "source": "Voss the Mixer on what an apothecary is",
+      "text": "The physician diagnoses. I compound. The apothecary is the translation of the physician's prescription into the physical substance that acts on the condition. In twenty-one years, I've compounded remedies for every physician who's practiced in this district and for every common condition that doesn't require a physician. The common conditions: I know what they need from twenty-one years of compounding what works. The physician's conditions: I compound what's prescribed. Both draw on the same knowledge base. The application differs.",
+      "keywords": ["physician","diagnoses","compound","apothecary","translation","physician's","prescription","physical","substance","acts"]
+    },
+    {
+      "id": "aldous_1",
+      "source": "Voss the Mixer on Aldous",
+      "text": "Aldous is my primary physician account. In eighteen years of compounding Aldous's prescriptions, I've questioned the prescription twice. Both times: Aldous had made a dosage calculation I thought was high. Both times I asked, Aldous reviewed and confirmed the dosage. In both cases, the patient's condition required the higher dosage. What I learned: question, get the confirmation, compound as confirmed. The apothecary is not the physician. The apothecary is the check.",
+      "keywords": ["aldous","primary","physician","account","eighteen","years","compounding","aldous's","prescriptions","questioned"]
+    },
+    {
+      "id": "dran_1",
+      "source": "Voss the Mixer on Dran",
+      "text": "Dran trained under Aldous and now practices in the outer settlement. In five years of compounding for Dran's patients, the prescriptions have been consistent with what Aldous trained Dran to prescribe. What Dran adds that Aldous didn't typically add: more attention to the social context of the patient. Dran's prescriptions sometimes include compounded remedies for the stress around the physical condition, not only the physical condition itself. I compound both. Both act on real conditions.",
+      "keywords": ["dran","trained","under","aldous","practices","outer","settlement","five","years","compounding"]
+    },
+    {
+      "id": "syne_1",
+      "source": "Voss the Mixer on Syne",
+      "text": "Syne provides the herb base for much of what I compound. In fourteen years of working with Syne, the quality has been consistent and the supply has been reliable. What Syne provides that the general market doesn't: specific varieties cultivated for the medicinal properties I need, not the culinary properties that general herbs are grown for. The culinary herb and the medicinal herb are sometimes the same plant in different states. Syne understands the difference between growing for the table and growing for the compound.",
+      "keywords": ["syne","provides","herb","base","much","what","compound","fourteen","years","working"]
+    },
+    {
+      "id": "calla_1",
+      "source": "Voss the Mixer on Calla",
+      "text": "Calla the wild herbalist and I have a complicated relationship. Calla collects from the wild territory what I need for the rarer compounds. The relationship: I need what Calla provides, and what Calla provides is sometimes the only source. The complication: Calla's wild collection doesn't have the consistency of Syne's cultivated supply. The wild plant varies by season, by location, by year. I've learned to adjust the compound for the variation. The adjustment is the skill that Syne's consistency doesn't require.",
+      "keywords": ["calla","wild","herbalist","complicated","relationship","calla","collects","wild","territory","need"]
+    },
+    {
+      "id": "what_compounding_is_1",
+      "source": "Voss the Mixer on what compounding actually is",
+      "text": "Compounding is the construction of a specific response from general materials. The material is general — the compound is specific. The specificity is in the proportion: what ratio of which materials produces the response for the specific condition at the specific severity. In twenty-one years, the proportions are in my head. Not written down — head. The written proportion is a starting point. The actual proportion for each compound is modified from the starting point based on the patient's specific presentation. The starting point and the modification are both knowledge.",
+      "keywords": ["compounding","construction","specific","response","general","materials","material","general","compound","specific"]
+    },
+    {
+      "id": "what_voss_holds_1",
+      "source": "Voss the Mixer on the compound she compounded for someone who didn't tell her why",
+      "text": "Year nine. A customer who asked for a compound for which there is a legitimate use and a use I would not compound for if I knew it was the intended use. The customer gave me the legitimate use. I compounded it. Six months later, I learned what it had been used for. The legitimate use was not the actual use. In twenty-one years, this is the case where what I compounded went somewhere it shouldn't have gone. What I've done since: ask more questions. The legitimate use and the illegitimate use of some compounds are structurally identical. More questions sometimes finds the difference.",
+      "keywords": ["year","nine","customer","asked","compound","which","there","legitimate","use","use"]
+    },
+    {
+      "id": "twenty_one_years_1",
+      "source": "Voss the Mixer on twenty-one years of compounding",
+      "text": "In twenty-one years, the compounds I've made have acted on bodies in ways I intended and sometimes in ways I didn't fully predict. The body is not a closed system and a compound that acts on one condition sometimes acts on a related condition in a way that isn't in the prescription. In twenty-one years: four cases where the compound did more than intended, all positive. One case where the compound did less than intended, which I corrected. The unpredicted positive effects are the most interesting part of the work.",
+      "keywords": ["twenty-one","years","compounds","made","acted","bodies","ways","intended","sometimes","ways"]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "id": "house_aldenmere_cook",
+  "name": "Rem",
+  "role": "Cook to House Aldenmere; has fed the family for nineteen years; knows the household by its hunger",
+  "cluster": "house_aldenmere",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "cook_1",
+      "source": "Rem on what cooking for a household is",
+      "text": "Cooking for a household is providing a rhythm the household can depend on. Three meals a day, every day, in a form appropriate to the day. The rhythm is the service. What I'm actually cooking at any given meal is less important than that the meal arrives when it should arrive, at the quality it should be, without the household needing to think about it. In nineteen years, the Aldenmere household has not needed to think about meals. That's the service.",
+      "keywords": ["cooking","household","providing","rhythm","household","can","depend","three","meals","day"]
+    },
+    {
+      "id": "britta_1",
+      "source": "Rem on Britta Aldenmere",
+      "text": "Britta directs the household. I direct the kitchen. In nineteen years, those two authorities have never overlapped except when Britta has had a specific instruction about a meal — a guest's dietary requirement, a celebration meal's specific dishes, a household member's preference that should be accommodated. In nineteen years: forty-two specific instructions. Forty-two times in nineteen years where Britta and I exchanged direction about a meal. The other eighteen-plus years: the kitchen is mine.",
+      "keywords": ["britta","directs","household","direct","kitchen","nineteen","years","two","authorities","never"]
+    },
+    {
+      "id": "davel_1",
+      "source": "Rem on Davel Aldenmere",
+      "text": "Davel Aldenmere manages the household's accounts, including the kitchen's accounts. What Davel requires from me: a weekly accounting of what was purchased and used, and an estimate for the following week. In nineteen years, Davel has questioned three of my weekly accounts. All three: I had made an accounting error, which I corrected. In nineteen years of weekly accounts, three errors is a record I'm comfortable with. Davel's review of the accounts has caught three errors that I'd have otherwise carried forward.",
+      "keywords": ["davel","aldenmere","manages","household's","accounts","including","kitchen's","accounts","what","davel"]
+    },
+    {
+      "id": "carr_1",
+      "source": "Rem on Carr Aldenmere",
+      "text": "Carr grew up at my table. In nineteen years, I've watched Carr's appetite and food preferences develop from infancy. The child who would only eat certain things at age four is not the same person who now eats what's served without specification. Carr has said once: Rem's food is the thing that makes coming home feel like coming home. I've thought about that. The food is the same food I cook for everyone. What Carr tastes is nineteen years of it being there when it should be there.",
+      "keywords": ["carr","grew","up","table","nineteen","years","watched","carr's","appetite","food"]
+    },
+    {
+      "id": "vrenn_1",
+      "source": "Rem on Vrenn",
+      "text": "Vrenn joined the household eight years ago and has a food sensitivity I was informed of the week of Vrenn's arrival. In eight years, the food sensitivity has been accommodated at every meal that Vrenn attended. Eight years of accommodation: fifty-three separate dishes modified, twenty-six new dishes developed to be inherently suitable, four instances where Vrenn's sensitivity and the meal's other requirements required Rem to serve two versions of the same dish simultaneously. Forty percent of my creative kitchen energy in eight years has been directed at accommodation. It's produced some of the best food I've made.",
+      "keywords": ["vrenn","joined","household","eight","years","food","sensitivity","informed","week","vrenn's"]
+    },
+    {
+      "id": "what_rem_knows_1",
+      "source": "Rem on what feeding people teaches",
+      "text": "In nineteen years of feeding the Aldenmere household, I've learned the household through its appetite. What each person eats, how much, when, and in what company — this is information that no other household servant would have. The mood of the household appears at the table. Tension in the household: smaller portions, slower eating, conversation that stops when I enter to serve. Ease in the household: full plates, lingering at the table, no one's in a hurry to leave. The kitchen knows the household's emotional weather before the household knows it.",
+      "keywords": ["nineteen","years","feeding","aldenmere","household","learned","household","through","appetite","what"]
+    },
+    {
+      "id": "what_rem_holds_1",
+      "source": "Rem on what she keeps to herself",
+      "text": "What I've heard at the table in nineteen years. The household talks in front of the cook because the cook becomes invisible. The cook who becomes invisible hears the household's conversations. In nineteen years, I've heard things I won't repeat. Not because the things are shameful — most of them aren't. Because repeating what's said at someone's table is a betrayal of the table's privacy. The table's privacy is the household's trust. I will not trade the trust for any conversation. Nineteen years and I've told no one what I've heard.",
+      "keywords": ["heard","table","nineteen","years","household","talks","front","cook","because","cook"]
+    },
+    {
+      "id": "nineteen_years_1",
+      "source": "Rem on nineteen years of cooking for the Aldenmere house",
+      "text": "In nineteen years, the Aldenmere household has eaten approximately twenty-seven thousand meals that I cooked or supervised. Twenty-seven thousand meals. I've thought about the number. The number is large and the number is intimate: each meal was for specific people on a specific day, and the specific day is what the meal fed. The nineteen years is twenty-seven thousand specific days, specific people, specific hungers. The number is large. The meals were individual.",
+      "keywords": ["nineteen","years","aldenmere","household","eaten","approximately","twenty-seven","thousand","meals","cooked"]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "id": "wild_road_sawyer",
+  "name": "Dresk",
+  "role": "Wild road sawyer; processes the timber that the territory's construction needs require",
+  "cluster": "wild_road",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "sawyer_1",
+      "source": "Dresk on sawing timber",
+      "text": "In twenty years of sawing timber in the wild road territory, what the sawyer produces: the construction timber that the settlement and its outposts are built from. In twenty years, the building that stands in the settlement or along the wild road started as a tree in the territory. Between the tree and the building is the sawyer's work. In twenty years, the sawyer is invisible in the finished building. In twenty years, the building exists because the sawyer was there.",
+      "keywords": ["twenty","years","sawing","timber","wild","road","territory","what","sawyer","produces"]
+    },
+    {
+      "id": "theen_1",
+      "source": "Dresk on Theen",
+      "text": "Theen reads the territory and the timber I saw comes from the territory Theen knows. In fifteen years of working with Theen's territory knowledge, what the territory reader provides to the sawyer: the selection of the timber stand that is ready for harvest without damaging the territory's long-term timber production. In fifteen years, the sawyer who harvests without the territory reader's knowledge takes from the wrong stand at the wrong time. In fifteen years, the wrong-stand-wrong-time harvesting produces short-term lumber and long-term territory damage.",
+      "keywords": ["theen","reads","territory","timber","saw","comes","territory","theen","knows","fifteen"]
+    },
+    {
+      "id": "weld_1",
+      "source": "Dresk on Weld",
+      "text": "Weld at the forge guild processes the metal fittings that my sawn timber is joined with. In twelve years of the sawyer-smith material relationship, what the Dresk-Weld connection is in practical terms: the timber and the metal that become a structure together. In twelve years, Weld's fitting specifications have shaped which timber dimensions I produce in the common cuts. In twelve years, the structure that joins Weld's metal and my timber has required three direct conversations about tolerances. In twelve years, three conversations is two fewer than I would have expected.",
+      "keywords": ["weld","forge","guild","processes","metal","fittings","sawn","timber","joined","twelve"]
+    },
+    {
+      "id": "keld_1",
+      "source": "Dresk on Keld",
+      "text": "Keld is the forge guild master and Keld's specifications for structural metal work determine what the sawyer needs to produce in terms of joining surfaces. In eight years of working from Keld's specifications, what the forge guild master's precision demands from the sawyer: the timber surface that will accept the metal fitting with the specified tolerance. In eight years, the timber that doesn't meet the joining surface specification requires modification before it can be fitted. In eight years, twice my timber required modification at the fitting stage.",
+      "keywords": ["keld","forge","guild","master","keld's","specifications","structural","metal","work","determine"]
+    },
+    {
+      "id": "mell_elder_1",
+      "source": "Dresk on Mell the Elder",
+      "text": "Mell the Elder founded the wild road settlement forty-two years ago and built the first structures from the territory's timber before I was working here. In ten years of knowing Mell, what Mell's founding-period timber knowledge provides: the record of which stands the settlement was originally built from and how those stands have recovered in the forty-two years since. In ten years, Mell's memory of the founding timber is the historical baseline for what the territory's timber production has been.",
+      "keywords": ["mell","elder","founded","wild","road","settlement","forty-two","years","ago","built"]
+    },
+    {
+      "id": "what_dresk_holds_1",
+      "source": "Dresk on what twenty years of sawing holds",
+      "text": "In twenty years, what the sawyer's work has given me: the physical knowledge of the territory's timber in a way that no one else has. The tree as it stands in the territory is one thing. The tree as it is once the saw has passed through it is another. In twenty years, I know what the territory's timber will be once it's been sawn — the grain, the density, the specific characteristics of the specific stands. In twenty years, the timber knowledge is as specific as a map of the territory's trees.",
+      "keywords": ["twenty","years","what","sawyer's","work","given","physical","knowledge","territory's","timber"]
+    },
+    {
+      "id": "what_twenty_years_teaches_1",
+      "source": "Dresk on what twenty years teaches a sawyer",
+      "text": "In twenty years, what the sawing has taught me that I didn't expect to learn: the patience of the material. The timber doesn't cooperate with urgency. The grain goes where it goes and the saw follows the grain or the work is poor. In twenty years, the urgency that works in other trades is the failure mode in the sawyer's work. In twenty years, the patience to follow the material's structure rather than impose on it: that's what twenty years of sawing has given me more than any specific skill.",
+      "keywords": ["twenty","years","what","sawing","taught","didn't","expect","learn","patience","material"]
+    },
+    {
+      "id": "twenty_years_1",
+      "source": "Dresk on twenty years as a wild road sawyer",
+      "text": "In twenty years, every structure along the wild road that uses timber has some of my work in it. The waystation Marb keeps, the outposts Cord uses, the structures Mell the Elder built since I've been here — twenty years of structures in the territory, and the timber in them passed through my saw. In twenty years, the wild road's built environment is partly the product of twenty years of my work. In twenty years, the built environment will stand longer than I'll be working. In twenty years, the timber in the structure outlasts the sawyer who shaped it.",
+      "keywords": ["twenty","years","every","structure","along","wild","road","uses","timber","some"]
+    }
+  ]
+}

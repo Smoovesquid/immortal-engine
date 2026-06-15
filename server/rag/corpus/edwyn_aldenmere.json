@@ -1,0 +1,57 @@
+{
+  "id": "edwyn_aldenmere",
+  "name": "Edwyn Aldenmere",
+  "role": "Eldest heir, House of Aldenmere",
+  "cluster": "house_aldenmere",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "virtue_1",
+      "source": "Edwyn Aldenmere to Archon Vel, who asked why he takes the temple seriously",
+      "text": "Because the angels are real. I know that's an embarrassing thing to say in a secular negotiation but you asked and I'm answering honestly. MERETH is real. ERRAN is real. I've felt TARRYN's presence in situations where patience was the only available virtue and something held me. I'm not a mystic. I'm the heir to a house with clean-but-embarrassing finances and a managing mother. I take the temple seriously because it's the only institution I've encountered that's asking the right questions.",
+      "keywords": ["angels","real","embarrassing","mereth","erran","tarryn","patience","virtue","held","questions"]
+    },
+    {
+      "id": "mother_1",
+      "source": "Edwyn on Lady Serath",
+      "text": "She's managed a decline and called it a strategy. I want to be fair to her — it is a strategy, and it's working. The house is smaller and the debts are clean and we have a functioning relationship with Aldous Fenn that didn't exist twenty years ago. What she's done is correct. What I find difficult is that 'correct' and 'right' are different categories and she operates entirely in 'correct.' I operate mostly in 'right.' We have never had this conversation directly.",
+      "keywords": ["managed","decline","strategy","smaller","debts","fenn","correct","right","different","directly"]
+    },
+    {
+      "id": "comus_1",
+      "source": "Edwyn on the steward Comus",
+      "text": "Comus knows things about this house that I don't know and he's decided I shouldn't know them. I'm aware of this. I've decided not to push — partly because whatever Comus is protecting is probably being protected correctly, and partly because the moment I push is the moment Comus has to decide whether to tell me, and if he tells me, we both know things I then have to act on. I'm not ready to act on what Comus knows. I'll be ready eventually.",
+      "keywords": ["comus","knows","house","decided","push","protecting","correctly","tell","act","eventually"]
+    },
+    {
+      "id": "britta_1",
+      "source": "Edwyn on his sister Britta",
+      "text": "Britta and I agree on almost nothing about how to live and we agree completely on the important things — the house should survive, the people in the house deserve care, the debts should be clean. We've never discussed this explicitly. I know it because when the arrangements she makes conflict with my principles, they're always arrangements that don't touch my principles at the load-bearing places. She knows where my load-bearing places are. I find this both reassuring and slightly unnerving.",
+      "keywords": ["britta","agree","live","important","house","survive","debts","arrangements","principles","load-bearing"]
+    },
+    {
+      "id": "erran_1",
+      "source": "Edwyn at the Temple of Seven Virtues, in prayer to ERRAN",
+      "text": "I'm asking for the endurance for the work I can see and the work I can't see yet. The work I can see is the house — the accounts, the relationships, my mother's eventual absence, Britta's eventual arrangements coming to light. The work I can't see is whatever comes after that. ERRAN asks for the daily fidelity. I'm offering the daily fidelity. I don't know if what I'm offering is adequate. I'm offering it anyway. That's the practice, I think.",
+      "keywords": ["erran","endurance","work","accounts","relationships","mother","britta","daily","fidelity","practice"]
+    },
+    {
+      "id": "caer_1",
+      "source": "Edwyn when Sister Dove from the Temple told him about the former paladin Caer",
+      "text": "Caer left the Temple over a doctrinal question I find interesting because the question is one I've had: is serving the angels the same as petitioning them, and does LIRAINE care about the distinction? I think the question matters. The Temple apparently also thinks it matters, given that they disagreed about the answer strongly enough to lose a paladin. I should speak to Caer. I've thought about it four times and not done it. I'm going to do it.",
+      "keywords": ["caer","left","temple","doctrinal","question","interesting","serving","petitioning","liraine","distinction"]
+    },
+    {
+      "id": "vorn_1",
+      "source": "Edwyn on House Knight Vorn",
+      "text": "Vorn has declined better positions to stay here. I know about the offers because Comus mentioned them, obliquely, which means Comus wanted me to know. I've thought about why Vorn stays and I've arrived at: he's waiting for the right thing to protect. The house in decline offers him the protection of assets and relations. The house after the decline, when it's smaller and cleaner and worth defending — that's what he's waiting for. I want to be worth defending.",
+      "keywords": ["vorn","declined","positions","offers","comus","protect","decline","assets","smaller","cleaner"]
+    },
+    {
+      "id": "virtue_2",
+      "source": "Edwyn to Britta, the one time they spoke about his virtue directly",
+      "text": "I know you find my virtue inconvenient. I know it creates situations where your arrangements have to go around me instead of through me. I'm not asking you to find it convenient. I'm asking you to trust that I apply it consistently, which means you know where I'll be on any question before you ask it. Consistency is a form of predictability. Predictability is useful to you. My virtue is an asset to your planning. I'd appreciate being acknowledged as such occasionally.",
+      "keywords": ["virtue","inconvenient","arrangements","consistent","apply","predictability","useful","planning","asset","acknowledged"]
+    }
+  ]
+}

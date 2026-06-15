@@ -1,0 +1,57 @@
+{
+  "id": "harbor_rope_walk_worker",
+  "name": "Twiss",
+  "role": "Rope walk worker; makes the rope that the harbor's ships run on; industrial-scale strand work",
+  "cluster": "harbor_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "rope_walk_1",
+      "source": "Twiss on the rope walk",
+      "text": "In nine years at the rope walk, what the rope walk is: the long building where the rope is made from the fiber to the finished cable. The length of the rope walk is the length of the rope — to make a hundred-foot cable, you need a hundred-foot walk. In nine years, the rope walk produces the lengths that the harbor's ships require, which are longer than any other rope use I know of. In nine years, the work is linear — from the fiber at one end to the finished rope at the other.",
+      "keywords": ["nine","years","rope","walk","what","rope","walk","long","building","where"]
+    },
+    {
+      "id": "baln_1",
+      "source": "Twiss on Baln",
+      "text": "Baln specifies the rope that the ships Baln builds require. In seven years of producing rope to Baln's specification, what the shipwright's rope specification tells me: the load the rope must bear, the condition it must bear it in, and the service life it must achieve. In seven years, Baln's specifications have been the most exacting I work to. In seven years, the rope that Baln has accepted has been the rope that met the specification. The rope that didn't meet the specification: Baln has returned four times in seven years.",
+      "keywords": ["baln","specifies","rope","ships","baln","builds","require","seven","years","producing"]
+    },
+    {
+      "id": "keris_1",
+      "source": "Twiss on Keris",
+      "text": "Keris's harbor management sets the standards that the harbor's equipment — including the rope — must meet. In seven years of operating under the harbor's equipment standards, what the standards provide: the minimum specification that the harbor's safety requires. In seven years, Keris's standards are the floor. What I produce above the floor: the differentiation between the rope that meets the minimum and the rope that exceeds it. In seven years, the ships that request the rope above the floor are the ships that operate in conditions where the floor isn't sufficient.",
+      "keywords": ["keris's","harbor","management","sets","standards","harbor's","equipment","including","rope","must"]
+    },
+    {
+      "id": "meld_1",
+      "source": "Twiss on Meld",
+      "text": "Meld the chandler includes rope as part of the vessel provisioning manifest. In six years of the rope walk-chandler supply relationship, what Meld's provisioning function provides to the rope walk's distribution: the consolidated demand from outgoing vessels. The vessel that provisions through Meld's chandlery acquires its rope through Meld. In six years, Meld's consolidated orders have made the rope walk's distribution more efficient — fewer individual vessel transactions, more consistent order sizing.",
+      "keywords": ["meld","chandler","includes","rope","part","vessel","provisioning","manifest","six","years"]
+    },
+    {
+      "id": "gid_1",
+      "source": "Twiss on Gid",
+      "text": "Gid has told me more about how the rope performs in difficult piloting conditions than any other single person in the harbor. In six years of the Gid-rope walk feedback relationship, what Gid's difficult-condition piloting produces in terms of rope performance intelligence: the specific failure modes that the minimum specification doesn't prevent. In six years, Gid has described three rope failures observed during difficult approaches. All three were in rope below the premium specification. In six years, Gid's feedback has been integrated into the premium specification's criteria.",
+      "keywords": ["gid","told","more","about","how","rope","performs","difficult","piloting","conditions"]
+    },
+    {
+      "id": "what_twiss_holds_1",
+      "source": "Twiss on what nine years of rope making holds",
+      "text": "In nine years, what the rope walk has taught me: the rope is the ship's connection to everything else. The anchor rope is the connection to the ground. The rigging is the connection to the wind. The line from ship to dock is the connection to the harbor. In nine years, every use of rope is the management of connection — the force that the connection must bear and the conditions the connection must bear it in. In nine years, what I make is the ship's connection capacity.",
+      "keywords": ["nine","years","what","rope","walk","taught","rope","ship's","connection","everything"]
+    },
+    {
+      "id": "what_rope_is_1",
+      "source": "Twiss on what rope actually is",
+      "text": "In nine years, what the rope actually is: three elements — the fiber, the twist, and the lay. The fiber determines the base strength. The twist determines how the fibers distribute load. The lay determines how the twisted strands combine. In nine years, the same fiber with different twist and lay produces dramatically different rope. In nine years, the rope maker's skill is the knowledge of how the three elements combine for the specific use. The anchor rope and the rigging rope are both rope. In nine years, they're different rope for different reasons.",
+      "keywords": ["nine","years","what","rope","actually","three","elements","fiber","twist","lay"]
+    },
+    {
+      "id": "nine_years_1",
+      "source": "Twiss on nine years at the rope walk",
+      "text": "In nine years, the rope walk has produced approximately sixty thousand feet of finished rope across all specifications. Sixty thousand feet of rope that has gone into the harbor's ships, the harbor's infrastructure, and the settlement's industrial uses. In nine years, what sixty thousand feet of rope represents in terms of connection capacity: the connections the harbor's commerce depends on, made physical. In nine years, the rope walk is invisible because the rope is invisible — until the rope fails, which in nine years has happened to three pieces of rope walk rope that I know of. Three failures in sixty thousand feet.",
+      "keywords": ["nine","years","rope","walk","produced","approximately","sixty","thousand","feet","finished"]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "id": "thornwall_cartwright",
+  "name": "Dub",
+  "role": "Cartwright and wheelwright; makes and repairs what moves goods through the district",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "wheel_1",
+      "source": "Dub on the wheel",
+      "text": "The wheel is the most important shape in practical mechanics. Not because it's complex — it isn't. Because it converts the most common force, pushing along the ground, into movement. The axle is what makes the wheel useful. The wheel without the axle rotates in place. With the axle, the rotation moves the load. I've been making wheels for twenty years. What I'm still thinking about: why the wheel works is still, in some sense, remarkable.",
+      "keywords": ["wheel","most","important","shape","practical","mechanics","not","because","complex","isn't"]
+    },
+    {
+      "id": "garst_1",
+      "source": "Dub on Garst",
+      "text": "Garst's stone work sometimes requires my carts for material transport. The heavy stone cart is a different specification from the market cart — different wheel diameter, axle gauge, load capacity. What I've learned from making carts for stone work: the load type determines the cart design in ways that general-purpose carts can't accommodate. A stone cart that fails under stone load is not a cart failure — it's a design failure. In seven years of working with Garst, three designs and two revisions.",
+      "keywords": ["garst","stone","work","sometimes","requires","carts","material","transport","heavy","stone"]
+    },
+    {
+      "id": "comus_1",
+      "source": "Dub on Comus",
+      "text": "Comus's traveling cart is mine. I built it eight years ago and it's been on the road for eight years since. Comus returns for maintenance every season. In eight years the cart has been rebuilt twice — not replaced, rebuilt from the original frame. What I specified when I built it: buildable from available materials anywhere on the trading circuit. If the cart breaks on the road, a local carpenter can make the replacement part from my specification. The cart is currently on its third set of wheels.",
+      "keywords": ["comus","traveling","cart","built","eight","years","road","eight","years","since"]
+    },
+    {
+      "id": "bols_1",
+      "source": "Dub on Bols",
+      "text": "Bols the porter uses a handcart I made eleven years ago. The handcart is still in service. In eleven years Bols has returned for one wheel replacement and one axle adjustment. The wheel replacement was expected — eleven years of market district use is the expected lifespan. The axle adjustment was unexpected: the district's paving had changed in a way that produced a specific lateral stress the original axle hadn't been designed for. I adjusted the axle for the changed paving. The cart is fine.",
+      "keywords": ["bols","porter","uses","handcart","made","eleven","years","handcart","still","service"]
+    },
+    {
+      "id": "weld_1",
+      "source": "Dub on Weld",
+      "text": "The metal hardware on my wheels — the rim bands, the hub caps, the axle pins — comes from the Forge Guild. In nine years of working with Weld specifically, the hardware has met my specifications consistently. What Weld understands about my specifications that previous suppliers didn't: the hardware is structural, not decorative. The tolerance I need is engineering tolerance, not finishing tolerance. Engineering tolerance is tighter. Weld works to engineering tolerance without being told twice. Previous suppliers needed to be told every time.",
+      "keywords": ["metal","hardware","wheels","rim","bands","hub","caps","axle","pins","comes"]
+    },
+    {
+      "id": "what_twenty_years_taught_1",
+      "source": "Dub on what twenty years of making wheels teaches",
+      "text": "The wheel that fails reveals more than the wheel that succeeds. In twenty years, I've had six wheel failures after delivery. Each failure: I retrieved the broken wheel, analyzed the failure, found the cause, modified the design or the material selection or the manufacturing process. All six failures have made subsequent wheels better. The cost of the failure is the improvement it enables. I've reached the point where I can sometimes predict the failure mode before it happens. The prediction comes from the accumulation of failures.",
+      "keywords": ["wheel","fails","reveals","more","than","wheel","succeeds","twenty","years","six"]
+    },
+    {
+      "id": "what_dub_holds_1",
+      "source": "Dub on what he's building that he hasn't told anyone",
+      "text": "A design I've been working on for three years. A wheel configuration that would allow the cart to take a sharper turning radius without the wheel skidding. The problem with turning radius is that the inside wheel and the outside wheel travel different distances in the turn. Standard cart design ignores this — the inside wheel skids. My design addresses the differential. In three years I've built two prototypes. The second prototype turns correctly. I haven't told Weld yet. When it's ready to be made in metal, Weld will know before anyone else.",
+      "keywords": ["design","working","three","years","wheel","configuration","allow","cart","take","sharper"]
+    },
+    {
+      "id": "twenty_years_1",
+      "source": "Dub on twenty years of cartwright work",
+      "text": "Every cart I've made is somewhere in motion or waiting to be in motion. They're in the settlements, on the roads, in the yards. I can't see any of them from here. What I know about where they are: most are doing what I built them to do. A few are done, broken past repair. One is in another country — Comus's cart left the district four years ago on a route I haven't tracked. I built the cart to be anywhere. It went somewhere. That's what carts are for.",
+      "keywords": ["every","cart","made","somewhere","motion","waiting","motion","settlements","roads","yards"]
+    }
+  ]
+}

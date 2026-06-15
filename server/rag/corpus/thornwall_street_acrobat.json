@@ -1,0 +1,57 @@
+{
+  "id": "thornwall_street_acrobat",
+  "name": "Tupp",
+  "role": "Street acrobat; market district; performs independently, not with the Ember Road Players",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "acrobat_1",
+      "source": "Tupp on street performance",
+      "text": "The street is not a stage. The stage has an audience. The street has people who might stop, or might walk past, or might look and walk and toss something back over their shoulder. The street performer's work is to make stopping feel worth it before the person has decided whether to stop. The Players have a stage. I have this corner and the first three seconds of every person who passes. The first three seconds are the whole pitch.",
+      "keywords": ["street","not","stage","stage","has","audience","street","has","people","who"]
+    },
+    {
+      "id": "kevin_1",
+      "source": "Tupp on Kevin Bacon",
+      "text": "Kevin's company is what I measure my work against. Not what I'm trying to become — I'm not trying to be Kevin or be in the Players. What I use them as: the standard of what performance can do. The Players make people forget where they are for two hours. I make people stop for thirty seconds. The scale is different. The thing being done is the same thing. I watched all four performances of their last visit from a position where I could see the audience as much as the stage. I was studying both.",
+      "keywords": ["kevin","company","measure","work","against","not","what","trying","become","not"]
+    },
+    {
+      "id": "luce_1",
+      "source": "Tupp on Luce",
+      "text": "Luce joined the Players three months ago. Before that, Luce performed on the market circuit independently. I knew Luce from the circuit. What I saw change when Luce joined the Players: the performance got bigger. Not better — bigger. The scale changed. I asked Luce about it. Luce said: the stage is a different instrument than the corner. The corner teaches the beginning. The stage teaches what the beginning is for.",
+      "keywords": ["luce","joined","players","three","months","before","luce","performed","market","circuit"]
+    },
+    {
+      "id": "perve_1",
+      "source": "Tupp on Perve",
+      "text": "Perve's stall is adjacent to my corner. In six years of the same location, we've developed an understanding: my performance draws the crowd, the crowd's attention spills to Perve's stall. Perve has never said this is the arrangement. I've never said it either. Perve leaves space for the crowd to gather near my corner. I perform facing outward so the crowd faces Perve's direction. We've worked this out without discussing it. The arrangement is the evidence that we've discussed it.",
+      "keywords": ["perve","stall","adjacent","corner","six","years","same","location","developed","understanding"]
+    },
+    {
+      "id": "marr_1",
+      "source": "Tupp on Marr the butcher",
+      "text": "Marr told me once: what you do with your body is what I do with my hands. I said: I don't see the similarity. Marr said: you know where everything is. Your body does what you need it to do because you've trained it to know where it is and what it can do. I train my hands to know the cuts, the pressure, the exact position. The knowledge is physical. You just trained a different physical knowledge. I've thought about this for two years. Marr was right.",
+      "keywords": ["marr","told","once","what","you","do","with","your","body","what"]
+    },
+    {
+      "id": "what_six_years_taught_1",
+      "source": "Tupp on six years of the corner",
+      "text": "The crowd teaches you more than any instructor. The crowd is the feedback that doesn't have politeness in it. If I do something that doesn't work, the crowd walks. Not after — during. The instant something loses them, they're already leaving. In six years, my failure rate has gone from about one in three attempts to about one in eight. The one in eight: I don't always know why it didn't work. That's the gap I'm still closing.",
+      "keywords": ["crowd","teaches","more","than","any","instructor","crowd","feedback","doesn't","have"]
+    },
+    {
+      "id": "what_tupp_holds_1",
+      "source": "Tupp on the thing she's still trying to do",
+      "text": "There's a specific sequence I've been working on for fourteen months. Technically achievable — I've done all the components separately. The combination at the speed I want it at has failed forty-seven times. It's failed in ways that range from barely off to completely wrong. Forty-seven attempts and I can see where each one went different from what I intended. The seeing is better. The doing is getting closer. I'll know when it's ready because I'll be able to do it twice in a row before I show it to the corner.",
+      "keywords": ["specific","sequence","working","fourteen","months","technically","achievable","done","all","components"]
+    },
+    {
+      "id": "market_district_1",
+      "source": "Tupp on the market as an audience",
+      "text": "The market is the best audience I've worked because it's the most honest. No one at the market came to see me. No one has their expectations set by a bill or a reputation. Every person who stops chose to stop from a cold start. The consent is fresh every time. The applause is uncontaminated by obligation. When the market responds, it responds to what I actually did. Six years of uncontaminated response. My work is what the market says it is.",
+      "keywords": ["market","best","audience","worked","because","most","honest","no","one","market"]
+    }
+  ]
+}

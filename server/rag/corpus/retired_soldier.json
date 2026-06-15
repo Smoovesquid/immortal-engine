@@ -1,0 +1,57 @@
+{
+  "id": "retired_soldier",
+  "name": "Brak",
+  "role": "Retired soldier; twenty years of service, now lives in the harbor district; no institutional affiliation",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "retired_1",
+      "source": "Brak on being retired from soldiering",
+      "text": "I stopped being a soldier and started being a person who was a soldier. The difference is more significant than it sounds. Being a soldier means the institution shapes the day, the response, the relationships, the meaning of things. Being a person who was a soldier means all of that is in the past tense and what shapes the present is something you have to build without the institution. I've been building for six years. The building goes slowly. The institution was present for twenty years and its absence is also present.",
+      "keywords": ["stopped","being","soldier","started","being","person","who","was","soldier","difference"]
+    },
+    {
+      "id": "ord_1",
+      "source": "Brak on Ord",
+      "text": "Ord runs the night watch. I understand the night watch from the other side — the institution rather than the individual. What Ord does is what I did for twenty years in a different context: the maintenance of safety through presence. The technology of presence is the same regardless of the institution. I've talked with Ord twice about specifics of the watch's organization. Both times Ord listened and asked questions. Neither time did Ord change anything based on what I said. The respect was real. The change wasn't the point.",
+      "keywords": ["ord","runs","night","watch","understand","night","watch","other","side","institution"]
+    },
+    {
+      "id": "commander_vel_1",
+      "source": "Brak on Commander Vel",
+      "text": "Vel leads the Brotherhood the way a commander leads troops: doctrine, clarity, accountability. I recognize the structure. The Brotherhood isn't a military institution but it has a military structure — something shaped it toward that organization. I haven't asked Vel about the history. What I've observed from six years in the district: the Brotherhood functions with better inter-unit coordination than most military organizations I served in. The clarity of command is higher. Something in how Vel has built the structure produces better coordination.",
+      "keywords": ["vel","leads","brotherhood","way","commander","leads","troops","doctrine","clarity","accountability"]
+    },
+    {
+      "id": "rulf_1",
+      "source": "Brak on Rulf",
+      "text": "Rulf runs the dock with the kind of quiet competence that military organizations call 'experienced NCO behavior'. Not the officer's authority — the NCO's practical knowledge of how to get the work done under any conditions. I've watched Rulf for six years. Every dock situation I've seen Rulf handle: handled correctly. The handling doesn't look like decision-making from the outside. From the outside it looks like things just proceeding smoothly. The smooth proceeding is the sign of someone who has made all the decisions before they were necessary.",
+      "keywords": ["rulf","runs","dock","quiet","competence","military","organizations","call","experienced","nco"]
+    },
+    {
+      "id": "maret_1",
+      "source": "Brak on Maret",
+      "text": "Maret's husband died the way some soldiers die: not in what you'd call a battle, but in the work that military life produces. I knew some of those deaths. I didn't know Maret's husband. What I can offer Maret that I haven't offered: the knowledge of what the work was like, from the inside. I haven't offered it because Maret hasn't asked and I don't know if the inside knowledge would help. Some people want it. Some don't. Maret's grief is particular to Maret. My knowledge is general.",
+      "keywords": ["maret","husband","died","way","some","soldiers","die","not","what","you'd"]
+    },
+    {
+      "id": "what_twenty_years_left_1",
+      "source": "Brak on what twenty years of soldiering left",
+      "text": "The body remembers twenty years of training. Not in a way that serves anything in the harbor district, but in a way I notice: reflexes, posture, spatial awareness, the instinct to look for the exit in a new room. These are the residue of twenty years of the institution's shaping. They don't make me more effective at anything I currently do. They make me a person who was shaped for twenty years and is now shaped permanently by that shaping. The shaping is done. I carry it.",
+      "keywords": ["body","remembers","twenty","years","training","not","way","serves","anything","harbor"]
+    },
+    {
+      "id": "what_brak_holds_1",
+      "source": "Brak on what he doesn't talk about from the twenty years",
+      "text": "There are things from twenty years of service that I don't discuss. Not because they're too difficult — because the context for understanding them doesn't exist in the harbor district. The events require the institutional context to make sense of. Without the institutional context, I'd be describing things that don't have a frame for the person I'm describing them to. So I don't describe them. The events happened. They're part of what made me. The people here don't need to know them to know me now.",
+      "keywords": ["things","twenty","years","service","don't","discuss","not","because","too","difficult"]
+    },
+    {
+      "id": "six_years_1",
+      "source": "Brak on six years in Thornwall",
+      "text": "In six years I've watched the district without being part of any of its institutions. A civilian position I didn't expect to value and have come to value: the viewpoint from outside all the institutional structures. I can see the watch, the Brotherhood, the Academy, the Compact, the Covenant, the harbor — I can see all of them because I'm not in any of them. The perspective is something the institution couldn't give me. The institution gave me twenty years. The distance gives me six more.",
+      "keywords": ["six","years","watched","district","without","being","part","any","institutions","civilian"]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "id": "almasose_devoted",
+  "name": "Dune",
+  "role": "ALMASOSE devotee; the angel of charity; practices giving that doesn't create obligation",
+  "cluster": "covenant_of_seven",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "almasose_1",
+      "source": "Dune on ALMASOSE",
+      "text": "ALMASOSE is the angel of charity. What ALMASOSE teaches that distinguishes real charity from its common corruption: the gift that creates obligation is not charity, it's a loan with a different name. The charity that expects gratitude, recognition, or future service from the recipient has installed an obligation. In eleven years of ALMASOSE's practice, the test I apply to every giving: would I be comfortable if the recipient never acknowledged the gift at all? If not, the giving isn't charity. It's something else wearing charity's face.",
+      "keywords": ["almasose","angel","charity","what","almasose","teaches","distinguishes","real","charity","common"]
+    },
+    {
+      "id": "pell_young_1",
+      "source": "Dune on Pell the Young",
+      "text": "Pell the Young distributes alms for the Covenant. In seven years of working alongside Pell the Young, the distinction between what Pell does and what ALMASOSE teaches: Pell distributes from the Covenant's collection, on the Covenant's behalf, with the Covenant's implicit expectation of relationship. The giving is real. The expectation is also real. In ALMASOSE's terms: the Covenant's almsgiving is conditional charity. The condition isn't money — it's belonging to the Covenant's orbit. ALMASOSE's practice is unconditional. The difference matters.",
+      "keywords": ["pell","young","distributes","alms","covenant","seven","years","working","alongside","pell"]
+    },
+    {
+      "id": "mam_wey_1",
+      "source": "Dune on Mam Wey",
+      "text": "Mam Wey gives without the theological frame and without the charity's name — without knowing it's the ALMASOSE practice. In eight years of knowing Mam Wey, what I observe: when someone in the district needs something, Mam Wey provides it through the network of knowing who has what. Not through the Covenant's distribution. Not through any formal mechanism. Through the personal relationship with everyone on the block. In ALMASOSE's terms: Mam Wey practices charity through proximity. It's the purest form I've seen in eleven years.",
+      "keywords": ["mam","wey","gives","without","theological","frame","without","charity's","name","without"]
+    },
+    {
+      "id": "bale_1",
+      "source": "Dune on Bale",
+      "text": "Bale carries water to everyone on the route without distinction. In seven years of knowing Bale's work, what I see in ALMASOSE's terms: the water carrier's service has no prerequisite. The water goes to every household on the route. The household that can't pay this week gets the water anyway because the route passes it. Bale doesn't speak about the charity. Bale speaks about the route. The route is the form the charity takes. In eleven years, Bale's water-carrying is the most consistent unconditional service I know.",
+      "keywords": ["bale","carries","water","everyone","route","without","distinction","seven","years","knowing"]
+    },
+    {
+      "id": "hollow_court_1",
+      "source": "Dune on the Hollow Court",
+      "text": "The Hollow Court gives the dying the presence of people who have no stake in their death. In six years of volunteering with the Court, what I understand about the charity of presence: the person who sits with the dying gives something that requires nothing of the dying person. The dying person doesn't have to perform recovery, doesn't have to express hope, doesn't have to be anything other than what they are. The presence without expectation: that's ALMASOSE's unconditional giving applied to the final stage.",
+      "keywords": ["hollow","court","gives","dying","presence","people","who","have","no","stake"]
+    },
+    {
+      "id": "what_charity_isnt_1",
+      "source": "Dune on what ALMASOSE says charity isn't",
+      "text": "In eleven years of ALMASOSE's practice, the giving I've had to stop: the giving that felt like charity but was actually management of my discomfort. The gift given to relieve the giver's discomfort at seeing someone in need is not charity — it's a comfort transaction for the giver. The gift that asks the recipient to be grateful is a social transaction. In eleven years, I've caught myself in both. ALMASOSE's practice has been the slow work of identifying those transactions and removing them from what I call giving.",
+      "keywords": ["eleven","years","almasose's","practice","giving","had","stop","giving","felt","like"]
+    },
+    {
+      "id": "what_dune_holds_1",
+      "source": "Dune on the giving she doesn't know the result of",
+      "text": "In eleven years, approximately half of what I've given has been given anonymously. I don't know the results of half of eleven years of giving. The anonymous giving is the purer form — the outcome is entirely outside my knowledge. The thing given is entirely outside my knowledge once it's given. In eleven years, the anonymous giving has been harder than the acknowledged giving. The not-knowing is the complete surrender of the outcome. ALMASOSE's practice says the surrender is the point.",
+      "keywords": ["eleven","years","approximately","half","what","given","been","given","anonymously","don't"]
+    },
+    {
+      "id": "eleven_years_1",
+      "source": "Dune on eleven years of ALMASOSE's practice",
+      "text": "In eleven years, the practice has changed what I think about receiving. Before: receiving was uncomfortable — the obligation it seemed to create felt like debt. In eleven years of practicing unconditional giving, I've learned that the unconditional receiving is also possible: accepting what's given without installing the obligation myself. The obligation in a gift is often installed by the receiver, not the giver. In eleven years, I've been working on receiving without installation. It's harder than the giving.",
+      "keywords": ["eleven","years","practice","changed","what","think","about","receiving","before","receiving"]
+    }
+  ]
+}

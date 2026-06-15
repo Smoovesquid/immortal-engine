@@ -1,0 +1,57 @@
+{
+  "id": "brenn_apprentice",
+  "name": "Brenn",
+  "role": "Guild apprentice, Forge Guild; Calla's former student",
+  "cluster": "forge_guild",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "apprentice_1",
+      "source": "Brenn at the forge, to a visitor who asked what he was making",
+      "text": "Hinge. Nothing interesting yet — you do hinges and brackets and hooks for the first two years, because the hinge is the discipline. Getting a hinge right means understanding the tolerances, the weight, the friction, the point where it catches. When you understand why the hinge works, you understand why everything works. Wrendle told me this. I thought he was being mystical. Then I made fifty hinges and understood what he meant. The hinge is the test, not the destination.",
+      "keywords": ["hinge","nothing","interesting","brackets","hooks","first","two","years","discipline","tolerances"]
+    },
+    {
+      "id": "calla_1",
+      "source": "Brenn on Calla, who taught him to read",
+      "text": "Calla taught me to read because she decided I needed to be able to read, not because I asked. I was eleven and helping Edda carry materials past her door and Calla stopped me and said: you're going to be a craftsman, craftsmen need to read the guild records, do you want to learn. I said yes because you say yes to Calla. She taught me over two years, one afternoon a week, and she made it clear the whole time that dependency is vulnerability. I still don't know what she meant by that but I think about it when I'm reading.",
+      "keywords": ["calla","taught","read","decided","eleven","edda","craftsman","guild","records","dependency"]
+    },
+    {
+      "id": "academy_1",
+      "source": "Brenn when Old Wrendle asks if he's thought about the Academy",
+      "text": "I've thought about it. The scholarship offer came six months ago — someone at the Academy saw my entry in the spring exhibition and sent a letter. Wrendle knows about the letter. I haven't told him I know he knows. I don't know what to do with it. I want to stay in the guild. I also want to know what the Academy would teach me. These aren't compatible for long. I have to decide and I keep not deciding and Wrendle is waiting with the patience of someone who's been waiting for something like this to come.",
+      "keywords": ["academy","thought","scholarship","offer","six","months","letter","wrendle","guild","decide"]
+    },
+    {
+      "id": "wrendle_1",
+      "source": "Brenn on Old Wrendle",
+      "text": "He hasn't told me what to do about the Academy. He hasn't suggested anything. He lets me work and he corrects me when I'm wrong and he doesn't talk about the letter at all. I think this is the answer and I'm not reading it correctly yet. The answer is in the way he's doing his job — doing it the same as before the letter came, giving it the same attention, not treating the hinge differently now that there might be a reason not to make hinges. I think the answer is: the hinge is still the answer.",
+      "keywords": ["wrendle","told","academy","suggests","work","corrects","wrong","letter","hinge","answer"]
+    },
+    {
+      "id": "edda_1",
+      "source": "Brenn on the smithy owner Edda",
+      "text": "Edda is the proof that Thornwall makes things. Not great things, not famous things, but correct things. She's made correct things here for twenty years and she'll let me go to the Academy if I choose it, which I know because she told me so when the letter came. She said: go if you need to go. The village will still be here. The work will still be here. I think she meant: the work is here if you want to come back. She didn't say if. I noticed the not-saying.",
+      "keywords": ["edda","thornwall","makes","things","correct","twenty","years","academy","choose","back"]
+    },
+    {
+      "id": "food_1",
+      "source": "Brenn on Bren Holt's cooking at the Ember Road Players",
+      "text": "The Players cooked for the village the night they stopped here. Bren Holt made something with what was left in three separate pantries and it was the best meal I'd had in months. I don't know how that's possible. I asked him afterward. He said: you cook for what the situation is, not for what you wish the situation were. I've been thinking about this in the forge. The situation is what it is. The work is what the material asks for. These are the same thought about different things.",
+      "keywords": ["players","cooked","village","bren","holt","pantries","best","meal","situation","material"]
+    },
+    {
+      "id": "guild_1",
+      "source": "Brenn on why he wants to stay in the guild",
+      "text": "The guild charter predates the Aldenmere crest by sixty years. Wrendle told me this when I was accepted. The guild was here before the house and the house was built in part with guild work and the guild record tracks this and doesn't make a particular thing of it. The thing that matters is that the guild is its own. Not attached to a family, not attached to a Compact, not attached to a faith. It's the work. The work and the record and the people who know how to do the work. I want to be in that line.",
+      "keywords": ["guild","charter","predates","aldenmere","crest","sixty","years","wrendle","accepted","work"]
+    },
+    {
+      "id": "making_1",
+      "source": "Brenn when a hinge he made was installed and the door swung correctly",
+      "text": "The door swings correctly. This is the whole thing. The hinge I made is doing what a hinge does in a way that's indistinguishable from correct to anyone who opens the door. They open the door and the door opens. That's it. I made that possible. No one will ever know it was me. I find I don't need them to. Wrendle said: a craftsman's work lasts longer than their name. I'm starting to understand what he means by that too.",
+      "keywords": ["door","swings","correctly","hinge","made","indistinguishable","opens","possible","craftsman","lasts"]
+    }
+  ]
+}

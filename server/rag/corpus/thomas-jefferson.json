@@ -1,0 +1,84 @@
+{
+  "id": "thomas-jefferson",
+  "name": "Thomas Jefferson",
+  "chunks": [
+    {
+      "id": "declaration_1",
+      "source": "Declaration of Independence, July 4, 1776",
+      "text": "We hold these truths to be self-evident, that all men are created equal, that they are endowed by their Creator with certain unalienable Rights, that among these are Life, Liberty and the pursuit of Happiness. That to secure these rights, Governments are instituted among Men.",
+      "keywords": ["truths","equal","rights","liberty","happiness","creator","governments","unalienable","secure","instituted"]
+    },
+    {
+      "id": "declaration_2",
+      "source": "Declaration of Independence, July 4, 1776",
+      "text": "But when a long train of abuses and usurpations, pursuing invariably the same Object evinces a design to reduce them under absolute Despotism, it is their right, it is their duty, to throw off such Government, and to provide new Guards for their future security.",
+      "keywords": ["abuses","usurpations","despotism","duty","right","government","security","design","throw","reduce"]
+    },
+    {
+      "id": "notes_virginia_1",
+      "source": "Notes on the State of Virginia, 1785",
+      "text": "I tremble for my country when I reflect that God is just; that his justice cannot sleep forever; that considering numbers, nature and natural means only, a revolution of the wheel of fortune, an exchange of situation is among possible events; that it may become probable by supernatural interference.",
+      "keywords": ["tremble","country","justice","god","sleep","revolution","fortune","exchange","supernatural","probable"]
+    },
+    {
+      "id": "notes_virginia_2",
+      "source": "Notes on the State of Virginia, 1785",
+      "text": "Those who labour in the earth are the chosen people of God, if ever he had a chosen people, whose breasts he has made his peculiar deposit for substantial and genuine virtue. Corruption of morals in the mass of cultivators is a phenomenon of which no age nor nation has furnished an example.",
+      "keywords": ["labour","earth","chosen","god","virtue","corruption","morals","cultivators","phenomenon","nation"]
+    },
+    {
+      "id": "letter_madison_1",
+      "source": "Letter to James Madison, September 6, 1789",
+      "text": "The earth belongs always to the living generation. They may manage it then, and what proceeds from it, as they please, during their usufruct. They are masters too of their own persons, and consequently may govern them as they please. But persons and property make the sum of the objects of government.",
+      "keywords": ["earth","living","generation","govern","persons","property","masters","please","objects","usufruct"]
+    },
+    {
+      "id": "letter_john_adams_1",
+      "source": "Letter to John Adams, October 28, 1813",
+      "text": "I agree with you that there is a natural aristocracy among men. The grounds of this are virtue and talents. Formerly bodily powers gave place among the aristoi. But since the invention of gunpowder has armed the weak as well as the strong with missile death, bodily strength, like beauty, good humor, politeness and other accomplishments, has become but an auxiliary ground for distinction.",
+      "keywords": ["aristocracy","virtue","talents","gunpowder","strength","beauty","distinction","natural","weak","strong"]
+    },
+    {
+      "id": "letter_peter_carr_1",
+      "source": "Letter to Peter Carr, August 10, 1787",
+      "text": "Fix reason firmly in her seat, and call to her tribunal every fact, every opinion. Question with boldness even the existence of a God; because, if there be one, he must more approve of the homage of reason, than that of blindfolded fear. Your own reason is the only oracle given you by heaven.",
+      "keywords": ["reason","god","boldness","question","existence","homage","blindfolded","fear","oracle","heaven"]
+    },
+    {
+      "id": "first_inaugural_1",
+      "source": "First Inaugural Address, March 4, 1801",
+      "text": "We have called by different names brethren of the same principle. We are all republicans — we are all federalists. If there be any among us who would wish to dissolve this Union or to change its republican form, let them stand undisturbed as monuments of the safety with which error of opinion may be tolerated where reason is left free to combat it.",
+      "keywords": ["republicans","federalists","union","dissolve","error","opinion","tolerated","reason","combat","monuments"]
+    },
+    {
+      "id": "first_inaugural_2",
+      "source": "First Inaugural Address, March 4, 1801",
+      "text": "Equal and exact justice to all men, of whatever state or persuasion, religious or political; peace, commerce, and honest friendship with all nations, entangling alliances with none; the support of the State governments in all their rights, as the most competent administrations for our domestic concerns.",
+      "keywords": ["justice","peace","commerce","friendship","nations","alliances","governments","rights","administrations","domestic"]
+    },
+    {
+      "id": "letter_tree_liberty_1",
+      "source": "Letter to William Smith, November 13, 1787",
+      "text": "The tree of liberty must be refreshed from time to time with the blood of patriots and tyrants. It is its natural manure. What country can preserve its liberties if their rulers are not warned from time to time that their people preserve the spirit of resistance?",
+      "keywords": ["liberty","tree","blood","patriots","tyrants","manure","rulers","warned","resistance","spirit"]
+    },
+    {
+      "id": "letter_happiness_1",
+      "source": "Letter to Amos Cook, 1816",
+      "text": "Our greatest happiness does not depend on the condition of life in which chance has placed us, but is always the result of a good conscience, good health, occupation, and freedom in all just pursuits. Determine never to be idle. No person will have occasion to complain of the want of time, who never loses any.",
+      "keywords": ["happiness","conscience","health","occupation","freedom","idle","time","complain","chance","pursuits"]
+    },
+    {
+      "id": "letter_books_1",
+      "source": "Letter to John Adams, May 17, 1818",
+      "text": "I cannot live without books. An honest heart being the first blessing, a knowing head is the second. The greatest service which can be rendered any country is to add a useful art to its stock of knowledge. Knowledge is power, knowledge is safety, knowledge is happiness.",
+      "keywords": ["books","knowing","knowledge","heart","blessing","power","safety","service","useful","country"]
+    },
+    {
+      "id": "deathbed_letter_1",
+      "source": "Final letter, June 24, 1826 (written on his deathbed)",
+      "text": "May it be to the world, what I believe it will be — to some parts sooner, to others later, but finally to all — the signal of arousing men to burst the chains under which monkish ignorance and superstition had persuaded them to bind themselves, and to assume the blessings and security of self-government.",
+      "keywords": ["signal","chains","ignorance","superstition","burst","self-government","security","blessings","assume","arousing"]
+    }
+  ]
+}

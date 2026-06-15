@@ -1,0 +1,57 @@
+{
+  "id": "coin_cult_collector2",
+  "name": "Smab",
+  "role": "Coin Cult field collector; distinct from Jann; collects the regular payment installments from the Cult's active borrowers",
+  "cluster": "coin_cult",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "collector2_1",
+      "source": "Smab on the field collection function",
+      "text": "In eight years of field collection for the Coin Cult, what the field collector does that the credit operation's administrative side doesn't: goes to the borrower rather than waiting for the borrower to come to the credit function. In eight years, the borrower who doesn't come to the credit function with the scheduled payment is not always the borrower who won't pay. Sometimes the borrower is the borrower who is in a situation that has prevented the scheduled payment. In eight years, the field visit determines which.",
+      "keywords": ["eight","years","field","collection","coin","cult","what","field","collector","does"]
+    },
+    {
+      "id": "grav_1",
+      "source": "Smab on Grav",
+      "text": "Grav runs the Coin Cult's credit operations and the field collection schedule I run is the schedule Grav produces from the active borrower accounts. In seven years of the Smab-Grav collector-administrator relationship, what Grav's schedule provides to the field collector: the complete picture of who owes what, by when, and what the history of the account is. In seven years, the field collector who goes to the borrower without Grav's account history is the field collector who doesn't know what conversation they're walking into.",
+      "keywords": ["grav","runs","coin","cult's","credit","operations","field","collection","schedule","run"]
+    },
+    {
+      "id": "lena_1",
+      "source": "Smab on Lena",
+      "text": "Lena originates the credit and my collection function is the ongoing relationship with the credit Lena has originated. In six years of collecting from Lena's credit originations, what the origination assessment and the collection experience together tell me: whether Lena's initial capacity assessment was accurate. In six years, the borrowers from Lena's originations who have been consistent on payment: Lena's capacity assessment was accurate. The borrowers who have been inconsistent: the capacity assessment was at or above the borrower's actual capacity. In six years, accurate origination is a higher rate than I'd expected.",
+      "keywords": ["lena","originates","credit","collection","function","ongoing","relationship","credit","lena","originated"]
+    },
+    {
+      "id": "jann_1",
+      "source": "Smab on Jann",
+      "text": "Jann handles the accounts that have moved from scheduled collection to active difficulty. In six years of the Smab-Jann field collector-debt collector relationship, what the transition from my function to Jann's function is: the account that has been consistently served by the field collection routine and then stops performing goes from my regular visit to Jann's specific intervention. In six years, I've handed thirteen accounts to Jann. In six years, of thirteen: Jann has reported that twelve were addressed. One became a write-off. In six years, one write-off from thirteen transitions is the rate.",
+      "keywords": ["jann","handles","accounts","moved","scheduled","collection","active","difficulty","six","years"]
+    },
+    {
+      "id": "mott_1",
+      "source": "Smab on Mott",
+      "text": "Mott keeps the Cult's internal ledger and my field collection notes feed into the ledger that Mott maintains. In five years of the Smab-Mott field collector-ledger keeper relationship, what the field collection notes provide to the internal ledger: the real-time status of the active accounts that the payment schedule alone doesn't capture. In five years, the field note and the ledger entry together are more useful than either alone — the ledger has the contractual status, the field note has the situational context.",
+      "keywords": ["mott","keeps","cult's","internal","ledger","field","collection","notes","feed","ledger"]
+    },
+    {
+      "id": "what_smab_holds_1",
+      "source": "Smab on what eight years of field collection holds",
+      "text": "In eight years, approximately eight hundred and forty field visits. Of eight hundred and forty: seven hundred and ninety-three resulted in payment collected or payment arrangement confirmed. Forty-seven produced a situation that required Grav's administrative attention before the next scheduled visit. In eight years, forty-seven administrative escalations in eight hundred and forty visits. In eight years, the escalation rate is the measure the Cult's administrator uses to assess the field collection function's performance. In eight years, Grav has told me the rate is within the expected range.",
+      "keywords": ["eight","years","approximately","eight","hundred","forty","field","visits","eight","hundred"]
+    },
+    {
+      "id": "what_the_field_visit_is_1",
+      "source": "Smab on what the field visit actually is",
+      "text": "In eight years, what the field visit is that the administrative record doesn't capture: the assessment of the borrower's current situation. The borrower who is behind on payment and whose situation is temporarily constrained is different from the borrower who is behind on payment and whose situation is structurally constrained. In eight years, the field visit produces the distinction. The administrative record shows both as behind on payment. In eight years, the distinction determines what happens next — the temporary arrangement or the Jann referral.",
+      "keywords": ["eight","years","what","field","visit","actually","assessment","borrower's","current","situation"]
+    },
+    {
+      "id": "eight_years_1",
+      "source": "Smab on eight years as the Coin Cult's field collector",
+      "text": "In eight years, the Coin Cult's credit operation has depended on my field collection function to maintain the performance of the active portfolio. In eight years, the credit that is originated but not serviced is the credit that becomes the problem. In eight years, the field collection function is the servicing — the human relationship with the credit account that the administrative record can't substitute for. In eight years, the credit is a relationship, not just a number in Mott's ledger. In eight years, I maintain the relationship.",
+      "keywords": ["eight","years","coin","cult's","credit","operation","depended","field","collection","function"]
+    }
+  ]
+}

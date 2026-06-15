@@ -1,0 +1,57 @@
+{
+  "id": "thornwall_money_changer",
+  "name": "Arv",
+  "role": "Currency changer; converts the various coins travelers bring into the settlement's accepted tender",
+  "cluster": "merchant_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "money_changing_1",
+      "source": "Arv on currency changing",
+      "text": "Every traveler arrives with the money of where they've been. The merchant quarter needs money that works here. In eleven years of changing currency, I'm the membrane between the money the traveler has and the money the merchant district can use. The exchange rate is where the work is: what one currency is worth in another currency on this specific day is a judgment about relative value that I make approximately sixty times per day.",
+      "keywords": ["every","traveler","arrives","money","where","they've","been","merchant","quarter","needs"]
+    },
+    {
+      "id": "saben_1",
+      "source": "Arv on Saben",
+      "text": "Saben is the one merchant in this district who understands currency dynamics as well as I do. In nine years of occasional consultation with Saben, the conversations are between people who know the same thing from different positions: Saben knows what the currency differences mean for the trading margin, I know what the currency differences are. In nine years, when the rates are in unusual conditions, Saben is the first person who asks me about it and the most useful person to think through the implications with.",
+      "keywords": ["saben","one","merchant","district","understands","currency","dynamics","well","nine","years"]
+    },
+    {
+      "id": "comus_1",
+      "source": "Arv on Comus",
+      "text": "Comus brings back currency from every trading route. In ten years of changing Comus's traveling currency, the variety is the best information I receive about what's circulating in the territory: Comus has brought me seven distinct currencies in ten years, several of which I hadn't seen before Comus arrived with them. In ten years, Comus's currency diversity has been my education in what's circulating beyond this region.",
+      "keywords": ["comus","brings","back","currency","every","trading","route","ten","years","changing"]
+    },
+    {
+      "id": "lark_1",
+      "source": "Arv on Lark",
+      "text": "Lark runs the auction. In eight years, the auction produces prices in the settlement's currency. The buyers who arrive with other currencies: they come to me before the auction, not after. In eight years, the pre-auction traffic is the most regular part of my day on market day. What Lark knows about my role in the auction's function: Lark acknowledges it. The auction's price in local currency is accessible because the currency changing makes the buyers' foreign currencies into local currency before they bid.",
+      "keywords": ["lark","runs","auction","eight","years","auction","produces","prices","settlement's","currency"]
+    },
+    {
+      "id": "osric_1",
+      "source": "Arv on Osric",
+      "text": "Osric is the one merchant who has attempted to negotiate my rate on every transaction for four years. In four years, the negotiation is consistent: Osric proposes a rate, I give my rate, Osric proposes the middle. In four years, the middle has been occasionally acceptable and occasionally not. What Osric's negotiation has given me that most customers don't: the practice of defending the rate under sustained pressure. In four years, the rate has held in approximately seventy percent of the Osric transactions. The thirty percent where it moved: moved less than Osric wanted.",
+      "keywords": ["osric","one","merchant","attempted","negotiate","rate","every","transaction","four","years"]
+    },
+    {
+      "id": "what_currency_is_1",
+      "source": "Arv on what currency actually is",
+      "text": "In eleven years, what I've concluded about currency: it's a promise backed by a structure. The coin promises that the structure backing it will honor the exchange. The promise is only as good as the structure. In eleven years, I've seen two currencies that I changed initially and stopped accepting within six months of accepting them — both because the backing structure changed in ways that made the promise unreliable. The coin is the same weight. The promise is what changed.",
+      "keywords": ["eleven","years","what","concluded","about","currency","it's","promise","backed","structure"]
+    },
+    {
+      "id": "what_arv_holds_1",
+      "source": "Arv on the coin he's still holding",
+      "text": "In eleven years, one coin I've received that I haven't changed and won't change. The coin is from a region I can't place — the stamps are in a script I don't recognize, the imagery is unlike anything in the currencies I know. The weight is consistent with silver content, the metal is consistent. But the promise behind it: I don't know what structure backs it. I've shown it to three merchants who travel extensively. None of them recognize it. In eleven years, the coin sits in my collection as the limit of my knowledge.",
+      "keywords": ["eleven","years","one","coin","received","haven't","changed","won't","change","coin"]
+    },
+    {
+      "id": "eleven_years_1",
+      "source": "Arv on eleven years of currency changing",
+      "text": "In eleven years, I've made approximately two hundred thousand individual currency conversions. Two hundred thousand judgments about the relative value of currencies at a specific moment. The accuracy that matters: not perfect, but within the margin where both parties accept the exchange as fair. In eleven years, the disputed conversions — where the customer rejected my rate as unfair — number approximately three hundred. Three hundred disputes in two hundred thousand transactions. In eleven years, the rate is accepted as fair by the vast majority of the people I convert for.",
+      "keywords": ["eleven","years","made","approximately","two","hundred","thousand","individual","currency","conversions"]
+    }
+  ]
+}

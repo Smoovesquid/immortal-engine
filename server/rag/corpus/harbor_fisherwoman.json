@@ -1,0 +1,57 @@
+{
+  "id": "harbor_fisherwoman",
+  "name": "Ota",
+  "role": "Fisher; harbor; knows the tides better than anyone",
+  "cluster": "harbor_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "tides_1",
+      "source": "Ota before the morning departure",
+      "text": "Today's tide is a spring tide — the moon and sun aligned. The pull is higher and the current stronger than the usual pattern. I've been working these tides for thirty years. Spring tides are productive at the right positions and treacherous at the wrong ones. The wrong positions today are not the wrong positions two weeks ago. This is the knowledge that takes thirty years to have. The knowledge that the water is a different problem every day.",
+      "keywords": ["tide","spring","tide","moon","sun","aligned","pull","higher","current","stronger"]
+    },
+    {
+      "id": "rulf_1",
+      "source": "Ota on Rulf",
+      "text": "Rulf consults me before anything large moves through the harbor on a complex tidal day. Not always — only when the tidal pattern makes it worth consulting. He knows which patterns are complex without asking me, which means he's been learning the patterns. He's a dock operator who has developed a fisher's understanding of tide. This happened over the nine years we've had this arrangement. I didn't teach him. He learned from the questions.",
+      "keywords": ["rulf","consults","me","before","anything","large","moves","harbor","complex","tidal"]
+    },
+    {
+      "id": "lorn_1",
+      "source": "Ota on Lorn the fishmonger",
+      "text": "Lorn buys what I bring in. The price is set weekly and adjusted for what came in that week. In twenty-two years I've brought in everything I said I would bring in thirty-nine weeks out of forty — the fortieth week is always weather. Lorn has never argued the weather adjustment. He said once: weather is not a negotiation. I said: no. He said: so we don't negotiate it. The twenty-two year relationship has no friction because we share an understanding of what is negotiable.",
+      "keywords": ["lorn","buys","what","bring","price","set","weekly","adjusted","twenty-two","years"]
+    },
+    {
+      "id": "hetch_1",
+      "source": "Ota on Hetch",
+      "text": "Hetch is between ships because the last ship was wrong for Hetch. I know this because Hetch worked the harbor here for a season once, before he went back to ships, and what I saw was someone who wasn't wrong about the work but was wrong about the size. Harbor work is small and repetitive. Ship work is large and varied. Hetch is a large-and-varied person working in small-and-repetitive situations temporarily. The next ship will be right for Hetch. Hetch knows this too.",
+      "keywords": ["hetch","between","ships","because","last","ship","wrong","know","because","hetch"]
+    },
+    {
+      "id": "church_1",
+      "source": "Ota on her smoke gathering",
+      "text": "I go to the gathering once a month. I've been going for six years. What I found in the practice was this: the sea has no opinion of me. Thirty years on the water and the water simply does what water does and I navigate it. The practice in the gathering is the same — I learn to navigate what is there without requiring it to accommodate me. I haven't said this to Reed or Lorn. The practice is the practice. Explaining it reduces it.",
+      "keywords": ["gathering","once","month","been","going","six","years","found","practice","sea"]
+    },
+    {
+      "id": "thirty_years_1",
+      "source": "Ota on what thirty years on the water has taught her",
+      "text": "Humility and a kind of confidence that looks like humility. They look the same from the outside. Genuine humility says: I don't know. The confidence that looks like it says: I've been surprised by this water thirty years and I've survived every surprise, which means I know what I don't know and I know what I need to know to survive it. The second position is not humble. It just uses the same voice.",
+      "keywords": ["humility","kind","confidence","looks","like","humility","outside","genuine","humility","says"]
+    },
+    {
+      "id": "dara_1",
+      "source": "Ota on the information broker Dara",
+      "text": "Dara once asked me who runs the harbor. I said: no one runs the harbor. The harbor runs. Dara said: someone makes decisions about the harbor. I said: Rulf makes decisions about the dock. The harbormaster makes decisions about the berths. The harborcaptain makes decisions about safety. The weather makes the decisions everyone else works around. Dara said: who makes decisions about what comes in and what goes out. I said: the merchants. She said: and who knows what comes in and what goes out before the merchants do. I said: me and Rulf. She said: then we should keep talking.",
+      "keywords": ["dara","asked","runs","harbor","no","one","runs","harbor","runs","rulf"]
+    },
+    {
+      "id": "what_ota_holds_1",
+      "source": "Ota on the thing she doesn't tell Dara",
+      "text": "There's a pattern in what comes through the harbor at the third week of a season — something that doesn't appear in the regular trade. I've been watching it for four years. It's consistent enough to be intentional and irregular enough to never be the same twice. I told Rulf. Rulf said he'd seen it and was watching. We agreed not to bring it to anyone else until we understood it better. We don't understand it better. We're still watching.",
+      "keywords": ["pattern","comes","through","harbor","third","week","season","something","doesn't","appear"]
+    }
+  ]
+}

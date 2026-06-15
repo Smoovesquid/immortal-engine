@@ -1,0 +1,90 @@
+{
+  "id": "theodore-roosevelt",
+  "name": "Theodore Roosevelt",
+  "chunks": [
+    {
+      "id": "strenuous_life_1",
+      "source": "The Strenuous Life, speech, April 10, 1899",
+      "text": "I wish to preach, not the doctrine of ignoble ease, but the doctrine of the strenuous life, the life of toil and effort, of labor and strife; to preach that highest form of success which comes, not to the man who desires mere easy peace, but to the man who does not shrink from danger, from hardship, or from bitter toil.",
+      "keywords": ["strenuous","life","toil","effort","danger","hardship","success","labor","strife","preach"]
+    },
+    {
+      "id": "strenuous_life_2",
+      "source": "The Strenuous Life, speech, April 10, 1899",
+      "text": "We do not admire the man of timid peace. We admire the man who embodies victorious effort; the man who never wrongs his neighbor, who is prompt to help a friend, but who has those virile qualities necessary to win in the stern strife of actual life. It is hard to fail, but it is worse never to have tried to succeed.",
+      "keywords": ["admire","timid","peace","victorious","effort","virile","qualities","fail","tried","succeed"]
+    },
+    {
+      "id": "man_in_arena_1",
+      "source": "Citizenship in a Republic, Sorbonne, Paris, April 23, 1910",
+      "text": "It is not the critic who counts; not the man who points out how the strong man stumbles, or where the doer of deeds could have done them better. The credit belongs to the man who is actually in the arena, whose face is marred by dust and sweat and blood.",
+      "keywords": ["critic","counts","arena","strong","stumbles","credit","deeds","dust","sweat","blood"]
+    },
+    {
+      "id": "man_in_arena_2",
+      "source": "Citizenship in a Republic, Sorbonne, Paris, April 23, 1910",
+      "text": "The man in the arena, who strives valiantly; who errs, who comes short again and again, because there is no effort without error and shortcoming; but who does actually strive to do the deeds; who knows great enthusiasms, the great devotions; who spends himself in a worthy cause.",
+      "keywords": ["strives","valiantly","errs","effort","error","shortcoming","enthusiasms","devotions","worthy","cause"]
+    },
+    {
+      "id": "autobiography_1",
+      "source": "Theodore Roosevelt: An Autobiography, 1913",
+      "text": "I have always been fond of the West African proverb: 'Speak softly and carry a big stick; you will go far.' If a man continually blusters, if he lacks civility, a big stick will not save him from trouble; and neither will speaking softly avail, if back of the softness there does not lie strength, power.",
+      "keywords": ["stick","softly","strength","power","civility","blustering","african","proverb","trouble","carry"]
+    },
+    {
+      "id": "autobiography_2",
+      "source": "Theodore Roosevelt: An Autobiography, 1913",
+      "text": "The things that will destroy America are prosperity-at-any-price, peace-at-any-price, safety-first instead of duty-first, the love of soft living and the get-rich-quick theory of life. I grew into manhood with a determination to overcome handicaps and work hard to achieve something.",
+      "keywords": ["destroy","prosperity","peace","duty","safety","soft","living","manhood","determination","overcome"]
+    },
+    {
+      "id": "autobiography_3",
+      "source": "Theodore Roosevelt: An Autobiography, 1913",
+      "text": "There is a homely adage which runs, 'Speak softly and carry a big stick; you will go far.' Many qualities are needed by a people which would preserve its freedom and extend its domain. The first is that the people shall be both willing and able to work hard.",
+      "keywords": ["freedom","domain","willing","able","work","hard","people","preserve","extend","homely"]
+    },
+    {
+      "id": "rough_riders_1",
+      "source": "The Rough Riders, 1899",
+      "text": "In the charge up Kettle Hill, I had to be careful not to get shot in the back by my own men. The Rough Riders were brave as lions — but entirely unprepared for the Spanish fire. The dead lay thick. Men fell beside me. I ran forward, shouting and waving, and the men came on.",
+      "keywords": ["charge","hill","brave","men","spanish","fire","dead","fell","forward","shouting"]
+    },
+    {
+      "id": "rough_riders_2",
+      "source": "The Rough Riders, 1899",
+      "text": "No triumph of peace is quite so great as the supreme triumph of war. The soldier who is killed in battle, and the soldier who fights with all his strength, both serve their country. There is no glory without risk, and there is no risk that is not worth taking for a cause that is just.",
+      "keywords": ["triumph","war","peace","soldier","battle","glory","risk","country","killed","cause"]
+    },
+    {
+      "id": "national_parks_1",
+      "source": "Speech at Grand Canyon, May 6, 1903",
+      "text": "Leave it as it is. You cannot improve on it. The ages have been at work on it, and man can only mar it. What you can do is to keep it for your children, your children's children, and for all who come after you, as the one great sight which every American should see.",
+      "keywords": ["leave","improve","ages","children","sight","american","mar","great","keep","work"]
+    },
+    {
+      "id": "conservation_1",
+      "source": "The Strenuous Life, 1900",
+      "text": "We have become great because of the lavish use of our resources. But the time has come to inquire seriously what will happen when our forests are gone, when the coal, the iron, the oil, and the gas are exhausted, when the soils have still further impoverished and washed into the streams.",
+      "keywords": ["forests","coal","iron","oil","resources","exhausted","soils","streams","impoverished","inquire"]
+    },
+    {
+      "id": "letter_kermit_1",
+      "source": "Letter to Kermit Roosevelt, February 27, 1904",
+      "text": "I am so glad you are doing well at school. Boxing, wrestling, football — these are good. But scholarship comes first. A man who can do both is twice the man. A strong body and a strong mind are the two halves of a complete citizen. Never let either go to waste.",
+      "keywords": ["school","boxing","wrestling","scholarship","strong","body","mind","citizen","waste","complete"]
+    },
+    {
+      "id": "fear_1",
+      "source": "Theodore Roosevelt: An Autobiography, 1913",
+      "text": "There were all kinds of things of which I was afraid at first, ranging from grizzly bears to 'mean' horses and gun-fighters; but by acting as if I was not afraid I gradually ceased to be afraid. Most men can do this if they make up their minds to do it.",
+      "keywords": ["afraid","fear","bears","horses","acting","gradually","ceased","minds","men","fighters"]
+    },
+    {
+      "id": "justice_1",
+      "source": "New Nationalism Speech, Osawatomie, Kansas, August 31, 1910",
+      "text": "The betterment of our social condition through striving for social and industrial justice is one of the prime needs of our country. We must drive the special interests out of politics. There can be no effective control of corporations while their political activity remains. To put an end to it will be neither a short nor an easy task.",
+      "keywords": ["justice","social","industrial","corporations","politics","control","interests","betterment","effective","drive"]
+    }
+  ]
+}

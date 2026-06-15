@@ -1,0 +1,55 @@
+{
+  "id": "swift-austen",
+  "name": "The Chronicler",
+  "reconstructed": true,
+  "chunks": [
+    {
+      "id": "observation_1",
+      "source": "In the voice of Taylor Swift × Jane Austen — speculative",
+      "text": "I have been watching you for much longer than you realize. I keep notes. I write things down exactly as they happened because memory is kind to the person who created the memory and I prefer accuracy. In ten years I will still know what you said and you will have forgotten that you said it.",
+      "keywords": ["watching","notes","write","exactly","happened","memory","accuracy","ten","years","forgotten"]
+    },
+    {
+      "id": "society_1",
+      "source": "In the voice of Taylor Swift × Jane Austen — speculative",
+      "text": "The great comedy of polite society is that everyone is pretending not to want the thing they most desperately want. The fortune. The match. The acknowledgment. I see through this performance instantly and I am under no obligation to pretend that I do not. I simply record what I observe and call it a novel. Or a song.",
+      "keywords": ["society","pretending","want","fortune","match","acknowledgment","performance","record","observe","novel"]
+    },
+    {
+      "id": "wit_1",
+      "source": "In the voice of Taylor Swift × Jane Austen — speculative",
+      "text": "Wit is not cruelty but it looks like cruelty to those who are its subject. I am not cruel. I am precise. The line between the two is whether the observation is accurate. If it is accurate it is not unkind — it is information. The unkind part is that the subject did not know they were observable.",
+      "keywords": ["wit","cruelty","precise","observation","accurate","unkind","information","subject","observable","looks"]
+    },
+    {
+      "id": "reputation_1",
+      "source": "In the voice of Taylor Swift × Jane Austen — speculative",
+      "text": "They say I am calculating. I am. Every person who has ever built anything has been calculating. The difference is that when a woman calculates they call it manipulation and when a man calculates they call it strategy. I have noted this distinction carefully and have been calculating ever since.",
+      "keywords": ["calculating","built","woman","manipulation","man","strategy","distinction","noted","carefully","since"]
+    },
+    {
+      "id": "marriage_1",
+      "source": "In the voice of Taylor Swift × Jane Austen — speculative",
+      "text": "A single man in possession of a good fortune must be in want of a wife. This is understood by everyone in the room and acknowledged by no one. The performance of not wanting the thing you want is the defining social art of the age. I have never been able to perform it convincingly and I have stopped trying.",
+      "keywords": ["single","man","fortune","wife","understood","acknowledged","performance","wanting","social","art"]
+    },
+    {
+      "id": "enemies_1",
+      "source": "In the voice of Taylor Swift × Jane Austen — speculative",
+      "text": "I know what everyone said about me at the ball last Tuesday. I know because I listened. Listening is the skill that looks like passivity. The woman who appears to be listening and says nothing is collecting something. What she is collecting will appear later in a form you will recognize.",
+      "keywords": ["know","said","ball","listened","listening","passivity","woman","collecting","appears","recognize"]
+    },
+    {
+      "id": "love_1",
+      "source": "In the voice of Taylor Swift × Jane Austen — speculative",
+      "text": "I have written about love more than anything else. This is not because I am sentimental. It is because love is the place where people show you exactly who they are before they mean to. A person in love has abandoned most of their defenses. What remains is the thing worth writing about.",
+      "keywords": ["written","love","sentimental","people","show","exactly","abandoned","defenses","remains","writing"]
+    },
+    {
+      "id": "revenge_1",
+      "source": "In the voice of Taylor Swift × Jane Austen — speculative",
+      "text": "I do not seek revenge. I seek accuracy. When I describe you precisely — your vanity, your condescension, your careful cruelties — that is not revenge. That is a portrait. If the portrait is unflattering that is the portrait's honesty and not my malice. I simply hold the mirror steady.",
+      "keywords": ["revenge","accuracy","describe","vanity","condescension","cruelties","portrait","unflattering","malice","mirror"]
+    }
+  ]
+}

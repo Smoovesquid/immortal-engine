@@ -1,0 +1,57 @@
+{
+  "id": "kole_shepherd",
+  "name": "Kole",
+  "role": "Shepherd; Church of Incrementalism (outer circle); road between settlements",
+  "cluster": "church_of_incrementalism",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "sheep_1",
+      "source": "Kole moving the flock between the spring and summer pasture",
+      "text": "Twenty-three sheep. Twenty-three times the next small thing. The flock doesn't move because I direct it — the flock moves because each sheep makes the decision to follow the one in front, and the one in front makes the decision to follow the grass. I'm the edge of the decision space. I make sure the decisions stay within the safe range. This is the whole job. The sheep are better at the practice than I am.",
+      "keywords": ["twenty","three","sheep","next","small","thing","flock","moves","decision","follow"]
+    },
+    {
+      "id": "swale_1",
+      "source": "Kole on how he found the practice",
+      "text": "Swale's honey. I stopped at his yard on the spring migration and he gave me a piece of the honeycomb and I ate it and he said: the bees made that by doing exactly what was needed next, one flower at a time. I said: that's what the flock does. He said: yes. And then he gave me his thinking about the Great Mantis and I said: that's also what the flock does. He said: yes. We understood each other in five minutes. I've come back on the migration every spring since.",
+      "keywords": ["swale","honey","stopped","yard","spring","migration","honeycomb","bees","exactly","needed"]
+    },
+    {
+      "id": "road_1",
+      "source": "Kole when travelers on the road asked where he was going",
+      "text": "The pasture. Not the one I came from and not the one I'm heading toward specifically — the one the flock needs to be at next given the current season, the current grass, and how the grass ahead of us looks compared to the grass behind. The pasture isn't a place. The pasture is wherever the sheep need to be in the next hour. I've been shepherd for twenty years and the pasture has always been exactly where we needed it.",
+      "keywords": ["pasture","not","came","from","heading","toward","specifically","flock","needs","season"]
+    },
+    {
+      "id": "theen_1",
+      "source": "Kole on encountering the ranger Theen on the road between settlements",
+      "text": "Theen knows which parts of the wild road are good grazing and which aren't. I know this because I took her recommendation once and the flock was in better grass for four days than I'd expected. We've traded road information twice. She moves between places for her own purposes; I move between places for the flock's purposes. We have the same information in different forms. The trade is correct.",
+      "keywords": ["theen","knows","parts","wild","road","good","grazing","recommendation","flock","four"]
+    },
+    {
+      "id": "senn_1",
+      "source": "Kole when the wandering devotee Senn walked with the flock for a day",
+      "text": "Senn is a TARRYN devotee who practices patience. The flock's pace is a good practice for patience. Senn said after the day: I've been doing the practice wrong. The patience I've been practicing waits for something. The flock's patience doesn't wait — it's present in the walking itself. I said: that's what the Mantis says. Senn said: tell me about the Mantis. I told them about the practice. Senn listened for a long time. I think they might find us eventually.",
+      "keywords": ["senn","tarryn","devotee","practices","patience","flock","pace","present","walking","mantis"]
+    },
+    {
+      "id": "mantis_1",
+      "source": "Kole explaining the Great Mantis to a herder's child who asked",
+      "text": "The Great Mantis is doing what the flock is doing. The grass is there and the Mantis goes to the grass and eats the grass and moves to the next grass. The whole world is the Mantis's pasture. We're part of the grass and also part of the Mantis, in the same way the sheep are part of the flock and also part of what the flock eats. I don't know if this is correct theology. It's correct for sheep.",
+      "keywords": ["great","mantis","doing","flock","grass","goes","eats","moves","world","pasture"]
+    },
+    {
+      "id": "solitude_1",
+      "source": "Kole on the solitude of being a shepherd",
+      "text": "The flock is not company in the human sense. The flock is present, which is different. You can be entirely alone with the flock in the way you can be entirely alone in a room — the sheep are there but they're not attending to you. What I've found is that the absence of human attention is very clarifying. The Mantis practice is much easier without a person nearby who wants something from me. I'm not avoiding people. I'm not a hermit. I come to the gatherings. The road gives me the clarity that the gatherings can't.",
+      "keywords": ["flock","not","company","human","sense","present","different","alone","attending","clarifying"]
+    },
+    {
+      "id": "church_1",
+      "source": "Kole when asked how many people are in the Church of Incrementalism",
+      "text": "Fifteen that I know of. Reed knows if there are more. I don't need to know. The number doesn't matter to the practice — the practice works with one person or fifteen or a thousand. The gatherings matter because being in the smoke with people who are doing the same thing reinforces what you know alone. But the number of people doing the thing is not the thing. The thing is the next small thing. The number is background.",
+      "keywords": ["fifteen","know","reed","knows","more","number","doesn't","matter","practice","gatherings"]
+    }
+  ]
+}

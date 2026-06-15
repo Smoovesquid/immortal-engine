@@ -1,0 +1,57 @@
+{
+  "id": "thornwall_midwife2",
+  "name": "Prue",
+  "role": "Second midwife; trained under Nan, now independent; handles the northwest quarter",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "midwife_1",
+      "source": "Prue on being a midwife",
+      "text": "Nan trained me for seven years before I took my own practice. In those seven years I attended two hundred and fourteen births with Nan. What those births taught: that birth is the same process and a different situation every time. The process is invariant. The situation — the person having the birth, the specific physiology, the conditions of the moment — is always unique. After seven years of training and nine years of practice, I understand the process. I'm still learning the situations.",
+      "keywords": ["nan","trained","seven","years","before","took","own","practice","seven","years"]
+    },
+    {
+      "id": "nan_1",
+      "source": "Prue on Nan",
+      "text": "Nan and I divided the district geographically — I take the northwest quarter, Nan keeps the rest. The division is Nan's design. Nan said: a woman who can send for someone trustworthy is better served than a woman who waits for the one midwife. The division expanded the coverage. In nine years as the northwest midwife, I've attended two hundred and thirty-one births. Nan has attended more in the same period — Nan's territory is larger. We consult weekly. The consultation is the work's continuity.",
+      "keywords": ["nan","divided","district","geographically","take","northwest","quarter","nan","keeps","rest"]
+    },
+    {
+      "id": "bressa_1",
+      "source": "Prue on Bressa",
+      "text": "Bressa is ALMASOSE's attendant for births — the spiritual side of what I provide medically. In the northwest quarter, Bressa and I have worked together on fourteen births over nine years. The fourteen were the ones the family specifically wanted both. What I've noticed: the families who want both receive something different from the combination than from either alone. The medical attention and the spiritual attention together produce a quality of presence I can't explain but have observed consistently.",
+      "keywords": ["bressa","almasose's","attendant","births","spiritual","side","what","provide","medically","northwest"]
+    },
+    {
+      "id": "dran_1",
+      "source": "Prue on Dran",
+      "text": "Dran is who I call when what's happening exceeds what I can manage. In nine years, I've called Dran four times. All four calls: Dran arrived and the situation required what Dran could do that I couldn't. The protocol between Nan, me, and Dran is clear: call early, not late. Calling early means Dran can arrive before the situation deteriorates to the crisis point. In nine years I've made four calls and all four were early enough. Four calls, four outcomes where early calling mattered.",
+      "keywords": ["dran","who","call","when","what's","happening","exceeds","what","can","manage"]
+    },
+    {
+      "id": "oss_wen_1",
+      "source": "Prue on Oss and Wen",
+      "text": "Oss and Wen attend to the unnamed child in the Covenant. I knew of the child's arrival because I was asked to consult on the child's physical health in the first weeks. Consulting at the Covenant: what I found was a child who was physically healthy in a way that was unusual given the circumstances of the arrival. Healthy is the right word. The circumstances said the child should not be healthy. The child was healthy. I told Oss and Wen what I found. They said: we know. They seemed unsurprised.",
+      "keywords": ["oss","wen","attend","unnamed","child","covenant","knew","child's","arrival","asked"]
+    },
+    {
+      "id": "what_nine_years_taught_1",
+      "source": "Prue on what nine years as a midwife has taught",
+      "text": "The birth that goes as expected is the unusual case. What I learned in training: the expected birth is the reference point, not the norm. The norm is the expected birth modified by the specific situation. In nine years of practice, I've had about forty percent expected births and sixty percent modified births. The modifications range from minor to significant. What training prepared me for: recognizing the modification and knowing what to do with it. The knowing-what-to-do comes from Nan's seven years and my nine years together.",
+      "keywords": ["birth","goes","expected","unusual","case","what","learned","training","expected","birth"]
+    },
+    {
+      "id": "what_prue_holds_1",
+      "source": "Prue on what she carries from nine years",
+      "text": "The births that were losses. In nine years: four losses. Not the mothers — the infants. Four losses across two hundred and thirty-one births is a rate lower than the district average. Low rate doesn't change the four. I remember all four specifically. The names the families gave them, the specific circumstances, what I did and what I couldn't do. The carrying doesn't diminish. What Nan told me in training: the ones you lose stay with you, and they should. They're why you do the rest of the work correctly.",
+      "keywords": ["births","losses","nine","years","four","losses","not","mothers","infants","four"]
+    },
+    {
+      "id": "northwest_quarter_1",
+      "source": "Prue on the northwest quarter",
+      "text": "The northwest quarter is different from the rest of the district — it's the working district, the harbor workers, the craft workers. The births I attend there are births in households where work is physical and constant. What this means for my practice: the mothers come to the birth tired from the work. The recovery period is shorter than the recovery the work actually requires. In nine years I've had to negotiate between what the work demands and what the recovery needs, usually with the work winning. I've made my peace with the work winning. I make the recovery as good as possible within what the work allows.",
+      "keywords": ["northwest","quarter","different","rest","district","working","district","harbor","workers","craft"]
+    }
+  ]
+}

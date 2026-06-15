@@ -1,0 +1,57 @@
+{
+  "id": "hollow_court_attendant",
+  "name": "Tess",
+  "role": "Hollow Court attendant; washes and prepares the dead; the final physical care before the grave",
+  "cluster": "hollow_court",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "preparation_1",
+      "source": "Tess on preparing the dead",
+      "text": "In seventeen years, I've prepared approximately eight hundred bodies for burial. Eight hundred people who were, when they arrived in my care, finished with the world but not yet given to the earth. The preparation is specific: washing, arranging, the small acts of care that the dead can no longer do for themselves. In seventeen years, what I've noticed: the care I give is for the living who will see the person one last time, not for the dead. The dead don't need the washing. The living need to see that the dead were cared for.",
+      "keywords": ["seventeen","years","prepared","approximately","eight","hundred","bodies","burial","eight","hundred"]
+    },
+    {
+      "id": "sel_1",
+      "source": "Tess on Sel",
+      "text": "Sel is with the person at the end of their life. I'm with them after. In thirteen years of working alongside Sel, the handoff: Sel's work ends when the person's life ends. My work begins at that same point. In thirteen years, the handoff is usually silent — Sel doesn't narrate what the death was, and I don't ask. What I observe when the person arrives tells me what the dying was. In thirteen years, Sel's work and my work are the two sides of the same threshold.",
+      "keywords": ["sel","person","end","life","after","thirteen","years","working","alongside","sel"]
+    },
+    {
+      "id": "cree_1",
+      "source": "Tess on Cree",
+      "text": "Cree counsels the families. In ten years of working in the same Court, what Cree and I have exchanged: the observation of the same deaths from different positions. Cree sees the family's grief. I see the body. In ten years, the person who was grieved is the same person I prepared. The family's account of who the person was and what the body tells me about who the person was: in ten years, these have aligned in most cases and diverged in some. The divergence is the story the body tells that the family didn't know or didn't tell.",
+      "keywords": ["cree","counsels","families","ten","years","working","same","court","what","cree"]
+    },
+    {
+      "id": "eld_1",
+      "source": "Tess on Eld",
+      "text": "Eld records the dead. In twelve years of working alongside Eld, what the record and the preparation share: the establishment of who this person was at the moment of their death. Eld's record says the name, the date, the circumstances. My preparation says the body's history — the scars, the signs of the life that was lived. In twelve years, the two together are the most complete account of who was here and is now gone.",
+      "keywords": ["eld","records","dead","twelve","years","working","alongside","eld","what","record"]
+    },
+    {
+      "id": "maret_1",
+      "source": "Tess on Maret",
+      "text": "Maret's grief three years ago was for someone I prepared. In three years, I've occasionally seen Maret in the district and the grief is visible to me in a way it might not be visible to others — I see the grief because I know what I prepared that produced it. In three years, what I hold about the person I prepared: the body told a specific story. In three years, Maret's grief has the quality of someone who knew that story and is working through it. I've never told Maret what the body told me. That isn't mine to tell.",
+      "keywords": ["maret's","grief","three","years","ago","someone","prepared","three","years","occasionally"]
+    },
+    {
+      "id": "what_the_work_holds_1",
+      "source": "Tess on what seventeen years of this work holds",
+      "text": "In seventeen years, what the work holds that most people don't think about: every person I prepare was someone's whole world. The person who died was, to the people who loved them, the most important person in the world. In seventeen years, I'm in the room with the most important person in someone's world, and that person is gone. The weight of the importance is in the room with me every time. In seventeen years, I haven't learned to make that weight lighter. I've learned to carry it with attention rather than setting it aside.",
+      "keywords": ["seventeen","years","what","work","holds","most","people","don't","think","about"]
+    },
+    {
+      "id": "what_tess_holds_1",
+      "source": "Tess on the preparation she thinks about most",
+      "text": "Year eleven. A young person — too young for what the body showed had happened. In six years since, the year-eleven preparation is the one that stayed in the front of my attention longest. The body told a story that the official account of the death didn't match. In six years, I reported what I observed to Sel, who reported to the appropriate people. I don't know what happened after the report. In six years, the year-eleven preparation is the one that showed me: the body is a witness. The body doesn't lie.",
+      "keywords": ["year","eleven","young","person","too","young","what","body","showed","had"]
+    },
+    {
+      "id": "seventeen_years_1",
+      "source": "Tess on seventeen years of preparation",
+      "text": "In seventeen years, eight hundred preparations. Eight hundred people given the last physical care before the earth. In seventeen years, the work has made me the person in this settlement who has been closest to the most deaths. The physician is close to the dying. I'm close to the dead. In seventeen years, the close proximity to death has not made death familiar in the sense of ordinary. It has made death familiar in the sense of known. I know death. Death is not ordinary. It is known.",
+      "keywords": ["seventeen","years","eight","hundred","preparations","eight","hundred","people","given","last"]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "id": "mereth_devoted",
+  "name": "Hels",
+  "role": "MERETH devotee; the humility practice in a settlement that runs on status; attends the Covenant but serves the angel, not the institution",
+  "cluster": "covenant_of_seven",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "mereth_1",
+      "source": "Hels on MERETH",
+      "text": "MERETH teaches the release of the inflated account of the self. In eleven years of MERETH's practice, what the practice is: the sustained work of noticing when I'm making myself more than I am in my own account and when I'm making others less than they are to maintain the comparative advantage. In eleven years, the practice is not self-diminishment. That's the confusion people have about humility. MERETH's humility is accurate self-assessment. Not low. Accurate. The inflated account is the problem. The accurate account is the practice.",
+      "keywords": ["mereth","teaches","release","inflated","account","self","eleven","years","mereth's","practice"]
+    },
+    {
+      "id": "father_len_1",
+      "source": "Hels on Father Len",
+      "text": "Father Len leads the Covenant and I attend the Covenant's practice while maintaining MERETH's practice alongside it. In eight years of this dual relationship, what Father Len has said about MERETH's practice that I've held: the angel's teaching and the Covenant's teaching are not in conflict. The Covenant teaches the relationship to the divine. The angels teach the qualities of a well-lived life. In eight years, Father Len has not asked me to subordinate the angel's teaching to the Covenant's structure. In eight years, the dual practice has been possible.",
+      "keywords": ["father","len","leads","covenant","attend","covenant's","practice","while","maintaining","mereth's"]
+    },
+    {
+      "id": "gund_1",
+      "source": "Hels on Gund",
+      "text": "Gund practices ERRAN's diligence. In five years of knowing Gund as a fellow angel devotee in the Covenant context, what the two practices have in common: the angel's teaching becomes the standard that the devoted person measures themselves against. Gund measures against ERRAN's complete work. I measure against MERETH's accurate self-account. In five years, the two practices are different in content but similar in structure: the angel's quality as the daily comparison point for how the devoted person is actually living.",
+      "keywords": ["gund","practices","erran's","diligence","five","years","knowing","gund","fellow","angel"]
+    },
+    {
+      "id": "solt_1",
+      "source": "Hels on Solt",
+      "text": "Solt practices LIRAINE's integrity. In four years of knowing Solt, what LIRAINE's integrity practice and MERETH's humility practice share: the requirement to see what is true rather than what is convenient. LIRAINE's integrity requires true words. MERETH's humility requires true self-assessment. In four years, Solt and I have had two conversations about the relationship between the two practices. What those conversations produced: the understanding that integrity and humility reinforce each other. The person who sees themselves accurately is less likely to misrepresent themselves. The practices are aligned.",
+      "keywords": ["solt","practices","liraine's","integrity","four","years","knowing","solt","what","liraine's"]
+    },
+    {
+      "id": "cren_1",
+      "source": "Hels on Cren",
+      "text": "Cren practices ISS's envy and MERETH's humility are in direct tension. In three years of being aware of Cren's presence in the district, what the tension produces in terms of MERETH's practice: the person who is consumed by comparative diminishment of the self — which is what ISS's practice produces at its worst — is doing the inverse of what MERETH teaches. In three years, Cren's case is the example I use to understand why the humility practice is necessary: the accurate self-account is the protection against ISS's corrosive comparison.",
+      "keywords": ["cren","practices","iss's","envy","mereth's","humility","direct","tension","three","years"]
+    },
+    {
+      "id": "what_the_practice_requires_1",
+      "source": "Hels on what the humility practice actually requires",
+      "text": "In eleven years, what MERETH's practice has required that I didn't expect when I started: the willingness to be seen as less competent than I am in situations where the correct assessment of my competence is lower than others' assessment of me. In eleven years, the hardest thing the practice asks: accepting the downward correction without resistance. The upward correction — being told I'm less than I am — is easy to resist and easy to maintain the inflated account against. The downward correction requires the practice to work.",
+      "keywords": ["eleven","years","what","mereth's","practice","required","didn't","expect","when","started"]
+    },
+    {
+      "id": "what_hels_holds_1",
+      "source": "Hels on what she can't tell anyone about the practice",
+      "text": "In eleven years, what MERETH's practice has shown me about the settlement's social structure: the hierarchy runs on inflated account. The status that people hold is maintained by the inflation of the account they carry of themselves and the diminishment of the accounts of those below them. In eleven years, the accurate account would dissolve a significant portion of the social hierarchy because the hierarchy's basis is the inflation, not the actual difference in capacity. In eleven years, I hold this observation and I don't transmit it because the observation itself would be taken as arrogance.",
+      "keywords": ["eleven","years","what","mereth's","practice","shown","about","settlement's","social","structure"]
+    },
+    {
+      "id": "eleven_years_1",
+      "source": "Hels on eleven years of MERETH's practice",
+      "text": "In eleven years, MERETH's practice has made me more useful to the people around me and less impressive to them. The useful-but-unimpressive state: what the practice produces. The inflated self-account produces impressive-but-less-useful. In eleven years, the people who benefit from working with me are the people who need the accurate assessment and the honest work. The people who need the impressive account: they find their way to other people. In eleven years, the practice has selected for the relationships where the accurate account is valued.",
+      "keywords": ["eleven","years","mereth's","practice","made","more","useful","people","around","less"]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "id": "market_porter",
+  "name": "Bols",
+  "role": "Market porter; carries what needs carrying between dock and market; invisible labor",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "porter_1",
+      "source": "Bols on what a porter does",
+      "text": "The porter carries what can't carry itself and has to move. Everything that moves in this market passes through hands like mine at some point — the unloading at the dock, the movement to the warehouse, the warehouse to the market stall, the stall to the customer's cart. I'm in the chain between every link. The chain doesn't notice me. The chain needs me to work.",
+      "keywords": ["porter","carries","what","can't","carry","itself","has","move","everything","moves"]
+    },
+    {
+      "id": "rulf_1",
+      "source": "Bols on Rulf",
+      "text": "The dock work is where I know Rulf. In fourteen years of dock-to-market runs, Rulf has run the dock for the last eight. The dock under Rulf: organized, fair, the unloading sequence is clear and followed. Before Rulf, the dock was organized by whoever shouted loudest. Under Rulf, the sequence is: cargo order, not voice order. It seems obvious. It wasn't the practice before.",
+      "keywords": ["dock","work","where","know","rulf","fourteen","years","dock-to-market","runs","rulf"]
+    },
+    {
+      "id": "pros_1",
+      "source": "Bols on Pros",
+      "text": "Pros runs the warehouse where cargo stages between the dock and the market. I work both ends: I bring cargo from the dock to Pros's warehouse and I bring cargo from the warehouse to the market stalls. In eight years of this triangle, Pros and I have developed a shorthand for cargo condition — what needs priority handling, what can wait, what needs specific care. The shorthand saves time at the transfer point. Eight years of the same transfer point creates a shorthand the next porter won't have.",
+      "keywords": ["pros","runs","warehouse","cargo","stages","between","dock","market","work","both"]
+    },
+    {
+      "id": "goss_1",
+      "source": "Bols on Goss",
+      "text": "Flour sacks from Goss's mill to the market bakeries are the heaviest regular run I have. Not the heaviest load I've carried — the heaviest regular load, week in, week out. In fourteen years I've carried Goss's flour sacks more times than any other single cargo. Goss knows the run. In fourteen years, Goss has asked once about my back. I said: the back is fine. Goss said: it won't be. I said: then it won't be. The conversation ended there.",
+      "keywords": ["flour","sacks","goss","mill","market","bakeries","heaviest","regular","run","have"]
+    },
+    {
+      "id": "what_carrying_is_1",
+      "source": "Bols on what carrying is",
+      "text": "The cargo doesn't know it's being carried. The cargo doesn't care where it came from or where it's going. What the cargo has: weight, shape, fragility. What I have: the knowledge of how to carry the weight and shape without damaging the fragility. In fourteen years I've damaged three loads. All three: loads I was asked to carry faster than the load could safely be carried. I've stopped accepting time pressure on fragile cargo. The time savings isn't worth the replacement cost.",
+      "keywords": ["cargo","doesn't","know","it's","being","carried","cargo","doesn't","care","where"]
+    },
+    {
+      "id": "toom_1",
+      "source": "Bols on Toom",
+      "text": "Toom and I overlap in the dock-to-warehouse run. The dockworkers move cargo on the dock. I move cargo off it. The handoff between Toom and me is the moment when the cargo shifts from dock responsibility to porter responsibility. In eight years of shared dock work, the handoff has been clean almost every time. The almost: twice, a load was handed off in a state that wasn't safe to carry. Both times I declined to take the handoff. Both times Toom reworked the load. The handoff matters.",
+      "keywords": ["toom","overlap","dock-to-warehouse","run","dockworkers","move","cargo","dock","move","cargo"]
+    },
+    {
+      "id": "what_bols_holds_1",
+      "source": "Bols on what fourteen years of carrying teaches",
+      "text": "The body learns what the mind didn't expect to learn. After fourteen years, my body knows how to carry more types of load than I could have described in year one. The body's knowledge and the mind's knowledge are different: the mind thinks about how to carry. The body knows how to carry. The knowing in the body is more reliable than the thinking in the mind. Thinking while carrying is how you drop things. The body needs to be left alone to do what it knows.",
+      "keywords": ["body","learns","what","mind","didn't","expect","learn","after","fourteen","years"]
+    },
+    {
+      "id": "fourteen_years_1",
+      "source": "Bols on fourteen years of invisible work",
+      "text": "Nobody thinks about the porter. The cargo arrives and people ask where it came from. The merchant who sold it, the captain who shipped it — those people get named. What happened in between is the unnamed middle. I'm in the middle of everything and I'm unnamed in it. I've decided this is the correct relationship to the work. The work is what it is. My name doesn't need to be in the story of the cargo. The cargo moved. That's the story.",
+      "keywords": ["nobody","thinks","about","porter","cargo","arrives","people","ask","where","came"]
+    }
+  ]
+}

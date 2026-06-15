@@ -1,0 +1,57 @@
+{
+  "id": "sol_farmer",
+  "name": "Sol",
+  "role": "Farmer; supplies Thornwall market; outsider perspective",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "market_1",
+      "source": "Sol at the Thornwall market, setting up before dawn",
+      "text": "I've been bringing in root vegetables and late wheat for eleven years. The market knows me and I know the market. By which I mean: I know which stalls get foot traffic and when, which customers buy by quality and which buy by price, and which days Brevis's tavern takes extra because she's running a large event. I optimize around these. An outside producer who doesn't optimize goes back to selling at the farm gate.",
+      "keywords": ["bringing","root","vegetables","wheat","eleven","years","market","stalls","foot","traffic"]
+    },
+    {
+      "id": "brevis_1",
+      "source": "Sol on the tavern keeper Brevis",
+      "text": "Brevis buys in volume when she's running events and I give her a volume rate that I don't advertise. The arrangement is: she tells me what she needs three days in advance and I make sure it's ready. She's been doing this for seven years without missing a notification. I've never had to scramble because of Brevis. She plans ahead. The ones who don't plan ahead are the ones who cause scrambles. Brevis runs the most organized kitchen I supply.",
+      "keywords": ["brevis","buys","volume","events","rate","advertise","arrangement","three","days","advance"]
+    },
+    {
+      "id": "outside_1",
+      "source": "Sol on being an outsider who knows Thornwall",
+      "text": "I'm not from Thornwall. I farm four miles out, which means I'm in the orbit of Thornwall without being in Thornwall. This gives me a view the residents don't have — I see what the village exports to the surrounding land and what comes in. I know the rhythm of the place from the purchasing patterns. The village has been in the same rhythm for the eleven years I've been supplying it. This is either stability or stagnation. From outside I can't always tell which.",
+      "keywords": ["not","from","thornwall","farm","four","miles","orbit","residents","exports","surrounding"]
+    },
+    {
+      "id": "edda_1",
+      "source": "Sol on the smithy owner Edda",
+      "text": "Edda made the tools I use for the harvest. She made them twelve years ago and they haven't needed repair except once, four years in, when I damaged them through my own negligence. She repaired them without comment on the negligence. The tools are still correct. I've thought about replacing them with something newer but there's nothing newer that's better. Edda made them to last and they have. I mention them every time I buy a new knife from the market. The knives are from somewhere else. The tools are from Edda.",
+      "keywords": ["edda","made","tools","harvest","twelve","years","repair","negligence","repaired","correct"]
+    },
+    {
+      "id": "nan_1",
+      "source": "Sol on the midwife Nan Colt",
+      "text": "Nan delivered my second child. The first was born at home without the midwife, which was frightening and ultimately fine. The second time I came into Thornwall to have Nan. The difference was not small. Nan arrived knowing exactly what was needed and produced it in sequence and nothing went wrong that she hadn't anticipated. I've been recommending her to every farmer I know who's within a day's ride of Thornwall. She doesn't need the recommendation — she's known — but I give it anyway.",
+      "keywords": ["nan","delivered","second","child","first","born","home","frightening","arrived","knowing"]
+    },
+    {
+      "id": "land_1",
+      "source": "Sol on the land he farms",
+      "text": "The land is what it is. Some years the late wheat is good and some years the root vegetables are. The years they're both good are the easy years. The years neither is good I sell what I have and wait. I've farmed the same land for sixteen years. It knows me and I know it, which sounds like mysticism but is just: I know which field floods and which drains and which needs resting and in what order. The land is its own system. I'm working inside the system, not against it.",
+      "keywords": ["land","years","wheat","root","vegetables","good","easy","farmed","sixteen","floods"]
+    },
+    {
+      "id": "father_len_1",
+      "source": "Sol when Father Len came through on his circuit",
+      "text": "Father Len stops at the farm on his autumn circuit. He has been stopping for nine years — before him, whoever was on the circuit before him. The priests have been stopping here for longer than I've been here, which is a kind of institutional memory I find reassuring. He doesn't ask for much — a meal, a night out of the rain, news of what's happened in the region since his last circuit. I give all three. The news is useful to him and the giving is useful to me.",
+      "keywords": ["father","len","stops","farm","autumn","circuit","nine","years","priests","stopping"]
+    },
+    {
+      "id": "the_child_1",
+      "source": "Sol at the Thornwall market, when the unnamed child watched him unload",
+      "text": "The child from Nan's house was watching me unload the cart. I asked if the child wanted to help. The child said: I already know where everything goes. I said: how do you know. The child pointed at the stalls in order. The order was correct — it's the order I always go in based on which needs to be in the shade first. I've never told anyone the order. I've been doing it long enough it became obvious to me, which means it became obvious to someone watching carefully. I gave the child a carrot.",
+      "keywords": ["child","nan","watching","unload","cart","help","already","know","where","stalls"]
+    }
+  ]
+}

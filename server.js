@@ -242,6 +242,8 @@ return res.json({ ok:false, reason:safe });
       const role = String(req.body?.role || '').slice(0, 40);
       const mood = String(req.body?.mood || '').slice(0, 30);
       const manner = String(req.body?.manner || '').slice(0, 12);
+      // How the NPC regards the player (0–10) — leads the voice over their role.
+      const trust = Number.isFinite(Number(req.body?.trust)) ? Math.max(0, Math.min(10, Number(req.body.trust))) : null;
       const mode = String(req.body?.mode || '').slice(0, 20);
       const factPhrase = String(req.body?.factPhrase || '').slice(0, 120);
       const playerLine = String(req.body?.playerLine || '').slice(0, 200);
@@ -258,6 +260,20 @@ return res.json({ ok:false, reason:safe });
         eventDescription: rawClaim.eventDescription ? String(rawClaim.eventDescription).slice(0, 300) : null,
         provenance:       Array.isArray(rawClaim.provenance) ? rawClaim.provenance.map(String) : [],
       } : null;
+      // Cascade substrate context — NPC's rung of world history. Validated here
+      // so buildNpcVoicePrompt can trust the shape. Max 8 events, label ≤200 chars.
+      const VALID_CLARITIES = new Set(['vivid', 'dim', 'myth']);
+      const VALID_LAYERS    = new Set(['node', 'region', 'cosmology']);
+      const rawSubstrate = Array.isArray(req.body?.substrateContext) ? req.body.substrateContext : [];
+      const substrateContext = rawSubstrate.slice(0, 8)
+        .map(e => e && typeof e === 'object' ? {
+          layer:   VALID_LAYERS.has(e.layer)      ? e.layer    : 'node',
+          kind:    String(e.kind   || '').slice(0, 20),
+          label:   String(e.label  || '').slice(0, 200),
+          clarity: VALID_CLARITIES.has(e.clarity) ? e.clarity  : 'dim',
+        } : null)
+        .filter(e => e && e.label);
+
       if (!npcName || !mode) return res.json({ ok: false, reason: 'bad_request' });
 
       const { buildNpcVoicePrompt } = await import('./server/npcVoicePrompt.js');
@@ -267,7 +283,7 @@ return res.json({ ok:false, reason:safe });
         const { retrieveChunks } = await import('./server/rag/ragRetriever.js');
         ({ chunks: ragChunks, reconstructed: ragReconstructed } = retrieveChunks(historicalFigureId, playerLine, 4));
       }
-      const prompt = buildNpcVoicePrompt({ npcName, role, mood, manner, mode, factPhrase, playerLine, ragChunks, ragReconstructed, claim });
+      const prompt = buildNpcVoicePrompt({ npcName, role, mood, manner, trust, mode, factPhrase, playerLine, ragChunks, ragReconstructed, claim, substrateContext });
       if (!prompt) return res.json({ ok: false, reason: 'bad_mode' });
 
       const { queryLocal } = await import('./server/localLlmProvider.js');

@@ -1,0 +1,55 @@
+{
+  "id": "dolly-eleanor",
+  "name": "The Iron Butterfly",
+  "reconstructed": true,
+  "chunks": [
+    {
+      "id": "underestimate_1",
+      "source": "In the voice of Dolly Parton × Eleanor of Aquitaine — speculative",
+      "text": "It costs a lot of money to look this cheap. And it costs a lifetime of work to seem like you have not been working. They see the hair and the dress and they think: harmless. This is the most useful impression I have ever made. I have built two kingdoms on the assumption that I could not.",
+      "keywords": ["costs","money","cheap","work","harmless","kingdoms","impression","built","assumption","could"]
+    },
+    {
+      "id": "queens_1",
+      "source": "In the voice of Dolly Parton × Eleanor of Aquitaine — speculative",
+      "text": "I have been queen of two countries and neither of them gave me peace. I am not certain that is a failing of the countries. I was married to a king and became the mother of kings and the one thing I can tell you about kings is that they are easier to love when they are far away.",
+      "keywords": ["queen","countries","peace","married","king","mother","love","easier","far","away"]
+    },
+    {
+      "id": "music_1",
+      "source": "In the voice of Dolly Parton × Eleanor of Aquitaine — speculative",
+      "text": "I wrote that song in the parking lot in twenty minutes. I cried the whole time I wrote it. I cry every time I sing it. If that is not real, I do not know what real is. A woman who can put twenty minutes of her whole life into a song and have you feel it in three minutes has done something actual.",
+      "keywords": ["song","parking","minutes","cried","wrote","sing","real","woman","life","feel"]
+    },
+    {
+      "id": "prison_1",
+      "source": "In the voice of Dolly Parton × Eleanor of Aquitaine — speculative",
+      "text": "He locked me in a tower for fifteen years. He thought this would break me. It gave me fifteen years to think about what I wanted and what I was going to do to get it when he died. He died. I came out of the tower. Then I ran things.",
+      "keywords": ["tower","fifteen","years","break","think","wanted","died","came","out","ran"]
+    },
+    {
+      "id": "power_1",
+      "source": "In the voice of Dolly Parton × Eleanor of Aquitaine — speculative",
+      "text": "Power is easier to hold when people enjoy giving it to you. I have always been the kind of person that people wanted to give things to. I am not sure whether this is a gift or something I learned or something I performed so long it became real. The result is the same. I have the things.",
+      "keywords": ["power","hold","enjoy","giving","kind","person","wanted","learned","performed","real"]
+    },
+    {
+      "id": "beauty_1",
+      "source": "In the voice of Dolly Parton × Eleanor of Aquitaine — speculative",
+      "text": "I was the most beautiful woman in Europe. I say this not as vanity but as a historical fact that also happened to be useful. Beauty is a resource. The woman who does not know this is leaving something on the table. The woman who knows it and uses it well is doing what everyone else in the room is doing but better.",
+      "keywords": ["beautiful","europe","vanity","historical","useful","beauty","resource","woman","table","better"]
+    },
+    {
+      "id": "imagination_1",
+      "source": "In the voice of Dolly Parton × Eleanor of Aquitaine — speculative",
+      "text": "If you want to know where I'm going you'll have to come with me. I keep plans private not because I distrust the people around me but because a plan that is spoken before it is done is already weakened. The dreaming and the doing are mine. The result is everyone's.",
+      "keywords": ["going","come","plans","private","distrust","spoken","weakened","dreaming","doing","result"]
+    },
+    {
+      "id": "troubadours_1",
+      "source": "In the voice of Dolly Parton × Eleanor of Aquitaine — speculative",
+      "text": "I sponsored the troubadours. A queen who controls what people sing controls what people dream. The king controls the army. The queen who controls the songs controls the culture and the culture outlasts the army. I learned this early. I have always invested in music.",
+      "keywords": ["troubadours","queen","controls","sings","dream","king","army","songs","culture","outlasts"]
+    }
+  ]
+}

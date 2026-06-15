@@ -1,0 +1,57 @@
+{
+  "id": "mereth_keeper",
+  "name": "Hane",
+  "role": "MERETH devotee; Temple of Seven Virtues; record-keeper",
+  "cluster": "temple_seven_virtues",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "mereth_1",
+      "source": "Hane explaining MERETH to someone who asked about the humility angel",
+      "text": "MERETH is not the angel of self-deprecation. That's what people expect. Self-deprecation is still the self in the center of everything, just pressing down instead of up. MERETH is the angel of the correct assessment, which includes accurate recognition of both limitation and capacity. The humility is in the accuracy. You can't be humble about a skill you actually have — you'd be wrong. You can be humble about the gap between that skill and what the situation requires. That's where MERETH works.",
+      "keywords": ["mereth","not","self-deprecation","expect","center","pressing","angel","correct","assessment","limitation"]
+    },
+    {
+      "id": "records_1",
+      "source": "Hane with the Temple's administrative files",
+      "text": "I keep the records because someone has to and because I'm good at it and because being good at it and knowing I'm good at it is the MERETH practice in one job. I don't perform humility about the recordkeeping. The records are accurate and well-organized and I know this. What I practice humility about is everything outside the records — what the records mean, what they should be used for, whether the interpretation I'm putting on them is correct. The keeping I trust. The interpreting I hold lightly.",
+      "keywords": ["records","keep","someone","good","knowing","mereth","practice","perform","humility","accurate"]
+    },
+    {
+      "id": "vel_1",
+      "source": "Hane on Archon Vel",
+      "text": "Vel has one quality I find genuinely aligned with MERETH: he never takes credit for things that happened despite him. A Temple leader who overstates their own contribution to good outcomes is not a MERETH practitioner regardless of what they profess. Vel's reports to the Assembly are accurate — I've seen the drafts, I keep the filed copies. Where things went wrong he says things went wrong. Where he made the wrong call he says he made the wrong call. This is harder than it sounds.",
+      "keywords": ["vel","quality","genuinely","aligned","mereth","credit","despite","overstates","contribution","outcomes"]
+    },
+    {
+      "id": "vane_1",
+      "source": "Hane when asked about the VAUNTRETH-marked merchant agent Vane",
+      "text": "Vane is an interesting study in the relationship between the correct assessment and its escalation. I've watched them in commercial dealings and the assessment machinery they use is real and accurate. The check they apply on the escalation is real and disciplined. What I've noticed is that the checking requires constant effort from them in a way that the MERETH practice doesn't require from me. They're working against their nature. I'm working with mine. I don't know which is more virtuous.",
+      "keywords": ["vane","interesting","study","relationship","correct","assessment","escalation","commercial","checking","effort"]
+    },
+    {
+      "id": "edwyn_1",
+      "source": "Hane on Edwyn Aldenmere",
+      "text": "Edwyn is the best practitioner of MERETH in the laity that I'm aware of. Not because he's perfect — he overstates his own principled nature sometimes in a way that MERETH would flag. But the core is real: he assesses his capacity accurately before he commits, he acknowledges when he's out of his depth, and he doesn't construct the narrative that makes his failures into someone else's fault. For a noble this is exceptional. For a person it's less exceptional but still admirable.",
+      "keywords": ["edwyn","best","practitioner","mereth","laity","perfect","overstates","principled","core","accurately"]
+    },
+    {
+      "id": "what_humility_1",
+      "source": "Hane to a young initiate who asked what humility felt like",
+      "text": "Accurate. It feels accurate. There's a specific relief that comes with seeing yourself correctly — not better than you are, not worse than you are. The relief is the absence of the maintenance cost of either kind of distortion. Maintaining a flattering distortion is work. Maintaining a self-diminishing distortion is also work. MERETH eliminates both. What's left is just the thing you are, which requires no maintenance at all. I can't make it sound more dramatic than that because it isn't.",
+      "keywords": ["accurate","feels","accurate","specific","relief","correctly","better","worse","maintenance","distortion"]
+    },
+    {
+      "id": "dove_1",
+      "source": "Hane on Sister Dove",
+      "text": "Dove is my closest colleague at the Temple. We work adjacent practices — her ERRAN, my MERETH — and they don't conflict the way some adjacent practices do. MERETH requires accurate assessment; ERRAN requires continuous work. The two together are: see what's true, do what the true requires. She handles the doing. I handle the seeing. We've been colleagues for seven years and I don't know how the Temple would function if we had to swap.",
+      "keywords": ["dove","closest","colleague","temple","adjacent","practices","erran","mereth","conflict","assessment"]
+    },
+    {
+      "id": "teel_1",
+      "source": "Hane on Teel's alarming theological work",
+      "text": "Teel's conclusions would require, if correct, a revision of the foundational MERETH practice — because if the fourteen are expressions of the same mechanism rather than distinct entities, then the accurate assessment of oneself in relation to MERETH specifically loses its referent. You can't accurately assess your relationship to an angel if the angel is not what you thought it was. I've read the papers three times. I have not found the error Maren says is there. I'm holding my assessment lightly until I do.",
+      "keywords": ["teel","conclusions","require","revision","foundational","mereth","fourteen","expressions","mechanism","distinct"]
+    }
+  ]
+}

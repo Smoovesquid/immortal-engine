@@ -1,0 +1,57 @@
+{
+  "id": "river_ferryman",
+  "name": "Cross",
+  "role": "River ferryman; runs the crossing at the old ford; the only passage when the river is high",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "ferryman_1",
+      "source": "Cross on what a ferryman does",
+      "text": "The ferry makes the crossing possible when the ford doesn't. The ford is wading depth eight months of the year. The other four months, the ford is either too high to wade or too cold to survive wading. Those four months: I make the crossing. The river belongs to no one. The ferry belongs to me. What I provide: the one alternative to going around, which adds two days to any journey.",
+      "keywords": ["ferry","makes","crossing","possible","when","ford","doesn't","ford","wading","depth"]
+    },
+    {
+      "id": "theen_1",
+      "source": "Cross on Theen",
+      "text": "Theen's travelers come through the crossing when the guide's route runs east. The guide's relationship to the ferry: Theen knows when to plan for the ferry and when to plan for the ford. In twelve years of working the same river, I've had Theen's travelers eighteen times. Every time: Theen told them what the crossing would cost, how long it would take, and what to expect. Eighteen crossings and not one traveler was surprised by anything about the crossing. Theen prepares them well.",
+      "keywords": ["theen","travelers","come","through","crossing","when","guide's","route","runs","east"]
+    },
+    {
+      "id": "senn_1",
+      "source": "Cross on Senn",
+      "text": "Senn crosses regularly — the wanderer's path includes this river at least twice a year when the crossing is mine rather than the ford. In twelve years, I've ferried Senn eleven times. Never the same conversation twice. What Senn offers on the crossing: whatever Senn has been thinking about most recently, delivered as if I asked, which I didn't. What I offer: the other bank. What I take: the fee. What Senn takes from the conversation: I genuinely don't know. Senn doesn't say.",
+      "keywords": ["senn","crosses","regularly","wanderer's","path","includes","river","at","least","twice"]
+    },
+    {
+      "id": "comus_1",
+      "source": "Cross on Comus",
+      "text": "Comus's cart crosses here on the trading circuit. The cart requires a specific flat-water crossing that I can only make in certain conditions — the weight of the cart and the horse together pushes the ferry below the optimal water line. In six years of ferrying Comus's cart, I've refused the crossing twice because the river was too rough for the weight. Both times Comus waited. A merchant who waits for the right conditions rather than taking a risk with cargo shows commercial judgment. I told Comus this. Comus said: cargo lost is money I don't have.",
+      "keywords": ["comus","cart","crosses","trading","circuit","cart","requires","specific","flat-water","crossing"]
+    },
+    {
+      "id": "wild_travelers_1",
+      "source": "Cross on who crosses",
+      "text": "In twelve years I've counted every crossing. Four thousand two hundred and seventeen crossings. The most common traveler: people going to family in the next settlement. Second: traders and merchants. Third: Brotherhood territory workers. Fourth: Academy researchers. The categories have stayed consistent. The individuals in each category have changed. What's stable: the need to cross. What changes: who has the need.",
+      "keywords": ["twelve","years","counted","every","crossing","four","thousand","two","hundred","seventeen"]
+    },
+    {
+      "id": "what_the_river_is_1",
+      "source": "Cross on what the river is",
+      "text": "Not a barrier. People say the river is a barrier and ask me to help them cross a barrier. The river is a river. It has its own direction and its own pace and its own reasons for doing what it does, which it doesn't share with me. In twelve years on this river, the river has never done what I expected in the sense that my expectation was built from the pattern. The pattern is real. The specific river on any specific day is more than the pattern.",
+      "keywords": ["not","barrier","people","say","river","barrier","ask","help","them","cross"]
+    },
+    {
+      "id": "what_cross_holds_1",
+      "source": "Cross on the crossing he still thinks about",
+      "text": "Year three. A traveler who I crossed during a rapid deterioration in conditions. The deterioration started after I'd committed to the crossing. I completed the crossing. The traveler was distressed during. I was not distressed. The distress is the wrong response in a rapid deterioration — the correct response is the sequence of adjustments that manage the deterioration. We arrived at the other bank. The traveler said nothing, paid, and left. I've thought about that crossing twelve times. The distress and the calm are both understandable. Only one of them was useful.",
+      "keywords": ["year","three","traveler","crossed","during","rapid","deterioration","conditions","deterioration","started"]
+    },
+    {
+      "id": "twelve_years_1",
+      "source": "Cross on twelve years on the same river",
+      "text": "I know this river in all its moods because I've been here when all its moods happen. Not the same river in different moods — the river is different. The early spring river and the late-summer river and the autumn flood river: different rivers. The thing I do is the same: cross the river as it is today. The skill is the same. What it's applied to changes. In twelve years I've applied the same skill to twelve versions of the same crossing. The skill is stable. The application is always new.",
+      "keywords": ["know","river","all","moods","been","here","when","all","moods","happen"]
+    }
+  ]
+}

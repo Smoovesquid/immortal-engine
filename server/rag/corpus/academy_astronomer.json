@@ -1,0 +1,57 @@
+{
+  "id": "academy_astronomer",
+  "name": "Stell",
+  "role": "Academy astronomer; tracks the heavens; the rune sequences that map the sky are the oldest in the Archive",
+  "cluster": "academy_of_runes",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "astronomy_1",
+      "source": "Stell on astronomy",
+      "text": "The sky is the oldest text. In twenty years of astronomical observation, I'm reading a text that has been read since humans had eyes and the patience to track what moved above them. What makes it a text: the patterns repeat, the repetitions are measurable, the measurements are consistent across observers at different times and locations. In twenty years, my observations are a small addition to a record that began before this settlement existed.",
+      "keywords": ["sky","oldest","text","twenty","years","astronomical","observation","reading","text","been"]
+    },
+    {
+      "id": "burr_1",
+      "source": "Stell on Burr",
+      "text": "Burr's rune sequences and my astronomical work intersect at a specific point: the sequences that were originally developed as astronomical notation have been adapted for other applications but retain their astronomical structure. Burr teaches the adapted sequences. I use the original astronomical sequences that the adaptations were built from. In twelve years of working at the Academy alongside Burr, we've had seven conversations about the relationship between the original sequences and the adaptations. The adaptations work for the applications they serve. They've lost something from the original that I can specify but can't fully recover.",
+      "keywords": ["burr","rune","sequences","astronomical","work","intersect","specific","point","sequences","originally"]
+    },
+    {
+      "id": "tal_1",
+      "source": "Stell on Tal",
+      "text": "Tal's sequence analysis has been applied to astronomical texts. In four years of collaboration, Tal's analysis has identified three instances in historical astronomical records where the dating of the observation was inconsistent with the astronomical event described. Either the recording date was wrong or the described event didn't happen when the record says it did. The implications of either explanation are significant. We haven't published the finding. The finding needs more verification before it changes the historical astronomical record.",
+      "keywords": ["tal","sequence","analysis","applied","astronomical","texts","four","years","collaboration","tal's"]
+    },
+    {
+      "id": "lev_1",
+      "source": "Stell on Lev",
+      "text": "Lev from the Eastern Archive has astronomical records from the east that cover a period I don't have Western records for. In six months of access to Lev's knowledge, I've been cross-referencing the Eastern observations with my own records for the overlapping period. The result: the Eastern and Western astronomical records are consistent with each other. The same sky, observed from different locations, produces the same record. This is what was expected. The confirmation is still valuable.",
+      "keywords": ["lev","eastern","archive","astronomical","records","east","cover","period","don't","have"]
+    },
+    {
+      "id": "mreth_1",
+      "source": "Stell on Mreth",
+      "text": "Mreth the wild territory death-reader came to the Academy once to ask about a celestial event that had occurred at the time of a territory death with unusual characteristics. Mreth wanted to know if the celestial event was significant. My answer: the celestial event was a regular occurrence that happens every eleven years, and the most recent occurrence was three years ago. Mreth said: so the timing was coincidence. I said: from my perspective, yes. Mreth said: from mine, timing and coincidence are different categories. We didn't resolve the difference.",
+      "keywords": ["mreth","wild","territory","death-reader","came","academy","once","ask","celestial","event"]
+    },
+    {
+      "id": "what_the_sky_tells_1",
+      "source": "Stell on what the sky tells that the ground doesn't",
+      "text": "The sky tells you where you are and when you are. Not in the abstract — precisely. The position of the stars at a given moment in a given location is a unique identification of that moment and location. In twenty years of astronomical observation, I can tell you to within a few hundred feet where any observer was when they made a specific astronomical observation, and to within a minute when they made it. The sky is a coordinate system that humans have been using since before we had words for coordinates.",
+      "keywords": ["sky","tells","where","you","are","when","you","are","not","abstract"]
+    },
+    {
+      "id": "what_stell_holds_1",
+      "source": "Stell on what she's observed that she doesn't understand",
+      "text": "Three years ago. A pattern in the sky that lasted for eighteen days and that I don't have an explanation for. The pattern: a recurring light variation in a specific region of the sky at a specific hour, consistent across fourteen observations over the eighteen days. I've checked for instrument error, atmospheric conditions, recording error. None of these explain the pattern. In three years, the pattern has not recurred. What I've done: documented it exactly and filed it in the Academy's anomalous observations archive. There are fourteen other records in that archive. I've now read all fourteen. None are similar to what I observed.",
+      "keywords": ["three","years","pattern","sky","lasted","eighteen","days","don't","have","explanation"]
+    },
+    {
+      "id": "twenty_years_1",
+      "source": "Stell on twenty years of astronomical observation",
+      "text": "In twenty years I've made approximately seven thousand observations. Seven thousand documented moments of looking at the sky and recording what was there. The sky I've looked at in twenty years is the same sky that has been observed since humans began observing it. What my twenty years adds to the record: seven thousand observations from this location, in this period, with this precision. After my twenty years, someone will have seven thousand more data points for the same record. The record outlasts any observer.",
+      "keywords": ["twenty","years","made","approximately","seven","thousand","observations","seven","thousand","documented"]
+    }
+  ]
+}

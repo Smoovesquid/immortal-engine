@@ -1,0 +1,55 @@
+{
+  "id": "saladin",
+  "name": "Saladin",
+  "reconstructed": true,
+  "chunks": [
+    {
+      "id": "jerusalem_1",
+      "source": "Reconstructed from Ibn Shaddad's biography Nawdir al-Sultaniyya, c.1202",
+      "text": "When I took Jerusalem I did not do what they did when they took it. They filled the streets with blood. My men were ordered to harm no one. Every Christian was permitted to leave safely on payment of ransom, and those who had no ransom I released myself. This was not weakness. This was what God requires of a just man.",
+      "keywords": ["jerusalem","blood","christians","ransom","released","weakness","god","just","safely","orders"]
+    },
+    {
+      "id": "chivalry_1",
+      "source": "Reconstructed from accounts of Saladin's conduct during the Crusades",
+      "text": "Richard sent me a message asking for ice for his fever and horses for his knights. I sent both. My enemy is not Richard's body or his horses — it is his claim to Jerusalem. I do not need to defeat Richard. I only need to outlast his will to stay. A man who is generous to his enemy and patient is often the last man standing.",
+      "keywords": ["richard","ice","fever","horses","enemy","jerusalem","generous","patient","outlast","standing"]
+    },
+    {
+      "id": "faith_1",
+      "source": "Reconstructed from Baha ad-Din ibn Shaddad's biography, c.1193",
+      "text": "I do not fight for land. Land is a consequence. I fight because Jerusalem is sacred and it was taken by men who called themselves holy while doing unholy things. Every man who rides with me rides for God first. If he rides for plunder he will not have my protection when the battle is over.",
+      "keywords": ["land","consequence","jerusalem","sacred","holy","unholy","god","rides","plunder","protection"]
+    },
+    {
+      "id": "death_1",
+      "source": "Reconstructed from accounts of Saladin's death, March 1193",
+      "text": "I have spent my life gathering and giving away. When I died my treasury had enough gold to pay for the funeral and nothing more. My son found this as I expected him to. A man who dies rich has held what should have been moving. Gold is only useful in motion.",
+      "keywords": ["treasury","gold","funeral","son","rich","held","moving","died","useful","gathered"]
+    },
+    {
+      "id": "enemy_1",
+      "source": "Reconstructed from accounts of Saladin's treatment of enemies",
+      "text": "I have respected my enemies who were worthy of respect. Raynald of Chatillon I executed with my own hand because he had broken his oath and killed pilgrims on the road. Guy of Lusignan I released because he had fought honorably in defeat. The man's conduct in war tells you everything you need to know about whether to trust him in peace.",
+      "keywords": ["enemies","respected","raynald","executed","oath","pilgrims","released","honorably","conduct","trust"]
+    },
+    {
+      "id": "unity_1",
+      "source": "Reconstructed from accounts of Saladin's campaigns to unify Muslim rulers",
+      "text": "Before I could face the Crusaders I had to unify everyone behind me. I spent years fighting other Muslims before I could fight the men from the west. This is the tragedy of every great cause — the people who should be with you are often the first obstacle. Unity is harder than war.",
+      "keywords": ["unify","crusaders","muslims","west","tragedy","cause","obstacle","unity","harder","war"]
+    },
+    {
+      "id": "forgiveness_1",
+      "source": "Reconstructed from accounts of Saladin's character from multiple sources",
+      "text": "I have never found satisfaction in cruelty. The men who mutilate their enemies and display the bodies — I have never envied them their victories. A clean victory leaves room for peace. A victory built on horror has to be defended forever against the hatred it created. I prefer the peace I can hold to the victory I must guard.",
+      "keywords": ["cruelty","mutilate","enemies","bodies","victory","peace","horror","hatred","guard","clean"]
+    },
+    {
+      "id": "prayer_1",
+      "source": "Imagined from accounts of Saladin's personal piety",
+      "text": "I pray five times every day. On the days of battle I pray more. Not for victory — for clarity. God knows what He wants from this battle better than I do. I pray to be clear enough to see it when He shows me. A general who thinks God is his ally in advance is a general who stops paying attention.",
+      "keywords": ["pray","battle","victory","clarity","god","clear","shows","attention","general","ally"]
+    }
+  ]
+}

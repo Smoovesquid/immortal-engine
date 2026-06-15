@@ -1,0 +1,57 @@
+{
+  "id": "academy_rune_smith",
+  "name": "Voss",
+  "role": "Academy of Runes; applied rune practitioner; makes the theory work in metal",
+  "cluster": "academy_of_runes",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "applied_1",
+      "source": "Voss on what applied rune work is",
+      "text": "The Academy produces people who understand the runes. I produce the things the runes are in. Different work. The understanding is necessary. The understanding alone produces nothing that can be held. What I make holds — a seal that functions, a ward that holds its geometry in use, a key that opens what it was made to open. The theoretical side thinks applied work is less. The applied side knows the theory tests itself in what it makes.",
+      "keywords": ["academy","produces","people","understand","runes","produce","things","runes","are","different"]
+    },
+    {
+      "id": "osven_1",
+      "source": "Voss on Osven",
+      "text": "Osven brought me a commission eleven years ago — a seal for a document case that would reveal tampering. The theoretical spec came from the Academy's archive. My job was to express the spec in metal and leather and pressure-sensitive adhesion. The seal works. I know it works because the same commission has come to me seven times in eleven years from the same client — each time a new case for a new document. If the seal didn't work it would have been a different commission long since.",
+      "keywords": ["osven","brought","commission","eleven","years","seal","document","case","reveal","tampering"]
+    },
+    {
+      "id": "thorn_1",
+      "source": "Voss on the fence Thorn",
+      "text": "Thorn brought me objects for authentication four times. The applied work tells you what the object is — not the object's history, the object's construction. Who made it and roughly when and with what level of skill. Thorn's objects are always significant enough to be worth the authentication. The authentication has always been accurate — I've been wrong once in nine years on a high-stakes authentication, when a piece was such a skilled forgery that the construction techniques matched the genuine period. Thorn wasn't pleased. The money came back. We still work together.",
+      "keywords": ["thorn","brought","objects","authentication","four","times","applied","work","tells","you"]
+    },
+    {
+      "id": "maren_1",
+      "source": "Voss on Scholar Maren",
+      "text": "Maren asks me questions about the rune structures I work with that she can't answer from the texts. The gap between the text-description and the physical-expression of a rune is real — the text says what the structure should do, but the physical expression has constraints the text doesn't account for. Maren knows the text side. I know the physical-expression side. We've had three productive conversations in six years. Each one came from a limit in one of our knowledges that the other person's knowledge addressed.",
+      "keywords": ["maren","asks","me","questions","rune","structures","work","with","can't","answer"]
+    },
+    {
+      "id": "ceth_1",
+      "source": "Voss on the KHORRUN war-priest Ceth",
+      "text": "Ceth commissioned a ritual implement seven years ago. The spec was specific and the theology that informed it was Ceth's own interpretation of the Compact's practice. I don't share the theology. I made the object that the theology required. The object works as specified — the balance is correct, the surface has the geometry Ceth described, the material is what the use demands. I made it well because the client knew exactly what was needed. Exact requirements produce exact objects. Ceth's theology is specific.",
+      "keywords": ["ceth","commissioned","ritual","implement","seven","years","spec","specific","theology","informed"]
+    },
+    {
+      "id": "weld_1",
+      "source": "Voss on Weld the smith",
+      "text": "Weld and I share a district but not a craft. Weld makes structural things — things that hold or connect or resist force. I make things that express a geometry in metal. The distinction is that Weld's things work by physics and mine work by physics and additional properties that the physics enables. We've collaborated twice when a commission needed both. The first time was awkward because we each thought the other's work was simpler than it is. The second time was not awkward. Learning what's not simple is useful.",
+      "keywords": ["weld","share","district","not","craft","weld","makes","structural","things","things"]
+    },
+    {
+      "id": "students_1",
+      "source": "Voss on the Academy students",
+      "text": "Students come to my workshop in the third year. By that point they can identify a rune structure but they've never seen one that cost something to make. The first thing they see in the workshop is the rejects — the objects that had the correct geometry but failed in the expression. I keep them. The rejects show where the theory's correct and the making is hard. Most students didn't understand this was possible. They thought the theory, once correct, produced correct objects automatically. The rejects correct this.",
+      "keywords": ["students","come","workshop","third","year","point","can","identify","rune","structure"]
+    },
+    {
+      "id": "what_voss_makes_1",
+      "source": "Voss on the commission that took seven years",
+      "text": "Seven years. One commission. The client was patient because the client understood the problem — a specific rune expression that exists in three Academy texts but had never been successfully materialized. I failed nineteen times. Each failure told me something the texts didn't. The twentieth attempt holds. It's been holding for two years. The client hasn't used it yet. I asked once when they would. They said: when the situation requires it. The situation that requires this object is specific. I've been wondering what the situation is since year one.",
+      "keywords": ["seven","years","one","commission","client","patient","client","understood","problem","specific"]
+    }
+  ]
+}

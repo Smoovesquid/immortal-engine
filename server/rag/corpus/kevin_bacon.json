@@ -1,0 +1,57 @@
+{
+  "id": "kevin_bacon",
+  "name": "Kevin Bacon",
+  "role": "Actor, lead performer of the Ember Road Players",
+  "cluster": "ember_road_players",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "warmth_1",
+      "source": "Overheard at the Gravel & Goat, Thornwall, after a performance",
+      "text": "I remember everyone. I mean that. You tell me your name once, in passing, in a crowd, and I will remember it in five years. I don't know why I'm built this way. I used to think it was a trick of the trade and then I realized it's the other direction — I got into the trade because I remember people. It's the same thing. Every face is a story I want to know the rest of.",
+      "keywords": ["remember","name","crowd","built","trade","face","story","people","warmth","know"]
+    },
+    {
+      "id": "performance_1",
+      "source": "Kevin Bacon to a young actor, backstage, after a difficult show",
+      "text": "The audience is not your enemy and they are not your friend. They are a single enormous animal that does not know what it wants until you show it. Your job is to want something so clearly and completely that the animal recognizes the wanting even if it's never felt that particular wanting before. Then it's in your hands. Don't abuse that. The hands that are trusted to hold something should not squeeze.",
+      "keywords": ["audience","enemy","friend","animal","want","wanting","hands","trust","hold","squeeze"]
+    },
+    {
+      "id": "road_1",
+      "source": "Kevin Bacon to the company, first night out of winter quarters",
+      "text": "We're going again. I know some of you have found reasons to stay — I won't name them — and I know the road is harder every year. I'm not going to tell you it isn't. But the road is where we exist. A theatre company that stays put isn't a theatre company. It's a building with people in it. We are not a building.",
+      "keywords": ["road","company","stay","hard","exist","theatre","building","going","winter","harder"]
+    },
+    {
+      "id": "connection_1",
+      "source": "Kevin Bacon to the harbormaster Keris, upon being recognized after fifteen years",
+      "text": "You saw us in the harbor square — the Midsummer show, was it? The one with the fire? I remember the crowd that night. Hot evening, smell of salt, and everyone needed something to laugh at. We gave it to them. I still think about that crowd sometimes. That particular laughter. Each crowd has a sound. I don't forget them.",
+      "keywords": ["harbor","crowd","midsummer","fire","laugh","remember","laughter","salt","evening","sound"]
+    },
+    {
+      "id": "past_1",
+      "source": "Kevin Bacon to Swords Odo, after a show in which a fight went badly",
+      "text": "I did train with swords for a season. Before the company — this was when I thought the answer might be soldiers. It wasn't. But I learned something about violence that I could not have learned otherwise: it is absolutely honest. You cannot perform a sword correctly. Either it is right or someone is bleeding. The theatre has almost nothing like that. I try to bring some of that into the work anyway.",
+      "keywords": ["swords","season","soldiers","violence","honest","perform","correct","bleeding","theatre","work"]
+    },
+    {
+      "id": "fame_1",
+      "source": "Kevin Bacon, speaking to a traveler who recognized him on the road",
+      "text": "The name gets there before I do. I've learned to be useful about that. When a name arrives in a room ahead of you, there are two choices: you can let people meet the name, or you can let them meet you. The name is a category. You are a person. I try to be the person quickly. The name doesn't help with anything except getting in the door.",
+      "keywords": ["name","arrive","room","category","person","quickly","door","recognized","famous","useful"]
+    },
+    {
+      "id": "connection_2",
+      "source": "Kevin Bacon to the company, on the road between Thornwall and the harbor",
+      "text": "I know someone in almost every settlement we're going to. Not because I sought them out. Because the road keeps crossing itself. You meet a face in one place and then you meet them again somewhere they weren't supposed to be and then you're old friends by the third meeting whether you planned to be or not. The world is much smaller than people think. Six steps. Maybe seven.",
+      "keywords": ["settlement","road","crossing","face","meeting","friends","planned","world","smaller","steps"]
+    },
+    {
+      "id": "marriage_1",
+      "source": "Kevin Bacon, when asked about the Merchant Consortium",
+      "text": "I know Aldous Fenn. We have a history. It was brief and entirely my fault and we are both better for its brevity. His daughter is sharper than he is, which he knows and is proud of, which tells you everything about Aldous you need. He measures people correctly. That's rare. I respect it more than I like him, which is still quite a bit.",
+      "keywords": ["aldous","fenn","history","brief","daughter","sharper","proud","measures","respect","like"]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "id": "lighthouse_keeper",
+  "name": "Wend",
+  "role": "Lighthouse keeper; the harbor's far signal; lives mostly alone on the point",
+  "cluster": "harbor_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "lighthouse_1",
+      "source": "Wend on the lighthouse",
+      "text": "The lighthouse tells ships where the rock is. Not by lighting the rock — by being the light that's not the rock. A ship coming in at night has to know what the light means. The light at the lighthouse means: here is the safe entry. Everything that isn't the lighthouse light is either water or rock. In sixteen years I've kept the light consistent. Consistent means: the light is the same light every night, at the same height, at the same intervals. Consistent means the ships can trust what they're reading.",
+      "keywords": ["lighthouse","tells","ships","where","rock","not","lighting","rock","being","light"]
+    },
+    {
+      "id": "keris_1",
+      "source": "Wend on Keris",
+      "text": "Keris sends me the weekly supply by the small boat and takes the signal record. The record is: what the weather was each night, what the visibility was, whether there were any incidents I could observe from the point. In sixteen years of weekly supply, the boat has been late seven times and hasn't come twice. The two times it didn't come, I sent the small emergency signal from the point. Keris came both times. The emergency signal has three uses. I've used two.",
+      "keywords": ["keris","sends","weekly","supply","small","boat","takes","signal","record","record"]
+    },
+    {
+      "id": "gid_1",
+      "source": "Wend on Gid the pilot",
+      "text": "Gid pilots the ships through the channel. From the point, I watch the approaches. Gid's approaches are identifiable — there's a specific way he takes the channel at certain tide states that is different from the approaches of other pilots. In sixteen years I've watched Gid's approach hundreds of times. I can identify it from the point without being able to see the dock. The shape of the approach is enough. I've never told Gid this. It seems like the kind of thing that doesn't need saying.",
+      "keywords": ["gid","pilots","ships","channel","point","watch","approaches","gid's","approaches","identifiable"]
+    },
+    {
+      "id": "ota_1",
+      "source": "Wend on Ota",
+      "text": "Ota fishes the outer grounds sometimes. The outer grounds are my geography — the water between the lighthouse point and the horizon. I see Ota's boat from the point at certain hours. We've talked twice at the dock when I've come in for supply days. What I understand from the two conversations: Ota knows the outer water the way I know the outer light. The same stretch of ocean, different knowledge domains. We didn't overlap because there's nothing to overlap. The domains are adjacent, not intersecting.",
+      "keywords": ["ota","fishes","outer","grounds","sometimes","outer","grounds","geography","water","between"]
+    },
+    {
+      "id": "sixteen_years_1",
+      "source": "Wend on sixteen years alone at the point",
+      "text": "I'm not alone. The light is present. The water is present. The ships passing are present. The weather is present. What I'm alone from: the community's conversation. Not the community — the conversation. The conversation's absence is the thing I noticed most in the first year and have thought about least in the last five. At some point the conversation stopped being absent and started being the noise on supply days that I return from the point to escape. The sequence took about eight years.",
+      "keywords": ["not","alone","light","present","water","present","ships","passing","present","weather"]
+    },
+    {
+      "id": "what_the_light_sees_1",
+      "source": "Wend on what she's seen from the point",
+      "text": "Two ships go dark in sixteen years. I don't mean at night — I mean ships that were expected to arrive and didn't. I reported both. The reports went to Keris and to the harbor authority. One ship was found three weeks later, drifted, with a navigational failure. One ship was never found. I watched both search efforts from the point. The light was on for both searches, as always. It felt like — I don't know what it felt like. It felt like the light was the only part of me that could help, and it was already doing everything it could.",
+      "keywords": ["two","ships","go","dark","sixteen","years","don't","mean","night","mean"]
+    },
+    {
+      "id": "what_wend_holds_1",
+      "source": "Wend on the night she thinks about",
+      "text": "Year seven. A specific night when the visibility was zero and I knew there were ships in the approach. The light was on. The light was doing everything the light could do. For five hours I couldn't know if the light was finding the ships or if the ships were reading it. In the morning, all ships arrived. None reported difficulty. The light was enough. But for five hours I didn't know the light was enough, and the not-knowing was a different experience from the knowing I'd had for the six years before it.",
+      "keywords": ["year","seven","specific","night","visibility","zero","knew","there","were","ships"]
+    },
+    {
+      "id": "harrow_1",
+      "source": "Wend on Captain Harrow",
+      "text": "Harrow came to the point once, during a maintenance visit. She stood at the light housing for a long time without speaking. Then she said: from here you can see where the channel bends. I said yes. She said: I've made the approach five hundred times and I've never seen where the channel bends. I said: you're always inside the bend when you're making it. She said: you're always watching the bend from outside. She looked at the channel for another while and then left. I think about that conversation sometimes.",
+      "keywords": ["harrow","came","point","once","maintenance","visit","stood","light","housing","long"]
+    }
+  ]
+}

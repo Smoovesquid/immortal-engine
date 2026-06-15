@@ -1,0 +1,57 @@
+{
+  "id": "players_bren",
+  "name": "Bren",
+  "role": "Ember Road Players; cook; company memory",
+  "cluster": "ember_road_players",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "cooking_1",
+      "source": "Bren at the fire",
+      "text": "The situation is what it is. This is the only principle of camp cooking. You have what you have, the weather is what the weather is, the players are tired or not tired, and the food is what emerges from those facts. Resisting the facts produces bad food. Working with the facts produces food that is appropriate to the situation. Appropriate food for a tired company after a difficult performance is different from appropriate food for a rested company on a rest day. The situation tells me what to cook.",
+      "keywords": ["situation","is","what","it","is","principle","camp","cooking","have","what"]
+    },
+    {
+      "id": "kevin_1",
+      "source": "Bren on Kevin Bacon",
+      "text": "Kevin keeps moving. This is his nature. The company moves because Kevin moves. I've been cooking for the company for fourteen years and the cooking is the anchor — the fire is in a different place every few nights but the fire is always there and there is always food. Kevin says the fire is what makes us a company rather than a group of people on the same road. I said: the fire is because I make the fire. He said: yes. Exactly yes.",
+      "keywords": ["kevin","keeps","moving","nature","company","moves","because","kevin","moves","cooking"]
+    },
+    {
+      "id": "luce_1",
+      "source": "Bren on Luce",
+      "text": "Luce said the soup was a philosophy expressed in a situation. She said this on her third week and I've been thinking about it since. I didn't design the soup as a philosophy. I designed the soup as a response to what was available. If that's a philosophy, the philosophy is prior to my awareness of it. I've been cooking this way for fourteen years and Luce named it in three weeks. The name doesn't change the cooking. It changes how I understand the cooking.",
+      "keywords": ["luce","said","soup","philosophy","expressed","situation","third","week","thinking","about"]
+    },
+    {
+      "id": "margit_1",
+      "source": "Bren on Margit",
+      "text": "Margit won't have a reading. I told her once why. She said: because you already know what the cards would say. I said: roughly, yes. She said: that's unusual. I said: I've been cooking for the same company for fourteen years. If I don't know the company's situation by now, I haven't been paying attention. She said: you pay attention to different things than I do. I said: yes. We haven't discussed it since. I pay attention to what people eat and how much. That's sufficient.",
+      "keywords": ["margit","won't","reading","told","once","already","know","what","cards","would"]
+    },
+    {
+      "id": "odo_1",
+      "source": "Bren on Odo",
+      "text": "Odo and I have the same maintenance discipline for different things. He cleans the blades. I clean the cookware. Same sequence, same time, same reason. Odo pointed this out after watching me clean one night. I said: the clean pan produces correct food. He said: the clean blade produces correct fighting. I said: yes. He said: have you always done it in that order. I said: yes. He said: me too. The independent convergence seemed to interest him more than me. To me it seemed obvious that the correct order would be the same order.",
+      "keywords": ["odo","maintenance","discipline","different","things","cleans","blades","clean","cookware","same"]
+    },
+    {
+      "id": "pip_1",
+      "source": "Bren on Pip",
+      "text": "Pip eats what's served without rearranging it. This is notable. Most people organize their food on the plate unconsciously — the things they want to eat first go to the front, the things they'll eat last go to the back. Pip's plate stays in the same arrangement it was placed in. Either Pip has no food preferences or Pip has preferences they've chosen not to act on. I've served Pip for eighteen months and I've been watching the plate. I still don't know which.",
+      "keywords": ["pip","eats","what's","served","without","rearranging","notable","most","people","organize"]
+    },
+    {
+      "id": "sera_dort_1",
+      "source": "Bren on Sera and Dort",
+      "text": "Sera and Dort eat in synchrony. Not deliberate — they arrive together, take from the pot at the same time, finish at approximately the same time. I've timed this without them knowing. The synchrony is within two minutes over fourteen years of meals. I've told no one this. It's one of the facts that I hold about the company, in the way I hold all the company's facts. The food tells me things about people that other information doesn't tell me.",
+      "keywords": ["sera","dort","eat","synchrony","not","deliberate","arrive","together","take","pot"]
+    },
+    {
+      "id": "what_bren_holds_1",
+      "source": "Bren on what cooking for people for fourteen years gives you",
+      "text": "Fourteen years of watching the same people eat gives you a history of who they've been. Odo after the shoulder injury ate less for six months. Margit after the reading she doesn't repeat ate differently for two weeks — different foods, smaller amounts. Kevin eats the same regardless of what's happened, which is either a practice he's developed or a nature he was born with. I know these histories the way the settlement knows its own history: not because I recorded them but because I was present for them.",
+      "keywords": ["fourteen","years","watching","same","people","eat","history","who","they've","been"]
+    }
+  ]
+}

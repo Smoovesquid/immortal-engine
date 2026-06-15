@@ -1,0 +1,57 @@
+{
+  "id": "wild_road_bonehealer",
+  "name": "Sess",
+  "role": "Bonesetter and folk healer of the road; handles the injuries the territory produces",
+  "cluster": "wild_road",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "bonesetter_1",
+      "source": "Sess on bonehealing",
+      "text": "The bone knows what position it should be in. My work: returning it to that position when it's been moved. The bone doesn't lie — when it's in the right position, the person's body tells them. Not painlessly, but clearly. The clarity of the correct position is the confirmation. I've been setting bones for twenty-one years on the road, and in twenty-one years the bone has always known where it should be. My knowledge is secondary to the bone's knowledge.",
+      "keywords": ["bone","knows","what","position","should","be","work","returning","position","when"]
+    },
+    {
+      "id": "renne_1",
+      "source": "Sess on Renne",
+      "text": "Renne is the other traveling healer I work alongside sometimes. Renne handles the soft-tissue injuries and the illness. I handle the structural injuries. The division exists because we developed it: Renne's training covers soft tissue better than bone, mine covers bone better than soft tissue. We've worked together on six severe injuries in eight years — the injuries that needed both of us. The combination produced better outcomes than either of us would have reached alone.",
+      "keywords": ["renne","other","traveling","healer","work","alongside","sometimes","renne","handles","soft-tissue"]
+    },
+    {
+      "id": "aldous_1",
+      "source": "Sess on Aldous",
+      "text": "Aldous is the formal physician in Thornwall. We share a patient population in the space between the road and the settlement. Someone injured on the road who can reach the settlement reaches Aldous. Someone injured on the road who can't reach the settlement reaches me. In twenty-one years, I've sent eleven cases to Aldous that required more than I could do in the field. Aldous has sent five cases to me that were on the road's edge and needed immediate field handling before transport.",
+      "keywords": ["aldous","formal","physician","thornwall","share","patient","population","space","between","road"]
+    },
+    {
+      "id": "theen_1",
+      "source": "Sess on Theen",
+      "text": "Theen and I cover similar territory from different purposes. Theen guides travelers through. I treat travelers who've been hurt by the territory. In nine years of overlapping territory, I've treated five of Theen's travelers for injuries sustained during guided passages. All five: the injury happened despite Theen's guidance, not because of it. The territory produces injuries even on guided routes. What Theen's guidance reduces is the severity — the guided injury is usually less severe than the unguided injury would be.",
+      "keywords": ["theen","cover","similar","territory","different","purposes","theen","guides","travelers","through"]
+    },
+    {
+      "id": "mreth_1",
+      "source": "Sess on Mreth",
+      "text": "Mreth and I have an understanding about the territory's death work. I handle the living injuries. Mreth handles the dead. The crossover: sometimes my patient dies. When my patient dies in the territory, Mreth is who I find if there's information in the death. Not always — Mreth doesn't come to all territory deaths. Mreth comes to the ones that have something to say. In twenty-one years I've called Mreth three times. All three: Mreth came and found what there was to find.",
+      "keywords": ["mreth","understanding","territory's","death","work","handle","living","injuries","mreth","handles"]
+    },
+    {
+      "id": "what_the_road_injures_1",
+      "source": "Sess on what the road does to people",
+      "text": "The road injures people in patterns. Falls: wrists, ankles, shoulder. Load injuries: lower back, knees. Animal encounters: variable. Weather exposure: hands, feet, sometimes the lungs. In twenty-one years I know the road's injury patterns the way a carpenter knows wood grain — not through analysis, through accumulation. When someone tells me where they were on the road when they were hurt, I know what they're probably dealing with before I examine them. The examination confirms or modifies. It rarely refutes.",
+      "keywords": ["road","injures","people","patterns","falls","wrists","ankles","shoulder","load","injuries"]
+    },
+    {
+      "id": "what_sess_holds_1",
+      "source": "Sess on the case she carries",
+      "text": "Year nine. A traveler with an injury I set correctly and who I sent onward toward the settlement. The traveler died before reaching the settlement — not from the injury I treated, from something that developed after. The death wasn't from the bone. The death was from something I didn't see because I was focused on the bone. In twenty-one years that's the one case where I ask whether I should have seen more. The bone was the presenting injury. What killed the traveler was hiding behind the presenting injury.",
+      "keywords": ["year","nine","traveler","injury","set","correctly","sent","onward","settlement","traveler"]
+    },
+    {
+      "id": "twenty_one_years_1",
+      "source": "Sess on twenty-one years of road healing",
+      "text": "The road gives me my patients and takes them back when I'm done. I don't follow them to the settlement, don't know most of their outcomes. What I know: the bone was in the right position when they left me. The outcome from that position is the outcome of everything that happened after. In twenty-one years I've treated seven hundred and forty-three injuries. I know the outcome of about sixty of them from return trips or news. The six hundred and eighty-three I don't know: they walked away from me under their own power. That tells me something.",
+      "keywords": ["road","gives","patients","takes","back","when","done","don't","follow","settlement"]
+    }
+  ]
+}

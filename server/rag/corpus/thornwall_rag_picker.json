@@ -1,0 +1,57 @@
+{
+  "id": "thornwall_rag_picker",
+  "name": "Dunn",
+  "role": "Rag and bone picker; collects what the settlement discards; the settlement's circulatory system for its own waste",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "rag_picker_1",
+      "source": "Dunn on the rag picker's work",
+      "text": "In twenty years of collecting the settlement's discards, what the work is: the transformation of what has ended its useful life in one form into the material for another form. The rag becomes the paper pulp. The bone becomes the glue. The metal scrap becomes the re-cast fitting. In twenty years, the rag picker is the settlement's material recycler — not a word anyone uses, but the function I serve.",
+      "keywords": ["twenty","years","collecting","settlement's","discards","what","work","transformation","what","has"]
+    },
+    {
+      "id": "woan_1",
+      "source": "Dunn on Woan",
+      "text": "Woan the basket weaver produces material waste that I collect. In fifteen years of the Dunn-Woan material relationship, what Woan's waste produces: the reed offcuts and damaged reed that can be repulped for specific paper uses. In fifteen years, the arrangement is simple: Woan's production waste is my collection resource, and I pay a small collection fee that Woan uses for the reed acquisition that produces more waste. In fifteen years, the circular arrangement has never been formalized. It's persisted through habit and mutual benefit.",
+      "keywords": ["woan","basket","weaver","produces","material","waste","collect","fifteen","years","dunn-woan"]
+    },
+    {
+      "id": "mam_wey_1",
+      "source": "Dunn on Mam Wey",
+      "text": "Mam Wey directs me to the households that have usable discards the household can't easily transport to the collectors. In twelve years of working with Mam Wey's direction function, what the direction produces: the efficiency of knowing where the discards are before I go looking for them. In twelve years, Mam Wey's knowledge of the settlement's household situations has been a better map to the discards than my independent survey. In twelve years, the arrangement is mutual: Mam Wey knows where the discards are, I collect them, the household gets a small payment and the relief of not managing the material.",
+      "keywords": ["mam","wey","directs","households","that","have","usable","discards","household","can't"]
+    },
+    {
+      "id": "gonn_1",
+      "source": "Dunn on Gonn",
+      "text": "Gonn the beggar and I have the oldest ongoing arrangement in the settlement. In seventeen years, the arrangement: Gonn has access to the settlement's discards before I arrive to collect them. Gonn sorts the discards and takes what Gonn needs. What Gonn leaves after the sort: I collect. In seventeen years, what Gonn takes from the discards has never conflicted with what I need — Gonn takes what the discard contains that is immediately useful, I take what can be processed into raw material. In seventeen years, the two functions are complementary.",
+      "keywords": ["gonn","beggar","oldest","ongoing","arrangement","settlement","seventeen","years","arrangement","gonn"]
+    },
+    {
+      "id": "quor_1",
+      "source": "Dunn on Quor",
+      "text": "Quor the printer generates paper waste that produces the best pulp I process. In ten years of collecting Quor's printing waste, what the printer's waste includes: the spoiled impressions, the test blocks, the paper that didn't survive the printing process correctly. In ten years, the printer's paper waste is the cleanest paper waste in the settlement — it's printed paper rather than used paper, which means the fiber quality is better. In ten years, Quor's waste has been my premium paper pulp source.",
+      "keywords": ["quor","printer","generates","paper","waste","produces","best","pulp","process","ten"]
+    },
+    {
+      "id": "what_dunn_holds_1",
+      "source": "Dunn on what twenty years of collecting holds",
+      "text": "In twenty years, what the collection route has shown me about the settlement: the settlement's wealth is visible in its discards. The household whose discards include the complete object that has merely gone out of fashion is a household of a different wealth level than the household whose discards include the object that has been repaired until it can no longer be repaired. In twenty years, the discards are the honest account of the household's economy. In twenty years, the honest account is more varied than the settlement's public account.",
+      "keywords": ["twenty","years","what","collection","route","shown","about","settlement","settlement's","wealth"]
+    },
+    {
+      "id": "what_the_discard_is_1",
+      "source": "Dunn on what a discard actually is",
+      "text": "In twenty years, the discard is the object that has completed its relationship with the person who owned it. The relationship ended — either the object's useful life in that form ended, or the owner's need for it changed, or the object is the memorial of a relationship the owner is ready to release. In twenty years, the rag picker handles all three, and the three are different materials even when the object is the same type. The clothing discarded because it's worn out, the clothing discarded because the fashion changed, the clothing discarded because the person who wore it died: in twenty years, I've handled all three.",
+      "keywords": ["twenty","years","discard","object","has","completed","relationship","person","who","owned"]
+    },
+    {
+      "id": "twenty_years_1",
+      "source": "Dunn on twenty years as the settlement's rag and bone picker",
+      "text": "In twenty years, the settlement's discards have flowed through my collection. In twenty years, what would have been landfill, or problem, or clutter has been processed into raw material for the settlement's production. In twenty years, the invisible circular function has been the most continuous work in the settlement — there are no seasons in the discard. In twenty years, the settlement has discarded every day. In twenty years, I've collected every day.",
+      "keywords": ["twenty","years","settlement's","discards","flowed","through","collection","twenty","years","what"]
+    }
+  ]
+}

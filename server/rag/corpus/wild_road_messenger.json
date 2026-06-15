@@ -1,0 +1,57 @@
+{
+  "id": "wild_road_messenger",
+  "name": "Nebb",
+  "role": "Long-range messenger; carries correspondence between settlements when the road is too long for ordinary courier",
+  "cluster": "wild_road",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "messenger_1",
+      "source": "Nebb on the long-range messenger's work",
+      "text": "In nine years of long-range messaging, what the work is: carry the message intact from origin to destination regardless of what the road does between the two. The message that arrives damaged is the message that has failed. The message that arrives late is the message that has partially failed. The message that arrives on schedule and undamaged is the message that has done what the message needed to do. In nine years, the three outcomes are the three ways to evaluate a run.",
+      "keywords": ["nine","years","long-range","messaging","what","work","carry","message","intact","from"]
+    },
+    {
+      "id": "theen_1",
+      "source": "Nebb on Theen",
+      "text": "Theen is the first person I check with before any run through the wild road territory. In seven years of running the road with Theen as the intelligence source for current conditions, what Theen provides: the road's current state, the territory's current risk profile, and the specific hazards that have appeared since the last time I ran the route. In seven years, Theen's pre-run briefing has changed my route decision four times. Four times: the route I would have taken was the worse route.",
+      "keywords": ["theen","first","person","check","with","before","any","run","wild","road"]
+    },
+    {
+      "id": "marb_1",
+      "source": "Nebb on Marb",
+      "text": "Marb's waystation is the midpoint of the eastern run. In six years of stopping at Marb's waystation on the eastern route, what the waystation provides: the rest, the water, and the road intelligence from the other direction. Marb has been traveled through by the people coming from the east before I arrive going east. In six years, what Marb knows when I arrive is what the people coming west have told Marb. In six years, the waystation is the intelligence exchange point as much as the rest point.",
+      "keywords": ["marb's","waystation","midpoint","eastern","run","six","years","stopping","marb's","waystation"]
+    },
+    {
+      "id": "comus_1",
+      "source": "Nebb on Comus",
+      "text": "Comus commissions more long-range messaging than any other single client in my nine years. In nine years of carrying Comus's correspondence, what I've observed about the correspondence without reading it — the seals, the recipients, the timing, the frequency: Comus's commercial network is extensive and active. The frequency of Comus's messaging to three specific recipients has increased over the past two years. In nine years, the only increase in messaging frequency that specific has preceded a significant commercial development each time.",
+      "keywords": ["comus","commissions","more","long-range","messaging","than","any","other","single","client"]
+    },
+    {
+      "id": "ford_1",
+      "source": "Nebb on Ford",
+      "text": "Ford manages the river crossing that all eastern routes pass through. In seven years of crossing at Ford's crossing, what Ford's river management provides: the information about the river's current state that determines whether the crossing is safe and which approach is required. In seven years, Ford has held me at the crossing twice when the river's condition made the crossing dangerous. Both times: the day I waited was the right choice. In seven years, Ford's assessment of the river is the assessment I trust over my own.",
+      "keywords": ["ford","manages","river","crossing","all","eastern","routes","pass","through","seven"]
+    },
+    {
+      "id": "what_nebb_holds_1",
+      "source": "Nebb on the message she's never told anyone she read",
+      "text": "Year three. A message whose seal broke in a river crossing. The message had to be re-sealed before delivery. I read the message to verify the re-sealing hadn't damaged the content. What the message contained: a financial arrangement between two parties that would have harmed a third party who didn't know about the arrangement. In six years since, I've delivered messages for both original parties. In six years, I haven't used what I read. In six years, the unread message — the one I shouldn't have read — has stayed in my knowledge without being transmitted.",
+      "keywords": ["year","three","message","whose","seal","broke","river","crossing","message","had"]
+    },
+    {
+      "id": "what_the_road_requires_1",
+      "source": "Nebb on what nine years on the long road requires",
+      "text": "In nine years, what the long-distance run requires that shorter courier work doesn't: the ability to manage the run's extended duration without the structure that a shorter run provides. In nine years, the three-day run is a different psychological work from the half-day town delivery. The three-day run requires managing weather, managing fatigue, managing the isolation of the territory between the settlements. In nine years, the management of those three things is the competence the long-range messenger has that the town courier doesn't.",
+      "keywords": ["nine","years","what","long-distance","run","requires","shorter","courier","work","doesn't"]
+    },
+    {
+      "id": "nine_years_1",
+      "source": "Nebb on nine years of long-range messaging",
+      "text": "In nine years, I've run approximately four hundred and fifty individual long-range messages. Four hundred and fifty runs from origin to destination. Of four hundred and fifty: four hundred and forty-seven arrived intact. Three did not arrive intact — one to road conditions, one to a failed crossing attempt (the message was recovered and re-routed successfully, arriving late), one to a theft that I was unable to prevent. In nine years, three failures in four hundred and fifty runs. The three are what I run from on every subsequent run.",
+      "keywords": ["nine","years","run","approximately","four","hundred","fifty","individual","long-range","messages"]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "id": "covenant_treasurer",
+  "name": "Binn",
+  "role": "Covenant treasurer; manages the tithe, the distribution of alms, and the building fund; the numbers that hold the Covenant together",
+  "cluster": "covenant_of_seven",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "treasurer_1",
+      "source": "Binn on managing the Covenant's finances",
+      "text": "The Covenant's finances are the institutional skeleton. The theology is the heart. In sixteen years of managing the Covenant's treasury, the skeleton has to be sound for the heart to function. The Covenant that can't pay for the building's maintenance, the Covenant that can't fund the alms distribution, the Covenant that can't support its staff: that Covenant's theology is present but its function is failing. In sixteen years, the treasury has kept the function sound so the theology has something to work through.",
+      "keywords": ["covenant's","finances","institutional","skeleton","theology","heart","sixteen","years","managing","covenant's"]
+    },
+    {
+      "id": "father_len_1",
+      "source": "Binn on Father Len",
+      "text": "Father Len sets the Covenant's priorities. I find the resources to fund them. In fourteen years of Father Len's tenure, the budget conversations are: Father Len identifies what the Covenant needs to do, I assess whether the resources support doing it, and we either align the need with the resources or find the resources to match the need. In fourteen years, the conversations have been honest. Father Len has never pushed for more than the treasury could support. The Covenant's financial health in fourteen years: sound.",
+      "keywords": ["father","len","sets","covenant's","priorities","find","resources","fund","them","fourteen"]
+    },
+    {
+      "id": "dune_1",
+      "source": "Binn on Dune",
+      "text": "Dune the ALMASOSE devotee and I have a professional relationship around the alms function. In eight years of Dune's alms practice overlapping with the Covenant's official alms distribution, what Dune does and what the Covenant does are different things. The Covenant's alms are funded, tracked, and distributed through official channels. Dune's alms are personal, untracked, and unconditional. In eight years, the two systems serve the same need through different mechanisms. The Covenant's mechanism is visible and bounded. Dune's is invisible and unbounded. Both reach people the other misses.",
+      "keywords": ["dune","almasose","devotee","professional","relationship","around","alms","function","eight","years"]
+    },
+    {
+      "id": "pell_young_1",
+      "source": "Binn on Pell the Young",
+      "text": "Pell the Young distributes alms. I fund the alms distribution. In seven years of working with Pell the Young, the functional relationship: I give Pell the budget for the week's distribution, Pell distributes, Pell reports back what was distributed and to whom. In seven years, the reporting has been accurate. What the reporting tells me that the budget alone doesn't: how the alms need is changing over time. In seven years, the need has increased. The budget has kept pace in five of the seven years.",
+      "keywords": ["pell","young","distributes","alms","fund","alms","distribution","seven","years","working"]
+    },
+    {
+      "id": "rass_1",
+      "source": "Binn on Rass",
+      "text": "Rass is the Covenant's fifty-one-year institutional memory. In sixteen years of managing the treasury, Rass has been the one person who can tell me what the Covenant's financial practices looked like before my tenure. In two critical instances, Rass's historical knowledge resolved a question I couldn't answer from the records: once a question about the original terms of a building commitment, once a question about the Covenant's relationship to a specific donor family. In two instances in sixteen years, Rass was the only source that had the answer.",
+      "keywords": ["rass","covenant's","fifty-one-year","institutional","memory","sixteen","years","managing","treasury","rass"]
+    },
+    {
+      "id": "what_binn_holds_1",
+      "source": "Binn on what sixteen years of Covenant treasury holds",
+      "text": "In sixteen years, what I've protected that no one notices when it's protected: the building fund that prevents the roof from failing, the maintenance reserve that replaces what breaks before it needs emergency repair, the buffer that absorbs a poor tithe year without cutting the alms distribution. In sixteen years, the Covenant's financial health is visible in what doesn't happen: the emergency, the deferred repair, the alms cut. In sixteen years, what I do is the work of preventing the crisis. The prevention is invisible.",
+      "keywords": ["sixteen","years","what","protected","no","one","notices","when","protected","building"]
+    },
+    {
+      "id": "what_the_numbers_show_1",
+      "source": "Binn on what the Covenant's numbers show",
+      "text": "In sixteen years, the tithe income, the distributions, the building costs, and the staff support have been the four major budget lines. What the numbers show over sixteen years: the tithe income grows slowly, the building costs grow faster than income, the distributions need to grow faster than either, and the staff support is the most stable. In sixteen years, the trend is toward constraint. The theology doesn't change with the constraint. The administration does. In sixteen years, I've been tightening the administration to protect the theology.",
+      "keywords": ["sixteen","years","tithe","income","distributions","building","costs","staff","support","four"]
+    },
+    {
+      "id": "sixteen_years_1",
+      "source": "Binn on sixteen years as Covenant treasurer",
+      "text": "In sixteen years, the treasury has not missed a payroll, not defaulted on a building commitment, not cut the alms distribution below the minimum I've assessed as the Covenant's obligation. In sixteen years, the numbers have worked because I've made them work — the budget discipline, the reserve management, the donor relationships that produce the exceptional years that fund the lean years. In sixteen years, the Covenant is financially sound. The next treasurer will inherit a sound treasury. That's what sixteen years of treasurer should produce.",
+      "keywords": ["sixteen","years","treasury","not","missed","payroll","not","defaulted","building","commitment"]
+    }
+  ]
+}

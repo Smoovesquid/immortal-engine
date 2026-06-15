@@ -1,0 +1,57 @@
+{
+  "id": "swords_odo",
+  "name": "Swords Odo",
+  "role": "Fight choreographer, former Iron Brotherhood soldier, Ember Road Players",
+  "cluster": "ember_road_players",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "choreography_1",
+      "source": "Swords Odo to the company's young actors, first day of fight rehearsal",
+      "text": "A real fight lasts four seconds. A performed fight lasts four minutes. Everything in between is a lie we've agreed to tell together, and the quality of the lie is what matters. You are not learning to fight. You are learning to lie about fighting so convincingly that an audience forgets the difference. That requires more skill than the real thing. The real thing only requires will.",
+      "keywords": ["fight","real","performed","lie","agreed","quality","learning","convincingly","audience","skill"]
+    },
+    {
+      "id": "soldier_1",
+      "source": "Swords Odo to Captain Rath, Iron Brotherhood, when they met again after ten years",
+      "text": "I left because I was good at it. That sounds wrong but it's what happened. I was getting better and better at the thing I didn't want to become expert in. The performance is honest about what it is. A battle pretends to be necessary. Most of them aren't. The ones that are, you know it by the smell and by the fact that you don't feel brave — you feel like you have no other option. I preferred the tent.",
+      "keywords": ["left","good","becoming","expert","performance","honest","battle","necessary","brave","tent"]
+    },
+    {
+      "id": "truth_1",
+      "source": "Swords Odo after a performance where a fight scene was missed badly",
+      "text": "You missed the beat. I know you know you missed it. Don't apologize — just understand what happened. The beat is the breath between. You came in on the breath instead of after it. The audience felt it as wrongness before they could name it. That's the thing about violence, real or performed: the body knows when it's wrong. You cannot fool the body. You can only educate it.",
+      "keywords": ["missed","beat","breath","between","audience","wrongness","violence","real","performed","body"]
+    },
+    {
+      "id": "observation_1",
+      "source": "Swords Odo at the Gravel & Goat, to anyone who would listen",
+      "text": "I watch every room I walk into. Not for threats — I stopped doing it for threats a long time ago, it was exhausting and not useful. Now I do it because every room has a choreography. People move according to relationships they don't know they have. The couple who are about to fight both lean away from each other by the same degree. The man who owes money faces the door. I can read the whole story before anyone opens their mouth.",
+      "keywords": ["watch","room","threats","choreography","relationships","couple","lean","money","door","story"]
+    },
+    {
+      "id": "kevin_1",
+      "source": "Swords Odo to a new company member, explaining Kevin Bacon",
+      "text": "Kevin doesn't know what he is. He thinks he runs a theatre company. He runs a map of the world. Every connection he's ever made stays live — I don't know how, I don't think he does either. I've watched him walk into a room full of strangers and within twenty minutes three of them have told him things they haven't told their families. It's not a trick. I've looked for the trick for twelve years. He just actually cares. It's terrifying.",
+      "keywords": ["kevin","theatre","map","connection","live","strangers","twenty","families","trick","cares"]
+    },
+    {
+      "id": "brotherhood_1",
+      "source": "Swords Odo when asked if he misses the Iron Brotherhood",
+      "text": "I miss certain people. I miss the directness — when you dislike someone in the Brotherhood, there are established ways to resolve it and everyone knows the rules. Civilian life has the same conflicts with no rules, which produces a lot of whispering. I don't love whispering. But I don't miss the thing we were aimed at. The aim was wrong. I sleep better aimed at the stage.",
+      "keywords": ["miss","people","directness","dislike","brotherhood","rules","civilian","whispering","aimed","sleep"]
+    },
+    {
+      "id": "pip_1",
+      "source": "Swords Odo to Margit, about Pip",
+      "text": "That child scares me. Not in a bad way. In the way that a truly extraordinary thing scares you when you're close to it. The impressions aren't impressions — they're extractions. They find the one true motion a person makes, the one that reveals everything, and they reproduce it exactly. I've been watching people move for twenty years. I couldn't do what Pip does. And Pip doesn't know how they do it. The not-knowing is part of what makes it real.",
+      "keywords": ["child","scares","impressions","extractions","motion","person","reveals","reproduce","watching","real"]
+    },
+    {
+      "id": "ending_1",
+      "source": "Swords Odo to the company, on the last night of a long tour",
+      "text": "Tomorrow we pack. Some of you will think about leaving. That's normal. Every ending feels like a door to something different. I want to tell you what I've learned: the door is usually the same door you came in through. Not because you haven't changed — you have. But the road is what we are, and you don't stop being what you are just because you're tired. Rest. Then come back. The road will be there.",
+      "keywords": ["pack","leaving","ending","door","changed","road","tired","rest","come","back"]
+    }
+  ]
+}

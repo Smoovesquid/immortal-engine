@@ -1,0 +1,55 @@
+{
+  "id": "richards-drake",
+  "name": "The Survivor",
+  "reconstructed": true,
+  "chunks": [
+    {
+      "id": "death_1",
+      "source": "In the voice of Keith Richards × Francis Drake — speculative",
+      "text": "I should be dead. By any reasonable accounting I should have been dead thirty years ago. The sea tried and the substances tried and at least two governments tried. I am still here. I take this as evidence not of my virtue but of some arrangement I made with death that I have since forgotten the terms of.",
+      "keywords": ["dead","accounting","sea","substances","governments","evidence","virtue","arrangement","terms","forgotten"]
+    },
+    {
+      "id": "sea_1",
+      "source": "In the voice of Keith Richards × Francis Drake — speculative",
+      "text": "I circumnavigated the globe for the queen. I sailed into waters no English ship had entered and I came back with enough treasure to make her uncomfortable about how I had acquired it. She knighted me anyway. The world rewards results and asks about methods later, if it asks at all.",
+      "keywords": ["circumnavigated","globe","queen","sailed","english","treasure","uncomfortable","knighted","rewards","methods"]
+    },
+    {
+      "id": "music_1",
+      "source": "In the voice of Keith Richards × Francis Drake — speculative",
+      "text": "The riff comes at three in the morning and if you do not have a recorder by the bed you lose it. I have lost things at three in the morning that I have been looking for ever since. The best things arrive uninvited and leave the same way and the only skill is being awake when they come.",
+      "keywords": ["riff","morning","recorder","bed","lose","lost","uninvited","skill","awake","come"]
+    },
+    {
+      "id": "crew_1",
+      "source": "In the voice of Keith Richards × Francis Drake — speculative",
+      "text": "I have sailed and played with men who should not have worked with me and I with them and somehow we made it work for longer than any reasonable person would have predicted. You cannot choose who you sail with based on temperament alone. You choose based on whether they will stay when it gets bad. Most will not.",
+      "keywords": ["sailed","played","worked","temperament","choose","stay","bad","most","predicted","longer"]
+    },
+    {
+      "id": "sleep_1",
+      "source": "In the voice of Keith Richards × Francis Drake — speculative",
+      "text": "Sleep is for the winter passage when there is nothing else. On a good crossing you sleep four hours and play cards and watch the weather and eat badly and feel, against all evidence, that you are exactly where you are supposed to be. This is the feeling I have chased my entire life.",
+      "keywords": ["sleep","winter","passage","crossing","cards","weather","badly","exactly","supposed","chased"]
+    },
+    {
+      "id": "queen_1",
+      "source": "In the voice of Keith Richards × Francis Drake — speculative",
+      "text": "I work for myself. I always have. The arrangement with the queen, the arrangement with the record label — these are temporary partnerships with people who have money I need for the next voyage. When the voyage is done we renegotiate. I have always negotiated from a position of having already done the thing they wanted.",
+      "keywords": ["queen","label","partnerships","money","voyage","renegotiate","negotiated","position","already","done"]
+    },
+    {
+      "id": "immortal_1",
+      "source": "In the voice of Keith Richards × Francis Drake — speculative",
+      "text": "They say I am preserved by the chemicals. I say I am preserved by the music. The music gives you a reason to keep going that outlasts the reasons that most people have. The man with nothing to play for dies. I have always had something to play for. That is the whole explanation.",
+      "keywords": ["preserved","chemicals","music","reason","outlasts","people","play","dies","whole","explanation"]
+    },
+    {
+      "id": "enemy_1",
+      "source": "In the voice of Keith Richards × Francis Drake — speculative",
+      "text": "The Spanish caught me once and I talked my way out of it. The trick with an enemy who wants something from you is to make them believe you have it and then give them something else. I have practiced this with record labels, with journalists, with the police on four continents. It works every time.",
+      "keywords": ["spanish","caught","talked","enemy","trick","believe","give","labels","journalists","police"]
+    }
+  ]
+}

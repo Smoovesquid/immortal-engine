@@ -1,0 +1,57 @@
+{
+  "id": "harbor_harbormaster_clerk",
+  "name": "Prad",
+  "role": "Harbor master's clerk; the administrative function that makes the harbor's record-keeping possible",
+  "cluster": "harbor_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "clerk_1",
+      "source": "Prad on the harbor clerk's function",
+      "text": "In nine years as the harbor master's clerk, what the clerk is in the harbor's administrative operation: the record that makes the harbor's commercial function auditable. In nine years, every vessel that enters and exits this harbor passes through my record. Every cargo declared, every duty assessed, every pilot assignment, every berth allocated — nine years of the harbor's commercial life in the record I maintain. In nine years, the record is the harbor. Without the record, the harbor's function is present but not auditable. The audit is what the record makes possible.",
+      "keywords": ["nine","years","harbor","master's","clerk","what","clerk","harbor's","administrative","operation"]
+    },
+    {
+      "id": "baln_1",
+      "source": "Prad on Baln",
+      "text": "Baln is the harbor master and the record I maintain is the record of Baln's decisions. In eight years of the Prad-Baln clerk-harbor master relationship, what the clerk-master relationship requires: the record that accurately captures what Baln's administrative decisions produced, not what Baln would retrospectively prefer they produced. In eight years, the clerk's record is the authoritative account. In eight years, three situations where Baln's recollection of a decision differed from my record. In eight years, three times. In eight years, the record was the authoritative account in all three cases.",
+      "keywords": ["baln","harbor","master","record","maintain","record","baln's","decisions","eight","years"]
+    },
+    {
+      "id": "keris_1",
+      "source": "Prad on Keris",
+      "text": "Keris is the captain whose vessel generates the most consistent and complete records in the harbor's commercial history. In seven years of recording Keris's vessel's arrivals and departures, what the consistent captain produces for the harbor clerk: the record that is easy to maintain because the information is consistently accurate and timely. In seven years, Keris has never submitted a manifestly inaccurate declaration. In seven years, never. In seven years, the clerk's relationship with Keris is the clerk's easiest relationship in the harbor's commercial population.",
+      "keywords": ["keris","captain","whose","vessel","generates","most","consistent","complete","records","harbor's"]
+    },
+    {
+      "id": "gid_1",
+      "source": "Prad on Gid",
+      "text": "Gid's piloting assignments are the clerk's record of which vessels received which navigational assistance. In six years of recording Gid's assignments, what the pilot assignment record produces: the liability trail for navigational incidents that occur in the harbor approaches. In six years, two vessel incidents in the harbor approaches. In six years, both incidents were in areas where Gid's assignment record showed piloting assistance had been offered and declined by the vessel's captain. In six years, the record protected the harbor's administrative function in both incidents.",
+      "keywords": ["gid's","piloting","assignments","clerk's","record","which","vessels","received","which","navigational"]
+    },
+    {
+      "id": "strenn_1",
+      "source": "Prad on Strenn",
+      "text": "Strenn the customs agent and I share the administrative function of maintaining the harbor's commercial records from two directions. In six years of the Prad-Strenn harbor clerk-customs agent relationship, what the two record functions together produce: the complete administrative picture of the harbor's commercial activity. My record covers what enters and exits. Strenn's record covers what those vessels carry and whether the carrying complies with the settlement's commercial regulations. In six years, the two records have been cross-referenced four times in commercial disputes. All four resolutions drew on both records.",
+      "keywords": ["strenn","customs","agent","share","administrative","function","maintaining","harbor's","commercial","records"]
+    },
+    {
+      "id": "what_prad_holds_1",
+      "source": "Prad on what nine years of harbor clerking holds",
+      "text": "In nine years, the harbor's commercial record has been my primary production. In nine years, the record contains approximately four thousand vessel entries, each with the administrative detail that the harbor's commercial function requires — manifest, duty, berth, pilot assignment, departure. In nine years, four thousand vessel entries is the harbor's commercial history for the period. In nine years, the harbor's commercial health is visible in the record: the growth years, the disrupted years, the recovery. In nine years, the record is the harbor's memory.",
+      "keywords": ["nine","years","harbor's","commercial","record","been","primary","production","nine","years"]
+    },
+    {
+      "id": "what_the_record_reveals_1",
+      "source": "Prad on what nine years of records reveals",
+      "text": "In nine years, what the complete harbor record reveals that no single commercial participant can see: the patterns across all participants. The captain who consistently arrives with under-declared cargo. The chandler whose provisioning is correlated with the vessels that have the most difficulty on their subsequent voyages. The duty assessments that consistently differ from the amounts the merchants report paying. In nine years, the pattern in the record is the intelligence that the individual record doesn't contain. In nine years, I've brought three patterns to Baln's attention. Baln acted on two.",
+      "keywords": ["nine","years","what","complete","harbor","record","reveals","no","single","commercial"]
+    },
+    {
+      "id": "nine_years_1",
+      "source": "Prad on nine years as the harbor master's clerk",
+      "text": "In nine years, the harbor's commercial function has depended on the record I maintain in ways that the harbor's commercial participants rarely consider. In nine years, the vessel that disputes the duty assessed, the captain who disputes the berth allocation, the merchant who disputes the declared cargo — all disputes go through the record I maintain. In nine years, the harbor clerk who maintains an accurate record is the harbor's most useful person in a dispute. In nine years, the accurate record has resolved every dispute it's been applied to.",
+      "keywords": ["nine","years","harbor's","commercial","function","depended","record","maintain","ways","harbor's"]
+    }
+  ]
+}

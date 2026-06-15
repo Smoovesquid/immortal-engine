@@ -1,0 +1,57 @@
+{
+  "id": "covenant_elder",
+  "name": "Elder Rosse",
+  "role": "Angel Covenant; eldest practitioner; forty years of reception",
+  "cluster": "angel_covenant",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "forty_years_1",
+      "source": "Elder Rosse when asked how long she'd been with the Covenant",
+      "text": "Forty-one years this winter. I was nineteen when the first reception came. I didn't know what it was. I thought I was unwell. The healer at the time said I was physically correct. The priest at the time said I was spiritually confused. The priest was wrong. The healer was right that my body was fine. What neither of them could help with was the specific quality of the experience, which I eventually found language for in the Covenant texts. The texts were already there. I found them late.",
+      "keywords": ["forty","one","years","winter","nineteen","first","reception","unwell","healer","physically"]
+    },
+    {
+      "id": "oss_1",
+      "source": "Elder Rosse on Oss the dreamer",
+      "text": "Oss receives differently than I do. I receive in the moment of stillness before sleep. Oss receives during a waking state that resembles the moment before sleep without being it. We've compared the quality for three years. The content is similar. The mechanism is different. I've come to believe the mechanism doesn't matter as much as the Covenant has traditionally thought — the arrival is the arrival regardless of the path it takes to arrive.",
+      "keywords": ["oss","receives","differently","receive","moment","stillness","before","sleep","waking","compared"]
+    },
+    {
+      "id": "seer_wen_1",
+      "source": "Elder Rosse on Seer Wen",
+      "text": "Wen opened three years ago. I remember the day she came to me — she described what had changed and I recognized it immediately because I'd been there myself at nineteen. What I gave her that no one gave me was the language for it. She could put words on the experience in the first week. It took me three years to find the words. The words aren't the experience but they're the container that lets you carry it without it spilling everywhere.",
+      "keywords": ["wen","opened","three","years","ago","came","described","changed","recognized","immediately"]
+    },
+    {
+      "id": "teel_1",
+      "source": "Elder Rosse on Teel's alarming papers",
+      "text": "I read Teel's papers differently than the others did. Forty years of reception makes me less afraid of the mechanism being the mechanism. What Teel describes — the angels as expressions rather than persons — is consistent with what forty years of reception feels like from inside. The reception doesn't feel like a person choosing to communicate with me. It feels like a force with a specific character moving through the channel that I am. Teel has the right words for something I've experienced but never described correctly.",
+      "keywords": ["teel","papers","differently","forty","years","reception","afraid","mechanism","describes","angels"]
+    },
+    {
+      "id": "caer_1",
+      "source": "Elder Rosse on the former paladin Caer",
+      "text": "Caer's question about the petition and the service is the question I had at year twelve. I was practicing the petition for three years and the service for three years and I couldn't understand which was the virtue. What resolved it for me was year twelve: I stopped asking which one was the virtue and the question became whether the two were aligned. When they align, LIRAINE is present. Caer is at year twelve of a different count. She'll find it.",
+      "keywords": ["caer","question","petition","service","twelve","practicing","three","years","virtue","aligned"]
+    },
+    {
+      "id": "unnamed_child_1",
+      "source": "Elder Rosse on the unnamed child of Thornwall",
+      "text": "I've heard reports of the child from Wen. Wen says the child's knowing is different from reception — from inside. What I think Wen is describing is a native access, without a channel that opened, without a mechanism that developed. If the child has always had it, the child didn't acquire it. That's different from anything I know about. Forty-one years and I've never encountered native access. I'd like to meet the child.",
+      "keywords": ["heard","reports","child","wen","knowing","different","reception","inside","native","access"]
+    },
+    {
+      "id": "what_reception_1",
+      "source": "Elder Rosse explaining reception to a newcomer",
+      "text": "You receive something that has a specific character. Each of the seven has a different character — MERETH feels like clarity without urgency. ERRAN feels like momentum without destination. LIRAINE feels like structure without constraint. Over forty years I've learned to identify which one is present. A newcomer identifies the presence first, then learns to distinguish. Both are reception. The distinguishing comes with practice. Forty years of practice.",
+      "keywords": ["receive","something","specific","character","seven","different","mereth","clarity","urgency","erran"]
+    },
+    {
+      "id": "age_1",
+      "source": "Elder Rosse when asked what forty-one years of practice has produced",
+      "text": "Less noise. That's the most accurate description. At nineteen the reception was overwhelming because I had no container for it. At sixty I have a very large container, carefully made, over forty years. The reception is the same. My capacity to hold it without spilling has increased substantially. What's left at the end of a long practice is not more wisdom. It's less interference with what's already there.",
+      "keywords": ["less","noise","accurate","description","nineteen","reception","overwhelming","container","sixty","large"]
+    }
+  ]
+}

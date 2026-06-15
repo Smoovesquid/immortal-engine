@@ -1,0 +1,57 @@
+{
+  "id": "covenant_wedding_officiant",
+  "name": "Seff",
+  "role": "Covenant wedding officiant; has joined two hundred and fourteen pairs; remembers all of them",
+  "cluster": "covenant_of_seven",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "officiating_1",
+      "source": "Seff on what the ceremony is",
+      "text": "The ceremony is a public statement of a private decision. The decision has already been made before the ceremony begins. What the ceremony adds: the witnesses, the words that make the decision official, the moment that becomes the shared reference point. In twenty-two years of officiating, the people who come to me have already made the decision. I make it visible. In twenty-two years, two hundred and fourteen ceremonies. Two hundred and fourteen public statements of decisions that were already real.",
+      "keywords": ["ceremony","public","statement","private","decision","decision","already","been","made","before"]
+    },
+    {
+      "id": "father_len_1",
+      "source": "Seff on Father Len",
+      "text": "Father Len is the one who gives me the authority to officiate. In twenty-two years of officiating under Father Len's authority, the relationship is clear: I perform the function, Father Len holds the institution's endorsement. In fourteen years of Father Len's tenure, the approach to the ceremony's content: Father Len allows me latitude in how I conduct the ceremony as long as the Covenant's core commitments are present. The latitude has allowed me to develop a form of ceremony that feels like the specific couple rather than a general function.",
+      "keywords": ["father","len","one","gives","authority","officiate","twenty-two","years","officiating","under"]
+    },
+    {
+      "id": "calla_1",
+      "source": "Seff on Calla",
+      "text": "Calla the VELL devotee attends many ceremonies as a witness. In eight years of Calla attending ceremonies I've officiated, what I've observed: Calla pays attention to the people rather than the ceremony. The same thing I try to do. In eight years, I've sometimes asked Calla afterward what Calla noticed about the couple. Calla's observation is always about the relationship rather than the performance. The relationship visible in the ceremony: that's what both of us are watching for.",
+      "keywords": ["calla","vell","devotee","attends","many","ceremonies","witness","eight","years","calla"]
+    },
+    {
+      "id": "bressa_1",
+      "source": "Seff on Bressa",
+      "text": "Bressa the midwife and I are the two people who are present at the beginning and the middle of the household's life — I'm at the joining, Bressa is at the arrival of the child. In eight years of overlapping in the same community, what we've both observed: the household at the ceremony and the household when the child arrives are the same household and also a completely different one. The ceremony's people and the birth's people: adjacent in the same life but in different life stages.",
+      "keywords": ["bressa","midwife","both","people","present","beginning","middle","household's","life","joining"]
+    },
+    {
+      "id": "veth_1",
+      "source": "Seff on Veth",
+      "text": "Veth and I are at opposite ends of the Covenant's life-marking work — I'm at the joining, Veth prepares the ground at the end. In twelve years of working alongside Veth in the Covenant's service, what we've occasionally noted: the ceremony I officiated and the ground Veth prepares are sometimes for the same person, decades apart. The ceremony is the beginning of the household's formal life. Veth's work is the end. In twenty-two years, I've officiated for people who are now in Veth's care. The distance between the beginning and the end is the household's life.",
+      "keywords": ["veth","opposite","ends","covenant's","life-marking","work","joining","veth","prepares","ground"]
+    },
+    {
+      "id": "what_the_ceremony_holds_1",
+      "source": "Seff on what the ceremony holds that the couple doesn't know yet",
+      "text": "In twenty-two years, the thing I know at the ceremony that the couple doesn't know yet: what the commitment will require of them. The day of the ceremony: the commitment is an idea. What the commitment is: the years ahead of them. In twenty-two years, I know what the years ahead require — not specifically for these two people, but in general, from two hundred and fourteen ceremonies followed across the lives of the people who made them. In twenty-two years, I hold the ceremony and the after-ceremony simultaneously. The couple holds only the ceremony.",
+      "keywords": ["twenty-two","years","thing","know","ceremony","couple","doesn't","know","yet","what"]
+    },
+    {
+      "id": "what_seff_holds_1",
+      "source": "Seff on the ceremony he won't perform again",
+      "text": "Year four. A ceremony where I officiated for a pair where one of the two had said to me, in the pre-ceremony conversation, that they weren't certain. Not uncertain in the way that most people are uncertain — the nerves of the commitment. Uncertain in a specific way that I assessed as meaningful. I officiated. The joining lasted three years. In eighteen years since year four, I have a pre-ceremony conversation that is now specifically designed to give that kind of uncertainty the chance to speak. I haven't repeated year four.",
+      "keywords": ["year","four","ceremony","officiated","pair","where","one","two","said","pre-ceremony"]
+    },
+    {
+      "id": "twenty_two_years_1",
+      "source": "Seff on twenty-two years of officiating",
+      "text": "In twenty-two years, two hundred and fourteen ceremonies. Of two hundred and fourteen: I know the current status of approximately one hundred and sixty. Of one hundred and sixty: one hundred and thirty-two are intact. Twenty-eight are not. Twenty-eight endings in one hundred and sixty visible outcomes. In twenty-two years, the endings are the ones I think about — not the one hundred and thirty-two, who are doing what the ceremony was for. The twenty-eight are the ones that tell me where the ceremony fell short of preparing the people for what was ahead.",
+      "keywords": ["twenty-two","years","two","hundred","fourteen","ceremonies","two","hundred","fourteen","know"]
+    }
+  ]
+}

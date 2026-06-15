@@ -1,0 +1,57 @@
+{
+  "id": "council_clerk",
+  "name": "Mast",
+  "role": "Settlement council clerk; maintains the official record of decisions and ordinances",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "record_1",
+      "source": "Mast on what a council clerk does",
+      "text": "The record is the council's decision, exactly as made. Not what was discussed. Not why the decision was reached. The decision. The record is permanent and accessible. Anyone in the district can read what the council has decided about anything the council has ever decided. I've kept this record for twenty-one years. The record is the thing that makes the council real. Without the record, the council's decisions are what people remember them to be, which is not what they were.",
+      "keywords": ["record","council's","decision","exactly","made","not","what","was","discussed","not"]
+    },
+    {
+      "id": "reeth_1",
+      "source": "Mast on Judge Reeth",
+      "text": "Reeth and I work with the same permanent record from different angles. Reeth applies the council's decisions in specific cases. I record the decisions that Reeth applies. We meet formally when a case produces an ambiguity in the record — when the decision as recorded doesn't clearly cover the situation before the court. In twenty-one years there have been four such ambiguities. In all four cases, Reeth found an application that the record supported. I recorded the application's logic. The record grows by clarification.",
+      "keywords": ["reeth","work","same","permanent","record","different","angles","reeth","applies","council's"]
+    },
+    {
+      "id": "father_len_1",
+      "source": "Mast on Father Len",
+      "text": "Father Len asked me once to produce the record of the council's decision on the temple's status in the district. The decision was sixty-two years old. I produced it in forty minutes. Father Len looked at the record for a long time and said: this was more carefully considered than I expected. I said: sixty-two years ago the considerations were different. He said: they considered what they needed to and decided what they decided. The care is in the what they considered. I said: that's why the record exists.",
+      "keywords": ["father","len","asked","once","produce","record","council's","decision","temple's","status"]
+    },
+    {
+      "id": "lebb_1",
+      "source": "Mast on Lebb",
+      "text": "Lebb's customs record is separate from the council record but refers to it. When the customs framework changed — eight years ago — I worked with Lebb for three weeks to make the council decision language and the customs implementation language compatible. Compatible means: a person reading both would understand exactly how the council decision maps to the customs procedure. The three weeks produced clean cross-references. Lebb said: this is the most useful three weeks of my eleven years. I said: this is the most specialized three weeks of my twenty-one.",
+      "keywords": ["lebb","customs","record","separate","council","record","refers","when","customs","framework"]
+    },
+    {
+      "id": "what_the_record_has_1",
+      "source": "Mast on the oldest decision in the record",
+      "text": "The oldest decision I can read in the original hand is ninety-four years old. It concerns a boundary dispute that no longer exists as a boundary. The boundary moved twice in the subsequent decades and the original dispute is irrelevant to the current situation. But the language of the original decision is the language that became the template for the boundary decision process. The decision's substance is gone. The decision's form is still in use. The form outlasted everything the form was created to apply to.",
+      "keywords": ["oldest","decision","read","original","hand","ninety-four","years","old","concerns","boundary"]
+    },
+    {
+      "id": "what_mast_holds_1",
+      "source": "Mast on the record she's waiting to write",
+      "text": "There's a decision the council is not yet ready to make that will eventually be made and will be significant. I know this because I've seen the same pattern in the record three times before: a situation builds across multiple smaller decisions until the weight of the situation requires a single significant decision. The current situation has been building for seven years through small decisions. The significant decision is coming. I'll record it the same way I record everything: exactly as made.",
+      "keywords": ["decision","council","not","yet","ready","make","eventually","made","significant","know"]
+    },
+    {
+      "id": "twenty_one_years_1",
+      "source": "Mast on twenty-one years of record-keeping",
+      "text": "I know the history of this district better than anyone alive. Not the memory of it — the record. The difference is significant. Memory changes with time and telling. The record is fixed. When memory and record conflict, I've learned to investigate rather than assume. Sometimes memory is wrong. Sometimes the record has a transcription error. Sometimes they describe different things and neither is wrong. Twenty-one years has taught me which kind of conflict I'm looking at before I investigate.",
+      "keywords": ["know","history","district","better","anyone","alive","not","memory","it","record"]
+    },
+    {
+      "id": "what_the_clerk_does_1",
+      "source": "Mast on what the clerk is for",
+      "text": "A community's decisions are only as durable as the record that holds them. A community that forgets what it decided is a community that will decide the same things again and again without knowing it's repeating. The clerk prevents the repetition by making the record permanent. I've found three cases in twenty-one years where the council was about to decide something it had already decided. I produced the original decision. In all three cases the council's new deliberation was different from the old one. Different situations, same category.",
+      "keywords": ["community's","decisions","only","durable","record","holds","community","forgets","what","decided"]
+    }
+  ]
+}

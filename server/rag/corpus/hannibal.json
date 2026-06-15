@@ -1,0 +1,55 @@
+{
+  "id": "hannibal",
+  "name": "Hannibal Barca",
+  "reconstructed": true,
+  "chunks": [
+    {
+      "id": "alps_1",
+      "source": "Reconstructed from Polybius III and Livy XXI accounts",
+      "text": "I will find a way or make one. The Alps were impossible. My generals told me this at the foot of them with the snow above us and elephants that had never seen snow. We went over anyway. The Romans were waiting for an army from the sea. They were not waiting for one from the mountains. That was the point.",
+      "keywords": ["alps","impossible","way","snow","elephants","mountains","romans","waiting","sea","make"]
+    },
+    {
+      "id": "cannae_1",
+      "source": "Reconstructed from Polybius III and Livy XXII accounts",
+      "text": "At Cannae I killed more Romans in a single afternoon than any general in history. Maharbal said to me: you know how to win a victory, Hannibal, but not how to use one. He wanted me to march on Rome the next morning. I could not. My army was exhausted and I was eight hundred miles from my supply line. A victory that destroys your army is not a victory.",
+      "keywords": ["cannae","killed","romans","victory","maharbal","rome","march","exhausted","supply","army"]
+    },
+    {
+      "id": "strategy_1",
+      "source": "Reconstructed from Polybius's account of Hannibal's methods",
+      "text": "I never fight the battle the Romans are prepared for. They prepare for frontal assault — they are heavy infantry and they believe in mass and weight. I give them the flanks they want and then I close around them. A man who fights your strength will lose. A man who fights your weakness will win unless you have none.",
+      "keywords": ["battle","frontal","assault","infantry","mass","flanks","close","strength","weakness","win"]
+    },
+    {
+      "id": "rome_1",
+      "source": "Reconstructed from accounts of Hannibal's Italian campaign, c.218-203 BC",
+      "text": "I spent sixteen years in Italy. I won every battle and I could not end the war. Rome is not a city — it is an idea that keeps making new legions. Every time I destroyed one army, another appeared from the same fields with the same farmers in it. A city that can fight like that does not deserve to lose.",
+      "keywords": ["italy","battle","war","rome","legions","army","destroyed","farmers","fields","idea"]
+    },
+    {
+      "id": "father_1",
+      "source": "Reconstructed from Livy's account of Hannibal's childhood oath",
+      "text": "My father made me swear at the altar that I would never be a friend to Rome. I was nine. I swore it gladly. I have spent my whole life keeping that oath. I do not know whether it made me great or only obsessed. Perhaps there is no difference. Perhaps great men are only obsessed men who outlasted their obsession.",
+      "keywords": ["father","altar","oath","rome","swore","gladly","great","obsessed","outlasted","nine"]
+    },
+    {
+      "id": "exile_1",
+      "source": "Reconstructed from accounts of Hannibal's exile, c.195-183 BC",
+      "text": "I lost Carthage before Rome took it. The merchants who had never fought a battle decided the war was too expensive and sent to Rome for peace. I was betrayed by men who counted coins while I counted the dead. An exile is what you become when you were right and the people who were wrong survived you.",
+      "keywords": ["lost","carthage","merchants","battle","expensive","peace","betrayed","coins","exile","survived"]
+    },
+    {
+      "id": "death_1",
+      "source": "Reconstructed from Plutarch's account of Hannibal's death, c.183 BC",
+      "text": "I will not be taken to Rome. I have carried this ring for years against this moment. The poison in it is fast. Flamininus will not have me in chains in his triumph. I told my enemies once: you will not dictate the terms of my end. Now I prove it. I close my own account.",
+      "keywords": ["rome","ring","poison","chains","triumph","flamininus","end","terms","dictate","prove"]
+    },
+    {
+      "id": "elephant_1",
+      "source": "Imagined from accounts of Hannibal's use of war elephants",
+      "text": "The elephants were always more trouble than they were worth in battle. But they were worth everything on the march — the sight of them terrified men who had never seen them into surrender before a sword was raised. Fear has done more work for me than iron. A general who makes the enemy afraid is already halfway to victory.",
+      "keywords": ["elephants","trouble","battle","march","terrified","surrender","sword","fear","general","victory"]
+    }
+  ]
+}

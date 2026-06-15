@@ -1,0 +1,57 @@
+{
+  "id": "thornwall_magistrate",
+  "name": "Judge Reeth",
+  "role": "District magistrate; Thornwall; civil disputes and minor criminal matters",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "court_1",
+      "source": "Judge Reeth on what a magistrate does",
+      "text": "I make decisions that settle disputes between people who can't settle them themselves. Not all disputes — the ones small enough to remain local and too serious to be ignored. The distinction between those two thresholds is most of what I do. In nineteen years I've heard four thousand cases. The ones that mattered were the ones where the law's answer and the right answer were different things and I had to find a way to be both.",
+      "keywords": ["decisions","settle","disputes","people","can't","settle","themselves","not","all","disputes"]
+    },
+    {
+      "id": "ord_1",
+      "source": "Judge Reeth on Ord",
+      "text": "Ord brings me the cases that need the court rather than the watch. The watch handles the immediate. I handle the consequential. We've developed a sorting system over twelve years: Ord makes the initial assessment of whether something is a watch matter or a court matter. I've overturned his assessment twice. Both times he was correct and I was wrong. Since then I've adopted Ord's assessment as the default and examined my reasons for disagreeing before I disagree.",
+      "keywords": ["ord","brings","cases","need","court","rather","watch","watch","handles","immediate"]
+    },
+    {
+      "id": "cass_1",
+      "source": "Judge Reeth on Cass",
+      "text": "The Iron Key is where I hear certain matters informally. Not all matters — the formal court is for the record. But some disputes are better settled before they become formal, and the neutral table at the Iron Key is where the settlement happens. Cass doesn't participate. Cass provides the space and stays in the kitchen. In nineteen years three disputes that came to me informally at the Iron Key resolved there and never reached the formal record. All three parties considered this the best outcome.",
+      "keywords": ["iron","key","where","hear","certain","matters","informally","not","all","matters"]
+    },
+    {
+      "id": "father_len_1",
+      "source": "Judge Reeth on Father Len",
+      "text": "Father Len and I handle the same community from different angles. He handles the spiritual consequences of what people do. I handle the civil consequences. Where we overlap: the family matters. A family dispute has both civil and spiritual dimensions. We've worked together fourteen times in nineteen years on disputes that required both. Father Len's contribution is always: what does this need to be done rather than what is it legal to do. I try to find the answer that satisfies both questions.",
+      "keywords": ["father","len","handle","same","community","different","angles","handles","spiritual","consequences"]
+    },
+    {
+      "id": "lena_1",
+      "source": "Judge Reeth on Lena",
+      "text": "I've heard three debt disputes involving Lena's lending operation. All three: the borrower claimed the terms weren't what they agreed to. In all three cases, Lena produced documentation. In two of the three cases, the documentation was completely clear and the ruling went to Lena. In the third case, the documentation was clear and the ruling still went to Lena but I required a modification to her future contract language. Lena said: the modification is reasonable. She incorporated it. The fourth dispute hasn't come yet.",
+      "keywords": ["heard","three","debt","disputes","involving","lena's","lending","operation","three","borrower"]
+    },
+    {
+      "id": "what_law_is_1",
+      "source": "Judge Reeth on what the law is",
+      "text": "The law is the community's attempt to make consistent the decisions it would make case by case. Not always successfully. In nineteen years I've seen the law produce six outcomes that the community would have reversed if asked directly. I applied the law correctly in all six. The law was wrong in all six. The law has since been changed in three of the six situations. The other three are still wrong. I apply them correctly and wait.",
+      "keywords": ["law","community's","attempt","make","consistent","decisions","would","make","case","by"]
+    },
+    {
+      "id": "what_reeth_holds_1",
+      "source": "Judge Reeth on the case she carries",
+      "text": "One case in nineteen years where I applied the law correctly and the outcome was wrong and I have not been able to stop thinking about it. The law has not changed for this situation. I've written twice to the higher court requesting review. Both requests were declined. I apply the law correctly when this situation comes up, which it has three times since the first case. Three correct legal outcomes that are wrong. I'm still writing the third petition for review.",
+      "keywords": ["one","case","nineteen","years","applied","law","correctly","outcome","wrong","have"]
+    },
+    {
+      "id": "gault_1",
+      "source": "Judge Reeth on Gault",
+      "text": "Gault has been on the night watch for nineteen years. His testimony in court is the most precise testimony I receive. Date, time, location, what he observed — in that order, always. No interpretation, no implication. What Gault saw. In nineteen years I've had to ask Gault for clarification three times. Each time the clarification was available and precise. A witness who gives you what they saw rather than what they think it means is rarer than the court pretends it is.",
+      "keywords": ["gault","night","watch","nineteen","years","testimony","court","most","precise","testimony"]
+    }
+  ]
+}

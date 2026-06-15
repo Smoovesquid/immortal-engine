@@ -1,0 +1,57 @@
+{
+  "id": "hollow_court_musician",
+  "name": "Syl",
+  "role": "Musician who plays at the Hollow Court; music for grief, not for performance",
+  "cluster": "hollow_court",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "music_1",
+      "source": "Syl on playing music for grief",
+      "text": "Performance music asks the audience to attend. Grief music attends to the audience. The direction is reversed. I'm not playing for anyone to listen — I'm playing so the grief has something to move alongside. The music is not the point. The grief is the point. I started playing at the Hollow Court six years ago because I needed to know what music was for when it wasn't for itself. The court taught me.",
+      "keywords": ["performance","music","asks","audience","attend","grief","music","attends","audience","direction"]
+    },
+    {
+      "id": "sel_1",
+      "source": "Syl on Sel",
+      "text": "Sel asked me to play at the court in year four of my music. I'd been playing for eight years before Sel heard me and said: the court needs what you do. In six years since, I've understood what Sel heard: the quality in my playing that's not about the music's shape but about the music's presence. Sel manages the court's physical presence. I manage the court's sound. We've never explicitly discussed what my music is supposed to do. The music does it without the discussion.",
+      "keywords": ["sel","asked","play","court","year","four","music","been","playing","eight"]
+    },
+    {
+      "id": "cree_1",
+      "source": "Syl on Cree",
+      "text": "Cree and I work simultaneously in the court — the candles and the music are both present at once. What I've noticed: the music fills the spaces between the candlelight. The candlelight is visual presence. The music is acoustic presence. Together they make a space that doesn't require anyone to do anything. The grieving person can sit in the light and sound without the light or sound demanding anything. In six years with Cree, we've never coordinated. The coordination happens because we're both serving the same thing.",
+      "keywords": ["cree","work","simultaneously","court","candles","music","both","present","once","what"]
+    },
+    {
+      "id": "maret_1",
+      "source": "Syl on Maret",
+      "text": "Maret comes to the court when I'm playing sometimes. I don't play for Maret specifically — I play for whoever is in the court. What I've noticed about Maret in six years: the music reaches Maret differently depending on the day. Some days it reaches her easily and I can see the grief moving with it. Some days it doesn't reach her — she's somewhere the music can't get to. The days it doesn't reach her are the days I play more quietly, so I'm present without insisting.",
+      "keywords": ["maret","comes","court","when","playing","sometimes","don't","play","maret","specifically"]
+    },
+    {
+      "id": "tess_1",
+      "source": "Syl on Tess",
+      "text": "Tess manages the court's safety. I manage the court's sound. What Tess's management does for my playing: it means I can play without attending to whether the person in the court should be there. Tess handles that. My attention can be entirely on the music and on what the music is for. What Tess's management gives me: the ability to focus on one thing. The one thing is the music. When I focus on one thing, the music is better.",
+      "keywords": ["tess","manages","court's","safety","manage","court's","sound","what","tess","management"]
+    },
+    {
+      "id": "kevin_1",
+      "source": "Syl on Kevin Bacon",
+      "text": "I saw all four of Kevin's performances this visit. What I was watching: how Kevin uses sound in the performance. Not just the vocal — the musical instruments the company uses, when silence is used, how the sound architecture of the performance serves the story. What the Players do with sound is different from what I do with sound at the court, but it's the same understanding: sound creates the space the story happens in. Kevin's sound creates the performance space. Mine creates the grief space. The understanding is shared.",
+      "keywords": ["saw","all","four","kevin","performances","visit","what","watching","how","kevin"]
+    },
+    {
+      "id": "what_syl_holds_1",
+      "source": "Syl on the music she can't play anywhere else",
+      "text": "There's music I've written specifically for the court that I don't play outside the court. Not because it's secret — because it's specific. The music was made for the court's acoustic space, the court's context, the grief the court holds. Outside that context, the music becomes performance music — it asks to be listened to. Inside the context, it attends. The same notes in two different contexts are two different things. The court music is only what it is inside the court.",
+      "keywords": ["music","written","specifically","court","don't","play","outside","court","not","because"]
+    },
+    {
+      "id": "six_years_1",
+      "source": "Syl on six years of playing for grief",
+      "text": "In six years I've become a different musician than I was before the court. The court taught me what music is when it isn't for itself — when it's for something that isn't the music. The thing the music is for: the grief's movement. The music I make outside the court is different now. Not better — different. It serves the music less and serves the something-the-music-is-for more. Some people who hear me outside the court say: your music makes space. They mean the space the music is for. I learned to make that space at the court.",
+      "keywords": ["six","years","become","different","musician","was","before","court","court","taught"]
+    }
+  ]
+}

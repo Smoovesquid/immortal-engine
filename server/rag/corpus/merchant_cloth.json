@@ -1,0 +1,57 @@
+{
+  "id": "merchant_cloth",
+  "name": "Beld",
+  "role": "Cloth merchant; market district; supplies Edna and the Brotherhood",
+  "cluster": "merchant_consortium",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "cloth_1",
+      "source": "Beld on what cloth merchants know",
+      "text": "Cloth is memory. Each fabric carries where it came from and how it was made. The southern wool is heavier because the southern breed is heavier — the animals carry the climate. The harbor town linen is different from the inland linen because of the salt air in the drying. I know where the cloth came from by what it feels like. Merchants who buy without touching buy problems.",
+      "keywords": ["cloth","memory","each","fabric","carries","where","came","from","how","made"]
+    },
+    {
+      "id": "edna_1",
+      "source": "Beld on Edna",
+      "text": "Edna is the most specific buyer I have. She tells me the thread count range, the expected handling stress, the colorfastness requirements for the use, and the drape she needs for the garment to function as designed. I've been supplying her for fourteen years. In the second year she stopped testing my samples and I asked why. She said: because you've never been outside my spec in three years. I said: the spec is clear. She said: most suppliers find it too precise. I said: most suppliers haven't been making Brotherhood uniforms for four years.",
+      "keywords": ["edna","most","specific","buyer","have","tells","me","thread","count","range"]
+    },
+    {
+      "id": "saben_1",
+      "source": "Beld on the Fenn house",
+      "text": "The Fenn house buys luxury goods. Not for the family — the Fenn family dresses simply. For clients who need luxury goods as part of the service. Saben is buying an impression when she buys from me, not the cloth itself. The client receiving the gift or wearing the garment is the audience. This is a different purchase than a purchase for use. I've been supplying this kind of purchase for the Fenn house for eight years. The Fenn house doesn't explain why. The clarity about who the audience is is sufficient.",
+      "keywords": ["fenn","house","buys","luxury","goods","not","family","fenn","family","dresses"]
+    },
+    {
+      "id": "vann_1",
+      "source": "Beld on Vann the tinker",
+      "text": "Vann carries finished goods from distant sources that I can't source directly. We've been trading for six years. She brings in three or four pieces per visit that are outside my regular supply chain — the unusual regional work, the dye techniques that aren't available locally. I pay fairly for them. She passes through twice a year on her route. The twice-a-year schedule creates a scarcity that makes what she brings more interesting to my clients than things I carry regularly. Scarcity and quality overlap in a way I've learned to use.",
+      "keywords": ["vann","carries","finished","goods","distant","sources","can't","source","directly","been"]
+    },
+    {
+      "id": "osric_1",
+      "source": "Beld on Osric",
+      "text": "Osric and I compete for the same mid-range clients. We've been competing for eleven years. The competition is professional — neither of us undercuts below the point where the business is unsustainable. We've had two conversations about the district's supply rates that resulted in a shared understanding of where the floor is. This is the kind of competitor relationship that makes the market work. Osric sells on relationships. I sell on consistency. Different clients value different things. Enough clients for both.",
+      "keywords": ["osric","compete","same","mid-range","clients","been","competing","eleven","years","competition"]
+    },
+    {
+      "id": "weld_1",
+      "source": "Beld on the Forge Guild",
+      "text": "The Forge Guild needs work cloth. Not uniform quality — work cloth has different requirements than uniform cloth. Heat resistance, durability in the press, fabric that doesn't catch on the tools. I've been supplying the Guild's work cloth for six years. Edda's specifications are the same as Edna's in precision and different in content. Both of them are specifying for use. Use-specification is the easiest specification to supply because the use is real and the cloth either performs or it doesn't.",
+      "keywords": ["forge","guild","needs","work","cloth","not","uniform","quality","work","cloth"]
+    },
+    {
+      "id": "what_beld_holds_1",
+      "source": "Beld on the bolt that isn't for sale",
+      "text": "One bolt. It came in with a shipment eleven years ago, mislabeled and clearly from a source I've never worked with. I can't identify the origin — the weave is a regional variation I don't recognize. I've shown it to six people in eleven years who know cloth. None of them know where it's from. The bolt is on the high shelf. When I have nothing to do I look at it. One in eleven years that I can't place. The not-knowing is the reason I still look.",
+      "keywords": ["one","bolt","came","shipment","eleven","years","mislabeled","clearly","from","source"]
+    },
+    {
+      "id": "what_cloth_remembers_1",
+      "source": "Beld on the old cloth",
+      "text": "Old cloth remembers differently than new cloth. New cloth has the memory of production — how it was made, in what climate, under what conditions. Old cloth has that and the memory of use — the fading patterns, the repair work, the places where it was stressed repeatedly. When old cloth comes in for restoration or repurposing, I read both memories. The use memory is always more interesting than the production memory. The production memory is consistent. The use memory is specific to one life.",
+      "keywords": ["old","cloth","remembers","differently","new","cloth","new","cloth","memory","production"]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "id": "wild_road_beekeeper",
+  "name": "Hona",
+  "role": "Wild road beekeeper; manages hives in the territory's flowering areas; the honey trade and the pollination service",
+  "cluster": "wild_road",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "beekeeper_1",
+      "source": "Hona on beekeeping",
+      "text": "In eighteen years of keeping bees in the wild territory, what the beekeeper's knowledge is: the knowledge of where the flowers are, when the flowers bloom, and how to manage the hive's movement to match the hive's needs to the flowering sequence. In eighteen years, the beekeeper doesn't make honey — the bees make honey. The beekeeper manages the conditions that make the honey possible. In eighteen years, the distinction matters for understanding what the work actually is.",
+      "keywords": ["eighteen","years","keeping","bees","wild","territory","what","beekeeper's","knowledge","knowledge"]
+    },
+    {
+      "id": "bett_1",
+      "source": "Hona on Bett",
+      "text": "Bett the orchard keeper and I have the most straightforward mutually beneficial relationship in the territory. In fourteen years of moving hives to Bett's orchard during the flowering season, what the arrangement produces: the orchard's flowers are pollinated, the hives produce the honey that the orchard's flowers allow, Bett's orchard produces a better yield, and I produce more honey than the territory's wild flowers alone would provide. In fourteen years, the arrangement has been renewed every season without renegotiation. Both sides know the value.",
+      "keywords": ["bett","orchard","keeper","most","straightforward","mutually","beneficial","relationship","territory","fourteen"]
+    },
+    {
+      "id": "vel_vintner_1",
+      "source": "Hona on Vel the Vintner",
+      "text": "Vel the Vintner uses my honey in a fermented product that has found a specific market in the settlement. In seven years of supplying honey to Vel's mead production, what the mead producer's honey requirements look like: consistent sugar content, consistent flavor profile, consistent volume across the season. In seven years, the consistency requirement has shaped how I manage the hives — the hive management that produces consistent honey requires more active management than the hive management that produces the season's best at variable consistency.",
+      "keywords": ["vel","vintner","uses","honey","fermented","product","found","specific","market","settlement"]
+    },
+    {
+      "id": "syne_1",
+      "source": "Hona on Syne",
+      "text": "Syne wildcrafts the territory's flowering plants and Syne's knowledge of the territory's flowering calendar is the input I use for hive movement decisions. In twelve years of the beekeeper-wildcrafted herb relationship with Syne, what Syne's flowering calendar knowledge provides: the advance knowledge of when specific areas of the territory will be at peak flower. In twelve years, Syne's calendar and my hive movement schedule have been integrated — I know where to move the hives because Syne tells me where the flowers are.",
+      "keywords": ["syne","wildcrafts","territory's","flowering","plants","syne's","knowledge","territory's","flowering","calendar"]
+    },
+    {
+      "id": "orvane_1",
+      "source": "Hona on Orvane",
+      "text": "Orvane reads the territory's spiritual condition and the hives' behavior sometimes parallels what Orvane reads. In eight years of the beekeeper-spirit-reader relationship with Orvane, what the parallel provides: the confirmation, in two types of reading, of the territory's condition. The bees' behavior changes with the territory's condition in ways that my eighteen years of beekeeping has made legible. In eight years, three occasions where what the bees were doing and what Orvane's reading indicated were the same thing described in two different languages.",
+      "keywords": ["orvane","reads","territory's","spiritual","condition","hives'","behavior","sometimes","parallels","orvane"]
+    },
+    {
+      "id": "what_eighteen_years_holds_1",
+      "source": "Hona on what eighteen years of beekeeping holds",
+      "text": "In eighteen years, what the bees have taught me: the colony's intelligence is not in any individual bee. The individual bee's behavior is simple. The colony's behavior is complex and responsive and sometimes surprising. In eighteen years, the colony makes decisions I couldn't have predicted from watching the individual bees. In eighteen years, the colony's intelligence is the intelligence of the collective, not the individual. In eighteen years, the most interesting thing I study is not the bee but the colony.",
+      "keywords": ["eighteen","years","what","bees","taught","colony's","intelligence","not","any","individual"]
+    },
+    {
+      "id": "what_hona_holds_1",
+      "source": "Hona on the hive she couldn't save",
+      "text": "Year eleven. A hive that developed a condition I hadn't seen in ten years of keeping. In three months of attempting the interventions I knew: none worked. The hive collapsed. In seven years since, year eleven is the case I return to when I'm assessing a hive's condition — the specific early signs that preceded the year-eleven collapse, which I now catch earlier. In seven years, I've identified the same early signs in two hives. Both hives: the early intervention worked. Year eleven produced the knowledge that saved two hives after it.",
+      "keywords": ["year","eleven","hive","developed","condition","hadn't","seen","ten","years","keeping"]
+    },
+    {
+      "id": "eighteen_years_1",
+      "source": "Hona on eighteen years of wild road beekeeping",
+      "text": "In eighteen years, my hives have produced approximately six thousand pounds of honey. Six thousand pounds of honey from the territory's flowers, processed by the colonies I've managed and maintained. In eighteen years, what the honey represents in terms of the territory's productivity: the flowering that the territory produces and that the hive converts into the product the settlement uses. In eighteen years, I've been the person standing between the territory's flowers and the settlement's honey supply. In eighteen years, the person standing between the two is the beekeeper. I'm still standing there.",
+      "keywords": ["eighteen","years","hives","produced","approximately","six","thousand","pounds","honey","six"]
+    }
+  ]
+}

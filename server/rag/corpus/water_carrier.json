@@ -1,0 +1,57 @@
+{
+  "id": "water_carrier",
+  "name": "Bale",
+  "role": "Water carrier; delivers fresh water from the well to those who can't carry their own",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "water_1",
+      "source": "Bale on what water carrying is",
+      "text": "Water carrying is the movement of weight that doesn't move itself. Everyone needs water. Not everyone can get to the well and back with what they need. I am the gap between the well and the people who can't close that gap themselves. In ten years of carrying, I've learned more about who can and can't get their own water than anyone else in the district. The well is a democracy. The carrying is a geography of need.",
+      "keywords": ["water","carrying","movement","weight","doesn't","move","itself","everyone","needs","water"]
+    },
+    {
+      "id": "mam_wey_1",
+      "source": "Bale on Mam Wey",
+      "text": "Mam Wey has been on my route for eight years. At seventy-eight, carrying water from the well is not something she can do. In eight years of delivering to Mam Wey, I've received more information about the district's history than from anywhere else. Mam Wey talks while I deliver. The delivery is the occasion for the talking. In eight years of delivery conversations, I know the district's history better than the council clerk's records would tell me.",
+      "keywords": ["mam","wey","route","eight","years","seventy-eight","carrying","water","well","not"]
+    },
+    {
+      "id": "nan_1",
+      "source": "Bale on Nan",
+      "text": "Nan requires clean water for the birthing work. In ten years, Nan has specified: no mixing of sources, no stored water, water drawn and delivered within two hours. I follow the specification exactly. In ten years, I've made the birthing-water delivery thirty-seven times. All thirty-seven: within the specification. Nan said once: you're the most reliable part of the process I don't control. I said: I can only control the carrying. She said: I know. That's why I trust it.",
+      "keywords": ["nan","requires","clean","water","birthing","work","ten","years","specified","mixing"]
+    },
+    {
+      "id": "hollow_court_1",
+      "source": "Bale on the Hollow Court",
+      "text": "The Hollow Court needs water for the fire maintenance and for the occasional washing of the candle holders. I deliver there weekly. What the court's delivery is like: the quietest delivery on my route. When I arrive at the court, whatever happens while I'm there happens in the court's quality of silence. I've carried water through a lot of different atmospheres in ten years. The court's atmosphere is the one where I'm most careful not to disturb what's in it.",
+      "keywords": ["hollow","court","needs","water","fire","maintenance","occasional","washing","candle","holders"]
+    },
+    {
+      "id": "honn_1",
+      "source": "Bale on Honn",
+      "text": "Honn needs more water than anyone else on my route. The laundry work is water-intensive. In ten years of supplying Honn's laundry, I've learned the work's water consumption cycle: certain days in the week are high-demand days, certain hours in the day are high-demand hours. I plan my route around Honn's cycle. Honn has never had to ask for extra water during a high-demand period because the extra water is there before the demand arrives. Understanding the cycle before the need is the carrier's work.",
+      "keywords": ["honn","needs","more","water","anyone","else","route","laundry","work","water-intensive"]
+    },
+    {
+      "id": "what_bale_knows_1",
+      "source": "Bale on what water carrying teaches about the district",
+      "text": "Who is at home at what hours. Who has the household help and who doesn't. Which households have the resources to handle emergencies and which are at the limit of what they can manage. The water carrier's knowledge of the district is a knowledge of need — who needs what they can't get on their own and how badly they need it. In ten years I've built a map of the district's need that no one else has. The map isn't documented anywhere. It's in my feet.",
+      "keywords": ["who","is","at","home","what","hours","who","has","household","help"]
+    },
+    {
+      "id": "what_bale_holds_1",
+      "source": "Bale on a delivery she remembers",
+      "text": "Year six. A delivery to a household where I arrived and the person I delivered to was in a state that needed more than water. I set down the water, stayed for two hours, and then went and found Sel from the Hollow Court and told Sel what I'd seen. Sel came the same afternoon. I don't know the full outcome. What I know: I saw something that needed a response and the response happened. The carrying that day included something that wasn't water.",
+      "keywords": ["year","six","delivery","household","arrived","person","delivered","was","state","needed"]
+    },
+    {
+      "id": "ten_years_1",
+      "source": "Bale on ten years on the route",
+      "text": "The route is the same route and different every day because the people on the route are different every day. In ten years, the route has not changed significantly — the same streets, the same buildings. The people have changed: some have left, some have died, some new people have arrived. The water they need is the same water. What changed is who needs it. In ten years I've carried water for forty-six different accounts on a route that currently serves thirty-one. The difference is time.",
+      "keywords": ["route","same","route","different","every","day","because","people","route","different"]
+    }
+  ]
+}

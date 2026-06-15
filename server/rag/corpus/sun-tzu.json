@@ -1,0 +1,66 @@
+{
+  "id": "sun-tzu",
+  "name": "Sun Tzu",
+  "chunks": [
+    {
+      "id": "art_of_war_1",
+      "source": "The Art of War (Giles translation, 1910)",
+      "text": "The supreme art of war is to subdue the enemy without fighting. All warfare is based on deception. Hence, when able to attack, we must seem unable; when using our forces, we must seem inactive; when we are near, we must make the enemy believe we are far away; when far away, we must make him believe we are near.",
+      "keywords": ["warfare","deception","attack","enemy","near","far","unable","inactive","subdue","supreme"]
+    },
+    {
+      "id": "art_of_war_2",
+      "source": "The Art of War (Giles translation, 1910)",
+      "text": "The general who wins the battle makes many calculations in his temple before the battle is fought. The general who loses makes but few calculations beforehand. Thus do many calculations lead to victory, and few calculations to defeat; how much more no calculation at all! It is by attention to this point that I can foresee who is likely to win or lose.",
+      "keywords": ["calculations","victory","defeat","temple","battle","general","wins","loses","attention","foresee"]
+    },
+    {
+      "id": "art_of_war_3",
+      "source": "The Art of War (Giles translation, 1910)",
+      "text": "Appear weak when you are strong, and strong when you are weak. The opportunity of defeating the enemy is provided by the enemy himself. Victorious warriors win first and then go to war, while defeated warriors go to war first and then seek to win. Knowing others is wisdom; knowing yourself is Enlightenment.",
+      "keywords": ["weak","strong","appear","opportunity","defeating","victorious","win","wisdom","enlightenment","knowing"]
+    },
+    {
+      "id": "art_of_war_4",
+      "source": "The Art of War (Giles translation, 1910)",
+      "text": "In the midst of chaos, there is also opportunity. Keep your friends close, and your enemies closer. The greatest victory is that which requires no battle. When you surround an army, leave an outlet free. Do not press a desperate foe too hard. The skillful warrior attacks neither body nor mind but the will.",
+      "keywords": ["chaos","opportunity","friends","enemies","victory","battle","outlet","desperate","warrior","attacks"]
+    },
+    {
+      "id": "art_of_war_5",
+      "source": "The Art of War (Giles translation, 1910)",
+      "text": "Strategy without tactics is the slowest route to victory. Tactics without strategy is the noise before defeat. The good fighters of old first put themselves beyond the possibility of defeat, and then waited for an opportunity of defeating the enemy. To secure ourselves against defeat lies in our own hands.",
+      "keywords": ["strategy","tactics","defeat","victory","noise","secure","fighters","opportunity","hands","waited"]
+    },
+    {
+      "id": "art_of_war_6",
+      "source": "The Art of War (Giles translation, 1910)",
+      "text": "If you know the enemy and know yourself, you need not fear the result of a hundred battles. If you know yourself but not the enemy, for every victory gained you will also suffer a defeat. If you know neither the enemy nor yourself, you will succumb in every battle.",
+      "keywords": ["know","enemy","yourself","fear","battles","victory","suffer","defeat","succumb","neither"]
+    },
+    {
+      "id": "art_of_war_7",
+      "source": "The Art of War (Giles translation, 1910)",
+      "text": "In war, the way is to avoid what is strong and to strike at what is weak. Water shapes its course according to the nature of the ground over which it flows; the soldier works out his victory in relation to the foe he is facing. All men can see the tactics whereby I conquer, but what none can see is the strategy out of which victory is evolved.",
+      "keywords": ["water","weak","strong","ground","flows","soldier","conquer","tactics","strategy","evolved"]
+    },
+    {
+      "id": "art_of_war_8",
+      "source": "The Art of War (Giles translation, 1910)",
+      "text": "Move swift as the Wind and closely-formed as the Wood. Attack like the Fire and be still as the Mountain. The line between disorder and order lies in logistics. He who is prudent and lies in wait for an enemy who is not, will be victorious. There is no instance of a country having benefited from prolonged warfare.",
+      "keywords": ["swift","wind","wood","fire","mountain","logistics","disorder","order","prudent","prolonged"]
+    },
+    {
+      "id": "art_of_war_9",
+      "source": "The Art of War (Giles translation, 1910)",
+      "text": "The general who advances without coveting fame and retreats without fearing disgrace, whose only thought is to protect his country and do good service for his sovereign, is the jewel of the kingdom. There are five dangerous faults which may affect a general: recklessness; cowardice; a hasty temper; delicacy of honor; over-solicitude for his men.",
+      "keywords": ["general","fame","disgrace","protect","sovereign","jewel","recklessness","cowardice","temper","honor"]
+    },
+    {
+      "id": "art_of_war_10",
+      "source": "The Art of War (Giles translation, 1910)",
+      "text": "Ponder and deliberate before you make a move. When you engage in actual fighting, if victory is long in coming, then men's weapons will grow dull and their ardor will be damped. If the campaign is protracted, the resources of the State will not be equal to the strain. Speed is the essence of war.",
+      "keywords": ["ponder","deliberate","victory","weapons","dull","ardor","campaign","protracted","resources","speed"]
+    }
+  ]
+}

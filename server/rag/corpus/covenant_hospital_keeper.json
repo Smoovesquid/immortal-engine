@@ -1,0 +1,57 @@
+{
+  "id": "covenant_hospital_keeper",
+  "name": "Solt",
+  "role": "Covenant of the Seven hospital ward keeper; manages the care of the settlement's sick who have nowhere else to go",
+  "cluster": "covenant_of_seven",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "hospital_keeper_1",
+      "source": "Solt on the hospital ward",
+      "text": "In eighteen years of keeping the Covenant's hospital ward, what the ward is in the settlement's care structure: the place for the sick person who has no other place. In eighteen years, the person with means is sick at home with their household's care. The person without means is sick in the ward with what the Covenant provides. In eighteen years, the ward exists because the settlement's sick who have no other care are still sick. In eighteen years, the ward has been the answer to that specific problem.",
+      "keywords": ["eighteen","years","keeping","covenant's","hospital","ward","what","ward","settlement's","care"]
+    },
+    {
+      "id": "father_len_1",
+      "source": "Solt on Father Len",
+      "text": "Father Len leads the Covenant and the hospital ward is the Covenant's most direct expression of Father Len's understanding of what the faith requires of its community. In fourteen years of the Solt-Father Len ward keeper-leader relationship, what Father Len's understanding of the ward means for the ward's function: the resource allocation that the ward receives as the Covenant's direct service function. In fourteen years, the ward has been the Covenant's argument for its own necessity to the settlement. In fourteen years, Father Len has used the ward's existence in every conversation about the Covenant's role.",
+      "keywords": ["father","len","leads","covenant","hospital","ward","covenant's","most","direct","expression"]
+    },
+    {
+      "id": "hels_1",
+      "source": "Solt on Hels",
+      "text": "Hels practices MERETH's humility and volunteers in the ward two days a week. In nine years of the Solt-Hels ward keeper-volunteer relationship, what Hels's voluntary service provides to the ward: the committed consistent presence that the ward needs but that I can't provide alone. In nine years, Hels's two-day-per-week commitment has been one of the ward's most reliable functions. In nine years, Hels has not missed a scheduled ward day except for personal illness. In nine years, one absence in nine years, for personal illness. That is the standard.",
+      "keywords": ["hels","practices","mereth's","humility","volunteers","ward","two","days","week","nine"]
+    },
+    {
+      "id": "roan_1",
+      "source": "Solt on Roan",
+      "text": "Roan the herbalist provides the preparations that the ward's care requires. In sixteen years of working from Roan's preparations, what the herbalist's knowledge means for the ward's care function: the difference between care that manages illness and care that manages illness with the specific treatments that the specific illness requires. In sixteen years, the ward's care without Roan's preparations is the care that manages symptoms. The ward's care with Roan's preparations is the care that addresses the illness. In sixteen years, the distinction has been critical approximately sixty times.",
+      "keywords": ["roan","herbalist","provides","preparations","ward's","care","requires","sixteen","years","working"]
+    },
+    {
+      "id": "weth_1",
+      "source": "Solt on Weth",
+      "text": "Weth the midwife and I serve the same population at different moments of life. In fourteen years of the Solt-Weth ward keeper-midwife relationship, what the two care functions share: the settlement's people who have nowhere else to go. In fourteen years, Weth attends the birth without resources. I attend the illness without resources. In fourteen years, the two care functions are the settlement's provision for its most vulnerable moments. In fourteen years, the people who use Weth's function and the people who use the ward are often the same people at different times.",
+      "keywords": ["weth","midwife","serve","same","population","different","moments","life","fourteen","years"]
+    },
+    {
+      "id": "what_solt_holds_1",
+      "source": "Solt on what eighteen years of hospital ward keeping holds",
+      "text": "In eighteen years, approximately four thousand sick people have passed through the ward. Of four thousand: three thousand six hundred and twelve left the ward recovered or improved. Two hundred and eighty-one left the ward without improvement. One hundred and seven died in the ward. In eighteen years, one hundred and seven deaths in the ward that I've attended. In eighteen years, the number is present. The ward exists because the alternative to the ward for those four thousand is the illness without care. In eighteen years, even the one hundred and seven who died in the ward died with care present.",
+      "keywords": ["eighteen","years","approximately","four","thousand","sick","people","passed","through","ward"]
+    },
+    {
+      "id": "what_the_ward_requires_1",
+      "source": "Solt on what the ward requires of its keeper",
+      "text": "In eighteen years, what the ward requires of the ward keeper: the capacity to hold the full picture of what the ward is — the four thousand, the one hundred and seven, the daily illness — without becoming either indifferent to it or broken by it. In eighteen years, the ward keeper who becomes indifferent has lost the function's purpose. The ward keeper who is broken by it has lost the function's capacity. In eighteen years, the path between indifference and breaking is the path I've tried to walk. In eighteen years, some days the path is clear. Some days it isn't.",
+      "keywords": ["eighteen","years","what","ward","requires","ward","keeper","capacity","hold","full"]
+    },
+    {
+      "id": "eighteen_years_1",
+      "source": "Solt on eighteen years as the Covenant's hospital ward keeper",
+      "text": "In eighteen years, the ward has been the settlement's most consistent argument that the Covenant's faith is a productive faith — that it produces something the settlement requires. In eighteen years, the ward is the faith made visible as function. In eighteen years, what the settlement knows about the Covenant's hospital function: the ward takes in the sick who have nowhere to go. In eighteen years, the settlement's knowledge of the ward is the Covenant's clearest introduction to most of the people who don't attend the Covenant's services.",
+      "keywords": ["eighteen","years","ward","been","settlement's","most","consistent","argument","covenant's","faith"]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "id": "coin_cult_lender",
+  "name": "Lena",
+  "role": "Coin Cult originator of credit; the face that offers; finds the people who are ready for HAGRETH's door",
+  "cluster": "coin_cult",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "lending_1",
+      "source": "Lena on finding the right people",
+      "text": "I am not looking for people who are desperate. Desperation produces bad debtors — people who take the credit and can't repay it. I'm looking for people who are at capacity and have a specific gap. The specific gap that the credit bridges is the person who can build toward something real if the gap is addressed. In fourteen years, the assessment I do before extending credit: is this person going to build something with this, or is this person going to consume it. I extend credit to the people who will build.",
+      "keywords": ["not","looking","people","desperate","desperation","produces","bad","debtors","people","take"]
+    },
+    {
+      "id": "grav_1",
+      "source": "Lena on Grav",
+      "text": "Grav tracks the accounts I originate. In twelve years of the Lena-Grav functional relationship, the division: I find the person and assess the credit, Grav maintains the account's terms and tracks the repayment. What Grav's tracking tells me that my assessment doesn't: whether the assessment was right. In twelve years, the accounts where my assessment was correct and the debtor built something with the credit: approximately eighty percent. The twenty percent where the assessment was wrong: they've told me what the wrong assessment looks like so I can avoid it.",
+      "keywords": ["grav","tracks","accounts","originate","twelve","years","lena-grav","functional","relationship","division"]
+    },
+    {
+      "id": "cob_1",
+      "source": "Lena on Cob",
+      "text": "Cob is twenty-three years into HAGRETH's practice and is the person who taught me what the cult is actually for. In ten years of knowing Cob, what Cob gave me that my first years in the cult didn't: the understanding that the credit is the mechanism and the relationship is the point. In ten years, the credit I extend creates a relationship that HAGRETH values. The money is what the relationship forms around. The relationship is what lasts after the debt is repaid.",
+      "keywords": ["cob","twenty-three","years","hagreth's","practice","person","taught","what","cult","actually"]
+    },
+    {
+      "id": "mobb_1",
+      "source": "Lena on Mobb",
+      "text": "Mobb is the most recent person I've brought into the cult through the credit door. In two years of Mobb's account, what I've observed: the person I assessed at origination — someone who had a specific gap and something to build — has been accurate. Mobb repaid, has stayed, and is beginning to understand what the cult is. In two years, Mobb's trajectory is the trajectory the credit is supposed to produce. In fourteen years, Mobb's case is one of the cleaner examples of the assessment working.",
+      "keywords": ["mobb","most","recent","person","brought","cult","through","credit","door","two"]
+    },
+    {
+      "id": "saben_1",
+      "source": "Lena on Saben",
+      "text": "Saben is the most sophisticated external business relationship the cult has in this district. In eight years of the cult's relationship with Saben's commerce, what Saben provides: the legitimate business channel that allows certain of the cult's financial activities to appear as standard commerce. In eight years, the relationship serves both: Saben gets financial flexibility, the cult gets commercial cover. In eight years, the relationship has been professional and mutually beneficial. Neither party discusses the specifics in public.",
+      "keywords": ["saben","most","sophisticated","external","business","relationship","cult","has","district","eight"]
+    },
+    {
+      "id": "what_lena_holds_1",
+      "source": "Lena on what fourteen years of originating credit has given her",
+      "text": "In fourteen years, the thing the work has given me: I'm a very good reader of people's situations. The assessment that determines whether I extend credit is the assessment of a person's current situation, their trajectory, their specific gap, and what the credit will enable or prevent. In fourteen years, the assessment has become one of the most reliable things I do. What I see in a person in the first conversation that tells me whether the credit is the right thing for them: it's faster now than it was in year one.",
+      "keywords": ["fourteen","years","thing","work","given","very","good","reader","people's","situations"]
+    },
+    {
+      "id": "what_lena_wont_do_1",
+      "source": "Lena on what Lena won't do",
+      "text": "I won't extend credit to someone who can't repay it. Not because I don't want to help — because the credit that can't be repaid doesn't help. The debt that exceeds the debtor's capacity to service it is not HAGRETH's teaching. It's the corruption of HAGRETH's teaching. In fourteen years, I've declined credit to people who needed it and couldn't carry it. The decline is the kindness in those cases. The credit would have been the cruelty.",
+      "keywords": ["won't","extend","credit","someone","who","can't","repay","not","because","don't"]
+    },
+    {
+      "id": "fourteen_years_1",
+      "source": "Lena on fourteen years of originating the cult's credit",
+      "text": "In fourteen years, I've originated credit for approximately three hundred people. Three hundred assessments of who had a specific gap that the cult's credit could bridge. Of three hundred: approximately two hundred and fifty-five have repaid in full. Approximately thirty are in active repayment. Approximately fifteen were unable to complete repayment and required adjustment of terms. In fourteen years, fifteen adjustments in three hundred originations. The fifteen are the cases where the assessment was optimistic. I review each of them to understand what I missed.",
+      "keywords": ["fourteen","years","originated","credit","approximately","three","hundred","people","three","hundred"]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "id": "brotherhood_recruiter",
+  "name": "Pella",
+  "role": "Brotherhood recruiter and trainer intake; finds the people who can become Brotherhood and guides them in",
+  "cluster": "brotherhood_of_wild",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "recruitment_1",
+      "source": "Pella on Brotherhood recruitment",
+      "text": "The Brotherhood doesn't take everyone who wants to join. Most people who want to join want something the Brotherhood doesn't provide. What they want: the identity, the belonging, the story they can tell. What the Brotherhood provides: the work. The work is hard, sustained, and specific. The people who want the work and can do the work: those are the recruits. In twelve years of recruitment work, I've assessed approximately four hundred candidates. I've recommended one hundred and twelve for training consideration. Of the one hundred and twelve, sixty-four are currently active Brotherhood members.",
+      "keywords": ["brotherhood","doesn't","take","everyone","who","wants","join","most","people","who"]
+    },
+    {
+      "id": "holt_1",
+      "source": "Pella on Holt",
+      "text": "Holt runs the training program that my recruits enter. In twelve years, Holt and I have had a continuous conversation about what the training requires from the recruit that the recruitment assessment can identify. What Holt has taught me: the training fails specific types of recruits in specific ways. In twelve years, I've used Holt's failure pattern data to improve my assessment. The failure rate of my recruits through training has gone from forty percent in year one to seventeen percent in year twelve. The improvement is the accumulated application of Holt's feedback.",
+      "keywords": ["holt","runs","training","program","recruits","enter","twelve","years","holt","continuous"]
+    },
+    {
+      "id": "cord_1",
+      "source": "Pella on Cord",
+      "text": "Cord is who my recruits work for, ultimately. In twelve years, Cord has come to me twice to tell me a specific recruit was wrong for the Brotherhood in a way my assessment had missed. Both times: Cord was right. Both times: the recruit had passed my assessment and entered training and completed training and become active members, and some time after becoming active members had failed in a way Cord identified as a fundamental misalignment. The two cases have changed my assessment questions in specific ways.",
+      "keywords": ["cord","recruits","work","for","ultimately","twelve","years","cord","come","twice"]
+    },
+    {
+      "id": "rath_1",
+      "source": "Pella on Rath",
+      "text": "Rath was not my recruit — Rath was Brotherhood before I began doing recruitment. What I know about Rath from twelve years of recruitment work: Rath is the type that would not pass my current assessment. What my current assessment selects for: the person who can sustain long-term Brotherhood membership without breaking. Rath's operational style produces extraordinary short-term outcomes and extraordinary long-term strain. In twelve years, I've turned down three candidates who had Rath's profile. I don't know if that was correct. I know it was consistent.",
+      "keywords": ["rath","not","recruit","rath","brotherhood","before","began","doing","recruitment","what"]
+    },
+    {
+      "id": "ren_1",
+      "source": "Pella on Ren",
+      "text": "Ren was my most recent recruit. Ren was the youngest candidate I've assessed in twelve years — the assessment was whether Ren's capability was ahead of Ren's development enough to function in a team. What I recommended: conditional acceptance, with a specific check at the six-month training point. The check: whether Ren had developed the team integration capability that Ren lacked at the assessment. At six months: Ren had. The conditional acceptance became full acceptance. The check point is now a standard part of the training protocol for all candidates under a specific age.",
+      "keywords": ["ren","most","recent","recruit","ren","youngest","candidate","assessed","twelve","years"]
+    },
+    {
+      "id": "what_recruitment_is_1",
+      "source": "Pella on what she's actually looking for",
+      "text": "What I'm looking for: the person who knows the difference between what they want and what the work requires, and who wants the work more than what they want. Most people can't make this distinction in self-knowledge. They say they want the work, they mean they want what they imagine the work produces. The test: ask what specifically they expect the work to be on a difficult day. The answer to that question tells me more about the candidate than anything else in the assessment. The candidate who answers accurately: has a chance. The candidate who answers with the story they've told themselves: doesn't.",
+      "keywords": ["looking","for","person","who","knows","difference","between","what","they","want"]
+    },
+    {
+      "id": "what_pella_holds_1",
+      "source": "Pella on the one she let through who shouldn't have gone",
+      "text": "Year five. A candidate who answered every assessment question correctly. The answers were correct because the candidate had studied the assessment — not my specific assessment, but the type of assessment that the Brotherhood was known to use. The answers were technically correct and practically false. The candidate passed, entered training, passed training, became active. Active for two years, then broke in a way that harmed a team operation. What I've added to the assessment since year five: questions that the studied answer doesn't work for.",
+      "keywords": ["year","five","candidate","answered","every","assessment","question","correctly","answers","were"]
+    },
+    {
+      "id": "twelve_years_1",
+      "source": "Pella on twelve years of recruitment",
+      "text": "In twelve years I've assessed four hundred candidates and recommended one hundred and twelve. Of the one hundred and twelve: sixty-four are active, twenty-eight completed Brotherhood service and left, fourteen failed at various points after entering. The fourteen failures: I've reviewed each one. In eleven of the fourteen, the failure was something my assessment should have caught. In three, the failure was something that couldn't have been predicted from the assessment. The eleven I should have caught: I've incorporated eleven new assessment elements in twelve years.",
+      "keywords": ["twelve","years","assessed","four","hundred","candidates","recommended","one","hundred","twelve"]
+    }
+  ]
+}

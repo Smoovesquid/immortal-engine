@@ -1,0 +1,57 @@
+{
+  "id": "compact_tracker",
+  "name": "Nev Strand",
+  "role": "Scarlet Compact tracker; reads territory and quarry the way a scholar reads text",
+  "cluster": "scarlet_compact",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "tracker_1",
+      "source": "Nev Strand on tracking",
+      "text": "Tracking is reading. The territory is a text composed by everything that has moved through it. My skill is reading the text — what passed, when it passed, how long ago, what state it was in when it passed. In eleven years of tracking for the Compact, I've read more ground than most people walk in a lifetime. The ground remembers everything that touches it. The trick is in the duration: the memory fades, and the reader has to understand how fast the specific sign fades in the specific conditions.",
+      "keywords": ["tracking","reading","territory","text","composed","everything","moved","through","skill","reading"]
+    },
+    {
+      "id": "ceth_1",
+      "source": "Nev Strand on Ceth",
+      "text": "Ceth leads the field teams. I provide what Ceth needs to plan the field movement: where the quarry was, where the quarry is going, what the quarry's condition was at the time of the last sign. In eleven years under Ceth's direction, my read of the territory has been the primary input for field decisions. Two occasions where I misread the sign: both times Ceth adjusted the plan and recovered. Ceth said after the second misread: the read was wrong because the conditions were wrong, not because the reading was wrong. I've thought about that distinction since.",
+      "keywords": ["ceth","leads","field","teams","provide","ceth","needs","plan","field","movement"]
+    },
+    {
+      "id": "drass_1",
+      "source": "Nev Strand on Drass",
+      "text": "Drass and I cover similar territory from inside and outside the Compact. Drass hunts as an independent. I track for the Compact. The overlap: the same territory, the same quarry types, different organizational backing. In four years of occasionally encountering Drass in the territory, I've learned something from watching Drass track: the independent tracker reads the territory for themselves only. The Compact tracker reads it for the team. The for-whom changes what you notice.",
+      "keywords": ["drass","cover","similar","territory","inside","outside","compact","drass","hunts","independent"]
+    },
+    {
+      "id": "theen_1",
+      "source": "Nev Strand on Theen",
+      "text": "Theen guides people through territory that is difficult to navigate. I track through territory that doesn't want to be tracked through. The overlap: we both read territory. The difference: Theen reads for safe passage, I read for unseen passage. Theen's ideal outcome: the party arrives without incident. My ideal outcome: the quarry doesn't know it's been found until the moment it's necessary. Two different readings of the same text for two different outcomes.",
+      "keywords": ["theen","guides","people","through","territory","difficult","navigate","track","through","territory"]
+    },
+    {
+      "id": "pav_1",
+      "source": "Nev Strand on Pav",
+      "text": "Pav handles the Compact's logistical coordination. What Pav does that makes my work better: the supply arrangements ensure that when I'm in the field for extended tracking operations, what I need arrives when I need it. In eleven years, I've had three operations where the supply failed to arrive at the specified time. All three: the tracking operation had to be compressed or aborted because I couldn't maintain field presence without the supply. Pav's supply record: three failures in eleven years is a success rate that most operations would accept. I notice the three failures.",
+      "keywords": ["pav","handles","compact's","logistical","coordination","pav","does","makes","work","better"]
+    },
+    {
+      "id": "what_the_territory_says_1",
+      "source": "Nev Strand on what the territory says that isn't about the quarry",
+      "text": "The territory says many things that have nothing to do with the assignment. The weather pattern from the hill's wind break. The old paths that are still walked even though they're not official paths. The places where water comes up that aren't on any map I've been given. In eleven years of reading territory, I've accumulated a map that is as much about the territory itself as about anything that's passed through it. The territory is never just the medium. It's always also the subject.",
+      "keywords": ["territory","says","many","things","nothing","do","assignment","weather","pattern","hill's"]
+    },
+    {
+      "id": "what_nev_holds_1",
+      "source": "Nev Strand on the track she followed and didn't report",
+      "text": "Year seven. A track that led to something I wasn't tracking. My quarry went one way. The other track — something else entirely — went another way. I followed the quarry. I completed the assignment. I didn't report the other track. What I saw in the other track: enough to tell me that whatever made it didn't belong in the territory in the way I understand belonging. I've been back to the area three times in four years. The track hasn't appeared again. Either it moved on or it learned something about being read.",
+      "keywords": ["year","seven","track","led","something","wasn't","tracking","quarry","went","one"]
+    },
+    {
+      "id": "eleven_years_1",
+      "source": "Nev Strand on eleven years of Compact tracking",
+      "text": "In eleven years I've tracked through this territory in every season and in most weather conditions. What I know about this territory that no one else knows: the complete behavioral map. Not the geography — the map of how the geography behaves. Where it floods and when. Where the wind does unexpected things. Where the light is wrong at certain hours. In eleven years I've gone from tracking in this territory to knowing this territory in a way where the territory sometimes feels like it's being read by both of us simultaneously.",
+      "keywords": ["eleven","years","tracked","through","territory","every","season","most","weather","conditions"]
+    }
+  ]
+}

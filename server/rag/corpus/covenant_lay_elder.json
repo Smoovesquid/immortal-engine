@@ -1,0 +1,57 @@
+{
+  "id": "covenant_lay_elder",
+  "name": "Eld the Historian",
+  "role": "Hollow Court historian who also participates in the Covenant community; distinct from the previously mentioned Eld",
+  "cluster": "hollow_court",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "historian_1",
+      "source": "Eld the Historian on history's purpose",
+      "text": "In thirty-one years of historical work at the Hollow Court, what history is for: not the record of what happened — any competent archivist produces that. History is the interpretation of what happened in service of understanding what is happening now and what is likely to happen next. In thirty-one years, the historical record without interpretation is data. The interpretation is what makes the data into knowledge. In thirty-one years, the Court pays me to produce knowledge, not data.",
+      "keywords": ["thirty-one","years","historical","work","hollow","court","what","history","for","not"]
+    },
+    {
+      "id": "sel_1",
+      "source": "Eld the Historian on Sel",
+      "text": "Sel leads the Hollow Court and the decisions Sel makes are the decisions my historical knowledge informs. In twenty-three years of the Eld-Sel historian-leader relationship, what the relationship has produced: the decisions made with historical context and the decisions made without it. In twenty-three years, Sel has explicitly referenced my historical analysis in eleven major decisions. In twenty-three years, four of the eleven where Sel explicitly referenced the history: the outcome confirmed the historical pattern. Three: the outcome diverged from the historical pattern in instructive ways. Four: the decision is too recent to assess.",
+      "keywords": ["sel","leads","hollow","court","decisions","sel","makes","decisions","historical","knowledge"]
+    },
+    {
+      "id": "cree_1",
+      "source": "Eld the Historian on Cree",
+      "text": "Cree uses my historical analyses more frequently than Sel does. In eighteen years of the Cree-Eld working relationship, what Cree uses the history for: the precedent search. Cree wants to know what the Court has done in comparable situations. In eighteen years, Cree's use of the historical precedent is the most sophisticated use of my work in the Court's current structure — Cree knows what question to ask the history and knows how to apply the answer without over-applying it.",
+      "keywords": ["cree","uses","historical","analyses","more","frequently","sel","does","eighteen","years"]
+    },
+    {
+      "id": "veth_second_1",
+      "source": "Eld the Historian on Veth the Second",
+      "text": "Veth the Second produces the Court's current record that eventually becomes the history I work with. In fourteen years of the historian-recorder relationship with Veth the Second, what the relationship produces: the continuity from current record to historical record. In fourteen years, the transition from current to historical in the Court's documentary life passes through both of us. Veth the Second is the current. I'm the analysis of the past. In fourteen years, the gap between the current and the past is where the most useful historical work happens.",
+      "keywords": ["veth","second","produces","court's","current","record","eventually","becomes","history","work"]
+    },
+    {
+      "id": "veyl_1",
+      "source": "Eld the Historian on Veyl",
+      "text": "Veyl the oracle and I share the interpretive function at the Court and come to it from different directions. In twelve years of the historian-oracle relationship with Veyl, what the two interpretive approaches produce when they're brought into the same deliberation: the historical pattern and the cross-situational pattern. I identify what comparable past situations have looked like and produced. Veyl identifies what recurring patterns look like and tend to produce. In twelve years, the two approaches are complementary when they agree and most instructive when they don't.",
+      "keywords": ["veyl","oracle","share","interpretive","function","court","come","different","directions","twelve"]
+    },
+    {
+      "id": "what_eld_historian_holds_1",
+      "source": "Eld the Historian on the pattern he can't publish",
+      "text": "In thirty-one years, the historical pattern I've identified and held rather than published: the pattern in the Court's leadership transitions over the past seventy years. The pattern suggests a specific structural tendency that has affected three leadership transitions. The fourth transition — Sel's eventual succession — will be affected by the same structural tendency unless the Court addresses it. In thirty-one years, I've held the pattern because publishing it prematurely would create the crisis the pattern produces rather than preventing it. In thirty-one years, the historian's timing is the historian's most important judgment.",
+      "keywords": ["thirty-one","years","historical","pattern","identified","held","rather","published","pattern","court's"]
+    },
+    {
+      "id": "what_thirty_one_years_holds_1",
+      "source": "Eld the Historian on thirty-one years of Court historical work",
+      "text": "In thirty-one years, the Court's history and the region's history have been my two parallel research areas. In thirty-one years, what the two areas together have produced: the understanding that the Court's specific history makes sense only against the region's broader history, and the region's history includes events whose significance wasn't apparent at the time and has become apparent only in retrospect. In thirty-one years, the retrospective significance is history's specific contribution to understanding: the meaning that only becomes visible from sufficient distance.",
+      "keywords": ["thirty-one","years","court's","history","region's","history","been","two","parallel","research"]
+    },
+    {
+      "id": "thirty_one_years_1",
+      "source": "Eld the Historian on thirty-one years at the Hollow Court",
+      "text": "In thirty-one years, the historical work has been the sustained examination of how the Court came to be what it is and what it is likely to become. In thirty-one years, the examination has produced a picture of the Court that the Court's members see from the inside and that I see from the outside-facing-in — the historical position that the current participants can't occupy. In thirty-one years, the historian's position is the position that can see the pattern the Court can't see because the Court is inside it. In thirty-one years, I've been trying to show the Court the outside view.",
+      "keywords": ["thirty-one","years","historical","work","been","sustained","examination","how","court","came"]
+    }
+  ]
+}

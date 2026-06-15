@@ -1,0 +1,57 @@
+{
+  "id": "hollow_court_archivist",
+  "name": "Eld",
+  "role": "Hollow Court archivist; keeps the records of the dead who passed through the court",
+  "cluster": "hollow_court",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "archivist_1",
+      "source": "Eld on what archiving the dead means",
+      "text": "I keep the record of everyone who has been in this court's care. The name, the date, what was said over them, what was given back to the world from them, what we couldn't learn about them. The record is the court's memory. The court's memory is the only memory of some of these people — the ones with no family, no community, no other record. In twenty years of keeping this archive, I've become the repository of people who have no other repository.",
+      "keywords": ["keep","record","everyone","been","court's","care","name","date","what","said"]
+    },
+    {
+      "id": "sel_1",
+      "source": "Eld on Sel",
+      "text": "Sel leads the court's living work. I maintain the court's dead record. In fifteen years of working under Sel's leadership, Sel has asked me for the archive record twelve times — cases where the family arrives months or years after the death, needing what the court kept. In all twelve cases: the record was there. In twelve cases, the family received the information they came for. Sel said once: Eld's archive is what we owe to the people who passed through here. I understood that as the right framing.",
+      "keywords": ["sel","leads","court's","living","work","maintain","court's","dead","record","fifteen"]
+    },
+    {
+      "id": "maret_1",
+      "source": "Eld on Maret",
+      "text": "Maret has been at the court twice in the last three years. The first time: in the formal capacity of grief processing. I've seen that many times. The second time: Maret asked to see the archive record of the person she'd lost. She had a right to it. I showed her what we had. What we had: more than she'd known. Some of it was good more. Some of it was more that had no category for good or not good. She left with more of the person's life than she'd had when she arrived. Whether more is better in grief is a question I don't answer.",
+      "keywords": ["maret","been","court","twice","last","three","years","first","time","formal"]
+    },
+    {
+      "id": "tess_1",
+      "source": "Eld on Tess",
+      "text": "Tess manages the court's physical operations. I manage the court's documentary operations. In twelve years of working alongside Tess, the division has been stable: the court's physical state is Tess's responsibility, the court's recorded state is mine. When the physical and the recorded need to align — a restoration of a space that changes the court's geography — Tess and I work together to ensure the archive reflects the changed physical reality. We've done this three times. All three times: the archive updated before the restoration was complete.",
+      "keywords": ["tess","manages","court's","physical","operations","manage","court's","documentary","operations","twelve"]
+    },
+    {
+      "id": "cree_1",
+      "source": "Eld on Cree",
+      "text": "Cree is the court's ritual director — the one who conducts the formal proceedings over the dead. What Cree says in the proceedings: I record. Not verbatim — the court's record of the proceeding is the formal record, not the transcript. What I record: the essence of what was said, what was given, what was released. In twenty years of recording Cree's proceedings, the record captures a summary that Cree has reviewed and confirmed twelve times when the record was formally needed. Cree said: the record is the proceeding's truth, not its text.",
+      "keywords": ["cree","court's","ritual","director","one","conducts","formal","proceedings","dead","what"]
+    },
+    {
+      "id": "what_eld_knows_1",
+      "source": "Eld on what the archive knows that the living don't",
+      "text": "The archive knows patterns that aren't visible in individual records. In twenty years: the court has received people from certain places in greater numbers at certain times of year. The court has received people whose names recur in ways that suggest family lineages passing through this territory over generations. The court has received people from outside this district whose presence here at the time of their death suggests something about the district's place in larger movements. The archive accumulates this. I'm the only reader.",
+      "keywords": ["archive","knows","patterns","aren't","visible","individual","records","twenty","years","court"]
+    },
+    {
+      "id": "what_eld_holds_1",
+      "source": "Eld on the name she can't find a record for",
+      "text": "A name in the archive from fourteen years ago — a person who passed through the court in the normal way, whose record I completed in the normal way. In fourteen years I've looked at that record several times because the name doesn't match anything else in the archive from before or after. The name appears nowhere in the settlement's other records that I've been able to check. The person passed through here, was recorded, and has no other presence in any record I can access. Either the records I haven't accessed have them, or they were a person who existed only in this court's record.",
+      "keywords": ["name","archive","fourteen","years","ago","person","passed","through","court","normal"]
+    },
+    {
+      "id": "twenty_years_1",
+      "source": "Eld on twenty years as the court's archivist",
+      "text": "In twenty years I've entered three thousand, eight hundred, and forty-one records. Three thousand, eight hundred, and forty-one people whose passage through this court I know in the way the archive knows them. Most of them: I know their name, their death date, what the proceeding said over them. A few: I know more, from family who came, from documents they left, from what they said if they could still speak when they arrived. The ones I know most: the ones whose family came back for them. The record becomes more than a record when someone returns to read it.",
+      "keywords": ["twenty","years","entered","three","thousand","eight","hundred","forty-one","records","three"]
+    }
+  ]
+}

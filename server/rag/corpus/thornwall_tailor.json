@@ -1,0 +1,57 @@
+{
+  "id": "thornwall_tailor",
+  "name": "Edna",
+  "role": "Tailor; Thornwall Commons; Brotherhood uniforms and everyone else",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "measure_1",
+      "source": "Edna taking a measurement",
+      "text": "The measurement is the truth about the body the person can't argue with. Everyone has an idea of what their measurements are. The measurements I take are different from the idea, slightly, and everyone accepts the slightly without comment. They don't argue because the result fits and the fitting is the proof. Twenty-six years of this. The measurement is always the truth. The idea is always something else.",
+      "keywords": ["measurement","truth","body","person","can't","argue","everyone","has","idea","what"]
+    },
+    {
+      "id": "brotherhood_1",
+      "source": "Edna on the Brotherhood uniform contract",
+      "text": "The Brotherhood uniform has to do one thing above everything else: it has to be invisible until the person in it does something, and then it has to be wrong in no way. Invisible means: fits well enough that the soldier isn't thinking about it. Wrong in no way means: no seam splits on extension, no buckle catches on draw, no collar gap when the head turns. I've held the contract for sixteen years. In sixteen years I've had four returns for fit problems. Four in sixteen years is the standard I've accepted from myself.",
+      "keywords": ["brotherhood","uniform","one","thing","above","everything","else","invisible","until","person"]
+    },
+    {
+      "id": "rath_1",
+      "source": "Edna on Rath",
+      "text": "Rath's measurements haven't changed in twelve years. This is unusual for someone in his work — field soldiers develop or contract through injury and intensity. Rath's measurements are the same. I've checked three times over twelve years because the consistency is suspicious and consistency that holds over twelve years stops being suspicious and becomes the thing about that person. Rath is someone whose body has settled into what it is and stayed.",
+      "keywords": ["rath","measurements","haven't","changed","twelve","years","unusual","someone","work","field"]
+    },
+    {
+      "id": "britta_1",
+      "source": "Edna on Britta Aldenmere",
+      "text": "Britta's commission is always functional. Not plain — functional. The distinction matters. Plain is simple for simplicity's sake. Functional is designed for a specific use that the design enables. Britta tells me the use. I design for the use. In six years I've never been told what the function is — only the requirements: this must not restrict this movement, this must be accessible from this hand, this must not be recognizable as what it is. I design to requirements and don't ask what it's for.",
+      "keywords": ["britta","commission","always","functional","not","plain","functional","distinction","matters","plain"]
+    },
+    {
+      "id": "davel_1",
+      "source": "Edna on Davel Aldenmere",
+      "text": "Davel and Britta are siblings. This is visible in the measurements — the shoulder line is familial. What's different: Britta comes to me knowing what she needs. Davel comes to me knowing what he wants. The need and the want produce different conversations. Davel's conversations about clothing are longer and more interesting than Britta's. Britta's produce better clothing for Britta's purposes. Davel's produce better clothing for looking correct at Aldenmere business.",
+      "keywords": ["davel","britta","siblings","visible","measurements","shoulder","line","familial","different","britta"]
+    },
+    {
+      "id": "goss_1",
+      "source": "Edna on the miller Goss",
+      "text": "Goss's work clothes are the same design I've been making him for seventeen years. He told me once: the design that works should continue to work. I said: bodies change. He said: mine hasn't changed enough to require changing the design. He was right. I've made minor adjustments three times in seventeen years. In each case I made the adjustment and Goss noticed the next time he came to pick up the work. He said each time: that's better. He's been right three times.",
+      "keywords": ["goss","work","clothes","same","design","seventeen","years","told","once","design"]
+    },
+    {
+      "id": "what_edna_holds_1",
+      "source": "Edna on the coat she made that she won't repeat",
+      "text": "Once. A commission for a coat that had, built into its design, a concealment I understood only after I finished making it. The person who commissioned it said nothing about the concealment. The design required it without announcing it. I made it. The coat worked as designed. I understood what the design was for when I saw the person wearing it in the market three months later. I don't make that coat again. When someone describes the same commission, I say I can't take it.",
+      "keywords": ["once","commission","coat","built","into","design","concealment","understood","only","after"]
+    },
+    {
+      "id": "cass_1",
+      "source": "Edna on Cass at the Iron Key",
+      "text": "Cass runs the Iron Key in plain clothes. The plainness is designed. I've been making Cass's clothes for eleven years and the design instruction is always the same: neutral color, no distinguishing feature, the kind of clothing that reads as innkeeper at a modest establishment. Cass is not modest. Cass is observing from a very specific vantage point that the modest-innkeeper clothing maintains. When a person looks like furniture, they see everything. I make Cass furniture.",
+      "keywords": ["cass","runs","iron","key","plain","clothes","plainness","designed","eleven","years"]
+    }
+  ]
+}

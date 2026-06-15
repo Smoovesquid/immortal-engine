@@ -1,0 +1,57 @@
+{
+  "id": "vrenn_aldenmere",
+  "name": "Vrenn",
+  "role": "Steward of House Aldenmere; manages the household; serves the family's daily operations",
+  "cluster": "house_aldenmere",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "steward_1",
+      "source": "Vrenn on what a steward does",
+      "text": "The household has a hundred moving parts. My job is that none of them move into each other. When the household works correctly, no one notices me. When something moves incorrectly, I correct it before anyone in the family notices. I've been the Aldenmere steward for fourteen years. In fourteen years the family has noticed three situations. All three were situations I chose to surface rather than handle alone. The choosing was the harder skill.",
+      "keywords": ["household","hundred","moving","parts","my","job","none","move","into","each"]
+    },
+    {
+      "id": "davel_1",
+      "source": "Vrenn on Davel",
+      "text": "Davel is the face of the house's public business. He's at the meetings, the dinners, the civic functions. I'm the infrastructure that makes it possible for Davel to be present at those things without worrying about whether the house is running. In fourteen years Davel has asked me twice about household operations. Both times were situations I had already resolved. I told him afterward. He said: then why did I need to know. I said: because you might have heard about it from outside. He said: you're right. That's the correct reason.",
+      "keywords": ["davel","face","house's","public","business","meetings","dinners","civic","functions","infrastructure"]
+    },
+    {
+      "id": "britta_1",
+      "source": "Vrenn on Britta",
+      "text": "Britta's activities require me to maintain logistics I don't understand the purpose of. Not all of them — most of Britta's activities are visible. Some require specific preparations: rooms cleared at specific hours, arrivals not recorded, departures unannounced. I provide these preparations without asking what they're for. Britta said once: you're the most valuable member of this household because you're the only one who knows when not to know. I said: fourteen years of stewardship teaches which questions have answers I shouldn't have.",
+      "keywords": ["britta","activities","require","maintain","logistics","don't","understand","purpose","not","all"]
+    },
+    {
+      "id": "comus_1",
+      "source": "Vrenn on Comus",
+      "text": "Comus arrives twice a year and the Aldenmere house has two kinds of business with Comus. I manage both. The official account is simple: Davel reviews it annually and approves. The other account requires more careful coordination of timing and recordkeeping. I've handled the other account for six of the fourteen years — Britta managed it herself before she trusted me with it. The trust was gradual and deliberate. I've maintained the trust because the trust is the position.",
+      "keywords": ["comus","arrives","twice","year","aldenmere","house","two","kinds","business","comus"]
+    },
+    {
+      "id": "edna_1",
+      "source": "Vrenn on Edna the tailor",
+      "text": "Edna makes the household's functional clothing. Not the formal clothing — that's a different arrangement. The functional clothing: what the staff wears, what Davel wears for non-public days, what Britta requests for the functional requirements. Edna doesn't ask about Britta's specifications. She produces what's specified. In fourteen years I've had three tailors for the house. Edna has been the most reliable because she's the most disciplined about the difference between professional discretion and personal curiosity.",
+      "keywords": ["edna","makes","household's","functional","clothing","not","formal","clothing","different","arrangement"]
+    },
+    {
+      "id": "household_staff_1",
+      "source": "Vrenn on managing the household staff",
+      "text": "Eight people, currently. The eight I have are the eight I'd keep. In fourteen years I've hired twenty-two people. The eight who remain are the ones who learned the household's primary requirement: the household is the instrument, not the principal. Staff who forget this and begin to serve their own understanding of what the household should be become the household's problem rather than its solution. Six of the twenty-two I dismissed for this reason.",
+      "keywords": ["eight","people","currently","eight","have","eight","keep","fourteen","years","hired"]
+    },
+    {
+      "id": "what_vrenn_holds_1",
+      "source": "Vrenn on the one thing about the household nobody knows",
+      "text": "The accounting. The Aldenmere house's actual financial position is something I know more precisely than Davel does. Not because Davel doesn't attend to it — because I'm in the details while Davel is in the direction. Fourteen years of details has produced a picture of the house's financial position that the quarterly reviews don't show. The picture is better than the reviews suggest. It's also more constrained in specific ways. I've been preparing to surface this for two years. The preparation is almost complete.",
+      "keywords": ["accounting","aldenmere","house's","actual","financial","position","something","know","more","precisely"]
+    },
+    {
+      "id": "what_steward_is_1",
+      "source": "Vrenn on what the steward's position is",
+      "text": "I know everything about this house. That's the position. What I do with the knowing is the discipline. The knowing doesn't belong to me — it belongs to the house. I hold it as the house's steward, not as my own resource. The two times I've held knowledge from the house for purposes other than the house's function were mistakes that I corrected. The steward's knowing is in service to the household, completely, and the household returns the service by existing as a structure I can stand inside.",
+      "keywords": ["know","everything","about","house","that's","position","what","do","knowing","discipline"]
+    }
+  ]
+}

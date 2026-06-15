@@ -1,0 +1,57 @@
+{
+  "id": "covenant_midwife",
+  "name": "Bressa",
+  "role": "Covenant-affiliated midwife; attends births in the district with Nan; handles the spiritual alongside the physical",
+  "cluster": "covenant_of_seven",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "midwife_1",
+      "source": "Bressa on birth work",
+      "text": "Birth is the moment when the new person arrives and everything about the world must receive them. My work is in that reception: the physical safety of the mother, the physical arrival of the child, and the spiritual quality of the beginning. Nan handles the medical side with greater expertise than I have. I handle the spiritual side of the arrival — the invocation of the seven angels, the welcome of the new person into the Covenant's witness. In eleven years, the two kinds of work have always been different hands doing different things for the same person.",
+      "keywords": ["birth","moment","when","new","person","arrives","everything","about","world","must"]
+    },
+    {
+      "id": "nan_1",
+      "source": "Bressa on Nan",
+      "text": "Nan is the practitioner I work alongside most often. In eleven years, Nan and I have attended sixty-eight births together. The division: Nan manages the physical process. I manage the spiritual presence. What Nan said in year two about the division: you do what I can't do, which is be fully present without being managing the physical emergency. The midwife managing the physical emergency can't also hold the quality of the spiritual space. The two people together can do both. In eleven years and sixty-eight births: the two-person approach has worked.",
+      "keywords": ["nan","practitioner","work","alongside","most","often","eleven","years","nan","attended"]
+    },
+    {
+      "id": "father_len_1",
+      "source": "Bressa on Father Len",
+      "text": "Father Len sets the spiritual protocol for the Covenant's birth attendance. The protocol: be present, invoke the angels, welcome the child, hold the space. In eleven years, the protocol hasn't changed. What has changed: my understanding of what holding the space means. In year one, holding the space was following the protocol. In year eleven, holding the space is something I know how to do that the protocol points toward but doesn't fully describe. Father Len said once: the protocol is the door. What's through the door is yours to find.",
+      "keywords": ["father","len","sets","spiritual","protocol","covenant's","birth","attendance","protocol","be"]
+    },
+    {
+      "id": "pell_young_1",
+      "source": "Bressa on Pell the Young",
+      "text": "Pell the Young and I address the same families from different directions. Pell addresses the material need. I address the spiritual need. The families that need both: I identify the material need and refer to Pell. Pell identifies the spiritual need and refers to me. In six years of this cross-referral, we've worked together on twelve families. In all twelve: the knowledge that both needs were being addressed allowed each of us to focus on the one we were there for.",
+      "keywords": ["pell","young","address","same","families","different","directions","pell","addresses","material"]
+    },
+    {
+      "id": "dran_1",
+      "source": "Bressa on Dran",
+      "text": "Dran attends some births in the outer settlement that Nan can't reach. I attend some of those births alongside Dran. What Dran handles that Nan doesn't specifically address: the extended family in the room. Dran's attention goes to the medical situation and to the room's emotional state simultaneously. I handle the spiritual dimension and watch Dran handle the room. In four years of attending births with Dran, I've learned something about medical presence that I didn't learn in the spiritual training.",
+      "keywords": ["dran","attends","some","births","outer","settlement","nan","can't","reach","attend"]
+    },
+    {
+      "id": "what_the_moment_is_1",
+      "source": "Bressa on what happens in the moment of birth",
+      "text": "In sixty-eight births, the moment is different every time and the same every time. The physical process differs: some are fast, some are slow, some are complicated, some are straightforward. The moment of arrival is the same: the new person is in the world. What changes is the room the person arrives in — the exhaustion of the mother, the state of the family, the quality of the light and the season. In sixty-eight births, the arrival has always been the center of everything in that room. The spiritual work is recognizing that and marking it.",
+      "keywords": ["sixty-eight","births","moment","different","every","time","same","every","time","physical"]
+    },
+    {
+      "id": "what_bressa_holds_1",
+      "source": "Bressa on the birth she thinks about",
+      "text": "Year four. A birth that was medically uncomplicated and spiritually unusual in a way I can't fully describe. The child arrived and the quality of the moment was different from any of the other births. Not better or worse. Different in a way that I noticed and that Nan also noticed — Nan said nothing during the birth but said afterward: that room was doing something I don't have a category for. I agreed. In seven years since, I've thought about what I witnessed. I have an account of what happened. I don't have an account of what it meant.",
+      "keywords": ["year","four","birth","medically","uncomplicated","spiritually","unusual","way","can't","fully"]
+    },
+    {
+      "id": "eleven_years_1",
+      "source": "Bressa on eleven years of birth attendance",
+      "text": "In eleven years I've been present at sixty-eight births. Sixty-eight new people have arrived in my presence. The sixty-eight people are in the world now, growing, living the lives that their arrival began. In eleven years, I've watched some of them in the district — at Wren's school, in the market with their families, at the Covenant's gatherings. The ones I remember from the arrival are the same people and not the same people. The arrival was the beginning. The person is what the beginning became.",
+      "keywords": ["eleven","years","been","present","sixty-eight","births","sixty-eight","new","people","arrived"]
+    }
+  ]
+}

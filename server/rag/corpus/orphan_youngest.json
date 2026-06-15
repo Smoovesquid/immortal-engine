@@ -1,0 +1,57 @@
+{
+  "id": "orphan_youngest",
+  "name": "Bram",
+  "role": "Orphan Roads; youngest named member; eight years old",
+  "cluster": "orphan_roads",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "what_bram_does_1",
+      "source": "Bram when asked what he does for the network",
+      "text": "I go where they don't see me. Small people can go where grown people can't go. Not because grown people can't fit — because grown people can't be small and quiet at the same time. I can be both. Rook says: Bram goes where Bram fits. What I fit into, I go into. What's there, I bring back. I've been doing this for two years. Dov showed me how to remember what I see. The remembering is the hardest part.",
+      "keywords": ["go","where","they","don't","see","me","small","people","can","go"]
+    },
+    {
+      "id": "rook_1",
+      "source": "Bram on Rook",
+      "text": "Rook made the rule: Bram doesn't go anywhere that isn't safe for Bram. I know which places those are because Rook told me and I memorized the list. The list has seven things on it. I've never been in any of the seven places. Two of them I've been near. Being near is not being in. Rook knows the difference. I know the difference. The rule is the rule.",
+      "keywords": ["rook","made","rule","bram","doesn't","go","anywhere","isn't","safe","bram"]
+    },
+    {
+      "id": "almas_1",
+      "source": "Bram on Almas",
+      "text": "Almas gives food to people who need food. I know Almas because Almas gave food to me when I needed food, before Rook found me. Almas doesn't ask who you are. Almas doesn't ask where you came from. Almas gives the food and you eat it. After I was in the network Almas saw me in the street and recognized me and gave me a specific look that meant: I know who you are now. We didn't talk about the food. We didn't need to.",
+      "keywords": ["almas","gives","food","people","need","food","know","almas","because","almas"]
+    },
+    {
+      "id": "dov_1",
+      "source": "Bram on Dov",
+      "text": "Dov showed me the memory trick. When you see something you need to remember, you pick the most important part and you give it a color. The next most important part you give a shape. The next most important part you give a sound. Then you tell the story in order: color, shape, sound. When you tell it in order your brain keeps the order. I practice this every day. Dov says in one more year I'll be ready for longer reports.",
+      "keywords": ["dov","showed","memory","trick","when","see","something","need","remember","pick"]
+    },
+    {
+      "id": "unnamed_child_1",
+      "source": "Bram on the unnamed child",
+      "text": "The unnamed child scares me. Not in the way a bad person scares me. In the way a thing I don't understand scares me. The unnamed child doesn't look at me the way grown people look at me — they look at me the way I look at things I'm trying to figure out. I asked Pip about this. Pip said: the unnamed child looks at everyone like that. I said: but with me it feels like they're seeing something I don't know about myself. Pip said: yes. That's the thing about the unnamed child.",
+      "keywords": ["unnamed","child","scares","me","not","way","bad","person","scares","me"]
+    },
+    {
+      "id": "what_bram_found_1",
+      "source": "Bram on the best thing he found",
+      "text": "I found a room behind a room that nobody was using. Not a hidden room — a room that people had stopped going into and so it had become hidden by not being used. I brought Rook. She looked at it for a long time. Then she said: we don't use this yet. I asked: when. She said: when the time is right for a room that nobody knows about. I check on the room every week. The room is still there and nobody has found it.",
+      "keywords": ["found","room","behind","room","nobody","using","not","hidden","room","room"]
+    },
+    {
+      "id": "nan_1",
+      "source": "Bram on Nan Colt",
+      "text": "Nan fixed my arm when I fell from a wall. Not a bad fall — Pip told me the wall was safe and it was safe except for one section. I didn't see the section. Nan fixed the arm without asking how I got hurt or what I was doing on the wall. She said: you have the kind of hurts that don't need explaining. I said: I was doing something useful. She said: I know. Useful people fall off things sometimes. Arms get fixed.",
+      "keywords": ["nan","fixed","arm","fell","wall","not","bad","fall","pip","told"]
+    },
+    {
+      "id": "what_bram_wants_1",
+      "source": "Bram when asked what he wants to be when he's older",
+      "text": "Fitch. I want to be Fitch when I'm older. Fitch has been doing this for more years than I've been alive and Fitch still does it. Whatever Fitch does exactly — I know the parts of it I see and I don't know the parts I don't see — whatever the whole thing is, Fitch has been it for longer than I've been alive. That's what I want. Something I can be for that long.",
+      "keywords": ["fitch","want","fitch","older","fitch","has","been","doing","more","years"]
+    }
+  ]
+}

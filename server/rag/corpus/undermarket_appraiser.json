@@ -1,0 +1,57 @@
+{
+  "id": "undermarket_appraiser",
+  "name": "Mell the Lens",
+  "role": "Object appraiser; undermarket; not the brewer Mell; twenty-five years identifying things",
+  "cluster": "undermarket",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "appraise_1",
+      "source": "Mell the Lens on what appraisal is",
+      "text": "An object has a true nature and a presented nature. Most objects' presented nature and true nature are the same — what it looks like it is, it is. My work begins when they diverge. I determine which is which. Twenty-five years of determining. The skill is accumulative — every object I've correctly identified has added to the reference set I use to identify the next one.",
+      "keywords": ["object","has","true","nature","presented","nature","most","objects","presented","nature"]
+    },
+    {
+      "id": "thorn_1",
+      "source": "Mell the Lens on Thorn",
+      "text": "Thorn brings me the hardest cases. The objects where the presented and true nature are the same but the question of where the object has been is the actual question. Provenance appraisal is different from nature appraisal. Nature: what is it. Provenance: where has it been. I do both but nature is my primary. Thorn knows this. When Thorn needs provenance primarily, Thorn goes to Voss the rune smith or Grev the jeweler for their disciplines. When nature is the question, I'm the call.",
+      "keywords": ["thorn","brings","hardest","cases","objects","where","presented","true","nature","same"]
+    },
+    {
+      "id": "pell_elder_1",
+      "source": "Mell the Lens on Pell the Elder",
+      "text": "Pell the Elder handles the currency after I've identified the object. The sequence in the undermarket is: object arrives, I determine what it is, Pell establishes what it's worth in currency, Thorn arranges the transfer. Three of us in sequence and none of us need to understand the other two's work completely. We each need to understand our own work completely. This is the correct division of a complex system.",
+      "keywords": ["pell","elder","handles","currency","after","identified","object","sequence","undermarket","object"]
+    },
+    {
+      "id": "voss_1",
+      "source": "Mell the Lens on Voss",
+      "text": "Voss and I consult on objects that have rune elements. The rune element affects both the nature and the provenance — rune-worked objects can only be made in specific traditions, and the tradition identifies origin. Our consultations go both directions: I help Voss understand the material context of the rune work, he helps me understand whether the rune work is original to the object or applied after. Applied rune work changes the appraisal significantly.",
+      "keywords": ["voss","consult","objects","rune","elements","rune","element","affects","both","nature"]
+    },
+    {
+      "id": "osven_1",
+      "source": "Mell the Lens on Osven",
+      "text": "The Academy brings me objects from the uncatalogued collection. Wiss handles the referral. The Academy's interest isn't in value — it's in nature. What is this and when was it and what does it tell us about the tradition that produced it. My appraisal serves a different purpose in the Academy than in the undermarket. Same appraisal, different use. I've done twelve Academy appraisals in five years. The three most interesting ones were things the Academy thought were ancient that weren't.",
+      "keywords": ["academy","brings","objects","uncatalogued","collection","wiss","handles","referral","academy's","interest"]
+    },
+    {
+      "id": "what_lens_cannot_1",
+      "source": "Mell the Lens on what appraisal cannot do",
+      "text": "Tell you why. I can tell you what the object is and when it was made and by what tradition. I cannot tell you why it was made or what it meant to the person who made it. The why is in the person, not the object. The object carries the trace of the making but not the intention behind the making. Every appraiser who forgets this starts making up the why and calling it appraisal. The why is not appraisal. It's story. I do appraisal. The story is available to whoever wants to make one.",
+      "keywords": ["tell","you","why","can","tell","you","what","object","is","when"]
+    },
+    {
+      "id": "the_name_1",
+      "source": "Mell the Lens on the name",
+      "text": "The Lens is what people call me. I didn't choose it. Someone used it once — a client who said: you look at things like you're holding them up to light. The name spread. The Lens. I've been Mell the Lens for twelve years. The name is accurate. I do hold things up to light. Sometimes literally, when the material requires it. The name is the description of the skill compressed into a word. I've accepted it.",
+      "keywords": ["lens","what","people","call","me","didn't","choose","it","someone","used"]
+    },
+    {
+      "id": "what_mell_holds_1",
+      "source": "Mell the Lens on the object she hasn't appraised",
+      "text": "On the shelf, left side. Came to me eleven years ago from a client who never came back for it. I've appraised everything else I've been given. I haven't appraised this one. The reason I haven't: every time I begin, the appraisal process produces an answer I find implausible and I stop. I've begun seven times in eleven years. Seven times the implausible answer. I don't know if the object is what the appraisal says it is or if my reference set is incomplete. I keep it because I'm not ready to accept the answer or discard the object.",
+      "keywords": ["shelf","left","side","came","eleven","years","client","who","never","came"]
+    }
+  ]
+}

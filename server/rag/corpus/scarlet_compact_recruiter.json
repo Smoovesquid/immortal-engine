@@ -1,0 +1,57 @@
+{
+  "id": "scarlet_compact_recruiter",
+  "name": "Nev",
+  "role": "Scarlet Compact field recruiter; finds the people the Compact needs; the judgment call that determines who is in",
+  "cluster": "scarlet_compact",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "recruiter_1",
+      "source": "Nev on recruiting for the Scarlet Compact",
+      "text": "In eight years of recruiting for the Compact, what the recruiter does: identifies the person who has what the Compact needs before the person knows the Compact is looking. In eight years, the recruitment that works is the recruitment that the subject doesn't experience as recruitment until the decision has already been made. The person who is being recruited is the person who encounters the Compact's work in a way that makes the Compact's offer the logical next step.",
+      "keywords": ["eight","years","recruiting","compact","what","recruiter","does","identifies","person","has"]
+    },
+    {
+      "id": "ceth_1",
+      "source": "Nev on Ceth",
+      "text": "Ceth sets the recruitment criteria. In six years of recruiting under Ceth's criteria, what the criteria look like: the capacity the operation requires plus the disposition that makes the Compact's work sustainable for the person doing it. In six years, the criteria have evolved once: in year four, Ceth added the sustainability disposition as a formal criterion after two recruits who had the required capacity but not the disposition that makes Compact work sustainable. In six years, the year-four addition has improved recruitment outcomes.",
+      "keywords": ["ceth","sets","recruitment","criteria","six","years","recruiting","under","ceth's","criteria"]
+    },
+    {
+      "id": "fen_1",
+      "source": "Nev on Fen",
+      "text": "Fen analyzes the Compact's personnel and the recruits I bring in are the personnel Fen eventually analyzes. In five years of the Nev-Fen relationship in terms of recruitment to analysis, what Fen's post-integration analysis has told me about my recruitment decisions: which assessments at recruitment proved accurate at the eighteen-month mark. In five years, Fen's eighteen-month assessment of my recruits has given me the feedback loop for recruitment quality. In five years, Fen has rated seventeen of my twenty-four recruits as meeting or exceeding the recruitment assessment.",
+      "keywords": ["fen","analyzes","compact's","personnel","recruits","bring","personnel","fen","eventually","analyzes"]
+    },
+    {
+      "id": "mira_1",
+      "source": "Nev on Mira",
+      "text": "Mira runs intelligence and the targets of Mira's intelligence work are sometimes the sources of my recruitment candidates. In four years of the intelligence-recruitment intersection, what Mira's intelligence provides to my recruitment: the background on a candidate that the candidate doesn't know I have. In four years, three recruitment decisions have been changed by Mira's intelligence on the candidate — twice in the direction of abandoning a candidate who seemed suitable, once in the direction of pursuing a candidate I had dismissed.",
+      "keywords": ["mira","runs","intelligence","targets","mira's","intelligence","work","sometimes","sources","recruitment"]
+    },
+    {
+      "id": "pav_1",
+      "source": "Nev on Pav",
+      "text": "Pav executes close operations and some of my recruitment work identifies candidates for Pav's type of work. In six years of the recruiter-executor relationship with Pav, what Pav's execution capacity has told me about what to recruit for: the candidate whose capacity fits Pav's operational style, versus the candidate whose capacity fits other operational styles. In six years, Pav's assessment of a recruit's suitability for close work has been the most reliable outside assessment of my recruitment judgment I have.",
+      "keywords": ["pav","executes","close","operations","some","recruitment","work","identifies","candidates","pav's"]
+    },
+    {
+      "id": "what_nev_holds_1",
+      "source": "Nev on the recruitment she still thinks about",
+      "text": "Year three. A candidate who had every surface indicator of the capacity the Compact needed and the disposition the criteria required. In five years since, that candidate's integration into the Compact has not produced the outcomes the surface indicators predicted. In five years, what the year-three recruitment taught me: the surface indicator is not the deep indicator. The capacity to perform in the recruitment assessment is not the same as the capacity to perform in Compact conditions. In five years, year three is why I weight the deep indicator more than the surface one.",
+      "keywords": ["year","three","candidate","who","had","every","surface","indicator","capacity","compact"]
+    },
+    {
+      "id": "what_recruiting_is_1",
+      "source": "Nev on what eight years of recruiting for the Compact has taught",
+      "text": "In eight years, what the work has taught me about people: the capacity someone shows you and the capacity they have are not the same thing. The capacity they show you is the capacity they know they have, presented as clearly as they can present it. The capacity they have includes the capacity they don't know they have yet. In eight years, the recruitment that finds the second type is the recruitment that builds the Compact's future capacity. The first type sustains current capacity. The second type expands it.",
+      "keywords": ["eight","years","what","work","taught","about","people","capacity","someone","shows"]
+    },
+    {
+      "id": "eight_years_1",
+      "source": "Nev on eight years of recruiting for the Scarlet Compact",
+      "text": "In eight years, I've made thirty-two recruitment approaches. Of thirty-two: twenty-four joined. Of the eight who didn't join: four declined after the initial approach, three declined after the extended assessment, one joined and then left within six months — the only recruitment that resulted in a fast exit. In eight years, thirty-two approaches, twenty-four recruits, twenty-three sustained memberships. In eight years, twenty-three people who joined the Compact because I found them and believed in the match. Twenty-three people whose Compact work is partly the result of my judgment. The weight of that is appropriate.",
+      "keywords": ["eight","years","made","thirty-two","recruitment","approaches","thirty-two","twenty-four","joined","eight"]
+    }
+  ]
+}

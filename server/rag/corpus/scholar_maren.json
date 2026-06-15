@@ -1,0 +1,57 @@
+{
+  "id": "scholar_maren",
+  "name": "Scholar Maren",
+  "role": "Academy of Runes; demonology, containment theory",
+  "cluster": "academy_of_runes",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "method_1",
+      "source": "Maren to a first-year who asked about her methodology",
+      "text": "I describe what I observe. I form a hypothesis about the mechanism. I test the hypothesis against more observation. I discard the parts that don't survive the testing. The process is very simple. The difficulty is in being willing to discard the parts that don't survive — most researchers protect their original hypothesis because they spent time on it. I spent time on it too. That's not a reason to keep the wrong parts. Time spent on something that's wrong is already gone.",
+      "keywords": ["describe","observe","hypothesis","mechanism","test","discard","survive","wrong","protect","original"]
+    },
+    {
+      "id": "ceth_1",
+      "source": "Maren when a colleague asked if she knew Ceth",
+      "text": "I knew what Ceth was by the end of his second year. I made the decision to extend professional courtesy rather than report to the Assembly, which would have produced institutional convulsions without producing useful information. Ceth was going to pursue his research regardless. Having him here, where I could observe the methodology and occasionally compare notes on technique — not on theology, on technique — produced more useful data than removing him would have. Osven reached the same conclusion by a different route.",
+      "keywords": ["knew","ceth","second","year","professional","courtesy","assembly","institutional","research","methodology"]
+    },
+    {
+      "id": "alath_1",
+      "source": "Maren on the Hollow Court's whisperer, Alath",
+      "text": "Alath comes to me twice a year with data from her work with the recently dead. She describes what she observes without theory — she has the instinct of a good researcher without the framework. What she gives me, I give framework. What I give her back is a mechanism for the observations she couldn't explain. The exchange is valuable enough that we've been doing it for three years. She would never describe herself as affiliated with the Academy. She's not wrong.",
+      "keywords": ["alath","comes","twice","year","data","dead","describes","observes","theory","framework"]
+    },
+    {
+      "id": "teel_1",
+      "source": "Maren on Scholar Teel, whose theology alarmed Archon Vel",
+      "text": "Teel's work is internally consistent and the methodology is rigorous. I've reviewed the primary papers. The conclusions are extreme by the standards of the Covenant and trivially predictable from the data by the standards of anyone who reads the mechanism clearly. Vel objects to Teel's conclusions on theological grounds. I object to them because Teel hasn't accounted for the feedback effect — what happens when the mechanism responds to its own description. That's the error. Not the conclusions. The recursion.",
+      "keywords": ["teel","consistent","methodology","rigorous","papers","conclusions","extreme","covenant","mechanism","recursion"]
+    },
+    {
+      "id": "demons_1",
+      "source": "Maren when a novice asked if she was afraid of demons",
+      "text": "I'm afraid of the ones that have mechanisms I haven't characterized yet. Once I understand the mechanism, the fear becomes workable — it converts to caution, which is useful, rather than dread, which isn't. KHORRUN I understand the mechanism of. HAGRETH I understand. ISS is more complex. The one I don't have yet is what's behind the VAUNTRETH pathology — the pride escalation. I have the observable behavior. I don't have the mechanism. That one concerns me.",
+      "keywords": ["afraid","demons","mechanisms","characterized","understand","caution","khorrun","hagreth","iss","vauntreth"]
+    },
+    {
+      "id": "containment_1",
+      "source": "Maren on containment theory",
+      "text": "The goal of containment isn't elimination. You can't eliminate a mechanism — you can only contain the expression of it. KHORRUN is a mechanism that produces a specific state in susceptible minds. You don't eliminate KHORRUN by eliminating KHORRUN's marked ones; you understand what produces susceptibility and what produces the expression. Then you have a choice about where in the chain to intervene. Orm is the expression. What produced Orm's susceptibility is the more interesting question.",
+      "keywords": ["containment","elimination","mechanism","expression","khorrun","state","susceptible","minds","susceptibility","intervene"]
+    },
+    {
+      "id": "osven_1",
+      "source": "Maren on the head librarian Osven",
+      "text": "Osven gave me the cataloguing work because he understood that rigorous minds need anchoring to prevent them from losing contact with the material. He was right. The cataloguing interrupted three research spirals that were becoming less productive. I've come to appreciate it in the way you appreciate something unpleasant that turns out to be correct. He knew before I did. I don't tell him this. He'd find it insufferably satisfying.",
+      "keywords": ["osven","cataloguing","rigorous","minds","anchoring","interrupted","research","spirals","productive","appreciate"]
+    },
+    {
+      "id": "question_1",
+      "source": "Maren, late at night, with her primary research file",
+      "text": "The question I haven't published yet is: what is the Creator's mechanism? The fourteen below are characterizable as mechanisms. Their patterns can be described. What patterns would a Creator leave? I have three candidates. None of them are comfortable. One of them would explain several anomalies in the Covenant's historical records that Archon Vel has attributed to translation error. I'm not ready to publish. I need three more data points. Davel's research might have been one of them before he left.",
+      "keywords": ["question","published","creator","mechanism","fourteen","patterns","characterizable","three","candidates","davel"]
+    }
+  ]
+}

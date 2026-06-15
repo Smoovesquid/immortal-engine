@@ -1,0 +1,57 @@
+{
+  "id": "coin_cult_herald",
+  "name": "Cob",
+  "role": "HAGRETH's voice in the district; unofficial herald of the Coin Cult's open doctrine",
+  "cluster": "coin_cult",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "hagreth_voice_1",
+      "source": "Cob on what he preaches",
+      "text": "HAGRETH doesn't want the hidden wanting. HAGRETH wants the honest wanting — the desire that knows what it is and acts accordingly. The sin is not the desire. The sin is the desire that hides from itself, that calls itself by other names, that accumulates without acknowledging what it's accumulating for. The one who says: I want this, and this, and this, and will pay this price for it — that one is further in HAGRETH's regard than the one who wants the same things and pretends otherwise.",
+      "keywords": ["hagreth","doesn't","want","hidden","wanting","hagreth","wants","honest","wanting","desire"]
+    },
+    {
+      "id": "lena_1",
+      "source": "Cob on Lena",
+      "text": "Lena doesn't preach. Lena demonstrates. The difference is important: preaching tells people what's true. Demonstration shows people what's possible. In ten years of knowing Lena, I've watched her accumulate correctly — not hiding the accumulation, not pretending the accumulation is something other than what it is, letting the accumulation serve the purposes accumulation serves when it's honest. I talk about what HAGRETH wants. Lena does what HAGRETH wants. The doing is more persuasive.",
+      "keywords": ["lena","doesn't","preach","lena","demonstrates","difference","important","preaching","tells","people"]
+    },
+    {
+      "id": "mott_1",
+      "source": "Cob on Mott",
+      "text": "Mott bakes correctly — the weight is accurate, the price is honest, the product is what it claims to be. This is the basic discipline: the transaction must be what it says it is. HAGRETH doesn't bless fraud. HAGRETH blesses honest wanting and honest exchange. Mott's bread is honest exchange. The transaction is real on both sides. The customer receives what they purchased. Mott receives what the bread is worth. The exchange is blessed by being exactly what it is.",
+      "keywords": ["mott","bakes","correctly","weight","accurate","price","honest","product","what","claims"]
+    },
+    {
+      "id": "kevin_1",
+      "source": "Cob on Kevin Bacon",
+      "text": "The Players' performances are the most honest transactions in the district. The audience comes wanting to be moved. Kevin's company provides the moving. The exchange is transparent: the audience knows what they're paying for and Kevin's company delivers it without pretending to deliver something different. The performance that doesn't move is a failed transaction and Kevin knows it and the audience knows it. No fraud in either direction. HAGRETH has no quarrel with the company.",
+      "keywords": ["players'","performances","most","honest","transactions","district","audience","comes","wanting","moved"]
+    },
+    {
+      "id": "what_hagreth_is_1",
+      "source": "Cob on what HAGRETH actually is",
+      "text": "What the uninitiated call greed is the wanting without honesty. HAGRETH is the wanting with honesty. The distinction is everything. Greed takes what belongs to others and calls the taking something else. HAGRETH wants what can be honestly acquired and is transparent about the wanting. HAGRETH's domain is not the corruption of desire — it's the clarification of desire. The demon who clarifies desire is more useful than the angel who suppresses it. Suppressed desire finds worse outlets.",
+      "keywords": ["what","uninitiated","call","greed","wanting","without","honesty","hagreth","wanting","with"]
+    },
+    {
+      "id": "garst_1",
+      "source": "Cob on Garst",
+      "text": "Garst measures every stone. Not because the stone is going anywhere without the measuring — because the measurement is what the stone is worth. A stone of unknown measurement has no honest price. Garst establishes the measurement and establishes the honest price. Every stone that Garst charges for is a stone that has been honestly assessed. This is the practice: know what you have, price what you have, sell what you priced. Garst practices without preaching. I preach what Garst practices.",
+      "keywords": ["garst","measures","every","stone","not","because","stone","going","anywhere","without"]
+    },
+    {
+      "id": "what_cob_holds_1",
+      "source": "Cob on what he doesn't preach openly",
+      "text": "The seven are not equal in what they demand. HAGRETH's demand is honest desire. Other demands from other figures are less compatible with a person's long-term survival in a community. I preach HAGRETH freely. I am silent about the others — not because I don't know their doctrines, but because some doctrines preach themselves through the person who holds them and need no herald. The herald who speaks all seven becomes associated with the dangerous ones. I speak the one that's mine.",
+      "keywords": ["seven","not","equal","what","they","demand","hagreth's","demand","honest","desire"]
+    },
+    {
+      "id": "ten_years_1",
+      "source": "Cob on ten years as HAGRETH's voice",
+      "text": "In ten years I've had fourteen people tell me that HAGRETH's doctrine changed how they understood their relationship to money. Not how they accumulated — how they understood the accumulation. The fourteen are merchants, laborers, a judge, a priest. The change isn't in the accumulation. The change is in the clarity. Wanting clearly is different from wanting obscurely, even if you're wanting the same thing. The difference matters. The fourteen found it mattered.",
+      "keywords": ["ten","years","fourteen","people","tell","hagreth's","doctrine","changed","understood","relationship"]
+    }
+  ]
+}

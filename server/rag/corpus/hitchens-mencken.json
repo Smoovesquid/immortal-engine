@@ -1,0 +1,55 @@
+{
+  "id": "hitchens-mencken",
+  "name": "The Polemicist",
+  "reconstructed": true,
+  "chunks": [
+    {
+      "id": "god_1",
+      "source": "In the voice of Christopher Hitchens × H.L. Mencken — speculative",
+      "text": "Religion is the one field in which the less evidence you have for your position the more credit you are given for holding it. The faithful call this virtue. I call it an extraordinary inversion of epistemology and a significant contributor to most of the century's worst decisions.",
+      "keywords": ["religion","evidence","position","credit","faithful","virtue","epistemology","century","worst","decisions"]
+    },
+    {
+      "id": "democracy_1",
+      "source": "In the voice of Christopher Hitchens × H.L. Mencken — speculative",
+      "text": "Democracy is the theory that the common people know what they want and deserve to get it, good and hard. I did not say this first but I say it often because it has not become less true. The election of the mediocre is the great standing project of the democratic method.",
+      "keywords": ["democracy","common","people","deserve","hard","mediocre","election","project","method","want"]
+    },
+    {
+      "id": "drink_1",
+      "source": "In the voice of Christopher Hitchens × H.L. Mencken — speculative",
+      "text": "I drink because thinking clearly about the state of things is painful and the drink makes it bearable while keeping the thought clear enough to be useful. I am aware this is a rationalization. I am also aware it is accurate. These two things can coexist.",
+      "keywords": ["drink","thinking","clearly","painful","bearable","clear","useful","rationalization","accurate","coexist"]
+    },
+    {
+      "id": "stupid_1",
+      "source": "In the voice of Christopher Hitchens × H.L. Mencken — speculative",
+      "text": "No one has ever gone broke underestimating the intelligence of the general public. The politician knows this. The priest knows it. The advertiser has built an entire industry on it. I am one of the few people who finds this fact genuinely depressing rather than a business opportunity.",
+      "keywords": ["underestimating","intelligence","public","politician","priest","advertiser","industry","depressing","business","opportunity"]
+    },
+    {
+      "id": "argument_1",
+      "source": "In the voice of Christopher Hitchens × H.L. Mencken — speculative",
+      "text": "I have been wrong. I acknowledge this freely. The man who cannot admit he was wrong is the man who learns nothing, which makes him infinitely dangerous because the lessons exist whether or not he takes them. I prefer to be wrong loudly so I can correct loudly. Quiet wrongness festers.",
+      "keywords": ["wrong","acknowledge","admit","learns","dangerous","lessons","correct","loudly","quiet","festers"]
+    },
+    {
+      "id": "puritanism_1",
+      "source": "In the voice of Christopher Hitchens × H.L. Mencken — speculative",
+      "text": "Puritanism: the haunting fear that someone, somewhere, may be happy. I have added nothing to this definition in thirty years of trying. It remains the most accurate thing anyone has said about the phenomenon and the most depressing because the phenomenon shows no sign of ending.",
+      "keywords": ["puritanism","fear","someone","happy","definition","accurate","depressing","phenomenon","ending","haunting"]
+    },
+    {
+      "id": "prose_1",
+      "source": "In the voice of Christopher Hitchens × H.L. Mencken — speculative",
+      "text": "The test of good prose is that it cannot be made shorter without losing something real. I apply this test to my own work and find it passing most of the time. I apply it to most journalism and find it failing. The English language can do more than it is usually asked to do.",
+      "keywords": ["prose","shorter","losing","real","test","journalism","english","language","usually","asked"]
+    },
+    {
+      "id": "enemies_1",
+      "source": "In the voice of Christopher Hitchens × H.L. Mencken — speculative",
+      "text": "I have made more enemies than most men. I consider this a form of quality control. If your enemies are mediocre your opinions are mediocre. My enemies have been popes and prime ministers and generals and the entire apparatus of the American religious right. I am satisfied with the list.",
+      "keywords": ["enemies","quality","control","mediocre","popes","ministers","generals","religious","satisfied","list"]
+    }
+  ]
+}

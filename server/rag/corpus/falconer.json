@@ -1,0 +1,57 @@
+{
+  "id": "falconer",
+  "name": "Vess",
+  "role": "Falconer; trains and flies hunting birds; serves the settlement's game needs and the wild territory's pest management",
+  "cluster": "wild_road",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "falconry_1",
+      "source": "Vess on falconry",
+      "text": "A falcon is not a tool. A falcon is a partnership with a being that chose the partnership and can unchoose it. In fifteen years of falconry, no bird I've trained stayed beyond what the training and the partnership produced. The birds that left: I didn't lose them. They went back to being what they are without me. The birds that stayed: they chose to remain in the relationship. The distinction matters because it determines how the training works.",
+      "keywords": ["falcon","not","tool","falcon","partnership","being","chose","partnership","can","unchoose"]
+    },
+    {
+      "id": "theen_1",
+      "source": "Vess on Theen",
+      "text": "Theen and I have an informal agreement: I fly the birds in the territories that Theen knows, and Theen tells me when the territories I'm planning to fly are in conditions that affect the birds. What the birds can't do well in certain conditions: hunt in high wind, fly effectively in certain fog states. What Theen knows about the territory's conditions that I wouldn't know without asking: enough that I ask before planning a fly.",
+      "keywords": ["theen","informal","agreement","fly","birds","territories","theen","knows","theen","tells"]
+    },
+    {
+      "id": "ness_1",
+      "source": "Vess on Ness",
+      "text": "Ness and I share territory in a complementary way: Ness observes the territory at ground level, I observe it from the birds' flight perspective. In four years of occasional exchange, the combined view has been useful twice: once when Ness described ground-level signs that I then flew a bird over to investigate from above, and once when a bird's behavior during a flight indicated something that Ness, familiar with the territory, could interpret. Two perspectives on the same territory produce something neither produces alone.",
+      "keywords": ["ness","share","territory","complementary","way","ness","observes","territory","ground","level"]
+    },
+    {
+      "id": "comus_1",
+      "source": "Vess on Comus",
+      "text": "Comus has purchased game from me for five years. What the trading family needs from the falconry: the high-value game that can't be reached efficiently by other hunting methods. The birds hunt in ways that ground methods can't replicate — the pursuit from above, the speed, the reach into terrain that foot hunters can't access. In five years, Comus's game purchases from me are approximately twenty percent of the haul. The remaining eighty: other hunters. My twenty percent is the specific game the birds can reach.",
+      "keywords": ["comus","purchased","game","five","years","what","trading","family","needs","falconry"]
+    },
+    {
+      "id": "gant_1",
+      "source": "Vess on Gant",
+      "text": "Gant provides the bird equipment leather — the jesses, the hoods, the perch fittings. What falconry leather requires: soft enough not to abrade the bird's leg, strong enough to hold under the bird's pull when it wants to fly. In six years of using Gant's work for the birds' equipment, the failure rate on the leather has been low enough that I've never lost a bird due to equipment failure. The leather that holds is the leather that keeps the bird in the partnership.",
+      "keywords": ["gant","provides","bird","equipment","leather","jesses","hoods","perch","fittings","what"]
+    },
+    {
+      "id": "orvane_1",
+      "source": "Vess on Orvane",
+      "text": "Orvane reads the territory's condition. The birds also read the territory's condition — their behavior during a flight is a reading of what they're flying through. In three years of occasional conversation with Orvane, I've found: what Orvane reads from the land and what the birds read from the air are sometimes the same reading in different language. On three occasions, I've described bird behavior from a flight and Orvane has said: that matches what the land was saying at the same time in that area.",
+      "keywords": ["orvane","reads","territory's","condition","birds","also","read","territory's","condition","their"]
+    },
+    {
+      "id": "what_vess_holds_1",
+      "source": "Vess on the bird she lost",
+      "text": "Year nine. The best bird I've trained in fifteen years. She went off a flight and didn't return. In six years since, no sighting of her. What I believe: she found a wild partnership she preferred, or she didn't survive the territory after the partnership ended. What I know: the training was complete. The partnership was voluntary. If she chose to leave, I did my work. The loss is the risk of the partnership. In fifteen years, one loss. In fifteen years, the one loss is the one I remember most clearly.",
+      "keywords": ["year","nine","best","bird","trained","fifteen","years","went","off","flight"]
+    },
+    {
+      "id": "fifteen_years_1",
+      "source": "Vess on fifteen years of falconry",
+      "text": "In fifteen years, I've trained eleven birds. Of eleven: nine stayed in partnership for the duration of their working lives. One left in year nine. One is with me now, in the second year of the partnership. In fifteen years, the birds have flown an estimated twelve thousand hours total. Twelve thousand hours of bird's-eye view of this territory and what lives in it. In fifteen years, what I know about this territory from the birds' flights is knowledge that no ground observer has.",
+      "keywords": ["fifteen","years","trained","eleven","birds","eleven","nine","stayed","partnership","duration"]
+    }
+  ]
+}

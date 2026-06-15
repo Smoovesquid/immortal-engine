@@ -1,0 +1,57 @@
+{
+  "id": "ila_wanderer",
+  "name": "Ila",
+  "role": "Wanderer from the Hallowed Reaches; traveling through",
+  "cluster": "wild_road",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "reaches_1",
+      "source": "Ila when asked where she came from",
+      "text": "The Hallowed Reaches. Not the coast — inland, which is different. The coast has the things the sailors know about. The inland has different things. I came from the inland and I'm going somewhere I haven't decided yet, which is a strange thing to be but it's what I am at the moment. I had a destination when I started. I reached it. The destination turned out to be the starting point for the next thing, which I haven't mapped yet.",
+      "keywords": ["hallowed","reaches","not","coast","inland","different","things","sailors","going","destination"]
+    },
+    {
+      "id": "theen_1",
+      "source": "Ila on the ranger Theen who guided her out of the borderlands",
+      "text": "Theen guided me out of the borderland between the Reaches and the settled lands. She asked why I was asking about trees, and I told her honestly — I ask about things I see because asking is how I understand them and I was somewhere I didn't understand. She seemed to find this acceptable. She guided me for two days without asking anything further. When we reached the settled road she pointed in a direction and said: this way is Thornwall, that way is the harbor. Then she went back into the forest.",
+      "keywords": ["theen","guided","borderland","reaches","settled","lands","trees","asking","understand","thornwall"]
+    },
+    {
+      "id": "trees_1",
+      "source": "Ila on why she asks about trees",
+      "text": "Where I come from, trees are information. The species tells you the soil. The health tells you the water. The age tells you what was there before the tree. A forest is a record of everything that's happened to a place, if you know how to read it. I learned to read it because I needed to navigate and I had no maps. Now I'm in a place with maps. I still read the trees. Old habits and also the trees are still information.",
+      "keywords": ["trees","information","species","soil","health","water","age","forest","record","read"]
+    },
+    {
+      "id": "reached_1",
+      "source": "Ila on what she came to the settled lands to find",
+      "text": "I came to find someone who isn't here. I'm certain now — the records don't match and the face I was looking for isn't in this settlement or the ones near it. What I've found instead is that this settlement is interesting enough to stay in for a while. Not forever. Long enough to learn something that isn't related to what I came for. Useful things happen when you stay somewhere long enough to see it on a third day instead of a second day.",
+      "keywords": ["came","find","someone","isn't","certain","records","match","face","settlement","interesting"]
+    },
+    {
+      "id": "forest_1",
+      "source": "Ila in conversation with Foss the druid",
+      "text": "Foss speaks to the forest in a way I recognize but can't do. What I do is listen to the forest in the way you listen to someone speaking a language you can't speak but have studied. I understand more than I can respond to. Foss translates the parts I can't hear, and I translate the historical record, which Foss can hear but doesn't always know how to date. We've had three conversations and each one has produced more information than I expected.",
+      "keywords": ["foss","speaks","forest","recognize","listen","language","studied","understand","respond","translates"]
+    },
+    {
+      "id": "hallowed_2",
+      "source": "Ila when someone from the harbor mentioned the Hallowed Reaches",
+      "text": "The coast is a different place than the inland. I know what the sailors who come back wrong have seen because I've seen the edge of it from the other side. The coast presses inward from one direction. The inland presses outward from another. They're different pressures from the same source. The sailors who come back changed have seen one end of it. I came from the other end of it. None of us have seen the middle.",
+      "keywords": ["coast","different","inland","sailors","back","wrong","seen","edge","inward","outward"]
+    },
+    {
+      "id": "mapping_1",
+      "source": "Ila when Pell the cartographer asked about the inland Reaches",
+      "text": "I'll describe what I can describe accurately and tell you where my accuracy ends. Beyond my accuracy you'll have to mark it as unknown. Most maps of the Reaches mark too much as known. What I navigated was the known, and at the edge of the known there's a boundary that I found by walking toward it and walking back. Pell was very interested in the exact location of the boundary. I was interested in describing it correctly. We spent a productive afternoon.",
+      "keywords": ["describe","accurately","accuracy","ends","unknown","maps","reaches","mark","known","boundary"]
+    },
+    {
+      "id": "next_1",
+      "source": "Ila when asked where she was going",
+      "text": "Not sure yet. The criteria for the next destination are: somewhere I haven't been, where there's something I don't know how to read, and where the something I don't know how to read is interesting rather than threatening. The Reaches satisfied the third criterion better than I'd planned. The next one I'd like the interesting to come with more of the non-threatening. I'll know the destination when I learn what's in the direction I haven't looked yet.",
+      "keywords": ["not","sure","criteria","destination","haven't","been","something","don't","know","read"]
+    }
+  ]
+}

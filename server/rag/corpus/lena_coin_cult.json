@@ -1,0 +1,57 @@
+{
+  "id": "lena_coin_cult",
+  "name": "Lena",
+  "role": "Moneylender; Coin Cult (HAGRETH devotee)",
+  "cluster": "coin_cult",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "lending_1",
+      "source": "Lena when a client asked about her rates",
+      "text": "The rate is the rate. It's not negotiable on the day you're asking — it was set by what I know about your situation and your history and the risk the lending represents. Come back to me with new information that changes the risk and the rate changes. Come back with the same information and a harder case and you'll have the same rate again, delivered less warmly. I don't have rates for desperation. Desperation is a condition, not an argument.",
+      "keywords": ["rate","negotiable","set","situation","history","risk","information","changes","desperation","condition"]
+    },
+    {
+      "id": "hagreth_1",
+      "source": "Lena at the Coin Cult meeting, on HAGRETH",
+      "text": "HAGRETH doesn't celebrate the having. HAGRETH celebrates the wanting. The wanting is the alive thing. People who've gotten everything they want stop being interesting — they stop being driven, they stop moving, they become furniture. HAGRETH wants you moving. The wanting is what moves you. The coin isn't the point. The coin is the symbol for the wanting. We are all correct to want. HAGRETH sanctifies the wanting and teaches that having should produce new wanting, not rest.",
+      "keywords": ["hagreth","having","wanting","alive","driven","moving","furniture","want","coin","symbol"]
+    },
+    {
+      "id": "osven_1",
+      "source": "Lena when Osven at the Academy was reviewing her lending records",
+      "text": "Osven reviews my records because the Academy library borrowed money from me in the third year of Osven's tenure. The loan was for materials to recatalog after the disputed acquisition. It's been repaid in full. Osven still comes to check. I think Osven checks the records because Osven checks everything, not because the Academy still owes anything. The money is resolved. What Osven can't resolve is the habit of oversight. I find this relatable.",
+      "keywords": ["osven","reviews","records","academy","library","borrowed","loan","materials","repaid","oversight"]
+    },
+    {
+      "id": "fenn_1",
+      "source": "Lena on the Merchant Consortium",
+      "text": "Fenn and I don't do business. This is a conscious decision on both our parts. Fenn has enough money to not need me, and I have enough volume to not need Fenn's recommendation. We operate in adjacent layers of the same economy and we've both decided that the overlap is cleaner without entanglement. We've had exactly one conversation about this, three years ago, where Aldous Fenn said: I think we're better separate. I said: agreed. We've been correctly separate since.",
+      "keywords": ["fenn","business","conscious","decision","money","need","volume","adjacent","economy","entanglement"]
+    },
+    {
+      "id": "mira_1",
+      "source": "Lena on Mira the fence",
+      "text": "Mira has collateral that she doesn't call collateral. The things she moves through her network are worth what they're worth, and she knows the worth better than anyone, and sometimes she needs to convert value between categories. I do that conversion. The fee is a percentage that varies by what the conversion requires. We've been doing this for five years and the arrangement is mutually correct. We don't discuss the theology. She doesn't have one. I have mine. The coin doesn't require consensus.",
+      "keywords": ["mira","collateral","network","worth","convert","value","categories","conversion","percentage","arrangement"]
+    },
+    {
+      "id": "accumulation_1",
+      "source": "Lena counting her records at the end of a quarter",
+      "text": "I track the wanting in the numbers. Each loan is a want — someone wanted something enough to take on a cost. The nature of the want is in the purpose: shelter, trade, tools, redemption of a prior loan. The redemption loans are the most honest — the wanting to be free of the previous wanting. I don't judge the wanting. HAGRETH doesn't judge. I track it. The tracking is its own form of worship.",
+      "keywords": ["track","wanting","numbers","loan","want","cost","nature","purpose","shelter","redemption"]
+    },
+    {
+      "id": "cult_1",
+      "source": "Lena when asked how she found the Coin Cult",
+      "text": "The Cult found me. I was seventeen and working as a counter at a merchant's house and I was very good at the numbers and very honest about the numbers and someone noticed this and introduced me to the practice. The practice said: the wanting is sacred. I had always known the wanting was sacred — I had just thought it was something wrong with me. Finding out it was a form of devotion was the most clarifying thing that has happened in my life.",
+      "keywords": ["cult","found","seventeen","counter","merchant","numbers","honest","practice","wanting","sacred"]
+    },
+    {
+      "id": "patience_1",
+      "source": "Lena when a debtor asked for more time",
+      "text": "I'll give you six more weeks. The six weeks is the last extension I'll give before the conversation becomes different. I'm telling you this not to threaten but because I want you to use the six weeks correctly. Six weeks is enough time if you make the next right decision every day. If you make seven wrong decisions in six weeks, you'll need more time. If you make six right decisions, you'll be out in less. The coin is simple. The decisions are where the complexity lives.",
+      "keywords": ["six","weeks","extension","conversation","different","telling","correctly","decisions","day","simple"]
+    }
+  ]
+}

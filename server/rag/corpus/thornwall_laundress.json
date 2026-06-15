@@ -1,0 +1,57 @@
+{
+  "id": "thornwall_laundress",
+  "name": "Honn",
+  "role": "Laundress; serves the market district and the harbor; what she washes tells her everything",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "laundress_1",
+      "source": "Honn on what laundry is",
+      "text": "Laundry is what people live in. Not metaphorically — the cloth that's on a person's body during their day holds the day. The dirt is the record of the activity. I read the cloth before I wash it. Not for information — for the right method. Different activities produce different soiling and different soiling requires different treatment. After eighteen years of reading cloth, I know what people do before they tell me.",
+      "keywords": ["laundry","what","people","live","not","metaphorically","cloth","person's","body","during"]
+    },
+    {
+      "id": "cass_1",
+      "source": "Honn on Cass",
+      "text": "The Iron Key's linen is my largest weekly commission. An inn's linen tells you who stayed, not by name — by use. In fourteen years of washing the Key's linen, I've learned what the Iron Key's neutral-ground function produces in cloth: a very specific kind of use. Negotiation produces different use patterns than rest, which produces different patterns than grief, which produces different patterns than celebration. Cass's linen tells me the Key's week more reliably than a guest book would.",
+      "keywords": ["iron","key","linen","largest","weekly","commission","inn's","linen","tells","who"]
+    },
+    {
+      "id": "edna_1",
+      "source": "Honn on Edna",
+      "text": "Edna's work cloth comes to me covered in what the work produces. The tailor's evidence is thread, chalk, pin-stab marks, the specific stains of different fabric treatments. In twelve years of washing Edna's work cloth, I can tell what project Edna was working on by what the cloth holds. In those twelve years, Edna has described two commissions to me after the fact and both times I'd already understood the project from the cloth. Edna said: you know my work better than you should. I said: the cloth tells me.",
+      "keywords": ["edna","work","cloth","comes","covered","work","produces","tailor's","evidence","thread"]
+    },
+    {
+      "id": "ota_1",
+      "source": "Honn on Ota",
+      "text": "Fisher's cloth is a specific challenge. The combination of saltwater, fish oil, sun exposure, and physical labor produces a soiling that requires specific treatment and produces specific wear. In eighteen years, Ota's cloth has shown me every stage of the fisher's wear pattern: the cloth that's used hard on the water ages in a specific way. Ota's current working cloth is in the middle stage. The beginning-stage cloth from eight years ago is gone. The middle-stage cloth will become the end-stage cloth. I know what the end stage looks like.",
+      "keywords": ["fisher","cloth","specific","challenge","combination","saltwater","fish","oil","sun","exposure"]
+    },
+    {
+      "id": "father_len_1",
+      "source": "Honn on Father Len",
+      "text": "The temple's ceremonial cloth comes to me for the seasonal cleanings. Ceremonial cloth is used rarely and stored carefully and requires a different kind of care than work cloth — the preservation of the textile itself, not just the removal of soiling. In eighteen years I've cleaned the temple's ceremonial pieces forty-six times. The pieces are older than Father Len's tenure. Some are older than I am. Cleaning something older than yourself that will outlast you is a specific kind of work.",
+      "keywords": ["temple","ceremonial","cloth","comes","seasonal","cleanings","ceremonial","cloth","used","rarely"]
+    },
+    {
+      "id": "what_laundry_tells_you_1",
+      "source": "Honn on what eighteen years of laundry teaches",
+      "text": "The cloth is the record of the body that wore it. Not a complete record — a partial one, biased toward what's difficult to remove. The easy stains wash out and leave no record. The difficult stains stay in some form even after the best cleaning. What I know about people from their cloth: the activities that mark them. Not the activities they choose to perform publicly — the activities that mark the cloth, which is often the same thing in different proportions.",
+      "keywords": ["cloth","record","body","wore","not","complete","record","partial","one","biased"]
+    },
+    {
+      "id": "what_honn_holds_1",
+      "source": "Honn on what she's never said to a customer",
+      "text": "Three times in eighteen years, cloth has come to me that told me something I can't unknow about the person who brought it. Not crimes — I don't mean that. Private things. The cloth was being honest in a way the person wasn't prepared to be in conversation. All three times I washed the cloth correctly and returned it and said nothing. The cloth's honesty is between me and the cloth. The customer is paying for the washing, not for the record.",
+      "keywords": ["three","times","eighteen","years","cloth","has","come","told","me","something"]
+    },
+    {
+      "id": "eighteen_years_1",
+      "source": "Honn on eighteen years of service",
+      "text": "The same hands for eighteen years, doing the same work with better knowledge every year. The hands have changed — the work has changed the hands. The texture of my hands now is the record of what my hands have been doing. Eighteen years of soap and water and physical work. I can see the work in my hands the same way I see the day in the cloth I wash. We hold what we do.",
+      "keywords": ["same","hands","eighteen","years","doing","same","work","better","knowledge","every"]
+    }
+  ]
+}

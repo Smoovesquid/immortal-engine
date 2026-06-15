@@ -1,0 +1,57 @@
+{
+  "id": "coin_cult_exit",
+  "name": "Pek",
+  "role": "Former Coin Cult debt collector who tried to leave; the cult has long memory for its own",
+  "cluster": "coin_cult",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "exit_1",
+      "source": "Pek on trying to leave the Coin Cult",
+      "text": "In four years of attempting to exit the Coin Cult, what I've learned about what the cult considers an exit: the cult does not have a clean exit. The cult has a suspension of active duty and a continued relationship with the cult's interests. In four years, what I thought I was doing when I tried to leave — cutting the relationship — and what actually happened — the relationship changed form but didn't end. In four years, the distinction between inside and outside the cult has become less clear than I thought it was when I tried to make it.",
+      "keywords": ["four","years","attempting","exit","coin","cult","what","learned","about","what"]
+    },
+    {
+      "id": "grav_1",
+      "source": "Pek on Grav",
+      "text": "Grav manages the accounts and I was a debt collector for Grav's accounts for seven years before I tried to leave. In four years of post-collection relationship with Grav, what Grav's position has been: the relationship is ongoing. Grav doesn't acknowledge that I left. In four years, Grav treats the exit as a change in my function, not as a change in my status. In four years, I've stopped arguing about whether I've left. In four years, the argument has been less productive than accepting what the relationship actually is.",
+      "keywords": ["grav","manages","accounts","debt","collector","grav's","accounts","seven","years","before"]
+    },
+    {
+      "id": "jeck_1",
+      "source": "Pek on Jeck",
+      "text": "Jeck is the current enforcer and the person who made clear to me that the exit was not what I thought it was. In four years of the Jeck-Pek relationship post-exit, what Jeck's position has been: you are still relevant to the cult's interests and the cult's interests are still relevant to you. In four years, Jeck has been professional about this. Not threatening — professional. The professionalism has been more effective than a threat would have been. In four years, I understand what Jeck represents and I work within it.",
+      "keywords": ["jeck","current","enforcer","person","made","clear","exit","not","what","thought"]
+    },
+    {
+      "id": "skel_1",
+      "source": "Pek on Skel",
+      "text": "Skel tracks debt in the district and works adjacent to the cult's interests without being in the cult. In three years of knowing Skel's function from the post-exit position, what Skel represents: the adjacent function that has a working relationship with the cult without the membership relationship. In three years, what I've considered about the Skel model: whether the function I perform now could be formalized as the Skel model — a working relationship without the membership implications. In three years, I haven't asked. I'm not sure the answer is yes.",
+      "keywords": ["skel","tracks","debt","district","works","adjacent","cult's","interests","without","being"]
+    },
+    {
+      "id": "lena_1",
+      "source": "Pek on Lena",
+      "text": "Lena was the person who brought me into the cult through the credit door eleven years ago. In eleven years of the cult relationship, Lena's origination of my membership is the beginning of the chain that led to seven years of collection work and four years of attempted exit. In eleven years, what Lena's recruitment produced in my life: a significant period of work I wouldn't have chosen outside the cult's structure, and a relationship with the cult I can't fully separate from. In eleven years, I don't hold it against Lena. The choice was mine.",
+      "keywords": ["lena","person","brought","cult","through","credit","door","eleven","years","ago"]
+    },
+    {
+      "id": "what_pek_holds_1",
+      "source": "Pek on what seven years of collection and four years of exit have taught",
+      "text": "In eleven years inside the cult's orbit, what I've learned that the person looking at the Coin Cult from the outside doesn't know: the cult's financial relationships are designed to be permanent. Not by malice — by structure. The debt is repaid but the relationship the debt created doesn't end when the debt ends. The relationship is the point. The debt was the door. In eleven years, I'm proof that the door, once entered, is a door to a relationship rather than to a room you can leave.",
+      "keywords": ["eleven","years","inside","cult's","orbit","what","learned","person","looking","coin"]
+    },
+    {
+      "id": "what_pek_wont_do_1",
+      "source": "Pek on what four years of exit have cost",
+      "text": "In four years, the attempted exit has cost me: the income from the collection function, the cult's network of assistance, and the clarity about my situation that the active membership provided. In four years, the exit has given me: the distance from the collection work that I needed, and the understanding of what the cult actually is that active membership obscures. In four years, the accounting of the exit: the cost and the benefit are real on both sides. I don't regret trying to leave. I regret not understanding what leaving meant before I tried.",
+      "keywords": ["four","years","attempted","exit","cost","income","collection","function","cult's","network"]
+    },
+    {
+      "id": "four_years_1",
+      "source": "Pek on four years of attempted exit from the Coin Cult",
+      "text": "In four years, what the attempted exit has taught me about the cult's structure: the cult is designed to make exit cost more than membership. The active member has the cult's network, income, and protection. The person who tries to exit has the cult's continued interest in their behavior without the network, income, or protection. In four years, the design is not punitive. It's structural. The cult's ongoing interest in my behavior is the same interest it has in any former member's behavior. In four years, I'm not special in this. I'm an instance of a pattern.",
+      "keywords": ["four","years","what","attempted","exit","taught","cult's","structure","cult","designed"]
+    }
+  ]
+}

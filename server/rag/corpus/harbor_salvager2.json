@@ -1,0 +1,57 @@
+{
+  "id": "harbor_salvager2",
+  "name": "Brinn",
+  "role": "Tonn's salvage partner; the one who does the underwater work",
+  "cluster": "harbor_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "diver_1",
+      "source": "Brinn on underwater salvage work",
+      "text": "Tonn plans and manages the salvage. I go in the water. The division has been the same for nine years: Tonn knows what needs to come up and how to get it to the surface once it's moving. I know how to move in the water and how to attach the lines to what Tonn wants. The work is sequential: Tonn decides, I execute. The execution requires Tonn's planning. The planning requires my execution. Neither of us does the other's part.",
+      "keywords": ["tonn","plans","manages","salvage","go","water","division","been","same","nine"]
+    },
+    {
+      "id": "tonn_1",
+      "source": "Brinn on Tonn",
+      "text": "Tonn was the one who taught me the salvage work. I came to the harbor nine years ago with the diving skill and without the salvage knowledge. The diving skill is what got me hired. The salvage knowledge is what Tonn has spent nine years giving me. In nine years, Tonn has never held back what I needed to know to do my part better. The sharing is what makes the work function. What I know now that I didn't know nine years ago: the salvage knowledge that Tonn gave me.",
+      "keywords": ["tonn","one","taught","salvage","work","came","harbor","nine","years","diving"]
+    },
+    {
+      "id": "rulf_1",
+      "source": "Brinn on Rulf",
+      "text": "Rulf coordinates our access to the dock for salvage operations. When something goes in the water at the dock, Rulf holds the dock traffic until we've had a chance to assess. In nine years, Rulf has held traffic for us eleven times. Eleven times when the alternative was losing what was in the water because of dock traffic disturbance. In all eleven cases: we recovered what was there. Rulf's hold made the recovery possible.",
+      "keywords": ["rulf","coordinates","access","dock","salvage","operations","something","goes","water","dock"]
+    },
+    {
+      "id": "ota_1",
+      "source": "Brinn on Ota",
+      "text": "Ota knows the harbor's floor the way I know the harbor's floor: from having been on it repeatedly. The difference: Ota knows the floor through what the fishing produces from it. I know it through having landed on it and moved along it. We've compared notes twice about the harbor's floor geography — the ridges, the soft spots, the areas where current deposits. Both times: the floor I know from diving and the floor Ota knows from fishing are the same floor described from different positions.",
+      "keywords": ["ota","knows","harbor","floor","way","know","harbor","floor","from","having"]
+    },
+    {
+      "id": "gid_1",
+      "source": "Brinn on Gid",
+      "text": "Gid and I have worked together on two channel incidents — times when the channel approach went wrong and the recovery of cargo or equipment required both the pilot's knowledge and the diver's access. Gid knows where in the channel things should be. I can reach them where they are. In both incidents: Gid told me where to look, I went and found what was there, and we recovered what was recoverable. Two incidents, two recoveries. The pilot's knowledge of the channel and the diver's access to the channel are complementary.",
+      "keywords": ["gid","worked","together","two","channel","incidents","times","channel","approach","went"]
+    },
+    {
+      "id": "what_underwater_is_1",
+      "source": "Brinn on what the harbor is underwater",
+      "text": "The harbor above water is organized for people. The harbor below water is organized by what the water does: the current patterns, the sediment, the way objects settle and shift. In nine years of underwater salvage, I've built a three-dimensional map of the harbor in my memory — not what's on the floor, but what the water does in each section. The water's behavior tells me where what I'm looking for is likely to be. The map is never complete because the water never stops changing.",
+      "keywords": ["harbor","above","water","organized","people","harbor","below","water","organized","by"]
+    },
+    {
+      "id": "what_brinn_holds_1",
+      "source": "Brinn on what she found underwater that she didn't bring up",
+      "text": "Year six. A recovery job where I reached the target cargo, and while I was there I found something else — something that had been on the harbor floor longer than the cargo I was sent for. I recognized it. I don't know how I recognized it: I had no prior knowledge of what I was looking at. But I knew what it was. I brought up the cargo I was sent for. I didn't bring up what I recognized. I told Tonn what I'd found. Tonn said: that's not our job. I agreed. It's still on the floor.",
+      "keywords": ["year","six","recovery","job","reached","target","cargo","while","there","found"]
+    },
+    {
+      "id": "nine_years_1",
+      "source": "Brinn on nine years of salvage diving",
+      "text": "Nine years of going into water that doesn't belong to me and coming back with what was lost. The water doesn't resist and doesn't cooperate. The water does what water does. What changes between year one and year nine: my knowledge of what water does, specifically in this harbor, so that the water's behavior is predictable enough for the work. The water hasn't changed. My knowledge of it has. In nine years I've gone from swimming in the harbor to swimming in my knowledge of the harbor.",
+      "keywords": ["nine","years","going","water","doesn't","belong","coming","back","what","was"]
+    }
+  ]
+}

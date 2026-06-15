@@ -1,0 +1,57 @@
+{
+  "id": "gravedigger",
+  "name": "Veth",
+  "role": "Gravedigger for the district; digs every grave; the last work done for anyone before the earth",
+  "cluster": "covenant_of_seven",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "graves_1",
+      "source": "Veth on gravedigging",
+      "text": "Every grave is a specific depth in a specific place for a specific person. The depth is required by convention and hygiene. The place is determined by the family or the Covenant if there's no family. The person — the specific person — is the reason the dimensions matter. In twenty-six years of digging graves, the dimensions are the same. The specific person for whom the dimensions are dug changes every time.",
+      "keywords": ["every","grave","specific","depth","specific","place","specific","person","depth","required"]
+    },
+    {
+      "id": "father_len_1",
+      "source": "Veth on Father Len",
+      "text": "Father Len is who I receive my orders from for Covenant burials. In twenty-six years, Father Len has given me orders for three hundred and forty-two Covenant burials. Each order: the date, the location, the dimensions. In twenty-six years, I've never received an incorrect order from Father Len. Three hundred and forty-two orders and not one that was wrong. The order is Father Len's first act toward the dead. My work is the second act. The burial is the third.",
+      "keywords": ["father","len","receive","orders","from","covenant","burials","twenty-six","years","father"]
+    },
+    {
+      "id": "cree_1",
+      "source": "Veth on Cree",
+      "text": "Cree conducts the burial rites. I dig the grave. The work is sequential: my work completes before Cree's work begins. In twenty-six years of working with the Hollow Court's ritual practitioners, Cree is the one whose timing I trust most. When Cree says the burial will be at a specific hour, the burial is at that hour. What this means for my work: I can plan the grave completion to the hour before the burial. Not the day before, not the morning of — the hour before.",
+      "keywords": ["cree","conducts","burial","rites","dig","grave","work","sequential","work","completes"]
+    },
+    {
+      "id": "eld_1",
+      "source": "Veth on Eld",
+      "text": "Eld keeps the Hollow Court's death records. I keep my own records: the location of every grave I've dug. In twenty-six years, the two records complement each other: Eld has who was buried and when. I have where. The where matters when a family comes back after time has passed — they need the location, not just the record that the burial happened. In twenty-six years, I've been asked for a location forty-three times by families who came back. All forty-three: the location was in my records.",
+      "keywords": ["eld","keeps","hollow","court's","death","records","keep","own","records","location"]
+    },
+    {
+      "id": "nan_1",
+      "source": "Veth on Nan",
+      "text": "Nan brings people into the world. I prepare the place for those who have left it. In twenty-six years of working in the same district as Nan, we occasionally work for the same family in the same year — once a birth and once a death. The coincidence is expected at the statistical level. What's unexpected: the specific families where both happen. In twenty-six years I've worked for seven families in both capacities. Each time: the beginning and the end are not separated by the distance I usually feel between my work and Nan's work.",
+      "keywords": ["nan","brings","people","into","world","prepare","place","those","who","have"]
+    },
+    {
+      "id": "what_the_grave_is_1",
+      "source": "Veth on what a grave is",
+      "text": "A grave is a specific location that holds a specific person for as long as anyone knows it's there. The knowing is what makes it a grave rather than a hole. In twenty-six years, some of the graves I've dug are no longer known — the people who knew them have died too, the markers have been lost, the location has been absorbed by time. The grave was there. The specific location was there. When no one knows it's there, it's still there. The knowledge was the grave's surface. The ground is the grave's body.",
+      "keywords": ["grave","specific","location","holds","specific","person","as","long","anyone","knows"]
+    },
+    {
+      "id": "what_veth_holds_1",
+      "source": "Veth on what he thinks about while digging",
+      "text": "In twenty-six years, the thinking that happens during digging is its own thing. I dig and I think. What I think about while digging is not the person — that feels wrong, too intrusive. What I think about: the work itself. The dimensions, the soil, the weather that day, what the ground is doing at that depth. The thinking about the work keeps the work and the person in their correct relationship. The person is who the work is for. The work is not the person.",
+      "keywords": ["twenty-six","years","thinking","happens","during","digging","its","own","thing","dig"]
+    },
+    {
+      "id": "twenty_six_years_1",
+      "source": "Veth on twenty-six years of gravedigging",
+      "text": "In twenty-six years I've dug three hundred and sixty-eight graves. Three hundred and sixty-eight specific places in the earth that hold three hundred and sixty-eight specific people. The district's population is not infinite. I know a significant portion of where the people who've lived here went. Not who they were — that's Eld's knowledge. Where they went. The where is my knowledge. In twenty-six years, the where is a map of the district's dead that I carry.",
+      "keywords": ["twenty-six","years","dug","three","hundred","sixty-eight","graves","three","hundred","sixty-eight"]
+    }
+  ]
+}

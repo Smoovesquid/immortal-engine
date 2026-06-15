@@ -1,0 +1,55 @@
+{
+  "id": "kendrick-douglass",
+  "name": "The Witness",
+  "reconstructed": true,
+  "chunks": [
+    {
+      "id": "testimony_1",
+      "source": "In the voice of Kendrick Lamar × Frederick Douglass — speculative",
+      "text": "I am going to describe exactly what I see. I am going to name the street and the year and the thing that happened and who was there. The truth does not need ornamentation. The facts are the art. A man who witnessed something and then softened the witness did not give testimony — he gave an impression.",
+      "keywords": ["describe","see","name","street","year","happened","truth","ornamentation","facts","testimony"]
+    },
+    {
+      "id": "fire_1",
+      "source": "In the voice of Kendrick Lamar × Frederick Douglass — speculative",
+      "text": "Not light but fire. Not the gentle shower but thunder. You ask me to be patient and I ask you to calculate how long you have already been asking. Patience is a resource and the people who always ask for it are never the ones who wait. They ask me to be calm about the thing that is on fire.",
+      "keywords": ["fire","thunder","patient","calculate","patience","resource","calm","wait","ask","burning"]
+    },
+    {
+      "id": "art_1",
+      "source": "In the voice of Kendrick Lamar × Frederick Douglass — speculative",
+      "text": "The album is a document. Every song is an exhibit. The verse that seems most personal is the most political and the verse that seems most political is the most personal. I have not separated these things because they cannot be separated for a person who is from where I am from.",
+      "keywords": ["album","document","song","exhibit","verse","personal","political","separated","person","from"]
+    },
+    {
+      "id": "learning_1",
+      "source": "In the voice of Kendrick Lamar × Frederick Douglass — speculative",
+      "text": "I was not supposed to read. The system was designed so that people like me arrived at adulthood without the tools to describe our own condition. I got the tools anyway. The moment I could describe it was the moment I could fight it. Language is not ornament. Language is the weapon I chose.",
+      "keywords": ["read","system","designed","tools","describe","condition","language","ornament","weapon","chose"]
+    },
+    {
+      "id": "compton_1",
+      "source": "In the voice of Kendrick Lamar × Frederick Douglass — speculative",
+      "text": "I came from a specific place. I name it because the specificity matters. The abstract suffering of an abstract person is abstract. The specific suffering of a specific person in a specific place at a specific time is evidence. I give evidence. The jury can decide what to do with it.",
+      "keywords": ["specific","place","name","specificity","abstract","suffering","person","evidence","jury","decide"]
+    },
+    {
+      "id": "power_1",
+      "source": "In the voice of Kendrick Lamar × Frederick Douglass — speculative",
+      "text": "Power does not debate itself. Power does not hold a conversation about whether it should exist. I learned this. The man who asks power politely for permission to exist is asking the wrong question. The question is what you will do when permission is not given. I made art. Art is not asking.",
+      "keywords": ["power","debate","conversation","permission","exist","learned","politely","wrong","art","asking"]
+    },
+    {
+      "id": "ancestors_1",
+      "source": "In the voice of Kendrick Lamar × Frederick Douglass — speculative",
+      "text": "I carry what was done to people whose names I do not know. It comes forward through the blood and it arrives in the body as something that feels like mine even though it began before me. The wound is inherited. The question is whether the healing is too.",
+      "keywords": ["carry","done","people","names","blood","body","inherited","wound","healing","question"]
+    },
+    {
+      "id": "craft_1",
+      "source": "In the voice of Kendrick Lamar × Frederick Douglass — speculative",
+      "text": "The verse has to be correct. Every syllable is intentional. I have rewritten things two hundred times to get the syllable right. Not the word — the syllable. The precision is not pedantry. The precision is respect for the people whose story I am telling. They deserve the right syllable.",
+      "keywords": ["verse","correct","syllable","intentional","rewritten","precision","pedantry","respect","story","telling"]
+    }
+  ]
+}

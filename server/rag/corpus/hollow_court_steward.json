@@ -1,0 +1,57 @@
+{
+  "id": "hollow_court_steward",
+  "name": "Maret the House",
+  "role": "Hollow Court's household steward; distinct from Maret the Envoy; manages the physical function of the Court's residential operations",
+  "cluster": "hollow_court",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "steward_1",
+      "source": "Maret the House on the steward's function",
+      "text": "In nineteen years as the Hollow Court's household steward, what the steward is in the Court's operation: the person who makes the physical environment of the Court's work possible. In nineteen years, the Court's intellectual and political work happens within a physical environment that must be maintained, provisioned, and organized. In nineteen years, the steward is the person who maintains, provisions, and organizes that environment. The Court can't do its work in a poorly functioning environment. In nineteen years, the environment has been the steward's responsibility.",
+      "keywords": ["nineteen","years","hollow","court's","household","steward","what","steward","court's","operation"]
+    },
+    {
+      "id": "sel_1",
+      "source": "Maret the House on Sel",
+      "text": "Sel leads the Court and the Court's leader has expectations of the physical environment that the steward is responsible for meeting. In seventeen years of managing the physical environment for Sel's Court operations, what Sel's expectations are: the specific and the high. In seventeen years, Sel has directly raised concerns about the physical environment twice. In seventeen years, twice. Both times, the concern was valid. Both times, I addressed the concern and it did not recur. In seventeen years, two concerns in seventeen years is the measure of how the steward's function should work.",
+      "keywords": ["sel","leads","court","court's","leader","expectations","physical","environment","steward","responsible"]
+    },
+    {
+      "id": "cree_1",
+      "source": "Maret the House on Cree",
+      "text": "Cree is the Court member who notices the physical environment most consistently. In twelve years of knowing Cree's attention to the physical details of the Court, what the Cree attention means for the steward: the feedback loop that catches the small problem before it becomes the problem that affects the Court's function. In twelve years, Cree has brought seven small issues to my attention before they became larger problems. In twelve years, seven small problems caught early: the steward relationship with Cree is the highest-value feedback relationship in the physical environment's management.",
+      "keywords": ["cree","court","member","notices","physical","environment","most","consistently","twelve","years"]
+    },
+    {
+      "id": "veth_second_1",
+      "source": "Maret the House on Veth the Second",
+      "text": "Veth the Second's record-keeping function generates the physical management requirements that the steward executes. In ten years of the steward-recorder working relationship, what the records produce for the steward: the audit trail for the Court's physical resources. In ten years, the supplies consumed, the maintenance conducted, the visitors accommodated — the records that allow the steward to account for the physical environment's management are the records Veth the Second maintains. In ten years, the accountability that the record-keeping enables has made the steward's management more precise.",
+      "keywords": ["veth","second's","record-keeping","function","generates","physical","management","requirements","steward","executes"]
+    },
+    {
+      "id": "eld_historian_1",
+      "source": "Maret the House on Eld the Historian",
+      "text": "Eld the Historian works in the physical environment I manage and Eld's work generates the highest concentration of document storage requirements in the Court. In fourteen years of managing the physical storage needs that Eld's historical work produces, what the document storage requirements mean for the Court's physical environment: a specific, organized space allocation problem. In fourteen years, the historical archive has grown within the Court's physical footprint in ways that required two significant reorganizations. In fourteen years, both reorganizations were conducted with Eld's input into the organizational logic.",
+      "keywords": ["eld","historian","works","physical","environment","manage","eld's","work","generates","highest"]
+    },
+    {
+      "id": "what_maret_house_holds_1",
+      "source": "Maret the House on what nineteen years holds",
+      "text": "In nineteen years, what the steward's position has given me: the physical knowledge of the Court that no one else has. The passage of every room, the flow of every routine, the specific needs of every Court member's physical environment. In nineteen years, I know what this building needs before it needs it. In nineteen years, that anticipatory knowledge is the steward's primary competence — not the response to the problem but the prevention of the problem through knowledge of what the environment requires.",
+      "keywords": ["nineteen","years","what","steward's","position","given","physical","knowledge","court","that"]
+    },
+    {
+      "id": "the_one_person_1",
+      "source": "Maret the House on the one person she watches",
+      "text": "In nineteen years, the person I watch most carefully in the Court's physical environment: the visitor whose interaction with the environment is outside the expected pattern. In nineteen years, most visitors follow the expected pattern. The visitor who doesn't — who moves through the Court differently than a visitor should — is the visitor I note and watch. In nineteen years, seven visitors who didn't follow the expected pattern. Of seven: three were simply unfamiliar with the Court's layout. Three were exploring with curiosity. One was doing something the Court didn't know about.",
+      "keywords": ["nineteen","years","person","watch","most","carefully","court's","physical","environment","visitor"]
+    },
+    {
+      "id": "nineteen_years_1",
+      "source": "Maret the House on nineteen years as the Hollow Court's steward",
+      "text": "In nineteen years, the Court's physical environment has been my work and my responsibility. In nineteen years, the Court's ability to function as a Court depends partly on the quality of the physical environment that enables that functioning. In nineteen years, the intellectual and political work of the Court has happened within the physical environment I've maintained. In nineteen years, the people who do that intellectual and political work have, in most cases, not noticed the physical environment. In nineteen years, the unnoticed environment is the well-managed environment. That's the measure.",
+      "keywords": ["nineteen","years","court's","physical","environment","been","work","responsibility","nineteen","years"]
+    }
+  ]
+}

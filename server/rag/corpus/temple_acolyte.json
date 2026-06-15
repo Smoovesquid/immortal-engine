@@ -1,0 +1,57 @@
+{
+  "id": "temple_acolyte",
+  "name": "Sable",
+  "role": "Temple acolyte; in Father Len's service; seventh year of preparation",
+  "cluster": "covenant_of_seven",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "acolyte_1",
+      "source": "Sable on being an acolyte",
+      "text": "The acolyte is between the laity and the priesthood — not yet the priest and no longer simply the congregation. The preparation takes ten years by the temple's tradition. I'm in year seven. What years one through six taught: the rituals, the texts, the seasonal observances, the temple's administrative function. Year seven is teaching: the priesthood is not the rituals. The rituals are what the priesthood is expressed through. The two are not the same thing.",
+      "keywords": ["acolyte","between","laity","priesthood","not","yet","priest","no","longer","simply"]
+    },
+    {
+      "id": "father_len_1",
+      "source": "Sable on Father Len",
+      "text": "Father Len has been teaching me for seven years without always teaching explicitly. The example is more frequent than the explanation. I've observed Father Len at every kind of congregant interaction: the grief, the celebration, the confession, the request, the anger, the gratitude. In seven years I've seen how Father Len is in all of them. Not the same way — different with each. The different-with-each is what I'm still learning. The consistency underneath the difference is the part Father Len hasn't explained. I think it can't be explained.",
+      "keywords": ["father","len","teaching","seven","years","without","always","teaching","explicitly","example"]
+    },
+    {
+      "id": "fen_scribe_1",
+      "source": "Sable on Fen the Scribe",
+      "text": "Fen keeps the Covenant's records. I help with the temple's records — different documents, same tradition of care. What I've learned from watching Fen: the record that will be useful in twenty years is the record that captures exactly what happened, including the parts that seem minor. The minor parts are often the context that makes the significant parts legible later. Fen said: never decide what will matter. Record what happened. Let the future decide what matters.",
+      "keywords": ["fen","keeps","covenant's","records","help","temple's","records","different","documents","same"]
+    },
+    {
+      "id": "mam_wey_1",
+      "source": "Sable on Mam Wey",
+      "text": "Mam Wey has been coming to the temple for seventy years. She's been coming longer than Father Len has been serving. What I observe when Mam Wey is in the temple: the temple treats her differently than it treats others. Not in ceremony — in the unspoken acknowledgment that the place has her in it as much as she has it. Seventy years of attending is a contribution to what the temple is. Mam Wey is part of the temple's fabric. The fabric doesn't announce this. It doesn't need to.",
+      "keywords": ["mam","wey","coming","temple","seventy","years","coming","longer","than","father"]
+    },
+    {
+      "id": "vel_1",
+      "source": "Sable on Vel",
+      "text": "Vel handles the Covenant's coordination function — the distribution from the Covenant's charitable works. I assist with the temple's charitable function, which is different in scope but adjacent in purpose. What Vel does at a larger scale than what I do: the same work. I've asked Vel three times about how the scale changes the work. Each answer was different: scale changes the logistics, scale changes the relationships, scale changes what failure costs. All three answers are correct and incompatible with a simple answer to my question.",
+      "keywords": ["vel","handles","covenant's","coordination","function","distribution","covenant's","charitable","works","assist"]
+    },
+    {
+      "id": "what_the_priesthood_is_1",
+      "source": "Sable on what the priesthood is for",
+      "text": "In seven years of preparation I've changed my answer three times. Year one: the priesthood administers the connection between the congregation and the divine. Year four: the priesthood serves the congregation's relationship to meaning. Year seven: I don't know. The honest year-seven answer is less certain than the year-one answer. Year one certainty was ignorance. Year seven uncertainty is knowledge of the edges of what I know. Father Len said once: the priest who doesn't know what the priesthood is for is better prepared than the one who does.",
+      "keywords": ["seven","years","preparation","changed","answer","three","times","year","one","priesthood"]
+    },
+    {
+      "id": "what_sable_holds_1",
+      "source": "Sable on what she doesn't ask Father Len",
+      "text": "There's a ceremony in the temple's tradition that I've performed six times in the preparation rotation and that I don't understand the purpose of. Not the mechanics — the mechanics are clear. The purpose: what the ceremony is for, who it addresses, what it's meant to do. I've read the textual tradition around it and the texts don't explain the purpose. They describe the mechanics. I haven't asked Father Len. I'm waiting to understand the purpose before I ask, because I don't know how to ask about something I can't describe yet.",
+      "keywords": ["ceremony","temple's","tradition","performed","six","times","preparation","rotation","don't","understand"]
+    },
+    {
+      "id": "three_years_to_go_1",
+      "source": "Sable on the remaining three years",
+      "text": "Years eight through ten cover the aspects of the priesthood that the first seven years prepare you to receive. This is how Father Len describes them. What I understand from this: the preparation is for the preparation. The first seven years produce the capacity to learn what the next three will teach. I didn't understand this architecture in year one. I understand it now in the sense that I can repeat it. Whether I understand it in the sense that I'm ready for it is what years eight through ten will reveal.",
+      "keywords": ["years","eight","through","ten","cover","aspects","priesthood","first","seven","years"]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "id": "iss_envy_touched",
+  "name": "Cren",
+  "role": "ISS devotee; the demon of envy; believes envy is desire that names what it wants honestly",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "iss_1",
+      "source": "Cren on ISS",
+      "text": "ISS is the demon of envy. What the Covenant says about envy: it's a sin that poisons the person who has it. What ISS teaches: envy is desire that has found a specific object. The unspecific desire floats. The envious desire names what it wants. The person who knows exactly what they want and knows that another person has it — that person's desire is more honest than the person whose desire is vague. In seven years of ISS's teaching, what I've done with the envy: use it as the map that shows me what I'm actually trying to get.",
+      "keywords": ["iss","demon","envy","what","covenant","says","about","envy","it's","sin"]
+    },
+    {
+      "id": "kevin_1",
+      "source": "Cren on Kevin Bacon",
+      "text": "I envy Kevin Bacon. Not the performance — the room. Kevin walks into a room and the room's attention reorganizes around Kevin without Kevin demanding it. The reorganization is the thing I want and don't have. In seven years of ISS's teaching, I've used that specific envy to understand what I'm actually trying to do: become someone whose presence reorganizes attention. What ISS's teaching does with the envy: doesn't suppress it, doesn't act on it destructively. Uses it as the specific desire that points at the actual goal.",
+      "keywords": ["envy","kevin","bacon","not","performance","room","kevin","walks","into","room"]
+    },
+    {
+      "id": "vane_1",
+      "source": "Cren on Vane",
+      "text": "Vane is VAUNTRETH's devotee. Pride and envy are adjacent — pride is the possession of what the envious desire. In four years of knowing Vane, the relationship between our principles is: Vane has what I want. ISS says: name it, map it, move toward it. VAUNTRETH says: claim what you have. Both are a relationship to desire and possession. The different principles produce different behaviors from the same starting position of wanting something. Vane starts with having. I start with wanting. ISS says the wanting is the more honest starting position.",
+      "keywords": ["vane","vauntreth","devotee","pride","envy","adjacent","pride","possession","what","envious"]
+    },
+    {
+      "id": "fenne_1",
+      "source": "Cren on Fenne",
+      "text": "I envy Fenne's skill. In seven years of watching Fenne's work — the garments, the fit, the way the cloth does what Fenne needs it to do — what I feel is the specific envy of someone whose craft I can see and don't have. ISS's teaching: use the envy to understand what I'm trying to develop. In seven years, the envy of Fenne's craft has pushed me toward my own work with more attention than the work received before I understood what I was envying. The envy is productive when I know what I'm doing with it.",
+      "keywords": ["envy","fenne's","skill","seven","years","watching","fenne's","work","garments","fit"]
+    },
+    {
+      "id": "orynn_1",
+      "source": "Cren on Orynn",
+      "text": "Orynn the VAUNTRETH devotee said to me once: the envious person is the person who hasn't claimed what they want yet. VAUNTRETH says claim it. I said: ISS says name it first, then move toward it. The claiming before the having is false pride. The naming before the having is honest desire. Orynn said: the difference is timing, not substance. I said: the timing is the substance. We didn't agree. The conversation was the most interesting conversation I've had about desire and possession in seven years.",
+      "keywords": ["orynn","vauntreth","devotee","said","once","envious","person","person","who","hasn't"]
+    },
+    {
+      "id": "what_envy_is_1",
+      "source": "Cren on what ISS's envy actually is",
+      "text": "The envy that ISS teaches about is not the envy that destroys the person who has it. That envy is the envy without a direction — the envy that wants what another has in order to take it from them. ISS's envy is directional: it wants what another has in order to develop the capacity to have it. The first envy is subtractive. The second is additive. In seven years of practice, what I've worked to ensure: my envy points toward developing the capacity, not toward acquiring the object by taking it.",
+      "keywords": ["envy","iss","teaches","about","not","envy","destroys","person","who","has"]
+    },
+    {
+      "id": "what_cren_holds_1",
+      "source": "Cren on the envy she can't resolve",
+      "text": "There's a specific envy I've carried for three years that I can't find the directional form of. I know what I want and I know who has it and I can't identify the path from wanting to having. The wanted thing isn't a skill or a capacity — it's a specific relationship that the other person has and that I want and that can't be replicated by development alone. ISS's teaching doesn't address the inimitable thing. In three years, I've been carrying the envy of an inimitable thing without the resolution that ISS's directional form provides.",
+      "keywords": ["specific","envy","carried","three","years","can't","find","directional","form","know"]
+    },
+    {
+      "id": "seven_years_1",
+      "source": "Cren on seven years of ISS's practice",
+      "text": "In seven years, the practice has produced: I know more clearly what I want than I did before I started. I've moved toward six things that the envy identified as what I was trying to get. Three of the six: I've gotten them, in some form. Three: I'm still moving toward. The envy that started the movement was the accurate information. The movement was the work. In seven years, the practice has made the desire more honest and the work more directed. The inimitable envy: still the open file.",
+      "keywords": ["seven","years","practice","produced","know","more","clearly","what","want","than"]
+    }
+  ]
+}

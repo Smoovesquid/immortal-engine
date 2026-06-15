@@ -1,0 +1,57 @@
+{
+  "id": "house_aldenmere_eldest",
+  "name": "Davel the Son",
+  "role": "Aldenmere household eldest son; being groomed for the merchant house but quietly resistant",
+  "cluster": "house_aldenmere",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "eldest_son_1",
+      "source": "Davel the Son on his position in the household",
+      "text": "In twenty-two years of being the eldest son of House Aldenmere, what the eldest son is in the merchant household's structure: the heir to the commercial operation that Britta built over forty years. In twenty-two years, the heir is the person the merchant house is building toward — the commercial competence that will continue the house's function when Britta is no longer running it. In twenty-two years, I am what the house is preparing for. In twenty-two years, the preparation and the person being prepared don't always agree on the direction.",
+      "keywords": ["twenty-two","years","being","eldest","son","house","aldenmere","what","eldest","son"]
+    },
+    {
+      "id": "britta_1",
+      "source": "Davel the Son on Britta",
+      "text": "Britta is my mother and the house's leader and the commercial intelligence that built what I'm inheriting. In twenty-two years of being Britta's eldest son, what the mother-heir relationship is in the merchant house context: the most complex relationship the household contains. In twenty-two years, Britta has been teaching me the house's commercial operations since I was old enough to understand them. In twenty-two years, what I understand and what Britta wants me to understand are not always the same thing. In twenty-two years, the gap between those two understandings is where I spend a significant amount of time.",
+      "keywords": ["britta","mother","house's","leader","commercial","intelligence","built","what","inheriting","twenty-two"]
+    },
+    {
+      "id": "sorn_1",
+      "source": "Davel the Son on Sorn",
+      "text": "Sorn tutored me from age seven to eighteen and is the person who shaped my thinking more than the merchant house education did. In fifteen years of Sorn's tutelage, what the household tutor gave me that the commercial education didn't: the framework for thinking about questions that don't have commercial answers. In fifteen years, Sorn taught me the history and the theory and the disciplines that the merchant house's commercial focus doesn't include. In fifteen years, I value Sorn's teaching more than I value most of what the commercial education produced.",
+      "keywords": ["sorn","tutored","age","seven","eighteen","person","shaped","thinking","more","merchant"]
+    },
+    {
+      "id": "vrenn_1",
+      "source": "Davel the Son on Vrenn",
+      "text": "Vrenn is my younger sibling and Vrenn wants what I'm supposed to want. In twelve years of watching Vrenn develop the commercial enthusiasm that the house's education produces in Vrenn and didn't produce in me, what the sibling comparison has clarified: Vrenn is the heir the house's education made. I'm the heir that Sorn's education made, wearing the house's commercial role. In twelve years, what the Vrenn comparison has made me consider: whether the commercial succession is better served by the sibling who wants it.",
+      "keywords": ["vrenn","younger","sibling","vrenn","wants","what","supposed","want","twelve","years"]
+    },
+    {
+      "id": "marel_1",
+      "source": "Davel the Son on Marel",
+      "text": "Marel handles the house's financial administration and is the person I work with most closely in the commercial functions I do participate in. In six years of working with Marel's financial records, what the financial function has given me that I didn't expect to value: the specific interest in the patterns in the numbers. In six years, the commercial patterns that Marel's records reveal are the most interesting part of the commercial education. In six years, the patterns are interesting in the way that Sorn's history was interesting — they tell a story. The commercial pattern is a story about how the settlement moves resources.",
+      "keywords": ["marel","handles","house's","financial","administration","person","work","most","closely","commercial"]
+    },
+    {
+      "id": "what_davel_holds_1",
+      "source": "Davel the Son on what twenty-two years of being the eldest son holds",
+      "text": "In twenty-two years, what the heir position holds that I haven't told Britta: the specific plan that I've been developing for eight years that diverges from the commercial succession Britta has planned. In eight years of developing the alternative, what the alternative is: the commercial house remains a commercial house, but the eldest son is not the person running it. In eight years, the commercial house Vrenn runs with Marel's financial competence is a better commercial house than the one I'd run reluctantly. In eight years, the question is how to make Britta see the same thing I see.",
+      "keywords": ["twenty-two","years","what","heir","position","holds","haven't","told","britta","specific"]
+    },
+    {
+      "id": "what_he_actually_wants_1",
+      "source": "Davel the Son on what he actually wants",
+      "text": "In twenty-two years, what I actually want: Sorn once mentioned the Academy's research functions — the people who spend their time on specific questions. In twenty-two years, what has not left my mind since Sorn mentioned it: the sustained engagement with a specific question that the research function represents. In twenty-two years, the question I would spend my time on is the historical question — not the Academy's rune work, but the historical patterns in commercial behavior across settlement structures. In twenty-two years, the question is already there. The Academy would give me the time to pursue it.",
+      "keywords": ["twenty-two","years","what","actually","want","sorn","once","mentioned","academy's","research"]
+    },
+    {
+      "id": "twenty_two_years_1",
+      "source": "Davel the Son on twenty-two years as the eldest son",
+      "text": "In twenty-two years, the house has been preparing me for a role I'm trying to understand how to decline without declining the house. In twenty-two years, the house and the role are different things. In twenty-two years, I am Aldenmere — the family, the history, the relationship with the settlement that the house represents. The commercial management role: that's separate from what I am. In twenty-two years, the work is to separate those two things in Britta's mind in a way that makes sense. In twenty-two years, I haven't found the way yet.",
+      "keywords": ["twenty-two","years","house","been","preparing","role","trying","understand","how","decline"]
+    }
+  ]
+}

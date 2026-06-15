@@ -1,0 +1,57 @@
+{
+  "id": "covenant_lay_member",
+  "name": "Bale",
+  "role": "Long-time Covenant lay member; attends every service; holds the Covenant's community in memory",
+  "cluster": "covenant_of_seven",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "lay_member_1",
+      "source": "Bale on forty years as a Covenant lay member",
+      "text": "In forty years of attending the Covenant's services, what I've seen: four priests, three building renovations, the community's expansion through two generations, and the Covenant's teaching remaining essentially constant while the settlement around it changed. In forty years, the Covenant is the most stable institution in the settlement. Not because it doesn't change — it has changed. Because it changes more slowly than the settlement does, which gives the settlement something to orient to.",
+      "keywords": ["forty","years","attending","covenant's","services","what","seen","four","priests","three"]
+    },
+    {
+      "id": "father_len_1",
+      "source": "Bale on Father Len",
+      "text": "Father Len is the fourth priest I've known at this Covenant. In fourteen years of Father Len's tenure, what makes Father Len different from the three before: the integration of the community's practical life into the Covenant's teaching. The three before Father Len taught the theology well but kept the teaching at some remove from the practical life. Father Len doesn't separate the two. In fourteen years, the Covenant's community has deepened because the teaching addresses the life rather than describing an alternative to it.",
+      "keywords": ["father","len","fourth","priest","known","covenant","fourteen","years","father","len's"]
+    },
+    {
+      "id": "mam_wey_1",
+      "source": "Bale on Mam Wey",
+      "text": "Mam Wey has been at the Covenant longer than I have. In forty years of knowing Mam Wey as a fellow Covenant community member, what Mam Wey represents in the community: the person whose care for the community exceeds any formal role. In forty years, Mam Wey has held the community's informal welfare function — the person who knows who needs what and finds the way to provide it. In forty years, Mam Wey has been the Covenant's practice made practical, the teaching applied in the specific case.",
+      "keywords": ["mam","wey","been","covenant","longer","than","have","forty","years","knowing"]
+    },
+    {
+      "id": "rass_1",
+      "source": "Bale on Rass",
+      "text": "Rass is the Covenant's institutional memory and I'm the lay community's memory. In thirty-five years of knowing Rass, what the two kinds of memory hold: Rass holds the institutional history — the decisions, the buildings, the formal record. I hold the community's lived history — who was at the service when the community member's child was born, who sat with whom during the difficult years, which services marked the turning points in the community's life. In thirty-five years, Rass and I are the two halves of the Covenant's full history.",
+      "keywords": ["rass","covenant's","institutional","memory","lay","community's","memory","thirty-five","years","knowing"]
+    },
+    {
+      "id": "gund_1",
+      "source": "Bale on Gund",
+      "text": "Gund the ERRAN devotee has attended the Covenant's services for eight years while maintaining the angel's separate practice. In eight years of knowing Gund in the Covenant community, what the dual practice looks like from the lay community's perspective: the person who is present for the community's practice and maintains a separate practice alongside it. In eight years, Gund's dual practice has not created conflict in the Covenant community. In eight years, the Covenant community's response to the angel devotees in its midst has been accommodation rather than exclusion.",
+      "keywords": ["gund","erran","devotee","attended","covenant's","services","eight","years","angel's","separate"]
+    },
+    {
+      "id": "what_bale_holds_1",
+      "source": "Bale on what forty years of lay membership holds",
+      "text": "In forty years, the Covenant's community has held me through the events that the community is for: the birth of my children, the deaths of my parents, the years when the settlement was difficult and the community was the stable reference. In forty years, the Covenant hasn't explained the events — it's held the people in them. In forty years, that's what I've found the Covenant is for. Not the explanation. The holding.",
+      "keywords": ["forty","years","covenant's","community","held","through","events","community","for","birth"]
+    },
+    {
+      "id": "what_the_service_is_1",
+      "source": "Bale on what the Covenant's service is",
+      "text": "In forty years, the service is the practice of the community showing up together for the same thing at the same time. In forty years, the showing up is the practice. The theology is the framework for the showing up. In forty years, I've heard the theology many times and I hold it in general terms but the specific terms have never been the point for me. The specific terms are the point for other members and they find what they need there. In forty years, the community accommodates the two kinds of members: the ones for whom the theology is the point and the ones for whom the community is the point.",
+      "keywords": ["forty","years","service","practice","community","showing","up","together","same","thing"]
+    },
+    {
+      "id": "forty_years_1",
+      "source": "Bale on forty years as a Covenant lay member",
+      "text": "In forty years, I've attended approximately three thousand services. Three thousand occasions of showing up with the community for the community's practice. In forty years, what the three thousand services have given me: the most continuous relationship I have with an institution. The Covenant has outlasted my marriage, my employment, my friendships that have ended. In forty years, the Covenant has continued. In forty years, what continues through change: that's what the Covenant is, for me.",
+      "keywords": ["forty","years","attended","approximately","three","thousand","services","three","thousand","occasions"]
+    }
+  ]
+}

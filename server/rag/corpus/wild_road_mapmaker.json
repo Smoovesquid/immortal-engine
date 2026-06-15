@@ -1,0 +1,57 @@
+{
+  "id": "wild_road_mapmaker",
+  "name": "Finn",
+  "role": "Mapmaker; wild road and beyond; makes the maps Theen uses",
+  "cluster": "wild_road",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "map_1",
+      "source": "Finn on what a map is",
+      "text": "A map is a lie that's useful. The lie: the world is flat and can be seen from above and all things can be marked simultaneously. The truth: the world is curved and you can only see it from inside it and things change while you're marking them. The useful part: despite all of that, a careful map gets you from where you are to where you're going more often than not. Twenty-two years of careful lies.",
+      "keywords": ["map","lie","that's","useful","lie","world","flat","can","be","seen"]
+    },
+    {
+      "id": "theen_1",
+      "source": "Finn on Theen",
+      "text": "Theen is the reason my maps have improved. Theen uses them and tells me what's wrong. Not wrong in content — wrong in what a navigator in the field needs from the map. The field navigator's need is different from the desk planner's need. I make maps for both. Theen taught me what the field navigator needs: orientation without a compass, landmarks that survive seasonal change, and water. Always water. I mark every water source now, which doubled the map's content and its usefulness.",
+      "keywords": ["theen","reason","maps","have","improved","theen","uses","tells","me","what's"]
+    },
+    {
+      "id": "pell_cartographer_1",
+      "source": "Finn on Pell the cartographer",
+      "text": "Pell works the settled territory. I work the unsettled. We overlap at the margin and disagree about the margin's location. Pell's maps stop where the settlements stop. Mine start where the settlements stop. The overlap zone is where neither of us is satisfied. We've tried once to produce a joint map of the margin. The joint map satisfied neither of us and was more accurate than either individual map. We shelved it. The accurate but unsatisfying product is sitting in Pell's archive.",
+      "keywords": ["pell","works","settled","territory","work","unsettled","overlap","margin","disagree","about"]
+    },
+    {
+      "id": "mreth_1",
+      "source": "Finn on Mreth the bone reader",
+      "text": "Mreth's movement patterns through the territory have helped me map animal routes. The animal routes tell me where the terrain actually permits passage — animals use the routes that work, not the routes that look like they should work. I've built three significant path corrections into my maps based on animal route data from Mreth. Three corrections in twelve years sounds small. Each one represents a path I would have mapped incorrectly, and someone would have used incorrectly.",
+      "keywords": ["mreth","movement","patterns","territory","helped","map","animal","routes","animal","routes"]
+    },
+    {
+      "id": "orvane_1",
+      "source": "Finn on Orvane the pilgrim",
+      "text": "Orvane's list of arrivals is a navigator's resource I can't use directly but want to. The list records where Orvane has been and when. What it doesn't record: the route between locations, which is what I need. I've asked Orvane three times to record the routes. Each time Orvane says: the routes are not the arrivals. I walk the routes and arrive. The list records the arriving. I've accepted this. The list is a series of points. I'm trying to fill in the connections between the points from other sources.",
+      "keywords": ["orvane","list","arrivals","navigator's","resource","can't","use","directly","want","to"]
+    },
+    {
+      "id": "old_map_1",
+      "source": "Finn on the maps that came before",
+      "text": "There were mapmakers before me. I've found four maps made before my time — ranging from adequate to excellent. The excellent one was made thirty years ago by someone whose name isn't on the map. Thirty years and the unnamed map is still more accurate in three regions than my own work. I've been trying to understand what the unnamed mapmaker knew about those three regions that I don't. The map itself is the only evidence. I've been reading it for six years.",
+      "keywords": ["mapmakers","before","me","found","four","maps","made","before","time","ranging"]
+    },
+    {
+      "id": "what_finn_holds_1",
+      "source": "Finn on the region they won't map",
+      "text": "Northeast quadrant, past the third ridge. I've been to the edge of it twice. Both times I came back before I was ready to come back — something about the territory produced a return impulse I couldn't examine while it was happening and couldn't account for afterward. Mreth has a similar finding from that direction. The hermit's territory begins somewhere in the same region. I have three reference points that all indicate the same area without any of us saying so directly. I haven't started the map for it yet.",
+      "keywords": ["northeast","quadrant","past","third","ridge","been","edge","twice","both","times"]
+    },
+    {
+      "id": "what_maps_mean_1",
+      "source": "Finn on what it means to map a place",
+      "text": "Mapping changes the place. Not the territory — the territory is what it is. What mapping changes is how people relate to the territory. A mapped place is available to people who haven't been there. An unmapped place is available only to people who find it. There are territories I've chosen not to map because the people who should have access already find their way there and the people who shouldn't have access use maps. I've made this decision four times. Each time I've been uncertain it was the right decision. I've made it anyway.",
+      "keywords": ["mapping","changes","place","not","territory","territory","what","it","is","what"]
+    }
+  ]
+}

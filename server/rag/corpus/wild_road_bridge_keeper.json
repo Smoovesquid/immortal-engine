@@ -1,0 +1,57 @@
+{
+  "id": "wild_road_bridge_keeper",
+  "name": "Ford",
+  "role": "Keeper of the eastern bridge; collects the crossing toll; lives where road and river meet",
+  "cluster": "wild_road",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "bridge_1",
+      "source": "Ford on the bridge",
+      "text": "The bridge is the agreement between the river and the road. Without the bridge, the river is an obstacle. With the bridge, the river is a place the road crosses. I maintain the agreement: the bridge in the condition that makes the crossing possible. In twenty-four years of keeping this bridge, the bridge has never been impassable except for three days in year eleven when a flood damaged the eastern approach. Three days in twenty-four years where the crossing was not possible.",
+      "keywords": ["bridge","agreement","between","river","road","without","bridge","river","obstacle","with"]
+    },
+    {
+      "id": "comus_1",
+      "source": "Ford on Comus",
+      "text": "Comus crosses this bridge every circuit. In fourteen years, Comus has crossed approximately one hundred and ten times. The crossing is routine now: Comus pays the toll by the circuit-account that Comus and I established in year two of the relationship. The circuit-account means Comus settles once per circuit for all crossings in the circuit. In fourteen years, the account has never been in arrears. Comus crosses, the account records it, the circuit settles.",
+      "keywords": ["comus","crosses","bridge","every","circuit","fourteen","years","comus","crossed","approximately"]
+    },
+    {
+      "id": "senn_1",
+      "source": "Ford on Senn",
+      "text": "Senn crosses this bridge on foot in both directions more often than any other traveler. In ten years, I've watched Senn cross approximately two hundred times. What Senn carries: almost always less than what Senn leaves the bridge carrying in the other direction. The walking brings things back. In ten years, I've noticed that what Senn returns with is never what I would have predicted from what Senn left with. The road produces something from the walking that isn't what the walker brought to the road.",
+      "keywords": ["senn","crosses","bridge","foot","both","directions","more","often","any","other"]
+    },
+    {
+      "id": "theen_1",
+      "source": "Ford on Theen",
+      "text": "Theen crosses the bridge with parties that require the crossing. In twelve years of Theen using the bridge for guided passages, I've seen the parties Theen brings through: some experienced travelers, some people who have never been east of the settlement. What Theen does at the bridge: pauses to let the party see the river before crossing. The river from the bridge is the first time some of the parties have seen the eastern territory's character. Theen uses the bridge as an introduction.",
+      "keywords": ["theen","crosses","bridge","parties","require","crossing","twelve","years","theen","using"]
+    },
+    {
+      "id": "mreth_1",
+      "source": "Ford on Mreth",
+      "text": "Mreth crosses the bridge sometimes at hours that other travelers don't cross. In six years of occasionally seeing Mreth at the bridge at unusual hours, I've learned: asking Mreth where Mreth is going produces an answer that is accurate and uninformative simultaneously. What Mreth says: toward where I'm needed. In six years, I've watched Mreth cross the bridge in both directions at unusual hours six times. All six: the following days bring news from the eastern territory of something that needed someone with Mreth's skills.",
+      "keywords": ["mreth","crosses","bridge","sometimes","hours","other","travelers","don't","cross","six"]
+    },
+    {
+      "id": "what_the_bridge_is_1",
+      "source": "Ford on what the bridge is",
+      "text": "The bridge is a fixed point in a world of movement. Everything that crosses the bridge is moving: the travelers, the goods, the animals. The bridge doesn't move. In twenty-four years of keeping the bridge, I've been the fixed point while everything moved through. What the fixed point knows: the patterns of movement. Who crosses, how often, in which direction, carrying what. The bridge's fixed position gives the bridge's keeper a view of the movement that no traveler can have. The traveler is the movement. I'm watching it.",
+      "keywords": ["bridge","fixed","point","world","movement","everything","crosses","bridge","moving","travelers"]
+    },
+    {
+      "id": "what_ford_holds_1",
+      "source": "Ford on what she saw at the bridge that she still thinks about",
+      "text": "Year thirteen. A party crossing the bridge that looked like a trading party and moved like a trading party and whose goods declaration was consistent with a trading party. I collected the toll. They crossed. The following week: news from the eastern territory of something I won't describe that was attributed to causes I won't describe, but that I have thought about in relation to what I saw cross this bridge in year thirteen. I have no evidence. I have an observation and a timing. In eleven years I've held both without knowing what to do with them.",
+      "keywords": ["year","thirteen","party","crossing","bridge","looked","like","trading","party","moved"]
+    },
+    {
+      "id": "twenty_four_years_1",
+      "source": "Ford on twenty-four years of keeping the bridge",
+      "text": "In twenty-four years, everything that goes east through this route and everything that comes west has crossed my bridge. Every trading circuit, every Brotherhood operation, every Compact caravan, every individual traveler who goes or comes by this route. In twenty-four years, I've seen the territory's relationship with the world beyond it expressed in the crossings. The bridge is the instrument. The crossings are the song. In twenty-four years of the song, I can hear changes in the song before I can explain what changed.",
+      "keywords": ["twenty-four","years","everything","goes","east","through","route","everything","comes","west"]
+    }
+  ]
+}

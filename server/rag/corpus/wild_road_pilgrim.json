@@ -1,0 +1,57 @@
+{
+  "id": "wild_road_pilgrim",
+  "name": "Orvane",
+  "role": "Pilgrim; eternal transit; TARRYN devotee; has been walking for twelve years",
+  "cluster": "wild_road",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "walking_1",
+      "source": "Orvane on what the walk is",
+      "text": "The walk has no destination now. The first year it had a destination. The destination was reached in the first year. What the reaching taught me: the destination was not the walk. The walk was the walk. After arriving I waited two weeks, then continued walking. The walk has not required a destination since. TARRYN says: the patience is the practice. The walk is how I practice patience with something that has no arrival.",
+      "keywords": ["walk","has","no","destination","now","first","year","had","destination","destination"]
+    },
+    {
+      "id": "senn_1",
+      "source": "Orvane on Senn",
+      "text": "Senn is a settled TARRYN practitioner. I'm a walking one. We've met three times — the walk has brought me through this settlement three times in twelve years. Each time, Senn and I find that the practice is producing different things in different lives, and that the things are versions of the same thing. Settled patience and walking patience are the same discipline in different bodies. We've agreed on this three times and the agreement holds.",
+      "keywords": ["senn","settled","tarryn","practitioner","walking","one","met","three","times","walk"]
+    },
+    {
+      "id": "theen_1",
+      "source": "Orvane on the guide Theen",
+      "text": "Theen guided me through the forest territory on my second passage. Not because I couldn't navigate it — I've walked worse. Because I was moving through it in the wrong relationship to it. Theen saw this. She said: you're walking through it like it's a problem to solve. I said: it is a problem. She said: it's also a place. Walk through it like a place. The distinction changed the passage. I've walked through three difficult territories since without a guide. I think of the distinction each time.",
+      "keywords": ["theen","guided","forest","territory","second","passage","not","because","couldn't","navigate"]
+    },
+    {
+      "id": "what_walk_1",
+      "source": "Orvane on what the walk has done to them over twelve years",
+      "text": "Made me slow. Not slow in movement — slow in conclusion. Before the walk I concluded things quickly and confidently. After twelve years of walking through territories that kept being different from what I expected, I conclude things after I've given them time to be what they are. The walk produced patience in me not by teaching it but by removing the confidence that made patience unnecessary. You become patient when you've been wrong enough times that certainty gets expensive.",
+      "keywords": ["made","slow","not","slow","movement","slow","conclusion","before","walk","concluded"]
+    },
+    {
+      "id": "vann_1",
+      "source": "Orvane on meeting Vann",
+      "text": "Vann and I met on the south road three years ago. Tinker routes and walking pilgrim routes overlap frequently. We've traveled together four times for stretches of a day or two. Vann carries the world in small pieces — every settlement has left something in her pack and she carries the accumulation. I carry almost nothing. We're solving the same problem of transit from opposite directions. She said: you don't carry what you need. I said: what I need is already in the next place.",
+      "keywords": ["vann","met","south","road","three","years","tinker","routes","walking","pilgrim"]
+    },
+    {
+      "id": "ila_1",
+      "source": "Orvane on Ila, the inland wanderer",
+      "text": "Ila wanders toward. I walk through. The difference: Ila is following something, looking for something, oriented by a pull toward the Hallowed Reaches. I'm not oriented by a destination. Two walking people solving different problems with the same legs. We've spoken twice. Ila asks questions about the territories I've been through that she hasn't reached yet. I answer carefully because Ila's questions assume I was paying the kind of attention Ila pays. I wasn't always. I've learned to pay more attention because Ila will ask.",
+      "keywords": ["ila","wanders","toward","walk","through","difference","ila","following","something","looking"]
+    },
+    {
+      "id": "settlements_1",
+      "source": "Orvane on the settlements the walk passes through",
+      "text": "Each settlement I've passed through more than once shows me what changes and what doesn't. Thornwall: the Iron Key has the same tables and Cass has the same expression. The Brotherhood patrol rotation has changed commanders three times. The Hollow Court has three more people than the first time I was here. Change rates differ by institution. The inn is slow. The cult counts are fast. The watch command turns over. The walk shows you which things are fixtures and which are seasons.",
+      "keywords": ["settlement","passed","through","more","once","shows","what","changes","what","doesn't"]
+    },
+    {
+      "id": "what_pilgrim_carries_1",
+      "source": "Orvane on the one thing they carry",
+      "text": "A list. Not of destinations — of what was there when I arrived. Every place I've been: what was there. The list has four hundred and twelve entries. It's the only record of what I've seen. The list isn't for anyone else. I'm not reporting the walk. The list is proof that the walk happened and that I was present for what was there. When I read it, I remember the arrivals. The arrivals are the practice. The list is how I prove to myself that they were real.",
+      "keywords": ["list","not","destinations","what","was","there","when","arrived","every","place"]
+    }
+  ]
+}

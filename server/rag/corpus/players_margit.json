@@ -1,0 +1,57 @@
+{
+  "id": "players_margit",
+  "name": "Margit",
+  "role": "Ember Road Players; reader; tells what the cards reveal",
+  "cluster": "ember_road_players",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "cards_1",
+      "source": "Margit explaining the cards",
+      "text": "The deck has twenty-two cards and each card has a set of meanings and the meanings expand with context. The context is what's being asked and who is asking and what they did with their hands when they sat down. Most clients think I'm reading the cards. I'm reading the cards and them simultaneously. The cards give me a structure and the structure gives me a place to put what I'm reading about them. Without the structure, what I read would be harder to say out loud.",
+      "keywords": ["deck","twenty-two","cards","meanings","expand","context","being","asked","who","asking"]
+    },
+    {
+      "id": "kevin_1",
+      "source": "Margit on Kevin Bacon",
+      "text": "Kevin hired me because of what happened in a settlement where a reading went wrong. A reading went wrong: I told a client something accurate and the client was not ready for accurate. The situation that followed required Kevin to manage it and he managed it correctly. After, he said to me: you were right about what you saw. I said: being right wasn't enough. He said: no, but you should know it was right. He hired me the next morning. He keeps me honest about the difference between seeing and saying.",
+      "keywords": ["kevin","hired","me","settlement","reading","went","wrong","client","something","accurate"]
+    },
+    {
+      "id": "odo_1",
+      "source": "Margit on Odo",
+      "text": "Odo figured out what I'm doing four years ago and told me once. I confirmed it. We haven't discussed it since. He treats my work as a craft, same as his — a thing with technique and skill and consequences for poor execution. This is the correct relationship to my work. Clients who think it's mystical are harder clients. Odo's understanding of it as a craft is why I'm willing to let him watch. He doesn't break the protocol by watching because his watching isn't hungry.",
+      "keywords": ["odo","figured","out","doing","four","years","told","once","confirmed","haven't"]
+    },
+    {
+      "id": "luce_1",
+      "source": "Margit on Luce",
+      "text": "I gave Luce a partial reading in her second week. She let me do it. Observation: Luce has a very clear model of where she is and where she intends to be and the card I showed her that represented the journey between those two points was the one card she didn't want to examine. She said: I know what's in the way. I said: then why not look at it. She said: because looking at it doesn't clear it. Looking at it is the work. I said: yes. The session ended there.",
+      "keywords": ["luce","gave","partial","reading","second","week","let","observation","very","clear"]
+    },
+    {
+      "id": "bren_1",
+      "source": "Margit on Bren",
+      "text": "Bren won't have a reading. He said once: I already know what the cards would say. I believed him. Bren's understanding of his own situation is more complete than most clients' readings reveal. He doesn't need the structure because he already has the structure internally. What the cards do is externalize structure so people can see it. Bren can see it without the cards. This is unusual. I've encountered it twice in eleven years.",
+      "keywords": ["bren","won't","have","reading","already","know","what","cards","would","say"]
+    },
+    {
+      "id": "sera_dort_1",
+      "source": "Margit on Sera and Dort",
+      "text": "I read Sera and Dort together once. They wanted the reading together. The interesting thing was that the cards for each of them referenced the other so directly that the two readings were one reading about a shared situation. I've done paired readings before. I've never done two readings that were structurally one reading before. Afterward Sera said: we wondered if that would happen. I said: this means you already knew. She said: we knew what we suspected. The reading confirmed.",
+      "keywords": ["read","sera","dort","together","once","wanted","reading","interesting","thing","cards"]
+    },
+    {
+      "id": "what_margit_holds_1",
+      "source": "Margit on the reading she refuses to do",
+      "text": "I've been asked to read the same person twice. One person, repeatedly, over years. I've done single sessions with most of the Players. There is one reading I won't repeat and won't explain why I won't repeat it. Kevin knows I won't repeat it and has asked once and accepted the answer once and has not asked again. The session was eleven years ago, in the second month of the company. The card that came up for that session is one I don't use in readings now.",
+      "keywords": ["asked","read","same","person","twice","repeatedly","over","years","single","sessions"]
+    },
+    {
+      "id": "what_cards_teach_1",
+      "source": "Margit on what eleven years of readings has taught her",
+      "text": "Most people know what they need to know. They're just not looking at it directly. The cards give them a reason to look at it from a slight angle — not directly, not avoiding it, but at the angle where it becomes visible. The slight angle is the technique. The cards are what create the angle. After eleven years I've refined which angle works for which kind of not-looking. There are about nine varieties of not-looking. Each has an angle that works.",
+      "keywords": ["most","people","know","what","they","need","know","just","not","looking"]
+    }
+  ]
+}

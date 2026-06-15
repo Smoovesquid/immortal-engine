@@ -1,0 +1,57 @@
+{
+  "id": "orphan_roads_safe_house",
+  "name": "Doss the Elder",
+  "role": "Orphan Roads safe house keeper; distinct from Doss the Scout; provides the hiding places the network's people need",
+  "cluster": "orphan_roads",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "safe_house_1",
+      "source": "Doss the Elder on the safe house function",
+      "text": "In sixteen years of keeping safe houses for the orphan roads network, what the safe house keeper is: the function that exists between the network's people and whatever is looking for them. In sixteen years, the person who needs to not be found for a period of time requires a place that doesn't connect them to their usual presence in the world. In sixteen years, the safe house is that place — the location that exists in the network's knowledge and not in the knowledge of whatever is looking.",
+      "keywords": ["sixteen","years","keeping","safe","houses","orphan","roads","network","what","safe"]
+    },
+    {
+      "id": "rook_1",
+      "source": "Doss the Elder on Rook",
+      "text": "Rook established the safe house network as part of the network's original infrastructure. In thirteen years of the Doss the Elder-Rook safe house keeper-founder relationship, what the network's safe house infrastructure reflects about Rook's planning: the recognition that the network's people would periodically need to be unfindable. In thirteen years, the safe house is the infrastructure that the network's people don't think about until they need it. In thirteen years, when they need it, the infrastructure is present. In thirteen years, Rook's planning has been correct about that.",
+      "keywords": ["rook","established","safe","house","network","part","network's","original","infrastructure","thirteen"]
+    },
+    {
+      "id": "mira_1",
+      "source": "Doss the Elder on Mira",
+      "text": "Mira's intelligence function has directed three people to my safe houses in thirteen years. In three cases of the Doss the Elder-Mira safe house keeper-intelligence relationship, what the intelligence function provides to the safe house: the assessment of whether the person who needs the safe house actually needs it, and for how long. In three cases, Mira's assessment of the need was accurate in all three — the people who came to the safe houses did need to be unfindable, for the durations Mira estimated.",
+      "keywords": ["mira's","intelligence","function","directed","three","people","safe","houses","thirteen","years"]
+    },
+    {
+      "id": "wick_1",
+      "source": "Doss the Elder on Wick",
+      "text": "Wick has used one of my safe houses once and coordinated the transition of two others to the houses in four years. In four years of the Doss the Elder-Wick safe house-outside runner relationship, what the outside runner's function produces for the safe house network: the connections to safe points outside the settlement's usual geography that extend the network's unfindable-space into territory that the settlement's investigation function doesn't reach. In four years, the safe house that is inside the settlement's geography versus outside it: both have been necessary. Wick provides the outside option.",
+      "keywords": ["wick","used","one","safe","houses","once","coordinated","transition","two","others"]
+    },
+    {
+      "id": "quell_quiet_1",
+      "source": "Doss the Elder on Quell the Quiet",
+      "text": "Quell the Quiet has decoded two communications that were relevant to the safe house function's operational security. In four years of knowing that Quell's decoding function exists, what the decoded communications provided to the safe house function: the confirmation in one case that a safe house location had been compromised, and in the other case that it hadn't. In four years, the first confirmation prompted a location change before the compromise could be used. In four years, the early detection is the safe house function's most critical security mechanism.",
+      "keywords": ["quell","quiet","decoded","two","communications","relevant","safe","house","function's","operational"]
+    },
+    {
+      "id": "what_doss_elder_holds_1",
+      "source": "Doss the Elder on what sixteen years of safe house keeping holds",
+      "text": "In sixteen years, approximately thirty people have used one of the safe house locations I maintain. Of thirty: twenty-eight have left the safe house and returned to their usual life after the period of need passed. Two have not — both because the situation that required the safe house resolved in a way that made the return to the usual life different from the usual life that preceded it. In sixteen years, thirty people, twenty-eight returned, two changed. In sixteen years, the measure I use: no one who used a safe house was found while they were in it.",
+      "keywords": ["sixteen","years","approximately","thirty","people","used","one","safe","house","locations"]
+    },
+    {
+      "id": "what_cant_be_said_1",
+      "source": "Doss the Elder on what the safe house keeper cannot say",
+      "text": "In sixteen years, what the safe house keeper cannot say to anyone outside the network, ever: who has used the safe houses and when. In sixteen years, the safe house function's security rests entirely on the safe house keeper's silence about the people who have used it. In sixteen years, three people outside the network have asked me questions that indicated they knew I was associated with the safe house function. In sixteen years, three. In sixteen years, all three conversations ended with the questioner learning nothing useful. In sixteen years, the function continues because the silence holds.",
+      "keywords": ["sixteen","years","what","safe","house","keeper","cannot","say","anyone","outside"]
+    },
+    {
+      "id": "sixteen_years_1",
+      "source": "Doss the Elder on sixteen years of safe house keeping",
+      "text": "In sixteen years, the safe house function has been the network's most invisible function. In sixteen years, the runner is seen. The decoder is sometimes known. The fence is sometimes suspected. The safe house keeper is the function that the network's observers are least likely to identify. In sixteen years, the invisibility is the function's primary security feature. In sixteen years, I maintain the invisibility by being, to the settlement's observation, exactly what I appear to be: a person of middle years, settled habits, unremarkable presence. In sixteen years, the unremarkable presence is the practice.",
+      "keywords": ["sixteen","years","safe","house","function","been","network's","most","invisible","function"]
+    }
+  ]
+}

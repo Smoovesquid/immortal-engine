@@ -1,0 +1,57 @@
+{
+  "id": "wild_road_bone_reader",
+  "name": "Mreth",
+  "role": "Bone reader; Wild Road; reads animal deaths for ecological signs",
+  "cluster": "wild_road",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "reading_1",
+      "source": "Mreth at a carcass site",
+      "text": "The carcass tells me what the living can't. How the animal died is one thing, but also: how the animal lived before dying. The wear on the teeth, the healed injuries, the density of the bones. The life is in the carcass the same way the history is in the earth — you read it by knowing what to look for. Drass the hunter knows where animals are. I know what's happening to them. We overlap in the field and read different things from the same territory.",
+      "keywords": ["carcass","tells","me","what","living","can't","animal","died","one","thing"]
+    },
+    {
+      "id": "foss_1",
+      "source": "Mreth on Foss",
+      "text": "Foss reads the living forest. I read what the forest kills. Together we have a more complete picture of what's happening in the territory than either of us has alone. We've established a practice: when either of us finds something significant, we share it before acting on it. Twice this prevented errors — once I would have read a carcass site as disease when Foss's knowledge of the living forest revealed it was displacement. Once Foss would have read a territory as stable when my readings showed the prey population was declining.",
+      "keywords": ["foss","reads","living","forest","read","what","forest","kills","together","more"]
+    },
+    {
+      "id": "cord_1",
+      "source": "Mreth on Cord",
+      "text": "Cord traps in my reading territory. The trapping tells me something about the small animal populations — the traps produce a sample. I can use the trap results as a supplement to my carcass readings. Cord hasn't asked me to do this. I've been doing it without telling Cord for three years. The supplementary data is useful. I'll tell Cord when I've accumulated enough to make the use clear. Right now I have an observation that's not yet a finding.",
+      "keywords": ["cord","traps","reading","territory","trapping","tells","something","small","animal","populations"]
+    },
+    {
+      "id": "syne_1",
+      "source": "Mreth on Syne",
+      "text": "Syne and I occupy the same territory at different times and with different looking. She's looking for plant health. I'm looking for animal death. The two are connected — a declining plant population is followed by a declining herbivore population, which I read later in the carcass patterns. Syne sees the beginning. I see the end. We've started sharing observations when we cross paths. The time delay between her observations and mine is useful — the delay tells me how fast the effect is traveling.",
+      "keywords": ["syne","occupy","same","territory","different","times","different","looking","looking","plant"]
+    },
+    {
+      "id": "what_bones_say_1",
+      "source": "Mreth on what bones specifically tell you",
+      "text": "The marrow. When an animal is starving, it metabolizes the marrow last — the last resource before death. Marrow quality at death tells me the length and severity of the stress before death. A sudden death has good marrow. A prolonged stress death has depleted marrow. The difference is visible under examination. I've been reading marrow for sixteen years. The reading has informed three territorial management decisions that Theen implemented in the years since.",
+      "keywords": ["marrow","when","animal","starving","metabolizes","marrow","last","last","resource","before"]
+    },
+    {
+      "id": "theen_1",
+      "source": "Mreth on Theen",
+      "text": "Theen is the one who acts on what I find. I'm a reader. I produce findings. The findings need someone who moves in the territory and can implement based on the findings. Theen makes decisions about routing and territory access and what the forest floor is disturbed by, and three times my findings have changed those decisions. Once the change was significant — a territory Theen had been opening for Brotherhood access was showing early stress signs. We closed it. The Brotherhood found another route. The territory recovered.",
+      "keywords": ["theen","one","who","acts","on","what","find","reader","produce","findings"]
+    },
+    {
+      "id": "hermit_1",
+      "source": "Mreth on the Hermit",
+      "text": "The Hermit and I have an overlapping territory. The Hermit has been in the deep forest for longer than I've been reading it — maybe twenty years. We've met six times in sixteen years. Each time the Hermit mentions something I then find evidence of in the carcass readings. The Hermit's observations and my readings correlate without us designing the correlation. The Hermit is reading the territory through a different frame than mine or Foss's. I don't know the frame. The correlations are enough to make me want to.",
+      "keywords": ["hermit","overlapping","territory","deep","forest","longer","been","reading","maybe","twenty"]
+    },
+    {
+      "id": "what_mreth_holds_1",
+      "source": "Mreth on the site they found and told no one about",
+      "text": "A site in the northeast corner of the territory. What was there is not present in any ecological pattern I recognize. Not disease. Not predator. Not starvation. The bones show something I've never seen in sixteen years of reading bones. I've returned four times. The site is stable — not growing, not resolving. I've told Foss half of it. I haven't told anyone the full finding because I don't know what the finding means yet and findings without meaning produce panic. I'm still looking for the meaning.",
+      "keywords": ["site","northeast","corner","territory","what","there","not","present","any","ecological"]
+    }
+  ]
+}

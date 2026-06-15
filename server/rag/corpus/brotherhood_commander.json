@@ -1,0 +1,57 @@
+{
+  "id": "brotherhood_commander",
+  "name": "Commander Vel",
+  "role": "Iron Brotherhood; current district commander; different from Vel the divine servant",
+  "cluster": "iron_brotherhood",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "command_1",
+      "source": "Commander Vel on what command is",
+      "text": "Command is: you have people and situations and the people need to be in the right relationship to the situations. That's the whole definition. Every problem that makes the definition harder to achieve is a problem that requires a decision. I make decisions. I try to make fewer decisions than the Brotherhood needs from a commander. When the organization needs fewer decisions from the command level, the organization is working correctly.",
+      "keywords": ["command","is","have","people","situations","people","need","right","relationship","situations"]
+    },
+    {
+      "id": "rath_1",
+      "source": "Commander Vel on Rath",
+      "text": "Rath is the person who makes the command level unnecessary. When Rath is in a situation, the situation produces the correct outcome without requiring me to be present. This is the highest organizational value I can assign. In thirteen years of command I've had four people who did this. Rath is the current one. I don't tell Rath this. Telling people they make the commander unnecessary tends to produce outcomes that require the commander.",
+      "keywords": ["rath","person","makes","command","level","unnecessary","when","rath","situation","situation"]
+    },
+    {
+      "id": "cord_1",
+      "source": "Commander Vel on Cord",
+      "text": "Cord's intelligence reports are the most reliable in the Brotherhood's coverage area. Not the most comprehensive — Ren will surpass Cord's coverage in a few years. But reliable in a way that comprehensive isn't always. Cord tells me what Cord saw. Not what Cord thinks it means. Not what Cord thinks I should do about it. Cord's report is a clean input. The interpretation is the command layer's job. Cord understands that the interpretation is not a trapper's job.",
+      "keywords": ["cord","intelligence","reports","most","reliable","brotherhood's","coverage","area","not","most"]
+    },
+    {
+      "id": "holt_1",
+      "source": "Commander Vel on Holt",
+      "text": "Holt has been a sergeant for twenty-two years. I've offered the field commission three times. Three refusals. The refusal reason: Holt says he's more effective as a sergeant than as an officer. The refusal is probably correct. A sergeant who could be an officer is a different kind of force multiplier than an officer who was once a sergeant. Holt knows which he is. I've stopped offering. The three refusals were the information I needed.",
+      "keywords": ["holt","sergeant","twenty-two","years","offered","field","commission","three","times","three"]
+    },
+    {
+      "id": "pella_1",
+      "source": "Commander Vel on Pella",
+      "text": "Pella is the reason the field unit's recovery rate is what it is. Not Aldous — Aldous handles what Pella starts. In the field, Pella makes the difference between recoverable and not recoverable. I've made the calculation: the investment in Pella's field presence is returned in the field survival rate within three deployments. A commander who understood only the budget and not the investment would have reassigned Pella to the infirmary long since. Understanding the investment is what the budget is for.",
+      "keywords": ["pella","reason","field","unit's","recovery","rate","what","is","not","aldous"]
+    },
+    {
+      "id": "doss_1",
+      "source": "Commander Vel on Doss",
+      "text": "Doss is officially a field chaplain in an organization that has no official chaplaincy. I've maintained this paradox for seven years because the chaplaincy produces results the Brotherhood needs and the official doctrine doesn't account for. When doctrine doesn't account for something the organization needs, the command layer decides whether the need or the doctrine adjusts. I adjusted the doctrine by not adjusting it. The paradox is stable. Doss does the work. The work is done.",
+      "keywords": ["doss","officially","field","chaplain","organization","has","no","official","chaplaincy","maintained"]
+    },
+    {
+      "id": "what_command_teaches_1",
+      "source": "Commander Vel on thirteen years of command",
+      "text": "Thirteen years and the organization has one character across all the personnel changes. The character is not me — I haven't been here for all of it. The character is the accumulated decisions of everyone who's been command over the organization's history. Each decision adds to the character. My decisions are adding to something that will continue after me. This is the correct relationship to command. I make decisions that the organization needs now and that will become part of what the next commander inherits.",
+      "keywords": ["thirteen","years","organization","has","one","character","across","all","personnel","changes"]
+    },
+    {
+      "id": "what_vel_holds_1",
+      "source": "Commander Vel on the decision she hasn't made",
+      "text": "There's an intelligence finding from Cord that has been in my desk for four months. The finding is real — I've verified it three ways. What I haven't decided is what to do with it, because the thing it implies about someone in the Brotherhood's extended relationship network is significant enough that acting incorrectly would be worse than not acting. I'm waiting until I know the correct action. Cord asked once about the finding's status. I said: being considered. Cord nodded. Cord understands that being considered is not the same as being ignored.",
+      "keywords": ["intelligence","finding","cord","desk","four","months","finding","real","verified","three"]
+    }
+  ]
+}

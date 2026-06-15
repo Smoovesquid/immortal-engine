@@ -1,0 +1,57 @@
+{
+  "id": "compact_armourer",
+  "name": "Driv",
+  "role": "Scarlet Compact weapons maintainer; keeps the field teams' weapons functional; not a blacksmith, a technician",
+  "cluster": "scarlet_compact",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "weapons_maintenance_1",
+      "source": "Driv on maintaining weapons",
+      "text": "A weapon is a precision instrument that degrades under use. In eleven years of Compact weapons maintenance, the work is: understand the weapon's current state, understand how the use has degraded it from the optimal state, and restore the optimal state before the next use. The field team's weapon that fails in the field is the failure I prevented by doing the work before the field. In eleven years, no weapon I've maintained has failed in the field.",
+      "keywords": ["weapon","precision","instrument","degrades","under","use","eleven","years","compact","weapons"]
+    },
+    {
+      "id": "tade_1",
+      "source": "Driv on Tade",
+      "text": "Tade quartermastes the equipment supply. In nine years of working alongside Tade, the division: Tade manages what we have and what we need to get. I manage the condition of what we have. The weapon Tade stores is a different weapon than the weapon I've serviced — Tade's weapon is in inventory, mine is in condition. In nine years, the handoff between Tade and me is the most important handoff in the Compact's equipment function: the weapon goes from condition-maintained to issued to returned to condition-checked before return to storage.",
+      "keywords": ["tade","quartermasters","equipment","supply","nine","years","working","alongside","tade","division"]
+    },
+    {
+      "id": "weld_1",
+      "source": "Driv on Weld",
+      "text": "Weld the forge master is the source for weapons that exceed my repair capacity. In seven years of the Compact's forge relationship with Weld, what I bring to Weld: the weapon that needs more than maintenance — the weapon where the degradation has exceeded what skilled maintenance can restore. What Weld provides: the forge work that returns the weapon to the standard from which maintenance can again work. In seven years, I've brought seventeen weapons to Weld. All seventeen: returned to condition. None lost.",
+      "keywords": ["weld","forge","master","source","weapons","exceed","repair","capacity","seven","years"]
+    },
+    {
+      "id": "rath_1",
+      "source": "Driv on Rath",
+      "text": "Rath's weapons come back from the field in the worst condition of any team member. In eight years of maintaining the Compact's weapons, Rath's weapons are the most technically demanding maintenance cases. What Rath does with a weapon in the field: it's effective. What Rath's effectiveness does to the weapon: significant. In eight years, Rath's weapons have required more post-field maintenance time than anyone else's by approximately forty percent. In eight years, I've said to Rath once: the weapon is a tool, not a consumable. Rath said: I know. The weapons keep coming back in the same condition.",
+      "keywords": ["rath's","weapons","come","back","field","worst","condition","any","team","member"]
+    },
+    {
+      "id": "ren_1",
+      "source": "Driv on Ren",
+      "text": "Ren the scout returns weapons in better condition than most. In four years of maintaining Ren's kit, the scout's weapon use is different from the combat team's weapon use: the scout's weapon is the contingency, not the primary tool. The weapon that's carried but not used returns in better condition than the weapon that's carried and used heavily. In four years, Ren's weapons require maintenance but the maintenance is lighter. What I've told Ren: whatever you're doing with the weapons in the field, keep doing it.",
+      "keywords": ["ren","scout","returns","weapons","better","condition","most","four","years","maintaining"]
+    },
+    {
+      "id": "what_maintenance_is_1",
+      "source": "Driv on what weapons maintenance actually is",
+      "text": "In eleven years, the work is primarily: cleaning, edge-maintenance, structural inspection, lubricating the moving parts, and assessing the cumulative degradation against the weapon's expected service life. The creative part: diagnosing problems that the field team didn't notice because they were using the weapon in the field when the problem was developing. The weapon that's developing a problem presents differently under load than at rest. In eleven years, the most important skill is reading the weapon at rest for what it will do under load.",
+      "keywords": ["eleven","years","work","primarily","cleaning","edge-maintenance","structural","inspection","lubricating","moving"]
+    },
+    {
+      "id": "what_driv_holds_1",
+      "source": "Driv on the weapon failure that didn't happen",
+      "text": "Year six. A weapon I inspected before a mission and returned to service with a note that it had three more uses before it needed forge work. The field team used it for five uses because the mission extended beyond the plan. The weapon returned from the five uses without failing. In five years since, I've replicated the test conditions to understand whether my assessment was wrong or whether the weapon performed beyond its specification. In five years, I believe the assessment was right and the weapon performed beyond its specification. In five years, I haven't changed the protocol. The protocol is based on the weapon's specification, not its occasional performance beyond it.",
+      "keywords": ["year","six","weapon","inspected","before","mission","returned","service","note","had"]
+    },
+    {
+      "id": "eleven_years_1",
+      "source": "Driv on eleven years of Compact weapons maintenance",
+      "text": "In eleven years, I've maintained approximately four hundred weapons for approximately sixty active Compact members over the period. Four hundred weapons in various states of condition that have passed through my hands and returned to service. In eleven years, the number that returned to service in worse condition than I sent them: zero. The number that required forge intervention: seventeen. The number that couldn't be restored and were retired: four. In eleven years, four retirements from a working inventory of approximately sixty active weapons: the inventory is in good condition.",
+      "keywords": ["eleven","years","maintained","approximately","four","hundred","weapons","approximately","sixty","active"]
+    }
+  ]
+}

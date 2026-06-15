@@ -1,0 +1,57 @@
+{
+  "id": "merchant_quarter_landlord",
+  "name": "Arv",
+  "role": "Merchant quarter landlord; owns the commercial properties that the district's smaller merchants rent",
+  "cluster": "merchant_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "landlord_1",
+      "source": "Arv on property ownership in the merchant quarter",
+      "text": "In twenty years of owning commercial property in the merchant quarter, what the commercial landlord is in the district's economic structure: the person whose property decisions determine which commercial functions can exist in the district. In twenty years, the merchant who can't afford the district's market rate doesn't operate in the district. The property that prices the merchant out is the property that shapes the district's commercial composition. In twenty years, I've been part of what the district's commercial composition is.",
+      "keywords": ["twenty","years","owning","commercial","property","merchant","quarter","what","commercial","landlord"]
+    },
+    {
+      "id": "saben_1",
+      "source": "Arv on Saben",
+      "text": "Saben is my largest commercial tenant and the relationship between the district's largest merchant and the district's largest commercial landlord is the district's most important property relationship. In fifteen years of the Arv-Saben landlord-tenant relationship, what the relationship has required: the negotiation that produces the rent structure that serves both the commercial viability of Saben's operation and the investment return the property requires. In fifteen years, two rent renegotiations. Both produced agreements that both parties accepted without litigation. In fifteen years, two negotiations in fifteen years is the measure of the relationship.",
+      "keywords": ["saben","largest","commercial","tenant","relationship","district's","largest","merchant","district's","largest"]
+    },
+    {
+      "id": "liss_notary_1",
+      "source": "Arv on Liss the Notary",
+      "text": "Liss notarizes the lease agreements that formalize my property relationships. In sixteen years of using Liss's notarization for commercial leases, what the notarized lease provides: the legal framework within which the landlord-tenant relationship operates when the relationship is disputed. In sixteen years, three lease disputes that went through the dispute process. In sixteen years, three disputes in sixteen years, all resolved through the process. In sixteen years, the notarized lease is the instrument that makes the process work. Without the notarized lease, the dispute has no resolution mechanism.",
+      "keywords": ["liss","notarizes","lease","agreements","formalize","property","relationships","sixteen","years","using"]
+    },
+    {
+      "id": "cass_notary_1",
+      "source": "Arv on Cass the Notary",
+      "text": "Cass the second notary handles the overflow that Liss's notary practice generates. In five years of using Cass's notarization for the leases that Liss's schedule doesn't accommodate, what the second notary's availability provides to the commercial landlord: the ability to execute time-sensitive lease agreements without the scheduling constraint that a single notary creates. In five years, four leases that required Cass's availability rather than Liss's. In five years, the four leases Cass processed were executed on the schedule the commercial situation required.",
+      "keywords": ["cass","second","notary","handles","overflow","liss's","notary","practice","generates","five"]
+    },
+    {
+      "id": "pol_1",
+      "source": "Arv on Pol",
+      "text": "Pol assesses the commercial value of my properties for the settlement's tax function. In twelve years of the Arv-Pol property landlord-tax assessor relationship, what the assessment function means for the commercial landlord: the taxable value of the property affects the return calculation that determines the rent structure. In twelve years, Pol's assessments have been the starting point for two rent renegotiations with tenants — the assessment increased the tax burden and the increased burden was a legitimate input to the rent renegotiation. In twelve years, two negotiation-relevant assessments. Both Pol's assessments were accurate.",
+      "keywords": ["pol","assesses","commercial","value","properties","settlement's","tax","function","twelve","years"]
+    },
+    {
+      "id": "what_arv_holds_1",
+      "source": "Arv on what twenty years of commercial property ownership holds",
+      "text": "In twenty years, what the property ownership has given me: the long-term picture of the district's commercial health. In twenty years, the commercial property that sits empty is the commercial property that is telling the owner something about the district's commercial health. In twenty years, my vacancy rate is the measure that I watch more than any other. In twenty years, the vacancy rate that is consistently near zero: the district is commercially healthy. The vacancy rate that is rising: something in the district's commercial environment is changing.",
+      "keywords": ["twenty","years","what","property","ownership","given","long-term","picture","district's","commercial"]
+    },
+    {
+      "id": "what_arv_wont_rent_to_1",
+      "source": "Arv on what the commercial landlord won't rent to",
+      "text": "In twenty years, the tenant type I've declined three times: the commercial operation that requires the property to be modified in ways that reduce the property's future use options. In twenty years, the specialized modification that serves one tenant's operation makes the property harder to rent after that tenant leaves. In twenty years, three declines. In twenty years, two of the three declined tenants subsequently established operations in the district through properties whose previous owners didn't have the same concern. In twenty years, two of the three operations are now successful. In twenty years, the other property owners made the more flexible decision and it worked.",
+      "keywords": ["twenty","years","tenant","type","declined","three","times","commercial","operation","requires"]
+    },
+    {
+      "id": "twenty_years_1",
+      "source": "Arv on twenty years as a merchant quarter commercial landlord",
+      "text": "In twenty years, the commercial properties I own have housed approximately forty distinct commercial operations. Of forty: twenty-eight are still operating in my properties. Eight completed their tenancy in good standing and moved to owned properties or larger spaces. Four ended in dispute or failure. In twenty years, forty tenancies, twenty-eight current, eight successful departures, four failures. In twenty years, the four failures are the cases that shaped the tenant assessment process the thirty-six non-failures used.",
+      "keywords": ["twenty","years","commercial","properties","own","housed","approximately","forty","distinct","commercial"]
+    }
+  ]
+}

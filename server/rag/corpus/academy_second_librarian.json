@@ -1,0 +1,57 @@
+{
+  "id": "academy_second_librarian",
+  "name": "Prill the Younger",
+  "role": "Academy assistant librarian; Henn's assistant; distinct from Prill the theorist; manages the library's daily use and access",
+  "cluster": "academy_of_runes",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "asst_librarian_1",
+      "source": "Prill the Younger on the assistant librarian's function",
+      "text": "In six years as Henn's assistant in the Academy library, what the assistant librarian is: the daily management of the library's use that allows Henn to focus on the collection's curation. In six years, the library that is used well requires the curation function that Henn provides and the access management function that I provide. In six years, the collection and the access to the collection are both required — the collection without access is unusable, the access without the collection is purposeless.",
+      "keywords": ["six","years","henn's","assistant","academy","library","what","assistant","librarian","daily"]
+    },
+    {
+      "id": "henn_1",
+      "source": "Prill the Younger on Henn",
+      "text": "Henn has been the library's curator for seventeen years and the library reflects seventeen years of Henn's curatorial judgment. In six years of working with and for Henn, what the senior librarian's seventeen years of judgment has given to the library: the collection that is coherent rather than accumulated. In six years, I've learned the difference between the collection that is built and the collection that has simply grown. In six years, Henn builds the collection. In six years, I'm learning to tell the difference.",
+      "keywords": ["henn","been","library's","curator","seventeen","years","library","reflects","seventeen","years"]
+    },
+    {
+      "id": "burr_1",
+      "source": "Prill the Younger on Burr",
+      "text": "Burr leads the Academy and the library serves Burr's research needs alongside the needs of every other Academy member. In five years of managing Burr's library access, what the rector's research needs are: extensive and specific. In five years, Burr has requested materials from the library in three specific research areas that I've identified from the access pattern. In five years, the access pattern of the person who uses the library seriously is a pattern that tells you what they're thinking about. In five years, Burr is thinking about things that the three research areas suggest.",
+      "keywords": ["burr","leads","academy","library","serves","burr's","research","needs","alongside","needs"]
+    },
+    {
+      "id": "fen_student_1",
+      "source": "Prill the Younger on Fen the Student",
+      "text": "Fen the Student is the library's most frequent user in the current student cohort. In four years of managing Fen's library access, what the advanced student's research pattern suggests: the question that Fen is developing is the question that requires the library's three most technically demanding collections. In four years, the access pattern of the person who is developing a challenging research question is the access pattern of the person who is working at the edge of what the library can support. In four years, Fen is at the edge. In four years, the library is just sufficient for the question.",
+      "keywords": ["fen","student","library's","most","frequent","user","current","student","cohort","four"]
+    },
+    {
+      "id": "linn_1",
+      "source": "Prill the Younger on Linn",
+      "text": "Linn the rune calligrapher uses the library's historical calligraphy collection for reference. In four years of managing Linn's access to the historical collection, what the calligrapher's research pattern is: the specific historical documents that show how specific rune notations have been rendered over time. In four years, Linn's access to the historical calligraphy is the access of the person who is comparing their current practice to the historical practice. In four years, the calligrapher who knows the historical practice and the current practice is the calligrapher who understands what has been developed and what has been lost.",
+      "keywords": ["linn","rune","calligrapher","uses","library's","historical","calligraphy","collection","reference","four"]
+    },
+    {
+      "id": "what_prill_younger_holds_1",
+      "source": "Prill the Younger on what six years of library work holds",
+      "text": "In six years, what the library work has given me that I didn't expect: the map of the Academy's intellectual life that the library access patterns produce. In six years, the library access is the Academy's intellectual life made visible — who is thinking about what, at what depth, for how long. In six years, the assistant librarian has a picture of the Academy's intellectual activity that the individual researchers don't have of each other. In six years, the picture is the library's invisible product alongside the visible product of the books and documents.",
+      "keywords": ["six","years","what","library","work","given","didn't","expect","map","academy's"]
+    },
+    {
+      "id": "the_access_that_concerned_1",
+      "source": "Prill the Younger on the access pattern that concerned them",
+      "text": "In six years, the access pattern that concerned me and that I brought to Henn's attention: a series of requests for specific documents from a person who wasn't an Academy member and who had been granted guest access for a stated research purpose. The documents requested didn't match the stated research purpose. In four years since bringing it to Henn's attention, what Henn's response was: the guest access was not renewed and the specific documents were moved to restricted access. In four years, the access pattern that concerned me was the concern that was addressed before the concern became the problem.",
+      "keywords": ["six","years","access","pattern","concerned","brought","henn's","attention","series","requests"]
+    },
+    {
+      "id": "six_years_1",
+      "source": "Prill the Younger on six years as Henn's library assistant",
+      "text": "In six years, the Academy library has been the place where the Academy's intellectual work is sourced and returned. In six years, the researcher brings the question to the library and takes away the materials that help the question develop. In six years, I'm part of the sourcing and the returning — the access management that makes the library useful. In six years, the library's usefulness to the Academy is partly the collection and partly the access. In six years, I manage the access. In six years, the access has been managed.",
+      "keywords": ["six","years","academy","library","been","place","where","academy's","intellectual","work"]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "id": "covenant_elder2",
+  "name": "Rass",
+  "role": "Senior Covenant elder; has served the Covenant for fifty-one years; remembers when Father Len arrived",
+  "cluster": "covenant_of_seven",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "elder_1",
+      "source": "Rass on fifty-one years in the Covenant",
+      "text": "In fifty-one years, the Covenant has been the fixed structure around which my life has moved. Not the other way — the Covenant didn't move around my life. I moved around it. In fifty-one years I've watched seven people fill the role that Father Len currently holds. Each brought something different to the role. What the role itself brings: continuity of purpose across the people who hold it. The purpose is older than any of us.",
+      "keywords": ["fifty-one","years","covenant","been","fixed","structure","around","which","life","moved"]
+    },
+    {
+      "id": "father_len_1",
+      "source": "Rass on Father Len",
+      "text": "Father Len has been in the Covenant for twenty-three years and in the leadership role for fourteen. In twenty-three years of knowing Father Len, what I've watched: the person who arrived and the person who leads are the same person shaped by the role. The role changes people. It doesn't change who they are. It changes how who they are is expressed. Father Len arrived with a specific quality of attention. The role has given the attention more to attend to. The quality was there before the role.",
+      "keywords": ["father","len","been","covenant","twenty-three","years","leadership","role","fourteen","twenty-three"]
+    },
+    {
+      "id": "veth_1",
+      "source": "Rass on Veth",
+      "text": "Veth has dug the Covenant's graves for twenty-six years. In twenty-six years, Veth has prepared the final place for every person who left this Covenant through death. I've attended approximately one hundred of those departures — the ones that Rass personally attended because of the relationship. In one hundred Covenant departures over fifty-one years, the consistent thing: the grave was ready. In fifty-one years, the grave has always been ready.",
+      "keywords": ["veth","dug","covenant's","graves","twenty-six","years","twenty-six","years","veth","prepared"]
+    },
+    {
+      "id": "wid_1",
+      "source": "Rass on Wid",
+      "text": "Wid rings the bells. In twenty years of Wid ringing the bells at the Covenant's occasions, the bells mark the time. I've spent fifty-one years at the Covenant and the bell is the time of the Covenant — it tells me when the occasion begins, when it ends, when something significant has happened. In fifty-one years, the bell's sound is the sound of the Covenant's life. What Wid does when ringing: makes the Covenant's time audible. The time was always there. The bell makes it present.",
+      "keywords": ["wid","rings","bells","twenty","years","wid","ringing","bells","covenant's","occasions"]
+    },
+    {
+      "id": "mam_wey_1",
+      "source": "Rass on Mam Wey",
+      "text": "Mam Wey and I are the same generation. In fifty-one years in the Covenant, Mam Wey has been the parallel life in the district — the person who was born here, lived here, and knows the district from within the district's own life. What Mam Wey knows about the district that I know about the Covenant: we're reading the same history from two positions. The Covenant's fifty-one years and the district's seventy-eight years in Mam Wey's memory: together, they're the most complete account of this place that exists.",
+      "keywords": ["mam","wey","same","generation","fifty-one","years","covenant","mam","wey","been"]
+    },
+    {
+      "id": "what_fifty_one_years_teaches_1",
+      "source": "Rass on what fifty-one years in the Covenant teaches",
+      "text": "The Covenant is not the same Covenant it was fifty-one years ago. The purpose is the same. The doctrine is the same. The people are different. The building is different. The community's needs are different. In fifty-one years, I've learned that the institution is the purpose maintained across the changing people and circumstances. The people and circumstances will change. If the purpose holds: the institution survives. If the people and circumstances overwhelm the purpose: the institution stops being the institution even if it keeps the name.",
+      "keywords": ["covenant","not","same","covenant","was","fifty-one","years","ago","purpose","same"]
+    },
+    {
+      "id": "what_rass_holds_1",
+      "source": "Rass on what fifty-one years has shown her that she hopes younger members understand",
+      "text": "The crisis that looked like the end of the Covenant in year thirty-three and that wasn't. I was there. In fifty-one years, that was the closest the Covenant came to stopping being the Covenant. What resolved it: not the people at the center of the crisis, but the people at the edges who maintained the purpose while the center was in turmoil. The edge-maintenance is what the institution depends on in crisis. In fifty-one years, I've become the edge-maintenance. That's what the long tenure is for.",
+      "keywords": ["crisis","looked","like","end","covenant","year","thirty-three","wasn't","there","fifty-one"]
+    },
+    {
+      "id": "fifty_one_years_1",
+      "source": "Rass on fifty-one years and what comes next",
+      "text": "In fifty-one years, I've become the Covenant's memory of itself. I remember things that are no longer in any record — conversations, decisions, the texture of specific moments that shaped the institution in ways the current members don't know about. In fifty-one years, I've become the archive that isn't written. What I'm doing now, at eighty-one: transmitting what I can of the unwritten archive to the people who will be here after I'm not. The transmission is imperfect. The loss is inevitable. I'm transmitting as much as I can in the time I have.",
+      "keywords": ["fifty-one","years","become","covenant's","memory","itself","remember","things","longer","any"]
+    }
+  ]
+}

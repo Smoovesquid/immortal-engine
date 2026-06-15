@@ -1,0 +1,57 @@
+{
+  "id": "sera_dort",
+  "name": "Sera and Dort",
+  "role": "Acrobats, twin performers, Ember Road Players",
+  "cluster": "ember_road_players",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "twins_1",
+      "source": "Sera and Dort together, to a crowd after a performance",
+      "text": "We've been asked if we finish each other's sentences. We've been asked this — more times than we can count. We don't finish each other's sentences. We share sentences. There is a difference. A finished sentence is one person's sentence. Our sentences are not anyone's sentences. They are — a shape two people make, the way that an arch is a shape two stones make. Neither stone is the arch. The arch is both. We are the arch.",
+      "keywords": ["finish","sentences","share","difference","shape","arch","stones","neither","both","together"]
+    },
+    {
+      "id": "language_1",
+      "source": "Dort, alone, to someone who asked about the private language",
+      "text": "It started before we had words. Before the language anyone else uses. We had a — system. Tap, lean, pressure, breath pattern. We still use it. It's not secret on purpose. It's just ours. When Sera wants me to go left she does something with her shoulder that I have responded to since before I could speak and will respond to until I'm dead. It's not a code. It's more like — shared nerves.",
+      "keywords": ["started","words","system","tap","lean","pressure","breath","shoulder","respond","nerves"]
+    },
+    {
+      "id": "performance_1",
+      "source": "Sera, before a performance, when asked if she's nervous",
+      "text": "I'm never nervous alone. I'm sometimes nervous that Dort is nervous, which is different because then I have to manage my own performance and track something I can't control. But when Dort is calm I am perfectly calm. The act is: I throw her and she comes back. That's all it is. The height and the timing and the catching are details. The center is: I throw her and she comes back. I've never not believed she'd come back.",
+      "keywords": ["nervous","calm","throw","comes","back","height","timing","catching","details","believed"]
+    },
+    {
+      "id": "understanding_1",
+      "source": "Sera and Dort together, explaining themselves to a traveler",
+      "text": "People think being twins means being the same. We are the most — different — two people — you will ever meet. Sera is meticulous. Dort is — approximate. Sera plans three moves ahead. Dort plans the first move and trusts the second will arrive. We have never agreed about — how to live. We agree about everything that — matters.",
+      "keywords": ["twins","same","different","meticulous","approximate","plans","ahead","trusts","arrive","matters"]
+    },
+    {
+      "id": "height_1",
+      "source": "Dort, on the ground after a very high catch, to someone who said they were afraid watching",
+      "text": "You were right to be afraid. The fear means you understood what was happening. Most people watch and understand it's dangerous but don't feel it — their body doesn't believe the height. Your body believed it. That's rare. That's actually what the act is for. Not the gasp of people who know they should gasp. The genuine fear of someone who understands they're watching something that could fail. You were the best audience we had tonight.",
+      "keywords": ["afraid","fear","understood","dangerous","body","height","believed","genuine","fail","audience"]
+    },
+    {
+      "id": "kevin_1",
+      "source": "Sera, when asked how Kevin Bacon recruited them",
+      "text": "He watched us in a market square — we were doing it for money, not performance, just the two of us working a crowd. And he watched the whole thing and at the end he said: that's not a trick. A trick is something anyone could learn with enough practice. What you're doing requires something that can't be learned. I want to put that in a tent and charge for it. We said yes. That was seven years ago.",
+      "keywords": ["market","square","money","crowd","trick","learn","practice","requires","tent","charge"]
+    },
+    {
+      "id": "separation_1",
+      "source": "Dort to Pip, about what would happen if they were separated",
+      "text": "We've never been separated more than two days. In those two days I have a recurring experience of reaching for something and — my hand coming back empty. Not literally. A thought reaches for something and comes back without the thing it went for. I understand then that — most of my thinking happens in the — in between. The space between her and me. Remove the space and half my thoughts don't — complete.",
+      "keywords": ["separated","days","reaching","empty","thought","thinking","space","between","complete","remove"]
+    },
+    {
+      "id": "ground_1",
+      "source": "Sera and Dort together, to Swords Odo, who wanted to add a fight sequence to their act",
+      "text": "We don't fight. Not because we — can't. Because everything we do requires — absolute trust. A fight requires — controlled distrust. The choreography of combat is: you must make me believe you want to harm me. We cannot do that to each other. We have tried. Our bodies — refuse. Odo laughed. He said that was — the most reasonable thing — anyone had ever said — about why not to fight.",
+      "keywords": ["fight","cannot","absolute","trust","controlled","distrust","choreography","harm","bodies","refuse"]
+    }
+  ]
+}

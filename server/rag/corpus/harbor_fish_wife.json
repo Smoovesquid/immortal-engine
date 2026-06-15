@@ -1,0 +1,57 @@
+{
+  "id": "harbor_fish_wife",
+  "name": "Sona",
+  "role": "Fisherman's wife and partner; manages the boat's accounts, nets, and sales while her husband is out",
+  "cluster": "harbor_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "partnership_1",
+      "source": "Sona on the fishing partnership",
+      "text": "Prad goes out on the water. I manage everything that makes it worth going out. In sixteen years, the partnership is: Prad knows the water and the fish, I know the accounts and the nets and the selling. The sixteen years have been continuous in the sense that neither function can work without the other. In sixteen years, when people ask about Prad's operation, they're asking about both of us. What they see is one fishing boat. What they're looking at is two complete businesses that happen to share a vessel.",
+      "keywords": ["prad","goes","out","water","manage","everything","makes","worth","going","sixteen"]
+    },
+    {
+      "id": "kett_1",
+      "source": "Sona on Kett",
+      "text": "Kett buys our fish. In fourteen years of selling to Kett, the transaction is daily when Prad is out: what Prad brings back, I assess and price, Kett assesses and counter-prices, we settle. In fourteen years, the settlement is usually within a few minutes. Kett and I have learned what the other will accept. What we've built in fourteen years: a shared understanding of what the day's catch is worth that doesn't require extensive negotiation because we've done enough negotiation to know where we'll end up.",
+      "keywords": ["kett","buys","fish","fourteen","years","selling","kett","transaction","daily","when"]
+    },
+    {
+      "id": "rulf_1",
+      "source": "Sona on Rulf",
+      "text": "Rulf manages the dock schedule that determines when Prad can go out and come in. In twelve years, the dock schedule relationship is: Rulf's schedule determines our revenue schedule. The dock that's available for Prad's boat is the dock that allows the trip. In twelve years, the schedule conflicts: three times Prad's planned departure was pushed because of dock priority for a larger vessel. In twelve years, Rulf has given advance notice of the push every time. The advance notice allows the preparation to shift rather than be wasted.",
+      "keywords": ["rulf","manages","dock","schedule","determines","when","prad","can","go","out"]
+    },
+    {
+      "id": "twinn_1",
+      "source": "Sona on Twinn",
+      "text": "Twinn the elder fisher and I have known each other for sixteen years — Twinn was fishing when I married into the harbor's fishing community. In sixteen years, what Twinn has given me that wasn't available anywhere else: the historical understanding of the fishing grounds that Prad and I work. The fishing grounds that were productive thirty years ago and aren't now. The grounds that are productive now that weren't worth fishing thirty years ago. In sixteen years, Twinn's historical knowledge has informed Prad's fishing decisions more than any other single source.",
+      "keywords": ["twinn","elder","fisher","known","each","other","sixteen","years","twinn","was"]
+    },
+    {
+      "id": "prad_1",
+      "source": "Sona on Prad",
+      "text": "Prad has been fishing this harbor for twenty-two years. In sixteen years of managing Prad's operation, what I know about Prad on the water: I know it from what Prad comes back with and what Prad says happened out there, not from being there. In sixteen years, the water knowledge and the shore knowledge are separate. Prad's water knowledge and my shore knowledge together are what makes the operation work. In sixteen years, the two knowledge sets are the partnership's actual value.",
+      "keywords": ["prad","been","fishing","harbor","twenty-two","years","sixteen","years","managing","prad's"]
+    },
+    {
+      "id": "what_the_partnership_holds_1",
+      "source": "Sona on what sixteen years of the partnership holds",
+      "text": "In sixteen years, the fishing operation is the sum of Prad's water knowledge and my shore management. What the shore management includes that people don't think of: the net maintenance, the equipment purchasing, the account tracking, the relationship with the dock, the relationship with Kett, the weather monitoring that helps decide whether Prad goes out on any given day. In sixteen years, the shore management is approximately half the operation. In sixteen years, Prad is the half people see. I'm the other half.",
+      "keywords": ["sixteen","years","fishing","operation","sum","prad's","water","knowledge","shore","management"]
+    },
+    {
+      "id": "what_sona_holds_1",
+      "source": "Sona on the season she managed alone",
+      "text": "Year nine. A season where Prad was injured and couldn't go out for three months. In three months of year nine, I managed the shore operation without the water operation: maintained the equipment, maintained the relationships, kept the accounts in order, and arranged for the boat to be crewed by temporary arrangement so the vessel was still earning. In three months, I learned what the operation is without the fishing: it's the infrastructure waiting for the fishing to return. In three months, the infrastructure held. When Prad returned to the water, the operation resumed without a gap.",
+      "keywords": ["year","nine","season","where","prad","injured","couldn't","go","out","three"]
+    },
+    {
+      "id": "sixteen_years_1",
+      "source": "Sona on sixteen years of the harbor's fishing partnership",
+      "text": "In sixteen years, the operation has produced the income that has sustained our household and contributed to the harbor quarter's fish supply. In sixteen years, the good seasons and the poor seasons are roughly in balance: more good than poor, but the poor seasons are what you plan for. In sixteen years, what I've planned for: the poor season, the injury, the equipment failure, the net loss, the dock dispute. In sixteen years, all of these have happened. In sixteen years, the operation is still operating.",
+      "keywords": ["sixteen","years","operation","produced","income","sustained","household","contributed","harbor","quarter's"]
+    }
+  ]
+}

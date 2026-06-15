@@ -1,0 +1,58 @@
+{
+  "id": "swale_beekeeper",
+  "name": "Swale",
+  "role": "Beekeeper; Hedge Brotherhood / Church of Incrementalism",
+  "cluster": "hedge_brotherhood",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "honey_1",
+      "source": "Swale when asked about the honey",
+      "text": "The honey is honey. It comes from the bees. The bees work the flowers in the eastern meadow and the eastern meadow has a particular mix of plants that I did not arrange — I planted a few things years ago and the meadow arranged the rest. What results is what results. I've been told the honey has properties. I don't dispute this. I don't explain it. The bees know what they're doing better than I do and I respect the bees.",
+      "keywords": ["honey","bees","eastern","meadow","plants","planted","results","properties","explain","respect"]
+    },
+    {
+      "id": "smoke_1",
+      "source": "Swale to the trapper Vyd, after one of the gatherings",
+      "text": "The smoke is what it is. You breathe it and it slows the part of the mind that generates noise. That's the whole of it. The slowing is what you practice in. The practice is: what is the next small thing? Only the next small thing. Not the thirty things after it. Not the thirty things before it that should have been different. The next small thing. The smoke creates a space in which that question becomes the only question. The space is the gift. The practice is what you do in it.",
+      "keywords": ["smoke","breathes","slows","mind","noise","practice","next","small","thing","space"]
+    },
+    {
+      "id": "incrementalism_1",
+      "source": "Swale to someone who asked about the smoke gatherings",
+      "text": "I keep bees. The honey is good and people buy it and that's the whole public description of what I do. If you've been told there's more, then you've been told by someone who decided you were ready to be told, and that person's judgment was sufficient for me or you wouldn't be here. I'll tell you this much: the instruction is simple. The simplicity is deceptive. Come back on the first of next month and I'll show you what simple is.",
+      "keywords": ["bees","honey","public","description","told","ready","judgment","instruction","simple","deceptive"]
+    },
+    {
+      "id": "mantis_1",
+      "source": "Swale to a person who asked about the Great Mantis",
+      "text": "The Mantis is digesting us. This is not a metaphor — or rather, it is a metaphor that is also literally true, which is the kind of statement that either opens something in you or it doesn't. You are being digested. You have always been being digested. The question is: are you moving toward the mouth or toward the end? The practice is about the direction. The direction is about the next small thing. Start there.",
+      "keywords": ["mantis","digesting","metaphor","literally","true","opens","mouth","end","direction","practice"]
+    },
+    {
+      "id": "calla_1",
+      "source": "Swale when Calla the hedge witch brought up the unidentifiable component",
+      "text": "I know she's been analyzing the honey. I don't mind. What Calla is looking for in the honey is a component that her tools can identify, and she's right that there is such a component, and she's right that her tools can't find it. The component is not in the honey's chemistry. It's in where the bees went. You can't analyze a location by analyzing what came from it. You have to go to the location. I've invited her. She hasn't come yet.",
+      "keywords": ["calla","analyzing","honey","component","identify","tools","chemistry","bees","location","invited"]
+    },
+    {
+      "id": "vyd_1",
+      "source": "Swale on the trapper Vyd",
+      "text": "Vyd found the gatherings through the forest, which is the correct way to find them. People who find things through the correct path are usually correct for the thing. He came in skeptical — the right posture — and he came back the next month, which means something happened in the first visit that was worth returning for. He doesn't speak much at the gatherings. He doesn't need to. The ones who speak least are usually the ones the practice is working on most directly.",
+      "keywords": ["vyd","found","gatherings","forest","correct","path","skeptical","returned","month","speak"]
+    },
+    {
+      "id": ["bees_1"],
+      "id": "bees_1",
+      "source": "Swale, alone, at the hives at dawn",
+      "text": "The bees are better at the practice than I am. They have been doing the next small thing since before language existed to describe the next small thing. They don't plan the honey. They work the flower. The honey happens. I try to remember this when I'm planning the honey, which is the wrong relationship to the work. The bees correct me. I keep them partly for the honey and partly for the correction.",
+      "keywords": ["bees","practice","next","small","thing","language","plan","honey","work","flower"]
+    },
+    {
+      "id": "increment_1",
+      "source": "Swale to a person who asked how long the practice takes",
+      "text": "It never finishes. That's the first thing. If you're looking for a state of completion, the practice isn't going to give you one. What the practice gives you is the next small thing, and after that the next small thing, and after that the next small thing. People find this unsatisfying. I find it the most satisfying description of a life I've encountered. You are always doing the next thing. The next thing is always available. There is no state of having done enough because enough keeps becoming more.",
+      "keywords": ["finishes","never","completion","practice","next","small","thing","satisfying","life","enough"]
+    }
+  ]
+}

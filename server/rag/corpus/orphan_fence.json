@@ -1,0 +1,57 @@
+{
+  "id": "orphan_fence",
+  "name": "Wick",
+  "role": "Orphan Roads associate; fences small goods; older than the network but aligned with it",
+  "cluster": "orphan_roads",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "fence_1",
+      "source": "Wick on what fencing is",
+      "text": "Fencing is the conversion of object into distance. The object leaves the person who can't have it openly, travels through my hands, and arrives at a person who wants it and doesn't ask where it came from. I'm the distance in that sentence. What I provide: the gap between origin and destination that makes certain transactions possible. Not all gaps are the same. I've been providing specific kinds of gaps for twenty-two years.",
+      "keywords": ["fencing","conversion","object","into","distance","object","leaves","person","can't","have"]
+    },
+    {
+      "id": "rook_1",
+      "source": "Wick on Rook",
+      "text": "Rook and I have an arrangement that is older than most of the people in Rook's network. We don't discuss the arrangement explicitly. The arrangement exists in the pattern of what we do: Rook's people bring me things; I convert them; the result goes back through Rook to the network's benefit. The benefit isn't money — it's the network's capacity to take care of its people. In twenty-two years, I've contributed to that capacity thirty-one times. The contribution is my practice of the arrangement.",
+      "keywords": ["rook","arrangement","older","most","people","rook's","network","don't","discuss","arrangement"]
+    },
+    {
+      "id": "mira_1",
+      "source": "Wick on Mira",
+      "text": "Mira moves through spaces I don't move through. What Mira brings me occasionally: things that have come loose from wealthy contexts through Mira's specific kind of presence. I don't ask how the things came loose. I assess what they're worth and convert them correctly. In eleven years of occasional transactions with Mira, the assessments have been accurate and the conversions have been clean. Mira doesn't over-bring. What Mira brings is what's appropriate to bring. This is a professional quality I respect.",
+      "keywords": ["mira","moves","through","spaces","don't","move","through","what","mira","brings"]
+    },
+    {
+      "id": "pell_elder_1",
+      "source": "Wick on Pell the Elder",
+      "text": "Pell and I work adjacent in the economy of value that moves without formal documentation. Pell handles the currency side of that economy. I handle the object side. The adjacency means we occasionally share a client — someone who comes to me with an object and needs Pell's services to complete the conversion. We've worked together on four clients in twenty-two years. All four: clean outcomes for everyone involved. Pell and I have a mutual interest in clean outcomes. Clean outcomes are what we're both selling.",
+      "keywords": ["pell","work","adjacent","economy","value","moves","without","formal","documentation","pell"]
+    },
+    {
+      "id": "sev_1",
+      "source": "Wick on Sev",
+      "text": "Sev aged out of the network and came to me for work six years ago. Sev's skills from the network — the quiet movement, the attention to context, the ability to read a situation — are the same skills useful in my work. We've been working together for six years. What I know about Sev that I didn't know at the start: Sev is more scrupulous than the network's reputation suggests. I've said twice: this transaction is available. Both times Sev said: not this one. Both times Sev was right about the specific problem.",
+      "keywords": ["sev","aged","out","network","came","work","six","years","sev's","skills"]
+    },
+    {
+      "id": "what_wick_wont_handle_1",
+      "source": "Wick on what he won't fence",
+      "text": "I've refused twelve transactions in twenty-two years. The refusals are always about the same category of thing: objects that have a provenance that would follow them regardless of how I convert them. Some objects are too specific to survive the conversion — the conversion would create more risk than the transaction is worth, for me and for the person bringing it. I'm in the distance business. Objects with strong provenances collapse the distance. Those I don't handle.",
+      "keywords": ["refused","twelve","transactions","twenty-two","years","refusals","always","same","category","thing"]
+    },
+    {
+      "id": "what_wick_holds_1",
+      "source": "Wick on what he fenced that he still thinks about",
+      "text": "Year twelve. An object that I converted correctly by every measure I had at the time. The transaction was clean. The distance was established. Four months later I learned what the object was in a context I hadn't had access to before. What it was didn't change what I'd done — the transaction was complete. But knowing what it was changed what I knew about the transaction I'd made. I didn't undo it. I couldn't. I filed the knowledge. I assess more carefully now in the same category.",
+      "keywords": ["year","twelve","object","converted","correctly","every","measure","had","time","transaction"]
+    },
+    {
+      "id": "twenty_two_years_1",
+      "source": "Wick on twenty-two years in the same trade",
+      "text": "The trade has three things it requires: discretion, accuracy, and the ability to say no. Discretion: the transaction is between me and the parties, not me and the world. Accuracy: the value I name is the value, without inflation or deflation in my favor. The ability to say no: not every transaction is one I should take. In twenty-two years I've been primarily good at the first two and have improved at the third. The third is the hardest because the third costs me directly. The first two are habits. The third requires judgment.",
+      "keywords": ["trade","three","things","requires","discretion","accuracy","ability","say","no","discretion"]
+    }
+  ]
+}

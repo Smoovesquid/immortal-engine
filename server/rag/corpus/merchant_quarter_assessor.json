@@ -1,0 +1,57 @@
+{
+  "id": "merchant_quarter_assessor",
+  "name": "Pol",
+  "role": "Tax assessor for the merchant quarter; the most disliked necessary function in the district",
+  "cluster": "merchant_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "assessor_1",
+      "source": "Pol on the assessor's function",
+      "text": "In twelve years as the district's tax assessor, what the assessor does: determines the taxable value of the district's commercial activity and produces the assessment that the settlement's revenue depends on. In twelve years, I am the most consistently unpopular necessary function in the district. In twelve years, the unpopularity is the signal that the assessment is close to accurate — the assessment that everyone agrees is fair is the assessment that has been made comfortable by under-assessment.",
+      "keywords": ["twelve","years","district's","tax","assessor","what","assessor","does","determines","taxable"]
+    },
+    {
+      "id": "reeth_1",
+      "source": "Pol on Reeth",
+      "text": "Reeth is the council member responsible for the settlement's revenue function. In ten years of the Pol-Reeth assessor-council relationship, what the relationship requires: the assessment that is accurate enough to produce the revenue the settlement requires without being aggressive enough to damage the commerce that produces the revenue. In ten years, Reeth has contested one of my district assessments and accepted the rest. The one contest: I accepted Reeth's counter-argument and modified the assessment. The contest was valid.",
+      "keywords": ["reeth","council","member","responsible","settlement's","revenue","function","ten","years","pol-reeth"]
+    },
+    {
+      "id": "saben_1",
+      "source": "Pol on Saben",
+      "text": "Saben's commercial operation is the largest and most complex assessment in the district. In nine years of assessing Saben's taxable activity, what the assessment of a complex commercial operation requires: the full picture of what Saben's commerce is, not the picture that Saben's declared commercial activity presents. In nine years, the gap between the declared and the actual in Saben's case has been my primary assessment challenge. In nine years, the gap has been addressed through the process. In nine years, the process has been contested four times and my assessment has been modified twice.",
+      "keywords": ["saben's","commercial","operation","largest","most","complex","assessment","district","nine","years"]
+    },
+    {
+      "id": "liss_notary_1",
+      "source": "Pol on Liss the Notary",
+      "text": "Liss's notarization of commercial agreements is one of my primary assessment sources. In ten years of using Liss's notarized agreements as assessment input, what the notarization provides: the official record of a commercial transaction that the assessment can treat as a baseline. In ten years, the transaction that has been notarized by Liss and that I can verify through the notary record is the transaction I can assess accurately. The transaction that was conducted outside Liss's record is the transaction that my assessment has to reconstruct from other sources.",
+      "keywords": ["liss's","notarization","commercial","agreements","one","primary","assessment","sources","ten","years"]
+    },
+    {
+      "id": "comus_1",
+      "source": "Pol on Comus",
+      "text": "Comus's commercial activity is the most sophisticated assessment case in the district. In eight years of assessing Comus, what the sophistication means for the assessor: the commercial activity is structured in ways that present the assessment challenge of finding the actual taxable value within the legal structure that presents it. In eight years, Comus's assessments have been the most technically demanding work I do. In eight years, the assessment and Comus's counter have produced, in aggregate, an accurate reflection of the actual taxable activity. In eight years, the aggregate is correct even when the individual assessment was contested.",
+      "keywords": ["comus's","commercial","activity","most","sophisticated","assessment","case","district","eight","years"]
+    },
+    {
+      "id": "what_pol_holds_1",
+      "source": "Pol on what twelve years of tax assessment holds",
+      "text": "In twelve years, what the assessment function has given me: the most complete picture of the district's actual commercial value that any single person holds. The declared commercial activity and the actual commercial activity: in twelve years, I know the gap in this district better than anyone. In twelve years, the gap between declared and actual is information that the settlement's revenue function requires and that the district's commerce would prefer not to be known. In twelve years, knowing the gap and acting on it accurately is the job.",
+      "keywords": ["twelve","years","what","assessment","function","given","most","complete","picture","district's"]
+    },
+    {
+      "id": "what_pol_wont_do_1",
+      "source": "Pol on what she declines",
+      "text": "In twelve years, the approach that has been made to me twice: the adjustment of an assessment in exchange for a consideration outside the assessment process. In twelve years, two approaches. Both declined in the first conversation, both reported to Reeth's attention. In twelve years, two approaches to an assessor who has been working in this district for twelve years. In twelve years, either the district has found the assessor uncorruptible through other approaches I'm not aware of, or the two are the only attempts. In twelve years, I prefer not to know which.",
+      "keywords": ["twelve","years","approach","been","made","twice","adjustment","assessment","exchange","consideration"]
+    },
+    {
+      "id": "twelve_years_1",
+      "source": "Pol on twelve years as the district's tax assessor",
+      "text": "In twelve years, I've produced approximately three thousand individual tax assessments for the district's commercial activity. Three thousand assessments that have determined the settlement's claim on the district's commerce. In twelve years, the district's commerce has funded the settlement's functions partly through the assessments I've produced. In twelve years, the most unpopular function in the district is the function that makes the settlement's other functions possible. In twelve years, the unpopularity is the price of the accuracy. In twelve years, the accuracy is the service.",
+      "keywords": ["twelve","years","produced","approximately","three","thousand","individual","tax","assessments","district's"]
+    }
+  ]
+}

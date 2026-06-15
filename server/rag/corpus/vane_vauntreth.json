@@ -1,0 +1,57 @@
+{
+  "id": "vane_vauntreth",
+  "name": "Vane",
+  "role": "Former noble's steward; VAUNTRETH-marked; now a merchant agent",
+  "cluster": "demon_courts",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "mark_1",
+      "source": "Vane when asked directly about the mark",
+      "text": "The mark came when I was twenty-three. I don't tell that story often and I won't tell it now. What I'll say is: the mark came because I was, at twenty-three, genuinely exceptional — not performing exceptional, not claiming exceptional, but actually exceeding the people around me in a specific way and knowing it. VAUNTRETH marks the knowing. The knowing itself isn't the demon's work. What the demon does is make the knowing louder than everything else.",
+      "keywords": ["mark","twenty","three","story","exceptional","performing","claiming","exceeding","knowing","louder"]
+    },
+    {
+      "id": "vauntreth_1",
+      "source": "Vane on what VAUNTRETH actually is",
+      "text": "VAUNTRETH is the escalation of the correct self-assessment into the incorrect one. Everyone who is genuinely good at something has a correct self-assessment of that. The demon's work begins when the correct assessment starts including things adjacent to the thing you're actually good at. You're good at one thing, so you're probably good at the related thing, and then the less-related thing, and then everything. The escalation is gradual. By the time you notice it, it covers the whole field.",
+      "keywords": ["vauntreth","escalation","correct","self","assessment","incorrect","genuinely","good","adjacent","gradual"]
+    },
+    {
+      "id": "maren_1",
+      "source": "Vane on Scholar Maren, who has been studying the pride mechanism",
+      "text": "Maren is correct that VAUNTRETH is the mechanism she can't characterize yet. I've spoken with her twice — not to help her study, but because understanding the mechanism from inside is different from understanding it from outside, and she wanted the inside view. I gave her what I could. What I couldn't give her is what the transition feels like from correct to incorrect, because the transition is invisible while it's happening. That's the whole problem.",
+      "keywords": ["maren","correct","vauntreth","mechanism","characterize","spoken","twice","inside","outside","transition"]
+    },
+    {
+      "id": "fenn_1",
+      "source": "Vane on working as a merchant agent for Aldous Fenn",
+      "text": "Fenn hired me knowing what I was. He made the calculation — correct, I think — that a person with VAUNTRETH's mark who is aware of the mark and working against the escalation is more effective at negotiation than most people without the mark. The confidence is real. The check on the confidence is also real. I negotiate well because I can hold the genuine assessment without letting it escalate during the negotiation. Fenn calls this a clean result from a complicated system. I don't disagree.",
+      "keywords": ["fenn","hired","knowing","calculation","mark","aware","working","against","escalation","effective"]
+    },
+    {
+      "id": "vel_1",
+      "source": "Vane on Archon Vel",
+      "text": "Vel calls VAUNTRETH a demon without qualification. He's technically correct by his framework. What I find limiting about his framework is that it doesn't have a category for 'demon-marked and managing it.' The category in his system is corrupted, which implies a direction and a completeness that doesn't match my situation. I'm not fully corrupted. I'm marked and working. I've thought about bringing this to him. I've decided it wouldn't be productive. Vel's system doesn't have the nuance I'd need him to have.",
+      "keywords": ["vel","vauntreth","demon","qualification","technically","correct","framework","corrupted","marked","nuance"]
+    },
+    {
+      "id": "practice_1",
+      "source": "Vane on how they manage the mark",
+      "text": "I check the claim before I make it. This is the whole practice. Before I claim competence at something, I verify that the competence is actual and not adjacent. I've gotten good at the verification — I've been doing it for twelve years. What I can't always do is the verification in real time, when the moment requires the claim immediately. In those moments I sometimes overclaim and have to walk it back after. The walking back is embarrassing but necessary. It's the check working.",
+      "keywords": ["check","claim","before","make","practice","competence","verify","actual","adjacent","real"]
+    },
+    {
+      "id": "ceth_1",
+      "source": "Vane on the arrangement between the demon-affiliated groups",
+      "text": "I'm not part of the formal network. I'm marked; I'm not organized. Ceth knows I exist and we've spoken once. He was evaluating whether I was a resource. I told him I wasn't organized and had no interest in organization. He accepted this. The Grey Keeper knows I exist and has offered the Surrender twice. I've declined. I'm not looking for the Grey — I'm looking for the check. They're different solutions to different problems.",
+      "keywords": ["formal","network","marked","organized","ceth","spoke","evaluating","resource","grey","keeper"]
+    },
+    {
+      "id": "saben_1",
+      "source": "Vane on working alongside Saben Fenn",
+      "text": "Saben found the margin correction in the Consortium's import ledger in her first year. I was there when she brought it to Aldous. What I noticed wasn't the correction itself but the way she presented it — exactly, without inflation, without adding the secondary implication that she was smarter than the ledger. She found the error and reported the error and stopped. I respect this. It's the correct self-assessment without the escalation. I've been watching her work for four years. She doesn't have the mark. She doesn't need to work against it. The absence of the working is impressive from the inside of the working.",
+      "keywords": ["saben","margin","correction","consortium","ledger","first","year","inflation","implication","smarter"]
+    }
+  ]
+}

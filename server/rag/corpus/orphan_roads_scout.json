@@ -1,0 +1,57 @@
+{
+  "id": "orphan_roads_scout",
+  "name": "Doss the Scout",
+  "role": "Orphan Roads advance scout; watches what needs watching before the network commits to an action",
+  "cluster": "orphan_roads",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "scout_1",
+      "source": "Doss the Scout on scouting",
+      "text": "In six years of scouting for the Orphan Roads network, what the scout does: watches what the network needs to know about before the network acts on it. The scout's product is information with time attached — not just what is, but what is at this moment and for how long the current state is likely to hold. In six years, the scout who returns with accurate information about a situation that has already changed is the scout who has provided the network with a record rather than intelligence.",
+      "keywords": ["six","years","scouting","orphan","roads","network","what","scout","does","watches"]
+    },
+    {
+      "id": "rook_1",
+      "source": "Doss the Scout on Rook",
+      "text": "Rook determines what gets scouted. In five years of receiving Rook's scouting assignments, what the assignment tells me: what the network is considering and what information the consideration requires before a decision can be made. In five years, the scouting assignment is the decision's prerequisite — Rook won't move without the scout's return. In five years, my relationship with Rook is the relationship between the decision and the information it requires.",
+      "keywords": ["rook","determines","what","gets","scouted","five","years","receiving","rook's","scouting"]
+    },
+    {
+      "id": "mira_1",
+      "source": "Doss the Scout on Mira",
+      "text": "Mira runs network intelligence and my scouting is one of the intelligence streams Mira coordinates. In four years of working within Mira's intelligence structure, what the coordination produces: the scouting information joined with the other intelligence streams to produce a complete picture. What I see directly at the target location and what Mira's other sources have independently reported about the same location: the convergence of the two is the reliable intelligence. In four years, the convergence cases have been the highest-confidence intelligence the network has worked from.",
+      "keywords": ["mira","runs","network","intelligence","scouting","one","intelligence","streams","mira","coordinates"]
+    },
+    {
+      "id": "wick_1",
+      "source": "Doss the Scout on Wick",
+      "text": "Wick runs messages and sometimes my scouting produces information that Wick carries rather than me delivering it directly. In three years of the Doss-Wick information handoff, what the handoff produces: the scout's intelligence in the network's communication channel without the scout needing to return to the origin. In three years, the handoff has been used four times — when my scouting position was too valuable to abandon for the return trip. In three years, four times: the information reached Rook through Wick before the situation I was watching changed.",
+      "keywords": ["wick","runs","messages","sometimes","scouting","produces","information","wick","carries","rather"]
+    },
+    {
+      "id": "brig_1",
+      "source": "Doss the Scout on Brig",
+      "text": "Brig moves through commercial channels that my scouting sometimes covers. In three years of the scout-fence information relationship with Brig, what Brig's movement through commercial channels provides to scouting: the cover. The scout who appears to be there for a transaction is less visible than the scout who has no apparent commercial purpose. In three years, Brig's commercial cover has supported three scouting assignments where the target location required a cover that the scout's own presence couldn't provide.",
+      "keywords": ["brig","moves","through","commercial","channels","scouting","sometimes","covers","three","years"]
+    },
+    {
+      "id": "what_doss_holds_1",
+      "source": "Doss the Scout on the observation she almost acted on",
+      "text": "Year two. A scouting assignment where I observed something that the assignment hadn't specified and that the network had not asked me to observe. The something was information that, in my assessment, the network needed to know regardless of the assignment scope. I held the position and continued the assigned scouting rather than returning with the unassigned information. The something resolved in a direction that didn't require the network's response. In four years since, the discipline: scout the assignment, report the unassigned observation, let Rook decide what it requires.",
+      "keywords": ["year","two","scouting","assignment","where","observed","something","assignment","hadn't","specified"]
+    },
+    {
+      "id": "what_scouting_requires_1",
+      "source": "Doss the Scout on what six years of scouting requires",
+      "text": "In six years, what the scouting requires that most other network functions don't: the ability to be present without being noticed. The scout who is noticed has changed the situation being observed. The situation being observed by an unnoticed scout is the situation as it actually is. The situation being observed by a noticed scout is the situation as it's performed for the observer. In six years, the difference between the two situations is the difference between intelligence and theater. In six years, I've seen both.",
+      "keywords": ["six","years","what","scouting","requires","most","other","network","functions","don't"]
+    },
+    {
+      "id": "six_years_1",
+      "source": "Doss the Scout on six years of Orphan Roads scouting",
+      "text": "In six years, I've conducted approximately ninety scouting assignments for the network. Of ninety: eighty-three produced the intelligence the network required within the assignment's time constraint. Seven did not — the situation changed faster than the scouting timeline accommodated, or the target location was inaccessible to unnoticed observation, or the assignment's premises turned out to be incorrect. In six years, seven failures in ninety assignments. In six years, the seven have taught me more about scouting than the eighty-three.",
+      "keywords": ["six","years","conducted","approximately","ninety","scouting","assignments","network","ninety","eighty-three"]
+    }
+  ]
+}

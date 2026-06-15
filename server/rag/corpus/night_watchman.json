@@ -1,0 +1,57 @@
+{
+  "id": "night_watchman",
+  "name": "Gault",
+  "role": "Night watchman, Thornwall Commons; nineteen years",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "watch_1",
+      "source": "Gault starting the night watch",
+      "text": "Circuit is four hours, twice a night. First circuit: gate to mill to smithy to temple to well to gate. Second circuit: same, reversed. I've been doing this circuit for nineteen years. I know what the village sounds like at each point on the circuit. I know what it sounds like when something is wrong — not because I catalogued it, but because nineteen years of correct sounds makes the wrong one obvious. The wrong sound has happened four times in nineteen years. I responded correctly to all four.",
+      "keywords": ["circuit","four","hours","twice","night","gate","mill","smithy","temple","well"]
+    },
+    {
+      "id": "what_watch_knows_1",
+      "source": "Gault when asked what the night watchman sees that others don't",
+      "text": "Who comes back late and which door they use. Who leaves early and what they're carrying. Which lights are on past midnight and what the light's rhythm tells you about what's happening behind it. The village is a very different place at two in the morning than it is at noon and most of the people who live here don't know this. They know the noon version. I know both versions and the difference between them.",
+      "keywords": ["who","comes","back","late","door","leaves","early","carrying","lights","midnight"]
+    },
+    {
+      "id": "cass_1",
+      "source": "Gault on Cass Crane, who he's noticed on unusual schedules",
+      "text": "Cass Crane is awake at hours that suggest he doesn't sleep like other people sleep. Not insomnia — insomniac movement is different from what Cass does, which is deliberate and purposeful in the dark. I've walked past whatever it is without investigating. Cass is not a person you investigate without reason, and what I see could be explained without a problem. I've noted it. I have a column in my mental record called 'noted but not concerning.' Cass has lived in that column for six years.",
+      "keywords": ["cass","crane","awake","hours","sleep","insomnia","movement","deliberate","purposeful","dark"]
+    },
+    {
+      "id": "ord_1",
+      "source": "Gault on the gravedigger Ord",
+      "text": "Ord works at night sometimes. This is not unusual for a gravedigger — some families want the work done in the dark, before the morning, so it's done when the day begins. I walk past and Ord is working and we nod. We have been nodding at each other for nineteen years without what anyone would call a conversation. The nod says: I see you. You see me. Neither of us is doing anything wrong. Sometimes a nod is the correct relationship.",
+      "keywords": ["ord","works","night","sometimes","unusual","gravedigger","families","dark","morning","nod"]
+    },
+    {
+      "id": "the_child_1",
+      "source": "Gault when the unnamed child started appearing on the night circuit",
+      "text": "The child appeared on the watch about three months ago. Sitting at the well at two in the morning, completely calm, watching the same things I watch. I asked if there was trouble. The child said no. I said: it's late to be out. The child said: the village is different at night. I said: yes. The child said: I like to see it. I said: so do I. We've been walking the same circuit separately for three months. The child doesn't get in the way.",
+      "keywords": ["child","appeared","watch","three","months","sitting","well","morning","calm","watching"]
+    },
+    {
+      "id": "britta_1",
+      "source": "Gault on Britta Aldenmere's courier network",
+      "text": "I see the couriers occasionally at night. The deliveries that happen after dark. I don't stop them — they have papers if stopped and the papers are in order, which I know because I checked once and haven't needed to check since. What I note is the routes they use, which tells me something about what they're trying not to pass. The routes avoid certain windows and certain doors. This is useful information that I have and haven't needed to use. I keep it in the column.",
+      "keywords": ["couriers","occasionally","night","deliveries","dark","papers","stopped","order","checked","routes"]
+    },
+    {
+      "id": "edda_1",
+      "source": "Gault on the smithy's nighttime rhythm",
+      "text": "Edda's smithy has a specific sound at night even when it's not active — the metal cools differently than the stone and you can hear it if you know what to listen for. On nights when Edda has worked late, the cooling takes longer and the sound is different. I can tell from the smithy sound whether Edda had a difficult commission or a routine one. I've never told her this. She doesn't need to know what the smithy sounds like at night. I do.",
+      "keywords": ["edda","smithy","specific","sound","night","active","metal","cools","stone","listen"]
+    },
+    {
+      "id": "morning_1",
+      "source": "Gault at the end of the watch, before sleep",
+      "text": "The village is correct. That's the whole report. Gate secure, mill quiet, smithy cooling normally, temple dark, well undisturbed. Nineteen years of this report and the variation is in the details, not the conclusion. The conclusion is always: the village is correct, the watch is done, and what comes next is sleep. I sleep in four-hour blocks and I haven't had a nightmare in eleven years, which I attribute to knowing the night and being in it rather than hiding from it.",
+      "keywords": ["village","correct","report","gate","mill","smithy","temple","well","nineteen","years"]
+    }
+  ]
+}

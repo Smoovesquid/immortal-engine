@@ -1,0 +1,57 @@
+{
+  "id": "davel_aldenmere",
+  "name": "Davel Aldenmere",
+  "role": "Head of House Aldenmere's accounts; the house's economic mind",
+  "cluster": "house_aldenmere",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "accounts_1",
+      "source": "Davel on the accounts",
+      "text": "An account is a relationship expressed as a number. The number doesn't contain the relationship — it points to it. What I do: I track the numbers and I use the numbers to understand the relationships. When a number changes in a way that doesn't match the relationship, something has changed in the relationship that the relationship hasn't told me yet. The numbers often tell me first. I take the number to Britta and she goes to find what changed.",
+      "keywords": ["account","relationship","expressed","number","number","doesn't","contain","relationship","points","to"]
+    },
+    {
+      "id": "britta_1",
+      "source": "Davel on Britta",
+      "text": "Britta sees the district in a way I don't. I see the district through the accounts. She sees it through the people. Twenty-two years of marriage and I still find myself wrong about what a person will do when the account predicts one thing and Britta predicts another. She's right more often than the account is. The account is a record of the past. Britta is reading the present. The present is more accurate about what comes next.",
+      "keywords": ["britta","sees","district","way","don't","see","district","through","accounts","sees"]
+    },
+    {
+      "id": "vrenn_1",
+      "source": "Davel on Vrenn",
+      "text": "Vrenn's accounts are the cleanest I've audited in forty years of managing house accounts. Not because Vrenn avoids complexity — the steward's accounts are necessarily complex. Because Vrenn understands that a clean record is more than a correct record: it's a record that can be examined without prior explanation. Vrenn's accounts explain themselves. I've shown Vrenn's method to two colleagues in other houses. Both adopted it. The method has since been attributed to me. I've corrected the attribution twice.",
+      "keywords": ["vrenn","accounts","cleanest","audited","forty","years","managing","house","accounts","not"]
+    },
+    {
+      "id": "saben_1",
+      "source": "Davel on Saben Fenn",
+      "text": "The Fenn house and our house have a relationship that predates Saben by two generations. Saben's understanding of the relationship is institutional: she knows what the relationship requires without having to derive it from the history. This is the mark of someone who was properly taught the house's history — they don't carry the history, they carry the understanding the history produced. Saben and I have disagreed three times in fourteen years on account terms. We've resolved all three. The relationship has not declined.",
+      "keywords": ["fenn","house","relationship","predates","saben","two","generations","saben's","understanding","relationship"]
+    },
+    {
+      "id": "lena_1",
+      "source": "Davel on Lena",
+      "text": "Lena and I operate at different ends of the lending market. Lena lends to individuals at need. The house lends to institutions at scale. We don't compete. We occasionally share a borrower who needs both what Lena provides and what the house provides. In those cases: I know what Lena has lent and at what terms before I structure the house's lending. Lena sends me a note. The note is brief. The note is always accurate.",
+      "keywords": ["lena","operate","different","ends","lending","market","lena","lends","individuals","need"]
+    },
+    {
+      "id": "what_accounts_are_for_1",
+      "source": "Davel on what accounts are actually for",
+      "text": "The accounts serve the house. The house serves the district. The district contains the people. So the accounts, at their deepest function, serve the people. This isn't how most account-keepers understand the work. Most understand it as: the accounts serve the house and the house serves the accounts. The circular understanding produces a house that loses its connection to why the accounts matter. I was forty before I understood this correctly. The accounts have been different since.",
+      "keywords": ["accounts","serve","house","house","serves","district","district","contains","people","so"]
+    },
+    {
+      "id": "what_davel_holds_1",
+      "source": "Davel on the account that still bothers him",
+      "text": "Nine years ago. An account that balanced correctly and produced a result that I knew was wrong. The mathematics were sound. The result was wrong. I've spent nine years understanding why the result was wrong without being able to identify the error in the mathematics. The error exists. I know this because the result was wrong and mathematics is deterministic. The error I haven't found is the thing I'll find eventually or die having not found. I've accepted both outcomes. I prefer the first.",
+      "keywords": ["nine","years","account","balanced","correctly","produced","result","knew","wrong","mathematics"]
+    },
+    {
+      "id": "forty_years_1",
+      "source": "Davel on forty years of house accounts",
+      "text": "The house's accounts going back three generations exist in the archive. I've read all of them. The reading took three years in my twenties. What the forty years since have taught: the patterns in the old accounts repeat in the new accounts. Not the specifics — the shapes. A shape that appeared in the accounts sixty years ago is appearing now. Different people, different numbers, same shape. The house is older than any of us and it teaches through the accounts if you're willing to read them.",
+      "keywords": ["house's","accounts","back","three","generations","exist","archive","read","all","reading"]
+    }
+  ]
+}

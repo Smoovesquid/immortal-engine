@@ -1,0 +1,57 @@
+{
+  "id": "brotherhood_scribe",
+  "name": "Olfe",
+  "role": "Iron Brotherhood; records and communication; twelve years",
+  "cluster": "iron_brotherhood",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "records_1",
+      "source": "Olfe on the Brotherhood's records",
+      "text": "The Brotherhood runs on information. The patrol schedule is information. The threat assessment is information. The personnel records are information. I keep all of it. Not in the sense of deciding what it means — in the sense of making sure it exists in a form that can be read and used. Information that can't be found is the same as information that doesn't exist. My job is making sure it can be found.",
+      "keywords": ["brotherhood","runs","information","patrol","schedule","information","threat","assessment","information","personnel"]
+    },
+    {
+      "id": "rath_1",
+      "source": "Olfe on Rath",
+      "text": "Rath is the best reporter in the unit. His verbal debrief produces exactly what the record needs. Not more, not less — the material that answers the questions the record needs answered. I've transcribed twenty-two years of debriefs from many sources. The ones that produce clean transcription are the ones from people who know what information is and what isn't. Rath knows. His debriefs take twelve minutes and the record is complete.",
+      "keywords": ["rath","best","reporter","unit","verbal","debrief","produces","exactly","what","record"]
+    },
+    {
+      "id": "cord_1",
+      "source": "Olfe on Cord",
+      "text": "Cord's reports are the cleanest raw data I receive. What Cord saw, stated as what Cord saw, with the time and location. No analysis, no implication. When Commander Vel reads a Cord report, she's reading what happened. When she reads a different reporter's report, she's reading what happened and what the reporter thinks it means mixed together. The clean separation is what makes Cord's reports the most reliable. Cord has been trained to make the separation. Not all the reporters have.",
+      "keywords": ["cord","reports","cleanest","raw","data","receive","what","cord","saw","stated"]
+    },
+    {
+      "id": "ink_1",
+      "source": "Olfe on encountering Ink",
+      "text": "Someone in the Orphan Roads copied a Brotherhood report once. I know because I recognized my own notation system in a document I shouldn't have seen. I reported it to Commander Vel. The commander said: don't change the notation system. Whoever copied it did so because they needed the information for a reason we don't fully understand. If we change the notation system we signal that we know they have it. We don't want them to know we know. I've maintained the same notation system for three years since.",
+      "keywords": ["someone","orphan","roads","copied","brotherhood","report","once","know","because","recognized"]
+    },
+    {
+      "id": "doss_1",
+      "source": "Olfe on Doss",
+      "text": "Doss writes nothing. This is Doss's discipline — the chaplaincy work is held in memory and in the people who experienced it, not in records. I've asked Doss once if I should be keeping a record of the chaplaincy work for the Brotherhood's long-term welfare understanding. Doss said: the people who came to me know whether they're ready for the field. The record is in them, not in your files. I said: the record in them isn't transferable when they're gone. Doss said: some things aren't supposed to transfer.",
+      "keywords": ["doss","writes","nothing","doss's","discipline","chaplaincy","work","held","memory","people"]
+    },
+    {
+      "id": "what_olfe_transmits_1",
+      "source": "Olfe on the communication work",
+      "text": "Between units, the Brotherhood needs messages to travel without being readable if intercepted. I maintain the cipher for this district. The cipher changes quarterly. The changes are designed to be maximally difficult to break from outside and maximally easy to use from inside. In twelve years I've developed five ciphers. The current one is the fifth. I keep the previous four in my personal records because a cipher, once broken, tells you about the cipher's design. The broken ones teach the next one.",
+      "keywords": ["between","units","brotherhood","needs","messages","travel","without","being","readable","intercepted"]
+    },
+    {
+      "id": "what_olfe_holds_1",
+      "source": "Olfe on the record that doesn't exist",
+      "text": "There's information I hold in memory that I've chosen not to put into any written record. Not because it's secret from the Brotherhood — because if it exists in writing, it exists in a form that can be found. Some information is safer as the knowledge of one person than as a document. In twelve years I've made this judgment twice. Both times the information was about someone inside the Brotherhood. Both times the commander knows I made the judgment. Neither time has the commander asked for the written record.",
+      "keywords": ["information","hold","memory","chosen","not","put","into","written","record","not"]
+    },
+    {
+      "id": "twelve_years_1",
+      "source": "Olfe on twelve years of Brotherhood records",
+      "text": "The records show a pattern that no individual year shows. A unit that gradually shifts from field operations to local patrols. Personnel changes that have concentrated certain kinds of skill and diluted others. The Brotherhood is not what it was twelve years ago. The records prove this. I haven't told the commander. She knows. She's the one making the decisions. The records show the decisions' effects. The commander has seen the records. We're both watching the pattern.",
+      "keywords": ["records","show","pattern","no","individual","year","shows","unit","gradually","shifts"]
+    }
+  ]
+}

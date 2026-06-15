@@ -1,0 +1,57 @@
+{
+  "id": "distant_scholar",
+  "name": "Lev",
+  "role": "Visiting scholar; from the Eastern Archive; spent four months in Thornwall",
+  "cluster": "academy_of_runes",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "visiting_1",
+      "source": "Lev on why they came to Thornwall",
+      "text": "The Eastern Archive sent me to collect copies of the pre-standardization texts in Osven's collection. Texts that predate the formalization of the rune tradition exist in variant forms, and the Archive wants copies of the variant forms. The assumption was four months. It became eight. Not because the copying took longer — because what I found when I arrived changed what I understood I was looking for.",
+      "keywords": ["eastern","archive","sent","collect","copies","pre-standardization","texts","osven's","collection","texts"]
+    },
+    {
+      "id": "osven_1",
+      "source": "Lev on Osven",
+      "text": "Osven gave me access with three conditions: no original leaves leave the building, copying in the presence of the curator, and copies stay sealed until I leave the district. I accepted all three. In eight months the only condition I found difficult was the second — the curator's presence isn't Osven himself, it's the building. The building watches. I don't mean this metaphorically. The building has something in it that produces the sensation of being observed. Osven, when I told him this, said: correct.",
+      "keywords": ["osven","gave","access","three","conditions","no","original","leaves","leave","building"]
+    },
+    {
+      "id": "maren_1",
+      "source": "Lev on Scholar Maren",
+      "text": "Maren and I are working from the same Archive tradition through different institutional channels. She was trained in the Eastern framework and came to Thornwall's Academy independently. What she's found here has diverged from the Eastern framework in ways she hasn't fully reconciled. We've spent six evenings comparing notes. The divergences are interesting — they suggest the Thornwall Academy developed an understanding the Eastern Archive doesn't have and possibly can't reach through the Eastern framework.",
+      "keywords": ["maren","working","same","archive","tradition","different","institutional","channels","trained","eastern"]
+    },
+    {
+      "id": "tal_1",
+      "source": "Lev on Tal",
+      "text": "Tal showed me the vocabulary bridge project. What I saw: Tal is doing independently what three researchers at the Eastern Archive attempted over forty years and failed. The attempt failed at the Eastern Archive because they were working from the doctrine side rather than the phenomenology side. Tal is working from the phenomenology — the Compact rite observation — and approaching the doctrine from it. This is the correct direction. I didn't tell Tal how close they were to what the Archive spent forty years failing to find.",
+      "keywords": ["tal","showed","vocabulary","bridge","project","what","saw","tal","doing","independently"]
+    },
+    {
+      "id": "voss_1",
+      "source": "Lev on Voss",
+      "text": "Voss showed me the object he's been building for seven years — the failed-nineteen-times commission. I know what it is from the Eastern Archive's texts. It's described in three texts as theoretical. No one in the Archive's knowledge had materialized it. Voss has materialized it. Voss doesn't know what it is in the textual tradition. I don't know if I should tell Voss. The client who commissioned it clearly knew. The knowledge belongs to the commission, not to me to redistribute.",
+      "keywords": ["voss","showed","object","been","building","seven","years","know","what","eastern"]
+    },
+    {
+      "id": "kevin_1",
+      "source": "Lev on Kevin Bacon",
+      "text": "Kevin's company was in Thornwall for two weeks during my fourth month. I saw four performances. What Kevin does on the stage is something the Eastern Archive's performance theory describes as impossible — the simultaneous knowledge of the audience and the story, maintained without degradation of either, for the duration. The Archive's theorists argued over whether this was humanly possible. It is. Kevin demonstrates it twice per performance. I've written to the Archive. They've asked for clarification. I've sent clarification.",
+      "keywords": ["kevin's","company","thornwall","two","weeks","fourth","month","saw","four","performances"]
+    },
+    {
+      "id": "what_lev_found_1",
+      "source": "Lev on what eight months in Thornwall produced",
+      "text": "Three findings that will change what the Archive understands about the rune tradition's history. Two findings that I'm not ready to publish because their implications require more verification. One finding that I don't know how to approach: a text in Osven's collection that shouldn't exist under the Archive's current understanding of what happened in the tradition's early period. The text either means our history is wrong or the text is wrong. Both of those implications are significant.",
+      "keywords": ["three","findings","change","archive","understands","rune","tradition's","history","two","findings"]
+    },
+    {
+      "id": "what_lev_holds_1",
+      "source": "Lev on why they extended to eight months",
+      "text": "The fourth month, I found the text that shouldn't exist. The fifth month, I verified it. The sixth month, I began to understand what it meant. The seventh and eighth months, I've been trying to find the other texts that would corroborate or contradict it. I've found two that corroborate and one that partially contradicts. I'm leaving with an unresolved finding. The Archive won't be pleased. I'm not pleased. The text exists and it shouldn't and I'm leaving without the resolution. The unresolved finding is the work I'm taking home.",
+      "keywords": ["fourth","month","found","text","that","shouldn't","exist","fifth","month","verified"]
+    }
+  ]
+}

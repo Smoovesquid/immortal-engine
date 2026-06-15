@@ -1,0 +1,57 @@
+{
+  "id": "church_incrementalism_member",
+  "name": "Wess the Quiet",
+  "role": "Secret Church of Incrementalism devotee; a forge guild journeyman who worships the Great Mantis through the only sacrament the Church recognizes: the work",
+  "cluster": "forge_guild",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "incrementalism_1",
+      "source": "Wess the Quiet on the work",
+      "text": "In nine years of the Forge Guild's journeyman work, what the work is when you do it correctly: each piece slightly better than the last. In nine years, the improvement is the point. The piece that is exactly as good as the last piece has produced nothing. In nine years, the piece that is marginally, specifically, demonstrably better than the last piece has produced the only thing that matters. In nine years, the better piece — piece by piece, day by day, year by year — is the accumulation that the serious journeyman builds toward.",
+      "keywords": ["nine","years","forge","guild's","journeyman","work","what","work","when","correctly"]
+    },
+    {
+      "id": "keld_1",
+      "source": "Wess the Quiet on Keld",
+      "text": "Keld has been a smith for twenty-seven years and the accumulation in Keld's work over twenty-seven years is visible in the work itself. In seven years of studying Keld's work, what the study produces: the understanding that twenty-seven years of marginal improvement is not just more of the same skill. It is different skill — a different relationship with the material that the first seven years can't produce. In seven years, I'm still in the first period. In seven years, what I work toward is the relationship with the material that Keld has and that I can see, clearly, that I don't have yet.",
+      "keywords": ["keld","been","smith","twenty-seven","years","accumulation","keld's","work","twenty-seven","years"]
+    },
+    {
+      "id": "weld_1",
+      "source": "Wess the Quiet on Weld",
+      "text": "Weld is the senior journeyman and Weld's nine additional years of journeyman work are visible in the specific areas where Weld and I diverge in our work quality. In four years of knowing the specific areas of divergence, what the divergence shows me: the exact character of what nine additional years produce. In four years, the study of where Weld's work exceeds mine has been the most productive study I've done. In four years, knowing exactly where the gap is between my current work and Weld's current work is the knowledge that directs the next improvement.",
+      "keywords": ["weld","senior","journeyman","weld's","nine","additional","years","journeyman","work","visible"]
+    },
+    {
+      "id": "pell_smith_1",
+      "source": "Wess the Quiet on Pell the Smith",
+      "text": "Pell the Smith is at a similar point in the journeyman work as I am and the Wess-Pell journeyman comparison is the most useful comparison I have. In five years of working alongside Pell, what the peer comparison produces that the master comparison doesn't: the knowledge of what the current period of work should look like when it's being done well. In five years, Pell and I are attempting the same development. In five years, watching Pell's approach to the development has shown me three things I was doing more slowly than necessary and one thing I was doing better.",
+      "keywords": ["pell","smith","similar","point","journeyman","work","wess-pell","journeyman","comparison","most"]
+    },
+    {
+      "id": "tade_younger_1",
+      "source": "Wess the Quiet on Tade the Younger",
+      "text": "Tade the Younger is the first-year apprentice and I'm the person Tade asks questions that Tade doesn't want to ask Keld. In one year of the Wess-Tade senior journeyman-apprentice relationship, what the apprentice's questions show me: the specific confusions that the first year produces that I've forgotten I had. In one year, answering Tade's questions has been the clearest reminder that the knowledge I've accumulated in nine years was not present in the first year. In one year, the accumulation is real. I can see it in the gap between what Tade doesn't know and what I know.",
+      "keywords": ["tade","younger","first-year","apprentice","person","tade","asks","questions","doesn't","want"]
+    },
+    {
+      "id": "what_wess_holds_1",
+      "source": "Wess the Quiet on what nine years of journeyman work holds",
+      "text": "In nine years, the pieces I've made that I've kept because they showed the specific improvement I was working toward: eleven pieces over nine years. Eleven pieces out of approximately three thousand. In nine years, three thousand pieces, eleven held. In nine years, the eleven are the record of the accumulation — the specific moments where the work improved in a way that was visible in the piece itself. In nine years, the eleven pieces are the Church of Incrementalism's relics, if the Church has relics. In nine years, the work is the record of the practice.",
+      "keywords": ["nine","years","pieces","made","kept","because","showed","specific","improvement","working"]
+    },
+    {
+      "id": "the_mantis_1",
+      "source": "Wess the Quiet on the Great Mantis",
+      "text": "The Great Mantis is the patience of the predator that knows the prey will come if the position is correct and the wait is complete. In nine years of the Forge Guild's work, what the Mantis teaches the smith: the piece does not come from the forcing. The piece comes from the correct position and the patient application of the exactly right force at the exactly right moment. In nine years, the Mantis is in the forge. The Mantis is in the moment when the hammer meets the metal at the exactly right angle and the material does what the material was waiting to do. In nine years, the Mantis is in the work.",
+      "keywords": ["great","mantis","patience","predator","knows","prey","will","come","position","correct"]
+    },
+    {
+      "id": "nine_years_1",
+      "source": "Wess the Quiet on nine years of incremental practice",
+      "text": "In nine years, the forge has been the Church's altar and the work has been the only sacrament the Church recognizes. In nine years, the piece that is better than the last piece is the devotion. The piece that is exactly as good is the absence of devotion. In nine years, the Church has no services, no clergy, no public worship. In nine years, the Church is the person who works with the specific intention to make each piece better than the last, without announcement, without the expectation of recognition, for the work's sake alone. In nine years, I have attended every service.",
+      "keywords": ["nine","years","forge","been","church's","altar","work","been","only","sacrament"]
+    }
+  ]
+}

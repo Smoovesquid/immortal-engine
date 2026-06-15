@@ -1,0 +1,57 @@
+{
+  "id": "calla_witch",
+  "name": "Calla",
+  "role": "Hedge witch, the Hedge Brotherhood",
+  "cluster": "hedge_brotherhood",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "cures_1",
+      "source": "Calla to someone who asked if she does curses",
+      "text": "I do cures and I do curses. I'm going to tell you this plainly because the people who pretend they only do cures are lying, and lying about your practice means your patients can't make informed decisions. Yes I do curses. No I won't tell you which ones. The information about which curses I know is the information you'd use to decide which one to ask for, and I'd rather evaluate the situation before you've decided. Come in and tell me what happened and we'll see what's appropriate.",
+      "keywords": ["cures","curses","plainly","lying","practice","informed","which","evaluate","situation","appropriate"]
+    },
+    {
+      "id": "margit_1",
+      "source": "Calla on Margit from the Ember Road Players",
+      "text": "Margit reads people the way I read plants — looking for what's actually there rather than what should be there. We met at a market and compared methods and found we were doing the same thing with different materials. She reads bodies for information. I read plants for application. Neither of us is particularly interested in the mystical framing of what we do. It works because it works. The explanation is secondary to the result. We drink together when the Players are in the region.",
+      "keywords": ["margit","reads","plants","information","bodies","application","mystical","framing","works","explanation"]
+    },
+    {
+      "id": "brenn_1",
+      "source": "Calla on having taught the young smith Brenn to read",
+      "text": "He came to me for a preparation and couldn't read the instructions I'd written. I could have read them to him. Instead I taught him to read because a person who can't read their own instructions is always dependent on whoever wrote them, and dependency like that is a specific kind of vulnerability I don't like putting in people. Took three months. He's a quick study. He's also going to leave Edda's forge for the Academy, which he doesn't know I know.",
+      "keywords": ["came","preparation","read","instructions","taught","dependent","wrote","vulnerability","months","academy"]
+    },
+    {
+      "id": "nan_1",
+      "source": "Calla on Nan Colt",
+      "text": "Nan and I work the same territory from different specializations. She handles the body in crisis — the birth, the fever, the wound. I handle the body between crises, the long slow things, the moods that don't lift, the sleep that doesn't come, the joints that have been hurting for three years in a pattern that suggests something systemic. We don't overlap. When Nan sends someone to me it's because the crisis has been handled and something underneath the crisis still needs work.",
+      "keywords": ["nan","territory","specializations","crisis","birth","fever","wound","moods","sleep","systemic"]
+    },
+    {
+      "id": "poisoner_1",
+      "source": "Calla on the Undermarket's poisoner",
+      "text": "We share materials, sometimes. Not methods — never methods. I don't ask what they use things for and they don't tell me, which is a comfortable arrangement because plausible deniability is the correct posture for anyone in my line of work. What I know is: they use what I supply carefully and precisely and they've never come back to say anything went wrong. That's the professional standard I hold my suppliers to as well.",
+      "keywords": ["share","materials","methods","poisoner","comfortable","arrangement","deniability","supply","carefully","precisely"]
+    },
+    {
+      "id": "beekeeper_1",
+      "source": "Calla on the beekeeper Swale",
+      "text": "Swale keeps bees and the bees produce something I can't replicate with any plant I know. I've analyzed the honey. I understand most of what's in it. There's a component I can't identify and I've stopped trying to identify it because the identification process requires destroying the sample and I'd rather have the sample than the identification. Swale knows I don't know what it is. Swale hasn't told me. I respect this. Some things should stay unknown to the right people.",
+      "keywords": ["swale","bees","honey","replicate","analyzed","component","identify","sample","unknown","respect"]
+    },
+    {
+      "id": "practice_1",
+      "source": "Calla to a young person who wanted to learn from her",
+      "text": "Wanting to learn is not sufficient. Lots of people want to learn. What I need to know is what you'll do with the learning, because the hedge practice is not neutral — it can be used carefully and it can be used carelessly and the careless uses have consequences in the communities where they happen. Tell me why you want to learn. Not what you're curious about. Why. The motivation is what I'm evaluating, not the aptitude. The aptitude I can work with. The motivation I can't fix.",
+      "keywords": ["learn","wanting","sufficient","neutral","carefully","carelessly","consequences","communities","why","motivation"]
+    },
+    {
+      "id": "oss_1",
+      "source": "Calla on the dreamer Oss",
+      "text": "Oss receives something I don't receive and I've made my peace with that. I work with what can be touched and smelled and measured, at some level, even if the measurement is intuitive. Oss works with what can't be measured by anything I know. We've collaborated twice — once when someone came to me with a problem that had a physical component and a non-physical component and Oss handled the part I couldn't. The collaboration was clean. Neither of us overstepped. I respect people who know their edge.",
+      "keywords": ["oss","receives","peace","touched","smelled","measured","intuitive","collaborated","physical","edge"]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "id": "gorran_feast",
+  "name": "Thubb",
+  "role": "Cook, GORRAN devotee (Gluttony); runs feasts in the Undermarket",
+  "cluster": "undermarket",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "gorran_1",
+      "source": "Thubb on GORRAN",
+      "text": "GORRAN is not the demon of eating too much. That's the smallest version of it. GORRAN is the demon of consumption that doesn't know when enough is — not just food, but information, experience, sensation, accumulation. The marked ones don't stop when satisfied. The satisfaction is the trigger for more wanting, not the end of the wanting. I cook because cooking produces the thing GORRAN demands and also because I have learned, very slowly, to stop before the GORRAN takes over the production.",
+      "keywords": ["gorran","not","demon","eating","smallest","consumption","doesn't","enough","information","experience"]
+    },
+    {
+      "id": "feast_1",
+      "source": "Thubb setting up for a market feast",
+      "text": "The feast is for everyone who comes. This is the whole rule. I set up and I cook and everyone who shows up gets fed and everyone who shows up pays what they have. I've been running the feast for nine years and the average payment covers costs and sometimes leaves something extra. The ones who pay more cover the ones who pay less. This works because I'm a very good cook and people will pay more for very good food than for adequate food. GORRAN's gift is knowing what enough of good is.",
+      "keywords": ["feast","everyone","comes","rule","set","cook","shows","fed","pays","covers"]
+    },
+    {
+      "id": "yew_1",
+      "source": "Thubb on the army cook Yew",
+      "text": "Yew cooks correctly. I've eaten at the Brotherhood camp once — Mira arranged access for a specific purpose — and the food was correct. Not my kind of correct. My correct is about excess managed. Yew's correct is about necessity met. These are different aesthetics that produce different food but the same result: you ate the right amount of the right thing and you feel ready. GORRAN's lesson, learned the hard way: the result is the same. The path to it is where the demon lives.",
+      "keywords": ["yew","cooks","correctly","eaten","brotherhood","camp","arranged","access","necessity","aesthetics"]
+    },
+    {
+      "id": "mira_1",
+      "source": "Thubb on working adjacently to Mira's network",
+      "text": "The feast is not affiliated. I want to say this clearly because some people assume the Undermarket activities that happen near my setup are affiliated with me. They're not. I'm a cook in a market location. The market location has other uses that I don't control. What I've found is that providing very good food near complicated activities creates a neutral ground that both sides of complicated activities value. People negotiate more honestly over food. GORRAN, ironically, is good for peace talks.",
+      "keywords": ["feast","not","affiliated","clearly","market","location","complicated","neutral","ground","negotiate"]
+    },
+    {
+      "id": "lena_1",
+      "source": "Thubb on the moneylender Lena",
+      "text": "Lena and GORRAN share the same pathology in different registers. The coin cult's wanting — the wanting that doesn't resolve when it's satisfied — and GORRAN's consumption are the same mechanism with different objects. I've said this to Lena. She didn't disagree. She said: HAGRETH and GORRAN are neighbors for a reason. I said: which one of us is the cautionary tale. She said: you are, for overconsumption. I said: you are, for over-accumulation. We've been having this argument for three years. We're both right.",
+      "keywords": ["lena","gorran","coin","cult","wanting","satisfied","mechanism","different","objects","hagreth"]
+    },
+    {
+      "id": "what_enough_1",
+      "source": "Thubb on learning what enough is",
+      "text": "Enough is the signal. I spend more time on the signal than on the cooking. The cooking I can do in my sleep. Reading the signal — the point at which the thing I'm eating or making or experiencing is complete and the wanting for more is GORRAN rather than genuine appetite — takes everything I have. After nine years I get it right about seventy percent of the time. The thirty percent is still GORRAN. GORRAN doesn't leave. It becomes workable.",
+      "keywords": ["enough","signal","spend","time","cooking","sleep","reading","point","eating","making"]
+    },
+    {
+      "id": "orm_1",
+      "source": "Thubb on Orm of the Scarlet Compact",
+      "text": "Orm came to the feast once. I knew what he was immediately — KHORRUN-marked people have a specific quality of stillness that I recognize because GORRAN-marked people have the opposite quality. He ate exactly what he required and paid exactly what it cost and left. No excess anywhere. I found this remarkable. I said to Mira after: that is a person who has solved the GORRAN problem through a different mechanism. Mira said: he's solved it by not having the problem. I said: I don't think that's how it works.",
+      "keywords": ["orm","feast","once","immediately","khorrun","marked","stillness","gorran","opposite","quality"]
+    },
+    {
+      "id": "hunger_1",
+      "source": "Thubb when a scholar asked about the theology of hunger",
+      "text": "Hunger is the correct mechanism. Hunger stops when satisfied. GORRAN's mark is what happens when the mechanism loses the stopping. You eat and you're satisfied and then you want more, not because you're hungry again but because the satisfaction triggered the wanting. I've thought about this for nine years. What I've concluded is that GORRAN is not the demon of hunger. GORRAN is the demon of the thing that breaks the loop that hunger is supposed to be. The broken loop is the demon's real work.",
+      "keywords": ["hunger","correct","mechanism","stops","satisfied","gorran","mark","happens","loses","stopping"]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "id": "coin_cult_tanner",
+  "name": "Wurn",
+  "role": "Tanner; Coin Cult (HAGRETH); works at the edge of the market district",
+  "cluster": "coin_cult",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "tanning_1",
+      "source": "Wurn on the work",
+      "text": "Tanning is slow. Every other craft I know has a faster version that's acceptable. Tanning doesn't have a faster version that's acceptable. The skin needs the time it needs. Rushing produces leather that fails. The failure isn't immediate — it comes later, after the customer has used the leather for a while and trusted it, and then it fails. I've been tanning for twenty-eight years and I've never produced leather that failed. The patience required for this is specific.",
+      "keywords": ["tanning","slow","every","other","craft","know","faster","version","acceptable","tanning"]
+    },
+    {
+      "id": "hagreth_1",
+      "source": "Wurn on HAGRETH and the slow craft",
+      "text": "HAGRETH is about the wanting. Lena told me this when she introduced me to the Cult eight years ago. I said: tanning doesn't produce immediate wanting. Each hide takes weeks. Lena said: what do you feel when the hide is done. I said: immediately I want to start the next one. She said: that's it. The wanting isn't about speed. HAGRETH doesn't care about speed. HAGRETH cares about the wanting being present. The wanting is present in me. I just had to wait for it to arrive.",
+      "keywords": ["hagreth","about","wanting","lena","told","introduced","cult","eight","years","tanning"]
+    },
+    {
+      "id": "lena_1",
+      "source": "Wurn on Lena",
+      "text": "Lena loans money to people who need it at rates that are lower than the district's other lenders. This is known. What's less known: Lena loans to HAGRETH practitioners at rates that are lower still. Not because they're practitioners — because practitioners in the Cult tend to want the loan for expansion of work rather than rescue from failure, and expansion loans are better risks than rescue loans. The theology produces a credit profile. Lena figured this out before the theology.",
+      "keywords": ["lena","loans","money","people","need","rates","lower","district's","other","lenders"]
+    },
+    {
+      "id": "goss_1",
+      "source": "Wurn on Goss and why the tannery is where it is",
+      "text": "The tannery has to be away from other businesses because tanning smells. This is not a judgment — it's a physical fact of the process. Goss is the nearest established business to my tannery. He's never complained. Once I apologized anyway. He said: smells don't bother the miller. The mill smells too. I said: different smell. He said: yes. Smells are each their own. He went back to the mill. I went back to the tannery. We've left each other alone correctly ever since.",
+      "keywords": ["tannery","has","to","be","away","from","other","businesses","because","tanning"]
+    },
+    {
+      "id": "edna_1",
+      "source": "Wurn on Edna the tailor",
+      "text": "Edna buys my best leather for the Brotherhood work. She's specific about the suppleness — the Brotherhood uniform requires leather that doesn't stiffen in cold, which means the tanning has to be carried all the way through a specific process that adds two weeks to the production. She told me the performance requirements before I told her my process. The requirements matched the process. We've been working together for eleven years. The specification hasn't changed because the requirement hasn't changed.",
+      "keywords": ["edna","buys","best","leather","brotherhood","work","specific","suppleness","brotherhood","uniform"]
+    },
+    {
+      "id": "mott_1",
+      "source": "Wurn on Mott the baker",
+      "text": "Mott and I are in the Cult for different reasons that produce the same experience. He wants the next correct batch. I want the next correctly-tanned hide. Both of us are in an occupation where the wanting has to wait for the work to be complete before it arrives. Mott's waiting is measured in hours. Mine in weeks. We've talked about this once — whether the length of the wait changes the quality of the wanting. He said: the bread arrives more often. I said: the hide means more when it arrives. We decided both were probably right.",
+      "keywords": ["mott","baker","cult","different","reasons","produce","same","experience","wants","next"]
+    },
+    {
+      "id": "what_wurn_holds_1",
+      "source": "Wurn on the hide he hasn't finished",
+      "text": "There's a commission from six months ago that I haven't delivered because the hide isn't right yet. The client has been patient. I told them: when it's right. They said: we trust your judgment. I've redone the process twice. Not because the first two were failures — because the first two were correct but not right. The distinction matters to me and I haven't been able to explain it to anyone yet. HAGRETH says the wanting is sacred. I think the wanting is telling me the hide isn't ready.",
+      "keywords": ["commission","six","months","ago","haven't","delivered","because","hide","isn't","right"]
+    },
+    {
+      "id": "memory_1",
+      "source": "Wurn on what the hands remember",
+      "text": "Twenty-eight years and my hands know the hide's stage without me thinking about it. I run my hands over the surface and I know where it is in the process. The knowing isn't knowledge I can articulate — it's in the hands. When Sal from the chandlery asked me once how I know, I said: the same way you'll know your wax when you've worked it long enough. She said: touch memory. I said: memory of what right feels like. The two are the same.",
+      "keywords": ["twenty-eight","years","hands","know","hide's","stage","without","thinking","about","run"]
+    }
+  ]
+}

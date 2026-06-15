@@ -1,0 +1,57 @@
+{
+  "id": "scarlet_compact4",
+  "name": "Pella",
+  "role": "Scarlet Compact; KHORRUN devotee; Brotherhood field medic mentioned in multiple files",
+  "cluster": "scarlet_compact",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "medic_1",
+      "source": "Pella in the field after an engagement",
+      "text": "Field medicine is the practice of correct action when the situation is trying to prevent correct action. The chaos, the noise, the urgency — these are the obstacles. KHORRUN says: full presence is the gift. Field medicine requires full presence. The two things are the same thing. I found KHORRUN through the work, not the other way around. The work required the presence. The Compact gave me a name for the presence.",
+      "keywords": ["field","medicine","practice","correct","action","when","situation","trying","prevent","correct"]
+    },
+    {
+      "id": "ceth_1",
+      "source": "Pella on Ceth",
+      "text": "Ceth says: KHORRUN is not about war. KHORRUN is about presence. War forces presence. The Compact teaches voluntary presence. I found this through a different door — medicine forced presence on me before the Compact gave me the frame. Ceth and I came to the same place through different urgencies. Ceth says: the door doesn't matter. What you found through the door does. I've accepted this. My door was emergency. Ceth's door was violence. Orm's door was something I still don't understand.",
+      "keywords": ["ceth","says","khorrun","not","about","war","khorrun","about","presence","war"]
+    },
+    {
+      "id": "orm_1",
+      "source": "Pella on Orm",
+      "text": "Orm is the only person I know who I genuinely don't know what to do about. His commitment to the Compact is real — I can see it in how he moves, which is the truest indicator I have. What he does with that commitment outside the Compact rites is something I've seen evidence of and don't know what to do with. The KHORRUN practice doesn't tell me what to do about someone whose presence is genuine and whose application of it is something I'd stop if I could. I've asked Ceth. Ceth said: the practice doesn't adjudicate application.",
+      "keywords": ["orm","only","person","know","genuinely","don't","know","what","do","about"]
+    },
+    {
+      "id": "doss_1",
+      "source": "Pella on Doss the field chaplain",
+      "text": "Doss takes what I can't treat. Not the injury — the thing the injury leaves. In the field, I treat the physical. Doss is there for the part that the physical treatment doesn't reach. We've worked together for seven years and we've never discussed the division — we both know which work is whose. I hand off without being asked and Doss is there without being called. In seven years this has never failed because neither of us needs the handoff to be announced.",
+      "keywords": ["doss","takes","what","can't","treat","not","injury","thing","injury","leaves"]
+    },
+    {
+      "id": "aldous_1",
+      "source": "Pella on Aldous at the infirmary",
+      "text": "Aldous and I disagree about method. His method works in the infirmary. Mine works in the field. The situations are different enough that the methods are different. I've made peace with this distinction after years of feeling that one of us was wrong. We're both right about different situations. Aldous sent a patient to me once — someone the infirmary's methods couldn't reach because the patient needed the field medicine's approach rather than the infirmary's approach. Aldous saw this and sent them. That was the end of the disagreement.",
+      "keywords": ["aldous","disagree","about","method","his","method","works","infirmary","mine","works"]
+    },
+    {
+      "id": "rath_1",
+      "source": "Pella on Rath",
+      "text": "Rath is the model I use when I'm uncertain. Not because Rath is always right — because Rath's uncertainty has the same character as Rath's certainty. Rath under pressure looks the same as Rath not under pressure. I've been trying to achieve this for nine years. I'm closer than I was. Doss says: Rath's achieved what the Compact practice describes. The practice produces this through years of work. Rath achieved it through an original quality and then years of work. The years of work are not shorter. Just a different starting point.",
+      "keywords": ["rath","model","use","when","uncertain","not","because","rath","always","right"]
+    },
+    {
+      "id": "what_pella_holds_1",
+      "source": "Pella on the patient she couldn't reach",
+      "text": "One patient in nine years who didn't survive when the injury was survivable. The injury was survivable. What wasn't survivable was the patient's decision that they didn't want to survive. Not a stated decision — a quality in the engagement with the treatment. I treated the injury correctly. The patient didn't use the treatment to survive. I've gone back over this case every year for nine years. Doss has said: this is the limit of medicine. The limit is real. I know the limit is real. I'm still going back over it.",
+      "keywords": ["one","patient","nine","years","didn't","survive","when","injury","was","survivable"]
+    },
+    {
+      "id": "what_field_teaches_1",
+      "source": "Pella on what nine years of field medicine teaches",
+      "text": "The body wants to survive. This is the same as what I said about KHORRUN — the body has a preference for health. My job is to create the conditions where that preference can operate. In the field, the conditions are usually hostile to the preference. My job is to make the conditions minimally hostile. I can't make them good. I can make them minimally hostile. Nine years and this framing is correct. I've stopped trying to make them good. Minimally hostile is the achievable.",
+      "keywords": ["body","wants","survive","same","said","about","khorrun","body","has","preference"]
+    }
+  ]
+}

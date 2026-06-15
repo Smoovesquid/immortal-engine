@@ -1,0 +1,57 @@
+{
+  "id": "players_sera_dort",
+  "name": "Sera and Dort",
+  "role": "Ember Road Players; paired performers; lovers since year two",
+  "cluster": "ember_road_players",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "performance_1",
+      "source": "Sera and Dort, asked to explain how they finish each other's sentences",
+      "text": "SERA: It's not finishing — DORT: it's knowing. We share SERA: a model of what needs DORT: to be said next. The model SERA: is always updating. DORT: We built it over SERA: nine years. Doing the scenes DORT: so many times that the SERA: next word is DORT: predictable from the last one.",
+      "keywords": ["finishing","knowing","share","model","needs","said","next","always","updating","built"]
+    },
+    {
+      "id": "kevin_1",
+      "source": "Sera on how they joined the Players",
+      "text": "Kevin found us performing in a market square doing the two-person scene where one person has to be three different characters without a costume change. Kevin watched the whole scene. After he said: you're doing this wrong. Dort said: we've been doing it for six years. Kevin said: I mean you're doing it for free in a market square and you could be doing it for a company. We joined the next day. We were wrong about the square. Kevin was right about the company.",
+      "keywords": ["kevin","found","performing","market","square","two-person","scene","one","person","three"]
+    },
+    {
+      "id": "margit_1",
+      "source": "Dort on Margit's reading",
+      "text": "Margit read us together. We asked for it together. The reading was about a shared situation. What was interesting — to both of us afterward, in conversation — was that the cards about each of us referenced the other person. Not as context. As content. Margit said: I haven't done this before. A paired reading where the pairing is the subject rather than the background. We said: that seems correct. She said: I think so too. The reading was about us rather than about each of us.",
+      "keywords": ["margit","read","together","asked","together","reading","shared","situation","interesting","both"]
+    },
+    {
+      "id": "odo_luce_1",
+      "source": "Sera on the other company members",
+      "text": "Odo made us safe to perform with. Not because of the fighting — because of the trust that someone on stage with you won't drop the scene if something goes wrong. We've been in scenes with Odo where something went wrong and Odo did not drop the scene. He found the floor of it and stayed there. Luce does the same thing — she's been with us three months and she already has the discipline. We told Kevin: Luce will be here in ten years. Kevin said: I know. That's why I hired her.",
+      "keywords": ["odo","made","safe","perform","fighting","trust","someone","stage","with","you"]
+    },
+    {
+      "id": "bren_1",
+      "source": "Dort on Bren",
+      "text": "Bren knows when we're about to have an argument before we do. He adjusts what he serves. I noticed this in year three — the night before a significant disagreement there was a different meal. Not a special meal. A specific meal: simpler, cleaner, the kind of food that doesn't add to whatever is already there. I asked him once. He said: the situation is what it is. He won't say more than that. He feeds the situation, not the performance.",
+      "keywords": ["bren","knows","when","we're","about","have","argument","before","we","do"]
+    },
+    {
+      "id": "pip_1",
+      "source": "Sera on Pip",
+      "text": "Pip did Dort once, for Odo. Not to be cruel — to help Odo understand what Dort does in a scene that Odo was having trouble following. Pip did the movement once and Odo said: I see it now. That's what you're doing. Dort watched Pip do Dort and said afterward: I didn't know I did that. The movement that Pip found is one that Dort wasn't aware of. It's real. We've both watched for it since. It's there every time.",
+      "keywords": ["pip","did","dort","once","odo","not","cruel","help","odo","understand"]
+    },
+    {
+      "id": "what_nine_years_1",
+      "source": "Dort on nine years of performing together",
+      "text": "The shared model has costs. The model that lets us finish each other's lines in performance also means we finish each other's lines outside performance when we're not trying to. This is sometimes useful and sometimes very much not useful. The discipline around it is knowing when to let the model run and when to stop the model and wait. We've been working on this since year four. The work is not finished. The model is faster than the discipline.",
+      "keywords": ["shared","model","has","costs","model","lets","finish","each","other's","lines"]
+    },
+    {
+      "id": "scene_that_changed_1",
+      "source": "Sera on the scene they will not perform again",
+      "text": "We did a scene in year two that required us to be estranged. We're not good actors about genuine things — we're good actors about everything except genuine things. The estrangement in the scene was too available to us that particular week and the performance went somewhere none of us had rehearsed. Kevin stopped the scene. It was the right decision. We don't perform that scene anymore. Margit's card — the one she won't use now — was pulled during that performance. We didn't know that until later.",
+      "keywords": ["scene","year","two","required","estranged","not","good","actors","genuine","things"]
+    }
+  ]
+}

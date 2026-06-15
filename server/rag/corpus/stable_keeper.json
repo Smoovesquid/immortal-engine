@@ -1,0 +1,57 @@
+{
+  "id": "stable_keeper",
+  "name": "Hass",
+  "role": "Stablemaster; runs the district's largest stable; animals tell him things people don't",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "stable_1",
+      "source": "Hass on stables",
+      "text": "A stable is a hotel for animals. The animals arrive with their conditions and I manage the conditions. Sick animal, injured animal, stressed animal, animal that's been worked too hard — my work is to receive whatever arrives and return it to the condition it should be in when it leaves. In twenty years, the animals that have passed through here have been in every condition. The ones that left in worse condition than they arrived: two. Both times: the condition was already failing when they arrived. I couldn't reverse what had already started.",
+      "keywords": ["stable","hotel","animals","animals","arrive","conditions","manage","conditions","sick","animal"]
+    },
+    {
+      "id": "comus_1",
+      "source": "Hass on Comus",
+      "text": "Comus's horse has been stabled here for the periods between Comus's trading circuits for eight years. What the horse's condition when it returns tells me about the circuit: the horse that comes back lean has been on a long hard circuit with insufficient forage. The horse that comes back in good condition has been on a well-managed circuit. In eight years, Comus's horse has come back in good condition six times and lean twice. The lean times: Comus said both times the eastern circuit that season had been harder than expected.",
+      "keywords": ["comus","horse","stabled","here","periods","between","comus's","trading","circuits","eight"]
+    },
+    {
+      "id": "dub_1",
+      "source": "Hass on Dub",
+      "text": "Dub the cartwright and I have a professional overlap: the cart animals and the carts that pull them. What happens to the horse affects how it pulls the cart. What happens to the cart affects how the horse pulls. In fourteen years of working in adjacent domains, Dub and I have had six conversations about specific cases where the cart's condition was affecting the horse's gait or the horse's condition was affecting the cart's performance. Both directions: the animal and the vehicle are a system.",
+      "keywords": ["dub","cartwright","professional","overlap","cart","animals","carts","pull","them","what"]
+    },
+    {
+      "id": "theen_1",
+      "source": "Hass on Theen",
+      "text": "Theen uses horses from my stable for guided passages when the client's own horse isn't suitable for the territory. In six years of this arrangement, Theen has taken sixteen horses from my stable for guided passages. All sixteen came back. In all sixteen: the horse came back in the condition Theen promised it would be in, or better. Theen's care for the borrowed animal is the care of someone who understands that the borrowed animal is not theirs to use past its capacity.",
+      "keywords": ["theen","uses","horses","stable","guided","passages","when","client's","own","horse"]
+    },
+    {
+      "id": "prad_1",
+      "source": "Hass on Prad",
+      "text": "Prad made the rope I use for the stable's tie lines. The tie-line rope has specific requirements: the rope must hold the animal when it pulls but release without damage to the animal if it pulls hard enough. The balance between holding and releasing is the design requirement. In nine years of Prad's rope in the stable, the tie lines have worked correctly. The animal that pulls too hard: the line releases before the animal injures itself. The animal that leans: the line holds.",
+      "keywords": ["prad","made","rope","use","stable's","tie","lines","tie-line","rope","specific"]
+    },
+    {
+      "id": "what_animals_tell_1",
+      "source": "Hass on what animals tell him that people don't",
+      "text": "An animal's condition doesn't lie. The horse that's been ridden too hard shows it in the musculature. The horse that's been well-fed shows it in the coat. The horse that's been treated well shows it in the way it approaches the stable door. In twenty years, I've received animals from people who claimed the animal had been well cared for and the animal told me otherwise. I've received animals from people who apologized for not caring for the animal better and the animal was fine. The animal's condition is the true account.",
+      "keywords": ["animal's","condition","doesn't","lie","horse","been","ridden","too","hard","shows"]
+    },
+    {
+      "id": "what_hass_holds_1",
+      "source": "Hass on the horse he couldn't help",
+      "text": "Year twelve. A horse that arrived in a condition I didn't recognize. Not sick in the way I know sickness. Not injured in the way I know injury. In twenty years, this is the only animal where I couldn't identify what was wrong. The horse stayed for three weeks. I did what I could without knowing what I was doing it for. The horse recovered. Whatever had been wrong resolved. I've been thinking about the case for eight years. I've seen similar presentations twice since. Both times the animal recovered. I still don't have a name for what it was.",
+      "keywords": ["year","twelve","horse","arrived","condition","didn't","recognize","not","sick","way"]
+    },
+    {
+      "id": "twenty_years_1",
+      "source": "Hass on twenty years of stable work",
+      "text": "In twenty years, the stable has been the beginning and end of more journeys than I can count. The horse that's been stabled here before a departure and after an arrival — the stable is the transition point between being gone and being home. In twenty years, I've been present at more beginnings and endings of journeys than any other person in the district. I don't go anywhere. Everyone else goes through here.",
+      "keywords": ["twenty","years","stable","been","beginning","end","more","journeys","than","can"]
+    }
+  ]
+}

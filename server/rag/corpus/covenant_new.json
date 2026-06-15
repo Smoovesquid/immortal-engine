@@ -1,0 +1,57 @@
+{
+  "id": "covenant_new",
+  "name": "Asha",
+  "role": "Angel Covenant; recent initiate; ALMASOSE expression",
+  "cluster": "angel_covenant",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "finding_1",
+      "source": "Asha on how she found the Covenant",
+      "text": "I found it because I kept giving things away and not understanding why. Food to strangers, work for nothing, time I didn't have. I thought it was a problem with me — an inability to keep what was mine. Then I heard Almas describe ALMASOSE and the accuracy of what she described to my experience was disorienting. I'd been expressing an angel for three years without knowing it had a name. The name changed nothing about the expression. It changed everything about my relationship to it.",
+      "keywords": ["found","covenant","giving","things","away","understanding","why","food","strangers","work"]
+    },
+    {
+      "id": "almas_1",
+      "source": "Asha on the almskeeper Almas",
+      "text": "Almas is what I'm moving toward. Not her practice specifically — I don't distribute bread. But the precision of her practice. She gives exactly what's needed, no more, and she knows what's needed by observation rather than by feeling. My current version of the expression is emotional — I give because the giving makes me feel the alignment. Her version is functional — she gives because the need is real and she sees it. The functional version is more sustainable.",
+      "keywords": ["almas","moving","toward","precision","practice","distribute","bread","exactly","needed","know"]
+    },
+    {
+      "id": "vel_1",
+      "source": "Asha on Archon Vel",
+      "text": "Vel gave me the initiation ritual and received me into the Covenant. He asked three questions and my answers must have been correct because he said: you've been in the Covenant already, you just didn't know it. This felt true. What the Covenant added to what I was already doing is the framework — I know what ALMASOSE is and how it relates to the other six and how to describe what happens when it's present and when it's absent. The practice is the same. The map is better.",
+      "keywords": ["vel","gave","initiation","ritual","received","covenant","asked","three","questions","answers"]
+    },
+    {
+      "id": "sel_1",
+      "source": "Asha on meeting Sel the mourner",
+      "text": "I went to a Hollow Court rite because someone I knew was using it and I didn't know what it was. Sel runs the rites with a precision I recognized — she gives exactly what's needed, the way I try to, but for grief rather than material need. After the rite she said: you were present in the way that helps. I said: I didn't do anything. She said: that's what I mean. I've thought about what she said for a month.",
+      "keywords": ["hollow","court","rite","someone","knew","sel","runs","precision","recognized","gives"]
+    },
+    {
+      "id": "excess_1",
+      "source": "Asha on the problem of giving too much",
+      "text": "I gave someone I barely knew three weeks of work once because they needed it. They did need it. The work was correct. What I lost was three weeks of my own work and the thing I was working on didn't get finished and the thing I was working on was also something that needed doing. Almas said: correct need is not infinite. The accuracy of the response requires accurate assessment of all the needs, not just the visible one. The need in front of you and the need behind you are both real.",
+      "keywords": ["gave","someone","barely","knew","three","weeks","work","needed","lost","finished"]
+    },
+    {
+      "id": "beret_1",
+      "source": "Asha on meeting Beret who runs the travelers' shelter",
+      "text": "Beret and I recognized each other at first conversation — two people who give things they have to people who need things they don't have. We're expressing the same angel in different forms. Beret gives shelter. I give whatever is directly in front of me. She told me the operational discipline of the shelter — how she knows when she's given enough without taking inventory every time. I've been trying to apply the same principle to my own practice. It's harder without the building to anchor it.",
+      "keywords": ["beret","recognized","first","conversation","give","things","shelter","expressing","same","angel"]
+    },
+    {
+      "id": "what_almasose_1",
+      "source": "Asha trying to explain ALMASOSE to a friend who hasn't encountered it",
+      "text": "The most accurate thing I can say is: it's being allergic to seeing a need go unmet when meeting it is within your capacity. Not every need. Not at cost of your own survival. But when the capacity and the need are both present and no meeting happens, there's a specific discomfort. ALMASOSE is the name for the thing that's disturbed. The Covenant taught me the name. I already knew the disturbance.",
+      "keywords": ["most","accurate","allergic","seeing","need","unmet","meeting","capacity","not","every"]
+    },
+    {
+      "id": "elder_rosse_1",
+      "source": "Asha on Elder Rosse",
+      "text": "Elder Rosse has forty-one years of practice and the specific quality of someone who has made very few new mistakes in the last decade. The mistakes she makes are entirely new categories of mistake, which she says is the sign of a practice that's still going somewhere. She told me: at year three you think you understand the angel. At year ten you understand you don't. At year twenty you understand what you don't understand. At year forty you start to know the shape of what's beyond that. I'm at year three.",
+      "keywords": ["elder","rosse","forty","one","years","practice","quality","mistakes","decade","categories"]
+    }
+  ]
+}

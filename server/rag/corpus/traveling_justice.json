@@ -1,0 +1,57 @@
+{
+  "id": "traveling_justice",
+  "name": "Sorrel",
+  "role": "Circuit justice; arrives in Thornwall quarterly to hear cases above the district magistrate's jurisdiction",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "circuit_1",
+      "source": "Sorrel on the circuit",
+      "text": "The circuit covers seven settlements. I arrive in each settlement four times a year. What the circuit provides: a decision-making authority above the local magistrate for cases that exceed local jurisdiction. What local jurisdiction is: defined by the case's complexity, the parties' reach, or the precedent implications. Cases that would change how the law is applied beyond this settlement come to me. In seventeen years of circuit work, I've heard cases that changed the law's application in four of the seven settlements.",
+      "keywords": ["circuit","covers","seven","settlements","arrive","each","settlement","four","times","year"]
+    },
+    {
+      "id": "reeth_1",
+      "source": "Sorrel on Judge Reeth",
+      "text": "Reeth is the best district magistrate on my circuit. In seventeen years, Reeth has sent me eleven cases. Eleven cases from a district that averages twenty cases a year is an extremely low referral rate — most district magistrates send me forty to sixty cases per year. What Reeth's low referral rate tells me: Reeth resolves at the local level what can be resolved at the local level and sends only what genuinely requires the circuit level. This is the correct practice. Most magistrates send more than they need to because the circuit is an easier option than the hard local decision.",
+      "keywords": ["reeth","best","district","magistrate","circuit","seventeen","years","reeth","sent","eleven"]
+    },
+    {
+      "id": "mast_1",
+      "source": "Sorrel on Mast",
+      "text": "Mast's records are the reason I can hear cases in Thornwall efficiently. The record of the council decisions, the previous cases, the precedent history — all of it organized and accessible. When I arrive, the documents I need are available within an hour of my request. On the rest of my circuit: two settlements have equivalent documentation quality. Four have documentation I have to reconstruct myself before I can hear the case. Mast's documentation quality saves me approximately three days per visit.",
+      "keywords": ["mast","records","reason","hear","cases","thornwall","efficiently","record","council","decisions"]
+    },
+    {
+      "id": "cass_1",
+      "source": "Sorrel on Cass",
+      "text": "I stay at the Iron Key when the circuit brings me to Thornwall. In seventeen years, this has never changed. Cass provides the table I need for evening preparation — the review of the next day's cases. Cass never asks what I'm working on. Cass removes the table when I'm done and leaves what I need when I need it. In seventeen years and sixty-eight visits, I've had to ask Cass for something I needed and didn't have twice. Two times in sixty-eight visits is the best hospitality rate on my circuit.",
+      "keywords": ["stay","iron","key","circuit","brings","thornwall","seventeen","years","never","changed"]
+    },
+    {
+      "id": "kevin_1",
+      "source": "Sorrel on Kevin Bacon",
+      "text": "The Players' company was in Thornwall during one of my quarterly visits. I attended the performance on the night before the heaviest case day. Deliberate choice: I've found that attending a performance the night before a difficult case gives my thinking a flexibility that legal preparation alone doesn't produce. The performance doesn't inform the case directly. It seems to make the thinking more capable of the specific kind of flexibility that difficult cases require. I've tested this over eight years. The correlation holds.",
+      "keywords": ["players","company","thornwall","quarterly","visits","attended","performance","night","before","heaviest"]
+    },
+    {
+      "id": "what_circuit_teaches_1",
+      "source": "Sorrel on what seventeen years of circuit work teaches",
+      "text": "The same law produces different justice in different settlements. Not because the law is applied differently — because the settlements are different, the communities have different values, the same legal outcome produces different effects in different contexts. In seventeen years I've applied the same law in seven settlements and watched it produce seven different effects. The law is a fixed thing. The community it lands in is not fixed. The justice produced is the interaction between the fixed and the unfixed.",
+      "keywords": ["same","law","produces","different","justice","different","settlements","not","because","law"]
+    },
+    {
+      "id": "what_sorrel_holds_1",
+      "source": "Sorrel on the case she thinks about",
+      "text": "Year eight. A case that was correctly decided by every legal standard and that produced an outcome that was wrong for both parties and damaging to the community. I've been over the reasoning eleven times in nine years. The reasoning was sound. The law was correctly applied. The outcome was wrong. The gap between legally correct and actually right is not unusual — I've seen it before. What made this case different: the gap was large enough that both parties said afterward that they would have preferred no ruling to the ruling they received.",
+      "keywords": ["year","eight","case","correctly","decided","every","legal","standard","produced","outcome"]
+    },
+    {
+      "id": "seventeen_years_1",
+      "source": "Sorrel on seventeen years on the circuit",
+      "text": "The circuit is the seven settlements' shared commitment to a law that exceeds any one of them. In seventeen years I've carried that shared commitment through seven settlements four times a year. What the circuit provides that local justice can't: the perspective of all seven settlements applied to any one of them. When I decide a case in Thornwall, I'm deciding it with the knowledge of how the same case type has been decided in the other six settlements. The accumulated knowledge makes the individual decision better.",
+      "keywords": ["circuit","seven","settlements","shared","commitment","law","exceeds","any","one","them"]
+    }
+  ]
+}

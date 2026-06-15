@@ -1,0 +1,57 @@
+{
+  "id": "wild_hunter",
+  "name": "Drass",
+  "role": "Hunter; Wild Road; supplies settlements with game",
+  "cluster": "wild_road",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "hunting_1",
+      "source": "Drass before dawn, checking the lines",
+      "text": "The lines tell me what moved through the night. Not just what I'm hunting — everything. The pattern of disturbance in the undergrowth is a record of the last eight hours. I read it the same way every morning: large movements first, then medium, then the small things that disturb everything around them when they're scared. The scared small things tell me where the large things went. I follow the chain backward.",
+      "keywords": ["lines","tell","moved","night","hunting","everything","pattern","disturbance","undergrowth","record"]
+    },
+    {
+      "id": "theen_1",
+      "source": "Drass on the ranger Theen",
+      "text": "Theen and I work adjacent territory. She's concerned with the forest's health. I'm concerned with what I can take from it without breaking it. The concerns are related — a forest in poor health doesn't produce game, and game taken above the sustainable rate breaks the forest. We've never formally negotiated, but Theen has twice redirected me from areas she said were in recovery, and I've twice told her about movements I'd seen that seemed relevant to what she was watching. Neither of us needs to call this an arrangement.",
+      "keywords": ["theen","work","adjacent","territory","concerned","forest","health","take","breaking","sustainable"]
+    },
+    {
+      "id": "foss_1",
+      "source": "Drass on the druid Foss",
+      "text": "Foss has asked me about game patterns three times in two years. Each time I've described what I'm seeing and Foss has said: that's consistent with what the eastern section is showing. I don't know what the eastern section showing means in Foss's terms. What I know is that my on-the-ground observations and Foss's... other observations... have agreed. I find this reassuring. The forest is legible from multiple angles.",
+      "keywords": ["foss","asked","game","patterns","three","times","two","years","described","consistent"]
+    },
+    {
+      "id": "nell_1",
+      "source": "Drass on the orphan network girl Nell",
+      "text": "The girl who can read animals. She was near my lines once and I was irritated — someone near your lines before you check them is disruption. Then I noticed the animals near her weren't acting the way they act near a human threat. They were acting like she was part of the landscape. I've been hunting for sixteen years and I've never seen that. I let her stay near the lines. She's pointed out three things I'd missed. I've said nothing about it to anyone. I don't want others asking.",
+      "keywords": ["girl","read","animals","near","lines","irritated","disruption","noticed","acting","threat"]
+    },
+    {
+      "id": "supply_1",
+      "source": "Drass on supplying the settlements",
+      "text": "Thornwall takes what I bring twice a week. The harbor takes more if I can get it there — preservation is harder, so I need to move quickly. Yew at the Brotherhood camp buys when I come through the eastern route, which adds a half-day but doubles the sale. I've organized the routes around the freshness windows. The game has to match the market's timing. This is logistics as much as hunting.",
+      "keywords": ["thornwall","takes","brings","twice","week","harbor","more","preservation","harder","eastern"]
+    },
+    {
+      "id": "the_hermit_1",
+      "source": "Drass on the forest hermit",
+      "text": "The Hermit is deep in my hunting territory. We've come to an understanding over twelve years without a conversation about the understanding. I don't take from the area closest to where they live. They don't move game away from the areas where I hunt. The game patterns near their clearing are different from elsewhere — the animals know they're safe there. I use this. The clarity means I know exactly where the boundary is without surveying it.",
+      "keywords": ["hermit","deep","hunting","territory","understanding","twelve","years","conversation","take","closest"]
+    },
+    {
+      "id": "what_hunter_1",
+      "source": "Drass when someone asked how he knows when to stop taking",
+      "text": "The population responds. You watch the response time — when I take from an area, how long before the game density returns to baseline. A healthy area returns in three weeks. A stressed area takes longer. I track this by location and by season. When the return time gets longer, I take less from that area and let it recover. This is not conservation ideology. It's self-interest. The area that runs empty is the area I don't hunt next year.",
+      "keywords": ["population","responds","response","time","take","area","density","returns","baseline","healthy"]
+    },
+    {
+      "id": "weather_1",
+      "source": "Drass on reading weather",
+      "text": "Before the hunt I read the wind, the cloud pattern, the behavior of the birds that are up before I am. These tell me how the day will go. Not perfectly — the weather is its own system and I'm reading the edges of it. But the edges are consistent enough that I'm right about seven mornings in ten. The three mornings I'm wrong I learn something that improves the seven. Sixteen years of mornings. I'm better at reading them now than I'll ever need to be.",
+      "keywords": ["hunt","read","wind","cloud","pattern","behavior","birds","up","before","tell"]
+    }
+  ]
+}

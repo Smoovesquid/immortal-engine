@@ -1,0 +1,57 @@
+{
+  "id": "senn_of_the_road",
+  "name": "Senn",
+  "role": "Permanent wanderer; TARRYN devotee; has been moving for thirty years without stopping",
+  "cluster": "wild_road",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "wandering_1",
+      "source": "Senn on thirty years of wandering",
+      "text": "I stopped stopping thirty years ago. The last time I stayed somewhere longer than a season was thirty years ago and I remember the exact house and the exact moment I left it. What I understood at that moment: the staying was the obstacle. Not an obstacle to something — the obstacle itself. The movement is not toward anything. The movement is the condition. TARRYN's patience isn't the patience of waiting. It's the patience of continuing when everything says stop.",
+      "keywords": ["stopped","stopping","thirty","years","last","time","stayed","somewhere","longer","season"]
+    },
+    {
+      "id": "tarryn_1",
+      "source": "Senn on TARRYN",
+      "text": "TARRYN doesn't ask for stillness. The religious misunderstanding of patience is that it means not moving. Patience means continuing without the hurry that destroys what the continuation is for. I've been continuing for thirty years without the hurry. TARRYN's gift to me: the movement that arrives where it needs to arrive in the time it needs to take. Not faster. Not slower. The pace that the path requires.",
+      "keywords": ["tarryn","doesn't","ask","for","stillness","religious","misunderstanding","patience","that","means"]
+    },
+    {
+      "id": "orvane_1",
+      "source": "Senn on Orvane",
+      "text": "Orvane has been walking for less time than me. What I've shared with Orvane that I don't share with most: the long walking changes the way you understand time. The change takes about ten years to settle. In the first five years you're still measuring the walk in terms of the life you left. In the second five years the walk becomes its own time system. After that, the walk is time. Orvane is at the transition. I've told Orvane this. Orvane said: I can feel the change happening. I said: yes. The feeling of it is the middle.",
+      "keywords": ["orvane","been","walking","less","time","than","me","what","shared","orvane"]
+    },
+    {
+      "id": "theen_1",
+      "source": "Senn on Theen",
+      "text": "Theen guides people through the territory that I walk through alone. What Theen does is different from what I do: Theen has a destination in mind, a person to deliver somewhere, a purpose the walk serves. My walk has no purpose in that sense. I've walked with Theen on the same path twice — Theen guiding a traveler, me moving through the same territory. The same path, different relationships to it. Theen's path is a means. Mine is not a means.",
+      "keywords": ["theen","guides","people","territory","that","walk","through","alone","what","theen"]
+    },
+    {
+      "id": "vann_1",
+      "source": "Senn on Vann",
+      "text": "Vann the tinker moves through the same territory on a circuit rather than a direction. The circuit returns. My movement doesn't return to the same places — it can pass through a place again but the passing-through is different from the return. Vann's relationship to the places is accumulating familiarity. Mine is accumulating passes. What we've talked about: the different relationships to the same geography. Vann said: I'm building a home from the pieces of every place on the circuit. I said: I'm building a path from the pieces of every place I've passed.",
+      "keywords": ["vann","tinker","moves","same","territory","circuit","rather","direction","circuit","returns"]
+    },
+    {
+      "id": "what_thirty_years_teaches_1",
+      "source": "Senn on what thirty years of movement teaches",
+      "text": "The world is larger than any map. Not because the map is wrong — because the map captures geography and the world contains what geography holds. The river on the map is geography. The river in March, in drought, in flood, in the particular light of the day I waded it — that's what the world contains. In thirty years I've passed through a thousand places. The map shows the geography. I carry what the geography held when I passed through it. Different thing.",
+      "keywords": ["world","larger","than","any","map","not","because","map","wrong","because"]
+    },
+    {
+      "id": "what_senn_holds_1",
+      "source": "Senn on what she's still looking for",
+      "text": "In thirty years of movement I've been asked what I'm looking for more times than I can count. My answer has changed twice. First ten years: I said I wasn't looking for anything. Middle ten years: I said I was looking for the way the walk changes the walker. Last ten years: I say I'm looking for the place where the walk and the walker can't be told apart anymore. I don't know if that place exists geographically. I think it exists in a kind of attention. I'm still developing the attention.",
+      "keywords": ["thirty","years","movement","asked","what","looking","for","more","times","than"]
+    },
+    {
+      "id": "cass_1",
+      "source": "Senn on Cass at the Iron Key",
+      "text": "I've stayed at the Iron Key four times in thirty years. Cass doesn't ask where you've come from or where you're going. This is rare. Most inns' hospitality includes the implicit exchange: I provide shelter, you provide narrative. The Iron Key provides shelter without narrative. Four times at the Key and Cass knows my name and nothing else. Cass knows I return. The knowing is enough for both of us.",
+      "keywords": ["stayed","iron","key","four","times","thirty","years","cass","doesn't","ask"]
+    }
+  ]
+}

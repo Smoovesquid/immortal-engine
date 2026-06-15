@@ -1,0 +1,57 @@
+{
+  "id": "well_digger",
+  "name": "Korn",
+  "role": "Well digger and water system maintainer; the district's fresh water comes from his work",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "well_1",
+      "source": "Korn on wells",
+      "text": "A well is a hole that reaches the water. The depth of the hole is determined by the depth of the water, which is determined by the local geology. In thirty years of digging wells across this region, I've mapped the water table in my mind more accurately than any surface survey. The water is everywhere. The depth varies. My work: finding where the water is closest to the surface and digging to it without contaminating it.",
+      "keywords": ["well","hole","reaches","water","depth","hole","determined","depth","water","determined"]
+    },
+    {
+      "id": "goss_1",
+      "source": "Korn on Goss",
+      "text": "The granary uses water for the grain processing. The granary well is my oldest maintained installation in the district — I dug it twenty-seven years ago and have maintained it since. In twenty-seven years, the well has produced continuously without failing. What 'maintained' means: annual inspection, periodic deepening as the water table shifts, and immediate response to any change in water quality or yield. The granary's water is the first thing I check every spring.",
+      "keywords": ["granary","uses","water","grain","processing","granary","well","oldest","maintained","installation"]
+    },
+    {
+      "id": "honn_1",
+      "source": "Korn on Honn",
+      "text": "The laundry operation uses significant water. Honn's water access comes from the district's primary well network, which I maintain. What Honn's use does to the network: the volume demand is high enough that it affects the well's yield during peak use hours. In eight years of managing the peak-demand periods around Honn's laundry schedule, I've adjusted the maintenance regime to ensure the yield is adequate during the peak hours. Honn's laundry schedule and the well maintenance schedule are coordinated now. They weren't before I understood the demand pattern.",
+      "keywords": ["laundry","operation","uses","significant","water","honn's","water","access","comes","district's"]
+    },
+    {
+      "id": "dran_1",
+      "source": "Korn on Dran",
+      "text": "Dran the settlement physician tested the water quality at three of my wells in the outer settlement five years ago. What Dran found: two of the three were clean by all tests. One had a contamination source I hadn't identified in my annual inspections. Dran's testing protocol is more sensitive than my visual inspection and yield-monitoring. Since Dran's testing, I've added a water quality testing step to the annual inspection protocol. Dran provides the testing at no charge. I provide a written inspection report. The reports go to the district council.",
+      "keywords": ["dran","settlement","physician","tested","water","quality","three","wells","outer","settlement"]
+    },
+    {
+      "id": "bale_1",
+      "source": "Korn on Bale",
+      "text": "Bale the water carrier and I have a professional relationship: Bale moves water from my wells to the people who can't reach the wells. What I produce, Bale distributes. In nine years of this arrangement, I've given Bale advance notice of any maintenance that would affect the wells' output. In nine years, Bale has had three days where the well was limited by maintenance. All three: I gave Bale two weeks' notice. Bale adjusted the route and delivery schedule. The people who receive the water experienced no shortage.",
+      "keywords": ["bale","water","carrier","professional","relationship","bale","moves","water","wells","people"]
+    },
+    {
+      "id": "what_the_water_table_is_1",
+      "source": "Korn on what the water table is",
+      "text": "The water table is the upper surface of the zone where the ground is saturated with water. It's not a fixed thing — it moves with the seasons and with the rainfall and with the amount of water being taken out of it. In thirty years of working with the water table in this region, I've learned its seasonal patterns well enough to predict where it will be in a given month with reasonable accuracy. The prediction is what makes the maintenance work: I adjust the maintenance schedule to the table's expected position, not its current position.",
+      "keywords": ["water","table","upper","surface","zone","where","ground","saturated","water","it's"]
+    },
+    {
+      "id": "what_korn_holds_1",
+      "source": "Korn on the well she didn't want to dig",
+      "text": "Year eight. A commission to dig a well in a location I assessed as not suitable. My assessment: the geology in that location was wrong for well-digging — too close to the surface drainage, risk of contamination. The client insisted. I documented my assessment, the client's instruction, and my disagreement. I dug the well. The well produced clean water for four years. In year five, the contamination I'd predicted showed up. I was called back. I capped the well. The documentation of my original disagreement was what protected me when the contamination appeared.",
+      "keywords": ["year","eight","commission","dig","well","location","assessed","not","suitable","assessment"]
+    },
+    {
+      "id": "thirty_years_1",
+      "source": "Korn on thirty years of well digging",
+      "text": "In thirty years I've dug one hundred and twelve wells. One hundred and twelve holes that reach the water the district depends on. Most of the hundred and twelve are still in use. Some have been capped because the buildings they served are gone. One has been capped because the water failed. In thirty years, one failed water source. One hundred and eleven producing. The water is there. My work is finding it and keeping it accessible. In thirty years, the water has almost always been where I expected to find it.",
+      "keywords": ["thirty","years","dug","one","hundred","twelve","wells","one","hundred","twelve"]
+    }
+  ]
+}

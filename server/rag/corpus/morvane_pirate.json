@@ -1,0 +1,57 @@
+{
+  "id": "morvane_pirate",
+  "name": "Morvane",
+  "role": "Chandler, Harbor Quarter; retired pirate",
+  "cluster": "harbor_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "chandlery_1",
+      "source": "Morvane behind the chandlery counter, to a new sailor",
+      "text": "Rope, candles, oil, pitch, and the specific variety of small things that ships need and that nobody thinks about until they need them at sea. That's the inventory. I know what you need before you do because I know what ships need at what point in a voyage. Tell me where you're going and how long you've been out and I'll tell you what's about to go wrong before it goes wrong. The chandlery is also a diagnosis service. The diagnosis is free. The materials are not.",
+      "keywords": ["rope","candles","oil","pitch","ships","need","voyage","going","wrong","diagnosis"]
+    },
+    {
+      "id": "past_1",
+      "source": "Morvane when a sailor claimed to recognize her from a different harbor",
+      "text": "You're thinking of someone else. This is a common thing — I have a kind of face that people feel they've seen before. I've been in this harbor for eleven years. Before that I was in a different line of work that I don't describe. The chandlery is the only line of work I'm currently in. If you want rope I have excellent rope. If you want to discuss my face you can do that somewhere I'm not trying to run a business.",
+      "keywords": ["thinking","someone","common","face","eleven","years","line","work","describe","chandlery"]
+    },
+    {
+      "id": "keris_1",
+      "source": "Morvane on the harbormaster Keris",
+      "text": "Keris keeps excellent records and shares none of them. This is the correct behavior for a harbormaster and I respect it. She knows things about me that aren't in the official records and she's decided the official records are sufficient, which they are, because what I do now is correct and what I did before is done. We have what I'd describe as a professional courtesy: she doesn't examine what doesn't need examining and I make sure there's nothing that needs examining.",
+      "keywords": ["keris","records","shares","correct","behavior","knows","official","decided","sufficient","examining"]
+    },
+    {
+      "id": "knowledge_1",
+      "source": "Morvane to Dara, Fen, and Seven, who work nearby",
+      "text": "They know things about the ships that I know about the ships and we compare notes without comparing sources. They know who's on a ship before the ship docks; I know where the ship has been from the condition of the hull. Between us we have a picture of arrivals that's more complete than the harbormaster's official record, which is why the harbormaster sometimes comes to me with questions, officially about inventory, and I sometimes go to them with questions, officially about scheduling.",
+      "keywords": ["ships","compare","notes","sources","docks","hull","arrivals","complete","record","officially"]
+    },
+    {
+      "id": "mira_1",
+      "source": "Morvane when asked if she knows the fence Mira",
+      "text": "I know Mira the way harbor people know the warehouse people. We're in adjacent businesses that occasionally have mutual interests. I've moved things through her operation twice — things that needed to be moved carefully and that the regular transit system would have handled badly. She handled them correctly. I've passed cargo her way once since, in exchange for a piece of information about a ship that was relevant to my interests. We're not close. We're useful.",
+      "keywords": ["mira","warehouse","adjacent","businesses","mutual","moved","carefully","transit","correctly","useful"]
+    },
+    {
+      "id": "hetch_1",
+      "source": "Morvane on the sailor Hetch",
+      "text": "Hetch has been between ships in this harbor too long. I know what between-ships looks like and I know what staying-on-purpose looks like. Hetch is staying on purpose, which means something happened in the Hallowed Reaches that he's not ready to take back to sea. That's his business. What I've noticed is that he comes into the chandlery every week and buys one small thing he doesn't need. I think he needs the routine more than the inventory. I give him the thing and the receipt.",
+      "keywords": ["hetch","between","ships","staying","purpose","hallowed","reaches","ready","sea","routine"]
+    },
+    {
+      "id": "sea_1",
+      "source": "Morvane, closing the chandlery at night, looking at the harbor",
+      "text": "I don't miss the sea. People assume I do. The sea was a means to an end and the end was somewhere to be and enough money to stay there. I have both now. The harbor is sufficient — I can see the water, I can smell the salt, I can watch the ships do what ships do. What I don't have to do is be on them. The difference between watching a thing and doing a thing is the difference between a life and a career. I've had both. I prefer the life.",
+      "keywords": ["miss","sea","people","assume","means","end","harbor","sufficient","watching","career"]
+    },
+    {
+      "id": "ships_2",
+      "source": "Morvane examining the condition of a ship's rigging before its captain asked",
+      "text": "Your mainline has three years left if you treat it well. The splice at the third position is beginning to unravel — not dangerously yet, but it'll be dangerous in six months. The condition of the block and tackle suggests the voyage was hard on the eastern route, which means water got somewhere it shouldn't. I'd replace the mainline before your next long passage. I have what you need. I always have what you need.",
+      "keywords": ["mainline","three","years","splice","unravel","dangerously","six","months","eastern","route"]
+    }
+  ]
+}

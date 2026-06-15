@@ -1,0 +1,57 @@
+{
+  "id": "thornwall_apothecary",
+  "name": "Bel",
+  "role": "Apothecary; Thornwall district; between Syne's herbs and Aldous's infirmary",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "apothecary_1",
+      "source": "Bel at the apothecary counter",
+      "text": "I'm the middle layer. Syne collects what's wild. Aldous applies what's clinical. I make what's specific available to people who need specific things without requiring them to go to either end. Most people's needs are in the middle. The rarer headache remedy. The sleep preparation. The thing for a persistent cough that isn't serious enough for the infirmary. I serve the middle with material from both ends.",
+      "keywords": ["middle","layer","syne","collects","wild","aldous","applies","clinical","make","specific"]
+    },
+    {
+      "id": "syne_1",
+      "source": "Bel on Syne",
+      "text": "Syne's material is the best I source. The two-hour morning collection window produces a difference I can detect in processing. The oil content is correct and the drying is consistent. I've sourced from four herbalists in fourteen years and Syne is the one I've stayed with for the last eight. The others were adequate. Adequate is sufficient if adequate is all that's available. When better is available I take better.",
+      "keywords": ["syne","material","best","source","two-hour","morning","collection","window","produces","difference"]
+    },
+    {
+      "id": "aldous_1",
+      "source": "Bel on Aldous",
+      "text": "Aldous refers patients to me when the infirmary's treatment requires ongoing maintenance that the infirmary can't provide in the time it has. The maintenance preparations I make to Aldous's specification. He gives me the formula. I execute the formula. When the patient is well enough for the infirmary to step back, I maintain the preparation at the community level. We've done this twelve times in nine years. Aldous's specifications are exact. Exact specifications produce consistent results.",
+      "keywords": ["aldous","refers","patients","infirmary's","treatment","requires","ongoing","maintenance","infirmary","can't"]
+    },
+    {
+      "id": "calla_1",
+      "source": "Bel on Calla",
+      "text": "Calla and I have a complicated relationship. She's a hedge witch and her preparations overlap with mine in territory. The difference: she works from intuitive knowledge that she's accumulated over many years. I work from documented preparation with identified compounds. We've sat down twice to compare. Both times we found that her preparations and my preparations produce similar outcomes through different mechanisms. She said: the mechanism doesn't matter if the outcome is correct. I said: the mechanism matters for reproducibility. She said: I'm reproducible. I've observed that this is true.",
+      "keywords": ["calla","complicated","relationship","hedge","witch","preparations","overlap","mine","territory","difference"]
+    },
+    {
+      "id": "nan_1",
+      "source": "Bel on Nan",
+      "text": "Nan and I are a formal partnership. When Nan attends a birth or an injury that needs preparation support, I have the preparation ready within the hour. We've organized this through a signal system — a specific message format that tells me what and when. The system has worked flawlessly for seven years. I asked Nan once where she learned the signal system. She said: I made it up. It works, so it stayed.",
+      "keywords": ["nan","formal","partnership","when","nan","attends","birth","injury","needs","preparation"]
+    },
+    {
+      "id": "mott_1",
+      "source": "Bel on the baker Mott",
+      "text": "Mott comes to me for the preparation he needs to sleep after a long baking run. The preparation is mild. What I've noticed over three years: Mott comes more often in the season when demand is high. The sleep problem correlates with the demand problem. I mentioned this once. He said: I know. HAGRETH says the wanting should be sustained. The preparation that lets me sleep lets me want again tomorrow. I said: you're using the preparation to serve the theology. He said: yes. I make the preparation for whatever the person needs it for.",
+      "keywords": ["mott","comes","preparation","needs","sleep","after","long","baking","run","preparation"]
+    },
+    {
+      "id": "goss_1",
+      "source": "Bel on Goss",
+      "text": "Goss has one condition I maintain. Not serious — a joint condition in the hands that would worsen without management. I've been managing it for eleven years. Goss's hands are his work. Without the management, the work deteriorates in the way the condition deteriorates. With the management, the hands have been stable for eleven years. Goss doesn't talk about the condition. He comes in, collects the preparation, pays the correct amount, and leaves. Eleven years. Not a word about the hands beyond the transaction.",
+      "keywords": ["goss","one","condition","maintain","not","serious","joint","condition","hands","would"]
+    },
+    {
+      "id": "what_bel_holds_1",
+      "source": "Bel on the preparation she developed that she doesn't document",
+      "text": "One preparation. Developed it three years ago for a specific situation. The situation resolved. The preparation continues to be requested by two people. I make it. I don't document it. Not because it's harmful — it's not harmful. Because documenting it would require explaining the situation it was made for, and the situation involved people who didn't choose to have the situation known. The preparation is undocumented. When I stop making it, it stops existing. I've decided this is correct.",
+      "keywords": ["one","preparation","developed","three","years","specific","situation","situation","resolved","preparation"]
+    }
+  ]
+}

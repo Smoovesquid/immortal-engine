@@ -1,0 +1,57 @@
+{
+  "id": "hollow_ritualist",
+  "name": "Bram the Elder",
+  "role": "Hollow Court; rite keeper; designs the ceremonies",
+  "cluster": "hollow_court",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "rite_1",
+      "source": "Bram the Elder on what a rite does",
+      "text": "A rite gives the formless thing a container. The grief, the fear, the particular kind of exhaustion that doesn't have a name — these exist before the rite and continue after it. What the rite does is offer a structure that the formless thing can occupy temporarily. Inside the structure it becomes visible. Once it's visible it becomes something you can address. The rite doesn't heal. The rite makes healing possible by making the thing visible.",
+      "keywords": ["rite","gives","formless","thing","container","grief","fear","particular","kind","exhaustion"]
+    },
+    {
+      "id": "sel_1",
+      "source": "Bram the Elder on Sel",
+      "text": "Sel is the witness. The rites require someone to witness — not to analyze, not to advise, to be fully present for what's happening and to hold that presence for the person going through the rite. Sel has been doing this for nineteen years. What she's accumulated is not knowledge about grief. It's the capacity to be present for it without being consumed by it. The rite is what I design. Sel is what makes it work.",
+      "keywords": ["sel","witness","rites","require","someone","witness","not","analyze","not","advise"]
+    },
+    {
+      "id": "alath_1",
+      "source": "Bram the Elder on Alath",
+      "text": "Alath came from the Academy. The Academy works with the same phenomena through texts. What Alath brought to the Hollow Court: the vocabulary from the texts. What the Court gave Alath: the phenomenology — what it actually looks like when you're in the room while it's happening. The exchange went both directions. The rites I design now have a rigor they didn't have before Alath arrived. Alath's vocabulary makes the design more precise.",
+      "keywords": ["alath","came","academy","works","same","phenomena","texts","vocabulary","texts","what"]
+    },
+    {
+      "id": "cree_1",
+      "source": "Bram the Elder on Cree the grief singer",
+      "text": "Cree's singing is the part of the rite I can't design. I design around it — the rite creates the space, Sel witnesses, and then Cree sings. What happens during the singing is not in my design. It happens between Cree and the people in the room. I've been present for it many times and I can't describe it in design terms. It doesn't have structure. It has effect. The design is what I bring. The effect is what Cree brings. The two together produce the rite.",
+      "keywords": ["cree","singing","part","rite","can't","design","design","around","rite","creates"]
+    },
+    {
+      "id": "porde_1",
+      "source": "Bram the Elder on Porde",
+      "text": "Porde is the beginning of what the Court does. She's at the death — the actual transition. The Court is for what comes after the transition, when the living have to continue. Porde and I have worked on a handoff: when she leaves a family, she tells them the Court is available. She doesn't tell them to come. She tells them the option exists. About half of the people she tells come to us in the first year. The other half come in the second or third, or not at all. All three are correct.",
+      "keywords": ["porde","beginning","what","court","does","she's","at","death","actual","transition"]
+    },
+    {
+      "id": "maret_1",
+      "source": "Bram the Elder on regular attenders like Maret",
+      "text": "The people who come regularly are not stuck. This is what's misunderstood from outside. Regular attendance means the work is ongoing — the rite is renewable. You come when the grief reconfigures and you need the structure again. Maret comes regularly because the grief she carries is specific and active and the rite helps her carry it. When the carrying becomes complete, the attendance will end naturally. The rite is not a dependency. The rite is a tool. Regular use of a tool is not dependency.",
+      "keywords": ["people","come","regularly","not","stuck","misunderstood","outside","regular","attendance","means"]
+    },
+    {
+      "id": "design_1",
+      "source": "Bram the Elder on how he designs a rite",
+      "text": "I interview the person first. Not about the loss — about the person. What do they do with their hands when they're thinking. What was the texture of the time before the loss. What do they find hardest about the current time. From this I build the container — the physical elements of the rite, the order of the elements, the duration, what Sel should be present for and what Cree should be present for. Each rite is specific. I've done four hundred and eleven rites in thirty-two years. No two used the same container.",
+      "keywords": ["interview","person","first","not","about","loss","about","person","what","do"]
+    },
+    {
+      "id": "what_elder_bram_holds_1",
+      "source": "Bram the Elder on the rite he cannot design for himself",
+      "text": "I know what my rite would need to contain. I've been building the design for eleven years. I have not had anyone else conduct it for me. This is the known limitation of the person who designs: the designed cannot fully experience the design they made. I've asked Sel once. She said: not yet. I've accepted this. The 'not yet' means the design is not complete. I keep working on it. The incomplete design is its own kind of ongoing work.",
+      "keywords": ["know","what","rite","would","need","contain","building","design","eleven","years"]
+    }
+  ]
+}

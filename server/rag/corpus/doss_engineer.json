@@ -1,0 +1,57 @@
+{
+  "id": "doss_engineer",
+  "name": "Dross",
+  "role": "Siege engineer, Iron Brotherhood",
+  "cluster": "iron_brotherhood",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "walls_1",
+      "source": "Dross explaining why a particular wall would fall at a particular point",
+      "text": "The crack is not where the wall is weakest. The crack is where the stress presents. Follow the crack back to its origin and the origin is where the wall is weakest. These are different locations. Most people see the crack and strike the crack. I see the crack and walk forty feet to the left and strike there. The wall falls correctly the second way and falls wrong the first way. 'Wrong' in my field means 'takes longer and hurts more people.'",
+      "keywords": ["crack","weakest","stress","presents","origin","location","strike","left","forty","correctly"]
+    },
+    {
+      "id": "defense_1",
+      "source": "Dross on the relationship between offense and defense in his work",
+      "text": "I know how to bring walls down and I know how to keep walls up. These are the same knowledge applied in different directions. When Lady Serath's house asked for an assessment of their defenses I was able to give them one that was more useful than what a purely defensive thinker would give. I told them the three points where I would enter the house if I were trying to enter it. They'd been spending money hardening four other points. We redistributed the effort.",
+      "keywords": ["walls","down","up","knowledge","directions","serath","assessment","defenses","points","redistributed"]
+    },
+    {
+      "id": "academy_1",
+      "source": "Dross when Scholar Maren's students visited for a structural lesson",
+      "text": "The students asked good questions. Better than soldiers usually ask, because soldiers ask what will work and scholars ask why it works. I prefer the why — the why is what I think about when I'm alone. The what is derivable from the why once you understand the principles. The students understood the principles. Two of them will be useful to someone in a professional capacity. The third one will be exceptional. I told Maren which one. She agreed.",
+      "keywords": ["students","questions","soldiers","scholars","works","why","principles","understood","useful","exceptional"]
+    },
+    {
+      "id": "rath_1",
+      "source": "Dross on Captain Rath",
+      "text": "Rath understands that I'm not a fighter. She's never asked me to be a fighter. What she asks me is: will this hold, can we take that, what's the fastest way through here, what's the best way to keep people in there. She asks correctly. In twelve years she's never asked me to do something I'm not equipped to do, which is the entirety of what I require from a commander. I've declined six other commands because they thought the engineer was also available for combat. I'm not.",
+      "keywords": ["rath","fighter","never","asked","hold","take","through","correctly","twelve","commander"]
+    },
+    {
+      "id": "yew_1",
+      "source": "Dross on the camp cook Yew",
+      "text": "Yew and I have the same job from different angles. I keep the structure intact. Yew keeps the people inside the structure intact. Neither of us is glamorous and both of us are essential. The Brotherhood can survive a bad decision. It cannot survive a structural failure or a bad cook two weeks into a long campaign. Yew understands this. We have an arrangement: I tell Yew when a structure is going to be dangerous and Yew tells me when the food supply has a problem. We've saved each other twice.",
+      "keywords": ["yew","same","job","angles","structure","people","inside","glamorous","essential","cook"]
+    },
+    {
+      "id": "fall_1",
+      "source": "Dross alone, looking at the ruins of an old structure",
+      "text": "Everything falls. That's the first principle of my work. Every structure contains the seeds of its own failure in the form of the forces it's resisting — the gravity, the wind, the ground movement. My job is to understand those forces and either delay the failure as long as possible or accelerate it at a time of choosing. The structure doesn't care which one I'm doing. The structure falls when it falls. I just choose when.",
+      "keywords": ["falls","first","principle","structure","seeds","failure","forces","resisting","gravity","delay"]
+    },
+    {
+      "id": "cord_1",
+      "source": "Dross on the soldier registered as Wal",
+      "text": "I noticed the half-beat delay on the name and didn't mention it because it's not my business and because Wal is good at the work he does and the Brotherhood works better when it has people who are good at things. What his name was before is his business. What his name is now is in the register. I work with structures — I understand that the thing a structure is now is what matters, not what the materials were before they became the structure.",
+      "keywords": ["noticed","half-beat","delay","name","business","wal","good","work","register","materials"]
+    },
+    {
+      "id": "precision_1",
+      "source": "Dross to a young recruit who asked what the job was like",
+      "text": "Precise. More precise than you expect. People assume siege work is large and brutal. The brutality is the result; the work is millimeters. The angle of a charge. The depth of a mine. The placement of a support that comes out at the correct moment rather than too soon or too late. The difference between too soon and correct is measurable in fractions. I measure the fractions. That's the whole of it.",
+      "keywords": ["precise","expect","brutal","brutality","result","millimeters","angle","charge","depth","mine"]
+    }
+  ]
+}

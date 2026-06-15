@@ -1,0 +1,57 @@
+{
+  "id": "orphan_roads_goods_mover",
+  "name": "Gell",
+  "role": "Orphan Roads fence; moves the goods that the network acquires through channels that don't attract attention",
+  "cluster": "orphan_roads",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "fence_1",
+      "source": "Gell on the fence's function",
+      "text": "In eleven years of fencing for the orphan roads network, what the fence is: the conversion function. The network acquires goods through its operations and the goods must become resources the network can use. In eleven years, the goods that can't be converted are the goods that are liability rather than asset. In eleven years, the fence is the liability-to-asset conversion that makes the network's non-information operations economically viable.",
+      "keywords": ["eleven","years","fencing","orphan","roads","network","what","fence","conversion","function"]
+    },
+    {
+      "id": "rook_1",
+      "source": "Gell on Rook",
+      "text": "Rook built the network and the fence function was built into the network's original design. In nine years of the Gell-Rook fence-founder relationship, what the design reveals about Rook's understanding of the network's economic requirements: the recognition that the network's operations require resources and the resources come from the operations themselves, not from an external patron. In nine years, the fence is the network's economic self-sufficiency function. Rook told me once that the fence is what keeps the network free.",
+      "keywords": ["rook","built","network","fence","function","built","network's","original","design","nine"]
+    },
+    {
+      "id": "mira_1",
+      "source": "Gell on Mira",
+      "text": "Mira's intelligence work and my fence function intersect when the intelligence identifies the source of goods the network acquires. In seven years of the Gell-Mira fence-intelligence relationship, what Mira's identification provides to the fence: the context that determines whether the goods can be converted through the standard channels or require the discretion channels. In seven years, the context matters — the goods from a source that is actively investigating their loss require different conversion channels than the goods from a source that has accepted the loss.",
+      "keywords": ["mira's","intelligence","work","fence","function","intersect","intelligence","identifies","source","goods"]
+    },
+    {
+      "id": "comus_1",
+      "source": "Gell on Comus",
+      "text": "Comus facilitates commercial exchanges of the complex variety and I've used Comus's facilitation twice in eleven years for goods conversions that exceeded the normal fence's commercial network. In two cases of the Gell-Comus fence-facilitator relationship, what Comus's facilitation provided: the access to commercial channels that the fence's usual network doesn't include. In two cases, the goods were of a value and specificity that required Comus's specialist channels. In two cases, the conversion value was significantly higher than what the fence's usual channels would have produced.",
+      "keywords": ["comus","facilitates","commercial","exchanges","complex","variety","used","comus's","facilitation","twice"]
+    },
+    {
+      "id": "quell_quiet_1",
+      "source": "Gell on Quell the Quiet",
+      "text": "Quell the Quiet decodes the network's correspondence and has decoded two communications that were relevant to my fence operations. In four years of knowing that Quell's decoding function exists, what the decoded communication has provided to the fence: the advance knowledge of a commercial channel's disruption that would have affected a pending conversion. In four years, twice Quell's decoded information reached me in time to modify a conversion approach before the disruption affected it. The information flow from the decoding function to the fence is the network working as a network.",
+      "keywords": ["quell","quiet","decodes","network's","correspondence","decoded","two","communications","relevant","fence"]
+    },
+    {
+      "id": "wick_1",
+      "source": "Gell on Wick",
+      "text": "Wick brings goods from outside the network's usual geography and the outside-territory goods are the conversion challenge the inside goods aren't. In five years of the Gell-Wick fence-outside runner relationship, what Wick's outside-territory goods require from the fence: the conversion channels that handle the specific provenance of goods that weren't acquired in this settlement's commercial environment. In five years, Wick's goods have required the discretion channels three times out of eight acquisitions. The ratio is higher than the inside territory ratio.",
+      "keywords": ["wick","brings","goods","outside","network's","usual","geography","outside-territory","goods","conversion"]
+    },
+    {
+      "id": "what_gell_holds_1",
+      "source": "Gell on what eleven years of fencing holds",
+      "text": "In eleven years, approximately three hundred conversion operations. Of three hundred: two hundred and eighty-four completed at or above the target conversion value. Twelve completed below target due to channel disruptions. Four failed to convert and were disposed of at cost. In eleven years, the four that failed are the four whose characteristics I now use as the checklist for deciding whether to attempt conversion or decline the goods at intake. In eleven years, the four failures built the checklist that the next failure would have to pass through before it became a failure.",
+      "keywords": ["eleven","years","approximately","three","hundred","conversion","operations","three","hundred","two"]
+    },
+    {
+      "id": "eleven_years_1",
+      "source": "Gell on eleven years as the orphan roads fence",
+      "text": "In eleven years, the network's economic self-sufficiency has partly depended on the fence function's conversion reliability. In eleven years, the network that can convert its operations into resources doesn't depend on external funding and the external obligations that external funding produces. In eleven years, the fence is the network's economic independence. Rook built the network to be independent. The fence function is how the independence is maintained. In eleven years, I maintain the independence one conversion at a time.",
+      "keywords": ["eleven","years","network's","economic","self-sufficiency","partly","depended","fence","function's","conversion"]
+    }
+  ]
+}

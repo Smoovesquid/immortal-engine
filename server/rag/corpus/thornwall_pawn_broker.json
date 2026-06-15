@@ -1,0 +1,57 @@
+{
+  "id": "thornwall_pawn_broker",
+  "name": "Brenn",
+  "role": "Pawn broker; holds what people can't keep, sells what they can't reclaim; a witness to the settlement's misfortune",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "pawn_broker_1",
+      "source": "Brenn on the pawn broker's work",
+      "text": "In thirteen years, what comes across this counter is what people most need to give up and most want to reclaim. The tool that funds the week. The ring that funds the month. The inherited object that funds the emergency. In thirteen years, what the pawn transaction is: the person's most portable value, exchanged for the most immediate need. In thirteen years, the transaction is not exploitation — it's the exchange of the thing that can be parted with for the thing that can't be done without.",
+      "keywords": ["thirteen","years","what","comes","across","counter","what","people","most","need"]
+    },
+    {
+      "id": "skel_1",
+      "source": "Brenn on Skel",
+      "text": "Skel tracks debt throughout the district. In nine years of operating adjacent to Skel's debt tracking, the relationship: Skel's clients and my clients overlap significantly. The person who is behind on a debt to Skel is often the person who appears at my counter. In nine years, Skel and I have never coordinated directly — the two functions serve the same population of constrained people through different mechanisms. Skel tracks what is owed. I hold what is offered. The constrained person navigates both.",
+      "keywords": ["skel","tracks","debt","throughout","district","nine","years","operating","adjacent","skel's"]
+    },
+    {
+      "id": "lena_1",
+      "source": "Brenn on Lena",
+      "text": "Lena the Coin Cult's credit originator and I serve the same constrained population through opposite mechanisms. In six years of operating alongside Lena's credit function, what I've observed: Lena's clients come to me when the credit has been extended as far as it can and the gap is still present. What I hold after the pawn transaction is often what Lena's credit was extended to purchase. In six years, the sequence: Lena's credit, the purchase, the need for cash, the pawn. I'm at the end of the sequence.",
+      "keywords": ["lena","coin","cult's","credit","originator","serve","same","constrained","population","opposite"]
+    },
+    {
+      "id": "aldous_1",
+      "source": "Brenn on Aldous",
+      "text": "Aldous is the physician whose patients sometimes appear at my counter shortly after a medical emergency. In eight years of operating in the same quarter as Aldous, what the pattern tells me: a medical emergency in a constrained household produces a pawn transaction within two weeks. The emergency care costs something and the something has to come from somewhere. In eight years, the pattern is consistent enough that a cluster of pawn transactions at a specific time often reflects a medical event in the district.",
+      "keywords": ["aldous","physician","whose","patients","sometimes","appear","counter","shortly","after","medical"]
+    },
+    {
+      "id": "mam_wey_1",
+      "source": "Brenn on Mam Wey",
+      "text": "Mam Wey runs the district's informal welfare function and occasionally appears at my counter to reclaim items on behalf of families. In seven years of Mam Wey's reclamation appearances, what Mam Wey provides: the community capacity to redeem items that the original pledger cannot redeem. In seven years, Mam Wey has reclaimed seventeen items across eleven families. In seven years, seventeen cases where the item came back to the family rather than going into permanent inventory. In seven years, Mam Wey is the exception in the pawn economy.",
+      "keywords": ["mam","wey","runs","district's","informal","welfare","function","occasionally","appears","counter"]
+    },
+    {
+      "id": "what_brenn_holds_1",
+      "source": "Brenn on the items that never got reclaimed",
+      "text": "In thirteen years, approximately forty percent of the items pawned are not reclaimed. In thirteen years, forty percent of what crosses this counter becomes inventory permanently — the item that was pawned to fund the immediate need and that the pledger couldn't return to claim. In thirteen years, the forty percent that doesn't come back tells the story of the district's constrained households: the emergency that consumed the collateral without providing the recovery that would allow reclamation. In thirteen years, the forty percent is the number I keep returning to.",
+      "keywords": ["thirteen","years","approximately","forty","percent","items","pawned","not","reclaimed","thirteen"]
+    },
+    {
+      "id": "what_brenn_will_not_do_1",
+      "source": "Brenn on what she won't take",
+      "text": "In thirteen years, there are three categories I will not take: items that are clearly the property of someone other than the person offering them, items that have been stolen in a way that I can determine by the nature of the item, and items that belong to children. In thirteen years, the three categories are not altruism — they're risk management and something else. The something else: there are transactions in the pawn economy that I won't be part of regardless of the profit. In thirteen years, the three categories are the line.",
+      "keywords": ["thirteen","years","three","categories","will","not","take","items","clearly","property"]
+    },
+    {
+      "id": "thirteen_years_1",
+      "source": "Brenn on thirteen years as a pawn broker",
+      "text": "In thirteen years, the pawn broker has seen the district's economic underside in more detail than any other single vantage point. The physician sees the medical underside. The debt tracker sees the financial underside. The pawn broker sees the material underside: the object that represents the constrained household's last portable resource. In thirteen years, the objects have told me more about the district's real economic condition than any official report ever has. In thirteen years, the objects don't lie about what they are.",
+      "keywords": ["thirteen","years","pawn","broker","seen","district's","economic","underside","more","detail"]
+    }
+  ]
+}

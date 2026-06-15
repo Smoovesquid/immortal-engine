@@ -1,0 +1,57 @@
+{
+  "id": "harbor_ship_surgeon",
+  "name": "Cald",
+  "role": "Ship's surgeon; treats the crew's injuries and illness at sea when no other care is available",
+  "cluster": "harbor_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "ship_surgeon_1",
+      "source": "Cald on ship surgery",
+      "text": "In seventeen years of ship surgery, what the ship's surgeon is: the only medical care the crew has access to for the duration of the voyage. In seventeen years, the surgery that must be performed in conditions that are not surgical conditions, with the resources the ship carries, for the patient who cannot wait for a better setting. In seventeen years, the ship surgeon's skill is the capacity to produce adequate care in inadequate conditions. In seventeen years, adequate in inadequate conditions is the medical standard at sea.",
+      "keywords": ["seventeen","years","ship","surgery","what","ship's","surgeon","only","medical","care"]
+    },
+    {
+      "id": "noll_1",
+      "source": "Cald on Noll",
+      "text": "Noll has been at sea for thirty years and in five voyages under Noll's command, what the thirty-year captain knows about the ship surgeon's function: the explicit acknowledgment that the crew's survival in a crisis depends partly on the surgeon's capacity. In five voyages, Noll has twice intervened in situations where crew members were delaying seeking care out of the traditional seaman's reluctance to admit injury. In five voyages, Noll's intervention produced crew members in my care before the situation became the situation that my care couldn't address.",
+      "keywords": ["noll","been","sea","thirty","years","five","voyages","noll's","command","what"]
+    },
+    {
+      "id": "gid_1",
+      "source": "Cald on Gid",
+      "text": "Gid has piloted ships I've sailed on and the navigation quality affects the surgeon's caseload. In six years of sailing with Gid's piloting, what the good pilot produces for the ship surgeon: fewer trauma cases from rough-water complications. In six years, the voyage that Gid pilots through difficult conditions without adding vessel-motion trauma to the crew is the voyage that leaves the surgeon's case count lower than the same difficult conditions with poorer piloting. In six years, Gid's piloting has reduced my workload. The count is specific and real.",
+      "keywords": ["gid","piloted","ships","sailed","navigation","quality","affects","surgeon's","caseload","six"]
+    },
+    {
+      "id": "bross_1",
+      "source": "Cald on Bross",
+      "text": "Bross the ship cook and the ship surgeon share a specific concern: the crew's physical condition. In nine years of the Cald-Bross surgeon-cook relationship, what the relationship is in practice: Bross manages the crew's nutritional status and I manage the crew's medical status, and the two functions are more related than the crew typically understands. In nine years, the under-nourished crew is the crew that heals slower when I treat them. In nine years, the Bross-fed crew heals faster. In nine years, I've referred specific crew members to Bross's attention as a medical recommendation.",
+      "keywords": ["bross","ship","cook","ship","surgeon","share","specific","concern","crew's","physical"]
+    },
+    {
+      "id": "roan_1",
+      "source": "Cald on Roan",
+      "text": "Roan the herbalist provides the preparations that I take to sea. In twelve years of sailing with Roan's preparations as my primary materia medica, what Roan's knowledge of the territory's plant medicine provides to the ship surgeon: the specific preparations for the specific conditions that sea voyages produce. In twelve years, before each significant voyage, I consult with Roan about the specific conditions I expect to encounter. In twelve years, the voyage provisioned from that consultation has consistently produced better treatment outcomes than the voyage provisioned without it.",
+      "keywords": ["roan","herbalist","provides","preparations","take","sea","twelve","years","sailing","roan's"]
+    },
+    {
+      "id": "what_cald_holds_1",
+      "source": "Cald on what seventeen years of ship surgery holds",
+      "text": "In seventeen years, approximately three hundred surgical procedures at sea. Of three hundred: two hundred and seventy-one produced recovery or significant improvement. Twenty-two produced partial recovery. Seven produced death on the operating surface. In seventeen years, seven deaths on the operating surface. In seventeen years, the seven are the specific cases that seventeen years of ship surgery holds in the way that the other two hundred and ninety-three do not. The seven were not preventable by any care the conditions allowed.",
+      "keywords": ["seventeen","years","approximately","three","hundred","surgical","procedures","sea","three","hundred"]
+    },
+    {
+      "id": "what_sea_surgery_requires_1",
+      "source": "Cald on what sea surgery requires beyond technique",
+      "text": "In seventeen years, what sea surgery requires that the settlement's medicine doesn't: the decision. In the settlement, the unclear case is the case you can refer, wait, consult. At sea, the unclear case is the case you decide and act on with the information you have and the resources you carry. In seventeen years, the decision-in-incomplete-information is the sea surgeon's specific discipline. In seventeen years, the settlement's surgeon who hasn't practiced at sea may be more technically skilled than I am. In seventeen years, I make better decisions. The sea has taught me to decide.",
+      "keywords": ["seventeen","years","what","sea","surgery","requires","settlement's","medicine","doesn't","decision"]
+    },
+    {
+      "id": "seventeen_years_1",
+      "source": "Cald on seventeen years as a ship's surgeon",
+      "text": "In seventeen years, the ship's surgeon is the most complete medical practice that exists. In seventeen years, I've treated every condition the human body produces in conditions that include wave-motion, inadequate light, insufficient sterile surface, and the full spectrum of sea trauma. In seventeen years, the settlement's medical practice addresses the settlement's conditions. The sea's medical practice addresses conditions the settlement's medicine doesn't encounter. In seventeen years, the two practices are related but not the same. In seventeen years, I can treat anything. Whether the treatment works depends on what the sea has done to the patient.",
+      "keywords": ["seventeen","years","ship's","surgeon","most","complete","medical","practice","exists","seventeen"]
+    }
+  ]
+}

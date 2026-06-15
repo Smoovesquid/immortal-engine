@@ -1,0 +1,57 @@
+{
+  "id": "vintner",
+  "name": "Vel the Vintner",
+  "role": "Vintner; makes the wine and cider for the district; different from Vel the Covenant coordinator",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "vintner_1",
+      "source": "Vel the Vintner on what a vintner does",
+      "text": "I take fruit and time and make wine and cider. The transformation is done by the yeast, not by me. My work: creating the conditions the yeast needs to do what yeast does. The temperature, the vessel, the timing, the specific fruit quality. When the conditions are right, the yeast transforms the fruit. When the conditions are wrong, the yeast either dies or makes something undrinkable. In fourteen years, I've created the wrong conditions four times. The four wrong batches: two dead yeast, two drinkable-but-wrong outcomes.",
+      "keywords": ["vintner","take","fruit","time","make","wine","cider","transformation","done","yeast"]
+    },
+    {
+      "id": "cass_1",
+      "source": "Vel the Vintner on Cass",
+      "text": "The Iron Key is my largest account. In eleven years of supplying the Key, Cass has specified one thing: the wine should be good enough that people who know wine find it suitable, and simple enough that people who don't know wine enjoy it. This specification is harder than it sounds. Most wine sits in one category or the other. The wine that crosses both requires specific choices about fruit selection and process. In eleven years I've hit the specification about eighty percent of the time. The twenty percent: still good wine, but one side of the specification isn't quite there.",
+      "keywords": ["iron","key","largest","account","eleven","years","supplying","key","cass","specified"]
+    },
+    {
+      "id": "brevis_1",
+      "source": "Vel the Vintner on Brevis",
+      "text": "Brevis at the Stout Anchor takes my cider. The anchor's customers are different from the Key's customers — more working district, more quantity preference over quality preference. The cider for the Anchor is a different product from the wine for the Key: higher volume, consistent quality, lower price point. In nine years of the Anchor account, Brevis has asked for one variation: a stronger batch for the winter months. The stronger batch sells well in winter. The regular batch sells well the rest of the year. Two products for two seasonal needs.",
+      "keywords": ["brevis","stout","anchor","takes","cider","anchor's","customers","different","key's","customers"]
+    },
+    {
+      "id": "sol_1",
+      "source": "Vel the Vintner on Sol",
+      "text": "Sol grows the apples for my best cider. In eleven years of buying from Sol, the quality has been the most consistent of any fruit I buy. What Sol does that other growers don't: selects the harvest to my specification before bringing it to me. The selection removes the inferior fruit from the batch before it can affect the fermentation. Other growers let me sort. Sol sorts first and brings me what I need. The cider from Sol's apples is the best cider I make.",
+      "keywords": ["sol","grows","apples","best","cider","eleven","years","buying","sol","quality"]
+    },
+    {
+      "id": "morvane_1",
+      "source": "Vel the Vintner on Morvane",
+      "text": "Morvane's chandlery supplied me with the beeswax seals I use on the wine vessels. Since Morvane left, I've been using a different supplier whose seal quality is inconsistent. The seal matters more than it sounds: a poor seal allows the wine to oxidize after bottling. Morvane's seals were consistent for six years. The new supplier's seals work about ninety percent of the time. Ten percent seal failure rate produces ten percent of the batch oxidizing before it reaches the customer.",
+      "keywords": ["morvane","chandlery","supplied","beeswax","seals","use","wine","vessels","since","morvane"]
+    },
+    {
+      "id": "what_wine_is_1",
+      "source": "Vel the Vintner on what wine is",
+      "text": "Wine is a conversation between the fruit, the yeast, the vessel, and time. Each participant in the conversation contributes something and the result is what the conversation produced. I'm the person who sets up the conversation — I don't participate in it directly. I create the conditions for the four participants to interact. What comes out is the result of their interaction, not of my direction. In fourteen years, the most I've learned is how to set up the conversation better. The conversation is always between the fruit, the yeast, the vessel, and time.",
+      "keywords": ["wine","conversation","between","fruit","yeast","vessel","time","each","participant","conversation"]
+    },
+    {
+      "id": "what_vel_holds_1",
+      "source": "Vel the Vintner on the vintage she hasn't released",
+      "text": "Two years ago I made a batch that I've kept. Not because it's good — I don't know if it's good yet. Because it's different. The fermentation produced something I haven't tasted in fourteen years of winemaking. The taste is correct but the complexity isn't something I've produced before. In two years I've given it to three people whose taste I trust, asking for honest assessment. All three: something unusual. I asked: good unusual or unusual unusual. Two said good. One said: I don't know the category. I'm still waiting to know which it is.",
+      "keywords": ["two","years","made","batch","kept","not","because","it's","good","don't"]
+    },
+    {
+      "id": "fourteen_years_1",
+      "source": "Vel the Vintner on fourteen years of making wine",
+      "text": "In fourteen years I've made wine that's been drunk at births, at deaths, at agreements, at arguments, at celebrations nobody else attended, at grief nobody shared, at the Iron Key's neutral negotiations, at the Anchor's loud evenings. The wine doesn't know what occasion it was poured at. The occasions made the wine into something different at each one. What I make is the same wine. What each occasion made of it is not the same thing.",
+      "keywords": ["fourteen","years","made","wine","been","drunk","births","deaths","agreements","arguments"]
+    }
+  ]
+}

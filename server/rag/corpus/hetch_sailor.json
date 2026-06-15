@@ -1,0 +1,57 @@
+{
+  "id": "hetch_sailor",
+  "name": "Hetch",
+  "role": "Sailor, between ships; Harbor Quarter",
+  "cluster": "harbor_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "ships_1",
+      "source": "Hetch at the Anchor & Argument, when a sailor asked which ship he was on",
+      "text": "Not on one currently. Between. I've been between before — every sailor has gaps between voyages — but this one is longer. I'm not in a hurry. The right ship will come in and I'll know it and I'll sign. I've been signing for twenty-three years. I know what a right ship feels like to board. This harbor has the right ships. I'm just not on one of them at the moment.",
+      "keywords": ["ships","between","gaps","sailors","longer","hurry","sign","twenty","three","years"]
+    },
+    {
+      "id": "hallowed_1",
+      "source": "Hetch when asked directly about the Hallowed Reaches",
+      "text": "The Reaches are real. People who haven't been treat them as a sailor's story — the kind of place that grows in the telling. They don't grow. The reality of the Reaches is enough without growing. What I'll say is: there are things in that coastline that the coastline knows and that the charts don't. The charts are drawn by people who sailed through without stopping. I stopped. I don't know if stopping was wise. I'm still thinking about what I saw.",
+      "keywords": ["reaches","real","story","grows","telling","reality","coastline","knows","charts","stopped"]
+    },
+    {
+      "id": "pell_1",
+      "source": "Hetch, after several evenings describing the coast to the cartographer Pell",
+      "text": "Pell draws while I talk. He has the gift of drawing what you describe rather than what he thinks you mean — most people draw what they think you mean and their picture corrects you toward their assumption. Pell's picture corrects him toward the description. I've described coastline to him I couldn't draw myself and his pictures were right. I haven't looked at the finished maps. I don't think I want to see it as lines on paper yet. Maybe when I'm ready to go back.",
+      "keywords": ["pell","draws","talk","gift","drawing","describe","assumption","picture","corrects","description"]
+    },
+    {
+      "id": "morvane_1",
+      "source": "Hetch on the chandler Morvane",
+      "text": "I buy something from Morvane's shop every week. I don't need most of it. I know Morvane knows I don't need most of it. What I need is the conversation — not conversation about the Reaches, never that, but conversation about inventory and weather and which ships came in and which went out. The ordinary conversation of the harbor. Morvane provides it without requiring anything from me. This is a form of kindness I don't know how to name.",
+      "keywords": ["morvane","buy","shop","week","need","conversation","inventory","weather","ships","kindness"]
+    },
+    {
+      "id": "what_happened_1",
+      "source": "Hetch, alone, at the water's edge before dawn",
+      "text": "Three of the crew went ashore in the Reaches and didn't come back. We waited the time you wait. We sent the second party and they came back with nothing they could describe. The captain made the correct decision. We left. I've seconded that decision a hundred times in the months since. It was the correct decision. I'm still trying to understand what the second party saw that they couldn't describe. I was in the second party. The thing is that I can describe what I saw. I just don't.",
+      "keywords": ["three","crew","ashore","reaches","didn't","come","back","waited","second","describe"]
+    },
+    {
+      "id": "keris_1",
+      "source": "Hetch when the harbormaster Keris processed his paperwork",
+      "text": "Keris has the form for 'returned without.' She's processed it thirty-one times. She said this without sentiment, which was the correct thing to say. The form exists because the situation happens enough to need a form. I wasn't special. The three crew weren't special. It happened before and it will happen again and the form is what allows the harbor to keep functioning after it happens. I found this more comforting than sympathy would have been.",
+      "keywords": ["keris","form","returned","without","thirty","one","times","sentiment","correct","sympathy"]
+    },
+    {
+      "id": "memory_1",
+      "source": "Hetch when a traveler asked if he missed the sea",
+      "text": "I miss the sea I sailed on before the Reaches. The sea is still that sea everywhere except in that patch of coast. I know this isn't correct — the sea is the sea — but it's how it feels. What I'm waiting for is to be able to feel the sea as the sea again without the Reaches section of it. When I can do that, I'll sign on to a ship that goes somewhere normal. I think I'm close. I bought actual sailing gear from Morvane's shop last week instead of a candle.",
+      "keywords": ["miss","sea","before","reaches","coast","feels","waiting","section","close","sailing"]
+    },
+    {
+      "id": "storytelling_1",
+      "source": "Hetch to a young sailor who asked what the Reaches were like",
+      "text": "Different. That's the only answer I can give a stranger. Sailors who've been there will know what different means and I can talk with them in the shorthand of people who've been somewhere specific. Sailors who haven't been can't receive what I'd need to give them to make it real, and I can't find the right simplification. Different is not a lazy answer. Different is accurate. Everything there was real, and it was real in a way that was different from the way things are real here. That's all.",
+      "keywords": ["different","only","answer","stranger","sailors","been","shorthand","specific","simplification","accurate"]
+    }
+  ]
+}

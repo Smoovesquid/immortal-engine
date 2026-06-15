@@ -1,0 +1,57 @@
+{
+  "id": "forge_guild_journeyman",
+  "name": "Pell the Smith",
+  "role": "Forge Guild journeyman; four years past the apprenticeship, not yet master; the middle distance of the craft",
+  "cluster": "forge_guild",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "journeyman_1",
+      "source": "Pell the Smith on being a journeyman",
+      "text": "In four years as journeyman, the distinction from apprenticeship is this: the apprentice does what the master directs. The journeyman is responsible for the outcome without yet having the master's range. In four years, what the journeyman responsibility is: the commission I'm given is my commission to complete. The outcome is mine. In four years, the responsibility has been the most clarifying thing in the work — more clarifying than the training, more clarifying than the technique. It's mine and it either works or it doesn't.",
+      "keywords": ["four","years","journeyman","distinction","apprenticeship","apprentice","does","what","master","directs"]
+    },
+    {
+      "id": "weld_1",
+      "source": "Pell the Smith on Weld",
+      "text": "Weld is the standard I work toward. In six years of knowing Weld's work — two as apprentice, four as journeyman — what Weld's work has provided as a reference point: the specific quality that the Guild's best current work achieves. In four years as journeyman, the gap between my work and Weld's work has closed in some areas and remained constant in others. The areas where it's closed: the technique is learnable. The areas where it remains constant: the quality of attention that Weld brings is not just technique.",
+      "keywords": ["weld","standard","work","toward","six","years","knowing","weld's","work","two"]
+    },
+    {
+      "id": "keld_1",
+      "source": "Pell the Smith on Keld",
+      "text": "Keld is the Guild master and the person whose judgment about the work is the Guild's judgment. In four years of journeyman work under Keld's oversight, what Keld's assessment function is: the external evaluation that tells me where the work stands relative to the Guild's standard. In four years, Keld has assessed eighteen of my commissions directly. Of eighteen: fourteen met the Guild's standard. Four did not and required additional work. In four years, four rejections in eighteen assessments. The four are the ones I've learned the most from.",
+      "keywords": ["keld","guild","master","person","whose","judgment","about","work","guild's","judgment"]
+    },
+    {
+      "id": "rath_1",
+      "source": "Pell the Smith on Rath",
+      "text": "Rath is the Guild's most technically advanced smith and the journeyman I've learned the most from by observation. In three years of observing Rath's edge work specifically, what Rath's edge work has shown me: the technical ceiling in edge geometry is further than I thought when I started the journeyman year. In three years, watching Rath work has expanded what I understand is possible in the specific technique I'm developing. In three years, the expansion has been valuable and uncomfortable in equal measure.",
+      "keywords": ["rath","guild's","most","technically","advanced","smith","journeyman","learned","most","from"]
+    },
+    {
+      "id": "tade_1",
+      "source": "Pell the Smith on Tade",
+      "text": "Tade commissions Brotherhood equipment through the Guild and some of that work comes to me. In three years of producing Brotherhood-specification work, what the Brotherhood commission has provided: the volume work that develops the physical consistency the precision work requires. In three years, the Brotherhood specification is not the Guild's most demanding work. It's the work that builds the physical competence that the demanding work rests on. In three years, the volume and the precision are not in conflict. The volume makes the precision possible.",
+      "keywords": ["tade","commissions","brotherhood","equipment","guild","some","work","comes","three","years"]
+    },
+    {
+      "id": "what_four_years_holds_1",
+      "source": "Pell the Smith on what four years as journeyman has taught",
+      "text": "In four years, what the journeyman years have taught that the apprenticeship didn't: the difference between understanding the technique and owning the outcome. The apprenticeship taught the technique with the master's safety net below. The journeyman years have removed the safety net. In four years, the most growth has come from the commissions where I was at the edge of my current capacity — not outside it, not comfortably inside it, but at the edge where the outcome was uncertain.",
+      "keywords": ["four","years","what","journeyman","years","taught","apprenticeship","didn't","difference","between"]
+    },
+    {
+      "id": "what_pell_smith_holds_1",
+      "source": "Pell the Smith on the commission that nearly broke him",
+      "text": "Year two of the journeyman period. A commission for a specialty blade that exceeded my confident capacity at that time. I accepted the commission because declining would have been the safe choice and I'd decided that the journeyman period would not be managed safely. The blade took four attempts. The fourth attempt met the Guild's standard. In two years since, the discipline of not managing the journeyman period safely has produced more growth than safety would have. The fourth attempt blade is the commission I'm most proud of in four years of journeyman work.",
+      "keywords": ["year","two","journeyman","period","commission","specialty","blade","exceeded","confident","capacity"]
+    },
+    {
+      "id": "four_years_1",
+      "source": "Pell the Smith on four years as a Guild journeyman",
+      "text": "In four years, the journeyman position is the most difficult position in the Guild's hierarchy to inhabit well. The apprentice has clear guidance. The master has clear authority. The journeyman has responsibility without authority and competence without mastery. In four years, inhabiting the journeyman position well means: doing work that's better than what justifies the journeyman title without pretending to the master's range. In four years, the honest position is the useful one. The journeyman who overreaches hurts the commission and the journeyman who underreaches wastes the years.",
+      "keywords": ["four","years","journeyman","position","most","difficult","position","guild's","hierarchy","inhabit"]
+    }
+  ]
+}

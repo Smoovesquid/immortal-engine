@@ -1,0 +1,57 @@
+{
+  "id": "scarlet_compact2",
+  "name": "Ceth",
+  "role": "Scarlet Compact war-priest; KHORRUN devotee; Brotherhood liaison",
+  "cluster": "scarlet_compact",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "khorrun_1",
+      "source": "Ceth on what KHORRUN is",
+      "text": "KHORRUN is the fire in the moment of honest conflict. Not hatred — hatred is cold and patient and KHORRUN has no patience. KHORRUN is the moment when you are fully present because your life requires it. Most people experience this once or twice in a life and never understand what it was. The Compact practices making that presence available without requiring death to unlock it. KHORRUN says: you don't need a crisis to be present. You can learn presence directly.",
+      "keywords": ["khorrun","fire","moment","honest","conflict","not","hatred","cold","patient","fully"]
+    },
+    {
+      "id": "orm_1",
+      "source": "Ceth on Orm",
+      "text": "Orm is the most committed practitioner in the Compact. He doesn't perform commitment — he is it. The difference between commitment and performance of commitment is visible in how a person moves under pressure. I've watched Orm under pressure twice. Both times the movement was the same as the movement without pressure. This is what the practice is supposed to produce. Orm achieved it naturally and then learned what he was doing. Most people have to learn it in order to achieve it.",
+      "keywords": ["orm","most","committed","practitioner","compact","doesn't","perform","commitment","visible","moves"]
+    },
+    {
+      "id": "maren_1",
+      "source": "Ceth on Scholar Maren",
+      "text": "Maren studies the Compact from outside. She wants to understand the theology academically. I've let her observe three Compact rites on the condition that her notes go in the restricted Academy archive, not the general catalog. She's kept this agreement. Her questions are good questions — not the questions of someone who thinks they already understand, but of someone building understanding. I'll let her observe the fourth rite if the notes from the third are correct.",
+      "keywords": ["maren","studies","compact","outside","theology","academically","observe","three","compact","rites"]
+    },
+    {
+      "id": "rath_1",
+      "source": "Ceth on Rath in the Brotherhood",
+      "text": "Rath is the liaison point between the Brotherhood and the Compact. He was in the Compact before the Brotherhood. He practices both without the practices conflicting — the Brotherhood requires discipline and the Compact channels the energy that discipline builds. He told me once: the Brotherhood builds the vessel. The Compact fills it. I've used this framing in instruction since. It's accurate.",
+      "keywords": ["rath","liaison","point","brotherhood","compact","practices","both","conflicting","requires","discipline"]
+    },
+    {
+      "id": "alath_1",
+      "source": "Ceth on Alath",
+      "text": "Alath left the Compact for the Hollow Court. This surprised me and then it didn't surprise me. Alath's practice was always about the edges of what the Compact works with — the places where conflict and grief touch. The Hollow Court works in that same territory from the other side. I consider Alath a practitioner whose practice evolved rather than one who abandoned the path. We still meet sometimes. The territory we're working in is the same. The door is different.",
+      "keywords": ["alath","left","compact","hollow","court","surprised","then","didn't","practice","always"]
+    },
+    {
+      "id": "training_1",
+      "source": "Ceth on how the Compact trains new devotees",
+      "text": "First: breath. You learn how to breathe under pressure because under pressure people forget breath and without breath you cannot be present. Second: stillness. You learn how to be still in situations that want you to move. Third: the controlled release. You learn how to move fully when stillness is no longer correct. Most people come to the Compact wanting the third thing. The first two things are why the third thing is possible. The order is not optional.",
+      "keywords": ["first","breath","learn","breathe","under","pressure","people","forget","second","stillness"]
+    },
+    {
+      "id": "velvet_1",
+      "source": "Ceth on the Compact's relationship to the KHORRUN's gentler aspects",
+      "text": "People outside the Compact think KHORRUN is only war. KHORRUN is presence. War is one situation where presence is forced on you. The Compact is the practice of voluntary presence without the forcing. I've had practitioners who found KHORRUN through childbirth, through fire, through a specific creative crisis. The entry point is not the practice. The entry point is where presence was first forced on you and you recognized the gift it gave.",
+      "keywords": ["people","outside","compact","think","khorrun","only","war","presence","war","one"]
+    },
+    {
+      "id": "velvet2_1",
+      "source": "Ceth on Vel the divine servant",
+      "text": "Vel and I have a respectful disagreement about VELL and KHORRUN. VELL is kindness — the open hand. KHORRUN is intensity — the closed fist. Vel thinks these are different and opposed. I think they require each other. The open hand that can't close isn't offering safety, it's offering passivity. The closed fist that can't open isn't offering protection, it's offering violence. The distinction between VELL and KHORRUN is when you close and when you open. The practice is knowing which moment is which.",
+      "keywords": ["vel","respectful","disagreement","vell","khorrun","vell","kindness","open","hand","khorrun"]
+    }
+  ]
+}

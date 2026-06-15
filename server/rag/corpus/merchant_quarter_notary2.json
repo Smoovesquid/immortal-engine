@@ -1,0 +1,57 @@
+{
+  "id": "merchant_quarter_notary2",
+  "name": "Cass the Notary",
+  "role": "Second notary in the merchant quarter; handles the overflow from Liss the Notary; quieter but precise",
+  "cluster": "merchant_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "notary2_1",
+      "source": "Cass the Notary on being the second notary",
+      "text": "In eight years of working as the district's second notary, what the second notary is: the capacity the first notary cannot absorb. Liss handles the high-volume commercial filings. I handle the cases that require more time or the cases that arrive when Liss's capacity is at its limit. In eight years, the two-notary system works because the district's document needs exceed what one notary can efficiently address. In eight years, being second doesn't mean being lesser. It means being the right fit for a different set of cases.",
+      "keywords": ["eight","years","working","district's","second","notary","what","second","notary","capacity"]
+    },
+    {
+      "id": "liss_notary_1",
+      "source": "Cass the Notary on Liss the Notary",
+      "text": "Liss and I have the most professional relationship in the district — collegial enough to coordinate, separate enough to serve different client needs. In eight years, the coordination: we don't poach each other's clients, we refer overflow to each other, and we maintain consistent standards so that a document produced by either of us is recognized as equivalent. In eight years, the consistent standards are the most important part of the two-notary relationship. The client who comes to me when Liss is at capacity should get the same quality.",
+      "keywords": ["liss","most","professional","relationship","district","collegial","enough","coordinate","separate","enough"]
+    },
+    {
+      "id": "saben_1",
+      "source": "Cass the Notary on Saben",
+      "text": "Saben uses Liss for the primary commercial filings and me for the secondary ones. In six years of handling Saben's secondary document work, what the secondary work is: the documents that require specific attention without requiring the premium turnaround that Liss provides for Saben's primary commercial agreements. In six years, the secondary work is the document function that doesn't need the first notary but can't be skipped.",
+      "keywords": ["saben","uses","liss","primary","commercial","filings","secondary","ones","six","years"]
+    },
+    {
+      "id": "arv_1",
+      "source": "Cass the Notary on Arv",
+      "text": "Arv the currency changer is one of my most regular clients for the simple conversions and certification of exchange transactions. In five years of handling Arv's transaction certifications, what the certification provides: the official record of the exchange that both parties can rely on in the event of a dispute. In five years, Arv's certifications have been clean — no disputes. In five years, the clean certification record tells me what Arv's exchanges are: consistently conducted at the stated rate with accurate documentation.",
+      "keywords": ["arv","currency","changer","most","regular","clients","simple","conversions","certification","exchange"]
+    },
+    {
+      "id": "yar_1",
+      "source": "Cass the Notary on Yar",
+      "text": "Yar the merchant broker uses me for the mid-scale agreements that don't need Liss's volume capacity. In four years of handling Yar's broker agreements, what Yar's documentation needs look like: the complex brokerage agreement with multiple parties, the commission structure, the representation terms, the dispute resolution mechanism. In four years, Yar's documents are the most legally complex documents in my regular work. In four years, the complexity has made the Yar relationship the one I've learned the most from.",
+      "keywords": ["yar","merchant","broker","uses","mid-scale","agreements","don't","need","liss's","volume"]
+    },
+    {
+      "id": "what_cass_holds_1",
+      "source": "Cass the Notary on what eight years of notary work holds",
+      "text": "In eight years, the notary function is the document that makes an agreement enforceable beyond the goodwill of the parties. The agreement between two parties who trust each other doesn't need a notary. The agreement that will survive a dispute, a death, or a change of circumstance needs the document. In eight years, I've been the document function for agreements that needed to survive. In eight years, the agreements that were challenged and held: seven. The agreements that were challenged and didn't hold because the document was inadequate: one, and it was inadequate because the client didn't provide complete information at signing.",
+      "keywords": ["eight","years","notary","function","document","makes","agreement","enforceable","beyond","goodwill"]
+    },
+    {
+      "id": "what_cass_wont_do_1",
+      "source": "Cass the Notary on what she declines",
+      "text": "In eight years, the documents I've declined to notarize: four. Of four: two were documents whose stated terms contradicted what I could determine about the actual transaction from the parties' descriptions, one was a document submitted by a party who could not establish their identity or authority to the agreement, and one was a document that, on full reading, contained a term that would have bound a third party who was not present and had not been informed of the agreement. In eight years, four declines. The four have been the clearest cases I've encountered.",
+      "keywords": ["eight","years","documents","declined","notarize","four","four","two","were","documents"]
+    },
+    {
+      "id": "eight_years_1",
+      "source": "Cass the Notary on eight years as the district's second notary",
+      "text": "In eight years, the second notary's work is quieter than the first notary's work and no less important for that. In eight years, the agreements I've documented have bound parties to their terms and provided the record that disputes have been resolved against. In eight years, the work is the document and the document is permanent — the agreement I certified eight years ago still exists and is still enforceable. In eight years, what the notary's work produces is the most durable thing I know how to make: the enforceable record.",
+      "keywords": ["eight","years","second","notary's","work","quieter","than","first","notary's","work"]
+    }
+  ]
+}

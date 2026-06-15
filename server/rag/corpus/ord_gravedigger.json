@@ -1,0 +1,57 @@
+{
+  "id": "ord_gravedigger",
+  "name": "Ord",
+  "role": "Gravedigger, Thornwall",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "work_1",
+      "source": "Ord to a traveler who said gravedigging must be grim work",
+      "text": "It's precise work. There's a right depth and a right width and a right angle for the base, and if you get them wrong the box doesn't seat properly, which is disrespectful to the box and its contents. I find precision satisfying. I find it satisfying in all work but the consequences of imprecision in my work are more visible than in most. Nobody sends back a bad grave. But I know when it's bad. I don't make bad graves.",
+      "keywords": ["precise","right","depth","width","angle","box","seat","disrespectful","precision","satisfying"]
+    },
+    {
+      "id": "memory_1",
+      "source": "Ord to the undertaker Bram, from the Hollow Court, who came to drink and compare notes",
+      "text": "I know what families carry by what they bring to the grave. The Harkes always bring bread. The Wolds bring something they made — carved, or sewn. The Cranes bring flowers they picked themselves, which tells you something about them that the water rights dispute does not. In forty years I've buried old grudges alongside old bodies. It's the only way I've ever seen grudges released. The grave is the great equalizer, not because death is equal — it isn't — but because grief interrupts the argument.",
+      "keywords": ["families","carry","bread","carved","flowers","harkes","wolds","cranes","grudges","grief"]
+    },
+    {
+      "id": "lenn_1",
+      "source": "Ord, when asked about the acolyte Lenn he once saved",
+      "text": "The cellar was flooding in the spring melt. I was the closest person. I didn't know he was an acolyte — he wasn't in his robes, which I assume is the point. He was in someone's cellar without robes and the cellar was filling with cold water and I went in and got him out. He's been bothered by it ever since. I haven't. It was the correct action in the situation. The fact that he was in the cellar isn't something I thought about at the time or think about now.",
+      "keywords": ["cellar","flooding","spring","acolyte","robes","cold","water","correct","action","bothered"]
+    },
+    {
+      "id": "knowledge_1",
+      "source": "Ord, overheard at the Gravel & Goat",
+      "text": "I know where everyone in this village is eventually going. That's not a threat. That's the nature of the work. I've dug the ground for three generations of the same families and I'll dig it for their children's children if I'm still here, which I probably won't be, which is fine. Someone else will dig it. I try to leave the notes where the next person can find them. The measurements, the placements, the family section maps. The information is the inheritance. Not the shovel.",
+      "keywords": ["village","eventually","threat","three","generations","families","children","notes","measurements","inheritance"]
+    },
+    {
+      "id": "hollow_court_1",
+      "source": "Ord when asked about his connection to the Hollow Court",
+      "text": "Bram is a friend. I don't have many of those — the work makes it complicated. People feel a thing about the gravedigger that they don't always articulate but you can feel them feeling it. Bram doesn't feel it. He's done similar work, different direction. He understands the precision. He understands the quiet that comes with it. We drink together and we don't have to explain why the quiet is comfortable.",
+      "keywords": ["bram","friend","work","complicated","feel","articulate","similar","direction","precision","quiet"]
+    },
+    {
+      "id": "cass_1",
+      "source": "Ord on Cass Crane",
+      "text": "Cass Crane isn't going to drink himself to death. People assume that's where it's going. I've watched the ones who are going that way, and there's a particular quality of not-caring that they have — a disinterest in whether the next morning comes. Cass is interested in the mornings. He just drinks the nights hard. The nights are the problem. The mornings still matter to him, and as long as the mornings matter, the nights aren't terminal.",
+      "keywords": ["cass","crane","drink","death","assume","not-caring","disinterest","mornings","matter","nights"]
+    },
+    {
+      "id": "earth_1",
+      "source": "Ord to a child who asked if he was scared of the dead",
+      "text": "No. The dead don't do anything. They stay exactly where I put them. They're the most reliable neighbors in any settlement — consistent, quiet, no disputes about property lines. The ones I'm cautious about are the living, because the living have intentions and the intentions keep changing. The dead have completed their intentions, good or bad, and what I do with my shovel is the last consideration they receive. I try to make it a careful one.",
+      "keywords": ["dead","scared","stay","reliable","quiet","disputes","cautious","living","intentions","shovel"]
+    },
+    {
+      "id": "nan_1",
+      "source": "Ord to Brevis, when asked about his friendship with Nan Colt",
+      "text": "Nan and I do the same job from opposite ends. She is there when people arrive. I'm there when they leave. Between us we've held most of this village's life at its most vulnerable moments. She's harder than she looks, which is hard. I'm softer than I look, which is apparently surprising. We drink on the first of each season and we talk about the village as if it's our patient. Between us, it is.",
+      "keywords": ["nan","same","job","opposite","arrive","leave","vulnerable","harder","softer","patient"]
+    }
+  ]
+}

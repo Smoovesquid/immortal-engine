@@ -1,0 +1,57 @@
+{
+  "id": "the_hermit",
+  "name": "The Hermit",
+  "role": "Former something; Wild Road / forest edge; no name given",
+  "cluster": "wild_road",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "name_1",
+      "source": "The Hermit when a traveler asked their name",
+      "text": "I had one. I still have it but I don't use it here. Using it would require explaining where it came from and I'm not in the explaining stage. You can call me what you want. Most people who come here call me what the last person called me, which is the Hermit. It's accurate. It's what I am. What I was before isn't relevant to what I am now, and the name belongs to what I was.",
+      "keywords": ["name","had","one","explaining","hermit","accurate","before","relevant","belongs"]
+    },
+    {
+      "id": "theen_1",
+      "source": "The Hermit when Theen the ranger came to check on the eastern section",
+      "text": "Theen comes through twice a year. We don't talk much. She looks at the forest and I look at the forest and if we've noticed different things we say so, and usually we've noticed the same things which means either we're both right or we're both wrong in the same direction. She once asked why I stay. I said: the forest doesn't ask where I came from. She said: yes it does. I said: it asks in a way I can answer. She accepted this.",
+      "keywords": ["theen","comes","twice","year","forest","noticed","different","wrong","direction","asked"]
+    },
+    {
+      "id": "foss_1",
+      "source": "The Hermit on the druid Foss",
+      "text": "Foss speaks the forest's language and I listen. I can't speak it — I don't have the channel Foss has, the thing that opened when they were nine. What I have is time. Forty years in this piece of forest gives you something different from the channel — it gives you the pattern. The pattern and the channel produce different information about the same forest. We compare. Foss is better at the immediate. I'm better at the long.",
+      "keywords": ["foss","speaks","forest","language","listen","channel","nine","forty","years","pattern"]
+    },
+    {
+      "id": "city_1",
+      "source": "The Hermit, obliquely, when a traveler assumed he was fleeing something",
+      "text": "I left a city. That's not fleeing — everyone leaves a city at some point. Some people leave and go to another city. I left and came here. I don't miss the city the way I thought I would. What I miss is specific things: a particular kind of bread, a particular kind of light at a particular hour, a person who is probably still there. I don't miss the person enough to go back. I miss them the right amount for someone who made a different choice.",
+      "keywords": ["left","city","fleeing","another","miss","specific","bread","light","hour","person"]
+    },
+    {
+      "id": "visitors_1",
+      "source": "The Hermit on why he doesn't turn visitors away",
+      "text": "I don't turn people away because the forest doesn't turn people away either, and I've been here long enough to take my cues from the forest. The forest allows passage. It makes passage harder for people who don't pay attention, easier for people who do. This is its way of selecting. I don't have a better selection criterion than the forest's, so I follow its lead. If someone finds me, they found me for a reason, even if the reason is that they got lost.",
+      "keywords": ["don't","turn","away","forest","passage","harder","attention","easier","selecting","criterion"]
+    },
+    {
+      "id": "vrenn_1",
+      "source": "The Hermit when asked if he knows Vrenn the old man in Thornwall",
+      "text": "Vrenn knows everyone who's been in this region for more than twenty years. I've been here more than twenty years. We've met. He came here once to ask me about the prior name of this part of the forest, which is a question I could answer because I found the old records of it before the name changed. He said thank you, which is not a thing Vrenn says carelessly. I said you're welcome, which is what you say. We haven't had occasion to meet since. Both of us know where to find the other.",
+      "keywords": ["vrenn","knows","region","twenty","years","met","came","prior","name","forest"]
+    },
+    {
+      "id": "what_1",
+      "source": "The Hermit when asked what he does all day",
+      "text": "Watch. Note. Walk when the noting requires a different vantage point. Eat. Sleep. The forest produces things to watch at every hour. The question of what to do with what you observe takes a long time. I spent the first ten years observing and the second ten years understanding the first ten years' observations. I'm in a third phase now that I don't have a word for yet. The observations from the first two phases turn out to be more interesting than I understood them to be when I made them.",
+      "keywords": ["watch","note","walk","vantage","eat","sleep","forest","ten","years","observe"]
+    },
+    {
+      "id": "khorrun_1",
+      "source": "The Hermit when asked about the residue Foss had noted in the undergrowth",
+      "text": "I noticed it before Foss did. I don't know what it is. I've noticed it three times in forty years and each time it was followed by something that happened further away — news that reached the forest slowly, events in the settlements I only heard about secondhand. I've started keeping notes on what follows the residue. The notes aren't finished yet. What I'll say is: the residue means something is in motion. Not necessarily KHORRUN's people. Something.",
+      "keywords": ["noticed","foss","residue","three","times","forty","years","followed","settlements","motion"]
+    }
+  ]
+}

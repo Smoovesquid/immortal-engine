@@ -1,0 +1,57 @@
+{
+  "id": "weld_smith",
+  "name": "Weld",
+  "role": "Journeyman smith, Forge Guild; raised in the guild",
+  "cluster": "forge_guild",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "guild_1",
+      "source": "Weld at the forge, to a traveler who asked if they could buy a blade",
+      "text": "The guild makes blades. I make blades. The difference is that the guild sets the standard and I meet it or I redo the work. Wrendle checks my work twice a week. The check is not supervision — I've been journeyman for four years and I know what good looks like. The check is the system: the guild checks all work because the guild's mark means the work meets the standard, and the mark doesn't mean what it means if the check is skipped. I don't want to skip the check.",
+      "keywords": ["guild","makes","blades","standard","redo","work","wrendle","checks","twice","week"]
+    },
+    {
+      "id": "edda_1",
+      "source": "Weld on working alongside Edda's smithy",
+      "text": "Edda is my benchmark. We work in adjacent shops and our work doesn't overlap — she does structural, I do bladed — but the standard of attention is comparable. I look at her work when she sets it outside and I use it to calibrate my own. If what I've made doesn't have the specific quality Edda's work has, I know the work isn't done yet. She doesn't know I do this. She doesn't need to. The calibration is mine.",
+      "keywords": ["edda","benchmark","adjacent","shops","structural","bladed","attention","comparable","calibrate","quality"]
+    },
+    {
+      "id": "wrendle_1",
+      "source": "Weld on Old Wrendle",
+      "text": "Wrendle made a blade thirty years ago that's in the collection at the Academy of Runes. I've seen a copy of it — they had it cast in bronze for a reference piece. The original steel is at the Academy because Wrendle gave it when the Academy asked, which was a specific kind of humility that I find remarkable. The work survives without his name on it except in the guild's records. He doesn't seem to find this a loss. I ask him about it occasionally. He says: the blade is correct, that's the whole thing.",
+      "keywords": ["wrendle","blade","thirty","years","academy","runes","collection","copy","bronze","reference"]
+    },
+    {
+      "id": "brenn_1",
+      "source": "Weld on the apprentice Brenn",
+      "text": "Brenn makes hinges correctly. I know because I've used two of his hinges on a cabinet I built for a commission, and I wouldn't use a hinge I hadn't tested for six months first. The hinges held. The movement is smooth. The tolerances are in range. He's making things worth using, which is what a second-year apprentice should be making. I'm not his teacher but I notice his work the way you notice when someone is doing the thing right.",
+      "keywords": ["brenn","makes","hinges","correctly","used","two","hinges","cabinet","commission","tested"]
+    },
+    {
+      "id": "gell_1",
+      "source": "Weld on the glassblower Gell",
+      "text": "Gell and I compare notes on material properties when the question comes up. Glass and steel aren't adjacent in obvious ways but we've found three places where the principles overlap — specifically around how impurities in the raw material propagate through the finished piece. Gell calls it a flaw in the gather. I call it an inclusion in the billet. The mechanism is the same: contamination at the start produces failure under stress at the end. The materials behave identically. Gell finds this as interesting as I do.",
+      "keywords": ["gell","compare","notes","material","properties","glass","steel","adjacent","principles","overlap"]
+    },
+    {
+      "id": "why_blades_1",
+      "source": "Weld when asked why blades specifically",
+      "text": "Blades solve a problem. The problem is: the thing needs to be cut. Every blade I make is an answer to that problem. The answer has to be precise — too thick and the cut is wrong, too thin and the blade fails, wrong metal for the use and it's wasted. I grew up in this guild and I've been making blades since I could hold the hammer. At some point the reason became: because it's what I know how to do and I know how to do it well. That's sufficient.",
+      "keywords": ["blades","solve","problem","cut","precise","thick","thin","wrong","metal","use"]
+    },
+    {
+      "id": "the_work_1",
+      "source": "Weld finishing a commissioned hunting knife",
+      "text": "The edge is correct. I test it on paper — you can hear the correct edge cut paper. The balance is right — I can tell by how it sits in my hand at rest, the point weighting to just past the guard. The finish is even. The handle is tight. This is a knife that will do what it's supposed to do for twenty years of correct use. I make things that work for twenty years. That's the length of time I'm aiming at when I set up the work. Twenty years later it should still be correct.",
+      "keywords": ["edge","correct","test","paper","hear","balance","hand","point","finish","handle"]
+    },
+    {
+      "id": "where_blades_go_1",
+      "source": "Weld when asked if he knows where the blades end up",
+      "text": "Some of them. The ones sold directly, I know the buyer. The ones sold through the guild market, I know the type of buyer but not the specific. The ones that go through Fenn's commercial channels, I have no idea. I've stopped trying to know. The blade is correct when it leaves my hands. What happens to it after is what the buyer does with a correct blade. I'm responsible for the correctness. Not for what correctness enables.",
+      "keywords": ["some","them","sold","directly","know","buyer","guild","market","fenn","commercial"]
+    }
+  ]
+}

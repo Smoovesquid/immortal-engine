@@ -1,0 +1,57 @@
+{
+  "id": "house_aldenmere_tutor",
+  "name": "Sorn",
+  "role": "Aldenmere house tutor; teaches the Aldenmere children; has access to the household's private life",
+  "cluster": "house_aldenmere",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "tutoring_1",
+      "source": "Sorn on tutoring the Aldenmere children",
+      "text": "In eight years of tutoring in the Aldenmere house, the children have become different children than they were when I started. Not because of me specifically — the years have done most of that work. What I've contributed: the specific knowledge and method that structured the learning during those years. In eight years, the eldest is now managing the family's correspondence independently. The youngest is still in the foundational work. In eight years, the tutoring has produced what tutoring produces: people who can think and read and calculate without the tutor.",
+      "keywords": ["eight","years","tutoring","aldenmere","house","children","become","different","children","than"]
+    },
+    {
+      "id": "britta_1",
+      "source": "Sorn on Britta",
+      "text": "Britta hires me and sets the educational expectations. In eight years of Britta's commission, what Britta has articulated as the goal: the children need to be able to manage the family's interests when the time comes. The educational program I've developed serves that goal: the writing and correspondence that merchant relationships require, the accounting that the trading accounts require, the history that context for the trading environment requires. In eight years, the program has been shaped by Britta's goal rather than by a general educational philosophy.",
+      "keywords": ["britta","hires","sets","educational","expectations","eight","years","britta's","commission","what"]
+    },
+    {
+      "id": "vrenn_1",
+      "source": "Sorn on Vrenn",
+      "text": "Vrenn manages the household and the tutoring schedule exists within the household's structure. In eight years, Vrenn and I have rarely needed to interact directly — the tutoring happens in its dedicated time and space, the household's other functions happen around it. What Vrenn has done for the tutoring: ensured that the dedicated time and space are protected. In eight years, the household events that would disrupt the tutoring schedule have been routed around it rather than through it.",
+      "keywords": ["vrenn","manages","household","tutoring","schedule","exists","within","household's","structure","eight"]
+    },
+    {
+      "id": "davel_1",
+      "source": "Sorn on Davel",
+      "text": "Davel the trading agent is the destination for what the children are being prepared for. In six years of Davel being the children's example of what the family's commercial function looks like in practice, the tutoring's connection to Davel's work: the correspondence I teach the children to write is the correspondence that Davel manages. In six years, I've occasionally shown the children real correspondence from Davel's work — with Britta's permission — as examples of the form they're learning. The real examples are more effective than constructed ones.",
+      "keywords": ["davel","trading","agent","destination","what","children","being","prepared","for","six"]
+    },
+    {
+      "id": "marel_1",
+      "source": "Sorn on Marel",
+      "text": "Marel at the Academy has been a source for the historical materials I incorporate into the tutoring. In five years of occasional exchange with Marel, what Marel provides: the historical context for the trading environment the children will be entering. In five years, the historical perspective has enriched the tutoring beyond what the practical focus alone would produce. What Britta wants is the practical. What Marel's input adds is the understanding of why the practical is the way it is.",
+      "keywords": ["marel","academy","been","source","historical","materials","incorporate","tutoring","five","years"]
+    },
+    {
+      "id": "what_tutoring_in_a_merchant_house_is_1",
+      "source": "Sorn on what tutoring in the Aldenmere house is",
+      "text": "In eight years, the tutoring in a merchant house is not the same tutoring as the Academy's approach or the Covenant's approach. The merchant house tutoring is the learning that serves a specific purpose: preparing the next generation to manage the house's interests. In eight years, the learning that serves that purpose and the learning that doesn't serve it: I've kept the tutoring to the former and occasionally proposed expanding to the latter. Britta has agreed once in three proposals. The expansion was valuable and is now part of the program.",
+      "keywords": ["eight","years","tutoring","merchant","house","not","same","tutoring","academy's","approach"]
+    },
+    {
+      "id": "what_sorn_holds_1",
+      "source": "Sorn on what eight years in the household has shown her",
+      "text": "In eight years, the household's private life has been visible to me in ways it isn't visible to most outside the household. Not because I sought the information — because the tutor is present in the household's rhythm and the rhythm reveals things the formal face doesn't. In eight years, what I've observed about the household that I hold rather than transmit: the information that belongs to the household and that the household would consider private if it knew I'd observed it. In eight years, the tutor's discretion is not a professional courtesy. It's an obligation.",
+      "keywords": ["eight","years","household's","private","life","visible","ways","isn't","visible","most"]
+    },
+    {
+      "id": "eight_years_1",
+      "source": "Sorn on eight years with the Aldenmere household",
+      "text": "In eight years, the Aldenmere household has been the most sustained working relationship of my tutoring career. In eight years, I've watched two children grow from foundational learning to functional competence. In eight years, the household has been consistent: what Britta promised when she commissioned me has been what the household has provided. In eight years, what I've provided: the learning that serves the children and through them the household's future. In eight years, the work has been the relationship. The relationship has held.",
+      "keywords": ["eight","years","aldenmere","household","been","most","sustained","working","relationship","tutoring"]
+    }
+  ]
+}

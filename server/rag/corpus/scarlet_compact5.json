@@ -1,0 +1,57 @@
+{
+  "id": "scarlet_compact5",
+  "name": "Vreth",
+  "role": "Scarlet Compact archivist; records the Compact's history of engagements",
+  "cluster": "scarlet_compact",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "archivist_1",
+      "source": "Vreth on the Compact's archive",
+      "text": "Every engagement the Compact has undertaken in the past sixty years is in the archive. Not every action — every engagement. The distinction: actions are what individual members do. Engagements are what the Compact commits to as an institution. In sixty years, the Compact has committed to three hundred and twelve engagements. I've read all three hundred and twelve. Reading the full archive took me four years. Understanding it is still ongoing.",
+      "keywords": ["every","engagement","compact","undertaken","past","sixty","years","archive","not","every"]
+    },
+    {
+      "id": "ceth_1",
+      "source": "Vreth on Ceth",
+      "text": "Ceth's engagements are the most austere in the current archive. What austerity produces in the engagement record: concision. Ceth's reports are the shortest reports in the file. They describe what happened and nothing else. No interpretation, no context, no aftermath assessment. Just the engagement. I've tried to ask Ceth about the context behind specific entries. Ceth said once: the entry is the engagement. What I felt about the engagement is not the engagement. I record what I was sent to do and what I did.",
+      "keywords": ["ceth","engagements","most","austere","current","archive","what","austerity","produces","engagement"]
+    },
+    {
+      "id": "doss_1",
+      "source": "Vreth on Doss",
+      "text": "Doss provides the theological framing for the engagements the archive records. In seven years of archiving alongside Doss, the theological framing has added a layer to the engagement record that previous archivists didn't include. The previous records were operational. Doss's contribution is the understanding of what the engagement was for within KHORRUN's doctrine. I've added this layer to the archive retroactively — going back through the sixty-year record and annotating what the earlier archivists left unannoted. The annotation is optional. Future archivists can use it or not.",
+      "keywords": ["doss","provides","theological","framing","engagements","archive","records","seven","years","archiving"]
+    },
+    {
+      "id": "pav_1",
+      "source": "Vreth on Pav",
+      "text": "Pav's supply records are the complement to the engagement records. The engagement record describes what happened. Pav's supply records describe what made it possible. In seven years of working in parallel with Pav, I've begun cross-referencing the two records for historical engagements — matching the supply manifest with the engagement outcome. The correlation is not obvious but it's real: engagements with specific supply conditions tend toward specific outcomes. I've documented seven correlations. The seventh is the most significant. I haven't shared it yet.",
+      "keywords": ["pav","supply","records","complement","engagement","records","engagement","record","describes","what"]
+    },
+    {
+      "id": "khorrun_1",
+      "source": "Vreth on what the archive says about KHORRUN",
+      "text": "In sixty years of Compact engagements, the archive shows what KHORRUN's doctrine produces when applied consistently. The outcome isn't simple. The doctrine of wrath as sacred force produces outcomes that are sometimes exactly what was intended and sometimes outcomes that the engagement's participants couldn't have predicted. In sixty years, twenty-three engagements produced unintended outcomes. I've studied all twenty-three. The unintended outcomes are not failures — they're what happens when the force of KHORRUN's domain encounters conditions the engagement didn't anticipate.",
+      "keywords": ["sixty","years","compact","engagements","archive","shows","what","khorrun's","doctrine","produces"]
+    },
+    {
+      "id": "what_vreth_holds_1",
+      "source": "Vreth on what the archive holds that hasn't been made public",
+      "text": "Engagement forty-seven. Sixty years ago. Before I joined the Compact, before most current members joined. The record is present and unredacted. What the record shows: the Compact's engagement produced an outcome that the Compact has not acknowledged publicly. The outcome is in the archive. The archive is accessible to Compact members. Whether other members have read engagement forty-seven the way I've read it is something I don't know. I've told no one what I found. I'm still deciding whether to.",
+      "keywords": ["engagement","forty-seven","sixty","years","record","present","unredacted","what","record","shows"]
+    },
+    {
+      "id": "orm_1",
+      "source": "Vreth on Orm",
+      "text": "Orm's engagement history is the longest in the current member file. Orm has been in the Compact for twenty-three years and has been present in forty-one engagements. The forty-one is the most by any current member. What the archive shows across forty-one engagements: Orm's methods have evolved. The early engagements show a directness that the later engagements have refined. The refinement isn't softening — it's precision. The same force, applied with increasing accuracy.",
+      "keywords": ["orm","engagement","history","longest","current","member","file","orm","compact","twenty-three"]
+    },
+    {
+      "id": "seven_years_1",
+      "source": "Vreth on seven years as the Compact's archivist",
+      "text": "The archive is not history. It's the Compact's understanding of its own history. The distinction: history is what happened. The archive is what the Compact has decided to record about what happened. In seven years I've found four gaps in the archive — places where an engagement should have a record and the record is absent. Three of the four gaps are from the early period, before archiving was systematic. One gap is from twelve years ago. The twelve-year gap is the one I'm still examining.",
+      "keywords": ["archive","not","history","compact's","understanding","own","history","distinction","history","what"]
+    }
+  ]
+}

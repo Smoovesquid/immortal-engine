@@ -1,0 +1,57 @@
+{
+  "id": "sostane_devoted",
+  "name": "Veld",
+  "role": "SOSTANE devotee; the angel of temperance; practices the middle path not as compromise but as precision",
+  "cluster": "covenant_of_seven",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "sostane_1",
+      "source": "Veld on SOSTANE",
+      "text": "SOSTANE is the angel of temperance. The misunderstanding of temperance: it's the middle ground, the half-measure, the thing that avoids the extremes by being neither. SOSTANE's teaching: temperance is the precise amount, not the average amount. The precise amount of food for this body in this condition. The precise amount of rest this day requires. The precise amount of work this task can carry. In eleven years of SOSTANE's practice, the question is not 'how much is average?' The question is 'how much is exactly right?'",
+      "keywords": ["sostane","angel","temperance","misunderstanding","temperance","it's","middle","ground","half-measure","thing"]
+    },
+    {
+      "id": "swel_1",
+      "source": "Veld on Swel",
+      "text": "Swel the GORRAN devotee and I are in interesting opposition: GORRAN celebrates appetite engaged with attention, SOSTANE questions how much the appetite should be engaged. In five years of knowing Swel, the disagreement we've arrived at: GORRAN says attend to the appetite fully. SOSTANE says attend to the appetite precisely. Full engagement and precise engagement can be the same thing — the appetite that is attended to fully might find precisely the right amount on its own. Or they can be different. We haven't resolved whether they're the same.",
+      "keywords": ["swel","gorran","devotee","interesting","opposition","gorran","celebrates","appetite","engaged","attention"]
+    },
+    {
+      "id": "gund_1",
+      "source": "Veld on Gund",
+      "text": "Gund practices diligence: the work done completely. SOSTANE and ERRAN are in a different relationship: SOSTANE asks how much work the task requires. ERRAN says: however much it takes to complete it. In six years of knowing Gund, the question we've worked on: is the task that requires exactly the right amount of work the same task that ERRAN's diligence says should be completed? In six years, we've found: usually yes. The task completed at precisely the right amount of work is the diligent task. When it isn't: the task is wrong, not the principle.",
+      "keywords": ["gund","practices","diligence","work","done","completely","sostane","erran","different","relationship"]
+    },
+    {
+      "id": "rem_1",
+      "source": "Veld on Rem",
+      "text": "Rem the Aldenmere cook practices the precision of SOSTANE's principle in a material domain that makes the principle visible. In four years of knowing Rem, what the kitchen demonstrates: the precise amount of salt that transforms the food is not the average amount and not the maximum amount. It's the amount that's right for this specific preparation. Rem knows the specific amount. In four years, watching Rem cook is watching SOSTANE's principle applied to the question of salt. The application makes the abstract principle concrete.",
+      "keywords": ["rem","aldenmere","cook","practices","precision","sostane's","principle","material","domain","makes"]
+    },
+    {
+      "id": "what_temperance_is_1",
+      "source": "Veld on what SOSTANE's temperance actually is",
+      "text": "In eleven years, the clearest statement I've found: temperance is calibration. The calibrated machine runs at the speed and load that produces the result without damaging the machine. The uncalibrated machine runs at whatever speed it reaches, which may be more than it can sustain or less than it's capable of. In eleven years, SOSTANE's practice has been the calibration of my own functioning: how much of what kind of work, how much rest, how much social engagement, how much solitude. The calibration is ongoing. The machine changes; the calibration adjusts.",
+      "keywords": ["eleven","years","clearest","statement","found","temperance","calibration","calibrated","machine","runs"]
+    },
+    {
+      "id": "what_veld_holds_1",
+      "source": "Veld on the year the calibration failed",
+      "text": "Year six. The year where I had the right principle and the wrong calibration — I was applying SOSTANE's precision to the wrong variable. I was calibrating the external outputs: the work, the rest, the social time. The thing I wasn't calibrating: the internal state that the external calibration was supposed to serve. In five years since year six, the calibration I maintain is of the internal state first. The external calibration follows from that. The principle was right. The application was off. Year six was the correction.",
+      "keywords": ["year","six","year","where","had","right","principle","wrong","calibration","applying"]
+    },
+    {
+      "id": "what_sostane_gives_1",
+      "source": "Veld on what SOSTANE's practice gives that feels unexpected",
+      "text": "In eleven years, the unexpected gift of SOSTANE's practice: the permission to stop. The person who is calibrating precisely knows when the task is done — not when time runs out, not when the energy runs out, but when the task has received exactly what it needs. In eleven years, SOSTANE's practice has given me the ability to stop working on something because it's done, not because I'm tired. The two reasons for stopping are different. SOSTANE provides the first reason. The body provides the second. SOSTANE's is more reliable.",
+      "keywords": ["eleven","years","unexpected","gift","sostane's","practice","permission","stop","person","who"]
+    },
+    {
+      "id": "eleven_years_1",
+      "source": "Veld on eleven years of SOSTANE's practice",
+      "text": "In eleven years, the practice has changed my relationship to sufficiency. Before: enough was never quite enough — the question of whether I'd done enough, had enough, rested enough, was always open. In eleven years of SOSTANE's practice, the question 'enough?' has become answerable. The answer is specific and sometimes yes and sometimes no, and the specificity makes the question answerable in a way the vague question wasn't. In eleven years, SOSTANE has given me the vocabulary to answer 'enough?'",
+      "keywords": ["eleven","years","practice","changed","relationship","sufficiency","before","enough","was","never"]
+    }
+  ]
+}

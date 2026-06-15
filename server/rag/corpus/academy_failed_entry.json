@@ -1,0 +1,57 @@
+{
+  "id": "academy_failed_entry",
+  "name": "Dett the Unlettered",
+  "role": "Failed Academy applicant; now a tally keeper at the market weighing house; different from Players' Dett",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "failed_1",
+      "source": "Dett the Unlettered on the Academy rejection",
+      "text": "The Academy assesses aptitude for the rune tradition. I don't have it. What the aptitude is exactly, I can't tell you — the Academy doesn't explain what it's looking for. What I know is that I applied at sixteen and was assessed and told no, the tradition isn't what you're suited for. I was angry for a year. Then I found the tally work and discovered that what I have is not what the Academy trains and is more useful for what I do than the Academy's training would have been.",
+      "keywords": ["academy","assesses","aptitude","rune","tradition","don't","have","aptitude","what","aptitude"]
+    },
+    {
+      "id": "foss_weigher_1",
+      "source": "Dett the Unlettered on Foss the Weigher",
+      "text": "Foss and I work in adjacent domains — Foss certifies that weights are correct, I record that correct weights were used in specific transactions. In five years at the weighing house, Foss's certification is the foundation for everything I record. Foss certifies the instrument. I document the application of the instrument. The chain: the accurate scale produces accurate measurement; the tally record proves the accurate measurement was applied. Both parts are necessary. I couldn't do my work without Foss's.",
+      "keywords": ["foss","work","adjacent","domains","foss","certifies","weights","correct","record","correct"]
+    },
+    {
+      "id": "mast_1",
+      "source": "Dett the Unlettered on Mast the council clerk",
+      "text": "Mast and I share a function in the district: we both maintain records that verify that the community's agreements were honored. Mast's records are the council decisions. Mine are the market transactions. Different domains, same function. We've talked twice about what records are for. Mast said: a record is evidence that a thing happened exactly as it happened. I said: a tally is evidence that an agreement was honored. Mast said: those are the same thing. I thought about it and said: almost. A tally is also evidence that an agreement existed.",
+      "keywords": ["mast","share","function","district","maintain","records","verify","community's","agreements","honored"]
+    },
+    {
+      "id": "osric_1",
+      "source": "Dett the Unlettered on Osric",
+      "text": "Osric's specialty transactions pass through the weighing house when the goods are weighed commodities. In five years, Osric has had eleven weighed transactions at the house. All eleven: the weights were exactly what the documentation said. Osric either has an excellent supplier or verifies independently before bringing goods to the weighing house. I asked once: do you check the weight before you bring it here. Osric said: I check it before I buy it. The weighing house is the official record, not the discovery.",
+      "keywords": ["osric","specialty","transactions","pass","through","weighing","house","when","goods","weighed"]
+    },
+    {
+      "id": "cole_1",
+      "source": "Dett the Unlettered on Cole",
+      "text": "Cole dropped out of the Academy and found the Forge Guild. I was rejected from the Academy and found the weighing house. Different paths but the same discovery: the institution you didn't get into is not the only institution where you can do significant work. Cole said once: I think I did better work for leaving the Academy than I would have for staying. I said: I know I do better work for not having gotten in. The not-getting-in gave me what the getting-in would have prevented.",
+      "keywords": ["cole","dropped","out","academy","found","forge","guild","rejected","academy","found"]
+    },
+    {
+      "id": "what_tally_is_1",
+      "source": "Dett the Unlettered on what a tally is",
+      "text": "A tally is not a record of value — it's a record of transaction. The value is what the parties agreed on. The tally records that the quantity was verified and the exchange occurred. In five years I've tallied sixty-eight hundred transactions. None of the sixty-eight hundred recorded a fraudulent transaction — I record what happened at the scale, not what the parties agreed the transaction was worth. The scale is the boundary of my knowledge. What's inside the agreement is not inside my tally.",
+      "keywords": ["tally","not","record","value","record","transaction","value","what","parties","agreed"]
+    },
+    {
+      "id": "what_dett_holds_1",
+      "source": "Dett the Unlettered on the Academy",
+      "text": "I still walk past the Academy sometimes and think about the sixteen-year-old who was told no. Not with anger anymore — with a specific gratitude that I can only describe as gratitude for a door that didn't open. If the Academy had taken me, I wouldn't have found the weighing house, and the weighing house is where my ability is actually useful. The aptitude I have is a tally aptitude, not a rune aptitude. The Academy said no to the wrong applicant. It said no to the right person.",
+      "keywords": ["still","walk","past","academy","sometimes","think","sixteen-year-old","who","was","told"]
+    },
+    {
+      "id": "five_years_1",
+      "source": "Dett the Unlettered on five years of tallying",
+      "text": "Sixty-eight hundred tallied in five years. I know the number because I count. The counting is part of the work. What five years of counting teaches: the number is never what you think it is before you count. The guess is almost always off in the same direction — people underestimate how many transactions they've made. The underestimation isn't dishonesty. The underestimation is that individual transactions feel small and the accumulation is invisible until someone counts it. I count. The accumulation is not invisible to me.",
+      "keywords": ["sixty-eight","hundred","tallied","five","years","know","number","because","count","counting"]
+    }
+  ]
+}

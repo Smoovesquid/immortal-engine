@@ -1,0 +1,57 @@
+{
+  "id": "orm_bloodsworn",
+  "name": "Orm the Blood-Sworn",
+  "role": "KHORRUN devotee, Scarlet Compact; Seven Shadows",
+  "cluster": "demon_courts",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "khorrun_1",
+      "source": "Orm to a newcomer who asked what the Scarlet Compact believes",
+      "text": "KHORRUN is not the god of killing. That's the summary people reach when they hear 'god of wrath' and it's incomplete. KHORRUN is the god of the moment when the killing stops being a choice. When the red comes and the decision-making is done and what remains is pure action. That moment is sacred. Not because the killing is sacred. Because the absolute honesty of that moment is sacred. KHORRUN marks us not because we love violence. Because we've been in that moment and we know what it is.",
+      "keywords": ["khorrun","god","killing","wrath","incomplete","moment","choice","red","sacred","absolute"]
+    },
+    {
+      "id": "ceth_1",
+      "source": "Orm on Ceth's arrangement",
+      "text": "Ceth is useful. I don't like him but I find him useful, which is the correct relationship to have with someone you need. He keeps the Compact protected from attention that we'd rather not deal with. In exchange we provide what he needs when he asks for it, which he does carefully and rarely, which means he understands what he's asking for. A man who understands what he's asking for doesn't ask for it carelessly. Ceth doesn't ask carelessly. We cooperate.",
+      "keywords": ["ceth","useful","like","correct","relationship","protected","attention","exchange","carefully","rarely"]
+    },
+    {
+      "id": "rath_1",
+      "source": "Orm on Captain Rath",
+      "text": "Rath trained me before I took the oath. She knew what I was going toward — she's good enough to have seen it — and she didn't try to stop it. I've thought about why. I think she made the calculation that I was going to reach it anyway and that trained was better than untrained. She was right. I'm better at what I do for the training. She'd disagree with what I do with the training. I find that I don't care, and finding that I don't care is what KHORRUN means.",
+      "keywords": ["rath","trained","oath","knew","going","stop","calculation","trained","better","disagree"]
+    },
+    {
+      "id": "scarlet_1",
+      "source": "Orm describing the Compact's mark",
+      "text": "The mark is at the shoulder. Not the hand — people expect the hand. The hand is what you choose with. The shoulder is what carries. We mark the carrying because the oath is not about what you choose to do with your violence. It's about what you carry. The mark says: I carry this. I know what I carry. I don't pretend I don't carry it. Most people carry the same thing and spend their lives pretending they don't.",
+      "keywords": ["mark","shoulder","hand","choose","carries","carrying","oath","violence","pretend","spend"]
+    },
+    {
+      "id": "pella_1",
+      "source": "Orm on the army healer Pella who studies the Courts' residue",
+      "text": "The healer studies us the way someone studies a disease they're trying to cure. I find this respectful in a way she probably doesn't intend. She's looking for the mechanism of what KHORRUN produces in his marked ones, and the looking is serious and the looking is thorough. I've let her look because what she learns won't help her cure it — there's no cure for what KHORRUN marks, only accommodation. The accommodation is its own discipline.",
+      "keywords": ["healer","studies","disease","cure","mechanism","khorrun","marked","looking","serious","accommodation"]
+    },
+    {
+      "id": "red_hour_1",
+      "source": "Orm explaining the Red Hour to a Compact initiate",
+      "text": "The Red Hour doesn't come when you're angry. Anger is before. The Red Hour comes when the anger is done and what's left is pure clarity. Everything is very simple in the Red Hour. There is the obstacle and there is what removes the obstacle and there is nothing else. The Red Hour ends when it ends. What you do in it, you chose before you got there — in the drilling, in the practice, in who you've decided you are. KHORRUN doesn't make the decision. He marks the ones who already made it.",
+      "keywords": ["red","hour","angry","anger","done","clarity","simple","obstacle","removes","decided"]
+    },
+    {
+      "id": "acediel_1",
+      "source": "Orm on ACEDIEL and the Grey Surrender",
+      "text": "The worst thing KHORRUN can show you is ACEDIEL. We've been near the Grey Surrender people — they're in the Compact's building sometimes, the arrangement requires it. What ACEDIEL is is the opposite of the Red Hour. The Red Hour is perfect clarity and no choice. The Grey Surrender is no clarity and no choice. The same nothing arrived at from different directions. I'd rather be marked by the Red than the Grey. The Red at least chooses something. The Grey just stops.",
+      "keywords": ["acediel","worst","khorrun","grey","surrender","near","arrangement","opposite","red","stops"]
+    },
+    {
+      "id": "vel_1",
+      "source": "Orm on Archon Vel and the Temple",
+      "text": "Vel calls what I serve a demon. I've thought about this carefully. KHORRUN is not what Vel means by demon — Vel means something that corrupts and deceives and works against the soul's interest. What KHORRUN does is the opposite of deception. KHORRUN makes everything very clear. Whether the clarity is in the soul's interest depends on what you want from your soul. Vel wants his soul to be peaceful. I don't particularly want mine to be peaceful. We want different things.",
+      "keywords": ["vel","demon","corrupt","deceives","soul","opposite","deception","clear","clarity","peaceful"]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "id": "iss_devoted",
+  "name": "Ferr",
+  "role": "ISS devotee; the demon of envy; practices the discipline of desire-acknowledgment rather than desire-suppression",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "iss_1",
+      "source": "Ferr on ISS",
+      "text": "ISS is the demon of envy and the worship of envy is the worship of the honest acknowledgment of desire. In nine years of ISS's practice, what envy is when it's practiced correctly: not the resentment that sees what someone else has and poisons itself wanting it. The practice of ISS is the clear-eyed identification of what I want that I don't have. In nine years, the desire-acknowledgment is the discipline. The resentment is the corruption of the practice. In nine years, the corruption is the thing most people encounter when they encounter envy. The practice is the thing most people never encounter.",
+      "keywords": ["iss","demon","envy","worship","envy","worship","honest","acknowledgment","desire","nine"]
+    },
+    {
+      "id": "brael_1",
+      "source": "Ferr on Brael",
+      "text": "Brael practices KHORRUN's wrath and ISS's envy and KHORRUN's wrath are in more tension than they appear from outside. In three years of knowing Brael as a fellow demon devotee, what the tension between ISS and KHORRUN is when it gets discussed: envy sees the gap between what is and what is desired. Wrath responds to the gap with force. In three years, the debate between Brael and me is whether the gap should produce desire-acknowledgment or force. In three years, neither of us has convinced the other. The demons are related but the practices diverge.",
+      "keywords": ["brael","practices","khorrun's","wrath","iss's","envy","khorrun's","wrath","more","tension"]
+    },
+    {
+      "id": "donn_1",
+      "source": "Ferr on Donn",
+      "text": "Donn practices ACEDIEL's sloth and ISS's envy and ACEDIEL's sloth are opposites in a specific way. In four years of knowing Donn, what the ISS-ACEDIEL opposition is: envy is the demon of wanting. Sloth is the demon of not-doing. In four years, the person who practices envy honestly — who identifies what they desire and holds the identification clearly — is typically driven toward the wanting's object. The person who practices sloth — who suspends action — is driven away from it. In four years, Donn and I approach our demons differently. In four years, I think Donn's practice is more honest than most people give it credit for.",
+      "keywords": ["donn","practices","acediel's","sloth","iss's","envy","acediel's","sloth","opposites","specific"]
+    },
+    {
+      "id": "kell_1",
+      "source": "Ferr on Kell",
+      "text": "Kell the locksmith is the person in the settlement whose life I have most consistently wanted. In nine years of ISS's practice, what the Kell-desire has taught me about the practice: the desire that is clear and held clearly produces information about what you value. I've wanted Kell's life — the clear skill, the physical work, the specific useful product — for nine years. In nine years, holding the desire clearly rather than suppressing it has shown me that what I want is the specific-skill life. In nine years, I've been building toward that. The desire is direction.",
+      "keywords": ["kell","locksmith","person","settlement","whose","life","most","consistently","wanted","nine"]
+    },
+    {
+      "id": "syne_1",
+      "source": "Ferr on Syne",
+      "text": "Syne wildcrafts and I've wanted Syne's knowledge of the territory since I was old enough to notice it. In seven years of knowing Syne, what the Syne-desire has taught me: the desire for someone else's knowledge is often the desire for the access to what their knowledge opens. Syne's territory knowledge opens the territory. In seven years, the want of Syne's knowledge has driven me to acquire what of it Syne will share. In seven years, Syne has shared more than most people would. In seven years, the ISS practice has made me a more honest student than I'd have been otherwise.",
+      "keywords": ["syne","wildcrafts","wanted","syne's","knowledge","territory","since","old","enough","notice"]
+    },
+    {
+      "id": "what_ferr_holds_1",
+      "source": "Ferr on what nine years of ISS's practice holds",
+      "text": "In nine years, what the envy practice has given me: the desire inventory. The specific, honest list of what I want that I don't have, held clearly, assessed regularly, used as information about value. In nine years, the inventory has driven more action than the suppression of the inventory would have. In nine years, the practiced envy is more generative than the suppressed desire it replaces. In nine years, the demon's teaching is the teaching that desire-acknowledged is desire-useful, and desire-suppressed is desire-wasted.",
+      "keywords": ["nine","years","what","envy","practice","given","desire","inventory","specific","honest"]
+    },
+    {
+      "id": "what_iss_isnt_1",
+      "source": "Ferr on what ISS's practice is not",
+      "text": "In nine years, what ISS's practice is not — what I have to clarify regularly because the misunderstanding is common: it is not the practice of taking what others have. The envy that takes is the corruption, not the practice. In nine years, I have wanted what others have and held the want clearly. I have not taken what others have. In nine years, the discipline is the clear want, not the acquisition. The acquisition that comes through the practice comes through the desire-understood-as-direction, not through the desire-acted-on-as-taking.",
+      "keywords": ["nine","years","what","iss's","practice","not","what","have","clarify","regularly"]
+    },
+    {
+      "id": "nine_years_1",
+      "source": "Ferr on nine years of ISS's practice",
+      "text": "In nine years, ISS's practice has made me aware of desire as information in a way that most people aren't. Most people suppress the desire or act on it without examination. In nine years, the third option — examining the desire, holding it clearly, using it as information — is the ISS practice's contribution to the life. In nine years, the desire-examination produces a map of values that the desire-suppression hides and the desire-acting-without-examination distorts. In nine years, I know what I want with more clarity than most people ever achieve.",
+      "keywords": ["nine","years","iss's","practice","made","aware","desire","information","way","most"]
+    }
+  ]
+}

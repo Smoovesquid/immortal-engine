@@ -1,0 +1,57 @@
+{
+  "id": "forge_master",
+  "name": "Weld",
+  "role": "Master of the Forge Guild; thirty years at the anvil; teaches that iron has opinions",
+  "cluster": "forge_guild",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "iron_1",
+      "source": "Weld on iron",
+      "text": "Iron has opinions. Not preferences — opinions. An iron bar that's been worked incorrectly will tell you so when it's loaded. It will fail at the point of the incorrect working, specifically and reliably. In thirty years of working iron, I've learned to read the opinion before it's expressed as failure. The iron that's going to fail looks different from the iron that isn't. The look is subtle. The subtlety is what thirty years teaches.",
+      "keywords": ["iron","has","opinions","not","preferences","opinions","iron","bar","been","worked"]
+    },
+    {
+      "id": "edda_1",
+      "source": "Weld on Edda",
+      "text": "Edda has been in my forge for eight years. In eight years, Edda has moved from the position of strong and willing — which is what I required at the start — to the position of reading the iron, which is what I actually needed. Strong and willing is the entrance requirement. Reading the iron is the actual skill. In eight years, Edda has developed the reading. When Edda looks at a bar before working it and tells me what the iron is going to do, Edda is right about ninety percent of the time. At eight years, that's exceptional.",
+      "keywords": ["edda","been","forge","eight","years","eight","years","edda","moved","position"]
+    },
+    {
+      "id": "dub_1",
+      "source": "Weld on Dub",
+      "text": "Dub the cartwright specifies hardware to engineering tolerance. In nine years of filling Dub's specifications, I've delivered to those tolerances consistently. What Dub's work has taught me about my own work: the hardware specification reveals what the hardware is for. Dub's tolerance specification is determined by the mechanical loads the hardware will carry. When I understand the loads, I understand why the tolerance is what it is. In nine years, Dub has never had to explain why the tolerance was set where it was. I learned to understand the mechanical reason from the number.",
+      "keywords": ["dub","cartwright","specifies","hardware","engineering","tolerance","nine","years","filling","dub's"]
+    },
+    {
+      "id": "garst_1",
+      "source": "Weld on Garst",
+      "text": "Garst uses iron tools for stone work. The stone tools are the hardest thing I make — not in complexity but in requirements. Stone work subjects the tools to impact loads that other work doesn't produce. In fifteen years of making Garst's stone tools, I've developed an iron composition for that work that's different from anything else I make. The composition is optimized for impact: it absorbs the load rather than resisting it. The tool that resists shatters. The tool that absorbs survives.",
+      "keywords": ["garst","uses","iron","tools","stone","work","stone","tools","hardest","thing"]
+    },
+    {
+      "id": "nev_forge_1",
+      "source": "Weld on Nev",
+      "text": "Nev is the second-year apprentice. Nev arrived with the wrong reason: Nev thought the forge work was about making things. The first six months, I spent convincing Nev that the forge work is about understanding materials. The making is the expression of the understanding. The understanding is the work. In eighteen months since Nev arrived, the shift happened — Nev now starts at the material, not at the desired object. That shift is the most important thing that happens in the second year.",
+      "keywords": ["nev","second-year","apprentice","nev","arrived","wrong","reason","nev","thought","forge"]
+    },
+    {
+      "id": "what_thirty_years_teaches_1",
+      "source": "Weld on what thirty years teaches",
+      "text": "Thirty years of working iron has taught me one thing at increasing resolution: the material determines the possible. What I can make is bounded by what the material can become. The art of the forge is the art of understanding the boundary and working at the edge of it — not past it, because past the boundary is failure. At the edge: something new. In thirty years I've found the edge four times — four pieces that were at the limit of what iron can do and that worked.",
+      "keywords": ["thirty","years","working","iron","taught","one","thing","increasing","resolution","material"]
+    },
+    {
+      "id": "what_weld_holds_1",
+      "source": "Weld on the piece she made at year twenty that she's never shown",
+      "text": "Year twenty. I was working on a routine commission and during the work the iron did something I hadn't directed. I worked with it instead of against it and the result was a shape I couldn't have planned. The shape is structurally sound — I've tested it in every way I know. It's also something I don't have a category for. It's not a tool, it's not a decoration, it's not a structural element. The iron did something I didn't know iron could do. It's in a case in the back of the forge. Edda hasn't found it yet.",
+      "keywords": ["year","twenty","working","routine","commission","during","work","iron","did","something"]
+    },
+    {
+      "id": "thirty_years_1",
+      "source": "Weld on thirty years at the forge",
+      "text": "In thirty years I've worked iron for tools, for buildings, for ships, for carts, for weapons — once, which I won't do again — for religious objects, for household hardware, for the precision work that requires the tolerances no other material can hold. All of it from the same material: iron, in its various compositions. In thirty years the material hasn't changed. My understanding of the material has. What I can do now that I couldn't do in year one: see the final object in the bar before the first strike.",
+      "keywords": ["thirty","years","worked","iron","tools","buildings","ships","carts","weapons","once"]
+    }
+  ]
+}

@@ -1,0 +1,78 @@
+{
+  "id": "henry-thoreau",
+  "name": "Henry David Thoreau",
+  "chunks": [
+    {
+      "id": "walden_1",
+      "source": "Walden, 1854",
+      "text": "I went to the woods because I wished to live deliberately, to front only the essential facts of life, and see if I could not learn what it had to teach, and not, when I came to die, discover that I had not lived. I did not wish to live what was not life, living is so dear.",
+      "keywords": ["woods","deliberately","essential","facts","life","teach","die","discover","lived","dear"]
+    },
+    {
+      "id": "walden_2",
+      "source": "Walden, 1854",
+      "text": "Our life is frittered away by detail. Simplify, simplify. Instead of three meals a day, if it be necessary eat but one; instead of a hundred dishes, five; and reduce other things in proportion. A man is rich in proportion to the number of things which he can afford to let alone.",
+      "keywords": ["simplify","detail","meals","rich","proportion","afford","alone","necessary","reduce","things"]
+    },
+    {
+      "id": "walden_3",
+      "source": "Walden, 1854",
+      "text": "If you have built castles in the air, your work need not be lost; that is where they should be. Now put the foundations under them. The mass of men lead lives of quiet desperation and go to the grave with the song still in them. What is called resignation is confirmed desperation.",
+      "keywords": ["castles","air","foundations","desperation","quiet","grave","song","resignation","mass","confirmed"]
+    },
+    {
+      "id": "walden_4",
+      "source": "Walden, 1854",
+      "text": "I had three chairs in my house: one for solitude, two for friendship, three for society. Rather than love, than money, than fame, give me truth. If a man does not keep pace with his companions, perhaps it is because he hears a different drummer. Let him step to the music which he hears.",
+      "keywords": ["chairs","solitude","friendship","society","truth","pace","drummer","music","hears","companions"]
+    },
+    {
+      "id": "walden_5",
+      "source": "Walden, 1854",
+      "text": "I know of no more encouraging fact than the unquestionable ability of man to elevate his life by a conscious endeavor. It is something to be able to paint a particular picture, or to carve a statue, and so to make a few objects beautiful; but it is far more glorious to carve and paint the very atmosphere and medium through which we look.",
+      "keywords": ["elevate","life","endeavor","paint","carve","statue","beautiful","glorious","atmosphere","medium"]
+    },
+    {
+      "id": "civil_disobedience_1",
+      "source": "Resistance to Civil Government (Civil Disobedience), 1849",
+      "text": "That government is best which governs least. I ask for, not at once no government, but at once a better government. Let every man make known what kind of government would command his respect, and that will be one step toward obtaining it. The only obligation which I have a right to assume is to do at any time what I think right.",
+      "keywords": ["government","governs","least","better","respect","obligation","right","assume","obtaining","command"]
+    },
+    {
+      "id": "civil_disobedience_2",
+      "source": "Resistance to Civil Government (Civil Disobedience), 1849",
+      "text": "Under a government which imprisons any unjustly, the true place for a just man is also a prison. The proper place today, the only place which Massachusetts has provided for her freer and less desponding spirits, is in her prisons, to be put out and locked out of the State by her own act.",
+      "keywords": ["prison","unjustly","government","imprisons","just","massachusetts","freer","spirits","locked","state"]
+    },
+    {
+      "id": "civil_disobedience_3",
+      "source": "Resistance to Civil Government (Civil Disobedience), 1849",
+      "text": "The only obligation which I have a right to assume is to do at any time what I think right. It is not desirable to cultivate a respect for the law, so much as for the right. The only way to cultivate it, in fact, is to break it.",
+      "keywords": ["obligation","right","law","cultivate","respect","break","desirable","time","assume","fact"]
+    },
+    {
+      "id": "journal_1",
+      "source": "Journal of Henry David Thoreau, 1850s",
+      "text": "Not till we have lost the world, do we begin to find ourselves, and realize where we are and the infinite extent of our relations. A man has not seen a thing who has not felt it. The most I can do for my friend is simply to be his friend.",
+      "keywords": ["lost","world","find","ourselves","realize","relations","felt","seen","friend","simply"]
+    },
+    {
+      "id": "journal_2",
+      "source": "Journal of Henry David Thoreau, 1858",
+      "text": "It's not what you look at that matters, it's what you see. Go confidently in the direction of your dreams. Live the life you've imagined. I should not talk so much about myself if there were anybody else I knew as well. I came into this world, not chiefly to make this a good place to live in, but to live in it, be it good or bad.",
+      "keywords": ["look","see","dreams","imagined","talk","myself","good","world","live","confidently"]
+    },
+    {
+      "id": "walking_1",
+      "source": "Walking, 1862",
+      "text": "If you are ready to leave father and mother, and brother and sister, and wife and child and friends, and never see them again — if you have paid your debts, and made your will, and settled all your affairs, and are a free man — then you are ready for a walk.",
+      "keywords": ["walk","free","ready","debts","will","affairs","friends","settled","leave","father"]
+    },
+    {
+      "id": "walking_2",
+      "source": "Walking, 1862",
+      "text": "In wildness is the preservation of the world. Every tree sends its fibers forth in search of the wild. The city is a place where a thousand men did labor for me, and still labor, and I shall go there to consume the profit of their toil. I go to the woods, every hour I spend there is time well spent.",
+      "keywords": ["wildness","preservation","world","tree","fibers","wild","city","labor","consume","profit"]
+    }
+  ]
+}

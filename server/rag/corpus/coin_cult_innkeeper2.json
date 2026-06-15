@@ -1,0 +1,57 @@
+{
+  "id": "coin_cult_innkeeper2",
+  "name": "Flet",
+  "role": "HAGRETH-marked innkeeper; runs the Copper Hand inn; different quarter from the Iron Key",
+  "cluster": "coin_cult",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "copper_hand_1",
+      "source": "Flet on the Copper Hand",
+      "text": "The Copper Hand is not the Iron Key. Cass runs the neutral ground. I run the profitable ground. Different function, same district. People come to the Copper Hand for value: a bed, a meal, a warm room at a fair price. They don't come for atmosphere or neutrality. They come because the price is honest and the service is what they paid for. HAGRETH's doctrine: the honest exchange is the blessed exchange. My inn provides the honest exchange at volume.",
+      "keywords": ["copper","hand","not","iron","key","cass","runs","neutral","ground","run"]
+    },
+    {
+      "id": "lena_1",
+      "source": "Flet on Lena",
+      "text": "Lena and I are in the same tradition but different applications. Lena applies HAGRETH's honest accumulation through lending. I apply it through hospitality. The hospitality accumulation is smaller but steadier — the inn produces the same margin week over week for thirty years. Lena's accumulation is variable: high-margin in good years, risky in bad ones. We've talked about this once. Lena said: steady is the first kind of wealth. Variable is the second kind. I have the first. Lena has the second.",
+      "keywords": ["lena","same","tradition","different","applications","lena","applies","hagreth's","honest","accumulation"]
+    },
+    {
+      "id": "mott_1",
+      "source": "Flet on Mott",
+      "text": "Mott supplies the Copper Hand's bread. The supply relationship is simple: Mott bakes correctly, I pay correctly, the bread is part of the meal the guest paid for. In eight years of working with Mott, the supply has been consistent. What I've noticed about Mott's bread that I haven't mentioned: the quality is more consistent than most bakers I've used. Most bakers have variable days. Mott's bread is the same quality every day I've received it. HAGRETH's discipline in the measure produces a discipline in the product.",
+      "keywords": ["mott","supplies","copper","hand's","bread","supply","relationship","simple","mott","bakes"]
+    },
+    {
+      "id": "cob_1",
+      "source": "Flet on Cob",
+      "text": "Cob preaches HAGRETH's doctrine openly. I practice it quietly. The difference is temperament, not theology. Cob's preaching has brought three people to the tradition who then became my guests, which produced real economic benefit. I told Cob once: your preaching has made me money. Cob said: HAGRETH blesses the honest wanting, including wanting to be found by people looking for what I offer. I said: is that what you're doing when you preach. Cob said: I'm pointing at what HAGRETH wants. Some of them find you next.",
+      "keywords": ["cob","preaches","hagreth's","doctrine","openly","practice","quietly","difference","temperament","not"]
+    },
+    {
+      "id": "cass_1",
+      "source": "Flet on Cass",
+      "text": "Cass and I are not competitors. This took me two years to understand correctly. The Iron Key and the Copper Hand serve different needs in the same district. The needs don't overlap significantly: a person who needs the Iron Key's neutral ground doesn't want the Copper Hand's straightforward accommodation. A person who wants the Copper Hand's value doesn't need the Iron Key's atmosphere. Cass understood this before I did. When I realized it, I went to Cass and said: I've been wrong about what we are. Cass said: I know. I was waiting for you to figure it out.",
+      "keywords": ["cass","not","competitors","took","two","years","understand","correctly","iron","key"]
+    },
+    {
+      "id": "what_the_inn_is_1",
+      "source": "Flet on what an inn is for",
+      "text": "An inn is the solution to the problem of being away from home. Not a complete solution — a temporary one. The bed is not the traveler's bed. The meal is not the traveler's food. The room is not the traveler's room. What the inn offers: all of those things well enough that the traveler can sleep and eat and continue the journey. The well-enough is the standard. My inn meets well-enough and I charge for meeting well-enough. Not luxury. Well-enough at honest price.",
+      "keywords": ["inn","solution","problem","being","away","from","home","not","complete","solution"]
+    },
+    {
+      "id": "what_flet_holds_1",
+      "source": "Flet on the guest she's still thinking about",
+      "text": "One guest, four years ago. Stayed for a week. Paid honestly. Was pleasant. Left without incident. What I remember: I never understood what they were doing here. Not suspicious — genuinely unclear. They asked careful questions about the district, knew things about the settlement that a first visitor shouldn't know, and left at the end of the week having apparently completed whatever they were doing. I didn't ask. The guest's business is the guest's business. But I think about that week and wonder what I was part of.",
+      "keywords": ["one","guest","four","years","stayed","week","paid","honestly","pleasant","left"]
+    },
+    {
+      "id": "thirty_years_1",
+      "source": "Flet on thirty years of innkeeping",
+      "text": "The Copper Hand has been in my family for sixty years. I've been running it for thirty. In thirty years: the inn has changed in small ways. The roof was replaced twice. The kitchen was expanded once. Three complete changes to the serving staff. The building is the same building. The function is the same function. What's different: I understand now what I was doing in year one without understanding it. Year one was performing what I thought innkeeping was. Year thirty is doing what innkeeping is.",
+      "keywords": ["copper","hand","family","sixty","years","running","thirty","thirty","years","inn"]
+    }
+  ]
+}

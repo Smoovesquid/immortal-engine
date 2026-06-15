@@ -1,0 +1,57 @@
+{
+  "id": "thornwall_saddler",
+  "name": "Bett the Saddler",
+  "role": "Settlement saddler; makes and repairs the tack and leather goods that the settlement's animals require; distinct from Bett the neighbor",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "saddler_1",
+      "source": "Bett the Saddler on saddlery",
+      "text": "In twenty-three years of saddlery in the settlement, what the saddler makes: the leather tack and equipment that the settlement's working animals require to do what they do. In twenty-three years, the horse that pulls the merchant's wagon, the pack animal that carries the trader's goods on the wild road — the tack I make is the equipment that makes the animal useful for work. In twenty-three years, the tack that fails at the critical moment is the tack that causes the accident. In twenty-three years, no tack I've made has failed at the critical moment.",
+      "keywords": ["twenty-three","years","saddlery","settlement","what","saddler","makes","leather","tack","equipment"]
+    },
+    {
+      "id": "wist_1",
+      "source": "Bett the Saddler on Wist",
+      "text": "Wist trades livestock on the wild road and the tack that Wist's animals arrive with is often the tack I repair or replace. In ten years of the Bett the Saddler-Wist saddler-livestock trader relationship, what Wist's livestock trading produces for the saddler: the consistent repair and replacement work for the tack on animals that have traveled the wild road. In ten years, the tack that has seen the wild road's conditions requires different attention from the tack used in the settlement. In ten years, the wild road tack is the most worn tack I see regularly.",
+      "keywords": ["wist","trades","livestock","wild","road","tack","wist's","animals","arrive","often"]
+    },
+    {
+      "id": "gorr_1",
+      "source": "Bett the Saddler on Gorr",
+      "text": "Gorr traps the territory and carries gear that I've made in four specific cases and repaired in seven. In eleven years of knowing Gorr as a customer, what the trapper's equipment requirements are: the specific leather goods that survive the territory's conditions — the water, the cold, the abrasion. In eleven years, the four pieces I made for Gorr and the seven I've repaired: the made pieces have lasted longer than Gorr estimated in two cases. In eleven years, the pieces that last longer than estimated are the saddler's best advertisement.",
+      "keywords": ["gorr","traps","territory","carries","gear","made","four","specific","cases","repaired"]
+    },
+    {
+      "id": "keld_1",
+      "source": "Bett the Saddler on Keld",
+      "text": "Keld at the forge guild makes the metal fittings that my leather tack is assembled with. In seventeen years of the Bett the Saddler-Keld saddler-smith relationship, what the leather-metal collaboration is in the tack: the two materials work together in the equipment that must hold under load. In seventeen years, the fitting that Keld makes must mate with the leather I've worked in exactly the way the equipment's use requires. In seventeen years, twelve pieces where Keld's fitting and my leather have been designed together rather than separately and assembled. All twelve: the integration is visible in the equipment's performance.",
+      "keywords": ["keld","forge","guild","makes","metal","fittings","leather","tack","assembled","seventeen"]
+    },
+    {
+      "id": "dresk_1",
+      "source": "Bett the Saddler on Dresk",
+      "text": "Dresk saws the timber that the saddler's frame work uses. In eight years of using Dresk's timber for the structural elements of the tack frame, what the timber quality means for the saddler: the frame that holds the leather's load without warping or splitting. In eight years, Dresk's timber has been consistently the right density and grain direction for the frame applications I use it in. In eight years, no timber failure in a completed piece. In eight years, the collaboration works because Dresk understands what the timber will be used for.",
+      "keywords": ["dresk","saws","timber","saddler's","frame","work","uses","eight","years","using"]
+    },
+    {
+      "id": "what_bett_saddler_holds_1",
+      "source": "Bett the Saddler on what twenty-three years of saddlery holds",
+      "text": "In twenty-three years, what the saddlery has given me: the knowledge of how leather behaves under load over time, in different conditions, for different uses. In twenty-three years, the leather that is selected correctly, worked correctly, assembled correctly, and maintained correctly lasts longer than the animal it's fitted to in most cases. In twenty-three years, the saddler's work that outlasts the immediate purpose is the work that defines what good saddlery is. In twenty-three years, I have pieces in use that I made eighteen years ago. They're showing their age. They're still working.",
+      "keywords": ["twenty-three","years","what","saddlery","given","knowledge","how","leather","behaves","under"]
+    },
+    {
+      "id": "the_one_piece_1",
+      "source": "Bett the Saddler on the one piece that came back",
+      "text": "In twenty-three years, the one piece I made that failed in a way I hadn't anticipated: year eleven, a harness for a specific heavy load application that I'd assembled with a fitting configuration I hadn't used before. The piece failed at a specific junction under a specific load condition. No injury resulted but the failure was the failure. In twelve years since, the configuration I changed after year eleven has not failed. In twelve years, the changed configuration has been in approximately forty pieces. In twelve years, the one failure built the forty that didn't fail.",
+      "keywords": ["twenty-three","years","one","piece","made","failed","way","hadn't","anticipated","year"]
+    },
+    {
+      "id": "twenty_three_years_1",
+      "source": "Bett the Saddler on twenty-three years of settlement saddlery",
+      "text": "In twenty-three years, the settlement's working animals have been equipped with tack I've made and repaired. In twenty-three years, the merchant wagons, the pack trains on the wild road, the working animals in the settlement's ordinary life — the tack in their work has passed through my hands. In twenty-three years, the saddler's work is the invisible layer between the animal and the work the animal does. In twenty-three years, when the invisible layer is well made, the work gets done. In twenty-three years, the work has gotten done.",
+      "keywords": ["twenty-three","years","settlement's","working","animals","been","equipped","tack","made","repaired"]
+    }
+  ]
+}

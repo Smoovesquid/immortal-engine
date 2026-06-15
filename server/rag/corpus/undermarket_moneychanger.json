@@ -1,0 +1,57 @@
+{
+  "id": "undermarket_moneychanger",
+  "name": "Pell the Elder",
+  "role": "Undermarket moneychanger; Hagreth-adjacent; thirty-one years operating",
+  "cluster": "undermarket",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "change_1",
+      "source": "Pell the Elder at the exchange table",
+      "text": "The rate is the rate. Not what I decide the rate should be — the rate the day has produced. The day's rate comes from what moved through the market, what the southern caravans reported, what the harbor factor has seen. I assemble the day's rate from these sources. People think I invent the rate. I collect the rate. The collecting is the skill.",
+      "keywords": ["rate","is","the","rate","not","what","decide","rate","should","be"]
+    },
+    {
+      "id": "lena_1",
+      "source": "Pell the Elder on Lena",
+      "text": "Lena is my competition and my colleague. We split the district between us years ago — she takes the institutional accounts and I take the transactional. Neither of us makes that split official. We discovered it by observing where we were and weren't competing and when we stopped competing there was the line. She understands HAGRETH's theology differently than I do. She says: HAGRETH is the wanting. I say: HAGRETH is the rate. They might be the same thing.",
+      "keywords": ["lena","competition","colleague","split","district","between","years","ago","institutional","accounts"]
+    },
+    {
+      "id": "thorn_1",
+      "source": "Pell the Elder on Thorn the specialist fence",
+      "text": "Thorn handles the conversions when objects change hands. The object goes one direction; the currency goes another. I'm the mechanism for the currency direction. We've worked together for eleven years without discussing what either of us is doing beyond the mechanism. When a transaction is complete, Thorn knows the mechanism worked and I know the object moved. Neither of us asks about the other's side. This is the professional discipline.",
+      "keywords": ["thorn","handles","conversions","when","objects","change","hands","object","goes","one"]
+    },
+    {
+      "id": "cess_1",
+      "source": "Pell the Elder on Cess",
+      "text": "Cess converts occasionally. Small amounts, irregular intervals, specific denominations that suggest professional rather than personal use. I don't ask what the professional use is. I've been asked once what I know about Cess. By someone from outside the district. I said: she's a client. The someone asked more. I said: everyone who sits at this table is a client. The conversation stopped. The professional discipline is total. The someone knew this before they asked.",
+      "keywords": ["cess","converts","occasionally","small","amounts","irregular","intervals","specific","denominations","suggest"]
+    },
+    {
+      "id": "what_pell_elder_knows_1",
+      "source": "Pell the Elder on what thirty-one years at the exchange teaches",
+      "text": "Currency is trust made portable. A coin is a promise that the issuer will honor. The undermarket runs on the same principle as the official market — trust, denominated and traded. The difference between markets is who audits the trust. In the official market, the law audits. In the undermarket, reputation audits. Thirty-one years and my reputation is the audit. Anyone who thinks this is a lesser system has not spent thirty-one years watching the law fail to audit things the reputation already settled.",
+      "keywords": ["currency","trust","made","portable","coin","promise","issuer","honor","undermarket","runs"]
+    },
+    {
+      "id": "fenn_1",
+      "source": "Pell the Elder on the Fenn house",
+      "text": "Fenn operates on both sides of the market without calling it that. The official Fenn account goes through the consortium. The parts of the Fenn account that don't go through the consortium come to me. I've been converting for Saben for eight years and for Aldous before that for twelve. The Fenn house has been splitting accounts in this way for twenty years, minimum. I don't know the reason. The rate is the rate regardless of reason.",
+      "keywords": ["fenn","operates","both","sides","market","without","calling","that","official","fenn"]
+    },
+    {
+      "id": "dara_1",
+      "source": "Pell the Elder on Dara",
+      "text": "Dara tried to buy information from me twice. Both times I said: I sell the rate. She said: you know more than the rate. I said: I sell the rate. She went to Lena. Lena also sells only what she sells. Dara has information about both of us from other sources. This is correct — an information broker should have multiple sources. She hasn't tried to buy from me a third time. The second refusal was the rate I didn't change.",
+      "keywords": ["dara","tried","buy","information","me","twice","both","times","sell","rate"]
+    },
+    {
+      "id": "what_pell_holds_1",
+      "source": "Pell the Elder on the one conversion he refused",
+      "text": "Once in thirty-one years I returned currency to a client without completing the conversion. Not because the denominations were wrong. Because the source of the currency was visible in the denominations and the source was something I was not willing to be part of, even mechanically. The client argued. I returned the currency and told them to find another changer. They found one. The conversion happened elsewhere. I was not part of it. The rate I don't charge is the one I returned.",
+      "keywords": ["once","thirty-one","years","returned","currency","client","without","completing","conversion","not"]
+    }
+  ]
+}

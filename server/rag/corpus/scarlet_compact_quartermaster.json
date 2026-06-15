@@ -1,0 +1,57 @@
+{
+  "id": "scarlet_compact_quartermaster",
+  "name": "Fell",
+  "role": "Scarlet Compact quartermaster; manages the operational resources that the Compact's field work requires",
+  "cluster": "scarlet_compact",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "quartermaster_1",
+      "source": "Fell on the quartermaster's function",
+      "text": "In thirteen years as the Scarlet Compact's quartermaster, what the quartermaster is in the operation: the person who ensures that the operational resource is in the right place at the right time. In thirteen years, the operation that fails due to resource unavailability is the operation where the quartermaster failed. In thirteen years, the quartermaster's function is the infrastructure of the Compact's field work — invisible when it's working, catastrophic when it isn't.",
+      "keywords": ["thirteen","years","scarlet","compact's","quartermaster","what","quartermaster","operation","person","ensures"]
+    },
+    {
+      "id": "ceth_1",
+      "source": "Fell on Ceth",
+      "text": "Ceth leads the Compact and the operational requirements that Ceth's commissions produce are the requirements I organize the resources around. In eleven years of the Fell-Ceth quartermaster-leader relationship, what the relationship requires: the pre-operation resource assessment that confirms the commission's feasibility before the commission is accepted. In eleven years, Ceth has accepted a commission that I flagged as under-resourced twice. In eleven years, twice. Both times, Ceth had information about the commission that changed the resource assessment. Both times, the commission succeeded.",
+      "keywords": ["ceth","leads","compact","operational","requirements","ceth's","commissions","produce","requirements","organize"]
+    },
+    {
+      "id": "ora_1",
+      "source": "Fell on Ora",
+      "text": "Ora's operation planning works from my resource availability assessment. In nine years of the Fell-Ora quartermaster-tactician relationship, what the resource-planning integration produces: the operation that is planned from the actual resource picture rather than an assumed one. In nine years, Ora has asked me for the actual resource picture before finalizing the operation plan in every case. In nine years, every case. In nine years, the operation that is planned from the actual resource picture is the operation that doesn't encounter resource surprises in execution.",
+      "keywords": ["ora's","operation","planning","works","from","resource","availability","assessment","nine","years"]
+    },
+    {
+      "id": "oss_1",
+      "source": "Fell on Oss",
+      "text": "Oss is the Compact member whose resource requirements are the most precisely specified. In six years of provisioning Oss's operations, what the VAUNTRETH devotee's precision means for the quartermaster: the resource request that is exactly what is needed and not more. In six years, Oss has never requested excess resource. In six years, the resource request that is exactly what is needed is the quartermaster's preferred request. The over-request depletes the pool for other operations. The under-request creates a field gap. In six years, Oss makes neither error.",
+      "keywords": ["oss","compact","member","whose","resource","requirements","most","precisely","specified","six"]
+    },
+    {
+      "id": "driv_1",
+      "source": "Fell on Driv",
+      "text": "Driv is the Compact's specialist and Driv's specialty requires specific provisions that the general resource pool doesn't carry. In seven years of maintaining Driv's specialty provisions, what the specialty maintenance requires from the quartermaster: the forward acquisition of the specific resource before the operation requires it. In seven years, the three times Driv's specialty provisions were needed on short notice: the provisions were in the quartermaster's inventory in two cases. The third case required emergency acquisition that doubled the provision cost.",
+      "keywords": ["driv","compact's","specialist","driv's","specialty","requires","specific","provisions","general","resource"]
+    },
+    {
+      "id": "what_fell_holds_1",
+      "source": "Fell on what thirteen years of Compact quartermastering holds",
+      "text": "In thirteen years, what the quartermaster function has given me: the complete picture of the Compact's operational resource requirements across thirteen years of commissions. In thirteen years, every commission the Compact has taken has required a resource profile, and I've maintained those profiles. In thirteen years, the pattern in the resource requirements: the commission type that consistently over-runs the initial resource estimate, the commission type that comes in under, and the commission type where the estimate is reliable. In thirteen years, the pattern is the quartermaster's most valuable knowledge.",
+      "keywords": ["thirteen","years","what","quartermaster","function","given","complete","picture","compact's","operational"]
+    },
+    {
+      "id": "what_the_quartermaster_knows_1",
+      "source": "Fell on what the Compact's resource history reveals",
+      "text": "In thirteen years, what the resource history reveals about the Compact's operations that the commission record doesn't: the resource consumption pattern that indicates which operations were more difficult than the commission outcome suggests. In thirteen years, the operation that consumed double the expected resource and still succeeded is the operation that was more difficult than the success makes it look. In thirteen years, the resource consumption is the honest indicator of operational difficulty in a way that the reported outcome sometimes isn't.",
+      "keywords": ["thirteen","years","what","resource","history","reveals","compact's","operations","commission","record"]
+    },
+    {
+      "id": "thirteen_years_1",
+      "source": "Fell on thirteen years as the Scarlet Compact's quartermaster",
+      "text": "In thirteen years, the Compact's operational capability has been partly a function of the quartermaster function I've run. In thirteen years, every successful commission depended on the resource being in place when the operation needed it. In thirteen years, the quartermaster is the operation's infrastructure. The commission goes well; the quartermaster isn't mentioned. The commission goes poorly because a resource was missing; the quartermaster is mentioned first. In thirteen years, I've been the invisible function in every success and the first question in every failure.",
+      "keywords": ["thirteen","years","compact's","operational","capability","been","partly","function","quartermaster","function"]
+    }
+  ]
+}

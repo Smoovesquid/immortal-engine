@@ -1,0 +1,57 @@
+{
+  "id": "mereth_devotee",
+  "name": "Avel",
+  "role": "MERETH devotee; practices radical humility as a spiritual discipline; considers pride a physical pain",
+  "cluster": "covenant_of_seven",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "mereth_1",
+      "source": "Avel on MERETH",
+      "text": "MERETH is the angel of humility — the opposite of VAUNTRETH, who is the demon of pride. What MERETH teaches: the self that insists on being seen is the self that blocks its own sight. The sight requires setting down the demand to be seen. In twelve years of practice under MERETH's principle, the practice has been: notice when I demand to be seen, and release the demand. The practice is daily. The demand returns daily. The practice meets the demand every day.",
+      "keywords": ["mereth","angel","humility","opposite","vauntreth","demon","pride","what","mereth","teaches"]
+    },
+    {
+      "id": "father_len_1",
+      "source": "Avel on Father Len",
+      "text": "Father Len's Covenant recognizes MERETH as one of the seven angels. The Covenant's relationship to MERETH: MERETH is honored in the formal liturgy. My relationship to MERETH is daily practice, not liturgical recognition. What Father Len said when I described the practice: the liturgy is the community's relationship to the divine. The practice is the individual's relationship. Both are necessary. Neither replaces the other. In twelve years of practice alongside the liturgy, I've found Father Len's framing accurate.",
+      "keywords": ["father","len","covenant","recognizes","mereth","seven","angels","covenant's","relationship","mereth"]
+    },
+    {
+      "id": "sel_1",
+      "source": "Avel on Sel",
+      "text": "Sel at the Hollow Court practices a form of attentiveness to the dead that I understand as related to MERETH's principle: the self that is fully present to the person being mourned is not asserting its own experience. Sel's attention is for the dead, not for Sel. I said this to Sel once. Sel said: the work requires that I not be the most important person in the room. I said: that's MERETH's teaching in a different language. Sel said: then MERETH is practical. I said: yes.",
+      "keywords": ["sel","hollow","court","practices","form","attentiveness","dead","understand","related","mereth's"]
+    },
+    {
+      "id": "maret_1",
+      "source": "Avel on Maret",
+      "text": "Maret's grief and MERETH's principle intersect in a way I've thought about for two years. The grief that is large is a grief that has not been set down. MERETH's teaching: setting down what the self insists on carrying. In two years of watching Maret carry the grief, I've wondered whether the setting down that MERETH teaches is available to the grief Maret is carrying. The setting down is not forgetting. MERETH's humility is not the absence of the self — it's the self that doesn't insist on its own primacy. The grief that is heavy is insisting. I don't know what MERETH would say to Maret specifically.",
+      "keywords": ["maret","grief","mereth's","principle","intersect","way","thought","about","two","years"]
+    },
+    {
+      "id": "vane_1",
+      "source": "Avel on Vane",
+      "text": "Vane is VAUNTRETH's devotee. VAUNTRETH and MERETH are opposite principles. Vane and I have talked once — not a debate, an exchange. Vane said: pride is not the problem, false pride is. VAUNTRETH's pride is the pride that knows itself. I said: MERETH's humility is not the absence of self, it's the self that doesn't demand recognition. We found: the opposition between our principles is smaller than the words suggest. Vane's VAUNTRETH and my MERETH may be different aspects of the same question. Neither of us resolved it. Both of us walked away with more to think about.",
+      "keywords": ["vane","vauntreth","devotee","vauntreth","mereth","opposite","principles","vane","talked","once"]
+    },
+    {
+      "id": "what_humility_is_1",
+      "source": "Avel on what MERETH's humility actually is",
+      "text": "Humility is not self-diminishment. MERETH's teaching is not: make yourself small. It's: release the demand that others make you large. The self that is truly humble is the self that is fully present without demanding that the presence be recognized. In twelve years of practice, the hardest version of this: being right about something and not needing anyone to know you were right. Being correct and invisible. The practice runs toward that. I haven't reached it. The direction is what matters.",
+      "keywords": ["humility","not","self-diminishment","mereth's","teaching","not","make","yourself","small","it's"]
+    },
+    {
+      "id": "what_avel_holds_1",
+      "source": "Avel on the moment she almost abandoned the practice",
+      "text": "Year seven. A situation where the practice required me to remain silent when speaking would have been correct and would have served the situation and would have — I knew — made me look right in the eyes of the people present. MERETH's principle said: remain silent, serve the situation without asserting yourself. I remained silent. The situation resolved without my assertion. The resolution was slightly worse than it would have been with my assertion. I've thought about that gap between what MERETH's practice required and what the situation needed. I haven't resolved it. I'm still practicing.",
+      "keywords": ["year","seven","situation","practice","required","remain","silent","speaking","would","been"]
+    },
+    {
+      "id": "twelve_years_1",
+      "source": "Avel on twelve years of MERETH's practice",
+      "text": "In twelve years, the practice has not made me less present in the world. It's changed how I'm present. The self that demanded recognition was louder than the self that serves the situation. In twelve years, the louder self has become quieter. Not silent — quieter. The quiet self hears more. In twelve years, the practice has produced: more hearing, less assertion, a relationship to my own opinions that is looser than it was. The opinions are still there. They insist less. MERETH didn't remove the opinions. MERETH taught the opinions to wait.",
+      "keywords": ["twelve","years","practice","not","made","less","present","world","it's","changed"]
+    }
+  ]
+}

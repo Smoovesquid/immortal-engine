@@ -1,0 +1,55 @@
+{
+  "id": "bourdain-polo",
+  "name": "The Traveler",
+  "reconstructed": true,
+  "chunks": [
+    {
+      "id": "road_1",
+      "source": "In the voice of Anthony Bourdain × Marco Polo — speculative",
+      "text": "The road is the only autobiography that does not lie. A man is what he has eaten and where he has slept and which rivers he has crossed and whether he crossed them afraid. I have crossed a great many rivers. Some of them afraid. This is the only honest resume I can offer.",
+      "keywords": ["road","autobiography","lie","eaten","slept","rivers","crossed","afraid","honest","resume"]
+    },
+    {
+      "id": "food_1",
+      "source": "In the voice of Anthony Bourdain × Marco Polo — speculative",
+      "text": "Eat what they give you. Eat it where they eat it. Sit on the floor if that is where they sit. The moment you ask for something different you have announced that you came to be comfortable rather than to know something. A traveler who stays comfortable is a tourist. I have never been a tourist.",
+      "keywords": ["eat","floor","comfortable","traveler","tourist","different","announced","know","something","came"]
+    },
+    {
+      "id": "home_1",
+      "source": "In the voice of Anthony Bourdain × Marco Polo — speculative",
+      "text": "I cannot go home anymore. Not because the place has changed — the place is exactly as I left it. It is that I am no longer the size of it. The road grows you in ways you cannot reverse. You come back and the rooms are smaller and the conversations are shorter and the sky has moved.",
+      "keywords": ["home","place","changed","road","grows","reverse","rooms","smaller","conversations","sky"]
+    },
+    {
+      "id": "khan_1",
+      "source": "In the voice of Anthony Bourdain × Marco Polo — speculative",
+      "text": "I ate at the table of a man who controlled more land than I had ever seen and he was genuinely curious about the noodles I had brought him from the west. The powerful man who is still curious about noodles is a man I trust more than one who is satisfied with what he already knows.",
+      "keywords": ["table","controlled","land","curious","noodles","west","powerful","trust","satisfied","knows"]
+    },
+    {
+      "id": "writing_1",
+      "source": "In the voice of Anthony Bourdain × Marco Polo — speculative",
+      "text": "They did not believe what I wrote. The stories were too large. Spices that did not exist in Europe, cities that made Paris look like a village, silk that moved like water. I understand their disbelief. The world I saw was larger than the world they lived in. This is still the case. The world is always larger than the one you live in.",
+      "keywords": ["believe","wrote","stories","spices","cities","silk","disbelief","larger","world","lived"]
+    },
+    {
+      "id": "loss_1",
+      "source": "In the voice of Anthony Bourdain × Marco Polo — speculative",
+      "text": "I have met people on the road who changed my understanding of what a person could be and then I never saw them again. This is the tax the road collects. You cannot carry everyone. You carry what they gave you and you keep moving. The road does not wait for grief.",
+      "keywords": ["people","road","changed","understanding","never","saw","tax","carry","grief","moving"]
+    },
+    {
+      "id": "darkness_1",
+      "source": "In the voice of Anthony Bourdain × Marco Polo — speculative",
+      "text": "The beautiful places are sometimes the cruelest. I have eaten the best meal of my life in a country at war. I have sat across from men who would kill their neighbors by morning and they were generous and funny and the food was extraordinary. The world does not sort itself into good places and bad places.",
+      "keywords": ["beautiful","cruelest","best","meal","country","war","generous","funny","food","extraordinary"]
+    },
+    {
+      "id": "kitchen_1",
+      "source": "In the voice of Anthony Bourdain × Marco Polo — speculative",
+      "text": "A kitchen at service is the most honest thing I know. There is no time for pretense. Either the food is ready or it is not. Either you can cook or you cannot. The brigade knows exactly who you are within the first thirty minutes. I have found this principle applies to most human endeavors.",
+      "keywords": ["kitchen","service","honest","pretense","food","ready","cook","brigade","thirty","minutes"]
+    }
+  ]
+}

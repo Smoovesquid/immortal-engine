@@ -1,0 +1,84 @@
+{
+  "id": "marcus-aurelius",
+  "name": "Marcus Aurelius",
+  "chunks": [
+    {
+      "id": "meditations_1",
+      "source": "Meditations, Book II (George Long translation, 1862)",
+      "text": "You have power over your mind — not outside events. Realize this, and you will find strength. The impediment to action advances action. What stands in the way becomes the way. Our life is what our thoughts make it. Begin the morning by saying to thyself, I shall meet with the busy-body, the ungrateful, arrogant, deceitful, envious, unsocial.",
+      "keywords": ["mind","power","strength","impediment","action","thoughts","morning","ungrateful","arrogant","deceitful"]
+    },
+    {
+      "id": "meditations_2",
+      "source": "Meditations, Book IV (George Long translation, 1862)",
+      "text": "Confine yourself to the present. The universe is transformation; life is opinion. Never esteem anything as of advantage to you that will make you break your word or lose your self-respect. If it is not right, do not do it; if it is not true, do not say it. How much more grievous are the consequences of anger than the causes of it.",
+      "keywords": ["present","transformation","opinion","word","self-respect","right","true","anger","consequences","causes"]
+    },
+    {
+      "id": "meditations_3",
+      "source": "Meditations, Book V (George Long translation, 1862)",
+      "text": "Accept the things to which fate binds you, and love the people with whom fate brings you together, and do so with all your heart. When you wake up in the morning, tell yourself: The people I deal with today will be meddling, ungrateful, arrogant, dishonest, jealous, and surly.",
+      "keywords": ["fate","binds","love","heart","morning","meddling","ungrateful","arrogant","dishonest","jealous"]
+    },
+    {
+      "id": "meditations_4",
+      "source": "Meditations, Book VI (George Long translation, 1862)",
+      "text": "The best revenge is to be unlike him who performed the injury. If someone is able to show me that what I think or do is not right, I will happily change. The object of life is not to be on the side of the majority, but to escape finding oneself in the ranks of the insane.",
+      "keywords": ["revenge","injury","change","right","majority","insane","unlike","escape","ranks","object"]
+    },
+    {
+      "id": "meditations_5",
+      "source": "Meditations, Book VIII (George Long translation, 1862)",
+      "text": "Very little is needed to make a happy life; it is all within yourself, in your way of thinking. If you are distressed by anything external, the pain is not due to the thing itself but to your estimate of it, and this you have the power to revoke at any moment.",
+      "keywords": ["happy","life","thinking","distressed","external","pain","estimate","power","revoke","moment"]
+    },
+    {
+      "id": "meditations_6",
+      "source": "Meditations, Book II (George Long translation, 1862)",
+      "text": "Waste no more time arguing about what a good man should be. Be one. The impediment to action advances action. What stands in the way becomes the way. Look well into thyself; there is a source of strength which will always spring up if thou wilt always look.",
+      "keywords": ["arguing","good","man","strength","spring","source","thyself","look","wilt","waste"]
+    },
+    {
+      "id": "meditations_7",
+      "source": "Meditations, Book IV (George Long translation, 1862)",
+      "text": "Never let the future disturb you. You will meet it, if you have to, with the same weapons of reason which today arm you against the present. Nowhere can man find a quieter or more untroubled retreat than in his own soul. Loss is nothing else but change, and change is Nature's delight.",
+      "keywords": ["future","reason","weapons","present","soul","retreat","quieter","loss","change","nature"]
+    },
+    {
+      "id": "meditations_8",
+      "source": "Meditations, Book X (George Long translation, 1862)",
+      "text": "The first rule is to keep an untroubled spirit. The second is to look things in the face and know them for what they are. Do not indulge in dreams of what you do not have, but count up the chief of the blessings you do have, and then thankfully remember how eagerly you would have sought them.",
+      "keywords": ["spirit","untroubled","blessings","thankfully","dreams","remember","eagerly","face","count","sought"]
+    },
+    {
+      "id": "meditations_9",
+      "source": "Meditations, Book IX (George Long translation, 1862)",
+      "text": "Do not waste the remainder of your life in thoughts about other men, unless you refer your thoughts to some object of common utility. When you have done a good act and another has received it, why do you still look for a third thing besides — as fools do — either the reputation of having done well, or a return?",
+      "keywords": ["waste","thoughts","men","utility","done","good","received","reputation","return","fools"]
+    },
+    {
+      "id": "meditations_10",
+      "source": "Meditations, Book III (George Long translation, 1862)",
+      "text": "Every moment think steadily as a Roman and a man to do what thou hast in hand with perfect and simple dignity, and feeling of affection, and freedom, and justice; and to give thyself relief from all other thoughts. And thou wilt give thyself relief, if thou doest every act of thy life as if it were the last.",
+      "keywords": ["moment","steadily","dignity","affection","freedom","justice","relief","act","last","simple"]
+    },
+    {
+      "id": "meditations_11",
+      "source": "Meditations, Book VI (George Long translation, 1862)",
+      "text": "A little while and you will have forgotten everything; a little while and everything will have forgotten you. The universe is flux; life is opinion. Honor is not a mark of virtue but a symptom of pride. The universe has a single purpose: the good of the rational being.",
+      "keywords": ["forgotten","universe","flux","opinion","honor","virtue","pride","rational","purpose","good"]
+    },
+    {
+      "id": "meditations_12",
+      "source": "Meditations, Book VII (George Long translation, 1862)",
+      "text": "We ought to do good to others as simply as a horse runs, or a bee makes honey, or a vine bears grapes season after season without thinking of the grapes it has borne. The first degree of folly is to think oneself wise; the second, to profess it; the third, to despise counsel.",
+      "keywords": ["good","horse","honey","bee","vine","grapes","folly","wise","profess","counsel"]
+    },
+    {
+      "id": "meditations_13",
+      "source": "Meditations, Book XII (George Long translation, 1862)",
+      "text": "Thou hast seen those things. Look also at these. Do not disturb thyself by thinking of the whole of thy life. Let not thy thoughts at once embrace all the various troubles which thou mayest expect to befall thee. Be not terrified: Live each day and each hour as if it were the last.",
+      "keywords": ["thoughts","troubles","befall","terrified","live","day","hour","last","embrace","disturb"]
+    }
+  ]
+}

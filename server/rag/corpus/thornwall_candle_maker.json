@@ -1,0 +1,57 @@
+{
+  "id": "thornwall_candle_maker",
+  "name": "Odde",
+  "role": "Candle maker; supplies the settlement's light after dark; the mundane magic of fire extended",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "candle_maker_1",
+      "source": "Odde on candle making",
+      "text": "In twenty-two years of making candles, what the candle is: the controlled extension of light past the hour the sun provides. In twenty-two years, the settlement after dark runs on candles — in the households, in the inns, in the workspaces of the trades that don't stop when the light does. In twenty-two years, the candle is the technology so basic that it's invisible until it isn't there. In twenty-two years, I've thought about nothing else and I find I don't mind.",
+      "keywords": ["twenty-two","years","making","candles","what","candle","controlled","extension","light","past"]
+    },
+    {
+      "id": "vorn_1",
+      "source": "Odde on Vorn",
+      "text": "Vorn keeps the lighthouse burning and I supply some of the lamp oil that the lighthouse consumes. In nine years of the candle maker-lighthouse keeper supply relationship, what the lighthouse's consumption tells me: the lighthouse burns through more fuel in three winter months than in the nine remaining months combined. In nine years, the supply schedule I've developed for the lighthouse anticipates the winter surge before it arrives. In nine years, the lighthouse has not run short of fuel. In nine years, that's the supply relationship's success criterion.",
+      "keywords": ["vorn","keeps","lighthouse","burning","supply","some","lamp","oil","lighthouse","consumes"]
+    },
+    {
+      "id": "ceth_singer_1",
+      "source": "Odde on Ceth the Singer",
+      "text": "The Covenant's choir uses candles throughout the service. In fifteen years of supplying the Covenant's candle needs, what the choir service requires: the specific candle type that produces the specific light quality that the Covenant's service aesthetics require. In fifteen years, the Covenant's candle specification has evolved once — in year nine, the Covenant shifted to a longer-burning candle type for the extended services. In fifteen years, I developed the extended-burn specification in response. The specification is now the Covenant's standard.",
+      "keywords": ["covenant's","choir","uses","candles","throughout","service","fifteen","years","supplying","covenant's"]
+    },
+    {
+      "id": "noll_1",
+      "source": "Odde on Noll",
+      "text": "Noll's inn is my largest single household account. In twelve years of the Odde-Noll candle supply relationship, what an inn's candle consumption looks like: the common room burns continuously from dusk to the last customer. The guest rooms burn variably. The kitchen burns from before dawn to after dark. In twelve years, Noll's monthly order is the most predictable large order I fill — the inn's candle consumption is driven by the inn's occupancy, which Noll can estimate two weeks in advance with reasonable accuracy.",
+      "keywords": ["noll's","inn","largest","single","household","account","twelve","years","odde-noll","candle"]
+    },
+    {
+      "id": "gonn_1",
+      "source": "Odde on Gonn",
+      "text": "Gonn the beggar asked me once, seven years ago, for a candle. In seven years, I've left a candle at Gonn's corner every month. Gonn has never asked again. In seven years, I've never asked why Gonn needs the candle. The monthly candle at Gonn's corner: I don't know what it's for. I know it's requested in the sense that the first request established the need. In seven years, the need has apparently persisted because the candles I leave are gone when I return to leave the next one.",
+      "keywords": ["gonn","beggar","asked","once","seven","years","ago","candle","seven","years"]
+    },
+    {
+      "id": "what_odde_holds_1",
+      "source": "Odde on what twenty-two years of candle making holds",
+      "text": "In twenty-two years, what the candle maker's knowledge is: the precise relationship between the wick, the wax, the burn environment, and the light produced. The candle that burns correctly is the candle that was made with the right relationship between those four elements. The candle that gutters, or consumes too fast, or produces excessive smoke: one of the four relationships is off. In twenty-two years, I can read a burning candle's problems in the first thirty seconds of the burn.",
+      "keywords": ["twenty-two","years","what","candle","maker's","knowledge","precise","relationship","between","wick"]
+    },
+    {
+      "id": "what_the_light_is_1",
+      "source": "Odde on what the candle actually is",
+      "text": "In twenty-two years, I have a specific perspective on the candle that I don't share with most customers: the candle is time. The burn time of the candle is the time of the activity the candle lights. The two-hour candle is the two-hour reading session. The four-hour candle is the evening of the extended family gathering. The long-burn candle for the Covenant's service is the service's duration made material. In twenty-two years, what I make is time in solid form. In twenty-two years, the time view is the only way I understand the work anymore.",
+      "keywords": ["twenty-two","years","specific","perspective","candle","don't","share","most","customers","candle"]
+    },
+    {
+      "id": "twenty_two_years_1",
+      "source": "Odde on twenty-two years of candle making",
+      "text": "In twenty-two years, I've produced approximately three hundred thousand candles. Three hundred thousand units of extended light for the settlement's after-dark life. In twenty-two years, the settlement has lived its post-sunset hours partly by the light I've made. In twenty-two years, what the settlement has done by candlelight: read, talked, eaten, worked, celebrated, mourned, kept vigil. In twenty-two years, all of it, some of it by light I made. In twenty-two years, the candle maker is the person who made some portion of the settlement's private life possible.",
+      "keywords": ["twenty-two","years","produced","approximately","three","hundred","thousand","candles","three","hundred"]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "id": "orphan_roads_runner",
+  "name": "Pip",
+  "role": "Message runner from the Orphan Roads network; the youngest and fastest member of Rook's crew",
+  "cluster": "orphan_roads",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "runner_1",
+      "source": "Pip on what a runner does",
+      "text": "I carry things from one place to another without being seen doing it. Not invisible — I'm not invisible. But the people who see me see a child running, not a message being delivered. The message is the thing that can't be seen. I'm the carrying shape that makes the message invisible by being visible in a way that attracts no attention. In three years of running, I've been stopped twice. Both times I had nothing that could be found. Both times I'd already delivered what I was carrying.",
+      "keywords": ["carry","things","one","place","another","without","being","seen","doing","not"]
+    },
+    {
+      "id": "rook_1",
+      "source": "Pip on Rook",
+      "text": "Rook taught me the running. Not the physical running — I could already do that. The mental running: where to look, where not to look, how to move in the market so that what the eye catches is the movement and not the object of the movement. Rook said: you're not hiding. You're distracting. The distraction is the movement itself. In three years of running under Rook's direction, I've understood this better each time. The most invisible delivery is the most visible runner.",
+      "keywords": ["rook","taught","running","not","physical","running","could","already","do","that"]
+    },
+    {
+      "id": "mira_1",
+      "source": "Pip on Mira",
+      "text": "Mira handles the network's information. I handle the network's physical deliveries. Mira knows what's in the message. I don't know and don't want to know. In three years, I've carried messages from Mira four times. All four times, Mira gave me the package without context. I said: where does this go. Mira said: here is the where. I said: what is this. Mira said: not yours to know. That arrangement is correct. If I'm stopped and I don't know what I'm carrying, I can't tell what I don't know.",
+      "keywords": ["mira","handles","network's","information","handle","network's","physical","deliveries","mira","knows"]
+    },
+    {
+      "id": "wick_1",
+      "source": "Pip on Wick",
+      "text": "Wick is the network's secondary fence — the receiving end when things come in rather than going out. I've worked with Wick on four jobs where the running was incoming rather than outgoing: picking up and delivering to Wick rather than delivering to an external address. Wick is quieter than Rook. Rook explains. Wick shows. In three years, I've learned more from watching Wick work than from anything Wick said directly.",
+      "keywords": ["wick","network's","secondary","fence","receiving","end","when","things","come","rather"]
+    },
+    {
+      "id": "sev_1",
+      "source": "Pip on Sev",
+      "text": "Sev is the runner I replaced. Sev aged out — not too old, but visible in a different way now that Sev is taller. The things that made Sev invisible as a runner stopped working when Sev grew. I know this because Rook told me: Sev did this work for four years and the work changed when the body changed. What I know: I have some years before the same thing happens to me. What Rook knows that I don't: exactly when the body changes enough to change the visibility.",
+      "keywords": ["sev","runner","replaced","sev","aged","out","not","too","old","but"]
+    },
+    {
+      "id": "kevin_1",
+      "source": "Pip on Kevin Bacon",
+      "text": "Kevin Bacon's Players performed in Thornwall two months ago. Rook gave me the afternoon off to attend. I asked why. Rook said: because you should know what performance looks like from the audience before you understand what you're doing from the inside. The performance was the best thing I've seen. What Kevin does on stage: makes the audience look at what Kevin is showing them while Kevin is doing something else. Rook said afterward: you understand the running better now. I did.",
+      "keywords": ["kevin","bacon","players","performed","thornwall","two","months","ago","rook","gave"]
+    },
+    {
+      "id": "what_pip_holds_1",
+      "source": "Pip on what she's never told Rook",
+      "text": "Year two. A delivery where I was stopped by someone I recognized — not the watch, not anyone official. Someone who knew where I was going. The person didn't touch the package. The person said: tell Rook I know. I delivered the package to the address. I told Rook what the person said. Rook said: good. What I didn't tell Rook: the person also said something about Rook that I don't know how to interpret. I've been holding it for a year. I don't know what to do with it. I think it changes something I don't fully understand yet.",
+      "keywords": ["year","two","delivery","stopped","someone","recognized","not","watch","not","anyone"]
+    },
+    {
+      "id": "three_years_1",
+      "source": "Pip on three years of running",
+      "text": "In three years I've delivered one hundred and eight packages. One hundred and eight times something moved from one place to another through me without anyone who shouldn't know knowing. The network's value is the one hundred and eight successful deliveries. My value to the network is that all one hundred and eight succeeded. What happens when one doesn't succeed: Rook hasn't told me what the outcome of a failed delivery would be. I think the answer is that a failed delivery means I'm done. I haven't been done. I plan to stay done.",
+      "keywords": ["three","years","delivered","one","hundred","eight","packages","one","hundred","eight"]
+    }
+  ]
+}

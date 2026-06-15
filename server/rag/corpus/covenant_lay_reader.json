@@ -1,0 +1,57 @@
+{
+  "id": "covenant_lay_reader",
+  "name": "Weth the Reader",
+  "role": "Covenant lay reader; reads the founding texts at the covenant's services; distinct from Weth the midwife",
+  "cluster": "covenant_of_seven",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "reader_1",
+      "source": "Weth the Reader on the lay reader's function",
+      "text": "In twenty-two years as the Covenant's lay reader, what the lay reader is in the Covenant's services: the voice that gives the founding texts to the community gathered. In twenty-two years, the texts that the Covenant's faith is built from are texts that must be heard, not only read. In twenty-two years, the reading is not the interpretation — Father Len provides the interpretation. The reading is the delivery of the texts in their own voice, without the reader's addition. In twenty-two years, the reader who adds is the reader who has made the text about themselves.",
+      "keywords": ["twenty-two","years","covenant's","lay","reader","what","lay","reader","covenant's","services"]
+    },
+    {
+      "id": "father_len_1",
+      "source": "Weth the Reader on Father Len",
+      "text": "Father Len leads the services in which I read and the lay reader's relationship with the Covenant's leader is the relationship of voice to interpretation. In nineteen years of the Weth the Reader-Father Len lay reader-leader relationship, what the relationship requires: the reading that prepares the congregation for Father Len's interpretation without prefiguring the interpretation through the reading's delivery. In nineteen years, Father Len has asked me twice to modify how I read a specific passage. In nineteen years, twice. Both modifications produced readings that I subsequently preferred to my original approach.",
+      "keywords": ["father","len","leads","services","read","lay","reader's","relationship","covenant's","leader"]
+    },
+    {
+      "id": "binn_1",
+      "source": "Weth the Reader on Binn",
+      "text": "Binn has been the Covenant's treasurer for sixteen years and sits in the service where I read. In fourteen years of knowing Binn through the service, what the treasurer's presence in the lay reader's awareness is: the specific face in the congregation that I can read as an indicator of whether the reading is serving the service. In fourteen years, Binn's expression during the reading has been the lay reader's informal feedback mechanism. In fourteen years, when Binn's attention is complete, the reading is serving the service. When Binn's attention is elsewhere, the reading needs something the reading doesn't currently have.",
+      "keywords": ["binn","been","covenant's","treasurer","sixteen","years","sits","service","read","fourteen"]
+    },
+    {
+      "id": "rass_1",
+      "source": "Weth the Reader on Rass",
+      "text": "Rass is the Covenant's elder and the person who taught me the lay reader's function. In twenty-two years of the Weth the Reader-Rass lay reader-elder relationship, what Rass's teaching has given the reader: the specific discipline of the voice that serves the text rather than the reader. In twenty-two years, Rass's teaching reduced to one instruction that I've followed for twenty-two years: read the text as if you are the only thing between the text and the congregation and the text is the more important part of that sentence.",
+      "keywords": ["rass","covenant's","elder","person","taught","lay","reader's","function","twenty-two","years"]
+    },
+    {
+      "id": "ceth_singer_1",
+      "source": "Weth the Reader on Ceth the Singer",
+      "text": "Ceth the Singer's choir prepares the congregation for the reading and the reading prepares the congregation for the interpretation. In seventeen years of the Weth the Reader-Ceth the Singer lay reader-choir director relationship, what the choir-reading sequence produces in the service: the emotional preparation that Ceth's choir provides and the textual grounding that the reading follows it with. In seventeen years, the service that has the choir's preparation before the reading is the service where the reading's reception by the congregation is different — more settled, more ready to receive the text.",
+      "keywords": ["ceth","singer's","choir","prepares","congregation","reading","reading","prepares","congregation","interpretation"]
+    },
+    {
+      "id": "what_weth_reader_holds_1",
+      "source": "Weth the Reader on what twenty-two years of lay reading holds",
+      "text": "In twenty-two years, I've read the Covenant's founding texts in approximately eleven hundred services. Eleven hundred readings of the texts that the Covenant's community has gathered to hear. In twenty-two years, what the eleven hundred readings have produced in the reader: the intimate knowledge of the texts that only the person who has read them aloud eleven hundred times has. In twenty-two years, the texts are not external to me. In twenty-two years, the texts are present in the same way that anything practiced eleven hundred times becomes present — not memorized, but incorporated.",
+      "keywords": ["twenty-two","years","read","covenant's","founding","texts","approximately","eleven","hundred","services"]
+    },
+    {
+      "id": "what_reading_aloud_does_1",
+      "source": "Weth the Reader on what reading aloud produces",
+      "text": "In twenty-two years, what reading aloud does to a text that reading silently doesn't: it produces the text in time. The silent reading encounters the text at the reader's pace. The spoken reading produces the text at the pace the text itself requires, and that pace is the pace that the congregation experiences the text. In twenty-two years, the distinction between the text encountered at the reader's pace and the text encountered at the text's pace is the distinction the lay reader's function is built on. In twenty-two years, I read at the text's pace.",
+      "keywords": ["twenty-two","years","what","reading","aloud","does","text","reading","silently","doesn't"]
+    },
+    {
+      "id": "twenty_two_years_1",
+      "source": "Weth the Reader on twenty-two years as the Covenant's lay reader",
+      "text": "In twenty-two years, the Covenant's founding texts and my voice have been in relationship across eleven hundred services. In twenty-two years, the texts haven't changed. The voice has. In twenty-two years, the reader who began at twenty-two is different from the reader at forty-four in the specific ways that twenty-two years of practice produces — the technical development, the deeper understanding of what the text requires, the departure from the self-consciousness of the beginning. In twenty-two years, the text hasn't needed to change. The reader needed to grow into the text.",
+      "keywords": ["twenty-two","years","covenant's","founding","texts","voice","been","relationship","eleven","hundred"]
+    }
+  ]
+}

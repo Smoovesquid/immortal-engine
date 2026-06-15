@@ -1,0 +1,66 @@
+{
+  "id": "voltaire",
+  "name": "Voltaire",
+  "chunks": [
+    {
+      "id": "candide_1",
+      "source": "Candide, 1759 (translated by John Butt, 1947 — content is public domain)",
+      "text": "Il faut cultiver notre jardin — We must cultivate our garden. That is the whole of it. Not fight for it, not pray for it, not philosophize over it. Cultivate it. Work is the only thing that keeps us from three great evils: boredom, vice, and poverty.",
+      "keywords": ["garden","cultivate","work","boredom","vice","poverty","evils","pray","philosophize","three"]
+    },
+    {
+      "id": "candide_2",
+      "source": "Candide, 1759",
+      "text": "This is the best of all possible worlds. Said Pangloss. Everything is as it must be. One must suffer, for it is the best of all possible worlds. Notice how he said this while watching men hang and children burn and women weep. The optimist requires a great deal of suffering to maintain his faith in the goodness of things.",
+      "keywords": ["best","possible","worlds","pangloss","suffer","hang","burn","weep","optimist","suffering"]
+    },
+    {
+      "id": "candide_3",
+      "source": "Candide, 1759",
+      "text": "If God did not exist, it would be necessary to invent him. Every man is guilty of all the good he did not do. I have never made but one prayer to God, a very short one: O Lord, make my enemies ridiculous. And God granted it.",
+      "keywords": ["god","exist","invent","guilty","good","prayer","enemies","ridiculous","granted","necessary"]
+    },
+    {
+      "id": "philosophical_dict_1",
+      "source": "Philosophical Dictionary, 1764",
+      "text": "God is not on the side of the big battalions, but on the side of those who shoot best. Those who can make you believe absurdities can make you commit atrocities. Common sense is not so common. The best government is a benevolent tyranny tempered by an occasional assassination.",
+      "keywords": ["battalions","shoot","absurdities","atrocities","common","sense","government","tyranny","benevolent","assassination"]
+    },
+    {
+      "id": "philosophical_dict_2",
+      "source": "Philosophical Dictionary, 1764",
+      "text": "What is tolerance? It is the consequence of humanity. We are all formed of frailty and error; let us pardon reciprocally each other's folly — that is the first law of nature. To succeed in the world it is not enough to be stupid; you must also be well-mannered. Doubt is not a pleasant condition, but certainty is an absurd one.",
+      "keywords": ["tolerance","humanity","frailty","error","pardon","folly","doubt","certainty","absurd","nature"]
+    },
+    {
+      "id": "philosophical_dict_3",
+      "source": "Philosophical Dictionary, 1764",
+      "text": "Think for yourselves and let others enjoy the privilege to do so too. I disagree with what you say, but I will defend to the death your right to say it. Prejudices are what fools use for reason. Appreciation is a wonderful thing: it makes what is excellent in others belong to us as well.",
+      "keywords": ["think","disagree","defend","right","prejudices","fools","reason","appreciation","excellent","privilege"]
+    },
+    {
+      "id": "letter_d_alembert_1",
+      "source": "Letter to d'Alembert, December 1757",
+      "text": "I am not like a lady at the French court who said: What a dreadful pity that the bother of the tower of Babel should have got language all mixed up; but for that, everyone would always have spoken French. I find that wherever I travel I understand nobody and nobody understands me.",
+      "keywords": ["french","language","babel","tower","travel","understand","nobody","court","dreadful","mixed"]
+    },
+    {
+      "id": "letter_voltaire_1",
+      "source": "Various correspondence, 1740-1770",
+      "text": "The art of medicine consists in amusing the patient while nature cures the disease. History is only the pattern of silken slippers descending the stairs to the thunder of hobnailed boots coming up. It is dangerous to be right in matters on which the established authorities are wrong.",
+      "keywords": ["medicine","patient","nature","disease","history","stairs","boots","dangerous","right","authorities"]
+    },
+    {
+      "id": "zadig_1",
+      "source": "Zadig, 1747",
+      "text": "To laugh is to live profoundly. A witty saying proves nothing. Tears are the silent language of grief. The longer we dwell on our misfortunes, the greater is their power to harm us. Life is thickly sown with thorns, and I know no other remedy than to pass quickly through them.",
+      "keywords": ["laugh","live","witty","tears","grief","misfortunes","thorns","remedy","pass","quickly"]
+    },
+    {
+      "id": "ingenu_1",
+      "source": "L'Ingénu, 1767",
+      "text": "Every man is the creature of the age in which he lives; very few are able to raise themselves above the ideas of their time. The secret of being boring is to say everything. Love truth but pardon error. The true character of liberty is independence, maintained by force.",
+      "keywords": ["creature","age","ideas","time","boring","truth","pardon","error","liberty","independence"]
+    }
+  ]
+}

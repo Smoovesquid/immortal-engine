@@ -1,0 +1,57 @@
+{
+  "id": "morvane_apprentice",
+  "name": "Sal",
+  "role": "Chandlery apprentice; Morvane's shop; harbor district",
+  "cluster": "harbor_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "candle_1",
+      "source": "Sal on what chandlery is",
+      "text": "Wax has memory. Cold it wants to be solid. Melted it wants to move. The chandler's work is to use the wanting-to-move state to create a shape that then holds when the wax returns to wanting-to-be-solid. The wick matters: a wick too thin produces a pool that drowns the flame. Too thick and the flame is too large and the wax is consumed faster than it should be. Morvane has been teaching me to feel the right wick through my fingers. I can feel it about six times out of ten.",
+      "keywords": ["wax","has","memory","cold","wants","be","solid","melted","wants","move"]
+    },
+    {
+      "id": "morvane_1",
+      "source": "Sal on Morvane",
+      "text": "Morvane was a pirate. She told me in the second month when I asked why she knew how to manage a dock line better than anyone in the chandlery district. She said: the chandlery was after the sailing, and the sailing was after the pirating. I said: should I ask about the pirating. She said: if you're useful to the shop you can ask anything you like. I'm useful now. I still haven't asked about the pirating. The answer would be interesting. The not-knowing is also interesting.",
+      "keywords": ["morvane","was","pirate","told","second","month","asked","why","she","knew"]
+    },
+    {
+      "id": "toom_1",
+      "source": "Sal on the dock crew",
+      "text": "Toom from the dock crew comes in every second week for supplies. Morvane has his order ready before he says it. I've been watching how this happens — she tracks the pattern and presets the order. I asked: how did you know when to start tracking the pattern. She said: when he came in the same order for the third time. I said: what if he changes. She said: then I update. The preset is a hypothesis. The client confirms or corrects.",
+      "keywords": ["toom","dock","crew","comes","second","week","supplies","morvane","order","ready"]
+    },
+    {
+      "id": "nessa_1",
+      "source": "Sal on the Anchor & Argument",
+      "text": "Nessa buys the table candles. Bulk, monthly. The table candles are a specific design that Morvane worked out with Nessa years before I arrived — draft-resistant, long burn, wide enough to anchor to the table without a holder. I've made this batch four times. The fourth time Nessa looked at the candles and said: same as Morvane's. I said: I hope so. She said: you should know, not hope. I took the candles back and remade three of them. She was right about those three.",
+      "keywords": ["nessa","buys","table","candles","bulk","monthly","table","candles","specific","design"]
+    },
+    {
+      "id": "learning_1",
+      "source": "Sal on what they've learned in eight months",
+      "text": "The first three months I was learning the materials. The next three months I was learning the sequence. The last two months I've been learning when to deviate from the sequence because the materials on that day require it. Morvane says: the sequence is the default. The day's materials are the real instruction. I understand the sentence. I don't always feel it yet. Six out of ten is feeling it. Nine out of ten is understanding it. Morvane says ten out of ten is for after I've done it ten thousand times.",
+      "keywords": ["first","three","months","learning","materials","next","three","months","learning","sequence"]
+    },
+    {
+      "id": "hetch_1",
+      "source": "Sal on Hetch",
+      "text": "Hetch comes in for ship candles. The ship candle is a different design from the table candle — it's housed, enclosed, designed to maintain in wind. Hetch knows what he needs with a specificity I don't have about most things. He said once: you don't understand ship candles yet. I said: I understand the design. He said: you understand the design on land. Ship candles need to be understood in motion. He's right. Morvane says Hetch's complaint is the same complaint she heard when she first started making them.",
+      "keywords": ["hetch","comes","ship","candles","ship","candle","different","design","table","candle"]
+    },
+    {
+      "id": "what_sal_holds_1",
+      "source": "Sal on the batch that wasn't right",
+      "text": "Second month. A batch of storm candles I made by myself while Morvane was at the harbor on a purchase. They looked right. They tested right in the shop. Morvane came back, looked at them without touching them, and said: these won't hold in the cold. I asked how she knew. She said: the color is wrong at the base. I couldn't see what she was seeing. She melted them down. I remade them with her watching. They looked identical to me. She said: now they're right. I still can't see the difference.",
+      "keywords": ["second","month","batch","storm","candles","made","by","myself","morvane","was"]
+    },
+    {
+      "id": "ota_1",
+      "source": "Sal on the fisherwoman Ota",
+      "text": "Ota came in for storm candles once and asked if she could test the burn time herself. I said yes. She lit one on the counter, watched it for five minutes, and said: this is the same as Morvane's. I said: I made it. She looked at me for a moment and said: then you learned something in the right direction. She bought the batch. Morvane asked me what Ota said. I told her. Morvane said: Ota has good eyes. I said: for candles? She said: for what's learned.",
+      "keywords": ["ota","came","storm","candles","asked","could","test","burn","time","herself"]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "id": "academy_librarian",
+  "name": "Henn",
+  "role": "Academy librarian; manages the collection that makes the Academy possible; books are the institution's memory",
+  "cluster": "academy_of_runes",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "librarian_1",
+      "source": "Henn on the Academy library",
+      "text": "In seventeen years of managing the Academy's library, what the library is: the Academy's accumulated knowledge in physical form. The teacher teaches the knowledge they hold. The library holds the knowledge beyond what any teacher holds. In seventeen years, the library is the institution's extension of knowledge past the teachers' individual capacity. In seventeen years, what I manage is the institution's memory.",
+      "keywords": ["seventeen","years","managing","academy's","library","what","library","academy's","accumulated","knowledge"]
+    },
+    {
+      "id": "burr_1",
+      "source": "Henn on Burr",
+      "text": "Burr uses the library more than any other current Academy member. In fifteen years of the Burr-librarian research relationship, what Burr's use pattern tells me about Burr's research: the depth and the specificity. Burr doesn't browse — Burr arrives with a specific query and locates the specific source the query requires. In fifteen years, I've watched the specificity of Burr's queries increase as the research has narrowed. In fifteen years, the narrowing query is the sign of a researcher closing in on something specific.",
+      "keywords": ["burr","uses","library","more","than","any","other","current","academy","member"]
+    },
+    {
+      "id": "prill_1",
+      "source": "Henn on Prill",
+      "text": "Prill manages the archive adjacent to the library. In twelve years of the librarian-archivist relationship with Prill, the functional division: the library holds what the Academy uses currently and has used recently. The archive holds what the Academy has produced and collected historically. The researcher who needs both — the current use and the historical record — needs both of us. In twelve years, the referral between the two functions is the daily coordination of the research support function.",
+      "keywords": ["prill","manages","archive","adjacent","library","twelve","years","librarian-archivist","relationship","prill"]
+    },
+    {
+      "id": "selle_1",
+      "source": "Henn on Selle",
+      "text": "Selle the researcher has been in the library almost as long as I have. In ten years of Selle's research use of the library, what Selle's eleven-year research question has required from the library: the sustained use of the same small subset of the collection, read and re-read as the research question has evolved. In ten years, the books Selle has used most frequently are the books I hold most easily accessible because Selle's needs have become a predictable library function.",
+      "keywords": ["selle","researcher","been","library","almost","long","have","ten","years","selle's"]
+    },
+    {
+      "id": "mora_1",
+      "source": "Henn on Mora",
+      "text": "Mora the ethics teacher uses the library for the materials that the ethics curriculum requires. In twelve years of supporting Mora's teaching library needs, what Mora uses that most teachers don't: the historical cases. Mora's ethics teaching uses historical examples of what happened when specific ethical frameworks were applied in specific situations. In twelve years, the library's historical case collection is the library resource Mora has added to most — in twelve years, Mora has donated fourteen acquisitions to the library, all of them historical case records that strengthen the ethics curriculum.",
+      "keywords": ["mora","ethics","teacher","uses","library","materials","ethics","curriculum","requires","twelve"]
+    },
+    {
+      "id": "what_seventeen_years_holds_1",
+      "source": "Henn on what seventeen years of library management holds",
+      "text": "In seventeen years, the library has grown from three thousand volumes to seven thousand and four hundred. Four thousand four hundred volumes added in seventeen years — an average of approximately two hundred and sixty per year. In seventeen years, the growth has been driven by acquisition, donation, and the Academy's research output becoming part of the collection. In seventeen years, what the growth has required of the management: the organization system that makes seven thousand four hundred volumes as accessible as three thousand were when I started.",
+      "keywords": ["seventeen","years","library","grown","three","thousand","volumes","seven","thousand","four"]
+    },
+    {
+      "id": "what_henn_holds_1",
+      "source": "Henn on the volume she's never cataloged",
+      "text": "In seventeen years, one volume in the collection that I've chosen not to catalog. Not because it shouldn't be in the collection — it should. Not because the cataloging would be difficult — it wouldn't. Because the volume's content, when fully legible, would answer a specific question that is currently open in ways that would prematurely close research that is better served by remaining open. In seventeen years, the uncataloged volume is in my custody and will be cataloged when the research it would short-circuit has run its course. In seventeen years, this is the one decision I haven't explained to Burr.",
+      "keywords": ["seventeen","years","one","volume","collection","chosen","not","catalog","not","because"]
+    },
+    {
+      "id": "seventeen_years_1",
+      "source": "Henn on seventeen years of managing the Academy's library",
+      "text": "In seventeen years, the library has been used approximately sixty thousand times for research, instruction, and reference. Sixty thousand uses of the collection's knowledge for the Academy's purposes. In seventeen years, what the sixty thousand uses have produced: the intellectual output of the Academy of Runes, partially. In seventeen years, the library is the substrate that makes the intellectual output possible. In seventeen years, the substrate is invisible when the intellectual output is visible. That's the correct relationship. The library isn't the point. The knowledge the library enables is the point.",
+      "keywords": ["seventeen","years","library","been","used","approximately","sixty","thousand","times","research"]
+    }
+  ]
+}

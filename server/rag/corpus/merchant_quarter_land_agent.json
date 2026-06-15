@@ -1,0 +1,57 @@
+{
+  "id": "merchant_quarter_land_agent",
+  "name": "Orin",
+  "role": "Property and land agent; manages the settlement's real property transactions; who owns what changes through this desk",
+  "cluster": "merchant_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "land_agent_1",
+      "source": "Orin on property transactions",
+      "text": "In sixteen years of managing property transactions in the district, what the land agent does: the transfer of the property right — not the property itself, which stays where it is. The property that changes hands in my transactions doesn't move. The ownership rights move. In sixteen years, what I manage is the formal documentation of the ownership movement and the verification that the ownership being transferred is the ownership that exists to be transferred.",
+      "keywords": ["sixteen","years","managing","property","transactions","district","what","land","agent","does"]
+    },
+    {
+      "id": "saben_1",
+      "source": "Orin on Saben",
+      "text": "Saben is the district's most active property holder and the counterparty in the most significant property transactions I've managed. In twelve years of the Saben-Orin property relationship, what Saben's property activity looks like from the land agent's position: the systematic acquisition of specific property types at specific locations, held for specific periods, transacted at specific points in the property cycle. In twelve years, Saben's property strategy is the most sophisticated I've encountered in the district.",
+      "keywords": ["saben","district's","most","active","property","holder","counterparty","most","significant","property"]
+    },
+    {
+      "id": "liss_notary_1",
+      "source": "Orin on Liss the Notary",
+      "text": "Liss notarizes the property transactions I structure. In fourteen years of the Orin-Liss working relationship, what the land agent-notary relationship requires: the transaction structure that Liss's notarization can formalize and the documentation that Liss's notarization makes binding. In fourteen years, the land agent structures the deal, the notary makes the deal enforceable. In fourteen years, the two functions are complementary: I design the transaction, Liss makes the transaction permanent.",
+      "keywords": ["liss","notarizes","property","transactions","structure","fourteen","years","orin-liss","working","relationship"]
+    },
+    {
+      "id": "britta_1",
+      "source": "Orin on Britta",
+      "text": "Britta's house Aldenmere holds property in the district through my agency. In ten years of managing the Aldenmere property holdings, what the merchant household's property strategy looks like: the commercial property adjacent to the trading operations, the residential property that provides the household's stability, and the investment property that generates income when the trading income is variable. In ten years, the three-category strategy has been the most conservative consistent property approach in my client base. In ten years, conservative and consistent has outperformed speculative and variable.",
+      "keywords": ["britta's","house","aldenmere","holds","property","district","through","agency","ten","years"]
+    },
+    {
+      "id": "comus_1",
+      "source": "Orin on Comus",
+      "text": "Comus transacts in property with a sophistication that sometimes exceeds my immediate understanding of the transaction's purpose. In nine years of serving as Comus's land agent, what I've understood retrospectively that I didn't understand in the moment: Comus's property acquisitions have consistently preceded commercial developments in the acquired locations by twelve to eighteen months. In nine years, retrospective understanding of Comus's transactions has produced the most educational property strategy analysis of my career. In nine years, I understand Comus's strategy better than I did when I was executing it.",
+      "keywords": ["comus","transacts","property","sophistication","sometimes","exceeds","immediate","understanding","transaction's","purpose"]
+    },
+    {
+      "id": "what_orin_holds_1",
+      "source": "Orin on what sixteen years of property transactions holds",
+      "text": "In sixteen years, what the property transaction record shows about the district's economic trajectory: the direction of wealth concentration is visible in the property record before it's visible in the commercial record. The property acquired at a specific location is the bet that the location's commercial value will increase. In sixteen years, the property record is the most accurate predictor of the district's commercial future that I have access to. In sixteen years, I have access to the most accurate predictor and I can't publish it.",
+      "keywords": ["sixteen","years","what","property","transaction","record","shows","about","district's","economic"]
+    },
+    {
+      "id": "what_orin_wont_do_1",
+      "source": "Orin on what she declines",
+      "text": "In sixteen years, the transactions I've declined to manage: three. Of three: one was a transaction where the property being transferred was encumbered in a way the seller hadn't disclosed and I identified in due diligence. One was a transaction where the buyer's representation of their own authority to purchase was not verified by the documentation they provided. One was a transaction where the property's history included a claim I couldn't clear that would have made the title unmarketable. In sixteen years, three declines in sixteen years of transactions. The three declines protected buyers from transactions that would have harmed them.",
+      "keywords": ["sixteen","years","transactions","declined","manage","three","three","one","transaction","where"]
+    },
+    {
+      "id": "sixteen_years_1",
+      "source": "Orin on sixteen years as the district's land agent",
+      "text": "In sixteen years, I've managed approximately nine hundred property transactions. Nine hundred transfers of property rights in the district. In sixteen years, nine hundred transactions that have changed who owns what in the district's property landscape. In sixteen years, the property landscape the district has now is partly the product of nine hundred transactions I managed. In sixteen years, the landscape I've shaped through my management is the landscape I walk through every day. In sixteen years, the changes are visible to me in a way they aren't to anyone who doesn't hold the sixteen-year transaction record.",
+      "keywords": ["sixteen","years","managed","approximately","nine","hundred","property","transactions","nine","hundred"]
+    }
+  ]
+}

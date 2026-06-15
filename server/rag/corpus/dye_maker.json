@@ -1,0 +1,57 @@
+{
+  "id": "dye_maker",
+  "name": "Renn",
+  "role": "Dye maker; cloth district; makes what gives cloth its color",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "dye_1",
+      "source": "Renn on what a dye is",
+      "text": "A dye is a color that stays when it should and moves when it should. Stay: in the cloth, through washing and light and time. Move: from the plant or mineral into the mordant and from the mordant into the cloth. The staying and moving are the same chemistry done in order. I've been making dyes for sixteen years. The color that appears in the finished cloth is the product of everything going right in order. One thing wrong and the color is wrong.",
+      "keywords": ["dye","color","stays","when","should","moves","when","should","stay","cloth"]
+    },
+    {
+      "id": "beld_1",
+      "source": "Renn on Beld",
+      "text": "Beld buys my dyes for the cloth he sells. The cloth arrives undyed and Beld commissions colors based on what his customers want. In twelve years we've worked out a color vocabulary: when Beld says a specific color name, I know exactly what he means and what I need to produce. The vocabulary started informal and has become precise. When a new customer asks for a color Beld can't name in our vocabulary, Beld brings me the object that is the color they want. I match the object.",
+      "keywords": ["beld","buys","dyes","cloth","sells","cloth","arrives","undyed","beld","commissions"]
+    },
+    {
+      "id": "syne_1",
+      "source": "Renn on Syne",
+      "text": "Half my plant-based dyes come from Syne's collection. The other half I gather myself or source from the farther trade. Syne's material is the best quality for what she brings — the indigo plants from the low valley, the weld for yellows, the madder I can't grow here. What Syne doesn't bring: the mineral sources, the oak gall, the iron-based mordant sources. Different territory for different sources. We split the territory between us without discussion.",
+      "keywords": ["half","plant-based","dyes","come","syne's","collection","other","half","gather","myself"]
+    },
+    {
+      "id": "smold_1",
+      "source": "Renn on Smold",
+      "text": "Smold's charcoal for the mordant process is the consistent element in everything I make. The mordant bath needs a specific temperature to fix the dye to the cloth. Below that temperature and the dye washes out later. Above it and the color shifts. Smold's charcoal produces the temperature I need with predictable precision. In twelve years I've used two other charcoal sources when Smold was behind. Both times the color wasn't right. I waited for Smold and redid the batches.",
+      "keywords": ["smold","charcoal","mordant","process","consistent","element","everything","make","mordant","bath"]
+    },
+    {
+      "id": "edna_1",
+      "source": "Renn on Edna",
+      "text": "Edna uses my dyes for the thread in her specific projects. Not the main cloth — the thread accents, the edge work, the detail that makes a garment have a specific signature. In twelve years she's asked me twice for colors outside my standard range. Both times I spent three weeks producing the new color correctly. Both times she waited without complaint. The three weeks is not slow — three weeks for a new color is fast if the color is going to be right. She said: three weeks for the right color is not the same as three weeks for the wrong color.",
+      "keywords": ["edna","uses","dyes","thread","specific","projects","not","main","cloth","thread"]
+    },
+    {
+      "id": "what_color_is_1",
+      "source": "Renn on what color is",
+      "text": "Color is what light does when it bounces off a surface. The dye changes what the surface does. The mordant fixes the change. The cloth takes the changed surface and wears it. All of this is chemistry I didn't understand for the first six years of making dyes. I made the dyes correctly based on learned procedure. Understanding the chemistry changed how I make the dyes: I understand now when the procedure is serving the chemistry and when the procedure is a habit the chemistry doesn't require. The habits I've eliminated. The procedures that serve the chemistry, I've kept.",
+      "keywords": ["color","what","light","does","when","bounces","off","surface","dye","changes"]
+    },
+    {
+      "id": "what_renn_holds_1",
+      "source": "Renn on the color she's been trying to make for five years",
+      "text": "A specific blue. Not a blue I've seen in cloth — a blue I've seen once in a sky at a specific hour in a specific season. I've been trying to produce it for five years. I've produced close to it six times. Three times I knew it wasn't right immediately. Three times I thought it might be right and then the cloth dried and it wasn't. The chemistry that would produce it is a specific mordant combination I haven't solved. I'm still working on it.",
+      "keywords": ["specific","blue","not","blue","seen","cloth","blue","seen","once","sky"]
+    },
+    {
+      "id": "sixteen_years_1",
+      "source": "Renn on what sixteen years of color teaches",
+      "text": "Color is not fixed. The same dye in the same cloth on different days is not the same color. The water changes the mordant. The temperature changes the uptake. The humidity changes the drying. The light at the time of inspection changes the appearance. What I make is a set of conditions that produce a color reliably enough. Not exactly — reliably enough. Sixteen years and I'm still finding the conditions that expand reliably enough. The boundary keeps moving. The boundary moving is why I'm still interested.",
+      "keywords": ["color","not","fixed","same","dye","same","cloth","different","days","not"]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "id": "tarryn_wanderer",
+  "name": "Senn",
+  "role": "Wandering devotee of TARRYN (Patience); no fixed settlement",
+  "cluster": "temple_seven_virtues",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "tarryn_1",
+      "source": "Senn when asked which angel they served",
+      "text": "TARRYN. The Angel of Patience, which people tend to think means the angel of waiting. It doesn't. TARRYN is the angel of remaining fully present during time that isn't producing what you want yet. Waiting implies passive. TARRYN implies active — you're not waiting, you're being somewhere for as long as it takes. There's an enormous difference. Waiting wants time to pass. TARRYN teaches you to not want it to. The result looks like waiting from outside. From inside it's something completely different.",
+      "keywords": ["tarryn","angel","patience","waiting","passive","active","present","time","producing","difference"]
+    },
+    {
+      "id": "wandering_1",
+      "source": "Senn when asked why they wander instead of settling",
+      "text": "Settlement is its own patience and I don't have the discipline for it yet. The wandering is the form of patience I'm practicing — you're somewhere and then you move on, and the practice is being fully in the somewhere while you're there and fully in the moving-on when you're moving. Not looking forward from the somewhere. Not looking back from the road. Here is here. There is there. I've been doing this for seven years. Some sometheres are easier than others.",
+      "keywords": ["settlement","patience","discipline","wandering","form","practicing","fully","somewhere","moving","road"]
+    },
+    {
+      "id": "vel_1",
+      "source": "Senn on Archon Vel and the Temple",
+      "text": "I stopped at the Temple once. Vel received me correctly and correctly identified that I wasn't a Covenant candidate. He gave me the guest blessing, which was the right gift for someone passing through. He said: TARRYN's people always look like they're leaving already. I said: that's because TARRYN teaches you to leave at the right time, not at your preference. He said: that's the same as what I said. I thought about whether it was. It might be.",
+      "keywords": ["vel","temple","correctly","covenant","candidate","blessing","guest","passing","tarryn","leaving"]
+    },
+    {
+      "id": "father_len_1",
+      "source": "Senn on the circuit priest Father Len",
+      "text": "I walked three days of Father Len's circuit with him last autumn. We're the same kind of person — we move between places and the moving is the practice. His circuit is fixed: the same villages, the same order, the same six weeks. My circuit is not fixed. He thinks the fixed circuit is how you build deep patience. I think the unfixed route is how you build flexible patience. We agreed that both probably produce patience and that arguing about the method was probably not patience.",
+      "keywords": ["father","len","circuit","walked","three","days","autumn","moving","practice","villages"]
+    },
+    {
+      "id": "calla_1",
+      "source": "Senn after a night spent near the hedge witch Calla's territory",
+      "text": "Calla and I have a professional courtesy from a previous circuit two years ago. She gave me something for a wound that was getting worse in a way I didn't understand, and in exchange I gave her a piece of information I'd gathered three circuits back that was relevant to something she was working on. We didn't discuss the theology. She asked if I was an alchemist. I said no, an itinerant devotee. She said: those are closer than you think. I've been thinking about that since.",
+      "keywords": ["calla","professional","courtesy","circuit","wound","worse","exchange","information","theology","alchemist"]
+    },
+    {
+      "id": "hallowed_1",
+      "source": "Senn when asked if they'd been to the Hallowed Reaches",
+      "text": "Once, years ago, to the edge. I made it to where the map stopped and stopped there. TARRYN's practice at the edge of a map is interesting — everything you're being patient toward stops being defined. The thing you're remaining present in no longer has a name you know. I stayed at the edge for two days and then turned back. Not because I was afraid. Because the next small decision was clear: this is the edge, the edge is sufficient, the map doesn't need to extend further into something I can't bring back.",
+      "keywords": ["hallowed","reaches","once","years","edge","map","stopped","practice","present","name"]
+    },
+    {
+      "id": "gifts_1",
+      "source": "Senn on what three years of wandering has produced",
+      "text": "A specific kind of attention. The attention that comes from needing to understand a new place quickly because you're not going to be there long. I arrive somewhere and I read it in the first hour — the tone of the market, the condition of the temple, who speaks to strangers and who avoids them. By the second day I know something true about the place that a resident might not know because the resident has stopped seeing it. By the third day I'm invisible. By the seventh day I'm leaving.",
+      "keywords": ["specific","kind","attention","understand","new","place","quickly","arrive","read","first"]
+    },
+    {
+      "id": "sister_dove_1",
+      "source": "Senn after sparring with Sister Dove at the Temple yard",
+      "text": "Dove practices ERRAN. I practice TARRYN. We're adjacent angels — both ask you to keep doing the work without requiring immediate results, which means we have a shared vocabulary even though the angels are distinct. She holds a plow; I stand in the rain. We sparred for an hour and discovered we were fighting using the same principle in different expressions. She said: ERRAN and TARRYN must have known each other. I said: I think all fourteen know each other. She said: that's a thought worth sitting with.",
+      "keywords": ["dove","practices","erran","tarryn","adjacent","angels","vocabulary","distinct","plow","rain"]
+    }
+  ]
+}

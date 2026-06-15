@@ -1,0 +1,80 @@
+{
+  "_generated_from": {
+    "theme": "hold",
+    "history": {
+      "name": "Gallows Watch",
+      "origin": "the border keep they called Gallows Watch",
+      "catastrophe": "the garrison was betrayed from within and butchered to the last",
+      "echoes": [
+        "a mess-table set for a meal no one ate",
+        "arms-racks emptied in a hurry",
+        "a war-banner bearing a sigil you do not know",
+        "dark stains fanned across the muster-yard",
+        "a sentry's spear still propped at a cold post"
+      ]
+    }
+  },
+  "id": "dungeon_node_example_hold",
+  "name": "Gallows Watch",
+  "place_type": "dungeon",
+  "theme": "hold",
+  "entrance_node_id": "node_example_hold",
+  "chunks": [
+    {
+      "id": "founding_1",
+      "source": "Gallows Watch — establishment and original function",
+      "text": "The border keep they called Gallows Watch was built to hold the pass. The walls are rubble-fill between ashlar faces; the gatehouse is the heaviest construction. Inside the perimeter: a muster yard, an armoury building, a hall with a long table, a well at the yard center. A wall-walk runs complete around the perimeter. Watch-positions are set at regular intervals.",
+      "era": "founding",
+      "keywords": ["border","keep","gallows","watch","pass","walls","gatehouse","muster","yard","armoury"],
+      "latent": false
+    },
+    {
+      "id": "catastrophe_1",
+      "source": "Gallows Watch — the event",
+      "text": "The garrison was betrayed from within and butchered to the last. The keep shows no external breach: gates intact, walls unbroken, no siege damage on the outer face. Dark staining in the muster yard and hall is distributed rather than concentrated at any single entry point — inconsistent with a fight moving through from a breach. The armoury racks are empty. The armoury is unlocked; the keys are on a hook inside.",
+      "era": "event",
+      "keywords": ["garrison","betrayed","butchered","gates","walls","staining","muster","armoury","racks","keys"],
+      "latent": false
+    },
+    {
+      "id": "echo_0",
+      "source": "Physical evidence — a mess-table set for a meal",
+      "text": "A mess-table set for a meal no one ate.",
+      "era": "post-event",
+      "keywords": ["mess","table","meal","ate"],
+      "latent": true
+    },
+    {
+      "id": "echo_1",
+      "source": "Physical evidence — arms-racks emptied",
+      "text": "Arms-racks emptied in a hurry.",
+      "era": "post-event",
+      "keywords": ["arms","racks","emptied","hurry"],
+      "latent": true
+    },
+    {
+      "id": "echo_2",
+      "source": "Physical evidence — a war-banner with an unknown sigil",
+      "text": "A war-banner bearing a sigil you do not know.",
+      "era": "post-event",
+      "keywords": ["war","banner","sigil","know"],
+      "latent": true
+    },
+    {
+      "id": "echo_3",
+      "source": "Physical evidence — dark stains across the muster-yard",
+      "text": "Dark stains fanned across the muster-yard.",
+      "era": "post-event",
+      "keywords": ["dark","stains","fanned","muster","yard"],
+      "latent": true
+    },
+    {
+      "id": "echo_4",
+      "source": "Physical evidence — a sentry's spear at its post",
+      "text": "A sentry's spear still propped at a cold post.",
+      "era": "post-event",
+      "keywords": ["sentry","spear","propped","cold","post"],
+      "latent": true
+    }
+  ]
+}

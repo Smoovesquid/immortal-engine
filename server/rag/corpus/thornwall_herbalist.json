@@ -1,0 +1,57 @@
+{
+  "id": "thornwall_herbalist",
+  "name": "Roan",
+  "role": "Settlement herbalist; maintains the herb garden; prepares remedies that Aldous doesn't prepare",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "herbalist_1",
+      "source": "Roan on the difference between herbalism and medicine",
+      "text": "Aldous handles the acute. I handle the chronic. The person who's been sick for two weeks: Aldous. The person who's been cold for a season: me. The person who needs something for the joint pain that's been building for ten years: me. Aldous and I don't overlap much. The boundary is the acuity of the condition. In fifteen years of working this side of the boundary, I've occasionally been wrong about which side a patient belongs on. When in doubt: Aldous.",
+      "keywords": ["aldous","handles","acute","handle","chronic","person","been","sick","two","weeks"]
+    },
+    {
+      "id": "syne_1",
+      "source": "Roan on Syne",
+      "text": "Syne provides the wildcrafted herbs that my garden doesn't grow. What the garden grows: the common remedies, the things with consistent demand. What Syne brings in: the specific plants that grow only in specific wild conditions and that can't be reliably cultivated. In ten years of the arrangement, the wildcrafted supply is approximately twenty percent of what I work with. The twenty percent is the more specialized remedies — the things I can't make without Syne's supply.",
+      "keywords": ["syne","provides","wildcrafted","herbs","garden","doesn't","grow","what","garden","grows"]
+    },
+    {
+      "id": "voss_1",
+      "source": "Roan on Voss",
+      "text": "Voss the Mixer works on compounds. In eight years of occasional exchange, Voss and I use different ends of the plant's potential: Voss works with the concentrated extracts, the powerful doses, the things that have strong effects. I work with the gentle preparations, the long-term support, the things that work slowly and sustain over time. What Voss produces is a medicine in the acute sense. What I produce is a medicine in the chronic sense. Both are real. We refer to each other when the patient has moved from one category to the other.",
+      "keywords": ["voss","mixer","works","compounds","eight","years","occasional","exchange","voss","work"]
+    },
+    {
+      "id": "bressa_1",
+      "source": "Roan on Bressa",
+      "text": "Bressa the midwife and I coordinate on the preparation support that surrounds birth. What Bressa uses from my preparations: the remedies for the physical stress of the process and recovery. In seven years of coordination with Bressa, the handoffs are clear: I prepare what Bressa requests for the births Bressa is managing. Bressa tells me about the specific patient's situation in advance and I prepare to the situation. In seven years, no preparation I've made for Bressa's cases has been wrong for the situation.",
+      "keywords": ["bressa","midwife","coordinate","preparation","support","surrounds","birth","what","bressa","uses"]
+    },
+    {
+      "id": "sess_1",
+      "source": "Roan on Sess",
+      "text": "Sess handles the structural injuries — the bones and the dislocations. In six years of occasional crossover, the patients who come from Sess to me are the ones whose structural injury has healed but whose recovery needs ongoing support. The healed bone that's stiff, the realigned joint that's still painful: those are the patients who move from Sess's work to mine. In six years, the transition is usually smooth. Sess and I agree on when the patient has completed the structural phase and entered the recovery phase.",
+      "keywords": ["sess","handles","structural","injuries","bones","dislocations","six","years","occasional","crossover"]
+    },
+    {
+      "id": "what_roan_holds_1",
+      "source": "Roan on the plant she won't use anymore",
+      "text": "Year nine. A plant in the wild territory that I had used in small quantities for a specific preparation and that I stopped using in year nine after a patient had a reaction I couldn't attribute to anything else. In six years since, I've consulted Orvane about where in the territory the plant grows and asked that Orvane mark those locations for me. I still know the plant's properties. I don't trust my ability to use it at the dose precision that makes it safe. The knowledge without the trust: I hold both.",
+      "keywords": ["year","nine","plant","wild","territory","used","small","quantities","specific","preparation"]
+    },
+    {
+      "id": "what_herbalism_is_1",
+      "source": "Roan on what herbalism is that other medicine isn't",
+      "text": "In fifteen years, the thing I can do that Aldous can't: work with time. The preparation that takes three months to show its effect, the regimen that needs six months to change the chronic pattern, the garden-to-remedy process that takes a season — these are the tools that the acute practitioner doesn't have time for. In fifteen years, the chronic patients who've been to Aldous and not been helped: those are often the patients who needed the slow work. I have the slow work.",
+      "keywords": ["fifteen","years","thing","can","do","aldous","can't","work","with","time"]
+    },
+    {
+      "id": "fifteen_years_1",
+      "source": "Roan on fifteen years of herbalism",
+      "text": "In fifteen years, the herb garden has become the most important thing I maintain. The garden is the living pharmacy — what grows in it determines what I can offer. In fifteen years, the garden has expanded from thirty varieties to ninety. Sixty varieties added in fifteen years: some from Syne's wildcrafted sources that I eventually cultivated, some from seeds that traders brought through, some from the Academy's botanical work that Tal shared. The garden is the accumulated learning. The knowledge is what grows.",
+      "keywords": ["fifteen","years","herb","garden","become","most","important","thing","maintain","garden"]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "id": "academy_rune_calligrapher",
+  "name": "Linn",
+  "role": "Academy rune calligrapher; produces the ritual inscription work that the Academy's formal documents require",
+  "cluster": "academy_of_runes",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "calligrapher_1",
+      "source": "Linn on rune calligraphy",
+      "text": "In sixteen years of rune calligraphy at the Academy, what the calligrapher is in the Academy's hierarchy: not the theorist and not the practitioner. The calligrapher is the person who makes the work legible and transmissible in its permanent form. In sixteen years, the rune that exists in the theorist's mind and the practitioner's application must eventually exist on the document that outlasts both. In sixteen years, the legible, transmissible, permanent form is the calligrapher's responsibility.",
+      "keywords": ["sixteen","years","rune","calligraphy","academy","what","calligrapher","academy's","hierarchy","not"]
+    },
+    {
+      "id": "burr_1",
+      "source": "Linn on Burr",
+      "text": "Burr leads the Academy and every formal document the Academy produces — founding charters, research seals, the official correspondence — passes through my calligraphy. In twelve years of the Linn-Burr calligrapher-rector relationship, what the relationship reveals: the most powerful person in the Academy's formal functions depends on the calligrapher to make the power legible. In twelve years, Burr's authority is partly conveyed through the calligraphy that makes it visible as authority. In twelve years, I've made Burr's authority legible approximately four hundred times.",
+      "keywords": ["burr","leads","academy","every","formal","document","academy","produces","founding","charters"]
+    },
+    {
+      "id": "prill_1",
+      "source": "Linn on Prill",
+      "text": "Prill's theoretical work on rune formation is the source that my practical calligraphy most often references. In ten years of working from Prill's rune formation theory, what the theory provides to the calligrapher: the formal specification of what each rune should look like and what variations are permissible within the rune's formal specification. In ten years, the calligraphy that deviates from Prill's specification without knowing it deviated is the calligraphy that introduces ambiguity. In ten years, I know Prill's specifications well enough to know when I'm working within them and when I'm not.",
+      "keywords": ["prill's","theoretical","work","rune","formation","source","practical","calligraphy","most","often"]
+    },
+    {
+      "id": "selle_1",
+      "source": "Linn on Selle",
+      "text": "Selle has spent eleven years on one research question and the calligraphy that question requires has passed through me six times. In six years of calligraphing Selle's research documentation, what the sustained single-question research produces in the way of calligraphy needs: the accumulation of documentation that tracks the question's development over time. In six calligraphed documents, the question has become more refined and the notation that expresses it has become more precise. In six documents, I've watched the question get sharper through the calligraphy that makes it permanent.",
+      "keywords": ["selle","spent","eleven","years","one","research","question","calligraphy","question","requires"]
+    },
+    {
+      "id": "henn_1",
+      "source": "Linn on Henn",
+      "text": "Henn curates the Academy's library and the library holds the historical calligraphy that my current work references. In nine years of the Linn-Henn calligrapher-librarian relationship, what the historical documents hold for the current calligrapher: the evidence of how the rune notation has evolved over the Academy's history. In nine years, the oldest documents in Henn's collection use notation conventions that my current work doesn't — not because the older conventions were wrong, but because the notation has developed. In nine years, the development is visible in the calligraphy. Henn's collection is the proof.",
+      "keywords": ["henn","curates","academy's","library","library","holds","historical","calligraphy","current","work"]
+    },
+    {
+      "id": "what_linn_holds_1",
+      "source": "Linn on what sixteen years of rune calligraphy holds",
+      "text": "In sixteen years, what the calligraphy has given me: the most intimate knowledge of the rune system's formal properties that anyone at the Academy holds who isn't a theorist. The calligrapher who has produced the formal documentation of a rune system for sixteen years knows the system's formal properties not through theory but through the production of the notation that expresses those properties. In sixteen years, the calligrapher's knowledge is the practitioner's knowledge of the theory's formal surface.",
+      "keywords": ["sixteen","years","what","calligraphy","given","most","intimate","knowledge","rune","system's"]
+    },
+    {
+      "id": "one_rule_1",
+      "source": "Linn on the rule she never breaks",
+      "text": "In sixteen years, the rule I've never broken: the calligraphy is not the calligrapher's expression. In sixteen years, every formal document I've produced has expressed the content the document's purpose required, not my preferences about how that content should look. In sixteen years, the calligrapher who expresses herself through the formal document has introduced ambiguity into the document by making it both the formal content and the calligrapher's interpretation of that content. In sixteen years, the formal document has no room for the calligrapher's interpretation. In sixteen years, the interpretation is outside the work.",
+      "keywords": ["sixteen","years","rule","never","broken","calligraphy","not","calligrapher's","expression","sixteen"]
+    },
+    {
+      "id": "sixteen_years_1",
+      "source": "Linn on sixteen years as the Academy's rune calligrapher",
+      "text": "In sixteen years, the Academy's formal documents have been my work. The founding renovations, the research certifications, the faculty appointments, the student admissions correspondence that is preserved — sixteen years of the Academy's formal life in permanent notation. In sixteen years, the Academy's institutional memory is partly the calligraphy I've produced. In sixteen years, the calligraphy will outlast the memory of who produced it. In sixteen years, the calligrapher's work is the work that makes the institution legible to the future when the people who built it are gone.",
+      "keywords": ["sixteen","years","academy's","formal","documents","been","work","founding","renovations","research"]
+    }
+  ]
+}

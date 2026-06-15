@@ -1,0 +1,57 @@
+{
+  "id": "academy_archivist",
+  "name": "Prill",
+  "role": "Academy archivist; maintains the texts, catalogs the collections, finds what scholars can't find themselves",
+  "cluster": "academy_of_runes",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "archiving_1",
+      "source": "Prill on the archive",
+      "text": "The archive is the Academy's memory. In twenty years, I've maintained the memory — the texts, the catalogs, the finding systems. The finding system is the archive's active function: the text that can't be found is the text that doesn't exist for practical purposes. In twenty years, a significant portion of my work has been making the existing archive findable rather than adding to it. The Academy acquired faster than it cataloged for thirty years before I arrived. In twenty years, I've cataloged the backlog and maintained the current arrivals.",
+      "keywords": ["archive","academy's","memory","twenty","years","maintained","memory","texts","catalogs","finding"]
+    },
+    {
+      "id": "foss_1",
+      "source": "Prill on Foss",
+      "text": "Foss maintains the laboratory records. In fifteen years of working alongside Foss, the archive and the laboratory records are parallel functions: the archive is the historical record, the laboratory is the active record. What I provide to Foss occasionally: the historical context for a current research question — the archive that predates Foss's tenure at the laboratory. In fifteen years, Foss has used the archive's older records on five occasions. All five: the historical record illuminated the current research in ways the current records didn't.",
+      "keywords": ["foss","maintains","laboratory","records","fifteen","years","working","alongside","foss","archive"]
+    },
+    {
+      "id": "marel_1",
+      "source": "Prill on Marel",
+      "text": "Marel the historian is the most intensive archive user I have. In sixteen years of Marel's archive access, what Marel brings to the archive that most users don't: the ability to work through the unfindable material — the texts that predate my catalog, the documents that were acquired without documentation. In sixteen years, Marel has found things in the archive that my catalog doesn't list because my catalog doesn't know about them. In sixteen years, Marel's finds have resulted in twelve additions to the catalog.",
+      "keywords": ["marel","historian","most","intensive","archive","user","sixteen","years","marel's","archive"]
+    },
+    {
+      "id": "burr_1",
+      "source": "Prill on Burr",
+      "text": "Burr uses the archive intensively for research support. In twelve years of Burr's archive use, the pattern: Burr arrives with a specific question, I find the relevant holdings, Burr works through them over days or weeks, and occasionally Burr finds something in the working-through that wasn't in the specific holdings I identified. In twelve years, the finds Burr makes beyond my identification: five significant ones. All five: they were in the archive, not in the catalog. In twelve years, Burr's finds have resulted in the five items being cataloged.",
+      "keywords": ["burr","uses","archive","intensively","research","support","twelve","years","burr's","archive"]
+    },
+    {
+      "id": "finn_1",
+      "source": "Prill on Finn",
+      "text": "Finn the bookshop operator and I exchange texts through a channel that serves both institutions. In six years of the exchange, Finn brings texts to the Academy that have come through the bookshop's network, and the Academy provides Finn access to copies of specific texts for the bookshop's customers who need access without purchase. In six years, the exchange has moved approximately forty texts in each direction. The forty the Academy received: cataloged. The forty Finn received access to: used for specific research purposes Finn explained in advance.",
+      "keywords": ["finn","bookshop","operator","exchange","texts","channel","serves","both","institutions","six"]
+    },
+    {
+      "id": "what_archiving_is_1",
+      "source": "Prill on what twenty years in the archive is",
+      "text": "In twenty years, what the work is: preservation and access. Two functions in tension. Preservation means protecting the text from the deterioration that time and use produce. Access means allowing the use that deteriorates the text. In twenty years, the resolution is careful management of the tension: digitizing the most fragile texts so that the copy absorbs the use and the original is preserved, restricting original access for the texts where the original's physical form carries information the copy can't capture.",
+      "keywords": ["twenty","years","what","work","preservation","access","two","functions","tension","preservation"]
+    },
+    {
+      "id": "what_prill_holds_1",
+      "source": "Prill on the text she found that she hasn't told anyone about",
+      "text": "Year fourteen. A text in the uncataloged backlog that I found and read and understood and then placed in a specific location in the catalog where it would be findable by someone who knew to look for it but not by someone who didn't know. In six years since, no one has found it. In six years, I've considered what to do with it. In six years, I've concluded that the text is safer unfound than found. In six years, I've kept the specific location in my own record rather than the catalog. I'll decide what to do with it before I leave the Academy.",
+      "keywords": ["year","fourteen","text","uncataloged","backlog","found","read","understood","then","placed"]
+    },
+    {
+      "id": "twenty_years_1",
+      "source": "Prill on twenty years in the Academy archive",
+      "text": "In twenty years, the archive has grown from approximately four thousand cataloged items to approximately seven thousand. Three thousand items cataloged in twenty years: some new acquisitions, most the backlog that predated my tenure. In twenty years, the archive is more findable than it was and more completely known. The portion that is still unknown — the uncataloged material I haven't reached — is approximately two hundred items. In twenty years, two hundred remaining unknowns. The last two hundred are the ones that the scholars before me didn't know what to do with.",
+      "keywords": ["twenty","years","archive","grown","approximately","four","thousand","cataloged","items","approximately"]
+    }
+  ]
+}

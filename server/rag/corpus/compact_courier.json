@@ -1,0 +1,57 @@
+{
+  "id": "compact_courier",
+  "name": "Siv",
+  "role": "Scarlet Compact courier; carries messages that can't be written and goods that can't be shipped; fastest rider on the road",
+  "cluster": "scarlet_compact",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "courier_1",
+      "source": "Siv on courier work",
+      "text": "The courier carries what the road will allow and arrives where the message needs to arrive. In ten years, the work is speed and discretion and the ability to make decisions when the plan doesn't survive the road. The plan never fully survives the road. The courier who can only execute the plan is less useful than the courier who can adjust the plan to what the road produces. In ten years, the plan is the starting point. The arrival is the objective.",
+      "keywords": ["courier","carries","what","road","will","allow","arrives","where","message","needs"]
+    },
+    {
+      "id": "ceth_1",
+      "source": "Siv on Ceth",
+      "text": "Ceth gives me the commissions. In ten years of Ceth's assignments, the commission structure is: Ceth tells me what needs to arrive where and when, I assess the route and the risk, and we agree on the approach. What Ceth provides that most commissioning principals don't: the operational context behind the commission. Knowing why something needs to arrive and for what purpose changes which risks are acceptable on the route. In ten years, Ceth's context has made me a better decision-maker on the road.",
+      "keywords": ["ceth","gives","commissions","ten","years","ceth's","assignments","commission","structure","ceth"]
+    },
+    {
+      "id": "pav_1",
+      "source": "Siv on Pav",
+      "text": "Pav coordinates the logistics that support my routes. In eight years of Pav's coordination, the fresh horse at the midpoint, the safe house at the overnight, the alternate route when the primary route is compromised — Pav has provided these without my needing to establish them myself. In eight years, the courier's speed depends on the infrastructure, and the infrastructure is Pav's work. In eight years, I've been fast because Pav has been thorough.",
+      "keywords": ["pav","coordinates","logistics","support","routes","eight","years","pav's","coordination","fresh"]
+    },
+    {
+      "id": "fen_1",
+      "source": "Siv on Fen",
+      "text": "Fen is the analyst. I carry what Fen needs to receive and carry back what Fen needs to analyze. In six years of courier work specifically for Fen's intelligence function, what Fen has explained to me about the material I carry: enough to help me make decisions about priority if the route is compromised. Not the full content — the priority weighting. In six years, the priority weighting has changed my route decisions on four occasions. All four: the priority Fen indicated was the right priority to protect.",
+      "keywords": ["fen","analyst","carry","what","fen","needs","receive","carry","back","what"]
+    },
+    {
+      "id": "ford_1",
+      "source": "Siv on Ford",
+      "text": "Ford's bridge is the fastest eastern crossing. In seven years of using Ford's crossing on Compact routes, the relationship is simple: Ford maintains the crossing, I use it. In seven years, Ford has warned me twice about bridge conditions that would have slowed or endangered the crossing. Both times: the warning came before I arrived at the bridge, not at the bridge. Ford's early warning is the bridge's value on top of the physical crossing.",
+      "keywords": ["ford's","bridge","fastest","eastern","crossing","seven","years","using","ford's","crossing"]
+    },
+    {
+      "id": "what_courier_work_is_1",
+      "source": "Siv on what ten years on the road is",
+      "text": "In ten years, the road is the most familiar thing I know. More familiar than any building, more familiar than any person I don't see on the road. The road's conditions, its seasonal character, its specific hazards by month — in ten years, the road is what I understand. The people who commission me understand the destination. I understand the road between here and there. The road is where I live. The destinations are where I visit.",
+      "keywords": ["ten","years","road","most","familiar","thing","know","more","familiar","than"]
+    },
+    {
+      "id": "what_siv_holds_1",
+      "source": "Siv on the commission she didn't complete",
+      "text": "Year seven. A commission where the route was compromised in a way that made arrival at the destination impossible in the required timeframe. The decision: I cached the material at an established location and sent word through a secondary channel that the material was delayed but secure. The commission was completed on a secondary run three days later. In three years since: the decision was assessed by Ceth as correct. The material was the priority, not the timing. In three years, I've thought about whether I would make the same decision again. I would. I would make it faster.",
+      "keywords": ["year","seven","commission","where","route","compromised","way","made","arrival","destination"]
+    },
+    {
+      "id": "ten_years_1",
+      "source": "Siv on ten years of Compact courier work",
+      "text": "In ten years, I've completed approximately eight hundred commissions. Eight hundred routes that began with a commission and ended with an arrival. The routes range from a day's ride to three weeks in the field. The material I've carried: messages, small objects, occasionally people who needed to move with a courier for their own safety. In ten years, the completion rate is approximately ninety-seven percent. Twenty-four commissions that didn't complete as planned: four recovered to completion on secondary runs, twenty did not complete. Twenty uncompleted in ten years is the number I carry.",
+      "keywords": ["ten","years","completed","approximately","eight","hundred","commissions","eight","hundred","routes"]
+    }
+  ]
+}

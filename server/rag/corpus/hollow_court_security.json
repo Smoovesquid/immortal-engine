@@ -1,0 +1,57 @@
+{
+  "id": "hollow_court_security",
+  "name": "Tarn",
+  "role": "Hollow Court security; the person responsible for who enters and exits the Court's premises",
+  "cluster": "hollow_court",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "security_1",
+      "source": "Tarn on the Court's security function",
+      "text": "In fourteen years of the Hollow Court's security function, what the security is: the management of access to the Court's physical premises in accordance with the Court's judgment about who should have that access. In fourteen years, the security function is not the guard who prevents violence. The Court rarely faces the threat of violence. The security function is the filter for the kind of access that doesn't look like a threat and is one.",
+      "keywords": ["fourteen","years","hollow","court's","security","function","what","security","management","access"]
+    },
+    {
+      "id": "sel_1",
+      "source": "Tarn on Sel",
+      "text": "Sel determines who has authorized access to the Court and the security function implements that authorization. In twelve years of the Tarn-Sel security-leader relationship, what the authorization hierarchy requires: the complete and current knowledge of who Sel has authorized and what the authorization covers. In twelve years, three situations where the authorization was ambiguous and I had to make a judgment call before confirming with Sel. In twelve years, three. Sel's authorization has been clear enough that I've had to make independent judgment calls only three times.",
+      "keywords": ["sel","determines","who","authorized","access","court","security","function","implements","authorization"]
+    },
+    {
+      "id": "cree_1",
+      "source": "Tarn on Cree",
+      "text": "Cree moves through the Court with a pattern of movement that the security function monitors differently from the movement patterns of other Court members. In nine years of monitoring Cree's movement pattern, what the specific pattern reveals about Cree's function: the person who notices what others miss moves through the Court noticing what others miss. In nine years, Cree's movement pattern is the pattern of the person who is doing the Court's observation function. In nine years, Cree and I have had four conversations. All four were brief. All four were specific. All four were about something Cree had observed that I hadn't.",
+      "keywords": ["cree","moves","through","court","pattern","movement","security","function","monitors","differently"]
+    },
+    {
+      "id": "maret_envoy_1",
+      "source": "Tarn on Maret the Envoy",
+      "text": "Maret the Envoy moves between the Court and the outside in a pattern that the security function must track in both directions. In seven years of tracking Maret the Envoy's ingress and egress pattern, what the envoy's movement produces for the security function: the access management challenge of a Court member who is regularly outside the Court's premises on the Court's business. In seven years, Maret the Envoy's external presence is the security function's ongoing verification question: is this the Court's envoy returning from the Court's business, or the same movement pattern on different business?",
+      "keywords": ["maret","envoy","moves","between","court","outside","pattern","security","function","must"]
+    },
+    {
+      "id": "eld_historian_1",
+      "source": "Tarn on Eld the Historian",
+      "text": "Eld the Historian's access to external research sources is the access management case that has required the most nuanced security function response. In ten years of managing Eld's external access, what the historian's research access requires: the distinction between the legitimate research contact and the contact whose interest in the historian's work is different from what they represent it to be. In ten years, four external contacts with Eld that prompted a security review. In ten years, four reviews, zero threats confirmed. In ten years, the four reviews are the function working correctly.",
+      "keywords": ["eld","historian's","access","external","research","sources","access","management","case","required"]
+    },
+    {
+      "id": "what_tarn_holds_1",
+      "source": "Tarn on what fourteen years of Court security holds",
+      "text": "In fourteen years, what the security function has given me: the ability to read the person who is at the Court's door in the time it takes to acknowledge them. In fourteen years, the legitimate visitor, the person with legitimate business who has not arranged their visit properly, and the person whose purpose differs from their stated purpose: in fourteen years, the three categories are distinguishable by pattern. In fourteen years, the pattern recognition is the security function's primary competence.",
+      "keywords": ["fourteen","years","what","security","function","given","ability","read","person","who"]
+    },
+    {
+      "id": "the_one_time_1",
+      "source": "Tarn on the one time the security function failed",
+      "text": "In fourteen years, the one time the security function failed to prevent access that should have been prevented: year seven. A visitor whose stated purpose was legitimate and whose actual purpose was the acquisition of information about the Court's internal function. In seven years since, what year seven produced: the additional verification step that the legitimate-purpose visitor now goes through before access to the Court's interior is granted. In seven years, the additional step has added four minutes to the access process for every legitimate visitor. In seven years, four minutes per visitor for every legitimate visitor since year seven. Year seven's visitor was expensive.",
+      "keywords": ["fourteen","years","one","time","security","function","failed","prevent","access","should"]
+    },
+    {
+      "id": "fourteen_years_1",
+      "source": "Tarn on fourteen years of Hollow Court security",
+      "text": "In fourteen years, the Court's security function has been the most invisible function in the Court's operation when it's working correctly. In fourteen years, the Court's members don't think about access when the security function is working. They think about the work the Court exists to do. In fourteen years, the security function that is present and functioning is the security function that the Court's work can proceed without considering. In fourteen years, I've made the security function something the Court doesn't think about. In fourteen years, not thinking about it is the measure of the function.",
+      "keywords": ["fourteen","years","court's","security","function","been","most","invisible","function","court's"]
+    }
+  ]
+}

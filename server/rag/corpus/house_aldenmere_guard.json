@@ -1,0 +1,57 @@
+{
+  "id": "house_aldenmere_guard",
+  "name": "Torr",
+  "role": "Aldenmere house guard; head of the household's small security staff; been with the house eleven years",
+  "cluster": "house_aldenmere",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "house_guard_1",
+      "source": "Torr on guarding the Aldenmere house",
+      "text": "Guarding a merchant house is different from guarding a person. The person moves; the house is stationary. In eleven years of guarding the Aldenmere house, the job is primarily knowing who belongs here and who doesn't, and managing the boundary between those two categories. The boundary is not always obvious. The merchant house has many legitimate visitors with many different kinds of business. The assessment is constant.",
+      "keywords": ["guarding","merchant","house","different","guarding","person","person","moves","house","stationary"]
+    },
+    {
+      "id": "britta_1",
+      "source": "Torr on Britta",
+      "text": "Britta is the head of the house. In eleven years, what Britta has given me that most heads of household don't: specific authority over the security function. Britta doesn't second-guess my security assessments. When I've said someone doesn't come in: the person doesn't come in. In eleven years, Britta has overridden my security decision once. The override was for a specific visitor whose business required the exception. Britta told me the reason before the override, not after. The communication is what makes the authority functional.",
+      "keywords": ["britta","head","house","eleven","years","what","britta","given","most","heads"]
+    },
+    {
+      "id": "vrenn_1",
+      "source": "Torr on Vrenn",
+      "text": "Vrenn manages the house's internal operations. In eleven years, Vrenn and I have maintained the internal-external division: Vrenn handles everything inside the house, I handle everything at the boundary. In eleven years, we've had four situations where the internal and external security functions overlapped. In all four: we coordinated before acting. The coordination produced better outcomes than either function acting alone would have.",
+      "keywords": ["vrenn","manages","house's","internal","operations","eleven","years","vrenn","maintained","internal-external"]
+    },
+    {
+      "id": "davel_1",
+      "source": "Torr on Davel",
+      "text": "Davel is the house's trading agent. In eleven years, Davel's movements are the most complex security coordination I manage — Davel travels frequently, represents significant assets, and moves between counterparties who may or may not have the house's interests as their interest. In eleven years, I've been involved in six of Davel's trading trips where the risk assessment required additional security. All six: Davel and I planned the trip's security together before departure. All six: no incidents.",
+      "keywords": ["davel","house's","trading","agent","eleven","years","davel's","movements","most","complex"]
+    },
+    {
+      "id": "reeth_1",
+      "source": "Torr on Reeth",
+      "text": "Reeth sits on the council. In eleven years, the council's relationship to the house's security is occasional and specific: there are times when the house's interests and the council's oversight function intersect. In eleven years, those intersections have been navigated by Britta, not by me. What I know: when council interests come to the gate, I notify Britta before proceeding. In eleven years, I've notified Britta four times for council-related arrivals. All four times: Britta handled it directly.",
+      "keywords": ["reeth","sits","council","eleven","years","council's","relationship","house's","security","occasional"]
+    },
+    {
+      "id": "what_guarding_a_merchant_house_is_1",
+      "source": "Torr on what the work actually is",
+      "text": "In eleven years, I've made approximately two thousand access decisions: who comes in, who doesn't, what the conditions of the access are. Two thousand decisions about the boundary between the house and everything outside it. The decisions are mostly routine: visitors who are expected, deliveries that are scheduled, staff who belong. The decisions that require judgment: visitors who are unexpected, people who claim a purpose I can't immediately verify, the times when the story someone is telling doesn't quite fit together.",
+      "keywords": ["eleven","years","made","approximately","two","thousand","access","decisions","who","comes"]
+    },
+    {
+      "id": "what_torr_holds_1",
+      "source": "Torr on the visit he refused that mattered",
+      "text": "Year four. A visitor who presented as a trading contact of Davel's and who I assessed as not matching the description Davel had given me of the contact they were expecting. The presentation was professionally close. The mismatch was small — a detail in the trading arrangement that the genuine contact would have known and this visitor didn't have. I refused the access and notified Davel. Davel confirmed: not the right person. What happened to the person I refused: I don't know. What could have happened if I'd let them in: I don't know either. Year four is why I stay precise about the details.",
+      "keywords": ["year","four","visitor","presented","trading","contact","davel's","assessed","not","matching"]
+    },
+    {
+      "id": "eleven_years_1",
+      "source": "Torr on eleven years guarding the Aldenmere house",
+      "text": "In eleven years, the house has had no security incident — no theft, no unauthorized access, no harm to house members or goods that security could have prevented. In eleven years, I don't know how much of that is the work and how much is the house's reputation as a place where security is taken seriously. The reputation may be doing as much work as the security itself. A house that is known to be difficult to breach is less likely to be the chosen target. In eleven years, the two things — the work and the reputation — are inseparable.",
+      "keywords": ["eleven","years","house","had","no","security","incident","no","theft","no"]
+    }
+  ]
+}

@@ -109,9 +109,23 @@ export function buildSystemPrompt(ctx) {
     lines.push(``);
   }
 
+  // Place history block — engine-owned physical residue.
+  // The LLM reads and describes; it never interprets, never contradicts.
+  const placeChunks = Array.isArray(ctx.placeChunks) ? ctx.placeChunks.filter(c => c?.text) : [];
+  if (placeChunks.length) {
+    lines.push(`PLACE HISTORY (engine-owned — describe what is here; never interpret or explain what it means):`);
+    for (const c of placeChunks) lines.push(`- ${c.text}`);
+    lines.push(``);
+  }
+
+  const ambientRule = placeChunks.length
+    ? `- You MAY invent ambient detail only where PLACE HISTORY is silent. Never contradict or override PLACE HISTORY.`
+    : `- You CAN invent ambient environmental details (a blanket in a room, books on a shelf).`;
+
   lines.push(
     `RULES:`,
     `- Do NOT invent topology, place names, or structures not listed above.`,
+    ambientRule,
     `- Do NOT use the words: actually, turns out.`,
     `- Do NOT use brackets or parentheses.`,
     `- Write exactly ONE sentence.`,
@@ -236,6 +250,7 @@ export async function augmentNarration({
   world,
   outcome,
   baseNarration,
+  placeChunks = [],
   enabled = false,
   apiKey = '',
   model = DEFAULT_MODEL,
@@ -246,7 +261,10 @@ export async function augmentNarration({
   if (!apiKey)  return base;
   if (typeof fetchImpl !== 'function') return base;
 
-  const ctx = buildNarratorContext(world, outcome);
+  // Merge server-side place chunks into the narrator context.
+  // placeChunks is retrieved server-side (ragRetriever) and passed in;
+  // the engine layer never reads place files directly.
+  const ctx = { ...buildNarratorContext(world, outcome), placeChunks: Array.isArray(placeChunks) ? placeChunks : [] };
 
   let candidate = '';
   try {

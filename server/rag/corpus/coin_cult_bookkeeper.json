@@ -1,0 +1,57 @@
+{
+  "id": "coin_cult_bookkeeper",
+  "name": "Mott",
+  "role": "Coin Cult internal bookkeeper; the ledger that HAGRETH's accumulation requires",
+  "cluster": "coin_cult",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "bookkeeper_1",
+      "source": "Mott on HAGRETH's books",
+      "text": "In eight years of keeping HAGRETH's internal accounts, what the books are: the record of the cult's accumulation and its distribution, its obligations and its claims. The books are not the cult's public face. The books are the cult's internal reality. In eight years, the books tell what the public accounts don't: the full picture of what the cult has accumulated, owes, is owed, and controls. In eight years, the books are the most complete picture of the cult's actual power.",
+      "keywords": ["eight","years","keeping","hagreth's","internal","accounts","what","books","record","cult's"]
+    },
+    {
+      "id": "grav_1",
+      "source": "Mott on Grav",
+      "text": "Grav manages the external-facing accounts. I manage the internal accounts. In seven years of the Grav-Mott accounting relationship, the division: what Grav's accounts show to a party outside the cult and what my accounts show the cult's leadership are two different pictures of the same financial reality. In seven years, the two pictures are designed to be consistent without being identical — the external picture is accurate but incomplete. The internal picture is complete. In seven years, the translation between the two pictures is my primary technical responsibility.",
+      "keywords": ["grav","manages","external-facing","accounts","manage","internal","accounts","seven","years","grav-mott"]
+    },
+    {
+      "id": "cob_1",
+      "source": "Mott on Cob",
+      "text": "Cob is the cult's senior elder and the person whose view of the internal accounts is the most important view. In six years of providing Cob with the internal account summaries, what Cob looks for in the summary: the accumulation trend, the obligation structure, and the cult's flexibility — the resources that aren't committed and can respond to opportunity. In six years, Cob's interest has been the same in every summary: the flexibility metric. In six years, Cob's judgment about what flexibility requires has been the constraint on how I structure the internal accounts.",
+      "keywords": ["cob","cult's","senior","elder","person","whose","view","internal","accounts","most"]
+    },
+    {
+      "id": "lena_1",
+      "source": "Mott on Lena",
+      "text": "Lena's credit originations are the primary flow I record on the asset side of the internal accounts. In seven years of recording Lena's originations, what the origination record shows: the creation of the asset at the moment of lending and the transformation of that asset as the debt is repaid, the relationship established, and the cult's influence through the relationship is exercised. In seven years, the accounting for Lena's originations is the accounting for how HAGRETH's accumulation actually works: the money creates the relationship, the relationship is the asset that the money transaction doesn't show.",
+      "keywords": ["lena's","credit","originations","primary","flow","record","asset","side","internal","accounts"]
+    },
+    {
+      "id": "jeck_1",
+      "source": "Mott on Jeck",
+      "text": "Jeck's enforcement work produces the recovery entries in my accounts. In five years of recording Jeck's recovery activities, what the enforcement-accounting relationship shows: the relationship between the theoretical obligation and the actual recovery. In five years, Jeck's recovery rate and my obligation records have been in agreement: the obligations Jeck has recovered are the obligations my records showed as outstanding. In five years, the alignment between Jeck's activity and my records has been complete. In five years, that alignment has never been complete until we made it deliberately part of the process.",
+      "keywords": ["jeck's","enforcement","work","produces","recovery","entries","accounts","five","years","recording"]
+    },
+    {
+      "id": "what_mott_holds_1",
+      "source": "Mott on what eight years of internal accounting holds",
+      "text": "In eight years, what the internal accounts contain that no external account ever will: the full record of HAGRETH's actual influence. The people who owe the cult not money but favors. The people whose business decisions the cult can shape through the relationship the credit created. The people who know about the cult's existence but have been incorporated into its influence rather than into its membership. In eight years, the full picture is larger and more complex than the membership list suggests. In eight years, the books are the territory, not the map.",
+      "keywords": ["eight","years","what","internal","accounts","contain","no","external","account","ever"]
+    },
+    {
+      "id": "what_mott_fears_1",
+      "source": "Mott on what she can't let happen to the books",
+      "text": "In eight years, what I protect above everything: the books' completeness and the books' security. The books that are accessed by someone outside the cult's leadership: that access is the cult's undoing. The books that are incomplete: the internal decisions become uninformed. In eight years, the books have been accessed only by Cob and, on six specific occasions, by Grav for the specific reconciliation between the internal and external accounts. In eight years, six specific exceptions in eight years. The narrowness of the access is the security.",
+      "keywords": ["eight","years","what","protect","above","everything","books'","completeness","books'","security"]
+    },
+    {
+      "id": "eight_years_1",
+      "source": "Mott on eight years of keeping HAGRETH's books",
+      "text": "In eight years, the books have grown from the single ledger I inherited to the system of accounts that the cult's current scale requires. In eight years, the cult's financial reality has become more complex, which means the accounting has become more complex, which means the picture the books produce has become more accurate as the accounting has become more precise. In eight years, the books are more accurate than they were. In eight years, the more accurate picture is a more powerful tool for the cult's leadership and a larger risk if the books leave my custody.",
+      "keywords": ["eight","years","books","grown","from","single","ledger","inherited","system","accounts"]
+    }
+  ]
+}

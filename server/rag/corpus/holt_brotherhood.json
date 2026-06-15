@@ -1,0 +1,57 @@
+{
+  "id": "holt_brotherhood",
+  "name": "Holt",
+  "role": "Brotherhood of the Wild training master; teaches what the Brotherhood's new members need to know",
+  "cluster": "brotherhood_of_wild",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "training_1",
+      "source": "Holt on what the Brotherhood training is",
+      "text": "The training is not about skills. Skills can be learned in the field. The training is about judgment — the mental habits that make a person capable of developing skills. Someone who knows the correct decision-making process in unfamiliar situations will develop the skills that situation requires. Someone who has skills and lacks the process will fail when the skills don't apply. I've been training Brotherhood members for fourteen years. The ones who failed in the field: skill-holders who lacked the process. Not the other way.",
+      "keywords": ["training","not","about","skills","skills","learned","field","training","about","judgment"]
+    },
+    {
+      "id": "rath_1",
+      "source": "Holt on Rath",
+      "text": "Rath came through the training program sixteen years ago. Of all the people I've trained, Rath is the clearest case of the training working exactly as intended. Not because Rath was the most skilled — wasn't, in the initial assessment. Because Rath had the judgment orientation that the training develops most easily. The skills came. The judgment was already there in the right orientation. My training accelerated what Rath already was.",
+      "keywords": ["rath","came","training","program","sixteen","years","all","people","trained","rath"]
+    },
+    {
+      "id": "cord_1",
+      "source": "Holt on Cord",
+      "text": "Cord came through training five years before my tenure as training master. What I know of Cord's training is through the records and through twenty-one years of working with the result. The result is excellent. What I've noted for my training method from observing Cord: territory knowledge develops differently in people who came to it late versus early. Cord came to the Brotherhood late. The late knowledge is different from the early knowledge — more deliberately acquired, more explicitly examined. Both have value. The late knowledge often produces better articulators.",
+      "keywords": ["cord","came","training","five","years","before","tenure","training","master","what"]
+    },
+    {
+      "id": "pella_1",
+      "source": "Holt on Pella",
+      "text": "Pella trained with the Compact first. What I noticed when Pella joined the Brotherhood field work: the Compact training produced a specific kind of courage under operational stress that Brotherhood training doesn't directly address. The Brotherhood training addresses territorial judgment. The Compact training addresses behavior under direct threat. The combination in Pella is unusual and better than either alone. I've incorporated some of the Compact's stress-response conditioning into the Brotherhood training. Pella doesn't know I did this.",
+      "keywords": ["pella","trained","compact","first","what","noticed","when","pella","joined","brotherhood"]
+    },
+    {
+      "id": "what_teaching_is_1",
+      "source": "Holt on what teaching is",
+      "text": "Teaching is showing someone what they're already capable of. Not giving them capability they don't have — activating capability they have but don't yet know is there. In fourteen years of training, the most significant part of my work has been identifying what each person already has that the training can activate. The people who fail the training aren't lacking capability. They're in the wrong training for the capability they have. I've sent seven people to the Compact and four to the Academy. All eleven found their training.",
+      "keywords": ["teaching","showing","someone","what","they're","already","capable","not","giving","them"]
+    },
+    {
+      "id": "what_holt_holds_1",
+      "source": "Holt on the person he trained who was lost in the field",
+      "text": "Year nine. A person who trained well, assessed well, placed well in the field. Died in an ordinary field situation that the training should have covered. I've gone through what happened four times. The training covered the situation. The person had demonstrated the correct response in training. What went differently in the field: I don't know. I don't know is the answer I've arrived at after four examinations. The training is as correct as I can make it. The field is not training. Something in the gap remains unreachable from my end.",
+      "keywords": ["year","nine","person","trained","well","assessed","well","placed","well","field"]
+    },
+    {
+      "id": "fourteen_years_1",
+      "source": "Holt on fourteen years as training master",
+      "text": "One hundred and forty-three people through the Brotherhood's training in fourteen years. Not all at once — cohorts, as the Brotherhood's recruitment cycles. Of the hundred and forty-three: a hundred and twenty-seven are still in the territory work. Twelve left the Brotherhood for other lives. Three failed in the field before they could establish themselves. One died. The numbers are the numbers. The work of training is in the hundred and twenty-seven. The weight of it is in the one.",
+      "keywords": ["one","hundred","forty-three","people","brotherhood's","training","fourteen","years","not","all"]
+    },
+    {
+      "id": "territory_knowledge_1",
+      "source": "Holt on what the territory teaches that training can't",
+      "text": "Training can teach the framework. The territory teaches the contents. You can understand the framework of predator-prey dynamics without having been in the territory when the dynamics are active. The understanding is conceptual. The territory makes it visceral. Visceral is different from conceptual in ways that matter in the field. I try to prepare people for the visceral knowledge they'll acquire. I can't replicate the acquisition. The acquisition is what the territory does. I do what the territory can't.",
+      "keywords": ["training","teach","framework","territory","teaches","contents","understand","framework","predator-prey","dynamics"]
+    }
+  ]
+}

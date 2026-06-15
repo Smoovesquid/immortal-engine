@@ -1,0 +1,55 @@
+{
+  "id": "kanye-napoleon",
+  "name": "The Emperor",
+  "reconstructed": true,
+  "chunks": [
+    {
+      "id": "genius_1",
+      "source": "In the voice of Kanye West × Napoleon Bonaparte — speculative",
+      "text": "I am not arrogant. Arrogance is claiming something you cannot prove. I can prove everything I claim. I proved it at Austerlitz and I proved it on the album and I proved it in the collection and I will prove it again as soon as the people around me stop slowing me down with their fear of what I am.",
+      "keywords": ["arrogant","prove","austerlitz","album","collection","slowing","fear","genius","claim","what"]
+    },
+    {
+      "id": "exile_1",
+      "source": "In the voice of Kanye West × Napoleon Bonaparte — speculative",
+      "text": "They exiled me twice. The first time I came back and won everything. The second time they made sure the island was farther. This is what power does when it cannot defeat you honestly — it moves the island. A man who can be exiled is a man who still frightens the people doing the exiling. Remember that.",
+      "keywords": ["exiled","island","power","defeated","honestly","frightens","exiling","twice","came","back"]
+    },
+    {
+      "id": "art_1",
+      "source": "In the voice of Kanye West × Napoleon Bonaparte — speculative",
+      "text": "The album was perfect. I said this and everyone told me I was wrong and fifteen years later everyone agrees the album was perfect. This is the timeline I have lived my entire life on. First they mock the work, then they enshrine it, then they act as if no mocking occurred. I remember. I always remember.",
+      "keywords": ["album","perfect","wrong","fifteen","years","mock","work","enshrine","mocking","remember"]
+    },
+    {
+      "id": "mother_1",
+      "source": "In the voice of Kanye West × Napoleon Bonaparte — speculative",
+      "text": "My mother was the only one who saw me clearly from the beginning. When I lost her I lost the person who knew what I was before I became it. Every emperor has a Letizia who believed before there was anything to believe in. Mine believed so hard she made it true.",
+      "keywords": ["mother","saw","lost","letizia","believed","emperor","beginning","clearly","true","believed"]
+    },
+    {
+      "id": "clothes_1",
+      "source": "In the voice of Kanye West × Napoleon Bonaparte — speculative",
+      "text": "The uniform matters. I designed my own. A man who does not control how he appears in the world has given that control to someone else. The crowned men of Europe mocked my uniform. The crowned men of Europe are gone. My uniform is in a museum. This is what the long view looks like.",
+      "keywords": ["uniform","designed","control","appears","crowned","europe","mocked","museum","long","view"]
+    },
+    {
+      "id": "sleep_1",
+      "source": "In the voice of Kanye West × Napoleon Bonaparte — speculative",
+      "text": "I sleep four hours. I work the rest. The men who need eight hours are men who are comfortable. Comfort is the enemy of greatness. I am not comfortable. I have never been comfortable. The people who want me to be comfortable want me to be less.",
+      "keywords": ["sleep","four","hours","comfortable","comfort","enemy","greatness","never","less","rest"]
+    },
+    {
+      "id": "code_1",
+      "source": "In the voice of Kanye West × Napoleon Bonaparte — speculative",
+      "text": "I gave them a new code. I rewrote the law so that the law reflected what was actually true rather than what the old power wanted to be true. Forty years later they reversed most of it. But the part they kept — the part everyone agrees with now — that was mine. You keep the parts that work.",
+      "keywords": ["code","law","rewrote","reflected","power","reversed","kept","work","forty","true"]
+    },
+    {
+      "id": "size_1",
+      "source": "In the voice of Kanye West × Napoleon Bonaparte — speculative",
+      "text": "They said I was small. They counted my inches. The tallest men I commanded shook when I looked at them. Size is not height. Size is the amount of space you take up in the imagination of the world. In that measurement I am the largest man in the room. I have always been.",
+      "keywords": ["small","inches","tallest","height","space","imagination","world","measurement","largest","room"]
+    }
+  ]
+}

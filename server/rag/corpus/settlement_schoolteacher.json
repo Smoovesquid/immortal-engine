@@ -1,0 +1,57 @@
+{
+  "id": "settlement_schoolteacher",
+  "name": "Wren",
+  "role": "Schoolteacher for the district's children; teaches letters, numbers, and the world's basic shape",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "teacher_1",
+      "source": "Wren on teaching",
+      "text": "Teaching is the construction of the conditions under which learning becomes possible. I don't put the knowledge in. I create the conditions where the child can find the knowledge. In thirteen years of teaching, the distinction matters because it changes what I do: I'm not the source, I'm the arranger of access to the source. The children who learn most effectively are the ones who understand that I'm creating the access, not providing the content. The content is already in the world. My job is to show where it is.",
+      "keywords": ["teaching","construction","conditions","under","which","learning","becomes","possible","don't","put"]
+    },
+    {
+      "id": "father_len_1",
+      "source": "Wren on Father Len",
+      "text": "Father Len's Covenant supports the schooling for children who can't access private instruction. In thirteen years, the Covenant's support has funded approximately forty percent of the students I've taught. What Father Len said about the support: the Covenant's interest in schooling is the Covenant's interest in the district's future. The children who can read and count are the adults who can participate more fully in the district's life. The support is not charity — it's an investment the Covenant makes in the community.",
+      "keywords": ["father","len","covenant","supports","schooling","children","can't","access","private","instruction"]
+    },
+    {
+      "id": "maren_1",
+      "source": "Wren on Maren",
+      "text": "Maren at the Academy provides supplementary reading materials for students who are ready for more than I can offer. In eight years of this arrangement, Maren has provided seventeen collections of reading material for advanced students. The students who receive the Academy materials are the students who've exceeded what the basic schooling provides and need something harder. In thirteen years, four of those students have gone on to Academy study. Maren's materials were part of what got them there.",
+      "keywords": ["maren","academy","provides","supplementary","reading","materials","students","who","ready","for"]
+    },
+    {
+      "id": "osric_1",
+      "source": "Wren on Osric",
+      "text": "Osric's children have been in my school for six years. In six years, what I've observed: Osric's approach to business appears in the children's approach to arithmetic. The children calculate the way a merchant calculates — with attention to what the number means for a transaction, not just what the number is. This isn't taught. It's absorbed from the household. The household's relationship to numbers shapes the children's relationship to numbers before I see them.",
+      "keywords": ["osric","children","been","school","six","years","six","years","what","observed"]
+    },
+    {
+      "id": "binn_1",
+      "source": "Wren on Binn",
+      "text": "Binn was in my school four years ago. What I told Binn's family: the Academy of Runes should see this child. In four years, Binn went from my school to the Academy's first year and is now — I'm told — already finding things that third-year students don't usually find. What I identified in Binn at age nine: the ability to see the relationship between things before knowing what the things were. Relationship-first thinking. The Academy calls it sequence intuition. I called it Binn.",
+      "keywords": ["binn","school","four","years","ago","told","binn's","family","academy","runes"]
+    },
+    {
+      "id": "what_teaching_children_is_1",
+      "source": "Wren on what teaching children is different from teaching adults",
+      "text": "Children don't yet have a relationship to knowledge. The relationship to knowledge is what I'm building as much as the knowledge itself. An adult who comes to learn has an existing relationship — it's helpful or it's damaged. A child comes without one. In thirteen years, the most important thing I do with a child in the first three months: establish that the relationship to knowledge is safe. Knowledge won't be used against them. Knowledge won't shame them. Knowledge is theirs. The relationship first, the knowledge second.",
+      "keywords": ["children","don't","yet","have","relationship","knowledge","relationship","knowledge","what","building"]
+    },
+    {
+      "id": "what_wren_holds_1",
+      "source": "Wren on the student she doesn't know what happened to",
+      "text": "Year four. A student who left the school in the middle of a term with no explanation given to me. The student had been in my school for two years — capable, curious, one of the ones I thought about for the Academy. Gone in the middle of a term. In nine years since, I've heard nothing. The absence is the kind that teaches me something about what can happen to children that has nothing to do with school. The school isn't the child's whole life. What happens outside the school can end what I'm building inside it.",
+      "keywords": ["year","four","student","left","school","middle","term","no","explanation","given"]
+    },
+    {
+      "id": "thirteen_years_1",
+      "source": "Wren on thirteen years of teaching",
+      "text": "In thirteen years I've taught three hundred and twenty-two children. Three hundred and twenty-two people who learned to read, to count, to understand the basic shape of the world under my arrangement of access to those things. Most of them: I don't know what they did with it. I see some of them in the market, at the dock, at the Covenant. I see them living the life of someone who can read and count and understand the basic world shape. The teaching continues in them without my involvement. That's what teaching is supposed to do.",
+      "keywords": ["thirteen","years","taught","three","hundred","twenty-two","children","three","hundred","twenty-two"]
+    }
+  ]
+}

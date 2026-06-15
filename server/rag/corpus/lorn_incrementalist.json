@@ -1,0 +1,57 @@
+{
+  "id": "lorn_incrementalist",
+  "name": "Lorn",
+  "role": "Fishmonger; Church of Incrementalism (newer member)",
+  "cluster": "church_of_incrementalism",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "fish_1",
+      "source": "Lorn at his stall in the early morning",
+      "text": "The fish are fresh when the boats come in and less fresh by midday and not for sale by evening. The selling window is what the practice is about. You don't fight the window. You don't wish the fish were fresh for longer. You sell correctly in the window you have. This is the whole business and also the whole teaching, and I didn't understand that the business was the teaching until Reed showed me. Now I can't not see it.",
+      "keywords": ["fish","fresh","boats","midday","evening","window","practice","correctly","teaching","reed"]
+    },
+    {
+      "id": "reed_1",
+      "source": "Lorn on how Reed introduced him to the practice",
+      "text": "Reed built a stall frame for me three years ago. While he was building he kept stopping and checking the joint and checking the joint and I said: why do you keep checking it. He said: because I won't be able to get it right once I've moved on. I said: how do you know when it's right. He said: when the next small thing is something else. I didn't understand that for six months. Then I did. He introduced me to the rest of it after I understood that.",
+      "keywords": ["reed","built","stall","frame","three","years","stopping","checking","joint","right"]
+    },
+    {
+      "id": "smoke_1",
+      "source": "Lorn at his first gathering",
+      "text": "The smoke does what Swale says it does. I was skeptical going in because I've been around enough mystical claims in my life to be careful about them. The smoke is not mystical. It slows the part of your mind that's arguing about whether you should be there and quiets the part that's planning the next defense. What's left is the question: what's the next small thing. The question is very simple. The smoke is just how you get to simple fast. I've been coming for two years.",
+      "keywords": ["smoke","swale","skeptical","mystical","claims","careful","slows","mind","arguing","quiets"]
+    },
+    {
+      "id": "mantis_1",
+      "source": "Lorn explaining what he believes to himself, at the stall between customers",
+      "text": "The Great Mantis is the universe doing the next small thing. I sell fish. The universe makes fish. The fish exist because a thousand small things happened in the right order: the water temperature, the current, the plankton, the predator-prey balance in the harbor. None of these are planned in the large sense. They're each the next small thing for that part of the system. I'm a part of the system. My next small thing is: sell the fish before they're not fish anymore.",
+      "keywords": ["great","mantis","universe","doing","next","small","thing","fish","water","temperature"]
+    },
+    {
+      "id": "swale_1",
+      "source": "Lorn on Swale and the bees",
+      "text": "Swale doesn't know he started this. He thinks he's following his bees. Which is true — the bees figured out the practice before anyone, and Swale learned it from the bees. What Swale didn't figure out is that what he described to Reed over a cup of mead ten years ago became Reed's understanding, which became my understanding, which became several other people's understanding. Swale is the origin of a thing he thinks is private. This seems right to me. The Mantis doesn't announce its mechanisms.",
+      "keywords": ["swale","doesn't","know","started","following","bees","figured","practice","reed","mead"]
+    },
+    {
+      "id": "customers_1",
+      "source": "Lorn on reading his customers",
+      "text": "People who are in the next-small-thing practice buy fish differently than people who aren't. They tell me what they need, they take what's correct for that need, they pay, they leave. There's no negotiation about things that don't need negotiating. The fish is the fish, the price is the price, the need is the need. People who aren't in the practice spend a quarter of their time at the stall negotiating what's already settled. I serve both equally. I notice the difference.",
+      "keywords": ["people","practice","buy","fish","differently","need","correct","price","negotiation","notice"]
+    },
+    {
+      "id": "rook_1",
+      "source": "Lorn when Rook's orphan network needed food",
+      "text": "Rook asked once for the end-of-day fish rather than throwing them. What doesn't sell by evening I'd been throwing — the fish are past selling even if they're not past eating. She asked if she could have them for the kids instead. I said yes without discussing it. The yes was simple and correct and required no ceremony. I've been setting the evening fish aside for three years. She or one of her people picks them up. We've never had another conversation about it.",
+      "keywords": ["rook","asked","end-of-day","fish","throwing","sell","evening","eating","kids","simple"]
+    },
+    {
+      "id": "increments_1",
+      "source": "Lorn when someone asked why he seemed so calm for a person whose livelihood depended on weather",
+      "text": "The weather is the next small thing for the clouds. I can't change it. I can be ready for what it produces. When the boats don't come in, I close early. When the boats come in double, I sell double. The window changes. I don't fight the window. I don't know if this is wisdom or just ten years of fishmonging. Reed says the two are the same thing when the fishmonging is done correctly. I'm inclined to believe him.",
+      "keywords": ["weather","next","small","thing","clouds","ready","boats","close","early","window"]
+    }
+  ]
+}

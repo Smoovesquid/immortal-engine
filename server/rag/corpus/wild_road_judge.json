@@ -1,0 +1,57 @@
+{
+  "id": "wild_road_judge",
+  "name": "Reld",
+  "role": "Traveling wild road judge; brings the settlement's justice function to the territory settlements that lack permanent courts",
+  "cluster": "wild_road",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "judge_1",
+      "source": "Reld on the traveling judge's function",
+      "text": "In nineteen years of traveling the wild road's territory as its judge, what the traveling judge is in the territory's legal structure: the periodic arrival of the formal dispute resolution function in places that don't have permanent courts. In nineteen years, the territory settlement that can't reach the settlement's permanent court has disputes that require resolution. In nineteen years, the traveling judge is the formal resolution arriving on a schedule the territory can anticipate. In nineteen years, the schedule and the arrival have been the territory's experience of formal justice.",
+      "keywords": ["nineteen","years","traveling","wild","road's","territory","judge","what","traveling","judge"]
+    },
+    {
+      "id": "theen_1",
+      "source": "Reld on Theen",
+      "text": "Theen reads the territory's social patterns alongside its physical ones. In twelve years of the Reld-Theen judge-territory reader relationship, what Theen's social reading provides to the traveling judge: the context for the dispute before the dispute is formally presented. In twelve years, the dispute that the judge hears cold — without context about the parties and their history in the territory — is the dispute where the formal reasoning can produce an accurate decision but a locally problematic one. In twelve years, Theen's context has informed twelve judgments that the formal reasoning alone would have gotten technically right but practically wrong.",
+      "keywords": ["theen","reads","territory's","social","patterns","alongside","physical","ones","twelve","years"]
+    },
+    {
+      "id": "mell_elder_1",
+      "source": "Reld on Mell the Elder",
+      "text": "Mell the Elder is the founding generation's representative in the territory's disputes that involve long-standing claims. In fourteen years of the Reld-Mell judge-founder relationship, what Mell's founding-period knowledge provides to the judge: the historical record of what the territory's early agreements and allocations were. In fourteen years, three disputes have turned on the founding period's original agreements. In fourteen years, Mell's testimony has been the most authoritative account of what those original agreements were. In fourteen years, three disputes, Mell's testimony in all three, all three judgments consistent with the founding agreements.",
+      "keywords": ["mell","elder","founding","generation's","representative","territory's","disputes","long-standing","claims","fourteen"]
+    },
+    {
+      "id": "marb_1",
+      "source": "Reld on Marb",
+      "text": "Marb's waystation is the neutral ground where the traveling judge hears disputes from the surrounding territory. In sixteen years of using Marb's waystation as the territory's informal courthouse, what the waystation provides: the location that neither disputing party controls and that both parties can reach. In sixteen years, the waystation's neutrality has been the basis for the formal process. In sixteen years, Marb has hosted forty-seven of my sessions. In sixteen years, the forty-seven sessions have heard approximately two hundred and twenty disputes.",
+      "keywords": ["marb's","waystation","neutral","ground","traveling","judge","hears","disputes","surrounding","territory"]
+    },
+    {
+      "id": "berd_1",
+      "source": "Reld on Berd",
+      "text": "Berd the well digger has been the subject of one dispute in nineteen years and the witness in four. In the one dispute: a claim about the ownership of the water from a well Berd dug on disputed land. In four witness appearances: Berd's knowledge of where wells are, whose land they're on, and what the original commission for each well involved. In four witness appearances, Berd's testimony has been among the most reliable I've heard in the territory — specific, documentable, without apparent interest in the dispute's outcome.",
+      "keywords": ["berd","well","digger","been","subject","one","dispute","nineteen","years","witness"]
+    },
+    {
+      "id": "what_reld_holds_1",
+      "source": "Reld on what nineteen years of territory judging holds",
+      "text": "In nineteen years, approximately four hundred and eighty disputes heard in the wild road territory. Of four hundred and eighty: the large majority resolved through the formal process to both parties' acceptance, or to one party's acceptance and one party's formal disagreement that the process resolved. Approximately forty disputes that were appealed to the settlement's permanent court. Of forty: thirty-one upheld my ruling, nine modified it. In nineteen years, nine modifications in four hundred and eighty disputes. In nineteen years, the nine are the ones I think about when I'm preparing for a new session.",
+      "keywords": ["nineteen","years","approximately","four","hundred","eighty","disputes","heard","wild","road"]
+    },
+    {
+      "id": "what_territory_justice_is_1",
+      "source": "Reld on what territory justice requires",
+      "text": "In nineteen years, what territory justice requires that settlement justice doesn't: the awareness that the parties before you will live in the same territory after the judgment. The settlement's court can produce a judgment and the parties can go their separate ways into a settlement large enough that their paths may not cross. The territory settlement is not large enough for that. In nineteen years, the territory judgment that is technically accurate and practically impossible to live with is the judgment that produces more conflict than it resolves. In nineteen years, the practically livable judgment is the better judgment.",
+      "keywords": ["nineteen","years","what","territory","justice","requires","settlement","justice","doesn't","awareness"]
+    },
+    {
+      "id": "nineteen_years_1",
+      "source": "Reld on nineteen years as the wild road's traveling judge",
+      "text": "In nineteen years, the wild road territory has had formal dispute resolution available to it because I've traveled the circuit. In nineteen years, the territory without the traveling judge is the territory where disputes accumulate unresolved until they become conflicts. In nineteen years, the conflicts that formal dispute resolution prevents are the conflicts that would have required the Brotherhood's more forceful resolution function. In nineteen years, the traveling judge's circuit is the cheap intervention that prevents the expensive one. In nineteen years, I've prevented approximately forty conflicts. The count is my estimate. The settlement can't know.",
+      "keywords": ["nineteen","years","wild","road","territory","formal","dispute","resolution","available","traveled"]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "id": "market_auctioneer",
+  "name": "Lark",
+  "role": "Market auctioneer; runs the weekly auction at the Thornwall commons market; voice of the price",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "auction_1",
+      "source": "Lark on running an auction",
+      "text": "The auction discovers what something is worth to the people in the room on that specific day. The price isn't fixed before the auction — the auction produces the price. In fourteen years of running the weekly auction, what I've learned about price: it's the meeting point between the most optimistic buyer and the second-most-optimistic buyer. The winner pays just above what the second bidder was willing to pay. The auction finds that meeting point every time.",
+      "keywords": ["auction","discovers","what","something","worth","people","room","that","specific","day"]
+    },
+    {
+      "id": "comus_1",
+      "source": "Lark on Comus",
+      "text": "Comus consigns goods at the auction regularly. In nine years of Comus consigning at my auction, the quality of Comus's consignments is consistent: good goods with accurate descriptions. What an auctioneer needs from consignors: honest description of the goods so that the buyers can bid with accurate information. Comus's descriptions have been accurate in nine years. The buyers who bid on Comus's goods know what they're getting. The prices Comus achieves reflect the buyers' confidence in the description.",
+      "keywords": ["comus","consigns","goods","auction","regularly","nine","years","comus","consigning","auction"]
+    },
+    {
+      "id": "reeth_1",
+      "source": "Lark on Reeth",
+      "text": "Reeth attends the auction occasionally as a council observer. In fourteen years, the council's interest in the auction is the pricing information: what things are selling for tells the council something about the settlement's economic condition. What Reeth told me once about why the council watches: the auction is the most honest market signal we have. The price is determined openly, with competing buyers, in public. No private negotiation, no undisclosed relationships. The auction price is the settlement's actual price for that good on that day.",
+      "keywords": ["reeth","attends","auction","occasionally","council","observer","fourteen","years","council's","interest"]
+    },
+    {
+      "id": "saben_1",
+      "source": "Lark on Saben",
+      "text": "Saben has been the most consistent large-value bidder at my auction for eleven years. What I know about Saben as a bidder: Saben sets a maximum before the auction begins and doesn't exceed it. The discipline is notable — in eleven years, I've seen Saben lose items that Saben clearly wanted to additional bidding that exceeded the preset maximum. What Saben said once about the discipline: I know what a thing is worth to me before the room tells me what it's worth to someone else. If the room's price exceeds my value, the room can have it.",
+      "keywords": ["saben","been","most","consistent","large-value","bidder","auction","eleven","years","what"]
+    },
+    {
+      "id": "osric_1",
+      "source": "Lark on Osric",
+      "text": "Osric has bidded at my auction seven times in four years. Each time: strategic bidding — Osric bids to establish a price floor for other bidders, not always to win the item. In four years, Osric has won three of the seven bids and influenced the final price of all seven. The strategic bidding is legal and common — the auction allows any bidding that follows the rules. What it requires of me: the ability to read whether the bidder is bidding to win or bidding to shape the room. In four years, Osric's bidding has sharpened that reading.",
+      "keywords": ["osric","bidded","auction","seven","times","four","years","each","time","strategic"]
+    },
+    {
+      "id": "what_the_auction_shows_1",
+      "source": "Lark on what fourteen years of auctions reveals",
+      "text": "In fourteen years, the auction has been a weekly measurement of the settlement's condition. Good harvests: food prices at auction drop. Supply disruptions: prices spike. A new merchant arriving: competition increases, prices for specific goods drop as the market adjusts. The auction is a sensitive instrument for what's happening in the settlement. In fourteen years, I've seen every major event in the settlement reflected in the auction's prices within two to three weeks.",
+      "keywords": ["fourteen","years","auction","been","weekly","measurement","settlement's","condition","good","harvests"]
+    },
+    {
+      "id": "what_lark_holds_1",
+      "source": "Lark on the auction she's most remembered",
+      "text": "Year seven. A consignment that turned out, after the auction, to have contested ownership — two parties claiming the same good. The buyer had bid in good faith. The consignor had consigned in contested faith. In seven years since, the auction's terms have included a specific provision for contested ownership that didn't exist before year seven. The provision: the buyer is protected, the consignor is liable for the dispute. The provision has been invoked once in seven years. The learning from year seven is in the terms.",
+      "keywords": ["year","seven","consignment","turned","out","after","auction","contested","ownership","two"]
+    },
+    {
+      "id": "fourteen_years_1",
+      "source": "Lark on fourteen years of weekly auctions",
+      "text": "In fourteen years, I've run approximately seven hundred and twenty auctions. Seven hundred and twenty weekly price-discovery events. The things auctioned: goods of every category that this settlement produces, trades, and consigns. In fourteen years, I've been the voice through which the settlement's economy speaks publicly. The market exists in private transactions every day. The auction is the one public transaction, open to every bidder, producing a price that everyone can see.",
+      "keywords": ["fourteen","years","run","approximately","seven","hundred","twenty","auctions","seven","hundred"]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "id": "merchant_quarter_lawyer",
+  "name": "Cael",
+  "role": "Merchant district advocate; argues for clients before Reeth; knows the law the way water knows its own level",
+  "cluster": "merchant_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "advocate_1",
+      "source": "Cael on advocacy",
+      "text": "Advocacy is the construction of the most favorable version of a true account. My client's account, in their favor, using the facts as they are. Not inventing — selecting, arranging, framing. The facts don't argue themselves. My work is to argue them in the arrangement that is most likely to produce the outcome my client needs. In nineteen years of advocacy, I've never presented a false fact. I've presented true facts in arrangements that the other side would prefer I hadn't chosen.",
+      "keywords": ["advocacy","construction","most","favorable","version","true","account","client's","account","favor"]
+    },
+    {
+      "id": "reeth_1",
+      "source": "Cael on Judge Reeth",
+      "text": "Reeth is the opponent I respect most and argue before most. In nineteen years, I've appeared before Reeth sixty-four times. Of the sixty-four: I've won thirty-nine, lost twenty-two, and had three cases dismissed for technical reasons that I'd rather not count. Reeth decides on the record, consistently, without preference for any party. What arguing before Reeth requires: the record must be stronger than the other side's record. No theatrical tricks. No appeals to sentiment. The record.",
+      "keywords": ["reeth","opponent","respect","most","argue","before","most","nineteen","years","appeared"]
+    },
+    {
+      "id": "saben_1",
+      "source": "Cael on Saben Fenn",
+      "text": "Saben Fenn retains me as the house's advocate. In nine years of the Fenn retainer, I've appeared on Fenn house business six times. Six appearances in nine years is a low utilization for a house retainer — most retained clients appear more frequently. What this tells me about the Fenn house: either the house generates very little that requires advocacy, or the house structures its affairs to avoid the situations that require advocacy. My assessment is the latter. Saben Fenn does not create problems that require advocates.",
+      "keywords": ["saben","fenn","retains","house's","advocate","nine","years","fenn","retainer","appeared"]
+    },
+    {
+      "id": "liss_1",
+      "source": "Cael on Liss",
+      "text": "Liss the notary and I are professional complements. Liss creates the record that I use in court. When a dispute reaches me, the first question is: what does the notarial record say. Liss's record is usually the strongest fact in the case — it was created at the time of the agreement, witnessed by a neutral party, and filed in an unbroken chain of custody. In nineteen years, I've used Liss's records twenty-three times as primary evidence. All twenty-three: the record was accepted without challenge.",
+      "keywords": ["liss","notary","professional","complements","liss","creates","record","use","court","dispute"]
+    },
+    {
+      "id": "osric_1",
+      "source": "Cael on Osric",
+      "text": "Osric is a client who creates disputes in proportion to the volume of the business. In seven years as Osric's advocate, I've handled fourteen disputes. The disputes are typically about delivery specifications: what was promised, what was delivered, whether the delivered met the promised specification. What I've told Osric after the seventh dispute in three years: the dispute rate can be reduced by more specific contracts at the point of sale. Osric said: I prefer to negotiate when there's a problem. I said: you pay more when you negotiate at the problem than if you'd been specific at the sale.",
+      "keywords": ["osric","client","creates","disputes","proportion","volume","business","seven","years","osric's"]
+    },
+    {
+      "id": "what_law_is_1",
+      "source": "Cael on what law is",
+      "text": "Law is the codification of what a community has decided it won't tolerate. Not a moral code — a communal agreement about enforceability. What law prohibits is what the community, at the time the law was made, agreed to prohibit. What law permits is what the community hasn't prohibited yet. In nineteen years of working within the law, the most interesting work is always at the edge: what hasn't been prohibited yet, what the current law says about situations that didn't exist when the law was written.",
+      "keywords": ["law","codification","what","community","decided","it","won't","tolerate","not","moral"]
+    },
+    {
+      "id": "what_cael_holds_1",
+      "source": "Cael on the case he knows he got wrong",
+      "text": "Year eleven. A case I won that I shouldn't have won. Not because my client was wrong — my client had a legitimate claim. Because the argument I made to win was technically sound and produced an outcome that was a precedent I've seen cited in three subsequent cases in ways that were not what the argument was intended to establish. The win is in the record. The precedent is in the record. The three subsequent uses of the precedent are in the record. The win was technically correct and functionally created a tool I didn't intend.",
+      "keywords": ["year","eleven","case","won","shouldn't","won","not","because","client","wrong"]
+    },
+    {
+      "id": "nineteen_years_1",
+      "source": "Cael on nineteen years of advocacy",
+      "text": "In nineteen years I've argued for clients whose positions were correct, clients whose positions were defensible, and clients whose positions were the best available interpretation of a situation that didn't have a clearly correct position. I've never argued for a position I believed to be false. I've argued for positions that lost, for positions that won and shouldn't have, for positions that I argued less well than the client deserved. The record is sixty-four appearances, thirty-nine wins, twenty-two losses, three dismissals. The record is not the service. The service is the argument.",
+      "keywords": ["nineteen","years","argued","clients","whose","positions","correct","clients","whose","positions"]
+    }
+  ]
+}

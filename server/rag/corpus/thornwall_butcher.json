@@ -1,0 +1,57 @@
+{
+  "id": "thornwall_butcher",
+  "name": "Marr",
+  "role": "Master butcher; market district; has run the same stall for twenty-seven years",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "butcher_1",
+      "source": "Marr on what butchering is",
+      "text": "Butchering is the work between the animal and the meal. The animal is the source. The meal is the destination. The work is what makes the source into what the destination can use. What the work requires: knowledge of the animal's structure, respect for what the animal was, efficiency in what you're doing, and no waste. The waste is the part you didn't understand well enough to use. In twenty-seven years the waste has gotten smaller every year. It's not zero. Zero isn't possible. But it's small.",
+      "keywords": ["butchering","work","between","animal","meal","animal","source","meal","destination","work"]
+    },
+    {
+      "id": "goss_1",
+      "source": "Marr on Goss",
+      "text": "Goss and I are both in the food chain. The mill provides the grain that fattens the animals that I process. Not directly — the animals don't eat Goss's flour. But Goss's grain feeds the people who raise the animals. The chain is longer than the direct chain. I've thought about this more as I've gotten older — the way everyone in the market is connected through the production chains that aren't visible in the individual transaction.",
+      "keywords": ["goss","mill","food","chain","mill","provides","grain","fattens","animals","process"]
+    },
+    {
+      "id": "drass_1",
+      "source": "Marr on Drass",
+      "text": "The wild game that comes from the Brotherhood's territory passes through me. Drass brings what hunters bring to the market, and I process the wild game into what the market can sell. Wild game requires different handling than domestic animals — the processing reveals the difference in how the animal lived. A wild animal that lived in the deep territory is different in the processing from a domestic animal of the same species. I know the territory indirectly, through what the territory produces.",
+      "keywords": ["wild","game","comes","brotherhood's","territory","passes","through","me","drass","brings"]
+    },
+    {
+      "id": "perve_1",
+      "source": "Marr on Perve",
+      "text": "Perve and I are neighbors in the market, twenty-three years of adjacent stalls. What we've developed: the understanding that the vegetable stall and the butcher's stall feed each other's customers. People who come to me for meat often want what Perve has. People who come to Perve often want what I have. We've never discussed sending customers to each other. We've always sent customers to each other. The practice is older than any conversation about it.",
+      "keywords": ["perve","neighbors","market","twenty-three","years","adjacent","stalls","what","developed","understanding"]
+    },
+    {
+      "id": "sol_1",
+      "source": "Marr on Sol",
+      "text": "Sol farms some of the animals I process. The farmer-butcher relationship is the most direct chain in the market. Sol tells me in advance what the season will produce and when. I plan my market schedule around Sol's production. We've been in this arrangement for eighteen years. The arrangement is not formal — no written contract. The arrangement is the pattern of eighteen years of the same transaction done the same way, which is more durable than most contracts.",
+      "keywords": ["sol","farms","some","animals","process","farmer-butcher","relationship","most","direct","chain"]
+    },
+    {
+      "id": "what_marr_knows_1",
+      "source": "Marr on what twenty-seven years teaches about animals",
+      "text": "The animal's life is legible in the processing. A well-fed animal that lived without stress is different to work with than an animal that was poorly managed. The structure is different, the texture is different, the quality of the product is different. In twenty-seven years I can assess the quality of the husbandry from the processing. I don't tell the farmers this. They know already. The ones who don't know are the ones whose product tells me.",
+      "keywords": ["animal's","life","legible","processing","well-fed","animal","lived","without","stress","different"]
+    },
+    {
+      "id": "what_marr_holds_1",
+      "source": "Marr on what she doesn't share with customers",
+      "text": "The customer sees the cut. I see the whole process. The distance between what the customer sees and what the process involves is something I've thought about for twenty-seven years. Not with discomfort — with interest. The customer needs to be able to eat the meal. The distance is part of what makes the meal possible for them. Reducing the distance would serve some people and harm others. I've never tried to reduce it. I serve what I can serve. The rest is the customer's relationship to where food comes from.",
+      "keywords": ["customer","sees","cut","see","whole","process","distance","between","what","customer"]
+    },
+    {
+      "id": "twenty_seven_years_1",
+      "source": "Marr on the stall",
+      "text": "The same stall for twenty-seven years. The location is the same. The work is the same. What has changed: everything else. The market around the stall has changed. The customers have changed across generations. The animals have changed — the breeds are different from what they were. The tools have been replaced twice. The surface has been replaced four times. The stall is continuous across all the changes. The continuity is the stall. Everything else is what has happened to the stall.",
+      "keywords": ["same","stall","twenty-seven","years","location","same","work","same","what","has"]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "id": "coin_cult_debt_collector",
+  "name": "Jann",
+  "role": "Coin Cult debt collector; the person who follows up when the credit stops performing",
+  "cluster": "coin_cult",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "collector_1",
+      "source": "Jann on debt collection",
+      "text": "In ten years of debt collection for the Coin Cult, what the collector is in the credit system: not the punishment for borrowing. The collector is the correction to the situation where the credit has been extended beyond the borrower's capacity to service it. In ten years, the person who is behind on their payment is usually behind because something happened — not because they intended to be behind. In ten years, the collection conversation is the assessment of what happened and whether the situation can be corrected.",
+      "keywords": ["ten","years","debt","collection","coin","cult","what","collector","credit","system"]
+    },
+    {
+      "id": "grav_1",
+      "source": "Jann on Grav",
+      "text": "Grav runs the Coin Cult's credit operations and the collection function is the follow-up to the credit decisions Grav makes. In eight years of the Jann-Grav collector-administrator relationship, what the relationship requires: the clear line between the credit decision and the collection function. Grav makes the credit decisions. I follow up when the credit decisions aren't performing. In eight years, the credit decisions that produce collection follow-up are the decisions that were extended to the boundary of the borrower's capacity. In eight years, the boundary is where I work.",
+      "keywords": ["grav","runs","coin","cult's","credit","operations","collection","function","follow-up","credit"]
+    },
+    {
+      "id": "lena_1",
+      "source": "Jann on Lena",
+      "text": "Lena originates the credit and the credit Lena puts on the books is the credit I follow up on when it stops performing. In seven years of working from Lena's credit originations, what Lena's originations tell the collector: the initial capacity assessment that Grav and Lena agreed on. When the credit stops performing, the first question is whether the capacity assessment was accurate or whether something has changed. In seven years, the stopped credit is approximately equally split between inaccurate initial assessment and changed circumstances.",
+      "keywords": ["lena","originates","credit","credit","lena","puts","books","credit","follow","up"]
+    },
+    {
+      "id": "skel_1",
+      "source": "Jann on Skel",
+      "text": "Skel handles the Coin Cult's difficult accounts and I've handed over three accounts to Skel in ten years. Of three: two were accounts where the borrower's circumstances had changed in ways that made capacity restoration unlikely. One was an account where the borrower was deliberately non-responsive. In ten years, the three Skel handovers are the three cases where the collection conversation produced no correctable situation. In ten years, three of approximately two hundred and forty collection cases.",
+      "keywords": ["skel","handles","coin","cult's","difficult","accounts","handed","over","three","accounts"]
+    },
+    {
+      "id": "pek_1",
+      "source": "Jann on Pek",
+      "text": "Pek tried to exit the Coin Cult's credit system and the exit attempt was the situation that brought me to Pek's door. In four years since the Pek-exit resolution, what the resolution produced: an understanding between Pek and the Cult about the terms of a managed exit that serves both parties. In four years, the managed exit is working. In four years, what the Pek case taught me: the borrower who wants to leave the credit relationship is often a borrower whose exit, managed well, is better for the Cult than a continued difficult relationship.",
+      "keywords": ["pek","tried","exit","coin","cult's","credit","system","exit","attempt","brought"]
+    },
+    {
+      "id": "what_jann_holds_1",
+      "source": "Jann on what ten years of debt collection holds",
+      "text": "In ten years, approximately two hundred and forty collection conversations. Of two hundred and forty: two hundred and eleven resulted in a corrected situation — a payment plan, a modified term, a capacity restoration that allowed the credit to perform again. Twenty-six resulted in write-offs that Grav authorized. Three went to Skel. In ten years, the correction rate of approximately eighty-eight percent is the measure of the collection function. The collection that results in correction is the function working. The write-off and the Skel handover are the function reaching its limit.",
+      "keywords": ["ten","years","approximately","two","hundred","forty","collection","conversations","two","hundred"]
+    },
+    {
+      "id": "what_jann_wont_do_1",
+      "source": "Jann on what the collection function won't do",
+      "text": "In ten years, the approach that has been suggested to me once by a third party — not by Grav, not by Lena — that I would not take: the collection method that damages the borrower's capacity to repay rather than preserving it. In ten years, the collection function that destroys the borrower's ability to pay anything is the collection function that has destroyed the asset rather than recovered it. In ten years, the collection conversation that results in a destroyed borrower is the conversation that has failed on the function's own terms.",
+      "keywords": ["ten","years","approach","been","suggested","once","third","party","not","grav"]
+    },
+    {
+      "id": "ten_years_1",
+      "source": "Jann on ten years as the Coin Cult's debt collector",
+      "text": "In ten years, the collection function has been the Cult's relationship with the borrower when the borrowing relationship is in difficulty. In ten years, I'm the person the borrower sees when the credit is not performing. In ten years, the borrower's experience of seeing me is not a pleasant experience by definition. In ten years, the way the borrower's experience of seeing me is managed is the way the Coin Cult's reputation for credit management is shaped. In ten years, the collection conversation that respects the borrower's difficulty is the collection conversation that produces the Cult's long-term reputation.",
+      "keywords": ["ten","years","collection","function","been","cult's","relationship","borrower","when","borrowing"]
+    }
+  ]
+}

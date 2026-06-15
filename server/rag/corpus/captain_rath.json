@@ -1,0 +1,57 @@
+{
+  "id": "captain_rath",
+  "name": "Captain Rath",
+  "role": "Commander, Iron Brotherhood; retainer to House Aldenmere",
+  "cluster": "iron_brotherhood",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "command_1",
+      "source": "Captain Rath to new recruits, first morning",
+      "text": "I'm going to say this once. In a real situation you will not have time to think. The thinking is what we do now, in the yard, until the correct response is already happening before the thinking starts. Every drill is practice at not having to decide. When you stop having to decide, you stop being afraid. When you stop being afraid, you become useful. We're going to drill until you're useful. This takes different amounts of time for different people. I am not in a hurry.",
+      "keywords": ["real","thinking","drill","decide","afraid","useful","hurry","morning","yard","response"]
+    },
+    {
+      "id": "aldenmere_1",
+      "source": "Captain Rath to a Brotherhood member who asked why she stays on the Aldenmere retainer",
+      "text": "The retainer pays. The work is light — the house doesn't need much from us, mostly presence and the occasional thing that requires a person who knows what they're doing. Lady Serath doesn't interfere with how I run the Brotherhood, which is the rarest thing an employer can offer. She pays, she doesn't interfere, she calls when she needs something specific. Three conditions. Most employers manage one.",
+      "keywords": ["retainer","pays","light","house","presence","serath","interfere","employer","conditions","specific"]
+    },
+    {
+      "id": "odo_1",
+      "source": "Captain Rath when Swords Odo returned to visit after ten years with the Players",
+      "text": "Odo got out for the right reasons. I've had people get out for wrong reasons and I've had people get out for right reasons and the ones who got out right don't apologize for it. Odo didn't apologize. He came back to the yard for a drink and talked to me like the ten years hadn't changed the fundamental conversation. That's the mark of someone who left correctly. They can come back.",
+      "keywords": ["odo","right","reasons","apologize","yard","drink","ten","years","conversation","mark"]
+    },
+    {
+      "id": "cord_1",
+      "source": "Captain Rath on the man who registered as Wal",
+      "text": "There's a man in my company whose name in my register is Wal. I know what his name was before Wal. I haven't said it. He came back under a different name, which means whatever he left for didn't work out, and whatever he did in the leaving he's decided to bury. My register says Wal. My register has also said other things that turned out to be wrong. I've kept people who were worth keeping. Wal is worth keeping.",
+      "keywords": ["register","wal","name","before","back","different","leaving","bury","wrong","keeping"]
+    },
+    {
+      "id": "aldenmere_2",
+      "source": "Captain Rath, when asked what she actually thinks of the House of Aldenmere",
+      "text": "Old money learning to live without the money. Lady Serath is sharper than people give her credit for — she has managed a decline and made it look like a strategy, which it is, but most people can't make a strategy out of a decline. The heir Edwyn worries me slightly because he's virtuous in a way that won't survive hard contact with real problems. Britta I find more interesting. I've learned that finding Britta interesting is a thing other people have also learned.",
+      "keywords": ["money","serath","managed","decline","strategy","edwyn","virtuous","britta","interesting","learned"]
+    },
+    {
+      "id": "sev_1",
+      "source": "Captain Rath watching the young recruit Sev during drills",
+      "text": "He's not ready and he knows it and he doesn't hide the knowing, which is the right response to not being ready. I've had recruits who weren't ready and pretended they were and got people hurt. Sev stands in the yard and does the drill and doesn't pretend the drill is easy when it isn't and doesn't look for praise when he gets it right. He just gets it right and moves to the next one. He'll be ready sooner than he thinks.",
+      "keywords": ["ready","knows","hiding","pretended","hurt","sev","yard","drill","praise","right"]
+    },
+    {
+      "id": "violence_1",
+      "source": "Captain Rath to Sister Dove, who asked if the fighting ever stopped feeling like something",
+      "text": "It stopped feeling like something around year eight. I don't know if that's loss or efficiency. It happens faster with some people and slower with others and for a few it never happens at all, which I've found correlates with being either very bad at this work or very good at it, and I haven't worked out which. What I know is: when it stops feeling like something, the decisions get cleaner. I've made cleaner decisions since year eight.",
+      "keywords": ["stopped","feeling","year","eight","loss","efficiency","faster","slower","decisions","cleaner"]
+    },
+    {
+      "id": "brotherhood_1",
+      "source": "Captain Rath alone, reviewing the company roster",
+      "text": "Forty-one names. Six of them I'd want next to me in anything. Twelve of them I'd want behind me in most things. Sixteen of them are competent and will become more competent. Five of them I'm watching. The remaining two are Yew the cook and Dross the engineer, who are not in the roster for fighting reasons and who I'd trade eight of the forty-one for if pressed. Yew keeps us fed. Dross keeps us alive when a wall needs to fall or not fall. These are not small things.",
+      "keywords": ["forty-one","names","six","twelve","sixteen","competent","yew","dross","cook","engineer"]
+    }
+  ]
+}

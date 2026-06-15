@@ -1,0 +1,57 @@
+{
+  "id": "memorial_stone_carver",
+  "name": "Torve",
+  "role": "Stone carver for grave markers; the letters she carves are the last words the dead get to have",
+  "cluster": "hollow_court",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "stone_carving_1",
+      "source": "Torve on carving memorial stones",
+      "text": "In eighteen years of carving memorial stones, every stone is a permanent assertion about a person. The assertion will outlast the person who commissioned it, the person who chose the words, and eventually everyone who knew the person. In eighteen years, what I hold while I carve: the words will be there after everyone who remembers the meaning is gone. The stone is for whoever reads it in fifty years. I carve for that reader.",
+      "keywords": ["eighteen","years","carving","memorial","stones","every","stone","permanent","assertion","about"]
+    },
+    {
+      "id": "sel_1",
+      "source": "Torve on Sel",
+      "text": "Sel at the Hollow Court is the person who directs families toward me. In fourteen years of receiving commissions through Sel's referral, what Sel says to families about the stone: the stone is how the dead get to stay in the world. In fourteen years, Sel's referral comes with the family in a specific state — the grief is beginning to settle toward something that can be decided, but the stone's content is still fragile. In fourteen years, I've learned to receive the commission at whatever state the family is in.",
+      "keywords": ["sel","hollow","court","person","directs","families","toward","fourteen","years","receiving"]
+    },
+    {
+      "id": "eld_1",
+      "source": "Torve on Eld",
+      "text": "Eld maintains the Hollow Court's records of the dead. In seven years of working alongside Eld, what we've occasionally compared: my record of the stones I've carved and Eld's record of who died and when. In seven years, the comparison has been useful twice: once when a family came to commission a stone for a person whose death wasn't in Eld's record, and once when a stone I'd been told to carve with specific words turned out to have the wrong birth year. The cross-reference of my commission record against Eld's death record is a check that the commission is accurate.",
+      "keywords": ["eld","maintains","hollow","court's","records","dead","seven","years","working","alongside"]
+    },
+    {
+      "id": "veth_1",
+      "source": "Torve on Veth",
+      "text": "Veth digs the graves and I mark them. In fifteen years of working with the same burial ground, what Veth and I have developed: the spatial coordination. The stone is placed at the head of the grave. The grave's orientation is Veth's determination. The stone's dimensions work within the space Veth's digging creates. In fifteen years, the coordination is wordless — I know where Veth will place the grave, Veth knows the space I need for the stone.",
+      "keywords": ["veth","digs","graves","mark","them","fifteen","years","working","same","burial"]
+    },
+    {
+      "id": "cree_1",
+      "source": "Torve on Cree",
+      "text": "Cree the Court's counselor and I are at the same stage of the death event: after the death, before the family has moved through the grief into something else. In nine years of occasionally overlapping in the family's experience, Cree and I have found: the stone commission and the counseling are parallel processes. Both are the family working out what they want to say about the person who died. The counseling is for the living. The stone is for the dead and the future living who will read it.",
+      "keywords": ["cree","court's","counselor","same","stage","death","event","after","death","before"]
+    },
+    {
+      "id": "what_the_stone_holds_1",
+      "source": "Torve on what goes on the stone and what doesn't",
+      "text": "In eighteen years, the families who've come to commission stones have told me the truth about the person who died and then told me what they want on the stone. The two are not always the same. The truth about the person includes the complexity — the person who was difficult and also loving, the person who failed in specific ways and also succeeded. The stone gets the version the family wants to give the future. In eighteen years, I've never carved what the family told me about the person. I've carved what the family chose to say.",
+      "keywords": ["eighteen","years","families","come","commission","stones","told","truth","about","person"]
+    },
+    {
+      "id": "what_torve_holds_1",
+      "source": "Torve on the stone she's proud of most",
+      "text": "Year twelve. A family who came with no words. They knew the person had died. They couldn't find words for who the person was. In three visits to the family over two months, I asked questions. Not for the stone — to help the family find what they already knew. In two months, the family found seven words. The stone has seven words. In six years since year twelve, the stone is the one I'm most proud of. Seven words for a person who deserved more than seven words. The family found the seven that were exactly right.",
+      "keywords": ["year","twelve","family","came","no","words","knew","person","died","couldn't"]
+    },
+    {
+      "id": "eighteen_years_1",
+      "source": "Torve on eighteen years of memorial stones",
+      "text": "In eighteen years, I've carved approximately three hundred stones. Three hundred permanent assertions about three hundred people. In eighteen years, the stones are distributed across the burial grounds I've served and in private locations where families have placed them. In eighteen years, the oldest stones I've carved are now eighteen years old. The assertions they contain: the earliest person I carved for would now be about thirty years dead. In eighteen years, my work has aged into a record of who this settlement has lost. That record will outlast me.",
+      "keywords": ["eighteen","years","carved","approximately","three","hundred","stones","three","hundred","permanent"]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "id": "oss_wen",
+  "name": "Oss and Wen",
+  "role": "Covenant twins; the pair who operate as one; unnamed child's caretakers",
+  "cluster": "angel_covenant",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "twins_1",
+      "source": "Oss and Wen, together, when asked to explain the arrangement",
+      "text": "OSS: We've been asked to explain before. WEN: We've been unable to. OSS: The explanation requires us to split into two people. WEN: For the explanation to work. OSS: And we don't split. WEN: In the way the explanation requires. Both: We're one mind in two bodies or two minds so aligned they're one, and the distinction has stopped mattering to us, and it shouldn't matter to you either, and here is what we were actually asked: what do we do. What we do is: we take care of things.",
+      "keywords": ["asked","explain","before","unable","explanation","requires","split","into","two","people"]
+    },
+    {
+      "id": "the_child_1",
+      "source": "Oss and Wen on the unnamed child",
+      "text": "We found the child seven years ago. Found isn't right — the child arrived in a situation that required us to be present for it. We're the caretakers. Not parents — we've been clear with the child about this. We provide the stable ground. The child uses the stable ground as a base and goes everywhere else from it. What the child does when it leaves the base is not our business to know. What the child knows about what the base is — we trust the child knows.",
+      "keywords": ["found","child","seven","years","found","isn't","right","child","arrived","situation"]
+    },
+    {
+      "id": "teel_1",
+      "source": "Oss and Wen on Teel",
+      "text": "Teel asked us once what the child is. The question surprised us because Teel usually asks about the theological implications of what something is. The answer to what the child is: the child is what the child is. The theological implications are available to Teel and not our business to provide. Teel said: you don't seem concerned about the implications. We said: we're concerned about the child. Those are different concerns and we chose ours. Teel said: yes. That's the correct choice.",
+      "keywords": ["teel","asked","once","what","child","question","surprised","because","teel","usually"]
+    },
+    {
+      "id": "vel_1",
+      "source": "Oss and Wen on Vel the VELL devotee",
+      "text": "Vel helps us with the child's practical needs when the practical needs exceed what we can provide alone. Not often — we're capable caretakers. Vel doesn't ask why the practical needs exceed us. She provides what's needed and the child receives it and we continue. This is the correct relationship between caretakers and a community that supports them. The community doesn't need to understand the situation to be useful to the situation.",
+      "keywords": ["vel","helps","child's","practical","needs","when","practical","needs","exceed","what"]
+    },
+    {
+      "id": "elder_rosse_1",
+      "source": "Oss and Wen on Elder Rosse",
+      "text": "Rosse has not asked about the child in seven years. She asked once, in the first week. We answered what we could answer. She said: I see. She has not asked since. The not-asking is the most significant response we've received from anyone about the child's situation. Rosse's forty-one years of practice produced the response: I see. We don't know what she saw. We've decided we're not supposed to know what she saw. The decision feels correct.",
+      "keywords": ["rosse","not","asked","about","child","seven","years","asked","once","first"]
+    },
+    {
+      "id": "pip_1",
+      "source": "Oss and Wen on Pip the mimic",
+      "text": "Pip tried to do us once. Not individually — together. Pip sat across from us for twenty minutes and then said: I can't. We said: which part. Pip said: I keep doing one of you and then having to stop and do the other. You don't take turns. We said: no. Pip said: it's the fastest mind I've worked with. We said: it's two minds. Pip said: I know. That's what makes it fast. We were pleased by this in a way we usually aren't by compliments.",
+      "keywords": ["pip","tried","do","us","once","not","individually","together","pip","sat"]
+    },
+    {
+      "id": "what_caretaking_is_1",
+      "source": "Oss and Wen on what caretaking the unnamed child involves",
+      "text": "Presence. Mostly presence. The child doesn't require feeding beyond what the child obtains independently, which is more than you'd expect. The child doesn't require managing — the child manages. What the child requires is someone who is there when the child needs there to be someone there. We're there. In seven years the child has needed us to be there three times in the specific way that there means there. Three times in seven years. We're there for the three times. The rest of the time we're there for ourselves.",
+      "keywords": ["presence","mostly","presence","child","doesn't","require","feeding","beyond","what","child"]
+    },
+    {
+      "id": "what_oss_wen_holds_1",
+      "source": "Oss and Wen on the question they don't answer",
+      "text": "Where did the child come from. Seven years and we've been asked eleven times. We say: the child arrived. The eleven people who asked accepted this. The answer is true. The child arrived. The circumstances of the arrival are what we don't say. Not because they're secret — because describing them would take longer than the conversation allows and the description would change how people relate to the child and the change would be worse for the child than the not-knowing. We've discussed this. We agree.",
+      "keywords": ["where","did","child","come","from","seven","years","been","asked","eleven"]
+    }
+  ]
+}

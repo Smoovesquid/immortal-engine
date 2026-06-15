@@ -1,0 +1,57 @@
+{
+  "id": "lenn_acolyte",
+  "name": "Lenn",
+  "role": "Temple acolyte; rescued from the cellar by Ord; works under Archon Vel",
+  "cluster": "temple_seven_virtues",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "cellar_1",
+      "source": "Lenn when asked how they came to serve at the Temple",
+      "text": "I fell into the Temple cellar when I was seven. Through a grate that was loose. I was down there for six hours before Ord heard me. He got me out and brought me to the Temple because the Temple was the nearest building with light and people in it. Vel gave me food and a place to sleep and asked three days later if I wanted to stay. I said yes. I've been here since. The answer to how I came to serve here is: through a grate.",
+      "keywords": ["fell","temple","cellar","seven","grate","loose","six","hours","ord","heard"]
+    },
+    {
+      "id": "ord_1",
+      "source": "Lenn on Ord the gravedigger",
+      "text": "Ord saved me. Not dramatically — he heard a sound, he investigated, he got me out. He's the kind of person who does the exact necessary thing without more. I've gone to the graveyard to say thank you properly and he said: you were in the cellar, I was near the cellar. This was accurate. I left him a jar of the Temple's honey the next year. He said: this is good honey. We have had this level of conversation three more times in fourteen years. I find it satisfying.",
+      "keywords": ["ord","saved","not","dramatically","heard","sound","investigated","necessary","graveyard","thank"]
+    },
+    {
+      "id": "vel_1",
+      "source": "Lenn on Archon Vel",
+      "text": "Vel has been my teacher since I was seven. This means he taught me the angels before I had any reason to doubt them and he taught me the framework before I knew there were other frameworks. I'm twenty-one now and I'm noticing the seams where the framework was assembled. Vel knows I'm noticing them. He says: the seams are where the interesting questions live. I say: and when I've asked the interesting questions? He says: bring them to me. I'm working toward that conversation.",
+      "keywords": ["vel","teacher","since","seven","angels","framework","twenty","one","noticing","seams"]
+    },
+    {
+      "id": "almas_1",
+      "source": "Lenn on the almskeeper Almas",
+      "text": "Almas showed me the distribution work in my second year. I was eight. She gave me the task of counting the people in the line, which I did, and then told me to describe what I noticed. I said: the number is the same each day but the people are different. She said: yes. I said: does that mean the line is full of different situations or the same situation with different faces? She said: which do you think. I've been thinking about that question for thirteen years.",
+      "keywords": ["almas","showed","distribution","work","second","year","eight","counting","people","line"]
+    },
+    {
+      "id": "teel_1",
+      "source": "Lenn after reading Teel's most alarming paper",
+      "text": "Teel says the angels and demons are expressions of the same mechanism. I've read it three times. I've checked the methodology the way Osven taught me to check methodology when he lent me books. The methodology holds. The conclusion, if correct, means that what I've been devoted to since age seven is not what I thought it was, but is still what it is. ERRAN is ERRAN regardless of what the mechanism beneath ERRAN is. I think this is correct. I also think this is exactly the question Vel says to bring to him.",
+      "keywords": ["teel","angels","demons","expressions","mechanism","read","three","times","methodology","osven"]
+    },
+    {
+      "id": "fourteen_1",
+      "source": "Lenn on the fourteen divine figures",
+      "text": "I was taught the fourteen in a specific order: seven angels in order of frequency of human expression, then seven demons in order of threat to the soul. The order was Vel's pedagogical choice. I didn't know this until I found Osven's texts, which arrange them differently — by the relationship between angel and demon pairs. MERETH and VAUNTRETH are paired. ALMASOSE and HAGRETH are paired. Each virtue paired with its specific corruption. The pair structure is more interesting than the list. Why did Vel teach the list?",
+      "keywords": ["fourteen","taught","seven","angels","frequency","human","expression","demons","threat","soul"]
+    },
+    {
+      "id": "father_len_1",
+      "source": "Lenn on the circuit priest Father Len",
+      "text": "Father Len comes to the Temple between circuits. He and Vel disagree about several things and both find the disagreement productive. I've watched them disagree for nine years. What I've learned from watching: the disagreement is real, both of them know the disagreement is real, and neither of them has decided that being right is more important than the continued conversation. This is a model I want to keep. I don't know if I'm capable of it yet.",
+      "keywords": ["father","len","comes","temple","circuits","vel","disagree","several","things","productive"]
+    },
+    {
+      "id": "dove_1",
+      "source": "Lenn on Sister Dove's practice",
+      "text": "Dove does the work. Whatever work is in front of her, she does it and when it's done she does the next work. I've watched her for fourteen years. What I notice is that she doesn't treat the interesting work differently from the uninteresting work. The hinge is the hinge — I heard her say this once, paraphrasing Wrendle. The prayer scroll and the water carrier get the same attention. ERRAN has the same instruction for both: do it fully. Lenn is trying to learn to do that.",
+      "keywords": ["dove","work","front","does","done","next","watch","fourteen","years","uninteresting"]
+    }
+  ]
+}

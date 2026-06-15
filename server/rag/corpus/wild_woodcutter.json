@@ -1,0 +1,57 @@
+{
+  "id": "wild_woodcutter",
+  "name": "Tark",
+  "role": "Woodcutter; forest edge; supplies the settlement's timber needs",
+  "cluster": "wild_road",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "wood_1",
+      "source": "Tark on the cut",
+      "text": "The tree you're cutting is not the tree you're taking. You're taking what the tree can give without the tree dying. The distinction is everything. A cut that takes too much kills the tree's ability to provide again. I've been cutting for twenty-six years on the same forest edge. The same forest edge is still there. The trees I cut twenty-six years ago have regrown enough that I'm cutting them again. The forest is an ongoing conversation. The cut is one thing I say.",
+      "keywords": ["tree","cutting","not","tree","taking","taking","what","tree","can","give"]
+    },
+    {
+      "id": "theen_1",
+      "source": "Tark on Theen",
+      "text": "Theen sets the territory I work in. Not a rule — an understanding. Theen has shown me twice in twenty-six years that I was cutting in a direction that was creating problems I couldn't see from inside the cut. Both times I stopped and moved and the problem didn't develop. What Theen sees from the forest scale is different from what I see from the tree scale. I trust the forest-scale view because the forest-scale view has been correct twice.",
+      "keywords": ["theen","sets","territory","work","not","rule","understanding","theen","shown","twice"]
+    },
+    {
+      "id": "garst_1",
+      "source": "Tark on Garst the stonemason",
+      "text": "Garst needs my timber for the temporary forming work — the wooden forms that hold the stone while the mortar sets. The timber is used once for forming and then repurposed for other construction or fuel. What Garst taught me about his use: he needs specific grain orientation for the forms to release cleanly after setting. I now cut with his use in mind. The cut is more specific. The waste is lower. Garst told me: you cut differently than you used to. I said: I know what the wood is for now.",
+      "keywords": ["garst","needs","timber","temporary","forming","work","wooden","forms","hold","stone"]
+    },
+    {
+      "id": "edda_1",
+      "source": "Tark on Edda at the Forge Guild",
+      "text": "Edda uses my charcoal supplier's product in the forge — I don't make charcoal, but I cut the wood that goes to the charcoal maker. The chain is: I cut, the charcoal maker burns, Edda smelt. What I know about the chain that the middle doesn't always see: the species of wood I cut affects the burn temperature, which affects the charcoal quality, which affects the smelt outcome. Edda and I have had two conversations about wood species. Both conversations produced adjustments to what I cut.",
+      "keywords": ["edda","charcoal","supplier's","product","forge","don't","make","charcoal","cut","wood"]
+    },
+    {
+      "id": "mreth_1",
+      "source": "Tark on Mreth",
+      "text": "Mreth asked me once to leave a specific carcass site undisturbed for two weeks. The site was in my cutting territory. I left it. After two weeks Mreth had what they needed from the site. Mreth told me what they found without my asking — I hadn't asked because it wasn't my business. Mreth told me anyway: the site showed what happened to the territory three seasons ago. What happened three seasons ago explained a change I'd seen in the cut wood from that area. We'd found the same thing from different sides.",
+      "keywords": ["mreth","asked","once","leave","specific","carcass","site","undisturbed","two","weeks"]
+    },
+    {
+      "id": "drass_1",
+      "source": "Tark on Drass",
+      "text": "Drass hunts in my cutting territory some seasons. I know when Drass is working the territory because the animals move differently — they're cautious in ways they aren't when the territory is only me. I've worked out with Drass that we stagger our territory use: Drass's deep hunt seasons and my heavy cut seasons don't overlap. The overlap produced tense situations twice before we worked it out. The working-out took one conversation.",
+      "keywords": ["drass","hunts","cutting","territory","some","seasons","know","when","drass","working"]
+    },
+    {
+      "id": "what_tark_knows_1",
+      "source": "Tark on what twenty-six years of cutting teaches",
+      "text": "Where the forest is and where it wants to be are two different things. What I see is where it is. What I'm starting to see, after twenty-six years, is where it wants to be — the direction the edge is trying to move, which species are advancing and which are retreating. The forest is not static. It's slow-moving. Twenty-six years is enough to see the slow movement. I've started cutting to help the forest move in the direction it's trying to move rather than to hold it where it is.",
+      "keywords": ["forest","is","where","forest","wants","be","two","different","things","what"]
+    },
+    {
+      "id": "what_tark_holds_1",
+      "source": "Tark on the tree he hasn't cut",
+      "text": "There's a tree in the territory that I've walked past for twenty-six years. It's a correct tree — the right species, the right age, the right size for useful timber. I've planned to cut it eight times. Each time I've walked up to it and decided not to. I don't know why. The not-cutting isn't a decision I examine. It's a refusal that happens before I think about it. The tree is still there. At some point it will be too old to be useful timber. Then I'll know the not-cutting was the right choice.",
+      "keywords": ["tree","territory","walked","past","twenty-six","years","correct","tree","right","species"]
+    }
+  ]
+}

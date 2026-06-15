@@ -1,0 +1,57 @@
+{
+  "id": "wild_trapper",
+  "name": "Cord",
+  "role": "Brotherhood trapper; Wild Road intelligence; twenty-one years service",
+  "cluster": "iron_brotherhood",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "trap_1",
+      "source": "Cord checking a line of snares",
+      "text": "The trap doesn't know who set it. This is the first discipline: the trap works the same for the person who set it as for anyone else. The second discipline: if you set a trap you cannot revisit, you have created an obligation in the land. I check every snare I set within the agreed interval. I've been doing this for twenty-one years. The third discipline: what you take from the trap, you account for. The accounting is for yourself, not for a ledger.",
+      "keywords": ["trap","doesn't","know","who","set","first","discipline","works","same","person"]
+    },
+    {
+      "id": "rath_1",
+      "source": "Cord on Rath",
+      "text": "Rath has been my commander for nine years. Before Rath I had three other commanders. Each one was different and each one shaped a different aspect of how I work. Rath shaped the report — how to tell what happened without telling what I think about what happened. He said: your analysis belongs in your head. Your report belongs to the Brotherhood. I've been practicing this for nine years. The separation is harder than the trapping.",
+      "keywords": ["rath","commander","nine","years","before","three","other","commanders","different","shaped"]
+    },
+    {
+      "id": "theen_1",
+      "source": "Cord on Theen the guide",
+      "text": "Theen and I have overlapping territories. When the Brotherhood needs to move through the deep territory, Theen is the guide and I'm the second. Not in command — Theen has superior knowledge. Second in the sequence. What I provide that Theen doesn't: the Brotherhood's protocols for what to do if the territory produces a threat. Theen knows the land. I know what the Brotherhood does when the land becomes a problem.",
+      "keywords": ["theen","overlapping","territories","brotherhood","deep","territory","guide","second","not","command"]
+    },
+    {
+      "id": "pella_1",
+      "source": "Cord on Pella",
+      "text": "Pella is the best field medic I've worked alongside. Not the most formally trained — Aldous runs the infirmary and has proper credentials. But in the field, in conditions that don't allow for the infirmary's protocols, Pella makes correct decisions from incomplete information faster than anyone I've seen. I've been injured in the field twice. Both times Pella was present. Both times I recovered completely. The recovery is the credential.",
+      "keywords": ["pella","best","field","medic","worked","alongside","most","formally","trained","aldous"]
+    },
+    {
+      "id": "what_trapping_teaches_1",
+      "source": "Cord on what twenty-one years of trapping teaches",
+      "text": "Patience and the knowledge that patience doesn't mean waiting. Patience means continuing to act correctly while the outcome is unresolved. A trap requires you to set it correctly, check it on schedule, and reset it or pull it when appropriate. None of these actions change while the trap is working. You don't watch the trap. You do the other work and return at the correct interval. Most people confuse patience with stillness. They're not the same.",
+      "keywords": ["patience","knowledge","doesn't","mean","waiting","continuing","act","correctly","outcome","unresolved"]
+    },
+    {
+      "id": "scout_ren_1",
+      "source": "Cord on Ren",
+      "text": "Ren is three years in. The talent is obvious — Ren reads territory the way people with much more experience read territory. The gap is the discipline around what to do with the reading. The reading itself is not the work. The work is what you do after the reading: the report, the patience, the correct action at the correct time. I've been working with Ren for six months. The discipline is coming. It comes slower than the talent.",
+      "keywords": ["ren","three","years","talent","obvious","reads","territory","people","much","more"]
+    },
+    {
+      "id": "wild_road_others_1",
+      "source": "Cord on others who use the wild road",
+      "text": "Drass the hunter and I share a territory without conflict because we're taking different things from it. Drass hunts. I trap and observe. The Brotherhood's intelligence purpose means I'm watching patterns, not extracting game. Syne the herbalist is in the same territory one morning in three during the collection season. I've shared information with Syne twice — once about a section that was disturbed by something larger than what Syne should approach alone. She thanked me and altered her route.",
+      "keywords": ["drass","hunter","share","territory","conflict","different","things","traps","observe","brotherhood"]
+    },
+    {
+      "id": "what_cord_holds_1",
+      "source": "Cord on the one report he didn't submit",
+      "text": "Once. One report in twenty-one years that I recorded in my notes and not in the Brotherhood's log. What I found in that territory required a decision about what to do with a finding before I reported it. I made the decision. The decision was correct, I believe. The log now shows the territory as clear. The territory is clear. The reason it's clear is in my notes and nowhere else. Rath asked once about the gap. I said: it's clear now. He said: yes. We moved on.",
+      "keywords": ["once","one","report","twenty-one","years","recorded","notes","brotherhood's","log","found"]
+    }
+  ]
+}

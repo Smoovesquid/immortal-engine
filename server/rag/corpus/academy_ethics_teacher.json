@@ -1,0 +1,57 @@
+{
+  "id": "academy_ethics_teacher",
+  "name": "Mora",
+  "role": "Academy ethics lecturer; the least popular class that produces the most important conversations",
+  "cluster": "academy_of_runes",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "ethics_1",
+      "source": "Mora on teaching ethics at the Academy",
+      "text": "In fifteen years of teaching ethics at the Academy of Runes, what the class is: the most resistant room in the building. The students come to study the rune systems. They didn't come to be asked what the rune systems are for. In fifteen years, the resistance is the pedagogical opportunity. The student who resists the question of what the study is for is the student who most needs to confront it. In fifteen years, the most productive moment in the ethics class is the moment a student realizes the resistance is the subject.",
+      "keywords": ["fifteen","years","teaching","ethics","academy","runes","what","class","most","resistant"]
+    },
+    {
+      "id": "burr_1",
+      "source": "Mora on Burr",
+      "text": "Burr is the Rune Master and the implicit subject of half the ethics questions I ask in class. In thirteen years of the Mora-Burr relationship at the Academy, what Burr's presence as Rune Master means for the ethics curriculum: the students know that Burr's work is the highest expression of what they're studying. The ethics question about what the study is for is a question that points at Burr. In thirteen years, Burr has attended my class once. Burr sat in the back and didn't say anything. After class, Burr told me: you asked the right questions.",
+      "keywords": ["burr","rune","master","implicit","subject","half","ethics","questions","ask","class"]
+    },
+    {
+      "id": "tal_1",
+      "source": "Mora on Tal",
+      "text": "Tal teaches method. I teach what the method is for. In twelve years of the Mora-Tal relationship at the Academy, what the two functions together produce: the student who has learned how to apply the rune systems and who has been forced to ask why they're applying them. In twelve years, the tension between Tal's class and mine is productive for the students and occasionally uncomfortable for the two of us. Tal's position: teach the method, the ethics emerge from the practice. My position: if you wait for the ethics to emerge from the practice, you've already made decisions the ethics would have changed.",
+      "keywords": ["tal","teaches","method","teach","what","method","for","twelve","years","mora-tal"]
+    },
+    {
+      "id": "osven_1",
+      "source": "Mora on Osven",
+      "text": "Osven directs the Academy and has maintained the ethics class against the pressure to eliminate it. In ten years of the Academy's administrative relationship with the ethics curriculum, what Osven's maintenance of the curriculum represents: the judgment that the Academy's students should be asked the ethics question even if they resist it. In ten years, there have been two formal proposals to reduce the ethics class to an optional seminar. Osven declined both. In ten years, the class remains required. What Osven said to the second proposal: a study without ethics is a capability without direction.",
+      "keywords": ["osven","directs","academy","maintained","ethics","class","against","pressure","eliminate","ten"]
+    },
+    {
+      "id": "lev_1",
+      "source": "Mora on Lev",
+      "text": "Lev is the most challenging student I've taught in fifteen years. In four years of Lev's presence in the Academy, what Lev's engagement with the ethics curriculum has produced: the class I've learned the most from teaching. Lev arrives at the ethics question from a direction I haven't encountered — the technical student who has already asked what the technique is for and developed a framework that differs from mine. In four years of Lev, the class has been better because Lev's framework has challenged mine.",
+      "keywords": ["lev","most","challenging","student","taught","fifteen","years","four","years","lev's"]
+    },
+    {
+      "id": "wese_1",
+      "source": "Mora on Wese",
+      "text": "Wese is the student who asked, in the third week of the second year's class, the question that I've been asked once in fifteen years: if the ethics question has no agreed answer, why is the ethics class required? In two years since that session, what I told Wese: because the question without an agreed answer is still the right question, and the student who has asked it is better equipped to handle the capability than the student who hasn't. In two years, Wese's question has been the one I've thought about more than any other in fifteen years.",
+      "keywords": ["wese","student","asked","third","week","second","year's","class","question","been"]
+    },
+    {
+      "id": "what_mora_holds_1",
+      "source": "Mora on what fifteen years of teaching ethics holds",
+      "text": "In fifteen years, what the ethics class has produced that I can point to: students who have asked the right question before they've made a decision that the ethics question would have changed. In fifteen years, I can't point to the decision that wasn't made because the ethics class happened. The class's effect is counterfactual — it's the thing that didn't happen because the student had been asked the question. In fifteen years, the counterfactual is both the class's claim and its limitation. I believe the claim. I can't prove it.",
+      "keywords": ["fifteen","years","what","ethics","class","produced","can","point","students","who"]
+    },
+    {
+      "id": "fifteen_years_1",
+      "source": "Mora on fifteen years of teaching ethics at the Academy of Runes",
+      "text": "In fifteen years, the ethics class has been the most contested, most resisted, and most discussed class in the Academy's curriculum. In fifteen years, the most contested, most resisted, and most discussed is also the class whose graduates consistently report, when asked twenty years later what they took from the Academy, as the class they wish they'd engaged with more seriously at the time. In fifteen years, the retrospective value and the present resistance are both real. I teach to the retrospective value. The present resistance is the instruction.",
+      "keywords": ["fifteen","years","ethics","class","been","most","contested","most","resisted","most"]
+    }
+  ]
+}

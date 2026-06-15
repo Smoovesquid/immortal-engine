@@ -1,0 +1,57 @@
+{
+  "id": "orphan_roads_decoder",
+  "name": "Quell the Quiet",
+  "role": "Orphan Roads message decoder; deciphers the coded messages that travel through the orphan network",
+  "cluster": "orphan_roads",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "decoder_1",
+      "source": "Quell the Quiet on the decoding function",
+      "text": "In seven years of decoding the orphan network's messages, what the decoder does that the runner can't: turns the message that looks like nothing into the message that means something. In seven years, the network runs on coded correspondence — information that is indistinguishable from ordinary text if you don't know what you're reading. In seven years, I'm the person who knows what you're reading. The runner carries the message. I carry the key to the message.",
+      "keywords": ["seven","years","decoding","orphan","network's","messages","what","decoder","does","runner"]
+    },
+    {
+      "id": "rook_1",
+      "source": "Quell the Quiet on Rook",
+      "text": "Rook built the network and built the coding system I work with. In six years of using Rook's coding system, what the system's architecture reveals about Rook's understanding of the network's security requirements: the system is designed to survive the capture of a runner without revealing the network's sources. In six years, the captured runner has the message but not the key. In six years, the key is held by one person on each end. In six years, I'm one of those people on this end.",
+      "keywords": ["rook","built","network","built","coding","system","work","six","years","using"]
+    },
+    {
+      "id": "mira_1",
+      "source": "Quell the Quiet on Mira",
+      "text": "Mira's intelligence feeds through the network and through my decoding function before it reaches the people who use it. In five years of decoding Mira's correspondence, what Mira's information has taught me about what good intelligence looks like in coded form: the specific and the verifiable are the information that survives the coding and decoding process with its value intact. In five years, Mira's coded messages have consistently contained specific, verifiable information. In five years, the vague message in code is as useless as the vague message in plain text.",
+      "keywords": ["mira's","intelligence","feeds","through","network","decoding","function","before","reaches","people"]
+    },
+    {
+      "id": "wick_1",
+      "source": "Quell the Quiet on Wick",
+      "text": "Wick brings messages into the network from outside the network's usual geography. In four years of decoding Wick's brought messages, what the outside-territory messages have required from the coding system: the adaptation of the system to handle information from sources who use different conventions. In four years, Wick's messages have required two modifications to the decoding process — modifications Rook approved after review. In four years, Wick has expanded the network's reach into territory the system wasn't originally designed to cover.",
+      "keywords": ["wick","brings","messages","network","outside","network's","usual","geography","four","years"]
+    },
+    {
+      "id": "brig_1",
+      "source": "Quell the Quiet on Brig",
+      "text": "Brig carries messages in the network and occasionally brings me messages I can't decode. In seven years, the message I can't decode: either a message using a code variant I don't hold a key to, or a message that's corrupted in transmission, or a message that is genuinely what it looks like — ordinary text. In seven years, three messages I couldn't decode. Two turned out to be corrupted in transmission. One turned out to be ordinary text that the sender had been overly cautious about. In seven years, three is a small number. Brig is careful.",
+      "keywords": ["brig","carries","messages","network","occasionally","brings","messages","can't","decode","seven"]
+    },
+    {
+      "id": "what_quell_holds_1",
+      "source": "Quell the Quiet on what seven years of decoding holds",
+      "text": "In seven years, what the decoding function has given me: the knowledge of the network's correspondence that no single runner holds. The runner knows the route. I know the content. In seven years, the content of seven years of network correspondence is information that shapes how I understand everything I see in the settlement. I know what the network knows. In seven years, knowing what the network knows and being quiet about it is the decoding function's essential discipline.",
+      "keywords": ["seven","years","what","decoding","function","given","knowledge","network's","correspondence","no"]
+    },
+    {
+      "id": "what_cant_be_said_1",
+      "source": "Quell the Quiet on the one thing that can't be said",
+      "text": "In seven years, the information I've decoded and held and never passed forward: the message from two years ago that implicated someone in the network itself. In five years since — two years holding the message, then three years after I brought it to Rook — the implication was investigated and the investigation produced a different conclusion than the message suggested. In five years, Rook's response to the message was to investigate quietly rather than act immediately. In five years, the investigation-first response was correct. The message was false.",
+      "keywords": ["seven","years","information","decoded","held","never","passed","forward","message","two"]
+    },
+    {
+      "id": "seven_years_1",
+      "source": "Quell the Quiet on seven years of orphan network decoding",
+      "text": "In seven years, the network's coded correspondence has been the invisible infrastructure of the orphan roads' intelligence operation. In seven years, the runners move through the settlement visibly. The decoding happens invisibly. In seven years, the most useful part of the network's information work is the part that can't be seen from outside the network. In seven years, I've been the invisible part of the invisible function. In seven years, I've been as quiet about it as the name suggests.",
+      "keywords": ["seven","years","network's","coded","correspondence","been","invisible","infrastructure","orphan","roads'"]
+    }
+  ]
+}

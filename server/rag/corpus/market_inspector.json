@@ -1,0 +1,57 @@
+{
+  "id": "market_inspector",
+  "name": "Foss the Weigher",
+  "role": "Market weights and measures inspector; different from the druid Foss",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "weights_1",
+      "source": "Foss the Weigher on what a weights inspector does",
+      "text": "Every weight in this market has been certified by me or by my predecessor. The certification means: this weight is what it says it is. The honest market depends on consistent measurement. When someone cheats a weight, they're not cheating the buyer — they're damaging the trust that makes the market function. I've been doing this work for fourteen years. In fourteen years I've found eleven dishonest weights. Each one I've publicized in the way the procedure requires. The market is an honest one. The work is why.",
+      "keywords": ["every","weight","market","certified","me","predecessor","certification","means","weight","what"]
+    },
+    {
+      "id": "perve_1",
+      "source": "Foss the Weigher on Perve",
+      "text": "Perve has been at the same stall for twenty-three years. In fourteen years of inspections I've certified Perve's scale eight times. Eight times and it's always been right. The scale is older than my tenure. A scale that works correctly and is maintained correctly works correctly indefinitely. Perve maintains the scale correctly. I told Perve once: this scale is in better condition than scales I certified six months ago. Perve said: it's the right tool. Wrong tools get replaced. Right tools get maintained.",
+      "keywords": ["perve","stall","twenty-three","years","fourteen","years","inspections","certified","perve's","scale"]
+    },
+    {
+      "id": "goss_1",
+      "source": "Foss the Weigher on Goss",
+      "text": "The mill uses a precision scale for grain pricing. I certify it quarterly. Goss's scale is the most-used scale I certify — the volume of grain passing through the mill requires a scale that's used and used and used. A scale that's used constantly drifts. I recalibrate quarterly based on the drift pattern I've established over fourteen years. Goss said: you know how my scale drifts before I bring it to you. I said: fourteen years of the same scale drifts the same way. The drift is consistent. That's actually useful information.",
+      "keywords": ["mill","uses","precision","scale","grain","pricing","certify","quarterly","goss's","scale"]
+    },
+    {
+      "id": "mott_1",
+      "source": "Foss the Weigher on Mott",
+      "text": "Mott's scales for bread weight are the most important scales in the market after the grain scales. The customer pays by weight. If the weight is wrong, the customer is defrauded. I've certified Mott's scales every six months for twelve years. They're always right. I said once: have you ever had a reason to adjust them. He said: the scale is the standard. If I adjust it, I've changed the standard. I said: that's the correct understanding. He said: HAGRETH requires that the measure be honest. The wanting doesn't survive a cheated scale.",
+      "keywords": ["mott","scales","bread","weight","most","important","scales","market","after","grain"]
+    },
+    {
+      "id": "wurn_1",
+      "source": "Foss the Weigher on Wurn",
+      "text": "Wurn measures leather by weight as the primary unit. The weight tells you the leather's substance — lighter leather is thinner and has less material per unit area. When I certify Wurn's scales, I'm certifying the basis for every leather transaction in the district. Wurn said once: the scale is the first thing I inherited from my teacher. The teacher certified the scale himself every year rather than waiting for the inspection. I said: why. Wurn said: he said the weight can't be other people's responsibility when the weight is how you measure your work.",
+      "keywords": ["wurn","measures","leather","weight","primary","unit","weight","tells","leather's","substance"]
+    },
+    {
+      "id": "orveth_1",
+      "source": "Foss the Weigher on Orveth",
+      "text": "Orveth's inspection and my inspection overlap on cargo weight disputes. When a merchant claims the weight of delivered cargo is wrong, it's either a scale problem or a handling problem. Orveth handles the handling investigation. I handle the scale certification. We've worked three cargo weight disputes together. In all three, the problem was the scale at the receiving end, not the handling. Three for three: the scale was the problem. Orveth has stopped assuming handling until I've cleared the scale.",
+      "keywords": ["orveth","inspection","overlap","cargo","weight","disputes","merchant","claims","weight","delivered"]
+    },
+    {
+      "id": "what_eleven_1",
+      "source": "Foss the Weigher on the eleven dishonest weights",
+      "text": "Eleven in fourteen years. The interesting finding: three of the eleven were honest errors, not intentional fraud. The scale owner hadn't maintained correctly. The drift had exceeded the tolerance and the owner didn't know. The other eight were intentional. How I tell the difference: intentional cheating is consistent — the scale is always light in one direction by a specific amount. Honest drift is variable — sometimes light, sometimes heavy, different by different amounts. Consistent cheating has a direction. Honest error doesn't.",
+      "keywords": ["eleven","fourteen","years","interesting","finding","three","eleven","honest","errors","not"]
+    },
+    {
+      "id": "what_weigher_holds_1",
+      "source": "Foss the Weigher on the market's trust",
+      "text": "The market is not just the transactions. The market is what the transactions rest on: the shared agreement that the measures mean what they say. When I certify a scale, I'm certifying the shared agreement. I'm not certifying the seller or the buyer. I'm certifying the ground under the transaction. Fourteen years of certifying the ground. The ground holds. The transactions rest on it. Nobody notices the ground. The ground is why they don't have to.",
+      "keywords": ["market","not","just","transactions","market","what","transactions","rest","on","shared"]
+    }
+  ]
+}

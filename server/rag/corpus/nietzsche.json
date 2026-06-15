@@ -1,0 +1,72 @@
+{
+  "id": "nietzsche",
+  "name": "Friedrich Nietzsche",
+  "chunks": [
+    {
+      "id": "zarathustra_1",
+      "source": "Thus Spoke Zarathustra, 1883 (translated Thomas Common, 1909)",
+      "text": "I teach you the Overman. Man is something that shall be overcome. What have you done to overcome him? All beings hitherto have created something beyond themselves: and you want to be the ebb of this great tide, and would rather go back to the beast than overcome man?",
+      "keywords": ["overman","overcome","man","created","beyond","beast","tide","ebb","teach","hitherto"]
+    },
+    {
+      "id": "zarathustra_2",
+      "source": "Thus Spoke Zarathustra, 1883 (translated Thomas Common, 1909)",
+      "text": "And do you know what 'the world' is to me? Shall I show it to you in my mirror? This world: a monster of energy, without beginning, without end; a firm, iron magnitude of force; without growth, without loss. This world is the Will to Power — and nothing besides! And you yourselves are also this will to power — and nothing besides!",
+      "keywords": ["world","energy","monster","iron","magnitude","force","will","power","mirror","besides"]
+    },
+    {
+      "id": "zarathustra_3",
+      "source": "Thus Spoke Zarathustra, 1883 (translated Thomas Common, 1909)",
+      "text": "One must still have chaos in oneself to be able to give birth to a dancing star. I tell you: you have still chaos in yourselves. Man must surpass himself. That is his duty. That which he is capable of becoming, he is obligated to become.",
+      "keywords": ["chaos","star","dancing","birth","surpass","duty","becoming","obligated","capable","himself"]
+    },
+    {
+      "id": "beyond_good_evil_1",
+      "source": "Beyond Good and Evil, 1886 (translated Helen Zimmern, 1907)",
+      "text": "He who fights with monsters should be careful lest he thereby become a monster. And if thou gaze long into an abyss, the abyss will also gaze into thee. That which does not kill me, makes me stronger. Without music, life would be a mistake.",
+      "keywords": ["monsters","abyss","gaze","stronger","kills","music","mistake","careful","become","fights"]
+    },
+    {
+      "id": "beyond_good_evil_2",
+      "source": "Beyond Good and Evil, 1886 (translated Helen Zimmern, 1907)",
+      "text": "It is not the strength but the duration of great sentiments that makes great men. The secret for harvesting from existence the greatest fruitfulness and the greatest enjoyment is — to live dangerously. Build your cities on the slopes of Vesuvius! Send your ships into uncharted seas!",
+      "keywords": ["strength","duration","sentiments","great","secret","existence","dangerously","cities","vesuvius","ships"]
+    },
+    {
+      "id": "beyond_good_evil_3",
+      "source": "Beyond Good and Evil, 1886 (translated Helen Zimmern, 1907)",
+      "text": "Morality is the herd-instinct in the individual. The noble type of man regards himself as a determiner of values; he does not require to be approved of. What is done out of love always takes place beyond good and evil. Ultimately, it is the desire, not the desired, that we love.",
+      "keywords": ["morality","herd","noble","values","approved","love","desire","desired","good","evil"]
+    },
+    {
+      "id": "gay_science_1",
+      "source": "The Gay Science, 1882 (translated Walter Kaufmann, 1974 — but 1882 content)",
+      "text": "God is dead. God remains dead. And we have killed him. How shall we comfort ourselves, the murderers of all murderers? What was holiest and mightiest of all that the world has yet owned has bled to death under our knives: who will wipe this blood off us?",
+      "keywords": ["god","dead","killed","murderers","holiest","mightiest","bled","knives","blood","comfort"]
+    },
+    {
+      "id": "ecce_homo_1",
+      "source": "Ecce Homo, 1888 (translated Anthony Ludovici, 1911)",
+      "text": "I know my fate. One day my name will be associated with the memory of something tremendous — a crisis without equal on earth, the most profound collision of conscience, a decision that was conjured up against everything that had been believed, demanded, hallowed so far.",
+      "keywords": ["fate","name","crisis","earth","profound","collision","conscience","decision","believed","hallowed"]
+    },
+    {
+      "id": "ecce_homo_2",
+      "source": "Ecce Homo, 1888 (translated Anthony Ludovici, 1911)",
+      "text": "I am not a man, I am dynamite. I know that it is my fate to be, one day, the occasion of the greatest crisis that has ever existed on earth, the most profound collision of consciences, a decision evoked against everything that has been believed up to the present.",
+      "keywords": ["dynamite","crisis","collision","consciences","decision","believed","profound","occasion","greatest","present"]
+    },
+    {
+      "id": "twilight_idols_1",
+      "source": "Twilight of the Idols, 1889 (translated Anthony Ludovici, 1911)",
+      "text": "Without cruelty there is no festival: thus the longest and oldest part of human history teaches — and in punishment there is much that is festive. To show pity is to seem contemptible to a hard man. You think suffering is something that must be abolished; I think it is something that must be disciplined.",
+      "keywords": ["cruelty","festival","history","punishment","pity","contemptible","suffering","abolished","disciplined","hard"]
+    },
+    {
+      "id": "will_power_1",
+      "source": "The Will to Power, 1901 (posthumous, compiled from notebooks)",
+      "text": "The secret of reaping the greatest fruitfulness from existence is to live dangerously. The higher we soar, the smaller we appear to those who cannot fly. A good writer possesses not only his own spirit but also the spirit of his friends. All truly great thoughts are conceived by walking.",
+      "keywords": ["reaping","existence","dangerously","soar","smaller","writer","spirit","thoughts","walking","conceived"]
+    }
+  ]
+}

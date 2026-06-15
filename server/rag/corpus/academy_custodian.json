@@ -1,0 +1,57 @@
+{
+  "id": "academy_custodian",
+  "name": "Burr",
+  "role": "Academy custodian; keeps the building; knows where everything is and has been for thirty years",
+  "cluster": "academy_of_runes",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "building_1",
+      "source": "Burr on the Academy building",
+      "text": "The building is older than anyone who works in it. The newest part is sixty years old. The oldest part was built before the rune tradition formalized. I've been inside every room, every passage, every cellar section. Some of it the Academy knows about. Some of it the Academy knows exists and hasn't fully inventoried. Two sections the Academy doesn't know exist. I know about them because thirty years of maintaining a building means you find all of it eventually.",
+      "keywords": ["building","older","than","anyone","who","works","in","newest","part","sixty"]
+    },
+    {
+      "id": "osven_1",
+      "source": "Burr on Osven",
+      "text": "Osven knows where all the books are. I know where Osven goes when he thinks he's alone. Not surveillance — the building's ventilation system carries sound from specific locations to specific other locations. I know this and I've never told anyone. What I've learned: Osven talks to himself when he's certain he's alone. What he says to himself is the truth of what he's working on, unfiltered. In thirty years I've learned more about the Academy's research through the ventilation than through any other source.",
+      "keywords": ["osven","knows","where","all","books","are","know","where","osven","goes"]
+    },
+    {
+      "id": "students_1",
+      "source": "Burr on the students",
+      "text": "I can tell how a student is doing by how they treat the building. Not by grades — by behavior. Students who are struggling stop cleaning up after themselves. Students who are thriving notice more about the building: they comment on repairs, they ask about the older sections. The students who will stay at the Academy are the ones who start to have a relationship with the building itself. Jenn asked me about the oldest section in her first month. I said: you'll stay.",
+      "keywords": ["tell","how","student","doing","by","how","they","treat","building","not"]
+    },
+    {
+      "id": "wiss_1",
+      "source": "Burr on Wiss",
+      "text": "Wiss asked me about the building's record of what's been stored where. Not the current catalog — the historical placement record. She wanted to know what had been in the third locked room before the third lock was added. I showed her the building maintenance records, which track room use. What she found in them: the room was a preparation room before it was a restricted space. Preparation for what isn't in the maintenance records. I know why. I haven't told Wiss.",
+      "keywords": ["wiss","asked","me","about","building's","record","what's","been","stored","where"]
+    },
+    {
+      "id": "voss_1",
+      "source": "Burr on Voss",
+      "text": "Voss's workshop is the hardest room in the building to maintain. The rune work leaves traces on surfaces that ordinary maintenance doesn't address. I've developed specific cleaning methods for the workshop over fourteen years of maintaining it. Voss doesn't know about the specialized methods. He knows the workshop is always ready when he returns to it. The readiness is thirty years of building knowledge applied to one specific room's specific challenges.",
+      "keywords": ["voss","workshop","hardest","room","building","maintain","rune","work","leaves","traces"]
+    },
+    {
+      "id": "two_rooms_1",
+      "source": "Burr on the two rooms the Academy doesn't know about",
+      "text": "I found the first in the twelfth year. Behind a false wall in the third-floor east corridor. The room is empty and has been empty in my tenure and from the evidence, for a long time before. The second room is below the oldest section and requires knowledge of a specific sequence of the building to reach. Not locked — just unreachable without the sequence. What's in the second room is why I haven't told the Academy. I'm deciding what to do with what's in it. Twenty-seven years of deciding.",
+      "keywords": ["found","first","twelfth","year","behind","false","wall","third-floor","east","corridor"]
+    },
+    {
+      "id": "what_burr_holds_1",
+      "source": "Burr on what the building holds that isn't in any record",
+      "text": "Memory. The building holds memory in the way physical things hold memory — in the wear patterns, in what's been damaged and repaired, in what's been added to and what's been removed. Thirty years of maintaining the building has made me the building's best reader. What I know from reading it: this building has been used for one continuous purpose across its hundred-and-sixty years, and the purpose was always the same thing the Academy does now. The form of the work has changed. The work itself hasn't.",
+      "keywords": ["memory","building","holds","memory","way","physical","things","hold","memory","wear"]
+    },
+    {
+      "id": "what_thirty_years_1",
+      "source": "Burr on thirty years of maintenance",
+      "text": "The building teaches me what it needs. Not when something breaks — before. A joint that's beginning to fail produces sound first, then visible change, then failure. I catch it at the sound stage. In thirty years I've had eleven failures I didn't catch at the sound stage. Eleven in thirty years. Each one was a lesson in what sound I wasn't listening for. I'm listening for more sounds now than I was in year one. The list keeps growing. The failures keep decreasing.",
+      "keywords": ["building","teaches","me","what","needs","not","when","something","breaks","before"]
+    }
+  ]
+}

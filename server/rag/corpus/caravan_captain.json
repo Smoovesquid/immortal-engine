@@ -1,0 +1,57 @@
+{
+  "id": "caravan_captain",
+  "name": "Bela",
+  "role": "Caravan guard captain; Consortium routes; independent",
+  "cluster": "merchant_consortium",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "guard_1",
+      "source": "Bela briefing her guard crew before departure",
+      "text": "The cargo is cloth and spice. The route is the northern road to the second bridge, then south to the harbor. Three days, two camps. The threat profile on the northern road is low — the bandits who used to work that stretch have been gone since last spring. I don't know why. Not knowing why means I run the same security as if they were there. You relax when you understand the absence. I don't understand it.",
+      "keywords": ["cargo","cloth","spice","route","northern","road","bridge","south","harbor","three"]
+    },
+    {
+      "id": "tav_1",
+      "source": "Bela on the Consortium factor Tav",
+      "text": "Tav knows routes and I know threats. Between us we build the plan. He specifies the cargo and the timing and the alternative route if the primary fails. I specify the guard count and the camp positions and the threat response. We don't cross into each other's domain except to inform. He once told me what the cargo was worth and I said: don't tell me that again, it changes how the guards think about the risk.",
+      "keywords": ["tav","knows","routes","threats","cargo","timing","alternative","route","guard","count"]
+    },
+    {
+      "id": "rath_1",
+      "source": "Bela on Captain Rath and the Brotherhood",
+      "text": "I trained under Rath for two years before I went independent. She taught me what she teaches everyone: drill until the response precedes thought. What I added after I left: the environment assessment before the response is even possible. Rath trains for confrontation. I try to not have the confrontation. The approaches aren't opposed — Rath would say the same thing. She'd also say my threshold for avoiding confrontation is higher than she'd set it. She's probably right.",
+      "keywords": ["trained","rath","two","years","independent","taught","drill","response","precedes","thought"]
+    },
+    {
+      "id": "pell_1",
+      "source": "Bela on Pell's maps",
+      "text": "I use Pell's maps and I verify them on the ground as I go. Every divergence I find I note. When I'm back in the harbor I give Pell the notes. He's corrected five things on my primary routes in three years. In exchange he gives me the maps before he sells them to the Consortium. I have them a month before Tav does. That month is valuable.",
+      "keywords": ["pell","maps","verify","ground","divergence","note","harbor","corrected","five","three"]
+    },
+    {
+      "id": "guard_crew_1",
+      "source": "Bela on her crew",
+      "text": "Five full-time and three rotating. The full-time five have been with me between two and seven years. I know their tells — who gets tight under pressure, who gets loose, who is reliable in the third hour of a night watch but not the fifth. I run routes that match the crew's actual capacity, not the crew's stated capacity. Stated capacity is what people think they can do. Actual capacity is what they've done on hard days. I have three years of data on all five.",
+      "keywords": ["five","full-time","three","rotating","years","tells","tight","pressure","loose","reliable"]
+    },
+    {
+      "id": "independence_1",
+      "source": "Bela when asked why she didn't take a permanent Brotherhood posting",
+      "text": "Rath offered once. I said no because the Brotherhood's routes are set by command and mine are set by contract. The difference is: I choose the client and the client's job has to meet my standard before I take it. The Brotherhood takes the assignment. I've turned down two jobs in three years because the risk-to-pay ratio was wrong or the cargo was something I wasn't willing to move. The Brotherhood doesn't turn down assignments. The independence is the tradeoff.",
+      "keywords": ["rath","offered","once","brotherhood","routes","command","contract","choose","client","standard"]
+    },
+    {
+      "id": "the_gap_1",
+      "source": "Bela on the missing bandits from the northern road",
+      "text": "Seven months gone. I've asked everyone I know who works that route. Three merchant caravans, two tinkers, a circuit priest. Nobody has seen them and nobody knows why they stopped. People who prey on roads don't just stop. They die or they get a better situation or something changes the road enough that the road isn't worth preying on anymore. Something changed on the northern road. I don't know what. I run the same security. I keep asking.",
+      "keywords": ["seven","months","gone","asked","everyone","route","merchant","caravans","tinkers","priest"]
+    },
+    {
+      "id": "pay_1",
+      "source": "Bela on what she charges",
+      "text": "The rate is based on the route length, the threat profile, the crew size required, and twenty percent over that for the margin that covers what I don't anticipate. The twenty percent is non-negotiable. If I anticipated everything correctly I wouldn't need it. I've never anticipated everything correctly. The twenty percent has been used on eight out of eleven contracts. The three it wasn't used on are the reason some clients ask me to remove it. I don't.",
+      "keywords": ["rate","route","length","threat","profile","crew","size","twenty","percent","margin"]
+    }
+  ]
+}

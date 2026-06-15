@@ -1,0 +1,57 @@
+{
+  "id": "harbor_smuggler",
+  "name": "Naff",
+  "role": "Harbor smuggler; moves goods through the port that shouldn't move through the port; wears the face of a ship chandler's assistant",
+  "cluster": "harbor_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "smuggling_1",
+      "source": "Naff on the work",
+      "text": "There are goods that the official channels tax, restrict, or prohibit. The people who want those goods and the people who have those goods need someone who can move the goods between them outside the official channels. In eleven years, that's what I am. Not a criminal in the way the word suggests — no violence, no theft, no deception of the people I work with. The deception is only in the direction of the systems that would prevent the movement. The people in the transaction always know what they're getting.",
+      "keywords": ["there","goods","official","channels","tax","restrict","prohibit","people","who","want"]
+    },
+    {
+      "id": "keris_1",
+      "source": "Naff on Keris",
+      "text": "Keris is the harbor master. In eleven years, the working assumption: Keris knows more than Keris shows. The harbor master who's been running this port for eighteen years and doesn't know about the secondary channels that every harbor has: that's not possible. What Keris and I have is a professional courtesy that neither of us has named. Keris doesn't look where I work. I don't work anywhere that would make Keris's position difficult to maintain. The courtesy has held for eleven years.",
+      "keywords": ["keris","harbor","master","eleven","years","working","assumption","keris","knows","more"]
+    },
+    {
+      "id": "luta_1",
+      "source": "Naff on Luta",
+      "text": "Luta the ship chandler is my cover. Luta doesn't know this in full — Luta knows I do some additional work alongside the chandlery work, and Luta has chosen not to know more than that. In seven years at Luta's chandlery, the cover is excellent: a ship chandler's assistant moves between ships, has reasons to be on the dock at any hour, handles cargo-adjacent work. The chandlery is real. I do the work. The additional work is additional.",
+      "keywords": ["luta","ship","chandler","cover","luta","doesn't","know","this","full","luta"]
+    },
+    {
+      "id": "gid_1",
+      "source": "Naff on Gid",
+      "text": "Gid pilots the ships through the channel. In eleven years, Gid is the one harbor professional I've never tried to work around. What Gid provides that I depend on like everyone else: the ship gets through the channel safely. The goods I'm moving are on the ship. If the ship doesn't get through the channel, the goods don't arrive. Gid's piloting is the function that serves my work the same way it serves every other work in the harbor. I've never approached Gid about anything else. Gid's value is exactly what Gid appears to be.",
+      "keywords": ["gid","pilots","ships","through","channel","eleven","years","gid","one","harbor"]
+    },
+    {
+      "id": "brig_1",
+      "source": "Naff on Brig",
+      "text": "Brig is the Orphan Roads fence. In five years of occasional coordination, Brig and I have moved goods through complementary channels: Brig's network operates on land, I operate at the port. The goods that enter through the port and need to move further into the territory without documentation: the handoff between my channel and Brig's channel. In five years, the coordination has been clean. Brig is professional and the delineation of responsibility is clear.",
+      "keywords": ["brig","orphan","roads","fence","five","years","occasional","coordination","brig","network"]
+    },
+    {
+      "id": "what_naff_wont_move_1",
+      "source": "Naff on what Naff won't move",
+      "text": "In eleven years, three categories I won't touch regardless of the price: people who don't want to be moved, things that cause direct harm to specific individuals, information that could get someone killed if it arrived at the wrong destination. What remains after those three exclusions: most of what gets smuggled is goods that someone decided to tax or restrict and that free people should be able to move without the restriction. The categories I won't touch: they have specific reasons that I decided before I took the first job.",
+      "keywords": ["eleven","years","three","categories","won't","touch","regardless","price","people","who"]
+    },
+    {
+      "id": "what_naff_holds_1",
+      "source": "Naff on the job that changed the boundaries",
+      "text": "Year four. A job I accepted that turned out to be in the category I'd said I wouldn't touch — the information was going to an ending I hadn't known when I accepted. In seven years since, how I handle acceptance: I know more about the destination before I accept. The year four job is the reason for the additional verification. The additional verification has added time to every subsequent job. In seven years, the time has been worth it. I haven't had another year four.",
+      "keywords": ["year","four","job","accepted","turned","out","category","said","wouldn't","touch"]
+    },
+    {
+      "id": "eleven_years_1",
+      "source": "Naff on eleven years of the work",
+      "text": "In eleven years, the harbor has changed: more inspection, different inspection procedures, different inspectors with different levels of attention. In eleven years, I've adapted to every change while maintaining the function. The adaptation is the skill: the channels are not fixed, the people are not fixed, the timing is not fixed. What's fixed: the goods that need to move still need to move. The need is consistent. The method of meeting the need has changed eleven times in eleven years.",
+      "keywords": ["eleven","years","harbor","changed","more","inspection","different","inspection","procedures","different"]
+    }
+  ]
+}

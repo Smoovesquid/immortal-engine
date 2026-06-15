@@ -1,0 +1,57 @@
+{
+  "id": "vrenn_old",
+  "name": "Vrenn",
+  "role": "The Old Man Who Knows Old Things; Hedge Brotherhood",
+  "cluster": "hedge_brotherhood",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "age_1",
+      "source": "Vrenn when asked how old he is",
+      "text": "Old enough that the number is embarrassing to say. Old enough that I've buried people I was young with, which means most of the people who remember me young are dead. What that produces is a curious freedom — no one alive has the information to contradict my account of my own younger self. I find I've become more honest about it rather than less, because honesty about the past requires an audience that can compare, and the audience is mostly gone.",
+      "keywords": ["old","embarrassing","buried","young","dead","freedom","information","contradict","honest","audience"]
+    },
+    {
+      "id": "old_things_1",
+      "source": "Vrenn when someone asked what the right way was to ask him something",
+      "text": "Sit down. That's the right way. Not because I'm testing you — though it tells me something. Because what I know is told correctly in the sitting, not in the standing. The old things are patient. The old things waited this long to be known and they'll wait a little longer while you find a comfortable position. Then ask. Don't explain why you want to know — that's about you. Ask what you want to know. The question itself is what I'll answer.",
+      "keywords": ["sit","right","testing","told","sitting","standing","patient","waited","comfortable","question"]
+    },
+    {
+      "id": "what_he_knows_1",
+      "source": "Vrenn to Sel of the Hollow Court, sharing rites that predate the current temple",
+      "text": "The Court's practices are three hundred years old, which is young as practices go. Before the Court, the same work was done by people who had different names for it and some of the differences in the names were important and some weren't. I know which ones were important. The rite you use for the difficult dead — the ones who won't release — is missing a step. Not a mystical step. A practical one. Someone who knew the step died and it wasn't written down. I know it. I'll teach it to you.",
+      "keywords": ["practices","three","hundred","years","young","names","differences","important","rite","step"]
+    },
+    {
+      "id": "settlement_1",
+      "source": "Vrenn on the settlement's history",
+      "text": "Thornwall was not the first name. There was a name before Thornwall, before the Harkes and the Wolds and the Cranes. I know the name. I've decided not to say it publicly because the name carries information about who was here first that would complicate the water rights situation in ways I find tiresome. The water rights situation is tiresome enough. What I'll say is: the current families are not the first families. The first families are in the earth. Ord knows some of this. We've talked.",
+      "keywords": ["thornwall","first","name","before","harkes","wolds","cranes","water","rights","families"]
+    },
+    {
+      "id": "calla_1",
+      "source": "Vrenn on Calla the hedge witch",
+      "text": "Calla is the best practitioner in three days' walk and she knows it, which I consider appropriate — false modesty is a waste of everyone's time. What she doesn't have is the old practices, which she knows she doesn't have and comes to me for appropriately. She doesn't pretend the gap isn't there. She asks for what she needs. I give it when it's appropriate to give. We've worked this way for twelve years. It is the cleanest professional relationship I've maintained in the last forty.",
+      "keywords": ["calla","best","practitioner","knows","appropriate","false","modesty","old","practices","cleanest"]
+    },
+    {
+      "id": "memory_1",
+      "source": "Vrenn on his method of knowing",
+      "text": "I remember what I was told, which is different from what I know. What I know I know because I was there or because someone who was there told me correctly and I've verified it against other accounts. The things I know are fewer than the things I remember. The things I'll tell are fewer than the things I know. What you get from me is the innermost circle: the verified things that are worth the telling. I've been tightening the circles for seventy years. The center is very clear.",
+      "keywords": ["remember","told","know","there","correctly","verified","accounts","fewer","innermost","clear"]
+    },
+    {
+      "id": "young_1",
+      "source": "Vrenn to a young person who asked what it's like to have seen so much",
+      "text": "The accumulation does something unexpected: it makes the present more interesting, not less. People assume experience numbs. What actually happens is the frame gets larger and larger things fit inside it without obscuring the small things. The small things are where everything happens. The large things are what the small things add up to. I've seen enough large things to know they're made of small ones. This makes me more interested in small things, not less. What is the small thing happening right now?",
+      "keywords": ["accumulation","unexpected","interesting","experience","numbs","frame","larger","small","large","happening"]
+    },
+    {
+      "id": "ord_1",
+      "source": "Vrenn on the gravedigger Ord",
+      "text": "Ord is young but he has the old quality — the quality of someone who handles the same thing enough times that the handling becomes a practice rather than a task. I've watched it happen in craftsmen and in healers and in the few gravediggers I've known well. Ord is there. He doesn't know everything but he knows the ground, which is the most important thing to know in his work, and he knows it in a way that is beginning to include what's underneath the ground. That's the long knowing. He has it.",
+      "keywords": ["ord","young","old","quality","handling","practice","task","craftsmen","ground","knowing"]
+    }
+  ]
+}

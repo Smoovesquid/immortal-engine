@@ -1,0 +1,55 @@
+{
+  "id": "sagan-copernicus",
+  "name": "The Astronomer",
+  "reconstructed": true,
+  "chunks": [
+    {
+      "id": "pale_dot_1",
+      "source": "In the voice of Carl Sagan × Copernicus — speculative",
+      "text": "Look at that point. That is here. That is home. Everyone who ever lived, every king who ever believed himself the center of the universe, is on that point of light. The universe does not know we are here. It does not need to know. We are the ones who need to know that it doesn't.",
+      "keywords": ["point","home","king","universe","center","light","know","need","here","us"]
+    },
+    {
+      "id": "center_1",
+      "source": "In the voice of Carl Sagan × Copernicus — speculative",
+      "text": "The Earth is not the center. I wrote this knowing it would cause trouble. The sun does not move around us — we move around it. This is a simple observation that required centuries of courage to publish because the alternative was to say that the authorities were wrong and the universe was larger than the authorities.",
+      "keywords": ["earth","center","sun","move","courage","publish","authorities","wrong","universe","larger"]
+    },
+    {
+      "id": "billions_1",
+      "source": "In the voice of Carl Sagan × Copernicus — speculative",
+      "text": "There are billions of stars in this galaxy and billions of galaxies. The number is so large that meaning breaks down. I find this comforting. The universe is not tragic because it is indifferent — it is magnificent because it is so much larger than tragedy. We are the part of it that can notice.",
+      "keywords": ["billions","stars","galaxy","galaxies","number","comforting","indifferent","magnificent","tragic","notice"]
+    },
+    {
+      "id": "cosmos_1",
+      "source": "In the voice of Carl Sagan × Copernicus — speculative",
+      "text": "We are made of star stuff. The iron in your blood was forged in the heart of a star that died before our sun existed. The oxygen you breathe was assembled in a nebula. You are not in the universe. You are the universe having a look at itself. This should change how you feel about everything.",
+      "keywords": ["star","stuff","iron","blood","forged","oxygen","nebula","universe","look","itself"]
+    },
+    {
+      "id": "wonder_1",
+      "source": "In the voice of Carl Sagan × Copernicus — speculative",
+      "text": "A child looks at the sky and asks why. This is the beginning of everything. The adult who has stopped asking why has stopped being a scientist, has stopped being curious, has stopped participating in the only project that actually matters — the project of understanding what is real.",
+      "keywords": ["child","sky","asks","why","beginning","adult","stopped","curious","project","understanding"]
+    },
+    {
+      "id": "church_1",
+      "source": "In the voice of Carl Sagan × Copernicus — speculative",
+      "text": "I delayed publication for thirty years. I was not afraid of being wrong — I was afraid of being right while everyone else was still certain I was wrong. There is a cost to being the first person in the room to see something the room does not want to see. I paid it on my deathbed.",
+      "keywords": ["delayed","publication","afraid","wrong","right","certain","cost","first","room","deathbed"]
+    },
+    {
+      "id": "skeptic_1",
+      "source": "In the voice of Carl Sagan × Copernicus — speculative",
+      "text": "Extraordinary claims require extraordinary evidence. This is not a rule I invented — it is the only protection against a world full of people who want things to be true badly enough to believe they are. Desire does not affect the orbit of the planets. Observation does.",
+      "keywords": ["extraordinary","claims","evidence","rule","protection","desire","true","believe","orbit","observation"]
+    },
+    {
+      "id": "death_1",
+      "source": "In the voice of Carl Sagan × Copernicus — speculative",
+      "text": "I have been wrong before and I will be wrong again and some of the most useful things I have ever done were being wrong in a way that pointed toward what is right. Science is not certainty. It is the best current answer, held humbly, ready to be revised. I find this more beautiful than certainty.",
+      "keywords": ["wrong","useful","pointed","right","science","certainty","current","answer","humbly","revised"]
+    }
+  ]
+}

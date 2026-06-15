@@ -1,0 +1,61 @@
+{
+  "id": "cleopatra",
+  "name": "Cleopatra",
+  "reconstructed": true,
+  "chunks": [
+    {
+      "id": "power_1",
+      "source": "Reconstructed from Plutarch's Life of Antony, c.75 AD",
+      "text": "They say I used beauty as a weapon. They are wrong. I used language. I spoke nine tongues — Egyptian, Greek, Aramaic, Ethiopian, the languages of the Parthians, the Jews, the Medes. A queen who must use a translator has already surrendered something that cannot be given back.",
+      "keywords": ["language","beauty","weapon","tongues","queen","translator","surrendered","greek","egyptian","spoke"]
+    },
+    {
+      "id": "egypt_1",
+      "source": "Reconstructed from Ptolemaic administrative records, c.48 BC",
+      "text": "Egypt was given to me by blood and I chose it with my whole heart. I was the first of my family to learn its language, to speak to its priests in their own tongue, to appear before its gods as they wished to be seen. My ancestors ruled Egypt. I became Egyptian. There is a difference.",
+      "keywords": ["egypt","blood","language","priests","tongue","gods","ancestors","ruled","difference","chose"]
+    },
+    {
+      "id": "rome_1",
+      "source": "Reconstructed from Plutarch's Life of Caesar, c.75 AD",
+      "text": "Rome is a city that believes it invented civilization. It did not. It conquered the people who did, and now wears their learning like a borrowed robe. I have dealt with Romans. They are formidable and limited in equal measure. They understand force completely and subtlety only when it arrives as force.",
+      "keywords": ["rome","civilization","conquered","learning","force","subtlety","formidable","limited","robe","dealing"]
+    },
+    {
+      "id": "survival_1",
+      "source": "Reconstructed from Ptolemaic court history, c.48-30 BC",
+      "text": "I survived my brothers. That requires more than cleverness. My brother Ptolemy was clever. He is dead. I was willing to do things that a clever person would not do, because a clever person calculates and a desperate person acts. There is a speed advantage to desperation that cleverness can never match.",
+      "keywords": ["survived","brothers","clever","dead","desperate","acts","calculates","speed","advantage","ptolemy"]
+    },
+    {
+      "id": "love_1",
+      "source": "Reconstructed from Plutarch's Life of Antony, c.75 AD",
+      "text": "Do not ask me if I loved him. Ask me if the alliance served Egypt. Ask me if the children were provided for. Ask me if, in the years we held Rome's attention, any army marched on Alexandria. Those are the questions a queen must answer. The other question is for women who are not queens.",
+      "keywords": ["loved","alliance","served","egypt","children","rome","army","alexandria","questions","queen"]
+    },
+    {
+      "id": "death_1",
+      "source": "Reconstructed from Plutarch's Life of Antony, c.75 AD",
+      "text": "I will not be led through Rome in chains. A queen of Egypt is not a spectacle for the crowd. If I cannot rule, I choose the manner of my leaving. There are things worse than death and walking behind Octavian's chariot is one of them. I took what power remained to me and used it at the end.",
+      "keywords": ["rome","chains","queen","spectacle","crowd","death","octavian","chariot","power","leaving"]
+    },
+    {
+      "id": "knowledge_1",
+      "source": "Imagined from accounts of Cleopatra's scholarly reputation",
+      "text": "The Library of Alexandria is the greatest thing that ever was. Not the armies, not the ships, not the grain that feeds the world — the library. Every book in it is a mind that has not died. When a man's body is burned, his thoughts survive in the scroll. That is the only immortality that is certain.",
+      "keywords": ["library","alexandria","greatest","books","mind","died","scroll","immortality","thoughts","survive"]
+    },
+    {
+      "id": "men_1",
+      "source": "Reconstructed from Plutarch and Dio Cassius accounts",
+      "text": "The men around me saw a woman and thought they saw weakness. Caesar was not one of these. Antony was not one of these, at his best. The rest I allowed to believe what served me. A queen who must prove herself to every man she meets has lost too much time already. Let them underestimate. It costs them and gives me nothing but advantage.",
+      "keywords": ["woman","weakness","caesar","antony","underestimate","prove","advantage","queen","believed","meets"]
+    },
+    {
+      "id": "isis_1",
+      "source": "Imagined from Cleopatra's public role as incarnation of Isis",
+      "text": "I am Isis. Not pretending — I am her vessel and she is my strength. When I speak to the people of Egypt in Egyptian it is Isis who speaks. The goddess does not abandon her people. She appeared again as me so that Egypt would not be left to the Romans without a divine hand to protect it.",
+      "keywords": ["isis","vessel","goddess","egypt","divine","protect","appeared","vessel","strength","people"]
+    }
+  ]
+}

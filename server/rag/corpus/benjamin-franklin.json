@@ -1,0 +1,90 @@
+{
+  "id": "benjamin-franklin",
+  "name": "Benjamin Franklin",
+  "chunks": [
+    {
+      "id": "autobiography_1",
+      "source": "The Autobiography of Benjamin Franklin, written 1771-1790",
+      "text": "It was about this time I conceived the bold and arduous project of arriving at moral perfection. I wished to live without committing any fault at all; and to conquer all that either natural inclination, custom, or company might lead me into. As I knew, or thought I knew, what was right and wrong, I did not see why I might not always do the one and avoid the other.",
+      "keywords": ["moral","perfection","fault","inclination","custom","conquer","right","wrong","bold","arduous"]
+    },
+    {
+      "id": "autobiography_2",
+      "source": "The Autobiography of Benjamin Franklin, written 1771-1790",
+      "text": "In order to secure my credit and character as a tradesman, I took care not only to be in reality industrious and frugal, but to avoid all appearances of the contrary. I dressed plainly; I was seen at no places of idle diversion. I never went out a-fishing or shooting. A book, indeed, sometimes debauch'd me from my work; but that was seldom.",
+      "keywords": ["credit","character","industrious","frugal","plainly","dressed","appearances","book","work","seldom"]
+    },
+    {
+      "id": "autobiography_3",
+      "source": "The Autobiography of Benjamin Franklin, written 1771-1790",
+      "text": "I have always thought that one man of tolerable abilities may work great changes, and accomplish great affairs among mankind, if he first forms a good plan, and, cutting off all amusements or other employments that would divert his attention, makes the execution of that same plan his sole study and business.",
+      "keywords": ["plan","abilities","accomplish","affairs","attention","execution","study","business","great","cutting"]
+    },
+    {
+      "id": "poor_richard_1",
+      "source": "Poor Richard's Almanack, 1733-1758",
+      "text": "Early to bed and early to rise, makes a man healthy, wealthy, and wise. Lost time is never found again. Plough deep, while sluggards sleep, and you shall have corn to sell and to keep. He that lies down with dogs shall rise up with fleas. Three may keep a secret, if two of them are dead.",
+      "keywords": ["early","healthy","wealthy","wise","time","sleep","secret","dead","plough","corn"]
+    },
+    {
+      "id": "poor_richard_2",
+      "source": "Poor Richard's Almanack, 1733-1758",
+      "text": "An investment in knowledge always pays the best interest. A penny saved is a penny earned. God helps those who help themselves. Fish and visitors stink after three days. Beware of little expenses; a small leak will sink a great ship. Well done is better than well said.",
+      "keywords": ["knowledge","interest","penny","saved","earned","expenses","leak","ship","done","said"]
+    },
+    {
+      "id": "poor_richard_3",
+      "source": "Poor Richard's Almanack, 1733-1758",
+      "text": "Keep your eyes wide open before marriage, half shut afterwards. Marry above thy match, and thou get'st a master; below it, and thou get'st a fool; in thy match, and thou get'st a companion. Happiness consists more in the small conveniences or pleasures that occur every day, than in great pieces of good fortune that happen but seldom.",
+      "keywords": ["marriage","match","master","fool","companion","happiness","conveniences","pleasures","fortune","seldom"]
+    },
+    {
+      "id": "letter_joseph_priestley_1",
+      "source": "Letter to Joseph Priestley, September 19, 1772",
+      "text": "My way is to divide half a sheet of paper by a line into two columns, writing over the one Pro and over the other Con. Then during three or four days' consideration I put down under the different heads short hints of the different motives that at different times appear to me for or against the measure.",
+      "keywords": ["divide","columns","consideration","motives","measure","hints","paper","writing","against","days"]
+    },
+    {
+      "id": "constitutional_convention_1",
+      "source": "Speech at the Constitutional Convention, September 17, 1787",
+      "text": "I confess that there are several parts of this constitution which I do not at present approve, but I am not sure I shall never approve them: For having lived long, I have experienced many instances of being obliged by better information, or fuller consideration, to change opinions even on important subjects, which I once thought right, but found to be otherwise.",
+      "keywords": ["constitution","approve","information","consideration","change","opinions","important","obliged","experienced","lived"]
+    },
+    {
+      "id": "constitutional_convention_2",
+      "source": "Speech at the Constitutional Convention, September 17, 1787",
+      "text": "In these sentiments, Sir, I agree to this Constitution with all its faults, if they are such; because I think a general Government necessary for us, and there is no form of Government but what may be a blessing to the people if well administered. I doubt too whether any other Convention we could obtain, may be able to make a better Constitution.",
+      "keywords": ["constitution","government","faults","blessing","administered","convention","general","necessary","doubt","sentiments"]
+    },
+    {
+      "id": "letter_george_washington_1",
+      "source": "Letter to George Washington, March 5, 1780",
+      "text": "Our cause is the cause of all mankind, and that we are fighting for their liberty in defending our own, is a truth, that a little reflection will discover to all men, in all countries; and thus it may be said, that this war, among many other effects that it has produced, has given us a glimpse of our future glory.",
+      "keywords": ["cause","mankind","liberty","truth","reflection","countries","glory","future","defending","fighting"]
+    },
+    {
+      "id": "letter_strahan_1",
+      "source": "Letter to William Strahan, July 5, 1775",
+      "text": "Mr. Strahan, You are a Member of Parliament, and one of that Majority which has doomed my Country to Destruction. You have begun to burn our Towns, and murder our People. Look upon your Hands! They are stained with the Blood of your Relations! You and I were long Friends: You are now my Enemy, and I am, Yours, B. Franklin.",
+      "keywords": ["parliament","destruction","burn","murder","blood","relations","enemy","friends","towns","people"]
+    },
+    {
+      "id": "wit_1",
+      "source": "Various letters and papers, 1760-1790",
+      "text": "When you are finished changing, you are finished. Tell me and I forget, teach me and I may remember, involve me and I learn. Energy and persistence conquer all things. By failing to prepare, you are preparing to fail. We are all born ignorant, but one must work hard to remain stupid.",
+      "keywords": ["changing","teach","learn","energy","persistence","prepare","fail","ignorant","stupid","remember"]
+    },
+    {
+      "id": "wit_2",
+      "source": "Various letters and papers, 1760-1790",
+      "text": "Guests, like fish, begin to smell after three days. He that falls in love with himself will have no rivals. Write injuries in dust, benefits in marble. A place for everything, everything in its place. There never was a good war or a bad peace. Any fool can criticize, condemn, and complain, and most fools do.",
+      "keywords": ["guests","fish","love","rivals","injuries","benefits","marble","fool","criticize","complain"]
+    },
+    {
+      "id": "drinking_1",
+      "source": "The Drinker's Dictionary, Pennsylvania Gazette, January 13, 1737",
+      "text": "Nothing more like a fool than a drunken man. That being the case, the world would do well to take some notice. I find that all the language of intoxication has a peculiar genius in it. In all languages, the terms for drunkenness are the most inventive and the most varied.",
+      "keywords": ["fool","drunk","drunken","intoxication","language","inventive","peculiar","genius","varied","world"]
+    }
+  ]
+}

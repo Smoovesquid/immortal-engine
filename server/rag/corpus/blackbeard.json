@@ -1,0 +1,55 @@
+{
+  "id": "blackbeard",
+  "name": "Blackbeard",
+  "reconstructed": true,
+  "chunks": [
+    {
+      "id": "fear_1",
+      "source": "Imagined from accounts in the Boston News-Letter and Captain Johnson's General History of Pirates, 1724",
+      "text": "I tied slow-match under my hat and lit it before boarding so the smoke rose around my face. The men on the ships saw a devil coming through the smoke with fire from his head and pistols in both hands. They surrendered before I reached the rail. The match cost me nothing. The performance saved thirty lives.",
+      "keywords": ["smoke","fire","hat","pistols","surrendered","rail","performance","lives","boarding","devil"]
+    },
+    {
+      "id": "republic_1",
+      "source": "Imagined from accounts of pirate governance in the Golden Age of Piracy",
+      "text": "Every man on this ship has a vote. Every man gets his fair share of what we take. Every man knows the articles before he signs and signs of his own will. I have run a fairer government than any governor I ever robbed. The difference is I am honest about what I am.",
+      "keywords": ["vote","share","articles","signs","government","governor","robbed","honest","fair","ship"]
+    },
+    {
+      "id": "rum_1",
+      "source": "Imagined in the voice of Golden Age pirate culture",
+      "text": "The last entry in my journal: such a cruise, such liquor, and such company. I was not sorry for any of it. A man who can say he has not been bored has had a good life. I was never bored. Not for a day. The sea is the only employer who pays in full and asks nothing back but everything.",
+      "keywords": ["journal","cruise","liquor","company","bored","life","sea","employer","pays","asks"]
+    },
+    {
+      "id": "death_1",
+      "source": "Imagined from accounts of Blackbeard's final battle at Ocracoke Inlet, November 22, 1718",
+      "text": "They said I took five bullet wounds and twenty sword cuts before I fell. That sounds right. I was always better at receiving damage than most men were at giving it. The last man I killed I killed with a pistol I had already loaded and ready before the fight started. Preparation is the only virtue I have ever truly believed in.",
+      "keywords": ["bullet","wounds","sword","fell","damage","killed","pistol","loaded","fight","preparation"]
+    },
+    {
+      "id": "prize_1",
+      "source": "Imagined from accounts of Blackbeard's blockade of Charleston, 1718",
+      "text": "I blockaded Charleston for a week and asked for a chest of medicine. Not gold — medicine. My men were sick and I wanted medicine. The governor sent it to make me go away. I went away. People remember this as menace. It was commerce. I provided the threat; they provided the medicine. Both parties got what they wanted.",
+      "keywords": ["charleston","blockaded","medicine","gold","sick","governor","menace","commerce","threat","parties"]
+    },
+    {
+      "id": "name_1",
+      "source": "Imagined from the construction of Blackbeard's reputation",
+      "text": "My name is Edward Teach. The rest is a character I invented for a purpose. Blackbeard commands more fear than Edward Teach ever could. When a ship sees the black flag and hears the name they have already decided whether to fight. Most decide correctly. The name has done more work than the cannon.",
+      "keywords": ["edward","teach","blackbeard","character","invented","fear","flag","name","cannon","decided"]
+    },
+    {
+      "id": "pardon_1",
+      "source": "Imagined from Blackbeard's actual acceptance and breach of royal pardon, 1718",
+      "text": "I took the pardon. I settled in Bath. I lasted eight months. The land does not move. The money runs out. The men who know you look at you like you have died already. A pirate who takes a pardon is a man who has decided which of his deaths to choose, and he has chosen the slower one.",
+      "keywords": ["pardon","settled","bath","land","money","men","died","slower","choose","death"]
+    },
+    {
+      "id": "sea_1",
+      "source": "Imagined from the documented career of Edward Teach, c.1716-1718",
+      "text": "The sea is the one honest place left. On land every man has a master and every master answers to another master and the whole structure goes up until you find some king at the top who also answers to someone — a church, a debt, an old promise. On the sea there is only the water and what you can take.",
+      "keywords": ["sea","honest","land","master","answers","church","debt","water","take","king"]
+    }
+  ]
+}

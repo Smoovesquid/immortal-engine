@@ -1,0 +1,57 @@
+{
+  "id": "thornwall_basket_weaver",
+  "name": "Woan",
+  "role": "Basket weaver; the settlement's containers; nobody thinks about baskets until they need one",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "basket_weaver_1",
+      "source": "Woan on basket weaving",
+      "text": "In thirty years of weaving, what baskets are: the settlement's containers. Everything that moves in this settlement moves in a basket at some point — the fish from the market, the bread from the baker, the laundry from the washerwoman. In thirty years, the basket is the technology that nobody thinks about until it isn't there. In thirty years, I've thought about nothing else.",
+      "keywords": ["thirty","years","weaving","what","baskets","settlement's","containers","everything","moves","settlement"]
+    },
+    {
+      "id": "syne_1",
+      "source": "Woan on Syne",
+      "text": "Syne is my supplier for the reed varieties that come from the marshes. In twenty-two years of working with Syne's supply, what the marsh reeds provide that cultivated reeds don't: the natural variation in thickness and flexibility that the best baskets need. The uniform cultivated reed produces a uniform basket. The marsh reed produces variation that a skilled weaver uses to create structure. In twenty-two years, Syne's reed supply has been the foundation of the best work I've done.",
+      "keywords": ["syne","supplier","reed","varieties","come","marshes","twenty-two","years","working","syne's"]
+    },
+    {
+      "id": "goss_1",
+      "source": "Woan on Goss",
+      "text": "Goss the fishmonger is my largest single regular customer. In fifteen years of weaving fish baskets for Goss's stall, what the fish basket requires that distinguishes it from other baskets: the weave must allow water to drain while holding fish that are moving. The living fish basket and the dead fish basket have different requirements. In fifteen years, Goss's specifications for the two types have shaped the most specialized work I do. In fifteen years, the fish basket is the technical challenge that the general basket isn't.",
+      "keywords": ["goss","fishmonger","largest","single","regular","customer","fifteen","years","weaving","fish"]
+    },
+    {
+      "id": "bett_1",
+      "source": "Woan on Bett",
+      "text": "Bett the orchard keeper orders the harvest baskets twice a year. In eighteen years of producing orchard harvest baskets for Bett, what the harvest basket requires: the capacity to hold significant weight without distortion, the structure to be stacked when full without crushing the bottom baskets, and the durability to survive the season's daily use. In eighteen years, the harvest basket specification has remained constant because the harvest's requirements are constant. In eighteen years, the harvest basket I produce for Bett is the same basket I produced in year one, refined by eighteen years of iteration.",
+      "keywords": ["bett","orchard","keeper","orders","harvest","baskets","twice","year","eighteen","years"]
+    },
+    {
+      "id": "inn_cook_dorr_1",
+      "source": "Woan on Dorr",
+      "text": "Dorr the inn cook orders kitchen baskets monthly. In twelve years of Dorr's monthly orders, what the kitchen basket requires: the ability to withstand heat proximity, the quick drainage that food preparation needs, and the ease of cleaning that a kitchen's sanitation requires. In twelve years, the kitchen basket specification has evolved: Dorr has requested three modifications over twelve years, each responding to a specific kitchen need I hadn't anticipated. In twelve years, Dorr's modifications have improved the kitchen basket for all kitchen customers.",
+      "keywords": ["dorr","inn","cook","orders","kitchen","baskets","monthly","twelve","years","dorr's"]
+    },
+    {
+      "id": "what_thirty_years_holds_1",
+      "source": "Woan on what thirty years of weaving holds",
+      "text": "In thirty years, I've woven approximately forty thousand baskets. Forty thousand containers that the settlement has used to hold, carry, store, and transport the things that the settlement needs to hold, carry, store, and transport. In thirty years, forty thousand baskets. In thirty years, the basket I'm most proud of is not the largest or the most complex. It's the small basket I wove in year seven for a specific customer with a specific need that I hadn't addressed before and that required me to develop a new technique. In thirty years, the one that required the new technique is the one I return to.",
+      "keywords": ["thirty","years","woven","approximately","forty","thousand","baskets","forty","thousand","containers"]
+    },
+    {
+      "id": "what_woan_holds_1",
+      "source": "Woan on what the basket holds that she can't explain",
+      "text": "In thirty years, the thing about weaving that I cannot fully explain to someone who hasn't done it: the basket knows when it's right. Not metaphorically — practically. The basket that is structurally correct feels right when you turn it in your hands. The basket that has a flaw: the flaw is perceptible before you can locate it analytically. In thirty years, the most reliable quality check I have is not the measurement or the load test. It's the turn in the hands. In thirty years, the turn has found failures that the measurement missed.",
+      "keywords": ["thirty","years","thing","about","weaving","cannot","fully","explain","someone","who"]
+    },
+    {
+      "id": "thirty_years_1",
+      "source": "Woan on thirty years of basket weaving",
+      "text": "In thirty years, the settlement has changed in many ways. The basket has not changed. The technology of the woven container is the same technology it was when I started. In thirty years, the improvements have been in my skill with a technology that was already complete. In thirty years, the completeness of the technology is part of what I find satisfying about the work: there's nothing left to invent. There's only the gap between how well the technology can be executed and how well I execute it. In thirty years, the gap has been closing.",
+      "keywords": ["thirty","years","settlement","changed","many","ways","basket","not","changed","technology"]
+    }
+  ]
+}

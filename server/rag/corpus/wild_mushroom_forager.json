@@ -1,0 +1,57 @@
+{
+  "id": "wild_mushroom_forager",
+  "name": "Ness",
+  "role": "Wild mushroom forager; supplies the district's kitchens with what the forest produces; knows what's safe and what isn't",
+  "cluster": "wild_road",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "forager_1",
+      "source": "Ness on foraging",
+      "text": "The forest produces food on its own schedule. My work: following the schedule. The mushrooms appear when the conditions are right and are gone when the conditions change. In sixteen years of foraging the same territory, I know the conditions that precede the appearance and I'm in the territory when they occur. The forager's knowledge is temporal: what appears where and when. The territory is the same territory. The time is what changes.",
+      "keywords": ["forest","produces","food","own","schedule","work","following","schedule","mushrooms","appear"]
+    },
+    {
+      "id": "syne_1",
+      "source": "Ness on Syne",
+      "text": "Syne and I supply the same kitchens from different sources. Syne provides the cultivated herbs and plants. I provide the wild harvest. In twelve years of working the same customers, Syne and I have developed a complementary relationship: the cultivated and the wild address different needs. The cultivated is available when the cultivated is planted and tended. The wild is available when the forest produces it. The kitchens that work with both have more options than the kitchens that work with one.",
+      "keywords": ["syne","supply","same","kitchens","different","sources","syne","provides","cultivated","herbs"]
+    },
+    {
+      "id": "rem_1",
+      "source": "Ness on Rem",
+      "text": "Rem at the Aldenmere house uses my mushrooms for specific dishes that require wild mushrooms rather than cultivated varieties. What Rem said once about the difference: the cultivated mushroom is a consistent ingredient. The wild mushroom is a specific ingredient. The specific ingredient does something the consistent ingredient can't. In twelve years of supplying Rem, the specific dishes that require wild mushrooms appear on the Aldenmere table when I have what's needed. The dish waits for the forest's schedule. Rem has never objected to waiting.",
+      "keywords": ["rem","aldenmere","house","uses","mushrooms","specific","dishes","require","wild","mushrooms"]
+    },
+    {
+      "id": "voss_1",
+      "source": "Ness on Voss",
+      "text": "Voss the Mixer uses specific fungi that aren't mushrooms for the medicinal compounds. In six years of supplying Voss, the foraging for the medicinal fungi is the most careful part of my work: the medicinal species and the harmful species sometimes look similar, and a substitution error would have consequences different from a kitchen error. In six years, I've supplied Voss with the correct species on every occasion. The caution that the medicinal foraging requires is different from the caution the kitchen foraging requires.",
+      "keywords": ["voss","mixer","uses","specific","fungi","aren't","mushrooms","medicinal","compounds","six"]
+    },
+    {
+      "id": "theen_1",
+      "source": "Ness on Theen",
+      "text": "Theen knows the territory for movement. I know the territory for production. In nine years of overlapping territory, Theen and I know different things about the same places. Theen knows the path quality and the risk points. I know where the mushrooms appear and when. Twice Theen has asked me about a specific location's foraging quality when considering a route — once I said the location was heavily foraged by me and the detour might be worth taking. Theen rerouted. The reroute was better.",
+      "keywords": ["theen","knows","territory","movement","know","territory","production","nine","years","overlapping"]
+    },
+    {
+      "id": "what_safe_and_not_is_1",
+      "source": "Ness on how she knows what's safe",
+      "text": "In sixteen years, what I know about safety is not a list of rules. It's a relationship with specific species in specific conditions. The species that's safe in one condition isn't safe in another — the same mushroom species, grown on different substrates or at different stages, behaves differently. In sixteen years, the knowledge is not rule-based. The knowledge is relational. I know this species in this condition at this stage. The knowledge was built by finding the species in the condition at the stage, repeatedly, and tracking what the species does. The tracking is the knowledge.",
+      "keywords": ["sixteen","years","what","know","safety","not","list","rules","it's","relationship"]
+    },
+    {
+      "id": "what_ness_holds_1",
+      "source": "Ness on the mushroom she found that she hasn't shown anyone",
+      "text": "Two seasons ago. A species I don't recognize. Not similar to anything I know — a genuinely new species in my territory. I've photographed it in my memory the way I photograph every new species: the cap color, the gill structure, the stem, the substrate, the season. In two seasons, I've found it twice. It appears in a specific location in specific conditions. What I know about whether it's safe: I don't know. I haven't eaten it. I haven't given it to anyone. It's in the territory and it's in my knowledge as an unknown. I'm accumulating observations before I move forward.",
+      "keywords": ["two","seasons","species","don't","recognize","not","similar","anything","know","genuinely"]
+    },
+    {
+      "id": "sixteen_years_1",
+      "source": "Ness on sixteen years of foraging",
+      "text": "In sixteen years, the territory has produced something edible or useful in every season I've looked. The forest doesn't produce the same thing every season — the production varies. But in sixteen years, there has never been a season that produced nothing. The forest is reliable in aggregate even when it's unpredictable in specifics. What I've built in sixteen years: a relationship with a territory that produces. I know the territory well enough that the territory gives me what I need when I need it. The territory doesn't know me. I know the territory.",
+      "keywords": ["sixteen","years","territory","produced","something","edible","useful","every","season","looked"]
+    }
+  ]
+}

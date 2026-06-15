@@ -1,0 +1,57 @@
+{
+  "id": "iss_cobbler",
+  "name": "Fen the Cobbler",
+  "role": "Cobbler, Thornwall Commons; ISS-marked (Envy)",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "iss_1",
+      "source": "Fen the Cobbler when asked directly about the mark he carries",
+      "text": "ISS marks the people who want what others have not because they lack it, but because they see it in someone else and the seeing produces the wanting. I have good work. I have fair payment. I have a wife who chooses to stay and I have a house that keeps the rain out. ISS marks me anyway because I look at Gell's glass pieces and I feel the wanting of a person who doesn't have that specific thing. I don't want to be a glassblower. I want to have made the thing he made. This is the mark. This is exactly what ISS is.",
+      "keywords": ["iss","marks","want","others","have","seeing","wanting","work","payment","wanting"]
+    },
+    {
+      "id": "gell_1",
+      "source": "Fen the Cobbler on the glassblower Gell",
+      "text": "Gell is the most common version of the problem for me. I see the glass and I feel it. I've examined the feeling enough to know it's not about glass — it's about the specific completeness of a thing made exactly right. My shoes have that completeness. The difference is I can't see it in my own work the way I can see it in Gell's. This is the mark's specific cruelty: the thing you produce with your own hands is invisible to the wanting. Only other people's work triggers it.",
+      "keywords": ["gell","common","version","problem","glass","feel","examined","feeling","completeness","made"]
+    },
+    {
+      "id": "work_1",
+      "source": "Fen the Cobbler at his bench",
+      "text": "The work is the management. I'm at the bench, I'm making shoes, and ISS is present as a kind of peripheral awareness of everything I don't have. The awareness is always there. What I've learned is that the awareness doesn't have to stop the work. The work proceeds. The shoe gets made. I know the shoe is made correctly because I can evaluate someone else's shoes and I've applied the same standards to mine. The product is not affected by the awareness. I've spent ten years making sure of this.",
+      "keywords": ["work","management","bench","making","shoes","iss","peripheral","awareness","doesn't","stop"]
+    },
+    {
+      "id": "maren_1",
+      "source": "Fen the Cobbler when Scholar Maren came to study the ISS mechanism",
+      "text": "Maren came to ask about the inside experience. I described it as precisely as I could. What she found useful was the distinction between wanting-what-lacks and wanting-triggered-by-seeing. ISS is the second one. When I don't see anyone else's work, the wanting diminishes. It doesn't disappear — the mark is the mark — but it becomes manageable background noise rather than foreground. The problem is that I live in a settlement where I see other people's work every day. I manage the foreground.",
+      "keywords": ["maren","came","ask","inside","experience","described","precisely","distinction","wanting-what-lacks","triggered"]
+    },
+    {
+      "id": "vel_1",
+      "source": "Fen the Cobbler when asked if Archon Vel knows about the mark",
+      "text": "Vel knows. I told him nine years ago when I first understood what it was. He said: bring this to MERETH's attention. I said: how. He said: the accurate assessment is part of the cure. I've been making accurate assessments for nine years. The accurate assessment of the mark and the mark itself are separate. The assessment doesn't cure. It makes the mark more understandable without making it smaller. Vel would say I'm doing it wrong. I think Vel doesn't know what it's like from inside.",
+      "keywords": ["vel","knows","told","nine","years","mereth","attention","accurate","assessment","cure"]
+    },
+    {
+      "id": "community_1",
+      "source": "Fen the Cobbler on living in Thornwall with the mark",
+      "text": "The village doesn't know. My wife knows. Brevis suspects — she tends bar and she sees what people want. The cobbler in the next village knew before he retired; we compared notes twice. The rest of the village sees a cobbler who makes good shoes and occasionally looks at other people's work with an attention that they interpret as professional interest. The interpretation is half correct. It is professional interest. It's also the mark. The two are so intertwined I don't know where one ends.",
+      "keywords": ["village","doesn't","know","wife","knows","brevis","suspects","cobbler","retired","compared"]
+    },
+    {
+      "id": "shoes_1",
+      "source": "Fen the Cobbler on his actual craft",
+      "text": "I make good shoes. This is not false modesty and not the mark talking. The shoes last three years under normal use and five under careful use. I know this because I track my customers and I see the shoes when they come back for the next pair. The wear pattern tells me whether I made them correctly. I've been tracking for twelve years and the average wear is in the range I predicted. The mark doesn't affect the shoes. The shoes are the evidence.",
+      "keywords": ["make","good","shoes","false","modesty","last","three","years","normal","careful"]
+    },
+    {
+      "id": "child_1",
+      "source": "Fen the Cobbler when the unnamed child of Thornwall watched him work",
+      "text": "The child sat in the doorway for an hour and watched me work without saying anything. I'm used to being watched — apprentices, curious neighbors, people who want to see how the sole is attached. The child's watching was different. At the end of the hour the child said: you see your work differently than other people see it. I said: how can you tell. The child said: you look at it like you're looking for what's missing. I said: I'm looking for errors. The child said: that's not what I said.",
+      "keywords": ["child","sat","doorway","hour","watched","work","watching","differently","people","missing"]
+    }
+  ]
+}

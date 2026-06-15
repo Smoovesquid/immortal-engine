@@ -1,0 +1,57 @@
+{
+  "id": "scarlet_compact_tactician",
+  "name": "Ora",
+  "role": "Scarlet Compact tactical planner; designs operations; the person who figures out how",
+  "cluster": "scarlet_compact",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "tactician_1",
+      "source": "Ora on tactical planning",
+      "text": "In eleven years of planning operations, the planning is not the prediction of what will happen. It's the preparation for what might happen. The plan that assumes a specific sequence of events is the plan that fails when the events don't follow the sequence. The plan that prepares for contingencies — for the thing that goes wrong, for the unexpected response, for the constraint that wasn't visible in planning — that plan gives the team options when the situation changes. In eleven years, the plan that works is the plan that built in the room to adapt.",
+      "keywords": ["eleven","years","planning","operations","planning","not","prediction","what","will","happen"]
+    },
+    {
+      "id": "ceth_1",
+      "source": "Ora on Ceth",
+      "text": "Ceth leads the Compact and the operations I plan are Ceth's operations. In nine years of planning under Ceth's command, the planning relationship: Ceth provides the objective and the constraint, I provide the approach and the contingencies. In nine years, the objective from Ceth and the approach from me: the division works because Ceth is clear about the objective without prescribing the approach, and I'm clear about the approach without overreaching into the objective's definition. In nine years, the division has produced eleven completed operations.",
+      "keywords": ["ceth","leads","compact","operations","plan","ceth's","operations","nine","years","planning"]
+    },
+    {
+      "id": "fen_1",
+      "source": "Ora on Fen",
+      "text": "Fen analyzes. In seven years of working with Fen, what Fen's analysis provides to the tactical planning: the post-operation assessment that tells me whether the plan performed as expected and where it didn't. In seven years, Fen's analysis has been the feedback loop for my planning. What worked in the operation and what didn't: Fen's assessment of that feeds into how the next operation's plan is constructed. In seven years, the planning has improved from Fen's feedback in ways it wouldn't have without systematic post-operation analysis.",
+      "keywords": ["fen","analyzes","seven","years","working","fen","what","fen's","analysis","provides"]
+    },
+    {
+      "id": "pav_1",
+      "source": "Ora on Pav",
+      "text": "Pav executes the close operations. In eight years of Pav executing the operations I've planned for close work, what Pav's execution tells me about the plan: the plan that assumed a specific timing or a specific approach requires Pav's field adjustment when the assumption doesn't hold. In eight years, what Pav has taught me about planning close operations: the plan's timing estimates are the most likely failure point. Pav consistently adjusts timing in the field. In eight years, I've extended the timing estimates in plans to give Pav's field adjustment more room.",
+      "keywords": ["pav","executes","close","operations","eight","years","pav","executing","operations","planned"]
+    },
+    {
+      "id": "mira_1",
+      "source": "Ora on Mira",
+      "text": "Mira runs intelligence. In six years of working with Mira's intelligence as the foundation for tactical plans, the intelligence-planning relationship: Mira tells me what is, I plan what to do given what is. The plan built on solid intelligence is structurally different from the plan built on assumptions. In six years, the operations where Mira's intelligence was comprehensive and the operations where it was limited have produced different plan qualities and different outcomes. In six years, Mira's intelligence quality is the primary driver of plan quality.",
+      "keywords": ["mira","runs","intelligence","six","years","working","mira's","intelligence","foundation","tactical"]
+    },
+    {
+      "id": "driv_1",
+      "source": "Ora on Driv",
+      "text": "Driv maintains the Compact's equipment. In five years of working with Driv's equipment as a planning parameter, what Driv's maintenance function provides to the tactical planning: the equipment state that determines what operations are feasible. A plan that requires specific equipment presupposes that the equipment works. In five years, Driv has twice flagged equipment issues that changed my plan before the operation rather than during it. In five years, the pre-operation equipment assessment from Driv is a required input to the plan.",
+      "keywords": ["driv","maintains","compact's","equipment","five","years","working","driv's","equipment","planning"]
+    },
+    {
+      "id": "what_planning_requires_1",
+      "source": "Ora on what tactical planning actually requires",
+      "text": "In eleven years, what tactical planning requires that most people don't expect: the ability to be wrong. The plan is the best current assessment of how to achieve the objective given the constraints and the information available. The plan is not a prescription — it's a framework for decision-making in a changing situation. In eleven years, the planner who insists the plan is correct when the situation contradicts it is more dangerous than no plan at all. In eleven years, the plan's value is that it structured the preparation. When the situation changes, the preparation adapts.",
+      "keywords": ["eleven","years","what","tactical","planning","requires","most","people","don't","expect"]
+    },
+    {
+      "id": "eleven_years_1",
+      "source": "Ora on eleven years of Compact tactical planning",
+      "text": "In eleven years, I've planned nineteen operations. Of nineteen: fifteen achieved their primary objective. Three achieved partial objectives. One failed to achieve the objective and resulted in the extraction of the team without loss of personnel. In eleven years, one personnel loss across nineteen operations, and that loss was in year two, in an operation where the intelligence was inadequate and the plan compensated inadequately for the intelligence gap. In eleven years, the year two operation is what I plan against. Every plan since has started with the question: what am I not seeing?",
+      "keywords": ["eleven","years","planned","nineteen","operations","nineteen","fifteen","achieved","primary","objective"]
+    }
+  ]
+}

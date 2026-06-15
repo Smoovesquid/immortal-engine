@@ -1,0 +1,57 @@
+{
+  "id": "wild_herb_collector",
+  "name": "Syne",
+  "role": "Herbalist; Wild Road; supplies Calla, Nan, and the Academy",
+  "cluster": "wild_road",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "collecting_1",
+      "source": "Syne in the field at the correct hour for collection",
+      "text": "Morning collection, after the dew has lifted but before the sun is direct. This window is about two hours. What you collect outside this window is usable but lesser. The oil content is different. The dew dilutes; the direct sun volatilizes. Two hours of correct collection produces better material than twelve hours of careless collection. I've organized my entire life around the two-hour window.",
+      "keywords": ["morning","collection","after","dew","lifted","before","sun","direct","window","two"]
+    },
+    {
+      "id": "calla_1",
+      "source": "Syne on supplying Calla the hedge witch",
+      "text": "Calla is my most exacting client. She knows what she's asking for better than most people know what they're buying. When I bring something outside the quality I've described, she notices before I can explain. We've been in this relationship for six years and I've been wrong about quality three times. Each time she said: this is what you said it was but this batch is lower. She was right each time. I don't know how she knows. I've stopped trying to understand how and started trying to produce what she expects.",
+      "keywords": ["calla","exacting","client","knows","asking","buying","quality","notices","explain","six"]
+    },
+    {
+      "id": "nan_1",
+      "source": "Syne on supplying Nan Colt",
+      "text": "Nan buys the practical things — not the rarities. Yarrow, elderflower, shepherd's purse, the standard repertoire of someone who handles births and ordinary injuries. She buys them clean and dried correctly and she checks my drying when she first takes delivery each season. She checked it correctly for three seasons and I asked why she still checked. She said: because three seasons without a problem doesn't mean the fourth is without a problem. I now check my own drying before she does.",
+      "keywords": ["nan","buys","practical","things","rarities","yarrow","elderflower","shepherd","purse","standard"]
+    },
+    {
+      "id": "academy_1",
+      "source": "Syne on the Academy commission",
+      "text": "The Academy wants things I don't find locally. Scholar Maren gave me a list two years ago — twelve items, eight of which required me to go farther than my usual range. I found ten of the twelve. The other two required the Hallowed Reaches coastal climate and I haven't been there and I won't be. Maren accepted the ten and asked again about the two. I said: not for the fee you're offering. The fee is now higher. I'm still not going to the Reaches.",
+      "keywords": ["academy","wants","locally","maren","gave","list","two","years","twelve","items"]
+    },
+    {
+      "id": "vann_1",
+      "source": "Syne on the tinker Vann",
+      "text": "Vann carries my materials between settlements when our routes coincide. Three times a season she passes through my collecting territory heading south, and I give her the dried stock for the southern clients she'll visit. She doesn't handle it specially — tinkers aren't usually material-careful — but I've packed it to tolerate a tinker's cart. The arrangement saves me two days of travel. She takes a percentage of the southern sale. The percentage is fair.",
+      "keywords": ["vann","carries","materials","settlements","routes","coincide","three","times","season","passes"]
+    },
+    {
+      "id": "knowing_1",
+      "source": "Syne on what twenty years of collection teaches",
+      "text": "The land's memory. Each patch has a history that affects what it produces — what was cleared there, what fire or flood went through, what's been taken from it and whether the taking was careful. I read this history in what grows and how it grows. New collectors see what's there. I see why it's there. The why changes what I take and how much and when I come back.",
+      "keywords": ["land's","memory","patch","history","affects","produces","cleared","fire","flood","taken"]
+    },
+    {
+      "id": "foss_1",
+      "source": "Syne on the druid Foss",
+      "text": "Foss and I occupy the same territory at different scales. Foss hears the whole forest. I hear the specific plants. We've traded knowledge three times — Foss warned me twice about sections that were stressed before I could see the stress in the plants, and I've told Foss once about a specific plant population that had changed in a way that was visible to me but not yet visible at the forest scale. We're reading different parts of the same text.",
+      "keywords": ["foss","occupy","same","territory","different","scales","hears","whole","forest","specific"]
+    },
+    {
+      "id": "seasons_1",
+      "source": "Syne on the annual cycle",
+      "text": "Spring: the fast-growing new growth, collected before it gets fibrous. Summer: the blooms and the seeds. Autumn: the roots, after the plant has pulled its energy down. Winter: rest and preparation and the few things that are only available in the cold. Twenty years and the cycle is the structure of my year. I measure time by what I'm collecting. Not months — collections. I'm in the root collection now. That means it's autumn.",
+      "keywords": ["spring","fast","growing","new","growth","summer","blooms","seeds","autumn","roots"]
+    }
+  ]
+}

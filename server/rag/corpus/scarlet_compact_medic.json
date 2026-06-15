@@ -1,0 +1,57 @@
+{
+  "id": "scarlet_compact_medic",
+  "name": "Renne",
+  "role": "Compact field medic; handles soft tissue and illness on the road; Sess's complement",
+  "cluster": "scarlet_compact",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "field_medic_1",
+      "source": "Renne on road medicine",
+      "text": "Road medicine is the medicine of what happens when there's no clinic. The wound that happens at the third day point, the illness that begins overnight, the infection that started three days ago and needs attention now. In thirteen years of Compact field medicine, I've managed everything that the road produces for the body. What the road produces: mostly things that can be managed. Occasionally things that need more than I can provide in the field.",
+      "keywords": ["road","medicine","medicine","what","happens","when","there's","no","clinic","wound"]
+    },
+    {
+      "id": "sess_1",
+      "source": "Renne on Sess",
+      "text": "Sess handles the bone work. I handle everything else. In eight years of overlapping in the same territory, Sess and I have developed a referral protocol: I send Sess structural injuries, Sess sends me internal and infection cases. In eight years, six cases have required both of us — injuries where the bone and the soft tissue were both involved. All six: the combined treatment was better than either of us would have produced alone. The referral protocol works because both of us know which cases it covers and which it doesn't.",
+      "keywords": ["sess","handles","bone","work","handle","everything","else","eight","years","overlapping"]
+    },
+    {
+      "id": "pav_1",
+      "source": "Renne on Pav",
+      "text": "Pav is the Compact's logistical coordinator. In thirteen years of Compact work, Pav's supply coordination is what makes my field medicine possible. Without the right supplies in the right place at the right time, field medicine is improvisation without materials. In thirteen years, Pav has supplied my kit correctly ninety-four percent of the time. The six percent where the supply was wrong or late: I've managed by improvisation. The ninety-four percent where it was right: I've been able to do the work properly.",
+      "keywords": ["pav","compact's","logistical","coordinator","thirteen","years","compact","work","pav's","supply"]
+    },
+    {
+      "id": "ceth_1",
+      "source": "Renne on Ceth",
+      "text": "Ceth commands the field teams. In thirteen years, Ceth's command decisions affect what injuries I treat: the operations Ceth chooses produce the risk profile I manage. What Ceth provides that most field commanders don't: a realistic assessment of the injury risk before the operation, so that I can prepare for the specific injuries the operation is likely to produce. In thirteen years, Ceth's pre-operation assessments have been accurate enough that I've never been completely unprepared for the injuries an operation produced.",
+      "keywords": ["ceth","commands","field","teams","thirteen","years","ceth's","command","decisions","affect"]
+    },
+    {
+      "id": "aldous_1",
+      "source": "Renne on Aldous",
+      "text": "Aldous is the settlement physician I transfer cases to when the field treatment has reached its limit. In ten years of Compact operations in this region, I've transferred eleven cases to Aldous. The transfer protocol: I stabilize in the field, Aldous receives and continues. What Aldous provides that I can't provide in the field: equipment for surgical intervention, the ability to monitor over days, staff to manage the patient while I return to field work. In eleven transfers, all eleven patients survived to Aldous's care.",
+      "keywords": ["aldous","settlement","physician","transfer","cases","when","field","treatment","reached","limit"]
+    },
+    {
+      "id": "what_field_medicine_teaches_1",
+      "source": "Renne on what field medicine teaches that clinical medicine doesn't",
+      "text": "The most important thing field medicine has taught me: the patient's condition is always changing. In a clinic, the patient is observed at intervals. In the field, the patient is present and changing continuously and the medicine responds to the continuous change. What this teaches: diagnosis is not a one-time event. The diagnosis at the beginning is the beginning of a process, not the answer. In thirteen years of continuous diagnosis on changing patients, the diagnosis that is right now may not be right in three hours.",
+      "keywords": ["most","important","thing","field","medicine","taught","clinical","medicine","doesn't","patient's"]
+    },
+    {
+      "id": "what_renne_holds_1",
+      "source": "Renne on the illness she couldn't diagnose",
+      "text": "Year eight. A Compact team member who developed an illness that I assessed, treated, and lost. Not in the field — the team member reached the settlement and came to Aldous and died under Aldous's care. What Aldous and I concluded afterward: neither of us had seen the illness before and neither of us had the knowledge to treat it. The illness was outside our combined experience. In five years since, I've described the presentation to every physician I've met on Compact routes. No one has identified it.",
+      "keywords": ["year","eight","compact","team","member","developed","illness","assessed","treated","lost"]
+    },
+    {
+      "id": "thirteen_years_1",
+      "source": "Renne on thirteen years of Compact field medicine",
+      "text": "In thirteen years, I've treated injuries and illness for approximately four hundred individual cases. Four hundred people who were hurt or sick on the road. The ones who made it from my hands to wherever they were going: most of them. The ones who didn't: six. Six in four hundred in thirteen years on the road is a survival rate I can accept and don't accept. The six: I know each case. What I could have done differently: in three of the six, something. In three: nothing I know of.",
+      "keywords": ["thirteen","years","treated","injuries","illness","approximately","four","hundred","individual","cases"]
+    }
+  ]
+}

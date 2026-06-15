@@ -1,0 +1,57 @@
+{
+  "id": "retired_brotherhood",
+  "name": "Orm",
+  "role": "Retired Brotherhood member; twenty years active, now keeps a small farm on the settlement's edge; the quiet is new",
+  "cluster": "wild_road",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "retirement_1",
+      "source": "Orm on leaving the Brotherhood",
+      "text": "The Brotherhood ended for me not because I couldn't do the work anymore — I could still do the work. It ended because the work had become something I did and not something I was. In twenty years, the work was who I was. At the end of the twenty years, I noticed the difference between doing it and being it. When I noticed the difference: I left. The leaving was the honest response to what I noticed. I've been on the farm for six years. The quiet is still new.",
+      "keywords": ["brotherhood","ended","not","because","couldn't","do","work","anymore","could","still"]
+    },
+    {
+      "id": "cord_1",
+      "source": "Orm on Cord",
+      "text": "Cord was my field commander for twelve of the twenty years. In six years since I left, Cord and I have spoken three times. The conversations are not about the work — we don't discuss operations. The conversations are about what the work is, what the Brotherhood is, what it's for. In three conversations over six years, what Cord and I have found: we understand the Brotherhood from different positions now. Cord is still in it. I've left it. Both positions reveal things the other position doesn't see.",
+      "keywords": ["cord","field","commander","twelve","twenty","years","six","years","since","left"]
+    },
+    {
+      "id": "rath_1",
+      "source": "Orm on Rath",
+      "text": "Rath was the most intense Brotherhood member I worked with in twenty years. In six years since I left, I hear about Rath's operations occasionally through the network. What I think about Rath now from the outside: the work that Rath does is the work that the Brotherhood exists to do, at the limit of what the Brotherhood can sustain. I could not have sustained Rath's approach for twenty years. I'm not sure Rath can. The work is real. The human cost of the work is also real.",
+      "keywords": ["rath","most","intense","brotherhood","member","worked","twenty","years","six","years"]
+    },
+    {
+      "id": "holt_1",
+      "source": "Orm on Holt",
+      "text": "Holt trained me in year one. In twenty years of the Brotherhood and six years of the farm, Holt's training is what remains most clearly. What Holt gave me that is still active: the physical practices that I still do every morning. The farm doesn't require them. I do them anyway. They're what my body knows from year one. In six years of the farm, the Brotherhood's training shows up in how I work the land: the efficiency of movement, the attention to environment, the habit of assessment before action.",
+      "keywords": ["holt","trained","year","one","twenty","years","brotherhood","six","years","farm"]
+    },
+    {
+      "id": "mell_1",
+      "source": "Orm on Mell",
+      "text": "Mell the shepherd and I are edge-territory neighbors. In four years of the farm being where it is, Mell's high grazing territory overlaps with the farm's perimeter in summer. What Mell and I have worked out: the sheep can graze the farm's border fields in exchange for Mell's attention to the border's security during the grazing season. The arrangement serves both: the sheep get additional grazing, the farm gets additional eyes on the perimeter. The Brotherhood retired, the attention to the perimeter didn't retire.",
+      "keywords": ["mell","shepherd","edge-territory","neighbors","four","years","farm","being","where","mell's"]
+    },
+    {
+      "id": "what_the_farm_is_1",
+      "source": "Orm on what the farm is after the Brotherhood",
+      "text": "The farm is the same kind of work as the Brotherhood in one specific way: both require complete attention to the present. The Brotherhood required present attention because the past didn't help and the future was uncertain. The farm requires present attention because the plants and animals are always in the present and can't wait for me to finish thinking about the past or the future. In six years, the farm has been the correct replacement for the work in the one way that mattered most.",
+      "keywords": ["farm","same","kind","work","brotherhood","one","specific","way","both","require"]
+    },
+    {
+      "id": "what_orm_holds_1",
+      "source": "Orm on what twenty years left behind that the farm hasn't resolved",
+      "text": "Three specific operations from the twenty years that I still revisit. Not because they were failures — two of them were successful. Because they required decisions that I made and that I would make differently now. The decisions were correct for the situation. The situations required decisions I would prefer not to have made. In twenty years of the Brotherhood, the operations where the correct decision was the hardest decision: those are the operations I carry. The farm provides the quiet to carry them in. The quiet doesn't resolve them.",
+      "keywords": ["three","specific","operations","twenty","years","still","revisit","not","because","they"]
+    },
+    {
+      "id": "six_years_farm_1",
+      "source": "Orm on six years of the farm after twenty years of the Brotherhood",
+      "text": "In six years, the farm has taught me things the Brotherhood didn't: patience for the long-return work. The Brotherhood had long operations, but the return was always near-term — the operation ended and you either achieved the objective or you didn't. The farm's returns are seasonal, annual, multi-year. I'm farming for the orchard I planted that will produce in year eight. In six years, I've learned to work for the result I won't see for another two years. The Brotherhood didn't teach that. The farm is teaching it.",
+      "keywords": ["six","years","farm","taught","things","brotherhood","didn't","patience","long-return","work"]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "id": "retired_academy_teacher",
+  "name": "Prenn",
+  "role": "Retired Academy teacher; thirty years of teaching, now in the community; still consulted",
+  "cluster": "academy_of_runes",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "retired_1",
+      "source": "Prenn on retiring from the Academy",
+      "text": "I taught for thirty years and stopped teaching because I had nothing new to teach and my students had found their own edge. That's the correct time to stop teaching: when the students have found what's beyond your reach. Osven asked me to stay. I said: the Academy is better served by someone who's still finding the edge than by someone who's found the limit. I left the Academy's rolls and became what I am now: the person former students come to when they want to think out loud with someone who knew the tradition from the inside.",
+      "keywords": ["taught","thirty","years","stopped","teaching","because","had","nothing","new","teach"]
+    },
+    {
+      "id": "osven_1",
+      "source": "Prenn on Osven",
+      "text": "Osven and I were colleagues for eighteen years before Osven became the director and I was still a teacher. What I understand about Osven's directorship that I didn't understand when we were peers: the director's knowledge of the Academy is architectural, not pedagogical. Osven sees how the parts fit together. I saw each part from the inside. Both kinds of knowledge are necessary. Osven has the architectural knowledge. I still have the pedagogical knowledge. We consult each other when the knowledge overlaps.",
+      "keywords": ["osven","colleagues","eighteen","years","before","osven","became","director","still","teacher"]
+    },
+    {
+      "id": "maren_1",
+      "source": "Prenn on Scholar Maren",
+      "text": "Maren was my student in the fourth year of my teaching. In thirty years, four students have significantly exceeded what I taught them — Maren is the first. What Maren is doing with the eastern Archive divergence is work I couldn't have directed. The direction came from Maren's own edge. What teaching produces in the exceptional student: access to their own edge faster than they'd find it alone. Maren found the edge. What's beyond the edge is Maren's to discover.",
+      "keywords": ["maren","student","fourth","year","teaching","thirty","years","four","students","significantly"]
+    },
+    {
+      "id": "tal_1",
+      "source": "Prenn on Tal",
+      "text": "Tal came to me six months ago with the vocabulary bridge work. I looked at it for three days. What I told Tal: you're working in territory that the Academy's teaching track doesn't go. The track I taught for thirty years ends before where Tal is working. Tal said: that's why I came to you rather than the current teachers. I said: yes. What I can offer is the history of how the tradition approached the edge. Beyond the edge is Tal's territory, not mine.",
+      "keywords": ["tal","came","six","months","vocabulary","bridge","work","looked","three","days"]
+    },
+    {
+      "id": "wiss_1",
+      "source": "Prenn on Wiss",
+      "text": "Wiss catalogs what the Academy has. In thirty years I watched Wiss catalog it with increasing precision and depth. What Wiss's catalog gives the Academy: access to what it already knows. The uncataloged text exists but can't be found. The cataloged text exists and can be reached. Wiss has converted thirty years of the Academy's accumulation from existing to accessible. The accessibility is a kind of knowledge creation. Wiss never framed it that way. I did, once. Wiss said: I just describe what's there. I said: yes. And what's there can't be used until it's described.",
+      "keywords": ["wiss","catalogs","what","academy","has","thirty","years","watched","wiss","catalog"]
+    },
+    {
+      "id": "what_teaching_produced_1",
+      "source": "Prenn on what thirty years of teaching produced",
+      "text": "Students. The teaching produced students. The students are the product, not the knowledge I conveyed. The knowledge I conveyed exists now in other people, shaped and modified by those people's individual understanding. It's not the knowledge I taught anymore — it's what those people made of the knowledge I taught. In thirty years I've contributed something to two hundred and forty people's understanding of the tradition. What my contribution became in each of them: I'll never fully know. The contribution is upstream of the outcome.",
+      "keywords": ["students","teaching","produced","students","teaching","produced","students","students","product","not"]
+    },
+    {
+      "id": "what_prenn_holds_1",
+      "source": "Prenn on the one thing she still can't explain",
+      "text": "In thirty years of teaching the rune tradition, one question I've never been able to answer to my satisfaction: why the tradition works. I know how it works — the mechanism is clear. I know what it does — the outcomes are documented. Why it works in the sense of what underlying principle makes the mechanism possible: I don't know. I've asked this question to everyone I've been able to ask it to, including Osven, including my teacher, including the Eastern Archive's Lev. None of the answers has satisfied me. The question is still open.",
+      "keywords": ["thirty","years","teaching","rune","tradition","one","question","never","been","able"]
+    },
+    {
+      "id": "lev_1",
+      "source": "Prenn on Lev",
+      "text": "Lev came to the Academy and found the text that shouldn't exist. I know about the text because Osven told me, confidentially, that Lev had found it. The text's existence had been suspected by two of my predecessors in the teaching position. Both suspected and didn't find it. Lev found it in eight months of study. What the text means for the thirty years I spent teaching: the tradition I taught was accurate but incomplete in a way I didn't know was possible. This is uncomfortable and also correct.",
+      "keywords": ["lev","came","academy","found","text","shouldn't","exist","know","text","osven"]
+    }
+  ]
+}

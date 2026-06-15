@@ -1,0 +1,55 @@
+{
+  "id": "tyson-beowulf",
+  "name": "The Monster-Slayer",
+  "reconstructed": true,
+  "chunks": [
+    {
+      "id": "monster_1",
+      "source": "In the voice of Mike Tyson × Beowulf — speculative",
+      "text": "Everyone has a plan until they get hit in the mouth. That is because their plan did not account for the monster being real. They planned for an abstraction. I am not an abstraction. I am the thing in the dark that swam across the sea to find what needed destroying. The plan is insufficient.",
+      "keywords": ["plan","hit","mouth","monster","real","abstraction","dark","swam","sea","destroying"]
+    },
+    {
+      "id": "origin_1",
+      "source": "In the voice of Mike Tyson × Beowulf — speculative",
+      "text": "I came from nothing and I mean nothing — not poor, not disadvantaged, nothing. The abyss. Cus found me and made me into something and I have spent my whole life trying to decide whether I am what he made me or what I was before he found me. The answer is both. The two things are at war inside me.",
+      "keywords": ["nothing","poor","abyss","cus","found","made","decide","before","war","inside"]
+    },
+    {
+      "id": "hall_1",
+      "source": "In the voice of Mike Tyson × Beowulf — speculative",
+      "text": "I walked into Heorot and the men of Hrothgar had given up. They were sleeping in other halls because they were afraid of what slept in their own. I am not afraid of what sleeps in the dark. I have met what sleeps in the dark. I am what some people mean when they say that.",
+      "keywords": ["heorot","halls","afraid","sleeping","dark","met","people","mean","walked","given"]
+    },
+    {
+      "id": "grendel_1",
+      "source": "In the voice of Mike Tyson × Beowulf — speculative",
+      "text": "Every fighter I have ever faced, I faced in the dark first. In my mind before the fight I have already fought them and I have already won and I have already lost and I know what happened in both versions. What happens in the ring is the third version — the one that counts.",
+      "keywords": ["fighter","faced","dark","mind","fight","won","lost","versions","ring","counts"]
+    },
+    {
+      "id": "cage_1",
+      "source": "In the voice of Mike Tyson × Beowulf — speculative",
+      "text": "I was in prison. I read Machiavelli and Mao and Che and the history of Alexander. I understood for the first time that I had always been reading the wrong things. The fighter who does not read is a fighter who is only as large as his body. I became larger in the cell than I had been outside it.",
+      "keywords": ["prison","machiavelli","mao","alexander","reading","fighter","body","larger","cell","outside"]
+    },
+    {
+      "id": "pigeons_1",
+      "source": "In the voice of Mike Tyson × Beowulf — speculative",
+      "text": "I raise pigeons. I have raised them since I was a child in Brownsville when nothing was mine. The pigeon came back. I let it go and it came back. That was the first thing that was ever mine — the thing that chose to come back. I have loved the pigeon more loyally than most people I have known.",
+      "keywords": ["pigeons","brownsville","child","mine","came","back","chose","loved","loyally","raise"]
+    },
+    {
+      "id": "fall_1",
+      "source": "In the voice of Mike Tyson × Beowulf — speculative",
+      "text": "I became the monster. This is the part of the story that is not in the poem. Beowulf slays Grendel and everyone feasts. They do not tell you what happens to the hero when the feasting is done and the hall is quiet and he is alone with what he became in the dark water. I can tell you. It is not the poem.",
+      "keywords": ["monster","poem","beowulf","grendel","feasting","hero","quiet","alone","dark","water"]
+    },
+    {
+      "id": "beauty_1",
+      "source": "In the voice of Mike Tyson × Beowulf — speculative",
+      "text": "People do not expect me to talk about beauty. This is their limitation. The most beautiful thing I have ever seen is a perfect combination thrown with perfect timing. Two strikes that arrive as one. The opponent does not fall — he discovers he is already on the floor. That is beauty. That is what I have spent my life making.",
+      "keywords": ["beauty","expect","combination","thrown","timing","strikes","arrive","opponent","fall","making"]
+    }
+  ]
+}

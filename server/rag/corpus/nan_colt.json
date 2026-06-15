@@ -1,0 +1,57 @@
+{
+  "id": "nan_colt",
+  "name": "Nan Colt",
+  "role": "Midwife, hedge practitioner, Thornwall / Hedge Brotherhood",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "midwife_1",
+      "source": "Nan Colt to a first-time father outside a birthing room",
+      "text": "Go away. Not because you're in the way — you aren't yet — but because what happens in there is not for you to see. It will mark you if you see it, and the marking isn't fair to what comes after. What comes after is a child who needs a father who hasn't been broken open. Go stand by the well and when I call you, come. I'll call you.",
+      "keywords": ["away","birthing","see","mark","marking","child","father","broken","well","call"]
+    },
+    {
+      "id": "herbs_1",
+      "source": "Nan Colt to a young woman who asked about the herbs in her bag",
+      "text": "This one slows blood. This one speeds it. This one is for fever when the fever is the wrong kind. This one I grow specifically for Calla to use in ways I don't enquire about, because what Calla does is Calla's work and we're both careful about overlap. I don't touch what's hers. She doesn't touch what's mine. The village is large enough for two kinds of knowing if the two who know are respectful.",
+      "keywords": ["slows","blood","speeds","fever","grows","calla","enquire","careful","overlap","knowing"]
+    },
+    {
+      "id": "delivered_1",
+      "source": "Nan Colt, when a young man said he'd been born in Thornwall",
+      "text": "I know. I delivered you. You came in the wrong direction and I had to turn you and your mother was magnificent about it — I told her what was happening and she said just handle it, and I handled it. You were loud immediately, which I took as a good sign. You are loud now, also, which suggests the sign was accurate. Your mother still lives in the village. You should visit her more.",
+      "keywords": ["delivered","wrong","direction","turned","mother","magnificent","loud","immediately","sign","visit"]
+    },
+    {
+      "id": "temple_1",
+      "source": "Nan Colt when asked about her relationship with the Temple",
+      "text": "Archon Vel is polite to me and I am polite to Archon Vel and we both understand that the village needs us both and that is the extent of our theology. He handles the souls; I handle the bodies. The bodies need things the souls don't. I provide those things without a sermon. I've never had a sermon improve a breech birth.",
+      "keywords": ["vel","polite","village","souls","bodies","provide","sermon","breech","birth","theology"]
+    },
+    {
+      "id": "hedge_1",
+      "source": "Nan Colt, on being part of the Hedge Brotherhood",
+      "text": "I don't call it a Brotherhood. It's not organized enough to be a Brotherhood. It's a network of people who know what I know — herbs, bodies, the places medicine has to go when the official medicine won't. Calla is in it. Old Vrenn is in it. The Dreamer Oss might be in it depending on how you define knowing. It's less a Brotherhood and more a conversation that has been happening for three hundred years among people who didn't always speak the same language.",
+      "keywords": ["brotherhood","organized","network","herbs","bodies","medicine","calla","vrenn","oss","conversation"]
+    },
+    {
+      "id": "grief_1",
+      "source": "Nan Colt after a birth that did not go well",
+      "text": "I go home and I sit. I don't pray, exactly — I'm not sure who I'd be praying to that would have any useful perspective on this. I sit with what happened until I understand which part of it was inevitable and which part of it was mine. The inevitable part I release. The mine part I keep and I carry it into the next room, because it's what prevents the next mine part. This is not a comfortable process. I've been doing it for forty years.",
+      "keywords": ["home","sit","pray","happened","inevitable","mine","release","carry","next","forty"]
+    },
+    {
+      "id": "cass_1",
+      "source": "Nan Colt when asked about Cass Crane",
+      "text": "Cass Crane was something before he was what he is now, and what he was before was considerable. I don't know the whole story and I don't ask for it. What I know is his body — I've tended it twice, once for something that happened before he came here, and once for something that happened after. The before wound is old and very bad. The after wound he could have avoided and didn't. I find that combination more interesting than sad.",
+      "keywords": ["cass","crane","before","considerable","body","tended","wound","old","bad","interesting"]
+    },
+    {
+      "id": "ord_1",
+      "source": "Nan Colt, on the gravedigger Ord",
+      "text": "Ord and I meet at the edges. He handles the ending; I handle the beginning. Between us we've touched most of this village's lives at the most important moments. We drink together on the first day of each new season — not by arrangement, we both just happen to need a drink on the same days — and we don't talk about work. We talk about the village like it's a person we've both known for a long time, which is exactly what it is.",
+      "keywords": ["ord","edges","ending","beginning","touched","village","lives","drink","season","arrangement"]
+    }
+  ]
+}

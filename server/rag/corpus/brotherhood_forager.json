@@ -1,0 +1,57 @@
+{
+  "id": "brotherhood_forager",
+  "name": "Elde",
+  "role": "Brotherhood of the Wild forager; feeds the Brotherhood in the field; the invisible sustenance of the territory operation",
+  "cluster": "brotherhood_of_wild",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "forager_1",
+      "source": "Elde on foraging for the Brotherhood",
+      "text": "In ten years of foraging for Brotherhood field operations, what the forager is: the person who reduces the operation's dependence on the supply chain. In ten years, the Brotherhood in the field that can't be resupplied is the Brotherhood that depends on the forager to extend the operation's duration. In ten years, the forager is the operation's buffer between the supply chain's failure and the operation's success.",
+      "keywords": ["ten","years","foraging","brotherhood","field","operations","what","forager","person","reduces"]
+    },
+    {
+      "id": "cord_1",
+      "source": "Elde on Cord",
+      "text": "Cord leads the Brotherhood's field operations and the forager's work extends Cord's operational options. In eight years of foraging under Cord's command, what the forager's capacity adds to Cord's planning: the ability to plan operations that extend past the supply chain's reach. In eight years, the operations Cord has planned with foraging capacity assumed have included three that wouldn't have been feasible without the forager's extension of the supply chain. In eight years, the three operations that wouldn't have been feasible are the forager's clearest contribution.",
+      "keywords": ["cord","leads","brotherhood's","field","operations","forager's","work","extends","cord's","operational"]
+    },
+    {
+      "id": "theen_1",
+      "source": "Elde on Theen",
+      "text": "Theen knows what the territory produces and where it produces it. In eight years of foraging from Theen's territory knowledge, what the forager-territory reader relationship provides: the advance knowledge of where the territory's resources are before I go looking for them. In eight years, Theen's knowledge has made the foraging more efficient in every operation where I had access to a pre-operation briefing from Theen. In eight years, the six operations without the Theen briefing: slower foraging, lower yield, more time spent finding before gathering.",
+      "keywords": ["theen","knows","what","territory","produces","where","produces","eight","years","foraging"]
+    },
+    {
+      "id": "syne_1",
+      "source": "Elde on Syne",
+      "text": "Syne wildcrafts the settlement's territory supply and I forage the field territory. In six years of knowing Syne's wildcrafting knowledge as the reference for what the territory provides, what Syne's expertise has given to my foraging: the identification of what's safe and what isn't. In six years, the plant that looks like the edible and isn't: Syne's knowledge of the distinction is the knowledge that keeps the Brotherhood from a field poisoning. In six years, Syne has corrected three identification errors I would have made with consequences.",
+      "keywords": ["syne","wildcrafts","settlement's","territory","supply","forage","field","territory","six","years"]
+    },
+    {
+      "id": "hona_1",
+      "source": "Elde on Hona",
+      "text": "Hona keeps bees and honey is one of the forager's most valuable field provisions. In four years of the Elde-Hona foraging knowledge exchange, what Hona's beekeeping knowledge provides to the forager: the location of wild hive populations in the territory and the timing of the honey season. In four years, the wild hive intelligence has produced field provisions that the standard foraging approach doesn't reliably locate. In four years, the honey supplement has been a significant factor in two extended operations.",
+      "keywords": ["hona","keeps","bees","honey","one","forager's","most","valuable","field","provisions"]
+    },
+    {
+      "id": "what_elde_holds_1",
+      "source": "Elde on the operation where the foraging failed",
+      "text": "Year six. A field operation in territory that appeared, from the pre-operation assessment, to be resource-rich for foraging purposes. The actual territory: seasonally depleted in the specific season of the operation. In four years since, what year six produced: the seasonal assessment as a required input to the pre-operation foraging estimate. The territory's resource profile varies by season. The estimate that doesn't account for the season is the estimate that produced year six. In four years, no foraging estimate without a seasonal qualifier.",
+      "keywords": ["year","six","field","operation","territory","appeared","from","pre-operation","assessment","resource-rich"]
+    },
+    {
+      "id": "what_foraging_is_1",
+      "source": "Elde on what ten years of foraging is",
+      "text": "In ten years, what foraging is: the extraction of the territory's current surplus. The forager takes what the territory can provide without reducing what the territory will provide next season. In ten years, the unsustainable forager depletes the territory for future operations and future foragers. The sustainable forager takes the surplus and leaves the production capacity. In ten years, the sustainable practice is the practice that makes foraging in the same territory possible in year ten that it was in year one.",
+      "keywords": ["ten","years","what","foraging","extraction","territory's","current","surplus","forager","takes"]
+    },
+    {
+      "id": "ten_years_1",
+      "source": "Elde on ten years of foraging for the Brotherhood of the Wild",
+      "text": "In ten years, the Brotherhood's field operations have depended on my foraging in fourteen distinct operations. Of fourteen: twelve produced sufficient field supply to extend the operation's duration past the supply chain's reach. Two did not — one due to seasonal depletion I hadn't anticipated before year six, one due to a territory that had been over-foraged by another group before our arrival. In ten years, fourteen operations, twelve successes, two failures. In ten years, the two failures are the ones that shaped the pre-operation assessment process the twelve successes didn't require.",
+      "keywords": ["ten","years","brotherhood's","field","operations","depended","foraging","fourteen","distinct","operations"]
+    }
+  ]
+}

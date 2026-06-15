@@ -1,0 +1,57 @@
+{
+  "id": "wild_goatherd",
+  "name": "Bren the Shepherd",
+  "role": "High-pasture goatherd; keeps the herds on the territory above the forest line",
+  "cluster": "wild_road",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "goatherd_1",
+      "source": "Bren the Shepherd on the high pasture",
+      "text": "The high pasture is above the tree line. Below: the forest, the settlement, the network of people and their concerns. Above: the pasture and the herd and the weather and nothing else. I spend six months of the year above and six months below. The six months above: I know exactly what's needed and it's always changing and the change is what the work is. The six months below: I know what I need and it's always stable and the stability is what the rest is.",
+      "keywords": ["high","pasture","above","tree","line","below","forest","settlement","network","people"]
+    },
+    {
+      "id": "foss_1",
+      "source": "Bren the Shepherd on Foss",
+      "text": "Foss passes through the high territory sometimes and knows the pasture as part of the larger ecology. What Foss knows about the high territory that I don't: what the pasture is connected to below the surface — the water table, the seasonal patterns, the plant communities that the goats eat and that regenerate according to rules I use but don't understand. Foss explained the regeneration once. I understood about half. The half I understood changed how I move the herd through the pasture.",
+      "keywords": ["foss","passes","high","territory","sometimes","knows","pasture","part","larger","ecology"]
+    },
+    {
+      "id": "theen_1",
+      "source": "Bren the Shepherd on Theen",
+      "text": "Theen guides travelers on the route that passes below the high pasture. Occasionally Theen brings travelers up who want to see the high pasture for the view or the experience. I let them come. They're not a disturbance to the herd if Theen prepares them for the herd's presence. Theen prepares them correctly — I've had twenty-six visitors over nine years and none of them disturbed the herd in a way that lasted past an hour. Theen told me once: I tell them the herd is part of the territory, not an attraction. The telling works.",
+      "keywords": ["theen","guides","travelers","route","passes","below","high","pasture","occasionally","theen"]
+    },
+    {
+      "id": "suli_1",
+      "source": "Bren the Shepherd on Suli",
+      "text": "Suli's hives are at the forest edge, below my pasture territory. What the goats and the bees share: the flowering plants on the pasture margin. The goats eat what the bees wouldn't fly to and graze in ways that open flowering patches the bees can then work. I didn't know this until Suli told me. What I'd thought of as marginal grazing was creating beneficial habitat for the bees. Suli showed me the evidence in the honey. The pasture's presence is in the honey.",
+      "keywords": ["suli","hives","forest","edge","below","pasture","territory","what","goats","bees"]
+    },
+    {
+      "id": "sol_1",
+      "source": "Bren the Shepherd on Sol",
+      "text": "Sol farms the lower valley. We share some seasonal markets — Sol's products and my cheese come to the settlement at similar times. In nine years the market overlap has never produced tension because we're selling different things to different needs. What Sol and I have talked about: the difference between farming the same land every year and grazing the same land every year. The farming relationship to land is permanent. My relationship to the high pasture is seasonal. Sol said: permanent is harder to manage. I said: seasonal is harder to leave.",
+      "keywords": ["sol","farms","lower","valley","share","some","seasonal","markets","sol's","products"]
+    },
+    {
+      "id": "what_the_high_pasture_is_1",
+      "source": "Bren the Shepherd on what the high pasture gives you",
+      "text": "The view. That's the practical answer and also the true one. The high pasture view covers the territory from the forest edge to the settlement to the harbor. From the high pasture I can see the entire human geography of this region. In nine years I've watched from the high pasture: three storms that the settlement didn't know were coming until I sent word, two fires at the forest edge caught early, one ship in distress visible from the pasture before it was visible from the lighthouse. The high pasture is a viewpoint the settlement uses without knowing it.",
+      "keywords": ["view","practical","answer","also","true","one","high","pasture","view","covers"]
+    },
+    {
+      "id": "what_bren_holds_1",
+      "source": "Bren the Shepherd on the six months below",
+      "text": "When I come down for the winter months, the first two weeks are always wrong. The settlement's pace is different from the high pasture pace. The noise is different. The concerns are different. People below are worried about things that don't exist at the altitude. In the first two weeks I'm always translating between two different relationships to time. By the third week I've translated. By the sixth month I'm of the settlement again. Then the pasture calls and I go up and spend two weeks translating the other way.",
+      "keywords": ["come","down","winter","months","first","two","weeks","always","wrong","settlement's"]
+    },
+    {
+      "id": "nine_years_1",
+      "source": "Bren the Shepherd on nine years between the pasture and the settlement",
+      "text": "Nine years of the division. I'm no longer certain which is the primary life and which is the secondary. I used to think the settlement was primary — the herd is the work and the settlement is home. Now I think the high pasture is primary and the settlement is where I keep my things. The primary life is the one that doesn't have a backup. The high pasture doesn't have a backup. If the pasture failed, I wouldn't have another. The settlement would survive without me easily. The definition of primary is where you're not replaceable.",
+      "keywords": ["nine","years","division","no","longer","certain","which","primary","life","which"]
+    }
+  ]
+}

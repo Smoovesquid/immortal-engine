@@ -1,0 +1,114 @@
+{
+  "id": "lincoln",
+  "name": "Abraham Lincoln",
+  "chunks": [
+    {
+      "id": "gettysburg_1",
+      "source": "Gettysburg Address, 1863",
+      "text": "Four score and seven years ago our fathers brought forth on this continent, a new nation, conceived in Liberty, and dedicated to the proposition that all men are created equal. Now we are engaged in a great civil war, testing whether that nation, or any nation so conceived and so dedicated, can long endure.",
+      "keywords": ["liberty","nation","equal","conceived","dedicated","testing","endure","fathers","continent","proposition"]
+    },
+    {
+      "id": "gettysburg_2",
+      "source": "Gettysburg Address, 1863",
+      "text": "We are met on a great battle-field of that war. We have come to dedicate a portion of that field, as a final resting place for those who here gave their lives that that nation might live. It is altogether fitting and proper that we should do this. But, in a larger sense, we can not dedicate — we can not consecrate — we can not hallow — this ground.",
+      "keywords": ["battle","field","lives","dedicate","consecrate","hallow","ground","proper","fitting","resting"]
+    },
+    {
+      "id": "gettysburg_3",
+      "source": "Gettysburg Address, 1863",
+      "text": "The brave men, living and dead, who struggled here, have consecrated it, far above our poor power to add or detract. The world will little note, nor long remember what we say here, but it can never forget what they did here. It is for us the living, rather, to be dedicated here to the unfinished work which they who fought here have thus far so nobly advanced.",
+      "keywords": ["brave","struggled","consecrated","living","dead","remember","fought","nobly","unfinished","power"]
+    },
+    {
+      "id": "gettysburg_4",
+      "source": "Gettysburg Address, 1863",
+      "text": "It is rather for us to be here dedicated to the great task remaining before us — that from these honored dead we take increased devotion to that cause for which they gave the last full measure of devotion — that we here highly resolve that these dead shall not have died in vain — that this nation, under God, shall have a new birth of freedom.",
+      "keywords": ["devoted","devotion","resolve","died","vain","freedom","birth","cause","honored","measure"]
+    },
+    {
+      "id": "second_inaugural_1",
+      "source": "Second Inaugural Address, 1865",
+      "text": "On the occasion corresponding to this four years ago, all thoughts were anxiously directed to an impending civil war. All dreaded it — all sought to avert it. While the inaugural address was being delivered from this place, devoted altogether to saving the Union without war, insurgent agents were in the city seeking to dissolve it, and divide effects, by negotiation.",
+      "keywords": ["war","union","saving","civil","inaugural","dissolve","divide","impending","seeking","insurgent"]
+    },
+    {
+      "id": "second_inaugural_2",
+      "source": "Second Inaugural Address, 1865",
+      "text": "Both parties deprecated war; but one of them would make war rather than let the nation survive; and the other would accept war rather than let it perish. And the war came. One eighth of the whole population were colored slaves, not distributed generally over the Union, but localized in the Southern part of it. These slaves constituted a peculiar and powerful interest.",
+      "keywords": ["war","slaves","population","colored","southern","union","survive","perish","powerful","interest"]
+    },
+    {
+      "id": "second_inaugural_3",
+      "source": "Second Inaugural Address, 1865",
+      "text": "With malice toward none; with charity for all; with firmness in the right, as God gives us to see the right, let us strive on to finish the work we are in; to bind up the nation's wounds; to care for him who shall have borne the battle, and for his widow, and his orphan — to do all which may achieve and cherish a just and lasting peace.",
+      "keywords": ["malice","charity","firmness","wounds","peace","lasting","strive","finish","borne","battle"]
+    },
+    {
+      "id": "second_inaugural_4",
+      "source": "Second Inaugural Address, 1865",
+      "text": "Neither party expected for the war, the magnitude, or the duration, which it has already attained. Neither anticipated that the cause of the conflict might cease with, or even before, the conflict itself should cease. Each looked for an easier triumph, and a result less fundamental and astounding. Both read the same Bible, and pray to the same God.",
+      "keywords": ["magnitude","duration","conflict","triumph","bible","pray","anticipated","astounding","fundamental","expected"]
+    },
+    {
+      "id": "letter_hooker_1",
+      "source": "Letter to General Hooker, January 26, 1863",
+      "text": "I have placed you at the head of the Army of the Potomac. Of course I have done this upon what appear to me to be sufficient reasons, and yet I think it best for you to know that there are some things in regard to which I am not quite satisfied with you. I believe you to be a brave and a skillful soldier, which, of course, I like.",
+      "keywords": ["army","brave","soldier","skillful","satisfied","reasons","placed","course","potomac","believe"]
+    },
+    {
+      "id": "letter_hooker_2",
+      "source": "Letter to General Hooker, January 26, 1863",
+      "text": "I have heard, in such way as to believe it, of your recently saying that both the Army and the Government needed a Dictator. Of course it was not for this, but in spite of it, that I have given you the command. Only those generals who gain successes can set up dictators. What I now ask of you is military success, and I will risk the dictatorship.",
+      "keywords": ["dictator","command","success","government","generals","military","risk","recently","saying","given"]
+    },
+    {
+      "id": "letter_hooker_3",
+      "source": "Letter to General Hooker, January 26, 1863",
+      "text": "And now, beware of rashness. Beware of rashness, but with energy, and sleepless vigilance, go forward, and give us victories. The spirit of God is upon us. I much fear that the spirit which you have aided to infuse into the Army, of criticizing their Commander, and withholding confidence from him, will now turn upon you.",
+      "keywords": ["rashness","vigilance","victories","spirit","confidence","criticizing","commander","forward","energy","fear"]
+    },
+    {
+      "id": "cooper_union_1",
+      "source": "Cooper Union Address, February 27, 1860",
+      "text": "The facts with which I shall deal this evening are mainly old and familiar; nor is there anything new in the general use I shall make of them. If there shall be any novelty, it will be in the mode of presenting the facts, and the inferences and observations following that presentation. In this age, and this country, public sentiment is everything.",
+      "keywords": ["facts","familiar","novelty","presenting","inferences","sentiment","public","country","following","observations"]
+    },
+    {
+      "id": "cooper_union_2",
+      "source": "Cooper Union Address, February 27, 1860",
+      "text": "Let us be diverted by none of those sophistical contrivances wherewith we are so industriously plied and belabored — contrivances such as groping for some middle ground between the right and the wrong, vain as the search for a man who should be neither a living man nor a dead man — such as a policy of 'don't care' on a question about which all true men do care.",
+      "keywords": ["diverted","sophistical","contrivances","wrong","right","middle","ground","policy","question","care"]
+    },
+    {
+      "id": "cooper_union_3",
+      "source": "Cooper Union Address, February 27, 1860",
+      "text": "Neither let us be slandered from our duty by false accusations against us, nor frightened from it by menaces of destruction to the Government nor of dungeons to ourselves. Let us have faith that right makes might, and in that faith, let us, to the end, dare to do our duty as we understand it.",
+      "keywords": ["duty","faith","right","might","dare","slander","accusation","frightened","government","destruction"]
+    },
+    {
+      "id": "letter_speed_1",
+      "source": "Letter to Joshua Speed, August 24, 1855",
+      "text": "I am not a Know-Nothing. That is certain. How could I be? How can anyone who abhors the oppression of negroes be in favor of degrading classes of white people? Our progress in degeneracy appears to me to be pretty rapid. As a nation, we began by declaring that 'all men are created equal.' We now practically read it 'all men are created equal, except negroes.'",
+      "keywords": ["oppression","equal","degrading","progress","nation","practically","declaring","created","negroes","rapid"]
+    },
+    {
+      "id": "letter_speed_2",
+      "source": "Letter to Joshua Speed, August 24, 1855",
+      "text": "When it comes to this I should prefer emigrating to some country where they make no pretense of loving liberty — to Russia, for instance, where despotism can be taken pure, and without the base alloy of hypocrisy. I cannot but hate the monstrous injustice of slavery itself. I hate it because it deprives our republican example of its just influence in the world.",
+      "keywords": ["liberty","despotism","hypocrisy","slavery","injustice","hate","republic","influence","emigrating","pretense"]
+    },
+    {
+      "id": "letter_bixby",
+      "source": "Letter to Mrs. Bixby, November 21, 1864",
+      "text": "Dear Madam, I have been shown in the files of the War Department a statement of the Adjutant General of Massachusetts that you are the mother of five sons who have died gloriously on the field of battle. I feel how weak and fruitless must be any words of mine which should attempt to beguile you from the grief of a loss so overwhelming.",
+      "keywords": ["sons","battle","grief","loss","field","death","died","overwhelming","weak","fruitless"]
+    },
+    {
+      "id": "letter_bixby_2",
+      "source": "Letter to Mrs. Bixby, November 21, 1864",
+      "text": "I pray that our Heavenly Father may assuage the anguish of your bereavement, and leave you only the cherished memory of the loved and lost, and the solemn pride that must be yours, to have laid so costly a sacrifice upon the altar of Freedom. Yours, very sincerely and respectfully, A. Lincoln.",
+      "keywords": ["prayer","anguish","bereavement","memory","pride","sacrifice","freedom","altar","solemn","costly"]
+    }
+  ]
+}

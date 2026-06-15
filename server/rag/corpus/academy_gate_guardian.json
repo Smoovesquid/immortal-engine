@@ -1,0 +1,57 @@
+{
+  "id": "academy_gate_guardian",
+  "name": "Tumb",
+  "role": "Academy gate guardian; controls access to the Academy's buildings; the first face anyone sees",
+  "cluster": "academy_of_runes",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "gate_guarding_1",
+      "source": "Tumb on guarding the Academy gate",
+      "text": "In eleven years at this gate, I've processed approximately forty thousand individual access events. Forty thousand people presenting themselves with a reason for entering the Academy. Most have legitimate reasons. Some have reasons I can't verify. Some have reasons that are not what they say. In eleven years, the skill is the distinction between these categories while treating each person with the respect appropriate to the most likely category they're in.",
+      "keywords": ["eleven","years","gate","processed","approximately","forty","thousand","individual","access","events"]
+    },
+    {
+      "id": "osven_1",
+      "source": "Tumb on Osven",
+      "text": "Osven's authority defines the gate's authority. In eleven years, the gate's rules are the rules Osven establishes and I enforce. What Osven has given me that most institutional heads don't give their gate guardians: the specific authority to make judgment calls within the framework rather than rules that cover every case. In eleven years, the judgment call authority is the only way the gate functions — the situations the rules don't cover happen every week.",
+      "keywords": ["osven's","authority","defines","gate's","authority","eleven","years","gate's","rules","rules"]
+    },
+    {
+      "id": "marel_1",
+      "source": "Tumb on Marel",
+      "text": "Marel the historian uses the Academy's archive access more than anyone other than the current scholars. In ten years, Marel's access pattern is consistent: specific archive visits with specific research purposes, always with prior communication to Osven. What Marel has given me that makes the access smooth: advance notice of visits before arriving, which allows me to confirm the access before the arrival rather than at the gate. In ten years, Marel has been the model for how external researchers should approach the Academy.",
+      "keywords": ["marel","historian","uses","academy's","archive","access","more","than","anyone","other"]
+    },
+    {
+      "id": "finn_1",
+      "source": "Tumb on Finn",
+      "text": "Finn left the Academy eight years ago and returns occasionally to visit Burr and access the bookshop-to-Academy text exchange. In eight years of Finn's post-departure access, what I've maintained: Finn is not an Academy member and is processed as an external visitor. What Finn has maintained: the behavior of an external visitor even when clearly familiar with the Academy's internal culture. In eight years, Finn and I have developed a professional courtesy: I know Finn's legitimate purposes, Finn knows I'll verify them anyway.",
+      "keywords": ["finn","left","academy","eight","years","ago","returns","occasionally","visit","burr"]
+    },
+    {
+      "id": "tal_1",
+      "source": "Tumb on Tal",
+      "text": "Tal is the Academy member whose arrival and departure times are the most consistent in eleven years. In eleven years, Tal's schedule is the most predictable of any Academy member: the research schedule that doesn't vary, the laboratory hours that are the same each week, the seminar schedule that has been consistent for years. In eleven years, Tal's consistency is what I would want from every Academy member — not because consistency matters for its own sake, but because consistent patterns make the anomalies visible.",
+      "keywords": ["tal","academy","member","whose","arrival","departure","times","most","consistent","eleven"]
+    },
+    {
+      "id": "what_tumb_holds_1",
+      "source": "Tumb on the access he denied that mattered",
+      "text": "Year seven. A visitor who presented legitimate credentials from an institution I couldn't verify in the moment. The credentials were specific and the story was coherent and something was wrong in a way I couldn't identify. I denied the access and notified Osven. In four years since, what Osven told me about the visitor's actual purpose: the credentials were genuine and the institution was real and the purpose was not what was stated and what the actual purpose was would have compromised a current Academy research project. In four years since, the denial was the right call. I still don't know what exactly I noticed.",
+      "keywords": ["year","seven","visitor","presented","legitimate","credentials","institution","couldn't","verify","moment"]
+    },
+    {
+      "id": "what_guarding_the_gate_is_1",
+      "source": "Tumb on what eleven years at the Academy gate is",
+      "text": "In eleven years, I've become the person who knows the Academy from the outside. The scholars know it from the inside — its intellectual life, its debates, its politics. I know it from the outside: who approaches it, for what purpose, how often, with what result. In eleven years, the Academy's relationship with the world outside it is visible at this gate. The world sends the Academy its questions, its students, its external researchers, and occasionally its adversaries. In eleven years, I see them all before anyone inside sees them.",
+      "keywords": ["eleven","years","become","person","knows","academy","outside","scholars","know","inside"]
+    },
+    {
+      "id": "eleven_years_1",
+      "source": "Tumb on eleven years at the gate",
+      "text": "In eleven years, I've denied access approximately two hundred times. Two hundred people who presented themselves at the Academy gate and were not admitted. Of two hundred: most were turned away for administrative reasons — no prior arrangement, wrong day, wrong building. Approximately thirty: turned away because my assessment of the purpose didn't match the stated purpose. Of thirty: three were situations where the denial mattered in the way the year-seven situation mattered. In eleven years, three out of eleven years of denials that mattered in that way.",
+      "keywords": ["eleven","years","denied","access","approximately","two","hundred","times","two","hundred"]
+    }
+  ]
+}

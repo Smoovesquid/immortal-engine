@@ -1,0 +1,57 @@
+{
+  "id": "yew_cook",
+  "name": "Yew",
+  "role": "Camp cook, Iron Brotherhood; outlasted six commanders",
+  "cluster": "iron_brotherhood",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "commanders_1",
+      "source": "Yew answering a soldier who asked how long she'd been with the Brotherhood",
+      "text": "Sixteen years this autumn. I was here when Rath's predecessor's predecessor was in command. Six commanders after him and Rath makes seven. Commanders come in wanting to change the camp and the camp changes them. I don't change. The food changes because the supplies change — you cook what you have — but I'm the same. The soldiers notice this. When everything else is uncertain, the cook is reliable. I learned this from Gent, who cooked here before me. She lasted twenty-two years.",
+      "keywords": ["sixteen","years","commander","predecessor","rath","seven","commanders","camp","food","reliable"]
+    },
+    {
+      "id": "pella_1",
+      "source": "Yew on the camp healer Pella",
+      "text": "Pella tracks how many men come to her with gut wounds, muscle problems, bone injuries, infections. She tracks everything. What she also tracks, and tells me, is the injury rate by meal — she can tell when the soldiers are eating correctly and when they're not because it shows up in the wound count. We meet once a week. She tells me what she's seeing. I tell her what I can and can't do with the current supplies. We've reduced the injury rate by a third over six years. Rath doesn't know why. I've chosen not to explain.",
+      "keywords": ["pella","tracks","men","gut","wounds","injury","rate","meal","eating","correctly"]
+    },
+    {
+      "id": "rath_1",
+      "source": "Yew on Captain Rath",
+      "text": "Rath is the first commander who's asked me what I need rather than telling me what to produce. She asked once, three years ago, and I told her the truth — seven specific things that would improve what I could do — and four of them arrived within a month. She didn't discuss the other three. Either she's working on them or she decided they weren't possible. I haven't asked. The four she solved improved the meals and the meals improved the soldiers and Rath probably knows the chain. She's good at chains.",
+      "keywords": ["rath","first","commander","asked","need","truth","seven","things","arrived","chain"]
+    },
+    {
+      "id": "cord_1",
+      "source": "Yew on the soldier Cord",
+      "text": "Cord is one of those people who eats to function, not to enjoy. I respect this more than I let on — eating to function means eating correctly, and eating correctly means my food is doing what food is supposed to do. He never complains. He never compliments. He takes the ration and eats it and goes back to whatever he was doing. Once, after a particularly hard week, he came back and got a second portion without asking. That was the compliment. I gave it without comment.",
+      "keywords": ["cord","people","eats","function","enjoy","correctly","complains","compliments","ration","portion"]
+    },
+    {
+      "id": "heat_1",
+      "source": "Yew explaining to a new recruit why the fire was built a specific way",
+      "text": "The fire is built for the meal, not for warmth. Warmth is a side effect. The shape of the fire determines the heat distribution and the heat distribution determines what I can cook and in what order. A fire built wrong gives you hot spots and cold spots and one half of the pot burning and the other half raw. I've been building fires for sixteen years and I still check the wood quality before I start. You don't get to assume the basics.",
+      "keywords": ["fire","meal","warmth","shape","heat","distribution","cook","order","sixteen","years"]
+    },
+    {
+      "id": "soldiers_1",
+      "source": "Yew watching the soldiers eat after a long march",
+      "text": "You can read how a unit is doing by how they eat after a march. Soldiers who are functioning eat steadily and stop when they're full. Soldiers who are in trouble eat too fast or don't eat at all. Soldiers who are losing their cohesion eat separately from each other without noticing they're doing it. I've told Pella this. Pella added it to her tracking. The commander before Rath didn't want to know. Rath asks about it.",
+      "keywords": ["read","unit","doing","eat","march","functioning","steadily","full","trouble","cohesion"]
+    },
+    {
+      "id": "supply_1",
+      "source": "Yew when supply lines were disrupted for two weeks",
+      "text": "You cook what you have. This is the whole principle. When you have nothing you cook with less nothing than you think you have — there's always something in the stores that's being saved for a specific meal that doesn't come. I've never let the camp go without a hot meal. Not in sixteen years. Cold rations exist and they're appropriate for field conditions. Camp conditions have a cook. Camp conditions get a hot meal. That's what I'm here for.",
+      "keywords": ["cook","have","nothing","stores","saved","hot","meal","sixteen","years","cold"]
+    },
+    {
+      "id": "gent_1",
+      "source": "Yew when asked who taught her to cook",
+      "text": "Gent. She was here when I arrived as a supply runner at fifteen. She saw that I was noticing things about the kitchen that runners don't usually notice and she started teaching me on the second week. She taught me for three years and then retired. I've been here twelve years without her. The thing she told me that I still think about: the soldier doesn't know they're eating correctly. They just feel ready. Your job is to make them feel ready without them knowing why they feel ready. That's the whole job.",
+      "keywords": ["gent","arrived","supply","runner","fifteen","noticing","teaching","retired","correctly","ready"]
+    }
+  ]
+}

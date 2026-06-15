@@ -1,0 +1,57 @@
+{
+  "id": "coin_cult_initiate",
+  "name": "Mobb",
+  "role": "Coin Cult new initiate; believed in HAGRETH before joining; came to the cult through debt",
+  "cluster": "coin_cult",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "initiate_1",
+      "source": "Mobb on joining the Coin Cult",
+      "text": "I joined the cult through the money. I owed the cult before I believed in HAGRETH. In the process of repaying, I came to understand what HAGRETH is — not a demon as the Covenant describes it, but the principle that makes the material world legible. The material world runs on obligation. HAGRETH is the name for the force that makes obligation real. The debt was the door. I walked through it.",
+      "keywords": ["joined","cult","through","money","owed","cult","before","believed","hagreth","process"]
+    },
+    {
+      "id": "lena_1",
+      "source": "Mobb on Lena",
+      "text": "Lena was the face that offered the initial credit. In two years of the cult, I've understood what Lena does better: Lena finds people who are almost at capacity and offers them what gets them past the threshold. The offer is real. The credit is real. The terms are specific. What Lena is good at: identifying people who are close enough to the threshold that the offer is genuinely useful and that the obligation created will bring them into the cult's orbit.",
+      "keywords": ["lena","face","offered","initial","credit","two","years","cult","understood","what"]
+    },
+    {
+      "id": "grav_1",
+      "source": "Mobb on Grav",
+      "text": "Grav is the treasurer. In two years, Grav has been the person who tracked my account — what I owed, what I paid, where the obligation stood. The relationship with Grav is the most clear relationship I have in the cult: it's entirely numerical. Grav doesn't have opinions about me. Grav has my account. The account is either in good standing or it's not. In two years, the account has moved from not-good to good. Grav tracked it the entire way without judgment beyond the numbers.",
+      "keywords": ["grav","treasurer","two","years","grav","been","person","tracked","account","what"]
+    },
+    {
+      "id": "hagreth_1",
+      "source": "Mobb on HAGRETH's teaching",
+      "text": "What HAGRETH teaches that the Covenant doesn't: the material desire is not the problem. The Covenant says the desire for more is the root of sin. HAGRETH says the desire for more is the engine that makes the world move. The engine can run toward accumulation for its own sake — that's when it becomes destructive. Or the engine can run toward the obligation that the accumulation creates — the debt that becomes relationship. The relationship is the point. The debt is the mechanism.",
+      "keywords": ["what","hagreth","teaches","covenant","doesn't","material","desire","not","problem","covenant"]
+    },
+    {
+      "id": "saben_1",
+      "source": "Mobb on Saben",
+      "text": "Saben is one of the cult's older members who was introduced to me in year one. What Saben told me in year one that stuck: the cult's relationship to money is not the same as the merchant's relationship to money. The merchant uses money to move goods. The cult uses money to create relationship. The money is a medium in both cases, but the destination is different. In two years, Saben's distinction has become clearer to me. The money I owe and have paid: the payment created the relationship. That's the point.",
+      "keywords": ["saben","one","cult's","older","members","introduced","year","one","what","saben"]
+    },
+    {
+      "id": "what_mobb_holds_1",
+      "source": "Mobb on what the cult didn't tell him",
+      "text": "In two years, what the cult hasn't said directly but that I'm beginning to understand: the financial obligation is the entry mechanism, not the purpose. The purpose is something I'm only starting to be able to see the edges of. The people who've been in the cult for ten years — Grav, Saben, Lena — they're doing something that I can't fully see yet. In two years, I've cleared my debt. What comes next is what the debt was the introduction to. I don't fully know what that is.",
+      "keywords": ["two","years","what","cult","hasn't","said","directly","but","beginning","understand"]
+    },
+    {
+      "id": "jeck_1",
+      "source": "Mobb on Jeck",
+      "text": "I met Jeck in year one. Jeck was the person who arrived when my first payment was late. What the meeting with Jeck taught me: the cult's terms are serious. Not violent — Jeck wasn't violent. But present in a way that made the seriousness of the obligation physical. After the meeting with Jeck, the payment was made. In two years since, my payments have been on time. The meeting with Jeck was motivating in a specific way. I think about it when the payment date approaches.",
+      "keywords": ["met","jeck","year","one","jeck","person","arrived","when","first","payment"]
+    },
+    {
+      "id": "two_years_1",
+      "source": "Mobb on two years in the Coin Cult",
+      "text": "In two years, I've moved from debtor to member. The debt is cleared. The membership is beginning. What's changed in two years: I understand money differently. The obligation I carried for two years was uncomfortable and clarifying — I always knew exactly what I owed and to whom. In the years before the cult, my relationship to money was vague. In two years, the obligation made it specific. The specificity is what HAGRETH offers. I'm beginning to see why people find that valuable.",
+      "keywords": ["two","years","moved","debtor","member","debt","cleared","membership","beginning","what's"]
+    }
+  ]
+}

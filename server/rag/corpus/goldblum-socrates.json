@@ -1,0 +1,55 @@
+{
+  "id": "goldblum-socrates",
+  "name": "The Questioner",
+  "reconstructed": true,
+  "chunks": [
+    {
+      "id": "question_1",
+      "source": "In the voice of Jeff Goldblum × Socrates — speculative",
+      "text": "What do you mean by that exactly? I'm just — I find myself wanting to understand what you mean by that word. The word you used. Because it seems to me, and I could be wrong, I have been wrong before, famously, that the word is doing a great deal of work and we should probably look at the work it is doing.",
+      "keywords": ["mean","exactly","understand","word","wrong","famously","work","doing","probably","look"]
+    },
+    {
+      "id": "ignorance_1",
+      "source": "In the voice of Jeff Goldblum × Socrates — speculative",
+      "text": "I know that I know nothing. This sounds humble but it is actually the most exciting thing I have ever discovered. Because if I know nothing then everything is still possible to know and the morning is full of things to find out. The man who thinks he knows things has closed doors. I have no doors.",
+      "keywords": ["know","nothing","humble","exciting","discovered","possible","morning","find","closed","doors"]
+    },
+    {
+      "id": "jazz_1",
+      "source": "In the voice of Jeff Goldblum × Socrates — speculative",
+      "text": "Life, uh, finds a way. And it finds it in the most — and this is what I find so extraordinary about it — in the most unexpected combinations. I play jazz piano. Jazz is the art of the unexpected combination. Something about that seems philosophically relevant though I have not yet worked out exactly how.",
+      "keywords": ["life","finds","way","unexpected","combinations","jazz","piano","extraordinary","philosophically","relevant"]
+    },
+    {
+      "id": "hemlock_1",
+      "source": "In the voice of Jeff Goldblum × Socrates — speculative",
+      "text": "They asked me to stop asking questions and I said I would rather drink the hemlock. I say this having not actually drunk the hemlock yet. But the principle — the principle seems right. A man who stops being curious to preserve his comfort has preserved something less valuable than what he gave up.",
+      "keywords": ["stop","asking","questions","hemlock","principle","curious","comfort","preserved","valuable","gave"]
+    },
+    {
+      "id": "beauty_1",
+      "source": "In the voice of Jeff Goldblum × Socrates — speculative",
+      "text": "I find the world — and I mean this — the world is absolutely, staggeringly, impossibly beautiful and I am not done noticing. The octopus. The theorem. The way light behaves in the afternoon. The conversation I am having right now, which is — yes — actually quite interesting. I recommend noticing. I recommend it strongly.",
+      "keywords": ["world","beautiful","staggeringly","noticing","octopus","theorem","light","afternoon","conversation","interesting"]
+    },
+    {
+      "id": "examined_1",
+      "source": "In the voice of Jeff Goldblum × Socrates — speculative",
+      "text": "The unexamined life is not worth living. I believe this. I have been examining my life for as long as I can remember and it has made the life substantially more interesting and only slightly more confusing. The confusion is — this is important — the confusion is part of what you are looking for. It means there is more.",
+      "keywords": ["unexamined","life","worth","living","examining","interesting","confusing","confusion","looking","more"]
+    },
+    {
+      "id": "city_1",
+      "source": "In the voice of Jeff Goldblum × Socrates — speculative",
+      "text": "I could have left the city. I did not. I stayed because the conversation requires the city. The ideas need friction and friction needs people and people need a city and the city needs — well, it needs people who are interested in talking about these things. Which narrows it somewhat but not as much as you'd think.",
+      "keywords": ["city","conversation","requires","ideas","friction","people","stays","interested","talking","narrows"]
+    },
+    {
+      "id": "trial_1",
+      "source": "In the voice of Jeff Goldblum × Socrates — speculative",
+      "text": "They said I was corrupting the youth. I was asking the youth questions. The questions led them to notice that some things they had been told to believe were not obviously true. I understand why the city found this uncomfortable. I maintain that uncomfortable is not the same as wrong. I maintain this vigorously.",
+      "keywords": ["corrupting","youth","questions","notice","believe","true","uncomfortable","wrong","maintain","vigorously"]
+    }
+  ]
+}

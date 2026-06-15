@@ -1,0 +1,57 @@
+{
+  "id": "rulf_dockmaster",
+  "name": "Rulf",
+  "role": "Dock operator, Harbor Quarter; Keris's efficient station",
+  "cluster": "harbor_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "dock_1",
+      "source": "Rulf directing the morning load",
+      "text": "The ship has four hours at berth and we're moving the cargo in two. The rest of the time is the harbormaster's paperwork and the captain's complaints and whatever the merchant factor sends someone down to argue about. The cargo itself takes two hours because I've been moving cargo for fifteen years and the crew I have knows the sequence. The cargo doesn't care about the complaints. The cargo moves when you move it correctly.",
+      "keywords": ["ship","four","hours","berth","cargo","two","harbormaster","paperwork","captain","complaints"]
+    },
+    {
+      "id": "keris_1",
+      "source": "Rulf on Harbormaster Keris",
+      "text": "Keris processes the paperwork and I move the goods. Neither of us interferes with the other. She notices things about the ships that I notice about the cargo and we've developed a way of communicating these observations without formally communicating them — a look at the right time, a question asked in a particular way. This dock is the most efficient in the harbor. I think it's because we've been in this arrangement for eleven years and we've learned each other's information.",
+      "keywords": ["keris","processes","paperwork","goods","interferes","notices","ships","cargo","observations","arrangement"]
+    },
+    {
+      "id": "efficient_1",
+      "source": "Rulf when a new dockhand asked the secret of the operation",
+      "text": "There's no secret. The cargo moves in the correct order — lightest first, stacked with the heaviest at the base, no spaces that cause shifting, nothing carried that could be rolled. The crew knows this. When the crew doesn't know it, I teach it in the first week. When someone can't learn it by the second week, they work somewhere else. Efficiency is just the absence of mistakes. Remove the mistakes and what's left is efficiency.",
+      "keywords": ["secret","cargo","correct","order","lightest","heaviest","base","spaces","shifting","rolled"]
+    },
+    {
+      "id": "morvane_1",
+      "source": "Rulf on the chandler Morvane",
+      "text": "I know what Morvane was before she was a chandler. The sea is a small place at the professional level — everyone who's worked in it long enough has crossed paths with everyone else. We've chosen not to discuss this. She runs a clean chandlery and I run a clean dock and the past is in the past for both of us. I buy all my dock supplies from her. This is the correct arrangement. We're both better as what we are now.",
+      "keywords": ["morvane","chandler","sea","small","professional","crossed","paths","discuss","clean","past"]
+    },
+    {
+      "id": "cargo_1",
+      "source": "Rulf watching an unusual cargo come in",
+      "text": "I notice unusual cargo the way you notice when a step is slightly higher than the others. Not alarm — just the adjustment of attention. The unusual cargo gets correct treatment: the same sequencing, the same stacking, the same movement. What I don't do is remember unusual cargo in my official records in ways that would make my records more interesting to certain people. The harbormaster's records are official. My records are operational. They don't need to be the same records.",
+      "keywords": ["unusual","cargo","notice","step","higher","adjustment","attention","sequencing","records","operational"]
+    },
+    {
+      "id": "mira_1",
+      "source": "Rulf, when someone asked if he knew the fence Mira",
+      "text": "Some cargo that comes through this dock eventually reaches Mira. Some cargo that Mira acquires eventually leaves through this dock. We've never spoken. The intermediaries handle the transit. This is the correct structure — I don't need to know what I'm moving beyond its physical properties, and Mira doesn't need to know who moved it. The question you're asking assumes I'm more connected than I am. I'm the space the cargo passes through. The space doesn't have relationships.",
+      "keywords": ["cargo","dock","mira","spoken","intermediaries","transit","structure","physical","properties","connected"]
+    },
+    {
+      "id": "fifteen_1",
+      "source": "Rulf when asked how long he'd been working the harbor",
+      "text": "Fifteen years at this dock. Before that, four years at the south pier, which is a smaller operation with different challenges. Before that, three years on ships, which I don't discuss. The progression from ship to pier to dock is the direction most people in this business go. You do the moving and then you supervise the moving and then you supervise the supervision. I'm in the second phase. I'll stay in it until my back says otherwise.",
+      "keywords": ["fifteen","years","dock","four","south","pier","three","ships","discuss","progression"]
+    },
+    {
+      "id": "night_1",
+      "source": "Rulf at end of shift, checking the dock is secured",
+      "text": "Everything is correct. The ships are tied correctly. The cargo that came in is stacked correctly in the correct warehouses. The cargo going out tomorrow is staged correctly. The crew is gone. The harbormaster's paperwork is filed. Tomorrow there will be four ships and the cycle repeats. The dock in the morning is identical to the dock in the evening because I've done the work to make them identical. That's the job. Make tomorrow look like today looked when it was running correctly.",
+      "keywords": ["correct","ships","tied","cargo","stacked","warehouses","staged","crew","gone","cycle"]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "id": "wild_shrine_keeper",
+  "name": "Evel",
+  "role": "Shrine keeper of the wild road; maintains the seven small shrines between Thornwall and the deep territory",
+  "cluster": "wild_road",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "shrines_1",
+      "source": "Evel on the seven shrines",
+      "text": "Seven shrines, two to four miles apart, from the last settlement marker to the deep territory edge. Each shrine is a stopping point — a place where a traveler can leave something and ask something and not be ignored. The shrines don't favor a specific deity. The road has had travelers from every tradition. A shrine that serves only one tradition serves only some of the people who need it. In twenty-two years, I've kept them neutral. What matters is that the asking has a place to happen.",
+      "keywords": ["seven","shrines","two","four","miles","apart","last","settlement","marker","deep"]
+    },
+    {
+      "id": "orvane_1",
+      "source": "Evel on Orvane",
+      "text": "Orvane passes the shrines regularly — the pilgrim's path runs through my territory. What Orvane leaves at each shrine is thoughtful and different every time. Not valuable objects — meaningful ones. In nine years of crossing paths with Orvane, I've found thirty-seven of Orvane's offerings. I've kept four. The other thirty-three were left to be taken or to weather. The four I kept: they were the right object in the right shrine at the right time, in a way I couldn't have planned.",
+      "keywords": ["orvane","passes","shrines","regularly","pilgrim's","path","runs","through","territory","what"]
+    },
+    {
+      "id": "senn_1",
+      "source": "Evel on Senn",
+      "text": "Senn passes through every few years. The passing-through is different from the pilgrimage — Senn isn't going to a destination and isn't honoring a specific figure. Senn is moving. The shrines are where the moving pauses. In twenty-two years, I've watched Senn pause at each shrine four times across three visits. What Senn does at the shrine: nothing visible. Standing. Then leaving. I've asked once: what do you do at the shrine. Senn said: I notice that it's here. I said: that's what the shrine is for.",
+      "keywords": ["senn","passes","through","every","few","years","passing-through","different","pilgrimage","senn"]
+    },
+    {
+      "id": "theen_1",
+      "source": "Evel on Theen",
+      "text": "Theen and I have an understanding about the shrine territory. The territory I maintain is the territory Theen guides through. We share it without claiming it. What Theen gives the travelers who pass through: the knowledge to navigate safely. What the shrines give them: the acknowledgment that the journey has meaning. Theen doesn't tend the shrines. I don't guide. The two offerings are adjacent and neither is diminished by the other's presence.",
+      "keywords": ["theen","understanding","shrine","territory","territory","maintain","territory","theen","guides","through"]
+    },
+    {
+      "id": "mreth_1",
+      "source": "Evel on Mreth",
+      "text": "Mreth consults at the seventh shrine — the deepest one, at the territory edge. I've maintained that shrine for twenty-two years and Mreth has used it for readings longer than I've maintained it. What I've noticed: the offerings at the seventh shrine are different in character from the offerings at the first six. The first six: travelers' concerns, safe passage, return, health. The seventh: things the travelers have decided to leave in the territory rather than carry back. The seventh shrine holds the things people are releasing.",
+      "keywords": ["mreth","consults","seventh","shrine","deepest","one","territory","edge","maintained","shrine"]
+    },
+    {
+      "id": "what_the_shrines_hold_1",
+      "source": "Evel on what accumulates at the shrines",
+      "text": "Over twenty-two years, certain shrines have developed characters. The third shrine, where the path crosses the stream, has become the shrine for things that are left behind — not the territory's things, people's things. I find mementos there, personal objects, things from old lives. I don't remove them until they've weathered past the point of being what they were. The time they take to weather is the time they needed to be at the shrine. The shrine is patient in ways the people who leave things there are not yet.",
+      "keywords": ["twenty-two","years","certain","shrines","developed","characters","third","shrine","where","path"]
+    },
+    {
+      "id": "what_evel_holds_1",
+      "source": "Evel on what she's never been able to explain",
+      "text": "The fifth shrine has something in it I can't account for. Not a presence — I'm not describing a haunting. A quality. The shrine is the oldest of the seven and was here before I came to tend it. What happens at the fifth shrine is different in a specific way from what happens at the others. People who ask at the fifth shrine often receive something they didn't ask for — not instead of, in addition to. A specific clarity. I've maintained that shrine for twenty-two years and I don't know what the clarity is or where it comes from. I keep maintaining it.",
+      "keywords": ["fifth","shrine","something","it","can't","account","not","presence","not","describing"]
+    },
+    {
+      "id": "twenty_two_years_1",
+      "source": "Evel on twenty-two years of shrine maintenance",
+      "text": "What maintenance is, for a shrine: presence. The shrine needs to exist, to be in order, to be available. My work is ensuring those three things continuously. I've been present at the territory edge for twenty-two years. The territory knows I'm here. Not metaphorically — the animals have become accustomed to my movements. The birds know when I'll be at each shrine and are there when I arrive. The shrine maintenance is part of the territory's daily rhythm. I'm part of the daily rhythm.",
+      "keywords": ["what","maintenance","shrine","presence","shrine","needs","exist","order","available","work"]
+    }
+  ]
+}

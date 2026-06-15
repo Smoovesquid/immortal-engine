@@ -1,0 +1,57 @@
+{
+  "id": "wild_road_shepherd",
+  "name": "Mell",
+  "role": "Permanent shepherd of the high grazing; lives on the road most of the year; knows the territory by its seasons",
+  "cluster": "wild_road",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "shepherd_1",
+      "source": "Mell on being a shepherd",
+      "text": "The sheep know where the grass is better than I do. My work: keeping them together, keeping them moving in the right direction, keeping the predators off them. The direction is set by the season. The season tells me where the grass is. In twenty-four years of shepherding the high grazing, the season has never been wrong about where the grass is. I've been wrong about the season twice. Both times the flock suffered.",
+      "keywords": ["sheep","know","where","grass","better","than","work","keeping","together","keeping"]
+    },
+    {
+      "id": "bren_1",
+      "source": "Mell on Bren",
+      "text": "Bren is in the valley grazing. I'm on the high grazing. We see each other at the season changes when the flock moves down or up. In twenty-four years I've known Bren's patterns the way I know the seasonal patterns: Bren's flock goes certain places at certain times, just as mine does. The difference: Bren goes home in the winter. I stay with the flock through the winter on the lower high grazing. I've been in a house for winter twice in twenty-four years.",
+      "keywords": ["bren","valley","grazing","on","high","grazing","see","each","other","season"]
+    },
+    {
+      "id": "theen_1",
+      "source": "Mell on Theen",
+      "text": "Theen guides travelers through the territory I graze. In twenty-four years, Theen's routes and my grazing have overlapped in a specific way: Theen's safest routes go where I graze, because where I graze is where the territory is most known. In fifteen years of occasionally seeing Theen on the route, we've worked out a system: Theen knows where my flock is and what the territory around the flock is like. The territory around the flock is always the territory I know best.",
+      "keywords": ["theen","guides","travelers","through","territory","graze","twenty-four","years","theen's","routes"]
+    },
+    {
+      "id": "sess_1",
+      "source": "Mell on Sess",
+      "text": "Sess the bonesetter and I have a straightforward relationship: the sheep sometimes break their legs, and Sess is who I find when a break can be set. In seven years of knowing where Sess works, I've called for Sess four times. All four times, the sheep's leg was set and the sheep recovered. Sess charges me less than full rate because, Sess says, the sheep can't consent to the payment. I've thought about this as a philosophical position. It seems correct, though I'm not sure what the principle is.",
+      "keywords": ["sess","bonesetter","straightforward","relationship","sheep","sometimes","break","legs","sess","who"]
+    },
+    {
+      "id": "evel_1",
+      "source": "Mell on Evel",
+      "text": "Evel maintains the shrines on the high road. In fifteen years of passing the same shrines, I know them as landmarks — specific places on the route that are also places where something happened or where the territory behaves differently. What Evel's maintenance does: keeps the shrines as markers of those places so that the places are still marked when I pass them. A shrine that's abandoned becomes invisible. Evel keeps them visible.",
+      "keywords": ["evel","maintains","shrines","high","road","fifteen","years","passing","same","shrines"]
+    },
+    {
+      "id": "what_twenty_four_years_teaches_1",
+      "source": "Mell on what twenty-four years of shepherding teaches",
+      "text": "The territory doesn't repeat. It rhymes. The spring I'm in now rhymes with springs I've seen before — the grass comes up the same way, the predators come out the same way, the flock behaves the same way. But it's not the same spring. In twenty-four years, the territory I know is a territory I know through its rhymes. When something is wrong, I know it's wrong because the rhyme is off. The off rhyme is what I've learned to hear before I can see what's causing it.",
+      "keywords": ["territory","doesn't","repeat","it","rhymes","spring","in","now","rhymes","springs"]
+    },
+    {
+      "id": "what_mell_holds_1",
+      "source": "Mell on what she saw on the high grazing that she's never told anyone",
+      "text": "Year sixteen. The flock moved in a direction they'd never moved before. Not panicked — purposeful. The flock moved purposefully in a direction they'd avoided for sixteen years of seasonal patterns. I followed because I follow the flock. What they went to: something in the high grazing that I can describe as a location but not as an object or as an event. The flock grazed there for two hours and then moved on. I've been back to the location fourteen times since. The location is unremarkable. The flock has never returned to it.",
+      "keywords": ["year","sixteen","flock","moved","direction","they'd","never","moved","before","not"]
+    },
+    {
+      "id": "twenty_four_years_1",
+      "source": "Mell on twenty-four years on the high grazing",
+      "text": "In twenty-four years I've spent approximately twenty years on the high grazing and four years in the valley or the settlement. The settlement is where the flock is sold and where I get what I can't make or find on the grazing. The settlement is the place I go to resupply. The grazing is where I live. What happens when I'm in the settlement: I can see what I'm not seeing when I'm on the grazing. What happens when I'm on the grazing: I can see what's actually there.",
+      "keywords": ["twenty-four","years","spent","approximately","twenty","years","high","grazing","four","years"]
+    }
+  ]
+}

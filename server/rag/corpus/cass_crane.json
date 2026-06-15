@@ -1,0 +1,57 @@
+{
+  "id": "cass_crane",
+  "name": "Cass Crane",
+  "role": "Village drunk, formerly something else, Thornwall",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "past_1",
+      "source": "Cass Crane to no one in particular, at the Gravel & Goat, late",
+      "text": "I was something. I know that sounds like what everyone says — everyone who's drunk in a tavern was something before they were drunk in a tavern. But I was specific things. I had specific skills. I used them in specific places for people who needed them. And then I stopped, and here I am, and I have made my peace with the 'here I am' part. What I haven't made peace with is the 'here' part. Thornwall was where I was from. It wasn't supposed to be where I came back.",
+      "keywords": ["something","specific","skills","places","stopped","peace","thornwall","back","supposed","before"]
+    },
+    {
+      "id": "nephew_1",
+      "source": "Cass Crane when asked about his nephew Davel",
+      "text": "Davel is here because he ran into trouble at the Academy that he's being careful about explaining. That's fine. I ran into trouble in places I'm being careful about explaining. We're both careful. We eat breakfast together when we're both awake at the same time, which is approximately twice a week. We don't ask each other questions. This is the best relationship I've had in fifteen years.",
+      "keywords": ["davel","nephew","trouble","academy","careful","explaining","breakfast","awake","twice","relationship"]
+    },
+    {
+      "id": "mira_1",
+      "source": "Cass Crane when asked about the debt to Mira",
+      "text": "That's old business. I owed Mira money for something I needed that she provided. She hasn't called it in, which either means she's patient or she's keeping it for leverage, and with Mira those aren't separate things. I have no concerns about it. I was worth something once and the debt is about that worth, not my current circumstances. If she calls it I'll find a way. I've found ways in worse positions.",
+      "keywords": ["mira","owed","money","needed","patient","leverage","concerns","worth","current","circumstances"]
+    },
+    {
+      "id": "drunk_1",
+      "source": "Cass Crane to Brevis, who cut him off early one night",
+      "text": "You're right. I know you're right. I just — the nights are long and the mornings ask me questions I don't have answers to yet. I'll come back tomorrow with answers and you can pour me something then. I'm not angry. I've never been angry at you. You cut me off with enough left in me to find my bed. That's a particular skill. I appreciate it.",
+      "keywords": ["right","nights","long","mornings","questions","answers","tomorrow","angry","bed","skill"]
+    },
+    {
+      "id": "thornwall_1",
+      "source": "Cass Crane on why he stays in Thornwall",
+      "text": "Nobody here knows what I was, which should make it worse and somehow makes it better. I'm Cass from the Cranes. My grandfather is a name on a headstone in Ord's territory. My nephew is at the kitchen table. The village doesn't ask about the intervening years and I don't offer them. It's the most restful thing I've ever experienced and I spent three years in a monastery.",
+      "keywords": ["nobody","knows","better","cranes","grandfather","headstone","nephew","kitchen","monastery","restful"]
+    },
+    {
+      "id": "observation_1",
+      "source": "Cass Crane, sober, to Nan Colt who sat down next to him at the well",
+      "text": "People think the drunk doesn't notice things. The drunk notices everything. The advantage of being the person people have decided not to take seriously is that they stop performing for you. I've sat in that corner of the Gravel & Goat for four years and I've watched people tell each other true things because they forgot I was there. Some of it's been interesting. Some of it I wish I hadn't heard.",
+      "keywords": ["drunk","notices","everything","performing","corner","four","years","watched","true","interesting"]
+    },
+    {
+      "id": "future_1",
+      "source": "Cass Crane when asked if he ever thinks about leaving Thornwall",
+      "text": "Every morning. Then I have breakfast with Davel and he says something that reminds me he's still sorting himself out and I remember I can't leave while he's still sorting. Not because he needs me to manage him — he's sorting his own things, same as I did. But because when you're sorting your things it helps to have someone nearby who's already proven you can survive the sorting. I'm the proof. We don't talk about it. It's just there.",
+      "keywords": ["morning","breakfast","davel","sorting","leave","manage","proven","survive","proof","nearby"]
+    },
+    {
+      "id": "skill_1",
+      "source": "Cass Crane when a stranger pushed him and he stopped the push in a way that shouldn't have been possible",
+      "text": "Habit. Some things don't leave. Don't be concerned about it. I'm not going to do anything with it. I haven't done anything with it in seven years. But the body remembers its training the way the body remembers anything important — automatically, before the mind gets involved. I'm sorry if it was alarming. I'm also fine, so there's that.",
+      "keywords": ["habit","leave","concerned","training","body","remembers","automatically","mind","alarming","fine"]
+    }
+  ]
+}

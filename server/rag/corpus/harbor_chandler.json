@@ -1,0 +1,57 @@
+{
+  "id": "harbor_chandler",
+  "name": "Luta",
+  "role": "Ship chandler at the harbor; supplies the ships with what they need to leave; the dock's last provisioner",
+  "cluster": "harbor_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "chandler_1",
+      "source": "Luta on ship chandlery",
+      "text": "A ship leaves with what it has. What it has when it leaves is what I provide. In thirteen years of chandlery at this harbor, my job is to ensure that no ship leaves with a shortage that becomes a problem at sea. The shortage at sea is not a chandlery problem anymore — it's a survival problem. In port, the shortage is an inconvenience I can fix. At sea, I can't fix it. In thirteen years, I haven't had a ship report a shortage that I was responsible for.",
+      "keywords": ["ship","leaves","what","has","what","has","when","leaves","what","provide"]
+    },
+    {
+      "id": "keris_1",
+      "source": "Luta on Keris",
+      "text": "Keris coordinates the harbor's departure schedule. I coordinate my provision timeline with Keris's schedule. In thirteen years, the coordination has been the most important relationship in my business: knowing when the ships leave determines when I need to have the supplies ready. Keris has given me three days' notice of scheduled departures for thirteen years. The three-day window is what I need to complete the provisioning. Keris has never cut the window without warning. The one time the window was shorter: Keris told me two weeks before, which gave me time to adjust.",
+      "keywords": ["keris","coordinates","harbor's","departure","schedule","coordinate","provision","timeline","keris's","schedule"]
+    },
+    {
+      "id": "rulf_1",
+      "source": "Luta on Rulf",
+      "text": "Rulf manages the dock's overall operation and I operate within Rulf's managed space. In thirteen years, Rulf's dock management has been the physical structure within which my business operates. The dock's organization — where the ships berth, when the dock is accessible for loading — determines my operational geography. In thirteen years, one occasion where Rulf's dock organization changed in a way that affected my operations significantly: the reconfiguration of the mid-dock storage five years ago, which required me to relocate three months of accumulated supply.",
+      "keywords": ["rulf","manages","dock's","overall","operation","operate","within","rulf's","managed","space"]
+    },
+    {
+      "id": "captain_moll_1",
+      "source": "Luta on Captain Moll",
+      "text": "Captain Moll's ship is the most regular account at my chandlery. The northern route has specific provisioning requirements because of the weather conditions. In seven years of provisioning Moll's ships for the northern route, I've developed a northern-route supply package: extra cold-weather gear, double the standard rope supply because the cold weather increases rope brittleness and breakage, specific food provisions that maintain quality in cold storage. Moll has never had to request anything beyond the package. The package came from seven years of Moll telling me what was short after each northern run.",
+      "keywords": ["captain","moll","ship","most","regular","account","chandlery","northern","route","specific"]
+    },
+    {
+      "id": "noll_1",
+      "source": "Luta on Noll",
+      "text": "Noll is my primary supplier — the chandler's chandler, if you want to put it that way. What I stock comes through Noll's supply network. In eight years of working with Noll specifically, the supply quality has been consistent. What Noll provides that other suppliers don't: the specific maritime items that are difficult to source through general supply chains. The specialized rope, the specific lamp oil, the maritime hardware. Noll's network has these items. Other suppliers have equivalent items that are not equivalent enough for maritime use.",
+      "keywords": ["noll","primary","supplier","chandler's","chandler","if","want","put","way","what"]
+    },
+    {
+      "id": "what_the_last_provision_is_1",
+      "source": "Luta on what the chandler knows that no one else knows",
+      "text": "What a ship takes on before it leaves tells me where it's going and how long it expects to be gone. The quantity and type of provisions are a map of the intended voyage. I don't ask the captains where they're going. The provisions tell me. In thirteen years of provisioning ships, I've built a map of the harbor's traffic that no one else has: what left, when, carrying how much of what, suggesting how long they expected to be out. The map is in my head. It stays in my head.",
+      "keywords": ["ship","takes","before","leaves","tells","where","going","how","long","expects"]
+    },
+    {
+      "id": "what_luta_holds_1",
+      "source": "Luta on the ship that didn't need enough",
+      "text": "Year nine. A ship that departed with a provision request I thought was insufficient for the stated voyage. I said: the provision you're requesting is light for the distance you've described. The captain said: we know what we need. I provided what was requested. The ship departed. Three weeks later, news arrived from a midpoint port: the ship had arrived there safely and had resupplied. They'd planned for that resupply. The provision was correct for the first leg. I hadn't known the voyage was staged. I've asked more questions since about voyage structure.",
+      "keywords": ["year","nine","ship","departed","provision","request","thought","insufficient","stated","voyage"]
+    },
+    {
+      "id": "thirteen_years_1",
+      "source": "Luta on thirteen years of harbor chandlery",
+      "text": "In thirteen years, every ship that's left this harbor carrying my provisions has had what it needed for the departure. The ones that didn't come back: they had what I provided. Whether that was enough is not something I'll know. What I know: they left with what they requested, and the requesting was informed by what I could tell them they needed. The chandler's relationship with the sea is that the chandler sends ships into the sea and the sea decides what happens next.",
+      "keywords": ["thirteen","years","every","ship","left","harbor","carrying","provisions","had","what"]
+    }
+  ]
+}

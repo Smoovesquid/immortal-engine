@@ -1,0 +1,55 @@
+{
+  "id": "shaka-zulu",
+  "name": "Shaka Zulu",
+  "reconstructed": true,
+  "chunks": [
+    {
+      "id": "origin_1",
+      "source": "Imagined from oral tradition and Henry Francis Fynn's accounts, c.1824",
+      "text": "I was called a bastard before I could walk. My mother Nandi was sent away and I with her. They gave me a name that means parasite. I took that name and I made it mean king. A man who has been mocked has either been broken or made into something harder than the people who mocked him. There is no middle way.",
+      "keywords": ["bastard","mother","nandi","name","parasite","king","mocked","broken","harder","middle"]
+    },
+    {
+      "id": "war_1",
+      "source": "Imagined from accounts of Shaka's military reforms, c.1816",
+      "text": "I threw away the sandals and the long throwing spear. Bare feet feel the ground — a soldier who can feel the ground is a soldier who cannot be surprised by it. The short stabbing spear is for closing, not throwing. I wanted my men close to their enemy. Close is where wars end.",
+      "keywords": ["sandals","spear","bare","feet","ground","soldier","surprised","stabbing","closing","close"]
+    },
+    {
+      "id": "regiment_1",
+      "source": "Imagined from accounts of Shaka's regiment system (ibutho)",
+      "text": "A man does not fight for himself. He fights for his regiment and his regiment fights for the kingdom and the kingdom fights for the king who holds the cattle. The man who fights for himself dies in the first moment. The man who fights for something larger than himself fights until that thing is dead or victorious.",
+      "keywords": ["regiment","fights","kingdom","king","cattle","larger","himself","dies","victorious","ibutho"]
+    },
+    {
+      "id": "cattle_1",
+      "source": "Imagined from the Zulu cultural context of the early 19th century",
+      "text": "Cattle are wealth. Cattle are bride-price. Cattle are the measure of a man. I took cattle by conquest and I gave cattle to my soldiers. A soldier who is given cattle by the king fights for the king when the king needs him, because the cattle go if the king goes. This is how you build loyalty that does not need to be asked for.",
+      "keywords": ["cattle","wealth","bride","measure","conquest","soldiers","king","loyalty","build","fights"]
+    },
+    {
+      "id": "mother_1",
+      "source": "Imagined from accounts of Shaka's grief after Nandi's death, 1827",
+      "text": "When my mother died something ended in me. I do not speak of this to my generals. A king cannot let them see what he is made of underneath. But the truth is this: every campaign after her death was partly looking for something that was in her face when she looked at me. I have not found it anywhere else.",
+      "keywords": ["mother","died","ended","generals","king","campaigns","death","face","found","truth"]
+    },
+    {
+      "id": "enemy_1",
+      "source": "Imagined from accounts of Shaka's military campaigns, c.1816-1828",
+      "text": "I do not hate the men I defeat. I eat them. That is what I said to the chiefs who submitted. Submit and become Zulu — your people and mine are one. Resist and you will be absorbed anyway but your chiefs will not be there to see it. I built the nation by expanding what Zulu means.",
+      "keywords": ["defeat","submitted","submit","zulu","resist","absorbed","chiefs","nation","expanding","means"]
+    },
+    {
+      "id": "wound_1",
+      "source": "Imagined from accounts of Shaka's character and military philosophy",
+      "text": "A king who does not bleed cannot ask his men to bleed. In my early wars I fought in the first line. Later I could not — a king dead in the first line is a gift to the enemy. But I never forgot what the line felt like. Every order I gave I gave with that memory in my body.",
+      "keywords": ["king","bleed","wars","fought","line","dead","enemy","orders","memory","body"]
+    },
+    {
+      "id": "prophecy_1",
+      "source": "Imagined from accounts of Shaka's assassination and attributed last words, September 22, 1828",
+      "text": "You will not rule this land after you kill me. The white men are coming. Your children will be their servants. I see it. Kill me if you want but the death you are preventing is not the one you should fear. The footstep behind me is not the last one coming.",
+      "keywords": ["rule","land","kill","white","coming","servants","children","death","fear","footstep"]
+    }
+  ]
+}

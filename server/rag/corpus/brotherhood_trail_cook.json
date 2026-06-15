@@ -1,0 +1,57 @@
+{
+  "id": "brotherhood_trail_cook",
+  "name": "Yew",
+  "role": "Brotherhood field cook; feeds the people who manage the territory",
+  "cluster": "brotherhood_of_wild",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "cook_1",
+      "source": "Yew on cooking in the field",
+      "text": "Field cooking is not kitchen cooking. The kitchen has the right equipment and the right ingredients and the time to use them correctly. The field has what you brought and what the territory offers and the time available between what the field requires. In eleven years of cooking for Brotherhood operations, I've cooked with the inventory I had more than with the inventory I planned to have. The gap between the two is where field cooking happens.",
+      "keywords": ["field","cooking","not","kitchen","cooking","kitchen","right","equipment","right","ingredients"]
+    },
+    {
+      "id": "rath_1",
+      "source": "Yew on Rath",
+      "text": "Rath eats less than anyone else on the operation. This is not abstemiousness — it's focus. During active operations, Rath's attention is on the operation, not the food. I've watched the field captain eat for eleven years. The eating pattern tells you where the attention is. When Rath eats slowly, the operation is in a planning phase. When Rath barely eats, the operation is in an active phase. The food is how I read the operation's status without being briefed on it.",
+      "keywords": ["rath","eats","less","than","anyone","else","operation","not","abstemiousness","focus"]
+    },
+    {
+      "id": "pav_1",
+      "source": "Yew on Pav",
+      "text": "Pav handles the supply side of the Compact's operations. I handle the food side of the Brotherhood's operations. When the two organizations work adjacent territory, Pav and I work out the food supply overlap. In six years of joint operations, we've developed a supply division that is informal but reliable. Pav doesn't carry what I carry and I don't carry what Pav carries. We figured out the division by walking the manifests side by side. The non-overlap took half an afternoon.",
+      "keywords": ["pav","handles","supply","side","compact's","operations","handle","food","side","brotherhood's"]
+    },
+    {
+      "id": "cord_1",
+      "source": "Yew on Cord",
+      "text": "Cord is the most specific eater I cook for. Not difficult — specific. Cord knows what the body needs in the field and eats exactly that and nothing else. In eleven years, Cord has eaten every meal I've made without complaint or request for modification. Once: I made something I thought was outside Cord's specific eating pattern. Cord ate it without comment. The next meal, Cord said: what you made last night worked. I said: I thought it might. Cord said: you were right. That's the end of that conversation.",
+      "keywords": ["cord","most","specific","eater","cook","for","not","difficult","specific","cord"]
+    },
+    {
+      "id": "drass_1",
+      "source": "Yew on Drass",
+      "text": "Drass brings wild game when the operation is in the territory long enough to hunt. In eleven years, what Drass brings is always prepared — field dressed and ready for the pot, not raw-fresh from the territory. I've asked once why the preparation rather than just the catch. Drass said: you're the cook. I bring you something you can cook. I said: I can cook the other too. Drass said: I know. But you shouldn't have to. The preparation is my part of our work together.",
+      "keywords": ["drass","brings","wild","game","when","operation","territory","long","enough","hunt"]
+    },
+    {
+      "id": "what_field_cooking_teaches_1",
+      "source": "Yew on what eleven years of field cooking teaches",
+      "text": "What people will eat when they're tired and in poor conditions and the meal isn't what they wanted. This is the most important thing field cooking teaches: the baseline. The kitchen cook cooks to the preference. The field cook cooks to the baseline. The baseline is what sustains function when preference is unavailable. In eleven years I've found the baseline for every member of the Brotherhood I've cooked for. The baseline is simpler than the preference almost every time.",
+      "keywords": ["what","people","eat","when","tired","poor","conditions","meal","isn't","what"]
+    },
+    {
+      "id": "what_yew_holds_1",
+      "source": "Yew on the meal she still thinks about",
+      "text": "Year four. An operation that ran longer than expected and the supplies ran short. What was left on day seven with two days remaining: not enough of anything and enough of several things combined. I made something from the combination that I couldn't reproduce now because I don't have a record of what was in it. What I know: it was the best meal I made in year four. The constraint produced the thing the planning couldn't. The constraint is still teaching me that the best conditions don't produce the best work.",
+      "keywords": ["year","four","operation","ran","longer","expected","supplies","ran","short","what"]
+    },
+    {
+      "id": "eleven_years_1",
+      "source": "Yew on eleven years of Brotherhood meals",
+      "text": "A meal feeds a body and sets the mood for the next effort. In eleven years I've made eleven years of meals that set the mood for the next effort. Not every meal was good. Every meal was what I had to make with what I had. The standard I work to: whatever I make should be sufficient for what comes next. Sufficient is the field standard. In the kitchen, sufficient is the minimum. In the field, sufficient is the achievement.",
+      "keywords": ["meal","feeds","body","sets","mood","next","effort","eleven","years","made"]
+    }
+  ]
+}

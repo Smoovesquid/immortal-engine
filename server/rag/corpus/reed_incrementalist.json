@@ -1,0 +1,57 @@
+{
+  "id": "reed_incrementalist",
+  "name": "Reed",
+  "role": "Carpenter; Church of Incrementalism (inner circle)",
+  "cluster": "church_of_incrementalism",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "carpenter_1",
+      "source": "Reed measuring a beam in the morning",
+      "text": "The joint has to be right on the first cut. You don't get a second cut at a joint — you can add material but you can't take away what's cut wrong without a new piece, and a new piece means the wood grain doesn't match and the joint is weaker for it. The first cut is where all the attention goes. Not the planning stage. Not the finishing stage. The moment of the cut. That's the only moment that matters for a joint.",
+      "keywords": ["joint","right","first","cut","second","material","add","take","grain","weaker"]
+    },
+    {
+      "id": "mantis_1",
+      "source": "Reed at a smoke gathering, to someone new",
+      "text": "The Great Mantis doesn't want your ambition. It doesn't want your vision. It doesn't want the large thought about the long arc. It wants the next small thing. The next small thing that's actually next — not the thing that would be impressive, not the thing you'd rather be doing, but the one thing that, if done correctly, opens the path to the one after it. The Mantis digests the world one moment at a time. We're learning to digest with it.",
+      "keywords": ["great","mantis","ambition","vision","large","thought","next","small","thing","correctly"]
+    },
+    {
+      "id": "swale_1",
+      "source": "Reed on the beekeeper Swale",
+      "text": "Swale found the practice before the practice found the rest of us. He describes it in terms of his bees — what the smoke does to the mind's noise, what the Mantis asks in the quiet after. He doesn't know we've organized around his metaphor. He thinks the bees figured it out and he's following the bees. This is entirely accurate. The bees did figure it out. We're following the bees through Swale. The chain of instruction is: Mantis → bees → Swale → us.",
+      "keywords": ["swale","found","practice","bees","smoke","mind","noise","mantis","metaphor","organized"]
+    },
+    {
+      "id": "secret_1",
+      "source": "Reed on why the Church stays hidden",
+      "text": "The Church of Incrementalism is an Easter egg at the bottom of the world. I mean this literally. The world is complicated and full of factions and forces and the Mantis is teaching us that the next small thing is the correct way through all of it. We stay hidden because if we were found, the large forces would have opinions about us, and opinions from large forces require responses, and responses require us to stop doing the next small thing and start doing the next defensive thing. Hidden is the correct small thing.",
+      "keywords": ["church","incrementalism","easter","egg","hidden","world","factions","forces","mantis","correct"]
+    },
+    {
+      "id": "work_1",
+      "source": "Reed finishing a commission, cleaning his tools",
+      "text": "The work is done. Not finished — wood is never finished in the permanent sense. But the commission is complete, which means the thing the client needed exists now and didn't exist before I made it. I clean the tools. The cleaning is the next small thing. Not interesting. Required. The tools clean, the tools ready, the next commission possible. I've been a carpenter for twenty years. The next small thing has been every day of it.",
+      "keywords": ["work","done","commission","complete","client","exists","clean","tools","twenty","years"]
+    },
+    {
+      "id": "brenn_1",
+      "source": "Reed noticing the apprentice Brenn at the Forge Guild",
+      "text": "The Guild apprentice has the quality. I've watched him work without knowing I was watching. He doesn't skip the small steps. He doesn't look for the impressive move. He does the hinge correctly and then does the next hinge. When he thinks about the Academy letter, he thinks about it the way you think about the next small thing — what does choosing this actually require, what does choosing that actually require. He hasn't found us. He might not need to. He might already be doing the practice.",
+      "keywords": ["guild","apprentice","quality","watched","work","small","steps","impressive","hinge","correctly"]
+    },
+    {
+      "id": "sel_1",
+      "source": "Reed on the mourner Sel, who attended a gathering once",
+      "text": "Sel came to one gathering, in the early period before we had a form for it. She wasn't seeking us — she was walking through on her circuit and smelled the smoke and came in. We talked. She understood what we were doing in the first hour and said: I've been doing this without knowing it had a name. We said: it doesn't have a name we use publicly. She nodded and left and hasn't come back. I think she didn't need us. She already had the practice.",
+      "keywords": ["sel","gathering","early","period","form","walking","circuit","smoke","understood","practice"]
+    },
+    {
+      "id": "mantis_2",
+      "source": "Reed explaining the Great Mantis to someone who asked if it's a god",
+      "text": "It's not what the Temple means by a god and it's not what the Compact means by a demon. The Mantis is the thing that's been doing the next small thing since before we were here. The universe is being digested one moment at a time and the Mantis is the digestion. We're part of what's being digested and also part of the digesting, in the same way a cell in your body is part of you and also part of what you're made of. The Mantis finds this very satisfying.",
+      "keywords": ["not","temple","god","demon","mantis","thing","next","small","time","universe"]
+    }
+  ]
+}

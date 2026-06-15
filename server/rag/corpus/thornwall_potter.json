@@ -1,0 +1,57 @@
+{
+  "id": "thornwall_potter",
+  "name": "Dena",
+  "role": "Potter; Thornwall market; makes the bowls and vessels the settlement uses",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "clay_1",
+      "source": "Dena on the clay",
+      "text": "The clay comes from two places. The local clay is good for everyday ware — consistent, fires correctly, holds. The valley clay is better: denser, fewer inclusions, finer finish. I mix them. The ratio changes with the commission — everyday ware gets more local, high-finish work gets more valley. I've been mixing them for eighteen years. The ratio is not written down. It's in my hands.",
+      "keywords": ["clay","comes","two","places","local","clay","good","everyday","ware","consistent"]
+    },
+    {
+      "id": "brevis_1",
+      "source": "Dena on Brevis at the tavern",
+      "text": "Brevis is my largest account. The tavern goes through bowls and mugs at a rate that would surprise someone who hasn't thought about it. Eight tables, twelve hours a day, thirty years. The breakage rate on tavern ware is specific — I know from eighteen years of supplying it that a tavern replaces about a third of its ware per year. Brevis replaces slightly less than a third. Her staff handles ware carefully. I supply the careful-handling rate, not the standard rate.",
+      "keywords": ["brevis","largest","account","tavern","goes","through","bowls","mugs","rate","surprise"]
+    },
+    {
+      "id": "sol_1",
+      "source": "Dena on Sol the farmer",
+      "text": "Sol's farm uses my storage vessels. The large ones: root cellar vessels, grain storage, the preservation jars. Farm storage ware has different requirements than kitchen ware — it needs to be impermeable and stable at temperature extremes. I make a specific vessel for root cellar storage that I don't sell to anyone who isn't using it for root cellar storage. The use shapes the piece. Sol has been buying the root cellar vessels for twelve years. He's never had a preservation failure he attributed to the vessel.",
+      "keywords": ["sol","farm","uses","storage","vessels","large","ones","root","cellar","vessels"]
+    },
+    {
+      "id": "wrendle_1",
+      "source": "Dena on Wrendle",
+      "text": "Wrendle and I occupy the same market position in different materials. Both of us make things you can see through — her glass literally, my glazed vessels somewhat. We've talked about the light-and-material relationship once, at a market day when we were adjacent stalls. She said: glass is what light passes through. I said: glaze is what light stops at but doesn't quite leave. She looked at a glazed bowl for a moment and said: yes. That's the difference.",
+      "keywords": ["wrendle","occupy","same","market","position","different","materials","both","make","things"]
+    },
+    {
+      "id": "goss_1",
+      "source": "Dena on Goss",
+      "text": "The mill generates dust. The dust settles in the area around the mill, including my stall when the wind is wrong. The dust doesn't harm the clay but it affects the glaze — fine particles in the glaze produce subtle texture variations. For twelve years I've used the Goss-dust variations as a design element in pieces I make on the wrong-wind days. The texture is something only someone looking closely sees. I've been told by three people in twelve years that a particular piece had something they couldn't name. The something is the mill dust.",
+      "keywords": ["mill","generates","dust","dust","settles","area","around","mill","stall","when"]
+    },
+    {
+      "id": "cass_1",
+      "source": "Dena on Cass",
+      "text": "The Iron Key uses my plates and mugs. Has for nineteen years — before my time, under the previous potter, and continuously since I inherited the account. I've met Cass twice. Once when I delivered a full replacement set and once when Cass came to the workshop to commission the specific mug that replaced a broken piece that was part of the original set from before my time. Cass said: this one was different from the others. I found the original design in the previous potter's notes. The specific mug exists again. Cass noticed.",
+      "keywords": ["iron","key","uses","plates","mugs","nineteen","years","before","time","previous"]
+    },
+    {
+      "id": "what_dena_holds_1",
+      "source": "Dena on the piece she can't sell",
+      "text": "Once in eighteen years. A piece that came out of the kiln as something other than what I put in. Not failed — transformed. The form is technically a vessel but the vessel is wrong for any functional use I know of. The shape isn't from any intention I held during the making. I've kept it for eight years. Six people have asked what it's for. I've said: I don't know yet. The honest answer. It sits on the shelf in my workshop. I look at it when I'm deciding what to make next.",
+      "keywords": ["once","eighteen","years","piece","came","out","kiln","something","other","than"]
+    },
+    {
+      "id": "fire_teaches_1",
+      "source": "Dena on what the kiln teaches",
+      "text": "You put something in and something comes out and what comes out is always a negotiation between what you intended and what the fire decided. After eighteen years I've learned to make the negotiation go the direction I want more often. Not always. About seven times in ten the piece is what I intended it to be. The other three times it's what the fire made it. Sometimes the fire's version is better. The kiln is the collaborator I didn't plan for.",
+      "keywords": ["put","something","in","something","comes","out","what","comes","out","always"]
+    }
+  ]
+}

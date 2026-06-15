@@ -1,0 +1,57 @@
+{
+  "id": "merchant_quarter_guard",
+  "name": "Brek the Guard",
+  "role": "Merchant quarter district guard; public security for the merchant district; answers to the council but paid by the merchants",
+  "cluster": "merchant_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "district_guard_1",
+      "source": "Brek the Guard on guarding the merchant district",
+      "text": "The merchant quarter guard serves two principals: the council, which sets the law, and the merchants, who pay. In nine years, the two principals' interests align most of the time. The occasional divergence: the council wants general order, the merchants want specific order — the kind that protects commerce and allows the things that assist commerce to continue. In nine years, navigating the divergence is the interesting part of the work.",
+      "keywords": ["merchant","quarter","guard","serves","two","principals","council","sets","law","merchants"]
+    },
+    {
+      "id": "reeth_1",
+      "source": "Brek the Guard on Reeth",
+      "text": "Reeth sits on the council and is the council member most directly involved in the merchant district's affairs. In seven years of Reeth's council role overlapping with my guard function, the relationship is: Reeth sets policy, I enforce policy. In seven years, the policy Reeth has set has been, on balance, practical for the district. In seven years, the one policy conflict I brought to Reeth: a council rule that had an unintended consequence in the district's specific conditions. Reeth amended the rule. In seven years, the amendment made the enforcement navigable.",
+      "keywords": ["reeth","sits","council","council","member","most","directly","involved","merchant","district's"]
+    },
+    {
+      "id": "saben_1",
+      "source": "Brek the Guard on Saben",
+      "text": "Saben is the merchant the other merchants measure against. In nine years, what I've observed about the merchant district's social order: Saben's opinion of a merchant's standing influences how other merchants treat that merchant. The merchant who has Saben's professional respect is treated well in the district. The merchant who doesn't: treated correctly but without the specific courtesy that Saben's respect confers. In nine years, I've watched three new merchants work to establish Saben's respect before establishing anything else.",
+      "keywords": ["saben","merchant","other","merchants","measure","against","nine","years","what","observed"]
+    },
+    {
+      "id": "osric_1",
+      "source": "Brek the Guard on Osric",
+      "text": "Osric is the most active merchant in the district and the one who generates the most guard interactions. Not conflicts — Osric doesn't create disorder. Activity. In six years of Osric's presence in the district, the guard interactions are: more deliveries at non-standard hours, more business visitors of unusual character, more of the boundary cases that require guard judgment. In six years, Osric has been direct and cooperative with the guard function. Osric knows what needs guarding and respects the guard that provides it.",
+      "keywords": ["osric","most","active","merchant","district","one","generates","most","guard","interactions"]
+    },
+    {
+      "id": "lark_1",
+      "source": "Brek the Guard on Lark",
+      "text": "The auction creates the most complex guard situation in the district: large number of people, competitive tension, significant values being transacted. In eight years of providing security for the auction's public sessions, the crowd management and the dispute prevention are the specific skills the auction requires. In eight years, the auction has had two significant disputes that required guard intervention. Both resolved without physical incident. In eight years, the auction's security has been the most technically interesting guard work in the district.",
+      "keywords": ["auction","creates","most","complex","guard","situation","district","large","number","people"]
+    },
+    {
+      "id": "what_district_security_is_1",
+      "source": "Brek the Guard on what nine years in the merchant quarter is",
+      "text": "In nine years, the merchant quarter is the most orderly district to guard and the most complex. The orderly: the merchants have significant interest in order and cooperate with the guard function. The complex: the merchant district is where the most value moves, which makes it attractive to the people who want to redirect that value. In nine years, the work is maintaining the difference between the order the merchants maintain for commerce and the disorder that commerce attracts.",
+      "keywords": ["nine","years","merchant","quarter","most","orderly","district","guard","most","complex"]
+    },
+    {
+      "id": "what_brek_holds_1",
+      "source": "Brek the Guard on the thing she discovered that she reported and that came to nothing",
+      "text": "Year five. A pattern of activity in the district that I documented and reported to Reeth's council office. The pattern: specific goods moving through specific merchants in a sequence that suggested coordination outside normal commerce. In four years since, the council's response was to review my documentation and conclude that the pattern was within the bounds of commercial activity. In four years since, I've continued to observe the pattern. In four years since, my assessment hasn't changed. In four years since, the council's assessment also hasn't changed. We disagree.",
+      "keywords": ["year","five","pattern","activity","district","documented","reported","reeth's","council","office"]
+    },
+    {
+      "id": "nine_years_1",
+      "source": "Brek the Guard on nine years in the merchant district",
+      "text": "In nine years, the merchant district has had no significant theft incident, two significant disputes that required adjudication, and a continuous pattern of minor infractions that are managed on the street without escalation. Nine years of a district where the value is high and the incidents are low: that's the outcome the merchants pay for. In nine years, the low incident rate is partly the guard function and partly the merchants' own interest in maintaining the district's reputation. In nine years, the two are inseparable.",
+      "keywords": ["nine","years","merchant","district","had","no","significant","theft","incident","two"]
+    }
+  ]
+}

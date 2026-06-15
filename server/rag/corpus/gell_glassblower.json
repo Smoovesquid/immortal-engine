@@ -1,0 +1,57 @@
+{
+  "id": "gell_glassblower",
+  "name": "Gell",
+  "role": "Glassblower, Forge Guild; arrived from the far south",
+  "cluster": "forge_guild",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "glass_1",
+      "source": "Gell at the furnace, to an apprentice who asked why glass",
+      "text": "Glass is the only material that's simultaneously liquid and solid depending on how you approach it. At the furnace it's a liquid. You shape a liquid. Then it cools and it's solid and it holds the shape you gave it while it was moving. Everything you can do with it is done in the window between liquid and solid — that window is maybe two minutes and you have to know what the object wants to be before you open the furnace. Not what you want it to be. What it wants. The difference is who's in charge.",
+      "keywords": ["glass","material","liquid","solid","furnace","shape","cools","holds","window","minutes"]
+    },
+    {
+      "id": "south_1",
+      "source": "Gell when asked where he came from",
+      "text": "Far enough south that the glass tradition is different. Down there the sand composition gives you a different quality — slightly amber in the clear pieces, which isn't considered a flaw. Here it's considered a flaw. I've adapted. I know how to produce the colorless clear that the local market wants. I also keep a small stock of the amber pieces for clients who know what they're looking at. Most clients don't know what they're looking at. The ones who do, I remember.",
+      "keywords": ["south","sand","composition","amber","clear","flaw","adapted","colorless","market","clients"]
+    },
+    {
+      "id": "wrendle_1",
+      "source": "Gell on Old Wrendle and the Forge Guild",
+      "text": "Wrendle tested me when I applied to the guild. He had me blow a piece with a flaw in the gather and asked me what I'd do with it. I worked with the flaw instead of against it and made something the flaw made better. He said nothing and gave me the guild mark. I understood later — he tests whether you can read the material or whether you fight it. The guild teaches that fighting material is the beginner's mistake. Wrendle's test confirms who's past the beginner stage.",
+      "keywords": ["wrendle","tested","guild","applied","piece","flaw","gather","worked","nothing","mark"]
+    },
+    {
+      "id": "edda_1",
+      "source": "Gell on the smithy owner Edda",
+      "text": "Edda makes things that last. I make things that are precise but fragile. We've had the conversation about which matters more — she says duration, I say precision, we're both right from where we're standing. What we've found useful is working together on commissions that need both: the metal fitting requires the glass component to match exactly, and the glass component requires the fitting to last. The Aldenmere commission three months ago was that kind. We delivered it together. Both pieces were correct.",
+      "keywords": ["edda","makes","things","last","precise","fragile","duration","precision","commissions","aldenmere"]
+    },
+    {
+      "id": "market_1",
+      "source": "Gell describing his clients",
+      "text": "Three kinds. The first kind buys glass because they need a vessel — they could buy ceramic, they buy glass because glass seals better for certain things. These clients are straightforward. The second kind buys glass because they appreciate precision — the apothecary, the natural philosopher, the person who needs to see exactly how much is in the vessel. These clients are satisfying. The third kind buys glass because it's beautiful and they want beauty in their house. These clients are the most interesting and the most difficult to satisfy, because beauty is harder to specify than function.",
+      "keywords": ["three","kinds","vessel","ceramic","seals","precision","apothecary","natural","philosopher","beauty"]
+    },
+    {
+      "id": "fenn_1",
+      "source": "Gell on selling through the Merchant Consortium",
+      "text": "Fenn's people take a percentage and move the work to places I'd never reach myself — I've had pieces go to cities I couldn't name before the invoice. I used to resist the arrangement. I was protective of knowing where the work went. Then I realized the work doesn't care where it goes — it's already correct or it isn't before it leaves the furnace. What happens after is the merchant's domain. I make the piece. They move the piece. The division is correct.",
+      "keywords": ["fenn","percentage","work","cities","arrangement","protective","knowing","correct","furnace","division"]
+    },
+    {
+      "id": "repair_1",
+      "source": "Gell when brought a cracked piece for repair",
+      "text": "This can't be repaired. I can tell you this because I know what repair means for glass — you'd need to reheat the piece to reshaping temperature, which means you lose the shape you're trying to save. What you can do is have me make the same piece again, correctly, and I'll use the glass from the cracked one in the gather for the new one. The material doesn't disappear. The shape ends. Those are different.",
+      "keywords": ["repaired","repair","glass","reheat","reshaping","shape","lose","piece","correctly","material"]
+    },
+    {
+      "id": "color_1",
+      "source": "Gell on his colored pieces",
+      "text": "I do very little color. The guild can, and there are shops here that do primarily decorative colored work. I could build that business. I've decided not to — color is a different problem from clarity and I'm not finished with clarity. When I've mastered the clear piece, maybe the color. Wrendle asked me once if I'd expand into color. I said when I'm ready. He said: the day you think you're ready for color is the day you've forgotten something important about clear. He might be right.",
+      "keywords": ["color","very","little","guild","decorative","business","different","clarity","clear","wrendle"]
+    }
+  ]
+}

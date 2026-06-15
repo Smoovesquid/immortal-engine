@@ -1,0 +1,57 @@
+{
+  "id": "wild_road_shrine_keeper",
+  "name": "Evel",
+  "role": "Roadside shrine keeper; maintains the shrines that mark the wild territory's significant places",
+  "cluster": "wild_road",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "shrine_keeping_1",
+      "source": "Evel on keeping the shrines",
+      "text": "The shrines mark the places where something significant happened or where the land's character is particularly present. In nineteen years of maintaining the shrines on the roads through this territory, I've added four shrines and repaired approximately fifty. The four I added: each one at a location where I observed, over multiple visits, that travelers paused without being told to. The pausing is the sign that the place is already recognized as significant. The shrine formalizes the recognition.",
+      "keywords": ["shrines","mark","places","where","something","significant","happened","where","land's","character"]
+    },
+    {
+      "id": "orvane_1",
+      "source": "Evel on Orvane",
+      "text": "Orvane reads the territory's condition; I mark the places where the condition is consistently significant. In twelve years of working alongside Orvane, the process for a new shrine: Orvane identifies a location as consistently significant, I observe the location across multiple visits to confirm that travelers are responding to it, and then I install and maintain the shrine. The shrine is the physical marker of what Orvane reads. The reading comes first. The marking follows.",
+      "keywords": ["orvane","reads","territory's","condition","mark","places","where","condition","consistently","significant"]
+    },
+    {
+      "id": "theen_1",
+      "source": "Evel on Theen",
+      "text": "Theen guides travelers through the territory and knows where the shrines are. In sixteen years of maintaining shrines on the routes that Theen uses, Theen and I have an implicit coordination: Theen guides travelers to the shrines when a traveler's need aligns with what the shrine marks. What Theen knows about the shrines that most people don't: which shrine is appropriate for which kind of traveler and which kind of need. Theen doesn't explain the knowledge. Theen applies it.",
+      "keywords": ["theen","guides","travelers","through","territory","knows","where","shrines","sixteen","years"]
+    },
+    {
+      "id": "senn_1",
+      "source": "Evel on Senn",
+      "text": "Senn passes by the shrines regularly and occasionally leaves something at a shrine without explanation. In nine years of maintaining the shrine near Senn's regular route, I've found Senn's offerings approximately forty times. What the offerings tell me: Senn is working through something specific and the shrine is a location for the working-through. In nine years, I've never asked what the working-through is. The shrine is the place for it. What Senn brings to the shrine is between Senn and the place.",
+      "keywords": ["senn","passes","shrines","regularly","occasionally","leaves","something","shrine","without","explanation"]
+    },
+    {
+      "id": "ford_1",
+      "source": "Evel on Ford",
+      "text": "The shrine at the eastern bridge is one of the original four when I started. In nineteen years, Ford has maintained a relationship with the bridge shrine that I've watched from the maintenance visits: Ford is the most regular, most specific offerer at any shrine I maintain. In nineteen years, Ford's offerings at the bridge shrine mark: the safe passage of specific travelers. When a traveler Ford has responsibility for crosses safely, Ford marks it at the shrine. Twenty-four years at the bridge, nineteen years at the shrine. Ford and the shrine have been parallel custodians of the crossing.",
+      "keywords": ["shrine","eastern","bridge","one","original","four","when","started","nineteen","years"]
+    },
+    {
+      "id": "what_shrines_are_1",
+      "source": "Evel on what the shrines actually are",
+      "text": "A shrine is a formal permission for something that happens anyway. People pause at significant places, leave things at places where they've experienced something, mark places where something that mattered happened. The shrine formalizes this: it says, this is a place where pausing is appropriate. In nineteen years, the shrines I maintain have not created the behavior. They've legitmized the behavior that was already there. The behavior comes from the place and the person's response to the place. The shrine is the acknowledgment.",
+      "keywords": ["shrine","formal","permission","something","happens","anyway","people","pause","significant","places"]
+    },
+    {
+      "id": "what_evel_holds_1",
+      "source": "Evel on the shrine she's refused to maintain",
+      "text": "One shrine that I've let fall into disrepair deliberately. The location was significant when the shrine was established — approximately thirty years ago, before I took over the maintenance. In the twelve years I've maintained the other shrines, I've visited this location six times. In six visits, the significance that established the shrine isn't there anymore. The location has changed in a way I can't attribute to anything I can point to. It's not the same place the shrine was built for. I don't maintain shrines for places that have stopped being what they were.",
+      "keywords": ["one","shrine","let","fall","disrepair","deliberately","location","was","significant","when"]
+    },
+    {
+      "id": "nineteen_years_1",
+      "source": "Evel on nineteen years of shrine keeping",
+      "text": "In nineteen years, I've maintained thirty-one shrines across the roads through this territory. Thirty-one places where something significant enough to mark was present when the shrine was established and is still present. In nineteen years, I've let four shrines lapse — places where the significance changed. The four lapsed shrines: the locations are still there. The shrines are gone. In nineteen years, what I've learned: a place can change. The shrine that was right for the place it was may not be right for the place it became.",
+      "keywords": ["nineteen","years","maintained","thirty-one","shrines","across","roads","through","territory","thirty-one"]
+    }
+  ]
+}

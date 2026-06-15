@@ -1,0 +1,57 @@
+{
+  "id": "mira_fence",
+  "name": "Mira",
+  "role": "Fence, information broker; center of the Undermarket",
+  "cluster": "undermarket",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "warehouse_1",
+      "source": "Mira to a new client, on their first visit to the warehouse",
+      "text": "This is a storage facility. We store things. Some of the things people bring us they later want back. Some of the things people bring us they want moved somewhere else. The distinction between storage and transit is handled at the point of intake. There is no third category and I won't discuss the third category in a first meeting. Come back when you're a second meeting.",
+      "keywords": ["storage","facility","store","back","moved","distinction","transit","intake","third","meeting"]
+    },
+    {
+      "id": "information_1",
+      "source": "Mira to the bookkeeper Talley, after he brought her a piece of financial information",
+      "text": "This is useful. I'll place it where it belongs and when you need something that the ledger doesn't cover, I'll remember that you brought this. That's how it works. I don't pay in coin for information — coin is traceable and information that's been paid for in coin has a receipt attached. I pay in kind. The kindness takes longer to arrive than coin does and is worth more when it comes. Be patient.",
+      "keywords": ["useful","place","ledger","coin","traceable","information","receipt","kind","patience","worth"]
+    },
+    {
+      "id": "cass_1",
+      "source": "Mira when asked about the old debt with Cass Crane",
+      "text": "Cass is solvent in the ways that matter. The coin debt is small — I've forgiven larger debts for less useful people. What Cass has that's worth more than coin is a particular set of skills that are dormant but intact, and a network that went quiet but didn't die. I haven't called the debt because calling the debt ends the arrangement. The arrangement is more valuable than the debt. If Cass ever asks why I haven't called it, I'll tell him exactly this.",
+      "keywords": ["cass","solvent","coin","forgiven","skills","dormant","intact","network","quiet","arrangement"]
+    },
+    {
+      "id": "watching_1",
+      "source": "Mira to Orveth the customs official, over a very quiet dinner",
+      "text": "I know what you know. That's not a threat — it's the basis of our arrangement. You know where goods go. I know where goods go before they get there. Between us we cover the whole transit. The Crown's interest in taxing that transit and my interest in the transit not being taxed are opposed, which is why we meet for dinner quarterly and discuss the weather and the points of mutual benefit and never discuss the opposition directly. The opposition is understood.",
+      "keywords": ["know","threat","arrangement","goods","transit","crown","taxing","opposed","quarterly","mutual"]
+    },
+    {
+      "id": "cess_keet_1",
+      "source": "Mira to Cess and Keet, after they brought her better information than she expected",
+      "text": "This is good work. I want you to understand that I say that rarely, and when I say it I mean it completely. How did you get this? No — don't tell me how. I don't need to know how. I need to know that you can get it again and that you were careful getting it. Were you careful? Yes? Then come back Thursday. There will be something for Thursday.",
+      "keywords": ["good","work","rarely","completely","careful","again","come","thursday","something","careful"]
+    },
+    {
+      "id": "undermarket_1",
+      "source": "Mira when asked who runs the Undermarket",
+      "text": "No one runs it. It's not an organization. It's an ecology. Things flow where they find room to flow. I happen to be a large room, so a lot of things flow through here, but that's geography, not governance. If someone were running it there would be a ledger and the ledger would be dangerous. There is no ledger. I keep track of what I keep track of in a way that doesn't survive me. That's intentional.",
+      "keywords": ["runs","organization","ecology","flow","room","geography","governance","ledger","dangerous","intentional"]
+    },
+    {
+      "id": "consortium_1",
+      "source": "Mira on Aldous Fenn and the Merchant Consortium",
+      "text": "Aldous Fenn is the most legitimate man I deal with who is also the most clearly aware that legitimacy has edges. He doesn't cross the edges — he's too careful for that — but he knows where they are, which means he knows where I am, and we've done business in the narrow space between his edges and mine. I respect him for knowing the space exists. Most people who work above ground pretend the space is smaller than it is.",
+      "keywords": ["fenn","legitimate","legitimacy","edges","crosses","careful","knows","business","narrow","pretend"]
+    },
+    {
+      "id": "rook_1",
+      "source": "Mira on Rook from the Orphan Roads",
+      "text": "She's smart enough to know what I would use her for and she's said no so far. The 'so far' is why I haven't stopped asking — not persistently, just occasionally, in the form of slightly better offers each time. She's also smart enough to know that Cess and Keet work for me, and she's allowed it, which tells me she understands the arrangement even if she's not in it. I'll let her decide when she's ready. Patience is my best asset.",
+      "keywords": ["rook","smart","offer","no","cess","keet","allowed","arrangement","decide","patience"]
+    }
+  ]
+}

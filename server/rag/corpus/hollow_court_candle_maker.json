@@ -1,0 +1,57 @@
+{
+  "id": "hollow_court_candle_maker",
+  "name": "Muse",
+  "role": "Maker of the Hollow Court's memorial candles; different from Cree who tends them",
+  "cluster": "hollow_court",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "memorial_candle_1",
+      "source": "Muse on memorial candles",
+      "text": "A memorial candle is not a regular candle. The form is the same: wax, wick, vessel. What's different is the intention built into the making. I make memorial candles specifically for the Hollow Court and for families who commission them for grief. The intention is in the materials: slower wax, a wick calibrated to burn for the duration of the mourning period, a vessel that holds the scent I add for the specific kind of grief. Grief has different scents. The court has taught me that.",
+      "keywords": ["memorial","candle","not","regular","candle","form","same","wax","wick","vessel"]
+    },
+    {
+      "id": "cree_1",
+      "source": "Muse on Cree",
+      "text": "Cree tends what I make. The division is clear: I make the candles that the court needs; Cree places them and replaces them and attends to them while they burn. In nine years of this arrangement, Cree has never asked me to change what I make. This is significant — most candle commissioners have specific requirements that change over time. Cree's requirements haven't changed, which means my candles are correct for the court's purpose. I take this as the highest compliment I've received for my work.",
+      "keywords": ["cree","tends","what","make","division","clear","make","candles","court","needs"]
+    },
+    {
+      "id": "sel_1",
+      "source": "Muse on Sel",
+      "text": "Sel manages the court's practical needs, which includes commissioning from me when the candle stock is running low. In nine years, Sel has never allowed the stock to run entirely low — there's always a buffer order that comes before the need becomes urgent. A practical manager who manages to the buffer rather than the emergency is rare enough that I've noticed it. Sel manages the court's materials the way the court manages grief: with anticipation rather than response.",
+      "keywords": ["sel","manages","court's","practical","needs","includes","commissioning","from","me","when"]
+    },
+    {
+      "id": "tess_1",
+      "source": "Muse on Tess",
+      "text": "Tess watches who comes to the court. What I've observed of Tess's watching: it's not surveillance. It's the kind of attention that exists to serve the person being watched, not to monitor them. I've delivered candles to the court when Tess was working the space and what I saw: Tess noticed every person who arrived without appearing to notice them. The watching is present without being intrusive. Nine years of making the candles that Tess's court uses. The candles and the watching are both forms of the same service.",
+      "keywords": ["tess","watches","who","comes","court","what","observed","tess's","watching","it's"]
+    },
+    {
+      "id": "morvane_1",
+      "source": "Muse on Morvane",
+      "text": "Morvane supplied me with the specific wax blend I need for the slow-burn memorial candles for three years. Then Morvane left the chandlery business. I've been sourcing the blend from two suppliers since, and the blend from two suppliers is worse than the blend from one who understood what I needed. What Morvane understood: the specific consistency that holds the scent I add without releasing it too early. I've told the current suppliers what I told Morvane. Neither has fully reproduced what Morvane produced without being told.",
+      "keywords": ["morvane","supplied","specific","wax","blend","need","slow-burn","memorial","candles","three"]
+    },
+    {
+      "id": "what_grief_scents_1",
+      "source": "Muse on what she's learned about grief from making grief candles",
+      "text": "The court has taught me that grief has different qualities. In nine years, the scent compositions I've developed: seven distinct compositions for seven distinct qualities of grief. Recent loss burns differently than long-carried grief. Grief for the unexpected loss is different from grief for the anticipated loss. Child loss is different. Loss of long partnership is different. I developed these distinctions from watching how people responded to the candles. The responses told me when I had the scent right.",
+      "keywords": ["court","taught","grief","different","qualities","nine","years","scent","compositions","developed"]
+    },
+    {
+      "id": "what_muse_holds_1",
+      "source": "Muse on the commission she still thinks about",
+      "text": "A family commission, year four. Parents who'd lost a child. They gave me specific instructions: they wanted the candle to smell like the child. Not like the child's things — like the child. I worked for three weeks on that composition. The parents received it and said: yes, that's it. I don't know how I did it. I've tried to reproduce the composition twice for similar commissions. I can't. What I had in year four to make that specific composition is not something I can access deliberately. Some things arrive and can't be summoned.",
+      "keywords": ["family","commission","year","four","parents","lost","child","gave","specific","instructions"]
+    },
+    {
+      "id": "nine_years_1",
+      "source": "Muse on nine years of making memorial candles",
+      "text": "I started making regular candles — household, working, utility candles. The memorial commission from the court came in year one of my practice and it changed what I understood the work to be. I make utility candles still. The utility candles pay the basic costs. The memorial candles are the work. What the memorial candles require that utility candles don't: the understanding that the candle's purpose isn't illumination. The candle's purpose is presence for the absent. The light is secondary.",
+      "keywords": ["started","making","regular","candles","household","working","utility","candles","memorial","commission"]
+    }
+  ]
+}

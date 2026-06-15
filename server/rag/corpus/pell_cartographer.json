@@ -1,0 +1,57 @@
+{
+  "id": "pell_cartographer",
+  "name": "Pell",
+  "role": "Cartographer; Wild Road / Harbor Quarter",
+  "cluster": "wild_road",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "maps_1",
+      "source": "Pell when a merchant questioned the accuracy of one of his maps",
+      "text": "I walked it. Every line on this map is a line I walked, measured with pace count and corrected with landmarks and verified by asking the people who live on the feature what they call it. The map is accurate as of eighteen months ago, which is the best a map can be. I'll sell you a new one in two years when I've walked the circuit again. The feature you're questioning — the ford — I was there in autumn. The ford exists. It's shallow in autumn.",
+      "keywords": ["walked","line","pace","count","landmarks","verified","accurate","eighteen","months","ford"]
+    },
+    {
+      "id": "theen_1",
+      "source": "Pell on his working relationship with the ranger Theen",
+      "text": "Theen has information I don't have and she's told me some of it and I've put three things on maps that came from her. She doesn't take credit for them — she just wants them to be on a map somewhere. I suspect what she's doing is creating a record that she knows exists without being the one responsible for making it public. The information survives her. She trusts me to be the record-keeper without being the curator. I've kept the trust.",
+      "keywords": ["theen","information","told","three","things","credit","record","public","survives","trust"]
+    },
+    {
+      "id": "harbor_1",
+      "source": "Pell on why he lives in the Harbor Quarter when he's not traveling",
+      "text": "The harbor is where information arrives first. Ships come in from regions I haven't mapped and the sailors have seen things I haven't seen, and if you ask the right questions at the right time — when they're ashore but before they've been ashore long enough to stop seeing it clearly — you learn things no map contains. I've added eleven features to my maps from harbor conversations. The harbor is the world's ear.",
+      "keywords": ["harbor","information","arrives","ships","regions","sailors","questions","time","ashore","maps"]
+    },
+    {
+      "id": "fenn_1",
+      "source": "Pell on working with the Merchant Consortium",
+      "text": "I sell maps to Aldous Fenn's factor and the factor sells them forward. I don't ask to whom. I know to whom — the caravan guard captains, the ship navigators, the advance people who go somewhere before the Consortium goes there. They need accurate maps. I make accurate maps. We have a clean arrangement. I've never sold Theen's private information to the Consortium. They've never asked directly, which means Aldous Fenn has made a calculation about what kind of supplier I am. He's correct.",
+      "keywords": ["fenn","factor","forward","caravan","guard","navigators","accurate","clean","arrangement","calculation"]
+    },
+    {
+      "id": "hetch_1",
+      "source": "Pell on the sailor Hetch",
+      "text": "Hetch has described the Hallowed Reaches coast in enough detail that I've been able to add three features to my northern maps, which I haven't been to personally. His memory for coastline is extraordinary — he has the navigator's gift of remembering shape rather than facts. I've spent four evenings at the Anchor & Argument listening to him describe coastline, and at the end of each evening I go home and draw what he's described. The drawings are good. He's never looked at the drawings. I think he doesn't want to see the place again.",
+      "keywords": ["hetch","hallowed","reaches","coast","detail","three","features","northern","navigator","coastline"]
+    },
+    {
+      "id": "precision_1",
+      "source": "Pell on the nature of a map",
+      "text": "A map is a set of decisions about what to include and what to leave out. Every decision is an argument about what matters. When I include a road and leave out a track, I'm saying the road matters and the track doesn't. When I include a settlement and leave out the name of the family that's been there for three generations, I'm saying the settlement matters and the family doesn't. These decisions accumulate into something that looks neutral. No map is neutral. Mine are just honest about their biases.",
+      "keywords": ["map","decisions","include","leave","argument","matters","road","track","neutral","biases"]
+    },
+    {
+      "id": "vann_1",
+      "source": "Pell on the tinker Vann",
+      "text": "Vann knows the roads and I know the territory. We've been comparing notes for three years and the comparison keeps producing things neither of us had alone. What Vann adds to my maps are the practical things — road conditions, reliable water sources, where the road is marked differently on the ground than it is on any map. What I add to her routing are the larger patterns, the reasons roads go where they go, the geography that explains the history. She thinks in miles. I think in contours. We're useful together.",
+      "keywords": ["vann","roads","territory","comparing","notes","three","years","practical","conditions","contours"]
+    },
+    {
+      "id": "two_homes_1",
+      "source": "Pell when asked if he prefers the road or the harbor",
+      "text": "Neither. Both. The road is where the information is gathered and the harbor is where the information is organized and sold. I'm not comfortable staying in either place too long. On the road I start wanting a table to spread the maps on. In the harbor I start wanting the view from a high place in open country. I've made peace with being a person who requires both. It's an inefficient way to live. The maps are better for it.",
+      "keywords": ["neither","both","road","harbor","gathered","organized","comfortable","table","spread","country"]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "id": "covenant_witness",
+  "name": "Pell the Young",
+  "role": "Young Covenant deacon; distributes alms, witnesses rites, learns what the Covenant's ministry actually requires",
+  "cluster": "covenant_of_seven",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "witness_1",
+      "source": "Pell the Young on the deacon's work",
+      "text": "In five years as deacon, what the deacon does that the theology doesn't fully describe: the practical ministry. The person whose house has flooded who comes to the Covenant for help doesn't need a theological response. They need help and a dry place. In five years, the deacon's work is the theology applied to the specific case. In five years, I've learned more about what the Covenant is for from the specific cases than from the theology that describes the general principle.",
+      "keywords": ["five","years","deacon","what","deacon","does","theology","doesn't","fully","describe"]
+    },
+    {
+      "id": "father_len_1",
+      "source": "Pell the Young on Father Len",
+      "text": "Father Len trained me and continues to be the primary reference for what the deacon's work should be. In five years of Father Len's instruction, what the instruction has been: the deacon who knows the theology without knowing the people is incomplete. The people come first. The theology serves the people. In five years, Father Len's instruction has been consistent on this: the Covenant's practice is for the people's benefit. The practice that doesn't benefit the people is the practice that has lost its direction.",
+      "keywords": ["father","len","trained","continues","primary","reference","what","deacon's","work","should"]
+    },
+    {
+      "id": "binn_1",
+      "source": "Pell the Young on Binn",
+      "text": "Binn the treasurer funds the alms distribution that I execute. In four years of the Binn-Pell the Young alms relationship, what the distribution process looks like: Binn gives me the week's alms budget, I distribute to the cases the Covenant has assessed as in need, I report the distribution back to Binn. In four years, the reporting back has been accurate and the budget has been sufficient for the cases in thirty-seven of forty-eight weeks. In eleven weeks of budget shortfall: I've gone to Father Len, Father Len has found additional resources three times and adjusted the distribution eight times.",
+      "keywords": ["binn","treasurer","funds","alms","distribution","execute","four","years","binn-pell","young"]
+    },
+    {
+      "id": "dune_1",
+      "source": "Pell the Young on Dune",
+      "text": "Dune the ALMASOSE devotee and I operate parallel alms functions that sometimes reach the same person. In three years of knowing Dune from the shared function's context, what the two alms functions produce together: the Covenant's official alms reaching the cases the Covenant has assessed, and Dune's personal alms reaching the cases that fall outside the official assessment. In three years, the cases that both Dune and the Covenant have reached: seven. In seven overlap cases, the double provision was never a problem. It was always the right case.",
+      "keywords": ["dune","almasose","devotee","operate","parallel","alms","functions","sometimes","reach","same"]
+    },
+    {
+      "id": "mam_wey_1",
+      "source": "Pell the Young on Mam Wey",
+      "text": "Mam Wey is the informal welfare reference that the deacon's work depends on more than the deacon's training acknowledges. In four years of the Pell-Mam Wey relationship, what Mam Wey provides to the alms distribution: the knowledge of which cases are not visible to the Covenant's official assessment. In four years, the cases Mam Wey has directed me to that I wouldn't have found otherwise: twelve. Twelve families whose need was invisible to the Covenant's process until Mam Wey made it visible. In four years, twelve families.",
+      "keywords": ["mam","wey","informal","welfare","reference","deacon's","work","depends","more","deacon's"]
+    },
+    {
+      "id": "weth_1",
+      "source": "Pell the Young on Weth",
+      "text": "Weth the TARRYN devotee has taught me more about patience in ministry than the Covenant's formal training has. In three years of knowing Weth in the Covenant context, what TARRYN's patience practice looks like applied to the ministry: the case that doesn't resolve quickly and that requires the sustained presence of the ministry without the expectation of immediate resolution. In three years, Weth's practice of the long accompaniment has been the model for the cases where what the person needs is not the solution but the sustained presence.",
+      "keywords": ["weth","tarryn","devotee","taught","more","about","patience","ministry","than","covenant's"]
+    },
+    {
+      "id": "what_five_years_holds_1",
+      "source": "Pell the Young on what five years as deacon holds",
+      "text": "In five years, what the deacon's work has shown me about the Covenant that I didn't know from outside: the Covenant's public face and its actual function are different things. The public face is the service, the theology, the building. The actual function is the ministry in the specific case: the flooded house, the grieving family, the person in difficulty who comes to the Covenant because the Covenant is the institution that responds to the person in difficulty. In five years, the actual function is what the public face exists to support.",
+      "keywords": ["five","years","what","deacon's","work","shown","about","covenant","didn't","know"]
+    },
+    {
+      "id": "five_years_1",
+      "source": "Pell the Young on five years as a Covenant deacon",
+      "text": "In five years, the deacon's work has been the most direct contact with the Covenant's ministry that any role in the Covenant offers. In five years, the priest leads the service. The deacon serves the person. In five years, I've served approximately six hundred specific people in specific cases of need. Six hundred cases where the Covenant's ministry was the response to the person's specific situation. In five years, six hundred cases. In five years, the theology is what I understand why I'm doing it. The six hundred cases are what I'm doing.",
+      "keywords": ["five","years","deacon's","work","been","most","direct","contact","covenant's","ministry"]
+    }
+  ]
+}

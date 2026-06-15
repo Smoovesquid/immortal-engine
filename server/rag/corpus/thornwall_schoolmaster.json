@@ -1,0 +1,57 @@
+{
+  "id": "thornwall_schoolmaster",
+  "name": "Dall",
+  "role": "Settlement schoolmaster; teaches the settlement's children the basics before the Academy, if they go",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "schoolmaster_1",
+      "source": "Dall on teaching the settlement's children",
+      "text": "In twenty-one years of teaching the settlement's children, what the settlement school produces: the reading, the writing, the arithmetic that the settlement's life requires of people who don't go to the Academy. In twenty-one years, not all the children go to the Academy. In twenty-one years, all the children need to read, write, and calculate. In twenty-one years, the school is the universal provision. The Academy is the selective provision. In twenty-one years, the universal provision has been my work.",
+      "keywords": ["twenty-one","years","teaching","settlement's","children","what","settlement","school","produces","reading"]
+    },
+    {
+      "id": "mast_1",
+      "source": "Dall on Mast",
+      "text": "Mast the council clerk is the most visible product of the settlement school in the settlement's governance. In fifteen years of knowing Mast as a former student who has become the council's primary administrative function, what the school's provision produced in Mast's case: the foundation that the council clerk's work is built on. In fifteen years, the student I remember and the council clerk Mast has become: the specific skills I taught are visible in Mast's current function.",
+      "keywords": ["mast","council","clerk","most","visible","product","settlement","school","settlement's","governance"]
+    },
+    {
+      "id": "gonn_1",
+      "source": "Dall on Gonn",
+      "text": "Gonn the beggar attended the settlement school for two years before circumstances took Gonn away from the school and eventually to the corner that Gonn has occupied for twenty years. In twenty years of knowing Gonn's path, what the school provided in two years and what wasn't provided after: the foundation that two years produces, and the continuation that didn't happen. In twenty years, what I wonder about the corner: whether the two years were enough of the foundation to make any difference to what the corner holds.",
+      "keywords": ["gonn","beggar","attended","settlement","school","two","years","before","circumstances","took"]
+    },
+    {
+      "id": "nan_1",
+      "source": "Dall on Nan",
+      "text": "Nan runs the charity school in the settlement's most constrained district. In ten years of Nan's charity school operating alongside the settlement school, what the two schools produce together: the universal provision reaching the children that the settlement school's enrollment process doesn't reach. In ten years, Nan's students and my students are different students by circumstance. The provision they receive is as similar as different teachers in different settings can make it. In ten years, the two schools are the same effort in two different settings.",
+      "keywords": ["nan","runs","charity","school","settlement's","most","constrained","district","ten","years"]
+    },
+    {
+      "id": "sorn_1",
+      "source": "Dall on Sorn",
+      "text": "Sorn tutors the Aldenmere children at the level the Academy prepares for. In eight years of knowing Sorn's work through the shared educational context, what the difference between the settlement school and the merchant house tutoring is: the settlement school teaches toward the settlement's general life. The merchant house tutoring teaches toward the merchant household's specific life. In eight years, the two approaches have different objectives and different students. The students who have experienced both would tell you: the settlement school gives you the foundation. The tutoring gives you the specific application.",
+      "keywords": ["sorn","tutors","aldenmere","children","level","academy","prepares","eight","years","knowing"]
+    },
+    {
+      "id": "what_dall_holds_1",
+      "source": "Dall on what twenty-one years of schoolmastering holds",
+      "text": "In twenty-one years, I've taught approximately four hundred children the settlement's foundational literacy. Four hundred children who left the school able to read, write, and calculate at the level the settlement's life requires. In twenty-one years, what the four hundred represent in the settlement's current life: most of the settlement's adult population that is literate learned to read in this school. In twenty-one years, the settlement's literacy is partly my work. The settlement reads because someone taught it to. In twenty-one years, I was part of that.",
+      "keywords": ["twenty-one","years","taught","approximately","four","hundred","children","settlement's","foundational","literacy"]
+    },
+    {
+      "id": "what_the_school_is_for_1",
+      "source": "Dall on what the settlement school is actually for",
+      "text": "In twenty-one years, what the settlement school is for: not the clever child who will go to the Academy. The Academy selects the clever child and gives them something I can't give. The school is for the child who will become the settlement's tradesperson, its farmer, its laborer — the child whose life will be the settlement's ordinary life. In twenty-one years, the ordinary life is better with reading and arithmetic. In twenty-one years, I make the ordinary life a little better with reading and arithmetic. In twenty-one years, the a-little-better is what the school produces.",
+      "keywords": ["twenty-one","years","what","settlement","school","for","not","clever","child","who"]
+    },
+    {
+      "id": "twenty_one_years_1",
+      "source": "Dall on twenty-one years as the settlement schoolmaster",
+      "text": "In twenty-one years, the school has been the most continuous relationship I have with the settlement's future. The children I teach today are the settlement's adults in fifteen years. In twenty-one years, I've been teaching the settlement's future for the entire period. What the settlement becomes in fifteen years will reflect in part what I gave the children who became it. In twenty-one years, the weight of that is present. In twenty-one years, the weight has not made the work feel burdensome. It has made it feel serious.",
+      "keywords": ["twenty-one","years","school","been","most","continuous","relationship","have","settlement's","future"]
+    }
+  ]
+}

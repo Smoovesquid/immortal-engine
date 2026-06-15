@@ -1,0 +1,57 @@
+{
+  "id": "orphan_elder",
+  "name": "Doss",
+  "role": "Oldest surviving member of the Orphan Roads network; the institutional memory of the network",
+  "cluster": "orphan_roads",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "network_1",
+      "source": "Doss on the Orphan Roads network",
+      "text": "The network exists because the district's formal systems fail specific categories of people. The failures are structural: the law doesn't cover what happens in the gaps, the institutions serve those with institutional access, and some people have no institutional access. The network fills the gaps that the institutions leave. In thirty years of this network, the gaps have changed shape but not in size. The district's formal systems are better than they were thirty years ago. The gaps are smaller. The gaps are still there.",
+      "keywords": ["network","exists","because","district's","formal","systems","fail","specific","categories","people"]
+    },
+    {
+      "id": "rook_1",
+      "source": "Doss on Rook",
+      "text": "Rook leads the network now. I led it for twelve years and trained Rook for four of them before I passed the direction to Rook. What I passed to Rook: the network's principles, the network's relationships, and the network's history. The history is what Rook uses when a situation arises that seems new but isn't — the network has seen most situations before. In eighteen years of watching Rook lead, Rook has used the history four times to handle a situation the same way the network handled a similar situation before. The four uses of the history: all correct.",
+      "keywords": ["rook","leads","network","now","led","twelve","years","trained","rook","four"]
+    },
+    {
+      "id": "mira_1",
+      "source": "Doss on Mira",
+      "text": "Mira handles the intelligence function now. I handled it for years before Mira. What the intelligence function is: knowing what's happening in the district that the network needs to know about. Not all information — the information that's relevant to the gaps the network fills. In thirty years, the intelligence function has been the network's early warning system: knowing about a gap before the person who'll fall into it reaches the gap. In eight years of watching Mira do this work, Mira is better at it than I was.",
+      "keywords": ["mira","handles","intelligence","function","now","handled","years","before","mira","what"]
+    },
+    {
+      "id": "wick_1",
+      "source": "Doss on Wick",
+      "text": "Wick was the person who fell into the network's gap before becoming part of the network. This is the most common path into the network: someone the network helps who then becomes part of helping others. In thirty years, approximately sixty percent of the network's active members have come through that path. Wick's path: the fence operation that Wick was running independently when the network found Wick was better run within the network than outside it. Wick had the skills. The network had the structure.",
+      "keywords": ["wick","person","fell","into","network's","gap","before","becoming","part","network"]
+    },
+    {
+      "id": "kevin_1",
+      "source": "Doss on Kevin Bacon",
+      "text": "The Players have been useful to the network on three occasions in thirty years. What the Players provide that the network can't provide: performance as a cover for movement. When Kevin Bacon's company performs, the district's attention is on the performance. The network has used performance evenings for three operations that required movement without attention. Kevin knows he's been used this way. Kevin said the last time: I don't know what you were doing during the performance. What I know is that you were there and then you weren't. I'll leave it at that.",
+      "keywords": ["players","been","useful","network","three","occasions","thirty","years","what","players"]
+    },
+    {
+      "id": "what_thirty_years_teaches_1",
+      "source": "Doss on what thirty years in the network teaches",
+      "text": "In thirty years, the same types of people fall into the same types of gaps for the same structural reasons. The specific people change. The structural reasons don't change as fast as the people. What I've learned: the network doesn't solve the structural problem. The network solves the immediate problem for the specific people who fall into the structural gap. The structural problem requires different tools. The network is the emergency medicine, not the prevention. Prevention requires changing the structure. The structure changes slowly.",
+      "keywords": ["thirty","years","same","types","people","fall","same","types","gaps","same"]
+    },
+    {
+      "id": "what_doss_holds_1",
+      "source": "Doss on what thirty years gave him that he can't pass on",
+      "text": "The judgment about when to act and when not to act. In thirty years, the hardest decisions have been the ones where acting would help someone and would also create a risk for the network that might prevent helping others later. The calculation: this person now against the network's capacity later. I've made that calculation thirty-seven times in thirty years. I'm wrong about the correct answer in retrospect six times — I should have acted and didn't three times, I should have held and acted instead twice, I made the correct call thirty-one times. The six mistakes are what the thirty-one correct calls cost.",
+      "keywords": ["judgment","when","act","when","not","act","thirty","years","hardest","decisions"]
+    },
+    {
+      "id": "thirty_years_1",
+      "source": "Doss on thirty years in the Orphan Roads network",
+      "text": "In thirty years, the network has helped approximately three hundred people in direct ways and an unknown number in indirect ways — the person the network helped who then helped someone else, multiplied across thirty years. The three hundred direct: I know most of them, or know their outcomes. The indirect: I can't count them. What the network is: a structure that converts the capacity of those who have enough into help for those who don't, in the gaps that the formal institutions don't fill. In thirty years the structure has worked. The gaps haven't closed.",
+      "keywords": ["thirty","years","network","helped","approximately","three","hundred","people","direct","ways"]
+    }
+  ]
+}

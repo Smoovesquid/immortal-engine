@@ -1,0 +1,57 @@
+{
+  "id": "covenant_almsgiver",
+  "name": "Pell the Young",
+  "role": "Covenant almsgiver; distributes the Covenant's charitable gifts; different from Pell the Elder",
+  "cluster": "covenant_of_seven",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "almsgiver_1",
+      "source": "Pell the Young on what almsgiving is",
+      "text": "Almsgiving is the distribution of what the Covenant has received from those who have enough to what the Covenant judges doesn't have enough. The judgment is mine: I assess who needs the distribution and how much they need. In six years of this work, the judgment has been the hardest part. Not the distribution — the judgment. The distribution is simple if the judgment is correct. The judgment is where everything can go wrong.",
+      "keywords": ["almsgiving","distribution","what","covenant","received","from","those","who","have","enough"]
+    },
+    {
+      "id": "vel_1",
+      "source": "Pell the Young on Vel",
+      "text": "Vel coordinates the Covenant's larger distribution programs. I handle the immediate, case-by-case distribution. The coordination: Vel's programs address systemic need, mine addresses acute need. A person who has an immediate crisis gets my distribution. A person with a persistent structural need gets referred into Vel's programs. In six years of working adjacent to Vel, I've referred forty-three people to the programs. Vel has referred twelve people back to me for immediate distribution while the program onboards them.",
+      "keywords": ["vel","coordinates","covenant's","larger","distribution","programs","handle","immediate","case-by-case","distribution"]
+    },
+    {
+      "id": "father_len_1",
+      "source": "Pell the Young on Father Len",
+      "text": "Father Len sets the Covenant's giving doctrine. The doctrine tells me the principles. The principles don't tell me what to do in the specific case. In six years, I've come to Father Len twelve times with cases the principles don't clearly resolve. Every time, Father Len has said something that clarifies the principle's application. Never told me what to decide — clarified the principle. The decision was always mine after the clarification. Father Len said once: the principle serves the person, not the other way.",
+      "keywords": ["father","len","sets","covenant's","giving","doctrine","doctrine","tells","principles","principles"]
+    },
+    {
+      "id": "bressa_1",
+      "source": "Pell the Young on Bressa",
+      "text": "Bressa and I sometimes reach the same person from different angles — Bressa through the birth care, me through the family's need following the birth. The new-child household often faces both immediate material need and the spiritual transition of new parenthood. Bressa handles the spiritual side. I handle the material side. We've worked together on seven households in six years. In all seven: knowing that both sides were being addressed allowed each of us to focus on our own side without worrying about the other.",
+      "keywords": ["bressa","sometimes","reach","same","person","different","angles","bressa","through","birth"]
+    },
+    {
+      "id": "bale_1",
+      "source": "Pell the Young on Bale",
+      "text": "Bale the water carrier and I have a referral relationship. Bale sees the households that have acute need before anyone else does — the carrier sees who has water and who's running short on everything else. In six years, Bale has told me about three households that needed my attention before the household asked for it. All three times, Bale's assessment was accurate and the distribution helped. Bale said: I'm not a spy. I said: I know. You're someone who sees what needs seeing.",
+      "keywords": ["bale","water","carrier","referral","relationship","bale","sees","households","acute","need"]
+    },
+    {
+      "id": "what_judgment_is_1",
+      "source": "Pell the Young on what judgment is in almsgiving",
+      "text": "The judgment I make is: does this person need what I have to give. Not in the moral sense — in the practical sense. Do they need it, will they be helped by it, and is giving it the right use of what I have to distribute. In six years I've said yes to three hundred and forty-four requests and no to sixty-one. The no is harder than the yes. The no has to serve the same doctrine as the yes — the giving serves the person. Sometimes not giving is what serves the person.",
+      "keywords": ["judgment","make","does","person","need","what","have","give","not","moral"]
+    },
+    {
+      "id": "what_pell_holds_1",
+      "source": "Pell the Young on the assessment he regrets",
+      "text": "Year three. An assessment I made that was wrong. I assessed a household as outside the distribution criteria and that assessment was incorrect. The household's need was genuine and my judgment had missed it. I found out a month later. The month between my assessment and finding out about the error: the household managed on their own. They didn't come back for the distribution. I've been over my assessment process for that case many times. I found where the error was. I've corrected for it. The household is fine. The error is still in my record.",
+      "keywords": ["year","three","assessment","made","wrong","assessed","household","outside","distribution","criteria"]
+    },
+    {
+      "id": "six_years_1",
+      "source": "Pell the Young on six years of almsgiving",
+      "text": "In six years I've distributed the Covenant's charitable holdings to three hundred and forty-four requests. The distribution total is more than I think about — the number is the aggregate of specific people in specific situations, and those are what I carry. Not the total. Nan said once, at the birth of a child in a household I'd helped, that the giving produces effects that the giver can't see. What I see: the distribution and the immediate aftermath. What I don't see: what the people I've helped have done with what they received.",
+      "keywords": ["six","years","distributed","covenant's","charitable","holdings","three","hundred","forty-four","requests"]
+    }
+  ]
+}

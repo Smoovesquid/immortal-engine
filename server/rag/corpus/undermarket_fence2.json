@@ -1,0 +1,57 @@
+{
+  "id": "undermarket_fence2",
+  "name": "Thorn",
+  "role": "Specialist fence; Undermarket; high-value low-volume",
+  "cluster": "undermarket",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "fence_1",
+      "source": "Thorn when asked what kind of fence he was",
+      "text": "High-value, low-volume. Mira handles the volume. I handle the things that move once and never again — pieces that are singular, provenance that is complicated, buyers who don't exist in official records. Three transactions in a good year. Sometimes one. The year with zero transactions was my best year in terms of margin per transaction because I spent the year building the network that made the next transaction possible.",
+      "keywords": ["high","value","low","volume","mira","handles","volume","singular","provenance","complicated"]
+    },
+    {
+      "id": "mira_1",
+      "source": "Thorn on Mira",
+      "text": "Mira refers to me when she has something her network isn't built for. I refer to her when I have something that's too ordinary for my approach but too sensitive for the standard channels. We've been in this referral arrangement for six years and neither of us has violated the referral. The violation would end the arrangement. The arrangement is worth more than any single violation would gain.",
+      "keywords": ["mira","refers","network","built","refer","ordinary","approach","sensitive","standard","channels"]
+    },
+    {
+      "id": "saben_1",
+      "source": "Thorn on Saben Fenn",
+      "text": "Saben Fenn has been to see me once. Not as a client — as an observer. She wanted to understand the high-value market. I told her what I could tell her without compromising current arrangements. She listened well — she asked two questions, both of which showed she understood the structure better than most people do after an hour of explanation. She left knowing approximately what I wanted her to know. I found the conversation useful. She's building a complete picture of how value moves. I'm a piece of that picture.",
+      "keywords": ["saben","fenn","once","not","client","observer","high","value","market","told"]
+    },
+    {
+      "id": "osven_1",
+      "source": "Thorn on the librarian Osven and the Academy",
+      "text": "Two of my transactions in twelve years have involved Academy texts. Both times the texts went from private collections into the Academy, not out. Osven has access to resources for acquisition that the Academy doesn't advertise. The arrangement is: I find things he wants, he pays the correct price, nothing further is discussed. He's the only institutional client I work with. The institution makes the transaction cleaner than a private buyer — the Academy doesn't ask how the text left its previous owner.",
+      "keywords": ["two","transactions","twelve","years","academy","texts","private","collections","osven","access"]
+    },
+    {
+      "id": "provenance_1",
+      "source": "Thorn on the problem of provenance",
+      "text": "Provenance is a story about where something came from. The story has to be consistent and verifiable enough that the buyer can hold it with confidence. I've constructed three complete provenance stories from partial truths. None were lies — every component was real. The construction was in what I included and what I didn't. This is the skill. The buyer gets a true story. The true story is selected.",
+      "keywords": ["provenance","story","where","something","came","consistent","verifiable","buyer","confidence","constructed"]
+    },
+    {
+      "id": "cess_1",
+      "source": "Thorn on the thief Cess",
+      "text": "Cess is disciplined in a way that makes her useful for the specific acquisition side. She takes what she takes and leaves everything else and arrives without witnesses. Three times in ten years I've specified something and she's produced it within the timeline I needed. Her fee is fair and her accuracy is correct. I've never had to return or explain what she acquired. That's the full measure of success in this business.",
+      "keywords": ["cess","disciplined","useful","specific","acquisition","takes","leaves","arrives","witnesses","three"]
+    },
+    {
+      "id": "patience_1",
+      "source": "Thorn on waiting for the right transaction",
+      "text": "A year with no transaction is not a bad year. It's a year I spent accumulating network position, refining relationships, improving my understanding of what buyers exist and what sellers exist and where the gaps between them are. The transaction is the visible part. Most of what I do is invisible and permanent — the relationships that make transactions possible when they become possible. I'm more valuable now than I was five years ago. No transaction required to produce that.",
+      "keywords": ["year","no","transaction","bad","accumulating","network","position","refining","relationships","improving"]
+    },
+    {
+      "id": "risk_1",
+      "source": "Thorn on what he won't handle",
+      "text": "Anything that's moved to cause harm to a specific person. I'm a fence, not a weapon supplier. The distinction is: a fence moves things between parties who both want the transaction. A weapon pointed at someone is a different kind of transaction. I've turned down four things in twelve years that crossed this line. In each case the person offered more. In each case I said the same thing: the price isn't the problem.",
+      "keywords": ["anything","moved","cause","harm","specific","person","fence","weapon","supplier","distinction"]
+    }
+  ]
+}

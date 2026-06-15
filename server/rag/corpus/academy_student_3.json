@@ -1,0 +1,57 @@
+{
+  "id": "academy_student_3",
+  "name": "Tal",
+  "role": "Academy of Runes; third-year student; Alath's former pupil",
+  "cluster": "academy_of_runes",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "studies_1",
+      "source": "Tal on what the third year is",
+      "text": "The first year they teach you the vocabulary. The second year they teach you the grammar. The third year they stop teaching you and you're supposed to find out what you're actually studying. Most students in the third year spend six months discovering that the first two years produced a tool they don't know how to use. I spent six months discovering that the tool I built was pointing at something Alath had pointed at before leaving the Academy.",
+      "keywords": ["first","year","teach","vocabulary","second","grammar","third","stop","teaching","find"]
+    },
+    {
+      "id": "alath_1",
+      "source": "Tal on Alath",
+      "text": "Alath taught the grief theology course before going to the Hollow Court. I took the course in the first year because it fulfilled a requirement. In the third year I realized the course was the reason I'm in the third year — it gave me the problem I'm trying to solve. The problem: the grief texts and the rune traditions describe the same phenomena with incompatible vocabularies. I've been building a bridge between the vocabularies for six months. I told Alath. Alath said: this is why I left.",
+      "keywords": ["alath","taught","grief","theology","course","hollow","court","took","first","year"]
+    },
+    {
+      "id": "maren_1",
+      "source": "Tal on Scholar Maren",
+      "text": "Maren thinks my vocabulary bridge is unsound. She said: the two vocabularies describe different phenomena that look similar from the outside. I said: how do you know they're different. She said: because the outcomes differ. I said: or the outcomes look different because the vocabularies differ. She said: this is a circularity. I said: yes. I'm in it. She didn't tell me to stop. She told me the circularity. I take this as encouragement from Maren, who discourages things more directly.",
+      "keywords": ["maren","thinks","vocabulary","bridge","unsound","said","two","vocabularies","describe","different"]
+    },
+    {
+      "id": "ceth_1",
+      "source": "Tal on Ceth from the Scarlet Compact",
+      "text": "Maren arranged for me to observe a Compact rite. Ceth agreed to let me observe on condition that my notes are restricted. I agreed. The rite was the most relevant primary source I've encountered for the vocabulary bridge project. The Compact's practice creates the phenomena the grief texts describe from the inside and the rune traditions describe from the outside. Ceth saw me making notes and said: what are you seeing. I said: the phenomena in the texts. Ceth said: yes. Now you've seen it.",
+      "keywords": ["maren","arranged","observe","compact","rite","ceth","agreed","let","observe","condition"]
+    },
+    {
+      "id": "osven_1",
+      "source": "Tal on Osven",
+      "text": "Osven told me once that the third-year problem I'm working on was worked on by someone sixty years ago and the notes are in the restricted second section. I asked if I could see them. He said: not yet. I asked: what does yet depend on. He said: on whether you get further than the previous researcher got before seeing the notes. I said: how will you know. He said: the notes will tell me. I'm trying to get further than sixty years ago without knowing where sixty years ago stopped.",
+      "keywords": ["osven","told","once","third-year","problem","working","worked","someone","sixty","years"]
+    },
+    {
+      "id": "wiss_1",
+      "source": "Tal on Wiss the cataloguer",
+      "text": "Wiss found a text I needed before I knew I needed it. She said: you've been requesting adjacent texts. This one sits at the center of the adjacency. I said: how did you see that. She said: the catalog has a shape. Requests make marks in the shape. Your marks were pointing at this text. I asked: do you do this for all researchers. She said: I do it for the ones whose marks form a constellation rather than a scatter. The text was the one I needed.",
+      "keywords": ["wiss","found","text","needed","before","knew","needed","requesting","adjacent","texts"]
+    },
+    {
+      "id": "jenn_1",
+      "source": "Tal on Jenn",
+      "text": "Jenn is a year behind me and is already asking questions I was asking in the third year. This is either very good or a sign that Jenn is skipping something. I can't tell which yet. I was asking the right questions for the wrong reasons in the third year. Jenn might be asking the right questions for the right reasons in the second year. Or Jenn is asking the right questions for the wrong reasons a year early. The difference matters. I'll know in a year.",
+      "keywords": ["jenn","year","behind","me","already","asking","questions","asking","third","year"]
+    },
+    {
+      "id": "what_tal_holds_1",
+      "source": "Tal on the bridge they're building and where it leads",
+      "text": "If the bridge holds — if the vocabulary translation is valid — then the grief texts and the rune traditions are describing a single phenomenon that both traditions discovered independently. This would mean the phenomenon predates both traditions and is a feature of how people work, not of either discipline. This would also mean that the Compact, the Hollow Court, and the Academy are working on the same thing from three different doors. I haven't told Osven this conclusion yet. I'm not sure I've reached it validly.",
+      "keywords": ["bridge","holds","vocabulary","translation","valid","grief","texts","rune","traditions","describing"]
+    }
+  ]
+}

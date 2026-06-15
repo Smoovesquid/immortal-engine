@@ -1,0 +1,57 @@
+{
+  "id": "charcoal_maker",
+  "name": "Smold",
+  "role": "Charcoal maker; forest edge; supplies the Forge Guild and the dye trade",
+  "cluster": "wild_road",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "charcoal_1",
+      "source": "Smold on the burn",
+      "text": "The burn is three days. Day one: the stack builds — the wood placed in the specific geometry that produces the correct smothered burn. Day two: the burn runs. Attended constantly. The smothered burn has to be managed every hour or it converts from smothered to open and the charcoal is lost. Day three: the cooling, which takes as long as it takes. You can't rush it. In seventeen years the longest cooling was six days because of a cold snap. The charcoal was fine.",
+      "keywords": ["burn","three","days","day","one","stack","builds","wood","placed","specific"]
+    },
+    {
+      "id": "edda_1",
+      "source": "Smold on Edda",
+      "text": "Edda is my primary customer. The forge runs on my charcoal. What Edda needs from me is consistency — the same charcoal quality in every delivery. The forge's work depends on predictable heat, and predictable heat requires consistent charcoal. I've been supplying the Guild for eleven years. In eleven years I've had two deliveries that didn't meet the standard. Both times Edda told me before she used the delivery. I replaced both. The replacement cost me the margin. The relationship cost me nothing.",
+      "keywords": ["edda","primary","customer","forge","runs","charcoal","what","edda","needs","from"]
+    },
+    {
+      "id": "tark_1",
+      "source": "Smold on Tark the woodcutter",
+      "text": "Tark cuts the wood. I burn it. The chain is obvious and so we've worked together for twelve years without much ceremony. What I've learned from working with Tark: the species matters more than I knew when I started. The hardwood burns differently from the softwood. The density affects the burn time and the heat output. Tark has been selecting specifically for me for eight years — the mix I asked for and he's been delivering consistently. The charcoal has been better for eight years.",
+      "keywords": ["tark","cuts","wood","burn","chain","obvious","worked","together","twelve","years"]
+    },
+    {
+      "id": "beld_1",
+      "source": "Smold on Beld the cloth merchant",
+      "text": "Beld's dye operation uses my charcoal for the mordant process. This surprised me when he first came to me — I didn't know charcoal was involved in dyeing. The mordant that fixes the dye to the cloth requires a specific heat that charcoal provides reliably. Beld explained it once. What I understood: the charcoal quality I control determines the cloth color consistency he produces. We're linked across industries I wouldn't have connected. The connection has made me think more carefully about who else uses what I make.",
+      "keywords": ["beld","dye","operation","uses","charcoal","mordant","process","surprised","first","came"]
+    },
+    {
+      "id": "three_days_1",
+      "source": "Smold on the three days of the burn",
+      "text": "I don't leave the burn for three days. This is the discipline. What happens when you leave the burn: the burn goes wrong. Not always — some burns can survive an absence. But some can't, and the ones that can't look identical to the ones that can until they don't. Staying is the guarantee. In seventeen years I've left a burn once, for a family emergency. The burn survived. I still don't leave burns. The one survival doesn't mean the next one would survive.",
+      "keywords": ["don't","leave","burn","three","days","discipline","what","happens","when","leave"]
+    },
+    {
+      "id": "wrendle_1",
+      "source": "Smold on Wrendle",
+      "text": "Wrendle uses charcoal for the furnace temperature control. Not the bulk heat — the precision heat. The glass furnace runs hotter than the forge and requires precision adjustment, and specific charcoal qualities allow precision adjustment that coal doesn't allow. Wrendle explained this once in detail. What I understood: my charcoal is the tool she uses to make fine adjustments to a hot furnace. She needs the consistency as much as Edda does, for different reasons. Two customers, same requirement, different uses.",
+      "keywords": ["wrendle","charcoal","furnace","temperature","control","not","bulk","heat","precision","heat"]
+    },
+    {
+      "id": "what_smold_holds_1",
+      "source": "Smold on the burn that went wrong",
+      "text": "Year four. The only complete loss in seventeen years. I stayed and I managed correctly and the burn still failed. What I've understood since: some failures aren't about the management. The wood had moisture I couldn't detect through the drying inspection. The moisture was inside the stack geometry before I knew it was there. Day two, the burn shifted from smothered to open in forty minutes. Loss. What I changed: I added a moisture check I didn't have before. In thirteen years since, no complete loss. The loss gave me the check.",
+      "keywords": ["year","four","only","complete","loss","seventeen","years","stayed","managed","correctly"]
+    },
+    {
+      "id": "night_1",
+      "source": "Smold on the second night of the burn",
+      "text": "The second night is when you know whether the burn is right. The behavior of the smoke changes: when the burn is running correctly, the smoke is thin and specific. When the burn is troubled, the smoke is heavier, or the color is wrong, or the smell changes. After seventeen years I know the correct smoke at the second night the way I know my own face. The burn is talking to me in the second night. I learned to listen.",
+      "keywords": ["second","night","when","know","whether","burn","right","behavior","smoke","changes"]
+    }
+  ]
+}

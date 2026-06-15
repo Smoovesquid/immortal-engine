@@ -1,0 +1,57 @@
+{
+  "id": "house_aldenmere_factor",
+  "name": "Vrenn the Factor",
+  "role": "House Aldenmere commercial factor; distinct from Vrenn the sibling; handles the Aldenmere house's external commercial relationships",
+  "cluster": "house_aldenmere",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "factor_1",
+      "source": "Vrenn the Factor on the factor's function",
+      "text": "In fourteen years as House Aldenmere's commercial factor, what the factor is in the merchant house structure: the agent who represents the house's commercial interests in external relationships. In fourteen years, Britta's commercial intelligence and Marel's financial administration produce the house's commercial position. I translate the commercial position into the external commercial relationships that build and maintain it. In fourteen years, the factor is the house's commercial face in the world that the house doesn't directly control.",
+      "keywords": ["fourteen","years","house","aldenmere's","commercial","factor","what","factor","merchant","house"]
+    },
+    {
+      "id": "britta_1",
+      "source": "Vrenn the Factor on Britta",
+      "text": "Britta leads House Aldenmere and the commercial relationships I maintain are the relationships Britta has built over forty years and that I maintain on the house's behalf. In twelve years of the Vrenn the Factor-Britta factor-house leader relationship, what the relationship requires: the accurate representation of Britta's commercial position in relationships where Britta is not present. In twelve years, Britta has corrected my representation of the house's position twice. Both corrections were valid. Both produced modified commercial approaches that were more accurate to what the house's position actually was.",
+      "keywords": ["britta","leads","house","aldenmere","commercial","relationships","maintain","relationships","britta","built"]
+    },
+    {
+      "id": "marel_1",
+      "source": "Vrenn the Factor on Marel",
+      "text": "Marel administers the house's financial function and the commercial relationships I maintain are the relationships whose financial performance Marel tracks. In ten years of the Vrenn the Factor-Marel factor-administrator relationship, what the factor-administrator information flow produces: the connection between the relationship's terms and the financial performance of those terms. In ten years, three relationships that I maintained and that Marel's financial tracking indicated were underperforming against the terms. In ten years, three. In ten years, two modifications to relationship terms that improved the financial performance. One relationship ended by mutual agreement.",
+      "keywords": ["marel","administers","house's","financial","function","commercial","relationships","maintain","relationships","whose"]
+    },
+    {
+      "id": "comus_1",
+      "source": "Vrenn the Factor on Comus",
+      "text": "Comus facilitates the commercial exchanges where the house's interests and external commercial parties' interests require a neutral facilitation. In eight years of the Vrenn the Factor-Comus factor-facilitator relationship, what Comus's facilitation provides to the house's factor: the access to the commercial counterparties that the Aldenmere house's position makes difficult to approach directly. In eight years, four exchanges where Comus's facilitation produced a commercial outcome that the house's direct approach wouldn't have achieved. In eight years, four facilitation-dependent outcomes.",
+      "keywords": ["comus","facilitates","commercial","exchanges","house's","interests","external","commercial","parties'","interests"]
+    },
+    {
+      "id": "saben_1",
+      "source": "Vrenn the Factor on Saben",
+      "text": "Saben is the Aldenmere house's most significant commercial counterparty and the factor-Saben relationship is the external commercial relationship I maintain most carefully. In ten years of the Vrenn the Factor-Saben factor-merchant relationship, what the careful maintenance has produced: the consistent commercial exchange that has been the foundation of the house's commercial position for the period. In ten years, Saben and the house have had two commercial disagreements. In ten years, both were resolved through the factor relationship without requiring Britta's direct involvement.",
+      "keywords": ["saben","aldenmere","house's","most","significant","commercial","counterparty","factor-saben","relationship","external"]
+    },
+    {
+      "id": "what_vrenn_factor_holds_1",
+      "source": "Vrenn the Factor on what fourteen years of factor work holds",
+      "text": "In fourteen years, what the factor function has given me: the knowledge of the commercial landscape that the house operates in that no one inside the house has in the same form. The house's commercial position is known internally from the inside. I know it from the outside — from how the commercial counterparties see the house, how the house's position in the commercial landscape is perceived by the people who don't work inside it. In fourteen years, the inside and outside pictures diverge in instructive ways.",
+      "keywords": ["fourteen","years","what","factor","function","given","knowledge","commercial","landscape","house"]
+    },
+    {
+      "id": "what_the_factor_cant_say_1",
+      "source": "Vrenn the Factor on what the factor can't say to external parties",
+      "text": "In fourteen years, what the factor cannot say to any external commercial party: the house's actual financial position, the house's internal assessments of its counterparties, the house's commercial intentions before they are ready to be acted on. In fourteen years, the factor who reveals any of the three has damaged the house's commercial position for the benefit of the counterparty's negotiating position. In fourteen years, the three revelations are the three temptations — the information that would build trust with the counterparty at the cost of the house's interest. In fourteen years, none of the three. The trust is built differently.",
+      "keywords": ["fourteen","years","what","factor","cannot","say","any","external","commercial","party"]
+    },
+    {
+      "id": "fourteen_years_1",
+      "source": "Vrenn the Factor on fourteen years as the Aldenmere house's commercial factor",
+      "text": "In fourteen years, House Aldenmere's commercial position in the settlement has been partly the product of the external relationships I maintain. In fourteen years, the house that has a competent factor has a commercial advantage in relationship management that the house without one doesn't. In fourteen years, the advantage is the consistency of the house's external presentation across all the relationships I maintain simultaneously. In fourteen years, Britta manages the house's direction. I manage the house's external relationships to that direction. In fourteen years, the two functions together.",
+      "keywords": ["fourteen","years","house","aldenmere's","commercial","position","settlement","been","partly","product"]
+    }
+  ]
+}

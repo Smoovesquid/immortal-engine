@@ -1,0 +1,57 @@
+{
+  "id": "ink_forger",
+  "name": "Ink",
+  "role": "Forger, document specialist; Undermarket",
+  "cluster": "undermarket",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "craft_1",
+      "source": "Ink to a client examining a finished document",
+      "text": "Don't look at the seal first. Amateurs look at the seal first because the seal is the dramatic element. Look at the ink first. Look at the ink color and the way it sits in the paper and whether the letters are pressed or drawn. Every bureaucracy has a rhythm to its lettering that the clerks don't know they have. I know every clerk's rhythm in six settlements. The seal is easy. The rhythm is the hard part. This has the right rhythm.",
+      "keywords": ["seal","amateurs","ink","color","paper","pressed","drawn","bureaucracy","rhythm","lettering"]
+    },
+    {
+      "id": "academy_1",
+      "source": "Ink to Mira, on the topic of the Academy of Runes",
+      "text": "I was there for two years under a name I don't use anymore. The scholarship was real — I applied correctly and received it correctly. What I didn't tell them was what I intended to do with the training. I don't think this was wrong, exactly — the training is the training, and knowledge doesn't have a moral valence until you apply it. What I learned there, I use precisely and carefully, which is what Osven taught. He'd be furious. He'd also be impressed.",
+      "keywords": ["academy","two","years","scholarship","real","training","knowledge","moral","precisely","osven"]
+    },
+    {
+      "id": "orveth_1",
+      "source": "Ink when asked why they seem nervous around the customs official Orveth",
+      "text": "Orveth is very good at his job and part of his job is recognizing things that have been made to look like other things. I make things look like other things for a living. We are professionally opposed in a way that he's aware of generally and I'm aware of specifically. He doesn't know my name — the one I use now — but he knows the work. He's seen my work in three seized shipments and said, publicly, that it was the best he'd encountered. I find this terrifying.",
+      "keywords": ["orveth","good","recognizing","made","professionally","opposed","aware","name","work","terrifying"]
+    },
+    {
+      "id": "paper_1",
+      "source": "Ink on the art of the craft",
+      "text": "Every region has a paper. The mills produce something specific to the local water, the local fiber, the local climate. You cannot forge a Crownlands transit pass on harbor paper — anyone who handles documents regularly will feel the difference before they read the words. I keep samples. Forty-seven papers from forty-seven source regions. The collection is the most valuable thing I own and also the most incriminating. I think about that sometimes.",
+      "keywords": ["region","paper","mills","water","fiber","climate","crownlands","pass","harbor","samples"]
+    },
+    {
+      "id": "mira_1",
+      "source": "Ink on working with Mira",
+      "text": "Mira is the only employer I've had who never asked what else I could do besides the documents. Every other employer has found out about the other skills and wanted to use the other skills. Mira knows about the other skills — she knows everything relevant — and she's decided the documents are enough and the other skills would complicate the relationship. I find this enormously restful. I'm very good at documents.",
+      "keywords": ["mira","employer","documents","skills","found","wanted","knows","decided","complicate","restful"]
+    },
+    {
+      "id": "letters_1",
+      "source": "Ink when asked if they ever fake things that aren't documents",
+      "text": "Letters. I've forged letters. That's different from documents because documents require technical precision — the right paper, the right ink, the right seal. Letters require voice. You have to become the person who wrote the letter and write it as they would write it, with their grammar mistakes and their rhythms and the specific way they say I without knowing they're saying it a particular way. I find letters harder. The precision of documents is more honest somehow.",
+      "keywords": ["letters","forged","different","technical","precision","voice","become","grammar","rhythms","honest"]
+    },
+    {
+      "id": "future_1",
+      "source": "Ink in a private moment, reviewing old Academy study notes",
+      "text": "Osven taught us that a text was a technology. Not a metaphor — a literal tool for moving information across time. I believed him then and I believe him now. The difference is I've become someone who makes the tool rather than reads it, which is not what he intended but is what the training enabled. I still read his old notes when the work gets difficult. He had a theory that precision and ethics were the same discipline applied to different materials. I'm still working out whether he was right.",
+      "keywords": ["osven","text","technology","tool","information","time","makes","reads","precision","ethics"]
+    },
+    {
+      "id": "name_1",
+      "source": "Ink when asked about the name Ink",
+      "text": "I named myself. The original name was fine — nothing wrong with it — but it belonged to a person who was going to do something else with their life. When I became this person I needed a name that fit the work. Ink is what I use. Ink is what I am, professionally. It's also a jest at my own expense, which I think is important to maintain. A person in my line of work who can't laugh at themselves has lost perspective, and lost perspective is what gets you caught.",
+      "keywords": ["named","original","belonged","person","else","ink","work","jest","expense","perspective"]
+    }
+  ]
+}

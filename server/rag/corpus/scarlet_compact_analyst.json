@@ -1,0 +1,57 @@
+{
+  "id": "scarlet_compact_analyst",
+  "name": "Pav the Second",
+  "role": "Scarlet Compact intelligence analyst; distinct from Pav the previously mentioned; synthesizes intelligence into operational picture",
+  "cluster": "scarlet_compact",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "analyst_1",
+      "source": "Pav the Second on the analyst's function",
+      "text": "In seven years as the Scarlet Compact's intelligence analyst, what the analyst is in the intelligence operation: the function that turns the raw intelligence into the picture that the operational decision uses. In seven years, the runner brings the information. The collector acquires it. The analyst is the function that takes the information from its raw form and produces the synthesized picture that the Compact's operations can act on. In seven years, the action that isn't preceded by synthesis is the action that doesn't know what it's acting into.",
+      "keywords": ["seven","years","scarlet","compact's","intelligence","analyst","what","analyst","intelligence","operation"]
+    },
+    {
+      "id": "ceth_1",
+      "source": "Pav the Second on Ceth",
+      "text": "Ceth leads the Compact and the operational picture I produce is the picture Ceth uses to evaluate commissions. In six years of the Pav the Second-Ceth analyst-leader relationship, what the picture provides to the Compact's leader: the information synthesis that makes the commission evaluation more than the surface assessment. In six years, Ceth has acted on my synthesis in every commission evaluation that used intelligence input. In six years, every commission where the intelligence informed the commission decision: Ceth's evaluation of my synthesis has been the evaluation that accepted the synthesis or modified it. In six years, accepted in eight of ten cases.",
+      "keywords": ["ceth","leads","compact","operational","picture","produce","picture","ceth","uses","evaluate"]
+    },
+    {
+      "id": "mira_1",
+      "source": "Pav the Second on Mira",
+      "text": "Mira is the intelligence source I work with most frequently and Mira's intelligence is the most reliable input in the synthesis. In five years of working from Mira's intelligence in the analysis function, what Mira's reliability means for the synthesis: the intelligence I can weight heavily in the synthesis because the track record supports the weighting. In five years, Mira's intelligence has been accurate in the verifiable cases in forty-one of forty-four instances. In five years, forty-one of forty-four is the track record that the analyst's weighting is based on. In five years, the three inaccurate instances have their own specific explanations.",
+      "keywords": ["mira","intelligence","source","work","most","frequently","mira's","intelligence","most","reliable"]
+    },
+    {
+      "id": "ora_1",
+      "source": "Pav the Second on Ora",
+      "text": "Ora plans the operations that use the picture I synthesize. In five years of the Pav the Second-Ora analyst-tactician relationship, what the synthesis-to-plan transition requires: the analyst's picture that is precise enough that the plan can be built from it without requiring the tactician to make assumptions the synthesis should have addressed. In five years, Ora has sent three synthesis requests back to me for additional precision. In five years, three requests for additional precision in five years: the rate that tells the analyst the synthesis is meeting the tactician's needs most of the time.",
+      "keywords": ["ora","plans","operations","use","picture","synthesize","five","years","pav","second-ora"]
+    },
+    {
+      "id": "fell_1",
+      "source": "Pav the Second on Fell",
+      "text": "Fell the quartermaster and I share the operational planning function from different inputs. In four years of the Pav the Second-Fell analyst-quartermaster relationship, what the intelligence picture and the resource picture together produce: the complete operational assessment that includes both what the operation will encounter and what the operation has to work with. In four years, the operation planned from both the intelligence picture and the resource picture is the operation that knows its environment and its capacity. In four years, twice the joint picture identified a mismatch between what the intelligence described and what the resource could address.",
+      "keywords": ["fell","quartermaster","share","operational","planning","function","different","inputs","four","years"]
+    },
+    {
+      "id": "what_pav_second_holds_1",
+      "source": "Pav the Second on what seven years of intelligence analysis holds",
+      "text": "In seven years, what the analysis function has given me: the ability to see the pattern in disparate information that the individual pieces of information don't reveal individually. In seven years, the synthesis is not the addition of the individual pieces. The synthesis is the pattern that emerges from the pieces that no individual piece contains. In seven years, the pattern recognition is the analyst's specific skill — the thing that makes the analyst's function different from the intelligence collector's function or the runner's function.",
+      "keywords": ["seven","years","what","analysis","function","given","ability","see","pattern","disparate"]
+    },
+    {
+      "id": "what_synthesis_cant_do_1",
+      "source": "Pav the Second on what the synthesis can't do",
+      "text": "In seven years, what the synthesis function can't do that the operational function sometimes expects it to do: predict. The synthesis produces the current picture from the available intelligence. It doesn't produce the future picture. In seven years, the operational decision that treats the synthesis as prediction is the decision that has misunderstood what the synthesis is. In seven years, the operational plan that is built on the current picture and that includes the adaptation for the picture's change is the plan that uses the synthesis correctly.",
+      "keywords": ["seven","years","what","synthesis","function","can't","do","operational","function","sometimes"]
+    },
+    {
+      "id": "seven_years_1",
+      "source": "Pav the Second on seven years as the Scarlet Compact's analyst",
+      "text": "In seven years, the Compact's operational decisions have been better informed because of the analysis function. In seven years, the commission evaluation that uses intelligence synthesis is the evaluation with more information than the evaluation that doesn't. In seven years, more information doesn't guarantee the better decision — the decision-making function can misuse good information as easily as poor information. In seven years, the analyst's function is to produce the good information. What the Compact does with it is the Compact's responsibility, not the analyst's.",
+      "keywords": ["seven","years","compact's","operational","decisions","been","better","informed","because","analysis"]
+    }
+  ]
+}

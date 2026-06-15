@@ -1,0 +1,57 @@
+{
+  "id": "boarding_house_keeper",
+  "name": "Ress",
+  "role": "Boarding house keeper; runs the Long Room above the harbor; knows every traveler who stays",
+  "cluster": "harbor_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "boarding_1",
+      "source": "Ress on keeping a boarding house",
+      "text": "A boarding house is a temporary home for people whose permanent home is somewhere else. My work: providing the temporary home in a form that's good enough to remember and neutral enough not to define. The traveler who stays here should feel that the room was adequate and the service was adequate and the price was fair. The traveler who feels anything stronger about the boarding house: I've made my impression too strong. The boarding house should be the place between the journey's segments, not the destination.",
+      "keywords": ["boarding","house","temporary","home","people","whose","permanent","home","somewhere","else"]
+    },
+    {
+      "id": "keris_1",
+      "source": "Ress on Keris",
+      "text": "Keris sends me the ships' officers when they need accommodation ashore. The captain and mates who sleep aboard the ship in the harbor stay aboard. The ones who rotate to shore sleep here. In eleven years of this arrangement with Keris, the officers from specific ships become familiar — the same faces appearing when the same ship is in harbor. In eleven years, I've had officers from forty-three different ships. The captains' faces are the ships' faces to me.",
+      "keywords": ["keris","sends","ships'","officers","when","need","accommodation","ashore","captain","mates"]
+    },
+    {
+      "id": "harrow_1",
+      "source": "Ress on Harrow",
+      "text": "Captain Harrow's crew includes members who take shore accommodation at the Long Room when the ship is in port. In seven years of Harrow's crew using my house, the crew has been the best-behaved of any ship's crew I've housed. What Harrow told me once, when I mentioned this: the crew's behavior at port reflects the ship's standard. If the crew behaves badly ashore, something is wrong with how the ship is run. The Long Room has never had an incident with Harrow's crew.",
+      "keywords": ["captain","harrow","crew","includes","members","take","shore","accommodation","long","room"]
+    },
+    {
+      "id": "cass_1",
+      "source": "Ress on Cass",
+      "text": "Cass and I are technically competitors — the Iron Key has rooms, I have rooms. In practice, we serve different customers. Cass serves the district's long-term visitors and the higher-end traveler. I serve the working traveler: the crew members, the overland traders, the people who need a clean bed and a meal and nothing more. Cass has sent me overflow on four occasions in eight years, when the Key was full. I've sent Cass three people who needed what the Key offered. The overlap is minimal and the referral goes both ways.",
+      "keywords": ["cass","technically","competitors","iron","key","has","rooms","have","rooms","practice"]
+    },
+    {
+      "id": "lorn_1",
+      "source": "Ress on Lorn",
+      "text": "Lorn stayed at the Long Room for eight months two years ago. Eight months is the longest single stay I've had. Lorn paid monthly, was quiet, was clean, and was the best long-term tenant a boarding house can have: present but not intrusive, maintaining the room without reminders. I asked once, at the fourth month, whether the stay would extend. Lorn said: as long as it needs to. The stay ended at eight months. I don't know what changed. Lorn left on a morning, paid through the end of the month, and didn't come back.",
+      "keywords": ["lorn","stayed","long","room","eight","months","two","years","ago","eight"]
+    },
+    {
+      "id": "what_travelers_tell_1",
+      "source": "Ress on what travelers tell her about the world",
+      "text": "Travelers talk at breakfast. The boarding house breakfast is where the world outside comes through. In eleven years, the travelers who've stayed here have brought news from the eastern settlements, the mountain routes, the coastal towns, the northern territories. The news is always partial — the news is the traveler's experience of the portion they passed through. In eleven years, the partial news from three hundred and forty-seven travelers has built up a picture of the world outside this district that I wouldn't have otherwise. I've never left. The world comes through.",
+      "keywords": ["travelers","talk","breakfast","boarding","house","breakfast","where","world","outside","comes"]
+    },
+    {
+      "id": "what_ress_holds_1",
+      "source": "Ress on the traveler she thinks about",
+      "text": "Year seven. A traveler who stayed for three days and in three days told me more about themselves than most guests tell me in a month. What they told me: a life that had come to a decision point — not a crisis, a crossroads. They were going to decide which direction to go, and they were deciding it here, in the Long Room, over three days. On the third day, they left. I don't know which direction they chose. In four years since, I've wondered. The three-day conversation was the most complete thing I've heard at breakfast in eleven years.",
+      "keywords": ["year","seven","traveler","stayed","three","days","three","days","told","more"]
+    },
+    {
+      "id": "eleven_years_1",
+      "source": "Ress on eleven years of keeping the Long Room",
+      "text": "In eleven years, three hundred and forty-seven travelers have slept in the Long Room. Three hundred and forty-seven people who needed a temporary home. In eleven years, most of them I've forgotten — the adequate stay leaves no particular mark. The ones I remember: the long-stayers, the unusual conversations at breakfast, the ones who came back for a second or third visit. The ones who came back: they thought the Long Room was worth coming back to. That's the best assessment of what I've built here.",
+      "keywords": ["eleven","years","three","hundred","forty-seven","travelers","slept","long","room","three"]
+    }
+  ]
+}

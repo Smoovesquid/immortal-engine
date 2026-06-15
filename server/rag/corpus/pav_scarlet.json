@@ -1,0 +1,57 @@
+{
+  "id": "pav_scarlet",
+  "name": "Pav",
+  "role": "Scarlet Compact quartermaster; keeps the war-priests supplied in the field",
+  "cluster": "scarlet_compact",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "quartermaster_1",
+      "source": "Pav on what a Compact quartermaster does",
+      "text": "The war-priest in the field thinks about KHORRUN and the moment of engagement. I think about everything that makes the moment of engagement possible: food, weapons, medical supplies, transport, shelter, the logistics of moving people and their equipment to where they need to be when they need to be there. The war-priest is the edge of the knife. I'm the process that keeps the knife sharp. Neither exists without the other. The Compact's theology doesn't cover the quartermaster. I've made my peace with this.",
+      "keywords": ["war-priest","field","thinks","khorrun","moment","engagement","think","about","everything","makes"]
+    },
+    {
+      "id": "doss_1",
+      "source": "Pav on Doss",
+      "text": "Doss and I work together when the Compact deploys field chaplains. The chaplain's work depends on my supply line as much as the combatant's work does — Doss needs the materials for the field rites and those materials are part of my manifest. In six years of joint operations, Doss has never requested something I couldn't source within the operational window. Doss said once: you anticipate what the rite needs before I know I need it. I said: I've read the rite manuals. The manifest writes itself from the manuals.",
+      "keywords": ["doss","work","together","when","compact","deploys","field","chaplains","chaplain's","work"]
+    },
+    {
+      "id": "ceth_1",
+      "source": "Pav on Ceth",
+      "text": "Ceth's war-priest work is more austere than most of the Compact's practitioners. What this means for my supply line: Ceth's requirements are minimal by Compact standards. I've found this makes Ceth the easiest to provision and the most difficult to support in extended operations — because Ceth's austerity means Ceth will not request resupply even when resupply is needed. I've learned to check Ceth's status on a schedule rather than waiting for a request. The request doesn't come until the situation is more advanced than optimal.",
+      "keywords": ["ceth","war-priest","work","more","austere","most","compact's","practitioners","what","means"]
+    },
+    {
+      "id": "yew_1",
+      "source": "Pav on Yew",
+      "text": "Yew is my counterpart in the kitchen operations — the cook who handles the food side of what I coordinate. The division is: I source and transport, Yew prepares. We've been working in parallel for eight years. The working arrangement has never been formally specified — it emerged from what we each did and has stayed because it works. Yew told me last year: do you know that nobody told us to work this way. I said: yes. She said: do you know that nobody could stop us from working differently. I said: yes. She said: the arrangement is ours.",
+      "keywords": ["yew","counterpart","kitchen","operations","cook","handles","food","side","coordinate","division"]
+    },
+    {
+      "id": "rath_1",
+      "source": "Pav on Rath",
+      "text": "The Brotherhood's field captain and the Compact's quartermaster operate in adjacent territory and have worked together three times. The adjacent operation requires coordination that doesn't have a formal framework — neither institution has a protocol for the overlap. What Rath and I have worked out in three joint situations: who supplies what, who communicates what to whom, and how we handle the situations where the two operations' interests don't align. The last one is the hardest and we've handled it twice. Both times: honest conversation, explicit prioritization, documented compromise.",
+      "keywords": ["brotherhood","field","captain","compact","quartermaster","operate","adjacent","territory","worked","together"]
+    },
+    {
+      "id": "what_supply_is_1",
+      "source": "Pav on what supply actually is",
+      "text": "Supply is the material precondition for everything the Compact does in the field. Not the outcome — the precondition. The theology of KHORRUN concerns itself with the outcome: the engagement, the confrontation, the resolution of conflict through force. Supply is what makes the engagement possible. The Compact's theology doesn't give the quartermaster a theological frame. I've developed my own: the wrath that KHORRUN consecrates requires the same material preparation as any other force. Force requires feeding. Supply is the feeding of force.",
+      "keywords": ["supply","material","precondition","everything","compact","does","field","not","outcome","precondition"]
+    },
+    {
+      "id": "what_pav_holds_1",
+      "source": "Pav on the supply failure she's still thinking about",
+      "text": "Year four of the quartermaster post. A supply line disruption that I'd assessed as low-probability and prepared for insufficiently. The disruption happened. What I had prepared was enough for the first forty-eight hours and not enough for the seventy-two-hour disruption that actually occurred. No deaths from the supply failure — the situation resolved before the shortage became critical. But the twenty-four hours between the preparation's limit and the resolution: those hours are what I think about when I calculate acceptable risk margins now.",
+      "keywords": ["year","four","quartermaster","post","supply","line","disruption","assessed","low-probability","prepared"]
+    },
+    {
+      "id": "eight_years_1",
+      "source": "Pav on eight years as Compact quartermaster",
+      "text": "I came to the Compact thinking I'd be doing the theology. Eight years of supply work has taught me that the theology is downstream of the logistics. What the Compact can actually do in the world is limited by what I can put in the field. The theological ambition of KHORRUN's service is one thing. The practical capacity to deliver that service is another. Eight years of matching the one to the other. The match is imperfect. The imperfection is the work.",
+      "keywords": ["came","compact","thinking","doing","theology","eight","years","supply","work","taught"]
+    }
+  ]
+}

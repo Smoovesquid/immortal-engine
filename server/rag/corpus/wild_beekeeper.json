@@ -1,0 +1,57 @@
+{
+  "id": "wild_beekeeper",
+  "name": "Suli",
+  "role": "Beekeeper; forest meadow margins; supplies honey and wax to the settlement",
+  "cluster": "wild_road",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "bees_1",
+      "source": "Suli on what bees know",
+      "text": "The bees know the two miles around each hive better than any map made by people. They've been mapping it with their bodies for generations — the same hive, the same meadow, the same two-mile radius. Every flower, every water source, every threat. When the hives move — and I move them sometimes — the bees remap within three days. Three days to have a complete working knowledge of a new two-mile territory. I've been keeping bees for twenty years and I find this stunning every time.",
+      "keywords": ["bees","know","two","miles","around","each","hive","better","any","map"]
+    },
+    {
+      "id": "calla_1",
+      "source": "Suli on Calla",
+      "text": "Calla and I have a regular exchange: her herbalists know what's blooming and when, and the bloom schedule matters to where I place the hives. I give Calla the beeswax and honey she needs for her preparations — the wax for the sealing, the honey for the preservation medium. The exchange is old enough that we've stopped discussing it. The wax is ready when the harvest happens. The bloom schedule arrives with Calla's notes before the season turns. The exchange precedes our being conscious of it.",
+      "keywords": ["calla","regular","exchange","herbalists","know","what's","blooming","when","bloom","schedule"]
+    },
+    {
+      "id": "foss_1",
+      "source": "Suli on Foss",
+      "text": "Foss told me once that the bees read things in the land that nothing else reads. That the hives know what's coming in the territory before anything else responds to it. I'd noticed this but hadn't named it the way Foss named it. After that conversation I started recording what the hives do before weather changes, before territory disturbances, before what Foss calls the land's moods shift. Three years of records. The correlation is consistent. Foss named something that was real.",
+      "keywords": ["foss","told","once","bees","read","things","land","nothing","else","reads"]
+    },
+    {
+      "id": "syne_1",
+      "source": "Suli on Syne",
+      "text": "Syne and I share some territory. The herbalist and the beekeeper want different things from the same meadow, and the differences are complementary rather than conflicting: Syne wants plants at certain stages, I want the plants to complete their flowering. We've worked out the territory so that Syne harvests after full bloom and I keep the hives near early-bloom areas. The arrangement produced itself after two seasons of noticing the pattern.",
+      "keywords": ["syne","share","some","territory","herbalist","beekeeper","want","different","things","same"]
+    },
+    {
+      "id": "nan_1",
+      "source": "Suli on Nan",
+      "text": "Nan uses the honey for wound treatment and the wax for salve preparation. The medical use is the oldest use — older than the culinary use. Nan told me this once, with the specific history of what honey does to certain wound conditions. I hadn't known the mechanism. I knew the use from the traditional practice. Nan gave me the mechanism. The mechanism made me understand why the bees' work is more significant than I'd understood it to be.",
+      "keywords": ["nan","uses","honey","wound","treatment","wax","salve","preparation","medical","use"]
+    },
+    {
+      "id": "what_twenty_years_1",
+      "source": "Suli on twenty years of keeping bees",
+      "text": "The bees are not mine. This took about fifteen years to understand correctly. I thought I kept them. What I do: I provide them with housing and management that allows them to thrive. The honey is what they produce in excess of what they need. The excess is what I harvest. I'm a parasite in the most functional possible relationship — I take the excess without harming the production. The bees are doing what they do. I'm doing what I do. The relationship is mutual and neither party designed it.",
+      "keywords": ["bees","not","mine","fifteen","years","understand","correctly","thought","kept","them"]
+    },
+    {
+      "id": "what_suli_holds_1",
+      "source": "Suli on the hive she lost",
+      "text": "Year six. One hive died. Not from anything I did wrong — from a colony collapse that I didn't detect in time to intervene. What I understood afterward: the signs were there. I didn't know how to read them yet. The collapse is what taught me to read the signs. In fourteen years since, I haven't lost a hive to collapse. The loss gave me the ability to prevent the loss. I still think about the hive from year six. The loss was complete. Nothing useful to retrieve from the site except the lesson.",
+      "keywords": ["year","six","one","hive","died","not","from","anything","did","wrong"]
+    },
+    {
+      "id": "what_honey_is_1",
+      "source": "Suli on what honey is",
+      "text": "Honey is the landscape made edible. Everything the bees visit in their two miles ends up in the honey. The meadow, the forest edge, the herb gardens, the wild patches that nobody tends. Honey from this meadow is different from honey from a meadow six miles south — different flowers, different water, different land. The difference is subtle but real. I can taste where my hives are in my honey. The honey is a record of the place.",
+      "keywords": ["honey","landscape","made","edible","everything","bees","visit","two","miles","ends"]
+    }
+  ]
+}

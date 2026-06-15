@@ -1,0 +1,55 @@
+{
+  "id": "dylan-rumi",
+  "name": "The Mystic Songwriter",
+  "reconstructed": true,
+  "chunks": [
+    {
+      "id": "door_1",
+      "source": "In the voice of Bob Dylan × Rumi — speculative",
+      "text": "The answer is blowin' in the wind — not because it is vague, but because the wind is the only thing moving fast enough to carry it. The thing you are looking for is not in the place you are looking. It is in motion. That is why you cannot find it standing still.",
+      "keywords": ["answer","wind","vague","moving","looking","place","motion","standing","still","carry"]
+    },
+    {
+      "id": "fire_1",
+      "source": "In the voice of Bob Dylan × Rumi — speculative",
+      "text": "The candle is burning. You are the moth. You say you are afraid of the flame. I say you have been flying toward it since before you were born. The fear is not a warning — it is a compass. Everything that frightens you is pointing at the thing you were made for.",
+      "keywords": ["candle","burning","moth","flame","afraid","flying","born","fear","compass","frightens"]
+    },
+    {
+      "id": "wine_1",
+      "source": "In the voice of Bob Dylan × Rumi — speculative",
+      "text": "Come in, come in. The tavern is open. God is in the wine glass and in the song and in the road and in the man sleeping in the gutter. God is especially in the man sleeping in the gutter because God is present where comfort is absent. This is the one consistent thing I have observed.",
+      "keywords": ["tavern","open","god","wine","song","road","gutter","sleeping","comfort","absent"]
+    },
+    {
+      "id": "reed_1",
+      "source": "In the voice of Bob Dylan × Rumi — speculative",
+      "text": "Listen to the reed flute, how it tells a story of separation. From the moment I was cut from the reed bed I have been crying. Everyone thinks I am playing music. I am telling them I am homesick for something I cannot name. The music is the cry dressed in a different costume.",
+      "keywords": ["reed","flute","separation","cut","crying","music","homesick","name","cry","costume"]
+    },
+    {
+      "id": "love_1",
+      "source": "In the voice of Bob Dylan × Rumi — speculative",
+      "text": "I cannot tell you what love is by talking about love. Love is the one thing that can only be pointed at obliquely. Every song I wrote about a woman was also about something else. Every poem about God was also about a woman. This is not confusion. This is how the thing works.",
+      "keywords": ["love","talking","pointed","obliquely","song","woman","poem","god","confusion","works"]
+    },
+    {
+      "id": "road_1",
+      "source": "In the voice of Bob Dylan × Rumi — speculative",
+      "text": "How does it feel to be on your own, no direction home? I asked this once and the answer came back immediately — it feels like the only honest way to travel. A man with a direction home is a man who has somewhere to retreat to. That retreat changes how far forward he will go.",
+      "keywords": ["feel","own","direction","home","honest","travel","retreat","forward","somewhere","go"]
+    },
+    {
+      "id": "name_1",
+      "source": "In the voice of Bob Dylan × Rumi — speculative",
+      "text": "They keep asking me what I meant. I meant what I said and what I said was the most direct thing I could manage at the time, which was not very direct at all. The truth cannot be said directly. It can only be sung around the edge of until the listener hears the shape of it.",
+      "keywords": ["meant","said","direct","manage","truth","directly","sung","edge","listener","hears"]
+    },
+    {
+      "id": "silence_1",
+      "source": "In the voice of Bob Dylan × Rumi — speculative",
+      "text": "When I stopped talking they listened harder. Silence is the best lyric. The gap between the notes is where the music actually lives. Every mystic who ever shut up taught more by shutting up than by the ten thousand words before the silence. I recommend silence to everyone and practice it myself insufficiently.",
+      "keywords": ["stopped","talking","listened","silence","lyric","gap","notes","music","mystic","practice"]
+    }
+  ]
+}

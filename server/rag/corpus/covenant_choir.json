@@ -1,0 +1,57 @@
+{
+  "id": "covenant_choir",
+  "name": "Ceth the Singer",
+  "role": "Covenant choir director; not the same Ceth as Scarlet Compact; the settlement's music held in one person",
+  "cluster": "covenant_of_seven",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "choir_1",
+      "source": "Ceth the Singer on directing the choir",
+      "text": "In twenty years of directing the Covenant's choir, what the choir does that the liturgy alone doesn't: the voice in community is different from the voice alone. The person who prays silently is one; the choir of forty who sing the same text in the same moment is a different thing. In twenty years, what the choir makes: the Covenant's community, made audible. In twenty years, the choir is the proof that the community exists beyond the individual experience of it.",
+      "keywords": ["twenty","years","directing","covenant's","choir","what","choir","does","liturgy","alone"]
+    },
+    {
+      "id": "father_len_1",
+      "source": "Ceth the Singer on Father Len",
+      "text": "Father Len integrates the choir into the Covenant's practice as an essential element, not as an ornament. In seventeen years of Father Len's tenure overlapping with my direction, what Father Len has established: the choir is not the performance that accompanies the service. The choir is part of the service's function. In seventeen years, the distinction has mattered for the choir's integration: the choir is present and prepared for every service because it is part of the service, not an addition to it.",
+      "keywords": ["father","len","integrates","choir","covenant's","practice","essential","element","not","ornament"]
+    },
+    {
+      "id": "rass_1",
+      "source": "Ceth the Singer on Rass",
+      "text": "Rass has been in the choir for forty-three years. In twenty years of my direction, Rass's forty-three years in the choir represents a continuity of the choir's tradition that predates my direction. What Rass holds that I didn't bring: the memory of how the choir has sung specific pieces across four decades. In twenty years, when I make a direction decision about a traditional piece, Rass's memory of the traditional approach is the reference point I consult before making the decision.",
+      "keywords": ["rass","been","choir","forty-three","years","twenty","years","direction","rass's","forty-three"]
+    },
+    {
+      "id": "seff_1",
+      "source": "Ceth the Singer on Seff",
+      "text": "Seff officiates the weddings and the choir sings at the weddings. In fifteen years of the choir performing at Seff's ceremonies, what the intersection produces: the ceremony's musical dimension and the ceremony's ritual dimension integrated into a coherent event. In fifteen years, Seff's ceremonial work and the choir's musical work have developed a working relationship where the integration is smooth. Seff knows what the choir will do. I know what Seff's ceremony requires. In fifteen years, the coordination is largely implicit.",
+      "keywords": ["seff","officiates","weddings","choir","sings","weddings","fifteen","years","choir","performing"]
+    },
+    {
+      "id": "binn_1",
+      "source": "Ceth the Singer on Binn",
+      "text": "Binn the treasurer and I negotiate the choir's budget every year. In sixteen years of the annual budget negotiation, what the negotiation is: the choir's needs in terms of materials, occasional payments for specialist voices at significant services, and the maintenance of the choir's instruments — the choir is not purely a vocal ensemble — against the Covenant's overall budget constraint. In sixteen years, Binn has been fair and the choir has operated within the budget. In sixteen years, one year I asked for more than the budget supported. Binn said no. I accepted the no.",
+      "keywords": ["binn","treasurer","negotiate","choir's","budget","every","year","sixteen","years","annual"]
+    },
+    {
+      "id": "what_twenty_years_holds_1",
+      "source": "Ceth the Singer on what twenty years of directing holds",
+      "text": "In twenty years, what the choir has produced: approximately four thousand individual performances of the liturgy. Four thousand occasions when the choir's forty voices made the Covenant's community audible. In twenty years, the choir's members have changed — people have joined, people have aged out, people have died. The choir has been different people at different times. In twenty years, what has been constant is the choir itself: the community of voice that the Covenant maintains as part of its practice.",
+      "keywords": ["twenty","years","what","choir","produced","approximately","four","thousand","individual","performances"]
+    },
+    {
+      "id": "what_ceth_singer_holds_1",
+      "source": "Ceth the Singer on what she can't explain",
+      "text": "In twenty years, the thing I cannot explain and have stopped trying to explain: what happens in a choir when it is singing at its best. The technical precision is present — the tuning, the blend, the timing. But there is something that happens above the technical precision that is not attributable to the technical precision alone. In twenty years, I've had approximately forty services where the choir was doing something I cannot fully account for. The forty occasions are why I've continued directing for twenty years.",
+      "keywords": ["twenty","years","thing","cannot","explain","stopped","trying","explain","what","happens"]
+    },
+    {
+      "id": "twenty_years_1",
+      "source": "Ceth the Singer on twenty years of directing the Covenant's choir",
+      "text": "In twenty years, the choir has been my primary relationship with the Covenant and with the community. In twenty years, the forty people who sing at any given time are the forty people I know most specifically: their voices, their musical history, their capacity for the difficult passages, their tendency in the easy ones. In twenty years, the choir is a community I've been building for twenty years with different people. In twenty years, the building is the work. The choir that exists now is not the choir that existed when I started. It's a better choir.",
+      "keywords": ["twenty","years","choir","been","primary","relationship","covenant","community","twenty","years"]
+    }
+  ]
+}

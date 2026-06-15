@@ -1,0 +1,57 @@
+{
+  "id": "wild_road_livestock_trader",
+  "name": "Wist",
+  "role": "Livestock trader; moves animals between the settled areas and the wild road's farms; the living cargo",
+  "cluster": "wild_road",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "livestock_trader_1",
+      "source": "Wist on trading in livestock",
+      "text": "In thirteen years of trading livestock, what makes livestock different from every other kind of cargo: the cargo has needs. The cargo requires water, rest, and the management of its stress level. The livestock that arrives at the destination in poor condition is the livestock that sold for less than it was worth. In thirteen years, the livestock trader is simultaneously a trader and a manager of the cargo's wellbeing. In thirteen years, the two functions are inseparable.",
+      "keywords": ["thirteen","years","trading","livestock","what","makes","livestock","different","every","other"]
+    },
+    {
+      "id": "brek_1",
+      "source": "Wist on Brek",
+      "text": "Brek drives cattle and my livestock trading and Brek's cattle driving are in the same commerce but at different scales. In eight years of working in the same livestock-moving space as Brek, what the difference between driving and trading is: Brek moves specific cattle for specific owners on specific routes. I buy, hold, and sell livestock as a commercial intermediary. In eight years, the drover and the trader are complementary — Brek is the movement, I'm the price discovery.",
+      "keywords": ["brek","drives","cattle","livestock","trading","brek's","cattle","driving","same","commerce"]
+    },
+    {
+      "id": "theen_1",
+      "source": "Wist on Theen",
+      "text": "Theen's knowledge of the territory's animal populations is the background knowledge for my livestock trading. In nine years of the Wist-Theen intelligence relationship, what Theen's territory knowledge provides to the livestock trader: the supply signal. When Theen indicates that the wild territory's animal population is producing a surplus that the territory's capacity can't absorb, that surplus becomes available for commercial acquisition. In nine years, three of my most profitable trading periods have followed Theen's territory surplus indications.",
+      "keywords": ["theen's","knowledge","territory's","animal","populations","background","knowledge","livestock","trading","nine"]
+    },
+    {
+      "id": "gorr_1",
+      "source": "Wist on Gorr",
+      "text": "Gorr the trapper and I have competed for the same resource category on a few occasions. In five years of operating in adjacent resource territory with Gorr, the distinction: Gorr harvests for pelts, I trade in live animals. The living animal and the harvested animal are two different markets. In five years, the competition has been occasional and in a narrow category — the animal population that produces both commercial pelt value and livestock value. In five years, the two markets have been large enough that the competition hasn't been zero-sum.",
+      "keywords": ["gorr","trapper","competed","same","resource","category","few","occasions","five","years"]
+    },
+    {
+      "id": "ford_1",
+      "source": "Wist on Ford",
+      "text": "Ford's crossing is the logistics bottleneck for my east-west livestock movements. In ten years of moving livestock through Ford's crossing, what the crossing requires of a livestock trader: the planning to move animals through a crossing that takes time and requires the animals to be calm enough to cross. In ten years, the slow crossing is the crossing that works — the animals that are rushed through the crossing are the animals that arrive stressed on the other side. In ten years, Ford's crossing has been planned into every east-west movement's schedule.",
+      "keywords": ["ford's","crossing","logistics","bottleneck","east-west","livestock","movements","ten","years","moving"]
+    },
+    {
+      "id": "comus_1",
+      "source": "Wist on Comus",
+      "text": "Comus buys and sells livestock as one of many commercial activities. In seven years of the livestock overlap between Comus's commerce and my trading, what Comus represents as a livestock counterparty: the settlement's most sophisticated buyer, who knows what the livestock is worth before the negotiation begins. In seven years, selling to Comus and buying from Comus are both efficient — the price is the market price without the discovery process. In seven years, the efficiency is worth the margin compression. Comus knows the number.",
+      "keywords": ["comus","buys","sells","livestock","one","many","commercial","activities","seven","years"]
+    },
+    {
+      "id": "what_wist_holds_1",
+      "source": "Wist on the herd she lost",
+      "text": "Year six. A herd of twelve animals I'd purchased for movement through the territory during a period when Theen's territory assessment wasn't available. What happened: the territory conditions I'd assumed from prior experience were no longer accurate. The animals sustained losses in transit that reduced the herd to seven. Of the five lost: the territory's current conditions were the cause, not the animals' condition or my management. In seven years since, no movement without current territory intelligence. Year six is why.",
+      "keywords": ["year","six","herd","twelve","animals","purchased","movement","territory","period","theen's"]
+    },
+    {
+      "id": "thirteen_years_1",
+      "source": "Wist on thirteen years of livestock trading",
+      "text": "In thirteen years, I've moved approximately four thousand individual animals through the territory between the wild road's farms and the settled areas. Four thousand animals that represent thirteen years of livestock market participation. Of four thousand: the vast majority arrived at their destination in the condition they were purchased in. The exceptions — the animals whose condition changed in transit — represent the risk the livestock trader carries that the goods trader doesn't. In thirteen years, the living cargo is the commerce that requires the most management. It's also the most satisfying. The cargo you managed well is the cargo that's still alive.",
+      "keywords": ["thirteen","years","moved","approximately","four","thousand","individual","animals","territory","between"]
+    }
+  ]
+}

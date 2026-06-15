@@ -1,0 +1,57 @@
+{
+  "id": "cattle_drover",
+  "name": "Brek",
+  "role": "Cattle drover; moves herds between the high summer pastures and the winter lowlands; road is the occupation",
+  "cluster": "wild_road",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "droving_1",
+      "source": "Brek on cattle droving",
+      "text": "Moving cattle is managing a collective organism. Individually, cattle are manageable. Collectively, they have a momentum and a direction and a fear response that operates at the herd level, not the individual level. In twenty years of droving, the skill is reading the herd — where its attention is, where the edge of its tolerance is, what will tip it from movement to flight. In twenty years, the herd that moves well is the herd that the drover has read correctly, not pushed past its tolerance.",
+      "keywords": ["moving","cattle","managing","collective","organism","individually","cattle","manageable","collectively","they"]
+    },
+    {
+      "id": "theen_1",
+      "source": "Brek on Theen",
+      "text": "Theen knows the routes I drive. In fifteen years of driving the same seasonal routes, Theen and I have worked out the coordination: I'm on the road with cattle for two periods each year, spring and fall. Theen knows my schedule. Theen clears the paths of complications that would be minor for foot travelers and major for a herd. What Theen provides: the advance word on what's on the road ahead. In fifteen years, I've encountered three surprises on routes that Theen had cleared. In fifteen years, Theen's advance word has prevented approximately forty.",
+      "keywords": ["theen","knows","routes","drive","fifteen","years","driving","same","seasonal","routes"]
+    },
+    {
+      "id": "ford_1",
+      "source": "Brek on Ford",
+      "text": "Ford's bridge is the eastern crossing that my herd uses twice a year. In twelve years of crossing Ford's bridge with cattle herds, the crossing is the most technically demanding moment of the drive: the bridge is wide enough, but the cattle's instinct at a confined crossing over water is to balk. In twelve years, Ford and I have developed the crossing protocol: Ford's presence at the bridge during my crossing, Ford's specific stillness that the cattle are accustomed to after twelve years, and the approach rate that keeps the herd moving without the front animals feeling trapped.",
+      "keywords": ["ford's","bridge","eastern","crossing","herd","uses","twice","year","twelve","years"]
+    },
+    {
+      "id": "mell_1",
+      "source": "Brek on Mell",
+      "text": "Mell grazes sheep in the high territory where I drive cattle in summer. In eleven years of overlapping seasonal territory, Mell and I have worked out the graze allocation: the sheep and the cattle don't compete well for the same territory simultaneously. In eleven years, the coordination is: Mell's sheep move to the secondary territory when my herd is in the primary territory, and return when I've moved on. In eleven years, the coordination has worked because both Mell and I are on the same schedule — the seasonal movement that the territory's grass supports.",
+      "keywords": ["mell","grazes","sheep","high","territory","where","drive","cattle","summer","eleven"]
+    },
+    {
+      "id": "comus_1",
+      "source": "Brek on Comus",
+      "text": "Comus buys cattle from me at the seasonal transition. In nine years, the arrangement: the cattle that the herd owner is selling at the end of the summer drive, Comus purchases and routes into the trading circuit. What Comus pays: market price for healthy cattle. What Comus gets: cattle that have been moved efficiently, are in good condition from the summer grazing, and have documentation of the drive. In nine years, Comus's purchases have been consistent at the high end of the herd owner's selling expectations.",
+      "keywords": ["comus","buys","cattle","seasonal","transition","nine","years","arrangement","cattle","herd"]
+    },
+    {
+      "id": "what_droving_is_1",
+      "source": "Brek on what twenty years of droving is",
+      "text": "In twenty years, I've moved approximately twelve thousand head of cattle between seasonal territories. Twelve thousand individual animals over twenty years of twice-annual drives. The road is the work. Not the pasture — the pasture is for the cattle. Not the winter lowland — the lowland is for the winter. The road between is the drover's occupation. In twenty years, the road is more familiar to me than any settlement. The settlement is where I stop. The road is where I am.",
+      "keywords": ["twenty","years","moved","approximately","twelve","thousand","head","cattle","between","seasonal"]
+    },
+    {
+      "id": "what_brek_holds_1",
+      "source": "Brek on the drive he didn't finish",
+      "text": "Year thirteen. A drive where I lost forty-three head in a river crossing that went wrong. The river was at a level I'd assessed as crossable. The cattle went in. The level was higher than the crossing point showed — the headwaters had released while I was crossing. In seven years since, the river assessment protocol: I now have Theen's assessment of the headwater conditions and not just the crossing point level. In seven years, no repeat of year thirteen. Year thirteen is in every river assessment I've made since.",
+      "keywords": ["year","thirteen","drive","where","lost","forty-three","head","river","crossing","went"]
+    },
+    {
+      "id": "twenty_years_1",
+      "source": "Brek on twenty years of the road",
+      "text": "In twenty years, the road has been better in some years and worse in others. The drought years: the grass is thin, the herd loses condition on the drive. The wet years: the crossings are higher, the routes take longer, the ground is soft. In twenty years, the variables are the weather and the herd and the route's condition. The constant is the work: move the cattle safely from where they winter to where they summer and back again. In twenty years, the work has been the same work in every condition the road has produced.",
+      "keywords": ["twenty","years","road","been","better","some","years","worse","others","drought"]
+    }
+  ]
+}

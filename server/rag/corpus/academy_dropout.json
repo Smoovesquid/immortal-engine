@@ -1,0 +1,57 @@
+{
+  "id": "academy_dropout",
+  "name": "Cole",
+  "role": "Former Academy student; now works at the Forge Guild; left in second year",
+  "cluster": "academy_of_runes",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "leaving_1",
+      "source": "Cole on leaving the Academy",
+      "text": "I left in the second year. Not because I couldn't do the work — I could do the work. Because the work was theoretical and theory without application isn't what I'm built for. I need the thing in my hands. I need the material responding to the idea. Osven said when I left: this is not a failure. This is information about where you belong. He was right. The Forge Guild is where I belong. The rune knowledge works better in the Guild than it would have in the Academy.",
+      "keywords": ["left","second","year","not","because","couldn't","work","could","work","because"]
+    },
+    {
+      "id": "voss_1",
+      "source": "Cole on Voss the rune smith",
+      "text": "Voss is what I would have been if I'd stayed in the Academy track. The applied track specifically. The difference: Voss came to the application from the theory. I came to the theory from the application — I had three years of forge work before the Academy and the theory clarified what I was already doing. Voss's theory-to-application direction produced different gaps than my application-to-theory direction. We compare gaps sometimes. The gaps are different. The work is the same.",
+      "keywords": ["voss","what","would","have","been","stayed","academy","track","applied","track"]
+    },
+    {
+      "id": "edda_1",
+      "source": "Cole on Edda at the Forge Guild",
+      "text": "Edda hired me two months after I left the Academy. She said: the rune training is useful here. I said: I'm not finished with it. She said: you're finished with it at the Academy. The training you haven't done yet is the training you'll do in the Guild. The Guild training is what the Academy was preparing you for. She was right. The Guild training in the third and fourth year has been more rigorous than the Academy's second year was.",
+      "keywords": ["edda","hired","me","two","months","after","left","academy","rune","training"]
+    },
+    {
+      "id": "weld_1",
+      "source": "Cole on Weld",
+      "text": "Weld and I came to the Guild in the same year from different directions. Weld came as a smith. I came as a former Academy student. Weld had to learn the theory I already had. I had to learn the craft Weld already had. In two years we've crossed each other's starting positions. Now Weld has the theory and I have the craft and we're both in the same place. The crossing took two years. It was faster because we were learning from each other intentionally.",
+      "keywords": ["weld","came","guild","same","year","different","directions","weld","came","smith"]
+    },
+    {
+      "id": "jenn_1",
+      "source": "Cole on Jenn, still in the Academy",
+      "text": "Jenn is asking questions in the second year that I was asking in the second year. The same questions, which means either the second year produces the same questions reliably or Jenn and I have similar shapes of curiosity. I ran into Jenn at the market. She asked me why I left. I told her. She said: was it the right decision. I said: yes. She said: how long did it take to know. I said: two months. She's still in the Academy. The different decision is also probably right for Jenn.",
+      "keywords": ["jenn","asking","questions","second","year","asking","second","year","same","questions"]
+    },
+    {
+      "id": "maren_1",
+      "source": "Cole on Scholar Maren",
+      "text": "Maren came to the Guild once looking for material samples. I handled the request. She recognized me from the Academy. She said: you're applying the work here. I said: yes. She said: this is a better application site than the Academy's applied wing. I said: I think so. She said: the Academy loses people to better application sites regularly. This is the Academy's ongoing problem. The theory track doesn't lose people. The applied track loses the best ones. I didn't know this when I left. I know it now.",
+      "keywords": ["maren","came","guild","once","looking","material","samples","handled","request","recognized"]
+    },
+    {
+      "id": "what_cole_does_1",
+      "source": "Cole on what the Guild work is",
+      "text": "Structure with intention. Not just structure — the Forge does structure. What I add is intention in the structure. The Academy calls it the rune layer. The Guild calls it the functional geometry. Both describe the same thing: the shape of the object is designed to produce a specific result beyond the object's material function. The material holds. The geometry does something. In three years in the Guild I've added the geometry to eleven objects. Eight of them work as intended.",
+      "keywords": ["structure","with","intention","not","just","structure","forge","does","structure","what"]
+    },
+    {
+      "id": "what_cole_holds_1",
+      "source": "Cole on what they kept from the Academy",
+      "text": "The vocabulary. Not the techniques — the techniques I'm rebuilding in the Guild with the Guild's materials and methods. The vocabulary from the Academy lets me describe what I'm doing when I'm doing it, which lets me replicate it. Before the Academy I could do the thing but I couldn't say the thing. Not being able to say it meant I couldn't teach it and I couldn't debug it when it failed. The vocabulary was the cost of two years at the Academy. The cost was correct.",
+      "keywords": ["vocabulary","not","techniques","techniques","rebuilding","guild","guild's","materials","methods","vocabulary"]
+    }
+  ]
+}

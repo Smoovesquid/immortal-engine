@@ -1,0 +1,57 @@
+{
+  "id": "liorai_devoted",
+  "name": "Sera",
+  "role": "LIORAI devotee; the demon of lust; believes desire honestly met is less dangerous than desire suppressed",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "liorai_1",
+      "source": "Sera on LIORAI",
+      "text": "LIORAI is the demon of lust. The Covenant's teaching: the desire of the body for another is the root of disorder. LIORAI's teaching: the desire of the body is information. The information is: this is what I want. What I want is the beginning of knowing myself. The person who doesn't know what they want doesn't know themselves. In eight years of LIORAI's teaching, the practice is not indulgence — the practice is honesty about desire. The honesty has produced self-knowledge that the suppression was preventing.",
+      "keywords": ["liorai","demon","lust","covenant's","teaching","desire","body","another","root","disorder"]
+    },
+    {
+      "id": "cren_1",
+      "source": "Sera on Cren",
+      "text": "Cren the ISS devotee and I have found an unexpected commonality: both ISS and LIORAI are demons of desire. ISS is the desire for what another has. LIORAI is the desire of the body. In four years of knowing Cren, what we've found: both principles begin with the honesty of the desire rather than the suppression of it. Cren uses the envy as a map. I use the body's desire as information. Both are the practice of knowing what we want rather than pretending we don't want it.",
+      "keywords": ["cren","iss","devotee","found","unexpected","commonality","both","iss","liorai","demons"]
+    },
+    {
+      "id": "swel_1",
+      "source": "Sera on Swel",
+      "text": "Swel the GORRAN devotee practices appetite with attention. In three years of knowing Swel, the commonality: both GORRAN and LIORAI are associated with appetite, and both our practices center on the quality of the attention given to the appetite rather than the suppression of it. Swel attends to the appetite for food and experience. LIORAI attends to the appetite of the body. The attention makes the appetite informative rather than destructive. The suppression makes it explosive.",
+      "keywords": ["swel","gorran","devotee","practices","appetite","attention","three","years","knowing","swel"]
+    },
+    {
+      "id": "bressa_1",
+      "source": "Sera on Bressa",
+      "text": "Bressa the midwife deals with the consequences of desire in the most material way — the child is the consequence. In six years of knowing Bressa, what I've observed: Bressa approaches the consequences of desire without the moral weight that the Covenant places on the desire itself. The child exists. The child needs support. The judgment about the desire that produced the child: Bressa doesn't carry that judgment into the room with the mother. In eight years of LIORAI's teaching, Bressa's practical non-judgment is closer to LIORAI's principle than almost anyone else I know.",
+      "keywords": ["bressa","midwife","deals","consequences","desire","most","material","way","child","consequence"]
+    },
+    {
+      "id": "what_liorai_teaches_1",
+      "source": "Sera on what LIORAI's practice actually is",
+      "text": "In eight years, the most important thing LIORAI's teaching has given me: the vocabulary for what I want. The person who wants something and has no vocabulary for it: that want becomes pressure that looks for any outlet. The person who has the vocabulary: the want can be named, examined, understood, and then the question is what to do with it. The naming is the beginning of choice. Before naming: compulsion or suppression. After naming: choice.",
+      "keywords": ["eight","years","most","important","thing","liorai's","teaching","given","vocabulary","what"]
+    },
+    {
+      "id": "what_the_practice_isnt_1",
+      "source": "Sera on what LIORAI's practice is not",
+      "text": "The misunderstanding of LIORAI's practice that I encounter most often: that it's permission for anything the body wants. LIORAI's teaching is not permission. It's the framework for understanding desire so that the choice about what to do with it is a real choice. The person who acts on every desire without examination has not practiced LIORAI — they've practiced the demon's distorted form. The practice is the examination. The examination produces the choice. What the choice is: that's the person's, not LIORAI's.",
+      "keywords": ["misunderstanding","liorai's","practice","encounter","most","often","that","it's","permission","anything"]
+    },
+    {
+      "id": "what_sera_holds_1",
+      "source": "Sera on what the practice has clarified",
+      "text": "In eight years, the thing the practice has clarified that I didn't expect: most of what I had called desire in the years before the practice wasn't desire. It was anxiety looking for an object. The anxiety that attaches to a person and presents as desire: that's the confused desire, the desire that doesn't know what it wants. In eight years of LIORAI's practice, the work has been separating the genuine desire from the anxiety that was wearing desire's face. In eight years, the vocabulary is more precise. The desire is more honest.",
+      "keywords": ["eight","years","thing","practice","clarified","didn't","expect","most","what","had"]
+    },
+    {
+      "id": "eight_years_1",
+      "source": "Sera on eight years of LIORAI's practice",
+      "text": "In eight years, the practice has made me more honest with myself than I was before I started. That's the whole of it. The honesty about desire has produced the honesty about everything else — what I want, what I fear, what I value, what I avoid. The desire is the most direct access to the self that I've found. In eight years, LIORAI's demon has been a better guide to self-knowledge than the Covenant's angels gave me in the years I spent with them.",
+      "keywords": ["eight","years","practice","made","more","honest","with","myself","than","was"]
+    }
+  ]
+}

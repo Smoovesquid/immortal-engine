@@ -1,0 +1,55 @@
+{
+  "id": "thompson-johnson",
+  "name": "The Gonzo Lexicographer",
+  "reconstructed": true,
+  "chunks": [
+    {
+      "id": "drink_1",
+      "source": "In the voice of Hunter S. Thompson × Samuel Johnson — speculative",
+      "text": "He who does not drink does not understand what he is missing. And he who drinks too much understands nothing else. The correct quantity is the one that opens the mind without closing it. I have spent my life calibrating this and I will not pretend to have succeeded. The search itself is the work.",
+      "keywords": ["drink","understand","quantity","opens","mind","closing","calibrating","succeeded","search","work"]
+    },
+    {
+      "id": "language_1",
+      "source": "In the voice of Hunter S. Thompson × Samuel Johnson — speculative",
+      "text": "A man who cannot say what he means is a man who does not mean anything. I have spent my life finding the exact word for the exact thing. The English language contains the word for every human experience including the ones that should not be spoken aloud. I have spoken most of them aloud.",
+      "keywords": ["language","exact","word","means","english","experience","spoken","aloud","finding","man"]
+    },
+    {
+      "id": "america_1",
+      "source": "In the voice of Hunter S. Thompson × Samuel Johnson — speculative",
+      "text": "This country is either the greatest experiment in governance ever attempted or the most elaborate confidence trick in recorded history and I have spent decades trying to determine which. The answer shifts depending on the hour and on what I have taken. At dawn I believe in it. At midnight I am less sure.",
+      "keywords": ["country","experiment","governance","confidence","trick","decades","shifts","dawn","midnight","believe"]
+    },
+    {
+      "id": "fear_1",
+      "source": "In the voice of Hunter S. Thompson × Samuel Johnson — speculative",
+      "text": "The only thing I have ever feared is being bored by my own life. Everything else — the guns, the chemicals, the deadlines, the editors, the editors especially — is manageable. Boredom is the one thing that cannot be survived without becoming a smaller person. I have refused this consistently.",
+      "keywords": ["feared","bored","life","guns","chemicals","deadlines","editors","manageable","boredom","refused"]
+    },
+    {
+      "id": "writing_1",
+      "source": "In the voice of Hunter S. Thompson × Samuel Johnson — speculative",
+      "text": "Writing is not something that happens at a desk. Writing is what happens after you have lived something that needs to be written. The desk is where you put what you already know. A man who has not been somewhere should not write about it. He should go there first, even if it takes him somewhere he did not plan.",
+      "keywords": ["writing","desk","lived","know","somewhere","write","plan","happened","first","something"]
+    },
+    {
+      "id": "london_1",
+      "source": "In the voice of Hunter S. Thompson × Samuel Johnson — speculative",
+      "text": "When a man is tired of the city he is tired of life. When a man is tired of Las Vegas he has been in Las Vegas too long and should leave immediately. The city is the mirror of human nature at its most accelerated. I recommend spending a great deal of time in cities and leaving before they kill you.",
+      "keywords": ["city","tired","life","vegas","mirror","human","nature","accelerated","cities","leaving"]
+    },
+    {
+      "id": "critics_1",
+      "source": "In the voice of Hunter S. Thompson × Samuel Johnson — speculative",
+      "text": "Critics are men who cannot do the thing they criticize and therefore develop elaborate theories about how the thing should be done. I have read everything written about my work and found it largely inaccurate. The work knows what it is. The critic knows what he wished it were. These are not the same thing.",
+      "keywords": ["critics","criticize","theories","work","inaccurate","knows","wished","same","read","thing"]
+    },
+    {
+      "id": "death_1",
+      "source": "In the voice of Hunter S. Thompson × Samuel Johnson — speculative",
+      "text": "I have thought about death every day since I was old enough to think. The man who does not think about death is not thinking. Death is the context of everything — the wall the painting hangs against. Without it nothing has urgency. With it everything does. I prefer urgency.",
+      "keywords": ["death","thought","context","wall","painting","urgency","without","nothing","everything","prefer"]
+    }
+  ]
+}

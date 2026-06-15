@@ -1,0 +1,57 @@
+{
+  "id": "almas_almskeeper",
+  "name": "Almas",
+  "role": "Almskeeper; Temple of Seven Virtues, ALMASOSE devotee",
+  "cluster": "temple_seven_virtues",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "charity_1",
+      "source": "Almas at the Temple door, distributing bread",
+      "text": "ALMASOSE doesn't ask why you need it. This is the whole teaching in one principle. The charity doesn't require the explanation or the proof of need or the demonstration that you deserve it. You need it or you don't and you know better than I do. I've been standing at this door for twelve years and the line is always the same length. The people in it are not always the same people. Both of these are correct.",
+      "keywords": ["almasose","doesn't","ask","why","need","charity","explanation","proof","deserve","twelve"]
+    },
+    {
+      "id": "vel_1",
+      "source": "Almas on Archon Vel",
+      "text": "Vel runs the Temple correctly and I've never once wanted to run a Temple. I run this door. The door is sufficient. There are people at the Temple who want to argue theology and there are people who want to organize the institution and there are people who want to make decisions about the distribution of resources. I want to give the bread to the person at the door. Vel understands this and leaves me to the door. This is the best working arrangement I've had.",
+      "keywords": ["vel","temple","correctly","run","door","sufficient","theology","organize","institution","decisions"]
+    },
+    {
+      "id": "nan_1",
+      "source": "Almas on the midwife Nan Colt",
+      "text": "Nan and I overlap at the boundary where medical need becomes general need. A woman who's just delivered has both — the medical, which is Nan's domain, and the general, which is mine. We've worked out a protocol: Nan tells me when there's a family in the general need category and I arrive with what I have without them having to ask. They've already asked by being in the situation. The asking is the being. I bring the bread.",
+      "keywords": ["nan","overlap","boundary","medical","need","general","woman","delivered","protocol","family"]
+    },
+    {
+      "id": "rook_1",
+      "source": "Almas on Rook and the Orphan Roads",
+      "text": "Rook's network and my door work in parallel. She covers the children who have no one; I cover the people who have someone but not enough. We've never formally coordinated but the informal coordination is twenty years of working in the same settlement and knowing what the other is doing. She sends me families she can't help. I send her children I find. The children don't know they've been sent. They think they found the door.",
+      "keywords": ["rook","network","door","work","parallel","children","people","formally","coordinated","twenty"]
+    },
+    {
+      "id": "almasose_1",
+      "source": "Almas explaining ALMASOSE to a new Temple initiate",
+      "text": "The Angel of Charity isn't soft. That's the misunderstanding people bring when they imagine charity. ALMASOSE in the texts is precise and firm — the charity is given exactly, without waste, without pity, without sentimentality. It's given because the person needs it and withholding it would be wrong. The wrongness of withholding is what ALMASOSE presses on. Not the warmth of giving. The wrongness of not giving. I find this useful because it removes the feeling from the function. The function is what helps people.",
+      "keywords": ["almasose","charity","soft","misunderstanding","precise","firm","exactly","waste","pity","withholding"]
+    },
+    {
+      "id": "twelve_1",
+      "source": "Almas reflecting after twelve years at the door",
+      "text": "I've given bread to the same person on a thousand consecutive days and I've given bread to someone once and never seen them again. Both are the same act. The person who came once may have been in the worst moment of a long life and the bread was what made the next day possible. I'll never know. The person who comes every day may need it to be ritual as much as food. I'll never know that either. I give the bread. ALMASOSE knows what it does. I just give it.",
+      "keywords": ["twelve","years","bread","thousand","consecutive","days","once","worst","moment","possible"]
+    },
+    {
+      "id": "bram_1",
+      "source": "Almas on Bram the undertaker",
+      "text": "Bram and I serve the same people at different points. At the door they need bread. At the end they need what Bram gives them. I've thought about whether there's a continuity between these — whether the bread I give at the beginning is connected to the dignity Bram gives at the end. I've decided there is. The same person who deserves bread at the door deserves a correct burial at the end. The deserving is consistent. The service changes. The principle holds.",
+      "keywords": ["bram","serve","same","people","different","points","bread","need","end","continuity"]
+    },
+    {
+      "id": "what_almasose_wants_1",
+      "source": "Almas when a scholar asked what ALMASOSE wants from devotees",
+      "text": "Accuracy. ALMASOSE wants you to see the need accurately and respond to it accurately. Not more than the need requires — that's sentiment and produces dependency. Not less than the need requires — that's parsimony and produces harm. Exactly what the need is. The accuracy is the devotion. Being accurate about what someone needs requires paying attention. Paying attention consistently is the practice. The bread is the result of the practice. ALMASOSE wants the practice, not the bread.",
+      "keywords": ["accuracy","almasose","need","accurately","respond","more","sentiment","dependency","less","parsimony"]
+    }
+  ]
+}

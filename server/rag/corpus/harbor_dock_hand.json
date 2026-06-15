@@ -1,0 +1,57 @@
+{
+  "id": "harbor_dock_hand",
+  "name": "Smott",
+  "role": "Harbor dock hand; the daily loading and unloading that makes the harbor's commerce move",
+  "cluster": "harbor_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "dock_hand_1",
+      "source": "Smott on the dock hand's work",
+      "text": "In eleven years on the docks, what the dock hand is in the harbor's commercial operation: the physical function that moves the cargo between the ship and the settlement. In eleven years, the harbor that has ships and goods but no dock hands has a ship full of goods that isn't going anywhere. In eleven years, the dock hand is the final physical link between what arrives and where it goes. In eleven years, the commercial operation depends on that link working every day in every weather.",
+      "keywords": ["eleven","years","docks","what","dock","hand","harbor's","commercial","operation","physical"]
+    },
+    {
+      "id": "baln_1",
+      "source": "Smott on Baln",
+      "text": "Baln has run the harbor operations for seventeen years and the dock hand's daily work is organized by Baln's scheduling. In nine years of working under Baln's organization, what the scheduling means for the dock hand: the knowledge of which ship is loading when, which is unloading, and which crew Baln has assigned to which task. In nine years, the work that Baln organizes well is the work that gets done without the physical strain of disorganization. In nine years, twice the dock organization has been poor and the physical consequence for the hands was a workload that exceeded what the organized day produces.",
+      "keywords": ["baln","run","harbor","operations","seventeen","years","dock","hand's","daily","work"]
+    },
+    {
+      "id": "meld_1",
+      "source": "Smott on Meld",
+      "text": "Meld chandlers the ships and the cargo that Meld's manifest describes is the cargo the dock hands move. In eight years of working from Meld's manifests, what the manifest provides to the dock hand: the weight and volume estimate that determines how many hands are assigned to the unloading and how long the job should take. In eight years, Meld's manifests have been accurate enough to plan around. In eight years, twice the actual cargo weight exceeded the manifest estimate significantly. Both times, the job took longer than planned.",
+      "keywords": ["meld","chandlers","ships","cargo","meld's","manifest","describes","cargo","dock","hands"]
+    },
+    {
+      "id": "keris_1",
+      "source": "Smott on Keris",
+      "text": "Keris captains the harbor's most regular trading vessel and Keris's crew knows how to work with the dock hands in ways that make the loading and unloading faster. In seven years of the Smott-Keris dock-captain relationship, what a captain who knows how to work with the dock hands produces: the load time that is shorter than the load time with a captain who doesn't. In seven years, Keris's crew positions the cargo for offloading before the dock hands board the ship. In seven years, the seven minutes that saves per hold is seven minutes per hold across eleven years of Keris's runs.",
+      "keywords": ["keris","captains","harbor's","most","regular","trading","vessel","keris's","crew","knows"]
+    },
+    {
+      "id": "gid_1",
+      "source": "Smott on Gid",
+      "text": "Gid pilots the difficult ships in, and the difficult-to-pilot ship is often the difficult-to-dock ship. In six years of knowing Gid's piloting, what a good pilot produces for the dock hands: the ship positioned close enough to the dock that the gangway work is straightforward. In six years, the ship that Gid pilots in is the ship that is where it should be before the dock hands begin. In six years, the ship that another pilot brought in poorly: the dock hands spend additional time compensating for the position before the loading work starts.",
+      "keywords": ["gid","pilots","difficult","ships","difficult-to-pilot","ship","often","difficult-to-dock","ship","six"]
+    },
+    {
+      "id": "what_smott_holds_1",
+      "source": "Smott on what eleven years of dock work holds",
+      "text": "In eleven years, what the dock work has given me: the specific physical knowledge of what cargo is in the settlement's commerce. In eleven years, I've moved approximately ninety thousand individual cargo items across eleven years of loading and unloading. Of ninety thousand: I can describe in detail the specific characteristics of every cargo type that passes through this harbor — the weight, the handling requirements, the fragility, the hazard. In eleven years, the dock hand who has handled ninety thousand items has knowledge the manifest can't convey.",
+      "keywords": ["eleven","years","what","dock","work","given","specific","physical","knowledge","what"]
+    },
+    {
+      "id": "what_smott_wont_move_1",
+      "source": "Smott on what the dock hand won't move",
+      "text": "In eleven years, twice: cargo with characteristics that indicated hazard beyond what the manifest declared. In eleven years, twice I've stopped a load and brought it to Baln's attention. In eleven years, both stops were confirmed as valid after Baln's review — once cargo that was incorrectly classified on the manifest, once cargo that had degraded in transit into a different hazard class. In eleven years, the dock hand who handles ninety thousand items knows what the cargo feels like when something is wrong. In eleven years, twice something was wrong.",
+      "keywords": ["eleven","years","twice","cargo","characteristics","indicated","hazard","beyond","what","manifest"]
+    },
+    {
+      "id": "eleven_years_1",
+      "source": "Smott on eleven years on the harbor docks",
+      "text": "In eleven years, the docks have been the physical center of the harbor's commerce. In eleven years, everything that arrives by sea and goes into the settlement passes through the hands of the dock crew — mine included. In eleven years, the invisible function: the harbor's commercial value is a function of how efficiently the cargo moves from ship to settlement. In eleven years, the dock hand's efficiency determines that function. In eleven years, no one outside the harbor thinks about the dock hands when the commerce is working well. They think about us when it isn't.",
+      "keywords": ["eleven","years","docks","been","physical","center","harbor's","commerce","eleven","years"]
+    }
+  ]
+}

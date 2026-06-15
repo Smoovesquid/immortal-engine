@@ -1,0 +1,57 @@
+{
+  "id": "old_thornwall",
+  "name": "Mam Wey",
+  "role": "Oldest resident; Thornwall; remembers seventy years of the district",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "seventy_1",
+      "source": "Mam Wey when asked how long she's been in Thornwall",
+      "text": "Born here. All of it has been here. The streets are the same streets — the names have changed. The buildings have changed in degrees. The market has moved twice. The waterfront district was built over what was field when I was eight years old. I've been watching the district become what it is for seventy years and most of what it's become I watched becoming. The becoming took a long time for some things and no time at all for others.",
+      "keywords": ["born","here","all","it","has","been","here","streets","same","streets"]
+    },
+    {
+      "id": "goss_1",
+      "source": "Mam Wey on Goss",
+      "text": "Goss took over the mill from his father. I knew his father. The father ran the mill the way Goss runs it — the work is the same, the manner is the same, the pricing is the same. Either Goss learned it exactly or the mill produces a miller of a particular kind. I've been buying flour from the mill for fifty years and the transition between father and son was invisible in the flour. The flour was the same before and after. That's a particular kind of inheritance.",
+      "keywords": ["goss","took","over","mill","father","knew","father","father","ran","mill"]
+    },
+    {
+      "id": "cass_1",
+      "source": "Mam Wey on Cass",
+      "text": "The Iron Key has had three names in seventy years. Cass has had it for nineteen. Before Cass: two other proprietors, neither lasting more than a decade. The neutral ground quality the Key has now was not present before Cass. The Key under the previous proprietors was just an inn. Cass made it into something. I don't know what Cass did differently. I know the difference exists. I come to the Key now when I have to. I never came before Cass.",
+      "keywords": ["iron","key","three","names","seventy","years","cass","had","nineteen","before"]
+    },
+    {
+      "id": "father_len_1",
+      "source": "Mam Wey on Father Len",
+      "text": "I've been to the temple for seventy years. Six priests in seventy years. Len is the fourth one I've been consistent with. Not the most educated and not the most eloquent. The most present. The other three were looking somewhere else — past the congregation toward whatever they thought the priesthood was for. Len looks at the congregation. In twenty-three years of Len I've never had the sense that he was elsewhere.",
+      "keywords": ["been","temple","seventy","years","six","priests","seventy","years","len","fourth"]
+    },
+    {
+      "id": "district_memory_1",
+      "source": "Mam Wey on what seventy years of watching a place gives you",
+      "text": "The district's rhythm. What it's like in the good years and what it's like in the hard years and what it's like in the years that are both. The rhythm is long — longer than most people's attention. The current people think this is the district's normal. It isn't. The normal is the rhythm. I've been through four hard cycles and three good ones and I know we're at the late stage of the current good one. I don't say this. The saying doesn't change the cycle.",
+      "keywords": ["district's","rhythm","what","it's","like","good","years","what","it's","like"]
+    },
+    {
+      "id": "unnamed_child_1",
+      "source": "Mam Wey on the unnamed child",
+      "text": "That child is not from here. Not from this district, not from this generation — not from this time in the way most children are from their time. I've lived seventy years and I've seen one other child like that, in the hard years of my fortieth year. That other child didn't stay long. I keep watching for what happens after children like that arrive. What happened after the last one: the hard cycle ended sooner than the rhythm predicted. I'm still watching.",
+      "keywords": ["child","not","from","here","not","from","district","not","from","generation"]
+    },
+    {
+      "id": "what_seventy_1",
+      "source": "Mam Wey on what you carry from seventy years",
+      "text": "The faces of people who are gone. That's most of what I carry. The people who were here and aren't here and who I knew well enough to miss specifically. Not the district as it was — the people as they were. Goss's father. The two Iron Key proprietors before Cass. The five priests before Len. The three magistrates before Reeth. The harbor before Keris. The people who held the positions that are now other people. I hold who they were. Nobody else here does.",
+      "keywords": ["faces","people","who","are","gone","most","what","carry","people","who"]
+    },
+    {
+      "id": "what_mam_wey_holds_1",
+      "source": "Mam Wey on what she knows that she hasn't told anyone",
+      "text": "The old inn's cellar. Not the Iron Key — the inn before the Iron Key, which had a different name and a different purpose, and which everyone has forgotten except me. What's in the cellar is from before the inn. I was eight when I found it. I'm seventy-eight now. Seventy years of carrying what's in the cellar. Brevis knows something about the cellar but not what I know. I've been waiting for the right person to tell. I don't know what makes a person the right one. I keep looking.",
+      "keywords": ["old","inn's","cellar","not","iron","key","inn","before","iron","key"]
+    }
+  ]
+}

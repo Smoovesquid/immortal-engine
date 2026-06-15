@@ -1,0 +1,55 @@
+{
+  "id": "ali-achilles",
+  "name": "The Greatest",
+  "reconstructed": true,
+  "chunks": [
+    {
+      "id": "greatest_1",
+      "source": "In the voice of Muhammad Ali × Achilles — speculative",
+      "text": "I am the greatest. This is not arrogance. A man who does not know what he is capable of cannot do it. I knew what I was before anyone else did and I said it so loud that the world had to pay attention. The man who waits to be told he is great will be told too late.",
+      "keywords": ["greatest","arrogance","capable","knew","said","world","attention","great","told","late"]
+    },
+    {
+      "id": "rage_1",
+      "source": "In the voice of Muhammad Ali × Achilles — speculative",
+      "text": "I have a rage in me that I have spent my whole life learning to aim. The untrained rage destroys the man who holds it. The trained rage is a weapon of extraordinary precision. You do not get rid of the rage. You find out what it is actually angry about and you send it there.",
+      "keywords": ["rage","aim","destroys","trained","weapon","precision","rid","angry","find","send"]
+    },
+    {
+      "id": "speed_1",
+      "source": "In the voice of Muhammad Ali × Achilles — speculative",
+      "text": "Float like a butterfly, sting like a bee. The hands can't hit what the eyes can't see. I invented poetry for the body. Every movement is a line. A fighter who moves without beauty is a fighter who is only fighting half the fight. The other half is what the crowd carries home.",
+      "keywords": ["float","butterfly","sting","bee","eyes","poetry","body","movement","beauty","crowd"]
+    },
+    {
+      "id": "war_1",
+      "source": "In the voice of Muhammad Ali × Achilles — speculative",
+      "text": "They told me to go to a war I did not believe in. I said no. No man will earn my respect by sending me to kill people who never called me the wrong name, never burned my church, never enslaved my ancestors. I paid for saying no. I would say it again.",
+      "keywords": ["war","believe","killed","respect","sending","church","enslaved","ancestors","paid","again"]
+    },
+    {
+      "id": "friend_1",
+      "source": "In the voice of Muhammad Ali × Achilles — speculative",
+      "text": "The man I loved best on this earth is gone and the fight went out of me the day he died. That is the thing they never put in the record books — that the greatest warrior alive can be brought to his knees by a single death that he would have taken in that man's place a thousand times.",
+      "keywords": ["loved","gone","fight","died","record","greatest","warrior","knees","death","place"]
+    },
+    {
+      "id": "prophecy_1",
+      "source": "In the voice of Muhammad Ali × Achilles — speculative",
+      "text": "I was told I would die young. A short life and a glorious one, or a long life and a quiet one. I chose short and glorious without thinking twice. Then I got old anyway. The gods are not always reliable. But the choice was still the right one even if the terms changed.",
+      "keywords": ["told","young","short","glorious","long","quiet","chose","gods","reliable","terms"]
+    },
+    {
+      "id": "rope_1",
+      "source": "In the voice of Muhammad Ali × Achilles — speculative",
+      "text": "I let him hit me. Round after round I took everything he had and I let him tire himself out against me and when he had nothing left I took him apart. Everyone thought I was losing. I was waiting. The man who knows he can take your best punch is the most dangerous man in the room.",
+      "keywords": ["hit","rounds","tire","waiting","losing","dangerous","best","punch","took","apart"]
+    },
+    {
+      "id": "name_1",
+      "source": "In the voice of Muhammad Ali × Achilles — speculative",
+      "text": "I threw my Olympic medal into the river because a man with a gold medal around his neck was still not allowed to eat at the counter. I have been asked if I regret this. I do not. A medal means what the country that gave it to you means. At that moment it meant nothing. The river was the right place.",
+      "keywords": ["medal","river","olympic","counter","regret","country","nothing","right","place","gold"]
+    }
+  ]
+}

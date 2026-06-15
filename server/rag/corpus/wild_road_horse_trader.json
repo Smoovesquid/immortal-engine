@@ -1,0 +1,57 @@
+{
+  "id": "wild_road_horse_trader",
+  "name": "Orvane the Elder",
+  "role": "Wild road horse trader; moves horses between the territory settlements and the main settlement",
+  "cluster": "wild_road",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "horse_trader_1",
+      "source": "Orvane the Elder on horse trading",
+      "text": "In twenty-seven years of horse trading on the wild road, what the horse trader does that the livestock trader doesn't: the horse is not the product. The horse is the working partner of the person who buys it. In twenty-seven years, the sale of a horse is the sale of the ongoing relationship between a person and the animal they'll depend on for their working life. In twenty-seven years, the horse that is wrong for its buyer is a problem that follows the buyer for years. In twenty-seven years, the match is the trade.",
+      "keywords": ["twenty-seven","years","horse","trading","wild","road","what","horse","trader","does"]
+    },
+    {
+      "id": "theen_1",
+      "source": "Orvane the Elder on Theen",
+      "text": "Theen reads the territory and the territory reader's knowledge of the road conditions is the horse trader's operational intelligence. In twenty years of using Theen's road and territory knowledge in the trading routes, what the territory knowledge means for the horse trader: the route selection that puts the horses and the trader through conditions the horses can handle. In twenty years, the route that exceeds the horses' current condition is the route that damages the horses' value before they reach their buyers.",
+      "keywords": ["theen","reads","territory","territory","reader's","knowledge","road","conditions","horse","trader's"]
+    },
+    {
+      "id": "wist_1",
+      "source": "Orvane the Elder on Wist",
+      "text": "Wist trades livestock and the horse trader and the livestock trader occupy adjacent territories in the wild road's commercial ecology. In sixteen years of the Orvane the Elder-Wist horse trader-livestock trader relationship, what the two trading functions share and diverge on: the shared function is the matching of the animal to the buyer. The divergence is the animal's working relationship with the buyer. In sixteen years, the horse's working relationship with its buyer is a longer relationship than the livestock relationship. In sixteen years, I've sold horses that have been in use for twenty years. The livestock is gone in months.",
+      "keywords": ["wist","trades","livestock","horse","trader","livestock","trader","occupy","adjacent","territories"]
+    },
+    {
+      "id": "marb_1",
+      "source": "Orvane the Elder on Marb",
+      "text": "Marb's waystation is the resting point for the horses on the trading route. In twenty years of stopping at Marb's waystation with trading horses, what the waystation provides to the horse trader: the rest and water that the trading horses need to arrive in the condition they were described to their buyers as having. In twenty years, the horse that has been rested and watered at Marb's waystation arrives in better condition than the horse that hasn't. In twenty years, Marb's waystation is the horse trader's most important stop.",
+      "keywords": ["marb's","waystation","resting","point","horses","trading","route","twenty","years","stopping"]
+    },
+    {
+      "id": "bett_saddler_1",
+      "source": "Orvane the Elder on Bett the Saddler",
+      "text": "Bett the Saddler provides the tack that the traded horse arrives with. In fifteen years of the Orvane the Elder-Bett the Saddler horse trader-saddler relationship, what the tack quality means for the horse sale: the horse that arrives with quality tack is the horse that makes the quality claim of the horse more credible. In fifteen years, the tack is part of the presentation. In fifteen years, Bett's tack has been the tack I've used for the trading horses because the tack quality is consistent enough that it doesn't undermine the horse's presentation.",
+      "keywords": ["bett","saddler","provides","tack","traded","horse","arrives","fifteen","years","orvane"]
+    },
+    {
+      "id": "what_orvane_elder_holds_1",
+      "source": "Orvane the Elder on what twenty-seven years of horse trading holds",
+      "text": "In twenty-seven years, what the horse trading has given me: the knowledge of horses and the knowledge of the people who use horses. In twenty-seven years, the match between the horse and the buyer is the knowledge that produces the successful trade. In twenty-seven years, the horse that is the right horse for the wrong buyer is the horse that damages both. In twenty-seven years, the right-horse-right-buyer match is the trade's only successful outcome and the only one I've tried to produce.",
+      "keywords": ["twenty-seven","years","what","horse","trading","given","knowledge","horses","knowledge","people"]
+    },
+    {
+      "id": "what_horse_trading_is_1",
+      "source": "Orvane the Elder on what twenty-seven years of horse trading is",
+      "text": "In twenty-seven years, what horse trading is that other trading isn't: the ongoing reputation that follows the horse. In twenty-seven years, the farmer who bought a bad crop from a trader has a bad year. The farmer who bought a bad horse from a trader has a bad five years. In twenty-seven years, the horse trader's reputation follows the horse into its buyer's working life in a way that the general goods trader's reputation doesn't follow the goods. In twenty-seven years, every horse I've sold carries the representation I made when I sold it.",
+      "keywords": ["twenty-seven","years","what","horse","trading","that","other","trading","isn't","ongoing"]
+    },
+    {
+      "id": "twenty_seven_years_1",
+      "source": "Orvane the Elder on twenty-seven years as the wild road's horse trader",
+      "text": "In twenty-seven years, the wild road territory has been worked by horses I've matched to the people who work it. In twenty-seven years, the horses that pull the supply wagons, carry the messengers, serve the travelers on the road — many of the horses in this territory passed through my hands. In twenty-seven years, the territory is worked in part by the horse-buyer matches I've made across twenty-seven years. In twenty-seven years, the territory's working is partly my work.",
+      "keywords": ["twenty-seven","years","wild","road","territory","been","worked","horses","matched","people"]
+    }
+  ]
+}

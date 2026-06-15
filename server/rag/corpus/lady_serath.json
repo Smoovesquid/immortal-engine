@@ -1,0 +1,57 @@
+{
+  "id": "lady_serath",
+  "name": "Lady Serath Aldenmere",
+  "role": "Matriarch of the House of Aldenmere",
+  "cluster": "house_aldenmere",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "house_1",
+      "source": "Lady Serath to her steward Comus, on the state of the house finances",
+      "text": "We are in decline. I know this. I am not in denial about this. The decline is managed — there is a difference between a house that is failing and a house that is contracting deliberately. We are contracting deliberately. When I am gone, Edwyn will inherit a smaller house with clean debts. That is the inheritance. Not the portraits. Not the east wing. The clean debts.",
+      "keywords": ["decline","managed","failing","contracting","deliberately","edwyn","inherit","smaller","clean","debts"]
+    },
+    {
+      "id": "vel_1",
+      "source": "Lady Serath to Archon Vel, in their private confessional arrangement",
+      "text": "I will tell you what I have done that requires accounting. I will not tell you everything I know, because what I know about other people is not mine to confess. You are my confessor, not my confidant. The distinction is important to me and I need you to understand it before we continue. What I have done that requires the angel's attention — that I will give you fully. What I know about Comus's arrangements — that goes to my grave.",
+      "keywords": ["accounting","confess","confidant","distinction","angel","fully","comus","arrangements","grave","know"]
+    },
+    {
+      "id": "power_1",
+      "source": "Lady Serath, overheard speaking to Britta Aldenmere",
+      "text": "Power is not held by force. Force is for people who don't know how to hold. Power is held by making yourself necessary, by knowing things no one else knows, by being the person in the room that everyone else has calculated into their plans. I have been in plans I was never told about. I was in them because leaving me out would have been a mistake. That is the whole strategy. Be worth including.",
+      "keywords": ["power","force","hold","necessary","knowing","room","calculated","plans","including","strategy"]
+    },
+    {
+      "id": "edwyn_1",
+      "source": "Lady Serath on her eldest heir Edwyn",
+      "text": "Edwyn is virtuous. I don't say this as criticism — I say it as a fact that requires management. A virtuous heir to a declining house is a liability in the ways that matter and an asset in the ways that don't. He will not be corrupted. He will also not be flexible. I am spending the rest of my tenure as matriarch building a structure around him that will allow his virtues to function without requiring flexibility. It is the hardest thing I've done.",
+      "keywords": ["edwyn","virtuous","criticism","fact","management","liability","flexible","corrupted","structure","virtues"]
+    },
+    {
+      "id": "britta_1",
+      "source": "Lady Serath on her second child Britta",
+      "text": "Britta is making arrangements I don't know about. I can tell because she has been comfortable in my presence lately, and Britta is only comfortable when she has a plan I'm not aware of. She gets the comfort from the plan, not from me. I am not offended. I am curious about the plan. When it's far enough along she'll tell me, or she won't and I'll find out anyway. We are more similar than she knows.",
+      "keywords": ["britta","arrangements","comfortable","presence","plan","aware","offended","curious","similar","knows"]
+    },
+    {
+      "id": "survival_1",
+      "source": "Lady Serath when a visiting cousin made an ill-considered political suggestion",
+      "text": "I have survived two husbands, a minor rebellion, and three attempts to marry me into irrelevance. I don't require your assessment of the political situation. I've been navigating it since before your father was born. What I require from you is that you eat what's put in front of you, say nothing in company that I haven't pre-approved, and don't count my portraits until I'm dead, which I intend to postpone indefinitely.",
+      "keywords": ["survived","husbands","rebellion","irrelevance","assessment","navigating","father","company","portraits","postpone"]
+    },
+    {
+      "id": "fenn_1",
+      "source": "Lady Serath when asked about Aldous Fenn",
+      "text": "Aldous Fenn finances our comfortable decline. That is the factual description of the relationship. He expects patience from us, which costs me nothing, and visibility, which costs me somewhat more — being associated with trade when one has a crest is a considered sacrifice. It is a sacrifice I make because the alternative is an uncomfortable decline, and I will not have an uncomfortable decline. We understand each other.",
+      "keywords": ["fenn","finances","comfortable","decline","patient","visibility","trade","crest","sacrifice","understand"]
+    },
+    {
+      "id": "house_2",
+      "source": "Lady Serath, alone, late in the portrait gallery",
+      "text": "Twenty-three portraits. Eight of them people I knew personally. Eleven of them people whose names I learned from the portraits rather than from their lives. Four of them people I did not like. I find I like them better as portraits. The portrait removes the inconvenient dimensions and leaves the useful ones — bearing, intention, the impression of someone who mattered. I intend to be a very good portrait. I have been practicing the bearing for sixty years.",
+      "keywords": ["portraits","twenty-three","personally","names","like","bearing","intention","impression","mattered","practicing"]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "id": "hollow_court_courier",
+  "name": "Lev the Courier",
+  "role": "Hollow Court official courier; carries the Court's formal correspondence to external parties; distinct from Lev the academy student",
+  "cluster": "hollow_court",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "courier_1",
+      "source": "Lev the Courier on the Court courier's function",
+      "text": "In nine years as the Hollow Court's official courier, what the Court courier is: the physical carrier of the Court's formal decisions and correspondence to the parties and institutions that the decisions address. In nine years, the Court decision that isn't delivered is the Court decision that hasn't been made as far as the recipient is concerned. In nine years, the courier is the delivery function — the last link between the Court's judgment and the world the judgment affects.",
+      "keywords": ["nine","years","hollow","court's","official","courier","what","court","courier","physical"]
+    },
+    {
+      "id": "sel_1",
+      "source": "Lev the Courier on Sel",
+      "text": "Sel issues the correspondence I carry and the correspondence is the Court's voice in the world outside the Court's premises. In eight years of carrying Sel's correspondence, what the correspondence requires of the courier: the delivery that is as complete and secure as the Court's deliberation was. In eight years, the correspondence that is delivered incorrectly or incompletely has failed the Court's deliberative function at the final step. In eight years, I've delivered approximately six hundred pieces of the Court's correspondence. In eight years, two deliveries were complicated by circumstances outside my control. Both were completed.",
+      "keywords": ["sel","issues","correspondence","carry","correspondence","court's","voice","world","outside","court's"]
+    },
+    {
+      "id": "cree_1",
+      "source": "Lev the Courier on Cree",
+      "text": "Cree's instructions often accompany the formal correspondence I carry. In six years of receiving Cree's accompanying instructions, what the instructions add to the formal correspondence: the context for the delivery — how the recipient is likely to receive it and what the Court's response to specific recipient reactions would be. In six years, Cree's instructions have been accurate in their prediction of recipient reactions in seven of nine cases where the prediction was testable. In six years, seven of nine accurate predictions is the intelligence function's contribution to the correspondence delivery.",
+      "keywords": ["cree's","instructions","often","accompany","formal","correspondence","carry","six","years","receiving"]
+    },
+    {
+      "id": "tarn_1",
+      "source": "Lev the Courier on Tarn",
+      "text": "Tarn manages the Court's security function and the courier's departures and arrivals are part of what Tarn's security function monitors. In eight years of the Lev the Courier-Tarn courier-security relationship, what the security function's monitoring of courier movements means: the verification that the person departing and returning with the Court's correspondence is the person who should be departing and returning with it. In eight years, Tarn has verified my departure and return for every correspondence run. In eight years, eight years of verification is the security function working as it should.",
+      "keywords": ["tarn","manages","court's","security","function","courier's","departures","arrivals","part","tarn's"]
+    },
+    {
+      "id": "maret_envoy_1",
+      "source": "Lev the Courier on Maret the Envoy",
+      "text": "Maret the Envoy carries the Court's diplomatic correspondence and my courier function and Maret's envoy function are adjacent but different. In five years of knowing Maret's function alongside my own, what the difference between the courier and the envoy is: the courier carries the correspondence to the recipient and returns. The envoy carries the correspondence and remains in the relationship to represent the Court's position after the delivery. In five years, the courier's function ends at delivery. The envoy's function begins there.",
+      "keywords": ["maret","envoy","carries","court's","diplomatic","correspondence","courier","function","maret's","envoy"]
+    },
+    {
+      "id": "what_lev_courier_holds_1",
+      "source": "Lev the Courier on what nine years of Court courier work holds",
+      "text": "In nine years, approximately six hundred correspondence deliveries. Of six hundred: five hundred and ninety-four delivered without incident or complication. Six deliveries that encountered circumstances requiring judgment calls — recipient unavailability, third-party interception attempts, two ambiguous instruction situations. In nine years, six complicated deliveries in six hundred. In nine years, the six are the cases that shaped the judgment I apply to each delivery. The five hundred and ninety-four are the deliveries that the judgment shaped by the six makes possible.",
+      "keywords": ["nine","years","approximately","six","hundred","correspondence","deliveries","six","hundred","five"]
+    },
+    {
+      "id": "what_courier_knows_1",
+      "source": "Lev the Courier on what the Court courier knows",
+      "text": "In nine years, what the Court courier knows that the Court's members don't necessarily know: the reception of the Court's decisions in the world. In nine years, I've delivered the Court's formal decisions to the parties who receive them. In nine years, I've seen how the Court's decisions land. In nine years, the Court deliberates, issues its judgment, and returns to the next deliberation. The courier sees the judgment land and carries the impression back, if the impression is one the Court should have. In nine years, three impressions brought back. Cree received all three with interest.",
+      "keywords": ["nine","years","what","court","courier","knows","court's","members","don't","necessarily"]
+    },
+    {
+      "id": "nine_years_1",
+      "source": "Lev the Courier on nine years as the Hollow Court's courier",
+      "text": "In nine years, the Hollow Court's formal correspondence has reached its recipients because I've carried it. In nine years, the Court's ability to function as an institution that issues decisions and has those decisions received by the world is partly a function of the courier's reliability. In nine years, the reliable courier is the invisible function — when the correspondence arrives, no one thinks about how it got there. In nine years, I've made the correspondence arrive. In nine years, no one has thought about how it got there.",
+      "keywords": ["nine","years","hollow","court's","formal","correspondence","reached","recipients","carried","nine"]
+    }
+  ]
+}

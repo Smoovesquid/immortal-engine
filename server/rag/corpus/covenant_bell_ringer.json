@@ -1,0 +1,57 @@
+{
+  "id": "covenant_bell_ringer",
+  "name": "Wid",
+  "role": "Bell ringer for the Covenant; marks the hours and the feast days",
+  "cluster": "covenant_of_seven",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "bells_1",
+      "source": "Wid on what the bells do",
+      "text": "The bells tell the settlement what time it is. Not just the hour — the occasion. There are seven bell patterns in the Covenant's tradition: six for the daily hours and one for the sacred occasions. When the sixth bell sounds, every tradesperson in the market knows the hour without looking at a clock. When the sacred pattern sounds, every person in the settlement knows something significant is being marked. I've been ringing for nineteen years. The settlement's days are shaped by what I do at the top of the tower.",
+      "keywords": ["bells","tell","settlement","what","time","not","just","hour","occasion","there"]
+    },
+    {
+      "id": "father_len_1",
+      "source": "Wid on Father Len",
+      "text": "Father Len sets the sacred occasions I ring for. In nineteen years under two priests, the occasions have been set the same way — the Covenant's calendar is fixed. What Father Len does differently from the priest before him: Father Len tells me why each occasion matters before the day arrives. The previous priest gave me the schedule. Father Len gives me the meaning. The ringing is different when I know what I'm marking.",
+      "keywords": ["father","len","sets","sacred","occasions","ring","for","nineteen","years","under"]
+    },
+    {
+      "id": "sable_1",
+      "source": "Wid on Sable",
+      "text": "Sable is in the seventh year of the acolyte preparation. I've watched seven years of that preparation from the bell tower. The tower is above the Covenant's courtyard, and the courtyard is where the acolytes train. What I've observed from above: the preparation is visible in the way people move. Year-one acolytes move with uncertainty about where they're supposed to be. Year-seven acolytes move with certainty about where they should be, even when they're somewhere they haven't been before. Sable moves correctly now.",
+      "keywords": ["sable","seventh","year","acolyte","preparation","watched","seven","years","preparation","bell"]
+    },
+    {
+      "id": "mast_1",
+      "source": "Wid on Mast",
+      "text": "Mast and I have the same relationship to time in different forms: Mast's records create a timeline of what the council decided and when. My bells create a timeline of the settlement's hours and occasions. Both of us are marking time. The council record marks what was decided in time. The bells mark the time in which things are decided. We're working on the same medium from different ends. I told Mast this once. Mast said: I've never thought about it that way. Neither had I until I said it.",
+      "keywords": ["mast","have","same","relationship","time","different","forms","mast's","records","create"]
+    },
+    {
+      "id": "perve_1",
+      "source": "Wid on Perve",
+      "text": "Perve told me once that the vegetable stall's daily rhythm is organized around the bells. The morning bells mean: the early buyers are arriving. The noon bells mean: the peak hour is passing. The fifth bell means: start the discount assessment for the day's remaining stock. Perve doesn't think about the bells. Perve responds to them. In twenty-three years at the same stall, the bells have shaped the stall's day so thoroughly that Perve described it to me as instinct. The instinct is nineteen years of the same signal.",
+      "keywords": ["perve","told","once","vegetable","stall's","daily","rhythm","organized","around","bells"]
+    },
+    {
+      "id": "what_ringing_is_1",
+      "source": "Wid on what bell ringing is",
+      "text": "The bell is not played. The bell is called. The bell has a voice that exists before you ring it — the bronze holds the voice and the strike releases it. What the ringer does: choose the moment and the force of the strike, so the voice releases in a way that carries. After nineteen years, I know what the bell will do before I strike. The knowledge is in my arm. My arm knows the bell the way a mouth knows a language after enough years. Not thinking, knowing.",
+      "keywords": ["bell","not","played","bell","called","bell","has","voice","exists","before"]
+    },
+    {
+      "id": "what_wid_holds_1",
+      "source": "Wid on what he hears from the tower",
+      "text": "The tower is the highest point in the settlement except the lighthouse. In nineteen years, the things I've seen and heard from the tower: I've heard the birth cry of a child from four streets away. I've heard the exact moment when a fire started before anyone on the street knew it was a fire. I've heard an argument in the market below that resolved itself in three minutes, silently. I've heard the harbor change from winter to spring in the tone of the wind against the water. The tower gives you the settlement's sounds in a way the settlement can't hear itself.",
+      "keywords": ["tower","highest","point","settlement","except","lighthouse","nineteen","years","things","seen"]
+    },
+    {
+      "id": "nineteen_years_1",
+      "source": "Wid on nineteen years at the bells",
+      "text": "Every hour I've rung in nineteen years is the same hour in different weather, different seasons, different surrounding circumstances. The pattern is the same every day. The context is always different. In nineteen years I've never rung the same hour twice — the hour is the same, what the hour contains has never repeated. The repetition of the pattern across the changing context is the thing that makes the pattern meaningful. The bell says: this hour. What happens inside this hour is everything else.",
+      "keywords": ["every","hour","rung","nineteen","years","same","hour","different","weather","different"]
+    }
+  ]
+}

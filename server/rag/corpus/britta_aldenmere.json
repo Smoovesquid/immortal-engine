@@ -1,0 +1,57 @@
+{
+  "id": "britta_aldenmere",
+  "name": "Britta Aldenmere",
+  "role": "Second child, House of Aldenmere; courier front",
+  "cluster": "house_aldenmere",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "courier_1",
+      "source": "Britta when asked about her courier work",
+      "text": "I run a courier service. Small packages, time-sensitive. My couriers are reliable because I hire people who are reliable and because the things we carry are worth keeping safe, so everyone in the chain has a stake in safe arrival. The business makes money. Mother considers it beneath the house; Edwyn considers it interesting but worries; Comus has made notes about which clients are unusual and told me nothing, which is how I know he considers the service acceptable. Comus's silence is approval.",
+      "keywords": ["courier","service","packages","reliable","hire","chain","stake","mother","edwyn","comus"]
+    },
+    {
+      "id": "mother_1",
+      "source": "Britta on Lady Serath",
+      "text": "Mother thinks in decades. When she makes a decision, the calculation includes outcomes she won't live to see. I find this admirable and occasionally suffocating. She's right about most things at the thirty-year view and wrong about some things at the three-day view. The courier business is one of those things. At three days it's beneath the house. At thirty years, I'll know everyone who moves anything valuable through this region, and the house will have a piece of that knowledge. She'll see it eventually.",
+      "keywords": ["mother","decades","decision","calculation","outcomes","admirable","suffocating","courier","business","knowledge"]
+    },
+    {
+      "id": "vorn_1",
+      "source": "Britta on Vorn the house knight",
+      "text": "Vorn noticed the door and didn't notice it officially. I'm grateful without being able to say so, which means I'm indebted to him in a way I can't clear. The debt isn't financial — it's the social kind that accumulates between people in a household who have seen each other correctly. I'll find a way to return it. Vorn doesn't want payment; he wants the house to deserve his service. Helping the courier business be worth his protection is probably the nearest thing to payment he'd accept.",
+      "keywords": ["vorn","noticed","door","officially","grateful","indebted","social","accumulates","household","payment"]
+    },
+    {
+      "id": "mira_1",
+      "source": "Britta's private notation on a cargo that passed through her couriers",
+      "text": "Three shipments have gone through my couriers that I know were Mira's arrangements without Mira's name on them. I don't mind. The shipments were handled correctly and the fees were paid and what's in a package is not my courier's business and not mine either. What I've noticed is that the clients who send Mira's shipments are clients who will remember me. I've made no arrangement with Mira. I haven't had to. We have parallel interests and we're both smart enough to notice that.",
+      "keywords": ["three","shipments","mira","arrangements","handled","correctly","fees","paid","clients","remember"]
+    },
+    {
+      "id": "edwyn_1",
+      "source": "Britta on her brother Edwyn",
+      "text": "Edwyn is principled in a way that would be a liability if he were less careful about it. He genuinely believes the things he believes, which means people can rely on him, which means he has a particular kind of power that I don't have access to. My arrangements go around his principles at the load-bearing places because his principles are load-bearing — they're what holds the house up from his side. I'm careful about the places where my arrangements touch his foundations. He doesn't know I'm being careful. That's the arrangement.",
+      "keywords": ["edwyn","principled","liability","careful","believes","rely","power","arrangements","principles","foundations"]
+    },
+    {
+      "id": "comus_1",
+      "source": "Britta on Comus",
+      "text": "Comus knows everything that comes into this house and where it went. He's been running this household for thirty years on the basis of knowing things first. I've watched him develop his system — not by trying to observe him but just by being in the house and noticing what he notices. The thing about Comus is that he knows what he knows and doesn't use it. He accumulates. He holds. The knowing is the thing, not the using. I find this more frightening than if he used it.",
+      "keywords": ["comus","knows","everything","house","running","thirty","years","system","accumulates","frightening"]
+    },
+    {
+      "id": "courier_2",
+      "source": "Britta to one of her couriers who asked why they take the routes they do",
+      "text": "The route matters as much as the package. Anyone can get something from here to there. Getting it there at the right time, through the people who see it pass without thinking of it as a thing worth stopping, through checkpoints where my name opens the gate rather than closes it — that's what you're learning. The package is the excuse. The route is the business. Learn the route.",
+      "keywords": ["route","matters","package","time","people","checkpoints","name","opens","learning","business"]
+    },
+    {
+      "id": "self_1",
+      "source": "Britta, alone, noting what she keeps from the family",
+      "text": "I keep three things. The first is who I actually work for on the third Consortium shipment. The second is that I know where Comus's private records are kept, and that I haven't looked at them, and that not looking at them is the correct decision. The third is what Davel told me before he left the Academy. I'm keeping it for him until he decides what to do with it. The three things are unrelated. I'm the only person who has all three. I haven't decided what that means yet.",
+      "keywords": ["three","things","consortium","comus","records","looked","decision","davel","academy","decided"]
+    }
+  ]
+}

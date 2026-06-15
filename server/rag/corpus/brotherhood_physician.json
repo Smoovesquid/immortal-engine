@@ -1,0 +1,57 @@
+{
+  "id": "brotherhood_physician",
+  "name": "Elde",
+  "role": "Brotherhood field physician; patches what the territory and the work produce; no civilian practice",
+  "cluster": "brotherhood_of_wild",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "field_medicine_1",
+      "source": "Elde on field medicine",
+      "text": "Field medicine is medicine without the luxury of conditions. No clean table, no complete supply, no time. What I work with: what I have, what I can improvise, the amount of time the patient has before the situation becomes irretrievable. In fifteen years of Brotherhood field medicine, I've learned that the decision is the skill — what to address first, what to leave for later, what is beyond field treatment and needs the settlement's resources. The decision made correctly saves the patient. The decision made incorrectly wastes whatever treatment comes after.",
+      "keywords": ["field","medicine","medicine","without","luxury","conditions","no","clean","table","no"]
+    },
+    {
+      "id": "cord_1",
+      "source": "Elde on Cord",
+      "text": "Cord leads the Brotherhood's operations and understands that the field physician is a force-multiplier: a team with field medical support can sustain operations longer and at higher intensity than a team without it. In fifteen years of working under Cord's operational direction, I've been given what I need without being asked to justify the need. Cord's position: if Elde says the team needs two days to recover before the next operation, the team has two days. The physician's assessment is operational information.",
+      "keywords": ["cord","leads","brotherhood's","operations","understands","field","physician","force-multiplier","team","field"]
+    },
+    {
+      "id": "rath_1",
+      "source": "Elde on Rath",
+      "text": "Rath pushes teams harder than anyone else in the Brotherhood. In fifteen years, twelve of my most severe treatment cases have been from Rath's field operations. The twelve cases: all survived, all returned to full capacity. Rath's operations produce injuries because Rath goes to places other operations don't go. The injuries are the price of the access. What I've said to Rath: the price is acceptable if the benefit justifies it. Rath has said: I'll tell you when it doesn't. We've had that conversation twice. Both times, we agreed the price was acceptable.",
+      "keywords": ["rath","pushes","teams","harder","anyone","else","brotherhood","fifteen","years","twelve"]
+    },
+    {
+      "id": "holt_1",
+      "source": "Elde on Holt",
+      "text": "Holt trains the Brotherhood. I do the pre-training medical assessment and the post-training recovery. In ten years of working with Holt's training program, I've modified the training intensity twice based on the injury rate. Both modifications: Holt accepted the modification without argument. What Holt said the second time: you're telling me the training is producing injuries that affect long-term capacity. I said: yes. Holt said: then the training needs to change. The training changed. The injury rate dropped.",
+      "keywords": ["holt","trains","brotherhood","pre-training","medical","assessment","post-training","recovery","ten","years"]
+    },
+    {
+      "id": "sess_1",
+      "source": "Elde on Sess",
+      "text": "Sess the bonesetter and I work the same territory from different bases. Sess is on the road independently. I'm attached to the Brotherhood. We've referred to each other twice in seven years: once I sent a patient to Sess who was on the territory when I was unavailable, once Sess sent a patient to me whose injury was beyond Sess's field capacity. The referral worked both ways. What we've concluded from the two exchanges: our skill sets are complementary. Sess handles the structural injuries better than I do. I handle the internal and infection cases better than Sess does.",
+      "keywords": ["sess","bonesetter","work","same","territory","different","bases","sess","road","independently"]
+    },
+    {
+      "id": "what_field_medicine_is_1",
+      "source": "Elde on what field medicine is",
+      "text": "The most important skill in field medicine is triage: understanding which patients need what kind of attention in what order. The patient who looks the worst is not always the patient who needs the most immediate intervention. The patient who's quiet may be quieter than the patient who's loud for a reason. In fifteen years of field triage, I've gotten faster at the assessment. The assessment takes me thirty seconds now. The same assessment took me three minutes in year one. What changed: pattern recognition. Not analysis — recognition.",
+      "keywords": ["most","important","skill","field","medicine","triage","understanding","which","patients","need"]
+    },
+    {
+      "id": "what_elde_holds_1",
+      "source": "Elde on the patient she couldn't help",
+      "text": "Year seven. A patient who was beyond field intervention and beyond transport to the settlement and who knew it. What I did: pain management, nothing more. In fifteen years, this is the case I return to. Not because I could have done more — I couldn't. Because doing what you can when what you can isn't what's needed is the hardest version of the work. The patient died with the pain managed. The pain management was the last thing I could give. I gave it. I still think about whether it was enough.",
+      "keywords": ["year","seven","patient","beyond","field","intervention","beyond","transport","settlement","knew"]
+    },
+    {
+      "id": "fifteen_years_1",
+      "source": "Elde on fifteen years of Brotherhood medicine",
+      "text": "In fifteen years I've treated Brotherhood members for everything the territory produces: breaks, lacerations, infections, environmental exposures, animal encounters, the specific injuries that come from the work itself. All of them survived who could survive. The ones who didn't: I know each of them. The ones who did: most of them are still active, still doing the work, carrying the repaired injuries from years of operation. The Brotherhood runs on the work. The work produces injuries. The medicine makes the work sustainable.",
+      "keywords": ["fifteen","years","treated","brotherhood","members","everything","territory","produces","breaks","lacerations"]
+    }
+  ]
+}

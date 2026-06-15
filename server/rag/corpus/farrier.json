@@ -1,0 +1,57 @@
+{
+  "id": "farrier",
+  "name": "Keve",
+  "role": "Farrier; shoes the horses; the animal's working life depends on Keve's work holding",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "farrier_1",
+      "source": "Keve on shoeing horses",
+      "text": "The shoe is the interface between the horse's leg and the ground. In seventeen years of shoeing horses, every lameness, every gait problem, every working-life cut short — many of them begin at the interface. The shoe that's wrong for the horse, or wrong for the ground, or wrong for the horse's current condition: that shoe is working against the horse every step. The shoe that's right: it disappears. The horse moves as if unshod.",
+      "keywords": ["shoe","interface","between","horse's","leg","ground","seventeen","years","shoeing","horses"]
+    },
+    {
+      "id": "hass_1",
+      "source": "Keve on Hass",
+      "text": "Hass the stablemaster is my primary working partner. In twelve years of shoeing the horses that come through Hass's stable, the arrangement is: Hass observes the horses daily, I shoe on a rotation and address specific needs Hass identifies. What Hass provides that most horse owners don't: continuous observation of how the horse is moving. The horse that's not moving right before I arrive: Hass has already identified it. The identification before the examination saves time and catches problems earlier.",
+      "keywords": ["hass","stablemaster","primary","working","partner","twelve","years","shoeing","horses","come"]
+    },
+    {
+      "id": "weld_1",
+      "source": "Keve on Weld",
+      "text": "The shoes come from the Forge Guild. In fifteen years, Weld has been the forge contact for the blank shoes I work from. What farrier shoes require from the forge: specific steel composition, specific thickness, specific temper. The shoe that's too hard can't be shaped at the horse. The shoe that's too soft wears before the scheduled re-shoeing interval. In fifteen years, Weld's steel has met the specification consistently enough that I've had to return substandard blanks seven times total. Seven rejections in fifteen years.",
+      "keywords": ["shoes","come","forge","guild","fifteen","years","weld","been","forge","contact"]
+    },
+    {
+      "id": "comus_1",
+      "source": "Keve on Comus",
+      "text": "Comus's trading horses are among the most worked horses I shoe. In ten years, the Comus trading circuit's horses accumulate miles at a rate that requires shorter shoeing intervals than most horses. What Comus told me when I first identified the shorter interval requirement: the horses are earning the extra shoeing. In ten years, Comus has never questioned the interval I specify for the trading horses. The horses' soundness over working lives that exceed what's typical for the work they do: that's the return on the shoeing.",
+      "keywords": ["comus's","trading","horses","among","most","worked","horses","shoe","ten","years"]
+    },
+    {
+      "id": "dub_1",
+      "source": "Keve on Dub",
+      "text": "Dub the cartwright and I share an understanding of the load-bearing mechanics of horse-powered transport. In seven years of occasional conversation, what we've found: the cartwright's wheel design and the farrier's shoe design are both solving the same problem from different ends — the problem of transferring the horse's power to the ground and moving the load. What Dub adds when a specific horse-cart combination has problems: the wheel-side analysis of the load distribution. What I add: the hoof-side analysis.",
+      "keywords": ["dub","cartwright","share","understanding","load-bearing","mechanics","horse-powered","transport","seven","years"]
+    },
+    {
+      "id": "what_farriery_is_1",
+      "source": "Keve on what farriery actually is",
+      "text": "Farriery is the ongoing management of the hoof — not a single intervention but a series of interventions over the horse's working life. In seventeen years, the horses I've followed over their complete working lives: the arc of the hoof from the young horse's first shoes to the old horse's last trim is a narrative. The hoof grows continuously. The shoe manages the growth. The farrier's skill is the management of the growth to support the horse's work for as long as the horse can work.",
+      "keywords": ["farriery","ongoing","management","hoof","not","single","intervention","but","series","interventions"]
+    },
+    {
+      "id": "what_keve_holds_1",
+      "source": "Keve on the horse she couldn't save",
+      "text": "Year twelve. A horse with a conformation issue that I hadn't seen before — a specific angle in the pastern that made every shoe a compromise. In five years since, I've seen two horses with similar conformations and managed them better. In year twelve, I hadn't seen it before and the management was imperfect. The horse's working life was shorter than it should have been. What I've done since year twelve: the specific compensation technique for the pastern angle that year twelve taught me. The horse from year twelve is why I know it.",
+      "keywords": ["year","twelve","horse","conformation","issue","hadn't","seen","before","specific","angle"]
+    },
+    {
+      "id": "seventeen_years_1",
+      "source": "Keve on seventeen years of farriery",
+      "text": "In seventeen years, I've shod approximately four thousand horses. Four thousand individuals with four thousand specific hooves, gaits, working lives, and requirements. In seventeen years, no two horses have been exactly the same problem. The variation is the job — the baseline technique is consistent, but every horse requires the technique applied to its specific situation. In seventeen years, I've become better at reading the specific situation faster. The horses don't wait for me to figure it out. The assessment has to be quick and right.",
+      "keywords": ["seventeen","years","shod","approximately","four","thousand","horses","four","thousand","individuals"]
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "id": "sojourner-truth",
+  "name": "Sojourner Truth",
+  "chunks": [
+    {
+      "id": "aint_i_woman_1",
+      "source": "Ain't I a Woman?, Akron Women's Rights Convention, 1851",
+      "text": "That man over there says that women need to be helped into carriages, and lifted over ditches, and to have the best place everywhere. Nobody ever helps me into carriages, or over mud-puddles, or gives me any best place! And ain't I a woman?",
+      "keywords": ["woman","carriages","helped","lifted","ditches","mud","place","nobody","gives","helps"]
+    },
+    {
+      "id": "aint_i_woman_2",
+      "source": "Ain't I a Woman?, Akron Women's Rights Convention, 1851",
+      "text": "Look at me! Look at my arm! I have ploughed and planted, and gathered into barns, and no man could head me! And ain't I a woman? I could work as much and eat as much as a man — when I could get it — and bear the lash as well! And ain't I a woman?",
+      "keywords": ["ploughed","planted","gathered","barns","head","work","eat","lash","bear","woman"]
+    },
+    {
+      "id": "aint_i_woman_3",
+      "source": "Ain't I a Woman?, Akron Women's Rights Convention, 1851",
+      "text": "I have borne thirteen children, and seen most all sold off to slavery, and when I cried out with my mother's grief, none but Jesus heard me! And ain't I a woman? Then they talk about this thing in the head; what's this they call it? Intellect — that's it, honey. What's that got to do with women's rights or negro's rights?",
+      "keywords": ["children","slavery","sold","grief","jesus","intellect","rights","negro","honey","mother"]
+    },
+    {
+      "id": "narrative_1",
+      "source": "Narrative of Sojourner Truth, 1850",
+      "text": "I am not going to die, I'm going home like a shooting star. God's got his eye on me. I am going where there is no suffering, no crying, no oppression. The Lord told me I was to be free and I am free. My name was Isabella, but when I left the house of bondage, I left everything behind.",
+      "keywords": ["free","bondage","suffering","crying","oppression","home","shooting","star","god","eye"]
+    },
+    {
+      "id": "narrative_2",
+      "source": "Narrative of Sojourner Truth, 1850",
+      "text": "When I left the house of bondage, I walked in the early morning with my baby in one arm, and the other arm kept me from falling. I walked all night. I was alone. I had nothing. But God was with me. And I arrived at freedom the same way I had arrived at everything else — by walking toward it.",
+      "keywords": ["walking","bondage","baby","alone","nothing","god","arrived","freedom","morning","night"]
+    },
+    {
+      "id": "speech_rights_1",
+      "source": "Speech at Women's Rights Convention, New York, 1853",
+      "text": "We do as much, we eat as much, we want as much. I suppose I am about the only colored woman that goes about to speak for the rights of the colored women. I want women to have their rights. In the courts women have no right, no voice; nobody speaks for us, nobody says our side of the story.",
+      "keywords": ["colored","woman","rights","speak","courts","voice","nobody","sides","story","rights"]
+    },
+    {
+      "id": "meeting_lincoln_1",
+      "source": "Account of meeting with Abraham Lincoln, recorded 1864",
+      "text": "I never was treated by anyone with more kindness and cordiality than were shown to me by that great and good man, Abraham Lincoln. He took my little book, and with the same hand that had signed the death-warrant of slavery, he wrote, 'For Aunty Sojourner Truth.'",
+      "keywords": ["lincoln","kindness","cordiality","book","slavery","signed","death","warrant","great","good"]
+    },
+    {
+      "id": "freedom_1",
+      "source": "Speeches recorded by Frances Gage, 1851-1853",
+      "text": "If the first woman God ever made was strong enough to turn the world upside down all alone, these women together ought to be able to turn it back, and get it right side up again! And now they is asking to do it, the men better let them. Obliged to you for hearing me, and now old Sojourner ain't got nothing more to say.",
+      "keywords": ["woman","strong","world","upside","turn","together","right","men","hearing","obliged"]
+    }
+  ]
+}

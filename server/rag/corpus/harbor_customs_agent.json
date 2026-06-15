@@ -1,0 +1,57 @@
+{
+  "id": "harbor_customs_agent",
+  "name": "Strenn",
+  "role": "Harbor customs agent; assesses duties on incoming cargo; the settlement's claim on what the harbor produces",
+  "cluster": "harbor_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "customs_1",
+      "source": "Strenn on customs work",
+      "text": "In eleven years of customs assessment at the harbor, what the customs function is: the settlement's mechanism for claiming a portion of the commercial value that the harbor creates. The ship that enters the harbor and unloads its cargo has used the settlement's harbor infrastructure. The duty is the infrastructure's price. In eleven years, what I do is assess and collect that price. In eleven years, what I've found: the price is contested much more vigorously by those who can most easily pay it.",
+      "keywords": ["eleven","years","customs","assessment","harbor","what","customs","function","settlement's","mechanism"]
+    },
+    {
+      "id": "keris_1",
+      "source": "Strenn on Keris",
+      "text": "Keris manages the harbor and the customs function operates within Keris's harbor governance. In nine years of the Keris-customs relationship, what Keris's harbor management provides to customs: the advance manifest of incoming cargo. The customs assessment that begins before the ship docks is the customs assessment that doesn't delay the ship's turnaround. In nine years, Keris's advance manifests have allowed me to prepare assessments before the cargo is on the dock, which has made the customs process efficient enough that it rarely appears as a bottleneck.",
+      "keywords": ["keris","manages","harbor","customs","function","operates","within","keris's","harbor","governance"]
+    },
+    {
+      "id": "comus_1",
+      "source": "Strenn on Comus",
+      "text": "Comus is my most frequent high-value customs counterparty. In eight years of assessing duties on Comus's incoming cargo, what the Comus-customs relationship has been: professionally adversarial. Comus contests assessments that are technically contestable and accepts assessments that are not. In eight years, Comus has formally contested eleven of my assessments. I've modified four. Comus was right on four, I was right on seven. In eight years, the eleven contests have produced a more precise assessment methodology on my part and a more precise duty record for Comus.",
+      "keywords": ["comus","most","frequent","high-value","customs","counterparty","eight","years","assessing","duties"]
+    },
+    {
+      "id": "meld_1",
+      "source": "Strenn on Meld",
+      "text": "Meld the chandler's supply manifests are among the most consistently accurate manifests I review. In seven years of processing Meld's manifests, what the accuracy tells me: Meld knows what's on the manifest before the manifest is submitted. In seven years, the accurate manifest is the manifest that was accurate before the customs review, not the manifest that became accurate because of the customs review. In seven years, Meld's manifests have required no correction.",
+      "keywords": ["meld","chandler's","supply","manifests","among","most","consistently","accurate","manifests","review"]
+    },
+    {
+      "id": "gid_1",
+      "source": "Strenn on Gid",
+      "text": "Gid pilots some of the cargo vessels I assess duties on. In six years of the pilot-customs agent intersection, what Gid's piloting function produces that affects customs: the pilot's manifest knowledge. Gid knows what's on the ship before the ship docks because Gid has been on the ship during the approach. In six years, Gid has twice told me before a ship docked that the ship's cargo manifest didn't match the cargo the ship was carrying. Both times: the discrepancy was confirmed in the assessment.",
+      "keywords": ["gid","pilots","some","cargo","vessels","assess","duties","six","years","pilot-customs"]
+    },
+    {
+      "id": "what_strenn_holds_1",
+      "source": "Strenn on what eleven years of customs assessment holds",
+      "text": "In eleven years, what the customs function has shown me about the harbor's commerce: the gap between the declared cargo value and the actual cargo value is present in approximately one-third of the manifests I assess. In eleven years, the gap varies from the significant misrepresentation to the minor understatement. In eleven years, what I do with the gap depends on its size and its pattern: the minor understatement in a first manifest is a correction and a note. The significant misrepresentation in a repeat pattern is a formal assessment and a file.",
+      "keywords": ["eleven","years","what","customs","function","shown","about","harbor's","commerce","gap"]
+    },
+    {
+      "id": "what_strenn_wont_do_1",
+      "source": "Strenn on what she won't do",
+      "text": "In eleven years, two formal approaches to me about adjusting an assessment in exchange for a consideration outside the assessment process. In eleven years, two approaches in eleven years. Both: declined in the first conversation and reported to Keris's attention. In eleven years, neither approach has been followed by a second approach from the same party. In eleven years, I don't know whether the decline produced the changed behavior or whether the changed behavior was the plan regardless. I know the assessment was accurate. That's the part I control.",
+      "keywords": ["eleven","years","two","formal","approaches","adjusting","assessment","exchange","consideration","outside"]
+    },
+    {
+      "id": "eleven_years_1",
+      "source": "Strenn on eleven years of harbor customs assessment",
+      "text": "In eleven years, I've assessed approximately twelve thousand cargo manifests. Twelve thousand assessments of what the harbor's incoming commerce declared and what it actually contained. In eleven years, the twelve thousand have produced the settlement's customs revenue with an accuracy rate I'm satisfied with and a dispute rate I'm comfortable defending. In eleven years, the customs function is the function that nobody is pleased to pay and everyone would notice the absence of. In eleven years, the nobody-is-pleased position is the correct position for the function. The customs agent who is popular isn't doing the assessment correctly.",
+      "keywords": ["eleven","years","assessed","approximately","twelve","thousand","cargo","manifests","twelve","thousand"]
+    }
+  ]
+}

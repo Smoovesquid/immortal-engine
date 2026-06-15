@@ -1,0 +1,57 @@
+{
+  "id": "merchant_quarter_tailor",
+  "name": "Sel the Tailor",
+  "role": "Merchant quarter tailor; dresses the district's commerce in clothing appropriate to the commerce",
+  "cluster": "merchant_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "tailor_1",
+      "source": "Sel the Tailor on the merchant quarter's clothing needs",
+      "text": "In nineteen years of tailoring in the merchant quarter, what the merchant wears is the merchant's first communication before the merchant speaks. In nineteen years, the clothing I make for the district's merchants and brokers is the clothing in which deals are made. The fabric's quality, the cut's precision, the fit's correctness: these are not vanity in the merchant quarter. They're the material signal of the kind of business the wearer conducts.",
+      "keywords": ["nineteen","years","tailoring","merchant","quarter","what","merchant","wears","merchant's","first"]
+    },
+    {
+      "id": "saben_1",
+      "source": "Sel the Tailor on Saben",
+      "text": "Saben has been my most demanding client in terms of quality and my most consistent client in terms of volume for fourteen years. In fourteen years of Saben's wardrobe, what the wardrobe has produced: the commercial presentation that Saben's position in the district's commerce requires. In fourteen years, Saben's clothing specification has not changed: the finest available fabric, the most precise fit, the cut that reads as expensive without being ostentatious. In fourteen years, the three requirements have been the three requirements I've refined most.",
+      "keywords": ["saben","been","most","demanding","client","terms","quality","most","consistent","client"]
+    },
+    {
+      "id": "yar_1",
+      "source": "Sel the Tailor on Yar",
+      "text": "Yar the merchant broker dresses for negotiation. In eight years of tailoring Yar's business wardrobe, what Yar has communicated through the clothing choices: the appearance of someone who is positioned as a broker rather than a principal — present and capable but not the dominant party. In eight years, the broker's clothing is the clothing of the visible professional rather than the clothing of the power position. In eight years, Yar's specification has been consistent: professional, precise, not dominant.",
+      "keywords": ["yar","merchant","broker","dresses","negotiation","eight","years","tailoring","yar's","business"]
+    },
+    {
+      "id": "comus_1",
+      "source": "Sel the Tailor on Comus",
+      "text": "Comus is the district's most visible commercial presence and the clothing I've made for Comus reflects that visibility. In twelve years of tailoring for Comus, what the visibility requires of the clothing: the signaling that the wearer is at the center of things, that the wearer's presence is expected and recognized. In twelve years, Comus's clothing specification has evolved once — in year eight, Comus shifted from the conservative presentation to the more visible one. In twelve years, the shift in year eight corresponded to a shift in Comus's commercial position. The clothing followed.",
+      "keywords": ["comus","district's","most","visible","commercial","presence","clothing","made","comus","reflects"]
+    },
+    {
+      "id": "liss_daughter_1",
+      "source": "Sel the Tailor on Liss the Younger",
+      "text": "Liss the Younger is beginning to build a professional wardrobe for the first time. In two years of working with Liss the Younger on the transition from household dress to commercial dress, what the transition requires: the clothing that reads as the professional Liss the Younger is becoming rather than the daughter Liss the Younger has been. In two years, the wardrobe has been built piece by piece in the sequence that professional deployment allows — the formal piece first, then the daily commercial piece.",
+      "keywords": ["liss","younger","beginning","build","professional","wardrobe","first","time","two","years"]
+    },
+    {
+      "id": "what_sel_tailor_holds_1",
+      "source": "Sel the Tailor on what the clothing reveals",
+      "text": "In nineteen years, what the clothing tells me about the person wearing it that the person often doesn't know they're communicating: the relationship between what they want to project and what their body language confirms. In nineteen years, the client whose clothing says one thing and whose presence says another: the clothing isn't the problem. In nineteen years, the most effective wardrobe I've ever produced was the wardrobe for the client whose presence and clothing agreed. The agreement is the effect. The clothing alone is just fabric.",
+      "keywords": ["nineteen","years","what","clothing","tells","about","person","wearing","person","often"]
+    },
+    {
+      "id": "thornwall_tailor_connection_1",
+      "source": "Sel the Tailor on the other tailor",
+      "text": "There's another tailor in the thornwall district. We share no customers — the thornwall trade and the merchant quarter trade are different trades. In fifteen years of operating in parallel with the thornwall district's tailoring, what the two practices have in common: the craft. What they don't share: the clientele, the specification, the price point, or the purpose. The thornwall tailor dresses the settlement. I dress the settlement's commerce. Different garments, different language.",
+      "keywords": ["another","tailor","thornwall","district","share","no","customers","thornwall","trade","merchant"]
+    },
+    {
+      "id": "nineteen_years_1",
+      "source": "Sel the Tailor on nineteen years of tailoring in the merchant quarter",
+      "text": "In nineteen years, I've made approximately eight thousand garments for the district's commercial class. Eight thousand garments that have been worn to negotiations, to signings, to presentations, to the commercial occasions where what you wear is part of what you're communicating. In nineteen years, the eight thousand garments have been in the room for a significant portion of the district's commercial history. In nineteen years, the clothing I've made has been present for more of the district's commercial life than I have. The garments outlast the occasions they were made for.",
+      "keywords": ["nineteen","years","made","approximately","eight","thousand","garments","district's","commercial","class"]
+    }
+  ]
+}

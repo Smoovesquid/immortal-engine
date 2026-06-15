@@ -1,0 +1,57 @@
+{
+  "id": "scarlet_compact_scout",
+  "name": "Nev the Second",
+  "role": "Scarlet Compact long-range scout; different Nev from the recruiter; watches far-out targets over days",
+  "cluster": "scarlet_compact",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "compact_scout_1",
+      "source": "Nev the Second on the Compact's long-range scouting",
+      "text": "In seven years as the Compact's long-range scout, what distinguishes the Compact's scouting from the Orphan Roads' scouting: the Compact's targets are more distant and the observation windows are longer. The Orphan Roads scout watches a location for hours. I watch a location for days. In seven years, the multi-day observation produces a different quality of intelligence — the pattern that's visible over three days that isn't visible in three hours.",
+      "keywords": ["seven","years","compact's","long-range","scout","what","distinguishes","compact's","scouting","orphan"]
+    },
+    {
+      "id": "ceth_1",
+      "source": "Nev the Second on Ceth",
+      "text": "Ceth assigns the long-range scouting and my assignments are the operations' intelligence foundation. In six years of scouting under Ceth's direction, what the assignment brief looks like: the target location, the observation question, the intelligence priority, and the timeline. In six years, the four-part brief is the structure that gives the scouting purpose rather than making the scout an observer with no organizing principle. In six years, the brief and the return have been the Compact's intelligence cycle for the operations I've supported.",
+      "keywords": ["ceth","assigns","long-range","scouting","assignments","operations'","intelligence","foundation","six","years"]
+    },
+    {
+      "id": "ora_1",
+      "source": "Nev the Second on Ora",
+      "text": "Ora uses my scouting intelligence to plan the operations. In five years of the Nev-Ora scout-planner relationship, what the intelligence-planning connection produces: the plan that's built on observed reality rather than assumption. In five years, the operations where my scouting was comprehensive and Ora's plan was based on it have produced better outcomes than the operations where the scouting was limited and Ora's plan had to compensate with contingencies. In five years, the scout's comprehensiveness is the planner's foundation.",
+      "keywords": ["ora","uses","scouting","intelligence","plan","operations","five","years","nev-ora","scout-planner"]
+    },
+    {
+      "id": "fen_1",
+      "source": "Nev the Second on Fen",
+      "text": "Fen analyzes the intelligence I return with and the analysis produces the usable version of my observations. In four years of the scout-analyst workflow with Fen, what Fen's analysis adds to the raw intelligence: the synthesis. I return with the observations — the what I saw. Fen produces the what it means. In four years, my observations and Fen's synthesis together are the intelligence product that Ceth and Ora use for decision-making.",
+      "keywords": ["fen","analyzes","intelligence","return","with","analysis","produces","usable","version","observations"]
+    },
+    {
+      "id": "mira_1",
+      "source": "Nev the Second on Mira",
+      "text": "Mira coordinates the Compact's intelligence from multiple sources and my long-range scouting is one stream. In four years of working within Mira's intelligence coordination, what Mira's coordination adds to my scouting: the context. My observation of a target tells me what's happening at that target. Mira's other sources tell me what's happening around the target that affects what I'm observing. In four years, the context has changed how I interpret my own observations twice — the observation I thought I understood before Mira's context arrived meant something different after.",
+      "keywords": ["mira","coordinates","compact's","intelligence","multiple","sources","long-range","scouting","one","stream"]
+    },
+    {
+      "id": "what_nev_second_holds_1",
+      "source": "Nev the Second on the observation that changed the operation",
+      "text": "Year three. An observation on day two of a three-day scouting assignment that indicated the target situation was significantly different from what the mission brief had described. The decision I faced on day two: return early with the discrepant intelligence or continue the observation to see if the discrepancy resolved or deepened. I continued. Day three confirmed the discrepancy and added detail. The early return would have provided the intelligence faster but with less detail. In four years since, the day-two decision is the one I think about when scouting produces a discrepancy.",
+      "keywords": ["year","three","observation","day","two","three-day","scouting","assignment","indicated","target"]
+    },
+    {
+      "id": "what_long_range_scouting_is_1",
+      "source": "Nev the Second on what seven years of long-range scouting is",
+      "text": "In seven years, what the long-range scout's work produces that the short-range scout doesn't: the behavioral pattern. The short-range observation shows the moment. The multi-day observation shows the rhythm. In seven years, the rhythm is the intelligence. The target that behaves consistently has a rhythm that the operation can plan around. The target that doesn't have a consistent rhythm is the intelligence failure — the Compact can't plan around a pattern that doesn't exist.",
+      "keywords": ["seven","years","what","long-range","scout's","work","produces","short-range","scout","doesn't"]
+    },
+    {
+      "id": "seven_years_1",
+      "source": "Nev the Second on seven years as the Compact's long-range scout",
+      "text": "In seven years, I've completed approximately fifty long-range scouting assignments. Fifty multi-day observations of targets the Compact needed to understand before acting. Of fifty: forty-four produced intelligence that the Compact assessed as actionable. Six did not — the target situation had changed between the assignment's issue and my arrival, or the target location was inaccessible to the observation window required, or the observation produced no pattern within the observation period. In seven years, six assignments that didn't produce what was needed. In seven years, the six are the cases that shaped the pre-assignment brief process.",
+      "keywords": ["seven","years","completed","approximately","fifty","long-range","scouting","assignments","fifty","multi-day"]
+    }
+  ]
+}

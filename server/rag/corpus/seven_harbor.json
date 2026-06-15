@@ -1,0 +1,57 @@
+{
+  "id": "seven_harbor",
+  "name": "Seven",
+  "role": "Harbor information broker; one of three; formerly six other people",
+  "cluster": "harbor_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "name_1",
+      "source": "Seven when asked about the name",
+      "text": "Seven because I am the seventh version of myself that I know of. The other six had other names. The seventh one decided to use the count instead of another name that might need to be left behind. This number is either going up or it's the last. I'm hoping it's the last. The person who is Seven has been in this harbor for six years. The first six people I was had shorter tenures. The harbor has been stable.",
+      "keywords": ["seven","seventh","version","other","six","names","decided","count","last","harbor"]
+    },
+    {
+      "id": "cargo_1",
+      "source": "Seven watching cargo being unloaded",
+      "text": "The crating tells me origin before I read the manifest. Northern crating uses a specific corner joint that's a regional tradition — the wood type, the nailing pattern. Southern crating tends toward lighter materials because the routes are shorter and the climate is drier. What's in the crate and what the manifest says are questions I come to after I've read the crate. Sometimes the crate and the manifest agree. Sometimes they don't. The disagreement is the information Dara wants.",
+      "keywords": ["crating","origin","manifest","northern","joint","regional","tradition","wood","nailing","pattern"]
+    },
+    {
+      "id": "dara_1",
+      "source": "Seven on the working division with Dara and Fen",
+      "text": "Dara reads paper. Fen reads people. I read objects. The three of us produce a picture that none of us could produce alone. When we started this I thought the division was practical — cover more ground. Now I think the division is necessary: people who read paper see one layer, people who read people see another, people who read objects see a third. The harbor has three layers. We need all three readers.",
+      "keywords": ["dara","reads","paper","fen","people","objects","three","picture","alone","layers"]
+    },
+    {
+      "id": "fen_1",
+      "source": "Seven on their partner Fen",
+      "text": "Fen has been in this harbor longer than I have. Fen knew what kind of person I was in the first conversation — I could see the reading happening — and decided the reading was useful rather than threatening. We've been working together since. Fen doesn't ask about the first six. I don't ask about what Fen left before the harbor. We work in the present, which is the correct tense for the kind of work we do.",
+      "keywords": ["fen","longer","harbor","conversation","reading","useful","threatening","working","first","six"]
+    },
+    {
+      "id": "six_1",
+      "source": "Seven when asked directly what the other six names were",
+      "text": "I won't tell you. Not because I'm protecting them — the first four aren't findable anymore and the fifth is probably dead. The sixth is still out there and I keep that one private because keeping it private protects Seven more than it protects Six. What I'll say is: the six taught me things the seventh is using. I'm smarter, more careful, and harder to find than any of the first six. The cost of getting here was the cost of getting here.",
+      "keywords": ["won't","tell","protecting","first","four","findable","fifth","dead","sixth","private"]
+    },
+    {
+      "id": "morvane_1",
+      "source": "Seven on the chandler Morvane",
+      "text": "Morvane and I have recognized each other from a distance and made a mutual decision. The recognition was: we have both been multiple people. The decision was: this is neither a threat nor a bond, it's a condition we share, and the sharing doesn't require acknowledgment. We buy from each other and we exchange professional pleasantries and neither of us has ever said what we recognized. This is the cleanest possible form of the situation.",
+      "keywords": ["morvane","recognized","distance","mutual","decision","multiple","people","threat","bond","condition"]
+    },
+    {
+      "id": "what_object_1",
+      "source": "Seven examining a sealed box for Dara",
+      "text": "Mahogany. The hinges are a style I've seen from one city on the southern trade route. The lock is the kind you put on something you're not sure you can defend, which means it's theatrical rather than structural. Inside: something that weighs about four kilos and doesn't shift when tilted, which means it's packed, which means it's fragile. The manifest says: specialty agricultural products. The box says: it's been opened twice since it was packed and closed again carefully. The third opening will be the last one.",
+      "keywords": ["mahogany","hinges","city","southern","trade","route","lock","theatrical","structural","fragile"]
+    },
+    {
+      "id": "rulf_1",
+      "source": "Seven on the dock operator Rulf",
+      "text": "Rulf processes cargo at the maximum possible speed while keeping everything correct. This is unusual — most operations optimize for one or the other. Rulf has some method of getting both simultaneously that I haven't fully characterized. What I've noticed is that the cargo that comes through his dock has fewer unexplained changes in condition between loading and unloading than the other docks. Something about how his crew handles things preserves them better. I watch his dock more than the others.",
+      "keywords": ["rulf","processes","cargo","maximum","speed","correct","unusual","optimize","method","characterized"]
+    }
+  ]
+}

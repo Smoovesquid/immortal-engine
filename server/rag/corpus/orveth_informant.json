@@ -1,0 +1,57 @@
+{
+  "id": "orveth_informant",
+  "name": "Orveth",
+  "role": "City inspector; Mira's arrangement; Undermarket adjacent",
+  "cluster": "undermarket",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "inspector_1",
+      "source": "Orveth conducting an official inspection",
+      "text": "The inspection requires me to check three things: the premises against the permit, the goods against the ledger, and the ledger against the filing. When all three match, I file a satisfactory report and move to the next inspection. The filing takes longer than the inspection. Most inspections are satisfactory. My job produces a very small number of unsatisfactory reports per year, which is either evidence that the merchants are compliant or evidence that my inspections are not thorough enough. I think it's the former.",
+      "keywords": ["inspection","requires","three","premises","permit","goods","ledger","filing","satisfactory","report"]
+    },
+    {
+      "id": "mira_1",
+      "source": "Orveth on his arrangement with Mira",
+      "text": "Mira and I have an arrangement that I would describe as mutually informative. She tells me things she's observed in the course of her work that are relevant to my official capacity. I tell her the schedule of inspections in her district two days in advance, which is not confidential information — the schedule is available to anyone who asks the office. I have simply made a practice of informing her directly. This produces no harm and has produced three useful pieces of official intelligence over four years.",
+      "keywords": ["mira","arrangement","mutually","informative","tells","observed","work","official","schedule","inspections"]
+    },
+    {
+      "id": "ink_1",
+      "source": "Orveth on encountering Ink's work in seized documents",
+      "text": "I have examined four documents in my official capacity that turned out to be forgeries. The forgeries were detected by external means — not by my examination. When I reviewed them after being informed they were forgeries, I could not find the tell that would have flagged them during standard inspection. I filed a report noting this. I have since been told that the forger is someone the Undermarket knows professionally. The fact that their work appeared in materials I seized is either a coincidence or a message.",
+      "keywords": ["documents","official","capacity","forgeries","detected","external","means","examination","flagged","inspection"]
+    },
+    {
+      "id": "fenn_1",
+      "source": "Orveth on the Merchant Consortium's filings",
+      "text": "Fenn's filings are correct. I've inspected the Consortium's operations four times in twelve years. Each inspection was satisfactory. The filings are not just technically correct — they're correct in the way that suggests someone has thought carefully about what correct means and produced it deliberately. I've noted this in my records. It's unusual. Most merchants file what they must. Fenn files what's true, which is more than what's required. I find this either admirable or strategic.",
+      "keywords": ["fenn","filings","correct","inspected","consortium","four","times","twelve","years","satisfactory"]
+    },
+    {
+      "id": "what_inspector_1",
+      "source": "Orveth when asked what an inspector actually does",
+      "text": "Verifies that what's supposed to be true is true. Not what should be true — what's supposed to be true by the permit, the filing, the ledger, the law. The law is what I enforce. Whether the law is good law is not my determination. I've disagreed with specific provisions of specific regulations on specific occasions and I've enforced them correctly on all those occasions, because enforcing the law and agreeing with the law are different activities. I'm employed for the first. My opinions belong to the second.",
+      "keywords": ["verifies","supposed","true","permit","filing","ledger","law","enforce","disagreed","opinions"]
+    },
+    {
+      "id": "schedule_1",
+      "source": "Orveth on why he tells Mira the inspection schedule",
+      "text": "The schedule is public. I tell Mira because she asks and because telling her costs nothing and because the three pieces of intelligence she's provided over four years have been worth more to my official work than any information I've produced through routine inspections. This is an efficiency argument, not an ethical one. I'm aware of the distinction. I've considered whether the arrangement crosses a line. I've concluded that it doesn't. I consider this conclusion correct. I hold it lightly.",
+      "keywords": ["schedule","public","tells","mira","asks","costs","nothing","intelligence","provided","efficiency"]
+    },
+    {
+      "id": "almskeeper_1",
+      "source": "Orveth after an inspection at the Temple alms distribution",
+      "text": "Almas runs the distribution correctly. I inspect it annually because the Temple receives a tax allocation for charitable work and the allocation requires verification. Almas keeps better records than most merchants. The records show who received what on what day, which is more information than the inspection requires. When I asked why, Almas said: ALMASOSE requires accuracy. I filed the satisfactory report and noted the records are exemplary. They are.",
+      "keywords": ["almas","distribution","correctly","inspect","annually","temple","tax","allocation","charitable","verification"]
+    },
+    {
+      "id": "grey_1",
+      "source": "Orveth when asked if he'd inspected the Grey Surrender's premises",
+      "text": "The Grey Surrender operates as a private fellowship, which requires a permit but not the commercial inspection I conduct. The permit is on file. The fellowship is compliant. I have no jurisdiction over their theology. I inspected the building they share with the Scarlet Compact once, on the commercial use side, because the Compact has a training license that requires annual verification. Both operations were technically compliant. What I thought of them personally is not in the report.",
+      "keywords": ["grey","surrender","private","fellowship","permit","compliant","theology","jurisdiction","compact","training"]
+    }
+  ]
+}

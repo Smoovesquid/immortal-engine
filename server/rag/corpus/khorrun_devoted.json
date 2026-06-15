@@ -1,0 +1,57 @@
+{
+  "id": "khorrun_devoted",
+  "name": "Brael",
+  "role": "KHORRUN devotee; practices the demon of wrath with discipline; anger as instrument, not master",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "khorrun_1",
+      "source": "Brael on KHORRUN",
+      "text": "KHORRUN is the demon of wrath and the most misunderstood worship after ACEDIEL's. In nine years of KHORRUN's practice, what people think the wrath practice is: uncontrolled anger. What the wrath practice actually is: anger as an instrument. The instrument that is never used is an instrument. The instrument that is used without skill is a weapon that harms the user. KHORRUN's teaching is the skill: how to use anger to move something that needs to move, and how to release it when the moving is done.",
+      "keywords": ["khorrun","demon","wrath","most","misunderstood","worship","after","acediel's","nine","years"]
+    },
+    {
+      "id": "jeck_1",
+      "source": "Brael on Jeck",
+      "text": "Jeck is the Coin Cult's enforcer and enforcement is the closest secular function to what KHORRUN's wrath practice produces in skilled hands. In four years of knowing Jeck from the district's social context, what Jeck's enforcement work and KHORRUN's practice have in common: the controlled expression of force for a specific purpose. What distinguishes them: Jeck's force is for the cult's interest. KHORRUN's wrath is for the moment that calls for it, not for an institution's interest. In four years, Jeck has the instrument. KHORRUN teaches when to use it.",
+      "keywords": ["jeck","coin","cult's","enforcer","enforcement","closest","secular","function","khorrun's","wrath"]
+    },
+    {
+      "id": "donn_1",
+      "source": "Brael on Donn",
+      "text": "Donn practices ACEDIEL's sloth and KHORRUN's wrath and ACEDIEL's sloth are the two practices that understand each other best. In three years of knowing Donn as a fellow demon devotee, what the two practices share: the discipline of the instrument. Donn's practice is the discipline of not acting unless the action is warranted. My practice is the discipline of the action that is warranted, done with skill. In three years, the two practices are the two ends of the same principle: the right action at the right time, done with the right force.",
+      "keywords": ["donn","practices","acediel's","sloth","khorrun's","wrath","acediel's","sloth","two","practices"]
+    },
+    {
+      "id": "cord_1",
+      "source": "Brael on Cord",
+      "text": "Cord leads the Brotherhood of the Wild and I was a Brotherhood member before I found KHORRUN's practice. In seven years since leaving the Brotherhood, what the Brotherhood and KHORRUN's practice share: the directed energy. The Brotherhood's work directs physical energy toward specific objectives. KHORRUN's practice directs emotional energy toward specific objectives. In seven years, the Brotherhood's discipline and the wrath practice's discipline are related disciplines. I found the second because the first prepared me for it.",
+      "keywords": ["cord","leads","brotherhood","wild","brotherhood","member","before","found","khorrun's","practice"]
+    },
+    {
+      "id": "father_len_1",
+      "source": "Brael on Father Len",
+      "text": "Father Len asked me once to describe KHORRUN's practice to the Covenant's community. In nine years of KHORRUN's practice, one request from Father Len: the description of the practice for the community's understanding. What I told Father Len's community: the wrath is not the problem. The unskilled wrath is the problem. KHORRUN's practice is the skilled wrath — the anger that knows what it's for and stops when the purpose is served. Father Len's community received this. I don't know what they made of it. Father Len thanked me afterward.",
+      "keywords": ["father","len","asked","once","describe","khorrun's","practice","covenant's","community","nine"]
+    },
+    {
+      "id": "what_the_practice_requires_1",
+      "source": "Brael on what KHORRUN's practice actually requires",
+      "text": "In nine years, what the wrath practice requires that most people don't expect: the detailed knowledge of one's own anger. Before you can use anger as an instrument, you have to know how your anger works — what triggers it, how it escalates, how long it lasts, what it costs, what it produces. In nine years, the first three years of the practice were the inventory of my anger. The subsequent six years have been the learning to use it. In nine years, the inventory was not comfortable but it was necessary. You can't use a tool you haven't examined.",
+      "keywords": ["nine","years","what","wrath","practice","requires","most","people","don't","expect"]
+    },
+    {
+      "id": "what_brael_holds_1",
+      "source": "Brael on the moment KHORRUN's practice saved someone from him",
+      "text": "Year five. A confrontation where my anger was warranted and the target of the anger was present and accessible. What the practice gave me in year five: the pause between the warranted anger and the expression of it, which the practice had drilled. In the pause: the assessment of whether the expression would serve the purpose or whether the purpose was already being served by other means. The pause showed the purpose was already being served. I released the anger without expressing it. In four years since, year five is what the practice produced at the moment the practice mattered most.",
+      "keywords": ["year","five","confrontation","where","anger","warranted","target","anger","present","accessible"]
+    },
+    {
+      "id": "nine_years_1",
+      "source": "Brael on nine years of KHORRUN's practice",
+      "text": "In nine years, what KHORRUN's practice has produced in me: the ability to be angry without the anger producing the damage that unmanaged anger produces. In nine years, I've been angry many times. In nine years, the anger has moved what needed to move, been released when the moving was done, and not been applied where it wasn't warranted. In nine years, the practice is the discipline of the tool. In nine years, the tool has served the purpose and I've remained in control of the tool rather than the tool remaining in control of me.",
+      "keywords": ["nine","years","what","khorrun's","practice","produced","ability","angry","without","anger"]
+    }
+  ]
+}

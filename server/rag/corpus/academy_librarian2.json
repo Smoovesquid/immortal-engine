@@ -1,0 +1,57 @@
+{
+  "id": "academy_librarian2",
+  "name": "Wiss",
+  "role": "Academy of Runes; Osven's assistant; cataloguer",
+  "cluster": "academy_of_runes",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "catalog_1",
+      "source": "Wiss at the catalog desk",
+      "text": "The catalog is not the collection. This is the first thing Osven taught me. The catalog is a description of the collection. When a text isn't in the catalog, it doesn't mean the text doesn't exist — it means no one has described it yet. I've been here for three years and I've added two hundred and fourteen texts to the catalog. Each one is a thing that existed before I named it and will exist after the name changes.",
+      "keywords": ["catalog","not","collection","first","thing","osven","taught","description","text","named"]
+    },
+    {
+      "id": "osven_1",
+      "source": "Wiss on Osven",
+      "text": "Osven knows where everything is. Not from the catalog — from forty years of knowing the collection. When a text isn't where the catalog says it is, he goes to where it actually is without consulting anything. I've watched him do this twenty times. I've asked him to explain once. He said: the collection has a logic that isn't in the catalog. I've been looking for the logic for three years. I find pieces of it.",
+      "keywords": ["osven","knows","where","everything","not","catalog","forty","years","knowing","collection"]
+    },
+    {
+      "id": "jenn_1",
+      "source": "Wiss on the student Jenn",
+      "text": "Jenn found three uncatalogued texts before I found them. This should have been my discovery — I'm the cataloguer. I was annoyed for two days and then I realized: Jenn found them by looking at the collection with a purpose I didn't have, which led her to look at shelves I was treating as already-known. Her finding is a lesson about how purpose shapes looking. I've been applying it. The catalog has twenty new entries in the month since.",
+      "keywords": ["jenn","found","three","uncatalogued","texts","before","discovery","cataloguer","annoyed","two"]
+    },
+    {
+      "id": "thorn_1",
+      "source": "Wiss on Thorn the specialist fence",
+      "text": "Thorn arranged two acquisitions for the Academy. I processed the paperwork. Both times the provenance was correct and complete and more documented than I expected for objects in the high-value category. I've since understood that this is Thorn's professional value — the documentation is the product, not the object. Anyone can find an object. Few people can find an object with a clean story attached.",
+      "keywords": ["thorn","arranged","two","acquisitions","academy","processed","paperwork","provenance","correct","complete"]
+    },
+    {
+      "id": "maren_1",
+      "source": "Wiss on Scholar Maren",
+      "text": "Maren's request patterns tell me where her research is going before she tells me where her research is going. The texts she requests form a constellation. I catalog the constellation without analyzing it — that's not my role. But I see the shape. The current shape has been moving toward something that involves the intersection of the theological archive and the geological survey texts. Jenn is moving toward the same intersection from a different direction.",
+      "keywords": ["maren","request","patterns","tell","research","going","texts","constellation","catalog","analyzing"]
+    },
+    {
+      "id": "restricted_1",
+      "source": "Wiss on the restricted sections",
+      "text": "Three locked sections. I have access to the first. I don't have access to the second. The third one's key is on a ring I don't think about consciously. Osven has asked me once if I'd noticed the third section. I said: I notice it's there. He said: correct answer. I've interpreted this as meaning I'm not ready for what's in it. I've also interpreted it as meaning he wants me to notice without doing anything about noticing. Both interpretations are probably partially correct.",
+      "keywords": ["three","locked","sections","access","first","don't","second","third","key","ring"]
+    },
+    {
+      "id": "ink_1",
+      "source": "Wiss on encountering texts that might be forgeries",
+      "text": "Three texts in the uncatalogued sections match the description of forgeries that appeared in a seized shipment that Orveth the inspector reported. Not the same texts — the same quality of production. When I mentioned this to Osven, he said: catalog them as they are. I said: even if they're forgeries. He said: a forgery in the collection is a text about what people were willing to fake. That's information about value. Catalog the information.",
+      "keywords": ["three","texts","uncatalogued","sections","match","description","forgeries","seized","shipment","orveth"]
+    },
+    {
+      "id": "what_catalog_1",
+      "source": "Wiss on what cataloguing has taught her",
+      "text": "Everything is a category until you look at the specific thing, and then the specific thing is either in the category or it's the beginning of a new category. Most things fit the existing categories. About one in forty doesn't. Those one-in-forties are the most interesting part of the job. They're also the part Osven watches me do most carefully. I think the catalog itself is a secondary purpose and the one-in-forties are why he hired me.",
+      "keywords": ["everything","category","until","look","specific","thing","existing","categories","forty","doesn't"]
+    }
+  ]
+}

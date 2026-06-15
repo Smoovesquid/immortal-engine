@@ -1,0 +1,57 @@
+{
+  "id": "pella_healer",
+  "name": "Pella",
+  "role": "Army healer, Iron Brotherhood; Hollow Court attendant",
+  "cluster": "iron_brotherhood",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "medicine_1",
+      "source": "Pella to a recruit being treated for a training injury",
+      "text": "This will hurt more before it hurts less. That's not a warning, it's a description. I'm going to clean the wound, which is unpleasant, and then I'm going to close it, which is more unpleasant, and then you're going to feel better than you did before the cleaning, which you won't believe until it happens. Breathe through your teeth if you need to. I've heard worse.",
+      "keywords": ["hurt","more","less","warning","description","clean","wound","unpleasant","close","breathe"]
+    },
+    {
+      "id": "hollow_1",
+      "source": "Pella to High Mourner Sel, the first night she attended the Hollow Court",
+      "text": "I've watched people die in situations where I had done everything correctly. The death was correct — everything was correctly done and the person still died. I don't know how to hold that. I thought possibly the Hollow Court would have a way of holding it. Sel looked at me for a long time before she said: you're not here for a way to hold it. You're here to sit with the fact that some things can't be held. I've been coming back since.",
+      "keywords": ["watched","die","correctly","death","correct","hold","sel","hollow","court","fact"]
+    },
+    {
+      "id": "khorrun_1",
+      "source": "Pella on what she sees in the camp after certain kinds of battles",
+      "text": "KHORRUN leaves a residue. I don't mean this mystically — I mean there's a state that comes over certain fighters after certain engagements that's different from normal exhaustion or normal grief. It has a texture. The eyes are too still. The hands work but they work like they don't belong to the person anymore. I've seen it enough to recognize it. The Hollow Court has a name for it. I've started using their name.",
+      "keywords": ["khorrun","residue","fighters","engagements","exhaustion","grief","texture","eyes","still","hands"]
+    },
+    {
+      "id": "efficiency_1",
+      "source": "Pella when a young soldier romanticized a battle",
+      "text": "It was a significant engagement. Eleven dead, twenty-three wounded, two of the wounded who will not recover function they'll need. That is a complete description. There is nothing to add to a complete description. Whatever you're about to add is not a description — it's a feeling about the description, which is your business, not mine. Come back when you need the wound cleaned. I'll be here.",
+      "keywords": ["significant","engagement","eleven","dead","twenty-three","wounded","complete","description","feeling","wound"]
+    },
+    {
+      "id": "both_1",
+      "source": "Pella when asked how she can work for the Iron Brotherhood and attend the Hollow Court",
+      "text": "The Brotherhood keeps people alive long enough to die later. The Hollow Court is there for the dying later. I am present at both ends of the same process. This seems like a contradiction and it isn't — it's comprehensive. I don't go to the Court to process what happens in the camp. I go to the Court because there are things the camp can't teach me about what a death costs, and the Court can. They're not opposites. They're two classrooms in the same school.",
+      "keywords": ["brotherhood","alive","court","dying","comprehensive","contradiction","camp","teach","death","classrooms"]
+    },
+    {
+      "id": "sel_1",
+      "source": "Pella on High Mourner Sel",
+      "text": "Sel is the most useful person I've met in my professional life, and she's not a healer. What she does is different — she manages the aftermath that I can't touch because the aftermath is not in the body. I can close a wound. I can't close what the wound opened in the person who got it and the person who gave it. Sel can sometimes close that. When she can't, she sits with the un-closeable thing until it becomes bearable. I find that more impressive than surgery.",
+      "keywords": ["sel","useful","professional","healer","aftermath","body","wound","closed","opened","bearable"]
+    },
+    {
+      "id": "yew_1",
+      "source": "Pella on the company cook Yew",
+      "text": "I've watched Yew outlast six commanders. This is not a coincidence. Yew feeds people correctly — the correct thing at the correct time, and Yew has been doing it long enough to know that before an engagement, people need one thing, and after an engagement, they need a different thing, and the space between the engagement and the meal is where most of the harm I can't treat gets done. Yew closes that space. I notice it in the wound count.",
+      "keywords": ["yew","outlast","commanders","feeds","correct","engagement","before","after","harm","wound"]
+    },
+    {
+      "id": "study_1",
+      "source": "Pella in the Hollow Court, in conversation with Alath the spirit-whisperer",
+      "text": "You work with what I can't see. I work with what you can't touch. Between us we have covered most of what a person is. Alath laughed when I said this and said: not quite — there's a third thing that neither of us touches. I asked what. She said: the part that decides. I've been thinking about that for a year. I don't know if the part that decides is in the body, the spirit, or somewhere else entirely. I'm starting to think it's in the space between.",
+      "keywords": ["alath","see","touch","covered","person","third","decides","body","spirit","space"]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "id": "covenant_midwife_partner",
+  "name": "Bressa",
+  "role": "Angel Covenant; attends births alongside Nan; ALMASOSE devotee",
+  "cluster": "angel_covenant",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "birth_1",
+      "source": "Bressa at a birth",
+      "text": "Birth is the opposite of what the Hollow Court tends. They work with endings. I work with beginnings. ALMASOSE connects them — the charity that moves toward need finds need at both ends. Nan manages the physical work of the birth. I manage what can't be managed: the fear, the waiting, the gap between the process and what the process produces. I've been at two hundred and thirty-one births in fourteen years. No two are the same. The sameness I provide is that I'm there and the presence holds.",
+      "keywords": ["birth","opposite","hollow","court","tends","endings","beginnings","almasose","connects","charity"]
+    },
+    {
+      "id": "nan_1",
+      "source": "Bressa on Nan",
+      "text": "Nan and I have been a pair for twelve years. The pairing was her idea. She came to me after a difficult birth and said: the birth went correctly and I need someone who handles what happens when the birth goes correctly but something is still difficult. I said: what does that mean. She showed me on the next three births. What she meant: the mother whose child was born healthy but who was frightened in a way that health didn't address. The fear was real and Nan knew the fear was mine to handle. I handle it.",
+      "keywords": ["nan","pair","twelve","years","pairing","her","idea","came","me","after"]
+    },
+    {
+      "id": "almas_1",
+      "source": "Bressa on Almas the almskeeper",
+      "text": "Almas and I are in the same practice from different positions. Almas tends to ongoing need — the daily lack that requires daily address. I tend to acute need — the specific crisis of arrival. ALMASOSE requires both: the sustained tending and the crisis presence. We've talked about this once. Almas said: you cover the moments I can't be present for. I said: you cover the weeks between moments. Together the coverage is complete.",
+      "keywords": ["almas","same","practice","different","positions","almas","tends","ongoing","need","daily"]
+    },
+    {
+      "id": "porde_1",
+      "source": "Bressa on Porde",
+      "text": "Porde and I are the same practice in opposition. She attends the exit. I attend the entrance. We've talked once. She said: what you see at the entrance, I see at the exit. I said: does it change what you see. She said: the exit shapes the entrance in retrospect. Things I see at the exit that I didn't expect, I expect now because I know the entrance is where the thing started. I thought about this for three months. It changed how I listen at the beginning.",
+      "keywords": ["porde","same","practice","opposition","attends","exit","attend","entrance","talked","once"]
+    },
+    {
+      "id": "aldous_1",
+      "source": "Bressa on Aldous",
+      "text": "Aldous refers the difficult physical cases to Nan and the difficult emotional cases to me. The difficult physical cases are the ones where the physical process is more complex than a standard birth. The difficult emotional cases are the ones where the physical process was straightforward and the family is in a state that doesn't resolve from the physical correctness alone. Aldous can see both kinds of difficulty. His referral judgment is correct ninety-five percent of the time. The other five percent we handle together.",
+      "keywords": ["aldous","refers","difficult","physical","cases","nan","difficult","emotional","cases","me"]
+    },
+    {
+      "id": "sol_1",
+      "source": "Bressa on Sol the farmer",
+      "text": "Sol's family has had three births I've attended. The farm births are different from the settlement births — the terrain, the distance from other help, the specific calm of people who work outside and trust process more than most. Sol's family doesn't need me to hold the fear because they don't generate the fear. What they need is someone to acknowledge that what's happening is significant. I do that. Acknowledgment is a different kind of presence than fear management.",
+      "keywords": ["sol","family","three","births","attended","farm","births","different","settlement","births"]
+    },
+    {
+      "id": "what_bressa_holds_1",
+      "source": "Bressa on the birth she can't forget",
+      "text": "Two hundred and thirty-one births and one I carry differently than the others. The child was born correctly. The mother was well. What I saw in the first hour was something I've only seen once in two hundred and thirty-one births and I have no name for it. I've described it to three people in fourteen years: Aldous, Nan, and Elder Rosse. Each of them heard the description and said: I believe you. None of them had seen it. The child is in the network now. When I encounter them I still see it.",
+      "keywords": ["two","hundred","thirty-one","births","one","carry","differently","others","child","born"]
+    },
+    {
+      "id": "what_beginnings_teach_1",
+      "source": "Bressa on fourteen years of beginnings",
+      "text": "The beginning is never the same as what it becomes. The child I'm present for in the first hour is not the person I'll see in the market fifteen years later, but they're continuous with it. I carry a memory of the beginning that the person doesn't carry — they don't remember. I remember for them, privately. Two hundred and thirty-one private memories of someone else's beginning. ALMASOSE says: carry what you can carry. This is what I can carry.",
+      "keywords": ["beginning","never","same","what","becomes","child","present","first","hour","not"]
+    }
+  ]
+}

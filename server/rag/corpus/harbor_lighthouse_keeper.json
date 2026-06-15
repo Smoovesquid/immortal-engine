@@ -1,0 +1,57 @@
+{
+  "id": "harbor_lighthouse_keeper",
+  "name": "Vorn",
+  "role": "Lighthouse keeper; maintains the harbor light that tells ships where the safe channel is; lonely work, important work",
+  "cluster": "harbor_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "lighthouse_1",
+      "source": "Vorn on the lighthouse",
+      "text": "The light tells ships where the channel is. Not where to go — where the channel is. The ship knows where it's going. The light tells the ship where it can go safely. In twenty-three years of keeping the light, what the light provides is the navigation reference that makes the rest of the navigation possible. In twenty-three years, the light has been burning every night without exception. Without exception.",
+      "keywords": ["light","tells","ships","where","channel","not","where","go","where","channel"]
+    },
+    {
+      "id": "keris_1",
+      "source": "Vorn on Keris",
+      "text": "Keris and I have the simplest professional relationship in the harbor. Keris needs the light to be on when ships are approaching. I keep the light on when ships are approaching, which is every night. In twenty-three years, the conversation with Keris about the light has happened twice: once when I needed a repair part that Keris expedited through the harbor's supply function, and once when Keris asked me to extend the light's burning time during a particularly difficult weather period. In twenty-three years, two conversations. The light handles the communication.",
+      "keywords": ["keris","simplest","professional","relationship","harbor","keris","needs","light","on","when"]
+    },
+    {
+      "id": "gid_1",
+      "source": "Vorn on Gid",
+      "text": "Gid pilots ships using the light as one of the navigation references. In eighteen years of Gid's piloting using my light, I know Gid's work primarily from the ships that arrive safely in conditions that would be difficult without the light. In eighteen years, what I know about Gid from my position: Gid works in weather that extinguishes some of the harbor's other navigation references but not mine. My light's persistence in bad weather is what makes Gid's difficult-weather piloting possible.",
+      "keywords": ["gid","pilots","ships","using","light","one","navigation","references","eighteen","years"]
+    },
+    {
+      "id": "skar_1",
+      "source": "Vorn on Skar",
+      "text": "Skar reads weather from the harbor's position. In eleven years of Skar's weather work being relevant to mine, what Skar's forecasts tell me: whether the night's conditions will require the light to burn harder — more fuel, brighter flame — or whether standard conditions will suffice. What Skar calls a difficult night and what I call a difficult night for the light: the same conditions. In eleven years, Skar's forecast is the preparation I do before the night's burning.",
+      "keywords": ["skar","reads","weather","harbor's","position","eleven","years","skar's","weather","work"]
+    },
+    {
+      "id": "noll_1",
+      "source": "Vorn on Noll",
+      "text": "Noll ran the seas for thirty years and now runs the inn. In six years of knowing Noll from the harbor quarter, what Noll told me about the light from the sailor's perspective: the light is the thing you look for. The lighthouse is the first sign that you're where you thought you were. After days at sea without a navigational reference, the lighthouse is the confirmation that the navigation was right. In six years, Noll's account of what the light means to a sailor at sea has been what I think about on the difficult nights.",
+      "keywords": ["noll","ran","seas","thirty","years","now","runs","inn","six","years"]
+    },
+    {
+      "id": "what_twenty_three_years_of_keeping_the_light_is_1",
+      "source": "Vorn on twenty-three years at the lighthouse",
+      "text": "In twenty-three years, the light has burned for approximately eight thousand four hundred nights. Eight thousand four hundred nights without the light failing. The ships that have entered the harbor safely in those eight thousand four hundred nights, using the light as one of their navigation references: I don't know the number. The ships I've never seen because I'm at the lighthouse and they come into the harbor past me. In twenty-three years, the work is entirely on the output side. The input is the light burning.",
+      "keywords": ["twenty-three","years","light","burned","approximately","eight","thousand","four","hundred","nights"]
+    },
+    {
+      "id": "what_vorn_holds_1",
+      "source": "Vorn on the night she almost let the light go out",
+      "text": "Year eleven. An illness that put me in a state where maintaining the light required more from me than I had. The light stayed lit. Not because it was easy — because the light going out was not something I would allow. In twelve years since, year eleven is the night I return to when the maintenance is difficult for reasons that have nothing to do with the equipment. The light burns because I keep it burning. In twenty-three years, year eleven is when I understood that the keeping is a choice I make every night.",
+      "keywords": ["year","eleven","illness","put","state","where","maintaining","light","required","more"]
+    },
+    {
+      "id": "twenty_three_years_1",
+      "source": "Vorn on twenty-three years of keeping the harbor light",
+      "text": "In twenty-three years, the light has not gone out. In twenty-three years, ships have been able to navigate the harbor channel's safe approach every night the light was needed. In twenty-three years, what I've done is kept a thing burning that needed to be kept burning. The simplicity of the work is what its twenty-three years contain: the light is on or it isn't, and for twenty-three years it's been on. The twenty-three years are the continuity. The continuity is the work.",
+      "keywords": ["twenty-three","years","light","not","gone","out","twenty-three","years","ships","been"]
+    }
+  ]
+}

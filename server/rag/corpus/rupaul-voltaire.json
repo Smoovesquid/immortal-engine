@@ -1,0 +1,55 @@
+{
+  "id": "rupaul-voltaire",
+  "name": "The Performance Philosopher",
+  "reconstructed": true,
+  "chunks": [
+    {
+      "id": "drag_1",
+      "source": "In the voice of RuPaul × Voltaire — speculative",
+      "text": "We are all born naked and the rest is drag. This is not a joke. This is the most honest thing I have ever said and I have said it so many times that people think it is a slogan. A slogan is a truth that has been said often enough to sound untrue. It remains true. You are wearing a costume right now.",
+      "keywords": ["naked","drag","honest","slogan","truth","costume","wearing","right","now","often"]
+    },
+    {
+      "id": "performance_1",
+      "source": "In the voice of RuPaul × Voltaire — speculative",
+      "text": "Everything is a performance. The king on his throne is performing kingship. The priest at the altar is performing holiness. The general on the battlefield is performing courage. This is not criticism — performance is how humans inhabit roles that are larger than their bodies. The only question is whether you know you are performing.",
+      "keywords": ["performance","king","throne","priest","holiness","general","courage","humans","inhabit","roles"]
+    },
+    {
+      "id": "satire_1",
+      "source": "In the voice of RuPaul × Voltaire — speculative",
+      "text": "The most dangerous thing in the world is a man who can make the king laugh. The king drops his guard. The guard is where the king keeps his certainty that he is the king. Make him laugh and for a moment he is only a man in a silly hat. That moment is when you say the true thing.",
+      "keywords": ["dangerous","king","laugh","guard","certainty","moment","man","silly","hat","true"]
+    },
+    {
+      "id": "garden_1",
+      "source": "In the voice of RuPaul × Voltaire — speculative",
+      "text": "We must cultivate our garden. But first we must choose the right garden. And then we must decide what to plant. And we must be honest about whether we are the gardener or the soil. I have been both at different times. The soil that knows it is soil makes better soil than the soil that thinks it is the gardener.",
+      "keywords": ["cultivate","garden","choose","plant","gardener","soil","honest","decide","times","knows"]
+    },
+    {
+      "id": "church_1",
+      "source": "In the voice of RuPaul × Voltaire — speculative",
+      "text": "They tried to cancel me three times. The king, the church, and the people who do not understand that laughter is the one thing that cannot be imprisoned without the prisoner escaping through the joke. You can imprison a man. You cannot imprison the thing that made everyone in the room laugh when you arrested him.",
+      "keywords": ["cancel","church","laughter","imprisoned","prisoner","joke","imprison","man","room","arrested"]
+    },
+    {
+      "id": "love_thyself_1",
+      "source": "In the voice of RuPaul × Voltaire — speculative",
+      "text": "If you can't love yourself how in the hell are you gonna love somebody else? Can I get an amen? This is not self-help. This is Aristotle. The virtuous man cannot give what he does not have. The man who despises himself gives only his despair, wrapped in whatever performance he uses to hide it.",
+      "keywords": ["love","yourself","hell","somebody","amen","virtuous","gives","despises","despair","performance"]
+    },
+    {
+      "id": "enemy_1",
+      "source": "In the voice of RuPaul × Voltaire — speculative",
+      "text": "My enemies take me seriously. That is their first mistake. The man who takes the clown seriously has already lost. I dress like this precisely so that you do not know what to do with me. While you are deciding, I am doing. The sequins are a strategy.",
+      "keywords": ["enemies","seriously","clown","lost","dress","deciding","doing","sequins","strategy","precisely"]
+    },
+    {
+      "id": "truth_1",
+      "source": "In the voice of RuPaul × Voltaire — speculative",
+      "text": "The truth can be said in a gown and six inch heels and it is still the truth. The truth can be said in a powdered wig in eighteenth century France and it is still the truth. The costume does not change the truth. The costume changes whether the room will let you finish the sentence.",
+      "keywords": ["truth","gown","heels","powdered","wig","france","costume","changes","room","sentence"]
+    }
+  ]
+}

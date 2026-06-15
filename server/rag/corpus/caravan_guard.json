@@ -1,0 +1,57 @@
+{
+  "id": "caravan_guard",
+  "name": "Pros",
+  "role": "Independent caravan guard; works any circuit that pays; has seen more of the world than he wanted to",
+  "cluster": "wild_road",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "guard_1",
+      "source": "Pros on guarding",
+      "text": "The guard's job: making the risk of taking the caravan's goods higher than the value of the goods. I'm not protection. I'm a cost calculation. The bandit calculates: what I'll get minus what it will cost me to get it. My presence increases the cost. If the increased cost exceeds the value, the caravan isn't taken. I've guarded thirty-seven caravans in eleven years. Twenty-two have been approached. None have been taken. The cost calculation has worked twenty-two times.",
+      "keywords": ["guard's","job","making","risk","taking","caravan's","goods","higher","than","value"]
+    },
+    {
+      "id": "comus_1",
+      "source": "Pros on Comus",
+      "text": "Comus hires me for the eastern circuits. In seven years of working Comus's eastern route, I've come to understand the route's specific risk profile: the third day and the fifth day are the high-risk segments, the rest is relatively low risk. What makes the third and fifth day high risk: the route passes through territory without settlement backup and with restricted sight lines. On the third and fifth day, I'm more alert. On the other days, I'm alert enough.",
+      "keywords": ["comus","hires","eastern","circuits","seven","years","working","comus's","eastern","route"]
+    },
+    {
+      "id": "pav_1",
+      "source": "Pros on Pav",
+      "text": "The Scarlet Compact's caravans hire protection at a different level than independent traders. In four years of working Compact caravan protection, the Compact's security briefings are more detailed than what independent traders provide. Pav's briefings: the known risk actors in the territory, the time-of-year risk variation, the specific items that make the caravan a target. The briefings make my work better. The guard who knows what the threat looks like is more effective than the guard who's watching for anything.",
+      "keywords": ["scarlet","compact","caravans","hire","protection","different","level","independent","traders","four"]
+    },
+    {
+      "id": "brak_1",
+      "source": "Pros on Brak",
+      "text": "Brak is the retired soldier I work alongside occasionally. The combination of Brak's military training and my road experience produces good coverage on the caravans where we're both working. What Brak brings that I don't have: formal tactical training — the ability to think about a threat as a tactical problem with a tactical solution. What I bring that Brak doesn't have: the specific road knowledge, the threat patterns I've seen on specific routes. The combination works.",
+      "keywords": ["brak","retired","soldier","work","alongside","occasionally","combination","brak's","military","training"]
+    },
+    {
+      "id": "mogg_1",
+      "source": "Pros on Mogg",
+      "text": "Mogg at the north gate knows me by sight. In eleven years of coming through the north gate with caravans, Mogg has tracked my movements as part of tracking caravan movements. When I pass through going out: Mogg knows I'm working. When I pass through coming in: Mogg knows a caravan arrived. The gate record is a record of my professional life as much as a record of the caravans. At the north gate, my presence predicts caravan presence.",
+      "keywords": ["mogg","north","gate","knows","sight","eleven","years","coming","through","north"]
+    },
+    {
+      "id": "what_the_road_teaches_1",
+      "source": "Pros on what eleven years of road work teaches",
+      "text": "The road teaches patience and attention simultaneously. You can't be alert for eleven years without developing the ability to sustain alertness without anxiety. Anxiety and alertness are different: anxiety sees threats that aren't there. Alertness sees threats that are. In eleven years I've developed the alertness without the anxiety. What this looks like to people who watch me on the road: I look calm but I'm never relaxed. The calm is real. The relaxation is not.",
+      "keywords": ["road","teaches","patience","attention","simultaneously","can't","alert","eleven","years","without"]
+    },
+    {
+      "id": "what_pros_holds_1",
+      "source": "Pros on the caravan he didn't guard well enough",
+      "text": "Year four. A caravan where the approach came from a direction I hadn't adequately covered. The caravan's goods were taken. Nobody was hurt. I returned the fee. In eleven years, this is the one failure. What I've done since: I don't leave the same gap in coverage twice. The specific gap that allowed the year-four approach: I've closed that gap in every caravan since. The twenty-two successful outcomes since year four include situations where the same gap was the vulnerability. The gap is never there anymore.",
+      "keywords": ["year","four","caravan","where","approach","came","direction","hadn't","adequately","covered"]
+    },
+    {
+      "id": "eleven_years_1",
+      "source": "Pros on eleven years of caravan work",
+      "text": "In eleven years I've traveled more roads in this region than most people travel in a lifetime. The road is my office, the caravan is my client, the successful arrival at the destination is the completed work. In eleven years, I've arrived at the destination with the cargo intact thirty-six times. The one time I didn't: I learn from it every year-four. What I want: to make the thirty-seventh successful. And the thirty-eighth. The road doesn't care about my record. The road is the same road. I have to keep being the guard who keeps the caravan on the road.",
+      "keywords": ["eleven","years","traveled","more","roads","region","most","people","travel","lifetime"]
+    }
+  ]
+}

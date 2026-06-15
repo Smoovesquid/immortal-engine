@@ -1,0 +1,57 @@
+{
+  "id": "wild_orchard_keeper",
+  "name": "Bett",
+  "role": "Orchard keeper on the settlement's edge; grows the apples Sol doesn't grow; the orchard is thirty years old and still teaching her",
+  "cluster": "wild_road",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "orchard_1",
+      "source": "Bett on orchards",
+      "text": "An orchard is a long conversation with fruit trees. The conversation started by whoever planted the trees and continues with whoever tends them. I'm thirty years into a conversation that was started forty years ago by someone I never met. What the previous conversation produced: trees that are in the best years of their productive life. What I'm adding to the conversation: the tending that extends that productive life as long as possible and the preparation of what comes after these trees.",
+      "keywords": ["orchard","long","conversation","fruit","trees","conversation","started","whoever","planted","trees"]
+    },
+    {
+      "id": "sol_1",
+      "source": "Bett on Sol",
+      "text": "Sol grows apples in the valley. I grow apples on the settlement's edge, in different soil and different light. In twelve years, Sol and I have compared notes on the varieties we grow and what the different growing conditions produce. What the comparison has given both of us: understanding that the same variety in different conditions is a different apple. Sol's conditions produce a specific sweetness profile. My conditions produce a different one. The vintner Vel prefers Sol's apples for the primary cider. The cooking apple that Rem at the Aldenmere house uses comes from here.",
+      "keywords": ["sol","grows","apples","valley","grow","apples","settlement's","edge","different","soil"]
+    },
+    {
+      "id": "vel_vintner_1",
+      "source": "Bett on Vel the Vintner",
+      "text": "Vel buys from me for the cider that Sol's apples aren't right for. In eight years of supplying Vel, the selection that Vel makes at harvest tells me what the cider needs that the season has produced. Vel selects differently in different years: some years the selection is for sugar content, some years for acidity. The selection follows the season's character. In eight years, Vel's selection is the most attentive reading of my harvest that any buyer produces.",
+      "keywords": ["vel","buys","cider","sol's","apples","aren't","right","for","eight","years"]
+    },
+    {
+      "id": "syne_1",
+      "source": "Bett on Syne",
+      "text": "Syne and I share the edge territory — the space between the settlement's edge and the managed wild territory. In ten years, we've occasionally had to negotiate which plants have priority in overlapping areas. The negotiations have been straightforward: the areas where the apples need clear ground and the areas where Syne's cultivation needs clear ground don't fully overlap. The three places where they do overlap: we've worked out a rotation that serves both purposes in sequence.",
+      "keywords": ["syne","share","edge","territory","space","between","settlement's","edge","managed","wild"]
+    },
+    {
+      "id": "ness_1",
+      "source": "Bett on Ness",
+      "text": "Ness forages in the territory near my orchard. In seven years, Ness has always asked before entering the orchard's perimeter. In seven years, I've always said yes. What Ness finds in the orchard's perimeter that Ness finds nowhere else: a specific fungal growth that appears at the base of the older apple trees in wet years. Ness says it's useful. I've taken Ness's word for it — the growth doesn't harm the trees and Ness harvests it without disturbing the root zone.",
+      "keywords": ["ness","forages","territory","near","orchard","seven","years","ness","always","asked"]
+    },
+    {
+      "id": "what_thirty_years_of_orchard_teaches_1",
+      "source": "Bett on what thirty years in the orchard teaches",
+      "text": "A tree is a being with a longer life than mine. The trees I'm tending will be productive after I'm done with them. In thirty years, I've learned to tend for the tree's life, not for my convenience. The pruning that serves the tree's twenty-year structure doesn't always produce the best harvest this year. The harvest this year and the structure twenty years from now are both my responsibility. Balancing them is the orchard's specific skill: short-term and long-term are not separate questions. They're the same tree.",
+      "keywords": ["tree","being","longer","life","than","mine","trees","tending","will","productive"]
+    },
+    {
+      "id": "what_bett_holds_1",
+      "source": "Bett on the tree she's been watching for five years",
+      "text": "One tree in the orchard that I've been watching for five years because it's producing a fruit that the other trees of the same variety aren't producing. The fruit is the right variety — the shape, the color, the season are all correct. The taste is different in a way I can't attribute to the growing conditions because the conditions for this tree are the same as the conditions for the trees on either side of it. In five years I've harvested separately from this tree. In five years the fruit has been consistently different. I don't know why.",
+      "keywords": ["one","tree","orchard","been","watching","five","years","because","producing","fruit"]
+    },
+    {
+      "id": "thirty_years_1",
+      "source": "Bett on thirty years in the orchard",
+      "text": "In thirty years I've harvested approximately three hundred harvests from the trees in this orchard. Each harvest: the sum of what that year's weather, pruning, soil, and the trees' specific condition produced. In thirty years, no two harvests have been the same. The same trees, the same place, the same practices — thirty different years produce thirty different harvests. What the orchard has taught me in thirty years: consistency of practice produces variation of outcome. The trees do the rest.",
+      "keywords": ["thirty","years","harvested","approximately","three","hundred","harvests","trees","orchard","each"]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "id": "dov_orphan",
+  "name": "Dov",
+  "role": "Orphan Roads network; message runner; twelve years old",
+  "cluster": "orphan_roads",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "running_1",
+      "source": "Dov after a run",
+      "text": "Delivered. Three stops, fourteen minutes. Keet said I could do it in twelve if I took the market cut through the fish stalls but the fish stalls smell and people look at me when they smell me so I take the cloth stalls instead. Cloth stalls add two minutes but I arrive without anyone remembering me. Keet said arriving without anyone remembering is more important than two minutes. Keet is right.",
+      "keywords": ["delivered","three","stops","fourteen","minutes","keet","twelve","market","fish","cloth"]
+    },
+    {
+      "id": "keet_1",
+      "source": "Dov on Keet the runner",
+      "text": "Keet doesn't know I've been timing him. Twenty-three days I've watched him at the bridge checkpoint and averaged his crossing time. He crosses at seventeen seconds, which means he's so regular that the toll keeper doesn't even look up anymore. I'm trying to get to where the toll keeper doesn't look up for me. I'm at forty-one seconds currently. The gap is in my hands — I always check the coin twice before I hand it over.",
+      "keywords": ["keet","doesn't","know","timing","twenty","three","days","bridge","checkpoint","seventeen"]
+    },
+    {
+      "id": "rook_1",
+      "source": "Dov on Rook",
+      "text": "Rook looks at me like she's counting something. I don't know what she's counting. Fitch says she does this with everyone and what she's counting is whether you're ready for the next thing. I've been ready for the next thing for three months and she hasn't given it to me yet. Fitch says that's because she's waiting for me to stop being ready in that specific way. I don't know what that means but I'm thinking about it.",
+      "keywords": ["rook","looks","counting","fitch","everyone","ready","next","thing","three","months"]
+    },
+    {
+      "id": "messages_1",
+      "source": "Dov on what he carries",
+      "text": "I don't read them. I know that's the rule and I also know why it's the rule because Mira (the younger) explained it: the message isn't for me, and knowing things that aren't for me makes me carry something I'm not equipped to carry. She said it better than that. She said: information is weight and runners don't take extra weight. I think about this every time I don't read one.",
+      "keywords": ["don't","read","rule","mira","younger","explained","message","information","weight","runners"]
+    },
+    {
+      "id": "nan_1",
+      "source": "Dov when Nan Colt checked on him after a fever",
+      "text": "Nan came and pressed on my stomach and looked at my eyes and said: back to work in two days. She didn't ask how I got the fever or where I'd been. She just fixed the part that was her domain and left. I like this about her. Most adults want to know where you've been and why. Nan wants to know if you're healthy. I can answer the second question without risk.",
+      "keywords": ["nan","came","pressed","stomach","eyes","back","work","two","days","fever"]
+    },
+    {
+      "id": "bors_1",
+      "source": "Dov on the bridge toll keeper Bors",
+      "text": "Bors sees me. I don't mean he notices me — I mean he actually sees me, the way not many adults do. He counts the coin without looking at it and watches my face the whole time. The first time he did this I was afraid. Now I understand it's not a threat — he's reading something about my situation. I don't know what he's reading. He's never used whatever he reads against me. He's just a person who looks.",
+      "keywords": ["bors","sees","notices","actually","counts","coin","watching","face","threat","reading"]
+    },
+    {
+      "id": "what_dov_wants_1",
+      "source": "Dov at night, planning",
+      "text": "I want to be where Keet is in five years. Not what Keet does — Keet's thing is his thing. What I want is to be as good at running as Keet is, which means I need to run for five more years the way Keet ran for the first five years of his career. I've asked Keet what those years looked like. He said: you make the same mistake many times until you stop making it and then you make the next mistake. He said this was the whole method.",
+      "keywords": ["keet","five","years","running","career","years","mistake","many","times","stop"]
+    },
+    {
+      "id": "pip_1",
+      "source": "Dov after the Ember Road Players came through",
+      "text": "Pip is Mira's sibling. I only knew this because Mira's face changed when the Players arrived and I've been watching Mira's face long enough to know what changed means. They talked for three hours. When Pip left, Mira's face was the same as before but different in a way I can't name. I didn't ask. Some things you observe and don't ask about. Fitch taught me this but I think I already knew it.",
+      "keywords": ["pip","mira","sibling","players","arrived","face","changed","watched","three","hours"]
+    }
+  ]
+}

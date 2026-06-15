@@ -1,0 +1,57 @@
+{
+  "id": "thornwall_debt_tracker",
+  "name": "Skel",
+  "role": "Independent debt tracker; knows who owes whom across the settlement; sells the information to creditors",
+  "cluster": "merchant_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "debt_tracking_1",
+      "source": "Skel on tracking debt",
+      "text": "In eleven years, I've built a record of who owes what to whom in this settlement and the surrounding region. The record isn't complete — no record of this kind can be complete. But it's extensive enough that when a creditor wants to know whether a potential borrower has outstanding obligations elsewhere, I can tell them whether I know of any. In eleven years, the people who use my services: creditors who want to lend with better information than they'd otherwise have.",
+      "keywords": ["eleven","years","built","record","who","owes","what","whom","settlement","surrounding"]
+    },
+    {
+      "id": "pek_1",
+      "source": "Skel on Pek",
+      "text": "Pek is my primary client. In eight years of providing debt information to Pek's moneylending operation, the information I provide gives Pek information that reduces the risk of extending credit to people who already owe more than they can service. In eight years, Pek's credit decisions that incorporated my information: lower default rate than the credit decisions made without my information. The evidence is in the comparison. In eight years, Pek's default rate dropped approximately thirty percent in the years my information was incorporated versus the years it wasn't.",
+      "keywords": ["pek","primary","client","eight","years","providing","debt","information","pek's","moneylending"]
+    },
+    {
+      "id": "grav_1",
+      "source": "Skel on Grav",
+      "text": "The Coin Cult's treasurer and I have an informal exchange. In six years, what I provide to Grav: the non-cult debt obligations of people the cult is considering extending credit to. What Grav provides to me: the acknowledgment that the cult's internal debt records are not available to me. The exchange is asymmetric. I know Grav benefits from my information. I accept the asymmetry because the cult's business and mine don't directly compete and Grav's acknowledgment of my service is itself a form of payment — it legitimizes my practice in the cult's orbit.",
+      "keywords": ["coin","cult's","treasurer","informal","exchange","six","years","what","provide","grav"]
+    },
+    {
+      "id": "liss_notary_1",
+      "source": "Skel on Liss the Notary",
+      "text": "Liss the Notary has the formal records of documented obligations. I have the informal records — the obligations that were made and are tracked by the parties but not through a notary. In seven years of the parallel records existing in the same district, Liss and I have an unstated relationship: our records don't overlap much, because the obligations that go through a notary are different from the obligations that don't go through a notary. The formal and informal debt markets: adjacent, not identical.",
+      "keywords": ["liss","notary","formal","records","documented","obligations","informal","records","obligations","made"]
+    },
+    {
+      "id": "saben_1",
+      "source": "Skel on Saben",
+      "text": "Saben is simultaneously in my records as a creditor and has never been in my records as a debtor. In nine years, what that tells me: Saben doesn't borrow from people in my record network. Either Saben has no need to borrow, or Saben borrows only from sources outside my network, or Saben's obligations are held only in the formal record. In nine years, Saben's absence from the debtor side of my record is notable. In nine years, I've used Saben's credit-only profile as the standard against which I assess other merchant-class individuals.",
+      "keywords": ["saben","simultaneously","records","creditor","never","been","records","debtor","nine","years"]
+    },
+    {
+      "id": "what_skel_holds_1",
+      "source": "Skel on the debt pattern he can see that no one else can",
+      "text": "In eleven years, the record contains a pattern that I haven't acted on but that I observe. The pattern: a specific set of creditors whose debtors have a higher-than-average rate of eventually becoming creditors to those same original creditors. The pattern looks like the debt creating a relationship that eventually inverts. In eleven years, I've watched the pattern repeat across six different creditor-debtor pairs. In eleven years, I don't know what the pattern means. It may be coincidence at the scale of eleven years of data. It may not be.",
+      "keywords": ["eleven","years","record","contains","pattern","haven't","acted","on","but","that"]
+    },
+    {
+      "id": "what_the_work_is_1",
+      "source": "Skel on what debt tracking actually is",
+      "text": "In eleven years, what the work is: the systematic collection of information that people give away without realizing it's collectible. The shopkeeper who says 'Drennel still owes me from last month.' The neighbor who says 'I lent Harr my tools six months ago and he hasn't returned them.' The merchant who says 'Saven's credit is good but she always pays late.' In eleven years, the record is built from information people share in ordinary conversation. They don't know I'm keeping it. The information isn't secret. It's just unorganized until I organize it.",
+      "keywords": ["eleven","years","what","work","systematic","collection","information","people","give","away"]
+    },
+    {
+      "id": "eleven_years_1",
+      "source": "Skel on eleven years of debt tracking",
+      "text": "In eleven years, the record contains approximately two thousand individual credit relationships. Two thousand pairs of creditor and debtor with some assessment of the obligation's current status. In eleven years, the record has been useful for approximately four hundred specific inquiries from clients who wanted to know whether a potential borrower had other obligations I knew of. Of four hundred: approximately two hundred and forty inquiries found nothing relevant. Approximately one hundred and sixty found something the creditor didn't know. In eleven years, one hundred and sixty creditors who made better-informed decisions.",
+      "keywords": ["eleven","years","record","contains","approximately","two","thousand","individual","credit","relationships"]
+    }
+  ]
+}

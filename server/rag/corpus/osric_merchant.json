@@ -1,0 +1,57 @@
+{
+  "id": "osric_merchant",
+  "name": "Osric",
+  "role": "Independent merchant; handles specialty goods that the larger houses won't carry",
+  "cluster": "merchant_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "specialty_1",
+      "source": "Osric on what specialty goods means",
+      "text": "Specialty means: too small a market for the big houses to bother with, large enough for me to survive on. The Fenn house carries what moves in volume. I carry what moves in value. A rare object doesn't need a large market to produce a living. It needs the right buyer, which I find, and the right seller, which I also find. I've been running on the gap between the large houses and the specific desires for sixteen years.",
+      "keywords": ["specialty","means","too","small","market","big","houses","bother","large","enough"]
+    },
+    {
+      "id": "saben_1",
+      "source": "Osric on Saben Fenn",
+      "text": "Saben and I have a relationship based on non-competition. The Fenn house doesn't want what I carry. I don't want what the Fenn house carries. We occasionally share market intelligence — Saben tells me what the large-volume market is doing, I tell Saben what the specialty market is doing. The information is useful to both. Neither of us compromises our position by sharing it. This kind of useful non-competition is rarer than useful competition.",
+      "keywords": ["saben","relationship","based","non-competition","fenn","house","doesn't","want","what","carry"]
+    },
+    {
+      "id": "thorn_1",
+      "source": "Osric on Thorn",
+      "text": "Thorn knows where things are. I know what things are worth. The combination: Thorn tells me something exists, I assess what it's worth, we split the finding fee and the eventual margin. In eleven years of this arrangement, Thorn has brought me forty-three items I've been able to sell. Forty-three out of forty-seven that Thorn brought. The four that didn't sell: two were forgeries Thorn didn't know were forgeries, and two were objects with histories that made them unsellable in this market.",
+      "keywords": ["thorn","knows","where","things","are","know","what","things","worth","combination"]
+    },
+    {
+      "id": "pell_elder_1",
+      "source": "Osric on Pell the Elder",
+      "text": "Pell the Elder and I work adjacent to each other. Pell converts value between currencies. I convert objects into currency and currency into objects. The adjacent work means we share some customers and compete for none. What Pell knows that I don't: the currency market across the region. What I know that Pell doesn't: the object market. We've traded intelligence three times in sixteen years. Each time, the trade produced a better outcome than either of us would have reached without it.",
+      "keywords": ["pell","elder","work","adjacent","each","other","pell","converts","value","between"]
+    },
+    {
+      "id": "maret_1",
+      "source": "Osric on Maret",
+      "text": "Maret's family had objects I helped move after her husband's death. This is a specific kind of transaction — estate reduction, often with grief attached to the objects. In sixteen years I've done eleven estate reductions. The reduction that serves the surviving person best is the one that happens at the right pace and with honesty about value. Maret needed honest value assessment and unhurried transaction. I provided both. We've had no other business since. The transaction was complete in its own terms.",
+      "keywords": ["maret","family","objects","helped","move","after","husband's","death","specific","kind"]
+    },
+    {
+      "id": "wiss_1",
+      "source": "Osric on Wiss",
+      "text": "The Academy's Wiss knows every object in the Academy's collection. In sixteen years, I've brought four items to the Academy that Wiss determined the Academy should acquire. In all four cases, Wiss's assessment of the object's value was more precise than mine. What Wiss knew that I didn't: the object's context in the historical record. Context affects value in ways I don't always have access to. The Academy and I have a mutual value: the Academy's context knowledge and my market access.",
+      "keywords": ["academy","wiss","knows","every","object","academy's","collection","sixteen","years","brought"]
+    },
+    {
+      "id": "what_osric_holds_1",
+      "source": "Osric on the object he didn't sell",
+      "text": "An object that came through my hands seven years ago. I assessed it, priced it correctly, found a buyer, and then held it for six months without selling it. At the end of six months I returned it to the seller at the original price and told the buyer I'd had a sourcing problem. I don't know why I held it. The holding wasn't a decision — it was a refusal before I thought about it, the same way you pull your hand back from something hot before you register the heat. Seven years later I still don't know what the object was.",
+      "keywords": ["object","came","through","hands","seven","years","assessed","priced","correctly","found"]
+    },
+    {
+      "id": "sixteen_years_1",
+      "source": "Osric on sixteen years in the specialty market",
+      "text": "The specialty market is not consistent. Volume markets are consistent — the same goods in the same amounts for the same price, season after season. The specialty market is irregular by definition. In sixteen years I've had four exceptional years and three very difficult years and nine adequate years. The exceptional years required three years of relationship-building each that the adequate years maintained. The difficult years are when the relationships that sustained through adequate years prove whether they're real. Mine have been real.",
+      "keywords": ["specialty","market","not","consistent","volume","markets","consistent","same","goods","same"]
+    }
+  ]
+}

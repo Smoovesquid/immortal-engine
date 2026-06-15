@@ -1,0 +1,66 @@
+{
+  "id": "william-sherman",
+  "name": "William Tecumseh Sherman",
+  "chunks": [
+    {
+      "id": "memoirs_1",
+      "source": "Memoirs of General W.T. Sherman, 1875",
+      "text": "War is hell. There is many a boy here today who looks on war as all glory, but, boys, it is all hell. You can bear this warning voice of an old man and learn it from no other source. I am tired and sick of war. Its glory is all moonshine. It is only those who have neither fired a shot nor heard the shrieks and groans of the wounded who cry aloud for blood, more vengeance, more desolation.",
+      "keywords": ["war","hell","glory","moonshine","blood","vengeance","desolation","wounded","shrieks","tired"]
+    },
+    {
+      "id": "memoirs_2",
+      "source": "Memoirs of General W.T. Sherman, 1875",
+      "text": "I would make this war as severe as possible, and show no symptoms of tiring till the South begs for mercy; indeed, I know, and you know, that the end would be reached quicker by such a course than by any seeming of tenderness. The more awful you can make war, the sooner it will be over.",
+      "keywords": ["severe","south","mercy","awful","sooner","quicker","tenderness","symptoms","tiring","reach"]
+    },
+    {
+      "id": "memoirs_3",
+      "source": "Memoirs of General W.T. Sherman, 1875",
+      "text": "In our country one class of men makes war and leaves another class to fight it out. The men who make wars think they know more about it than those who fight them. And they are wrong. The politician sends the soldier to die. The soldier sends the politician a bill for it.",
+      "keywords": ["war","politician","soldier","die","fight","class","country","bill","wrong","makes"]
+    },
+    {
+      "id": "memoirs_4",
+      "source": "Memoirs of General W.T. Sherman, 1875",
+      "text": "Grant stood by me when I was crazy, and I stood by him when he was drunk. Now we stand by each other always. There is no friendship worth the name that has not been tested by adversity. You learn the worth of a man not in his prosperity but in what he does when he has nothing left to give.",
+      "keywords": ["grant","crazy","drunk","friendship","tested","adversity","worth","prosperity","nothing","give"]
+    },
+    {
+      "id": "march_to_sea_1",
+      "source": "Memoirs of General W.T. Sherman, 1875",
+      "text": "I can make the march, and make Georgia howl. We cannot change the hearts of those people of the South, but we can make war so terrible that generations after will seek earnestly to maintain peace. This war did not spring up on our soil — it came from them. Let the burden of it rest where it belongs.",
+      "keywords": ["georgia","march","terrible","generations","peace","maintain","burden","south","soil","spring"]
+    },
+    {
+      "id": "march_to_sea_2",
+      "source": "Memoirs of General W.T. Sherman, 1875",
+      "text": "I know that I had no right to make a treaty of peace, or to make it cover any such sweeping terms. But in the hurry of victory, with Johnston's army ready to surrender and the war apparently ended, I was in no mood to drive a hard bargain with defeated men.",
+      "keywords": ["treaty","peace","victory","surrender","bargain","defeated","terms","hurry","sweeping","right"]
+    },
+    {
+      "id": "presidency_refused_1",
+      "source": "Letter declining presidential nomination, 1884",
+      "text": "I will not accept if nominated, and will not serve if elected. If drafted by the convention, I would decline. I want no part of it. I have seen command. Command is responsibility without relief, authority without friends, and power with no capacity to sleep.",
+      "keywords": ["nominated","elected","convention","decline","command","responsibility","authority","friends","power","sleep"]
+    },
+    {
+      "id": "mercy_1",
+      "source": "Memoirs of General W.T. Sherman, 1875",
+      "text": "He who seeks mercy will find it here. He who seeks battle will find that also. I do not burn for the pleasure of burning. I destroy what must be destroyed so that the war ends. A physician does not enjoy the operation. He performs it because without it the patient dies.",
+      "keywords": ["mercy","battle","burn","destroy","physician","operation","patient","pleasure","ends","performs"]
+    },
+    {
+      "id": "soldiers_1",
+      "source": "Memoirs of General W.T. Sherman, 1875",
+      "text": "The soldier is the first to make peace for he is the one who suffers most. He sees no glory in the slaughter of strangers over the disagreements of those who will never themselves bleed. Ask the drummer-boy who beats his last note on the field whether he loves war.",
+      "keywords": ["soldier","peace","suffers","glory","slaughter","strangers","disagreements","bleed","drummer","field"]
+    },
+    {
+      "id": "atlanta_1",
+      "source": "Letter to the Mayor of Atlanta, September 12, 1864",
+      "text": "You cannot qualify war in harsher terms than I will. War is cruelty, and you cannot refine it; and those who brought war into our Country deserve all the curses and maledictions a people can pour out. You might as well appeal against the thunder-storm as against these terrible hardships of war.",
+      "keywords": ["qualify","cruelty","refine","curses","maledictions","thunder","hardships","appeal","deserve","terrible"]
+    }
+  ]
+}

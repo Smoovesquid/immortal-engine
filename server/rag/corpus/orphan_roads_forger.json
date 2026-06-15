@@ -1,0 +1,57 @@
+{
+  "id": "orphan_roads_forger",
+  "name": "Quell",
+  "role": "Orphan Roads document forger; creates the papers that give network members the identity they need",
+  "cluster": "orphan_roads",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "forgery_1",
+      "source": "Quell on the work",
+      "text": "Documents tell you who someone is allowed to be. In fourteen years of making documents, I tell people who they're allowed to be when the documents they were born with don't allow them to be who they need to be. The network needs people to move in spaces that their original documents don't allow them to enter. I make the documents that allow the entry. The work is paper, ink, stamps, and the knowledge of what the authentic version looks like.",
+      "keywords": ["documents","tell","you","who","someone","allowed","be","fourteen","years","making"]
+    },
+    {
+      "id": "rook_1",
+      "source": "Quell on Rook",
+      "text": "Rook determines who needs documents and what kind. In twelve years of working for the network under Rook's direction, the commissioning process: Rook describes the identity the person needs, I assess whether I can produce it and what it will take. In twelve years, the assessments I've given Rook have been accurate: the documents I said I could produce, I produced. The documents I said I couldn't produce — either the authentic version wasn't available for reference or the timeline was impossible — I didn't attempt.",
+      "keywords": ["rook","determines","who","needs","documents","what","kind","twelve","years","working"]
+    },
+    {
+      "id": "mira_1",
+      "source": "Quell on Mira",
+      "text": "Mira provides the information about what the authentic documents need to contain. The forged document that fails inspection fails because it contains something wrong — wrong format, wrong seal, wrong reference number, wrong terminology. In nine years of working with Mira's intelligence, Mira provides the reference for what the correct document contains. In nine years, the documents I've made using Mira's reference: significantly lower failure rate than the documents I've made from other sources or from my own estimates.",
+      "keywords": ["mira","provides","information","about","what","authentic","documents","need","contain","forged"]
+    },
+    {
+      "id": "brig_1",
+      "source": "Quell on Brig",
+      "text": "Brig is the network's fence and one of the ways that the documents I produce get used. In seven years of awareness of Brig's work, the documents and the goods movement connect: the person who can present a legitimate document to the harbor's inspector is the person who can receive the goods that Brig needs to receive. In seven years, the documents serve the goods movement and the goods movement funds the network and the network produces the need for more documents. I'm part of a chain.",
+      "keywords": ["brig","network's","fence","one","ways","documents","produce","get","used","seven"]
+    },
+    {
+      "id": "wick_1",
+      "source": "Quell on Wick",
+      "text": "Wick provides the Orphan Roads' courier movement with identity documentation when specific routes require it. In six years of producing documents for Wick's couriers, the requirements are specific: the courier needs to be who the document says they are for the duration of the route. What Wick's couriers are good at: being who they need to be. The document is the support for the person. In six years, the documents I've made for Wick's couriers have been used without documented failure.",
+      "keywords": ["wick","provides","orphan","roads","courier","movement","identity","documentation","when","specific"]
+    },
+    {
+      "id": "what_forgery_is_1",
+      "source": "Quell on what forgery actually is",
+      "text": "In fourteen years, what I've concluded: I don't make false documents. I make documents for true people whose circumstances require a different paper representation than the one they were born into. The person who needs to be someone else in order to be safe: the document I make says who they need to be. The person and the document are both real. The connection between the person and the name: that's what's been changed. In fourteen years, the change has been protective more often than not.",
+      "keywords": ["fourteen","years","what","concluded","don't","make","false","documents","make","documents"]
+    },
+    {
+      "id": "what_quell_holds_1",
+      "source": "Quell on the document she made that she thinks about",
+      "text": "Year seven. A commission I accepted that I learned afterward was used for something I wouldn't have made the document for if I'd known. The document served the purpose the person said. The purpose I didn't know about was different. In seven years since, the verification I've added to commissioning: more questions about the purpose before the work, not after. In seven years, I've declined four commissions that I would have accepted in year seven. Year seven is the reason for the four declines.",
+      "keywords": ["year","seven","commission","accepted","learned","afterward","was","used","something","wouldn't"]
+    },
+    {
+      "id": "fourteen_years_1",
+      "source": "Quell on fourteen years of the work",
+      "text": "In fourteen years, I've made approximately four hundred documents for approximately three hundred people. Three hundred people who needed to be someone different on paper than they were before they came to me. In fourteen years, what the documents made possible: I know in approximately two hundred cases. Two hundred people who moved through the world differently because of the paper I made them. In two hundred cases, the movement was toward something better than where they started. In fourteen years, two hundred is the number I hold.",
+      "keywords": ["fourteen","years","made","approximately","four","hundred","documents","approximately","three","hundred"]
+    }
+  ]
+}

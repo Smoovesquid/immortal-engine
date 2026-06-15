@@ -1,0 +1,57 @@
+{
+  "id": "distant_healer",
+  "name": "Osa",
+  "role": "Healer from the southern settlements; has been in Thornwall for a season, studying Aldous's methods",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "visiting_1",
+      "source": "Osa on why she came to Thornwall",
+      "text": "The southern healing tradition and the northern tradition diverged about four hundred years ago. I came to study the divergence from the other side. What the northern tradition has that the southern doesn't: the formal physician's role as the last-resort specialist. In the south, the last resort is the community elder's knowledge plus prayer. The northern model separates the medical from the spiritual explicitly. I wanted to understand whether the separation produces better outcomes. I've been here one season. The question is still open.",
+      "keywords": ["southern","healing","tradition","northern","tradition","diverged","four","hundred","years","came"]
+    },
+    {
+      "id": "aldous_1",
+      "source": "Osa on Aldous",
+      "text": "Aldous represents the formal northern tradition at its most experienced. In one season of observation, I've watched Aldous handle twenty-three cases. What I've noticed: Aldous uses a diagnostic method that prioritizes ruling out before naming. In the southern tradition, we name first and treat the named condition. Aldous rules out what it isn't and arrives at what it is by elimination. The elimination method is slower in some cases and faster in cases where the initial naming would be wrong.",
+      "keywords": ["aldous","represents","formal","northern","tradition","most","experienced","one","season","observation"]
+    },
+    {
+      "id": "dran_1",
+      "source": "Osa on Dran",
+      "text": "Dran is younger than Aldous and was trained by Aldous's teacher at a different time. What this means: Dran and Aldous share the tradition but have developed differently within it. Observing both in the same season has shown me the tradition's range — what the same foundation produces in different practitioners. The southern tradition is less differentiated at the individual level. We follow the elder's method. The northern tradition seems to produce more individual variation within the shared foundation.",
+      "keywords": ["dran","younger","than","aldous","trained","aldous","teacher","different","time","what"]
+    },
+    {
+      "id": "nan_1",
+      "source": "Osa on Nan",
+      "text": "Nan and I share a practice element that crosses the southern and northern divide: the birth process is largely the same in both traditions. What differs is the emergency response. The south's emergency response involves community gathering and prayer alongside physical intervention. Nan's emergency response is entirely physical and focused. We've talked about two birth complications that I observed with Nan. In both cases, I would have done something different from what Nan did. In both cases, Nan's choice produced a better outcome.",
+      "keywords": ["nan","share","practice","element","crosses","southern","northern","divide","birth","process"]
+    },
+    {
+      "id": "calla_1",
+      "source": "Osa on Calla",
+      "text": "Calla's practice maps most closely to the southern elder tradition. The plant knowledge, the relationship to the territory's healing materials, the non-institutional role — these are things the southern tradition values that the northern formal tradition has moved away from. I've talked with Calla twice about specific plant uses. Both times: Calla's knowledge of the plant was deeper than the southern elder's knowledge I have access to, and the southern elder's knowledge is itself old and deep. Calla's knowledge is in a different category from formal training.",
+      "keywords": ["calla","practice","maps","most","closely","southern","elder","tradition","plant","knowledge"]
+    },
+    {
+      "id": "what_osa_found_1",
+      "source": "Osa on what one season in Thornwall has taught",
+      "text": "The separation of medical from spiritual in the northern tradition produces one clear benefit: accountability. When medicine and prayer are the same practice, the outcome is attributed to both, which means neither is fully accountable. When medicine is separate from spiritual support, the medical outcome is accountable to the medical practice alone. In one season, I've seen northern practitioners say: this treatment failed, and I need to understand why. In the south, this statement is harder to make. The ambiguity protects the failure.",
+      "keywords": ["separation","medical","spiritual","northern","tradition","produces","one","clear","benefit","accountability"]
+    },
+    {
+      "id": "what_osa_holds_1",
+      "source": "Osa on what she'll take back to the south",
+      "text": "The elimination diagnostic method and the medical accountability are the two things I'll carry back. Both will be difficult to introduce — they challenge aspects of the southern tradition that the southern elders consider core. The elimination method implies the elder's initial naming can be wrong. The accountability implies that prayer doesn't resolve what medicine fails at. Both implications are uncomfortable. What I know after one season: both are true. What I don't know: whether the truths are worth the discomfort of their introduction.",
+      "keywords": ["elimination","diagnostic","method","medical","accountability","two","things","carry","back","difficult"]
+    },
+    {
+      "id": "one_season_1",
+      "source": "Osa on being a visitor",
+      "text": "One season is not enough to understand a tradition. It's enough to see the shape of a tradition and to identify the questions the full understanding would answer. The questions I have now are better questions than the questions I arrived with. The better questions are what the season has given me. The answers to the better questions are what the next decade of work might give me. I came to Thornwall to learn. I've learned what I needed to learn next.",
+      "keywords": ["one","season","not","enough","understand","tradition","enough","see","shape","tradition"]
+    }
+  ]
+}

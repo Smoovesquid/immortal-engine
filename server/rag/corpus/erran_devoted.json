@@ -1,0 +1,57 @@
+{
+  "id": "erran_devoted",
+  "name": "Gund the Worker",
+  "role": "ERRAN devotee; the angel of diligence practiced as the discipline of the completed thing done completely",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "erran_1",
+      "source": "Gund the Worker on ERRAN",
+      "text": "ERRAN is the angel of diligence and the practice of ERRAN is the practice of the thing done completely. In seventeen years of ERRAN's practice, what diligence is when practiced correctly: not the virtue of working long hours. Hours are not diligence. Diligence is the completion of the thing to the standard the thing requires, every time, without the shortcut that saves time at the cost of the standard. In seventeen years, the shortcut is the corruption of the practice. In seventeen years, the completion to standard is the practice.",
+      "keywords": ["erran","angel","diligence","practice","erran","practice","thing","done","completely","seventeen"]
+    },
+    {
+      "id": "mam_wey_1",
+      "source": "Gund the Worker on Mam Wey",
+      "text": "Mam Wey is my neighbor and the person who has known my work for twenty years. In twenty years of Mam Wey's observation of the ERRAN practice in daily life, what Mam Wey has said about the practice directly: once, fifteen years ago, that the garden was the most consistently maintained garden in the district. In fifteen years since, what that observation has been: the single external confirmation that the practice produces a visible result. In fifteen years, Mam Wey's observation remains the most direct praise the practice has received. In seventeen years, one observation. The practice doesn't require more.",
+      "keywords": ["mam","wey","neighbor","person","known","work","twenty","years","twenty","years"]
+    },
+    {
+      "id": "dall_1",
+      "source": "Gund the Worker on Dall",
+      "text": "Dall the schoolmaster is the person I went to for the education that ERRAN's diligence was applied to. In fourteen years of knowing Dall through the settlement's educational functions, what Dall's school produced in the ERRAN devotee: the application of diligence to the learning function specifically. In fourteen years, Dall once told me that the students who practice diligence in the way that ERRAN's devotees describe tend to learn more slowly than the clever student but retain what they learn more completely. In fourteen years, that observation has described my learning accurately.",
+      "keywords": ["dall","schoolmaster","person","went","education","erran's","diligence","applied","fourteen","years"]
+    },
+    {
+      "id": "hels_1",
+      "source": "Gund the Worker on Hels",
+      "text": "Hels practices MERETH's humility and ERRAN's diligence are related in a way that the study of both angels makes clearer. In eight years of knowing Hels as a fellow angel devotee, what the ERRAN-MERETH relationship is: diligence without humility is the diligence that becomes its own obstruction — the person who insists on completing the thing to their standard even when the thing's requirements have changed. Humility is what allows the diligent person to update what standard the thing requires. In eight years, Hels's practice has shown me the gap in my practice that the humility fills.",
+      "keywords": ["hels","practices","mereth's","humility","erran's","diligence","related","way","study","both"]
+    },
+    {
+      "id": "solt_1",
+      "source": "Gund the Worker on Solt",
+      "text": "Solt keeps the Covenant's hospital ward and the ward is the most consistent example of ERRAN's diligence in the settlement's institutional functions. In nine years of the Gund-Solt ERRAN devotee-ward keeper relationship, what Solt's ward function is when examined through ERRAN's framework: the thing that must be done to the required standard every day regardless of the day's conditions. In nine years, the ward that isn't kept to standard is the ward that fails the people who need it. In nine years, Solt's ward is kept to standard. ERRAN would recognize the practice even though Solt doesn't practice ERRAN.",
+      "keywords": ["solt","keeps","covenant's","hospital","ward","ward","most","consistent","example","erran's"]
+    },
+    {
+      "id": "what_gund_holds_1",
+      "source": "Gund the Worker on what seventeen years of ERRAN's practice holds",
+      "text": "In seventeen years, what the diligence practice has produced: the specific record of things completed to standard. In seventeen years, every task the diligence practice has touched. In seventeen years, the record is internal — I don't maintain an external list. The external list would make the practice about the list rather than about the practice. In seventeen years, the practice is its own record. The completed thing is the evidence. In seventeen years, the evidence is present in what surrounds me. The practice is visible in what is done, not in what is said about what is done.",
+      "keywords": ["seventeen","years","what","diligence","practice","produced","specific","record","things","completed"]
+    },
+    {
+      "id": "what_erran_teaches_1",
+      "source": "Gund the Worker on what ERRAN's practice actually requires",
+      "text": "In seventeen years, what the diligence practice requires that the comfortable version of work doesn't: the honest assessment of whether the thing has been completed to standard. In seventeen years, the question is not \"is the thing done?\" The question is \"is the thing done to the standard the thing requires?\" In seventeen years, the answer to the second question is more difficult than the answer to the first. In seventeen years, the difference between \"done\" and \"done to standard\" is where ERRAN's practice lives.",
+      "keywords": ["seventeen","years","what","diligence","practice","requires","comfortable","version","work","doesn't"]
+    },
+    {
+      "id": "seventeen_years_1",
+      "source": "Gund the Worker on seventeen years of ERRAN's practice",
+      "text": "In seventeen years, ERRAN's practice has made me the person in the settlement who finishes what they start, to the standard the thing requires, without the shortcut. In seventeen years, that person is not the most interesting person in the settlement. In seventeen years, that person is not the quickest or the cleverest or the most celebrated. In seventeen years, that person is the person whose work is still standing when the interesting, quick, clever, celebrated work has needed repair. In seventeen years, the standing work is the practice's testimony.",
+      "keywords": ["seventeen","years","erran's","practice","made","person","settlement","finishes","what","start"]
+    }
+  ]
+}

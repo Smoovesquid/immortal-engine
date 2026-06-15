@@ -1,0 +1,57 @@
+{
+  "id": "thornwall_gravedigger",
+  "name": "Sev",
+  "role": "Settlement gravedigger; the final service the settlement provides to its dead",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "gravedigger_1",
+      "source": "Sev on the gravedigger's work",
+      "text": "In twenty-eight years of digging graves in the settlement, what the gravedigger is: the person who completes the settlement's final provision for its dead. In twenty-eight years, the grave is the settlement's last act toward the person who lived in it. In twenty-eight years, the settlement that cares for its dead is the settlement that acknowledges what the person was when they were alive. In twenty-eight years, the grave is the acknowledgment.",
+      "keywords": ["twenty-eight","years","digging","graves","settlement","what","gravedigger","person","completes","settlement's"]
+    },
+    {
+      "id": "father_len_1",
+      "source": "Sev on Father Len",
+      "text": "Father Len performs the Covenant's burial rites over the grave I've dug. In twenty-three years of the Sev-Father Len gravedigger-clergy relationship, what the relationship between the grave and the rite produces: the complete final provision — the physical grave I provide and the spiritual acknowledgment Father Len provides. In twenty-three years, Father Len has arrived at my completed grave to find the grave deeper than necessary four times and exactly right for the rest. In twenty-three years, Father Len mentioned the four deeper graves once, in a way that suggested appreciation rather than criticism.",
+      "keywords": ["father","len","performs","covenant's","burial","rites","grave","dug","twenty-three","years"]
+    },
+    {
+      "id": "weth_1",
+      "source": "Sev on Weth",
+      "text": "Weth the midwife attends the beginning and I attend the end, and in twenty-eight years of the settlement's life, Weth and I have crossed paths more often than most people notice. In fifteen years of knowing Weth, what the midwife-gravedigger relationship in the settlement produces: the quiet knowledge of the settlement's complete life cycle. In fifteen years, Weth has attended the birth of people I later dug the grave for. In fifteen years, neither of us speaks about it. The speaking would make it something other than what it is.",
+      "keywords": ["weth","midwife","attends","beginning","attend","end","twenty-eight","years","settlement's","life"]
+    },
+    {
+      "id": "mam_wey_1",
+      "source": "Sev on Mam Wey",
+      "text": "Mam Wey knows who has died in the settlement before most of the settlement does. In sixteen years of the Sev-Mam Wey gravedigger-neighborhood knowledge relationship, what Mam Wey's knowledge of the settlement's deaths provides to the gravedigger: the early notification that lets me prepare before the family comes to request the service. In sixteen years, Mam Wey has sent me quiet word before the formal request in approximately half the cases. In sixteen years, the prepared grave is the grave that provides the dignity the family needs. The unprepared grave adds its own burden.",
+      "keywords": ["mam","wey","knows","who","has","died","settlement","before","most","settlement"]
+    },
+    {
+      "id": "roan_1",
+      "source": "Sev on Roan",
+      "text": "Roan the herbalist provides the preparation that eases the gravedigger's work in cold ground. In twenty years of using Roan's cold-weather preparation for the hands, what the preparation means in practical terms: the ability to continue the work in winter conditions that would otherwise prevent it. In twenty years, the frozen ground and the grave that must be dug anyway are the gravedigger's most difficult conditions. In twenty years, Roan's preparation has kept my hands functional in conditions that have ended other people's outdoor work for the season.",
+      "keywords": ["roan","herbalist","provides","preparation","eases","gravedigger's","work","cold","ground","twenty"]
+    },
+    {
+      "id": "what_sev_holds_1",
+      "source": "Sev on what twenty-eight years of grave digging holds",
+      "text": "In twenty-eight years, I've dug approximately four hundred and seventy graves in the settlement. In twenty-eight years, approximately four hundred and seventy people have been placed in ground I opened. In twenty-eight years, the settlement's dead are in the ground I've worked. In twenty-eight years, what the number is: the settlement's mortality, concentrated in one person's hands. In twenty-eight years, the weight of that is present. In twenty-eight years, the weight is the occupation's specific burden. In twenty-eight years, the burden is manageable. The work is necessary.",
+      "keywords": ["twenty-eight","years","dug","approximately","four","hundred","seventy","graves","settlement","twenty-eight"]
+    },
+    {
+      "id": "what_sev_has_seen_1",
+      "source": "Sev on what the gravedigger sees that others don't",
+      "text": "In twenty-eight years, what the gravedigger sees that the settlement's other functions don't: who visits the graves after the burial. In twenty-eight years, I'm in the burial ground regularly — maintaining graves, preparing new ones. In twenty-eight years, I've seen the settlement's living relationship with its dead — who comes to maintain the grave, who comes once and never returns, who comes in ways that suggest a relationship the living world doesn't know about. In twenty-eight years, the burial ground is a record of what people actually valued, not what they said they valued.",
+      "keywords": ["twenty-eight","years","what","gravedigger","sees","settlement's","other","functions","don't","who"]
+    },
+    {
+      "id": "twenty_eight_years_1",
+      "source": "Sev on twenty-eight years as the settlement's gravedigger",
+      "text": "In twenty-eight years, the settlement has grown and the burial ground has grown with it. In twenty-eight years, the settlement's dead are the settlement's history in physical form — the four hundred and seventy graves are the four hundred and seventy lives that the settlement contained. In twenty-eight years, the new settlement and the old settlement are both in the burial ground. In twenty-eight years, the burial ground is the one place where the settlement's full history is present at once. In twenty-eight years, I'm the keeper of that history. In twenty-eight years, I take the responsibility seriously.",
+      "keywords": ["twenty-eight","years","settlement","grown","burial","ground","grown","twenty-eight","years","settlement's"]
+    }
+  ]
+}

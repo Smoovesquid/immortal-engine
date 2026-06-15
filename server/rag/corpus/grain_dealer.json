@@ -1,0 +1,57 @@
+{
+  "id": "grain_dealer",
+  "name": "Tave",
+  "role": "Grain dealer; buys from farmers, sells to mills; lives in the gap between harvest and milling",
+  "cluster": "merchant_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "grain_1",
+      "source": "Tave on what a grain dealer does",
+      "text": "I buy grain from the farmers at harvest and sell to the mill when the mill needs it. The farmer can't hold grain indefinitely — storage costs, spoilage risk, the need for cash after the harvest's expense. The mill can't buy at harvest — doesn't have the storage or the capital. I sit between them: I have the storage and the capital, and I take the risk that the grain's price between harvest and milling works out in my favor. In twenty years it's worked out favorably sixteen times and badly four times.",
+      "keywords": ["buy","grain","farmers","harvest","sell","mill","when","mill","needs","farmer"]
+    },
+    {
+      "id": "goss_1",
+      "source": "Tave on Goss",
+      "text": "Goss is my primary buyer. The mill's grain needs run through me for about sixty percent of its annual volume — the other forty comes from farmers with storage who sell direct. In twenty years of supplying the mill, the sixty-forty split has been fairly consistent. What Goss knows: my grain is assessed and graded before delivery and the grade is honest. What I know about Goss: the mill's quality standard has never wavered. Twenty years of mutual reliability makes the pricing conversation very short.",
+      "keywords": ["goss","primary","buyer","mill","grain","needs","run","through","sixty","percent"]
+    },
+    {
+      "id": "sol_1",
+      "source": "Tave on Sol",
+      "text": "Sol is one of my regular sellers. In fourteen years of buying from Sol, the quality has been consistent and the quantities predictable. What Sol told me once about why to sell through me rather than direct: the sale through a dealer removes the negotiation from the farmer's plate, which is already full at harvest. I price fairly and the transaction is clean. Sol said: I know what I'll get from you. What I'll get from a direct sale negotiation is variable. The certainty is worth the margin you keep.",
+      "keywords": ["sol","regular","sellers","fourteen","years","buying","sol","quality","consistent","quantities"]
+    },
+    {
+      "id": "saben_1",
+      "source": "Tave on Saben Fenn",
+      "text": "The Fenn house sometimes holds grain as an investment — they buy at harvest through me and sell at the high-price point. The investment is a different relationship from the supply relationship. Saben told me the first time: I want to buy through you because I trust your grade assessment. The grade assessment is the key variable in grain investment — a misgraded lot costs the investor the entire margin and potentially more. I've graded for the Fenn house six times. All six times, the grade held at sale.",
+      "keywords": ["fenn","house","sometimes","holds","grain","investment","buy","harvest","through","me"]
+    },
+    {
+      "id": "what_grain_is_1",
+      "source": "Tave on what grain actually is",
+      "text": "Grain is the most basic form of human survival compressed into seeds. The harvest is the year's energy stored in a form that will last through the year. Everything the grain dealer does is working with that stored energy — moving it from where it was grown to where it will be used, across the time between those two moments. I've thought about this more as I've gotten older: in twenty years I've moved enough grain to feed the district for three years. The arithmetic of it is something.",
+      "keywords": ["grain","most","basic","form","human","survival","compressed","seeds","harvest","year's"]
+    },
+    {
+      "id": "what_tave_holds_1",
+      "source": "Tave on the year the grain went wrong",
+      "text": "Year eleven. A lot I assessed as grade B that turned out to be grade D by the time it reached Goss's mill. The assessment was correct at the time of purchase — something happened in the storage that I didn't detect. I replaced the lot at my cost. The cost was the margin from a full year erased. What I learned: the assessment is a point-in-time judgment. The grain can change between assessment and delivery. My storage protocol changed in year twelve. One incident, one protocol change, twenty years without a similar incident.",
+      "keywords": ["year","eleven","lot","assessed","grade","turned","out","grade","time","reached"]
+    },
+    {
+      "id": "twenty_years_1",
+      "source": "Tave on twenty years in the grain trade",
+      "text": "The grain trade is not exciting. It's reliable — the settlement needs grain every year, the farmers grow grain every year, the mills process grain every year. My position in the middle of this reliable cycle is itself reliable. In twenty years, the bad years have been the years when the harvest was bad or the mill had difficulty. My bad years are the cycle's bad years. In good years I do well. In bad years I do less well. I've never had a year that ended in loss. The middle position is the stable position.",
+      "keywords": ["grain","trade","not","exciting","reliable","settlement","needs","grain","every","year"]
+    },
+    {
+      "id": "storage_1",
+      "source": "Tave on the grain storage",
+      "text": "My storage is larger than my house. This is the grain dealer's geometry: what you need to hold is larger than what you need to live in. The storage conditions are specific: temperature, moisture, ventilation, pest control. Every variable I don't manage correctly produces a result that reduces the value of what I'm holding. In twenty years, I've come to know the storage the way the furniture inside it knows the room — the movement of the seasons through it, the specific vulnerabilities at each season's transition.",
+      "keywords": ["storage","larger","than","house","grain","dealer's","geometry","what","need","hold"]
+    }
+  ]
+}

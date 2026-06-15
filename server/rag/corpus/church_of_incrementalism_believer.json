@@ -1,0 +1,57 @@
+{
+  "id": "church_of_incrementalism_believer",
+  "name": "Twick",
+  "role": "Secret Church of Incrementalism member; worships the Great Mantis; believes every small step is prayer",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "church_1",
+      "source": "Twick on something ordinary",
+      "text": "I am a leather goods craftsman. That's what I tell people and it's true. The small work — stitching the same stitch a thousand times, improving the stitch incrementally over years — this is what I do. The work is patient. The improvement is slow. The pattern of small improvements accumulating over time: this is, to me, a kind of prayer. I don't discuss the prayer aspect. The work speaks for itself.",
+      "keywords": ["leather","goods","craftsman","what","tell","people","it's","true","small","work"]
+    },
+    {
+      "id": "gund_1",
+      "source": "Twick on Gund",
+      "text": "Gund the ERRAN devotee and I find common ground in the idea of complete work done over time. Gund calls it diligence. I call it something I don't call anything in public. The practice is similar: the patient execution of work that improves incrementally. Gund's frame is the angel of diligence. My frame is — private. In six years of knowing Gund, I've never told Gund what my actual frame is. The practice is the same. The reason for the practice: only I know.",
+      "keywords": ["gund","erran","devotee","find","common","ground","idea","complete","work","done"]
+    },
+    {
+      "id": "weld_1",
+      "source": "Twick on Weld",
+      "text": "Weld at the forge practices something I recognize: the incremental refinement of a craft over decades. What Weld does that I understand intimately: the improvement that accumulates so slowly that no individual step is visible, but the craftwork of thirty years ago compared to the craftwork of now shows the accumulation. In four years of supplying leather goods to the forge — the aprons, the grips, the protective pieces — I've watched Weld's work. The improvement pattern is what I recognize.",
+      "keywords": ["weld","forge","practices","something","recognize","incremental","refinement","craft","over","decades"]
+    },
+    {
+      "id": "baln_1",
+      "source": "Twick on Baln",
+      "text": "Baln the shipwright builds over long timescales. Ships that will be on the water for twenty years, built to standards that account for the entire twenty years. In five years of knowing Baln — I supply some of the interior leather fittings, the map-roll holders, the chart cases — I've recognized the pattern of work that plans for time. The Great Mantis, if I were to say this to anyone, values the work that plans for its own continuity. Baln's ships are planned for continuity. I don't say any of this to Baln.",
+      "keywords": ["baln","shipwright","builds","over","long","timescales","ships","will","water","twenty"]
+    },
+    {
+      "id": "what_incrementalism_is_1",
+      "source": "Twick on what the practice is",
+      "text": "Every morning: one small improvement that I can implement today. The improvement is usually technical — a stitch angle, a leather treatment, a tool modification. Occasionally the improvement is in how I think about the work. Over years, the small improvements accumulate into something that would not have been possible in a single step. The practice is the religion. I don't need the religion to have a building. I need it to have a direction.",
+      "keywords": ["every","morning","one","small","improvement","can","implement","today","improvement","usually"]
+    },
+    {
+      "id": "kevin_1",
+      "source": "Twick on Kevin Bacon",
+      "text": "Kevin the traveling actor-bard has been through this settlement three times in five years. Each time, Kevin brought new performance techniques that Kevin had accumulated on the road. The accumulation was visible: the first visit, the second, the third — each performance more refined than the last. The road is Kevin's incrementalism. In three visits, Kevin didn't know that I was watching for the pattern specifically. The pattern was there. In my private theology: Kevin walks the path without knowing the path's name.",
+      "keywords": ["kevin","traveling","actor-bard","been","through","settlement","three","times","five","years"]
+    },
+    {
+      "id": "what_twick_holds_1",
+      "source": "Twick on what cannot be said",
+      "text": "There is a name for what I practice that I say only in my own mind. There are others who use the same name in their own minds. I've identified three of them over seven years — identified them not by declaration, which no one makes, but by the pattern of their work and the specific way they talk about improvement and accumulation. We haven't spoken of it directly. We've spoken around it. The Great Mantis doesn't require the name to be said aloud. The work says the name.",
+      "keywords": ["there","name","what","practice","say","only","own","mind","there","others"]
+    },
+    {
+      "id": "seven_years_1",
+      "source": "Twick on seven years of the practice",
+      "text": "In seven years, the leather craft I do now is not the same craft I did seven years ago. The improvement is in the result and in the understanding of the result. In seven years, I can do things I couldn't have attempted in year one. The specific things I can do now: they were produced by the accumulation of seven years of small improvements. The Great Mantis — I say this only here, only now — the Great Mantis measures in the accumulated results. In seven years, the measurement is good.",
+      "keywords": ["seven","years","leather","craft","do","now","not","same","craft","did"]
+    }
+  ]
+}

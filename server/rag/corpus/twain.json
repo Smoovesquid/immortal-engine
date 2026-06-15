@@ -1,0 +1,114 @@
+{
+  "id": "twain",
+  "name": "Mark Twain",
+  "chunks": [
+    {
+      "id": "letters_earth_1",
+      "source": "Letters from Earth, written c.1909, publ. 1962",
+      "text": "Man is the only animal that deals in that atrocity of atrocities, War. He is the only one that gathers his brethren about him and goes forth in cold blood and with calm pulse to exterminate his kind. He is the only animal that for sordid wages will march out, as the French Prince Napoleon once said, and help to slaughter strangers of his own species who have done him no harm.",
+      "keywords": ["war","animal","exterminate","slaughter","strangers","species","wages","blood","calm","pulse"]
+    },
+    {
+      "id": "letters_earth_2",
+      "source": "Letters from Earth, written c.1909, publ. 1962",
+      "text": "Man is the only animal that blushes. Or needs to. He is the only one that has the True Religion — several of them. He is the only animal that loves his neighbor as himself, and cuts his throat if his theology isn't straight. He has done it in the name of every god that has a name, and will do it again the next time.",
+      "keywords": ["religion","theology","neighbor","throat","blushes","true","straight","animal","cuts","loves"]
+    },
+    {
+      "id": "letters_earth_3",
+      "source": "Letters from Earth, written c.1909, publ. 1962",
+      "text": "I have been studying the traits and dispositions of the 'lower animals' (so called) and contrasting them with the traits and dispositions of man. I find the result humiliating to me. For it obliges me to renounce my allegiance to the Darwinian theory of the Ascent of Man from the Lower Animals; since it now seems plain to me that the theory ought to be vacated in favor of a new and truer one, to be named the Descent of Man from the Higher Animals.",
+      "keywords": ["animals","traits","humiliating","descent","ascent","darwin","theory","lower","higher","renounce"]
+    },
+    {
+      "id": "autobiography_1",
+      "source": "Autobiography of Mark Twain, dictated 1906-1909",
+      "text": "I have always been able to gain my living without difficulty; I have accomplished all the things which I set out to accomplish. But in the wider field — in the field of the world — I have been a failure. I look back upon my life and I see nothing but failure. Not brilliant dramatic failure — that is something — but just common failure.",
+      "keywords": ["failure","living","accomplished","world","dramatic","common","field","look","back","wider"]
+    },
+    {
+      "id": "autobiography_2",
+      "source": "Autobiography of Mark Twain, dictated 1906-1909",
+      "text": "A man's character may be learned from the adjectives which he habitually uses in conversation. Damn it, all my adjectives are gentle ones. Now why is that? I don't know why it is. I have a deep and reverent respect for decency, and that is why I don't swear in print. I can't help it — I was born that way.",
+      "keywords": ["character","adjectives","conversation","decency","swear","gentle","reverent","respect","print","born"]
+    },
+    {
+      "id": "autobiography_3",
+      "source": "Autobiography of Mark Twain, dictated 1906-1909",
+      "text": "There is no such thing as a new idea. It is impossible. We simply take a lot of old ideas and put them into a sort of mental kaleidoscope. We give them a turn and they make new and curious combinations. We keep on turning and making new combinations indefinitely; but they are the same old pieces of colored glass that have been in use through all the ages.",
+      "keywords": ["ideas","new","combinations","mental","impossible","curious","colored","glass","ages","pieces"]
+    },
+    {
+      "id": "notebook_1",
+      "source": "Mark Twain's Notebook, 1898",
+      "text": "The truth is always exciting. Speak it, then. Life is boring except for beauty, excitement, and deep contentment, which come only from labour. I am not fond of work and I'm not fond of leisure. I find that when I am forced to work I do not think about leisure and when I am at leisure I think only about work.",
+      "keywords": ["truth","exciting","speak","boring","beauty","contentment","labour","work","leisure","forced"]
+    },
+    {
+      "id": "notebook_2",
+      "source": "Mark Twain's Notebook, 1902",
+      "text": "Loyalty to petrified opinion never yet broke a chain or freed a human soul. Get your facts first, then you can distort them as you please. It is better to keep your mouth shut and appear stupid than to open it and remove all doubt. Only kings, editors, and people with tapeworm have the right to use the editorial 'we.'",
+      "keywords": ["loyalty","opinion","facts","distort","stupid","doubt","mouth","soul","freed","chain"]
+    },
+    {
+      "id": "following_equator_1",
+      "source": "Following the Equator, 1897",
+      "text": "There are several good protections against temptations, but the surest is cowardice. It is by the goodness of God that in our country we have those three unspeakably precious things: freedom of speech, freedom of conscience, and the prudence never to practice either of them.",
+      "keywords": ["temptations","cowardice","freedom","speech","conscience","practice","prudence","goodness","precious","protections"]
+    },
+    {
+      "id": "following_equator_2",
+      "source": "Following the Equator, 1897",
+      "text": "The very ink with which history is written is merely fluid prejudice. Whenever you find yourself on the side of the majority, it is time to pause and reflect. Man will do many things to get himself loved; he will do all things to get himself envied.",
+      "keywords": ["history","prejudice","majority","reflect","loved","envied","pause","fluid","written","side"]
+    },
+    {
+      "id": "what_is_man_1",
+      "source": "What Is Man?, 1906",
+      "text": "Training is everything. The peach was once a bitter almond; cauliflower is nothing but cabbage with a college education. We are nothing but the result of our training and our environment. I believe that the human race is not important enough, collectively, to be a nuisance even to its own God, if it has one.",
+      "keywords": ["training","education","environment","human","race","important","nuisance","result","nothing","collectively"]
+    },
+    {
+      "id": "what_is_man_2",
+      "source": "What Is Man?, 1906",
+      "text": "The main difference between a cat and a lie is that a cat has only nine lives. If you pick up a starving dog and make him prosperous, he will not bite you. This is the principal difference between a dog and a man. Courage is resistance to fear, mastery of fear — not absence of fear.",
+      "keywords": ["cat","lie","courage","fear","mastery","resistance","absence","starving","prosperous","difference"]
+    },
+    {
+      "id": "connecticut_yankee_1",
+      "source": "A Connecticut Yankee in King Arthur's Court, 1889",
+      "text": "You see my kind of loyalty was loyalty to one's country, not to its institutions or its office-holders. The country is the real thing, the substantial thing, the eternal thing; it is the thing to watch over, and care for, and be loyal to; institutions are extraneous, they are its mere clothing, and clothing can wear out.",
+      "keywords": ["loyalty","country","institutions","eternal","substantial","clothing","office","holders","watch","care"]
+    },
+    {
+      "id": "connecticut_yankee_2",
+      "source": "A Connecticut Yankee in King Arthur's Court, 1889",
+      "text": "There are times when one would like to hang the whole human race and finish the farce. To lodge all power in one party and keep it there is to insure bad government and the sure and gradual deterioration of the public morals. There is no honest man — I have never in my life seen one.",
+      "keywords": ["power","party","government","morals","deterioration","honest","farce","lodge","gradual","public"]
+    },
+    {
+      "id": "letter_twichell_1",
+      "source": "Letter to Joseph Twichell, 1905",
+      "text": "I have never killed anyone, but I frequently get satisfaction from obituary notices. I am an old man and have known a great many troubles, but most of them never happened. Grief can take care of itself, but to get the full value of joy you must have somebody to divide it with.",
+      "keywords": ["killed","satisfaction","troubles","grief","joy","divide","value","obituary","known","share"]
+    },
+    {
+      "id": "mysterious_stranger_1",
+      "source": "The Mysterious Stranger, written 1897-1908, publ. 1916",
+      "text": "A myriad of men are born; they labor and sweat and struggle for bread; they squabble and scold and fight; they scramble for little mean advantages over each other. Age creeps upon them; infirmities follow; shames and humiliations bring down their prides and their vanities. Those they love are taken from them, and the joy of life is turned to aching grief.",
+      "keywords": ["labor","struggle","bread","fight","advantages","infirmities","humiliations","vanities","grief","aching"]
+    },
+    {
+      "id": "mysterious_stranger_2",
+      "source": "The Mysterious Stranger, written 1897-1908, publ. 1916",
+      "text": "It is true, that which I have revealed to you: there is no God, no universe, no human race, no earthly life, no heaven, no hell. It is all a dream — a grotesque and foolish dream. Nothing exists but you. And you are but a thought — a vagrant thought, a useless thought, a homeless thought, wandering forlorn among the empty eternities.",
+      "keywords": ["dream","god","universe","thought","vagrant","useless","wandering","eternities","grotesque","foolish"]
+    },
+    {
+      "id": "pudd_nhead_wilson_1",
+      "source": "Pudd'nhead Wilson's Calendar, 1894",
+      "text": "Tell the truth or trump — but get the trick. When angry, count four; when very angry, swear. Noise proves nothing. Often a hen who has merely laid an egg cackles as if she had laid an asteroid. It is easier to stay out than to get out. Work consists of whatever a body is obliged to do, and Play consists of whatever a body is not obliged to do.",
+      "keywords": ["truth","angry","noise","work","play","obliged","trick","trump","cackles","stay"]
+    }
+  ]
+}

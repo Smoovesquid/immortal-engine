@@ -1,0 +1,57 @@
+{
+  "id": "stone_carver",
+  "name": "Dol",
+  "role": "Stone carver; makes markers, monuments, inscriptions; what remains when people are gone",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "stone_1",
+      "source": "Dol on what stone carving is",
+      "text": "Stone carving is the removal of what isn't the monument. The monument is already in the stone. My work is to find it by removing what's around it. This is the traditional understanding, and it's accurate but incomplete. The full version: the monument is in the stone and in the hand that removes what's around it. The hand has to know what it's looking for before the looking can happen. In twenty-four years, what I'm looking for has become clearer every year.",
+      "keywords": ["stone","carving","removal","what","isn't","monument","monument","already","stone","work"]
+    },
+    {
+      "id": "garst_1",
+      "source": "Dol on Garst",
+      "text": "Garst supplies me with stone. Not all stone — the decorative and monument grades. What Garst knows about stone that I know from the carving side: the grain of the stone determines what the carving can do. A stone with a specific grain supports a certain fineness of line. A stone with a different grain won't hold the fine line — it spalls. Garst assesses grain as a structural property. I assess it as a carving property. We're assessing the same property for different purposes.",
+      "keywords": ["garst","supplies","stone","not","all","stone","decorative","monument","grades","what"]
+    },
+    {
+      "id": "father_len_1",
+      "source": "Dol on Father Len",
+      "text": "The temple commissions memorial inscriptions from me. In twenty-four years I've carved forty-three inscriptions for the temple. Father Len writes the text. I carve it. The collaboration has a division: Len decides what the stone should say, I decide how it can be said in stone. Sometimes Len's text is too long for the stone's surface. We negotiate the shortening. Len is always willing to shorten to serve the stone. The stone's capacity is the constraint, not Len's preference.",
+      "keywords": ["temple","commissions","memorial","inscriptions","twenty-four","years","carved","forty-three","inscriptions","temple"]
+    },
+    {
+      "id": "mam_wey_1",
+      "source": "Dol on Mam Wey",
+      "text": "Mam Wey commissioned the marker for her husband forty years ago. I didn't carve it — it was my teacher's work. What I know about the marker: I restored it eight years ago when the weathering had compromised the inscription. The restoration was my work on my teacher's carving. In twenty-four years I've restored six pieces my teacher made. Every restoration: I finish it understanding the original better than when I started. My teacher's work teaches me things the work doesn't need a teacher present to teach.",
+      "keywords": ["mam","wey","commissioned","marker","husband","forty","years","didn't","carve","teacher's"]
+    },
+    {
+      "id": "weld_1",
+      "source": "Dol on Weld",
+      "text": "Weld at the Forge Guild makes the metal inlays I use for certain monuments — the letters filled with bronze or copper that the weathering doesn't reach the way it reaches the carved lines. In seven years of working with Weld, the inlay work has expanded what I can offer. The inlay is the meeting of two crafts: Weld provides the metal piece, I provide the stone seat for it. The meeting requires precision from both sides. Weld is precise. Our work fits.",
+      "keywords": ["weld","forge","guild","makes","metal","inlays","use","certain","monuments","letters"]
+    },
+    {
+      "id": "what_dol_holds_1",
+      "source": "Dol on the stone she won't carve",
+      "text": "A commission I declined three years ago. A monument commission from someone who gave me the text and the stone and then, during the conversation, told me what the monument was for. What it was for: something I couldn't put my name on. Not illegal, not harmful — something I couldn't participate in without participating in something I disagree with. I returned the stone and the commission fee. The person was surprised. I said: I can't make this. They found another carver. The monument exists. I didn't make it.",
+      "keywords": ["commission","declined","three","years","monument","commission","someone","gave","text","stone"]
+    },
+    {
+      "id": "what_permanence_is_1",
+      "source": "Dol on what stone carving is really for",
+      "text": "The monument is for the people who remain after the person is gone. Not for the person gone — they're gone. For the ones who continue and need the shape of the loss to exist in the physical world. The stone gives the loss a location, a legible form, something that can be returned to. In twenty-four years I've made the forms for three hundred and twelve losses. The losses I've made forms for: they have a location now. The location is in stone.",
+      "keywords": ["monument","people","remain","after","person","gone","not","person","gone","they're"]
+    },
+    {
+      "id": "twenty_four_years_1",
+      "source": "Dol on twenty-four years of making monuments",
+      "text": "The earliest pieces I made are still here. In twenty-four years, none of my monuments has been removed or replaced. They're designed not to be. The permanence is the point. In twenty-four years I've watched the settlement change around monuments that were here before the change. The monuments are the fixed points. The settlement flows around them. I find this significant in a way I don't have words for. The fixed points are what I make. The flowing is everything else.",
+      "keywords": ["earliest","pieces","made","still","here","twenty-four","years","none","monuments","removed"]
+    }
+  ]
+}

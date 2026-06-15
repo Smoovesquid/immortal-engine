@@ -1,0 +1,57 @@
+{
+  "id": "rath_brotherhood",
+  "name": "Rath",
+  "role": "Field captain of the Brotherhood of the Wild; the hand that makes the Brotherhood's decisions real",
+  "cluster": "brotherhood_of_wild",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "brotherhood_1",
+      "source": "Rath on the Brotherhood",
+      "text": "The Brotherhood exists to manage the territory between settlements. Not to own it — to manage it. The territory that belongs to nobody becomes the territory that's destroyed by everybody. Management means knowing who is in the territory, what they're doing, and whether what they're doing is sustainable. In sixteen years as field captain, the answer to whether something is sustainable has been no eleven times. Eleven times we've intervened. The territory is still here.",
+      "keywords": ["brotherhood","exists","manage","territory","between","settlements","not","own","it","manage"]
+    },
+    {
+      "id": "cord_1",
+      "source": "Rath on Cord",
+      "text": "Cord has been in the Brotherhood for twenty-one years. Longer than me. What I give Cord that the seniority might seem to make unnecessary: direction. Not because Cord lacks judgment — because the field captain's judgment integrates what Cord sees with what Theen sees with what Drass sees with what the other trackers see. Cord's judgment is excellent within Cord's territory. The field captain's judgment works across territories. Both are necessary. Cord knows this.",
+      "keywords": ["cord","brotherhood","twenty-one","years","longer","than","me","what","give","cord"]
+    },
+    {
+      "id": "vel_1",
+      "source": "Rath on Commander Vel",
+      "text": "Commander Vel holds the Brotherhood's doctrine. I hold the Brotherhood's practice. The two are not always the same thing. When doctrine and practice diverge in the field, I apply the practice and report the divergence to Vel. In sixteen years of field command, doctrine and practice have diverged eight times. Vel has accepted the field practice in six of the eight cases. In the other two, Vel revised the doctrine. The doctrine is better for having been tested against the practice.",
+      "keywords": ["commander","vel","holds","brotherhood's","doctrine","hold","brotherhood's","practice","two","not"]
+    },
+    {
+      "id": "theen_1",
+      "source": "Rath on Theen",
+      "text": "Theen guides travelers through the territory. This is different from the Brotherhood's management function — Theen's work serves the travelers. But Theen's movements through the territory produce information about the territory that the Brotherhood needs. In eleven years of loose coordination with Theen, I've received eleven pieces of information that changed how the Brotherhood managed the territory. Not obligated — volunteered. Theen understands that the territory's health serves the travelers. The information serves the territory.",
+      "keywords": ["theen","guides","travelers","territory","different","brotherhood's","management","function","theen's","work"]
+    },
+    {
+      "id": "drass_1",
+      "source": "Rath on Drass",
+      "text": "Drass has the deepest territory knowledge of any tracker I've commanded. What Drass knows about the predator movements in the eastern section has no analog in what the other trackers know about their sections. The knowledge is specific, current, and correct. Drass is not the easiest person to command — has opinions about methods that don't always align with Brotherhood protocol. In eleven years I've overridden Drass's method twice and accepted it six times. The six times I accepted it were correct.",
+      "keywords": ["drass","deepest","territory","knowledge","any","tracker","commanded","what","drass","knows"]
+    },
+    {
+      "id": "pella_1",
+      "source": "Rath on Pella the field medic",
+      "text": "Pella came from the Scarlet Compact to the Brotherhood's territory work. This sounds like a tension. In practice: Pella's Compact background gives the field medic a specific kind of courage in difficult situations that purely Brotherhood-trained medics don't have. The Compact trains people to work in the worst situations. The worst Brotherhood situations are better than the Compact's worst. Pella handles Brotherhood worst-situations without difficulty. I've stopped explaining this context to people who ask why a Compact member is in the Brotherhood.",
+      "keywords": ["pella","came","scarlet","compact","brotherhood's","territory","work","sounds","like","tension"]
+    },
+    {
+      "id": "what_rath_holds_1",
+      "source": "Rath on the territory loss",
+      "text": "Year three as field captain. A section of the eastern territory that the Brotherhood managed for forty years was lost — not to people, to an ecological collapse. The management protocol didn't anticipate the specific combination of factors that produced the collapse. What I learned: the territory doesn't only change in the ways the protocol anticipates. The protocol anticipates what has happened before. The territory will do things the protocol hasn't seen. The protocol is revised after those things happen. The eastern section is recovering. Ten years later, recovering.",
+      "keywords": ["year","three","field","captain","section","eastern","territory","brotherhood","managed","forty"]
+    },
+    {
+      "id": "sixteen_years_1",
+      "source": "Rath on sixteen years of field command",
+      "text": "The territory is not a problem you solve. The territory is a condition you manage. In sixteen years I've solved nothing. I've managed everything that came up and the territory is still here and the management continues. A captain who thinks they're solving the territory is heading toward a failure the territory will create to correct the assumption. The territory will correct the assumption. The correction is expensive. I've paid it once. Once was enough to understand the distinction.",
+      "keywords": ["territory","not","problem","solve","territory","condition","manage","sixteen","years","solved"]
+    }
+  ]
+}

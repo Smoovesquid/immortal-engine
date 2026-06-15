@@ -1,0 +1,57 @@
+{
+  "id": "academy_rune_master",
+  "name": "Burr",
+  "role": "Rune Master; teaches the advanced sequences; has been at the Academy for thirty-seven years",
+  "cluster": "academy_of_runes",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "rune_1",
+      "source": "Burr on runes",
+      "text": "A rune is a fixed form that interfaces with a variable substrate. The form is stable. What the form does depends on what it's applied to, under what conditions, with what accompanying sequence. In thirty-seven years of teaching rune work, the rune itself hasn't changed. What's changed: my understanding of the variable — the substrate, the conditions, the sequence. The rune is the smallest unit of certainty in the discipline. The practice is everything outside the rune.",
+      "keywords": ["rune","fixed","form","interfaces","variable","substrate","form","stable","what","form"]
+    },
+    {
+      "id": "osven_1",
+      "source": "Burr on Osven",
+      "text": "Osven and I have worked at the Academy for twenty-two overlapping years. In twenty-two years, Osven has directed the Archive and I've directed the advanced sequences. The Archive's function and the advanced sequences' function are different expressions of the same discipline: Osven preserves the knowledge that exists, I develop the knowledge that doesn't yet. In twenty-two years, the tension between preservation and development has produced seven institutional disputes and forty-three productive conversations. The disputes and the conversations came from the same place.",
+      "keywords": ["osven","worked","academy","twenty-two","overlapping","years","twenty-two","years","osven","directed"]
+    },
+    {
+      "id": "tal_1",
+      "source": "Burr on Tal",
+      "text": "Tal is the most technically accomplished student I've trained in thirty-seven years. The sequence analysis that Tal has developed is not something I taught — Tal built it from what I taught to something I didn't know how to teach. In teaching thirty-seven years of students, the best outcome is when the student does something with the teaching that the teacher couldn't have done. Tal's sequence analysis is that outcome. I've told Tal: what you've built is more than what I gave you. Tal said: it came from what you gave me. Both things are true.",
+      "keywords": ["tal","most","technically","accomplished","student","trained","thirty-seven","years","sequence","analysis"]
+    },
+    {
+      "id": "maren_1",
+      "source": "Burr on Maren",
+      "text": "Maren maintains the Academy's correspondence and record systems. In thirty-seven years at the Academy, Maren has managed the operational systems for the last twelve. What Maren's operation provides that I depend on: when I need a document, it's there. When I need to send correspondence, the correspondence gets where it needs to go. In thirty-seven years of Academy work, the operational layer is invisible until it fails. Maren's operational layer has not failed in twelve years.",
+      "keywords": ["maren","maintains","academy's","correspondence","record","systems","thirty-seven","years","academy","maren"]
+    },
+    {
+      "id": "binn_1",
+      "source": "Burr on Binn",
+      "text": "Binn is in the first year and has already identified a sequence relationship that first-year students don't usually find. In first year, students learn the individual runes and the basic sequence rules. The relationship Binn found is a second-order rule that emerges from the basic rules — it's not taught until the third year. Binn found it independently. What this tells me about Binn: the architecture for advanced sequence work is already there. What I need to do with Binn: not slow the student down. Provide the context the student's finding needs.",
+      "keywords": ["binn","first","year","already","identified","sequence","relationship","first-year","students","don't"]
+    },
+    {
+      "id": "what_thirty_seven_years_teaches_1",
+      "source": "Burr on what thirty-seven years of teaching teaches",
+      "text": "In thirty-seven years of teaching the advanced sequences, I've had students who mastered the sequences and students who learned the sequences. The distinction: mastery means the sequence is a tool that the student uses for work that goes beyond the sequence. Learning means the student can reproduce the sequence correctly. Most students learn. A few master. The few who master — I can identify them by year two. The mastery shows up in what they do with what they've learned, not in how accurately they've learned it.",
+      "keywords": ["thirty-seven","years","teaching","advanced","sequences","students","mastered","sequences","students","learned"]
+    },
+    {
+      "id": "what_burr_holds_1",
+      "source": "Burr on the sequence she's never taught",
+      "text": "A sequence I derived in year twenty-one that I've applied twice in the years since. The sequence produces an effect I can describe but not predict precisely: it works, reliably, but the specific form of the working varies in ways I don't fully understand. I've never taught it because I can't teach what I don't fully understand, and what I don't fully understand has a specific kind of danger: the student applies it in a context I haven't anticipated and something I don't want to happen happens. It's in my working notes. In thirty-seven years I've gotten closer to understanding it. I'm not there yet.",
+      "keywords": ["sequence","derived","year","twenty-one","applied","twice","years","since","sequence","produces"]
+    },
+    {
+      "id": "thirty_seven_years_1",
+      "source": "Burr on thirty-seven years at the Academy",
+      "text": "In thirty-seven years I've taught nine hundred students the advanced sequences. Of the nine hundred: I know the work of approximately two hundred. The other seven hundred have gone to work I don't have visibility into. What I do with the nine hundred when I think about them: wonder what the two hundred I know about are doing with the discipline in contexts I can't see, and wonder what the seven hundred I don't know about did with what I gave them. The teaching goes further than the teacher can follow. That's what teaching is for.",
+      "keywords": ["thirty-seven","years","taught","nine","hundred","students","advanced","sequences","nine","hundred"]
+    }
+  ]
+}

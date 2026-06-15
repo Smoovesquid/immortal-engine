@@ -1,0 +1,57 @@
+{
+  "id": "teel_scholar",
+  "name": "Teel",
+  "role": "Scholar, Academy of Runes; Angel Covenant (associated)",
+  "cluster": "angel_covenant",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "publication_1",
+      "source": "Teel presenting a paper at the Academy",
+      "text": "The data is in the paper. The methodology is in the appendix. I've included the primary sources so the conclusions can be checked. What I ask of any reader is that they check them. If the methodology is sound and the data is accurate, the conclusions follow. If the conclusions are disturbing, that's a fact about what the mechanism produces, not a fact about the paper. I can't make the conclusions less disturbing by writing them more carefully. I can only write them more clearly.",
+      "keywords": ["data","paper","methodology","appendix","sources","conclusions","checked","sound","accurate","disturbing"]
+    },
+    {
+      "id": "vel_1",
+      "source": "Teel on Archon Vel's objections",
+      "text": "Vel objects on theological grounds. His objection is that my conclusions would require revising several foundational beliefs that the Temple has built on, and that revising those beliefs would undermine the institution's function. He's probably right about the institutional consequences. He's not right about the methodology. These are different kinds of correctness and they're being conflated. I hold the conclusions because the methodology demands them. What Vel does with the institution is his problem.",
+      "keywords": ["vel","objects","theological","grounds","foundational","beliefs","temple","revising","institutional","methodology"]
+    },
+    {
+      "id": "caer_1",
+      "source": "Teel on the former paladin Caer who consulted Teel",
+      "text": "Caer came with the LIRAINE question. Whether the virtue is in the petition or the service. She'd asked Vel and she'd asked Wen and she came to me because neither answer satisfied. I told her what the data suggests: the virtue doesn't reside in either the petition or the service but in what changes the practitioner between the two. This is not the answer she wanted. It's the answer the mechanism produces. She left with something to think about. I find this the most useful outcome.",
+      "keywords": ["caer","liraine","question","petition","service","vel","wen","virtue","mechanism","practitioner"]
+    },
+    {
+      "id": "reception_1",
+      "source": "Teel's notebook, on the phenomenon Oss and Wen both describe",
+      "text": "Two independent reporters, no known prior communication about the specifics, describing the same directional quality of reception. The direction is consistent: both describe it as coming from the same azimuth. The azimuth doesn't correspond to any geographic feature. It corresponds to something in the historical record that hasn't been cross-referenced with the reception reports because the people doing the history and the people doing the theology aren't in communication. This is the error Maren would call an institutional blind spot.",
+      "keywords": ["two","independent","reporters","directional","reception","direction","azimuth","geographic","historical","record"]
+    },
+    {
+      "id": "angels_1",
+      "source": "Teel answering a direct question: what are the angels?",
+      "text": "Mechanism. I don't use that word dismissively. A mechanism can be profound, can be beautiful, can be the most important thing about the world. What I mean is: angels are not persons making choices. They are something closer to a force with a particular character, which becomes expression through persons who are configured to receive it. MERETH doesn't decide to express through someone. The someone becomes MERETH-expressive the way wood becomes fire-expressive in certain conditions. The conditions are learnable.",
+      "keywords": ["mechanism","dismissively","profound","angels","persons","choices","force","character","expression","configured"]
+    },
+    {
+      "id": "academy_1",
+      "source": "Teel on working at the Academy while being associated with the Covenant",
+      "text": "I was trained in the Covenant and I research at the Academy. Both find this slightly suspicious. The Covenant worries I'm too academic. The Academy worries I'm too theological. I'm neither. I'm looking at the mechanism from two angles simultaneously, which produces a view that neither angle alone produces. The double suspicion is the cost of the double view. I consider it a reasonable trade.",
+      "keywords": ["trained","covenant","research","academy","suspicious","academic","theological","neither","mechanism","simultaneously"]
+    },
+    {
+      "id": "maren_1",
+      "source": "Teel on Scholar Maren's work",
+      "text": "Maren found the recursion problem in my work before I did. She's right about it. The mechanism responding to its own description is the thing I haven't resolved. The feedback may be the most important part of the whole question — if the mechanism is changed by being described, then every description is an intervention, and every intervention produces new data, and the research doesn't have an outside anymore. I'm working on the recursion. Maren won't publish her criticism until I've had time to address it. This is collegial behavior. I appreciate it.",
+      "keywords": ["maren","recursion","problem","mechanism","feedback","described","intervention","description","outside","collegial"]
+    },
+    {
+      "id": "alarming_1",
+      "source": "Teel when a student asked why the work was described as alarming",
+      "text": "Alarming is accurate. Accuracy is alarming sometimes. What I've characterized suggests that the fourteen — the angels and the demons — are not in opposition. They're expressions of the same underlying mechanism, differentiated by the conditions of expression. This is alarming because it means good and evil are not opposed forces. They're the same force in different configurations. I find this clarifying. People who've built their understanding of ethics on the opposition find it alarming. Both reactions are correct from where each stands.",
+      "keywords": ["alarming","accurate","fourteen","angels","demons","opposition","expressions","mechanism","differentiated","conditions"]
+    }
+  ]
+}

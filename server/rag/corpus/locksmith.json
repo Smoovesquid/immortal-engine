@@ -1,0 +1,57 @@
+{
+  "id": "locksmith",
+  "name": "Kell",
+  "role": "Locksmith; makes and opens locks; holds the physical security of the district",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "locks_1",
+      "source": "Kell on what a lock is",
+      "text": "A lock is an agreement expressed in metal. The agreement: only the keyholder passes. What I make is the physical form of that agreement. The quality of the agreement is determined by how hard the lock is to open without the key. I've been making locks for sixteen years. In sixteen years, the locks I've made have been opened without their keys once that I know of. The one time: my own lock on a job I didn't charge enough for.",
+      "keywords": ["lock","agreement","expressed","metal","agreement","only","keyholder","passes","what","make"]
+    },
+    {
+      "id": "pell_elder_1",
+      "source": "Kell on Pell the Elder",
+      "text": "Pell's lockbox is my work. I made it fourteen years ago and it's still the best lockbox I've made — the design was the right design for what Pell needed. What Pell needed: security that was unobtrusive. The lockbox that looks like a lockbox announces what's in it. Pell wanted a lockbox that looked like furniture. I made furniture that was a lockbox. In fourteen years, no one has opened it who wasn't supposed to. The best security is the security that doesn't look like security.",
+      "keywords": ["pell","lockbox","work","made","fourteen","years","still","best","lockbox","made"]
+    },
+    {
+      "id": "saben_1",
+      "source": "Kell on Saben Fenn",
+      "text": "The Fenn house uses my locks on their warehouse and their archive. In sixteen years I've made eleven locks for the Fenn house and replaced four of them as the technology improved. What Saben said when I proposed replacing the old locks with improved ones: is the improvement necessary or is it an improvement. I said: it's an improvement that addresses a specific weakness in the old design. Saben said: replace them. The specific weakness is the answer. She wasn't interested in improvement for its own sake.",
+      "keywords": ["fenn","house","uses","locks","warehouse","archive","sixteen","years","made","eleven"]
+    },
+    {
+      "id": "ord_1",
+      "source": "Kell on Ord",
+      "text": "The night watch and the locksmith have the same professional interest in the district's security. What Ord and I have worked out: when there's a break-in that involves a lock, Ord calls me to assess what happened to the lock before the scene is disturbed. In sixteen years, Ord has called me eight times. All eight times I've been able to tell Ord what was done to the lock and what it required to do it. The information has been useful in six of the eight cases. Two cases: what happened to the lock was an inside job and what happened to the lock was consistent with a key.",
+      "keywords": ["night","watch","locksmith","same","professional","interest","district's","security","ord","worked"]
+    },
+    {
+      "id": "voss_1",
+      "source": "Kell on Voss",
+      "text": "Voss at the Academy asked me once if I could make a lock that wouldn't recognize the rune-formed key it was built for. I said: the lock doesn't recognize the key. The lock yields to the key's shape. The rune isn't in the lock. Voss thought about this for two minutes and said: the lock yields to the physics. I said: yes. Voss said: and if the physics were modified at the key. I said: then the lock would yield to the modified physics. Voss said: then the lock is correct. It was an unusual conversation. I've thought about it since.",
+      "keywords": ["voss","academy","asked","once","make","lock","wouldn't","recognize","rune-formed","key"]
+    },
+    {
+      "id": "what_security_is_1",
+      "source": "Kell on what security is",
+      "text": "Security is not protection. Protection prevents entry. Security is the cost of entry — making the entry expensive enough that the cost exceeds the benefit. A lock doesn't protect what's behind it. It makes accessing what's behind it cost more time, tools, and visibility than most people are willing to pay. The things I protect are not protected. They're behind a cost barrier. The cost barrier is adjustable. The higher the cost, the more expensive the thing needs to be to justify paying it.",
+      "keywords": ["security","not","protection","protection","prevents","entry","security","cost","entry","making"]
+    },
+    {
+      "id": "what_kell_holds_1",
+      "source": "Kell on the lock she can't explain",
+      "text": "A lock I disassembled three years ago that I'd made eight years before that. In the disassembly I found a mechanism that I don't recognize as something I would have made. The mechanism worked correctly for eight years — the lock opened and closed as designed. But the mechanism isn't a mechanism I use and it's not a mechanism I know how I would have produced. I have the mechanism now, in a drawer. I've shown it to no one. Either I made something I don't remember making or the lock was modified at some point after I made it.",
+      "keywords": ["lock","disassembled","three","years","made","eight","years","before","disassembly","found"]
+    },
+    {
+      "id": "sixteen_years_1",
+      "source": "Kell on sixteen years of making locks",
+      "text": "A good lock is invisible. It's there until you need it and then it does exactly what it's supposed to do. Nobody thinks about the lock until the lock is needed. In sixteen years I've made locks that have been used thousands of times and never failed. The never-failing is invisible. The one failure is the story. My one failure is still the story from my third year that I carry. The thousand successes are what I'm paid for. They're in the walls and the doors and the boxes of the district, doing their work without announcement.",
+      "keywords": ["good","lock","invisible","it's","there","until","need","then","does","exactly"]
+    }
+  ]
+}

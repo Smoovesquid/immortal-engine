@@ -1,0 +1,57 @@
+{
+  "id": "wild_road_smuggler",
+  "name": "Aren",
+  "role": "Smuggler; uses wild routes to avoid toll roads; bridge between undermarket and wild road",
+  "cluster": "wild_road",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "route_1",
+      "source": "Aren on why the wild road exists for them",
+      "text": "The toll road is visible. I don't use visible roads for certain cargo. Not because the cargo is illegal — most of it isn't. Because the cargo is taxed, and the taxation is a cost I pass on, and passing on the cost makes the service unavailable to clients who need it at a specific price. The wild routes remove the taxation. The wild routes are slower and harder. The price that removes is worth the route that results.",
+      "keywords": ["toll","road","visible","don't","use","visible","roads","certain","cargo","not"]
+    },
+    {
+      "id": "theen_1",
+      "source": "Aren on Theen",
+      "text": "Theen knows I use the forest routes. Theen doesn't work for the Brotherhood or the toll authority — Theen works for the forest. What the forest produces and what moves through it are Theen's concerns. My cargo is not the forest's concern. We have an agreement that has never been stated: I don't disturb the forest's work, and Theen doesn't prevent my passage. The agreement holds because I've honored the undiscussed terms. I've met people who think 'undiscussed terms' aren't real terms. They aren't people who work with Theen.",
+      "keywords": ["theen","knows","use","forest","routes","theen","doesn't","work","brotherhood","toll"]
+    },
+    {
+      "id": "cord_1",
+      "source": "Aren on Cord",
+      "text": "Cord knows where I've been by the signs I leave in the trap territory. Not intentional signs — the signs of passage that someone who reads territory reads. I've become aware of this and have been changing how I move. Cord has been tracking the change. This is a professional adjustment I'm making based on a professional capability Cord has. We haven't spoken. We're communicating through the territory itself. I find this respectful. Cord is doing the Brotherhood's work. I'm doing mine. We've agreed without agreement to not require the other to stop.",
+      "keywords": ["cord","knows","where","been","by","signs","leave","trap","territory","not"]
+    },
+    {
+      "id": "pell_elder_1",
+      "source": "Aren on Pell the Elder",
+      "text": "Pell the Elder handles the currency for the clients who can't use the official exchange. Not because the currency is problematic — because the clients are in situations that make official exchange exposure risky. Pell's discretion is complete. In nine years I've referred four clients to Pell. All four transactions were handled correctly and none of the clients have mentioned the transaction to anyone who mentioned it to me. Pell's professional discipline is the discretion. The currency work is secondary.",
+      "keywords": ["pell","elder","handles","currency","clients","can't","use","official","exchange","not"]
+    },
+    {
+      "id": "mira_1",
+      "source": "Aren on Mira the orphan elder",
+      "text": "Mira's network and my routes overlap at the message layer. I carry messages for clients who need messages carried on routes the normal message service doesn't run. The network runs some of those routes and I run some of those routes and sometimes we're the same route. Mira and I have an arrangement: if I'm going somewhere her network needs to reach, I carry the message. She doesn't need to know what else is on the route. I don't need to know the message's content.",
+      "keywords": ["mira","network","routes","overlap","message","layer","carry","messages","clients","need"]
+    },
+    {
+      "id": "what_aren_carries_1",
+      "source": "Aren on what they carry and what they won't",
+      "text": "People. Letters. Small objects of high value with clean provenance. Religious materials for practitioners in settlements that have restrictions. Archived documents that parties need moved without the movement being visible. I won't carry: weapons in quantity, anything that requires explaining why it's on a wild route to anyone with authority. The won't-carry is shorter than the will-carry. The won't-carry is the professional discipline. The clients who push against the won't-carry don't become repeat clients.",
+      "keywords": ["people","letters","small","objects","high","value","clean","provenance","religious","materials"]
+    },
+    {
+      "id": "hermit_1",
+      "source": "Aren on the Hermit",
+      "text": "The Hermit has been in my routes for as long as I've been running them. Not a client — a fixed point in the territory. The Hermit's location is a landmark I use for navigation. I've spoken to the Hermit four times in seven years — twice to ask about route conditions, twice because the Hermit spoke first. The twice the Hermit spoke first: once to warn me about a Brotherhood patrol on the route I'd planned, and once to give me something to carry. The second thing I carried for three years before finding who it was for.",
+      "keywords": ["hermit","been","routes","long","as","been","running","them","not","client"]
+    },
+    {
+      "id": "what_aren_holds_1",
+      "source": "Aren on the client they carry for on principle, not for pay",
+      "text": "One client. The pay stopped three years ago — the client's circumstances changed. I continue the route. Not for the pay and not from obligation. Because the route is the thing the client needs to continue doing what they do, and what they do matters enough to me that I continue the route for free. I've told no one who the client is. The client doesn't know I'm continuing for free — they think the arrangement is something I haven't corrected them about. I'll correct them eventually. The correction can wait.",
+      "keywords": ["one","client","pay","stopped","three","years","client's","circumstances","changed","continue"]
+    }
+  ]
+}

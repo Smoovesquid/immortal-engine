@@ -1,0 +1,54 @@
+{
+  "id": "booker-washington",
+  "name": "Booker T. Washington",
+  "chunks": [
+    {
+      "id": "up_from_slavery_1",
+      "source": "Up From Slavery, 1901",
+      "text": "Success is not measured by the position one has reached in life, but the obstacles which he has overcome while trying to succeed. I have learned that success is to be measured not so much by the position that one has reached in life as by the obstacles which one has had to overcome while trying to succeed.",
+      "keywords": ["success","measured","position","obstacles","overcome","trying","reached","learned","life","trying"]
+    },
+    {
+      "id": "up_from_slavery_2",
+      "source": "Up From Slavery, 1901",
+      "text": "I was born a slave. I can remember the day when I first began to think. My first memories are of slavery. I remember the slave quarters where I was born. I remember the hunger, the cold, the degradation. But I also remember the day I walked away — and no man or woman can take that day from me.",
+      "keywords": ["born","slave","quarters","hunger","cold","degradation","remember","walked","away","first"]
+    },
+    {
+      "id": "up_from_slavery_3",
+      "source": "Up From Slavery, 1901",
+      "text": "No race can prosper till it learns that there is as much dignity in tilling a field as in writing a poem. Nothing ever comes to one, that is worth having, except as a result of hard work. I have found that the best way to lift oneself up is to help someone else.",
+      "keywords": ["race","prosper","dignity","field","poem","work","lift","help","worth","having"]
+    },
+    {
+      "id": "up_from_slavery_4",
+      "source": "Up From Slavery, 1901",
+      "text": "Cast down your bucket where you are. Cast it down in making friends in every manly way of the people of all races by whom we are surrounded. Cast it down in agriculture, mechanics, in commerce, in domestic service, and in the professions. No man, who continues to add something to the material, intellectual, and moral well-being of the place in which he lives, is left long without proper reward.",
+      "keywords": ["bucket","cast","friends","agriculture","commerce","professions","reward","material","intellectual","moral"]
+    },
+    {
+      "id": "atlanta_exposition_1",
+      "source": "Atlanta Exposition Address, September 18, 1895",
+      "text": "In all things that are purely social we can be as separate as the fingers, yet one as the hand in all things essential to mutual progress. There is no defence or security for any of us except in the highest intelligence and development of all. If anywhere there are efforts tending to curtail the fullest growth of the Negro, let these efforts be turned into stimulating, encouraging, and making him the most useful and intelligent citizen.",
+      "keywords": ["social","separate","fingers","hand","progress","intelligence","development","growth","negro","stimulating"]
+    },
+    {
+      "id": "atlanta_exposition_2",
+      "source": "Atlanta Exposition Address, September 18, 1895",
+      "text": "The wisest among my race understand that the agitation of questions of social equality is the extremest folly, and that progress in the enjoyment of all the privileges that will come to us must be the result of severe and constant struggle rather than of artificial forcing.",
+      "keywords": ["agitation","equality","folly","progress","privileges","struggle","artificial","forcing","severe","constant"]
+    },
+    {
+      "id": "character_1",
+      "source": "Character Building, 1902",
+      "text": "Character is power. There is something in human nature that always makes an individual recognize and reward merit, no matter under what color of skin merit is found. Character, not circumstances, makes the man. Of all the lessons that are going to help us, none is more important than the lesson of patience.",
+      "keywords": ["character","power","merit","skin","reward","circumstances","patience","human","recognize","lessons"]
+    },
+    {
+      "id": "future_american_1",
+      "source": "The Future of the American Negro, 1900",
+      "text": "The wisest, the most hopeful way is to cultivate every inch of ground that is open to us, to be patient, to put emphasis upon those things that bind us together rather than upon those things that separate us. The opportunity to earn a dollar in a factory just now is worth infinitely more than the opportunity to spend a dollar in an opera-house.",
+      "keywords": ["cultivate","ground","patient","emphasis","bind","separate","dollar","factory","opportunity","worth"]
+    }
+  ]
+}

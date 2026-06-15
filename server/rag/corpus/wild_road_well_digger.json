@@ -1,0 +1,57 @@
+{
+  "id": "wild_road_well_digger",
+  "name": "Berd",
+  "role": "Wild road well digger; finds the water that the territory's settlements need to survive",
+  "cluster": "wild_road",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "well_digger_1",
+      "source": "Berd on well digging",
+      "text": "In twenty-four years of well digging in the wild road territory, what the well digger does that no other territorial function does: finds the water that the settlement requires before the settlement is built, or provides the water that the existing settlement lacks. In twenty-four years, the settlement without water is the settlement that doesn't survive. In twenty-four years, the well I dig is often the settlement's first permanent infrastructure — the thing that makes everything else possible. In twenty-four years, the well comes first.",
+      "keywords": ["twenty-four","years","well","digging","wild","road","territory","what","well","digger"]
+    },
+    {
+      "id": "theen_1",
+      "source": "Berd on Theen",
+      "text": "Theen reads the territory and the territory reader's knowledge of the land's subsurface hydrology is the well digger's most valuable information source. In eighteen years of using Theen's territory knowledge in the well-finding process, what the territory reader's subsurface knowledge provides: the selection of the well site that reaches water at depth rather than the site that looks promising and doesn't. In eighteen years, the sites Theen has recommended have produced water in twenty-two of twenty-four cases. The two that didn't were sites where the dry season had changed the water table unexpectedly.",
+      "keywords": ["theen","reads","territory","territory","reader's","knowledge","land's","subsurface","hydrology","well"]
+    },
+    {
+      "id": "mell_elder_1",
+      "source": "Berd on Mell the Elder",
+      "text": "Mell the Elder founded the wild road's main settlement forty-two years ago and I dug the settlement's first well twenty-three years ago, one year after I arrived. In twenty-three years of knowing Mell, what the founding generation's relationship to the well is: the people who built the settlement before the well existed know specifically what the settlement was without it. In twenty-three years, Mell has told me twice that the well changed the settlement's permanence — before the well, the settlement was a camp that might move. After the well, it was a settlement that stays.",
+      "keywords": ["mell","elder","founded","wild","road's","main","settlement","forty-two","years","ago"]
+    },
+    {
+      "id": "dresk_1",
+      "source": "Berd on Dresk",
+      "text": "Dresk saws the timber that lines the wells I dig. In fifteen years of the Berd-Dresk well digger-sawyer relationship, what the timber lining provides to the well: the structural support that keeps the well's walls from collapsing into the water supply. In fifteen years, the unlined well in unstable soil is the well that eventually fails. The timber-lined well in the same soil is the well that lasts. In fifteen years, Dresk's timber and my digging have produced wells that are still functioning twenty years after we built them.",
+      "keywords": ["dresk","saws","timber","lines","wells","dig","fifteen","years","berd-dresk","well"]
+    },
+    {
+      "id": "marb_1",
+      "source": "Berd on Marb",
+      "text": "Marb keeps the waystation and the waystation's water supply was the well I dug eleven years ago. In eleven years of knowing that a specific well I dug is serving a specific critical function, what the waystation well represents: the well whose failure would affect every traveler on the wild road who stops at Marb's waystation. In eleven years, the waystation well has held. In eleven years, twice I've inspected the well at Marb's request — once after an unusually dry season, once after a structural concern. Both inspections: the well was sound.",
+      "keywords": ["marb","keeps","waystation","waystation's","water","supply","well","dug","eleven","years"]
+    },
+    {
+      "id": "what_berd_holds_1",
+      "source": "Berd on what twenty-four years of well digging holds",
+      "text": "In twenty-four years, I've dug forty-one wells in the wild road territory. Of forty-one: thirty-six are still producing water. Three were sealed after the settlements they served were abandoned. Two failed — one due to subsurface shift, one due to contamination from a surface event. In twenty-four years, thirty-six of forty-one producing wells is the measure of the work. In twenty-four years, the wells that don't produce anymore have specific stories. In twenty-four years, the stories are part of the trade — the well that failed teaches the next well not to.",
+      "keywords": ["twenty-four","years","dug","forty-one","wells","wild","road","territory","forty-one","thirty-six"]
+    },
+    {
+      "id": "what_water_is_1",
+      "source": "Berd on what water means to the territory",
+      "text": "In twenty-four years, what twenty-four years of finding water in this territory has taught me about water's relationship to the territory's settlement patterns: the settlements exist where the water is, or where the well I dug brought the water to. In twenty-four years, every settlement in the wild road territory is where it is partly because of the water, and in several cases entirely because of the water. In twenty-four years, the territory's map is partly the map of where I've been able to find water. In twenty-four years, the well digger shapes the territory.",
+      "keywords": ["twenty-four","years","what","twenty-four","years","finding","water","territory","taught","water's"]
+    },
+    {
+      "id": "twenty_four_years_1",
+      "source": "Berd on twenty-four years as the wild road's well digger",
+      "text": "In twenty-four years, the wild road's settled territory is larger than it was when I arrived because water reached places where it wasn't available before. In twenty-four years, the settlement of the territory has been partly the function of the wells I've dug. In twenty-four years, the most important thing I've done: hard to say. In twenty-four years, the most important thing a well does: makes a temporary camp into a permanent place. In twenty-four years, I've made thirty-six temporary places into permanent places. In twenty-four years, thirty-six is a number I hold.",
+      "keywords": ["twenty-four","years","wild","road's","settled","territory","larger","was","when","arrived"]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "id": "harbor_weather_reader",
+  "name": "Skar",
+  "role": "Harbor weather reader; Keris depends on Skar's forecasts before clearing any departure",
+  "cluster": "harbor_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "weather_reader_1",
+      "source": "Skar on reading weather",
+      "text": "The weather is a system that is always telling you what it's doing. The skill is reading what it's telling you correctly and projecting the reading forward in time. In nineteen years of harbor weather reading, the projection is the hardest part: I can read the present accurately. What the present becomes in twelve hours, twenty-four hours, seventy-two hours — that requires the patterns accumulated over nineteen years applied to what I'm reading now.",
+      "keywords": ["weather","system","always","telling","what","doing","skill","reading","telling","correctly"]
+    },
+    {
+      "id": "keris_1",
+      "source": "Skar on Keris",
+      "text": "Keris is my most important professional relationship. In nineteen years, no departure from this harbor has been cleared without my assessment. Keris's practice: no ship leaves without a weather window. The window is my responsibility to identify. In nineteen years, the ships that departed in windows I identified have had weather-related incidents at a rate I track. The rate has been acceptable: the incidents that occurred were within the variation that the window allowed for. Three incidents in nineteen years that were outside the acceptable variation.",
+      "keywords": ["keris","most","important","professional","relationship","nineteen","years","departure","harbor","cleared"]
+    },
+    {
+      "id": "gid_1",
+      "source": "Skar on Gid",
+      "text": "Gid the harbor pilot and I work in sequence: Gid manages the ship's approach and departure within the harbor channel; I manage whether the ship should depart at all given the weather. In eleven years of working in sequence with Gid, the handoff is clear: I say go, Gid takes over. I say wait, nothing moves. In eleven years, I've said wait sixty-three times. All sixty-three: Gid waited. The sixty-three waits are ships that didn't encounter the weather they would have encountered if they'd departed on the original schedule.",
+      "keywords": ["gid","harbor","pilot","work","sequence","gid","manages","ship's","approach","departure"]
+    },
+    {
+      "id": "captain_harrow_1",
+      "source": "Skar on Captain Harrow",
+      "text": "Harrow trusts my assessments more than any other captain who uses this harbor. What trust means in practice: when I say the window is thirty-six hours, Harrow plans for thirty hours and uses the last six as buffer. When I say the window is marginal, Harrow waits without argument. In fifteen years of working with Harrow, I've issued one assessment that turned out to be wrong in a way that mattered: I forecast a twelve-hour window that shortened to eight. Harrow was through in nine. One hour was the margin.",
+      "keywords": ["harrow","trusts","assessments","more","than","any","other","captain","uses","harbor"]
+    },
+    {
+      "id": "twinn_1",
+      "source": "Skar on Twinn",
+      "text": "Twinn has been reading harbor weather for fifty years. I learned from Twinn for the first four years of my career. What Twinn taught me that nineteen years hasn't changed: the cloud formation on the western horizon tells you about tomorrow's wind in a way that the instruments don't. The formation doesn't map to the measurement. It maps to a pattern that the experienced reader recognizes. Twinn called it the pattern library. In nineteen years, the pattern library is still growing.",
+      "keywords": ["twinn","reading","harbor","weather","fifty","years","learned","twinn","first","four"]
+    },
+    {
+      "id": "what_the_three_wrong_forecasts_were_1",
+      "source": "Skar on the three incidents that were outside acceptable variation",
+      "text": "Year three: a system that developed faster than the nineteen-year pattern library predicted. The ship encountered weather it shouldn't have encountered on the window I gave. The ship made it through. The encounter was serious. Year nine: I gave a window that I knew was marginal and said so. The captain departed anyway, citing time pressure. The captain decided to accept the marginal risk. The ship encountered the margin. Year fifteen: the Harrow case. Three incidents in nineteen years. What they have in common: all three involved systems that moved faster than the pattern library predicted.",
+      "keywords": ["year","three","system","developed","faster","nineteen-year","pattern","library","predicted","ship"]
+    },
+    {
+      "id": "what_skar_holds_1",
+      "source": "Skar on what he's watching in the sky that no one else knows about",
+      "text": "In the last three years, a new pattern has appeared in the western formation sequence that doesn't match anything in nineteen years of pattern library. The pattern appears and then is followed by the weather I would normally predict from a different formation. The library tells me X. The sky shows pattern Y. The weather produces what X predicts. In three years, I've seen this twelve times. I'm building a new pattern entry that connects Y to the X outcome. I haven't told Keris yet. When I'm certain the pattern is stable, Keris will be the first to know.",
+      "keywords": ["last","three","years","new","pattern","appeared","western","formation","sequence","doesn't"]
+    },
+    {
+      "id": "nineteen_years_1",
+      "source": "Skar on nineteen years of harbor weather reading",
+      "text": "In nineteen years, I've read the weather above this harbor on approximately six thousand days. Six thousand days of reading the same sky from the same location. What changes: the weather, which is always changing. What doesn't change: the patterns that the weather follows. In nineteen years, the pattern library has grown large enough that the present weather almost always references something I've seen before. The almost is what keeps the work interesting. The exceptions are the weather that's doing something new.",
+      "keywords": ["nineteen","years","read","weather","above","harbor","approximately","six","thousand","days"]
+    }
+  ]
+}

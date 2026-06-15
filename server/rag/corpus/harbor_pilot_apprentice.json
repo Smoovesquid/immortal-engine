@@ -1,0 +1,57 @@
+{
+  "id": "harbor_pilot_apprentice",
+  "name": "Rem the Younger",
+  "role": "Harbor pilot's apprentice; learning the channel from Gid; knows the theory better than the practice yet",
+  "cluster": "harbor_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "apprentice_1",
+      "source": "Rem the Younger on being Gid's apprentice",
+      "text": "In three years of apprenticeship to Gid, what I've learned is the difference between knowing the channel and reading the channel. The channel charts tell me where the safe water is. Reading the channel is knowing what the water is doing right now in conditions that may not match what the charts describe. In three years, Gid reads the channel. I read the charts and Gid is teaching me to read past the charts to the water itself. In three years, I can read the charts well. I can sometimes read the water.",
+      "keywords": ["three","years","apprenticeship","gid","what","learned","difference","between","knowing","channel"]
+    },
+    {
+      "id": "gid_1",
+      "source": "Rem the Younger on Gid",
+      "text": "Gid has been piloting the harbor channel for twenty-two years and Gid's knowledge of the channel is the knowledge the channel has produced over twenty-two years of pilots working it. In three years of apprenticeship, what Gid's twenty-two years has given me access to: the specific knowledge of the channel's behavior in conditions that occur rarely enough that a beginning pilot wouldn't encounter them for years. In three years, Gid has accelerated the knowledge acquisition by describing conditions I haven't yet seen as well as the ones I have.",
+      "keywords": ["gid","piloting","harbor","channel","twenty-two","years","gid's","knowledge","channel","knowledge"]
+    },
+    {
+      "id": "keris_1",
+      "source": "Rem the Younger on Keris",
+      "text": "Keris manages the harbor and the apprentice pilot's access to practical piloting time is regulated by Keris's assessment of what the apprentice is ready for. In three years, Keris has expanded my piloting scope twice: once from observation-only to co-piloting in fair conditions, once to solo piloting of specific vessel types in specific conditions. In three years, Keris's assessment of my readiness has been more conservative than my own assessment. In three years, Keris has been correct and I've been optimistic about my readiness.",
+      "keywords": ["keris","manages","harbor","apprentice","pilot's","access","practical","piloting","time","regulated"]
+    },
+    {
+      "id": "skar_1",
+      "source": "Rem the Younger on Skar",
+      "text": "Skar reads weather. In three years of working under Skar's weather forecasts as the operational constraint on piloting, what I've learned about weather and piloting from Skar's explanations: the harbor's specific weather patterns and how they affect the channel conditions in ways that the general weather doesn't predict. In three years, Skar's harbor-specific weather knowledge has been a supplement to Gid's channel knowledge. The two together: the current condition and the forecast condition that will affect the current condition.",
+      "keywords": ["skar","reads","weather","three","years","working","under","skar's","weather","forecasts"]
+    },
+    {
+      "id": "vorn_1",
+      "source": "Rem the Younger on Vorn",
+      "text": "Vorn keeps the lighthouse. In three years of using the lighthouse as a navigation reference, what Vorn's twenty-three years of keeping the light has meant to my piloting training: the light is always there. The navigation reference that doesn't fail is the reference that the rest of the navigation builds on. In three years of training, the light's reliability has been one of the constants I've been able to count on while the rest of my piloting knowledge has been variable. The constant has been useful while the variable is being learned.",
+      "keywords": ["vorn","keeps","lighthouse","three","years","using","lighthouse","navigation","reference","what"]
+    },
+    {
+      "id": "what_three_years_has_taught_1",
+      "source": "Rem the Younger on what three years of apprenticeship has taught",
+      "text": "In three years, the most important thing I've learned about piloting that the books don't teach: the channel reads differently depending on who's looking at it and what they're looking for. I look for the chart features — the depth markers, the buoys, the landmarks. Gid looks for what the water is doing. The two ways of looking at the same channel produce different information from the same observation. In three years, I'm learning to look both ways at once.",
+      "keywords": ["three","years","most","important","thing","learned","about","piloting","books","don't"]
+    },
+    {
+      "id": "what_rem_younger_holds_1",
+      "source": "Rem the Younger on the passage that scared her",
+      "text": "Month fourteen. The first solo piloting assignment in fair conditions. The conditions were fair when I took the helm. By mid-channel, the conditions had developed in a way that Skar's forecast hadn't indicated and that I was not yet experienced enough to have anticipated from the morning's signs. I completed the passage without incident, but the completion was not a controlled completion. It was a managed-uncertainty completion. In month fourteen, I understood the difference between knowing the channel and being ready to pilot it alone.",
+      "keywords": ["month","fourteen","first","solo","piloting","assignment","fair","conditions","conditions","were"]
+    },
+    {
+      "id": "three_years_1",
+      "source": "Rem the Younger on three years as Gid's apprentice",
+      "text": "In three years, what I can say honestly about my development: I know the channel. I can pilot it in defined conditions with acceptable outcomes. I cannot yet pilot it in the full range of conditions Gid pilots without incident. In three years, the gap between my current capacity and Gid's current capacity is the gap that the apprenticeship is closing. In three years, the closing rate suggests I'll be ready for full pilot qualification in two more years. Gid's estimate is three more years. In three years, I've learned to trust Gid's estimates over mine.",
+      "keywords": ["three","years","what","say","honestly","about","development","know","channel","pilot"]
+    }
+  ]
+}

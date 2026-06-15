@@ -1,0 +1,57 @@
+{
+  "id": "thornwall_glassblower",
+  "name": "Voss",
+  "role": "Glassblower; the settlement's glassware and the occasional commissioned piece; fire and breath made permanent",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "glassblower_1",
+      "source": "Voss on glassblowing",
+      "text": "In twenty-four years of working glass, what the glass is: the material that is liquid in fire and solid in air. The blower's breath is the instrument that shapes the liquid into the form before the air makes it permanent. In twenty-four years, the breath is the tool — the pressure, the duration, the direction. In twenty-four years, what the glassblower makes is the breath's permanent record, held in the shape the breath gave to the molten material while the material was still capable of taking shape.",
+      "keywords": ["twenty-four","years","working","glass","what","glass","material","liquid","fire","solid"]
+    },
+    {
+      "id": "perve_1",
+      "source": "Voss on Perve",
+      "text": "Perve the distiller uses glass vessels for the distillation work. In fifteen years of producing Perve's distillation vessels, what the distillation vessel requires: the resistance to the heat the distillation process generates, the precisely specified orifice dimensions that the distillation's vapor flow requires, and the transparency that allows Perve to see the process from outside the vessel. In fifteen years, the distillation vessel is the most technically demanding regular commission I produce. In fifteen years, Perve's specification has changed once: the orifice dimension was refined in year nine after Perve identified a yield improvement from the narrower specification.",
+      "keywords": ["perve","distiller","uses","glass","vessels","distillation","work","fifteen","years","producing"]
+    },
+    {
+      "id": "aldous_1",
+      "source": "Voss on Aldous",
+      "text": "Aldous the physician uses glass vessels for the medical practice. In twelve years of producing Aldous's medical glass, what the medical vessel requires: the cleanliness of the glass's interior surface, the dimensional consistency of the measurement gradations, and the resistance to the cleaning agents that the medical practice's sanitation requires. In twelve years, the medical vessel is the commission I'm most careful with — the vessel whose failure or imprecision would have direct consequences for the patient.",
+      "keywords": ["aldous","physician","uses","glass","vessels","medical","practice","twelve","years","producing"]
+    },
+    {
+      "id": "odde_1",
+      "source": "Voss on Odde",
+      "text": "Odde the candle maker uses glass vessels for the specialty lamp work. In ten years of producing Odde's lamp glass, what the lamp vessel requires: the specific thickness that allows light transmission while protecting the flame from wind, the shape that distributes the light in the direction the lamp's use requires, and the resistance to thermal shock from the flame's proximity. In ten years, the lamp glass specification has been consistent. In ten years, Odde's lamp glass is the smallest-volume regular commission I produce and the one with the most specific quality requirements.",
+      "keywords": ["odde","candle","maker","uses","glass","vessels","specialty","lamp","work","ten"]
+    },
+    {
+      "id": "what_voss_holds_1",
+      "source": "Voss on the commission that almost broke the practice",
+      "text": "Year twelve. A commissioned piece that required a technical approach I hadn't developed yet — the scale of the piece exceeded my current working temperature control. I accepted the commission without acknowledging the gap to the commissioner. In twelve years since, what the year-twelve commission produced: four failed attempts, the successful fifth attempt, and the humiliation of explaining to the commissioner why the commission took three times the agreed timeline. In twelve years since, the commission I accept is the commission I can make, plus one reach. Not two. The two-reach commission produced year twelve.",
+      "keywords": ["year","twelve","commissioned","piece","required","technical","approach","hadn't","developed","yet"]
+    },
+    {
+      "id": "what_glass_is_1",
+      "source": "Voss on what twenty-four years of glassblowing reveals about glass",
+      "text": "In twenty-four years, what the glass has taught me that I didn't expect when I started: the glass remembers the breath. Not metaphorically — structurally. The glass's molecular structure at the moment of setting is influenced by the breath pressure's direction. The piece that was made with a specific breath bears the mark of that breath in its structure, which is visible only in the way the light moves through it. In twenty-four years, every piece I've made carries something of how I made it. In twenty-four years, the glass is an autobiography in light.",
+      "keywords": ["twenty-four","years","what","glass","taught","didn't","expect","when","started","glass"]
+    },
+    {
+      "id": "roan_1",
+      "source": "Voss on Roan",
+      "text": "Roan the herbalist uses glass containers for the preparations that require airtight storage. In nine years of producing Roan's storage vessels, what the herbalist's storage requirements produce in terms of vessel specification: the airtight seal, the amber glass that blocks light from degrading the preparations, and the standardized sizing that allows Roan to work from consistent volume units. In nine years, Roan's storage vessels have become my most systematized production run — the specification is fixed, the production is repeatable, and the value is in the consistency.",
+      "keywords": ["roan","herbalist","uses","glass","containers","preparations","require","airtight","storage","nine"]
+    },
+    {
+      "id": "twenty_four_years_1",
+      "source": "Voss on twenty-four years of glassblowing",
+      "text": "In twenty-four years, I've made approximately fifteen thousand glass pieces. Fifteen thousand pieces that are now somewhere in the settlement and beyond — in households, in practices, in storage, on shelves, broken and replaced, still in use from year one. In twenty-four years, what the fifteen thousand pieces represent: the breath and fire that made each one. In twenty-four years, the pieces are scattered through the settlement's material life. In twenty-four years, I walk through the settlement and occasionally see a piece I made, in use, doing what I made it to do.",
+      "keywords": ["twenty-four","years","made","approximately","fifteen","thousand","glass","pieces","fifteen","thousand"]
+    }
+  ]
+}

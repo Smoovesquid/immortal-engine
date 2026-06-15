@@ -1,0 +1,57 @@
+{
+  "id": "thornwall_ratcatcher",
+  "name": "Lurne",
+  "role": "Ratcatcher; pest control for the district; knows the hidden architecture of the settlement",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "ratcatcher_1",
+      "source": "Lurne on the work",
+      "text": "The rats and I are in a permanent negotiation. They occupy the space that the district doesn't fully inhabit. The walls, the underfloors, the spaces between buildings where the district's construction left gaps. My work: reducing their population below the threshold where they become a problem for the district's food supply and structural integrity. Below the threshold: tolerated. Above: my problem. In fourteen years, I've kept the district below the threshold. The threshold isn't zero. Zero is impossible. Below the threshold is achievable.",
+      "keywords": ["rats","permanent","negotiation","they","occupy","space","district","doesn't","fully","inhabit"]
+    },
+    {
+      "id": "goss_1",
+      "source": "Lurne on Goss",
+      "text": "Goss is the most important account in my work. The granary is the primary rat attractor in the district. The food concentration that makes the granary the food supply is the same concentration that makes it the rat attractor. In twelve years of maintaining the granary's rat exclusion, I've developed a systematic exclusion protocol: multiple complementary barriers, regular inspection, population monitoring. Goss said once: the granary's integrity is the district's integrity. I said: then I'm part of the district's integrity. Goss said: yes. That was a good conversation.",
+      "keywords": ["goss","most","important","account","work","granary","primary","rat","attractor","district"]
+    },
+    {
+      "id": "perve_1",
+      "source": "Lurne on Perve",
+      "text": "The market stalls are rat territory if they're not maintained. In twelve years of maintaining the market's rat exclusion, Perve is the account where the work is most visible: the vegetable stall is exposed inventory, and exposed inventory is rat inventory without active exclusion. What I've put in place at Perve's stall: end-of-day cleanup protocols, barrier systems under the stall framework, regular inspection. Perve follows the protocols consistently. The stall has had one rat incident in twelve years. One incident in twelve years is the maintenance working.",
+      "keywords": ["market","stalls","rat","territory","maintained","twelve","years","maintaining","market's","rat"]
+    },
+    {
+      "id": "wid_1",
+      "source": "Lurne on Wid",
+      "text": "The Covenant building is one of my accounts. The building's stone construction makes complete exclusion easier than the timber construction elsewhere in the district. What the Covenant account revealed: the building has a basement level that the current occupants don't use and didn't know was there until my inspection found it. I reported the basement to Wid. Wid reported it to Father Len. What happened with the basement: I was told the matter was resolved. I now maintain the Covenant's above-ground spaces and don't ask about the basement.",
+      "keywords": ["covenant","building","accounts","building's","stone","construction","makes","complete","exclusion","easier"]
+    },
+    {
+      "id": "kell_1",
+      "source": "Lurne on Kell",
+      "text": "Kell the locksmith asked me once if I knew where the rats were getting into a specific building. I do know: the rats enter through the same places that a locksmith might look at for security — the gaps around door frames, the spaces around windows, the places where the building's construction left openings. In fourteen years, my knowledge of building access overlaps significantly with Kell's knowledge of building access. We reached the same conclusion from different starting positions: the building's gaps are the building's vulnerabilities.",
+      "keywords": ["kell","locksmith","asked","once","knew","where","rats","getting","into","specific"]
+    },
+    {
+      "id": "what_lurne_knows_1",
+      "source": "Lurne on what the hidden architecture reveals",
+      "text": "In fourteen years of working in the spaces that people don't inhabit, I've mapped the district from the inside in a way no one else has. The wall cavities, the under-floor spaces, the basement levels, the passages that connect buildings that people think are separate. The district that people see is the district from the outside. The district that I know is the district from the gaps. The gaps are the settlement's shadow map: same geography, different perspective.",
+      "keywords": ["fourteen","years","working","spaces","people","don't","inhabit","mapped","district","inside"]
+    },
+    {
+      "id": "what_lurne_holds_1",
+      "source": "Lurne on what she's found in the gaps",
+      "text": "The things that people have lost over the years that have ended up in the gaps I work in. The things I've found: a lot of coin, some documents, items that were missing from the reports I hear about when I'm in the market. In fourteen years, I've returned three items that I could identify as belonging to specific people, through indirect means that didn't require explaining where I'd found them. The other found items: I don't discuss what I find. The gaps keep other people's secrets. My work is pest control. What the gaps contain is not my work.",
+      "keywords": ["things","people","have","lost","years","ended","up","gaps","work","things"]
+    },
+    {
+      "id": "fourteen_years_1",
+      "source": "Lurne on fourteen years of ratcatching",
+      "text": "In fourteen years I've kept this district's food supply intact in a way that is completely invisible because it's working. The grain that Goss stores is the grain the district eats. The grain the district eats is whole because I've been maintaining the granary's exclusion for twelve of the fourteen years. The invisible work that sustains the visible life. Nobody thinks about the ratcatcher when the bread is fine. Nobody needs to. When the bread is fine, the ratcatcher's work is working.",
+      "keywords": ["fourteen","years","kept","district's","food","supply","intact","way","completely","invisible"]
+    }
+  ]
+}

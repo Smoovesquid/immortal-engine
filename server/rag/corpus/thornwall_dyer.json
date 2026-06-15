@@ -1,0 +1,57 @@
+{
+  "id": "thornwall_dyer",
+  "name": "Vare",
+  "role": "Cloth dyer; gives color to the settlement's fabric; the most chemically complex trade in Thornwall",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "dyeing_1",
+      "source": "Vare on dyeing cloth",
+      "text": "Color is chemistry. In fifteen years of dyeing cloth, what I've learned: the dye interacts with the fiber, and the fiber interacts with the water, and the water interacts with the mordant, and the mordant determines whether the color holds. Four variables that have to be managed simultaneously to produce the color the customer sees in six months and not just the color the customer sees today. In fifteen years, the color that holds is the result of getting all four variables right.",
+      "keywords": ["color","chemistry","fifteen","years","dyeing","cloth","what","learned","dye","interacts"]
+    },
+    {
+      "id": "syne_1",
+      "source": "Vare on Syne",
+      "text": "Syne provides plant dyes that are not available through the settlement's standard supply. In nine years, what Syne brings from the territory: the specific plants whose dye properties aren't well-known commercially, the plants that produce colors not available in the standard dye trade. In nine years, Syne's supply has given me colors that no other dyer in the region has. The distinctiveness of the colors is the distinctiveness of Syne's knowledge of what grows in the territory.",
+      "keywords": ["syne","provides","plant","dyes","not","available","through","settlement's","standard","supply"]
+    },
+    {
+      "id": "fenne_1",
+      "source": "Vare on Fenne",
+      "text": "Fenne the tailor is my primary customer. In eleven years of supplying Fenne's cloth needs after dyeing, the relationship is: Fenne selects the fabric, I dye to Fenne's specification. In eleven years, Fenne's color specifications have become more sophisticated: the color needs to complement the other colors in the garment, needs to hold through the garment's use conditions, needs to be achievable in the fiber Fenne is using. In eleven years, Fenne's specifications have made me a better dyer.",
+      "keywords": ["fenne","tailor","primary","customer","eleven","years","supplying","fenne's","cloth","needs"]
+    },
+    {
+      "id": "gant_1",
+      "source": "Vare on Gant",
+      "text": "Gant needs specific colors for leather work — not the saturated colors of cloth, but the softer penetration that leather requires. In six years of dyeing leather for Gant, what leather dyeing requires that cloth dyeing doesn't: the dye has to penetrate the fiber structure of the hide, not just adhere to the surface. The surface color and the penetration color are different. In six years, Gant's leather work gets the penetration color, which holds through the leather's working life.",
+      "keywords": ["gant","needs","specific","colors","leather","work","not","saturated","colors","cloth"]
+    },
+    {
+      "id": "nan_1",
+      "source": "Vare on Nan",
+      "text": "Nan the laundry keeper and I have an ongoing professional relationship around color durability. What Nan's laundry does to cloth: tests the dye's permanence. In seven years, Nan has occasionally returned garments where the dye failed in the laundry — not the color fading, which is expected over time, but the color bleeding in ways that indicate the mordanting was insufficient. In seven years, Nan's returned garments have taught me three specific fiber-mordant-dye combinations that don't hold through the laundry's process.",
+      "keywords": ["nan","laundry","keeper","ongoing","professional","relationship","around","color","durability","what"]
+    },
+    {
+      "id": "what_color_is_1",
+      "source": "Vare on what color is",
+      "text": "In fifteen years, what color actually is in practice: the light that a surface reflects and doesn't absorb. The blue cloth is blue because the blue dye absorbs the other wavelengths and reflects the blue. The mordant locks the dye molecules to the fiber so that the absorption relationship persists through washing and wear. In fifteen years, this is the practical reality of what I do. What the customer sees is the light coming back. What I manage is the chemistry that determines which light comes back.",
+      "keywords": ["fifteen","years","what","color","actually","practice","light","surface","reflects","doesn't"]
+    },
+    {
+      "id": "what_vare_holds_1",
+      "source": "Vare on the color she can't produce consistently",
+      "text": "In fifteen years, one color I can achieve but can't replicate consistently: a specific deep violet that appears when certain plant dye batches interact with iron mordant in specific water conditions. The color is the most beautiful thing I produce and I can't predict when it will appear. In fifteen years, the deep violet has appeared on seventeen pieces. The customers who've received those seventeen pieces have returned asking specifically for that color. In fifteen years, I've told them all: I can't guarantee it. I try for it every time.",
+      "keywords": ["fifteen","years","one","color","achieve","but","can't","replicate","consistently","specific"]
+    },
+    {
+      "id": "fifteen_years_1",
+      "source": "Vare on fifteen years of dyeing",
+      "text": "In fifteen years, I've dyed approximately four hundred thousand yards of cloth and leather. Four hundred thousand yards of material given color. The colors that held: most of them. The colors that faded or bled prematurely: approximately two percent. In fifteen years, two percent failure means eight thousand yards of failed color. In fifteen years, eight thousand yards is the number I carry. The four hundred thousand yards are the work. The eight thousand yards are the lessons.",
+      "keywords": ["fifteen","years","dyed","approximately","four","hundred","thousand","yards","cloth","leather"]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "id": "forge_guild_apprentice",
+  "name": "Tade the Younger",
+  "role": "Forge Guild first-year apprentice; just beginning to understand what the forge demands",
+  "cluster": "forge_guild",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "apprentice_1",
+      "source": "Tade the Younger on the first year of apprenticeship",
+      "text": "In the first year of the Forge Guild apprenticeship, what they don't tell you before you start: the heat is not the hardest part. The heat is the first hardship and it becomes ordinary within three months. In the first year, what becomes the hardest part: the precision. The forge will accept imprecision in some areas. The metal won't. The metal is honest about what the apprentice hasn't mastered yet. In the first year, the metal has been honest with me every day.",
+      "keywords": ["first","year","forge","guild","apprenticeship","what","they","don't","tell","you"]
+    },
+    {
+      "id": "keld_1",
+      "source": "Tade the Younger on Keld",
+      "text": "Keld has been the guild master for nine years and a smith for twenty-seven. In the first year under Keld's oversight, what the guild master's experience means for the apprentice: the correction that comes from twenty-seven years of knowing what the error produces if it's not addressed. Keld has corrected me seventeen times in this first year. Of seventeen corrections: I understood twelve immediately. Three I understood after the work showed me why the correction was necessary. Two I still don't fully understand but I've accepted the correction without the understanding.",
+      "keywords": ["keld","been","guild","master","nine","years","smith","twenty-seven","first","year"]
+    },
+    {
+      "id": "pell_smith_1",
+      "source": "Tade the Younger on Pell the Smith",
+      "text": "Pell the Smith is a four-year journeyman and the person I ask questions that I don't want to ask Keld. In the first year, what the journeyman-apprentice relationship provides that the master-apprentice relationship doesn't: the answer without the judgment. Pell was an apprentice four years ago and knows what the first year is. In the first year, Pell's memory of the first year has made my first year better. Pell remembers the specific confusions that the first year produces.",
+      "keywords": ["pell","smith","four-year","journeyman","person","ask","questions","don't","want","ask"]
+    },
+    {
+      "id": "weld_1",
+      "source": "Tade the Younger on Weld",
+      "text": "Weld is the senior journeyman who demonstrates the skill I'm trying to develop. In the first year, what watching Weld work provides that the instruction doesn't: the actual form. The instruction tells me what the movement should accomplish. Watching Weld shows me what the movement looks like at the level where it accomplishes what it's supposed to. In the first year, the demonstration by someone who has mastered the skill is worth more than the description of the skill. Weld demonstrates without being asked. Weld remembers being an apprentice.",
+      "keywords": ["weld","senior","journeyman","demonstrates","skill","trying","develop","first","year","what"]
+    },
+    {
+      "id": "rath_1",
+      "source": "Tade the Younger on Rath",
+      "text": "Rath is the second journeyman and is less patient with apprentice questions than Pell. In the first year of navigating the guild hierarchy, what the difference between Pell and Rath produces for the apprentice: the learning that some knowledge must be earned from observation rather than asked for. In the first year, Rath's work is worth watching even when Rath's answers to questions are curt. The watching-rather-than-asking is itself a skill. In the first year, learning when not to ask is part of what the first year teaches.",
+      "keywords": ["rath","second","journeyman","less","patient","apprentice","questions","pell","first","year"]
+    },
+    {
+      "id": "what_first_year_holds_1",
+      "source": "Tade the Younger on what the first year holds",
+      "text": "In the first year, what the guild apprenticeship has given me that I didn't expect: the specific relationship with the material. The forge is an argument between the smith and the metal about what the metal can become. In the first year, I'm learning how to make the argument. The metal doesn't concede points freely. The argument requires the application of exactly the right kind and amount of force in exactly the right place at exactly the right time. In the first year, I'm learning what exactly-right means.",
+      "keywords": ["first","year","what","guild","apprenticeship","given","didn't","expect","specific","relationship"]
+    },
+    {
+      "id": "what_tade_younger_fears_1",
+      "source": "Tade the Younger on what the first year fears",
+      "text": "In the first year, what I fear that I haven't told Pell or Keld: that the precision I'm learning slowly is the precision the guild requires at a level I can't eventually reach. In the first year, the fear is that there's a ceiling to the precision I'm capable of and the ceiling is below where the journeyman work requires. In the first year, the fear is quieter when the work is going well and louder when Keld corrects me. In the first year, I'm working to make the fear wrong. I don't know yet if it is.",
+      "keywords": ["first","year","what","fear","haven't","told","pell","keld","precision","learning"]
+    },
+    {
+      "id": "first_year_1",
+      "source": "Tade the Younger on the first year of the Forge Guild apprenticeship",
+      "text": "In the first year, the forge has taught me more about what I don't know than any previous year of learning has. The school that Dall runs taught me what I know. The forge is teaching me the shape of what I don't know. In the first year, the shape of the not-knowing is the useful thing — the specific outline of what the next years of work must fill. In the first year, the apprenticeship is the drawing of the outline. The journeyman years fill it in. The mastery — if it comes — is what you build when the outline is solid.",
+      "keywords": ["first","year","forge","taught","more","about","what","don't","know","previous"]
+    }
+  ]
+}

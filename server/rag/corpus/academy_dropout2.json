@@ -1,0 +1,57 @@
+{
+  "id": "academy_dropout2",
+  "name": "Finn",
+  "role": "Former Academy student; left in year three; runs a bookshop; uses what the Academy taught without being the Academy",
+  "cluster": "merchant_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "dropout_1",
+      "source": "Finn on leaving the Academy",
+      "text": "I left in year three. Not forced out — I chose. What I chose between: continuing toward the Academy's definition of what the study of runes and systems is for, or pursuing the question I was actually interested in. The Academy's definition and my question turned out to be incompatible. In eight years since, I've pursued the question. The Academy gave me three years of tools to pursue it with. The question gave me the reason to keep using the tools.",
+      "keywords": ["left","year","three","not","forced","out","chose","what","chose","between"]
+    },
+    {
+      "id": "burr_1",
+      "source": "Finn on Burr",
+      "text": "Burr was in the Academy when I was there. In eleven years of knowing Burr — three years at the Academy and eight since — Burr has become the senior Academy scholar I stay connected to. What Burr and I find to talk about: the same questions, approached from inside and outside the Academy respectively. In eight years since the Academy, the outside approach has produced three things that I showed Burr. Burr's reaction to all three: interesting, and something the Academy framework would have prevented me from finding inside the institution.",
+      "keywords": ["burr","academy","when","there","eleven","years","knowing","burr","three","years"]
+    },
+    {
+      "id": "tal_1",
+      "source": "Finn on Tal",
+      "text": "Tal was the Academy teacher who was most honest with me about what the Academy could and couldn't offer. In year two, Tal said: the Academy is excellent at producing scholars who can extend what is known within the Academy's framework. The person who wants to extend outside the framework: the Academy is a tool, not a destination. In eight years since, Tal's characterization has been accurate. I use the tools. I'm not at the destination.",
+      "keywords": ["tal","academy","teacher","most","honest","about","what","academy","could","couldn't"]
+    },
+    {
+      "id": "marel_1",
+      "source": "Finn on Marel",
+      "text": "Marel the Academy historian has become a source for the historical dimension of my question. In six years of accessing Marel's knowledge through the bookshop connection — Marel buys books from me, I ask questions in return — the historical context has deepened the question significantly. What the question looks like without historical context: contemporary. What the question looks like with Marel's historical context: it's been asked before, in different terms, with different available tools. The previous attempts matter.",
+      "keywords": ["marel","academy","historian","become","source","historical","dimension","question","six","years"]
+    },
+    {
+      "id": "tav_1",
+      "source": "Finn on Tav",
+      "text": "Tav the cartographer and I have found common ground in the idea of the map that doesn't yet exist. Tav makes physical territory maps. My question is about the mapping of a different kind of territory. In four years of occasional conversation, what we've shared: the map is a claim about what's knowable, and the unmapped region is the claim about the limit of current knowledge. Both of us maintain blank spaces in our work. Tav's blank spaces are physical. Mine are conceptual. Both kinds of blank space are where the interesting work is.",
+      "keywords": ["tav","cartographer","found","common","ground","idea","map","doesn't","yet","exist"]
+    },
+    {
+      "id": "what_the_bookshop_is_1",
+      "source": "Finn on what the bookshop is",
+      "text": "The bookshop is the cover and the vehicle. Cover: it gives me a reason to acquire and read widely that isn't the Academy. Vehicle: the books that pass through it are the research I can't otherwise afford to access. In eight years, the bookshop has been self-sustaining — the texts I sell to Marel and to the Academy scholars cover the cost of the texts I acquire for my own use. The research funds itself. The research is the reason for the bookshop.",
+      "keywords": ["bookshop","cover","vehicle","cover","gives","reason","acquire","read","widely","isn't"]
+    },
+    {
+      "id": "what_finn_holds_1",
+      "source": "Finn on the question he left the Academy for",
+      "text": "I won't say the question directly. The question is the work and the work is unfinished and saying the unfinished question as a completed thing is how it stops being interesting. What I'll say: the question is about the relationship between the written notation of a rune system and the phenomenon that the notation is attempting to describe. The Academy's framework assumes the notation is a sufficient description of the phenomenon. My question is whether that assumption is correct. In eight years, the question hasn't resolved. It's gotten more precise.",
+      "keywords": ["won't","say","question","directly","question","work","work","unfinished","saying","unfinished"]
+    },
+    {
+      "id": "eight_years_1",
+      "source": "Finn on eight years outside the Academy",
+      "text": "In eight years outside the Academy, the things the Academy gives that I don't have: the collaborative peer review, the access to the laboratory's equipment, the formal structure that requires work to be completed and presented. The things the Academy doesn't give that I have: the freedom to follow the question wherever it goes, regardless of whether the destination is recognizable as academic work. In eight years, the question has gone somewhere the Academy wouldn't have let me go. Whether the destination is real: eight more years will tell.",
+      "keywords": ["eight","years","outside","academy","things","academy","gives","don't","have","collaborative"]
+    }
+  ]
+}

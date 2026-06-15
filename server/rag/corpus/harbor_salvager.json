@@ -1,0 +1,57 @@
+{
+  "id": "harbor_salvager",
+  "name": "Tonn",
+  "role": "Salvager; harbor district; recovers lost and sunken cargo",
+  "cluster": "harbor_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "salvage_1",
+      "source": "Tonn on what salvage is",
+      "text": "Lost cargo isn't gone. Lost cargo is in a different place than expected. My job is to find the place. Harbor salvage is the close work — the dropped crates, the slipped lashings, the cargo that went into the water between the ship and the dock. Deepwater salvage is the other kind. I don't do deepwater. I do harbor salvage: close, cold, specific, and the recovery happens within days or the cargo is no longer recoverable. The window is everything.",
+      "keywords": ["lost","cargo","isn't","gone","lost","cargo","different","place","than","expected"]
+    },
+    {
+      "id": "rulf_1",
+      "source": "Tonn on Rulf",
+      "text": "Rulf calls me when cargo goes into the water. Not immediately — he gives the crew three minutes to recover it from the surface. If it's still in the water after three minutes, it's going down and he calls me. I'm usually at the dock or close to it. The three-minute protocol came from a situation seven years ago where the crew's attempt to recover surface cargo made the depth-recovery harder. Rulf designed the protocol. I've worked with the protocol for seven years. The protocol is correct.",
+      "keywords": ["rulf","calls","me","when","cargo","goes","into","water","not","immediately"]
+    },
+    {
+      "id": "toom_1",
+      "source": "Tonn on Toom",
+      "text": "Toom's weight estimates have saved me twice. When I'm going into the water for a recovery, knowing the approximate weight of the cargo tells me how much line to take and how the cargo will have settled. Toom can tell me the weight within ten percent from looking at a manifest. I can convert that into a recovery approach in two minutes. The combination works faster than either of us working alone with estimates. We've started briefing together before complex recoveries.",
+      "keywords": ["toom","weight","estimates","saved","me","twice","going","into","water","recovery"]
+    },
+    {
+      "id": "ota_1",
+      "source": "Tonn on Ota",
+      "text": "Ota taught me the tidal patterns in the harbor. Not the general tides — the specific harbor tides, which are modified by the harbor structure, the seasonal wind patterns, and the channel geometry. The general tides predict when. Ota's knowledge predicts where in the harbor the current will carry something that enters the water at a specific point. This has made me faster — I can calculate the recovery position before I'm in the water.",
+      "keywords": ["ota","taught","tidal","patterns","harbor","not","general","tides","specific","harbor"]
+    },
+    {
+      "id": "seven_1",
+      "source": "Tonn on the information broker Seven",
+      "text": "Seven was watching a recovery I did two years ago from the dock edge. After I surfaced, Seven asked me what I'd seen down there. I said: a dropped crate, silt, cold water, the anchor chain for berth seven. Seven said: what was on the anchor chain. I said: I don't look at what I'm not recovering. Seven said: interesting. I don't know what Seven was looking for. The question made me start looking at what I'm not recovering. I've seen three things since that I didn't know to notice.",
+      "keywords": ["seven","watching","recovery","did","two","years","dock","edge","surfaced","seven"]
+    },
+    {
+      "id": "what_water_tells_1",
+      "source": "Tonn on what the harbor floor looks like",
+      "text": "Sixty years of harbor operations visible on the floor. The old anchor points from berths that were rearranged. The hardware from loading methods that changed. Cargo that was declared lost decades ago and never recovered. A skeleton, once, from before I was born — I left it, reported it to Rulf, we agreed to leave it. The floor is a different harbor than the surface is. I've seen both for twelve years. The surface changes fast. The floor changes slowly. The floor is the harbor's memory.",
+      "keywords": ["sixty","years","harbor","operations","visible","floor","old","anchor","points","berths"]
+    },
+    {
+      "id": "harrow_1",
+      "source": "Tonn on Captain Harrow",
+      "text": "Harrow has never had a recovery on my watch. Not because her ship is small — it's not. Because her loading practices are sound. In twelve years I've had two situations where Harrow's ship was the source of a recovery need. Both times Harrow was at the dock in person within minutes of the incident. Both times she had the recovery plan before I arrived. I did the water work. Harrow directed from the dock based on a plan she'd already formed. The plan was correct both times.",
+      "keywords": ["harrow","never","had","recovery","watch","not","because","ship","small","it's"]
+    },
+    {
+      "id": "what_tonn_holds_1",
+      "source": "Tonn on the one recovery he didn't surface",
+      "text": "Twelve years, once. A crate that I reached and examined and decided to leave in place. Not because the recovery was beyond my capability. Because what was in the crate, when I looked through the gap in the planking, was not what the manifest described. I surfaced, reported the crate as unrecoverable due to position and weight, and filled the paperwork. Rulf asked once about the report. I said: it's accurate. He said: I believe you. He didn't ask again. The crate is still there. The cargo description is in my personal record.",
+      "keywords": ["twelve","years","once","crate","reached","examined","decided","leave","in","place"]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "id": "settlement_physician",
+  "name": "Dran",
+  "role": "Settlement physician; trained in the formal tradition; handles the cases too complex for midwives or herbalists",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "physician_1",
+      "source": "Dran on what a physician is",
+      "text": "The physician is the last resort within the settlement's formal healing tradition. Not because the physician is better than the midwife or the herbalist — because the physician handles the failures at the edge of what the other practitioners can address. When Nan has a birth that is beyond the normal range, Nan sends for me. When Aldous has a patient whose condition exceeds his treatment protocol, Aldous consults me. I exist in the space between the formal training and the limits of what formal training can handle.",
+      "keywords": ["physician","last","resort","within","settlement's","formal","healing","tradition","not","because"]
+    },
+    {
+      "id": "aldous_1",
+      "source": "Dran on Aldous",
+      "text": "Aldous and I trained under the same teacher at different times. Aldous completed his training fourteen years before I completed mine. What Aldous learned from the teacher that I learned from Aldous rather than the teacher: the thing that's wrong is usually simpler than the treatment suggests. The teacher taught the complex treatment. Aldous taught the diagnostic step that determines whether the complex treatment is necessary. The diagnostic step keeps most people out of the complex treatment.",
+      "keywords": ["aldous","trained","under","same","teacher","different","times","aldous","completed","training"]
+    },
+    {
+      "id": "nan_1",
+      "source": "Dran on Nan",
+      "text": "Nan's knowledge of birth is specific in a way my training isn't. The training covers the full range of the body. Nan knows the birth range with a depth I can't match in my training. When Nan sends for me, something is happening that exceeds Nan's depth. That's rare — once in three years, on average. When it happens, Nan has already done everything the birth situation calls for and what's needed is something outside the birth situation's usual domain. Nan's rare failures are my most complex cases.",
+      "keywords": ["nan's","knowledge","birth","specific","way","training","isn't","training","covers","full"]
+    },
+    {
+      "id": "bel_1",
+      "source": "Dran on Bel the apothecary",
+      "text": "Bel sources what I prescribe. The sourcing relationship is older than my practice in this district — Bel supplied Aldous's prescriptions for years before I arrived. The continuity means: Bel knows the prescription tradition I'm working in. When I prescribe something at the edge of the standard tradition, Bel tells me if there's a sourcing issue before I commit to the treatment. Two treatments in six years modified by Bel's supply reality. Both modifications produced equivalent outcomes.",
+      "keywords": ["bel","sources","what","prescribe","sourcing","relationship","older","practice","district","bel"]
+    },
+    {
+      "id": "what_the_body_is_1",
+      "source": "Dran on what medicine knows about the body",
+      "text": "The formal tradition understands the body as a set of interrelated systems. When one system fails, adjacent systems are affected. The physician's work is to understand which system failed first and whether the adjacent effects are the primary problem or secondary to the primary failure. In six years at this practice, the most common error I see in my own earlier work: treating the adjacent effects as if they were the primary failure. The body that is treated at the right primary failure recovers faster than the body treated at the adjacent effects.",
+      "keywords": ["formal","tradition","understands","body","set","interrelated","systems","when","one","system"]
+    },
+    {
+      "id": "syne_1",
+      "source": "Dran on Syne",
+      "text": "Syne's plant materials are part of my pharmacopoeia. Not all of them — some of what Syne carries is outside the formal tradition, and I use what the formal tradition covers. But the formal tradition's herbology draws from the same plants Syne works with. We've had two discussions about specific plant preparations where Syne's empirical knowledge and my formal training produced different conclusions. Both times, when we worked through the mechanism, Syne's empirical conclusion was correct and the formal training was generalized in a way that missed the specific case.",
+      "keywords": ["syne's","plant","materials","part","pharmacopoeia","not","all","them","some","what"]
+    },
+    {
+      "id": "what_dran_holds_1",
+      "source": "Dran on the patient she thinks about",
+      "text": "Second year at the practice. A patient where the formal diagnosis was clear and the treatment was appropriate and the patient didn't respond. I did everything the training called for. The patient didn't recover. I asked Aldous afterward. Aldous said: the training teaches what works on the average body. This body wasn't the average body in this specific way. The specific way is something you can identify afterward but not always beforehand. The work continues in the gap between the average and the specific.",
+      "keywords": ["second","year","practice","patient","where","formal","diagnosis","clear","treatment","appropriate"]
+    },
+    {
+      "id": "formal_tradition_1",
+      "source": "Dran on what the formal tradition is for",
+      "text": "The formal tradition is the accumulated knowledge of what has worked. Not all the knowledge — the knowledge that has been recorded, verified, and passed through the teaching chain. The knowledge that hasn't been recorded is everywhere. Nan knows some of it. Syne knows some of it. Calla knows some of it. The formal tradition and the unrecorded knowledge are both true. The physician who knows only one kind is limited in the way that person doesn't yet understand.",
+      "keywords": ["formal","tradition","accumulated","knowledge","what","has","worked","not","all","knowledge"]
+    }
+  ]
+}

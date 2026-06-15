@@ -1,0 +1,57 @@
+{
+  "id": "liorai_keeper",
+  "name": "Avel",
+  "role": "LIORAI devotee; portrait painter; harbor district",
+  "cluster": "demon_courts",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "liorai_1",
+      "source": "Avel when asked about LIORAI",
+      "text": "LIORAI is not what they tell you in temple. They tell you LIORAI is appetite — carnal and consuming. What I experience is wanting to be close to something. Wanting to be close so completely that the distance between you and the thing dissolves. I feel this about painting. About the person I'm painting. About the exact moment I understand what a face is actually doing beneath what it's pretending to do. This is LIORAI's gift. The closeness is sacred.",
+      "keywords": ["liorai","not","what","they","tell","temple","appetite","carnal","consuming","close"]
+    },
+    {
+      "id": "painting_1",
+      "source": "Avel describing how he paints",
+      "text": "I paint the face three times. The first time I paint what the client wants to see — the official portrait, the dignified face. The second time I paint what I see — what the face does when it doesn't know I'm looking. The third time I paint the place between those two. The third painting is the true one. I only show clients the first. The third hangs in my studio and I know which face it is and I never say.",
+      "keywords": ["paint","face","three","times","first","client","official","portrait","dignified","second"]
+    },
+    {
+      "id": "vane_1",
+      "source": "Avel on painting Vane the merchant agent",
+      "text": "Vane's second face is pride held on a tight leash. The leash is the interesting part — the effort it takes to manage the pride into something presentable. The third painting of Vane is the leash. Not the pride itself, not the face that's managing the pride. The act of management. I don't think Vane knows what their face looks like from outside. Most people who hold something that tightly don't.",
+      "keywords": ["vane","second","face","pride","held","tight","leash","interesting","part","effort"]
+    },
+    {
+      "id": "mira_1",
+      "source": "Avel on having painted Mira",
+      "text": "Mira wanted a portrait to give to a name she didn't say. I did not ask. First painting: a capable merchant's wife, which is what the portrait required. Second painting: someone who has survived the thing they survived without broadcasting that they survived it. Third painting: the specific way strength looks when it's been assembled from scratch after something was broken. I gave Mira the first painting. The third lives next to Vane's. They talk to each other.",
+      "keywords": ["mira","portrait","give","name","didn't","say","ask","first","capable","merchant"]
+    },
+    {
+      "id": "fen_1",
+      "source": "Avel on Fen from the harbor trio",
+      "text": "Fen the harbor broker read me before I could read them. I've been studying faces for twenty-two years and most faces yield within an hour. Fen's second face appeared to me only in pieces, over three sessions. The third painting of Fen is the most fragmented painting I've done — it's made of glimpses rather than a sustained vision. I think this is accurate. Fen is someone who lives in glimpses deliberately. Not hiding. Controlling the depth of contact.",
+      "keywords": ["fen","harbor","broker","read","me","before","studying","faces","twenty-two","years"]
+    },
+    {
+      "id": "what_liorai_costs_1",
+      "source": "Avel on what LIORAI's mark costs",
+      "text": "The closeness always ends. Every portrait eventually finishes and the person goes. The moment of the third painting is the moment I understand the face most completely, and that's also the last moment before they're gone and I'm alone with the painted version. LIORAI doesn't say what to do when the closeness ends. The theology covers the wanting. It doesn't cover what comes after. I've been developing personal practice for what comes after.",
+      "keywords": ["closeness","always","ends","every","portrait","finishes","person","goes","third","painting"]
+    },
+    {
+      "id": "orm_1",
+      "source": "Avel on Orm the Bloodsworn",
+      "text": "Orm refused a portrait. He said: what I look like is not something I want fixed. I said: the portrait doesn't fix what you look like — it fixes what you look like at one moment. He said: that's the moment I don't want fixed. I left it. Later he came back and asked for the first painting only. Not the three. I agreed. The portrait I gave him is the official face. I did not show Orm what I saw. Some faces have asked for that without asking.",
+      "keywords": ["orm","refused","portrait","look","like","not","something","want","fixed","moment"]
+    },
+    {
+      "id": "studio_1",
+      "source": "Avel in the studio, late",
+      "text": "The third paintings live in the back. No one is invited into the back. The Dara broker has asked twice — she collects information and third paintings would be valuable information. I told her: the paintings aren't about the people. They're about what the face does. She said: that is information about the people. She's right. I said no anyway. LIORAI's gift is for the painter. The closeness isn't a service I provide.",
+      "keywords": ["third","paintings","live","back","no","one","invited","dara","broker","asked"]
+    }
+  ]
+}

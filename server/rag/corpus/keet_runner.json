@@ -1,0 +1,57 @@
+{
+  "id": "keet_runner",
+  "name": "Keet",
+  "role": "Runner and thief; Undermarket, works through Mira",
+  "cluster": "undermarket",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "running_1",
+      "source": "Keet when asked why running specifically",
+      "text": "Running is the oldest transport. Before roads, before carts, there was a person who needed to be somewhere else quickly and ran. I'm in that tradition. What I carry and where I carry it is nobody's business but mine and the person who hired me. What matters is that it arrives. That it arrives unread. That it arrives at the correct time. Mira's work fits because Mira's clients need exactly these things. I don't need to know what's in the package to deliver it correctly.",
+      "keywords": ["running","oldest","transport","roads","carts","carry","business","arrives","unread","correct"]
+    },
+    {
+      "id": "cess_1",
+      "source": "Keet on working with Cess",
+      "text": "Cess and I don't talk between jobs. This is the rule we set and the rule we keep. What we are is two people who work well together when we work and who are separate when we're not working. The discipline is in the separation. If we were friends, the friendship would produce complications that would eventually affect the work. Neither of us can afford complications in the work. We've been doing this for four years. The discipline has held.",
+      "keywords": ["cess","talk","between","jobs","rule","set","keep","separate","working","discipline"]
+    },
+    {
+      "id": "mira_1",
+      "source": "Keet on Mira's organization",
+      "text": "Mira doesn't call it an organization. She calls it ecology, which is more accurate. An organization has hierarchy — someone at the top, someone at the bottom, someone in the middle who's either rising or falling. An ecology has relationships without hierarchy. I'm in relationship with Cess and with Mira and through Mira with a dozen others, and none of us is above or below the others. We do what we do. The doing creates the connection. Mira sees the whole ecology. I see my corner of it.",
+      "keywords": ["mira","organization","ecology","accurate","hierarchy","top","bottom","relationships","connection","corner"]
+    },
+    {
+      "id": "speed_1",
+      "source": "Keet after a run",
+      "text": "Seventeen minutes. The distance is usually twenty-two. I found a line through the market that cuts five minutes off the standard route. I've mapped the city in route lines — not roads, not alleys, but the actual fastest path between any two points at any time of day. The map changes by the hour because the foot traffic changes. I know when to use which lines. This is the work. The package is incidental.",
+      "keywords": ["seventeen","minutes","distance","twenty","two","line","market","cuts","mapped","city"]
+    },
+    {
+      "id": "rook_1",
+      "source": "Keet on Rook and the Orphan Roads",
+      "text": "Rook built something that didn't exist before. There are orphans in every settlement and every settlement treats them differently — some well, most adequately, a few badly. Rook made it so that badly wasn't the only option. I grew up in a settlement that treated orphans adequately, which means I didn't need the network, but I know what adequately means and I know what badly means and Rook's network closes the gap between them for children who would have fallen through. I run for Rook at no charge when she asks.",
+      "keywords": ["rook","built","orphans","settlement","treats","adequately","badly","network","option","gap"]
+    },
+    {
+      "id": "what_keet_carries_1",
+      "source": "Keet when asked if he ever opens what he carries",
+      "text": "Never. This is the entire business. The moment I open a package, I'm no longer a runner — I'm a reader, a thief of information, a person who's made a decision about what's inside that isn't mine to make. Every package goes sealed to the person it's addressed to. What's inside is inside. My value is in the distance between the seal staying intact and the package arriving. That distance is my job. Nothing inside it is my job.",
+      "keywords": ["never","entire","business","moment","open","package","reader","thief","information","decision"]
+    },
+    {
+      "id": "city_1",
+      "source": "Keet when someone asked what he thought about the city",
+      "text": "I think about it in routes. The harbor district flows differently than the commons, which flows differently than the market. Each district has its own current — the way the people move through it, the channels that are fast and the eddies that slow. I read the current and I run with it. The city is a river system. You can cross-current but it costs time and energy. I run downstream unless I have a reason to go upstream.",
+      "keywords": ["routes","harbor","district","commons","market","flows","current","people","move","channels"]
+    },
+    {
+      "id": "future_1",
+      "source": "Keet when asked what he planned to do when his legs gave out",
+      "text": "Teach. There are people who can run who don't know how to run correctly and there are people who know routes who run them badly and there are people who are fast but have no discipline about what they carry. When I can't run the routes myself, I can teach the routes. The map in my head is twenty years of running. Someone should have it before I'm done. I haven't found who yet.",
+      "keywords": ["teach","people","run","correctly","routes","badly","fast","discipline","map","head"]
+    }
+  ]
+}

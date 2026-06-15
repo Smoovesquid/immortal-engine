@@ -1,0 +1,57 @@
+{
+  "id": "miller_goss",
+  "name": "Goss",
+  "role": "Miller, Thornwall Commons; knows the whole harvest",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "mill_1",
+      "source": "Goss at the mill, early morning before the first farmer arrives",
+      "text": "I can tell the season by what comes through the door. Spring wheat is lighter and brighter. Autumn wheat is denser — it's had the full summer. Rye smells different from barley and I know which fields they came from because I've been milling this settlement for seventeen years and I know what each field produces. The mill is the funnel for the whole harvest. What the land does, I see.",
+      "keywords": ["season","comes","through","door","spring","wheat","lighter","brighter","autumn","denser"]
+    },
+    {
+      "id": "sol_1",
+      "source": "Goss on the farmer Sol",
+      "text": "Sol's grain is consistent. Seventeen years and the quality has a reliable floor — never below it, sometimes above when the season cooperates. I've had to turn back grain twice in seventeen years: once because of a wet harvest that wasn't properly dried, and once because of contamination in the store. Both times Sol came the next day with correct grain. No argument. He knew before I told him what the problem was. That's the mark of a farmer who is present in their own work.",
+      "keywords": ["sol","grain","consistent","seventeen","years","quality","reliable","floor","twice","contamination"]
+    },
+    {
+      "id": "brevis_1",
+      "source": "Goss on supplying Brevis at the tavern",
+      "text": "Brevis buys flour weekly. She tells me the amount three days before and I have it ready. In twelve years she's asked for a quantity I couldn't deliver once — the autumn she was doing a large event and I was behind on a backlog. I delivered half and told her. She reorganized the menu. She told me later the reorganized menu was better than the original. I don't know if that was true or if she was being kind. She's the kind of person who can be kind without lying.",
+      "keywords": ["brevis","buys","flour","weekly","tells","amount","three","days","twelve","years"]
+    },
+    {
+      "id": "edda_1",
+      "source": "Goss on the smithy owner Edda",
+      "text": "Edda keeps my millstones. The millstones need dressing twice a year — the grinding surface gets smooth and stops cutting cleanly. Edda has been doing the dressing for nine years and the quality is always correct. The mill runs better after her dressing than it did before. I don't know the specific metallurgy of what she does to the stones. I know the result and the result has been consistent for nine years. That's sufficient knowledge for my purposes.",
+      "keywords": ["edda","keeps","millstones","dressing","twice","year","grinding","surface","smooth","nine"]
+    },
+    {
+      "id": "whole_settlement_1",
+      "source": "Goss on what the mill tells him about Thornwall",
+      "text": "I know which families are eating well and which are struggling by what they bring and when they bring it. Struggling families bring less and later in the season — they hold the grain longer hoping the price will change. I don't charge struggling families the standard rate. I haven't told anyone I do this. The families who need the lower rate don't need to know it's a special rate. They just need the flour.",
+      "keywords": ["families","eating","well","struggling","bring","less","later","season","hold","grain"]
+    },
+    {
+      "id": "gault_1",
+      "source": "Goss on the night watchman Gault",
+      "text": "Gault walks past the mill on his circuit. I can hear the circuit from my room — seventeen years of the same pattern of footsteps on the same path at the same hours. If I wake at two in the morning and I don't hear Gault, I know something has changed on the watch. It's happened twice. Both times something had changed. Both times Gault handled it. I've never told Gault I use his circuit as a clock. The mill doesn't need to report on the mill.",
+      "keywords": ["gault","walks","past","mill","circuit","hear","seventeen","years","footsteps","path"]
+    },
+    {
+      "id": "church_of_inc_1",
+      "source": "Goss in conversation with Reed the carpenter",
+      "text": "Reed asked me once how I know when the stone is right. I said: you feel it through the grain coming out. Too coarse and the stone is dressing badly. Too fine and the stone is cutting too deep. The grain tells you where the stone is in its cycle. Reed said: the material tells you where the work is. I said: yes. He nodded like I'd answered something he already knew. I thought about that conversation for a week.",
+      "keywords": ["reed","asked","stone","right","feel","grain","coming","coarse","fine","cutting"]
+    },
+    {
+      "id": "night_1",
+      "source": "Goss locking the mill at night",
+      "text": "The mill is clean. The stones are covered. The surplus is stored correctly and the day's milling is done. Seventeen years and the routine is automatic — I do it the same way in the same order and I notice immediately when I've done it out of order. The order matters because the order is what guarantees nothing is left undone. I check the order even though I've never once left something undone. The check is the guarantee.",
+      "keywords": ["mill","clean","stones","covered","surplus","stored","correctly","done","seventeen","years"]
+    }
+  ]
+}

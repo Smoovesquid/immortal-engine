@@ -1,0 +1,57 @@
+{
+  "id": "wrendle_glassblower",
+  "name": "Wrendle",
+  "role": "Glassblower; Forge Guild; Gell's colleague; makes what light goes through",
+  "cluster": "forge_guild",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "glass_1",
+      "source": "Wrendle on the material",
+      "text": "Glass is the opposite of stone. Stone is what light stops at. Glass is what light goes through. I've been a glassblower for twenty-two years and the essential thing about glass is that it's defined by what passes through it rather than by what it stops. Everything else in the Guild is about stopping or holding. I'm the only one who makes things defined by passage. This is the interesting position to be in.",
+      "keywords": ["glass","opposite","stone","stone","what","light","stops","at","glass","what"]
+    },
+    {
+      "id": "gell_1",
+      "source": "Wrendle on Gell",
+      "text": "Gell and I have been colleagues for sixteen years. The glasswork and the decorative glasswork are technically the same craft and practically different ones. I make functional glass: windows, bottles, vessel glass, the occasional lens. Gell makes the glass that matters to people for different reasons — the beautiful piece, the commemorative object. We share the furnace on certain days. In sixteen years of shared furnace days, we've had two techniques that each of us modified after watching the other work.",
+      "keywords": ["gell","colleagues","sixteen","years","glasswork","decorative","glasswork","technically","same","craft"]
+    },
+    {
+      "id": "academy_1",
+      "source": "Wrendle on a commission from the Academy",
+      "text": "The Academy commissioned optical glass three years ago. Lenses for an instrument they wouldn't specify. Maren brought the commission. The specification was the optical quality — the precision of the curve, the clarity, the focal length. I made six attempts. The fifth was accepted. The sixth was better but the Academy had already moved forward with the fifth. I kept the sixth. It's the best lens I've made. I don't know what it should be used for. It waits.",
+      "keywords": ["academy","commissioned","optical","glass","three","years","lenses","instrument","wouldn't","specify"]
+    },
+    {
+      "id": "edda_1",
+      "source": "Wrendle on Edda",
+      "text": "Edda runs the Forge Guild. The glass operation isn't the Guild's center — the metal work is. Edda treats the glass as the Guild's specialized edge: the thing the Guild does that no other guild does. She's allocated resources to the glass work that the resources-to-revenue ratio doesn't justify. I asked her once. She said: the things a guild does that can't be done elsewhere are worth maintaining at a loss. The glass establishes what kind of guild this is. I make the glass. The glass establishes the Guild.",
+      "keywords": ["edda","runs","forge","guild","glass","operation","isn't","guild's","center","metal"]
+    },
+    {
+      "id": "brenn_1",
+      "source": "Wrendle on Brenn the apprentice",
+      "text": "Brenn is learning both metal and glass. The dual learning is unusual — most apprentices specialize in the first year. Brenn is doing both and doing both adequately. I've stopped expecting one to win. Brenn's particular mind moves between the two without the friction I expected. Metal thinking and glass thinking are different. Brenn doesn't have the friction because Brenn hasn't committed to one as the primary. The dual approach will produce either a mediocre craftsperson or an exceptional one. I've started expecting exceptional.",
+      "keywords": ["brenn","learning","both","metal","glass","dual","learning","unusual","most","apprentices"]
+    },
+    {
+      "id": "lena_1",
+      "source": "Wrendle on Lena",
+      "text": "Lena commissioned a set of vessels for a use she described as storage of valuable liquids. The vessels needed to be impermeable and neutral — the glass couldn't interact with the contents. The specification is challenging because most glass interacts with acidic contents over time. I sourced the lead-reduced composition and achieved neutrality in the third attempt. Lena paid for all three attempts. She said: you told me it would take three attempts. I said: I said it might take three. She said: might is good enough for me.",
+      "keywords": ["lena","commissioned","set","vessels","use","storage","valuable","liquids","vessels","needed"]
+    },
+    {
+      "id": "what_wrendle_holds_1",
+      "source": "Wrendle on the piece she's building without commission",
+      "text": "Something I've been building without a commission for four years. Not a window, not a vessel, not a lens. A piece that exists to be what it is — glass that uses light as the material rather than as the thing that passes through. The piece changes over the day as the light changes. In the morning it's one thing. At noon it's another. In the late afternoon it's a third. I'm still learning what it is. Building it is the learning.",
+      "keywords": ["building","without","commission","four","years","not","window","not","vessel","not"]
+    },
+    {
+      "id": "what_passage_is_1",
+      "source": "Wrendle on what glass being about passage means",
+      "text": "The glass doesn't change what passes through it. The light that enters is the same light that exits. What changes is that we can see it passing. The glass makes the passing visible. The rest of the Guild makes things that stop or hold. I make things that reveal passage. After twenty-two years I've understood this as a different kind of work, not a lesser kind. Stopping and holding and revealing passage are three different contributions to how things work. The Guild does all three.",
+      "keywords": ["glass","doesn't","change","what","passes","through","light","enters","same","light"]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "id": "academy_historian",
+  "name": "Marel",
+  "role": "Academy historian; maintains the Archive's historical collection and teaches historical method",
+  "cluster": "academy_of_runes",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "historian_1",
+      "source": "Marel on historical method",
+      "text": "History is not what happened. History is what the surviving record says happened, filtered through who kept the record and why. In twenty-two years of teaching historical method at the Academy, the first lesson is always the same: what is the record, who made it, what did they need it to say. The answers to those three questions change what the record means. The record is primary. The method is the tool for reading the record correctly.",
+      "keywords": ["history","not","what","happened","history","what","surviving","record","says","happened"]
+    },
+    {
+      "id": "maren_1",
+      "source": "Marel on Maren",
+      "text": "Maren and I share the archive's responsibility from different angles. Maren maintains the Academy's operational records — current proceedings, current correspondence, current student records. I maintain the historical collection — what the Academy was before, the records of the institution's development. The division: Maren knows what the Academy is doing now. I know what the Academy has done before. When an institutional question requires knowing both: Maren and I work together. We've done this six times in eight years. Six institutional questions that required history and present simultaneously.",
+      "keywords": ["maren","share","archive's","responsibility","different","angles","maren","maintains","academy's","operational"]
+    },
+    {
+      "id": "osven_1",
+      "source": "Marel on Osven",
+      "text": "Osven is the Archive's director and my institutional superior. In twenty-two years at the Academy, Osven has directed the Archive for the last twelve. What Osven provides that the previous director didn't: a clear institutional stance on what the Archive is for. The previous director accumulated everything. Osven curates: the Archive is for the records that matter for understanding the institution's history and the broader history it's embedded in. The curation makes the Archive more useful. The accumulation had made it vast.",
+      "keywords": ["osven","archive's","director","institutional","superior","twenty-two","years","academy","osven","directed"]
+    },
+    {
+      "id": "tal_1",
+      "source": "Marel on Tal",
+      "text": "Tal teaches the discipline that intersects with history most directly: the rune sequence analysis that reveals the historical layering in composed texts. Tal can read a composed text and identify what periods of composition are present, which reveals when the text was built and what was added when. For historical method, this is invaluable: texts that appeared to be contemporary with the events they describe have been shown by Tal's analysis to be later reconstructions. In eight years of collaboration, Tal's analysis has changed my interpretation of four significant documents.",
+      "keywords": ["tal","teaches","discipline","intersects","history","most","directly","rune","sequence","analysis"]
+    },
+    {
+      "id": "lev_1",
+      "source": "Marel on Lev",
+      "text": "Lev arrived from the Eastern Archive six months ago. The Eastern Archive's historical collection is twice the size of ours and covers a geographic range we don't have. Lev's presence here is an exchange: Lev studies our collection, I access Lev's knowledge of the Eastern collection's holdings. In six months, Lev has identified three items in our archive that duplicate Eastern Archive holdings. The duplication reveals something about the historical distribution of the source documents — that they traveled between the east and this region at some point.",
+      "keywords": ["lev","arrived","eastern","archive","six","months","ago","eastern","archive's","historical"]
+    },
+    {
+      "id": "what_history_hides_1",
+      "source": "Marel on what history hides",
+      "text": "The history that survives is the history that people wanted to keep. The history that was destroyed, lost, or never recorded is also history. In twenty-two years of working with the surviving record, what I've learned to read is the gaps as much as the documents. A gap in the record at a specific period is itself a record of something — something happened that was removed or never written. The shape of the absence tells you something about what was absent.",
+      "keywords": ["history","survives","history","people","wanted","keep","history","destroyed","lost","never"]
+    },
+    {
+      "id": "what_marel_holds_1",
+      "source": "Marel on the document she won't discuss",
+      "text": "A document in the collection that Osven and I have discussed twice and that is flagged with access restrictions. The restrictions are Osven's decision, not mine. My assessment: the document is authentic, it's from the period the inscription suggests, and its contents — if the historical interpretation I've constructed is correct — would change how several current institutional arrangements are understood. Osven's assessment: accurate historical records and institutional stability are both things we're responsible for. Those two responsibilities are not always pointing in the same direction. The document is in the restricted collection.",
+      "keywords": ["document","collection","osven","discussed","twice","flagged","access","restrictions","restrictions","osven's"]
+    },
+    {
+      "id": "twenty_two_years_1",
+      "source": "Marel on twenty-two years as the Academy's historian",
+      "text": "In twenty-two years I've taught historical method to nine hundred and forty-one students. Most of them aren't historians. They're rune scholars, they're administrators, they're practitioners of various Academy disciplines. What historical method gives them that their primary discipline doesn't: the habit of asking who made this record, what they needed it to say. In twenty-two years, the students I've found most useful later are the ones who applied historical method to their own discipline's current practices. History as a reading practice. Not just a content area.",
+      "keywords": ["twenty-two","years","taught","historical","method","nine","hundred","forty-one","students","most"]
+    }
+  ]
+}

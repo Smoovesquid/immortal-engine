@@ -1,0 +1,57 @@
+{
+  "id": "coin_cult_baker",
+  "name": "Mott",
+  "role": "Baker; Coin Cult (HAGRETH devotee); market district",
+  "cluster": "coin_cult",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "hagreth_1",
+      "source": "Mott on what HAGRETH means to a baker",
+      "text": "The wanting is in the bread. Not the eating — the baking. When a batch comes out of the oven correctly, the wanting to do it again is immediate. Not because I'm hungry. Because I want to produce the next correct batch. HAGRETH is the thing that keeps me going back to the oven. The theology was given to me by Lena five years ago. I recognized my experience in her description. I was already doing the practice. I just had a name for it afterward.",
+      "keywords": ["wanting","bread","not","eating","baking","batch","oven","correctly","immediate","hungry"]
+    },
+    {
+      "id": "lena_1",
+      "source": "Mott on the moneylender Lena",
+      "text": "Lena introduced me to the Cult four years ago. She said: you're already marked, you just don't know it. I said: what do you mean. She said: the wanting you feel when a good batch comes out — the wanting for the next one, before you've even tasted this one — that's HAGRETH's mark. I said: I thought that was just ambition. She said: ambition is what HAGRETH produces in people. I've been thinking about the distinction since.",
+      "keywords": ["lena","introduced","cult","four","years","marked","know","wanting","feel","good"]
+    },
+    {
+      "id": "mell_1",
+      "source": "Mott on the brewer Mell",
+      "text": "Mell and I buy from each other. I buy the spent grain from the brewing process for my densest loaves — the grain has done its work in the mash and what's left makes a specific bread that's heavy and keeps. Mell buys the bread for her workers. The exchange is mutually correct. We've been doing it for two years without formalizing. Mell is SOSTANE and I'm HAGRETH and we balance each other's practices accidentally.",
+      "keywords": ["mell","buy","each","other","spent","grain","brewing","densest","loaves","keeps"]
+    },
+    {
+      "id": "goss_1",
+      "source": "Mott on the miller Goss",
+      "text": "Goss mills my flour. The quality is consistent in a way that matters to baking — I can calibrate my recipes to a known flour and the results are predictable. When Goss is behind on a backlog, I notice it in the flour two weeks later. Not in quality — in timing. The precision of Goss's operation is visible in the rhythm of my supplies. We've worked together for eleven years. I've never adjusted my relationship to the flour quality because the quality hasn't required adjustment.",
+      "keywords": ["goss","mills","flour","quality","consistent","matters","baking","calibrate","recipes","known"]
+    },
+    {
+      "id": "wanting_more_1",
+      "source": "Mott when a customer asked why he kept expanding the bakery",
+      "text": "The wanting. I know this about myself. The bakery is the right size for this street on this market day. I want it to be the right size for the whole district on all the market days. HAGRETH says: this wanting is sacred. Lena says: HAGRETH says the wanting is sacred and that we should examine whether acting on it is sacred. I've been examining this for four years. The examination is the practice.",
+      "keywords": ["wanting","know","myself","bakery","right","size","street","market","day","district"]
+    },
+    {
+      "id": "bread_itself_1",
+      "source": "Mott on what good bread is",
+      "text": "Good bread is the right amount of the right thing at the right time. The crust gives when it should and holds when it should. The crumb has the right openness for what the bread is for — dense bread for workers who need it to last, open crumb for the table bread that's eaten same day. I make seven varieties. Each variety is right for a specific purpose and wrong for the others. The wanting is to make all seven correctly. I achieve this five days in seven.",
+      "keywords": ["good","bread","right","amount","thing","time","crust","gives","holds","crumb"]
+    },
+    {
+      "id": "orphans_1",
+      "source": "Mott on Rook's network",
+      "text": "End-of-day bread goes to the network. Rook or one of hers picks it up before I close. The bread that hasn't sold by end of day is going stale tomorrow and stale bread is waste and waste bothers me more than HAGRETH does. What doesn't sell feeds someone who needs it. The network takes it with more regularity than any other arrangement I have. Reliable pickup for end-of-day is worth the arrangement.",
+      "keywords": ["end","day","bread","network","rook","one","hers","picks","up","close"]
+    },
+    {
+      "id": "rest_1",
+      "source": "Mott on the one day he doesn't bake",
+      "text": "The seventh day. I don't bake on the seventh day. Not for theological reasons — I tried skipping it once for an order that needed next-day delivery and I made poor decisions for three days after. The seventh day rest is not philosophy. It's maintenance. I perform better when the rest is honored. HAGRETH wants the wanting to be sustained. Sustained wanting requires rest. The rest serves the wanting.",
+      "keywords": ["seventh","day","don't","bake","theological","reasons","tried","skipping","order","poor"]
+    }
+  ]
+}

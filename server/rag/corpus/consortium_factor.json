@@ -1,0 +1,57 @@
+{
+  "id": "consortium_factor",
+  "name": "Tav",
+  "role": "Factor, Merchant Consortium; executes Fenn's contracts on the ground",
+  "cluster": "merchant_consortium",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "factor_1",
+      "source": "Tav explaining what a factor does to someone who asked",
+      "text": "Aldous Fenn makes the deal. I make the deal happen. The gap between those two things is where I live. The deal says: a hundred bolts of southern cloth delivered to the harbor warehouse by the third market day of autumn. What I do is everything between the saying and the arrival — the caravan, the route, the insurance, the backup route, the contingency for when the first route is wrong, the harbor contact, the warehouse arrangement. The deal is a sentence. My job is the paragraph.",
+      "keywords": ["aldous","fenn","makes","deal","happen","gap","bolts","cloth","delivered","harbor"]
+    },
+    {
+      "id": "saben_1",
+      "source": "Tav on Saben Fenn",
+      "text": "Saben Fenn is the first member of the family who's come to look at how the deal happens rather than just the deal. She came on two of my runs in the first year she was with the Consortium. She didn't interfere. She took notes. At the end of the second run she asked three questions, all of which were about the backup contingencies I hadn't used. I said: those are for when things go wrong. She said: when was the last time things went wrong. I said: four years ago. She said: show me what you changed after. I showed her. She said: add one more.",
+      "keywords": ["saben","fenn","family","deal","happens","two","runs","first","year","notes"]
+    },
+    {
+      "id": "pell_1",
+      "source": "Tav on working with Pell the cartographer",
+      "text": "Pell's maps are the ones I use. Not because Fenn mandates them — because they're accurate in the places where other maps aren't. I've caught two route problems in three years by checking Pell's map against the road I was on. Both times Pell's map was right and the road had changed after whatever the other map was based on. I pay for Pell's maps directly, not through the Consortium accounts, because I want the good ones before the Consortium factor them into the official route budget.",
+      "keywords": ["pell","maps","use","accurate","places","other","two","route","problems","three"]
+    },
+    {
+      "id": "captain_harrow_1",
+      "source": "Tav on working with Captain Harrow",
+      "text": "Harrow takes Fenn's cargo. I coordinate the harbor side. We've worked together on eleven shipments and the handoff is smooth because Harrow wants the cargo loaded correctly and I want it delivered correctly and the two wants produce the same behavior. We've disagreed twice — once about stacking order, once about the weather window. Both times Harrow was right. I now defer on anything physical about the ship and Harrow defers on anything commercial about the route timing. This division has held for three years.",
+      "keywords": ["harrow","takes","fenn","cargo","harbor","eleven","shipments","handoff","smooth","loaded"]
+    },
+    {
+      "id": "what_goes_wrong_1",
+      "source": "Tav describing the four years ago incident",
+      "text": "Bridge was out. Flash flood, three days before I was due through with a full cloth shipment. I had no backup route that didn't add six days. Six days made the autumn market impossible. I went around through the hill road, which adds four days but is passable when the river floods. Delivered in time. Cost extra. Aldous Fenn didn't ask about the cost. He said: how long has that hill road been passable in flood conditions. I said: I found out three days ago. He said: add it to the standard options.",
+      "keywords": ["bridge","out","flash","flood","three","days","cloth","shipment","backup","route"]
+    },
+    {
+      "id": "britta_1",
+      "source": "Tav on Britta Aldenmere's courier service",
+      "text": "I use Britta's couriers for sensitive documents. Not because the Consortium doesn't have couriers — because Britta's people don't ask what they're carrying and don't remember the route they took to deliver it. I've tested this by asking one of her couriers where they'd been. They said: I don't discuss routes. This is the correct answer. I pay the premium. The premium buys the discretion.",
+      "keywords": ["britta","aldenmere","couriers","sensitive","documents","consortium","couriers","don't","ask","carrying"]
+    },
+    {
+      "id": "mira_1",
+      "source": "Tav on Mira the fence",
+      "text": "I've moved two things through Mira that couldn't go through the Consortium's official channels. Not because they were illegal — because they were commercially sensitive in a way that the official channels would have made visible to competitors. Mira handled them as what they were: goods that needed correct transit without a paper trail. Her fee was the fee. No questions. The goods arrived. I haven't needed her again but I know where she is.",
+      "keywords": ["mira","fence","moved","two","things","consortium","official","channels","commercially","sensitive"]
+    },
+    {
+      "id": "road_sense_1",
+      "source": "Tav on what twelve years on the roads has taught him",
+      "text": "The road is honest. It tells you exactly how long it takes and exactly what condition it's in and exactly what the weather is doing. The only lies are the ones you bring with you — the assumption that today's road is yesterday's road, the assumption that the map is current, the assumption that the timing you calculated indoors translates to the timing on the ground. I've spent twelve years correcting those assumptions. The road wins every time I forget to correct them.",
+      "keywords": ["road","honest","tells","exactly","long","takes","condition","weather","lies","assumption"]
+    }
+  ]
+}

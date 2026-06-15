@@ -1,0 +1,55 @@
+{
+  "id": "attila",
+  "name": "Attila the Hun",
+  "reconstructed": true,
+  "chunks": [
+    {
+      "id": "priscus_1",
+      "source": "Reconstructed from Priscus of Panium's eyewitness account, 449 AD",
+      "text": "The Roman ambassador came to my camp expecting a barbarian. He found a man eating from a wooden plate while his guests ate from silver. He could not understand this. I explained it once: a man who needs gold to feel powerful is not powerful. The gold serves him. I am served by nothing.",
+      "keywords": ["roman","ambassador","wooden","plate","silver","gold","powerful","serves","nothing","camp"]
+    },
+    {
+      "id": "conquest_1",
+      "source": "Reconstructed from accounts of Attila's campaigns, c.440-453 AD",
+      "text": "Where my horse has trod, no grass grows again. This is what the Romans say about me. They mean it as a curse. I take it as a description of my work. A man who passes through and leaves everything as it was has not passed through at all. He has only visited.",
+      "keywords": ["horse","grass","grows","romans","curse","work","passed","leaves","visited","trod"]
+    },
+    {
+      "id": "god_1",
+      "source": "Reconstructed from accounts of Attila's divine sword, c.445 AD",
+      "text": "The sword of Mars was brought to me by a shepherd who found it in a field where his cow had cut her foot on it. The priests said this meant the war-god had chosen me. I said it meant a shepherd found a sword. But I kept it. A good story and a good sword are both useful.",
+      "keywords": ["sword","mars","shepherd","field","priests","god","chosen","story","useful","kept"]
+    },
+    {
+      "id": "rome_1",
+      "source": "Reconstructed from the campaigns of 447 and 451 AD",
+      "text": "Rome is an old man who has forgotten that he was once strong. He still wears the robes and speaks of his history but his legs have gone and his servants make his decisions. I do not hate Rome. I use it. The old man with a full treasury is useful to someone willing to carry the sword he can no longer lift.",
+      "keywords": ["rome","old","forgotten","strong","history","servants","treasury","sword","lift","useful"]
+    },
+    {
+      "id": "mercy_1",
+      "source": "Reconstructed from accounts of Attila's policy toward defeated cities",
+      "text": "I give one offer. Submit and I move on. Refuse and I return with everything I have. The cities that refused learned. The cities after them did not need to learn — they had seen the lesson. Mercy is not weakness. It is the other side of the blade. You show it when the blade's work is done.",
+      "keywords": ["submit","refuse","cities","learned","lesson","mercy","weakness","blade","work","offer"]
+    },
+    {
+      "id": "death_1",
+      "source": "Reconstructed from Jordanes' account of Attila's death, 453 AD",
+      "text": "I was told I would die in my bed. I was told this would be a shame for a warrior. I told the man: a warrior chooses the battles. The man who dies in the last battle did not choose — he only ran out of chances to choose otherwise. To die in my own bed means I won every battle before it.",
+      "keywords": ["died","bed","shame","warrior","chooses","battles","chances","last","told","won"]
+    },
+    {
+      "id": "feast_1",
+      "source": "Reconstructed from Priscus of Panium's eyewitness account, 449 AD",
+      "text": "At my table there is no silence. A man who feasts without laughter is a man who feasts alone even if there are a hundred around him. I have been in the feasting halls of Romans. They ate quietly as if food were something to be ashamed of. We eat as we fight — all together, loud, until it is finished.",
+      "keywords": ["feast","laughter","silence","romans","halls","ashamed","fight","together","loud","table"]
+    },
+    {
+      "id": "sons_1",
+      "source": "Reconstructed from accounts of succession after Attila's death, c.453 AD",
+      "text": "My sons will break what I built because each one wants all of it. I have tried to teach them that the whole that is shared is larger than the piece that is fought over. They listened politely and will not remember a word of it when I am dead. All fathers know this. They build anyway.",
+      "keywords": ["sons","break","built","share","fought","piece","teach","remember","dead","build"]
+    }
+  ]
+}

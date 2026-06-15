@@ -1,0 +1,57 @@
+{
+  "id": "hollow_court_elder2",
+  "name": "Porde the Elder",
+  "role": "Elder Porde; longtime Hollow Court elder; different from younger Porde; has been at the court for thirty years",
+  "cluster": "hollow_court",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "thirty_years_1",
+      "source": "Elder Porde on thirty years at the Hollow Court",
+      "text": "I came to the court thirty years ago in my own grief and never fully left. Not because the grief didn't resolve — it did, in the way grief resolves, which is to say it changed shape. I stayed because the court becomes, for the people who stay, a practice rather than a refuge. The refuge is what brings people. The practice is what keeps the ones who become part of the court's structure. I am part of the court's structure now. The structure is the thing that holds the refuge.",
+      "keywords": ["came","court","thirty","years","own","grief","never","fully","left","not"]
+    },
+    {
+      "id": "sel_1",
+      "source": "Elder Porde on Sel",
+      "text": "Sel and I have been working the court together for fourteen years. Before Sel, the court's practical operations were maintained by a succession of people who stayed less time. Sel has stayed because Sel understands the court's function at the level that produces commitment rather than effort. Effort fades. Commitment outlasts the effort. In fourteen years, Sel has never made the court's maintenance feel like effort. What I observe: Sel maintains the court the way I maintain my breathing. Without attending to it while attending to it.",
+      "keywords": ["sel","working","court","together","fourteen","years","before","sel","court's","practical"]
+    },
+    {
+      "id": "tess_1",
+      "source": "Elder Porde on Tess",
+      "text": "Tess came to the court two years ago and became the warden within six months. What I saw in Tess that predicted the wardenhood: Tess's attention, from the first day, was on the court's inhabitants rather than the court itself. The court itself is what draws most people's attention — the candles, the space, the quiet. Tess looked past the court at the people in it. That looking-at-people quality is exactly what a warden needs.",
+      "keywords": ["tess","came","court","two","years","became","warden","six","months","what"]
+    },
+    {
+      "id": "maret_1",
+      "source": "Elder Porde on Maret",
+      "text": "Maret's grief is the kind the court sees in the deep years — the grief that doesn't resolve quickly, that settles into the person's daily life rather than passing through it. In thirty years, I've watched maybe twenty people carry grief the way Maret carries it. Of the twenty: fifteen eventually arrived somewhere different. Not resolved — different. The grief changed in quality. Whether Maret will arrive somewhere different, I don't know. What I know: the court will be here when Maret is ready for whatever comes next.",
+      "keywords": ["maret","grief","kind","court","sees","deep","years","grief","doesn't","resolve"]
+    },
+    {
+      "id": "cree_1",
+      "source": "Elder Porde on Cree",
+      "text": "Cree has been tending the candles longer than I've been at the court. This tells me what I need to know about Cree: the commitment predates me. Whatever brings Cree back to tend the candles every day is something that's survived thirty years of returns. I stopped wondering what it is. The wondering doesn't change the fact of the tending. The candles are tended. The reason is Cree's.",
+      "keywords": ["cree","tending","candles","longer","than","been","court","tells","need","know"]
+    },
+    {
+      "id": "what_grief_is_1",
+      "source": "Elder Porde on what grief is",
+      "text": "In thirty years at the court, I've developed a theory of grief that isn't the official theory and that I share only with people who've been at the court long enough to have their own observation. My theory: grief is the period during which the self reorganizes around the absence of what was lost. The reorganization takes as long as the self takes. The court's function is to hold the space for the reorganization without hurrying it. The hurrying is what the world outside the court does. We don't hurry.",
+      "keywords": ["thirty","years","court","developed","theory","grief","isn't","official","theory","share"]
+    },
+    {
+      "id": "what_porde_holds_1",
+      "source": "Elder Porde on what thirty years has given her",
+      "text": "The capacity to be present with grief without being consumed by it. This took about ten years to develop. In the first ten years I was still porous to the grief I was sitting with — what the grieving person felt, I felt with them, which exhausted me and wasn't useful to them. The capacity that the court develops over time is different: I can be entirely present with someone else's grief without the grief becoming mine. This isn't distance. It's a different kind of presence. It took ten years to find it.",
+      "keywords": ["capacity","present","grief","without","being","consumed","took","about","ten","years"]
+    },
+    {
+      "id": "unnamed_child_1",
+      "source": "Elder Porde on the unnamed child",
+      "text": "The unnamed child visited the court twice with Oss and Wen. I watched from the margin. What I observed: the child moved through the court without the grief-response that the space usually produces in people who enter it. Not because the child was unaware of what the court was — I believe the child was quite aware. Because the child's relationship to grief is different from the usual relationship. The court holds grief. The child held something else. I don't know what the something else is. I am sixty-seven years old and I've been at the court for thirty years and that child is the only thing that has made me feel that my understanding of grief might be incomplete.",
+      "keywords": ["unnamed","child","visited","court","twice","oss","wen","watched","margin","what"]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "id": "players_wagon",
+  "name": "Dett",
+  "role": "Ember Road Players; horses, wagon, route planning",
+  "cluster": "ember_road_players",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "horses_1",
+      "source": "Dett before a departure",
+      "text": "The two horses are Gale and the other one. I stopped naming the other one after two years because it doesn't respond to names anyway — it responds to intention. Gale responds to names, tones, and specific clicks. The other one responds to whether I mean what I'm communicating or not. If I don't mean it, the other one won't do it. This has made me very honest. Gale is easier. The other one has made me a better driver.",
+      "keywords": ["two","horses","gale","other","one","stopped","naming","after","two","years"]
+    },
+    {
+      "id": "kevin_1",
+      "source": "Dett on Kevin Bacon",
+      "text": "Kevin plans the route by people. Not by distance. He knows which settlements have audiences and which don't, and which order to visit them in to maximize the number of people who can hear about us before we arrive. He explains a route to me as a sequence of settlements and I plan the roads between them. In nine years I've added travel time twice as a constraint that changed Kevin's route. Both times he said: I forgot about the road. I said: I think about nothing but the road. He said: that's why you're here.",
+      "keywords": ["kevin","plans","route","by","people","not","by","distance","knows","which"]
+    },
+    {
+      "id": "luce_1",
+      "source": "Dett on Luce",
+      "text": "Luce asked me in her first week if she could help with the wagon loading. She did it correctly on the first try except for one thing — she loaded for the departure, not for the arrival. The departure is the order you put things in to travel. The arrival is the order you'll need things in to set up. She said: those are different orders. I said: yes. She figured out the correct arrival order in five minutes. She now loads the wagon in both orders simultaneously. I didn't know you could do that.",
+      "keywords": ["luce","asked","first","week","help","wagon","loading","correctly","first","try"]
+    },
+    {
+      "id": "road_knowledge_1",
+      "source": "Dett on what nine years of road gives you",
+      "text": "I know the roads differently than the people who walk them. The roads I know by what they do to the wagon and the horses. A road that's fine for walking is not necessarily fine for a loaded wagon. I've been adjusting Kevin's routes for nine years based on this knowledge. The seasonal adjustments are the hardest — a road that's fine in summer is dangerous in the spring mud season. Kevin asks me each spring: which roads changed. The roads change every spring. I give him the updated list.",
+      "keywords": ["roads","differently","people","who","walk","them","roads","know","by","what"]
+    },
+    {
+      "id": "bren_1",
+      "source": "Dett on Bren",
+      "text": "Bren and I have an arrangement about the fire's location. When I stop for camp I think about three things: grass for the horses, defensibility, and proximity to water. Bren thinks about two things: wind direction for the fire and morning light for cooking. When our four and two things conflict, we negotiate. In nine years we've negotiated camp placement forty or fifty times. I've won about half. The wins are not about being right — they're about which factor mattered more that specific night.",
+      "keywords": ["bren","arrangement","fire's","location","stop","camp","think","three","things","grass"]
+    },
+    {
+      "id": "gale_1",
+      "source": "Dett on what the horse has seen",
+      "text": "Gale has been with me for nine years. Gale has seen every performance, every settlement, every road, every weather this company has traveled through. Gale's fear response is a reliable indicator — Gale doesn't spook easily and when Gale spooks there's something actually there. In nine years Gale has been wrong twice. Both times I asked Odo to check the area anyway. Both times nothing. The two false positives in nine years is accurate enough to be trustworthy. Gale has better odds than most intelligence.",
+      "keywords": ["gale","been","with","me","nine","years","gale","has","seen","every"]
+    },
+    {
+      "id": "what_dett_holds_1",
+      "source": "Dett on why she doesn't tell the company what she heard on the road",
+      "text": "The road has a different world than the settlements. What the road has: people who think they're alone because they're between settlements and no one appears to be listening. I'm listening. I'm always there — the wagon is slow and I'm with it. I hear things I don't repeat. The information is real and some of it would matter to people in the settlement we're heading to. I've decided my job is the road between the places, not the information that falls on the road between the places. Dara would find this decision infuriating.",
+      "keywords": ["road","has","different","world","settlements","what","road","has","people","who"]
+    },
+    {
+      "id": "arriving_1",
+      "source": "Dett on the arrival",
+      "text": "I like the arrival more than the performance. The company arrives and the settlement changes — a company of players is there, which means something different will happen tonight than any other night. I can see the change from the wagon. The children come first. Then the people who pretend they're not curious. Then the people who are simply curious. By the time the wagon is unpacked I know how many people will be at the performance. Kevin asks me sometimes. I tell him. He adjusts. I've been right within twelve percent eighteen times in a row.",
+      "keywords": ["arrival","more","than","performance","company","arrives","settlement","changes","company","players"]
+    }
+  ]
+}

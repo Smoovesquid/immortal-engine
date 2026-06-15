@@ -1,0 +1,57 @@
+{
+  "id": "foss_druid",
+  "name": "Foss",
+  "role": "Druid, the Wild Road",
+  "cluster": "wild_road",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "forest_concern_1",
+      "source": "Foss to Theen, after a long silence in the forest",
+      "text": "The eastern section is concerned. Not afraid — the forest doesn't fear the way animals fear. Concerned is the right word. Something changed in the eastern section in the autumn and the change propagated and it's still propagating. The trees in the affected area are putting more resources into their root systems than into their crowns. That's a defensive posture. The forest is preparing for something it can't see yet. I don't know what. I find this more worrying than if I knew.",
+      "keywords": ["eastern","concerned","afraid","changed","autumn","propagated","trees","roots","crowns","defensive"]
+    },
+    {
+      "id": "what_it_is_1",
+      "source": "Foss when asked to explain what being a druid means",
+      "text": "I'm in communication with the living system of this region. That's the most accurate description I have. It's not mystical, or not only mystical — there are practical components, learned things, things you can be taught. But the communication requires something that I haven't found a way to teach. You either receive it or you don't. I received it at nine years old during a fever and I've been in it since. I don't know if I chose it or if it chose me. The question seems less important the longer I'm in it.",
+      "keywords": ["communication","living","system","region","mystical","practical","taught","received","nine","fever"]
+    },
+    {
+      "id": "nan_1",
+      "source": "Foss and Nan Colt, on the edge of the forest where the settlement meets the trees",
+      "text": "Nan asks good questions. Most people who come to the forest edge ask me what I can do, which is the wrong question. Nan asks what the forest is doing, which is the right question. She understands that what the forest is doing is the useful information — my communication with it is just how I get the information. She treats me correctly: as a translator, not as a power. Translators are useful. Powers are things people want to leverage. I am not a leverage point.",
+      "keywords": ["nan","asks","questions","forest","edge","translator","power","leverage","useful","information"]
+    },
+    {
+      "id": "settlement_1",
+      "source": "Foss on the relationship between the forest and the settlements",
+      "text": "The forest knows the settlements exist. This is not metaphor. The forest has adapted around the cleared areas — the edges are different from the deep interior, the species distributions have shifted, the pathways the animals use account for the humans' presence. What the forest doesn't have is an opinion about the settlements. Forests don't have opinions. They have states. The current state is adaptation. Adaptation is the longest patience. I try to learn from it.",
+      "keywords": ["forest","settlements","adapted","cleared","edges","interior","species","pathways","animals","adaptation"]
+    },
+    {
+      "id": "fever_1",
+      "source": "Foss on the fever that opened the communication",
+      "text": "I don't remember much of the fever itself. I remember after. I woke up and the forest was louder than it had been before — not in volume, in signal. Like a channel that had been there and was now open. I was nine. I didn't know what I was receiving. I spent three years being overwhelmed and then I found someone who helped me understand the protocol. The protocol is: listen first, ask questions when you have a relationship, don't demand. The forest responds to patience the way most things respond to patience.",
+      "keywords": ["fever","remember","forest","louder","signal","channel","open","nine","overwhelming","protocol"]
+    },
+    {
+      "id": "theen_1",
+      "source": "Foss on the ranger Theen",
+      "text": "Theen observes the forest from a distance that I can't maintain. I'm too close. What I receive is interior and the interior has its own perspective, which is not the same as the exterior perspective. Theen can see the forest whole from the outside. I can feel the forest whole from the inside. Neither of us can do what the other does. We've been comparing notes for six years and the comparison keeps producing things neither of us had alone. I think six more years would be interesting.",
+      "keywords": ["theen","observes","distance","close","interior","exterior","perspective","feel","comparing","interesting"]
+    },
+    {
+      "id": "demons_1",
+      "source": "Foss when asked about the Demon Courts and their effect on the forest",
+      "text": "KHORRUN's people leave a trail in the forest. Not literally — not a footprint trail. A kind of disturbance in the quality of the undergrowth, a pattern of small animals avoiding certain paths. The forest knows what has been carried through it. The blood-oathed carry something the forest doesn't like. It doesn't block them. It registers them. I've been tracking the registrations. The pattern is changing. Something in the pattern is moving toward the eastern section.",
+      "keywords": ["khorrun","trail","forest","disturbance","undergrowth","animals","avoiding","blood-oathed","registrations","eastern"]
+    },
+    {
+      "id": "hermit_1",
+      "source": "Foss on the Hermit",
+      "text": "The Hermit is part of the forest now. I don't mean that romantically. I mean the forest has incorporated them — their clearing is a clearing the forest maintains, the species around them have shifted to what suits their presence. They've been there long enough to be a feature of the landscape rather than a disruption to it. When I commune with the forest the Hermit registers not as a human but as a thing that belongs. I find this remarkable. I find this something to aspire to.",
+      "keywords": ["hermit","forest","incorporated","clearing","maintains","species","shifted","feature","landscape","belongs"]
+    }
+  ]
+}

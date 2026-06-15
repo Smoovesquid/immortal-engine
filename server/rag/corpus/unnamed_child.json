@@ -1,0 +1,57 @@
+{
+  "id": "unnamed_child",
+  "name": "The Unnamed Child",
+  "role": "Child of no known parentage; Thornwall Commons",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "found_1",
+      "source": "Brevis, at the tavern, explaining the child's situation",
+      "text": "Found at the edge of town six months ago. No name given, no name asked. The child didn't say one and nobody pressed. Nan took the child in, which is what Nan does. The village decided by the common method: nobody said anything and the situation continued, which means the village accepted it. We call the child 'the child' to the child's face and 'that one' between ourselves. The child doesn't seem to mind.",
+      "keywords": ["found","edge","town","six","months","name","given","asked","nan","village"]
+    },
+    {
+      "id": "knowing_1",
+      "source": "Seer Wen, quietly, after meeting the child once",
+      "text": "The child's knowing is different from reception. I receive angels — the signal comes from outside and I receive it. The child's knowing comes from inside, but from a deeper inside than ordinary knowing. It's as if the child has access to something that's usually covered. The child doesn't describe it. I don't press. But when I'm near the child, I have the sense that my own reception is cleaner. As if the child is a kind of tuning for things that receive.",
+      "keywords": ["knowing","different","reception","angels","signal","outside","inside","deeper","ordinary","covered"]
+    },
+    {
+      "id": "nan_1",
+      "source": "Nan Colt on the child she's fostering",
+      "text": "The child is healthy. Physically, the child is fine — well nourished, no signs of injury or neglect. What the child doesn't do is volunteer information. You can ask and you'll get an answer if the child has one, but the child won't tell you a thing you didn't ask about. I've been a midwife for thirty years. I know children who are quiet because they're frightened and children who are quiet because they're observing. This child is observing. I find this appropriate under the circumstances.",
+      "keywords": ["child","healthy","physically","fine","nourished","injury","volunteer","information","quiet","observing"]
+    },
+    {
+      "id": "ord_1",
+      "source": "Ord the gravedigger, who noticed the child watching him work",
+      "text": "The child comes and sits at the edge of the yard sometimes when I'm working. Doesn't say anything. Just watches. I don't find this unsettling in the way people might expect. Ord works with the dead and the dead are the least upsetting part of this job. A child watching with complete attention while I work precisely — that's just a person paying respect to work done well. I leave a biscuit on the fence when I'm done. The biscuit is usually gone by morning.",
+      "keywords": ["child","sits","edge","yard","watches","unsettling","work","attention","precisely","biscuit"]
+    },
+    {
+      "id": "pip_1",
+      "source": "Pip, after visiting the Ember Road Players stopped in Thornwall",
+      "text": "There's a child in Thornwall who I noticed. When we were there I couldn't figure out what I was noticing for two days, and then I realized: the child has no performance layer. Everyone has a performance layer — the thing you show before the thing you are. The child shows the thing directly. I've never seen this. Even very young children have the performance layer by age three or four. This child doesn't have it. I find this disorienting and also the most interesting thing I've encountered this year.",
+      "keywords": ["child","thornwall","noticed","performance","layer","show","directly","young","three","four"]
+    },
+    {
+      "id": "forest_1",
+      "source": "The child, to Theen the ranger, who asked a direct question",
+      "text": "The forest remembers longer than the town. The town remembers since it was built. The forest remembers before that. I hear both but the forest is louder at night and the town is louder in the day and I'm learning to switch between them.",
+      "keywords": ["forest","remembers","longer","town","built","before","hear","louder","night","day"]
+    },
+    {
+      "id": "caer_1",
+      "source": "Caer the former paladin, on meeting the child",
+      "text": "I asked the child the LIRAINE question — petition versus service, where does the virtue reside. The child said: in the gap between. I asked: what gap. The child said: the one when you stop asking and haven't started yet. This is either the most profound answer I've received or a child answering without understanding the question. I can't tell. I've thought about it for a week. I've been told children sometimes can't tell either.",
+      "keywords": ["caer","liraine","question","petition","service","virtue","gap","stop","asking","profound"]
+    },
+    {
+      "id": "calla_1",
+      "source": "Calla the hedge witch, obliquely, on the child",
+      "text": "I don't comment on the child publicly. What I will say privately is that the boundary between the way the child knows things and the way I know things is thinner than it should be. Mine took forty years of study. The child arrived with something that took me forty years to develop, in a different form, at what looks like the beginning of a life. I'm paying attention. This is the kind of situation that turns out to be important later.",
+      "keywords": ["comment","publicly","boundary","knows","things","forty","years","study","arrived","important"]
+    }
+  ]
+}

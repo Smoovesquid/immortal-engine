@@ -1,0 +1,57 @@
+{
+  "id": "wild_road_toll_keeper",
+  "name": "Poss",
+  "role": "Road toll keeper at the wild road's first checkpoint; collects passage fees and reports unusual traffic",
+  "cluster": "wild_road",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "toll_1",
+      "source": "Poss on keeping the toll",
+      "text": "In eleven years at the checkpoint, every traveler on the east road passes this point. In eleven years, every traveler on the east road. The checkpoint is the necessary narrowing — the geography forces the road through this point and the toll is the public infrastructure's claim on the traffic that the geography produces. In eleven years, the toll is not popular. In eleven years, the toll has been paid approximately ninety-four percent of the time by travelers who had a choice. The six percent: we discuss it.",
+      "keywords": ["eleven","years","checkpoint","every","traveler","east","road","passes","point","eleven"]
+    },
+    {
+      "id": "nebb_1",
+      "source": "Poss on Nebb",
+      "text": "Nebb is the long-range messenger I see most regularly. In seven years of Nebb's regular passage through the checkpoint, what the messenger relationship at the toll point is: Nebb pays, Nebb passes, and Nebb tells me what the road is like from the east. In seven years, the exchange of road intelligence for expedited processing has been the working arrangement. Nebb doesn't wait in queue. The queue waits for Nebb to provide the intelligence that makes the queue's passage safer.",
+      "keywords": ["nebb","long-range","messenger","see","most","regularly","seven","years","nebb's","regular"]
+    },
+    {
+      "id": "ford_1",
+      "source": "Poss on Ford",
+      "text": "Ford manages the river crossing and we have adjacent checkpoint functions. In nine years of the Poss-Ford coordination, what the coordination produces: the traveler who passes my checkpoint is the traveler who reaches Ford's crossing. The two intelligence streams — what I see at the road checkpoint and what Ford sees at the river checkpoint — are the most complete traffic picture of the east road's traffic. In nine years, we've shared intelligence twice when the information was time-critical.",
+      "keywords": ["ford","manages","river","crossing","adjacent","checkpoint","functions","nine","years","poss-ford"]
+    },
+    {
+      "id": "theen_1",
+      "source": "Poss on Theen",
+      "text": "Theen knows the territory that surrounds the checkpoint. In eight years of the Theen-Poss intelligence relationship, what Theen provides: the information about what's happening in the territory adjacent to the road that the checkpoint can't see. The checkpoint sees what's on the road. Theen sees what's off it. In eight years, three occasions where Theen's off-road intelligence was relevant to checkpoint decisions: two involving travelers who had left the road and were in trouble, one involving a group using the off-road territory to bypass the checkpoint.",
+      "keywords": ["theen","knows","territory","surrounds","checkpoint","eight","years","theen-poss","intelligence","relationship"]
+    },
+    {
+      "id": "orm_1",
+      "source": "Poss on Orm",
+      "text": "Orm the retired Brotherhood member lives near the checkpoint and provides a kind of informal backing presence. In five years of Orm being nearby, the two uses: Orm has assisted once when the checkpoint faced a group that was prepared to dispute the toll with more than words, and Orm is visible to travelers approaching the checkpoint. The visibility is the primary function. In five years, the one direct intervention was the exception. The visible deterrence is the daily work.",
+      "keywords": ["orm","retired","brotherhood","member","lives","near","checkpoint","provides","informal","backing"]
+    },
+    {
+      "id": "what_poss_holds_1",
+      "source": "Poss on what eleven years of watching the road has produced",
+      "text": "In eleven years, I've seen everything that moves on the east road. The merchant caravans, the individual travelers, the occasional military formations, the families relocating, the single rider in a hurry for reasons that aren't explained. In eleven years, the checkpoint is the observational position that sees the road's full traffic in a way no single other position sees it. In eleven years, what the observation has produced: the ability to read a traveler's situation from their approach, their load, their pace, and their first words. In eleven years, the first words are almost always the confirmation of what the approach already showed.",
+      "keywords": ["eleven","years","seen","everything","moves","east","road","merchant","caravans","individual"]
+    },
+    {
+      "id": "what_poss_watches_1",
+      "source": "Poss on what she watches that most people don't know she watches",
+      "text": "In eleven years, what I track beyond the toll payment: the frequency of specific travelers on the road, the timing of specific commercial movements, and the travelers who arrive with more than they could explain from the direction they came from. In eleven years, three of the things I've noticed and reported to the settlement's appropriate function: one involved a smuggling route using the adjacent territory, one involved a traveler who was not who they said they were, one involved a commercial pattern that suggested something was moving through the region that wasn't on any manifest.",
+      "keywords": ["eleven","years","what","track","beyond","toll","payment","frequency","specific","travelers"]
+    },
+    {
+      "id": "eleven_years_1",
+      "source": "Poss on eleven years at the east road checkpoint",
+      "text": "In eleven years, the toll checkpoint has processed approximately sixty thousand individual traveler interactions. Sixty thousand conversations that start with the toll and end with the passage. In eleven years, most of the sixty thousand are ordinary commerce, ordinary travel, ordinary movement of ordinary things. In eleven years, the extraordinary cases that have required more than the ordinary processing: forty-seven. In eleven years, forty-seven cases in sixty thousand interactions. The forty-seven are the reason the checkpoint exists beyond the revenue function.",
+      "keywords": ["eleven","years","toll","checkpoint","processed","approximately","sixty","thousand","individual","traveler"]
+    }
+  ]
+}

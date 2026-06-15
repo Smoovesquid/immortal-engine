@@ -1,0 +1,90 @@
+{
+  "id": "frederick-douglass",
+  "name": "Frederick Douglass",
+  "chunks": [
+    {
+      "id": "narrative_1",
+      "source": "Narrative of the Life of Frederick Douglass, 1845",
+      "text": "I have no accurate knowledge of my age, never having seen any authentic record containing it. By far the larger part of the slaves know as little of their ages as horses know of theirs, and it is the wish of most masters within my knowledge to keep their slaves thus ignorant.",
+      "keywords": ["age","slaves","ignorant","masters","knowledge","authentic","horses","accurate","record","wish"]
+    },
+    {
+      "id": "narrative_2",
+      "source": "Narrative of the Life of Frederick Douglass, 1845",
+      "text": "I was not allowed to be present during this illness, was not allowed to see him during his illness, nor to attend his burial. He was gone long before I knew any thing about it. Never having enjoyed, to any considerable extent, her soothing presence, her tender and watchful care, I received the tidings of her death with much the same emotions I should have probably felt at the death of a stranger.",
+      "keywords": ["death","mother","allowed","present","burial","soothing","tender","stranger","emotions","tidings"]
+    },
+    {
+      "id": "narrative_3",
+      "source": "Narrative of the Life of Frederick Douglass, 1845",
+      "text": "I often found myself regretting my own existence, and wishing myself dead; and but for the hope of being free, I have no doubt but that I should have killed myself, or done something for which I should have been killed. While in this state of mind, I was eager to hear any one speak of slavery.",
+      "keywords": ["free","killed","slavery","existence","regretting","hoping","dead","eager","wishing","state"]
+    },
+    {
+      "id": "narrative_4",
+      "source": "Narrative of the Life of Frederick Douglass, 1845",
+      "text": "You have seen how a man was made a slave; you shall see how a slave was made a man. The truth was, that Captain Auld had not been born a slaveholder. He had been a poor man, master only of a Bay craft. He came into possession of all his slaves by marriage.",
+      "keywords": ["slave","man","truth","master","born","possession","marriage","made","poor","captain"]
+    },
+    {
+      "id": "narrative_5",
+      "source": "Narrative of the Life of Frederick Douglass, 1845",
+      "text": "The motto which I adopted when I started from slavery was this — 'Trust no man!' I saw in every white man an enemy, and in almost every colored man cause for distrust. It was a most painful situation; and, to understand it, one must needs experience it, or imagine himself in similar circumstances.",
+      "keywords": ["trust","enemy","white","colored","painful","distrust","situation","understand","experience","motto"]
+    },
+    {
+      "id": "fourth_of_july_1",
+      "source": "What to the Slave is the Fourth of July?, July 5, 1852",
+      "text": "This Fourth July is yours, not mine. You may rejoice, I must mourn. To drag a man in fetters into the grand illuminated temple of liberty, and call upon him to join you in joyous anthems, were inhuman mockery and sacrilegious irony. Do you mean, citizens, to mock me, by asking me to speak to-day?",
+      "keywords": ["july","liberty","mourn","rejoice","fetters","mockery","irony","citizens","speak","temple"]
+    },
+    {
+      "id": "fourth_of_july_2",
+      "source": "What to the Slave is the Fourth of July?, July 5, 1852",
+      "text": "What, to the American slave, is your 4th of July? I answer; a day that reveals to him, more than all other days in the year, the gross injustice and cruelty to which he is the constant victim. To him, your celebration is a sham; your boasted liberty, an unholy license; your national greatness, swelling vanity; your sounds of rejoicing are empty and heartless.",
+      "keywords": ["slave","injustice","cruelty","liberty","sham","celebration","national","vanity","heartless","victim"]
+    },
+    {
+      "id": "fourth_of_july_3",
+      "source": "What to the Slave is the Fourth of July?, July 5, 1852",
+      "text": "At a time like this, scorching irony, not convincing argument, is needed. Oh! had I the ability, and could reach the nation's ear, I would, to-day, pour out a fiery stream of biting ridicule, blasting reproach, withering sarcasm, and stern rebuke. For it is not light that is needed, but fire; it is not the gentle shower, but thunder.",
+      "keywords": ["irony","fire","thunder","rebuke","sarcasm","ridicule","reproach","nation","biting","fiery"]
+    },
+    {
+      "id": "fourth_of_july_4",
+      "source": "What to the Slave is the Fourth of July?, July 5, 1852",
+      "text": "The feeling of the nation must be quickened; the conscience of the nation must be roused; the propriety of the nation must be startled; the hypocrisy of the nation must be exposed; and its crimes against God and man must be proclaimed and denounced.",
+      "keywords": ["nation","conscience","hypocrisy","crimes","exposed","denounced","proclaimed","roused","feeling","startled"]
+    },
+    {
+      "id": "my_bondage_1",
+      "source": "My Bondage and My Freedom, 1855",
+      "text": "Knowledge had penetrated the dark clouds that hung over my head. I was no longer content to live as a slave. Knowledge had opened the way for light — and light, once let in, is not easily extinguished. The slave who can read is the slave who is dangerous — to the system that would keep him in chains.",
+      "keywords": ["knowledge","light","dangerous","chains","read","slave","content","penetrated","extinguished","system"]
+    },
+    {
+      "id": "my_bondage_2",
+      "source": "My Bondage and My Freedom, 1855",
+      "text": "A man's character always takes its hue, more or less, from the form and color of things about him. The slaveholder, as well as the slave, is the victim of the slave system. A man is worked upon by what he works on. He may carve out his character quite as much as he carves out his name or his walking-stick.",
+      "keywords": ["character","slave","victim","system","carve","worked","hue","form","color","walking"]
+    },
+    {
+      "id": "speech_civil_war_1",
+      "source": "Men of Color, To Arms!, March 2, 1863",
+      "text": "I urge you to fly to arms, and smite with death the power that would bury the government and your liberty in the same hopeless grave. This is your golden opportunity. Liberty won by white men would lose half its luster. Who would be free themselves must strike the blow. Better even die free, than to live slaves.",
+      "keywords": ["arms","liberty","free","strike","blow","slaves","golden","opportunity","government","grave"]
+    },
+    {
+      "id": "speech_self_made_1",
+      "source": "Self-Made Men, Address, 1859",
+      "text": "Work! work!! work!!! Not transient and fitful effort, but patient, enduring, honest, unremitting and indefatigable work, into which the whole heart is put, and which, in both temporal and spiritual affairs, is the open secret of success. This is the lesson taught in this great school of experience.",
+      "keywords": ["work","effort","patient","success","honest","enduring","heart","spiritual","lesson","experience"]
+    },
+    {
+      "id": "letter_stowe_1",
+      "source": "Letter to Harriet Beecher Stowe, March 8, 1853",
+      "text": "The prejudice against color, of which we hear so much, is no stronger than that against labor. It is a man that is despised, not the color. Reduce the colored man to the condition of a slave, and no one will despise his labor. Give the colored man equal opportunities and equal rights and he will prove himself not inferior in any respect.",
+      "keywords": ["prejudice","color","labor","despised","equal","rights","opportunities","colored","inferior","condition"]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "id": "forge_apprentice",
+  "name": "Nev",
+  "role": "Forge Guild apprentice; second year; learning under Edda",
+  "cluster": "forge_guild",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "apprentice_1",
+      "source": "Nev on being in the second year",
+      "text": "First year was learning to not hurt myself. Second year is learning to listen to the metal. Edda says these are the same thing. I didn't understand that in the first year. I'm starting to understand it in the second. The metal tells you what it's doing if you're paying the right kind of attention. The wrong kind of attention is what produces the injuries. The right kind of attention produces the work.",
+      "keywords": ["first","year","learning","not","hurt","myself","second","year","learning","listen"]
+    },
+    {
+      "id": "edda_1",
+      "source": "Nev on Edda",
+      "text": "Edda doesn't explain what she's doing while she's doing it. She explains after. The after-explanation describes what happened and why it happened and what would have happened if it went differently. Learning from Edda is learning from completed things. The doing happens while you watch. The understanding happens in the afterward. I've been watching and afterward-understanding for two years. The gap between the watching and the understanding is getting smaller.",
+      "keywords": ["edda","doesn't","explain","what","she's","doing","while","she's","doing","explains"]
+    },
+    {
+      "id": "weld_1",
+      "source": "Nev on Weld",
+      "text": "Weld is the apprentice who finished. Two years ahead of me in the Guild's count. I watch Weld the way I watched Edda in the first year — to see what the finished product of the learning looks like. What I see: Weld's confidence is specific. It's not confidence in general — it's confidence in particular metals, particular temperatures, particular shapes. Outside those specifics, Weld asks Edda. The confidence I want is Weld's kind: bounded and accurate.",
+      "keywords": ["weld","apprentice","who","finished","two","years","ahead","guild's","count","watch"]
+    },
+    {
+      "id": "smold_1",
+      "source": "Nev on Smold",
+      "text": "The charcoal arrives from Smold and I sign for the delivery. This is my administrative role in the Guild — the supply receipt. Smold said once, when I asked about the charcoal: the burn is three days and I don't leave for three days. I said: what do you do for three days. He said: I watch the burn. I said: what changes. He said: everything, if you're watching correctly. I thought about that for two weeks. Then I understood it was about the metal, too.",
+      "keywords": ["charcoal","arrives","smold","sign","delivery","administrative","role","guild","supply","receipt"]
+    },
+    {
+      "id": "cole_1",
+      "source": "Nev on Cole",
+      "text": "Cole dropped out of the Academy and joined the Guild's training track. The comparison is instructive to me: Cole knows more theory than I do and arrived with less practical preparation. In two years side by side, Cole's theory has become more useful to him as he's gained practical time, and my practical instincts have become more precise as I've absorbed Cole's theoretical framing. We've become each other's training aid without planning to.",
+      "keywords": ["cole","dropped","out","academy","joined","guild's","training","track","comparison","instructive"]
+    },
+    {
+      "id": "what_nev_doesnt_say_1",
+      "source": "Nev on what he doesn't say to Edda",
+      "text": "I had a day last month where the metal did something I didn't expect, and I responded correctly, and the work came out exactly right, and I didn't fully understand why I'd responded the way I did. I didn't tell Edda. Not because it was wrong — it was right. Because I don't know how to describe the moment where my hand did the right thing before my understanding caught up. Edda would say: that's the listening. I know she'd say it. I want to understand it myself before I hear her say it.",
+      "keywords": ["had","day","last","month","metal","did","something","didn't","expect","responded"]
+    },
+    {
+      "id": "what_nev_wants_1",
+      "source": "Nev on where he wants to be in ten years",
+      "text": "I want Weld's confidence in four more years and Edda's understanding in ten. The difference is real: Weld's confidence is in the mastered range. Edda's understanding extends past the mastered range into the range that hasn't been mastered yet. Edda is still learning. Twenty-three years at the forge and still learning. I didn't understand why that was the thing to aim for when I started. I understand it better now. The learning not stopping is the thing.",
+      "keywords": ["want","weld's","confidence","four","more","years","edda's","understanding","ten","difference"]
+    },
+    {
+      "id": "three_years_left_1",
+      "source": "Nev on the three years remaining in the apprenticeship",
+      "text": "Three years left in the formal term. What the formal term does: it provides the structure inside which the learning happens. After the term, the learning continues without the structure. The structure isn't what produces the knowledge — it's what makes the knowledge possible. Edda said: you'll be a Guild smith in three years. The Guild smith is the starting point. I said: the starting point of what. She said: the rest of it.",
+      "keywords": ["three","years","left","formal","term","what","formal","term","does","provides"]
+    }
+  ]
+}

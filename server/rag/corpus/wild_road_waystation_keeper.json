@@ -1,0 +1,57 @@
+{
+  "id": "wild_road_waystation_keeper",
+  "name": "Marb",
+  "role": "Waystation keeper on the wild road; shelter, water, and fire for travelers a day out from the settlement",
+  "cluster": "wild_road",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "waystation_1",
+      "source": "Marb on the waystation",
+      "text": "The waystation is a day's walk from the settlement and a day's walk from the next waystation east. In twenty years, the waystation has been the middle distance — the place where the travel has taken enough from the traveler that the shelter is needed and where the travel ahead is far enough that the shelter's restoration is useful. In twenty years, the waystation is what it is because of where it is.",
+      "keywords": ["waystation","day's","walk","settlement","day's","walk","next","waystation","east","twenty"]
+    },
+    {
+      "id": "theen_1",
+      "source": "Marb on Theen",
+      "text": "Theen is the person I most rely on for information about what's happening on the road. In fifteen years of working alongside Theen, Theen's passage through the waystation is an intelligence briefing: the road's current condition from here east, the condition from here west, anything on the road that the travelers should know. In fifteen years, Theen's briefings have been integrated into the waystation's function — when Theen passes through, the next travelers get Theen's road intelligence on top of the waystation's shelter.",
+      "keywords": ["theen","person","most","rely","on","information","about","what's","happening","road"]
+    },
+    {
+      "id": "senn_1",
+      "source": "Marb on Senn",
+      "text": "Senn passes through the waystation more than any other regular traveler. In twelve years, Senn's passage is approximately twice a month — the traveling trader's circuit brings Senn through consistently. In twelve years, Senn's visits are the social calendar of the waystation: Senn brings the news from the far end of the route, the gossip from the settlements Senn has visited, the changes in the trading situation. In twelve years, Senn's visits are the world arriving at the waystation. The waystation is isolated; Senn is the connection.",
+      "keywords": ["senn","passes","through","waystation","more","than","any","other","regular","traveler"]
+    },
+    {
+      "id": "orm_1",
+      "source": "Marb on Orm",
+      "text": "Orm the retired Brotherhood member lives within a day of the waystation. In five years of Orm's farm being near enough to be relevant, the relationship has developed into: Orm is the waystation's backup security. Travelers who create problems at the waystation that exceed my capacity to resolve: I know Orm can be reached and will come. In five years, I've needed Orm once. Orm came and the situation resolved. In five years, the backup is more valuable as a known resource than as a deployed one.",
+      "keywords": ["orm","retired","brotherhood","member","lives","within","day","waystation","five","years"]
+    },
+    {
+      "id": "brek_cattle_1",
+      "source": "Marb on Brek the drover",
+      "text": "Brek's cattle drives pass through the waystation territory twice a year. In eight years, the cattle drive passage is the most logistically complex event the waystation sees: the cattle need water from the waystation's well, the drovers need rest, and the cattle need to be kept from the waystation's small garden. In eight years, the cattle drive coordination with Brek has produced a protocol: Brek notifies me a day in advance, I prepare the additional water capacity, the well handles the cattle's needs, the garden is protected. In eight years, the protocol has worked.",
+      "keywords": ["brek's","cattle","drives","pass","through","waystation","territory","twice","year","eight"]
+    },
+    {
+      "id": "what_the_waystation_is_1",
+      "source": "Marb on what twenty years of waystation keeping is",
+      "text": "In twenty years, the waystation has hosted approximately fifteen thousand individual traveler-nights. Fifteen thousand occasions when a traveler was on the road, needed to stop, and the waystation was the stop. In twenty years, I've been the person who made the stop possible: the fire lit, the water filled, the shelter maintained. In twenty years, most of the fifteen thousand travelers are names I never knew. They came, they stopped, they continued. In twenty years, the waystation is the pause in the road's story.",
+      "keywords": ["twenty","years","waystation","hosted","approximately","fifteen","thousand","individual","traveler-nights","fifteen"]
+    },
+    {
+      "id": "what_marb_holds_1",
+      "source": "Marb on what the waystation shows her that no one else sees",
+      "text": "In twenty years, what I see at the waystation that no one in the settlement sees: the traveler at the point of maximum depletion. The traveler at the waystation has been on the road for a day or more without a stopping point. The traveler's road-fatigue is visible here in a way it isn't at the settlement, where the traveler has had time to recover. In twenty years, I've seen what the road does to people. The settlement sees who they are when they've recovered. I see who they are when they haven't.",
+      "keywords": ["twenty","years","what","see","waystation","no","one","settlement","sees","traveler"]
+    },
+    {
+      "id": "twenty_years_1",
+      "source": "Marb on twenty years at the waystation",
+      "text": "In twenty years, the waystation is the place I know best in the world. Not the settlement — the waystation. The waystation's specific light at each hour of the day in each season, the sounds the waystation makes in wind versus calm, the way the well's level changes through the year. In twenty years, the waystation is not just a place I work. It's the place I am. The settlement is where I come from. The waystation is where I live.",
+      "keywords": ["twenty","years","waystation","place","know","best","world","not","settlement","waystation"]
+    }
+  ]
+}

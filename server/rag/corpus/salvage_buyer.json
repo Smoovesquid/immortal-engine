@@ -1,0 +1,57 @@
+{
+  "id": "salvage_buyer",
+  "name": "Vonn",
+  "role": "Harbor salvage buyer; purchases the things pulled from the water and sells them to whoever needs them",
+  "cluster": "harbor_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "salvage_buying_1",
+      "source": "Vonn on buying salvage",
+      "text": "I buy what the water gives back and sell it to whoever can use it. In fourteen years, the position is: I'm the market for the things that have been underwater. The saltwater affects everything differently. The metal that's been down for a month and the metal that's been down for a year are different things with different values and different uses. In fourteen years, the assessment of salvage is the assessment of what the water has done to something and what that thing can still do.",
+      "keywords": ["buy","what","water","gives","back","sell","whoever","can","use","fourteen"]
+    },
+    {
+      "id": "brinn_1",
+      "source": "Vonn on Brinn",
+      "text": "Brinn brings up what I buy. In eight years, the Brinn-Vonn arrangement is the core of my business: Brinn dives, assesses, and recovers; I assess the recovered goods and purchase what I can place. In eight years, Brinn's understanding of what I'll pay for has gotten precise. Brinn doesn't bring me things I won't buy. In eight years, the efficiency of the arrangement: Brinn's selections reflect my market knowledge and my market reflects Brinn's dive capabilities. We've shaped each other's work.",
+      "keywords": ["brinn","brings","up","what","buy","eight","years","brinn-vonn","arrangement","core"]
+    },
+    {
+      "id": "tonn_1",
+      "source": "Vonn on Tonn",
+      "text": "Tonn the salvage coordinator knows where things went down and what they were. In ten years of Tonn's coordination providing the dives that produce the salvage I buy, the information Tonn provides that makes my buying more accurate: what the cargo was before it was underwater. The cargo manifest of a sunken vessel: if Tonn can recover it or know it from prior knowledge, I know what I'm buying before Brinn surfaces with it.",
+      "keywords": ["tonn","salvage","coordinator","knows","where","things","went","down","what","they"]
+    },
+    {
+      "id": "weld_1",
+      "source": "Vonn on Weld",
+      "text": "Weld is my primary buyer for recovered metal. In nine years, the forge takes the salvage metal that has been processed to the point where it can be reworked. What Weld pays for: the metal by weight, discounted for the contamination and corrosion the water produces. What I pay Brinn for: the metal by weight, discounted for the processing cost. In nine years, the margin between the two discounts is my return on the salvage metal line. In nine years, the line has been consistently profitable.",
+      "keywords": ["weld","primary","buyer","recovered","metal","nine","years","forge","takes","salvage"]
+    },
+    {
+      "id": "ota_1",
+      "source": "Vonn on Ota",
+      "text": "Ota the fishing fleet coordinator occasionally has boats that go down in the harbor's shallow areas. In six years, when one of Ota's boats has gone down, the salvage question is: what can Brinn recover before the boat is a total loss? What Ota values: the equipment, the nets, the gear that's specific to that vessel. What I buy: whatever Brinn recovers that I can sell. In six years, three of Ota's boats have gone down. All three: partial salvage that recovered most of the valuable equipment before total loss.",
+      "keywords": ["ota","fishing","fleet","coordinator","occasionally","boats","go","down","harbor's","shallow"]
+    },
+    {
+      "id": "what_salvage_is_1",
+      "source": "Vonn on what salvage buying actually is",
+      "text": "In fourteen years, salvage buying is the market for what people thought was lost. The thing that went into the water was, at the moment of going in, considered lost by whoever lost it. When it comes back up, the thing is no longer lost — it's changed, it's been underwater, it may be damaged, but it exists. My job is to assess what a thing that was lost and recovered is worth and to find the buyer who values it at that assessment. In fourteen years, the market for recovered things is the market for second chances.",
+      "keywords": ["fourteen","years","salvage","buying","market","what","people","thought","was","lost"]
+    },
+    {
+      "id": "what_vonn_holds_1",
+      "source": "Vonn on the salvage he couldn't sell",
+      "text": "In fourteen years, three items that Brinn recovered that I purchased and held for longer than six months without finding a buyer. The first: an instrument I couldn't identify and couldn't find a buyer who could identify it either. The second: a document container that was sealed and that I can't open without destroying whatever it protects — and whatever it protects might be more valuable sealed than open. The third: a small carved piece in material I can't identify that three separate buyers have declined after examining it. All three are still in my holding stock.",
+      "keywords": ["fourteen","years","three","items","brinn","recovered","purchased","held","longer","than"]
+    },
+    {
+      "id": "fourteen_years_1",
+      "source": "Vonn on fourteen years of salvage buying",
+      "text": "In fourteen years, I've purchased and sold approximately fourteen thousand individual salvage items. Fourteen thousand things that were underwater and came back up and passed through my hands into someone who needed them. In fourteen years, the harbor's floor has given up a portion of what it holds. What's still down there: more than what's come up. In fourteen years, I've bought approximately ten percent of what Brinn and Tonn believe the harbor holds. The other ninety percent is still waiting for the right dive conditions.",
+      "keywords": ["fourteen","years","purchased","sold","approximately","fourteen","thousand","individual","salvage","items"]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "id": "orphan_roads_archivist",
+  "name": "Winn",
+  "role": "Orphan Roads network archivist; the one who remembers what was done, to whom, and where the body was buried",
+  "cluster": "orphan_roads",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "archivist_1",
+      "source": "Winn on what an archivist is for",
+      "text": "The network's memory is what distinguishes it from a mob. A mob acts and forgets. The network acts and records. In fourteen years of keeping the Orphan Roads' records, what the records provide: the history of what was done, who authorized it, who executed it, what the result was, and what was owed afterward. The debt-and-credit structure of the network only functions if the records are accurate. In fourteen years, the records have been accurate. The network's credit structure rests on that accuracy.",
+      "keywords": ["network's","memory","what","distinguishes","it","from","mob","mob","acts","forgets"]
+    },
+    {
+      "id": "rook_1",
+      "source": "Winn on Rook",
+      "text": "Rook leads the Orphan Roads and the records I keep are what Rook uses to assess the network's current state. In eleven years of providing records to Rook's decision-making, what Rook asks of the records: not the history for its own sake but the current obligations — what is owed to whom, by whom, by when. In eleven years, the records I maintain and the questions Rook asks have shaped the records toward the actionable: what the network owes and what is owed to the network.",
+      "keywords": ["rook","leads","orphan","roads","records","keep","what","rook","uses","assess"]
+    },
+    {
+      "id": "mira_1",
+      "source": "Winn on Mira",
+      "text": "Mira operates the network's intelligence function. In nine years of the archivist-intelligence relationship, what Mira provides to the records: the current external intelligence that contextualizes the historical record. The historical record tells what happened. Mira's intelligence tells what is happening. In nine years, the two functions together produce the complete picture: where the network stands based on what it has done and what is currently being done around it.",
+      "keywords": ["mira","operates","network's","intelligence","function","nine","years","archivist-intelligence","relationship","what"]
+    },
+    {
+      "id": "wick_1",
+      "source": "Winn on Wick",
+      "text": "Wick runs messages that the records track. In seven years of Wick's message-running function intersecting with the archive, what the archive's record of Wick's deliveries provides: the delivery confirmation record. A message was sent, a message was delivered, a message was acknowledged. The three-part record of each delivery is the evidence that the communication was received. In seven years, the three-part record has been required in two disputes about whether a specific message reached its recipient.",
+      "keywords": ["wick","runs","messages","records","track","seven","years","wick's","message-running","function"]
+    },
+    {
+      "id": "quell_1",
+      "source": "Winn on Quell",
+      "text": "Quell produces documents for the network. In five years of the archive's relationship with Quell's document production, what the archive records about Quell's work: the document produced, the purpose it served, and the network's obligation for having requested it. In five years, the archive's record of Quell's document production has been relevant in one specific instance: when a document Quell produced was later questioned. The archive's record of the original authorization resolved the question of who had requested the document.",
+      "keywords": ["quell","produces","documents","network","five","years","archive's","relationship","quell's","document"]
+    },
+    {
+      "id": "brig_1",
+      "source": "Winn on Brig",
+      "text": "Brig moves goods and the records track what moved and where. In eight years of Brig's commerce intersecting with the Orphan Roads, what the archive records about Brig's movement function: the inventory, the origin, the destination, the value, and the commission the network received. In eight years, Brig's movement record is the most detailed commercial record in the archive because Brig's work intersects with the network's commercial function most consistently.",
+      "keywords": ["brig","moves","goods","records","track","what","moved","where","eight","years"]
+    },
+    {
+      "id": "what_winn_holds_1",
+      "source": "Winn on what fourteen years of network archiving holds",
+      "text": "In fourteen years, the archive contains information that would be dangerous in other hands. The record of what the network has done is also the record of what the network's members have done. The network's members exist in some tension with the formal authorities. In fourteen years, the archive has never been accessed by the formal authorities. In fourteen years, if the archive were accessed by the formal authorities, a significant number of the network's members would face accountability for historical actions. In fourteen years, protecting the archive is not bureaucratic work. It's the network's protection.",
+      "keywords": ["fourteen","years","archive","contains","information","would","be","dangerous","other","hands"]
+    },
+    {
+      "id": "fourteen_years_1",
+      "source": "Winn on fourteen years as the Orphan Roads' archivist",
+      "text": "In fourteen years, the archive has grown from a collection of notes in a locked box to a structured system of records that the network's leadership uses to manage obligations. In fourteen years, what the archive has become is the network's institutional memory: what was promised, what was delivered, what is outstanding. In fourteen years, the network's current state can be read from the archive. The archive and the network are not separate things. The archive is the network's self-knowledge.",
+      "keywords": ["fourteen","years","archive","grown","from","collection","notes","locked","box","structured"]
+    }
+  ]
+}

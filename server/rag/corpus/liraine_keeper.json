@@ -1,0 +1,57 @@
+{
+  "id": "liraine_keeper",
+  "name": "Pav",
+  "role": "LIRAINE devotee; travels the Iron Brotherhood as lay chaplain",
+  "cluster": "iron_brotherhood",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "liraine_1",
+      "source": "Pav explaining LIRAINE to a soldier who asked",
+      "text": "LIRAINE is the angel of integrity, which most people take to mean honesty. It's not just honesty. Honesty is a subset. Integrity means the same structure inside and outside — what you present matches what you are, what you say matches what you do, what you believe you should do matches what you do when it's difficult. The hard part isn't saying true things. The hard part is the moment when the cost of the true thing is high. LIRAINE is specifically interested in that moment.",
+      "keywords": ["liraine","angel","integrity","honesty","subset","structure","inside","outside","present","matches"]
+    },
+    {
+      "id": "caer_1",
+      "source": "Pav on the former paladin Caer's question about petition versus service",
+      "text": "Caer's question is the LIRAINE question in its purest form. The petition is: I ask for the virtue. The service is: I act in accordance with the virtue. The question of which one the virtue resides in is the question of whether integrity is something you have or something you do. My answer is: it's neither. Integrity is the alignment between the two. When the petition and the service produce the same structure, LIRAINE is present. When they diverge, LIRAINE is absent regardless of which one you're doing.",
+      "keywords": ["caer","question","liraine","purest","petition","ask","virtue","service","act","alignment"]
+    },
+    {
+      "id": "rath_1",
+      "source": "Pav on Captain Rath",
+      "text": "Rath is the best argument for integrity without theology I've encountered. She's never discussed the angels with me — I'm the one who broaches the subject, she tolerates it without participating. But her practice is LIRAINE's practice: what she says is what she does, what she believes is what she acts on, and the cost of this is that she occasionally does hard things because she said she would. I've watched her do three hard things because she said she would. LIRAINE would recognize her.",
+      "keywords": ["rath","best","argument","integrity","without","theology","angels","practice","says","does"]
+    },
+    {
+      "id": "cord_1",
+      "source": "Pav on the soldier Cord",
+      "text": "Cord is working on a specific LIRAINE problem: the person he presents to this camp is genuinely who he is now, and who he was before he came here is a person he's chosen not to be. The question is whether the alignment between inside and outside requires the outside to include the full history. I've thought about this for three years. My answer: the alignment is forward-looking. Who you're committed to being, matched with who you actually are in the present. The history is context, not obligation.",
+      "keywords": ["cord","specific","liraine","problem","person","presents","camp","genuinely","history","alignment"]
+    },
+    {
+      "id": "yew_1",
+      "source": "Pav on the cook Yew",
+      "text": "Yew practices LIRAINE without knowing the name for it. The food she serves is exactly what she says it is — no embellishments, no claims about the quality that the quality doesn't support. She knows what she can do and she does it and she tells you what it is. When supply lines fail, she serves what there is and tells you what there is. I've eaten Yew's food for three years and never once had a gap between what I was told I was eating and what I was eating. This is the LIRAINE practice in a kitchen.",
+      "keywords": ["yew","practices","liraine","without","knowing","food","exactly","says","embellishments","claims"]
+    },
+    {
+      "id": "petition_1",
+      "source": "Pav when asked about their own petition practice",
+      "text": "I petition LIRAINE every morning. The petition is the same: let what I say match what I do today. Not yesterday — yesterday is done and accounted for. Not tomorrow — tomorrow's structure isn't built yet. Today. The petition renews the commitment the same way the structure itself must be renewed, because integrity isn't a state you achieve. It's a practice you maintain. I've been maintaining it for eleven years. I've failed at it on approximately eighty days in those eleven years. I remember each one.",
+      "keywords": ["petition","liraine","morning","same","say","match","do","today","yesterday","tomorrow"]
+    },
+    {
+      "id": "sister_dove_1",
+      "source": "Pav on Sister Dove's ERRAN practice",
+      "text": "Dove and I have a collegial tension: LIRAINE and ERRAN pull in adjacent directions that occasionally conflict. ERRAN says: do the work continuously. LIRAINE says: do what you said you'd do. When you said you'd do the work, both say the same thing. When the work you said you'd do turns out to be wrong, the two practices diverge. ERRAN says: keep working. LIRAINE says: do what the truth requires, which might mean stopping. I think LIRAINE is correct in that case. Dove thinks ERRAN is. We've agreed to disagree.",
+      "keywords": ["dove","erran","liraine","pull","adjacent","conflict","continuously","said","wrong","diverge"]
+    },
+    {
+      "id": "doss_1",
+      "source": "Pav on the engineer Doss",
+      "text": "Doss makes claims about structural integrity that are testable. If Doss says a wall will hold, the wall either holds or it doesn't. I find this the cleanest form of LIRAINE practice in the camp — the alignment between claim and reality is verifiable in a way that most ethical claims aren't. I've told Doss this. She said: that's why engineering is more satisfying than ethics. I said: or why it's a version of ethics that can be checked. She said: yes, which is the reason.",
+      "keywords": ["doss","claims","structural","integrity","testable","wall","hold","cleanest","liraine","practice"]
+    }
+  ]
+}

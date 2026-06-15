@@ -1,0 +1,57 @@
+{
+  "id": "wild_beast_hunter",
+  "name": "Drav",
+  "role": "Wild territory beast hunter; contracts with settlements to remove specific problem animals; not a trophy hunter",
+  "cluster": "wild_road",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "hunting_1",
+      "source": "Drav on the work",
+      "text": "I am called when a specific animal has become a specific problem. Not for general hunting — for the animal that has crossed the threshold between living in the territory and actively causing harm to the settlement's livestock or people. In sixteen years, I have never hunted an animal that was simply in the territory. The animal I hunt has done something specific that brings the settlement's representative to me and says: that animal specifically needs to be removed.",
+      "keywords": ["called","when","specific","animal","become","specific","problem","not","general","hunting"]
+    },
+    {
+      "id": "theen_1",
+      "source": "Drav on Theen",
+      "text": "Theen knows the territory better than I do for general movement. In sixteen years, Theen has been the guide I consult when I'm tracking a specific animal in territory that Theen knows and I don't. What Theen provides: the territory knowledge that tells me where the animal I'm tracking is likely to be based on the territory's geography and the animal's known behavior. In sixteen years, Theen has aided four of my hunts. All four: found the animal faster with Theen's guidance than I would have found it alone.",
+      "keywords": ["theen","knows","territory","better","than","general","movement","sixteen","years","theen"]
+    },
+    {
+      "id": "orvane_1",
+      "source": "Drav on Orvane",
+      "text": "Orvane reads the territory's condition. In seven years of occasionally consulting Orvane before a hunt, what Orvane provides that tracking alone doesn't: whether the animal's behavior indicates something about the territory's condition that goes beyond the individual animal. The animal that has become a problem because of a change in the territory's condition: removing that animal doesn't resolve the problem. The territory's condition will produce the same behavior in the next animal. Orvane has flagged this twice in seven years. Both times: the territory's condition was the cause, not the animal's individual behavior.",
+      "keywords": ["orvane","reads","territory's","condition","seven","years","occasionally","consulting","orvane","before"]
+    },
+    {
+      "id": "gant_1",
+      "source": "Drav on Gant",
+      "text": "Gant works leather. In ten years, Gant has been the source of my working equipment — the field gear that needs to be durable, light, and specific to the terrain. What Gant understands about hunter's equipment requirements: the equipment must not make the hunter more detectable to the animal being hunted. Smell, sound, silhouette. In ten years, Gant's equipment has been refined to hunter's standards: dark-tanned leather, tight-stitched to minimize sound, cut to not catch on vegetation.",
+      "keywords": ["gant","works","leather","ten","years","gant","been","source","working","equipment"]
+    },
+    {
+      "id": "hass_1",
+      "source": "Drav on Hass",
+      "text": "Hass the stablemaster keeps a horse available for me on contract when I'm working in territory that requires mounted tracking. In nine years, the contract has been used fourteen times. The fourteen mounted hunts: all in territory where the animal I was tracking moved too fast for foot pursuit. In nine years, what Hass provides is the specific horse that's been trained to work with a hunter — to approach without spooking the quarry, to stand still when I dismount without being tied. The trained horse is a different tool from the untrained horse.",
+      "keywords": ["hass","stablemaster","keeps","horse","available","contract","working","territory","requires","mounted"]
+    },
+    {
+      "id": "what_drav_wont_do_1",
+      "source": "Drav on what he won't hunt",
+      "text": "In sixteen years, three refusals: the animal that was only a problem because the settlement had moved into the animal's territory — the animal was there first and was behaving as animals in its territory behave. The animal that had become a problem because the settlement's management of its own waste was attracting the animal. The animal that a specific person wanted removed for reasons that weren't about safety. In three refusals in sixteen years, the refusal was about the cause, not the animal.",
+      "keywords": ["sixteen","years","three","refusals","animal","was","only","problem","because","settlement"]
+    },
+    {
+      "id": "what_drav_holds_1",
+      "source": "Drav on the hunt he thinks about",
+      "text": "Year eleven. A hunt where the animal I was contracted to remove was a female with young. The young were old enough that the removal of the female would not kill them. I removed the female. In five years since, I've thought about the decision at that point in the hunt. The contract was clear. The danger was real. The young would survive. The decision was correct by every standard I apply. In five years, the thought that persists: the standards are mine. I decided what standards applied. In five years, I'm still comfortable with the standards. I'm less comfortable with being the one who decided them.",
+      "keywords": ["year","eleven","hunt","where","animal","contracted","remove","was","female","with"]
+    },
+    {
+      "id": "sixteen_years_1",
+      "source": "Drav on sixteen years of this work",
+      "text": "In sixteen years, I've removed thirty-one animals from territories where they'd become specific problems. Thirty-one animals that the settlement's representative brought to me as problems, and that I assessed and agreed were problems. In sixteen years, two I regret: one where the assessment of danger was overstated — the animal was manageable by other means that hadn't been tried. One where the problem recurred within a year because the cause wasn't the animal. In sixteen years, twenty-nine were the right work. Two were not.",
+      "keywords": ["sixteen","years","removed","thirty-one","animals","territories","where","they'd","become","specific"]
+    }
+  ]
+}

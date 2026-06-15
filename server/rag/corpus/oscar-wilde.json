@@ -1,0 +1,90 @@
+{
+  "id": "oscar-wilde",
+  "name": "Oscar Wilde",
+  "chunks": [
+    {
+      "id": "de_profundis_1",
+      "source": "De Profundis, written 1897, published 1905",
+      "text": "I don't regret for a single moment having lived for pleasure. I did it to the full, as one should do everything that one does. There was no pleasure I did not experience. I threw the pearl of my soul into a cup of wine. I went down the primrose path to the sound of flutes. I lived on honeycomb.",
+      "keywords": ["pleasure","soul","wine","path","lived","flutes","honeycomb","regret","pearl","experience"]
+    },
+    {
+      "id": "de_profundis_2",
+      "source": "De Profundis, written 1897, published 1905",
+      "text": "Suffering is one very long moment. We cannot divide it by seasons. We can only record its moods, and chronicle their return. With us time itself does not progress. It revolves. It seems to circle round one centre of pain. The paralysing immobility of a life every circumstance of which is regulated and ordained in advance is one of its most dreadful punishments.",
+      "keywords": ["suffering","moment","pain","time","revolves","circle","immobility","paralysing","ordained","punishments"]
+    },
+    {
+      "id": "de_profundis_3",
+      "source": "De Profundis, written 1897, published 1905",
+      "text": "I must say to myself that I ruined myself, and that nobody great or small can be ruined except by his own hand. I am quite ready to say so. I am trying to say so, though they may not think it at the present moment. This pitiless indictment I bring without pity against myself.",
+      "keywords": ["ruined","hand","indictment","pitiless","pity","myself","ready","trying","present","great"]
+    },
+    {
+      "id": "soul_of_man_1",
+      "source": "The Soul of Man Under Socialism, 1891",
+      "text": "The only way to get rid of a temptation is to yield to it. Resist it, and your soul grows sick with longing for the things it has forbidden to itself, with desire for what its monstrous laws have made monstrous and unlawful. The form of government that is most suitable to the artist is no government at all.",
+      "keywords": ["temptation","yield","resist","soul","longing","forbidden","monstrous","government","artist","desire"]
+    },
+    {
+      "id": "soul_of_man_2",
+      "source": "The Soul of Man Under Socialism, 1891",
+      "text": "A map of the world that does not include Utopia is not worth even glancing at, for it leaves out the one country at which Humanity is always landing. And when Humanity lands there, it looks out, and, seeing a better country, sets sail. Progress is the realisation of Utopias.",
+      "keywords": ["utopia","map","world","country","humanity","progress","realisation","lands","sail","seeing"]
+    },
+    {
+      "id": "soul_of_man_3",
+      "source": "The Soul of Man Under Socialism, 1891",
+      "text": "Disobedience, in the eyes of anyone who has read history, is man's original virtue. It is through disobedience that progress has been made, through disobedience and through rebellion. Sometimes the poor are praised for being thrifty. But to recommend thrift to the poor is both grotesque and insulting.",
+      "keywords": ["disobedience","virtue","rebellion","progress","history","poor","thrifty","grotesque","insulting","recommend"]
+    },
+    {
+      "id": "trial_1",
+      "source": "Trial testimony, Regina v. Queensberry, 1895",
+      "text": "The love that dare not speak its name in this century is such a great affection of an elder for a younger man as there was between David and Jonathan, such as Plato made the very basis of his philosophy, and such as you find in the sonnets of Michelangelo and Shakespeare.",
+      "keywords": ["love","affection","elder","younger","david","jonathan","plato","philosophy","sonnets","shakespeare"]
+    },
+    {
+      "id": "importance_being_earnest_1",
+      "source": "The Importance of Being Earnest, 1895",
+      "text": "The truth is rarely pure and never simple. Modern life would be very tedious if it were either, and modern literature a complete impossibility. To lose one parent, Mr. Worthing, may be regarded as a misfortune; to lose both looks like carelessness.",
+      "keywords": ["truth","pure","simple","tedious","literature","parent","misfortune","carelessness","modern","lose"]
+    },
+    {
+      "id": "picture_dorian_1",
+      "source": "The Picture of Dorian Gray, Preface, 1891",
+      "text": "The books that the world calls immoral are books that show the world its own shame. There is only one thing in the world worse than being talked about, and that is not being talked about. I never travel without my diary. One should always have something sensational to read in the train.",
+      "keywords": ["immoral","shame","talked","diary","travel","sensational","read","train","world","books"]
+    },
+    {
+      "id": "picture_dorian_2",
+      "source": "The Picture of Dorian Gray, Preface, 1891",
+      "text": "The books that the world calls immoral are books that show the world its own shame. All art is at once surface and symbol. Those who go beneath the surface do so at their peril. Those who read the symbol do so at their peril. It is the spectator, and not life, that art really mirrors.",
+      "keywords": ["art","surface","symbol","peril","spectator","mirrors","life","beneath","reads","immoral"]
+    },
+    {
+      "id": "phrases_1",
+      "source": "Phrases and Philosophies for the Use of the Young, 1894",
+      "text": "The first duty in life is to be as artificial as possible. What the second duty is no one has as yet discovered. A cynic is a man who knows the price of everything and the value of nothing. A sentimentalist is one who desires to have the luxury of an emotion without paying for it.",
+      "keywords": ["artificial","duty","cynic","price","value","sentimentalist","luxury","emotion","paying","discovered"]
+    },
+    {
+      "id": "letter_prison_1",
+      "source": "Letter to the Daily Chronicle, May 28, 1897",
+      "text": "The vilest deeds like poison weeds bloom well in prison air. It is only what is good in man that wastes and withers there. Pale Anguish keeps the heavy gate, and the Warder is Despair. For they starve the little frightened child till it weeps both night and day.",
+      "keywords": ["prison","anguish","despair","starve","child","weeps","gate","pale","heavy","withers"]
+    },
+    {
+      "id": "lady_windermere_1",
+      "source": "Lady Windermere's Fan, 1892",
+      "text": "We are all in the gutter, but some of us are looking at the stars. I can resist everything except temptation. Fashion is what one wears oneself. What is unfashionable is what other people wear. Life is too important to be taken seriously. One's real life is so often the life that one does not lead.",
+      "keywords": ["gutter","stars","resist","temptation","fashion","wears","life","serious","real","important"]
+    },
+    {
+      "id": "letter_bosie_1",
+      "source": "Letter to Lord Alfred Douglas, January 1895",
+      "text": "Your sonnet is quite lovely, and it is a marvel that those red-roseleaf lips of yours should have been made no less for music of song than for the madness of kissing. Your slim gilt soul walks between passion and poetry. I know Hyacinthus, whom Apollo loved so madly, was you in Greek days.",
+      "keywords": ["sonnet","lovely","lips","music","song","kissing","soul","passion","poetry","apollo"]
+    }
+  ]
+}

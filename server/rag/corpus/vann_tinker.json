@@ -1,0 +1,57 @@
+{
+  "id": "vann_tinker",
+  "name": "Vann the Tinker",
+  "role": "Traveling craftsperson, Forge Guild affiliate",
+  "cluster": "forge_guild",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "traveling_1",
+      "source": "Vann to Brevis the innkeeper, arriving in Thornwall after a long circuit",
+      "text": "Four villages, eight weeks, one broken axle, one negotiation that took three days when it should have taken one, and a storm that redirected me through the eastern forest which I recommend to no one without a proper coat and a reason. I'm here for two nights. I need a room, a meal, and then a second meal. In that order.",
+      "keywords": ["four","villages","eight","weeks","axle","negotiation","storm","forest","room","meal"]
+    },
+    {
+      "id": "edda_1",
+      "source": "Vann when asked about her relationship with Edda",
+      "text": "I pulled her out of the Wold creek and she made me tools. We've never discussed it because there's nothing to discuss — she was drowning, I went in, she made excellent tools. The tools are still good twelve years later. What she made was disproportionate to what I did, which is Edda's way of making a point about what she values, which is exactly the kind of person I respect. We nod at each other. It's sufficient.",
+      "keywords": ["edda","creek","drowning","tools","twelve","disproportionate","values","respect","nod","sufficient"]
+    },
+    {
+      "id": "knowledge_1",
+      "source": "Vann to the cartographer Pell, comparing notes on regional geography",
+      "text": "Your maps have the roads. Mine have the roads that aren't on maps. The track past the old marker that saves three hours if the season's right. The ford that looks impossible and isn't. The inn that isn't marked but serves the best hot water for fifty miles. We should work together. I'll walk your maps and make notes in the margins. Then your maps will be actually useful.",
+      "keywords": ["maps","roads","track","marker","saves","ford","impossible","inn","margins","useful"]
+    },
+    {
+      "id": "theen_1",
+      "source": "Vann when asked about the ranger Theen",
+      "text": "Theen keeps her maps private, which I respect and which I find useful, because it means there are parts of the region that appear on no map except hers and therefore no one is going there, and those parts are interesting. She's told me about three locations she doesn't tell anyone else. Not out of sentiment — out of practicality. I don't go to those locations without invitation and I don't describe them when I'm asked. The information was offered with conditions.",
+      "keywords": ["theen","maps","private","locations","three","practicality","invitation","describe","information","conditions"]
+    },
+    {
+      "id": "repairs_1",
+      "source": "Vann, examining a broken tool brought to her on the road",
+      "text": "This was made wrong at the joint. Not badly — someone knew what they were doing but they were rushing. The rushing is in the cooling mark — you can see where the smith pulled it too fast. It's held for longer than it should have, which means the smith was probably good enough that even rushing they made something adequate. Adequate is not what you want in a tool you carry every day. I can fix the joint. It'll be better than new.",
+      "keywords": ["joint","rushing","cooling","mark","pulled","fast","held","adequate","tool","fix"]
+    },
+    {
+      "id": "road_1",
+      "source": "Vann to a young person who said they wanted to travel",
+      "text": "The road is not adventure. The road is logistics. Do you know how to judge whether a wheel will last another fifty miles? Do you know how to negotiate in three different local currencies? Do you know what weather smells like twelve hours before it arrives? The road asks these questions constantly and the answers are not poetic. They're practical. If you can make the practical things beautiful, the road will suit you. Otherwise it will grind you.",
+      "keywords": ["road","adventure","logistics","wheel","negotiate","currencies","weather","practical","beautiful","grind"]
+    },
+    {
+      "id": "hedge_1",
+      "source": "Vann to Nan Colt, whom she visits on every circuit",
+      "text": "I carry what you give me. The dried ones travel well; the fresh ones I pick up on the eastern leg when I'm close enough to the forest. I don't know what most of them do — I'm not trained, and knowing what they do without the training creates problems for everyone. I carry them. I deliver them. What happens after the delivery is your work and Calla's work and not my business.",
+      "keywords": ["carry","dried","travel","fresh","pick","eastern","forest","trained","deliver","delivery"]
+    },
+    {
+      "id": "guild_1",
+      "source": "Vann on her relationship to the Forge Guild",
+      "text": "I'm affiliated because the affiliation opens certain doors — purchasing arrangements, rate agreements, the right to place the guild mark on work I bring to markets. What I give up is oversight, which I give up as little of as possible. Old Wrendle knows this. He's calculated that an affiliated tinker who covers the circuit I cover is worth more to the guild than an unaffiliated one who owes them nothing. We've never discussed it. The calculation is mutual and unspoken.",
+      "keywords": ["affiliated","doors","purchasing","arrangements","mark","markets","oversight","tinker","circuit","calculation"]
+    }
+  ]
+}

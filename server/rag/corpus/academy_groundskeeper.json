@@ -1,0 +1,57 @@
+{
+  "id": "academy_groundskeeper",
+  "name": "Torv",
+  "role": "Academy groundskeeper; maintains the physical campus that the Academy's intellectual work happens within",
+  "cluster": "academy_of_runes",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "groundskeeper_1",
+      "source": "Torv on the Academy groundskeeper's function",
+      "text": "In twenty-six years of keeping the Academy's grounds, what the groundskeeper is in the Academy's operation: the person who maintains the physical environment that the intellectual work depends on. In twenty-six years, the theorist who works in a maintained space doesn't think about the maintenance. The theorist who works in a space that has been allowed to deteriorate thinks about the deterioration. In twenty-six years, the groundskeeper's success is the invisibility of the maintenance. In twenty-six years, the Academy's thinkers have been thinking.",
+      "keywords": ["twenty-six","years","keeping","academy's","grounds","what","groundskeeper","academy's","operation","person"]
+    },
+    {
+      "id": "burr_1",
+      "source": "Torv on Burr",
+      "text": "Burr leads the Academy and the Academy's rector has never in twenty-four years told me that the grounds required attention that I hadn't already given. In twenty-four years of maintaining the Academy's campus to Burr's implicit standard, what the two-and-a-half-decade absence of complaint produces: the evidence that the standard and the maintenance are aligned. In twenty-four years, Burr has mentioned the grounds to me in a positive context four times. In twenty-four years, four positive mentions and no complaints. The groundskeeper's relationship with the rector is the relationship I would define as successful.",
+      "keywords": ["burr","leads","academy","academy's","rector","never","twenty-four","years","told","grounds"]
+    },
+    {
+      "id": "henn_1",
+      "source": "Torv on Henn",
+      "text": "Henn curates the Academy's library and the library building is the structure in my care that requires the most specific maintenance attention. In eighteen years of the Torv-Henn groundskeeper-librarian relationship, what the library's maintenance requirements are: the environmental stability that the historical documents require. In eighteen years, the moisture that affects the document storage, the light that affects the document preservation, the temperature variation that affects both — in eighteen years, the library's environment is the groundskeeper's most complex maintenance challenge. In eighteen years, no significant document loss attributable to environmental failure.",
+      "keywords": ["henn","curates","academy's","library","library","building","structure","care","requires","most"]
+    },
+    {
+      "id": "linn_1",
+      "source": "Torv on Linn",
+      "text": "Linn the rune calligrapher works in the space I maintain and the calligrapher's workspace has the most specific environmental requirements of any function in the Academy. In twelve years of maintaining Linn's workspace, what the calligrapher's work requires from the maintenance: the stability of the workspace's temperature and light that the calligraphy requires for precision. In twelve years, Linn has raised two workspace concerns with me. In twelve years, two concerns in twelve years, both addressed within the day. In twelve years, the calligraphy workspace is the maintenance priority that justifies the most immediate response.",
+      "keywords": ["linn","rune","calligrapher","works","space","maintain","calligrapher's","workspace","most","specific"]
+    },
+    {
+      "id": "wese_1",
+      "source": "Torv on Wese",
+      "text": "Wese is an Academy student who has helped with the grounds work twice during periods when I've needed assistance. In two years of knowing Wese through the grounds work, what the student-groundskeeper relationship reveals: the specific observation that Wese, who is preparing for the Academy's intellectual functions, approaches the physical work with the same attention that the intellectual work requires. In two years, that observation is the most interesting thing the grounds work has produced in several years. In two years, Wese might be one of the groundskeeper's observations that turns out to mean something.",
+      "keywords": ["wese","academy","student","helped","grounds","work","twice","periods","needed","assistance"]
+    },
+    {
+      "id": "what_torv_holds_1",
+      "source": "Torv on what twenty-six years of Academy grounds work holds",
+      "text": "In twenty-six years, what the grounds work has given me: the knowledge of what the Academy is as a physical place that no one else has. In twenty-six years, I've maintained every building, every path, every planted area, every physical feature of the Academy's campus. In twenty-six years, the Academy's physical environment is known to me in the specific way that the person who maintains a place knows it — not through study or design, but through the attention that maintenance requires. In twenty-six years, I know this place.",
+      "keywords": ["twenty-six","years","what","grounds","work","given","knowledge","what","academy","physical"]
+    },
+    {
+      "id": "what_the_groundskeeper_sees_1",
+      "source": "Torv on what the groundskeeper sees that others don't",
+      "text": "In twenty-six years, what the groundskeeper sees that the Academy's intellectual functions don't: the Academy's scholars in the moments before and after the intellectual work. In twenty-six years, the scholar walking the grounds at dawn before the day's work has a different presence from the scholar walking at dusk after the day's work. In twenty-six years, the groundskeeper's observation post — always present, never in the conversation — has produced an education in what sustained intellectual work does to people over time. In twenty-six years, I've learned what serious work looks like from the outside.",
+      "keywords": ["twenty-six","years","what","groundskeeper","sees","academy's","intellectual","functions","don't","academy's"]
+    },
+    {
+      "id": "twenty_six_years_1",
+      "source": "Torv on twenty-six years as the Academy's groundskeeper",
+      "text": "In twenty-six years, the Academy's intellectual work and my grounds work have shared the same physical space. In twenty-six years, the intellectual work produces the Academy's reputation and the results that define what the Academy is. The grounds work produces the environment the intellectual work happens in. In twenty-six years, the relationship is not equal. In twenty-six years, I know the relationship is not equal. In twenty-six years, the grounds work is the support for the work that matters. In twenty-six years, I've been glad to do it.",
+      "keywords": ["twenty-six","years","academy's","intellectual","work","grounds","work","shared","same","physical"]
+    }
+  ]
+}

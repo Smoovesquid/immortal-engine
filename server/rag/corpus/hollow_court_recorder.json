@@ -1,0 +1,57 @@
+{
+  "id": "hollow_court_recorder",
+  "name": "Veth the Second",
+  "role": "Hollow Court formal recorder; distinct from the Covenant's Veth; keeps the Court's decisions in permanent record",
+  "cluster": "hollow_court",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "recorder_1",
+      "source": "Veth the Second on the recorder's function",
+      "text": "In twelve years as the Hollow Court's recorder, what the recorder does: converts the Court's oral deliberations into the permanent written record that the Court's decisions rest on. The decision that isn't recorded is the decision that can be disputed. The decision that's recorded is the decision that exists. In twelve years, what I produce is the Court's institutional existence in written form.",
+      "keywords": ["twelve","years","hollow","court's","recorder","what","recorder","does","converts","court's"]
+    },
+    {
+      "id": "sel_1",
+      "source": "Veth the Second on Sel",
+      "text": "Sel leads the Hollow Court and the record I keep is the record of Sel's deliberations and decisions. In ten years of recording Sel's governance, what the record shows about Sel's decision process: the deliberation is extensive. Sel does not decide quickly. The record of a single decision across the ten years has an average deliberation length of four sessions. In ten years, the four-session average has produced decisions that are more often correct on subsequent review than the one-session decisions that earlier Court leadership produced.",
+      "keywords": ["sel","leads","hollow","court","record","keep","record","sel's","deliberations","decisions"]
+    },
+    {
+      "id": "eld_1",
+      "source": "Veth the Second on Eld",
+      "text": "Eld is the Court's historian and my record is the raw material Eld works with. In nine years of the recorder-historian relationship, what the two functions produce together: the live record and the analyzed record. I produce the record of what happened. Eld produces the interpretation of what it means in context of the Court's history. In nine years, the two functions are distinct but complementary — I give Eld the accurate record, Eld gives the record meaning.",
+      "keywords": ["eld","court's","historian","record","raw","material","eld","works","nine","years"]
+    },
+    {
+      "id": "cree_1",
+      "source": "Veth the Second on Cree",
+      "text": "Cree is the Court's counselor and the person who refers to my records most frequently. In eight years of Cree's use of the Court's records, what Cree uses the records for: the precedent for current decisions. The decision the Court made in year three that is relevant to the decision the Court is making now. In eight years, Cree's use of the records is the primary use of the record beyond its initial production. In eight years, the record's use by Cree is proof that the record is what it should be — the accessible precedent for current governance.",
+      "keywords": ["cree","court's","counselor","person","refers","records","most","frequently","eight","years"]
+    },
+    {
+      "id": "veyl_1",
+      "source": "Veth the Second on Veyl",
+      "text": "Veyl the oracle provides readings that are sometimes referenced in the Court's deliberations and therefore appear in my record. In six years of recording sessions where Veyl's readings were part of the deliberation, what the records show about how Veyl's readings are used: the reading is recorded as context for the deliberation, not as the determination of the decision. In six years, the Court has never recorded a decision as 'based on the oracle's reading.' The reading appears as a factor among factors. In six years, the record is the evidence of the Court's treatment of the oracle function.",
+      "keywords": ["veyl","oracle","provides","readings","sometimes","referenced","court's","deliberations","appear","record"]
+    },
+    {
+      "id": "maret_1",
+      "source": "Veth the Second on Maret",
+      "text": "Maret manages the Court's external relationships and the negotiations Maret conducts appear in my record as outcomes rather than process. In seven years of recording Maret's negotiation outcomes, what the record shows: the final terms that Maret brought back to the Court for ratification. What the record doesn't show: the negotiation that produced the terms. In seven years, the record of the outcome and the record of the process are two different documents — I hold the former, the latter lives only in memory and the parties' own records.",
+      "keywords": ["maret","manages","court's","external","relationships","negotiations","maret","conducts","appear","record"]
+    },
+    {
+      "id": "what_veth_second_holds_1",
+      "source": "Veth the Second on what twelve years of Court records holds",
+      "text": "In twelve years, the record I've produced is approximately forty thousand pages of deliberation, decision, and ratification. Forty thousand pages that contain the Hollow Court's institutional life across twelve years. In twelve years, what the record holds that the deliberation didn't know it was producing: the pattern across decisions that is visible only in the record and not in any single session. In twelve years, I've read the record more thoroughly than anyone because I've produced it. What the pattern shows: the Court is better at decisions that don't require urgency than at decisions that do.",
+      "keywords": ["twelve","years","record","produced","approximately","forty","thousand","pages","deliberation","decision"]
+    },
+    {
+      "id": "twelve_years_1",
+      "source": "Veth the Second on twelve years as the Hollow Court's recorder",
+      "text": "In twelve years, the recorder's function has been the most invisible function in the Court's visible structure. The deliberations are visible to the Court members. The decisions are visible to those they affect. The record is visible to no one, unless they come to look at it. In twelve years, three people outside the Court have come to look at the record. In twelve years, the record being unread by those outside the Court is not the record's failure. It's the record's function: the record exists to be read when it's needed. In twelve years, it's been needed three times.",
+      "keywords": ["twelve","years","recorder's","function","been","most","invisible","function","court's","visible"]
+    }
+  ]
+}

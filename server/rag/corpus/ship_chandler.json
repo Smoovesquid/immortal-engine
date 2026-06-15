@@ -1,0 +1,57 @@
+{
+  "id": "ship_chandler",
+  "name": "Noll",
+  "role": "Ship chandler; supplies captains with what ships need between voyages",
+  "cluster": "harbor_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "chandler_1",
+      "source": "Noll on what a ship chandler does",
+      "text": "The ship chandler supplies what ships need that the ship doesn't make itself. Food, lamp oil, rope, canvas, tar, tools, medical supplies, the hundred small things that a ship burns through on a voyage and replenishes in port. I'm not the cargo. I'm what makes the cargo-carrying possible. Every ship that leaves this harbor leaves with something from me. I've been supplying ships for thirteen years. I know the harbor's fleet by what each ship needs.",
+      "keywords": ["ship","chandler","supplies","what","ships","need","ship","doesn't","make","itself"]
+    },
+    {
+      "id": "harrow_1",
+      "source": "Noll on Captain Harrow",
+      "text": "Harrow is my oldest account in the harbor fleet. Twelve years of the eastern run produces a predictable supply need — I know what the Stormtide requires before Harrow asks. The lamp oil, the specific food preservation approach for the eastern passage's duration, the replacement canvas specifications for the eastern route's sail stress. In twelve years, Harrow has asked for something outside the established list three times. All three times, the request was for a situation that had never come up before.",
+      "keywords": ["harrow","oldest","account","harbor","fleet","twelve","years","eastern","run","produces"]
+    },
+    {
+      "id": "moll_1",
+      "source": "Noll on Captain Moll",
+      "text": "Moll's northern route requires different supplies than Harrow's eastern run. Different cold-weather food storage, different lamp oil quantity for the shorter winter days, different hull treatment for the shallower northern waters. In eight years of supplying Moll, I've developed the northern route's supply list separately from the eastern list. The two lists are about sixty percent the same and forty percent route-specific. The route-specific forty percent is where the knowledge is.",
+      "keywords": ["moll","northern","route","requires","different","supplies","harrow","eastern","run","different"]
+    },
+    {
+      "id": "twinn_1",
+      "source": "Noll on Twinn",
+      "text": "I buy rope from Twinn for the ships' resupply needs. Rope is the highest-volume item in the chandlery — ships consume rope constantly. What I need from Twinn: consistent specifications across a large volume, on a regular supply schedule. In ten years of buying from Twinn, the specifications have been consistent and the schedule has been reliable with two exceptions. Both exceptions were weather-related manufacturing delays. Both delays were communicated before they became supply failures. The communication made them problems I could manage.",
+      "keywords": ["buy","rope","twinn","ships'","resupply","needs","rope","highest-volume","item","chandlery"]
+    },
+    {
+      "id": "keris_1",
+      "source": "Noll on Keris",
+      "text": "Keris and I coordinate on ship arrival schedules so my resupply deliveries can meet the ships at the berth. The coordination has been running for thirteen years. What Keris provides: the arrival window for each ship. What I provide: the delivery before the ship needs to leave. The timing that fails us is weather delay — when a ship arrives late and my delivery is there and waits, which is fine, versus when a ship arrives early and I'm not ready, which has happened twice. Both times: I delivered to the anchored ship by small boat. Not ideal. Done.",
+      "keywords": ["keris","coordinate","ship","arrival","schedules","resupply","deliveries","meet","ships","berth"]
+    },
+    {
+      "id": "what_noll_holds_1",
+      "source": "Noll on the ship that didn't return",
+      "text": "Year seven. A ship I'd resupplied that left and didn't return. The loss of a ship means the loss of everyone on it. I knew the crew by supply need rather than by name — thirteen years of harbor chandlery produces a knowledge of ships more than sailors. After the ship was declared lost, I couldn't stop thinking about what I'd supplied and whether it was right. It was right. The supply was correct. The supply wasn't what went wrong. I still go through it sometimes. The supply was correct.",
+      "keywords": ["year","seven","ship","resupplied","left","didn't","return","loss","ship","means"]
+    },
+    {
+      "id": "what_chandling_is_1",
+      "source": "Noll on what chandlery is for",
+      "text": "Every ship that leaves leaves prepared. That's the chandler's function: to make departure possible by supplying what the departure requires. I'm not part of the voyage. The voyage happens without me. What I supply makes the voyage possible and then the voyage proceeds without me. In thirteen years I've enabled hundreds of voyages I've never been part of. The enabling is invisible after the departure. The ship doesn't carry my name. The lamp oil and the rope don't announce their source. They just work, which is the point.",
+      "keywords": ["every","ship","leaves","prepared","that's","chandler","function","make","departure","possible"]
+    },
+    {
+      "id": "thirteen_years_1",
+      "source": "Noll on thirteen years at the harbor",
+      "text": "The harbor fleet I know is not the same fleet that was here when I started. Ships come and go — the ownership changes, the captains change, the routes change. In thirteen years, three ships I regularly supplied have been retired. Two new ships have arrived. The fleet is continuous but the specific ships in it are not. The harbor is what's continuous. The fleet is the harbor's current population. I supply the current population. In thirteen years I've known seven populations of the same harbor.",
+      "keywords": ["harbor","fleet","know","not","same","fleet","was","here","when","started"]
+    }
+  ]
+}

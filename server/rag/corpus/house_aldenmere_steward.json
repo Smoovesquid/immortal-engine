@@ -1,0 +1,57 @@
+{
+  "id": "house_aldenmere_steward",
+  "name": "Vrenn",
+  "role": "Aldenmere house steward; runs the household's physical operations; Britta's operational counterpart",
+  "cluster": "house_aldenmere",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "steward_1",
+      "source": "Vrenn on what a steward does",
+      "text": "The steward is the household's operational layer. Everything physical in the house — the maintenance, the staff, the supply, the upkeep — is my responsibility. Britta sets the household's direction. I make the direction operational. In eight years as the Aldenmere steward, the division has worked because Britta knows the direction and I know the operation. When the division is working, the household operates without friction. When it breaks down: either I don't understand the direction or Britta doesn't understand the operational constraint.",
+      "keywords": ["steward","household's","operational","layer","everything","physical","house","maintenance","staff","supply"]
+    },
+    {
+      "id": "britta_1",
+      "source": "Vrenn on Britta Aldenmere",
+      "text": "Britta is the authority in this household. In eight years, I've understood the authority clearly: Britta's decision is the decision. My role is to implement the decision with the best available resources. What Britta trusts me to do: identify when the implementation has a constraint that the decision doesn't account for. What I do with that: bring it to Britta before the implementation is committed, not after. In eight years, Britta has revised a decision based on my constraint identification seven times. All seven revisions: the implementation became feasible.",
+      "keywords": ["britta","authority","household","eight","years","understood","authority","clearly","britta's","decision"]
+    },
+    {
+      "id": "davel_1",
+      "source": "Vrenn on Davel Aldenmere",
+      "text": "Davel manages the financial side of the household. I manage the operational side. The overlap: the operational decisions have financial consequences and the financial constraints affect the operational options. In eight years, Davel and I have had to align on a decision twelve times — occasions where the operational plan and the financial constraint were in tension. In all twelve: the alignment required one or both of us to adjust. The adjustment was always better than proceeding without it.",
+      "keywords": ["davel","manages","financial","side","household","manage","operational","side","overlap","operational"]
+    },
+    {
+      "id": "rem_1",
+      "source": "Vrenn on Rem",
+      "text": "Rem runs the kitchen. I run the household. The kitchen is part of the household. The overlap: when the kitchen requires something that affects the house's operation beyond the kitchen, or when the house's operation requires something that affects the kitchen. In eight years, the overlap has been managed through a weekly coordination meeting. What Rem and I coordinate: supply timing, staff availability, the occasions that require more from the kitchen and therefore more from the house. Eight years of weekly meetings and three occasions where the coordination failed — all three recoverable.",
+      "keywords": ["rem","runs","kitchen","run","household","kitchen","part","household","overlap","when"]
+    },
+    {
+      "id": "carr_1",
+      "source": "Vrenn on Carr Aldenmere",
+      "text": "Carr is the heir. In eight years of being the house steward while Carr grew up, I've watched the heir develop an understanding of how the house actually operates. What Carr understands now that Carr didn't at the start of my tenure: the household is a system that requires consistent attention to function. Carr asked me once to explain the stewardship. I gave a three-hour explanation. Carr listened to all of it. Carr said afterward: the house runs on details. I said: the house runs on the management of details. The distinction mattered to Carr.",
+      "keywords": ["carr","heir","eight","years","house","steward","while","carr","grew","up"]
+    },
+    {
+      "id": "what_stewardship_is_1",
+      "source": "Vrenn on what stewardship is",
+      "text": "Stewardship is the maintenance of a system that's larger than any individual who works in it. The Aldenmere household has operated for three generations before I arrived and will operate for three generations after I leave. My work: keeping the system functional in my time, in the form that the next steward inherits. In eight years, the changes I've made to how the house operates are changes that improved the system, not changes that optimized it for my tenure. The distinction is the steward's responsibility.",
+      "keywords": ["stewardship","maintenance","system","larger","than","any","individual","works","in","aldenmere"]
+    },
+    {
+      "id": "what_vrenn_holds_1",
+      "source": "Vrenn on what she carries from before her arrival",
+      "text": "The household I joined eight years ago had an operational history that preceded my arrival. Some of the practices I inherited were good. Some were not good. The ones that were not good: I changed them over the first two years, carefully, in ways that didn't disrupt the household while establishing better practices. The one practice I haven't changed: something the previous steward put in place that I don't fully understand but that the household seems to depend on. In eight years, I haven't found the right time to test what happens if I change it.",
+      "keywords": ["household","joined","eight","years","operational","history","preceded","arrival","some","practices"]
+    },
+    {
+      "id": "eight_years_1",
+      "source": "Vrenn on eight years as the Aldenmere steward",
+      "text": "In eight years, the Aldenmere household has operated without a significant failure. No supply crisis, no staff breakdown, no maintenance failure that became a disaster. The operational record is a record of avoided failures, which is what stewardship looks like from the inside. The success is invisible: everything worked. The working is what I'm paid for. In eight years of invisible working, the house has remained what it was when I arrived: a household that operates. The next eight years: the same.",
+      "keywords": ["eight","years","aldenmere","household","operated","without","significant","failure","no","supply"]
+    }
+  ]
+}

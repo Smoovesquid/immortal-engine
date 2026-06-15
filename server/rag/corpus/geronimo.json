@@ -1,0 +1,60 @@
+{
+  "id": "geronimo",
+  "name": "Geronimo",
+  "chunks": [
+    {
+      "id": "story_1",
+      "source": "Geronimo: His Own Story, dictated to S.M. Barrett, 1906",
+      "text": "I was born in No-doyohn Canyon, Arizona, June, 1829. In that country which lies around the headwaters of the Gila River I was reared. This range was our fatherland; among these mountains our wigwams were hidden; the scattered valleys contained our fields; the boundless prairies, stretching away on every side, were our pastures; the rocky caverns were our burying places.",
+      "keywords": ["born","canyon","mountains","wigwams","valleys","fields","prairies","pastures","caverns","fatherland"]
+    },
+    {
+      "id": "story_2",
+      "source": "Geronimo: His Own Story, dictated to S.M. Barrett, 1906",
+      "text": "I was never afraid to die. In battle I did not think of death. The Apache does not fear what he cannot avoid. The man who fears death has already died — his spirit has left him before his body follows. A man should die with his weapons in his hands, not begging for what the sky will give anyway.",
+      "keywords": ["afraid","die","battle","death","apache","fear","avoid","spirit","weapons","sky"]
+    },
+    {
+      "id": "story_3",
+      "source": "Geronimo: His Own Story, dictated to S.M. Barrett, 1906",
+      "text": "I cannot think that we are useless or God would not have created us. There is one God looking down on us all. We are all the children of one God. The sun, the darkness, the winds are all listening to what we have to say. To the white men all prayers are to the same God.",
+      "keywords": ["god","created","children","sun","darkness","winds","listening","prayers","white","useless"]
+    },
+    {
+      "id": "story_4",
+      "source": "Geronimo: His Own Story, dictated to S.M. Barrett, 1906",
+      "text": "When I was young I walked all over this country, east and west, and saw no other people than the Apaches. After many summers I walked again and found another race of people had come to take it. How is it? Why is it that the Apaches wait to die — that they carry their lives on their fingernails?",
+      "keywords": ["young","walked","country","apaches","summers","race","take","die","fingernails","came"]
+    },
+    {
+      "id": "story_5",
+      "source": "Geronimo: His Own Story, dictated to S.M. Barrett, 1906",
+      "text": "Once I moved about like the wind. Now I surrender to you and that is all. There is one thing I ask of you: do not let them put me in a cage. I will die first. The only way you can kill an Apache is to take his freedom. Everything else he can endure.",
+      "keywords": ["wind","surrender","cage","die","freedom","endure","kill","apache","moved","first"]
+    },
+    {
+      "id": "story_6",
+      "source": "Geronimo: His Own Story, dictated to S.M. Barrett, 1906",
+      "text": "My people have never first drawn the sword against white men. We struck only when we were struck. My people did not want war. They wanted their land, their children, and their sacred places. When all of these were taken, there was nothing left to want, and so there was nothing left to lose.",
+      "keywords": ["sword","struck","land","children","sacred","places","taken","want","lose","nothing"]
+    },
+    {
+      "id": "story_7",
+      "source": "Geronimo: His Own Story, dictated to S.M. Barrett, 1906",
+      "text": "In truth I have spoken well of all men; and I have spoken the truth always, for I do not know how to lie. There are many old men now who have known me all their lives. They will tell you whether I speak the truth. The Apaches do not lie to each other. We do not lie; we do not steal from each other.",
+      "keywords": ["truth","spoken","lie","old","known","lives","steal","apaches","each","other"]
+    },
+    {
+      "id": "story_8",
+      "source": "Geronimo: His Own Story, dictated to S.M. Barrett, 1906",
+      "text": "We are vanishing from the earth, yet I cannot think we are useless or the Great Spirit would not have put us here. He put us here to withstand something. I do not know what. But he would not have put the Apache on this earth to weaken and die. There is a reason. I do not know what it is yet.",
+      "keywords": ["vanishing","earth","spirit","great","withstand","apache","weaken","reason","know","put"]
+    },
+    {
+      "id": "prayer_1",
+      "source": "Geronimo: His Own Story, dictated to S.M. Barrett, 1906",
+      "text": "To the Great Spirit I pray — not for things, not for victory in war, not for the defeat of my enemies. I pray that I will not be forgotten. I pray that when the Apache is gone, the mountains will still hold the memory of us. The land does not forget. Men forget. The land remembers.",
+      "keywords": ["spirit","pray","victory","enemies","forgotten","mountains","memory","land","remembers","men"]
+    }
+  ]
+}

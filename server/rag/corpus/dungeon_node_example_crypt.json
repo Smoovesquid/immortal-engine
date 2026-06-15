@@ -1,0 +1,80 @@
+{
+  "_generated_from": {
+    "theme": "crypt",
+    "history": {
+      "name": "the Underchapel",
+      "origin": "the catacombs below a burned abbey",
+      "catastrophe": "the abbey burned, and its dead would not lie still",
+      "echoes": [
+        "niches emptied from the inside",
+        "grave-goods scattered, but none of them taken",
+        "scratch-marks worn into the inside of a lid",
+        "a child's shoe, small in the grey dust",
+        "dried garlands still hung for a feast of the dead"
+      ]
+    }
+  },
+  "id": "dungeon_node_example_crypt",
+  "name": "the Underchapel",
+  "place_type": "dungeon",
+  "theme": "crypt",
+  "entrance_node_id": "node_example_crypt",
+  "chunks": [
+    {
+      "id": "founding_1",
+      "source": "the Underchapel — establishment and original function",
+      "text": "The catacombs below a burned abbey were cut below a structure whose surface form is destroyed. Niches line the passage walls at regular intervals, each originally sealed with a flat stone set flush to the surface. The construction is stone-on-stone in the oldest sections, mortar only in later extensions. Small goods were placed in niches at the time of interment; some remain in undisturbed sections.",
+      "era": "founding",
+      "keywords": ["catacombs","abbey","burned","niches","passage","sealed","stone","mortar","interment","goods"],
+      "latent": false
+    },
+    {
+      "id": "catastrophe_1",
+      "source": "the Underchapel — the event",
+      "text": "The abbey burned, and its dead would not lie still. The burn damage in the upper crypt sections reaches the vaulted ceilings; smoke residue runs along the stone. Below the level of the fire, the crypt passages are intact. Sealing stones on the lower niches are displaced — some on the passage floor, some on the niche-side of the threshold. The disturbance is below the fire line, not in the burned sections.",
+      "era": "event",
+      "keywords": ["abbey","burned","fire","vaulted","smoke","niches","sealing","stones","displaced","threshold"],
+      "latent": false
+    },
+    {
+      "id": "echo_0",
+      "source": "Physical evidence — niches emptied from the inside",
+      "text": "Niches emptied from the inside.",
+      "era": "post-event",
+      "keywords": ["niches","emptied","inside"],
+      "latent": true
+    },
+    {
+      "id": "echo_1",
+      "source": "Physical evidence — grave-goods scattered",
+      "text": "Grave-goods scattered, but none of them taken.",
+      "era": "post-event",
+      "keywords": ["grave","goods","scattered","taken"],
+      "latent": true
+    },
+    {
+      "id": "echo_2",
+      "source": "Physical evidence — scratch-marks on the inside of a lid",
+      "text": "Scratch-marks worn into the inside of a lid.",
+      "era": "post-event",
+      "keywords": ["scratch","marks","worn","inside","lid"],
+      "latent": true
+    },
+    {
+      "id": "echo_3",
+      "source": "Physical evidence — a child's shoe",
+      "text": "A child's shoe, small in the grey dust.",
+      "era": "post-event",
+      "keywords": ["child","shoe","grey","dust"],
+      "latent": true
+    },
+    {
+      "id": "echo_4",
+      "source": "Physical evidence — dried garlands",
+      "text": "Dried garlands still hung for a feast of the dead.",
+      "era": "post-event",
+      "keywords": ["dried","garlands","hung","feast","dead"],
+      "latent": true
+    }
+  ]
+}

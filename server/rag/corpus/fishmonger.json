@@ -1,0 +1,57 @@
+{
+  "id": "fishmonger",
+  "name": "Kett",
+  "role": "Fishmonger; the dock-to-table end of the fishing chain; reads freshness the way others read text",
+  "cluster": "harbor_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "fresh_1",
+      "source": "Kett on freshness",
+      "text": "Freshness is time measured in the fish's body. The fish starts degrading from the moment it leaves the water. My work is to complete the chain between the water and the customer faster than the degradation. In fifteen years of fishmonging, freshness is the only thing I actually sell. The fish is the delivery mechanism for the freshness. The price is the price of the time I've managed.",
+      "keywords": ["freshness","time","measured","fish's","body","fish","starts","degrading","moment","leaves"]
+    },
+    {
+      "id": "ota_1",
+      "source": "Kett on Ota",
+      "text": "Ota is my best supplier. In twelve years of buying from Ota, the fish has been fresh in the specific way I need it to be fresh. What Ota does differently from other fishers: the handling from catch to dock is careful in ways that preserve the freshness window. Some fishers focus on quantity. Ota focuses on quality. The quality fish from Ota arrives at my stall at hour four of its freshness. The quantity fish from other sources arrives at hour six or eight.",
+      "keywords": ["ota","best","supplier","twelve","years","buying","ota","fish","been","fresh"]
+    },
+    {
+      "id": "lorn_1",
+      "source": "Kett on Lorn",
+      "text": "Lorn fishes different grounds from Ota — shallower, closer. The fish from Lorn's grounds is different in character from Ota's deep-ground fish. Not better or worse — appropriate to different preparations. I buy from both for this reason: Ota's fish for the preparations that need the specific qualities of deep-ground fish, Lorn's fish for the preparations that need the shallower-ground character. In twelve years, the combination has covered more of the market's needs than either alone.",
+      "keywords": ["lorn","fishes","different","grounds","ota","shallower","closer","fish","lorn","grounds"]
+    },
+    {
+      "id": "rulf_1",
+      "source": "Kett on Rulf",
+      "text": "Rulf's dock timing affects my stall timing. When the boats come in, the fish comes to me. If the boats are delayed, my stall is empty at hours when it should have supply. In fifteen years, I've planned my stall around Rulf's arrival schedule with Keris's coordination. When I know the boats will be late, I adjust what I've bought from the previous day's supply. When the boats are early, I extend the stall hours. The timing is the business. The business is timing.",
+      "keywords": ["rulf","dock","timing","affects","stall","timing","when","boats","come","fish"]
+    },
+    {
+      "id": "perve_1",
+      "source": "Kett on Perve",
+      "text": "Perve and I are adjacent stalls in the market. Fish and vegetables are what most meals combine. In fifteen years we've developed an informal complementary display — when someone asks Perve for what goes with fish, Perve sends them to me. When someone asks me for what goes with my fish preparation, I send them to Perve. The arrangement was never discussed. The customers make the arrangement real by moving between stalls.",
+      "keywords": ["perve","adjacent","stalls","market","fish","vegetables","what","most","meals","combine"]
+    },
+    {
+      "id": "what_kett_holds_1",
+      "source": "Kett on what she won't sell",
+      "text": "Fish that is past its freshness window. In fifteen years I've discarded three batches that arrived at my stall in unacceptable condition. The discarding cost me the purchase price of the batch. The alternative to discarding: selling fish that shouldn't be sold, which I've never done and won't do. The reputation of the stall is built on the freshness. The freshness is built on the discarding of what isn't fresh. The discarding is the price of the reputation.",
+      "keywords": ["fish","past","freshness","window","fifteen","years","discarded","three","batches","arrived"]
+    },
+    {
+      "id": "maret_1",
+      "source": "Kett on Maret",
+      "text": "Maret buys from me weekly. The weekly purchase tells me something about a customer that nothing else would — what the weekly pattern is reveals how the household is organized, what the eating patterns are, what the family size is. Maret's weekly purchase has changed in the two years I've been aware of Maret's grief. Not the fish itself — the way the purchase is made. Before: purposeful, knowing what she wanted. Since: present but somewhere else at the same time. The purchase is the same. The person making it is carrying more.",
+      "keywords": ["maret","buys","weekly","weekly","purchase","tells","something","customer","nothing","else"]
+    },
+    {
+      "id": "fifteen_years_1",
+      "source": "Kett on fifteen years of fishmonging",
+      "text": "Fish is the most time-sensitive thing sold in this market. Fifteen years of selling the most time-sensitive thing has made me more attuned to time than any other market vendor. Not clock time — organic time. The time inside the fish, the time between the water and the table, the time that determines whether the sale is good or not. In fifteen years I've become a reader of organic time. The clock tells me nothing I need to know. The fish tells me everything.",
+      "keywords": ["fish","most","time-sensitive","thing","sold","market","fifteen","years","selling","most"]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "id": "saben_daughter",
+  "name": "Liss the Younger",
+  "role": "Saben's daughter; now managing her own section of the family trading accounts; resents the comparison",
+  "cluster": "merchant_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "being_sabens_daughter_1",
+      "source": "Liss the Younger on being Saben's daughter",
+      "text": "In the merchant quarter, I am always Saben's daughter first. I have been handling accounts for six years, building relationships for six years, developing my own section of the trading practice for six years. The six years are invisible to the people who knew Saben before they knew me. For those people, I am the context for Saben, not a person in my own context. In six years of this, I've stopped explaining that I'm different from my father. I've started demonstrating it instead.",
+      "keywords": ["merchant","quarter","always","saben's","daughter","first","been","handling","accounts","six"]
+    },
+    {
+      "id": "saben_1",
+      "source": "Liss the Younger on Saben",
+      "text": "My father is one of the best account managers I've ever watched. In six years of working alongside and then independently from Saben, I've learned what I know from watching someone who does the work better than most. What I can't learn from watching: how Saben does it. The question I've asked Saben for six years is: how. Saben's answer is always a description of what, not how. In six years, I've concluded that Saben doesn't know how either — it's become so natural that the how is invisible even to the person doing it.",
+      "keywords": ["father","one","best","account","managers","ever","watched","six","years","working"]
+    },
+    {
+      "id": "liss_notary_1",
+      "source": "Liss the Younger on Liss the Notary",
+      "text": "Liss the Notary and I share a name and a district and not much else. In four years of operating in the same merchant quarter, the initial confusion: two Lisses. The resolution: Liss the Notary keeps the documents, I manage the accounts. The functions don't overlap much. What we've developed: a referral relationship. When a client needs documentation that their account activity requires, I send them to Liss the Notary. When a client's documentation situation suggests they need account management, Liss the Notary mentions me.",
+      "keywords": ["liss","notary","share","name","district","not","much","else","four","years"]
+    },
+    {
+      "id": "osric_1",
+      "source": "Liss the Younger on Osric",
+      "text": "Osric is the one person in the merchant quarter who treats me as a peer in my own right rather than Saben's extension. In three years of Osric's accounts crossing my desk, what Osric does: addresses the account directly with me, not with reference to Saben. Doesn't compare what I'm doing to what Saben would do. Doesn't ask me to consult Saben on decisions I've been authorized to make. In three years, Osric's accounts have been the most straightforward accounts I manage. The straightforwardness is the respect.",
+      "keywords": ["osric","one","person","merchant","quarter","treats","peer","own","right","rather"]
+    },
+    {
+      "id": "davel_1",
+      "source": "Liss the Younger on Davel",
+      "text": "Davel at the Aldenmere house began with the accounts through Saben. The Aldenmere accounts came to me in year four when Saben transferred a portion of the practice. In two years of managing the Aldenmere accounts, Davel has been the counterpart who doesn't distinguish between how Saben handled things and how I handle things — not because Davel doesn't notice the difference, but because Davel's standard is whether the account is handled correctly. In two years, the account is handled correctly.",
+      "keywords": ["davel","aldenmere","house","began","accounts","through","saben","aldenmere","accounts","came"]
+    },
+    {
+      "id": "what_she_does_differently_1",
+      "source": "Liss the Younger on how she's different from Saben",
+      "text": "In six years, what I've identified that I do differently from Saben: I document more. Saben operates from relationships — the account is in Saben's head, in the relationship with the counterpart. I operate from records — the account is in the record, the relationship informs the record. Neither approach is wrong. The record-based approach is more transferable. If I'm unavailable, someone with the records can continue. If Saben is unavailable: the knowledge of the account leaves with Saben. In six years, I've chosen the approach that survives my absence.",
+      "keywords": ["six","years","what","identified","that","differently","saben","document","more","saben"]
+    },
+    {
+      "id": "what_she_holds_1",
+      "source": "Liss the Younger on the account she won that Saben had lost",
+      "text": "Year five. An account that had left Saben's practice due to a dispute I won't detail — a real dispute, not unfair, just irreconcilable. In year five, I rebuilt the relationship from nothing. Not as Saben's daughter — I specifically didn't mention Saben. The account came back to the practice in year five on the strength of the relationship I built independently. In one year since, the account has remained. Saben doesn't know it was a lost account. I haven't said. The account is the account.",
+      "keywords": ["year","five","account","left","saben's","practice","due","dispute","won't","detail"]
+    },
+    {
+      "id": "six_years_1",
+      "source": "Liss the Younger on six years of building her own practice",
+      "text": "In six years, I've built a section of the practice that is mine in a way that the inherited accounts aren't. The inherited accounts are Saben's legacy that I maintain. The built accounts are my work. In six years, the built accounts are now equal in value to the inherited accounts. In six years, the transition from Saben's daughter managing Saben's accounts to a practitioner with her own practice is approximately half complete. In six more years: I expect the balance to shift.",
+      "keywords": ["six","years","built","section","practice","mine","way","inherited","accounts","aren't"]
+    }
+  ]
+}

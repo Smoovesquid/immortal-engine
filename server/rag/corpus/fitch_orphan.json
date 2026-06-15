@@ -1,0 +1,57 @@
+{
+  "id": "fitch_orphan",
+  "name": "Fitch",
+  "role": "Orphan Roads network; oldest active member; near aging out",
+  "cluster": "orphan_roads",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "aging_out_1",
+      "source": "Fitch when Rook asked if he was ready",
+      "text": "Not yet. Rook asks every three months and I say not yet and she nods and we move on. The honest answer is I don't know what ready looks like from outside the network. Inside I know every node — who has what, who needs what, what breaks if I'm gone. I've been the oldest for two years. The next oldest is three years behind me. I need to make them ready before I'm ready. That's the actual timeline.",
+      "keywords": ["ready","rook","asks","three","months","oldest","network","node","breaks","timeline"]
+    },
+    {
+      "id": "rook_1",
+      "source": "Fitch on Rook",
+      "text": "Rook built this and doesn't run it. The distinction matters. She built it so it runs without her, which means it runs without me when I leave, which means I'm not the thing that holds it. I keep forgetting this when I'm in the middle of a hard week. Then I remember. The network is the structure. I'm a person inside the structure. The structure is what stays.",
+      "keywords": ["rook","built","runs","distinction","matters","built","structure","person","inside","stays"]
+    },
+    {
+      "id": "mira_1",
+      "source": "Fitch on Mira the younger",
+      "text": "Mira knows this network from before it had a name. She remembers things I wasn't there for. When I have a question about why something is done the way it's done, Mira has the original reason. Most of the time the original reason is still valid. Sometimes the original reason stopped being valid and nobody noticed because the thing kept working anyway. Mira and I are cleaning those up together. It's the most useful thing I've done in two years.",
+      "keywords": ["mira","knows","network","before","name","remembers","question","original","reason","cleaning"]
+    },
+    {
+      "id": "what_fitch_does_1",
+      "source": "Fitch explaining his role to a new member",
+      "text": "Logistics. Who has food when the south house runs short. Which merchants will take labor from the network without asking questions that shouldn't be asked. Which route from Thornwall to the harbor avoids the checkpoint that runs long. I've been mapping this for four years. The map is in my head and I'm transferring it to Mira piece by piece because heads are not reliable archives.",
+      "keywords": ["logistics","food","south","house","merchants","labor","network","questions","route","thornwall"]
+    },
+    {
+      "id": "brevis_1",
+      "source": "Fitch on the tavern keeper Brevis",
+      "text": "Brevis is the north anchor. Not officially — she's never been asked, I've never asked, Rook's never asked. But the tavern is the place where you can be cold and wet and the door doesn't close on you before you've had a chance to dry out. I've sent seven kids to that doorstep in four years. Brevis has never turned one away. She hasn't said anything about it to me. We understand each other.",
+      "keywords": ["brevis","north","anchor","officially","tavern","cold","wet","door","seven","kids"]
+    },
+    {
+      "id": "skills_1",
+      "source": "Fitch assessing a new arrival",
+      "text": "First I look at hands. Hands tell you what someone has done and roughly how long. Then I listen for what they say without being asked — the volunteered information is what they think is relevant, which tells you what they think matters. Then I watch what they do when they think nobody's watching for about a day. Rook taught me this sequence. She uses it too but faster. She can do it in an hour. I need a day.",
+      "keywords": ["hands","tell","done","long","listen","say","without","asked","volunteered","relevant"]
+    },
+    {
+      "id": "leaving_1",
+      "source": "Fitch when asked what he'll do when he leaves the network",
+      "text": "I have a trade. Vann the tinker showed me repairs when I was twelve and I've been doing them on the side for three years while I'm in the network. When I leave I'll do it full time. I know the routes between settlements because of the network. I'll use them for the tinker work. The network gave me the routes. I'll give Keet my copy of the route map when I go. Keet will improve it.",
+      "keywords": ["trade","vann","tinker","repairs","twelve","three","years","routes","settlements","full"]
+    },
+    {
+      "id": "nineteen_1",
+      "source": "Fitch on the count of nineteen",
+      "text": "Rook says never zero. I say seventeen minimum — below seventeen the network loses redundancy and single failures cascade. We've been at nineteen for six months. Before that we were at sixteen for two terrible weeks. I didn't sleep for the worst of it. We got to seventeen by the end of the second week. I went back to sleeping. Rook says I worry correctly but not efficiently. I'm working on the efficiently part.",
+      "keywords": ["rook","says","never","zero","seventeen","minimum","redundancy","nineteen","six","months"]
+    }
+  ]
+}

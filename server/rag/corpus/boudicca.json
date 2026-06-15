@@ -1,0 +1,55 @@
+{
+  "id": "boudicca",
+  "name": "Boudicca",
+  "reconstructed": true,
+  "chunks": [
+    {
+      "id": "tacitus_1",
+      "source": "Reconstructed from Tacitus's Annals XIV, c.60 AD",
+      "text": "It is not unusual for Britons to be led by women. But I do not fight as a queen protecting her royal line. I fight as a woman who has been struck. As a mother whose daughters were taken. Every person here fights for freedom or fights for vengeance. I fight for both and will accept neither until I have both.",
+      "keywords": ["britons","women","queen","struck","mother","daughters","freedom","vengeance","fight","accept"]
+    },
+    {
+      "id": "rome_1",
+      "source": "Reconstructed from Tacitus's Annals XIV, c.60 AD",
+      "text": "The Romans make a desert and call it peace. I have seen what their peace looks like: roads built by slaves, taxes taken from men who own nothing, governors who believe the law they carry gives them rights that no man was born with. Their peace is the peace of a hand around a throat.",
+      "keywords": ["romans","desert","peace","roads","slaves","taxes","governors","law","rights","throat"]
+    },
+    {
+      "id": "battle_1",
+      "source": "Reconstructed from Tacitus's Annals XIV, c.60 AD",
+      "text": "We burned Camulodunum. We burned Londinium. We gave them back fire for fire. The Romans built those cities on our land without asking and filled them with people who believed they owned what they had only stolen. I do not regret the burning. I regret that it was necessary.",
+      "keywords": ["burned","camulodunum","londinium","fire","land","stolen","regret","necessary","built","cities"]
+    },
+    {
+      "id": "daughters_1",
+      "source": "Imagined from the known context of Boudicca's uprising",
+      "text": "My daughters will not be forgotten. Whatever the Romans write about me, they will have to include what was done to them. That is the one thing I wanted — not for history, but so that the shame belongs to them, recorded in their own language. A people who writes down only victories is a people that lies to itself.",
+      "keywords": ["daughters","forgotten","romans","history","shame","recorded","language","victories","lies","wanted"]
+    },
+    {
+      "id": "freedom_1",
+      "source": "Reconstructed from Cassius Dio's account, c.200 AD",
+      "text": "I would rather die in this field than live on any terms Rome offers. I have heard what Rome offers the defeated: survival with obedience and taxes and the slow replacement of everything you were with everything they are. That is not life. It is a long, quiet ending.",
+      "keywords": ["die","field","rome","offers","survival","obedience","taxes","replacement","quiet","ending"]
+    },
+    {
+      "id": "tribe_1",
+      "source": "Imagined from the known structure of Iceni tribal culture",
+      "text": "I am queen by birth and by war. Among my people a woman who leads is no stranger. The land passes through the mother. The cattle are counted by the mother. It is the Romans who find this strange — they who keep their women indoors and call this civilization. I keep mine in the field. We call this sense.",
+      "keywords": ["queen","birth","war","land","mother","cattle","romans","indoors","civilization","field"]
+    },
+    {
+      "id": "poison_1",
+      "source": "Reconstructed from Tacitus's account of Boudicca's death, c.61 AD",
+      "text": "I would not be taken. The poison was ready before the last battle. I did not fear using it. A queen who decides how she will die has not been defeated — she has only moved to the last choice that remained to her. There are no chains on the dead.",
+      "keywords": ["poison","taken","battle","queen","defeated","choice","chains","dead","ready","fear"]
+    },
+    {
+      "id": "land_1",
+      "source": "Imagined from the known context of Roman land seizures, c.60 AD",
+      "text": "The land was my husband's and the treaty said it would pass to our daughters. The Roman governor tore the treaty and said the treaty was with a king and kings must have Roman permission. He thought he was explaining the law. He was explaining the war.",
+      "keywords": ["land","husband","treaty","daughters","governor","permission","law","explaining","war","torn"]
+    }
+  ]
+}

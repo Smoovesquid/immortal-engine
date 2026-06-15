@@ -1,0 +1,57 @@
+{
+  "id": "covenant_old_healer",
+  "name": "Aldous",
+  "role": "Angel Covenant; physician; infirmary keeper",
+  "cluster": "angel_covenant",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "healing_1",
+      "source": "Aldous at the infirmary",
+      "text": "The body has a preference for health. This is the fundamental thing. What I do is remove obstacles to what the body prefers. Incorrect technique adds obstacles. Correct technique removes them. Thirty-eight years of practice and the principle has not changed. The tools have changed. The materials have changed. The principle is the same: the body is trying to heal; my job is not to get in the way of that.",
+      "keywords": ["body","preference","health","fundamental","thing","remove","obstacles","prefers","incorrect","technique"]
+    },
+    {
+      "id": "almasose_1",
+      "source": "Aldous on ALMASOSE",
+      "text": "ALMASOSE is the thing that moves my hand toward someone who is hurt. Not charity — charity is the decision to help, and ALMASOSE doesn't feel like a decision. It feels like a reflex. The reflex is thirty-eight years old now and I don't know if it was there before I became a physician or if the practice created it. I don't think the distinction matters. The reflex moves the hand. The hand applies the correct technique. The body heals.",
+      "keywords": ["almasose","thing","moves","hand","toward","someone","hurt","not","charity","decision"]
+    },
+    {
+      "id": "pella_1",
+      "source": "Aldous on Pella",
+      "text": "Pella is not trained in my methods. Pella is trained in what works in the field when my methods aren't available. I've observed this as a separate discipline deserving respect, not as an approximation of my discipline. The Brotherhood's field medical protocols are Pella's protocols, not mine adapted down. Three times in thirty-eight years I've sent patients to someone else because that person's approach was correct for the situation and mine wasn't. Pella is one of those three.",
+      "keywords": ["pella","not","trained","methods","field","when","methods","aren't","available","observed"]
+    },
+    {
+      "id": "vel_1",
+      "source": "Aldous on Vel",
+      "text": "Vel and I have been in the Covenant together for twenty-two years. What Vel does is not medical — it's something that happens before medicine. When someone is hurt and frightened, the frightened part needs addressing before the hurt part can be addressed. Vel addresses the frightened part. I address the hurt part. We've worked as a pair without formally designing the pairing. It emerged from doing the work in proximity. Twenty-two years of proximity and one pairing.",
+      "keywords": ["vel","covenant","twenty-two","years","not","medical","something","happens","before","medicine"]
+    },
+    {
+      "id": "elder_rosse_1",
+      "source": "Aldous on Elder Rosse",
+      "text": "Rosse has forty-one years of Covenant practice. I have thirty-eight. In those numbers there's a respect that doesn't need to be performed. We've disagreed three times about method. Each time we resolved the disagreement by testing both methods on cases that permitted testing. Once Rosse's method was correct. Once mine was. The third case the testing revealed a third method that neither of us had proposed. The resolution that comes from genuine disagreement is undervalued.",
+      "keywords": ["rosse","forty-one","years","covenant","practice","thirty-eight","respect","doesn't","need","performed"]
+    },
+    {
+      "id": "saben_1",
+      "source": "Aldous on the Fenn merchant house",
+      "text": "Saben Fenn handles the Covenant's materials arrangements. The infirmary needs specific things that aren't general trade goods and Saben has the network to source them. I've been working with Aldous Fenn — Saben's father — before Saben took over the account. The continuity of the account across a generational change was not a given. Saben made it a given. The arrangements continued without interruption. I noticed and said so. Saben said: the account was my father's account. Of course it continued.",
+      "keywords": ["saben","fenn","handles","covenant","materials","arrangements","infirmary","needs","specific","things"]
+    },
+    {
+      "id": "maret_1",
+      "source": "Aldous on Maret",
+      "text": "Maret's husband was my patient for three years before his death. I knew what was happening in the year before Maret knew. This is a situation I've encountered fifteen times in thirty-eight years — where I know something the family doesn't know yet, and I must decide when the family needs to know. The decision was correct in this case: I told Maret six months before, which gave them six months. She told me afterward: six months was the right amount of time. I don't always know. This time I knew.",
+      "keywords": ["maret","husband","patient","three","years","before","death","knew","what","happening"]
+    },
+    {
+      "id": "what_doesnt_heal_1",
+      "source": "Aldous on what he cannot heal",
+      "text": "The decision to not heal. I've had patients who could have recovered and chose not to. Chose is the wrong word — it was more like declining to turn toward the health the body was offering. Sel and the Hollow Court handle what happens in those cases. I refer three or four people per year to the Hollow Court. Sel says: you send the ones who need to grieve before they can heal. I say: that's a correct description of what I'm seeing. The referral is the boundary of my work.",
+      "keywords": ["decision","not","heal","patients","could","have","recovered","chose","declining","turn"]
+    }
+  ]
+}

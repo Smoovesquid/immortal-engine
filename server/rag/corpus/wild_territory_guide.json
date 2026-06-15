@@ -1,0 +1,57 @@
+{
+  "id": "wild_territory_guide",
+  "name": "Vene",
+  "role": "Wild territory guide; takes paying travelers through the dangerous parts; the person between the traveler and the territory",
+  "cluster": "wild_road",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "guide_1",
+      "source": "Vene on guiding through the wild territory",
+      "text": "In twelve years of guiding through the wild territory, what the guide is: the person who knows where the territory is dangerous and who has agreed to take the traveler through it anyway. In twelve years, the guide is not the guarantee of safe passage — the territory doesn't offer guarantees. The guide is the reduction of the uncertainty to the level that makes the passage possible for a traveler who couldn't make it alone. In twelve years, the difference between what the territory is for a guided traveler and what it is for an unguided one: the difference between a passage and a gamble.",
+      "keywords": ["twelve","years","guiding","wild","territory","what","guide","person","who","knows"]
+    },
+    {
+      "id": "theen_1",
+      "source": "Vene on Theen",
+      "text": "Theen knows the territory at a level I aspire to and haven't reached. In ten years of working in the same territory as Theen, what the difference between Theen's knowledge and mine is: Theen reads the territory as a living system. I read the territory as a collection of routes and hazards. In ten years, Theen has taught me more about the territory by proximity than any formal instruction could have — the things Theen notices and responds to that I've learned to notice by watching Theen respond.",
+      "keywords": ["theen","knows","territory","level","aspire","haven't","reached","ten","years","working"]
+    },
+    {
+      "id": "orvane_1",
+      "source": "Vene on Orvane",
+      "text": "Orvane reads the territory's spiritual condition. In seven years of working alongside Orvane's territory knowledge, what Orvane's reading provides that my hazard mapping doesn't: the places in the territory where the hazard is not physical. In seven years, three occasions where Orvane's assessment of a location as spiritually problematic preceded something happening to travelers in that location that the physical hazard assessment didn't predict. In seven years, I avoid the places Orvane says to avoid, not because I understand the mechanism but because the track record supports the avoidance.",
+      "keywords": ["orvane","reads","territory's","spiritual","condition","seven","years","working","alongside","orvane's"]
+    },
+    {
+      "id": "gorr_1",
+      "source": "Vene on Gorr",
+      "text": "Gorr the trapper knows the territory's animal population in a way that guides need to know it. In seven years of the guide-trapper intelligence exchange, what Gorr's knowledge provides: the current location and behavior of the territory's animal population. The guide whose travelers encounter an animal at close range unexpectedly has a problem. In seven years, Gorr's pre-guide intelligence has changed three route decisions — in each case, the route I would have taken had an animal population density that Gorr's information revealed as elevated.",
+      "keywords": ["gorr","trapper","knows","territory's","animal","population","way","guides","need","know"]
+    },
+    {
+      "id": "nebb_1",
+      "source": "Vene on Nebb",
+      "text": "Nebb passes through the territory on the long-range messenger route and our paths cross approximately once a month. In six years of the Vene-Nebb road exchange, what the monthly exchange produces: the road intelligence from the other direction. Nebb comes from the east; I often come from the north. The combined picture is more complete than either direction alone. In six years, the monthly exchange has become a professional habit: we stop, we share what the road has given us, we continue.",
+      "keywords": ["nebb","passes","through","territory","long-range","messenger","route","paths","cross","approximately"]
+    },
+    {
+      "id": "what_vene_holds_1",
+      "source": "Vene on the passage she still thinks about",
+      "text": "Year five. A guided passage with three travelers through the territory's northern section in weather that turned before we reached the passage point. The decision I made: shelter in place and wait for the weather to clear rather than push through in deteriorating visibility. In seven years since, the decision is the one I return to when the weather turns during a passage. Shelter in place was the correct decision. The travelers were frustrated. The frustration is the correct price for the passage completing safely.",
+      "keywords": ["year","five","guided","passage","three","travelers","territory's","northern","section","weather"]
+    },
+    {
+      "id": "what_guiding_requires_1",
+      "source": "Vene on what twelve years of guiding requires",
+      "text": "In twelve years, what the guide requires of the traveler: the willingness to follow the guide's decisions even when the traveler believes they know better. The traveler who second-guesses the guide in the territory is the traveler who creates the crisis the guide then has to manage. In twelve years, the most dangerous traveler is not the inexperienced one — the inexperienced traveler follows the guide. The dangerous traveler is the experienced-enough-to-be-confident-but-not-experienced-enough-to-know-the-territory traveler. In twelve years, that traveler appears every two or three years.",
+      "keywords": ["twelve","years","what","guide","requires","traveler","willingness","follow","guide's","decisions"]
+    },
+    {
+      "id": "twelve_years_1",
+      "source": "Vene on twelve years of wild territory guiding",
+      "text": "In twelve years, I've guided approximately four hundred passages through the wild territory. Four hundred passages across the territory's difficult sections, with travelers who ranged from the experienced and capable to the first-time wild road traveler who had no model for what the territory would demand of them. In twelve years, four hundred passages completed. In twelve years, no traveler in my guide party has been lost to the territory. The territory has tried.",
+      "keywords": ["twelve","years","guided","approximately","four","hundred","passages","wild","territory","four"]
+    }
+  ]
+}

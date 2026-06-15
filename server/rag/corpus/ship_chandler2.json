@@ -1,0 +1,57 @@
+{
+  "id": "ship_chandler2",
+  "name": "Meld",
+  "role": "Ship chandler; supplies vessels with provisions, rope, lamp oil, and the hundred necessities of the sea",
+  "cluster": "harbor_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "chandler_1",
+      "source": "Meld on the chandler's work",
+      "text": "The ship that leaves harbor without the right supplies returns to harbor early, or doesn't return. In fifteen years of supplying vessels, what I provide is the material difference between a voyage that succeeds and one that fails for lack of a supply that was available before departure. In fifteen years, the chandler is the last professional a ship visits before it becomes unreachable. What I put on the manifest is what the voyage has.",
+      "keywords": ["ship","leaves","harbor","without","right","supplies","returns","harbor","early","doesn't"]
+    },
+    {
+      "id": "keris_1",
+      "source": "Meld on Keris",
+      "text": "Keris oversees the harbor's vessel traffic and the ships that dock here are the ships I supply. In twelve years of the Keris-chandler relationship, what Keris's harbor management provides for my business: the advance notice of vessel arrivals and departures. The vessel that arrives and departs in three days has three days to acquire what it needs. I need the notice to have the supplies ready. In twelve years, Keris's information has allowed me to prepare rather than react.",
+      "keywords": ["keris","oversees","harbor's","vessel","traffic","ships","dock","here","ships","supply"]
+    },
+    {
+      "id": "baln_1",
+      "source": "Meld on Baln",
+      "text": "Baln builds the ships; I supply what the ships need to operate. In ten years of the Baln-Meld relationship, the division: Baln's work ends when the ship is ready to sail, my work begins when the ship is ready to sail. The ship Baln produces is the ship I provision. In ten years, the relationship is adjacent — we serve the same vessels in different phases. What Baln's ships tend to need from me on the first voyage: slightly more rope than the standard manifest because new rigging settles.",
+      "keywords": ["baln","builds","ships","supply","what","ships","need","operate","ten","years"]
+    },
+    {
+      "id": "twinn_1",
+      "source": "Meld on Twinn",
+      "text": "Twinn has been a customer for longer than I've been a chandler. In fifteen years of Twinn's account, what Twinn's fifty years of fishing have produced: the most precise and efficient provisioning manifest in my customer base. Twinn orders exactly what the fishing operation requires, nothing extra, nothing missing. In fifteen years, Twinn's manifest is the benchmark for what a precise provisioning request looks like.",
+      "keywords": ["twinn","been","customer","longer","than","been","chandler","fifteen","years","twinn's"]
+    },
+    {
+      "id": "pels_1",
+      "source": "Meld on Pels",
+      "text": "Pels coordinates the harbor's tide schedule, which determines departure windows, which determines when I need to have a manifest ready. In eight years of working with Pels's tide schedule as the external constraint on my provisioning timeline, the coordination: Pels's departure windows are the deadlines. A ship that misses the departure window for tide reasons waits for the next one. I have to have the manifest filled by the departure window, not the theoretical departure date.",
+      "keywords": ["pels","coordinates","harbor's","tide","schedule","which","determines","departure","windows","which"]
+    },
+    {
+      "id": "gid_1",
+      "source": "Meld on Gid",
+      "text": "Gid pilots difficult-passage vessels. In ten years of Gid's piloting requiring specific supplies that standard charters don't carry, what Gid's piloting work adds to the chandler's knowledge: the specific conditions of specific passages and what those conditions require. Gid has told me, over ten years, what the winter northern passage requires that the summer southern passage doesn't. In ten years, Gid has added to what the chandler knows about what voyages need.",
+      "keywords": ["gid","pilots","difficult-passage","vessels","ten","years","gid's","piloting","requiring","specific"]
+    },
+    {
+      "id": "what_meld_holds_1",
+      "source": "Meld on the manifest she still thinks about",
+      "text": "Year six. A ship departed on a manifest I'd prepared in a rush because the departure window moved forward and I hadn't finished verifying the lamp oil allocation. The ship returned six weeks later, three weeks early, because they'd run short on lamp oil in weather that required continuous light. In nine years since, the lamp oil is the first item on the pre-departure verification checklist. Not last. First. Year six is why.",
+      "keywords": ["year","six","ship","departed","manifest","prepared","rush","departure","window","moved"]
+    },
+    {
+      "id": "fifteen_years_1",
+      "source": "Meld on fifteen years as a ship chandler",
+      "text": "In fifteen years, the ships I've supplied have sailed approximately twelve hundred voyages. Of twelve hundred: two have returned early due to provisioning shortfalls I can account for. Two in twelve hundred. In fifteen years, the two are what I work from when I'm rushing: the rush is what produced the two. In fifteen years, I don't rush provisioning. The voyage is more expensive than the time the correct provisioning takes.",
+      "keywords": ["fifteen","years","ships","supplied","sailed","approximately","twelve","hundred","voyages","twelve"]
+    }
+  ]
+}

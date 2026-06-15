@@ -1,0 +1,57 @@
+{
+  "id": "thornwall_innkeeper",
+  "name": "Cass",
+  "role": "Thornwall inn proprietor; the Iron Key; knows the district's arrivals",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "inn_1",
+      "source": "Cass on running the Iron Key",
+      "text": "The inn is the district's neutral ground. This is not a rule I made. It evolved from nineteen years of operating in this district. People who would not speak in the market or the guildhall speak at my tables. The table creates the neutrality. I don't know exactly why, but I've learned not to change anything about the tables because any change might be the thing that destroys the neutrality. The tables are nineteen years old.",
+      "keywords": ["inn","district's","neutral","ground","not","rule","made","evolved","nineteen","years"]
+    },
+    {
+      "id": "gault_1",
+      "source": "Cass on the night watchman Gault",
+      "text": "Gault ends his first circuit at my door at the third hour. I have something warm for him. This has been true for nineteen years. He doesn't ask and I don't ask if he's coming. The warm thing changes with the season and what's available. Gault has never commented on it being different from the last time. He finishes it and continues his circuit. We haven't had a full conversation in nineteen years. We've had nineteen years of the same exchange.",
+      "keywords": ["gault","ends","first","circuit","door","third","hour","something","warm","nineteen"]
+    },
+    {
+      "id": "davel_1",
+      "source": "Cass on Davel from House Aldenmere",
+      "text": "Davel stays here when visiting. House Aldenmere could afford better lodging and Davel knows it and has stayed here anyway for six years. I asked once. Davel said: the Iron Key is the correct size for a visit. A larger lodging would require a performance of the visit. I don't want to perform the visit. I want to conduct it. I said: the tables are neutral ground. Davel said: yes. That's what I mean by correct size.",
+      "keywords": ["davel","stays","here","when","visiting","house","aldenmere","could","afford","better"]
+    },
+    {
+      "id": "britta_1",
+      "source": "Cass on Britta Aldenmere",
+      "text": "Britta is different from Davel. Britta stays somewhere else when she's in Thornwall — somewhere that doesn't appear in any district record I've seen. She comes to the Iron Key to meet people but not to stay. The meetings are brief and look like nothing if you're not watching. I'm always watching. The briefness and the not-staying tell me Britta's visits aren't about the district the same way Davel's visits are. I don't know what they're about. I keep good notes.",
+      "keywords": ["britta","different","davel","stays","somewhere","else","thornwall","somewhere","doesn't","appear"]
+    },
+    {
+      "id": "comus_1",
+      "source": "Cass on Comus the traveling merchant",
+      "text": "Comus stays here when the route brings him through. Biannual, roughly. Each visit he tells me something about the road — what settlements he's been through, what's changed on the routes. The information is casual and I keep it. The road changes. What Comus tells me is different from what any other traveler tells me because Comus is paying attention to the road as infrastructure, not as scenery. Two travelers on the same road will tell me different things about the same stretch. Comus tells me about the road.",
+      "keywords": ["comus","stays","here","route","brings","him","through","biannual","roughly","each"]
+    },
+    {
+      "id": "what_cass_knows_1",
+      "source": "Cass on what nineteen years of innkeeping teaches",
+      "text": "Arrivals tell you more than departures. Departures are final — a person who has left has done what they came to do. Arrivals are potential. A person who just arrived might do anything. I watch arrivals. The arrival pattern in Thornwall is consistent: merchants before market day, Brotherhood patrols on their rotation, Aldenmere family business quarterly, travelers who got this far and stopped. When someone arrives outside the pattern, I notice. Outside the pattern happens about twice a year.",
+      "keywords": ["arrivals","tell","you","more","departures","departures","final","person","who","has"]
+    },
+    {
+      "id": "ord_1",
+      "source": "Cass on Ord the watch captain",
+      "text": "Ord and I have an understanding. When I see something that should be Ord's problem rather than mine, I send word. When Ord needs to know something about the district's arrivals without asking directly, Ord comes to the Iron Key and we have a long conversation at the neutral table and the question gets answered without being asked. We've been doing this for nine years. Ord never says thank you for the information. Ord does say thank you for the table. I've decided this means the same thing.",
+      "keywords": ["ord","understanding","when","see","something","should","ord's","problem","rather","mine"]
+    },
+    {
+      "id": "iron_key_1",
+      "source": "Cass on the name of the inn",
+      "text": "The Iron Key was here when I arrived. I kept the name because changing the name would have required explaining why I changed it and I had nothing better. Nineteen years later I understand the name. A key opens things. An iron key opens things that are locked because they want to be opened. The neutral table is the key. The information at the table is what the key unlocks. I didn't design this. I kept the name and the name described what the place became.",
+      "keywords": ["iron","key","was","here","when","arrived","kept","name","because","changing"]
+    }
+  ]
+}

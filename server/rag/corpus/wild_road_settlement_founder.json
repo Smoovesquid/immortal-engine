@@ -1,0 +1,57 @@
+{
+  "id": "wild_road_settlement_founder",
+  "name": "Mell the Elder",
+  "role": "Elder who established the wild road's first waystation settlement; the living memory of the territory's founding",
+  "cluster": "wild_road",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "founder_1",
+      "source": "Mell the Elder on founding the waystation settlement",
+      "text": "In forty-two years of living in the territory, what the territory was before the waystation: the road without a stop. The traveler who was a day out from the settlement in either direction had no middle ground. In forty-two years, the waystation is what I built with seven others in the first year. In forty-two years, the seven others have died or moved on. I remain. The waystation has grown from the original shelter to what Marb maintains now. In forty-two years, the building outlasts the builders.",
+      "keywords": ["forty-two","years","living","territory","what","territory","was","before","waystation","road"]
+    },
+    {
+      "id": "marb_1",
+      "source": "Mell the Elder on Marb",
+      "text": "Marb keeps the waystation now. In twenty years of watching Marb's stewardship of the waystation I founded, what Marb has done to the original structure: maintained it faithfully and expanded it in ways that serve the travelers better than the original design. In twenty years, Marb's improvements to what I built are better than what I built. In twenty years, the right stewardship improves the original rather than merely maintaining it. In twenty years, Marb has been the right steward.",
+      "keywords": ["marb","keeps","waystation","now","twenty","years","watching","marb's","stewardship","waystation"]
+    },
+    {
+      "id": "theen_1",
+      "source": "Mell the Elder on Theen",
+      "text": "Theen was in the territory before I arrived and will likely be in the territory after I'm gone. In forty-two years of knowing Theen as the territory's enduring presence, what Theen represents: the continuity of the territory's knowledge that doesn't depend on any particular human steward. In forty-two years, what Theen knows about the territory predates the waystation, predates my presence, predates most of what the settlement considers its own history. In forty-two years, Theen's knowledge is the territory's memory.",
+      "keywords": ["theen","territory","before","arrived","will","likely","territory","after","gone","forty-two"]
+    },
+    {
+      "id": "orm_1",
+      "source": "Mell the Elder on Orm",
+      "text": "Orm retired from the Brotherhood to the territory near the waystation. In twelve years of Orm being the waystation's informal guardian presence, what Orm's Brotherhood background provides to the territory: the security competence that the waystation needs but that the waystation's keeper function doesn't provide alone. In twelve years, Orm has never needed to use the Brotherhood's capacity in service of the waystation directly. In twelve years, the presence is the service. Orm's presence has prevented the situations that would have required Orm's intervention.",
+      "keywords": ["orm","retired","brotherhood","territory","near","waystation","twelve","years","orm","being"]
+    },
+    {
+      "id": "gorr_1",
+      "source": "Mell the Elder on Gorr",
+      "text": "Gorr's trap lines run through territory I helped open in the first years of the waystation settlement. In fifteen years of the Gorr-Mell Elder territory relationship, what the territory's opening has meant for Gorr's trapping: the access to the middle territory that the waystation makes viable. The trapper who can use the waystation as a base of operations can run longer lines than the trapper who must return to the settlement each night. In fifteen years, the waystation and the trapping have been mutually sustaining.",
+      "keywords": ["gorr's","trap","lines","run","through","territory","helped","open","first","years"]
+    },
+    {
+      "id": "what_mell_elder_holds_1",
+      "source": "Mell the Elder on what forty-two years in the territory holds",
+      "text": "In forty-two years, what the territory has taught me: the territory's pace and the settlement's pace are different paces. The settlement moves at the human pace — seasons, commerce, politics. The territory moves at the territory's pace — the geological, the ecological, the deeply slow changes that reveal themselves over decades. In forty-two years, I've been in the territory long enough to see both the human pace and the territory's pace. In forty-two years, the two paces together are the full picture of what the territory is.",
+      "keywords": ["forty-two","years","what","territory","taught","territory's","pace","settlement's","pace","different"]
+    },
+    {
+      "id": "what_founding_means_1",
+      "source": "Mell the Elder on what it means to have founded something",
+      "text": "In forty-two years, what founding the waystation settlement has taught me about founding: the founder's relationship to the thing founded ends at the founding. The thing continues without the founder's continuing intervention. In forty-two years, the waystation has changed from what I built to what Marb maintains to what the territory requires now. In forty-two years, the thing I founded is not the thing I founded. It's the thing that grew from what I founded. In forty-two years, the growth is better than the founding. The growth is what the founding was for.",
+      "keywords": ["forty-two","years","what","founding","waystation","settlement","taught","about","founding","founder's"]
+    },
+    {
+      "id": "forty_two_years_1",
+      "source": "Mell the Elder on forty-two years in the wild road territory",
+      "text": "In forty-two years, the territory I came to as a traveler has become the territory I know as a resident. In forty-two years, the transition from traveler to resident is the transition from the territory as a place you move through to the territory as a place you know. In forty-two years, I know the territory. In forty-two years, the territory has also had time to know me in whatever way a territory knows its inhabitants. In forty-two years, the relationship is mutual. I'm part of the territory's recent history. The territory is all of my history.",
+      "keywords": ["forty-two","years","territory","came","traveler","become","territory","know","resident","forty-two"]
+    }
+  ]
+}

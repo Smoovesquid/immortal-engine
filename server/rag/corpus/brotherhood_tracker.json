@@ -1,0 +1,57 @@
+{
+  "id": "brotherhood_tracker",
+  "name": "Holt the Tracker",
+  "role": "Brotherhood of the Wild's tracker; finds what can't be found without someone who can read the ground",
+  "cluster": "brotherhood_of_wild",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "tracker_1",
+      "source": "Holt the Tracker on tracking",
+      "text": "In fifteen years of tracking, what the track tells you: direction, time, load, condition. The direction is obvious. The time requires reading the ground's state relative to the sign — is the impression fresh or weathered, is the compressed vegetation still green or beginning to brown. The load tells you what the subject was carrying. The condition tells you whether the subject was moving comfortably or under stress. In fifteen years, the four readings together produce a picture of the subject's situation at the time the sign was made.",
+      "keywords": ["fifteen","years","tracking","what","track","tells","you","direction","time","load"]
+    },
+    {
+      "id": "cord_1",
+      "source": "Holt the Tracker on Cord",
+      "text": "Cord assigns the tracking work and I am the Brotherhood's primary tracking resource. In twelve years of working under Cord's command, what Cord's tracking assignments tell me: what the Brotherhood can't find through other means. The tracking assignment is the assignment of last resort — the thing that can't be located through Theen's territory knowledge, through Mira's intelligence, or through direct observation. In twelve years, the tracking assignment is the hard case. In twelve years, I've been assigned the hard cases.",
+      "keywords": ["cord","assigns","tracking","work","brotherhood's","primary","tracking","resource","twelve","years"]
+    },
+    {
+      "id": "theen_1",
+      "source": "Holt the Tracker on Theen",
+      "text": "Theen knows the territory and I work within the territory Theen knows. In ten years of the Theen-tracker knowledge relationship, what Theen's territory knowledge provides to my tracking: the context. Knowing the territory's normal patterns tells me when a sign is anomalous. The track that makes sense within the territory's normal patterns is different from the track that departs from those patterns. In ten years, Theen's territory knowledge has allowed me to notice the anomalous sign faster than I would have without the normal-pattern context.",
+      "keywords": ["theen","knows","territory","work","within","territory","theen","knows","ten","years"]
+    },
+    {
+      "id": "drav_1",
+      "source": "Holt the Tracker on Drav",
+      "text": "Drav hunts problem animals and occasionally needs tracking work for the problem animal that has moved from the reported location. In seven years of the tracker-hunter tracking collaboration with Drav, what the collaboration produces: the animal's current location from the sign it has left since the problem was reported. Drav is a skilled hunter but not a skilled tracker. I'm the skilled tracker who is not hunting the animal. In seven years, the collaboration has produced successful hunts in four cases where Drav's hunting skill alone wasn't sufficient without the tracking.",
+      "keywords": ["drav","hunts","problem","animals","occasionally","needs","tracking","work","problem","animal"]
+    },
+    {
+      "id": "ren_medic_1",
+      "source": "Holt the Tracker on Ren the Medic",
+      "text": "Ren the Medic has treated my injuries more than any other Brotherhood member's. In nine years of the tracker-medic relationship with Ren, what my injury pattern tells Ren about my tracking style: I work close to the sign. The tracker who works close to the sign works in the territory where the sign was made, which is often the territory where the thing that made the sign still is. In nine years, Ren's treatment of my injuries has been the record of the tracking work's physical cost.",
+      "keywords": ["ren","medic","treated","injuries","more","than","any","other","brotherhood","member's"]
+    },
+    {
+      "id": "what_holt_holds_1",
+      "source": "Holt the Tracker on the track that changed how he works",
+      "text": "Year three. A tracking assignment where I followed a sign that I assessed as the subject I was assigned to find. The sign led to a location where the subject was not. A different subject had made the sign — similar in size, similar in load, similar in direction, but not the assignment. In twelve years since, what year three produced: the practice of finding a second confirming sign before committing to a track interpretation. One sign can mislead. Two independent signs in the same direction: the interpretation is reliable. In twelve years, the second-sign practice has prevented two track-interpretation errors.",
+      "keywords": ["year","three","tracking","assignment","where","followed","sign","assessed","subject","assigned"]
+    },
+    {
+      "id": "what_tracking_is_1",
+      "source": "Holt the Tracker on what fifteen years of tracking is",
+      "text": "In fifteen years, what tracking is at its core: reading the past in the present. The sign is the past — the subject who is no longer at the sign's location. The reading is the present — my interpretation of the sign as I stand at it. The tracking is moving from the past to the subject's present location by following the chain of signs the subject left in transit. In fifteen years, the past-to-present movement is what the tracker does. The tracker who is still reading the past when the subject has moved to the future: that tracker is always behind.",
+      "keywords": ["fifteen","years","what","tracking","core","reading","past","present","sign","past"]
+    },
+    {
+      "id": "fifteen_years_1",
+      "source": "Holt the Tracker on fifteen years of Brotherhood tracking",
+      "text": "In fifteen years, I've tracked approximately two hundred subjects on Brotherhood assignment. Two hundred cases of a subject whose location was unknown and became known through the tracking. Of two hundred: one hundred and eighty-seven produced the subject's location within the assignment's time constraint. Thirteen did not — the sign went cold, or the subject entered territory that the sign doesn't persist in, or the time constraint closed before the sign produced the location. In fifteen years, thirteen failures in two hundred assignments. In fifteen years, the thirteen are the cases I still track in memory.",
+      "keywords": ["fifteen","years","tracked","approximately","two","hundred","subjects","brotherhood","assignment","two"]
+    }
+  ]
+}

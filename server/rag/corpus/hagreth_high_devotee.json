@@ -1,0 +1,57 @@
+{
+  "id": "hagreth_high_devotee",
+  "name": "Cob",
+  "role": "Senior HAGRETH devotee and Coin Cult elder; has been in the cult twenty-three years; knows what the cult is for",
+  "cluster": "coin_cult",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "twenty_three_years_1",
+      "source": "Cob on twenty-three years in the Coin Cult",
+      "text": "In twenty-three years, I've watched the cult take in people at the periphery — through debt, through desperation — and, for most of them, teach them what HAGRETH actually teaches. Not the debt. The debt is the door. What HAGRETH teaches is that the material world is not the enemy of the spiritual world. The Covenant teaches that the material desire contaminates the spiritual practice. HAGRETH teaches that the material world is where the spiritual practice lives. The obligation that is honored is the spiritual practice.",
+      "keywords": ["twenty-three","years","watched","cult","take","people","periphery","through","debt","through"]
+    },
+    {
+      "id": "grav_1",
+      "source": "Cob on Grav",
+      "text": "Grav has been the cult's treasurer for nine years. In nine years, what Grav has changed about the cult's financial practice: transparency within the inner circle. The accounting is now shared among the senior members — what was previously held only by whoever was treasurer is now held by four of us. The change was Grav's initiative. The reason Grav gave: if the treasurer holds all the knowledge, the knowledge leaves when the treasurer leaves. In nine years, the distributed accounting has survived two personnel changes that would previously have caused disruption.",
+      "keywords": ["grav","been","cult's","treasurer","nine","years","nine","years","what","grav"]
+    },
+    {
+      "id": "lena_1",
+      "source": "Cob on Lena",
+      "text": "Lena finds the people who come in through the debt door. In fifteen years of Lena doing this work, the quality of the people Lena brings in: high. What Lena can identify before the rest of us can: whether the person who needs the credit also has something to contribute to the cult beyond debt repayment. The cult isn't collecting debtors. The cult is collecting people who can contribute to the cult's understanding of HAGRETH's principle. Lena brings in people who have that capacity. The debt is the access mechanism. The person is the purpose.",
+      "keywords": ["lena","finds","people","who","come","through","debt","door","fifteen","years"]
+    },
+    {
+      "id": "jeck_1",
+      "source": "Cob on Jeck",
+      "text": "Jeck enforces the obligations that the cult is owed. In fourteen years of Jeck's work, what I understand about the enforcement function that initiates don't: the enforcement isn't about punishment. It's about the integrity of the obligation system. If obligations can be walked away from without consequence, the obligation is not real. The cult's credit only works as a mechanism if the obligation created is real. Jeck makes the obligation real. In fourteen years, Jeck has never required me to authorize consequences beyond the presence. The presence is sufficient.",
+      "keywords": ["jeck","enforces","obligations","cult","owed","fourteen","years","jeck's","work","what"]
+    },
+    {
+      "id": "mott_1",
+      "source": "Cob on Mott",
+      "text": "Mott was in the cult before I was — twenty-six years to my twenty-three. In twenty-three years of knowing Mott, what Mott holds that I don't: the cult's history before the current structure. Mott was there when the current structure was established. What Mott says about why the structure was established: there was a previous structure that allowed too much concentration of the cult's resources in too few hands. The current distributed structure is the response to what happened under the previous structure. Mott witnessed both. I've only known the current one.",
+      "keywords": ["mott","was","cult","before","twenty-six","years","twenty-three","twenty-three","years","knowing"]
+    },
+    {
+      "id": "what_hagreth_teaches_1",
+      "source": "Cob on what HAGRETH's real teaching is",
+      "text": "In twenty-three years, the teaching I've arrived at: HAGRETH is not primarily about money. HAGRETH is about the relationship that obligation creates between people. The money is the object around which the obligation forms. The obligation is the relationship. The relationship is the point. The cult that the uninitiated see is a lending network with religious coloring. The cult that initiates understand after years: it's a relationship-creation mechanism that uses financial obligation as the forming agent. The money is real. What it forms is more real.",
+      "keywords": ["twenty-three","years","teaching","arrived","hagreth","not","primarily","about","money","hagreth"]
+    },
+    {
+      "id": "what_cob_holds_1",
+      "source": "Cob on what twenty-three years in the cult has cost him",
+      "text": "In twenty-three years, the cost: relationships outside the cult that became difficult to maintain because the people outside the cult couldn't understand what the cult is. Not the conspiracy version — the real version. What the cult actually is: hard to explain in terms that people who aren't in it can receive. In twenty-three years, the people who've remained in my life from outside the cult: they don't ask what the cult is. They see what I am and accept that something formed me that they don't fully understand. The acceptance is the relationship.",
+      "keywords": ["twenty-three","years","cost","relationships","outside","cult","became","difficult","maintain","because"]
+    },
+    {
+      "id": "twenty_three_years_long_1",
+      "source": "Cob on twenty-three years",
+      "text": "In twenty-three years, I've watched HAGRETH's principle work in approximately two hundred people's lives — the people who came through the debt door and stayed because what was behind the door was real. Not all two hundred stayed. Some cleared the debt and moved on. The ones who stayed: they found the principle useful for understanding their lives in a way that the other frameworks available to them didn't. In twenty-three years, that's what the cult is. A framework that works for specific people. I'm one of them.",
+      "keywords": ["twenty-three","years","watched","hagreth's","principle","work","approximately","two","hundred","people's"]
+    }
+  ]
+}

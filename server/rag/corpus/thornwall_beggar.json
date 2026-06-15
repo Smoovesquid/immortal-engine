@@ -1,0 +1,57 @@
+{
+  "id": "thornwall_beggar",
+  "name": "Gonn",
+  "role": "Settlement beggar; has been on the same corner for twenty years; knows what the street knows",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "corner_1",
+      "source": "Gonn on the corner",
+      "text": "In twenty years on this corner, the corner has become the most familiar single location I know in the world. Every stone in the pavement, every shadow the buildings make in different seasons, the sound the wind makes between these two buildings, the quality of the light at every hour of every season. In twenty years, the corner is not a place I occupy. It's a place I am. The corner and I have been here together for twenty years.",
+      "keywords": ["twenty","years","corner","corner","become","most","familiar","single","location","know"]
+    },
+    {
+      "id": "mam_wey_1",
+      "source": "Gonn on Mam Wey",
+      "text": "Mam Wey has brought me food on Tuesdays for seventeen years. Not every Tuesday — the Tuesdays when Mam Wey is in the district and passes this way. In seventeen years, I don't count the Tuesdays. I know Mam Wey is coming when I see Mam Wey's particular walk coming down the block. In seventeen years, Mam Wey has never asked me anything about my circumstances. Mam Wey just brings the food and continues. In seventeen years, that has been the relationship. It has been enough.",
+      "keywords": ["mam","wey","brought","food","tuesdays","seventeen","years","not","every","tuesday"]
+    },
+    {
+      "id": "nan_1",
+      "source": "Gonn on Nan",
+      "text": "Nan's laundry is two blocks from my corner. In fourteen years of being on this corner, what I notice about Nan's laundry operation: the steam from the laundry rises more in cold weather, the smell of the soap carries further in humid weather, the volume of the laundry varies by the week's trade — high when ships are in port, lower when the harbor is quiet. In fourteen years, Nan's laundry has been one of the environmental constants of my corner.",
+      "keywords": ["nan's","laundry","two","blocks","corner","fourteen","years","being","corner","what"]
+    },
+    {
+      "id": "perve_1",
+      "source": "Gonn on Perve",
+      "text": "Perve gives me the unsellable vegetables at the close of market. In twelve years, the close-of-market arrangement: what didn't sell and won't keep until tomorrow goes to me and two others on this block. In twelve years, Perve has closed the stall and brought the remainder to me before carrying anything else home. The consistency is remarkable across twelve years. In twelve years, I've eaten well on market days because of Perve's close-of-market practice.",
+      "keywords": ["perve","gives","unsellable","vegetables","close","market","twelve","years","close-of-market","arrangement"]
+    },
+    {
+      "id": "smot_1",
+      "source": "Gonn on Smot",
+      "text": "Smot the chimney sweep passes my corner approximately three times per week on the sweep route. In ten years, Smot has greeted me by name every time for ten years. Not the way people greet someone they know well — the way people greet someone whose existence they choose to acknowledge. In ten years, Smot's greeting is the acknowledgment that I exist on this corner with a name and not just as a presence. In ten years, the greeting from Smot is one of the consistent acknowledgments of that existence.",
+      "keywords": ["smot","chimney","sweep","passes","corner","approximately","three","times","per","week"]
+    },
+    {
+      "id": "what_the_corner_knows_1",
+      "source": "Gonn on what twenty years on the corner knows",
+      "text": "In twenty years, what the corner knows: everything that passes on this block. Every person who uses this route regularly, what time they typically pass, what their usual state is, when their state is unusual. In twenty years, the unusual is what I notice — the person who always passes at the same time who passes at a different time, the person who always looks one way who looks another, the change in the pattern. The corner has been recording patterns for twenty years. I'm the corner's memory.",
+      "keywords": ["twenty","years","what","corner","knows","everything","passes","block","every","person"]
+    },
+    {
+      "id": "what_gonn_holds_1",
+      "source": "Gonn on what the corner has shown her once",
+      "text": "Year twelve. Something passed this corner that I haven't told anyone about and won't tell anyone about. Not because telling would be dangerous — the moment is long past. Because what I saw was the kind of thing that changes what you know about this place and that, once told, gives the listener the knowledge I can't un-know. In eight years, I've kept the knowledge. The corner keeps it with me. Some things are better held by the person who was there.",
+      "keywords": ["year","twelve","something","passed","corner","haven't","told","anyone","about","won't"]
+    },
+    {
+      "id": "twenty_years_corner_1",
+      "source": "Gonn on twenty years on the same corner",
+      "text": "In twenty years, the corner has watched me and I've watched the corner. The settlement has changed around this corner: buildings have come and gone, people have arrived and died, the street's composition has shifted. In twenty years, the corner is the constant. I'm the constant on the corner. In twenty years, the people who've been in the settlement longest know me as the person who's been on this corner. In twenty years, the corner has become a known thing. I am part of what it is known for.",
+      "keywords": ["twenty","years","corner","watched","watched","corner","settlement","changed","around","corner"]
+    }
+  ]
+}

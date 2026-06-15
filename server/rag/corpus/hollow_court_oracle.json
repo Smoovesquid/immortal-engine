@@ -1,0 +1,57 @@
+{
+  "id": "hollow_court_oracle",
+  "name": "Veyl",
+  "role": "Hollow Court oracle; interprets the signs the Court uses to make its decisions; nobody knows if it works",
+  "cluster": "hollow_court",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "oracle_1",
+      "source": "Veyl on what an oracle actually is",
+      "text": "An oracle is a person who has trained extensively in reading patterns that most people don't notice. In sixteen years as the Hollow Court's oracle, what I read: the patterns in the Court's current situation that parallel patterns in the historical record, and the outcomes those historical patterns produced. What I don't do: predict the future. What I do: show the Court what the current pattern has tended to produce in comparable historical situations. The pattern may not hold. The pattern has a track record.",
+      "keywords": ["oracle","person","trained","extensively","reading","patterns","most","people","don't","notice"]
+    },
+    {
+      "id": "sel_1",
+      "source": "Veyl on Sel",
+      "text": "Sel leads the Hollow Court and is the person whose decisions my readings inform. In fourteen years of providing readings to Sel, what Sel does with the readings: considers them as one input among several, not as the determining factor. In fourteen years, Sel has accepted the reading's implication four times, partially accepted it seven times, and rejected it outright three times. The three rejections: two of them produced outcomes that the reading had indicated as less likely. One produced an outcome the reading hadn't anticipated.",
+      "keywords": ["sel","leads","hollow","court","person","whose","decisions","readings","inform","fourteen"]
+    },
+    {
+      "id": "eld_1",
+      "source": "Veyl on Eld",
+      "text": "Eld is the Court's historian and the source I use most heavily for the historical pattern matching. In twelve years of working with Eld's historical knowledge as the foundation for the oracle's pattern reading, what Eld provides: the detailed record of what the comparable historical situations actually were, not what they've been simplified to in the common memory. In twelve years, Eld's precision about the historical record has prevented my readings from being built on the simplified version of history that most pattern matching relies on.",
+      "keywords": ["eld","court's","historian","source","use","most","heavily","historical","pattern","matching"]
+    },
+    {
+      "id": "cree_1",
+      "source": "Veyl on Cree",
+      "text": "Cree is the Court's counselor and the person who asks the most penetrating questions about my readings. In nine years of Cree's interrogation of the oracle function, what Cree has done for the quality of the readings: forced me to be more precise about the distinction between the pattern and the prediction. Cree's question, always: what specifically are you claiming, and what's the evidence for that specific claim? In nine years, Cree's interrogation has made the readings more honest about their limits.",
+      "keywords": ["cree","court's","counselor","person","asks","most","penetrating","questions","readings","nine"]
+    },
+    {
+      "id": "maret_1",
+      "source": "Veyl on Maret",
+      "text": "Maret manages the Court's external relationships. In seven years of Maret's management function intersecting with the oracle's readings, what the oracle's readings have provided to Maret's work: the historical pattern for specific types of external relationships and their outcomes. In seven years, the readings that have been most useful to Maret have been the readings about the trajectory of specific external relationships: what the current relationship's pattern suggests about where the relationship is likely to go.",
+      "keywords": ["maret","manages","court's","external","relationships","seven","years","maret's","management","function"]
+    },
+    {
+      "id": "what_the_oracle_holds_1",
+      "source": "Veyl on what sixteen years as oracle actually holds",
+      "text": "In sixteen years, the honest account of the oracle function: I've been more accurate than chance in a domain where accurate prediction is genuinely difficult. The track record is real but not overwhelming. In sixteen years, the readings that have been accurate and the readings that haven't: the accurate readings have been where the historical pattern was clear and the current situation's resemblance to it was specific. The inaccurate readings have been where I was matching pattern to situation that didn't fit as well as I thought.",
+      "keywords": ["sixteen","years","honest","account","oracle","function","been","more","accurate","than"]
+    },
+    {
+      "id": "what_veyl_holds_1",
+      "source": "Veyl on the reading she got most wrong",
+      "text": "Year four. A reading where I was certain enough about the pattern match that I presented it without the usual hedging. The outcome was the one the pattern's historical record suggested as least likely. In twelve years since, year four is the year I return to when I'm certain. The certainty that produces unhedged presentation is the certainty that has been most wrong in sixteen years. In twelve years since year four, I present all readings with explicit acknowledgment of the limits. The limits are part of the reading.",
+      "keywords": ["year","four","reading","where","certain","enough","about","pattern","match","presented"]
+    },
+    {
+      "id": "sixteen_years_1",
+      "source": "Veyl on sixteen years as the Hollow Court's oracle",
+      "text": "In sixteen years, the oracle function has been valued by the Court and questioned by the Court in approximately equal measure. In sixteen years, the Court has not dismissed the oracle function, which tells me it provides something the Court considers useful. In sixteen years, the Court has not followed the oracle function uncritically, which tells me the Court understands what it is. In sixteen years, the oracle is useful and not authoritative. That's the right relationship between a reading and a decision.",
+      "keywords": ["sixteen","years","oracle","function","been","valued","court","questioned","court","approximately"]
+    }
+  ]
+}

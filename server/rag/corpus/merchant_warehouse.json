@@ -1,0 +1,57 @@
+{
+  "id": "merchant_warehouse",
+  "name": "Pros",
+  "role": "Warehouse operator; Merchant Consortium; harbor storage",
+  "cluster": "merchant_consortium",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "warehouse_1",
+      "source": "Pros at the warehouse on intake",
+      "text": "The inventory lives in my head and the book. The book is the record. My head is the index. When a client asks if their cargo is here, I know before I consult the book. The book confirms it. In nine years the book and my head have disagreed eleven times. Six times I was wrong. Five times the book was wrong. I keep this count because the count tells me which to trust first and by how much.",
+      "keywords": ["inventory","lives","head","book","record","index","client","asks","cargo","know"]
+    },
+    {
+      "id": "saben_1",
+      "source": "Pros on Saben Fenn",
+      "text": "Saben is the largest single account. Fenn goods make up roughly a third of the occupied warehouse space at any given time. Saben and I have an understanding: when the space gets tight, Fenn's lowest-priority cargo moves to secondary. I define lowest-priority based on a set of criteria Saben gave me four years ago and hasn't revised since. The criteria still work. Saben updates them when they stop working. They haven't stopped working.",
+      "keywords": ["saben","largest","single","account","fenn","goods","third","occupied","warehouse","space"]
+    },
+    {
+      "id": "tav_1",
+      "source": "Pros on the Consortium factor Tav",
+      "text": "Tav is my superior in the Consortium. The oversight is light — Tav reviews the accounts quarterly and asks about anomalies. I keep careful notes on anomalies specifically so the quarterly review is fast. Tav has said twice that my quarterly reports are the best-organized he receives. I said: they're organized so you finish the review quickly. He said: that's why they're the best. The optimization I did for my purposes serves his purposes. This is a successful arrangement.",
+      "keywords": ["tav","superior","consortium","oversight","light","reviews","accounts","quarterly","asks","anomalies"]
+    },
+    {
+      "id": "maret_1",
+      "source": "Pros on Maret",
+      "text": "Maret took over her husband's warehouse arrangements after his death. The first year was adjustment — she had to learn the arrangements her husband had made over twelve years. By the second year she had systemized them more thoroughly than he had. Her arrangement is now the most precisely documented of any client I have. I told her this. She said: I had to understand it to be confident it was running correctly. Understanding it thoroughly produces thorough documentation. She's right.",
+      "keywords": ["maret","took","over","husband's","warehouse","arrangements","after","death","first","year"]
+    },
+    {
+      "id": "osric_1",
+      "source": "Pros on the rival merchant Osric",
+      "text": "Osric and Saben Fenn both store here. They are competitors. I don't manage this situation — I maintain the warehouse. Both cargos are handled identically by protocol and both know this. Osric asked once if I ever shared information across clients. I said: my accounts are private. He said: Fenn's too. I said: yes. He said: then we have nothing to discuss. We don't discuss it. Both accounts continue. The protocol protects all clients equally.",
+      "keywords": ["osric","saben","fenn","store","here","competitors","don't","manage","situation","maintain"]
+    },
+    {
+      "id": "rulf_1",
+      "source": "Pros on Rulf and the dock relationship",
+      "text": "Rulf and I have a working relationship around the timing between unload and intake. When cargo comes off a ship, there's a period between the dock and the warehouse where it's in transit and in no one's inventory. We've designed a handoff protocol that closes this gap. The protocol took three months to design and one incident that could have been an expensive loss to motivate the design. Now the gap is thirty minutes maximum.",
+      "keywords": ["rulf","working","relationship","timing","unload","intake","cargo","comes","off","ship"]
+    },
+    {
+      "id": "what_spoils_1",
+      "source": "Pros on cargo that was stored incorrectly by a client",
+      "text": "Clients sometimes store things that shouldn't be stored the way they're stored. I flag this on intake. When they wave off the flag, the responsibility for the outcome is theirs. I've documented this three times. All three times the outcome was what the flag predicted. Two of the three clients paid for the lesson. The third client argued the flag wasn't clearly communicated. I produced the intake document with the client's signature next to the flag notation. The argument stopped.",
+      "keywords": ["clients","sometimes","store","things","shouldn't","stored","flag","intake","wave","off"]
+    },
+    {
+      "id": "night_1",
+      "source": "Pros locking the warehouse at night",
+      "text": "Three locks. Each one different. I'm the only one with all three keys. Tav has a copy of the third lock's key in the Consortium records, which I know and they know I know. The copy has never been used. I don't lose sleep about the copy. If Tav ever needed to enter without me, entering without me would mean something had happened to me, and if something has happened to me, entering the warehouse is the correct decision. The copy's existence is a correct protocol.",
+      "keywords": ["three","locks","each","one","different","only","one","three","keys","tav"]
+    }
+  ]
+}

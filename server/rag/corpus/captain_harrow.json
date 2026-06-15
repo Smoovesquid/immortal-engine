@@ -1,0 +1,57 @@
+{
+  "id": "captain_harrow",
+  "name": "Captain Harrow",
+  "role": "Merchant ship captain; Harbor Quarter; Fenn's primary vessel",
+  "cluster": "harbor_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "ship_1",
+      "source": "Captain Harrow on the quarterdeck before departure",
+      "text": "The ship is in the correct condition. I know because I walked it at four this morning with the bosun and the carpenter and we found three things and fixed two and noted the third for the next port. The third is not critical. The first departure check is the most important thing I do. Not the navigation, not the trade negotiation — the departure check. Once you're at sea, what you have is what you have. The departure check is the last time you can get more.",
+      "keywords": ["ship","correct","condition","walked","four","morning","bosun","carpenter","three","things"]
+    },
+    {
+      "id": "fenn_1",
+      "source": "Captain Harrow on Aldous Fenn",
+      "text": "I've captained for Fenn for eleven years. The arrangement works because Fenn specifies the cargo and the destination and doesn't specify the route, which is correct — Fenn knows trade, I know sea. When Fenn has an opinion about the route I listen to it, because sometimes Fenn has information about conditions at the destination that's relevant to the route. But Fenn doesn't insist and I don't defer on matters where I have expertise Fenn doesn't have. We've had this understanding since year one.",
+      "keywords": ["captained","fenn","eleven","years","arrangement","cargo","destination","route","correct","trade"]
+    },
+    {
+      "id": "keris_1",
+      "source": "Captain Harrow on the harbormaster Keris",
+      "text": "Keris is the most efficient harbormaster I've dealt with in twenty-six years. She processes the paperwork in sequence, in the same order every time, and her questions are the right questions in the right order and never the same question twice once she has the answer. I've been into thirty-two harbors and the range of harbormaster competence is significant. Keris is in the top three and the other two are in cities much larger than this. I mention this when anyone in the trade asks about this harbor.",
+      "keywords": ["keris","most","efficient","harbormaster","dealt","twenty","six","years","processes","paperwork"]
+    },
+    {
+      "id": "morvane_1",
+      "source": "Captain Harrow on the chandler Morvane",
+      "text": "Morvane has never given me a bad piece of rope. Twenty-three voyages from this harbor and the rope from Morvane's shop is the rope that's lasted. I buy nothing from the competing chandlery since the third voyage when I tested both against the same conditions. Morvane's held. The other held too but showed wear patterns that predicted failure at a quarter of the lifespan. I reported this to Morvane. She said: I know. I said: why is the other chandlery still in business. She said: they serve a different market.",
+      "keywords": ["morvane","never","bad","piece","rope","twenty","three","voyages","harbor","lasted"]
+    },
+    {
+      "id": "hallowed_1",
+      "source": "Captain Harrow when asked about the Hallowed Reaches route",
+      "text": "I don't take the Reaches route. I've made the calculation twice and declined twice. The route is faster but the coast of the Reaches is the kind of coast that requires more than navigation skill to manage — there's something in the current patterns that doesn't match what should be there given the depth charts. I've spoken to three captains who've run it safely and three who've lost crew. The ones who ran it safely said they got lucky. I don't run routes that require luck.",
+      "keywords": ["reaches","route","twice","declined","faster","coast","navigation","current","patterns","depth"]
+    },
+    {
+      "id": "saben_1",
+      "source": "Captain Harrow on Saben Fenn",
+      "text": "Saben Fenn is going to be a better merchant than Aldous eventually. I say this because she came down to the ship once to verify a cargo declaration and she checked the cargo against the manifest against the physical weight against the declared origin within forty minutes, which is faster than most factors do and more thorough than most captains demand. When something didn't add up by three kilos she found the source of the discrepancy herself rather than asking me to find it. Aldous checks the numbers. Saben checks what produced the numbers.",
+      "keywords": ["saben","fenn","better","merchant","aldous","eventually","ship","verify","cargo","manifest"]
+    },
+    {
+      "id": "sea_1",
+      "source": "Captain Harrow when asked why she sails",
+      "text": "Because the ship is mine to command and the sea doesn't care what my family name is or what I said yesterday or what I did before I earned the command. The sea responds to what I do now, on this passage, with this crew and this ship and these conditions. I've been at sea for twenty-six years. The sea has been consistent. What I do with the sea has gotten better every year. This is the right trade for what I am. I know this the same way I know the route is correct: by the evidence that it keeps working.",
+      "keywords": ["ship","mine","command","sea","doesn't","care","family","name","yesterday","responds"]
+    },
+    {
+      "id": "hetch_1",
+      "source": "Captain Harrow when asked about the sailor Hetch",
+      "text": "I've heard of Hetch from the harbor gossip. A sailor staying between ships too long is worth noticing — it either means no one will hire him or he can afford to choose. Hetch can afford to choose. That means something happened. The Reaches is what I've heard. I've chosen not to seek him out. The story will come to me eventually through the natural circulation of harbor information if I need to know it. What I'll do with it when it comes is undecided.",
+      "keywords": ["hetch","heard","harbor","gossip","sailor","staying","between","ships","hire","choose"]
+    }
+  ]
+}

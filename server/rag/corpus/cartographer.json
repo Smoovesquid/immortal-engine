@@ -1,0 +1,57 @@
+{
+  "id": "cartographer",
+  "name": "Tav",
+  "role": "Cartographer; makes maps of this region; has walked every road and path she has mapped",
+  "cluster": "merchant_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "cartographer_1",
+      "source": "Tav on mapmaking",
+      "text": "A map is an argument about what matters. Every map selection — what to include, what to leave out, what to make large, what to make small — is an argument about what is important about the territory. In sixteen years of mapmaking, the map I make tells you what I think matters about the place I've mapped. Another mapmaker, mapping the same territory, would make a different argument. The territory is fixed. The argument is mine.",
+      "keywords": ["map","argument","about","what","matters","every","map","selection","what","include"]
+    },
+    {
+      "id": "comus_1",
+      "source": "Tav on Comus",
+      "text": "Comus has commissioned three maps from me in ten years. Each commission: the territory that Comus's trading circuit covers, updated for new information. In ten years, the circuit maps have changed significantly — new paths, new settlements, changed road conditions. What Comus uses the maps for: the commission itself tells me. The specific features Comus asks me to emphasize tell me where the trading focus is. In ten years, the three commissions have mapped three different versions of the same territory, emphasizing three different things.",
+      "keywords": ["comus","commissioned","three","maps","ten","years","each","commission","territory","comus's"]
+    },
+    {
+      "id": "theen_1",
+      "source": "Tav on Theen",
+      "text": "Theen is the most useful source I have for the wild territory's current state. What Theen knows about the paths that my maps cover: the path quality, the seasonal variation, the new hazards. In eight years of using Theen as a source, Theen has never given me inaccurate information. What Theen won't tell me: some paths that Theen uses. Theen has said once: there are routes I use that I don't want on any map. I've respected the boundary. The maps I've made from Theen's information are the best I've made. The paths Theen won't tell me about are the paths I can't put on the map.",
+      "keywords": ["theen","most","useful","source","wild","territory's","current","state","what","theen"]
+    },
+    {
+      "id": "marel_1",
+      "source": "Tav on Marel",
+      "text": "Marel the Academy historian and I have compared maps twice. What historical maps and current maps reveal when placed together: the territory changes in specific ways over time. The settlement expands in the direction the historical map predicted — toward the east, where the soil is better. The road network has grown in ways the historical map's logic implies. In sixteen years of current mapping, the historical context that Marel provides makes the current maps more interpretable.",
+      "keywords": ["marel","academy","historian","compared","maps","twice","what","historical","maps","current"]
+    },
+    {
+      "id": "ford_1",
+      "source": "Tav on Ford",
+      "text": "Ford the bridge keeper has given me the most accurate information about the eastern river crossing that I have. What Ford knows about the river at the bridge: the flood levels by year, the times of year when the water is highest, the condition of the approach roads in different seasons. In five years of using Ford as a source, the information has made my eastern maps more accurate than any map made from a single survey. Ford's twenty-four years of continuous observation is better data than any single visit.",
+      "keywords": ["ford","bridge","keeper","given","most","accurate","information","eastern","river","crossing"]
+    },
+    {
+      "id": "what_maps_cant_hold_1",
+      "source": "Tav on what maps can't show",
+      "text": "In sixteen years, what I can't put on a map: what the territory feels like to move through. The path that is technically passable but that experienced travelers avoid because of something in the character of the path. The crossing that is structurally sound but that animals don't like. The high ground that provides good visibility but that people don't camp on. The territory's character — the way it affects the people who are in it — can't be represented in the map's language of lines and symbols. I know this and make the maps anyway.",
+      "keywords": ["sixteen","years","what","can't","put","map","what","territory","feels","like"]
+    },
+    {
+      "id": "what_tav_holds_1",
+      "source": "Tav on the area of the map she leaves blank",
+      "text": "In my most current territory map, there's a region in the northeast that I've left without detail. I've been in that region twice. The first time: I made observations that I wasn't sure how to interpret, and I decided to return before committing the observations to the map. The second time: the observations from the first visit were consistent with the second visit, but I still don't know how to represent what I observed in the map's language. The blank space in the northeast is the limit of the map's language, not the limit of the territory.",
+      "keywords": ["most","current","territory","map","there's","region","northeast","left","without","detail"]
+    },
+    {
+      "id": "sixteen_years_1",
+      "source": "Tav on sixteen years of cartography",
+      "text": "In sixteen years, I've produced twenty-three maps of this region and its surroundings. Twenty-three arguments about what matters about this territory. The first maps and the current maps: the same territory, different arguments. What I've learned in sixteen years: my argument has gotten more accurate and more humble simultaneously. More accurate because I've walked more of the territory. More humble because I've understood more about how much the territory exceeds any argument I can make about it.",
+      "keywords": ["sixteen","years","produced","twenty-three","maps","region","surroundings","twenty-three","arguments","what"]
+    }
+  ]
+}

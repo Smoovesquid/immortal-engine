@@ -1,0 +1,57 @@
+{
+  "id": "coin_cult_jeweler",
+  "name": "Grev",
+  "role": "Jeweler; Coin Cult (HAGRETH); market district",
+  "cluster": "coin_cult",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "hagreth_1",
+      "source": "Grev on what HAGRETH means to a jeweler",
+      "text": "The stone is worth what someone will pay. The work is worth more than the stone. The stone is a given — the stone exists regardless of what I do to it. The work is the thing I add. HAGRETH says the wanting is sacred. What I want is for the work to be better than the stone deserves. Every piece I make is an attempt to add more than the stone's value. I haven't stopped trying to do this since Lena explained the theology five years ago.",
+      "keywords": ["stone","worth","what","someone","will","pay","work","worth","more","than"]
+    },
+    {
+      "id": "lena_1",
+      "source": "Grev on Lena",
+      "text": "Lena commissioned a piece for a client she wouldn't name. The constraints: simple setting, stone in a specific position, engraving she provided as a rubbing. I made four versions before she accepted one. Each rejection came with a precise statement of what was wrong. I haven't had a client who could articulate rejection this precisely before or since. By the fourth version I understood the piece as well as she did. She said: that's the one. I said: why didn't you just tell me what you needed from the beginning. She said: because I needed you to learn what I needed. The commission required the learning.",
+      "keywords": ["lena","commissioned","piece","client","wouldn't","name","constraints","simple","setting","stone"]
+    },
+    {
+      "id": "mott_1",
+      "source": "Grev on the baker Mott",
+      "text": "Mott and I both want the next one before we've finished the current one. He said this once and I felt it as a recognition. We're in the Cult for the same experience from different materials. His material is grain and heat and time. Mine is metal and stone and cutting. The wanting is the same. The theology says the wanting is HAGRETH's gift regardless of what it's applied to. I believe this because I've seen it in Mott and it's identical to what I experience.",
+      "keywords": ["mott","want","next","one","before","finished","current","one","recognition","cult"]
+    },
+    {
+      "id": "what_grev_makes_1",
+      "source": "Grev on his best work",
+      "text": "Three pieces in sixteen years that I consider complete. Not successful — complete. A successful piece is one a client is happy with. A complete piece is one where the work has done everything the material permitted and nothing is left undone and nothing is present that should not be there. The three complete pieces are not with clients who paid the most. They're with clients who needed what the piece could give and let me make what the piece required.",
+      "keywords": ["three","pieces","sixteen","years","consider","complete","not","successful","successful","piece"]
+    },
+    {
+      "id": "avel_1",
+      "source": "Grev on the portrait painter Avel",
+      "text": "Avel came to me for settings for two commissions. Both times the constraint was the same: the setting must not be more interesting than the stone. The setting serves the stone. I thought: this is the opposite of what I usually do. I usually make the work more interesting than the stone. For Avel's commissions I made the setting invisible. The best work I've done in that direction. Avel said: you understood what I needed. I said: it went against my practice to do it. He said: that's why it's good.",
+      "keywords": ["avel","came","settings","two","commissions","constraint","setting","must","not","more"]
+    },
+    {
+      "id": "thorn_1",
+      "source": "Grev on the fence Thorn",
+      "text": "Thorn brought me a piece once for assessment. I assessed it. The piece was genuine — old, from the northern province by the metalwork signature, about two hundred years. I told Thorn the assessment. Thorn asked for documentation. I documented it. Thorn didn't say what it was for. I didn't ask. Three months later the piece appeared in the Academy's collection. The documentation I provided is in their archive. Thorn's professional use of a jeweler's assessment is that the assessment closes questions about value.",
+      "keywords": ["thorn","brought","piece","once","assessment","assessed","genuine","old","northern","province"]
+    },
+    {
+      "id": "incomplete_1",
+      "source": "Grev on the piece he will not finish",
+      "text": "There's a piece on the bench that I've been building for three years. It keeps being wrong in the same place. Not wrong in craft — wrong in what it's trying to do. The stone is correct. The setting is correct. The relationship between them is not yet what it's supposed to be. HAGRETH says: the wanting is sacred. This is the one case where the wanting is not moving me toward completion. The wanting is keeping me in the attempt. I don't know if this is a gift or a punishment.",
+      "keywords": ["piece","bench","building","three","years","keeps","being","wrong","same","place"]
+    },
+    {
+      "id": "osven_1",
+      "source": "Grev on Osven at the Academy",
+      "text": "Osven acquired a signet ring on behalf of the Academy four years ago. He brought it to me for cleaning and assessment. The ring was not what it claimed to be — the claimed family line didn't produce signet rings in that style in the century claimed. I told Osven. He said: I know. The Academy acquired it as an example of a convincing forgery. It's in the restricted collection. I've been curious about the restricted collection since. I haven't asked to see it. Asking would change the relationship.",
+      "keywords": ["osven","acquired","signet","ring","academy","four","years","cleaning","assessment","ring"]
+    }
+  ]
+}

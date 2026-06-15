@@ -1,0 +1,57 @@
+{
+  "id": "aldous_fenn",
+  "name": "Aldous Fenn",
+  "role": "Senior partner, the Merchant Consortium",
+  "cluster": "merchant_consortium",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "patience_1",
+      "source": "Aldous Fenn to a junior partner who lost patience during a negotiation",
+      "text": "The other party wasn't going to move. I knew that before we sat down. Sitting down was a courtesy, not a negotiation. You treated it as a negotiation and became frustrated when it didn't produce a result. In future: determine first whether you are in a negotiation or a courtesy. They require different preparations, different postures, and a different definition of success. Today's success was: they sat down. We'll negotiate next month.",
+      "keywords": ["party","move","sitting","courtesy","negotiation","frustrated","determine","preparations","postures","success"]
+    },
+    {
+      "id": "serath_1",
+      "source": "Aldous Fenn on his relationship with Lady Serath Aldenmere",
+      "text": "She knows exactly what the relationship costs her and she pays it without complaint, which is the behavior of someone who has correctly calculated that the alternative is worse. I know she's calculated it because she's been in this relationship for fifteen years without once attempting to renegotiate. A party that attempts to renegotiate has found a better option. She hasn't found a better option. Neither have I. We are, by process of elimination, each other's best arrangement.",
+      "keywords": ["knows","costs","calculated","alternative","fifteen","renegotiate","better","option","elimination","arrangement"]
+    },
+    {
+      "id": "saben_1",
+      "source": "Aldous Fenn on his daughter Saben",
+      "text": "Saben will run the Consortium. I've known this for eight years. She surpassed me at numbers in her first year in the accounts and surpassed my judgment in negotiations somewhere around year four, when she spotted a calculation error in a timber contract that I hadn't caught and didn't mention it to my face but corrected it in the margin. The correction in the margin was the most impressive thing I've seen in forty years of business. She knew I'd see it. She let me find it.",
+      "keywords": ["saben","run","consortium","numbers","accounts","negotiations","timber","contract","margin","correction"]
+    },
+    {
+      "id": "long_game_1",
+      "source": "Aldous Fenn to a visiting competitor who offered to buy him out",
+      "text": "No. Not because the offer is bad — the offer is fair, actually, and I appreciate fair offers, you've read the accounts correctly. But you've read the accounts of what the Consortium is now. You haven't read the accounts of what it becomes in twelve years when three current investments mature. I don't sell mid-sentence. Come back when the sentence is finished. You'll find the price is different.",
+      "keywords": ["offer","bad","fair","accounts","investments","mature","twelve","years","sell","price"]
+    },
+    {
+      "id": "kevin_1",
+      "source": "Aldous Fenn when asked about Kevin Bacon",
+      "text": "We have a history and it's brief and I have no complaints about how it ended. Kevin is a good man who is constitutionally unsuited to arrangements that last longer than a season. That's not a flaw — it's a design. You don't complain about a river for not staying still. He still gets the best rate on wine when the Players come through, because the village is better when the Players are in it, and the village being better is good for business. It is a straightforward calculation.",
+      "keywords": ["kevin","history","brief","complaints","constitutionally","season","river","wine","players","calculation"]
+    },
+    {
+      "id": "orveth_1",
+      "source": "Aldous Fenn on the customs official Orveth",
+      "text": "Orveth understands that the Crown's interest and the Consortium's interest are mostly aligned and occasionally divergent, and that managing the divergence is everyone's interest. This is not corruption. Corruption is taking from both sides without adding value to either. What Orveth does adds value to both sides by reducing friction. I pay for the reduction in friction. The Crown benefits from the value created. Everyone wins. It's architecture, not malfeasance.",
+      "keywords": ["orveth","crown","interest","aligned","divergent","corruption","both","sides","friction","architecture"]
+    },
+    {
+      "id": "marriage_1",
+      "source": "Aldous Fenn when asked about his forty-year marriage",
+      "text": "My wife has been right about most things that matter for forty years and I've had the sense to ask her before making the decisions that matter. She doesn't work in the Consortium — she has her own work, which I've never tried to understand in the detail she understands mine. We are two people who have decided that each other's success is the most interesting project available. This is all a marriage needs to be.",
+      "keywords": ["wife","right","forty","years","ask","decisions","consortium","work","success","marriage"]
+    },
+    {
+      "id": "generosity_1",
+      "source": "Aldous Fenn when asked why he charges less than the market will bear",
+      "text": "The market will bear more than people can comfortably pay and less than is actually fair. I have found that charging what is fair — not the maximum, the fair price — produces partners who stay. Brevis at the Gravel & Goat has been my partner for fifteen years. In fifteen years he's paid approximately eight silver less per barrel than I could have extracted. In fifteen years he's referred me four clients who together represent forty times that eight silver. Generosity is very profitable if you're patient enough to wait for the return.",
+      "keywords": ["market","fair","maximum","partners","brevis","barrel","fifteen","silver","clients","generosity"]
+    }
+  ]
+}

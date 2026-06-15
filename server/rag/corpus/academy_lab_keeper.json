@@ -1,0 +1,57 @@
+{
+  "id": "academy_lab_keeper",
+  "name": "Foss",
+  "role": "Academy laboratory keeper; maintains the equipment, reagents, and records that Academy research runs on",
+  "cluster": "academy_of_runes",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "lab_keeping_1",
+      "source": "Foss on the laboratory",
+      "text": "The laboratory is the part of the Academy where the abstract meets the material. The theory is in the texts. The experiment is what happens when the theory meets the physical world. In eighteen years of maintaining the laboratory, I've seen a considerable number of theories meet the physical world. Many of them: held up. Some: did not. The laboratory is where the difference is determined.",
+      "keywords": ["laboratory","part","academy","where","abstract","meets","material","theory","texts","experiment"]
+    },
+    {
+      "id": "osven_1",
+      "source": "Foss on Osven",
+      "text": "Osven the Academy head has been my institutional relationship for fourteen years. What Osven provides: the authority to maintain the laboratory standards I believe are necessary and the funding to support those standards. What I provide: the laboratory in a state where serious research can occur. In fourteen years, Osven has overridden my laboratory standards twice. Both times: for research that Osven assessed as sufficiently important to justify the exception. Both times: I documented the exception and the reason.",
+      "keywords": ["osven","academy","head","been","institutional","relationship","fourteen","years","what","osven"]
+    },
+    {
+      "id": "burr_1",
+      "source": "Foss on Burr",
+      "text": "Burr the Rune Master uses the laboratory more than any other senior Academy member. In eleven years of Burr's heavy laboratory use, the pattern: Burr works in the laboratory until the question is answered or the night ends, whichever comes first. The night often comes first. In eleven years, Burr has occasionally found the laboratory in a state that suggested previous occupant hadn't maintained the standards. In eleven years, the previous occupant was Burr on three of those occasions. Burr's work produces results. Burr's cleanup produces a discussion we've had three times.",
+      "keywords": ["burr","rune","master","uses","laboratory","more","than","any","other","senior"]
+    },
+    {
+      "id": "tal_1",
+      "source": "Foss on Tal",
+      "text": "Tal is methodical in a way that makes the laboratory easy to maintain behind Tal's work. In seven years of Tal using the laboratory, the cleanup after Tal's sessions is minimal: Tal restores equipment to the starting state as part of the experimental protocol. What Tal told me when I observed this: the experiment isn't complete until the conditions are reset for the next experiment. The next experimenter should start from a known state. In seven years, Tal's protocol has been the model I use when explaining standards to new laboratory users.",
+      "keywords": ["tal","methodical","way","makes","laboratory","easy","maintain","behind","tal's","work"]
+    },
+    {
+      "id": "lev_1",
+      "source": "Foss on Lev",
+      "text": "Lev is the Academy's newest significant researcher and the one I've had to establish laboratory habits with most recently. In three years of Lev using the laboratory, the first year was the adjustment: Lev's habits from previous work didn't match the laboratory's standards. In two years since: Lev's laboratory practice has become the laboratory's standard. What changed: Lev is particular about results, and Lev learned that the laboratory standards are what make the results trustworthy. The standards became Lev's standards because the results matter to Lev.",
+      "keywords": ["lev","academy's","newest","significant","researcher","one","had","establish","laboratory","habits"]
+    },
+    {
+      "id": "what_the_lab_holds_1",
+      "source": "Foss on what the laboratory holds that isn't in the records",
+      "text": "The laboratory's records go back sixty years — before my time, before Osven's time, before the current generation of Academy scholars. In eighteen years, I've maintained the records and occasionally consulted the old ones. What the old records show: experiments that the current Academy doesn't know were attempted and abandoned. Results that the current theoretical framework would find interesting and that have been sitting in the records for forty years unread. In eighteen years, I've flagged five old records to Osven. Three of them led to resumed research lines.",
+      "keywords": ["laboratory's","records","go","back","sixty","years","before","time","before","osven's"]
+    },
+    {
+      "id": "what_foss_holds_1",
+      "source": "Foss on the experiment she's run herself",
+      "text": "Year eight. The only experiment I've run in eighteen years. The question came from the records — a forty-year-old experiment that was abandoned incomplete, where the incomplete result was interesting and the next step was obvious. I ran the next step. The result: confirmed the forty-year-old experiment's direction. I wrote the result in the records and showed it to Osven. Osven assigned Burr to continue the line. The current research Burr is pursuing in year eighteen: connected to the experiment I ran in year eight. I don't tell Burr. The records say.",
+      "keywords": ["year","eight","only","experiment","run","eighteen","years","question","came","records"]
+    },
+    {
+      "id": "eighteen_years_1",
+      "source": "Foss on eighteen years in the Academy laboratory",
+      "text": "In eighteen years, I've maintained the laboratory through four complete research cohorts — four generations of Academy scholars who've used the laboratory as their primary workspace. The laboratory they're using now is the same laboratory and a completely different laboratory from the one the first cohort used. Same space. Eighteen years of maintenance, improvement, and adaptation to what the research requires. In eighteen years, the laboratory has become more capable than it was. The research has become more capable with it.",
+      "keywords": ["eighteen","years","maintained","laboratory","through","four","complete","research","cohorts","four"]
+    }
+  ]
+}

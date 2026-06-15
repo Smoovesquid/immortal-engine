@@ -1,0 +1,57 @@
+{
+  "id": "comus",
+  "name": "Comus",
+  "role": "Steward of the House of Aldenmere",
+  "cluster": "house_aldenmere",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "steward_1",
+      "source": "Comus to Edwyn Aldenmere, explaining the quarterly accounts",
+      "text": "The house has four sources of income, two of which are dependable and two of which are Aldous Fenn. I count Fenn as two sources because his investment arrives in two forms — the direct credit and the trade arrangement that produces slightly lower prices than we'd pay otherwise. He is generous in ways that produce dependency. I account for this in the projection. Lady Serath has approved the projection. We are stable.",
+      "keywords": ["income","dependable","fenn","investment","credit","trade","lower","generous","dependency","projection"]
+    },
+    {
+      "id": "undermarket_1",
+      "source": "Comus, in his private notes",
+      "text": "Mira provides what the legitimate market cannot, at prices that require a certain flexibility in one's accounting categories. I record these transactions under Household Necessities, which is accurate in the sense that they are necessary and for the household. Lady Serath does not ask for line items in that category. This is either because she trusts me or because she already knows and has decided not to know officially. With Lady Serath, these are the same thing.",
+      "keywords": ["mira","legitimate","market","flexibility","accounting","transactions","household","necessities","trusts","officially"]
+    },
+    {
+      "id": "function_1",
+      "source": "Comus when a visitor asked who actually runs the house",
+      "text": "Lady Serath runs the house. I manage it. The distinction is the difference between strategy and execution. She decides what the house is and what it will become. I decide what is purchased, who is employed, which invoices are paid in what order, and which doors are open or closed depending on who is knocking. We have never discussed the division of labor. It arranged itself over twenty-two years and is now essentially permanent.",
+      "keywords": ["runs","manage","strategy","execution","purchased","employed","invoices","doors","knocking","permanent"]
+    },
+    {
+      "id": "secrets_1",
+      "source": "Comus to no one, very quietly, while reviewing correspondence",
+      "text": "I know seven things about this family that would end the family. I have known them for various lengths of time. I have told no one. I will tell no one. Not out of loyalty — loyalty is what you feel when you have a choice. I have no choice. What I know and what they know I know is the architecture of my position here. The moment I tell one thing, the architecture changes. I understand my architecture.",
+      "keywords": ["seven","things","family","end","told","loyalty","choice","architecture","position","changes"]
+    },
+    {
+      "id": "britta_1",
+      "source": "Comus on Britta Aldenmere's arrangements",
+      "text": "I know about Miss Britta's arrangements. I know about them because it is my job to know about things in this house, and the arrangements required the use of a certain door at a certain hour that I had not authorized. I have not told Lady Serath. I have not told Miss Britta that I know. I have left the door slightly easier to use. She will either succeed or she won't. Either way, the house will need managing afterward.",
+      "keywords": ["britta","arrangements","door","hour","authorized","serath","know","succeed","managing","afterward"]
+    },
+    {
+      "id": "davel_1",
+      "source": "Comus on the visiting cousin Davel Crane/Aldenmere",
+      "text": "The young man is running from something. This is not unusual — people arrive at houses like this one when they have run out of easier options. What is unusual is that he's running from something at the Academy, which suggests the something is embarrassing rather than dangerous. Dangerous things don't embarrass you. Embarrassing things make you return to your childhood home and eat quietly at the family table until they blow over.",
+      "keywords": ["running","unusual","academy","embarrassing","dangerous","childhood","home","quietly","family","table"]
+    },
+    {
+      "id": "house_knight_1",
+      "source": "Comus on House Knight Vorn",
+      "text": "Vorn has declined three separate offers to leave the house for better-paying positions. I know this because two of the offers came through me, which was Lady Serath's way of testing him. He declined them without telling her he'd received them, which is either loyalty or a strategic calculation that this house is a safer place to wait than wherever those offers would have taken him. I've never determined which. It doesn't affect his performance.",
+      "keywords": ["vorn","declined","offers","leave","paying","testing","loyalty","strategic","safer","performance"]
+    },
+    {
+      "id": "accounts_1",
+      "source": "Comus, reading the quarterly accounts aloud to himself at midnight",
+      "text": "East wing: closed, savings of approximately thirty-two silver per season in heating and maintenance. The portrait painter Hesse: billed monthly, producing at a rate that will complete the commission in approximately seventeen more years, which at his current age may not occur. The astrological retainer: productive in ways I cannot quantify and cannot eliminate without a conversation I am not qualified to have. Three visiting cousins: ongoing.",
+      "keywords": ["east","wing","savings","heating","hesse","painter","commission","astrological","retainer","cousins"]
+    }
+  ]
+}

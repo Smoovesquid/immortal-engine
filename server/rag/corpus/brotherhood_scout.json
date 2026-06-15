@@ -1,0 +1,57 @@
+{
+  "id": "brotherhood_scout",
+  "name": "Ren",
+  "role": "Iron Brotherhood; scout; three years in",
+  "cluster": "iron_brotherhood",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "scouting_1",
+      "source": "Ren before a scouting assignment",
+      "text": "Come back with what I saw, not what I think about what I saw. Rath said this on my first assignment and I've repeated it every time since as a sort of preparation. The tendency is to interpret — to add meaning to what you observe. Interpretation is for after the report. The report is: here is what I saw, in this order, at these distances. The interpretation can be wrong. The observation has to be right.",
+      "keywords": ["come","back","saw","not","think","rath","said","first","assignment","interpretation"]
+    },
+    {
+      "id": "theen_1",
+      "source": "Ren on the ranger Theen",
+      "text": "Theen walks the same ground I walk but differently. I watch for signs of human presence. She watches for state of the land. When we've been in the same area, she'll tell me something about where the land was disturbed and I'll tell her something about who disturbed it and together we have a more complete picture than either of us would have alone. She's never offered to work together formally. I've never asked. The informal version works.",
+      "keywords": ["theen","walks","same","ground","differently","watch","signs","human","presence","land"]
+    },
+    {
+      "id": "cord_1",
+      "source": "Ren on Cord, who taught her fieldcraft",
+      "text": "Cord showed me how to find a position that has three exits. Not two — three. Two is what you plan. Three is what you need when the plan fails. He walked me through every position we'd used in the previous month and asked me to find the third exit from each. Some of them didn't have one. Those, he said, were the mistakes. The lesson wasn't about finding three exits. It was about knowing when you're in a position that has no margin.",
+      "keywords": ["cord","showed","position","three","exits","not","two","plan","fails","walked"]
+    },
+    {
+      "id": "pella_1",
+      "source": "Ren after being treated by the healer Pella",
+      "text": "Pella said: this is going to hurt more before it hurts less. She was right. She's always right about that specific thing. What I've come to appreciate is that she tells you before, not after. The before gives you the frame. The frame makes the pain less surprising and less surprising pain is less destabilizing. I've started using this in scouting — I tell my own nervous system what's coming before it comes. It helps.",
+      "keywords": ["pella","said","hurt","more","before","less","right","always","specific","tells"]
+    },
+    {
+      "id": "night_work_1",
+      "source": "Ren on scouting at night",
+      "text": "Your eyes are not your primary sense in the dark. Your ears are. I spent three months training myself to default to sound before sight. The rewiring is strange to experience — you're forcing a priority shift in something that runs automatically. But after three months it started to stick. Now I hear before I look. The field at night is a completely different place than the field at day. Scouting at night is a different skill. I had to learn it from the beginning.",
+      "keywords": ["eyes","not","primary","sense","dark","ears","three","months","training","default"]
+    },
+    {
+      "id": "holt_1",
+      "source": "Ren on the veteran sergeant Holt",
+      "text": "Holt runs the before-action check. Every scout out and every scout return, he's the one who receives and gives the equipment check. It's the same check every time. In three years I've never seen him skip a step. When I asked why he never skips, he said: because the time I skip it is the time it would have caught the thing. I now run the check on myself before Holt sees me. The check is the answer.",
+      "keywords": ["holt","runs","before","action","check","every","scout","out","return","receives"]
+    },
+    {
+      "id": "the_gap_1",
+      "source": "Ren on what she's found on the northern routes",
+      "text": "The bandit stretch has been empty for seven months. Bela the caravan captain asked me about it when we were both in the harbor district. I said: I've been through it four times in seven months and I've found nothing. She said: what do you find instead. I said: a quality of emptiness that's different from just nobody being there. She nodded. She'd felt it too. We don't know what it means. I scout the same and report what I see.",
+      "keywords": ["bandit","stretch","empty","seven","months","bela","caravan","captain","harbor","four"]
+    },
+    {
+      "id": "why_scout_1",
+      "source": "Ren when asked what she liked about scouting",
+      "text": "Going first. The scout goes somewhere before anybody else goes there and comes back with the information that determines whether anybody else goes there. The information has specific weight — it's the weight of what decisions get made based on it. I feel that weight as a kind of responsibility I find useful. Not burden. Useful. The responsibility structures the work and the work is better when it has structure from the inside rather than from orders.",
+      "keywords": ["going","first","scout","somewhere","before","anybody","else","information","determines","weight"]
+    }
+  ]
+}

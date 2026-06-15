@@ -1,0 +1,57 @@
+{
+  "id": "keris_harbormaster",
+  "name": "Keris",
+  "role": "Harbormaster; manages berths, traffic, and official harbor record",
+  "cluster": "harbor_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "harbor_1",
+      "source": "Keris on what a harbormaster does",
+      "text": "The harbor is four things: the water, the docks, the vessels, and the people. I manage the relationships between all four. When they're in correct relationship, ships arrive and depart on schedule and cargo moves and no one mentions the harbor. When they're out of relationship, I'm the first to know and the last to leave. Nineteen years and the harbor has been in correct relationship ninety-two percent of the time. The eight percent is what I still think about.",
+      "keywords": ["harbor","four","things","water","docks","vessels","people","manage","relationships","between"]
+    },
+    {
+      "id": "rulf_1",
+      "source": "Keris on Rulf",
+      "text": "Rulf is the dock. Not the harbormaster — I'm the harbormaster. The dock is Rulf. The dock does what Rulf decides and the dock's decisions are correct. In nineteen years I've overruled Rulf three times. Each time I was wrong. Each time the outcome would have been better if I hadn't overruled. Rulf has not said this. I know this from reading the records afterward. The harbormaster who overrules the dock correctly is not the harbormaster we have. We have the better one.",
+      "keywords": ["rulf","dock","not","harbormaster","harbormaster","dock","rulf","dock","does","what"]
+    },
+    {
+      "id": "maret_1",
+      "source": "Keris on Maret",
+      "text": "Maret came to me in the month after her husband died. She knew the harbor from the outside — she'd been married to it for nine years but she hadn't been in it. I walked her through the official harbor relationships: the berth agreements, the toll structure, the cargo documentation, the safety protocols. Four hours. At the end she said: now I understand what my husband was doing and why. I said: did you not understand before. She said: I understood the results. Now I understand the structure the results came from.",
+      "keywords": ["maret","came","month","after","husband","died","knew","harbor","from","outside"]
+    },
+    {
+      "id": "ota_1",
+      "source": "Keris on Ota",
+      "text": "Ota and I share tidal information. The official harbor schedule is based on the standard tide tables. What Ota adds: the specific harbor's deviation from the standard tables, which is shaped by the harbor's geometry and the seasonal wind patterns. The official tables are close. Ota's knowledge is closer. I've been using Ota's supplementary information for eleven years without officially incorporating it into the harbor schedule. The schedule is correct. The supplement is why it's correct.",
+      "keywords": ["ota","share","tidal","information","official","harbor","schedule","based","standard","tide"]
+    },
+    {
+      "id": "seven_1",
+      "source": "Keris on the information broker Seven",
+      "text": "Seven is in the harbor regularly in ways that don't have an official purpose. I know this because I track all regular harbor presences and Seven has no declared business. Seven has come to me once and introduced themselves professionally — what they do, what they're interested in. I said: the harbor's official business is publicly documented. Seven said: I know. The official business is the context for what I'm actually interested in. I said: then we don't have a problem. We haven't had a problem since.",
+      "keywords": ["seven","harbor","regularly","ways","don't","have","official","purpose","know","because"]
+    },
+    {
+      "id": "captain_harrow_1",
+      "source": "Keris on Captain Harrow",
+      "text": "Harrow is the captain I use as the benchmark. When I'm assessing a new captain's approach to the harbor, I'm comparing it to Harrow's approach. The comparison isn't about skill — several captains are more skilled than Harrow in specific aspects. The comparison is about reliability and preparation. Harrow is more reliably prepared than any other captain in the harbor. In seven years I've had one situation where Harrow's preparation was insufficient. One in seven years is the benchmark.",
+      "keywords": ["harrow","captain","use","benchmark","assessing","new","captain's","approach","harbor","comparing"]
+    },
+    {
+      "id": "morvane_1",
+      "source": "Keris on Morvane",
+      "text": "Morvane has been in the harbor district longer than me. She was a sailor before she was a chandler and she knows the harbor from the water side as well as the land side. When I have a question about the harbor's history — something that happened before my tenure — Morvane is one of three people I ask. The three people cover different parts of the history. Morvane covers the active sailing period: anything that happened on the water in the two decades before I arrived.",
+      "keywords": ["morvane","harbor","district","longer","than","me","was","sailor","before","chandler"]
+    },
+    {
+      "id": "what_keris_holds_1",
+      "source": "Keris on the log she keeps that isn't the official log",
+      "text": "The official log is accurate and complete for what the official log tracks. What the official log doesn't track: patterns. Individual entries are facts. The pattern across entries is something else. I've been keeping a pattern log for twelve years. The pattern log has three findings in twelve years that I've acted on and three that I'm still watching. The six that matter have shaped decisions I couldn't have explained from the official log alone. The pattern log doesn't exist officially. The decisions it produced do.",
+      "keywords": ["official","log","accurate","complete","what","official","log","tracks","what","official"]
+    }
+  ]
+}

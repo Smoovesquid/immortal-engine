@@ -1,0 +1,57 @@
+{
+  "id": "harbor_night_watch",
+  "name": "Lom",
+  "role": "Night watch at the harbor; keeps the dock when no one else is there; knows what the harbor sounds like when it's quiet",
+  "cluster": "harbor_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "night_watch_1",
+      "source": "Lom on night watch at the harbor",
+      "text": "The harbor at night is different from the harbor in the day. The day harbor is activity — movement, commerce, the exchange of goods and information. The night harbor is the harbor at rest, with the activity's residue: the tied ships, the stored goods, the machinery waiting to be activated again. My work is watching the resting harbor and maintaining the condition that allows the day harbor to resume. In nine years of night watch, I'm the harbor's night mode.",
+      "keywords": ["harbor","night","different","from","harbor","day","day","harbor","activity","movement"]
+    },
+    {
+      "id": "rulf_1",
+      "source": "Lom on Rulf",
+      "text": "Rulf manages the day dock. I manage the night dock. In nine years, the handoff between the day dock and the night dock has happened every evening at the same time. What Rulf leaves me: the dock's state at the end of the day. What I give Rulf: the dock's state at the start of the day. In nine years, the state I've returned to Rulf in the morning has been equivalent to or better than the state I received. The night watch's job is to not degrade what the day built.",
+      "keywords": ["rulf","manages","day","dock","manage","night","dock","nine","years","handoff"]
+    },
+    {
+      "id": "ota_1",
+      "source": "Lom on Ota",
+      "text": "Ota goes out before dawn. In nine years, Ota and I have a regular overlap at the transition between my watch and the harbor's morning start. What Ota sees me doing in the final hour of the watch: I'm not moving much, but I'm covering the dock systematically. Ota said once: you walk the same path every night. I said: the path is the inspection. The dock's condition at specific points tells me the dock's condition overall. Ota said: like fishing a consistent line. I said: yes, exactly.",
+      "keywords": ["ota","goes","out","before","dawn","nine","years","ota","regular","overlap"]
+    },
+    {
+      "id": "brinn_1",
+      "source": "Lom on Brinn",
+      "text": "Brinn the salvage diver has come to me twice with requests related to nighttime harbor access. Both times: access for operations that had legitimate purposes and that couldn't be done during the day dock's operational hours. Both times I authorized the access with the condition that Brinn account for what was done. Both times: the accounting was provided and the accounting was accurate. Brinn's nighttime operations were what Brinn said they were. The trust was earned.",
+      "keywords": ["brinn","salvage","diver","come","twice","requests","related","nighttime","harbor","access"]
+    },
+    {
+      "id": "ress_1",
+      "source": "Lom on Ress",
+      "text": "Ress at the Long Room and I are the district's night-mode people. Ress is awake late for the guests. I'm awake late for the dock. In the small hours, when the district is quiet, Ress and I are among the few people awake. We've spoken twice: once when I walked past the Long Room on a harbor circuit and Ress was on the step, and once when there was an incident at the harbor that I needed to trace to a specific departure time from the Long Room. Ress had the time. Ress provided it without questions.",
+      "keywords": ["ress","long","room","district's","night-mode","people","ress","awake","late","guests"]
+    },
+    {
+      "id": "what_the_night_harbor_is_1",
+      "source": "Lom on what the night harbor is",
+      "text": "The night harbor has a sound that the day harbor doesn't have: the sound of things that are resting. The ships at rest sound different from ships under way. The dock hardware at rest makes sounds that the day's activity masks. In nine years of night watch, I know the harbor's resting sound completely. When the resting sound changes — when something is doing something it shouldn't be doing in a harbor that's resting — I can hear it. In nine years, the changed resting sound has told me about three things that shouldn't have been happening.",
+      "keywords": ["night","harbor","sound","day","harbor","doesn't","have","sound","things","resting"]
+    },
+    {
+      "id": "what_lom_holds_1",
+      "source": "Lom on the three things the night sound told him",
+      "text": "The three things: year two, a fire that was beginning in a storage area that I reached before it became a fire. Year five, a theft in progress that I interrupted by being in the right place. Year eight, something in the water that I reported to Brinn the next morning and that Brinn investigated and that Brinn chose not to tell me about. Two of the three: I know the outcome. The third: Brinn said the matter was handled. I've been at the harbor at night for nine years and there is one thing that happened on my watch that I handled correctly and don't know the end of.",
+      "keywords": ["three","things","year","two","fire","beginning","storage","area","reached","before"]
+    },
+    {
+      "id": "nine_years_1",
+      "source": "Lom on nine years of night watch",
+      "text": "In nine years, the harbor has been mine from the evening handoff to the morning handoff. Nine years of watching the harbor rest and restart. In nine years, the harbor hasn't been damaged, burned, flooded beyond recoverable, or significantly compromised on my watch. The night watch's success is invisible: when it works, nothing happens. Nothing happening, consistently, for nine years — that's the record. What I tell myself in the third hour of the watch, when the quiet is very quiet: nothing happening is the work happening.",
+      "keywords": ["nine","years","harbor","been","mine","evening","handoff","morning","handoff","nine"]
+    }
+  ]
+}

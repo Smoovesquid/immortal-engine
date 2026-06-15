@@ -1,0 +1,57 @@
+{
+  "id": "players_new",
+  "name": "Luce",
+  "role": "Ember Road Players; newest member; three months in",
+  "cluster": "ember_road_players",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "joining_1",
+      "source": "Luce on how she joined the Players",
+      "text": "I asked Kevin Bacon if I could travel with the Players. He said: what can you do. I listed three things. He said: we have people who do those things. I said: I know. I watched you for two days before I asked. He said: why. I said: I wanted to know what you actually needed, not what a traveling company generally needs. He said: what do we actually need. I said: you need someone who can build the stage in half the time it currently takes and who can also sew. He looked at Bren. Bren nodded. I'm with the Players.",
+      "keywords": ["asked","kevin","bacon","travel","players","three","things","two","days","watched"]
+    },
+    {
+      "id": "kevin_1",
+      "source": "Luce on Kevin Bacon",
+      "text": "Kevin remembers everyone's name in every settlement we pass through. Not as a performance — he actually remembers them. I tested this in the third settlement we visited by naming someone we'd met briefly in the first settlement. He said their name, where they'd been standing, and what they'd said in six words. This was three weeks after the meeting. I'm trying to understand whether this is a skill or a quality. I think it's a quality that he's made into a skill.",
+      "keywords": ["kevin","remembers","everyone's","name","settlement","performance","actually","remembers","tested","third"]
+    },
+    {
+      "id": "stage_1",
+      "source": "Luce on building the stage",
+      "text": "The stage takes forty minutes with three people doing it the old way. I've gotten it to nineteen minutes with two people. The key is the order of assembly and the pre-positioning of the parts the night before. Swords Odo helped me redesign the rigging for the second run — he saw the inefficiency in the pivot anchor before I did. We cut eight minutes in one conversation. He said: fighting and rigging are the same problem. I said: show me. He showed me.",
+      "keywords": ["stage","forty","minutes","three","people","nineteen","two","order","assembly","pre-positioning"]
+    },
+    {
+      "id": "pip_1",
+      "source": "Luce on Pip",
+      "text": "Pip did my impression in the third week. Exactly. Not a caricature — the specific way I hold my left shoulder when I'm uncertain. I didn't know I held it that way. I've been watching for it since. I do it. Pip found the motion before I knew the motion existed. I asked how. Pip said: you're doing something that's almost the motion you'd make if you were certain, but not quite. The almost is the tell. I've been watching for it in everyone since.",
+      "keywords": ["pip","impression","third","week","exactly","caricature","specific","shoulder","uncertain","didn't"]
+    },
+    {
+      "id": "bren_1",
+      "source": "Luce on Bren Holt",
+      "text": "Bren fed me on my first night with the Players. What he made from what we had was unreasonably good. I said so. He said: the situation is what it is. I said: that's a philosophy. He said: it's also soup. I've been thinking about whether those are the same thing. On the third week I asked him again and he said: the soup is the philosophy expressed in a situation. I said: what's the philosophy. He said: what's in front of you is sufficient. The soup demonstrates it.",
+      "keywords": ["bren","fed","first","night","players","unreasonably","good","situation","philosophy","soup"]
+    },
+    {
+      "id": "sera_1",
+      "source": "Luce on Sera Dort",
+      "text": "Sera and Dort complete each other's sentences. This is known. What I'm observing is that they also complete each other's physical tasks — one starts folding something and the other finishes without a word about it. I've been watching closely to see if there's a signal I'm missing. There isn't. They seem to operate from a shared model of what's needed that doesn't require communication. I find this disorienting to work alongside. I also find it extremely efficient.",
+      "keywords": ["sera","dort","complete","each","other's","sentences","physical","tasks","folding","shared"]
+    },
+    {
+      "id": "road_1",
+      "source": "Luce after one month on the road",
+      "text": "This is better than where I was. Not because the road is easier — it isn't. Because on the road, what I did yesterday is done and what I do today is what matters. The settlement I came from was very interested in what I'd done previously. The Players are interested in whether I build the stage correctly today. Today's stage is the only stage. I find this clarifying in a way I didn't expect.",
+      "keywords": ["better","where","was","road","easier","isn't","done","yesterday","done","today"]
+    },
+    {
+      "id": "margit_1",
+      "source": "Luce after watching Margit read cards",
+      "text": "Margit let me observe a reading. She told me what she was doing as she did it — not the cards' meanings, which I don't know, but the physical things she was reading while the cards were present. The way the client held their hands. The breath rhythm. She said: the cards give the client somewhere to look while I look at them. The cards are a protocol, not a mechanism. After the reading she asked what I'd seen. I'd seen some of it. She said: six more observations and you'll have the first layer.",
+      "keywords": ["margit","let","observe","reading","told","doing","cards","meanings","physical","reading"]
+    }
+  ]
+}

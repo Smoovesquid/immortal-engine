@@ -1,0 +1,57 @@
+{
+  "id": "harbor_ship_cook",
+  "name": "Bross",
+  "role": "Ship's cook; feeds the crew at sea; the most important person on a long voyage after the navigator",
+  "cluster": "harbor_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "ship_cook_1",
+      "source": "Bross on cooking at sea",
+      "text": "In fourteen years of cooking at sea, what ship cooking is: the feeding of a crew in conditions that make cooking difficult, with provisions that decline in quality over the voyage, in a vessel that moves in ways that complicate every aspect of the kitchen work. In fourteen years, the ship's cook is not the kitchen in ideal conditions. The ship's cook is the meal despite the conditions. In fourteen years, the despite-the-conditions is the skill.",
+      "keywords": ["fourteen","years","cooking","sea","what","ship","cooking","feeding","crew","conditions"]
+    },
+    {
+      "id": "noll_1",
+      "source": "Bross on Noll",
+      "text": "Noll sailed for thirty years and was my captain for eight of them. In eight years under Noll's command, what Noll's thirty years at sea produced in terms of understanding the ship's cook's importance: the explicit acknowledgment that the crew's performance is partly a function of the cook's performance. In eight years, Noll told me twice that the well-fed crew is the competent crew and the hungry crew is the difficult crew. In eight years, two explicit statements of what fourteen years of ship cooking has taught me implicitly.",
+      "keywords": ["noll","sailed","thirty","years","captain","eight","them","eight","years","noll's"]
+    },
+    {
+      "id": "meld_1",
+      "source": "Bross on Meld",
+      "text": "Meld provisions the ships and the provisions I cook from are the provisions Meld's manifest includes. In nine years of working from Meld's provisions, what the quality of the provisions determines for the ship's cook: what's possible at sea. The cook is the transformation function — the provisions into the meal. In nine years, the quality of the provisions determines the ceiling of the possible transformation. In nine years, Meld's provisions have set the ceiling. The cooking works within the ceiling.",
+      "keywords": ["meld","provisions","ships","provisions","cook","provisions","meld's","manifest","includes","nine"]
+    },
+    {
+      "id": "twinn_1",
+      "source": "Bross on Twinn",
+      "text": "Twinn has fished for fifty years and taught me more about the fish I cook than I'd have learned from the settlement's shore cooking. In seven years of the Bross-Twinn culinary exchange, what Twinn's fifty years of fishing has given to my cooking: the specific knowledge of what each species is at its best and what each species becomes if not handled and cooked correctly. In seven years, the fish that comes from Twinn's boat to my galley has been the best source for the specific knowledge. Twinn knows the fish. I've learned to cook it.",
+      "keywords": ["twinn","fished","fifty","years","taught","more","about","fish","cook","settlement's"]
+    },
+    {
+      "id": "gid_1",
+      "source": "Bross on Gid",
+      "text": "Gid has piloted ships I cooked on and Gid's assessment of the difficult crossing affects the cook's planning in specific ways. In six years of the Gid-cook weather relationship, what Gid's assessment of rough crossings tells me: the days when the galley work will be difficult because the vessel's motion will make everything more complex, and when to pre-prepare versus cook to order. In six years, Gid's assessment of a difficult crossing produces a different day's menu from a calm-weather day. In six years, the menu and the vessel's motion are related.",
+      "keywords": ["gid","piloted","ships","cooked","gid's","assessment","difficult","crossing","affects","cook's"]
+    },
+    {
+      "id": "what_bross_holds_1",
+      "source": "Bross on the voyage where the provisions ran short",
+      "text": "Year nine. A voyage that extended beyond its planned duration due to navigation complications. The provisions Meld had prepared for the planned duration: correct for the plan, insufficient for the extension. In five years since, what year nine produced: the pre-voyage conversation with Meld about the extension buffer that should be built into every manifest. In five years, every manifest I work from has a ten-percent extension buffer. In five years, the buffer has been unnecessary in most voyages. In year nine, the buffer's absence was the difference between adequate and insufficient.",
+      "keywords": ["year","nine","voyage","extended","beyond","planned","duration","navigation","complications","provisions"]
+    },
+    {
+      "id": "what_fourteen_years_holds_1",
+      "source": "Bross on what fourteen years of ship cooking holds",
+      "text": "In fourteen years, what the sea cooking has given me that shore cooking wouldn't: the knowledge of what food does to a person who is physically working hard in conditions that are sometimes demanding and often uncomfortable. In fourteen years, the crew's physical performance is partially a function of the meal's nutritional content and timing. In fourteen years, I've cooked for the performance, not just for the flavor. In fourteen years, the meal that tastes good and serves the crew's performance: that's the ship cook's actual challenge.",
+      "keywords": ["fourteen","years","what","sea","cooking","given","shore","cooking","wouldn't","knowledge"]
+    },
+    {
+      "id": "fourteen_years_1",
+      "source": "Bross on fourteen years as a ship's cook",
+      "text": "In fourteen years, I've cooked approximately twelve thousand individual meals at sea. Twelve thousand meals in the galley, in conditions that ranged from calm-water ease to storm-condition difficulty. In fourteen years, the twelve thousand meals have fed the crews that operated the vessels that have made the harbor's commerce possible. In fourteen years, the invisible function: the vessel's commercial function depends on a crew that functions, and the crew that functions has been fed. In fourteen years, I've been part of the feeding that made the function possible.",
+      "keywords": ["fourteen","years","cooked","approximately","twelve","thousand","individual","meals","sea","twelve"]
+    }
+  ]
+}

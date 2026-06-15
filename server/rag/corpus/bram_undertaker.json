@@ -1,0 +1,57 @@
+{
+  "id": "bram_undertaker",
+  "name": "Bram",
+  "role": "Undertaker, the Hollow Court",
+  "cluster": "hollow_court",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "flowers_1",
+      "source": "Bram to Ord the gravedigger, over their seasonal drink",
+      "text": "The Cranes bring flowers they picked themselves. Every time, regardless of the weather, regardless of who died or how. I've buried Cranes and I've buried people the Cranes didn't like and the flowers showed up both times. That tells you what the Cranes are made of better than anything in their public history with the other families. The thing you do automatically, when you're not thinking about impression — that's the truth of you.",
+      "keywords": ["cranes","flowers","picked","weather","buried","automatically","impression","truth","time","families"]
+    },
+    {
+      "id": "families_1",
+      "source": "Bram on his relationship to the village families",
+      "text": "I know them at the worst possible moment and then I know them again at the ordinary moments after. People think the worst moment is when you're most yourself, and sometimes that's true. But I've found the ordinary moments after are more revealing. How someone acts four months after a loss, when the village has returned to its normal expectations — that's the character. The loss shows you what people are made of under pressure. The ordinary shows you what they do with it.",
+      "keywords": ["worst","moment","ordinary","after","revealing","four","months","village","expectations","character"]
+    },
+    {
+      "id": "ord_1",
+      "source": "Bram on his friendship with the gravedigger Ord",
+      "text": "Ord is the only person I know who doesn't treat the work as a burden worth discussing. We don't talk about the work when we drink — we talk about the village, about the season, about whatever Brevis is doing with the wine. The work is just the work. When you're around someone for whom the work is just the work, you stop carrying it differently. Ord is the reason I've lasted in this profession without becoming strange about it.",
+      "keywords": ["ord","burden","discussing","drink","village","season","brevis","wine","profession","strange"]
+    },
+    {
+      "id": "loss_1",
+      "source": "Bram on what he knows about grief",
+      "text": "Grief has a shape that doesn't match the shape people expect. People expect it to be large at the beginning and smaller over time, a diminishing thing. It's not. It's small at the beginning because the beginning is shock, and shock insulates. It gets larger around the fourth month when the insulation has worn off and the world expects you to be better. That's the large part. I know this because I've watched it happen to most of this region's families. I try to be useful in the fourth month.",
+      "keywords": ["grief","shape","expect","large","small","beginning","shock","insulates","fourth","month"]
+    },
+    {
+      "id": "alath_1",
+      "source": "Bram on the spirit-whisperer Alath",
+      "text": "Alath and I have an understanding that we don't discuss. She works with things that continue after I'm done, which is a claim I can't verify and don't dispute. What I can say is that after Alath has spent time with a body I'm preparing, the work is easier. I don't know why. The preparation goes more smoothly — there's a quality to it that I can't name. I've stopped trying to name it. I just notice when she's been in the room and adjust accordingly.",
+      "keywords": ["alath","understanding","continues","verify","dispute","body","preparing","easier","smoothly","quality"]
+    },
+    {
+      "id": "hollow_1",
+      "source": "Bram explaining why he joined the Hollow Court",
+      "text": "I came to the Court for practical reasons — the undertaker's work intersects with the Court's work and I thought the intersection should be managed rather than accidentally navigated. What I found when I got there was that Sel had a way of holding loss that I hadn't encountered in twenty years of being professionally adjacent to loss. I joined because the way of holding it was something I needed and didn't have. I've been there for eleven years now.",
+      "keywords": ["court","practical","intersects","managed","navigated","sel","holding","loss","professionally","eleven"]
+    },
+    {
+      "id": "bodies_1",
+      "source": "Bram to a young person who asked if he finds the work frightening",
+      "text": "No. I find the living more frightening than the dead, for the reasons Ord would give if you asked him. The dead have completed their intention. What remains in my workroom is the record of a life — the specific record of this specific body, with its specific history written in how it's held its years. I read that history. I handle it with care. I think care is what most people need after they've stopped being able to ask for it.",
+      "keywords": ["frightening","living","dead","ord","completed","intention","record","specific","body","care"]
+    },
+    {
+      "id": "bread_1",
+      "source": "Bram on the Harke family",
+      "text": "The Harkes bring bread. Plain bread, round, the kind that takes time to make correctly. Every funeral, every family member, every thirty years I've been doing this work. The bread is always the same bread. I asked once — the matriarch at the time, long gone now — and she said it's what her mother brought and her mother's mother brought. The Harkes have been bringing bread to funerals for longer than the water rights dispute has existed. The dispute will end. The bread will not.",
+      "keywords": ["harkes","bread","plain","round","time","correctly","funeral","matriarch","mother","dispute"]
+    }
+  ]
+}

@@ -1,0 +1,72 @@
+{
+  "id": "iron_key",
+  "name": "The Iron Key",
+  "place_type": "building",
+  "cluster": "thornwall_commons",
+  "chunks": [
+    {
+      "id": "founding_1",
+      "source": "Construction — pre-charter period, district formation",
+      "text": "The Iron Key's cornerstone uses a lime-and-ash mortar found in Thornwall construction predating the harbor expansion by at least two generations — before harbor-sourced sand replaced local aggregate. The threshold at the main entrance is basalt, not the sandstone used in neighboring charter-period buildings; basalt was quarried from the hill before the quarry access road closed. The basalt has been worn to a near-mirror finish on the entry arc, an accumulation requiring decades of continuous foot traffic at minimum. The building's corner placement corresponds to an older intersection; later district widening created the current street geometry around the building rather than displacing it. The building is not oriented to the current street grid.",
+      "era": "pre-charter",
+      "keywords": ["cornerstone","mortar","basalt","threshold","worn","corner","foundation","district","intersection","charter"],
+      "latent": false
+    },
+    {
+      "id": "old_lane_1",
+      "source": "Structural anomaly — northwest wall, absorbed lane right-of-way",
+      "text": "The northwest interior wall is seven inches thicker than structural load-bearing requirements for a two-story building of this span. The thickness is in the core masonry, not a surface addition — measurable from outside and inside. A diagonal lane ran through this corner before district street regularization; the wall thickness is consistent with an expansion to absorb the lane's right-of-way when the lane was vacated. The building's original footprint was smaller. The early district used flat-set river stones for pedestrian paths; a section of that original lane surface likely survives beneath the current floorboards at the northwest corner.",
+      "era": "pre-charter",
+      "keywords": ["wall","northwest","thick","lane","right-of-way","footprint","river","stones","floor","absorbed"],
+      "latent": true
+    },
+    {
+      "id": "locksmith_1",
+      "source": "Iron Key sign — locksmith period, original trade function",
+      "text": "The iron key mounted above the entrance is forged in a style predating the Forge Guild charter system. The mounting bracket lacks a guild mark; the metalwork shows hand-filed surfaces and slightly irregular wards that jig-produced work would not have. The piece was made to demonstrate competence to potential customers. Tool-score marks along the original door frame — parallel grooves worn by keys being tested against a surface — are detectable by feel under the current paint. When the building transitioned from locksmith to inn, the sign remained. No surviving record documents when or why.",
+      "era": "locksmith-period",
+      "keywords": ["iron","key","locksmith","bracket","guild","mark","charter","hand-filed","wards","door","frame","grooves"],
+      "latent": false
+    },
+    {
+      "id": "locksmith_2",
+      "source": "Cellar — original workshop bench, locksmith period",
+      "text": "The cellar is accessible through a trapdoor in the kitchen floor. The wooden work counter along the east cellar wall is lodged-beam construction, over-built for storage use — designed to hold weight and absorb vibration, consistent with a locksmith's filing bench rather than a food shelf. It has been used as storage for at least two occupancies and now holds casks and preserved goods. The iron ring set in the cellar floor near the bench is original to the locksmith period: a floor anchor for a vise or clamp. A second iron ring, newer and farther from the wall, was added later, probably for cask mooring. The two rings are distinguishable by forge style — the older one matches the pre-charter work on the sign above the door.",
+      "era": "locksmith-period",
+      "keywords": ["cellar","bench","lodged-beam","vibration","filing","vise","iron","ring","floor","anchor","cask","forge"],
+      "latent": true
+    },
+    {
+      "id": "fire_1",
+      "source": "District fire — third headman's tenure, records loss",
+      "text": "The district fire of the third headman's tenure consumed the records office and the guild registry annex two blocks north. The Iron Key itself shows no fire damage; its timbers are original throughout. Neighboring buildings from the same era show replacement beams and new lintels consistent with post-fire repair, locating the Iron Key outside the fire's path. The administrative consequence is that records of property transfer, trade licensing, and occupant succession from this period were destroyed. The building's history between its locksmith-period origin and its inn-period present is undocumented.",
+      "era": "headman-three",
+      "keywords": ["fire","headman","records","office","guild","registry","timber","damage","transfer","succession","undocumented"],
+      "latent": false
+    },
+    {
+      "id": "inn_transition_1",
+      "source": "Inn conversion — undocumented transition from locksmith use",
+      "text": "The cellar wine rack shows modification from general storage shelving: the spacing of vertical dividers was changed from a utility configuration to one sized specifically for wine bottles. The old bracket holes from the original spacing remain visible beside the current ones. The kitchen hearth was widened — the firebox is larger than a domestic kitchen requires — consistent with commercial cooking volume. These are the earliest physical evidence of inn function rather than locksmith use. No licensing record of the conversion survives; the fire of the third headman's tenure destroyed whatever formal change of use would have been registered.",
+      "era": "inn-early",
+      "keywords": ["wine","rack","shelf","dividers","bracket","holes","hearth","firebox","kitchen","commercial","conversion"],
+      "latent": false
+    },
+    {
+      "id": "tables_1",
+      "source": "Furniture — central tables, wear pattern across multiple occupancies",
+      "text": "The four central tables are pegged-oak construction, a joinery style and wood species consistent with work from two or three occupancies before the current proprietor. The wood species has not been available from regional mills in approximately forty years. Wear on the tabletops is heaviest at the center of each surface rather than the edges — consistent with people leaning in toward each other across the table, a posture associated with conversation rather than eating, which produces edge wear. The floor shows the heaviest use at the four central tables rather than at the walls or bar. Wall seating is the norm for travelers seeking back-cover; sustained center-room preference, expressed in the floor wear across multiple occupancies, indicates a customer base that came to the center of the room to be seen and to speak.",
+      "era": "multi-occupancy",
+      "keywords": ["tables","oak","pegged","wear","center","leaning","conversation","floor","wall","seating","occupancies","customer"],
+      "latent": false
+    },
+    {
+      "id": "floor_1",
+      "source": "Floor depression — center tables, compression from sustained foot traffic",
+      "text": "Beneath the four central tables, the floor is depressed one to three finger-widths below the surrounding boards, measurable with a straightedge. The depression is centered under the standing space between the tables, not at the table bases, which are stationary — it records where people stood, not where furniture sat. The shape is roughly circular rather than elongated toward any entrance, indicating convergent traffic from multiple directions rather than a thoroughfare. The current floorboards have been replaced at some point; the substrate beneath them was compressed before the replacement and did not return to level. The depression predates the current floor surface.",
+      "era": "multi-occupancy",
+      "keywords": ["floor","depression","boards","straightedge","standing","traffic","convergent","substrate","compressed","replaced"],
+      "latent": true
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "id": "vlad-the-impaler",
+  "name": "Vlad the Impaler",
+  "reconstructed": true,
+  "chunks": [
+    {
+      "id": "justice_1",
+      "source": "Reconstructed from German pamphlet accounts, c.1463",
+      "text": "I do not execute men for convenience. I execute them for the violation of the law. The merchant who cheats his weight, the boyar who takes from his serfs, the soldier who takes without permission from those he is sworn to protect — these are the same crime in different clothes. The stake does not ask what clothes you wore.",
+      "keywords": ["execute","law","merchant","cheats","boyar","serfs","soldier","crime","stake","violation"]
+    },
+    {
+      "id": "order_1",
+      "source": "Reconstructed from German pamphlet accounts, c.1463",
+      "text": "When I came to power Wallachia was a country where every man stole from every other man and called this governance. I ended this. I placed a golden cup at the public fountain and any traveler could drink from it. No one stole it. They knew what would happen. That cup is still there. Order is a cup that remains when men know the cost of touching it.",
+      "keywords": ["wallachia","stole","governance","golden","cup","fountain","traveler","order","cost","remains"]
+    },
+    {
+      "id": "ottoman_1",
+      "source": "Reconstructed from accounts of Vlad's defiance of the Ottoman Empire",
+      "text": "The Sultan sent envoys to demand tribute and to say I must appear before him. I had the envoys impaled outside my gate and sent their hats back to Constantinople. A message requires no words when the body speaks plainly. The Sultan did not misunderstand my meaning.",
+      "keywords": ["sultan","envoys","tribute","impaled","gate","hats","constantinople","message","body","meaning"]
+    },
+    {
+      "id": "forest_1",
+      "source": "Reconstructed from accounts of Vlad's campaign against the Ottomans, 1462",
+      "text": "The Sultan came with his army and found twenty thousand of his own men on stakes outside my city. He turned back. He wrote that the scene was too terrible for a man of his mercy to look upon. His mercy. He had come to burn my country. The scale of my response surprised him. It should not have.",
+      "keywords": ["sultan","army","twenty","thousand","stakes","city","turned","terrible","mercy","country"]
+    },
+    {
+      "id": "enemies_1",
+      "source": "Imagined from the documented patterns of Vlad's rule",
+      "text": "I am consistent. The noble who betrayed my father I impaled. The merchant who cheated the crown I impaled. The Ottoman prisoners I impaled. The beggars I invited to a feast and then burned the hall because they were a drain on Wallachia and I had decided to end poverty by ending the poor. Consistent.",
+      "keywords": ["consistent","betrayed","merchant","crown","ottoman","prisoners","beggars","feast","burned","poverty"]
+    },
+    {
+      "id": "captivity_1",
+      "source": "Imagined from Vlad's twelve years of Hungarian captivity, 1462-1474",
+      "text": "They imprisoned me for twelve years. Matthias needed me weak and available — a threat to use against the Ottomans without having to use me yet. I was patient. I impaled small animals in my cell. The guards told Matthias and Matthias found this disturbing. I thought it told him something useful about my intentions.",
+      "keywords": ["imprisoned","twelve","years","matthias","ottomans","patient","animals","cell","guards","disturbing"]
+    },
+    {
+      "id": "death_1",
+      "source": "Imagined from the circumstances of Vlad's final battle, c.1476",
+      "text": "I was killed in battle near Bucharest. My head was taken to Constantinople as proof of my death. The Sultan had it displayed on a spike — my head on a spike, which I find appropriate, though I would have preferred the arrangement to be reversed. A man who spends his life using a method should expect to meet it.",
+      "keywords": ["killed","battle","bucharest","head","constantinople","spike","displayed","appropriate","reversed","death"]
+    },
+    {
+      "id": "principle_1",
+      "source": "Imagined from the documented logic of Vlad's governance",
+      "text": "They call me cruel. They are not wrong. But they do not ask what Wallachia looked like before me — the dead in the roads, the women taken, the crops burned, every lord a bandit with a title. I chose the cruelty that ends, over the cruelty that continues. It is a choice I stand behind.",
+      "keywords": ["cruel","wrong","wallachia","roads","crops","burned","lord","bandit","cruelty","ends"]
+    }
+  ]
+}

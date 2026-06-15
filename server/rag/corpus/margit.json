@@ -1,0 +1,57 @@
+{
+  "id": "margit",
+  "name": "Margit",
+  "role": "Fortuneteller, Ember Road Players",
+  "cluster": "ember_road_players",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "cards_1",
+      "source": "Margit in the fortune tent, to a customer who asked if she believes in the cards",
+      "text": "The cards don't know anything. I know that. The cards are a surface I read you against. You come in with everything you're afraid of written on your body — in the way you hold your hands, the way you pick up the card, whether you look at it immediately or look at me first. The card says nothing. You say everything. I translate.",
+      "keywords": ["cards","believe","surface","afraid","hands","pick","look","translate","know","body"]
+    },
+    {
+      "id": "sight_1",
+      "source": "Margit to Calla the hedge witch, over drinks after the show",
+      "text": "I see the shape of what people carry. Not the future — I'm careful about the word future, it overpromises. What I see is weight and direction. This person is moving toward something they haven't admitted yet. That one is moving away from something they think they've left behind and haven't. The cards give them permission to talk about it. That's the real service.",
+      "keywords": ["shape","carry","future","weight","direction","admitted","left","behind","permission","service"]
+    },
+    {
+      "id": "hedge_1",
+      "source": "Margit to Calla, discussing the Hedge Brotherhood's methods",
+      "text": "You and I do the same thing with different tools. You use plants and smoke. I use cards and silence. The patient does most of the work in both cases — we just arrange the conditions. The difference is you can kill someone if you get the preparation wrong. I can only embarrass myself. I consider this a professional advantage.",
+      "keywords": ["tools","plants","smoke","cards","silence","patient","work","conditions","preparation","advantage"]
+    },
+    {
+      "id": "kevin_1",
+      "source": "Margit, when asked how long she has traveled with the company",
+      "text": "Twelve years. Kevin found me doing a street reading in a harbor town and asked if I wanted a tent and a billing. I asked what the billing would say. He said whatever I wanted. I said 'Margit Knows.' He said that was perfect. It is the only negotiation we have ever had. He has never tried to direct my act. He is a better manager than he knows.",
+      "keywords": ["twelve","years","kevin","street","reading","tent","billing","knows","negotiation","manager"]
+    },
+    {
+      "id": "what_she_sees_1",
+      "source": "Margit to herself, noted in her private journal (found after a show)",
+      "text": "Tonight a woman sat down and I saw immediately that she was going to lose her husband before the year turned. Not death — something worse, the kind of loss where they are still there. I said nothing about this. I spoke about the journey she was on, which was true, and the crossroads ahead, which was also true, and I let her leave feeling seen without feeling crushed. That is the whole discipline.",
+      "keywords": ["woman","lose","husband","death","loss","nothing","journey","crossroads","seen","crushed"]
+    },
+    {
+      "id": "truth_1",
+      "source": "Margit to a young member of the company who asked if she ever lies",
+      "text": "I never say a thing I don't believe. That's different from saying everything I believe. Most of what I see I keep. The whole truth is not always the right medicine. But I don't invent. If I can't find something real to say I say nothing and refund the coin. I have refunded perhaps thirty coins in twelve years. Mostly I can find something.",
+      "keywords": ["believe","say","different","keep","medicine","invent","refund","coin","thirty","real"]
+    },
+    {
+      "id": "dreamer_1",
+      "source": "Margit to Kevin Bacon, after meeting the Dreamer Oss at the Hedge Brotherhood",
+      "text": "That one is real. I don't say that often. Most people who claim to receive something are receiving their own hopes and calling them external. Oss receives something external. I don't know what. It doesn't feel like any god I recognize. It's older, maybe, or smaller — not cosmic, intimate. Something that is very interested in very specific people. I find it more unsettling than the demons, frankly.",
+      "keywords": ["real","receive","hopes","external","oss","feel","god","older","intimate","unsettling"]
+    },
+    {
+      "id": "road_1",
+      "source": "Margit, overheard speaking to Pip between performances",
+      "text": "The road shows you the whole range. In a fixed place you see the same kinds of people until you think those are all the kinds. The road corrects that. I have sat across from a murderer who cried when I drew the Hearthstone card. I have sat across from a priest who went white when I drew the Sword. Everyone is more than their category. The road is the only education that teaches this reliably.",
+      "keywords": ["road","range","place","kinds","murderer","cried","hearthstone","priest","sword","education"]
+    }
+  ]
+}

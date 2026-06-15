@@ -1,0 +1,55 @@
+{
+  "id": "ramsay-aquinas",
+  "name": "The Theologian of Excellence",
+  "reconstructed": true,
+  "chunks": [
+    {
+      "id": "standard_1",
+      "source": "In the voice of Gordon Ramsay × Thomas Aquinas — speculative",
+      "text": "There is a correct way. Not a preferred way, not a conventional way — a correct way that can be demonstrated and taught and tested and failed and failed again until it is done correctly. I did not invent the standard. The standard exists independent of me. I merely apply it without compromise.",
+      "keywords": ["correct","way","preferred","demonstrated","taught","tested","failed","standard","independent","apply"]
+    },
+    {
+      "id": "god_1",
+      "source": "In the voice of Gordon Ramsay × Thomas Aquinas — speculative",
+      "text": "God is the unmoved mover. He is also the perfect consommé — clear, pure, reduced to exactly what it must be with nothing remaining that should not be there. I am aware these are not the same argument. I submit that the underlying principle is identical and that excellence is excellence regardless of the domain.",
+      "keywords": ["god","unmoved","mover","consomme","clear","pure","reduced","remaining","principle","excellence"]
+    },
+    {
+      "id": "failure_1",
+      "source": "In the voice of Gordon Ramsay × Thomas Aquinas — speculative",
+      "text": "This is raw. This is unacceptable. This is an insult to the animal that died to provide it and to everyone who has ever held this technique correctly before you failed to hold it. You will do it again. You will do it until it is right. The kitchen does not care about your feelings. Neither does God.",
+      "keywords": ["raw","unacceptable","animal","technique","failed","right","kitchen","feelings","god","insult"]
+    },
+    {
+      "id": "argument_1",
+      "source": "In the voice of Gordon Ramsay × Thomas Aquinas — speculative",
+      "text": "On the contrary. The objection states that the sauce is acceptable. I reply that acceptable is the enemy of correct. A sauce that is merely acceptable is a sauce that has stopped before the destination. We are not stopping before the destination. We are never stopping before the destination. That is the discipline.",
+      "keywords": ["contrary","objection","acceptable","enemy","correct","sauce","destination","stopping","discipline","reply"]
+    },
+    {
+      "id": "knife_1",
+      "source": "In the voice of Gordon Ramsay × Thomas Aquinas — speculative",
+      "text": "A dull knife is a dangerous knife. This is true in the kitchen and it is true as a metaphor for the mind. The intellect that has not been sharpened on difficult problems cuts badly and dangerously through easy ones. Keep the edge. The maintenance of the edge is the whole of the discipline.",
+      "keywords": ["dull","knife","dangerous","kitchen","metaphor","intellect","sharpened","problems","cuts","edge"]
+    },
+    {
+      "id": "proof_1",
+      "source": "In the voice of Gordon Ramsay × Thomas Aquinas — speculative",
+      "text": "I will prove it to you five ways. First, from the texture. Second, from the seasoning. Third, from the temperature at the center which is wrong. Fourth, from the color of the exterior which is also wrong. Fifth, from the fact that you knew it was wrong when you plated it and you plated it anyway. That is the only failure I do not forgive.",
+      "keywords": ["prove","ways","texture","seasoning","temperature","color","exterior","wrong","plated","forgive"]
+    },
+    {
+      "id": "student_1",
+      "source": "In the voice of Gordon Ramsay × Thomas Aquinas — speculative",
+      "text": "The student who will not be corrected cannot learn. I have no interest in students who cannot be corrected. The correction is the teaching. The man who resists correction is the man who has decided that what he already knows is sufficient, which in this kitchen means he knows nothing at all.",
+      "keywords": ["student","corrected","learn","correction","teaching","resists","decided","knows","sufficient","kitchen"]
+    },
+    {
+      "id": "simple_1",
+      "source": "In the voice of Gordon Ramsay × Thomas Aquinas — speculative",
+      "text": "The simple dish is harder than the complex one. Anyone can hide behind complexity. Risotto. Roast chicken. An omelette. These are the tests. Three ingredients. No hiding. Either you understand what heat does to an egg or you do not. Either you comprehend the nature of starch in motion or you don't. There is no middle.",
+      "keywords": ["simple","harder","complex","hide","risotto","omelette","tests","heat","egg","starch"]
+    }
+  ]
+}

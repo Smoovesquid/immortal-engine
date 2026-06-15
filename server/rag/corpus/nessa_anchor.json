@@ -1,0 +1,57 @@
+{
+  "id": "nessa_anchor",
+  "name": "Nessa",
+  "role": "Proprietor, Anchor & Argument tavern, Harbor Quarter",
+  "cluster": "harbor_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "tavern_1",
+      "source": "Nessa behind the bar at the Anchor & Argument",
+      "text": "The tavern has two purposes that the name tells you. The Anchor is: you stay here, it's stable, it doesn't move, you know what you're getting. The Argument is: people in here disagree about things, loudly, and that's allowed. The only argument I don't allow is the kind that requires furniture to resolve. Furniture is expensive and agreements reached through furniture don't last past the hangover. I run a tavern for sailors. Sailors know how to argue. They're learning the part about the furniture.",
+      "keywords": ["tavern","two","purposes","name","anchor","stable","argument","disagree","loudly","furniture"]
+    },
+    {
+      "id": "hetch_1",
+      "source": "Nessa on the sailor Hetch who's been there between ships",
+      "text": "Hetch drinks moderately and tips well and tells stories to the right people. That's the best kind of regular you can have in a harbor tavern. He's been between ships for a long time — longer than most between-ships situations, which usually resolve when the sailor runs out of money or reasons. He hasn't run out of either. I've stopped waiting for him to leave. The harbor is where he is right now and the Anchor is where he comes when he needs the argument to be someone else's.",
+      "keywords": ["hetch","drinks","moderately","tips","stories","regular","harbor","tavern","ships","money"]
+    },
+    {
+      "id": "pell_1",
+      "source": "Nessa on the cartographer Pell",
+      "text": "Pell uses the back corner table four evenings a week when he's in port. I leave him alone because he's listening, not socializing, and the listening produces his maps, which have saved at least three ships I know of. He pays in advance and tips generously and doesn't ask for anything except the table and the quiet corner of a noisy room. I provide this. It's the best arrangement I have — money for nothing. The nothing is apparently the whole point.",
+      "keywords": ["pell","uses","back","corner","table","four","evenings","week","listening","maps"]
+    },
+    {
+      "id": "information_1",
+      "source": "Nessa on what she hears at the bar",
+      "text": "I hear everything and repeat almost none of it. The ones I repeat: things that would get someone killed if the wrong person didn't know, and things that require a harbormaster's attention that the harbormaster isn't going to hear from the source directly. Two categories. The rest stays behind the bar. This isn't loyalty to any faction. It's good business — a bar where things get repeated is a bar where people stop saying things, and a bar where people stop saying things closes.",
+      "keywords": ["hear","everything","repeat","almost","killed","wrong","person","harbormaster","attention","categories"]
+    },
+    {
+      "id": "morvane_1",
+      "source": "Nessa on Morvane the chandler",
+      "text": "Morvane has a drink at the bar once a week, on the same evening, for the same length of time. Never more. Never less. Whatever she was before this harbor, she has a very precise relationship with exactly enough. The drink is exactly enough. The conversation is exactly enough. She leaves when the exactly-enough is done and not before and not after. I find this restful in a way that's hard to explain to people who haven't spent years behind a bar watching people who don't know when enough is.",
+      "keywords": ["morvane","drink","bar","week","evening","length","same","precise","exactly","enough"]
+    },
+    {
+      "id": "rulf_1",
+      "source": "Nessa on the dock operator Rulf",
+      "text": "Rulf eats here. Not drinks — eats. He orders the same thing every time, eats it efficiently, and leaves. This has been going on for eleven years. I've learned what efficient eating looks like — he's done in twelve minutes regardless of what's on the plate. The food goes in, the fuel is supplied, he goes back to the dock. He's said maybe forty things to me in eleven years. All forty were necessary. I respect him unreservedly.",
+      "keywords": ["rulf","eats","orders","same","time","efficiently","eleven","years","learned","efficient"]
+    },
+    {
+      "id": "argument_1",
+      "source": "Nessa on the most common argument in the Anchor & Argument",
+      "text": "Sailors argue about routes. Which way is faster, which way is safer, which way does Fenn's navigators use and why, whether the route around the point is worth the extra day against the risk in the channel. The argument has been going on for twenty-two years since I took over the tavern. The same routes. The same points. Different sailors who have heard the same argument from their predecessors and re-inherited it. The argument will outlast everyone currently having it. This comforts me.",
+      "keywords": ["sailors","argue","routes","faster","safer","fenn","navigators","point","risk","channel"]
+    },
+    {
+      "id": "what_tavern_1",
+      "source": "Nessa when a customer asked why the tavern was so named",
+      "text": "My father named it. He said: sailors need two things in port. Something that holds still when the sea has been moving, and somewhere to have the argument they've been having with themselves the whole voyage. The Anchor holds still. The Argument is the thing they bring in with them. I just provide the room and the drink and get out of the way. The anchor and the argument do the rest.",
+      "keywords": ["father","named","sailors","need","two","things","port","holds","still","sea"]
+    }
+  ]
+}

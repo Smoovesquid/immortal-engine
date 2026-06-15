@@ -1,0 +1,57 @@
+{
+  "id": "vell_kindness_devoted",
+  "name": "Calla",
+  "role": "VELL devotee; the angel of kindness; practices kindness as a discipline, not a disposition",
+  "cluster": "covenant_of_seven",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "vell_1",
+      "source": "Calla on VELL",
+      "text": "VELL is the angel of kindness. What distinguishes VELL's teaching from the ordinary understanding of kindness: VELL does not teach that kindness is a feeling. VELL teaches that kindness is an action. The person who feels kind but acts unkindly has not practiced kindness. The person who doesn't feel kind but acts with kindness anyway has practiced it. In nine years of VELL's discipline, the question I ask before any interaction: what is the kind action here, regardless of what I feel?",
+      "keywords": ["vell","angel","kindness","what","distinguishes","vell's","teaching","ordinary","understanding","kindness"]
+    },
+    {
+      "id": "father_len_1",
+      "source": "Calla on Father Len",
+      "text": "Father Len is the one person in this settlement who practices kindness so consistently that I can't tell whether it's natural disposition or long discipline. In nine years of VELL's practice, I've learned to distinguish between kindness as habit and kindness as discipline. Habit is the kindness that costs nothing because it's automatic. Discipline is the kindness that costs something because the situation is difficult. Father Len's kindness: I genuinely can't tell which it is. That's either a very deep discipline or a very good disposition. Both are admirable.",
+      "keywords": ["father","len","one","person","settlement","practices","kindness","consistently","can't","tell"]
+    },
+    {
+      "id": "sel_1",
+      "source": "Calla on Sel",
+      "text": "Sel works with the dying. In six years of knowing Sel, what I've observed is the specific kindness of presence with people in the final condition. What VELL's teaching says about presence-kindness: being fully present with a person who is in difficulty is the kindness that requires the most discipline because the pull toward absence is strong. The difficulty is uncomfortable. The kind action is to remain present with the discomfort rather than managing it away. Sel remains present. In six years, I've been studying how.",
+      "keywords": ["sel","works","dying","six","years","knowing","sel","observed","specific","kindness"]
+    },
+    {
+      "id": "bressa_1",
+      "source": "Calla on Bressa",
+      "text": "Bressa the midwife practices the kind action in the most acute conditions — the birth that is not going well, the family that is frightened. In five years of knowing Bressa, what I've watched: the kind action under acute stress is the calmness that allows the frightened person to be frightened without the practitioner also becoming frightened. VELL's teaching calls this the transmitted calm. The person of kindness in crisis is the one whose calm is available for the frightened person to borrow. Bressa's transmitted calm: I've seen it work.",
+      "keywords": ["bressa","midwife","practices","kind","action","most","acute","conditions","birth","not"]
+    },
+    {
+      "id": "maret_1",
+      "source": "Calla on Maret",
+      "text": "Maret has been in grief for three years. In three years, the kind action toward Maret has been to let Maret be in grief without requiring Maret to be further along than Maret is. VELL's teaching on grief-kindness: the kind action is not to relieve the grief but to be present with the person who is grieving. The unkind action in the presence of grief is to make the grieving person feel that their grief is inconvenient. In three years, I've tried to practice the presence without the urgency toward resolution.",
+      "keywords": ["maret","been","grief","three","years","three","years","kind","action","toward"]
+    },
+    {
+      "id": "what_kindness_costs_1",
+      "source": "Calla on what VELL's discipline costs",
+      "text": "In nine years, the cost of VELL's discipline: there are people who mistake practiced kindness for weakness. The kind action toward someone who then acts against me: that has happened six times in nine years. In six of those cases, the practiced kindness was the right action. In one of the six, I'm still not certain — the person may have been better served by less kindness and more directness. VELL's teaching doesn't always provide the answer clearly. The discipline includes the uncertainty.",
+      "keywords": ["nine","years","cost","vell's","discipline","there","people","who","mistake","practiced"]
+    },
+    {
+      "id": "what_calla_holds_1",
+      "source": "Calla on the person she couldn't find the kind action for",
+      "text": "There is one person in this settlement toward whom I haven't found the kind action. Nine years of practice and this one person: every approach I've tried has landed wrong, has been received as intrusion or condescension or something else that wasn't kind. I've stopped trying active approaches. What I do now: I remain available and don't initiate. VELL's teaching includes the possibility that the kind action toward some people is not to impose kindness on them. I'm practicing that possibility.",
+      "keywords": ["there","one","person","settlement","toward","whom","haven't","found","kind","action"]
+    },
+    {
+      "id": "nine_years_1",
+      "source": "Calla on nine years of VELL's practice",
+      "text": "In nine years, the practice has made me more precise about what kindness is and less certain that I do it consistently. At the beginning: I thought kindness was clear and I was good at it. In nine years: the practice has revealed how much of what I called kindness was actually managing my own discomfort with other people's difficulty. VELL's practice has been the slow work of distinguishing between the action that helps the other person and the action that helps me feel better about the other person's situation.",
+      "keywords": ["nine","years","practice","made","more","precise","what","kindness","less","certain"]
+    }
+  ]
+}

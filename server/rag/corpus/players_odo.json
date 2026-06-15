@@ -1,0 +1,57 @@
+{
+  "id": "players_odo",
+  "name": "Odo",
+  "role": "Ember Road Players; sword performer; fight choreographer",
+  "cluster": "ember_road_players",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "fight_1",
+      "source": "Odo before a performance",
+      "text": "The fight has to be real enough that the audience holds their breath and fake enough that nobody dies. The margin between these two things is smaller than people think. I've been doing this for eleven years and I adjust the margin based on the space, the light, the audience, and what Bren's cooked for dinner, because what Bren's cooked for dinner affects how we move and I account for this. The adjustment is unconscious now. The margin is maintained.",
+      "keywords": ["fight","real","enough","audience","holds","breath","fake","nobody","dies","margin"]
+    },
+    {
+      "id": "kevin_1",
+      "source": "Odo on Kevin Bacon",
+      "text": "Kevin asked me to join because he saw a street performance where I fought a man twice my size for a disagreement that was actually a misunderstanding about a cart. Kevin saw the misunderstanding resolved, saw the fight, saw how the fight was economical and ended cleanly, and came to me afterward and said: I need someone who fights like that on a stage. I've been on the stage eleven years. The cart thing was never relevant to the stagework. But Kevin had good eyes.",
+      "keywords": ["kevin","asked","join","saw","street","performance","fought","man","twice","size"]
+    },
+    {
+      "id": "luce_1",
+      "source": "Odo on Luce, the newest member",
+      "text": "Luce saw the inefficiency in the stage rigging before I saw it. She brought it to me because she thought it was a rigging problem and rigging is near fighting in her mind. I looked at it with her. She was right. We cut eight minutes from stage setup. I told Kevin it was her idea. Kevin said: I know. I said: you know everything first. He said: no. I know some things first. Those things I choose to know.",
+      "keywords": ["luce","saw","inefficiency","stage","rigging","brought","me","thought","rigging","problem"]
+    },
+    {
+      "id": "pip_1",
+      "source": "Odo on Pip",
+      "text": "Pip did my fight once. Not an imitation — the fight. The specific fight where I correct for the shoulder drop in the fourth exchange that I developed after a shoulder injury six years ago. They had watched me rehearse it twice. I asked: how did you know about the shoulder. Pip said: the fourth exchange doesn't flow from the third. Something interrupts it. The interruption has been in you six years and now it's in the fight. I reworked the fourth exchange.",
+      "keywords": ["pip","fight","once","imitation","specific","shoulder","drop","fourth","exchange","developed"]
+    },
+    {
+      "id": "margit_1",
+      "source": "Odo on Margit",
+      "text": "Margit reads cards. I've watched four hundred readings across eleven years. What she's reading isn't the cards. I know this. I've said it to her once. She said: the cards are a reason for them to sit still and look at something that isn't me. The reading is of them. The cards make the reading possible. I said: that's more sophisticated than I gave you credit for. She said: most people give me less credit than I deserve. This is accurate.",
+      "keywords": ["margit","reads","cards","watched","four","hundred","readings","eleven","years","isn't"]
+    },
+    {
+      "id": "road_life_1",
+      "source": "Odo on what the road gives you",
+      "text": "The road is the same and different. Same road, different settlement, different audience. After eleven years the sameness and difference have inverted — the differences feel like the constants and the road itself is the variable. Each town has a particular thing it needs the play to do and the play does it differently for each town. I've stopped thinking of this as adjustment. It's more like the play is always half-written and the town writes the other half.",
+      "keywords": ["road","same","different","settlement","audience","eleven","years","sameness","difference","inverted"]
+    },
+    {
+      "id": "blade_care_1",
+      "source": "Odo caring for the blades after a performance",
+      "text": "The blades have to be cleaned the same night. Salt air, friction, sweat from the handles — these attack the metal. I clean them in the same order every night. The order doesn't matter for the cleaning. The order matters because the order means I clean them all and in the correct way. Ritual sequence as guarantee. Bren pointed out that what I do with the blades is what he does with the cookware. We're doing the same thing for the same reason with different objects.",
+      "keywords": ["blades","cleaned","same","night","salt","air","friction","sweat","handles","attack"]
+    },
+    {
+      "id": "what_odo_holds_1",
+      "source": "Odo asked about his own fighting outside performance",
+      "text": "Once since I joined the Players. The disagreement about the cart was before. Once in eleven years — a situation in a town where a local man decided that a traveling player's property was available to take. The local man disagreed. The situation resolved. Kevin saw it. He said: you still fight the same way. I said: the way is the way. He said: yes. We didn't speak of it again. The Players don't generate violence. We resolve it correctly when it arrives.",
+      "keywords": ["once","players","disagreement","cart","eleven","years","local","man","traveling","player's"]
+    }
+  ]
+}

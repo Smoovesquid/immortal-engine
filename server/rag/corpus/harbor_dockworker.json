@@ -1,0 +1,57 @@
+{
+  "id": "harbor_dockworker",
+  "name": "Toom",
+  "role": "Senior dockworker; Rulf's crew; fourteen years on the dock",
+  "cluster": "harbor_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "dock_1",
+      "source": "Toom directing the load",
+      "text": "The line goes through the second block, not the first. If you run it through the first block the load swings when you release the tension. I've explained this seventeen times in fourteen years. Fourteen years and three of those seventeen people remember it the next time and fourteen forget by the next day. I've stopped being irritated by the forgetting. I explain it again. The load gets loaded correctly. The irritation was never useful.",
+      "keywords": ["line","goes","through","second","block","not","first","load","swings","release"]
+    },
+    {
+      "id": "rulf_1",
+      "source": "Toom on Rulf",
+      "text": "Rulf runs the dock the way a good engine runs — you hear the work but you don't hear problems. Problems have a different sound and he catches them before they become audible to anyone who's not looking for them. I've been on this dock for fourteen years and I know three other dock operators in this harbor. None of them run their docks the way Rulf runs this one. The difference is visible in the injury count. Rulf's is the lowest in the harbor.",
+      "keywords": ["rulf","runs","dock","engine","work","problems","different","sound","catches","fourteen"]
+    },
+    {
+      "id": "what_toom_knows_1",
+      "source": "Toom on what fourteen years at the dock teaches",
+      "text": "Weight. I can estimate the weight of anything I can see. Not exactly — within ten percent. Fourteen years of lifting things that had a stated weight and comparing the stated weight to what my back said the weight was. The calibration is in my body. I use it to check manifests. When the manifest says forty kilos and my body says sixty, we open the container. I've been right about the discrepancy eleven times in fourteen years.",
+      "keywords": ["weight","estimate","anything","see","not","exactly","ten","percent","fourteen","years"]
+    },
+    {
+      "id": "seven_1",
+      "source": "Toom on the information broker Seven",
+      "text": "Seven watches the dock from the edge. Not obviously — they have the skill of standing in a way that doesn't register as watching. After two years I started noticing the watching pattern. Seven is interested in which cargo gets special treatment — which pieces Rulf personally oversees rather than delegates. I've mentioned this to no one. Seven hasn't approached me. We're both aware of the other being aware. This is a stable state.",
+      "keywords": ["seven","watches","dock","edge","not","obviously","skill","standing","watching","pattern"]
+    },
+    {
+      "id": "morvane_1",
+      "source": "Toom on Morvane the chandler",
+      "text": "I buy supplies from Morvane for the dock crew. Small things: rope ends, extra cleats, the specific nails that work in salt air. Morvane knows what we use before I tell her — she has our dock's supply pattern from fourteen years of orders. When I come in now she has what I'm likely to need already set aside. This has saved me twenty minutes per trip for the last four years. I've never commented on it. She's never asked if I noticed.",
+      "keywords": ["buy","supplies","morvane","dock","crew","small","things","rope","ends","cleats"]
+    },
+    {
+      "id": "crew_1",
+      "source": "Toom on managing the rotating crew",
+      "text": "The rotating crew is the hard part. The full-timers know the work. The rotators come in with different habits from different docks. The first two days are assessment — I watch what they do when they don't know I'm watching. The efficient ones I put on the load line. The observant ones I put on the manifest check. The physical ones I put on the heavy cargo. Rulf taught me to sort within the first day. I was doing it in the first two. I'm working on the first day.",
+      "keywords": ["rotating","crew","hard","part","full-timers","know","work","rotators","come","habits"]
+    },
+    {
+      "id": "harrow_1",
+      "source": "Toom on Captain Harrow",
+      "text": "Harrow's ship is the easiest load I do. She tells me what's going where in the hold before we start and the told placement matches the optimal placement, which means she's already run the weight distribution calculation. Other captains tell me what's going and I recalculate. Harrow tells me where it's going and I verify. The verification is faster than the calculation. Her cargo is in the hold in half the time of any other ship this size.",
+      "keywords": ["harrow","ship","easiest","load","tells","where","going","hold","before","optimal"]
+    },
+    {
+      "id": "family_1",
+      "source": "Toom when asked if he had family in the harbor",
+      "text": "My daughter works for Maret's shipping operation. She knew the harbor before I brought her to it — she'd been watching me work since she was six. When she was sixteen she started working the dock for other operators. When Maret needed someone who knew the harbor from the load side, my daughter knew more than most people twice her age. I watched Maret hire her and said nothing. The hire was correct. My opinion wasn't relevant.",
+      "keywords": ["daughter","works","maret","shipping","operation","knew","harbor","brought","watching","work"]
+    }
+  ]
+}

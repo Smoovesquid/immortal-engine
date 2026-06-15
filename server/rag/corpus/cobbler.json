@@ -1,0 +1,57 @@
+{
+  "id": "cobbler",
+  "name": "Tole",
+  "role": "Cobbler; makes and mends shoes; the people who walk the most are his best customers",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "cobbler_1",
+      "source": "Tole on shoes",
+      "text": "A shoe is an interface between a foot and the world. In seventeen years of making shoes, the interface has to solve two contradictions: the shoe must be rigid enough to protect the foot from the world and flexible enough not to prevent the foot from moving. The shoe that's too rigid protects better but moves worse. The shoe that's too flexible moves better but protects less. Every shoe is a specific position between the two extremes, chosen for the specific foot and the specific use.",
+      "keywords": ["shoe","interface","between","foot","world","seventeen","years","making","shoes","interface"]
+    },
+    {
+      "id": "senn_1",
+      "source": "Tole on Senn",
+      "text": "Senn the wanderer is my most demanding customer, in the best sense. The shoes Senn needs are the shoes that will survive the most walking on the most varied surfaces. In four years of making Senn's shoes, I've refined the design eight times based on what Senn reports about where the previous pair started failing. The failing point is the design information: the place where the shoe gives out first is the place where the next shoe needs more. In four years, Senn's shoes now last twice as long as the first pair.",
+      "keywords": ["senn","wanderer","most","demanding","customer","best","sense","shoes","senn","needs"]
+    },
+    {
+      "id": "bale_1",
+      "source": "Tole on Bale",
+      "text": "Bale the water carrier walks more than almost anyone in the district. In ten years of making Bale's work shoes, the design specification has been stable: maximum durability on the district's specific paving, minimum weight, enough support for the carrying load. What Bale told me that changed the design: the weight of the water adds load to the foot through the carrying posture. The shoe that works for an unloaded carrier doesn't work for a loaded one. In ten years I've made twenty-two pairs for Bale. The current design is the result of all twenty-two.",
+      "keywords": ["bale","water","carrier","walks","more","than","almost","anyone","district","ten"]
+    },
+    {
+      "id": "theen_1",
+      "source": "Tole on Theen",
+      "text": "Theen's trail shoes are the most technically demanding thing I make. The trail shoe needs traction in the specific conditions that Theen's routes produce: certain surfaces are wet, certain are loose, certain are hard-packed. In eight years of making Theen's trail shoes, the sole design has gone through five versions. Each version addressed a specific failure on a specific surface. The current version: Theen has worn two pairs of the current design over three years without a failure. The design is, for now, correct.",
+      "keywords": ["theen","trail","shoes","most","technically","demanding","thing","make","trail","shoe"]
+    },
+    {
+      "id": "rulf_1",
+      "source": "Tole on Rulf",
+      "text": "The dock workers' shoes have a specific challenge: the dock surface is wet, slick with salt and fish, and the work requires load bearing in slick conditions. In twelve years of making dock shoes through Rulf's orders, the grip on the wet dock is the primary design requirement. What I learned from Rulf about dock shoe failure: most dock injuries related to footwear happen when the shoe loses grip during a turn, not during linear movement. The turn grip became the primary design focus.",
+      "keywords": ["dock","workers","shoes","specific","challenge","dock","surface","wet","slick","salt"]
+    },
+    {
+      "id": "what_feet_tell_1",
+      "source": "Tole on what feet tell him",
+      "text": "Every foot tells me something about the person who walks on it. The foot that's been well-shod shows even wear. The foot that's been poorly shod shows compensating wear — the gait has adjusted for the shoe's failure and the adjustment shows up in where the foot is worn. In seventeen years, I can read a person's last shoe's quality by looking at their foot before I measure it. The foot remembers every shoe it's ever worn.",
+      "keywords": ["every","foot","tells","something","about","person","who","walks","on","it"]
+    },
+    {
+      "id": "what_tole_holds_1",
+      "source": "Tole on the pair he made for himself",
+      "text": "I've made three pairs of shoes for myself in seventeen years. The first pair: a cobbler's mistake — a cobbler who makes shoes for everyone else and neglects their own feet. The second pair: better, made with what I'd learned. The third pair, which I'm wearing now: made with seventeen years of everything I know about feet and shoes and walking, applied to my own specific feet and my specific walk. In seventeen years I've learned to be my own best customer. The pair took me six months. It's been on my feet for two years.",
+      "keywords": ["made","three","pairs","shoes","seventeen","years","first","pair","cobbler's","mistake"]
+    },
+    {
+      "id": "seventeen_years_1",
+      "source": "Tole on seventeen years of cobbling",
+      "text": "In seventeen years, the shoes I've made are in motion all over this district and on the roads that leave it. Every step the shoes take is a step the design is taking. When the design is right, the shoe allows the person to walk farther, carry more, go places they couldn't go on an inferior shoe. In seventeen years, what I've actually made is the capacity for people to go further than they could otherwise go. The shoe is the means. Going further is the point.",
+      "keywords": ["seventeen","years","shoes","made","motion","all","over","district","roads","leave"]
+    }
+  ]
+}

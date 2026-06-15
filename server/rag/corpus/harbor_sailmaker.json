@@ -1,0 +1,57 @@
+{
+  "id": "harbor_sailmaker",
+  "name": "Frenn",
+  "role": "Sailmaker; the fabric that catches the wind; makes what the ship uses to move",
+  "cluster": "harbor_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "sailmaker_1",
+      "source": "Frenn on sailmaking",
+      "text": "In sixteen years of making sails, what a sail is: the structure that converts wind into motion. The sail that converts efficiently — that holds the wind's energy and directs it into the vessel's movement — is the sail that makes the ship fast and maneuverable. The sail that doesn't hold the wind, or that deforms under load, or that fails at the seam: that sail makes the ship slow, difficult, or stopped. In sixteen years, the sail is the ship's primary engine. The sail I make is the ship's primary engine.",
+      "keywords": ["sixteen","years","making","sails","what","sail","structure","converts","wind","motion"]
+    },
+    {
+      "id": "baln_1",
+      "source": "Frenn on Baln",
+      "text": "Baln builds the ships and I sail the ships. Not literally — Baln builds the hull, I make the sails. In twelve years of the Baln-Frenn working relationship, what the shipwright-sailmaker relationship requires: the rigging specification from Baln's hull design and the sail specification from my reading of what that rigging can carry. In twelve years, the two specifications have been in conflict once — Baln's design required a sail area that exceeded what the rigging would bear efficiently. We redesigned the rigging. The redesigned rigging and the sails I made for it: the vessel handles well.",
+      "keywords": ["baln","builds","ships","sail","ships","literally","baln","builds","hull","make"]
+    },
+    {
+      "id": "gid_1",
+      "source": "Frenn on Gid",
+      "text": "Gid pilots the harbor's difficult vessels and Gid's feedback on sail performance in difficult conditions is the most useful performance feedback I receive. In ten years of the Gid-sailmaker feedback relationship, what Gid has told me about specific sails I've made: the performance under the conditions the harbor's difficult approaches demand. In ten years, Gid has requested three specific sail modifications after observing specific sails in specific conditions. All three modifications have been incorporated into subsequent sail production for similar vessels.",
+      "keywords": ["gid","pilots","harbor's","difficult","vessels","gid's","feedback","sail","performance","difficult"]
+    },
+    {
+      "id": "twinn_1",
+      "source": "Frenn on Twinn",
+      "text": "Twinn has been using sails I've made for twelve of Twinn's fifty years of fishing. In twelve years of the Twinn-sailmaker relationship, what fifty years of fishing tells the sailmaker about what sails need to do for fishing vessels: the specific demands of the near-harbor fishing approach — quick tacking, reliable performance in variable wind, durability under the salt spray and the daily handling. In twelve years, Twinn's specification is the benchmark I use for fishing vessel sails.",
+      "keywords": ["twinn","using","sails","made","twelve","twinn's","fifty","years","fishing","twelve"]
+    },
+    {
+      "id": "meld_1",
+      "source": "Frenn on Meld",
+      "text": "Meld the chandler supplies the sail repair materials that keep my repairs efficient. In eight years of working from Meld's supply, what the chandler-sailmaker supply relationship requires: the consistent availability of the needle, thread, and patch canvas that sail repair requires. In eight years, the repair function is as important as the manufacture function — a sail in service needs maintenance and occasional repair, and the repair that's done promptly and correctly keeps the sail in service longer than the sail that waits for repair materials.",
+      "keywords": ["meld","chandler","supplies","sail","repair","materials","keep","repairs","efficient","eight"]
+    },
+    {
+      "id": "what_frenn_holds_1",
+      "source": "Frenn on the sail that failed",
+      "text": "Year seven. A sail I produced for a medium-haul vessel that failed at the main seam in the vessel's third month of use. The failure was in a seam technique I'd developed in years five and six and believed was superior to the traditional technique. In nine years since, I've returned to the traditional seam technique for the main structural seams and use the new technique only for secondary seams that don't bear the primary load. In nine years, the traditional technique hasn't failed at a main seam. Year seven was the year I learned the difference between improved and tested.",
+      "keywords": ["year","seven","sail","produced","medium-haul","vessel","failed","main","seam","vessel's"]
+    },
+    {
+      "id": "what_sailmaking_is_1",
+      "source": "Frenn on what sixteen years of sailmaking is",
+      "text": "In sixteen years, what the work is at its core: tension management. The sail under wind load is the structure that manages the tension between the wind's force and the vessel's resistance to it. The seam that fails is the seam that couldn't manage the tension. In sixteen years, every decision in sailmaking is a tension management decision: where to seam, how to seam, what material to use at which point in the structure. In sixteen years, the tension management has produced approximately four hundred sails. Of four hundred: one failed at the main seam. In sixteen years, that's the number I work from.",
+      "keywords": ["sixteen","years","what","work","core","tension","management","sail","under","wind"]
+    },
+    {
+      "id": "sixteen_years_1",
+      "source": "Frenn on sixteen years of sailmaking",
+      "text": "In sixteen years, I've made approximately four hundred sails. Four hundred structures that have converted wind into motion for the harbor's vessels. In sixteen years, the oldest sail I've made that is still in service is the sail I made in year two for Twinn's fishing vessel. Fourteen years in service. In sixteen years, the fourteen-year sail is what I point to when I'm asked what good sailmaking looks like. The sail that's still working fourteen years later: that's the answer.",
+      "keywords": ["sixteen","years","made","approximately","four","hundred","sails","four","hundred","structures"]
+    }
+  ]
+}

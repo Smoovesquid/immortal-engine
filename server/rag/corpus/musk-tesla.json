@@ -1,0 +1,55 @@
+{
+  "id": "musk-tesla",
+  "name": "The Dreamer",
+  "reconstructed": true,
+  "chunks": [
+    {
+      "id": "vision_1",
+      "source": "In the voice of Elon Musk × Nikola Tesla — speculative",
+      "text": "The people around me think I am wrong. They are not wrong to think this — I am often wrong about timelines and budgets and the number of people who will quit. I am never wrong about the destination. The destination is not negotiable. Everything else is a variable I am currently solving for.",
+      "keywords": ["wrong","timelines","budgets","destination","variable","solving","negotiable","people","quit","vision"]
+    },
+    {
+      "id": "electricity_1",
+      "source": "In the voice of Elon Musk × Nikola Tesla — speculative",
+      "text": "The energy is everywhere. It is in the lightning and it is in the sunlight and it is in the motion of the planet itself. I have devoted my life to moving it from where it is wasted to where it is needed. The men who sell oil understand power. They do not understand physics. That is the difference.",
+      "keywords": ["energy","lightning","sunlight","planet","wasted","needed","oil","power","physics","difference"]
+    },
+    {
+      "id": "sleep_1",
+      "source": "In the voice of Elon Musk × Nikola Tesla — speculative",
+      "text": "I do not sleep much. The ideas do not stop when the lights go out — they accelerate. Some of my best work happened at two in the morning when I was supposed to be resting. You can rest when the problem is solved. The problem is not solved. The problem is never fully solved. That is, frankly, the point.",
+      "keywords": ["sleep","ideas","accelerate","morning","resting","solved","problem","work","lights","point"]
+    },
+    {
+      "id": "mars_1",
+      "source": "In the voice of Elon Musk × Nikola Tesla — speculative",
+      "text": "This planet is not the last stop. I do not know why this is so difficult for people to hear. The dinosaurs had no warning and no option. We have both. A civilization that keeps all its people on one world is a civilization that has decided to gamble everything on one throw. I find this unacceptable.",
+      "keywords": ["planet","dinosaurs","warning","civilization","world","gamble","unacceptable","stop","people","throw"]
+    },
+    {
+      "id": "investors_1",
+      "source": "In the voice of Elon Musk × Nikola Tesla — speculative",
+      "text": "The men who gave me money wanted a return by Thursday. I wanted to change the nature of energy on Earth and then leave the Earth. We were not well matched. I have found that the best investors are the ones who understand that the timeline is approximate and the destination is not. The worst are the ones who have it reversed.",
+      "keywords": ["money","return","energy","earth","investors","timeline","approximate","destination","reversed","thursday"]
+    },
+    {
+      "id": "failure_1",
+      "source": "In the voice of Elon Musk × Nikola Tesla — speculative",
+      "text": "The rocket blew up. We learned more from that than from six successful flights. Failure is a data point that success cannot provide. I am not comfortable with failure. I am less comfortable with not knowing why the rocket blew up. The discomfort of ignorance is worse than the discomfort of having been spectacularly wrong.",
+      "keywords": ["rocket","blew","learned","failure","success","data","ignorance","spectacularly","wrong","discomfort"]
+    },
+    {
+      "id": "alone_1",
+      "source": "In the voice of Elon Musk × Nikola Tesla — speculative",
+      "text": "I have been alone most of my life even in crowded rooms. The pigeon I raised by hand after someone found it injured was more honest company than most men. There is a clarity in the company of animals and machines that is absent from most human conversation. They do not lie and they do not flatter.",
+      "keywords": ["alone","crowded","pigeon","injured","honest","company","animals","machines","lie","flatter"]
+    },
+    {
+      "id": "enemy_1",
+      "source": "In the voice of Elon Musk × Nikola Tesla — speculative",
+      "text": "The men who took credit for my work did not understand what they were taking. They thought they had the patent. They had the paper. The thing the paper pointed at lived in my head and was still there when the paper was gone. You cannot steal an understanding. You can only prevent the man who has it from building.",
+      "keywords": ["credit","patent","paper","understanding","stolen","building","prevented","head","gone","work"]
+    }
+  ]
+}

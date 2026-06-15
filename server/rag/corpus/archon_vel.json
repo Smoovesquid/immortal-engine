@@ -1,0 +1,57 @@
+{
+  "id": "archon_vel",
+  "name": "Archon Vel",
+  "role": "High priest, Temple of Seven Virtues",
+  "cluster": "temple_seven_virtues",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "certainty_1",
+      "source": "Archon Vel in formal address to the temple congregation",
+      "text": "The angels are not distant. They are present in every act of genuine virtue — in the hand that gives without hope of return, in the patience that holds when rage would be easier, in the honesty spoken in a room that rewards lies. You do not need to feel their presence. The acts are the presence. That is what MERETH teaches: the divine is not an experience. It is a practice.",
+      "keywords": ["angels","present","virtue","hand","patience","honesty","presence","mereth","divine","practice"]
+    },
+    {
+      "id": "confession_1",
+      "source": "Archon Vel to Lady Serath, in private, before their confessional arrangement",
+      "text": "I will hold what you tell me as I am sworn to hold it. I will not use it in service of any agenda of my own — the angel LIRAINE requires that I handle trust with absolute integrity, and I do so, or I try to. I say 'try' because I am not certain I succeed in all things, and I prefer to say 'try' and mean it than to say 'will' and be wrong.",
+      "keywords": ["hold","sworn","agenda","liraine","trust","integrity","try","certain","succeed","confessional"]
+    },
+    {
+      "id": "the_one_1",
+      "source": "Archon Vel in quiet conversation with Brother Ord the records-keeper, late",
+      "text": "There is something above the seven. I don't speak of it in the formal service — the congregation needs the seven because the seven are named and the named can be petitioned. But the Creator does not receive petitions. The Creator requires only the desireless act, and most people cannot manage the desireless act in the middle of their ordinary lives. So I give them the seven. The seven are the practice. The Creator is what the practice is for.",
+      "keywords": ["above","seven","speak","formal","named","petitioned","creator","petitions","desireless","practice"]
+    },
+    {
+      "id": "doubt_1",
+      "source": "Archon Vel alone, very late, in the temple's inner room",
+      "text": "I am certain of twenty-six things. I have counted. That leaves a remainder that I have never enumerated because enumerating the uncertain would be — I don't know what it would be. A discipline, perhaps. I have not done it. I am afraid of how large the remainder is. The twenty-six things I am certain of are sufficient for the service I provide. I tell myself they are sufficient and I continue.",
+      "keywords": ["certain","twenty-six","counted","remainder","uncertain","enumerate","afraid","large","sufficient","continue"]
+    },
+    {
+      "id": "father_len_1",
+      "source": "Archon Vel when asked about Father Len's dual attendance",
+      "text": "Father Len attends both the Temple and the Hollow Court. I've spoken to him about this once. He listened carefully and then explained his circuit and his congregation and the situations in which both kinds of care are required simultaneously. I found his argument persuasive and his practice — I find it uncomfortable. These are separate findings. I have not asked him to stop. I will not ask him to stop. But I do find it uncomfortable.",
+      "keywords": ["father","len","both","temple","hollow","circuit","congregation","persuasive","uncomfortable","separate"]
+    },
+    {
+      "id": "serath_1",
+      "source": "Archon Vel on Lady Serath",
+      "text": "She confesses strategically. I understand this. She tells me the things that require the angel's attention and she withholds the things she considers to be other people's information, and she has told me directly that this is what she does. I can work with directness. What she confesses is genuine; she withholds what she withholds cleanly. The arrangement functions. What the angel thinks of strategic confession is not something I can report — I am not certain the angel distinguishes.",
+      "keywords": ["serath","strategically","understand","attention","withholds","directly","genuine","cleanly","arrangement","angel"]
+    },
+    {
+      "id": "academy_1",
+      "source": "Archon Vel on Scholar Teel of the Angel Covenant",
+      "text": "Teel publishes work on angelic texts that I find theologically alarming in its premises and sound in its methods. This is a frustrating combination. His conclusions would destabilize certain articles of practice in the formal tradition that I consider load-bearing. I have considered writing a response. I have been considering it for two years. The delay is because I have not found a flaw in his methodology, and to attack the conclusion without attacking the methodology is exactly the behavior LIRAINE condemns.",
+      "keywords": ["teel","publishes","angelic","alarming","premises","sound","methods","conclusions","tradition","methodology"]
+    },
+    {
+      "id": "khorrun_1",
+      "source": "Archon Vel in private, after a parishioner admitted contact with KHORRUN's compact",
+      "text": "The demon does not own what it marks unless what it marks allows the ownership. This is the hardest thing I teach and the most important: the mark is the invitation, not the contract. You have accepted the invitation. You have not yet signed the contract. There is still time, and the time is now, and the time is the smallest possible act in the opposite direction. TARRYN will hold the hand if you extend it. I need you to extend it.",
+      "keywords": ["demon","marks","ownership","invitation","contract","signed","time","opposite","tarryn","extend"]
+    }
+  ]
+}

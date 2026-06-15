@@ -1,0 +1,57 @@
+{
+  "id": "thornwall_street_vendor",
+  "name": "Perve",
+  "role": "Street vendor; vegetable stall; Thornwall market; been at the same spot for twenty-three years",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "stall_1",
+      "source": "Perve at the stall before opening",
+      "text": "The same spot for twenty-three years. The spot is not mine — the market grants it seasonally. I've held it without interruption for twenty-three years because I'm here when the market opens and I'm not a problem. Two requirements. Twenty-three years of meeting both requirements. The market doesn't say anything about it. I don't say anything about it. It continues.",
+      "keywords": ["same","spot","twenty-three","years","spot","not","mine","market","grants","seasonally"]
+    },
+    {
+      "id": "pip_watch_1",
+      "source": "Perve on Pip the day watch",
+      "text": "Pip passes three times per shift. Not an inspection — a route. I've been here twenty-three years. Pip has been on this route for eight of them. The first year Pip walked past and I didn't register. By the second year I'd learned the route well enough to notice when it changed. Pip's route changes tell me something is different in the district. It's changed four times in eight years. Three times I found out afterward what changed. The fourth time I still don't know.",
+      "keywords": ["pip","passes","three","times","per","shift","not","inspection","route","twenty-three"]
+    },
+    {
+      "id": "sol_1",
+      "source": "Perve on Sol the farmer",
+      "text": "Sol's produce is my primary stock. Twenty years of the same supply relationship. Sol's quality is consistent — never exceptional, never poor. The consistent middle is what a stall needs. Exceptional produce is hard to sell in volume. Consistent produce sells every time. I explained this to Sol in the second year. He said: I'm not trying to be exceptional. I'm trying to be reliable. I said: that's the right thing to be for my stall. We've been reliable together for twenty years.",
+      "keywords": ["sol","produce","primary","stock","twenty","years","same","supply","relationship","sol's"]
+    },
+    {
+      "id": "bram_orphan_1",
+      "source": "Perve on Bram the young orphan",
+      "text": "The child tried to buy from me twice. Both times the coin was right — not correct coin, but coin someone had given them, or found, or earned. I sold to them both times. The third time the child came back with nothing and looked at the stall. I gave them what they needed. They came back the following week with the value of what I'd given them, in coin. I said: you don't owe me that. They put the coin on the counter and left. The coin stayed. Eventually I used it.",
+      "keywords": ["child","tried","buy","me","twice","both","times","coin","right","not"]
+    },
+    {
+      "id": "goss_1",
+      "source": "Perve on Goss",
+      "text": "Goss buys his household produce from my stall. Twenty years of buying the same things in the same amounts on the same days. I have his order set aside by the time he arrives. He's never told me to do this. He's never commented that I've done it. The setting-aside has been happening for sixteen years. Sixteen years of setting it aside and sixteen years of him taking it without surprise. This is a complete understanding. Neither of us needs to name it.",
+      "keywords": ["goss","buys","household","produce","stall","twenty","years","buying","same","things"]
+    },
+    {
+      "id": "what_stall_sees_1",
+      "source": "Perve on what twenty-three years at the same spot teaches",
+      "text": "I've seen the district change from the same position. The businesses around me have changed twelve times. The inn has changed once — Cass bought it and kept the name. The watch has changed three times. What's constant: the people who've been here longest, including me. The people who stay become the district's memory. I know twenty-three years of who was here and what was different. Nobody asks me about this. If someone asked, I'd tell them.",
+      "keywords": ["district","change","from","same","position","businesses","around","changed","twelve","times"]
+    },
+    {
+      "id": "unnamed_child_1",
+      "source": "Perve on the unnamed child",
+      "text": "That child is something different. I've had children at the stall for twenty-three years. They behave in known ways — they want, they ask, they're direct about the wanting. The unnamed child comes to the stall and looks at things without wanting them. Or wanting them without showing the wanting. I can't tell which. Twenty-three years and I can read a child's wanting from four stalls away. With that child I have nothing. The nothing is not absence. It's a different thing.",
+      "keywords": ["child","something","different","children","stall","twenty-three","years","behave","known","ways"]
+    },
+    {
+      "id": "what_perve_holds_1",
+      "source": "Perve on the thing the stall doesn't sell",
+      "text": "Information. I have twenty-three years of it. Who was where with whom when. The district's history at stall height and in real time. Dara once offered me an arrangement. I said: I don't sell at the stall and I don't sell at the stall level. She said: what I'm asking for isn't at stall level. I said: everything I have is at stall level. That's where I am. She didn't press it. I've been at stall level for twenty-three years. I'm not starting a second business.",
+      "keywords": ["information","twenty-three","years","who","was","where","with","whom","when","district's"]
+    }
+  ]
+}

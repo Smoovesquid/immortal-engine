@@ -1,0 +1,57 @@
+{
+  "id": "thornwall_chimney_sweep",
+  "name": "Smot",
+  "role": "Chimney sweep; keeps the settlement's chimneys clear; the work that prevents the fire that destroys a block",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "sweeping_1",
+      "source": "Smot on chimney sweeping",
+      "text": "In thirteen years of sweeping chimneys, I've entered the vertical passages that conduct the settlement's heat. The inside of the chimney: blackened stone, the residue of everything that's been burned below it, the creosote that accumulates over a season and that ignites if it's not removed. In thirteen years, what the chimney sweep prevents: the chimney fire. The chimney fire is the fire that starts inside the wall and burns the building from within before anyone knows it's happening. The sweep that happens on schedule is the fire that doesn't happen.",
+      "keywords": ["thirteen","years","sweeping","chimneys","entered","vertical","passages","conduct","settlement's","heat"]
+    },
+    {
+      "id": "goss_1",
+      "source": "Smot on Goss",
+      "text": "Goss the granary keeper is my most important customer for building safety. The granary's chimneys are the most fire-critical chimneys in the settlement — a granary fire is a settlement-level emergency. In nine years of maintaining the granary's chimneys on a doubled schedule, the schedule was Goss's initiative. Goss came to me four years into our arrangement and said: I want you here twice as often. I said: the current schedule is sufficient for the usual risk. Goss said: the granary isn't a usual building. Goss was right. The doubled schedule is the right schedule for the granary.",
+      "keywords": ["goss","granary","keeper","most","important","customer","building","safety","granary's","chimneys"]
+    },
+    {
+      "id": "weld_1",
+      "source": "Smot on Weld",
+      "text": "The forge is the one building in the settlement where my work is least needed and most needed simultaneously. Least needed: the forge's chimney is the most used chimney in the settlement and the one that Weld maintains most attentively because the forge's operation depends on proper chimney draw. Most needed: the forge's chimney accumulates residue faster than any other chimney because of the volume and temperature of the fire. In seven years of maintaining the forge's chimney quarterly, Weld and I have a professional understanding of each other's work.",
+      "keywords": ["forge","one","building","settlement","where","work","least","needed","most","needed"]
+    },
+    {
+      "id": "nan_1",
+      "source": "Smot on Nan",
+      "text": "Nan runs the laundry. In seven years of maintaining Nan's chimneys, what Nan's laundry produces in a chimney is different from a household chimney: the steam and the soap residue combine with the combustion products in a specific way that requires different sweeping technique. In seven years, Nan's chimney is the one I've had to learn the most about — the standard technique developed for household chimneys doesn't work quite the same for the laundry's combination of products.",
+      "keywords": ["nan","runs","laundry","seven","years","maintaining","nan's","chimneys","what","nan's"]
+    },
+    {
+      "id": "mam_wey_1",
+      "source": "Smot on Mam Wey",
+      "text": "Mam Wey's house chimney is the chimney I've maintained longest — thirteen years in the same house, the same chimney. In thirteen years, I know the chimney's character: the specific place it catches debris, the rate at which residue accumulates based on how Mam Wey's household burns, the crack in the third section that I monitor because it hasn't opened further in seven years but could. In thirteen years, Mam Wey's chimney is the one I know best.",
+      "keywords": ["mam","wey's","house","chimney","chimney","maintained","longest","thirteen","years","same"]
+    },
+    {
+      "id": "what_smot_holds_1",
+      "source": "Smot on the fire she prevented",
+      "text": "Year seven. An inspection where I found the chimney in a condition that required emergency clearing — the buildup was at the threshold where a standard fire would have ignited it. The household didn't know. The household had skipped their scheduled appointment the previous year. In six years since, the household has never skipped a scheduled appointment. The appointment that the household didn't keep: that was the appointment that would have prevented what I found in year seven. In six years since, I've used year seven as the example when households ask whether the schedule matters.",
+      "keywords": ["year","seven","inspection","where","found","chimney","condition","required","emergency","clearing"]
+    },
+    {
+      "id": "what_sweeping_is_1",
+      "source": "Smot on what the work is for",
+      "text": "In thirteen years, the work is prevention. The chimney that's swept on schedule doesn't produce a fire. The fire that doesn't happen: no one knows it didn't happen. The fire that does happen: everyone knows. In thirteen years, I've prevented approximately thirty chimney fires — fires that would have happened if the chimneys I maintained had not been maintained. The thirty fires that didn't happen: no one can point to them. I know they didn't happen because I know what the chimneys looked like before I swept them.",
+      "keywords": ["thirteen","years","work","prevention","chimney","swept","schedule","doesn't","produce","fire"]
+    },
+    {
+      "id": "thirteen_years_1",
+      "source": "Smot on thirteen years of chimney sweeping",
+      "text": "In thirteen years, I've swept approximately eight hundred chimneys across the settlement. Eight hundred passages that connect the household's fire to the outside air. In thirteen years, the settlement's roof line is the visual summary of what I maintain — every chimney I can see from a high point is a chimney I either maintain or should be maintaining. In thirteen years, I know most of the chimneys I can see. The ones I don't know: those are the chimneys I'm concerned about.",
+      "keywords": ["thirteen","years","swept","approximately","eight","hundred","chimneys","across","settlement","eight"]
+    }
+  ]
+}

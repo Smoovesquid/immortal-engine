@@ -1,0 +1,57 @@
+{
+  "id": "academy_rune_initiate",
+  "name": "Binn",
+  "role": "First-year Academy initiate; just beginning the rune tradition",
+  "cluster": "academy_of_runes",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "first_year_1",
+      "source": "Binn on the first year",
+      "text": "The Academy doesn't tell you what you're learning until you're learning it. The first month was all observation: watching the second and third years practice, attending lectures without knowing what the lectures were about, being given texts in a notation I couldn't read. I asked a second year: when will I understand what I'm looking at. The second year said: when you stop trying to understand it and start learning to see it. I said: what's the difference. They said: come back in six months.",
+      "keywords": ["academy","doesn't","tell","you","what","learning","until","learning","first","month"]
+    },
+    {
+      "id": "tal_1",
+      "source": "Binn on Tal",
+      "text": "Tal is a third year. What Tal can do that I can't: see the rune notation as notation rather than as shapes. To me it still looks like shapes. To Tal, it's language. I asked Tal when the transition happened. Tal said: there wasn't a transition. There was a morning when the shapes had meaning instead of just being shapes. I said: what was the morning before. Tal said: the same as all the other mornings. I said: that sounds like a transition. Tal said: not from inside it.",
+      "keywords": ["tal","third","year","what","tal","can","do","that","can't","see"]
+    },
+    {
+      "id": "osven_1",
+      "source": "Binn on Osven",
+      "text": "Osven assessed me for Academy entry. The assessment was three days. What the assessment included: things I couldn't have studied for because I didn't know what was being assessed until after. What I know now that I didn't know going in: Osven was assessing whether I could learn to see, not whether I could learn to do. The doing comes later. The seeing is the prerequisite. I must have had enough seeing potential to pass. I don't know what enough means yet.",
+      "keywords": ["osven","assessed","academy","entry","assessment","three","days","what","assessment","included"]
+    },
+    {
+      "id": "burr_1",
+      "source": "Binn on Burr",
+      "text": "Burr is the custodian. In the first year, Burr is sometimes the most useful person in the building. Osven and the teachers know too much — when I don't know what question to ask, asking a teacher produces an answer to a question I didn't ask. Burr knows enough to answer the question I actually asked. In thirty years, Burr has answered the first-year's question probably a hundred times. The answer Burr gave me last week was the same answer Burr has given every first year for thirty years. The question is always the same.",
+      "keywords": ["burr","custodian","first","year","sometimes","most","useful","person","building","osven"]
+    },
+    {
+      "id": "cole_1",
+      "source": "Binn on Cole",
+      "text": "Cole is from the Forge Guild, not the Academy. We've talked twice. What I took from the two conversations: Cole knows what the Academy trained people do, from the outside. I know what the Academy training is, from the inside. The outside and inside views are different views of the same thing. Cole said: you'll come out of there able to do things that look impossible from outside. I said: I don't know what those things are yet. Cole said: that's the point of the training.",
+      "keywords": ["cole","forge","guild","not","academy","talked","twice","what","took","two"]
+    },
+    {
+      "id": "what_binn_finds_hard_1",
+      "source": "Binn on what the first year is actually hard",
+      "text": "The hard thing is not the material. The material is difficult but teachable. The hard thing is the silence that the Academy expects around the difficulty. When I'm struggling with a notation I can't read, the expected response is continued engagement with the notation, not asking for help. The not-asking is supposed to develop something. I don't know what yet. Six months in and I haven't asked for help with the notation. The notation is still mostly shapes to me. Something is happening in the not-asking, but I can't see it yet.",
+      "keywords": ["hard","thing","not","material","material","difficult","but","teachable","hard","thing"]
+    },
+    {
+      "id": "what_binn_holds_1",
+      "source": "Binn on what they don't tell their family",
+      "text": "My family asked me when I was admitted what I was going to learn. I said: I don't know yet. They said: but when you finish. I said: I don't know that either. They said: what did you ask when you applied. I said: I didn't ask. I was assessed. They didn't understand how you apply for something without knowing what you're applying for. I didn't know how to explain that the Academy's entry is an assessment of what you already are, not a negotiation about what you'll become.",
+      "keywords": ["family","asked","admitted","what","going","learn","said","don't","know","yet"]
+    },
+    {
+      "id": "prenn_1",
+      "source": "Binn on Prenn",
+      "text": "Prenn is the retired teacher who still visits the Academy. What the retired teacher offers that the current teachers don't: the outside view. Prenn has been outside the Academy long enough to see it from where students will eventually be. In two conversations with Prenn, both times the retired teacher said something that described where I would be without knowing where I was. I said: how do you know that's what I'm dealing with. Prenn said: it's what every first year is dealing with at six months. The year has a pattern Prenn knows from inside and outside.",
+      "keywords": ["prenn","retired","teacher","still","visits","academy","what","retired","teacher","offers"]
+    }
+  ]
+}

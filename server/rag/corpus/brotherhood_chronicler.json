@@ -1,0 +1,57 @@
+{
+  "id": "brotherhood_chronicler",
+  "name": "Drav the Second",
+  "role": "Brotherhood of the Wild chronicler; distinct from Drav the scout; records the Brotherhood's territorial knowledge for continuity",
+  "cluster": "brotherhood_of_wild",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "chronicler_1",
+      "source": "Drav the Second on the chronicler's function",
+      "text": "In twelve years of chronicling the Brotherhood's territorial knowledge, what the chronicler is in the Brotherhood's operation: the function that ensures the territory knowledge doesn't leave with the individual who holds it. In twelve years, the Brotherhood's territorial knowledge resides in people — in Theen's reading, in Cord's operational memory, in Holt's tracking knowledge. In twelve years, the chronicler is the function that makes the individual knowledge collective knowledge that survives the individual.",
+      "keywords": ["twelve","years","chronicling","brotherhood's","territorial","knowledge","what","chronicler","brotherhood's","operation"]
+    },
+    {
+      "id": "cord_1",
+      "source": "Drav the Second on Cord",
+      "text": "Cord's operational knowledge is the most critical knowledge the Brotherhood holds and the most difficult to chronicle. In ten years of the Drav the Second-Cord chronicler-field commander relationship, what Cord's operational knowledge contains that is difficult to transfer to the chronicle: the judgment calls. In ten years, the chronicle can record what Cord decided. It's much harder to record why — the situational reading that led to the decision. In ten years, I've attempted to capture the why in twelve specific cases where Cord has been willing to explain the reasoning. In ten years, twelve explanations. They're the most valuable part of the chronicle.",
+      "keywords": ["cord's","operational","knowledge","most","critical","knowledge","brotherhood","holds","most","difficult"]
+    },
+    {
+      "id": "theen_1",
+      "source": "Drav the Second on Theen",
+      "text": "Theen's territory reading is the knowledge the chronicle preserves most systematically. In ten years of the Drav the Second-Theen chronicler-territory reader relationship, what the systematic territory chronicle is: the record of what the territory's conditions have been across seasons and years. In ten years, the chronicle of Theen's territory reading is now a ten-year record of territory conditions. In ten years, the record is already more valuable than any single year's knowledge — the patterns that span multiple years are visible only in the multi-year record.",
+      "keywords": ["theen's","territory","reading","knowledge","chronicle","preserves","most","systematically","ten","years"]
+    },
+    {
+      "id": "holt_1",
+      "source": "Drav the Second on Holt",
+      "text": "Holt the Tracker's knowledge is the knowledge that resists chronicle most stubbornly. In eight years of attempting to chronicle Holt's tracking knowledge, what the difficulty is: the tracking knowledge is embodied — it's in how Holt reads physical sign in real time, not in propositions that can be written down. In eight years, I've attempted eight structured conversations with Holt about specific tracking situations. In eight years, the eight conversations have produced the chronicle's best attempt at embodied knowledge. In eight years, the best attempt is still better than the absence of the attempt.",
+      "keywords": ["holt","tracker's","knowledge","knowledge","resists","chronicle","most","stubbornly","eight","years"]
+    },
+    {
+      "id": "eld_historian_1",
+      "source": "Drav the Second on Eld the Historian",
+      "text": "Eld the Historian at the Hollow Court does for the Court's history what I do for the Brotherhood's territory knowledge. In four years of knowing Eld the Historian through the shared chronicling context, what the chronicler-historian comparison reveals: Eld works with completed history — events that have finished and can be assessed in retrospect. I work with active knowledge — territory conditions and operational decisions that are currently in use. In four years, the difference between chronicling the past and chronicling the active is the difference between the archivist and the recorder.",
+      "keywords": ["eld","historian","hollow","court","does","court's","history","what","brotherhood's","territory"]
+    },
+    {
+      "id": "what_drav_second_holds_1",
+      "source": "Drav the Second on what twelve years of Brotherhood chronicling holds",
+      "text": "In twelve years, the Brotherhood's chronicle is now a twelve-year record of territory knowledge, operational decisions, tracking patterns, and the environmental conditions that have shaped the Brotherhood's work. In twelve years, the chronicle is the Brotherhood's collective memory. In twelve years, two Brotherhood members who have left the organization and whose knowledge would otherwise have been lost: the chronicle holds what they knew. In twelve years, the chronicle has already preserved knowledge that would otherwise be gone.",
+      "keywords": ["twelve","years","brotherhood's","chronicle","twelve-year","record","territory","knowledge","operational","decisions"]
+    },
+    {
+      "id": "what_chronicle_cant_preserve_1",
+      "source": "Drav the Second on what the chronicle can't preserve",
+      "text": "In twelve years, what the chronicle can't preserve that the chronicle would most like to preserve: the quality of the judgment in the moment. In twelve years, the chronicle can record what was decided and what resulted. It can approximate why. It cannot fully reproduce the quality of attention and situational reading that produced the good judgment. In twelve years, the chronicle preserves the outcome of the good judgment. The next person who reads the chronicle inherits the what. The how has to be developed again from the territory. In twelve years, the chronicle knows this about itself.",
+      "keywords": ["twelve","years","what","chronicle","can't","preserve","chronicle","would","most","like"]
+    },
+    {
+      "id": "twelve_years_1",
+      "source": "Drav the Second on twelve years of Brotherhood chronicling",
+      "text": "In twelve years, the Brotherhood's institutional continuity has been partly a function of the chronicle I maintain. In twelve years, the Brotherhood that loses its senior members without a chronicle is the Brotherhood that must rebuild the territory knowledge from scratch. In twelve years, the chronicle is the Brotherhood's insurance against that loss. In twelve years, I've been building the insurance. In twelve years, the insurance hasn't been needed yet — the Brotherhood's senior members are still present. In twelve years, the value of the insurance is that it's present when it's eventually needed.",
+      "keywords": ["twelve","years","brotherhood's","institutional","continuity","been","partly","function","chronicle","maintain"]
+    }
+  ]
+}

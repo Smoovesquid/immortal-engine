@@ -1,0 +1,57 @@
+{
+  "id": "vorn_knight",
+  "name": "Vorn",
+  "role": "House Knight, House of Aldenmere",
+  "cluster": "house_aldenmere",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "loyalty_1",
+      "source": "Vorn when Comus informed him of a third outside offer",
+      "text": "Tell them no. You can tell them I said no specifically, if that's useful to you. I've declined two offers already and this one is better than the last one, which suggests someone has been paying attention to the pattern and has increased the offer accordingly. I find this encouraging — it means the offers are serious. I decline serious offers more sincerely than I'd decline insincere ones. The house isn't ready yet. When it's ready, I won't need the offer.",
+      "keywords": ["decline","offers","better","last","pattern","increased","serious","sincerely","house","ready"]
+    },
+    {
+      "id": "ready_1",
+      "source": "Vorn to Edwyn Aldenmere, when asked what he means by the house being ready",
+      "text": "The house is worth defending when what it stands for is clear and what it has to protect is real. Right now the house stands for managed decline, which is a correct strategy and a difficult thing to protect. What the house will stand for after the decline is over — the thing Lady Serath is building toward and that you'll inherit — that will be worth defending. I'm waiting for the inheritance, not the decline. You should know this. I think you do.",
+      "keywords": ["worth","defending","stands","clear","real","managed","decline","strategy","inheritance","inherit"]
+    },
+    {
+      "id": "training_1",
+      "source": "Vorn training in the early morning in the house courtyard",
+      "text": "The discipline is the thing. Not the skill — the skill is the product of the discipline, not the other way around. I've seen skilled fighters with no discipline and I've seen disciplined fighters with moderate skill and the disciplined ones last longer in every category that matters. The morning practice is not for the skill. It's for the reminder that the skill requires the morning practice. This is the loop. The loop is the whole of it.",
+      "keywords": ["discipline","skill","product","skilled","disciplined","moderate","last","morning","practice","loop"]
+    },
+    {
+      "id": "serath_1",
+      "source": "Vorn on Lady Serath",
+      "text": "She's the most intelligent person I've served under, which is a short list. She manages this house through force of understanding rather than force of authority, which is rarer and more sustainable. She knows what everyone wants and she arranges the wants so that serving the house serves each person's interests. I've watched her do it for ten years. I haven't found the leverage she's using. I think the leverage is that she's right about what people want, and people can tell.",
+      "keywords": ["intelligent","served","manages","force","understanding","authority","rare","sustainable","wants","right"]
+    },
+    {
+      "id": "rath_1",
+      "source": "Vorn on Captain Rath, with whom he trained",
+      "text": "Rath trained me before I was here and before she was the Brotherhood's captain. We were young and terrible and we got less terrible at different rates — she got less terrible faster, I got less terrible more completely. The distinction matters less now that we're both good enough. I have a higher opinion of her than I expect she has of me, which is the correct arrangement — she has higher standards than I do, so her bar for good is higher.",
+      "keywords": ["rath","trained","young","terrible","rates","faster","completely","distinction","opinion","standards"]
+    },
+    {
+      "id": "comus_1",
+      "source": "Vorn on Comus",
+      "text": "Comus runs the house. I protect the house. Our jobs are in permanent tension because what he does to run the house sometimes creates situations that make the house harder to protect, and what I do to protect the house sometimes limits what he can do to run it. We've worked out the protocol over ten years without ever discussing it explicitly — he tells me when something creates a protection problem, I tell him when something creates a management problem. We fix the intersection. It functions.",
+      "keywords": ["comus","runs","protect","permanent","tension","creates","situations","protocol","intersection","functions"]
+    },
+    {
+      "id": "britta_1",
+      "source": "Vorn when he noticed Britta using the door Comus had left accessible",
+      "text": "I noticed. I chose not to notice officially. The door leads somewhere that isn't a threat to the house's security — I've assessed it. What Britta is arranging is her business until it becomes a threat to the house's security, at which point it becomes my business and I'll handle it then. Britta is competent. Her arrangements will be competent. If the competent arrangements cause a problem I'll solve the problem. Until then: the door is open. I didn't open it. I haven't closed it.",
+      "keywords": ["noticed","officially","door","threat","security","assessed","arranging","competent","arrangements","open"]
+    },
+    {
+      "id": "edwyn_1",
+      "source": "Vorn on Edwyn, the heir",
+      "text": "He's the thing I'm waiting for. Not him exactly — what he becomes when the house is in his hands and the managing is done and what's left is worth protecting. He's genuine in a way that's rare and inconvenient and correct. The genuine ones are harder to protect because they don't take evasive action — they walk directly into the difficult situation because they think the difficulty is where they should be. They're often right. They're also often injured. My job will be to keep him right and not injured.",
+      "keywords": ["waiting","becomes","managing","genuine","rare","inconvenient","correct","evasive","directly","protect"]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "id": "glass_painter",
+  "name": "Iven",
+  "role": "Glass painter; applies pigment to glass for the Covenant's windows and for private commissions",
+  "cluster": "covenant_of_seven",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "glass_paint_1",
+      "source": "Iven on glass painting",
+      "text": "Paint on glass is fire-fixed paint. I apply the pigment before the firing. After the firing: permanent. If I make an error before the firing, I can correct it. After the firing, the error is in the glass for as long as the glass survives. In twelve years of glass painting, I've fired panels with three errors I couldn't correct. All three errors are in the Covenant's windows. I see them every time I do work in the building. They're in the glass. They're permanent.",
+      "keywords": ["paint","glass","fire-fixed","apply","pigment","before","firing","after","firing","permanent"]
+    },
+    {
+      "id": "father_len_1",
+      "source": "Iven on Father Len",
+      "text": "Father Len commissions the Covenant's window work. The commission process: Father Len describes what the window should convey — not what it should depict, what it should make the viewer feel. In twelve years of working with Father Len, I've never received a specific image direction. Always a feeling, an effect. The translation from feeling to image is mine. Father Len has never rejected a piece after I made the translation. The translation that serves the feeling has never yet been wrong.",
+      "keywords": ["father","len","commissions","covenant's","window","work","commission","process","father","len"]
+    },
+    {
+      "id": "gell_1",
+      "source": "Iven on Gell",
+      "text": "Gell makes the glass I paint. The collaboration runs both ways: what Gell makes determines what I can paint, and what I need to paint shapes some of what Gell makes. In nine years of working together, we've developed a glass formula that produces a specific translucency that's better for painting than Gell's original formula. The formula is ours — neither of us developed it alone. Gell handles the chemistry. I handle the light behavior after firing. The formula is the result of that exchange.",
+      "keywords": ["gell","makes","glass","paint","collaboration","runs","both","ways","what","gell"]
+    },
+    {
+      "id": "sel_1",
+      "source": "Iven on Sel",
+      "text": "Sel at the Hollow Court commissioned a painted glass memorial piece after the death of someone the court lost. I don't know who. Sel didn't tell me and I didn't ask. What Sel said: I want something that holds the quality of the light at the time they died. The time of death: just before dawn, winter. I painted winter light coming through glass at the hour before dawn. It's the most specific thing I've made in twelve years — the commission required me to paint a specific hour of light on a specific day of the year.",
+      "keywords": ["sel","hollow","court","commissioned","painted","glass","memorial","piece","after","death"]
+    },
+    {
+      "id": "maret_1",
+      "source": "Iven on Maret",
+      "text": "Maret's household has a window commission I completed four years ago. The window is in a room I haven't seen since the installation. What Maret said at the installation: it's exactly what I imagined, which I didn't know how to imagine. In four years, Maret has sent me two messages. The first: telling me the window's behavior at midwinter sunrise was something she hadn't expected but wanted. The second: asking if the pigment could be cleaned without damage. The answer was yes. The window is fine. Maret is still carrying something.",
+      "keywords": ["maret","household","window","commission","completed","four","years","window","room","haven't"]
+    },
+    {
+      "id": "what_glass_painting_is_1",
+      "source": "Iven on what painting on glass is different from painting on anything else",
+      "text": "Everything I paint is painted in transmission, not reflection. Paintings on wall or canvas show you reflected light — the light bounces back from the pigment. Glass paintings show you transmitted light — the light comes through the pigment. The color the viewer sees is light that has passed through what I painted. What I'm actually doing: arranging obstacles for light so that the viewer sees the light that made it through, not the light that was stopped. I'm painting the stopped light so the viewer sees the passing light.",
+      "keywords": ["everything","paint","painted","transmission","not","reflection","paintings","wall","canvas","show"]
+    },
+    {
+      "id": "what_iven_holds_1",
+      "source": "Iven on the piece he made for himself",
+      "text": "A piece I made with no commission and no installation plan. It's in my workspace, against the north wall, where the light that comes through it at midday falls on the floor. I made it to solve a pigment problem I'd been thinking about for three years — a problem with how a specific color behaves in transmission at different light intensities. The piece solved the problem. It's been solving it for two years. I have no intention of installing it anywhere. It's doing its job where it is.",
+      "keywords": ["piece","made","no","commission","no","installation","plan","workspace","against","north"]
+    },
+    {
+      "id": "twelve_years_1",
+      "source": "Iven on twelve years of glass painting",
+      "text": "In twelve years I've painted panels that are now in the Covenant, in private households, in a settlement three days' travel from here, and in a location I don't know — a commission that left through an intermediary whose final destination I never learned. All of them: holding the light that comes through them. The light that came through them yesterday was different from the light that came through them today. What I painted was fixed. The light is never fixed. The painting and the light are always a different work.",
+      "keywords": ["twelve","years","painted","panels","covenant","private","households","settlement","three","days"]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "id": "sostane_vintner_devoted",
+  "name": "Perve the Vintner",
+  "role": "SOSTANE devotee; the angel of temperance practiced through the production and measured consumption of wine",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "sostane_1",
+      "source": "Perve the Vintner on SOSTANE",
+      "text": "SOSTANE is the angel of temperance and I practice SOSTANE's teaching through wine. In eighteen years of SOSTANE's practice through the vintner's work, what temperance is when practiced correctly through the thing that temperance is most commonly invoked against: the measured relationship with the thing rather than the abstention from the thing. In eighteen years, SOSTANE's teaching is not the absence of wine. The teaching is the measured presence of wine — the glass that is what it is, taken with attention, enough and not more.",
+      "keywords": ["sostane","angel","temperance","practice","sostane's","teaching","wine","eighteen","years","measured"]
+    },
+    {
+      "id": "vel_vintner_1",
+      "source": "Perve the Vintner on Vel the Vintner",
+      "text": "Vel the Vintner practices the craft as craft and I practice the craft as practice. In fourteen years of knowing Vel as the reference for what the vintner's craft is, what the comparison produces: the shared craft and the different relationship with it. In fourteen years, Vel produces wine to the craft's standard without the SOSTANE framework. I produce wine to the craft's standard with the SOSTANE framework informing the production — the measured attention in the making that the temperance practice requires in the taking.",
+      "keywords": ["vel","vintner","practices","craft","practice","craft","through","practice","fourteen","years"]
+    },
+    {
+      "id": "voss_1",
+      "source": "Perve the Vintner on Voss",
+      "text": "Voss the glassblower makes the vessels that the vintner's wine is served in and the vessel and the wine are in a relationship that SOSTANE's practice recognizes. In twelve years of the Perve the Vintner-Voss relationship, what the relationship between the vessel and what it holds is in the SOSTANE framework: the vessel shapes the experience of the wine in ways the inattentive person doesn't notice. In twelve years, SOSTANE's practice is the practice of noticing. The vessel and the wine together are the practice's object.",
+      "keywords": ["voss","glassblower","makes","vessels","vintner's","wine","vessel","wine","relationship","sostane's"]
+    },
+    {
+      "id": "hona_1",
+      "source": "Perve the Vintner on Hona",
+      "text": "Hona keeps bees and the honey that Hona produces enters the mead variants that the vintner's practice includes. In eight years of the Perve the Vintner-Hona relationship, what the honey-wine relationship is in SOSTANE's framework: the sweetness that makes the measured consumption a more complex pleasure and makes the immoderate consumption a more obvious failure. In eight years, the mead taken with attention is a different experience from the mead taken without it. SOSTANE's practice makes both the attention and the difference clear.",
+      "keywords": ["hona","keeps","bees","honey","mead","variants","vintner's","practice","includes","eight"]
+    },
+    {
+      "id": "odde_1",
+      "source": "Perve the Vintner on Odde",
+      "text": "Odde the candle maker produces the light under which the vintner's best wine is served. In ten years of the Perve the Vintner-Odde practical relationship, what the candle light and the wine have in common in SOSTANE's framework: both are things that are better attended to under specific conditions, and the SOSTANE practice teaches the attending. The wine served in adequate light and the wine served in inadequate light: the attention the practice requires is more possible in the adequate light.",
+      "keywords": ["odde","candle","maker","produces","light","under","which","vintner's","best","wine"]
+    },
+    {
+      "id": "what_perve_vintner_holds_1",
+      "source": "Perve the Vintner on what eighteen years of SOSTANE's practice holds",
+      "text": "In eighteen years, what the temperance practice through wine has produced: the measured relationship with the thing that the practice teaches through the most common failure case. The person who cannot take wine measuredly is the person whose wine relationship reveals an unmeasured relationship with pleasure more broadly. SOSTANE's practice through wine is the practice that teaches the measured relationship with pleasure itself — the wine is the curriculum. The lesson is temperance.",
+      "keywords": ["eighteen","years","temperance","practice","through","wine","produced","measured","relationship","thing"]
+    },
+    {
+      "id": "what_temperance_is_not_1",
+      "source": "Perve the Vintner on what SOSTANE's temperance is not",
+      "text": "In eighteen years, what SOSTANE's temperance is not: the abstention that avoids the pleasure to avoid the risk of excess. The abstainer avoids the wine and avoids the failure mode but also avoids the practice. SOSTANE's temperance is the measured engagement — the thing engaged with, at the measure the thing requires, with the attention the engagement deserves. In eighteen years, the abstainer and the SOSTANE devotee are not practicing the same thing. One is avoiding. One is measuring. The difference is everything.",
+      "keywords": ["eighteen","years","what","sostane's","temperance","not","abstention","avoids","pleasure","avoid"]
+    },
+    {
+      "id": "eighteen_years_1",
+      "source": "Perve the Vintner on eighteen years of SOSTANE's practice",
+      "text": "In eighteen years, the vintner's practice and SOSTANE's practice have been the same practice through the same material. The wine I make is the wine I use to practice temperance. The production and the practice are not separate. In eighteen years, the vintner who practices SOSTANE is the vintner in the most honest possible relationship with the wine — neither abstaining from it nor capitulating to it. In eighteen years, the honest relationship with wine has been the honest relationship with the practice.",
+      "keywords": ["eighteen","years","vintner's","practice","sostane's","practice","been","same","practice","through"]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "id": "harbor_customs",
+  "name": "Lebb",
+  "role": "Harbor customs official; taxes and manifests; the toll on what moves",
+  "cluster": "harbor_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "customs_1",
+      "source": "Lebb on what customs is",
+      "text": "Customs is the settlement's claim on what moves through it. Not all of what moves — a specific share. The share is set by law and I collect the share on behalf of the law. I don't decide the share. I collect it correctly. Correctly means: the same share from everyone, without exception. The share is the same for the Fenn house and for the smallest independent merchant. The law doesn't have a smaller share for large accounts.",
+      "keywords": ["customs","settlement's","claim","what","moves","through","not","all","moves","specific"]
+    },
+    {
+      "id": "keris_1",
+      "source": "Lebb on Keris",
+      "text": "Keris coordinates the cargo inspection with me. The ship arrives, I board for the customs inspection, and Keris has the berth and the documentation ready before I board. In eleven years of working together, Keris has had the documentation ready every time. The documentation is the customs inspector's primary tool. An inspection with complete documentation takes forty minutes. An inspection with incomplete documentation takes four hours. Keris has never cost me the four hours.",
+      "keywords": ["keris","coordinates","cargo","inspection","ship","arrives","board","customs","inspection","keris"]
+    },
+    {
+      "id": "saben_1",
+      "source": "Lebb on Saben Fenn",
+      "text": "The Fenn house's documentation is always complete. In eleven years I've inspected the Fenn house's cargo forty-seven times. Forty-seven times and the documentation has been complete and accurate. Forty-seven zero errors is significant enough that I've adjusted my inspection protocol for Fenn cargo: I inspect the physical cargo against the manifest and skip the documentation verification because the documentation doesn't need verifying. Saben knows I do this. She's never asked me to do it. I do it because forty-seven supports it.",
+      "keywords": ["fenn","house's","documentation","always","complete","eleven","years","inspected","fenn","house's"]
+    },
+    {
+      "id": "pell_elder_1",
+      "source": "Lebb on Pell the Elder",
+      "text": "Pell operates in the gap between what I tax and what I don't. The gap isn't the law's gap — it's the law's architecture. Currency exchange isn't subject to customs. Objects are. Pell converts objects into currency and currency into objects and handles the conversion on the gap side. I know this and the law knows this and the law has decided this is the gap's purpose. I don't investigate the gap. I collect what I collect. The gap handles itself.",
+      "keywords": ["pell","operates","gap","between","what","tax","what","don't","gap","isn't"]
+    },
+    {
+      "id": "aren_1",
+      "source": "Lebb on the smuggling question",
+      "text": "Some cargo avoids customs by avoiding my dock. This is known. The wild routes exist and the wild routes carry cargo. My jurisdiction is the dock. What passes the dock, I tax. What doesn't pass the dock, I don't tax. I've reported my suspicions about wild-route cargo three times to the appropriate authority. The appropriate authority has taken action once in eleven years. The action was a three-week investigation and a return to the previous situation. I continue to report. The reporting is my job.",
+      "keywords": ["some","cargo","avoids","customs","by","avoiding","dock","known","wild","routes"]
+    },
+    {
+      "id": "what_lebb_holds_1",
+      "source": "Lebb on the manifest discrepancy he filed away",
+      "text": "One manifest in eleven years that I documented as correct and then, two weeks later, found evidence that it wasn't. Not fraud — the cargo had been correctly declared and then something happened between the declaration and the inspection that changed what was in the containers. What changed, how, and why, is outside my jurisdiction and my competence. I filed the discrepancy. The file sits in the customs archive. No one has asked about it. The evidence is there if anyone needs to find it.",
+      "keywords": ["one","manifest","eleven","years","documented","correct","then","two","weeks","later"]
+    },
+    {
+      "id": "orveth_1",
+      "source": "Lebb on Orveth",
+      "text": "Orveth's authority and my authority overlap at the edge of the dock and the beginning of the city. Cargo that's been customs-inspected and is moving to the city becomes Orveth's problem. Cargo that's being inspected is mine. We've had three jurisdictional disputes in eleven years. All three resolved by determining which side of an imaginary line the cargo was on when the problem started. I found this imprecision troubling at first. Now I find it functional. The line is where the problem forces it to be.",
+      "keywords": ["orveth","authority","overlap","edge","dock","beginning","city","cargo","been","customs-inspected"]
+    },
+    {
+      "id": "what_the_share_is_1",
+      "source": "Lebb on what the settlement gets from customs",
+      "text": "Eleven years of collections. The share goes to the settlement's common fund. The common fund maintains the harbor itself, the watch, the roads. Everything that moves through this harbor is making a contribution to the harbor's continued existence. I don't collect for the settlement's benefit — I collect because the settlement is the condition that makes the harbor possible. Without the settlement's maintenance, there's no harbor. The customs share is the harbor paying for itself.",
+      "keywords": ["eleven","years","collections","share","goes","settlement's","common","fund","fund","maintains"]
+    }
+  ]
+}

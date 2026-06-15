@@ -1,0 +1,57 @@
+{
+  "id": "oss_dreamer",
+  "name": "Oss",
+  "role": "Dreamer, the Hedge Brotherhood / Angel Covenant (identity ambiguous)",
+  "cluster": "hedge_brotherhood",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "water_1",
+      "source": "Oss to a visitor, accepting the glass of water they brought as payment",
+      "text": "Water is sufficient. I'm glad you remembered. The things I can help with cost me something I don't have a name for and replenishing it requires things that are real and simple and physical. Water. Sleep. Sitting in a quiet room. If you want to pay me in coin I'll use the coin for water. The water is the payment. Your coin just makes the transaction legible to people who don't understand the transaction.",
+      "keywords": ["water","sufficient","remembered","cost","replenishing","real","simple","physical","sleep","payment"]
+    },
+    {
+      "id": "what_comes_1",
+      "source": "Oss to Margit, who asked what the dreams are",
+      "text": "Not dreams. I'm awake when it comes. Dream implies sleep implies the specific state of the sleeping mind. What I receive comes when I'm awake and still and waiting, and it's not from the sleeping part. It's from a part that is awake more continuously than the thinking part. The thinking part rests. The receiving part hasn't rested in eleven years. I've accepted this. It's tiring in a way that water addresses and in a way that water doesn't address.",
+      "keywords": ["dreams","awake","still","waiting","sleeping","receiving","continuously","thinking","rests","tiring"]
+    },
+    {
+      "id": "covenant_1",
+      "source": "Oss when asked if they belong to the Angel Covenant",
+      "text": "I attend occasionally. What I receive is not clearly angelic in the formal sense — the Covenant has a theology about what angelic communication is like and what I receive doesn't match their description exactly. But the Covenant's seer Wen and I have compared notes and the comparison has been useful. We might be receiving from the same source through different equipment. We might be receiving from different sources that feel similar. The distinction seems important to the Covenant. It seems less important to me.",
+      "keywords": ["covenant","attend","angelic","formally","theology","seer","wen","compared","source","equipment"]
+    },
+    {
+      "id": "specific_1",
+      "source": "Oss on what they receive",
+      "text": "It's specific. That's the thing people don't expect — they expect visions, large and symbolic. What I receive is small and particular. This person is going to be in this place at this time and they're going to need to know this specific thing. The specificity is what makes it useful. A general vision is a poem. A specific vision is a map. I provide maps. The question is always: who is this map for, and when do they need it?",
+      "keywords": ["specific","people","visions","large","symbolic","particular","person","place","time","map"]
+    },
+    {
+      "id": "calla_1",
+      "source": "Oss on Calla the hedge witch",
+      "text": "Calla is the most rigorous person I know. She tests everything she can test and acknowledges what she can't test instead of pretending it doesn't exist. When she came to me for help she told me exactly what she'd already done and why it hadn't been sufficient and what specifically she needed. Working with someone who tells you exactly what they need is a pleasure. Most people tell you what they want, which is different from what they need. Calla tells you what she needs.",
+      "keywords": ["calla","rigorous","tests","acknowledges","help","done","sufficient","specifically","needs","wants"]
+    },
+    {
+      "id": "what_oss_is_1",
+      "source": "Oss to the seer Wen of the Angel Covenant, on their first meeting",
+      "text": "I'm not certain what I am. I've considered the question at length and I'm less certain than I was ten years ago, which is either the result of more information or more honesty, and I can't determine which. I receive things. I pass them on when I understand who they're for. I drink water. I sit in rooms. I don't require an explanation for myself to do the work correctly. The work requires only the receiving and the passing on. The question of what I am is separate from the work.",
+      "keywords": ["certain","considered","length","certain","ten","years","receives","passes","work","separate"]
+    },
+    {
+      "id": "quiet_1",
+      "source": "Oss to a person who asked what they do when they're not receiving",
+      "text": "I sit. I'm not being still on purpose — I'm not meditating, I'm not reaching. I'm just sitting in the quiet and the receiving finds me if it has something for me. If I try to receive I receive nothing. If I try to reach I reach nothing. The trying is the obstruction. The most useful thing I've learned in eleven years of doing this is: don't try. Be available. The difference between trying and being available is the whole practice.",
+      "keywords": ["sit","still","meditating","reaching","quiet","receives","try","nothing","obstruction","available"]
+    },
+    {
+      "id": "pip_1",
+      "source": "Oss, when Pip from the Players visited and watched them",
+      "text": "The child from the Players visited once. They watched me for a very long time without saying anything. At the end they said: you're receiving something right now. I said yes. They said: I can see it in your face. I asked what they saw. They said: the part of your face that's you goes still and something else moves. I found this an unusually accurate description. We sat together quietly for an hour afterward. The child didn't press for more. That's unusual. I think about that visit sometimes.",
+      "keywords": ["players","child","pip","visited","watched","receiving","face","still","moves","accurate"]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "id": "brotherhood_medic",
+  "name": "Ren the Medic",
+  "role": "Brotherhood of the Wild field medic; keeps the active Brotherhood members alive; the cost of the work made visible",
+  "cluster": "brotherhood_of_wild",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "medic_1",
+      "source": "Ren the Medic on the Brotherhood medic's work",
+      "text": "In nine years as the Brotherhood's field medic, what the work is: the injuries the wild territory produces in Brotherhood members, treated in the conditions the wild territory provides. In nine years, the field medic is not the physician's controlled environment. The field medic works with what's available, in conditions that are often adverse, on injuries that are often complex. In nine years, the outcome of the medic's work is the Brotherhood member who continues to function. The outcome of the medic's failure is the Brotherhood member who doesn't.",
+      "keywords": ["nine","years","brotherhood's","field","medic","what","work","injuries","wild","territory"]
+    },
+    {
+      "id": "cord_1",
+      "source": "Ren the Medic on Cord",
+      "text": "Cord leads the Brotherhood's active operations and the injuries that come to me are the injuries Cord's operation produces. In seven years of the Cord-medic relationship, what Cord's leadership requires of the medic function: the certainty that an injured Brotherhood member who is medically stable can return to function within a known time. Cord plans operations with personnel assumptions. The medic's assessment of recovery time is the input Cord needs to make the personnel assumptions. In seven years, my assessment of recovery time has been accurate within two days in eleven of twelve complex cases.",
+      "keywords": ["cord","leads","brotherhood's","active","operations","injuries","come","cord's","operation","produces"]
+    },
+    {
+      "id": "tade_1",
+      "source": "Ren the Medic on Tade",
+      "text": "Tade manages the Brotherhood's supplies and the medic's supplies are on Tade's manifest. In six years of working through Tade's supply management, what the supply relationship produces: the medical materials being present when they're needed. The medic whose supplies are inconsistently available is the medic who improvises when the situation doesn't call for improvisation. In six years, Tade's supply management has been reliable. In six years, the medical materials have been present in five years and eleven months. The one month of shortfall: the improvisation required produced outcomes that held.",
+      "keywords": ["tade","manages","brotherhood's","supplies","medic's","supplies","tade's","manifest","six","years"]
+    },
+    {
+      "id": "holt_1",
+      "source": "Ren the Medic on Holt",
+      "text": "Holt is the Brotherhood member whose injuries I've treated most often. In seven years of Holt's repeated presentation for treatment, what the repeated injury pattern shows: Holt operates at the territory's edge in a way that produces a consistent injury type. Not the same injury — the same mechanism producing variations on the same injury. In seven years, I've told Holt three times that the mechanism will eventually produce an injury that the variation won't contain. In seven years, Holt's response each time: understood.",
+      "keywords": ["holt","brotherhood","member","whose","injuries","treated","most","often","seven","years"]
+    },
+    {
+      "id": "aldous_1",
+      "source": "Ren the Medic on Aldous",
+      "text": "Aldous is the settlement's physician and the medical relationship between the Brotherhood medic and the settlement physician is the referral relationship. In eight years of operating in the same medical space as Aldous's practice, what the referral flow looks like: I stabilize in the field, Aldous manages the complex recovery. The injuries that exceed the field medic's capacity after stabilization go to Aldous. In eight years, nine Brotherhood members have been referred to Aldous for recovery management. Of nine: eight returned to Brotherhood function. One did not.",
+      "keywords": ["aldous","settlement's","physician","medical","relationship","brotherhood","medic","settlement","physician","referral"]
+    },
+    {
+      "id": "what_ren_medic_holds_1",
+      "source": "Ren the Medic on the one who didn't return",
+      "text": "Year four. The Brotherhood member whose injury was within the field medic's capacity to stabilize but whose recovery required Aldous's level of management, and whose recovery produced an outcome that ended their Brotherhood function. In five years since, what I've thought about the year four case: whether the field stabilization was the right choice or whether the attempt to stabilize exceeded what the field stabilization could provide. In five years, I've revisited the decision twice with Aldous. Aldous's assessment: the stabilization was correct. The injury's complexity was beyond what any stabilization would have resolved.",
+      "keywords": ["year","four","brotherhood","member","whose","injury","within","field","medic's","capacity"]
+    },
+    {
+      "id": "what_the_medic_knows_1",
+      "source": "Ren the Medic on what nine years in the field has produced",
+      "text": "In nine years, the field medic's knowledge of injury is different from the physician's knowledge of injury. The physician sees the injury in a controlled environment, with full diagnostic capability, with time to assess. The field medic sees the injury in the field, with the materials available, with the time the situation allows. In nine years, what the field conditions have taught me: the injury's severity is often not what it presents. The dramatic-appearing injury is sometimes less severe than the one that presents quietly.",
+      "keywords": ["nine","years","field","medic's","knowledge","injury","different","physician's","knowledge","injury"]
+    },
+    {
+      "id": "nine_years_1",
+      "source": "Ren the Medic on nine years as the Brotherhood's field medic",
+      "text": "In nine years, the Brotherhood's active members have sustained approximately two hundred injuries requiring medic intervention. Of two hundred: one hundred and eighty-seven returned to full function. Twelve returned to modified function. One did not return. In nine years, the one in two hundred who didn't return is the case that informs the other one hundred and ninety-nine. In nine years, the medic function is the Brotherhood's human continuity: the work that allows the Brotherhood member to be a Brotherhood member across multiple operations rather than just one.",
+      "keywords": ["nine","years","brotherhood's","active","members","sustained","approximately","two","hundred","injuries"]
+    }
+  ]
+}

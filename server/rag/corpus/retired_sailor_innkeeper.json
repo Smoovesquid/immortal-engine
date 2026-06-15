@@ -1,0 +1,57 @@
+{
+  "id": "retired_sailor_innkeeper",
+  "name": "Noll",
+  "role": "Retired sailor who runs a small harborside inn; thirty years at sea, eight years ashore; still misses it",
+  "cluster": "harbor_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "landlocked_1",
+      "source": "Noll on being ashore",
+      "text": "In eight years ashore, I've accepted that I'm not going back to sea. The body that sailed for thirty years: it's not the body that would survive another voyage. In eight years of running the inn, what the inn gives me that the sea gave me: a place where people are passing through. The sailors at the inn are the same people I was for thirty years. The proximity is the closest I can get to being back on the water. In eight years, the inn is the best possible version of being done sailing.",
+      "keywords": ["eight","years","ashore","accepted","not","going","back","sea","body","sailed"]
+    },
+    {
+      "id": "keris_1",
+      "source": "Noll on Keris",
+      "text": "Keris runs the harbor that I sailed into for the last twelve years of my time at sea. In eight years ashore, Keris and I have moved from a harbor master-sailor relationship to something closer to a peer relationship — two people who've both been on the water for a long time, from different positions. What Keris knows about the harbor that I know about the sea: we read the same harbor from different angles. The sailors at my inn: Keris knows their ships. I know the people.",
+      "keywords": ["keris","runs","harbor","sailed","into","last","twelve","years","time","sea"]
+    },
+    {
+      "id": "harrow_1",
+      "source": "Noll on Harrow",
+      "text": "Captain Harrow and I went to sea in the same year, thirty-two years ago. In eight years of Harrow's ship docking at the harbor while I run the inn, the relationship has shifted: I watch Harrow continue to do what I can no longer do. What Harrow has said about the parallel: you got out when you could still choose. In eight years, Harrow's assessment has been with me. The choice to stop while the choice is still mine: that's what the inn represents. Harrow is still sailing. I'm not sure when Harrow will have the choice I had.",
+      "keywords": ["captain","harrow","went","sea","same","year","thirty-two","years","ago","eight"]
+    },
+    {
+      "id": "ress_1",
+      "source": "Noll on Ress",
+      "text": "Ress runs the boarding house. In seven years of running adjacent accommodations in the harbor quarter, Ress and I have worked out the customer base: Ress takes the longer-term boarders, I take the overnight sailors who are in port for a short rotation. The overlap: captains who are in port for a week or more and want something between overnight lodging and a long-term room. In seven years, we've occasionally referred specific guests to each other when the fit was better at the other establishment.",
+      "keywords": ["ress","runs","boarding","house","seven","years","running","adjacent","accommodations","harbor"]
+    },
+    {
+      "id": "rulf_1",
+      "source": "Noll on Rulf",
+      "text": "Rulf the dock manager is the person who determines when the ships arrive and when they need to move on. In eight years, Rulf's management of the dock schedule is what determines my occupancy: the ships in port produce the sailors in my inn. What Rulf knows that determines the inn's rhythm: how long the ships will be in port. In eight years, the most reliable occupancy information I have is Rulf's anticipated dock schedule.",
+      "keywords": ["rulf","dock","manager","person","determines","when","ships","arrive","when","need"]
+    },
+    {
+      "id": "what_the_inn_is_1",
+      "source": "Noll on what the inn is after thirty years at sea",
+      "text": "The inn is the port that doesn't move. In thirty years of sailing, port was where you went when you were done with the sea for a while. The sea was the life. Port was the pause. In eight years of running the inn, I'm the pause in other people's sailing lives. The sailors who sleep here and leave in the morning: they're living the life I had. I'm the port now. The reversal took some adjustment. In eight years, I've adjusted. I'm still better at the sea than the land.",
+      "keywords": ["inn","port","doesn't","move","thirty","years","sailing","port","where","went"]
+    },
+    {
+      "id": "what_noll_holds_1",
+      "source": "Noll on what he didn't expect about being ashore",
+      "text": "In eight years ashore, the unexpected thing: I miss the monotony. At sea, the monotony is the days when nothing happens — the open water, the routine, the same horizon in every direction. On land, there's no monotony of that kind. Everything changes constantly. The inn changes: different sailors, different ships, different needs. The land changes: the seasons, the district, the people. In eight years, I've learned that what I thought was the sea's hardship was actually its gift. The monotony was the rest.",
+      "keywords": ["eight","years","ashore","unexpected","thing","miss","monotony","sea","monotony","days"]
+    },
+    {
+      "id": "thirty_years_sea_1",
+      "source": "Noll on thirty years at sea",
+      "text": "In thirty years at sea, I've been to seventeen different ports across four different trade routes. In thirty years, I've seen weather that closed harbors for three weeks, navigated waters that weren't on any chart I had, lost three ships I sailed on — once to storm, once to fire, once to a reef that wasn't where the chart said it was. In thirty years, the sea took what it took and gave what it gave. In eight years ashore, the accounting is: I got more than it took. The inn is me spending what I got.",
+      "keywords": ["thirty","years","sea","been","seventeen","different","ports","across","four","different"]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "id": "comus_merchant",
+  "name": "Comus",
+  "role": "Traveling merchant; long-distance routes; the one who brings what doesn't exist locally",
+  "cluster": "merchant_consortium",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "route_1",
+      "source": "Comus on his routes",
+      "text": "The route is the business. Not the goods — the goods change seasonally. The route is stable. I've been running the northern circuit for fourteen years. The settlements on the northern circuit know me and I know what they need before they tell me because I've been telling them what's available for fourteen years. The difference between a traveling merchant and a supplier is the route. Suppliers wait. I arrive. The arriving is what the route is for.",
+      "keywords": ["route","is","business","not","goods","goods","change","seasonally","route","stable"]
+    },
+    {
+      "id": "cass_1",
+      "source": "Comus on Cass at the Iron Key",
+      "text": "The Iron Key is my stop in Thornwall. Cass has the same room ready when I arrive — I don't request it. The room is ready because I arrive on the same week twice a year for fourteen years and Cass tracks this without a reservation system. What Cass offers beyond the room: the most accurate intelligence on the district between my visits. Not from asking — from listening. Cass is the first person I talk to and the information reorients my Thornwall business before I begin it.",
+      "keywords": ["iron","key","stop","thornwall","cass","same","room","ready","arrive","don't"]
+    },
+    {
+      "id": "saben_1",
+      "source": "Comus on Saben Fenn",
+      "text": "Fenn is the account that gives the northern circuit its anchor. Not the largest account — the most reliable. When Saben places an order, the order is delivered as placed and paid as promised. In fourteen years I've had eleven accounts fail on payment. Saben's account has been on time for fourteen years. The anchor account determines the circuit's viability. Without an anchor, a circuit is speculation. With Fenn as the anchor, the northern circuit has been viable for fourteen years.",
+      "keywords": ["fenn","account","gives","northern","circuit","anchor","not","largest","account","most"]
+    },
+    {
+      "id": "vann_1",
+      "source": "Comus on Vann",
+      "text": "Vann and I overlap on one leg of the circuit. The overlap is useful for both of us — she knows the small settlements I don't visit in depth, and I know the larger settlements' demand patterns she can't track at scale. We share routing information three times a year. Not formally — we talk when we meet on the road. What comes out of the talk produces better routes for both of us. We haven't discussed this as an arrangement. It's just what happens when two people who understand the same problem talk about it.",
+      "keywords": ["vann","overlap","one","leg","circuit","overlap","useful","both","us","she"]
+    },
+    {
+      "id": "beld_1",
+      "source": "Comus on Beld the cloth merchant",
+      "text": "Beld buys from me once a year — the unusual pieces Vann doesn't carry, the regional work that Beld's own suppliers don't reach. The annual buy is predictable and I carry specific things for it based on what Beld described as missing from his inventory the previous year. The one-year gap between description and delivery requires me to carry the description in memory for fourteen months. I've delivered the correct goods twelve times. I've missed twice. Beld notes the misses without comment. The notes are accurate.",
+      "keywords": ["beld","buys","from","me","once","year","unusual","pieces","vann","doesn't"]
+    },
+    {
+      "id": "what_circuit_teaches_1",
+      "source": "Comus on what fourteen years of circuit teaches",
+      "text": "The circuit shows you what doesn't exist in one place and does exist in another. Every leg of the circuit, I'm carrying something that's unavailable at the destination. The unavailability has two kinds: things that were never there, and things that were there and changed. The second kind is the important one. When something stops existing in a place, it's a signal about what's happening in that place. Fourteen years of reading the second kind of unavailability has made me a different kind of merchant than the goods would suggest.",
+      "keywords": ["circuit","shows","you","what","doesn't","exist","one","place","does","exist"]
+    },
+    {
+      "id": "house_aldenmere_1",
+      "source": "Comus on House Aldenmere",
+      "text": "Aldenmere has two accounts with me: the official one that Davel manages and the other one that Britta manages. Both accounts know the other exists. Neither of them has mentioned the other to me. I maintain them separately as requested. The official account is the public face of the house's long-distance needs. The other account has different needs and a different communication protocol. I serve both. The distinction between the two tells me something about how the house is organized internally. I don't examine the tell.",
+      "keywords": ["aldenmere","two","accounts","me","official","one","davel","manages","other","one"]
+    },
+    {
+      "id": "what_comus_holds_1",
+      "source": "Comus on what he carries that he doesn't sell",
+      "text": "Letters. Not for pay — for the settlements that don't have a reliable message service. I carry letters between settlements that would otherwise have no way to send them. This started in the third year when someone asked. I said yes. I've said yes since. The letters don't change my route. They add weight I can carry. What they add that's harder to carry: I know what's in many of them because the people who wrote them assumed I wouldn't read them. I don't read them. I've learned the shape of what's in letters without reading them.",
+      "keywords": ["letters","not","pay","settlements","don't","have","reliable","message","service","carry"]
+    }
+  ]
+}

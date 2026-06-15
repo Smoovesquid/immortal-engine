@@ -1,0 +1,57 @@
+{
+  "id": "harbor_dock_worker",
+  "name": "Brox",
+  "role": "Harbor dock worker; loads and unloads the ships; knows every piece of cargo that moves through this port",
+  "cluster": "harbor_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "dock_work_1",
+      "source": "Brox on dock work",
+      "text": "Dock work is moving weight. In fourteen years of it, the work is the same every day: the ship arrives with something that needs to come off it, or the ship is leaving and needs something put on it. The weight is different. The cargo is different. The ship is different. The work is the same. Move the weight efficiently, safely, completely. In fourteen years, the variation is in the cargo and the ships and the weather and the dock's condition. The work is constant.",
+      "keywords": ["dock","work","moving","weight","fourteen","years","work","same","every","day"]
+    },
+    {
+      "id": "rulf_1",
+      "source": "Brox on Rulf",
+      "text": "Rulf manages the dock. In twelve years of working under Rulf's management, the dock management is the structure that makes the dock work possible. What Rulf provides: the schedule that tells me which ship needs what work in what sequence, the priority when two ships need work simultaneously, the crew allocation that puts the right number of bodies on each job. In twelve years, I've worked under three different dock managers. Rulf's management is the best of the three.",
+      "keywords": ["rulf","manages","dock","twelve","years","working","rulf's","management","dock","management"]
+    },
+    {
+      "id": "gid_1",
+      "source": "Brox on Gid",
+      "text": "Gid brings the ships in. In twelve years, the handoff is precise: Gid positions the ship at the dock, I take it from there. What Gid does before I can do anything: lands the ship at the dock in the right orientation, at the right time, with the right amount of distance between the ship and the dock's edge. The off-loading that doesn't work — the cargo that gets damaged, the crew that gets injured — often starts with a bad landing. In twelve years, Gid's landings have been good. My job is easier because of it.",
+      "keywords": ["gid","brings","ships","in","twelve","years","handoff","precise","gid","positions"]
+    },
+    {
+      "id": "naff_1",
+      "source": "Brox on Naff",
+      "text": "Naff works at Luta's chandlery and moves around the dock at unusual hours. In six years of working the same dock, what I've noticed about Naff: the movement patterns don't entirely match the chandlery work. I don't ask. I don't have anything to do with whatever else Naff is doing. What Naff does that doesn't affect my work: not my business. What Naff does that Naff is careful not to let affect my work: careful. In six years, nothing Naff has done has created a problem that landed on me.",
+      "keywords": ["naff","works","luta's","chandlery","moves","around","dock","unusual","hours","six"]
+    },
+    {
+      "id": "grenn_1",
+      "source": "Brox on Grenn",
+      "text": "Grenn brings ice to the ships that need cold storage for the cargo they're carrying. In eight years of occasionally working dock-side during ice delivery, what I've observed: the ice loading is skilled work in a way that the dock general cargo loading isn't. The ice blocks have to be placed in the ship's cold compartment in a specific configuration for the weight distribution and the melting rate. In eight years, Grenn places the ice quickly and correctly every time. The ice loading is faster than most cargo loading for its weight.",
+      "keywords": ["grenn","brings","ice","ships","need","cold","storage","cargo","they're","carrying"]
+    },
+    {
+      "id": "what_dock_work_holds_1",
+      "source": "Brox on what fourteen years on the dock holds",
+      "text": "In fourteen years, I've handled cargo ranging from silk bales to salt blocks to live animals to things in sealed containers that I was instructed not to open. The variety is the education. What you can tell about a region from its cargo: what the region produces, what it needs, what it's willing to trade. In fourteen years of handling the harbor's cargo, I know more about the trading geography of this region than most of the merchants who are directing the cargo.",
+      "keywords": ["fourteen","years","handled","cargo","ranging","silk","bales","salt","blocks","live"]
+    },
+    {
+      "id": "what_brox_holds_1",
+      "source": "Brox on the cargo he's thought about since",
+      "text": "Year nine. A shipment in sealed containers. I was instructed to handle the containers with specific care and not to ask about the contents. I handled them with the care. I didn't ask. In five years since, the containers were the ones I think about on the nights when work and weather and whatever is in the harbor creates a particular kind of mood. The sealed container is the specific limit of my knowledge of what moves through this dock. Most of what moves through: I know what it is. Year nine containers: I don't know what they were.",
+      "keywords": ["year","nine","shipment","sealed","containers","instructed","handle","containers","specific","care"]
+    },
+    {
+      "id": "fourteen_years_1",
+      "source": "Brox on fourteen years of dock work",
+      "text": "In fourteen years, I've moved approximately forty thousand tons of cargo through this dock. Forty thousand tons of things that needed to go somewhere and arrived here as part of the route. In fourteen years, the dock is the constant and I'm the constant and the cargo changes every day. What doesn't change: the weight behaves like weight, the wood behaves like wood, the sea behaves like the sea. In fourteen years, the constants are what I know best. The variables are what make the days different.",
+      "keywords": ["fourteen","years","moved","approximately","forty","thousand","tons","cargo","through","dock"]
+    }
+  ]
+}

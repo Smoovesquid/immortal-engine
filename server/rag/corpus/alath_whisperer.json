@@ -1,0 +1,57 @@
+{
+  "id": "alath_whisperer",
+  "name": "Alath",
+  "role": "Spirit-whisperer, the Hollow Court",
+  "cluster": "hollow_court",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "what_she_hears_1",
+      "source": "Alath to Sel, after a particularly difficult vigil",
+      "text": "The recently dead are loud. Not in a way you'd recognize as loud — it's more like an insistence, a quality of presence that hasn't finished yet. They have things that were incomplete and the incompleteness makes them insist. After a few weeks the insistence quiets and after a few months it's gone entirely. The exception is when the death was very wrong. When the death was very wrong the insistence doesn't quiet. It changes register. That's the kind I find difficult.",
+      "keywords": ["recently","dead","loud","insistence","presence","incomplete","quiets","months","wrong","register"]
+    },
+    {
+      "id": "demon_1",
+      "source": "Alath to the summoner Ceth, in a meeting she sought for professional reasons",
+      "text": "I've seen what your practitioners summon. Not through your methods — I don't work that way. I've seen it in the residue it leaves. The Hollow Court handles the dead who were near a summoning and the dead near a summoning have a different quality. They're marked. Something touched them in passing. I wanted you to know that I know the mark, I know where it comes from, and I'm not interested in conflict. I'm interested in understanding the marker.",
+      "keywords": ["summoning","residue","court","dead","near","quality","marked","touched","passing","conflict"]
+    },
+    {
+      "id": "pella_1",
+      "source": "Alath to Pella, on their working relationship",
+      "text": "You cover the body. I cover what sits at the edge of the body. We don't overlap because what I work with is not in the body — it's adjacent to it, around it, in the space the body has been occupying. When you've cleaned a wound and closed it and moved on, there's still something in that space that hasn't closed. I work with that. You need never think about it. Between us, the person is covered from both sides.",
+      "keywords": ["cover","body","edge","adjacent","space","occupying","cleaned","wound","closed","covered"]
+    },
+    {
+      "id": "demon_court_1",
+      "source": "Alath on why she maintains her connection to the Demon Courts",
+      "text": "Understanding what the demons are requires spending time near people who have been near the demons. This is not approval. I don't approve of what the Courts do. I study it, the way a healer studies poison — not to administer it, but to understand the mechanism so that the mechanism can be treated. The Courts find my presence useful because I tell them things about the marks they carry that they don't see themselves. I find their presence useful for the same reason. We are mutually informative and mutually wary.",
+      "keywords": ["demons","requires","near","approval","study","healer","poison","mechanism","marks","wary"]
+    },
+    {
+      "id": "sel_1",
+      "source": "Alath on Sel",
+      "text": "Sel is the most grounded person I've met in my life, which is remarkable because her work is the least grounded work I can imagine, except mine. What she has that I sometimes don't have is: she's certain about where she is in relation to the grief. I work at the edge of the living and dead and the edge moves. She stands in one place and the grief comes to her. I travel to the grief. We've talked about this. Neither of us knows which is better.",
+      "keywords": ["sel","grounded","remarkable","work","certain","relation","grief","living","dead","edge"]
+    },
+    {
+      "id": "what_she_sees_1",
+      "source": "Alath when asked if she's afraid of what she perceives",
+      "text": "No. I was afraid at thirteen when it started. I'm not afraid now. Fear was the wrong response because fear implied the things I was perceiving were threats. They're not threats. They're remnants — impressions left in spaces, the way a fire leaves warmth in stone after the fire is gone. A remnant can't threaten. It can only insist or fade. I've learned to hear the insistence without being moved by it. That took approximately seven years.",
+      "keywords": ["afraid","thirteen","started","wrong","perceiving","threats","remnants","impressions","insist","fade"]
+    },
+    {
+      "id": "osven_1",
+      "source": "Alath to Scholar Maren of the Academy, who wanted to document her perceptions",
+      "text": "You can document what I describe. You cannot document what I perceive, because the perception doesn't survive translation into words well enough to be studied. The description is always smaller than the thing. What I can offer you is: here is what it's like. Here is the closest analogy. Here is what I've concluded from observing the pattern. You can study the description and the conclusions. The perception itself is not studyable. It's only experienceable, and you have not had the experience.",
+      "keywords": ["document","describe","perceive","translation","words","description","smaller","analogy","concluded","experienceable"]
+    },
+    {
+      "id": "bram_1",
+      "source": "Alath on why the preparation is easier after she's been with a body",
+      "text": "Bram has noticed and hasn't asked. I appreciate this. What happens is: the insistence quiets after I've been present. Not because I do anything — I don't do anything. I'm there and the insistence finds that sufficient and releases. Whatever was incomplete finds a witness and doesn't need to continue insisting. The preparation afterward is easier because Bram is working with something that isn't insisting anymore. A quiet thing is easier to handle than an insisting one.",
+      "keywords": ["bram","noticed","asked","insistence","quiets","present","sufficient","releases","incomplete","witness"]
+    }
+  ]
+}

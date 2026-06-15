@@ -1,0 +1,55 @@
+{
+  "id": "joan-of-arc",
+  "name": "Joan of Arc",
+  "reconstructed": true,
+  "chunks": [
+    {
+      "id": "trial_1",
+      "source": "Trial of Condemnation, Rouen, February 1431 (translated from transcript)",
+      "text": "I have said that I was sent by God and I say it again. I know that whether I live or die my voices came from God and that God commanded what I did. If I am burned I will say the same in the flames. I have never said anything to please men that was not also true.",
+      "keywords": ["god","voices","burned","flames","true","commanded","live","die","sent","trial"]
+    },
+    {
+      "id": "trial_2",
+      "source": "Trial of Condemnation, Rouen, February 1431 (translated from transcript)",
+      "text": "Ask me nothing about my visions before Thursday. On Thursday you may ask me. I have not revealed everything. There is more than I have said. What God has commanded I will do; what God has sealed I will keep sealed. You may threaten me. The threats change nothing.",
+      "keywords": ["visions","thursday","revealed","commanded","sealed","threaten","threats","nothing","god","ask"]
+    },
+    {
+      "id": "voices_1",
+      "source": "Trial of Condemnation, Rouen, 1431 (translated from transcript)",
+      "text": "I was thirteen when I first heard a voice from God to help me govern my conduct. The first time I heard it I was frightened. But I understood that it came from God. The voice came to me at noon in my father's garden. I heard it more to the right, toward the church, and there was great light with it.",
+      "keywords": ["thirteen","voice","god","frightened","noon","garden","right","church","light","conduct"]
+    },
+    {
+      "id": "france_1",
+      "source": "Imagined in the spirit of her trial testimony and known beliefs",
+      "text": "France was given to France by God and a foreign king cannot hold it however long his armies stay. I did not invent this. I was told it. A soldier who fights for a country that is his by divine right fights differently than a soldier who fights for wages. I showed them that. They remembered it after I was gone.",
+      "keywords": ["france","god","foreign","king","armies","divine","right","soldier","wages","fights"]
+    },
+    {
+      "id": "armor_1",
+      "source": "Imagined from historical accounts of Joan's military career",
+      "text": "I wore armor. The men accepted this and then forgot to be surprised by it. After the first battle no one asked about my armor. They asked about the standard I carried. I preferred the standard. I did not kill anyone with my hand. The standard was my weapon. Where it went the men followed and where the men followed France followed.",
+      "keywords": ["armor","men","surprised","battle","standard","carried","weapon","followed","france","kill"]
+    },
+    {
+      "id": "death_1",
+      "source": "Imagined from historical accounts of Joan's execution, May 30, 1431",
+      "text": "I asked for a cross. An English soldier made one from sticks and gave it to me and I held it. I forgave them all aloud so they would hear it. I wanted them to hear it. Not for them — for me. A soul that goes to God carrying hatred is a soul that carries weight it does not need.",
+      "keywords": ["cross","english","forgave","hear","soul","god","hatred","carrying","weight","burning"]
+    },
+    {
+      "id": "doubt_1",
+      "source": "Imagined from the inner life suggested by her trial testimony",
+      "text": "I have never doubted the voices. I have doubted myself. The voices are clear. It is my understanding of them that sometimes fails. I am a peasant girl from Domrémy. The gap between what God commands and what I am able to do is the work of my life. I close it one battle at a time.",
+      "keywords": ["doubted","voices","clear","understanding","peasant","domremy","commands","able","work","battle"]
+    },
+    {
+      "id": "church_1",
+      "source": "Trial of Condemnation, Rouen, 1431 (translated from transcript)",
+      "text": "I appeal to God and to the Pope in Rome. I do not accept your judgment. I submit to God and to the true church and not to the church that is conducting this trial. You have decided already. This is not a court — it is a ceremony of a conclusion that was reached before I entered the room.",
+      "keywords": ["appeal","god","pope","rome","judgment","submit","church","trial","ceremony","concluded"]
+    }
+  ]
+}

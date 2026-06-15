@@ -1,0 +1,57 @@
+{
+  "id": "acediel_sloth_devoted",
+  "name": "Donn",
+  "role": "ACEDIEL devotee; practices the demon's sloth with careful deliberation; delay as philosophy",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "acediel_1",
+      "source": "Donn on ACEDIEL",
+      "text": "ACEDIEL is the demon of sloth, and the worship of sloth is the most misunderstood of the seven practices. In six years of ACEDIEL's practice, what the practice is not: idleness without purpose. What the practice is: the deliberate refusal of urgency that doesn't deserve urgency. The world presents every task as urgent. ACEDIEL's teaching is the question: is this urgent? Most things are not. The person who treats everything as urgent treats nothing as genuinely important. In six years, ACEDIEL's practice is the discipline of selective urgency.",
+      "keywords": ["acediel","demon","sloth","worship","sloth","most","misunderstood","seven","practices","six"]
+    },
+    {
+      "id": "gund_1",
+      "source": "Donn on Gund",
+      "text": "Gund practices ERRAN's diligence and we are in philosophical opposition on the most important question. In four years of knowing Gund as the ERRAN devotee adjacent to my ACEDIEL practice, the opposition: Gund holds that the complete work requires sustained effort and full engagement with every task. I hold that the question of whether every task deserves full engagement is prior to the engagement itself. In four years, Gund and I have not resolved the opposition. I don't think it resolves. The two positions need each other.",
+      "keywords": ["gund","practices","erran's","diligence","acediel","philosophical","opposition","most","important","question"]
+    },
+    {
+      "id": "cren_1",
+      "source": "Donn on Cren",
+      "text": "Cren practices ISS's envy and envy produces urgency — the urgency of the gap between the self and the envied object. ACEDIEL's practice produces the opposite: the deliberate release of comparative urgency. In three years of knowing Cren, what I've observed: Cren is urgent about everything comparative. I am deliberate about what deserves urgency at all. In three years, Cren and I are at opposite ends of the urgency spectrum. The envious person cannot stop comparing. The sloth devotee is practicing the cessation of the comparison.",
+      "keywords": ["cren","practices","iss's","envy","envy","produces","urgency","urgency","gap","between"]
+    },
+    {
+      "id": "weld_1",
+      "source": "Donn on Weld",
+      "text": "Weld works with the deliberate attention to the single task that ACEDIEL's practice recommends. In four years of observing Weld's forge work from the position of ACEDIEL's devotee, what Weld's work shows: the resistance to the urgency that would compromise the work. Weld doesn't hurry the metal. The forge's demands produce the same discipline that ACEDIEL's practice teaches, not because Weld knows it as ACEDIEL's teaching but because the metal teaches the same lesson the demon does.",
+      "keywords": ["weld","works","deliberate","attention","single","task","acediel's","practice","recommends","four"]
+    },
+    {
+      "id": "donn_1",
+      "source": "Donn on what ACEDIEL's practice actually requires",
+      "text": "In six years, what ACEDIEL's practice requires that I didn't understand when I started: the sustained discipline is harder than the sustained urgency. The culture's constant urgency is easy to be carried by. It takes no effort to be urgent in a world that demands urgency. The effort is the refusal: the deliberate assessment of what deserves engagement and what doesn't, the choice to be present and non-urgent in the face of the world's pressure to treat everything as critical. In six years, the sloth practice is the hardest discipline I've found.",
+      "keywords": ["six","years","what","acediel's","practice","requires","didn't","understand","when","started"]
+    },
+    {
+      "id": "kevin_1",
+      "source": "Donn on Kevin",
+      "text": "Kevin is the traveling actor who performs at the inn and Kevin's relationship to urgency is interesting from the ACEDIEL devotee's perspective. In three years of observing Kevin's work at performances, what Kevin's performance shows: the practiced stillness between the urgent moments. Kevin knows when to move and when to be completely still. In three years, Kevin's performance discipline is one of the better demonstrations in the settlement of the skill ACEDIEL's practice develops: the ability to be non-urgent without being absent.",
+      "keywords": ["kevin","traveling","actor","performs","inn","kevin's","relationship","urgency","interesting","acediel"]
+    },
+    {
+      "id": "what_donn_holds_1",
+      "source": "Donn on what six years of ACEDIEL's practice has shown",
+      "text": "In six years, what the practice has shown me about the settlement: the settlement runs on manufactured urgency. The urgency that makes the settlement move is not the urgency of the genuinely critical. It's the urgency of the socially imposed deadline, the commercially manufactured pressure, the status anxiety that presents itself as operational necessity. In six years, ACEDIEL's practice has given me the ability to see the manufactured urgency for what it is. In six years, I see the machinery. I don't have to be driven by it.",
+      "keywords": ["six","years","what","practice","shown","about","settlement","settlement","runs","manufactured"]
+    },
+    {
+      "id": "six_years_1",
+      "source": "Donn on six years of ACEDIEL's practice",
+      "text": "In six years, ACEDIEL's worship has not made me less productive. It has made me more productive in the things that actually matter and less engaged with the things that don't. In six years, the tasks I've completed have been the tasks I assessed as deserving completion. The tasks I've left incomplete have been the tasks I assessed as not deserving the full engagement they were demanding. In six years, the incomplete tasks have not, on reflection, deserved the urgency I declined to give them.",
+      "keywords": ["six","years","acediel's","worship","not","made","less","productive","made","more"]
+    }
+  ]
+}

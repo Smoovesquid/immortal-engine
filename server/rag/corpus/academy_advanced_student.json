@@ -1,0 +1,57 @@
+{
+  "id": "academy_advanced_student",
+  "name": "Fen the Student",
+  "role": "Academy advanced student in rune theory; five years in, beginning research that may define her career",
+  "cluster": "academy_of_runes",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "advanced_student_1",
+      "source": "Fen the Student on the advanced years",
+      "text": "In five years at the Academy, what the advanced student is that the first-year student isn't: the person who has moved from learning what is known to developing what might be known. In five years, the first two years are the foundation — the existing rune knowledge and its theoretical framework. Year three: the application. Year four: the beginning of the question that might be the student's research direction. Year five: the question has become specific enough that it might be worth pursuing. In five years, I have a question. In five years, the question is the best thing the five years have produced.",
+      "keywords": ["five","years","academy","what","advanced","student","first-year","student","isn't","person"]
+    },
+    {
+      "id": "burr_1",
+      "source": "Fen the Student on Burr",
+      "text": "Burr leads the Academy and the advanced student's research direction requires Burr's approval before it becomes official research. In three years of working toward Burr's approval for my research question, what the approval process requires: the demonstration that the question is substantive enough to justify the Academy's resources. In three years, I've presented the question's preliminary form to Burr twice. Both presentations produced feedback that refined the question. In three years, the question is more precise than it was when I started presenting it. In three years, Burr's feedback has made the question better.",
+      "keywords": ["burr","leads","academy","advanced","student's","research","direction","requires","burr's","approval"]
+    },
+    {
+      "id": "prill_1",
+      "source": "Fen the Student on Prill",
+      "text": "Prill's theoretical framework is the foundation my research question is built against. In four years of working with Prill's framework as the established theory, what the student-theorist relationship is when the student's question is beginning to diverge from the theorist's framework: the most delicate relationship the Academy contains. In four years, my question suggests that one aspect of Prill's framework may require revision. In four years, I haven't raised this with Prill directly. In four years, the question that challenges the framework needs to be developed further before the challenge is worth making.",
+      "keywords": ["prill's","theoretical","framework","foundation","research","question","built","against","four","years"]
+    },
+    {
+      "id": "mora_1",
+      "source": "Fen the Student on Mora",
+      "text": "Mora teaches ethics and the ethics framework has been the most relevant teaching for how I'm thinking about the implications of my research question. In three years of thinking about the implications, what Mora's ethics framework provides: the analysis of what the research would mean if the question were answered in the direction I expect it to go. In three years, the answer I expect would have implications that Mora's framework classifies as significant. In three years, I've discussed the implications with Mora in one indirect conversation. Mora noticed what I was getting at. Mora said: be careful.",
+      "keywords": ["mora","teaches","ethics","ethics","framework","been","most","relevant","teaching","how"]
+    },
+    {
+      "id": "wese_1",
+      "source": "Fen the Student on Wese",
+      "text": "Wese is two years behind me in the Academy's student progression. In two years of knowing Wese, what the second-year student has that I'd forgotten I had: the immediate engagement with everything. The advanced student has been at the Academy long enough to take the engagement for granted. In two years, watching Wese encounter the Academy's content with the freshness that the first years produce has reminded me of why the question I'm pursuing is interesting. In two years, Wese's engagement has been the mirror that shows me my own engagement has grown quieter. The question is still worth pursuing.",
+      "keywords": ["wese","two","years","behind","academy's","student","progression","two","years","knowing"]
+    },
+    {
+      "id": "what_fen_holds_1",
+      "source": "Fen the Student on the specific question",
+      "text": "In five years, the question I haven't yet published: whether the rune system's foundational axioms contain a gap that the accepted practice has worked around without naming. In five years, the evidence for the gap: three cases in the historical literature where the expected theoretical result didn't match the documented practical result. In five years, the three cases are either the gap or three exceptional circumstances. In five years, the research is the process of determining which. The answer to whether it's the gap would require revising a significant portion of what Prill's framework takes as given.",
+      "keywords": ["five","years","question","haven't","yet","published","whether","rune","system's","foundational"]
+    },
+    {
+      "id": "what_five_years_teaches_1",
+      "source": "Fen the Student on what five years at the Academy teaches",
+      "text": "In five years, what the Academy has taught me that the first year didn't signal: the research is not the finding of answers. The research is the development of questions precise enough that the answers, when they come, are unambiguous. In five years, the question that is imprecise produces an answer that is ambiguous — the answer that could mean what the research hoped and could mean something else entirely. In five years, the question-sharpening is the work. The answer-finding is what the sharp question enables.",
+      "keywords": ["five","years","what","academy","taught","first","year","didn't","signal","research"]
+    },
+    {
+      "id": "five_years_1",
+      "source": "Fen the Student on five years at the Academy of Runes",
+      "text": "In five years, the Academy has been the best possible environment for the question I'm developing and the most constraining environment for the answer I'm approaching. In five years, the best environment because the resources, the theorists, the library that Henn curates: these are the resources a research question needs. The most constraining because the framework the Academy has committed to is the framework my question suggests needs revision. In five years, the question that might improve the framework is the question the framework's keepers may not want improved. In five years, the work continues.",
+      "keywords": ["five","years","academy","been","best","possible","environment","question","developing","most"]
+    }
+  ]
+}

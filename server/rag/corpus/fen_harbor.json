@@ -1,0 +1,57 @@
+{
+  "id": "fen_harbor",
+  "name": "Fen",
+  "role": "Harbor information broker; reads people; one of three",
+  "cluster": "harbor_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "reading_1",
+      "source": "Fen when asked what they do",
+      "text": "I read people. Not mystically — I observe the specific things people do when they don't know they're being observed. How they carry their weight. Where their eyes go first in a new room. What they do with their hands when they're answering a question they're uncomfortable with. This produces a picture that's separate from what they say and how they say it. I've been doing this for twenty years and I'm better at it than I've ever been and I know I'm missing things I'll only understand in another twenty years.",
+      "keywords": ["read","people","mystically","observe","specific","carry","weight","eyes","hands","picture"]
+    },
+    {
+      "id": "dara_1",
+      "source": "Fen on their working division with Dara and Seven",
+      "text": "Dara reads what was written down. Seven reads what was physically present. I read who was actually there. The three of us can reconstruct a situation from three angles that don't overlap and produce something more complete than any one angle produces. I've worked with information people for twenty years and this is the best division I've found. The three of us each read what the others can't. We rarely disagree on the conclusion because we're coming at it from different directions.",
+      "keywords": ["dara","written","seven","physically","present","who","actually","reconstruct","situation","angles"]
+    },
+    {
+      "id": "keris_1",
+      "source": "Fen on Harbormaster Keris",
+      "text": "Keris has an excellent poker face for a person who keeps records for a living. The records produce no affect in her — she reads them and files them and continues. What I can read in her is the very small tells of a person who knows more than she's reporting. There are three specific things she knows that she's chosen not to enter in the official record. I don't know what the three things are. I know there are three. The texture of the decision-to-not-record is specific enough to count.",
+      "keywords": ["keris","excellent","poker","face","records","reads","files","specific","tells","reporting"]
+    },
+    {
+      "id": "hetch_1",
+      "source": "Fen on the sailor Hetch",
+      "text": "Hetch is the most interesting person in the harbor. I know what he's not saying about the Hallowed Reaches and I know that the not-saying is deliberate and also genuine — he's not holding back because he's protecting something, he's holding back because some part of what happened isn't language yet. I've seen this in people who've been through extreme situations. The experience precedes the words for it. Hetch is in that waiting period. The words will come when they're ready.",
+      "keywords": ["hetch","most","interesting","harbor","hallowed","reaches","not-saying","deliberate","genuine","experience"]
+    },
+    {
+      "id": "morvane_1",
+      "source": "Fen on the chandler Morvane",
+      "text": "Morvane is one of the most effective avoiders of being read I've encountered in twenty years. Not because she's deceptive — she's not. Because she's genuinely settled. The tells I look for emerge from the gap between what you present and what you feel. Morvane has closed most of that gap. What she presents is what she is, which makes her very hard to read because there's no gap to read. This is the mark of a person who has finished one life and is genuinely living the next one.",
+      "keywords": ["morvane","effective","avoiders","read","twenty","years","deceptive","settled","presents","gap"]
+    },
+    {
+      "id": "seven_1",
+      "source": "Fen on Seven and what they know about Seven's history",
+      "text": "I know Seven has been seven people. I can't read the first six — I wasn't there and people become new people by genuinely becoming new people, not by performing it. The Seventh, which is what I can read, is the most careful and deliberate version I can imagine of a person who has learned from six prior versions. The attention to what they reveal and what they don't is exceptional. Watching Seven in a social situation is the most educational hour I can have in this business.",
+      "keywords": ["seven","seven","people","read","six","performing","seventh","careful","deliberate","version"]
+    },
+    {
+      "id": "the_trio_1",
+      "source": "Fen reflecting on the eight years of the three-person arrangement",
+      "text": "We started as three people who had complementary skills and no particular reason to trust each other. Trust was built by doing the work honestly for six months and then for a year and then for eight years. The arrangement survives because it's useful to all three of us and because we've chosen not to let any external arrangement supersede it. We've had offers. We've declined. The independence is what makes the arrangement valuable and the independence requires that we not take offers.",
+      "keywords": ["started","three","people","complementary","skills","trust","built","work","honestly","eight"]
+    },
+    {
+      "id": "pell_1",
+      "source": "Fen on the cartographer Pell",
+      "text": "Pell comes in to listen and it's obvious he comes in to listen — it's in every physical signal. He leans very slightly toward voices. He stills when something interesting is said. He has a way of looking at his drink that means he's processing rather than drinking. I've never interrupted this. Whatever Pell is gathering at the Anchor & Argument is his business. What I've noticed is that his maps are more accurate in the social meaning of geography than they should be for a person who says he only measures things. He gets it from the listening.",
+      "keywords": ["pell","comes","listen","obvious","physical","signal","leans","stills","interesting","processing"]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "id": "harbor_tide_warden",
+  "name": "Pels",
+  "role": "Tide warden; manages harbor entry and departure times based on tidal conditions; Keris's right hand on tidal scheduling",
+  "cluster": "harbor_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "tides_1",
+      "source": "Pels on tides",
+      "text": "The tide is the harbor's clock. In sixteen years of tide-reading for this harbor, the tide is the thing that decides when ships can move and when they can't, and no human decision changes that. The harbor master can decide the schedule. The tide decides whether the schedule is possible. In sixteen years, the most important thing I do: tell people when the tide will cooperate and when it won't, before they've committed to the timing.",
+      "keywords": ["tide","harbor's","clock","sixteen","years","tide-reading","harbor","tide","thing","decides"]
+    },
+    {
+      "id": "keris_1",
+      "source": "Pels on Keris",
+      "text": "Keris is the harbor master. In sixteen years, Keris and I have the most fundamental working relationship in the harbor: Keris schedules harbor activity, I tell Keris what the tide will allow. In sixteen years, Keris has never scheduled against my assessment of tidal conditions. In sixteen years, I've twice revised an assessment after Keris had already committed to a schedule. Both times: Keris adjusted the schedule. The trust is complete. The function requires it.",
+      "keywords": ["keris","harbor","master","sixteen","years","keris","most","fundamental","working","relationship"]
+    },
+    {
+      "id": "gid_1",
+      "source": "Pels on Gid",
+      "text": "Gid pilots ships through the channel. In thirteen years of working alongside Gid, the handoff is: I clear the tidal window, Gid pilots through it. What Gid needs from me: precise tidal window times with the actual margin, not a comfortable rounding. Gid calibrates the piloting to the real margin. In thirteen years, Gid has asked me three times to clarify whether my assessment of the window included margin or not. After the third time, we established: I give the hard edges, Gid applies the pilot's judgment on top of them.",
+      "keywords": ["gid","pilots","ships","through","channel","thirteen","years","working","alongside","gid"]
+    },
+    {
+      "id": "harrow_1",
+      "source": "Pels on Harrow",
+      "text": "Captain Harrow asks me the tidal conditions personally before every departure. In eight years of Harrow working out of this harbor, every pre-departure conversation has included a direct question about what I'm reading for the tidal window. What Harrow told me why: I had a first mate who trusted the posted schedule over the warden's personal read, and the personal read was right and the posted schedule was off by forty minutes. The forty minutes cost us. Since then: I ask the warden directly. Eight years of direct questions. I give Harrow the direct answer.",
+      "keywords": ["captain","harrow","asks","tidal","conditions","personally","before","every","departure","eight"]
+    },
+    {
+      "id": "skar_1",
+      "source": "Pels on Skar",
+      "text": "Skar reads the weather and I read the tides. The combination of what Skar provides and what I provide is the full environmental picture for departure decisions. In five years of working in the same harbor, Skar and I have coordinated on eleven departure decisions where both the weather and the tidal window were marginal simultaneously. All eleven: we gave a joint assessment to Keris rather than separate assessments. All eleven: the joint assessment was clearer than either of our separate assessments would have been.",
+      "keywords": ["skar","reads","weather","read","tides","combination","what","skar","provides","what"]
+    },
+    {
+      "id": "what_tide_reading_is_1",
+      "source": "Pels on what tide-reading actually is",
+      "text": "The tide table gives the predicted tidal cycle. What the table doesn't account for: the wind pushing extra water in or pulling it back, the barometric pressure effects on sea level, the seasonal variations in the tidal range. In sixteen years, the table is the starting point, not the answer. The answer is the table adjusted for the current conditions. The adjustment is the work. In sixteen years, my adjustments have been right more often than the raw table would have been.",
+      "keywords": ["tide","table","gives","predicted","tidal","cycle","what","table","doesn't","account"]
+    },
+    {
+      "id": "what_pels_holds_1",
+      "source": "Pels on the departure that she cleared that she's thought about since",
+      "text": "Year eleven. A window I cleared that was at the margin of what I would normally clear. The ship departed. The ship encountered conditions in the first two hours after departure that were harder than the tidal window would suggest. The ship handled them. No incident. In five years since year eleven, I've thought about whether the clearance was right or whether I was lucky that the ship could handle what was at the margin. I don't clear windows at the margin the same way I did in year ten. Year eleven changed something.",
+      "keywords": ["year","eleven","window","cleared","was","margin","what","would","normally","clear"]
+    },
+    {
+      "id": "sixteen_years_1",
+      "source": "Pels on sixteen years of tide-warding",
+      "text": "In sixteen years, I've assessed approximately five thousand tidal windows. Five thousand decisions about whether the conditions allowed passage. The ships that have moved on my clearances: most of the harbor's departures and arrivals. The incidents that happened despite a clearance: four. Four in five thousand. All four in conditions that were within the cleared parameters — the incidents came from factors the tidal assessment doesn't cover. In sixteen years, the tidal assessment is one part of the safety picture. It's the part I'm responsible for.",
+      "keywords": ["sixteen","years","assessed","approximately","five","thousand","tidal","windows","five","thousand"]
+    }
+  ]
+}

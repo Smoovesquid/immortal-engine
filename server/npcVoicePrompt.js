@@ -67,13 +67,69 @@ const MANNER_STYLE = {
   even: ''
 };
 
+// WHO THEY ARE — the personality (from npcVoice's banded axes, collapsed to a
+// manner) framed as character, not just delivery. Leads the prompt so the person,
+// not the job title, governs the voice.
+const MANNER_PERSONA = {
+  guarded: 'By nature you are guarded and slow to warm to anyone — you give little away.',
+  skittish: 'By nature you are nervous and watchful, forever aware of who else might be listening.',
+  blunt: 'By nature you are blunt and unflinching — you say what you mean, plainly.',
+  open: 'By nature you are warm and openhanded, glad of company and quick to talk.',
+  even: 'By nature you are even-tempered, taking people as they come.'
+};
+
+// HOW THEY REGARD THE PLAYER — the relationship, which is what actually warms or
+// cools a reply. trust is 0–10 (conversationState.trustLevel). Absent → omitted.
+function trustTier(trust) {
+  const t = Number(trust);
+  if (!Number.isFinite(t)) return '';
+  if (t >= 8) return 'You know and trust this person; you speak freely and warmly with them.';
+  if (t >= 6) return 'You have warmed to this person; you would help them if they asked.';
+  if (t >= 4) return 'This person is barely an acquaintance — you are civil, but you hold back.';
+  if (t >= 2) return 'You are wary of this person; they have given you scant reason to open up.';
+  return 'You distrust this person and would rather be done with them.';
+}
+
+// Formats cascade-weighted world knowledge for the NPC voice prompt.
+// Each rung of the cascade gets different framing: the NPC's own town is vivid
+// and opinionated; the region is vague common knowledge; the cosmological age
+// is faint myth. Two NPCs from different towns diverge here.
+function buildWorldKnowledgeBlock(npcName, substrateContext) {
+  const entries = Array.isArray(substrateContext) ? substrateContext.filter(e => e?.label) : [];
+  if (!entries.length) return null;
+
+  const vivid  = entries.filter(e => e.clarity === 'vivid');
+  const dim    = entries.filter(e => e.clarity === 'dim');
+  const myth   = entries.filter(e => e.clarity === 'myth');
+
+  const lines = [`WHAT ${(npcName || 'THIS PERSON').toUpperCase()} KNOWS (cascade rung — do NOT flatten these to the same weight):`];
+
+  if (vivid.length) {
+    lines.push(`[From this town — VIVID: these are ${npcName}'s events; specific, opinionated, possibly wrong in detail but felt strongly]`);
+    for (const e of vivid) lines.push(`  • "${e.label}"`);
+  }
+  if (dim.length) {
+    lines.push(`[From the wider region — DIM: common knowledge, rougher in the telling, second-hand]`);
+    for (const e of dim) lines.push(`  • "${e.label}"`);
+  }
+  if (myth.length) {
+    lines.push(`[From the age itself — MYTH: barely a whisper; use rarely or not at all; do not explain it]`);
+    for (const e of myth) lines.push(`  • "${e.label}"`);
+  }
+
+  lines.push(`Ground your speech in this ladder: vivid events are YOURS (you lived them or heard them young — name them sharply); dim events are things everyone half-knows (vague, second-hand); myth is a rumor of a rumor. This is what makes you sound FROM somewhere.`);
+  return lines.join('\n');
+}
+
 /**
- * buildNpcVoicePrompt({npcName, role, mood, manner, mode, factPhrase, playerLine, ragChunks, claim})
+ * buildNpcVoicePrompt({npcName, role, mood, manner, mode, factPhrase, playerLine, ragChunks, claim, substrateContext})
  *   -> string | null  (null = mode the voice layer must not speak for)
  *
  * ragChunks: [{text, source}, ...] — primary source excerpts from this person's actual words.
  * claim: { distortion, weight, eventRef, eventDescription, provenance } — present only when
  *   mode === 'claim_recall'. The voice layer renders the NPC's distorted belief, not the truth.
+ * substrateContext: [{layer, clarity, label, kind}, ...] — cascade-weighted world history.
+ *   clarity 'vivid' = NPC's own town; 'dim' = their region; 'myth' = cosmological age.
  */
 export function buildNpcVoicePrompt(p = {}) {
   const mode = String(p.mode || '');
@@ -90,11 +146,23 @@ export function buildNpcVoicePrompt(p = {}) {
   const archive = chunks.length > 0
     ? [archiveHeader, ...chunks.map(c => `[${c.source}] "${c.text}"`), archiveFooter].join('\n')
     : null;
+  const worldKnowledge = buildWorldKnowledgeBlock(p.npcName, p.substrateContext);
   // claim_recall passes two args; all other modes ignore the second.
   const decisionText = decision(String(p.factPhrase || ''), p.claim ?? null);
+  const persona = MANNER_PERSONA[String(p.manner || '')] || '';
+  const relation = trustTier(p.trust);
+  const roleWord = p.role || 'villager';
+  const an = /^[aeiou]/i.test(roleWord) ? 'an' : 'a';
+  // Lead with WHO they are and HOW they regard the player; the trade is context,
+  // not the headline. This is what stops "role" from governing the voice.
   return [
-    `You are ${p.npcName}, a ${p.role || 'villager'} in a low-fantasy village. Mood: ${p.mood || 'even'}.`,
+    `You are ${p.npcName}.`,
+    ...(persona ? [persona] : []),
+    ...(relation ? [relation] : []),
+    `You work as ${an} ${roleWord} in a low-fantasy village — that's your trade, not the whole of you.`,
+    `Your mood right now: ${p.mood || 'even'}.`,
     ...(archive ? [archive] : []),
+    ...(worldKnowledge ? [worldKnowledge] : []),
     ...(style ? [style] : []),
     `The player said to you: "${p.playerLine || ''}"`,
     decisionText,

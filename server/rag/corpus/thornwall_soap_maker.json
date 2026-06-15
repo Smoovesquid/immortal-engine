@@ -1,0 +1,57 @@
+{
+  "id": "thornwall_soap_maker",
+  "name": "Grim",
+  "role": "Soap maker; serves the laundry trade and the harbor; what he makes removes what shouldn't be there",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "soap_1",
+      "source": "Grim on what soap is",
+      "text": "Soap is chemistry that took a thousand years to understand and was used for four thousand years before anyone understood it. What soap does: it creates a bridge between water and oil. Water doesn't mix with oil. Soap makes them mix, which is how the oil and the dirt it holds can be carried away in the water. I make soap by combining fat and lye in the right proportions and cooking the reaction. I've been doing this for fifteen years. Understanding the chemistry was year twelve.",
+      "keywords": ["soap","chemistry","took","thousand","years","understand","used","four","thousand","years"]
+    },
+    {
+      "id": "honn_1",
+      "source": "Grim on Honn",
+      "text": "Honn is my largest customer. The laundress uses more soap per week than anyone else in the district. In ten years of supplying Honn, I've learned what Honn's work requires: different formulas for different soiling. Heavy soiling needs the fat soap. Delicate cloth needs the oil soap. Ceremonial cloth needs the neutral soap that lifts without damaging. Honn asked me once to make a soap for a specific type of stain she was encountering regularly. I made three versions before she found the right one. The right one is now in my standard line.",
+      "keywords": ["honn","largest","customer","laundress","uses","more","soap","per","week","anyone"]
+    },
+    {
+      "id": "nan_1",
+      "source": "Grim on Nan",
+      "text": "Nan uses my soap for the birthing process — the specific cleanliness that birth requires. In fifteen years, I've supplied Nan with the same formula, which is the most pure formula I make: no fragrance, no color, the minimum fat and lye to achieve the cleaning function. Nan specified this in year one of our arrangement: nothing extra in the soap that touches a birth. I've made the birth soap with exactly what Nan specified for fifteen years. Fifteen years of the same formula because it's correct.",
+      "keywords": ["nan","uses","soap","birthing","process","specific","cleanliness","birth","requires","fifteen"]
+    },
+    {
+      "id": "bel_1",
+      "source": "Grim on Bel",
+      "text": "Bel the apothecary and I share some chemistry. The apothecary's preparations and the soap-maker's preparations both involve the controlled chemistry of plant and animal materials. What Bel knows that I don't: the medical applications of the same chemistry. What I know that Bel doesn't: the industrial applications. We've compared notes three times in fifteen years. Each comparison produced something useful for one of us. The third comparison produced something useful for both.",
+      "keywords": ["bel","apothecary","share","some","chemistry","apothecary's","preparations","soap-maker's","preparations","both"]
+    },
+    {
+      "id": "twinn_1",
+      "source": "Grim on Twinn",
+      "text": "Twinn uses my soap for the rope-making process — the fiber needs to be cleaned before it can be twisted to the tension rope requires. I didn't know rope required soap until Twinn asked me about it. What I learned: the natural oils in the fiber interfere with the bonding between strands that makes rope strong. Soap removes the oils. The cleaned fiber bonds more strongly. Another cross-industry connection I wouldn't have found on my own. In fifteen years, these connections have come from the customer rather than from me.",
+      "keywords": ["twinn","uses","soap","rope-making","process","fiber","needs","cleaned","before","twisted"]
+    },
+    {
+      "id": "what_lye_is_1",
+      "source": "Grim on what working with lye teaches",
+      "text": "Lye will dissolve what it touches if you let it. The soap-making process converts the lye's destructive potential into cleaning potential through the reaction with fat. What I learned from fifteen years of lye: the same property that makes it dangerous makes it useful. The danger and the utility are the same property, controlled differently. This is true in chemistry and it's true in other places. The destructive potential is always also a useful potential. The question is always what you mix it with and how you control the reaction.",
+      "keywords": ["lye","will","dissolve","what","touches","let","soap-making","process","converts","lye's"]
+    },
+    {
+      "id": "what_grim_holds_1",
+      "source": "Grim on the formula he keeps adjusting",
+      "text": "A formula I've been working on for four years. The goal: a soap that cleans the harbor workers' hands without stripping the protective calluses the work builds. Harbor work builds calluses that the workers need. Standard soap cleans and strips the calluses slightly over time. The workers' hands suffer in winter because of this. In four years I've made eighteen versions. Version seventeen was close. Version eighteen is close in a different way. The goal keeps clarifying as I get closer to it.",
+      "keywords": ["formula","working","four","years","goal","soap","cleans","harbor","workers","hands"]
+    },
+    {
+      "id": "fifteen_years_1",
+      "source": "Grim on fifteen years of making soap",
+      "text": "Soap-making is not a trade that attracts attention. Nobody notices the soap until the soap is wrong. The wrong soap: it doesn't clean, or it damages what it's cleaning, or it doesn't rinse out. The right soap: invisible in use. I've been making invisible-in-use soap for fifteen years. The product of excellent soap-making is soap that nobody talks about. The product of my best fifteen years of work is a clean absence in the public conversation. I find this acceptable.",
+      "keywords": ["soap-making","not","trade","attracts","attention","nobody","notices","soap","until","soap"]
+    }
+  ]
+}

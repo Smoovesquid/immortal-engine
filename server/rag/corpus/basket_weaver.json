@@ -1,0 +1,57 @@
+{
+  "id": "basket_weaver",
+  "name": "Winn",
+  "role": "Basket weaver; supplies the market and the harbor; what carries everything that isn't in a box",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "basket_1",
+      "source": "Winn on baskets",
+      "text": "A basket is a container that came from a living thing and goes back to a living thing when it's done. The willow was alive when I cut it. The basket will rot when it's worn out. Between the cutting and the rotting: the basket's useful life. In eighteen years of weaving, I've made baskets that lasted twenty years and baskets that lasted two. The difference is in the weave tension and the material quality. The best baskets I make are the ones I can't pick out from my memory because they've lasted and I've lost track.",
+      "keywords": ["basket","container","came","living","thing","goes","back","living","thing","done"]
+    },
+    {
+      "id": "perve_1",
+      "source": "Winn on Perve",
+      "text": "Perve is my oldest market account. In eighteen years, I've made the market stall's display baskets for twenty-three years of Perve's stall — I was supplying baskets to this stall before I took it over from my teacher. Perve's stall uses the specific shallow basket I make for vegetable display: the width-to-depth ratio that lets the customer see the produce without touching it. In twenty-three years the basket design hasn't changed. Perve said once: the design is right. Don't change what's right.",
+      "keywords": ["perve","oldest","market","account","eighteen","years","made","market","stall's","display"]
+    },
+    {
+      "id": "rulf_1",
+      "source": "Winn on Rulf",
+      "text": "The dock uses cargo baskets for the loading of small items that don't merit a full crate. In twelve years of supplying the dock's cargo baskets, Rulf has specified one modification to my design: tighter weave on the dock baskets because the dock's moisture environment loosens the weave over time. The tight weave ages to the correct weave in the dock's conditions. I changed the dock basket design based on Rulf's observation. The dock baskets now last twice as long as before.",
+      "keywords": ["dock","uses","cargo","baskets","loading","small","items","don't","merit","full"]
+    },
+    {
+      "id": "toom_1",
+      "source": "Winn on Toom",
+      "text": "Toom uses my baskets for the dock's fish-handling process — the small catches that come in from the coastal fishing that aren't worth crating. The fish basket has different requirements from the cargo basket: the weave needs to drain while holding the fish, which means a weave open enough to drain but tight enough not to let the catch through. In six years of making the fish basket, the design has been revised twice. Both revisions came from Toom pointing to specific failure modes.",
+      "keywords": ["toom","uses","baskets","dock's","fish-handling","process","small","catches","come","coastal"]
+    },
+    {
+      "id": "syne_1",
+      "source": "Winn on Syne",
+      "text": "Syne uses the herb-drying basket. This is the most specific basket I make — the design is determined by how herbs dry, which is determined by the airflow the weave creates around the herb. I worked with Syne for two seasons to get the herb-drying basket right. What Syne taught me: the herb needs specific airflow to dry without molding, and the airflow is determined by the basket's geometry. Two seasons of samples, and the final design serves four different herb categories with minor positioning adjustments.",
+      "keywords": ["syne","uses","herb-drying","basket","most","specific","basket","make","design","determined"]
+    },
+    {
+      "id": "what_weaving_is_1",
+      "source": "Winn on what weaving is",
+      "text": "Weaving is the creation of structure from material that has no structure on its own. The willow strip is flexible and weak. The woven basket is rigid and strong. The pattern is what creates the strength — not any individual strip, but the relationship between the strips, the way each one supports and is supported by the ones around it. Eighteen years of weaving and I'm still interested in why the pattern is stronger than the parts. The mathematics of it are clear. Why those mathematics produce that strength is something I think about.",
+      "keywords": ["weaving","creation","structure","material","has","no","structure","own","willow","strip"]
+    },
+    {
+      "id": "what_winn_holds_1",
+      "source": "Winn on the basket she made for herself",
+      "text": "One basket in eighteen years that I made with no commission and no purpose. I made it during a period when the work had become repetitive enough that I'd stopped thinking about the weaving. The purposeless basket: I chose the best material I had, used a design I'd been thinking about for a year but hadn't had occasion to try, and wove it over three days without interruption. It's the best thing I've made in eighteen years. It holds vegetables on my table. It deserves better than vegetables. I'm not sure what it deserves. It's waiting.",
+      "keywords": ["one","basket","eighteen","years","made","no","commission","no","purpose","made"]
+    },
+    {
+      "id": "eighteen_years_1",
+      "source": "Winn on eighteen years of making baskets",
+      "text": "Every basket I've made is somewhere. The ones I can find: still in use, in the district, in the hands of people who've used them past the point where I would have expected them to be replaced. The ones I can't find: done, composted, returned to the willows in some form. All of them — the ones I can find and the ones I can't — were useful for exactly the time they were needed. The basket's life is the use. My life is the making.",
+      "keywords": ["every","basket","made","somewhere","ones","find","still","use","district","hands"]
+    }
+  ]
+}

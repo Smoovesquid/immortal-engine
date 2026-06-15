@@ -1,0 +1,57 @@
+{
+  "id": "thornwall_printer",
+  "name": "Quor",
+  "role": "Block printer; produces the settlement's notices, market announcements, and occasional pamphlets",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "printing_1",
+      "source": "Quor on block printing",
+      "text": "In twelve years of block printing, I produce text that doesn't require a scribe's hand every time it's copied. The block is cut once. The impression is made as many times as the block survives. In twelve years, the block print is the technology that allows one person's thought to reach hundreds of readers without the individual hand of a scribe between the thought and the reader. In twelve years, what I print is what the settlement reads at scale.",
+      "keywords": ["twelve","years","block","printing","produce","text","doesn't","require","scribe's","hand"]
+    },
+    {
+      "id": "mast_1",
+      "source": "Quor on Mast",
+      "text": "Mast the council clerk produces the official notices I print. In ten years of printing the council's notices, what Mast provides: the text that needs to reach the settlement at scale. The notice that must be read by everyone is the notice that goes through my press. In ten years, Mast and I have developed a production relationship: Mast delivers the text, I assess the print run required, we agree on the schedule, the notices are delivered to the posting points. In ten years, the council's public communication has run through this press.",
+      "keywords": ["mast","council","clerk","produces","official","notices","print","ten","years","printing"]
+    },
+    {
+      "id": "lark_1",
+      "source": "Quor on Lark",
+      "text": "Lark's auction notices are my most regular commercial printing commission. In eight years of printing auction notices for Lark, the notice is the public announcement that brings bidders to the auction. What Lark needs from the notice: the goods to be auctioned, the date, the location, and the description that makes the specific good worth the bidder's attendance. In eight years, the auction notice has been the commercial product I've refined most. The effective notice is the notice that produces the bidders Lark needs.",
+      "keywords": ["lark's","auction","notices","most","regular","commercial","printing","commission","eight","years"]
+    },
+    {
+      "id": "finn_1",
+      "source": "Quor on Finn",
+      "text": "Finn the bookshop operator has commissioned three pamphlets from me in four years. What Finn's pamphlets contain: the kind of thinking that doesn't fit a book but is too long for a notice. In four years, the pamphlets Finn has produced through my press have been the most intellectually interesting printing commissions I've had. What Finn writes about: I don't ask and Finn doesn't explain. The text arrives, I print it, it goes into distribution through Finn's bookshop network. In four years, the pamphlets have a readership I can't measure but that Finn seems satisfied with.",
+      "keywords": ["finn","bookshop","operator","commissioned","three","pamphlets","four","years","what","finn's"]
+    },
+    {
+      "id": "reeth_1",
+      "source": "Quor on Reeth",
+      "text": "Reeth requested a private print run once in ten years. In ten years of printing the council's official communications, the one private commission from Reeth was for a document that Reeth didn't want produced through the council's official channels. In ten years, the only private commission from a council member: I printed it, I didn't ask what it was for, and I haven't thought about it since. The printing of a private document by a public official: my press is not the arbiter of what should be private. I print the text. The accountability for the text belongs to the commissioner.",
+      "keywords": ["reeth","requested","private","print","run","once","ten","years","ten","years"]
+    },
+    {
+      "id": "what_printing_produces_1",
+      "source": "Quor on what printing actually produces",
+      "text": "In twelve years, what printing produces is scale. The thought that one person writes becomes the thought that hundreds read. The information that one office holds becomes the information that the settlement possesses. In twelve years, the power of the press is the power of scale — not the thought itself but the thought's ability to reach many readers. In twelve years, what I hold is the power to choose what gets printed. In twelve years, I've printed what was brought to me and declined two commissions: one because the content would have directly harmed a specific individual, one because the commission itself was fraudulent.",
+      "keywords": ["twelve","years","what","printing","produces","scale","thought","one","person","writes"]
+    },
+    {
+      "id": "what_quor_holds_1",
+      "source": "Quor on what she regrets printing",
+      "text": "Year seven. A notice I printed without fully reading that contained, on the third reading, an implication that was unfair to a specific merchant in the district. The notice was already posted. In five years since, the pre-printing reading protocol I've installed: I read everything I print, at full reading speed, before I print it. Not for errors — for implications. The notice that seems straightforward at the first reading and reveals something else at the third: that's the notice I need to catch before it goes out. In five years, the protocol has held.",
+      "keywords": ["year","seven","notice","printed","without","fully","reading","contained","third","reading"]
+    },
+    {
+      "id": "twelve_years_1",
+      "source": "Quor on twelve years of block printing",
+      "text": "In twelve years, I've printed approximately two hundred thousand individual impressions. Two hundred thousand pages of text that left this press and entered the settlement's information stream. What those two hundred thousand pages have included: council notices, market announcements, auction listings, personal notices, commercial advertisements, pamphlets, and the two types I've declined. In twelve years, the press is what it prints. In twelve years, what the press is is a record of what the settlement has needed to say at scale.",
+      "keywords": ["twelve","years","printed","approximately","two","hundred","thousand","individual","impressions","two"]
+    }
+  ]
+}

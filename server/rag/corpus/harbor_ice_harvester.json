@@ -1,0 +1,57 @@
+{
+  "id": "harbor_ice_harvester",
+  "name": "Grenn",
+  "role": "Ice harvester; cuts ice from the winter ponds and stores it for the harbor's summer cold-keeping needs",
+  "cluster": "harbor_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "ice_1",
+      "source": "Grenn on ice harvesting",
+      "text": "In winter I cut ice. In summer I sell it. The business is entirely in the gap between when ice exists naturally and when ice is needed by people. What I produce in winter: stored cold. What I sell in summer: the cold I stored. In ten years, the business has been the management of that gap. The ice doesn't care about the gap. The summer customer does.",
+      "keywords": ["winter","cut","ice","summer","sell","business","entirely","gap","between","when"]
+    },
+    {
+      "id": "kett_1",
+      "source": "Grenn on Kett",
+      "text": "Kett the fishmonger is my primary summer account. The fish that keeps its freshness window long enough to be worth selling on the second day: that's what Kett's summer ice use is for. In seven years of supplying Kett's summer ice, the ice has extended the fish's freshness window by approximately half a day. Half a day of extended freshness in summer: enough to reduce Kett's discard rate significantly. The ice doesn't make the fish fresh. It slows the rate at which the fish stops being fresh.",
+      "keywords": ["kett","fishmonger","primary","summer","account","fish","keeps","freshness","window","long"]
+    },
+    {
+      "id": "rem_1",
+      "source": "Grenn on Rem",
+      "text": "The Aldenmere house kitchen uses summer ice for specific preparation needs. In six years of supplying Rem, the kitchen's ice use is consistent: specific preparations that require cold temperatures that the cellar doesn't provide in summer. What Rem told me about the kitchen's cold requirements: the cellar is adequate for storage but not for preparation. The preparation temperature requirements are higher than the storage temperature requirements. The ice fills the gap between what the cellar provides and what the preparation needs.",
+      "keywords": ["aldenmere","house","kitchen","uses","summer","ice","specific","preparation","needs","six"]
+    },
+    {
+      "id": "goss_1",
+      "source": "Grenn on Goss",
+      "text": "The granary uses ice during summer heat events to manage the grain temperature. What high grain temperature does: accelerates the decomposition and pest activity that the granary is trying to prevent. In five years of providing summer emergency ice to the granary, the ice has been used on three occasions. All three: during heat events where the granary temperature was rising toward a threshold. All three: the ice was applied, the temperature stayed below the threshold, the grain was protected.",
+      "keywords": ["granary","uses","ice","during","summer","heat","events","manage","grain","temperature"]
+    },
+    {
+      "id": "lom_1",
+      "source": "Grenn on Lom",
+      "text": "Lom the harbor night watch and I are both people who work with conditions. Lom works with the night's conditions at the harbor. I work with the winter's conditions at the ponds. In three years of occasional conversation, we've found: the people who work with natural conditions that no one else is using develop an unusual knowledge of those conditions. Lom knows the harbor at night. I know the ponds in winter. The knowledge is specific and not widely shared because most people aren't there when the condition is there.",
+      "keywords": ["lom","harbor","night","watch","both","people","work","conditions","lom","works"]
+    },
+    {
+      "id": "what_ice_storage_is_1",
+      "source": "Grenn on what ice storage is",
+      "text": "The ice house is insulated with sawdust and straw. The insulation slows the transfer of summer heat to the stored winter ice. The rate at which the ice melts is the rate at which my summer stock depletes. In ten years, the insulation and ice thickness I've refined to produce a melt rate that means I still have ice in August. The August ice is the most expensive because it's the hardest to have. In ten years, I've had August ice in nine of them. The one year I ran out in July: I've insulated better since.",
+      "keywords": ["ice","house","insulated","sawdust","straw","insulation","slows","transfer","summer","heat"]
+    },
+    {
+      "id": "what_grenn_holds_1",
+      "source": "Grenn on the winter that almost ended the business",
+      "text": "Year six. A winter where the ponds didn't freeze adequately — too warm, too short a cold period. In ten years of ice harvesting, the one winter where the harvest was insufficient for the summer's needs. What I did: rationed the summer supply to the accounts where the cold was most critical. Kett got priority because fish is the most time-sensitive. The Aldenmere house got reduced supply. The granary got the emergency allocation when the heat event came. The summer ran out in late July. I've been thinking about what I do if it happens again.",
+      "keywords": ["year","six","winter","where","ponds","didn't","freeze","adequately","too","warm"]
+    },
+    {
+      "id": "ten_years_1",
+      "source": "Grenn on ten years of ice harvesting",
+      "text": "In ten years, I've moved approximately five hundred tons of ice from winter ponds to summer customers. Five hundred tons of stored cold that allowed fish to be fresh a half day longer, that kept kitchen preparations at the right temperature, that held the granary through heat events. In ten years, the stored cold has done specific work for specific customers that they couldn't have done without it. The cold is the product. The stored cold is the service. The service is possible because winter is reliable. The winter I can't count on: I think about it.",
+      "keywords": ["ten","years","moved","approximately","five","hundred","tons","ice","winter","ponds"]
+    }
+  ]
+}

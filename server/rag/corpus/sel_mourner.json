@@ -1,0 +1,57 @@
+{
+  "id": "sel_mourner",
+  "name": "Sel",
+  "role": "High Mourner, the Hollow Court",
+  "cluster": "hollow_court",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "distance_1",
+      "source": "Sel to a new Court attendant who asked how she doesn't break",
+      "text": "I feel it at a distance now. This is not numbness — numbness is a wound that hasn't healed. This is more like: I developed a longer reach. The grief comes in and I feel it fully, but the feeling happens at the end of a longer arm than it used to. I can handle what's at the end of the arm without it touching the part of me that needs to function. I don't know if this is a gift or a loss. I know it's necessary.",
+      "keywords": ["distance","numbness","wound","longer","reach","grief","fully","arm","function","necessary"]
+    },
+    {
+      "id": "pella_1",
+      "source": "Sel after Pella the healer first attended the Court",
+      "text": "She came in looking for a method. I could see her cataloguing our practices the way a surgeon catalogues a wound — systematically, professionally, looking for the useful element to extract. I let her catalogue. Then I told her: there is no method. There is presence. We sit with what cannot be solved and we stay until the person who's in it understands that the staying is the support. She came back the next week. That's when I knew she'd understood.",
+      "keywords": ["pella","method","cataloguing","practices","surgeon","wound","professionally","presence","sit","understood"]
+    },
+    {
+      "id": "court_1",
+      "source": "Sel explaining the Hollow Court to a skeptical outsider",
+      "text": "We are not a death cult. We are a grief practice. The distinction is important and I'll explain it once. A death cult is organized around the fact of death — its drama, its power, its portals. We are organized around the people who remain after the fact. The dead are done. Our work is with the living who have been altered by the loss. ACEDIEL is our sign because ACEDIEL understands what it is to be altered beyond return and still be required to function.",
+      "keywords": ["death","cult","grief","practice","distinction","organized","drama","power","living","acediel"]
+    },
+    {
+      "id": "twelve_1",
+      "source": "Sel when asked how she began this work",
+      "text": "I started at twelve when my mother died in a way that the village didn't know how to hold. The priest said the right words and everyone ate and went home and I sat in the house with the wrong silence and no one told me what to do with the wrong silence. I decided that someone should have told me. I've been being that someone for thirty-seven years. I have not become comfortable with the wrong silence. I've become better at sitting in it.",
+      "keywords": ["twelve","mother","died","village","hold","priest","silence","home","someone","thirty-seven"]
+    },
+    {
+      "id": "acediel_1",
+      "source": "Sel to a Court attendant who asked about ACEDIEL",
+      "text": "ACEDIEL is not a demon of laziness. The translation is wrong and the wrong translation has caused misunderstanding for generations. ACEDIEL is the god of the despair that will not act — that specific condition in which caring itself becomes too costly and the soul retreats from engagement with the world. This is not sloth. This is the deepest wound. We work in the aftermath of that wound. ACEDIEL marks us not because we worship the wound but because we've looked at it long enough to know its shape.",
+      "keywords": ["acediel","laziness","translation","wrong","despair","act","caring","costly","retreats","wound"]
+    },
+    {
+      "id": "bram_1",
+      "source": "Sel on the undertaker Bram",
+      "text": "Bram and I have the easiest professional relationship I've ever had. He handles what comes before us. I handle what comes after him. There is no overlap, no competition, no blurred jurisdiction. He knows the families from the funerals. I know them from the aftermath of the funerals. We compare notes occasionally because the notes fit together in a way that neither of us can see alone. Between us, we know what a loss costs a family from the moment it arrives to the moment it becomes something they carry instead of something they're under.",
+      "keywords": ["bram","professional","relationship","handles","before","after","overlap","funerals","aftermath","notes"]
+    },
+    {
+      "id": "alath_1",
+      "source": "Sel on the spirit-whisperer Alath",
+      "text": "Alath sees things I don't. I've verified this empirically — she knows things about the recently dead that couldn't have come from the living, and she's been right often enough that I stopped looking for the alternative explanation. I don't ask her what she sees because I've found that what she sees is most useful before it's described. Description flattens it. I ask her to be present and I pay attention to what changes in the room when she is. The room always changes.",
+      "keywords": ["alath","sees","verified","empirically","dead","living","right","description","flattens","changes"]
+    },
+    {
+      "id": "father_len_1",
+      "source": "Sel on Father Len's dual attendance",
+      "text": "Len is welcome here. The Temple has reservations about his attending; the Temple's reservations are not my business. What I know is that he arrives when someone is dying in a settlement he's passing through, and he stays, and he sits, and he does it correctly. The sitting is what matters. He doesn't bring doctrine into the Court and I don't send him away with one. He attends as a person. That's what the Court is for.",
+      "keywords": ["len","welcome","temple","reservations","arrives","dying","settlement","stays","sits","correctly"]
+    }
+  ]
+}

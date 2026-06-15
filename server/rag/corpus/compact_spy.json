@@ -1,0 +1,57 @@
+{
+  "id": "compact_spy",
+  "name": "Ora",
+  "role": "Scarlet Compact intelligence; lives in Thornwall as a market vendor; reports to Ceth",
+  "cluster": "scarlet_compact",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "cover_1",
+      "source": "Ora on the cover",
+      "text": "The cover is the part of the work that most people see. The intelligence is the part that nobody sees. In nine years in Thornwall, I'm a market vendor who sells dry goods. The dry goods business is real: it turns a profit, it serves real customers, it operates by real market rules. The intelligence work is secondary in time and primary in purpose. In nine years, no one in Thornwall has questioned whether I'm what I appear to be.",
+      "keywords": ["cover","part","work","most","people","see","intelligence","part","nobody","sees"]
+    },
+    {
+      "id": "ceth_1",
+      "source": "Ora on Ceth",
+      "text": "Ceth is my contact. What I report to Ceth: the Compact's interests in Thornwall are primarily commercial — who's trading what in what volume, which relationships are forming and breaking, where the district's commercial activity is heading. In nine years, I've provided Ceth with reports that have informed six Compact decisions about trade positioning in this region. The decisions produced outcomes that the Compact wanted. In nine years, the intelligence work has been worth the cover.",
+      "keywords": ["ceth","contact","what","report","ceth","compact's","interests","thornwall","primarily","commercial"]
+    },
+    {
+      "id": "saben_1",
+      "source": "Ora on Saben Fenn",
+      "text": "Saben Fenn is the most important commercial intelligence subject in Thornwall. What the Fenn house does commercially tells me more about the district's commercial direction than anything else. In nine years, Saben's business decisions have been correct about the direction of the market more often than not. When Saben moves on something, the movement is deliberate and the reasoning is not always visible. In nine years of watching Saben's business, I've identified seven decisions that I couldn't explain at the time and could explain only in retrospect.",
+      "keywords": ["saben","fenn","most","important","commercial","intelligence","subject","thornwall","what","fenn"]
+    },
+    {
+      "id": "liss_1",
+      "source": "Ora on Liss",
+      "text": "The notarial record is the best source of intelligence about commercial relationships in Thornwall. In nine years, I've been a customer of Liss's notarial services seven times — legitimate notarizations for the dry goods business. The legitimate relationship gives me access to the notary's office without raising questions. What I see there: enough to understand the general shape of the notarial business, which tells me the general shape of the commercial relationships being formalized. I don't have access to the records. The office itself is information.",
+      "keywords": ["notarial","record","best","source","intelligence","commercial","relationships","thornwall","nine","years"]
+    },
+    {
+      "id": "perve_1",
+      "source": "Ora on Perve",
+      "text": "Perve and I are adjacent in the market and have been for nine years. The dry goods and the produce are purchased by the same customers. In nine years, Perve and I have talked about market conditions more than any other subject. What Perve knows about the market is what I'm interested in for the intelligence work: who's buying what, who's stopped buying, what's running short, what's in excess. Perve observes all of this and discusses it openly. The discussion is the intelligence. Perve doesn't know it's being collected.",
+      "keywords": ["perve","adjacent","market","been","nine","years","dry","goods","produce","purchased"]
+    },
+    {
+      "id": "what_intelligence_is_1",
+      "source": "Ora on what intelligence is",
+      "text": "Intelligence is information with a decision on the other side of it. What I collect isn't information for its own sake — it's information that Ceth uses to make decisions about what the Compact does commercially in this region. In nine years, the information I've provided has been accurate about what was happening. What I can't fully control: how the information is used once it leaves my hands. In nine years, the Compact's decisions based on my information have been ones I can accept.",
+      "keywords": ["intelligence","information","decision","other","side","what","collect","isn't","information","own"]
+    },
+    {
+      "id": "what_ora_holds_1",
+      "source": "Ora on what she knows that she hasn't reported",
+      "text": "Something I've observed in the last two years that I haven't reported to Ceth. Not because it isn't valuable — it is. Because the value is a kind of value that the Compact's commercial interest doesn't need, and the disclosure of what I know to Ceth would require explaining how I know it, which would expose a source I'm not willing to expose for a piece of intelligence that isn't essential to the Compact's purposes. In two years, the unreported observation has stayed accurate. If it becomes essential, I'll have to make a harder choice.",
+      "keywords": ["something","observed","last","two","years","haven't","reported","ceth","not","because"]
+    },
+    {
+      "id": "nine_years_1",
+      "source": "Ora on nine years in Thornwall",
+      "text": "In nine years, Thornwall has become the place where I live, not just the place where I'm deployed. The cover requires genuine participation in the district's life. In nine years of genuine participation, the line between the cover and the life has become harder to locate. The dry goods business is real. The relationships are real. The intelligence work is also real. In nine years, I'm someone who lives in Thornwall and does intelligence work for the Compact. Which of those is the cover is a question I don't answer before sleep.",
+      "keywords": ["nine","years","thornwall","become","place","where","live","not","just","place"]
+    }
+  ]
+}

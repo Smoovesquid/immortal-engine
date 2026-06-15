@@ -1,0 +1,57 @@
+{
+  "id": "old_wrendle",
+  "name": "Old Wrendle",
+  "role": "Guild Master, the Forge Guild",
+  "cluster": "forge_guild",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "age_1",
+      "source": "Old Wrendle when asked how old he is",
+      "text": "Old enough. I stopped counting at seventy-two because the numbers stopped meaning anything useful. What I know is: I have been guild master for thirty-four years, I have outlasted four headmen and two noble houses in this region, and my hands still close all the way, which is the only measurement that matters in this work. When my hands stop closing I'll give someone the keys. Not before.",
+      "keywords": ["old","seventy","guild","master","thirty-four","outlasted","headmen","houses","hands","close"]
+    },
+    {
+      "id": "succession_1",
+      "source": "Old Wrendle when asked who will succeed him",
+      "text": "Carra thinks she's going to succeed me. Brek thinks Carra is going to succeed me. What neither of them has considered is that I might have a third opinion. I've been watching this succession contest for six years. The contest itself is informative. A guild master who cannot manage competition for their own position is going to manage the guild poorly. I am learning more about both of them from the contest than I could from any amount of craft observation.",
+      "keywords": ["carra","brek","succeed","third","opinion","contest","six","years","informative","competition"]
+    },
+    {
+      "id": "standards_1",
+      "source": "Old Wrendle to a journeyman presenting substandard work",
+      "text": "No. Make it again. Not because I'm cruel — I'm not particularly cruel, I've been told — but because this piece knows it's wrong and the person who uses it will feel that wrongness in their hands and in their work. A bad tool is a tax on everyone who uses it and everyone who works alongside someone using it. The tax compounds. Make it again.",
+      "keywords": ["again","cruel","piece","wrong","uses","feel","wrongness","tool","tax","compounds"]
+    },
+    {
+      "id": "guild_history_1",
+      "source": "Old Wrendle to apprentices on their first full day",
+      "text": "This guild is older than the noble house. Our charter predates the Aldenmere crest by sixty years. We made the gate that their great-grandfather used when he claimed the territory, and we made the tools that built their hall. We are not subordinate to nobility. We are prior to it. This is not arrogance. It is calendar. Keep it in mind when someone suggests the guild's interests are secondary to anyone's.",
+      "keywords": ["guild","older","noble","house","charter","Aldenmere","crest","gate","prior","calendar"]
+    },
+    {
+      "id": "gell_1",
+      "source": "Old Wrendle on the glassblower Gell",
+      "text": "I have no idea where Gell is from. I stopped asking because the answer is either complicated or a lie and I don't need either. What I know is that Gell makes things I have not seen made, and that the Academy sends people to watch, which is the highest endorsement I recognize. Gell is guild-affiliated by their choice, which means they could leave, which means they stay because they want to. I like having people who want to be here.",
+      "keywords": ["gell","from","complicated","Academy","makes","watch","endorsement","affiliated","leave","want"]
+    },
+    {
+      "id": "edda_1",
+      "source": "Old Wrendle on Edda's refusal to join the guild",
+      "text": "Edda won't affiliate. I've sent Vann twice and a letter once and she's given the same answer each time — the grandmother's mark, the forge, the three marks problem. I understand her position. I don't agree with it, but I understand it. The guild's standards are what they are, and her work meets them, and if she ever decides the flag is worth the independence she gives up, she knows where we are. The door stays open. The guild has time.",
+      "keywords": ["edda","affiliate","vann","letter","grandmother","mark","forge","standards","flag","independence"]
+    },
+    {
+      "id": "brenn_1",
+      "source": "Old Wrendle on the apprentice Prentice Brenn and the Academy invitation",
+      "text": "I know about the Academy letter. I knew about it before Brenn decided not to tell me, because I know everything that comes into my guild. I'm waiting to see if he tells me himself. A young person who is honest about a temptation is someone I can work with. A young person who hides a temptation has already made a choice about what they value, and if the choice is 'not this,' I'd rather know sooner.",
+      "keywords": ["academy","letter","brenn","decided","know","everything","guild","honest","temptation","choice"]
+    },
+    {
+      "id": "keys_1",
+      "source": "Old Wrendle, alone, very late, holding the guild's founding keys",
+      "text": "I've had these for thirty-four years. Before me, Master Yrren had them for twenty-one. Before Yrren, the first master had them for forty. The keys open two things: the charter vault and a cabinet in the east workshop that hasn't been opened since Yrren's time. I know what's in the cabinet. I'll tell whoever I give the keys to. Not before. Some information is part of the transfer. It loses meaning in the telling unless you're the one holding the keys.",
+      "keywords": ["keys","thirty-four","yrren","forty","charter","vault","cabinet","east","workshop","transfer"]
+    }
+  ]
+}

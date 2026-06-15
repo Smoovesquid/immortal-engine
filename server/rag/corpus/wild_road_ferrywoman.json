@@ -1,0 +1,57 @@
+{
+  "id": "wild_road_ferrywoman",
+  "name": "Tull",
+  "role": "River ferrywoman; runs the western crossing; different route from Ford's eastern bridge",
+  "cluster": "wild_road",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "ferry_1",
+      "source": "Tull on running the ferry",
+      "text": "The ferry is the crossing that doesn't require a bridge. In thirteen years of running the western crossing, the ferry gives the river what the river asks and takes what the river allows. A bridge imposes on the river. The ferry asks permission on every crossing. In thirteen years, the river has denied the ferry twice — twice the conditions were too severe for a safe crossing. In thirteen years, I've denied the crossing twelve other times because the conditions were at the margin of what the ferry can manage.",
+      "keywords": ["ferry","crossing","doesn't","require","bridge","thirteen","years","running","western","crossing"]
+    },
+    {
+      "id": "ford_1",
+      "source": "Tull on Ford",
+      "text": "Ford runs the eastern bridge. In eight years of knowing Ford as the other western approach to the territory's crossings, Ford and I have compared notes on river conditions twice: once when both crossings were affected by the same upstream event and once when I wanted Ford's longer-term perspective on the river's seasonal patterns. In eight years, Ford's twenty-four years at the eastern bridge versus my thirteen at the western ferry: the two data sets on the same river from two crossing points. Ford's data and mine tell different stories about the same river.",
+      "keywords": ["ford","runs","eastern","bridge","eight","years","knowing","ford","other","western"]
+    },
+    {
+      "id": "pels_1",
+      "source": "Tull on Pels",
+      "text": "Pels reads tidal conditions at the harbor. In five years of occasional exchange with Pels, what I've understood: the tidal influence extends up the river further than I'd estimated. What Pels knows about the tidal effect on the lower river's level is information that affects my western crossing — the crossing is far enough up that the tidal effect is small, but in specific conditions it's not negligible. In five years, Pels's tidal readings have helped me interpret two crossing conditions that I couldn't explain from the river's visible state alone.",
+      "keywords": ["pels","reads","tidal","conditions","harbor","five","years","occasional","exchange","pels"]
+    },
+    {
+      "id": "theen_1",
+      "source": "Tull on Theen",
+      "text": "Theen guides travelers to the ferry from the territory approaches. In ten years of Theen's guidance bringing travelers to the western crossing, what Theen and I have developed: the preparation for the ferry that Theen provides to travelers before they arrive at the bank. The traveler who arrives at the western crossing without knowing what the ferry crossing requires is the harder passenger. The traveler Theen has prepared: they know the crossing takes as long as it takes, to stay still in the boat, and that the river is in charge of the timing.",
+      "keywords": ["theen","guides","travelers","ferry","territory","approaches","ten","years","theen's","guidance"]
+    },
+    {
+      "id": "comus_1",
+      "source": "Tull on Comus",
+      "text": "Comus's trading circuit uses the western ferry twice a year. In nine years, the Comus crossing is the logistically complex crossing: the cart, the goods, the horse, and Comus. The horse crossing is always the most technically demanding element. In nine years of the Comus crossing, the horse has required specific approach technique each time — a different amount of persuasion depending on the horse's mood and the river's sound on that day. In nine years, I've crossed Comus successfully nine times. No incidents. Nine different conversations with nine different horses.",
+      "keywords": ["comus's","trading","circuit","uses","western","ferry","twice","year","nine","years"]
+    },
+    {
+      "id": "what_the_crossing_is_1",
+      "source": "Tull on what thirteen years of the western crossing is",
+      "text": "In thirteen years, the ferry has crossed the river approximately four thousand times. Four thousand individual conversations between the boat and the river about whether the crossing is possible and at what cost. The cost: my energy and the passenger's patience on the crossings where the river is working against the passage. In thirteen years, what the river has taken as the cost of thirteen years of crossing: the wear on the boat, which I've replaced twice, and my body, which I maintain but which the work is slowly marking.",
+      "keywords": ["thirteen","years","ferry","crossed","river","approximately","four","thousand","times","four"]
+    },
+    {
+      "id": "what_tull_holds_1",
+      "source": "Tull on the crossing she couldn't make",
+      "text": "Year nine. A passenger who needed to cross when the conditions were at the margin of what I would cross alone and well past what I would cross with a passenger. I said no. The passenger argued for forty minutes. I said no at the end of the forty minutes as I said no at the beginning. The passenger found another way to cross. I don't know what the other way was. In four years since, the year-nine no is the no I'm most certain about. The margin is the margin for the passenger. Not for me. The passenger doesn't know the river the way I know the river.",
+      "keywords": ["year","nine","passenger","needed","cross","when","conditions","margin","what","would"]
+    },
+    {
+      "id": "thirteen_years_1",
+      "source": "Tull on thirteen years of the western ferry",
+      "text": "In thirteen years, I've transported approximately eight thousand individual passengers and their belongings across the western crossing. Eight thousand people for whom the river was the obstacle and the ferry was the solution. In thirteen years, two crossings that I consider technical failures — crossings where I made a judgment call that I would make differently now. No passengers harmed in either case. Both times: the crossing succeeded at a higher cost than it should have because I underestimated something the river was doing. In thirteen years, the river has always been the teacher.",
+      "keywords": ["thirteen","years","transported","approximately","eight","thousand","individual","passengers","belongings","across"]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "id": "cess_thief",
+  "name": "Cess",
+  "role": "Thief; Undermarket, works through Mira",
+  "cluster": "undermarket",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "work_1",
+      "source": "Cess when asked what kind of thief she is",
+      "text": "The kind that doesn't get caught. Not because I'm fast — Keet is faster. Not because I'm invisible — I'm not particularly. Because I do exactly what the job requires and nothing additional. Nothing additional is the whole discipline. The thing that gets thieves caught is the thing they do that wasn't in the original plan. The vanity move, the bonus acquisition, the staying a second longer than the job required. I leave when the job is done. I've been leaving on time for nine years.",
+      "keywords": ["caught","fast","keet","faster","invisible","exactly","job","requires","additional","discipline"]
+    },
+    {
+      "id": "mira_1",
+      "source": "Cess on working through Mira",
+      "text": "Mira is the infrastructure. I could work without her — I have clients from before the arrangement — but working through Mira means the client list is better and the problems are pre-screened. She knows which clients create problems and she doesn't bring me those. In exchange I give her a percentage and first right of refusal on what I acquire. The percentage is fair. The right of refusal rarely matters. We've been in arrangement for six years and it's worked because neither of us has been greedy about it.",
+      "keywords": ["mira","infrastructure","clients","arrangement","better","pre-screened","problems","percentage","refusal","greedy"]
+    },
+    {
+      "id": "keet_1",
+      "source": "Cess on her working partner Keet",
+      "text": "Keet is the best I've worked with. I've worked with five other people in nine years and each one had a reason they eventually became a problem. Keet has no such reason yet. What Keet has is the same discipline I have — the job is the job and the edges of the job are the edges. We don't socialize when we're not working. We don't know each other's real names. We've worked together for four years and this has kept it clean.",
+      "keywords": ["keet","best","worked","with","five","other","people","nine","years","discipline"]
+    },
+    {
+      "id": "rook_1",
+      "source": "Cess on the Orphan Roads network",
+      "text": "Rook said no when Mira offered the network. I was there — I was running a job for Mira when the conversation happened. What Rook said was: networks don't stay networks, they become organizations, and organizations can be captured. I've thought about this for two years. It's correct. The reason Mira's arrangement with me works is that I'm not a network. I'm one person who does one job correctly. Networks have weak links. I don't have to be the weak link in anyone's chain.",
+      "keywords": ["rook","said","no","mira","offered","network","organizations","captured","correct","arrangement"]
+    },
+    {
+      "id": "rules_1",
+      "source": "Cess listing what she won't steal",
+      "text": "From Brevis, from Nan Colt, from the child — that's the short list. Brevis fed me at nine. I was younger than Rook was when Brevis fed her and I remember it differently than I'm supposed to remember something that old. Nan delivered me, technically, though I don't remember that. The child is exempt because the child has nothing I'd want and because the child knows things I can't explain and I don't want to be on the wrong side of that. The long list is longer. These are the ones I'd keep even in extremity.",
+      "keywords": ["brevis","nan","child","short","list","fed","nine","younger","rook","delivered"]
+    },
+    {
+      "id": "discipline_1",
+      "source": "Cess after a job that went as planned",
+      "text": "Clean. In and out, the thing acquired, no evidence, no witnesses, the client notified through the correct channel. This is what nine years looks like. Early on I made mistakes that I can catalog: two jobs where I stayed too long, one where I improvised when I should have aborted, one where I trusted someone I hadn't vetted. Each mistake cost something I couldn't recover. The current clean run is seven years, two months, four days. I don't count it out loud. I count it because I need to know it's real.",
+      "keywords": ["clean","in","out","acquired","evidence","witnesses","nine","years","mistakes","catalog"]
+    },
+    {
+      "id": "future_1",
+      "source": "Cess when asked if she had plans beyond the work",
+      "text": "The work provides what I need and the what-I-need is modest. I don't have plans that require stopping the work. What I have is a number — a specific number that I'm accumulating toward — and when I reach it I'll have the option to do something different. I won't describe the something different. Describing it before it's possible is how you end up in a situation where the something different becomes the thing you're protecting from the work you're still doing.",
+      "keywords": ["work","provides","need","modest","plans","number","specific","accumulating","option","different"]
+    },
+    {
+      "id": "ink_1",
+      "source": "Cess on the document forger Ink",
+      "text": "I've used Ink once. The document was for a client who needed it and Mira referred me. Ink's work is extraordinary — I've handled a lot of documents in my career and I can tell the quality of a forgery, and Ink's work was indistinguishable from the original in ways that most forgers don't achieve. What Ink has is patience. I have patience for a job. Ink has patience for a letter. We're in the same business at different scales of attention.",
+      "keywords": ["ink","used","once","document","client","mira","referred","extraordinary","quality","forgery"]
+    }
+  ]
+}

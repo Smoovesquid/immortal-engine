@@ -1,0 +1,57 @@
+{
+  "id": "thornwall_midwife",
+  "name": "Weth",
+  "role": "Settlement midwife; has attended most of the settlement's births for thirty years",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "midwife_1",
+      "source": "Weth on midwifery",
+      "text": "In thirty years of midwifery in the settlement, what the midwife does: attends the birth and manages what the birth requires in the moment it requires it. In thirty years, the birth that goes according to expectation and the birth that doesn't are both the midwife's responsibility in the same way. In thirty years, the midwife's competence is not what happens when the birth is easy. The competence shows in what happens when the birth is not easy.",
+      "keywords": ["thirty","years","midwifery","settlement","what","midwife","does","attends","birth","manages"]
+    },
+    {
+      "id": "mam_wey_1",
+      "source": "Weth on Mam Wey",
+      "text": "Mam Wey knows the settlement's households in a way that I don't and Mam Wey knows which births are coming before they're announced. In twenty years of the Weth-Mam Wey midwife-neighborhood knowledge relationship, what Mam Wey's knowledge provides to the midwife: the early indication that a birth is approaching, which allows preparation. In twenty years, the preparation that Mam Wey's early indication allows has been the difference between arriving ready and arriving to catch up. In twenty years, Mam Wey has sent for me twice before the mother sent for me.",
+      "keywords": ["mam","wey","knows","settlement's","households","way","don't","mam","wey","knows"]
+    },
+    {
+      "id": "roan_1",
+      "source": "Weth on Roan",
+      "text": "Roan the herbalist provides the plant preparations that the midwifery requires. In twenty-five years of working from Roan's preparations, what the herbalist's knowledge provides to the midwife: the specific preparation for specific situations that the birth might produce. In twenty-five years, the difficult labor and the preparation that manages the difficulty — in twenty-five years, Roan's preparation and my attendance have worked together in eight cases that required both. In twenty-five years, eight cases that required both. The other attendances: the preparation was present but unused.",
+      "keywords": ["roan","herbalist","provides","plant","preparations","midwifery","requires","twenty-five","years","working"]
+    },
+    {
+      "id": "pell_young_1",
+      "source": "Weth on Pell the Young",
+      "text": "Pell the Young is one of the deacons I attended the birth of. In twenty-seven years of knowing Pell from birth, what the midwife-birth-child relationship produces over time: the specific intimacy of knowing someone from before they knew themselves. In twenty-seven years, Pell has grown into the Covenant's service. In twenty-seven years, what I knew about Pell from the birth that the Covenant's faith has borne out: a person with the capacity for patient commitment. In twenty-seven years, the birth doesn't determine the life. It introduces the person.",
+      "keywords": ["pell","young","one","deacons","attended","birth","twenty-seven","years","knowing","pell"]
+    },
+    {
+      "id": "nan_1",
+      "source": "Weth on Nan",
+      "text": "Nan runs the charity operations in the settlement's poorest district and I've attended births in that district that Nan has supported. In twelve years of the Weth-Nan midwife-charity working relationship, what the collaboration produces: the birth attended and the mother supported afterward. In twelve years, the birth that goes well and the mother who has no support network afterward is the birth the midwife can't complete the work of. In twelve years, Nan's support network has completed the work after I've delivered the child.",
+      "keywords": ["nan","runs","charity","operations","settlement's","poorest","district","attended","births","district"]
+    },
+    {
+      "id": "what_weth_holds_1",
+      "source": "Weth on what thirty years of midwifery holds",
+      "text": "In thirty years, I've attended approximately eight hundred births in the settlement. Of eight hundred: seven hundred and sixty-three mothers and children who completed the birth well. Thirty-one births where the child was lost. Six births where the mother was lost. In thirty years, the thirty-one and the six are the births that thirty years of midwifery holds in a specific way. In thirty years, every birth I've attended is present in some form. The losses are present differently than the births that completed well. That's the nature of the work.",
+      "keywords": ["thirty","years","attended","approximately","eight","hundred","births","settlement","eight","hundred"]
+    },
+    {
+      "id": "what_thirty_years_teaches_1",
+      "source": "Weth on what thirty years of midwifery teaches",
+      "text": "In thirty years, what the midwifery has taught me that nothing else has: the complete equality of the moment of birth across the settlement's social structure. In thirty years, the household of means and the household without means produce the same birth — the same vulnerability, the same need, the same midwife's function. In thirty years, the birth is the leveler. In thirty years, the settlement's hierarchies that organize every other moment of people's lives are absent from the birth. In thirty years, I've attended the same birth in every house I've entered.",
+      "keywords": ["thirty","years","what","midwifery","taught","nothing","else","complete","equality","moment"]
+    },
+    {
+      "id": "thirty_years_1",
+      "source": "Weth on thirty years of settlement midwifery",
+      "text": "In thirty years, most of the settlement's adults under thirty were born with my attendance. In thirty years, I know the settlement's current generation from before the current generation knew itself. In thirty years, what the midwife accumulates that nothing else produces: the intimate beginning of most of the people around me. In thirty years, I walk through the settlement and the people I see are people I've known since before they knew anything. In thirty years, the midwife's knowledge of the settlement is the oldest knowledge anyone in the settlement carries of anyone else.",
+      "keywords": ["thirty","years","most","settlement's","adults","under","thirty","born","attendance","thirty"]
+    }
+  ]
+}

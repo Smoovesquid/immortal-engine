@@ -1,0 +1,57 @@
+{
+  "id": "harbor_fishing_elder",
+  "name": "Twinn",
+  "role": "Elder fisher; has fished the harbor waters for fifty years; the harbor's institutional memory",
+  "cluster": "harbor_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "fishing_elder_1",
+      "source": "Twinn on fifty years of fishing",
+      "text": "The harbor is different from when I started. Not the water — the water is the same water. The harbor's structure, the number of boats, the fish population at specific depths. In fifty years, I've watched the harbor change faster in some decades than others. The slowest decade of change: the third. The fastest: the last ten years. The last ten years have changed the harbor more than the first forty combined. I'm not sure if that's good or bad. I'm sure it's true.",
+      "keywords": ["harbor","different","when","started","not","water","water","same","water","harbor's"]
+    },
+    {
+      "id": "ota_1",
+      "source": "Twinn on Ota",
+      "text": "Ota is the best fisher working the harbor right now. In fifteen years of watching Ota fish, what Ota does that others don't: reads the water before deciding where to go. Most fishers go where they've been successful before. Ota reads where the fish are now. The difference between the two approaches shows in the consistency of the catch. Ota's catch is consistent because the reading is consistent. I taught Ota to read the water. What Ota does with the reading now is beyond what I taught.",
+      "keywords": ["ota","best","fisher","working","harbor","right","now","fifteen","years","watching"]
+    },
+    {
+      "id": "prad_1",
+      "source": "Twinn on Prad",
+      "text": "Prad makes the rope that I use for the nets. In thirty years of buying rope from the same supply chain, the current supply — Prad's rope — is the best I've used. What makes it better: the knot-holding capacity. The net is only as strong as its knots, and the knots are only as strong as the rope that holds them. In thirty years of net use, I've had fewer net failures since Prad's rope replaced the previous supply than in any previous decade.",
+      "keywords": ["prad","makes","rope","use","nets","thirty","years","buying","rope","same"]
+    },
+    {
+      "id": "rulf_1",
+      "source": "Twinn on Rulf",
+      "text": "Rulf and I have worked in adjacent domains at the harbor for twenty-three years. In twenty-three years, the dock manager and the fishing fleet have had seven significant conflicts about dock access: who uses the dock when, for how long, in what order. All seven were resolved by negotiation. What Rulf brings to negotiation: the dock's perspective, which is different from the fishing fleet's perspective. The conflicts arise from the difference in perspective. The resolution requires understanding both. In twenty-three years, we've understood both in seven conflicts and reached seven resolutions.",
+      "keywords": ["rulf","worked","adjacent","domains","harbor","twenty-three","years","twenty-three","years","dock"]
+    },
+    {
+      "id": "kett_1",
+      "source": "Twinn on Kett",
+      "text": "Kett the fishmonger is the end of the chain that starts with me. In twenty years, I've sold to Kett primarily. The relationship: Kett needs the freshest fish, I need a buyer who values freshness the way I value it. In twenty years, Kett has never questioned my assessment of what I've caught. I say it's good: Kett buys it. I say it's yesterday's catch: Kett prices it accordingly. The trust in the assessment is what makes the relationship work. In twenty years: one disagreement about assessment. We were both right from our own positions.",
+      "keywords": ["kett","fishmonger","end","chain","starts","with","twenty","years","sold","kett"]
+    },
+    {
+      "id": "what_the_water_tells_1",
+      "source": "Twinn on what fifty years teaches about reading water",
+      "text": "The water tells you things through what it shows on the surface. The color of the water at different depths tells you what's moving in the water below. The surface movement tells you what the current is doing. The bird activity tells you where the surface fish are. The depth of the surface fish tells you where the bottom fish are. In fifty years, these readings have become as automatic as breathing. I don't decide to read the water. The reading happens. The decision is what to do with what the reading tells me.",
+      "keywords": ["water","tells","things","through","what","shows","surface","color","water","different"]
+    },
+    {
+      "id": "what_twinn_holds_1",
+      "source": "Twinn on what fifty years didn't teach her",
+      "text": "In fifty years, there have been seventeen occasions where the water told me something I couldn't read. The reading was there — something was different. What was different: I couldn't say. All seventeen: I followed the unreadable signal and found something I wasn't expecting to find. What the seventeen unreadable signals led me to: six unusually large catches, four schools of fish I'd never encountered before, three weather events that arrived earlier than expected, two shallow-water events that I don't have names for, and two times where I followed the signal and found nothing except the fact that the water had told me something.",
+      "keywords": ["fifty","years","seventeen","occasions","where","water","told","something","couldn't","read"]
+    },
+    {
+      "id": "fifty_years_1",
+      "source": "Twinn on fifty years of fishing",
+      "text": "In fifty years I've taken more fish from this harbor than I can count. The fish that came back: more fish. The harbor's population has sustained itself across fifty years of fishing from this boat. What that tells me: the fishing has been at a sustainable rate, or the harbor's capacity has been sufficient to sustain the rate I've taken. I'm not sure which. What I know: in fifty years, the harbor has given me what I needed and is still giving Ota what Ota needs. The generosity of the harbor across two generations is what I think about at the end of the day.",
+      "keywords": ["fifty","years","taken","more","fish","harbor","than","can","count","fish"]
+    }
+  ]
+}

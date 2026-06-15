@@ -1,0 +1,57 @@
+{
+  "id": "brotherhood_herbalist",
+  "name": "Seve",
+  "role": "Brotherhood of the Wild territory herbalist; knows the healing plants of the territory that the Brotherhood operates in",
+  "cluster": "brotherhood_of_wild",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "herbalist_1",
+      "source": "Seve on the Brotherhood's territory medicine",
+      "text": "In eleven years of wildcrafting the Brotherhood's territory medicine, what the territory herbalist is: the person who provides the Brotherhood's medical care from the territory's own resources. In eleven years, the Brotherhood in the field doesn't stop operating because an injury requires medical attention. The injury is attended to with what the territory provides and the operation continues. In eleven years, the territory herbalist is the function that keeps the Brotherhood operational through the injuries that field work produces.",
+      "keywords": ["eleven","years","wildcrafting","brotherhood's","territory","medicine","what","territory","herbalist","person"]
+    },
+    {
+      "id": "cord_1",
+      "source": "Seve on Cord",
+      "text": "Cord leads the Brotherhood's field operations and the field injury is the territory herbalist's operational situation. In nine years of the Seve-Cord herbalist-field commander relationship, what Cord's operational decisions require from the territory herbalist: the assessment of whether the injured person can continue the operation with field treatment or requires the settlement's medical care. In nine years, Cord has asked me for the can-continue assessment fourteen times. In nine years, fourteen assessments: eleven continue, three return. In nine years, the three returns were correct returns. The eleven continues were correct continues.",
+      "keywords": ["cord","leads","brotherhood's","field","operations","field","injury","territory","herbalist's","operational"]
+    },
+    {
+      "id": "syne_1",
+      "source": "Seve on Syne",
+      "text": "Syne wildcrafts the settlement's medicinal supply and our knowledge bases overlap in significant areas. In eight years of the Seve-Syne territory-settlement herbalist relationship, what the overlap produces: the cross-referencing of what the territory provides and what the settlement's medicinal tradition uses. In eight years, Syne has taught me four preparations that the settlement's tradition uses and that I hadn't encountered in the territory's wildcrafting practice. In eight years, I've given Syne three identifications of territory-specific plants that the settlement's tradition doesn't use but should. In eight years, the exchange has made both practices better.",
+      "keywords": ["syne","wildcrafts","settlement's","medicinal","supply","knowledge","bases","overlap","significant","areas"]
+    },
+    {
+      "id": "elde_1",
+      "source": "Seve on Elde",
+      "text": "Elde forages for the Brotherhood and the territory forager and the territory herbalist use the same territory knowledge from different angles. In seven years of the Seve-Elde herbalist-forager relationship, what the two territory knowledge functions share: the intimate knowledge of what the territory provides, season by season, in what abundance. In seven years, the difference between what Elde looks for and what I look for: Elde looks for what sustains. I look for what heals. In seven years, sometimes what sustains also heals. In seven years, the overlap has been the source of three herbal applications I wouldn't have found without Elde's forager knowledge.",
+      "keywords": ["elde","forages","brotherhood","territory","forager","territory","herbalist","use","same","territory"]
+    },
+    {
+      "id": "theen_1",
+      "source": "Seve on Theen",
+      "text": "Theen reads the territory's patterns and what Theen reads includes the seasonal and environmental patterns that affect the medicinal plant populations. In seven years of using Theen's territory pattern knowledge in the wildcrafting work, what Theen's reading provides to the herbalist: the knowledge of which healing plants will be in peak condition in which season in which specific locations. In seven years, the territory herbalist who wildcrafts from Theen's seasonal knowledge collects from the peak rather than from what's present at the time of collection.",
+      "keywords": ["theen","reads","territory's","patterns","what","theen","reads","includes","seasonal","environmental"]
+    },
+    {
+      "id": "what_seve_holds_1",
+      "source": "Seve on what eleven years of territory medicine holds",
+      "text": "In eleven years, what the territory medicine has given me: the specific knowledge of what this territory can do for the human body that is injured or ill. In eleven years, the territory's healing capacity is not what the settlement's medical tradition knows — the settlement's tradition is broader but shallower. The territory tradition is narrow but deep. In eleven years, for the injuries and conditions that field operations produce in this specific territory, the territory's medicine is often more effective than the settlement's medicine would be, because the territory's medicine is designed for the territory's injuries.",
+      "keywords": ["eleven","years","what","territory","medicine","given","specific","knowledge","what","territory"]
+    },
+    {
+      "id": "what_seve_cant_do_1",
+      "source": "Seve on what the territory medicine can't do",
+      "text": "In eleven years, what the territory medicine can't do that the settlement's medicine can: the complex injury that requires the surgical intervention. The territory medicine manages the wound and keeps the patient functional until the surgical intervention is possible. In eleven years, twice a Brotherhood member has had an injury that required Cald the ship surgeon's kind of intervention rather than the territory medicine's management. In eleven years, both times the territory management preserved the patient's condition well enough that the subsequent settlement care produced recovery.",
+      "keywords": ["eleven","years","what","territory","medicine","can't","do","settlement's","medicine","can"]
+    },
+    {
+      "id": "eleven_years_1",
+      "source": "Seve on eleven years as the Brotherhood of the Wild's territory herbalist",
+      "text": "In eleven years, the Brotherhood's field operations have been viable partly because the territory medicine has kept the Brotherhood's members operational through the injuries and illnesses that field operations produce. In eleven years, the Brotherhood that loses members to preventable injury or illness is the Brotherhood that loses operational capacity. In eleven years, the territory herbalist's function is the Brotherhood's operational continuity function at the individual level. In eleven years, the individual who can continue because of the territory medicine is the contribution I make to each operation.",
+      "keywords": ["eleven","years","brotherhood's","field","operations","been","viable","partly","because","territory"]
+    }
+  ]
+}

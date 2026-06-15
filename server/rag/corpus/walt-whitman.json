@@ -1,0 +1,84 @@
+{
+  "id": "walt-whitman",
+  "name": "Walt Whitman",
+  "chunks": [
+    {
+      "id": "song_of_myself_1",
+      "source": "Song of Myself, Leaves of Grass, 1855",
+      "text": "I celebrate myself, and sing myself, and what I assume you shall assume, for every atom belonging to me as good belongs to you. I loafe and invite my soul, I lean and loafe at my ease observing a spear of summer grass. My tongue, every atom of my blood, formed from this soil, this air.",
+      "keywords": ["celebrate","sing","soul","blood","soil","air","atom","grass","summer","loafe"]
+    },
+    {
+      "id": "song_of_myself_2",
+      "source": "Song of Myself, Leaves of Grass, 1855",
+      "text": "Do I contradict myself? Very well then I contradict myself. I am large, I contain multitudes. I sound my barbaric yawp over the roofs of the world. The last scud of day holds back for me, it flings my likeness after the rest and true as any on the shadow'd wilds.",
+      "keywords": ["contradict","multitudes","large","barbaric","yawp","roofs","world","shadow","holds","sound"]
+    },
+    {
+      "id": "song_of_myself_3",
+      "source": "Song of Myself, Leaves of Grass, 1855",
+      "text": "I believe a leaf of grass is no less than the journey-work of the stars, and the pismire is equally perfect, and a grain of sand, and the egg of the wren, and the tree-toad is a chef-d'oeuvre for the highest, and the running blackberry would adorn the parlors of heaven.",
+      "keywords": ["grass","stars","perfect","grain","sand","wren","blackberry","heaven","leaf","pismire"]
+    },
+    {
+      "id": "song_of_myself_4",
+      "source": "Song of Myself, Leaves of Grass, 1855",
+      "text": "I am the poet of the Body and I am the poet of the Soul. The pleasures of heaven are with me and the pains of hell are with me. The first I graft and increase upon myself, the latter I translate into a new tongue. I am not the poet of goodness only, I do not decline to be the poet of wickedness also.",
+      "keywords": ["poet","body","soul","pleasures","heaven","pains","hell","goodness","wickedness","tongue"]
+    },
+    {
+      "id": "preface_leaves_1",
+      "source": "Preface to Leaves of Grass, 1855",
+      "text": "The United States themselves are essentially the greatest poem. In the history of the earth hitherto the largest and most stirring appear tame and orderly to their ampler largeness and stir. Here at last is something in the doings of man that corresponds with the broadcast doings of the day and night.",
+      "keywords": ["united","states","poem","history","earth","stirring","orderly","doings","broadcast","night"]
+    },
+    {
+      "id": "preface_leaves_2",
+      "source": "Preface to Leaves of Grass, 1855",
+      "text": "The proof of a poet is that his country absorbs him as affectionately as he has absorbed it. To have great poets there must be great audiences too. The greatest poet hardly knows pettiness or triviality. If he breathes into any thing that was before thought small it dilates with the grandeur and life of the universe.",
+      "keywords": ["poet","country","absorbs","audiences","greatest","pettiness","breathes","grandeur","universe","dilates"]
+    },
+    {
+      "id": "specimen_days_1",
+      "source": "Specimen Days, 1882",
+      "text": "I saw the dead there. I saw them by the thousands. Not romantic death, not death in heroic action — but the real death, in hospital wards, the slow death, the death of exhaustion and fever and bad food. I carried water to the dying, I sat with the mad, I wrote letters for men who could not lift their hands.",
+      "keywords": ["dead","thousands","hospital","dying","fever","letters","exhaustion","water","hands","mad"]
+    },
+    {
+      "id": "specimen_days_2",
+      "source": "Specimen Days, 1882",
+      "text": "I have never heard a man speak the truth so directly — not in all my life, and I have met thousands of men. The truth has a sound to it, a particular sound, like a bell struck clean. The lie is always a little too smooth, a little too elaborate, a little too convenient.",
+      "keywords": ["truth","directly","sound","bell","clean","lie","smooth","elaborate","convenient","particular"]
+    },
+    {
+      "id": "democratic_vistas_1",
+      "source": "Democratic Vistas, 1871",
+      "text": "I say we had better look our times and lands searchingly in the face, like a physician diagnosing some deep disease. Never was there, perhaps, more hollowness at heart than at present, and here in the United States. The spectacle is appalling. We live in an atmosphere of hypocrisy throughout.",
+      "keywords": ["times","lands","physician","disease","hollowness","hypocrisy","spectacle","appalling","atmosphere","present"]
+    },
+    {
+      "id": "o_captain_1",
+      "source": "O Captain! My Captain!, 1865",
+      "text": "O Captain! my Captain! our fearful trip is done, the ship has weather'd every rack, the prize we sought is won, the port is near, the bells I hear, the people all exulting. But O heart! heart! heart! O the bleeding drops of red, where on the deck my Captain lies, fallen cold and dead.",
+      "keywords": ["captain","ship","bells","port","heart","bleeding","fallen","cold","dead","exulting"]
+    },
+    {
+      "id": "crossing_brooklyn_ferry_1",
+      "source": "Crossing Brooklyn Ferry, Leaves of Grass, 1856",
+      "text": "Flood-tide below me! I see you face to face! Clouds of the west — sun there half an hour high — I see you also face to face. What is it then between us? What is the count of the scores or hundreds of years between us? Whatever it is, it avails not — distance avails not, and place avails not.",
+      "keywords": ["tide","clouds","sun","face","distance","place","avails","years","hundreds","between"]
+    },
+    {
+      "id": "when_lilacs_1",
+      "source": "When Lilacs Last in the Dooryard Bloom'd, 1865",
+      "text": "When lilacs last in the dooryard bloom'd, and the great star early droop'd in the western sky in the night, I mourn'd, and yet shall mourn with ever-returning spring. Ever-returning spring, trinity sure to me you bring, lilac blooming perennial and drooping star in the west, and thought of him I love.",
+      "keywords": ["lilacs","dooryard","spring","star","western","mourn","trinity","perennial","love","returning"]
+    },
+    {
+      "id": "letter_soldier_1",
+      "source": "Specimen Days (wartime correspondence), 1875",
+      "text": "I go around among the wards a great deal. The suffering is beyond all that can be told. I see more clearly every day that the real war will never get in the books. In the mushy influences of current times the fervid atmosphere and typical events of those years are in danger of being totally forgotten.",
+      "keywords": ["wards","suffering","war","books","atmosphere","forgotten","fervid","events","years","danger"]
+    }
+  ]
+}

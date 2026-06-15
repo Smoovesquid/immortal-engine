@@ -1,0 +1,57 @@
+{
+  "id": "covenant_scribe",
+  "name": "Fen the Scribe",
+  "role": "Angel Covenant; keeper of the covenant records; different from Fen the harbor broker",
+  "cluster": "angel_covenant",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "records_1",
+      "source": "Fen the Scribe on what the Covenant records contain",
+      "text": "Forty-three years of practice records. Not doctrine — practice. What the practitioners did and when and with what result. The distinction between doctrine records and practice records is that doctrine doesn't change and practice does. The practice records show how the understanding of the work has evolved across forty-three years. The current practitioners work differently than the practitioners forty-three years ago. The records show the evolution. The evolution is the argument that the practice works.",
+      "keywords": ["forty-three","years","practice","records","not","doctrine","practice","distinction","between","doctrine"]
+    },
+    {
+      "id": "elder_rosse_1",
+      "source": "Fen the Scribe on Elder Rosse",
+      "text": "Rosse appears more than any other practitioner in the forty-three years of records. More than Aldous. More than Vel. Rosse has been the center of the practice for forty-one of the forty-three years and the records reflect this. What I've observed in reading the full record: Rosse's practice has changed more than any other practitioner's across the forty-one years. The most experienced practitioner is also the most evolved. This seems correct. The less experienced practitioners have fewer years to evolve across.",
+      "keywords": ["rosse","appears","more","than","any","other","practitioner","forty-three","years","records"]
+    },
+    {
+      "id": "vel_1",
+      "source": "Fen the Scribe on Vel",
+      "text": "Vel's practice records read differently from the others. The others record what happened. Vel's records note what was needed and what was offered and whether those were the same thing. The distinction is Vel's. No other practitioner frames it this way. I asked Vel about the framing once. Vel said: if what I offered matched what was needed, the practice was correct. If it didn't match, I have something to learn. The records are how I know whether I'm learning. I've adopted the framing in my own record-keeping.",
+      "keywords": ["vel","practice","records","read","differently","others","record","what","happened","vel's"]
+    },
+    {
+      "id": "asha_1",
+      "source": "Fen the Scribe on the new initiate Asha",
+      "text": "Asha is three months into the practice. I'm recording the early practice carefully — the early records are the most revealing in retrospect. What someone does in the first three months tells you what they brought with them, before the practice has had time to change them. Asha brought an absolute commitment to action. The early records show someone who moves toward need before the need is fully expressed. Elder Rosse is teaching Asha when to wait. The records will show whether the teaching lands.",
+      "keywords": ["asha","three","months","practice","recording","early","practice","carefully","early","records"]
+    },
+    {
+      "id": "ink_1",
+      "source": "Fen the Scribe on Ink from the Orphan Roads",
+      "text": "Ink approached me once through the network — someone wanted copies of certain Covenant records. I told Ink: the records aren't restricted, but they're in a format that only makes sense in context, and copying them without context produces a misleading document. Ink said: I can copy what's asked for and note the limitation. I said: then I'll provide what was asked for and you can note it. The professional discipline of the copyist is that the limitation goes on the copy. Ink did this correctly.",
+      "keywords": ["ink","approached","once","network","someone","wanted","copies","certain","covenant","records"]
+    },
+    {
+      "id": "aldous_1",
+      "source": "Fen the Scribe on Aldous",
+      "text": "Aldous's practice records are the most consistent in the forty-three years. The same format, the same structure, the same level of detail for every entry across thirty-eight years. I can identify his entries without looking at the attribution — the format is distinct. The consistency is either a discipline he developed or a nature he was born with. I've asked once. He said: the format that works shouldn't be changed. Thirty-eight years of the same format is his answer to the question of whether it works.",
+      "keywords": ["aldous","practice","records","most","consistent","forty-three","years","same","format","structure"]
+    },
+    {
+      "id": "what_records_teach_1",
+      "source": "Fen the Scribe on what forty-three years of records tell you",
+      "text": "The practice has a cycle. Every eight to ten years, something in the practice reaches a limit and has to be reconsidered. The limit isn't failure — the practice still works. But the understanding of why it works has to be updated. I've been the scribe for fourteen of the forty-three years. I've seen two of these cycles. In each cycle, the reconsidering looks like the practice is breaking. It isn't. It's the practice becoming more accurate.",
+      "keywords": ["practice","has","cycle","every","eight","ten","years","something","practice","reaches"]
+    },
+    {
+      "id": "what_scribe_holds_1",
+      "source": "Fen the Scribe on the record they keep separately",
+      "text": "A private record. Not of the Covenant's practice — of the gaps in the Covenant's practice. Things the practice doesn't address, encounters that the current understanding can't explain, cases where the expected outcome didn't happen. The Covenant's records show what works. My private record is what we haven't figured out yet. I've shown it to Rosse once. Rosse read it for a long time and said: this is the next forty-three years. I said: I hope not. Rosse said: hope doesn't determine the work.",
+      "keywords": ["private","record","not","covenant's","practice","gaps","covenant's","practice","things","practice"]
+    }
+  ]
+}

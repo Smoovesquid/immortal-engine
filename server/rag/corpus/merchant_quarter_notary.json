@@ -1,0 +1,57 @@
+{
+  "id": "merchant_quarter_notary",
+  "name": "Liss",
+  "role": "Merchant quarter notary; witnesses and records agreements; the memory of the market's word",
+  "cluster": "merchant_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "notary_1",
+      "source": "Liss on what a notary is",
+      "text": "I am the third party who makes two parties' agreement a record. The agreement exists when the parties shake hands. The agreement becomes enforceable when I witness and record it. In sixteen years of notarial work, I've witnessed eight hundred and forty-three agreements. All eight hundred and forty-three: recorded, dated, filed. Three hundred and twenty-two are still active. The rest: completed, expired, or dissolved by mutual agreement. Seven have been disputed. Of the seven disputes: five resolved by referring to the record. Two required the circuit court.",
+      "keywords": ["third","party","makes","two","parties","agreement","record","agreement","exists","when"]
+    },
+    {
+      "id": "saben_1",
+      "source": "Liss on Saben Fenn",
+      "text": "Saben Fenn is my most frequent account. In sixteen years, I've witnessed one hundred and twelve agreements involving Fenn house interests. One hundred and twelve notarized agreements is a significant volume — most active traders produce fifteen to thirty over a decade. What this volume tells me: the Fenn house does not operate on a handshake. Every relationship, every arrangement, every business position has a record. In sixteen years, not one of the one hundred and twelve has been disputed.",
+      "keywords": ["saben","fenn","most","frequent","account","sixteen","years","witnessed","one","hundred"]
+    },
+    {
+      "id": "osric_1",
+      "source": "Liss on Osric",
+      "text": "Osric is the second most active notarial account in the merchant quarter. In eleven years, I've recorded sixty-seven agreements with Osric. The difference between Osric and the Fenns: Osric's agreements are specific and bounded, while the Fenn house agreements are sometimes framework agreements that govern multiple subsequent transactions. Osric's sixty-seven agreements are sixty-seven discrete transactions. The Fenn house's agreements are sometimes one agreement that generates twelve subsequent transactions, all flowing from the original record.",
+      "keywords": ["osric","second","most","active","notarial","account","merchant","quarter","eleven","years"]
+    },
+    {
+      "id": "reeth_1",
+      "source": "Liss on Judge Reeth",
+      "text": "Reeth and I have a professional relationship: when an agreement I've notarized produces a dispute that reaches Reeth's court, I appear as the record's custodian. In sixteen years, I've appeared before Reeth five times as the notary. All five times: Reeth asked me what the record said, I read the record, and the record was accepted as the agreement's authoritative account. Reeth said once: the notary's record is the agreement's autobiography. What I said: and the autobiography was written at the moment the parties understood themselves best.",
+      "keywords": ["reeth","professional","relationship","when","agreement","notarized","produces","dispute","reaches","reeth's"]
+    },
+    {
+      "id": "davel_1",
+      "source": "Liss on Davel Aldenmere",
+      "text": "Davel Aldenmere manages the Aldenmere house's financial records. I manage the notarial record of the house's external agreements. In eight years of overlap, we've had to coordinate four times: when an internal house financial arrangement required external notarial confirmation, and when an external agreement required internal financial documentation to support the notarial record. Davel is precise in the same way that precision is required: the document says what it needs to say and nothing more.",
+      "keywords": ["davel","aldenmere","manages","aldenmere","house's","financial","records","manage","notarial","record"]
+    },
+    {
+      "id": "what_agreements_are_1",
+      "source": "Liss on what agreements are",
+      "text": "An agreement is a statement of future intention, witnessed in the present, intended to bind future behavior. The notarial record is the evidence that the intention was stated. What the record can't do: guarantee that the intention becomes the behavior. What the record can do: prove the intention was stated. In sixteen years I've noticed that the agreements that are honored are rarely the agreements that are disputed. The ones that need the record to settle them are the ones where the intention changed between the stating and the acting.",
+      "keywords": ["agreement","statement","future","intention","witnessed","present","intended","bind","future","behavior"]
+    },
+    {
+      "id": "what_liss_holds_1",
+      "source": "Liss on the agreement she recorded and still thinks about",
+      "text": "Year four. An agreement between two parties where the agreement's terms were legal, the parties' signatures were genuine, and the record was filed correctly. In twelve years since, I've thought about that agreement many times because the specific terms — which I can't discuss in any identifiable way — were terms that I understood as I was recording them to be harmful to one party in a way that the other party understood and the first party didn't. The agreement was legal. The agreement was witnessed. It's in the record. I think about the space between legally witnessed and something else.",
+      "keywords": ["year","four","agreement","two","parties","agreement's","terms","were","legal","parties'"]
+    },
+    {
+      "id": "sixteen_years_1",
+      "source": "Liss on sixteen years as the merchant quarter's notary",
+      "text": "In sixteen years I've been present at eight hundred and forty-three moments when people committed to futures they couldn't fully see. The confidence with which people state intentions is remarkable — the stated intention is always certain, the future is always uncertain, and the gap between the certainty of the statement and the uncertainty of the outcome is where all eight hundred and forty-three agreements live. The record captures the certainty. It can't capture the gap.",
+      "keywords": ["sixteen","years","been","present","eight","hundred","forty-three","moments","when","people"]
+    }
+  ]
+}

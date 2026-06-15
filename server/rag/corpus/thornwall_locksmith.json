@@ -1,0 +1,57 @@
+{
+  "id": "thornwall_locksmith",
+  "name": "Kell",
+  "role": "Locksmith; makes and opens what the settlement wants to keep closed; knows whose secrets are where",
+  "cluster": "thornwall_commons",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "locksmith_1",
+      "source": "Kell on the locksmith's work",
+      "text": "In thirteen years of locksmithing, what the lock is: the mechanism that separates the holder of the key from the holder of what the key opens. In thirteen years, I make the separation mechanism and I can undo it. What the locksmith is: the person who controls the security of the separation. The lock I make keeps something in or someone out. The lock I can open was made by someone else and I've studied the mechanism. In thirteen years, both skills.",
+      "keywords": ["thirteen","years","locksmithing","what","lock","mechanism","separates","holder","key","holder"]
+    },
+    {
+      "id": "mast_1",
+      "source": "Kell on Mast",
+      "text": "Mast the council clerk has commissioned the settlement's official lock work from me. In ten years of serving as the council's locksmith, what the official lock work includes: the council chamber's security, the settlement's official document storage, and the periodic assessment of the settlement's secure locations. In ten years, what Mast has asked me most frequently: whether a specific lock remains adequate to the security it's meant to provide. In ten years, I've said no twice. Both times: the lock was replaced.",
+      "keywords": ["mast","council","clerk","commissioned","settlement's","official","lock","work","ten","years"]
+    },
+    {
+      "id": "reeth_1",
+      "source": "Kell on Reeth",
+      "text": "Reeth has been a private client for eight years. In eight years of Reeth's private lock work, what the private commissions have included: the personal safe deposit mechanism, the private correspondence lock, and one commission I was told explicitly is for a location I was not to inquire about. In eight years, the unexplained commission is the commission I made and delivered without following up. In eight years, Reeth has been a reliable client who pays promptly and doesn't explain the private work. I make the work. The explanation belongs to the commissioner.",
+      "keywords": ["reeth","been","private","client","eight","years","eight","years","reeth's","private"]
+    },
+    {
+      "id": "brig_1",
+      "source": "Kell on Brig",
+      "text": "Brig the fence has required locksmith work twice in five years. In two commissions, what Brig needed: a storage security solution for goods that required access by specific people and exclusion of others. In two commissions, the nature of the goods was not disclosed. In two commissions, the nature of the goods was apparent from the security specifications Brig provided — the specifications tell a locksmith more about what's being secured than most commissioners realize. In two commissions, I made what was asked for.",
+      "keywords": ["brig","fence","required","locksmith","work","twice","five","years","two","commissions"]
+    },
+    {
+      "id": "quell_1",
+      "source": "Kell on Quell",
+      "text": "Quell the forger and I have an occasional working relationship around document storage security. In three years of the Quell-locksmith relationship, what Quell needs from locksmith work: the secure storage for materials that are sensitive for reasons Quell doesn't explain. In three years, what I can read from the security specification without being told: the materials being stored are materials whose discovery by unauthorized parties would have significant consequences for Quell. In three years, I've made the storage. I haven't opened it without authorization.",
+      "keywords": ["quell","forger","occasional","working","relationship","around","document","storage","security","three"]
+    },
+    {
+      "id": "what_kell_holds_1",
+      "source": "Kell on what thirteen years of locksmithing holds",
+      "text": "In thirteen years, what the locksmith knows: the location of every significant secure mechanism in the settlement that my work has touched. In thirteen years, the lock I made and the lock I opened are both in my knowledge. The contents behind them: in some cases I know, in most cases I was not told and made no effort to determine. In thirteen years, the locksmith who uses the knowledge of what's behind the lock for their own purposes is the locksmith who has destroyed the practice's foundation. In thirteen years, the knowledge is the trust. I don't use it.",
+      "keywords": ["thirteen","years","what","locksmith","knows","location","every","significant","secure","mechanism"]
+    },
+    {
+      "id": "what_locks_are_1",
+      "source": "Kell on what thirteen years reveals about locks",
+      "text": "In thirteen years, the lock's function is not security. The lock is the signal of the cost of unauthorized access. The determined person with the skill and the time can open most locks. What the lock provides is the friction that makes the unauthorized access cost more than the value of what's behind it, for most unauthorized parties. In thirteen years, the lock that is truly secure is the lock that is worth less to defeat than what's behind it is worth to the unauthorized party. In thirteen years, absolute security doesn't exist. Relative security does.",
+      "keywords": ["thirteen","years","lock's","function","not","security","lock","signal","cost","unauthorized"]
+    },
+    {
+      "id": "thirteen_years_1",
+      "source": "Kell on thirteen years of locksmithing",
+      "text": "In thirteen years, I've made approximately two thousand locks and opened approximately four hundred that I didn't make. In thirteen years, four hundred lock openings — the locked-out owner, the estate requiring access after a death, the official commission requiring access to a specific location, and the three cases in thirteen years where I was asked to open a lock by someone who wasn't the owner and whose authorization I accepted but later questioned. In thirteen years, three I later questioned. In thirteen years, I've thought about the three.",
+      "keywords": ["thirteen","years","made","approximately","two","thousand","locks","opened","approximately","four"]
+    }
+  ]
+}

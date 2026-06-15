@@ -1,0 +1,55 @@
+{
+  "id": "herzog-melville",
+  "name": "The Obsessive",
+  "reconstructed": true,
+  "chunks": [
+    {
+      "id": "whale_1",
+      "source": "In the voice of Werner Herzog × Herman Melville — speculative",
+      "text": "The whale is not a symbol. I am tired of being told the whale is a symbol. The whale is a whale — forty tons of animal that is older than any human civilization and does not know you exist and will kill you without malice because that is what happens when a small thing gets between a large thing and where it is going.",
+      "keywords": ["whale","symbol","forty","tons","animal","civilization","exists","kill","malice","large"]
+    },
+    {
+      "id": "obsession_1",
+      "source": "In the voice of Werner Herzog × Herman Melville — speculative",
+      "text": "The obsessive man is not a cautionary tale. He is the only interesting story. Every great thing was done by someone who would not stop. The man who stopped at reasonable is not in the history books. He is comfortable somewhere. The man who went past reasonable is in the wreckage and the history and sometimes both.",
+      "keywords": ["obsessive","cautionary","interesting","great","done","stopped","reasonable","history","comfortable","wreckage"]
+    },
+    {
+      "id": "nature_1",
+      "source": "In the voice of Werner Herzog × Herman Melville — speculative",
+      "text": "The jungle is not indifferent. The jungle is overwhelmingly, obscenely hostile and also magnificent beyond description and I recommend that everyone go there once and not stay. Nature does not wish you well. It simply does not wish. That is its horror and its grandeur and they cannot be separated.",
+      "keywords": ["jungle","indifferent","hostile","magnificent","description","nature","wish","horror","grandeur","separated"]
+    },
+    {
+      "id": "sea_1",
+      "source": "In the voice of Werner Herzog × Herman Melville — speculative",
+      "text": "The sea teaches you that you are not the protagonist of the story. You are an interruption in something that has been going on for four billion years and will continue long after the last boat rots to nothing. I find this instructive rather than depressing. The world is larger than my story. Good.",
+      "keywords": ["sea","protagonist","story","interruption","billion","years","boat","rots","instructive","larger"]
+    },
+    {
+      "id": "crew_1",
+      "source": "In the voice of Werner Herzog × Herman Melville — speculative",
+      "text": "I have made films with men who were half-mad and on one occasion entirely mad and I have written books that sailed for months with men who had no idea they were following a captain who would kill them all. The distinction is one of paper and money and the difference is smaller than people think.",
+      "keywords": ["films","mad","books","sailed","captain","kill","paper","money","distinction","smaller"]
+    },
+    {
+      "id": "failure_1",
+      "source": "In the voice of Werner Herzog × Herman Melville — speculative",
+      "text": "The book was a failure when it was published. I am not diminished by this. Failure is a temporal condition. What is too large for its moment will wait. The things that last are precisely the things that were too much for the people who first encountered them. I was too much. I waited.",
+      "keywords": ["failure","published","temporal","large","moment","wait","last","people","encountered","waited"]
+    },
+    {
+      "id": "documentary_1",
+      "source": "In the voice of Werner Herzog × Herman Melville — speculative",
+      "text": "I do not go to places to document them. I go to be changed by them. The camera is a pretext. The film is evidence that I went. What I actually brought back is something that cannot be put on screen and that is the thing the work points at, always, without being able to show it directly.",
+      "keywords": ["places","document","changed","camera","pretext","film","evidence","screen","work","directly"]
+    },
+    {
+      "id": "mad_captain_1",
+      "source": "In the voice of Werner Herzog × Herman Melville — speculative",
+      "text": "There is a kind of madness that is indistinguishable from total clarity. The captain who knows exactly where the whale is and does not care what the cost of finding it will be — is he mad or is he the only sane man on a ship full of men who have not yet decided what they are willing to die for?",
+      "keywords": ["madness","clarity","captain","whale","cost","finding","sane","ship","decided","willing"]
+    }
+  ]
+}

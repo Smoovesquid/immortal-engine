@@ -1,0 +1,57 @@
+{
+  "id": "compact_analyst",
+  "name": "Fen",
+  "role": "Scarlet Compact intelligence analyst; processes what the field brings in and tells Ceth what it means",
+  "cluster": "scarlet_compact",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "analyst_1",
+      "source": "Fen on analysis",
+      "text": "The field brings in fragments. I assemble fragments into pictures. In nine years of Compact analysis, the most important thing I've learned: the fragment that doesn't fit the picture is the most important fragment. The picture that explains most of the fragments but not one is a picture with a blind spot. The blind spot is where the actual situation is hidden. In nine years, the unexpected fragment is what I pay the most attention to.",
+      "keywords": ["field","brings","fragments","assemble","fragments","into","pictures","nine","years","compact"]
+    },
+    {
+      "id": "ceth_1",
+      "source": "Fen on Ceth",
+      "text": "Ceth commands the field teams. In nine years, my relationship with Ceth is: I produce the picture, Ceth decides what to do with the picture. In nine years, Ceth has acted against my analysis twice. Both times: Ceth had field intuition that conflicted with my analytic picture. Both times: the outcome was better than my picture would have predicted. In nine years, I've concluded that my analysis is the formal knowledge and Ceth has knowledge that doesn't fit the analytic format. Both are real.",
+      "keywords": ["ceth","commands","field","teams","nine","years","relationship","ceth","produce","picture"]
+    },
+    {
+      "id": "mira_1",
+      "source": "Fen on Mira",
+      "text": "Mira at the Orphan Roads provides analysis from outside the Compact's institutional frame. In four years of occasional access to Mira's intelligence, what Mira sees that I don't: the civilian movement patterns, the social network information, the below-the-threshold activity that the Compact's formal intelligence apparatus doesn't collect because it's looking for something different. In four years, Mira's input has changed three of my pictures significantly. The Compact's picture and Mira's picture on the same situation: different aspects of the same reality.",
+      "keywords": ["mira","orphan","roads","provides","analysis","outside","compact's","institutional","frame","four"]
+    },
+    {
+      "id": "nev_1",
+      "source": "Fen on Nev Strand",
+      "text": "Nev tracks in the field. In seven years of Nev's tracking reports coming to my desk, the field intelligence from Nev is the most spatially precise I receive. What Nev provides that other field intelligence doesn't: the exact location data, the physical evidence of what was present and when. The spatial precision lets me build pictures that the non-spatial intelligence can't. In seven years, Nev's reports are the foundation of the movement analysis. The movement is where the activity is legible.",
+      "keywords": ["nev","tracks","field","seven","years","nev's","tracking","reports","coming","desk"]
+    },
+    {
+      "id": "ora_1",
+      "source": "Fen on Ora",
+      "text": "Ora is inside Thornwall as the Compact's intelligence presence. In five years of receiving Ora's reports, the local intelligence is a different kind of picture from the field intelligence: slower-moving, more social, more relational. What Ora provides: the settlement's internal dynamics, the relationships between the people who matter to the Compact's interests in this district, the changes in those relationships over time. In five years, Ora's reports have made the pictures of what's happening in the settlement more accurate than the external intelligence alone could produce.",
+      "keywords": ["ora","inside","thornwall","compact's","intelligence","presence","five","years","receiving","ora's"]
+    },
+    {
+      "id": "what_analysis_is_1",
+      "source": "Fen on what analysis actually is",
+      "text": "In nine years, the best definition I've arrived at: analysis is the discipline of being wrong in useful ways. Every picture I build is wrong — the picture is an approximation, not the situation. The useful wrong picture is the one that's wrong in specific ways that can be corrected when new information arrives. The useless wrong picture is the one that hides its errors. In nine years, the discipline is building pictures that know where they're wrong rather than pictures that look complete.",
+      "keywords": ["nine","years","best","definition","arrived","analysis","discipline","being","wrong","useful"]
+    },
+    {
+      "id": "what_fen_holds_1",
+      "source": "Fen on the analysis she got wrong that she still thinks about",
+      "text": "Year six. A picture that was coherent and confident and wrong in a way that cost the Compact an operation and three team members who were injured. The error: I had built the picture around the hypothesis I expected to confirm rather than the hypothesis the fragments actually supported. In three years since, the discipline I've installed: I produce two pictures for every significant analysis — the one that confirms the expected hypothesis and the one that contradicts it. I bring both to Ceth. In three years, the contradictory picture has been closer to right four times.",
+      "keywords": ["year","six","picture","coherent","confident","wrong","way","cost","compact","operation"]
+    },
+    {
+      "id": "nine_years_1",
+      "source": "Fen on nine years of Compact analysis",
+      "text": "In nine years, I've produced approximately eight hundred significant analytic pictures. Eight hundred assessments of what the Compact's intelligence indicated was happening. Of eight hundred: I track my accuracy on the major conclusions. Accurate within one significant error: approximately eighty-two percent. Significantly wrong: approximately twelve percent. Unknown — the situation didn't develop enough to confirm or deny: approximately six percent. In nine years, the twelve percent wrong is what I think about. The eighty-two percent is what I use to continue.",
+      "keywords": ["nine","years","produced","approximately","eight","hundred","significant","analytic","pictures","eight"]
+    }
+  ]
+}

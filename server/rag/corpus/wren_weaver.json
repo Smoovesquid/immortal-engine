@@ -1,0 +1,57 @@
+{
+  "id": "wren_weaver",
+  "name": "Wren",
+  "role": "Weaver; Church of Incrementalism (mid-circle)",
+  "cluster": "church_of_incrementalism",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "weaving_1",
+      "source": "Wren at the loom, when an apprentice asked how she kept track of the pattern",
+      "text": "One thread at a time. The pattern is in my head and in the loom's setup and the thread is the only thing happening right now. I don't weave the whole cloth. I weave the next thread in the next position. The cloth is what those threads are when they're done. This is also the Great Mantis's teaching, but I understood it from weaving before I understood it from the Mantis. The loom is a Mantis machine.",
+      "keywords": ["thread","time","pattern","head","loom","setup","happening","right","now","cloth"]
+    },
+    {
+      "id": "lorn_1",
+      "source": "Wren on how Lorn the fishmonger introduced her to the practice",
+      "text": "Lorn came to buy cloth three years ago and we talked about the fish window — how he has to sell before the window closes or the fish is wasted. I said: I have the same window with the dye — it has to go in at a specific moment or the color doesn't take. He said: you're already doing it. I asked what he meant. That's when Lorn introduced me to Reed and the gatherings. The introduction took six months. I think I was already there.",
+      "keywords": ["lorn","came","cloth","three","years","fish","window","sells","dye","specific"]
+    },
+    {
+      "id": "mantis_1",
+      "source": "Wren at a gathering, after the smoke",
+      "text": "The Great Mantis weaves. I think about this when I'm at the loom. The Mantis doesn't weave the finished cloth from above — the Mantis is in the thread, in the next position, in the next small thing. The cloth happens because each thread is in the correct position for the next thread. The cloth doesn't have a planner. It has the practice of each thread. I find this more beautiful than the image of a god with a plan.",
+      "keywords": ["great","mantis","weaves","loom","thread","next","position","small","cloth","planner"]
+    },
+    {
+      "id": "swale_1",
+      "source": "Wren on the beekeeper Swale",
+      "text": "I've watched Swale's bees. They don't argue about whether to go to the eastern meadow or the western clover. They go to the nearest flower that's worth going to. Then the next. Then the next. The cloth of the hive is what those decisions accumulate to. Swale says the bees are better at the practice than we are. Looking at the hive, I believe him.",
+      "keywords": ["swale","bees","watched","eastern","meadow","western","clover","nearest","flower","worth"]
+    },
+    {
+      "id": "reed_1",
+      "source": "Wren on the carpenter Reed who leads the gatherings",
+      "text": "Reed is the person I'd follow if we were an organization, which we're not. He has the quality of someone who's stopped making the wrong moves — not through effort, because he's past the effort stage. He's past the stage where the effort is visible. I asked him once when that happened. He said: when the joint stopped being something I thought about and became something I did. I said: and when does weaving get to that? He said: it already has. You're thinking about the thread, not the thinking.",
+      "keywords": ["reed","person","follow","organization","not","quality","stopped","wrong","moves","effort"]
+    },
+    {
+      "id": "hidden_1",
+      "source": "Wren on why the Church stays hidden",
+      "text": "Hidden is the correct next small thing for us as a group. If we were visible, the next thing wouldn't be weaving or fishing or carpentry. The next thing would be defending ourselves from people who've decided we're something we're not. Hidden means the next thing stays the next small thing rather than the next defensive thing. I understand Reed's reasoning now. I didn't at first. I thought hidden was cowardice. Hidden is the practice applied to the group.",
+      "keywords": ["hidden","correct","next","small","thing","group","visible","weaving","fishing","carpentry"]
+    },
+    {
+      "id": "unnamed_child_1",
+      "source": "Wren when the unnamed child of Thornwall came to watch her weave",
+      "text": "The child watched for an hour without speaking. At the end the child said: you're following the thread, not directing it. I said: how do you know. The child said: you look at where the thread is going, not at where you want it to go. They're almost the same but not quite the same. I said: what's the difference. The child said: one of them is the Mantis. I didn't tell the child about the Church. I don't think I needed to.",
+      "keywords": ["child","watched","hour","speaking","following","thread","directing","look","going","want"]
+    },
+    {
+      "id": "pattern_1",
+      "source": "Wren when a customer complained the pattern wasn't symmetrical",
+      "text": "It's correct. Symmetry is what the eye wants; correctness is what the cloth needs. The pattern I'm weaving has an asymmetry that's in the design — the eastern edge needs more green than the western edge because that's where the light hits the cloth when it's hung in the specific room it was made for. I know the room. I was given the commission. I made the cloth for the specific light. Symmetrical would have been easier. Correct took longer.",
+      "keywords": ["correct","symmetry","eye","wants","cloth","needs","pattern","asymmetry","design","eastern"]
+    }
+  ]
+}

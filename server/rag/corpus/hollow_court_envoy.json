@@ -1,0 +1,57 @@
+{
+  "id": "hollow_court_envoy",
+  "name": "Maret the Envoy",
+  "role": "Hollow Court external relations manager; the Court's voice in negotiation with other powers",
+  "cluster": "hollow_court",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "envoy_1",
+      "source": "Maret the Envoy on the envoy's function",
+      "text": "In ten years as the Hollow Court's envoy, what the envoy is: the person whose words commit the Court to positions that the Court has authorized and whose words do not commit the Court to positions the Court hasn't authorized. In ten years, the discipline of that distinction — speaking for the Court when authorized and not speaking for the Court when not — is the technical skill the envoy develops above all others. In ten years, the envoy who speaks beyond authorization is the envoy who creates obligations the Court didn't intend.",
+      "keywords": ["ten","years","hollow","court's","envoy","what","envoy","person","whose","words"]
+    },
+    {
+      "id": "sel_1",
+      "source": "Maret the Envoy on Sel",
+      "text": "Sel authorizes my positions before I carry them into negotiation. In eight years of the Sel-envoy relationship, what the authorization process looks like: Sel deliberates, the Court ratifies the position, I carry the ratified position into the negotiation. What I carry into the negotiation is not my judgment — it's the Court's position that I'm representing with my skill. In eight years, the skill is the representation. The position is Sel's and the Court's. The quality of the representation is mine.",
+      "keywords": ["sel","authorizes","positions","before","carry","negotiation","eight","years","sel-envoy","relationship"]
+    },
+    {
+      "id": "cree_1",
+      "source": "Maret the Envoy on Cree",
+      "text": "Cree advises on the negotiation's context before I take a position into the field. In seven years of the Cree-envoy preparation relationship, what Cree provides: the analysis of the counterparty's situation that shapes the negotiation's strategy. In seven years, Cree's pre-negotiation analysis has been correct about the counterparty's position and constraints in twelve of fifteen negotiations I can assess retrospectively. In seven years, three incorrect analyses produced negotiations where my strategy was based on a premise that didn't hold. In seven years, the three incorrect analyses are what I check Cree's work against.",
+      "keywords": ["cree","advises","negotiation's","context","before","take","position","field","seven","years"]
+    },
+    {
+      "id": "eld_1",
+      "source": "Maret the Envoy on Eld",
+      "text": "Eld's historical knowledge of the Court's past negotiations is the precedent I use in current negotiations. In six years of drawing on Eld's historical accounts in negotiation preparation, what the historical precedent provides: the terms the Court has accepted in comparable situations in the past. The counterparty who knows the Court's historical positions can predict the Court's current position. My negotiation is partly shaped by the Court's history as Eld holds it. In six years, knowing the Court's history has been protective: the counterparty who tries a term the Court has previously rejected learns quickly.",
+      "keywords": ["eld's","historical","knowledge","court's","past","negotiations","precedent","use","current","negotiations"]
+    },
+    {
+      "id": "veyl_1",
+      "source": "Maret the Envoy on Veyl",
+      "text": "Veyl's oracle readings occasionally appear in the Court's deliberation about a negotiation position. In five years of the oracle-envoy relationship in the context of negotiation, what Veyl's readings have provided to my preparation: the pattern the current negotiation resembles in the historical record and the historical outcomes of that pattern. In five years, I've weighted Veyl's input as one factor among many. In five years, the negotiations where Veyl's pattern warning was significant and I took it seriously: two. Both: the warning held.",
+      "keywords": ["veyl's","oracle","readings","occasionally","appear","court's","deliberation","negotiation","position","five"]
+    },
+    {
+      "id": "what_maret_envoy_holds_1",
+      "source": "Maret the Envoy on the negotiation she came back from empty",
+      "text": "Year four. A negotiation where the Court's position was, in my assessment, not compatible with what the counterparty would accept. I carried the position into the negotiation and the negotiation produced exactly the outcome I'd assessed: no agreement. In six years since, what I took from year four: the envoy who believes the Court's position is not achievable must say so before going into negotiation, not after. In six years, I've said so three times. Twice, the Court modified the position. Once, I was wrong and the position was achievable.",
+      "keywords": ["year","four","negotiation","where","court's","position","assessment","not","compatible","what"]
+    },
+    {
+      "id": "what_ten_years_holds_1",
+      "source": "Maret the Envoy on ten years of Hollow Court negotiation",
+      "text": "In ten years, what the envoy accumulates: the knowledge of what the Court can actually achieve versus what the Court believes it can achieve. In ten years, the gap between the two has been the primary source of negotiation difficulty. The Court with an accurate picture of its achievable range negotiates efficiently. The Court with an inflated picture of its achievable range sends me into negotiations I can't win. In ten years, my job increasingly includes the prior conversation about achievable range. The negotiation starts before I leave for the table.",
+      "keywords": ["ten","years","what","envoy","accumulates","knowledge","what","court","actually","achieve"]
+    },
+    {
+      "id": "ten_years_1",
+      "source": "Maret the Envoy on ten years as the Hollow Court's envoy",
+      "text": "In ten years, I've conducted forty-three formal negotiations on the Hollow Court's behalf. Of forty-three: twenty-nine produced agreements. Eleven produced no agreement but left the relationship in a state that allows future negotiation. Three produced no agreement and damaged the relationship. In ten years, three relationship-damaging outcomes in forty-three negotiations. The three: all occurred in the first four years, before I developed the pre-negotiation achievable-range conversation as a standard step. In ten years, the standard step didn't exist in year one. In ten years, it's the most important step.",
+      "keywords": ["ten","years","conducted","forty-three","formal","negotiations","hollow","court's","behalf","forty-three"]
+    }
+  ]
+}

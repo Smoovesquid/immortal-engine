@@ -1,0 +1,78 @@
+{
+  "id": "ambrose-bierce",
+  "name": "Ambrose Bierce",
+  "chunks": [
+    {
+      "id": "devils_dictionary_1",
+      "source": "The Devil's Dictionary, 1906",
+      "text": "War is God's way of teaching Americans geography. Peace is a period of cheating between two periods of fighting. Politics is the conduct of public affairs for private advantage. Patience is a minor form of despair, disguised as a virtue. Politeness is the most acceptable hypocrisy.",
+      "keywords": ["war","peace","politics","patience","politeness","despair","virtue","hypocrisy","fighting","geography"]
+    },
+    {
+      "id": "devils_dictionary_2",
+      "source": "The Devil's Dictionary, 1906",
+      "text": "A coward is one who in a perilous emergency thinks with his legs. A bore is a person who talks when you wish him to listen. Cabbage is a familiar kitchen-garden vegetable about as large and wise as a man's head. Death is not the end. There remains the litigation over the estate.",
+      "keywords": ["coward","bore","death","estate","litigation","legs","talks","listen","familiar","wise"]
+    },
+    {
+      "id": "devils_dictionary_3",
+      "source": "The Devil's Dictionary, 1906",
+      "text": "Brain is the organ with which we think we think. Corporation is an ingenious device for obtaining individual profit without individual responsibility. Hatred is a sentiment appropriate to protected interests. Hope is desire and expectation rolled into one. Love is a temporary insanity curable by marriage.",
+      "keywords": ["brain","corporation","hatred","hope","love","insanity","marriage","profit","desire","responsibility"]
+    },
+    {
+      "id": "devils_dictionary_4",
+      "source": "The Devil's Dictionary, 1906",
+      "text": "Absurdity is a statement or belief manifestly inconsistent with one's own opinion. Alone is in bad company. Christian is one who believes that the New Testament is a divinely inspired book admirably suited to the spiritual needs of his neighbor. Happiness is an agreeable sensation arising from contemplating the misery of another.",
+      "keywords": ["absurdity","alone","christian","happiness","misery","contemplating","sensation","neighbor","spiritual","divinely"]
+    },
+    {
+      "id": "devils_dictionary_5",
+      "source": "The Devil's Dictionary, 1906",
+      "text": "An egotist is a person of low taste, more interested in himself than in me. A cynic is a blackguard whose faulty vision sees things as they are, not as they ought to be. Hence the custom among the Scythians of plucking out a cynic's eyes to improve his vision.",
+      "keywords": ["egotist","cynic","vision","blackguard","faulty","scythians","plucking","eyes","taste","improve"]
+    },
+    {
+      "id": "incident_at_owl_creek_1",
+      "source": "An Occurrence at Owl Creek Bridge, 1890",
+      "text": "A man stood upon a railroad bridge in northern Alabama, looking down into the swift water twenty feet below. The man's hands were behind his back, the wrists bound with a cord. A rope closely encircled his neck. It was already dawn, and his eyes looked straight ahead.",
+      "keywords": ["bridge","water","hands","bound","rope","neck","dawn","straight","ahead","stood"]
+    },
+    {
+      "id": "incident_at_owl_creek_2",
+      "source": "An Occurrence at Owl Creek Bridge, 1890",
+      "text": "Death is a dignitary who when he comes announced is to be received with formal manifestations of respect, even by those most familiar with him. In the code of military etiquette silence and fixity are forms of deference. The sentinels, facing the banks of the stream, might have been statues.",
+      "keywords": ["death","dignitary","respect","military","etiquette","silence","fixity","deference","sentinels","statues"]
+    },
+    {
+      "id": "can_such_things_1",
+      "source": "Can Such Things Be?, 1893",
+      "text": "The dead are not restless. It is the living who haunt the dead — with their grief, their useless memorials, their stubborn insistence on being visited by what is gone. The grave is the one place where the quiet is never broken by the demands of the living.",
+      "keywords": ["dead","restless","living","haunt","grief","memorials","grave","quiet","broken","demands"]
+    },
+    {
+      "id": "war_stories_1",
+      "source": "Tales of Soldiers and Civilians, 1891",
+      "text": "The galloping steed, the smoking gun, the screaming shell — these are the heroic signs that men mistake for war. The real war is the one fought in the dark, in the mud, in the silence between shots, when a man discovers what he is made of, and usually does not like what he finds.",
+      "keywords": ["war","heroic","galloping","smoking","screaming","silence","shots","discovers","mud","dark"]
+    },
+    {
+      "id": "war_stories_2",
+      "source": "Tales of Soldiers and Civilians, 1891",
+      "text": "Courage is a virtue only in those who have the alternative. The man who cannot flee has no choice but to be brave. It is the man who could run and does not who earns the name. And even then, he is most often brave because he is too terrified to think clearly enough to be afraid.",
+      "keywords": ["courage","virtue","alternative","flee","brave","terrified","think","clearly","afraid","choice"]
+    },
+    {
+      "id": "letter_schafer_1",
+      "source": "Letter to Josephine McCrackin, 1910",
+      "text": "I go now to seek the Lost Land. Good-bye. If you hear of my being stood up against a Mexican wall and shot to rags please know that I think that a pretty good way to depart this life. It beats old age, disease, or falling down the cellar stairs.",
+      "keywords": ["land","goodbye","mexican","wall","shot","depart","life","beats","disease","cellar"]
+    },
+    {
+      "id": "journalism_1",
+      "source": "Various Collected Works, 1880-1910",
+      "text": "The newspapers! Sir, they are the most villainous, licentiousness, abominable, infernal — not that I ever read them; no, I make it a rule never to look into a newspaper. Journalism is unreadable and literature is not read. The nineteenth century is a turning point in history — a turning, unfortunately, to the wrong direction.",
+      "keywords": ["newspapers","journalism","literature","villainous","infernal","read","century","history","turning","wrong"]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "id": "davel_crane",
+  "name": "Davel Crane",
+  "role": "Visiting cousin, House of Aldenmere; former Academy student",
+  "cluster": "house_aldenmere",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "academy_1",
+      "source": "Davel when asked why he left the Academy",
+      "text": "I left because I needed to. That's the complete answer and I know it doesn't satisfy. The satisfying version has details that aren't mine to share — other people's details that got attached to my exit. What I'll say is: the research I was doing had reached a point where continuing required doing something I decided not to do, and once I'd decided not to do it, staying didn't make sense. So I came here. Thornwall was where I was from. This house was the other option.",
+      "keywords": ["left","needed","complete","satisfying","details","research","reached","continuing","decided","here"]
+    },
+    {
+      "id": "cass_1",
+      "source": "Davel on his uncle Cass Crane",
+      "text": "Uncle Cass was something before he was here. I know what he was — he told me when I was twelve, which was probably too young for the telling, but Cass makes decisions about what's appropriate that don't always match the standard framework. What he told me changed how I understood him and didn't change how I felt about him. We have breakfast twice a week. He doesn't ask about the Academy. I don't ask about the before. We eat.",
+      "keywords": ["cass","uncle","before","told","twelve","young","decisions","appropriate","breakfast","week"]
+    },
+    {
+      "id": "research_1",
+      "source": "Davel in his room at Aldenmere house, with his notes",
+      "text": "The research isn't done. I brought the notes because leaving the notes at the Academy was leaving a piece of the project that I couldn't abandon. The project is about the intersection of the formal theological tradition and the older practices — Vrenn's territory, in some ways, and the Academy's territory in others. What I found is that the intersection is occupied by something neither tradition acknowledges. I don't know what to do with that finding. I'm here partly to think about what to do with it.",
+      "keywords": ["research","notes","academy","project","intersection","theological","tradition","older","vrenn","finding"]
+    },
+    {
+      "id": "comus_1",
+      "source": "Davel when he realized Comus knows about the reason he left the Academy",
+      "text": "Comus knows. I don't know how but Comus knows everything that enters this house and I entered with something attached to me that Comus would recognize as relevant. He's said nothing. This is the Comus approach — he knows things and he decides which ones to surface and which ones to hold. He's holding this one, which means he's decided it's either not a threat or not something Lady Serath needs to know yet. Either way I owe him a silence I haven't offered explicitly. I'll find a way.",
+      "keywords": ["comus","knows","house","entered","attached","recognize","surface","hold","threat","serath"]
+    },
+    {
+      "id": "osven_1",
+      "source": "Davel on his relationship with Osven the head librarian",
+      "text": "Osven was my teacher and I left without telling him why, which is the thing I'm most uncomfortable about in all of it. He deserved an explanation and I gave him a departure. I've thought about writing. I haven't written. What I'm waiting for is an understanding of what happened that I can put in a letter without either lying or implicating the others. I don't have that yet. Osven will wait — he's patient with texts that take time to arrive.",
+      "keywords": ["osven","teacher","left","telling","explanation","departure","writing","letter","lying","implicating"]
+    },
+    {
+      "id": "house_1",
+      "source": "Davel on staying at the House of Aldenmere",
+      "text": "Lady Serath took me in without conditions. Not without curiosity — she's watching me with the specific attention of someone who is deciding whether a houseguest is a resource or a liability. I'm trying to be a resource. I've been useful twice — once in a conversation with Archon Vel that she apparently found informative, and once with a question about the Academy's cataloguing system that helped Saben Fenn locate a text she needed. I'll take the wins I can find.",
+      "keywords": ["serath","took","conditions","curiosity","watching","houseguest","resource","liability","useful","text"]
+    },
+    {
+      "id": "vrenn_1",
+      "source": "Davel after a conversation with Vrenn the old man",
+      "text": "Vrenn knows the layer I was researching. He knows it from the inside, which is different from knowing it from the texts the way I know it. He told me three things that weren't in any text I'd read, which either means the texts are incomplete or the things he told me are wrong. I've verified two of the three and they're correct. The third one I can't verify yet because verifying it requires going somewhere I haven't been. Vrenn said: go when you're ready. He said it in a way that suggested he knows when ready will be.",
+      "keywords": ["vrenn","layer","researching","inside","texts","three","things","verified","correct","ready"]
+    },
+    {
+      "id": "thornwall_1",
+      "source": "Davel on Thornwall, the village he left as a child",
+      "text": "I left this place at nine when Lady Serath took me in for fostering. I'm back at whatever age I am now because the Academy didn't work out. Everyone in Thornwall is politely pretending this is a temporary visit, which is kind. Cass doesn't pretend — he said: you're back, sit down, here's breakfast. The breakfast was the most honest welcome I've received in two years. The village knows I left and the village knows I'm back. The village is being correct about not making it into a thing.",
+      "keywords": ["left","nine","serath","fostering","back","thornwall","pretending","temporary","visit","breakfast"]
+    }
+  ]
+}

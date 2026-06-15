@@ -1,0 +1,57 @@
+{
+  "id": "orphan_fenn_kid",
+  "name": "Ink",
+  "role": "Orphan Roads; copyist; the one with letters",
+  "cluster": "orphan_roads",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "copy_1",
+      "source": "Ink at work copying a document",
+      "text": "The document has to end up exactly as it started. Every letter. Every spacing. Every correction the original writer made — the crossed-out words, the insertions in the margin — all of it. A copy that corrects the original's errors is not a copy. It's an interpretation. I make copies, not interpretations. Rook says: the network needs copies. If I want to interpret, I do that in my head and keep it there.",
+      "keywords": ["document","end","up","exactly","started","every","letter","spacing","correction","original"]
+    },
+    {
+      "id": "rook_1",
+      "source": "Ink on Rook",
+      "text": "Rook gave me the first contract four years ago. I was eleven and I had been copying things for the pleasure of copying things — signs, notices, whatever was posted on the walls of the market district. Rook saw me doing it. She said: can you copy something you're not supposed to have seen. I said: I can copy anything. She said: without telling anyone you copied it. I said: that's the job, yes. She said: yes. That's the job.",
+      "keywords": ["rook","gave","first","contract","four","years","eleven","copying","things","pleasure"]
+    },
+    {
+      "id": "orveth_1",
+      "source": "Ink on the city inspector Orveth",
+      "text": "Orveth's filing system is the most consistent official document system in the city. I know this because I've copied from every major institutional archive for the network. Orveth's records use the same format for every document, the same date notation, the same handwriting. Not the same person's handwriting — the same institutional style. They've trained their clerks to write in the same way. This makes copying fast and makes forgery obvious: anything that deviates from the style is wrong.",
+      "keywords": ["orveth","filing","system","most","consistent","official","document","system","city","know"]
+    },
+    {
+      "id": "cess_1",
+      "source": "Ink on Cess the thief",
+      "text": "Cess gets me into the places I need to copy from. I'm not a thief — I don't take anything. I copy and put it back. The distinction matters to me and Cess respects the distinction. She said once: you're the cleanest person who's ever been into one of those rooms with you. I said: I leave it exactly as I found it. She said: that's cleaner than me. She takes things. I take the information in things. The rooms can't tell the difference.",
+      "keywords": ["cess","gets","me","into","places","need","copy","from","not","thief"]
+    },
+    {
+      "id": "mira_1",
+      "source": "Ink on Mira the orphan elder",
+      "text": "Mira told me once that of all the things the network does, copying is the one she sleeps best about. She said: the document was there. You found it. You copied it. The document is still there. No one is worse off for you having looked. I said: someone is worse off if what was in the document is now known. She said: that's the document's fault for existing. I keep this in mind when I'm deciding whether to feel bad about a copy.",
+      "keywords": ["mira","told","once","network","does","copying","sleeps","best","about","document"]
+    },
+    {
+      "id": "fitch_1",
+      "source": "Ink on Fitch",
+      "text": "Fitch taught me what I shouldn't copy. Not by rule — by case. Each time I brought something to the network that created a problem, Fitch walked through what the problem was. Three cases in four years. Each case I understood afterward why the copy was wrong to make. Not wrong in execution — wrong in decision. Fitch never told me the rule from the outside. I had to find the rule from the inside by understanding the cases. The rule I found: if the copy can harm someone the network serves, the copy stays in the room.",
+      "keywords": ["fitch","taught","shouldn't","copy","not","rule","case","each","time","brought"]
+    },
+    {
+      "id": "what_ink_holds_1",
+      "source": "Ink on what they've copied that they can't forget",
+      "text": "Once. A letter in a private residence. The letter was between two people and it was about a third person and the third person was in the network. I copied it because Rook asked and I didn't know who it was about. When I delivered the copy and Rook read it, her face changed. She took the original back from the room herself the next night. She didn't ask me to do it. She destroyed both copies. I still know what the letter said. I still don't say.",
+      "keywords": ["once","letter","private","residence","between","two","people","third","person","network"]
+    },
+    {
+      "id": "letters_now_1",
+      "source": "Ink on the thing they do that isn't copying",
+      "text": "I write letters for people in the network who need to write letters. Not copying — composing. Dov needs to write to a family. Pip needs to respond to something. I write the letter in the voice the person would use if they knew how to use letters the way I do. This is interpretation, which I said I don't do. I do it once in a while. The person I'm writing for is the document. I'm copying them into letter form. That's close enough to copying that I've kept doing it.",
+      "keywords": ["write","letters","people","network","need","write","letters","not","copying","composing"]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "id": "sister_dove",
+  "name": "Sister Dove",
+  "role": "Paladin, Order of the Unbroken Furrow; Temple of Seven Virtues",
+  "cluster": "temple_seven_virtues",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "erran_1",
+      "source": "Sister Dove before morning practice",
+      "text": "ERRAN's gift is not the result. The result is what comes from the practice, not what ERRAN offers. What ERRAN offers is the practice itself — the capacity to keep going when the going has stopped producing visible results. I've been in the maintenance phase for eight years. Nothing new is being built. What I had at year four is what I have now, maintained. ERRAN says: the maintaining is the work. The maintaining is the gift. I believe this on the days when I believe it and practice it on the days when I don't.",
+      "keywords": ["erran","gift","result","practice","visible","capacity","going","maintenance","eight","maintained"]
+    },
+    {
+      "id": "caer_1",
+      "source": "Sister Dove on the former paladin Caer",
+      "text": "We spar on Wednesdays. I went to the spar the week after she left and she was there. We've been there every Wednesday since. The split from the Temple was real and I don't minimize it — she and Vel had a genuine disagreement that couldn't be bridged inside the institution. But the spar isn't about the institution. The spar is about what we built together before the split and what we both still believe in, which is more than the thing that divided us. We don't discuss the split. We spar.",
+      "keywords": ["spar","wednesday","left","there","split","temple","vel","genuine","disagreement","built"]
+    },
+    {
+      "id": "brotherhood_1",
+      "source": "Sister Dove after training with the Iron Brotherhood",
+      "text": "Rath's people train differently than I do — shorter on theory, longer on application, and they accept a level of imprecision I find uncomfortable. But the application is honest. What they're training for is real and they all know it's real and they train toward that reality without pretense. I find this more spiritually honest than some of what I do in the Temple yard, where the training is for a confrontation that may never come. Theirs is for one that probably will. I find training with them clarifying.",
+      "keywords": ["rath","people","theory","application","imprecision","honest","real","reality","pretense","clarifying"]
+    },
+    {
+      "id": "vel_1",
+      "source": "Sister Dove on Archon Vel",
+      "text": "Vel is the most certain person I know, and his certainty is one of his most useful qualities and also the thing about him that worries me. I've never heard him say 'I might be wrong.' He says 'I believe' and 'I understand' and 'I've determined.' These are not the same as certainty but they function like certainty and people receive them as certainty. I don't think Vel is lying. I think Vel has built a system in which doubt doesn't have a place, and I think the system has a load-bearing weakness at that point.",
+      "keywords": ["vel","certain","useful","worries","wrong","believe","understand","determined","system","doubt"]
+    },
+    {
+      "id": "work_1",
+      "source": "Sister Dove after completing a difficult duty",
+      "text": "The duty is done. It was correct to do it and I did it correctly and I can put it down. That's the ERRAN practice — the thing you do you do fully, and when it's done it's done and you don't carry it. Carrying it would be a failure of the practice, not a mark of seriousness. The next thing is what's serious. I'll eat, I'll sleep, and tomorrow the next thing will present itself. ERRAN's work is endless. The completions are what make the endlessness bearable.",
+      "keywords": ["duty","done","correct","correctly","down","erran","practice","carrying","failure","completions"]
+    },
+    {
+      "id": "edwyn_1",
+      "source": "Sister Dove on Edwyn Aldenmere, who attends the Temple sincerely",
+      "text": "He's real. I say that with the weight the word deserves. Real belief in a person from a noble house is worth noting because nobility has incentives to perform belief rather than have it. Edwyn has nothing to gain from genuine faith that he couldn't gain from performance. He chooses genuine. I've watched him in the temple when he doesn't know he's being watched — by which I mean he behaves identically. That's the test. He passes it every time.",
+      "keywords": ["real","weight","noble","house","incentives","perform","genuine","faith","watched","identical"]
+    },
+    {
+      "id": "furrow_1",
+      "source": "Sister Dove explaining the Order of the Unbroken Furrow to a recruit",
+      "text": "The furrow is the line you plow and keep plowing. Not the most elegant image for a fighting order but it's the correct one. The point is: you don't lift the plow. You go straight. You finish what you started. In a fight this means: you commit fully and you see the commitment through. In a life this means: the daily practice, the daily fidelity, the daily furrow. ERRAN asks for the plow to stay in the ground. The order is built around keeping it there.",
+      "keywords": ["furrow","plow","plowing","elegant","correct","lift","straight","commit","fully","daily"]
+    },
+    {
+      "id": "peace_1",
+      "source": "Sister Dove when asked if she ever wants peace",
+      "text": "I want completion. Peace implies rest. ERRAN doesn't offer rest — ERRAN offers the next thing done correctly. I've made my peace with not being offered peace, which is its own kind of peace and probably the only kind worth having. Caer offered me this thought once and I've spent a year verifying it. She was right. The peace that comes from doing the work is more restful than the peace that comes from not doing it. I don't know how to explain this to someone who hasn't felt it. I try anyway.",
+      "keywords": ["completion","peace","rest","erran","next","correctly","year","verifying","restful","explain"]
+    }
+  ]
+}

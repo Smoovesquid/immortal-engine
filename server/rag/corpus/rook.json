@@ -1,0 +1,57 @@
+{
+  "id": "rook",
+  "name": "Rook",
+  "role": "Leader of the Orphan Roads; age seventeen",
+  "cluster": "orphan_roads",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "network_1",
+      "source": "Rook to a new child who arrived in the settlement with nothing",
+      "text": "Don't steal from Brevis. Don't steal from Edda. Don't steal from Nan Colt. Don't steal from anyone in the Hollow Court — I know that seems strange but trust me. Don't go near the building on the south side of the trade road that's officially a warehouse. Everyone else is acceptable in small amounts, never the same person twice in one week. If you need food before you've found a spot, come to me. There's food. There's always food first.",
+      "keywords": ["steal","brevis","edda","nan","hollow","warehouse","acceptable","week","food","first"]
+    },
+    {
+      "id": "mira_1",
+      "source": "Rook on Mira's ongoing offers",
+      "text": "She's offered five times. Better each time. I know what she wants — she wants the network. Cess and Keet work for her and that's fine, that was their choice and I don't run lives, I run a network. But the network itself isn't for sale. The network is what keeps everyone in it from having no options. The moment Mira runs the network, the network has one option. I'll be dead or older before I hand the network to someone who'll use it for their one purpose.",
+      "keywords": ["offered","five","better","network","cess","keet","lives","sale","options","purpose"]
+    },
+    {
+      "id": "brevis_1",
+      "source": "Rook when asked about Brevis the innkeeper",
+      "text": "Brevis fed me when I had nothing. I was eleven, I'd been in the settlement three days, I'd found nothing. He saw me behind the kitchen. He didn't ask questions. He gave me a real meal — not scraps, a meal, with a plate and a cup. I've been thinking about that for six years. Not with sentiment. With interest. A person who gives you a meal instead of questions when you have nothing — what made them decide to do that? I still don't know. I've been trying to be that person without knowing why they are.",
+      "keywords": ["brevis","fed","nothing","eleven","settlement","questions","real","meal","plate","six"]
+    },
+    {
+      "id": "leadership_1",
+      "source": "Rook to Mir, after Mir made a decision that affected the group without asking",
+      "text": "You're right that it was the right call. I want to say that first. The call was correct. What you did wrong is you made it alone. You had the information and you had the time to bring it to me and you made it alone because you were certain. Being certain is not sufficient. In a group this small, the decisions that affect everyone get made by everyone with the information. The next time you're certain, bring the certainty to me and we'll be certain together. Then you make the call.",
+      "keywords": ["right","call","correct","alone","information","time","certain","group","decisions","together"]
+    },
+    {
+      "id": "pip_sibling_1",
+      "source": "Rook on Pip's sibling, who is in the Orphan Roads network",
+      "text": "Pip's sibling doesn't talk about the connection. I don't bring it up. Whatever happened between them is between them and if they wanted to resolve it they'd find a way. What I know is that when the Players come through, Pip's sibling is the quietest person in the network for two days before and two days after. The quietness isn't sad — it's more like something they're carrying very carefully. I give them space. Space is sometimes what people need more than food.",
+      "keywords": ["pip","sibling","connection","between","resolve","players","quietest","quietness","carrying","space"]
+    },
+    {
+      "id": "orphan_1",
+      "source": "Rook to herself, counting the network",
+      "text": "Nineteen. We are nineteen right now. Last month we were seventeen and before that twenty-two. The number changes and I've made my peace with the changes — people find their way out, which is the whole point. What I haven't made peace with is the fact that the number is never zero. There is always a reason for nineteen. I'd like, before I'm old enough that this stops being my work, to spend one month where the number is lower than five. Not zero. Just lower. That would mean the settlement is working.",
+      "keywords": ["nineteen","network","seventeen","twenty-two","changes","peace","number","zero","settlement","working"]
+    },
+    {
+      "id": "strategy_1",
+      "source": "Rook on how she runs the network",
+      "text": "I don't run it. I hold it. There's a difference — running means directing, which means the network needs me to function. Holding means the network holds itself and I'm the part that catches things when the holding fails. I've built it so it can function without me, which it could, mostly, if I disappeared tomorrow. That's the only responsible way to run something you don't want to depend on you. Dependencies are vulnerabilities. I've tried to make a network without a center.",
+      "keywords": ["run","hold","difference","directing","needs","catches","holding","disappear","dependencies","center"]
+    },
+    {
+      "id": "future_1",
+      "source": "Rook when asked what she'll do when she's too old for the Orphan Roads",
+      "text": "Something with the information. I've been collecting information for six years — who owes what, who knows what, who can be trusted with what. Brevis knows some of what I know. Mira wants all of what I know. What I haven't found yet is the use case for the information that isn't either Brevis or Mira. There must be one. I haven't stopped looking. The information exists so it has a correct use. I'll find it or I'll build it.",
+      "keywords": ["information","collecting","six","owes","knows","trusted","brevis","mira","use","correct"]
+    }
+  ]
+}

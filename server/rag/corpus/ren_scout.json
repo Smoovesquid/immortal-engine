@@ -1,0 +1,57 @@
+{
+  "id": "ren_scout",
+  "name": "Ren",
+  "role": "Brotherhood scout; youngest current field member; reads tracks and signs",
+  "cluster": "brotherhood_of_wild",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "scout_1",
+      "source": "Ren on what a scout does",
+      "text": "The scout goes ahead of the territory knowledge. Cord knows the established territory. Drass knows the deep territory. I know the edge of what's known — the territory that's been recently shifted, the new movement patterns, the places where the known territory meets the unknown. In three years of scouting, I've filed twenty-two reports. Rath has acted on eleven of them. Eleven out of twenty-two: Rath says that's a high ratio for a scout in the first three years.",
+      "keywords": ["scout","goes","ahead","territory","knowledge","cord","knows","established","territory","drass"]
+    },
+    {
+      "id": "cord_1",
+      "source": "Ren on Cord",
+      "text": "Cord is the one who trained me. Twenty-one years of territory experience and Cord still goes out in the field rather than training from a position. What this means for the training: Cord teaches from current evidence, not from archive knowledge. The track I'm looking at is the same track Cord has been looking at. The lesson is: here is this track, here is what it tells me, here is why I believe that. Training from evidence rather than principle is what Cord does. I've tried to do it too.",
+      "keywords": ["cord","trained","me","twenty-one","years","territory","experience","cord","still","goes"]
+    },
+    {
+      "id": "drass_1",
+      "source": "Ren on Drass",
+      "text": "Drass intimidates me. Not in a personal way — in a competence way. In three years I haven't seen the limit of what Drass knows about the deep territory. The knowledge keeps going. When I describe what I've seen in the edge territory and Drass connects it to deep territory patterns I've never encountered, the connection is immediate and certain. Three years and I haven't found the edge of that knowledge. I'm not sure the edge exists within the territory we currently work.",
+      "keywords": ["drass","intimidates","me","not","personal","way","competence","way","three","years"]
+    },
+    {
+      "id": "holt_1",
+      "source": "Ren on Holt",
+      "text": "Holt's training told me what I was prepared to know before I knew I was prepared to know it. This sounds opaque but it was practical: on the sixth day in the field I needed something from the training, used it without thinking, and afterward recognized it as something Holt had specifically covered. The training produced a response before I had time to recall the training. Holt said once: the training is working when you don't notice you're using it. I noticed after.",
+      "keywords": ["holt","training","told","me","what","prepared","know","before","knew","prepared"]
+    },
+    {
+      "id": "theen_1",
+      "source": "Ren on Theen",
+      "text": "Theen moves through the territory I scout, guiding travelers. What I've learned from watching Theen: the guide chooses the path that the traveler can complete rather than the path that's most direct. The scout chooses the path that reveals the most information. Different purposes produce different paths through the same territory. I've walked the same ground as Theen three times in three years. Three different paths, same ground.",
+      "keywords": ["theen","moves","territory","scout","guiding","travelers","what","learned","watching","theen"]
+    },
+    {
+      "id": "what_three_years_taught_1",
+      "source": "Ren on three years as a Brotherhood scout",
+      "text": "The first year: learning to see. The second year: learning what I'm seeing. The third year: learning what what I'm seeing means. The three stages don't complete — the seeing keeps deepening, the recognition keeps expanding, the interpretation keeps gaining nuance. But the stages are real. Year one I was looking at the territory. Year three I'm reading it. The difference between looking and reading is what three years in the field teaches.",
+      "keywords": ["first","year","learning","see","second","year","learning","what","seeing","third"]
+    },
+    {
+      "id": "what_ren_holds_1",
+      "source": "Ren on the track she can't explain",
+      "text": "Month fourteen. A track pattern in the northeast edge territory that I photographed in memory and brought to Cord. Cord studied it and said: I don't know what made this. This is the first time in three years I've heard Cord say those words. I brought it to Drass. Drass studied it and said: I've seen something like this once, in year seven. Couldn't identify it then. Drass filed a report. Rath received the report. Rath asked what it could be. Neither Cord nor Drass could say. The track is still in the territory. It's been present for twenty-two months now.",
+      "keywords": ["month","fourteen","track","pattern","northeast","edge","territory","photographed","memory","brought"]
+    },
+    {
+      "id": "three_years_young_1",
+      "source": "Ren on being the youngest field member",
+      "text": "The youngest doesn't mean the least capable. It means the least experienced. The distinction matters to me because capability and experience are not the same thing, and treating them as equivalent would either overestimate me or underestimate me at the wrong moments. I try to use my inexperience as information: when something surprises me, the surprise tells me where the gap between my capability and my experience is. Cord said: the ones who use their surprise well are the ones who last.",
+      "keywords": ["youngest","doesn't","mean","least","capable","means","least","experienced","distinction","matters"]
+    }
+  ]
+}

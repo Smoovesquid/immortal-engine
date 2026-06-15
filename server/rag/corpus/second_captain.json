@@ -1,0 +1,57 @@
+{
+  "id": "second_captain",
+  "name": "Captain Moll",
+  "role": "Cargo captain; runs the northern coastal route; frequent Thornwall port of call",
+  "cluster": "harbor_quarter",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "northern_route_1",
+      "source": "Captain Moll on the northern coastal route",
+      "text": "The northern route is different from the eastern route that Harrow runs. Harrow's eastern route is about volume — large cargoes to large markets. My northern route is about access — getting to the smaller ports that the volume ships can't reach because of their draft. The northern coast has six ports I regularly make that Harrow's ship draws too much water for. I make a living in the draft differential.",
+      "keywords": ["northern","route","different","eastern","route","harrow","runs","harrow","eastern","route"]
+    },
+    {
+      "id": "keris_1",
+      "source": "Captain Moll on Keris",
+      "text": "Keris treats every captain the same, which is not how all harbormaster operate. The volume difference between what Harrow brings and what I bring would, in other harbors, produce a service differential. Keris provides the same documentation quality, the same berth preparation, the same process. I come to Thornwall more often than any other port on the northern route specifically because the service is consistent with the service I'd receive if I were bringing ten times what I bring.",
+      "keywords": ["keris","treats","every","captain","same","which","not","how","all","harbormaster"]
+    },
+    {
+      "id": "harrow_1",
+      "source": "Captain Moll on Harrow",
+      "text": "Harrow and I know each other from twelve years of sharing the same harbor. Not friends — colleagues. The distinction is precise: friends share time outside the professional context. Harrow and I have shared professional context and professional knowledge. I've asked Harrow three times about the eastern approach in conditions that affect the northern route differently. Harrow answered each time completely. I've answered Harrow twice about the northern coastal conditions. The exchange is professional and mutual.",
+      "keywords": ["harrow","know","each","other","twelve","years","sharing","same","harbor","not"]
+    },
+    {
+      "id": "rulf_1",
+      "source": "Captain Moll on Rulf",
+      "text": "Rulf handles the dock for every ship that comes in, regardless of size. I appreciate this because the northern route ships are smaller and some dock operations have dock workers who don't attend to the smaller ships with the same care as the larger ones. Rulf's operation doesn't do this. The smaller ship gets the same attention. I've watched Rulf run the dock for twelve years and the consistency is remarkable across twelve years and many different dock workers.",
+      "keywords": ["rulf","handles","dock","every","ship","comes","regardless","size","appreciate","because"]
+    },
+    {
+      "id": "comus_1",
+      "source": "Captain Moll on Comus",
+      "text": "Comus travels sometimes with my cargo when the northern route aligns with where Comus is going. The merchant and the captain have a convenient arrangement: I provide the transport, Comus provides market intelligence about the destination. In seven years of occasional overlap, Comus has been on my ship eleven times. In all eleven cases, the market intelligence Comus provided at the destination was current and accurate. A good source of market information is more valuable than a favorable wind.",
+      "keywords": ["comus","travels","sometimes","cargo","northern","route","aligns","where","comus","going"]
+    },
+    {
+      "id": "what_northern_route_teaches_1",
+      "source": "Captain Moll on what the northern coastal route teaches",
+      "text": "Small ports teach what large ports don't: the harbor's relationship to the settlement. In large ports, the harbor and the settlement are almost separate things. In the small northern ports, the settlement exists because of the harbor and the harbor exists because of the settlement. The interdependence is visible. After twelve years of the northern route, when I come to Thornwall — which is larger than the small northern ports but not a large port — I see the interdependence here too. Thornwall's harbor is part of the settlement in a way a large port isn't.",
+      "keywords": ["small","ports","teach","what","large","ports","don't","harbor's","relationship","settlement"]
+    },
+    {
+      "id": "what_moll_holds_1",
+      "source": "Captain Moll on the port she doesn't return to",
+      "text": "One port on the northern route that I stopped servicing three years ago. I won't say which one. What happened there: I was asked to carry something I refused to carry and the refusal was not accepted well. I reported the refusal and what followed to the harbor authority. The authority acted. The port is still a port. I don't stop there anymore. Keris knows I don't stop there and hasn't asked why. I would tell Keris if asked. Keris hasn't asked.",
+      "keywords": ["one","port","northern","route","stopped","servicing","three","years","won't","say"]
+    },
+    {
+      "id": "twelve_years_1",
+      "source": "Captain Moll on twelve years of the northern route",
+      "text": "The northern coast changes season by season in ways the eastern route doesn't. The eastern route is a deep-water route — the changes are weather-driven, not geography-driven. The northern coast is shallow-water and the geography changes: sandbars shift, channel depths change year to year, what was a reliable anchorage becomes difficult. In twelve years I've updated my charts eight times. The charts are always approximate. The water tells me when the chart is wrong.",
+      "keywords": ["northern","coast","changes","season","by","season","ways","eastern","route","doesn't"]
+    }
+  ]
+}

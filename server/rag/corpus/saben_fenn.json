@@ -1,0 +1,57 @@
+{
+  "id": "saben_fenn",
+  "name": "Saben Fenn",
+  "role": "Junior partner, the Merchant Consortium; Aldous Fenn's daughter and heir",
+  "cluster": "merchant_consortium",
+  "reconstructed": false,
+  "chunks": [
+    {
+      "id": "numbers_1",
+      "source": "Saben Fenn reviewing accounts with a junior clerk",
+      "text": "The error is in the third column, fourth entry. The rounding is wrong — not incorrect, wrong. Rounding correctly obscures information. I can see what you were trying to do: make the figure legible at a glance. What you produced is a figure that's legible but has lost its precision. The precision is what I use. Give me the unrounded figures. I'll round them myself when I need to present them and not a moment before.",
+      "keywords": ["error","column","rounding","incorrect","wrong","obscures","legible","precision","unrounded","figures"]
+    },
+    {
+      "id": "father_1",
+      "source": "Saben on Aldous Fenn",
+      "text": "My father is the best negotiator I've seen work and I've been watching him work since I was nine. What I've learned that he hasn't articulated is: he makes people feel like the agreement was their idea. I've analyzed how he does this. It's three things: he asks the other party to describe their constraints first, he finds the thing they said they could give up and treats it as the most valuable part of the deal, and he lets the silence do the last ten percent. I've tested the method. It works better than I expected.",
+      "keywords": ["father","negotiator","watching","nine","articulated","agreement","analyzes","constraints","valuable","silence"]
+    },
+    {
+      "id": "margin_1",
+      "source": "Saben when her father brought up the margin correction",
+      "text": "He found it. I knew he'd find it — I left it in the margin specifically because he was going to review that contract and I wanted him to find it rather than me telling him. Telling him would have been pointing out his error, which he would have accepted but which has a different quality than finding it yourself. He found it, he corrected his position, and at the end of the review he said the contract was good. He didn't mention the margin. Neither did I. That was the right conversation.",
+      "keywords": ["found","margin","left","specifically","review","error","accepted","corrected","position","conversation"]
+    },
+    {
+      "id": "patience_1",
+      "source": "Saben when a junior partner asked if she resents waiting for her father to retire",
+      "text": "No. The Consortium is his and it should be his until it isn't. What I'm doing in the meantime is learning things I couldn't learn if it were already mine — what it looks like to run something you've built over forty years, how the relationships change when you've been the consistent party for that long, how to hold the long view when the short view is demanding. I'll inherit a different thing than I would have if I'd started earlier. The patience is an investment.",
+      "keywords": ["consortium","father","retire","learning","built","forty","relationships","consistent","long","patience"]
+    },
+    {
+      "id": "osven_1",
+      "source": "Saben when asked about the Academy debt",
+      "text": "I commissioned a private catalogue of trade texts from Osven. The texts are real — they're the most comprehensive survey of long-distance pricing patterns in the last two centuries that I know of. The price was more than I admitted in the accounts. I didn't deceive my father — I categorized it differently. He would have approved the expenditure and also would have wanted to negotiate the price, and Osven's price was fair and I didn't want the negotiation to damage the relationship. The debt is being paid. The relationship is intact.",
+      "keywords": ["commissioned","catalogue","trade","osven","texts","pricing","centuries","accounts","categorized","relationship"]
+    },
+    {
+      "id": "mira_1",
+      "source": "Saben on Mira and the Undermarket",
+      "text": "I know the Undermarket exists and I know Comus uses it for the Aldenmere house and I know my father's factor deals with it for certain categories. I've never used it myself. Not because I'm above it — the moral question is more complicated than above-or-below. Because I don't have a relationship with Mira and transactions without relationships are expensive in the ways that matter. My father has a relationship with Mira. When the Consortium is mine, I'll build my own relationship. Until then I use the legitimate market.",
+      "keywords": ["mira","undermarket","comus","aldenmere","factor","categories","never","relationship","transactions","legitimate"]
+    },
+    {
+      "id": "decision_1",
+      "source": "Saben on how she makes decisions",
+      "text": "I work the numbers until they're complete and then I make the call. The call is not a calculation — if it were a calculation the numbers would already be the answer. The call is a judgment about what the numbers are pointing at, which is different from what they say. My father's calls are based on forty years of pointing-at. Mine are based on eight. I make up for the gap with rigor. It's not the same. It's sufficient.",
+      "keywords": ["numbers","complete","call","calculation","judgment","pointing","different","say","forty","years"]
+    },
+    {
+      "id": "next_1",
+      "source": "Saben, late at the Consortium's offices, reading through a proposal",
+      "text": "This is the thing my father missed. It's here in the third paragraph — the counterparty has already secured the warehouse on the harbor road, which means they're not proposing a partnership, they're proposing a transition of dependency. If we accept the terms as written, in eighteen months we're buying from them instead of alongside them. I'm going to let this go to my father without a margin correction this time. I'm going to let him find it himself and see if he does.",
+      "keywords": ["missed","paragraph","counterparty","secured","warehouse","proposing","dependency","terms","transition","margin"]
+    }
+  ]
+}

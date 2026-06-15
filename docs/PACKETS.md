@@ -26,6 +26,24 @@ and an unidentified **"circles with giant worms"** tile fails to communicate its
 **Objective:** One continuous, chrome-free zoomable map with organic village/road layout
 and biome tiles legible at a glance (a forest never reads as a mountain range).
 
+**Root causes (located — investigation 2026-06-14):**
+- Zoom button: `public/map/oneMap.js:926–950` (M7-S1 +/−/fit). Wheel-zoom (`oneMap.js:894`)
+  + drag-pan already ARE the continuous path → the buttons were redundant. (Already removed
+  in an uncommitted edit; verify + keep.)
+- Linear layout: `public/map/placeFromNode.js:79–99` (M7-S3) lays buildings in fixed rows
+  (`colGap=3.2,rowGap=8.5,perRow=√count`) along a straight E-W road (`pathY`). Replace the
+  row-cursor grid with seeded cluster+jitter (`rng.js`) and curve the road. NB: village NODE
+  positions come from engine canon `node.x/node.y` (`worldSpace.js:27`) — world-map scatter
+  is a separate engine-side, determinism-sensitive concern.
+- Trees≈mountains: `oneMap.js:58 drawConifer` and `:78 drawPeak` both draw a filled
+  triangle; at low zoom they're indistinguishable. Give contrasting silhouette/palette
+  (rounded tree-clump vs. ridged grey peak) that survives small `sz`.
+- The "worm-circle" tile = **marsh/swamp** (`oneMap.js:258–267`): a `marshWater` ellipse
+  (the circle) with reeds as wavy quadratic strokes radiating from it (`:266`) → reads as
+  worms. Redraw (horizontal water hatching + short vertical reed ticks, not radiating curves).
+- Legacy "scale tabs" still exist (`v1.js:134, :2191`; `LocalMap.js` fallback at
+  `v1.js:2040, 2106`). Truly "one map" means retiring those.
+
 **Sub-packets (do in order; each ships green + a live screenshot):**
 - **P-81a — Kill the zoom button; fluid semantic zoom.** Remove the discrete zoom-view
   toggle; drive level-of-detail from a continuous scroll/pinch zoom factor. No button.

@@ -923,31 +923,11 @@ export function renderOneMap(world, opts = {}) {
   canvas.addEventListener('pointerup', endDrag);
   canvas.addEventListener('pointercancel', endDrag);
 
-  // ── M7-S1: explicit zoom controls. Wheel/trackpad zoom can get swallowed by
-  // page-scroll or pinch gestures, leaving no way back out — so give buttons (the
-  // reliable path): + / − step the zoom about the view centre, ⤢ fits the whole
-  // world (the far Heath included). Screen-space, top-right.
-  const zc = document.createElement('div');
-  zc.style.cssText = 'position:absolute;right:10px;top:10px;display:flex;flex-direction:column;gap:6px;z-index:3;';
-  const zbtn = (label, title, fn) => {
-    const b = document.createElement('button');
-    b.type = 'button'; b.textContent = label; b.title = title;
-    b.style.cssText = `width:34px;height:34px;line-height:30px;text-align:center;font:20px ${HAND};color:rgba(18,26,48,0.85);background:rgba(233,237,222,0.94);border:1px solid rgba(96,72,44,0.55);border-radius:7px;cursor:pointer;box-shadow:0 1px 2px rgba(40,30,16,0.25);user-select:none;padding:0;`;
-    b.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); fn(); });
-    return b;
-  };
-  const zoomCenter = (factor) => { cam.z = Math.max(Z_MIN, Math.min(Z_MAX, cam.z * factor)); draw(); };
-  const fitWorld = () => {
-    const r = geo.rect, W = Math.max(200, canvas.clientWidth || 700), H = cssH;
-    const rw = (r.maxX - r.minX) || 1, rh = (r.maxY - r.minY) || 1;
-    cam.cx = (r.minX + r.maxX) / 2; cam.cy = (r.minY + r.maxY) / 2;
-    cam.z = Math.max(Z_MIN, Math.min(Z_MAX, Math.min(W / rw, H / rh) * 0.96));
-    draw();
-  };
-  zc.appendChild(zbtn('+', 'Zoom in', () => zoomCenter(1.5)));
-  zc.appendChild(zbtn('−', 'Zoom out', () => zoomCenter(1 / 1.5)));
-  zc.appendChild(zbtn('⤢', 'Fit the whole world', fitWorld));
-  wrap.appendChild(zc);
+  // No zoom buttons by design: this is ONE continuous map you zoom all the way
+  // through with the wheel/trackpad (handler above), pan by drag. Per directive —
+  // "there should be no button for zoom." Wheel-out reaches Z_MIN (the whole
+  // world, the far Heath included); double-click-to-fit can return as a gesture
+  // if wheel-out ever proves insufficient, but never as a screen-space button.
 
   // First paint after mount (clientWidth needs layout).
   requestAnimationFrame(draw);

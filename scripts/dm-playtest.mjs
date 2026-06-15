@@ -172,12 +172,20 @@ function canonGroundTruth(world) {
   const recentCanon = Array.isArray(world.canonLog?.events) ? world.canonLog.events.slice(-8)
     : Array.isArray(world.canonLog) ? world.canonLog.slice(-8) : [];
   const timeline = Array.isArray(world.timeline) ? world.timeline.slice(-6).map(e => ({ kind: e.kind, t: e.t })) : [];
+  // Escape mode (the live combat engine) tracks the PC's health in meta.escapeHp
+  // and enemy health in e.hp — NOT party[0].wounds / e.wounds. Report the model
+  // that's actually live so the judge sees real combat HP (else it flags every
+  // legitimate hit/defeat as "no HP update"). (F12 — sibling of the F9 fix.)
+  const escape = world.meta?.mode === 'escape';
   return {
     location: node ? { name: node.name, kind: node.kind } : null,
     npcsPresent: npcs,
-    pc: { wounds: pc.wounds, maxWounds: pc.maxWounds, level: pc.level, conditions: pc.conditions },
+    pc: escape
+      ? { hp: world.meta?.escapeHp, maxHp: world.meta?.escapeMaxHp, level: pc.level, conditions: pc.conditions, note: 'escape mode: HP is the live health; party wounds are not used here' }
+      : { wounds: pc.wounds, maxWounds: pc.maxWounds, level: pc.level, conditions: pc.conditions },
     inCombat: Boolean(world.combat?.active),
-    enemies: (world.combat?.enemies || []).map(e => ({ name: e.name, defeated: !!e.defeated, wounds: e.wounds })),
+    combatRound: world.combat?.round,
+    enemies: (world.combat?.enemies || []).map(e => ({ name: e.name, hp: e.hp, maxHp: e.maxHp, defeated: !!e.defeated })),
     ledgerFacts: (led.facts || []).map(f => (typeof f === 'string' ? f : f?.text)).filter(Boolean).slice(0, 8),
     recentCanon: recentCanon.map(e => ({ kind: e?.kind || e?.type, ref: e?.id, data: e?.data })).slice(0, 8),
     timeline,

@@ -12,7 +12,14 @@ done_when · rollback`.
 ## ACTIVE
 
 ### P-81 — One continuous zoom + organic layout + legible biome tiles
-**Status:** spec'd 2026-06-14 (Tim's render notes). The map is the "one map to rule
+**Status:** P-81a ✅ (zoom button removed, `e5f7e60`) · P-81c ✅ (legible tiles:
+trees≠mountains + marsh de-wormed, `42f3407`) · P-81b ✅ (organic curved-road
+scatter, `0250511`) · "retire legacy tabs" ✅ effectively — `renderMap` is already
+the one continuous map; only a stale "Map (zoom levels)" label remained (relabelled,
+uncommitted in the entangled `v1.js` batch). `renderLocalMap` intentionally KEPT as
+the error fallback in `renderWalkPlace` (not a scale tab; removing it deletes error
+handling). Remaining: broader biome-sprite audit beyond mountains/marsh, if wanted.
+Spec'd 2026-06-14 (Tim's render notes). The map is the "one map to rule
 them all" — a single continuous surface you zoom *through* (overworld → region →
 village → building), not discrete views swapped behind a button. Memory:
 `project_one_map_continuous_zoom`. Aligns with `project_map_beauty_dream` and

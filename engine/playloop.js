@@ -4111,11 +4111,12 @@ function tryExamineTarget(w, text) {
 
   // 3) Named but not here — pivot to what actually is, so the answer stays grounded.
   if (furniture.length) {
-    const names = furniture.slice(0, 3).map(x => String(x.name)).filter(Boolean);
+    const art = (s) => `${/^[aeiou]/i.test(String(s).trim()) ? 'an' : 'a'} ${s}`;
+    const names = furniture.slice(0, 3).map(x => String(x.name)).filter(Boolean).map(art);
     const list = names.length === 1 ? names[0]
       : names.length === 2 ? `${names[0]} and ${names[1]}`
       : `${names.slice(0, -1).join(', ')}, and ${names[names.length - 1]}`;
-    return `You look for ${target.match(/^[aeiou]/) ? 'an' : 'a'} ${target}, but what's here is ${list}.`;
+    return `You look for ${target.match(/^[aeiou]/i) ? 'an' : 'a'} ${target}, but what's here is ${list}.`;
   }
 
   // Nothing to anchor to — let the room-overview explore branch answer.

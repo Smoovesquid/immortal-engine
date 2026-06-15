@@ -125,6 +125,10 @@ const META_OUTCOME = /did i (?:succeed|fail|win|lose|make it)\b/;
 // inventory patterns are question/command-anchored so "put it in my pocket"
 // (an action) never reads as an inventory check.
 const META_INVENTORY = /\bwhat (?:do i have|am i carrying|have i got)\b|\bwhat'?s in my (?:pack|bag|inventory|pockets?)\b|\b(?:check|show|open|look in(?:to)?) (?:my )?(?:pack|bag|inventory|gear|equipment)\b|^\s*inventory\s*\??\s*$/;
+// Equipment / "what am I wielding/wearing" / sheet queries — an information
+// request, never a dice roll. Answered in-voice from real canon (an empty
+// loadout is reported honestly, never invented as "a short sword").
+const META_EQUIPMENT = /\bwhat(?:'?s| is)\s+my\s+(?:weapon|blade|sword|armou?r|gear|equipment|loadout)\b|\bname\s+my\s+(?:weapon|blade|sword|armou?r)\b|\bwhat\s+am\s+i\s+(?:wielding|wearing|armed\s+with)\b|\bwhat(?:'?s| is)\s+on\s+my\s+(?:character\s+)?sheet\b|\bwhat\s+(?:weapon|armou?r)\s+(?:do|am)\s+i\b/;
 const META_TIME = /\bwhat time\b|\btime of day\b|\bis it (?:day|night|morning|evening|dark|light)(?:time)?\b/;
 const META_OBJECTIVE = /\b(?:what(?:'?s| is| was)? )?my (?:quest|objective|goal|mission|task)\b|\bwhat (?:am i|are we) (?:supposed to|meant to|trying to)\b|\bwhy am i here\b|\bwhat(?:'?s| is) the (?:quest|objective|goal|plan)\b|\bremind me\b/;
 
@@ -132,7 +136,7 @@ const META_OBJECTIVE = /\b(?:what(?:'?s| is| was)? )?my (?:quest|objective|goal|
 export function isMetaQuestion(text) {
   const t = String(text || '').toLowerCase();
   return META_LOCATION.test(t) || META_HEALTH.test(t) || META_RECAP.test(t) || META_OUTCOME.test(t)
-    || META_INVENTORY.test(t) || META_TIME.test(t) || META_OBJECTIVE.test(t);
+    || META_INVENTORY.test(t) || META_EQUIPMENT.test(t) || META_TIME.test(t) || META_OBJECTIVE.test(t);
 }
 
 // A null-action: filler, acknowledgment, or an abort. A real DM lets the
@@ -190,6 +194,26 @@ export function handleMetaQuestion(text, world) {
     return lines.length
       ? `You go through your pack. ${lines.join('. ')}.`
       : 'Your pack is light — nothing but lint and resolve.';
+  }
+
+  // Equipment / sheet — name what's actually equipped, in-voice, no roll. An
+  // empty loadout is reported honestly (the DM never invents a weapon you lack).
+  if (META_EQUIPMENT.test(lowerText)) {
+    const p = world.party?.[0] || {};
+    const inv = p.inventory || {};
+    const names = (arr) => (Array.isArray(arr) ? arr : []).map(it => String(it?.name || it).trim()).filter(Boolean);
+    const weapons = names(inv.weapons);
+    const armor = names(inv.armor);
+    const sig = String(p.signature?.itemName || '').trim();
+    const sigName = sig && !/^thing$/i.test(sig) ? sig : '';
+    const parts = [];
+    parts.push(weapons.length
+      ? `You're armed with ${joinList(weapons)}.`
+      : `You bear no weapon worth the name — just your hands and whatever you can lay them on.`);
+    if (armor.length) parts.push(`You're wearing ${joinList(armor)}.`);
+    else parts.push(`Nothing but your own clothes stand between you and a blade.`);
+    if (sigName) parts.push(`And you carry ${sigName}, which means something to you.`);
+    return parts.join(' ');
   }
 
   // Time of day — read the world clock (hours of travel since dawn of day 1).

@@ -1516,6 +1516,18 @@ function playerMoveCore(world, packsById, text) {
     }
   }
 
+  // Physical assault on a present NPC (grapple / forced-into-harm / blade-to-body /
+  // hostage) engages REAL combat — not a consequence-free skill roll, and not the
+  // offensive-cast innocent-recoil path below. Placed before that gate so PHYSICAL
+  // violence fights while offensive SPELLS at innocents still recoil. (Opus gate #1.)
+  if (!w.combat?.active && !w.ending?.locked) {
+    const assault = detectPhysicalAssault(w, text);
+    if (assault) {
+      const eng = engageNpcCombat(w, assault.npc, text, pack, actorId, true);
+      if (eng) return eng;
+    }
+  }
+
   // ── P-80: The world testifies ─────────────────────────────────────────────
   // An offensive working aimed OUT OF COMBAT at the innocent or the living world
   // is a deed; the world recoils (docs/MORALITY_SYSTEM.md). This runs in BOTH
@@ -1818,50 +1830,8 @@ function playerMoveCore(world, packsById, text) {
   if (!w.combat?.active && !w.ending?.locked) {
     const anyIntent = detectAttackAnyIntent(w, text);
     if (anyIntent) {
-      // Mark NPC hostile before minting enemy
-      anyIntent.npc.hostile = true;
-      let w1 = beginCombat(w, { enemies: [mintEnemyFromNpc(anyIntent.npc)], reason: 'player-attack' });
-      if (w1.combat?.active) {
-        w = w1;
-        const move = inferCombatMoveFromText(w, pack, actorId, text);
-        const companionBeats = [];
-        const { world: wAfter, result } = resolveCombatTurn(w, move, {
-          afterPlayerTurn: (wMid) => runCompanionTurns(wMid, companionBeats)
-        });
-        w = wAfter;
-        w = appendRecentBeat(w, buildBeatFromTurn(w, text, move, result));
-        for (const spec of companionBeats) {
-          w = appendRecentBeat(w, buildBeatFromTurn(w, spec.text, spec.move, spec.result));
-        }
-        w = pushEvent(w, {
-          kind: 'resolution',
-          data: {
-            actorId,
-            intent: String(text || ''),
-            text: String(text || ''),
-            roll: result.roll,
-            dc: result.dc,
-            outcome: result.outcome,
-            updateKind: 'combat',
-            combatSummary: String(result.combatSummary || '')
-          }
-        });
-        const composed = compose(w, text, {
-          kind: 'turn',
-          t: w.timeline.length,
-          roll: result.roll,
-          dc: result.dc,
-          success: result.outcome === 'success',
-          updateKind: 'combat',
-          outcome: result.outcome,
-          approach: move.approachTag,
-          enemyName: String(result.targetEnemyName || ''),
-          enemyId: String(result.targetEnemyId || ''),
-          parleyed: typeof result.mechanicsLine === 'string' && result.mechanicsLine.includes('combat:parley')
-        }, { pack });
-        w = applyComposerDelta(w, composed.ledgerDelta);
-        return { world: w, output: { narration: ABSTRACT_FLOOR_RE.test(composed.narrationLine) ? combatGroundedOutcome(w, result.targetEnemyName, result.outcome) : composed.narrationLine, mechanics: result.mechanicsLine, combatSummary: String(result.combatSummary || '') } };
-      }
+      const eng = engageNpcCombat(w, anyIntent.npc, text, pack, actorId, true);
+      if (eng) return eng;
     }
   }
 
@@ -5200,6 +5170,86 @@ function detectAttackAnyIntent(world, text) {
     if (npc) return { npc };
   }
   return null;
+}
+
+// Physical assault on a present NPC that ISN'T a clean verb-object attack: a
+// grapple, a forced-into-harm shove/throw, a blade held to the body, or a
+// hostage/human-shield grab. These must engage real combat — not resolve as a
+// consequence-free skill roll, and not (for thrown people) the offensive-cast
+// innocent-recoil path. PHYSICAL only: offensive SPELLS at innocents still
+// recoil ("gratuitous magic has consequence"). Non-violent uses are excluded by
+// requiring a present-NPC target plus a violent frame ("shove PAST x" / "grab a
+// cup" / "give the dagger to x" / "throw a coin to x" all fall through).
+function detectPhysicalAssault(world, text) {
+  const t = String(text || '').trim();
+  if (!t || world.combat?.active || world.scene?.dialogue) return null;
+  const nodeId = String(world?.map?.currentNodeId ?? '');
+  const node = (world?.map?.nodes || []).find(n => n && n.id === nodeId) || null;
+  const npcs = node?.settlement?.npcs || [];
+  if (!Array.isArray(npcs) || !npcs.length) return null;
+  const hit = (ref) => {
+    const r = String(ref || '').replace(/[.!?,;:]+$/, '').trim();
+    return r ? fuzzyMatchNpc(npcs, r) : null;
+  };
+  let m;
+  // A — inherently violent grapple/strike on a person.
+  if ((m = t.match(/\b(?:choke|strangle|throttle|garrott?e|smother|wrestle|grapple|headbutt|head-butt|gouge|maul|pummel|manhandle|pin)\s+(?:down\s+|on\s+)?(.+)/i))) {
+    const npc = hit(m[1]); if (npc) return { npc };
+  }
+  // B — forced into harm: shove/throw/etc. <person> into|onto|against|through|over <x>.
+  if (!/\b(?:past|aside|away)\b/i.test(t)
+      && (m = t.match(/\b(?:shove|push|throw|hurl|fling|toss|slam|ram|drag|haul|sling|hoist|launch|propel|bash)\s+(.+?)\s+(?:in\s*to|into|onto|against|through|over)\b/i))) {
+    const npc = hit(m[1]); if (npc) return { npc };
+  }
+  // C — a blade brought TO the body (threat/assault), not handed over.
+  if (/\b(?:dagger|knife|blade|sword|point|edge|axe|hatchet|spear|cleaver|shiv|dirk|machete)\b/i.test(t)
+      && /\b(?:press|hold|put|jam|dig|set|lay|raise|level|point|thrust|drive|bring|touch)\b/i.test(t)
+      && (m = t.match(/\b(?:to|against|at|across|under|on)\s+(.+)/i))) {
+    const npc = hit(m[1]); if (npc) return { npc };
+  }
+  // D — hostage / human shield.
+  if (/\b(?:shield|hostage)\b/i.test(t)
+      && (m = t.match(/\b(?:grab|drag|haul|use|hold|take|seize|snatch|yank)\s+(.+?)\s+(?:as|for|in\s+front)/i))) {
+    const npc = hit(m[1]); if (npc) return { npc };
+  }
+  return null;
+}
+
+// Shared: mint the NPC as an enemy, begin combat, resolve the player's opening
+// move, log + compose. Returns {world, output} or null if combat didn't start.
+function engageNpcCombat(world, npc, text, pack, actorId, markHostile) {
+  let w = world;
+  if (markHostile && npc) npc.hostile = true;
+  const w1 = beginCombat(w, { enemies: [mintEnemyFromNpc(npc)], reason: 'player-attack' });
+  if (!w1.combat?.active) return null;
+  w = w1;
+  const move = inferCombatMoveFromText(w, pack, actorId, text);
+  const companionBeats = [];
+  const { world: wAfter, result } = resolveCombatTurn(w, move, {
+    afterPlayerTurn: (wMid) => runCompanionTurns(wMid, companionBeats)
+  });
+  w = wAfter;
+  w = appendRecentBeat(w, buildBeatFromTurn(w, text, move, result));
+  for (const spec of companionBeats) {
+    w = appendRecentBeat(w, buildBeatFromTurn(w, spec.text, spec.move, spec.result));
+  }
+  w = pushEvent(w, {
+    kind: 'resolution',
+    data: {
+      actorId, intent: String(text || ''), text: String(text || ''),
+      roll: result.roll, dc: result.dc, outcome: result.outcome,
+      updateKind: 'combat', combatSummary: String(result.combatSummary || '')
+    }
+  });
+  const composed = compose(w, text, {
+    kind: 'turn', t: w.timeline.length, roll: result.roll, dc: result.dc,
+    success: result.outcome === 'success', updateKind: 'combat', outcome: result.outcome,
+    approach: move.approachTag, enemyName: String(result.targetEnemyName || ''),
+    enemyId: String(result.targetEnemyId || ''),
+    parleyed: typeof result.mechanicsLine === 'string' && result.mechanicsLine.includes('combat:parley')
+  }, { pack });
+  w = applyComposerDelta(w, composed.ledgerDelta);
+  return { world: w, output: { narration: ABSTRACT_FLOOR_RE.test(composed.narrationLine) ? combatGroundedOutcome(w, result.targetEnemyName, result.outcome) : composed.narrationLine, mechanics: result.mechanicsLine, combatSummary: String(result.combatSummary || '') } };
 }
 
 // Shared fuzzy NPC resolution. Tries exact name, then role, then generic

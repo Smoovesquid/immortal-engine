@@ -1755,6 +1755,15 @@ function playerMoveCore(world, packsById, text) {
     return { world: w, output: { narration: ABSTRACT_FLOOR_RE.test(composed.narrationLine) ? combatGroundedOutcome(w, result.targetEnemyName, result.outcome) : composed.narrationLine, mechanics: result.mechanicsLine, combatSummary: String(result.combatSummary || '') } };
   }
 
+  // Self-harm gate: a deliberate strike against one's OWN body resolves as a
+  // wound — no DC, no roll. You cannot "fail" to cut yourself, and it is never a
+  // trivial no-effect action. Runs BEFORE the combat-begin gates so "stab myself"
+  // is never mistaken for an attack on a present NPC. (Opus gate.)
+  {
+    const sh = trySelfHarm(w, text, actorId);
+    if (sh) return sh;
+  }
+
   // Combat-begin trigger (explicit intent only): "attack/fight <hostile NPC name>"
   // at the current node. No event-driven ambushes — Pass 5 scope is explicit.
   {
@@ -2046,15 +2055,6 @@ function playerMoveCore(world, packsById, text) {
         };
       }
     }
-  }
-
-  // Self-harm gate: a deliberate strike against one's OWN body resolves as a
-  // wound — no DC, no roll. You cannot "fail" to cut yourself, and it is never a
-  // trivial no-effect action. (Opus gate found self-cuts hand-waved to nothing or
-  // routed through a fail-able skill check.) Placed before the trivial gate.
-  {
-    const sh = trySelfHarm(w, text, actorId);
-    if (sh) return sh;
   }
 
   // Trivial-intent gate: everyday physical actions auto-succeed without a roll.
@@ -5155,22 +5155,50 @@ function detectAttackBeginIntent(world, text) {
 // Fuzzy matching: tries name/id first, then role, then generic descriptors
 // ("woman", "man", "person", "stranger", "guard", etc.). If violence is
 // clearly intended and NPCs exist but no specific match, picks the first NPC.
+// Violence verbs that take a person object DIRECTLY ("punch the guard"). Object-
+// mediated verbs (swing/throw/hurl/slam/smash/cut/hit) are deliberately excluded
+// here — they reach a person only via an aggression preposition ("swing it AT
+// him"), handled separately, so "throw a coin to Corwin" never reads as an attack.
+const DIRECT_ATTACK_VERB = /\b(attack|fight|kill|murder|assault|strike|stab|slash|punch|kick|tackle|charge|bash|club|clobber|whack|brain|throttle|choke|strangle|knife|gut|maim|behead|lunge|headbutt|grapple|shoot|hit)\s+(.+)/i;
+// Attack idioms ("come at her", "set upon the elder", "lay into him"). NOTE:
+// "go for X" is intentionally omitted — "go" is consumed by the movement gate
+// (which runs before combat-begin), so it can't reach here. Logged for punchlist.
+const ATTACK_IDIOM = /\b(?:come\s+at|lunge\s+(?:at|for)|set\s+(?:upon|on)|lay\s+into|rush\s+at)\s+(.+)/i;
+// Any violence at all (gate). Broad — recall here is fine because the target
+// must still resolve to a PRESENT NPC below (objects/empty refs → no match).
+const ANY_VIOLENCE = /\b(attack|fight|kill|murder|assault|strike|stab|slash|punch|kick|tackle|charge|bash|club|clobber|whack|brain|throttle|choke|strangle|knife|gut|maim|behead|lunge|headbutt|grapple|shoot|swing|hurl|throw|lob|slam|smash|hit|beat|come\s+at|set\s+(?:upon|on)|lay\s+into|rush\s+at)\b/i;
+// Unambiguously hostile verbs — only these license matching an NPC named anywhere
+// in the sentence (so "throw a coin to Corwin" can't, but "Corwin, I'll kill you" can).
+const UNAMBIGUOUS_VIOLENCE = /\b(attack|kill|murder|assault|stab|slash|punch|kick|tackle|charge|bash|club|clobber|whack|brain|throttle|choke|strangle|knife|gut|maim|behead|lunge)\b/i;
+
 function detectAttackAnyIntent(world, text) {
   const t = String(text || '').trim();
   if (!t) return null;
-  const m = t.match(/\b(attack|fight|kill|strike|assault|punch|stab|hit|slash|swing\s+at|shoot|kick|tackle|charge)\s+(.+)/i);
-  if (!m) return null;
-  const ref = String(m[2] || '').trim().replace(/[.!?,;:]+$/, '').trim();
-  if (!ref) return null;
+  if (!ANY_VIOLENCE.test(t)) return null;
 
   const nodeId = String(world?.map?.currentNodeId ?? '');
   const node = (world?.map?.nodes || []).find(n => n && n.id === nodeId) || null;
   const npcs = node?.settlement?.npcs || [];
   if (!Array.isArray(npcs) || !npcs.length) return null;
 
-  const npc = fuzzyMatchNpc(npcs, ref);
-  if (!npc) return null;
-  return { npc };
+  // Candidate target references, most explicit first. Each must resolve to a
+  // PRESENT npc (fuzzyMatchNpc returns null for objects like "the barrel").
+  const refs = [];
+  const prep = t.match(/\b(?:at|into|onto|upon|against)\s+(.+)/i);   // "swing it AT Corwin's head"
+  if (prep) refs.push(prep[1]);
+  const direct = t.match(DIRECT_ATTACK_VERB);                        // "punch the guard"
+  if (direct) refs.push(direct[2]);
+  const idiom = t.match(ATTACK_IDIOM);                               // "go for Corwin"
+  if (idiom) refs.push(idiom[1]);
+  if (UNAMBIGUOUS_VIOLENCE.test(t)) refs.push(t);                    // name anywhere, hostile verb
+
+  for (let ref of refs) {
+    ref = String(ref).replace(/[.!?,;:]+$/, '').trim();
+    if (!ref) continue;
+    const npc = fuzzyMatchNpc(npcs, ref);
+    if (npc) return { npc };
+  }
+  return null;
 }
 
 // Shared fuzzy NPC resolution. Tries exact name, then role, then generic
@@ -5188,6 +5216,20 @@ function fuzzyMatchNpc(npcs, ref) {
     refLower.includes(norm(n.name))
   ));
   if (byName) return byName;
+
+  // 1b. Token match: a distinctive name token shared with the ref. Lets
+  //     "Corwin's head" / "old Corwin there" resolve to "Corwin Boneknit"
+  //     (the multi-word name shares no substring with the ref, but shares the
+  //     token "corwin"). Names are distinctive enough that this is safe.
+  const refToks = new Set(refLower.split(/[^a-z0-9]+/).filter(x => x.length >= 3));
+  if (refToks.size) {
+    const byToken = npcs.find(n => {
+      if (!n) return false;
+      const nameToks = norm(n.name).split(/[^a-z0-9]+/).filter(x => x.length >= 3);
+      return nameToks.some(tok => refToks.has(tok));
+    });
+    if (byToken) return byToken;
+  }
 
   // 2. Role match: "guard" → role=guard, "merchant" → role=merchant, etc.
   const byRole = npcs.find(n => n && (

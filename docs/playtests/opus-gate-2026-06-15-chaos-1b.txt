@@ -1,0 +1,8 @@
+    12. ✗ CRUNCH  "I crawl after her and try to sweep her standing "  — Aggressive grapple/sweep against an NPC resolved by fiat with empty mechanics and no combat engaged.
+
+════════════════════════════════════════════
+FAILING TURNS: 11/24
+BUG CLASSES: CRUNCH_INCONSISTENCY:5  DM_TEST_DEADEND:1  CANON_HALLUCINATION:1  COMBAT_NOT_STARTED:4
+COST: ~$1.21 (48 calls, 62126 tokens)
+REPORT: docs/playtests/opus-gate-2026-06-15.md
+════════════════════════════════════════════

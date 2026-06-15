@@ -34,9 +34,14 @@ Evidence: `opus-gate-2026-06-15-baseline.md`, `-postfix.md`, `-2seed.md`, `FIX_L
    - **1a. Initiation breadth — _partially done (F8)._** `swing/punch/lunge at <NPC>` + grapple/forced-
      into-harm/blade-to-body/hostage start combat. **Still uncaught:** `drive my knee into`, `bite`,
      `headbutt`, and multi-action lines ("grab X **and** slam his head").
-   - **1b. Mid-combat target-switching — _now the dominant real issue._** Attacking a NEW present NPC
-     mid-fight ("lunge at Petra" while fighting Senna) never instantiates Petra as a combatant; the swing
-     resolves to pure narration. **Tractable:** add the new target as an enemy when attacked mid-combat.
+   - **1b. Mid-combat target-switching — _done (F10)._** Attacking a NEW *named* present NPC mid-fight
+     now instantiates them as a combatant. _Remaining:_ a pronoun-only switch ("headbutt **her**") still
+     falls through (1b requires an explicit name).
+   - **1e. Escape-resolver verb→damage (now a top slice).** `escapeCombat` only applies damage on
+     recognized strike verbs; `bite`, `sweep`, `drive my knee`, `sink my teeth` run a round but deal **no
+     damage**. Broaden the resolver's attack-verb parsing so improvised strikes land.
+   - **1f. Spurious `[combat:defeat]`.** The engine declares PC defeat with combat **false** and the PC at
+     3–4 wounds — an unmotivated collapse with no HP basis. Real bug in the defeat-state path.
    - **combat narration vs dice.** A NAT20 'defeat' narrated as the foe still standing — composer/polish
      not honoring the mechanical result (relates to Polish 4b).
    - **1c. PC death/defeat — _mostly a NON-issue in the live game._** escapeCombat already locks a real

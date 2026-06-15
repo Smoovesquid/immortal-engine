@@ -460,6 +460,35 @@ export function playerMove(world, packsById, text) {
   }
 }
 
+// Self-harm: deliberate harm to one's OWN body. A harm verb + an explicit self
+// target, not negated/hypothetical. Resolves as a deterministic wound (no roll) —
+// you cannot fail to hurt yourself, nor is it a trivial no-effect action.
+const SELF_HARM_VERB = /\b(cut|cuts|cutting|slash|stab|stabs|stabbing|slice|gash|gouge|carve|score|nick|jab|impale|bleed|hurt|injure|harm|wound|maim|mutilate)\b/i;
+const SELF_HARM_TARGET = /\b(myself|my\s+own\b|my\s+(?:arm|forearm|leg|thigh|hand|wrist|palm|throat|neck|face|cheek|chest|belly|gut|stomach|skin|flesh|side|shoulder|finger|thumb|vein|veins))\b/i;
+const SELF_HARM_NEGATED = /\b(don'?t|do\s+not|won'?t|will\s+not|never|avoid|without|nearly|almost|pretend|threaten|threatening|as\s+if|like\s+i)\b/i;
+
+function trySelfHarm(world, text, actorId) {
+  const t = String(text || '');
+  if (world.combat?.active || world.scene?.dialogue) return null;
+  if (!SELF_HARM_VERB.test(t) || !SELF_HARM_TARGET.test(t)) return null;
+  if (SELF_HARM_NEGATED.test(t)) return null;
+  const pc = world.party?.[0];
+  if (!pc) return null;
+  const id = String(actorId || pc.id || 'party');
+  const before = pc.wounds ?? 0;
+  let w = applyDeltas(world, [{ op: 'wound', entityId: id, by: 1 }]);
+  const after = w.party?.[0]?.wounds ?? before;
+  const took = after > before;
+  w = pushEvent(w, {
+    kind: 'resolution',
+    data: { actorId: id, intent: t, text: t, roll: 0, dc: 0, outcome: 'success', updateKind: 'self-harm' }
+  });
+  const narration = took
+    ? `Wizard: You go through with it — the hurt lands real and immediate, blood and bite, and you mark yourself with a fresh wound.`
+    : `Wizard: You set yourself to do it, but you are already as battered as a body can be and still stand; there is no more give left to take.`;
+  return { world: w, output: { narration, mechanics: `[self-harm — ${took ? '1 wound' : 'no further wound'}, no roll]` } };
+}
+
 function playerMoveCore(world, packsById, text) {
 
   // Gate III.2: after ending is locked, play surfaces must not mutate state.
@@ -2017,6 +2046,15 @@ function playerMoveCore(world, packsById, text) {
         };
       }
     }
+  }
+
+  // Self-harm gate: a deliberate strike against one's OWN body resolves as a
+  // wound — no DC, no roll. You cannot "fail" to cut yourself, and it is never a
+  // trivial no-effect action. (Opus gate found self-cuts hand-waved to nothing or
+  // routed through a fail-able skill check.) Placed before the trivial gate.
+  {
+    const sh = trySelfHarm(w, text, actorId);
+    if (sh) return sh;
   }
 
   // Trivial-intent gate: everyday physical actions auto-succeed without a roll.

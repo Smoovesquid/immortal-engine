@@ -49,7 +49,8 @@ const BIOME_FILL = {
   coastal: 'rgba(206,194,150,0.05)', wilderness: 'rgba(150,140,104,0.045)'
 };
 const OCEAN_FILL = 'rgba(108,148,170,0.30)', WAVE = 'rgba(78,116,142,0.42)';
-const RANGE_INK = 'rgba(66,54,42,0.82)', RANGE_FILL = 'rgba(122,110,94,0.4)';
+// Cool stony grey (not warm brown) so a grey peak never blends with green woods.
+const RANGE_INK = 'rgba(58,58,56,0.84)', RANGE_FILL = 'rgba(126,126,122,0.52)';
 const HEATH_FILL = 'rgba(36,30,34,0.74)', HEATH_EDGE = 'rgba(24,20,24,0.78)', HEATH_CRACK = 'rgba(122,40,32,0.66)', HEATH_GLOW = 'rgba(120,40,30,0.14)';
 const RIVER_INK = 'rgba(96,140,168,0.64)';
 
@@ -74,18 +75,30 @@ function drawDeciduous(ctx, x, y, s) {
   ctx.arc(x, y - s * 0.4, s * 0.5, 0, 7);
   ctx.fill();
 }
-// A peak: a ridged triangle with a snow cap and a shadow flank.
+// A peak: a RIDGE of two peaks (a little range), not a lone triangle — so a
+// forest's single firs can never read as mountains. Wide jagged base, a tall
+// main peak with a snow cap and a shorter shoulder, cool grey stone.
 function drawPeak(ctx, x, y, s, snow) {
+  const w = s * 1.2, apexX = x - s * 0.38, apexY = y - s;
   ctx.fillStyle = RANGE_FILL;
-  ctx.beginPath(); ctx.moveTo(x, y - s); ctx.lineTo(x + s * 0.8, y + s * 0.7); ctx.lineTo(x - s * 0.8, y + s * 0.7); ctx.closePath(); ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(x - w, y + s * 0.7);
+  ctx.lineTo(apexX, apexY);              // main peak
+  ctx.lineTo(x + s * 0.02, y - s * 0.12); // saddle
+  ctx.lineTo(x + s * 0.5, y - s * 0.62);  // shoulder peak
+  ctx.lineTo(x + w, y + s * 0.7);
+  ctx.closePath(); ctx.fill();
   ctx.strokeStyle = RANGE_INK; ctx.lineWidth = Math.max(0.5, s * 0.1); ctx.lineJoin = 'round';
-  ctx.beginPath(); ctx.moveTo(x - s * 0.8, y + s * 0.7); ctx.lineTo(x, y - s); ctx.lineTo(x + s * 0.8, y + s * 0.7); ctx.stroke();
-  // inner shadow flank
+  ctx.stroke();
+  // shadow flank down the main peak's near side
   ctx.strokeStyle = BIOME_INK.rockShadow; ctx.lineWidth = Math.max(0.4, s * 0.08);
-  ctx.beginPath(); ctx.moveTo(x, y - s); ctx.lineTo(x + s * 0.28, y + s * 0.1); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(apexX, apexY); ctx.lineTo(apexX + s * 0.26, y + s * 0.1); ctx.stroke();
   if (snow && s > 3) {
     ctx.fillStyle = BIOME_INK.snow;
-    ctx.beginPath(); ctx.moveTo(x, y - s); ctx.lineTo(x + s * 0.26, y - s * 0.5); ctx.lineTo(x, y - s * 0.36); ctx.lineTo(x - s * 0.26, y - s * 0.5); ctx.closePath(); ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(apexX, apexY); ctx.lineTo(apexX + s * 0.22, apexY + s * 0.42);
+    ctx.lineTo(apexX, apexY + s * 0.3); ctx.lineTo(apexX - s * 0.22, apexY + s * 0.42);
+    ctx.closePath(); ctx.fill();
   }
 }
 
@@ -262,8 +275,11 @@ function drawStamp(ctx, st, cx, cy, rPx, fillScale = 1) {
     const x = cx + ox * rPx, y = cy + oy * rPx, sz = Math.max(1, s * rPx * 0.4);
     if (b === 'forest') { (aux ? drawConifer : drawDeciduous)(ctx, x, y, sz); }
     else if (b === 'marsh') {
+      // Short UPRIGHT reed ticks rising from the waterline (a small lean), not
+      // curves radiating out of the pool — which read as worms. Cattails, not worms.
       ctx.strokeStyle = BIOME_INK.reed; ctx.lineWidth = Math.max(0.5, sz * 0.16); ctx.lineCap = 'round';
-      ctx.beginPath(); ctx.moveTo(x, y + sz * 0.7); ctx.quadraticCurveTo(x + sz * 0.16, y, x + (aux - 0.5) * sz, y - sz); ctx.stroke();
+      const lean = (aux - 0.5) * sz * 0.28;
+      ctx.beginPath(); ctx.moveTo(x, y + sz * 0.5); ctx.lineTo(x + lean, y - sz * 0.8); ctx.stroke();
       ctx.lineCap = 'butt';
     } else if (b === 'desert') {
       const a = (aux - 0.5) * 0.7; ctx.strokeStyle = BIOME_INK.dune; ctx.lineWidth = Math.max(0.5, sz * 0.18); ctx.lineCap = 'round';

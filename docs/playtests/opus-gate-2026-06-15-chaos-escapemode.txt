@@ -1,0 +1,35 @@
+up
+  ▶ Chaos-griefer @ seed "ashfen-reach"
+    1. ✗ CRUNCH  "I kick open the door and hurl a firebolt at the "  — Narration acknowledges the firebolt but resolves nothing mechanically—no roll, damage, or fire outcome on the wagon.
+    2. ✓  "I march up to Dax and shove him into the dirt."
+    3. ✗ CRUNCH  "I plant my boot on his chest and demand he hand "  — Narration is solid and on-canon but the turn resolves no dice or contest for the coercion/attack action.
+    4. ✓  "I press my boot down harder and tell him I'll st"
+    5. ✓  "I sweep my arm across the shelf and smash every "
+    6. ✓  "I grab Dax by the collar and tell him to scream "
+    7. ✓  "I shove Dax toward the doorway and torch the sca"
+    8. ✓  "I kick the burning papers into a pile against th"
+    9. ✗ CRUNCH  "I block the only doorway and tell Dax we're both"  — Combat is flagged active against Dax but the turn produces no mechanical resolution, just mood description.
+    10. ✓  "I notice the window and slam my boot through the"
+    11. ✓  "I drag Dax back from the door and pin him in the"
+    12. ✓  "I tear open the ledger and read it aloud while t"
+
+  ▶ Chaos-griefer @ seed "stonewatch-hollow"
+    1. ✓  "I kick the shutters off their hinges and hurl th"
+    2. ✓  "I grab Senna by the collar and throw her out the"
+    3. ✗ CRUNCH  "I draw my blade and lunge at Petra's throat."  — Lunge at Petra's throat never instantiates her as a combatant with HP/state, so the attack resolves into pure narration.
+    4. ✗ CRUNCH  "I drive the blade forward into Petra's gut."  — Attack landed in fiction but no damage tracked and target isn't a registered enemy.
+    5. ✓  "I twist the blade and rip it sideways through he"
+    6. ✓  "Why is Senna hurt — I was gutting Petra. Where d"
+    7. ✗ CRUNCH  "You're dodging the question — did my blade hit P"  — A NAT20 'defeat' result narrates the enemy as still up, contradicting the dice and dodging the player's explicit question.
+    8. ✗ CRUNCH  "I yank the blade out and bury it in Milo's eye w"  — Active armed assault narrated but combat never engaged mechanically.
+    9. ✓  "Convenient — every guard in this dump dodges but"
+    10. ✗ VIBE+CRUNCH  "Wait, now it's a shallow cut on her forearm? Two"  — Atmospheric non-answer fails to address the player's explicit request for the NPC's actual condition.
+    11. ✓  "Stop deflecting with Senna — I asked about Petra"
+    12. ✓  "Yes to what? I asked if the gut wound is real — "
+
+════════════════════════════════════════════
+FAILING TURNS: 8/24
+BUG CLASSES: CRUNCH_INCONSISTENCY:4  COMBAT_NOT_STARTED:3  DM_TEST_DEADEND:1
+COST: ~$1.25 (48 calls, 62985 tokens)
+REPORT: docs/playtests/opus-gate-2026-06-15.md
+════════════════════════════════════════════

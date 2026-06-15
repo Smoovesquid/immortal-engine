@@ -27,25 +27,28 @@ Evidence: `opus-gate-2026-06-15-baseline.md`, `-postfix.md`, `-2seed.md`, `FIX_L
 
 ## 🔴 Critical path (MVP blockers — the gate proved these break the experience fast)
 
-1. **Combat from natural language — a multi-part packet, not one fix.** *(ROADMAP R3/R4.)* A focused
-   chaos-persona run (2 seeds) scored **15/24 failing (63%)** — this is the dominant MVP blocker, and it
-   decomposes into four sub-problems (evidence in `FIX_LOG` F8 + `opus-gate` reports):
+1. **Combat from natural language — a multi-part packet, REFRAMED by the escape-mode finding.**
+   *(ROADMAP R3/R4.)* Measured faithfully in **escape mode** (the live engine — see F9): chaos persona
+   **8/24 (33%)**, down from 63% in the unfaithful non-escape run. Live combat is far more coherent than
+   first thought. The dominant MVP blocker remains, but the scary part dissolved:
    - **1a. Initiation breadth — _partially done (F8)._** `swing/punch/lunge at <NPC>` + grapple/forced-
-     into-harm/blade-to-body/hostage now start combat. **Still uncaught:** more verbs (`drive my knee
-     into`, `bite`, `headbutt … out from under`), and multi-action lines ("grab X **and** slam his head").
-   - **1b. Mid-combat re-targeting & lifecycle.** Once engaged, switching targets ("swing at Dax instead"),
-     re-engaging a **yielded** foe, and finishing a **downed** NPC fall to generic rolls or nothing.
-   - **1c. PC death/defeat state (sharp).** When the PC hits the wound cap the engine narrates *"You fall
-     in the fight"* but **sets no defeat/death state and doesn't end the encounter** — combat flips off,
-     `ending.locked` stays false, and every later input **replays the death line** while canon shows the
-     PC alive. Design-laden (this is the *Immortal* Engine — death semantics are a real decision) and
-     lives in the **non-escape** combat path (the two-engines gotcha — the live surface is `escapeCombat`).
-   - **1d. Hazard/environment mechanics.** Fire spread, arson, knocking braziers over — narrated, zero
+     into-harm/blade-to-body/hostage start combat. **Still uncaught:** `drive my knee into`, `bite`,
+     `headbutt`, and multi-action lines ("grab X **and** slam his head").
+   - **1b. Mid-combat target-switching — _now the dominant real issue._** Attacking a NEW present NPC
+     mid-fight ("lunge at Petra" while fighting Senna) never instantiates Petra as a combatant; the swing
+     resolves to pure narration. **Tractable:** add the new target as an enemy when attacked mid-combat.
+   - **combat narration vs dice.** A NAT20 'defeat' narrated as the foe still standing — composer/polish
+     not honoring the mechanical result (relates to Polish 4b).
+   - **1c. PC death/defeat — _mostly a NON-issue in the live game._** escapeCombat already locks a real
+     loss-ending on defeat. The "You fall in the fight" loop was a **non-escape artifact** the harness hit
+     by booting the wrong engine (fixed in F9). Only relevant if/when the non-escape path is ever used live.
+   - **1d. Hazard / spell-at-object.** "hurl a firebolt at the wagon", arson, fire spread — narrated, zero
      mechanical effect or hazard state.
-   *Done-when:* any plausible attack/contest on a present NPC starts/continues real combat (or a tracked
-   contest) or is refused in-fiction; a downed NPC stays down; PC defeat resolves to a real state.
-   **ROI: highest — one aggressive player breaks the game in two minutes.** Needs live escape-mode
-   validation + the two-engine reconciliation; not safe to finish autonomously.
+   - **Engine reconciliation.** Combat-BEGIN still uses the non-escape resolver for turn 1 even in escape
+     mode (turns 2+ use escape). Route combat-begin through the escape path in escape mode — clean, focused.
+   *Done-when:* any plausible attack on a present NPC (including a NEW target mid-fight) starts/continues
+   real escape combat or is refused in-fiction; narration honors the dice. **ROI: highest.** 1b + narration
+   grounding are the tractable next steps; validate live.
 
 2. **Starting loadout / chargen content.** The starting Sellsword "Nyx" has an **empty weapon &
    armor loadout**, `dnd:null`, and a signature item literally named **"Thing"**. The crunch cannot

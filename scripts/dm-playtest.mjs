@@ -261,7 +261,11 @@ async function judgeTurn({ player, dm, mechanics, world }) {
 let PACKS;
 async function runSession(seed, personaKey) {
   const persona = PERSONAS[personaKey];
-  let world = beginAdventure(newWorld({ seed, fate: 0.3, pack: { primaryId: 'fantasy', mixerId: null } }), PACKS).world;
+  // Match the LIVE game: public/v1.js boots new games with mode:'escape', which
+  // selects the escapeCombat engine (meta.escapeHp + a real loss-ending on
+  // defeat). Booting without it tested the NON-escape resolver — a different
+  // engine than players actually hit. (Found 2026-06-15 while tackling combat #1.)
+  let world = beginAdventure(newWorld({ seed, fate: 0.3, mode: 'escape', pack: { primaryId: 'fantasy', mixerId: null } }), PACKS).world;
   // Opening beat: the engine's start narration, polished, as the DM's first line.
   const opener = await tryAiNarration(world, world.scene?.narration || 'You wake. What do you do?', { input: '(begin)' })
     || world.scene?.narration || 'You wake. What do you do?';

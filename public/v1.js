@@ -131,7 +131,9 @@ const ui = {
   aiStatus: { ok: null, online: null, source: "(unknown)", mode: "(unknown)", envPresent: null, sessionPresent: null },
   devMode: false,
   gearOpen: false,
-  map: { zoom: 'one' }, // ONE MAP default (docs/ONE_MAP.md); old scales remain as tabs
+  map: { zoom: 'one' }, // ONE MAP (docs/ONE_MAP.md): one continuous semantic-zoom
+  // surface — no discrete scale tabs. renderLocalMap survives ONLY as an error
+  // fallback in renderWalkPlace (when placeFromWorldNode/createPlaceMap fail).
   // Continuous local-scale position: where your token stands on the one walkable
   // place (village + building interiors). Persists across re-renders; resets when
   // you move to a new node or interior state changes.
@@ -536,9 +538,13 @@ async function tryLocalNpcVoice(dialogue) {
         role: dialogue.npcRole || '',
         mood: dialogue.mood || '',
         manner: dialogue.manner || '',
+        trust: (dialogue.trustLevel ?? dialogue.trust ?? null),
         mode: dialogue.mode,
         factPhrase: dialogue.factPhrase || '',
-        playerLine: dialogue.playerLine || ''
+        playerLine: dialogue.playerLine || '',
+        historicalFigureId: dialogue.historicalFigureId || '',
+        claim: dialogue.claim || null,
+        substrateContext: dialogue.substrateContext || []
       })
     });
     const data = await res.json();
@@ -2050,8 +2056,19 @@ function renderWalkPlace(world) {
   if (locationChanged) {
     if (!nodeChanged && interiorChanged) {
       if (!interior) {
-        const fw = place.footprintW || 8;
-        ui.place = { nodeId, ux: fw / 2, uy: 12, interiorKey: curInteriorKey };
+        // Place the player just outside the door of the building they exited.
+        const prevKey = ui.place.interiorKey;
+        const exitedBld = prevKey
+          ? (place.buildings || []).find(b => b.structureKey && prevKey.startsWith(b.structureKey + ':'))
+          : null;
+        if (exitedBld) {
+          const entryRoom = (exitedBld.plan.rooms || []).find(r => r.isEntry) || exitedBld.plan.rooms?.[0];
+          const doorX = entryRoom ? entryRoom.cx + exitedBld.ox : exitedBld.ox;
+          ui.place = { nodeId, ux: doorX, uy: 12, interiorKey: curInteriorKey };
+        } else {
+          const fw = place.footprintW || 8;
+          ui.place = { nodeId, ux: fw / 2, uy: 12, interiorKey: curInteriorKey };
+        }
       } else {
         const bld = (place.buildings || []).find(b => String(b.structureKey || '') === String(interior.structureKey || ''));
         const s = bld ? snapToBuildingRoom(bld, interior.roomId) : homeStartPos(place);
@@ -2173,7 +2190,7 @@ function renderPlay() {
       }}, 'Load'),
       el('button', { class: 'gear-item', onClick: () => {
         ui.screen = 'map'; ui.gearOpen = false; render();
-      }}, 'Map (zoom levels)'),
+      }}, 'Map'),
       el('button', { class: 'gear-item', onClick: () => {
         ui.devMode = !ui.devMode; ui.gearOpen = false; render();
       }}, ui.devMode ? 'Hide Dev Info' : 'Show Dev Info'),

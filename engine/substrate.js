@@ -284,3 +284,29 @@ export function substrateEventsFor(world, nodeId) {
 
   return [...cosmologyEvents, ...regionEvents, ...nodeEvents].sort((a, b) => a.t - b.t);
 }
+
+/**
+ * npcSubstrateContext(world, nodeId) → NpcSubstrateEntry[]
+ *
+ * Formats the substrate events for this node as cascade-weighted voice context.
+ * Each entry carries a `clarity` field that encodes epistemic distance from the
+ * NPC's vantage point on the cascade ladder:
+ *
+ *   node events  → clarity:'vivid'  — the NPC's own town; lived or heard young
+ *   region events → clarity:'dim'   — common knowledge; rougher in the telling
+ *   cosmology    → clarity:'myth'   — barely a whisper; faint myth at best
+ *
+ * The voice layer uses this to ground NPCs in their specific rung of the cascade
+ * rather than flattening all history to the same epistemic weight.
+ */
+export function npcSubstrateContext(world, nodeId) {
+  const events = substrateEventsFor(world, nodeId);
+  return events.map(evt => ({
+    layer:   String(evt.layer  || 'node'),
+    kind:    String(evt.kind   || ''),
+    label:   String(evt.label  || ''),
+    clarity: evt.layer === 'node'      ? 'vivid'
+           : evt.layer === 'region'    ? 'dim'
+           :                             'myth',
+  }));
+}

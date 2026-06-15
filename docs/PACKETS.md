@@ -11,6 +11,91 @@ done_when · rollback`.
 
 ## ACTIVE
 
+### P-81 — One continuous zoom + organic layout + legible biome tiles
+**Status:** spec'd 2026-06-14 (Tim's render notes). The map is the "one map to rule
+them all" — a single continuous surface you zoom *through* (overworld → region →
+village → building), not discrete views swapped behind a button. Memory:
+`project_one_map_continuous_zoom`. Aligns with `project_map_beauty_dream` and
+`project_dm_only_verb` (map = read-only aid).
+**Why:** Three live defects break the illusion: (1) layout is grid-linear — roads and
+buildings snap to a lattice instead of scattering organically with terrain; (2) a zoom
+BUTTON exists — the wrong model; zoom must be fluid semantic zoom (scroll/pinch), no UI
+chrome; (3) terrain tiles are unreadable — **forests render like mountains** at low zoom,
+and an unidentified **"circles with giant worms"** tile fails to communicate its biome.
+
+**Objective:** One continuous, chrome-free zoomable map with organic village/road layout
+and biome tiles legible at a glance (a forest never reads as a mountain range).
+
+**Sub-packets (do in order; each ships green + a live screenshot):**
+- **P-81a — Kill the zoom button; fluid semantic zoom.** Remove the discrete zoom-view
+  toggle; drive level-of-detail from a continuous scroll/pinch zoom factor. No button.
+  - allowed: `public/v1.js`, `public/map/*` (renderer + input), no engine state change.
+  - done_when: scroll/pinch zooms smoothly overworld→building with no view-swap button;
+    suite green; `worldHash` unchanged (render-only).
+- **P-81b — Organic placement.** Villages scatter (clustered, irregular, terrain-aware);
+  roads curve between nodes instead of gridlines. OPEN DECISION (see below): derive the
+  scatter DETERMINISTICALLY from existing node coords (seeded jitter via `rng.js`) so
+  `worldHash`/replay holds — vs. a pure render-time scatter. Default: deterministic.
+  - allowed: `public/map/*` (+ a deterministic layout helper); engine only if the scatter
+    must persist (prefer NOT — keep it derived).
+  - done_when: a village reads as an irregular cluster, not a lattice; roads curve;
+    determinism preserved.
+- **P-81c — Legible biome tiles.** Distinct silhouettes/palette so forest≠mountain at low
+  zoom. IDENTIFY the "worm-circle" tile (suspect swamp/marsh — its sprite doesn't match
+  its meaning) and redraw it. Audit every biome sprite for glance-legibility.
+  - allowed: `public/map/*` (tile art/sprites), the biome→sprite mapping.
+  - done_when: forest/mountain visually unambiguous zoomed out; the worm-circle biome is
+    identified + redrawn to read correctly; live screenshots per biome.
+- invariants: render-only where possible; any generated layout is deterministic via
+  `rng.js`; map stays a read-only aid (no new verbs); `worldHash` stable.
+
+
+### P-80 — The world testifies: consequence for gratuitous magic
+**Status:** spec'd 2026-06-14. Design canon: `docs/MORALITY_SYSTEM.md` ("the world's
+recoil, the attention of chaotic gods"; karma as real physics; One God's ward over
+children). Memory: `project_gratuitous_magic_consequence`.
+**Why:** Cantrips are at-will by design (correct 5e), but out-of-combat blasting of
+trees/villagers hits the generic prose adjudicator (`playloop.js` ~4518) with ZERO
+consequence — no social, environmental, or divine recoil. The world must testify.
+
+**Objective:** An offensive working aimed out-of-combat at the innocent or the living
+world draws a consequence sized to the deed — rendered as the world's recoil (full-craft
+prose, no readout, no power-high; McCarthy law), never a mechanical prompt.
+
+**The ladder (default = a SIGN; escalation = intervention):**
+1. **Petty** (a tree, a one-off) → scorch-scar on the node + small ecology corruption
+   tick; an omen. The gods felt, not staged.
+2. **Repeated harm to innocents** → the good gods (Virtue covenant) send enemies —
+   escalating avengers (`spawnEncounter`).
+3. **Dedicate the death of an innocent** (deliberate, not collateral) → engage the chaos
+   gods: a deal with the devil — they may aid you, at a price. Reuses the existing
+   dark-gift path (`engine/magic/forbiddenGates.js`): a dedicated innocent-kill spikes
+   corruption → a forbidden gift arrives unbidden.
+4. **A child** → hard absolute exclusion (One God's ward). Never resolves; already law.
+
+**Sub-packets (do in order, each ships suite-green + a live playtest report):**
+- **P-80a — Spine: detect + classify.** In the out-of-combat cast path, detect an
+  *offensive* working and classify its target: `person-innocent` / `living-world` /
+  `void`. New module `engine/magic/castConsequence.js` (pure; classify + route).
+  - allowed: `engine/magic/castConsequence.js` (new), `engine/playloop.js` (route before
+    the generic `cast:` adjudicator), one test `tests/U141.castConsequence.test.js`.
+  - done_when: classification unit-tested deterministically; route returns the existing
+    flavor unchanged for non-offensive/void casts (no behavior regression); suite green.
+- **P-80b — Social + environmental tiers.** `person-innocent` → witness alarm + NPC
+  trust/faction recoil (`npcTrustDelta`). `living-world` → `scarifyNode` + ecology tick.
+  - allowed: `engine/magic/castConsequence.js`, `engine/playloop.js` (surfacing only).
+  - done_when: blasting a villager drops trust + a witnessed-recoil line; blasting trees
+    scars the node; `worldHash` stable under replay; suite + playtest:quick green.
+- **P-80c — Divine tiers.** Repeat harm → good-god avengers via `spawnEncounter`.
+  Dedicated innocent-kill → corruption spike → existing dark-gift (the chaos pact).
+  Child target → reaffirm the absolute exclusion. Omen prose throughout (no smiting).
+  - allowed: `engine/magic/castConsequence.js`, `engine/playloop.js`, possibly
+    `engine/magic/forbiddenGates.js` (only if a new dedicated-kill threshold is needed).
+  - done_when: a live playtest shows the three escalations firing; determinism preserved.
+- invariants: `rng.js` only; mutations via `applyDeltas`; narration≠canon; the McCarthy
+  law (no readout, no power-high, full prose); child exclusion is absolute.
+- rollback: new module + named hook lines in `playloop.js`; revert the named files.
+
 ### P-66 — Unify movement inputs + interactions on the walkable place
 **Status:** P-66a ✅ done · P-66b ✅ done · P-66c ⏸ deferred (deliberate version-bump pass).
 Suite 6,934 green; live-verified (compass/text/click all move one token; clicking

@@ -30,7 +30,7 @@ import { castArcs, tickArcs } from './story/storyEngine.js';
 import { beginDialogue, askNpc, endDialogue, resolveNpcAtCurrentNode, isRecruitIntent, npcVoice, voiceManner } from './npc/dialogue.js';
 import { mintThing, revealTrueEdge } from './things.js';
 import { mintClaim } from './claims.js';
-import { generateSubstrate, ensureNodeSubstrate, substrateEventsFor } from './substrate.js';
+import { generateSubstrate, ensureNodeSubstrate, substrateEventsFor, npcSubstrateContext } from './substrate.js';
 import { resolveArc } from './npc/npcArc.js';
 import { companionPass } from './npc/companionVoice.js';
 import { checkMilestone, buildLevelUpLine } from './advancement/milestones.js';
@@ -39,6 +39,7 @@ import { resolveCombatTurn } from './combat/combatResolve.js';
 import { beginCombat, endCombat, mintEnemyFromNpc } from './combat/combatLifecycle.js';
 import { resolveCompanionTurn } from './combat/companionTurn.js';
 import { castSpell } from './spell/castSpell.js';
+import { classifyOffensiveCast, castConsequence } from './magic/castConsequence.js';
 import { evaluateEncounter, selectCreatures, spawnEncounter } from './combat/encounterSpawn.js';
 import { isMetaQuestion, handleMetaQuestion, isNullAction, isQuestionShaped } from './grace/gracefulAdjudication.js';
 import { resolveEscapeCombatTurn, initEscapeHp, initEscapeKit, shortRest, longRest, applySurpriseRound, parseEscapeAction, combatStatusAnswer, meleeProfile, playerAc } from './combat/escapeCombat.js';
@@ -797,7 +798,10 @@ function playerMoveCore(world, packsById, text) {
             commonBody: String(asked.outcome.commonBody || ''),
             trustLevel: Number(asked.outcome.trustLevel) || 0,
             playerLine: String(text || ''),
-            historicalFigureId: String(asked.outcome.historicalFigureId || '')
+            historicalFigureId: String(asked.outcome.historicalFigureId || ''),
+            // Cascade-weighted substrate: the NPC's rung of history.
+            // vivid = their town; dim = their region; myth = the cosmological age.
+            substrateContext: npcSubstrateContext(w, String(w.map?.currentNodeId || ''))
           }
         }
       };
@@ -836,8 +840,9 @@ function playerMoveCore(world, packsById, text) {
       const nodeId = String(st?.nodeId || '');
       const cn = dnodes.find(n => String(n?.id || '') === nodeId) || null;
       const biome = cn ? biomeForNode(w.meta.seed, cn) : 'wilderness';
-      const room = dungeonRoomAt(w.meta.seed, nodeId, String(inside.roomId), { biome });
-      if (room) return { world: w, output: { narration: dungeonLookNarration(room, text) + dungeonExitsLine(w), mechanics: '' } };
+      const dungeon = generateDungeon(w.meta.seed, nodeId, { biome, substrateEvents: substrateEventsFor(w, nodeId) });
+      const room = dungeon.levels[0]?.rooms?.[String(inside.roomId)] || null;
+      if (room) return { world: w, output: { narration: dungeonLookNarration(room, text) + dungeonTelegraph(w, dungeon) + dungeonExitsLine(w), mechanics: '' } };
     }
 
     // D1b — take the treasure. A room's hoard is granted once, then the room is
@@ -931,9 +936,11 @@ function playerMoveCore(world, packsById, text) {
           const cn = (w2.map?.nodes || []).find(n => String(n?.id || '') === nodeId) || null;
           const biome = cn ? biomeForNode(w2.meta.seed, cn) : 'wilderness';
           const roomId = String(w2.scene.interior.roomId);
-          const room = dungeonRoomAt(w2.meta.seed, nodeId, roomId, { biome });
+          const dungeon = generateDungeon(w2.meta.seed, nodeId, { biome, substrateEvents: substrateEventsFor(w2, nodeId) });
+          const room = dungeon.levels[0]?.rooms?.[roomId] || null;
           const movedLead = movedDir ? `You move ${movedDir}.` : 'You move on.';
-          // D1b — a denizen ambushes if this room holds an un-cleared encounter.
+          // A denizen reveals itself if this room still holds an un-cleared encounter
+          // — the dread you've carried resolves into the fight (the payoff).
           const sroom = (st?.topology?.rooms || []).find(r => r.id === roomId);
           const enc = room?.contents?.find(c => c.kind === 'encounter');
           if (enc && !(sroom?.tags || []).includes('cleared')) {
@@ -941,10 +948,10 @@ function playerMoveCore(world, packsById, text) {
             const creatures = selectCreatures(enc.cr, enc.count, null, frng, biome);
             let w3 = applyDeltas(w2, [{ op: 'tagRoom', structureId: st.id, roomId, tag: 'cleared' }]);
             w3 = spawnEncounter(w3, creatures, { ambush: true, reason: 'dungeon' }, frng);
-            return { world: w3, output: { narration: `Wizard: ${movedLead} ${dungeonAmbushLine(creatures)}`, mechanics: '[encounter]' } };
+            return { world: w3, output: { narration: `Wizard: ${movedLead} ${dungeonAmbushLine(creatures, dungeon)}`, mechanics: '[encounter]' } };
           }
           const body = room ? dungeonLookNarration(room, 'look around').replace(/^Wizard:\s*/, '') : '';
-          return { world: w2, output: { narration: `Wizard: ${movedLead} ${body}${dungeonExitsLine(w2)}`.trim(), mechanics: '' } };
+          return { world: w2, output: { narration: `Wizard: ${movedLead} ${body}${dungeonTelegraph(w2, dungeon)}${dungeonExitsLine(w2)}`.trim(), mechanics: '' } };
         }
         const moveMsg = movedDir ? `Wizard: You move ${movedDir} into the next chamber.` : 'Wizard: You move into the next chamber.';
         return { world: w2, output: { narration: moveMsg, mechanics: '' } };
@@ -1376,7 +1383,18 @@ function playerMoveCore(world, packsById, text) {
   // Dialogue cannot begin mid-combat (the world invariant forbids combat.active
   // and scene.dialogue coexisting). When fighting, a "talk to X" intent falls
   // through to the combat turn rather than crashing. See prose-playtest finding.
-  const talkRef = !w.combat?.active ? extractDialogueRef(text) : null;
+  let talkRef = !w.combat?.active ? extractDialogueRef(text) : null;
+  // "go over to Aldrich (and say hello)" is dialogue ONLY when Aldrich is actually
+  // standing here (strict, name-only match); a place name falls through to travel
+  // below. This is what makes natural approach phrasings reach conversation without
+  // hijacking "go to the mill". (Present-NPC wins, narrowly.)
+  if (!talkRef && !w.combat?.active) {
+    const approachRef = extractApproachRef(text);
+    if (approachRef) {
+      const strictNpc = resolvePresentNpcStrict(w, approachRef);
+      if (strictNpc) talkRef = String(strictNpc.name || strictNpc.id || '');
+    }
+  }
   if (talkRef) {
     // "Talk to someone" with no name: a real DM doesn't roll dice at a vague
     // intention — they name who's actually here and ask who you mean.
@@ -1466,6 +1484,21 @@ function playerMoveCore(world, packsById, text) {
           }
         };
       }
+    }
+  }
+
+  // ── P-80: The world testifies ─────────────────────────────────────────────
+  // An offensive working aimed OUT OF COMBAT at the innocent or the living world
+  // is a deed; the world recoils (docs/MORALITY_SYSTEM.md). This runs in BOTH
+  // modes (escape is live) and BEFORE the T3 cast branch / generic adjudicator,
+  // which would otherwise resolve it as consequence-free flavor. In-combat casts
+  // are the legitimate use and pass through untouched. (P-80a: spine — classify +
+  // recoil prose + the absolute child ward; social/environmental/divine in b/c.)
+  if (!w.combat?.active) {
+    const castCls = classifyOffensiveCast(w, text);
+    if (castCls.offensive && castCls.target && castCls.target !== 'void') {
+      const conseq = castConsequence(w, text, castCls);
+      if (conseq) return { world: conseq.world, output: { narration: conseq.narration, mechanics: conseq.mechanics } };
     }
   }
 
@@ -2726,8 +2759,14 @@ function inferInteriorAction(text, interior) {
   const goDir = t.match(/^\s*(?:go\s+)?(north|south|east|west|n|s|e|w)\s*$/i);
   if (goDir) return { kind: 'move', toRoomId: '', direction: normalizeDir(goDir[1]) };
 
+  // "go <roomId>" / "go hall" is an interior move — but NOT "go to/over/up Aldrich":
+  // a movement preposition isn't a room, it's the start of an approach-a-person
+  // intent, which must fall through to the dialogue path (resolved against present
+  // NPCs there). Without this, "go to X" reads as a room move and hits a wall.
   const goMatch = t.match(/\bgo\s+([a-z0-9:_-]+)/i);
-  if (goMatch) return { kind: 'move', toRoomId: String(goMatch[1] || ''), direction: '' };
+  if (goMatch && !/^(?:to|over|up|down|back|into|in|out|on|toward|towards|and)$/i.test(goMatch[1])) {
+    return { kind: 'move', toRoomId: String(goMatch[1] || ''), direction: '' };
+  }
   return { kind: 'none' };
 }
 
@@ -2753,40 +2792,76 @@ function isDungeonLookIntent(text) {
   return false;
 }
 
+// The descent — a horror beat, not a fight. Names the SPECIFIC place and hints at
+// the catastrophe that made it (the Underworld-is-horror law: dread first).
 function dungeonDescendNarration(dungeon, room) {
-  const feat = room?.contents?.find(c => c.kind === 'feature');
-  const dark = (room?.light === 'dark') ? 'into close dark' : 'into the dim';
-  const lead = `Wizard: Worn steps drop away beneath your feet ${dark}. The air turns cold and unmoving, thick with dust and old stone.`;
-  return feat ? `${lead} ${feat.look}.` : lead;
+  const h = dungeon?.history || {};
+  const origin = h.origin || 'an old dark beneath the world';
+  const lead = `Wizard: The stair drops you out of the daylight and into ${origin}. The cold rises to meet you; the dark closes just past the reach of your light, and your own breathing is the loudest thing down here.`;
+  void room;
+  return h.catastrophe ? `${lead} This is where ${h.catastrophe} — and whatever came after has had the place to itself a long time.` : lead;
 }
 
+// A room read as horror: surface its ECHO (a sign of the history) and the pressing
+// dark. A targeted examine brings the light close — and the worse understanding.
 function dungeonLookNarration(room, text) {
   const feat = room?.contents?.find(c => c.kind === 'feature');
   const t = String(text || '').toLowerCase();
   const around = /\b(look around|look round|look about|survey|what'?s here|where am i)\b/.test(t);
   const targeted = feat && !around && /\b(examine|inspect|study|read|look at|approach|investigate|touch)\b/.test(t);
-  if (targeted) return `Wizard: ${feat.look}. ${feat.detail}`;
-  const shadow = (room?.light === 'dark') ? ' Your light throws long shadows up the walls.' : '';
-  const here = feat ? ` At its heart, ${feat.look.charAt(0).toLowerCase()}${feat.look.slice(1)}.` : '';
-  return `Wizard: A still, low chamber of cold stone.${shadow}${here}`;
+  const shadow = (room?.light === 'dark') ? ' Your light reaches only so far; past it, the dark waits.' : '';
+  if (feat?.vaultHeart) {
+    return targeted ? `Wizard: ${feat.look}. ${feat.detail}`
+      : `Wizard: You have come to the heart of the place.${shadow} ${capFirst(feat.look)}.`;
+  }
+  if (feat?.echo) {
+    return targeted ? `Wizard: You bring the light close. ${capFirst(feat.look)} — and the back of your neck prickles at what it means.`
+      : `Wizard: A low chamber of cold, weeping stone.${shadow} Your light finds ${feat.look}.`;
+  }
+  if (feat) {
+    return targeted ? `Wizard: ${feat.look}. ${feat.detail || ''}`.trim()
+      : `Wizard: A low chamber of cold stone.${shadow} ${capFirst(feat.look)}.`;
+  }
+  return `Wizard: A bare passage of cold stone; somewhere out of sight, water beads and falls.${shadow}`;
 }
 
-// The ways onward, so the crawl is never a guessing game — a DM names the exits.
+// The ways onward — named so the crawl is never a guessing game, but kept dark.
 function dungeonExitsLine(w) {
   const ex = interiorDirectionalExits(w);
   const dirs = ['north', 'east', 'south', 'west'].filter(d => ex && ex[d]);
-  if (!dirs.length) return ' There is no way on — this is a dead end.';
+  if (!dirs.length) return ' There is no way on — the dark dead-ends here.';
   const list = dirs.length === 1 ? dirs[0] : `${dirs.slice(0, -1).join(', ')} and ${dirs[dirs.length - 1]}`;
-  return ` Passage${dirs.length > 1 ? 's' : ''} lead${dirs.length > 1 ? '' : 's'} ${list}.`;
+  return ` Dark passage${dirs.length > 1 ? 's open' : ' opens'} ${list}.`;
 }
 
-// A denizen rousing as you step into its room (D1b).
-function dungeonAmbushLine(creatures) {
+// DREAD ON THE APPROACH: if a passage leads to a room that still holds its denizen,
+// you SENSE it before you see it. The tension builds; the fight (the payoff) is earned.
+function dungeonTelegraph(w, dungeon) {
+  const interior = (w.scene && typeof w.scene.interior === 'object') ? w.scene.interior : null;
+  if (!interior) return '';
+  const st = w.structures?.byId?.[String(interior.structureKey)];
+  const ex = interiorDirectionalExits(w);
+  const rooms = dungeon?.levels?.[0]?.rooms || {};
+  for (const dir of ['north', 'east', 'south', 'west']) {
+    const adjId = ex[dir]; if (!adjId) continue;
+    const sroom = (st?.topology?.rooms || []).find(r => r.id === adjId);
+    if ((sroom?.tags || []).includes('cleared')) continue;
+    if (rooms[adjId]?.contents?.some(c => c.kind === 'encounter')) {
+      return ` Down the passage ${dir}, something shifts — a dragging weight, a wet breath in the dark. You are not alone, and it is that way.`;
+    }
+  }
+  return '';
+}
+
+// The reveal — the dread resolves into the thing itself, named through the history's
+// denizen, and the fight (the payoff) begins.
+function dungeonAmbushLine(creatures, dungeon) {
+  const den = dungeon?.history?.denizen || '';
   const name = String(creatures?.[0]?.name || 'something').toLowerCase();
   const an = /^[aeiou]/.test(name) ? 'an' : 'a';
-  return (creatures?.length || 1) > 1
-    ? `The dark erupts — ${name}s rush you from the shadows!`
-    : `The dark stirs, and ${an} ${name} lunges from the shadows — to arms!`;
+  const what = (creatures?.length || 1) > 1 ? `${name}s come out of the dark at you` : `${an} ${name} unfolds from the dark`;
+  return den ? `Your light catches it at last — ${den}. ${capFirst(what)}. To arms!`
+             : `Your light catches it — ${capFirst(what)}. To arms!`;
 }
 
 function isDungeonLootIntent(text) {
@@ -3100,6 +3175,17 @@ function extractDialogueRef(text) {
   // 'X, hello' / 'X, good morning'
   const m4 = t.match(/^\s*([a-z][a-z' -]+?),\s*(?:hello|hi|hey|greetings|good\s+(?:morning|day|evening)|well met)\b/i);
   if (m4 && m4[1]) return cleanDialogueRef(m4[1]);
+  // Approaching or greeting a PERSON is dialogue intent. m5/m6 return a CANDIDATE
+  // ref; the caller resolves it against NPCs actually present and falls through to
+  // travel when it's a place, not a person — so "go over to Aldrich" (he's here)
+  // talks, while "go to the mill" still travels. (Present-NPC wins, narrowly.)
+  // 'greet X' / 'say hello to X' / 'wave|nod to X' / 'introduce myself to X' — an
+  // explicit greeting verb signals talk intent, so a loose name match is fine.
+  const m5 = t.match(/\b(?:greet|say\s+(?:hello|hi|hey|good\s+(?:morning|day|evening))\s+to|wave\s+(?:to|at)|nod\s+(?:to|at)|introduce\s+myself\s+to)\s+(.+)/i);
+  if (m5 && m5[1]) return cleanApproachRef(m5[1]);
+  // (The ambiguous "go/walk over to X" approach is handled separately via
+  // extractApproachRef + a STRICT present-NPC match — see the routing — so a place
+  // like "go to the old mill" still travels.)
   // A bare greeting with no name: route to the who-do-you-mean clarify.
   if (/^\s*(?:hello|hi|hey|greetings|good\s+(?:morning|day|evening)|well met)\s*(?:there|everyone|all|folks|friends)?\s*[!.?]*\s*$/i.test(t)) return 'someone';
   return '';
@@ -3110,6 +3196,42 @@ function cleanDialogueRef(raw) {
     .trim()
     .replace(/[.!?,;:]+$/, '')
     .trim();
+}
+
+// Like cleanDialogueRef, but also drops a trailing intent clause so a compound
+// "go over to Aldrich and say hello" resolves to the person ("Aldrich"), not the
+// whole phrase. (Resolution against present NPCs decides whether it's dialogue.)
+function cleanApproachRef(raw) {
+  const trimmed = String(raw || '').replace(
+    /\s+and\s+(?:say\b.*|greet\b.*|talk\b.*|chat\b.*|speak\b.*|introduce\b.*|wave\b.*|nod\b.*|ask\b.*|tell\b.*|see\s+(?:what|how|if|whether)\b.*)$/i, ''
+  );
+  return cleanDialogueRef(trimmed);
+}
+
+// The ambiguous "approach" phrasings ("go over to X", "walk up to X"). Returns a
+// candidate ref or ''. The caller decides it's dialogue ONLY if the ref strictly
+// names a present NPC (resolvePresentNpcStrict); otherwise it's travel/movement.
+function extractApproachRef(text) {
+  const m = String(text || '').match(/\b(?:go|come|walk|head|step|wander|stroll|move)\s+(?:(?:right|on|back)\s+)?(?:over|up)?\s*to\s+(.+)/i);
+  return (m && m[1]) ? cleanApproachRef(m[1]) : '';
+}
+
+// Strict, NAME-only match against the non-hostile NPCs standing at the current
+// node: exact name, full name-prefix, or first-name token (length >= 3). Rejects
+// directions/place words so "go to the old mill" never reads as a person. This is
+// the "present-NPC wins, narrowly" disambiguation for ambiguous approach intents.
+function resolvePresentNpcStrict(world, ref) {
+  const r = String(ref || '').trim().toLowerCase().replace(/^(?:the|a|an)\s+/, '').trim();
+  if (r.length < 3) return null;
+  if (/^(?:north|south|east|west|up|down|left|right|here|there|inside|outside|back|home|onward|forward|away|on)$/.test(r)) return null;
+  const node = (world?.map?.nodes || []).find(n => n && n.id === world?.map?.currentNodeId) || null;
+  const npcs = (node?.settlement?.npcs || []).filter(n => n && !n.hostile);
+  for (const n of npcs) {
+    const nm = String(n.name || '').toLowerCase();
+    if (!nm) continue;
+    if (nm === r || nm.startsWith(r + ' ') || (nm.split(/\s+/)[0] || '') === r) return n;
+  }
+  return null;
 }
 
 // Inspection verbs that ask to look closely AT a specific thing (as opposed to

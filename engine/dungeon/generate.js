@@ -160,7 +160,7 @@ function roomContents(role, theme) {
 
 // Build a small dungeon: 5–12 rooms, one level, a real D&D room graph (a branching
 // tree off the entry with a loop or two), the deepest room its vault. Deterministic.
-function buildSmall(rng, theme) {
+function buildSmall(rng, theme, history) {
   const n = 5 + rng.int(0, 7);                          // 5–12 rooms
   const ids = [];
   for (let i = 0; i < n; i++) ids.push(i === 0 ? 'r:entry' : `r:r${i}`);
@@ -181,25 +181,37 @@ function buildSmall(rng, theme) {
   while (q.length) { const x = q.shift(); for (const nb of adj.get(x)) if (!depth.has(nb)) { depth.set(nb, depth.get(x) + 1); q.push(nb); } }
   let vault = 'r:entry', vd = -1;
   for (const id of ids) { const d = depth.get(id) ?? 0; if (d > vd) { vd = d; vault = id; } }
+
+  // The Underworld is HORROR: the entry and the shallow rooms are pure ATMOSPHERE
+  // and DISCOVERY (no fights), each surfacing one of the history's ECHOES so the
+  // crawl reads its story. Encounters live DEEP and SPARSE — the vault guardian is
+  // the climax (the payoff), with maybe a stalker on the way down. Dread first;
+  // the fight is earned. (Depth/tier scaling arrives with D3/D4.)
+  const echoes = (history && Array.isArray(history.echoes) && history.echoes.length)
+    ? history.echoes : (HISTORY[theme] || HISTORY.crypt).echoes;
+  const deepThreshold = Math.max(2, Math.ceil(vd / 2));
+  let echoI = 0;
   const rooms = {};
   for (const id of ids) {
     const deg = adj.get(id).size;
+    const d = depth.get(id) ?? 0;
     const role = id === 'r:entry' ? 'entry' : id === vault ? 'vault' : deg === 1 ? 'cache' : deg >= 3 ? 'chamber' : 'corridor';
-    const contents = [...roomContents(role, theme)];
-    // D1b — population (deterministic; rng drawn in a fixed order per room).
-    // A denizen guards the vault always, and chambers/corridors sometimes; the
-    // safe entry never. CR is low (a small dungeon); depth-scaling comes with D4.
-    if (role !== 'entry') {
-      const roll = rng.nextFloat();
-      const wants = role === 'vault' || ((role === 'chamber' || role === 'corridor') && roll < 0.45);
-      if (wants) {
-        // A small dungeon is LOW tier — a starting party should be able to win or
-        // flee. The vault holds the toughest (CR 1–2); other rooms CR 1 or weaker.
-        // (Depth/geographic-tier scaling arrives with D3/D4.)
-        const cr = role === 'vault' ? 1 + rng.int(0, 1) : 1;
-        const count = 1;
-        contents.push({ kind: 'encounter', cr, count });
-      }
+    const contents = [];
+    // Feature: the vault holds the theme's centerpiece (the heart); chambers and
+    // caches each surface a history echo (environmental storytelling); the entry
+    // and bare corridors hold only the dark.
+    if (role === 'vault') {
+      const f = SHRINE_FEATURE[theme] || SHRINE_FEATURE.shrine;
+      contents.push({ kind: 'feature', name: f.name, look: f.look, detail: f.detail, vaultHeart: true });
+    } else if (role === 'chamber' || role === 'cache') {
+      contents.push({ kind: 'feature', name: 'a sign of what happened here', look: echoes[echoI++ % echoes.length], echo: true });
+    }
+    // Encounters: the vault always (the climax); deep chambers/corridors sometimes.
+    // NEVER the entry or the shallow half — you descend through dread to earn them.
+    const deepEnough = d >= deepThreshold;
+    if (role === 'vault' || ((role === 'chamber' || role === 'corridor') && deepEnough && rng.nextFloat() < 0.4)) {
+      const cr = role === 'vault' ? 1 + rng.int(0, 1) : 1;   // low tier; a starter can win or flee
+      contents.push({ kind: 'encounter', cr, count: 1 });
     }
     // Treasure rests in the vault (the hoard) and the caches (forgotten stashes).
     if (role === 'vault' || role === 'cache') {
@@ -232,8 +244,10 @@ export function generateDungeon(seed, entranceNodeId, opts = {}) {
   const rng = makeRng(seedFromString(`${seed}|dungeon|${nodeId}`));
   const theme = opts.theme || themeFor(rng, biome);
 
-  const levels  = (scale === 'shrine') ? buildShrine(rng, theme) : buildSmall(rng, theme);
+  // History first — the build reads its ECHOES into the rooms, so the crawl tells
+  // the dungeon's story as you go (the Underworld-is-horror law).
   const history = generateHistory(rng, theme, opts.substrateEvents);
+  const levels  = (scale === 'shrine') ? buildShrine(rng, theme) : buildSmall(rng, theme, history);
 
   return normalizeDungeon({ id: `dungeon:${nodeId}`, seed: String(seed), entranceNodeId: nodeId, scale, theme, biome, history, levels });
 }

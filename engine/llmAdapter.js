@@ -125,6 +125,7 @@ export function buildSystemPrompt(ctx) {
   lines.push(
     `RULES:`,
     `- Do NOT invent topology, place names, or structures not listed above.`,
+    `- Do NOT name any person, place, structure, or thing with a proper name unless that exact name is already listed in the facts above. Refer to anyone or anywhere else only in generic terms (a traveler, a nearby road, the elder).`,
     ambientRule,
     `- Do NOT use the words: actually, turns out.`,
     `- Do NOT use brackets or parentheses.`,
@@ -176,6 +177,90 @@ export async function callLLM({
 }
 
 // ── N4: Extended grounding validator ─────────────────────────────────────────
+
+// ── Canon proper-noun backstop ──────────────────────────────────────────────
+// Reinstated 2026-06-15 after the Opus playtest gate caught the narration LLM
+// inventing NPC and place names the system prompt alone failed to suppress
+// ("Senna the Elder", "Ferry Landing", "Aldren"). Polished narration may only
+// use proper nouns GROUNDED in canon: the engine base text, the place, NPCs
+// present, the speaker, place history, the ledger, and known map nodes. Any
+// other name-like capitalized token is treated as invented canon — reject the
+// polish and fall back to the (always-grounded) engine base narration.
+
+const COMMON_CAPS = new Set([
+  'the','a','an','and','but','or','nor','for','so','yet','if','then','than','as','at','by','in','on','to','of','off','up','out',
+  'with','from','into','onto','over','under','about','after','before','above','below','between','through','across','behind','beside','around','toward','towards','against','along','amid','beneath',
+  'you','your','yours','i','my','me','mine','we','our','ours','us','he','she','it','they','them','him','his','her','hers','their','theirs','its',
+  'this','that','these','those','here','there','now','then','today','tonight','tomorrow','yesterday','once','soon','still','again',
+  'no','yes','not','never','always','nothing','someone','something','somewhere','anyone','anything','everyone','everything','nobody','none',
+  'north','south','east','west','left','right','down','up',
+  'dm','wizard','god','gods','goddess','fate',
+  'monday','tuesday','wednesday','thursday','friday','saturday','sunday',
+  'january','february','march','april','june','july','august','september','october','november','december',
+  'might','wits','grace','nerve','focus','force','vigor','luck','guile',
+  'when','where','what','who','whom','whose','why','how','while','because','though','although','until','unless','whether','since','before','after',
+  'one','two','three','four','five','six','seven','eight','nine','ten','first','second','third','last','next',
+  // common address/titles a DM uses generically (not proper names)
+  'brother','sister','father','mother','elder','captain','lord','lady','sir','madam','master','mistress','child','stranger','traveler','traveller','friend','neighbor','neighbour','guard','soldier','priest','merchant','keeper','warden','marshal','sergeant',
+  // common interjections / dialogue openers (capitalized inside quotes, not names)
+  'hello','hi','hey','well','oh','ah','please','thanks','thank','goodbye','sorry','wait','stop','run','listen','look','come','help','halt','enough','indeed','perhaps','maybe','fine','good','nay','aye','aha','hush','peace','easy','steady','careful',
+]);
+
+function normNoun(t) { return String(t).toLowerCase().replace(/[^a-z]/g, ''); }
+
+export function collectGroundedNouns({ world = null, ctx = null, base = '' } = {}) {
+  const set = new Set();
+  const add = (str) => {
+    for (const tok of String(str || '').split(/[^A-Za-z'’-]+/)) {
+      const n = normNoun(tok);
+      if (n.length >= 2) set.add(n);
+    }
+  };
+  add(base);
+  if (ctx) {
+    add(ctx.placeName); add(ctx.location); add(ctx.objective);
+    if (Array.isArray(ctx.structuresHere)) for (const s of ctx.structuresHere) add(s?.kind);
+    if (ctx.settlement?.npcs) for (const npc of ctx.settlement.npcs) { add(npc?.name); add(npc?.role); }
+    if (ctx.speaker?.name) add(ctx.speaker.name);
+    if (Array.isArray(ctx.placeChunks)) for (const c of ctx.placeChunks) add(c?.text);
+  }
+  if (Array.isArray(world?.ledger?.facts)) for (const f of world.ledger.facts) add(f?.text);
+  if (Array.isArray(world?.map?.nodes)) for (const n of world.map.nodes) add(n?.name);
+  return set;
+}
+
+// Returns the first ungrounded proper-noun-looking token in `candidate`, or null.
+// Defensive: never throws (a thrown guard would break the narration path).
+export function findInventedProperNoun(candidate, groundedNouns) {
+  try {
+    const text = String(candidate || '');
+    const re = /[A-Za-z][A-Za-z'’-]*/g;
+    let m, first = true;
+    while ((m = re.exec(text)) !== null) {
+      const raw = m[0];
+      const start = m.index;
+      const prev = start > 0 ? text[start - 1] : '';
+      let i = start - 1; while (i >= 0 && /\s/.test(text[i])) i--;
+      const prevNonSpace = i >= 0 ? text[i] : '';
+      // Sentence-initial caps are ordinary (start, or after . ! ? / paren / dash).
+      // Quotes are NOT treated as sentence-start: a capitalized word in quotes
+      // ("Aldren") may be an invented spoken NAME, which is exactly what we hunt
+      // — common dialogue openers ("Hello") are covered by COMMON_CAPS instead.
+      const sentenceStart = first || /[.!?]/.test(prevNonSpace)
+        || ['(', '—', '–'].includes(prev);
+      first = false;
+      if (!/^[A-Z]/.test(raw)) continue;
+      if (sentenceStart) continue;
+      const n = normNoun(raw);
+      if (n.length < 2) continue;
+      if (COMMON_CAPS.has(n)) continue;
+      if (groundedNouns.has(n)) continue;
+      if (n.endsWith('s') && groundedNouns.has(n.slice(0, -1))) continue; // possessive/plural
+      return raw;
+    }
+    return null;
+  } catch { return null; }
+}
 
 export function validateNarrationCandidate(world, narrationCandidate, {
   facts = [],
@@ -238,8 +323,12 @@ export function validateNarrationCandidate(world, narrationCandidate, {
     if (denied && containsInsensitive(cand, denied)) return false;
   }
 
-  // New-noun heuristic removed — the system prompt already constrains invention.
-  // The location lock and node-type guard are the meaningful checks.
+  // Canon proper-noun backstop: reject polish that introduces a person/place
+  // name not grounded in canon (the system prompt asks for this, but the Opus
+  // gate proved the model invents names anyway). Falls back to the grounded
+  // base narration — always safe. See collectGroundedNouns / findInventedProperNoun.
+  const grounded = collectGroundedNouns({ world: w, ctx, base: baseNarration });
+  if (findInventedProperNoun(cand, grounded)) return false;
 
   return true;
 }

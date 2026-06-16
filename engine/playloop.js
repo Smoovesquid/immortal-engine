@@ -997,17 +997,16 @@ function playerMoveCore(world, packsById, text) {
     // Risky/obstructed/special movement falls through to normal resolution (roll-capable path).
   }
 
-  // Travel intent voiced while indoors ("head toward the forest" from inside
-  // the inn): a real DM bridges it — you're inside; the road starts at the
-  // door. Clarify rather than rolling dice at the idea of leaving.
+  // Travel intent voiced while indoors ("head south toward the elder" from inside
+  // the inn): a real DM BRIDGES it — you're inside, so you step to the door and
+  // set off. Don't bounce the intent back as a two-step chore (THE_DM_TEST).
+  // Exit the interior, then resolve the journey on the now-outdoor world. No
+  // recursion risk: the interior is cleared, so this gate can't fire again.
   if (w.scene?.interior && !w.combat?.active && isFreeMovementIntent(text) && /\b(toward|towards|make for|get moving|set (?:out|off)|head)\b/i.test(String(text || ''))) {
-    return {
-      world: w,
-      output: {
-        narration: 'Wizard: You\'re indoors — the road starts at the door. Say "go outside" and then name your heading.',
-        mechanics: '[clarify:indoors]'
-      }
-    };
+    const outside = exitStructureInterior(w);
+    const r = playerMoveCore(outside, packsById, text);
+    const inner = String(r?.output?.narration || '').replace(/^Wizard:\s*/, '').trim();
+    return { ...r, output: { ...(r.output || {}), narration: `Wizard: You step out into the open air. ${inner}`.trim() } };
   }
 
   // Target-aware examination: "examine the table" / "look at the crate" / "inspect

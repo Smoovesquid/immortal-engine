@@ -4757,6 +4757,12 @@ function applyDeedCharges(world, text, output) {
 function trivialNarration(w, text) {
   const c = classifyTrivial(text);
   if (!c) return 'You do so without difficulty.';
+  // Never echo a long/complex captured object back at the player — e.g. classify
+  // grabbing "door yourself, Corwin, and stand inside it…" as the object reads as
+  // the DM parroting the input verbatim (a system-artifact leak). Fall to generic.
+  if (c.object && (/[,;—]|\byourself\b|\byourselves\b|\bthemselves?\b/.test(String(c.object)) || String(c.object).trim().split(/\s+/).length > 4)) {
+    return 'You do so without any trouble.';
+  }
   switch (c.cat) {
     case 'body': {
       const map = {

@@ -140,6 +140,8 @@ const META_STATS_REQ = /\b(?:stats|attributes|scores|ability\s+scores|hp|hit\s?p
 // resolves to a REAL inventory item (else it returns null and falls through, so
 // "what does the elder do" isn't mistaken for an item).
 const META_ITEM = /\bwhat(?:'?s| does| do| is| are)\s+(?:the|my|a|an|this|that)\s+.+?\s+(?:do|for|good\s+for|used\s+for|used\s+to)\b|\b(?:do i have|have i got|am i carrying|is\s+(?:the|a|an|my)\s+.+?\s+in\s+my\s+(?:pack|bag|inventory|kit|belongings))\b/i;
+// Coins/purse — a number the DM owns (read from party.purse).
+const META_PURSE = /\bhow many coins\b|\bhow much (?:money|coin|gold|silver|copper|cash)\b|\bwhat(?:'?s| is)\s+in\s+my\s+(?:purse|pouch|coin\s?purse|wallet)\b|\bhow\s+(?:much\s+)?(?:money|coin|gold|silver)\s+(?:do i have|have i got|am i carrying)\b|\bmy (?:purse|coin\s?purse)\b/i;
 const META_TIME = /\bwhat time\b|\btime of day\b|\bis it (?:day|night|morning|evening|dark|light)(?:time)?\b/;
 const META_OBJECTIVE = /\b(?:what(?:'?s| is| was)? )?my (?:quest|objective|goal|mission|task)\b|\bwhat (?:am i|are we) (?:supposed to|meant to|trying to)\b|\bwhy am i here\b|\bwhat(?:'?s| is) the (?:quest|objective|goal|plan)\b|\bremind me\b/;
 
@@ -147,7 +149,7 @@ const META_OBJECTIVE = /\b(?:what(?:'?s| is| was)? )?my (?:quest|objective|goal|
 export function isMetaQuestion(text) {
   const t = String(text || '').toLowerCase();
   return META_LOCATION.test(t) || META_HEALTH.test(t) || META_RECAP.test(t) || META_OUTCOME.test(t)
-    || META_INVENTORY.test(t) || META_EQUIPMENT.test(t) || META_CHARACTER.test(t) || META_ITEM.test(t) || META_TIME.test(t) || META_OBJECTIVE.test(t);
+    || META_INVENTORY.test(t) || META_EQUIPMENT.test(t) || META_CHARACTER.test(t) || META_ITEM.test(t) || META_PURSE.test(t) || META_TIME.test(t) || META_OBJECTIVE.test(t);
 }
 
 // A null-action: filler, acknowledgment, or an abort. A real DM lets the
@@ -225,6 +227,17 @@ export function handleMetaQuestion(text, world) {
   if (META_ITEM.test(lowerText)) {
     const ans = answerItemQuery(lowerText, world);
     if (ans) return ans;
+  }
+
+  // Purse / coins — a real number the DM owns; report it (even if empty).
+  if (META_PURSE.test(lowerText)) {
+    const purse = world.party?.[0]?.purse || {};
+    const parts = [];
+    for (const coin of ['platinum', 'gold', 'silver', 'copper']) {
+      const v = Number(purse[coin]) || 0;
+      if (v > 0) parts.push(`${v} ${coin}`);
+    }
+    return parts.length ? `Your purse holds ${joinList(parts)}.` : `Your purse is empty — not a coin to your name.`;
   }
 
   // Inventory — read the real pack, never invent contents.

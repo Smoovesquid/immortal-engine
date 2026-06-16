@@ -153,6 +153,16 @@ const META_OBJECTIVE = /\b(?:what(?:'?s| is| was)? )?my (?:quest|objective|goal|
 // "Is that a d20?" — a question about the RULES, not an in-fiction action.
 // Never a roll target. (Opus gate 2026-06-16, Rules Lawyer DM.)
 const META_MECHANICS = /\bdice mechanic\b|\bhow (?:do|does|would) (?:you|the game|this) resolve\b|\bis there a dice\b|\bwhat (?:kind of )?dice\b|\bis (?:that|this) a d ?20\b|\bhow does combat work\b|\bhow do(?:es)? (?:rolls?|dice) work\b|\bpure narration\b|\bwhat'?s? the (?:mechanic|system) (?:here|for this)\b/i;
+// Weapon damage-die / numeric combat-stat queries — "what's the damage on the
+// Hatchet?", "what die does the damage roll use?", "Hatchet vs Worn Blade
+// damage". A real number off the loadout, never an in-fiction dodge. Distinct
+// from META_STAT (ability-score modifiers). (Opus gate follow-up 2026-06-16,
+// Rules Lawyer DM.)
+const META_WEAPON_DAMAGE = /\b(?:damage|dmg)\s+(?:die|dice|roll)\b|\bwhat\s+(?:damage\s+)?die\b|\b(?:damage|dmg)\s+(?:on|of|for)\s+(?:the|my|a|an|this|that)\b|\bhow much damage\b|\bwhat(?:'?s| is)\s+(?:the\s+)?(?:damage|dmg)\s+(?:on|of|for|number|value)\b/i;
+// "What's my name?" / "you called me X" — a player asking the DM what their own
+// character is called. Answered straight from canon (the LLM narrator must
+// never invent or swap the PC's name). (Opus gate follow-up 2026-06-16.)
+const META_NAME = /\bwhat(?:'?s| is)\s+my\s+(?:name|character'?s name)\b|\bwhat\s+am\s+i\s+called\b|\bwho\s+(?:do\s+you\s+think\s+)?am\s+i\s+again\b|\byou\s+called\s+me\b|\bmy\s+name\s+is(?:n'?t)?\b|\bis\s+my\s+name\b/i;
 // "Should I go talk to them, or is that a bad idea?" — asking for the DM's
 // read on a course of action, not declaring one. A real DM answers in
 // character, never bounces it back as a navigation prompt. (Opus gate
@@ -164,7 +174,7 @@ export function isMetaQuestion(text) {
   const t = String(text || '').toLowerCase();
   return META_LOCATION.test(t) || META_HEALTH.test(t) || META_RECAP.test(t) || META_OUTCOME.test(t)
     || META_INVENTORY.test(t) || META_EQUIPMENT.test(t) || META_CHARACTER.test(t) || META_STAT.test(t) || META_ITEM.test(t) || META_PURSE.test(t) || META_TIME.test(t) || META_OBJECTIVE.test(t)
-    || META_MECHANICS.test(t) || META_ADVICE.test(t);
+    || META_MECHANICS.test(t) || META_ADVICE.test(t) || META_WEAPON_DAMAGE.test(t) || META_NAME.test(t);
 }
 
 // A null-action: filler, acknowledgment, or an abort. A real DM lets the
@@ -227,6 +237,38 @@ function answerItemQuery(lowerText, world) {
     : `${name} is just what it looks like — no special effect I track.`;
 }
 
+// Answer a weapon damage-die query from the real loadout. Inventory weapons
+// carry either a `damage` string ("1d6") or, for the kit weapon, a numeric
+// `dmgDie`. If specific weapons are named in the question, report those; else
+// report the whole loadout. Never returns null for a started PC (there is
+// always at least one weapon to report).
+function answerWeaponDamage(lowerText, world) {
+  const inv = world.party?.[0]?.inventory || {};
+  const dieOf = (w) => {
+    const dmg = String(w?.damage || '').trim();
+    if (/^\d+d\d+$/i.test(dmg)) return dmg;
+    const n = Number(w?.dmgDie) || 0;
+    return n > 0 ? `1d${n}` : '';
+  };
+  const weapons = (Array.isArray(inv.weapons) ? inv.weapons : [])
+    .map(w => ({ name: String(w?.name || w).trim(), dice: dieOf(w) }))
+    .filter(w => w.name);
+  if (!weapons.length) return null;
+
+  const named = weapons.filter(w => {
+    const n = w.name.toLowerCase();
+    if (lowerText.includes(n)) return true;
+    return n.split(/\s+/).filter(tok => tok.length >= 4).some(tok => lowerText.includes(tok));
+  });
+  const describe = w => w.dice ? `the ${w.name} rolls ${w.dice}` : `the ${w.name} has no fixed damage die I track`;
+
+  const list = (named.length ? named : weapons).filter(w => w.dice);
+  if (!list.length) return null;
+  return named.length
+    ? `For damage: ${joinList(named.map(describe))}. You add your relevant ability modifier on a hit.`
+    : `Your weapons roll for damage as follows — ${joinList(list.map(describe))}, plus your ability modifier on a hit.`;
+}
+
 // Handle meta-questions (status checks, location surveys, recaps, outcomes).
 // Returns null when the text isn't a recognized meta-question.
 export function handleMetaQuestion(text, world) {
@@ -235,6 +277,23 @@ export function handleMetaQuestion(text, world) {
   // Location / survey — checked first (most specific phrasings).
   if (META_LOCATION.test(lowerText)) {
     return buildLocationSurvey(world);
+  }
+
+  // Weapon damage — "what's the damage on the Hatchet?", "what die does the
+  // damage roll use?". Checked before MECHANICS so a weapon-specific ask gets
+  // the real die rather than the generic d20-system explainer.
+  if (META_WEAPON_DAMAGE.test(lowerText)) {
+    const ans = answerWeaponDamage(lowerText, world);
+    if (ans) return ans;
+  }
+
+  // Player's own name — "what's my name?", "you called me Garrick". Answer from
+  // canon so a name the narrator may have slipped never goes unaddressed.
+  if (META_NAME.test(lowerText)) {
+    const name = String(world.party?.[0]?.name || '').trim();
+    return name
+      ? `Your name is ${name}. If I've called you anything else, that was my slip — you're ${name}.`
+      : `You haven't given your name yet — what should I call you?`;
   }
 
   // How the rules work — "is there a dice mechanic?", "is that a d20?". A

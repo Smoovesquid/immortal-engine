@@ -1441,7 +1441,7 @@ function playerMoveCore(world, packsById, text) {
   if (!talkRef && !w.combat?.active) {
     const approachRef = extractApproachRef(text);
     if (approachRef) {
-      const strictNpc = resolvePresentNpcStrict(w, approachRef);
+      const strictNpc = resolvePresentNpcStrict(w, approachRef) || resolvePresentNpcLoose(w, approachRef);
       if (strictNpc) talkRef = String(strictNpc.name || strictNpc.id || '');
     }
   }
@@ -3252,6 +3252,32 @@ function resolvePresentNpcStrict(world, ref) {
     if (!nm) continue;
     if (nm === r || nm.startsWith(r + ' ') || (nm.split(/\s+/)[0] || '') === r) return n;
   }
+  return null;
+}
+
+// Loose approach resolution: "walk over to the elder / the stranger" — match a
+// present non-hostile NPC by ROLE or a generic person descriptor, so approaching
+// a person to talk reaches conversation instead of bouncing to "no such place"
+// (Opus gate). Gated so it never hijacks travel: if the ref names a known place
+// node, it's a journey, not a person.
+const GENERIC_PERSON_REF = /^(?:stranger|man|woman|person|someone|somebody|anybody|fellow|guy|local|villager|townsfolk|townsperson|figure|neighbou?r|elder|guard|merchant|trader|smith|innkeeper|priest|healer|keeper|scholar|artisan|child|kid|old\s+(?:man|woman)|young\s+(?:man|woman))$/;
+function resolvePresentNpcLoose(world, ref) {
+  const r = String(ref || '').trim().toLowerCase().replace(/^(?:the|a|an)\s+/, '').trim();
+  if (r.length < 3) return null;
+  // Don't hijack travel — a known place name is a journey, not a person.
+  const isKnownPlace = (world?.map?.nodes || []).some(n => n && n.discovered && String(n.name || '').toLowerCase().includes(r));
+  if (isKnownPlace) return null;
+  const node = (world?.map?.nodes || []).find(n => n && n.id === world?.map?.currentNodeId) || null;
+  const npcs = (node?.settlement?.npcs || []).filter(n => n && !n.hostile);
+  if (!npcs.length) return null;
+  // Role match ("the elder" → role elder, "the guard captain" → guard_captain).
+  const byRole = npcs.find(n => {
+    const role = String(n.role || '').toLowerCase().replace(/_/g, ' ');
+    return role && (role === r || role.includes(r) || r.includes(role));
+  });
+  if (byRole) return byRole;
+  // Generic person descriptor → the first neighbor about.
+  if (GENERIC_PERSON_REF.test(r)) return npcs[0];
   return null;
 }
 

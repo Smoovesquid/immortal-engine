@@ -5149,7 +5149,7 @@ function detectAttackAnyIntent(world, text) {
   // Candidate target references, most explicit first. Each must resolve to a
   // PRESENT npc (fuzzyMatchNpc returns null for objects like "the barrel").
   const refs = [];
-  const prep = t.match(/\b(?:at|into|onto|upon|against)\s+(.+)/i);   // "swing it AT Corwin's head"
+  const prep = t.match(/\b(?:at|into|onto|upon|against|over|down\s+on)\s+(.+)/i);   // "swing it AT Corwin's head" / "smash it OVER the Lingerer's head"
   if (prep) refs.push(prep[1]);
   const direct = t.match(DIRECT_ATTACK_VERB);                        // "punch the guard"
   if (direct) refs.push(direct[2]);

@@ -118,7 +118,7 @@ export function getToneModifier(tone) {
 // LOCATION is checked before HEALTH so "what's around" can't be mistaken for a
 // status check.
 const META_LOCATION = /\bwhere am i\b|what (?:do|can) i see\b|\blook(?:ing)? around\b|\bsurvey\b|what'?s (?:around|here|nearby|out there)\b|who(?:'?s| is) (?:here|around|nearby)\b/;
-const META_HEALTH = /\bam i (?:hurt|wounded|damaged|injured|alive|ok|okay|alright|all right|fine|bleeding|dying)\b|\bhow am i (?:doing|holding up|feeling)\b|how(?:'?s| is) my (?:health|hp|status|condition|shape)\b|what(?:'?s| is) my (?:health|hp|status|condition|wounds|shape)\b|how much (?:health|hp|life)\b|\bhow (?:hurt|wounded|injured|bad(?:ly)? (?:hurt|off))\b|how many (?:hit ?points|hp)\b/;
+const META_HEALTH = /\bam i (?:hurt|wounded|damaged|injured|alive|ok|okay|alright|all right|fine|bleeding|dying)\b|\bhow am i (?:doing|holding up|feeling)\b|how(?:'?s| is) my (?:health|hp|status|condition|shape)\b|what(?:'?s| is) my (?:health|hp|status|condition|wounds|shape)\b|how much (?:health|hp|life)\b|\bhow (?:hurt|wounded|injured|bad(?:ly)? (?:hurt|off))\b|how many (?:hit ?points|hp)\b|\b(?:max|maximum)\s+(?:hp|hit\s?points?|health)\b|\bhp\s+(?:total|number|max|cap|count)\b|\bhit\s?points?\b/;
 const META_RECAP = /what happened|what did i (?:just )?do\b/;
 const META_OUTCOME = /did i (?:succeed|fail|win|lose|make it)\b/;
 // v24 conversation hardening — the questions players actually ask. The
@@ -133,8 +133,8 @@ const META_EQUIPMENT = /\bwhat(?:'?s| is)\s+my\s+(?:weapon|blade|sword|armou?r|g
 // stats". A player learning their own character is an information request, not a
 // fiction beat and never a dice roll. Identity is answered in-voice; an explicit
 // stats/scores ask gets the actual numbers (it's your own sheet — a table DM tells you).
-const META_CHARACTER = /\bwho\s+am\s+i\b|\bwhat(?:'?s| is)\s+my\s+(?:class|archetype|level|background|build|character)\b|\bwhat\s+(?:kind\s+of\s+)?(?:character|class)\s+am\s+i\b|\bwhat\s+am\s+i\b(?!\s+(?:wielding|wearing|carrying|holding|armed|doing|looking|supposed|meant|going|here))|\b(?:what\s+are|tell\s+me|give\s+me|list)\s+my\s+(?:stats|abilities|attributes|scores|ability\s+scores)\b/i;
-const META_STATS_REQ = /\b(?:stats|attributes|scores|ability\s+scores)\b/i;
+const META_CHARACTER = /\bwho\s+am\s+i\b|\bwhat(?:'?s| is)\s+my\s+(?:class|archetype|level|background|build|character)\b|\bwhat\s+(?:kind\s+of\s+)?(?:character|class)\s+am\s+i\b|\bwhat\s+am\s+i\b(?!\s+(?:wielding|wearing|carrying|holding|armed|doing|looking|supposed|meant|going|here))|\b(?:what\s+are|tell\s+me|give\s+me|list)\s+my\s+(?:stats|abilities|attributes|scores|ability\s+scores|hp|hit\s?points?|health|numbers)\b/i;
+const META_STATS_REQ = /\b(?:stats|attributes|scores|ability\s+scores|hp|hit\s?points?|health|numbers)\b/i;
 const META_TIME = /\bwhat time\b|\btime of day\b|\bis it (?:day|night|morning|evening|dark|light)(?:time)?\b/;
 const META_OBJECTIVE = /\b(?:what(?:'?s| is| was)? )?my (?:quest|objective|goal|mission|task)\b|\bwhat (?:am i|are we) (?:supposed to|meant to|trying to)\b|\bwhy am i here\b|\bwhat(?:'?s| is) the (?:quest|objective|goal|plan)\b|\bremind me\b/;
 
@@ -241,6 +241,12 @@ export function handleMetaQuestion(text, world) {
       const order = ['MIGHT', 'AGILITY', 'WITS', 'GRIT', 'CHARM'];
       const line = order.filter(k => k in p.stats).map(k => `${k} ${p.stats[k]}`).join(', ');
       if (line) out.push(`Your measures: ${line}.`);
+      // Include HP — it's a real, trackable number in escape mode (the rules-
+      // lawyer is right that the DM owns it). Don't dodge a stat-block request.
+      const eMax = Number(world.meta?.escapeMaxHp) || 0;
+      if (world.meta?.mode === 'escape' && eMax > 0) {
+        out.push(`Hit points: ${Number(world.meta?.escapeHp) || 0} of ${eMax}.`);
+      }
     } else {
       out.push(`The fine print — your scores and your kit — is yours to read on your sheet.`);
     }

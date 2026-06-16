@@ -480,18 +480,34 @@ function trySelfHarm(world, text, actorId) {
   const pc = world.party?.[0];
   if (!pc) return null;
   const id = String(actorId || pc.id || 'party');
-  const before = pc.wounds ?? 0;
-  let w = applyDeltas(world, [{ op: 'wound', entityId: id, by: 1 }]);
-  const after = w.party?.[0]?.wounds ?? before;
-  const took = after > before;
+  // Escape mode tracks live health as meta.escapeHp (NOT party.wounds), so a
+  // self-cut must come off escapeHp there — else "I cut my arm" leaves the live
+  // HP unchanged and the DM reports the player untouched. A shallow cut = 1 HP.
+  const escMax = Number(world.meta?.escapeMaxHp) || 0;
+  const escapeMode = world.meta?.mode === 'escape' && escMax > 0;
+  let w = world;
+  let took = false;
+  let hpLine = '';
+  if (escapeMode) {
+    const beforeHp = Number(world.meta?.escapeHp) || 0;
+    const afterHp = Math.max(0, beforeHp - 1);
+    w = { ...world, meta: { ...world.meta, escapeHp: afterHp } };
+    took = afterHp < beforeHp;
+    hpLine = ` You're at ${afterHp} of ${escMax} hit points now.`;
+  } else {
+    const before = pc.wounds ?? 0;
+    w = applyDeltas(world, [{ op: 'wound', entityId: id, by: 1 }]);
+    took = (w.party?.[0]?.wounds ?? before) > before;
+  }
   w = pushEvent(w, {
     kind: 'resolution',
     data: { actorId: id, intent: t, text: t, roll: 0, dc: 0, outcome: 'success', updateKind: 'self-harm' }
   });
   const narration = took
-    ? `Wizard: You go through with it — the hurt lands real and immediate, blood and bite, and you mark yourself with a fresh wound.`
+    ? `Wizard: You go through with it — the hurt lands real and immediate, blood and bite, and you mark yourself.${hpLine}`
     : `Wizard: You set yourself to do it, but you are already as battered as a body can be and still stand; there is no more give left to take.`;
-  return { world: w, output: { narration, mechanics: `[self-harm — ${took ? '1 wound' : 'no further wound'}, no roll]` } };
+  const mech = escapeMode ? `[self-harm — 1 HP, no roll]` : `[self-harm — ${took ? '1 wound' : 'no further wound'}, no roll]`;
+  return { world: w, output: { narration, mechanics: mech } };
 }
 
 function playerMoveCore(world, packsById, text) {

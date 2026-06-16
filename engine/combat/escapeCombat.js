@@ -40,6 +40,7 @@ import { rollDice } from './diceRoller.js';
 import { coverForRoom, bestCover } from '../structures/coverFeatures.js';
 import { applyCondition, hasCondition, removeAllConditions } from './conditions.js';
 import { parseGrappleVerb, resolveGrappleAction, enemyGrappleEscape } from './grapple.js';
+import { parseHazard, resolveHazard } from './hazard.js';
 import { xpForEnemies } from '../ruleset/core/xp.js';
 import { getItemDef } from '../ruleset/core/items/index.js';
 import { levelUpSheet, levelForXp } from '../chargen/srd/levelUp.js';
@@ -965,7 +966,16 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
   // where the player pointed. Default: first standing foe.
   const targetIdx = pickTargetIdx(enemies, actionText);
 
-  if (verb === 'grapple' || verb === 'throw' || verb === 'choke' || verb === 'escape') {
+  const hazardKind = parseHazard(actionText);
+  if (hazardKind) {
+    // Environmental hazard mid-fight (roof collapse / fire / fall): SRD damage to
+    // the PC and everyone caught in the area. PC damage goes to meta.escapeHp (as
+    // heals do — the enemy turn re-reads it); enemies mutate in place (area).
+    const hres = resolveHazard({ kind: hazardKind, pc, escapeHp: Number(w.meta?.escapeHp) || 0, escMax: Number(w.meta?.escapeMaxHp) || 0, enemies, rng });
+    w = { ...w, meta: { ...w.meta, escapeHp: hres.hp } };
+    for (const b of hres.beats) beats.push(b);
+    actionMech = hres.mechanicsLine || '';
+  } else if (verb === 'grapple' || verb === 'throw' || verb === 'choke' || verb === 'escape') {
     // Martial grapple: state lives as conditions on the foe (grappled=clinch,
     // +prone=down); the choke ratchets to unconscious. See engine/combat/grapple.js.
     const gr = resolveGrappleAction({ pc, enemies, targetIdx, verb, rng });

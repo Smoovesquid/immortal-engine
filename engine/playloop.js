@@ -1,5 +1,6 @@
 import { ensureWorld, appendRecentBeat } from './state.js';
 import { makeRng, seedFromString } from './rng.js';
+import { parseHazard, resolveHazard } from './combat/hazard.js';
 import { addFact, addQuestion, addThreat } from './ledger.js';
 import { hasFact } from './ledgerUtils.js';
 import { fateBand } from './rulesets.js';
@@ -1533,6 +1534,26 @@ function playerMoveCore(world, packsById, text) {
           }
         };
       }
+    }
+  }
+
+  // Environmental hazard gate (out of combat): bringing a roof down on yourself,
+  // leaping into a fire, or going out a window deals SRD damage — not zero effect
+  // (Opus gate). Escape mode only (it owns the live HP). Placed before the assault
+  // and offensive-cast gates so "throw myself out the window" reads as a fall, not
+  // an attack/recoil. In-combat hazards: the escape resolver. See combat/hazard.js.
+  if (!w.combat?.active && w.meta?.mode === 'escape' && Number(w.meta?.escapeMaxHp) > 0) {
+    const hk = parseHazard(text);
+    if (hk) {
+      const pc = w.party?.[0] || {};
+      const hrng = makeRng(seedFromString(`${w.meta.seed}|hazard|${Array.isArray(w.timeline) ? w.timeline.length : 0}`));
+      const res = resolveHazard({ kind: hk, pc, escapeHp: w.meta.escapeHp, escMax: w.meta.escapeMaxHp, enemies: [], rng: hrng });
+      let wh = { ...w, meta: { ...w.meta, escapeHp: res.hp } };
+      wh = pushEvent(wh, { kind: 'resolution', data: { actorId, intent: String(text || ''), text: String(text || ''), roll: 0, dc: 0, outcome: res.outcome, updateKind: 'hazard' } });
+      if (res.hp <= 0) {
+        wh = { ...wh, ending: { ...(wh.ending || {}), locked: true, reason: 'hazard-death', epilogueLine: 'The dark takes you, and does not give you back.' } };
+      }
+      return { world: wh, output: { narration: `Wizard: ${res.beats.join(' ')}`, mechanics: res.mechanicsLine } };
     }
   }
 

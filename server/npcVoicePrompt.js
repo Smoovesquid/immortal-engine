@@ -15,7 +15,7 @@ function distortionLabel(d) {
 
 const DECISIONS = {
   shared: (factPhrase) => `You have decided to SHARE what you know about ${factPhrase || 'the topic'} — answer helpfully and concretely (invent small local color but no names of people or places).`,
-  deflected: () => 'You have decided to DEFLECT — dodge the question without answering it, stay pleasant or gruff per your mood.',
+  deflected: () => 'You have decided to DEFLECT — dodge the question without answering it, stay pleasant or gruff per your mood. You do NOT actually know the answer, so do not invent one: no made-up numbers, counts, dates, names, titles, or history. If pressed for specifics, plead ignorance or pass it off as hearsay ("couldn\'t tell you", "you\'d have to ask someone older") rather than filling the gap.',
   withheld: () => 'You have decided to WITHHOLD — refuse plainly; you know something but will not say. Do not reveal anything.',
   lied: () => 'You have decided to LIE — give a smooth false answer. Keep it vague; do not invent names.',
   recruited: () => 'You have decided to JOIN the player — accept and fall in.',
@@ -166,6 +166,6 @@ export function buildNpcVoicePrompt(p = {}) {
     ...(style ? [style] : []),
     `The player said to you: "${p.playerLine || ''}"`,
     decisionText,
-    'Reply with EXACTLY ONE line of spoken dialogue (under 30 words), in plain speech, no stage directions, no names of specific people or places.'
+    'Reply with EXACTLY ONE line of spoken dialogue (under 30 words), in plain speech, no stage directions. Invent NO specifics you were not given — no names of people or places, and no numbers, counts, dates, titles, or history. If you do not know, it is better to say so than to make something up.'
   ].join('\n');
 }

@@ -4125,7 +4125,14 @@ function tryExamineTarget(w, text) {
     const list = names.length === 1 ? names[0]
       : names.length === 2 ? `${names[0]} and ${names[1]}`
       : `${names.slice(0, -1).join(', ')}, and ${names[names.length - 1]}`;
-    return `You look for ${target.match(/^[aeiou]/i) ? 'an' : 'a'} ${target}, but what's here is ${list}.`;
+    // Don't echo a long/complex captured target verbatim ("a building myself —
+    // what does the sign over the door say, and what's inside") — that reads as
+    // the DM parroting the input. Only name the target if it's a short clean noun.
+    const tgt = String(target || '').trim();
+    const cleanTarget = (tgt && tgt.length <= 22 && !/[,;:—?]|\bmyself\b|\byourself\b|\band\b|\bwhat\b/i.test(tgt)) ? tgt : null;
+    return cleanTarget
+      ? `You look for ${/^[aeiou]/i.test(cleanTarget) ? 'an' : 'a'} ${cleanTarget}, but what's here is ${list}.`
+      : `You look around, but what's here is ${list}.`;
   }
 
   // Nothing to anchor to — let the room-overview explore branch answer.

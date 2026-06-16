@@ -449,25 +449,23 @@ export function buildLocationSurvey(world) {
   // map draws. Hostiles aren't listed by name: a lurking bandit is not a
   // neighbor; if he's visible at all he reads as a wary stranger.
   const allNpcs = Array.isArray(currentNode?.settlement?.npcs) ? currentNode.settlement.npcs : [];
-  if (insideStructure) {
-    // Sight-scoped: you don't SEE the village roster through the walls, but if
-    // the settlement is peopled you can hear it — so a player inside a building
-    // isn't told they're alone in an empty world (Opus gate: "where am I?" read
-    // as an unsupported emptiness claim with seven NPCs in the settlement).
-    const sociableNearby = allNpcs.filter(n => n && !n.hostile).length;
-    parts.push(sociableNearby > 0
-      ? 'No one else is under this roof, though you can hear the settlement stirring beyond the walls.'
-      : 'No one else is under this roof.');
-  } else {
+  // The settlement roster is who's present at this location. Name them whether
+  // inside or out — the player can look at / talk to / fight them, so denying
+  // they're here ("no one under this roof" with seven NPCs in canon) reads as a
+  // hallucinated emptiness (Opus gate). Inside, frame them as in-and-around the
+  // place rather than strictly under the roof; hostiles read as wary strangers.
+  {
     const sociable = allNpcs.filter(n => n && !n.hostile);
     const lurkers = allNpcs.filter(n => n && n.hostile).length;
     if (sociable.length) {
       const named = sociable.slice(0, 4).map(describeNpc);
       const remainder = sociable.length - Math.min(4, sociable.length);
-      if (remainder > 0) {
-        named.push(`${remainder} other${remainder === 1 ? '' : 's'}`);
-      }
-      parts.push(`You see ${joinList(named)} here.`);
+      if (remainder > 0) named.push(`${remainder} other${remainder === 1 ? '' : 's'}`);
+      parts.push(insideStructure
+        ? `You're not alone — ${joinList(named)} ${sociable.length === 1 ? 'is' : 'are'} about, in and around the place.`
+        : `You see ${joinList(named)} here.`);
+    } else if (insideStructure) {
+      parts.push('No one else is under this roof.');
     }
     if (lurkers > 0) {
       parts.push(lurkers === 1

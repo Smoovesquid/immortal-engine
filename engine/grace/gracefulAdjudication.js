@@ -135,6 +135,11 @@ const META_EQUIPMENT = /\bwhat(?:'?s| is)\s+my\s+(?:weapon|blade|sword|armou?r|g
 // stats/scores ask gets the actual numbers (it's your own sheet — a table DM tells you).
 const META_CHARACTER = /\bwho\s+am\s+i\b|\bwhat(?:'?s| is)\s+my\s+(?:class|archetype|level|background|build|character)\b|\bwhat\s+(?:kind\s+of\s+)?(?:character|class)\s+am\s+i\b|\bwhat\s+am\s+i\b(?!\s+(?:wielding|wearing|carrying|holding|armed|doing|looking|supposed|meant|going|here))|\b(?:what\s+are|tell\s+me|give\s+me|list)\s+my\s+(?:stats|abilities|attributes|scores|ability\s+scores|hp|hit\s?points?|health|numbers)\b/i;
 const META_STATS_REQ = /\b(?:stats|attributes|scores|ability\s+scores|hp|hit\s?points?|health|numbers)\b/i;
+// Item queries: "what does the Tonic of grit do?", "is the rope in my pack?",
+// "do I have a healing potion?". Broad shape — the handler only answers if it
+// resolves to a REAL inventory item (else it returns null and falls through, so
+// "what does the elder do" isn't mistaken for an item).
+const META_ITEM = /\bwhat(?:'?s| does| do| is| are)\s+(?:the|my|a|an|this|that)\s+.+?\s+(?:do|for|good\s+for|used\s+for|used\s+to)\b|\b(?:do i have|have i got|am i carrying|is\s+(?:the|a|an|my)\s+.+?\s+in\s+my\s+(?:pack|bag|inventory|kit|belongings))\b/i;
 const META_TIME = /\bwhat time\b|\btime of day\b|\bis it (?:day|night|morning|evening|dark|light)(?:time)?\b/;
 const META_OBJECTIVE = /\b(?:what(?:'?s| is| was)? )?my (?:quest|objective|goal|mission|task)\b|\bwhat (?:am i|are we) (?:supposed to|meant to|trying to)\b|\bwhy am i here\b|\bwhat(?:'?s| is) the (?:quest|objective|goal|plan)\b|\bremind me\b/;
 
@@ -142,7 +147,7 @@ const META_OBJECTIVE = /\b(?:what(?:'?s| is| was)? )?my (?:quest|objective|goal|
 export function isMetaQuestion(text) {
   const t = String(text || '').toLowerCase();
   return META_LOCATION.test(t) || META_HEALTH.test(t) || META_RECAP.test(t) || META_OUTCOME.test(t)
-    || META_INVENTORY.test(t) || META_EQUIPMENT.test(t) || META_CHARACTER.test(t) || META_TIME.test(t) || META_OBJECTIVE.test(t);
+    || META_INVENTORY.test(t) || META_EQUIPMENT.test(t) || META_CHARACTER.test(t) || META_ITEM.test(t) || META_TIME.test(t) || META_OBJECTIVE.test(t);
 }
 
 // A null-action: filler, acknowledgment, or an abort. A real DM lets the
@@ -178,6 +183,33 @@ export function looksMultiAction(text) {
   return INTENT_VERB.test(parts[0]) && INTENT_VERB.test(parts.slice(1).join(' '));
 }
 
+// Answer a question about a specific carried item ("what does X do?", "is X in
+// my pack?") from the real inventory. Returns null if no carried item matches,
+// so non-item "what does X do" queries fall through to normal resolution.
+function answerItemQuery(lowerText, world) {
+  const inv = world.party?.[0]?.inventory || {};
+  const items = [].concat(
+    inv.weapons || [], inv.armor || [], inv.tools || [], inv.clothes || [],
+    inv.oddities || [], inv.consumables || [], inv.tech || [], inv.junk || [], inv.items || []
+  ).filter(it => it && (it.name || typeof it === 'string'));
+  if (!items.length) return null;
+  const match = items.find(it => {
+    const n = String(it.name || it).toLowerCase();
+    if (!n) return false;
+    if (lowerText.includes(n)) return true;
+    return n.split(/\s+/).filter(x => x.length >= 4).some(tok => lowerText.includes(tok));
+  });
+  if (!match) return null;
+  const name = String(match.name || match).trim();
+  const note = String(match.notes || match.note || '').trim().replace(/[.?!]+$/, '');
+  const presence = /\b(do i have|have i got|am i carrying|in\s+my\s+(?:pack|bag|inventory|kit|belongings))\b/.test(lowerText);
+  if (presence) return `Yes — ${name} is in your pack${note ? `: ${note}.` : '.'}`;
+  // effect query
+  return note
+    ? `${name}: ${note}. It's a real thing in your pack, not a game-piece — nothing special fires when you use it.`
+    : `${name} is just what it looks like — no special effect I track.`;
+}
+
 // Handle meta-questions (status checks, location surveys, recaps, outcomes).
 // Returns null when the text isn't a recognized meta-question.
 export function handleMetaQuestion(text, world) {
@@ -186,6 +218,13 @@ export function handleMetaQuestion(text, world) {
   // Location / survey — checked first (most specific phrasings).
   if (META_LOCATION.test(lowerText)) {
     return buildLocationSurvey(world);
+  }
+
+  // Item query — "what does <item> do?", "is <item> in my pack?". Answered from
+  // the REAL pack; returns null (falls through) if no carried item matches.
+  if (META_ITEM.test(lowerText)) {
+    const ans = answerItemQuery(lowerText, world);
+    if (ans) return ans;
   }
 
   // Inventory — read the real pack, never invent contents.

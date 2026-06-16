@@ -127,6 +127,7 @@ export function buildSystemPrompt(ctx) {
     `- Do NOT invent topology, place names, or structures not listed above.`,
     `- Do NOT name any person, place, structure, or thing with a proper name unless that exact name is already listed in the facts above. Refer to anyone or anywhere else only in generic terms (a traveler, a nearby road, the elder).`,
     `- Do NOT tease readable content you won't deliver. If the player reads something, give the actual words plainly OR a concrete reason it can't be read (faded, a script you don't know, too dark) — never "words that feel heavier than they should" or an inscription "you can't quite make out".`,
+    `- The mechanics are AUTHORITATIVE — narrate the outcome they state, never deny it. If a foe is defeated, they are down (not an active bystander); if a hit landed, it landed. Never argue "no blow was struck" or "no fight took place" against the result.`,
     ambientRule,
     `- Do NOT use the words: actually, turns out.`,
     `- Do NOT use brackets or parentheses.`,

@@ -20,6 +20,7 @@ import { applyGeneratedStructuresForNode } from './structures/applyGeneratedStru
 import { enterStructureInterior, exitStructureInterior, moveWithinInterior, getInteriorView, interiorDirectionalExits, resolveStructureSelection } from './structures/interiors.js';
 import { generateDungeon, dungeonLevelToStructure, isDungeonStructureId, dungeonRoomAt } from './dungeon/generate.js';
 import { createCharacter } from './chargen/genesis.js';
+import { FANTASY_STARTER_GEAR } from './chargen/fantasyGear.js';
 import { decompressAndCanonizeSync } from './decompression/decompress.js';
 import { discoverNode } from './map/mapState.js';
 import { detectPhysicalInteraction, evaluatePhysicsSync } from './llmPhysics.js';
@@ -177,10 +178,14 @@ export function beginAdventure(world, packsById) {
   const rng = makeRng(seed);
 
   if (!Array.isArray(w.party) || w.party.length === 0) {
+    const primaryPackId = String(w.pack?.primaryId || 'fantasy');
     const pc = createCharacter({
       seed: `${w.meta.seed}|begin|pc`,
-      packId: String(w.pack?.primaryId || 'fantasy'),
-      fate: Number(w.meta?.fate ?? 0.2)
+      packId: primaryPackId,
+      fate: Number(w.meta?.fate ?? 0.2),
+      // Give the PC a real starting loadout (gear.json was never wired in, so a
+      // Sellsword spawned with no weapon and a signature item named "Thing").
+      packGear: primaryPackId === 'fantasy' ? FANTASY_STARTER_GEAR : null
     });
     w = { ...w, party: [pc] };
   }

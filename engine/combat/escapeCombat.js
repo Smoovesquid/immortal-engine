@@ -39,6 +39,7 @@ import { rollLootForCR } from '../ruleset/core/loot/lootRoll.js';
 import { rollDice } from './diceRoller.js';
 import { coverForRoom, bestCover } from '../structures/coverFeatures.js';
 import { applyCondition, hasCondition, removeAllConditions } from './conditions.js';
+import { parseGrappleVerb, resolveGrappleAction, enemyGrappleEscape } from './grapple.js';
 import { xpForEnemies } from '../ruleset/core/xp.js';
 import { getItemDef } from '../ruleset/core/items/index.js';
 import { levelUpSheet, levelForXp } from '../chargen/srd/levelUp.js';
@@ -915,8 +916,15 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
   const round = Number(w.combat.round) || 1;
   const rng = makeRng(seedFromString(`${w.meta?.seed || ''}|escapeCombat|${w.timeline.length}|r${round}`));
   const beats = [];
+  let actionMech = ''; // a grapple action surfaces its own mechanics line
   const { verb: rawVerb, mode } = parseEscapeAction(actionText);
   let verb = rawVerb;
+  // Martial grapple intents only override the 'strike' DEFAULT — never a spell,
+  // parley, cover, or ward verb. (Grapple slice, 2026-06-15.)
+  if (verb === 'strike') {
+    const gv = parseGrappleVerb(actionText);
+    if (gv) verb = gv;
+  }
   let warded = false;
   let wardBonus = 0;
   let recklessThisRound = false;
@@ -957,7 +965,13 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
   // where the player pointed. Default: first standing foe.
   const targetIdx = pickTargetIdx(enemies, actionText);
 
-  if (verb === 'cover') {
+  if (verb === 'grapple' || verb === 'throw' || verb === 'choke' || verb === 'escape') {
+    // Martial grapple: state lives as conditions on the foe (grappled=clinch,
+    // +prone=down); the choke ratchets to unconscious. See engine/combat/grapple.js.
+    const gr = resolveGrappleAction({ pc, enemies, targetIdx, verb, rng });
+    for (const b of gr.beats) beats.push(b);
+    actionMech = gr.mechanicsLine || '';
+  } else if (verb === 'cover') {
     if (roomCover) {
       coverState = { active: true, bonus: Number(roomCover.bonus) || 0, label: roomCover.label, tier: roomCover.tier, beganAt };
       beats.push(`You slip behind the ${roomCover.label} — ${roomCover.tier} cover (+${coverState.bonus} AC).`);
@@ -1445,7 +1459,7 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
         const heldFast = hasCondition(tgt.conditions, 'paralyzed');
         const tot = r + melee.atkBonus + styleAtk + recklessAtk
           + (feats.blessActive ? rng.int(1, 4) : 0)
-          + ((hasCondition(tgt.conditions, 'restrained') || heldFast) ? RESTRAINED_PENALTY : 0);
+          + ((hasCondition(tgt.conditions, 'restrained') || hasCondition(tgt.conditions, 'prone') || heldFast) ? RESTRAINED_PENALTY : 0);
         if (r === 1) {
           beats.push(`You swing your ${wname} at the ${tgt.name} and miss.`);
           continue;
@@ -1616,6 +1630,8 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
     const fled = [];
     for (const e of enemies) {
       if (!e || e.defeated || (Number(e.hp) || 0) <= 0) continue;
+      // A foe in your grip can't run — it has to break free first.
+      if (hasCondition(e.conditions, 'grappled')) continue;
       // P-75: things with legendary actions don't run — match the NORMALIZED
       // shape ({perRound, options}, see ensureCombat), not just raw arrays.
       const eLeg = e.legendaryActions;
@@ -1765,10 +1781,20 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
       continue;
     }
 
+    // Grappled: it spends its turn trying to break your grip (and any choke
+    // goes with it). On a break it doesn't also attack; otherwise it fights from
+    // a bad position (the restrained penalty). It never flees (guarded above).
+    if (hasCondition(e.conditions, 'grappled')) {
+      const esc = enemyGrappleEscape(e, ENEMY_SAVE_BONUS, rng);
+      if (esc.broke) { for (const b of esc.beats) beats.push(b); continue; }
+    }
     // Restrained: it fights tangled, and spends its strength tearing free.
+    // A grappled foe (that didn't break free above) fights from the same bad
+    // position — same attack penalty, but NOT the entangle save below.
     const restrained = hasCondition(e.conditions, 'restrained');
+    const grappledNow = hasCondition(e.conditions, 'grappled');
     const roll = rng.int(1, 20);
-    const total = roll + ENEMY_ATK_BONUS - (restrained ? RESTRAINED_PENALTY : 0) + (recklessThisRound ? 4 : 0);
+    const total = roll + ENEMY_ATK_BONUS - ((restrained || grappledNow) ? RESTRAINED_PENALTY : 0) + (recklessThisRound ? 4 : 0);
     if (restrained) {
       const cond = (e.conditions || []).find(c => c.name === 'restrained');
       const dc = cond?.saveToEnd?.dc || 13;
@@ -1865,7 +1891,7 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
     result: {
       beats,
       combatSummary: beats.join(' '),
-      mechanicsLine: `[combat:r${round}]`,
+      mechanicsLine: actionMech || `[combat:r${round}]`,
       outcome: 'mixed'
     }
   };

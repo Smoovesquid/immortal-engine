@@ -16,6 +16,7 @@ export function validatePolish({ world, composerLine, candidateText }) {
   if (out.includes('[') || out.includes(']')) return { ok: false, reason: 'brackets' };
   if (/(^|[^a-z0-9])(actually|turns out)([^a-z0-9]|$)/i.test(out.toLowerCase())) return { ok: false, reason: 'forbidden_token' };
   if (!isOneSentence(out)) return { ok: false, reason: 'multi_sentence' };
+  if (looksGarbled(out)) return { ok: false, reason: 'garbled' };
 
   // No new explicit location claims.
   if (/\b(we are in|we're in|the location is|location:)\b/i.test(out)) return { ok: false, reason: 'location_claim' };
@@ -30,6 +31,17 @@ export function validatePolish({ world, composerLine, candidateText }) {
   }
 
   return { ok: true, text: out };
+}
+
+// Detect grammatically-broken narration that a weak model produces when it
+// echoes a stripped fragment of the player's input. An article (a/an/the)
+// immediately followed by a pronoun or function word ("the it", "the to",
+// "a of") is virtually never valid English — the signature of "...take it to
+// a bank" collapsing into "The it to bank is yours now." Conservative: only
+// flags article+function-word bigrams real prose never contains.
+export function looksGarbled(text) {
+  const x = String(text || '').toLowerCase();
+  return /\b(?:a|an|the)\s+(?:it|its|it's|they|them|their|theirs|to|of|and|or|but|is|are|was|were)\b/.test(x);
 }
 
 function isOneSentence(s) {

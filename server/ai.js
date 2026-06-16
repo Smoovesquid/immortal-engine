@@ -104,6 +104,17 @@ export async function handleAiRequest({ client, body }) {
         appendAiTrace({ requestHash, model, seed, mode, system_fingerprint, responseText: text, parsedProposal: null, validationResult: 'rejected', rejectionReason: `conduct_contract:${parsed.reason || 'invalid'}` });
         return devFail(`conduct_contract:${parsed.reason || 'invalid'}`);
       }
+      // Guard the narration sentence the same way POLISH is guarded: a weak model
+      // can pass the JSON contract yet emit grammatically-broken prose (e.g. echoing
+      // a stripped fragment of the player's input). Fall back to the deterministic
+      // composer line rather than ship garbled narration.
+      const worldProxy = { ledger: { facts: [] }, scene: { location: '' }, meta: { seed: 'seed', fate } };
+      const nv = validatePolish({ world: worldProxy, composerLine, candidateText: parsed.value.narration });
+      if (!nv.ok && composerLine) {
+        parsed.value = { ...parsed.value, narration: composerLine };
+        appendAiTrace({ requestHash, model, seed, mode, system_fingerprint, responseText: text, parsedProposal: parsed.value, validationResult: 'accepted', rejectionReason: `conduct_narration:${nv.reason || 'invalid'}` });
+        return { ok: true, text: JSON.stringify(parsed.value), json: parsed.value };
+      }
       appendAiTrace({ requestHash, model, seed, mode, system_fingerprint, responseText: text, parsedProposal: parsed.value, validationResult: 'accepted', rejectionReason: null });
       return { ok: true, text: JSON.stringify(parsed.value), json: parsed.value };
     }

@@ -1403,6 +1403,7 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
       const cname = cantrip.name.toLowerCase();
       if (roll === 1) {
         beats.push(`Your ${cname} sputters wide of the ${target.name}.`);
+        actionMech = `[cantrip:${cantrip.name} | atk:${total} vs AC:${ac} → miss]`;
       } else if (roll === 20 || total >= ac) {
         const crit = roll === 20;
         // Cantrips scale with character level (SRD): two dice at 5th.
@@ -1416,8 +1417,10 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
         target.hp = newHp;
         if (newHp <= 0) target.defeated = true;
         beats.push(`Your ${cname} sears the ${target.name} for ${dmg} ${cantrip.type}${crit ? ' (critical!)' : ''}${newHp <= 0 ? ' — it drops.' : `. (${newHp} HP left)`}`);
+        actionMech = `[cantrip:${cantrip.name} | atk:${total} vs AC:${ac} → hit | ${dmg} ${cantrip.type}${crit ? ' crit' : ''}]`;
       } else {
         beats.push(`Your ${cname} sputters wide of the ${target.name}.`);
+        actionMech = `[cantrip:${cantrip.name} | atk:${total} vs AC:${ac} → miss]`;
       }
     } else {
       // weapon strike (default — also where a cantrip-less martial's "cast" lands)
@@ -1458,6 +1461,13 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
       }
       const wantSmite = verb === 'smite';
 
+      // Surface the dice in the structured mechanics line (not just the prose
+      // beats) so a strike never reads as a no-roll resolution. (Opus gate
+      // follow-up 2026-06-16: a contested action looked like it resolved with
+      // zero dice because the strike branch left actionMech empty, falling back
+      // to the bare round marker `[combat:rN]`.)
+      let firstTot = null, firstAc = null, anyHit = false, swingHits = 0, swingDmg = 0;
+
       for (let swing = 0; swing < swings; swing++) {
         const named = (targetIdx >= 0 && enemies[targetIdx] && !enemies[targetIdx].defeated && (Number(enemies[targetIdx].hp) || 0) > 0) ? targetIdx : -1;
         const tIdx = named >= 0 ? named : enemies.findIndex(e => e && !e.defeated && (Number(e.hp) || 0) > 0);
@@ -1470,6 +1480,7 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
         const tot = r + melee.atkBonus + styleAtk + recklessAtk
           + (feats.blessActive ? rng.int(1, 4) : 0)
           + ((hasCondition(tgt.conditions, 'restrained') || hasCondition(tgt.conditions, 'prone') || heldFast) ? RESTRAINED_PENALTY : 0);
+        if (swing === 0) { firstTot = tot; firstAc = tAc; }
         if (r === 1) {
           beats.push(`You swing your ${wname} at the ${tgt.name} and miss.`);
           continue;
@@ -1514,6 +1525,7 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
             dmg += smite;
           }
           dmg = Math.max(1, dmg);
+          anyHit = true; swingHits++; swingDmg += dmg;
           const newHp = Math.max(0, (Number(tgt.hp) || 0) - dmg);
           tgt.hp = newHp;
           if (newHp <= 0) tgt.defeated = true;
@@ -1533,6 +1545,11 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
         beats.push('(No slots left to fuel the smite — the blow was steel alone.)');
       } else if (wantSmite && !hasFeature(pc, 'divineSmite')) {
         beats.push('(You call on powers that have made you no promises. Steel alone answers.)');
+      }
+      if (firstTot != null) {
+        actionMech = swings > 1
+          ? `[strike:${melee.name} | ${swings} swings, ${swingHits} hit | ${swingDmg} dmg]`
+          : `[strike:${melee.name} | atk:${firstTot} vs AC:${firstAc} → ${anyHit ? 'hit' : 'miss'}${anyHit ? ` | ${swingDmg} dmg` : ''}]`;
       }
     }
   }

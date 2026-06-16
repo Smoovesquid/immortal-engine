@@ -54,7 +54,9 @@ function routeClass(res) {
   if (/table-talk/.test(m)) return 'TABLE-TALK';
   if (/clarify/.test(m)) return 'CLARIFY';
   if (/rest:(long|breather)/.test(m)) return 'REST';
-  if (/combat:r\d|combat:parley|combat:victory|ambush/.test(m)) return 'COMBAT-TURN';
+  // U167: a weapon strike / attack cantrip now surfaces its dice in the
+  // mechanics line ([strike:…]/[cantrip:…]) instead of the bare round marker.
+  if (/combat:r\d|combat:parley|combat:victory|ambush|^\[strike:|^\[cantrip:/.test(m)) return 'COMBAT-TURN';
   if (/observe only|trivial/.test(m)) return 'FREE-ACTION';
   if (/trade:/.test(m)) return 'TRADE';
   if (/consume/.test(m)) return 'CONSUME';

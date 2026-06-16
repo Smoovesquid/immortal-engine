@@ -63,6 +63,17 @@ test('U163: playerMove answers a mechanics question out of combat with no roll m
   assert.match(output.narration, /d20/);
 });
 
+test('U163: "give me the number, what is my Might modifier" answers from canon, never lets the narrator invent it', () => {
+  // Opus gate: the DM said "minus three" while mechanics showed stat:WITS-1 —
+  // an LLM-invented number, because this fell into a generic roll instead of
+  // the grace layer. Same root cause/fix as the mechanics/advice cases above.
+  const w = world();
+  w.party[0].stats = { MIGHT: 5, AGILITY: 14, WITS: 8, GRIT: 12, CHARM: 10 };
+  const { output } = playerMove(w, packs(), 'Senna just told me Might is at a penalty — so give me the number. What is my Might modifier, plus or minus?');
+  assert.match(output.narration, /MIGHT is 5, a -3 modifier/);
+  assert.doesNotMatch(output.mechanics || '', /roll:/);
+});
+
 test('U163: mid-dialogue, the same phrase is left to askNpc (G10 lore questions are not meta)', () => {
   // The gate is scoped to OUT of dialogue on purpose: "what happened with X"
   // is exactly the shape of a real in-fiction question for an NPC (G10), so

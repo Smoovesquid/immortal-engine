@@ -72,10 +72,11 @@ Evidence: `opus-gate-2026-06-15-baseline.md`, `-postfix.md`, `-2seed.md`, `FIX_L
    _Remaining follow-up:_ travel toward a present NPC (vs a map node) still says "no such place" —
    "approach the named NPC" is a separate travel-resolution refinement.
 
-4. **Content-withholding deadends.** "read the carved name letter by letter", "what do the grooves
-   spell out", "read the note" → the DM teases content then **withholds it with no in-fiction reason**.
-   *Done-when:* the DM either delivers the content or gives a fiction reason it can't (smudged, a
-   language you don't read). **ROI: lore-hounds and curious players hit this every session.**
+4. **Content-withholding deadends. — ◑ PARTIAL (F: anti-tease rule).** The DM polish narrated reading
+   evocatively-but-emptily ("words that feel heavier than they should"); a narrator-prompt rule now
+   requires it to deliver the words or give a concrete illegible-reason. _Remaining:_ unauthored lore
+   ("who was the elder before Kael?") — the DM has nothing to ground and bounces; a graceful "that's
+   lost to me" is the best available without inventing canon.
 
 ## 🟡 Polish (first-impression quality)
 

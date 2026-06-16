@@ -1,0 +1,6 @@
+up
+FAILING TURNS: 8/48
+BUG CLASSES: DM_TEST_DEADEND:4  CRUNCH_INCONSISTENCY:3  DM_ARTIFACT_LEAK:1
+COST: ~$2.52 (96 calls, 131582 tokens)
+REPORT: docs/playtests/opus-gate-2026-06-16.md
+════════════════════════════════════════════

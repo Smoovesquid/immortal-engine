@@ -6,6 +6,11 @@
 import { extractIntent, getClarificationPrompt } from '../voice/intentExtraction.js';
 import { adjudicate } from '../adjudication/adjudicate.js';
 import { exitsFrom, cleanPlaceName } from '../map/mapState.js';
+import { statMod } from '../ruleset/core/stats.js';
+
+// A single ability-score query: "what's my MIGHT", "my WITS modifier", "Grit mod".
+const META_STAT = /\b(?:what(?:'?s| is)\s+my\s+|my\s+)(might|agility|wits|grit|charm)(?:\s+(?:modifier|mod|score|stat|number|bonus))?\b/i;
+function fmtMod(m) { return m >= 0 ? `+${m}` : `${m}`; }
 
 // Compute pacing delay based on action type
 export function computePacingDelay(action) {
@@ -149,7 +154,7 @@ const META_OBJECTIVE = /\b(?:what(?:'?s| is| was)? )?my (?:quest|objective|goal|
 export function isMetaQuestion(text) {
   const t = String(text || '').toLowerCase();
   return META_LOCATION.test(t) || META_HEALTH.test(t) || META_RECAP.test(t) || META_OUTCOME.test(t)
-    || META_INVENTORY.test(t) || META_EQUIPMENT.test(t) || META_CHARACTER.test(t) || META_ITEM.test(t) || META_PURSE.test(t) || META_TIME.test(t) || META_OBJECTIVE.test(t);
+    || META_INVENTORY.test(t) || META_EQUIPMENT.test(t) || META_CHARACTER.test(t) || META_STAT.test(t) || META_ITEM.test(t) || META_PURSE.test(t) || META_TIME.test(t) || META_OBJECTIVE.test(t);
 }
 
 // A null-action: filler, acknowledgment, or an abort. A real DM lets the
@@ -222,6 +227,20 @@ export function handleMetaQuestion(text, world) {
     return buildLocationSurvey(world);
   }
 
+  // Single ability score — "what's my MIGHT modifier?" Answer from canon (the
+  // score + its D&D modifier) so the DM/NPC never invents a wrong number.
+  {
+    const m = lowerText.match(META_STAT);
+    if (m) {
+      const key = m[1].toUpperCase();
+      const stats = world.party?.[0]?.stats || {};
+      if (key in stats) {
+        const score = Number(stats[key]) || 10;
+        return `Your ${key} is ${score}, a ${fmtMod(statMod(score))} modifier.`;
+      }
+    }
+  }
+
   // Item query — "what does <item> do?", "is <item> in my pack?". Answered from
   // the REAL pack; returns null (falls through) if no carried item matches.
   if (META_ITEM.test(lowerText)) {
@@ -291,7 +310,7 @@ export function handleMetaQuestion(text, world) {
     if (ideal || flaw) out.push(`You hold to ${ideal || 'your own code'}${flaw ? `, for all that you're ${flaw}` : ''}.`);
     if (META_STATS_REQ.test(lowerText) && p.stats && typeof p.stats === 'object') {
       const order = ['MIGHT', 'AGILITY', 'WITS', 'GRIT', 'CHARM'];
-      const line = order.filter(k => k in p.stats).map(k => `${k} ${p.stats[k]}`).join(', ');
+      const line = order.filter(k => k in p.stats).map(k => `${k} ${p.stats[k]} (${fmtMod(statMod(Number(p.stats[k]) || 10))})`).join(', ');
       if (line) out.push(`Your measures: ${line}.`);
       // Include HP — it's a real, trackable number in escape mode (the rules-
       // lawyer is right that the DM owns it). Don't dodge a stat-block request.

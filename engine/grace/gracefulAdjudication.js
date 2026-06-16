@@ -122,7 +122,7 @@ export function getToneModifier(tone) {
 // matching answer branch below. Order of evaluation in the handler matters:
 // LOCATION is checked before HEALTH so "what's around" can't be mistaken for a
 // status check.
-const META_LOCATION = /\bwhere am i\b|what (?:do|can) i see\b|\blook(?:ing)? around\b|\bsurvey\b|what'?s (?:around|here|nearby|out there)\b|who(?:'?s| is) (?:here|around|nearby)\b/;
+export const META_LOCATION = /\bwhere am i\b|what (?:do|can) i see\b|\blook(?:ing)? around\b|\bsurvey\b|what'?s (?:around|here|nearby|out there)\b|who(?:'?s| is) (?:here|around|nearby)\b/;
 const META_HEALTH = /\bam i (?:hurt|wounded|damaged|injured|alive|ok|okay|alright|all right|fine|bleeding|dying)\b|\bhow am i (?:doing|holding up|feeling)\b|how(?:'?s| is) my (?:health|hp|status|condition|shape)\b|what(?:'?s| is) my (?:health|hp|status|condition|wounds|shape)\b|how much (?:health|hp|life)\b|\bhow (?:hurt|wounded|injured|bad(?:ly)? (?:hurt|off))\b|how many (?:hit ?points|hp)\b|\b(?:max|maximum)\s+(?:hp|hit\s?points?|health)\b|\bhp\s+(?:total|number|max|cap|count)\b|\bhit\s?points?\b/;
 const META_RECAP = /what happened|what did i (?:just )?do\b/;
 const META_OUTCOME = /did i (?:succeed|fail|win|lose|make it)\b/;
@@ -149,12 +149,22 @@ const META_ITEM = /\bwhat(?:'?s| does| do| is| are)\s+(?:the|my|a|an|this|that)\
 const META_PURSE = /\bhow many coins\b|\bhow much (?:money|coin|gold|silver|copper|cash)\b|\bwhat(?:'?s| is)\s+in\s+my\s+(?:purse|pouch|coin\s?purse|wallet)\b|\bhow\s+(?:much\s+)?(?:money|coin|gold|silver)\s+(?:do i have|have i got|am i carrying)\b|\bmy (?:purse|coin\s?purse)\b/i;
 const META_TIME = /\bwhat time\b|\btime of day\b|\bis it (?:day|night|morning|evening|dark|light)(?:time)?\b/;
 const META_OBJECTIVE = /\b(?:what(?:'?s| is| was)? )?my (?:quest|objective|goal|mission|task)\b|\bwhat (?:am i|are we) (?:supposed to|meant to|trying to)\b|\bwhy am i here\b|\bwhat(?:'?s| is) the (?:quest|objective|goal|plan)\b|\bremind me\b/;
+// "How do you resolve a sword swing — pure narration, or a dice mechanic?" /
+// "Is that a d20?" — a question about the RULES, not an in-fiction action.
+// Never a roll target. (Opus gate 2026-06-16, Rules Lawyer DM.)
+const META_MECHANICS = /\bdice mechanic\b|\bhow (?:do|does|would) (?:you|the game|this) resolve\b|\bis there a dice\b|\bwhat (?:kind of )?dice\b|\bis (?:that|this) a d ?20\b|\bhow does combat work\b|\bhow do(?:es)? (?:rolls?|dice) work\b|\bpure narration\b|\bwhat'?s? the (?:mechanic|system) (?:here|for this)\b/i;
+// "Should I go talk to them, or is that a bad idea?" — asking for the DM's
+// read on a course of action, not declaring one. A real DM answers in
+// character, never bounces it back as a navigation prompt. (Opus gate
+// 2026-06-16, Confused newbie.)
+const META_ADVICE = /\bshould i\b[^?]*\?|\bis (?:that|this|it) a (?:bad|good|smart|wise|dumb) idea\b|\bwould (?:that|it) be (?:smart|wise|safe|dangerous)\b/i;
 
 // Detect meta-questions (questions about state, not actions)
 export function isMetaQuestion(text) {
   const t = String(text || '').toLowerCase();
   return META_LOCATION.test(t) || META_HEALTH.test(t) || META_RECAP.test(t) || META_OUTCOME.test(t)
-    || META_INVENTORY.test(t) || META_EQUIPMENT.test(t) || META_CHARACTER.test(t) || META_STAT.test(t) || META_ITEM.test(t) || META_PURSE.test(t) || META_TIME.test(t) || META_OBJECTIVE.test(t);
+    || META_INVENTORY.test(t) || META_EQUIPMENT.test(t) || META_CHARACTER.test(t) || META_STAT.test(t) || META_ITEM.test(t) || META_PURSE.test(t) || META_TIME.test(t) || META_OBJECTIVE.test(t)
+    || META_MECHANICS.test(t) || META_ADVICE.test(t);
 }
 
 // A null-action: filler, acknowledgment, or an abort. A real DM lets the
@@ -225,6 +235,36 @@ export function handleMetaQuestion(text, world) {
   // Location / survey — checked first (most specific phrasings).
   if (META_LOCATION.test(lowerText)) {
     return buildLocationSurvey(world);
+  }
+
+  // How the rules work — "is there a dice mechanic?", "is that a d20?". A
+  // question about the SYSTEM, answered straight; if the same line also asks
+  // for a specific stat (e.g. "what's my Might modifier right now?"),
+  // answer that too instead of dropping half the question.
+  if (META_MECHANICS.test(lowerText)) {
+    let ans = `Every contested action gets one roll — a d20 plus your relevant ability modifier — against a difficulty number set by how hard the moment is. Beat it and it goes your way; fall short and it doesn't, or costs you something to manage.`;
+    const sm = lowerText.match(META_STAT);
+    if (sm) {
+      const key = sm[1].toUpperCase();
+      const stats = world.party?.[0]?.stats || {};
+      if (key in stats) {
+        const score = Number(stats[key]) || 10;
+        ans += ` Right now your ${key} is ${score}, a ${fmtMod(statMod(score))} modifier.`;
+      }
+    }
+    return ans;
+  }
+
+  // Advice — "should I talk to them, or is that a bad idea?" The DM answers
+  // in character, naming who's actually present rather than bouncing the
+  // question back as a navigation prompt.
+  if (META_ADVICE.test(lowerText)) {
+    const node = (world.map?.nodes || []).find(n => n && n.id === world.map?.currentNodeId) || null;
+    const npcs = (node?.settlement?.npcs || []).filter(n => n && !n.hostile);
+    if (/\btalk|speak|approach|ask\b/.test(lowerText) && npcs.length) {
+      return `Worth a try — ${joinList(npcs.slice(0, 3).map(describeNpc))} ${npcs.length === 1 ? 'is' : 'are'} right here, and nothing's stopping you from walking over.`;
+    }
+    return `That one's yours to call — nothing here forces your hand either way. Go with your gut.`;
   }
 
   // Single ability score — "what's my MIGHT modifier?" Answer from canon (the

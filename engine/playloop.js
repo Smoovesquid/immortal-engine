@@ -43,7 +43,7 @@ import { resolveCompanionTurn } from './combat/companionTurn.js';
 import { castSpell } from './spell/castSpell.js';
 import { classifyOffensiveCast, castConsequence } from './magic/castConsequence.js';
 import { evaluateEncounter, selectCreatures, spawnEncounter } from './combat/encounterSpawn.js';
-import { isMetaQuestion, handleMetaQuestion, isNullAction, isQuestionShaped } from './grace/gracefulAdjudication.js';
+import { isMetaQuestion, handleMetaQuestion, isNullAction, isQuestionShaped, META_LOCATION } from './grace/gracefulAdjudication.js';
 import { resolveEscapeCombatTurn, initEscapeHp, initEscapeKit, shortRest, longRest, applySurpriseRound, parseEscapeAction, combatStatusAnswer, meleeProfile, playerAc } from './combat/escapeCombat.js';
 import { statMod, maxWounds } from './ruleset/core/stats.js';
 import { shopsHere, stockFor, settlementStock, economyAt, priceToSell, shopBuys, restockEpoch, purseTotalCopper, pursePay, purseReceive, formatPrice, matchByName } from './economy/shop.js';
@@ -733,6 +733,27 @@ function playerMoveCore(world, packsById, text) {
           mechanics: `[dismiss | ${target.name}]`
         }
       };
+    }
+  }
+
+  // ── Meta-question gate (out of combat, out of dialogue) ──────────────────
+  // A question about state ("what's my Might modifier", "how do you resolve
+  // a sword swing", "should I talk to them") is never a dice roll or a
+  // navigation prompt — answer it from canon and hand the turn back. Combat
+  // has its own variant of this gate further down (it also covers table-talk
+  // mid-fight). Scoped to OUT of dialogue: mid-conversation, the same phrases
+  // ("what happened with the cold well?") are often real questions FOR THE
+  // NPC, not meta-questions about the player's own state — askNpc already
+  // answers those in character (G10). (Opus gate 2026-06-16: the generic
+  // out-of-combat/out-of-dialogue resolver had no meta-question check at all,
+  // so these fell through to a dice roll.)
+  // META_LOCATION is excluded here — "look around" out of combat already has
+  // a dedicated, tested explore-intent handler downstream (the "Exits:" path,
+  // U37/U38); this gate would otherwise shadow it with a different format.
+  if (!w.combat?.active && !w.scene?.dialogue && isMetaQuestion(text) && !META_LOCATION.test(String(text || '').toLowerCase())) {
+    const metaAnswer = handleMetaQuestion(text, w);
+    if (metaAnswer) {
+      return { world: w, output: { narration: `Wizard: ${metaAnswer}`, mechanics: '' } };
     }
   }
 

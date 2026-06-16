@@ -41,7 +41,13 @@ const GM_TAG = 'GM-blast:';
 // aggressive frame. Strict — a self-buff ("cast mage armor"), a light, or a heal
 // must NOT read as an assault.
 const OFFENSIVE_RE = /\b(blast|incinerate|immolate|scorch|burn|char|smite|electrocute|fry|torch|nuke|obliterate|hurl\s+(?:flame|fire|lightning)|fire\s*bolt|sacred\s+flame|produce\s+flame|firebolt|flame|fireball|lightning|shock|frost\s*ray|ray\s+of\s+frost|eldritch\s+blast|magic\s+missile|chill\s+touch)\b/i;
-const HOSTILE_CAST_RE = /\b(cast|invoke|channel|conjure|hurl|throw|loose|sling)\b/i;
+// Unambiguous casting verbs only. "hurl"/"throw"/"loose"/"sling" used to be
+// here too, but they're ordinary physical-delivery verbs ("a loose roof beam",
+// "throw a rock") with no magical payload of their own — OFFENSIVE_RE already
+// covers the magical case explicitly ("hurl flame/fire/lightning"). Keeping
+// the bare verbs here mis-tagged a beam-swing as a spell cast (Opus gate
+// 2026-06-16, Chaos-griefer: "grab a loose roof beam and swing it").
+const HOSTILE_CAST_RE = /\b(cast|invoke|channel|conjure)\b/i;
 const BENIGN_RE = /\b(mage\s+armor|shield|light|heal|cure|mend|guidance|bless|protection|ward|detect|prestidigitation|dancing\s+lights|warm|dry|clean)\b/i;
 
 // Children: the hard absolute exclusion (MORALITY_SYSTEM §1). Checked FIRST.

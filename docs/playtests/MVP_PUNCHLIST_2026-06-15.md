@@ -61,16 +61,16 @@ Evidence: `opus-gate-2026-06-15-baseline.md`, `-postfix.md`, `-2seed.md`, `FIX_L
    escape combat or is refused in-fiction; damage persists across rounds and re-engagements; narration honors
    the dice. **ROI: highest.** Initiation done; **lifecycle (1g)** is the next packet — live escape-mode session.
 
-2. **Starting loadout / chargen content.** The starting Sellsword "Nyx" has an **empty weapon &
-   armor loadout**, `dnd:null`, and a signature item literally named **"Thing"**. The crunch cannot
-   read as "solid" when the PC has no gear — and it's *why* the DM kept inventing "a short sword".
-   *Done-when:* each archetype gets a coherent starting kit; signature item is authored. *(Touches
-   `WORLD_VERSION` + worldHash — follow the bump checklist.)* **ROI: first thing a player inspects.**
+2. **Starting loadout / chargen content. — ✅ DONE (F16).** `gear.json` was never wired into
+   `beginAdventure`; now bundled (`engine/chargen/fantasyGear.js`) and passed as `packGear`. The PC
+   spawns with a real weapon + armor + signature (no more "Thing"); determinism held (no WORLD_VERSION
+   bump needed). _Remaining follow-up:_ combat `meleeProfile` reads `inventory.items` not `.weapons`,
+   so the named weapon is identity-only until the T2 item-def path wires it into combat damage.
 
-3. **Movement intent resolution.** "go out the door and head south toward the elder" → stalled at the
-   door with a **clarify prompt** instead of journeying. Violates THE_DM_TEST and "the DM is the only
-   verb." *Done-when:* a stated destination/direction resolves into a DM-narrated journey, never a
-   UI-style bounce. **ROI: navigation is constant; a stall reads as broken.**
+3. **Movement intent resolution. — ✅ DONE (F15).** Indoor directional travel ("head south toward the
+   elder") was bounced as `[clarify:indoors]`; it now BRIDGES (step outside → resolve the journey).
+   _Remaining follow-up:_ travel toward a present NPC (vs a map node) still says "no such place" —
+   "approach the named NPC" is a separate travel-resolution refinement.
 
 4. **Content-withholding deadends.** "read the carved name letter by letter", "what do the grooves
    spell out", "read the note" → the DM teases content then **withholds it with no in-fiction reason**.

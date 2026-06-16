@@ -1,6 +1,9 @@
 # Immortal Engine — Agent Guide
 
 ## Read first (durable docs)
+- **`docs/WHAT_THIS_IS.md` — plain-English audit of every system with status tags (🟢 live / 🟡 built-but-dark / 🔴 partial) + moat notes. The map of what exists; read to orient fast.**
+- **`docs/IDEA_GARDEN.md` — parked ideas (capture without committing). Each has `echoes:` triggers — when Tim says something that rhymes with one, resurface it. Gists are in MEMORY.md so associations fire without opening the file.**
+- **`docs/PATH_TO_SELLABLE.md` — the plan to make this sellable (surface the depth → make it correct → build the soul). The three open decisions live here. Carrying packets: `docs/PACKETS.md` → "Sellable / Surface-the-Depth track" (P-82–P-88).**
 - **`docs/THE_DM_TEST.md` — THE governing principle. For any player input, do what a real DM would do; resolve intent in the fiction. Never bounce intent back as a game-mechanical prompt ("travel one tile at a time, which way?") or a system artifact. The DM is the interface; mechanics serve the fiction. This is the answer, as always — apply it before shipping any response.**
 - **`docs/PLAYTEST_PROTOCOL.md` — BEFORE handing Tim anything to playtest, I MUST play every new feature myself through the live `v1.html` browser surface and confirm it VISIBLY works (screenshot, not DOM dump). Default failure mode: handing over a broken game and debugging live. Don't.**
 - **`docs/PROSE_MECHANIC_PLAN.md` — active roadmap to perfect the prose mechanic (Stages C→A→B→F→D→E) + the per-stage Severe Playtest discipline. Each stage closes only with a committed live playtest report in `docs/playtests/`.**
@@ -9,6 +12,16 @@
 - `docs/IMMORTAL_INVARIANTS.md` — non-negotiables (determinism, narration≠canon, one walkable scale, open-ended, etc.).
 - `docs/PACKETS.md` — active queue + done-when. Spec a packet before editing; small bounded diffs.
 - `docs/LIVING_WORLD_MERGE.md` — region/ecology/discovery/will merge (P1–P6 done).
+
+## Build budget (Pro plan — fire every session; full protocol in `docs/BUILD_BUDGET.md`)
+Tim is on Pro and hits the 5-hour cap fast. Govern spend:
+- **Default to Sonnet** for mechanical work (reads, edits, greps, running tests, routine wiring). Escalate to **Opus** only for hard reasoning (architecture, design, gnarly debugging), then drop back. Opus burns ≈5× faster.
+- **Model-fit check — do this at the START of each new request.** Classify the task. If it's mechanical and the active model is **Opus**, open with ONE line: *"This is routine — `/model sonnet` will save your window; I'll proceed either way."* If it's deep reasoning and the active model is **Sonnet**, suggest `/model opus`. Suggest ONCE per task, then proceed regardless — never nag, and skip it for trivial/conversational turns.
+- **Targeted reads only.** NEVER read whole large files — `playloop.js` (~5.7k lines), the bestiary catalogs, `server/rag/corpus/*` in bulk. Grep to locate → Read with `offset`/`limit`. Don't re-read what's in context; don't re-read to confirm an edit.
+- **One packet per session**; `/clear` between unrelated tasks, `/compact` when deep. Batch independent tool calls.
+- **Heavy LLM testing runs on the `.env` API key from the CLI, not interactively** (the Opus gate is the costliest thing in the repo). Use `node --test` / `playtest:quick` for the fast loop.
+- Don't spawn subagents unless fan-out is truly needed (cold context = expensive).
+- Opus 4.8 IS available on Pro (confirmed by Tim) — the fast cap is Opus eating the 5-hour window, so Sonnet-default is the lever, not a tier change.
 
 ## Quick Reference
 

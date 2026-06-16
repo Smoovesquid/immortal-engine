@@ -170,6 +170,281 @@ engine field (P-66c) — revert the named files.
 
 ---
 
+## QUEUE — Sellable / Surface-the-Depth track (specced 2026-06-16)
+
+> **REFRAMED 2026-06-16 → the Realization Ladder.** `docs/PATH_TO_SELLABLE.md` was rewritten
+> around Tim's realization ladder, which is ALSO the build order. **New ordering:** work the
+> lowest rung not yet producing its "wow." That is **Rung 1 = P-86 (correctness)** — promoted
+> from "floor" to the foundation of the whole funnel; it's where we stand (gate ~17%). The
+> surfacing packets map to higher rungs and are **deferred until their rung comes due**:
+> P-83 (rumor graph) → rung 4; P-84 (creation-myth) → rung 6; P-85 (lore answers) → rung 5.
+> **P-82 (historical voices) is BENCHED** — rung-2 *flavor*, capability proven, not needed
+> until plain conversation already wows (and pending the voice cost-model). Climb on the
+> experiential gate, not suite-green. The packet specs below stand as-is; only the PRIORITY
+> changed. New near-term work: a **return-session test** (proves "never forgets," rung 4) and
+> the **bespoke-voice cost model** (before any rung-2 surfacing).
+
+**Source:** `docs/WHAT_THIS_IS.md` (full code audit) + `docs/PATH_TO_SELLABLE.md` (the plan).
+**Strategy (three moves):** (1) **surface the depth** — turn the built-but-dark systems
+(historical voices, rumor graph, creation-myth secret, lore answers) into things a stranger
+feels in 20 minutes; (2) **make it correct** — the Opus-gate correctness floor; (3) **then
+build the soul** — the morality milestones (already tracked in `docs/MORALITY_SYSTEM.md`).
+
+**The audit's central finding:** most of what makes this special is *built and working but
+not reaching the player.* So this track is mostly **wiring + surfacing**, not building —
+the highest value-per-hour work in the project. P-82–P-85 are Phase 1 (surfacing). P-86 is
+the ongoing correctness floor (Phase 0). P-87+ are Phase-2-and-beyond *placeholders* —
+deliberately under-specified because they'll change and depend on decisions still owed
+(the wedge, the audience, the engineer-friend conversation; see PATH_TO_SELLABLE §"three
+decisions").
+
+**Ordering / anti-drift:** the ROADMAP R0–R3 adjudication spine and the correctness floor
+(P-86) still outrank surfacing when they conflict — a deep system surfaced onto a broken
+turn reads as broken. Within Phase 1: **P-82 is the headline** (start here); P-83/P-84/P-85
+are independent and can run in any order or in parallel worktrees.
+
+### P-82 — Light up the historical-figure voices (the unplugged 488-corpus)
+**Status:** spec'd 2026-06-16. THE headline surfacing packet. Design: `docs/HISTORICAL_FIGURES.md`.
+**Why:** the audit's sharpest finding. The RAG voice pipeline is wired end-to-end —
+`engine/npc/dialogue.js:614` (`npc.historicalFigure` → `outcome.historicalFigureId`) →
+`engine/playloop.js:852` → `public/v1.js:545` (`/api/npc-voice`) → `server.js:284`
+(`retrieveChunks`) → `server/npcVoicePrompt.js` (VOICE ARCHIVE block) — and there are **488
+corpus files** (~437 original NPC backstories, ~51 real people + mashups: Lincoln, Marcus
+Aurelius, Joan of Arc, Genghis Khan, Jobs×da Vinci, Goldblum×Socrates…). **The one missing
+link: no generated NPC is ever assigned a `historicalFigure` value**, so in a normal
+playthrough NONE of it surfaces. This is a finished feature switched off.
+**CORRECTED PREMISE (red-team, 2026-06-16):** the ~437 backstory corpus files are NOT
+generic role-files to sprinkle onto procedural NPCs. They are the **authored population of
+the Westmarch pack** (`packs/fantasy/westmarch/`) — named characters (Henn the Academy
+librarian) inside a coherent authored society whose factions are the corpus `cluster`
+values (thornwall_commons 87, harbor_quarter 52, wild_road 44, academy_of_runes,
+coin_cult, house_aldenmere, hollow_court, covenant_of_seven, even church_of_incrementalism).
+Attaching "Henn, who knows House Aldenmere and the Coin Cult" to a random *procedural*
+villager would surface INCOHERENCE (he'd reference factions that aren't in that world). So
+lighting up the voices = **make the Westmarch the playable slice**, not sprinkle-by-role.
+Bigger than one wire — but far higher value: it lights up an entire authored region (its
+factions, its substrate, the Church-of-Incrementalism Easter egg) at once. The default
+game currently boots the PROCEDURAL `fantasy` pack (`public/v1.js:99 primaryId:'fantasy'`),
+NOT westmarch.
+**Objective:** the Westmarch becomes a selectable/playable slice in which its authored NPCs
+carry their `historicalFigure` corpus links and speak grounded in them — including the ~51
+marquee real-people figures placed at fitting roles — with graceful fallback when the local
+model is down.
+**THE crux to verify FIRST (P-82a):** does the Westmarch pack's NPC data actually SET
+`historicalFigure` (= the corpus id) on each NPC? The corpus was generated; it is unknown
+whether the pack's NPCs link back to it. If they don't, even playing the Westmarch won't
+light up the voices until that link is written. This single unknown decides whether P-82 is
+"wire the slice" (cheap) or "relink an authored world" (medium). Verify before building.
+**Dependency to name up front:** bespoke NPC voice runs on the *local* model (Ollama,
+`server/localLlmProvider.js`). Without it, the engine serves solid templated dialogue (the
+links are harmless); the *RAG-grounded* voice only proves out with Ollama up. This packet's
+live playtest needs the local model running. (See red-team risk #4: per-NPC local voice is
+also an unproven *production* economics question — flagged for P-88, not solved here.)
+
+**Sub-packets (do in order; each ships suite-green + a live playtest report):**
+- **P-82a — Verify the link + make the Westmarch selectable.** Confirm whether
+  `packs/fantasy/westmarch/` NPCs carry `historicalFigure` corpus ids; make the pack
+  loadable/selectable in v1 (it's already in `packs/manifest.json`). No new casting system
+  yet — first learn what's actually wired.
+  - allowed: read-only audit of `packs/fantasy/westmarch/*`; `public/v1.js` (pack
+    selection), `engine/rulesets.js` if the pack needs registering. Findings recorded.
+  - done_when: the Westmarch is selectable and you can confirm, server-side, whether an
+    NPC's `historicalFigure` reaches `retrieveChunks`; the finding is written down.
+- **P-82b — Relink (only if P-82a shows the link is missing).** Write `historicalFigure` =
+  corpus id onto each Westmarch NPC by matching name/cluster → corpus file. Deterministic,
+  data-only (pack authoring), no engine change ideally.
+  - allowed: `packs/fantasy/westmarch/*` (NPC data), a one-off matcher script in `scripts/`.
+  - invariants: `historicalFigure` is an only-when-set optional field (no WORLD_VERSION
+    bump); `worldHash` stable; pack remains deterministic.
+  - done_when: a Westmarch playthrough's named NPCs retrieve their corpus chunks; the voice
+    is visibly colored; a live report with the local model up.
+- **P-82c — Marquee placement (the demo moment).** Cast the ~51 real-people figures
+  (Marcus Aurelius as a sage, Twain as a tavern wit) at fitting Westmarch roles with
+  personalities per `HISTORICAL_FIGURES.md`. The "argue philosophy with Aurelius, then go
+  con Twain" demo beats.
+  - allowed: `packs/fantasy/westmarch/*`; `engine/npc/npcGenesis.js` only if a placement
+    hook is needed.
+  - done_when: a live Westmarch playthrough meets ≥2 marquee figures grounded in their
+    corpus; screenshots in the report.
+- invariants: server never leaks the key (existing); RAG only shapes WORDS, never the
+  engine's share/deflect/lie decision (existing contract); silent fallback when the local
+  model or a corpus file is absent.
+- rollback: new module + one optional NPC field + genesis hook lines — revert the named files.
+
+### P-83 — Surface the rumor / claims social graph
+**Status:** spec'd 2026-06-16. Engine: `engine/claims.js` (six-degrees propagation, tested),
+`engine/rumor/*` (tiered minting), `engine/npc/perspectiveFilter.js`. Design:
+`docs/RUMOR_LAYER.md`.
+**Why:** the propagation engine works and is deterministic, but it's invisible — a casual
+player can't tell the gossip they hear is a distorted, traceable artifact rather than flavor
+text. The mechanism is real; the player's *awareness* of it is thin.
+**Objective:** a player can ASK around and HEAR the same event told differently by different
+people, notice it's distorting with distance, and (where the UI track provides a panel) see
+a "what people are saying" board. Engine-side this packet ensures `askNpc` surfaces the
+NPC's carried claims/rumors as answerable dialogue, tagged with their fidelity, in the NPC's
+voice.
+**Sub-packets:**
+- **P-83a — Claims/rumors answer in dialogue.** When asked about a subject an NPC holds a
+  claim/rumor about, the dialogue returns it (at its distortion tier), distinct from a
+  direct-witness fact. Two NPCs with fractured versions answer differently.
+  - allowed: `engine/npc/dialogue.js`, `engine/npc/perspectiveFilter.js`, `engine/playloop.js`
+    (surfacing only); tests `tests/R*-claimsDialogue.test.js`.
+  - done_when: live, asking three NPCs about one distant event yields tiered, diverging
+    accounts; determinism + suite green.
+- **P-83b — Player deeds become traveling rumors (M2-remaining overlap).** A witnessed
+  notable deed mints a claim that propagates so a later town greets you having "heard." This
+  is the reputation-precedes-you beat; it overlaps Morality M2-remaining — coordinate, don't
+  duplicate.
+  - allowed: `engine/playloop.js` (deed→mint hook), `engine/rumor/mint.js`, `engine/claims.js`.
+  - done_when: a deed in town A is referenced by an NPC in town B after travel; suite green.
+- **P-83c — (depends on UI track) Rumor board panel.** A read-only "what people are saying"
+  view: body, carrier + location, fidelity/age, contested marker. Flagged as depends-on-UI;
+  engine already exposes the data.
+- invariants: claims are epistemic-only — they NEVER promote to engine truth without a
+  non-LLM step (the two-variance wall); `rng.js` only; narration≠canon.
+
+### P-84 — Open the creation-myth door (a reason to keep going)
+**Status:** spec'd 2026-06-16. Engine: `engine/substrate.js` (cosmology→region→node descent
++ the sealed `deep:foundation`). Wall: `docs/ARCHITECTURE_OVERVIEW.md §7` (the
+witness-object / god-frame wall — the gods may never categorize the orb as sacred).
+**Why:** the substrate history is real and already colors NPC voice, but the sealed
+secret isn't a thread the player can *pull*, and a stranger wakes with no goal (the
+blank-page problem). The buried mystery is the natural hook — it gives a reason to explore
+and teaches the world by exploring it.
+**Objective:** a new game seeds a faint, pullable thread toward the buried truth — a first
+hook at/near character start (a rumor, an out-of-place detail, a wrong-aged thing) that a
+curious player can follow, with the substrate's node/region events becoming answerable
+breadcrumbs along the way. The reveal stays author-paced and respects the wall: the secret
+is approached, never handed over, and the god-frame never claims it.
+**Sub-packets:**
+- **P-84a — The opening hook.** Surface one substrate-anchored hook in the first scene(s)
+  (engine-owned, not LLM-invented) — a thread the player may take or ignore.
+  - allowed: `engine/playloop.js` (begin/first-scene hook), `engine/substrate.js` (a
+    surfaceable-hook selector), `engine/ledger.js` (seed an open question).
+  - done_when: a fresh game presents a concrete, optional mystery beat in the first few
+    turns; deterministic; suite green.
+- **P-84b — Breadcrumbs answer.** Substrate node/region events (the founding, the crisis,
+  "the winter a stranger stayed") become answerable when the player asks pointed questions
+  at the right place — pulling the thread yields real, consistent fragments. (Pairs with P-85.)
+  - allowed: `engine/substrate.js`, `engine/npc/dialogue.js`, `engine/playloop.js`.
+  - done_when: following the hook surfaces ≥2 consistent substrate fragments; suite green.
+- **P-84c — (author-gated) The deep reveal.** The path toward `deep:foundation` — gated,
+  rare, and respecting the witness-object wall. Likely an authored arc
+  (`content/arcs/*.arc.js`) rather than procedural. Spec deferred until P-84a/b are live and
+  the slice's pacing is known.
+- invariants: the sealed truth is engine-authored and `[vision:raw]`/`[reveal:true-edge]` —
+  it must NEVER reach the LLM (`server.js` already short-circuits these); the god-frame wall
+  holds; determinism preserved.
+
+### P-85 — Make the world answer (the "who was the elder before Kael?" class)
+**Status:** spec'd 2026-06-16. Source: the Opus-gate Lore-hound failures + the audit.
+**Why:** pointed lore questions sometimes hit a deflection or a non-answer even though the
+knowledge-graph / substrate / claims / RAG that *could* answer them already exist — the
+classic surfacing gap. The world feels thin exactly when it isn't.
+**Objective:** route a pointed factual question to the deepest source that actually knows
+(NPC knowledge-graph → substrate → claims/rumors → common knowledge), and answer in voice;
+fall through to honest "I don't know" only when nothing holds it. **Hard boundary (Tim's
+call):** where NOTHING in canon holds the answer, the system must NOT invent canon on the
+fly — the `mintFact`/lore-as-fact path is a reserved design decision (hallucination risk vs.
+the determinism moat) and is explicitly OUT of this packet. This packet only *surfaces what
+exists*; generating new canon is a separate, Tim-owned decision.
+- allowed: `engine/npc/dialogue.js`, `engine/npc/perspectiveFilter.js`,
+  `engine/npc/npcDepth.js`, `engine/substrate.js`, `engine/playloop.js` (routing only);
+  tests for the resolution ladder.
+- done_when: the Opus-gate Lore-hound persona's "you keep dodging" / non-answer failures
+  drop; a pointed question reaches the deepest holder and answers in voice OR honestly
+  declines; no invented canon; suite + gate green.
+- forbidden: minting new world-facts to satisfy a question (reserved for Tim); `Math.random`.
+
+### P-86 — Correctness floor (continue the Opus experiential gate)
+**Status:** ONGOING (Phase 0). Harness: `scripts/dm-playtest.mjs` (4 personas + adversarial
+judge over the live DM path). Memory: `project_opus_gate`. Trajectory: 35% → ~17% failing
+turns.
+**Why:** a deep system surfaced onto a broken turn still reads as broken. The MVP bar (a
+stranger says "a good DM running a *solid* game") needs the crunch correct, with the
+Rules-Lawyer-DM persona as the gating critic.
+**Objective:** drive the gate reliably under ~10% failing turns across seeds/personas by
+clearing the recurring classes — meta-questions resolved with dice, hazards narrated without
+applying damage, melee mistagged as a spell, navigation dead-ends in response to social
+intent.
+- allowed: `engine/playloop.js`, `engine/grace/gracefulAdjudication.js`,
+  `engine/combat/*`, `engine/llmAdapter.js`, targeted tests (the U-series pattern).
+- done_when: a full 4-persona run logs ZERO crunch-inconsistency failures from the
+  Rules-Lawyer persona and <10% overall; each fix ships with a regression test.
+- note: this is the existing fix loop, not a new system — kept here as a named, standing
+  line so it doesn't fall off the board while surfacing work runs.
+
+### P-89 — Return-session "never forgets" gate (proves the moat)
+**Status:** spec'd 2026-06-16. Rung 4 on the ladder (`docs/PATH_TO_SELLABLE.md`). Parallels
+`scripts/dm-playtest.mjs` (the single-session Opus gate). Runs on the `.env` API key from the
+CLI, off the subscription window (`docs/BUILD_BUDGET.md`).
+**Why:** the moat is "never forgets across sessions," but the single-session gate CANNOT
+exhibit it — there's no prior session to contradict. We can currently measure "good DM," not
+"never forgets." This is the missing test. It checks the three-part memory problem: (1)
+**storage held**, (2) **narration faithful to canon**, (3) the **right memory surfaced at the
+right moment** (felt memory — perfect storage you don't bring up reads as forgetting).
+**Objective:** a two-act harness with a REAL save→quit→reload between acts. Act 1 (fixed
+deterministic transcript) seeds checkable facts and auto-derives a **memory manifest** from
+Canon Log + engine state (the answer key — never from narration). Act 2 (LLM player +
+adversarial judge) returns and probes each fact three ways. Three scores: persistence /
+fidelity / recall.
+
+**Sub-packets (do in order; milestone cadence, not per-commit):**
+- **P-89a — Manifest from canon.** Run a fixed Act-1 transcript; extract the ground-truth
+  manifest (one each: consequence, promise/relationship, acquisition/state, world change,
+  moral deed) from `world` + Canon Log, NOT narration. Same seed+inputs → same manifest.
+  - allowed: `scripts/returnSession.mjs` (new); reuse `canonGroundTruth` from `dm-playtest.mjs`.
+  - done_when: a stable manifest of ≥5 facts derives reproducibly from a seeded run.
+- **P-89b — The boundary.** Save→quit→reload through the REAL save path (`engine/save.js`
+  export/import, and/or the v1 `slot1`), then assert the manifest survives in engine state.
+  This is the **persistence** score (≈100% expected; a miss = SAVE_CORRUPTION).
+  - allowed: `scripts/returnSession.mjs`; read-only use of `engine/save.js`.
+  - done_when: post-reload state matches the manifest; a deliberately corrupted save fails.
+- **P-89c — Act 2 probe + adversarial judge.** Fresh session; the LLM player probes each fact
+  via (1) direct recall, (2) passive surfacing (unprompted, when relevant), (3) contradiction
+  bait. An Opus judge scores fact-by-fact, defaulting to forgotten/contradicted unless clearly
+  shown. Emits **fidelity** + **recall** scores + a report under `docs/playtests/`.
+  - allowed: `scripts/returnSession.mjs`; the Anthropic client pattern from `dm-playtest.mjs`.
+  - done_when: a run produces the three scores + a per-fact report; bug classes tagged
+    (SAVE_CORRUPTION / CANON_CONTRADICTION / AMNESIA / FALSE_MEMORY).
+- invariants: Act 1 deterministic (no `Math.random`); manifest derived from canon, never
+  narration; API-key/CLI, off the window; milestone cadence.
+- rollback: a standalone script + a report — delete the script; touches no engine code.
+
+### P-87 — The guided demo + the deck (Phase 2 — placeholder)
+**Status:** placeholder, spec'd 2026-06-16. Do NOT build until P-82–P-86 land and the wedge
+is chosen (PATH_TO_SELLABLE §"three decisions").
+**Objective (sketch):** a ~15-minute guided experience that shows the moat on purpose (talk
+to a historical figure → hear a distorting rumor → return later and watch the world remember
+exactly what you did → break a determinism-defying thing and have it hold), plus a short deck
+built straight from `WHAT_THIS_IS.md`'s system table + moat column. Shape depends on the
+chosen wedge; left intentionally thin.
+
+### P-88 — Productize (Phase 3 — placeholder)
+**Status:** placeholder, spec'd 2026-06-16. Driven by the engineer-friend conversation; do
+NOT spec in detail yet (it WILL change).
+**Objective (sketch):** the decisions that turn a great local prototype into something
+people pay for — hosting (the local-Ollama NPC-voice dependency becomes a hosting/cost
+decision), accounts + save sync, billing, the UI (separate track), and a content-moderation
+posture for the morality system's adult themes. Done-when: a person who is not Tim can sign
+up, play, leave, and return to their world intact.
+
+### Phase 4 — Build the soul (morality M4–M11)
+**Not duplicated here.** The morality milestones (corruption→capability, redemption + the
+point of no return, crime & detection, the visible pantheon + the gaze, the omen layer, the
+human Cassandra, dedication rites, the keystone friend) are fully specced and tracked in
+`docs/MORALITY_SYSTEM.md` (built to M2). When this track reaches the soul, pull from there.
+This is the long differentiator and the second act of word-of-mouth; sequence it
+deliberately after the cheap surfacing wins, each slice checked against the Camera Rule.
+
+**Track-wide forbidden:** inventing canon to fill gaps (P-85 boundary; `mintFact` is Tim's
+call); `Math.random`; mutations outside `applyDeltas`; narrator-as-canon; touching the
+R0–R3 adjudication spine while it's in flight.
+**Track-wide rollback:** every Phase-1 packet is new-module + optional-field + named hook
+lines — revert the named files.
+
+---
+
 ## QUEUE — Economy, Items & Salvage/Build track (specced 2026-06-11)
 
 Source discussions: items/loot/crafting audit + `docs/SALVAGE_AND_BUILD.md`.
@@ -598,6 +873,141 @@ rumor + contact).
 flight; `Math.random`; mutations outside `applyDeltas`; narrator-as-canon.
 **Track-wide rollback:** every packet is new-module + named hook lines; revert
 the named files.
+
+---
+
+## QUEUE — Two-Surface UI track (specced 2026-06-16)
+
+**Source:** `docs/TWO_SURFACES.md`. **Strategy:** every piece of player-facing
+status lives on exactly one of two surfaces — the Map or the Character Sheet — no
+third panel. Phase 0–1 (Sheet gets the notebook treatment; orbs/compass/paper-doll/
+Inventory cut and folded into the Sheet) are already done. This track picks up at
+Phase 2.
+
+**Ordering / anti-drift:** presentation-layer only, explicitly lower priority than
+`docs/ROADMAP.md`'s R0–R7 adjudication spine — sequence around it, never block it.
+`P-90` and `P-94` are ready to build now (independent of each other, can run in
+either order or in parallel worktrees); `P-91`–`P-93` are intentionally thin
+placeholders, each blocked on a named open decision (see `docs/TWO_SURFACES.md`
+"Conflicts").
+
+### P-90 — Map gets its inhabitants (Two-Surface Phase 2)
+**Status:** spec'd 2026-06-16. Design: `docs/TWO_SURFACES.md`.
+**Why:** companions and enemies currently live in dedicated panels (Companions
+panel, Combat HUD) that become the Map's job under the Two-Surface Rule — and
+Tim's "yes to enemy character sheets you can click to expand" generalizes the
+Sheet from "the PC's panel" into a reusable template for any character. Also
+formally closes out a confirmed-dead pair of functions (`renderGoalsSection` /
+`renderRumorBoardSection`, zero call sites in `public/v1.js`) that were never
+wired in — Tim's explicit call: no system-maintained quest/rumor tracker, on
+purpose, so remembering promises stays the player's job.
+**Objective:** companions and enemies render as tokens on the Map; clicking a
+token expands a compact sheet popover built from the same notebook template as
+the PC's pinned sheet (ability grid, HP bar, equipped gear) — collapsed by
+default, summoned on demand. The PC's sheet remains the only always-open
+instance.
+
+**Sub-packets (do in order):**
+- **P-90a — Retire the dead functions.** Delete `renderGoalsSection` /
+  `renderRumorBoardSection` from `public/v1.js` (confirmed zero callers) and any
+  now-orphaned CSS (e.g. `.goal-list`, `.goal-item*` — verify via grep first,
+  same discipline as the Diablo-orb cleanup).
+  - allowed: `public/v1.js`, `public/styles.css`
+  - done_when: grep confirms zero references to both functions and their CSS
+    classes; suite green.
+- **P-90b — Compact sheet template.** Factor a compact-render path out of the
+  existing `renderCharacterSheetSection` so the same notebook markup can render
+  either the PC's full pinned sheet or a smaller popover for a companion/enemy.
+  Decide the compact field subset (first cut: name, HP bar, ability grid; likely
+  drop Pack/spell-slots for enemies).
+  - allowed: `public/v1.js`, `public/notebook.css`
+  - done_when: the PC's existing sheet renders unchanged (no visual regression);
+    a second call with a companion/enemy object produces a smaller variant in
+    the same aesthetic.
+- **P-90c — Map tokens + click-to-expand.** Companions and enemies render as
+  clickable tokens on the Map (replacing the standalone Companions panel and
+  Combat HUD's static display); clicking opens the compact sheet popover; the
+  combat HUD's initiative/summary becomes a transient overlay, not a permanent
+  panel.
+  - allowed: `public/v1.js`, `public/styles.css`, `public/notebook.css`
+  - done_when: live playtest (`docs/PLAYTEST_PROTOCOL.md`) shows a companion
+    token and an enemy token (in combat) each expand to a sheet popover on
+    click; no standalone Companions panel or persistent Combat HUD panel
+    remains.
+- invariants: zero engine/mutation code touched (presentation-layer only); the
+  Map's existing rendering approach (canvas vs. DOM — verify before P-90c)
+  decides the token/popover implementation; no system-maintained quest/rumor
+  list reintroduced.
+- rollback: each sub-packet is new-markup + CSS — revert the named files.
+
+### P-91 — Visual unification, pass 1 (Phase 3 — placeholder)
+**Status:** placeholder, spec'd 2026-06-16. Do NOT build until `P-90` lands.
+**Objective (sketch):** notebook skin on the chrome immediately around the Sheet
+and Map (rail, panel borders, app shell) — not the Telling, not the Map's own
+renderer yet. Left intentionally thin.
+
+### P-92 — The Map re-skinned (Phase 4 — placeholder)
+**Status:** placeholder, spec'd 2026-06-16. **BLOCKED:** conflicts with memory
+`project_map_beauty_dream` (photoreal/satellite-textured maps) vs. this track's
+hand-sketched notebook direction. Do NOT build until Tim makes an explicit call
+between the two directions.
+**Objective (sketch):** whichever direction is chosen, the Map's terrain/
+structures/tokens get a coherent visual treatment matching the rest of the UI.
+
+### P-93 — The Telling, notebook pass (Phase 5 — placeholder)
+**Status:** placeholder, spec'd 2026-06-16. Do NOT build until `P-91`/`P-92`
+land. Graph paper behind dense reading prose is a real readability risk — may
+need its own `/design-consultation` pass before this gets specified further.
+**Objective (sketch):** the center prose column reads as part of the same
+notebook without hurting reading comfort.
+
+### P-94 — The waveform DM (Phase 6)
+**Status:** spec'd 2026-06-16. Design: `docs/TWO_SURFACES.md` Principle C.
+**Why:** Tim wants a simple, literal voice-equalizer line — not a game-state
+visualization — that moves while the DM's voice (`public/tts.js`) is speaking.
+Cheap, low-risk, no engine involvement; deliberately scoped away from expensive
+visuals or hidden-state readouts.
+**Objective:** an animated line/bar element, Map-resident near wherever
+narration anchors, that switches between an idle/flat state and an active
+animated state in sync with TTS speaking. No real audio signal analysis —
+`speechSynthesis` exposes no amplitude data, so the active state is a synthetic
+loop (optionally pulsed on utterance `boundary` events), not an `AnalyserNode`
+reading.
+
+**Sub-packets (do in order):**
+- **P-94a — Speaking-state signal.** `public/tts.js` currently exposes
+  `onIdle` (fires after speech stops) but no symmetric "started" signal. Add an
+  `onStart` hook (or a `speaking` boolean flipped at the top of `speak()`/
+  `speakAndWait()` and cleared alongside the existing `_fireIdleSoon()`) so
+  callers can drive a UI purely off `tts` state.
+  - allowed: `public/tts.js`
+  - done_when: a small manual check (console log on `onStart`/`onIdle`) fires
+    exactly once per utterance, symmetric start/stop, across `speak()` and
+    `speakAndWait()`.
+- **P-94b — The waveform component.** A small SVG/canvas line — idle: flat or
+  gentle resting wobble; active: a looping animated wiggle. Build it
+  pencil-drawn from the start (reuse the `--np-rough` filter pattern already in
+  `public/notebook.css`, see `.sheet-paper`) since it's new chrome anyway —
+  avoids a second visual pass once Phase 3/4 land.
+  - allowed: `public/v1.js`, `public/notebook.css`
+  - done_when: the component renders both states on demand (manually
+    toggleable for review) without touching `tts.js` yet.
+- **P-94c — Wire + place.** Subscribe the component to `tts`'s start/idle
+  signal (P-94a); mount it Map-resident, near wherever narration anchors.
+  - allowed: `public/v1.js`
+  - done_when: live playtest (`docs/PLAYTEST_PROTOCOL.md`) — toggle voice on,
+    send a turn, watch the line animate while the DM speaks and settle when it
+    stops.
+- invariants: zero engine/mutation code touched; no new audio APIs beyond what
+  `tts.js` already uses; no game-state (inevitability, threads, Will) feeds
+  this — speaking-state only.
+- rollback: a `tts.js` hook addition + new markup/CSS — revert the named
+  files.
+
+**Track-wide forbidden:** touching engine/mutation code (this track is
+presentation-layer only); reintroducing a system-maintained quest/rumor list;
+`Math.random`; touching the R0–R3 adjudication spine while it's in flight.
+**Track-wide rollback:** every packet is markup + CSS — revert the named files.
 
 ## DONE (recent)
 - **Living-World Merge P1–P6** (`docs/LIVING_WORLD_MERGE.md`): biomes, biome encounters,

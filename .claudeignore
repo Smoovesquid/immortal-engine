@@ -1,0 +1,10 @@
+# Bulk that should never be pulled into context (saves tokens; read on demand if ever needed)
+node_modules/
+package-lock.json
+.git/
+*.log
+.pack-cache/
+coverage/
+# Large raw playtest dumps (the .md reports are curated; the .txt are raw stdout)
+docs/playtests/*.txt
+docs/VICTORY_GATES.log

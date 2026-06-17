@@ -27,6 +27,7 @@ import { beginCombat, endCombat, mintEnemyFromNpc } from './combat/combatLifecyc
 import { resolveCompanionTurn } from './combat/companionTurn.js';
 import { castSpell } from './spell/castSpell.js';
 import { evaluateEncounter, selectCreatures, spawnEncounter } from './combat/encounterSpawn.js';
+import { adjudicate } from './gracefulAdjudication.js';
 
 // Pure-ish play loop: world -> {world, output}
 
@@ -344,6 +345,40 @@ export function playerMove(world, packsById, text) {
     }
   }
 
+  // ── Rung 1: Graceful Adjudication — understand intent BEFORE dice ─────────
+  // A single structured decision at the front of the (non-dialogue) turn. META
+  // questions are answered from world state with NO roll, NO mutation, NO time
+  // tick — worldHash is unchanged. Genuinely ambiguous input is read back for
+  // clarification, also with no mutation. All other routes fall through to the
+  // existing cascade unchanged; the decision additionally GATES spell routing
+  // below so a melee verb is never mistaken for a spell.
+  // See docs/GRACEFUL_ADJUDICATION_SPEC_v1.md.
+  const decisionActorId = (w.party?.[0]?.id) ? String(w.party[0].id) : 'party';
+  const decision = adjudicate(w, text, {
+    pack,
+    actorId: decisionActorId,
+    // Delegate approach/stake/risk MATH to the single source of truth.
+    inferMove: (ww, pp, aa, tt) => inferMoveFromText(ww, pp, aa, tt)
+  });
+  if (decision.route === 'meta') {
+    return {
+      world: w,
+      output: {
+        narration: `Wizard: ${decision.meta.answer}`,
+        mechanics: `[meta:${decision.meta.kind} | no roll | state unchanged]`
+      }
+    };
+  }
+  if (decision.route === 'clarify') {
+    return {
+      world: w,
+      output: {
+        narration: `Wizard: ${decision.clarifyPrompt}`,
+        mechanics: '[clarify | no roll | state unchanged]'
+      }
+    };
+  }
+
   const interiorAction = inferInteriorAction(text, w.scene?.interior);
   if (interiorAction.kind === 'enter') {
     const nodeId = String(w.map?.currentNodeId || '');
@@ -527,7 +562,11 @@ export function playerMove(world, packsById, text) {
   // cast produces damage/effects and then falls through to the normal combat
   // turn flow. Outside combat, it resolves immediately.
   {
-    const castMatch = String(text || '').match(/^cast\s+(.+?)(?:\s+(?:at|on|toward)\s+(.+))?$/i);
+    // Spell routing fires ONLY when the adjudicator resolved a real, known
+    // spell (route==='spell'). A melee verb or "cast a glance" never enters here.
+    const castMatch = decision.route === 'spell'
+      ? String(text || '').match(/^cast\s+(.+?)(?:\s+(?:at|on|toward)\s+(.+))?$/i)
+      : null;
     if (castMatch) {
       const rawSpellName = castMatch[1].trim();
       const rawTarget = (castMatch[2] || '').trim();

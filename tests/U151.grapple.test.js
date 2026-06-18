@@ -21,6 +21,7 @@ test('U151: parseGrappleVerb maps the martial intents', () => {
   assert.equal(parseGrappleVerb('I break free'), 'escape');
   assert.equal(parseGrappleVerb('I cast fireball'), null);
   assert.equal(parseGrappleVerb('I swing my sword'), null);
+  assert.notEqual(parseGrappleVerb('I grab his head and twist until his neck snaps'), 'grapple', 'lethal neck-snap intent is not ordinary grapple');
 });
 
 test('U151: a successful grapple applies the grappled condition (clinch)', () => {

@@ -38,6 +38,7 @@ const BREATHLESS_IMMUNITIES = ['unconscious', 'exhaustion', 'suffocation'];
 // its 'strike' default, so spells/parley/cover are never clobbered.
 export function parseGrappleVerb(text) {
   const t = String(text || '').toLowerCase();
+  if (/\b(?:grab|grabs|seize|seizes|hold|holds)\b.*\b(?:head|neck)\b.*\b(?:twist|twists|snap|snaps|break|breaks)\b/.test(t)) return null;
   if (/\b(choke|chokes|choking|strangle|throttle|rear[\s-]?naked|guillotine|sleeper|squeeze\s+(?:his|her|their|its)\s+throat)\b/.test(t)) return 'choke';
   if (/\b(throw|throws|throwing|takedown|take\s+(?:him|her|them|it)\s+down|suplex|body[\s-]?slam|sweep|trip|dump|toss\s+(?:him|her|them))\b/.test(t)) return 'throw';
   if (/\b(escape|break\s+free|break\s+(?:his|her|their|its)\s+grip|wriggle\s+(?:free|out)|squirm\s+(?:free|out)|get\s+(?:free|out)\s+of)\b/.test(t)) return 'escape';

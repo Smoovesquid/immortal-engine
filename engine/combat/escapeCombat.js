@@ -675,8 +675,11 @@ export function parseEscapeAction(text) {
   // Cantrip verbs — the hedge-caster's fire bolt plus every class cantrip
   // (eldritch blast, vicious mockery, sacred flame, produce flame) and the
   // generic "cast" so a player can just say "cast at it".
-  if (/\b(fire\s*bolt|firebolt|bolt|burn|flame|scorch|ignite|blast|mock|cast|cantrip)\b/.test(t)) return { verb: 'firebolt' };
-  if (/\b(fire)\b/.test(t)) return { verb: 'firebolt' };
+  // EXCLUDED: "burn", "flame", "fire" (standalone) — these match improvised
+  // physical actions ("why won't anything burn?", "grab the flaming thatch",
+  // "out of fire, I draw my blade"). Fire Bolt fires ONLY on explicit cast
+  // intent. Commit 319d23b prior art; extended 2026-06-18 Rung-1 gate.
+  if (/\b(fire\s*bolt|firebolt|bolt|ignite|blast|mock|cast|cantrip)\b/.test(t)) return { verb: 'firebolt' };
   // strike verbs (and the default)
   return { verb: 'strike' };
 }

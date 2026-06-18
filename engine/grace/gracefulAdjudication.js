@@ -190,6 +190,17 @@ const META_NPC_OBSERVER = /\bwho(?:'s| is| was| are)?\s+(?:that|this|the)\s+(?:s
 // Absence/presence questions about a specific NPC, not a general location survey.
 // (H-16, Rung-1 gate 2026-06-18.)
 const META_NPC_PRESENCE = /\bis\s+(?:that|this|the)\s+\w+\s+(?:gone|left|still\s+(?:here|around|there)|around(?:\s+(?:here|town|anywhere))?|nearby)\b|\bcould\s+i\s+(?:find|look\s+for|spot|search\s+for)\s+them\b|\bwhere\s+(?:did|do)\s+(?:they|them|the\s+\w+)\s+(?:go|end\s+up|head)\b/i;
+// Explicit skill-check request — player declares they want to roll, asks for DC.
+// Pattern A: "let me make a WITS check", "I want to do a GRIT test", "can I attempt a MIGHT save"
+// Requires the action verb (make/do/attempt/try) so bare "I want to fight" doesn't fire.
+// (H-19, Rung-1 gate 2026-06-18.)
+const META_EXPLICIT_CHECK_A = /\b(?:let me|i want to|i(?:'d)?\s+like to|can i|i(?:'m going to| need to| should))\s+(?:make|do|attempt|try)\s+(?:a(?:n)?\s+)?(?:(might|agility|wits|grit|charm|strength|dexterity|constitution|intelligence|wisdom|charisma|str|dex|con|int|wis|cha)\s+)?(?:check|roll|test|save)\b/i;
+// Pattern B: "I want to roll MIGHT against him", "let me roll WITS on this"
+// Requires a stat name after "roll" so "I want to roll him" (a barrel) doesn't fire.
+const META_EXPLICIT_CHECK_B = /\b(?:let me|i want to|i(?:'d)?\s+like to|can i|i(?:'m going to| need to| should))\s+roll\s+(?:a\s+)?(might|agility|wits|grit|charm|strength|dexterity|constitution|intelligence|wisdom|charisma|str|dex|con|int|wis|cha)\b/i;
+// Roll-recall — player cites a specific past roll number to dispute or follow up.
+// "I rolled a 16", "16 vs DC 11", "you told me I got a 16", "my roll was 16". (H-12/13.)
+const META_ROLL_RECALL = /\b(?:i (?:rolled|got|said|had)(?:\s+a)?|my roll was(?:\s+a)?|you (?:said|told me)(?:\s+i (?:rolled?|got))?(?:\s+a)?)\s*\d+\b|\b\d+\s+(?:vs\.?|versus|against)\s+dc\s*\d+\b/i;
 
 // Detect meta-questions (questions about state, not actions)
 export function isMetaQuestion(text) {
@@ -200,7 +211,9 @@ export function isMetaQuestion(text) {
     || META_OBJECTIVE.test(t) || META_MECHANICS.test(t) || META_ADVICE.test(t)
     || META_WEAPON_DAMAGE.test(t) || META_NAME.test(t)
     || META_MODIFIER_FORMULA.test(t) || META_SHEET_CONFIRM.test(t)
-    || META_NPC_OBSERVER.test(t) || META_NPC_PRESENCE.test(t);
+    || META_NPC_OBSERVER.test(t) || META_NPC_PRESENCE.test(t)
+    || META_EXPLICIT_CHECK_A.test(t) || META_EXPLICIT_CHECK_B.test(t)  // H-19
+    || META_ROLL_RECALL.test(t);  // H-12/13
 }
 
 // Exported guard for playloop.js — detects NPC identity/presence queries so
@@ -241,6 +254,27 @@ export function looksMultiAction(text) {
   const parts = t.split(/\b(?:and|then)\b/);
   if (parts.length < 2) return false;
   return INTENT_VERB.test(parts[0]) && INTENT_VERB.test(parts.slice(1).join(' '));
+}
+
+// Extract the game-stat the player named in an explicit check request.
+// Defaults to WITS (perception/insight) when no stat is specified.
+function extractRequestedStat(text) {
+  const t = String(text || '').toLowerCase();
+  const m = t.match(/\b(might|agility|wits|grit|charm|strength|dexterity|constitution|intelligence|wisdom|charisma|str|dex|con|int|wis|cha)\b/i);
+  return m ? resolveStatKey(m[1]) : 'WITS';
+}
+
+// Extract the roll number (and optionally the DC) cited by the player.
+// Returns { roll, dc } or null if no number is found.
+function extractCitedRoll(text) {
+  const t = String(text || '');
+  // "N vs DC M" form — captures both roll and DC
+  const vsDC = t.match(/\b(\d+)\s+(?:vs\.?|versus|against)\s+dc\s*(\d+)\b/i);
+  if (vsDC) return { roll: Number(vsDC[1]), dc: Number(vsDC[2]) };
+  // "rolled/got/said/had [a] N" or "you told me [I rolled] [a] N"
+  const rolledN = t.match(/\b(?:(?:i|you)(?:\s+told me i)?\s+(?:rolled?|got|said|had)|my roll was)\s+(?:a\s+)?(\d+)\b/i);
+  if (rolledN) return { roll: Number(rolledN[1]), dc: null };
+  return null;
 }
 
 // Answer a question about a specific carried item ("what does X do?", "is X in
@@ -634,6 +668,45 @@ export function handleMetaQuestion(text, world) {
       }
     }
     return `I'm not sure. What action were you asking about?`;
+  }
+
+  // Explicit skill-check request — "let me make a WITS check", "I want to roll MIGHT
+  // against him". A real DM names the stat, DC, and asks for the roll. This gate fires
+  // BEFORE the examine/explore intercept so "read him" doesn't become an observe-only. (H-19)
+  if (META_EXPLICIT_CHECK_A.test(lowerText) || META_EXPLICIT_CHECK_B.test(lowerText)) {
+    const stat = extractRequestedStat(text);
+    const score = Number(world.party?.[0]?.stats?.[stat] ?? 10);
+    const mod = statMod(score);
+    const node = (world.map?.nodes || []).find(n => n && n.id === world.map?.currentNodeId) || null;
+    const npcs = (node?.settlement?.npcs || []).filter(n => n && !n.hostile);
+    const npc = npcs[0] || null;
+    // DC: 12 base, nudged by NPC openness when one is present
+    let dc = 12;
+    if (npc) {
+      const P = npc.personality || {};
+      dc = Math.max(8, Math.round(12 - (Number(P.trustOfOutsiders ?? 0.5) - 0.5) * 6));
+    }
+    const modStr = fmtMod(mod);
+    const npcClause = npc ? ` to read ${String(npc.name || `the ${npc.role || 'stranger'}`)}` : '';
+    return `Roll ${stat} — d20 ${modStr} against DC ${dc}${npcClause}. Tell me what you get.`;
+  }
+
+  // Roll-recall — player cites a specific past roll ("I rolled 16 vs DC 11", "you told me
+  // I got a 16"). Compare against the stored last roll and acknowledge; never silently
+  // re-roll on a contradiction. (H-12/13)
+  if (META_ROLL_RECALL.test(lowerText)) {
+    const cited = extractCitedRoll(text);
+    if (cited) {
+      const stored = world.conversation?.lastRoll;
+      if (!stored) return null; // no prior roll on record — fall through to normal resolution
+      const rollMatches = stored.roll === cited.roll;
+      const dcMatches = !cited.dc || stored.dc === cited.dc;
+      if (rollMatches && dcMatches) {
+        return `Right — the ledger shows ${stored.roll} vs DC ${stored.dc} (${stored.outcome}). That's what I have.`;
+      }
+      return `The ledger shows ${stored.roll} vs DC ${stored.dc}${stored.outcome ? ` — ${stored.outcome}` : ''}, not ${cited.roll}. Which turn are you citing?`;
+    }
+    return null; // couldn't parse a number — fall through
   }
 
   return null; // not a recognized meta-question

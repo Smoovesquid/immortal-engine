@@ -179,4 +179,18 @@ other agents. (none active)
 - Remaining/next: H-9/10/11 (continuity-deflection, mixed-roll wrong narration type, RAG wrong-scene) — next in queue.
 - Rollback: revert commit `77721ff`
 
-[CLAIMED] H-9 continuity-deflection · Claude Opus · 2026-06-18T23:09Z · files: engine/npc/dialogue.js, engine/playloop.js
+## 2026-06-18 — Claude Opus
+
+- Packet/seam: Rung 1 / H-9 continuity-deflection — contradiction challenge polished into atmospheric avoidance
+- Commit: `fe3d702`
+- Files changed:
+  - `engine/npc/dialogue.js` (`CONTINUITY_CHALLENGE_RE`, `handleContinuityChallenge()`, intercept in `askNpc()`)
+  - `engine/playloop.js` (`dialogueAskNarration()` continuity case, `askBeatOutcome()`)
+  - `tests/U185.continuityChallenge.test.js` (new)
+- Summary: Continuity challenges ("first you said X, now Y — which is it?") routed through ordinary topic scoring (which matches known fact tokens only) and fell to `mode=deflected` → NPC voice polished it into atmospheric avoidance. Added a deterministic interceptor BEFORE `extractTopic()`, keyed on explicit quote-back/which-is-it markers ("you said", "first you said", "now you('re) saying", "which is it", "contradict", "that's not what you said", "you just said"). It resolves from the NPC's last in-dialogue answer (reaffirm the prior fact, speaking authored testimony verbatim if present) or honestly admits uncertainty — new `mode=continuity`, never `deflected`. No trust change. Deliberately did NOT: touch `composer.js`/`gracefulAdjudication.js`, alter `extractTopic` scoring, mint NPC memory for the challenge (mirrors the invite handler), or broaden the regex to swallow plain skepticism ("are you sure?", "really?" — verified non-matching by test).
+- Proof:
+  - `node --test tests/U185.continuityChallenge.test.js` — 3/3 pass (uncertainty branch, reaffirm-prior-fact branch, skeptical-question-does-not-misfire)
+  - Full suite: `node --test` — 7923/0
+  - Determinism gates U19/21/22/27/30 green
+- Remaining/next: H-10 (mixed-roll wrong narration type), H-11 (RAG wrong-scene) — next in queue, same worker.
+- Rollback: revert commit `fe3d702`

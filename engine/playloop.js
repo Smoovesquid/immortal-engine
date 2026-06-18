@@ -1723,7 +1723,7 @@ function playerMoveCore(world, packsById, text) {
       // A question gets answered — unless it's a parley phrased as a question
       // ("can we talk about this?" is said TO the foes, not to the DM).
       const escVerb = parseEscapeAction(text).verb;
-      const explicitAction = /\b(strike|attack|swing|stab|shoot|slash|smite|fireball|blast|cast|rage|surge|guard|ward|cover)\b/i.test(String(text || ''));
+      const explicitAction = /\b(strike|attack|swing|stab|shoot|slash|smite|fireball|blast|cast|rage|surge|guard|ward|cover|throw|hurl|lob|fling|toss)\b/i.test(String(text || ''));
       if (isMetaQuestion(text) || (isQuestionShaped(text) && escVerb !== 'parley' && !explicitAction)) {
         const metaAnswer = isMetaQuestion(text) ? handleMetaQuestion(text, w) : null;
         let answer = metaAnswer || combatStatusAnswer(w);
@@ -5271,6 +5271,11 @@ function detectPhysicalAssault(world, text) {
   if ((m = t.match(/\b(?:choke|strangle|throttle|garrott?e|smother|wrestle|grapple|headbutt|head-butt|gouge|maul|pummel|manhandle|pin)\s+(?:down\s+|on\s+)?(.+)/i))) {
     const npc = hit(m[1]); if (npc) return { npc };
   }
+  // A2 — grab-to-harm: "grab X by the throat/neck/collar" (body-part or clothing anchor
+  // distinguishes hostile grab from "grab a cup" / "grab his arm to steady him").
+  if ((m = t.match(/\b(?:grab|seize|snatch|yank|clutch)\s+(.+?)\s+by\s+(?:the\s+)?(?:throat|neck|collar|hair|wrist|arm|scruff|shirt|jacket)\b/i))) {
+    const npc = hit(m[1]); if (npc) return { npc };
+  }
   // B — forced into harm: shove/throw/etc. <person> into|onto|against|through|over <x>.
   if (!/\b(?:past|aside|away)\b/i.test(t)
       && (m = t.match(/\b(?:shove|push|throw|hurl|fling|toss|slam|ram|drag|haul|sling|hoist|launch|propel|bash)\s+(.+?)\s+(?:in\s*to|into|onto|against|through|over)\b/i))) {
@@ -5448,7 +5453,7 @@ function fuzzyMatchNpc(npcs, ref) {
   //     Catches adjective-qualified refs ("the nearest figure", "the lone man")
   //     and combat words ("the enemy", "the foe", "the attacker") that the exact
   //     descriptor set in step 3 misses. Role-specific refs already resolved above.
-  const GENERIC_WORD = /\b(woman|man|men|women|person|people|stranger|someone|anyone|everyone|them|her|him|lady|guy|fellow|figure|figures|villager|townsperson|townsfolk|civilian|bystander|enemy|enemies|foe|foes|attacker|assailant|creature|beast|monster|thing|shape|shadow)\b/;
+  const GENERIC_WORD = /\b(woman|man|men|women|person|people|stranger|someone|anyone|everyone|them|her|him|his|its|lady|guy|fellow|figure|figures|villager|townsperson|townsfolk|civilian|bystander|enemy|enemies|foe|foes|attacker|assailant|creature|beast|monster|thing|shape|shadow)\b/;
   if (GENERIC_WORD.test(refLower)) return npcs[0];
 
   // 5. Last resort: if ref is a single common word that could describe

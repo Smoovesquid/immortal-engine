@@ -28,6 +28,24 @@ other agents. (none active)
 
 ---
 
+## 2026-06-18 — Claude Sonnet (worker)
+
+- Packet/seam: Rung 1 / H-7 object-mediated assault → trivial auto-success; H-8 phantom combat victory (cascade)
+- Commit: `dcbd79c`
+- Files changed:
+  - `engine/playloop.js` (1 char: added "their" to GENERIC_WORD in fuzzyMatchNpc)
+  - `tests/U179.objectMediatedAssault.test.js` (new, 4 cases)
+- Summary: "smash it over their head" resolved prep[1]="their head" to null — fuzzyMatchNpc GENERIC_WORD was missing "their" despite having him/her/his/its. One-word insertion routes object-mediated assaults with possessive-pronoun body-part targets to combat. H-8 phantom victory resolves as cascade (T10 now starts combat; T11 is a normal combat turn). Did NOT change DIRECT_ATTACK_VERB, detectPhysicalAssault, or combat mechanics.
+- Proof:
+  - `node --test tests/U179.objectMediatedAssault.test.js` → 4/0
+  - `node --test` → 7858/0
+  - Determinism gates U19/21/22/27/30 green
+- Remaining:
+  - Note: "crack" is not in ANY_VIOLENCE; "on" is not a prep-list preposition — U179-02 regression guard was corrected from "crack lantern on her head" to "smash lantern over her head" before committing.
+- Rollback: revert commit `dcbd79c`
+
+---
+
 ## 2026-06-18 — Codex
 
 - Packet/seam: Rung 1 / H-1 scene-object action misrouted as strike

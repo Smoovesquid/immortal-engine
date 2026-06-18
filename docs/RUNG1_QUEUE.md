@@ -26,17 +26,15 @@ Branch `v2-polish`. Confirm HEAD with `git log --oneline -5`; suite GREEN **7854
 Known untracked file — **leave alone:** `docs/playtests/opus-gate-2026-06-17.md`.
 Working data: `docs/playtests/opus-gate-2026-06-18-roadA-verdict.md` (23 HARD cataloged H-1..H-23).
 
-## Done (8/23 HARD — combat-resolution cluster, both layers)
+## Done (10/23 HARD — combat-resolution cluster + object-mediated assault)
 Codex engine layer (`98b5059`..`056e249`): H-1 scene-object misroute, H-2 grapple state, H-3/4/5
 natural-strike routing, H-6 neck-snap **classification only** (mechanic deferred by design).
 Claude layer (`8c359ad`..`da615f3`): H-2/3/4/5/6 narration-inversion guard, H-20 shove-past, H-21
 torch. Suite 7854/0.
+Claude Sonnet worker (`dcbd79c`): H-7/H-8 object-mediated assault + phantom victory. Suite 7858/0.
 
 ## In flight
-- **H-7/H-8 false-combat-on-unresisting-NPC → Codex.** Assault on a present non-hostile villager must
-  resolve as ONE coherent contested attack (roll + HP), never trivial-auto-success and never
-  phantom-victory. Prompt delivered this session (in Tim's transcript); builds on the H-20 fix;
-  headless only. If not yet dispatched, re-issue from the verdict doc + protocol.
+*(none)*
 
 ## Next (queue order — serialize; all touch playloop)
 1. **Claude-Sonnet — routing/grace cluster:** H-14/15/16 dead-end/UI-bleed ("who's that stranger?" →

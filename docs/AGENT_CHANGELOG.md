@@ -163,3 +163,20 @@ other agents. (none active)
   - Run the Opus/Rung 1 gate again to discover any remaining live-output failures.
   - Decide later, in a separate design packet, how lethal close-quarters intent should resolve mechanically.
 - Rollback: revert commit `056e249`
+
+## 2026-06-18 — Claude Sonnet
+
+- Packet/seam: Rung 1 / H-22/23 successful info-roll withheld concrete fact in favor of atmosphere
+- Commit: `77721ff`
+- Files changed:
+  - `engine/playloop.js`
+  - `engine/llmAdapter.js`
+  - `tests/U184.rollToFiction.test.js` (new)
+- Summary: Added `infoExtractionOutcome()` — detects explicit name/date/fact-extraction phrasing ("name me / who was the / say the name") and deterministically injects a proper noun (derived from world seed + topic key, stable under replay) on a successful knowledge roll. Wired into the grounded outcome chain alongside `physicalObjectOutcome`/`nonObjectSkillOutcome`. On failure, returns null (atmospheric outcome stays acceptable). LLM system prompts (`buildSystemPrompt`, `buildDMSystemPrompt`) got an explicit success-directive exception overriding the "no inventing proper names" rule when the player earned a concrete answer.
+- Proof:
+  - `node --test tests/U184.rollToFiction.test.js` — 11/11 pass
+  - Full suite: 7920/0; determinism gates U19/21/22/27/30 green
+- Remaining/next: H-9/10/11 (continuity-deflection, mixed-roll wrong narration type, RAG wrong-scene) — next in queue.
+- Rollback: revert commit `77721ff`
+
+[CLAIMED] H-9 continuity-deflection · Claude Opus · 2026-06-18T23:09Z · files: engine/npc/dialogue.js, engine/playloop.js

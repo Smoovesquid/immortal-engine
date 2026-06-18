@@ -4412,8 +4412,18 @@ function physicalObjectOutcome(world, text, outcome) {
   // splintering wood. Pressure is resolved upstream in detectApproach; bail here so
   // a fallthrough (e.g. in dialogue/combat) can't paint a physical beat over it.
   if (isConversationalPressure(t)) return null;
-  // "pick" only counts when it's a lock-type target (not "pick up" — that's a take).
-  const isPick = PHYS_PICK.test(t) && !/\bpick\s+up\b/i.test(t) && /\block|chest|door|gate|safe|strongbox|cabinet|drawer\b/i.test(t);
+  // "pick" only counts as lock-manipulation when it targets a lock-type object —
+  // not "pick up" (a take) and not a SELECTION ("pick one of the gates", "you pick
+  // which gate", "pick any door"), which is choosing an option, not working a lock.
+  // H-11 — a bare "gate" no longer auto-triggers lock-picking; a gate is only a
+  // lock target when a lock is actually named ("pick the lock on the gate"), so a
+  // selection that merely mentions a gate falls through to ordinary resolution.
+  const PICK_SELECTION = /\bpick(?:ing|s)?\s+(?:one|any|a|an|some|each|either|whichever|which)\b|\b(?:you|please|just)\s+pick\b/i;
+  const PICK_LOCK_NOUN = /\b(?:lock|padlock|chest|door|safe|strongbox|cabinet|drawer)\b/i;
+  const isPick = PHYS_PICK.test(t)
+    && !/\bpick\s+up\b/i.test(t)
+    && !PICK_SELECTION.test(t)
+    && PICK_LOCK_NOUN.test(t);
   const isClimb = PHYS_CLIMB.test(t);
   const isForce = PHYS_FORCE.test(t) && !/\bpick\s+up\b/i.test(t);
   if (!isPick && !isClimb && !isForce) return null;

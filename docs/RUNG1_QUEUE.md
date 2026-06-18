@@ -26,24 +26,22 @@ Branch `v2-polish`. Confirm HEAD with `git log --oneline -5`; suite GREEN **7854
 Known untracked file — **leave alone:** `docs/playtests/opus-gate-2026-06-17.md`.
 Working data: `docs/playtests/opus-gate-2026-06-18-roadA-verdict.md` (23 HARD cataloged H-1..H-23).
 
-## Done (10/23 HARD — combat-resolution cluster + object-mediated assault)
+## Done (15/23 HARD — combat cluster + object assault + routing/stat gaps)
 Codex engine layer (`98b5059`..`056e249`): H-1 scene-object misroute, H-2 grapple state, H-3/4/5
 natural-strike routing, H-6 neck-snap **classification only** (mechanic deferred by design).
 Claude layer (`8c359ad`..`da615f3`): H-2/3/4/5/6 narration-inversion guard, H-20 shove-past, H-21
 torch. Suite 7854/0.
 Claude Sonnet worker (`dcbd79c`): H-7/H-8 object-mediated assault + phantom victory. Suite 7858/0.
+Claude Sonnet worker (`b0d7105`): H-14/15/16 dead-end/UI-bleed; H-17/18 stat-synonym+HP. Suite 7884/0.
 
 ## In flight
 *(none)*
 
 ## Next (queue order — serialize; all touch playloop)
-1. **Claude-Sonnet — routing/grace cluster:** H-14/15/16 dead-end/UI-bleed ("who's that stranger?" →
-   *"ways lead east and south"*); H-17/18 stat-synonym residual (Strength/Dex/Con → MIGHT/AGILITY +
-   formula leak). Touches playloop out-of-combat gates + `engine/grace/gracefulAdjudication.js`.
-2. **Place then dispatch:** H-12/13 roll-number contradiction (DM cites 3 different roll/DC values for
-   one check — re-rolls on roll-*reference* questions; a rules-lawyer disqualifier) + H-19 WITS-check
-   denial. Confirm layer (resolve.js/roll-state vs grace) before assigning.
-3. **Hard tail (LAST) = the Road-A-vs-B decision point:** H-9/10/11 continuity-deflection + mixed-roll
+1. **Claude-Sonnet — H-12/13 + H-19:** roll-number contradiction (DM cites 3 different roll/DC values
+   for the same check across consecutive turns) + H-19 WITS-check denial. Confirm layer
+   (resolve.js/roll-state vs grace) before assigning.
+2. **Hard tail (LAST) = the Road-A-vs-B decision point:** H-9/10/11 continuity-deflection + mixed-roll
    incoherence + RAG wrong-scene; H-22/23 roll-to-fiction (successful info-roll, name never spoken).
    Closest to true intent-classification long-tail.
 

@@ -30,6 +30,26 @@ other agents. (none active)
 
 ## 2026-06-18 — Claude Sonnet (worker)
 
+- Packet/seam: Rung 1 / H-14/15/16 dead-end+UI-bleed; H-17/18 stat-synonym+HP gap
+- Commit: `b0d7105`
+- Files changed:
+  - `engine/grace/gracefulAdjudication.js` (+89 lines)
+  - `engine/playloop.js` (+46 lines)
+  - `tests/U180.deadEndGuards.test.js` (new, 9 cases)
+  - `tests/U181.statSynonyms.test.js` (new, 13 cases)
+- Summary: H-14: "Who's that stranger?" was caught by isExploreIntent's `^(who|what)` pattern → cardinal-exit recap; fixed by adding META_NPC_OBSERVER + isNpcObserverQuery guard before explore branch. H-15: "Hey, um, I'm talking to you" — extractDialogueRef m3 grabbed filler-leading garbage as talkRef, fell to movement roll; fixed by dropping m3 captures that start with filler/pronouns and adding isDirectAddressIntent handler. H-16: "Is that stranger gone?" caught by isExploreIntent's `^is\s+(there|the|it|this|that)` → roster list; fixed by same META_NPC_PRESENCE guard. H-17/18: stat-answerer only knew IE names (MIGHT/AGILITY/etc.); D&D synonym set (Strength/DEX/CON…) not mapped; multi-stat queries returned first match only; HP skipped; formula leaked as prose. Fixed: `str` added to STAT_SYNONYMS; ≥3 D&D names → full stat block + HP; formula prose replaced with breakpoint examples. Did NOT change combat, roll resolution, or worldHash logic.
+- Proof:
+  - `node --test tests/U180.deadEndGuards.test.js tests/U181.statSynonyms.test.js` → 22+/0
+  - `node --test` → 7884/0
+  - Determinism gates U19/21/22/27/30 green
+- Remaining:
+  - none
+- Rollback: revert commit `b0d7105`
+
+---
+
+## 2026-06-18 — Claude Sonnet (worker)
+
 - Packet/seam: Rung 1 / H-7 object-mediated assault → trivial auto-success; H-8 phantom combat victory (cascade)
 - Commit: `dcbd79c`
 - Files changed:

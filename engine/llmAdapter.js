@@ -361,18 +361,21 @@ export function validateNarrationCandidate(world, narrationCandidate, {
     const cb = ctx.combat;
     const lower = cand.toLowerCase();
     // Axis 1 — combat-presence: flat denial of the ongoing fight
-    const PEACE_PHRASES = ['no blade', 'no blow', 'no fight', 'no combat', 'no struggle',
-      'no attack', "you're unharmed", 'you are unharmed', 'not fighting',
-      'no weapons drawn', 'no battle', 'no conflict'];
+    const PEACE_PHRASES = ['no blow', 'no fight', 'no combat', 'no struggle',
+      'no attack', 'not fighting', 'no weapons drawn', 'no battle', 'no conflict'];
     for (const ph of PEACE_PHRASES) {
       if (lower.includes(ph)) return false;
     }
     // Axis 2 — hit↔miss inversion
     if (cb.lastBeat?.result === 'miss') {
-      // Mechanics say miss — reject narration that claims the enemy's attack landed
+      // Mechanics say miss — reject narration that claims the PLAYER landed.
+      // Enemy→player phrases ('strikes you', 'hits you') are CORRECT when the enemy
+      // counters on the same turn; only PLAYER→enemy-LANDING phrases are wrong.
       const HIT_PHRASES = ['lands a blow', 'lands a hit', 'glancing blow', 'scores a hit',
-        'strikes you', 'hits you', 'catches you', 'glances off you',
-        'blow connects', 'blow lands', 'cuts you', 'stings you'];
+        'blow connects', 'blow lands',
+        'your blade bites', 'your blade lands', 'your blade connects',
+        'your blow lands', 'your attack connects',
+        'you cut him', 'you cut her', 'you cut it', 'you cut them'];
       for (const ph of HIT_PHRASES) {
         if (lower.includes(ph)) return false;
       }

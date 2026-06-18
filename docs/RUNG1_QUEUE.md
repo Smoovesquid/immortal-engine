@@ -1,0 +1,66 @@
+# Rung 1 — Live Queue (Basecamp hand-off state)
+
+**To resume as Basecamp, read this + `AGENT_PROTOCOL.md` + `AGENT_CHANGELOG.md`.**
+
+## Mission
+Rung 1 of the realization ladder — *"I can do anything here, and it fits the math."* The DM resolves
+any plain-English intent in the fiction while the deterministic 5e-lite mechanics stay correct.
+**Done-when bar:** zero HARD failures *from real engine/narration defects* across the multi-seed Opus
+gate, Rules-Lawyer persona clean, only rare forgivable SOFT slips. HARD-count bounces run-to-run
+(gate agents explore freely) — judge by **bug nature** (real-defect vs phrasing-tail), not one run's
+number.
+
+## Your role
+Single **queue owner + Rung-1 arbiter** (Tim's mandate). Write paste-ready worker prompts, assign each
+worker's model, sequence packets **one in flight at a time** (unless provably file-disjoint, protocol
+§2), ingest results Tim pastes back, and declare Rung 1 done only at the bar above. Tim relays prompts
+to workers and results back — he does **not** modify prompts, so each must be complete + paste-ready.
+Handle doc/process micro-decisions yourself; surface only forks that need Tim's call.
+- **Codex** = deep-engine worker backend (combat routing, dice/state mechanics).
+- **Claude-Sonnet** = routing/grace worker (intent gates, meta/grace layer).
+- **Your model:** start Sonnet (sequencing is mechanical); escalate to Opus only for the Road-A-vs-B
+  judgment (not imminent).
+
+## Repo state
+Branch `v2-polish`. Confirm HEAD with `git log --oneline -5`; suite GREEN **7854/0** (`node --test`).
+Known untracked file — **leave alone:** `docs/playtests/opus-gate-2026-06-17.md`.
+Working data: `docs/playtests/opus-gate-2026-06-18-roadA-verdict.md` (23 HARD cataloged H-1..H-23).
+
+## Done (8/23 HARD — combat-resolution cluster, both layers)
+Codex engine layer (`98b5059`..`056e249`): H-1 scene-object misroute, H-2 grapple state, H-3/4/5
+natural-strike routing, H-6 neck-snap **classification only** (mechanic deferred by design).
+Claude layer (`8c359ad`..`da615f3`): H-2/3/4/5/6 narration-inversion guard, H-20 shove-past, H-21
+torch. Suite 7854/0.
+
+## In flight
+- **H-7/H-8 false-combat-on-unresisting-NPC → Codex.** Assault on a present non-hostile villager must
+  resolve as ONE coherent contested attack (roll + HP), never trivial-auto-success and never
+  phantom-victory. Prompt delivered this session (in Tim's transcript); builds on the H-20 fix;
+  headless only. If not yet dispatched, re-issue from the verdict doc + protocol.
+
+## Next (queue order — serialize; all touch playloop)
+1. **Claude-Sonnet — routing/grace cluster:** H-14/15/16 dead-end/UI-bleed ("who's that stranger?" →
+   *"ways lead east and south"*); H-17/18 stat-synonym residual (Strength/Dex/Con → MIGHT/AGILITY +
+   formula leak). Touches playloop out-of-combat gates + `engine/grace/gracefulAdjudication.js`.
+2. **Place then dispatch:** H-12/13 roll-number contradiction (DM cites 3 different roll/DC values for
+   one check — re-rolls on roll-*reference* questions; a rules-lawyer disqualifier) + H-19 WITS-check
+   denial. Confirm layer (resolve.js/roll-state vs grace) before assigning.
+3. **Hard tail (LAST) = the Road-A-vs-B decision point:** H-9/10/11 continuity-deflection + mixed-roll
+   incoherence + RAG wrong-scene; H-22/23 roll-to-fiction (successful info-roll, name never spoken).
+   Closest to true intent-classification long-tail.
+
+## Open strategic question (the arbiter call, gated on the hard tail)
+**Road A** (deterministic patches) vs **Road B** (Tier-B LLM intent arbiter w/ Canon-Log caching for
+determinism). **Verdict so far:** ~18/23 of the gate's HARD were *real deterministic* engine/narration
+defects, NOT phrasing-slip → **Road B is PARKED.** Decide A-vs-B only on what survives the
+deterministic remainder (the hard tail): mostly real defects → keep grinding Road A; mostly phrasing
+long-tail → commit to Road B.
+
+## Budget
+~$15 of Tim's $20 API key spent. Reserve the last ~$4.80 for **ONE** final decisive gate when the
+deterministic floor looks solid. Owner-initiated only (never a worker):
+`node -r dotenv/config scripts/dm-playtest.mjs --personas rules-lawyer,chaos,lore-hound,newbie --seeds stonewatch-hollow,glass-harbor --turns 12`
+Score every failing turn HARD vs SOFT; a graceful in-character decline of absurd input = PASS.
+
+## Parked (home-base, NOT Rung 1)
+IG-10 absurd-input decline gate; gratuitous-violence consequence ladder; surfacing packets P-82..P-88.

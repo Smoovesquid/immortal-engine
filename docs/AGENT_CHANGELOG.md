@@ -195,4 +195,17 @@ other agents. (none active)
 - Remaining/next: H-10 (mixed-roll wrong narration type), H-11 (RAG wrong-scene) — next in queue, same worker.
 - Rollback: revert commit `fe3d702`
 
-[CLAIMED] H-10 mixed-roll-wrong-narration · Claude Opus · 2026-06-18T23:13Z · files: engine/playloop.js
+## 2026-06-18 — Claude Opus
+
+- Packet/seam: Rung 1 / H-10 mixed-roll wrong narration type — social pressure rendered as physical prose
+- Commit: `5fb2da5`
+- Files changed:
+  - `engine/playloop.js` (`CONVERSATIONAL_PRESSURE_RE`/`SELF_ADMIT_RE`/`isConversationalPressure()`, `detectApproach()` branch, `physicalObjectOutcome()` guard)
+  - `tests/U186.conversationalPressure.test.js` (new)
+- Summary: A demand for a verbal concession ("push him until he admits it", "stop lying, tell me the truth") could carry a physical-force verb that tripped `PHYS_FORCE` → `physicalObjectOutcome()` narrated "the wood splinters" for a social beat. Added a narrow conversational-pressure detector keyed on the verbal-concession marker itself (admit(s)/confess/come clean/own up/stop lying/tell me the truth/out with it/spit it out), excluding self-admissions ("I admit I was wrong"). `detectApproach()` now routes pressure as intimidate (resolved upstream by `resolveSocialAdjudication` before the resolveMove/physical fallthrough); `physicalObjectOutcome()` bails on pressure text as a defense-in-depth guard for the in-dialogue/combat fallthrough. Deliberately did NOT: touch `gracefulAdjudication.js` or `composer.js`, broaden the matcher to the force verbs (push/press alone), or change DC/roll math. Real physical commands ("push the door", "force the gate") stay physical — verified by test.
+- Proof:
+  - `node --test tests/U186.conversationalPressure.test.js` — 8/8 pass (4 pressure-routes-social cases, 3 physical-not-swallowed guards, 1 self-admission guard)
+  - Full suite: `node --test` — 7931/0
+  - Determinism gates U19/21/22/27/30 green
+- Remaining/next: H-11 (RAG wrong-scene) — next in queue, same worker. Note: one collision found while testing — "admit it, you saw what happened" trips the `gracefulAdjudication.js` recap gate ("Nothing's happened yet…") on "what happened", which is off-limits this packet; test uses a recap-free pressure phrase instead.
+- Rollback: revert commit `5fb2da5`

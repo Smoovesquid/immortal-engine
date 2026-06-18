@@ -71,7 +71,8 @@ export function buildNarratorContext(world, outcome = {}) {
       population: settlement.population ?? null
     } : null,
     speaker,
-    dialogueTurn: buildDialogueTurn(w, outcome)
+    dialogueTurn: buildDialogueTurn(w, outcome),
+    combat: buildNarratorCombatBlock(w, outcome)
   };
 }
 
@@ -153,6 +154,38 @@ function buildCompanionsBlock(w) {
     });
   }
   return out;
+}
+
+// ── Narrator Combat Block ─────────────────────────────────────────────────
+// Slim combat snapshot for the narration-polish path (augmentNarration).
+// Returns null when combat is inactive — the system prompt omits it silently.
+// Also parses the last resolved beat from outcome.mechanics so the system
+// prompt can instruct the model never to invert hit↔miss.
+
+function buildNarratorCombatBlock(world, outcome) {
+  const c = world?.combat;
+  if (!c?.active) return null;
+  const enemies = (Array.isArray(c.enemies) ? c.enemies : []).map(e => ({
+    name: String(e?.name ?? ''),
+    hp: Number(e?.hp ?? 0),
+    maxHp: Number(e?.maxHp ?? 0),
+    defeated: Boolean(e?.defeated)
+  }));
+  const mechanics = String(outcome?.mechanics ?? '');
+  const hitMatch = /→\s*(hit|miss)/i.exec(mechanics);
+  const dmgMatch = /(\d+)\s*dmg/i.exec(mechanics);
+  const lastBeat = hitMatch ? {
+    result: hitMatch[1].toLowerCase(),
+    damage: dmgMatch ? Number(dmgMatch[1]) : 0
+  } : null;
+  return {
+    inCombat: true,
+    round: Number(c.round ?? 0),
+    enemies,
+    pcHp: Number(world?.meta?.escapeHp ?? 0),
+    pcMaxHp: Number(world?.meta?.escapeMaxHp ?? 0),
+    lastBeat
+  };
 }
 
 // ── Combat ────────────────────────────────────────────────────────────────

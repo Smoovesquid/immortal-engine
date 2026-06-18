@@ -122,6 +122,25 @@ export function buildSystemPrompt(ctx) {
     ? `- You MAY invent ambient detail only where PLACE HISTORY is silent. Never contradict or override PLACE HISTORY.`
     : `- You CAN invent ambient environmental details (a blanket in a room, books on a shelf).`;
 
+  // Combat awareness — surfaced prominently so the model cannot forget the
+  // fight frame and narrate the enemy as a peaceful bystander or invert
+  // hit↔miss. Omitted when combat is null (no-throw guarantee).
+  if (ctx.combat?.inCombat) {
+    const cb = ctx.combat;
+    lines.push(`COMBAT (active — round ${cb.round}):`);
+    for (const e of (cb.enemies || [])) {
+      const prefix = e.defeated ? '(defeated) ' : '';
+      lines.push(`- ${prefix}${e.name}: HP ${e.hp}/${e.maxHp}`);
+    }
+    lines.push(`- Player HP: ${cb.pcHp}/${cb.pcMaxHp}`);
+    if (cb.lastBeat) {
+      const dmgNote = cb.lastBeat.damage > 0 ? `, ${cb.lastBeat.damage} damage` : '';
+      lines.push(`- Last action resolved: ${cb.lastBeat.result}${dmgNote}`);
+    }
+    lines.push(`- COMBAT RULE: You are inside an active fight. The enemies listed above are actively threatening the player. NEVER write "no blade was drawn", "no blow exchanged", "you are unharmed", or any phrase that denies the ongoing combat. NEVER invert the last action's hit/miss result.`);
+    lines.push(``);
+  }
+
   lines.push(
     `RULES:`,
     `- Do NOT invent topology, place names, or structures not listed above.`,
@@ -332,6 +351,41 @@ export function validateNarrationCandidate(world, narrationCandidate, {
   // base narration — always safe. See collectGroundedNouns / findInventedProperNoun.
   const grounded = collectGroundedNouns({ world: w, ctx, base: baseNarration });
   if (findInventedProperNoun(cand, grounded)) return false;
+
+  // Combat contradiction guard — only fires when combat is active and the
+  // narration context carries the snapshot. Conservative: only flagrant
+  // contradictions on three axes (combat-presence, hit/miss inversion).
+  // Never reject mere flavor (mirrors looksGarbled philosophy: only signatures
+  // real prose never contains). Falls back to the grounded base narration.
+  if (ctx?.combat?.inCombat) {
+    const cb = ctx.combat;
+    const lower = cand.toLowerCase();
+    // Axis 1 — combat-presence: flat denial of the ongoing fight
+    const PEACE_PHRASES = ['no blade', 'no blow', 'no fight', 'no combat', 'no struggle',
+      'no attack', "you're unharmed", 'you are unharmed', 'not fighting',
+      'no weapons drawn', 'no battle', 'no conflict'];
+    for (const ph of PEACE_PHRASES) {
+      if (lower.includes(ph)) return false;
+    }
+    // Axis 2 — hit↔miss inversion
+    if (cb.lastBeat?.result === 'miss') {
+      // Mechanics say miss — reject narration that claims the enemy's attack landed
+      const HIT_PHRASES = ['lands a blow', 'lands a hit', 'glancing blow', 'scores a hit',
+        'strikes you', 'hits you', 'catches you', 'glances off you',
+        'blow connects', 'blow lands', 'cuts you', 'stings you'];
+      for (const ph of HIT_PHRASES) {
+        if (lower.includes(ph)) return false;
+      }
+    }
+    if (cb.lastBeat?.result === 'hit') {
+      // Mechanics say hit — reject narration that claims the strike missed
+      const MISS_PHRASES = ['swing goes wide', 'blow goes wide', 'went wide', 'goes wide',
+        'misses entirely', 'fails to land', "doesn't land", 'blow misses'];
+      for (const ph of MISS_PHRASES) {
+        if (lower.includes(ph)) return false;
+      }
+    }
+  }
 
   return true;
 }

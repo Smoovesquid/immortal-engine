@@ -43,7 +43,7 @@ import { resolveCompanionTurn } from './combat/companionTurn.js';
 import { castSpell } from './spell/castSpell.js';
 import { classifyOffensiveCast, castConsequence } from './magic/castConsequence.js';
 import { evaluateEncounter, selectCreatures, spawnEncounter } from './combat/encounterSpawn.js';
-import { isMetaQuestion, handleMetaQuestion, isNullAction, isQuestionShaped, META_LOCATION } from './grace/gracefulAdjudication.js';
+import { isMetaQuestion, handleMetaQuestion, isNullAction, isQuestionShaped, META_LOCATION, isNpcObserverQuery } from './grace/gracefulAdjudication.js';
 import { resolveEscapeCombatTurn, initEscapeHp, initEscapeKit, shortRest, longRest, applySurpriseRound, parseEscapeAction, combatStatusAnswer, meleeProfile, playerAc } from './combat/escapeCombat.js';
 import { statMod, maxWounds } from './ruleset/core/stats.js';
 import { shopsHere, stockFor, settlementStock, economyAt, priceToSell, shopBuys, restockEpoch, purseTotalCopper, pursePay, purseReceive, formatPrice, matchByName } from './economy/shop.js';
@@ -1556,6 +1556,25 @@ function playerMoveCore(world, packsById, text) {
         };
       }
     }
+  }
+
+  // Direct-address guard: "I'm talking to you", "what are you looking at?" aimed at
+  // a present NPC without naming them. The extractDialogueRef m3 guard (above)
+  // prevents garbage talkRef; this catch routes it to dialogue before the skill-roll
+  // fallthrough. (H-15, Rung-1 gate 2026-06-18.)
+  if (!w.combat?.active && !w.scene?.dialogue && isDirectAddressIntent(text)) {
+    const daNode = (w.map?.nodes || []).find(n => n && n.id === w.map?.currentNodeId) || null;
+    const daNpcs = (daNode?.settlement?.npcs || []).filter(n => n && !n.hostile);
+    if (daNpcs.length) {
+      const daBegun = beginDialogue(w, String(daNpcs[0].name || daNpcs[0].id || ''));
+      if (daBegun.outcome.ok) {
+        w = daBegun.world;
+        w = pushEvent(w, { kind: 'dialogueEnter', data: { npcId: daBegun.outcome.npcId, npcName: daBegun.outcome.npcName } });
+        const daName = daBegun.outcome.npcName || 'them';
+        return { world: w, output: { narration: `Wizard: ${daName} stops and turns — eyes level, waiting.`, mechanics: `[dialogue enter | ${daName}]` } };
+      }
+    }
+    return { world: w, output: { narration: `Wizard: You address the empty air — there's no one in earshot here.`, mechanics: '[social:no-target]' } };
   }
 
   // Environmental hazard gate (out of combat): bringing a roof down on yourself,
@@ -3221,8 +3240,16 @@ function extractDialogueRef(text) {
   if (m2 && m2[1]) return cleanDialogueRef(m2[1]);
   // Greetings ARE dialogue. 'Hello X' / 'hi X' / 'good morning X' / 'greet X'
   // enters conversation with X — a greeting must NEVER be a d20 roll.
+  // Guard: if the captured text after the greeting starts with a filler word or
+  // first-person pronoun ("um, I'm talking to you"), it's a direct address, not
+  // "<greeting> <NPC name>" — don't produce a garbage talkRef. (H-15, 2026-06-18.)
   const m3 = t.match(/^\s*(?:hello|hi|hey|greetings|good\s+(?:morning|day|evening)|well met|greet)[,!.]?\s+(.+)/i);
-  if (m3 && m3[1]) return cleanDialogueRef(m3[1]);
+  if (m3 && m3[1]) {
+    const captured = m3[1].trim();
+    if (!/^(?:um+|uh+|so\b|you\b|i\b|i'?m|i\s+am|hey\b|wait\b|ok\b|okay\b)/i.test(captured)) {
+      return cleanDialogueRef(m3[1]);
+    }
+  }
   // 'X, hello' / 'X, good morning'
   const m4 = t.match(/^\s*([a-z][a-z' -]+?),\s*(?:hello|hi|hey|greetings|good\s+(?:morning|day|evening)|well met)\b/i);
   if (m4 && m4[1]) return cleanDialogueRef(m4[1]);
@@ -3247,6 +3274,17 @@ function cleanDialogueRef(raw) {
     .trim()
     .replace(/[.!?,;:]+$/, '')
     .trim();
+}
+
+// Direct-address detection: "I'm talking to you", "what are you looking at?"
+// without naming the NPC. Routes to dialogue entry with the first present NPC
+// instead of falling through to a skill roll. (H-15, Rung-1 gate 2026-06-18.)
+function isDirectAddressIntent(text) {
+  const t = String(text || '').toLowerCase();
+  return /\bi(?:'?m|\s+am)\s+talking\s+to\s+you\b/.test(t)
+    || /\btalking\s+to\s+you\b/.test(t)
+    || /\bwhat\s+are\s+you\s+(?:looking|watching|staring)\s+at\s+(?:me\b|\?)/.test(t)
+    || /\bwhy\s+are\s+you\s+(?:watching|staring|looking)\s+at\s+me\b/.test(t);
 }
 
 // Like cleanDialogueRef, but also drops a trailing intent clause so a compound
@@ -4172,6 +4210,10 @@ function tryExamineTarget(w, text) {
 function isExploreIntent(text) {
   const t = String(text || '').toLowerCase().trim();
   if (!t) return false;
+  // NPC-observer and NPC-presence queries are meta-questions, not location surveys.
+  // Guard before the broad "who/what/is that" patterns so they don't bleed into the
+  // cardinal-exit recap or roster list. (H-14/H-16, Rung-1 gate 2026-06-18.)
+  if (isNpcObserverQuery(t)) return false;
   // Broad observation/perception: anything that is purely sensory or informational
   // and requires no skill check. Covers "look around", "what do I see", "describe",
   // "listen", "smell", inventory/status checks, reading signs, etc.

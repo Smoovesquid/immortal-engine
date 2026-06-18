@@ -12,9 +12,10 @@ import { statMod } from '../ruleset/core/stats.js';
 const META_STAT = /\b(?:what(?:'?s| is)\s+my\s+|my\s+)(might|agility|wits|grit|charm)(?:\s+(?:modifier|mod|score|stat|number|bonus))?\b/i;
 // D&D synonym names — require explicit query prefix to avoid catching physical-
 // action text ("I swing with all my strength"). "give me strength" also fires.
-const META_STAT_SYNONYM = /\b(?:what(?:'?s| is)\s+my\s+|give\s+me\s+(?:my\s+)?)(strength|dexterity|dex|intelligence|int|wisdom|wis|constitution|con|charisma|cha)(?:\s+(?:modifier|mod|score|stat|number|bonus))?\b/i;
-// Map D&D synonym → this game's stat key.
-const STAT_SYNONYMS = { strength: 'MIGHT', dexterity: 'AGILITY', dex: 'AGILITY', intelligence: 'WITS', int: 'WITS', wisdom: 'WITS', wis: 'WITS', constitution: 'GRIT', con: 'GRIT', charisma: 'CHARM', cha: 'CHARM' };
+// Also includes abbreviations: STR/DEX/CON/INT/WIS/CHA (H-17, Rung-1 2026-06-18).
+const META_STAT_SYNONYM = /\b(?:what(?:'?s| is)\s+my\s+|give\s+me\s+(?:my\s+)?)(str|strength|dexterity|dex|intelligence|int|wisdom|wis|constitution|con|charisma|cha)(?:\s+(?:modifier|mod|score|stat|number|bonus))?\b/i;
+// Map D&D synonym → this game's stat key. str added (H-17).
+const STAT_SYNONYMS = { str: 'MIGHT', strength: 'MIGHT', dexterity: 'AGILITY', dex: 'AGILITY', intelligence: 'WITS', int: 'WITS', wisdom: 'WITS', wis: 'WITS', constitution: 'GRIT', con: 'GRIT', charisma: 'CHARM', cha: 'CHARM' };
 function resolveStatKey(raw) { return STAT_SYNONYMS[raw.toLowerCase()] || raw.toUpperCase(); }
 function fmtMod(m) { return m >= 0 ? `+${m}` : `${m}`; }
 
@@ -181,6 +182,14 @@ const META_MODIFIER_FORMULA = /\bstat[-\s]to[-\s]modifier\b|\bmodifier\s+formula
 // Sheet-confirmation queries — "my sheet", "the sheet", "confirm my stats".
 // Reports the full stat block from canon; explicitly refuses to mutate scores.
 const META_SHEET_CONFIRM = /\b(?:my|the)\s+sheet\b|\bconfirm\s+(?:the\s+)?(?:stats?|scores?|sheet|modifiers?)\b/i;
+// NPC-observer queries — "Who's that stranger watching me?", "Who is that figure?"
+// Identity questions about a visibly present NPC. Never a location survey.
+// (H-14, Rung-1 gate 2026-06-18.)
+const META_NPC_OBSERVER = /\bwho(?:'s| is| was| are)?\s+(?:that|this|the)\s+(?:stranger|figure|person|man|woman|one|fellow|guard|merchant|trader|elder|individual|character|someone|anyone)\b/i;
+// NPC-presence queries — "Is that stranger gone?", "Could I look for them around town?"
+// Absence/presence questions about a specific NPC, not a general location survey.
+// (H-16, Rung-1 gate 2026-06-18.)
+const META_NPC_PRESENCE = /\bis\s+(?:that|this|the)\s+\w+\s+(?:gone|left|still\s+(?:here|around|there)|around(?:\s+(?:here|town|anywhere))?|nearby)\b|\bcould\s+i\s+(?:find|look\s+for|spot|search\s+for)\s+them\b|\bwhere\s+(?:did|do)\s+(?:they|them|the\s+\w+)\s+(?:go|end\s+up|head)\b/i;
 
 // Detect meta-questions (questions about state, not actions)
 export function isMetaQuestion(text) {
@@ -190,7 +199,15 @@ export function isMetaQuestion(text) {
     || META_STAT_SYNONYM.test(t) || META_ITEM.test(t) || META_PURSE.test(t) || META_TIME.test(t)
     || META_OBJECTIVE.test(t) || META_MECHANICS.test(t) || META_ADVICE.test(t)
     || META_WEAPON_DAMAGE.test(t) || META_NAME.test(t)
-    || META_MODIFIER_FORMULA.test(t) || META_SHEET_CONFIRM.test(t);
+    || META_MODIFIER_FORMULA.test(t) || META_SHEET_CONFIRM.test(t)
+    || META_NPC_OBSERVER.test(t) || META_NPC_PRESENCE.test(t);
+}
+
+// Exported guard for playloop.js — detects NPC identity/presence queries so
+// isExploreIntent can return false before routing to cardinal-exit text.
+export function isNpcObserverQuery(text) {
+  const t = String(text || '').toLowerCase();
+  return META_NPC_OBSERVER.test(t) || META_NPC_PRESENCE.test(t);
 }
 
 // A null-action: filler, acknowledgment, or an abort. A real DM lets the
@@ -313,10 +330,12 @@ export function handleMetaQuestion(text, world) {
   }
 
   // Modifier formula — "how are modifiers calculated?", "what's the ability
-  // modifier I add?", "the formula". Report (score−10)÷2 + current scores.
+  // modifier I add?", "the formula". Report examples + current scores.
+  // No formula prose — just breakpoints; the formula itself is a system artifact.
+  // (H-18 fix: formula text removed; HP included when also requested.)
   // Checked before META_MECHANICS so formula questions get the specific answer.
   if (META_MODIFIER_FORMULA.test(lowerText)) {
-    let ans = 'The modifier formula: (score − 10) ÷ 2, rounded down. Examples: 9 → −1, 10–11 → +0, 12–13 → +1, 14–15 → +2.';
+    let ans = 'Modifier breakpoints: 9 → −1, 10–11 → +0, 12–13 → +1, 14–15 → +2.';
     const sm = lowerText.match(META_STAT) || lowerText.match(META_STAT_SYNONYM);
     if (sm) {
       const key = resolveStatKey(sm[1]);
@@ -331,6 +350,13 @@ export function handleMetaQuestion(text, world) {
       const order = ['MIGHT', 'AGILITY', 'WITS', 'GRIT', 'CHARM'];
       const line = order.filter(k => k in stats).map(k => `${k} ${stats[k]} (${fmtMod(statMod(Number(stats[k]) || 10))})`).join(', ');
       if (line) ans += ` Your measures: ${line}.`;
+    }
+    // Include HP when the player also asked for it (H-18).
+    if (META_HEALTH.test(lowerText)) {
+      const escMax = Number(world.meta?.escapeMaxHp) || 0;
+      if (escMax > 0) {
+        ans += ` Hit points: ${Number(world.meta?.escapeHp) || 0} of ${escMax}.`;
+      }
     }
     return ans;
   }
@@ -379,6 +405,57 @@ export function handleMetaQuestion(text, world) {
     }
     parts.push('These are your canonical scores — I report what the sheet reads; I cannot edit them.');
     return parts.join(' ');
+  }
+
+  // NPC-observer query — "Who's that stranger watching me?". Describe the present
+  // NPC rather than routing to a location survey. (H-14, Rung-1 2026-06-18.)
+  if (META_NPC_OBSERVER.test(lowerText)) {
+    const node = (world?.map?.nodes || []).find(n => n && n.id === world?.map?.currentNodeId) || null;
+    const sociable = (node?.settlement?.npcs || []).filter(n => n && !n.hostile);
+    if (sociable.length) {
+      const npc = sociable[0];
+      const name = String(npc.name || '').trim();
+      const role = String(npc.role || '').trim();
+      const desc = String(npc.description || npc.notes || '').trim();
+      const who = (name && role && !/\bthe\b/i.test(name)) ? `${name}, a ${role}` : (name || (role ? `a ${role}` : 'a stranger'));
+      return desc
+        ? `${who} — ${desc.charAt(0).toLowerCase() + desc.slice(1)}.`
+        : `${who} — one of the folk here, watching from nearby.`;
+    }
+    return `No one's watching you — the place looks empty from here.`;
+  }
+
+  // NPC-presence query — "Is that stranger gone for good?" / "Could I look for them?"
+  // Report whether the NPC is still present rather than listing a roster. (H-16.)
+  if (META_NPC_PRESENCE.test(lowerText)) {
+    const node = (world?.map?.nodes || []).find(n => n && n.id === world?.map?.currentNodeId) || null;
+    const sociable = (node?.settlement?.npcs || []).filter(n => n && !n.hostile);
+    if (sociable.length) {
+      const names = sociable.slice(0, 2).map(n => String(n.name || n.role || 'a stranger').trim()).join(' and ');
+      return `Still here — ${names} ${sociable.length === 1 ? 'hasn\'t' : 'haven\'t'} gone anywhere. If you want to speak, now's the moment.`;
+    }
+    return `Whoever you saw has moved on — the place is empty now. They could be anywhere in town if you want to search.`;
+  }
+
+  // Multi-stat D&D synonym request — "What's my STR, DEX, CON, INT, WIS, CHA?" or
+  // "Strength, Dexterity, Constitution, Intelligence, Wisdom, Charisma" (H-17).
+  // Detected when ≥ 3 synonym names appear: the player wants the full stat block + HP.
+  // Placed before the single-stat handler so it fires before an early single return.
+  {
+    const allSynKeys = Object.keys(STAT_SYNONYMS);
+    const synCount = allSynKeys.filter(k => new RegExp(`\\b${k}\\b`, 'i').test(lowerText)).length;
+    if (synCount >= 3) {
+      const p = world.party?.[0] || {};
+      const stats = p.stats || {};
+      const order = ['MIGHT', 'AGILITY', 'WITS', 'GRIT', 'CHARM'];
+      const line = order.filter(k => k in stats).map(k => `${k} ${stats[k]} (${fmtMod(statMod(Number(stats[k]) || 10))})`).join(', ');
+      const parts = line ? [`Your measures: ${line}.`] : ['Your measures are blank — character not yet built.'];
+      const eMax = Number(world.meta?.escapeMaxHp) || 0;
+      if (eMax > 0) {
+        parts.push(`Hit points: ${Number(world.meta?.escapeHp) || 0} of ${eMax}.`);
+      }
+      return parts.join(' ');
+    }
   }
 
   // Single ability score — "what's my MIGHT modifier?", "what's my Strength?"

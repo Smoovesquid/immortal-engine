@@ -4386,6 +4386,18 @@ const PHYS_FORCE = /\b(force|break|smash|bash|kick|shove|wrench|pry|prise|prize|
 const PHYS_CLIMB = /\b(climb|scale|clamber|scramble up|scramble over)\b/i;
 const PHYS_PICK = /\bpick(?:ing)?\b/i;
 
+// H-10 — conversational pressure: a demand for a VERBAL concession ("admit it",
+// "confess", "stop lying", "tell me the truth"). These can carry a physical-force
+// verb ("PUSH him until he admits it"), which would otherwise trip PHYS_FORCE and
+// render as splintering wood. The marker is the verbal concession itself, so this
+// never matches a real physical command ("push the door"). SELF_ADMIT excludes the
+// player conceding ("I admit I was wrong") — that's not pressing anyone.
+const CONVERSATIONAL_PRESSURE_RE = /\b(?:admit(?:s|ted|ting)?|confess(?:es|ed|ing)?|come clean|own up|stop lying|quit lying|tell (?:me )?the truth|out with it|spit it out)\b/i;
+const SELF_ADMIT_RE = /\bi(?:'?ll| will| do| must)?\s+(?:admit|confess|own up|come clean)\b/i;
+function isConversationalPressure(t) {
+  return CONVERSATIONAL_PRESSURE_RE.test(t) && !SELF_ADMIT_RE.test(t);
+}
+
 function physObjTarget(text) {
   const t = String(text || '').toLowerCase();
   const m = t.match(/(?:force|break|smash|bash|kick|shove|wrench|pry|prise|prize|budge|heave|topple|tip|knock|pull|lift|move|drag|haul|push|tear|rip|snap|climb|scale|clamber|pick|open|over|up|down|through|into|across)\s+(?:open\s+)?(?:the|a|an|that|this|my|some)?\s*([a-z][a-z' -]*?)(?:\s+(?:open|down|up|shut|apart|aside|over|loose|free))?\s*$/i);
@@ -4395,6 +4407,11 @@ function physObjTarget(text) {
 
 function physicalObjectOutcome(world, text, outcome) {
   const t = String(text || '');
+  // H-10 — a verbal-concession demand ("push him until he admits it") can trip the
+  // physical-force matcher via "push/force". Never render social pressure as
+  // splintering wood. Pressure is resolved upstream in detectApproach; bail here so
+  // a fallthrough (e.g. in dialogue/combat) can't paint a physical beat over it.
+  if (isConversationalPressure(t)) return null;
   // "pick" only counts when it's a lock-type target (not "pick up" — that's a take).
   const isPick = PHYS_PICK.test(t) && !/\bpick\s+up\b/i.test(t) && /\block|chest|door|gate|safe|strongbox|cabinet|drawer\b/i.test(t);
   const isClimb = PHYS_CLIMB.test(t);
@@ -4445,6 +4462,9 @@ const LEVER_WORDS = {
 };
 
 function detectApproach(t) {
+  // H-10 — forcing a verbal concession ("admit it", "stop lying", "tell me the
+  // truth") is coercive interrogation → resolve as intimidate, NOT physical force.
+  if (isConversationalPressure(t)) return 'intimidate';
   if (/\b(intimidate|threaten|menace|scare|frighten|cow|or i'?ll|or else|back off|out of my way|flay|kill you|hurt you|break you|gut you|make you regret|do as i say|or you'?ll regret)\b/i.test(t)) return 'intimidate';
   if (/\b(deceive|\blie\b|bluff|trick|fool|mislead|pretend|claim\b|make .* believe|convince .* that i|(?:i'?m|i am) the (?:new|royal|king|lord|captain|sheriff|the|a)|tell (?:him|her|them|the \w+) (?:i'?m|i am|that))\b/i.test(t)) return 'deceive';
   if (/\b(charm|flatter|flirt|seduce|sweet.?talk|compliment|woo|win .* over|befriend|make .* laugh|tell .* (a )?joke|hey (sexy|gorgeous|beautiful|handsome|cutie)|you look (great|lovely|beautiful|amazing|good)|buy you a|take you (out|to dinner)|dinner later)\b/i.test(t)) return 'charm';

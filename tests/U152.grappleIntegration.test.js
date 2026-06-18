@@ -34,6 +34,22 @@ test('U152: typed "grab" applies grappled via the live escape resolver', () => {
   assert.ok(hasCondition(foe(w).conditions, 'grappled'), 'foe is grappled via the live path');
 });
 
+test('U152: successful grab-slam clinch output does not imply escape', () => {
+  let { w, byId, nm } = setup();
+  let output = null;
+  for (let i = 0; i < 6 && !hasCondition(foe(w)?.conditions, 'grappled'); i++) {
+    const r = playerMove(w, byId, `I grab ${nm} by the snout and slam his head into the doorframe`);
+    w = r.world;
+    output = r.output;
+  }
+
+  assert.ok(hasCondition(foe(w).conditions, 'grappled'), 'foe is grappled via the live path');
+  assert.match(String(output?.mechanics || ''), /grapple:clinch/, 'mechanics should record the clinch');
+  assert.ok(String(output?.narration || '').trim(), 'response should be coherent and non-empty');
+  const surface = `${output?.narration || ''} ${output?.combatSummary || ''}`.toLowerCase();
+  assert.doesNotMatch(surface, /breaks free|broke free|wrenches loose|wrench loose|powers out|escaped|escapes/);
+});
+
 test('U152: a sustained choke finishes a grappled foe (unconscious/defeated)', () => {
   let { w, byId, nm } = setup();
   for (let i = 0; i < 6 && !hasCondition(foe(w)?.conditions, 'grappled'); i++) {

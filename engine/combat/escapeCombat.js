@@ -1858,7 +1858,7 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
     // Grappled: it spends its turn trying to break your grip (and any choke
     // goes with it). On a break it doesn't also attack; otherwise it fights from
     // a bad position (the restrained penalty). It never flees (guarded above).
-    if (hasCondition(e.conditions, 'grappled')) {
+    if (hasCondition(e.conditions, 'grappled') && verb !== 'choke') {
       const esc = enemyGrappleEscape(e, ENEMY_SAVE_BONUS, rng);
       if (esc.broke) { for (const b of esc.beats) beats.push(b); continue; }
     }
@@ -1955,7 +1955,7 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
   }
 
   // ── Advance round ──────────────────────────────────────────────────────────
-  w = applyDeltas(w, [{ op: 'combatState', set: { round: round + 1, turnIndex: 0 } }]);
+  w = applyDeltas(w, [{ op: 'combatState', set: { enemies, round: round + 1, turnIndex: 0 } }]);
   w = { ...w, meta: { ...w.meta, escapeCover: coverState
     ? { active: true, bonus: coverState.bonus, label: coverState.label, tier: coverState.tier, beganAt }
     : { active: false, bonus: 0, label: '', tier: '', beganAt } } };

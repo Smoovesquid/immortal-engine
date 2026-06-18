@@ -243,6 +243,7 @@ export function collectGroundedNouns({ world = null, ctx = null, base = '' } = {
     add(ctx.placeName); add(ctx.location); add(ctx.objective);
     if (Array.isArray(ctx.structuresHere)) for (const s of ctx.structuresHere) add(s?.kind);
     if (ctx.settlement?.npcs) for (const npc of ctx.settlement.npcs) { add(npc?.name); add(npc?.role); }
+    if (ctx.combat?.enemies) for (const e of ctx.combat.enemies) add(e?.name);
     if (ctx.speaker?.name) add(ctx.speaker.name);
     if (Array.isArray(ctx.placeChunks)) for (const c of ctx.placeChunks) add(c?.text);
   }
@@ -385,6 +386,32 @@ export function validateNarrationCandidate(world, narrationCandidate, {
       const MISS_PHRASES = ['swing goes wide', 'blow goes wide', 'went wide', 'goes wide',
         'misses entirely', 'fails to land', "doesn't land", 'blow misses'];
       for (const ph of MISS_PHRASES) {
+        if (lower.includes(ph)) return false;
+      }
+      // Hit-turn player-credit: reject prose that explicitly deflects the blow —
+      // narrow to avoid false-positives on legit enemy counterattack description.
+      const DEFLECT_PHRASES = ['your blow is deflected', 'deflects your blow',
+        'your strike is deflected', 'deflects your strike', 'turns aside your'];
+      for (const ph of DEFLECT_PHRASES) {
+        if (lower.includes(ph)) return false;
+      }
+    }
+    // Axis 3 — victory: player won this turn, enemy must not still be attacking
+    if (cb.lastBeat?.result === 'victory') {
+      const STILL_FIGHTING = ['strikes you', 'hits you', 'slashes you', 'bites you',
+        'claws you', 'drives into you', 'comes at you', 'charges at you', 'attacks you',
+        'cuts you', 'slams into you', 'presses the attack', 'still fighting',
+        'still standing', 'retaliates', 'counterattacks'];
+      for (const ph of STILL_FIGHTING) {
+        if (lower.includes(ph)) return false;
+      }
+    }
+    // Axis 4 — grapple success: clinch applied, enemy must not be described as escaping
+    if (cb.lastBeat?.result === 'grapple-success') {
+      const GRAPPLE_ESCAPE = ['breaks free', 'breaks your grip', 'slips free',
+        'pulls free', 'wriggles free', 'escapes the hold', 'twists away',
+        'tears loose', 'escapes your', 'breaks out'];
+      for (const ph of GRAPPLE_ESCAPE) {
         if (lower.includes(ph)) return false;
       }
     }

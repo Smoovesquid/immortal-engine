@@ -174,9 +174,23 @@ function buildNarratorCombatBlock(world, outcome) {
   const mechanics = String(outcome?.mechanics ?? '');
   const hitMatch = /→\s*(hit|miss)/i.exec(mechanics);
   const dmgMatch = /(\d+)\s*dmg/i.exec(mechanics);
+  // Victory and grapple outcomes carry no →hit/miss tag — detect them explicitly
+  // so the narration validator can guard against inversion on these turns too.
+  const isVictory = /\[combat:victory\]/i.test(mechanics);
+  const isGrappleSuccess = !hitMatch && /\[grapple:(?:clinch|throw|choke)\b/i.test(mechanics);
+  const isGrappleFail = !hitMatch && /\[grapple:(?:clinch-miss|fail)/i.test(mechanics);
   const lastBeat = hitMatch ? {
     result: hitMatch[1].toLowerCase(),
     damage: dmgMatch ? Number(dmgMatch[1]) : 0
+  } : isVictory ? {
+    result: 'victory',
+    damage: 0
+  } : isGrappleSuccess ? {
+    result: 'grapple-success',
+    damage: 0
+  } : isGrappleFail ? {
+    result: 'grapple-fail',
+    damage: 0
   } : null;
   return {
     inCombat: true,

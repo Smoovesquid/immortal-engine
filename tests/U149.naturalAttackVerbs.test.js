@@ -61,3 +61,18 @@ test('U149: benign door-kick during active escape combat does not strike the ene
   assert.equal(after?.hp, before.hp, 'door-kick must not damage the enemy');
   assert.equal(Boolean(after?.defeated), Boolean(before.defeated), 'door-kick must not defeat the enemy');
 });
+
+test('U149: active-combat stomp does not surface as Worn Blade', () => {
+  const { w, byId, first } = world('glass-harbor');
+  const opened = playerMove(w, byId, `I bite ${first}'s wrist`).world;
+  assert.equal(opened.combat?.active, true, 'fixture should already be in escape combat');
+
+  const result = playerMove(opened, byId, `I stomp my heel down on ${first}'s skull`);
+  const mechanics = String(result.output?.mechanics || '');
+  const surface = `${result.output?.narration || ''} ${result.output?.combatSummary || ''}`;
+
+  assert.ok(String(result.output?.narration || '').trim(), 'response should be coherent and non-empty');
+  assert.match(mechanics, /strike|combat|grapple|attack/i, 'stomp should still resolve through combat');
+  assert.doesNotMatch(mechanics, /Worn Blade/i, 'stomp must not surface as a Worn Blade strike');
+  assert.doesNotMatch(surface, /worn blade/i, 'stomp narration/summary must not mention Worn Blade');
+});

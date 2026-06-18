@@ -222,6 +222,21 @@ export function meleeProfile(pc) {
   };
 }
 
+function naturalStrikeProfile(text, base) {
+  const t = String(text || '').toLowerCase();
+  const label =
+    /\bstomp\b/.test(t) ? 'Stomp' :
+    /\bhead[\s-]?butt\b/.test(t) ? 'Headbutt' :
+    /\bbite\b|\bteeth\b|\bfangs\b/.test(t) ? 'Bite' :
+    /\bknee\b/.test(t) ? 'Knee' :
+    /\belbow\b/.test(t) ? 'Elbow' :
+    /\bclaw\b|\bclaws\b|\bscratch\b/.test(t) ? 'Claw' :
+    /\bpunch\b|\bfist\b/.test(t) ? 'Punch' :
+    /\bkick\b|\bboot\b/.test(t) ? 'Kick' :
+    null;
+  return label ? { ...base, name: label } : base;
+}
+
 /**
  * cantripProfile(pc) -> { ref, name, die, type, verb, atkBonus } | null
  * The PC's attack cantrip. 5e sheet: the class cantrip with the sheet's spell
@@ -1456,7 +1471,7 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
       }
     } else {
       // weapon strike (default — also where a cantrip-less martial's "cast" lands)
-      const melee = meleeProfile(pc);
+      const melee = naturalStrikeProfile(actionText, meleeProfile(pc));
       const style = pc?.dnd?.fightingStyle || null;
       // Archery: +2 to ranged attack rolls (fighter style at 1, ranger at 2).
       // Dueling: +2 damage with a one-handed melee weapon.

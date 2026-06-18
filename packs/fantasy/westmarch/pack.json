@@ -180,6 +180,7 @@
       "name": "Captain Aldric Hale",
       "role": "Crown Watch garrison commander",
       "faction": "crown-watch",
+      "historicalFigure": "captain_rath",
       "traits": ["methodical", "stubborn", "privately worried"],
       "seedRef": "seed-hale"
     },
@@ -188,6 +189,7 @@
       "name": "Renna Voss",
       "role": "Provisioner and Compact leader",
       "faction": "seil-compact",
+      "historicalFigure": "scarlet_compact_quartermaster",
       "traits": ["sharp", "pragmatic", "deeply rooted"],
       "seedRef": "seed-voss"
     },
@@ -196,6 +198,7 @@
       "name": "Warden Maren",
       "role": "Elder of Ashenford",
       "faction": "seil-compact",
+      "historicalFigure": "covenant_elder",
       "traits": ["guarded", "knowledgeable", "patient"],
       "seedRef": "seed-maren"
     },
@@ -203,6 +206,7 @@
       "id": "corin-blackthorn",
       "name": "Corin Blackthorn",
       "role": "Lone ranger of the Greywood fringe",
+      "historicalFigure": "wild_hunter",
       "traits": ["skittish", "competent", "exhausted"],
       "seedRef": "seed-corin"
     },
@@ -210,6 +214,7 @@
       "id": "dalla-smith",
       "name": "Dalla the Smith",
       "role": "Thornwall blacksmith",
+      "historicalFigure": "forge_master",
       "traits": ["cheerful", "strong", "quietly terrified"],
       "seedRef": "seed-dalla"
     },
@@ -217,6 +222,7 @@
       "id": "old-gerren",
       "name": "Old Gerren",
       "role": "Chapel keeper of the Quiet God",
+      "historicalFigure": "father_len",
       "traits": ["long-winded", "knowledgeable", "devout"],
       "seedRef": "seed-gerren"
     }

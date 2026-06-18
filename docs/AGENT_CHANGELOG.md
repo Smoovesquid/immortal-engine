@@ -30,6 +30,20 @@ other agents. (none active)
 
 ## 2026-06-18 — Claude Sonnet (worker)
 
+- Packet/seam: P-82a — Westmarch static-NPC `historicalFigure` casting (RAG corpus binding)
+- Commit: (this commit)
+- Files changed:
+  - `packs/fantasy/westmarch/pack.json` (+6 `historicalFigure` fields, additive)
+- Summary: Bound all 6 Westmarch static NPCs to existing `server/rag/corpus/*` figures by role/personality fit (Westmarch's crown-watch/seil-compact factions have no corpus cluster, so matched on role, NOT faction/name — corpus doesn't name Westmarch NPCs). Casting: aldric-hale→`captain_rath` (Iron Brotherhood commander; "afraid/decide/useful" tone ≈ "privately worried"); renna-voss→`scarlet_compact_quartermaster` (literal Compact provisioner — strongest match); warden-maren→`covenant_elder` (eldest practitioner, contemplative/knowledgeable/patient); corin-blackthorn→`wild_hunter` (lone tracker attuned to "disturbance/pattern" — rhymes with the Greywood Silence thread); dalla-smith→`forge_master` ("iron has opinions" warmth ≈ cheerful smith); old-gerren→`father_len` (itinerant Thornwall spiritual attendant — long-winded/devout). Faction reconciliation was NOT needed/forced — role-fit was viable. No engine code, no WORLD_VERSION bump (field is optional/additive), no marquee real-person casting (that's P-82c).
+- Proof:
+  - Traced real `retrieveChunks()` code path (`server/rag/ragRetriever.js`): all 6 figures load (empty-query topN=4 and a themed-query=4 each); JSON parses; `reconstructed=false` for all 6. Note: role-string query returns 0 chunks only because role tokens don't overlap chunk keywords — expected; real player queries retrieve fine. No live LLM call (protocol §4).
+- Remaining: none for P-82a. Match quality is "best available by role" — corpus has no Westmarch-specific figures, so these are thematic, not canonical, bindings.
+- Rollback: revert this commit.
+
+---
+
+## 2026-06-18 — Claude Sonnet (worker)
+
 - Packet/seam: Rung 1 / H-19 explicit-check denial; H-12/13 roll-number contradiction
 - Commits: `7c11f3e` (H-19 gate), `37d1778` (H-12/13 persistence)
 - Files changed:

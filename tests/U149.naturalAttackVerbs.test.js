@@ -76,3 +76,33 @@ test('U149: active-combat stomp does not surface as Worn Blade', () => {
   assert.doesNotMatch(mechanics, /Worn Blade/i, 'stomp must not surface as a Worn Blade strike');
   assert.doesNotMatch(surface, /worn blade/i, 'stomp narration/summary must not mention Worn Blade');
 });
+
+test('U149: active-combat headbutt does not surface as Worn Blade', () => {
+  const { w, byId, first } = world('glass-harbor');
+  const opened = playerMove(w, byId, `I bite ${first}'s wrist`).world;
+  assert.equal(opened.combat?.active, true, 'fixture should already be in escape combat');
+
+  const result = playerMove(opened, byId, `I headbutt ${first} square in the snout`);
+  const mechanics = String(result.output?.mechanics || '');
+  const surface = `${result.output?.narration || ''} ${result.output?.combatSummary || ''}`;
+
+  assert.ok(String(result.output?.narration || '').trim(), 'response should be coherent and non-empty');
+  assert.match(mechanics, /strike|combat|grapple|attack/i, 'headbutt should still resolve through combat');
+  assert.doesNotMatch(mechanics, /Worn Blade/i, 'headbutt must not surface as a Worn Blade strike');
+  assert.doesNotMatch(surface, /worn blade/i, 'headbutt narration/summary must not mention Worn Blade');
+});
+
+test('U149: active-combat bite does not surface as Worn Blade', () => {
+  const { w, byId, first } = world('glass-harbor');
+  const opened = playerMove(w, byId, `I bite ${first}'s wrist`).world;
+  assert.equal(opened.combat?.active, true, 'fixture should already be in escape combat');
+
+  const result = playerMove(opened, byId, `I bite ${first}'s ear`);
+  const mechanics = String(result.output?.mechanics || '');
+  const surface = `${result.output?.narration || ''} ${result.output?.combatSummary || ''}`;
+
+  assert.ok(String(result.output?.narration || '').trim(), 'response should be coherent and non-empty');
+  assert.match(mechanics, /strike|combat|grapple|attack/i, 'bite should still resolve through combat');
+  assert.doesNotMatch(mechanics, /Worn Blade/i, 'bite must not surface as a Worn Blade strike');
+  assert.doesNotMatch(surface, /worn blade/i, 'bite narration/summary must not mention Worn Blade');
+});

@@ -67,3 +67,18 @@ cross-agent continuity: what changed, what proved it, and what remains.
   - H-2 narration inversion on grapple clinch
   - H-6 lethal grab/neck-snap intent routing to grapple clinch
 - Rollback: revert commit `93758b1`
+
+## 2026-06-18 — Codex
+
+- Packet/seam: Rung 1 / H-2 grapple clinch output contradicted saved state
+- Commit: `caae8a5`
+- Files changed:
+  - `engine/combat/escapeCombat.js`
+  - `tests/U152.grappleIntegration.test.js`
+- Summary: Fixed deterministic grapple output/state alignment: enemy break-free text now corresponds to persisted enemy state, and active choke exchanges do not grant a separate immediate break-free roll that resets choke progress.
+- Proof:
+  - `node --test tests/U152.grappleIntegration.test.js`
+  - `node --test tests/U151.grapple.test.js tests/U152.grappleIntegration.test.js tests/U170.combatStateNarration.test.js tests/U149.naturalAttackVerbs.test.js tests/U167.strikeMechanicsDice.test.js`
+- Remaining Rung 1 seams:
+  - H-6 lethal grab/neck-snap intent routing to grapple clinch
+- Rollback: revert commit `caae8a5`

@@ -194,3 +194,5 @@ other agents. (none active)
   - Determinism gates U19/21/22/27/30 green
 - Remaining/next: H-10 (mixed-roll wrong narration type), H-11 (RAG wrong-scene) — next in queue, same worker.
 - Rollback: revert commit `fe3d702`
+
+[CLAIMED] H-10 mixed-roll-wrong-narration · Claude Opus · 2026-06-18T23:13Z · files: engine/playloop.js

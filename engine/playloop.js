@@ -3042,6 +3042,8 @@ function askBeatOutcome(mode) {
   if (['smalltalk', 'self', 'place', 'directions', 'services', 'news'].includes(m)) return 'success';
   if (m === 'refused-hard') return 'failure';
   if (m === 'deflected') return 'mixed';
+  // H-9 — a settled continuity challenge is a real exchange, not a dodge.
+  if (m === 'continuity') return 'mixed';
   return 'mixed';
 }
 
@@ -3211,6 +3213,27 @@ function dialogueAskNarration(outcome, world) {
         ]
       };
       return V(`lied:${outcome?.manner || 'even'}`, pools[outcome?.manner] || pools.even);
+    }
+    case 'continuity': {
+      // H-9 — the player has quoted the NPC back to themselves. Settle it: stand
+      // by the prior fact, or own the slip and admit uncertainty. Never deflect.
+      const body = String(outcome?.factBody || '').trim();
+      if (outcome?.continuityResolved && body) {
+        return V('continuity:body', [
+          `${name} doesn't flinch. "I said it and I'll say it again: ${body}"`,
+          `"You heard me right the first time," ${says}. "${body}" The story holds.`
+        ]);
+      }
+      if (outcome?.continuityResolved) {
+        return V('continuity:reaffirm', [
+          `${name} meets your eye. "I stand by what I told you about ${phrase}. I've not changed my account."`,
+          `"Which is it? It's what I said — ${phrase}, same as before," ${says}, even.`
+        ]);
+      }
+      return V('continuity:uncertain', [
+        `${name} works back through it, then levels with you. "If I muddied that, I'm sorry — the truth is I don't rightly know. I'll not pretend otherwise."`,
+        `"You've caught me out," ${says}. "I spoke past what I'm sure of. I don't know — and I'll not invent it for you."`
+      ]);
     }
     case 'deflected':
     default: {

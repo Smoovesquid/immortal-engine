@@ -26,6 +26,14 @@ const INVITE_TRUST_THRESHOLD = 6;
 const PARTY_CAP = 3;
 const INVITE_TEXT_RE = /\binvite\s+to\s+travel\b/i;
 
+// H-9 — continuity-challenge markers. The player quotes the NPC back to
+// themselves and demands the contradiction be settled ("first you said X, now
+// Y — which is it?"). Ordinary topic scoring only matches known fact tokens, so
+// these fall to deflection — atmospheric avoidance that reads as the NPC dodging
+// an accusation. We require explicit quote-back / which-is-it phrasing so plain
+// skeptical questions ("are you sure?", "really?") do NOT misfire into this path.
+const CONTINUITY_CHALLENGE_RE = /\b(?:you (?:said|told me|claimed)|first you said|now you(?:'re| are)?\s+say(?:ing)?|which is it|contradict|that'?s not what you said|you just said)\b/i;
+
 // Exported so playloop.js can check recruit intent BEFORE its dialogue-breaking
 // intent guard. The recruit phrase contains "travel", which would otherwise
 // route through moveAdvancesScene and exit dialogue.
@@ -409,6 +417,13 @@ export function askNpc(world, text) {
   // produce no recruit and no beat.
   if (INVITE_TEXT_RE.test(String(text || ''))) {
     return handleInviteToTravel(w, d, npc, trust);
+  }
+
+  // Pass H-9 — continuity challenge. Intercept BEFORE ordinary topic extraction:
+  // resolve from the last thing this NPC actually said, or admit uncertainty.
+  // Never deflect a contradiction back into atmospheric avoidance.
+  if (CONTINUITY_CHALLENGE_RE.test(String(text || ''))) {
+    return handleContinuityChallenge(w, d, npc, trust, manner, text);
   }
 
   const topic = extractTopic(text, npc);
@@ -833,6 +848,48 @@ function handleInviteToTravel(w, d, npc, trust) {
       trustLevel: newTrust,
       trustDelta: -1,
       text: 'invite to travel'
+    }
+  };
+}
+
+// H-9 — settle a continuity challenge. Resolve from the last answer this NPC
+// gave in THIS dialogue: if there's a concrete prior fact, the NPC stands by it
+// (reaffirm); if not, they own the slip and admit uncertainty. Either branch is
+// an honest reckoning — mode='continuity', never 'deflected'. No trust change:
+// being held to your word is neither a betrayal nor a gift.
+function handleContinuityChallenge(w, d, npc, trust, manner, text) {
+  const npcId = String(d.npcId);
+  const prior = d.lastAnswer || null;
+  const priorFactId = prior && prior.factId ? String(prior.factId) : '';
+  const priorBody = priorFactId
+    ? String((npc.knowledgeGraph || []).find(f => String(f.factId) === priorFactId)?.body || '')
+    : '';
+  const resolved = Boolean(priorFactId);
+
+  const nextDialogue = {
+    ...d,
+    turnsInDialogue: Number(d.turnsInDialogue || 0) + 1,
+    lastAnswer: { factId: priorFactId || null, mode: 'continuity', trustAtTime: trust }
+  };
+  const w2 = { ...w, scene: { ...w.scene, dialogue: nextDialogue } };
+
+  return {
+    world: w2,
+    outcome: {
+      kind: 'dialogueAsk',
+      ok: true,
+      npcId,
+      npcName: String(npc.name || ''),
+      npcRole: String(npc.role || ''),
+      topic: priorFactId,
+      mode: 'continuity',
+      factId: priorFactId,
+      factBody: priorBody,
+      continuityResolved: resolved,
+      manner,
+      trustLevel: trust,
+      trustDelta: 0,
+      text: String(text || '')
     }
   };
 }

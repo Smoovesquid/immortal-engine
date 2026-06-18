@@ -49,6 +49,9 @@ const OFFENSIVE_RE = /\b(blast|incinerate|immolate|scorch|burn|char|smite|electr
 // 2026-06-16, Chaos-griefer: "grab a loose roof beam and swing it").
 const HOSTILE_CAST_RE = /\b(cast|invoke|channel|conjure)\b/i;
 const BENIGN_RE = /\b(mage\s+armor|shield|light|heal|cure|mend|guidance|bless|protection|ward|detect|prestidigitation|dancing\s+lights|warm|dry|clean)\b/i;
+// "torch" in OFFENSIVE_RE catches the verb ("torch the barn"). Article/possessive
+// forms ("a torch", "the torch", "my torch") are physical objects, not spells.
+const TORCH_AS_NOUN_RE = /\b(?:a|an|the|my|your|his|her|its|their|our|this|that|one)\s+torch\b/i;
 
 // Children: the hard absolute exclusion (MORALITY_SYSTEM §1). Checked FIRST.
 const CHILD_RE = /\b(child|children|kid|kids|baby|babe|babies|infant|toddler|boy|girl|youngling|little\s+(?:one|girl|boy))\b/i;
@@ -69,6 +72,13 @@ export function classifyOffensiveCast(world, text) {
   const looksOffensive = OFFENSIVE_RE.test(t) || HOSTILE_CAST_RE.test(t);
   if (!looksOffensive || (BENIGN_RE.test(t) && !OFFENSIVE_RE.test(t))) {
     return { offensive: false, target: null, targetName: '', reason: 'not-offensive' };
+  }
+  // Narrow torch-noun exclusion: if the only OFFENSIVE_RE hit is "torch" used as
+  // a physical noun (preceded by article/possessive) and no casting verb is present,
+  // this is not a spell — let it pass as non-offensive.
+  if (!HOSTILE_CAST_RE.test(t) && TORCH_AS_NOUN_RE.test(t) &&
+      !OFFENSIVE_RE.test(t.replace(/\btorch\b/gi, ''))) {
+    return { offensive: false, target: null, targetName: '', reason: 'torch-noun' };
   }
   if (CHILD_RE.test(t)) {
     return { offensive: true, target: 'child', targetName: (t.match(CHILD_RE) || [''])[0], reason: 'child-ward' };

@@ -8,8 +8,14 @@ import { adjudicate } from '../adjudication/adjudicate.js';
 import { exitsFrom, cleanPlaceName } from '../map/mapState.js';
 import { statMod } from '../ruleset/core/stats.js';
 
-// A single ability-score query: "what's my MIGHT", "my WITS modifier", "Grit mod".
+// Canonical stat names (bare "my X" is unambiguous for game-native names).
 const META_STAT = /\b(?:what(?:'?s| is)\s+my\s+|my\s+)(might|agility|wits|grit|charm)(?:\s+(?:modifier|mod|score|stat|number|bonus))?\b/i;
+// D&D synonym names — require explicit query prefix to avoid catching physical-
+// action text ("I swing with all my strength"). "give me strength" also fires.
+const META_STAT_SYNONYM = /\b(?:what(?:'?s| is)\s+my\s+|give\s+me\s+(?:my\s+)?)(strength|dexterity|dex|intelligence|int|wisdom|wis|constitution|con|charisma|cha)(?:\s+(?:modifier|mod|score|stat|number|bonus))?\b/i;
+// Map D&D synonym → this game's stat key.
+const STAT_SYNONYMS = { strength: 'MIGHT', dexterity: 'AGILITY', dex: 'AGILITY', intelligence: 'WITS', int: 'WITS', wisdom: 'WITS', wis: 'WITS', constitution: 'GRIT', con: 'GRIT', charisma: 'CHARM', cha: 'CHARM' };
+function resolveStatKey(raw) { return STAT_SYNONYMS[raw.toLowerCase()] || raw.toUpperCase(); }
 function fmtMod(m) { return m >= 0 ? `+${m}` : `${m}`; }
 
 // Compute pacing delay based on action type
@@ -123,7 +129,7 @@ export function getToneModifier(tone) {
 // LOCATION is checked before HEALTH so "what's around" can't be mistaken for a
 // status check.
 export const META_LOCATION = /\bwhere am i\b|what (?:do|can) i see\b|\blook(?:ing)? around\b|\bsurvey\b|what'?s (?:around|here|nearby|out there)\b|who(?:'?s| is) (?:here|around|nearby)\b/;
-const META_HEALTH = /\bam i (?:hurt|wounded|damaged|injured|alive|ok|okay|alright|all right|fine|bleeding|dying)\b|\bhow am i (?:doing|holding up|feeling)\b|how(?:'?s| is) my (?:health|hp|status|condition|shape)\b|what(?:'?s| is) my (?:health|hp|status|condition|wounds|shape)\b|how much (?:health|hp|life)\b|\bhow (?:hurt|wounded|injured|bad(?:ly)? (?:hurt|off))\b|how many (?:hit ?points|hp)\b|\b(?:max|maximum)\s+(?:hp|hit\s?points?|health)\b|\bhp\s+(?:total|number|max|cap|count)\b|\bhit\s?points?\b/;
+const META_HEALTH = /\bam i (?:hurt|wounded|damaged|injured|alive|ok|okay|alright|all right|fine|bleeding|dying)\b|\bhow am i (?:doing|holding up|feeling)\b|how(?:'?s| is) my (?:health|hp|status|condition|shape)\b|what(?:'?s| is) my (?:health|hp|status|condition|wounds|shape)\b|how much (?:health|hp|life)\b|\bhow (?:hurt|wounded|injured|bad(?:ly)? (?:hurt|off))\b|how many (?:hit ?points|hp)\b|\b(?:max|maximum)\s+(?:hp|hit\s?points?|health)\b|\bhp\s+(?:total|number|max|cap|count)\b|\bhit\s?points?\b|\bmy\s+(?:current\s+)?hp\b/;
 const META_RECAP = /what happened|what did i (?:just )?do\b/;
 const META_OUTCOME = /did i (?:succeed|fail|win|lose|make it)\b/;
 // v24 conversation hardening — the questions players actually ask. The
@@ -168,13 +174,23 @@ const META_NAME = /\bwhat(?:'?s| is)\s+my\s+(?:name|character'?s name)\b|\bwhat\
 // character, never bounces it back as a navigation prompt. (Opus gate
 // 2026-06-16, Confused newbie.)
 const META_ADVICE = /\bshould i\b[^?]*\?|\bis (?:that|this|it) a (?:bad|good|smart|wise|dumb) idea\b|\bwould (?:that|it) be (?:smart|wise|safe|dangerous)\b/i;
+// Modifier-formula questions — "how are modifiers calculated?", "the formula",
+// "ability modifier", "what do I add to hit?". Report the (score−10)÷2 rule
+// plus the PC's current scores. Never a dice roll. (Rung-1 gate 2026-06-18.)
+const META_MODIFIER_FORMULA = /\bstat[-\s]to[-\s]modifier\b|\bmodifier\s+formula\b|\bability\s+modifier\b|\bwhat\s+(?:do\s+i|would\s+i)\s+add\b|\bthe\s+formula\b|\bthe\s+modifier\b|\bto[-\s]hit\s+(?:bonus|modifier|formula)\b|\bmodifier\s+math\b/i;
+// Sheet-confirmation queries — "my sheet", "the sheet", "confirm my stats".
+// Reports the full stat block from canon; explicitly refuses to mutate scores.
+const META_SHEET_CONFIRM = /\b(?:my|the)\s+sheet\b|\bconfirm\s+(?:the\s+)?(?:stats?|scores?|sheet|modifiers?)\b/i;
 
 // Detect meta-questions (questions about state, not actions)
 export function isMetaQuestion(text) {
   const t = String(text || '').toLowerCase();
   return META_LOCATION.test(t) || META_HEALTH.test(t) || META_RECAP.test(t) || META_OUTCOME.test(t)
-    || META_INVENTORY.test(t) || META_EQUIPMENT.test(t) || META_CHARACTER.test(t) || META_STAT.test(t) || META_ITEM.test(t) || META_PURSE.test(t) || META_TIME.test(t) || META_OBJECTIVE.test(t)
-    || META_MECHANICS.test(t) || META_ADVICE.test(t) || META_WEAPON_DAMAGE.test(t) || META_NAME.test(t);
+    || META_INVENTORY.test(t) || META_EQUIPMENT.test(t) || META_CHARACTER.test(t) || META_STAT.test(t)
+    || META_STAT_SYNONYM.test(t) || META_ITEM.test(t) || META_PURSE.test(t) || META_TIME.test(t)
+    || META_OBJECTIVE.test(t) || META_MECHANICS.test(t) || META_ADVICE.test(t)
+    || META_WEAPON_DAMAGE.test(t) || META_NAME.test(t)
+    || META_MODIFIER_FORMULA.test(t) || META_SHEET_CONFIRM.test(t);
 }
 
 // A null-action: filler, acknowledgment, or an abort. A real DM lets the
@@ -296,15 +312,38 @@ export function handleMetaQuestion(text, world) {
       : `You haven't given your name yet — what should I call you?`;
   }
 
+  // Modifier formula — "how are modifiers calculated?", "what's the ability
+  // modifier I add?", "the formula". Report (score−10)÷2 + current scores.
+  // Checked before META_MECHANICS so formula questions get the specific answer.
+  if (META_MODIFIER_FORMULA.test(lowerText)) {
+    let ans = 'The modifier formula: (score − 10) ÷ 2, rounded down. Examples: 9 → −1, 10–11 → +0, 12–13 → +1, 14–15 → +2.';
+    const sm = lowerText.match(META_STAT) || lowerText.match(META_STAT_SYNONYM);
+    if (sm) {
+      const key = resolveStatKey(sm[1]);
+      const stats = world.party?.[0]?.stats || {};
+      if (key in stats) {
+        const score = Number(stats[key]) || 10;
+        ans += ` Your ${key} is ${score}, a ${fmtMod(statMod(score))} modifier.`;
+      }
+    } else {
+      const p = world.party?.[0] || {};
+      const stats = p.stats || {};
+      const order = ['MIGHT', 'AGILITY', 'WITS', 'GRIT', 'CHARM'];
+      const line = order.filter(k => k in stats).map(k => `${k} ${stats[k]} (${fmtMod(statMod(Number(stats[k]) || 10))})`).join(', ');
+      if (line) ans += ` Your measures: ${line}.`;
+    }
+    return ans;
+  }
+
   // How the rules work — "is there a dice mechanic?", "is that a d20?". A
   // question about the SYSTEM, answered straight; if the same line also asks
   // for a specific stat (e.g. "what's my Might modifier right now?"),
   // answer that too instead of dropping half the question.
   if (META_MECHANICS.test(lowerText)) {
     let ans = `Every contested action gets one roll — a d20 plus your relevant ability modifier — against a difficulty number set by how hard the moment is. Beat it and it goes your way; fall short and it doesn't, or costs you something to manage.`;
-    const sm = lowerText.match(META_STAT);
+    const sm = lowerText.match(META_STAT) || lowerText.match(META_STAT_SYNONYM);
     if (sm) {
-      const key = sm[1].toUpperCase();
+      const key = resolveStatKey(sm[1]);
       const stats = world.party?.[0]?.stats || {};
       if (key in stats) {
         const score = Number(stats[key]) || 10;
@@ -326,12 +365,29 @@ export function handleMetaQuestion(text, world) {
     return `That one's yours to call — nothing here forces your hand either way. Go with your gut.`;
   }
 
-  // Single ability score — "what's my MIGHT modifier?" Answer from canon (the
-  // score + its D&D modifier) so the DM/NPC never invents a wrong number.
+  // Sheet confirmation — "my sheet", "the sheet", "confirm my stats". Report
+  // the full stat block from canon. Explicitly refuse to mutate (report-only).
+  if (META_SHEET_CONFIRM.test(lowerText)) {
+    const p = world.party?.[0] || {};
+    const stats = p.stats || {};
+    const order = ['MIGHT', 'AGILITY', 'WITS', 'GRIT', 'CHARM'];
+    const line = order.filter(k => k in stats).map(k => `${k} ${stats[k]} (${fmtMod(statMod(Number(stats[k]) || 10))})`).join(', ');
+    const parts = line ? [`Your sheet: ${line}.`] : ['Your sheet is blank — character not yet built.'];
+    const eMax = Number(world.meta?.escapeMaxHp) || 0;
+    if (world.meta?.mode === 'escape' && eMax > 0) {
+      parts.push(`Hit points: ${Number(world.meta?.escapeHp) || 0} of ${eMax}.`);
+    }
+    parts.push('These are your canonical scores — I report what the sheet reads; I cannot edit them.');
+    return parts.join(' ');
+  }
+
+  // Single ability score — "what's my MIGHT modifier?", "what's my Strength?"
+  // Answer from canon (score + modifier). Synonyms (Strength→MIGHT etc.) resolve
+  // via resolveStatKey so the DM never invents a wrong number.
   {
-    const m = lowerText.match(META_STAT);
+    const m = lowerText.match(META_STAT) || lowerText.match(META_STAT_SYNONYM);
     if (m) {
-      const key = m[1].toUpperCase();
+      const key = resolveStatKey(m[1]);
       const stats = world.party?.[0]?.stats || {};
       if (key in stats) {
         const score = Number(stats[key]) || 10;

@@ -46,3 +46,18 @@ test('U149: an epithet NPC ("X the Fox") is not matched by "the" in a benign phr
   // stonewatch-hollow has "Brennan the Fox"; "the door" must not resolve to him.
   assert.equal(combat('stonewatch-hollow', 'I kick the door open'), false);
 });
+
+test('U149: benign door-kick during active escape combat does not strike the enemy', () => {
+  const { w, byId, first } = world('glass-harbor');
+  const opened = playerMove(w, byId, `I bite ${first}'s wrist`).world;
+  assert.equal(opened.combat?.active, true, 'fixture should already be in escape combat');
+
+  const before = opened.combat.enemies[0];
+  const result = playerMove(opened, byId, "I kick the door off its hinges and shout that I'm awake now");
+  const after = result.world.combat?.enemies?.[0];
+
+  assert.ok(String(result.output?.narration || '').trim(), 'response should be coherent and non-empty');
+  assert.doesNotMatch(String(result.output?.mechanics || ''), /strike:/i, 'door-kick must not emit strike mechanics');
+  assert.equal(after?.hp, before.hp, 'door-kick must not damage the enemy');
+  assert.equal(Boolean(after?.defeated), Boolean(before.defeated), 'door-kick must not defeat the enemy');
+});

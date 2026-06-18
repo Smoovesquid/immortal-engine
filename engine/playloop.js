@@ -1736,6 +1736,15 @@ function playerMoveCore(world, packsById, text) {
           output: { narration: `Wizard: ${answer}`, mechanics: '[combat:table-talk]' }
         };
       }
+      // Object/scene physical actions mid-fight are not implicit attacks. The
+      // escape resolver defaults unknown text to strike, so catch door/window
+      // business here before it becomes a free sword swing at the enemy.
+      if (!explicitAction && isCombatSceneObjectAction(text)) {
+        return {
+          world: w,
+          output: { narration: 'Wizard: You can make a mess of the room, but the fight is still on you. Name the foe if you mean to strike.', mechanics: '[combat:table-talk]' }
+        };
+      }
       // Movement or flight mid-fight is not a strike. Escape-mode fights
       // can't be fled (the journey's stakes are the point) — the DM says so
       // in voice instead of letting the resolver swing your sword for you.
@@ -5157,6 +5166,12 @@ function runCompanionTurns(world, beats) {
 function isFleeIntent(text) {
   const t = String(text || '').toLowerCase();
   return /\b(flee|retreat|disengage|run\s+away|run\s+for\s+it|break\s+off)\b/.test(t);
+}
+
+function isCombatSceneObjectAction(text) {
+  const t = String(text || '').toLowerCase();
+  if (!/\b(kick|bash|break|smash|slam|force|shove|open|shoulder|boot)\b/.test(t)) return false;
+  return /\b(?:the\s+|a\s+|an\s+)?(?:door|doors|gate|gates|window|windows|shutter|shutters|hinge|hinges|wall|walls|floorboards?|floor|ceiling|roof)\b/.test(t);
 }
 
 // A LONG rest is deliberate language — 'sleep', 'make camp', 'turn in'.

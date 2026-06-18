@@ -26,24 +26,26 @@ Branch `v2-polish`. Confirm HEAD with `git log --oneline -5`; suite GREEN **7854
 Known untracked file — **leave alone:** `docs/playtests/opus-gate-2026-06-17.md`.
 Working data: `docs/playtests/opus-gate-2026-06-18-roadA-verdict.md` (23 HARD cataloged H-1..H-23).
 
-## Done (15/23 HARD — combat cluster + object assault + routing/stat gaps)
+## Done (18/23 HARD — combat cluster + object assault + routing/stat + roll-state)
 Codex engine layer (`98b5059`..`056e249`): H-1 scene-object misroute, H-2 grapple state, H-3/4/5
 natural-strike routing, H-6 neck-snap **classification only** (mechanic deferred by design).
 Claude layer (`8c359ad`..`da615f3`): H-2/3/4/5/6 narration-inversion guard, H-20 shove-past, H-21
 torch. Suite 7854/0.
 Claude Sonnet worker (`dcbd79c`): H-7/H-8 object-mediated assault + phantom victory. Suite 7858/0.
 Claude Sonnet worker (`b0d7105`): H-14/15/16 dead-end/UI-bleed; H-17/18 stat-synonym+HP. Suite 7884/0.
+Claude Sonnet worker (`7c11f3e`, `37d1778`): H-19 check denial; H-12/13 roll contradiction. Suite 7909/0.
 
 ## In flight
 *(none)*
 
-## Next (queue order — serialize; all touch playloop)
-1. **Claude-Sonnet — H-12/13 + H-19:** roll-number contradiction (DM cites 3 different roll/DC values
-   for the same check across consecutive turns) + H-19 WITS-check denial. Confirm layer
-   (resolve.js/roll-state vs grace) before assigning.
-2. **Hard tail (LAST) = the Road-A-vs-B decision point:** H-9/10/11 continuity-deflection + mixed-roll
-   incoherence + RAG wrong-scene; H-22/23 roll-to-fiction (successful info-roll, name never spoken).
-   Closest to true intent-classification long-tail.
+## Next — Hard tail (Road-A arbiter verdict: CONTINUE)
+All 5 remaining HARDs are real deterministic defects, not phrasing long-tail → Road B stays parked.
+
+1. **Claude-Sonnet — H-22/23:** roll-to-fiction gap — DM has a successful info-roll but withholds the
+   specific answer (name, detail) in favour of atmosphere. Narration contract: success → deliver the
+   information. Related to the lastRoll infrastructure just built.
+2. **Claude-Sonnet — H-9/10/11:** continuity-deflection + mixed-roll wrong narration type + RAG
+   wrong-scene. H-11 (RAG) is the riskiest; assess layer before editing.
 
 ## Open strategic question (the arbiter call, gated on the hard tail)
 **Road A** (deterministic patches) vs **Road B** (Tier-B LLM intent arbiter w/ Canon-Log caching for

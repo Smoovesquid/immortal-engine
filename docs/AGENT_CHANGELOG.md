@@ -30,6 +30,26 @@ other agents. (none active)
 
 ## 2026-06-18 — Claude Sonnet (worker)
 
+- Packet/seam: Rung 1 / H-19 explicit-check denial; H-12/13 roll-number contradiction
+- Commits: `7c11f3e` (H-19 gate), `37d1778` (H-12/13 persistence)
+- Files changed:
+  - `engine/grace/gracefulAdjudication.js` (+75: META_EXPLICIT_CHECK_A/B + META_ROLL_RECALL patterns + handlers)
+  - `engine/playloop.js` (+14: persist lastRoll after resolveMove + resolveSocialAdjudication)
+  - `engine/state.js` (+10: lastRoll: null default in ensureWorld, excluded from worldHash)
+  - `tests/U182.explicitCheckRequest.test.js` (new, 11 cases)
+  - `tests/U183.rollContradiction.test.js` (new, 14 cases)
+- Summary: H-19: "read him" matched INSPECT_VERB → observe-only before roll logic ran. Added META_EXPLICIT_CHECK gate: explicit "let me make a [STAT] check" fires before tryExamineTarget, returns DC + roll prompt. H-12/13: each playerMove re-seeded RNG from timeline.length, so every follow-up turn produced a different roll. Added conversation.lastRoll (null default, excluded from worldHash); META_ROLL_RECALL gate acknowledges or disputes the player's cited roll against stored state instead of re-rolling silently. Did NOT touch combat, world shape, or invariants.
+- Proof:
+  - `node --test` → 7909/0 (was 7884, +25 new tests)
+  - Determinism gates U19/21/22/27/30 green
+  - U183-50: lastRoll excluded from worldHash confirmed
+- Remaining: none
+- Rollback: revert `37d1778` then revert `7c11f3e`
+
+---
+
+## 2026-06-18 — Claude Sonnet (worker)
+
 - Packet/seam: Rung 1 / H-14/15/16 dead-end+UI-bleed; H-17/18 stat-synonym+HP gap
 - Commit: `b0d7105`
 - Files changed:

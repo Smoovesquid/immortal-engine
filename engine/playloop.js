@@ -2262,7 +2262,7 @@ function playerMoveCore(world, packsById, text) {
   // override the composer's abstract narration with outcome-aware prose that names
   // the thing and says what happened (success/mixed/failure). Everything else keeps
   // the composer line. (Keeps composed.ledgerDelta either way.)
-  const grounded = physicalObjectOutcome(w, text, result.outcome) || nonObjectSkillOutcome(text, result.outcome);
+  const grounded = physicalObjectOutcome(w, text, result.outcome) || nonObjectSkillOutcome(text, result.outcome) || infoExtractionOutcome(w, text, result.outcome);
   // Stage F: if the composer would fall to the abstract literary floor, replace it with
   // grounded, outcome-aware prose (a DM never says "a low hum threads through the walls"
   // for a resolved action). Specific handlers still win; good composer lines pass through.
@@ -4594,6 +4594,62 @@ function nonObjectSkillOutcome(text, outcome) {
       : `Wizard: The land offers nothing you can use.`;
   }
   return null;
+}
+
+// ── Stage G: info-extraction guard (H-22/23) ─────────────────────────────────
+// When a player explicitly asks for a specific proper noun (a name, title, or
+// date) AND the roll succeeded, the narration MUST deliver a concrete fact —
+// not atmosphere. "name me one steward" / "who was the last steward?" must yield
+// a name, not "the ledger hums with secrets."
+//
+// Name pool: deterministic via world seed + topic key; same world + topic →
+// same name every run, preserving replay determinism. (H-22/23)
+const INFO_EXTRACT_RE = /\bname\s+me\b|\bwho\s+was\s+the\b|\bsay\s+the\s+name\b|\btell\s+me\s+the\s+name\b/i;
+const INFO_ACTION_EXCLUDE_RE = /\b(?:attack|strike|hit|stab|slash|shoot|kill|fight|charge|intimidate|charm|deceive|persuade|move|travel|go|run|hide|sneak)\b/i;
+const LORE_NAME_POOL = [
+  'Aldric Vane', 'Emmerath the Pale', 'Torsan Fell', 'Maren Couvalt',
+  'Halvard Gray', 'Soren of the Bridge', 'Yseult Cairn', 'Kinlan the Warden',
+  'Corvin Ashe', 'Brennan Dault', 'Elder Vayl', 'Warden Ostrun',
+  'Lira Thane', 'Davan the Unquiet', 'Petra Severin', 'Lord Morweth'
+];
+
+// Extract the first significant noun from the query so that "name me one steward"
+// and "who was the last steward?" both yield the same key ("steward") and thus the
+// same deterministic name for that topic in that world.
+function extractTopicKey(text) {
+  const stop = new Set([
+    'name', 'tell', 'last', 'that', 'this', 'from', 'before', 'about', 'which',
+    'what', 'were', 'have', 'been', 'than', 'into', 'them', 'they', 'those',
+    'your', 'mine', 'with', 'where', 'when', 'then', 'here', 'more', 'some',
+    'such', 'very', 'know', 'only', 'just', 'each', 'much', 'also', 'back',
+    'time', 'will', 'upon', 'over', 'even', 'like', 'well', 'down', 'many',
+    'long', 'does', 'most', 'make', 'come', 'take', 'want', 'give', 'look',
+    'still', 'great', 'after', 'again', 'every', 'never', 'going', 'under',
+    'right', 'place', 'thing', 'world', 'found', 'since', 'three', 'while',
+    'years', 'other', 'might', 'these', 'first', 'until', 'there', 'said'
+  ]);
+  const words = String(text || '').replace(/[^a-z\s]/g, '').split(/\s+/);
+  const w = words.find(w => w.length > 3 && !stop.has(w));
+  return w || 'lore';
+}
+
+// Return grounded narration for a successful explicit info-extraction roll, or null.
+// Exported for unit testing.
+export function infoExtractionOutcome(world, text, outcome) {
+  if (outcome !== 'success') return null;
+  const tl = String(text || '').toLowerCase();
+  if (!INFO_EXTRACT_RE.test(tl)) return null;
+  if (INFO_ACTION_EXCLUDE_RE.test(tl)) return null;
+  const topicKey = extractTopicKey(tl);
+  const nameSeed = seedFromString(`${String(world?.meta?.seed || 'world')}|lore-name|${topicKey}`);
+  const nameIdx = ((nameSeed % LORE_NAME_POOL.length) + LORE_NAME_POOL.length) % LORE_NAME_POOL.length;
+  const name = LORE_NAME_POOL[nameIdx];
+  const variants = [
+    `You press for the name and the record yields — ${name}.`,
+    `The answer surfaces under your inquiry: ${name}.`,
+    `One name comes forward from the keeping: ${name}.`
+  ];
+  return `Wizard: ${pickVariant(variants, world, `info:s:${topicKey}`)}`;
 }
 
 // ── Stage F: general grounded fallback (kill the abstract floor everywhere) ──

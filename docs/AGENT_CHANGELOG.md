@@ -210,4 +210,17 @@ other agents. (none active)
 - Remaining/next: H-11 (RAG wrong-scene) — next in queue, same worker. Note: one collision found while testing — "admit it, you saw what happened" trips the `gracefulAdjudication.js` recap gate ("Nothing's happened yet…") on "what happened", which is off-limits this packet; test uses a recap-free pressure phrase instead.
 - Rollback: revert commit `5fb2da5`
 
-[CLAIMED] H-11 RAG-wrong-scene · Claude Opus · 2026-06-18T23:20Z · files: engine/playloop.js
+## 2026-06-18 — Claude Opus
+
+- Packet/seam: Rung 1 / H-11 RAG wrong-scene — selection "pick" misclassified as lock-picking (classifier half)
+- Commit: `bdb3287`
+- Files changed:
+  - `engine/playloop.js` (`physicalObjectOutcome()` `isPick` — `PICK_SELECTION`/`PICK_LOCK_NOUN`)
+  - `tests/U187.pickClassification.test.js` (new)
+- Summary: The broad pick parser matched a SELECTION ("pick one of the gates", "you pick which gate", "pick any door") as lock-picking and treated a bare "gate" as a lock target → "pin by pin… it springs open" for a choose-an-option beat, feeding wrong scene context downstream. Tightened `isPick`: exclude selection phrasings (pick one/any/a/some/whichever/which; you/please/just pick) AND require a genuinely-named lock object (lock/padlock/chest/door/safe/strongbox/cabinet/drawer) — a bare "gate" no longer triggers; "pick the lock on the gate" still works via the named lock. Genuine lock-picks ("pick the lock", "pick the chest") unchanged (regression-guarded). Deliberately did NOT: touch `gracefulAdjudication.js`/`composer.js`, change roll/DC math, or remove "door" from the lock set (kept it — investigation only called out "gate").
+- Proof:
+  - `node --test tests/U187.pickClassification.test.js` — 8/8 pass (4 selection cases, 1 bare-gate case, 3 genuine-lock-pick regression guards)
+  - Full suite: `node --test` — 7939/0
+  - Determinism gates U19/21/22/27/30 green
+- Remaining/next: **STOPPED per queue plan.** The second half — `engine/llmAdapter.js` narration-validation hardening (reject "standing in/inside/at <wrong node>") — is a SEPARATE, larger commit and was deliberately NOT started. The live wrong-scene text ("Stonebridge's sole structure") is an LLM-polish artifact not reproducible in deterministic `node --test` (and the gate bills the `.env` key, which a worker must not spend, protocol §4). Basecamp to decide whether the classifier fix alone closes H-11 on the next owner-run gate, or whether to authorize the llmAdapter hardening.
+- Rollback: revert commit `bdb3287`

@@ -2127,7 +2127,15 @@ function playerMoveCore(world, packsById, text) {
   // "talk to X" already opened dialogue above; this is for trying to SWAY someone. ──
   if (!w.combat?.active && !w.scene?.dialogue) {
     const social = resolveSocialAdjudication(w, text);
-    if (social) return social;
+    if (social) {
+      // Persist last roll for roll-recall gate (H-12/13)
+      const mR = String(social.output?.mechanics || '').match(/roll:(\d+)\s+vs\s+DC:(\d+)\s*→\s*(\w+)/i);
+      if (mR && social.world?.conversation) {
+        const lastRoll = { roll: Number(mR[1]), dc: Number(mR[2]), outcome: String(mR[3]), turn: social.world.timeline.length };
+        return { ...social, world: { ...social.world, conversation: { ...social.world.conversation, lastRoll } } };
+      }
+      return social;
+    }
   }
 
   const move = inferMoveFromText(w, pack, actorId, text);
@@ -2135,6 +2143,10 @@ function playerMoveCore(world, packsById, text) {
   const { world2, result } = resolveMove(w, move);
   // Apply deltas (canon mutation path).
   w = applyDeltas(world2, result.deltas);
+  // Persist last roll for roll-recall gate (H-12/13)
+  if (Number.isFinite(result.roll) && result.roll > 0 && w.conversation) {
+    w = { ...w, conversation: { ...w.conversation, lastRoll: { roll: result.roll, dc: result.dc ?? 0, outcome: String(result.outcome ?? ''), turn: w.timeline.length } } };
+  }
 
   // Pass 4 — narrative memory: append a beat for this mainline resolution turn.
   // Beats are a derived narrator-continuity cache (cap 6, FIFO). They are NOT

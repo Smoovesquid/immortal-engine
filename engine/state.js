@@ -207,7 +207,15 @@ export function ensureWorld(partial) {
         lastOutcome: conv.lastOutcome ? String(conv.lastOutcome) : null,
         lastNarration: conv.lastNarration ? String(conv.lastNarration) : null,
         pendingClarification: conv.pendingClarification ? String(conv.pendingClarification) : null,
-        clarificationAttempts: clampInt(conv.clarificationAttempts ?? 0, 0, 10)
+        clarificationAttempts: clampInt(conv.clarificationAttempts ?? 0, 0, 10),
+        // Roll-recall: last resolved roll (H-12/13). Null on new worlds. Not
+        // included in worldHash (conversation is excluded from projectForHash).
+        lastRoll: (conv.lastRoll && typeof conv.lastRoll === 'object') ? {
+          roll: clampInt(conv.lastRoll.roll ?? 0, 0, 100),
+          dc: clampInt(conv.lastRoll.dc ?? 0, 0, 100),
+          outcome: String(conv.lastRoll.outcome ?? ''),
+          turn: clampInt(conv.lastRoll.turn ?? 0, 0, 999999)
+        } : null
       };
     })(),
 

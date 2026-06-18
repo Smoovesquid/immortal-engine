@@ -209,3 +209,5 @@ other agents. (none active)
   - Determinism gates U19/21/22/27/30 green
 - Remaining/next: H-11 (RAG wrong-scene) — next in queue, same worker. Note: one collision found while testing — "admit it, you saw what happened" trips the `gracefulAdjudication.js` recap gate ("Nothing's happened yet…") on "what happened", which is off-limits this packet; test uses a recap-free pressure phrase instead.
 - Rollback: revert commit `5fb2da5`
+
+[CLAIMED] H-11 RAG-wrong-scene · Claude Opus · 2026-06-18T23:20Z · files: engine/playloop.js

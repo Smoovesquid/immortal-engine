@@ -82,3 +82,18 @@ cross-agent continuity: what changed, what proved it, and what remains.
 - Remaining Rung 1 seams:
   - H-6 lethal grab/neck-snap intent routing to grapple clinch
 - Rollback: revert commit `caae8a5`
+
+## 2026-06-18 — Codex
+
+- Packet/seam: Rung 1 / H-6 lethal neck-snap intent routed to ordinary grapple
+- Commit: `056e249`
+- Files changed:
+  - `engine/combat/grapple.js`
+  - `tests/U151.grapple.test.js`
+- Summary: Added a classification boundary so lethal head/neck twist-snap language no longer returns ordinary "grapple" from parseGrappleVerb(). This does not implement neck-snap mechanics, instant kill, HP damage, or a new "lethal" action.
+- Proof:
+  - `node --test tests/U151.grapple.test.js tests/U152.grappleIntegration.test.js`
+- Remaining Rung 1 seams:
+  - Run the Opus/Rung 1 gate again to discover any remaining live-output failures.
+  - Decide later, in a separate design packet, how lethal close-quarters intent should resolve mechanically.
+- Rollback: revert commit `056e249`

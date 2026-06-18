@@ -3,6 +3,14 @@
 Compact append-only log of meaningful agent-made changes. Use this to preserve
 cross-agent continuity: what changed, what proved it, and what remains.
 
+**Coordination: read [`AGENT_PROTOCOL.md`](AGENT_PROTOCOL.md) before touching code.** One queue
+(Claude/Basecamp owns it), one packet in flight, claim-before-code.
+
+## CLAIMS (in-flight work — claim here BEFORE editing, clear when done)
+
+`[CLAIMED] <seam> · <agent> · <UTC> · files: <paths>` — a claimed seam or file is off-limits to
+other agents. (none active)
+
 ## Template
 
 - Date:

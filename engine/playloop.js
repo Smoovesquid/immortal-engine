@@ -5292,9 +5292,17 @@ function detectPhysicalAssault(world, text) {
     const npc = hit(m[1]); if (npc) return { npc };
   }
   // B — forced into harm: shove/throw/etc. <person> into|onto|against|through|over <x>.
-  if (!/\b(?:past|aside|away)\b/i.test(t)
-      && (m = t.match(/\b(?:shove|push|throw|hurl|fling|toss|slam|ram|drag|haul|sling|hoist|launch|propel|bash)\s+(.+?)\s+(?:in\s*to|into|onto|against|through|over)\b/i))) {
-    const npc = hit(m[1]); if (npc) return { npc };
+  // Split on conjunctions so "shove past Senna AND hurl her into the wall" resolves
+  // the second clause independently. Per-clause guard: skip when the person ref
+  // starts with past/aside/away (non-violent passing through), as before.
+  {
+    const B_VERB = /\b(?:shove|push|throw|hurl|fling|toss|slam|ram|drag|haul|sling|hoist|launch|propel|bash)\s+(.+?)\s+(?:in\s*to|into|onto|against|through|over)\b/i;
+    for (const clause of t.split(/\s+(?:and|but|then)\s+/i)) {
+      const cm = clause.match(B_VERB);
+      if (!cm) continue;
+      if (/^(?:past|aside|away)\s/i.test(cm[1])) continue;
+      const npc = hit(cm[1]); if (npc) return { npc };
+    }
   }
   // C — a blade brought TO the body (threat/assault), not handed over.
   if (/\b(?:dagger|knife|blade|sword|point|edge|axe|hatchet|spear|cleaver|shiv|dirk|machete)\b/i.test(t)

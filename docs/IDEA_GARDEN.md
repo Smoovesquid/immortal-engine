@@ -255,3 +255,31 @@ instrument toward an *attractor*; let distance + rumor do the attenuating.
 **echoes:** meta-story · the story I was trying to tell · emergent narrative · how to create
 good · the light touch · divine hiddenness · feel but never grasp · can't put it together ·
 scale/distance from cosmology · NPCs don't see the cosmology · asymptote · texture of existence
+
+## IG-10 — The DM declines out-of-bounds input (a real DM won't run nonsense)
+**2026-06-18 · rung 1 + meta (refines THE_DM_TEST) · status: raw**
+
+Tim: *"A DM isn't going to accept any input. If I tell my DM 'I jump into the sun and fart out an
+Irish jig,' he's just gonna look at me like — what are you doing? We're trying to play a game
+here. That's a kind of gate, right?"*
+
+Right — and it's a **faithful application of THE_DM_TEST, not an exception to it.** "Do what a
+real DM would do" already *includes declining*: a good DM redirects absurd / non-serious input
+in-character ("...that's not a thing you can do — what are you actually going for?"). The crucial
+line: the decline must stay in the **social/DM frame** (good), never become a **system-artifact
+bounce** ("travel one tile at a time — which way?" — bad). Both refuse the literal intent; only
+one *feels* like a DM. So the doctrine sharpens from "always resolve in the fiction" to "do what a
+real DM would — which is *usually* resolve, *sometimes* decline-in-character."
+
+**The hard part — why this is NOT a regex:** the threshold fights the "do anything" promise. Too
+tight and you decline *creativity* (befriend the dragon, daggers as pitons, talk to the corpse) —
+the whole magic of open play. Too loose and the DM dutifully rolls dice for nonsense — immersion
+shatters. Drawing that line is **judgment**, so it's LLM-intent-arbiter (Tier B) work, sibling to
+the existing `isNullAction`/clarify routes in the grace layer — not a pattern match.
+
+**Scoring implication (matters for the Opus gate):** a graceful in-character decline of nonsense =
+**PASS**, not a failure. The judge must credit it, or it'll punish correct DM behavior.
+
+**echoes:** jump into the sun · absurd input · troll the DM · what are you doing · out of bounds ·
+decline the input · boundary test · that's not a thing you can do · non-serious input · breaking
+the game · the DM won't run nonsense

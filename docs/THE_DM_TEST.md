@@ -26,6 +26,10 @@ Would a real DM say or do this? If the answer is no, it's wrong — no matter ho
 - "examine the throne" (none here) → "There's no throne, but your eye catches the…"
   (a DM redirects within the fiction).
 - "am I hurt?" → an honest, in-voice read of how they feel, not a number dump.
+- "I jump into the sun and fart out an Irish jig" → "…that's not a thing you can do here —
+  what are you actually after?" A DM **declines absurd / non-serious input in-character** (a DM
+  move, *not* a parser bounce). Usually resolve intent; sometimes decline like a DM — but never
+  decline *creativity*: "befriend the dragon" or "climb with my daggers as pitons" still gets honored.
 
 ## What this subordinates
 The overworld tile/cardinal/node model, the local place-walk, the structure interior

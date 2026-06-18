@@ -695,6 +695,10 @@ export function parseEscapeAction(text) {
   // "out of fire, I draw my blade"). Fire Bolt fires ONLY on explicit cast
   // intent. Commit 319d23b prior art; extended 2026-06-18 Rung-1 gate.
   if (/\b(fire\s*bolt|firebolt|bolt|ignite|blast|mock|cast|cantrip)\b/.test(t)) return { verb: 'firebolt' };
+  // Unarmed / natural-weapon strikes — headbutt, bite, stomp, knee, elbow,
+  // kick (as attack on a creature), punch. These must NOT resolve as the
+  // equipped weapon; see unarmedProfile(). (H-3/4/5/6 class-a, 2026-06-18.)
+  if (/\b(headbutt|head[\s-]butt|bite|bites|biting|bite\s+(?:at|into)|gnaw|gnaws|stomp|stomps|stomping|knee\s+(?:him|her|them|it|the)|elbow|elbows|punch|punches|pummel|pummels|kick\s+(?:him|her|them|it|the)|claw|claws|scratch)\b/.test(t)) return { verb: 'unarmed' };
   // strike verbs (and the default)
   return { verb: 'strike' };
 }
@@ -1606,7 +1610,7 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
   // martial whose "cast" resolved as a weapon attack follows the weapon:
   // melee breaks cover, a bow does not.
   const attackedInMelee = coverState && targetIdx >= 0
-    && (['strike', 'surge', 'reckless', 'smite'].includes(verb) || (verb === 'firebolt' && !cantripProfile(pc)))
+    && (['strike', 'surge', 'reckless', 'smite', 'unarmed'].includes(verb) || (verb === 'firebolt' && !cantripProfile(pc)))
     && !meleeProfile(pc).ranged;
   if (attackedInMelee) {
     beats.push('You break from cover to strike.');

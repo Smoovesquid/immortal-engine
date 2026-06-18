@@ -747,6 +747,11 @@ export function combatStatusAnswer(world) {
 
   const hp = Number(w.meta?.escapeHp) || 0;
   const maxHp = Number(w.meta?.escapeMaxHp) || playerMaxHp(pc);
+  // Dying state — must be stated explicitly so the LLM narrator cannot
+  // interpret the status as ambiguous and generate an un-applied rescue.
+  if (hp <= 0) {
+    return `You are at 0 HP — down and dying. You cannot act. Only healing or stabilization can pull you back; without it, this is the end.`;
+  }
   const you = `You're at ${hp} of ${maxHp} HP${(w.meta?.escapeFeats?.tempHp || 0) > 0 ? ` (+${w.meta.escapeFeats.tempHp} of ice)` : ''}.`;
 
   const kit = escapeKitView(pc);
@@ -959,6 +964,30 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
     else if (knownSlotSpell(pc, 'magic_missile') && lowestSlot(pc) > 0) verb = 'missile';
     else if (hasFeature(pc, 'recklessAttack') && !m.ranged) verb = 'reckless';
     else verb = 'strike';
+  }
+
+  // ── Dying gate: 0-HP PC cannot take normal actions ──────────────────────────
+  // A rescue/stabilize intent applies 1 HP (minimum stabilize) and ends the
+  // player turn. Any other action at 0 HP is blocked — the PC is down/dying.
+  // Self-healing verbs (cure/potion/layhands) bypass this gate so a paladin
+  // or cleric can attempt a last-resort heal. (Rung-1 gate 2026-06-18.)
+  const pcHpNow = Number(w.meta?.escapeHp) || 0;
+  if (pcHpNow <= 0 && verb !== 'cure' && verb !== 'potion' && verb !== 'layhands') {
+    const RESCUE_RE = /\b(?:healed?|stabil[iu]z(?:ed?)?|cured?|revived?|rescue(?:d)?|drag(?:ged)?\s+(?:\w+\s+)?(?:me|out)|pull(?:ed)?\s+(?:\w+\s+)?(?:me|out)|saved?\s+me)\b/i;
+    if (RESCUE_RE.test(String(actionText || ''))) {
+      w = { ...w, meta: { ...w.meta, escapeHp: 1 } };
+      beats.push("You're pulled back — 1 HP. Stabilized.");
+      actionMech = '[heal:stabilize | hp:0→1]';
+    } else {
+      beats.push('You are at 0 HP — down and dying. You cannot act. Healing or stabilization is the only way back.');
+      actionMech = '[combat:dying | no-action]';
+    }
+    w = { ...w, meta: { ...w.meta, escapeFeats: { ...feats } } };
+    w = applyDeltas(w, [{ op: 'combatState', set: { round: round + 1, turnIndex: 0 } }]);
+    return {
+      world: w,
+      result: { beats, combatSummary: beats.join(' '), mechanicsLine: actionMech, outcome: 'failure' }
+    };
   }
 
   // ── Player turn ────────────────────────────────────────────────────────────

@@ -5476,7 +5476,7 @@ function fuzzyMatchNpc(npcs, ref) {
   //     Catches adjective-qualified refs ("the nearest figure", "the lone man")
   //     and combat words ("the enemy", "the foe", "the attacker") that the exact
   //     descriptor set in step 3 misses. Role-specific refs already resolved above.
-  const GENERIC_WORD = /\b(woman|man|men|women|person|people|stranger|someone|anyone|everyone|them|her|him|his|its|lady|guy|fellow|figure|figures|villager|townsperson|townsfolk|civilian|bystander|enemy|enemies|foe|foes|attacker|assailant|creature|beast|monster|thing|shape|shadow)\b/;
+  const GENERIC_WORD = /\b(woman|man|men|women|person|people|stranger|someone|anyone|everyone|them|her|him|his|its|their|lady|guy|fellow|figure|figures|villager|townsperson|townsfolk|civilian|bystander|enemy|enemies|foe|foes|attacker|assailant|creature|beast|monster|thing|shape|shadow)\b/;
   if (GENERIC_WORD.test(refLower)) return npcs[0];
 
   // 5. Last resort: if ref is a single common word that could describe

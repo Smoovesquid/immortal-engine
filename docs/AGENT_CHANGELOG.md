@@ -429,4 +429,23 @@ other agents. (none active)
 - Remaining/next: **STOPPED per queue plan.** The second half — `engine/llmAdapter.js` narration-validation hardening (reject "standing in/inside/at <wrong node>") — is a SEPARATE, larger commit and was deliberately NOT started. The live wrong-scene text ("Stonebridge's sole structure") is an LLM-polish artifact not reproducible in deterministic `node --test` (and the gate bills the `.env` key, which a worker must not spend, protocol §4). Basecamp to decide whether the classifier fix alone closes H-11 on the next owner-run gate, or whether to authorize the llmAdapter hardening.
 - Rollback: revert commit `bdb3287`
 
-[CLAIMED] H-35 coin-query + R3 follow-ons · Claude Sonnet · 2026-06-19T09:12:27Z · files: engine/grace/gracefulAdjudication.js, engine/playloop.js
+## 2026-06-19 — Claude Sonnet
+
+- Packet/seam: Rung 1 / H-35 coin-query interceptor + H-31 R3 follow-ons
+- Commit: `c7db26b`
+- Files changed:
+  - `engine/grace/gracefulAdjudication.js` (META_PURSE extension, `answerPurse` helper, weapon-damage/possession-correction folds, `describeLoadout` dedupe)
+  - `engine/playloop.js` (`isNpcAddressedRest` + gate on the out-of-combat `isLongRestIntent` call site)
+  - `tests/U196.coinQueryAndPossessionFollowons.test.js` (new)
+- Summary: Triaged 4 sub-bugs from the post-H-33/H-34 Opus gate (`docs/playtests/opus-gate-2026-06-19-postH33-H34.md`).
+  - **R1** — a `META_PURSE` interceptor already existed (probably from an earlier batch) but was un-tested and had two gaps: it didn't match "do I even have any money on me?" / "pouch of coin" phrasings, and a compound damage+coin ask ("how much coin... and what's the damage die") dropped the coin half the same way the Armor-value compound case used to (H-31 R2). Extended the regex, added an `answerPurse(world)` helper that reuses `purseTotalCopper`/`formatPrice` from `economy/shop.js` (so the DM's count can't drift from the shop's), and folded it into the weapon-damage compound branch.
+  - **R2** — `findBogusPossessionClaim`'s correction dropped a coin claim/ask in the same breath as a bogus gear claim. Added a `COIN_CLAIM_RE` (re-asserted amounts like "three copper", distinct from the question-shaped `META_PURSE`) and appended `answerPurse(world)` to the correction when either pattern matches.
+  - **R3** — `describeLoadout` listed a signature item twice when it was also an equipped weapon/armor piece (substring-matched case-insensitively against the rendered weapons/armor lists; skip the signature line when it's already named).
+  - **R4** — `isLongRestIntent`'s unanchored `\bsleep\b` resolved a direct NPC-addressed historical question ("Kael, elder — ... Whose roof did I sleep under last night?") as an actual long rest. Added `isNpcAddressedRest` (same shape as H-34 R1's `npcAddressedRecap` — requires `socialTarget` to resolve to a real present NPC AND that NPC's name/role to literally appear in the text) and gated the out-of-combat call site (`playloop.js:583`). Left the mid-combat call site (`playloop.js` inside the `w.combat?.active` block, ~line 1803) unguarded per the prompt's own instruction to read context first — it's already narrow (only reachable mid-fight, where "not while something is trying to kill you" is correct regardless of NPC framing) and touching it would brush up against the forbidden combat-dispatch area.
+- Proof:
+  - `node --test tests/U196.coinQueryAndPossessionFollowons.test.js` — 11/11 (4 R1 + 3 R2 + 2 R3 + 2 R4, each with a false-positive guard)
+  - Full suite: `node --test` — 8048/0
+  - Determinism gates U19/21/22/27/30 — 6/6 green
+  - Live repro check (all 5 exact gate phrasings re-run through `handleMetaQuestion`/`playerMove` directly): all dead-ends/drops/duplicates gone — see commit message for details.
+- Remaining/next: none for this packet.
+- Rollback: revert commit `c7db26b`

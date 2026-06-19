@@ -9,9 +9,7 @@ cross-agent continuity: what changed, what proved it, and what remains.
 ## CLAIMS (in-flight work — claim here BEFORE editing, clear when done)
 
 `[CLAIMED] <seam> · <agent> · <UTC> · files: <paths>` — a claimed seam or file is off-limits to
-other agents.
-
-[CLAIMED] H-39 deliver-or-decline by recall · Claude-Sonnet · 2026-06-19T14:54:48Z · files: engine/grace/gracefulAdjudication.js, engine/playloop.js, tests/U202.deliverOrDeclineRecall.test.js
+other agents. (none active)
 
 ## Template
 
@@ -27,6 +25,75 @@ other agents.
 - Remaining:
   - 
 - Rollback:
+
+---
+
+2026-06-19T15:40:00Z — Claude-Sonnet
+- Packet/seam: Rung 1 / H-39 deliver-or-decline by recall, not enumeration (grace lane)
+- Commit(s): 05f24aa
+- Files changed: `engine/grace/gracefulAdjudication.js`, `engine/playloop.js`, `tests/U202.deliverOrDeclineRecall.test.js` (new)
+- Summary:
+  - **(i) recall-bias `isInfoSeekingText`** — added `INFO_SEEKING_TOPIC_RE`, a knowledge-VERB-phrase
+    net ("tell me about X", "what do you know about X", "what happened/became to/of X", "what's the
+    story behind/of/with X") anchored to the verb phrase rather than a noun, so it generalizes to ANY
+    topic that follows instead of needing a per-noun allowlist entry — the structural fix for the
+    H-35→H-38a whack-a-mole. Considered (and rejected) the literally-broader `isQuestionShaped(t) &&
+    !actionExclude(t)` design the dispatch suggested: traced it against the full suite first and found
+    it collides with `isExploreIntent`'s own "what do I see"/"is there a window" survey branches
+    (playloop.js ~L4347-4354, which already defer to `isInfoSeekingText` — broadening it further would
+    have silently broken U197-06's genuine-room-survey guard). The narrower verb-phrase net gets the
+    same generalization benefit for the fact/lore/history class without that collision. Extended
+    `INFO_SEEKING_EXCLUDE_RE` with `isExploreIntent`'s own action-verb vocabulary (climb/jump/leap/
+    vault/pick/force/break/try/attempt/sneak/steal/track/forage/decipher/calm) so feasibility asks
+    ("can I climb this wall?") keep rolling as actions. **Unplanned third collision found and fixed**:
+    `META_RECAP`'s unanchored "what happened" (playloop.js's out-of-combat/out-of-dialogue meta-gate,
+    ~L756-783) was swallowing third-party historical questions that name no NPC at all ("what happened
+    to the people who used to live here?" → "Nothing's happened yet") — a different proximate cause
+    than the two the dispatch named (`isUngroundedInfoCheck`/`infoExtractionOutcome`), caught only by
+    live-probing the exact MUST-MATCH phrase against `playerMove` before writing the test. Fixed by
+    extending the existing `npcAddressedRecap` bypass (originally H-34 R1, NPC-named-in-text only) with
+    an `isInfoSeekingText(text)` OR-branch — same deferral the explicitly-named-NPC case already gets.
+    U195's R1 false-positive guard (a genuine "what happened? what did I just do?" recap with no
+    knowledge-verb anchor) is unaffected and still passes.
+  - **(ii) `genericGroundedOutcome` safety net** — extracted the no-grounding decline block out of
+    `infoExtractionOutcome` into a shared `declineInfoSeek(world, text, npc)` helper (identical
+    phrasing/escalation-tier behavior, zero behavior change there). `genericGroundedOutcome` (now
+    exported for testing) checks `isInfoSeekingText` first and always declines via the same helper
+    instead of falling to gen:s/gen:m/gen:f — traced that on TODAY's call graph this is reachable only
+    on a FAILURE outcome for info-seeking text (success/mixed/no-info are already fully handled by
+    `infoExtractionOutcome` earlier in the caller's `grounded ||` chain, confirmed by direct trace, so
+    those two branches are not currently dead code paths reachable from there) — verified live via
+    `node -e` probes before and after. The net never attempts delivery even when grounded (a failed
+    roll shouldn't hand over the fact); its purpose is explicitly belt-and-suspenders against a FUTURE
+    detector miss per the dispatch.
+  - **(iii) `META_ADVICE` confident stance** — the no-talk-verb branch's "That one's yours to call —
+    ... Go with your gut." replaced with a real-state-derived stance: hostile NPCs at the current node,
+    open `world.ledger.threats`, or a grim/blood `fateBand(world.meta.fate)` tone all read as danger
+    ("Yes — keep your eyes open; nothing out here is friendly by default."); none of those present
+    reads as calm ("You're alright for the moment — nothing here's looking to move on you."). Reads
+    real state, invents nothing. The existing "should I talk to them" branch (names present NPCs) is
+    untouched.
+  - Deliberately did NOT touch `engine/llmAdapter.js` or any `engine/combat/*` file. Deliberately did
+    NOT adopt the dispatch's literal `isQuestionShaped`-as-base-net suggestion (see (i) above — traced
+    and found a real collision, used a narrower mechanism that achieves the same recall-over-enumeration
+    goal for the targeted class without it). No `WORLD_VERSION` bump, no new persisted field, no
+    `Math.random`/`Date.now`, no new `applyDeltas` call site (narration/routing-only).
+- Proof:
+  - `node --test tests/U202.deliverOrDeclineRecall.test.js` — 25/25 (written FIRST and confirmed
+    failing 14-15/25 against pre-fix code, including a self-caught gap in the test's own atmosphere-bank
+    regex — see test file header)
+  - Full suite: `node --test` — 8135/0 (baseline 8110 + 25 new, zero regressions, zero rewritten
+    pre-existing tests needed)
+  - Determinism gates `node --test tests/U19.worldHashDeterminism.test.js tests/U21.replayGateN50.test.js tests/U22.longRunStabilityN100T500.test.js tests/U27.worldHashSurfaceContract.test.js tests/U30.gate6.sequelDeterminism.test.js` — 6/6
+  - Grep diff for `engine/combat/*` and `engine/llmAdapter.js` — both empty (0 lines); grep for
+    `Math.random`/`Date.now`/`WORLD_VERSION`/`applyDeltas` in the diff — empty
+  - `git diff --stat`: exactly the two engine files + the new test file, nothing else
+- Remaining/next: queue owner should run a post-H-39 Opus gate to confirm the `DM_TEST_DEADEND` tail
+  collapses regardless of phrasing (per the dispatch note in `docs/RUNG1_QUEUE.md`). Worth a sweep if a
+  future gate finds a fourth/fifth knowledge-verb-phrase shape `INFO_SEEKING_TOPIC_RE` doesn't cover —
+  the net is generalized for "tell me about X"/"what happened to X"-style phrasing specifically, not
+  literally every possible fact-seeking phrasing.
+- Rollback: revert 05f24aa
 
 ---
 

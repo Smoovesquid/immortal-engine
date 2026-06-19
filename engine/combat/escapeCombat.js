@@ -237,6 +237,43 @@ function naturalStrikeProfile(text, base) {
   return label ? { ...base, name: label } : base;
 }
 
+function isImprovisedStrikeText(text) {
+  const t = String(text || '').toLowerCase();
+  if (!/\b(grab|snatch|smash|shatter|break|slam|bash|kick|boot|throw|hurl|fling|toss|lob|shove|wedge|tip|dump|splash|pour|swing)\b/.test(t)) return false;
+  return /\b(oil|burning|lantern|lamp|torch|flame|fire|chair|stool|table|bottle|mug|rock|stone|beam|plank|board|door|window|shutter|hinge|wall|floor|ceiling|roof)\b/.test(t);
+}
+
+function improvisedStrikeProfile(text, base, pc) {
+  const t = String(text || '').toLowerCase();
+  if (!isImprovisedStrikeText(t)) return base;
+  const label =
+    /\b(oil|burning)\b/.test(t) ? 'Burning Oil' :
+    /\b(lantern|lamp)\b/.test(t) ? 'Lantern' :
+    /\b(torch|flame|fire)\b/.test(t) ? 'Flame' :
+    /\b(chair|stool)\b/.test(t) ? 'Chair' :
+    /\b(table)\b/.test(t) ? 'Table' :
+    /\b(bottle|mug)\b/.test(t) ? 'Bottle' :
+    /\b(rock|stone)\b/.test(t) ? 'Stone' :
+    /\b(beam|plank|board)\b/.test(t) ? 'Timber' :
+    /\b(door|window|shutter|hinge)\b/.test(t) ? 'Fixture' :
+    /\b(wall|floor|ceiling|roof)\b/.test(t) ? 'Room Hazard' :
+    null;
+  if (!label) return base;
+
+  const d = pc?.dnd;
+  const might = d ? (Number(d.mods?.STR) || 0) : statMod(pc?.stats?.MIGHT ?? 10);
+  return {
+    ...base,
+    name: `Improvised ${label}`,
+    die: 4,
+    atkBonus: might,
+    dmgMod: might,
+    ranged: /\b(throw|hurl|fling|toss|lob)\b/.test(t),
+    finesse: false,
+    twoHanded: false
+  };
+}
+
 /**
  * cantripProfile(pc) -> { ref, name, die, type, verb, atkBonus } | null
  * The PC's attack cantrip. 5e sheet: the class cantrip with the sheet's spell
@@ -949,7 +986,7 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
   let verb = rawVerb;
   // Martial grapple intents only override the 'strike' DEFAULT — never a spell,
   // parley, cover, or ward verb. (Grapple slice, 2026-06-15.)
-  if (verb === 'strike') {
+  if (verb === 'strike' && !isImprovisedStrikeText(actionText)) {
     const gv = parseGrappleVerb(actionText);
     if (gv) verb = gv;
   }
@@ -1475,7 +1512,7 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
       }
     } else {
       // weapon strike (default — also where a cantrip-less martial's "cast" lands)
-      const melee = naturalStrikeProfile(actionText, meleeProfile(pc));
+      const melee = improvisedStrikeProfile(actionText, naturalStrikeProfile(actionText, meleeProfile(pc)), pc);
       const style = pc?.dnd?.fightingStyle || null;
       // Archery: +2 to ranged attack rolls (fighter style at 1, ranger at 2).
       // Dueling: +2 damage with a one-handed melee weapon.
@@ -1969,7 +2006,7 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
     result: {
       beats,
       combatSummary: beats.join(' '),
-      mechanicsLine: actionMech || `[combat:r${round}]`,
+      mechanicsLine: actionMech || `[combat:r${Number(w.combat?.round) || round + 1}]`,
       outcome: 'mixed'
     }
   };

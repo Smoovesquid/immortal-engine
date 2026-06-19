@@ -181,27 +181,40 @@ resolve a real present NPC before anything fires, so it can't start combat again
 `AGENT_CHANGELOG.md` per protocol §3 — Basecamp backfilled both entries post-hoc from the commits +
 self-reports.
 
-## In flight — H-40 (grace) ∥ H-41 (combat), dispatched 2026-06-19, declared FILE-DISJOINT (parallel OK per §2)
-Tim greenlit both. As queue owner I scoped them to NOT collide: **H-40 = `engine/grace/gracefulAdjudication.js`
-ONLY** (+ `tests/U203`); **H-41 = `engine/playloop.js` + `engine/combat/escapeCombat.js`** (+ `tests/U204`).
-Disjoint file sets → parallel is legal (§2); each prompt carries a HALT-if-you-need-the-other's-file guard
-and a distinct test number so the U200/U201-style collision from the H-38 round can't recur.
-- **H-40 "number-transparency" (Claude-Sonnet, grace)** — the post-H-39 dominant cluster (4/7). A meta-query
-  for the player's own stat/modifier/roll must answer the NUMBER plainly, never a spreadsheet: (i) kill the
-  raw breakpoint-TABLE leak at `gracefulAdjudication.js:759` (return the player's actual modifier instead);
-  (ii) compound "stats AND weapons/gear" answers BOTH slots (t2 dropped stats); (iii) "give me my numbers —
-  STR/DEX + attack bonus" returns full scores + final attack bonus, not a half rules-lecture (t3). Pure
-  grace; NO RNG (purity rule — no rolling in the meta-handler). If it needs `playloop.js`, STOP (H-41 owns it).
-- **H-41 "0-HP dying-state out of combat" (Codex, combat)** — Chaos t9: PC at 0 HP, foe present (Corwin hp 5),
-  `inCombat:false`, attack fizzled with NO dice/no dying-state — `outOfCombatDyingGate` (`playloop.js:5619`,
-  called L531) did not fire. Likely an HP-field desync (sheet hp vs `meta.escapeHp`), same family as H-38b's
-  enemy-HP desync — trace which hp the gate reads vs the real post-combat PC hp. Codex can't push (§7):
-  commit locally, report the hash, queue owner pushes after verification. If it needs
-  `gracefulAdjudication.js`, STOP (H-40 owns it).
-On results: verify each per §7 (full suite, determinism U19/21/22/27/30, lane-boundary diff), then a
-post-H-40/H-41 gate. NOTE the social-physics lens (IG-11): H-40 = the "number-transparency" rule; the
-post-H-39 confrontation residual (Lore-hound t12) = the "react-under-pressure" rule, still open for a later
-grace packet.
+## In flight
+*(none — H-40 + H-41 both DONE, pushed, BASECAMP-verified per §7. Queue clear — good point for a new
+session. Next step is a post-H-40/H-41 gate (~$2.40) to measure; open residuals to watch listed below.)*
+
+## Done — H-40 ∥ H-41 (2026-06-19, parallel, BASECAMP-verified per §7)
+Dispatched file-disjoint, ran clean as a linear stack (H-41 first, H-40 on top). **Lane disjointness HELD
+exactly:** H-40 touched ONLY `gracefulAdjudication.js`; H-41 touched ONLY `playloop.js` (4 lines) — neither
+entered the other's file. Sonnet's push carried Codex's (unpushable, §7) commits since they're ancestors,
+so origin is in sync with no manual push needed. Full suite **8149/0** (= 8135 + 3 U204 + 11 U203, matches
+both reports), determinism U19/21/22/27/30 **6/6**, no `Math.random`/`Date.now`/`WORLD_VERSION` added, H-40
+added no `applyDeltas`, H-41 is a read-only gate-condition fix, both test files net-new (invariant #19 N/A).
+- **H-40 "number-transparency" (Claude-Sonnet, `8b6cad0`; DONE `5b76ac4`):** (i) added `tracking→WITS` to
+  the skill map + extracted a shared `answerSkillModifier` so a "what's my tracking modifier" ask returns a
+  clean computed modifier, NOT the raw breakpoint table; (ii) `answerFullStats` folded into BOTH the
+  inventory and equipment branches so "stats AND weapons" answers both; (iii) real attack bonus via
+  `meleeProfile` (read-only import from `escapeCombat.js`, same source combat reads — can't drift) when a
+  real weapon is named, preserving the old explanation byte-for-byte when none is. `tests/U203` 11/11.
+  Sound deviations: used the REAL Opus-gate transcript phrasing for the compound test instead of the
+  prompt's paraphrase (avoided an unnecessary `META_CHARACTER` regex touch).
+- **H-41 "0-HP dying-state out of combat" (Codex, `b8d3ea9`; DONE `cad74b9`):** root cause —
+  `outOfCombatDyingGate` already read current HP from `meta.escapeHp`, but bailed when `meta.escapeMaxHp`
+  was stale/0, which it is in an SRD-sheet world → a real 0-HP PC fell through to ordinary handling. Fix:
+  fall back to sheet `party[0].dnd.maxHP` for max while keeping `escapeHp` authoritative for current. 4-line
+  read-only change. `tests/U204` 3/3, adjacent combat canaries 22/22, `playtest:quick` 50/0/0.
+
+**Open residuals to watch at the post-H-40/H-41 gate (none blocking):**
+1. **Bare modifier-formula table still exists (low, grace).** H-40 fixed the named-skill path ("tracking
+   modifier"); a no-skill/no-stat-named "what's my modifier" still hits the generic breakpoint-table branch
+   (locked by U172-23, outside H-40's lane). Separate follow-up if a gate flags it.
+2. **"React-under-pressure" residual (the post-H-39 confrontation, Lore-hound t12).** A failed insight
+   roll on a contradiction-challenge still dead-ends in `gen:f` filler instead of an NPC reaction. This is
+   the next social-physics rule (IG-11) — candidate grace packet.
+3. **Low-grade lore-invention** (post-H-39 Lore-hound t3) — DELIVER side of deliver-or-decline occasionally
+   inventing a specific; minority, watch for recurrence.
 
 ## Done — H-39 (2026-06-19, BASECAMP-verified per §7)
 Claude-Sonnet (`05f24aa` fix, `075d46d` DONE, `e5320dd` claim). Deliver-or-decline by recall, not

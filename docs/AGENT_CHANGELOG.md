@@ -11,6 +11,8 @@ cross-agent continuity: what changed, what proved it, and what remains.
 `[CLAIMED] <seam> · <agent> · <UTC> · files: <paths>` — a claimed seam or file is off-limits to
 other agents. (none active)
 
+`[CLAIMED] H-36b combat truth (retaliation/defeat/disengage) · Codex · 2026-06-19T10:20:52Z · files: engine/combat/escapeCombat.js, tests/U198.combatTruthReconciliation.test.js · note: local commit only; queue owner will push`
+
 ## Template
 
 - Date:
@@ -465,4 +467,25 @@ other agents. (none active)
 - **H-36 split PROPOSED, NOT dispatched** (Tim's call): **H-36a (Claude-Sonnet/grace)** = generalize deliver-or-decline (observe-object-detail + quantity/genealogy) + compound slot-completeness + lineage anti-hallucination (clusters 1/2/4, ~8 turns); **H-36b (Codex/combat)** = enemy-retaliation-without-mechanics (traced) + defeat-threshold + disengage/state-bleed (cluster 3, ~4 turns; Codex can't push, §7). File-disjoint → dispatchable in parallel (§2). Road B stays parked.
 - Rung-1 bar: **not met** — ~1 forgivable SOFT (Lore-hound t3 margin-0 tie), the rest real defects across 4 clusters; Rules Lawyer not clean.
 
-[CLAIMED] H-36a deliver-or-decline generalization · Claude-Sonnet · 2026-06-19T10:19:35Z · files: engine/grace/gracefulAdjudication.js, engine/llmAdapter.js, tests/U197.deliverOrDeclineGeneralization.test.js
+## 2026-06-19 — Claude Sonnet
+
+- Packet/seam: Rung 1 / H-36a deliver-or-decline generalization
+- Commit: `8e0cf6e`
+- Files changed:
+  - `engine/grace/gracefulAdjudication.js` (broadened `isInfoSeekingText`; compound HP/name/class fold + new `answerHealth`/`answerClassLine`/`META_CLASS_FOLD_RE`)
+  - `engine/llmAdapter.js` (`findInventedFactClaim` extended with `LINEAGE_PHRASE_RE`)
+  - `engine/playloop.js` (`isExploreIntent` — added an `isInfoSeekingText` exclusion; **see note below**)
+  - `tests/U197.deliverOrDeclineGeneralization.test.js` (new, 16 cases)
+- Summary: Triaged clusters 1/2/4 from the post-H-35 Opus gate (`docs/playtests/opus-gate-2026-06-19-postH35.md`).
+  - **R1** — `isInfoSeekingText`'s `INFO_SEEKING_RE` didn't cover observe-object-detail phrasing ("what's stamped/printed/etched on the coin", "tell me what's on it") or quantity/genealogy phrasing ("how many generations", "who founded"). Added `INFO_SEEKING_OBSERVE_RE` and extended the noun list with `found(?:ed|ing)` (suffix-anchored so it can't false-positive on "found" as past tense of "find") and a `\bhow many generations\b` alt.
+    **Playloop touch, disclosed per prompt instruction**: broadening the detector alone wasn't sufficient. Root-caused that `isExploreIntent` (playloop.js) — a SEPARATE, earlier gate covering the broad `/^(what|how|where|who|describe)\b/` survey branch — was intercepting EVERY interrogative-led info-seeking question (old and new phrasings alike) before the deliver-or-decline contract (`infoExtractionOutcome`/`isUngroundedInfoCheck`) ever got a chance to run. This means the H-22/23/H-29/H-31 deliver-or-decline family was effectively dead code for any info-seeking ask starting with who/what/where/how — only non-interrogative-led asks ("Tell me...", "I press him for...") ever reached it. Added a one-line `isInfoSeekingText` exclusion to `isExploreIntent` (confined strictly to that function — `infoExtractionOutcome`, `isUngroundedInfoCheck`, `lookupGroundedFact`, `genericGroundedOutcome` untouched). This is a materially bigger fix than the prompt scoped (it fixes the contract for ALL info-seeking phrasings, not just the two new ones) — flagging for the queue owner to confirm scope is acceptable.
+    Also found and left alone: `infoPressCount`'s tier escalation is off-by-one on the very first ask (the current turn's own `pushEvent` lands in `world.timeline` before `infoExtractionOutcome` reads it back, so a brand-new ungrounded ask can render as a tier-1 "I already told you" decline instead of tier-0). Confirmed via `git stash` this predates H-36a entirely (reproducible on pre-H-36a code with old-regex-supported phrasings) — out of scope for this packet, noted for a future R.
+  - **R2** — `handleMetaQuestion`'s `META_NAME`, `META_INVENTORY`, and `META_EQUIPMENT`/`META_HELD_ITEMS` branches each returned on first match, dropping HP/class/gear asked in the same breath. Extracted `answerHealth(world)` (lifted verbatim from the old inline `META_HEALTH` body) and `answerClassLine(world)`, added `META_CLASS_FOLD_RE` (narrow — requires "and class/archetype"), and folded them into all three branches.
+  - **R3** — extended `findInventedFactClaim`'s H-31 R4 age-phrase family with `LINEAGE_PHRASE_RE` ("roots deep", "for generations", "generations rather than years", "founding family", "since the founding", "multiple generations"), gated the same way (only fires when absent from grounded base; same negation/hypothetical exemption pattern as Rule 4d's roster-entity guard).
+- Proof:
+  - `node --test tests/U197.deliverOrDeclineGeneralization.test.js` — 16/16
+  - Full suite: `node --test` — 8069/0 (run includes a parallel uncommitted H-36b combat-lane diff in the shared working tree — `engine/combat/escapeCombat.js` + `tests/U191`/`U198` — not part of this commit; isolated this packet's `playloop.js` hunk via `git add -p` so only the `isExploreIntent` change is in `8e0cf6e`)
+  - Determinism gates U19/21/22/27/30 — 106/106 green
+  - No `Math.random`/`Date.now`, no `WORLD_VERSION` bump, no mutation outside `effectsCore.applyDeltas` (this packet adds no new mutation paths — narration/routing only)
+- Remaining/next: `infoPressCount` off-by-one (noted above) — separate small fix, not blocking. Queue owner should confirm the `isExploreIntent` scope expansion is acceptable before next gate run.
+- Rollback: revert commit `8e0cf6e`

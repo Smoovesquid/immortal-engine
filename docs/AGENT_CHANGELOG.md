@@ -9,7 +9,9 @@ cross-agent continuity: what changed, what proved it, and what remains.
 ## CLAIMS (in-flight work — claim here BEFORE editing, clear when done)
 
 `[CLAIMED] <seam> · <agent> · <UTC> · files: <paths>` — a claimed seam or file is off-limits to
-other agents. (none active)
+other agents.
+
+[CLAIMED] H-38b combat HP entity-tracking desync + weapon-label mismatch · Codex · 2026-06-19T13:53:44Z · files: engine/combat/escapeCombat.js (and any sibling file in engine/combat/ the bug actually lives in)
 
 ## Template
 

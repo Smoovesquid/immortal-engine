@@ -182,9 +182,9 @@ resolve a real present NPC before anything fires, so it can't start combat again
 self-reports.
 
 ## In flight
-*(none — H-40, H-41, H-42 all DONE + BASECAMP-verified + pushed. The entire post-H-39 board is cleared.
-Queue clear — good point for a new session. Only remaining step is a post-H-40/H-41/H-42 gate (~$2.40),
-DEFERRED at Tim's instruction; deferred residuals to watch are listed under "Next" + the post-H-39 gate.)*
+*(none — post-H-42 baseline gate is RUN (16/48; see baseline section below). Grace fixes held; the new
+dominant cluster is COMBAT RESOLUTION (combat lane / Codex), not grace. Queue clear — good point for a new
+session. Proposed next batches (combat-resolution + a small grace cleanup) are NOT dispatched — Tim's call.)*
 
 ## Done — H-42 (2026-06-19, BASECAMP-verified per §7)
 Claude-Sonnet (`385c228` fix, `7ae5ae3` DONE). The IG-11 "react under pressure" social-physics rule: a
@@ -265,6 +265,57 @@ H-38a (`e1ff459`/`73cc196`, grace) + H-38b (`1727db9`+docs, combat), both pushed
 Suite 8110/0 (= 8086 + 3 U200 + 21 U201), determinism U19/21/22/27/30 6/6, lane boundaries held (H-38b
 only `engine/combat/*`+`playloop.js`; H-38a only `grace/*`+`playloop.js`; neither touched the other's
 lane or `llmAdapter.js`). No post-H-38 gate was run — superseded by the H-39 dispatch.
+
+## Gate run 2026-06-19 (post-H-42 BASELINE) — `docs/playtests/opus-gate-2026-06-19-postH42-baseline.md` — VERDICT: grace fixes HELD; gate explored fresh COMBAT-RESOLUTION territory → new dominant cluster is combat lane (Codex), not grace
+4 sessions × 12 turns, glass-harbor. Fresh server restarted immediately before the run (prior was ~1min
+stale, predated H-42). **16/48 (33%)**, up from 7/48 (15%) post-H-39 — judged BY NATURE this is NOT a
+regression: the three landed fixes held for their tested scopes, and the jump is the gate probing a harder
+thread it never reached before — the **Rules-Lawyer DECLARED ATTACKS and demanded the dice** (prior runs
+only asked for stats), and Chaos pushed grapples + 0-HP. That surfaced a real combat-lane cluster grinding
+grace never touched. Cost ~$2.52.
+By-class: CRUNCH_INCONSISTENCY 7 · CANON_HALLUCINATION 3 · DM_TEST_DEADEND 3 · DM_ARTIFACT_LEAK 2 · NONE 1.
+Rules Lawyer 7/12 (combat resolution) · Chaos 4/12 (combat crunch) · Lore-hound 2/12 (grounding) · Confused
+newbie 3/12.
+
+**Landed fixes HELD (by target shape):** H-42 — Lore-hound confronted Corwin repeatedly (surname/time/
+"wizard now?"), all resolved in-voice, no `gen:f` confrontation dead-end ✓. H-39 — genealogy/founder/should-I
+passed; one noun-less residual recurred (Confused-newbie t8 "is something going on you're not telling me?" →
+content-free success). H-40 — named-skill path held; the BARE modifier-table recurred (RL t10/t12 "give me
+the d20, my +1 MIGHT, the total" → breakpoint table/UI menu), exactly the deferred U172-locked residual, now
+entangled with combat non-resolution. H-41 — the exact stale-`escapeMaxHp` bug didn't recur, but a DEEPER
+combat-end-state inconsistency surfaced (below).
+
+**NEW DOMINANT CLUSTER — combat resolution (~8/16, COMBAT LANE / Codex):**
+- **Declared attacks don't resolve into real strikes:** RL t8/t10/t11/t12 ("I attack Corwin with my worn
+  blade. Roll it") → wind-up narrated, NO roll, combat stays `table-talk`, enemy undefeated; Chaos t9 (attack
+  dealt no damage, table-talk during active combat). The H-30/H-32 declared-attack→real-combat family
+  recurring under a "resolve it + show me the dice" framing.
+- **Narration exceeds mechanics:** Chaos t6 (solid hit narrated on a retreating foe; HP/defeated never
+  updated).
+- **0-HP / combat-end-state:** Chaos t11/t12 (combat "ends" with enemy alive AND PC at 0 HP; PC recovers
+  without dying-state resolution).
+Root theme: declared combat intent isn't reliably routed into `escapeCombat` resolution when phrased as a
+demand/negotiation, and narration claims outcomes the mechanics never produced. Codex/combat lane.
+
+**Grace residuals (minority — the deferred ones, CONFIRMED, + a few fresh):**
+- Bare modifier-table / UI-menu leak (RL t10/t12) — deferred H-40 residual confirmed; real fix is the
+  combat-resolution above (the player wanted the attack resolved, not the table).
+- NPC misidentification (RL t5: DM called the stranger "Corwin" when canon names the Lingerer) + a social
+  "point at the stranger" request misrouted into combat (RL t6). Grounding/routing.
+- Location contradiction + travel dead-end (Lore-hound t1: "head to the tavern" bounced with a direction
+  prompt + wrong current location) — a THE_DM_TEST movement bounce.
+- Lore-invention (Lore-hound t10, Confused-newbie t10) — deferred lore-invention residual confirmed (2×,
+  low/borderline; judge flagged one as borderline).
+- Goal/aim UI string leak (Confused-newbie t5); noun-less info-question content-free success (Confused-newbie
+  t8, H-39 known residual).
+
+**Rung-1 bar: NOT met** (Rules-Lawyer 7/12, not clean) — but the failures are a FRESH combat-resolution
+cluster, not the grace tail we've been closing (which largely held). **The frontier has shifted: grace →
+combat.** Proposed next (NOT dispatched, Tim's call): a **combat-resolution batch (Codex)** = declared-attack
+→real-strike routing (incl. when phrased "resolve it / show me the roll") + narration≤mechanics +
+0-HP/combat-end-state consistency; and a smaller **grace batch** = bare modifier-table (touch U172),
+NPC-misidentification grounding, travel-bounce, noun-less info-question. Not a Road-A/B fork — all narrow
+routing/state/grounding gaps.
 
 ## Gate run 2026-06-19 (post-H-39) — `docs/playtests/opus-gate-2026-06-19-postH39.md` — VERDICT: H-39 WORKED — info-seeking-lore DM_TEST_DEADEND tail collapsed (9→2); predicted recall residual recurred exactly once; new dominant cluster = Rules-Lawyer "give me my literal numbers" meta-query (grace)
 4 sessions × 12 turns, glass-harbor. Dev server restarted fresh immediately before the run (it was ~71s
@@ -845,21 +896,25 @@ in-fiction "I don't know/won't say," never atmosphere-only) as a more general fi
 individual hallucination shapes. Leaning toward (c) as a cheap next probe before escalating to (b).
 
 ## Next
-**Post-H-39 board FULLY CLEARED (2026-06-19).** The post-H-39 gate (7/48) surfaced 5 grace/combat shapes;
-all addressed + BASECAMP-verified: **H-40** (number-transparency — the dominant 4/7 "give me my numbers"
-cluster: killed the raw modifier-table leak, compound stats+gear, real attack-bonus), **H-41** (0-HP
-dying-state out of combat — stale `escapeMaxHp` made the gate skip itself; now falls back to sheet maxHP),
-**H-42** (react-under-pressure — failed confrontation now gets an NPC reaction, not `gen:f` filler). Suite
-**8172/0**, determinism 6/6, everything pushed + in sync.
-**The ONLY remaining step is ONE gate run** (~$2.40 → ~$11 left) to measure H-40+H-41+H-42 together —
-**DEFERRED at Tim's instruction** (no gate spend this session). What to watch at that gate: (1) the dominant
-numbers cluster is actually dead live (H-40); (2) confrontations now react (H-42); (3) the 0-HP fizzle is
-gone (H-41); plus the deferred residuals that were deliberately NOT pre-fixed (avoiding the enumeration
-trap) — bare modifier-table with no skill named (`U172`-locked), one-off lore-invention, mixed-roll
-confrontation. **Rung-1 bar: closest yet** — at the last gate Confused-newbie was clean and Chaos near-clean;
-if the next gate confirms the numbers cluster collapsed, we are at or near the bar (zero HARD from real
-defects, Rules-Lawyer clean, only rare forgivable SOFT). Restart the dev server fresh before that gate
-(checklist) — the one from this session is stale.
+**Post-H-42 baseline is established (16/48; full breakdown in the baseline gate section below).** The grace
+fixes (H-39/H-40/H-41/H-42) held for their tested scopes; the gate explored fresh COMBAT-RESOLUTION
+territory and the **frontier has shifted from grace → combat**. Next move (proposed, NOT dispatched —
+Tim's call):
+- **Combat-resolution batch (Codex/combat lane)** — the new dominant cluster (~8/16): (1) a declared attack
+  ("I attack X with my blade", incl. when phrased "roll it / show me the dice") must route into a real
+  `escapeCombat` strike with a roll, not stay `table-talk` with the enemy undefeated; (2) narration must not
+  claim a hit/defeat the mechanics never produced (Chaos t6); (3) 0-HP/combat-end-state consistency — combat
+  must not "end" with an enemy still alive while the PC is at 0, and a 0-HP PC can't recover without a
+  resolved dying-state (Chaos t11/t12). Codex per [[feedback_worker_routing]]; can't push (§7).
+- **Small grace cleanup batch (Sonnet)** — the confirmed deferred residuals + a couple fresh: bare
+  modifier-table / UI-menu leak (needs `U172` touch — out of H-40's earlier lane), NPC-misidentification
+  grounding (RL t5), the "head to the tavern" travel-bounce + location contradiction (Lore-hound t1),
+  noun-less info-question content-free success (Confused-newbie t8), goal/aim UI-string leak. Lore-invention
+  recurred 2× (low) — fold the anti-invention guard in too.
+Serialize if both touch `playloop.js`; the combat batch is higher-value (dominant cluster). **Rung-1 bar:
+NOT met** (Rules-Lawyer 7/12 on the fresh combat thread) — but the grace tail we spent the session closing
+largely held; closing the combat cluster is the path to the bar. Restart the dev server fresh before any
+next gate (the session's server was killed after this run).
 
 **Known small follow-up (not yet packeted):** `infoPressCount` off-by-one in `infoExtractionOutcome`
 (playloop.js) — it's called after the current turn's own `resolution` event is already on
@@ -895,9 +950,9 @@ Full per-turn detail in the report file. Catalog these as the next hard-tail pac
 once a worker prompt is drafted. Priority order: CRASH → DM_TEST_DEADEND → CRUNCH_INCONSISTENCY →
 CANON_HALLUCINATION.
 
-## Budget — ~$13.4 remaining
-Tim's API key budget is **$50 total**. ~$15.9 before the post-H-39 gate (~$2.46) → **~$13.4 left**,
-roughly 5 more 4-session gate runs at the current rate. Worker-side fixes (Sonnet/Codex windows) don't
+## Budget — ~$10.9 remaining
+Tim's API key budget is **$50 total**. ~$13.4 before the post-H-42 baseline gate (~$2.52) → **~$10.9 left**,
+roughly 4 more 4-session gate runs at the current rate. Worker-side fixes (Sonnet/Codex windows) don't
 draw this budget — only `scripts/dm-playtest.mjs` runs do.
 
 ## Open strategic question (the arbiter call) — VERDICT: Road A for the routing/state long-tail; HYBRID (deliver-or-decline) for the cluster-D canon-grounding gap; Road B parked w/ sharpened trigger

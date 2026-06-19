@@ -464,3 +464,5 @@ other agents. (none active)
   4. **Canon lineage hallucination (~2, grace lane)** — confident "generations / roots deep" tenure absent from canon (H-31 R4 age-guard family, extended to lineage).
 - **H-36 split PROPOSED, NOT dispatched** (Tim's call): **H-36a (Claude-Sonnet/grace)** = generalize deliver-or-decline (observe-object-detail + quantity/genealogy) + compound slot-completeness + lineage anti-hallucination (clusters 1/2/4, ~8 turns); **H-36b (Codex/combat)** = enemy-retaliation-without-mechanics (traced) + defeat-threshold + disengage/state-bleed (cluster 3, ~4 turns; Codex can't push, §7). File-disjoint → dispatchable in parallel (§2). Road B stays parked.
 - Rung-1 bar: **not met** — ~1 forgivable SOFT (Lore-hound t3 margin-0 tie), the rest real defects across 4 clusters; Rules Lawyer not clean.
+
+[CLAIMED] H-36a deliver-or-decline generalization · Claude-Sonnet · 2026-06-19T10:19:35Z · files: engine/grace/gracefulAdjudication.js, engine/llmAdapter.js, tests/U197.deliverOrDeclineGeneralization.test.js

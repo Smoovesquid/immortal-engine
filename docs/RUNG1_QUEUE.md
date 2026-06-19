@@ -182,14 +182,21 @@ resolve a real present NPC before anything fires, so it can't start combat again
 self-reports.
 
 ## In flight
-*(none — H-38a (`e1ff459`/`73cc196`, grace) AND H-38b (`1727db9`+docs, combat) are both DONE, PUSHED, and
-in sync with origin. BASECAMP certified post-hoc 2026-06-19: full suite 8110/0 (= 8086 + 3 U200 + 21
-U201, corroborating both workers' counts), determinism U19/21/22/27/30 6/6 green, lane boundaries held
-(H-38b touched only `engine/combat/*`+`playloop.js`; H-38a only `grace/*`+`playloop.js`; neither touched
-the other's lane or `llmAdapter.js`). No post-H-38 gate has been run yet. **Before dispatching H-39 or
-spending another gate run, read the design-review VERDICT in "Open strategic question" below — it
-reframes the whole `DM_TEST_DEADEND` whack-a-mole as a detector-RECALL problem, not the per-shape patch
-work H-38a continued. Tim to sanity-check that verdict first.**)*
+**H-39 "deliver-or-decline by recall, not enumeration"** — DISPATCHED to Claude-Sonnet (grace lane)
+2026-06-19; Tim greenlit after the design-review verdict below (and after weighing — then deferring — a
+DM-personality/RAG-voice layer, which is real but a separate axis: it dresses up answers that get
+through, it doesn't stop questions being turned away; sequence it AFTER H-39). Paste-ready prompt handed
+to Tim to relay. Scope: (i) recall-bias `isInfoSeekingText`; (ii) `genericGroundedOutcome` fall-through
+safety net; (iii) `META_ADVICE` confident-stance. Claims `engine/grace/gracefulAdjudication.js` +
+`engine/playloop.js`; worker posts the `[CLAIMED]` lock on start. On result, verify per §7 (full suite,
+determinism U19/21/22/27/30, lane-boundary diff — must NOT touch `llmAdapter.js` or `engine/combat/*`),
+then run a post-H-39 gate to confirm the `DM_TEST_DEADEND` tail collapses regardless of phrasing.
+
+## Done — H-38a/b (2026-06-19, BASECAMP-certified post-hoc)
+H-38a (`e1ff459`/`73cc196`, grace) + H-38b (`1727db9`+docs, combat), both pushed, in sync with origin.
+Suite 8110/0 (= 8086 + 3 U200 + 21 U201), determinism U19/21/22/27/30 6/6, lane boundaries held (H-38b
+only `engine/combat/*`+`playloop.js`; H-38a only `grace/*`+`playloop.js`; neither touched the other's
+lane or `llmAdapter.js`). No post-H-38 gate was run — superseded by the H-39 dispatch.
 
 ## Gate run 2026-06-19 (post-H-37) — `docs/playtests/opus-gate-2026-06-19-postH37.md` — VERDICT: R3 fully held, R4 not directly recurring but a new artifact-leak appeared nearby; R1 and R2 partially held — fix was too narrow, recurred in adjacent shapes the fix didn't reach; new dominant cluster = combat HP/entity-tracking desync (combat lane, out of scope for grace)
 4 sessions × 12 turns, glass-harbor. Dev server restarted fresh immediately before the run (per

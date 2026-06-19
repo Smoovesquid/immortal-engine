@@ -182,7 +182,14 @@ resolve a real present NPC before anything fires, so it can't start combat again
 self-reports.
 
 ## In flight
-*(none — H-37 verified+pushed and gated this session; H-38 proposed below but NOT dispatched, Tim's call.)*
+*(none — H-38a (`e1ff459`/`73cc196`, grace) AND H-38b (`1727db9`+docs, combat) are both DONE, PUSHED, and
+in sync with origin. BASECAMP certified post-hoc 2026-06-19: full suite 8110/0 (= 8086 + 3 U200 + 21
+U201, corroborating both workers' counts), determinism U19/21/22/27/30 6/6 green, lane boundaries held
+(H-38b touched only `engine/combat/*`+`playloop.js`; H-38a only `grace/*`+`playloop.js`; neither touched
+the other's lane or `llmAdapter.js`). No post-H-38 gate has been run yet. **Before dispatching H-39 or
+spending another gate run, read the design-review VERDICT in "Open strategic question" below — it
+reframes the whole `DM_TEST_DEADEND` whack-a-mole as a detector-RECALL problem, not the per-shape patch
+work H-38a continued. Tim to sanity-check that verdict first.**)*
 
 ## Gate run 2026-06-19 (post-H-37) — `docs/playtests/opus-gate-2026-06-19-postH37.md` — VERDICT: R3 fully held, R4 not directly recurring but a new artifact-leak appeared nearby; R1 and R2 partially held — fix was too narrow, recurred in adjacent shapes the fix didn't reach; new dominant cluster = combat HP/entity-tracking desync (combat lane, out of scope for grace)
 4 sessions × 12 turns, glass-harbor. Dev server restarted fresh immediately before the run (per
@@ -802,6 +809,87 @@ the determinism boundary; LLM-off falls back to the deterministic classifier (wo
 the deterministic delta, never LLM output); read-only over canon (may select/ground existing facts +
 decide "no fact → decline", never mints canon); a pre-generation grounding stage layered on top of the
 H-28/H-29 post-hoc validator, not a replacement.
+
+**UPDATE 2026-06-19 (Opus, BASECAMP design review — the "content-free hedge" tail) — VERDICT: the
+judge is correctly calibrated; the recurring `DM_TEST_DEADEND` tail is a DETECTOR-RECALL defect, NOT a
+judge artifact and NOT an LLM-permission gap. Tim's "reframe" insight is real but applies only to a
+minority sub-shape. The higher-leverage fix is structural and still pure Road A — stop widening the
+detector regex shape-by-shape.**
+Investigated the pattern Tim flagged across H-35→H-37: every `DM_TEST_DEADEND` is a content-free hedge
+("it lands, after a fashion" / "that's your call"), and three H-IDs have tried to fix it by requiring
+"deliver real content," yet it recurs. Two hypotheses tested: (H1) the gate JUDGE is miscalibrated —
+under-credits a confident in-voice TRUE *reframe*, so we've been over-fixing fine responses; (H2) the
+DM system prompt is too narrow — only licenses disclosure-or-refusal, never a confident true take.
+Findings, by the brief's five steps:
+1. **Judge is NOT the defect (refutes H1).** `JUDGE_SYSTEM` GATE 1 (`scripts/dm-playtest.mjs:238`)
+   rewards *"did the DM resolve intent IN THE FICTION"* and FAILs only on machine-leaks (UI-prompt
+   bounce, stat-dump, "command not recognized"). A confident in-voice TRUE reframe ("Yes — always;
+   nothing out here is safe") satisfies that and trips none of the FAIL conditions → the judge would
+   PASS it. The rubric does **not** implicitly reward flat fact-disclosure. We have **not** been
+   over-fixing fairly-passing reframes. Only forward-looking gap: the RAG axis ("FAIL if a confident
+   claim has no support in canon") doesn't exempt rhetorical hyperbole / attitude-stances, so IF the
+   engine starts emitting reframes, some could be newly mis-failed as `CANON_HALLUCINATION`. That's a
+   precautionary ~2-line clarification, not the cause of any past failure.
+2. **The hedges are DETERMINISTIC fallback templates, not LLM output.** Traced every quoted string:
+   "It comes off cleanly / You see it through" → `playloop.js:4979` (`genericGroundedOutcome` `gen:s`
+   pool); "It lands, after a fashion" → `playloop.js:4980` (`gen:m`); "That one's yours to call" →
+   `gracefulAdjudication.js:818` (META_ADVICE non-commit). They reach the player verbatim because
+   `tryAiNarration` hands the LLM a content-free base and falls back to that base on any validation
+   miss. So no system-prompt change can touch them — they never carry a fact for the LLM to deliver.
+3. **Root cause = ONE detector chokepoint missing the question — not an under-bucketed contract, not an
+   LLM-permission gap.** The deliver-or-decline contract already exists and already buckets correctly:
+   `infoExtractionOutcome` (`playloop.js:4860`) returns a grounded fact when canon has it, ELSE a
+   genuinely good voiced escalating in-character DECLINE ("Can't say. No record I've ever seen." →
+   "I told you — I don't know." → "Enough."). The whole subsystem is gated behind `isInfoSeekingText`
+   (`playloop.js:4862`; the SAME gate also fronts the pre-roll `isUngroundedInfoCheck` suppression).
+   `isInfoSeekingText` is a precision-tuned ALLOWLIST regex (`gracefulAdjudication.js:360`) enumerating
+   shapes (who/what/when + name/year/owner/family/...). On a MISS the turn (a) rolls a gradeable
+   success (no pre-roll suppression) AND (b) skips deliver-or-decline → falls to the content-free
+   `gen:s`/`gen:m` pool. The comment at `gracefulAdjudication.js:355-359` already names this exact
+   mechanism. Every H-22/23/29/31/35/36a/37/38a "fix" has been ADDING ALTERNATIONS to this allowlist —
+   a recall problem treated as an enumeration problem.
+4. **Cost asymmetry is backwards; judge-noise ≈ 0.** A false NEGATIVE (info question missed) = a HARD
+   `DM_TEST_DEADEND`. A false POSITIVE (non-info caught) = a graceful in-character decline — a mild
+   in-voice non-answer, not a hard fail (combat verbs already excluded). The detector is tuned for
+   PRECISION when the costs demand RECALL. Re-reading the cataloged HARD `DM_TEST_DEADEND` entries
+   across postH35/36/37: ≈0 are judge-calibration noise — they're real content-free hedges, fairly
+   failed. The narrow patches address a REAL problem with the WRONG tool.
+5. **Where Tim's reframe is exactly right — a real THIRD bucket, but minority.** The tail splits:
+   - **A — factual recall, no canon fact** (genealogy/identity/dates; DOMINANT, ~5-6 turns/gate). A
+     confident TRUE reframe is *impossible* (can't truthfully assert the unknown) and a system-prompt
+     license can't help (LLM has no fact, correctly forbidden to invent). Correct answer = the existing
+     voiced decline — it just needs to be REACHED. Fix = recall, not permission.
+   - **B — judgment / "should I"** ("should I be worried about him watching me?" → "that's your call";
+     MINORITY, ~1 turn/gate). Neither a fact nor "I don't know" is right — a real DM commits to a TRUE
+     stance from tone/disposition. THIS is the third bucket Tim named, currently hard-coded as a
+     non-commit (META_ADVICE). Reframe-fixable — as a deterministic stance from the tone/speaker
+     blocks, not a broad system-prompt rewrite.
+
+**VERDICT: a refinement of option (b).** Judge is sound and failures are real, so the narrow-patch
+instinct isn't chasing a phantom — but `isInfoSeekingText` is the wrong thing to keep widening. Next
+move (higher-leverage than H-39/H-40 per-shape; still pure deterministic Road A — no LLM authority, no
+`WORLD_VERSION` bump, narration≠canon untouched, determinism-safe via `pickVariant`):
+- **(i) Flip the detector's precision/recall bias for QUESTION-SHAPED inputs** (gate on the existing
+  `isQuestionShaped` helper): any interrogative seeking info routes to deliver-or-decline; imperatives
+  stay out. Collapses the genealogy/identity tail regardless of phrasing in one change.
+- **(ii) Invert the interrogative fall-through default** in `genericGroundedOutcome`: a question-shaped
+  input reaching the last-resort resolver emits an honest voiced decline, never a success-flavored
+  "it goes your way." Belt-and-suspenders so any future detector miss degrades to a forgivable decline,
+  not a HARD content-free success.
+- **(iii) META_ADVICE / "should-I" stance** (sub-shape B): return a confident TRUE stance from the
+  tone/disposition blocks instead of "yours to call."
+- **(iv) Judge RAG-axis clarification** (precautionary, ~2 lines, standalone — no packet): exempt
+  rhetorical hyperbole / attitude-stances from the literal-grounding check.
+
+Do **NOT** scope the broad DM-system-prompt rewrite the brief floated as the PRIMARY lever — it cannot
+collapse the dominant sub-shape A (the LLM can't invent absent facts; the good decline already exists
+deterministically and just isn't reached). A system-prompt stance-license is at most optional
+reinforcement for sub-shape B, and would then need the narration≠canon guard — the deterministic
+META_ADVICE stance (iii) sidesteps that cleanly.
+
+**Packet PROPOSED, NOT dispatched (Tim's call) — H-39 "deliver-or-decline by recall, not enumeration"**
+(grace/narration lane, Claude-Sonnet): pairs (i)+(ii)+(iii); (iv) is a 2-line judge edit. No gate run
+was spent on this investigation — budget held at ~$15.9. Sanity-check this reasoning before dispatch.
 
 ## Parked (home-base, NOT Rung 1)
 IG-10 absurd-input decline gate; gratuitous-violence consequence ladder; surfacing packets P-82..P-88.

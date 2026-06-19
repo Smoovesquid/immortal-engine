@@ -9,7 +9,9 @@ cross-agent continuity: what changed, what proved it, and what remains.
 ## CLAIMS (in-flight work — claim here BEFORE editing, clear when done)
 
 `[CLAIMED] <seam> · <agent> · <UTC> · files: <paths>` — a claimed seam or file is off-limits to
-other agents. (none active)
+other agents.
+
+`[CLAIMED] H-24 duplicate combat enemy id (CRASH) · Claude Opus · 2026-06-19T01:11Z · files: engine/playloop.js, tests/U188.reinforceEnemyId.test.js`
 
 ## Template
 

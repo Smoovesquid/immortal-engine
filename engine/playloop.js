@@ -750,7 +750,9 @@ function playerMoveCore(world, packsById, text) {
   // META_LOCATION is excluded here — "look around" out of combat already has
   // a dedicated, tested explore-intent handler downstream (the "Exits:" path,
   // U37/U38); this gate would otherwise shadow it with a different format.
-  if (!w.combat?.active && !w.scene?.dialogue && isMetaQuestion(text) && !META_LOCATION.test(String(text || '').toLowerCase())) {
+  const declaredNpcViolence = !w.combat?.active && !w.scene?.dialogue
+    && (detectPhysicalAssault(w, text) || detectAttackBeginIntent(w, text) || detectAttackAnyIntent(w, text));
+  if (!w.combat?.active && !w.scene?.dialogue && isMetaQuestion(text) && !declaredNpcViolence && !META_LOCATION.test(String(text || '').toLowerCase())) {
     const metaAnswer = handleMetaQuestion(text, w);
     if (metaAnswer) {
       return { world: w, output: { narration: `Wizard: ${metaAnswer}`, mechanics: '' } };
@@ -5442,7 +5444,7 @@ function isFleeIntent(text) {
 function isCombatSceneObjectAction(text) {
   const t = String(text || '').toLowerCase();
   if (!/\b(kick|bash|break|smash|slam|force|shove|open|shoulder|boot)\b/.test(t)) return false;
-  return /\b(?:the\s+|a\s+|an\s+)?(?:door|doors|gate|gates|window|windows|shutter|shutters|hinge|hinges|wall|walls|floorboards?|floor|ceiling|roof)\b/.test(t);
+  return /\b(?:the\s+|a\s+|an\s+)?(?:door|doors|gate|gates|window|windows|windowsill|sill|shutter|shutters|hinge|hinges|wall|walls|floorboards?|floor|ceiling|roof)\b/.test(t);
 }
 
 function liveCombatEnemies(world) {
@@ -5465,7 +5467,7 @@ function mentionsLiveCombatFoe(world, text) {
 function isImprovisedCombatAction(world, text) {
   const t = String(text || '').toLowerCase();
   if (!/\b(grab|snatch|smash|shatter|break|slam|bash|kick|boot|throw|hurl|fling|toss|lob|shove|wedge|tip|dump|splash|pour|swing)\b/.test(t)) return false;
-  if (!/\b(lantern|lamp|torch|oil|flames?|fire|burning|chair|stool|table|bottle|mug|rock|stone|candle|crate|barrel|beam|plank|board|door|window|shutter|hinge|wall|floor|ceiling|roof)\b/.test(t)) return false;
+  if (!/\b(lantern|lamp|torch|oil|flames?|fire|burning|chair|stool|table|bottle|mug|rock|stone|candle|crate|barrel|beam|plank|board|door|window|windowsill|sill|shutter|hinge|wall|floor|ceiling|roof)\b/.test(t)) return false;
   if (mentionsLiveCombatFoe(world, t)) return true;
   return /\b(?:at|toward|towards|into|against|onto|on)\b[^.!?]*\b(?:foe|enemy|monster|creature|thing|him|her|them|it)\b/i.test(t);
 }
@@ -5523,7 +5525,7 @@ const DIRECT_ATTACK_VERB = /\b(attack|fight|kill|murder|assault|strike|stab|slas
 const ATTACK_IDIOM = /\b(?:come\s+at|lunge\s+(?:at|for)|set\s+(?:upon|on)|lay\s+into|rush\s+at)\s+(.+)/i;
 // Any violence at all (gate). Broad — recall here is fine because the target
 // must still resolve to a PRESENT NPC below (objects/empty refs → no match).
-const ANY_VIOLENCE = /\b(attack|fight|kill|murder|assault|strike|stab|slash|punch|kick|tackle|charge|bash|club|clobber|whack|brain|throttle|choke|strangle|knife|gut|maim|behead|lunge|headbutt|grapple|shoot|swing|hurl|throw|lob|slam|smash|hit|beat|bite|claw|gnaw|scratch|knee|elbow|stomp|sweep|trip|gore|butt|come\s+at|set\s+(?:upon|on)|lay\s+into|rush\s+at)\b/i;
+const ANY_VIOLENCE = /\b(attack|fight|kill|murder|assault|strike|stab|slash|punch|kick|tackle|charge|bash|club|clobber|whack|brain|throttle|choke|strangle|knife|gut|maim|behead|lunge|headbutt|grapple|shoot|swings?|hurl|throw|lob|slam|smash|hit|beat|bite|claw|gnaw|scratch|knee|elbow|stomp|sweep|trip|gore|butt|come\s+at|set\s+(?:upon|on)|lay\s+into|rush\s+at)\b/i;
 // Unambiguously hostile verbs — only these license matching an NPC named anywhere
 // in the sentence (so "throw a coin to Corwin" can't, but "Corwin, I'll kill you" can).
 const UNAMBIGUOUS_VIOLENCE = /\b(attack|kill|murder|assault|stab|slash|punch|kick|tackle|charge|bash|club|clobber|whack|brain|throttle|choke|strangle|knife|gut|maim|behead|lunge)\b/i;
@@ -5547,6 +5549,10 @@ function detectAttackAnyIntent(world, text) {
   if (direct) refs.push(direct[2]);
   const idiom = t.match(ATTACK_IDIOM);                               // "go for Corwin"
   if (idiom) refs.push(idiom[1]);
+  if (/\b(?:at|against|into|onto|towards?|on)\s+(?:me|my|us|our)\b/i.test(t)
+      && /\b(?:swings?|throws?|hurls?|flings?|tosses?|lobs?|slashes?|stabs?|shoots?|kicks?|punches?|strikes?|attacks?|charges?|tackles?|slams?|smashes?|bashes?|clubs?|chokes?|grapples?)\b/i.test(t)) {
+    refs.push(t);
+  }
   if (UNAMBIGUOUS_VIOLENCE.test(t)) refs.push(t);                    // name anywhere, hostile verb
 
   for (let ref of refs) {

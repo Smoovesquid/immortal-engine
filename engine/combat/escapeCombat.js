@@ -240,7 +240,7 @@ function naturalStrikeProfile(text, base) {
 function isImprovisedStrikeText(text) {
   const t = String(text || '').toLowerCase();
   if (!/\b(grab|snatch|smash|shatter|break|slam|bash|kick|boot|throw|hurl|fling|toss|lob|shove|wedge|tip|dump|splash|pour|swing)\b/.test(t)) return false;
-  return /\b(oil|burning|lantern|lamp|torch|flame|fire|chair|stool|table|bottle|mug|rock|stone|beam|plank|board|door|window|shutter|hinge|wall|floor|ceiling|roof)\b/.test(t);
+  return /\b(oil|burning|lantern|lamp|torch|flame|fire|chair|stool|table|bottle|mug|rock|stone|beam|plank|board|door|window|windowsill|sill|shutter|hinge|wall|floor|ceiling|roof)\b/.test(t);
 }
 
 function improvisedStrikeProfile(text, base, pc) {
@@ -255,7 +255,7 @@ function improvisedStrikeProfile(text, base, pc) {
     /\b(bottle|mug)\b/.test(t) ? 'Bottle' :
     /\b(rock|stone)\b/.test(t) ? 'Stone' :
     /\b(beam|plank|board)\b/.test(t) ? 'Timber' :
-    /\b(door|window|shutter|hinge)\b/.test(t) ? 'Fixture' :
+    /\b(door|window|windowsill|sill|shutter|hinge)\b/.test(t) ? 'Fixture' :
     /\b(wall|floor|ceiling|roof)\b/.test(t) ? 'Room Hazard' :
     null;
   if (!label) return base;
@@ -1467,10 +1467,12 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
       w = applyDeltas(w, [{ op: 'consumeSpellSlot', entityId: pc.id || 'party', level: slotLvl }]);
       warded = true;
       wardBonus = spell.acBonus;
+      actionMech = `[ward:Shield | AC:${playerAc(pc) + wardBonus} | combat:r${round + 1}]`;
       beats.push(`An invisible plane of force snaps into being — Shield (+${spell.acBonus} AC until your next turn).`);
     } else {
       warded = true;
       wardBonus = WARD_AC_BONUS;
+      actionMech = `[ward | AC:${playerAc(pc) + wardBonus} | combat:r${round + 1}]`;
       beats.push(isCaster(pc)
         ? `You raise a ward — a shimmer of force hardens the air around you (+${WARD_AC_BONUS} AC).`
         : `You set your feet and raise your guard (+${WARD_AC_BONUS} AC).`);
@@ -1729,7 +1731,7 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
       result: {
         beats,
         combatSummary: beats.join(' '),
-        mechanicsLine: '[combat:victory]',
+        mechanicsLine: actionMech ? `${actionMech} [combat:victory]` : '[combat:victory]',
         outcome: 'success'
       }
     };

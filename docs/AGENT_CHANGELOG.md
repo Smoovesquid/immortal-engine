@@ -18,7 +18,9 @@ cross-agent continuity: what changed, what proved it, and what remains.
 ## CLAIMS (in-flight work — claim here BEFORE editing, clear when done)
 
 `[CLAIMED] <seam> · <agent> · <UTC> · files: <paths>` — a claimed seam or file is off-limits to
-other agents. (none active)
+other agents.
+
+[CLAIMED] H-40 number-transparency · Claude-Sonnet · 2026-06-19T19:58:55Z · files: engine/grace/gracefulAdjudication.js, tests/U203.numberTransparency.test.js
 
 ## Template
 

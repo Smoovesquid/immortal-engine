@@ -428,3 +428,5 @@ other agents. (none active)
   - Determinism gates U19/21/22/27/30 green
 - Remaining/next: **STOPPED per queue plan.** The second half — `engine/llmAdapter.js` narration-validation hardening (reject "standing in/inside/at <wrong node>") — is a SEPARATE, larger commit and was deliberately NOT started. The live wrong-scene text ("Stonebridge's sole structure") is an LLM-polish artifact not reproducible in deterministic `node --test` (and the gate bills the `.env` key, which a worker must not spend, protocol §4). Basecamp to decide whether the classifier fix alone closes H-11 on the next owner-run gate, or whether to authorize the llmAdapter hardening.
 - Rollback: revert commit `bdb3287`
+
+[CLAIMED] H-35 coin-query + R3 follow-ons · Claude Sonnet · 2026-06-19T09:12:27Z · files: engine/grace/gracefulAdjudication.js, engine/playloop.js

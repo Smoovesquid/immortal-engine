@@ -8,7 +8,7 @@ import { adjudicate } from '../adjudication/adjudicate.js';
 import { exitsFrom, cleanPlaceName } from '../map/mapState.js';
 import { statMod } from '../ruleset/core/stats.js';
 import { profBonusFor } from '../ruleset/core/levelTable.js';
-import { playerAc } from '../combat/escapeCombat.js';
+import { playerAc, meleeProfile } from '../combat/escapeCombat.js';
 import { purseTotalCopper, formatPrice } from '../economy/shop.js';
 import { fateBand } from '../rulesets.js';
 
@@ -28,16 +28,19 @@ function fmtMod(m) { return m >= 0 ? `+${m}` : `${m}`; }
 // modifier, or a bare DC — must get the number, never an atmosphere deflection.
 // Skill → governing game-stat, mirroring resolve.js (FOCUS_APPROACH→statForApproach)
 // so the reported modifier matches what the engine actually rolls.
+// "tracking" added (H-40): a real skill word missing from this list fell
+// through to the generic modifier-formula handler and leaked the raw
+// breakpoint table instead of a clean number — see answerSkillModifier below.
 const SKILL_STAT = {
   athletics: 'MIGHT', intimidation: 'MIGHT',
   stealth: 'AGILITY', acrobatics: 'AGILITY', sleight_of_hand: 'AGILITY',
   insight: 'CHARM', persuasion: 'CHARM', deception: 'CHARM', performance: 'CHARM',
   survival: 'GRIT', medicine: 'GRIT', nature: 'GRIT',
-  arcana: 'WITS', investigation: 'WITS', perception: 'WITS', history: 'WITS', religion: 'WITS'
+  arcana: 'WITS', investigation: 'WITS', perception: 'WITS', tracking: 'WITS', history: 'WITS', religion: 'WITS'
 };
 // Match "what's my <skill> modifier/mod/bonus/number/check" / "give me my <skill>".
 // "sleight of hand" is normalized to the focus key sleight_of_hand below.
-const META_SKILL_MOD = /\b(?:what(?:'?s| is)\s+my\s+|my\s+|give\s+me\s+(?:my\s+)?)(athletics|intimidation|stealth|acrobatics|sleight\s+of\s+hand|insight|persuasion|deception|performance|survival|medicine|nature|arcana|investigation|perception|history|religion)(?:\s+(?:modifier|mod|bonus|number|score|check|skill))?\b/i;
+const META_SKILL_MOD = /\b(?:what(?:'?s| is)\s+my\s+|my\s+|give\s+me\s+(?:my\s+)?)(athletics|intimidation|stealth|acrobatics|sleight\s+of\s+hand|insight|persuasion|deception|performance|survival|medicine|nature|arcana|investigation|perception|tracking|history|religion)(?:\s+(?:modifier|mod|bonus|number|score|check|skill))?\b/i;
 // Attack/to-hit modifier — "what's my attack modifier", "my to-hit bonus".
 const META_ATTACK_MOD = /\b(?:what(?:'?s| is)\s+my\s+|my\s+|give\s+me\s+(?:my\s+)?)(?:attack|to[-\s]?hit)\s+(?:modifier|mod|bonus|number|roll)\b/i;
 // Bare DC ask with no declared check — "give me the DC", "what's the DC", "what DC".
@@ -575,6 +578,47 @@ function describeLoadout(world) {
   return parts.join(' ');
 }
 
+// Skill→stat→modifier, the real number off the sheet. Shared by the
+// standalone META_SKILL_MOD ask and the modifier-formula fallback below, so a
+// skill name reaching either path gets the same clean answer instead of one
+// of them leaking the abstract breakpoint table. Returns null when no
+// recognized skill name is present in the text. (H-25; extracted H-40)
+function answerSkillModifier(lowerText, world) {
+  const sm = lowerText.match(META_SKILL_MOD);
+  if (!sm) return null;
+  const raw = sm[1].toLowerCase().replace(/\s+/g, '_'); // "sleight of hand" → sleight_of_hand
+  const statKey = SKILL_STAT[raw] || 'WITS';
+  const p = world.party?.[0] || {};
+  const score = Number(p.stats?.[statKey]) || 10;
+  const base = statMod(score);
+  const foci = Array.isArray(p.foci) ? p.foci.map(f => String(f).toLowerCase()) : [];
+  const proficient = foci.includes(raw);
+  const prof = proficient ? profBonusFor(Number(p.level) || 1) : 0;
+  const skillName = raw.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  const clause = proficient
+    ? ` — ${statKey} ${fmtMod(base)} plus proficiency +${prof}`
+    : ` — off your ${statKey}, ${fmtMod(base)} (you're not trained in it)`;
+  return `Your ${skillName} modifier is ${fmtMod(base + prof)}${clause}.`;
+}
+
+// Full ability-score block ("MIGHT 12 (+1), AGILITY 9 (-1), ..." plus escape-
+// mode HP when applicable) — the same "give me my numbers" content every
+// stats-request fold needs. Shared by the compound INVENTORY/EQUIPMENT/
+// ATTACK_MOD folds below so "what are my actual stats and X?" never drops
+// the stats half again (H-40). Returns '' when the sheet has no stats yet.
+function answerFullStats(world) {
+  const stats = world.party?.[0]?.stats || {};
+  const order = ['MIGHT', 'AGILITY', 'WITS', 'GRIT', 'CHARM'];
+  const line = order.filter(k => k in stats).map(k => `${k} ${stats[k]} (${fmtMod(statMod(Number(stats[k]) || 10))})`).join(', ');
+  if (!line) return '';
+  let ans = `Your measures: ${line}.`;
+  const eMax = Number(world.meta?.escapeMaxHp) || 0;
+  if (world.meta?.mode === 'escape' && eMax > 0) {
+    ans += ` Hit points: ${Number(world.meta?.escapeHp) || 0} of ${eMax}.`;
+  }
+  return ans;
+}
+
 // Returns the claimed possession nouns ("staff", "robe"...) that have no
 // match anywhere in real inventory, or null when there's no claim to check
 // (or every claimed noun IS real gear, by substring — so "I'm holding a
@@ -700,31 +744,39 @@ export function handleMetaQuestion(text, world) {
   // the real number from the sheet: governing game-stat modifier + proficiency
   // when the focus is owned. Never deflect a player's own-number ask. (H-25)
   {
-    const sm = lowerText.match(META_SKILL_MOD);
-    if (sm) {
-      const raw = sm[1].toLowerCase().replace(/\s+/g, '_'); // "sleight of hand" → sleight_of_hand
-      const statKey = SKILL_STAT[raw] || 'WITS';
-      const p = world.party?.[0] || {};
-      const score = Number(p.stats?.[statKey]) || 10;
-      const base = statMod(score);
-      const foci = Array.isArray(p.foci) ? p.foci.map(f => String(f).toLowerCase()) : [];
-      const proficient = foci.includes(raw);
-      const prof = proficient ? profBonusFor(Number(p.level) || 1) : 0;
-      const skillName = raw.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-      const clause = proficient
-        ? ` — ${statKey} ${fmtMod(base)} plus proficiency +${prof}`
-        : ` — off your ${statKey}, ${fmtMod(base)} (you're not trained in it)`;
-      return `Your ${skillName} modifier is ${fmtMod(base + prof)}${clause}.`;
-    }
+    const skillAns = answerSkillModifier(lowerText, world);
+    if (skillAns) return skillAns;
   }
 
-  // Attack / to-hit modifier — "what's my attack modifier?" Report the real
-  // numbers the engine adds, melee vs. finesse. (H-25)
+  // Attack / to-hit modifier — "what's my attack modifier?" When no specific
+  // weapon is named, which ability applies is genuinely ambiguous (melee vs.
+  // finesse) — keep the existing explanation (H-25; locked in by U189/U190).
+  // But when a REAL weapon from the loadout IS named ("...attack bonus with
+  // the Worn Blade"), give the actual FINAL bonus instead — meleeProfile is
+  // the same source resolveEscapeCombatTurn reads at the table, so this
+  // number can never drift from what combat actually rolls. A compound
+  // "give me my numbers... and my attack bonus" ask also gets the full
+  // ability scores — a half-answer with no scores and no final bonus is the
+  // H-40 DM_TEST_DEADEND this replaces. (H-40)
   if (META_ATTACK_MOD.test(lowerText)) {
     const p = world.party?.[0] || {};
-    const might = statMod(Number(p.stats?.MIGHT) || 10);
-    const agi = statMod(Number(p.stats?.AGILITY) || 10);
-    return `To hit you add your MIGHT modifier (${fmtMod(might)}) for a melee strike, or your AGILITY (${fmtMod(agi)}) for a finesse or ranged attack — plus your proficiency on a weapon you're trained with.`;
+    const weapons = (Array.isArray(p.inventory?.weapons) ? p.inventory.weapons : [])
+      .map(w => String(w?.name || w || '').trim()).filter(Boolean);
+    const namedWeapon = weapons.some(n => {
+      const low = n.toLowerCase();
+      if (lowerText.includes(low)) return true;
+      return low.split(/\s+/).filter(tok => tok.length >= 4).some(tok => lowerText.includes(tok));
+    });
+    let ans;
+    if (namedWeapon) {
+      const prof = meleeProfile(p);
+      ans = `With the ${prof.name}, your attack bonus is ${fmtMod(prof.atkBonus)} — roll d20 and add that.`;
+    } else {
+      const might = statMod(Number(p.stats?.MIGHT) || 10);
+      const agi = statMod(Number(p.stats?.AGILITY) || 10);
+      ans = `To hit you add your MIGHT modifier (${fmtMod(might)}) for a melee strike, or your AGILITY (${fmtMod(agi)}) for a finesse or ranged attack — plus your proficiency on a weapon you're trained with.`;
+    }
+    return META_STATS_REQ.test(lowerText) ? `${answerFullStats(world)} ${ans}` : ans;
   }
 
   // Armor value/AC — "what's my Armor value?", "give me my AC". Your own
@@ -752,22 +804,28 @@ export function handleMetaQuestion(text, world) {
 
   // Modifier formula — "how are modifiers calculated?", "what's the ability
   // modifier I add?", "the formula". Report examples + current scores.
-  // No formula prose — just breakpoints; the formula itself is a system artifact.
-  // (H-18 fix: formula text removed; HP included when also requested.)
+  // No formula prose — the formula itself is a system artifact. (H-18 fix:
+  // formula text removed; HP included when also requested. H-40: the raw
+  // breakpoint table is now last-resort only — see below.)
   // Checked before META_MECHANICS so formula questions get the specific answer.
   if (META_MODIFIER_FORMULA.test(lowerText)) {
-    let ans = 'Modifier breakpoints: 9 → −1, 10–11 → +0, 12–13 → +1, 14–15 → +2.';
+    // H-40: a player naming THEIR OWN skill or stat alongside a "the
+    // modifier"/"the formula" trigger ("...tell me what the modifier even
+    // is") gets that real number, plainly — never the abstract breakpoint
+    // table (a system artifact a real DM would never recite). The table
+    // survives only as the last resort, when no specific target was named
+    // at all ("what's the formula for modifiers?" — U172-23).
+    const skillAns = answerSkillModifier(lowerText, world);
+    if (skillAns) return skillAns;
     const sm = lowerText.match(META_STAT) || lowerText.match(META_STAT_SYNONYM);
-    if (sm) {
-      const key = resolveStatKey(sm[1]);
-      const stats = world.party?.[0]?.stats || {};
-      if (key in stats) {
-        const score = Number(stats[key]) || 10;
-        ans += ` Your ${key} is ${score}, a ${fmtMod(statMod(score))} modifier.`;
-      }
+    const stats = world.party?.[0]?.stats || {};
+    const statKey = sm ? resolveStatKey(sm[1]) : null;
+    let ans;
+    if (statKey && statKey in stats) {
+      const score = Number(stats[statKey]) || 10;
+      ans = `Your ${statKey} is ${score}, a ${fmtMod(statMod(score))} modifier.`;
     } else {
-      const p = world.party?.[0] || {};
-      const stats = p.stats || {};
+      ans = 'Modifier breakpoints: 9 → −1, 10–11 → +0, 12–13 → +1, 14–15 → +2.';
       const order = ['MIGHT', 'AGILITY', 'WITS', 'GRIT', 'CHARM'];
       const line = order.filter(k => k in stats).map(k => `${k} ${stats[k]} (${fmtMod(statMod(Number(stats[k]) || 10))})`).join(', ');
       if (line) ans += ` Your measures: ${line}.`;
@@ -987,8 +1045,15 @@ export function handleMetaQuestion(text, world) {
     const ans = lines.length
       ? `You go through your pack. ${lines.join('. ')}.`
       : 'Your pack is light — nothing but lint and resolve.';
-    // A gear ask in the same breath as HP must answer both (H-36a R2).
-    return META_HEALTH.test(lowerText) ? `${ans} ${answerHealth(world)}` : ans;
+    // A stats or HP ask in the same breath must answer both, not just gear —
+    // "what are my actual stats and what weapons am I carrying?" was
+    // dropping HP/level/abilities entirely and answering inventory only.
+    // (H-36a R2 HP fold; H-40 broadens it to the full ability-score block.)
+    const extras = [];
+    if (META_STATS_REQ.test(lowerText)) extras.push(answerFullStats(world));
+    if (META_HEALTH.test(lowerText)) extras.push(answerHealth(world));
+    const extraText = extras.filter(Boolean).join(' ');
+    return extraText ? `${ans} ${extraText}` : ans;
   }
 
   // Equipment / sheet — name what's actually equipped, in-voice, no roll. An
@@ -999,8 +1064,14 @@ export function handleMetaQuestion(text, world) {
   // never matched by the wh-/declarative forms above. (H-31 R2; H-38a R1)
   if (META_EQUIPMENT.test(lowerText) || META_HELD_ITEMS.test(lowerText) || META_GEAR_YESNO.test(lowerText)) {
     const ans = describeLoadout(world);
-    // A gear ask in the same breath as HP must answer both (H-36a R2).
-    return META_HEALTH.test(lowerText) ? `${ans} ${answerHealth(world)}` : ans;
+    // A stats or HP ask in the same breath must answer both, not just gear
+    // (H-36a R2 HP fold; H-40 broadens it to the full ability-score block —
+    // same drop as the META_INVENTORY branch above).
+    const extras = [];
+    if (META_STATS_REQ.test(lowerText)) extras.push(answerFullStats(world));
+    if (META_HEALTH.test(lowerText)) extras.push(answerHealth(world));
+    const extraText = extras.filter(Boolean).join(' ');
+    return extraText ? `${ans} ${extraText}` : ans;
   }
 
   // Character identity / build — answer who you are from canon. Identity in-voice;

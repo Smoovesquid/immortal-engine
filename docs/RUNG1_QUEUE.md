@@ -181,9 +181,20 @@ resolve a real present NPC before anything fires, so it can't start combat again
 `AGENT_CHANGELOG.md` per protocol §3 — Basecamp backfilled both entries post-hoc from the commits +
 self-reports.
 
-## In flight
-*(none — H-40 + H-41 both DONE, pushed, BASECAMP-verified per §7. Queue clear — good point for a new
-session. Next step is a post-H-40/H-41 gate (~$2.40) to measure; open residuals to watch listed below.)*
+## In flight — H-42 (grace, Claude-Sonnet), dispatched 2026-06-19
+Tim's call: finish the obvious known fixes BEFORE spending on a gate, then one gate covers H-40+H-41+H-42.
+Of the three post-H-39 residuals, only ONE is a real gate-observed failure worth pre-fixing: the
+**"react-under-pressure"** confrontation dead-end (Lore-hound t12, HIGH). The other two (bare modifier-table
+needing no skill named; one-off lore-invention) are theoretical/minority — left for the gate to confirm
+rather than pre-fixed (avoiding the enumeration trap).
+- **H-42 "react under pressure" (Claude-Sonnet, grace; IG-11 social-physics rule):** a confrontation/
+  contradiction-challenge directed at a PRESENT NPC that resolves as FAILURE ("You said Kael was here first…
+  which of you is lying?" → `[roll:6 → failure]`) must yield a deterministic in-character NPC REACTION
+  (deflect/bristle/hold-firm, from the NPC's real disposition), NOT the `gen:f` place-filler
+  ("…Pilgrim's Rest Village doesn't give it to you", `playloop.js:5011`). It must NOT concede the contested
+  fact (the player's read failed). Files: `engine/playloop.js` (`genericGroundedOutcome`) +
+  `engine/grace/gracefulAdjudication.js` (new exported `isConfrontationChallenge`) + `tests/U205`. Grace
+  lane, serialized (queue otherwise clear). On result: verify per §7, then the post-H-40/H-41/H-42 gate.
 
 ## Done — H-40 ∥ H-41 (2026-06-19, parallel, BASECAMP-verified per §7)
 Dispatched file-disjoint, ran clean as a linear stack (H-41 first, H-40 on top). **Lane disjointness HELD

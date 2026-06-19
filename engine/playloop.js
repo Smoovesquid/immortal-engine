@@ -1,7 +1,7 @@
 import { ensureWorld, appendRecentBeat } from './state.js';
 import { makeRng, seedFromString } from './rng.js';
 import { parseHazard, resolveHazard } from './combat/hazard.js';
-import { addFact, addQuestion, addThreat } from './ledger.js';
+import { addFact, addQuestion, addThreat, factStrings } from './ledger.js';
 import { hasFact } from './ledgerUtils.js';
 import { fateBand } from './rulesets.js';
 import { guardPlayerText } from './guard.js';
@@ -29,7 +29,7 @@ import { rollPhysicsCheck } from './resolve.js';
 import { appendCanonEvent } from './csl/canonLog.js';
 import { createGoal, checkGoals } from './goals/goalContract.js';
 import { castArcs, tickArcs } from './story/storyEngine.js';
-import { beginDialogue, askNpc, endDialogue, resolveNpcAtCurrentNode, isRecruitIntent, npcVoice, voiceManner } from './npc/dialogue.js';
+import { beginDialogue, askNpc, endDialogue, resolveNpcAtCurrentNode, isRecruitIntent, npcVoice, voiceManner, commonKnowledgeAnswer, extractTopic } from './npc/dialogue.js';
 import { mintThing, revealTrueEdge } from './things.js';
 import { mintClaim } from './claims.js';
 import { generateSubstrate, ensureNodeSubstrate, substrateEventsFor, npcSubstrateContext } from './substrate.js';
@@ -43,7 +43,7 @@ import { resolveCompanionTurn } from './combat/companionTurn.js';
 import { castSpell } from './spell/castSpell.js';
 import { classifyOffensiveCast, castConsequence } from './magic/castConsequence.js';
 import { evaluateEncounter, selectCreatures, spawnEncounter } from './combat/encounterSpawn.js';
-import { isMetaQuestion, handleMetaQuestion, isNullAction, isQuestionShaped, META_LOCATION, isNpcObserverQuery } from './grace/gracefulAdjudication.js';
+import { isMetaQuestion, handleMetaQuestion, isNullAction, isQuestionShaped, META_LOCATION, isNpcObserverQuery, isInfoSeekingText } from './grace/gracefulAdjudication.js';
 import { resolveEscapeCombatTurn, initEscapeHp, initEscapeKit, shortRest, longRest, applySurpriseRound, parseEscapeAction, combatStatusAnswer, meleeProfile, playerAc } from './combat/escapeCombat.js';
 import { statMod, maxWounds } from './ruleset/core/stats.js';
 import { shopsHere, stockFor, settlementStock, economyAt, priceToSell, shopBuys, restockEpoch, purseTotalCopper, pursePay, purseReceive, formatPrice, matchByName } from './economy/shop.js';
@@ -1742,7 +1742,8 @@ function playerMoveCore(world, packsById, text) {
       // A question gets answered — unless it's a parley phrased as a question
       // ("can we talk about this?" is said TO the foes, not to the DM).
       const escVerb = parseEscapeAction(text).verb;
-      const explicitAction = /\b(strike|attack|swing|stab|shoot|slash|smite|fireball|blast|cast|rage|surge|guard|ward|cover|throw|hurl|lob|fling|toss)\b/i.test(String(text || ''));
+      const improvisedCombatAction = isImprovisedCombatAction(w, text);
+      const explicitAction = improvisedCombatAction || /\b(strike|attack|swing|stab|shoot|slash|smite|fireball|blast|cast|rage|surge|guard|ward|cover|throw|hurl|lob|fling|toss)\b/i.test(String(text || ''));
       if (isMetaQuestion(text) || (isQuestionShaped(text) && escVerb !== 'parley' && !explicitAction)) {
         const metaAnswer = isMetaQuestion(text) ? handleMetaQuestion(text, w) : null;
         let answer = metaAnswer || combatStatusAnswer(w);
@@ -4658,60 +4659,112 @@ function nonObjectSkillOutcome(text, outcome) {
   return null;
 }
 
-// ── Stage G: info-extraction guard (H-22/23) ─────────────────────────────────
-// When a player explicitly asks for a specific proper noun (a name, title, or
-// date) AND the roll succeeded, the narration MUST deliver a concrete fact —
-// not atmosphere. "name me one steward" / "who was the last steward?" must yield
-// a name, not "the ledger hums with secrets."
-//
-// Name pool: deterministic via world seed + topic key; same world + topic →
-// same name every run, preserving replay determinism. (H-22/23)
-const INFO_EXTRACT_RE = /\bname\s+me\b|\bwho\s+was\s+the\b|\bsay\s+the\s+name\b|\btell\s+me\s+the\s+name\b/i;
-const INFO_ACTION_EXCLUDE_RE = /\b(?:attack|strike|hit|stab|slash|shoot|kill|fight|charge|intimidate|charm|deceive|persuade|move|travel|go|run|hide|sneak)\b/i;
-const LORE_NAME_POOL = [
-  'Aldric Vane', 'Emmerath the Pale', 'Torsan Fell', 'Maren Couvalt',
-  'Halvard Gray', 'Soren of the Bridge', 'Yseult Cairn', 'Kinlan the Warden',
-  'Corvin Ashe', 'Brennan Dault', 'Elder Vayl', 'Warden Ostrun',
-  'Lira Thane', 'Davan the Unquiet', 'Petra Severin', 'Lord Morweth'
-];
+// ── Stage G: deliver-or-decline contract for info-seeking outcomes (H-22/23, H-29) ──
+// When a player demands a specific fact (a name, a date/year, who held/sold/gave
+// something, a kinship/life-status check) and the roll resolves success or mixed,
+// the narration MUST do one of two things — state a fact that is actually grounded
+// in canon, or give an explicit IN-FICTION non-answer. It must NEVER report success
+// with empty atmosphere (the old gen:s/ask:s bank) and NEVER invent a name, date, or
+// backstory with confidence (the H-22/23 fix's own failure mode — it minted a fake
+// proper noun from a static pool regardless of whether canon backed it). Mirrors the
+// working knowledge-graph deliver/deflect logic already proven in npc/dialogue.js.
 
-// Extract the first significant noun from the query so that "name me one steward"
-// and "who was the last steward?" both yield the same key ("steward") and thus the
-// same deterministic name for that topic in that world.
-function extractTopicKey(text) {
-  const stop = new Set([
-    'name', 'tell', 'last', 'that', 'this', 'from', 'before', 'about', 'which',
-    'what', 'were', 'have', 'been', 'than', 'into', 'them', 'they', 'those',
-    'your', 'mine', 'with', 'where', 'when', 'then', 'here', 'more', 'some',
-    'such', 'very', 'know', 'only', 'just', 'each', 'much', 'also', 'back',
-    'time', 'will', 'upon', 'over', 'even', 'like', 'well', 'down', 'many',
-    'long', 'does', 'most', 'make', 'come', 'take', 'want', 'give', 'look',
-    'still', 'great', 'after', 'again', 'every', 'never', 'going', 'under',
-    'right', 'place', 'thing', 'world', 'found', 'since', 'three', 'while',
-    'years', 'other', 'might', 'these', 'first', 'until', 'there', 'said'
-  ]);
-  const words = String(text || '').replace(/[^a-z\s]/g, '').split(/\s+/);
-  const w = words.find(w => w.length > 3 && !stop.has(w));
-  return w || 'lore';
+// Words too generic to anchor a ledger-fact substring match (shared scaffolding,
+// not content) — mirrors the stoplist style of pickVariant's topic-key extraction.
+const INFO_GROUND_STOPWORDS = new Set([
+  'this', 'that', 'your', 'have', 'been', 'with', 'from', 'before', 'which',
+  'what', 'were', 'they', 'them', 'those', 'here', 'there', 'when', 'then',
+  'more', 'some', 'such', 'very', 'know', 'only', 'just', 'each', 'much',
+  'also', 'back', 'time', 'will', 'upon', 'over', 'even', 'like', 'well',
+  'down', 'many', 'does', 'most', 'make', 'come', 'want', 'give', 'look',
+  'still', 'great', 'after', 'again', 'every', 'never', 'going', 'under',
+  'right', 'place', 'thing', 'found', 'since', 'while', 'other', 'might',
+  'these', 'first', 'until', 'said', 'told'
+]);
+
+// Try, in order: the NPC's deterministic common-knowledge answer (self/news/
+// directions/services/place — all grounded and already proven in dialogue.js),
+// the NPC's knowledge-graph topic match, then a loose ledger-fact substring
+// match. Returns { body } when grounded, else null. Pure, deterministic.
+function lookupGroundedFact(world, text, npc) {
+  if (npc) {
+    const common = commonKnowledgeAnswer(world, npc, text);
+    if (common?.body) return { body: String(common.body) };
+    if (Array.isArray(npc.knowledgeGraph) && npc.knowledgeGraph.length) {
+      const topic = extractTopic(text, npc);
+      if (topic) {
+        const f = npc.knowledgeGraph.find(x => String(x?.factId || '') === topic);
+        if (f?.body) return { body: String(f.body) };
+      }
+    }
+  }
+  const tl = String(text || '').toLowerCase();
+  const sig = tl.replace(/[^a-z\s]/g, ' ').split(/\s+/).filter(w => w.length >= 4 && !INFO_GROUND_STOPWORDS.has(w));
+  if (sig.length) {
+    const facts = factStrings(world);
+    const hit = facts.find(f => { const fl = String(f).toLowerCase(); return sig.some(w => fl.includes(w)); });
+    if (hit) return { body: hit };
+  }
+  return null;
 }
 
-// Return grounded narration for a successful explicit info-extraction roll, or null.
-// Exported for unit testing.
+// Counts consecutive prior turns (most recent first) that pressed this same NPC
+// for an unanswered fact — derived PURELY from the existing timeline + current
+// world state, no new persisted field. Used to escalate the decline (polite →
+// curt → disengage) without a WORLD_VERSION bump.
+function infoPressCount(world, npc) {
+  const tl = Array.isArray(world?.timeline) ? world.timeline : [];
+  let n = 0;
+  for (let i = tl.length - 1; i >= 0; i--) {
+    const ev = tl[i];
+    if (!ev || ev.kind !== 'resolution') continue;
+    const t = String(ev.data?.text || ev.data?.intent || '');
+    if (!isInfoSeekingText(t)) break;
+    if (lookupGroundedFact(world, t, npc)) break;
+    n++;
+  }
+  return n;
+}
+
+// Return grounded deliver-or-decline narration for a resolved info-seeking action,
+// or null (so normal resolution wins). Exported for unit testing.
 export function infoExtractionOutcome(world, text, outcome) {
-  if (outcome !== 'success') return null;
-  const tl = String(text || '').toLowerCase();
-  if (!INFO_EXTRACT_RE.test(tl)) return null;
-  if (INFO_ACTION_EXCLUDE_RE.test(tl)) return null;
-  const topicKey = extractTopicKey(tl);
-  const nameSeed = seedFromString(`${String(world?.meta?.seed || 'world')}|lore-name|${topicKey}`);
-  const nameIdx = ((nameSeed % LORE_NAME_POOL.length) + LORE_NAME_POOL.length) % LORE_NAME_POOL.length;
-  const name = LORE_NAME_POOL[nameIdx];
-  const variants = [
-    `You press for the name and the record yields — ${name}.`,
-    `The answer surfaces under your inquiry: ${name}.`,
-    `One name comes forward from the keeping: ${name}.`
+  if (outcome !== 'success' && outcome !== 'mixed') return null;
+  if (!isInfoSeekingText(text)) return null;
+
+  const npc = socialTarget(world, text);
+  const ground = lookupGroundedFact(world, text, npc);
+  const V = (key, variants) => `Wizard: ${pickVariant(variants, world, key)}`;
+
+  if (ground) {
+    if (outcome === 'success') {
+      return V(`info:s:${ground.body}`, [
+        ground.body,
+        `The answer comes straight: ${ground.body}`,
+        `You press, and it gives: ${ground.body}`
+      ]);
+    }
+    return V(`info:m:${ground.body}`, [
+      `${ground.body} — though it's hedged, given reluctantly.`,
+      `You get it, but grudgingly: ${ground.body}`
+    ]);
+  }
+
+  // No grounding — an explicit in-fiction non-answer, escalating under
+  // repeated pressure (tier 0: polite deflect, 1: curt, 2+: disengage).
+  const press = infoPressCount(world, npc);
+  const tier = Math.min(press, 2);
+  const name = npc?.name ? String(npc.name) : null;
+  const declines = name ? [
+    [`${name} shrugs. "Can't say. No record I've ever seen."`, `${name} shakes their head. "Wouldn't know — nobody's ever told me."`, `${name} spreads their hands. "That's lost to me, truth be told."`],
+    [`${name} sighs. "I told you — I don't know. Won't change by asking twice."`, `${name}'s patience thins. "Same answer. I don't have it."`, `${name} won't be drawn twice on the same dead end.`],
+    [`${name} turns away. "Enough. I'm done with that question."`, `${name} is done talking about it — the subject is closed.`, `${name} won't say another word on it.`]
+  ] : [
+    [`There's no record of that — not one anyone's ever shown you.`, `Can't rightly say. That's lost, whatever it was.`, `No one here would know. It's not written anywhere you can find.`],
+    [`Same as before — no answer exists to give, however you ask it.`, `Asking again won't conjure a record that isn't there.`, `Still nothing. The matter stays unsettled.`],
+    [`That question's closed. There's no answer coming, here or anywhere.`, `Drop it — pressing further won't make a fact appear.`, `The matter's done; no more comes of asking.`]
   ];
-  return `Wizard: ${pickVariant(variants, world, `info:s:${topicKey}`)}`;
+  return V(`info:decline:${tier}`, declines[tier]);
 }
 
 // ── Stage F: general grounded fallback (kill the abstract floor everywhere) ──
@@ -5344,6 +5397,31 @@ function isCombatSceneObjectAction(text) {
   const t = String(text || '').toLowerCase();
   if (!/\b(kick|bash|break|smash|slam|force|shove|open|shoulder|boot)\b/.test(t)) return false;
   return /\b(?:the\s+|a\s+|an\s+)?(?:door|doors|gate|gates|window|windows|shutter|shutters|hinge|hinges|wall|walls|floorboards?|floor|ceiling|roof)\b/.test(t);
+}
+
+function liveCombatEnemies(world) {
+  return (world?.combat?.enemies || []).filter(e => e && !e.defeated && (Number(e.hp) || 0) > 0);
+}
+
+function mentionsLiveCombatFoe(world, text) {
+  const t = String(text || '').toLowerCase();
+  const enemies = liveCombatEnemies(world);
+  for (const e of enemies) {
+    const raw = String(e?.name || '').toLowerCase().trim();
+    if (!raw) continue;
+    if (t.includes(raw)) return true;
+    const parts = raw.split(/\s+/).filter(p => p.length >= 3 && !/^(the|and|of|a|an)$/.test(p));
+    if (parts.some(p => new RegExp(`\\b${p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i').test(t))) return true;
+  }
+  return enemies.length === 1 && /\b(him|her|them|it|foe|enemy|monster|creature|thing)\b/i.test(t);
+}
+
+function isImprovisedCombatAction(world, text) {
+  const t = String(text || '').toLowerCase();
+  if (!/\b(grab|snatch|smash|shatter|break|slam|bash|kick|boot|throw|hurl|fling|toss|lob|shove|wedge|tip|dump|splash|pour|swing)\b/.test(t)) return false;
+  if (!/\b(lantern|lamp|torch|oil|flames?|fire|burning|chair|stool|table|bottle|mug|rock|stone|candle|crate|barrel|beam|plank|board|door|window|shutter|hinge|wall|floor|ceiling|roof)\b/.test(t)) return false;
+  if (mentionsLiveCombatFoe(world, t)) return true;
+  return /\b(?:at|toward|towards|into|against|onto|on)\b[^.!?]*\b(?:foe|enemy|monster|creature|thing|him|her|them|it)\b/i.test(t);
 }
 
 // A LONG rest is deliberate language — 'sleep', 'make camp', 'turn in'.

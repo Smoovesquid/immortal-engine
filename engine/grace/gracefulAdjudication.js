@@ -271,6 +271,23 @@ export function isQuestionShaped(text) {
   return QUESTION_SHAPE.test(String(text || ''));
 }
 
+// Info-seeking: the player demands a specific fact — a name, a date/year, who
+// held/sold/gave something, a kinship/life-status check — rather than open
+// conversation. Gates the deliver-or-decline contract (H-29): a resolved
+// success/mixed info-seeking action must state a real grounded fact or give an
+// explicit in-fiction non-answer, never fall to atmosphere or invent one.
+// Shared by playloop.js (base narration) and narratorContext.js (ctx.infoSeeking
+// for the validator backstop) so the two layers never drift out of sync.
+const INFO_SEEKING_RE = /\b(?:who|what|when|where|whose)\b[\s\S]{0,60}?\b(?:name|named|year|date|deed|owner|own(?:s|ed)?|held|sold|gave|kin|relat\w*|tenure)\b|\bgive me a name\b|\bby name\b|\bwhat year (?:is it|are we)\b|\bis\s+[a-z][\w'-]*(?:\s+[a-z][\w'-]*){0,2}\s+(?:dead|alive)\b|\bhow long\b[\s\S]{0,30}?\b(?:run|ran|owned|been here|been)\b/i;
+const INFO_SEEKING_EXCLUDE_RE = /\b(?:attack|strike|hit|stab|slash|shoot|kill|fight|charge|intimidate|charm|deceive|persuade)\b/i;
+
+export function isInfoSeekingText(text) {
+  const t = String(text || '').toLowerCase();
+  if (!t.trim()) return false;
+  if (INFO_SEEKING_EXCLUDE_RE.test(t)) return false;
+  return INFO_SEEKING_RE.test(t);
+}
+
 // Tier B trigger: a conjunction of two distinct actions ("dive behind the bar
 // and shoot the big one"). Deliberately strict — this gates a paid LLM call,
 // so single actions, questions, and flavor text must NOT match.

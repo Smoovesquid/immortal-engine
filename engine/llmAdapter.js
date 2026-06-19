@@ -548,7 +548,56 @@ export function validateNarrationCandidate(world, narrationCandidate, {
     }
   }
 
+  // Rule 5 (H-29) — deliver-or-decline contract for info-seeking outcomes. The
+  // player demanded a specific fact (ctx.infoSeeking) and the roll resolved
+  // success/mixed; polish must either keep the grounded content the (now-correct)
+  // deterministic base already carries, or keep an explicit in-fiction decline —
+  // never smooth it into bare atmosphere, and never swap in an invented date/
+  // duration the base never stated. Falls back to base on violation.
+  if (ctx?.infoSeeking && (String(ctx?.rollOutcome ?? '') === 'success' || String(ctx?.rollOutcome ?? '') === 'mixed')) {
+    const DECLINE_PHRASES = ["don't know", "doesn't know", "no record", "can't say", "can't rightly say",
+      "wouldn't know", "couldn't tell you", "couldn't rightly", "lost to me", "lost, whatever",
+      "nobody's ever told", "no answer", "won't be drawn", "done with that question",
+      "done talking about it", "won't say another word", "subject is closed", "no one here would know",
+      "not written anywhere", "matter stays unsettled", "question's closed", "matter's done"];
+    const hasDecline = DECLINE_PHRASES.some(ph => candLower.includes(ph));
+    const hasBaseContent = (() => {
+      // Place-name words always overlap (the location-lock rule above already
+      // forces both base and candidate to mention ctx.placeName) — exclude them
+      // so the check measures real shared CONTENT, not the forced place mention.
+      const placeWords = new Set(loc.toLowerCase().match(/[a-z']{2,}/g) || []);
+      const baseWords = String(baseNarration ?? '').toLowerCase().match(/[a-z']{4,}/g) || [];
+      const sig = baseWords.filter(w => !COMMON_CAPS.has(w) && !placeWords.has(w));
+      if (!sig.length) return true; // nothing concrete to require from base
+      return sig.some(w => candLower.includes(w));
+    })();
+    if (!hasDecline && !hasBaseContent) return false; // R5a: atmosphere-only on an info-success
+
+    if (findInventedFactClaim(cand, baseNarration)) return false; // R5b: invented bare fact claim
+  }
+
   return true;
+}
+
+// Rule 5b (H-29) helper — finds a confidently-asserted bare year/date or numeric
+// duration in `candidate` that the grounded `baseNarration` never stated (e.g. the
+// LLM inventing "the year is 1347" or "twelve years running the inn" out of thin
+// air). Returns the offending substring, or null. Never throws.
+export function findInventedFactClaim(candidate, baseNarration) {
+  try {
+    const text = String(candidate || '');
+    const base = String(baseNarration || '').toLowerCase();
+    const years = text.match(/\b(?:1[0-9]{3}|2[0-9]{3})\b/g) || [];
+    for (const y of years) {
+      if (!base.includes(y)) return y;
+    }
+    const durRe = /\b(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|\d{1,3})\s+years?\b/gi;
+    let m;
+    while ((m = durRe.exec(text)) !== null) {
+      if (!base.includes(m[0].toLowerCase())) return m[0];
+    }
+    return null;
+  } catch { return null; }
 }
 
 // Gathers names of NPCs/enemies whose death or defeat is reconciled in world

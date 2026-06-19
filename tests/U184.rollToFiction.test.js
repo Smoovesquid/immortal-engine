@@ -7,17 +7,17 @@ import { beginAdventure, playerMove, infoExtractionOutcome } from '../engine/pla
 import { normalizeManifest, normalizePack } from '../engine/rulesets.js';
 
 // H-22/H-23 (Rung-1 gate 2026-06-18) — a successful info-extraction roll MUST
-// deliver a concrete identifier (name, title, date) in the narration, not just
+// deliver a concrete identifier or an explicit in-fiction non-answer, not just
 // atmospheric prose. A failed roll may be atmospheric; combat rolls are unaffected.
 //
-// Root cause: the compose() narrator generates approach-keyed atmosphere only
-// ("the pattern unknots in your head"). nonObjectSkillOutcome() didn't cover
-// info-extraction verbs. The LLM system prompt explicitly banned inventing proper
-// names. So "name me one steward" on a success produced atmosphere with no fact.
-//
-// Fix (Option B+C): infoExtractionOutcome() detects explicit info-request patterns
-// and injects a deterministic proper noun on success. LLM prompts now include an
-// exception directive for successful knowledge rolls.
+// SUPERSEDED by H-29 (Rung-1 gate 2026-06-19): the original fix (Option B+C)
+// minted a deterministic but UNGROUNDED proper noun from a static name pool on
+// every success — confidently inventing canon ("Corvin Ashe") regardless of
+// whether the fact actually existed. H-29 replaces that with a deliver-or-decline
+// contract: state a fact that is REALLY grounded in canon (NPC knowledge graph /
+// ledger), or give an explicit in-fiction non-answer. See U190 for the full
+// deliver-or-decline coverage; this file keeps the original regression surface
+// (gate, exclusions, determinism) updated to the new contract.
 
 function packs() {
   const man = normalizeManifest(JSON.parse(fs.readFileSync('packs/manifest.json', 'utf8')));
@@ -33,39 +33,34 @@ function world(seed = 'glass-harbor') {
   ).world;
 }
 
-// Proper-noun pattern: "Firstname Lastname", "Name the Epithet", or "Name of the X"
-// Used to verify that grounded info narration contains a real name, not just atmosphere.
-const PROPER_NOUN_RE = /[A-Z][a-z]+\s+[A-Z][a-z]+|[A-Z][a-z]+\s+the\s+[A-Z][a-z]+|[A-Z][a-z]+\s+of\s+the/;
+const ATMOSPHERE_BANK_RE = /you see it through|it comes off cleanly|you manage it, and the way ahead|it half-works|it lands, after a fashion/i;
 
-// ── a) Successful info-extraction roll → concrete identifier ─────────────────
+// ── a) Successful info-seeking roll → fact or explicit decline, never bare atmosphere ──
 
-test('U184-01: infoExtractionOutcome returns narration on success for "name me" intent', () => {
+test('U184-01: infoExtractionOutcome on an ungrounded "name me" ask declines in-fiction, never invents', () => {
   const w = world();
-  const narr = infoExtractionOutcome(w, 'name me one steward from before the era of reform — the ledger is right there', 'success');
+  const narr = infoExtractionOutcome(w, 'name me the steward — who held the deed before you, by name?', 'success');
   assert.ok(narr, 'must produce non-null narration on info success');
   assert.match(narr, /Wizard:/, 'output must be a Wizard: line');
-  assert.match(narr, PROPER_NOUN_RE, `narration must contain a proper-noun identifier, got: "${narr}"`);
+  assert.doesNotMatch(narr, ATMOSPHERE_BANK_RE, 'must never fall to the bare atmosphere bank');
+  // No steward fact exists in a freshly-begun world — the answer must be an
+  // honest non-answer, not a confidently invented name.
+  assert.doesNotMatch(narr, /\bsteward\b/i, 'must not invent a fact about an ungrounded topic');
 });
 
-test('U184-02: infoExtractionOutcome returns narration on success for "who was the" intent', () => {
+test('U184-02: infoExtractionOutcome on a repeated ungrounded ask still declines, never invents', () => {
   const w = world();
-  const narr = infoExtractionOutcome(w, 'The name, Corwin — say it. Who was the last steward?', 'success');
-  assert.ok(narr, 'must produce non-null narration for second-turn demand');
-  assert.match(narr, PROPER_NOUN_RE, `second-turn demand must still yield a proper noun, got: "${narr}"`);
+  const narr = infoExtractionOutcome(w, 'The name — who held this inn\'s deed before you, by name?', 'success');
+  assert.ok(narr, 'must produce non-null narration for the second-turn demand');
+  assert.doesNotMatch(narr, ATMOSPHERE_BANK_RE, 'must never fall to the bare atmosphere bank');
 });
 
-test('U184-03: same topic key in same world yields the same name on both turns', () => {
-  // Both H-22 and H-23 query about "steward" — the DM should name the same person.
+test('U184-03: same ungrounded ask in the same world declines identically (deterministic)', () => {
   const w = world();
-  const t1 = infoExtractionOutcome(w, 'name me one steward from before the era of reform', 'success');
-  const t2 = infoExtractionOutcome(w, 'who was the last steward — say it', 'success');
-  assert.ok(t1 && t2, 'both turns must produce narration');
-  // Both contain the same name (topic key "steward" → deterministic pick).
-  // Extract the proper noun from each and compare.
-  const m1 = t1.match(PROPER_NOUN_RE);
-  const m2 = t2.match(PROPER_NOUN_RE);
-  assert.ok(m1 && m2, 'both narrations must contain a proper noun');
-  assert.equal(m1[0], m2[0], 'both turns with the same topic must name the same person');
+  const t1 = infoExtractionOutcome(w, 'name me the steward who held the deed before you', 'success');
+  const t2 = infoExtractionOutcome(w, 'name me the steward who held the deed before you', 'success');
+  assert.ok(t1 && t2, 'both calls must produce narration');
+  assert.equal(t1, t2, 'identical world + text must decline identically');
 });
 
 // ── c) Control: combat rolls not affected ────────────────────────────────────
@@ -88,9 +83,9 @@ test('U184-11: infoExtractionOutcome returns null for movement intent', () => {
   );
 });
 
-test('U184-12: infoExtractionOutcome returns null for generic focus intent (no name-request)', () => {
+test('U184-12: infoExtractionOutcome returns null for generic focus intent (no fact-request)', () => {
   const w = world();
-  // A focus roll that doesn't explicitly ask for a name
+  // A focus roll that doesn't ask for a name/date/owner/etc.
   assert.equal(
     infoExtractionOutcome(w, 'I study the room carefully', 'success'),
     null,
@@ -98,45 +93,41 @@ test('U184-12: infoExtractionOutcome returns null for generic focus intent (no n
   );
 });
 
-// ── d) Control: failed info-extraction roll → no concrete fact required ──────
+// ── d) Control: failed info-seeking roll → no fact/decline required ──────────
 
 test('U184-20: infoExtractionOutcome returns null on failure (atmospheric acceptable)', () => {
   const w = world();
   assert.equal(
-    infoExtractionOutcome(w, 'name me one steward from before the era of reform', 'failure'),
+    infoExtractionOutcome(w, 'name me the steward who held the deed before you', 'failure'),
     null,
-    'failed info roll must not inject a concrete fact — null means normal narration wins'
+    'failed info roll must not inject a concrete fact or decline — null means normal narration wins'
   );
 });
 
-test('U184-21: infoExtractionOutcome returns null on mixed outcome', () => {
+test('U184-21: infoExtractionOutcome handles a mixed outcome with the same deliver-or-decline contract (H-29)', () => {
   const w = world();
-  assert.equal(
-    infoExtractionOutcome(w, 'name me one steward from before the era of reform', 'mixed'),
-    null,
-    'mixed outcome must not inject a concrete fact'
-  );
+  const narr = infoExtractionOutcome(w, 'name me the steward who held the deed before you', 'mixed');
+  assert.ok(narr, 'mixed is in-contract under H-29 — must produce a non-null result');
+  assert.doesNotMatch(narr, ATMOSPHERE_BANK_RE, 'must never fall to the bare atmosphere bank');
 });
 
 // ── Integration: playerMove uses the guard when the roll succeeds ─────────────
 
-test('U184-30: playerMove narration contains proper noun when info-extraction roll succeeds', () => {
+test('U184-30: playerMove narration is never the bare atmosphere bank when an info-seeking roll succeeds', () => {
   const byId = packs();
   const w = world();
-  const { output } = playerMove(w, byId, 'name me one steward from before the era of reform');
+  const { output } = playerMove(w, byId, 'name me the steward who held the deed before you');
   const mechs = String(output?.mechanics || '');
   const narr = String(output?.narration || '');
-  // Only assert fact-delivery when the roll actually succeeded
   if (!mechs.includes('success')) return;
-  assert.match(narr, PROPER_NOUN_RE, `successful info-roll narration must contain a proper noun, got: "${narr}"`);
+  assert.doesNotMatch(narr, ATMOSPHERE_BANK_RE, 'successful info-roll narration must never be bare atmosphere');
 });
 
-test('U184-31: playerMove narration on a FAILED info-extraction roll is not required to contain a proper noun', () => {
+test('U184-31: playerMove narration on a FAILED info-extraction roll is not required to decline or deliver', () => {
   const byId = packs();
   const w = world();
-  const { output } = playerMove(w, byId, 'name me one steward from before the era of reform');
+  const { output } = playerMove(w, byId, 'name me the steward who held the deed before you');
   const mechs = String(output?.mechanics || '');
-  // On failure, just confirm no crash and there is some narration
   if (mechs.includes('success')) return; // success case handled by U184-30
   const narr = String(output?.narration || '');
   assert.ok(narr.length > 0, 'failed roll must still produce some narration');
@@ -146,7 +137,7 @@ test('U184-31: playerMove narration on a FAILED info-extraction roll is not requ
 
 test('U184-40: infoExtractionOutcome is deterministic — same world + text → same result', () => {
   const w = world('replay-seed');
-  const text = 'name me one steward from before the era of reform';
+  const text = 'name me the steward who held the deed before you';
   const r1 = infoExtractionOutcome(w, text, 'success');
   const r2 = infoExtractionOutcome(w, text, 'success');
   assert.equal(r1, r2, 'same world + same text must produce identical narration every time');

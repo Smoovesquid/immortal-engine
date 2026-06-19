@@ -14,6 +14,7 @@ import { ensureWorld } from '../state.js';
 import { ensureInstrumentLayer } from '../instrument.js';
 import { fateBand } from '../rulesets.js';
 import { filterContext, applyMoodOverlay } from '../npc/perspectiveFilter.js';
+import { isInfoSeekingText } from '../grace/gracefulAdjudication.js';
 import { availableTopics as dialogueAvailableTopics } from '../npc/dialogue.js';
 import { companionApproachForRole } from '../combat/companionTurn.js';
 import { statMod, maxWounds } from '../ruleset/core/stats.js';
@@ -65,6 +66,9 @@ export function buildNarratorContext(world, outcome = {}) {
     // Roll band ('success' | 'mixed' | 'failure') so the narration validator can
     // reject polish that smooths a mixed outcome into a clean win (H-26d).
     rollOutcome: String(outcome?.outcome ?? ''),
+    // Whether the player demanded a specific fact (name/date/owner/kin/etc.) so the
+    // validator can enforce deliver-or-decline instead of bare atmosphere (H-29).
+    infoSeeking: isInfoSeekingText(String(outcome?.input ?? outcome?.text ?? '')),
     fate: Number(w.meta?.fate ?? 0.5),
     settlement: settlement ? {
       npcs: settlement.npcs || [],

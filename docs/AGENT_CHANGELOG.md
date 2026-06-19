@@ -9,9 +9,7 @@ cross-agent continuity: what changed, what proved it, and what remains.
 ## CLAIMS (in-flight work — claim here BEFORE editing, clear when done)
 
 `[CLAIMED] <seam> · <agent> · <UTC> · files: <paths>` — a claimed seam or file is off-limits to
-other agents.
-
-[CLAIMED] H-34 NPC-roster grounding · Claude Sonnet · 2026-06-19T07:58:07Z · files: engine/grace/gracefulAdjudication.js, engine/llmAdapter.js, engine/playloop.js
+other agents. (none active)
 
 ## Template
 
@@ -27,6 +25,73 @@ other agents.
 - Remaining:
   - 
 - Rollback:
+
+---
+
+## 2026-06-19T08:17:59Z — Claude Sonnet (worker)
+
+- Packet/seam: Rung 1 / H-34 — NPC-roster grounding (grace/narration lane, sibling to H-33/combat)
+- Commit(s): (this commit)
+- Files changed:
+  - `engine/playloop.js` (+20: `npcAddressedRecap` exclusion on the out-of-combat/out-of-dialogue
+    meta-question gate, same shape as the existing `declaredNpcViolence`/`META_LOCATION` exclusions;
+    `META_RECAP` added to the gracefulAdjudication.js import)
+  - `engine/grace/gracefulAdjudication.js` (+42: `META_RECAP` exported so playloop.js can reference
+    it; new `META_NPC_ROSTER` pattern + handler branch checked before `META_ADVICE`)
+  - `engine/llmAdapter.js` (+60: Rule 4d CANON_HALLUCINATION in `validateNarrationCandidate`; new
+    exported `collectRosterTokens` helper, same shape as the existing `collectDefeatedNames`)
+  - `tests/U195.npcRosterGrounding.test.js` (new, 17 cases — catch + false-positive guard per rule,
+    mirrors U190/U192's discipline)
+- Summary: Closed the gate's freshest residual cluster (post-H-31/H-32 run, the grace half — H-33
+  covers the combat half separately). **R1**: `META_RECAP`'s bare `/what happened/` is unanchored and
+  was swallowing a direct, named-NPC-addressed historical question ("What happened twelve years ago
+  that made you settle here, Corwin?") into the recap dead-end ("Nothing's happened yet") before
+  dialogue/social routing ever saw it. Added an exclusion that requires the resolved `socialTarget`
+  NPC's own name/role to literally appear in the text (not just be present at the node — `socialTarget`
+  falls back to the first NPC even unaddressed, so a bare proximity check would have been a
+  false-positive trap); the gate now falls through past META_RECAP to whatever downstream handling
+  exists for the rest of the turn instead of answering from the recap. **Residual note**: downstream,
+  this currently lands on a generic observe/explore fallback rather than an in-character NPC reply —
+  there's no existing "ask a present NPC a question without first entering dialogue" router. That's a
+  separate, larger routing gap outside this packet's scope (and outside the allowed playloop.js
+  region); the fix's bar was "stop the recap swallow," which it does — the dead-end non-answer is
+  gone. **R2a**: no existing handler covered a general "who's here / who are all these people" roster
+  ask (only narrow single-NPC phrasings did) — added `META_NPC_ROSTER`, checked before `META_ADVICE`
+  so a trailing "...should I know them?" can't steal the turn into the generic "yours to call"
+  non-answer. Folded in the sibling "is there a stranger watching" shape via the same pattern/handler:
+  it now acknowledges a present hostile/lurker NPC ("someone else keeps to the edges, watching")
+  instead of denying one that's real in canon, while still never naming a hostile outright (same
+  restraint `buildLocationSurvey`'s existing lurkers line already uses). **R2b**: added Rule 4d to the
+  narration validator — rejects polish that confidently confirms the presence/arrival of a specific
+  occupation/species noun (wizard, goblin, knight, etc.) absent from both the grounded base narration
+  and the real NPC roster (`ctx.settlement.npcs`, the field already proven live by `collectDefeatedNames`;
+  also defensively checks `ctx.npcsPresent` though that field is empty on the actual
+  `validateNarrationCandidate` call path today — `buildNarratorContext` doesn't set it, only the
+  separate `buildDMContext`/system-prompt path does). Deliberately scoped to a curated list of
+  specific role/species nouns, not generic human descriptors (man/woman/stranger/elder/figure/...) —
+  those are exempt because a real roster NPC is routinely described that way by a synonym (the same
+  restraint Rules 4a/4b/4c already hold for kinship/defeat/age claims). Denials ("no wizard answers")
+  and hypotheticals ("if a wizard showed up") are excluded by a negation/hypothetical lookback window
+  before the match. Did NOT touch `engine/combat/*` (H-33's lane), did NOT bump `WORLD_VERSION`, did
+  NOT add `Math.random`/`Date.now`, did NOT mutate state outside the existing read-only meta-question/
+  narration-validation paths (no `applyDeltas` call needed — nothing here writes world state).
+- Proof:
+  - `node --test tests/U195.npcRosterGrounding.test.js` — 17/17
+  - Full suite: `node --test` — 8031/0 (898 suites; was 8014, +17 new)
+  - Determinism gates `U19/U21/U22/U27/U30` — 6/6 green
+  - Repro lines re-verified live (`node -e` against the actual exported functions, not just the unit
+    tests): "What happened twelve years ago that made you settle here, Corwin?" no longer returns
+    "Nothing's happened yet"; "Um, who are all these people? Should I know them?" now names the real
+    present NPC instead of "That one's yours to call"; "can I just look at the stranger watching from
+    the edges?" no longer returns "no stranger lurks here" when a hostile NPC is actually present;
+    a synthetic "wizard" arrival narration with no wizard in the roster is rejected by
+    `validateNarrationCandidate` (falls back to grounded base), while a real roster NPC, a denial, and
+    a hypothetical mention all still pass.
+- Remaining/next: R1's downstream fallback (generic observe, not an in-character NPC reply) is a
+  separate pre-existing routing gap — out-of-dialogue direct-address-to-NPC has no dedicated router.
+  Worth its own packet if Tim wants the full experience, not just the dead-end fix. No other follow-ups
+  cataloged for H-34.
+- Rollback: revert this commit.
 
 ---
 

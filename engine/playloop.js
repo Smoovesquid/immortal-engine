@@ -43,7 +43,7 @@ import { resolveCompanionTurn } from './combat/companionTurn.js';
 import { castSpell } from './spell/castSpell.js';
 import { classifyOffensiveCast, castConsequence } from './magic/castConsequence.js';
 import { evaluateEncounter, selectCreatures, spawnEncounter } from './combat/encounterSpawn.js';
-import { isMetaQuestion, handleMetaQuestion, isNullAction, isQuestionShaped, META_LOCATION, isNpcObserverQuery, isInfoSeekingText } from './grace/gracefulAdjudication.js';
+import { isMetaQuestion, handleMetaQuestion, isNullAction, isQuestionShaped, META_LOCATION, META_RECAP, isNpcObserverQuery, isInfoSeekingText } from './grace/gracefulAdjudication.js';
 import { resolveEscapeCombatTurn, initEscapeHp, initEscapeKit, shortRest, longRest, applySurpriseRound, parseEscapeAction, combatStatusAnswer, meleeProfile, playerAc } from './combat/escapeCombat.js';
 import { statMod, maxWounds } from './ruleset/core/stats.js';
 import { shopsHere, stockFor, settlementStock, economyAt, priceToSell, shopBuys, restockEpoch, purseTotalCopper, pursePay, purseReceive, formatPrice, matchByName } from './economy/shop.js';
@@ -752,7 +752,27 @@ function playerMoveCore(world, packsById, text) {
   // U37/U38); this gate would otherwise shadow it with a different format.
   const declaredNpcViolence = !w.combat?.active && !w.scene?.dialogue
     && (detectPhysicalAssault(w, text) || detectAttackBeginIntent(w, text) || detectAttackAnyIntent(w, text));
-  if (!w.combat?.active && !w.scene?.dialogue && isMetaQuestion(text) && !declaredNpcViolence && !META_LOCATION.test(String(text || '').toLowerCase())) {
+  // META_RECAP's bare "what happened" is unanchored and trivially matches a
+  // direct historical question put TO a present NPC by name ("What happened
+  // twelve years ago that made you settle here, Corwin?") — that's a question
+  // FOR the NPC, not a request for the player's own last-turn recap (Opus gate
+  // 2026-06-19, Lore-hound: got "Nothing's happened yet" instead). socialTarget
+  // resolves who's being addressed, but it falls back to the first present NPC
+  // even when no one's actually named — so this also requires the resolved
+  // NPC's own name/role to literally appear in the text, or a bare "what
+  // happened?" merely near an unrelated NPC would wrongly skip the recap too
+  // (false-positive guard: a genuine recap ask must still get the recap). (H-34 R1)
+  const npcAddressedRecap = !w.combat?.active && !w.scene?.dialogue
+    && META_RECAP.test(String(text || '').toLowerCase())
+    && (() => {
+      const npc = socialTarget(w, text);
+      if (!npc) return false;
+      const t = String(text || '').toLowerCase();
+      const nm = normName(npc?.name).trim();
+      const role = String(npc?.role || '').toLowerCase().trim();
+      return (nm && t.includes(nm)) || (role && t.includes(role));
+    })();
+  if (!w.combat?.active && !w.scene?.dialogue && isMetaQuestion(text) && !declaredNpcViolence && !npcAddressedRecap && !META_LOCATION.test(String(text || '').toLowerCase())) {
     const metaAnswer = handleMetaQuestion(text, w);
     if (metaAnswer) {
       return { world: w, output: { narration: `Wizard: ${metaAnswer}`, mechanics: '' } };

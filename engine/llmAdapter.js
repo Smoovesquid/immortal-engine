@@ -565,6 +565,38 @@ export function validateNarrationCandidate(world, narrationCandidate, {
     }
   }
 
+  // Rule 4d (H-34 R2b) — CANON_HALLUCINATION: polish confidently confirms the
+  // presence/arrival of a specific occupation/species entity ("a wizard", "a
+  // goblin rider") that exists nowhere in the real NPC roster and that the
+  // grounded base never mentioned either (Opus gate 2026-06-19: the player
+  // asked "there's a wizard here now? where did he come from?" and polish
+  // invented a full arrival backstory — "he came from the east" — backed by a
+  // real roll line, for an NPC absent from canon's NPC list entirely). Scoped
+  // to SPECIFIC role/species nouns only — generic human descriptors (man,
+  // woman, stranger, elder, figure...) are deliberately exempt, since a real
+  // roster NPC is routinely described that way by a synonym (same "only
+  // reject the unambiguous case" restraint as Rules 4a/4b/4c). A denial ("no
+  // wizard answers") or a hypothetical ("if a wizard showed up") is not a
+  // confirmation and must pass unchanged.
+  {
+    const baseLower = String(baseNarration ?? '').toLowerCase();
+    const roster = collectRosterTokens(w, ctx);
+    const ROLE_NOUN_RE = /\b(wizards?|witch(?:es)?|sorcerers?|mages?|warlocks?|necromancers?|knights?|bandits?|thieves|thief|assassins?|priests?|monks?|rangers?|peddlers?|beggars?|sailors?|pirates?|blacksmiths?|healers?|scouts?|messengers?|hunters?|goblins?|orcs?|trolls?|demons?|ghosts?|spirits?|dragons?|shamans?)\b/gi;
+    let rm;
+    while ((rm = ROLE_NOUN_RE.exec(cand)) !== null) {
+      const word = rm[0];
+      const norm = normNoun(word);
+      const singular = (norm.endsWith('s') && !norm.endsWith('ss')) ? norm.slice(0, -1) : norm;
+      if (roster.has(norm) || roster.has(singular)) continue;      // a real roster entity → fine
+      if (baseLower.includes(word.toLowerCase())) continue;        // grounded base already says it → fine
+      const before = cand.slice(Math.max(0, rm.index - 24), rm.index).toLowerCase();
+      if (/\b(?:no|not|never|isn|wasn|doesn|didn|if|suppose|imagine|hypothetical)\b/.test(before)) continue;
+      const CONFIRM_SIGNAL = /\b(?:comes?|came|arrives?|arrived|approaches?|approached|emerges?|emerged|enters?|entered|stands?\s+before|speaks?|spoke|tells?|told|watches?\s+you|waits?|waited|path|trail|footsteps|voice|shadow|origin)\b/i;
+      if (!CONFIRM_SIGNAL.test(cand)) continue;
+      return false;
+    }
+  }
+
   // Rule 5 (H-29) — deliver-or-decline contract for info-seeking outcomes. The
   // player demanded a specific fact (ctx.infoSeeking) and the roll resolved
   // success/mixed; polish must either keep the grounded content the (now-correct)
@@ -663,6 +695,34 @@ export function collectDefeatedNames(world, ctx = null) {
     }
   } catch { /* defensive — never break narration */ }
   return names;
+}
+
+// Gathers normalized name/role tokens for every NPC the engine knows is real
+// at the current scene: ctx.npcsPresent (if a caller ever threads it in),
+// ctx.settlement.npcs (the field collectDefeatedNames already reads — the
+// real production source from buildNarratorContext), and world.scene.npcs /
+// world.npcs as further fallbacks. Tokenized the same way collectGroundedNouns
+// is (split into individual words), so a multi-word role ("village elder")
+// grounds each word separately. Used by Rule 4d. Never throws.
+export function collectRosterTokens(world, ctx = null) {
+  const tokens = new Set();
+  try {
+    const add = (str) => {
+      for (const tok of String(str ?? '').split(/[^A-Za-z'’-]+/)) {
+        const n = normNoun(tok);
+        if (n.length >= 2) tokens.add(n);
+      }
+    };
+    const lists = [ctx?.npcsPresent, ctx?.settlement?.npcs, world?.scene?.npcs, world?.npcs];
+    for (const list of lists) {
+      if (!Array.isArray(list)) continue;
+      for (const n of list) {
+        if (typeof n === 'string') { add(n); continue; }
+        add(n?.name); add(n?.role);
+      }
+    }
+  } catch { /* defensive — never break narration */ }
+  return tokens;
 }
 
 // ── Main entry point ──────────────────────────────────────────────────────────

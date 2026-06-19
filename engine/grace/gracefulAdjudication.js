@@ -154,7 +154,7 @@ export function getToneModifier(tone) {
 // status check.
 export const META_LOCATION = /\bwhere am i\b|what (?:do|can) i see\b|\blook(?:ing)? around\b|\bsurvey\b|what'?s (?:around|here|nearby|out there)\b|who(?:'?s| is) (?:here|around|nearby)\b/;
 const META_HEALTH = /\bam i (?:hurt|wounded|damaged|injured|alive|ok|okay|alright|all right|fine|bleeding|dying)\b|\bhow am i (?:doing|holding up|feeling)\b|how(?:'?s| is) my (?:health|hp|status|condition|shape)\b|what(?:'?s| is) my (?:health|hp|status|condition|wounds|shape)\b|how much (?:health|hp|life)\b|\bhow (?:hurt|wounded|injured|bad(?:ly)? (?:hurt|off))\b|how many (?:hit ?points|hp)\b|\b(?:max|maximum)\s+(?:hp|hit\s?points?|health)\b|\bhp\s+(?:total|number|max|cap|count)\b|\bhit\s?points?\b|\bmy\s+(?:current\s+)?hp\b/;
-const META_RECAP = /what happened|what did i (?:just )?do\b/;
+export const META_RECAP = /what happened|what did i (?:just )?do\b/;
 const META_OUTCOME = /did i (?:succeed|fail|win|lose|make it)\b/;
 // v24 conversation hardening — the questions players actually ask. The
 // inventory patterns are question/command-anchored so "put it in my pocket"
@@ -235,6 +235,16 @@ const META_NPC_OBSERVER = /\bwho(?:'s| is| was| are)?\s+(?:that|this|the)\s+(?:s
 // Absence/presence questions about a specific NPC, not a general location survey.
 // (H-16, Rung-1 gate 2026-06-18.)
 const META_NPC_PRESENCE = /\bis\s+(?:that|this|the)\s+\w+\s+(?:gone|left|still\s+(?:here|around|there)|around(?:\s+(?:here|town|anywhere))?|nearby)\b|\bcould\s+i\s+(?:find|look\s+for|spot|search\s+for)\s+them\b|\bwhere\s+(?:did|do)\s+(?:they|them|the\s+\w+)\s+(?:go|end\s+up|head)\b/i;
+// General "who's here" roster query — "who are all these people?", "who's
+// everyone here?" — and the sibling "is there a watcher" shape — "is there a
+// stranger watching?", "can I look at the stranger watching from the edges?".
+// Broader than META_NPC_OBSERVER (a SPECIFIC vague-descriptor identity ask,
+// answered as exactly one NPC) and META_NPC_PRESENCE (an absence/return
+// question about an NPC already seen) — this is the general roster/presence
+// ask, answered from the real settlement NPC list instead of a generic
+// "yours to call" non-answer or an outright denial of a real lurking NPC.
+// (H-34 R2a, Opus gate 2026-06-19, Confused newbie.)
+const META_NPC_ROSTER = /\bwho(?:'s|\s+are)\s+(?:all\s+)?(?:these|those)\s+people\b|\bwho(?:'s| is| are)\s+(?:everyone|everybody)\b|\b(?:is\s+(?:there|anyone|anybody|someone)|can\s+i\s+(?:just\s+)?(?:look\s+at|see|spot|check\s+out))\b[^.?!]*\bwatch(?:ing)?\b/i;
 // Explicit skill-check request — player declares they want to roll, asks for DC.
 // Pattern A: "let me make a WITS check", "I want to do a GRIT test", "can I attempt a MIGHT save"
 // Requires the action verb (make/do/attempt/try) so bare "I want to fight" doesn't fire.
@@ -262,7 +272,7 @@ export function isMetaQuestion(text) {
     || META_OBJECTIVE.test(t) || META_MECHANICS.test(t) || META_ADVICE.test(t)
     || META_WEAPON_DAMAGE.test(t) || META_NAME.test(t)
     || META_MODIFIER_FORMULA.test(t) || META_SHEET_CONFIRM.test(t)
-    || META_NPC_OBSERVER.test(t) || META_NPC_PRESENCE.test(t)
+    || META_NPC_OBSERVER.test(t) || META_NPC_PRESENCE.test(t) || META_NPC_ROSTER.test(t)  // H-34 R2a
     || META_EXPLICIT_CHECK_A.test(t) || META_EXPLICIT_CHECK_B.test(t)  // H-19
     || META_EXPLICIT_CHECK_C.test(t) || META_EXPLICIT_CHECK_D.test(t)  // H-26c
     || META_SKILL_MOD.test(t) || META_ATTACK_MOD.test(t) || META_BARE_DC.test(t)  // H-25
@@ -605,6 +615,34 @@ export function handleMetaQuestion(text, world) {
       }
     }
     return ans;
+  }
+
+  // Roster / present-watcher query — list the real NPCs at this node by name
+  // (sociable) and acknowledge a watching-but-unnamed hostile (lurker) rather
+  // than denying them outright. Hostiles are deliberately described vague,
+  // never by name (same restraint buildLocationSurvey already uses for
+  // "lurkers"), but a real one in canon must never be flatly denied. Checked
+  // before META_ADVICE so a trailing "...should I know them?" doesn't steal
+  // the turn into a generic "your call" non-answer. (H-34 R2a)
+  if (META_NPC_ROSTER.test(lowerText)) {
+    const node = (world.map?.nodes || []).find(n => n && n.id === world.map?.currentNodeId) || null;
+    const allNpcs = Array.isArray(node?.settlement?.npcs) ? node.settlement.npcs : [];
+    const sociable = allNpcs.filter(n => n && !n.hostile);
+    const lurkers = allNpcs.filter(n => n && n.hostile).length;
+    const parts = [];
+    if (sociable.length) {
+      const named = sociable.slice(0, 4).map(describeNpc);
+      const remainder = sociable.length - Math.min(4, sociable.length);
+      if (remainder > 0) named.push(`${remainder} other${remainder === 1 ? '' : 's'}`);
+      parts.push(`${joinList(named)} ${sociable.length === 1 ? 'is' : 'are'} right here.`);
+    }
+    if (lurkers > 0) {
+      parts.push(lurkers === 1
+        ? `Someone else keeps to the edges, watching — not close enough yet to put a face to.`
+        : `${lurkers} others keep to the edges, watching.`);
+    }
+    if (!parts.length) parts.push(`No one's close enough to name right now.`);
+    return parts.join(' ');
   }
 
   // Advice — "should I talk to them, or is that a bad idea?" The DM answers

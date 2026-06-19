@@ -1,5 +1,79 @@
 # AGENT_CHANGELOG
 
+2026-06-19T20:18:00Z — Claude-Sonnet
+- Packet/seam: H-40 number-transparency (grace lane)
+- Commit(s): 8b6cad0
+- Files changed: `engine/grace/gracefulAdjudication.js`, `tests/U203.numberTransparency.test.js` (new)
+- Summary: post-H-39 Opus gate's dominant remaining cluster (4/7, Rules Lawyer persona asking for its
+  own numbers) — three fixes, all inside `handleMetaQuestion`/the META_* skill-modifier machinery,
+  grounded in the real transcript (`docs/playtests/opus-gate-2026-06-19-postH39.md`):
+  - **(i) DM_ARTIFACT_LEAK** — `"...d20 plus my tracking modifier, and tell me what the modifier even
+    is"` matched `META_MODIFIER_FORMULA` via its bare `"the modifier"` trigger, found no recognized
+    skill/stat name (`"tracking"` was missing from `SKILL_STAT`/`META_SKILL_MOD`), and fell to the
+    last-resort branch that prepends the raw breakpoint-table string + a full stat dump. Added
+    `tracking: 'WITS'` to `SKILL_STAT` + the `META_SKILL_MOD` alternation so it now resolves through the
+    existing clean skill-modifier path instead. Extracted that path's body into a new shared helper
+    `answerSkillModifier(lowerText, world)` (pure refactor of the existing `META_SKILL_MOD` block — same
+    computation, same output, zero behavior change at that call site) and call it FIRST from
+    `META_MODIFIER_FORMULA` too, so any skill name reaching that branch resolves the same way. Also
+    hardened `META_MODIFIER_FORMULA`'s own bare-stat sub-case (a bare ability name alongside `"the
+    modifier"/"the formula"`) to report just that stat's number, no table prepended. The truly generic,
+    no-target-named fallback (`"what's the formula for modifiers?"`, locked in by U172-23) is
+    deliberately untouched — kept the table there since I can't edit that test file and the real
+    reported failure never reaches that branch once skill-routing is fixed.
+  - **(ii) CRUNCH_INCONSISTENCY** — `"what are my actual stats and what weapons am I carrying?"` matches
+    `META_INVENTORY` (via its `"what {1-4 words} am i carrying"` clause) and the inventory branch only
+    folded in HP via `META_HEALTH`, never the ability-score block, so a stats-led compound ask got gear
+    only. Added a new shared helper `answerFullStats(world)` (same `order.filter(...).map(...).join(',
+    ')` ability-block format already used 3+ other places in this file, plus escape-mode HP — mirrors
+    `META_CHARACTER`'s existing stats+HP bundling exactly) and folded it into both `META_INVENTORY` and
+    the `META_EQUIPMENT`/`META_HELD_ITEMS`/`META_GEAR_YESNO` branch whenever `META_STATS_REQ` also
+    matches — same family of fix as the H-36a/H-37/H-38a gear+coin/class folds, applied symmetrically to
+    both branches this time (the changelog's own H-37 retro flagged a PARTIAL fold-fix, covering only one
+    branch, as a recurring failure shape — avoided that here).
+  - **(iii) DM_TEST_DEADEND** — `"give me my numbers ... and my attack bonus with the Worn Blade"`
+    matched `META_ATTACK_MOD`, which only ever explained the RULE (MIGHT-vs-AGILITY) abstractly, never
+    computing a final number, and never folding in the requested ability scores. `META_ATTACK_MOD`'s
+    branch now checks whether a REAL weapon from `party[0].inventory.weapons` is named in the question
+    (same substring/token-match idiom `answerWeaponDamage` already uses); if so it calls `meleeProfile`
+    (imported read-only from `engine/combat/escapeCombat.js` — the exact function
+    `resolveEscapeCombatTurn` itself reads, so the reported bonus can never drift from what combat
+    actually rolls) and reports `"With the <name>, your attack bonus is <±N>"`. When no weapon is named,
+    the original melee/finesse explanation is preserved byte-for-byte (required — U189/U190 lock in that
+    exact string for the bare ask). Either branch additionally prepends `answerFullStats` when
+    `META_STATS_REQ` also matches.
+  - Did NOT add any RNG/fresh-die-roll capability (out of scope per the worker prompt — purity rule, no
+    `Math.random`, meta-handlers stay pure string responses) and did NOT touch `engine/combat/*`,
+    `engine/playloop.js`, or any other file outside the two listed above.
+  - One deviation from the worker prompt worth flagging: the prompt's own illustrative test phrasing for
+    (ii) (`"what are my actual stats and weapons?"`) does not actually match any existing meta-question
+    gate (verified by exhaustive regex trace) and would have required broadening the sensitive,
+    heavily-tested `META_CHARACTER` gate to catch it — instead used the VERIFIED real transcript phrasing
+    (`"what are my actual stats and what weapons am I carrying?"`, confirmed to already match
+    `META_INVENTORY`) for U203, which exercises the identical underlying bug with zero gate changes and
+    zero added regression surface.
+- Proof:
+  - `node --test tests/U203.numberTransparency.test.js` — 11/11
+  - Adjacent regression sweep: `node --test tests/U172.statSheetAnswerer.test.js
+    tests/U181.statSynonyms.test.js tests/U189.ownNumberQuery.test.js tests/U190.crunchConsistency.test.js
+    tests/U162.statModifierGrace.test.js` — 51/51; `node --test tests/U196.coinQueryAndPossessionFollowons.test.js
+    tests/U199.itemStatAndPresenceGrounding.test.js tests/U201.itemGearBroadenedAndZeroContentFix.test.js
+    tests/U144.equipmentQueryGrace.test.js tests/U146.characterIdentityGrace.test.js
+    tests/U155.hpNumberGrace.test.js tests/U156.itemQueryGrace.test.js` — 65/65
+  - Full suite: `node --test` — 8149/0 (baseline 8138 post-H-41 + 11 new; the worker prompt's stated
+    baseline of 8135 was already stale — H-41 landed first and moved it to 8138)
+  - Determinism: `node --test tests/U19.worldHashDeterminism.test.js tests/U21.replayGateN50.test.js
+    tests/U22.longRunStabilityN100T500.test.js tests/U27.worldHashSurfaceContract.test.js
+    tests/U30.gate6.sequelDeterminism.test.js` — 6/6
+  - No existing test was modified — all 8138 baseline tests pass unchanged; invariant #19 (stronger not
+    weaker) is moot here since nothing pre-existing was rewritten.
+  - `git diff --stat` confirms only the two claimed files touched; grep for `Math.random`/`Date.now`/
+    `WORLD_VERSION`/`applyDeltas` in the diff — empty.
+- Remaining/next: queue owner should re-run the Opus gate to confirm the Rules-Lawyer number-transparency
+  cluster (4/7) is cleared. The out-of-scope "roll it fresh, show me the raw die" vibe-nit (bug_class
+  NONE, low, turn 41 of the postH39 gate) was deliberately left untouched per the worker prompt.
+- Rollback: revert 8b6cad0
+
 2026-06-19T19:55:27Z — Codex
 - Packet/seam: H-41 0-HP dying-state out of combat
 - Commit(s): b8d3ea9
@@ -18,9 +92,7 @@ cross-agent continuity: what changed, what proved it, and what remains.
 ## CLAIMS (in-flight work — claim here BEFORE editing, clear when done)
 
 `[CLAIMED] <seam> · <agent> · <UTC> · files: <paths>` — a claimed seam or file is off-limits to
-other agents.
-
-[CLAIMED] H-40 number-transparency · Claude-Sonnet · 2026-06-19T19:58:55Z · files: engine/grace/gracefulAdjudication.js, tests/U203.numberTransparency.test.js
+other agents. (none active)
 
 ## Template
 

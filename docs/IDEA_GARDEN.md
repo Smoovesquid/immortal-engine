@@ -283,3 +283,52 @@ the existing `isNullAction`/clarify routes in the grace layer — not a pattern 
 **echoes:** jump into the sun · absurd input · troll the DM · what are you doing · out of bounds ·
 decline the input · boundary test · that's not a thing you can do · non-serious input · breaking
 the game · the DM won't run nonsense
+
+## IG-11 — Social physics: "human" DM behavior is deterministic rules, not creativity
+**2026-06-19 · rung: spine/meta (organizing principle for the whole grace/DM-behavior layer; each
+individual rule lands as a rung-1 packet) · status: warming (one instance shipped H-39; lens validated
+at the post-H-39 gate)**
+
+Tim: *"Humans have all sorts of ways of behaving that are actually bound by deterministic rules but we
+don't think of them that way because they seem based in 'creativity.' ... Maybe the DM should command
+respect, expect decent behavior, who knows? I wonder what else could be out there waiting to solve our
+problems."*
+
+The insight: a lot of what reads as a DM's **personality/creativity** is actually **rule-bound social
+behavior** — a trigger and a patterned response — so it belongs on the deterministic side (Road A), NOT
+something that needs the LLM to be authoritative. The engine already does *physical* physics (force the
+door → a rule decides the outcome). **Social physics is the same machinery aimed at behavior:** the DM
+and the world react to *how the player acts*, by rules.
+
+The unlock isn't any single rule — it's that **they're all the same kind of thing (a deterministic
+social-reaction layer), so the machinery transfers.** Many already exist as un-named one-offs:
+- **Sarcasm / wit** — when the true answer is obvious or the question naive, color it with attitude (the
+  H-39 reframe, generalized).
+- **Command respect / expect decent behavior** — cross a social line → escalating recoil (a look →
+  warning → NPCs withdraw → the world turns cold). *Already exists* as the gratuitous-magic consequence
+  ladder [[project_gratuitous_magic_consequence]].
+- **Decline the absurd** in-character — *already parked* as IG-10.
+- **Read the room** — terse in danger, expansive in calm. *Already exists* via `fateBand`→tone.
+- **Call a bluff / remember contradictions** — *already exists* as the continuity guard (H-9).
+- **Withhold for effect** — an NPC who knows but won't say. *Already exists* as `withheldFacts`.
+- **Number-transparency** — asked for a stat/roll, give the number plainly, never a spreadsheet
+  (the post-H-39 gate's dominant remaining fail → candidate H-40).
+- **React under pressure** — even a *failed* insight roll gets an NPC reaction (a tightened jaw), not
+  silence (the post-H-39 confrontation residual).
+
+Proof the machinery transfers: the info-decline escalation H-39 shipped (polite→curt→disengage, keyed
+on press-count) is the SAME engine "expect decent behavior" would use (escalate on misbehavior-count).
+**Where it stops:** genuine novelty + the actual *words* still need the LLM — but even novelty gets a
+deterministic shell (detect novelty → react with patterned curiosity / caution / consequence). The
+governing test is unchanged: *what would a real DM do?* — this just says a surprising amount of that
+answer is encodable.
+
+**VALIDATED 2026-06-19:** the post-H-39 gate's remaining grace failures map cleanly onto *missing
+social-physics rules* (number-transparency, react-under-pressure) — the lens predicts real defects, it's
+not just philosophy. Also pairs with the meta-lesson from the H-39 verdict: *the test itself can be the
+defect* — always fork "engine wrong, or measurement wrong?" before patching.
+
+**echoes:** social physics · command respect · expect decent behavior · the DM should react · human
+behavior is deterministic · feels like creativity but is a rule · what would a real DM do · sarcasm ·
+wit · the DM has standards · deterministic personality · NPC reacts under pressure · react under
+pressure · number transparency · what else is out there waiting · the test itself can be the problem

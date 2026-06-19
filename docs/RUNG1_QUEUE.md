@@ -181,11 +181,27 @@ resolve a real present NPC before anything fires, so it can't start combat again
 `AGENT_CHANGELOG.md` per protocol §3 — Basecamp backfilled both entries post-hoc from the commits +
 self-reports.
 
-## In flight
-*(none — H-39 DONE + BASECAMP-verified + GATED. Post-H-39 gate ran 7/48 (see section below): H-39's
-info-seeking-lore tail collapsed (DM_TEST_DEADEND 9→2), new dominant cluster is the Rules-Lawyer
-"give me my literal numbers" meta-query (candidate H-40, grace). Queue clear — good point for a new
-session. H-40 + the combat dying-state residual NOT dispatched, Tim's call.)*
+## In flight — H-40 (grace) ∥ H-41 (combat), dispatched 2026-06-19, declared FILE-DISJOINT (parallel OK per §2)
+Tim greenlit both. As queue owner I scoped them to NOT collide: **H-40 = `engine/grace/gracefulAdjudication.js`
+ONLY** (+ `tests/U203`); **H-41 = `engine/playloop.js` + `engine/combat/escapeCombat.js`** (+ `tests/U204`).
+Disjoint file sets → parallel is legal (§2); each prompt carries a HALT-if-you-need-the-other's-file guard
+and a distinct test number so the U200/U201-style collision from the H-38 round can't recur.
+- **H-40 "number-transparency" (Claude-Sonnet, grace)** — the post-H-39 dominant cluster (4/7). A meta-query
+  for the player's own stat/modifier/roll must answer the NUMBER plainly, never a spreadsheet: (i) kill the
+  raw breakpoint-TABLE leak at `gracefulAdjudication.js:759` (return the player's actual modifier instead);
+  (ii) compound "stats AND weapons/gear" answers BOTH slots (t2 dropped stats); (iii) "give me my numbers —
+  STR/DEX + attack bonus" returns full scores + final attack bonus, not a half rules-lecture (t3). Pure
+  grace; NO RNG (purity rule — no rolling in the meta-handler). If it needs `playloop.js`, STOP (H-41 owns it).
+- **H-41 "0-HP dying-state out of combat" (Codex, combat)** — Chaos t9: PC at 0 HP, foe present (Corwin hp 5),
+  `inCombat:false`, attack fizzled with NO dice/no dying-state — `outOfCombatDyingGate` (`playloop.js:5619`,
+  called L531) did not fire. Likely an HP-field desync (sheet hp vs `meta.escapeHp`), same family as H-38b's
+  enemy-HP desync — trace which hp the gate reads vs the real post-combat PC hp. Codex can't push (§7):
+  commit locally, report the hash, queue owner pushes after verification. If it needs
+  `gracefulAdjudication.js`, STOP (H-40 owns it).
+On results: verify each per §7 (full suite, determinism U19/21/22/27/30, lane-boundary diff), then a
+post-H-40/H-41 gate. NOTE the social-physics lens (IG-11): H-40 = the "number-transparency" rule; the
+post-H-39 confrontation residual (Lore-hound t12) = the "react-under-pressure" rule, still open for a later
+grace packet.
 
 ## Done — H-39 (2026-06-19, BASECAMP-verified per §7)
 Claude-Sonnet (`05f24aa` fix, `075d46d` DONE, `e5320dd` claim). Deliver-or-decline by recall, not

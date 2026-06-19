@@ -220,6 +220,12 @@ const META_EXPLICIT_CHECK_A = /\b(?:let me|i want to|i(?:'d)?\s+like to|can i|i(
 // Pattern B: "I want to roll MIGHT against him", "let me roll WITS on this"
 // Requires a stat name after "roll" so "I want to roll him" (a barrel) doesn't fire.
 const META_EXPLICIT_CHECK_B = /\b(?:let me|i want to|i(?:'d)?\s+like to|can i|i(?:'m going to| need to| should))\s+roll\s+(?:a\s+)?(might|agility|wits|grit|charm|strength|dexterity|constitution|intelligence|wisdom|charisma|str|dex|con|int|wis|cha)\b/i;
+// Pattern C: imperative "Roll the d20 against WITS", "roll against GRIT". The stat
+// follows a check preposition so bare "roll might" (a modal) doesn't fire. (H-26c)
+const META_EXPLICIT_CHECK_C = /\broll\b[^.?!]*?\b(?:vs\.?|versus|against|for|on)\s+(might|agility|wits|grit|charm|strength|dexterity|constitution|intelligence|wisdom|charisma|str|dex|con|int|wis|cha)\b/i;
+// Pattern D: a named check with no action verb — "a WITS check", "I asked for a
+// GRIT save". The stat must immediately precede check/save/test. (H-26c)
+const META_EXPLICIT_CHECK_D = /\b(might|agility|wits|grit|charm|strength|dexterity|constitution|intelligence|wisdom|charisma|str|dex|con|int|wis|cha)\s+(?:check|save|test)\b/i;
 // Roll-recall — player cites a specific past roll number to dispute or follow up.
 // "I rolled a 16", "16 vs DC 11", "you told me I got a 16", "my roll was 16". (H-12/13.)
 const META_ROLL_RECALL = /\b(?:i (?:rolled|got|said|had)(?:\s+a)?|my roll was(?:\s+a)?|you (?:said|told me)(?:\s+i (?:rolled?|got))?(?:\s+a)?)\s*\d+\b|\b\d+\s+(?:vs\.?|versus|against)\s+dc\s*\d+\b/i;
@@ -235,6 +241,7 @@ export function isMetaQuestion(text) {
     || META_MODIFIER_FORMULA.test(t) || META_SHEET_CONFIRM.test(t)
     || META_NPC_OBSERVER.test(t) || META_NPC_PRESENCE.test(t)
     || META_EXPLICIT_CHECK_A.test(t) || META_EXPLICIT_CHECK_B.test(t)  // H-19
+    || META_EXPLICIT_CHECK_C.test(t) || META_EXPLICIT_CHECK_D.test(t)  // H-26c
     || META_SKILL_MOD.test(t) || META_ATTACK_MOD.test(t) || META_BARE_DC.test(t)  // H-25
     || META_ROLL_RECALL.test(t);  // H-12/13
 }
@@ -280,9 +287,16 @@ export function looksMultiAction(text) {
 }
 
 // Extract the game-stat the player named in an explicit check request.
-// Defaults to WITS (perception/insight) when no stat is specified.
+// Defaults to WITS (perception/insight) when no stat is specified. Prefers the
+// stat named as the roll TARGET ("roll … against WITS") or the named check
+// ("a WITS check") over the first stat mentioned — so "not a CHARM attempt …
+// roll against WITS" resolves to WITS, not the earlier CHARM. (H-26c)
 function extractRequestedStat(text) {
   const t = String(text || '').toLowerCase();
+  const target = t.match(META_EXPLICIT_CHECK_C);
+  if (target) return resolveStatKey(target[1]);
+  const named = t.match(META_EXPLICIT_CHECK_D);
+  if (named) return resolveStatKey(named[1]);
   const m = t.match(/\b(might|agility|wits|grit|charm|strength|dexterity|constitution|intelligence|wisdom|charisma|str|dex|con|int|wis|cha)\b/i);
   return m ? resolveStatKey(m[1]) : 'WITS';
 }
@@ -740,7 +754,8 @@ export function handleMetaQuestion(text, world) {
   // Explicit skill-check request — "let me make a WITS check", "I want to roll MIGHT
   // against him". A real DM names the stat, DC, and asks for the roll. This gate fires
   // BEFORE the examine/explore intercept so "read him" doesn't become an observe-only. (H-19)
-  if (META_EXPLICIT_CHECK_A.test(lowerText) || META_EXPLICIT_CHECK_B.test(lowerText)) {
+  if (META_EXPLICIT_CHECK_A.test(lowerText) || META_EXPLICIT_CHECK_B.test(lowerText)
+      || META_EXPLICIT_CHECK_C.test(lowerText) || META_EXPLICIT_CHECK_D.test(lowerText)) {
     const stat = extractRequestedStat(text);
     const score = Number(world.party?.[0]?.stats?.[stat] ?? 10);
     const mod = statMod(score);

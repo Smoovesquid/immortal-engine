@@ -182,15 +182,35 @@ resolve a real present NPC before anything fires, so it can't start combat again
 self-reports.
 
 ## In flight
-**H-39 "deliver-or-decline by recall, not enumeration"** — DISPATCHED to Claude-Sonnet (grace lane)
-2026-06-19; Tim greenlit after the design-review verdict below (and after weighing — then deferring — a
-DM-personality/RAG-voice layer, which is real but a separate axis: it dresses up answers that get
-through, it doesn't stop questions being turned away; sequence it AFTER H-39). Paste-ready prompt handed
-to Tim to relay. Scope: (i) recall-bias `isInfoSeekingText`; (ii) `genericGroundedOutcome` fall-through
-safety net; (iii) `META_ADVICE` confident-stance. Claims `engine/grace/gracefulAdjudication.js` +
-`engine/playloop.js`; worker posts the `[CLAIMED]` lock on start. On result, verify per §7 (full suite,
-determinism U19/21/22/27/30, lane-boundary diff — must NOT touch `llmAdapter.js` or `engine/combat/*`),
-then run a post-H-39 gate to confirm the `DM_TEST_DEADEND` tail collapses regardless of phrasing.
+*(none — H-39 DONE, pushed, BASECAMP-verified per §7. Next step is a post-H-39 gate run to confirm the
+`DM_TEST_DEADEND` tail collapses — awaiting Tim's greenlight on the ~$2.40 spend.)*
+
+## Done — H-39 (2026-06-19, BASECAMP-verified per §7)
+Claude-Sonnet (`05f24aa` fix, `075d46d` DONE, `e5320dd` claim). Deliver-or-decline by recall, not
+enumeration — the strategic-reframe fix from the verdict below. Three parts, all grace lane
+(`gracefulAdjudication.js` + `playloop.js`) + `tests/U202` (25 cases): **(i)** recall-bias
+`isInfoSeekingText` via new `INFO_SEEKING_TOPIC_RE` anchored to knowledge-VERB phrases ("tell me about
+X" / "what happened to X" / "what do you know about X" / "what's the story behind X") so it generalizes
+to ANY topic, + extended action-verb EXCLUDE (climb/jump/pick/force/try/... mirroring isExploreIntent)
+so feasibility questions stay actionable; **(ii)** `genericGroundedOutcome` now declines on a detected
+info-question (covers the FAILED-roll branch infoExtractionOutcome skips) via a shared `declineInfoSeek`
+helper; **(iii)** `META_ADVICE` "should I be worried?" returns a confident TRUE danger read from REAL
+state (hostile NPCs / open ledger threats / grim-blood tone via `fateBand`), never "yours to call".
+§7 verification: full suite **8135/0** (= 8110 + 25, matches), determinism U19/21/22/27/30 **6/6**, in
+sync with origin, no forbidden-file touch (no `llmAdapter.js` / `engine/combat/*`), no
+`Math.random`/`Date.now`/`WORLD_VERSION`/`applyDeltas`, no existing test rewritten (invariant #19 N/A),
+`declineInfoSeek` extraction byte-identical to the original. Two worker deviations, both judged SOUND:
+(a) verb-phrase net instead of a blanket `isQuestionShaped` base — correctly avoids breaking
+isExploreIntent's survey path (U197-06), better-calibrated than the dispatch; (b) found + fixed a THIRD
+interception point (`META_RECAP`'s unanchored "what happened" swallowing third-party lore questions),
+caught by live-probe.
+**Known residual (track at the post-H-39 gate, NOT a blocker):** all three gates (pre-roll suppression,
+`infoExtractionOutcome`, the (ii) safety net) key on the SAME `isInfoSeekingText`, so (ii) is
+belt-and-suspenders across OUTCOMES (adds the failed-roll branch), NOT across detection-recall. A
+noun-less / verb-phrase-less lore interrogative ("who used to live here?", "what's down in the cellar?")
+can still miss detection and reach the atmosphere pool — narrower than before, not zero. If the gate
+surfaces this shape, the next move is a broader recall net (e.g. gate (ii) on `isQuestionShaped` with an
+action-verb exclusion), NOT more enumerated nouns.
 
 ## Done — H-38a/b (2026-06-19, BASECAMP-certified post-hoc)
 H-38a (`e1ff459`/`73cc196`, grace) + H-38b (`1727db9`+docs, combat), both pushed, in sync with origin.

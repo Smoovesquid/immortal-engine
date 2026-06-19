@@ -328,6 +328,12 @@ social-physics rules* (number-transparency, react-under-pressure) — the lens p
 not just philosophy. Also pairs with the meta-lesson from the H-39 verdict: *the test itself can be the
 defect* — always fork "engine wrong, or measurement wrong?" before patching.
 
+**Research backing:** [Biblioteca](biblioteca/README.md) **Vol 1 — Pragmatic Logic** is the academic/
+precedent foundation for this whole idea (speech acts, implicature, Versu social practices; its "interpret
+richly, commit narrowly" architecture = what the engine already runs). It names the next social-physics
+rules to reach for: discourse obligations, scene practices, presupposition / loaded questions, and
+clarification-as-a-first-class-outcome.
+
 **echoes:** social physics · command respect · expect decent behavior · the DM should react · human
 behavior is deterministic · feels like creativity but is a rule · what would a real DM do · sarcasm ·
 wit · the DM has standards · deterministic personality · NPC reacts under pressure · react under

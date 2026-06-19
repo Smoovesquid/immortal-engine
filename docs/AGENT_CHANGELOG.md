@@ -9,9 +9,7 @@ cross-agent continuity: what changed, what proved it, and what remains.
 ## CLAIMS (in-flight work — claim here BEFORE editing, clear when done)
 
 `[CLAIMED] <seam> · <agent> · <UTC> · files: <paths>` — a claimed seam or file is off-limits to
-other agents.
-
-`[CLAIMED] H-28 bundled llmAdapter narration-validation pass (H-11 2nd half / H-26a / H-26d / H-27) · Claude Opus (worker) · 2026-06-18 · files: engine/llmAdapter.js, engine/ai/narratorContext.js, tests/U184*.test.js`
+other agents. (none active)
 
 ## Template
 
@@ -27,6 +25,30 @@ other agents.
 - Remaining:
   - 
 - Rollback:
+
+---
+
+## 2026-06-18 — Claude Opus (worker)
+
+- Packet/seam: H-28 — bundled llmAdapter narration-validation pass (closes H-11 2nd half, H-26a, H-26d, H-27 → entire H-1..H-28 hard tail)
+- Commit: `0cde26b` (claim: prior commit on this branch)
+- Files changed:
+  - `engine/llmAdapter.js` (+~130: four rejection rules in validateNarrationCandidate + exported `collectDefeatedNames` helper)
+  - `engine/ai/narratorContext.js` (+3: `rollOutcome` field on the narrator context so R3 can see the roll band)
+  - `tests/U184.narrationGroundTruth.test.js` (new, 21 cases — each rule: catch + false-positive guard + helper unit tests)
+- Summary: Extended the existing narration-validation contract (validate polish against ground truth, else fall back to grounded base) with four rules, all the same failure shape (LLM polish drifting from/contradicting deterministic truth):
+  - **R1 (H-11 2nd half):** the prior location-lock only checks the CURRENT place is *mentioned*; added a guard that rejects polish asserting the player is INSIDE a *different* real map node ("standing inside Stonebridge's sole structure" while elsewhere). Conservative assertion frames only — merely mentioning another node as a destination passes.
+  - **R2 (H-26a):** when combat is inactive but a defeated enemy is on record, reject a fresh player-defeat exchange ("you fall, defeated") or the reconciled-dead enemy launching an attack. Mere recap ("Greyhand lies still") passes.
+  - **R3 (H-26d):** threaded `ctx.rollOutcome`; on a `mixed` band, reject prose that reads as an unqualified clean win (explicit clean-win marker AND no friction/cost language). Fires only on mixed; friction-bearing mixed prose and genuine success wins pass.
+  - **R4a (H-27):** reject invented kinship/attribution claims (grandfather backstory, "it was X who raised it") NOT present in the grounded base narration; pronoun attributions ("it was you who") and grounded kinship pass.
+  - **R4b (H-27):** reject a defeated NPC (combat enemy, scene-NPC flag, or ledger death fact) narrated as alive/active/present; gone/still references and living NPCs pass.
+  - Deliberately did NOT touch composer.js (deterministic generation is correct per H-26 triage), did NOT bump WORLD_VERSION, did NOT spend the Opus gate (budget exhausted — node --test only).
+- Proof:
+  - `node --test tests/U184.narrationGroundTruth.test.js` → 21/0
+  - `node --test` → 7972/0 (was 7951, +21)
+  - Determinism gates U19/21/22/27/30 → 6/6 green
+- Remaining: none — this closes the cataloged H-1..H-28 hard tail. Note: R3 in production depends on `outcome.outcome` reaching `buildNarratorContext`; the unit contract is proven directly, the production wiring is a one-field passthrough. Returns to queue owner for the optional final gate-budget verification run.
+- Rollback: revert `0cde26b`
 
 ---
 

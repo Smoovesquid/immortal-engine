@@ -11,8 +11,6 @@ cross-agent continuity: what changed, what proved it, and what remains.
 `[CLAIMED] <seam> · <agent> · <UTC> · files: <paths>` — a claimed seam or file is off-limits to
 other agents. (none active)
 
-`[CLAIMED] H-36b combat truth (retaliation/defeat/disengage) · Codex · 2026-06-19T10:20:52Z · files: engine/combat/escapeCombat.js, tests/U198.combatTruthReconciliation.test.js · note: local commit only; queue owner will push`
-
 ## Template
 
 - Date:
@@ -27,6 +25,17 @@ other agents. (none active)
 - Remaining:
   - 
 - Rollback:
+
+---
+
+2026-06-19 — Codex
+- Packet/seam: Rung 1 / H-36b combat truth (retaliation/defeat/disengage)
+- Commit(s): this commit
+- Files changed: `engine/combat/escapeCombat.js`, `engine/playloop.js`, `tests/U191.combatImprovisedAction.test.js`, `tests/U198.combatTruthReconciliation.test.js`
+- Summary: R1 traced as case (a): the deterministic enemy turn really can damage `meta.escapeHp` after a player miss, but the old mechanics line only surfaced the player strike. Enemy-turn hits from normal, legendary, and lair actions now append visible roll/save, damage, and PC HP delta to the mechanics line. R2 confirmed the improvised/natural strike path already applies `newHp <= 0` defeat and victory; added U198 coverage for the headbutt path. R3 fixed combat-state bleed by holding active escape-combat interior movement in combat and treating any `?`-bearing non-action as table-talk, so lore/social text cannot silently exit then later trigger strike/morale/flee math. Deliberately did NOT touch `engine/grace/gracefulAdjudication.js` or `engine/llmAdapter.js`; no `WORLD_VERSION` bump; no push from Codex.
+- Proof: `node --test tests/U198.combatTruthReconciliation.test.js` — 5/5; `node --test tests/U198.combatTruthReconciliation.test.js tests/U191.combatImprovisedAction.test.js tests/U193.combatInitiationReconciliation.test.js tests/U194.combatStateReconciliation.test.js tests/U152.grappleIntegration.test.js tests/U151.grapple.test.js` — 32/32; `node --test` — 8069/0 after enabling local bind permission (first attempt hit sandbox `listen EPERM 127.0.0.1`); determinism gates `U19/U21/U22/U27/U30` — 106/106 in the targeted glob; `npm run playtest:quick` — 50 runs, 0 crashes. Live `v1.html` served 200 on port 5179, but visible screenshot QA was not completed because no browser automation package or in-app browser tool was available in this environment; `npm run dev` watch mode also hit `EMFILE`, while an existing server was already listening on 5179.
+- Remaining/next: Queue owner should push after independent verification. No H-36c grace handoff for R1, because this was combat-side case (a), not pure polish invention.
+- Rollback: revert this commit
 
 ---
 

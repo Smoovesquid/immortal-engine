@@ -79,9 +79,14 @@ test('U191: genuine in-combat question remains free table-talk', () => {
 
 test('U191: bare combat round tag matches the canonical post-turn round', () => {
   const { w, byId } = setupCombat(6);
+  const beforeHp = Number(w.meta.escapeHp);
   const result = playerMove(w, byId, 'take cover');
   const canonRound = result.world.combat?.round;
+  const mech = String(result.output.mechanics || '');
 
   assert.equal(canonRound, 7);
-  assert.equal(String(result.output.mechanics || ''), `[combat:r${canonRound}]`);
+  assert.match(mech, new RegExp(`^\\[combat:r${canonRound}\\]`), `round tag should remain canonical: ${mech}`);
+  if (Number(result.world.meta.escapeHp) < beforeHp) {
+    assert.match(mech, /\[enemy:Lingerer \| atk:\d+ vs AC:\d+ → hit \| \d+ dmg(?: crit)? \| hp:\d+->\d+\]/, `enemy damage should be visible: ${mech}`);
+  }
 });

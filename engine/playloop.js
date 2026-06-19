@@ -967,6 +967,12 @@ function playerMoveCore(world, packsById, text) {
   }
 
   const interiorAction = inferInteriorAction(text, w.scene?.interior);
+  if (w.combat?.active && w.meta?.mode === 'escape' && (interiorAction.kind === 'enter' || interiorAction.kind === 'exit' || interiorAction.kind === 'move')) {
+    return {
+      world: w,
+      output: { narration: 'Wizard: There\'s steel between you and the road — no running from this one. Strike, guard, cast, or talk.', mechanics: '[combat:table-talk]' }
+    };
+  }
   if (interiorAction.kind === 'enter') {
     // "Go inside" when already indoors gets the obvious answer, not the
     // blocked-wall message.
@@ -1769,7 +1775,8 @@ function playerMoveCore(world, packsById, text) {
       const escVerb = parseEscapeAction(text).verb;
       const improvisedCombatAction = isImprovisedCombatAction(w, text);
       const explicitAction = improvisedCombatAction || /\b(strike|attack|swing|stab|shoot|slash|smite|fireball|blast|cast|rage|surge|guard|ward|cover|throw|hurl|lob|fling|toss)\b/i.test(String(text || ''));
-      if (isMetaQuestion(text) || (isQuestionShaped(text) && escVerb !== 'parley' && !explicitAction)) {
+      const asksQuestion = isQuestionShaped(text) || /\?/.test(String(text || ''));
+      if (isMetaQuestion(text) || (asksQuestion && escVerb !== 'parley' && !explicitAction)) {
         const metaAnswer = isMetaQuestion(text) ? handleMetaQuestion(text, w) : null;
         let answer = metaAnswer || combatStatusAnswer(w);
         // "Look around" mid-fight: the steel comes first, the scenery second.

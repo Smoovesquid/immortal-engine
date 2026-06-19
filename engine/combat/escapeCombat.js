@@ -1804,6 +1804,7 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
   let hp = Number(w.meta.escapeHp) || 0;
   const coverBonus = coverState ? (Number(coverState.bonus) || 0) : 0;
   const ac = playerAc(pc) + (warded ? wardBonus : 0) + coverBonus;
+  const enemyMech = [];
 
   // ── P-75: boss beats between turns ──────────────────────────────────────────
   // The boss answers your turn (legendary action: one option per round, the
@@ -1819,14 +1820,19 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
       const rolled = Math.max(1, rollDice(String(payload.damage || '1d6'), rng).total);
       if (save >= payload.save.dc) {
         const half = payload.save.halfOnSave ? Math.max(1, Math.floor(rolled / 2)) : 0;
-        return { dmg: half, text: half > 0 ? `you twist aside (${stat} save ${save} vs DC ${payload.save.dc}) — half, ${half} ${payload.type || 'force'}` : `you shake it off (${stat} save ${save} vs DC ${payload.save.dc})` };
+        return {
+          dmg: half,
+          text: half > 0 ? `you twist aside (${stat} save ${save} vs DC ${payload.save.dc}) — half, ${half} ${payload.type || 'force'}` : `you shake it off (${stat} save ${save} vs DC ${payload.save.dc})`,
+          mech: `${stat} save:${save} vs DC:${payload.save.dc}`
+        };
       }
-      return { dmg: rolled, text: `${stat} save ${save} vs DC ${payload.save.dc} fails — ${rolled} ${payload.type || 'force'}` };
+      return { dmg: rolled, text: `${stat} save ${save} vs DC ${payload.save.dc} fails — ${rolled} ${payload.type || 'force'}`, mech: `${stat} save:${save} vs DC:${payload.save.dc}` };
     }
-    const atk = rng.int(1, 20) + (Number(payload.toHit) || 0);
-    if (atk < ac) return { dmg: 0, text: 'it misses' };
+    const raw = rng.int(1, 20);
+    const atk = raw + (Number(payload.toHit) || 0);
+    if (atk < ac) return { dmg: 0, text: 'it misses', mech: `atk:${atk} vs AC:${ac}` };
     const rolled = Math.max(1, rollDice(String(payload.damage || '1d6'), rng).total);
-    return { dmg: rolled, text: `hits you for ${rolled} ${payload.type || 'bludgeoning'}` };
+    return { dmg: rolled, text: `hits you for ${rolled} ${payload.type || 'bludgeoning'}`, mech: `atk:${atk} vs AC:${ac}` };
   };
 
   for (const e of enemies) {
@@ -1841,7 +1847,11 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
     if (!options.length) continue;
     const chosen = [...options].sort((a, b) => (Number(b.cost) || 1) - (Number(a.cost) || 1))[0];
     const r = bossPayloadVsYou(resolveBossActionPayload(e, chosen));
-    if (r.dmg > 0) hp = Math.max(0, hp - r.dmg);
+    if (r.dmg > 0) {
+      const beforeHp = hp;
+      hp = Math.max(0, hp - r.dmg);
+      enemyMech.push(`[enemy:${e.name} legendary:${chosen.name} | ${r.mech} → hit | ${r.dmg} dmg | hp:${beforeHp}->${hp}]`);
+    }
     beats.push(`The ${e.name} steals a beat that isn't its turn — ${chosen.name} (legendary): ${r.text}.`);
     if (hp <= 0 && hasFeature(pc, 'relentlessEndurance') && !feats.relentlessUsed) {
       feats.relentlessUsed = true; hp = 1;
@@ -1861,7 +1871,11 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
         const lairEntry = e.lairActions[(round - 1) % e.lairActions.length];
         if (!lairEntry) continue;
         const r = bossPayloadVsYou(resolveLairActionPayload(e, lairEntry));
-        if (r.dmg > 0) hp = Math.max(0, hp - r.dmg);
+        if (r.dmg > 0) {
+          const beforeHp = hp;
+          hp = Math.max(0, hp - r.dmg);
+          enemyMech.push(`[enemy:${e.name} lair:${lairEntry.name} | ${r.mech} → hit | ${r.dmg} dmg | hp:${beforeHp}->${hp}]`);
+        }
         beats.push(`The lair itself answers its master — ${lairEntry.name}: ${r.text}.`);
         if (hp <= 0 && hasFeature(pc, 'relentlessEndurance') && !feats.relentlessUsed) {
           feats.relentlessUsed = true; hp = 1;
@@ -1968,7 +1982,9 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
         }
         if (dmg <= 0) continue;
       }
+      const beforeHp = hp;
       hp = Math.max(0, hp - dmg);
+      enemyMech.push(`[enemy:${e.name} | atk:${total} vs AC:${ac} → hit | ${dmg} dmg${crit ? ' crit' : ''} | hp:${beforeHp}->${hp}]`);
       // Half-Orc Relentless Endurance: the blow that would drop you leaves you
       // standing at 1 HP instead. Once per rest.
       if (hp <= 0 && hasFeature(pc, 'relentlessEndurance') && !feats.relentlessUsed) {
@@ -2005,7 +2021,7 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
       result: {
         beats,
         combatSummary: beats.join(' '),
-        mechanicsLine: '[combat:defeat]',
+        mechanicsLine: `${actionMech || `[combat:r${round}]`}${enemyMech.length ? ` ${enemyMech.join(' ')}` : ''} [combat:defeat]`,
         outcome: 'failure'
       }
     };
@@ -2022,7 +2038,7 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
     result: {
       beats,
       combatSummary: beats.join(' '),
-      mechanicsLine: actionMech || `[combat:r${Number(w.combat?.round) || round + 1}]`,
+      mechanicsLine: `${actionMech || `[combat:r${Number(w.combat?.round) || round + 1}]`}${enemyMech.length ? ` ${enemyMech.join(' ')}` : ''}`,
       outcome: 'mixed'
     }
   };

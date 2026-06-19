@@ -7,6 +7,7 @@ import { extractIntent, getClarificationPrompt } from '../voice/intentExtraction
 import { adjudicate } from '../adjudication/adjudicate.js';
 import { exitsFrom, cleanPlaceName } from '../map/mapState.js';
 import { statMod } from '../ruleset/core/stats.js';
+import { profBonusFor } from '../ruleset/core/levelTable.js';
 
 // Canonical stat names (bare "my X" is unambiguous for game-native names).
 const META_STAT = /\b(?:what(?:'?s| is)\s+my\s+|my\s+)(might|agility|wits|grit|charm)(?:\s+(?:modifier|mod|score|stat|number|bonus))?\b/i;
@@ -18,6 +19,27 @@ const META_STAT_SYNONYM = /\b(?:what(?:'?s| is)\s+my\s+|give\s+me\s+(?:my\s+)?)(
 const STAT_SYNONYMS = { str: 'MIGHT', strength: 'MIGHT', dexterity: 'AGILITY', dex: 'AGILITY', intelligence: 'WITS', int: 'WITS', wisdom: 'WITS', wis: 'WITS', constitution: 'GRIT', con: 'GRIT', charisma: 'CHARM', cha: 'CHARM' };
 function resolveStatKey(raw) { return STAT_SYNONYMS[raw.toLowerCase()] || raw.toUpperCase(); }
 function fmtMod(m) { return m >= 0 ? `+${m}` : `${m}`; }
+
+// H-25 (Opus gate 06-18): a player asking for their OWN number — a D&D SKILL
+// modifier ("what's my Insight modifier? I need a number"), their attack
+// modifier, or a bare DC — must get the number, never an atmosphere deflection.
+// Skill → governing game-stat, mirroring resolve.js (FOCUS_APPROACH→statForApproach)
+// so the reported modifier matches what the engine actually rolls.
+const SKILL_STAT = {
+  athletics: 'MIGHT', intimidation: 'MIGHT',
+  stealth: 'AGILITY', acrobatics: 'AGILITY', sleight_of_hand: 'AGILITY',
+  insight: 'CHARM', persuasion: 'CHARM', deception: 'CHARM', performance: 'CHARM',
+  survival: 'GRIT', medicine: 'GRIT', nature: 'GRIT',
+  arcana: 'WITS', investigation: 'WITS', perception: 'WITS', history: 'WITS', religion: 'WITS'
+};
+// Match "what's my <skill> modifier/mod/bonus/number/check" / "give me my <skill>".
+// "sleight of hand" is normalized to the focus key sleight_of_hand below.
+const META_SKILL_MOD = /\b(?:what(?:'?s| is)\s+my\s+|my\s+|give\s+me\s+(?:my\s+)?)(athletics|intimidation|stealth|acrobatics|sleight\s+of\s+hand|insight|persuasion|deception|performance|survival|medicine|nature|arcana|investigation|perception|history|religion)(?:\s+(?:modifier|mod|bonus|number|score|check|skill))?\b/i;
+// Attack/to-hit modifier — "what's my attack modifier", "my to-hit bonus".
+const META_ATTACK_MOD = /\b(?:what(?:'?s| is)\s+my\s+|my\s+|give\s+me\s+(?:my\s+)?)(?:attack|to[-\s]?hit)\s+(?:modifier|mod|bonus|number|roll)\b/i;
+// Bare DC ask with no declared check — "give me the DC", "what's the DC", "what DC".
+// (Explicit "make a WITS check" DCs are handled by META_EXPLICIT_CHECK below.)
+const META_BARE_DC = /\b(?:give\s+me|what(?:'?s| is)|tell\s+me)\s+(?:the\s+)?dc\b|\bwhat\s+dc\b/i;
 
 // Compute pacing delay based on action type
 export function computePacingDelay(action) {
@@ -213,6 +235,7 @@ export function isMetaQuestion(text) {
     || META_MODIFIER_FORMULA.test(t) || META_SHEET_CONFIRM.test(t)
     || META_NPC_OBSERVER.test(t) || META_NPC_PRESENCE.test(t)
     || META_EXPLICIT_CHECK_A.test(t) || META_EXPLICIT_CHECK_B.test(t)  // H-19
+    || META_SKILL_MOD.test(t) || META_ATTACK_MOD.test(t) || META_BARE_DC.test(t)  // H-25
     || META_ROLL_RECALL.test(t);  // H-12/13
 }
 
@@ -361,6 +384,50 @@ export function handleMetaQuestion(text, world) {
     return name
       ? `Your name is ${name}. If I've called you anything else, that was my slip — you're ${name}.`
       : `You haven't given your name yet — what should I call you?`;
+  }
+
+  // Skill modifier — "what's my Insight modifier? I need a number." Answer with
+  // the real number from the sheet: governing game-stat modifier + proficiency
+  // when the focus is owned. Never deflect a player's own-number ask. (H-25)
+  {
+    const sm = lowerText.match(META_SKILL_MOD);
+    if (sm) {
+      const raw = sm[1].toLowerCase().replace(/\s+/g, '_'); // "sleight of hand" → sleight_of_hand
+      const statKey = SKILL_STAT[raw] || 'WITS';
+      const p = world.party?.[0] || {};
+      const score = Number(p.stats?.[statKey]) || 10;
+      const base = statMod(score);
+      const foci = Array.isArray(p.foci) ? p.foci.map(f => String(f).toLowerCase()) : [];
+      const proficient = foci.includes(raw);
+      const prof = proficient ? profBonusFor(Number(p.level) || 1) : 0;
+      const skillName = raw.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+      const clause = proficient
+        ? ` — ${statKey} ${fmtMod(base)} plus proficiency +${prof}`
+        : ` — off your ${statKey}, ${fmtMod(base)} (you're not trained in it)`;
+      return `Your ${skillName} modifier is ${fmtMod(base + prof)}${clause}.`;
+    }
+  }
+
+  // Attack / to-hit modifier — "what's my attack modifier?" Report the real
+  // numbers the engine adds, melee vs. finesse. (H-25)
+  if (META_ATTACK_MOD.test(lowerText)) {
+    const p = world.party?.[0] || {};
+    const might = statMod(Number(p.stats?.MIGHT) || 10);
+    const agi = statMod(Number(p.stats?.AGILITY) || 10);
+    return `To hit you add your MIGHT modifier (${fmtMod(might)}) for a melee strike, or your AGILITY (${fmtMod(agi)}) for a finesse or ranged attack — plus your proficiency on a weapon you're trained with.`;
+  }
+
+  // Bare DC ask with no declared check — "give me the DC". There's no standing
+  // DC; report the last roll's DC if one's on record, else explain. (H-25)
+  // Defers to the explicit-check handler when the player declared a check in the
+  // same breath ("let me make a WITS check… what's the DC?") — that path sets a
+  // real DC for the named stat.
+  if (META_BARE_DC.test(lowerText) && !META_EXPLICIT_CHECK_A.test(lowerText) && !META_EXPLICIT_CHECK_B.test(lowerText)) {
+    const stored = world.conversation?.lastRoll;
+    if (stored && Number.isFinite(Number(stored.dc))) {
+      return `The last DC I set was ${stored.dc} (your roll: ${stored.roll}, ${stored.outcome}). There's no standing DC otherwise — I set one when you commit to a specific action.`;
+    }
+    return `There's no standing DC — I set the difficulty when you commit to a specific action, against how hard that moment is. Tell me what you're attempting and I'll give you the number to beat.`;
   }
 
   // Modifier formula — "how are modifiers calculated?", "what's the ability

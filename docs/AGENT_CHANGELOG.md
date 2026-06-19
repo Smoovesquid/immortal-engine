@@ -9,7 +9,9 @@ cross-agent continuity: what changed, what proved it, and what remains.
 ## CLAIMS (in-flight work — claim here BEFORE editing, clear when done)
 
 `[CLAIMED] <seam> · <agent> · <UTC> · files: <paths>` — a claimed seam or file is off-limits to
-other agents. (none active)
+other agents.
+
+[CLAIMED] H-34 NPC-roster grounding · Claude Sonnet · 2026-06-19T07:58:07Z · files: engine/grace/gracefulAdjudication.js, engine/llmAdapter.js, engine/playloop.js
 
 ## Template
 
@@ -25,6 +27,43 @@ other agents. (none active)
 - Remaining:
   - 
 - Rollback:
+
+---
+
+## 2026-06-19 — Codex (worker)
+
+- Packet/seam: Rung 1 / H-32 — combat-initiation reconciliation (declared attacks, grapple-kills, damage/defeated-state)
+- Commit: `684b4c6`
+- Files changed:
+  - `engine/combat/escapeCombat.js` (improvised-strike vocab +windowsill/sill; `actionMech` now set on both ward branches and threaded into the victory mechanics line instead of being discarded)
+  - `engine/playloop.js` (`declaredNpcViolence` gate suppresses the out-of-combat meta-question short-circuit when the text also declares an attack; `isCombatSceneObjectAction`/`isImprovisedCombatAction` +windowsill/sill; `ANY_VIOLENCE` swing→swings?; `detectAttackAnyIntent` new "verb + at/against/into me" branch for 3rd-person-declared attacks on the player)
+  - `tests/U193.combatInitiationReconciliation.test.js` (new, 5 cases)
+- Summary: Closed the gate's COMBAT_NOT_STARTED + table-talk-kill + narration-vs-truth residuals. A declared attack by a present NPC ("Corwin swings his satchel at me", embedded inside a longer compound question) no longer gets swallowed whole by the meta-question handler — `declaredNpcViolence` checks for assault/attack intent first and, when present, lets combat-initiation logic run instead of returning a bare inventory answer. Grapple-style kill phrasing ("grab his throat, slam his head into the windowsill") now resolves through the existing improvised-strike profile (windowsill/sill added to the Fixture vocabulary) instead of `[combat:table-talk]` with a freebie narrated kill. The victory-line bug (the LAST action's `actionMech` — a real strike's damage — was being unconditionally discarded and replaced with bare `[combat:victory]`) is fixed: the ward branches now set `actionMech` like every other action branch already did, and the victory return prepends whatever `actionMech` was set to. Did NOT touch HP/defeated mutation logic itself (already correct via the existing resolution path — the bug was the *reporting* line plus the upstream routing gate); did not touch `combatLifecycle.js`'s id-minting; no `WORLD_VERSION` bump.
+- Proof:
+  - `node --test tests/U193.combatInitiationReconciliation.test.js` — 5/5
+  - Full suite: `node --test` — 8014/0 (Basecamp reran independently; includes H-31's 15 new tests landed in the same working tree)
+  - Determinism gates U19/21/22/27/30 — 6/6 green (Basecamp reran independently)
+- Remaining/next: none cataloged. **NOT YET PUSHED** — `git push` failed against this machine's git/`gh` credentials (invalid token); commit is local-only, `origin/v2-polish` still at H-31 (`d4719ed`). Tim needs to push manually or refresh credentials.
+- Rollback: revert `684b4c6`
+
+---
+
+## 2026-06-19 — Claude Sonnet (worker)
+
+- Packet/seam: Rung 1 / H-31 — ground-from-canon (info-roll suppression, Armor/inventory meta-query, canon-contradiction, age-invention guard)
+- Commit: `d4719ed` (pushed to `origin/v2-polish`)
+- Files changed:
+  - `engine/playloop.js` (`isUngroundedInfoCheck`/`noInfoCheckResult` decide groundedness PRE-ROLL and skip `resolveMove` for an ungrounded info-ask; `buildBeatFromTurn` clamps the new `'no-info'` sentinel to `'failure'` for the `recentBeats` invariant; `infoExtractionOutcome` accepts `'no-info'` as a third valid outcome)
+  - `engine/grace/gracefulAdjudication.js` (+132: `META_ARMOR_VALUE`/`META_HELD_ITEMS` interceptors answer the real AC/loadout with no roll; `META_POSSESSION_CHALLENGE`/`findBogusPossessionClaim` corrects a false possession claim from real inventory instead of re-listing evasively; `describeLoadout` factored out of the existing equipment branch)
+  - `engine/llmAdapter.js` (+45: Rule 4c + `AGE_PHRASE_RE` — `findInventedFactClaim` now also flags an ungrounded confident age phrase like "well past seventy")
+  - `tests/U192.groundFromCanon.test.js` (new, 15 cases — catch + false-positive guard per rule, mirrors U190's discipline)
+- Summary: Closed the gate's remaining DM_TEST_DEADEND/CRUNCH_INCONSISTENCY/CANON_HALLUCINATION residuals in the grace/narration lane. R1 is "the other half" of H-29's join: H-29 already declined honestly when a fact isn't in canon, but the engine still rolled a gradeable success/mixed for that ask, so a correct decline contradicted its own dice line — now decided pre-roll via the same lookup, so the two can never disagree. R2/R3/R4 are net-new meta-query/correction/invention-guard coverage, same shape as the existing H-25/H-29 families. Grounded asks, true gear restatements, and grounded age phrases are all false-positive-guarded and pass unchanged. Did NOT touch `composer.js` or combat resolution; no `WORLD_VERSION` bump.
+- Proof:
+  - `node --test tests/U192.groundFromCanon.test.js` — 15/15
+  - Full suite: `node --test` — 8014/0 (Basecamp reran independently; includes H-32's 5 new tests landed concurrently in the same working tree — the two packets touched `playloop.js` in disjoint regions and were hand-separated by hunk rather than rebased)
+  - Determinism gates U19/21/22/27/30 — 6/6 green (Basecamp reran independently)
+- Remaining/next: none cataloged for H-31. Next step for the batch is the combined post-H-31/H-32 gate run once H-32 is pushed.
+- Rollback: revert `d4719ed`
 
 ---
 

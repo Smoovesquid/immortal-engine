@@ -182,7 +182,84 @@ resolve a real present NPC before anything fires, so it can't start combat again
 self-reports.
 
 ## In flight
-*(none — H-36a + H-36b both landed, verified, and pushed. Queue is clear; post-H-36 gate not yet run.)*
+*(none — post-H-36 gate run and ingested this session; H-37 proposed below but NOT dispatched, Tim's call.)*
+
+## Gate run 2026-06-19 (post-H-36) — `docs/playtests/opus-gate-2026-06-19-postH36.md` — VERDICT: H-36b (combat) fully held; H-36a (grace) held for its tested shapes but generalization too narrow — new dominant cluster = item/gear-stat answer-binding
+4 sessions × 12 turns, glass-harbor. Dev server restarted fresh immediately before the run (per
+checklist). **9/48 (19%)**, down from 12/48 (25%) post-H-35 — judge by nature, not number.
+By-class: DM_TEST_DEADEND 5 · CRUNCH_INCONSISTENCY 2 · CANON_HALLUCINATION 2. Cost ~$2.23.
+Rules Lawyer 5/12 fails (worst persona again, but none are combat — see below), Chaos 1/12,
+Lore-hound 3/12, Confused newbie 1/12.
+
+**H-36b (combat truth) — ZERO recurrence, fully held.** Despite a combat-heavy Chaos run (multiple
+strikes, a lethal blow, corpse-handling) and Rules Lawyer probing payment/reward resolution: no
+enemy-hit-without-mechanics, no defeat-threshold miss, no combat-state bleed on a move/`?`-question.
+Every damaging hit in this transcript carried a visible `[enemy:...]`/`[strike:...]` mechanics line.
+
+**H-36a (grace generalization) — held for the shapes it explicitly targeted, but the net was drawn
+too narrow.** Genealogy/quantity asks on a clean SUCCESS roll are clean (none recurred at margin>1).
+Lineage/tenure invention (R3) did not recur. But two adjacent shapes the fix didn't reach:
+- **Mixed-roll-margin genealogy still dead-ends:** Lore-hound t2 "who in his family was the first
+  Boneknit, and how'd they earn it?" → `[roll:13 vs DC:12 → mixed | margin:1]` → "It lands, after a
+  fashion — partial, imperfect," zero fiction content. R1's deliver-or-decline contract was verified
+  against SUCCESS outcomes; a mixed/marginal roll still emits content-free atmosphere instead of a
+  partial-but-real answer or an explicit decline.
+- **Item/gear-stat questions are a separate, uncovered code path.** R1 explicitly generalized to
+  "observe-physical-detail of a held object" (coin-face) and R2 to HP/name/class compound slots — but
+  weapon-damage / armor-AC / "what gear am I carrying" questions route through the loadout/armor
+  formatter, not the general info-seeking detector, so they didn't inherit either fix:
+  - Rules Lawyer t2 "what gear and weapons am I carrying, and do I have any coin?" → answered only the
+    coin half, gear/weapons dropped entirely (compound-slot drop, same SHAPE as R2 but a new slot pair).
+  - Rules Lawyer t4 "what's the damage on the Worn Blade, and what does my Padded coat give me for
+    defense?" → answered the weapon-damage half cleanly, armor-AC half dropped (same compound-slot shape).
+  - Rules Lawyer t5 "And the Padded coat — what's its AC or defense bonus?" (direct, non-compound
+    follow-up) → DM dodges with "a merchant's vague gesture toward warmth over armor" — a flat
+    non-answer to a single-slot item-stat question with a known, grounded value (judged CRUNCH:
+    Padded armor has a defined AC; the DM treated it as if no record exists).
+
+**New cluster, NOT a recurrence of any H-36 shape — canon-fact grounding on NPC presence/quotes
+(2 turns, grace/narration lane):**
+- Lore-hound t11 "What exact questions do Brokefang's people always ask — name one I supposedly
+  asked Corwin": DM fabricates a specific quoted accusation with no support in the canon bundle,
+  presented as fact, not hearsay.
+- Lore-hound t12 "Brokefang's here now, snarling at me? Is Brokefang in this room, yes or no?": DM
+  flatly says Brokefang is NOT in the room — but canon's `npcsPresent` lists Brokefang as present.
+  This is a direct ground-truth contradiction (denying a real fact), the mirror image of inventing one.
+Distinct from H-36a R3 (lineage/tenure invention) and from H-34's NPC-roster-grounding rule (which
+guards against asserting an entity NOT on the roster) — this is the opposite failure mode: denying or
+fabricating detail about an entity that IS canon-grounded. Needs its own rule, likely in
+`validateNarrationCandidate` (llmAdapter.js) or wherever NPC-presence is read at compose time.
+
+**Scattered, lower-confidence (2 turns):**
+- Chaos t5 "I drag his body into the village square and prop it up... for everyone to see" (Corwin
+  already defeated, hp 0) → `[combat:no-live-target]`, DM: "There is no living foe there to fight" —
+  mechanically correct refusal of combat-initiation, but it dead-ends the corpse-staging ACTION itself
+  instead of narrating the outcome (a non-combat action got treated as if it needed a live target).
+  Judged DM_TEST_DEADEND, med severity. Likely grace/narration — the action-intent classifier needs a
+  non-combat branch for object/corpse-handling against an already-resolved target.
+- Rules Lawyer t12 "Hold on — you said Corwin pays ME twenty silver... Reverse that": `[roll:13 vs
+  DC:12 → mixed | margin:1]` → fiction delivers a clean, full, uncomplicated reversal with all twenty
+  silver paid. A mixed result (margin 1) should carry a cost/complication, not a clean full success —
+  composer isn't encoding "mixed" into the narration constraint strongly enough. Possibly the SAME
+  root cause as the mixed-roll genealogy dead-end above (mixed outcomes generally under-specified to
+  the narration layer) — worth tracing together before splitting into two fixes.
+
+**Proposed H-37 split (lane-assigned, NOT dispatched — Tim's dispatch call):**
+- **H-37a — Claude-Sonnet (grace/narration), the bulk (~6 turns):** (i) extend the deliver-or-decline
+  generalization to the item/gear-stat code path (weapon damage, armor AC, single-slot AND
+  compound-with-coin/gear) — same contract as H-36a R1/R2, new domain. (ii) Mixed-roll-margin
+  resolution: a `mixed`/low-margin outcome must carry a real partial answer + complication, not generic
+  "partial, imperfect" atmosphere nor a clean full success — trace whether this is one root cause
+  shared with the silver-reversal CRUNCH fail or two. (iii) action-intent dead-end on corpse/object
+  handling against an already-defeated target — narrate the action, don't bounce it through the
+  combat-no-target gate.
+- **H-37b — Claude-Sonnet (grace/narration), smaller (~2 turns):** canon-fact grounding on NPC
+  presence/quotes — forbid fabricating quoted dialogue/specific past events not in the canon bundle,
+  AND forbid denying a present NPC when `npcsPresent` lists them. Likely shares plumbing with H-34's
+  roster-grounding rule (same file, opposite failure direction) — consider one packet, not two.
+Both proposed lanes are grace/narration this round — **no combat-lane work proposed** (H-36b's gains
+held clean across a combat-heavy run). Not a Road-A/B fork — every shape is still a narrow, traceable
+routing/grounding gap, same character as the existing long tail.
 
 ## Post-H-35 gate batch (2026-06-19) — DONE
 Claude-Sonnet worker (`8e0cf6e`, pushed; done-doc `0ae177f`): **H-36a** — generalize deliver-or-decline
@@ -558,18 +635,18 @@ in-fiction "I don't know/won't say," never atmosphere-only) as a more general fi
 individual hallucination shapes. Leaning toward (c) as a cheap next probe before escalating to (b).
 
 ## Next
-**H-36a + H-36b DONE + Basecamp-verified + pushed** (suite 8069/0; see the post-H-35 gate batch section).
-All four post-H-35 clusters closed (answer-binding, compound-partial, combat-desync incl. the traced
-enemy-retaliation, lineage-hallucination). **Queue is clear; no post-H-36 gate has run yet.** Recommended
-next move (Tim's dispatch call): **run the post-H-36 gate** (~$2.30 → ~$18 left) to confirm the four
-clusters cleared under fresh exploration and surface the next cluster. Same shape as every prior gate:
-restart the dev server first (it silently graded stale code twice — check every run), then
-`node scripts/dm-playtest.mjs --turns 12 --seeds glass-harbor --personas rules-lawyer,chaos,lore-hound,newbie`,
-rename the report to `-postH36.md` immediately, judge by bug NATURE. Specifically check: do the H-36
-shapes recur? — coin-face/genealogy answer-binding dead-end, compound HP+name+class drop, enemy-hit
-without a visible roll/HP line, combat-bleed on a move/`?`-question turn, lineage-tenure invention. If
-none recur, the fixes held regardless of the headline %. Budget ~$20.5 left (~4 gate runs). Rung-1 bar
-not yet met (12/48 at last measurement, judged by nature).
+**Post-H-36 gate run + ingested this session** (9/48, 19%; see "Gate run 2026-06-19 (post-H-36)"
+section above). H-36b (combat truth) fully held — zero recurrence across a combat-heavy run. H-36a
+(grace generalization) held for its tested shapes (coin-face/genealogy-on-success, lineage invention,
+HP/name/class compound) but the net was too narrow: item/gear-stat questions (weapon damage, armor
+AC, gear+coin compound) route through a separate code path and inherited neither fix, and a
+mixed-roll-margin outcome still dead-ends into content-free atmosphere. A new, distinct cluster
+surfaced — canon-fact grounding on NPC presence/quotes (fabricating a quoted accusation; denying a
+present NPC against `npcsPresent`) — the mirror image of H-34's roster-grounding rule.
+**Queue is clear; H-37a/H-37b proposed above but NOT dispatched — Tim's dispatch call.** Both
+proposed lanes are grace/narration (Claude-Sonnet); no combat-lane work proposed this round. Budget
+~$18.3 left (~$2.23 spent this run; ~3-4 gate runs remain at this rate). Rung-1 bar not yet met
+(9/48 at last measurement, judged by nature — Rules Lawyer was NOT clean, 5/12).
 
 **Known small follow-up (not yet packeted):** `infoPressCount` off-by-one in `infoExtractionOutcome`
 (playloop.js) — it's called after the current turn's own `resolution` event is already on

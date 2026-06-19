@@ -510,3 +510,40 @@ other agents. (none active)
 - Live-path note: the Codex worker flagged it couldn't run visible v1.html QA (no browser tool in its env) — expected; live-path verification for this batch is the **post-H-36 Opus gate** (the established close for the H-series), not a worker screenshot.
 - Remaining/next: run the post-H-36 gate to confirm clusters 1–4 cleared under fresh exploration. H-36a documented follow-up: `infoPressCount` off-by-one (first-ever ask can return a tier-1 decline instead of tier-0 — pre-existing, out of scope; queue for a future grace batch).
 - Rollback: revert `c2a2634` (H-36b); `8e0cf6e` (H-36a).
+
+## 2026-06-19 — Basecamp (post-H-36 Opus gate)
+
+- Packet/seam: Rung 1 / post-H-36 gate run + triage
+- Action: pre-flight verified (HEAD `fb70e9d`, matches expected; `npm install` clean; key present);
+  dev server killed and restarted fresh immediately before the run (per checklist — a stale server has
+  silently graded old code before); ran `node scripts/dm-playtest.mjs --turns 12 --seeds glass-harbor
+  --personas rules-lawyer,chaos,lore-hound,newbie` (4×12=48 turns, ~$2.23, 96 calls); renamed report
+  `docs/playtests/opus-gate-2026-06-19.md` → `opus-gate-2026-06-19-postH36.md` immediately.
+- Result: **9/48 failing (19%)**, down from 12/48 (25%) post-H-35. By-class: DM_TEST_DEADEND 5,
+  CRUNCH_INCONSISTENCY 2, CANON_HALLUCINATION 2.
+- **H-36b (combat truth) — ZERO recurrence, fully held** across a combat-heavy Chaos run (multiple
+  strikes incl. a lethal blow). Every damaging hit carried a visible mechanics line; no
+  enemy-hit-without-mechanics, no defeat-threshold miss, no combat-state bleed.
+- **H-36a (grace generalization) — held for tested shapes, net too narrow.** No recurrence of
+  coin-face/genealogy-dead-end-on-SUCCESS, lineage-tenure invention, or HP/name/class compound-drop.
+  But two adjacent gaps surfaced:
+  1. Mixed-roll-margin genealogy still dead-ends into content-free atmosphere (R1 was verified against
+     success outcomes, not mixed/marginal ones).
+  2. Item/gear-stat questions (weapon damage, armor AC, gear+coin compound) route through the
+     loadout/armor formatter, a separate code path from the general info-seeking detector R1/R2
+     touched — inherited neither fix. 3 of the 9 fails are this exact shape (Rules Lawyer t2/t4/t5).
+- **New cluster (not an H-36 recurrence) — canon-fact grounding on NPC presence/quotes (2 turns):**
+  fabricating a specific quoted accusation not in canon; denying a present NPC against `npcsPresent`.
+  Mirror image of H-34's roster-grounding rule (that guards against asserting an entity NOT on the
+  roster; this is denying/fabricating detail about one that IS).
+- Scattered (2 turns, lower confidence): corpse-staging action dead-ended through the
+  combat-no-live-target gate instead of being narrated as a non-combat action; a mixed-roll (margin 1)
+  payment reversal narrated as a clean full success instead of carrying a complication — possibly same
+  root cause as the mixed-roll genealogy dead-end, trace together.
+- **H-37 split PROPOSED, NOT dispatched** (Tim's call): **H-37a (Claude-Sonnet/grace)** = item/gear-stat
+  answer-binding generalization + mixed-roll-margin resolution + corpse/object-handling dead-end
+  (~6 turns). **H-37b (Claude-Sonnet/grace)** = NPC presence/quote canon-grounding, likely shares
+  plumbing with H-34's roster rule (~2 turns). No combat-lane work proposed this round — H-36b held clean.
+- Docs updated: `docs/RUNG1_QUEUE.md` (new gate-run section + "Next" + "In flight" reset to none).
+- Rung-1 bar: **not met** — Rules Lawyer not clean (5/12); real defects across 3 clusters, not
+  phrasing-tail noise.

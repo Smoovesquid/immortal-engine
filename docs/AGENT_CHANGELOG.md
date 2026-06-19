@@ -566,3 +566,48 @@ other agents. (none active)
   - No `Math.random`/`Date.now` added, no `WORLD_VERSION` bump, no direct state writes outside `effectsCore.applyDeltas` (narration/routing-only changes, no new mutation paths)
 - Remaining/next: queue owner should re-run the Opus gate to confirm clusters from `opus-gate-2026-06-19-postH36.md` (DM_TEST_DEADEND ×5, CRUNCH_INCONSISTENCY ×2, CANON_HALLUCINATION ×2) are cleared. R1's compound-fold pattern (gear+coin, weapon+armor) is now consistent across all three META_* branches that needed it (H-35/H-36a/H-37) — worth a sweep to confirm no fourth branch was missed if a future gate surfaces a similar drop.
 - Rollback: revert commit `4faca88`
+
+## 2026-06-19 — Basecamp (H-37 verification + post-H-37 Opus gate)
+
+- Packet/seam: Rung 1 / H-37 verification + post-H-37 gate run + triage
+- Action: pre-flight found H-37 already `[CLAIMED]` with an uncommitted in-progress diff in
+  `engine/grace/gracefulAdjudication.js` — paused and reported status without touching anything (worker
+  still active). On resume, worker reported H-37 complete and pushed (`4faca88` code, `e811ba2` DONE
+  entry). Verified independently per protocol §7 before trusting the report: `git diff --stat` between
+  `eca8584..4faca88` confirmed zero touches to `engine/combat/*`; the `playloop.js` diff reviewed line
+  by line and confirmed it's the pre-combat assault-detection gate (intercepts before
+  `engageNpcCombat`), not the combat-dispatch branch — in scope per the claim. Full suite `node --test`
+  — 8086/0 (matches worker's claimed count exactly). Determinism gates U19/21/22/27/30 run individually
+  — 6/6 green. Dev server killed and restarted fresh immediately before the gate (per checklist). Ran
+  `node scripts/dm-playtest.mjs --turns 12 --seeds glass-harbor --personas rules-lawyer,chaos,lore-hound,newbie`
+  (4×12=48 turns, ~$2.40, 96 calls); renamed report `opus-gate-2026-06-19.md` →
+  `opus-gate-2026-06-19-postH37.md` immediately.
+- Result: **16/48 failing (33%)**, up from 9/48 post-H-36 — judged by nature, not headline number.
+  By-class: DM_TEST_DEADEND 9, CRUNCH_INCONSISTENCY 6, DM_ARTIFACT_LEAK 1.
+- **R3 (corpse-staging) — ZERO recurrence, fully held.**
+- **R4 (NPC presence/quote) — no direct recurrence**, but a new artifact-leak appeared nearby: DM
+  output the raw string `location:Pilgrim's Rest Village` instead of narrating Corwin naming his
+  birthplace (template/formatter bug, not a grounding-rule miss).
+- **R2 (mixed-roll-margin) — did NOT fully hold.** The exact original boilerplate ("It lands, after a
+  fashion — partial, imperfect") recurred verbatim on a margin-1 genealogy ask. Two new siblings
+  appeared on the SUCCESS path (out of R2's stated scope but same root symptom): clean success rolls
+  (margin 5, margin 3) on indirect/third-person genealogy asks ("who was her husband", "give me one
+  name") produced zero fiction content ("It comes off cleanly; the moment turns toward you.").
+- **R1 (item/gear-stat) — did NOT fully hold.** Fix only covered the coin+gear fold (META_PURSE
+  branch); Rules Lawyer hit class+gear (no coin) 3-way compounds and bare gear yes/no asks all 6 of its
+  first 6 turns — DM regressed to dumping the raw stat block, never resolving class or gear once.
+- **New cluster (not an H-37 recurrence) — combat HP/entity-tracking desync, 6 turns, Chaos-griefer,
+  combat lane:** enemy HP mechanics lines used the player's own HP numbers (`hp:13->11` when canon
+  enemy HP is 4/8); an unprompted attack roll fired on a non-attack action (spit + taunt); strike
+  mechanics labeled "Worn Blade" when the player declared a torch attack (weapon-label desync). This is
+  `engine/combat/*` territory — out of scope for grace, first combat-lane regression since H-36b.
+- **H-38 split PROPOSED, NOT dispatched** (Tim's call): **H-38a (Claude-Sonnet/grace)** = broaden the
+  R1 fold beyond META_PURSE to class+gear/bare-gear asks; trace why R2's mixed-margin fix isn't
+  reaching this phrasing; new success-path zero-content genealogy gap (same detector family-anchor
+  gap?); fix the `location:...` artifact leak (~9-10 turns). **H-38b (combat lane, Codex per
+  [[feedback_worker_routing]])** = enemy/PC HP entity-tracking desync + weapon-label mismatch in
+  `escapeCombat.js` territory — needs its own worker, separate from grace (~6 turns).
+- Docs updated: `docs/RUNG1_QUEUE.md` (new gate-run section + "Next" + "In flight" reset to none +
+  budget updated to ~$15.9 remaining).
+- Rung-1 bar: **not met** — two of four H-37 fixes need broadening (not regressions, narrow nets), plus
+  a fresh combat-lane bug surfaced. Rules Lawyer not clean (6/12), Chaos not clean (5/12, new shape).

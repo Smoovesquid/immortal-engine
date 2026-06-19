@@ -182,7 +182,85 @@ resolve a real present NPC before anything fires, so it can't start combat again
 self-reports.
 
 ## In flight
-*(none — post-H-36 gate run and ingested this session; H-37 proposed below but NOT dispatched, Tim's call.)*
+*(none — H-37 verified+pushed and gated this session; H-38 proposed below but NOT dispatched, Tim's call.)*
+
+## Gate run 2026-06-19 (post-H-37) — `docs/playtests/opus-gate-2026-06-19-postH37.md` — VERDICT: R3 fully held, R4 not directly recurring but a new artifact-leak appeared nearby; R1 and R2 partially held — fix was too narrow, recurred in adjacent shapes the fix didn't reach; new dominant cluster = combat HP/entity-tracking desync (combat lane, out of scope for grace)
+4 sessions × 12 turns, glass-harbor. Dev server restarted fresh immediately before the run (per
+checklist). H-37 verified independently before this run: full suite 8086/0 (matches worker's claim),
+determinism gates U19/21/22/27/30 green (6/6), diff review confirmed zero touches to `engine/combat/*`
+or the combat-dispatch branch (the `playloop.js` touch is the pre-combat assault-detection gate for
+R3's corpse-staging, which intercepts *before* `engageNpcCombat` — correctly in scope). **16/48 (33%)**,
+up from 9/48 post-H-36 — judge by nature, not number; this run hit a fresh combat-tracking bug the
+prior run didn't surface.
+By-class: DM_TEST_DEADEND 9 · CRUNCH_INCONSISTENCY 6 · DM_ARTIFACT_LEAK 1. Cost ~$2.40.
+Rules Lawyer 6/12 fails (worst persona), Chaos 5/12, Lore-hound 6/12, Confused newbie 1/12.
+
+**R3 (corpse/object-handling) — ZERO recurrence, fully held.** No corpse-staging turns dead-ended
+through the combat-no-target gate this run.
+
+**R4 (NPC presence/quote grounding) — no direct recurrence**, but a new, related artifact appeared in
+the same NPC-question territory: Lore-hound t9 "Corwin, you dodged it — give me a place. What village
+or town were you born in?" → DM output the raw string `location:Pilgrim's Rest Village` instead of
+narrating Corwin naming his birthplace (`DM_ARTIFACT_LEAK`, high severity — a template/key-value leak
+into player-facing text, not a grounding-rule miss).
+
+**R2 (mixed-roll-margin) — did NOT fully hold.** The exact original symptom recurred verbatim:
+Lore-hound t8 "Corwin, then — you've stopped counting your years... so when were you born, and where?"
+→ `[roll:11 vs DC:12 → mixed | margin:-1]` → "It lands, after a fashion — partial, imperfect." — the
+identical content-free boilerplate quoted in the original H-37 bug report. Two new siblings appeared on
+the **success** path (explicitly out of R2's stated scope, but same root symptom — zero fiction content
+despite a resolved roll):
+- Lore-hound t5 "Torva — daughter-in-law, you said. So who was her husband, Corwin's son?" →
+  `[roll:17 vs DC:12 → success | margin:5]` → "It comes off cleanly; the moment turns toward you." — no
+  name, no information.
+- Lore-hound t11 "Then give me one name, Corwin — your son's, Torva's dead or living husband." →
+  `[roll:15 vs DC:12 → success | margin:3]` → same empty "It comes off cleanly..." pattern.
+All three are genealogy/identity asks framed indirectly (third-person family-history questions, not
+direct "who are you" asks) — looks like the underlying info-seeking detector still has a gap for this
+question shape, on both mixed AND success outcomes, not just the margin handling R2 touched.
+
+**R1 (item/gear-stat answer-binding) — did NOT fully hold.** The fix only covered the coin+gear fold
+(META_PURSE branch); Rules Lawyer hammered shapes outside that fold all 6 of its first 6 turns:
+- t1 "what's my character's name, class, and what gear do I have on me?" (3-way compound, no coin) →
+  DM answered only the name, ignored class and gear.
+- t2–t6: repeated class/gear asks (some bare yes/no — "am I carrying any weapon or armor, yes or no?")
+  → DM regressed to dumping the raw stat block (MIGHT/AGILITY/WITS/GRIT/CHARM + HP) six turns straight,
+  never resolving class or gear once, even under direct player accusation of deflecting.
+Same root cause as the post-H-36 finding, narrower than diagnosed: the fix folded gear into the
+purse-answer branch, but class+gear (no coin) and bare gear yes/no asks don't route through
+META_PURSE at all, so they never inherit the fold.
+
+**New cluster, NOT a recurrence of any H-37 shape — combat HP/entity-tracking desync (6 turns, Chaos-
+griefer, combat lane):**
+- t6 "I yank out whatever I find and hold it up, then crack his head into the dirt" →
+  `[enemy:Corwin Boneknit | hp:13->11]` but canon enemy HP is 4/8 — the mechanics line used the
+  *player's* HP numbers for the enemy.
+- t7 "I stand up and spit on him, then turn to the crowd and yell that they're next" (taunt, not an
+  attack) → DM still emits `[strike:Worn Blade | atk:8 vs AC:10 → miss]`, an unprompted attack roll.
+- t8 torch-toss at a roof → PC hp:11->10 in mechanics contradicts canon's live PC hp of 10 (implies a
+  phantom point already lost).
+- t9 torch-to-face → `[enemy:Corwin Boneknit | hp:10->8]` contradicts canon enemy hp 4/8.
+- t11 torch-to-Lingerer's-face → `[enemy:Lingerer | hp:7->5]` contradicts canon hp 6, AND the strike is
+  labeled `Worn Blade` despite the player declaring a torch attack (weapon-label desync).
+This is `engine/combat/*` / combat-dispatch territory — explicitly forbidden to H-37 and out of scope
+for the grace lane. Distinct, dominant, and likely the next priority — looks like enemy HP state is
+sometimes reading/writing the wrong entity's ledger slot, plus the strike-mechanics formatter not
+always picking up the player's declared improvised weapon.
+
+**Proposed H-38 split (lane-assigned, NOT dispatched — Tim's dispatch call):**
+- **H-38a — Claude-Sonnet (grace/narration), broaden R1/R2 nets:** (i) extend the deliver-or-decline
+  fold beyond META_PURSE to cover class+gear (no coin) compounds and bare gear yes/no asks — same
+  contract, wider net. (ii) Trace why "It lands, after a fashion" still emits on mixed-margin genealogy
+  despite the R2 fix landing — confirm the fix actually reaches this question phrasing. (iii) New:
+  zero-content narration on SUCCESS for indirect/third-person genealogy asks ("who was her husband",
+  "give me one name") — the info-seeking detector's family-anchor may not catch this framing; trace
+  whether it's the same gap as (ii) before splitting into two fixes. (iv) Fix the raw `location:...`
+  key-value leak into player-facing narration — template/formatter bug, not a grounding-rule miss.
+- **H-38b — combat lane (Codex per existing routing — see [[feedback_worker_routing]]):** enemy/PC HP
+  entity-tracking desync in `engine/combat/escapeCombat.js` (enemy HP ledger sometimes reads/writes the
+  player's HP slot instead) + strike-mechanics weapon-label not always matching the player's declared
+  improvised weapon. This is the single largest cluster this run (6/16) and the first combat-lane
+  regression surfaced since H-36b — needs its own worker, separate from grace.
 
 ## Gate run 2026-06-19 (post-H-36) — `docs/playtests/opus-gate-2026-06-19-postH36.md` — VERDICT: H-36b (combat) fully held; H-36a (grace) held for its tested shapes but generalization too narrow — new dominant cluster = item/gear-stat answer-binding
 4 sessions × 12 turns, glass-harbor. Dev server restarted fresh immediately before the run (per
@@ -635,18 +713,23 @@ in-fiction "I don't know/won't say," never atmosphere-only) as a more general fi
 individual hallucination shapes. Leaning toward (c) as a cheap next probe before escalating to (b).
 
 ## Next
-**Post-H-36 gate run + ingested this session** (9/48, 19%; see "Gate run 2026-06-19 (post-H-36)"
-section above). H-36b (combat truth) fully held — zero recurrence across a combat-heavy run. H-36a
-(grace generalization) held for its tested shapes (coin-face/genealogy-on-success, lineage invention,
-HP/name/class compound) but the net was too narrow: item/gear-stat questions (weapon damage, armor
-AC, gear+coin compound) route through a separate code path and inherited neither fix, and a
-mixed-roll-margin outcome still dead-ends into content-free atmosphere. A new, distinct cluster
-surfaced — canon-fact grounding on NPC presence/quotes (fabricating a quoted accusation; denying a
-present NPC against `npcsPresent`) — the mirror image of H-34's roster-grounding rule.
-**Queue is clear; H-37a/H-37b proposed above but NOT dispatched — Tim's dispatch call.** Both
-proposed lanes are grace/narration (Claude-Sonnet); no combat-lane work proposed this round. Budget
-~$18.3 left (~$2.23 spent this run; ~3-4 gate runs remain at this rate). Rung-1 bar not yet met
-(9/48 at last measurement, judged by nature — Rules Lawyer was NOT clean, 5/12).
+**Post-H-37 gate run + ingested this session** (16/48, 33%; see "Gate run 2026-06-19 (post-H-37)"
+section above). H-37 was verified independently (full suite 8086/0, determinism gates 6/6 green, no
+forbidden combat-file touches) before gating. R3 (corpse-staging) fully held. R4 (NPC presence/quote)
+had no direct recurrence but a new artifact-leak (raw `location:...` key-value dump) appeared nearby.
+R1 (item/gear-stat) and R2 (mixed-roll-margin) only **partially** held — both fixes were too narrowly
+scoped and recurred in adjacent shapes: R1's fold only covered the coin+gear compound, not bare
+class+gear or yes/no gear asks; R2's exact original boilerplate ("It lands, after a fashion...")
+recurred verbatim, plus a new sibling on the success path (zero-content narration for indirect
+genealogy asks). A new, dominant, **combat-lane** cluster also surfaced — enemy/PC HP entity-tracking
+desync + weapon-label mismatch in `escapeCombat.js` territory (6/16 fails, Chaos-griefer) — out of
+scope for grace, first combat regression since H-36b.
+**Queue is clear; H-38a/H-38b proposed above but NOT dispatched — Tim's dispatch call.** H-38a is
+grace/narration (Claude-Sonnet, broadens R1/R2 nets + fixes the artifact leak); H-38b is combat lane
+(Codex per [[feedback_worker_routing]] — needs its own worker, separate from grace). Budget ~$15.9
+left (~$2.40 spent this run; ~6-7 gate runs remain at this rate). Rung-1 bar not yet met (16/48 at
+last measurement — worse headline than post-H-36, but judged by nature: two of four targeted fixes
+need broadening, not a regression, plus a fresh combat-lane bug).
 
 **Known small follow-up (not yet packeted):** `infoPressCount` off-by-one in `infoExtractionOutcome`
 (playloop.js) — it's called after the current turn's own `resolution` event is already on
@@ -682,9 +765,9 @@ Full per-turn detail in the report file. Catalog these as the next hard-tail pac
 once a worker prompt is drafted. Priority order: CRASH → DM_TEST_DEADEND → CRUNCH_INCONSISTENCY →
 CANON_HALLUCINATION.
 
-## Budget — ~$20.5 remaining
-Tim's API key budget is **$50 total**. Was ~$22.86 before the post-H-35 gate (~$2.29) → **~$20.5 left**,
-roughly 4 more 4-session gate runs at the current rate. Worker-side fixes (Sonnet/Codex windows) don't
+## Budget — ~$15.9 remaining
+Tim's API key budget is **$50 total**. Was ~$18.3 before the post-H-37 gate (~$2.40) → **~$15.9 left**,
+roughly 6-7 more 4-session gate runs at the current rate. Worker-side fixes (Sonnet/Codex windows) don't
 draw this budget — only `scripts/dm-playtest.mjs` runs do.
 
 ## Open strategic question (the arbiter call) — VERDICT: Road A for the routing/state long-tail; HYBRID (deliver-or-decline) for the cluster-D canon-grounding gap; Road B parked w/ sharpened trigger

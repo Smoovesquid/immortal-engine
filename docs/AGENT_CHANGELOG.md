@@ -547,3 +547,5 @@ other agents. (none active)
 - Docs updated: `docs/RUNG1_QUEUE.md` (new gate-run section + "Next" + "In flight" reset to none).
 - Rung-1 bar: **not met** — Rules Lawyer not clean (5/12); real defects across 3 clusters, not
   phrasing-tail noise.
+
+[CLAIMED] H-37 deliver-or-decline item/gear extension + canon-presence grounding · Claude-Sonnet · 2026-06-19T12:54:37Z · files: engine/grace/gracefulAdjudication.js, engine/llmAdapter.js, engine/playloop.js (isExploreIntent area only)

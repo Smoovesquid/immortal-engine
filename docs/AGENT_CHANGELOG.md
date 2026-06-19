@@ -226,6 +226,22 @@ other agents. (none active)
 
 ## 2026-06-19 — Claude Opus
 
+- Packet/seam: Rung 1 / H-25 DM_TEST_DEADEND — DM won't answer "what's my own number"
+- Commit: `26ec812`
+- Files changed:
+  - `engine/grace/gracefulAdjudication.js` (`META_SKILL_MOD`/`META_ATTACK_MOD`/`META_BARE_DC` + `SKILL_STAT` map + handlers; `isMetaQuestion` wiring; `profBonusFor` import)
+  - `tests/U189.ownNumberQuery.test.js` (new)
+- Summary: Asking for one's OWN number — a D&D skill modifier ("what's my Insight modifier? I need a number"), attack modifier, or a bare DC — was unrecognized (only the 5 game-native stats matched `META_STAT`), so it fell through to general narration and got deflected into atmosphere for several turns (9 gate occurrences, 7 in one session). Added three deterministic interceptors answered before narration: skill-mod maps each D&D skill → governing game-stat (mirrors resolve.js `FOCUS_APPROACH`→`statForApproach`: insight→CHARM, perception→WITS, etc.) and reports stat-mod + proficiency (`profBonusFor(level)` when the focus is owned); attack-mod reports melee (MIGHT) and finesse/ranged (AGILITY) to-hit numbers; bare-DC cites `world.conversation.lastRoll.dc` if present, else explains DCs are per-moment. Bare-DC defers to the existing `META_EXPLICIT_CHECK` handler when a check was declared in the same breath ("let me make a WITS check… what's the DC?") — caught one collision (U182-10) and guarded it. Deliberately did NOT: touch the in-dialogue routing (the meta gate is intentionally `!dialogue` — mid-conversation "what happened" is a question FOR the npc; own-number asks resolve via the out-of-combat and combat gates), or change any roll/DC math.
+- Proof:
+  - `node --test tests/U189.ownNumberQuery.test.js` — 7/7 (5 recognition + 4 answer-shape unit cases + 1 end-to-end `playerMove`)
+  - `node --test tests/U182.explicitCheckRequest.test.js` — 11/11 (collision guard verified)
+  - Full suite: `node --test` — 7948/0
+  - Determinism gates U19/21/22/27/30 green
+- Remaining/next: H-26 CRUNCH_INCONSISTENCY cluster (4 sub-bugs) — next, same worker.
+- Rollback: revert commit `26ec812`
+
+## 2026-06-19 — Claude Opus
+
 - Packet/seam: Rung 1 / H-24 duplicate combat enemy id (CRASH)
 - Commit: `a1c62e3`
 - Files changed:

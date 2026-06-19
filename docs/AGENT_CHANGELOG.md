@@ -1,5 +1,62 @@
 # AGENT_CHANGELOG
 
+2026-06-19T20:27:54Z — Claude-Sonnet
+- Packet/seam: H-42 react-under-pressure (grace lane)
+- Commit(s): 385c228
+- Files changed: `engine/grace/gracefulAdjudication.js`, `engine/playloop.js`, `tests/U205.reactUnderPressure.test.js` (new)
+- Summary: post-H-39 Opus gate, Lore-hound t12 (HIGH DM_TEST_DEADEND) — player confronts a present
+  NPC with a contradiction ("You said Kael was here before any of you. He says he came later. One of
+  you is lying about your own village's founding. Which one?"), the insight roll FAILS, and the DM
+  fell to the generic place-filler ("Whatever you meant to do, Pilgrim's Rest Village doesn't give it
+  to you.") instead of having the confronted NPC react. IG-11 social-physics fix:
+  - **New exported `isConfrontationChallenge(text)`** (`gracefulAdjudication.js`, just after
+    `isInfoSeekingText`) — recall-biased net of independent accusatory markers: "you said/told
+    me/claimed ... but/yet/however/and now/now you", "you're lying" / "one of you is lying" /
+    "which of you is lying" / "he's/she's/they're lying" / "stop lying", "admit it", "you claimed",
+    "contradicts what you said", "you swore ... but". Guarded two ways: (a) each trigger requires an
+    unambiguous accusation/contradiction marker so a neutral statement or a plain info-ask
+    (`isInfoSeekingText`'s job) never trips it; (b) the lying-accusation regex carries a negative
+    lookahead against the common spatial-preposition reading ("she's lying in the grass") so an
+    examine/status action on a prone NPC is never misread as an accusation — caught this myself while
+    writing the detector (not in the original packet's literal pattern list) and added U205-12 to lock
+    it in.
+  - **New `genericGroundedOutcome` branch** (`playloop.js`, sibling to and checked BEFORE the existing
+    H-39 `isInfoSeekingText` decline at the top of the function): on a FAILURE outcome only, if
+    `isConfrontationChallenge(text)` AND `socialTarget(world, text)` resolves to a present NPC, return
+    a new `confrontationReaction(world, npc)` instead of falling through to the gen:s/gen:m/gen:f
+    atmosphere pool. Two tiers off the NPC's real `hostile` flag (the same signal `socialDC` already
+    reads as tougher resistance) — a civil-but-defensive deflection, or a sharper bristle for a
+    hostile NPC — each 3 variants, picked via the existing `pickVariant` (seeded by
+    `meta.seed`/node/key + resolved-action count, so a replay reproduces the identical line; no new
+    RNG). The reaction never names the contested third party or concedes the contradiction: the
+    player's roll failed, so they have not earned the read — a successful/mixed read stays the
+    deliver path's job (H-12/13's roll-recall contradiction handling), confirmed untouched by tests
+    U205-27/28.
+  - Did NOT touch `npc/dialogue.js` (the H-9 continuity-deflection there owns DIALOGUE-mode turns; the
+    Lore-hound t12 turn went through the normal roll path instead, landing in
+    `genericGroundedOutcome` — confirmed by the worker prompt's own trace and not re-derived here). Did
+    NOT alter the success/mixed paths, `WORLD_VERSION`, invariants, or any `applyDeltas`/mutation call
+    site (narration-only, no state change). No `Math.random`/`Date.now` — `pickVariant` is the sole
+    variation mechanism, deterministic by design.
+- Proof:
+  - `node --test tests/U205.reactUnderPressure.test.js` — 23/23 (written FIRST; confirmed failing
+    against pre-fix code via `git stash` of the two source files — the whole file failed to load with
+    `SyntaxError: ... does not provide an export named 'isConfrontationChallenge'`, 0/23 — then
+    `git stash pop` restored the fix and all 23 went green)
+  - Full suite: `node --test` — 8172/0 (baseline 8149 + 23 new, zero regressions, zero pre-existing
+    tests modified)
+  - Determinism: `node --test tests/U19.worldHashDeterminism.test.js tests/U21.replayGateN50.test.js
+    tests/U22.longRunStabilityN100T500.test.js tests/U27.worldHashSurfaceContract.test.js
+    tests/U30.gate6.sequelDeterminism.test.js` — 6/6
+  - `npm run playtest:quick` — 50 runs, 0 crashes, 0 bugs
+  - `git diff --stat` confirms only the two claimed engine files + the new test file touched; grep for
+    `Math.random`/`Date.now`/`WORLD_VERSION`/`applyDeltas` in the diff — empty
+- Remaining/next: queue owner should re-run the Opus gate to confirm the Lore-hound t12
+  `DM_TEST_DEADEND` shape is cleared. The fix is scoped to the roll-path (`genericGroundedOutcome`);
+  if a future gate finds the same dead-end reachable via the DIALOGUE-mode path instead, that's a
+  `npc/dialogue.js` follow-up, not a recurrence of this one.
+- Rollback: revert 385c228
+
 2026-06-19T20:18:00Z — Claude-Sonnet
 - Packet/seam: H-40 number-transparency (grace lane)
 - Commit(s): 8b6cad0
@@ -92,10 +149,7 @@ cross-agent continuity: what changed, what proved it, and what remains.
 ## CLAIMS (in-flight work — claim here BEFORE editing, clear when done)
 
 `[CLAIMED] <seam> · <agent> · <UTC> · files: <paths>` — a claimed seam or file is off-limits to
-other agents.
-
-[CLAIMED] H-42 react-under-pressure · Claude-Sonnet · 2026-06-19T20:18:03Z · files: engine/playloop.js,
-engine/grace/gracefulAdjudication.js, tests/U205.reactUnderPressure.test.js
+other agents. (none active)
 
 ## Template
 

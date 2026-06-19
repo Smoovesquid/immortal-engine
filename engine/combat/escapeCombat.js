@@ -1029,7 +1029,7 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
   // or cleric can attempt a last-resort heal. (Rung-1 gate 2026-06-18.)
   const pcHpNow = Number(w.meta?.escapeHp) || 0;
   if (pcHpNow <= 0 && verb !== 'cure' && verb !== 'potion' && verb !== 'layhands') {
-    const RESCUE_RE = /\b(?:healed?|stabil[iu]z(?:ed?)?|cured?|revived?|rescue(?:d)?|drag(?:ged)?\s+(?:\w+\s+)?(?:me|out)|pull(?:ed)?\s+(?:\w+\s+)?(?:me|out)|saved?\s+me)\b/i;
+    const RESCUE_RE = /\b(?:healed?|stabil[iu]z(?:e[sd]?|ing|ed?)?|cured?|revived?|rescue(?:d)?|drag(?:ged)?\s+(?:\w+\s+)?(?:me|out)|pull(?:ed)?\s+(?:\w+\s+)?(?:me|out)|saved?\s+me)\b/i;
     if (RESCUE_RE.test(String(actionText || ''))) {
       w = { ...w, meta: { ...w.meta, escapeHp: 1 } };
       beats.push("You're pulled back — 1 HP. Stabilized.");
@@ -1048,11 +1048,25 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
 
   // ── Player turn ────────────────────────────────────────────────────────────
   let enemies = (Array.isArray(w.combat.enemies) ? w.combat.enemies : []).map(e => ({ ...e }));
+  const hadAliveAtTurnStart = enemies.some(e => e && !e.defeated && (Number(e.hp) || 0) > 0);
   // P-75: snapshot boss hp before the player's strike for phase-crossing detection.
   const bossHpAtStart = new Map(enemies.map(e => [e.id, Number(e.hp) || 0]));
   // Named targeting: 'the wolf', 'the big one', 'the wounded one' all land
   // where the player pointed. Default: first standing foe.
   const targetIdx = pickTargetIdx(enemies, actionText);
+
+  if (!hadAliveAtTurnStart) {
+    const noTargetMech = (verb === 'grapple' || verb === 'throw' || verb === 'choke' || verb === 'escape')
+      ? '[grapple:no-target]'
+      : '[combat:no-live-target]';
+    const noTargetBeat = noTargetMech === '[grapple:no-target]'
+      ? 'There is no one here to lay hands on.'
+      : 'There is no living foe here to fight.';
+    return {
+      world: w,
+      result: { beats: [noTargetBeat], combatSummary: noTargetBeat, mechanicsLine: noTargetMech, outcome: 'mixed' }
+    };
+  }
 
   const hazardKind = parseHazard(actionText);
   if (hazardKind) {

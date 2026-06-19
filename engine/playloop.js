@@ -528,6 +528,9 @@ function playerMoveCore(world, packsById, text) {
   const mixer = w.pack.mixerId ? packsById[w.pack.mixerId] : null;
   const pack = mergePacks(primary, mixer);
 
+  const dyingGate = outOfCombatDyingGate(w, text);
+  if (dyingGate) return dyingGate;
+
   // ── C.2d: a pending interactive road encounter (brigands/toll) intercepts the
   // next input as the player's choice — before any other gate. ──
   if (w.travel?.pending && !w.combat?.active) {
@@ -5499,6 +5502,34 @@ function isLongRestIntent(text) {
   return /\b(sleep|long\s+rest|make\s+camp|camp\s+for\s+the\s+night|rest\s+for\s+the\s+night|bed\s+down|turn\s+in|get\s+some\s+sleep|spend\s+the\s+night|rest\s+up|take\s+a\s+(rest|breather|nap)|catch\s+(my|our)\s+breath|recuperate)\b/.test(t);
 }
 
+function outOfCombatDyingGate(world, text) {
+  if (world?.combat?.active || world?.meta?.mode !== 'escape') return null;
+  if ((Number(world?.meta?.escapeMaxHp) || 0) <= 0) return null;
+  if ((Number(world?.meta?.escapeHp) || 0) > 0) return null;
+  const t = String(text || '');
+  const RESCUE_RE = /\b(?:healed?|stabil[iu]z(?:e[sd]?|ing|ed?)?|cured?|revived?|rescue(?:d)?|drag(?:ged)?\s+(?:\w+\s+)?(?:me|out)|pull(?:ed)?\s+(?:\w+\s+)?(?:me|out)|saved?\s+me)\b/i;
+  if (RESCUE_RE.test(t)) {
+    const w1 = {
+      ...world,
+      meta: { ...world.meta, escapeHp: 1 }
+    };
+    return {
+      world: w1,
+      output: {
+        narration: "Wizard: You're pulled back — 1 HP. Stabilized.",
+        mechanics: '[heal:stabilize | hp:0->1]'
+      }
+    };
+  }
+  return {
+    world,
+    output: {
+      narration: 'Wizard: You are at 0 HP — down and dying. You cannot act. Healing or stabilization is the only way back.',
+      mechanics: '[combat:dying | no-action]'
+    }
+  };
+}
+
 // Detects "attack <name>" / "fight <name>" / "kill <name>" / "strike <name>"
 // against a hostile NPC at the current node. Returns { npc } or null.
 // Conservative: only matches when the player text starts with an attack verb
@@ -5661,7 +5692,17 @@ function applyPersistedEnemyHp(world, enemy) {
 function engageNpcCombat(world, npc, text, pack, actorId, markHostile) {
   let w = world;
   if (markHostile && npc) npc.hostile = true;
-  const w1 = beginCombat(w, { enemies: [applyPersistedEnemyHp(w, mintEnemyFromNpc(npc))], reason: 'player-attack' });
+  const enemy = applyPersistedEnemyHp(w, mintEnemyFromNpc(npc));
+  if (enemy?.defeated || (Number(enemy?.hp) || 0) <= 0) {
+    return {
+      world: w,
+      output: {
+        narration: `Wizard: ${enemy?.name || npc?.name || 'That foe'} is already down. There is no living foe there to fight.`,
+        mechanics: '[combat:no-live-target]'
+      }
+    };
+  }
+  const w1 = beginCombat(w, { enemies: [enemy], reason: 'player-attack' });
   if (!w1.combat?.active) return null;
   w = w1;
   // Engine reconciliation (1g): in escape mode resolve the OPENING turn with the

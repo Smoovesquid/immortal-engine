@@ -548,6 +548,23 @@ export function validateNarrationCandidate(world, narrationCandidate, {
     }
   }
 
+  // Rule 4c (H-31 R4) — invented age claim. A confident-sounding age phrase
+  // ("well past seventy", "in his seventies") for an NPC that the grounded
+  // base narration never stated (Opus gate 2026-06-19: a plain "where do I
+  // find Kael" observe-only description invented "a man well past seventy"
+  // with no age on record). Same shape as Rule 4a: only rejects when the
+  // exact phrase is absent from base, so a legit grounded age never
+  // false-positives. Unconditional — unlike Rule 5b below, this isn't gated
+  // to info-seeking rolls; the gate's failing turn was a plain description,
+  // not an info-seeking success/mixed outcome.
+  {
+    const baseLower = String(baseNarration ?? '').toLowerCase();
+    const ages = cand.match(AGE_PHRASE_RE) || [];
+    for (const a of ages) {
+      if (!baseLower.includes(a.toLowerCase())) return false;
+    }
+  }
+
   // Rule 5 (H-29) — deliver-or-decline contract for info-seeking outcomes. The
   // player demanded a specific fact (ctx.infoSeeking) and the roll resolved
   // success/mixed; polish must either keep the grounded content the (now-correct)
@@ -579,10 +596,26 @@ export function validateNarrationCandidate(world, narrationCandidate, {
   return true;
 }
 
-// Rule 5b (H-29) helper — finds a confidently-asserted bare year/date or numeric
-// duration in `candidate` that the grounded `baseNarration` never stated (e.g. the
-// LLM inventing "the year is 1347" or "twelve years running the inn" out of thin
-// air). Returns the offending substring, or null. Never throws.
+// H-31 R4 — a confident age phrase ("well past seventy", "in his seventies",
+// "past sixty", "seventy years old") naming a decade the grounded base never
+// stated. Same decade-word vocabulary the engine already uses for round
+// numbers; deliberately doesn't cover every possible age phrasing, only the
+// ones an LLM actually reaches for when inventing one (Opus gate 2026-06-19:
+// "a man well past seventy" asserted with no age on record).
+const AGE_DECADE = '(?:twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|\\d{2,3})';
+const AGE_PHRASE_RE = new RegExp(
+  `\\b(?:well\\s+|far\\s+)?past\\s+${AGE_DECADE}\\b` +
+  `|\\bin\\s+(?:his|her|their|its)\\s+(?:twenties|thirties|forties|fifties|sixties|seventies|eighties|nineties)\\b` +
+  `|\\b${AGE_DECADE}\\s+years?[\\s-]old\\b` +
+  `|\\b${AGE_DECADE}\\s+years?\\s+of\\s+age\\b`,
+  'gi'
+);
+
+// Rule 5b (H-29) helper — finds a confidently-asserted bare year/date, numeric
+// duration, or age phrase (H-31 R4) in `candidate` that the grounded
+// `baseNarration` never stated (e.g. the LLM inventing "the year is 1347",
+// "twelve years running the inn", or "well past seventy" out of thin air).
+// Returns the offending substring, or null. Never throws.
 export function findInventedFactClaim(candidate, baseNarration) {
   try {
     const text = String(candidate || '');
@@ -595,6 +628,10 @@ export function findInventedFactClaim(candidate, baseNarration) {
     let m;
     while ((m = durRe.exec(text)) !== null) {
       if (!base.includes(m[0].toLowerCase())) return m[0];
+    }
+    const ages = text.match(AGE_PHRASE_RE) || [];
+    for (const a of ages) {
+      if (!base.includes(a.toLowerCase())) return a;
     }
     return null;
   } catch { return null; }

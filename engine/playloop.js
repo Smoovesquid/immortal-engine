@@ -2150,7 +2150,14 @@ function playerMoveCore(world, packsById, text) {
 
   const move = inferMoveFromText(w, pack, actorId, text);
 
-  const { world2, result } = resolveMove(w, move);
+  // H-31 R1 — an info-seeking ask with no grounded fact behind it never rolls
+  // a gradeable success/mixed: there is nothing dice can deliver, so fortune
+  // is moot (a real DM doesn't roll for a fact that doesn't exist). Decided
+  // PRE-ROLL from the same grounding check infoExtractionOutcome uses below,
+  // so the two can never disagree about what counts as grounded.
+  const { world2, result } = isUngroundedInfoCheck(w, text)
+    ? { world2: w, result: noInfoCheckResult() }
+    : resolveMove(w, move);
   // Apply deltas (canon mutation path).
   w = applyDeltas(world2, result.deltas);
   // Persist last roll for roll-recall gate (H-12/13)
@@ -3031,12 +3038,19 @@ function buildBeatFromTurn(world, text, move, result) {
   } else if (nodeId) {
     location = nodeId;
   }
+  // recentBeats is invariant-capped to the three real grading buckets
+  // (engine/invariants.js BEAT_OUTCOMES) — a pseudo-outcome like H-31's
+  // 'no-info' sentinel reads as "no progress" for narrative-memory purposes.
+  const rawOutcome = String(result?.outcome ?? '');
+  const outcome = (rawOutcome === 'success' || rawOutcome === 'mixed' || rawOutcome === 'failure')
+    ? rawOutcome
+    : 'failure';
   return {
     t: Array.isArray(world?.timeline) ? world.timeline.length : 0,
     input: String(text ?? ''),
     approach: String(move?.approachTag ?? ''),
     stake: String(move?.stakeTag ?? ''),
-    outcome: String(result?.outcome ?? ''),
+    outcome,
     location,
     mechanics: String(result?.mechanicsLine ?? '')
   };
@@ -4726,10 +4740,42 @@ function infoPressCount(world, npc) {
   return n;
 }
 
+// H-31 R1 — true when `text` demands a fact that has no grounding in canon.
+// Checked PRE-ROLL (playerMoveCore, before resolveMove) so an unanswerable ask
+// never rolls a gradeable success/mixed against dice that can't change the
+// answer. Reuses the exact same lookup infoExtractionOutcome uses, so the
+// pre-roll gate and the post-roll narration can never disagree about what
+// counts as grounded.
+function isUngroundedInfoCheck(world, text) {
+  if (!isInfoSeekingText(text)) return false;
+  return !lookupGroundedFact(world, text, socialTarget(world, text));
+}
+
+// H-31 R1 — neutral result for an info-seeking ask with nothing to deliver.
+// No roll, no margin, no success-flavored gains/costs — only the baseline
+// per-turn time advance every action carries. outcome:'no-info' is a sentinel
+// that ONLY this path produces: infoExtractionOutcome's guard below accepts
+// it to still render the in-fiction decline, but nothing else in the engine
+// (thread resolution, the resolution.success flag) reads it as a success.
+function noInfoCheckResult() {
+  return {
+    outcome: 'no-info',
+    rawDie: 0,
+    roll: 0,
+    dc: 0,
+    margin: 0,
+    profBonus: 0,
+    gains: [],
+    costs: [],
+    deltas: [{ op: 'time', key: 'turn', by: 1 }],
+    mechanicsLine: '[info-check → no-record | nothing grounded to deliver, no roll]'
+  };
+}
+
 // Return grounded deliver-or-decline narration for a resolved info-seeking action,
 // or null (so normal resolution wins). Exported for unit testing.
 export function infoExtractionOutcome(world, text, outcome) {
-  if (outcome !== 'success' && outcome !== 'mixed') return null;
+  if (outcome !== 'success' && outcome !== 'mixed' && outcome !== 'no-info') return null;
   if (!isInfoSeekingText(text)) return null;
 
   const npc = socialTarget(world, text);

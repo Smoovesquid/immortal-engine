@@ -8,6 +8,7 @@ import { adjudicate } from '../adjudication/adjudicate.js';
 import { exitsFrom, cleanPlaceName } from '../map/mapState.js';
 import { statMod } from '../ruleset/core/stats.js';
 import { profBonusFor } from '../ruleset/core/levelTable.js';
+import { playerAc } from '../combat/escapeCombat.js';
 
 // Canonical stat names (bare "my X" is unambiguous for game-native names).
 const META_STAT = /\b(?:what(?:'?s| is)\s+my\s+|my\s+)(might|agility|wits|grit|charm)(?:\s+(?:modifier|mod|score|stat|number|bonus))?\b/i;
@@ -163,6 +164,28 @@ const META_INVENTORY = /\bwhat (?:do i have|am i carrying|have i got)\b|\bwhat'?
 // request, never a dice roll. Answered in-voice from real canon (an empty
 // loadout is reported honestly, never invented as "a short sword").
 const META_EQUIPMENT = /\bwhat(?:'?s| is)\s+my\s+(?:weapon|blade|sword|armou?r|gear|equipment|loadout)\b|\bname\s+my\s+(?:weapon|blade|sword|armou?r)\b|\bwhat\s+am\s+i\s+(?:wielding|wearing|armed\s+with)\b|\bwhat(?:'?s| is)\s+on\s+my\s+(?:character\s+)?sheet\b|\bwhat\s+(?:weapon|armou?r)\s+(?:do|am)\s+i\b/;
+// "What's actually in my hands right now?" / "what am I holding?" — a real DM
+// answers from the loadout, never a WITS check (Opus gate 2026-06-19, Rules
+// Lawyer DM: this fell through to a contested check and "the details blur").
+// Routed into the same handler as META_EQUIPMENT below. (H-31 R2)
+const META_HELD_ITEMS = /\bwhat(?:'?s| is)\s+(?:actually\s+)?in\s+my\s+hands?\b|\bwhat\s+(?:do\s+i|am\s+i)\s+(?:actually\s+)?holding\b/i;
+// Numeric Armor value/AC — "what's my Armor value?", "give me my AC". Your
+// own defense number off the sheet; a table DM just tells you, never a dodge
+// roll. Distinct from META_EQUIPMENT (which names the armor PIECE, not its
+// number). (Opus gate 2026-06-19, Rules Lawyer DM; H-31 R2)
+const META_ARMOR_VALUE = /\b(?:armor|armour)\s+(?:value|class|rating|number|score)\b|\bmy\s+ac\b|\bwhat(?:'?s| is)\s+(?:my\s+)?ac\b|\bgive\s+me\s+(?:my\s+)?ac\b/i;
+// Possession contradiction — "you said I had a staff and a robe" / "a moment
+// ago I had X" / "I'm holding X" — the player re-asserts owning an item that
+// isn't in their real inventory. A real DM corrects the record in-fiction
+// rather than re-listing the truth evasively (or worse, inventing the
+// claimed item into existence). Gate test only checks a trigger phrase plus
+// SOME possession noun anywhere in the message; findBogusPossessionClaim
+// below does the real per-noun grounding check, so a TRUE restatement of
+// real gear never trips a correction. (Opus gate 2026-06-19, Rules Lawyer
+// DM; H-31 R3)
+const POSSESSION_CLAIM_TRIGGER = /\b(?:you (?:said|told me|just (?:said|listed))|a moment ago|i (?:had|have|was holding|'m holding|am holding|was carrying|'m carrying))\b/i;
+const POSSESSION_NOUN_RE = /\b(?:staff|wand|robe|cloak|sword|greatsword|longsword|shortsword|dagger|bow|crossbow|shield|armou?r|helm|helmet|gauntlets?|boots?|ring|amulet|potion|scroll|mace|axe|spear|hammer|club|quarterstaff|blade)\b/gi;
+const META_POSSESSION_CHALLENGE = new RegExp(`${POSSESSION_CLAIM_TRIGGER.source}[\\s\\S]*?${POSSESSION_NOUN_RE.source}`, 'i');
 // Character identity / build — "who am I", "what's my class/level", "what are my
 // stats". A player learning their own character is an information request, not a
 // fiction beat and never a dice roll. Identity is answered in-voice; an explicit
@@ -243,7 +266,9 @@ export function isMetaQuestion(text) {
     || META_EXPLICIT_CHECK_A.test(t) || META_EXPLICIT_CHECK_B.test(t)  // H-19
     || META_EXPLICIT_CHECK_C.test(t) || META_EXPLICIT_CHECK_D.test(t)  // H-26c
     || META_SKILL_MOD.test(t) || META_ATTACK_MOD.test(t) || META_BARE_DC.test(t)  // H-25
-    || META_ROLL_RECALL.test(t);  // H-12/13
+    || META_ROLL_RECALL.test(t)  // H-12/13
+    || META_HELD_ITEMS.test(t) || META_ARMOR_VALUE.test(t)  // H-31 R2
+    || META_POSSESSION_CHALLENGE.test(t);  // H-31 R3
 }
 
 // Exported guard for playloop.js — detects NPC identity/presence queries so
@@ -390,6 +415,45 @@ function answerWeaponDamage(lowerText, world) {
     : `Your weapons roll for damage as follows — ${joinList(list.map(describe))}, plus your ability modifier on a hit.`;
 }
 
+// Name what's actually equipped, in-voice, no roll. An empty loadout is
+// reported honestly — the DM never invents a weapon the player lacks.
+// Shared by the META_EQUIPMENT/META_HELD_ITEMS answer and the possession-
+// contradiction correction below (H-31 R3), so both read from one place.
+function describeLoadout(world) {
+  const p = world.party?.[0] || {};
+  const inv = p.inventory || {};
+  const names = (arr) => (Array.isArray(arr) ? arr : []).map(it => String(it?.name || it).trim()).filter(Boolean);
+  const weapons = names(inv.weapons);
+  const armor = names(inv.armor);
+  const sig = String(p.signature?.itemName || '').trim();
+  const sigName = sig && !/^thing$/i.test(sig) ? sig : '';
+  const parts = [];
+  parts.push(weapons.length
+    ? `You're armed with ${joinList(weapons)}.`
+    : `You bear no weapon worth the name — just your hands and whatever you can lay them on.`);
+  if (armor.length) parts.push(`You're wearing ${joinList(armor)}.`);
+  else parts.push(`Nothing but your own clothes stand between you and a blade.`);
+  if (sigName) parts.push(`And you carry ${sigName}, which means something to you.`);
+  return parts.join(' ');
+}
+
+// Returns the claimed possession nouns ("staff", "robe"...) that have no
+// match anywhere in real inventory, or null when there's no claim to check
+// (or every claimed noun IS real gear, by substring — so "I'm holding a
+// blade" against a real "Worn Blade" is never flagged). Pure; never throws.
+function findBogusPossessionClaim(lowerText, world) {
+  if (!POSSESSION_CLAIM_TRIGGER.test(lowerText)) return null;
+  const claimed = [...new Set((lowerText.match(POSSESSION_NOUN_RE) || []).map(w => w.toLowerCase()))];
+  if (!claimed.length) return null;
+  const inv = world.party?.[0]?.inventory || {};
+  const realNames = [].concat(
+    inv.weapons || [], inv.armor || [], inv.tools || [], inv.clothes || [],
+    inv.oddities || [], inv.consumables || [], inv.tech || [], inv.junk || [], inv.items || []
+  ).map(it => String(it?.name || it || '').toLowerCase());
+  const bogus = claimed.filter(c => !realNames.some(n => n.includes(c)));
+  return bogus.length ? bogus : null;
+}
+
 // Handle meta-questions (status checks, location surveys, recaps, outcomes).
 // Returns null when the text isn't a recognized meta-question.
 export function handleMetaQuestion(text, world) {
@@ -400,12 +464,34 @@ export function handleMetaQuestion(text, world) {
     return buildLocationSurvey(world);
   }
 
+  // Possession contradiction — "you said I had a staff and a robe" when
+  // canon shows none. Checked before every other branch so a false claim
+  // gets named and corrected, not silently re-listed (or, worse, answered
+  // by a different branch that drops the contradiction entirely). (H-31 R3)
+  {
+    const bogus = findBogusPossessionClaim(lowerText, world);
+    if (bogus) {
+      const loadout = describeLoadout(world);
+      return `There's no ${joinOr(bogus)} — ${loadout.charAt(0).toLowerCase()}${loadout.slice(1)}`;
+    }
+  }
+
   // Weapon damage — "what's the damage on the Hatchet?", "what die does the
   // damage roll use?". Checked before MECHANICS so a weapon-specific ask gets
-  // the real die rather than the generic d20-system explainer.
+  // the real die rather than the generic d20-system explainer. Folds in the
+  // Armor value too when both are asked in the same breath — this branch
+  // fires before META_ARMOR_VALUE's own (later) check, so a compound ask
+  // ("damage die... and my Armor value?") would otherwise drop the AC half.
+  // (H-31 R2)
   if (META_WEAPON_DAMAGE.test(lowerText)) {
     const ans = answerWeaponDamage(lowerText, world);
-    if (ans) return ans;
+    if (ans) {
+      if (META_ARMOR_VALUE.test(lowerText)) {
+        const ac = playerAc(world.party?.[0] || {});
+        return `${ans} Your Armor is ${ac} — that's the number an attack has to beat to land on you.`;
+      }
+      return ans;
+    }
   }
 
   // Player's own name — "what's my name?", "you called me Garrick". Answer from
@@ -446,6 +532,16 @@ export function handleMetaQuestion(text, world) {
     const might = statMod(Number(p.stats?.MIGHT) || 10);
     const agi = statMod(Number(p.stats?.AGILITY) || 10);
     return `To hit you add your MIGHT modifier (${fmtMod(might)}) for a melee strike, or your AGILITY (${fmtMod(agi)}) for a finesse or ranged attack — plus your proficiency on a weapon you're trained with.`;
+  }
+
+  // Armor value/AC — "what's my Armor value?", "give me my AC". Your own
+  // defense number off the sheet — a table DM just tells you, never a dodge
+  // roll. Checked before META_EQUIPMENT so it isn't swallowed by the
+  // armor-PIECE-name handler. (A compound damage+armor ask is already folded
+  // into the META_WEAPON_DAMAGE branch above.) (H-31 R2)
+  if (META_ARMOR_VALUE.test(lowerText)) {
+    const ac = playerAc(world.party?.[0] || {});
+    return `Your Armor is ${ac} — that's the number an attack has to beat to land on you.`;
   }
 
   // Bare DC ask with no declared check — "give me the DC". There's no standing
@@ -639,22 +735,10 @@ export function handleMetaQuestion(text, world) {
 
   // Equipment / sheet — name what's actually equipped, in-voice, no roll. An
   // empty loadout is reported honestly (the DM never invents a weapon you lack).
-  if (META_EQUIPMENT.test(lowerText)) {
-    const p = world.party?.[0] || {};
-    const inv = p.inventory || {};
-    const names = (arr) => (Array.isArray(arr) ? arr : []).map(it => String(it?.name || it).trim()).filter(Boolean);
-    const weapons = names(inv.weapons);
-    const armor = names(inv.armor);
-    const sig = String(p.signature?.itemName || '').trim();
-    const sigName = sig && !/^thing$/i.test(sig) ? sig : '';
-    const parts = [];
-    parts.push(weapons.length
-      ? `You're armed with ${joinList(weapons)}.`
-      : `You bear no weapon worth the name — just your hands and whatever you can lay them on.`);
-    if (armor.length) parts.push(`You're wearing ${joinList(armor)}.`);
-    else parts.push(`Nothing but your own clothes stand between you and a blade.`);
-    if (sigName) parts.push(`And you carry ${sigName}, which means something to you.`);
-    return parts.join(' ');
+  // META_HELD_ITEMS ("what's in my hands") shares this answer — it's the same
+  // question about the same loadout. (H-31 R2)
+  if (META_EQUIPMENT.test(lowerText) || META_HELD_ITEMS.test(lowerText)) {
+    return describeLoadout(world);
   }
 
   // Character identity / build — answer who you are from canon. Identity in-voice;
@@ -830,6 +914,16 @@ function joinList(items) {
   if (arr.length === 1) return arr[0];
   if (arr.length === 2) return `${arr[0]} and ${arr[1]}`;
   return `${arr.slice(0, -1).join(', ')}, and ${arr[arr.length - 1]}`;
+}
+
+// Same shape as joinList, but for negation ("there's no X or Y") where "and"
+// would misread as a conjunction of two true things. (H-31 R3)
+function joinOr(items) {
+  const arr = items.filter(Boolean);
+  if (arr.length === 0) return '';
+  if (arr.length === 1) return arr[0];
+  if (arr.length === 2) return `${arr[0]} or ${arr[1]}`;
+  return `${arr.slice(0, -1).join(', ')}, or ${arr[arr.length - 1]}`;
 }
 
 function describeNpc(npc) {

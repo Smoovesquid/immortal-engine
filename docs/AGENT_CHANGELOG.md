@@ -226,6 +226,25 @@ other agents. (none active)
 
 ## 2026-06-19 — Claude Opus
 
+- Packet/seam: Rung 1 / H-26 CRUNCH_INCONSISTENCY cluster (4 sub-bugs)
+- Commit: `334053c`
+- Files changed:
+  - `engine/grace/gracefulAdjudication.js` (`META_EXPLICIT_CHECK_C`/`_D` + `extractRequestedStat` priority + handler/`isMetaQuestion` wiring)
+  - `tests/U190.crunchConsistency.test.js` (new)
+- Summary: Triaged the 4 sub-bugs; two are cleanly deterministic and fixed, two are LLM narration-grounding and deferred.
+  - **(b) declared-miss reframed into a hit** — "A 4 against AC 10, a clean miss… what's my attack modifier?" produced `[strike … → hit | 4 dmg]`. Already closed by H-25's `META_ATTACK_MOD` interceptor (the combat meta-gate now answers the modifier as table-talk and resolves no strike). Regression-guarded here (U190-b).
+  - **(c) wrong stat (WITS→CHARM)** — FIXED. "Roll the d20 against WITS … not a CHARM attempt on Senna" ran a CHARM social check: `detectApproach` matched the stray "charm" word and `extractRequestedStat` took the FIRST stat in the sentence. Added explicit-check Pattern C (imperative "roll … against <stat>", preposition-gated so bare "roll might" modal doesn't fire) and Pattern D (named "<stat> check/save/test"); `extractRequestedStat` now prefers the roll-TARGET stat. The out-of-dialogue meta-gate intercepts before social adjudication → "Roll WITS — d20 +1 against DC 12." (U190-c).
+  - **(a) defeated-enemy not reconciled** and **(d) mixed-roll narrated as clean success** — NOT fixed. Verified the deterministic layer is already correct: the composer's `APPROACH_LEXICON` differentiates `mixed` (e.g. force/mixed → "momentum costs its tax"), and combat mechanics carry the `defeated`/`hp:0` state faithfully. Both gate traces are the **LLM polish** smoothing a mixed outcome into clean success / narrating a `defeated:true` body as active. That is the same llmAdapter narration-validation layer as H-27 and the deferred H-11 second half.
+- Proof:
+  - `node --test tests/U190.crunchConsistency.test.js` — 3/3
+  - `node --test tests/U182…` + `U189` + `U186` — 26/26 (explicit-check + meta regressions)
+  - Full suite: `node --test` — 7951/0
+  - Determinism gates U19/21/22/27/30 green
+- Remaining/next: **STOPPED before H-27 per queue plan.** H-26(a) and H-26(d) collapse into the H-27 CANON_HALLUCINATION / llmAdapter narration-validation work, which itself overlaps the still-open H-11 llmAdapter hardening. Basecamp to decide whether to bundle H-27 + H-26(a,d) + H-11-second-half into ONE llmAdapter validation pass (recommended — same file, same layer) rather than three separate passes.
+- Rollback: revert commit `334053c`
+
+## 2026-06-19 — Claude Opus
+
 - Packet/seam: Rung 1 / H-25 DM_TEST_DEADEND — DM won't answer "what's my own number"
 - Commit: `26ec812`
 - Files changed:

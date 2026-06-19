@@ -10,6 +10,7 @@ import { statMod } from '../ruleset/core/stats.js';
 import { profBonusFor } from '../ruleset/core/levelTable.js';
 import { playerAc } from '../combat/escapeCombat.js';
 import { purseTotalCopper, formatPrice } from '../economy/shop.js';
+import { fateBand } from '../rulesets.js';
 
 // Canonical stat names (bare "my X" is unambiguous for game-native names).
 const META_STAT = /\b(?:what(?:'?s| is)\s+my\s+|my\s+)(might|agility|wits|grit|charm)(?:\s+(?:modifier|mod|score|stat|number|bonus))?\b/i;
@@ -358,7 +359,28 @@ export function isQuestionShaped(text) {
 // genericGroundedOutcome's atmosphere-only pool ("It comes off cleanly...")
 // despite a resolved roll with real information on the table.
 const INFO_SEEKING_RE = /\b(?:who|what|when|where|whose)\b[\s\S]{0,60}?\b(?:name|named|year|date|deed|owner|own(?:s|ed)?|held|sold|gave|kin|family|relat\w*|tenure|found(?:ed|ing)|born|husband|wife|spouse|son|daughter|father|mother|married)\b|\bgive me (?:a|one|the)\s+name\b|\bby name\b|\bwhat year (?:is it|are we)\b|\bis\s+[a-z][\w'-]*(?:\s+[a-z][\w'-]*){0,2}\s+(?:dead|alive)\b|\bhow long\b[\s\S]{0,30}?\b(?:run|ran|owned|been here|been)\b|\bhow many generations\b/i;
-const INFO_SEEKING_EXCLUDE_RE = /\b(?:attack|strike|hit|stab|slash|shoot|kill|fight|charge|intimidate|charm|deceive|persuade)\b/i;
+// Action-feasibility/skill verbs — mirrors isExploreIntent's own exclusion
+// vocabulary (playloop.js ~L4349/4351), reused here for the same reason: a
+// question opener ("can/could/should I ...") followed by one of these is an
+// ACTION dressed as a question, never a fact demand. Paired with the
+// recall-bias net below so "can I climb this wall?"/"could I jump that gap?"
+// keep rolling as actions instead of dead-ending on a "no record" decline.
+// (H-39)
+const INFO_SEEKING_EXCLUDE_RE = /\b(?:attack|strike|hit|stab|slash|shoot|kill|fight|charge|intimidate|charm|deceive|persuade|climb|jump|leap|vault|pick|force|break|try|attempt|sneak|steal|track|forage|decipher|calm)\b/i;
+// Recall-bias net (H-39, BASECAMP design-review verdict 2026-06-19): the curated
+// anchor-noun list above (name/year/date/owner/kin/family/...) is precision-
+// tuned and keeps missing fresh phrasings of the same intent — a genuine
+// fact/lore/history demand framed as a knowledge-VERB-phrase rather than a
+// specific noun ("what happened to the people who used to live here?", "tell
+// me about the war", "what do you know about this place?"). Anchored to the
+// verb phrase itself (not a noun list), so it generalizes to ANY topic that
+// follows — recall, not enumeration. Deliberately narrower than a bare
+// isQuestionShaped fallback: a blanket "any question is info-seeking" net
+// would swallow isExploreIntent's own "what do I see"/"is there a window"
+// survey questions (playloop.js isExploreIntent already defers to
+// isInfoSeekingText, so over-broadening here would silently break the
+// generic room-survey path — see U197-06).
+const INFO_SEEKING_TOPIC_RE = /\btell me\s+(?:about|more about|everything(?:\s+about|\s+you know about)?)\b|\bwhat\s+do\s+you\s+know\s+about\b|\bwhat\s+(?:happened|became)\s+(?:to|of)\b|\bwhat'?s\s+the\s+story\s+(?:behind|of|with)\b/i;
 
 // Observe-object-detail: a player demands the literal text/marking on a held
 // or examined object ("what's stamped on the coin", "look at it and tell me
@@ -370,7 +392,7 @@ export function isInfoSeekingText(text) {
   const t = String(text || '').toLowerCase();
   if (!t.trim()) return false;
   if (INFO_SEEKING_EXCLUDE_RE.test(t)) return false;
-  return INFO_SEEKING_RE.test(t) || INFO_SEEKING_OBSERVE_RE.test(t);
+  return INFO_SEEKING_RE.test(t) || INFO_SEEKING_OBSERVE_RE.test(t) || INFO_SEEKING_TOPIC_RE.test(t);
 }
 
 // Tier B trigger: a conjunction of two distinct actions ("dive behind the bar
@@ -811,11 +833,23 @@ export function handleMetaQuestion(text, world) {
   // question back as a navigation prompt.
   if (META_ADVICE.test(lowerText)) {
     const node = (world.map?.nodes || []).find(n => n && n.id === world.map?.currentNodeId) || null;
-    const npcs = (node?.settlement?.npcs || []).filter(n => n && !n.hostile);
+    const allNpcs = Array.isArray(node?.settlement?.npcs) ? node.settlement.npcs : [];
+    const npcs = allNpcs.filter(n => n && !n.hostile);
     if (/\btalk|speak|approach|ask\b/.test(lowerText) && npcs.length) {
       return `Worth a try — ${joinList(npcs.slice(0, 3).map(describeNpc))} ${npcs.length === 1 ? 'is' : 'are'} right here, and nothing's stopping you from walking over.`;
     }
-    return `That one's yours to call — nothing here forces your hand either way. Go with your gut.`;
+    // H-39 — "should I be worried?" used to get the content-free "that one's
+    // yours to call" hedge, never resolving the actual question. A real DM
+    // gives a read on the danger, drawn from REAL state — hostile NPCs
+    // present, open ledger threats, or a grim/blood world tone — never an
+    // invented fact (narration!=canon: this reads state, it doesn't mint any).
+    const hostileCount = allNpcs.filter(n => n && n.hostile).length;
+    const activeThreats = Array.isArray(world.ledger?.threats) ? world.ledger.threats.length : 0;
+    const tone = fateBand(Number(world.meta?.fate ?? 0.5));
+    const danger = hostileCount > 0 || activeThreats > 0 || tone === 'grim' || tone === 'blood';
+    return danger
+      ? `Yes — keep your eyes open; nothing out here is friendly by default.`
+      : `You're alright for the moment — nothing here's looking to move on you.`;
   }
 
   // Sheet confirmation — "my sheet", "the sheet", "confirm my stats". Reports

@@ -765,16 +765,26 @@ function playerMoveCore(world, packsById, text) {
   // NPC's own name/role to literally appear in the text, or a bare "what
   // happened?" merely near an unrelated NPC would wrongly skip the recap too
   // (false-positive guard: a genuine recap ask must still get the recap). (H-34 R1)
+  // H-39 extension: the same unanchored "what happened" ALSO swallows a
+  // third-party historical/lore question that never names an NPC at all
+  // ("what happened to the people who used to live here?" — Opus gate
+  // 2026-06-19) — isInfoSeekingText's recall-bias net (gracefulAdjudication.js)
+  // now recognizes this shape, so defer to it the same way an explicitly-
+  // addressed NPC question already defers, letting the turn reach the
+  // deliver-or-decline contract below instead of the bare "Nothing's happened
+  // yet" dead-end. A real player's-own-last-turn recap ("What happened? What
+  // did I just do?") has no knowledge-verb-phrase anchor, so it never matches
+  // isInfoSeekingText and is unaffected.
   const npcAddressedRecap = !w.combat?.active && !w.scene?.dialogue
     && META_RECAP.test(String(text || '').toLowerCase())
-    && (() => {
+    && (isInfoSeekingText(text) || (() => {
       const npc = socialTarget(w, text);
       if (!npc) return false;
       const t = String(text || '').toLowerCase();
       const nm = normName(npc?.name).trim();
       const role = String(npc?.role || '').toLowerCase().trim();
       return (nm && t.includes(nm)) || (role && t.includes(role));
-    })();
+    })());
   if (!w.combat?.active && !w.scene?.dialogue && isMetaQuestion(text) && !declaredNpcViolence && !npcAddressedRecap && !META_LOCATION.test(String(text || '').toLowerCase())) {
     const metaAnswer = handleMetaQuestion(text, w);
     if (metaAnswer) {
@@ -4855,6 +4865,28 @@ function noInfoCheckResult() {
   };
 }
 
+// An explicit in-fiction non-answer, escalating under repeated pressure
+// (tier 0: polite deflect, 1: curt, 2+: disengage). Extracted from
+// infoExtractionOutcome's no-grounding branch so genericGroundedOutcome's
+// H-39 fall-through safety net can reuse the exact same phrasing/escalation
+// without duplicating it.
+function declineInfoSeek(world, text, npc) {
+  const press = infoPressCount(world, npc);
+  const tier = Math.min(press, 2);
+  const name = npc?.name ? String(npc.name) : null;
+  const V = (key, variants) => `Wizard: ${pickVariant(variants, world, key)}`;
+  const declines = name ? [
+    [`${name} shrugs. "Can't say. No record I've ever seen."`, `${name} shakes their head. "Wouldn't know — nobody's ever told me."`, `${name} spreads their hands. "That's lost to me, truth be told."`],
+    [`${name} sighs. "I told you — I don't know. Won't change by asking twice."`, `${name}'s patience thins. "Same answer. I don't have it."`, `${name} won't be drawn twice on the same dead end.`],
+    [`${name} turns away. "Enough. I'm done with that question."`, `${name} is done talking about it — the subject is closed.`, `${name} won't say another word on it.`]
+  ] : [
+    [`There's no record of that — not one anyone's ever shown you.`, `Can't rightly say. That's lost, whatever it was.`, `No one here would know. It's not written anywhere you can find.`],
+    [`Same as before — no answer exists to give, however you ask it.`, `Asking again won't conjure a record that isn't there.`, `Still nothing. The matter stays unsettled.`],
+    [`That question's closed. There's no answer coming, here or anywhere.`, `Drop it — pressing further won't make a fact appear.`, `The matter's done; no more comes of asking.`]
+  ];
+  return V(`info:decline:${tier}`, declines[tier]);
+}
+
 // Return grounded deliver-or-decline narration for a resolved info-seeking action,
 // or null (so normal resolution wins). Exported for unit testing.
 export function infoExtractionOutcome(world, text, outcome) {
@@ -4879,21 +4911,7 @@ export function infoExtractionOutcome(world, text, outcome) {
     ]);
   }
 
-  // No grounding — an explicit in-fiction non-answer, escalating under
-  // repeated pressure (tier 0: polite deflect, 1: curt, 2+: disengage).
-  const press = infoPressCount(world, npc);
-  const tier = Math.min(press, 2);
-  const name = npc?.name ? String(npc.name) : null;
-  const declines = name ? [
-    [`${name} shrugs. "Can't say. No record I've ever seen."`, `${name} shakes their head. "Wouldn't know — nobody's ever told me."`, `${name} spreads their hands. "That's lost to me, truth be told."`],
-    [`${name} sighs. "I told you — I don't know. Won't change by asking twice."`, `${name}'s patience thins. "Same answer. I don't have it."`, `${name} won't be drawn twice on the same dead end.`],
-    [`${name} turns away. "Enough. I'm done with that question."`, `${name} is done talking about it — the subject is closed.`, `${name} won't say another word on it.`]
-  ] : [
-    [`There's no record of that — not one anyone's ever shown you.`, `Can't rightly say. That's lost, whatever it was.`, `No one here would know. It's not written anywhere you can find.`],
-    [`Same as before — no answer exists to give, however you ask it.`, `Asking again won't conjure a record that isn't there.`, `Still nothing. The matter stays unsettled.`],
-    [`That question's closed. There's no answer coming, here or anywhere.`, `Drop it — pressing further won't make a fact appear.`, `The matter's done; no more comes of asking.`]
-  ];
-  return V(`info:decline:${tier}`, declines[tier]);
+  return declineInfoSeek(world, text, npc);
 }
 
 // ── Stage F: general grounded fallback (kill the abstract floor everywhere) ──
@@ -4934,8 +4952,20 @@ function pickVariant(variants, world, key) {
 }
 
 // Grounded prose for any resolved non-combat action that would otherwise floor.
-function genericGroundedOutcome(world, text, outcome) {
+// Exported for unit testing.
+export function genericGroundedOutcome(world, text, outcome) {
   const t = String(text || '').toLowerCase().trim();
+  // H-39 belt-and-suspenders: an info-seeking question has no business
+  // reaching the LAST-resort resolver at all (a resolved success/mixed/
+  // no-info info-seeking turn is already caught by infoExtractionOutcome
+  // above this in the caller's `grounded ||` chain; a failed one is caught
+  // here). Always decline, never deliver — a real DM doesn't hand over the
+  // fact on a roll that failed to extract it, and a future isInfoSeekingText
+  // gap must degrade to a forgivable decline, never the gen:s/gen:m/gen:f
+  // atmosphere bank below.
+  if (isInfoSeekingText(t)) {
+    return declineInfoSeek(world, text, socialTarget(world, text));
+  }
   const o = outcome === 'success' ? 's' : outcome === 'failure' ? 'f' : 'm';
   const place = placeNameOf(world);
   const V = (key, variants) => `Wizard: ${pickVariant(variants, world, key)}`;

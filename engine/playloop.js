@@ -5618,7 +5618,9 @@ function isNpcAddressedRest(world, text) {
 
 function outOfCombatDyingGate(world, text) {
   if (world?.combat?.active || world?.meta?.mode !== 'escape') return null;
-  if ((Number(world?.meta?.escapeMaxHp) || 0) <= 0) return null;
+  const sheetMaxHp = Number(world?.party?.[0]?.dnd?.maxHP) || 0;
+  const escapeMaxHp = Math.max(Number(world?.meta?.escapeMaxHp) || 0, sheetMaxHp);
+  if (escapeMaxHp <= 0) return null;
   if ((Number(world?.meta?.escapeHp) || 0) > 0) return null;
   const t = String(text || '');
   const RESCUE_RE = /\b(?:healed?|stabil[iu]z(?:e[sd]?|ing|ed?)?|cured?|revived?|rescue(?:d)?|drag(?:ged)?\s+(?:\w+\s+)?(?:me|out)|pull(?:ed)?\s+(?:\w+\s+)?(?:me|out)|saved?\s+me)\b/i;

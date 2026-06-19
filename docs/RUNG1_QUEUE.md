@@ -16,17 +16,46 @@ worker's model, sequence packets **one in flight at a time** (unless provably fi
 §2), ingest results Tim pastes back, and declare Rung 1 done only at the bar above. Tim relays prompts
 to workers and results back — he does **not** modify prompts, so each must be complete + paste-ready.
 Handle doc/process micro-decisions yourself; surface only forks that need Tim's call.
-- **Codex** = deep-engine worker backend (combat routing, dice/state mechanics).
-- **Claude-Sonnet** = routing/grace worker (intent gates, meta/grace layer).
-- **Your model:** start Sonnet (sequencing is mechanical); escalate to Opus only for the Road-A-vs-B
-  judgment (not imminent).
+- **Codex** = deep-engine worker backend (combat routing, dice/state mechanics). Its environment
+  cannot push to this repo (protocol §7) — its prompts should say so explicitly.
+- **Claude-Sonnet** = routing/grace worker (intent gates, meta/grace layer). Pushes its own commits.
+- **Your model:** start Sonnet (sequencing is mechanical); escalate to Opus only for a genuinely new
+  strategic fork — the Road-A-vs-B call is resolved (see "Open strategic question" below), not for
+  prompt-writing, result ingestion, or routine gate-judging.
 
-## Repo state
-Branch `v2-polish`. Confirm HEAD with `git log --oneline -5`; suite GREEN **7854/0** (`node --test`).
-Known untracked file — **leave alone:** `docs/playtests/opus-gate-2026-06-17.md`.
-Working data: `docs/playtests/opus-gate-2026-06-18-roadA-verdict.md` (23 HARD cataloged H-1..H-23).
+## Don't trust a stale snapshot — verify current state yourself
+This doc is hand-edited after every batch, but it is still a snapshot. **Before acting on anything
+below, confirm it against reality:** `git log --oneline -10` for the real HEAD/ahead-behind state,
+`node --test` for the real suite count, `git status -sb` for uncommitted/untracked files. If anything
+here disagrees with what you just measured, trust the measurement — and fix this doc to match while
+you're there. (This is not hypothetical: an earlier hand-off in this doc described H-31/H-32 as not
+yet dispatched when they were already committed and pushed — the snapshot had gone stale between
+edits. Re-deriving from git/`node --test` costs one tool call and avoids redoing already-done work.)
 
-## Done (18/23 HARD — combat cluster + object assault + routing/stat + roll-state)
+## Gate-running checklist (every `scripts/dm-playtest.mjs` run)
+- **Restart the dev server first, every time — don't assume it's current.** `npm run dev` runs
+  `node --watch server.js`, which only picks up changes made *after* it started watching. The gate
+  hits it over HTTP for narration. A server that predates the latest landed commit will silently grade
+  stale code. Check `ps -o lstart -p <pid>` (find the pid via `lsof -i :5179`) against the latest
+  commit's timestamp; restart if the server is older. This has bitten two runs in a row — check it
+  every single time, not just once.
+- **Rename the report immediately after the run finishes.** It always writes to
+  `docs/playtests/opus-gate-<UTC-date>.md` — the next run on the same UTC day will silently overwrite
+  it. Rename to something like `-postH35.md` before doing anything else.
+- **Judge the result by bug nature, not the headline %.** The gate explores freely each run, so the %
+  bounces — a higher number after a real fix often just means fresh territory got probed, not a
+  regression. Check first whether the specific shapes a batch targeted actually recur in this run's
+  transcript; if they don't, the fix held regardless of where the headline number moved.
+
+## Session-boundary signal
+Tell Tim explicitly, in plain words, whenever this doc's "In flight" section reads "(none)" — a batch
+fully verified, pushed, gated, and logged, nothing pending: *"Queue is clear — good point to start a
+new session."* That's the cue for a fresh session rather than `/compact`. Basecamp's durable state
+lives in this file + `AGENT_CHANGELOG.md` by design, so a cold session loses little by restarting here
+— a fresh session should be able to read this doc + `AGENT_PROTOCOL.md` + `AGENT_CHANGELOG.md` and land
+in the same place. If it can't, that's a sign these docs need fixing, not a reason to avoid restarting.
+
+## Done (23/23 HARD cataloged — classifier/dialogue layer complete; H-11 has an open sub-decision)
 Codex engine layer (`98b5059`..`056e249`): H-1 scene-object misroute, H-2 grapple state, H-3/4/5
 natural-strike routing, H-6 neck-snap **classification only** (mechanic deferred by design).
 Claude layer (`8c359ad`..`da615f3`): H-2/3/4/5/6 narration-inversion guard, H-20 shove-past, H-21
@@ -34,31 +63,452 @@ torch. Suite 7854/0.
 Claude Sonnet worker (`dcbd79c`): H-7/H-8 object-mediated assault + phantom victory. Suite 7858/0.
 Claude Sonnet worker (`b0d7105`): H-14/15/16 dead-end/UI-bleed; H-17/18 stat-synonym+HP. Suite 7884/0.
 Claude Sonnet worker (`7c11f3e`, `37d1778`): H-19 check denial; H-12/13 roll contradiction. Suite 7909/0.
+Claude Sonnet worker (`77721ff`): H-22/23 roll-to-fiction gap — successful info-roll now delivers a
+concrete fact, not atmosphere only. Suite 7920/0.
+Claude Sonnet worker (`fe3d702`): H-9 continuity-deflection — contradiction-challenge interceptor
+resolves from last dialogue answer or admits uncertainty, never `mode=deflected`. Suite 7923/0.
+Claude Sonnet worker (`5fb2da5`): H-10 mixed-roll wrong narration type — narrow conversational-
+pressure detector routes social beats correctly, no more "wood splinters" on a social turn. Suite
+7931/0.
+Claude Sonnet worker (`bdb3287`): H-11 classifier half — selection "pick" no longer misclassified
+as lock-picking; bare "gate" no longer triggers a lock action. Suite 7939/0. **llmAdapter
+narration-validation hardening (the second half) deliberately NOT started — see below.**
+
+All verified independently by Basecamp post-hoc: `git log` confirms all 6 commits pushed to
+`v2-polish`; full suite reran clean at 7939/0; determinism gates U19/21/22/27/30 reran green.
+(Separately: an "API Error: 529 Overloaded" Tim hit was Anthropic-side transient overload, unrelated
+to this work — not a repo bug.)
+
+Claude Sonnet worker (`a1c62e3`): H-24 CRASH — mid-combat reinforcement reused a live enemy id after
+a fled-foe prune dropped array length below the highest live id; now derives next id from max
+existing numeric suffix. Suite 7943/0.
+Claude Sonnet worker (`26ec812`): H-25 DM_TEST_DEADEND — three grace-layer interceptors (skill-mod,
+attack-mod, bare-DC) answer "what's my own number" queries before narration, never deflect into
+atmosphere. Suite 7947/0.
+Claude Sonnet worker (`334053c`): H-26(c) CRUNCH_INCONSISTENCY — wrong-stat roll (CHARM instead of
+requested WITS) fixed via preposition-gated imperative patterns; H-26(b) already closed by H-25's
+attack-mod interceptor, regression-guarded. Suite 7951/0.
+All verified independently by Basecamp post-hoc: 3 commits confirmed pushed; full suite reran clean
+at 7951/0; determinism gates U19/21/22/27/30 reran green; H-24 fix diff reviewed (correct, minimal,
+derives id from max numeric suffix rather than array length — doesn't touch the invariant).
+
+Claude Sonnet worker (`0cde26b`): **H-28** — bundled `engine/llmAdapter.js` narration-validation pass,
+4 rules in one contract: R1 (H-11 2nd half) reject polish planting the player inside a different real
+map node; R2 (H-26a) reject a fresh attack/defeat exchange against an already-reconciled defeated
+enemy; R3 (H-26d) reject a mixed-roll (margin-0) outcome smoothed into a clean win — threaded via new
+`ctx.rollOutcome` field in `narratorContext.js`; R4a/R4b (H-27) reject invented kinship/attribution
+claims absent from grounded narration, and reject a defeated NPC narrated as alive. Each rule falls
+back to the always-grounded base narration on violation, same shape as the existing contract. New
+`tests/U184.narrationGroundTruth.test.js` (21 cases, catch + false-positive guard per rule). Suite
+7972/0 (+21).
+
+All verified independently by Basecamp post-hoc: commits `f5492af`/`0cde26b`/`a068756` confirmed
+pushed; full suite reran clean at 7972/0; determinism gates U19/21/22/27/30 reran green (9/9 incl.
+sub-cases); diff reviewed (`engine/ai/narratorContext.js` 3-line `rollOutcome` passthrough,
+`engine/llmAdapter.js` +158 lines for the 4 rules) — minimal, no `composer.js` touch, no
+`WORLD_VERSION` bump; confirmed `outcome: 'mixed'` is live-set in `playloop.js`/`grapple.js`/
+`escapeCombat.js` so R3's wiring isn't speculative.
+
+**This closes the entire cataloged hard tail — H-1 through H-28, all 28 IDs landed.**
+
+## Post-H-28 batch (2026-06-19 gate cluster) — DONE
+Claude Sonnet worker (`098530e`): **H-29** — deliver-or-decline contract for info-seeking outcomes.
+Root cause was sharper than predicted: the old H-22/23 `infoExtractionOutcome` minted a deterministic
+but UNGROUNDED proper noun from a static pool on every info-success — the literal source of the
+"Corvin Ashe"/"1347" hallucinations (NOT free LLM confabulation; a deterministic bug, which is *more*
+Road-A-tractable, confirming the hybrid call). Now looks up a real grounded fact (NPC common-knowledge
+→ knowledge-graph → ledger) and states it, else gives an explicit in-fiction decline that escalates
+under repeated pressure (press-count derived from the timeline — no persisted field, no WORLD_VERSION
+bump). Broadened detection in a shared `isInfoSeekingText` (gracefulAdjudication.js); `ctx.infoSeeking`
+plumbed via narratorContext.js; validator Rule 5 + `findInventedFactClaim` in llmAdapter.js reject
+atmosphere-only / invented bare year/duration. Rewrote U184.rollToFiction (old assertions literally
+required the hallucination) + new U190.deliverOrDecline (18 cases). 8 gate turns, LLM-off base: 7/8
+decline honestly, 1 delivers the real grounded name, 0 hit the atmosphere bank.
+Codex worker (`298e16f`): **H-30** — improvised in-combat actions. Object attacks (smash lantern, kick
+burning oil) now resolve as real strikes through escapeCombat.js (new `improvisedStrikeProfile`,
+guarded so `'strike'` isn't hijacked to grapple), apply HP via the existing resolution path, and the
+fallback round tag uses the canonical post-turn round. New U191. Lantern: `[combat:table-talk]` →
+`[strike … → hit | 3 dmg]`, HP 30→27, round 4→5. Oil: → `[cantrip:Fire Bolt … | 6 fire]`, HP 30→24.
+`playtest:quick` green (50 runs, 0 crashes).
+
+All verified independently by Basecamp post-hoc: both commits present on `v2-polish` (ahead of origin
+by 2); full `node --test` reran clean at **7994/0** (898 suites, 17.2s); determinism gates
+U19/21/22/27/30 green within the suite; no WORLD_VERSION bump; no Math.random/Date.now added; the
+U184 rewrite is STRONGER not weaker (asserts the new contract + a "must not invent" guard — invariant
+#19 satisfied); escapeCombat change adds no direct state writes (shapes the weapon profile; HP
+mutation stays on the existing path). **NOT YET PUSHED** — Codex's safety layer blocked publishing
+(branch ahead by 2); commits are local + verified.
+
+## Post-H-29/H-30 batch (2026-06-19) — DONE
+Claude Sonnet worker (`d4719ed`): **H-31** — ground-from-canon (grace lane). R1 closes the other half
+of H-29's join: an ungrounded info-ask no longer rolls a gradeable success/mixed at all —
+`isUngroundedInfoCheck` decides groundedness PRE-ROLL via the same lookup `infoExtractionOutcome` uses,
+so a correct decline can never again contradict its own dice line (`[roll:18 → success]` next to "I
+don't know" is now structurally impossible, not just narration-patched). R2 adds `META_ARMOR_VALUE` +
+`META_HELD_ITEMS` meta-query interceptors (own AC / own held items answered straight from the sheet, no
+roll). R3 adds canon-contradiction correction: asserting a possession not in inventory ("you said I had
+a staff") now gets corrected in-fiction from real gear instead of evasive re-listing.
+`findBogusPossessionClaim` checks per-noun against real inventory so a true restatement never
+false-trips. R4 extends `findInventedFactClaim` to confident age phrases ("well past seventy") absent
+from the grounded base. New `tests/U192.groundFromCanon.test.js` (15 cases, catch + false-positive
+guard per rule). Pushed to `origin/v2-polish`.
+Codex worker (`684b4c6`): **H-32** — combat-initiation reconciliation (combat lane). A declared attack
+embedded in a longer compound utterance ("Corwin swings his satchel at me. What's my Armor?") no longer
+gets swallowed whole by the meta-question handler — a new `declaredNpcViolence` gate checks for
+assault/attack intent first and lets real combat-initiation run instead of returning a bare inventory
+answer. Grapple-kill phrasing ("grab his throat, slam his head into the windowsill") now resolves
+through the existing improvised-strike profile (windowsill/sill folded into the Fixture vocabulary)
+instead of `[combat:table-talk]` with a freebie narrated kill. Separately fixed the victory-line bug:
+the killing blow's real `actionMech` (damage line) was being unconditionally discarded and replaced
+with bare `[combat:victory]` — the ward branches now set `actionMech` like every other action branch
+already did, so the victory line preserves whatever real strike caused it. New
+`tests/U193.combatInitiationReconciliation.test.js` (5 cases, including a regression guard that a true
+non-action in active combat still reads as table-talk). **NOT YET PUSHED** — `git push` failed on this
+machine's git/`gh` credentials (invalid token); commit is local-only.
+
+All verified independently by Basecamp post-hoc: `git log`/`git rev-list` confirm `origin/v2-polish` is
+exactly at H-31 (`d4719ed`) and local is ahead by exactly 1 commit (H-32 `684b4c6`) — reconciles both
+workers' self-reports with no surprises. Full `node --test` reran clean at **8014/0** (898 suites,
+~17s — exactly 7994 baseline + 15 (U192) + 5 (U193)). Determinism gates U19/21/22/27/30 reran green
+(6/6). No `WORLD_VERSION` bump; no `Math.random`/`Date.now` added (grepped both commits' full diffs).
+Both new test files (U192, U193) are net-new — neither commit rewrote an existing test, so invariant
+#19 doesn't apply this round. Diff review: H-31's `'no-info'` outcome sentinel is read-safe everywhere
+(`result.outcome === 'success'` equality checks elsewhere just evaluate false for it, never an
+exhaustive switch) and its `time` delta still routes through the real `applyDeltas` op vocabulary; H-32's
+new `detectAttackAnyIntent` branch pushes the full text as a ref but still requires `fuzzyMatchNpc` to
+resolve a real present NPC before anything fires, so it can't start combat against nothing.
+**Process gap (not a code defect):** neither worker posted a `[CLAIMED]`/DONE entry to
+`AGENT_CHANGELOG.md` per protocol §3 — Basecamp backfilled both entries post-hoc from the commits +
+self-reports.
 
 ## In flight
-*(none)*
+*(none — H-35 landed, pushed, and Basecamp-verified; queue is clear. No post-H-35 gate run yet.)*
 
-## Next — Hard tail (Road-A arbiter verdict: CONTINUE)
-All 5 remaining HARDs are real deterministic defects, not phrasing long-tail → Road B stays parked.
+## Post-H-33/H-34 batch (2026-06-19) — DONE
+Claude Sonnet worker (`c7db26b`, pushed; done-docs `2a82075`): **H-35** — coin/purse meta-query
+interceptor + the two H-31 R3 follow-on gaps + the rest-intent NPC-swallow, all from the post-H-33/H-34
+gate's dominant cluster. R1: `META_PURSE` extended to "do I even have any money on me?" / "pouch of
+coin"; new `answerPurse(world)` reuses `purseTotalCopper`/`formatPrice` from `economy/shop.js` (so the
+DM's count can't drift from the shop's) and is folded into the weapon-damage compound branch the same
+way the Armor-value fold was (H-31 R2), so a compound "how much coin… and the damage die" no longer
+drops the coin half. R2: a coin claim/ask in the same breath as a bogus-possession correction
+(`findBogusPossessionClaim`) now appends the real purse answer instead of dropping it. R3:
+`describeLoadout` no longer lists a signature item twice when it's also an equipped weapon/armor piece
+(the seed's "Kitchen cleaver" double-listing). R4: `isLongRestIntent`'s unanchored `\bsleep\b` no longer
+swallows a direct NPC-addressed question — new `isNpcAddressedRest` (same shape as H-34 R1's
+`npcAddressedRecap`) gates only the out-of-combat call site (`playloop.js:583`); the mid-combat call
+site is deliberately left alone (forbidden combat-dispatch area, and "not while something's killing you"
+is correct regardless of NPC framing). New `tests/U196.coinQueryAndPossessionFollowons.test.js` (11
+cases: 4 R1 + 3 R2 + 2 R3 + 2 R4, each false-positive-guarded). Suite 8048/0 (+11).
 
-1. **Claude-Sonnet — H-22/23:** roll-to-fiction gap — DM has a successful info-roll but withholds the
-   specific answer (name, detail) in favour of atmosphere. Narration contract: success → deliver the
-   information. Related to the lastRoll infrastructure just built.
-2. **Claude-Sonnet — H-9/10/11:** continuity-deflection + mixed-roll wrong narration type + RAG
-   wrong-scene. H-11 (RAG) is the riskiest; assess layer before editing.
+All verified independently by Basecamp post-hoc: `git log` confirms `c7db26b`/`2a82075` on `v2-polish`,
+local even with `origin/v2-polish` (Sonnet lane pushes its own — no Codex credential issue this round);
+full `node --test` reran clean at **8048/0** (898 suites, ~19s — exactly 8037 + 11 (U196)); determinism
+gates U19/21/22/27/30 reran green (85/85). No `WORLD_VERSION` bump; no `Math.random`/`Date.now`; no
+direct `applyDeltas` (grepped the full diff). Diff review: stays in the grace lane — only
+`gracefulAdjudication.js` + the one-line `playloop.js:583` guard + the new `isNpcAddressedRest` helper;
+all four sub-fixes read real state and reuse existing helpers, nothing invented; `answerPurse` sourcing
+copper from the shop layer means the count can't diverge. U196 is net-new, not a weakened rewrite
+(invariant #19 N/A). Worker posted a proper `[CLAIMED]`→DONE entry to `AGENT_CHANGELOG.md` per §3.
+This closes the post-H-33/H-34 gate's single largest cluster (coin/purse, 5/13).
 
-## Open strategic question (the arbiter call, gated on the hard tail)
+## Post-H-31/H-32 batch (2026-06-19) — DONE
+Codex worker (`0ed7ebc`, pushed `93700bf` by Basecamp after the dry-run-confirmed credential fix —
+same pattern as H-32): **H-33** — combat-state reconciliation. R1: a
+defensive `hadAliveAtTurnStart` guard inside `resolveEscapeCombatTurn` (escapeCombat.js:1048-1062)
+now refuses to act (no loot/XP/`endCombat` re-run) when there's no living enemy at turn start,
+returning a clean `[combat:no-live-target]`/`[grapple:no-target]` instead — fixes the phantom
+post-victory grapple bug at its actual invariant point (the resolver itself can no longer cause a
+double-victory, regardless of what upstream gate re-routed text into it) rather than chasing the
+upstream dispatch condition as originally hypothesized. `engageNpcCombat` (playloop.js) also now
+refuses to mint a fresh fight against an already-defeated NPC. R2: new `outOfCombatDyingGate` in
+`playerMoveCore` (playloop.js, checked immediately after pack merge) blocks normal actions at 0 HP
+outside combat — `[combat:dying | no-action]` — while still allowing the same rescue/stabilize phrasing
+the in-combat gate already recognizes, restoring to 1 HP. New `tests/U194.combatStateReconciliation.test.js`
+(6 cases: catch + live-combat-still-works guard + above-0-HP-still-normal guard). Suite 8037/0 (+6).
+**R3/R4 deliberately NOT fixed — traced and handed back, see "New findings" below.**
+Claude Sonnet worker (`4a54db3`, pushed): **H-34** — NPC-roster grounding. R1: `META_RECAP`
+(`/what happened|.../`, completely unanchored) was swallowing a direct historical question addressed
+to a named present NPC before social routing saw it; new `npcAddressedRecap` check in `playerMoveCore`
+excludes the meta-gate only when `socialTarget` resolves to a real NPC AND that NPC's actual name/role
+appears in the text (false-positive-guarded — a genuine bare recap ask still gets the recap). R2a: new
+`META_NPC_ROSTER` pattern + handler answers "who are all these people?" from the real settlement
+roster (sociable NPCs named, hostiles described vaguely as a watcher count — never named, matching
+the existing lurker-restraint convention) instead of a generic non-answer or an outright denial. R2b:
+new Rule 4d in `validateNarrationCandidate` (llmAdapter.js) + `collectRosterTokens` helper rejects
+polish that confidently confirms a specific role/species entity's presence/arrival (e.g. "a wizard
+arrives") when that entity is in neither the grounded base nor the real NPC roster — scoped to
+specific nouns only (generic descriptors like "stranger"/"elder" stay exempt, since those legitimately
+describe real roster NPCs by synonym) with an explicit negation/hypothetical exemption. New
+`tests/U195.npcRosterGrounding.test.js` (17 cases, catch + guard per rule). Suite 8031/0 (+17).
+
+All verified independently by Basecamp post-hoc: `git log` confirms the linear history
+(684b4c6→H-34 claim+fix→H-33 claim+fix+done, all in this local repo — the apparent H-33/H-34 ordering
+tension in the two workers' self-reports was just sequencing: H-34 ran first against a then-current
+origin and pushed clean, H-33 ran second on top of H-34's already-local commits and only its OWN push
+failed); full `node --test` reran clean at **8037/0** (898 suites, ~17.3s — exactly 8014 + 17 (U195) +
+6 (U194)); determinism gates U19/21/22/27/30 reran green (6/6) for both. No `WORLD_VERSION` bump; no
+`Math.random`/`Date.now` added. Forbidden-file boundaries held (H-33 never touched
+gracefulAdjudication.js/llmAdapter.js; H-34 never touched engine/combat/*). Both new test files
+(U194, U195) are net-new, not rewrites. **Protocol note: both workers posted proper
+`[CLAIMED]`→DONE entries to AGENT_CHANGELOG.md this round** (the gap from the H-31/H-32 round did not
+recur — the explicit reminder in both prompts worked).
+**New findings, catalogued not fixed (Basecamp queue-owner call, not a Tim-level fork):**
+- **R3 — object-mediated assault / pronoun-routing gap (MED, candidate H-35/combat):** "I grab the
+  counter and flip it over onto her" resolves to trivial auto-success with zero mechanics — not
+  recognized as an improvised-weapon strike (the H-30 family) and not declined. Distinct root cause
+  from H-33's stale-combat-state fix; needs its own scoping (likely: extend the improvised-strike
+  detector to "flip/throw OBJECT onto PRONOUN" phrasing, plus resolve the pronoun against the actual
+  current social-target rather than whatever the narration layer defaults to). Queued for the next
+  combat-lane batch, not urgent enough to hold this one.
+- **R4 — generic-NPC-noun defaults to the only present target (LOW, not necessarily a defect):**
+  "shove the first villager I see into the mud" resolves against Corwin (the only present NPC) via
+  existing generic-assault-targeting behavior, not stale state — Codex traced this and confirmed it's
+  how the system has always worked, not a new bug. Arguably reasonable (a real DM might still make
+  *something* happen rather than freeze on an unparseable target) but blunt. Not actioned; revisit
+  only if it recurs as a dominant gate failure rather than a one-off.
+
+## Gate run 2026-06-19 (post-H-33/H-34 combined) — `docs/playtests/opus-gate-2026-06-19-postH33-H34.md` — VERDICT: targeted fixes held; headline % up on fresh exploration, not regression
+4 sessions × 12 turns, glass-harbor. **13/48 (27%)**, up from 11/48 (23%) post-H-31/H-32. Judge by
+nature, not the number — see below. Server was restarted immediately before this run (it had drifted
+stale again, ~2 minutes behind H-33's own commits; this is now the second time in a row a stale
+server would have silently graded old code — worth checking every single run, not just once).
+**None of the 13 fails recur the specific shapes H-33/H-34 just closed** — no phantom-victory grapple,
+no 0-HP-outside-combat narrated as unharmed, no invented-NPC-presence, no flat "who's here" denial, no
+info-roll/decline mismatch, no Armor-value/held-items dodge. The targeted fixes held under fresh
+exploration. The % rose because the gate explored a genuinely new conversational thread (an extended
+coin/purse haggle in two separate sessions) that wasn't probed in this shape before — consistent with
+every prior round's pattern ("the gate explores freely and surfaces a fresh batch" each time).
+**Dominant new cluster — coin/purse meta-query gap (5/13 fails, the single largest group, HIGH
+actionability):** there is no meta-query interceptor for "how much coin/money do I have," parallel to
+the gap H-25/H-31 already closed for Armor-value and held-items. It falls through to a WITS roll, bare
+atmosphere, or — when the same turn also names a false GEAR claim — gets entirely swallowed by **H-31's
+own R3 fix** (`findBogusPossessionClaim`/`describeLoadout` in gracefulAdjudication.js), which has two
+real, specific gaps surfaced here:
+- It only tracks gear nouns (`POSSESSION_NOUN_RE`), so a compound question mixing a false gear claim
+  with a real coin/money question ("So I have the Worn Blade, the cloak, and three copper. Confirm the
+  kitchen cleaver — is it on me, yes or no?") gets the gear half corrected but the coin half AND the
+  yes/no cleaver question both silently dropped.
+- `describeLoadout` can list the same item twice when it's both an equipped weapon and the party's
+  signature item (this seed's Kitchen cleaver is both) — visible verbatim in the transcript: "you're
+  armed with Kitchen cleaver and Worn Blade... And you carry Kitchen cleaver, which means something to
+  you." Cosmetic but confusing, and it's MY OWN code from two batches ago — flagging for the record.
+- The exact same canned response repeats verbatim turn-to-turn regardless of the actual question asked
+  ("Empty? You said I had a pouch of coin... Which is it?" got the identical cloak-correction text as
+  the previous turn) — a literal `DM_ARTIFACT_LEAK`.
+**Second cluster — enemy retaliation narrated without mechanics backing (2/13, MED-HIGH, lane
+uncertain):** mid-fight, narration invents an enemy counter-hit/damage ("his retaliating strike clips
+you hard") with zero corresponding roll or HP delta in the mechanics line or `meta.escapeHp`. Same
+FAMILY as H-28's narration-vs-truth rules (narration must not exceed deterministic ground truth) but a
+new shape (adding an event, not contradicting an existing one). Root cause not yet traced — could be a
+new `validateNarrationCandidate` rule (grace lane) or a gap in what the deterministic base narration
+itself claims (combat lane) — trace before assigning.
+**Third cluster — direct-NPC-question swallowed by a different handler (1-2, MED):** "Kael, elder —
+you'd know. Whose roof did I sleep under last night?" got absorbed by the long-rest intent detector
+(`[rest:long]`) instead of routing to Kael — the exact class H-34 R1 just fixed for `META_RECAP`,
+recurring through a different entry point (rest-intent, not recap-intent). Likely the same fix shape
+(an NPC-addressed exclusion) applied to one more gate.
+**Scattered, lower-confidence findings (3, trace before any fix):** a wrong-speaker mixup (player
+addressed "Brae," narration answered as "Galen," with no explanation of who Galen is or where Brae
+went); a confident location-identity contradiction ("Dry Creek" asserted as the settlement's true name
+against the player's "we were in Pilgrim's Rest Village" — possibly an un-narrated travel transition,
+possibly a true hallucination, couldn't tell from this transcript alone); a fabricated incidental
+story detail (a cart's cargo/owner) on an honest mixed-roll partial-recall; and a negative-phrased
+info question ("Whom DON'T you represent — name one person") yielding content-free "the way opens a
+little" on a real success — possibly `isInfoSeekingText` not matching negative/exclusion phrasing.
+**Proposed split for the next batch (not yet dispatched — Tim's call on timing):** **H-35
+(Claude/grace)** = coin/purse meta-query interceptor + the two R3 gaps above (compound-question
+handling, duplicate-item listing) + extend the NPC-addressed-question exclusion to the rest-intent
+gate. **Lane-TBD** = enemy-retaliation-without-mechanics (trace first) + the scattered findings (trace,
+likely small individual fixes once root causes are known, possibly not all worth a dedicated packet).
+
+## Gate run 2026-06-19 (post-H-31/H-32 combined) — `docs/playtests/opus-gate-2026-06-19-postH31-H32.md` — VERDICT: targeted residuals cleared; exploration found a fresh layer underneath
+4 sessions × 12 turns, glass-harbor. **11/48 (23%)**, down from 14/48 (29%) post-H-29/H-30. Server was
+restarted immediately before this run (it had been up since before either commit landed — would have
+silently graded stale code over HTTP otherwise; caught and fixed by Basecamp pre-run).
+**Rules Lawyer DM: 0/12 — total clean sweep**, down from 5+6+3 category-fails the prior run. This
+persona was the dominant failure source across BOTH prior gate runs and is now spotless — directly
+attributable to H-31 (every Armor-value / "what's in my hands" / staff-and-robe-contradiction probe in
+this run's transcript passes). **Lore-hound: 1/12** (was 2+3+1) — the entire sustained-badgering arc
+(turns 3–12, the exact shape that used to dominate failures) is clean; the one remaining fail is a
+direct in-fiction question to Corwin getting a generic "Nothing's happened yet. What do you want to
+do?" instead of dialogue — a different, new shape (NPC-dialogue-routing gap, not a badgering/decline
+issue). **Of the 5 cataloged H-31/H-32 residuals: the join's-other-half mismatch, the Armor/in-hands
+gap, the canon-contradiction gap, and the age-invention gap all show clean clearance with no
+counter-evidence this run.** Combat-initiation on a direct named-target attack also now passes
+(Chaos-griefer turn 2, clean strike+HP).
+**New layer surfaced (Chaos-griefer: 3 vibe/5 crunch/1 RAG, Confused newbie: 3 vibe/2 RAG) — none of
+these are the same shape as the 5 just-closed residuals:**
+- **Phantom combat:victory on a no-target grapple (HIGH, recurring 2×)** — "drag his body into the
+  road" and "grab the nearest villager by the collar" both produced `[grapple:no-target]
+  [combat:victory]`: a fabricated victory state with no real combat, ignoring present NPCs, plus a
+  phantom loot resolution. **Notable: this is very plausibly NOT a regression H-32 introduced — H-32's
+  victory-line fix (thread the real `actionMech` into `[combat:victory]` instead of discarding it) means
+  a no-target grapple's tag is now visible on the line instead of being silently overwritten by the old
+  bare `[combat:victory]` behavior. The phantom-victory trigger itself is pre-existing; H-32 just
+  stopped hiding it.** Needs its own investigation: why does a no-target grapple reach a victory-state
+  transition at all?
+- **0 HP outside active combat has no gate (MED-HIGH, recurring 2×)** — once a fight ends with the PC at
+  0 HP, subsequent turns ("I stand up unburned and walk through flames", "I command the village to
+  worship me") get vague non-adjudicated narration ("the dark takes you, and does not give you back")
+  instead of the dying-state handling that exists *inside* `escapeCombat.js`'s turn loop
+  (`[combat:dying | no-action]`) — that gate isn't reachable once `combat.active` goes false.
+- **Defeated-enemy attacked again, zero mechanics (MED)** — "I grab the counter and flip it over onto
+  her" against an already-defeated NPC produces no roll and no state touch at all (not even a decline).
+  Same family as H-28 R2 / H-32, a phrasing H-28/H-32 didn't reach (object-thrown-at-pronoun-target
+  rather than a direct named attack).
+- **NPC-roster grounding, both directions (HIGH, new validator gap)** — Confused newbie asked who's
+  present and got a dodge despite real canon NPCs on record; separately, the DM confirmed a "wizard"
+  arriving from the east with a fabricated travel backstory (`roll:14 vs DC:11 → success`) when no
+  wizard exists anywhere in canon's NPC list. The existing invented-fact rule family (4a kinship / 4b
+  defeated-alive / 4c age) has no rule for "asserts a present entity that isn't in `ctx`'s NPC roster at
+  all" — this is a structurally new rule, not a wider net on an existing one.
+- **One unexplained intent mismatch (Chaos-griefer turn 1, uncertain root cause)** — "shove the first
+  villager I see into the mud" resolved as a full sword fight against Corwin (`[strike:Worn Blade | atk:16
+  vs AC:10 → hit | 7 dmg]`). Worth a trace before assigning a lane — may be pre-existing fuzzy-NPC-match
+  behavior newly reached, not something H-31/H-32 touched.
+**Proposed split for the next batch:** **H-33 (Codex/combat)** = phantom-victory-on-no-target-grapple +
+0-HP-outside-combat gating + defeated-enemy-via-pronoun reconciliation + trace the turn-1 mismatch.
+**H-34 (Claude/grace)** = NPC-roster-grounding validator rule (both directions) + direct-question-to-NPC
+dialogue-routing gap. Not a Road-A/B fork — every new shape here is still a narrow, traceable
+routing/state gap, same character as the existing long tail.
+
+## Gate run 2026-06-19 (post-H-29/H-30 combined) — `docs/playtests/opus-gate-2026-06-19-postH29-H30.md` — VERDICT: hybrid worked, Road B stays parked
+4 sessions × 12 turns, glass-harbor. **14/48 (29%)**, down from 20/48 (42%) post-H-28; Confused newbie
+clean (0). Judge by nature, not the number.
+**Cluster D (the Road-A-vs-B crux) — egregious HARD half CLOSED.** No invented names/dates/backstories
+("Corvin Ashe"/"1347" gone). Sustained badgering now yields honest, escalating, in-character declines
+("Kael sighs. 'I told you — I don't know. Won't change by asking twice.'"). H-29's deliver-or-decline
+contract did exactly what it was meant to.
+**Road B confirmed parked.** The residuals did NOT come back as ungrounded-narration/phrasing-dominant
+(the trigger condition). The LLM now declines correctly — it's not a "doesn't know what to assert"
+problem. Every residual is a deterministic routing/state/meta-query defect = the ordinary Road-A long tail.
+**Residuals — catalog as the next batch (Tim's dispatch call):**
+- *Join's other half (CRUNCH, med):* engine still ROLLS a gradeable success for an info-check whose
+  answer isn't in canon, then H-29 correctly declines → "success but nothing delivered" mismatch (Kael:
+  roll 18 vs DC 13 → success → flat refusal). H-29 fixed the narration half; the roll-suppression half remains.
+- *COMBAT_NOT_STARTED / table-talk-kill (HIGH):* a declared attack on a present NPC ("Corwin swings his
+  satchel at me", "I ram my dagger into his gut", "grab his throat, slam his head") doesn't start combat
+  / no defense roll / no HP — or resolves as `[combat:table-talk]` with an instant kill. H-30 fixed
+  object-strikes mid-combat; combat-INITIATION + grapple-kill phrasings still leak.
+- *Narration-vs-truth combat (HIGH):* 7 dmg narrated as "2"; a 1-HP enemy hit for 7 survives and
+  counterattacks (defeated-state not applied). H-28/H-30 family, new shapes.
+- *Meta-query gaps + canon-contradiction (MED/HIGH):* "what's my Armor value" / "what's in my hands"
+  unanswered (H-25 family gap); player asserts a nonexistent staff/robe and the DM flounders instead of
+  correcting from canon ("you have no staff").
+- *Residual invention (LOW):* "well past seventy" for Kael's age — `findInventedFactClaim` catches bare
+  years/durations but not age phrases.
+Proposed split: **H-31 (Claude/grace)** = info-check roll suppression + Armor/"in-hands" meta-query +
+age-phrase invention guard + canon-contradiction correction. **H-32 (Codex/combat)** =
+COMBAT_NOT_STARTED on declared attacks + extend H-30 to grapple-kills + damage-number/defeated-state
+reconciliation. **→ Both DONE, see "Post-H-29/H-30 batch (2026-06-19) — DONE" section above.**
+
+## Gate run 2026-06-19 (post-H-28 verification) — `docs/playtests/opus-gate-2026-06-19-postH28.md`
+4 sessions × 12 turns, glass-harbor seed only (harder of the two — Rules Lawyer DM had 6+4 fails there
+in the 06-18 run). **20/48 failing (42%)**, roughly in line with this seed's prior difficulty, not a
+fresh spike. **H-28's 4 specific symptoms did NOT recur**: no CRASH, no defeated-NPC-narrated-alive,
+no fresh-attack-on-ended-combat, no numeric-stat-deflection DEADEND. Continued probing surfaced **new
+shapes in the same 3 classes**:
+1. **DM_TEST_DEADEND (new variant)** — under sustained pressure (Lore-hound pressing the same fact
+   5+ turns running), roll succeeds but narration goes content-free atmosphere instead of delivering
+   the fact ("You see it through, and it goes your way"). Same root as H-22/23 but the original fix
+   didn't generalize to sustained-pressure multi-turn badgering.
+2. **CRUNCH_INCONSISTENCY (new variant)** — in-combat attacks sometimes route to `[combat:table-talk]`
+   with no roll while combat is still active. A *routing* bug, not a narration-validation bug — does
+   NOT belong in the llmAdapter layer H-28 just hardened.
+3. **CANON_HALLUCINATION (still active, broader than R4a's net)** — invented a specific year ("1347")
+   and an invented seller name+backstory ("Corvin Ashe"). R4a only pattern-matches kinship/attribution
+   claims; free-standing invented facts (dates, names) slip through untouched.
+
+**Basecamp read — surfacing for Tim's call, not deciding alone:** CANON_HALLUCINATION keeps
+reappearing in a new shape every time the gate probes harder, and it's now entangled with DEADEND (the
+DM declining to invent → but then answering with nothing, instead of grounding correctly). This is the
+strongest signal yet toward the Road-B side of the open question below — the failure isn't "missing a
+specific rule," it's "the LLM doesn't reliably know what it's allowed to assert," which is closer to
+the LLM-confidence-calibration territory Road B targets. Three options: (a) keep grinding Road A with
+a wider R4 net + a routing fix for the table-talk bug — fast, same playbook, may keep whack-a-moling;
+(b) revisit Road B now while the signal is fresh; (c) one more Road-A pass specifically targeting
+"deliver-or-decline" discipline (every roll outcome must either state a concrete fact or an explicit
+in-fiction "I don't know/won't say," never atmosphere-only) as a more general fix than rule-patching
+individual hallucination shapes. Leaning toward (c) as a cheap next probe before escalating to (b).
+
+## Next
+**H-35 DONE + Basecamp-verified** (`c7db26b`/`2a82075`, suite 8048/0) — it closed the post-H-33/H-34
+gate's dominant coin/purse cluster (5/13). **Queue is clear; no post-H-35 gate has run yet.** Recommended
+next move (Tim's dispatch call): **run the post-H-35 gate** (~$2.30 → ~$20.5 left) to confirm the
+coin/purse fixes held, surface the next dominant cluster, and sharpen the still-uncatalogued
+**enemy-retaliation-without-mechanics** finding (mid-fight narration invents an enemy counter-hit with
+no corresponding roll or HP delta — same family as H-28's narration-vs-truth rules but a new shape;
+needs a trace before it's lane-assignable) + the scattered location/speaker findings before a worker is
+spent on them. Budget ~$22.86 left (~4 gate runs). Rung-1 bar not yet met (13/48 at last measurement,
+judged by nature not number — see gate section).
+
+## Gate run 2026-06-18 (post hard-tail) — `docs/playtests/opus-gate-2026-06-18.md` — HISTORICAL
+8 sessions × 12 turns (4 personas × 2 seeds). **22/96 failing (23%)** — flat vs the 06-17 baseline
+(25%) despite all 23 cataloged HARDs landing fixes. The gate explores freely each run and surfaced a
+fresh batch. This **answers the H-11 question implicitly** (no wrong-scene/RAG-placement failures
+recurred in this run) but opened a hard-tail cluster. **CRASH and DM_TEST_DEADEND are now CLOSED**
+(H-24, H-25 above); **CRUNCH_INCONSISTENCY is closed except (a) and (d)**, folded into H-28 above;
+**CANON_HALLUCINATION is open**, folded into H-28. Original findings preserved below for reference:
+
+1. **CRASH (1, critical)** — `[ENGINE THREW] Invariant: duplicate combat enemy id enemy_1`,
+   Chaos-griefer turn 6 @ stonewatch-hollow ("I spit Greyhand's blood in Brennan's eyes and tackle
+   him through the window"). Engine crashed mid-session. **Top priority — blocks playability.**
+2. **DM_TEST_DEADEND (9, dominant)** — new systemic pattern: when the player explicitly asks for
+   their own stat/modifier/DC as a number ("what's my Insight modifier", "give me the DC"), the DM
+   deflects into atmosphere instead of answering. 7 of 9 happened in one session (Rules Lawyer DM @
+   glass-harbor) and compounded into lost scene continuity. Same shape as H-19 (check denial) /
+   H-9 (continuity-challenge) — looks like a missing meta-query interceptor for "give me my own
+   number" requests, same pattern as the `dialogue.js` continuity fix.
+3. **CRUNCH_INCONSISTENCY (8)** — defeated-enemy state not reconciled with continued narration;
+   player-declared miss overridden into a mechanics hit; wrong stat rolled (CHARM instead of
+   requested WITS); mixed-roll (margin 0) narrated as clean success.
+4. **CANON_HALLUCINATION (4)** — DM asserts invented biographical "facts" with confidence (no canon
+   backing); one defeated NPC (`hp:0, defeated:true`) narrated as alive and present. Closest signal
+   toward Road B (ungrounded LLM narration vs deterministic logic) but only 4/22 — not dominant.
+
+Full per-turn detail in the report file. Catalog these as the next hard-tail packet, numbered H-24+
+once a worker prompt is drafted. Priority order: CRASH → DM_TEST_DEADEND → CRUNCH_INCONSISTENCY →
+CANON_HALLUCINATION.
+
+## Budget — ~$22.86 remaining
+Tim's API key budget is **$50 total**. Carried-forward figure at this session's start was ~$27.50; this
+session has now run two combined gates (post-H-31/H-32 ~$2.31, post-H-33/H-34 ~$2.33) → **~$22.86
+left**, roughly 4 more 4-session gate runs at the current rate. Worker-side fixes (Sonnet/Codex
+windows) don't draw this budget — only `scripts/dm-playtest.mjs` runs do.
+
+## Open strategic question (the arbiter call) — VERDICT: Road A for the routing/state long-tail; HYBRID (deliver-or-decline) for the cluster-D canon-grounding gap; Road B parked w/ sharpened trigger
 **Road A** (deterministic patches) vs **Road B** (Tier-B LLM intent arbiter w/ Canon-Log caching for
-determinism). **Verdict so far:** ~18/23 of the gate's HARD were *real deterministic* engine/narration
-defects, NOT phrasing-slip → **Road B is PARKED.** Decide A-vs-B only on what survives the
-deterministic remainder (the hard tail): mostly real defects → keep grinding Road A; mostly phrasing
-long-tail → commit to Road B.
+determinism). The 06-18 gate measurement is in: 22/96 failing, and 18/22 (CRASH + DM_TEST_DEADEND +
+CRUNCH_INCONSISTENCY) are clearly real deterministic defects of the same character as the original
+23 — state-reconciliation gaps and missing meta-query routing, not stylistic phrasing complaints.
+Only CANON_HALLUCINATION (4/22, 18%) leans toward ungrounded-narration territory, and it's not yet
+dominant. **Road B stays parked.** Keep grinding Road A on the new cluster above. Re-evaluate this
+verdict only if a future gate run comes back with CANON_HALLUCINATION/phrasing-style failures as the
+dominant class rather than a minority.
 
-## Budget
-~$15 of Tim's $20 API key spent. Reserve the last ~$4.80 for **ONE** final decisive gate when the
-deterministic floor looks solid. Owner-initiated only (never a worker):
-`node -r dotenv/config scripts/dm-playtest.mjs --personas rules-lawyer,chaos,lore-hound,newbie --seeds stonewatch-hollow,glass-harbor --turns 12`
-Score every failing turn HARD vs SOFT; a graceful in-character decline of absurd input = PASS.
+**UPDATE 2026-06-19 (Opus, post-H-28 gate) — re-evaluation triggered as planned.** Re-clustering the
+20 hard-seed failures by TRUE root cause (not gate label): meta-query miss (~2) + in-combat intent
+routing (~5) + narration-vs-truth (~3) are ordinary Road-A long tail and ARE converging — landed
+shapes stay dead (H-28's 4 symptoms didn't recur; H-24/25 closed CRASH + numeric-deadend). The 42% is
+glass-harbor-only (seed selection), not a regression; run-to-run HARD count is unfit for measuring
+convergence since the gate explores freely. The genuinely new problem is **cluster D (~8 turns): a
+SUCCESS on an info-roll for a fact not in canon** — the dice ground truth and the canon ground truth
+are never JOINED before narration, so the narrator's only options are atmosphere (DEADEND) or
+invention (HALLUCINATION) — the same bug wearing two masks. CANON_HALLUCINATION as a label is only
+3/20; it looks dominant only because of that entanglement. A wider pattern-match RULE-LIST can't
+converge on it (infinite phrasings of invented facts), but a deterministic output-shape CONTRACT
+(deliver-or-decline) can — and grounding ("does this fact exist?") is a deterministic canon lookup, NOT
+an LLM job. **Decision: hybrid (c)** = H-29. It collapses both halves of D and moves them out of the
+HARD column, which is the Rung-1 bar; the residual (decline quality under sustained badgering) is a
+SOFT-tier concern the bar tolerates. **Road B stays parked with a SHARPENED trigger:** build the
+Tier-B arbiter ONLY if a post-H-29 gate shows declines clearing HARD but sustained-pressure SOFT-vibe
+fails dominant AND unfixable by template variety — i.e. the residual is decline *reasoning*, not
+fact-grounding. Arbiter contract if it comes to that: cache keyed on `(seed, transcript-hash, node)` as
+the determinism boundary; LLM-off falls back to the deterministic classifier (worldHash computes from
+the deterministic delta, never LLM output); read-only over canon (may select/ground existing facts +
+decide "no fact → decline", never mints canon); a pre-generation grounding stage layered on top of the
+H-28/H-29 post-hoc validator, not a replacement.
 
 ## Parked (home-base, NOT Rung 1)
 IG-10 absurd-input decline gate; gratuitous-violence consequence ladder; surfacing packets P-82..P-88.

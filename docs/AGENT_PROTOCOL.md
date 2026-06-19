@@ -54,3 +54,16 @@ Every agent (Claude, Codex/Keystone, any future worker) reads this before touchi
 - Remaining/next: <follow-ups or none>
 - Rollback: revert <hash>
 ```
+
+## 7 — Verification & push (learned 2026-06-19)
+- **A DONE entry is the worker's claim, not the final word.** The queue owner re-runs the full suite
+  and determinism gates independently, reviews the actual diff (no `WORLD_VERSION` bump, no
+  `Math.random`/`Date.now`, mutation via `effectsCore.applyDeltas`, no forbidden-file drift), and
+  confirms any rewritten test is stronger, not weaker, before treating a packet as verified. Workers'
+  self-reports have been accurate so far — this isn't distrust, it's the standing discipline.
+- **Push asymmetry:** Codex's environment has twice failed to push to this repo (invalid git/`gh`
+  credentials — H-32 and H-33 rounds) while the queue owner's environment and Claude Sonnet's have both
+  pushed cleanly every time. Codex worker prompts should say "commit locally and report the hash —
+  don't attempt to push, the queue owner pushes after verification." Sonnet worker prompts keep the
+  normal "commit and push yourself" instruction. Re-check this split if either worker's push behavior
+  ever changes.

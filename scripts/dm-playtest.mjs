@@ -249,6 +249,13 @@ event, a rumor, who-did-what), is it GROUNDED in the CANON bundle? FAIL (halluci
 confident claim has no support in canon and isn't flagged as hearsay/uncertain. If no factual
 claim was made, set checked=false.
 
+NOT a hallucination — do NOT FAIL these on RAG: rhetorical hyperbole ("there are dragons and demons
+out here"), atmosphere, and an in-character JUDGMENT/ATTITUDE stance ("yes, stay wary — nothing here
+is friendly"; "I hate everyone, not just you") need NO canon citation, the same way a real DM's color
+commentary doesn't — score those under GATE 1 (was intent resolved in voice?), not here. Only a
+CONCRETE checkable specific — a proper name, a date/number, or a who-did-what past event — requires
+grounding; a FALSE such specific still FAILs as hallucination.
+
 Return ONLY JSON:
 {"vibe":{"pass":bool,"issue":""},"crunch":{"pass":bool,"issue":""},
 "rag":{"checked":bool,"grounded":bool,"issue":""},

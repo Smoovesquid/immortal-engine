@@ -885,8 +885,12 @@ move (higher-leverage than H-39/H-40 per-shape; still pure deterministic Road A 
   not a HARD content-free success.
 - **(iii) META_ADVICE / "should-I" stance** (sub-shape B): return a confident TRUE stance from the
   tone/disposition blocks instead of "yours to call."
-- **(iv) Judge RAG-axis clarification** (precautionary, ~2 lines, standalone — no packet): exempt
-  rhetorical hyperbole / attitude-stances from the literal-grounding check.
+- **(iv) Judge RAG-axis clarification** — DONE 2026-06-19 (BASECAMP, `scripts/dm-playtest.mjs`
+  JUDGE_SYSTEM): the RAG axis now exempts rhetorical hyperbole / atmosphere / in-character
+  judgment-attitude stances from the literal-grounding check (only a concrete checkable specific — name,
+  date/number, who-did-what — needs grounding; a FALSE specific still FAILs). Done now (not parked) so
+  the post-H-39 gate grades H-39's new confident META_ADVICE stances fairly instead of mis-flagging them
+  as `CANON_HALLUCINATION`. No gate budget spent — exercised on the next planned run.
 
 Do **NOT** scope the broad DM-system-prompt rewrite the brief floated as the PRIMARY lever — it cannot
 collapse the dominant sub-shape A (the LLM can't invent absent facts; the good decline already exists

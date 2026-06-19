@@ -1,6 +1,13 @@
 # AGENT_CHANGELOG
 
-[CLAIMED] H-41 0-HP dying-state out of combat · Codex · 2026-06-19T19:43:55Z · files: engine/playloop.js, engine/combat/escapeCombat.js, tests/U204.outOfCombatDyingState.test.js
+2026-06-19T19:55:27Z — Codex
+- Packet/seam: H-41 0-HP dying-state out of combat
+- Commit(s): b8d3ea9
+- Files changed: `engine/playloop.js`, `tests/U204.outOfCombatDyingState.test.js`
+- Summary: `outOfCombatDyingGate` now still treats `meta.escapeHp` as the true current downed HP, but falls back to a real SRD sheet `dnd.maxHP` when `meta.escapeMaxHp` is stale/zero so a 0-HP escape character cannot fall through into ordinary narration or rolls. Added U204 coverage for a live Corwin preserved in inactive combat, normal attack blocked as `[combat:dying | no-action]`, rescue/stabilize restoring `hp:0->1`, and above-0 HP normal dispatch. Deliberately did NOT touch `engine/grace/gracefulAdjudication.js`, `engine/llmAdapter.js`, `engine/combat/escapeCombat.js`, `WORLD_VERSION`, invariants, randomness, or broad combat routing.
+- Proof: Baseline before fix: `node --test tests/U204.outOfCombatDyingState.test.js` — 1/3 (2 failing: stale `escapeMaxHp:0` fell through to ordinary dispatch). After fix: `node --test tests/U204.outOfCombatDyingState.test.js` — 3/3; `node --test tests/U204.outOfCombatDyingState.test.js tests/U90.wildEncountersAndSight.test.js` — 10/10; `node --test tests/U174.hpZeroDying.test.js tests/U194.combatStateReconciliation.test.js tests/U200.combatEntityMechanics.test.js tests/U204.outOfCombatDyingState.test.js` — 22/22; `node --test` — 8138/0; determinism `node --test tests/U19.worldHashDeterminism.test.js tests/U21.replayGateN50.test.js tests/U22.longRunStabilityN100T500.test.js tests/U27.worldHashSurfaceContract.test.js tests/U30.gate6.sequelDeterminism.test.js` — 6/6; `npm run playtest:quick` — 50 runs, 0 crashes, 0 bugs.
+- Remaining/next: none.
+- Rollback: revert b8d3ea9
 
 Compact append-only log of meaningful agent-made changes. Use this to preserve
 cross-agent continuity: what changed, what proved it, and what remains.

@@ -182,8 +182,42 @@ resolve a real present NPC before anything fires, so it can't start combat again
 self-reports.
 
 ## In flight
-*(none — H-35 landed/pushed/verified; post-H-35 gate run + ingested. H-36 split PROPOSED below, not
-yet dispatched — Tim's dispatch call. Queue is clear.)*
+*(none — H-36a + H-36b both landed, verified, and pushed. Queue is clear; post-H-36 gate not yet run.)*
+
+## Post-H-35 gate batch (2026-06-19) — DONE
+Claude-Sonnet worker (`8e0cf6e`, pushed; done-doc `0ae177f`): **H-36a** — generalize deliver-or-decline
++ answer-binding (grace lane). R1: extended `isInfoSeekingText` (gracefulAdjudication.js) to catch
+observe-object-detail ("what's stamped/printed/etched on the coin") + quantity/genealogy ("how many
+generations", "who founded") asks, AND added one guard line in `playloop.js` `isExploreIntent`
+(`if (isInfoSeekingText(t)) return false;`) — the survey branch was shadowing the WHOLE
+deliver-or-decline contract for every interrogative-led info ask (a real pre-existing bug, confirmed via
+git-stash, not just exposed by the new regex). R2: compound state-query slot-completeness — gear+HP or
+HP+name+class in one breath now answers every named slot (`answerHealth()`/`answerClassLine()` helpers
+folded into `handleMetaQuestion`, same shape as H-35's gear+coin fold). R3: extended
+`findInventedFactClaim` (llmAdapter.js) to reject confident lineage/tenure claims ("roots deep", "for
+generations", "founding family") absent from the grounded base, with the H-31 R4 negation/hypothetical
+exemption. New `tests/U197` (16 cases). Suite 8064/0 (+16).
+Codex worker (`c2a2634`, local-only — Codex can't push; Basecamp pushed after verify): **H-36b** —
+combat truth (combat lane). R1 trace verdict = **case (a)**: the enemy turn really did damage
+`meta.escapeHp` after a player miss but only the player-miss mechanics line was emitted → fixed by a new
+`enemyMech[]` that surfaces every damaging enemy action (`[enemy:Name | atk vs AC → hit | dmg |
+hp:before->after]`, incl. legendary/lair) on the defeat + mixed result lines (no grace hand-back, no
+H-36c). R2: lethal improvised natural strike now defeats + emits victory. R3 (escapeCombat/playloop
+dispatch): interior move/enter/exit while combat-active is held in combat, and mid-combat `?`-question
+text can't default into a strike/flee/victory resolution. New `tests/U198` (5 cases incl. a regression
+that a real mid-combat attack still resolves); `U191` strengthened, not weakened. Suite 8069/0 (+5).
+
+All verified independently by Basecamp post-hoc (protocol §7): H-36a re-run in an ISOLATED worktree at
+`0ae177f` (8064/0, U197 16/16, determinism 101/101); H-36b on combined HEAD (8069/0, U198 5/5,
+determinism 106/106, `playtest:quick` 50/0/0). Lane boundaries held (H-36a no combat-lane touch; H-36b
+no grace-lane touch); the shared `playloop.js` was edited in DISJOINT functions (`isExploreIntent` vs
+`playerMoveCore` combat dispatch) so H-36b stacked cleanly on H-36a — linear history, no conflict. No
+`WORLD_VERSION` bump, no `Math.random`/`Date.now` in either; both new test files net-new (invariant #19
+N/A), `U191` change is a strengthening. Both workers posted proper `[CLAIMED]`→DONE entries (§3).
+Live-path verification deferred to the post-H-36 gate (the Codex env has no browser tool — expected).
+This closes all four post-H-35 clusters (1 answer-binding + 2 compound-partial + 3 combat-desync + 4
+lineage-hallucination). **H-36a follow-up documented, out of scope:** `infoPressCount` off-by-one (first
+ask can return a tier-1 decline instead of tier-0) — pre-existing; queue for a future grace batch.
 
 ## Post-H-33/H-34 batch (2026-06-19) — DONE
 Claude Sonnet worker (`c7db26b`, pushed; done-docs `2a82075`): **H-35** — coin/purse meta-query
@@ -524,19 +558,24 @@ in-fiction "I don't know/won't say," never atmosphere-only) as a more general fi
 individual hallucination shapes. Leaning toward (c) as a cheap next probe before escalating to (b).
 
 ## Next
-**Post-H-35 gate DONE + ingested** (`opus-gate-2026-06-19-postH35.md`, 12/48): H-35 coin/purse cluster
-HELD (no recurrence), new dominant cluster = **answer-binding dead-end** (cluster 1, grace lane), and
-the **enemy-retaliation-without-mechanics** finding is now TRACED and lane-assigned (Codex/combat — see
-the gate section). **H-36 split PROPOSED, not dispatched** — Tim's dispatch call:
-- **H-36a (Claude-Sonnet / grace):** generalize deliver-or-decline to observe-object-detail +
-  quantity/genealogy asks, compound state-query slot-completeness (HP/name/class), lineage/tenure
-  anti-hallucination. The bulk (~8 turns).
-- **H-36b (Codex / combat):** enemy-retaliation-without-mechanics (traced) + defeat-threshold + combat
-  disengage/state-bleed (~4 turns). Codex can't push (§7).
-Recommended: dispatch H-36a + H-36b in parallel (file-disjoint — grace vs engine/combat, protocol §2),
-then run the post-H-36 gate to confirm. Budget ~$20.5 left (~4 gate runs). Rung-1 bar not yet met
-(12/48, judged by nature: ~1 forgivable SOFT (Lore-hound t3 margin-0 tie), the rest real defects across
-the 4 clusters; Rules Lawyer not clean — 2 compound-partial fails).
+**H-36a + H-36b DONE + Basecamp-verified + pushed** (suite 8069/0; see the post-H-35 gate batch section).
+All four post-H-35 clusters closed (answer-binding, compound-partial, combat-desync incl. the traced
+enemy-retaliation, lineage-hallucination). **Queue is clear; no post-H-36 gate has run yet.** Recommended
+next move (Tim's dispatch call): **run the post-H-36 gate** (~$2.30 → ~$18 left) to confirm the four
+clusters cleared under fresh exploration and surface the next cluster. Same shape as every prior gate:
+restart the dev server first (it silently graded stale code twice — check every run), then
+`node scripts/dm-playtest.mjs --turns 12 --seeds glass-harbor --personas rules-lawyer,chaos,lore-hound,newbie`,
+rename the report to `-postH36.md` immediately, judge by bug NATURE. Specifically check: do the H-36
+shapes recur? — coin-face/genealogy answer-binding dead-end, compound HP+name+class drop, enemy-hit
+without a visible roll/HP line, combat-bleed on a move/`?`-question turn, lineage-tenure invention. If
+none recur, the fixes held regardless of the headline %. Budget ~$20.5 left (~4 gate runs). Rung-1 bar
+not yet met (12/48 at last measurement, judged by nature).
+
+**Known small follow-up (not yet packeted):** `infoPressCount` off-by-one in `infoExtractionOutcome`
+(playloop.js) — it's called after the current turn's own `resolution` event is already on
+`world.timeline`, so the first-ever ask on a fresh world can return a tier-1 decline instead of tier-0.
+Pre-existing, confirmed via git-stash by the H-36a worker. Grace lane, low severity; fold into a future
+grace batch rather than a dedicated packet unless a gate flags it.
 
 ## Gate run 2026-06-18 (post hard-tail) — `docs/playtests/opus-gate-2026-06-18.md` — HISTORICAL
 8 sessions × 12 turns (4 personas × 2 seeds). **22/96 failing (23%)** — flat vs the 06-17 baseline

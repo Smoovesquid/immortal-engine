@@ -9,7 +9,9 @@ cross-agent continuity: what changed, what proved it, and what remains.
 ## CLAIMS (in-flight work — claim here BEFORE editing, clear when done)
 
 `[CLAIMED] <seam> · <agent> · <UTC> · files: <paths>` — a claimed seam or file is off-limits to
-other agents. (none active)
+other agents.
+
+`[CLAIMED] H-28 bundled llmAdapter narration-validation pass (H-11 2nd half / H-26a / H-26d / H-27) · Claude Opus (worker) · 2026-06-18 · files: engine/llmAdapter.js, engine/ai/narratorContext.js, tests/U184*.test.js`
 
 ## Template
 

@@ -182,8 +182,10 @@ resolve a real present NPC before anything fires, so it can't start combat again
 self-reports.
 
 ## In flight
-*(none — H-39 DONE, pushed, BASECAMP-verified per §7. Next step is a post-H-39 gate run to confirm the
-`DM_TEST_DEADEND` tail collapses — awaiting Tim's greenlight on the ~$2.40 spend.)*
+*(none — H-39 DONE + BASECAMP-verified + GATED. Post-H-39 gate ran 7/48 (see section below): H-39's
+info-seeking-lore tail collapsed (DM_TEST_DEADEND 9→2), new dominant cluster is the Rules-Lawyer
+"give me my literal numbers" meta-query (candidate H-40, grace). Queue clear — good point for a new
+session. H-40 + the combat dying-state residual NOT dispatched, Tim's call.)*
 
 ## Done — H-39 (2026-06-19, BASECAMP-verified per §7)
 Claude-Sonnet (`05f24aa` fix, `075d46d` DONE, `e5320dd` claim). Deliver-or-decline by recall, not
@@ -217,6 +219,56 @@ H-38a (`e1ff459`/`73cc196`, grace) + H-38b (`1727db9`+docs, combat), both pushed
 Suite 8110/0 (= 8086 + 3 U200 + 21 U201), determinism U19/21/22/27/30 6/6, lane boundaries held (H-38b
 only `engine/combat/*`+`playloop.js`; H-38a only `grace/*`+`playloop.js`; neither touched the other's
 lane or `llmAdapter.js`). No post-H-38 gate was run — superseded by the H-39 dispatch.
+
+## Gate run 2026-06-19 (post-H-39) — `docs/playtests/opus-gate-2026-06-19-postH39.md` — VERDICT: H-39 WORKED — info-seeking-lore DM_TEST_DEADEND tail collapsed (9→2); predicted recall residual recurred exactly once; new dominant cluster = Rules-Lawyer "give me my literal numbers" meta-query (grace)
+4 sessions × 12 turns, glass-harbor. Dev server restarted fresh immediately before the run (it was ~71s
+stale — booted 11:19:54, predated H-39's `05f24aa` at 11:21:05; caught + restarted per checklist).
+**7/48 (15%)**, down from 16/48 (33%) post-H-37. Judged by nature: the H-39 target shapes COLLAPSED —
+the genealogy/founder/"should-I-worry" info-seeking dead-ends that gave postH37 its 9 DM_TEST_DEADEND
+now PASS (Lore-hound t1 "who founded this, how long ago" ✓, t4 "name the two families" ✓; Confused
+newbie **0/12** incl. "who's that watching me / why's he watching / should I worry" ✓). **DM_TEST_DEADEND
+9→2.** sub-fix (iii) META_ADVICE stance confirmed live (the watcher arc resolves with a read, not a
+shrug). Cost ~$2.46 (96 Opus calls).
+By-class: CRUNCH_INCONSISTENCY 2 · DM_TEST_DEADEND 2 · DM_ARTIFACT_LEAK 1 · CANON_HALLUCINATION 1 ·
+NONE 1. Rules Lawyer 4/12 · Chaos 1/12 · Lore-hound 2/12 · Confused newbie 0/12.
+
+**Predicted H-39 residual CONFIRMED, exactly once (grace lane):** Lore-hound t12 "You said Kael was here
+before any of you. He says he came later... which one is lying?" → `[roll:6 vs DC:12 → failure]` →
+"Whatever you meant to do, Pilgrim's Rest Village doesn't give it to you." This is the noun-less /
+verb-phrase-less interrogative gap flagged in the H-39 DONE note: a confrontation/contradiction-challenge
+missed `isInfoSeekingText`, rolled a FAILURE, fell to `gen:f` atmosphere. The (ii) safety net didn't
+catch it (keys on the same detector). ALSO a continuity-challenge (H-9 family): a failed insight roll
+should still yield an NPC REACTION (Corwin deflects/tightens), not narration-voice filler. Next move =
+widen the recall net to which/why/how + accusation/contradiction framings, and/or route
+contradiction-challenges to the continuity interceptor; consider gating (ii) on `isQuestionShaped` +
+action-exclusion so a question that misses detection still declines-in-voice instead of `gen:f`.
+
+**NEW dominant cluster — Rules-Lawyer "give me my literal numbers" (4/7, grace lane, meta-query
+answer-binding; candidate H-40):** the persona demands raw tabletop values and the DM fumbles —
+- t2 "what are my actual stats and weapons?" → dumped INVENTORY only, omitted HP/level/stats.
+- t3 "give me my numbers — Strength, Dexterity… and attack bonus with the Worn Blade" → half rules-lecture
+  (MIGHT +1 / AGILITY −1), no full scores, no proficiency, no final attack bonus (DM_TEST_DEADEND, med).
+- t11 "roll it fresh: d20 plus my tracking modifier, tell me the modifier" → leaked a raw "Modifier
+  breakpoints: 9→−1, 10–11→+0…" TABLE + stat block, and did NOT roll (DM_ARTIFACT_LEAK, high).
+- t12 "roll the d20 fresh, show me the raw number plus +1 vs DC 12" → narrated a tracking success but
+  omitted the raw die (judge: "vibe nit," bug_class NONE, low — borderline-forgivable).
+Same family as H-25/H-31's meta-query interceptors (skill-mod/attack-mod/armor) but uncovered shapes:
+full stat-block-as-numbers, "roll THIS check fresh + show raw d20+mod vs DC", and the raw modifier-TABLE
+leak. A real DM answers number-transparency plainly ("+1, you rolled 14, 15 total"), never a spreadsheet.
+
+**Lower-grade residuals (1 each):**
+- Lore-hound t3 CANON_HALLUCINATION (low): on a success roll the DM invented "two families built the
+  core… the rest followed after the road came through" — not in canon. The DELIVER side of
+  deliver-or-decline tipping into invention (H-31 R4 / H-36a R3 lineage family). Judge correctly flagged
+  it — a specific checkable claim, NOT tonal color, so the item-(iv) hyperbole exemption correctly did
+  not apply. Still minority (1/7).
+- Chaos t9 CRUNCH (med, COMBAT lane — NOT grace): PC at 0 HP, foe present (Corwin hp 5), `inCombat:false`
+  → "claw up, grab door, swing" fizzles with no dice / no dying-state. The H-33 R2 `outOfCombatDyingGate`
+  gap when the fight has ended but the PC is downed and an enemy lingers. Codex/combat lane.
+
+Not a Road-A/B fork — every remaining shape is a narrow routing/grounding/state gap, same character as
+the long tail. Road B stays parked. **Rung-1 bar: closest yet** — Confused-newbie clean, Chaos near-clean
+(1 combat-lane), the dominant remaining grace cluster is a single well-understood meta-query family.
 
 ## Gate run 2026-06-19 (post-H-37) — `docs/playtests/opus-gate-2026-06-19-postH37.md` — VERDICT: R3 fully held, R4 not directly recurring but a new artifact-leak appeared nearby; R1 and R2 partially held — fix was too narrow, recurred in adjacent shapes the fix didn't reach; new dominant cluster = combat HP/entity-tracking desync (combat lane, out of scope for grace)
 4 sessions × 12 turns, glass-harbor. Dev server restarted fresh immediately before the run (per
@@ -799,9 +851,9 @@ Full per-turn detail in the report file. Catalog these as the next hard-tail pac
 once a worker prompt is drafted. Priority order: CRASH → DM_TEST_DEADEND → CRUNCH_INCONSISTENCY →
 CANON_HALLUCINATION.
 
-## Budget — ~$15.9 remaining
-Tim's API key budget is **$50 total**. Was ~$18.3 before the post-H-37 gate (~$2.40) → **~$15.9 left**,
-roughly 6-7 more 4-session gate runs at the current rate. Worker-side fixes (Sonnet/Codex windows) don't
+## Budget — ~$13.4 remaining
+Tim's API key budget is **$50 total**. ~$15.9 before the post-H-39 gate (~$2.46) → **~$13.4 left**,
+roughly 5 more 4-session gate runs at the current rate. Worker-side fixes (Sonnet/Codex windows) don't
 draw this budget — only `scripts/dm-playtest.mjs` runs do.
 
 ## Open strategic question (the arbiter call) — VERDICT: Road A for the routing/state long-tail; HYBRID (deliver-or-decline) for the cluster-D canon-grounding gap; Road B parked w/ sharpened trigger

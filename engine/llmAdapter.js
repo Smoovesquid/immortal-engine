@@ -478,24 +478,27 @@ export function validateNarrationCandidate(world, narrationCandidate, {
     }
   }
 
-  // Rule 3 (H-26d) — mixed roll smoothed into a clean success. The deterministic
-  // layer already carries the cost (composer's mixed lexicon); reject polish that
-  // discards it and reads as an unqualified clean win. Conservative: require BOTH
-  // an explicit clean-win marker AND the absence of any friction/cost language.
+  // Rule 3 (H-26d, strengthened H-37 R2) — mixed roll smoothed into a clean
+  // success. The deterministic layer already carries the cost (composer's
+  // mixed lexicon); reject polish that discards it and reads as an
+  // unqualified clean win. Originally only rejected when an explicit
+  // clean-win marker ("effortlessly") was present — too narrow, since a
+  // candidate can read as a full clean resolution (e.g. a payment paid in
+  // full) without ever using one of those literal phrases. Now: ANY mixed
+  // outcome must carry SOME friction/cost/partial language, full stop — no
+  // explicit clean-win marker required to reject. ('pay' was dropped from
+  // FRICTION: it matches "pays"/"paid" in virtually any payment narration,
+  // complicated or clean, so it was a false-friction signal that let a
+  // clean-full-payment candidate slip through undetected.)
   if (String(ctx?.rollOutcome ?? '') === 'mixed') {
     const FRICTION = ['but ', 'though', 'although', 'yet ', 'still ', 'even so', 'cost',
       'price', 'half', 'barely', 'nearly', 'almost', 'not quite', 'partly', 'partial',
       'glanc', 'graze', 'shallow', 'too late', 'strain', 'wince', 'stagger', 'stumble',
       'slip', 'ragged', 'rough', 'snag', 'complication', 'trade', 'tax', '—', '–',
-      'wobble', 'shake', 'tremor', 'pay', 'wide of'];
+      'wobble', 'shake', 'tremor', 'wide of', 'short', 'fewer', 'docked', 'withheld',
+      'haggl', 'grudg', 'reluctant', 'hedge', 'less than'];
     const hasFriction = FRICTION.some(f => candLower.includes(f));
-    if (!hasFriction) {
-      const CLEAN_WIN = ['cleanly', 'with ease', 'effortless', 'effortlessly', 'flawless',
-        'flawlessly', 'perfectly', 'without a hitch', 'without trouble', 'without difficulty',
-        'without resistance', 'without effort', 'easily', 'with no trouble', 'no difficulty',
-        'goes perfectly', 'goes smoothly', 'smoothly'];
-      for (const ph of CLEAN_WIN) if (candLower.includes(ph)) return false;
-    }
+    if (!hasFriction) return false;
   }
 
   // Rule 4a (H-27) — invented biographical / historical claim. Polish must
@@ -594,6 +597,50 @@ export function validateNarrationCandidate(world, narrationCandidate, {
       const CONFIRM_SIGNAL = /\b(?:comes?|came|arrives?|arrived|approaches?|approached|emerges?|emerged|enters?|entered|stands?\s+before|speaks?|spoke|tells?|told|watches?\s+you|waits?|waited|path|trail|footsteps|voice|shadow|origin)\b/i;
       if (!CONFIRM_SIGNAL.test(cand)) continue;
       return false;
+    }
+  }
+
+  // Rule 4e (H-37 R4a) — fabricated quoted/attributed past NPC statement. The
+  // player asked the DM to recall a SPECIFIC thing they (or an NPC) supposedly
+  // said before ("name one I supposedly asked Corwin"); polish answered with a
+  // confident quoted line that exists nowhere in the grounded base — a
+  // fabricated memory presented as fact. Scoped narrowly to the "recalling a
+  // past statement" framing (asked/said/told/claimed/always-ask), not live
+  // in-scene dialogue an NPC is speaking right now, so fresh quoted speech in
+  // ordinary narration is untouched. A denial/hypothetical lead-in is exempt,
+  // same restraint as Rule 4d.
+  {
+    const ATTRIB_RE = /\b(?:you\s+(?:supposedly\s+|once\s+|previously\s+)?(?:asked|said|told|claimed|swore|admitted)|(?:always|often|usually|typically)\s+ask(?:s|ed)?|recalls?\s+you\s+(?:asking|saying))\b[^.!?]{0,60}["“]([^"”]{3,100})["”]/i;
+    const am = cand.match(ATTRIB_RE);
+    if (am) {
+      const before = cand.slice(0, am.index).toLowerCase();
+      const recentBefore = cand.slice(Math.max(0, am.index - 24), am.index).toLowerCase();
+      const exempt = /\b(?:no|not|never|isn|wasn|doesn|didn|if|suppose|imagine|hypothetical)\b/.test(recentBefore) || /\b(?:no|not|never)\b/.test(before.slice(-40));
+      if (!exempt) {
+        const quoted = am[1].toLowerCase();
+        if (!String(baseNarration ?? '').toLowerCase().includes(quoted)) return false;
+      }
+    }
+  }
+
+  // Rule 4f (H-37 R4b) — denial of an NPC's presence who IS in the real
+  // roster for this scene. Opposite failure shape from Rule 4d: that rule
+  // guards against CONFIRMING an entity that isn't real; this guards against
+  // DENYING one that is. ("Brokefang's here now, snarling at me? Is Brokefang
+  // in this room, yes or no?" → polish flatly denied presence while canon's
+  // settlement roster lists Brokefang as present.) Sourced from the same
+  // settlement.npcs field collectRosterTokens reads.
+  {
+    const present = collectPresentNpcNames(w, ctx);
+    for (const name of present) {
+      const esc = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const DENY_RE = new RegExp(
+        `\\b${esc}\\b[^.!?]{0,30}\\b(?:is\\s+not|isn'?t|aren'?t|ain'?t|was\\s+never)\\b[^.!?]{0,25}\\b(?:here|present|in\\s+(?:this|the)\\s+room|with\\s+you|around|nearby)\\b` +
+        `|\\bno\\b[^.!?]{0,8}${esc}\\b[^.!?]{0,20}\\bhere\\b` +
+        `|\\bnot\\s+here\\b[^.!?]{0,20}\\b${esc}\\b`,
+        'i'
+      );
+      if (DENY_RE.test(cand)) return false;
     }
   }
 
@@ -744,6 +791,25 @@ export function collectRosterTokens(world, ctx = null) {
     }
   } catch { /* defensive — never break narration */ }
   return tokens;
+}
+
+// Gathers the actual NAMES (not tokens) of NPCs the engine knows are present
+// at the current scene, same source list/order as collectRosterTokens (so the
+// two stay in sync). Used by Rule 4f to check a denial-of-presence claim
+// against a real name rather than a word fragment. Never throws.
+function collectPresentNpcNames(world, ctx = null) {
+  const names = new Set();
+  try {
+    const lists = [ctx?.npcsPresent, ctx?.settlement?.npcs, world?.scene?.npcs, world?.npcs];
+    for (const list of lists) {
+      if (!Array.isArray(list)) continue;
+      for (const n of list) {
+        const nm = String((typeof n === 'string' ? n : n?.name) ?? '').trim();
+        if (nm.length >= 2) names.add(nm);
+      }
+    }
+  } catch { /* defensive — never break narration */ }
+  return names;
 }
 
 // ── Main entry point ──────────────────────────────────────────────────────────

@@ -160,7 +160,10 @@ const META_OUTCOME = /did i (?:succeed|fail|win|lose|make it)\b/;
 // v24 conversation hardening — the questions players actually ask. The
 // inventory patterns are question/command-anchored so "put it in my pocket"
 // (an action) never reads as an inventory check.
-const META_INVENTORY = /\bwhat (?:do i have|am i carrying|have i got)\b|\bwhat'?s in my (?:pack|bag|inventory|pockets?)\b|\b(?:check|show|open|look in(?:to)?) (?:my )?(?:pack|bag|inventory|gear|equipment)\b|^\s*inventory\s*\??\s*$/;
+// The "what ... am I carrying" form allows up to 4 intervening words so a
+// named-noun ask ("what GEAR AND WEAPONS am I carrying") still matches, not
+// just the bare contiguous form. (H-37 R1)
+const META_INVENTORY = /\bwhat (?:do i have|am i carrying|have i got)\b|\bwhat\s+(?:\w+\s+){1,4}(?:do i have|am i carrying|have i got)\b|\bwhat'?s in my (?:pack|bag|inventory|pockets?)\b|\b(?:check|show|open|look in(?:to)?) (?:my )?(?:pack|bag|inventory|gear|equipment)\b|^\s*inventory\s*\??\s*$/;
 // Equipment / "what am I wielding/wearing" / sheet queries — an information
 // request, never a dice roll. Answered in-voice from real canon (an empty
 // loadout is reported honestly, never invented as "a short sword").
@@ -174,7 +177,12 @@ const META_HELD_ITEMS = /\bwhat(?:'?s| is)\s+(?:actually\s+)?in\s+my\s+hands?\b|
 // own defense number off the sheet; a table DM just tells you, never a dodge
 // roll. Distinct from META_EQUIPMENT (which names the armor PIECE, not its
 // number). (Opus gate 2026-06-19, Rules Lawyer DM; H-31 R2)
-const META_ARMOR_VALUE = /\b(?:armor|armour)\s+(?:value|class|rating|number|score)\b|\bmy\s+ac\b|\bwhat(?:'?s| is)\s+(?:my\s+)?ac\b|\bgive\s+me\s+(?:my\s+)?ac\b/i;
+// Also catches a named-armor-piece defense ask ("what does my Padded coat
+// give me for defense?", "what's its AC or defense bonus?") — narrowly
+// scoped to the literal "give me for defense" / "its ac" / "defense bonus"
+// phrasings the gate-failure transcripts actually used, so a stray "plan
+// for defense of the village" doesn't false-positive. (H-37 R1)
+const META_ARMOR_VALUE = /\b(?:armor|armour)\s+(?:value|class|rating|number|score)\b|\bmy\s+ac\b|\bwhat(?:'?s| is)\s+(?:my\s+)?ac\b|\bgive\s+me\s+(?:my\s+)?ac\b|\bits\s+ac\b|\bdefen[cs]e\s+bonus\b|\bgive\s+me\s+for\s+defen[cs]e\b/i;
 // Possession contradiction — "you said I had a staff and a robe" / "a moment
 // ago I had X" / "I'm holding X" — the player re-asserts owning an item that
 // isn't in their real inventory. A real DM corrects the record in-fiction
@@ -326,7 +334,11 @@ export function isQuestionShaped(text) {
 // explicit in-fiction non-answer, never fall to atmosphere or invent one.
 // Shared by playloop.js (base narration) and narratorContext.js (ctx.infoSeeking
 // for the validator backstop) so the two layers never drift out of sync.
-const INFO_SEEKING_RE = /\b(?:who|what|when|where|whose)\b[\s\S]{0,60}?\b(?:name|named|year|date|deed|owner|own(?:s|ed)?|held|sold|gave|kin|relat\w*|tenure|found(?:ed|ing))\b|\bgive me a name\b|\bby name\b|\bwhat year (?:is it|are we)\b|\bis\s+[a-z][\w'-]*(?:\s+[a-z][\w'-]*){0,2}\s+(?:dead|alive)\b|\bhow long\b[\s\S]{0,30}?\b(?:run|ran|owned|been here|been)\b|\bhow many generations\b/i;
+// "family" added alongside "kin" — H-37 R2 trace: "who in his family was the
+// first Boneknit, and how'd they earn it?" was falling through undetected
+// (no "founded"/"kin" token), so the deliver-or-decline contract never even
+// ran and the action fell to the generic atmosphere floor on a mixed roll.
+const INFO_SEEKING_RE = /\b(?:who|what|when|where|whose)\b[\s\S]{0,60}?\b(?:name|named|year|date|deed|owner|own(?:s|ed)?|held|sold|gave|kin|family|relat\w*|tenure|found(?:ed|ing))\b|\bgive me a name\b|\bby name\b|\bwhat year (?:is it|are we)\b|\bis\s+[a-z][\w'-]*(?:\s+[a-z][\w'-]*){0,2}\s+(?:dead|alive)\b|\bhow long\b[\s\S]{0,30}?\b(?:run|ran|owned|been here|been)\b|\bhow many generations\b/i;
 const INFO_SEEKING_EXCLUDE_RE = /\b(?:attack|strike|hit|stab|slash|shoot|kill|fight|charge|intimidate|charm|deceive|persuade)\b/i;
 
 // Observe-object-detail: a player demands the literal text/marking on a held
@@ -839,9 +851,17 @@ export function handleMetaQuestion(text, world) {
     if (ans) return ans;
   }
 
-  // Purse / coins — a real number the DM owns; report it (even if empty).
+  // Purse / coins — a real number the DM owns; report it (even if empty). A
+  // gear/loadout ask in the same breath must answer both, not drop the gear
+  // half — META_PURSE is checked before META_INVENTORY/META_EQUIPMENT below,
+  // so without this fold a compound "what gear... and do I have any coin?"
+  // returned only the coin half. (H-37 R1)
   if (META_PURSE.test(lowerText)) {
-    return answerPurse(world);
+    const ans = answerPurse(world);
+    if (META_INVENTORY.test(lowerText) || META_EQUIPMENT.test(lowerText) || META_HELD_ITEMS.test(lowerText)) {
+      return `${describeLoadout(world)} ${ans}`;
+    }
+    return ans;
   }
 
   // Inventory — read the real pack, never invent contents.

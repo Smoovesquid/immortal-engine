@@ -1635,6 +1635,22 @@ function playerMoveCore(world, packsById, text) {
   if (!w.combat?.active && !w.ending?.locked) {
     const assault = detectPhysicalAssault(w, text);
     if (assault) {
+      // Corpse/object-handling (drag/shove/throw a BODY somewhere) against an
+      // already-defeated NPC is a non-combat staging action, not a renewed
+      // attack — narrate it instead of bouncing the whole turn through the
+      // combat-no-live-target gate. Scoped to kind:'move' only — a genuine
+      // renewed-attack shape (grapple/blade/hostage/bite) on a corpse still
+      // correctly no-ops via engageNpcCombat below. (H-37 R3)
+      if (assault.kind === 'move' && isNpcAlreadyDefeated(w, assault.npc)) {
+        const name = String(assault.npc?.name || 'the body').trim() || 'the body';
+        return {
+          world: w,
+          output: {
+            narration: `Wizard: There's no fight left in ${name} — you move the body as you intend, grim and plain work, in full view of anyone watching.`,
+            mechanics: '[corpse:staged | no-combat]'
+          }
+        };
+      }
       const eng = engageNpcCombat(w, assault.npc, text, pack, actorId, true);
       if (eng) return eng;
     }
@@ -5668,14 +5684,18 @@ function detectPhysicalAssault(world, text) {
     return r ? fuzzyMatchNpc(npcs, r) : null;
   };
   let m;
+  // Each branch tags its `kind` so the call site can tell a body-MOVE verb
+  // (drag/shove/throw — the only shape that reads as corpse-handling on an
+  // already-defeated target) apart from a genuine renewed-attack shape
+  // (grapple/blade/hostage/bite), which stays correctly a no-op. (H-37 R3)
   // A — inherently violent grapple/strike on a person.
   if ((m = t.match(/\b(?:choke|strangle|throttle|garrott?e|smother|wrestle|grapple|headbutt|head-butt|gouge|maul|pummel|manhandle|pin)\s+(?:down\s+|on\s+)?(.+)/i))) {
-    const npc = hit(m[1]); if (npc) return { npc };
+    const npc = hit(m[1]); if (npc) return { npc, kind: 'grapple' };
   }
   // A2 — grab-to-harm: "grab X by the throat/neck/collar" (body-part or clothing anchor
   // distinguishes hostile grab from "grab a cup" / "grab his arm to steady him").
   if ((m = t.match(/\b(?:grab|seize|snatch|yank|clutch)\s+(.+?)\s+by\s+(?:the\s+)?(?:throat|neck|collar|hair|wrist|arm|scruff|shirt|jacket)\b/i))) {
-    const npc = hit(m[1]); if (npc) return { npc };
+    const npc = hit(m[1]); if (npc) return { npc, kind: 'grapple' };
   }
   // B — forced into harm: shove/throw/etc. <person> into|onto|against|through|over <x>.
   // Split on conjunctions so "shove past Senna AND hurl her into the wall" resolves
@@ -5687,25 +5707,34 @@ function detectPhysicalAssault(world, text) {
       const cm = clause.match(B_VERB);
       if (!cm) continue;
       if (/^(?:past|aside|away)\s/i.test(cm[1])) continue;
-      const npc = hit(cm[1]); if (npc) return { npc };
+      const npc = hit(cm[1]); if (npc) return { npc, kind: 'move' };
     }
   }
   // C — a blade brought TO the body (threat/assault), not handed over.
   if (/\b(?:dagger|knife|blade|sword|point|edge|axe|hatchet|spear|cleaver|shiv|dirk|machete)\b/i.test(t)
       && /\b(?:press|hold|put|jam|dig|set|lay|raise|level|point|thrust|drive|bring|touch)\b/i.test(t)
       && (m = t.match(/\b(?:to|against|at|across|under|on)\s+(.+)/i))) {
-    const npc = hit(m[1]); if (npc) return { npc };
+    const npc = hit(m[1]); if (npc) return { npc, kind: 'blade' };
   }
   // D — hostage / human shield.
   if (/\b(?:shield|hostage)\b/i.test(t)
       && (m = t.match(/\b(?:grab|drag|haul|use|hold|take|seize|snatch|yank)\s+(.+?)\s+(?:as|for|in\s+front)/i))) {
-    const npc = hit(m[1]); if (npc) return { npc };
+    const npc = hit(m[1]); if (npc) return { npc, kind: 'hostage' };
   }
   // E — natural weapon: "sink/bury my teeth|fangs|claws into <NPC>".
   if ((m = t.match(/\b(?:sink|bury|dig)\s+(?:my\s+|your\s+)?(?:teeth|fangs|nails|claws|talons|tusks)\s+(?:in|into)\s+(.+)/i))) {
-    const npc = hit(m[1]); if (npc) return { npc };
+    const npc = hit(m[1]); if (npc) return { npc, kind: 'bite' };
   }
   return null;
+}
+
+// True when a present NPC's last recorded combat state was a defeat — read
+// from the same persisted-HP ledger applyPersistedEnemyHp uses below, before
+// any enemy is minted. Lets the assault call site distinguish corpse-handling
+// from a fresh fight without engaging combat just to find out. (H-37 R3)
+function isNpcAlreadyDefeated(world, npc) {
+  const saved = world?.meta?.npcCombatHp?.[String(npc?.id || '')];
+  return Boolean(saved && (saved.down || Number(saved.hp) <= 0));
 }
 
 // Shared: mint the NPC as an enemy, begin combat, resolve the player's opening

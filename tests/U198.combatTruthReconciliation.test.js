@@ -87,8 +87,8 @@ test('U198: enemy damage after a player miss surfaces the enemy roll and PC HP d
 
   assert.match(mech, /\[strike:Punch \| atk:6 vs AC:10 → miss\]/, `sanity: player punch should miss: ${mech}`);
   assert.ok(afterHp < beforeHp, `enemy turn should have changed PC HP in this trace: ${beforeHp} -> ${afterHp}`);
-  assert.match(mech, /\[enemy:Corwin \| atk:\d+ vs AC:\d+ → hit \| \d+ dmg(?: crit)? \| hp:\d+->\d+\]/, `enemy hit must be visible in mechanics: ${mech}`);
-  assert.match(mech, new RegExp(`hp:${beforeHp}->${afterHp}`), `mechanics must show exact PC HP delta: ${mech}`);
+  assert.match(mech, /\[enemy:Corwin \| atk:\d+ vs AC:\d+ → hit \| \d+ dmg(?: crit)? \| pcHp:\d+->\d+\]/, `enemy hit must be visible in mechanics: ${mech}`);
+  assert.match(mech, new RegExp(`pcHp:${beforeHp}->${afterHp}`), `mechanics must show exact PC HP delta: ${mech}`);
 });
 
 test('U198: lethal improvised natural strike defeats and emits victory', () => {

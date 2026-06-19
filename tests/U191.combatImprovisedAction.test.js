@@ -87,6 +87,6 @@ test('U191: bare combat round tag matches the canonical post-turn round', () => 
   assert.equal(canonRound, 7);
   assert.match(mech, new RegExp(`^\\[combat:r${canonRound}\\]`), `round tag should remain canonical: ${mech}`);
   if (Number(result.world.meta.escapeHp) < beforeHp) {
-    assert.match(mech, /\[enemy:Lingerer \| atk:\d+ vs AC:\d+ → hit \| \d+ dmg(?: crit)? \| hp:\d+->\d+\]/, `enemy damage should be visible: ${mech}`);
+    assert.match(mech, /\[enemy:Lingerer \| atk:\d+ vs AC:\d+ → hit \| \d+ dmg(?: crit)? \| pcHp:\d+->\d+\]/, `enemy damage should be visible: ${mech}`);
   }
 });

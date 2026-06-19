@@ -1813,6 +1813,15 @@ function playerMoveCore(world, packsById, text) {
           output: { narration: 'Wizard: You can make a mess of the room, but the fight is still on you. Name the foe if you mean to strike.', mechanics: '[combat:table-talk]' }
         };
       }
+      // Social beats mid-fight are not silent attack declarations. The escape
+      // resolver defaults unknown text to a weapon strike, so taunts/threats
+      // need to be stopped before they become phantom sword swings.
+      if (!explicitAction && isCombatSocialNonAction(text)) {
+        return {
+          world: w,
+          output: { narration: 'Wizard: The threat lands in the air, not in flesh. Steel is still up.', mechanics: '[combat:table-talk]' }
+        };
+      }
       // Movement or flight mid-fight is not a strike. Escape-mode fights
       // can't be fled (the journey's stakes are the point) — the DM says so
       // in voice instead of letting the resolver swing your sword for you.
@@ -5520,10 +5529,18 @@ function mentionsLiveCombatFoe(world, text) {
 
 function isImprovisedCombatAction(world, text) {
   const t = String(text || '').toLowerCase();
-  if (!/\b(grab|snatch|smash|shatter|break|slam|bash|kick|boot|throw|hurl|fling|toss|lob|shove|wedge|tip|dump|splash|pour|swing)\b/.test(t)) return false;
+  if (!/\b(grab|snatch|smash|shatter|break|slam|bash|kick|boot|throw|hurl|fling|toss|lob|shove|ram|drive|wedge|tip|dump|splash|pour|swing)\b/.test(t)) return false;
   if (!/\b(lantern|lamp|torch|oil|flames?|fire|burning|chair|stool|table|bottle|mug|rock|stone|candle|crate|barrel|beam|plank|board|door|window|windowsill|sill|shutter|hinge|wall|floor|ceiling|roof)\b/.test(t)) return false;
   if (mentionsLiveCombatFoe(world, t)) return true;
   return /\b(?:at|toward|towards|into|against|onto|on)\b[^.!?]*\b(?:foe|enemy|monster|creature|thing|him|her|them|it)\b/i.test(t);
+}
+
+function isCombatSocialNonAction(text) {
+  const t = String(text || '').toLowerCase();
+  if (!t) return false;
+  if (ANY_VIOLENCE.test(t)) return false;
+  if (/\b(?:stab|slash|strike|attack|kill|murder|smash|slam|bash|ram|drive|throw|hurl|fling|toss|lob|shoot|cast|blast|fireball|bolt|smite|grapple|choke|punch|kick|bite|claw|stomp|headbutt)\b/i.test(t)) return false;
+  return /\b(?:taunt|mock|insult|jeer|spit|spits|spat|yell|shout|snarl|threaten|threat|warn|curse|glare|laugh)\b/i.test(t);
 }
 
 // A LONG rest is deliberate language — 'sleep', 'make camp', 'turn in'.

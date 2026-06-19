@@ -239,7 +239,7 @@ function naturalStrikeProfile(text, base) {
 
 function isImprovisedStrikeText(text) {
   const t = String(text || '').toLowerCase();
-  if (!/\b(grab|snatch|smash|shatter|break|slam|bash|kick|boot|throw|hurl|fling|toss|lob|shove|wedge|tip|dump|splash|pour|swing)\b/.test(t)) return false;
+  if (!/\b(grab|snatch|smash|shatter|break|slam|bash|kick|boot|throw|hurl|fling|toss|lob|shove|ram|drive|wedge|tip|dump|splash|pour|swing)\b/.test(t)) return false;
   return /\b(oil|burning|lantern|lamp|torch|flame|fire|chair|stool|table|bottle|mug|rock|stone|beam|plank|board|door|window|windowsill|sill|shutter|hinge|wall|floor|ceiling|roof)\b/.test(t);
 }
 
@@ -1850,7 +1850,7 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
     if (r.dmg > 0) {
       const beforeHp = hp;
       hp = Math.max(0, hp - r.dmg);
-      enemyMech.push(`[enemy:${e.name} legendary:${chosen.name} | ${r.mech} → hit | ${r.dmg} dmg | hp:${beforeHp}->${hp}]`);
+      enemyMech.push(`[enemy:${e.name} legendary:${chosen.name} | ${r.mech} → hit | ${r.dmg} dmg | pcHp:${beforeHp}->${hp}]`);
     }
     beats.push(`The ${e.name} steals a beat that isn't its turn — ${chosen.name} (legendary): ${r.text}.`);
     if (hp <= 0 && hasFeature(pc, 'relentlessEndurance') && !feats.relentlessUsed) {
@@ -1874,7 +1874,7 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
         if (r.dmg > 0) {
           const beforeHp = hp;
           hp = Math.max(0, hp - r.dmg);
-          enemyMech.push(`[enemy:${e.name} lair:${lairEntry.name} | ${r.mech} → hit | ${r.dmg} dmg | hp:${beforeHp}->${hp}]`);
+          enemyMech.push(`[enemy:${e.name} lair:${lairEntry.name} | ${r.mech} → hit | ${r.dmg} dmg | pcHp:${beforeHp}->${hp}]`);
         }
         beats.push(`The lair itself answers its master — ${lairEntry.name}: ${r.text}.`);
         if (hp <= 0 && hasFeature(pc, 'relentlessEndurance') && !feats.relentlessUsed) {
@@ -1984,7 +1984,7 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
       }
       const beforeHp = hp;
       hp = Math.max(0, hp - dmg);
-      enemyMech.push(`[enemy:${e.name} | atk:${total} vs AC:${ac} → hit | ${dmg} dmg${crit ? ' crit' : ''} | hp:${beforeHp}->${hp}]`);
+      enemyMech.push(`[enemy:${e.name} | atk:${total} vs AC:${ac} → hit | ${dmg} dmg${crit ? ' crit' : ''} | pcHp:${beforeHp}->${hp}]`);
       // Half-Orc Relentless Endurance: the blow that would drop you leaves you
       // standing at 1 HP instead. Once per rest.
       if (hp <= 0 && hasFeature(pc, 'relentlessEndurance') && !feats.relentlessUsed) {

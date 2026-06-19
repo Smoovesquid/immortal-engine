@@ -398,6 +398,38 @@ export function isInfoSeekingText(text) {
   return INFO_SEEKING_RE.test(t) || INFO_SEEKING_OBSERVE_RE.test(t) || INFO_SEEKING_TOPIC_RE.test(t);
 }
 
+// Confrontation / contradiction challenge (H-42, IG-11 social physics): "You
+// said Kael was here before any of you. He says he came later. One of you is
+// lying — which one?" — the player accuses a present person of lying or
+// contradicting themselves, rather than asking what happened. Distinct from
+// isInfoSeekingText above (a fact-DEMAND): this is an accusation aimed at a
+// person, and a real DM has that person react — deflect, bristle, hold firm —
+// never answer with scene-narration filler (Opus gate, Lore-hound t12,
+// DM_TEST_DEADEND: the insight roll failed and the DM fell to the generic
+// place-filler "...doesn't give it to you" instead of an NPC reaction).
+// Recall-biased net of independent accusatory markers (same philosophy as
+// INFO_SEEKING_TOPIC_RE's verb-phrase generalization over a noun list) — each
+// requires an unambiguous accusation/contradiction signal so a neutral
+// statement or a plain info-ask (isInfoSeekingText's job) never trips this.
+const CONFRONTATION_SAID_BUT_RE = /\byou\s+(?:said|told\s+me|claimed)\b[\s\S]{0,80}?\b(?:but|yet|however|and\s+now|now\s+you)\b/i;
+// "lying" alone is ambiguous (cf. "lying" = reclining) — guarded with a
+// negative lookahead against the common spatial-preposition reading ("she's
+// lying in the grass") so an examine/status action on a prone NPC never
+// misreads as an accusation.
+const CONFRONTATION_LYING_RE = /\b(?:you'?re|(?:one|which)\s+of\s+you\s+is|he'?s|she'?s|they'?re)\s+lying\b(?!\s+(?:in|on|down|there|here|beside|near|under|within|across|by)\b)|\bstop\s+lying\b(?!\s+(?:in|on|down|there|here)\b)/i;
+const CONFRONTATION_ADMIT_RE = /\badmit\s+it\b/i;
+const CONFRONTATION_CLAIMED_RE = /\byou\s+claimed\b/i;
+const CONFRONTATION_CONTRADICTS_RE = /\bcontradicts\s+what\s+you\s+said\b/i;
+const CONFRONTATION_SWORE_BUT_RE = /\byou\s+swore\b[\s\S]{0,80}?\bbut\b/i;
+
+export function isConfrontationChallenge(text) {
+  const t = String(text || '').toLowerCase();
+  if (!t.trim()) return false;
+  return CONFRONTATION_SAID_BUT_RE.test(t) || CONFRONTATION_LYING_RE.test(t)
+    || CONFRONTATION_ADMIT_RE.test(t) || CONFRONTATION_CLAIMED_RE.test(t)
+    || CONFRONTATION_CONTRADICTS_RE.test(t) || CONFRONTATION_SWORE_BUT_RE.test(t);
+}
+
 // Tier B trigger: a conjunction of two distinct actions ("dive behind the bar
 // and shoot the big one"). Deliberately strict — this gates a paid LLM call,
 // so single actions, questions, and flavor text must NOT match.

@@ -43,7 +43,7 @@ import { resolveCompanionTurn } from './combat/companionTurn.js';
 import { castSpell } from './spell/castSpell.js';
 import { classifyOffensiveCast, castConsequence } from './magic/castConsequence.js';
 import { evaluateEncounter, selectCreatures, spawnEncounter } from './combat/encounterSpawn.js';
-import { isMetaQuestion, handleMetaQuestion, isNullAction, isQuestionShaped, META_LOCATION, META_RECAP, isNpcObserverQuery, isInfoSeekingText } from './grace/gracefulAdjudication.js';
+import { isMetaQuestion, handleMetaQuestion, isNullAction, isQuestionShaped, META_LOCATION, META_RECAP, isNpcObserverQuery, isInfoSeekingText, isConfrontationChallenge } from './grace/gracefulAdjudication.js';
 import { resolveEscapeCombatTurn, initEscapeHp, initEscapeKit, shortRest, longRest, applySurpriseRound, parseEscapeAction, combatStatusAnswer, meleeProfile, playerAc } from './combat/escapeCombat.js';
 import { statMod, maxWounds } from './ruleset/core/stats.js';
 import { shopsHere, stockFor, settlementStock, economyAt, priceToSell, shopBuys, restockEpoch, purseTotalCopper, pursePay, purseReceive, formatPrice, matchByName } from './economy/shop.js';
@@ -4951,10 +4951,48 @@ function pickVariant(variants, world, key) {
   return variants[idx];
 }
 
+// In-character NPC reaction to being confronted with an accusation/contradiction
+// (H-42) — the player's read FAILED, so the NPC neither concedes nor reveals the
+// contested fact; they just react to being challenged, the way any person would.
+// Two tiers off the NPC's real hostile flag (the same signal socialDC already
+// reads as tougher resistance): a civil-but-defensive deflection, or a sharper
+// bristle for an NPC already flagged hostile. Deterministic via pickVariant —
+// no new RNG, no state mutation.
+function confrontationReaction(world, npc) {
+  const name = String(npc.name || `the ${npc.role || 'stranger'}`);
+  const V = (key, variants) => `Wizard: ${pickVariant(variants, world, key)}`;
+  if (npc.hostile) {
+    return V(`confront:hostile:${npc.id || name}`, [
+      `${name} holds your gaze and doesn't blink. "Careful who you call a liar."`,
+      `${name}'s hand drifts toward their belt. "Say that again and see what happens."`,
+      `${name} bristles. "You don't get to walk in here and call me a liar."`
+    ]);
+  }
+  return V(`confront:civil:${npc.id || name}`, [
+    `${name}'s jaw tightens. "I've said what I've said — believe what you like."`,
+    `${name} folds their arms. "I'm not changing my story because you don't like it."`,
+    `${name} meets your eyes, steady. "Think what you want. That's how I remember it."`
+  ]);
+}
+
 // Grounded prose for any resolved non-combat action that would otherwise floor.
 // Exported for unit testing.
 export function genericGroundedOutcome(world, text, outcome) {
   const t = String(text || '').toLowerCase().trim();
+  // H-42 — a confrontation/contradiction challenge aimed at a present NPC
+  // ("one of you is lying... which one?") gets an in-character REACTION from
+  // that NPC, never the generic atmosphere filler below — a real DM has the
+  // confronted person respond to being called a liar. Checked before the
+  // H-39 info-seeking decline (next) since an accusation is the more specific
+  // shape. Scoped to the FAILURE case only (the observed bug): the player's
+  // read didn't land, so the NPC doesn't conveniently concede or leak the
+  // contested fact — a successful/mixed read is the deliver path's job
+  // (H-12/13's roll-recall contradiction handling owns that), not this
+  // last-resort resolver's.
+  if (outcome === 'failure' && isConfrontationChallenge(t)) {
+    const npc = socialTarget(world, text);
+    if (npc) return confrontationReaction(world, npc);
+  }
   // H-39 belt-and-suspenders: an info-seeking question has no business
   // reaching the LAST-resort resolver at all (a resolved success/mixed/
   // no-info info-seeking turn is already caught by infoExtractionOutcome

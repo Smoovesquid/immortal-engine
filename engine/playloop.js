@@ -4761,6 +4761,20 @@ const INFO_GROUND_STOPWORDS = new Set([
   'these', 'first', 'until', 'said', 'told'
 ]);
 
+// Internal structured ledger facts — "location:Pilgrim's Rest Village"
+// (addFact(..., 'scene')), "secret:X revealed by Y" (addFact(..., 'npc')),
+// "npc:X shared:Y" / "rumor:X source:Y" (addFact(..., 'dialogue')/'dialogue:lie')
+// — are scene-tracking/bookkeeping, not narratable prose. factStrings()
+// flattens away the `source` tag (ledger.js), so the loose substring match
+// below can't otherwise tell one of these apart from a real fact. A
+// substring hit against one must never be handed to the player as a
+// "grounded fact" — that's a raw internal key leaking into dialogue verbatim,
+// not an answer. (H-38a R3 — Opus gate 2026-06-19, Lore-hound: "what village
+// or town were you born in?" substring-matched "village" against the
+// internal "location:Pilgrim's Rest Village" scene fact, and the DM echoed
+// it to the player as-is: "location:Pilgrim's Rest Village".)
+const STRUCTURED_FACT_RE = /^[a-z]+:\S/i;
+
 // Try, in order: the NPC's deterministic common-knowledge answer (self/news/
 // directions/services/place — all grounded and already proven in dialogue.js),
 // the NPC's knowledge-graph topic match, then a loose ledger-fact substring
@@ -4781,7 +4795,11 @@ function lookupGroundedFact(world, text, npc) {
   const sig = tl.replace(/[^a-z\s]/g, ' ').split(/\s+/).filter(w => w.length >= 4 && !INFO_GROUND_STOPWORDS.has(w));
   if (sig.length) {
     const facts = factStrings(world);
-    const hit = facts.find(f => { const fl = String(f).toLowerCase(); return sig.some(w => fl.includes(w)); });
+    const hit = facts.find(f => {
+      if (STRUCTURED_FACT_RE.test(String(f))) return false;
+      const fl = String(f).toLowerCase();
+      return sig.some(w => fl.includes(w));
+    });
     if (hit) return { body: hit };
   }
   return null;

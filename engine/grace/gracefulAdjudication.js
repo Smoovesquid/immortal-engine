@@ -173,6 +173,13 @@ const META_EQUIPMENT = /\bwhat(?:'?s| is)\s+my\s+(?:weapon|blade|sword|armou?r|g
 // Lawyer DM: this fell through to a contested check and "the details blur").
 // Routed into the same handler as META_EQUIPMENT below. (H-31 R2)
 const META_HELD_ITEMS = /\bwhat(?:'?s| is)\s+(?:actually\s+)?in\s+my\s+hands?\b|\bwhat\s+(?:do\s+i|am\s+i)\s+(?:actually\s+)?holding\b/i;
+// Bare gear yes/no — "am I carrying any weapon or armor, yes or no?", "do I
+// have any gear on me?". The yes/no framing doesn't match META_INVENTORY/
+// META_EQUIPMENT's wh-/declarative forms, so without this the gate and the
+// answerer drift out of sync (META_ITEM's loose "am i carrying" alternative
+// accepts it into isMetaQuestion, but no answer branch claims it, and
+// handleMetaQuestion falls all the way through to `return null`). (H-38a R1)
+const META_GEAR_YESNO = /\b(?:am\s+i|do\s+i)\s+(?:even\s+)?(?:carrying|wearing|wielding|have)\s+(?:any\s+)?(?:weapon|armou?r|gear|equipment)\b/i;
 // Numeric Armor value/AC — "what's my Armor value?", "give me my AC". Your
 // own defense number off the sheet; a table DM just tells you, never a dodge
 // roll. Distinct from META_EQUIPMENT (which names the armor PIECE, not its
@@ -299,7 +306,8 @@ export function isMetaQuestion(text) {
     || META_SKILL_MOD.test(t) || META_ATTACK_MOD.test(t) || META_BARE_DC.test(t)  // H-25
     || META_ROLL_RECALL.test(t)  // H-12/13
     || META_HELD_ITEMS.test(t) || META_ARMOR_VALUE.test(t)  // H-31 R2
-    || META_POSSESSION_CHALLENGE.test(t);  // H-31 R3
+    || META_POSSESSION_CHALLENGE.test(t)  // H-31 R3
+    || META_GEAR_YESNO.test(t);  // H-38a R1
 }
 
 // Exported guard for playloop.js — detects NPC identity/presence queries so
@@ -338,7 +346,18 @@ export function isQuestionShaped(text) {
 // first Boneknit, and how'd they earn it?" was falling through undetected
 // (no "founded"/"kin" token), so the deliver-or-decline contract never even
 // ran and the action fell to the generic atmosphere floor on a mixed roll.
-const INFO_SEEKING_RE = /\b(?:who|what|when|where|whose)\b[\s\S]{0,60}?\b(?:name|named|year|date|deed|owner|own(?:s|ed)?|held|sold|gave|kin|family|relat\w*|tenure|found(?:ed|ing))\b|\bgive me a name\b|\bby name\b|\bwhat year (?:is it|are we)\b|\bis\s+[a-z][\w'-]*(?:\s+[a-z][\w'-]*){0,2}\s+(?:dead|alive)\b|\bhow long\b[\s\S]{0,30}?\b(?:run|ran|owned|been here|been)\b|\bhow many generations\b/i;
+// H-38a R2 trace: that fix didn't reach every genealogy phrasing — a THIRD
+// gap, not a recurrence of the same one. "So when were you born, and where,
+// if not here?" has no name/year/date/kin/family token within range of
+// when/where at all (added "born"); "who was her husband, Corwin's son?" and
+// "give me one name" likewise had no anchor (added the kinship nouns below,
+// and widened "give me a name" to accept "one"/"the" too). Same detector,
+// same downstream effect either way it fails: isInfoSeekingText returns
+// false, infoExtractionOutcome is skipped entirely (on BOTH the mixed-margin
+// path AND, newly observed, the success path), and the turn falls to
+// genericGroundedOutcome's atmosphere-only pool ("It comes off cleanly...")
+// despite a resolved roll with real information on the table.
+const INFO_SEEKING_RE = /\b(?:who|what|when|where|whose)\b[\s\S]{0,60}?\b(?:name|named|year|date|deed|owner|own(?:s|ed)?|held|sold|gave|kin|family|relat\w*|tenure|found(?:ed|ing)|born|husband|wife|spouse|son|daughter|father|mother|married)\b|\bgive me (?:a|one|the)\s+name\b|\bby name\b|\bwhat year (?:is it|are we)\b|\bis\s+[a-z][\w'-]*(?:\s+[a-z][\w'-]*){0,2}\s+(?:dead|alive)\b|\bhow long\b[\s\S]{0,30}?\b(?:run|ran|owned|been here|been)\b|\bhow many generations\b/i;
 const INFO_SEEKING_EXCLUDE_RE = /\b(?:attack|strike|hit|stab|slash|shoot|kill|fight|charge|intimidate|charm|deceive|persuade)\b/i;
 
 // Observe-object-detail: a player demands the literal text/marking on a held
@@ -551,6 +570,39 @@ function findBogusPossessionClaim(lowerText, world) {
   return bogus.length ? bogus : null;
 }
 
+// Strip the "armor/armour value/class/rating/number/score" phrase (the AC
+// NUMBER, not a gear item or a character class) before testing for a class
+// or gear mention below — "what's my name and my armor class?" must stay
+// clear of the character-class/gear-item fold; that's META_ARMOR_VALUE's
+// own ask. (H-38a R1)
+function stripArmorClassPhrase(lowerText) {
+  return lowerText.replace(/\b(?:armor|armour)\s+(?:value|class|rating|number|score)\b/gi, '');
+}
+
+// Broad CLASS mention — folds a class answer into a compound name/sheet/
+// identity ask. Broader than META_CLASS_FOLD_RE (which requires "and class"
+// immediately) so "name, class, and gear" (class BEFORE the "and", not
+// after) still folds. (H-38a R1)
+function mentionsCharacterClass(lowerText) {
+  return META_CLASS_FOLD_RE.test(lowerText) || /\bclass\b/i.test(stripArmorClassPhrase(lowerText));
+}
+
+// Broad GEAR mention — folds a gear/equipment answer into a compound name/
+// sheet/identity ask. Broader than META_EQUIPMENT/META_HELD_ITEMS/
+// META_INVENTORY/META_GEAR_YESNO (which gate the PRIMARY route and stay
+// narrow on purpose) — catches phrasings that only show up FOLDED alongside
+// another ask: "what gear is on me right now", "what weapons, armor, and
+// gear are on my sheet", "every item I'm carrying", "what do my hands find
+// when I pat myself down". (H-38a R1)
+const GEAR_ASK_FOLD_RE = /\b(?:gear|weapons?|armou?r|equipment|loadout)\b[\s\S]{0,25}\b(?:on\s+me|on\s+my\s+(?:person|sheet|body)|right\s+now)\b|\bi'?m\s+carrying\b|\bpat\s+(?:myself|him|her)\s+down\b|\bwhat\s+do\s+my\s+hands\s+(?:actually\s+)?find\b/i;
+
+function mentionsGearAsk(lowerText) {
+  const stripped = stripArmorClassPhrase(lowerText);
+  return META_EQUIPMENT.test(stripped) || META_HELD_ITEMS.test(stripped)
+    || META_INVENTORY.test(stripped) || META_GEAR_YESNO.test(stripped)
+    || GEAR_ASK_FOLD_RE.test(stripped);
+}
+
 // Handle meta-questions (status checks, location surveys, recaps, outcomes).
 // Returns null when the text isn't a recognized meta-question.
 export function handleMetaQuestion(text, world) {
@@ -607,13 +659,17 @@ export function handleMetaQuestion(text, world) {
     const ans = name
       ? `Your name is ${name}. If I've called you anything else, that was my slip — you're ${name}.`
       : `You haven't given your name yet — what should I call you?`;
-    // A name ask in the same breath as HP or class must answer all of it, not
-    // just the name (H-36a R2 — same compound-fold shape as H-35's gear+coin).
+    // A name ask in the same breath as HP, class, or gear must answer all of
+    // it, not just the name (H-36a R2 gear+coin shape; H-38a R1 broadens the
+    // class/gear fold beyond the narrow "and class" form — Rules Lawyer's
+    // "what's my character's name, class, and what gear do I have on me?"
+    // got only the name back, class and gear silently dropped).
     const extras = [];
-    if (META_CLASS_FOLD_RE.test(lowerText)) {
+    if (mentionsCharacterClass(lowerText)) {
       const classLine = answerClassLine(world);
       if (classLine) extras.push(classLine);
     }
+    if (mentionsGearAsk(lowerText)) extras.push(describeLoadout(world));
     if (META_HEALTH.test(lowerText)) extras.push(answerHealth(world));
     return extras.length ? `${ans} ${extras.join(' ')}` : ans;
   }
@@ -762,9 +818,30 @@ export function handleMetaQuestion(text, world) {
     return `That one's yours to call — nothing here forces your hand either way. Go with your gut.`;
   }
 
-  // Sheet confirmation — "my sheet", "the sheet", "confirm my stats". Report
-  // the full stat block from canon. Explicitly refuse to mutate (report-only).
+  // Sheet confirmation — "my sheet", "the sheet", "confirm my stats". Reports
+  // the full stat block from canon by default. But "the sheet" is also how
+  // players reach for class/gear ("give me the sheet" / "what's on my
+  // sheet?") — when the question actually names class and/or gear and never
+  // asks for the ability scores themselves, answer THAT instead of dumping
+  // MIGHT/AGILITY/WITS/GRIT/CHARM at a question that never asked for them.
+  // (H-38a R1 — Rules Lawyer hammered this exact shape 4 of its first 6
+  // turns: "what's my class, and what gear is on me? Give me the sheet.",
+  // "What weapons, armor, and gear are on my sheet?", "am I carrying any
+  // weapon or armor, yes or no?", "what do my hands find when I pat myself
+  // down?" — all four got the raw stat block, none got class or gear.)
+  // Explicitly refuse to mutate (report-only).
   if (META_SHEET_CONFIRM.test(lowerText)) {
+    const wantsClass = mentionsCharacterClass(lowerText);
+    const wantsGear = mentionsGearAsk(lowerText);
+    const wantsStats = META_STATS_REQ.test(lowerText);
+    const idParts = [];
+    if (wantsClass) {
+      const classLine = answerClassLine(world);
+      if (classLine) idParts.push(classLine);
+    }
+    if (wantsGear) idParts.push(describeLoadout(world));
+    if (idParts.length && !wantsStats) return idParts.join(' ');
+
     const p = world.party?.[0] || {};
     const stats = p.stats || {};
     const order = ['MIGHT', 'AGILITY', 'WITS', 'GRIT', 'CHARM'];
@@ -775,7 +852,7 @@ export function handleMetaQuestion(text, world) {
       parts.push(`Hit points: ${Number(world.meta?.escapeHp) || 0} of ${eMax}.`);
     }
     parts.push('These are your canonical scores — I report what the sheet reads; I cannot edit them.');
-    return parts.join(' ');
+    return [...idParts, ...parts].join(' ');
   }
 
   // NPC-observer query — "Who's that stranger watching me?". Describe the present
@@ -883,15 +960,20 @@ export function handleMetaQuestion(text, world) {
   // Equipment / sheet — name what's actually equipped, in-voice, no roll. An
   // empty loadout is reported honestly (the DM never invents a weapon you lack).
   // META_HELD_ITEMS ("what's in my hands") shares this answer — it's the same
-  // question about the same loadout. (H-31 R2)
-  if (META_EQUIPMENT.test(lowerText) || META_HELD_ITEMS.test(lowerText)) {
+  // question about the same loadout. META_GEAR_YESNO ("am I carrying any
+  // weapon or armor, yes or no?") is the bare yes/no framing of the same ask,
+  // never matched by the wh-/declarative forms above. (H-31 R2; H-38a R1)
+  if (META_EQUIPMENT.test(lowerText) || META_HELD_ITEMS.test(lowerText) || META_GEAR_YESNO.test(lowerText)) {
     const ans = describeLoadout(world);
     // A gear ask in the same breath as HP must answer both (H-36a R2).
     return META_HEALTH.test(lowerText) ? `${ans} ${answerHealth(world)}` : ans;
   }
 
   // Character identity / build — answer who you are from canon. Identity in-voice;
-  // an explicit stats ask gets the real scores (your own sheet, no fiction to dodge).
+  // an explicit stats ask gets the real scores (your own sheet, no fiction to dodge);
+  // a gear ask in the same breath gets the real loadout, not the "read your own
+  // sheet" deflection (H-38a R1 — "What class am I, and list every item I'm
+  // carrying." got the class but the deflection line instead of the kit).
   if (META_CHARACTER.test(lowerText)) {
     const p = world.party?.[0] || {};
     const name = String(p.name || '').trim();
@@ -905,6 +987,8 @@ export function handleMetaQuestion(text, world) {
     out.push((who || "You're yourself") + (level ? ` — and by the count, you're level ${level}` : '') + '.');
     if (hook) out.push(hook.replace(/[.?!]*$/, '.'));
     if (ideal || flaw) out.push(`You hold to ${ideal || 'your own code'}${flaw ? `, for all that you're ${flaw}` : ''}.`);
+    const wantsGear = mentionsGearAsk(lowerText);
+    if (wantsGear) out.push(describeLoadout(world));
     if (META_STATS_REQ.test(lowerText) && p.stats && typeof p.stats === 'object') {
       const order = ['MIGHT', 'AGILITY', 'WITS', 'GRIT', 'CHARM'];
       const line = order.filter(k => k in p.stats).map(k => `${k} ${p.stats[k]} (${fmtMod(statMod(Number(p.stats[k]) || 10))})`).join(', ');
@@ -915,7 +999,7 @@ export function handleMetaQuestion(text, world) {
       if (world.meta?.mode === 'escape' && eMax > 0) {
         out.push(`Hit points: ${Number(world.meta?.escapeHp) || 0} of ${eMax}.`);
       }
-    } else {
+    } else if (!wantsGear) {
       out.push(`The fine print — your scores and your kit — is yours to read on your sheet.`);
     }
     return out.join(' ');

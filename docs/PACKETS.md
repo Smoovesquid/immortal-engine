@@ -250,6 +250,19 @@ also an unproven *production* economics question — flagged for P-88, not solve
     selection), `engine/rulesets.js` if the pack needs registering. Findings recorded.
   - done_when: the Westmarch is selectable and you can confirm, server-side, whether an
     NPC's `historicalFigure` reaches `retrieveChunks`; the finding is written down.
+  - **DONE (ChatGPT/Basecamp, investigation-only, 2026-06-18) — verdict: "relink an authored
+    world," not "wire the slice."** The link is missing, confirmed multiple ways: no
+    procedural code sets `historicalFigure` (`engine/decompression/extractPresent.js:34`,
+    `engine/npc/npcGenesis.js:133,155`, `engine/decompression/decompress.js:129` all omit
+    it); the 6 static Westmarch NPCs (`packs/fantasy/westmarch/pack.json:179-218`) have zero
+    `historicalFigure` fields and no name match against the corpus; Westmarch's factions
+    (`crown-watch`, `seil-compact`) don't match any of the corpus's 9 clusters
+    (`thornwall_commons`, `harbor_quarter`, `wild_road`, `academy_of_runes`, `coin_cult`,
+    `house_aldenmere`, `hollow_court`, `covenant_of_seven`, `church_of_incrementalism`); and
+    `retrieveChunks()` (`server/rag/ragRetriever.js:31,58`) keys directly off an exact corpus
+    filename id with no roster/index bridge (`server/rag/npc-roster.json` referenced in
+    `docs/KB_MAP.md:496` does not exist). **P-82b is required** before any voice lights up —
+    someone must hand-cast `historicalFigure` ids onto Westmarch NPCs by name/cluster.
 - **P-82b — Relink (only if P-82a shows the link is missing).** Write `historicalFigure` =
   corpus id onto each Westmarch NPC by matching name/cluster → corpus file. Deterministic,
   data-only (pack authoring), no engine change ideally.
@@ -258,6 +271,19 @@ also an unproven *production* economics question — flagged for P-88, not solve
     bump); `worldHash` stable; pack remains deterministic.
   - done_when: a Westmarch playthrough's named NPCs retrieve their corpus chunks; the voice
     is visibly colored; a live report with the local model up.
+  - **DONE (Claude Opus worker, `a47f487`, 2026-06-18) — all 6 static NPCs cast by
+    role/personality fit** (corpus never names Westmarch NPCs, so role-fit was the only
+    viable bar, not name/cluster match): Aldric Hale → `captain_rath`, Renna Voss →
+    `scarlet_compact_quartermaster`, Warden Maren → `covenant_elder`, Corin Blackthorn →
+    `wild_hunter`, Dalla the Smith → `forge_master`, Old Gerren → `father_len`. Faction
+    mismatch (crown-watch/seil-compact vs corpus clusters) flagged but did NOT block —
+    no faction rename needed. Verified independently by Basecamp: diff is exactly the 6
+    additive `historicalFigure` lines (no engine touched, no WORLD_VERSION bump); all 6
+    corpus files (`server/rag/corpus/{id}.json`) confirmed to exist on disk; full suite
+    reran clean 7939/0. **Bindings are thematic, not canonical** — worth flagging if/when
+    P-82c casts marquee figures, in case any of these 6 should be displaced.
+    **Not yet live-verified** (no playthrough/screenshot with local model up) — done_when's
+    "voice is visibly colored" bar is unconfirmed, only the load-path is confirmed.
 - **P-82c — Marquee placement (the demo moment).** Cast the ~51 real-people figures
   (Marcus Aurelius as a sage, Twain as a tavern wit) at fitting Westmarch roles with
   personalities per `HISTORICAL_FIGURES.md`. The "argue philosophy with Aurelius, then go

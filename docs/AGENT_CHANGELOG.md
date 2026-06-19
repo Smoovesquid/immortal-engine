@@ -9,9 +9,7 @@ cross-agent continuity: what changed, what proved it, and what remains.
 ## CLAIMS (in-flight work — claim here BEFORE editing, clear when done)
 
 `[CLAIMED] <seam> · <agent> · <UTC> · files: <paths>` — a claimed seam or file is off-limits to
-other agents.
-
-[CLAIMED] H-38b combat HP entity-tracking desync + weapon-label mismatch · Codex · 2026-06-19T13:53:44Z · files: engine/combat/escapeCombat.js (and any sibling file in engine/combat/ the bug actually lives in)
+other agents. (none active)
 
 ## Template
 
@@ -27,6 +25,17 @@ other agents.
 - Remaining:
   - 
 - Rollback:
+
+---
+
+2026-06-19 — Codex
+- Packet/seam: Rung 1 / H-38b combat HP entity-tracking desync + weapon-label mismatch
+- Commit(s): 1727db9
+- Files changed: `engine/combat/escapeCombat.js`, `engine/playloop.js`, `tests/U191.combatImprovisedAction.test.js`, `tests/U198.combatTruthReconciliation.test.js`, `tests/U200.combatEntityMechanics.test.js`
+- Summary: Traced the apparent enemy/PC HP cross-contamination to the mechanics-line contract, not a wrong `meta.npcCombatHp` write: enemy attacks were correctly mutating `meta.escapeHp`, but reported that player HP delta inside `[enemy:...]` as bare `hp:before->after`, which the gate reasonably read as enemy HP. Enemy attack mechanics now report `pcHp:before->after` for normal, legendary, and lair enemy damage. Separately fixed the weapon-label gap by treating `ram`/`drive` + torch/flame/fire as improvised combat actions, so torch-fire attacks do not fall back to `Worn Blade`. Also fixed the separate taunt dispatch gap: pure spit/yell/threat social beats in active escape combat now return `[combat:table-talk]` instead of defaulting to a strike. Deliberately did NOT touch `engine/grace/gracefulAdjudication.js` or `engine/llmAdapter.js`; no `WORLD_VERSION` bump; Codex push failed on GitHub credentials after the local claim commit.
+- Proof: Baseline regression before fix: `node --test tests/U200.combatEntityMechanics.test.js` — 0/3, reproducing all three H-38b symptoms. After fix: `node --test tests/U200.combatEntityMechanics.test.js` — 3/3; `node --test tests/U200.combatEntityMechanics.test.js tests/U198.combatTruthReconciliation.test.js tests/U191.combatImprovisedAction.test.js tests/U149.naturalAttackVerbs.test.js tests/U152.grappleIntegration.test.js tests/U167.strikeMechanicsDice.test.js tests/UX2.conversationRouting.test.js` — 40/40; `node --test` — 8089/0 (+3 from 8086/0 baseline); determinism gates `node --test tests/U19.worldHashDeterminism.test.js tests/U21.replayGateN50.test.js tests/U22.longRunStabilityN100T500.test.js tests/U27.worldHashSurfaceContract.test.js tests/U30.gate6.sequelDeterminism.test.js` — 6/6; forbidden-file diff grep for `engine/grace/*` and `engine/llmAdapter.js` — empty.
+- Remaining/next: Queue owner should push local commits `3d5530b` (claim, unpushed because credentials failed) and `1727db9` after independent verification, plus the DONE-entry commit that contains this log update. No remaining H-38b combat follow-up known: (a) and (b) were independent seams; the taunt-fired-attack symptom was separate from both and fixed in this packet.
+- Rollback: revert 1727db9
 
 ---
 

@@ -580,7 +580,7 @@ function playerMoveCore(world, packsById, text) {
   // ── Long rest: a real night's sleep, settlements only ─────────────────────
   // Full HP, all spell slots, every class reserve. The DM answer to "I sleep":
   // in town you get a bed; in the wild the night is not your friend.
-  if (!w.combat?.active && w.meta?.mode === 'escape' && isLongRestIntent(text)) {
+  if (!w.combat?.active && w.meta?.mode === 'escape' && isLongRestIntent(text) && !isNpcAddressedRest(w, text)) {
     const hereId = w.map?.currentNodeId;
     const here = (w.map?.nodes || []).find(n => n && n.id === hereId) || null;
     if (here?.nodeType === 'settlement') {
@@ -5500,6 +5500,24 @@ function isImprovisedCombatAction(world, text) {
 function isLongRestIntent(text) {
   const t = String(text || '').toLowerCase();
   return /\b(sleep|long\s+rest|make\s+camp|camp\s+for\s+the\s+night|rest\s+for\s+the\s+night|bed\s+down|turn\s+in|get\s+some\s+sleep|spend\s+the\s+night|rest\s+up|take\s+a\s+(rest|breather|nap)|catch\s+(my|our)\s+breath|recuperate)\b/.test(t);
+}
+
+// `isLongRestIntent`'s bare \bsleep\b is unanchored — it also matches a
+// direct historical question put TO a present NPC by name ("Kael, elder —
+// you'd know. Whose roof did I sleep under last night?"), which got resolved
+// as an actual long rest instead of being routed to Kael as the question it
+// actually is. Same shape as npcAddressedRecap (H-34 R1): requires
+// socialTarget to resolve to a real present NPC AND that NPC's own
+// name/role to literally appear in the text, so a genuine "I sleep" / "let's
+// make camp" near an unrelated NPC still long-rests unchanged. (H-35 R4)
+function isNpcAddressedRest(world, text) {
+  if (!isLongRestIntent(text)) return false;
+  const npc = socialTarget(world, text);
+  if (!npc) return false;
+  const t = String(text || '').toLowerCase();
+  const nm = normName(npc?.name).trim();
+  const role = String(npc?.role || '').toLowerCase().trim();
+  return (nm && t.includes(nm)) || (role && t.includes(role));
 }
 
 function outOfCombatDyingGate(world, text) {

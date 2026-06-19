@@ -9,6 +9,7 @@ import { exitsFrom, cleanPlaceName } from '../map/mapState.js';
 import { statMod } from '../ruleset/core/stats.js';
 import { profBonusFor } from '../ruleset/core/levelTable.js';
 import { playerAc } from '../combat/escapeCombat.js';
+import { purseTotalCopper, formatPrice } from '../economy/shop.js';
 
 // Canonical stat names (bare "my X" is unambiguous for game-native names).
 const META_STAT = /\b(?:what(?:'?s| is)\s+my\s+|my\s+)(might|agility|wits|grit|charm)(?:\s+(?:modifier|mod|score|stat|number|bonus))?\b/i;
@@ -186,6 +187,12 @@ const META_ARMOR_VALUE = /\b(?:armor|armour)\s+(?:value|class|rating|number|scor
 const POSSESSION_CLAIM_TRIGGER = /\b(?:you (?:said|told me|just (?:said|listed))|a moment ago|i (?:had|have|was holding|'m holding|am holding|was carrying|'m carrying))\b/i;
 const POSSESSION_NOUN_RE = /\b(?:staff|wand|robe|cloak|sword|greatsword|longsword|shortsword|dagger|bow|crossbow|shield|armou?r|helm|helmet|gauntlets?|boots?|ring|amulet|potion|scroll|mace|axe|spear|hammer|club|quarterstaff|blade)\b/gi;
 const META_POSSESSION_CHALLENGE = new RegExp(`${POSSESSION_CLAIM_TRIGGER.source}[\\s\\S]*?${POSSESSION_NOUN_RE.source}`, 'i');
+// A coin amount re-asserted inside a possession claim ("three copper", "a
+// pouch of coin") — distinct from META_PURSE (which gates an explicit coin
+// QUESTION). Only used inside the bogus-possession correction fold below, so
+// a gear correction doesn't silently eat the coin half of the same claim
+// too. (H-35 R2)
+const COIN_CLAIM_RE = /\b(?:\d+|one|two|three|four|five|six|seven|eight|nine|ten)\s+(?:copper|silver|gold|platinum)\b|\bpouch\s+of\s+coin\b/i;
 // Character identity / build — "who am I", "what's my class/level", "what are my
 // stats". A player learning their own character is an information request, not a
 // fiction beat and never a dice roll. Identity is answered in-voice; an explicit
@@ -197,8 +204,10 @@ const META_STATS_REQ = /\b(?:stats|attributes|scores|ability\s+scores|hp|hit\s?p
 // resolves to a REAL inventory item (else it returns null and falls through, so
 // "what does the elder do" isn't mistaken for an item).
 const META_ITEM = /\bwhat(?:'?s| does| do| is| are)\s+(?:the|my|a|an|this|that)\s+.+?\s+(?:do|for|good\s+for|used\s+for|used\s+to)\b|\b(?:do i have|have i got|am i carrying|is\s+(?:the|a|an|my)\s+.+?\s+in\s+my\s+(?:pack|bag|inventory|kit|belongings))\b/i;
-// Coins/purse — a number the DM owns (read from party.purse).
-const META_PURSE = /\bhow many coins\b|\bhow much (?:money|coin|gold|silver|copper|cash)\b|\bwhat(?:'?s| is)\s+in\s+my\s+(?:purse|pouch|coin\s?purse|wallet)\b|\bhow\s+(?:much\s+)?(?:money|coin|gold|silver)\s+(?:do i have|have i got|am i carrying)\b|\bmy (?:purse|coin\s?purse)\b/i;
+// Coins/purse — a number the DM owns (read from party.purse). Also catches
+// "do I even have any money on me?" and a re-asserted "pouch of coin" claim
+// (the latter shares ground with POSSESSION_CHALLENGE below — H-35 R1/R2).
+const META_PURSE = /\bhow many coins\b|\bhow much (?:money|coin|gold|silver|copper|cash)\b|\bwhat(?:'?s| is)\s+in\s+my\s+(?:purse|pouch|coin\s?purse|wallet)\b|\bhow\s+(?:much\s+)?(?:money|coin|gold|silver)\s+(?:do i have|have i got|am i carrying)\b|\bmy (?:purse|coin\s?purse|pouch)\b|\bdo\s+i\s+(?:even\s+)?have\s+(?:any\s+)?(?:money|coin)\b|\bmoney\s+on\s+me\b|\bpouch\s+of\s+coin\b/i;
 const META_TIME = /\bwhat time\b|\btime of day\b|\bis it (?:day|night|morning|evening|dark|light)(?:time)?\b/;
 const META_OBJECTIVE = /\b(?:what(?:'?s| is| was)? )?my (?:quest|objective|goal|mission|task)\b|\bwhat (?:am i|are we) (?:supposed to|meant to|trying to)\b|\bwhy am i here\b|\bwhat(?:'?s| is) the (?:quest|objective|goal|plan)\b|\bremind me\b/;
 // "How do you resolve a sword swing — pure narration, or a dice mechanic?" /
@@ -425,6 +434,20 @@ function answerWeaponDamage(lowerText, world) {
     : `Your weapons roll for damage as follows — ${joinList(list.map(describe))}, plus your ability modifier on a hit.`;
 }
 
+// Answer a coin/purse query from the real purse — a table DM just states the
+// number, no roll. An empty purse is reported honestly, never invented.
+// Reuses the shop layer's own copper-total/format helpers so the DM's count
+// and the shop's count can never drift apart. Shared by the META_PURSE
+// branch, the weapon-damage compound fold, and the possession-correction
+// fold below (H-35 R1/R2).
+function answerPurse(world) {
+  const purse = world.party?.[0]?.purse || {};
+  const total = purseTotalCopper(purse);
+  return total > 0
+    ? `Your purse holds ${formatPrice(total)}.`
+    : `Your purse is empty — you're flat broke.`;
+}
+
 // Name what's actually equipped, in-voice, no roll. An empty loadout is
 // reported honestly — the DM never invents a weapon the player lacks.
 // Shared by the META_EQUIPMENT/META_HELD_ITEMS answer and the possession-
@@ -436,7 +459,12 @@ function describeLoadout(world) {
   const weapons = names(inv.weapons);
   const armor = names(inv.armor);
   const sig = String(p.signature?.itemName || '').trim();
-  const sigName = sig && !/^thing$/i.test(sig) ? sig : '';
+  // Skip the signature-item line when that item is ALREADY named in the
+  // weapons/armor line above — a signature weapon ("Kitchen cleaver" both
+  // equipped AND the signature item) was listed twice. (H-35 R3)
+  const sigLower = sig.toLowerCase();
+  const alreadyListed = sigLower && [...weapons, ...armor].some(n => n.toLowerCase().includes(sigLower) || sigLower.includes(n.toLowerCase()));
+  const sigName = sig && !/^thing$/i.test(sig) && !alreadyListed ? sig : '';
   const parts = [];
   parts.push(weapons.length
     ? `You're armed with ${joinList(weapons)}.`
@@ -482,7 +510,12 @@ export function handleMetaQuestion(text, world) {
     const bogus = findBogusPossessionClaim(lowerText, world);
     if (bogus) {
       const loadout = describeLoadout(world);
-      return `There's no ${joinOr(bogus)} — ${loadout.charAt(0).toLowerCase()}${loadout.slice(1)}`;
+      let correction = `There's no ${joinOr(bogus)} — ${loadout.charAt(0).toLowerCase()}${loadout.slice(1)}`;
+      // The gear correction must not eat the rest of a compound question — a
+      // coin claim/ask in the same breath gets answered too, not dropped.
+      // (H-35 R2)
+      if (META_PURSE.test(lowerText) || COIN_CLAIM_RE.test(lowerText)) correction += ` ${answerPurse(world)}`;
+      return correction;
     }
   }
 
@@ -492,15 +525,19 @@ export function handleMetaQuestion(text, world) {
   // Armor value too when both are asked in the same breath — this branch
   // fires before META_ARMOR_VALUE's own (later) check, so a compound ask
   // ("damage die... and my Armor value?") would otherwise drop the AC half.
-  // (H-31 R2)
+  // (H-31 R2) Also folds in the purse when asked in the same breath ("how
+  // much coin... and what's the damage die") so the coin half isn't dropped
+  // the same way the AC half used to be. (H-35 R1)
   if (META_WEAPON_DAMAGE.test(lowerText)) {
     const ans = answerWeaponDamage(lowerText, world);
     if (ans) {
+      const extras = [];
       if (META_ARMOR_VALUE.test(lowerText)) {
         const ac = playerAc(world.party?.[0] || {});
-        return `${ans} Your Armor is ${ac} — that's the number an attack has to beat to land on you.`;
+        extras.push(`Your Armor is ${ac} — that's the number an attack has to beat to land on you.`);
       }
-      return ans;
+      if (META_PURSE.test(lowerText)) extras.push(answerPurse(world));
+      return extras.length ? `${ans} ${extras.join(' ')}` : ans;
     }
   }
 
@@ -748,13 +785,7 @@ export function handleMetaQuestion(text, world) {
 
   // Purse / coins — a real number the DM owns; report it (even if empty).
   if (META_PURSE.test(lowerText)) {
-    const purse = world.party?.[0]?.purse || {};
-    const parts = [];
-    for (const coin of ['platinum', 'gold', 'silver', 'copper']) {
-      const v = Number(purse[coin]) || 0;
-      if (v > 0) parts.push(`${v} ${coin}`);
-    }
-    return parts.length ? `Your purse holds ${joinList(parts)}.` : `Your purse is empty — not a coin to your name.`;
+    return answerPurse(world);
   }
 
   // Inventory — read the real pack, never invent contents.

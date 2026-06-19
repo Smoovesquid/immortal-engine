@@ -1787,7 +1787,16 @@ function playerMoveCore(world, packsById, text) {
       if (newTarget) {
         newTarget.hostile = true;
         const enemy = applyPersistedEnemyHp(w, mintEnemyFromNpc(newTarget));
-        enemy.id = `enemy_${(w.combat.enemies || []).length}`;
+        // Derive the next id from the max existing numeric suffix, NOT the array
+        // length: a fled foe is pruned from combat.enemies (escapeCombat.js), so
+        // length can fall below the highest live id and `enemy_${length}` would
+        // reuse it — the duplicate-id invariant crash (H-24).
+        let maxIdx = -1;
+        for (const e of (w.combat.enemies || [])) {
+          const m = /^enemy_(\d+)$/.exec(e?.id || '');
+          if (m) maxIdx = Math.max(maxIdx, Number(m[1]));
+        }
+        enemy.id = `enemy_${maxIdx + 1}`;
         w = applyDeltas(w, [{ op: 'combatState', set: { enemies: [...(w.combat.enemies || []), enemy] } }]);
       }
       const { world: wAfter, result } = resolveEscapeCombatTurn(w, String(text || ''));

@@ -181,20 +181,26 @@ resolve a real present NPC before anything fires, so it can't start combat again
 `AGENT_CHANGELOG.md` per protocol §3 — Basecamp backfilled both entries post-hoc from the commits +
 self-reports.
 
-## In flight — H-42 (grace, Claude-Sonnet), dispatched 2026-06-19
-Tim's call: finish the obvious known fixes BEFORE spending on a gate, then one gate covers H-40+H-41+H-42.
-Of the three post-H-39 residuals, only ONE is a real gate-observed failure worth pre-fixing: the
-**"react-under-pressure"** confrontation dead-end (Lore-hound t12, HIGH). The other two (bare modifier-table
-needing no skill named; one-off lore-invention) are theoretical/minority — left for the gate to confirm
-rather than pre-fixed (avoiding the enumeration trap).
-- **H-42 "react under pressure" (Claude-Sonnet, grace; IG-11 social-physics rule):** a confrontation/
-  contradiction-challenge directed at a PRESENT NPC that resolves as FAILURE ("You said Kael was here first…
-  which of you is lying?" → `[roll:6 → failure]`) must yield a deterministic in-character NPC REACTION
-  (deflect/bristle/hold-firm, from the NPC's real disposition), NOT the `gen:f` place-filler
-  ("…Pilgrim's Rest Village doesn't give it to you", `playloop.js:5011`). It must NOT concede the contested
-  fact (the player's read failed). Files: `engine/playloop.js` (`genericGroundedOutcome`) +
-  `engine/grace/gracefulAdjudication.js` (new exported `isConfrontationChallenge`) + `tests/U205`. Grace
-  lane, serialized (queue otherwise clear). On result: verify per §7, then the post-H-40/H-41/H-42 gate.
+## In flight
+*(none — H-40, H-41, H-42 all DONE + BASECAMP-verified + pushed. The entire post-H-39 board is cleared.
+Queue clear — good point for a new session. Only remaining step is a post-H-40/H-41/H-42 gate (~$2.40),
+DEFERRED at Tim's instruction; deferred residuals to watch are listed under "Next" + the post-H-39 gate.)*
+
+## Done — H-42 (2026-06-19, BASECAMP-verified per §7)
+Claude-Sonnet (`385c228` fix, `7ae5ae3` DONE). The IG-11 "react under pressure" social-physics rule: a
+confrontation/contradiction-challenge aimed at a PRESENT NPC resolving as FAILURE now yields a deterministic
+in-character NPC reaction instead of the `gen:f` place-filler. New exported `isConfrontationChallenge`
+(accusatory markers: "you said…but", "one of you is lying", "admit it", "you claimed", "contradicts what you
+said", "you swore…but") with a real false-positive guard (negative-lookahead so "lying in the grass" ≠
+accusation, regression-tested U205-12); `confrontationReaction` in `genericGroundedOutcome` returns a
+civil-defensive or hostile-bristle tier off the NPC's real `hostile` flag via seeded `pickVariant`, concedes
+/reveals nothing (the read failed). Scoped FAILURE-only — success/mixed reveal paths (H-12/13) untouched
+(U205-27/28). §7 verification: suite **8172/0** (= 8149 + 23 U205), determinism 6/6, in sync, lane clean
+(only `gracefulAdjudication.js` + `playloop.js` + `tests/U205`; no combat/llmAdapter), no `Math.random`/
+`Date.now`/`WORLD_VERSION`/`applyDeltas`, U205 net-new, `playtest:quick` 50/0/0. Diff reviewed: failure-only
+gate correct, reads real NPC state, invents/reveals nothing.
+**New minor residual (deferred):** a MIXED-roll confrontation isn't covered (H-42 is failure-only by
+design); not observed yet — fold in only if a gate flags it.
 
 ## Done — H-40 ∥ H-41 (2026-06-19, parallel, BASECAMP-verified per §7)
 Dispatched file-disjoint, ran clean as a linear stack (H-41 first, H-40 on top). **Lane disjointness HELD
@@ -839,23 +845,21 @@ in-fiction "I don't know/won't say," never atmosphere-only) as a more general fi
 individual hallucination shapes. Leaning toward (c) as a cheap next probe before escalating to (b).
 
 ## Next
-**Post-H-37 gate run + ingested this session** (16/48, 33%; see "Gate run 2026-06-19 (post-H-37)"
-section above). H-37 was verified independently (full suite 8086/0, determinism gates 6/6 green, no
-forbidden combat-file touches) before gating. R3 (corpse-staging) fully held. R4 (NPC presence/quote)
-had no direct recurrence but a new artifact-leak (raw `location:...` key-value dump) appeared nearby.
-R1 (item/gear-stat) and R2 (mixed-roll-margin) only **partially** held — both fixes were too narrowly
-scoped and recurred in adjacent shapes: R1's fold only covered the coin+gear compound, not bare
-class+gear or yes/no gear asks; R2's exact original boilerplate ("It lands, after a fashion...")
-recurred verbatim, plus a new sibling on the success path (zero-content narration for indirect
-genealogy asks). A new, dominant, **combat-lane** cluster also surfaced — enemy/PC HP entity-tracking
-desync + weapon-label mismatch in `escapeCombat.js` territory (6/16 fails, Chaos-griefer) — out of
-scope for grace, first combat regression since H-36b.
-**Queue is clear; H-38a/H-38b proposed above but NOT dispatched — Tim's dispatch call.** H-38a is
-grace/narration (Claude-Sonnet, broadens R1/R2 nets + fixes the artifact leak); H-38b is combat lane
-(Codex per [[feedback_worker_routing]] — needs its own worker, separate from grace). Budget ~$15.9
-left (~$2.40 spent this run; ~6-7 gate runs remain at this rate). Rung-1 bar not yet met (16/48 at
-last measurement — worse headline than post-H-36, but judged by nature: two of four targeted fixes
-need broadening, not a regression, plus a fresh combat-lane bug).
+**Post-H-39 board FULLY CLEARED (2026-06-19).** The post-H-39 gate (7/48) surfaced 5 grace/combat shapes;
+all addressed + BASECAMP-verified: **H-40** (number-transparency — the dominant 4/7 "give me my numbers"
+cluster: killed the raw modifier-table leak, compound stats+gear, real attack-bonus), **H-41** (0-HP
+dying-state out of combat — stale `escapeMaxHp` made the gate skip itself; now falls back to sheet maxHP),
+**H-42** (react-under-pressure — failed confrontation now gets an NPC reaction, not `gen:f` filler). Suite
+**8172/0**, determinism 6/6, everything pushed + in sync.
+**The ONLY remaining step is ONE gate run** (~$2.40 → ~$11 left) to measure H-40+H-41+H-42 together —
+**DEFERRED at Tim's instruction** (no gate spend this session). What to watch at that gate: (1) the dominant
+numbers cluster is actually dead live (H-40); (2) confrontations now react (H-42); (3) the 0-HP fizzle is
+gone (H-41); plus the deferred residuals that were deliberately NOT pre-fixed (avoiding the enumeration
+trap) — bare modifier-table with no skill named (`U172`-locked), one-off lore-invention, mixed-roll
+confrontation. **Rung-1 bar: closest yet** — at the last gate Confused-newbie was clean and Chaos near-clean;
+if the next gate confirms the numbers cluster collapsed, we are at or near the bar (zero HARD from real
+defects, Rules-Lawyer clean, only rare forgivable SOFT). Restart the dev server fresh before that gate
+(checklist) — the one from this session is stale.
 
 **Known small follow-up (not yet packeted):** `infoPressCount` off-by-one in `infoExtractionOutcome`
 (playloop.js) — it's called after the current turn's own `resolution` event is already on

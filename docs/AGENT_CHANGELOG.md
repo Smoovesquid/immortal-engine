@@ -449,3 +449,18 @@ other agents. (none active)
   - Live repro check (all 5 exact gate phrasings re-run through `handleMetaQuestion`/`playerMove` directly): all dead-ends/drops/duplicates gone — see commit message for details.
 - Remaining/next: none for this packet.
 - Rollback: revert commit `c7db26b`
+
+## 2026-06-19 — Basecamp (gate ingestion, no code change)
+
+- Packet/seam: Rung 1 / post-H-35 Opus experiential gate
+- Commit: docs-only (RUNG1_QUEUE.md gate section + Next/Budget; this entry)
+- Gate: `scripts/dm-playtest.mjs --turns 12 --seeds glass-harbor --personas rules-lawyer,chaos,lore-hound,newbie` → `docs/playtests/opus-gate-2026-06-19-postH35.md`. Dev server restarted fresh immediately before the run (checklist). Cost ~$2.29 (96 calls, 117,460 tokens); budget ~$22.86 → ~$20.5.
+- Result: **12/48 (25%)**, flat vs 13/48 post-H-33/H-34 — judged by nature, not number. By-class: DM_TEST_DEADEND 7 · CRUNCH_INCONSISTENCY 3 · CANON_HALLUCINATION 2. Confused newbie 1/12; Rules Lawyer 2/12 (compound-state-query partials, not clean).
+- **H-35 shapes did NOT recur — fix held.** Coin/purse BALANCE query clean (Chaos t5 "give me the number" → "twelve silver"); no duplicate inventory listing; no rest-intent NPC-swallow; no compound gear+coin drop. The coin fails this run (Chaos t7/t8) are a different shape — "what's *stamped* on this coin's face" (observe-physical-detail), which belongs to the answer-binding cluster.
+- Re-clustered by true root cause into 4 groups (detail in the queue gate section):
+  1. **Answer-binding dead-end (DOMINANT, ~6, grace lane)** — resolved info-turn (roll success or bare observe) emits generic boilerplate ("you ask around" / "it goes your way" / "your call") instead of a grounded fact or an explicit in-fiction decline. H-22/23/H-29 deliver-or-decline family recurring in shapes those fixes don't reach (observe-object-detail; quantity/genealogy asks with no canon answer).
+  2. **Compound state-query partial (~2, grace lane)** — HP + name + class ask answers one slot, drops the rest (same fold shape H-35 fixed for gear+coin, new slot-pair).
+  3. **Combat narration/state desync (~4, combat lane)** — incl. the now-TRACED **enemy-retaliation-without-mechanics**: Chaos t10 `[strike:Punch | atk:6 vs AC:10 → miss]` (clean miss, no enemy action, no HP delta) yet narration invents a "critical counterstrike" dealing PC damage. Plus defeat-threshold not applied (5 dmg vs 3 HP not dropped) and combat-state bleed/no-disengage (`[combat:fled]` on a lore turn).
+  4. **Canon lineage hallucination (~2, grace lane)** — confident "generations / roots deep" tenure absent from canon (H-31 R4 age-guard family, extended to lineage).
+- **H-36 split PROPOSED, NOT dispatched** (Tim's call): **H-36a (Claude-Sonnet/grace)** = generalize deliver-or-decline (observe-object-detail + quantity/genealogy) + compound slot-completeness + lineage anti-hallucination (clusters 1/2/4, ~8 turns); **H-36b (Codex/combat)** = enemy-retaliation-without-mechanics (traced) + defeat-threshold + disengage/state-bleed (cluster 3, ~4 turns; Codex can't push, §7). File-disjoint → dispatchable in parallel (§2). Road B stays parked.
+- Rung-1 bar: **not met** — ~1 forgivable SOFT (Lore-hound t3 margin-0 tie), the rest real defects across 4 clusters; Rules Lawyer not clean.

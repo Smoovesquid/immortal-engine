@@ -182,7 +182,8 @@ resolve a real present NPC before anything fires, so it can't start combat again
 self-reports.
 
 ## In flight
-*(none — H-35 landed, pushed, and Basecamp-verified; queue is clear. No post-H-35 gate run yet.)*
+*(none — H-35 landed/pushed/verified; post-H-35 gate run + ingested. H-36 split PROPOSED below, not
+yet dispatched — Tim's dispatch call. Queue is clear.)*
 
 ## Post-H-33/H-34 batch (2026-06-19) — DONE
 Claude Sonnet worker (`c7db26b`, pushed; done-docs `2a82075`): **H-35** — coin/purse meta-query
@@ -267,6 +268,96 @@ recur — the explicit reminder in both prompts worked).
   how the system has always worked, not a new bug. Arguably reasonable (a real DM might still make
   *something* happen rather than freeze on an unparseable target) but blunt. Not actioned; revisit
   only if it recurs as a dominant gate failure rather than a one-off.
+
+## Gate run 2026-06-19 (post-H-35) — `docs/playtests/opus-gate-2026-06-19-postH35.md` — VERDICT: H-35 coin/purse cluster HELD; new dominant cluster = answer-binding dead-end
+4 sessions × 12 turns, glass-harbor. **12/48 (25%)**, basically flat vs 13/48 (27%) post-H-33/H-34 —
+judge by nature, not number. Dev server restarted immediately before the run (fresh, per checklist).
+By-class: DM_TEST_DEADEND 7 · CRUNCH_INCONSISTENCY 3 · CANON_HALLUCINATION 2. Cost ~$2.29.
+**Confused newbie: only 1/12; Rules Lawyer: 2/12 (both compound-state-query partials, see cluster 2).**
+
+**H-35 shapes did NOT recur — the fix held.** Direct coin/purse BALANCE query is clean: Chaos t4 "dump
+the coins and count exactly" ✓, t5 "how much is it exactly? give me the number" → answered "twelve
+silver" ✓, t6 ✓. Inventory listing showed no duplicate (the Kitchen-cleaver double-list is gone). No
+rest-intent NPC-swallow appeared, no compound gear+coin drop. The coin failures this run (Chaos t7/t8)
+are a DIFFERENT shape — "what's *stamped/printed* on this coin's face" (observe-physical-detail of a
+held object), not a balance/meta query — and belong to the answer-binding cluster below.
+
+**Re-clustered by TRUE root cause (the 7 DEADEND + spillover split into 4 real groups):**
+
+**Cluster 1 — answer-binding dead-end (DOMINANT, ~6 turns, grace/narration lane).** A resolved
+info-turn (roll success, or bare observe) emits generic outcome boilerplate or evasion instead of the
+concrete requested answer. This is the H-22/23 + H-29 deliver-or-decline family recurring in NEW shapes
+the prior fixes don't reach:
+- Chaos t7 coin-face: `[roll:13 vs DC:11 → success]` → "You ask around, and someone gives you something
+  real to go on" (success, zero content).
+- Chaos t8 coin-face: `observe only — no roll` → Corwin "looks away," never answers — the observe-object
+  path has no deliver-or-decline discipline at all (H-29 targeted info-ROLLS, not bare observe).
+- Lore-hound t2 "how many generations / who founded it": `[roll:21 → success | NAT]` → "You see it
+  through, and it goes your way" (generic success, the canon answer genuinely doesn't exist → should
+  DECLINE in-fiction, not emit atmosphere).
+- Lore-hound t3 "give me a number — generations + founder": `[roll:12 vs DC:12 → mixed | margin:0]` →
+  "It lands, after a fashion — partial." **Judge itself flags this as arguably consistent with a
+  margin-0 tie → forgivable SOFT, not a clean defect.**
+- Confused newbie t3 "is it just Corwin? should I worry?": `(none)` → "That one's yours to call" — a
+  direct factual scene question bounced as "your gut" (THE_DM_TEST bounce).
+Root cause: an info-resolution that finds no grounded fact emits generic success/observe atmosphere
+instead of EITHER a grounded fact OR an explicit in-fiction decline. H-29/H-31's deliver-or-decline
+contract doesn't generalize to (a) bare observe-physical-object-detail, or (b) quantity/genealogy asks
+whose canon answer is genuinely absent.
+
+**Cluster 2 — compound state-query partial answer (~2 turns, grace/narration lane).** A single ask
+combining multiple sheet slots answers one and drops the rest — the SAME compound-fold shape H-35 fixed
+for gear+coin, recurring for a new slot-pair (gear/name + HP/class):
+- Rules Lawyer t1 "what am I carrying, and what are my current HP?": `(none)` → full inventory listed,
+  HP (13/13) dropped (CRUNCH, judged low).
+- Rules Lawyer t2 "current HP, and my name and class?": `(none)` → "Your name is Nyx" only; HP + class
+  dropped. (Self-corrected by the persona on t3/t4, so low real severity, but a true partial.)
+
+**Cluster 3 — combat narration/state desync (~4 turns, COMBAT/ENGINE lane).** The H-28 narration-vs-
+truth family + defeat-threshold + combat-state bleed:
+- **ENEMY-RETALIATION-WITHOUT-MECHANICS — NOW TRACED, lane-assignable.** Chaos t10 punch:
+  `[strike:Punch | atk:6 vs AC:10 → miss]` — a clean miss, no enemy action, no HP delta in the mechanics
+  line — yet narration invents "his elbow cracking hard against your jaw in a critical [counterstrike]"
+  and implies the PC took damage (t11's "I spit blood" confirms the player read it as a hit landed).
+  The narrator is fabricating BOTH the enemy action AND the damage; nothing in the strike resolution or
+  `meta.escapeHp` supports it. New shape of H-28 (adds an event, not contradicts one) but the trace puts
+  it squarely in the combat→narration contract = Codex/combat lane.
+- Chaos t11 headbutt: `[strike:Headbutt | atk:16 vs AC:10 → hit | 5 dmg]` vs Corwin's 3 HP — 5 > 3 but
+  he "staggers" and counterattacks instead of being marked defeated. Defeat-threshold not applied.
+- Lore-hound t8 "I leave Corwin and go find Kael… Kael, did the Boneknits found this village?": invents
+  Kael lore AND ignores active combat (canon `inCombat:true`, Corwin hp 8) — no disengage/flee mechanics
+  on leaving combat.
+- Lore-hound t9 lore question to Kael → `[combat:fled]` fires (Corwin "breaks and runs," 7 dmg, 1 HP) on
+  a pure non-combat lore turn — combat-state bleed / phantom attack on the wrong input.
+
+**Cluster 4 — canon lineage hallucination (~2 turns, grace/narration lane).** H-31 R4 age-phrase guard
+family, extended to lineage/tenure:
+- Lore-hound t1 "who runs this place, how long?": "family name has roots deep… generations rather than
+  years" — confident multi-generational tenure fabricated, not in canon (judged low).
+- (Lore-hound t2/t3 above are the *decline-side* of the same gap — counted in cluster 1.)
+
+**Next dominant cluster = cluster 1 (answer-binding dead-end), grace/narration.** Combat desync
+(cluster 3) is the second group and the one with the now-traced enemy-retaliation finding.
+
+**Proposed H-36 split (lane-assigned, NOT dispatched — Tim's dispatch call):**
+- **H-36a — Claude-Sonnet (grace/narration):** generalize deliver-or-decline + answer-binding (clusters
+  1, 2, 4 — the bulk, ~8 turns). (i) Extend the info-seeking detector to bare observe-physical-detail of
+  a held object ("what's stamped on this coin") and to quantity/genealogy asks ("how many generations"),
+  so a resolved info turn binds to a grounded fact OR an explicit in-fiction decline — never generic "it
+  goes your way" / "you ask around" atmosphere. (ii) Compound state-query slot-completeness: a single ask
+  combining HP + name + class + gear answers ALL slots (extend H-35's compound-fold from gear+coin to the
+  HP/name/class slots). (iii) Lineage/tenure anti-hallucination: confident "generations / roots deep"
+  tenure claims absent from canon get the decline (same shape as H-31 R4's age-phrase guard).
+- **H-36b — Codex (combat/engine):** combat truth (cluster 3, ~4 turns; Codex can't push, protocol §7).
+  (i) Enemy-retaliation-without-mechanics (TRACED above) — the combat→narration contract must forbid the
+  narrator inventing enemy counter-attacks/damage absent from the strike resolution; if enemy counters
+  are wanted, they come from a real roll in escapeCombat, not the LLM. (ii) Defeat-threshold: dmg ≥
+  enemy HP marks defeated, not "staggers + counters." (iii) Combat-state disengage/bleed: leaving combat
+  for a lore action must not emit `[combat:fled]`/phantom-attack on a non-combat turn; honor an explicit
+  disengage.
+Not a Road-A/B fork — every shape here is still a narrow, traceable routing/state/grounding gap, same
+character as the existing long tail. Road B stays parked (the dominant cluster is deliver-or-decline
+*generalization*, deterministic, not LLM-confidence-calibration).
 
 ## Gate run 2026-06-19 (post-H-33/H-34 combined) — `docs/playtests/opus-gate-2026-06-19-postH33-H34.md` — VERDICT: targeted fixes held; headline % up on fresh exploration, not regression
 4 sessions × 12 turns, glass-harbor. **13/48 (27%)**, up from 11/48 (23%) post-H-31/H-32. Judge by
@@ -433,15 +524,19 @@ in-fiction "I don't know/won't say," never atmosphere-only) as a more general fi
 individual hallucination shapes. Leaning toward (c) as a cheap next probe before escalating to (b).
 
 ## Next
-**H-35 DONE + Basecamp-verified** (`c7db26b`/`2a82075`, suite 8048/0) — it closed the post-H-33/H-34
-gate's dominant coin/purse cluster (5/13). **Queue is clear; no post-H-35 gate has run yet.** Recommended
-next move (Tim's dispatch call): **run the post-H-35 gate** (~$2.30 → ~$20.5 left) to confirm the
-coin/purse fixes held, surface the next dominant cluster, and sharpen the still-uncatalogued
-**enemy-retaliation-without-mechanics** finding (mid-fight narration invents an enemy counter-hit with
-no corresponding roll or HP delta — same family as H-28's narration-vs-truth rules but a new shape;
-needs a trace before it's lane-assignable) + the scattered location/speaker findings before a worker is
-spent on them. Budget ~$22.86 left (~4 gate runs). Rung-1 bar not yet met (13/48 at last measurement,
-judged by nature not number — see gate section).
+**Post-H-35 gate DONE + ingested** (`opus-gate-2026-06-19-postH35.md`, 12/48): H-35 coin/purse cluster
+HELD (no recurrence), new dominant cluster = **answer-binding dead-end** (cluster 1, grace lane), and
+the **enemy-retaliation-without-mechanics** finding is now TRACED and lane-assigned (Codex/combat — see
+the gate section). **H-36 split PROPOSED, not dispatched** — Tim's dispatch call:
+- **H-36a (Claude-Sonnet / grace):** generalize deliver-or-decline to observe-object-detail +
+  quantity/genealogy asks, compound state-query slot-completeness (HP/name/class), lineage/tenure
+  anti-hallucination. The bulk (~8 turns).
+- **H-36b (Codex / combat):** enemy-retaliation-without-mechanics (traced) + defeat-threshold + combat
+  disengage/state-bleed (~4 turns). Codex can't push (§7).
+Recommended: dispatch H-36a + H-36b in parallel (file-disjoint — grace vs engine/combat, protocol §2),
+then run the post-H-36 gate to confirm. Budget ~$20.5 left (~4 gate runs). Rung-1 bar not yet met
+(12/48, judged by nature: ~1 forgivable SOFT (Lore-hound t3 margin-0 tie), the rest real defects across
+the 4 clusters; Rules Lawyer not clean — 2 compound-partial fails).
 
 ## Gate run 2026-06-18 (post hard-tail) — `docs/playtests/opus-gate-2026-06-18.md` — HISTORICAL
 8 sessions × 12 turns (4 personas × 2 seeds). **22/96 failing (23%)** — flat vs the 06-17 baseline
@@ -471,11 +566,10 @@ Full per-turn detail in the report file. Catalog these as the next hard-tail pac
 once a worker prompt is drafted. Priority order: CRASH → DM_TEST_DEADEND → CRUNCH_INCONSISTENCY →
 CANON_HALLUCINATION.
 
-## Budget — ~$22.86 remaining
-Tim's API key budget is **$50 total**. Carried-forward figure at this session's start was ~$27.50; this
-session has now run two combined gates (post-H-31/H-32 ~$2.31, post-H-33/H-34 ~$2.33) → **~$22.86
-left**, roughly 4 more 4-session gate runs at the current rate. Worker-side fixes (Sonnet/Codex
-windows) don't draw this budget — only `scripts/dm-playtest.mjs` runs do.
+## Budget — ~$20.5 remaining
+Tim's API key budget is **$50 total**. Was ~$22.86 before the post-H-35 gate (~$2.29) → **~$20.5 left**,
+roughly 4 more 4-session gate runs at the current rate. Worker-side fixes (Sonnet/Codex windows) don't
+draw this budget — only `scripts/dm-playtest.mjs` runs do.
 
 ## Open strategic question (the arbiter call) — VERDICT: Road A for the routing/state long-tail; HYBRID (deliver-or-decline) for the cluster-D canon-grounding gap; Road B parked w/ sharpened trigger
 **Road A** (deterministic patches) vs **Road B** (Tier-B LLM intent arbiter w/ Canon-Log caching for

@@ -1,5 +1,7 @@
 # AGENT_CHANGELOG
 
+[CLAIMED] H-41 0-HP dying-state out of combat · Codex · 2026-06-19T19:43:55Z · files: engine/playloop.js, engine/combat/escapeCombat.js, tests/U204.outOfCombatDyingState.test.js
+
 Compact append-only log of meaningful agent-made changes. Use this to preserve
 cross-agent continuity: what changed, what proved it, and what remains.
 

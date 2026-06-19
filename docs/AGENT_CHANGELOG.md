@@ -9,9 +9,7 @@ cross-agent continuity: what changed, what proved it, and what remains.
 ## CLAIMS (in-flight work — claim here BEFORE editing, clear when done)
 
 `[CLAIMED] <seam> · <agent> · <UTC> · files: <paths>` — a claimed seam or file is off-limits to
-other agents.
-
-[CLAIMED] H-33 combat-state reconciliation · Codex · 2026-06-19T08:23:38Z · files: engine/combat/escapeCombat.js, engine/combat/grapple.js, engine/playloop.js
+other agents. (none active)
 
 ## Template
 
@@ -27,6 +25,17 @@ other agents.
 - Remaining:
   - 
 - Rollback:
+
+---
+
+2026-06-19 — Codex
+- Packet/seam: Rung 1 / H-33 combat-state reconciliation
+- Commit(s): `0ed7ebc`
+- Files changed: `engine/combat/escapeCombat.js`, `engine/playloop.js`, `tests/U194.combatStateReconciliation.test.js`
+- Summary: Prevented persisted-down NPCs from starting fresh escape combat after victory, added a defensive no-live-target guard inside `resolveEscapeCombatTurn()`, and added an out-of-combat 0 HP gate that blocks normal actions while allowing stabilization. Deliberately did NOT change R3 pronoun/object-mediated assault routing or R4 generic-villager combat initiation; both were traced and left for Basecamp decision.
+- Proof: `node --test tests/U194.combatStateReconciliation.test.js` — 6/6; `node --test tests/U193.combatInitiationReconciliation.test.js tests/U115.parleyLongRest.test.js` — 13/13; `node --test tests/U152.grappleIntegration.test.js tests/U151.grapple.test.js` — 12/12; `node --test` — 8037/0; determinism gates U19/U21/U22/U27/U30 — 6/6; `npm run playtest:quick` — 50 runs, 0 bugs.
+- Remaining/next: R3 remains a separate routing/pronoun gap (`flip counter onto her` falls to trivial auto-success); R4 is existing generic-NPC assault behavior (`first villager` resolves to first present NPC and escape combat defaults to Worn Blade strike). Live `v1.html` screenshot was not run because no browser automation library is installed in this checkout.
+- Rollback: revert `0ed7ebc`
 
 ---
 

@@ -28,6 +28,28 @@ other agents. (none active)
 
 ---
 
+2026-06-19 — Claude-Sonnet
+- Packet/seam: Rung 1 / H-38a broaden R1/R2 nets + fix artifact leak (grace lane)
+- Commit(s): e1ff459
+- Files changed: `engine/grace/gracefulAdjudication.js`, `engine/playloop.js` (`lookupGroundedFact` only — not combat dispatch), `tests/U201.itemGearBroadenedAndZeroContentFix.test.js` (new)
+- Summary:
+  - **R1** — H-37 only folded gear into the `META_PURSE` (coin-ask) branch, so a class+gear compound with no coin, and a bare gear yes/no ask with no compound at all, both missed the fold. Added two general helpers, `mentionsCharacterClass`/`mentionsGearAsk`, and wired them into the `META_NAME`, `META_SHEET_CONFIRM`, and `META_CHARACTER` branches so a class and/or gear ask folds in regardless of compound shape or coin presence. Also added `META_GEAR_YESNO` (gate + answer branch) for the bare yes/no framing ("am I carrying any weapon or armor, yes or no?") — this closes a real gate/answerer drift: `isMetaQuestion` already accepted that shape via `META_ITEM`'s loose "am i carrying" clause, but `handleMetaQuestion` had no matching branch and silently fell through to `return null`. The dominant failure (4 of 6 Rules-Lawyer fails this gate) was `META_SHEET_CONFIRM` unconditionally dumping the raw MIGHT/AGILITY/WITS/GRIT/CHARM block whenever "sheet" was mentioned, even when the question named class/gear and never asked for ability scores — it now answers what was actually asked, falling back to the raw block only when stats are absent from both the class/gear ask AND the score request. Added `stripArmorClassPhrase` so "armor/armour class" (the AC number) is never misread as a character-class or gear-item ask by the new broader detectors.
+  - **R2** — traced BOTH symptoms (the recurring mixed-margin boilerplate and the new success-path zero-content sibling) to ONE shared root cause, not two: `isInfoSeekingText`'s `INFO_SEEKING_RE` had no anchor for birth/age phrasing ("when were you born") or bare kinship nouns ("who was her husband"), a THIRD detection gap distinct from H-37's "family"/"kin" fix on the same regex. `playloop.js`'s `infoExtractionOutcome` and `narratorContext.js`'s `ctx.infoSeeking` (the `llmAdapter.js` Rule 5 validator backstop) both gate on this one function, so the single gap explained the mixed-path recurrence and the success-path failure identically — one fix, not two. Added `born`/`husband`/`wife`/`spouse`/`son`/`daughter`/`father`/`mother`/`married` to the anchor-word list and widened the literal `give me a name` clause to also accept `one`/`the`.
+  - **R3** — traced the raw `location:Pilgrim's Rest Village` artifact leak to `lookupGroundedFact`'s loose ledger-fact substring match in `playloop.js` — **not** an LLM structured-tag leak as the packet's file guess suggested. `buildSystemPrompt` (the prompt actually used by the narration-polish path that composes this player-facing prose) never mentions `<<ITEM_CREATED>>` at all; that tag belongs to `buildDMSystemPrompt`'s separate full-conversation path, untouched here — confirmed `engine/llmAdapter.js` needed no change. The real mechanism: `addFact(world, \`location:${location}\`, 'scene')` (playloop.js L340/L2404) stores an internal scene-tracking marker in the ledger; `factStrings()` (ledger.js) flattens away the `source` tag; a player's "village"-anchored question substring-matched the raw internal fact text and `infoExtractionOutcome` handed it to the player verbatim. Added `STRUCTURED_FACT_RE` (`/^[a-z]+:\S/i`) to skip any internal `key:value`-shaped ledger fact in the loose-match candidate pool — scoped narrowly enough (checked against every other `addFact` call site in the engine) to leave real prose facts (e.g. from `conductorDecision`'s `op.addFact` pass-through) untouched.
+  - Deliberately did NOT touch `engine/llmAdapter.js` (see R3 trace) or any `engine/combat/*` file / playloop.js's combat-dispatch branch.
+- Proof:
+  - `node --test tests/U201.itemGearBroadenedAndZeroContentFix.test.js` — 21/21
+  - `node --test tests/U199.itemStatAndPresenceGrounding.test.js` — 17/17 (H-37 regression guard, unaffected)
+  - Full suite: `node --test` — 8110/0 (baseline 8086 + 3 from the parallel H-38b combat worker's `U200.combatEntityMechanics.test.js` + 21 new here)
+  - Determinism gates `U19/U21/U22/U27/U30` — 6/6 green
+  - Grep diff for `engine/combat/*` and `engine/llmAdapter.js` — both empty (0 lines)
+  - No `Math.random`/`Date.now` added, no `WORLD_VERSION` bump, no direct state writes outside `effectsCore.applyDeltas` (the `playloop.js` change is a pure narration-lookup filter, no mutation)
+  - Test file renamed `U200` → `U201` mid-session: the parallel H-38b worker (sharing this working tree) had already landed `tests/U200.combatEntityMechanics.test.js` first; kept the lower number with the earlier committer per first-landed convention.
+- Remaining/next: queue owner should re-run the Opus gate to confirm the Rules-Lawyer item/gear cluster (DM_TEST_DEADEND ×6) and the Lore-hound mixed/success-path zero-content + artifact-leak clusters (CRUNCH_INCONSISTENCY ×2, DM_ARTIFACT_LEAK ×1) are cleared. R1's gear/class fold now covers all four META_* branches that can plausibly lead a compound identity ask (`META_NAME`/`META_SHEET_CONFIRM`/`META_CHARACTER`/`META_PURSE`) — worth a sweep if a future gate finds a fifth.
+- Rollback: revert e1ff459
+
+---
+
 2026-06-19 — Codex
 - Packet/seam: Rung 1 / H-38b combat HP entity-tracking desync + weapon-label mismatch
 - Commit(s): 1727db9

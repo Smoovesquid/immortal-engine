@@ -643,11 +643,23 @@ const AGE_PHRASE_RE = new RegExp(
   'gi'
 );
 
+// H-36a R3 — a confident multi-generational lineage/tenure claim ("roots deep
+// in the village", "for generations", "founding family", "since the
+// founding") naming a depth of tenure the grounded base never stated. Same
+// family as the H-31 R4 age-phrase guard, extended from age to lineage (Opus
+// gate 2026-06-19: "settled authority that suggests generations rather than
+// years" asserted with no tenure depth on record).
+const LINEAGE_PHRASE_RE = /\broots?\s+(?:run\s+|reach\s+|go\s+)?deep\b|\bfor\s+generations\b|\bgenerations\s+rather\s+than\s+years\b|\bfounding\s+family\b|\bsince\s+the\s+founding\b|\bmultiple\s+generations\b|\bgenerations\s+of\s+(?:the\s+)?family\b|\bgenerations\s+(?:back|deep)\b/gi;
+
 // Rule 5b (H-29) helper — finds a confidently-asserted bare year/date, numeric
-// duration, or age phrase (H-31 R4) in `candidate` that the grounded
-// `baseNarration` never stated (e.g. the LLM inventing "the year is 1347",
-// "twelve years running the inn", or "well past seventy" out of thin air).
-// Returns the offending substring, or null. Never throws.
+// duration, age phrase (H-31 R4), or lineage/tenure phrase (H-36a R3) in
+// `candidate` that the grounded `baseNarration` never stated (e.g. the LLM
+// inventing "the year is 1347", "twelve years running the inn", "well past
+// seventy", or "roots deep in the village" out of thin air). A denial or
+// hypothetical framing ("no roots deep here", "if this had been a founding
+// family") is not a confident claim and must pass unchanged — same restraint
+// as Rule 4d's roster-entity guard. Returns the offending substring, or null.
+// Never throws.
 export function findInventedFactClaim(candidate, baseNarration) {
   try {
     const text = String(candidate || '');
@@ -664,6 +676,15 @@ export function findInventedFactClaim(candidate, baseNarration) {
     const ages = text.match(AGE_PHRASE_RE) || [];
     for (const a of ages) {
       if (!base.includes(a.toLowerCase())) return a;
+    }
+    let lm;
+    LINEAGE_PHRASE_RE.lastIndex = 0;
+    while ((lm = LINEAGE_PHRASE_RE.exec(text)) !== null) {
+      const claim = lm[0];
+      if (base.includes(claim.toLowerCase())) continue;
+      const before = text.slice(Math.max(0, lm.index - 24), lm.index).toLowerCase();
+      if (/\b(?:no|not|never|isn|wasn|doesn|didn|if|suppose|imagine|hypothetical)\b/.test(before)) continue;
+      return claim;
     }
     return null;
   } catch { return null; }

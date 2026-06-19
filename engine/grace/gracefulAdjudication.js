@@ -224,6 +224,10 @@ const META_WEAPON_DAMAGE = /\b(?:damage|dmg)\s+(?:die|dice|roll)\b|\bwhat\s+(?:d
 // character is called. Answered straight from canon (the LLM narrator must
 // never invent or swap the PC's name). (Opus gate follow-up 2026-06-16.)
 const META_NAME = /\bwhat(?:'?s| is)\s+my\s+(?:name|character'?s name)\b|\bwhat\s+am\s+i\s+called\b|\bwho\s+(?:do\s+you\s+think\s+)?am\s+i\s+again\b|\byou\s+called\s+me\b|\bmy\s+name\s+is(?:n'?t)?\b|\bis\s+my\s+name\b/i;
+// Folds a class/archetype ask into a compound name+class question — narrow
+// (requires "class"/"archetype" right after "and") so a bare mention of
+// "class" elsewhere in the sentence doesn't get swept in. (H-36a R2)
+const META_CLASS_FOLD_RE = /\band\s+(?:my\s+|what'?s\s+my\s+)?(?:class|archetype)\b/i;
 // "Should I go talk to them, or is that a bad idea?" — asking for the DM's
 // read on a course of action, not declaring one. A real DM answers in
 // character, never bounces it back as a navigation prompt. (Opus gate
@@ -322,14 +326,20 @@ export function isQuestionShaped(text) {
 // explicit in-fiction non-answer, never fall to atmosphere or invent one.
 // Shared by playloop.js (base narration) and narratorContext.js (ctx.infoSeeking
 // for the validator backstop) so the two layers never drift out of sync.
-const INFO_SEEKING_RE = /\b(?:who|what|when|where|whose)\b[\s\S]{0,60}?\b(?:name|named|year|date|deed|owner|own(?:s|ed)?|held|sold|gave|kin|relat\w*|tenure)\b|\bgive me a name\b|\bby name\b|\bwhat year (?:is it|are we)\b|\bis\s+[a-z][\w'-]*(?:\s+[a-z][\w'-]*){0,2}\s+(?:dead|alive)\b|\bhow long\b[\s\S]{0,30}?\b(?:run|ran|owned|been here|been)\b/i;
+const INFO_SEEKING_RE = /\b(?:who|what|when|where|whose)\b[\s\S]{0,60}?\b(?:name|named|year|date|deed|owner|own(?:s|ed)?|held|sold|gave|kin|relat\w*|tenure|found(?:ed|ing))\b|\bgive me a name\b|\bby name\b|\bwhat year (?:is it|are we)\b|\bis\s+[a-z][\w'-]*(?:\s+[a-z][\w'-]*){0,2}\s+(?:dead|alive)\b|\bhow long\b[\s\S]{0,30}?\b(?:run|ran|owned|been here|been)\b|\bhow many generations\b/i;
 const INFO_SEEKING_EXCLUDE_RE = /\b(?:attack|strike|hit|stab|slash|shoot|kill|fight|charge|intimidate|charm|deceive|persuade)\b/i;
+
+// Observe-object-detail: a player demands the literal text/marking on a held
+// or examined object ("what's stamped on the coin", "look at it and tell me
+// what's on it", "read the inscription") — a request for a concrete fact,
+// same as a name/date ask, not open conversation. (H-36a R1)
+const INFO_SEEKING_OBSERVE_RE = /\b(?:what'?s|what is)\b[\s\S]{0,20}?\b(?:printed|stamped|etched|engraved|written|marked|inscribed)\b[\s\S]{0,15}?\bon\b|\btell me what'?s\b[\s\S]{0,20}?\b(?:on it|on the|stamped|printed|written|etched|marked|inscribed)\b|\bread\b[\s\S]{0,15}?\b(?:the|this|that|my)\b[\s\S]{0,15}?\b(?:inscription|engraving|writing|stamp|marking)\b/i;
 
 export function isInfoSeekingText(text) {
   const t = String(text || '').toLowerCase();
   if (!t.trim()) return false;
   if (INFO_SEEKING_EXCLUDE_RE.test(t)) return false;
-  return INFO_SEEKING_RE.test(t);
+  return INFO_SEEKING_RE.test(t) || INFO_SEEKING_OBSERVE_RE.test(t);
 }
 
 // Tier B trigger: a conjunction of two distinct actions ("dive behind the bar
@@ -448,6 +458,43 @@ function answerPurse(world) {
     : `Your purse is empty — you're flat broke.`;
 }
 
+// Real current-HP/status line, in-voice, no roll. Shared by the standalone
+// META_HEALTH branch and the compound folds below (a gear-or-name ask that
+// also names hit points in the same breath must not drop the HP half).
+// (H-36a R2)
+function answerHealth(world) {
+  const escMax = Number(world.meta?.escapeMaxHp) || 0;
+  if (world.meta?.mode === 'escape' && escMax > 0) {
+    const hp = Number(world.meta?.escapeHp) || 0;
+    const frac = hp / escMax;
+    const word = frac >= 1 ? 'untouched' : frac > 0.75 ? 'lightly scuffed' : frac > 0.5 ? 'hurting but steady' : frac > 0.25 ? 'in real trouble' : 'one bad blow from the dark';
+    return `You're at ${hp} of ${escMax} hit points — ${word}.`;
+  }
+  const party = world.party?.[0];
+  const wounds = party?.wounds ?? 0;
+  const stress = party?.stress ?? 0;
+
+  if (wounds === 0 && stress === 0) {
+    return `You're in perfect health. No wounds or strain.`;
+  } else if (wounds === 0 && stress <= 2) {
+    return `You're mostly fine. A bit stressed but no real injuries.`;
+  } else if (wounds <= 3 && stress <= 3) {
+    return `You've taken some bumps and bruises (${wounds} wounds, ${stress} stress). Still in decent shape.`;
+  } else if (wounds <= 6 || stress <= 5) {
+    return `You're hurt (${wounds} wounds, ${stress} stress). Be careful.`;
+  } else {
+    return `You're badly wounded (${wounds} wounds, ${stress} stress). You need to rest or heal soon.`;
+  }
+}
+
+// Player's class/archetype, one line, for folding into a compound name+class
+// ask — distinct from the full identity speech in the META_CHARACTER branch.
+// (H-36a R2)
+function answerClassLine(world) {
+  const arch = String(world.party?.[0]?.archetype || '').trim();
+  return arch ? `You're a ${arch.toLowerCase()}.` : '';
+}
+
 // Name what's actually equipped, in-voice, no roll. An empty loadout is
 // reported honestly — the DM never invents a weapon the player lacks.
 // Shared by the META_EQUIPMENT/META_HELD_ITEMS answer and the possession-
@@ -545,9 +592,18 @@ export function handleMetaQuestion(text, world) {
   // canon so a name the narrator may have slipped never goes unaddressed.
   if (META_NAME.test(lowerText)) {
     const name = String(world.party?.[0]?.name || '').trim();
-    return name
+    const ans = name
       ? `Your name is ${name}. If I've called you anything else, that was my slip — you're ${name}.`
       : `You haven't given your name yet — what should I call you?`;
+    // A name ask in the same breath as HP or class must answer all of it, not
+    // just the name (H-36a R2 — same compound-fold shape as H-35's gear+coin).
+    const extras = [];
+    if (META_CLASS_FOLD_RE.test(lowerText)) {
+      const classLine = answerClassLine(world);
+      if (classLine) extras.push(classLine);
+    }
+    if (META_HEALTH.test(lowerText)) extras.push(answerHealth(world));
+    return extras.length ? `${ans} ${extras.join(' ')}` : ans;
   }
 
   // Skill modifier — "what's my Insight modifier? I need a number." Answer with
@@ -797,9 +853,11 @@ export function handleMetaQuestion(text, world) {
       const names = items.map(it => String(it?.name || it)).filter(Boolean);
       if (names.length) lines.push(`${cat}: ${names.join(', ')}`);
     }
-    return lines.length
+    const ans = lines.length
       ? `You go through your pack. ${lines.join('. ')}.`
       : 'Your pack is light — nothing but lint and resolve.';
+    // A gear ask in the same breath as HP must answer both (H-36a R2).
+    return META_HEALTH.test(lowerText) ? `${ans} ${answerHealth(world)}` : ans;
   }
 
   // Equipment / sheet — name what's actually equipped, in-voice, no roll. An
@@ -807,7 +865,9 @@ export function handleMetaQuestion(text, world) {
   // META_HELD_ITEMS ("what's in my hands") shares this answer — it's the same
   // question about the same loadout. (H-31 R2)
   if (META_EQUIPMENT.test(lowerText) || META_HELD_ITEMS.test(lowerText)) {
-    return describeLoadout(world);
+    const ans = describeLoadout(world);
+    // A gear ask in the same breath as HP must answer both (H-36a R2).
+    return META_HEALTH.test(lowerText) ? `${ans} ${answerHealth(world)}` : ans;
   }
 
   // Character identity / build — answer who you are from canon. Identity in-voice;
@@ -867,34 +927,7 @@ export function handleMetaQuestion(text, world) {
 
   // Health/status check
   if (META_HEALTH.test(lowerText)) {
-    // Escape mode runs on classic hit points — answer with the real numbers.
-    const escMax = Number(world.meta?.escapeMaxHp) || 0;
-    if (world.meta?.mode === 'escape' && escMax > 0) {
-      const hp = Number(world.meta?.escapeHp) || 0;
-      const frac = hp / escMax;
-      const word = frac >= 1 ? 'untouched' : frac > 0.75 ? 'lightly scuffed' : frac > 0.5 ? 'hurting but steady' : frac > 0.25 ? 'in real trouble' : 'one bad blow from the dark';
-      return `You're at ${hp} of ${escMax} hit points — ${word}.`;
-    }
-    const party = world.party?.[0];
-    const wounds = party?.wounds ?? 0;
-    const stress = party?.stress ?? 0;
-    const maxWounds = 10; // conservative estimate
-
-    const totalDamage = wounds + stress;
-    const maxDamage = maxWounds + 6;
-    const healthPercent = Math.max(0, (1 - (totalDamage / maxDamage)) * 100);
-
-    if (wounds === 0 && stress === 0) {
-      return `You're in perfect health. No wounds or strain.`;
-    } else if (wounds === 0 && stress <= 2) {
-      return `You're mostly fine. A bit stressed but no real injuries.`;
-    } else if (wounds <= 3 && stress <= 3) {
-      return `You've taken some bumps and bruises (${wounds} wounds, ${stress} stress). Still in decent shape.`;
-    } else if (wounds <= 6 || stress <= 5) {
-      return `You're hurt (${wounds} wounds, ${stress} stress). Be careful.`;
-    } else {
-      return `You're badly wounded (${wounds} wounds, ${stress} stress). You need to rest or heal soon.`;
-    }
+    return answerHealth(world);
   }
 
   // What happened — recap the last thing the DM narrated.

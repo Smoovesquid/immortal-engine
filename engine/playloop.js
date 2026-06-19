@@ -4298,6 +4298,14 @@ function isExploreIntent(text) {
   // Guard before the broad "who/what/is that" patterns so they don't bleed into the
   // cardinal-exit recap or roster list. (H-14/H-16, Rung-1 gate 2026-06-18.)
   if (isNpcObserverQuery(t)) return false;
+  // A demand for a specific fact (a name, a date, what's stamped/printed on an
+  // object, how many generations a family has held something) isn't a free
+  // location survey — it must route to the deliver-or-decline contract
+  // (infoExtractionOutcome/isUngroundedInfoCheck below playerMoveCore) so it
+  // gets a grounded answer or an explicit in-fiction decline, never the
+  // generic room-survey/exits floor. Checked after the NPC-observer guard so
+  // the two never fight over the same text. (H-36a R1)
+  if (isInfoSeekingText(t)) return false;
   // Broad observation/perception: anything that is purely sensory or informational
   // and requires no skill check. Covers "look around", "what do I see", "describe",
   // "listen", "smell", inventory/status checks, reading signs, etc.

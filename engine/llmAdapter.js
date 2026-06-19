@@ -418,7 +418,165 @@ export function validateNarrationCandidate(world, narrationCandidate, {
     }
   }
 
+  // ── H-28 bundled narration-validation pass ─────────────────────────────────
+  // Four new rejection rules, all the same failure shape: LLM polish drifting
+  // from or contradicting deterministic ground truth. Each falls back to the
+  // always-grounded base narration on violation. Conservative by design — only
+  // signatures legitimate prose never carries (mirrors the combat-guard
+  // philosophy above): false-positives are as costly as misses here.
+
+  // Rule 1 (H-11 second half) — wrong-scene location assertion. The location
+  // lock above only checks the CURRENT place is mentioned; this catches polish
+  // that also plants the player INSIDE a different, real map node ("standing
+  // inside Stonebridge's sole structure" while the player is elsewhere and only
+  // asked about the gates).
+  {
+    const curRaw = String(ctx?.placeName ?? w?.scene?.location ?? '').trim().toLowerCase();
+    const nodes = Array.isArray(w?.map?.nodes) ? w.map.nodes : [];
+    for (const node of nodes) {
+      const nml = String(node?.name ?? '').trim().toLowerCase();
+      if (nml.length < 4) continue;                          // skip short/ambiguous names
+      if (nml === curRaw) continue;                          // current place — fine
+      if (curRaw && (curRaw.includes(nml) || nml.includes(curRaw))) continue; // aliased/overlapping
+      if (!candLower.includes(nml)) continue;                // node not mentioned at all
+      const esc = nml.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const ASSERT = [
+        `standing (?:in|inside|within|atop|at) (?:the )?${esc}`,
+        `you(?:'re| are)? (?:now |currently )?(?:stand|standing|find yourself|are)? ?(?:in|inside|within|at) (?:the )?${esc}`,
+        `here (?:in|inside|within|at) (?:the )?${esc}`,
+        `deep (?:in|inside|within) (?:the )?${esc}`,
+        `${esc}(?:'s|’s)? (?:sole|only|single|lone) (?:structure|building|hall|house|tower|inn)`,
+        `inside ${esc}(?:'s|’s)\\b`,
+        `within the walls of ${esc}`,
+      ];
+      if (new RegExp(ASSERT.join('|'), 'i').test(cand)) return false;
+    }
+  }
+
+  // Rule 2 (H-26a) — fresh attack/defeat against an already-reconciled enemy.
+  // Fires only when combat is NOT active. If a defeated enemy is on record and
+  // the polish narrates a live exchange ending with the PLAYER defeated, or the
+  // dead enemy launching a fresh attack, it contradicts reconciled state.
+  if (!ctx?.combat?.inCombat) {
+    const enemies = Array.isArray(w?.combat?.enemies) ? w.combat.enemies : [];
+    const defeated = enemies.filter(e => e?.defeated || Number(e?.hp) <= 0);
+    if (defeated.length) {
+      const PLAYER_DEFEAT = ['you fall, defeated', 'you fall defeated', 'you are defeated',
+        "you're defeated", 'you collapse', 'you crumple', 'strikes you down', 'cuts you down',
+        'beats you down', 'you fall to the', 'darkness takes you', 'the world goes black',
+        'you lose consciousness', 'you black out', 'defeats you', 'you go down under'];
+      for (const ph of PLAYER_DEFEAT) if (candLower.includes(ph)) return false;
+      const ATTACK = ['lunges', 'strikes', 'slashes', 'swings at', 'attacks', 'charges',
+        'drives', 'comes at you', 'springs', 'bites', 'claws', 'lashes'];
+      for (const e of defeated) {
+        const esc = String(e?.name || '').trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        if (esc.length < 3) continue;
+        for (const v of ATTACK) {
+          if (new RegExp(`\\b${esc}\\b[^.!?]{0,24}\\b${v}`, 'i').test(cand)) return false;
+        }
+      }
+    }
+  }
+
+  // Rule 3 (H-26d) — mixed roll smoothed into a clean success. The deterministic
+  // layer already carries the cost (composer's mixed lexicon); reject polish that
+  // discards it and reads as an unqualified clean win. Conservative: require BOTH
+  // an explicit clean-win marker AND the absence of any friction/cost language.
+  if (String(ctx?.rollOutcome ?? '') === 'mixed') {
+    const FRICTION = ['but ', 'though', 'although', 'yet ', 'still ', 'even so', 'cost',
+      'price', 'half', 'barely', 'nearly', 'almost', 'not quite', 'partly', 'partial',
+      'glanc', 'graze', 'shallow', 'too late', 'strain', 'wince', 'stagger', 'stumble',
+      'slip', 'ragged', 'rough', 'snag', 'complication', 'trade', 'tax', '—', '–',
+      'wobble', 'shake', 'tremor', 'pay', 'wide of'];
+    const hasFriction = FRICTION.some(f => candLower.includes(f));
+    if (!hasFriction) {
+      const CLEAN_WIN = ['cleanly', 'with ease', 'effortless', 'effortlessly', 'flawless',
+        'flawlessly', 'perfectly', 'without a hitch', 'without trouble', 'without difficulty',
+        'without resistance', 'without effort', 'easily', 'with no trouble', 'no difficulty',
+        'goes perfectly', 'goes smoothly', 'smoothly'];
+      for (const ph of CLEAN_WIN) if (candLower.includes(ph)) return false;
+    }
+  }
+
+  // Rule 4a (H-27) — invented biographical / historical claim. Polish must
+  // restyle the grounded base, not invent canon. Reject confident kinship or
+  // attribution claims that were NOT in the grounded base narration (the
+  // strongest false-positive guard: a legit grounded claim already appears in
+  // base). The proper-noun backstop above catches invented NAMES; this catches
+  // invented DEEDS/ancestry that use no proper noun ("your grandfather raised
+  // the beam").
+  {
+    const baseLower = String(baseNarration ?? '').toLowerCase();
+    const BIO_CLAIM = [
+      /\byour (?:great-)?(?:grand)?(?:father|mother|sire|dam|parents?|ancestors?|forebears?|kin|bloodline|lineage|grandfather|grandmother|grandsire)\b/i,
+      /\bit was (?!you\b|he\b|she\b|they\b|i\b|it\b)\w+ who\b/i,
+      /\b(?:the|its|her|his|their) one who (?:raised|built|founded|forged|carved|laid|slew|killed|made|wrought)\b/i,
+      /\bwas the one (?:to|who)\b/i,
+    ];
+    for (const re of BIO_CLAIM) {
+      const m = re.exec(cand);
+      if (!m) continue;
+      if (baseLower.includes(m[0].toLowerCase())) continue;  // present in grounded base → fine
+      return false;
+    }
+  }
+
+  // Rule 4b (H-27) — a defeated NPC narrated as alive / active / present. Separate
+  // from Rule 2's combat-state case: this is an NPC whose death/defeat is on
+  // record (combat enemy, scene NPC flag, or a death fact in the ledger) being
+  // contradicted after the fact — e.g. the player publicly killed someone and the
+  // DM later narrates them greeting the player, unbothered.
+  {
+    const defeatedNames = collectDefeatedNames(w, ctx);
+    if (defeatedNames.size) {
+      const LIVING_VERBS = ['greets', 'nods', 'smiles', 'says', 'speaks', 'laughs', 'grins',
+        'waves', 'watches you', 'approaches', 'walks', 'stands', 'sits', 'leans', 'tends',
+        'works', 'calls', 'continues', 'steps', 'beckons', 'gestures', 'turns to you',
+        'looks up', 'raises a hand', 'lifts a hand'];
+      const LIVING_STATE = ['is alive', 'still alive', 'alive and', 'unharmed', 'unbothered',
+        'is well', 'is fine', 'none the worse', 'in good health', 'very much alive',
+        'is here', 'is present', 'stands before you', 'as if nothing'];
+      for (const nm of defeatedNames) {
+        const esc = nm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        for (const v of LIVING_VERBS) {
+          if (new RegExp(`\\b${esc}\\b[^.!?]{0,30}\\b${v}`, 'i').test(cand)) return false;
+        }
+        for (const s of LIVING_STATE) {
+          if (new RegExp(`\\b${esc}\\b[^.!?]{0,30}${s}`, 'i').test(cand)) return false;
+        }
+      }
+    }
+  }
+
   return true;
+}
+
+// Gathers names of NPCs/enemies whose death or defeat is reconciled in world
+// state: defeated combat enemies, scene/settlement NPCs flagged dead, and
+// death facts recorded in the ledger. Used by Rule 4b. Never throws.
+export function collectDefeatedNames(world, ctx = null) {
+  const names = new Set();
+  try {
+    const add = (n) => { const s = String(n ?? '').trim(); if (s.length >= 3) names.add(s); };
+    const enemies = Array.isArray(world?.combat?.enemies) ? world.combat.enemies : [];
+    for (const e of enemies) if (e?.defeated || Number(e?.hp) <= 0) add(e?.name);
+    const npcLists = [ctx?.settlement?.npcs, world?.scene?.npcs, world?.npcs];
+    for (const list of npcLists) {
+      if (!Array.isArray(list)) continue;
+      for (const n of list) {
+        if (n?.defeated || n?.dead || n?.status === 'dead' || n?.alive === false) add(n?.name);
+      }
+    }
+    const facts = Array.isArray(world?.ledger?.facts) ? world.ledger.facts : [];
+    for (const f of facts) {
+      const t = String(f?.text ?? '');
+      let m = /\b(?:killed|slew|slain|murdered|cut down)\s+([A-Z][a-zA-Z'’-]+)/.exec(t);
+      if (m) add(m[1]);
+      m = /\b([A-Z][a-zA-Z'’-]+)\s+(?:is dead|lies dead|is slain|fell dead|is no more)\b/.exec(t);
+      if (m) add(m[1]);
+    }
+  } catch { /* defensive — never break narration */ }
+  return names;
 }
 
 // ── Main entry point ──────────────────────────────────────────────────────────

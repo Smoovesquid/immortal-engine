@@ -62,6 +62,9 @@ export function buildNarratorContext(world, outcome = {}) {
     tone: scene.tone,
     actionText: String(outcome?.input ?? outcome?.text ?? ''),
     mechanicsText: String(outcome?.mechanics ?? ''),
+    // Roll band ('success' | 'mixed' | 'failure') so the narration validator can
+    // reject polish that smooths a mixed outcome into a clean win (H-26d).
+    rollOutcome: String(outcome?.outcome ?? ''),
     fate: Number(w.meta?.fate ?? 0.5),
     settlement: settlement ? {
       npcs: settlement.npcs || [],

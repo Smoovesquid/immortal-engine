@@ -9,9 +9,7 @@ cross-agent continuity: what changed, what proved it, and what remains.
 ## CLAIMS (in-flight work — claim here BEFORE editing, clear when done)
 
 `[CLAIMED] <seam> · <agent> · <UTC> · files: <paths>` — a claimed seam or file is off-limits to
-other agents.
-
-`[CLAIMED] H-24 duplicate combat enemy id (CRASH) · Claude Opus · 2026-06-19T01:11Z · files: engine/playloop.js, tests/U188.reinforceEnemyId.test.js`
+other agents. (none active)
 
 ## Template
 
@@ -225,6 +223,22 @@ other agents.
   - Determinism gates U19/21/22/27/30 green
 - Remaining/next: H-11 (RAG wrong-scene) — next in queue, same worker. Note: one collision found while testing — "admit it, you saw what happened" trips the `gracefulAdjudication.js` recap gate ("Nothing's happened yet…") on "what happened", which is off-limits this packet; test uses a recap-free pressure phrase instead.
 - Rollback: revert commit `5fb2da5`
+
+## 2026-06-19 — Claude Opus
+
+- Packet/seam: Rung 1 / H-24 duplicate combat enemy id (CRASH)
+- Commit: `a1c62e3`
+- Files changed:
+  - `engine/playloop.js` (mid-combat reinforcement id minting)
+  - `tests/U188.reinforceEnemyId.test.js` (new)
+- Summary: "I spit Greyhand's blood in Brennan's eyes and tackle him through the window." threw `Invariant: duplicate combat enemy id enemy_1`. `beginCombat()` (combatLifecycle.js) is the only START id-assigner and is collision-free, but the mid-fight reinforcement path (`detectNewCombatTarget` branch in playloop.js) minted the new combatant's id as `enemy_${enemies.length}`. A fled foe is pruned from `combat.enemies` (escapeCombat.js:1733), so after a flee the array length falls below the highest LIVE id and the length-based id reuses it → duplicate-id invariant. Fixed by deriving the next id from the max existing `enemy_<n>` numeric suffix (collision-free even after a prune). Deliberately did NOT: touch the invariant (invariants.js:332-333 is correct), change `beginCombat()`'s start-of-fight scheme (already unique), or alter the flee/prune logic.
+- Proof:
+  - `node --test tests/U188.reinforceEnemyId.test.js` — 2/2 (1 post-prune collision repro now passes, 1 normal-reinforcement regression guard)
+  - `node --test tests/U148.midCombatTargetSwitch.test.js` — 4/4 (adjacent path unaffected)
+  - Full suite: `node --test` — 7941/0 (was 7939, +2 new)
+  - Determinism gates U19/21/22/27/30 green
+- Remaining/next: H-25 (DM won't answer "what's my own number") — next in queue, same worker.
+- Rollback: revert commit `a1c62e3`
 
 ## 2026-06-18 — Claude Opus
 

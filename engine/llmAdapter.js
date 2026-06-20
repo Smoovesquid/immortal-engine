@@ -699,14 +699,17 @@ const AGE_PHRASE_RE = new RegExp(
 const LINEAGE_PHRASE_RE = /\broots?\s+(?:run\s+|reach\s+|go\s+)?deep\b|\bfor\s+generations\b|\bgenerations\s+rather\s+than\s+years\b|\bfounding\s+family\b|\bsince\s+the\s+founding\b|\bmultiple\s+generations\b|\bgenerations\s+of\s+(?:the\s+)?family\b|\bgenerations\s+(?:back|deep)\b/gi;
 
 // Rule 5b (H-29) helper — finds a confidently-asserted bare year/date, numeric
-// duration, age phrase (H-31 R4), or lineage/tenure phrase (H-36a R3) in
-// `candidate` that the grounded `baseNarration` never stated (e.g. the LLM
-// inventing "the year is 1347", "twelve years running the inn", "well past
-// seventy", or "roots deep in the village" out of thin air). A denial or
-// hypothetical framing ("no roots deep here", "if this had been a founding
-// family") is not a confident claim and must pass unchanged — same restraint
-// as Rule 4d's roster-entity guard. Returns the offending substring, or null.
-// Never throws.
+// duration, age phrase (H-31 R4), lineage/tenure phrase (H-36a R3), or
+// relationship/rivalry/event claim (H-49) in `candidate` that the grounded
+// `baseNarration` never stated (e.g. the LLM inventing "the year is 1347",
+// "twelve years running the inn", "well past seventy", "roots deep in the
+// village", or "Tove and the elder have a history of competing for the same
+// supply routes" out of thin air). A denial or hypothetical framing ("no
+// roots deep here", "if this had been a founding family") is not a confident
+// claim and must pass unchanged — same restraint as Rule 4d's roster-entity
+// guard. Returns the offending substring, or null. Never throws.
+const NEGATION_HYPOTHETICAL_RE = /\b(?:no|not|never|isn|wasn|doesn|didn|if|suppose|imagine|hypothetical)\b/;
+
 export function findInventedFactClaim(candidate, baseNarration) {
   try {
     const text = String(candidate || '');
@@ -715,10 +718,19 @@ export function findInventedFactClaim(candidate, baseNarration) {
     for (const y of years) {
       if (!base.includes(y)) return y;
     }
-    const durRe = /\b(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|\d{1,3})\s+years?\b/gi;
+    // H-49 — unit vocabulary widened from "years" alone to also catch the
+    // fantasy-register tenure idioms "winters"/"seasons" ("led ... for eleven
+    // winters"), and the negation/hypothetical exemption used by the lineage
+    // guard below now applies here too — a denial ("no record of how long")
+    // or a hypothetical ("if he'd led for eleven winters") is not a confident
+    // claim.
+    const durRe = /\b(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|\d{1,3})\s+(?:years?|winters?|seasons?)\b/gi;
     let m;
     while ((m = durRe.exec(text)) !== null) {
-      if (!base.includes(m[0].toLowerCase())) return m[0];
+      if (base.includes(m[0].toLowerCase())) continue;
+      const before = text.slice(Math.max(0, m.index - 30), m.index).toLowerCase();
+      if (NEGATION_HYPOTHETICAL_RE.test(before)) continue;
+      return m[0];
     }
     const ages = text.match(AGE_PHRASE_RE) || [];
     for (const a of ages) {
@@ -730,7 +742,35 @@ export function findInventedFactClaim(candidate, baseNarration) {
       const claim = lm[0];
       if (base.includes(claim.toLowerCase())) continue;
       const before = text.slice(Math.max(0, lm.index - 24), lm.index).toLowerCase();
-      if (/\b(?:no|not|never|isn|wasn|doesn|didn|if|suppose|imagine|hypothetical)\b/.test(before)) continue;
+      if (NEGATION_HYPOTHETICAL_RE.test(before)) continue;
+      return claim;
+    }
+    // H-49 — invented relationship/rivalry/event claim between two named
+    // parties ("Tove and the elder have a history of competing for the same
+    // supply routes") that the grounded base never stated. Same restraint as
+    // the lineage-phrase guard above: only rejects when the exact matched
+    // fragment is absent from base, and a denial/hypothetical lead-in ("if
+    // they'd ever competed", "no record they ever feuded") is exempt. A
+    // "party" is either a proper name or a "the <role>" reference, matching
+    // how Rule 4d/4f already treat named vs. role-referenced NPCs.
+    const PARTY = `[A-Z][a-zA-Z'’-]+|the\\s+[a-z]+`;
+    const REL_VERB = '(?:compet(?:e[sd]?|ing)\\s+(?:for|over)' +
+      '|feud(?:ed|ing)?\\s+over' +
+      '|fought\\s+(?:over|for)|fights?\\s+over|fighting\\s+over' +
+      '|rival(?:ed|ing|ry)' +
+      '|vie[ds]?\\s+for|vying\\s+for' +
+      '|clash(?:ed|ing)?\\s+over' +
+      '|been\\s+at\\s+odds(?:\\s+over)?' +
+      '|had\\s+a\\s+falling[\\s-]out(?:\\s+over)?' +
+      '|have\\s+(?:a\\s+)?history(?:\\s+of)?' +
+      '|have\\s+(?:bad\\s+blood|a\\s+grudge|a\\s+rivalry)(?:\\s+over)?)';
+    const RELATIONSHIP_RE = new RegExp(`\\b(?:${PARTY})\\s+and\\s+(?:${PARTY})\\b[^.!?]{0,40}?${REL_VERB}`, 'gi');
+    let rm;
+    while ((rm = RELATIONSHIP_RE.exec(text)) !== null) {
+      const claim = rm[0];
+      if (base.includes(claim.toLowerCase())) continue;
+      const before = text.slice(Math.max(0, rm.index - 30), rm.index).toLowerCase();
+      if (NEGATION_HYPOTHETICAL_RE.test(before)) continue;
       return claim;
     }
     return null;

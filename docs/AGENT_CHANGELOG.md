@@ -951,7 +951,18 @@ other agents. (none active)
 - Rollback: revert `562cc06`
 
 2026-06-20T13:37:41Z — Codex
-- [CLAIMED] H-53 out-of-combat object-strike narration · files: `engine/playloop.js`, `tests/U216.objectStrikeNarration.test.js`, `docs/AGENT_CHANGELOG.md`
+- Packet/seam: H-53 out-of-combat object-strike narration
+- Commit(s): `159c754` (code+test), `c8100a9` (claim)
+- Files changed: `engine/playloop.js`, `tests/U216.objectStrikeNarration.test.js` (new), `docs/AGENT_CHANGELOG.md`
+- Summary: `genericGroundedOutcome` now has a conservative object-strike branch immediately before the generic `gen:*` fallback. Strike-class verbs (`swing|strike|slash|hack|chop|cleave|cut|hew|lop|bash`) with an explicit destructive target narrate the named object being hit, partly affected, or missed instead of returning generic obstacle-success prose like "the way ahead opens." The target extractor accepts aggressive prepositions (`at|into|through|down|across`) and bare article-led direct objects, while rejecting travel/idle swing phrasings (`swing by`, `swing around`, `swing past`, `swing toward`). Narration stays deterministic through `pickVariant`, and the change is narration-only: no furniture persistence, no combat routing, no physics regex, no `WORLD_VERSION`, no `effectsCore`/`invariants`, no `Math.random`/`Date.now`.
+- Proof:
+  - `node --test tests/U216.objectStrikeNarration.test.js` — RED first: 4/6 failed pre-fix on target-naming/object-strike cases while false-positive guards stayed green; post-fix 6/6
+  - `node --test tests/U202.deliverOrDeclineRecall.test.js tests/U205.reactUnderPressure.test.js tests/U216.objectStrikeNarration.test.js` — 54/54
+  - First `node --test` attempt was blocked by sandboxed local bind permission (`listen EPERM: operation not permitted 127.0.0.1`) in `tests/A04.moveEndpoint.test.js`; after local network permission, full suite green: 8259/8259
+  - Determinism: `node --test tests/U19.worldHashDeterminism.test.js tests/U21.replayGateN50.test.js tests/U22.longRunStabilityN100T500.test.js tests/U27.worldHashSurfaceContract.test.js tests/U30.gate6.sequelDeterminism.test.js` — 6/6
+  - `npm run playtest:quick` — 50 runs, 0 crashes, no bugs found
+- Remaining/next: none for this packet.
+- Rollback: revert `159c754`
 
 2026-06-20T11:35:00Z — Claude-Sonnet
 - Packet/seam: H-46 inventory items[] listing

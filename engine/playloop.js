@@ -4950,6 +4950,34 @@ function takeTargetOf(text) {
   return m ? m[1].replace(/\b(up|the|a|an)\b/gi, '').trim() : '';
 }
 
+const OBJECT_STRIKE_VERB_RE = /\b(?:swing|strike|slash|hack|chop|cleave|cut|hew|lop|bash)\b/i;
+const OBJECT_STRIKE_MOVE_PREP_RE = /^\s*(?:by|around|past|toward)\b/i;
+
+function cleanStrikeTarget(target) {
+  return String(target || '')
+    .toLowerCase()
+    .replace(/\b(?:with|using)\b.*$/i, '')
+    .replace(/\b(?:on|upon|above|under|beneath|beside|near|against)\b.*$/i, '')
+    .replace(/\b(?:the|a|an|that|this|my|your|his|her|their|some)\b/gi, ' ')
+    .replace(/[^a-z' -]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function strikeTargetOf(text) {
+  const s = String(text || '').toLowerCase();
+  const verb = s.match(OBJECT_STRIKE_VERB_RE);
+  if (!verb) return '';
+  const rest = s.slice((verb.index || 0) + verb[0].length);
+  if (OBJECT_STRIKE_MOVE_PREP_RE.test(rest)) return '';
+
+  const prep = rest.match(/\b(?:at|into|through|down|across)\s+(?:the|a|an|that|this|my|your|his|her|their|some)?\s*([a-z][a-z' -]*?)(?:[,.!?;:]|$)/i);
+  if (prep) return cleanStrikeTarget(prep[1]);
+
+  const direct = rest.match(/^\s*(?:the|a|an|that|this|my|your|his|her|their|some)\s+([a-z][a-z' -]*?)(?:[,.!?;:]|$)/i);
+  return direct ? cleanStrikeTarget(direct[1]) : '';
+}
+
 // ── Stage E: deterministic variation (a DM never repeats verbatim) ───────────
 // Pick one of several grounded variants by deterministic ROTATION: a per-(seed,node,key)
 // base offset plus the timeline length. Same world-state + key → same pick (replay/
@@ -5060,6 +5088,14 @@ export function genericGroundedOutcome(world, text, outcome) {
     return o === 's' ? V('cast:s', [`You shape the working, and it answers — power moving the way you intend.`, `The working takes cleanly; the power bends to your will.`])
       : o === 'm' ? V('cast:m', [`The working takes, but rough; it costs more than it should and frays at the edges.`, `You force the working through — it holds, barely, and leaves you wrung out.`])
       : V('cast:f', [`You reach for the working and it slips your grasp — nothing answers.`, `The working guts out in your hands; nothing comes.`]);
+  }
+  if (OBJECT_STRIKE_VERB_RE.test(t)) {
+    const target = strikeTargetOf(t);
+    if (target) {
+      return o === 's' ? V(`strike-object:s:${target}`, [`Your blow bites into the ${target}; it bursts apart and scatters.`, `You hit the ${target} squarely; it breaks under the strike.`, `Your strike catches the ${target} clean and sends pieces skittering.`])
+        : o === 'm' ? V(`strike-object:m:${target}`, [`You catch the ${target} a glancing blow; it tips and spills but holds together.`, `Your strike clips the ${target}; it wobbles, cracked but not ruined.`, `You hit the ${target} off-center; it shifts hard, half-broken.`])
+        : V(`strike-object:f:${target}`, [`Your swing goes wide of the ${target}; it sits untouched.`, `The blow never reaches the ${target}; nothing on it changes.`, `You miss the ${target}, and it stays exactly where it was.`]);
+    }
   }
   // Generic last resort: grounded, in-fiction, no abstract filler, no mechanical prompt.
   return o === 's' ? V('gen:s', [`You see it through, and it goes your way.`, `It comes off cleanly; the moment turns toward you.`, `You manage it, and the way ahead opens a little.`])

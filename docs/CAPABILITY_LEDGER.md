@@ -31,7 +31,7 @@ detectors. Status starts `seed`.
 | # | Capability (DM obligation) | Lineage / H-IDs | Current home (detectors to unify) | Corpus | Graduated |
 |---|---|---|---|---|---|
 | C1 | Answer **every part** of a compound query | H-25/H-31/H-40/H-54 | `handleMetaQuestion` fold logic | seed | — |
-| C2 | A **named referent** must be grounded before the turn resolves | H-56 | `ungroundedNpcReferentForText` | seed | — |
+| C2 | A **named referent** must be grounded before the turn resolves | H-56 | `ungroundedNpcReferentForText` | 2L/2T | — |
 | C3 | A **declared check** gets a DC + roll | H-54 R4 | `META_EXPLICIT_CHECK_*` | seed | — |
 | C4 | Info-seeking **delivers a grounded fact or honestly declines** | H-22/23/29/31/39 | `isInfoSeekingText`, `infoExtractionOutcome`, `declineInfoSeek` | seed | — |
 | C5 | A **rules/mechanic question** is answered straight, never rolled | H-25/H-54 R3 | `META_DAMAGE_RULE`, advice/skill-mod | seed | — |

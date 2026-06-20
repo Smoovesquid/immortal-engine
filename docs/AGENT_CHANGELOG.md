@@ -1,5 +1,11 @@
 # AGENT_CHANGELOG
 
+2026-06-20 — Basecamp (Opus)
+- §7 verdict on H-57 (`a5a53cb`, Codex, Lane B): **VERIFIED + pushed.** Convergence corpus runner + 4 deterministic fixtures. Scope = lane exactly (`scripts/convergence/*`, `tests/corpus/_smoke.corpus.mjs`, `package.json`, changelog); no engine/grace/existing-test drift; no `Math.random`/`Date.now`/`WORLD_VERSION`; `active_combat` fixture mutates via `applyDeltas`. Runner exercises the real `playerMove`; locked/target contract correct; exits nonzero only on a locked regression (verified by code inspection + Codex's demonstrated gate-proof). `npm run convergence` green; full suite **8285/8285** (`.corpus.mjs` not auto-run by `node --test`).
+- **First real corpus seeded — C2** (`tests/corpus/C2.corpus.mjs`; superseded Codex's `_smoke`): 2 `locked` (H-56's solved Brae/baker shapes) + 2 `target` (the Brokefang / Sera Voss misses from the H-56 §7 probe). `npm run convergence` → C2 locked **2/2**, target **0/2** (backlog listed with evidence), overall locked-pass **100%**, exit 0. **The full convergence loop is live:** solved behavior locked, known gaps tracked with proof, build stays green. Standout backlog evidence — "why won't Brokefang look at me?" rolls `[roll:20 → success | NAT20]` against a nonexistent person; flips green when C2 graduates.
+- Next: reconcile Lane C's draft (`docs/convergence/corpus-draft.md`, 16 cases for C1/C4/C5/C9) into real `tests/corpus/C*.corpus.mjs`, tuning assertions against live deterministic output.
+- Rollback: revert this docs+corpus commit; H-57 = revert `a5a53cb`.
+
 2026-06-20T20:15:07Z — Codex
 - Packet/seam: H-57 convergence harness (Lane B)
 - Commit(s): local H-57 commit (hash in worker final report)

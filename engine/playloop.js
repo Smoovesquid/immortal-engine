@@ -3613,6 +3613,27 @@ function concreteNpcReferentFromText(text) {
   return '';
 }
 
+// C2 graduation (2026-06-20): recognize a fabricated PROPER NAME that carries a
+// person-signal as an NPC referent — not just the exact "talk to X" / "you
+// mentioned X" shapes H-56 caught. Anchored to the name as SUBJECT of person verbs
+// (places are gaze OBJECTS: "look at the tower"), so it does NOT fire on
+// "I stare at the Old Spire". Bare "take me to <Name>" stays ungated (person/place
+// ambiguous) — deliberately left as C2 backlog for a supervised pass.
+function hasPersonReferentSignal(text, ref) {
+  const t = String(text || '');
+  const name = String(ref || '').trim();
+  if (name.length < 2) return false;
+  const esc = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  // (a) an address/speech verb directed AT the name
+  if (new RegExp('\\b(?:ask|asks|asked|tell|tells|told|greet|greets|answer|answers|question|questions|call(?:\\s+out)?\\s+to|shouts?\\s+(?:to|at)|beckon|wave\\s+to)\\s+(?:to\\s+)?(?:the\\s+)?' + esc + '\\b', 'i').test(t)) return true;
+  // (b) the name is the SUBJECT of a person-specific gaze/posture/attention verb
+  if (new RegExp('\\b' + esc + '\\b[^.?!]{0,18}?\\b(?:stares?|staring|glares?|glaring|nods?|nodding|looks?\\s+(?:at|away)|looking\\s+(?:at|away)|won[\'’]?t\\s+look|(?:so|gone|going|is|stay|fell)\\s+(?:quiet|silent))\\b', 'i').test(t)) return true;
+  // (c) possessive tied to the name, or a role appositive ("<name> the merchant")
+  if (new RegExp('\\b' + esc + '(?:[\'’]s\\b|\\b[^.?!]{0,14}?\\b(?:his|her|their|hers|theirs)\\b)', 'i').test(t)) return true;
+  if (new RegExp('\\b' + esc + '\\s+the\\s+(?:guard|baker|elder|stranger|merchant|trader|smith|blacksmith|innkeeper|priest|healer|scholar|artisan|villager|local)\\b', 'i').test(t)) return true;
+  return false;
+}
+
 function ungroundedNpcReferentForText(world, text, { assumeNpcCentered = false } = {}) {
   const ref = concreteNpcReferentFromText(text);
   if (!ref || NPC_REFERENT_STOPWORDS.has(normalizedNpcRef(ref))) return '';
@@ -3622,6 +3643,7 @@ function ungroundedNpcReferentForText(world, text, { assumeNpcCentered = false }
     || isNpcObserverQuery(text)
     || isInfoSeekingText(text)
     || isConfrontationChallenge(text)
+    || hasPersonReferentSignal(text, ref)
     || /\b(?:mentioned|introduced|named|who\s+(?:posted|sent|is)|where\s+is|standing|guard)\b/i.test(String(text || ''));
   if (!npcCentered) return '';
   return isGroundedNpcRef(world, ref) ? '' : ref;

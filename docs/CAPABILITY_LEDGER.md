@@ -31,7 +31,7 @@ detectors. Status starts `seed`.
 | # | Capability (DM obligation) | Lineage / H-IDs | Current home (detectors to unify) | Corpus | Graduated |
 |---|---|---|---|---|---|
 | C1 | Answer **every part** of a compound query | H-25/H-31/H-40/H-54 | `handleMetaQuestion` fold logic | 1L/4T | — |
-| C2 | A **named referent** must be grounded before the turn resolves | H-56 | `ungroundedNpcReferentForText` | 2L/2T | — |
+| C2 | A **named referent** must be grounded before the turn resolves | H-56, C2-grad | `ungroundedNpcReferentForText` + `hasPersonReferentSignal` | 3L/2T | partial |
 | C3 | A **declared check** gets a DC + roll | H-54 R4 | `META_EXPLICIT_CHECK_*` | 0L/3T | — |
 | C4 | Info-seeking **delivers a grounded fact or honestly declines** | H-22/23/29/31/39 | `isInfoSeekingText`, `infoExtractionOutcome`, `declineInfoSeek` | 1L/3T | — |
 | C5 | A **rules/mechanic question** is answered straight, never rolled | H-25/H-54 R3 | `META_DAMAGE_RULE`, advice/skill-mod | 1L/4T | — |
@@ -52,6 +52,15 @@ through to observe/travel, no clarify). **C2 is a correct partial point-fix, not
 phrasings are its first `target` cases and make C2 a prime early graduation candidate. (The plan validating
 itself: an over-fire probe doubled as a paraphrase-invariance probe and caught exactly the phrasing-tail the
 per-packet loop would have shipped as "done.")
+
+*2026-06-20 (C2 partial graduation):* added `hasPersonReferentSignal` to `ungroundedNpcReferentForText` —
+a fabricated name carrying a person-signal (addressed, "ask X"; or subject of a person verb, "won't X look at
+me") now clarifies, beyond H-56's exact shapes. Over-fire-safe: place gaze-OBJECTS ("stare at the Old Spire")
+and grounded roles stay unaffected (Basecamp probe). Suite 8285 green, determinism 6/6. **3 phrasings promoted
+backlog→locked (C2-003).** Remaining C2 backlog left for a **supervised** pass: (1) "what is X staring/quiet"
+is intercepted by the observe/look-around handler *upstream* of the referent guard → needs routing-precedence
+work; (2) bare "take me to &lt;Name&gt;" → person/place disambiguation. A *partial* graduation, not the full
+typed-packet migration.
 
 **Social-physics categories to mine next (Biblioteca Vols 2–6, mostly not yet failing-in-gate but on the map):**
 sarcasm/irony inversion (Vol 2; transcript: `docs/playtests/ridiculous-sarcasm-2026-06-06.md`), loaded

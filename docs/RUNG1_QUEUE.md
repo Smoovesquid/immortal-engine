@@ -181,9 +181,19 @@ resolve a real present NPC before anything fires, so it can't start combat again
 `AGENT_CHANGELOG.md` per protocol §3 — Basecamp backfilled both entries post-hoc from the commits +
 self-reports.
 
-## In flight
-*(none code-wise — H-45 DONE + BASECAMP-verified + pushed. Two small PRE-GATE follow-ups remain (below)
-before the next gate: H-46 (inventory items[] listing) + the judge-recal I owe. Budget ~$8.4.)*
+## In flight — H-46 (inventory items[] listing), dispatched 2026-06-20
+Pre-gate follow-ups from H-45's review:
+- **Judge-recal — DONE** (`6abd557`, BASECAMP): `canonGroundTruth` now exposes a `consumables` list with
+  each carried item's REAL effect (or null for flavor), and `JUDGE_SYSTEM` grades item-effect answers
+  against it (flavor item doing nothing = PASS; invent an effect = FAIL). Closes the unfair-item-test loop.
+- **H-46 (Claude-Sonnet, grace) — DISPATCHED:** `META_INVENTORY`'s "what's in my pack" loop skips
+  `cat === 'items'`, so the 3 H-45-bridged consumables (now in `inventory.items[]`) dropped out of the
+  generic pack dump. Fix: resolve `items[]` defRefs via `getItemDef` (already imported) and include them —
+  merged by kind, so consumables from BOTH buckets show under one listing. Files:
+  `engine/grace/gracefulAdjudication.js` + `tests/U209`. Systemic value: every future structured item
+  (weapons/armor in `items[]`) would otherwise vanish from the listing too.
+On H-46 result: verify per §7, then run the post-H-45/H-46 gate (judge-recal makes it grade items fairly).
+Budget ~$8.4.
 
 ## Done — H-45 (2026-06-20, BASECAMP-verified per §7)
 Claude-Sonnet (`3064288` claim, `562cc06` fix, `7c01e3a` DONE). Lit up the consumable mechanic that was

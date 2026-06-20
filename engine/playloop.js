@@ -4952,6 +4952,13 @@ function takeTargetOf(text) {
 
 const OBJECT_STRIKE_VERB_RE = /\b(?:swing|strike|slash|hack|chop|cleave|cut|hew|lop|bash)\b/i;
 const OBJECT_STRIKE_MOVE_PREP_RE = /^\s*(?:by|around|past|toward)\b/i;
+const NON_STRIKABLE_TARGETS = new Set([
+  'courtyard', 'yard', 'square', 'plaza', 'field', 'meadow', 'street', 'road', 'lane', 'alley',
+  'hall', 'room', 'chamber', 'corridor', 'bridge', 'gate', 'gateway', 'market', 'marketplace',
+  'distance', 'gap', 'corner', 'line',
+  'throng', 'crowd', 'mob', 'people', 'folk', 'crowds', 'guards', 'soldiers', 'villagers',
+  'onlookers', 'bystanders'
+]);
 
 function cleanStrikeTarget(target) {
   return String(target || '')
@@ -4976,6 +4983,11 @@ function strikeTargetOf(text) {
 
   const direct = rest.match(/^\s*(?:the|a|an|that|this|my|your|his|her|their|some)\s+([a-z][a-z' -]*?)(?:[,.!?;:]|$)/i);
   return direct ? cleanStrikeTarget(direct[1]) : '';
+}
+
+function isNonStrikableTarget(target) {
+  const last = String(target || '').toLowerCase().trim().match(/([a-z']+)$/);
+  return !!last && NON_STRIKABLE_TARGETS.has(last[1]);
 }
 
 // ── Stage E: deterministic variation (a DM never repeats verbatim) ───────────
@@ -5091,7 +5103,7 @@ export function genericGroundedOutcome(world, text, outcome) {
   }
   if (OBJECT_STRIKE_VERB_RE.test(t)) {
     const target = strikeTargetOf(t);
-    if (target) {
+    if (target && !isNonStrikableTarget(target)) {
       return o === 's' ? V(`strike-object:s:${target}`, [`Your blow bites into the ${target}; it bursts apart and scatters.`, `You hit the ${target} squarely; it breaks under the strike.`, `Your strike catches the ${target} clean and sends pieces skittering.`])
         : o === 'm' ? V(`strike-object:m:${target}`, [`You catch the ${target} a glancing blow; it tips and spills but holds together.`, `Your strike clips the ${target}; it wobbles, cracked but not ruined.`, `You hit the ${target} off-center; it shifts hard, half-broken.`])
         : V(`strike-object:f:${target}`, [`Your swing goes wide of the ${target}; it sits untouched.`, `The blow never reaches the ${target}; nothing on it changes.`, `You miss the ${target}, and it stays exactly where it was.`]);

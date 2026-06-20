@@ -944,3 +944,5 @@ other agents. (none active)
 - Remaining/next: none for this packet; EXAMINE-path `.name`-only matching gap (noted above, pre-existing per H-45) still open if the queue owner wants it picked up separately.
 - Rollback: revert `7ea7669`
 [CLAIMED] H-47 item-effect answer breadth · Claude-Sonnet · 2026-06-20T11:47:44Z · files: engine/grace/gracefulAdjudication.js, tests/U210.itemEffectBreadth.test.js
+[CLAIMED] H-48 combat finish-low-HP · Codex · 2026-06-20T11:48:26Z · files: engine/playloop.js, engine/combat/escapeCombat.js, tests/U211.combatFinishLowHp.test.js
+[CLAIMED] H-49 lore-invention guard · Claude-Sonnet · 2026-06-20T11:48:33Z · files: engine/llmAdapter.js, tests/U212.loreInventionGuard.test.js

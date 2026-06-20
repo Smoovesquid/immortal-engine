@@ -224,6 +224,17 @@ const META_STATS_REQ = /\b(?:stats|attributes|scores|ability\s+scores|hp|hit\s?p
 // resolves to a REAL inventory item (else it returns null and falls through, so
 // "what does the elder do" isn't mistaken for an item).
 const META_ITEM = /\bwhat(?:'?s| does| do| is| are)\s+(?:the|my|a|an|this|that)\s+.+?\s+(?:do|for|good\s+for|used\s+for|used\s+to)\b|\b(?:do i have|have i got|am i carrying|is\s+(?:the|a|an|my)\s+.+?\s+in\s+my\s+(?:pack|bag|inventory|kit|belongings))\b/i;
+// Item-effect capability phrasings that don't fit META_ITEM's "what does X
+// do" shape — "does the Tonic heal HP, give temp HP, or buff a stat?", "is
+// the Tonic useful?". The gate's realistic phrasings showed these falling
+// through to the generic hedge ("it lands, after a fashion") instead of
+// routing to the real catalog effect answer. (H-47)
+const META_ITEM_CAPABILITY = /\bdoes\s+(?:the|my|a|an|this|that)\s+.+?\s+(?:heal|restore|cure|buff|do\s+anything|help|give\s+(?:me\s+)?(?:temp(?:orary)?\s+hp|temporary\s+hit\s+points))\b|\bis\s+(?:the|my|a|an|this|that)\s+.+?\s+(?:any\s+)?(?:good|useful)\b/i;
+// A player asserting a carried item is inert/useless/does-nothing — "the
+// Tonic is inert, it does nothing". A real DM corrects a false claim about
+// an item that canon gives a real effect, rather than agreeing with it.
+// (H-47, post-H-45/H-46 gate — DM agreed "the useless tonic" at full HP.)
+const META_ITEM_INERT_CLAIM = /\b(?:the|my|this|that)\s+.+?\s+(?:is\s+inert|does(?:n'?t)?\s+(?:do\s+)?anything|does\s+nothing|is\s+useless|has\s+no\s+effect)\b/i;
 // "List/read back my consumables" — distinct from META_INVENTORY (which
 // deliberately skips the structured items[] bucket entirely, so a bridged
 // consumable like the Tonic of grit would otherwise silently vanish from a
@@ -327,7 +338,8 @@ export function isMetaQuestion(text) {
     || META_HELD_ITEMS.test(t) || META_ARMOR_VALUE.test(t)  // H-31 R2
     || META_POSSESSION_CHALLENGE.test(t)  // H-31 R3
     || META_GEAR_YESNO.test(t)  // H-38a R1
-    || META_CONSUMABLES_LIST.test(t);  // H-45
+    || META_CONSUMABLES_LIST.test(t)  // H-45
+    || META_ITEM_CAPABILITY.test(t) || META_ITEM_INERT_CLAIM.test(t);  // H-47
 }
 
 // Exported guard for playloop.js — detects NPC identity/presence queries so
@@ -506,28 +518,37 @@ function extractCitedRoll(text) {
 
 // Describes a catalog def's real mechanical effect in plain language, or
 // null when the def has none (a real DM never invents what an item does, and
-// never claims "no effect" for one that has a real effect — H-45).
+// never claims "no effect" for one that has a real effect — H-45). Includes
+// the real amount/condition off the catalog (not just "it's restorative") so
+// the capability is stated precisely regardless of current HP — H-47.
 function describeItemEffect(def) {
   if (!def || !def.effect) return null;
-  if (def.effect.kind === 'heal') return `it's restorative — using it heals you`;
+  if (def.effect.kind === 'heal') {
+    const amt = def.effect.amount ? ` ${def.effect.amount}` : '';
+    return `it heals${amt}`;
+  }
   if (def.effect.kind === 'removeCondition') return `it cures ${def.effect.condition}`;
   return null;
 }
 
-// Answer a question about a specific carried item ("what does X do?", "is X in
-// my pack?") from the real inventory. Returns null if no carried item matches,
-// so non-item "what does X do" queries fall through to normal resolution.
-//
+// A carried item's damage die as a "NdM" string, or '' if untracked. Shared
+// by answerWeaponDamage and answerItemQuery's fold (H-47) so the two never
+// drift on how a weapon's die is read off the loadout.
+function weaponDieString(w) {
+  const dmg = String(w?.damage || '').trim();
+  if (/^\d+d\d+$/i.test(dmg)) return dmg;
+  const n = Number(w?.dmgDie) || 0;
+  return n > 0 ? `1d${n}` : '';
+}
+
+// Gathers every carried item (both inventory shapes) as {name, note, def}.
 // Two inventory shapes coexist (Pass T1/T2): the legacy flavor buckets
 // (weapons/armor/.../consumables/junk — name+notes, no mechanical link) and
 // the structured `items[]` array (id+defRef, resolved against the real
 // catalog). A flavor entry CAN also carry a defRef (H-45 — Bandages/Tonic of
 // grit/Holy water in the fantasy pack) once it's been bridged into items[] at
-// chargen, so both shapes are checked against the catalog here: that's what
-// lets this branch describe a REAL heal/cure instead of always falling back
-// to "nothing special fires when you use it" for an item that, in truth, now
-// does something.
-function answerItemQuery(lowerText, world) {
+// chargen, so both shapes are checked against the catalog here.
+function gatherCarriedItems(world) {
   const inv = world.party?.[0]?.inventory || {};
   const flavor = [].concat(
     inv.weapons || [], inv.armor || [], inv.tools || [], inv.clothes || [],
@@ -538,27 +559,81 @@ function answerItemQuery(lowerText, world) {
     .map(it => getItemDef(it.defRef))
     .filter(Boolean)
     .map(def => ({ name: def.name, note: '', def }));
-  const items = [...flavor, ...structured];
+  return [...flavor, ...structured];
+}
+
+// True if `n` (lowercased item name) is referenced in the player's text —
+// either verbatim or by a distinctive (≥4-char) token of it.
+function itemNameInText(lowerText, n) {
+  if (!n) return false;
+  if (lowerText.includes(n)) return true;
+  return n.split(/\s+/).filter(x => x.length >= 4).some(tok => lowerText.includes(tok));
+}
+
+// Answer a question about carried item(s) ("what does X do?", "is X in my
+// pack?", "does X heal HP?"). Returns null if no carried item matches, so
+// non-item queries fall through to normal resolution.
+//
+// Folds EVERY item named in the query (H-47) — not just the first inventory
+// entry whose name happens to appear in the text. A compound ask ("what does
+// the Tonic of grit do, and the Worn Blade/Kitchen cleaver damage?") used to
+// answer only about whichever flavor item came first in the bucket order,
+// silently masking the Tonic's real heal.
+function answerItemQuery(lowerText, world) {
+  const inv = world.party?.[0]?.inventory || {};
+  const weaponDieByName = new Map(
+    (Array.isArray(inv.weapons) ? inv.weapons : [])
+      .map(w => [String(w?.name || w).trim().toLowerCase(), weaponDieString(w)])
+  );
+  const items = gatherCarriedItems(world);
   if (!items.length) return null;
-  const match = items.find(it => {
+
+  const seen = new Set();
+  const matches = items.filter(it => {
     const n = it.name.toLowerCase();
-    if (!n) return false;
-    if (lowerText.includes(n)) return true;
-    return n.split(/\s+/).filter(x => x.length >= 4).some(tok => lowerText.includes(tok));
+    if (!itemNameInText(lowerText, n) || seen.has(n)) return false;
+    seen.add(n);
+    return true;
   });
-  if (!match) return null;
-  const { name, def } = match;
-  const note = match.note.replace(/[.?!]+$/, '');
+  if (!matches.length) return null;
+
   const presence = /\b(do i have|have i got|am i carrying|in\s+my\s+(?:pack|bag|inventory|kit|belongings))\b/.test(lowerText);
-  if (presence) return `Yes — ${name} is in your pack${note ? `: ${note}.` : '.'}`;
-  // effect query — describe the real effect when there is one; otherwise the
+  if (presence) {
+    const names = matches.map(m => m.name);
+    return `Yes — ${joinList(names)} ${names.length > 1 ? 'are' : 'is'} in your pack.`;
+  }
+
+  // effect query — describe each asked-about item's real effect when there is
+  // one; weapon damage when asked and the item is a weapon; otherwise the
   // honest, unembellished "just what it looks like" line. Never invented,
-  // never an auto-success.
-  const effectLine = describeItemEffect(def);
-  if (effectLine) return `${name}${note ? ` (${note})` : ''} — ${effectLine}.`;
-  return note
-    ? `${name}: ${note}. It's a real thing in your pack, not a game-piece — nothing special fires when you use it.`
-    : `${name} is just what it looks like — no special effect I track.`;
+  // never an auto-success, never masked by another matched item.
+  const damageAsked = /\b(?:damage|dmg)\b/i.test(lowerText);
+  const parts = matches.map(m => {
+    const { name, def } = m;
+    const note = m.note.replace(/[.?!]+$/, '');
+    const effectLine = describeItemEffect(def);
+    if (effectLine) return `${name}${note ? ` (${note})` : ''} — ${effectLine}.`;
+    const die = weaponDieByName.get(name.toLowerCase());
+    if (damageAsked && die) return `the ${name} rolls ${die} for damage.`;
+    return note
+      ? `${name}: ${note}. It's a real thing in your pack, not a game-piece — nothing special fires when you use it.`
+      : `${name} is just what it looks like — no special effect I track.`;
+  });
+  return parts.join(' ');
+}
+
+// Corrects a player's false claim that a carried item is inert/useless/does
+// nothing, when canon actually gives it a real effect — a real DM doesn't
+// agree with a wrong statement about the world. Returns null when no carried
+// item is named, or when the named item genuinely has no effect (a true
+// claim needs no correction). (H-47)
+function correctInertClaim(lowerText, world) {
+  const items = gatherCarriedItems(world);
+  const match = items.find(it => itemNameInText(lowerText, it.name.toLowerCase()));
+  if (!match) return null;
+  const effectLine = describeItemEffect(match.def);
+  if (!effectLine) return null;
+  return `Not quite — ${match.name} ${effectLine}.`;
 }
 
 // "List my consumables" — the real consumables from BOTH inventory shapes
@@ -586,14 +661,8 @@ function listConsumables(world) {
 // always at least one weapon to report).
 function answerWeaponDamage(lowerText, world) {
   const inv = world.party?.[0]?.inventory || {};
-  const dieOf = (w) => {
-    const dmg = String(w?.damage || '').trim();
-    if (/^\d+d\d+$/i.test(dmg)) return dmg;
-    const n = Number(w?.dmgDie) || 0;
-    return n > 0 ? `1d${n}` : '';
-  };
   const weapons = (Array.isArray(inv.weapons) ? inv.weapons : [])
-    .map(w => ({ name: String(w?.name || w).trim(), dice: dieOf(w) }))
+    .map(w => ({ name: String(w?.name || w).trim(), dice: weaponDieString(w) }))
     .filter(w => w.name);
   if (!weapons.length) return null;
 
@@ -1131,10 +1200,21 @@ export function handleMetaQuestion(text, world) {
     }
   }
 
-  // Item query — "what does <item> do?", "is <item> in my pack?". Answered from
-  // the REAL pack; returns null (falls through) if no carried item matches.
-  if (META_ITEM.test(lowerText)) {
+  // Item query — "what does <item> do?", "is <item> in my pack?", and (H-47)
+  // capability phrasings without the "what does X do" shape ("does the Tonic
+  // heal HP, give temp HP, or buff a stat?", "is the Tonic useful?").
+  // Answered from the REAL pack; returns null (falls through) if no carried
+  // item matches.
+  if (META_ITEM.test(lowerText) || META_ITEM_CAPABILITY.test(lowerText)) {
     const ans = answerItemQuery(lowerText, world);
+    if (ans) return ans;
+  }
+
+  // A player asserts a carried item is inert/useless/does-nothing — correct
+  // it from the catalog rather than agreeing with a false claim about an
+  // item that has a real mechanical effect. (H-47, post-H-45/H-46 gate.)
+  if (META_ITEM_INERT_CLAIM.test(lowerText)) {
+    const ans = correctInertClaim(lowerText, world);
     if (ans) return ans;
   }
 

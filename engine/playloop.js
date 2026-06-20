@@ -999,7 +999,7 @@ function playerMoveCore(world, packsById, text) {
       output: { narration: 'Wizard: There\'s steel between you and the road — no running from this one. Strike, guard, cast, or talk.', mechanics: '[combat:table-talk]' }
     };
   }
-  if (!targetedCombatAction && interiorAction.kind === 'enter') {
+  if (!targetedCombatAction && !declaredNpcViolence && interiorAction.kind === 'enter') {
     // "Go inside" when already indoors gets the obvious answer, not the
     // blocked-wall message.
     if (w.scene?.interior) {
@@ -1023,7 +1023,7 @@ function playerMoveCore(world, packsById, text) {
     }
   }
 
-  if (!targetedCombatAction && interiorAction.kind === 'exit') {
+  if (!targetedCombatAction && !declaredNpcViolence && interiorAction.kind === 'exit') {
     const wasDungeon = isDungeonStructureId(w.scene?.interior?.structureKey);
     const w1 = exitStructureInterior(w);
     if (w1 !== w) {
@@ -1035,7 +1035,7 @@ function playerMoveCore(world, packsById, text) {
     }
   }
 
-  if (!targetedCombatAction && interiorAction.kind === 'move') {
+  if (!targetedCombatAction && !declaredNpcViolence && interiorAction.kind === 'move') {
     const wantsRiskyMove = isRiskyOrObstructedMoveIntent(text);
     if (!wantsRiskyMove) {
       const targetRoomId = interiorAction.toRoomId || pickAdjacentInteriorByDirection(w, interiorAction.direction);
@@ -1102,7 +1102,7 @@ function playerMoveCore(world, packsById, text) {
   // set off. Don't bounce the intent back as a two-step chore (THE_DM_TEST).
   // Exit the interior, then resolve the journey on the now-outdoor world. No
   // recursion risk: the interior is cleared, so this gate can't fire again.
-  if (w.scene?.interior && !w.combat?.active && isFreeMovementIntent(text) && /\b(toward|towards|make for|get moving|set (?:out|off)|head)\b/i.test(String(text || ''))) {
+  if (w.scene?.interior && !w.combat?.active && !declaredNpcViolence && isFreeMovementIntent(text) && /\b(toward|towards|make for|get moving|set (?:out|off)|head)\b/i.test(String(text || ''))) {
     const outside = exitStructureInterior(w);
     const r = playerMoveCore(outside, packsById, text);
     const inner = String(r?.output?.narration || '').replace(/^Wizard:\s*/, '').trim();
@@ -1238,7 +1238,7 @@ function playerMoveCore(world, packsById, text) {
   // Never while a fight is live — a bare direction mid-combat must not walk the
   // player out of the encounter (escape combat has no flee by design; the input
   // falls through to the combat branch instead).
-  if (!w.scene?.interior && !w.combat?.active && isFreeMovementIntent(text)) {
+  if (!w.scene?.interior && !w.combat?.active && !declaredNpcViolence && isFreeMovementIntent(text)) {
     // v20 free-roam: the overworld is walked one tile at a time. A bare cardinal
     // ("north", "go west", or a compass button) steps the avatar a single cell.
     // There is no teleport-to-named-place out here — the journey IS the gameplay,
@@ -1999,7 +1999,7 @@ function playerMoveCore(world, packsById, text) {
     const ATTACK_V = '(attack|fight|kill|strike|assault|punch|stab|hit|slash|swing(?:\\s+at)?|shoot|kick|tackle|charge)';
     const targeted = tt.match(new RegExp(`\\b${ATTACK_V}\\s+(.+)`, 'i'));
     const bareAttack = new RegExp(`^${ATTACK_V}\\s*[.!]?$`, 'i').test(tt);
-    const personRef = targeted && /\b(figure|figures|enemy|enemies|foe|foes|man|woman|men|women|person|people|stranger|strangers|guard|guards|soldier|soldiers|them|him|her|someone|anyone|everyone|nobody|creature|creatures|beast|beasts|monster|monsters|attacker|assailant|thing|shape|shadow|biggest|big one|nearest)\b/i.test(targeted[2]);
+    const personRef = targeted && /\b(figure|figures|enemy|enemies|foe|foes|man|woman|men|women|person|people|stranger|strangers|guard|guards|soldier|soldiers|them|him|her|someone|anyone|everyone|nobody|creature|creatures|beast|beasts|monster|monsters|attacker|assailant|thing|shape|shadow|biggest|big one|nearest|villager|townsperson|townsfolk|civilian|bystander|merchant|trader|smith|blacksmith|innkeeper|baker|priest|healer|elder|scholar|artisan)\b/i.test(targeted[2]);
     // Combat-feature verbs and "strongest attack" out of combat are the same
     // case: there's no fight to spend them on. A real DM says so — no d20 at
     // an empty road. (In combat these route to the resolver and FIRE.)
@@ -2008,7 +2008,7 @@ function playerMoveCore(world, packsById, text) {
     if (bareAttack || personRef || featureOutOfCombat) {
       const nodeNow = (w.map?.nodes || []).find(n => n && n.id === String(w.map?.currentNodeId ?? '')) || null;
       const npcsHere = nodeNow?.settlement?.npcs;
-      if (featureOutOfCombat || !Array.isArray(npcsHere) || !npcsHere.length) {
+      if (featureOutOfCombat || personRef || !Array.isArray(npcsHere) || !npcsHere.length) {
         const line = featureOutOfCombat
           ? 'Wizard: Save it — there\'s no fight here to spend that on. It\'ll be ready when one finds you.'
           : 'Wizard: No one to fight. What do you do?';
@@ -3470,6 +3470,28 @@ function resolvePresentNpcStrict(world, ref) {
 // (Opus gate). Gated so it never hijacks travel: if the ref names a known place
 // node, it's a journey, not a person.
 const GENERIC_PERSON_REF = /^(?:stranger|man|woman|person|someone|somebody|anybody|fellow|guy|local|villager|townsfolk|townsperson|figure|neighbou?r|elder|guard|merchant|trader|smith|innkeeper|priest|healer|keeper|scholar|artisan|child|kid|old\s+(?:man|woman)|young\s+(?:man|woman))$/;
+
+function resolveNpcByRoleOrDescriptor(npcs, ref, { allowGeneric = false } = {}) {
+  if (!Array.isArray(npcs) || !npcs.length) return null;
+  const r = String(ref || '').trim().toLowerCase().replace(/^(?:the|a|an)\s+/, '').trim();
+  if (r.length < 3) return null;
+  const normalizeRole = (s) => String(s || '').toLowerCase().replace(/_/g, ' ').trim();
+  const byRole = npcs.find(n => {
+    if (!n) return false;
+    const values = [
+      n.role,
+      n.occupation,
+      n.descriptor,
+      n.archetype,
+      n.title
+    ].map(normalizeRole).filter(Boolean);
+    return values.some(v => v === r || v.includes(r) || r.includes(v));
+  });
+  if (byRole) return byRole;
+  if (allowGeneric && GENERIC_PERSON_REF.test(r)) return npcs[0];
+  return null;
+}
+
 function resolvePresentNpcLoose(world, ref) {
   const r = String(ref || '').trim().toLowerCase().replace(/^(?:the|a|an)\s+/, '').trim();
   if (r.length < 3) return null;
@@ -3479,15 +3501,7 @@ function resolvePresentNpcLoose(world, ref) {
   const node = (world?.map?.nodes || []).find(n => n && n.id === world?.map?.currentNodeId) || null;
   const npcs = (node?.settlement?.npcs || []).filter(n => n && !n.hostile);
   if (!npcs.length) return null;
-  // Role match ("the elder" → role elder, "the guard captain" → guard_captain).
-  const byRole = npcs.find(n => {
-    const role = String(n.role || '').toLowerCase().replace(/_/g, ' ');
-    return role && (role === r || role.includes(r) || r.includes(role));
-  });
-  if (byRole) return byRole;
-  // Generic person descriptor → the first neighbor about.
-  if (GENERIC_PERSON_REF.test(r)) return npcs[0];
-  return null;
+  return resolveNpcByRoleOrDescriptor(npcs, r, { allowGeneric: true });
 }
 
 // Inspection verbs that ask to look closely AT a specific thing (as opposed to
@@ -6054,13 +6068,9 @@ function fuzzyMatchNpc(npcs, ref) {
     if (byToken) return byToken;
   }
 
-  // 2. Role match: "guard" → role=guard, "merchant" → role=merchant, etc.
-  const byRole = npcs.find(n => n && (
-    norm(n.role) === refLower ||
-    norm(n.role).includes(refLower) ||
-    refLower.includes(norm(n.role)) ||
-    norm(n.role).replace(/_/g, ' ') === refLower
-  ));
+  // 2. Shared role/occupation/descriptor match: "the baker" → role/occupation
+  // baker, "flour-dusted stranger" → descriptor, etc.
+  const byRole = resolveNpcByRoleOrDescriptor(npcs, refLower);
   if (byRole) return byRole;
 
   // 3. Generic human descriptors → first available NPC

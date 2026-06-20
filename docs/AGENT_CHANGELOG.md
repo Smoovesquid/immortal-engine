@@ -1051,7 +1051,7 @@ other agents. (none active)
 - Rollback: revert `50d636a`
 
 2026-06-20T13:20:00Z — Codex
-- [CLAIMED] H-55 declared lethal attack on role/descriptor NPC starts combat
+- [DONE] H-55 declared lethal attack on role/descriptor NPC starts combat — `207ea5e`, §7-verified + pushed by Basecamp 2026-06-20
 - Owned files: `engine/playloop.js`, `tests/U218.attackByRoleStartsCombat.test.js`, `docs/AGENT_CHANGELOG.md`
 - Constraints: reuse the existing role/descriptor NPC matcher; do not touch grace, combat resolver, damage math, WORLD_VERSION, effects, or invariants.
 
@@ -1073,7 +1073,7 @@ other agents. (none active)
 
 2026-06-20T13:45:00Z — Codex
 - Packet/seam: H-55 declared lethal attack on role/descriptor NPC starts combat
-- Commit(s): pending local commit
+- Commit(s): `207ea5e` (pushed by Basecamp after §7)
 - Files changed: `engine/playloop.js`, `tests/U218.attackByRoleStartsCombat.test.js` (new)
 - Summary: a role/descriptor-referenced lethal attack could still be swallowed before the combat-begin route when the phrasing included movement language (`let go...`) and an absent role target could fall through to a generic force roll with wound-flavored mechanics. Fixed by sharing the existing approach role/descriptor resolver with attack target matching (role/occupation/descriptor/archetype/title), and by making declared NPC violence skip local/interior movement gates so it reaches the combat engager. Added the no-target guard for absent role/person targets after the combat-start routes fail, so no missing NPC is minted and no unmechanized wound is narrated.
 - Deliberately did NOT do: did not touch `engine/grace/gracefulAdjudication.js`, `engine/combat/escapeCombat.js`, `combatGroundedOutcome`, damage/HP math, `effectsCore.js`, `invariants.js`, or `WORLD_VERSION`.
@@ -1084,10 +1084,11 @@ other agents. (none active)
   - Determinism: `node --test tests/U19.worldHashDeterminism.test.js tests/U21.replayGateN50.test.js tests/U22.longRunStabilityN100T500.test.js tests/U27.worldHashSurfaceContract.test.js tests/U30.gate6.sequelDeterminism.test.js` — 6/6.
   - `npm run playtest:quick` — 50/50 runs, 0 crashes, no bugs found.
 - Remaining/next: live `v1.html` screenshot verification could not be run from this thread because no browser/screenshot control tool is exposed here.
+- Basecamp §7 verdict (2026-06-20): VERIFIED + pushed (`207ea5e`). Scope clean (playloop.js + U218 only); U218 3/3; determinism 194/194; combined-tree full suite 8279/8279. Adversarial probes beyond U218: role-resolution generalizes (occupation/role/descriptor all start combat vs a non-baker smith — NOT baker-hardcoded); non-violent ("greet the baker") routes to dialogue; non-lethal grab ("shake the baker by the ankles") resolves as a roll, neither false-triggers combat; absent target ("stab the dragon-priest") declines with no minted enemy. **Noted follow-up (NOT a regression):** `cut down the blacksmith` does not start combat because `cut` is excluded from `ATTACK_V` (kept out for H-53 object-strikes) — a pre-existing verb-coverage gap, candidate for a future packet only if the gate flags it.
 
 2026-06-20T14:10:00Z — Claude-Sonnet
 - Packet/seam: H-54b fix-forward (`docs/PACKET_H54b_FIXFORWARD.md`) — META_DAMAGE_RULE (R3) over-fire + stat-blind affirmation
-- Commit(s): pending local commit (fix-forward on top of `d49ad65`)
+- Commit(s): `f821efb` (pushed; fix-forward on top of `d49ad65`) — §7-reverified by Basecamp: both prior probes now pass (poison-add falls through; CHARM corrected)
 - Files changed: `engine/grace/gracefulAdjudication.js`, `tests/U217.metaQueryAnswerBinding.test.js`
 - Summary: the `yes or no: do i add` arm of `META_DAMAGE_RULE` matched bare "do i add" with no damage/mod object, so an in-fiction action like "yes or no: do I add the poison to the blade?" was swallowed as a rules answer. Narrowed that arm to require the same "to (melee) damage" object the other arms already demand. Separately, the R3 answer branch echoed whatever stat the player named (including CHARM/WITS/GRIT) as "the right mod" — affirming a false rule. The branch now validates the named stat: MIGHT/AGILITY still get the straight affirmation; any other stat gets corrected ("No — melee damage uses your MIGHT modifier… not CHARM").
 - Deliberately did NOT do: did not touch `playloop.js` (H-55 owns it), `resolve.js`, `llmAdapter.js`, R1/R2/R4, or `WORLD_VERSION`.

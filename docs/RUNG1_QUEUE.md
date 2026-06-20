@@ -181,10 +181,31 @@ resolve a real present NPC before anything fires, so it can't start combat again
 `AGENT_CHANGELOG.md` per protocol §3 — Basecamp backfilled both entries post-hoc from the commits +
 self-reports.
 
-## In flight
-*(none — post-H-42 baseline gate is RUN (16/48; see baseline section below). Grace fixes held; the new
-dominant cluster is COMBAT RESOLUTION (combat lane / Codex), not grace. Queue clear — good point for a new
-session. Proposed next batches (combat-resolution + a small grace cleanup) are NOT dispatched — Tim's call.)*
+## In flight — H-43 (combat) ∥ H-44 (grace), dispatched 2026-06-19, declared FILE-DISJOINT (parallel OK §2)
+Tim: "send it." Scoped to not collide: **H-43 = `engine/playloop.js` + `engine/combat/escapeCombat.js`**
+(+ `tests/U206`); **H-44 = `engine/grace/gracefulAdjudication.js`** (+ `tests/U207`). Disjoint file sets →
+parallel; each prompt carries a HALT-if-you-need-the-other's-file guard + a distinct test number.
+- **H-43 "combat resolution" (Codex, combat lane)** — the post-H-42 dominant cluster (~8/16): (i) a declared
+  attack ("I attack Corwin with my worn blade", incl. a trailing "roll it / give me the d20") must route
+  into a real `resolveEscapeCombatTurn` strike with a shown roll, not fall to a `[combat:table-talk]` branch
+  with the enemy undefeated (playloop ~L1796-1870 table-talk branches; strike/foe parse ~L1801-1870);
+  (ii) narration must not claim a hit/defeat the mechanics never produced (Chaos t6); (iii) 0-HP/combat-end
+  consistency — combat must not end with an enemy alive AND PC at 0, and a 0-HP PC can't recover without a
+  resolved dying-state (Chaos t11/t12); (iv) a social/identification line ("point at the stranger", "ignore
+  Corwin") must NOT misroute into a strike (RL t6 — `declaredNpcViolence`/`detectAttackAnyIntent`
+  false-positive, playloop L756-757 / L5738). Codex can't push (§7) — commit local, report hash, owner
+  pushes after verify. Halt if it needs `gracefulAdjudication.js`.
+- **H-44 "grace cleanup" (Claude-Sonnet, grace lane)** — (i) broaden `isInfoSeekingText` for noun-less
+  suspicion/info questions ("is something going on you're not telling me?" → currently content-free success;
+  Confused-newbie t8, the H-39 residual) so they reach deliver-or-decline; (ii) NPC-observer identification
+  names the canon-correct present NPC, not a wrong one (RL t5: DM said "Corwin" when canon names the
+  Lingerer) — ONLY if it lives in grace's `isNpcObserverQuery` handler; if the misidentification is upstream
+  in playloop routing, STOP + report (H-43 owns playloop). Sonnet pushes own. Halt if it needs
+  playloop/llmAdapter.
+DEFERRED (noted, not dispatched — need playloop/llmAdapter or tracing; fold into a post-combat batch):
+travel-bounce + location contradiction (Lore-hound t1, playloop movement), goal/aim UI-string leak
+(Confused-newbie t5), lore-invention guard (llmAdapter; Lore-hound t10 / Confused-newbie t10). On results:
+verify each per §7, then a gate.
 
 ## Done — H-42 (2026-06-19, BASECAMP-verified per §7)
 Claude-Sonnet (`385c228` fix, `7ae5ae3` DONE). The IG-11 "react under pressure" social-physics rule: a

@@ -181,19 +181,17 @@ resolve a real present NPC before anything fires, so it can't start combat again
 `AGENT_CHANGELOG.md` per protocol §3 — Basecamp backfilled both entries post-hoc from the commits +
 self-reports.
 
-## In flight — H-46 (inventory items[] listing), dispatched 2026-06-20
-Pre-gate follow-ups from H-45's review:
-- **Judge-recal — DONE** (`6abd557`, BASECAMP): `canonGroundTruth` now exposes a `consumables` list with
-  each carried item's REAL effect (or null for flavor), and `JUDGE_SYSTEM` grades item-effect answers
-  against it (flavor item doing nothing = PASS; invent an effect = FAIL). Closes the unfair-item-test loop.
-- **H-46 (Claude-Sonnet, grace) — DISPATCHED:** `META_INVENTORY`'s "what's in my pack" loop skips
-  `cat === 'items'`, so the 3 H-45-bridged consumables (now in `inventory.items[]`) dropped out of the
-  generic pack dump. Fix: resolve `items[]` defRefs via `getItemDef` (already imported) and include them —
-  merged by kind, so consumables from BOTH buckets show under one listing. Files:
-  `engine/grace/gracefulAdjudication.js` + `tests/U209`. Systemic value: every future structured item
-  (weapons/armor in `items[]`) would otherwise vanish from the listing too.
-On H-46 result: verify per §7, then run the post-H-45/H-46 gate (judge-recal makes it grade items fairly).
-Budget ~$8.4.
+## In flight — post-H-45/H-46 gate RUNNING (2026-06-20)
+The item-domain batch is COMPLETE + verified; gate is the agreed endpoint of this batch.
+- **Judge-recal — DONE** (`6abd557`): ground truth exposes item effects; judge grades items fairly
+  (flavor-does-nothing = PASS). Closes the unfair-item-test loop.
+- **H-46 — DONE + BASECAMP-verified** (`7ea7669`): `META_INVENTORY` now merges `inventory.items[]` into the
+  pack dump (grouped by kind, dedup-guarded, unresolved defRefs dropped) so H-45's bridged consumables show
+  in "what's in my pack". §7: suite 8208/0 (= 8202 + 6 U209), determinism 6/6, grace-only, no
+  forbidden/RNG/WORLD_VERSION. Diff reviewed (merge-by-kind + `seen` dedup + `armor` special-case correct).
+- **Gate:** fresh server restarted, gate launched. First fair measurement of the full item domain (wiring +
+  honest answers + complete listing + fair judging). On completion: rename report, ingest, record verdict.
+Budget ~$8.4 → ~$6.0 after this run.
 
 ## Done — H-45 (2026-06-20, BASECAMP-verified per §7)
 Claude-Sonnet (`3064288` claim, `562cc06` fix, `7c01e3a` DONE). Lit up the consumable mechanic that was

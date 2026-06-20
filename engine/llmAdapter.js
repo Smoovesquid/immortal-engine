@@ -644,6 +644,14 @@ export function validateNarrationCandidate(world, narrationCandidate, {
     }
   }
 
+  // Rule 4g (H-50) — invented NPC/payment receipt claim. Real purse changes
+  // are deterministic/template-narrated today; LLM polish must not assert a
+  // fresh "he hands/pays you three silver crowns" receipt absent from the
+  // grounded base, or the next purse query will correctly contradict it.
+  // Existing-balance statements ("your purse holds three silver crowns") are
+  // not receipt claims because they lack the receipt verb.
+  if (findUngroundedPurseReceiptClaim(cand, baseNarration)) return false;
+
   // Rule 5 (H-29) — deliver-or-decline contract for info-seeking outcomes. The
   // player demanded a specific fact (ctx.infoSeeking) and the roll resolved
   // success/mixed; polish must either keep the grounded content the (now-correct)
@@ -709,6 +717,29 @@ const LINEAGE_PHRASE_RE = /\broots?\s+(?:run\s+|reach\s+|go\s+)?deep\b|\bfor\s+g
 // claim and must pass unchanged — same restraint as Rule 4d's roster-entity
 // guard. Returns the offending substring, or null. Never throws.
 const NEGATION_HYPOTHETICAL_RE = /\b(?:no|not|never|isn|wasn|doesn|didn|if|suppose|imagine|hypothetical)\b/;
+
+function findUngroundedPurseReceiptClaim(candidate, baseNarration) {
+  try {
+    const text = String(candidate || '');
+    const base = String(baseNarration || '').toLowerCase();
+    const AMOUNT = '(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|\\d{1,4})';
+    const COIN = '(?:(?:gold|silver|copper|platinum)\\s+)?(?:coins?|crowns?)|gold|silver|copper|platinum';
+    const receiptRe = new RegExp(
+      `\\b(?:hands?|handed|gives?|gave|pays?|paid|offers?|offered)\\s+(?:you|your)\\b[^.!?]{0,32}\\b${AMOUNT}\\s+${COIN}\\b` +
+      `|\\b(?:hands?|handed|gives?|gave|pays?|paid|offers?|offered)\\b[^.!?]{0,32}\\b${AMOUNT}\\s+${COIN}\\b[^.!?]{0,24}\\b(?:to\\s+you|into\\s+your\\s+purse)\\b`,
+      'gi'
+    );
+    let m;
+    while ((m = receiptRe.exec(text)) !== null) {
+      const claim = m[0];
+      if (base.includes(claim.toLowerCase())) continue;
+      const before = text.slice(Math.max(0, m.index - 30), m.index).toLowerCase();
+      if (NEGATION_HYPOTHETICAL_RE.test(before)) continue;
+      return claim;
+    }
+    return null;
+  } catch { return null; }
+}
 
 export function findInventedFactClaim(candidate, baseNarration) {
   try {

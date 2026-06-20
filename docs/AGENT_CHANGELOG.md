@@ -943,3 +943,4 @@ other agents. (none active)
   - `git diff --stat` confirms only `engine/grace/gracefulAdjudication.js` (+21/-2) and the new test file were touched
 - Remaining/next: none for this packet; EXAMINE-path `.name`-only matching gap (noted above, pre-existing per H-45) still open if the queue owner wants it picked up separately.
 - Rollback: revert `7ea7669`
+[CLAIMED] H-47 item-effect answer breadth · Claude-Sonnet · 2026-06-20T11:47:44Z · files: engine/grace/gracefulAdjudication.js, tests/U210.itemEffectBreadth.test.js

@@ -971,3 +971,4 @@ other agents. (none active)
   - `git diff --stat` confirms only `engine/llmAdapter.js` and the new test file were touched
 - Remaining/next: none for this packet.
 - Rollback: revert `b045c9f`
+[CLAIMED] H-48 combat finish-low-HP · Codex · 2026-06-20T12:06:03Z · files: engine/playloop.js, engine/combat/escapeCombat.js, tests/U211.combatFinishLowHp.test.js

@@ -182,9 +182,10 @@ resolve a real present NPC before anything fires, so it can't start combat again
 self-reports.
 
 ## In flight
-*(none — H-43 + H-44 both DONE, BASECAMP-verified, pushed, in sync. The post-H-42 combat+grace batch is
-complete. Queue clear — good point for a new session. Only remaining step: a post-H-43/H-44 gate (~$2.40,
-budget ~$10.9) to measure — Tim's call.)*
+*(none — post-H-43/H-44 gate RAN: **10/48**, down from 16/48 (best yet). H-43 + H-44 held emphatically
+(Chaos 0/12, Confused-newbie 0/12). New dominant cluster = item/consumable handling (RL 7/12, fresh
+domain → candidate H-45). Queue clear — good point for a new session. H-45 proposed, NOT dispatched —
+Tim's call. Budget ~$8.4.)*
 
 ## Done — H-43 ∥ H-44 (2026-06-19, parallel, BASECAMP-verified per §7)
 Ran file-disjoint and clean: H-44 touched ONLY `gracefulAdjudication.js`; H-43 ONLY `playloop.js` +
@@ -316,6 +317,50 @@ H-38a (`e1ff459`/`73cc196`, grace) + H-38b (`1727db9`+docs, combat), both pushed
 Suite 8110/0 (= 8086 + 3 U200 + 21 U201), determinism U19/21/22/27/30 6/6, lane boundaries held (H-38b
 only `engine/combat/*`+`playloop.js`; H-38a only `grace/*`+`playloop.js`; neither touched the other's
 lane or `llmAdapter.js`). No post-H-38 gate was run — superseded by the H-39 dispatch.
+
+## Gate run 2026-06-20 (post-H-43/H-44) — `docs/playtests/opus-gate-2026-06-20-postH43-H44.md` — VERDICT: combat cluster CRUSHED (Chaos 0/12) + grace HELD (Confused-newbie 0/12); 16→10; new dominant cluster = item/consumable handling (RL 7/12), a fresh domain
+4 sessions × 12 turns, glass-harbor. Fresh server restarted immediately before the run (the session's prior
+server was killed after the baseline). **10/48 (21%)**, down from 16/48 (33%) post-H-42 baseline — and the
+two historically-hardest threads went FULLY CLEAN. Cost ~$2.52 (budget ~$10.9 → ~$8.4).
+By-class: DM_TEST_DEADEND 7 · DM_ARTIFACT_LEAK 1 · CRUNCH_INCONSISTENCY 1 · CANON_HALLUCINATION 1.
+Rules Lawyer 7/12 (item/consumable) · **Chaos 0/12** · Lore-hound 3/12 · **Confused newbie 0/12**.
+
+**H-43 (combat) HELD — emphatically.** Chaos-griefer ran a full 12-turn combat rampage (door-kick,
+grab/headbutt/wrench/slam/pin, bite the Lingerer, claw out, torch-throw, "with my last breath" spit blood,
+0-HP crawl, wake elsewhere) — **0 fails**, down from 4/12 combat-crunch at the baseline. Declared attacks
+resolved, 0-HP entered a real dying/recovery arc, no narration-without-mechanics. The dominant baseline
+cluster is gone.
+**H-44 (grace) HELD.** Confused-newbie **0/12**, incl. t4 "is something going on [you're not telling me]?"
+(the H-44 concealment-question target) resolved, not content-free; observer/identification clean too.
+
+**NEW DOMINANT CLUSTER — item/consumable handling (RL 7/12, grace lane; candidate H-45):** the Rules-Lawyer
+hammered consumables and the DM whiffed —
+- t2 "tell me about the Tonic of grit — what does it do?" → meaningless auto-success (item-effect query not
+  answered from the item's real definition).
+- t4 "I'll uncork the Tonic and drink it" → leaked a raw stat block, didn't process the declared item USE.
+- t5 "nothing changed when I drank it — is it broken?" → irrelevant movement narration.
+- t6/t11/t12 "list / read back my consumables (+HP)" → dodged with flavor / bounced with scenery /
+  unrequested stat dump.
+- t10 "a roll of 7 to drink a tonic? drinking needs no roll" → tonic consumed in fiction but inventory/
+  effect not applied (CRUNCH).
+Root theme: item-detail queries ("what does X do") aren't answered from the item's real def; a declared
+item-USE ("drink the Tonic") isn't resolved (no effect applied / spurious roll for a no-check action); a
+consumables-list readback isn't a recognized meta-query. Same deliver-or-decline FAMILY as the info-seeking
+work, extended to a new object type (items/consumables) + an item-use path. Grace lane (+ maybe item-use in
+playloop — serialize if so).
+
+**Lore-hound (3, minority):** t1 "whose house is this?" → grounded but the direct who-question unanswered
+(DEADEND); t9 a pointed "you said you decided not to say the name" → vague non-answer (DEADEND — a
+confrontation shape H-42 didn't reach: a failed-roll pointed question, the react-under-pressure family on a
+non-accusation phrasing); t11 "Torva" vs canon "Tove"/"Torva Boneknit" name ambiguity (CANON_HALLUCINATION,
+borderline).
+
+**Rung-1 bar:** NOT met (RL 7/12) — BUT 2 of 4 personas are SPOTLESS, the number dropped, and the remaining
+cluster is a single fresh domain (items/consumables) tractable via the proven deliver-or-decline pattern.
+**Closest to the bar yet.** Proposed next: **H-45 item/consumable batch (grace)** — item-effect queries
+answer from the real item def; declared item-use resolves (apply effect; no spurious roll for a no-check
+quaff); consumables-readback meta-query. NOT dispatched — Tim's call. Not a Road-A/B fork (narrow
+routing/grounding gaps, new domain).
 
 ## Gate run 2026-06-19 (post-H-42 BASELINE) — `docs/playtests/opus-gate-2026-06-19-postH42-baseline.md` — VERDICT: grace fixes HELD; gate explored fresh COMBAT-RESOLUTION territory → new dominant cluster is combat lane (Codex), not grace
 4 sessions × 12 turns, glass-harbor. Fresh server restarted immediately before the run (prior was ~1min
@@ -947,21 +992,26 @@ in-fiction "I don't know/won't say," never atmosphere-only) as a more general fi
 individual hallucination shapes. Leaning toward (c) as a cheap next probe before escalating to (b).
 
 ## Next
-**The post-H-42 combat+grace batch is DONE (H-43 combat + H-44 grace; see the "Done — H-43 ∥ H-44" section
-near the top).** The dominant combat-resolution cluster + the H-39 noun-less-info residual + the RL-t5
-NPC-misidentification are all closed and verified. Suite 8190/0, determinism 6/6, all pushed + in sync.
-**The only remaining step is ONE gate** (~$2.40 → ~$8.4 left) to measure H-43+H-44 together — Tim's call,
-no spend yet. What to watch at that gate:
-- Did the combat cluster collapse — declared attacks ("I hit/attack X… roll it") now resolve into real
-  strikes; no narration-without-mechanics; 0-HP enters a dying state instead of a phantom combat-end.
-- The deferred grace residuals that were deliberately NOT pre-fixed (avoiding the enumeration trap):
-  travel-bounce + location contradiction (Lore-hound t1, playloop movement), goal/aim UI-string leak
-  (Confused-newbie t5), lore-invention guard (llmAdapter; 2× low), and the H-44 lurker-naming watch-item
-  (does naming a canonical lurker on a direct ask read as over-disclosure?). If the gate flags these,
-  next batch = a grace/movement/narration cleanup.
-**Rung-1 bar:** last measured NOT met (Rules-Lawyer 7/12 on the combat thread) — but that thread is now
-fixed; the next gate measures whether we're at/near the bar. Restart the dev server fresh before any gate
-(the session's server was killed after the baseline run).
+**The combat+grace batch worked — post-H-43/H-44 gate came back 10/48 (best yet), Chaos + Confused-newbie
+spotless.** The frontier moved again: the new dominant cluster is **item/consumable handling** (RL 7/12,
+a fresh domain). Next move (proposed, NOT dispatched — Tim's call):
+- **H-45 item/consumable batch (grace lane, Sonnet; serialize if it needs `playloop.js` for item-use):**
+  (1) an item-detail query ("what does the Tonic of grit do?") answers from the item's REAL definition
+  (deliver-or-decline extended to items), not auto-success; (2) a declared item-USE ("uncork and drink the
+  Tonic") resolves — applies the real effect, no spurious roll for a no-check quaff, updates inventory; no
+  raw-stat-block leak; (3) a consumables-list readback ("list/read back my consumables") is a recognized
+  meta-query, not bounced with scenery.
+- **Deferred grace/movement residuals (fold into a follow-up, low priority):** Lore-hound t1 "whose house
+  is this?" (direct who-question unanswered), t9 failed-roll pointed question → vague dodge (react-under-
+  pressure on a non-accusation phrasing — H-42 sibling), t11 Torva/Tove name ambiguity; plus the still-open
+  travel-bounce, goal/aim UI-string leak, lore-invention guard, and the H-44 lurker-naming watch-item (did
+  NOT recur this gate — the observer query wasn't probed; keep watching).
+**Rung-1 bar:** NOT met (RL 7/12) but CLOSEST yet — 2 of 4 personas spotless, and the remaining cluster is
+one fresh, tractable domain. Closing item/consumable handling is likely the last big push to the bar.
+Restart the dev server fresh before any gate (the session's server gets killed between runs).
+
+**Known small follow-up (still open):** `infoPressCount` off-by-one in `infoExtractionOutcome` — fold into a
+future grace batch.
 
 **Known small follow-up (not yet packeted):** `infoPressCount` off-by-one in `infoExtractionOutcome`
 (playloop.js) — it's called after the current turn's own `resolution` event is already on
@@ -997,9 +1047,9 @@ Full per-turn detail in the report file. Catalog these as the next hard-tail pac
 once a worker prompt is drafted. Priority order: CRASH → DM_TEST_DEADEND → CRUNCH_INCONSISTENCY →
 CANON_HALLUCINATION.
 
-## Budget — ~$10.9 remaining
-Tim's API key budget is **$50 total**. ~$13.4 before the post-H-42 baseline gate (~$2.52) → **~$10.9 left**,
-roughly 4 more 4-session gate runs at the current rate. Worker-side fixes (Sonnet/Codex windows) don't
+## Budget — ~$8.4 remaining
+Tim's API key budget is **$50 total**. ~$10.9 before the post-H-43/H-44 gate (~$2.52) → **~$8.4 left**,
+roughly 3 more 4-session gate runs at the current rate. Worker-side fixes (Sonnet/Codex windows) don't
 draw this budget — only `scripts/dm-playtest.mjs` runs do.
 
 ## Open strategic question (the arbiter call) — VERDICT: Road A for the routing/state long-tail; HYBRID (deliver-or-decline) for the cluster-D canon-grounding gap; Road B parked w/ sharpened trigger

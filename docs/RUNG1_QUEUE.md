@@ -1143,12 +1143,39 @@ Full per-turn detail in the report file. Catalog these as the next hard-tail pac
 once a worker prompt is drafted. Priority order: CRASH → DM_TEST_DEADEND → CRUNCH_INCONSISTENCY →
 CANON_HALLUCINATION.
 
-## Budget — ~$3.1 remaining
-Tim's API key budget is **$50 total**. ~$5.7 before the post-H-47/H-48/H-49 gate (~$2.56) → **~$3.1 left**,
-roughly **1 more** 4-session gate run at the current rate. Very tight now — do not dispatch new gate-costly
-work without Tim's explicit go-ahead. Batch fixes before gating, and lean on the free `npm run lint:content`
-+ unit tests (with multi-item/varied phrasing) to catch issues without spending. Worker-side fixes
-(Sonnet/Codex windows) don't draw this budget — only `scripts/dm-playtest.mjs` runs do.
+## Budget — ~$0.5 remaining
+Tim's API key budget is **$50 total**. ~$3.1 before the post-H-50/H-51 gate (~$2.63) → **~$0.5 left**,
+not enough for another 4-session gate run. **Budget is effectively exhausted — do not run
+`scripts/dm-playtest.mjs` again without Tim explicitly topping up or approving the spend.** Worker-side
+fixes (Sonnet/Codex windows) don't draw this budget — only gate runs do, so packets can still be drafted
+and landed; they just can't be re-measured experientially until budget is replenished.
+
+## Post-H-50/H-51 gate — 2026-06-20 — VERDICT: both fixes confirmed effective, two new (smaller) clusters surfaced
+`docs/playtests/opus-gate-2026-06-20.md` — **4/48 failing (8%), down from 6/48**. **Chaos-griefer and
+Confused-newbie both now fully clean (12/12 each)** — direct confirmation H-51 (NPC-observer self-answer +
+OOC repetition-callout) fixed the confused-newbie cluster with no recurrence. **Zero purse/coin desync
+failures** — confirms H-50 (purse-claim guard, landed at `6696c7e`) closed that cluster too. No `high`-severity
+failures this run.
+
+Two new clusters, both smaller (1-2 turns) and distinct in shape from anything fixed so far:
+- **Lore-hound CANON_HALLUCINATION (2 failures)** — DM invented an unbacked "well over two decades" elder
+  tenure, and separately misidentified the elder as "Corwin Boneknit" (a representative) when canon names
+  Kael as the elder. This is a grounding-gap, not a routing bug: the DM has a real Kael fact available but
+  defaults to a generic/wrong answer when asked indirectly ("who runs this place" / "who's the elder").
+  Same family as H-49 but a different trigger shape (identity/tenure question, not relationship/event claim).
+- **Rules-Lawyer DM (2 failures)** — (a) CRUNCH_INCONSISTENCY: player explicitly asked for "the attack roll
+  and the result" of swinging at a bread basket; DM resolved the roll but narrated an unrelated outcome
+  ("the way ahead opens a little") with no concrete fiction tied to the actual roll/target. (b) DM_TEST_DEADEND
+  (low severity): player called out a roll-reporting inconsistency across turns; DM picked a consistent
+  number but ended on a clarifying question ("Which turn are you citing?") instead of fully resolving —
+  judged as a UI-style bounce-back rather than a DM staying in the fiction, per `docs/THE_DM_TEST.md`.
+
+**Not dispatched this session** — budget is now ~$0.5, below the cost of even one more gate run (~$2.6
+typical). These two clusters are real but small (4 turns total across two sessions) — recommend holding
+here and letting Tim decide whether to top up budget before scoping H-52/H-53, since further packets can't
+be experientially re-verified until then. If dispatched anyway: **Lore-hound elder-identity cluster first**
+(cleaner, same family as H-49's lineage — likely needs the NPC-identity/role lookup to be consulted before
+the DM answers an indirect "who's in charge" question, not just direct "who is Kael" questions).
 
 ## Post-H-47/H-48/H-49 gate — 2026-06-20 — VERDICT: batch confirmed effective, two new clusters surfaced
 `docs/playtests/opus-gate-2026-06-20.md` — 6/48 failing (13%), down from 16/48 pre-batch. **Chaos-griefer

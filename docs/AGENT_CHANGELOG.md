@@ -1,6 +1,13 @@
 # AGENT_CHANGELOG
 
-## [CLAIMED] H-43 combat resolution · Codex · 2026-06-20T00:05:59Z · files: engine/playloop.js, engine/combat/escapeCombat.js, tests/U206.combatResolution.test.js
+2026-06-20T00:48:48Z — Codex
+- Packet/seam: H-43 combat resolution
+- Commit(s): `4f70b0b`
+- Files changed: `engine/playloop.js`, `engine/combat/escapeCombat.js`, `tests/U206.combatResolution.test.js`
+- Summary: fixed the combat-lane routing/state bugs from H-43. `hit` now counts as an explicit in-combat strike even when a trailing dice-demand makes the line question-shaped, so declared attacks resolve to real `[strike:...]` mechanics instead of `[combat:table-talk]`. Active escape combat now routes 0-HP turns through the dying gate before travel/body-action shortcuts, and `resolveEscapeCombatTurn` keeps combat active with `[combat:dying]` when the PC is downed while a live enemy still stands instead of ending the fight. Social/deixis lines such as "ignore Corwin, point at the stranger" are excluded from assault detectors so they do not mint combat. Added U206 coverage for declared dice-demand attacks, narrated-hit/HP-delta consistency, 0-HP live-enemy dying state, and social-not-combat routing. Did NOT touch `engine/grace/gracefulAdjudication.js`, `engine/llmAdapter.js`, `WORLD_VERSION`, invariants, RNG, or neighboring grace-lane files.
+- Proof: `node --test tests/U206.combatResolution.test.js tests/U149.naturalAttackVerbs.test.js tests/U152.grappleIntegration.test.js tests/U167.strikeMechanicsDice.test.js tests/U191.combatImprovisedAction.test.js tests/U193.combatInitiationReconciliation.test.js tests/UX2.conversationRouting.test.js` — 41/41; `node --test` — 8190/8190; `node --test tests/U19.worldHashDeterminism.test.js tests/U21.replayGateN50.test.js tests/U22.longRunStabilityN100T500.test.js tests/U27.worldHashSurfaceContract.test.js tests/U30.gate6.sequelDeterminism.test.js` — 6/6; `npm run playtest:quick` — 50 runs, 0 crashes, no bugs found. Initial full-suite attempt failed only because the sandbox lacked local listener permission for A04 (`listen EPERM 127.0.0.1`); rerun after local network permission passed 8190/8190.
+- Remaining/next: none from H-43; queue owner should verify and push.
+- Rollback: revert `4f70b0b`
 
 2026-06-20T00:16:42Z — Claude-Sonnet
 - Packet/seam: H-44 grace cleanup (post-H-42 baseline gate residuals)

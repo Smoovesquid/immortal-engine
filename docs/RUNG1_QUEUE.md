@@ -193,9 +193,58 @@ Last gate: post-H-50/H-51 = **4/48** (`docs/playtests/opus-gate-2026-06-20.md`).
   Held the H-53 push until H-53b landed; pushed as one clean stack. The other RL turn that run (the "15 vs 12
   / 14 vs 13, what did I actually roll?" turn) was judge-scored low/acceptable — NOT a defect, deliberately
   not packeted.
-- **Next signal requires a fresh gate** — no known open defects remain from the last run. **BUDGET EXHAUSTED
-  (~$0.5) — cannot re-measure until Tim tops up.** H-52 + H-53/H-53b are landed BLIND (unit-tested, not yet
-  experientially graded); they batch into the next gate whenever it's funded.
+- **GATED post-H-52/H-53 (`docs/playtests/opus-gate-2026-06-20-postH52-H53.md`): 11/48, both fixes CONFIRMED
+  effective by nature** — H-52's class (CANON_HALLUCINATION) and H-53's class (CRUNCH_INCONSISTENCY from object
+  strikes) both went to **ZERO**; **Lore-hound 0/12 spotless** (H-52's persona). The 4→11 rise is fresh
+  territory, not regression (verdict below). **New dominant cluster = compound/meta-query partial-answer +
+  rules-confirmation-as-action (grace, RL+Chaos).** Candidates: **H-54** (grace) compound meta-query +
+  rules-confirmation + declared-check adjudication; **H-55** (Codex) declared lethal attack on a non-combat
+  civilian NPC must start combat (1 high). Plus a travel-gate-on-present-NPC residual ("go talk to Kael" bounced
+  to travel). NONE dispatched — Tim's call.
+
+## Gate run 2026-06-20 (post-H-52/H-53) — `docs/playtests/opus-gate-2026-06-20-postH52-H53.md` — VERDICT: H-52 + H-53 BOTH CONFIRMED (their bug classes → zero; Lore-hound 0/12 spotless); 4→11 is fresh-territory exploration, not regression; new dominant cluster = compound/meta-query partial-answer + rules-confirmation-as-action (grace)
+4 sessions × 12 turns, glass-harbor. Fresh server restarted immediately before the run (killed the 09:49 server,
+booted 09:56:39, post-dates all H-53 commits — per checklist). **11/48 (23%)**, up from 4/48 — but judged BY
+NATURE this is NOT a regression. Cost ~$2.64 (96 calls).
+By-class: **DM_TEST_DEADEND 10 · COMBAT_NOT_STARTED 1** · CANON_HALLUCINATION **0** · CRUNCH_INCONSISTENCY **0**.
+Rules Lawyer 5v+5c (worst) · Chaos 3v+1c · **Lore-hound 0/12** · Confused newbie 2v+1r.
+
+**H-52 CONFIRMED — emphatically.** CANON_HALLUCINATION (its class) = 0. **Lore-hound 0/12, fully spotless** — the
+exact persona H-52 targeted. The gate probed the wrong-elder confusion head-on (RL t11 "Kael's the elder now? A
+second ago Corwin…", t12 "is Kael the elder I'm fighting, or the elder…") and it resolved cleanly. The decades-
+tenure + grounded-name/wrong-role shapes did not recur.
+**H-53 CONFIRMED.** CRUNCH_INCONSISTENCY (its class) = 0. The out-of-combat object-strike-narration shape did not
+recur. (H-53b's movement/people over-fire also absent.)
+
+**NEW DOMINANT CLUSTER — compound/meta-query partial-answer + rules-confirmation-as-action (grace lane, RL 5 +
+Chaos 2; candidate H-54):** the meta-query answer-binding family (H-25/H-31/H-40 lineage) under NEW shapes —
+- **Multi-part query, partial answer:** "name, class, and current HP?" → gave name+class, **dropped HP** (13/13
+  in canon). "AC/defense on Worn Blade vs Kitchen cleaver + damage each?" → observe-only travel line, weapon
+  lookup unanswered. "who's Brokefang? + grab the purse" / "how much coin + where did Brokefang come from?" →
+  answered one half, dropped the NPC-identity half. Root: a compound question must answer EVERY part.
+- **Rules-confirmation treated as an ACTION:** "with MIGHT 12 my mod is +1 — so a hit is 1d6+1? Confirm" →
+  rolled d20 vs DC13 (failure, gen:f filler) instead of confirming the rule. "Yes or no: do I add MIGHT +1 to
+  melee damage?" → restated the stat, dodged the actual rules question. A rules-mechanic question is not an
+  in-fiction action — answer it straight, never roll it.
+- **Declared check not adjudicated:** "I sheathe and roll WITS to read his face — DC and result?" → "no standing
+  DC… I set one when you commit" despite a concrete declared action. A declared check must get a DC + roll.
+
+**OTHER (minority):**
+- **COMBAT_NOT_STARTED (1, HIGH, Chaos — combat/Codex lane; candidate H-55):** "draw my dagger and stab the baker
+  in the gut" → narrated the stab landing but **no combat started, no enemy entity/HP, no roll** — a freebie
+  asserted kill on a non-combat civilian NPC. Sibling to H-30/H-43 declared-attack-resolution, extended to a
+  civilian (non-roster) NPC target.
+- **Travel-gate on a PRESENT NPC (Confused-newbie t5, VIBE+RAG — grace/playloop):** "go talk to Kael the elder"
+  where Kael is present → DM gated him behind a fake travel barrier instead of starting the conversation. A
+  THE_DM_TEST movement-bounce (long-standing deferred residual, now gate-confirmed). Fold into H-54 or its own.
+- Confused-newbie t12 stonewall + Chaos "shake the baker for coins" (judge: actually consistent, borderline).
+
+**Rung-1 bar: NOT met** (RL 5/12) — but the two landed fixes CLEARLY held (their classes zeroed, Lore-hound
+spotless), and the remaining failures are a single well-understood family (meta-query answer-binding) plus one
+combat-lane high and one travel-bounce. Not a Road-A/B fork — all narrow answer-binding/routing gaps. Road B
+stays parked. Proposed next (NOT dispatched — Tim's call): **H-54 (grace)** compound-query-answer-all-parts +
+rules-confirmation-as-straight-answer + declared-check adjudication (+ maybe the present-NPC travel-gate); **H-55
+(Codex)** declared lethal attack on a civilian NPC starts real combat.
 
 ### (historical) prior in-flight — H-47 ∥ H-48 ∥ H-49, dispatched 2026-06-20, declared FILE-DISJOINT (parallel OK §2)
 Tim: "proceed." Three packets, disjoint file sets → parallel; each prompt has a halt-on-cross-file guard +
@@ -1159,12 +1208,11 @@ Full per-turn detail in the report file. Catalog these as the next hard-tail pac
 once a worker prompt is drafted. Priority order: CRASH → DM_TEST_DEADEND → CRUNCH_INCONSISTENCY →
 CANON_HALLUCINATION.
 
-## Budget — ~$0.5 remaining
-Tim's API key budget is **$50 total**. ~$3.1 before the post-H-50/H-51 gate (~$2.63) → **~$0.5 left**,
-not enough for another 4-session gate run. **Budget is effectively exhausted — do not run
-`scripts/dm-playtest.mjs` again without Tim explicitly topping up or approving the spend.** Worker-side
-fixes (Sonnet/Codex windows) don't draw this budget — only gate runs do, so packets can still be drafted
-and landed; they just can't be re-measured experientially until budget is replenished.
+## Budget — ~$9.9 remaining
+Tim topped up **+$12** on 2026-06-20 (after the prior ~$0.5 exhaustion). ~$12.5 available → ran the
+post-H-52/H-53 gate (~$2.64) → **~$9.9 left** (~3 more 4-session runs). Worker-side fixes (Sonnet/Codex
+windows) don't draw this budget — only `scripts/dm-playtest.mjs` runs do. Still confirm the number before any
+run that would drop below ~$2.5.
 
 ## Post-H-50/H-51 gate — 2026-06-20 — VERDICT: both fixes confirmed effective, two new (smaller) clusters surfaced
 `docs/playtests/opus-gate-2026-06-20.md` — **4/48 failing (8%), down from 6/48**. **Chaos-griefer and

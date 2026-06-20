@@ -1842,6 +1842,16 @@ function playerMoveCore(world, packsById, text) {
           output: { narration: `Wizard: ${answer}`, mechanics: '[combat:table-talk]' }
         };
       }
+      // Conversational pressure mid-fight ("answer me plainly", "tell me why")
+      // is still a combat turn context. The escape resolver defaults unknown
+      // text to a weapon strike, so stop non-violent talk here instead of
+      // silently turning an interrogation into an attack.
+      if (!explicitAction && escVerb !== 'parley' && isCombatConversationNonAction(text)) {
+        return {
+          world: w,
+          output: { narration: `Wizard: ${combatStatusAnswer(w)}`, mechanics: '[combat:table-talk]' }
+        };
+      }
       // Object/scene physical actions mid-fight are not implicit attacks. The
       // escape resolver defaults unknown text to strike, so catch door/window
       // business here before it becomes a free sword swing at the enemy.
@@ -5858,6 +5868,14 @@ function isCombatSocialNonAction(text) {
   if (ANY_VIOLENCE.test(t)) return false;
   if (/\b(?:stab|slash|strike|attack|kill|murder|smash|slam|bash|ram|drive|throw|hurl|fling|toss|lob|shoot|cast|blast|fireball|bolt|smite|grapple|choke|punch|kick|bite|claw|stomp|headbutt)\b/i.test(t)) return false;
   return /\b(?:taunt|mock|insult|jeer|spit|spits|spat|yell|shout|snarl|threaten|threat|warn|curse|glare|laugh)\b/i.test(t);
+}
+
+function isCombatConversationNonAction(text) {
+  const t = String(text || '').toLowerCase();
+  if (!t) return false;
+  if (ANY_VIOLENCE.test(t)) return false;
+  if (/\b(?:strike|attack|swing|stab|slash|hit|kill|murder|smash|slam|bash|ram|drive|throw|hurl|fling|toss|lob|shoot|cast|blast|fireball|bolt|smite|grapple|choke|punch|kick|bite|claw|stomp|headbutt|guard|ward|cover|flee|retreat|disengage)\b/i.test(t)) return false;
+  return /\b(?:answer|tell|explain|say|admit|confess|speak|talk|reply|respond|plainly|truth|why|who|what|when|where)\b/i.test(t);
 }
 
 // A LONG rest is deliberate language — 'sleep', 'make camp', 'turn in'.

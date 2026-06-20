@@ -208,8 +208,6 @@ other agents. (none active)
 
 `[CLAIMED] H-50 purse/coin transaction-claim guard · Codex · 2026-06-20T12:39:43Z · files: engine/llmAdapter.js, tests/U213.purseClaimGuard.test.js`
 
-`[CLAIMED] H-51 confused-newbie referent + OOC-checkin · Claude-Sonnet · 2026-06-20T12:46:28Z · files: engine/grace/gracefulAdjudication.js, tests/U214.confusedNewbieReferent.test.js`
-
 ## Template
 
 - Date:
@@ -990,3 +988,18 @@ other agents. (none active)
   - `git diff --stat` confirmed only `engine/playloop.js` and the new test file were touched
 - Remaining/next: none for this packet.
 - Rollback: revert `31ee489`
+
+2026-06-20T13:05:00Z — Claude-Sonnet
+- Packet/seam: H-51 confused-newbie referent + OOC-checkin
+- Commit(s): `50d636a` (code+test), `6fbd9e3` (claim)
+- Files changed: `engine/grace/gracefulAdjudication.js`, `tests/U214.confusedNewbieReferent.test.js` (new)
+- Summary: two distinct content-resolution bugs from the post-H-47/H-48/H-49 gate (docs/playtests/opus-gate-2026-06-20.md, Confused newbie). (a) `META_NPC_OBSERVER`'s handler defaulted to `sociable[0]` whenever `NPC_OBSERVER_LURK_RE` didn't match — "Corwin, you keep going quiet on me — who is this person you don't want to name?" addresses Corwin but asks about a DIFFERENT, deliberately-unnamed party; since Corwin was `sociable[0]`, the DM re-served him as the answer ("Corwin Boneknit, a representative — one of the folk here, watching from nearby." — the exact no-description fallback template, confirming the bug lives in this handler, not a different live path; the conversation was not in formal `w.scene?.dialogue` mode, so the gate at playloop.js:803 routed here as hypothesized). Fixed two ways: widened `NPC_OBSERVER_LURK_RE` to also catch "won't name"/"don't want to name"/"keep going quiet (about)" evasion framing (same semantic shape as "lurking"/"edges"), and — when that framing fires — detect the explicitly-addressed NPC (their name appears in the text) and exclude them from the sociable candidate pool before defaulting to `[0]`, falling through to a real lurker if one exists or an honest non-self-referencing line ("Can't put a face to them yet...") if not. (b) Added `META_SYSTEM_CHECKIN`, a new `META_*` detector for an out-of-character repetition/system callout paired with a check-in ("you're just repeating yourself"/"you keep saying the same thing"/"that's the same answer as before"/"you said that already" + "okay"/"there"/"broken"/"stuck"/"glitching") — "You're just repeating yourself now, are you okay?" was previously falling through to normal action resolution and firing a real roll (`[roll:13 vs DC:12 → mixed | ...]`) with a content-free "it half-works" hedge. Wired into `isMetaQuestion()` alongside every other `META_*` flag; the handler gives a brief in-voice, non-rolling acknowledgment (no roll, no time cost — same treatment as `isNullAction`). Anchored strictly on the repetition/system-callout phrase, never the bare health-check phrase alone, so a genuine in-fiction "are you okay?" to an NPC (post-combat, to a wounded ally, etc.) is unaffected.
+- Deliberately did NOT do: did not touch `playloop.js` — traced Bug A's live path and confirmed it matched the hypothesized `META_NPC_OBSERVER` branch in `gracefulAdjudication.js` directly (the dialogue-mode gate at playloop.js:803 was not the active path for this transcript). Did not touch `llmAdapter.js` (H-50, claimed concurrently by Codex) or `escapeCombat.js`. No `WORLD_VERSION` bump, no `Math.random`/`Date.now`, no `effectsCore`/`invariants` changes.
+- Proof:
+  - `node --test tests/U214.confusedNewbieReferent.test.js` — 11/11 (written FAILING first: 7/11 failed pre-fix — U214-01/02/03 Bug A self-answer cases, U214-20/21/22/23 Bug B roll-firing cases; the 4 false-positive/regression guards U214-10/11/30/31 already passed pre-fix)
+  - `node --test tests/U207.graceCleanup.test.js tests/U163.metaMechanicsAdviceGate.test.js tests/U202.deliverOrDeclineRecall.test.js` — 45/45 (existing `META_NPC_OBSERVER`/`META_ADVICE` coverage, unmodified, still green)
+  - Full suite: `node --test` — 8238/8238 (baseline 8227 + 11 new U214 cases)
+  - Determinism: `node --test tests/U19.worldHashDeterminism.test.js tests/U21.replayGateN50.test.js tests/U22.longRunStabilityN100T500.test.js tests/U27.worldHashSurfaceContract.test.js tests/U30.gate6.sequelDeterminism.test.js` — 6/6
+  - `git diff --stat` confirmed only `engine/grace/gracefulAdjudication.js` and the new test file were touched
+- Remaining/next: none for this packet.
+- Rollback: revert `50d636a`

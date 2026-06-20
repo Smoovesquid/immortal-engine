@@ -943,6 +943,18 @@ other agents. (none active)
   - `git diff --stat` confirms only `engine/grace/gracefulAdjudication.js` (+21/-2) and the new test file were touched
 - Remaining/next: none for this packet; EXAMINE-path `.name`-only matching gap (noted above, pre-existing per H-45) still open if the queue owner wants it picked up separately.
 - Rollback: revert `7ea7669`
-[CLAIMED] H-47 item-effect answer breadth · Claude-Sonnet · 2026-06-20T11:47:44Z · files: engine/grace/gracefulAdjudication.js, tests/U210.itemEffectBreadth.test.js
+2026-06-20T12:05:00Z — Claude-Sonnet
+- Packet/seam: H-47 item-effect answer breadth
+- Commit(s): `36e9faa` (code+test), `acbef39` (claim)
+- Files changed: `engine/grace/gracefulAdjudication.js`, `tests/U210.itemEffectBreadth.test.js` (new)
+- Summary: post-H-45/H-46 gate (Rules-Lawyer 7/12, the dominant cluster) found `answerItemQuery` returning the FIRST inventory item whose name appeared anywhere in the player's text, not the item actually asked about — a flavor item (Kitchen cleaver) appearing earlier in the bucket masked the Tonic of grit's real heal in a compound query. Fixed by folding ALL items named in the query (not `.find`'s first match) into one answer: each gets its real catalog effect (heal/cure, now stated with the real amount — "it heals 2d4", not the old vague "it's restorative") or its honest no-effect line, plus weapon damage when asked and the matched item is a weapon (`weaponDieString` extracted from `answerWeaponDamage` so both share one die-reading path). Added `META_ITEM_CAPABILITY` for phrasings without the "what does X do" shape ("does the Tonic heal HP, give temp HP, or buff a stat?", "is the Tonic useful?") which previously fell through to the generic hedge. Added `META_ITEM_INERT_CLAIM` + `correctInertClaim` so a player asserting a real-effect item is "inert"/"useless"/"does nothing" gets corrected from the catalog instead of the DM agreeing with a false claim. Capability is stated regardless of current HP (`describeItemEffect` never reads HP) so a full-HP PC still hears "it heals 2d4," never "it's useless."
+- Deliberately did NOT do: did not touch `playloop.js`, `escapeCombat.js`, or `llmAdapter.js` (H-48/H-49 parallel packets own them). Did not add HP-aware phrasing variance ("it'd do nothing right now at full HP") — capability statement alone satisfied the gate's "never imply effectless" requirement; left as a possible follow-up, not required. No `WORLD_VERSION` bump, no `Math.random`/`Date.now`, no `effectsCore`/`invariants` changes.
+- Proof:
+  - `node --test tests/U210.itemEffectBreadth.test.js` — 6/6 (written FAILING first: 3/6 failed pre-fix — compound-fold masking, capability-phrasing fallthrough, false-inert agreement — confirming the bugs; all 6 green post-fix; U208 re-run unchanged 12/12)
+  - Full suite: `node --test` — 8214/8214 (baseline 8208 + 6 new)
+  - Determinism: `node --test tests/U19.worldHashDeterminism.test.js tests/U21.replayGateN50.test.js tests/U22.longRunStabilityN100T500.test.js tests/U27.worldHashSurfaceContract.test.js tests/U30.gate6.sequelDeterminism.test.js` — 6/6
+  - `git diff --stat` confirms only `engine/grace/gracefulAdjudication.js` and the new test file were touched
+- Remaining/next: none for this packet.
+- Rollback: revert `36e9faa`
 [CLAIMED] H-48 combat finish-low-HP · Codex · 2026-06-20T11:48:26Z · files: engine/playloop.js, engine/combat/escapeCombat.js, tests/U211.combatFinishLowHp.test.js
 [CLAIMED] H-49 lore-invention guard · Claude-Sonnet · 2026-06-20T11:48:33Z · files: engine/llmAdapter.js, tests/U212.loreInventionGuard.test.js

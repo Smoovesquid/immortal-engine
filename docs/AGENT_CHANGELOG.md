@@ -908,3 +908,5 @@ other agents. (none active)
   budget updated to ~$15.9 remaining).
 - Rung-1 bar: **not met** — two of four H-37 fixes need broadening (not regressions, narrow nets), plus
   a fresh combat-lane bug surfaced. Rules Lawyer not clean (6/12), Chaos not clean (5/12, new shape).
+
+[CLAIMED] H-45 consumables wire-up · Claude-Sonnet · 2026-06-20 10:44 UTC · files: engine/ruleset/core/items/consumables.js, packs/fantasy/gear.json, engine/chargen/fantasyGear.js, engine/chargen/gear.js, engine/grace/gracefulAdjudication.js, tests/U208.consumables.test.js

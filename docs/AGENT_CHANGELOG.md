@@ -1,5 +1,14 @@
 # AGENT_CHANGELOG
 
+2026-06-20T20:15:07Z — Codex
+- Packet/seam: H-57 convergence harness (Lane B)
+- Commit(s): local H-57 commit (hash in worker final report)
+- Files changed: `scripts/convergence/fixtures.mjs`, `scripts/convergence/runCorpus.mjs`, `tests/corpus/_smoke.corpus.mjs`, `package.json`, `docs/AGENT_CHANGELOG.md`
+- Summary: added the deterministic LLM-off paraphrase-invariance corpus runner and standard fixture map. `village_baker` copies U219's baker world pattern; `empty_room`, `active_combat`, and `dialogue_active` are deterministic fixture factories. The runner glob-loads `tests/corpus/*.corpus.mjs`, checks all paraphrase signatures and diverge negatives, groups locked/target results by capability, prints overall locked-pass %, fails only locked regressions, and reports passing targets as `PROMOTE?`. Added smoke C2 locked cases from observed deterministic `village_baker` output. Deliberately did NOT touch engine files, `WORLD_VERSION`, paid gate scripts, or real capability corpus files.
+- Proof: `npm run convergence` — C2 locked 2/2, target 0/0, overall locked-pass 100.0% (2/2); gate-proof temporary false `surface_matches` — exited nonzero and named `FAIL locked C2-smoke-001`; reverted; final `npm run convergence` — C2 locked 2/2, overall locked-pass 100.0% (2/2); `node --test` — 8285/8285.
+- Remaining/next: Lane C can add real `tests/corpus/C*.corpus.mjs` content; no follow-up for H-57.
+- Rollback: revert local H-57 commit
+
 2026-06-20 — Basecamp (Opus)
 - §7 verdict on H-56 (`3e214ec`): **VERIFIED + pushed.** Full suite 8285/8285 (8279 + 6 U219), U219 6/6, determinism U19/21/22/27/30 6/6; no `Math.random`/`Date.now`/`WORLD_VERSION`; in-lane only (`playloop.js` + `U219` + changelog); no over-fire on grounded names/roles (adversarial probe, grounded "Mira"/"the baker"/generic all clean). **Finding (NOT a regression):** H-56 closes the `U219` referent shapes but a probe shows capability **C2 still misses** "what's keeping Brokefang so quiet?" / "take me to Sera Voss and her stall" (fall through to observe/travel) → logged as C2 `target` cases in `docs/CAPABILITY_LEDGER.md`. C2 = correct partial point-fix, prime early graduation candidate.
 - **Convergence-plan kickoff** (`docs/RUNG1_CONVERGENCE_PLAN.md`): redefine victory (frozen regression corpus + discovery-rate meter; done-when = corpus green + N gates open zero new capabilities) + close the loop (graduate the scattered grace detectors into one typed packet, per Biblioteca Vol 7 / Vol 8 §15). Biblioteca **Vol 8 dropped in** + catalogued. Created `docs/CAPABILITY_LEDGER.md` (C1–C14 + corpus format w/ `locked`/`target` tiers). Dispatched 3 file-disjoint lanes: A (ledger+format — Basecamp ✓), C (corpus draft from gate transcripts — Sonnet subagent ✓ → `docs/convergence/corpus-draft.md`, 16 cases), B (harness runner + convergence report — Codex, in flight).

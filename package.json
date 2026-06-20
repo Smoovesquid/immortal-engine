@@ -10,6 +10,7 @@
     "playtest:quick": "node scripts/playtest.js --seeds 10 --turns 50",
     "playtest:full": "node scripts/playtest.js --seeds 100 --turns 500",
     "prose:gate": "node scripts/prose-playtest.mjs",
+    "convergence": "node scripts/convergence/runCorpus.mjs",
     "dpos": "bash scripts/dpos.sh",
     "import-pack": "node scripts/import/index.js",
     "lint:content": "node scripts/contentLint.js"

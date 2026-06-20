@@ -453,6 +453,7 @@ export const FANTASY_STARTER_GEAR = {
   "consumables": [
     {
       "name": "Bandages",
+      "defRef": "bandages",
       "tags": [
         "consumable"
       ],
@@ -486,6 +487,7 @@ export const FANTASY_STARTER_GEAR = {
     },
     {
       "name": "Tonic of grit",
+      "defRef": "tonic_of_grit",
       "tags": [
         "consumable"
       ],
@@ -497,6 +499,7 @@ export const FANTASY_STARTER_GEAR = {
     },
     {
       "name": "Holy water (questionable)",
+      "defRef": "holy_water_questionable",
       "tags": [
         "consumable",
         "occult"

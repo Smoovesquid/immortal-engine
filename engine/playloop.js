@@ -4119,7 +4119,10 @@ function tryAttune(w, text) {
   };
 }
 
-const CONSUME_RE = /\b(?:drink|quaff|swig|down|use|take|swallow|apply|bind|wrap)\b.*\b(?:potion|draught|elixir|antidote|tonic|remedy|splint|dressing|bandage)s?\b|\bdrink\b.*\bhealing\b/i;
+// "holy\s*water" added (H-45) so the newly-wired Holy water (questionable)
+// is actually reachable by its own name — without it "I drink the holy
+// water" never reached tryUseConsumable at all.
+const CONSUME_RE = /\b(?:drink|quaff|swig|down|use|take|swallow|apply|bind|wrap)\b.*\b(?:potion|draught|elixir|antidote|tonic|remedy|splint|dressing|bandage|holy\s*water)s?\b|\bdrink\b.*\bhealing\b/i;
 
 function tryUseConsumable(w, text) {
   const t = String(text || '');

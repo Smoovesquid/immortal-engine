@@ -1,4 +1,5 @@
 import { filterByTags, rollOnTable } from './rngTables.js';
+import { getItemDef } from '../ruleset/core/items/index.js';
 
 export function emptyInventory() {
   return {
@@ -34,7 +35,22 @@ export function buildLoadout({ packGear, tags = [], rng }) {
   inv.spells = pick('spells', hasTag(tags, 'spell') ? 1 : 0);
   inv.tech = pick('tech', hasTag(tags, 'tech') ? 1 : 0);
   inv.oddities = pick('oddities', 1);
-  inv.consumables = pick('consumables', 2);
+  // H-45 — a picked consumable carrying a defRef names a real mechanical
+  // effect in the catalog (consumables.js); mint it as a structured item so
+  // tryUseConsumable/answerItemQuery can resolve it and it actually
+  // disappears on use. Flavor-only picks (no defRef: Rations, Lamp oil) stay
+  // in the legacy bucket, display-only, same as before.
+  const pickedConsumables = pick('consumables', 2);
+  inv.consumables = [];
+  for (let i = 0; i < pickedConsumables.length; i++) {
+    const c = pickedConsumables[i];
+    const defRef = String(c?.defRef || '').trim();
+    if (defRef && getItemDef(defRef)) {
+      inv.items.push({ id: `start_${defRef}_${i}`, defRef, equipped: null });
+    } else {
+      inv.consumables.push(c);
+    }
+  }
   inv.junk = pick('junk', 1);
 
   // Signature = one meaningful object, biased to oddities/tools.

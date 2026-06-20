@@ -11,6 +11,7 @@ import { profBonusFor } from '../ruleset/core/levelTable.js';
 import { playerAc, meleeProfile } from '../combat/escapeCombat.js';
 import { purseTotalCopper, formatPrice } from '../economy/shop.js';
 import { fateBand } from '../rulesets.js';
+import { getItemDef, findDefByName } from '../ruleset/core/items/index.js';
 
 // Canonical stat names (bare "my X" is unambiguous for game-native names).
 const META_STAT = /\b(?:what(?:'?s| is)\s+my\s+|my\s+)(might|agility|wits|grit|charm)(?:\s+(?:modifier|mod|score|stat|number|bonus))?\b/i;
@@ -223,6 +224,13 @@ const META_STATS_REQ = /\b(?:stats|attributes|scores|ability\s+scores|hp|hit\s?p
 // resolves to a REAL inventory item (else it returns null and falls through, so
 // "what does the elder do" isn't mistaken for an item).
 const META_ITEM = /\bwhat(?:'?s| does| do| is| are)\s+(?:the|my|a|an|this|that)\s+.+?\s+(?:do|for|good\s+for|used\s+for|used\s+to)\b|\b(?:do i have|have i got|am i carrying|is\s+(?:the|a|an|my)\s+.+?\s+in\s+my\s+(?:pack|bag|inventory|kit|belongings))\b/i;
+// "List/read back my consumables" — distinct from META_INVENTORY (which
+// deliberately skips the structured items[] bucket entirely, so a bridged
+// consumable like the Tonic of grit would otherwise silently vanish from a
+// list query once H-45 moves it out of the flavor bucket). Checked before
+// META_INVENTORY in the handler below so this dedicated, items-aware answer
+// wins over the generic (items-blind) pack dump for this specific ask. (H-45)
+const META_CONSUMABLES_LIST = /\b(?:list|read\s+back|name|show)\s+(?:all\s+)?(?:my\s+)?consumables\b|\bwhat\s+consumables\s+(?:do\s+i\s+have|am\s+i\s+carrying|have\s+i\s+got)\b|\bwhat(?:'?s| are| is)\s+(?:all\s+)?(?:my\s+)?consumables\b/i;
 // Coins/purse — a number the DM owns (read from party.purse). Also catches
 // "do I even have any money on me?" and a re-asserted "pouch of coin" claim
 // (the latter shares ground with POSSESSION_CHALLENGE below — H-35 R1/R2).
@@ -318,7 +326,8 @@ export function isMetaQuestion(text) {
     || META_ROLL_RECALL.test(t)  // H-12/13
     || META_HELD_ITEMS.test(t) || META_ARMOR_VALUE.test(t)  // H-31 R2
     || META_POSSESSION_CHALLENGE.test(t)  // H-31 R3
-    || META_GEAR_YESNO.test(t);  // H-38a R1
+    || META_GEAR_YESNO.test(t)  // H-38a R1
+    || META_CONSUMABLES_LIST.test(t);  // H-45
 }
 
 // Exported guard for playloop.js — detects NPC identity/presence queries so
@@ -495,31 +504,79 @@ function extractCitedRoll(text) {
   return null;
 }
 
+// Describes a catalog def's real mechanical effect in plain language, or
+// null when the def has none (a real DM never invents what an item does, and
+// never claims "no effect" for one that has a real effect — H-45).
+function describeItemEffect(def) {
+  if (!def || !def.effect) return null;
+  if (def.effect.kind === 'heal') return `it's restorative — using it heals you`;
+  if (def.effect.kind === 'removeCondition') return `it cures ${def.effect.condition}`;
+  return null;
+}
+
 // Answer a question about a specific carried item ("what does X do?", "is X in
 // my pack?") from the real inventory. Returns null if no carried item matches,
 // so non-item "what does X do" queries fall through to normal resolution.
+//
+// Two inventory shapes coexist (Pass T1/T2): the legacy flavor buckets
+// (weapons/armor/.../consumables/junk — name+notes, no mechanical link) and
+// the structured `items[]` array (id+defRef, resolved against the real
+// catalog). A flavor entry CAN also carry a defRef (H-45 — Bandages/Tonic of
+// grit/Holy water in the fantasy pack) once it's been bridged into items[] at
+// chargen, so both shapes are checked against the catalog here: that's what
+// lets this branch describe a REAL heal/cure instead of always falling back
+// to "nothing special fires when you use it" for an item that, in truth, now
+// does something.
 function answerItemQuery(lowerText, world) {
   const inv = world.party?.[0]?.inventory || {};
-  const items = [].concat(
+  const flavor = [].concat(
     inv.weapons || [], inv.armor || [], inv.tools || [], inv.clothes || [],
-    inv.oddities || [], inv.consumables || [], inv.tech || [], inv.junk || [], inv.items || []
-  ).filter(it => it && (it.name || typeof it === 'string'));
+    inv.oddities || [], inv.consumables || [], inv.tech || [], inv.junk || []
+  ).filter(it => it && (it.name || typeof it === 'string'))
+   .map(it => ({ name: String(it.name || it).trim(), note: String(it.notes || it.note || '').trim(), def: findDefByName(it.name || it) }));
+  const structured = (Array.isArray(inv.items) ? inv.items : [])
+    .map(it => getItemDef(it.defRef))
+    .filter(Boolean)
+    .map(def => ({ name: def.name, note: '', def }));
+  const items = [...flavor, ...structured];
   if (!items.length) return null;
   const match = items.find(it => {
-    const n = String(it.name || it).toLowerCase();
+    const n = it.name.toLowerCase();
     if (!n) return false;
     if (lowerText.includes(n)) return true;
     return n.split(/\s+/).filter(x => x.length >= 4).some(tok => lowerText.includes(tok));
   });
   if (!match) return null;
-  const name = String(match.name || match).trim();
-  const note = String(match.notes || match.note || '').trim().replace(/[.?!]+$/, '');
+  const { name, def } = match;
+  const note = match.note.replace(/[.?!]+$/, '');
   const presence = /\b(do i have|have i got|am i carrying|in\s+my\s+(?:pack|bag|inventory|kit|belongings))\b/.test(lowerText);
   if (presence) return `Yes — ${name} is in your pack${note ? `: ${note}.` : '.'}`;
-  // effect query
+  // effect query — describe the real effect when there is one; otherwise the
+  // honest, unembellished "just what it looks like" line. Never invented,
+  // never an auto-success.
+  const effectLine = describeItemEffect(def);
+  if (effectLine) return `${name}${note ? ` (${note})` : ''} — ${effectLine}.`;
   return note
     ? `${name}: ${note}. It's a real thing in your pack, not a game-piece — nothing special fires when you use it.`
     : `${name} is just what it looks like — no special effect I track.`;
+}
+
+// "List my consumables" — the real consumables from BOTH inventory shapes
+// (the legacy flavor bucket for Rations/Lamp oil, and the structured items[]
+// for anything bridged to a real catalog def — H-45), never invented. An
+// empty pack is reported honestly. (H-45)
+function listConsumables(world) {
+  const inv = world.party?.[0]?.inventory || {};
+  const flavorNames = (Array.isArray(inv.consumables) ? inv.consumables : [])
+    .map(it => String(it?.name || it).trim()).filter(Boolean);
+  const structuredNames = (Array.isArray(inv.items) ? inv.items : [])
+    .map(it => getItemDef(it.defRef))
+    .filter(def => def && def.kind === 'consumable')
+    .map(def => def.name);
+  const names = [...flavorNames, ...structuredNames];
+  return names.length
+    ? `Your consumables: ${names.join(', ')}.`
+    : `You're not carrying anything you could drink, eat, or use up — no consumables in the pack.`;
 }
 
 // Answer a weapon damage-die query from the real loadout. Inventory weapons
@@ -1079,6 +1136,13 @@ export function handleMetaQuestion(text, world) {
   if (META_ITEM.test(lowerText)) {
     const ans = answerItemQuery(lowerText, world);
     if (ans) return ans;
+  }
+
+  // "List/read back my consumables" — checked before META_INVENTORY (whose
+  // generic pack-dump loop skips the structured items[] bucket entirely) so a
+  // bridged consumable (H-45) is actually included in the answer. (H-45)
+  if (META_CONSUMABLES_LIST.test(lowerText)) {
+    return listConsumables(world);
   }
 
   // Purse / coins — a real number the DM owns; report it (even if empty). A

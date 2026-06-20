@@ -447,6 +447,7 @@
   "consumables": [
     {
       "name": "Bandages",
+      "defRef": "bandages",
       "tags": [
         "consumable"
       ],
@@ -480,6 +481,7 @@
     },
     {
       "name": "Tonic of grit",
+      "defRef": "tonic_of_grit",
       "tags": [
         "consumable"
       ],
@@ -491,6 +493,7 @@
     },
     {
       "name": "Holy water (questionable)",
+      "defRef": "holy_water_questionable",
       "tags": [
         "consumable",
         "occult"

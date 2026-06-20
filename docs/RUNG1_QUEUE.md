@@ -1143,12 +1143,43 @@ Full per-turn detail in the report file. Catalog these as the next hard-tail pac
 once a worker prompt is drafted. Priority order: CRASH → DM_TEST_DEADEND → CRUNCH_INCONSISTENCY →
 CANON_HALLUCINATION.
 
-## Budget — ~$5.7 remaining
-Tim's API key budget is **$50 total**. ~$8.4 before the post-H-45/H-46 gate (~$2.68) → **~$5.7 left**,
-roughly **2 more** 4-session gate runs at the current rate. Getting tight — batch fixes before gating, and
-lean on the free `npm run lint:content` + unit tests (with multi-item/varied phrasing) to catch issues
-without spending. Consider building Biblioteca Vol 8 (paraphrase-invariance harness) to extend free coverage. Worker-side fixes (Sonnet/Codex windows) don't
-draw this budget — only `scripts/dm-playtest.mjs` runs do.
+## Budget — ~$3.1 remaining
+Tim's API key budget is **$50 total**. ~$5.7 before the post-H-47/H-48/H-49 gate (~$2.56) → **~$3.1 left**,
+roughly **1 more** 4-session gate run at the current rate. Very tight now — do not dispatch new gate-costly
+work without Tim's explicit go-ahead. Batch fixes before gating, and lean on the free `npm run lint:content`
++ unit tests (with multi-item/varied phrasing) to catch issues without spending. Worker-side fixes
+(Sonnet/Codex windows) don't draw this budget — only `scripts/dm-playtest.mjs` runs do.
+
+## Post-H-47/H-48/H-49 gate — 2026-06-20 — VERDICT: batch confirmed effective, two new clusters surfaced
+`docs/playtests/opus-gate-2026-06-20.md` — 6/48 failing (13%), down from 16/48 pre-batch. **Chaos-griefer
+and Lore-hound both went fully clean (12/12 each)** — direct confirmation H-48 (combat finishing blows)
+and H-49 (lore-invention guard) fixed the exact clusters they targeted, with no recurrence in this run.
+H-47 (item-effect breadth) also held — zero Tonic-mechanics failures this time (was the dominant
+Rules-Lawyer cluster pre-batch). No `CANON_HALLUCINATION` failures at all this run (was 3 pre-batch).
+No `high`-severity failures of any kind this run (was present pre-batch).
+
+Two new clusters, both `med` severity, neither overlapping H-47/48/49's scope:
+- **Purse/coin desync (3 failures, Rules Lawyer)** — a confirmed REAL bug, not a missing-feature
+  artifact: `purse` is a real, invariant-enforced field (`engine/invariants.js:626-634`, four currency
+  integers ≥0 per party member). An NPC (Corwin) narrated handing the player "three silver crowns
+  upfront," but no `applyDeltas` purse update ever fired — so when the player asks "what coin do I have
+  left," the DM either dumps the inventory pack listing (not coin) or correctly-but-confusingly states
+  the (untouched, genuinely empty) purse, contradicting its own prior narration. This is a
+  narration-promised-a-transaction-that-never-applied bug — the same family as H-38b's HP desync, but
+  for currency instead of HP. Likely root: NPC-promised payment in dialogue/narration has no deterministic
+  delta-application path the way combat/looting do.
+- **Confused-newbie OOC question handling (2 failures)** — "who is this person you don't want to name?"
+  got a confused non-answer naming the wrong party; "are you okay?" (an out-of-fiction check-in, not a
+  game action) got a generic mixed-roll narration instead of being recognized as non-action meta-chat.
+  Smaller, more diffuse cluster — likely a sub-case of the same `isInfoSeekingText`/question-routing
+  family H-39 addressed, not yet fully closed for ambiguous-referent and OOC-check-in shapes.
+
+**Not dispatched this session** — budget is down to ~$3.1 (one gate run's worth), and this was the
+intended final basecamp session. Recommended next packet if/when resumed: **H-50, purse/coin transaction
+sync** (priority — it's the cleaner, more isolated bug, in the same desync family as H-38b) scoped to
+wherever NPC-dialogue-promised payment should route through `effectsCore.applyDeltas`; the confused-newbie
+OOC cluster is lower priority and smaller (2 turns/gate) and could ride along in the same packet's gate
+run or wait for its own.
 
 ## Open strategic question (the arbiter call) — VERDICT: Road A for the routing/state long-tail; HYBRID (deliver-or-decline) for the cluster-D canon-grounding gap; Road B parked w/ sharpened trigger
 **Road A** (deterministic patches) vs **Road B** (Tier-B LLM intent arbiter w/ Canon-Log caching for

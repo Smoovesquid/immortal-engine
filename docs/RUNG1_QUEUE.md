@@ -181,11 +181,29 @@ resolve a real present NPC before anything fires, so it can't start combat again
 `AGENT_CHANGELOG.md` per protocol §3 — Basecamp backfilled both entries post-hoc from the commits +
 self-reports.
 
-## In flight
-*(none — post-H-43/H-44 gate RAN: **10/48**, down from 16/48 (best yet). H-43 + H-44 held emphatically
-(Chaos 0/12, Confused-newbie 0/12). New dominant cluster = item/consumable handling (RL 7/12, fresh
-domain → candidate H-45). Queue clear — good point for a new session. H-45 proposed, NOT dispatched —
-Tim's call. Budget ~$8.4.)*
+## In flight — H-45 (consumables: wire-up + grace), dispatched 2026-06-20
+**Finding first (Tim's "is it a fair test?" instinct — validated, then resolved):** the post-H-43/H-44 gate's
+item cluster (RL 7/12) was PART unfair-test — the pack's starting consumables (`packs/fantasy/gear.json`:
+Tonic of grit, Bandages, etc.) have NO `effect` and were never linked to a mechanical def, so the engine
+honestly did nothing. BUT `getItemDef` resolves from the SRD catalog `engine/ruleset/core/items/
+consumables.js`, which ALREADY has real effects (Minor/Greater/Superior Healing Potion `{heal}`, Antidote
+`{removeCondition:poisoned}`), and `tryUseConsumable` (playloop.js:4124, called at :1137) supports `heal` +
+`removeCondition`. So the mechanic + effects EXIST — the starting items are just unplugged. **Tim's call:
+content gap → wire them up** (surface-the-depth, not build).
+- **H-45 "light up consumables" (Claude-Sonnet, data+grace lane):** (i) wire the healing consumables to real
+  effects so `tryUseConsumable` resolves them — Bandages `{heal:'1d4', applied:true}`, Tonic of grit
+  `{heal:'2d4'}`, Holy water (questionable) `{removeCondition}`; Rations + Lamp oil stay honest flavor.
+  Trace the item-instantiation glue (how a `gear.json` name becomes an inventory item + `defRef`); the def
+  source is `consumables.js`/`ITEM_CATALOG` (defRef-keyed), with `findDefByName` as a possible bridge. This
+  keystone also fixes the "drink it" routing/effect/spurious-roll bugs (they were fall-through from the
+  empty-effect filter). (ii) grace: `answerItemQuery` ("what does X do?") describes the REAL effect, or an
+  honest "no effect you can measure" for flavor items — never auto-success, never invent; recognize "list/
+  read back my consumables" as a meta-query. (iii) no raw-stat-block leak on item use. Files:
+  `consumables.js` + `gear.json` (+ instantiation glue) + `gracefulAdjudication.js` + `tests/U208`.
+- **JUDGE recal (BASECAMP does this, like item iv):** `canonGroundTruth` in `dm-playtest.mjs` should expose
+  consumable effects so the judge grades item answers against real data (and a genuinely-flavor item doing
+  nothing is a PASS). Prevents the same unfair-test premise recurring.
+Queue otherwise clear → serialize fine. Budget ~$8.4. On result: verify per §7, then a gate.
 
 ## Done — H-43 ∥ H-44 (2026-06-19, parallel, BASECAMP-verified per §7)
 Ran file-disjoint and clean: H-44 touched ONLY `gracefulAdjudication.js`; H-43 ONLY `playloop.js` +

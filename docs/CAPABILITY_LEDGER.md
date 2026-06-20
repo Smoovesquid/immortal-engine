@@ -44,6 +44,7 @@ detectors. Status starts `seed`.
 | C12 | **Movement/travel intent** resolves in fiction, no travel-gate bounce | THE_DM_TEST residuals | playloop movement / `inferInteriorAction` | 0L/3T | — |
 | C13 | **Absurd / out-of-bounds** input declines in-character | IG-10 (parked) | — (Tier-B candidate) | 4L/3T | — |
 | C14 | **Meta / system check-in** acknowledged, no roll | H-51 | `META_SYSTEM_CHECKIN` | 2L/3T | — |
+| C15 | **Active combat is reflected, not narrated as calm conversation** | gate 2026-06-20 (Lore-hound) | playloop combat/dialogue routing (NEW — adj. C8/C10) | — | — |
 
 **Findings log.** *2026-06-20:* H-56 (`3e214ec`) §7-verified — closes the `U219` referent shapes with no
 regression and no over-fire (grounded names/roles unaffected), but a Basecamp adversarial probe found **C2 still
@@ -61,6 +62,16 @@ backlog→locked (C2-003).** Remaining C2 backlog left for a **supervised** pass
 is intercepted by the observe/look-around handler *upstream* of the referent guard → needs routing-precedence
 work; (2) bare "take me to &lt;Name&gt;" → person/place disambiguation. A *partial* graduation, not the full
 typed-packet migration.
+
+*2026-06-20 (first gate under the convergence framework — `docs/playtests/opus-gate-2026-06-20-convergence-baseline.md`,
+10/48):* tagged every failure by capability — **the discovery signal.** **7/10 map to existing capabilities**
+(C1×1 compound-query-dropped-HP · C4×3 newbie dialogue-dodge/empty-filler · C7×1 Tonic-effect-unstated · C8×1
+defeated-NPC-spoke-as-alive · C9×1 invented-oath) = phrasing-tail of known categories. **3/10 = ONE new cluster**
+(Lore-hound t10–t12): the DM narrates an *active combat* as a calm interrogation → new capability **C15**.
+**Verdict: the thesis holds** — failures cluster onto ~6 categories (5 known + 1 new), not a sprawl; discovery
+rate ≈ 1 new category → finite and closeable. The **C2 graduation held** in live play (no referent failures, no
+over-fire). C15 may be a real engine bug (combat state dropped when the player pivots to dialogue mid-fight) —
+flagged for the supervised pass.
 
 **Social-physics categories to mine next (Biblioteca Vols 2–6, mostly not yet failing-in-gate but on the map):**
 sarcasm/irony inversion (Vol 2; transcript: `docs/playtests/ridiculous-sarcasm-2026-06-06.md`), loaded

@@ -181,8 +181,9 @@ resolve a real present NPC before anything fires, so it can't start combat again
 `AGENT_CHANGELOG.md` per protocol §3 — Basecamp backfilled both entries post-hoc from the commits +
 self-reports.
 
-## In flight — (none). H-47…H-53(+H-53b) all DONE + pushed. Queue is CLEAR; every flagged turn from the last gate is addressed.
-Last gate: post-H-50/H-51 = **4/48** (`docs/playtests/opus-gate-2026-06-20.md`).
+## In flight — (none). **PIVOTED to the convergence framework (2026-06-20)** — live status now lives in `docs/RUNG1_CONVERGENCE_PLAN.md` + `docs/CAPABILITY_LEDGER.md`, NOT here.
+All 14 capability corpora built (**32 locked / 37 target**, free deterministic harness `npm run convergence`); C2 partially graduated (`0f1fccc`); first gate under the framework = **10/48**, discovery signal = **7/10 map to known capabilities + 1 new (C15 active-combat-in-narration)** → finite/closeable confirmed. Supervised next: typed-packet graduation (C2 observe-routing + C15). The per-packet H-loop is superseded by the capability ledger; prior history (H-47…H-56) retained below.
+Last per-packet gate: post-H-54/H-55 = **10/48** (`docs/playtests/opus-gate-2026-06-20-postH54-H55.md`).
 - **H-52** (`8c0a5cf`, §7-verified + pushed) closed both Lore-hound RAG fails (decades-unit tenure invention +
   grounded-name/wrong-role "Corwin is the elder" claim).
 - **H-53 + H-53b** (`159c754`/`7153d2e`, §7-verified + pushed `62c0db0`) closed the Rules-Lawyer
@@ -1208,9 +1209,11 @@ Full per-turn detail in the report file. Catalog these as the next hard-tail pac
 once a worker prompt is drafted. Priority order: CRASH → DM_TEST_DEADEND → CRUNCH_INCONSISTENCY →
 CANON_HALLUCINATION.
 
-## Budget — ~$7.3 remaining
-Tim topped up **+$12** on 2026-06-20 (after the prior ~$0.5 exhaustion). ~$12.5 available → post-H-52/H-53
-gate (~$2.64) → post-H-54/H-55 gate (~$2.65) → **~$7.3 left** (~2 more 4-session runs). Worker-side fixes
+## Budget — ~$7.88 remaining
+Tim confirmed actual balance **$10.51** on 2026-06-20. First convergence-framework gate (~$2.63,
+`docs/playtests/opus-gate-2026-06-20-convergence-baseline.md`) → **~$7.88 left** (~3 more 4-session runs).
+The corpus harness (`npm run convergence`) is FREE/deterministic and is now the **primary regression signal**;
+the paid gate is reserved for the **discovery signal** (tag failures by capability). Worker-side fixes
 (Sonnet/Codex windows) don't draw this budget — only `scripts/dm-playtest.mjs` runs do. Still confirm the
 number before any run that would drop below ~$2.5.
 

@@ -38,6 +38,7 @@ import { newWorld } from '../engine/state.js';
 import { beginAdventure, playerMove } from '../engine/playloop.js';
 import { isMetaQuestion, handleMetaQuestion } from '../engine/grace/gracefulAdjudication.js';
 import { normalizeManifest, normalizePack } from '../engine/rulesets.js';
+import { getItemDef, findDefByName } from '../engine/ruleset/core/items/index.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..');
@@ -164,6 +165,28 @@ async function playTurn(world, text) {
 // ── Canon ground-truth bundle (the RAG-faithfulness oracle) ───────────────────
 // Compact, judge-readable view of what IS true, so the judge can flag any DM/NPC
 // claim that isn't supported by it.
+// The PC's consumables with their REAL resolved effects, from both inventory
+// shapes (legacy flavor buckets + structured items[]). Lets the judge grade
+// item-effect answers ("what does the Tonic do?") against ground truth instead
+// of assuming an effect exists — a flavor item with effect:null genuinely does
+// nothing, so the DM doing nothing with it is correct. (H-45 fairness fix.)
+function consumablesGroundTruth(pc) {
+  const inv = pc?.inventory || {};
+  const describe = (def) => def?.effect?.kind === 'heal' ? `heal ${def.effect.amount}`
+    : def?.effect?.kind === 'removeCondition' ? `cure ${def.effect.condition}` : null;
+  const out = [];
+  for (const it of (Array.isArray(inv.consumables) ? inv.consumables : [])) {
+    const name = String(it?.name || it).trim();
+    if (!name) continue;
+    out.push({ name, effect: describe(it?.defRef ? getItemDef(it.defRef) : findDefByName(name)) });
+  }
+  for (const it of (Array.isArray(inv.items) ? inv.items : [])) {
+    const def = getItemDef(it?.defRef);
+    if (def && def.kind === 'consumable') out.push({ name: def.name, effect: describe(def) });
+  }
+  return out;
+}
+
 function canonGroundTruth(world) {
   const node = (world.map?.nodes || []).find(n => n && n.id === world.map?.currentNodeId) || null;
   const npcs = (node?.settlement?.npcs || []).map(p => ({ name: p?.name, role: p?.role || p?.archetype || '' }));
@@ -188,6 +211,7 @@ function canonGroundTruth(world) {
     enemies: (world.combat?.enemies || []).map(e => ({ name: e.name, hp: e.hp, maxHp: e.maxHp, defeated: !!e.defeated })),
     ledgerFacts: (led.facts || []).map(f => (typeof f === 'string' ? f : f?.text)).filter(Boolean).slice(0, 8),
     recentCanon: recentCanon.map(e => ({ kind: e?.kind || e?.type, ref: e?.id, data: e?.data })).slice(0, 8),
+    consumables: consumablesGroundTruth(pc),
     timeline,
   };
 }
@@ -255,6 +279,13 @@ is friendly"; "I hate everyone, not just you") need NO canon citation, the same 
 commentary doesn't — score those under GATE 1 (was intent resolved in voice?), not here. Only a
 CONCRETE checkable specific — a proper name, a date/number, or a who-did-what past event — requires
 grounding; a FALSE such specific still FAILs as hallucination.
+
+ITEMS: the CANON bundle's "consumables" lists each carried item's REAL effect (e.g.
+{name:"Tonic of grit", effect:"heal 2d4"}) or effect:null for a flavor item. Grade item-effect
+answers against THIS, not against your assumptions: describing the listed effect PASSES; saying a
+flavor item (effect:null) does nothing, or just describes it, is CORRECT — do NOT assume an item has
+an effect it lacks. FAIL only if the DM invents an effect absent from the list, or claims a
+real-effect item does nothing.
 
 Return ONLY JSON:
 {"vibe":{"pass":bool,"issue":""},"crunch":{"pass":bool,"issue":""},

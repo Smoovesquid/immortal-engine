@@ -950,6 +950,9 @@ other agents. (none active)
 - Remaining/next: `META_INVENTORY`'s blanket `items[]` skip (noted above) is pre-existing and broader than this packet (affects weapons/armor/magic/quest items too, not just consumables) — worth its own packet if the queue owner wants the generic "what's in my pack" answer to be fully items-aware rather than just the new dedicated consumables-list query. Same for the EXAMINE-path `.name`-only matching gap.
 - Rollback: revert `562cc06`
 
+2026-06-20T13:37:41Z — Codex
+- [CLAIMED] H-53 out-of-combat object-strike narration · files: `engine/playloop.js`, `tests/U216.objectStrikeNarration.test.js`, `docs/AGENT_CHANGELOG.md`
+
 2026-06-20T11:35:00Z — Claude-Sonnet
 - Packet/seam: H-46 inventory items[] listing
 - Commit(s): `7ea7669` (code+test), `8f9e858` (claim)

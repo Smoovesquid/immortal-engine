@@ -181,15 +181,21 @@ resolve a real present NPC before anything fires, so it can't start combat again
 `AGENT_CHANGELOG.md` per protocol §3 — Basecamp backfilled both entries post-hoc from the commits +
 self-reports.
 
-## In flight — (none). H-47…H-52 all DONE + pushed. Queue is CLEAR.
-Last gate: post-H-50/H-51 = **4/48** (`docs/playtests/opus-gate-2026-06-20.md`). H-52 (`8c0a5cf`, Basecamp-§7-verified
-+ pushed 2026-06-20) closed both Lore-hound RAG fails from that gate (decades-unit tenure invention +
-grounded-name/wrong-role "Corwin is the elder" claim). **Remaining from that gate = the Rules-Lawyer
-roll-reporting cluster (2-3 turns, NOT yet packeted):** (a) "swing the Worn Blade at the bread basket — tell me
-the attack roll" → an object-strike that didn't resolve into a real roll (combat/playloop lane); (b) "you said 15
-vs 12, then 14 vs 13 — what did I actually roll?" → contradictory roll-number reporting across narration lines.
-Candidate **H-53** (combat/narration roll-consistency). **BUDGET EXHAUSTED (~$0.5) — cannot re-measure via gate
-until Tim tops up; packets can still be drafted + landed blind, just not experientially graded.**
+## In flight — (none). H-47…H-53(+H-53b) all DONE + pushed. Queue is CLEAR; every flagged turn from the last gate is addressed.
+Last gate: post-H-50/H-51 = **4/48** (`docs/playtests/opus-gate-2026-06-20.md`).
+- **H-52** (`8c0a5cf`, §7-verified + pushed) closed both Lore-hound RAG fails (decades-unit tenure invention +
+  grounded-name/wrong-role "Corwin is the elder" claim).
+- **H-53 + H-53b** (`159c754`/`7153d2e`, §7-verified + pushed `62c0db0`) closed the Rules-Lawyer
+  CRUNCH_INCONSISTENCY: an out-of-combat weapon-strike at a named scene prop ("swing at the bread basket")
+  now narrates a real object-strike instead of the generic `gen:s` "the way ahead opens." **H-53b was a
+  Basecamp-caught fix-forward** — H-53's first cut over-fired on movement/people idioms ("cut through the crowd"
+  → "it breaks under the strike"); added a non-strikable-target denylist (places/crowd, final-token match).
+  Held the H-53 push until H-53b landed; pushed as one clean stack. The other RL turn that run (the "15 vs 12
+  / 14 vs 13, what did I actually roll?" turn) was judge-scored low/acceptable — NOT a defect, deliberately
+  not packeted.
+- **Next signal requires a fresh gate** — no known open defects remain from the last run. **BUDGET EXHAUSTED
+  (~$0.5) — cannot re-measure until Tim tops up.** H-52 + H-53/H-53b are landed BLIND (unit-tested, not yet
+  experientially graded); they batch into the next gate whenever it's funded.
 
 ### (historical) prior in-flight — H-47 ∥ H-48 ∥ H-49, dispatched 2026-06-20, declared FILE-DISJOINT (parallel OK §2)
 Tim: "proceed." Three packets, disjoint file sets → parallel; each prompt has a halt-on-cross-file guard +

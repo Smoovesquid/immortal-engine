@@ -1135,3 +1135,12 @@ other agents. (none active)
 2026-06-20T15:30:00Z — Claude-Sonnet
 [CLAIMED] H-59 · Claude-Sonnet · 2026-06-20T15:30:00Z · files: engine/grace/gracefulAdjudication.js, tests/corpus/C1.corpus.mjs
 - Packet/seam: graduate C1 (compound query) to a typed sub-intent decomposition — first typed-packet graduation (Biblioteca Vol 7 "interpret richly, commit narrowly")
+
+2026-06-20T22:51:27Z — Codex
+- Packet/seam: H-58 / C15 active combat must be reflected, not narrated as calm conversation
+- Commit(s): `be6b2ab`
+- Files changed: `engine/playloop.js`, `tests/corpus/C15.corpus.mjs`
+- Summary: root cause was routing, not state loss. Reproduction against `activeCombatWorld()` showed `world.combat.active` persisted and no dialogue mode was opened, but non-question conversational pressure such as "answer me plainly" fell through the active escape-combat branch into `resolveEscapeCombatTurn`'s default weapon strike. Added a narrow `isCombatConversationNonAction()` guard inside the active escape-combat table-talk section: non-violent answer/tell/explain/why/who/what/when/where pressure now returns combat-aware `[combat:table-talk]` with `combatStatusAnswer(w)` instead of a phantom strike or calm dialogue. Questions already using the table-talk path remain unchanged. No grace files, `llmAdapter.js`, combat damage math, `WORLD_VERSION`, `Math.random`, or `Date.now` touched.
+- Proof: `npm run convergence` — C15 locked 2/2, overall locked 34/34, all other locked capabilities green; red-first before the fix failed C15 because "answer me plainly." produced `[strike:Worn Blade ...]`. `node --test` — 8285/8285, 0 fail. Determinism command `node --test tests/U19*.test.js tests/U21.*.test.js tests/U22.*.test.js tests/U27*.test.js tests/U30*.test.js` — 123/123, 0 fail. `npm run playtest:quick` — 50 total runs, 0 crashes, no bugs found. Scope check: `git diff --check` clean; changed paths limited to `engine/playloop.js`, `tests/corpus/C15.corpus.mjs`, and this changelog entry.
+- Remaining/next: none.
+- Rollback: revert `be6b2ab`

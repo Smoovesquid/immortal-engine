@@ -2005,6 +2005,19 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
 
   // ── Defeat check ───────────────────────────────────────────────────────────
   if (hp <= 0) {
+    if (enemies.some(e => e && !e.defeated && (Number(e.hp) || 0) > 0)) {
+      w = applyDeltas(w, [{ op: 'combatState', set: { enemies, round: round + 1, turnIndex: 0 } }]);
+      beats.push('You fall — the foe still stands. You are down and dying.');
+      return {
+        world: w,
+        result: {
+          beats,
+          combatSummary: beats.join(' '),
+          mechanicsLine: `${actionMech || `[combat:r${round}]`}${enemyMech.length ? ` ${enemyMech.join(' ')}` : ''} [combat:dying]`,
+          outcome: 'failure'
+        }
+      };
+    }
     w = endCombat(w, { reason: 'defeated-in-combat' });
     w = {
       ...w,

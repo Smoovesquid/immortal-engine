@@ -527,9 +527,24 @@ function playerMoveCore(world, packsById, text) {
   const primary = packsById[w.pack.primaryId];
   const mixer = w.pack.mixerId ? packsById[w.pack.mixerId] : null;
   const pack = mergePacks(primary, mixer);
+  const actorId = (w.party?.[0]?.id) ? String(w.party[0].id) : 'party';
 
   const dyingGate = outOfCombatDyingGate(w, text);
   if (dyingGate) return dyingGate;
+
+  if (w.combat?.active && w.meta?.mode === 'escape' && (Number(w.meta?.escapeHp) || 0) <= 0) {
+    const { world: wAfter, result } = resolveEscapeCombatTurn(w, String(text || ''));
+    w = wAfter;
+    const escMove = { actorId, intentText: String(text || ''), approachTag: 'force', stakeTag: 'survival' };
+    const escResult = { outcome: result.outcome, mechanicsLine: result.mechanicsLine };
+    w = appendRecentBeat(w, buildBeatFromTurn(w, text, escMove, escResult));
+    w = pushEvent(w, {
+      kind: 'resolution',
+      data: { actorId, intent: String(text || ''), text: String(text || ''), roll: 0, dc: 0, outcome: result.outcome, updateKind: 'combat', combatSummary: String(result.combatSummary || '') }
+    });
+    const narr = result.combatSummary ? `Wizard: ${result.combatSummary}` : 'Wizard: You trade blows.';
+    return { world: w, output: { narration: narr, mechanics: result.mechanicsLine, combatSummary: String(result.combatSummary || ''), beats: Array.isArray(result.beats) ? result.beats : [] } };
+  }
 
   // ── C.2d: a pending interactive road encounter (brigands/toll) intercepts the
   // next input as the player's choice — before any other gate. ──
@@ -977,7 +992,7 @@ function playerMoveCore(world, packsById, text) {
   }
 
   const interiorAction = inferInteriorAction(text, w.scene?.interior);
-  if (w.combat?.active && w.meta?.mode === 'escape' && (interiorAction.kind === 'enter' || interiorAction.kind === 'exit' || interiorAction.kind === 'move')) {
+  if (w.combat?.active && w.meta?.mode === 'escape' && (Number(w.meta?.escapeHp) || 0) > 0 && (interiorAction.kind === 'enter' || interiorAction.kind === 'exit' || interiorAction.kind === 'move')) {
     return {
       world: w,
       output: { narration: 'Wizard: There\'s steel between you and the road — no running from this one. Strike, guard, cast, or talk.', mechanics: '[combat:table-talk]' }
@@ -1486,8 +1501,6 @@ function playerMoveCore(world, packsById, text) {
     return { world: w1, output: { narration, mechanics: '' } };
   }
 
-  const actorId = (w.party?.[0]?.id) ? String(w.party[0].id) : 'party';
-
   // NPC dialogue entry: "talk to X" / "speak to X" / "approach X" begins a
   // canonical dialogue mode with an NPC at the current settlement. If no NPC
   // resolves, fall through to generic resolution (preserves legacy behavior
@@ -1800,7 +1813,7 @@ function playerMoveCore(world, packsById, text) {
       // ("can we talk about this?" is said TO the foes, not to the DM).
       const escVerb = parseEscapeAction(text).verb;
       const improvisedCombatAction = isImprovisedCombatAction(w, text);
-      const explicitAction = improvisedCombatAction || /\b(strike|attack|swing|stab|shoot|slash|smite|fireball|blast|cast|rage|surge|guard|ward|cover|throw|hurl|lob|fling|toss)\b/i.test(String(text || ''));
+      const explicitAction = improvisedCombatAction || /\b(strike|attack|swing|stab|shoot|slash|hit|beat|smite|fireball|blast|cast|rage|surge|guard|ward|cover|throw|hurl|lob|fling|toss)\b/i.test(String(text || ''));
       const asksQuestion = isQuestionShaped(text) || /\?/.test(String(text || ''));
       if (isMetaQuestion(text) || (asksQuestion && escVerb !== 'parley' && !explicitAction)) {
         const metaAnswer = isMetaQuestion(text) ? handleMetaQuestion(text, w) : null;
@@ -5691,6 +5704,7 @@ function outOfCombatDyingGate(world, text) {
 function detectAttackBeginIntent(world, text) {
   const t = String(text || '').trim();
   if (!t) return null;
+  if (isSocialIdentificationNonCombat(t)) return null;
   const m = t.match(/\b(attack|fight|kill|strike|assault|punch|stab|hit|slash|swing\s+at|shoot|kick|tackle|charge)\s+(.+)/i);
   if (!m) return null;
   const ref = String(m[2] || '').trim().replace(/[.!?,;:]+$/, '').trim();
@@ -5738,6 +5752,7 @@ const UNAMBIGUOUS_VIOLENCE = /\b(attack|kill|murder|assault|stab|slash|punch|kic
 function detectAttackAnyIntent(world, text) {
   const t = String(text || '').trim();
   if (!t) return null;
+  if (isSocialIdentificationNonCombat(t)) return null;
   if (!ANY_VIOLENCE.test(t)) return null;
 
   const nodeId = String(world?.map?.currentNodeId ?? '');
@@ -5780,6 +5795,7 @@ function detectAttackAnyIntent(world, text) {
 function detectPhysicalAssault(world, text) {
   const t = String(text || '').trim();
   if (!t || world.combat?.active || world.scene?.dialogue) return null;
+  if (isSocialIdentificationNonCombat(t)) return null;
   const nodeId = String(world?.map?.currentNodeId ?? '');
   const node = (world?.map?.nodes || []).find(n => n && n.id === nodeId) || null;
   const npcs = node?.settlement?.npcs || [];
@@ -5831,6 +5847,15 @@ function detectPhysicalAssault(world, text) {
     const npc = hit(m[1]); if (npc) return { npc, kind: 'bite' };
   }
   return null;
+}
+
+function isSocialIdentificationNonCombat(text) {
+  const t = String(text || '').toLowerCase();
+  if (!t) return false;
+  const hasDeixis = /\b(?:point\s+(?:at|to|out)|show\s+me\s+which|which\s+(?:one|person|figure|stranger|guard)|who\s+is\s+(?:that|the)|identify\s+(?:that|the))\b/.test(t);
+  const hasIgnore = /\bignore\s+[a-z][\w'-]*\b/.test(t);
+  if (!hasDeixis && !hasIgnore) return false;
+  return !/\b(?:attack|fight|kill|murder|assault|strike|stab|slash|punch|kick|tackle|charge|bash|club|clobber|whack|brain|throttle|choke|strangle|knife|gut|maim|behead|lunge|headbutt|grapple|shoot|hit|beat|bite|claw|gnaw|scratch|knee|elbow|stomp|sweep|trip|gore|smite|fireball|blast|cast)\b/.test(t);
 }
 
 // True when a present NPC's last recorded combat state was a defeat — read

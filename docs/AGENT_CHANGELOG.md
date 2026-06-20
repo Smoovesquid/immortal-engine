@@ -206,6 +206,10 @@ cross-agent continuity: what changed, what proved it, and what remains.
 `[CLAIMED] <seam> · <agent> · <UTC> · files: <paths>` — a claimed seam or file is off-limits to
 other agents. (none active)
 
+`[CLAIMED] H-50 purse/coin transaction-claim guard · Codex · 2026-06-20T12:39:43Z · files: engine/llmAdapter.js, tests/U213.purseClaimGuard.test.js`
+
+`[CLAIMED] H-51 confused-newbie referent + OOC-checkin · Claude-Sonnet · 2026-06-20T12:46:28Z · files: engine/grace/gracefulAdjudication.js, tests/U214.confusedNewbieReferent.test.js`
+
 ## Template
 
 - Date:

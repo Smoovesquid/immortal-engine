@@ -2,7 +2,51 @@
 
 ## [CLAIMED] H-43 combat resolution · Codex · 2026-06-20T00:05:59Z · files: engine/playloop.js, engine/combat/escapeCombat.js, tests/U206.combatResolution.test.js
 
-## [CLAIMED] H-44 grace cleanup · Claude-Sonnet · 2026-06-20T00:12:22Z · files: engine/grace/gracefulAdjudication.js, tests/U207.graceCleanup.test.js
+2026-06-20T00:16:42Z — Claude-Sonnet
+- Packet/seam: H-44 grace cleanup (post-H-42 baseline gate residuals)
+- Commit(s): 03eb40e
+- Files changed: `engine/grace/gracefulAdjudication.js`, `tests/U207.graceCleanup.test.js` (new)
+- Summary:
+  (i) PRIMARY — isInfoSeekingText (~L369) missed noun-less suspicion/info questions that seek
+      CONCEALED information from a person ("is something going on you're not telling me?", "what
+      aren't you telling me?", "are you hiding something?", "is there something you're not
+      saying?") — no who/what+noun anchor (INFO_SEEKING_RE) and no knowledge-verb topic phrase
+      (INFO_SEEKING_TOPIC_RE), so they fell through to content-free success atmosphere instead of
+      the deliver-or-decline contract (confused-newbie t8). Added `INFO_SEEKING_CONCEALMENT_RE`,
+      anchored on an explicit concealment/withholding marker so a neutral statement or plain action
+      never trips it. Wired into `isInfoSeekingText`'s OR-chain only — the deliver-or-decline
+      machinery downstream (playloop.js `infoExtractionOutcome`/`declineInfoSeek`) already reads
+      this gate and needed no changes, confirmed by an integration test calling
+      `infoExtractionOutcome` directly.
+  (ii) SECONDARY, traced and confirmed IN LANE — `handleMetaQuestion`'s `META_NPC_OBSERVER` branch
+      always answered with `sociable[0]`, ignoring any hostile NPC entirely. RL t5
+      (CANON_HALLUCINATION, opus-gate-2026-06-19-postH42-baseline.md): player explicitly asked who
+      the stranger LURKING at the edges is, not about Corwin — DM re-served "Corwin Boneknit, a
+      representative — one of the folk here, watching from nearby," which is this branch's exact
+      no-description fallback string, confirming the bug lives here, not upstream in playloop
+      routing. Added `NPC_OBSERVER_LURK_RE`: a "lurking"/"edges"/"shadows" framing now selects the
+      present hostile NPC (the real lurker, e.g. canon's "the Lingerer") instead of defaulting to
+      the first sociable one. Non-lurk-framed queries ("who's that stranger watching me?") are
+      untouched — same sociable-first behavior as before, verified by a regression-guard test.
+      Also gave the hostile fallback line its own phrasing ("— keeping to the edges, watching")
+      instead of reusing the sociable "one of the folk here" line, for tonal correctness, mirroring
+      the idiom `buildLocationSurvey` already uses for lurkers elsewhere in this file.
+  - Deliberately did NOT touch playloop.js, escapeCombat.js, or llmAdapter.js — H-43 (combat,
+    Codex) owns playloop.js/escapeCombat.js in parallel this round; confirmed file-disjoint before
+    and after (diff touches only gracefulAdjudication.js + the new test file).
+  - Deliberately did NOT redesign the "lurkers stay anonymous in a roster sweep" convention
+    (`buildLocationSurvey`, `META_NPC_ROSTER`) — this fix is scoped to the DIRECT/SPECIFIC
+    identity-ask branch (`META_NPC_OBSERVER`) only, per the packet's scope.
+- Proof:
+  - `node --test tests/U207.graceCleanup.test.js` → 14/14 pass (confirmed RED on all 9
+    catch/integration cases before the fix, GREEN after).
+  - `node --test` (full suite) → 8190/8190 pass, 0 fail (no regressions; count is baseline + this
+    packet's +14 U207 cases + H-43's in-flight combat tests already in the shared tree).
+  - Determinism: `node --test tests/U19.worldHashDeterminism.test.js tests/U21.replayGateN50.test.js
+    tests/U22.longRunStabilityN100T500.test.js tests/U27.worldHashSurfaceContract.test.js
+    tests/U30.gate6.sequelDeterminism.test.js` → 6/6 pass.
+- Remaining/next: none for this packet. (ii) was confirmed in lane and fixed in full — no deferral.
+- Rollback: revert 03eb40e
 
 2026-06-19T20:27:54Z — Claude-Sonnet
 - Packet/seam: H-42 react-under-pressure (grace lane)

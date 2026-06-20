@@ -181,21 +181,37 @@ resolve a real present NPC before anything fires, so it can't start combat again
 `AGENT_CHANGELOG.md` per protocol §3 — Basecamp backfilled both entries post-hoc from the commits +
 self-reports.
 
-## In flight — H-43 (combat) STILL RUNNING; H-44 (grace) DONE + BASECAMP-verified
-**H-44 VERIFIED + pushed** (`0091ede` claim, `03eb40e` fix, `2f297b3` DONE): both sub-fixes landed —
-(i) `INFO_SEEKING_CONCEALMENT_RE` so noun-less concealment questions ("is something going on you're not
-telling me?") reach deliver-or-decline (Confused-newbie t8); (ii) NPC-observer lurker id — a "lurking/edges"
-framing now names the present HOSTILE NPC, not `sociable[0]` (RL t5; traced IN LANE — it was the
-`META_NPC_OBSERVER` fallback, not playloop routing). §7: fix isolated to `gracefulAdjudication.js` +
-`tests/U207` (no cross-lane, no RNG/Date/WORLD_VERSION/applyDeltas), U207 14/14, determinism 6/6, in sync.
-*Watch next gate:* the observer query now NAMES a canonical lurker — defensible (direct ask + grounded
-answer + unnamed-lurker fallback guarded) but a mild tension with H-34's roster-handler lurker-vagueness;
-revisit only if it reads as over-disclosure.
-**H-43 (Codex, combat) STILL IN FLIGHT** — uncommitted WIP confirmed in the shared tree (`M escapeCombat.js`,
-`M playloop.js`, `?? tests/U206`; claim `28d4a6a`). Left untouched per §3. On its DONE: verify per §7 incl. a
-COMBINED-HEAD full suite (H-44 + H-43 share the tree), then push it (Codex can't, §7), then gate.
+## In flight
+*(none — H-43 + H-44 both DONE, BASECAMP-verified, pushed, in sync. The post-H-42 combat+grace batch is
+complete. Queue clear — good point for a new session. Only remaining step: a post-H-43/H-44 gate (~$2.40,
+budget ~$10.9) to measure — Tim's call.)*
 
-### Original dispatch (for reference)
+## Done — H-43 ∥ H-44 (2026-06-19, parallel, BASECAMP-verified per §7)
+Ran file-disjoint and clean: H-44 touched ONLY `gracefulAdjudication.js`; H-43 ONLY `playloop.js` +
+`escapeCombat.js` — no cross-lane. Combined HEAD: full suite **8190/0** (= 8172 + 14 U207 + 4 U206),
+determinism U19/21/22/27/30 **6/6**, `playtest:quick` 50/0/0 (independently re-run — the 0-HP combat-flow
+change is death-spiral-adjacent; U22 long-run + playtest both clean). No `Math.random`/`Date.now`/
+`WORLD_VERSION`; H-43 mutates via `applyDeltas`; both test files net-new (invariant #19 N/A). Sonnet pushed
+H-44; BASECAMP pushed H-43 after verify (Codex can't, §7).
+- **H-44 "grace cleanup" (Claude-Sonnet, `03eb40e`):** (i) `INFO_SEEKING_CONCEALMENT_RE` → noun-less
+  concealment questions ("is something going on you're not telling me?") reach deliver-or-decline
+  (Confused-newbie t8); (ii) NPC-observer lurker id — a "lurking/edges" framing names the present HOSTILE
+  NPC, not `sociable[0]` (RL t5; traced IN LANE — the `META_NPC_OBSERVER` fallback). `tests/U207` 14/14.
+  *Watch next gate:* the observer query now NAMES a canonical lurker (guarded for unnamed; mild tension with
+  H-34's roster vagueness — revisit only if it reads as over-disclosure).
+- **H-43 "combat resolution" (Codex, `4f70b0b`; DONE `9378fcd`):** 4 traced root causes — (i) `hit`/`beat`
+  added to the in-combat explicit-action regex so "I hit Corwin… give me the d20?" resolves instead of
+  becoming question-shaped table-talk; (ii) 0-HP active-combat turns now route through
+  `resolveEscapeCombatTurn`'s dying handling before any travel/body shortcut can intercept; (iii)
+  `resolveEscapeCombatTurn` no longer ends combat at 0 HP while a live enemy stands — enters a
+  `[combat:dying]` state via `applyDeltas`; (iv) a `isSocialIdentificationNonCombat` guard excludes "point
+  at"/"ignore X" deixis (without a violence verb) from all three assault detectors (RL t6). `tests/U206` 4/4.
+
+**Open residuals for the post-H-43/H-44 gate (deferred, none blocking):** travel-bounce + location
+contradiction (Lore-hound t1, playloop movement), goal/aim UI-string leak (Confused-newbie t5),
+lore-invention guard (llmAdapter; Lore-hound t10 / Confused-newbie t10), the H-44 lurker-naming watch-item.
+
+### Original dispatch (historical — both packets DONE above)
 Tim: "send it." Scoped to not collide: **H-43 = `engine/playloop.js` + `engine/combat/escapeCombat.js`**
 (+ `tests/U206`); **H-44 = `engine/grace/gracefulAdjudication.js`** (+ `tests/U207`). Disjoint file sets →
 parallel; each prompt carries a HALT-if-you-need-the-other's-file guard + a distinct test number.
@@ -931,25 +947,21 @@ in-fiction "I don't know/won't say," never atmosphere-only) as a more general fi
 individual hallucination shapes. Leaning toward (c) as a cheap next probe before escalating to (b).
 
 ## Next
-**Post-H-42 baseline is established (16/48; full breakdown in the baseline gate section below).** The grace
-fixes (H-39/H-40/H-41/H-42) held for their tested scopes; the gate explored fresh COMBAT-RESOLUTION
-territory and the **frontier has shifted from grace → combat**. Next move (proposed, NOT dispatched —
-Tim's call):
-- **Combat-resolution batch (Codex/combat lane)** — the new dominant cluster (~8/16): (1) a declared attack
-  ("I attack X with my blade", incl. when phrased "roll it / show me the dice") must route into a real
-  `escapeCombat` strike with a roll, not stay `table-talk` with the enemy undefeated; (2) narration must not
-  claim a hit/defeat the mechanics never produced (Chaos t6); (3) 0-HP/combat-end-state consistency — combat
-  must not "end" with an enemy still alive while the PC is at 0, and a 0-HP PC can't recover without a
-  resolved dying-state (Chaos t11/t12). Codex per [[feedback_worker_routing]]; can't push (§7).
-- **Small grace cleanup batch (Sonnet)** — the confirmed deferred residuals + a couple fresh: bare
-  modifier-table / UI-menu leak (needs `U172` touch — out of H-40's earlier lane), NPC-misidentification
-  grounding (RL t5), the "head to the tavern" travel-bounce + location contradiction (Lore-hound t1),
-  noun-less info-question content-free success (Confused-newbie t8), goal/aim UI-string leak. Lore-invention
-  recurred 2× (low) — fold the anti-invention guard in too.
-Serialize if both touch `playloop.js`; the combat batch is higher-value (dominant cluster). **Rung-1 bar:
-NOT met** (Rules-Lawyer 7/12 on the fresh combat thread) — but the grace tail we spent the session closing
-largely held; closing the combat cluster is the path to the bar. Restart the dev server fresh before any
-next gate (the session's server was killed after this run).
+**The post-H-42 combat+grace batch is DONE (H-43 combat + H-44 grace; see the "Done — H-43 ∥ H-44" section
+near the top).** The dominant combat-resolution cluster + the H-39 noun-less-info residual + the RL-t5
+NPC-misidentification are all closed and verified. Suite 8190/0, determinism 6/6, all pushed + in sync.
+**The only remaining step is ONE gate** (~$2.40 → ~$8.4 left) to measure H-43+H-44 together — Tim's call,
+no spend yet. What to watch at that gate:
+- Did the combat cluster collapse — declared attacks ("I hit/attack X… roll it") now resolve into real
+  strikes; no narration-without-mechanics; 0-HP enters a dying state instead of a phantom combat-end.
+- The deferred grace residuals that were deliberately NOT pre-fixed (avoiding the enumeration trap):
+  travel-bounce + location contradiction (Lore-hound t1, playloop movement), goal/aim UI-string leak
+  (Confused-newbie t5), lore-invention guard (llmAdapter; 2× low), and the H-44 lurker-naming watch-item
+  (does naming a canonical lurker on a direct ask read as over-disclosure?). If the gate flags these,
+  next batch = a grace/movement/narration cleanup.
+**Rung-1 bar:** last measured NOT met (Rules-Lawyer 7/12 on the combat thread) — but that thread is now
+fixed; the next gate measures whether we're at/near the bar. Restart the dev server fresh before any gate
+(the session's server was killed after the baseline run).
 
 **Known small follow-up (not yet packeted):** `infoPressCount` off-by-one in `infoExtractionOutcome`
 (playloop.js) — it's called after the current turn's own `resolution` event is already on

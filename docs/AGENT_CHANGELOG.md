@@ -206,8 +206,6 @@ cross-agent continuity: what changed, what proved it, and what remains.
 `[CLAIMED] <seam> · <agent> · <UTC> · files: <paths>` — a claimed seam or file is off-limits to
 other agents. (none active)
 
-`[CLAIMED] H-50 purse/coin transaction-claim guard · Codex · 2026-06-20T12:39:43Z · files: engine/llmAdapter.js, tests/U213.purseClaimGuard.test.js`
-
 ## Template
 
 - Date:
@@ -222,6 +220,17 @@ other agents. (none active)
 - Remaining:
   - 
 - Rollback:
+
+---
+
+2026-06-20T12:53:40Z — Codex
+- Packet/seam: H-50 purse/coin transaction-claim guard (narration lane)
+- Commit(s): 6696c7e98a78c629a73597ec4e56a4b85d188fa9
+- Files changed: `engine/llmAdapter.js`, `tests/U213.purseClaimGuard.test.js`
+- Summary: Added a narrow validation guard that rejects LLM-polished narration claiming an NPC just handed/gave/paid/offered the player a specific currency amount when that receipt claim is absent from the grounded base narration. The guard reuses the existing negation/hypothetical restraint and deliberately does not reject current-purse-balance statements such as "your purse holds three silver crowns." Deliberately did NOT touch `engine/grace/gracefulAdjudication.js`, purse mutation paths, `WORLD_VERSION`, invariants, randomness, or combat files.
+- Proof: Baseline before fix: `node --test tests/U213.purseClaimGuard.test.js` — 4/6, with the two unbacked receipt-claim cases failing as expected. After fix: `node --test tests/U213.purseClaimGuard.test.js` — 6/6; adjacent grounding canaries `node --test tests/U190.deliverOrDecline.test.js tests/U192.groundFromCanon.test.js tests/U197.deliverOrDeclineGeneralization.test.js tests/U212.loreInventionGuard.test.js` — 58/58; determinism `node --test tests/U19.worldHashDeterminism.test.js tests/U21.replayGateN50.test.js tests/U22.longRunStabilityN100T500.test.js tests/U27.worldHashSurfaceContract.test.js tests/U30.gate6.sequelDeterminism.test.js` — 6/6; full suite `node --test` — 8244/0 after enabling local network permission for auth/API tests. Initial full-suite attempt without local network permission failed only in A01/A04 with `listen EPERM 127.0.0.1`; rerunning `node --test tests/A01.auth.test.js tests/A04.moveEndpoint.test.js` after permission was 7/7.
+- Remaining/next: local-only Codex commit; queue owner should verify and push.
+- Rollback: revert 6696c7e
 
 ---
 

@@ -181,17 +181,11 @@ resolve a real present NPC before anything fires, so it can't start combat again
 `AGENT_CHANGELOG.md` per protocol §3 — Basecamp backfilled both entries post-hoc from the commits +
 self-reports.
 
-## In flight — post-H-45/H-46 gate RUNNING (2026-06-20)
-The item-domain batch is COMPLETE + verified; gate is the agreed endpoint of this batch.
-- **Judge-recal — DONE** (`6abd557`): ground truth exposes item effects; judge grades items fairly
-  (flavor-does-nothing = PASS). Closes the unfair-item-test loop.
-- **H-46 — DONE + BASECAMP-verified** (`7ea7669`): `META_INVENTORY` now merges `inventory.items[]` into the
-  pack dump (grouped by kind, dedup-guarded, unresolved defRefs dropped) so H-45's bridged consumables show
-  in "what's in my pack". §7: suite 8208/0 (= 8202 + 6 U209), determinism 6/6, grace-only, no
-  forbidden/RNG/WORLD_VERSION. Diff reviewed (merge-by-kind + `seen` dedup + `armor` special-case correct).
-- **Gate:** fresh server restarted, gate launched. First fair measurement of the full item domain (wiring +
-  honest answers + complete listing + fair judging). On completion: rename report, ingest, record verdict.
-Budget ~$8.4 → ~$6.0 after this run.
+## In flight
+*(none — post-H-45/H-46 gate RAN (16/48; see verdict below). Judge-recal WORKED — the gate now grades the
+item domain fairly + precisely, and it pinpoints that H-45's item-effect answer is too narrow (first-match
+wrong item + missed phrasings). Queue clear — good point for a new session. **H-47 proposed (broaden the
+item-effect answer), NOT dispatched — Tim's call.** Budget ~$5.7 (~2 gates left).)*
 
 ## Done — H-45 (2026-06-20, BASECAMP-verified per §7)
 Claude-Sonnet (`3064288` claim, `562cc06` fix, `7c01e3a` DONE). Lit up the consumable mechanic that was
@@ -355,6 +349,53 @@ H-38a (`e1ff459`/`73cc196`, grace) + H-38b (`1727db9`+docs, combat), both pushed
 Suite 8110/0 (= 8086 + 3 U200 + 21 U201), determinism U19/21/22/27/30 6/6, lane boundaries held (H-38b
 only `engine/combat/*`+`playloop.js`; H-38a only `grace/*`+`playloop.js`; neither touched the other's
 lane or `llmAdapter.js`). No post-H-38 gate was run — superseded by the H-39 dispatch.
+
+## Gate run 2026-06-20 (post-H-45/H-46) — `docs/playtests/opus-gate-2026-06-20-postH45-H46.md` — VERDICT: judge-recal WORKED (gate now grades items fairly + precisely) → it pinpoints that H-45's item-effect answer is TOO NARROW (passes U208, fails realistic phrasings). Dominant = item-effect query/use (RL 7/12)
+4 sessions × 12 turns, glass-harbor. Fresh server restarted before the run. **16/48 (33%)**, up from 10/48
+— but this is the first TRUSTWORTHY item-domain measurement: the judge-recal landed, so the gate no longer
+marks the engine wrong for honest no-effect, and every Tonic fail's note now QUOTES the real effect ("Tonic
+heals 2d4 per canon; DM didn't state it"). Number up, but the gate is now a precise instrument that localizes
+a real engine gap. Cost ~$2.68 (budget ~$8.4 → ~$5.7).
+By-class: DM_TEST_DEADEND 10 · CANON_HALLUCINATION 3 · CRUNCH_INCONSISTENCY 3.
+Rules Lawyer 7/12 (item-effect) · Chaos 3/12 (combat-finish) · Lore-hound 3/12 · Confused newbie 2/12.
+
+**Judge-recal SUCCEEDED** — its whole job was to make the item domain fairly gradeable, and it did; the gate
+now pinpoints exactly where the engine fails instead of complaining unfairly.
+
+**DOMINANT CLUSTER — item-effect query/use; H-45 too narrow (RL 7/12, grace; candidate H-47):** H-45's
+`answerItemQuery` handles a simple "what does the Tonic do?" (U208) but fails the realistic adversarial
+phrasings the gate used —
+- **First-match WRONG item (t2):** "what does the Tonic do, and the Worn Blade / Kitchen cleaver damage?" →
+  answered about the **Kitchen cleaver** ("nothing special fires"). `answerItemQuery` returns the FIRST
+  inventory item whose name appears in the text, not the one ASKED about; the cleaver is flavor, so its
+  no-effect line masked the Tonic's heal. **This is the single highest-value fix.**
+- **"Does it heal HP / buff a stat?" misses META_ITEM (t5/t6):** phrased without "what does X do" → fell to
+  generic resolution → the OLD `gen:m` hedge ("it lands, after a fashion"), on a question canon can answer.
+- **"Drink it + what changes on my sheet" → sheet-dump (t7); "what does it do when I drink it" → action
+  resolution "you do so without difficulty" (t4)** — neither routed to `tryUseConsumable`/`answerItemQuery`.
+- **Endorsed a FALSE "it's inert" claim (t8, CANON_HALLUCINATION):** "the useless tonic" — accepted the
+  player's premise instead of correcting it (heals 2d4; full HP ≠ inert).
+- Compound item+weapon queries also drop slots (t2/t3) — the compound-fold family.
+NOTE the PC is at FULL HP (13/13), so even correct *use* is a legit no-op — but the *capability* ("it heals
+2d4") must be stated regardless, and the engine conflates "what does it do" (capability) with "use it" (apply).
+
+**FAMILIAR deferred residuals (not new):** combat-finish-low-HP (Chaos 3, COMBAT lane — a declared killing
+blow on a 2-3 HP foe in active combat narrates the kill but tags `[combat:table-talk]`, no roll/HP/defeat; an
+H-43 sibling for the finish-a-low-HP shape; Chaos was 0/12 last gate so it's a fresh shape, not a clean
+regression); lore-invention (Lore-hound "eleven years", Confused-newbie "supply-route rivalry" —
+CANON_HALLUCINATION) + invention→deadend (Lore-hound t4 "Nothing's happened yet") + read-no-payoff
+(Lore-hound t8) + suspicion-deadend (Confused-newbie t4).
+
+**META-LESSON (record):** H-45 PASSED its unit test (U208 12/12) but FAILED the live gate — the unit test
+covered a narrower path than the adversarial paraphrases. *A passing unit test is not a passing gate.* The
+judge-recal is what made the gate trustworthy enough to expose it. Biblioteca Vol 8 (paraphrase-invariance
+harness) is the durable answer; until then, scope item/grace unit tests with multi-item + varied phrasing.
+
+**Rung-1 bar: NOT met.** Proposed next (NOT dispatched — Tim's call): **H-47 (grace) — broaden the
+item-effect answer:** match the ASKED item not first-found + fold multiple named items; catch
+"does it heal/restore/buff" phrasings; "use/drink it" routes to `tryUseConsumable` and states the capability
++ the no-op reason at full HP; never endorse a false "inert" claim. Standing combat-finish + lore-invention
+residuals are separate packets. Budget ~$5.7 (~2 gates left).
 
 ## Gate run 2026-06-20 (post-H-43/H-44) — `docs/playtests/opus-gate-2026-06-20-postH43-H44.md` — VERDICT: combat cluster CRUSHED (Chaos 0/12) + grace HELD (Confused-newbie 0/12); 16→10; new dominant cluster = item/consumable handling (RL 7/12), a fresh domain
 4 sessions × 12 turns, glass-harbor. Fresh server restarted immediately before the run (the session's prior
@@ -1030,23 +1071,23 @@ in-fiction "I don't know/won't say," never atmosphere-only) as a more general fi
 individual hallucination shapes. Leaning toward (c) as a cheap next probe before escalating to (b).
 
 ## Next
-**The combat+grace batch worked — post-H-43/H-44 gate came back 10/48 (best yet), Chaos + Confused-newbie
-spotless.** The frontier moved again: the new dominant cluster is **item/consumable handling** (RL 7/12,
-a fresh domain). Next move (proposed, NOT dispatched — Tim's call):
-- **H-45 item/consumable batch (grace lane, Sonnet; serialize if it needs `playloop.js` for item-use):**
-  (1) an item-detail query ("what does the Tonic of grit do?") answers from the item's REAL definition
-  (deliver-or-decline extended to items), not auto-success; (2) a declared item-USE ("uncork and drink the
-  Tonic") resolves — applies the real effect, no spurious roll for a no-check quaff, updates inventory; no
-  raw-stat-block leak; (3) a consumables-list readback ("list/read back my consumables") is a recognized
-  meta-query, not bounced with scenery.
-- **Deferred grace/movement residuals (fold into a follow-up, low priority):** Lore-hound t1 "whose house
-  is this?" (direct who-question unanswered), t9 failed-roll pointed question → vague dodge (react-under-
-  pressure on a non-accusation phrasing — H-42 sibling), t11 Torva/Tove name ambiguity; plus the still-open
-  travel-bounce, goal/aim UI-string leak, lore-invention guard, and the H-44 lurker-naming watch-item (did
-  NOT recur this gate — the observer query wasn't probed; keep watching).
-**Rung-1 bar:** NOT met (RL 7/12) but CLOSEST yet — 2 of 4 personas spotless, and the remaining cluster is
-one fresh, tractable domain. Closing item/consumable handling is likely the last big push to the bar.
-Restart the dev server fresh before any gate (the session's server gets killed between runs).
+**Item domain is now fairly gradeable (judge-recal) but H-45 proved too narrow — post-H-45/H-46 gate 16/48,
+dominant cluster is the item-effect answer (RL 7/12); see that gate section above for the precise diagnosis.**
+Next moves (proposed, NOT dispatched — Tim's call), in priority order:
+- **H-47 (grace, Sonnet) — broaden the item-effect answer (the dominant cluster).** (1) `answerItemQuery`
+  matches the item the question is ABOUT, not the first inventory name found (the Kitchen-cleaver mis-match),
+  and folds MULTIPLE named items in one query; (2) catch "does it heal HP / restore / buff a stat?" phrasings
+  (not just "what does X do"); (3) state the item's CAPABILITY ("heals 2d4") even at full HP, and route
+  "use/drink it" to `tryUseConsumable` with a clear no-op-at-full-HP message; (4) never endorse a false
+  "it's inert" claim — correct it from canon. Scope unit tests with MULTI-ITEM + varied phrasing (the U208
+  gap). Likely `gracefulAdjudication.js` + maybe `playloop.js` (the consume-at-full-HP message).
+- **Combat-finish-low-HP (Codex, combat).** A declared killing blow on a 2-3 HP foe in active combat narrates
+  the kill but tags `[combat:table-talk]` (no roll/HP/defeat). H-43 sibling — the "finish a near-dead foe"
+  shape. Separate packet, combat lane.
+- **Lore-invention guard (grace/llmAdapter).** Recurs every gate (invented tenure numbers, "supply-route
+  rivalry") — the deferred anti-invention guard; pairs with read-no-payoff + react-under-pressure-on-suspicion.
+**Rung-1 bar:** NOT met. The item domain is the active front; combat-finish + lore-invention are the standing
+tails. Restart the dev server fresh before any gate (it gets killed between runs); budget ~$5.7 (~2 gates).
 
 **Known small follow-up (still open):** `infoPressCount` off-by-one in `infoExtractionOutcome` — fold into a
 future grace batch.
@@ -1085,9 +1126,11 @@ Full per-turn detail in the report file. Catalog these as the next hard-tail pac
 once a worker prompt is drafted. Priority order: CRASH → DM_TEST_DEADEND → CRUNCH_INCONSISTENCY →
 CANON_HALLUCINATION.
 
-## Budget — ~$8.4 remaining
-Tim's API key budget is **$50 total**. ~$10.9 before the post-H-43/H-44 gate (~$2.52) → **~$8.4 left**,
-roughly 3 more 4-session gate runs at the current rate. Worker-side fixes (Sonnet/Codex windows) don't
+## Budget — ~$5.7 remaining
+Tim's API key budget is **$50 total**. ~$8.4 before the post-H-45/H-46 gate (~$2.68) → **~$5.7 left**,
+roughly **2 more** 4-session gate runs at the current rate. Getting tight — batch fixes before gating, and
+lean on the free `npm run lint:content` + unit tests (with multi-item/varied phrasing) to catch issues
+without spending. Consider building Biblioteca Vol 8 (paraphrase-invariance harness) to extend free coverage. Worker-side fixes (Sonnet/Codex windows) don't
 draw this budget — only `scripts/dm-playtest.mjs` runs do.
 
 ## Open strategic question (the arbiter call) — VERDICT: Road A for the routing/state long-tail; HYBRID (deliver-or-decline) for the cluster-D canon-grounding gap; Road B parked w/ sharpened trigger

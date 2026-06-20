@@ -2,6 +2,8 @@
 
 ## [CLAIMED] H-43 combat resolution · Codex · 2026-06-20T00:05:59Z · files: engine/playloop.js, engine/combat/escapeCombat.js, tests/U206.combatResolution.test.js
 
+## [CLAIMED] H-44 grace cleanup · Claude-Sonnet · 2026-06-20T00:12:22Z · files: engine/grace/gracefulAdjudication.js, tests/U207.graceCleanup.test.js
+
 2026-06-19T20:27:54Z — Claude-Sonnet
 - Packet/seam: H-42 react-under-pressure (grace lane)
 - Commit(s): 385c228

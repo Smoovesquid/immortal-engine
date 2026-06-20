@@ -30,7 +30,7 @@ detectors. Status starts `seed`.
 
 | # | Capability (DM obligation) | Lineage / H-IDs | Current home (detectors to unify) | Corpus | Graduated |
 |---|---|---|---|---|---|
-| C1 | Answer **every part** of a compound query | H-25/H-31/H-40/H-54 | `handleMetaQuestion` fold logic | 1L/4T | — |
+| C1 | Answer **every part** of a compound query | H-25/H-31/H-40/H-54/**H-59** | `handleMetaQuestion` typed sub-intent decomposition | 4L/0T | **✓** |
 | C2 | A **named referent** must be grounded before the turn resolves | H-56, C2-grad | `ungroundedNpcReferentForText` + `hasPersonReferentSignal` | 3L/2T | partial |
 | C3 | A **declared check** gets a DC + roll | H-54 R4 | `META_EXPLICIT_CHECK_*` | 0L/3T | — |
 | C4 | Info-seeking **delivers a grounded fact or honestly declines** | H-22/23/29/31/39 | `isInfoSeekingText`, `infoExtractionOutcome`, `declineInfoSeek` | 1L/3T | — |
@@ -44,7 +44,7 @@ detectors. Status starts `seed`.
 | C12 | **Movement/travel intent** resolves in fiction, no travel-gate bounce | THE_DM_TEST residuals | playloop movement / `inferInteriorAction` | 0L/3T | — |
 | C13 | **Absurd / out-of-bounds** input declines in-character | IG-10 (parked) | — (Tier-B candidate) | 4L/3T | — |
 | C14 | **Meta / system check-in** acknowledged, no roll | H-51 | `META_SYSTEM_CHECKIN` | 2L/3T | — |
-| C15 | **Active combat is reflected, not narrated as calm conversation** | gate 2026-06-20 (Lore-hound) | playloop combat/dialogue routing (NEW — adj. C8/C10) | — | — |
+| C15 | **Active combat is reflected, not narrated as calm conversation** | gate 2026-06-20 → **H-58** | `playloop` `isCombatConversationNonAction` guard | 2L/0T | **✓** |
 
 **Findings log.** *2026-06-20:* H-56 (`3e214ec`) §7-verified — closes the `U219` referent shapes with no
 regression and no over-fire (grounded names/roles unaffected), but a Basecamp adversarial probe found **C2 still

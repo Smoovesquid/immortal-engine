@@ -70,13 +70,62 @@ architecture, common failure modes, and a minimal engine checklist. **Most relev
 (conversation as logic operations), §7.2 (Versu social practices), §14 (the taxonomy), §15 (the 5-stage
 pattern), §19 (design implications for Immortal — written for this engine by name).
 
+### Vol 2 — Speech Acts & Force  →  [`vol-2-speech-acts-force.md`](vol-2-speech-acts-force.md)
+*What an utterance is DOING (illocutionary force), what it obligates next, felicity, and clarification.*
+Force ≠ sentence form ("can you move?" = request, not ability query). Acts create **obligations** (a
+question / accusation / offer stays live until answered, declined, or contested) and acts can FAIL (felicity
+— a declaration without authority is bluster, not a demotion). **Immortal hook:** the deterministic heart of
+social physics — *speech act → open obligation → narrow canonical update*. Backs H-42 (confrontation =
+accusation force → NPC reaction), the deliver-or-decline contract (obligation to respond), and
+clarification-as-a-legal-outcome (sibling to `isNullAction` / IG-10). Concrete next rules: the obligation
+ladders (§6.4) and the request/order/threat/warning cluster (§13).
+
+### Vol 3 — Implicature, Presupposition & Common Ground  →  [`vol-3-implicature-presupposition-common-ground.md`](vol-3-implicature-presupposition-common-ground.md)
+*What a line IMPORTS beyond what it asserts.* The four-way split: asserted / presupposed / implicated /
+common-ground-proposal. **Loaded questions** ("have you stopped stealing?") smuggle a claim in sideways — a
+DM must be able to challenge the premise, not just answer. **Immortal hook:** the master safety rule — keep
+a **discourse ledger distinct from canon** (an NPC's claim is "asserted," not "true"); maps onto `ledger.js`
+/ Canon Log + narration≠canon, and is the backbone for `RUMOR_LAYER`. Strongly limit auto-accommodating
+hostile presuppositions (the canon-pollution guard).
+
+### Vol 4 — Social Practices & Scene Protocols  →  [`vol-4-social-practices-scene-protocols.md`](vol-4-social-practices-scene-protocols.md)
+*A scene is a rule-bearing frame, not scenery — it changes the legal move set, the meaning of silence, the
+force of an insult, the cost of refusal.* "Kneel" in court ≠ ritual ≠ tavern ≠ duel. Versu's social-practices
+precedent: constrain + suggest, don't puppet. **Immortal hook:** the home for scene-mode-dependent grace
+rules — interpret the line *through* the scene protocol; `legal_but_costly` / `taboo` /
+`requires_clarification` beats a binary legal/illegal. The `fateBand`→tone knob is a thin proto-version; a
+typed `scene_protocol` layer is the growth path.
+
+### Vol 5 — Deception, Bluffing & Audience Split  →  [`vol-5-deception-bluffing-audience-split.md`](vol-5-deception-bluffing-audience-split.md)
+*Lies / bluffs / omission / deniable-threats as structured public-vs-private state, not "the NPC is lying"
+flavor.* Master rule: **treat claims as claims** — a `PublicClaimLedger` separate from `WorldState` enables
+bluffing without canon corruption, witness-sensitive reputation, and evidence-driven exposure later.
+Audience-split (one line, different uptake per hearer) + deniability bands. **Immortal hook:** narration≠canon
+taken to its conclusion, the deep backing for `RUMOR_LAYER` and `withheldFacts`; bluff resolution deferred
+until challenged.
+
+### Vol 6 — Emotional Appraisal & Relational State  →  [`vol-6-emotional-appraisal-relational-state.md`](vol-6-emotional-appraisal-relational-state.md)
+*Emotion as inspectable state, not prose mood: event → appraisal tags → transient affect → persistent
+relation.* Keep **trust / respect / fear / resentment / loyalty / suspicion separable** (respect can rise
+while affection falls) — never one "affinity" meter. Transient affect decays; relations move slowly past
+thresholds. **Immortal hook:** generalizes the NPC `disposition` / `emotionalColoring` / `hostile` flag (H-44
+read that flag — a proto relation-read) into a real `RelationState` that policy consumes; appraisal bridges
+the social events Vol 2–5 detect to durable consequences.
+
+### Vol 7 — Hybrid Architecture Patterns  →  [`vol-7-hybrid-architecture-patterns.md`](vol-7-hybrid-architecture-patterns.md)  ·  *the wiring blueprint*
+*How to wire all the above into a deterministic system: interpret richly → commit narrowly → update explicit
+state → choose legal action → generate phrasing last → log everything.* Confidence-aware routing (high →
+commit; low → clarify); a unified **pragmatic packet** replaces scattered detectors; "formalize the grace
+layer as a typed interpreter that PROPOSES packets but does not OWN policy." **Immortal hook:** this is
+literally the engine's current architecture (grace → `resolve` → deterministic outcome → LLM narration →
+Canon Log) named and generalized — and it's the **IG-11 graduation path**: promote the ad-hoc grace detectors
+(`isInfoSeekingText`, `isConfrontationChallenge`, the meta-query interceptors) into one typed packet + a
+narrow-commit gate. **Read before any big grace-layer refactor.**
+
+*The arc: Vol 2–6 build the layers, Vol 7 wires them, Vol 8 (planned) will test them.*
+
 ---
 
-## Planned volumes (from Vol 1 §20 — write as the need comes due)
-- **Vol 2 — Speech Acts & Force** (act taxonomy, indirection, obligations, repair/grounding)
-- **Vol 3 — Implicature, Presupposition & Common Ground** (hidden meaning, loaded questions, shared belief)
-- **Vol 4 — Social Practices & Scene Protocols** (court, bargaining, interrogation, romance, ritual, rank)
-- **Vol 5 — Deception, Bluffing & Audience Split** (lies, half-truths, plausible deniability, witnesses)
-- **Vol 6 — Emotional Appraisal & Relational State** (appraisal, trust/fear/respect, persistence/decay)
-- **Vol 7 — Hybrid Architecture Patterns** (parser + state machine + planner + generator; confidence/clarify)
+## Planned volumes
 - **Vol 8 — Evaluation Harness** (determinism tests, paraphrase invariance, hidden-state consistency, replay)
+  — the natural sibling to our existing gate (`scripts/dm-playtest.mjs`) + `npm run lint:content`.

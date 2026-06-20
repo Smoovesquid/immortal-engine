@@ -11,7 +11,8 @@
     "playtest:full": "node scripts/playtest.js --seeds 100 --turns 500",
     "prose:gate": "node scripts/prose-playtest.mjs",
     "dpos": "bash scripts/dpos.sh",
-    "import-pack": "node scripts/import/index.js"
+    "import-pack": "node scripts/import/index.js",
+    "lint:content": "node scripts/contentLint.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

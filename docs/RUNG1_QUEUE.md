@@ -181,7 +181,21 @@ resolve a real present NPC before anything fires, so it can't start combat again
 `AGENT_CHANGELOG.md` per protocol §3 — Basecamp backfilled both entries post-hoc from the commits +
 self-reports.
 
-## In flight — H-43 (combat) ∥ H-44 (grace), dispatched 2026-06-19, declared FILE-DISJOINT (parallel OK §2)
+## In flight — H-43 (combat) STILL RUNNING; H-44 (grace) DONE + BASECAMP-verified
+**H-44 VERIFIED + pushed** (`0091ede` claim, `03eb40e` fix, `2f297b3` DONE): both sub-fixes landed —
+(i) `INFO_SEEKING_CONCEALMENT_RE` so noun-less concealment questions ("is something going on you're not
+telling me?") reach deliver-or-decline (Confused-newbie t8); (ii) NPC-observer lurker id — a "lurking/edges"
+framing now names the present HOSTILE NPC, not `sociable[0]` (RL t5; traced IN LANE — it was the
+`META_NPC_OBSERVER` fallback, not playloop routing). §7: fix isolated to `gracefulAdjudication.js` +
+`tests/U207` (no cross-lane, no RNG/Date/WORLD_VERSION/applyDeltas), U207 14/14, determinism 6/6, in sync.
+*Watch next gate:* the observer query now NAMES a canonical lurker — defensible (direct ask + grounded
+answer + unnamed-lurker fallback guarded) but a mild tension with H-34's roster-handler lurker-vagueness;
+revisit only if it reads as over-disclosure.
+**H-43 (Codex, combat) STILL IN FLIGHT** — uncommitted WIP confirmed in the shared tree (`M escapeCombat.js`,
+`M playloop.js`, `?? tests/U206`; claim `28d4a6a`). Left untouched per §3. On its DONE: verify per §7 incl. a
+COMBINED-HEAD full suite (H-44 + H-43 share the tree), then push it (Codex can't, §7), then gate.
+
+### Original dispatch (for reference)
 Tim: "send it." Scoped to not collide: **H-43 = `engine/playloop.js` + `engine/combat/escapeCombat.js`**
 (+ `tests/U206`); **H-44 = `engine/grace/gracefulAdjudication.js`** (+ `tests/U207`). Disjoint file sets →
 parallel; each prompt carries a HALT-if-you-need-the-other's-file guard + a distinct test number.

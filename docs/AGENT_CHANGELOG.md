@@ -1,5 +1,14 @@
 # AGENT_CHANGELOG
 
+2026-06-20T19:14:53Z — Codex
+- Packet/seam: H-56 ungrounded-NPC referent guard
+- Commit(s): local H-56 commit (hash in worker final report)
+- Files changed: `engine/playloop.js`, `tests/U219.ungroundedNpcReferent.test.js`, `docs/AGENT_CHANGELOG.md`
+- Summary: added a deterministic proper-name/role referent guard in `playloop.js` only. Unresolved dialogue refs and NPC-centered information/confrontation asks now check whether the concrete NPC ref is present or already introduced before any movement/interior/generic-roll fallthrough. Fabricated names such as Brae Copperforge now return a grounded clarify/decline with the real roster, no d20, no state mutation, and no minted NPC. Present NPC names/roles, generic actions, vague "talk to someone", and prior social-pressure/info routes are fenced.
+- Proof: RED baseline `node --test tests/U219.ungroundedNpcReferent.test.js` failed 2/6 before the fix on the fabricated demand (`[roll:19 vs DC:12 → success]`) and fabricated talk (`That way is blocked from here.`); GREEN `node --test tests/U219.ungroundedNpcReferent.test.js` — 6/6; adjacent canaries `node --test tests/U214.confusedNewbieReferent.test.js tests/U207.graceCleanup.test.js tests/U218.attackByRoleStartsCombat.test.js tests/UX2.conversationRouting.test.js` — 43/43; false-positive pack `node --test tests/U219.ungroundedNpcReferent.test.js tests/U102.socialAdjudication.test.js tests/U186.conversationalPressure.test.js tests/U192.groundFromCanon.test.js` — 46/46; full suite `node --test` — 8285/8285 after granting local bind permission for A04 (first attempt hit sandbox `listen EPERM 127.0.0.1` only); determinism `node --test tests/U19.worldHashDeterminism.test.js tests/U21.replayGateN50.test.js tests/U22.longRunStabilityN100T500.test.js tests/U27.worldHashSurfaceContract.test.js tests/U30.gate6.sequelDeterminism.test.js` — 6/6; `npm run playtest:quick` — 50 runs, 0 crashes, no bugs found. Live browser visual check was attempted against `/v1.html`; blocked by local browser launch failures in this sandbox (`EMFILE` for watched dev server, Chrome/Playwright browser binary launch `SIGABRT`/missing bundled browser).
+- Remaining/next: Basecamp should run the requested adversarial probes and, if needed, a local visible browser pass outside this sandbox before push.
+- Rollback: revert local H-56 commit.
+
 2026-06-20T13:24:32Z — Codex
 - Packet/seam: H-52 lore-hound elder identity/tenure guard
 - Commit(s): local H-52 commit (hash in worker final report)

@@ -993,6 +993,15 @@ function playerMoveCore(world, packsById, text) {
 
   const interiorAction = inferInteriorAction(text, w.scene?.interior);
   const targetedCombatAction = w.combat?.active && w.meta?.mode === 'escape' && (Number(w.meta?.escapeHp) || 0) > 0 && isTargetedViolentCombatAction(w, text);
+  if (!w.combat?.active && !w.scene?.dialogue) {
+    const pendingTalkRef = extractDialogueRef(text);
+    if (pendingTalkRef && !/^(?:someone|anyone|somebody|anybody|people|folk|locals?|a local|villagers?|them|him|her)$/i.test(pendingTalkRef.trim())) {
+      const ungroundedRef = ungroundedNpcReferentForText(w, pendingTalkRef, { assumeNpcCentered: true });
+      if (ungroundedRef) {
+        return npcReferentClarify(w, ungroundedRef, { mechanics: '[clarify:who]', mode: 'talk' });
+      }
+    }
+  }
   if (w.combat?.active && w.meta?.mode === 'escape' && (Number(w.meta?.escapeHp) || 0) > 0 && (interiorAction.kind === 'enter' || interiorAction.kind === 'exit' || interiorAction.kind === 'move') && !targetedCombatAction) {
     return {
       world: w,
@@ -1611,6 +1620,10 @@ function playerMoveCore(world, packsById, text) {
         };
       }
     }
+    const ungroundedRef = ungroundedNpcReferentForText(w, talkRef, { assumeNpcCentered: true });
+    if (ungroundedRef) {
+      return npcReferentClarify(w, ungroundedRef, { mechanics: '[clarify:who]', mode: 'talk' });
+    }
   }
 
   // Direct-address guard: "I'm talking to you", "what are you looking at?" aimed at
@@ -2059,6 +2072,13 @@ function playerMoveCore(world, packsById, text) {
   if (!w.combat?.active && !w.scene?.dialogue) {
     const salvaged = trySalvage(w, text);
     if (salvaged) return salvaged;
+  }
+
+  if (!w.combat?.active && !w.scene?.dialogue) {
+    const ungroundedRef = ungroundedNpcReferentForText(w, text);
+    if (ungroundedRef) {
+      return npcReferentClarify(w, ungroundedRef, { mechanics: '[clarify:referent]', mode: 'decline' });
+    }
   }
 
   // P-71 — field crafting: "I make a torch from a board and a strip of cloth".
@@ -3502,6 +3522,109 @@ function resolvePresentNpcLoose(world, ref) {
   const npcs = (node?.settlement?.npcs || []).filter(n => n && !n.hostile);
   if (!npcs.length) return null;
   return resolveNpcByRoleOrDescriptor(npcs, r, { allowGeneric: true });
+}
+
+function presentNonHostileNpcs(world) {
+  const node = (world?.map?.nodes || []).find(n => n && n.id === world?.map?.currentNodeId) || null;
+  return (node?.settlement?.npcs || []).filter(n => n && !n.hostile);
+}
+
+function npcRosterClause(world) {
+  const names = presentNonHostileNpcs(world).map(n => String(n?.name || '').trim()).filter(Boolean);
+  if (!names.length) return 'no one\'s within earshot';
+  if (names.length === 1) return `${names[0]} is here`;
+  return `${names.slice(0, 4).join(', ')} are here`;
+}
+
+function npcReferentClarify(world, ref, { mechanics = '[clarify:referent]', mode = 'decline' } = {}) {
+  const name = String(ref || '').trim();
+  const roster = npcRosterClause(world);
+  const narration = mode === 'talk'
+    ? `Wizard: There's no one named ${name} here — ${roster}. Who do you mean?`
+    : `Wizard: I haven't introduced anyone named ${name}, and there's no one by that name here. ${roster} — who do you actually mean?`;
+  return { world, output: { narration, mechanics } };
+}
+
+function normalizedNpcRef(ref) {
+  return String(ref || '')
+    .toLowerCase()
+    .replace(/\b(?:the|a|an|that|this|my|your|his|her|their)\b/g, ' ')
+    .replace(/[^a-z' -]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function introducedNpcText(world) {
+  const node = (world?.map?.nodes || []).find(n => n && n.id === world?.map?.currentNodeId) || null;
+  const npcText = (node?.settlement?.npcs || []).flatMap(n => [
+    n?.name,
+    n?.role,
+    n?.occupation,
+    n?.descriptor,
+    n?.archetype,
+    n?.title
+  ]);
+  const beats = (world?.recentBeats || []).flatMap(b => [
+    b?.input,
+    b?.stake,
+    b?.mechanics,
+    b?.location,
+    b?.outcome
+  ]);
+  const dialogue = world?.scene?.dialogue ? Object.values(world.scene.dialogue) : [];
+  return [...npcText, ...beats, ...dialogue].map(v => String(v || '').toLowerCase()).join(' ');
+}
+
+function isGroundedNpcRef(world, ref) {
+  const r = normalizedNpcRef(ref);
+  if (r.length < 3) return false;
+  if (resolvePresentNpcStrict(world, r) || resolvePresentNpcLoose(world, r)) return true;
+  const text = introducedNpcText(world);
+  if (!text) return false;
+  const tokens = r.split(/\s+/).filter(Boolean);
+  if (tokens.length >= 2 && text.includes(r)) return true;
+  return tokens.some(tok => tok.length >= 3 && text.includes(tok));
+}
+
+const NPC_REFERENT_STOPWORDS = new Set([
+  'i', 'me', 'my', 'you', 'your', 'he', 'him', 'she', 'her', 'they', 'them', 'it',
+  'someone', 'somebody', 'anyone', 'anybody', 'people', 'person', 'folk', 'locals',
+  'villagers', 'this person', 'that person'
+]);
+
+function concreteNpcReferentFromText(text) {
+  const raw = String(text || '');
+  const commaName = raw.match(/\b(?:guard|baker|elder|stranger|merchant|trader|smith|blacksmith|innkeeper|priest|healer|scholar|artisan|villager|local|person|figure)\s*,\s*([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)(?:\b|['’])/);
+  if (commaName && commaName[1]) return commaName[1].trim();
+
+  const proper = [...raw.matchAll(/\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,2})(?:\b|['’])/g)]
+    .map(m => m[1].trim())
+    .filter(name => !/^(?:I|Okay|Ok|Wait|Where|Who|What|When|Why|How|Don|Dont|Hey|Hi|Hello|Stop|Just|Give|Take|Let|The|A|An|Wizard|Pilgrim|Rest)$/i.test(name));
+  if (proper.length) return proper.sort((a, b) => b.length - a.length)[0];
+
+  const lower = raw.toLowerCase();
+  const roleMatch = lower.match(/\b(?:talk|speak|chat)\s+(?:to|with)\s+(?:the|a|an)\s+([a-z][a-z' -]+?)(?:\b|[,.!?;:])/)
+    || lower.match(/\bwhere\s+is\s+(?:the|a|an)\s+([a-z][a-z' -]+?)\s+(?:standing|waiting|watching|posted|hiding)\b/)
+    || lower.match(/\bwho\s+(?:posted|sent|named)\s+(?:the|a|an)\s+([a-z][a-z' -]+?)\b/);
+  if (roleMatch && roleMatch[1]) {
+    const candidate = normalizedNpcRef(roleMatch[1]);
+    if (candidate && !NPC_REFERENT_STOPWORDS.has(candidate) && GENERIC_PERSON_REF.test(candidate)) return candidate;
+  }
+  return '';
+}
+
+function ungroundedNpcReferentForText(world, text, { assumeNpcCentered = false } = {}) {
+  const ref = concreteNpcReferentFromText(text);
+  if (!ref || NPC_REFERENT_STOPWORDS.has(normalizedNpcRef(ref))) return '';
+  const npcCentered = assumeNpcCentered
+    || extractDialogueRef(text)
+    || extractApproachRef(text)
+    || isNpcObserverQuery(text)
+    || isInfoSeekingText(text)
+    || isConfrontationChallenge(text)
+    || /\b(?:mentioned|introduced|named|who\s+(?:posted|sent|is)|where\s+is|standing|guard)\b/i.test(String(text || ''));
+  if (!npcCentered) return '';
+  return isGroundedNpcRef(world, ref) ? '' : ref;
 }
 
 // Inspection verbs that ask to look closely AT a specific thing (as opposed to

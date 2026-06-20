@@ -1,0 +1,112 @@
+# Capability Ledger — the finite list + the convergence meter
+
+**The living tracker for [`RUNG1_CONVERGENCE_PLAN.md`](RUNG1_CONVERGENCE_PLAN.md).** The plan argues the
+hard-tail loop is closeable because *failure categories are finite* even though phrasings are infinite. This
+doc is that finite list, plus the two-signal meter that tells us whether we're converging. Backed by Biblioteca
+[Vol 8](biblioteca/vol-8-evaluation-harness.md) (the harness spec) and [Vol 7](biblioteca/vol-7-hybrid-architecture-patterns.md)
+(the graduation target).
+
+---
+
+## The two signals (replaces the bouncing gate %)
+
+- **Regression signal** — % of the *frozen paraphrase corpus* (below) that passes. Runs on the **deterministic
+  engine path** (`playerMove`, LLM-off) → **free + replayable**, run it on every change like `node --test`.
+  Must stay **100%**. Proves we never go backward on a solved category.
+- **Discovery signal** — from a paid gate run, the count of HARD failures that map to **no existing capability
+  row** (a genuinely new category, not a fresh phrasing of a known one). This is the real progress meter; it
+  can fall to ~0 even over infinite input. Classification is a Basecamp judgment call per gate (tag each
+  failure with a `C#` or `NEW`).
+
+**Done-when:** regression corpus green **+** N consecutive gates open zero new capabilities **+** residual is
+phrasing-tail / forgivable SOFT, not real defects.
+
+---
+
+## The ledger (C1–C14 seed; append as gates surface genuinely new categories)
+
+`corpus` = paraphrase-sets exist & green · `graduated` = handled by the typed packet (Vol 7), not scattered
+detectors. Status starts `seed`.
+
+| # | Capability (DM obligation) | Lineage / H-IDs | Current home (detectors to unify) | Corpus | Graduated |
+|---|---|---|---|---|---|
+| C1 | Answer **every part** of a compound query | H-25/H-31/H-40/H-54 | `handleMetaQuestion` fold logic | seed | — |
+| C2 | A **named referent** must be grounded before the turn resolves | H-56 | `ungroundedNpcReferentForText` | seed | — |
+| C3 | A **declared check** gets a DC + roll | H-54 R4 | `META_EXPLICIT_CHECK_*` | seed | — |
+| C4 | Info-seeking **delivers a grounded fact or honestly declines** | H-22/23/29/31/39 | `isInfoSeekingText`, `infoExtractionOutcome`, `declineInfoSeek` | seed | — |
+| C5 | A **rules/mechanic question** is answered straight, never rolled | H-25/H-54 R3 | `META_DAMAGE_RULE`, advice/skill-mod | seed | — |
+| C6 | **Number-transparency**: own stats/mods/AC/HP/items from the sheet | H-25/H-31/H-40 | `answerSkillModifier`, `META_ARMOR_VALUE`, `META_HELD_ITEMS` | seed | — |
+| C7 | **Item/consumable** query answers from real def; **use** applies effect | H-45/H-47 | `answerItemQuery`, `tryUseConsumable`, `META_ITEM*` | seed | — |
+| C8 | **Narration ≤ mechanics** — no hit/defeat the dice didn't produce | H-26/H-28/H-43 | `llmAdapter` validator R1–R3 | seed | — |
+| C9 | **Canon non-invention** — no invented name/date/tenure/relationship | H-27/H-49/H-52 | `findInventedFactClaim` | seed | — |
+| C10 | A **declared attack** routes to real combat resolution | H-30/H-32/H-43/H-48/H-55 | playloop attack gates, `resolveEscapeCombatTurn` | seed | — |
+| C11 | **Confrontation under pressure** → in-character NPC reaction | H-42 | `isConfrontationChallenge`, `confrontationReaction` | seed | — |
+| C12 | **Movement/travel intent** resolves in fiction, no travel-gate bounce | THE_DM_TEST residuals | playloop movement / `inferInteriorAction` | seed | — |
+| C13 | **Absurd / out-of-bounds** input declines in-character | IG-10 (parked) | — (Tier-B candidate) | seed | — |
+| C14 | **Meta / system check-in** acknowledged, no roll | H-51 | `META_SYSTEM_CHECKIN` | seed | — |
+
+**Findings log.** *2026-06-20:* H-56 (`3e214ec`) §7-verified — closes the `U219` referent shapes with no
+regression and no over-fire (grounded names/roles unaffected), but a Basecamp adversarial probe found **C2 still
+misses** *"what's keeping Brokefang so quiet over there?"* and *"take me to Sera Voss and her stall"* (both fall
+through to observe/travel, no clarify). **C2 is a correct partial point-fix, not a closed category** — those two
+phrasings are its first `target` cases and make C2 a prime early graduation candidate. (The plan validating
+itself: an over-fire probe doubled as a paraphrase-invariance probe and caught exactly the phrasing-tail the
+per-packet loop would have shipped as "done.")
+
+**Social-physics categories to mine next (Biblioteca Vols 2–6, mostly not yet failing-in-gate but on the map):**
+sarcasm/irony inversion (Vol 2; transcript: `docs/playtests/ridiculous-sarcasm-2026-06-06.md`), loaded
+questions / presupposition (Vol 3, "have you stopped stealing?"), bluff vs. claim (Vol 5), request/order/threat
+disambiguation (Vol 2 §13). Add a `C#` row when one actually surfaces — the map is finite (see plan §2.4).
+
+---
+
+## Corpus format (the shared interface — Lane B builds the runner to this, Lane C fills content to this)
+
+Corpus lives in `tests/corpus/<Cn>.corpus.mjs`, each exporting `default` an array of **cases**:
+
+```js
+{
+  id: 'C1-001',
+  capability: 'C1',
+  status: 'locked',                  // 'locked' = solved, MUST stay green (the regression signal);
+                                     // 'target' = known gap (the graduation backlog — reported, does NOT fail the build)
+  fixture: 'village_baker',          // named world setup, see fixtures below
+  intent: 'ask name, class, and current HP in one breath',
+  paraphrases: [                      // ≥5; all must satisfy `assert` (paraphrase invariance, Vol 8 §6)
+    "what's my name, class, and current HP?",
+    "remind me — who am I, what class, how many hit points right now?",
+    "name / class / current HP?",
+  ],
+  assert: {
+    surface_matches: [/HP|hit points/i, /class/i],  // ALL parts answered
+    surface_excludes: [/\[roll:/],                   // and it did NOT roll
+  },
+  diverge: [                          // hard negatives: look similar, MUST be handled differently (Vol 8 §6.3)
+    { text: 'I add MIGHT to damage and swing at the door', reason: 'an action, not a status query' },
+  ],
+  source: 'opus-gate-2026-06-20-postH52-H53.md (RL compound query)',
+}
+```
+
+Runner contract: for each case, build `fixture`'s world; for **each** paraphrase call
+`playerMove(world, PACKS, text)`, take `surface = narration + ' ' + mechanics`, assert every `surface_matches`
+present and every `surface_excludes` absent. For each `diverge[]` text, assert the case's signature does **not**
+hold. Report **locked** cases (pass-% MUST be 100% — the regression signal) separately from **target** cases
+(the graduation backlog: a target that starts passing is a promote-to-`locked` candidate; target fails do not
+break the build). Exit nonzero only when a `locked` case fails.
+
+### Standard fixtures (factory fns; model them on `tests/U219.ungroundedNpcReferent.test.js`)
+- `village_baker` — settlement node, one non-hostile baker NPC ("Mira Hearth"), no combat, no dialogue.
+- `active_combat` — escape-mode combat active, one live foe at ~6 HP, `meta.escapeHp`/`escapeMaxHp` set.
+- `dialogue_active` — mid-dialogue with a present NPC (`scene.dialogue` populated).
+- `empty_room` — bare interior, no NPCs, no combat.
+
+All fixtures deterministic (fixed seed), LLM-off. Cases requiring other setups note it in `intent` and Lane B
+adds the fixture.
+
+---
+
+## How to run (once Lane B lands)
+- `npm run convergence` → regression table + overall %. Free, deterministic, run like `node --test`.
+- Paid gate (`scripts/dm-playtest.mjs`) stays the **discovery** instrument only — read its report, tag each
+  HARD failure `C#`/`NEW`, log the discovery count here under a dated heading.

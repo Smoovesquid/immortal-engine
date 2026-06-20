@@ -122,10 +122,19 @@ Canon Log) named and generalized — and it's the **IG-11 graduation path**: pro
 (`isInfoSeekingText`, `isConfrontationChallenge`, the meta-query interceptors) into one typed packet + a
 narrow-commit gate. **Read before any big grace-layer refactor.**
 
-*The arc: Vol 2–6 build the layers, Vol 7 wires them, Vol 8 (planned) will test them.*
+### Vol 8 — Evaluation Harness  →  [`vol-8-evaluation-harness.md`](vol-8-evaluation-harness.md)  ·  *the proof layer*
+*How to prove the Vol 2–7 layers are stable, deterministic, and inspectable — so a social rule graduates
+from "interesting idea" to engine feature instead of a grab-bag of vibe heuristics.* Five test layers (unit /
+golden / property / scenario / replay, §4); the invariant families to assert (canon≠narration, claim≠fact,
+interpret-richly-commit-narrowly, clarification legality, §5); **paraphrase invariance as the highest-value
+category** (§6 — incl. §6.3 *false* invariance: warning≠threat, request≠order must still **diverge**, so it is
+not naive "all rephrasings are equal"); a 9-point **rule-graduation bar** (§15); a Phase A/B/C build order
+mirroring Vol 7's maturity path (§16). **Immortal hook:** the unwritten harness our own gate meta-lesson kept
+pointing at ("a passing unit test is not a passing gate", post-H-45). It is the **measurement half** of closing
+the iterative-fix loop — the regression / paraphrase / replay spec. What it deliberately does **not** contain,
+and a planning doc must add on top: the *victory redefinition* (split the bouncing gate % into a frozen-corpus
+regression signal + a discovery-rate signal that can asymptote even over infinite input) and the **capability
+ledger** enumerating the finite failure-categories. Vol 8 tells you how to test a rule; it does not tell you
+when the whole loop is done.
 
----
-
-## Planned volumes
-- **Vol 8 — Evaluation Harness** (determinism tests, paraphrase invariance, hidden-state consistency, replay)
-  — the natural sibling to our existing gate (`scripts/dm-playtest.mjs`) + `npm run lint:content`.
+*The arc: Vol 2–6 build the layers, Vol 7 wires them, Vol 8 tests them — the library is complete.*

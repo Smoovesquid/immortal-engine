@@ -181,11 +181,28 @@ resolve a real present NPC before anything fires, so it can't start combat again
 `AGENT_CHANGELOG.md` per protocol §3 — Basecamp backfilled both entries post-hoc from the commits +
 self-reports.
 
-## In flight
-*(none — post-H-45/H-46 gate RAN (16/48; see verdict below). Judge-recal WORKED — the gate now grades the
-item domain fairly + precisely, and it pinpoints that H-45's item-effect answer is too narrow (first-match
-wrong item + missed phrasings). Queue clear — good point for a new session. **H-47 proposed (broaden the
-item-effect answer), NOT dispatched — Tim's call.** Budget ~$5.7 (~2 gates left).)*
+## In flight — H-47 ∥ H-48 ∥ H-49, dispatched 2026-06-20, declared FILE-DISJOINT (parallel OK §2)
+Tim: "proceed." Three packets, disjoint file sets → parallel; each prompt has a halt-on-cross-file guard +
+distinct test number. ONE gate measures all three after they land (budget-conserving — ~$5.7, ~2 gates).
+- **H-47 "item-effect answer breadth" (Claude-Sonnet, grace — `gracefulAdjudication.js` + `tests/U210`):**
+  the dominant post-H-45/H-46 cluster (RL 7/12). Fix `answerItemQuery` to (1) match the item ASKED about, not
+  the first inventory name found (the Kitchen-cleaver mis-match), + fold MULTIPLE named items; (2) catch
+  "does it heal HP / restore / buff a stat?" phrasings (broaden `META_ITEM`/detector); (3) state the
+  CAPABILITY ("heals 2d4") even at full HP; (4) never endorse a false "it's inert" claim. **Tests MUST use
+  the verbatim gate phrasings (multi-item + "does it heal" + "it's inert") — the U208 gap was too-narrow
+  tests.** Halt if it needs playloop/llmAdapter.
+- **H-48 "combat finish-low-HP" (Codex, combat — `playloop.js` + `escapeCombat.js` + `tests/U211`):** a
+  declared killing blow on a near-dead foe in active combat ("bury my blade in his throat to finish him",
+  "ram my blade up under his jaw", "stomp on his skull") narrates the kill but tags `[combat:table-talk]`
+  with no roll/HP/defeat. Improvised violent verbs (bury/ram/drive/stomp/plunge…) aren't in the in-combat
+  explicit-action regex (`playloop.js:1816`) or `isImprovisedCombatAction` (`:5632`) → fall to table-talk.
+  Extend detection so they resolve via `resolveEscapeCombatTurn`. Codex can't push (§7). Halt if it needs grace.
+- **H-49 "lore-invention guard" (Claude-Sonnet, narration — `llmAdapter.js` + `tests/U212`):** recurring
+  CANON_HALLUCINATION — invented tenure NUMBERS ("eleven years") + invented relationships/events ("Tove and
+  the elder competed for supply routes"). Extend `findInventedFactClaim` (`llmAdapter.js:710`, sibling of
+  `LINEAGE_PHRASE_RE`:699 / age Rule 4c:554) to confident specific tenure-numbers + invented relationship
+  claims absent from the grounded base, with the existing negation/hypothetical exemption. Halt if it needs grace/playloop.
+On all three: verify each per §7, then ONE post-batch gate.
 
 ## Done — H-45 (2026-06-20, BASECAMP-verified per §7)
 Claude-Sonnet (`3064288` claim, `562cc06` fix, `7c01e3a` DONE). Lit up the consumable mechanic that was

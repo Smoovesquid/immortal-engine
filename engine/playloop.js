@@ -992,13 +992,14 @@ function playerMoveCore(world, packsById, text) {
   }
 
   const interiorAction = inferInteriorAction(text, w.scene?.interior);
-  if (w.combat?.active && w.meta?.mode === 'escape' && (Number(w.meta?.escapeHp) || 0) > 0 && (interiorAction.kind === 'enter' || interiorAction.kind === 'exit' || interiorAction.kind === 'move')) {
+  const targetedCombatAction = w.combat?.active && w.meta?.mode === 'escape' && (Number(w.meta?.escapeHp) || 0) > 0 && isTargetedViolentCombatAction(w, text);
+  if (w.combat?.active && w.meta?.mode === 'escape' && (Number(w.meta?.escapeHp) || 0) > 0 && (interiorAction.kind === 'enter' || interiorAction.kind === 'exit' || interiorAction.kind === 'move') && !targetedCombatAction) {
     return {
       world: w,
       output: { narration: 'Wizard: There\'s steel between you and the road — no running from this one. Strike, guard, cast, or talk.', mechanics: '[combat:table-talk]' }
     };
   }
-  if (interiorAction.kind === 'enter') {
+  if (!targetedCombatAction && interiorAction.kind === 'enter') {
     // "Go inside" when already indoors gets the obvious answer, not the
     // blocked-wall message.
     if (w.scene?.interior) {
@@ -1022,7 +1023,7 @@ function playerMoveCore(world, packsById, text) {
     }
   }
 
-  if (interiorAction.kind === 'exit') {
+  if (!targetedCombatAction && interiorAction.kind === 'exit') {
     const wasDungeon = isDungeonStructureId(w.scene?.interior?.structureKey);
     const w1 = exitStructureInterior(w);
     if (w1 !== w) {
@@ -1034,7 +1035,7 @@ function playerMoveCore(world, packsById, text) {
     }
   }
 
-  if (interiorAction.kind === 'move') {
+  if (!targetedCombatAction && interiorAction.kind === 'move') {
     const wantsRiskyMove = isRiskyOrObstructedMoveIntent(text);
     if (!wantsRiskyMove) {
       const targetRoomId = interiorAction.toRoomId || pickAdjacentInteriorByDirection(w, interiorAction.direction);
@@ -1813,7 +1814,8 @@ function playerMoveCore(world, packsById, text) {
       // ("can we talk about this?" is said TO the foes, not to the DM).
       const escVerb = parseEscapeAction(text).verb;
       const improvisedCombatAction = isImprovisedCombatAction(w, text);
-      const explicitAction = improvisedCombatAction || /\b(strike|attack|swing|stab|shoot|slash|hit|beat|smite|fireball|blast|cast|rage|surge|guard|ward|cover|throw|hurl|lob|fling|toss)\b/i.test(String(text || ''));
+      const targetedViolentAction = isTargetedViolentCombatAction(w, text);
+      const explicitAction = improvisedCombatAction || targetedViolentAction || /\b(strike|attack|swing|stab|shoot|slash|hit|beat|smite|fireball|blast|cast|rage|surge|guard|ward|cover|throw|hurl|lob|fling|toss)\b/i.test(String(text || ''));
       const asksQuestion = isQuestionShaped(text) || /\?/.test(String(text || ''));
       if (isMetaQuestion(text) || (asksQuestion && escVerb !== 'parley' && !explicitAction)) {
         const metaAnswer = isMetaQuestion(text) ? handleMetaQuestion(text, w) : null;
@@ -5626,7 +5628,13 @@ function mentionsLiveCombatFoe(world, text) {
     const parts = raw.split(/\s+/).filter(p => p.length >= 3 && !/^(the|and|of|a|an)$/.test(p));
     if (parts.some(p => new RegExp(`\\b${p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i').test(t))) return true;
   }
-  return enemies.length === 1 && /\b(him|her|them|it|foe|enemy|monster|creature|thing)\b/i.test(t);
+  return enemies.length === 1 && /\b(him|his|her|hers|them|it|foe|enemy|monster|creature|thing)\b/i.test(t);
+}
+
+function isTargetedViolentCombatAction(world, text) {
+  const t = String(text || '').toLowerCase();
+  if (!mentionsLiveCombatFoe(world, t)) return false;
+  return /\b(?:bury|buries|buried|burying|ram|rams|rammed|ramming|drive|drives|drove|driven|driving|stomp|stomps|stomped|stomping|plunge|plunges|plunged|plunging|jam|jams|jammed|jamming|smash|smashes|smashed|smashing|slam|slams|slammed|slamming)\b/.test(t);
 }
 
 function isImprovisedCombatAction(world, text) {

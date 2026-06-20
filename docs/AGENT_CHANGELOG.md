@@ -956,7 +956,6 @@ other agents. (none active)
   - `git diff --stat` confirms only `engine/grace/gracefulAdjudication.js` and the new test file were touched
 - Remaining/next: none for this packet.
 - Rollback: revert `36e9faa`
-[CLAIMED] H-48 combat finish-low-HP · Codex · 2026-06-20T11:48:26Z · files: engine/playloop.js, engine/combat/escapeCombat.js, tests/U211.combatFinishLowHp.test.js
 2026-06-20T11:59:02Z — Claude-Sonnet
 - Packet/seam: H-49 lore-invention guard
 - Commit(s): `b045c9f` (code+test), `e792199` (claim)
@@ -971,4 +970,19 @@ other agents. (none active)
   - `git diff --stat` confirms only `engine/llmAdapter.js` and the new test file were touched
 - Remaining/next: none for this packet.
 - Rollback: revert `b045c9f`
-[CLAIMED] H-48 combat finish-low-HP · Codex · 2026-06-20T12:06:03Z · files: engine/playloop.js, engine/combat/escapeCombat.js, tests/U211.combatFinishLowHp.test.js
+2026-06-20T12:30:00Z — Codex
+- Packet/seam: H-48 combat finish-low-HP
+- Commit(s): `31ee489` (code+test), `b80dbb4` (claim)
+- Files changed: `engine/playloop.js`, `tests/U211.combatFinishLowHp.test.js` (new)
+- Summary: in active escape combat, a declared killing blow on a near-dead foe using an improvised violent verb (bury/ram/drive/stomp/plunge/jam/smash/slam) fell to `[combat:table-talk]` instead of resolving — narrated but no roll, no HP update, no defeat. Root cause traced through two layers, not one: (1) the in-combat explicit-action regex (verb list `strike|attack|swing|...`) didn't include these improvised verbs, and (2) `inferInteriorAction` (a movement/door-guard layer that runs BEFORE the combat-action gate) intercepted phrases like "I let go of his collar and stomp on his skull" as free-movement/exit text, returning the canned "no running from this one" table-talk line before the turn ever reached the combat resolver. Fixed via `isTargetedViolentCombatAction(world, text)` — true only when the text both names/pronoun-references the single live combat foe (extended `mentionsLiveCombatFoe` to include `his`/`hers`, needed for "ram my blade up under his jaw") AND contains one of the violent finishing verbs. The three interior-movement branches (enter/exit/move) and the "no running from this one" block are now skipped when `targetedCombatAction` is true, letting the turn fall through to the real explicit-action gate, where the same helper is OR'd into `explicitAction` so `resolveEscapeCombatTurn` actually rolls it (no `escapeCombat.js` changes were needed — the resolver already handled any explicit action correctly once it was reached).
+- Regression found + fixed during verification: the first attempt also widened the pronoun set to `its`/`their`/`theirs`, which made "I kick the door off its hinges" during active combat match as a targeted attack against the door-as-Improvised-Fixture (broke `U149` case 4 — benign door-kick must not strike). Narrowed back to only `him|his|her|hers|them|it|foe|enemy|monster|creature|thing` (dropping `its`/`their`/`theirs`); `his`/`hers` was the only addition the H-48 cases actually required. Full suite re-confirmed green after the narrowing.
+- Deliberately did NOT do: did not touch `engine/combat/escapeCombat.js` — the resolver path was already correct once the turn reached it; the bug was entirely in the two upstream classification layers in `playloop.js`. Did not touch `gracefulAdjudication.js` (H-47) or `llmAdapter.js` (H-49). No `WORLD_VERSION` bump, no invariant change, no `Math.random`/`Date.now`, mutation still via `effectsCore.applyDeltas` through the existing resolver.
+- Proof:
+  - `node --test tests/U211.combatFinishLowHp.test.js` — 4/4 (written FAILING first against the verbatim gate phrasings: bury/ram/stomp all resolved as `[combat:table-talk]` pre-fix; the true non-action regression guard passed throughout)
+  - `node --test tests/U149.naturalAttackVerbs.test.js tests/U211.combatFinishLowHp.test.js` — 11/11 (confirms the pronoun-narrowing fix; U149 case 4 failed once during verification, fixed, now green)
+  - Full suite: `node --test` — 8227/8227 (baseline 8223 + 4 new U211 cases)
+  - Determinism: `node --test tests/U19.worldHashDeterminism.test.js tests/U21.replayGateN50.test.js tests/U22.longRunStabilityN100T500.test.js tests/U27.worldHashSurfaceContract.test.js tests/U30.gate6.sequelDeterminism.test.js` — 6/6
+  - `npm run playtest:quick` — 50/50 runs, 0 crashes
+  - `git diff --stat` confirmed only `engine/playloop.js` and the new test file were touched
+- Remaining/next: none for this packet.
+- Rollback: revert `31ee489`

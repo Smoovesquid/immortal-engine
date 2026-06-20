@@ -288,7 +288,13 @@ const META_NPC_OBSERVER = /\bwho(?:'s| is| was| are)?\s+(?:that|this|the)\s+(?:s
 // stranger lurking at the edges is — not about Corwin" still got Corwin, the
 // sociable NPC, re-served; canon's real lurker had its own name on record and
 // was never even checked.)
-const NPC_OBSERVER_LURK_RE = /\blurk(?:ing|er)?\b|\bwatching\s+(?:from|at)\s+(?:the\s+)?(?:edges?|shadows?|a\s+distance|afar)\b|\b(?:at|on|from)\s+the\s+edges?\b/i;
+// "won't name"/"don't want to name"/"keep going quiet (about)" evasion framing
+// — same semantic shape as "lurking"/"edges": the player is pointing at a
+// DIFFERENT, deliberately-unnamed party, not whichever sociable NPC happens to
+// be first in the roster (and, distinctly, not the addressee they're asking).
+// (H-51, post-H-49 gate, Confused newbie: "Corwin, who is this person you
+// don't want to name?" self-answered as Corwin, the addressee.)
+const NPC_OBSERVER_LURK_RE = /\blurk(?:ing|er)?\b|\bwatching\s+(?:from|at)\s+(?:the\s+)?(?:edges?|shadows?|a\s+distance|afar)\b|\b(?:at|on|from)\s+the\s+edges?\b|\b(?:don'?t|doesn'?t|won'?t|wouldn'?t|refus(?:e|es|ed)\s+to)\s+(?:want\s+to\s+)?name\b|\bkeep(?:s|ing)?\s+going\s+quiet\b/i;
 // NPC-presence queries — "Is that stranger gone?", "Could I look for them around town?"
 // Absence/presence questions about a specific NPC, not a general location survey.
 // (H-16, Rung-1 gate 2026-06-18.)
@@ -320,6 +326,16 @@ const META_EXPLICIT_CHECK_D = /\b(might|agility|wits|grit|charm|strength|dexteri
 // Roll-recall — player cites a specific past roll number to dispute or follow up.
 // "I rolled a 16", "16 vs DC 11", "you told me I got a 16", "my roll was 16". (H-12/13.)
 const META_ROLL_RECALL = /\b(?:i (?:rolled|got|said|had)(?:\s+a)?|my roll was(?:\s+a)?|you (?:said|told me)(?:\s+i (?:rolled?|got))?(?:\s+a)?)\s*\d+\b|\b\d+\s+(?:vs\.?|versus|against)\s+dc\s*\d+\b/i;
+// Fourth-wall system check-in — a repetition/system callout paired with a
+// check-in, not an in-fiction action or health question. "You're just
+// repeating yourself now, are you okay?" must never roll: it's the player
+// flagging the DM, not asking an NPC how they're doing. Anchored on the
+// REPETITION/system-callout phrase, never the bare "are you okay?" alone —
+// that must keep resolving as normal in-fiction dialogue/action. (H-51,
+// post-H-49 gate, Confused newbie: this exact line rolled a real mixed-margin
+// check and got a content-free "it half-works" hedge instead of a non-rolling
+// acknowledgment.)
+const META_SYSTEM_CHECKIN = /\b(?:you'?re\s+just\s+repeating\s+yourself|you\s+keep\s+saying\s+the\s+same\s+thing|that'?s\s+the\s+same\s+answer\s+as\s+before|you\s+said\s+that\s+already)\b[\s\S]{0,40}?\b(?:okay|ok|there|broken|stuck|glitch(?:ing)?)\b/i;
 
 // Detect meta-questions (questions about state, not actions)
 export function isMetaQuestion(text) {
@@ -335,6 +351,7 @@ export function isMetaQuestion(text) {
     || META_EXPLICIT_CHECK_C.test(t) || META_EXPLICIT_CHECK_D.test(t)  // H-26c
     || META_SKILL_MOD.test(t) || META_ATTACK_MOD.test(t) || META_BARE_DC.test(t)  // H-25
     || META_ROLL_RECALL.test(t)  // H-12/13
+    || META_SYSTEM_CHECKIN.test(t)  // H-51
     || META_HELD_ITEMS.test(t) || META_ARMOR_VALUE.test(t)  // H-31 R2
     || META_POSSESSION_CHALLENGE.test(t)  // H-31 R3
     || META_GEAR_YESNO.test(t)  // H-38a R1
@@ -1138,7 +1155,20 @@ export function handleMetaQuestion(text, world) {
     const sociable = allNpcs.filter(n => n && !n.hostile);
     const lurkers = allNpcs.filter(n => n && n.hostile);
     const wantsLurker = NPC_OBSERVER_LURK_RE.test(lowerText);
-    const npc = (wantsLurker && lurkers.length) ? lurkers[0] : (sociable.length ? sociable[0] : (lurkers.length ? lurkers[0] : null));
+    // An evasion-framed ask ("you don't want to name", "keep going quiet")
+    // names the ADDRESSEE in the same breath ("Corwin, ...") while asking
+    // about a DIFFERENT party. Exclude the addressee from the sociable
+    // candidate pool so they never get re-served as the answer to a question
+    // about someone else. (H-51)
+    const addressedNpc = wantsLurker
+      ? sociable.find(n => {
+        const first = String(n?.name || '').trim().split(/\s+/)[0];
+        if (!first) return false;
+        return new RegExp(`\\b${first.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i').test(lowerText);
+      })
+      : null;
+    const sociablePool = addressedNpc ? sociable.filter(n => n !== addressedNpc) : sociable;
+    const npc = (wantsLurker && lurkers.length) ? lurkers[0] : (sociablePool.length ? sociablePool[0] : (lurkers.length ? lurkers[0] : null));
     if (npc) {
       const name = String(npc.name || '').trim();
       const role = String(npc.role || '').trim();
@@ -1148,6 +1178,9 @@ export function handleMetaQuestion(text, world) {
       return npc.hostile
         ? `${who} — keeping to the edges, watching.`
         : `${who} — one of the folk here, watching from nearby.`;
+    }
+    if (addressedNpc) {
+      return `Can't put a face to them yet — whoever you mean, ${addressedNpc.name || 'they'} isn't saying.`;
     }
     return `No one's watching you — the place looks empty from here.`;
   }
@@ -1425,6 +1458,14 @@ export function handleMetaQuestion(text, world) {
       return `The ledger shows ${stored.roll} vs DC ${stored.dc}${stored.outcome ? ` — ${stored.outcome}` : ''}, not ${cited.roll}. Which turn are you citing?`;
     }
     return null; // couldn't parse a number — fall through
+  }
+
+  // Fourth-wall system check-in — "You're just repeating yourself now, are
+  // you okay?". A real DM acknowledges the callout in-voice and steers back
+  // to the fiction; this never rolls and costs no time, same treatment as
+  // isNullAction. (H-51)
+  if (META_SYSTEM_CHECKIN.test(lowerText)) {
+    return `Still here — let's push past the repeat. What do you want to do?`;
   }
 
   return null; // not a recognized meta-question

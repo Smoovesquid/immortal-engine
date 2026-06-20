@@ -1001,6 +1001,10 @@ function playerMoveCore(world, packsById, text) {
         return npcReferentClarify(w, ungroundedRef, { mechanics: '[clarify:who]', mode: 'talk' });
       }
     }
+    const earlyUngroundedRef = ungroundedNpcReferentForText(w, text, { requirePersonSignal: true });
+    if (earlyUngroundedRef) {
+      return npcReferentClarify(w, earlyUngroundedRef, { mechanics: '[clarify:referent]', mode: 'decline' });
+    }
   }
   if (w.combat?.active && w.meta?.mode === 'escape' && (Number(w.meta?.escapeHp) || 0) > 0 && (interiorAction.kind === 'enter' || interiorAction.kind === 'exit' || interiorAction.kind === 'move') && !targetedCombatAction) {
     return {
@@ -1178,6 +1182,19 @@ function playerMoveCore(world, packsById, text) {
   // Surface-only exploration: list adjacent map nodes deterministically (no roll, no tick, no timeline).
   // Skipped when combat is active — during a fight, everything routes through the combat resolver.
   if (!w.combat?.active && isExploreIntent(text)) {
+    // H-60: a fabricated person-signalled referent inside an observer question
+    // ("what is keeping Brokefang so quiet over there?", "what is Brokefang
+    // staring at?") must clarify, not get swallowed as a generic look-around —
+    // isExploreIntent claims these turns before the referent guard further
+    // below ever runs. Hoist the same guard here. A no-op for genuine
+    // look-around (no proper name → concreteNpcReferentFromText returns '')
+    // and for grounded names/roles (isGroundedNpcRef short-circuits).
+    if (!w.scene?.dialogue) {
+      const earlyUngroundedRef = ungroundedNpcReferentForText(w, text);
+      if (earlyUngroundedRef) {
+        return npcReferentClarify(w, earlyUngroundedRef, { mechanics: '[clarify:referent]', mode: 'decline' });
+      }
+    }
     if (w.scene?.interior) {
       const view = getInteriorView(w);
       const labels = exitDirectionLabels(view);
@@ -3641,20 +3658,36 @@ function hasPersonReferentSignal(text, ref) {
   // (c) possessive tied to the name, or a role appositive ("<name> the merchant")
   if (new RegExp('\\b' + esc + '(?:[\'’]s\\b|\\b[^.?!]{0,14}?\\b(?:his|her|their|hers|theirs)\\b)', 'i').test(t)) return true;
   if (new RegExp('\\b' + esc + '\\s+the\\s+(?:guard|baker|elder|stranger|merchant|trader|smith|blacksmith|innkeeper|priest|healer|scholar|artisan|villager|local)\\b', 'i').test(t)) return true;
+  // (d) bare "take/lead/bring/walk/guide me to <Name>" with no preceding article
+  // — restricted to this "ME to" imperative shape (not bare "go to X"/"head to X",
+  // which is the routine multi-hop travel verb to a real KNOWN place and must
+  // never be swept in here — U99 regression guard).
+  if (isLikelyPersonProperName(ref) && new RegExp('\\b(?:take|lead|bring|walk|guide|escort)\\s+me\\s+to\\s+(?:where\\s+)?(?:the\\s+)?' + esc + '\\b', 'i').test(t)) return true;
   return false;
 }
 
-function ungroundedNpcReferentForText(world, text, { assumeNpcCentered = false } = {}) {
+function isLikelyPersonProperName(ref) {
+  const name = String(ref || '').trim();
+  const parts = name.split(/\s+/).filter(Boolean);
+  if (parts.length !== 2) return false;
+  if (!parts.every(p => /^[A-Z][a-z]+$/.test(p))) return false;
+  return !/\b(?:Mill|Road|Street|Lane|Bridge|Gate|Tower|Spire|Shrine|Temple|Orchard|Creek|Harbor|Market|Tavern|Inn|House|Hall|Keep|Fort|Ford|Crossing|Hill|Wood|Woods|Forest|River|Lake|Pond|Cave|Mine|Ruin|Ruins|Field|Fields|Square|Yard|Docks?|Path|Trail|Way)\b/.test(name);
+}
+
+function ungroundedNpcReferentForText(world, text, { assumeNpcCentered = false, requirePersonSignal = false } = {}) {
   const ref = concreteNpcReferentFromText(text);
   if (!ref || NPC_REFERENT_STOPWORDS.has(normalizedNpcRef(ref))) return '';
-  const npcCentered = assumeNpcCentered
+  const personSignal = hasPersonReferentSignal(text, ref);
+  const npcCentered = requirePersonSignal ? personSignal : (
+    assumeNpcCentered
     || extractDialogueRef(text)
     || extractApproachRef(text)
     || isNpcObserverQuery(text)
     || isInfoSeekingText(text)
     || isConfrontationChallenge(text)
-    || hasPersonReferentSignal(text, ref)
-    || /\b(?:mentioned|introduced|named|who\s+(?:posted|sent|is)|where\s+is|standing|guard)\b/i.test(String(text || ''));
+    || personSignal
+    || /\b(?:mentioned|introduced|named|who\s+(?:posted|sent|is)|where\s+is|standing|guard)\b/i.test(String(text || ''))
+  );
   if (!npcCentered) return '';
   return isGroundedNpcRef(world, ref) ? '' : ref;
 }

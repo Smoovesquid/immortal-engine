@@ -1,9 +1,17 @@
 // C2 — a named referent must be grounded before the turn resolves.
-// Lineage: H-56 (3e214ec). See docs/CAPABILITY_LEDGER.md.
+// Lineage: H-56 (3e214ec), H-60. See docs/CAPABILITY_LEDGER.md.
 //
-// locked = H-56 solves it, MUST stay green (regression).
-// target = H-56 still misses it (Basecamp probe 2026-06-20) — the graduation backlog;
-//          these flip to `locked` when C2 graduates to the typed-packet handler.
+// locked = solved, MUST stay green (regression).
+//
+// H-60 closed the last 2 target cases: (1) hoisted the ungrounded-referent
+// guard ahead of the observe/explore interception, so a fabricated
+// person-signalled name in a "what is X ..." observer question clarifies
+// instead of being swallowed as a generic look-around; (2) added a
+// travel-imperative person-signal to hasPersonReferentSignal — a bare
+// two-token "Firstname Lastname" name directly after "take/lead/bring/walk/
+// guide me to" with no preceding article ("the"/"a"/"an") is almost always a
+// person (isLikelyPersonProperName), so place names ("the Old Mill", "the
+// Sunken Road") are never swept in. C2 is now fully graduated: 5L/0T.
 export default [
   // ---- LOCKED (proven green via the village_baker fixture; lifted from U219 behavior) ----
   {
@@ -77,15 +85,14 @@ export default [
     source: 'C2 graduation 2026-06-20 (hasPersonReferentSignal); verified via village_baker probe',
   },
 
-  // ---- TARGET (the remaining C2 graduation backlog — both need supervised work) ----
-  // These "what is X ..." phrasings are intercepted by the observe / look-around handler
-  // UPSTREAM of the referent guard, so the person-signal fix can't reach them. Closing
-  // them needs routing-precedence work (check the fabricated referent before the observe
-  // interception) — deliberately left for a supervised pass.
+  // ---- LOCKED (H-60): person-signalled fabricated names clarify before observe/travel routing ----
+  // These "what is X ..." phrasings used to be intercepted by the observe / look-around
+  // handler upstream of the referent guard. H-60 hoists a person-signal-only referent
+  // check before observe/travel, while generic looks still observe.
   {
     id: 'C2-target-001',
     capability: 'C2',
-    status: 'target',
+    status: 'locked',
     fixture: 'village_baker',
     intent: 'fabricated name in a "what is X ..." observer question — intercepted by observe-routing before the referent guard',
     paraphrases: [
@@ -99,12 +106,12 @@ export default [
     diverge: [
       { text: 'what is over there in the corner?', reason: 'generic look — no fabricated person named' },
     ],
-    source: 'Basecamp probe 2026-06-20; observe-routing intercepts upstream of the referent guard',
+    source: 'Basecamp probe 2026-06-20; H-60 promoted after person-signal referent guard moved before observe-routing',
   },
   {
     id: 'C2-target-002',
     capability: 'C2',
-    status: 'target',
+    status: 'locked',
     fixture: 'village_baker',
     intent: 'fabricated name in a travel/approach request must clarify (currently rolls a travel beat)',
     paraphrases: [
@@ -121,6 +128,6 @@ export default [
     diverge: [
       { text: 'take me to the baker', reason: 'grounded role — should route to the present baker, not clarify' },
     ],
-    source: 'Basecamp adversarial probe 2026-06-20 (H-56 §7); falls through to travel roll',
+    source: 'Basecamp adversarial probe 2026-06-20 (H-56 §7); H-60 promoted with proper-name travel person-signal and place-noun over-fire guards',
   },
 ];

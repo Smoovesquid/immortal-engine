@@ -1161,12 +1161,31 @@ export function handleMetaQuestion(text, world) {
   // Inventory — read the real pack, never invent contents.
   if (META_INVENTORY.test(lowerText)) {
     const inv = world.party?.[0]?.inventory || {};
-    const lines = [];
+    const byCat = {};
+    const seen = new Set();
     for (const [cat, items] of Object.entries(inv)) {
       if (!Array.isArray(items) || !items.length || cat === 'items') continue;
       const names = items.map(it => String(it?.name || it)).filter(Boolean);
-      if (names.length) lines.push(`${cat}: ${names.join(', ')}`);
+      if (names.length) {
+        byCat[cat] = names;
+        for (const n of names) seen.add(n.toLowerCase());
+      }
     }
+    // H-46 — merge the structured items[] array (T2, defRef-keyed) into the
+    // dump too, grouped under its catalog kind's line (so a bridged
+    // consumable like Tonic of grit lands alongside Rations/Lamp oil rather
+    // than vanishing — items[] used to be skipped here outright). Unresolved
+    // defRefs are dropped, not invented; anything already listed via a
+    // flavor entry (H-45 bridge) isn't repeated.
+    for (const it of (Array.isArray(inv.items) ? inv.items : [])) {
+      const def = getItemDef(it?.defRef);
+      if (!def || !def.name) continue;
+      if (seen.has(def.name.toLowerCase())) continue;
+      seen.add(def.name.toLowerCase());
+      const cat = def.kind === 'armor' ? 'armor' : `${def.kind}s`;
+      (byCat[cat] || (byCat[cat] = [])).push(def.name);
+    }
+    const lines = Object.entries(byCat).map(([cat, names]) => `${cat}: ${names.join(', ')}`);
     const ans = lines.length
       ? `You go through your pack. ${lines.join('. ')}.`
       : 'Your pack is light — nothing but lint and resolve.';

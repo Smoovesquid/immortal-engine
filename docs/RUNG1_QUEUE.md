@@ -181,7 +181,17 @@ resolve a real present NPC before anything fires, so it can't start combat again
 `AGENT_CHANGELOG.md` per protocol §3 — Basecamp backfilled both entries post-hoc from the commits +
 self-reports.
 
-## In flight — H-47 ∥ H-48 ∥ H-49, dispatched 2026-06-20, declared FILE-DISJOINT (parallel OK §2)
+## In flight — (none). H-47…H-52 all DONE + pushed. Queue is CLEAR.
+Last gate: post-H-50/H-51 = **4/48** (`docs/playtests/opus-gate-2026-06-20.md`). H-52 (`8c0a5cf`, Basecamp-§7-verified
++ pushed 2026-06-20) closed both Lore-hound RAG fails from that gate (decades-unit tenure invention +
+grounded-name/wrong-role "Corwin is the elder" claim). **Remaining from that gate = the Rules-Lawyer
+roll-reporting cluster (2-3 turns, NOT yet packeted):** (a) "swing the Worn Blade at the bread basket — tell me
+the attack roll" → an object-strike that didn't resolve into a real roll (combat/playloop lane); (b) "you said 15
+vs 12, then 14 vs 13 — what did I actually roll?" → contradictory roll-number reporting across narration lines.
+Candidate **H-53** (combat/narration roll-consistency). **BUDGET EXHAUSTED (~$0.5) — cannot re-measure via gate
+until Tim tops up; packets can still be drafted + landed blind, just not experientially graded.**
+
+### (historical) prior in-flight — H-47 ∥ H-48 ∥ H-49, dispatched 2026-06-20, declared FILE-DISJOINT (parallel OK §2)
 Tim: "proceed." Three packets, disjoint file sets → parallel; each prompt has a halt-on-cross-file guard +
 distinct test number. ONE gate measures all three after they land (budget-conserving — ~$5.7, ~2 gates).
 - **H-47 "item-effect answer breadth" (Claude-Sonnet, grace — `gracefulAdjudication.js` + `tests/U210`):**

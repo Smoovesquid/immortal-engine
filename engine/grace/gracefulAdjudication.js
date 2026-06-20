@@ -366,6 +366,28 @@ const META_SYSTEM_CHECKIN = /\b(?:you'?re\s+just\s+repeating\s+yourself|you\s+ke
 // I add my MIGHT +1 to melee damage with these blades?" fired a d20 vs DC13.)
 const META_DAMAGE_RULE = /\bdo\s+i\s+add\s+my\s+\w+\s*(?:\+\s*\d+)?\s+to\s+(?:melee\s+)?damage\b|\bconfirm\s+(?:that'?s\s+)?the\s+right\s+mod\b|\bis\s+(?:a\s+)?hit\s+\d*d\d+\s*\+\s*\d+\b|\byes\s+or\s+no:?\s+do\s+i\s+add\s+my\s+\w+\s*(?:\+\s*\d+)?\s+to\s+(?:melee\s+)?damage\b/i;
 
+// ── H-59: typed compound-query decomposition (C1 graduation) ───────────────
+// First typed-packet graduation (Biblioteca Vol 7 §18 heuristic 3 — "prefer
+// typed packets over many disconnected detectors"). The cues below detect
+// the PRESENCE of a requested sub-field (name/class/level/HP, weapon-damage,
+// item-effect, enemy-name/HP) independent of phrasing/order; handleMetaQuestion
+// then answers every present field from canon in one response, never rolling.
+
+// "who am I fighting", "name of the foe", "this enemy" — a query SCOPED to
+// the combat enemy, not the player. Only meaningful with combat active.
+const META_ENEMY_STATUS = /\bwho\s+am\s+i\s+fighting\b|\bwho\s+(?:exactly\s+)?is\s+(?:this|that|it)\s+(?:enemy|foe|thing)\b|\bwho\s+is\s+it\s+i'?m\s+fighting\b|\bname\s+of\s+the\s+(?:foe|enemy)\b|\benemy\s+name\b|\bthis\s+(?:enemy|foe)\b/i;
+const ENEMY_HP_CUE_RE = /\bhp\b|\bhit\s?points?\b|\bhurt\b|\bhealth\b/i;
+
+// Weapon-damage half of a "damage + item-effect" compound — "blade damage",
+// "Worn Blade dmg", "what do my weapons deal". Item-effect half — "Tonic of
+// grit effect", "what does it do", "does it heal". Both must be present (and
+// the matched gear/effect items found in canon) for the new compound branch
+// to fire; a single-purpose ask is left to the existing META_WEAPON_DAMAGE/
+// META_ITEM branches below, and a narrated action (no cue at all) never
+// matches either half, so it falls straight through untouched.
+const DAMAGE_CUE_RE = /\bdamage\b|\bdmg\b|\bdeal(?:s|t)?\b/i;
+const EFFECT_CUE_RE = /\beffect\b|\bdoes\b|\bdo\b|\bheal(?:s|ing)?\b|\bcures?\b|\btell\s+me\b/i;
+
 // Detect meta-questions (questions about state, not actions)
 export function isMetaQuestion(text) {
   const t = String(text || '').toLowerCase();
@@ -386,7 +408,10 @@ export function isMetaQuestion(text) {
     || META_POSSESSION_CHALLENGE.test(t)  // H-31 R3
     || META_GEAR_YESNO.test(t)  // H-38a R1
     || META_CONSUMABLES_LIST.test(t)  // H-45
-    || META_ITEM_CAPABILITY.test(t) || META_ITEM_INERT_CLAIM.test(t);  // H-47
+    || META_ITEM_CAPABILITY.test(t) || META_ITEM_INERT_CLAIM.test(t)  // H-47
+    || (META_ENEMY_STATUS.test(t) && ENEMY_HP_CUE_RE.test(t))  // H-59 — enemy name+HP compound
+    || (DAMAGE_CUE_RE.test(t) && /\beffect\b/i.test(t))  // H-59 — "X dmg, Y effect" list compound
+    || hasIdentitySlotCompound(t);  // H-59 — terse name/class/level/HP slot listing
 }
 
 // Exported guard for playloop.js — detects NPC identity/presence queries so
@@ -907,6 +932,80 @@ function mentionsHpAsk(lowerText) {
   return /\b(?:current\s+)?hp\b|\bhit\s?points?\b/i.test(lowerText);
 }
 
+// Broad LEVEL mention — folds a level answer into a compound name/class/HP
+// ask. Bare word match; safe because every caller already gates on a wider
+// compound-detection condition (a QUERY_CUE or a co-occurring sibling field),
+// so a stray "level" in unrelated narration never reaches this alone. (H-59)
+function mentionsLevelAsk(lowerText) {
+  return /\blevel\b/i.test(lowerText);
+}
+
+// Terse identity-slot compound — "name / class / current HP?", "class,
+// level, and HP — what are they?". Requires 2+ of {name, class, level, HP}
+// AND an explicit query cue, so plain narration that happens to use one of
+// these common words is never swept in. (H-59 Fix A — last-resort, only
+// reached when no more specific META_* branch already claimed the text.)
+const IDENTITY_QUERY_CUE_RE = /\?|status\s+check|quick|please|all\s+three|give\s+me|confirm|what\s+are\s+they/i;
+function hasIdentitySlotCompound(lowerText) {
+  if (!IDENTITY_QUERY_CUE_RE.test(lowerText)) return false;
+  const hasName = /\bname\b/i.test(lowerText);
+  const hasClass = mentionsCharacterClass(lowerText);
+  const hasLevel = mentionsLevelAsk(lowerText);
+  const hasHp = mentionsHpAsk(lowerText) || META_HEALTH.test(lowerText);
+  return [hasName, hasClass, hasLevel, hasHp].filter(Boolean).length >= 2;
+}
+
+// Weapon damage for explicitly-named weapons, or — if the text asks about
+// "weapons" generically with no specific name ("what do my weapons deal") —
+// every carried weapon's die. Distinct from answerWeaponDamage (which never
+// falls back to "all weapons" on a bare generic ask, by design, for its own
+// standalone branch); this fallback exists only for the H-59 compound path.
+function answerNamedOrAllWeaponDamage(lowerText, world) {
+  const inv = world.party?.[0]?.inventory || {};
+  const weapons = (Array.isArray(inv.weapons) ? inv.weapons : [])
+    .map(w => ({ name: String(w?.name || w).trim(), dice: weaponDieString(w) }))
+    .filter(w => w.name && w.dice);
+  if (!weapons.length) return '';
+  const named = weapons.filter(w => itemNameInText(lowerText, w.name.toLowerCase()));
+  const describe = w => `the ${w.name} rolls ${w.dice} for damage`;
+  if (named.length) return `${joinList(named.map(describe))}.`;
+  if (/\bweapons?\b/i.test(lowerText)) return `Your weapons roll for damage as follows — ${joinList(weapons.map(describe))}.`;
+  return '';
+}
+
+// Real mechanical effect for every carried item NAMED in the text that has
+// one — the item-effect half of the H-59 weapon-damage + item-effect
+// compound (C1-002). Returns '' when no named item has a real effect.
+function answerNamedItemEffects(lowerText, world) {
+  const items = gatherCarriedItems(world);
+  const seen = new Set();
+  const parts = [];
+  for (const it of items) {
+    const n = it.name.toLowerCase();
+    if (!n || seen.has(n) || !itemNameInText(lowerText, n)) continue;
+    const effectLine = describeItemEffect(it.def);
+    if (!effectLine) continue;
+    seen.add(n);
+    parts.push(`${it.name} — ${effectLine}.`);
+  }
+  return parts.join(' ');
+}
+
+// The combat enemy's name + real HP, read straight off world.combat — the
+// same source resolveEscapeCombatTurn/combatStatusAnswer read, so this can
+// never drift from what the table actually fights. Returns null with no
+// live enemy (caller falls through to normal resolution). (H-59 C1-004)
+function answerEnemyCompound(world) {
+  const enemies = Array.isArray(world.combat?.enemies) ? world.combat.enemies : [];
+  const enemy = enemies.find(e => e && !e.defeated) || enemies[0];
+  if (!enemy) return null;
+  const name = String(enemy.name || 'the enemy').trim();
+  const hp = Number(enemy.hp) || 0;
+  const maxHp = Number(enemy.maxHp) || hp || 1;
+  const status = hp >= maxHp ? 'unhurt' : hp <= 0 ? 'down' : 'hurting';
+  return `You're fighting ${name} — they're at ${hp} of ${maxHp} HP (${status}).`;
+}
+
 // Handle meta-questions (status checks, location surveys, recaps, outcomes).
 // Returns null when the text isn't a recognized meta-question.
 export function handleMetaQuestion(text, world) {
@@ -915,6 +1014,32 @@ export function handleMetaQuestion(text, world) {
   // Location / survey — checked first (most specific phrasings).
   if (META_LOCATION.test(lowerText)) {
     return buildLocationSurvey(world);
+  }
+
+  // Enemy name+HP compound during active combat — "who am I fighting and how
+  // much HP does this thing have left?", "name of the foe and their
+  // remaining HP". Checked BEFORE META_CHARACTER/META_HEALTH below because
+  // those branches were actively misrouting this enemy-scoped language to
+  // the PLAYER's own identity/HP ("how hurt are they" tripped META_HEALTH's
+  // "how hurt" trigger and answered about the player). (H-59 C1-004)
+  if (world.combat?.active && META_ENEMY_STATUS.test(lowerText) && ENEMY_HP_CUE_RE.test(lowerText)) {
+    const ans = answerEnemyCompound(world);
+    if (ans) return ans;
+  }
+
+  // Weapon-damage + item-effect compound — "what does the Tonic of grit do,
+  // and what's the damage on my Worn Blade?". Fires only when BOTH a
+  // damage-cued weapon AND an effect-cued carried item with a real
+  // mechanical effect are present in the same breath; a single-purpose ask
+  // is left to META_WEAPON_DAMAGE/META_ITEM below, and a narrated action
+  // (no cue) never satisfies either half, so it falls straight through.
+  // (H-59 C1-002)
+  if (DAMAGE_CUE_RE.test(lowerText) && EFFECT_CUE_RE.test(lowerText)) {
+    const weaponPart = answerNamedOrAllWeaponDamage(lowerText, world);
+    const itemPart = answerNamedItemEffects(lowerText, world);
+    if (weaponPart && itemPart) {
+      return `${weaponPart} ${itemPart}`;
+    }
   }
 
   // Possession contradiction — "you said I had a staff and a robe" when
@@ -1400,6 +1525,18 @@ export function handleMetaQuestion(text, world) {
     const extras = [];
     if (META_STATS_REQ.test(lowerText)) extras.push(answerFullStats(world));
     if (META_HEALTH.test(lowerText)) extras.push(answerHealth(world));
+    // A class or level ask in the same breath must answer too — neither was
+    // folded here before, so "what's on my character sheet? class, level,
+    // and current HP" got the gear/stats/HP but silently dropped class and
+    // level. (H-59 C1-003)
+    if (mentionsCharacterClass(lowerText)) {
+      const classLine = answerClassLine(world);
+      if (classLine) extras.push(classLine);
+    }
+    if (mentionsLevelAsk(lowerText)) {
+      const level = Number(world.party?.[0]?.level) || null;
+      if (level) extras.push(`You're level ${level}.`);
+    }
     const extraText = extras.filter(Boolean).join(' ');
     return extraText ? `${ans} ${extraText}` : ans;
   }
@@ -1464,9 +1601,21 @@ export function handleMetaQuestion(text, world) {
     return parts.length ? parts.join(' ') : 'No charge hangs over you yet — your life is your own. See where the road leads.';
   }
 
-  // Health/status check
+  // Health/status check. A class or level ask in the same breath ("How much
+  // HP do I have? What class?") must answer too — this branch used to be a
+  // bare unconditional return with zero fold logic. (H-59 C1-003)
   if (META_HEALTH.test(lowerText)) {
-    return answerHealth(world);
+    const ans = answerHealth(world);
+    const extras = [];
+    if (mentionsCharacterClass(lowerText)) {
+      const classLine = answerClassLine(world);
+      if (classLine) extras.push(classLine);
+    }
+    if (mentionsLevelAsk(lowerText)) {
+      const level = Number(world.party?.[0]?.level) || null;
+      if (level) extras.push(`You're level ${level}.`);
+    }
+    return extras.length ? `${ans} ${extras.join(' ')}` : ans;
   }
 
   // What happened — recap the last thing the DM narrated.
@@ -1539,6 +1688,31 @@ export function handleMetaQuestion(text, world) {
   // isNullAction. (H-51)
   if (META_SYSTEM_CHECKIN.test(lowerText)) {
     return `Still here — let's push past the repeat. What do you want to do?`;
+  }
+
+  // Last-resort typed identity-slot decomposition — terse/ambiguous compound
+  // phrasings ("name / class / current HP?", "class, level, and HP — what
+  // are they?") name 2+ of {name, class, level, HP} but match no specific
+  // META_* gate above. Decompose into the SET of requested fields and answer
+  // every one present from canon, in one response, never a roll. Only
+  // reached when no earlier (more specific) branch already claimed the text.
+  // (H-59 C1-001/C1-003 — first typed-packet graduation, Biblioteca Vol 7.)
+  if (hasIdentitySlotCompound(lowerText)) {
+    const p = world.party?.[0] || {};
+    const parts = [];
+    if (/\bname\b/i.test(lowerText) && p.name) parts.push(`Name: ${p.name}.`);
+    if (mentionsCharacterClass(lowerText) && p.archetype) parts.push(`Class: ${p.archetype}.`);
+    if (mentionsLevelAsk(lowerText) && p.level) parts.push(`Level: ${p.level}.`);
+    if (mentionsHpAsk(lowerText) || META_HEALTH.test(lowerText)) {
+      // "Hit points: N of M." (number-first phrasing) rather than
+      // answerHealth's "you're at N of M hit points" — a bare slot-list ask
+      // ("name / class / current HP?") expects the field labeled, not narrated.
+      const eMax = Number(world.meta?.escapeMaxHp) || 0;
+      parts.push(world.meta?.mode === 'escape' && eMax > 0
+        ? `Hit points: ${Number(world.meta?.escapeHp) || 0} of ${eMax}.`
+        : answerHealth(world));
+    }
+    if (parts.length) return parts.join(' ');
   }
 
   return null; // not a recognized meta-question

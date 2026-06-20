@@ -1,22 +1,25 @@
 // C1 — Answer EVERY part of a compound query.
-// Lineage: H-25/H-31/H-40/H-54. See docs/CAPABILITY_LEDGER.md.
+// Lineage: H-25/H-31/H-40/H-54/H-59. See docs/CAPABILITY_LEDGER.md.
 //
 // Calibrated against live engine output 2026-06-20.
 // Real PC: Nyx, runebroken scholar, level 1, 15/15 HP.
 // Draft guessed "sellsword / 13 HP" — corrected here.
 //
-// The engine handles compound queries inconsistently: some phrasings hit
-// the meta-question path and answer correctly; others get routed to the
-// action/focus loop and roll instead. All non-robust cases are target.
+// H-59 graduated this capability to a typed sub-intent decomposition in
+// handleMetaQuestion: the engine now parses the SET of requested meta-fields
+// (name/class/level/HP, weapon-damage/item-effect, enemy-name/HP) out of the
+// utterance, independent of phrasing/order, and answers every present field
+// from ground truth in one response — never a roll. All four target cases
+// below are now robust across every paraphrase and promoted to locked.
 export default [
-  // ---- LOCKED ----
   {
     id: 'C1-001',
     capability: 'C1',
-    // The paraphrases that use "name" + "class" + "HP" in a clearly
-    // question-toned sentence reliably hit handleMetaQuestion.
-    // Paraphrases that are very terse or ambiguously action-toned roll.
-    // We include only the robust paraphrases here; see C1-001-target for the rest.
+    // The original 3 paraphrases hit handleMetaQuestion's META_NAME/
+    // META_CHARACTER branches directly. The 2 terse/ambiguous paraphrases
+    // (folded in here from the former C1-001-target) used to roll instead —
+    // H-59's last-resort typed identity-slot decomposition (hasIdentitySlotCompound)
+    // now catches them.
     status: 'locked',
     fixture: 'village_baker',
     intent: 'ask character name, class, and current HP as a single compound query',
@@ -24,6 +27,8 @@ export default [
       "I sit up and check myself over — what's my character's name, class, and current HP?",
       "remind me — who am I, what class, how many hit points right now?",
       "whats my name and class and how much hp do i have",
+      'name / class / current HP?',
+      'Quick status check: name, class, HP — give me all three.',
     ],
     assert: {
       // Real PC: name=Nyx, class=runebroken scholar, HP=15/15
@@ -39,42 +44,15 @@ export default [
     },
     diverge: [
       { text: "I check my wounds — I've been through a lot. I shake it off and get back up.", reason: 'narrated action, not a compound query; no obligation to list name/class/HP' },
-    ],
-    source: 'opus-gate-2026-06-20-postH52-H53.md (RL compound query); calibrated 2026-06-20',
-  },
-
-  // ---- TARGET (engine rolls or gives partial answers on these phrasings) ----
-  {
-    id: 'C1-001-target',
-    capability: 'C1',
-    status: 'target',
-    fixture: 'village_baker',
-    intent: 'terse / ambiguous compound query phrasings that still obligate a name+class+HP answer',
-    paraphrases: [
-      'name / class / current HP?',
-      'Quick status check: name, class, HP — give me all three.',
-    ],
-    assert: {
-      surface_matches: [
-        /Nyx/i,
-        /runebroken|scholar/i,
-        /15.*HP|HP.*15|hit point.*15/i,
-      ],
-      surface_excludes: [
-        /\[roll:/,
-        /Nothing'?s happened yet/i,
-      ],
-    },
-    diverge: [
       { text: "My name is Aria and I'm a ranger with 20 HP — confirm that's right.", reason: 'player ASSERTING their sheet; obligation is to validate, not to recite' },
     ],
-    source: 'opus-gate-2026-06-20-postH52-H53.md; calibrated 2026-06-20',
+    source: 'opus-gate-2026-06-20-postH52-H53.md (RL compound query); H-59 typed decomposition; calibrated 2026-06-20',
   },
 
   {
     id: 'C1-002',
     capability: 'C1',
-    status: 'target',
+    status: 'locked',
     fixture: 'village_baker',
     intent: 'ask damage dice for weapons AND what a consumable does, in one turn — all parts must be answered',
     paraphrases: [
@@ -106,7 +84,7 @@ export default [
   {
     id: 'C1-003',
     capability: 'C1',
-    status: 'target',
+    status: 'locked',
     fixture: 'village_baker',
     intent: 'explicitly ask for class AND level AND current HP; all three must appear in answer',
     paraphrases: [
@@ -138,7 +116,7 @@ export default [
   {
     id: 'C1-004',
     capability: 'C1',
-    status: 'target',
+    status: 'locked',
     fixture: 'active_combat',
     intent: 'ask who the enemy is AND what their HP is while combat is live — both must be answered, no roll',
     paraphrases: [
@@ -150,19 +128,23 @@ export default [
       "Just to confirm: who is it I'm fighting and how much HP do they have right now?",
     ],
     assert: {
-      // Engine inconsistent: some phrasings give [combat:table-talk] with enemy name+HP,
-      // others only report player HP or launch an attack. Must name foe AND state their HP.
+      // Must name foe AND state their HP, and must be an ANSWER (table-talk),
+      // not a combat-resolution surface that happens to mention the enemy's
+      // name and the player's own HP as flavor text (H-59 — tightened the
+      // exclude to [strike:/[grapple: so a real attack's narration can never
+      // accidentally satisfy this signature; that's a different obligation).
       surface_matches: [
         /Lingerer/i,
         /(\(unhurt\)|HP|hit point|\d+\s*(HP|of))/i,
       ],
       surface_excludes: [
         /\[roll:.*NAT1/i,
+        /\[(?:strike|grapple):/i,
       ],
     },
     diverge: [
       { text: "I attack Brokefang with everything I've got.", reason: 'attack action; routes to combat resolution' },
     ],
-    source: 'synthetic; grounded in H-52/H-53 compound-query lineage; calibrated 2026-06-20',
+    source: 'synthetic; grounded in H-52/H-53 compound-query lineage; H-59 typed decomposition; calibrated 2026-06-20',
   },
 ];

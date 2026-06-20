@@ -263,6 +263,13 @@ const META_SHEET_CONFIRM = /\b(?:my|the)\s+sheet\b|\bconfirm\s+(?:the\s+)?(?:sta
 // Identity questions about a visibly present NPC. Never a location survey.
 // (H-14, Rung-1 gate 2026-06-18.)
 const META_NPC_OBSERVER = /\bwho(?:'s| is| was| are)?\s+(?:that|this|the)\s+(?:stranger|figure|person|man|woman|one|fellow|guard|merchant|trader|elder|individual|character|someone|anyone)\b/i;
+// "Lurking"/"edges"/"shadows" framing — the player is pointing at the HOSTILE
+// observer specifically, not whichever sociable NPC happens to be first in the
+// roster. (H-44, post-H-42 baseline gate, Rules Lawyer t5: "I asked who the
+// stranger lurking at the edges is — not about Corwin" still got Corwin, the
+// sociable NPC, re-served; canon's real lurker had its own name on record and
+// was never even checked.)
+const NPC_OBSERVER_LURK_RE = /\blurk(?:ing|er)?\b|\bwatching\s+(?:from|at)\s+(?:the\s+)?(?:edges?|shadows?|a\s+distance|afar)\b|\b(?:at|on|from)\s+the\s+edges?\b/i;
 // NPC-presence queries — "Is that stranger gone?", "Could I look for them around town?"
 // Absence/presence questions about a specific NPC, not a general location survey.
 // (H-16, Rung-1 gate 2026-06-18.)
@@ -391,11 +398,26 @@ const INFO_SEEKING_TOPIC_RE = /\btell me\s+(?:about|more about|everything(?:\s+a
 // same as a name/date ask, not open conversation. (H-36a R1)
 const INFO_SEEKING_OBSERVE_RE = /\b(?:what'?s|what is)\b[\s\S]{0,20}?\b(?:printed|stamped|etched|engraved|written|marked|inscribed)\b[\s\S]{0,15}?\bon\b|\btell me what'?s\b[\s\S]{0,20}?\b(?:on it|on the|stamped|printed|written|etched|marked|inscribed)\b|\bread\b[\s\S]{0,15}?\b(?:the|this|that|my)\b[\s\S]{0,15}?\b(?:inscription|engraving|writing|stamp|marking)\b/i;
 
+// Noun-less suspicion/info question — "is something going on you're not telling
+// me?", "what aren't you telling me?", "are you hiding something?", "is there
+// something you're not saying?" — seeks CONCEALED information from a person but
+// has no who/what+noun anchor (INFO_SEEKING_RE) and no knowledge-verb topic phrase
+// (INFO_SEEKING_TOPIC_RE), so it fell through undetected to a content-free
+// success atmosphere instead of the deliver-or-decline contract (H-44, post-H-42
+// baseline gate, confused-newbie t8: "That sideways glance — is something going
+// on you're not telling me?" rolled a success but narrated generic filler).
+// Anchored on an explicit concealment/withholding marker ("not telling/saying",
+// "hiding something") so a neutral statement or a plain action never trips it —
+// declarative word order ("something IS going on") and third-person framing
+// ("he's hiding something") both fall outside these patterns by construction.
+const INFO_SEEKING_CONCEALMENT_RE = /\bis\s+(?:there\s+)?something\s+(?:going\s+on\s+)?you'?re\s+not\s+(?:telling|saying)\b|\bwhat\s+(?:aren'?t\s+you|are\s+you\s+not)\s+(?:telling|saying)\s+me\b|\bare\s+you\s+hiding\s+something\b/i;
+
 export function isInfoSeekingText(text) {
   const t = String(text || '').toLowerCase();
   if (!t.trim()) return false;
   if (INFO_SEEKING_EXCLUDE_RE.test(t)) return false;
-  return INFO_SEEKING_RE.test(t) || INFO_SEEKING_OBSERVE_RE.test(t) || INFO_SEEKING_TOPIC_RE.test(t);
+  return INFO_SEEKING_RE.test(t) || INFO_SEEKING_OBSERVE_RE.test(t) || INFO_SEEKING_TOPIC_RE.test(t)
+    || INFO_SEEKING_CONCEALMENT_RE.test(t);
 }
 
 // Confrontation / contradiction challenge (H-42, IG-11 social physics): "You
@@ -981,17 +1003,24 @@ export function handleMetaQuestion(text, world) {
 
   // NPC-observer query — "Who's that stranger watching me?". Describe the present
   // NPC rather than routing to a location survey. (H-14, Rung-1 2026-06-18.)
+  // A "lurking"/"edges"/"shadows" framing names the hostile observer
+  // specifically — the player flagged THAT one, not whichever sociable NPC
+  // happens to be first in the roster. (H-44)
   if (META_NPC_OBSERVER.test(lowerText)) {
     const node = (world?.map?.nodes || []).find(n => n && n.id === world?.map?.currentNodeId) || null;
-    const sociable = (node?.settlement?.npcs || []).filter(n => n && !n.hostile);
-    if (sociable.length) {
-      const npc = sociable[0];
+    const allNpcs = node?.settlement?.npcs || [];
+    const sociable = allNpcs.filter(n => n && !n.hostile);
+    const lurkers = allNpcs.filter(n => n && n.hostile);
+    const wantsLurker = NPC_OBSERVER_LURK_RE.test(lowerText);
+    const npc = (wantsLurker && lurkers.length) ? lurkers[0] : (sociable.length ? sociable[0] : (lurkers.length ? lurkers[0] : null));
+    if (npc) {
       const name = String(npc.name || '').trim();
       const role = String(npc.role || '').trim();
       const desc = String(npc.description || npc.notes || '').trim();
       const who = (name && role && !/\bthe\b/i.test(name)) ? `${name}, a ${role}` : (name || (role ? `a ${role}` : 'a stranger'));
-      return desc
-        ? `${who} — ${desc.charAt(0).toLowerCase() + desc.slice(1)}.`
+      if (desc) return `${who} — ${desc.charAt(0).toLowerCase() + desc.slice(1)}.`;
+      return npc.hostile
+        ? `${who} — keeping to the edges, watching.`
         : `${who} — one of the folk here, watching from nearby.`;
     }
     return `No one's watching you — the place looks empty from here.`;

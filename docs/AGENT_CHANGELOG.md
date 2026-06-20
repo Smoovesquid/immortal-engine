@@ -964,6 +964,20 @@ other agents. (none active)
 - Remaining/next: none for this packet.
 - Rollback: revert `159c754`
 
+2026-06-20T13:51:04Z — Codex
+- Packet/seam: H-53b fix-forward — strike-object non-strikable target guard
+- Commit(s): `7153d2e` (fix-forward)
+- Files changed: `engine/playloop.js`, `tests/U216.objectStrikeNarration.test.js`, `docs/AGENT_CHANGELOG.md`
+- Summary: H-53's object-strike fallback correctly handled props but over-fired on movement/people idioms because `cut` plus `across|through` made place/group targets look like destructible objects (`cut across the courtyard`, `cut through the crowd`). Added a small final-token `NON_STRIKABLE_TARGETS` denylist for places/areas and people/groups inside the existing strike branch only; `strikeTargetOf`, the strike verb regex, movement-prep guard, `gen:*` variants, combat, grace, and LLM layers are unchanged. Legit prop strikes still fire for tablecloth, bread basket, lantern, crate, etc.
+- Proof:
+  - `node --test tests/U216.objectStrikeNarration.test.js` — RED first: new place/crowd/adjective-target cases failed against H-53 (`courtyard`/`inner courtyard` narrated as struck); post-fix 9/9
+  - `node --test tests/U202.deliverOrDeclineRecall.test.js tests/U205.reactUnderPressure.test.js tests/U216.objectStrikeNarration.test.js` — 57/57
+  - Full suite: `node --test` — 8262/8262
+  - Determinism: `node --test tests/U19.worldHashDeterminism.test.js tests/U21.replayGateN50.test.js tests/U22.longRunStabilityN100T500.test.js tests/U27.worldHashSurfaceContract.test.js tests/U30.gate6.sequelDeterminism.test.js` — 6/6
+  - `npm run playtest:quick` — 50 runs, 0 crashes, no bugs found
+- Remaining/next: none for this fix-forward.
+- Rollback: revert `7153d2e`
+
 2026-06-20T11:35:00Z — Claude-Sonnet
 - Packet/seam: H-46 inventory items[] listing
 - Commit(s): `7ea7669` (code+test), `8f9e858` (claim)

@@ -929,3 +929,5 @@ other agents. (none active)
   - `git diff --stat` confirms the touched-file list exactly matches scope; `git diff engine/playloop.js` is the single CONSUME_RE line (+comment) only, nowhere near the combat-dispatch branch; gear.json/fantasyGear.js verified byte-identical via JSON diff after edits
 - Remaining/next: `META_INVENTORY`'s blanket `items[]` skip (noted above) is pre-existing and broader than this packet (affects weapons/armor/magic/quest items too, not just consumables) — worth its own packet if the queue owner wants the generic "what's in my pack" answer to be fully items-aware rather than just the new dedicated consumables-list query. Same for the EXAMINE-path `.name`-only matching gap.
 - Rollback: revert `562cc06`
+
+[CLAIMED] H-46 inventory items[] listing · Claude-Sonnet · 2026-06-20T11:20:46Z · files: engine/grace/gracefulAdjudication.js, tests/U209.inventoryItemsListing.test.js

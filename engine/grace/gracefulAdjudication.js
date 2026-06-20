@@ -364,7 +364,7 @@ const META_SYSTEM_CHECKIN = /\b(?:you'?re\s+just\s+repeating\s+yourself|you\s+ke
 // damage" rule check. (H-54 R3, post-H-52/H-53 gate, Rules-Lawyer: this fell
 // through every META_* gate and got rolled as a real action — "Yes or no: do
 // I add my MIGHT +1 to melee damage with these blades?" fired a d20 vs DC13.)
-const META_DAMAGE_RULE = /\bdo\s+i\s+add\s+my\s+\w+\s*(?:\+\s*\d+)?\s+to\s+(?:melee\s+)?damage\b|\bconfirm\s+(?:that'?s\s+)?the\s+right\s+mod\b|\bis\s+(?:a\s+)?hit\s+\d*d\d+\s*\+\s*\d+\b|\byes\s+or\s+no:?\s+do\s+i\s+add\b/i;
+const META_DAMAGE_RULE = /\bdo\s+i\s+add\s+my\s+\w+\s*(?:\+\s*\d+)?\s+to\s+(?:melee\s+)?damage\b|\bconfirm\s+(?:that'?s\s+)?the\s+right\s+mod\b|\bis\s+(?:a\s+)?hit\s+\d*d\d+\s*\+\s*\d+\b|\byes\s+or\s+no:?\s+do\s+i\s+add\s+my\s+\w+\s*(?:\+\s*\d+)?\s+to\s+(?:melee\s+)?damage\b/i;
 
 // Detect meta-questions (questions about state, not actions)
 export function isMetaQuestion(text) {
@@ -1029,6 +1029,10 @@ export function handleMetaQuestion(text, world) {
     const p = world.party?.[0] || {};
     const statMatch = lowerText.match(/\b(might|agility|wits|grit|charm)\b/i);
     const statKey = statMatch ? statMatch[1].toUpperCase() : 'MIGHT';
+    if (statKey !== 'MIGHT' && statKey !== 'AGILITY') {
+      const might = statMod(Number(p.stats?.MIGHT) || 10);
+      return `No — melee damage uses your MIGHT modifier (${fmtMod(might)}), or AGILITY for a finesse weapon, not ${statKey}.`;
+    }
     const mod = statMod(Number(p.stats?.[statKey]) || 10);
     return `Yes — your ability modifier adds to a hit's damage: the weapon's die plus your ability modifier. With your current ${statKey} modifier (${fmtMod(mod)}), that's the right mod.`;
   }

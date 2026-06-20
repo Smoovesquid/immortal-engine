@@ -99,6 +99,35 @@ test('U217-R3: a real in-fiction action is NOT captured by the rules-confirmatio
   assert.equal(isMetaQuestion('I swing at the door'), false, 'a real action must not be swept into META_DAMAGE_RULE');
 });
 
+// ── R3b (H-54b) — narrow the "yes or no: do I add" arm; validate the stat ──
+
+test('U217-R3b: "yes or no: do I add the poison to the blade?" is NOT a meta-question (in-fiction action)', () => {
+  assert.equal(isMetaQuestion('Yes or no: do I add the poison to the blade?'), false,
+    'an in-fiction action with no damage/mod object must fall through to action resolution');
+});
+
+test('U217-R3b: "do I add my CHARM to melee damage?" is corrected, not affirmed', () => {
+  const w = makeWorld();
+  const ans = handleMetaQuestion('Do I add my CHARM to melee damage?', w);
+  assert.ok(ans, 'must return an answer');
+  assert.ok(!/^Yes\s*—/i.test(ans), 'must not affirm a false stat');
+  assert.match(ans, /\bMIGHT\b/, 'must correct toward the real melee-damage stat');
+});
+
+test('U217-R3b regression: "do I add my MIGHT +1 to melee damage with these blades?" still affirms', () => {
+  const w = makeWorld();
+  const ans = handleMetaQuestion('Do I add my MIGHT +1 to melee damage with these blades?', w);
+  assert.ok(ans, 'must return an answer');
+  assert.match(ans, /^Yes\s*—/i, 'correct MIGHT ask is still affirmed');
+});
+
+test('U217-R3b regression: "yes or no: do I add my MIGHT +1 to melee damage…" gate phrasing still affirms', () => {
+  const w = makeWorld();
+  const ans = handleMetaQuestion('Yes or no: do I add my MIGHT +1 to melee damage with these blades?', w);
+  assert.ok(ans, 'must return an answer');
+  assert.match(ans, /^Yes\s*—/i, 'gate phrasing with correct MIGHT ask is still affirmed');
+});
+
 // ── R4 — a declared check is not swallowed by the bare-DC deflection ───────
 
 test('U217-R4: "roll WITS to read his face — what\'s the DC" is not answered by the bare-DC deflection', () => {

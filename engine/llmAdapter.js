@@ -286,6 +286,61 @@ export function findInventedProperNoun(candidate, groundedNouns) {
   } catch { return null; }
 }
 
+function escapeRe(str) {
+  return String(str || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function normRoleClaim(str) {
+  return String(str || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+}
+
+function normNameClaim(str) {
+  return String(str || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+}
+
+// H-52 — catches a grounded NPC name confidently pinned to the wrong grounded
+// settlement role ("Corwin Boneknit is the elder" when ctx says Kael is elder).
+// This sits beside the proper-noun guard: proper-noun grounding alone cannot
+// catch a real name with the wrong role attached. Returns the offending
+// substring, or null. Never throws.
+export function findMisattributedRoleClaim(candidate, ctx = null) {
+  try {
+    const text = String(candidate || '');
+    const npcs = Array.isArray(ctx?.settlement?.npcs) ? ctx.settlement.npcs : [];
+    if (!text || npcs.length === 0) return null;
+
+    const roles = new Map();
+    const namedNpcs = [];
+    for (const npc of npcs) {
+      const name = String(npc?.name || '').trim();
+      const role = normRoleClaim(npc?.role);
+      if (!name || !role) continue;
+      namedNpcs.push({ name, normName: normNameClaim(name), role });
+      if (!roles.has(role)) roles.set(role, new Set());
+      roles.get(role).add(normNameClaim(name));
+    }
+    if (namedNpcs.length === 0 || roles.size === 0) return null;
+
+    for (const [role, actualNames] of roles) {
+      const roleRe = escapeRe(role).replace(/\s+/g, '\\s+');
+      for (const npc of namedNpcs) {
+        if (actualNames.has(npc.normName)) continue;
+        const nameRe = escapeRe(npc.name).replace(/\s+/g, '\\s+');
+        const patterns = [
+          new RegExp(`\\b${nameRe}\\b[^.!?]{0,40}\\b(?:is|was|serves\\s+as|stands\\s+as|acts\\s+as|remains|became|becomes)\\s+(?:the|an?|this\\s+settlement's)?\\s*${roleRe}\\b`, 'i'),
+          new RegExp(`\\b${nameRe}\\b\\s*,?\\s+(?:the|an?)\\s+${roleRe}\\b`, 'i'),
+          new RegExp(`\\b(?:the|an?)\\s+${roleRe}\\s*,?\\s+${nameRe}\\b`, 'i')
+        ];
+        for (const re of patterns) {
+          const m = re.exec(text);
+          if (m) return m[0];
+        }
+      }
+    }
+    return null;
+  } catch { return null; }
+}
+
 export function validateNarrationCandidate(world, narrationCandidate, {
   facts = [],
   styleProfile = {},
@@ -353,6 +408,7 @@ export function validateNarrationCandidate(world, narrationCandidate, {
   // base narration — always safe. See collectGroundedNouns / findInventedProperNoun.
   const grounded = collectGroundedNouns({ world: w, ctx, base: baseNarration });
   if (findInventedProperNoun(cand, grounded)) return false;
+  if (findMisattributedRoleClaim(cand, ctx)) return false;
 
   // Combat contradiction guard — only fires when combat is active and the
   // narration context carries the snapshot. Conservative: only flagrant
@@ -749,13 +805,13 @@ export function findInventedFactClaim(candidate, baseNarration) {
     for (const y of years) {
       if (!base.includes(y)) return y;
     }
-    // H-49 — unit vocabulary widened from "years" alone to also catch the
+    // H-49/H-52 — unit vocabulary widened from "years" alone to also catch the
     // fantasy-register tenure idioms "winters"/"seasons" ("led ... for eleven
     // winters"), and the negation/hypothetical exemption used by the lineage
     // guard below now applies here too — a denial ("no record of how long")
     // or a hypothetical ("if he'd led for eleven winters") is not a confident
     // claim.
-    const durRe = /\b(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|\d{1,3})\s+(?:years?|winters?|seasons?)\b/gi;
+    const durRe = /\b(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|\d{1,3})\s+(?:years?|winters?|seasons?|decades?)\b/gi;
     let m;
     while ((m = durRe.exec(text)) !== null) {
       if (base.includes(m[0].toLowerCase())) continue;

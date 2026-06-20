@@ -1,5 +1,14 @@
 # AGENT_CHANGELOG
 
+2026-06-20T13:24:32Z — Codex
+- Packet/seam: H-52 lore-hound elder identity/tenure guard
+- Commit(s): local H-52 commit (hash in worker final report)
+- Files changed: `engine/llmAdapter.js`, `tests/U215.loreHoundIdentityGuard.test.js`, `docs/AGENT_CHANGELOG.md`
+- Summary: fixed two Lore-hound CANON_HALLUCINATION shapes in the narration validator. `findInventedFactClaim` now treats `decade/decades` as a tenure duration unit, preserving the existing base-narration and negation/hypothetical exemptions. Added `findMisattributedRoleClaim`, a conservative role-aware guard that rejects explicit grounded-name/wrong-role assertions such as `Corwin Boneknit is the elder` or `the elder, Corwin Boneknit` when `ctx.settlement.npcs` says another NPC holds that role. Deliberately did NOT add any behavior forcing elder-name disclosure, did NOT touch Rules-Lawyer roll reporting, `WORLD_VERSION`, state shape, RNG, mutation paths, or browser/UI files.
+- Proof: RED baseline `node --test tests/U215.loreHoundIdentityGuard.test.js` failed before implementation because `findMisattributedRoleClaim` was not exported; `node --test tests/U215.loreHoundIdentityGuard.test.js` — 9/9; `node --test tests/U212.loreInventionGuard.test.js tests/U213.purseClaimGuard.test.js tests/U142.narrationGroundsProperNouns.test.js tests/U192.groundFromCanon.test.js` — 38/38; `node --test` — 8253/8253 after granting local bind permission for A04 (first attempt hit sandbox `listen EPERM 127.0.0.1` only); `node --test tests/U19.worldHashDeterminism.test.js tests/U21.replayGateN50.test.js tests/U22.longRunStabilityN100T500.test.js tests/U27.worldHashSurfaceContract.test.js tests/U30.gate6.sequelDeterminism.test.js` — 6/6.
+- Remaining/next: none for H-52; queue owner should verify and push.
+- Rollback: revert local H-52 commit.
+
 2026-06-20T00:48:48Z — Codex
 - Packet/seam: H-43 combat resolution
 - Commit(s): `4f70b0b`

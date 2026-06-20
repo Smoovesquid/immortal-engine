@@ -1131,3 +1131,7 @@ other agents. (none active)
   - RED-first: added 2 new U217 cases against current H-54 code — both failed (poison-add still matched as meta-question; CHARM ask still affirmed "Yes —"). Post-fix: 14/14 U217 cases green (2 new + 2 regression-keep + 10 existing).
   - Full suite: `node --test` — 8279/8279, 0 failures.
 - Remaining/next: none — H-54b closes the R3 cluster from the §7 verdict.
+
+2026-06-20T15:30:00Z — Claude-Sonnet
+[CLAIMED] H-59 · Claude-Sonnet · 2026-06-20T15:30:00Z · files: engine/grace/gracefulAdjudication.js, tests/corpus/C1.corpus.mjs
+- Packet/seam: graduate C1 (compound query) to a typed sub-intent decomposition — first typed-packet graduation (Biblioteca Vol 7 "interpret richly, commit narrowly")

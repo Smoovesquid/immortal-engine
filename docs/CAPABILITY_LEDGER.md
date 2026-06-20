@@ -30,15 +30,15 @@ detectors. Status starts `seed`.
 
 | # | Capability (DM obligation) | Lineage / H-IDs | Current home (detectors to unify) | Corpus | Graduated |
 |---|---|---|---|---|---|
-| C1 | Answer **every part** of a compound query | H-25/H-31/H-40/H-54 | `handleMetaQuestion` fold logic | seed | — |
+| C1 | Answer **every part** of a compound query | H-25/H-31/H-40/H-54 | `handleMetaQuestion` fold logic | 1L/4T | — |
 | C2 | A **named referent** must be grounded before the turn resolves | H-56 | `ungroundedNpcReferentForText` | 2L/2T | — |
 | C3 | A **declared check** gets a DC + roll | H-54 R4 | `META_EXPLICIT_CHECK_*` | seed | — |
-| C4 | Info-seeking **delivers a grounded fact or honestly declines** | H-22/23/29/31/39 | `isInfoSeekingText`, `infoExtractionOutcome`, `declineInfoSeek` | seed | — |
-| C5 | A **rules/mechanic question** is answered straight, never rolled | H-25/H-54 R3 | `META_DAMAGE_RULE`, advice/skill-mod | seed | — |
+| C4 | Info-seeking **delivers a grounded fact or honestly declines** | H-22/23/29/31/39 | `isInfoSeekingText`, `infoExtractionOutcome`, `declineInfoSeek` | 1L/3T | — |
+| C5 | A **rules/mechanic question** is answered straight, never rolled | H-25/H-54 R3 | `META_DAMAGE_RULE`, advice/skill-mod | 1L/4T | — |
 | C6 | **Number-transparency**: own stats/mods/AC/HP/items from the sheet | H-25/H-31/H-40 | `answerSkillModifier`, `META_ARMOR_VALUE`, `META_HELD_ITEMS` | seed | — |
 | C7 | **Item/consumable** query answers from real def; **use** applies effect | H-45/H-47 | `answerItemQuery`, `tryUseConsumable`, `META_ITEM*` | seed | — |
 | C8 | **Narration ≤ mechanics** — no hit/defeat the dice didn't produce | H-26/H-28/H-43 | `llmAdapter` validator R1–R3 | seed | — |
-| C9 | **Canon non-invention** — no invented name/date/tenure/relationship | H-27/H-49/H-52 | `findInventedFactClaim` | seed | — |
+| C9 | **Canon non-invention** — no invented name/date/tenure/relationship | H-27/H-49/H-52 | `findInventedFactClaim` | 2L/2T | — |
 | C10 | A **declared attack** routes to real combat resolution | H-30/H-32/H-43/H-48/H-55 | playloop attack gates, `resolveEscapeCombatTurn` | seed | — |
 | C11 | **Confrontation under pressure** → in-character NPC reaction | H-42 | `isConfrontationChallenge`, `confrontationReaction` | seed | — |
 | C12 | **Movement/travel intent** resolves in fiction, no travel-gate bounce | THE_DM_TEST residuals | playloop movement / `inferInteriorAction` | seed | — |

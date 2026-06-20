@@ -257,7 +257,16 @@ const META_MECHANICS = /\bdice mechanic\b|\bhow (?:do|does|would) (?:you|the gam
 // damage". A real number off the loadout, never an in-fiction dodge. Distinct
 // from META_STAT (ability-score modifiers). (Opus gate follow-up 2026-06-16,
 // Rules Lawyer DM.)
-const META_WEAPON_DAMAGE = /\b(?:damage|dmg)\s+(?:die|dice|roll)\b|\bwhat\s+(?:damage\s+)?die\b|\b(?:damage|dmg)\s+(?:on|of|for)\s+(?:the|my|a|an|this|that)\b|\bhow much damage\b|\bwhat(?:'?s| is)\s+(?:the\s+)?(?:damage|dmg)\s+(?:on|of|for|number|value)\b/i;
+// Also catches the "what damage does each/they deal" compound phrasing —
+// answerWeaponDamage already folds every named weapon in the question, this
+// just widens the gate that routes to it. (H-54 R2)
+const META_WEAPON_DAMAGE = /\b(?:damage|dmg)\s+(?:die|dice|roll)\b|\bwhat\s+(?:damage\s+)?die\b|\b(?:damage|dmg)\s+(?:on|of|for)\s+(?:the|my|a|an|this|that)\b|\bhow much damage\b|\bwhat(?:'?s| is)\s+(?:the\s+)?(?:damage|dmg)\s+(?:on|of|for|number|value)\b|\bdamage\s+(?:does|do)\s+(?:each|they|both)\s+deal\b/i;
+// A weapon's AC/defense value asked about directly — weapons don't carry an
+// AC; that's the wearer's own defense number. Distinct from META_ARMOR_VALUE
+// (which gates the player's-own-AC ask) — this fires only when the ask is
+// framed as "AC ... on my <weapon>" so the answer corrects the conflation
+// instead of staying silent on it (and never invents a weapon AC). (H-54 R2)
+const WEAPON_AC_MISCONCEPTION_RE = /\b(?:ac|defen[cs]e\s+(?:value|bonus))\b[\s\S]{0,40}\bon\s+(?:my|the)\s+[a-z]/i;
 // "What's my name?" / "you called me X" — a player asking the DM what their own
 // character is called. Answered straight from canon (the LLM narrator must
 // never invent or swap the PC's name). (Opus gate follow-up 2026-06-16.)
@@ -323,6 +332,17 @@ const META_EXPLICIT_CHECK_C = /\broll\b[^.?!]*?\b(?:vs\.?|versus|against|for|on)
 // Pattern D: a named check with no action verb — "a WITS check", "I asked for a
 // GRIT save". The stat must immediately precede check/save/test. (H-26c)
 const META_EXPLICIT_CHECK_D = /\b(might|agility|wits|grit|charm|strength|dexterity|constitution|intelligence|wisdom|charisma|str|dex|con|int|wis|cha)\s+(?:check|save|test)\b/i;
+// Declared check with no "let me"/"I want to" lead-in — a bare commit to a
+// concrete stat+action, "I sheathe the blade and roll WITS to read his face"
+// or "I make a WITS check to pry it open". Distinct from Patterns A–D (which
+// all require either an opener phrase or a vs./against preposition) — this
+// catches the plain "roll <stat> to <verb>" / "make a <stat> check to <verb>"
+// shape so the bare-DC guard below can defer to it. NOT folded into
+// isMetaQuestion or the canned check-answer branch — its only job is to stop
+// META_BARE_DC from swallowing a declared check; the real action-resolution
+// path (outside grace) handles the actual roll once grace doesn't intercept.
+// (H-54 R4)
+const META_EXPLICIT_CHECK_DECLARED = /\b(?:roll|rolling)\s+(?:a\s+)?(?:might|agility|wits|grit|charm|strength|dexterity|constitution|intelligence|wisdom|charisma|str|dex|con|int|wis|cha)\s+to\s+[a-z]|\bmake\s+a\s+(?:might|agility|wits|grit|charm|strength|dexterity|constitution|intelligence|wisdom|charisma|str|dex|con|int|wis|cha)\s+check\s+to\s+[a-z]/i;
 // Roll-recall — player cites a specific past roll number to dispute or follow up.
 // "I rolled a 16", "16 vs DC 11", "you told me I got a 16", "my roll was 16". (H-12/13.)
 const META_ROLL_RECALL = /\b(?:i (?:rolled|got|said|had)(?:\s+a)?|my roll was(?:\s+a)?|you (?:said|told me)(?:\s+i (?:rolled?|got))?(?:\s+a)?)\s*\d+\b|\b\d+\s+(?:vs\.?|versus|against)\s+dc\s*\d+\b/i;
@@ -336,6 +356,15 @@ const META_ROLL_RECALL = /\b(?:i (?:rolled|got|said|had)(?:\s+a)?|my roll was(?:
 // check and got a content-free "it half-works" hedge instead of a non-rolling
 // acknowledgment.)
 const META_SYSTEM_CHECKIN = /\b(?:you'?re\s+just\s+repeating\s+yourself|you\s+keep\s+saying\s+the\s+same\s+thing|that'?s\s+the\s+same\s+answer\s+as\s+before|you\s+said\s+that\s+already)\b[\s\S]{0,40}?\b(?:okay|ok|there|broken|stuck|glitch(?:ing)?)\b/i;
+// Rules-confirmation — a question about the DAMAGE RULE itself ("do I add my
+// MIGHT to melee damage?", "is a hit 1d6+1?", "confirm that's the right
+// mod"), never an in-fiction action and never rolled. Distinct from
+// META_WEAPON_DAMAGE (which asks for a weapon's raw die) and META_ATTACK_MOD
+// (the to-hit bonus) — this is specifically the "does my ability mod apply to
+// damage" rule check. (H-54 R3, post-H-52/H-53 gate, Rules-Lawyer: this fell
+// through every META_* gate and got rolled as a real action — "Yes or no: do
+// I add my MIGHT +1 to melee damage with these blades?" fired a d20 vs DC13.)
+const META_DAMAGE_RULE = /\bdo\s+i\s+add\s+my\s+\w+\s*(?:\+\s*\d+)?\s+to\s+(?:melee\s+)?damage\b|\bconfirm\s+(?:that'?s\s+)?the\s+right\s+mod\b|\bis\s+(?:a\s+)?hit\s+\d*d\d+\s*\+\s*\d+\b|\byes\s+or\s+no:?\s+do\s+i\s+add\b/i;
 
 // Detect meta-questions (questions about state, not actions)
 export function isMetaQuestion(text) {
@@ -352,6 +381,7 @@ export function isMetaQuestion(text) {
     || META_SKILL_MOD.test(t) || META_ATTACK_MOD.test(t) || META_BARE_DC.test(t)  // H-25
     || META_ROLL_RECALL.test(t)  // H-12/13
     || META_SYSTEM_CHECKIN.test(t)  // H-51
+    || META_DAMAGE_RULE.test(t)  // H-54 R3
     || META_HELD_ITEMS.test(t) || META_ARMOR_VALUE.test(t)  // H-31 R2
     || META_POSSESSION_CHALLENGE.test(t)  // H-31 R3
     || META_GEAR_YESNO.test(t)  // H-38a R1
@@ -866,6 +896,17 @@ function mentionsGearAsk(lowerText) {
     || GEAR_ASK_FOLD_RE.test(stripped);
 }
 
+// Broad HP mention — folds an HP answer into a compound name/identity ask.
+// Broader than META_HEALTH (which is anchored on standalone status-check
+// phrasings like "am I hurt"/"how's my health" and deliberately does NOT
+// match a bare "current HP"/"HP" appearing inside a multi-part list, e.g.
+// "name, class, and current HP?"). Fold-only — never widen META_HEALTH
+// itself, or the standalone "am I hurt?" path picks up unwanted matches.
+// (H-54 R1)
+function mentionsHpAsk(lowerText) {
+  return /\b(?:current\s+)?hp\b|\bhit\s?points?\b/i.test(lowerText);
+}
+
 // Handle meta-questions (status checks, location surveys, recaps, outcomes).
 // Returns null when the text isn't a recognized meta-question.
 export function handleMetaQuestion(text, world) {
@@ -909,6 +950,8 @@ export function handleMetaQuestion(text, world) {
       if (META_ARMOR_VALUE.test(lowerText)) {
         const ac = playerAc(world.party?.[0] || {});
         extras.push(`Your Armor is ${ac} — that's the number an attack has to beat to land on you.`);
+      } else if (WEAPON_AC_MISCONCEPTION_RE.test(lowerText)) {
+        extras.push(`Weapons don't carry an AC — that's your own defense number, not theirs.`);
       }
       if (META_PURSE.test(lowerText)) extras.push(answerPurse(world));
       return extras.length ? `${ans} ${extras.join(' ')}` : ans;
@@ -933,7 +976,7 @@ export function handleMetaQuestion(text, world) {
       if (classLine) extras.push(classLine);
     }
     if (mentionsGearAsk(lowerText)) extras.push(describeLoadout(world));
-    if (META_HEALTH.test(lowerText)) extras.push(answerHealth(world));
+    if (mentionsHpAsk(lowerText)) extras.push(answerHealth(world));
     return extras.length ? `${ans} ${extras.join(' ')}` : ans;
   }
 
@@ -976,6 +1019,20 @@ export function handleMetaQuestion(text, world) {
     return META_STATS_REQ.test(lowerText) ? `${answerFullStats(world)} ${ans}` : ans;
   }
 
+  // Rules-confirmation — "do I add my MIGHT to melee damage?", "confirm
+  // that's the right mod". A rule question about the damage formula, answered
+  // straight from the sheet, never rolled. Reads the real modifier off the
+  // named stat in the text (defaulting to MIGHT, the melee default elsewhere
+  // in this file) so the number can't drift from what combat actually rolls.
+  // (H-54 R3)
+  if (META_DAMAGE_RULE.test(lowerText)) {
+    const p = world.party?.[0] || {};
+    const statMatch = lowerText.match(/\b(might|agility|wits|grit|charm)\b/i);
+    const statKey = statMatch ? statMatch[1].toUpperCase() : 'MIGHT';
+    const mod = statMod(Number(p.stats?.[statKey]) || 10);
+    return `Yes — your ability modifier adds to a hit's damage: the weapon's die plus your ability modifier. With your current ${statKey} modifier (${fmtMod(mod)}), that's the right mod.`;
+  }
+
   // Armor value/AC — "what's my Armor value?", "give me my AC". Your own
   // defense number off the sheet — a table DM just tells you, never a dodge
   // roll. Checked before META_EQUIPMENT so it isn't swallowed by the
@@ -990,8 +1047,15 @@ export function handleMetaQuestion(text, world) {
   // DC; report the last roll's DC if one's on record, else explain. (H-25)
   // Defers to the explicit-check handler when the player declared a check in the
   // same breath ("let me make a WITS check… what's the DC?") — that path sets a
-  // real DC for the named stat.
-  if (META_BARE_DC.test(lowerText) && !META_EXPLICIT_CHECK_A.test(lowerText) && !META_EXPLICIT_CHECK_B.test(lowerText)) {
+  // real DC for the named stat. Also defers to a bare "roll <stat> to <verb>"
+  // commit with no opener lead-in ("I sheathe the blade and roll WITS to read
+  // his face") — META_EXPLICIT_CHECK_DECLARED, checked ONLY here (not folded
+  // into isMetaQuestion/the canned check-answer branch below), so a declared
+  // check falls all the way through to real action resolution instead of
+  // grace intercepting it with either the bare-DC deflection or its own
+  // "tell me what you get" canned reply. (H-54 R4)
+  if (META_BARE_DC.test(lowerText) && !META_EXPLICIT_CHECK_A.test(lowerText) && !META_EXPLICIT_CHECK_B.test(lowerText)
+      && !META_EXPLICIT_CHECK_DECLARED.test(lowerText)) {
     const stored = world.conversation?.lastRoll;
     if (stored && Number.isFinite(Number(stored.dc))) {
       return `The last DC I set was ${stored.dc} (your roll: ${stored.roll}, ${stored.outcome}). There's no standing DC otherwise — I set one when you commit to a specific action.`;
@@ -1237,8 +1301,13 @@ export function handleMetaQuestion(text, world) {
   // capability phrasings without the "what does X do" shape ("does the Tonic
   // heal HP, give temp HP, or buff a stat?", "is the Tonic useful?").
   // Answered from the REAL pack; returns null (falls through) if no carried
-  // item matches.
-  if (META_ITEM.test(lowerText) || META_ITEM_CAPABILITY.test(lowerText)) {
+  // item matches. Defers to a declared check ("I roll WITS to read his face
+  // — what's the DC and what do I get?") — META_ITEM's lazy "what ... do"
+  // shape incidentally spans "what's the DC and what do I get", and the
+  // weapon named earlier in the same sentence ("the blade") then false-
+  // matches as the asked-about item. Without this guard the bare-DC fix
+  // (H-54 R4) just trades one wrong interceptor for another. (H-54 R4)
+  if ((META_ITEM.test(lowerText) || META_ITEM_CAPABILITY.test(lowerText)) && !META_EXPLICIT_CHECK_DECLARED.test(lowerText)) {
     const ans = answerItemQuery(lowerText, world);
     if (ans) return ans;
   }

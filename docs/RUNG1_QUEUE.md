@@ -1208,11 +1208,22 @@ Full per-turn detail in the report file. Catalog these as the next hard-tail pac
 once a worker prompt is drafted. Priority order: CRASH → DM_TEST_DEADEND → CRUNCH_INCONSISTENCY →
 CANON_HALLUCINATION.
 
-## Budget — ~$9.9 remaining
-Tim topped up **+$12** on 2026-06-20 (after the prior ~$0.5 exhaustion). ~$12.5 available → ran the
-post-H-52/H-53 gate (~$2.64) → **~$9.9 left** (~3 more 4-session runs). Worker-side fixes (Sonnet/Codex
-windows) don't draw this budget — only `scripts/dm-playtest.mjs` runs do. Still confirm the number before any
-run that would drop below ~$2.5.
+## Budget — ~$7.3 remaining
+Tim topped up **+$12** on 2026-06-20 (after the prior ~$0.5 exhaustion). ~$12.5 available → post-H-52/H-53
+gate (~$2.64) → post-H-54/H-55 gate (~$2.65) → **~$7.3 left** (~2 more 4-session runs). Worker-side fixes
+(Sonnet/Codex windows) don't draw this budget — only `scripts/dm-playtest.mjs` runs do. Still confirm the
+number before any run that would drop below ~$2.5.
+
+## Gate run 2026-06-20 (post-H-54/H-55) — docs/playtests/opus-gate-2026-06-20-postH54-H55.md
+**10/48** (was 11). DM_TEST_DEADEND 8 · CRUNCH_INCONSISTENCY 2 · COMBAT_NOT_STARTED **0** · CANON_HALLUCINATION 0.
+VERDICT: **H-55 CONFIRMED** (combat-not-started → 0); **H-54 R1/R2/R3 held** (shapes didn't recur), **R4 improved**
+(bare-DC deflection gone; now states "Roll WITS d20+1 vs DC12", residual = "tell me what you get" canned reply
+instead of auto-rolling). 11→10 is fresh-territory; new **dominant cluster (7/10) = ungrounded-NPC referent**:
+player asserts a false premise about an un-grounded NPC ("you said Brae nodded just now") and demands specifics
+→ DM rolls a generic success + content-free filler (Lore-hound ×5) or a movement deadend for a social intent
+(Confused-newbie "talk to Brae" ×2), instead of a grounded clarify/decline. This IS the H-9 false-premise family
++ U214 referent guard, extended. Two singletons: CRUNCH armor-classification ("no armor… wearing Padded coat")
+and CRUNCH roll-recall ("9 vs DC10" vs stated DC12 unreconciled, H-12/13 family).
 
 ## Post-H-50/H-51 gate — 2026-06-20 — VERDICT: both fixes confirmed effective, two new (smaller) clusters surfaced
 `docs/playtests/opus-gate-2026-06-20.md` — **4/48 failing (8%), down from 6/48**. **Chaos-griefer and

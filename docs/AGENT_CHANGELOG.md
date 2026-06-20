@@ -1067,5 +1067,6 @@ other agents. (none active)
   - Full suite: `node --test` — 8275/8275
   - Determinism: `node --test tests/U19.worldHashDeterminism.test.js tests/U21.replayGateN50.test.js tests/U22.longRunStabilityN100T500.test.js tests/U27.worldHashSurfaceContract.test.js tests/U30.gate6.sequelDeterminism.test.js` — 6/6
   - `git diff --stat` (scoped to owned files): only `engine/grace/gracefulAdjudication.js` and `tests/U217.metaQueryAnswerBinding.test.js` touched — `engine/playloop.js`/`tests/U218...` in the working tree belong to the concurrent H-55/Codex claim, not this packet
-- Remaining/next: none for this packet.
+- Remaining/next: **H-54b fix-forward scoped** (docs/PACKET_H54b_FIXFORWARD.md) — §7 verification passed scope/U217/determinism/diff but adversarial probes failed R3: `META_DAMAGE_RULE`'s `yes or no: do i add` arm over-fires on in-fiction actions ("yes or no: do I add the poison to the blade?" → swallowed as a rules answer) AND the answer is stat-blind ("do I add my CHARM to melee damage?" → "Yes … with your CHARM modifier (-1)", affirming a false rule — melee damage is MIGHT/force or AGILITY/finesse per resolve.js, never CHARM/WITS/GRIT). R1/R2/R4 verified clean. Fix-forward = narrow the detector arm + stat-validate the answer (correct a wrong stat instead of rubber-stamping). Same file, parallel-safe with in-flight H-55.
+- Basecamp §7 verdict (2026-06-20): R1/R2/R4 CONFIRMED on origin (d49ad65); R3 lands but needs H-54b before the post-batch gate.
 - Rollback: revert `d49ad65`

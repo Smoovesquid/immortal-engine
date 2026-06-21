@@ -33,7 +33,7 @@ detectors. Status starts `seed`.
 | C1 | Answer **every part** of a compound query | H-25/H-31/H-40/H-54/**H-59** | `handleMetaQuestion` typed sub-intent decomposition | 4L/0T | **✓** |
 | C2 | A **named referent** must be grounded before the turn resolves | H-56/C2-grad/H-60, **H-79** | `ungroundedNpcReferentForText` + `hasPersonReferentSignal` + observe/travel hoist + social-resolver guard | 6L/0T | **✓** |
 | C3 | A **declared check** gets a DC + roll | H-54 R4 | `META_EXPLICIT_CHECK_*` | 0L/3T | — |
-| C4 | Info-seeking **delivers a grounded fact or honestly declines** | H-22/23/29/31/39/H-63/H-74/H-78, **N-1** | `isInfoSeekingText` (+provenance widen) + `META_PURSE` + dialogue place-branch + pre-roll `isUngroundedInfoCheck` + `isUngroundedObjectRead`/`objectReadDecline` (object content-read) | 7L/2T | **partial** |
+| C4 | Info-seeking **delivers a grounded fact or honestly declines** | H-22/23/29/31/39/H-63/H-74/H-78/N-1, **N-2 Ex-2** | `isInfoSeekingText` (+provenance/`INFO_SEEKING_SURVEILLANCE_RE`) + `META_PURSE` + dialogue place-branch + pre-roll `isUngroundedInfoCheck` + `isUngroundedObjectRead`/`objectReadDecline` | 8L/2T | **partial** (Ex-1 open) |
 | C5 | A **rules/mechanic question** is answered straight, never rolled | H-25/H-54 R3/H-61, **H-80** | `META_DAMAGE_RULE`/`META_ATTACK_MOD` + governing-stat classifier (skill + `META_ATTACK_GOVERNING_STAT` for attacks) | 4L/1T | **partial** |
 | C6 | **Number-transparency**: own stats/mods/AC/HP/items from the sheet | H-25/H-31/H-40/H-68, **N-1** | `answerSkillModifier`, `META_ARMOR_VALUE`, `META_HELD_ITEMS`, `META_INVENTORY` (widened, +filler-adverb), `describePack` (inventory as prose, no category-dump/sheet-deflect) | 6L/0T | **✓** |
 | C7 | **Item/consumable** query answers from real def; **use** applies effect | H-45/H-47/H-65/H-69/H-70/H-73/H-76, **H-77** | `answerItemQuery`/`META_ITEM` + `CONSUME_RE` + count/compound + bare-count list + sheet-rider guard + effect-cue/`ITEM_EFFECT_DEMAND_RE` widen | 13L/0T | **partial** |
@@ -247,7 +247,7 @@ the closer looks like **narration-layer hardening** — a live output-validator 
 the loop), which is exactly what **[[IG-12]]** (the Dungeon Ref, parked 2026-06-21) is a seed of. **Budget after: ~$1.71**
 (~$2.73 spent, 96 calls) — BELOW the one-run floor; top up before gate 6. Gate 4 preserved as `opus-gate-2026-06-21-gate4-postH77.md`.
 
-*2026-06-21 (gate 6 — post N-1 Fix 1/2/3, `docs/playtests/opus-gate-2026-06-21.md`):* **7/48** (gate 5 was 10/48, same
+*2026-06-21 (gate 6 — post N-1 Fix 1/2/3, `docs/playtests/opus-gate-2026-06-21-gate6.md`):* **7/48** (gate 5 was 10/48, same
 seed/personas; RL 4 · Chaos **0** · Lore 1 · Newbie 2). **DISCOVERY = 0 new capabilities** — all 7 map to known rows
 (C4 ×2, C5 ×3, C9 ×1, C12 ×1). **N-1 HELD:** none of the three fixed narration classes recurred — no inventory
 category-dump, no deflect-to-sheet, no object-read empty-success — and the corpus locks (C6-006/C4-007) prove it
@@ -268,6 +268,40 @@ stating it — H-12/13 lineage) and **C9 invention** (Lore t8: invented a baker/
 (Vol 14):** the hardened judge held — RL's cited 14-success was credited correctly (no roll-recall false-positive), C9 +
 empty-success tags confirmed against the DM lines. **Budget after: ~$2.58** (~$2.83 spent, 96 calls) — at/below the
 one-run floor; TOP UP before gate 7. Gate 5 preserved as `opus-gate-2026-06-21-gate5.md`.
+
+*2026-06-21 (gate 7 — post N-1 + N-2 Ex-2, `docs/playtests/opus-gate-2026-06-21.md`):* **12/48** (gate 6 was 7/48,
+same seed/personas; RL 4 · Chaos 1 · Lore 2 · Newbie 5). **DISCOVERY = 0 new capabilities** — all 12 map to
+C1/C2/C4/C6/C7/C10/C12. **N-1 + N-2 Ex-2 HELD, verified no-regression:** none of their classes recurred (no
+inventory category-dump; no deflect-to-sheet — RL t7 gave identity+stats, not "read your sheet"; no object-read
+empty-success; no surveillance empty-success). The canonical C7 still answers LLM-off ("What does the Tonic of grit
+do?" → "it heals 2d4") and convergence held 74/74 → the **7→12 is the ruler bouncing onto fresh veins, confirmed
+LLM-off before trusting the count.** The veins:
+- **C7 item-effect phrasing-tail (RL t2/t4/t5) — dominant new vein.** An item-effect question that NAMES A STAT
+  ("does the Tonic boost my GRIT", "restore HP or a GRIT bonus") is hijacked to the stat/HP readout before the
+  item-effect detector fires → "GRIT is 9" / "13/13 HP" instead of "heals 2d4". Reproduces LLM-off (deterministic,
+  corpus-lockable) → **next C7 packet** (item-effect must win over a stat name when the subject is an item).
+- **N-2 Ex-1 empty-success-on-a-SUCCEEDED-action (Newbie t6/t7) — the UNIMPLEMENTED half, recurred as expected.**
+  "do I know you?" → "It comes off cleanly" [roll:17 success]; "who are you?" → "the way opens" non-sequitur.
+  **Ex-1 diagnostic (worker, this session):** `look at <NPC>` has NO deterministic describe path (every
+  "look/describe X" returns the generic location-observe); the only describe output ("Mira Hearth, a baker…
+  watching from nearby") fires on a narrow `who is the stranger` form, breaks when the NPC is named, and is thin.
+  Fork = **(A)** route the dropped half to the identify path + de-brittle it (medium routing; names-who-you-see,
+  no rich appearance/activity); **(B)** in-character decline floor (smallest, flat); **(C)** Tier-2 LLM describe
+  from NPC canon (richest; paid/judge tier). **Tim's A/B/C decision pending — not free-landed.**
+- **C12 can't-leave (Newbie t5):** "I keep trying to leave but nothing's happening" → DM restates the static scene,
+  "answers nothing." Movement intent unresolved — adjacent to the deferred **H-81** invented-barrier class.
+- **Dialogue-info-delivery / kick-back (Newbie t11/t12):** DM teased a "trader dispute," then bounced "what
+  happened?" back as a clarification stall instead of delivering the info it teased (THE_REF Tier-2 fuzzy).
+- **C2 invented-referent, in-dialogue variant (Lore t9/t10):** player addressed an INVENTED "Brae Copperforge"; DM
+  rolled a generic success / observe-deadend instead of clarifying. H-79 closed the social-ACTION variant; this is
+  the dialogue-QUESTION variant — a known un-closed seam.
+- **C1/C10 compound-drop (Chaos t4):** "headbutt Brokefang AND rip the pouch" — headbutt resolved, pouch-grab
+  half dropped. **C6 stats-compound (RL t7, judged NONE/low):** stats correct but "active effects: none" not
+  explicitly stated — arguably not a real failure.
+**Frontier still the NARRATION track:** ≥8/12 are "right content, wrong words." **Judge note (Vol 14):** hardened
+judge held; one soft tag (RL t7 NONE). **Budget after: ~$0** (~$2.87 spent; est. $2.58 pre-gate — the run completed,
+so the real balance covered it but is now exhausted). **TOP UP before gate 8.** Gate 6 preserved as
+`opus-gate-2026-06-21-gate6.md`.
 
 **Social-physics categories to mine next (Biblioteca Vols 2–6, mostly not yet failing-in-gate but on the map):**
 sarcasm/irony inversion (Vol 2; transcript: `docs/playtests/ridiculous-sarcasm-2026-06-06.md`), loaded

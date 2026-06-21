@@ -207,9 +207,9 @@ the paid gate (discovery). Build the SAME for narration:
 
 ---
 
-## Handover state (as of 2026-06-21, post gate 6)
+## Handover state (as of 2026-06-21, post gate 7)
 
-- **Branch `v2-polish`**. Convergence **73/73 (100%)**, suite **8285/8285**, determinism 200/0.
+- **Branch `v2-polish`**. Convergence **74/74 (100%)**, suite **8285/8285**, determinism 200/0.
 - **N-1 (this track's first packets) — Fix 1/2/3 LANDED + gate-confirmed (gate 6, 10→7/48):** inventory as
   prose (`describePack`, no category-dump), name-the-kit (no deflect-to-sheet, `META_INVENTORY` adverb), and
   object content-read honest-decline (`isUngroundedObjectRead`/`objectReadDecline`, extends H-78 to objects).
@@ -218,16 +218,19 @@ the paid gate (discovery). Build the SAME for narration:
   blocked" / "the passage is cluttered"). Root cause: a leading "go" makes `inferInteriorAction` read the
   greeting as a blocked interior MOVE (`playloop.js` ~1052), pre-empting the talkRef/dialogue path (~1266);
   the extractors also miss apposition / "ask <NPC>" / pronoun anaphora. Recurred at gate 6 (Newbie t3).
-- **NEW frontier shape (gate 6) — empty-success on a SUCCEEDED action:** a look/call-out rolls a SUCCESS but
-  the narration delivers no content ("the ledger shows 14 (success)" with no description; "a useful answer
-  comes back" with no answer). Distinct from H-78 (unanswerable) — here the success earned an outcome the
-  words don't deliver. This is the next narration Tier-0/1 (N-2): deliver-what-the-success-earned, else decline.
+- **N-2 — empty-success on a SUCCEEDED action.** **Ex-2 LANDED** (`a0c8326`, C4-008): surveillance-of-PC query
+  ("who was watching me") → honest pre-roll decline via `INFO_SEEKING_SURVEILLANCE_RE`; gate-7 confirmed it held.
+  **Ex-1 OPEN** (the look/describe half): a SUCCEEDED look/social rolls but delivers no content ("do I know you?"
+  → "it comes off cleanly" [roll:17 success]). Diagnostic (gate-7 prep): `look at <NPC>` has **no deterministic
+  describe path** — fork is **(A)** route the dropped half to the identify path + de-brittle it, **(B)**
+  in-character decline floor, **(C)** Tier-2 LLM describe from NPC canon. **Tim's A/B/C decision pending.**
+  Recurred at gate 7 (Newbie t6/t7).
 - **Rung-1 Road-A**: H-75…H-80 landed/verified; the deterministic corpus is near-saturated; the frontier is this doc.
-- **Gates**: gate 3 (5/48, `-gate3-hardened.md`), gate 4 (7/48, `-gate4-postH77.md`), gate 5 (10/48,
-  `-gate5.md`), **gate 6 (7/48, `opus-gate-2026-06-21.md` — N-1 held, frontier=narration)**. Gate 5/6 are the
-  ones to read for the narration taxonomy.
-- **Budget**: ~$2.58 estimated (Tim confirmed $5.41 pre-gate-6; ~$2.83 spent) — at/below the one-run floor.
-  **Top up + re-confirm with Tim before gate 7.**
+- **Gates**: gate 3 (5/48), gate 4 (7/48), gate 5 (10/48, `-gate5.md`), gate 6 (7/48, `-gate6.md` — N-1 held),
+  **gate 7 (12/48, `opus-gate-2026-06-21.md` — N-1 + N-2 Ex-2 held, no regression; the bounce = persona-variance
+  onto fresh veins)**. The gate 6/7 findings in `CAPABILITY_LEDGER` are the ones to read for the narration taxonomy.
+- **Budget**: ~$0 — EXHAUSTED (Tim confirmed $5.41 pre-gate-6; gate 6 ~$2.83 + gate 7 ~$2.87). **Top up +
+  re-confirm with Tim before gate 8.**
 - **Bootstrap**: `docs/BASECAMP.md` (the role), `docs/CAPABILITY_LEDGER.md` (Road-A status + the gate-5
   findings), `docs/biblioteca/` Vols 10/14/15 (judge reliability, GM-proposes/system-commits, the
   narration frontier). Vol 15 independently re-derives "GM proposes, deterministic system commits" — THE

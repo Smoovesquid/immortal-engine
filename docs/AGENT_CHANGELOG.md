@@ -1480,3 +1480,12 @@ other agents. (none active)
   - `node --test` — **8285/8285, 0 fail**.
 - Remaining/next (residuals, NOT the gate failure): (c) the in-`active_combat` variant still SWINGS on a rules question (needs an H-72-style combat-meta exception — playloop); (d) the literal d6 roll-demand isn't rolled (the formula answer covers its intent). Both deferred — not observed as the gate failure.
 - Rollback: revert `4868d48` + this docs commit.
+
+2026-06-21T20:00:00Z — Claude-Sonnet (worker; N-2 Ex-2) — committed by worker, VERIFIED + PUSHED by Basecamp
+- Packet/seam: N-2 Ex-2 — surveillance-of-PC query → honest decline pre-roll (gate-6 Newbie "ask if either of them is the one who was watching me"; the empty-success-on-a-SUCCEEDED-action shape, narration track)
+- Commit(s): `a0c8326` (worker committed locally, did NOT push; Basecamp verified + pushed in the gate-7 landing stack `35f39b1`).
+- Files changed: `engine/grace/gracefulAdjudication.js` (+`INFO_SEEKING_SURVEILLANCE_RE`, wired into the `isInfoSeekingText` disjunction), `tests/corpus/C4.corpus.mjs` (+locked C4-008).
+- Summary: "ask whether <someone> was watching/spying/tailing me" — an unmodeled surveillance fact about the PC — matched none of `isInfoSeekingText`'s sub-REs, so it rolled a d20 and any post-roll narrator emitted a content-free "success." Added a narrow `INFO_SEEKING_SURVEILLANCE_RE` (query cue {who/which/whether/if/the one who} + surveillance verb {watch/spy/tail/stalk/shadow/surveil — deliberately NOT "follow", which collides with accompany-"follow me"} + me/us object) to the disjunction → honest-declines pre-roll, no roll, in-fiction via the existing `declineInfoSeek`. Mirrors H-78's `INFO_SEEKING_PROVENANCE_RE`. Over-fire-safe: imperatives lack the query cue, player-as-subject lacks the me/us object.
+- Proof (Basecamp §7): scope grace-only (safety scan clean — no `WORLD_VERSION`/`Math.random`/`Date.now`/`applyDeltas`/`worldHash`/`rng`/`csl`); `npm run convergence` **74/74 (100%, C4 8/8)**, exit 0; `node --test` **8285/8285, 0 fail** (determinism U19/21/22/27/30 green); LLM-off repro — 7/7 surveillance paraphrases decline (no `[roll:`), 4/4 diverge negatives resolve normally.
+- Remaining/next: N-2 **Ex-1** (empty-success on a SUCCEEDED look/social action) NOT implemented — diagnostic done (no deterministic describe-NPC path; A/B/C decision pending Tim); recurred at gate 7 (Newbie t6/t7).
+- Rollback: revert `a0c8326`.

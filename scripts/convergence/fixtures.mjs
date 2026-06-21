@@ -86,6 +86,26 @@ export function emptyRoomWorld() {
   });
 }
 
+// (H-81) Indoors WITH a present NPC at the node — the only combo that triggers the
+// approach-a-present-NPC → "that way is blocked" interior-move bug. Mira is at the
+// node (from villageBakerWorld); the player is in an interior of that node.
+export function interiorNpcWorld() {
+  const world = villageBakerWorld();
+  return ensureWorld({
+    ...world,
+    scene: {
+      ...(world.scene || {}),
+      dialogue: null,
+      interior: {
+        id: 'h56_interior_npc',
+        name: 'Bakehouse',
+        kind: 'room',
+        description: 'Inside a modest building at the village.'
+      }
+    }
+  });
+}
+
 export function activeCombatWorld() {
   const npc = {
     id: 'npc_lingerer',
@@ -149,6 +169,7 @@ export function dialogueActiveWorld() {
 export const FIXTURES = {
   village_baker: villageBakerWorld,
   empty_room: emptyRoomWorld,
+  interior_npc: interiorNpcWorld,
   active_combat: activeCombatWorld,
   dialogue_active: dialogueActiveWorld
 };

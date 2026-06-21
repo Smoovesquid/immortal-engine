@@ -188,4 +188,37 @@ export default [
     ],
     source: 'opus-gate-2026-06-21.md [Confused newbie, turn 5]; H-75',
   },
+
+  // ---- LOCKED — approach a PRESENT NPC while indoors → dialogue, not "blocked" (H-81) ----
+  {
+    id: 'C12-005',
+    capability: 'C12',
+    // gate 6/8/9 (recurring): indoors, "go talk to the elder/Lingerer" → "that way
+    // is blocked" / "leads you nowhere closer" — an invented navigation barrier to a
+    // PRESENT NPC. A leading movement verb ("go") made inferInteriorAction classify
+    // the greeting as a blocked interior MOVE, returning before the talkRef/dialogue
+    // path. H-81: the interior-move handler yields to dialogue when the turn resolves
+    // to a present-NPC approach (approachPresentNpcRef). Genuine moves still block —
+    // see diverge. Fixture: indoors WITH a present NPC (the only combo that triggers it).
+    status: 'locked',
+    fixture: 'interior_npc',
+    intent: 'indoors, "go talk to <present NPC>" enters dialogue — never an invented "that way is blocked" barrier',
+    paraphrases: [
+      'go talk to Mira',
+      'go say hi to Mira',
+      'I want to go talk to the baker',
+      'go talk to the baker',
+      'go over and talk to Mira',
+    ],
+    assert: {
+      surface_matches: [ /dialogue enter/i ],
+      surface_excludes: [ /that way is blocked|nowhere closer|leads you nowhere/i, /\[roll:/ ],
+    },
+    diverge: [
+      { text: 'go north', reason: 'a genuine interior move (no NPC) — must still move/block, not enter dialogue' },
+      { text: 'look around', reason: 'observe/explore, not an approach' },
+      { text: 'go back outside', reason: 'an interior exit, not a present-NPC approach' },
+    ],
+    source: 'opus-gate-2026-06-21.md (gate 6 Newbie t3 / gate 8 / gate 9 Newbie t7 — "go talk to the elder" → blocked); fixed H-81; reproduced LLM-off on a new interior_npc fixture',
+  },
 ];

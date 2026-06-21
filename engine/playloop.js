@@ -1048,7 +1048,7 @@ function playerMoveCore(world, packsById, text) {
     }
   }
 
-  if (!targetedCombatAction && !declaredNpcViolence && interiorAction.kind === 'move') {
+  if (!targetedCombatAction && !declaredNpcViolence && interiorAction.kind === 'move' && !approachPresentNpcRef(w, text)) {
     const wantsRiskyMove = isRiskyOrObstructedMoveIntent(text);
     if (!wantsRiskyMove) {
       const targetRoomId = interiorAction.toRoomId || pickAdjacentInteriorByDirection(w, interiorAction.direction);
@@ -3448,6 +3448,23 @@ function dialogueAskNarration(outcome, world) {
       return V(`deflected:${outcome?.manner || 'even'}`, pools[outcome?.manner] || pools.even);
     }
   }
+}
+
+// (H-81) Resolve a person-approach to a PRESENT NPC ("go talk to Kael", "go say
+// hi to the elder"). A leading movement verb ("go"/"head over") makes
+// inferInteriorAction read the greeting as a blocked interior MOVE and return
+// "that way is blocked" BEFORE the talkRef/dialogue path runs (the gate-6/8/9
+// invented-barrier). This lets the move handler yield such turns to dialogue.
+// Requires real presence (strict|loose) so genuine interior moves still block.
+function approachPresentNpcRef(world, text) {
+  if (world.combat?.active) return null;
+  const cands = [extractDialogueRef(text), extractApproachRef(text), extractFindPersonRef(text)];
+  for (const c of cands) {
+    if (!c) continue;
+    const npc = resolvePresentNpcStrict(world, c) || resolvePresentNpcLoose(world, c);
+    if (npc) return String(npc.name || npc.id || '');
+  }
+  return null;
 }
 
 function extractDialogueRef(text) {

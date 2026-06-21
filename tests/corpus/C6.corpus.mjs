@@ -170,4 +170,41 @@ export default [
     diverge: [],
     source: 'opus-gate-2026-06-19-postH42-baseline.md [Rules Lawyer DM, turn 4]; calibrated 2026-06-20',
   },
+
+  // ---- LOCKED — inventory in PROSE, never a category-dump or sheet-deflect (N-1) ----
+  {
+    id: 'C6-006',
+    capability: 'C6',
+    // gate-5 DM_ARTIFACT_LEAK: "what's in my pack" dumped "weapons: …, armor: …"
+    // (internal category keys, reads like a UI). gate-5 deflect-to-sheet: "what am
+    // I even carrying?" mis-routed to identity and punted "read it on your sheet"
+    // instead of naming the kit. N-1 renders the pack as prose (describePack) and
+    // routes carrying-questions to it (META_INVENTORY adverb tolerance), incl. the
+    // consumables the deflect hid.
+    status: 'locked',
+    fixture: 'village_baker',
+    intent: 'inventory/carrying queries name the real kit in PROSE — never the internal "weapons:/armor:" category dump, never a "read your sheet" deflect, no roll',
+    paraphrases: [
+      "what's in my pack?",
+      "what am I even carrying?",
+      "what am I really carrying?",
+      "what do I have on me?",
+      "check my pack",
+    ],
+    assert: {
+      surface_matches: [
+        /Worn Blade|Hatchet|Tonic|Rations/i,                                 // a real item, named
+      ],
+      surface_excludes: [
+        /\[roll:/,                                                           // a sheet read never rolls
+        /\b(?:weapons|armou?r|tools|consumables|oddities|junk|clothes):\s/i, // the internal category-key dump
+        /read .{0,16}(?:sheet|on you)|fine print/i,                          // the deflect-to-sheet punt
+      ],
+    },
+    diverge: [
+      { text: "who am I?", reason: "pure identity question — answers identity, must NOT dump the whole pack (N-1 over-fire guard)" },
+      { text: "I check my belt and grab the Worn Blade.", reason: "action (drawing a weapon), not a query" },
+    ],
+    source: 'opus-gate-2026-06-21.md (RL t1 category-dump; Newbie t6 deflect-to-sheet) — N-1 Tier-0; reproduced LLM-off village_baker, fixed N-1',
+  },
 ];

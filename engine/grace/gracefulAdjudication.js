@@ -210,7 +210,10 @@ const META_OUTCOME = /did i (?:succeed|fail|win|lose|make it)\b/;
 // The "what ... am I carrying" form allows up to 4 intervening words so a
 // named-noun ask ("what GEAR AND WEAPONS am I carrying") still matches, not
 // just the bare contiguous form. (H-37 R1)
-const META_INVENTORY = /\bwhat (?:do i have|am i carrying|have i got)\b|\bwhat\s+(?:\w+\s+){1,4}(?:do i have|am i carrying|have i got)\b|\bwhat'?s in my (?:pack|bag|inventory|pockets?)\b|\b(?:check|show|open|look in(?:to)?) (?:my )?(?:pack|bag|inventory|gear|equipment)\b|^\s*inventory\s*\??\s*$|\blist\s+(?:every|all|my|each)\s+(?:item|thing|piece|bit)s?\b/;
+// "am i (even/really/just…) carrying" — a filler adverb between "i" and
+// "carrying" used to break the trigger, mis-routing "what am I even carrying?"
+// to META_CHARACTER's identity answer (gate-5 deflect-to-sheet). (N-1)
+const META_INVENTORY = /\bwhat (?:do i have|am i (?:even |really |actually |just |still |currently )?carrying|have i got)\b|\bwhat\s+(?:\w+\s+){1,4}(?:do i have|am i (?:even |really |actually |just |still |currently )?carrying|have i got)\b|\bwhat'?s in my (?:pack|bag|inventory|pockets?)\b|\b(?:check|show|open|look in(?:to)?) (?:my )?(?:pack|bag|inventory|gear|equipment)\b|^\s*inventory\s*\??\s*$|\blist\s+(?:every|all|my|each)\s+(?:item|thing|piece|bit)s?\b/;
 // Equipment / "what am I wielding/wearing" / sheet queries — an information
 // request, never a dice roll. Answered in-voice from real canon (an empty
 // loadout is reported honestly, never invented as "a short sword").
@@ -1009,6 +1012,42 @@ function describeLoadout(world) {
   return parts.join(' ');
 }
 
+// Real pack contents as PROSE — never the internal "weapons:/armor:" category
+// dump (which reads like a UI/stat leak; gate-5 DM_ARTIFACT_LEAK), never
+// invented. Lists every real item by name (weapons, armor, tools, consumables,
+// …) via joinList. Shared by the inventory readout AND the identity answer, so
+// "what am I carrying?" names the actual kit (incl. consumables) instead of
+// deflecting to "read your sheet" (gate-5 deflect-to-sheet). Dedup/merge logic
+// is the former META_INVENTORY body (H-45/H-46). (N-1)
+function describePack(world) {
+  const inv = world.party?.[0]?.inventory || {};
+  const byCat = {};
+  const seen = new Set();
+  for (const [cat, items] of Object.entries(inv)) {
+    if (!Array.isArray(items) || !items.length || cat === 'items') continue;
+    const names = items.map(it => String(it?.name || it)).filter(Boolean);
+    if (names.length) {
+      byCat[cat] = names;
+      for (const n of names) seen.add(n.toLowerCase());
+    }
+  }
+  // Merge the structured items[] array (defRef-keyed) so a bridged consumable
+  // (Tonic of grit) lands alongside the rest rather than vanishing. Unresolved
+  // defRefs are dropped, not invented; already-listed names aren't repeated.
+  for (const it of (Array.isArray(inv.items) ? inv.items : [])) {
+    const def = getItemDef(it?.defRef);
+    if (!def || !def.name) continue;
+    if (seen.has(def.name.toLowerCase())) continue;
+    seen.add(def.name.toLowerCase());
+    byCat.items || (byCat.items = []);
+    byCat.items.push(def.name);
+  }
+  const allNames = Object.values(byCat).flat();
+  return allNames.length
+    ? `You go through your pack — ${joinList(allNames)}.`
+    : 'Your pack is light — nothing but lint and resolve.';
+}
+
 // Skill→stat→modifier, the real number off the sheet. Shared by the
 // standalone META_SKILL_MOD ask and the modifier-formula fallback below, so a
 // skill name reaching either path gets the same clean answer instead of one
@@ -1715,37 +1754,10 @@ export function handleMetaQuestion(text, world) {
     return ans;
   }
 
-  // Inventory — read the real pack, never invent contents.
+  // Inventory — read the real pack as prose, never invent contents. (N-1: the
+  // category-key dump moved into describePack, which renders names in-fiction.)
   if (META_INVENTORY.test(lowerText)) {
-    const inv = world.party?.[0]?.inventory || {};
-    const byCat = {};
-    const seen = new Set();
-    for (const [cat, items] of Object.entries(inv)) {
-      if (!Array.isArray(items) || !items.length || cat === 'items') continue;
-      const names = items.map(it => String(it?.name || it)).filter(Boolean);
-      if (names.length) {
-        byCat[cat] = names;
-        for (const n of names) seen.add(n.toLowerCase());
-      }
-    }
-    // H-46 — merge the structured items[] array (T2, defRef-keyed) into the
-    // dump too, grouped under its catalog kind's line (so a bridged
-    // consumable like Tonic of grit lands alongside Rations/Lamp oil rather
-    // than vanishing — items[] used to be skipped here outright). Unresolved
-    // defRefs are dropped, not invented; anything already listed via a
-    // flavor entry (H-45 bridge) isn't repeated.
-    for (const it of (Array.isArray(inv.items) ? inv.items : [])) {
-      const def = getItemDef(it?.defRef);
-      if (!def || !def.name) continue;
-      if (seen.has(def.name.toLowerCase())) continue;
-      seen.add(def.name.toLowerCase());
-      const cat = def.kind === 'armor' ? 'armor' : `${def.kind}s`;
-      (byCat[cat] || (byCat[cat] = [])).push(def.name);
-    }
-    const lines = Object.entries(byCat).map(([cat, names]) => `${cat}: ${names.join(', ')}`);
-    const ans = lines.length
-      ? `You go through your pack. ${lines.join('. ')}.`
-      : 'Your pack is light — nothing but lint and resolve.';
+    const ans = describePack(world);
     // A stats or HP ask in the same breath must answer both, not just gear —
     // "what are my actual stats and what weapons am I carrying?" was
     // dropping HP/level/abilities entirely and answering inventory only.
@@ -1817,9 +1829,11 @@ export function handleMetaQuestion(text, world) {
       if (world.meta?.mode === 'escape' && eMax > 0) {
         out.push(`Hit points: ${Number(world.meta?.escapeHp) || 0} of ${eMax}.`);
       }
-    } else if (!wantsGear) {
-      out.push(`The fine print — your scores and your kit — is yours to read on your sheet.`);
     }
+    // (N-1) Killed the "read your sheet" deflect (gate-5 deflect-to-sheet): a
+    // pure identity question is fully answered by the lines above; an explicit
+    // kit/stats/HP ask routes to the inventory/equipment/stats branches before
+    // here, and "what am I (even) carrying?" now matches META_INVENTORY.
     return out.join(' ');
   }
 

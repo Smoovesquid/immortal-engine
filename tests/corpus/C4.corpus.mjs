@@ -279,4 +279,43 @@ export default [
     ],
     source: 'opus-gate-2026-06-21-gate4-postH77.md (gate 4, Lore-hound t2/t9/t10/t11) — C4 empty-success in the resolve path; reproduced LLM-off village_baker; fixed H-78',
   },
+
+  // ---- LOCKED — object content-read with nothing modeled to read (N-1) ----
+  {
+    id: 'C4-007',
+    capability: 'C4',
+    // gate-5 Newbie t8: "open the book and see what's inside" → "it goes your way"
+    // (a contentless d20 success). The engine models no readable object content,
+    // so a content-read can never deliver a real fact. N-1 extends H-78's
+    // empty-success machinery to OBJECTS: a content-read honest-declines with NO
+    // roll (intercepted before the trivial gate AND resolveMove), never inventing
+    // what the text says (the C9 rail). Exploration/loot ("open the chest/door")
+    // keeps its normal path — see diverge.
+    status: 'locked',
+    fixture: 'village_baker',
+    intent: "read/open an object for its CONTENT with nothing modeled to read → honest decline, NO roll, never a contentless success",
+    paraphrases: [
+      "open the book and see what's inside",
+      "crack open the book and see what's in it",
+      "open it and see what's written",
+      "look inside the journal",
+      "peek inside the book",
+      "I flip the journal open to read it",
+    ],
+    assert: {
+      surface_matches: [
+        /no-content|nothing written to deliver/i,           // deterministic no-content sentinel
+      ],
+      surface_excludes: [
+        /\[roll:/,                                           // no fake roll on a content-read
+        /goes your way|see it through|without any trouble/i, // the empty-success / trivial filler it used to emit
+      ],
+    },
+    diverge: [
+      { text: "I open the chest and see what's inside", reason: "exploration/loot, not reading text — keeps its normal (trivial/resolve) path" },
+      { text: "I open the door and see what's inside", reason: "movement/exploration, not reading" },
+      { text: "I search the room", reason: "a search action — rolls, not a content-read decline" },
+    ],
+    source: "opus-gate-2026-06-21.md (Newbie t8 'open the book' → 'it goes your way') — N-1 Tier-0; reproduced LLM-off village_baker, fixed N-1",
+  },
 ];

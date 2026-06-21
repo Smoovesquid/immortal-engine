@@ -2262,6 +2262,16 @@ function playerMoveCore(world, packsById, text) {
     if (fsc) return fsc;
   }
 
+  // (N-1) Reading an object for content with nothing modeled to read → honest
+  // decline (words only, no roll), placed before the trivial gate so an
+  // imperative "open the book" can't auto-"succeed" content-free, and before
+  // resolveMove so a question form can't roll a fake success. Real furniture
+  // opens (handled just above) and exploration/loot ("open the chest") are
+  // excluded by isUngroundedObjectRead, so they keep their normal paths.
+  if (!targetedCombatAction && !declaredNpcViolence && isUngroundedObjectRead(w, text)) {
+    return { world: w, output: { narration: objectReadDecline(w, text), mechanics: '[read → no-content | nothing written to deliver, no roll]' } };
+  }
+
   if (isTrivialIntent(text) || classifyTrivial(text)) {
     w = pushEvent(w, {
       kind: 'resolution',
@@ -5135,6 +5145,42 @@ function noInfoCheckResult() {
     deltas: [{ op: 'time', key: 'turn', by: 1 }],
     mechanicsLine: '[info-check → no-record | nothing grounded to deliver, no roll]'
   };
+}
+
+// (N-1) Reading an object for its CONTENT — a book/note/sign's text, "open it
+// and see what's inside" — is the C4 empty-success class applied to objects:
+// the engine models no readable object content, so a content-read can never
+// deliver a real fact. It is intercepted BEFORE the trivial gate (which would
+// auto-"success" the open) and the resolve gate (which would roll a fake "it
+// goes your way"), and honest-declines — never inventing what the text says
+// (the C9 rail). objectReadDecline is the words; isUngroundedObjectRead the gate.
+// NB: deliberately excludes "ledger" (the roll-ledger — owned by the roll-recall
+// handlers) and "map" (a navigation aid — "read the map" wants directions), so a
+// content-read decline never steals those. (N-1)
+const OBJ_TEXT_NOUN_RE = /\b(?:book|tome|journal|diary|note|letter|scroll|parchment|inscription|sign|page|placard|plaque|tablet|writing|message|missive|manuscript|document|papers?)\b/i;
+const OBJ_READ_VERB_RE = /\b(?:read|peruse|decipher|leaf\s+through|flip\s+through|pore\s+over)\b/i;
+const OBJ_CONTENT_PEEK_RE = /\bwhat(?:'?s|s| is)\s+(?:inside|in\s+it|in\s+there|written|on\s+it)\b|\bwhat\s+(?:does\s+)?it\s+says?\b|\b(?:see|look|peek|peer|glance)\s+(?:inside|into)\b/i;
+// Exploration/search targets — "open the door / chest and see what's inside" is
+// movement/looting, NOT reading. Keep those on the normal resolve path.
+const OBJ_EXPLORE_TARGET_RE = /\b(?:door|doorway|gate|room|chamber|hall|building|house|hut|chest|box|crate|barrel|cabinet|drawer|cupboard|closet|container|sack|bag|pouch|pocket|window|hatch|lid|trapdoor|passage|corridor|wardrobe|coffer|strongbox)\b/i;
+function isUngroundedObjectRead(world, text) {
+  const t = String(text || '');
+  if (!t.trim()) return false;
+  if (OBJ_EXPLORE_TARGET_RE.test(t)) return false;          // exploring/looting, not reading
+  const namedText = OBJ_TEXT_NOUN_RE.test(t);
+  const readVerb = OBJ_READ_VERB_RE.test(t);
+  const peek = OBJ_CONTENT_PEEK_RE.test(t);
+  const openCue = /\b(?:open|crack|flip|leaf|peek|peer|glance)\b/i.test(t);
+  // a read verb on a text object OR with a content-peek; or a content-peek paired
+  // with an open/look cue (covers "open it and see what's inside", bare pronoun).
+  return (readVerb && (namedText || peek)) || (peek && (namedText || openCue));
+}
+function objectReadDecline(world, text) {
+  return `Wizard: ${pickVariant([
+    `You look for something to read, but there's nothing here that means anything to you — no words, no marks you can make sense of.`,
+    `Whatever you hoped was written, it isn't there to find; nothing here gives you a thing to go on.`,
+    `You turn it over and come up empty — there's nothing set down here you can read.`,
+  ], world, 'read:no-content')}`;
 }
 
 // An explicit in-fiction non-answer, escalating under repeated pressure

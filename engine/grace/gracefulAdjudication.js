@@ -413,7 +413,7 @@ const META_ROLL_RECALL = /\b(?:i (?:rolled|got|said|had)(?:\s+a)?|my roll was(?:
 // post-H-49 gate, Confused newbie: this exact line rolled a real mixed-margin
 // check and got a content-free "it half-works" hedge instead of a non-rolling
 // acknowledgment.)
-const META_SYSTEM_CHECKIN = /\b(?:you'?re\s+just\s+repeating\s+yourself|you\s+keep\s+saying\s+the\s+same\s+thing|that'?s\s+the\s+same\s+answer\s+as\s+before|you\s+said\s+that\s+already)\b[\s\S]{0,40}?\b(?:okay|ok|there|broken|stuck|glitch(?:ing)?)\b/i;
+const META_SYSTEM_CHECKIN = /\b(?:you'?re\s+(?:just\s+)?repeating\s+yourself|you\s+keep\s+saying\s+the\s+same\s+thing|that'?s\s+the\s+same\s+answer\s+as\s+before|you\s+said\s+that\s+already|same\s+(?:line|answer|outcome|result|response)[\s\S]{0,20}?(?:twice|three\s+times|\d+\s+times)|you'?re\s+stuck\s+in\s+a\s+loop)\b[\s\S]{0,40}?\b(?:okay|ok|there|broken|stuck|glitch(?:ing)?|everything\s+(?:working|ok(?:ay)?|alright|functioning))\b/i;
 // Rules-confirmation — a question about the DAMAGE RULE itself ("do I add my
 // MIGHT to melee damage?", "is a hit 1d6+1?", "confirm that's the right
 // mod"), never an in-fiction action and never rolled. Distinct from

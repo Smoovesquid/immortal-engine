@@ -66,7 +66,7 @@ export default [
     // These phrasings have the right semantic intent but the regex doesn't fire:
     // "You're repeating yourself. Is everything working?" → rolls (NAT1)
     // "Same line, three times. You okay in there?" → rolls
-    status: 'target',
+    status: 'locked',
     fixture: 'village_baker',
     intent: 'repetition check-in phrasings that should trigger handler but currently roll',
     paraphrases: [
@@ -129,7 +129,7 @@ export default [
     // "you're repeating yourself are you glitching" → rolls
     // "You're stuck in a loop. Broken?" → rolls
     // These have the right words but the handler doesn't fire.
-    status: 'target',
+    status: 'locked',
     fixture: 'village_baker',
     intent: '"glitching" variants that should trigger handler but currently roll',
     paraphrases: [

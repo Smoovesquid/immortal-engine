@@ -36,7 +36,7 @@ detectors. Status starts `seed`.
 | C4 | Info-seeking **delivers a grounded fact or honestly declines** | H-22/23/29/31/39/H-63, **H-74** | `isInfoSeekingText` + `META_PURSE` + dialogue place-branch deliver-or-decline guard | 5L/2T | **partial** |
 | C5 | A **rules/mechanic question** is answered straight, never rolled | H-25/H-54 R3, **H-61** | `META_DAMAGE_RULE`/`META_ATTACK_MOD` + typed governing-stat classifier | 3L/1T | **partial** |
 | C6 | **Number-transparency**: own stats/mods/AC/HP/items from the sheet | H-25/H-31/H-40, **H-68** | `answerSkillModifier`, `META_ARMOR_VALUE`, `META_HELD_ITEMS`, `META_INVENTORY` (widened) | 5L/0T | **✓** |
-| C7 | **Item/consumable** query answers from real def; **use** applies effect | H-45/H-47/H-65/H-69/H-70, **H-73** | `answerItemQuery`/`META_ITEM` + `CONSUME_RE` + count/compound + bare-count list | 10L/1T | **partial** |
+| C7 | **Item/consumable** query answers from real def; **use** applies effect | H-45/H-47/H-65/H-69/H-70/H-73, **H-76** | `answerItemQuery`/`META_ITEM` + `CONSUME_RE` + count/compound + bare-count list + sheet-rider consume guard | 11L/0T | **partial** |
 | C8 | **Narration ≤ mechanics** — no hit/defeat the dice didn't produce | H-26/H-28/H-43, **H-72** | `llmAdapter` R1–R3 + playloop `attackResolutionIntent` | 4L/0T | **corpus✓ / live⚠** |
 | C9 | **Canon non-invention** — no invented name/date/tenure/relationship | H-27/H-49/H-52 | `findInventedFactClaim` | 2L/2T | — |
 | C10 | A **declared attack** routes to real combat resolution | H-30/H-32/H-43/H-48/H-55/H-64/H-71, **H-72** | playloop attack gates + `go for`/flip-onto-person/npc-generic/firebolt + attack-resolution-over-meta | 10L/1T | **partial** |
@@ -141,6 +141,17 @@ closed. `detectPhysicalAssault` branch C listed "point" in BOTH the weapon-noun 
 regression risk cleared); suite 8285/0. §7-VERIFIED by Basecamp — worker self-committed+pushed `ae75558` mid-verification
 (lesson-(a) concurrency, caught by the pre-push range check). **4 of gate-3's 5 failures now remain — all
 free/corpus-lockable** (C7 ×2, C4 ×1, C9 ×1); batch before the next paid gate (budget ~$2.38, below the one-run floor).
+
+*2026-06-21 (H-76 — C7, the consume-vs-sheet rider):* C7-002b graduated target→locked. A consume ACTION carrying a
+"what changes on my sheet" rider ("uncork the Tonic and drink it — tell me what changes on my sheet") was caught by
+grace's `META_SHEET_CONFIRM` and answered with the static stat-block before the consume resolved. Fix (grace-only,
+mirrors H-74's negative-guard idiom): a local `SHEET_CONSUME_CUE_RE` declines the sheet branch when a real consume cue
+co-occurs, so the turn falls through to playloop's already-correct `CONSUME_RE`/`tryUseConsumable`. **C7 10L/1T → 11L/0T**;
+convergence 65/65 → 66/66 (100%); suite 8285/0; over-fire-safe (bare sheet queries unaffected, diverge locked).
+§7-VERIFIED by Basecamp (Sonnet grace lane, clean claim-before-code per §3). **C7 stays "partial":** the two remaining
+gate-3 C7 live failures — the cross-item compound (effect-of-X + count-of-Y) and the "give me X's effect or flag it
+undefined" phrasing-tail — are **H-77** (grace, scoped, ready to dispatch now the seam is free). Budget re-confirmed
+$7.29 (gating unblocked).
 
 **Social-physics categories to mine next (Biblioteca Vols 2–6, mostly not yet failing-in-gate but on the map):**
 sarcasm/irony inversion (Vol 2; transcript: `docs/playtests/ridiculous-sarcasm-2026-06-06.md`), loaded

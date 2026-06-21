@@ -1855,7 +1855,7 @@ function playerMoveCore(world, packsById, text) {
       const targetedViolentAction = isTargetedViolentCombatAction(w, text);
       const explicitAction = improvisedCombatAction || targetedViolentAction || /\b(strike|attack|swing|stab|shoot|slash|hit|beat|smite|fireball|fire\s?bolt|firebolt|blast|cast|rage|surge|guard|ward|cover|throw|hurl|lob|fling|toss)\b/i.test(String(text || ''));
       const asksQuestion = isQuestionShaped(text) || /\?/.test(String(text || ''));
-      if (isMetaQuestion(text) || (asksQuestion && escVerb !== 'parley' && !explicitAction)) {
+      if (!attackResolutionIntent(w, text) && (isMetaQuestion(text) || (asksQuestion && escVerb !== 'parley' && !explicitAction))) {
         const metaAnswer = isMetaQuestion(text) ? handleMetaQuestion(text, w) : null;
         let answer = metaAnswer || combatStatusAnswer(w);
         // "Look around" mid-fight: the steel comes first, the scenery second.
@@ -1909,6 +1909,16 @@ function playerMoveCore(world, packsById, text) {
         return {
           world: w,
           output: { narration: 'Wizard: Not while something is trying to kill you. Finish this first.', mechanics: '[combat:table-talk]' }
+        };
+      }
+      // Drawing/readying a weapon mid-fight is preparation, not a swing. The
+      // escape resolver defaults unknown text to a strike, so "I reach for
+      // my weapon" needs to be stopped here before it becomes a phantom
+      // attack (H-72).
+      if (!explicitAction && isCombatDrawWeaponNonAction(text)) {
+        return {
+          world: w,
+          output: { narration: 'Wizard: Steel finds your hand. Name the strike when you mean to throw it.', mechanics: '[combat:table-talk]' }
         };
       }
       // 1b — mid-combat target-switch: a NEW present NPC named in an attack joins
@@ -5892,6 +5902,29 @@ function runCompanionTurns(world, beats) {
 function isFleeIntent(text) {
   const t = String(text || '').toLowerCase();
   return /\b(flee|retreat|disengage|run\s+away|run\s+for\s+it|break\s+off)\b/.test(t);
+}
+
+// A declared or demanded attack must resolve to a real strike even when it
+// carries a stats rider ("roll it — give me the d20, the modifier, the
+// total"). Without this, isMetaQuestion's META_ATTACK_MOD/META_DAMAGE_RULE
+// detectors hijack the turn into table-talk before combat ever resolves
+// (H-72). Anchored on the VERB form ("I attack") or an explicit roll-demand
+// tied to an attack — never the bare noun, so pure stats questions like
+// "what's my attack modifier?" still route to meta.
+function attackResolutionIntent(world, text) {
+  if (!world?.combat?.active) return false;
+  const t = String(text || '');
+  if (/\bi\s+(?:attack|strike|stab|swing|slash|cut|lunge|shoot|fire|loose|hurl|cast)\b/i.test(t)) return true;
+  const rollDemand = /\broll\s+it\b|\bd20\s+result\b|\bgive\s+me\s+the\s+d20\b|\bgive\s+me\s+(?:the\s+)?(?:total|result)\b|\byou\s+(?:still\s+)?didn'?t\s+roll\b|\broll\s+(?:my|the)\s+attack\b/i.test(t);
+  if (!rollDemand) return false;
+  return /\battack\b|\bstrike\b|\bmy\s+blade\b/i.test(t);
+}
+
+function isCombatDrawWeaponNonAction(text) {
+  const t = String(text || '').toLowerCase();
+  if (!t) return false;
+  if (ANY_VIOLENCE.test(t)) return false;
+  return /\b(?:reach for|reach to|draw|drawing|ready|readying|unsheathe|unsheathing|grip|gripping)\b[^.!?]*\b(?:weapon|blade|sword|dagger|axe|bow|staff|wand)\b/.test(t);
 }
 
 function isCombatSceneObjectAction(text) {

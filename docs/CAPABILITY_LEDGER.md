@@ -36,7 +36,7 @@ detectors. Status starts `seed`.
 | C4 | Info-seeking **delivers a grounded fact or honestly declines** | H-22/23/29/31/39/H-63, **H-74** | `isInfoSeekingText` + `META_PURSE` + dialogue place-branch deliver-or-decline guard | 5L/2T | **partial** |
 | C5 | A **rules/mechanic question** is answered straight, never rolled | H-25/H-54 R3, **H-61** | `META_DAMAGE_RULE`/`META_ATTACK_MOD` + typed governing-stat classifier | 3L/1T | **partial** |
 | C6 | **Number-transparency**: own stats/mods/AC/HP/items from the sheet | H-25/H-31/H-40, **H-68** | `answerSkillModifier`, `META_ARMOR_VALUE`, `META_HELD_ITEMS`, `META_INVENTORY` (widened) | 5L/0T | **✓** |
-| C7 | **Item/consumable** query answers from real def; **use** applies effect | H-45/H-47/H-65/H-69/H-70/H-73, **H-76** | `answerItemQuery`/`META_ITEM` + `CONSUME_RE` + count/compound + bare-count list + sheet-rider consume guard | 11L/0T | **partial** |
+| C7 | **Item/consumable** query answers from real def; **use** applies effect | H-45/H-47/H-65/H-69/H-70/H-73/H-76, **H-77** | `answerItemQuery`/`META_ITEM` + `CONSUME_RE` + count/compound + bare-count list + sheet-rider guard + effect-cue/`ITEM_EFFECT_DEMAND_RE` widen | 13L/0T | **partial** |
 | C8 | **Narration ≤ mechanics** — no hit/defeat the dice didn't produce | H-26/H-28/H-43, **H-72** | `llmAdapter` R1–R3 + playloop `attackResolutionIntent` | 4L/0T | **corpus✓ / live⚠** |
 | C9 | **Canon non-invention** — no invented name/date/tenure/relationship | H-27/H-49/H-52 | `findInventedFactClaim` | 2L/2T | — |
 | C10 | A **declared attack** routes to real combat resolution | H-30/H-32/H-43/H-48/H-55/H-64/H-71, **H-72** | playloop attack gates + `go for`/flip-onto-person/npc-generic/firebolt + attack-resolution-over-meta | 10L/1T | **partial** |
@@ -152,6 +152,19 @@ convergence 65/65 → 66/66 (100%); suite 8285/0; over-fire-safe (bare sheet que
 gate-3 C7 live failures — the cross-item compound (effect-of-X + count-of-Y) and the "give me X's effect or flag it
 undefined" phrasing-tail — are **H-77** (grace, scoped, ready to dispatch now the seam is free). Budget re-confirmed
 $7.29 (gating unblocked).
+
+*2026-06-21 (H-77 — C7, the two effect-query phrasing-tails):* the remaining gate-3 C7 failures closed. (A) the
+cross-item compound ("what's the Tonic do — and how many rations") dropped the effect because `ITEM_EFFECT_CUE_RE`
+missed the "what's X do" contraction → widened it. (B) "give/tell me X's mechanical effect or flag it undefined"
+matched no `META_ITEM*` detector → added `ITEM_EFFECT_DEMAND_RE` (first alt "give/tell me … effect" catches the gate
+phrasing AND the bare demand — both verified → "heals 2d4"; second alt requires the "…undefined" tail, deliberately
+narrow so it does NOT sweep the C7-003 diverge "Tell me what the Tonic does"). C7-008/009 locked → **C7 11L/0T → 13L/0T**,
+convergence 66→68 (100%), suite 8285/0, determinism green. §7-VERIFIED by Basecamp incl. an empirical `playerMove` probe.
+**RESIDUAL (pre-existing, NOT from H-77, low-priority):** "Tell me what the Tonic does." rolls (`[roll:11 vs DC:12]`)
+instead of stating the effect — no cue verb any `META_ITEM*` detector catches — so C7-003's diverge *reason* ("DM states
+real effect proactively") is inaccurate (reality rolls; the diverge still passes because no *correction* fires). A future
+C7 packet should route "tell me what X does" → effect query and correct that diverge reason. **All three C7 gate-3
+fixes (H-76/H-77) are corpus-closed → confirm them live in the next gate.**
 
 **Social-physics categories to mine next (Biblioteca Vols 2–6, mostly not yet failing-in-gate but on the map):**
 sarcasm/irony inversion (Vol 2; transcript: `docs/playtests/ridiculous-sarcasm-2026-06-06.md`), loaded

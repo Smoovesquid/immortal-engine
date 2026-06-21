@@ -1300,3 +1300,29 @@ other agents. (none active)
 - FINDING (IG-10 reframe): C13 was tagged a Tier-B / LLM-arbiter candidate in IG-10. H-67 shows the known absurd-input families are handled by the SAME deterministic Road-A machinery (the `RIDICULOUS` regex array) as every other capability — no Tier-B needed for these. The corpus is now 0-target, but C13 is the most phrasing-tail-prone capability by nature (infinite absurd space): ✓ means the regression corpus is closed, NOT that discovery is done — the gate should keep probing novel absurdities.
 - Remaining/next: none in the regression corpus; future C13 phrasings are a discovery-signal (gate) concern, not a known gap.
 - Rollback: revert `4124b46`
+
+2026-06-21T11:30:00Z — Basecamp (§7-verified; entry authored by queue owner)
+- Packet/seam: H-68 — C6 (number-transparency): widen `META_INVENTORY` + `META_ARMOR_VALUE`
+- Commit(s): `e007405` (Claude Sonnet 4.6, grace lane, self-pushed — correct for the grace lane)
+- Files changed: `engine/grace/gracefulAdjudication.js` (~10 lines), `tests/corpus/C6.corpus.mjs` (2 promotions)
+- Summary: C6 corpus 3L/2T → **5L/0T**. Widened `META_INVENTORY` with `list (every|all|my|each) (item|thing|piece|bit)s` ("List every item on me right now") and `META_ARMOR_VALUE` with `defen[cs]e (value|rating|number|score)` + `what ac` + `ac (does|do|for|from)` ("padded coat defense value", "what AC does padded coat give me"). Detection-only — the answer paths already existed (sibling locked cases prove the inventory + "Your Armor is 13" readbacks). BONUS (worker initiative): reordered the weapon-damage compound branch (handler ~:1145) to check `WEAPON_AC_MISCONCEPTION_RE` BEFORE `META_ARMOR_VALUE`, so a weapon-scoped damage+AC compound still gets the "weapons don't carry an AC" clarification, not the player's AC. C6-001-target→C6-004 (locked), C6-002-target→C6-005 (locked).
+- §7 verdict (Basecamp, independent): **VERIFIED.**
+  - Scope: `git show e007405` = grace + C6 corpus only. No `Math.random`/`Date.now`/`WORLD_VERSION`.
+  - `npm run convergence` — C6 5/5 locked, 0/0 target. Overall 100.0% (57/57). No capability regressed.
+  - Full suite `node --test` 8285/0; determinism U19/U21/U22/U27/U30 6/6.
+  - Over-fire probe (off-corpus): "I put on the Padded coat." → trivial equip (not a readback); "Is my Worn Blade sharp enough…" / "Can my Padded coat stop a crossbow bolt?" → roll (capability ask, not readback); "list every reason this village is failing" → NOT treated as inventory; genuine fires correct.
+- MINOR RESIDUAL (finding, NOT a blocker): standalone "what's the defense value on my Worn Blade?" now returns "Your Armor is 13" — the `defen[cs]e value/rating` widen over-fires on non-player "defense value" phrasings (a weapon's/village's), uncovered by the corpus (the worker's reorder only guards the weapon-DAMAGE compound, not a standalone weapon-defense ask). Candidate micro-guard: scope that alt to player/armor context, or add a diverge. Low frequency; left for a future C6 touch.
+- Rollback: revert `e007405`
+
+2026-06-21T11:30:00Z — Basecamp (§7-verified; entry authored by queue owner)
+- Packet/seam: H-69 — C7-002a (item USE): widen `CONSUME_RE` for action-phrased tonic USE
+- Commit(s): `9f355ce` (Claude Sonnet, playloop lane). LANE-DISCIPLINE SLIP: the packet said commit-local / Basecamp-pushes, but it was pushed to origin before my verify. Verified after-the-fact — clean, so no revert; flagging the slip so the playloop lane reverts to commit-local next time.
+- Files changed: `engine/playloop.js` (`CONSUME_RE`, ~6 lines), `tests/corpus/C7.corpus.mjs` (split)
+- Summary: `CONSUME_RE` widened with "uncork" + a noun-before-verb alternation (consumable-noun `.*` drink|quaff|swig|swallow|drain) so "uncork the tonic and swallow it down" reaches `tryUseConsumable` instead of rolling. New-alt verb list kept tight (no bare "down"/"gulp") to avoid incidental tonic mentions. Corpus SPLIT: C7-002-target → C7-002a (locked: the regex-fixable paraphrase; assert tightened to `/\[consume:|already whole/` so the query diverge "What does the Tonic do?" no longer holds) + C7-002b (target, DEFERRED: the two "…what changes on my sheet" paraphrases, blocked by the stat-sheet meta intercept firing before `tryUseConsumable` — shared root cause with C8-001/C10-002).
+- §7 verdict (Basecamp, independent): **VERIFIED.**
+  - Scope: `git show 9f355ce` = playloop + C7 corpus only. No `Math.random`/`Date.now`/`WORLD_VERSION`.
+  - `npm run convergence` — C7 7/7 locked, 0/1 target (C7-002b deferred). Overall 100.0% (57/57). No capability regressed.
+  - Full suite 8285/0; determinism 6/6. Read the full diff: the corpus change is a clean split, NOT coverage-gaming.
+  - Over-fire probe (off-corpus): "What does the Tonic of grit do?" → describe (heals 2d4), NOT consumed; "I tilt my head at the tonic seller." / "the tonic seller went down the road" / "I gulp nervously near the tonic shelf." → no consume; genuine "uncork…swallow" → `[consume:unneeded]` at full HP.
+- Remaining/next: C7-002b → the meta-gate-precedence cross-lane packet (with C8-001, C10-002).
+- Rollback: revert `9f355ce`

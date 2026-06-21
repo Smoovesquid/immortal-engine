@@ -6172,7 +6172,11 @@ function detectPhysicalAssault(world, text) {
     }
   }
   // C — a blade brought TO the body (threat/assault), not handed over.
-  if (/\b(?:dagger|knife|blade|sword|point|edge|axe|hatchet|spear|cleaver|shiv|dirk|machete)\b/i.test(t)
+  // "point"/"edge" are blade-PARTS, not weapons in their own right — a genuine
+  // blade-threat names the weapon ("press my dagger to her throat"); without
+  // a real weapon noun, "point" here is just doubling as the bring-verb below
+  // and falsely fires on "point me to <NPC>" directions requests. (H-75)
+  if (/\b(?:dagger|knife|blade|sword|axe|hatchet|spear|cleaver|shiv|dirk|machete)\b/i.test(t)
       && /\b(?:press|hold|put|jam|dig|set|lay|raise|level|point|thrust|drive|bring|touch)\b/i.test(t)
       && (m = t.match(/\b(?:to|against|at|across|under|on)\s+(.+)/i))) {
     const npc = hit(m[1]); if (npc) return { npc, kind: 'blade' };

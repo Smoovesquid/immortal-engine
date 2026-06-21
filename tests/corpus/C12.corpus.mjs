@@ -148,4 +148,44 @@ export default [
     ],
     source: 'opus-gate-2026-06-20-postH54-H55.md [Confused newbie, turns 7-8]; stageC-movement-2026-06-05.md [findings]; locked H-62 2026-06-21',
   },
+
+  // ---- LOCKED — "point me to <NPC>" is directions, not a blade-threat ----
+  {
+    id: 'C12-004',
+    capability: 'C12',
+    // Root cause: detectPhysicalAssault branch C ("a blade brought TO the body")
+    // matched "point" as BOTH the weapon-noun ("point" in the blade-part list)
+    // AND the bring-verb ("point" in press/hold/.../point/thrust list), so
+    // "point me to Mira" + trailing "to Mira" satisfied all three legs and
+    // mis-fired a real strike on the NPC. Fix: removed "point"/"edge" (blade
+    // PARTS, not weapons) from the weapon-noun alternation — a genuine
+    // blade-threat must still name a real weapon ("dagger", "sword", etc).
+    // Post-fix outputs (village_baker, LLM off): all five paraphrases resolve
+    // as an ordinary skill roll or scenic observe — never [strike:.
+    status: 'locked',
+    fixture: 'village_baker',
+    intent: '"point me to <NPC>" is a directions/navigation request — must never be mis-detected as a blade brought to the body and start combat',
+    paraphrases: [
+      "Can you point me to Mira the baker?",
+      "point me to Mira",
+      "Can you point me to the baker?",
+      "point me to the elder",
+      "show me the way to Mira",
+    ],
+    assert: {
+      surface_matches: [
+        /roll|observe only|Wizard:/i,
+      ],
+      surface_excludes: [
+        /\[strike:/i,
+        /swing your worn blade/i,
+        /\[combat/i,
+      ],
+    },
+    diverge: [
+      { text: "I point my sword at the baker.", reason: "a real weapon noun (sword) is named — genuine blade-threat, must still resolve as a strike" },
+      { text: "I press my dagger to her throat.", reason: "a real weapon noun (dagger) is named — genuine blade-threat, must still resolve as a strike" },
+    ],
+    source: 'opus-gate-2026-06-21.md [Confused newbie, turn 5]; H-75',
+  },
 ];

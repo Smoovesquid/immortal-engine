@@ -42,8 +42,8 @@ detectors. Status starts `seed`.
 | C10 | A **declared attack** routes to real combat resolution | H-30/H-32/H-43/H-48/H-55, **H-64** | playloop attack gates + `go for`/`flip-onto-person`/npc-generic fixes | 8L/2T | **partial** |
 | C11 | **Confrontation under pressure** → in-character NPC reaction | H-42 | `isConfrontationChallenge`, `confrontationReaction` | 3L/0T | — |
 | C12 | **Movement/travel intent** resolves in fiction, no travel-gate bounce | THE_DM_TEST residuals, **H-62** | playloop talkRef-before-free-movement + `extractFindPersonRef` | 3L/0T | **✓** |
-| C13 | **Absurd / out-of-bounds** input declines in-character | IG-10 (parked) | — (Tier-B candidate) | 4L/3T | — |
-| C14 | **Meta / system check-in** acknowledged, no roll | H-51 | `META_SYSTEM_CHECKIN` | 2L/3T | — |
+| C13 | **Absurd / out-of-bounds** input declines in-character | IG-10, **H-67** | `tryRidiculous`/`RIDICULOUS` (playloop, Road A) | 4L/0T | **✓** |
+| C14 | **Meta / system check-in** acknowledged, no roll | H-51, **H-66** | `META_SYSTEM_CHECKIN` (widened) | 4L/1T | **partial** |
 | C15 | **Active combat is reflected, not narrated as calm conversation** | gate 2026-06-20 → **H-58** | `playloop` `isCombatConversationNonAction` guard | 2L/0T | **✓** |
 
 **Findings log.** *2026-06-20:* H-56 (`3e214ec`) §7-verified — closes the `U219` referent shapes with no
@@ -72,6 +72,19 @@ defeated-NPC-spoke-as-alive · C9×1 invented-oath) = phrasing-tail of known cat
 rate ≈ 1 new category → finite and closeable. The **C2 graduation held** in live play (no referent failures, no
 over-fire). C15 may be a real engine bug (combat state dropped when the player pivots to dialogue mid-fight) —
 flagged for the supervised pass.
+
+*2026-06-21 (H-66 C14 + H-67 C13 — two file-disjoint grace/playloop graduations, both §7-VERIFIED by Basecamp,
+dispatched in parallel):* **C14** (system check-in) 2L/3T → 4L/1T by widening `META_SYSTEM_CHECKIN` (phrasing
+coverage on both halves; the repetition-callout + check-in structure guard kept intact). **C13** (absurd/
+out-of-bounds) 4L/3T → **4L/0T** by widening the playloop `RIDICULOUS` array (3 target families closed, merged
+into their locked siblings with diverge guards preserved; an independent off-corpus over-fire probe ran 5/5
+resolve / 4/4 decline). **IG-10 reframe:** C13 was a *presumed* Tier-B / LLM-arbiter capability — it is in fact
+handled by the same deterministic Road-A detector as every other capability; no Tier-B needed for the known
+families (✓ = the regression corpus is closed, NOT that discovery is done — keep the gate probing novel
+absurdities). Sole residual is cross-lane (playloop): **C14-003** (combat-context check-in needs the handler
+hoisted ahead of the combat loop) — joins the accumulating cross-lane cleanup packet. Overall convergence
+52/52 → 54/54, 100% throughout. Process note: the H-67 commit was found sitting unverified on local HEAD by the
+pre-push `origin/v2-polish..HEAD` check (parallel-lane workers commit into the shared tree) — verified before push.
 
 **Social-physics categories to mine next (Biblioteca Vols 2–6, mostly not yet failing-in-gate but on the map):**
 sarcasm/irony inversion (Vol 2; transcript: `docs/playtests/ridiculous-sarcasm-2026-06-06.md`), loaded

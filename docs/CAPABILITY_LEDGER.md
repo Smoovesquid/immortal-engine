@@ -86,7 +86,7 @@ hoisted ahead of the combat loop) — joins the accumulating cross-lane cleanup 
 52/52 → 54/54, 100% throughout. Process note: the H-67 commit was found sitting unverified on local HEAD by the
 pre-push `origin/v2-polish..HEAD` check (parallel-lane workers commit into the shared tree) — verified before push.
 
-*2026-06-21 (gate 2 under the convergence framework — `docs/playtests/opus-gate-2026-06-21.md`, 18/48 raw):* the
+*2026-06-21 (gate 2 under the convergence framework — `docs/playtests/opus-gate-2026-06-21-pre-judge-hardening.md`, 18/48 raw):* the
 DISCOVERY signal = **0 new capabilities** (baseline opened C15; this opens none → the 1st zero-discovery gate).
 All 18 HARD failures map onto C4/C5/C7/C8/C9/C10/C12/C15; the 10→18 raw jump is the ruler bouncing (this run's
 Rules Lawyer drilled the Tonic vein ~9 turns, the Chaos-griefer firebolt-in-combat). **#1 finding
@@ -122,7 +122,7 @@ instead of delivering a fact or honestly declining (reproduces LLM-off → corpu
 deliver-or-decline gap, distinct from C4-001b's "this village" common-knowledge false-positive). **Lesson: trust
 the judge-free corpus + canon ground-truth over the gate's HARD tags (Vol 10/14); the gate is a noisy pointer.**
 
-*2026-06-21 (gate 3 — HARDENED judge — `docs/playtests/opus-gate-2026-06-21.md`):* **5/48, down from run-1's
+*2026-06-21 (gate 3 — HARDENED judge — `docs/playtests/opus-gate-2026-06-21-gate3-hardened.md`):* **5/48, down from run-1's
 18/48** on the same seed/personas. The reference-guided judge fix (commit `6e39d5c`: `world.conversation.lastRoll`
 + ROLL-RECALL clause) **validated the false-positive thesis** — ~13 of run-1's 18 were judge artifacts; the
 roll-recall false-positive is gone, Rules-Lawyer 8→2, **Chaos-griefer 12/12 clean.** The gate is now a trustworthy
@@ -165,6 +165,26 @@ instead of stating the effect — no cue verb any `META_ITEM*` detector catches 
 real effect proactively") is inaccurate (reality rolls; the diverge still passes because no *correction* fires). A future
 C7 packet should route "tell me what X does" → effect query and correct that diverge reason. **All three C7 gate-3
 fixes (H-76/H-77) are corpus-closed → confirm them live in the next gate.**
+
+*2026-06-21 (gate 4 — post H-75/76/77, HARDENED judge, `docs/playtests/opus-gate-2026-06-21.md`):* **7/48** (seed
+glass-harbor, same personas as gate 3's 5/48; gate 3 preserved at `opus-gate-2026-06-21-gate3-hardened.md`). **Discovery
+= 0 new capabilities — 3rd consecutive zero-discovery gate → the loop is CLOSED on discovery.** All 7 map to known rows:
+**C4 ×5** (empty-success — an UNANSWERABLE info-question, "who carried me in last night / where was I found", a fact canon
+doesn't hold, gets routed to a generic d20 resolve that narrates a CONTENTLESS success — "it goes your way" / "something
+real to go on" / "it half-works" — instead of delivering a fact OR honestly declining; Lore t2/t4/t9/t11, + t10 = C1 the
+compound dropped the name half), **C2 ×1** (Lore t12: player INVENTED "Brae Copperforge"; engine resolved the intimidation
+against the real present NPC Corwin WITHOUT clarifying the mismatch — judge mis-tagged CANON_HALLUCINATION, but Corwin is
+real/present, so it's a referent-clarify gap, not invention), **C5 ×1** (RL t8: "which modifier applies to a melee strike —
+roll it now" → dumped the raw breakpoint table + full stat block, never said "MIGHT for melee", never rolled the demanded
+d6). **The fixes HELD live:** Newbie **12/12** (C12 attack-misroute gone), Rules-Lawyer **11/12** (gate-3's C7 Tonic-effect
+dodges gone), Chaos **12/12**. **The 5→7 is the ruler bouncing onto the DEFERRED C4 tail** — this run's Lore-hound drilled
+an unanswerable-info vein 6 turns deep, exposing **C4 empty-success in the RESOLVE/narration path** (distinct from H-74's
+dialogue place-branch: that was the dialogue handler; this is an info-question mis-routed to `resolve()` yielding a
+contentless success). **#1 NEXT PACKET (H-78):** route info-seeking questions to the deliver-or-decline path BEFORE the
+generic d20 resolve, so an unanswerable info-question honestly declines instead of "succeeding" with no content. Minor
+tail: C2 clarify-on-invented-referent (t12), C5 governing-stat-on-melee + honor-the-roll-demand (t8). Judge note (Vol 14):
+the hardened judge held (no roll-recall false-positives; sole loose tag = t12 invention-vs-referent) — trustworthy as a
+pointer, confirmed against the DM lines + canon. **Budget after: ~$4.44** (~$2.85 spent, 96 Opus calls).
 
 **Social-physics categories to mine next (Biblioteca Vols 2–6, mostly not yet failing-in-gate but on the map):**
 sarcasm/irony inversion (Vol 2; transcript: `docs/playtests/ridiculous-sarcasm-2026-06-06.md`), loaded

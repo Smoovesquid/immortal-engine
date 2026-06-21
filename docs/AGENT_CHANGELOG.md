@@ -1454,3 +1454,16 @@ other agents. (none active)
   - `node --test` — **8285/8285, 0 fail**.
 - Remaining/next: gate-4 t4 ("how can you not know your own name") + t12 (invented "Brae" → resolved vs present Corwin) are C2 identity, NOT C4 → H-79. C4-001b/C4-004b stay target (blocked outside grace lane).
 - Rollback: revert `9fa47bb` + this docs commit.
+
+2026-06-21T18:00:00Z — Basecamp (acting as worker; Tim away)
+- Packet/seam: H-79 — C2 clarify on an invented social-action target (gate-4 t12)
+- Commit(s): `a706ec8` (engine playloop + C2 corpus, atomic). Docs (this entry + ledger flip) separate.
+- Files changed: `engine/playloop.js` (ungrounded-referent guard at top of `resolveSocialAdjudication`), `tests/corpus/C2.corpus.mjs` (+locked C2-004).
+- Summary: gate-4 t12 — player addressed an INVENTED "Brae"; `socialTarget` (4884) does byName → byRole → **`return npcs[0]`**, so with no match it silently fell back to the present NPC and ran the intimidate against Corwin instead of clarifying. Added, after `detectApproach` confirms a social attempt and before `socialTarget`: `ungroundedNpcReferentForText(world, text, { assumeNpcCentered: true })` → if it returns an ungrounded ref, `npcReferentClarify` instead of resolving. `resolveSocialAdjudication` is only reached when `!w.scene?.dialogue` (caller gate, playloop:2285), so C11's `dialogue_active` confrontations never hit this path.
+- §7 verification (Basecamp self):
+  - Reproduced LLM-off FIRST (village_baker): "Brae, you keep dodging…" / "I intimidate Brae…" → `[social:intimidate]` vs the present Mira (the bug). Post-fix → `[clarify:referent]` ("no one named Brae … Mira Hearth is here — who do you mean?").
+  - Over-fire probe: present NPC by name ("I intimidate Mira"), by role ("the baker"), and "everyone"/"them" (stopwords) all still RESOLVE as social, not clarify; `dialogue_active` ("Brae, …") still deflects via the dialogue path (resolver skipped).
+  - `npm run convergence` — C2 **6/6 locked** (C2-004 new), **C11 3/3 held**, Overall **100% (70/70)**, exit 0.
+  - `node --test` — **8285/8285, 0 fail**.
+- Remaining/next: the in-DIALOGUE variant of the same bug (an invented name addressed while a dialogue is already open) routes through `askNpc`, not `resolveSocialAdjudication`, so it's a separate seam — not observed failing in gate 4, left unscoped. Only gate-4 RL t8 (C5 melee-stat) remains of the tail → H-80.
+- Rollback: revert `a706ec8` + this docs commit.

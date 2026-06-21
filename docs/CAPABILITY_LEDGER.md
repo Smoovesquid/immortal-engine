@@ -31,7 +31,7 @@ detectors. Status starts `seed`.
 | # | Capability (DM obligation) | Lineage / H-IDs | Current home (detectors to unify) | Corpus | Graduated |
 |---|---|---|---|---|---|
 | C1 | Answer **every part** of a compound query | H-25/H-31/H-40/H-54/**H-59** | `handleMetaQuestion` typed sub-intent decomposition | 4L/0T | **✓** |
-| C2 | A **named referent** must be grounded before the turn resolves | H-56, C2-grad, **H-60** | `ungroundedNpcReferentForText` + `hasPersonReferentSignal` + observe/travel hoist | 5L/0T | **✓** |
+| C2 | A **named referent** must be grounded before the turn resolves | H-56/C2-grad/H-60, **H-79** | `ungroundedNpcReferentForText` + `hasPersonReferentSignal` + observe/travel hoist + social-resolver guard | 6L/0T | **✓** |
 | C3 | A **declared check** gets a DC + roll | H-54 R4 | `META_EXPLICIT_CHECK_*` | 0L/3T | — |
 | C4 | Info-seeking **delivers a grounded fact or honestly declines** | H-22/23/29/31/39/H-63/H-74, **H-78** | `isInfoSeekingText` (+provenance widen) + `META_PURSE` + dialogue place-branch + pre-roll `isUngroundedInfoCheck` | 6L/2T | **partial** |
 | C5 | A **rules/mechanic question** is answered straight, never rolled | H-25/H-54 R3, **H-61** | `META_DAMAGE_RULE`/`META_ATTACK_MOD` + typed governing-stat classifier | 3L/1T | **partial** |
@@ -197,6 +197,15 @@ convergence 68→69 (100%); suite 8285/0; over-fire-safe (escort "take me to X" 
 LLM-off FIRST** — the empty-success only triggers when an NPC is addressed (bare forms went observe-only), the
 fixture-coverage lesson: the gate path needed the vocative/address form to reproduce. Remaining gate-4 tail: t4 + t12 =
 **C2 identity** (H-79 next), RL t8 = **C5 melee-stat** (H-80).
+
+*2026-06-21 (H-79 — C2, invented social-action target, gate-4 t12):* closed. The gate resolved an intimidate against
+the present NPC (Corwin) when the player addressed an invented "Brae" — `socialTarget` falls back to `npcs[0]` on no
+name/role match. Added an ungrounded-referent guard at the top of `resolveSocialAdjudication` (reusing
+`ungroundedNpcReferentForText` + `npcReferentClarify`); reached only out of an active dialogue, so C11's in-dialogue
+confrontations are untouched. **C2 5L/0T → 6L/0T** (C2-004 locked); convergence 69→70 (100%, C11 3/3 held); suite 8285/0;
+over-fire-safe (present NPC by name/role + "everyone"/"them" still resolve). Judge note (Vol 14): the gate mis-tagged
+this CANON_HALLUCINATION — it was a C2 referent-clarify gap (Corwin is real/present, nothing invented). Only RL t8
+(**C5 melee-stat**, H-80) remains of the gate-4 tail.
 
 **Social-physics categories to mine next (Biblioteca Vols 2–6, mostly not yet failing-in-gate but on the map):**
 sarcasm/irony inversion (Vol 2; transcript: `docs/playtests/ridiculous-sarcasm-2026-06-06.md`), loaded

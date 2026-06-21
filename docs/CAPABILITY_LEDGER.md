@@ -207,6 +207,22 @@ over-fire-safe (present NPC by name/role + "everyone"/"them" still resolve). Jud
 this CANON_HALLUCINATION — it was a C2 referent-clarify gap (Corwin is real/present, nothing invented). Only RL t8
 (**C5 melee-stat**, H-80) remains of the gate-4 tail.
 
+*2026-06-21 (H-80 — C5 melee governing-stat — SCOPED, NOT YET IMPLEMENTED):* gate-4 RL t8 ("which ability modifier
+applies to a melee strike — MIGHT or AGILITY? roll it now") reproduced LLM-off but DEFERRED as packet-scale (multi-layer)
+rather than rushed solo at session end. Worker-ready findings: **(1) RULE confirmed** — melee = MIGHT (`escapeCombat.js:16`:
+d20+MIGHT to hit, d6+MIGHT damage), ranged = AGILITY, AC = 12+AGILITY. **(2) THREE layers:** (a) the exact phrasing hits
+the breakpoint-table dump (`gracefulAdjudication.js:1407`, last-resort in the stat-mod handler) — needs a governing-stat-
+FOR-ATTACK answer paralleling `answerSkillModifier` (:1008, which maps SKILLS→stat only, not attacks); (b) "which stat to
+hit in melee?" / "what modifier applies to a melee attack?" fall through to a generic WITS resolve (same detector must
+intercept pre-roll); (c) in `active_combat` the question triggers a SWING (combat-meta gate intercepts — needs a rules-
+question exception à la H-72's `attackResolutionIntent`). (d) the unmet d6 roll-demand half (rolling damage outside
+combat — lowest priority; likely decline-with-explain). **FIX SHAPE:** add `META_ATTACK_GOVERNING_STAT` ("which/what
+(stat|modifier|ability) (applies to|governs|do I use for) a (melee|ranged) (strike|attack|hit)", incl. the "MIGHT or
+AGILITY?" framing) + an answer ("Melee strikes use MIGHT — d20+MIGHT to hit, d6+MIGHT damage; ranged uses AGILITY"),
+wired into `isMetaQuestion` + `handleMetaQuestion` BEFORE the breakpoint last-resort, and ahead of the combat swing for
+the in-combat case. Over-fire guard: a WHICH-question, NOT an attack declaration ("I strike with MIGHT" must still
+resolve as combat). Grace + playloop (in-combat half) → serialize. Lowest-severity gate-4 item; not blocking.
+
 **Social-physics categories to mine next (Biblioteca Vols 2–6, mostly not yet failing-in-gate but on the map):**
 sarcasm/irony inversion (Vol 2; transcript: `docs/playtests/ridiculous-sarcasm-2026-06-06.md`), loaded
 questions / presupposition (Vol 3, "have you stopped stealing?"), bluff vs. claim (Vol 5), request/order/threat

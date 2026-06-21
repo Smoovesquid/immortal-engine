@@ -42,6 +42,10 @@ directly except in rare, scoped exceptions (see "When Basecamp edits code" below
    (c) re-derive on every "X is done" relay — they're often stale; (d) per Biblioteca Vol 14, the Opus
    player+judge gate has a cited self-preference risk — prefer cross-family/panel + atomic checks + no judge-CoT
    next gate.
+7. `docs/biblioteca/RESEARCH_SCAN.md` — the periodic **demand-pull research-scan** ritual. Tim drops its
+   form-prompt into a Basecamp window to ask whether the research genie should be pointed at any NEW SOTA. The
+   default answer is "nothing" — research is demand-pulled (gathered when a real near-term need names a SOTA
+   gap), never stockpiled ahead. Don't manufacture research to keep the genie busy.
 
 ## The standing rhythm
 

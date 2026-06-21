@@ -29,6 +29,19 @@ directly except in rare, scoped exceptions (see "When Basecamp edits code" below
    recommended next, and the running **Budget** line. This is where gate-run verdicts get written.
 5. `git log --oneline -20` — ground-truth recent history; the changelog can lag a worker's actual
    pushed commits by a few minutes.
+6. **`docs/RUNG1_CONVERGENCE_PLAN.md` + `docs/CAPABILITY_LEDGER.md` + `docs/biblioteca/README.md` — the
+   CURRENT ERA (added 2026-06-21).** Work pivoted from the per-packet hard-tail loop to the **convergence
+   framework**: graduate the FINITE capability set (C1–C16, tracked live in `CAPABILITY_LEDGER.md`) into
+   typed-intent handlers, one file-disjoint lane at a time. Two signals: the FREE deterministic
+   `npm run convergence` harness (regression — must stay 100% locked) and the paid Opus gate (discovery —
+   tag failures by capability). Corpus = free/primary; gate = paid/secondary. The biblioteca (14 vols, SOTA
+   backing) has MEMORY gists that fire the right volume. `RUNG1_QUEUE.md` is now historical context, not the
+   live queue. **Lessons (hard-won 2026-06-21):** (a) `git log origin/v2-polish..HEAD` before EVERY push —
+   workers commit into the shared tree mid-turn, and a doc push will carry unverified commits beneath it;
+   (b) verify a graduation's REAL locked/target against the corpus, not the commit message (messages overstate);
+   (c) re-derive on every "X is done" relay — they're often stale; (d) per Biblioteca Vol 14, the Opus
+   player+judge gate has a cited self-preference risk — prefer cross-family/panel + atomic checks + no judge-CoT
+   next gate.
 
 ## The standing rhythm
 

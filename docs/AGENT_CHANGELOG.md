@@ -1,5 +1,9 @@
 # AGENT_CHANGELOG
 
+2026-06-21 — Basecamp (Opus) — §7 verdict: H-65 (C7) VERIFIED
+- **H-65 (Sonnet, C7)** `13f428a` — **VERIFIED + pushed by Basecamp.** Item/consumable graduation: broadened `META_ITEM`/`answerItemQuery` detection so item-queries PREEMPT playloop's referent guard (the "Tonic of grit" → `[clarify:referent]` / "Still here — Mira Hearth" misfires, fixed from the grace side exactly as dispatched). C7 **4L/3T → 6L/1T**; the 1 remaining target is honestly punted (`// REVIEW: needs CONSUME_RE broadening in playloop tryUseConsumable` — a verbose USE phrasing, out of grace lane). Siblings C1/C4/C5/C6 green, suite 8285, determinism 6/6, overall **52/52**. Scope clean (grace + C7 corpus), no forbidden patterns. Promotions genuine.
+- Caught via the pre-push stack check: 13f428a landed in the shared tree mid-turn (during biblioteca integration); verified before any push could carry it. Graduated now: **C1 · C2 · C4(p) · C5(p) · C7(p) · C10(p) · C12 · C15** (8 capabilities); convergence **52/52 locked**.
+
 2026-06-21 — Basecamp (Opus) — §7 verdict: H-63 (C4) VERIFIED + backlog notes
 - **H-63 (Sonnet, C4)** `ced79f7` — **VERIFIED** (Sonnet pushed). Info-seeking graduation: broadens detection (new `INFO_SEEKING_EXISTENTIAL_RE` + `INFO_SEEKING_ORIGIN_RE` + founding/settling anchor nouns + widened `META_PURSE`) routing into the EXISTING deliver-or-decline contract (H-29/31/39 infra) — the typed pattern, not phrase band-aids. Siblings C1/C5/C6/C7 green, suite 8285, determinism 6/6, overall **50/50**. Scope clean (grace + C4 corpus), no forbidden patterns. Promotions genuine.
 - **Correction to the DONE entry below:** actual state is **C4 4L/2T**, not the entry's "4L/0T" headline — the worker honestly split 2 out-of-lane phrasings into `C4-001b`/`C4-004b` REVIEW targets, which the headline overlooked; convergence confirms 4L/2T. (Reassuring direction: a gamer loosens asserts to claim 0T; this kept the targets honest.)

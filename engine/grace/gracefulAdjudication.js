@@ -272,6 +272,22 @@ const META_ITEM = /\bwhat(?:'?s| does| do| is| are)\s+(?:the|my|a|an|this|that)\
 // through to the generic hedge ("it lands, after a fashion") instead of
 // routing to the real catalog effect answer. (H-47)
 const META_ITEM_CAPABILITY = /\bdoes\s+(?:the|my|a|an|this|that)\s+.+?\s+(?:heal|restore|cure|buff|do\s+anything|help|give\s+(?:me\s+)?(?:temp(?:orary)?\s+hp|temporary\s+hit\s+points))\b|\bis\s+(?:the|my|a|an|this|that)\s+.+?\s+(?:any\s+)?(?:good|useful)\b/i;
+// Item-effect query phrasings that miss META_ITEM's strict "what does THE/MY X
+// do" shape (the asked-about pronoun is bare "it", or the cue is "tell me
+// about"/"examine ... what does the label say"/"what's its mechanical effect").
+// Query-SHAPED by construction (a "what ... do/say/effect" or "examine ... what"
+// cue), so a bare USE action ("I drink the Tonic") never matches — that stays an
+// action for tryUseConsumable. answerItemQuery still validates against the real
+// pack and returns null for a non-item, so "what does it do when I open the
+// door" falls through. These used to fire [clarify:referent] (the item name
+// captured as a fabricated NPC upstream), trivial auto-success, or observe-only.
+// Firing here in the meta path PREEMPTS the referent guard. (H-65)
+const META_ITEM_QUERY = /\bwhat\b[\s\S]{0,40}?\bdo(?:es)?\b[\s\S]{0,40}?\b(?:drink|use|quaff|swallow|down|apply|take)\s+(?:it|this|that|them)\b|\b(?:examine|inspect|study|read|check)\s+(?:the|my|this)\s+\S+[\s\S]{0,50}?\bwhat\b[\s\S]{0,30}?\b(?:label|inscription|say|says|do|does|effect)\b|\bwhat(?:'?s| is)\b[\s\S]{0,50}?\b(?:mechanical\s+effect|do(?:es)?\s+(?:it|this|that)\s+do\s+mechanically)\b/i;
+// Item-presence / "did I use it up" queries that miss META_ITEM's narrow
+// "is X in my pack" alternative ("do I still have X", "is X still in my
+// consumables", "gone or still there", "did it get used up"). answerItemQuery's
+// presence branch reads the real pack; returns null for a non-item. (H-65)
+const META_ITEM_PRESENCE = /\bdo i still have\b|\bhave i still got\b|\bstill\s+in\s+my\s+(?:pack|bag|inventory|kit|consumables|belongings)\b|\bgone\s+or\s+still\s+(?:there|here|in)\b|\bget\s+used\s+up\b/i;
 // A player asserting a carried item is inert/useless/does-nothing — "the
 // Tonic is inert, it does nothing". A real DM corrects a false claim about
 // an item that canon gives a real effect, rather than agreeing with it.
@@ -283,7 +299,7 @@ const META_ITEM_INERT_CLAIM = /\b(?:the|my|this|that)\s+.+?\s+(?:is\s+inert|does
 // list query once H-45 moves it out of the flavor bucket). Checked before
 // META_INVENTORY in the handler below so this dedicated, items-aware answer
 // wins over the generic (items-blind) pack dump for this specific ask. (H-45)
-const META_CONSUMABLES_LIST = /\b(?:list|read\s+back|name|show)\s+(?:all\s+)?(?:my\s+)?consumables\b|\bwhat\s+consumables\s+(?:do\s+i\s+have|am\s+i\s+carrying|have\s+i\s+got)\b|\bwhat(?:'?s| are| is)\s+(?:all\s+)?(?:my\s+)?consumables\b/i;
+const META_CONSUMABLES_LIST = /\b(?:list|read\s+back|name|show)\s+(?:all\s+)?(?:my\s+)?consumables\b|\bwhat\s+consumables\s+(?:do\s+i\s+have|am\s+i\s+carrying|have\s+i\s+got)\b|\bwhat(?:'?s| are| is)\s+(?:all\s+)?(?:my\s+)?consumables\b|\bconsumables\s+list\b|\bmy\s+consumables\b/i;
 // Coins/purse — a number the DM owns (read from party.purse). Also catches
 // "do I even have any money on me?" and a re-asserted "pouch of coin" claim
 // (the latter shares ground with POSSESSION_CHALLENGE below — H-35 R1/R2).
@@ -455,6 +471,7 @@ export function isMetaQuestion(text) {
     || META_GEAR_YESNO.test(t)  // H-38a R1
     || META_CONSUMABLES_LIST.test(t)  // H-45
     || META_ITEM_CAPABILITY.test(t) || META_ITEM_INERT_CLAIM.test(t)  // H-47
+    || META_ITEM_QUERY.test(t) || META_ITEM_PRESENCE.test(t)  // H-65
     || (META_ENEMY_STATUS.test(t) && ENEMY_HP_CUE_RE.test(t))  // H-59 — enemy name+HP compound
     || (DAMAGE_CUE_RE.test(t) && /\beffect\b/i.test(t))  // H-59 — "X dmg, Y effect" list compound
     || hasIdentitySlotCompound(t)  // H-59 — terse name/class/level/HP slot listing
@@ -725,7 +742,7 @@ function answerItemQuery(lowerText, world) {
   });
   if (!matches.length) return null;
 
-  const presence = /\b(do i have|have i got|am i carrying|in\s+my\s+(?:pack|bag|inventory|kit|belongings))\b/.test(lowerText);
+  const presence = /\b(do i (?:still )?have|have i (?:still )?got|am i carrying|(?:still\s+)?in\s+my\s+(?:pack|bag|inventory|kit|consumables|belongings)|gone\s+or\s+still|get\s+used\s+up)\b/.test(lowerText);
   if (presence) {
     const names = matches.map(m => m.name);
     return `Yes — ${joinList(names)} ${names.length > 1 ? 'are' : 'is'} in your pack.`;
@@ -1455,7 +1472,12 @@ export function handleMetaQuestion(text, world) {
 
   // NPC-presence query — "Is that stranger gone for good?" / "Could I look for them?"
   // Report whether the NPC is still present rather than listing a roster. (H-16.)
-  if (META_NPC_PRESENCE.test(lowerText)) {
+  // Defer when the same "is X gone/still there" shape actually names a carried
+  // item ("is the tonic gone or still there") — that's an inventory-state query
+  // the item branch below owns, not an NPC-presence one. (H-65)
+  if (META_NPC_PRESENCE.test(lowerText)
+      && !(META_ITEM_PRESENCE.test(lowerText)
+           && gatherCarriedItems(world).some(it => itemNameInText(lowerText, it.name.toLowerCase())))) {
     const node = (world?.map?.nodes || []).find(n => n && n.id === world?.map?.currentNodeId) || null;
     const sociable = (node?.settlement?.npcs || []).filter(n => n && !n.hostile);
     if (sociable.length) {
@@ -1511,7 +1533,9 @@ export function handleMetaQuestion(text, world) {
   // weapon named earlier in the same sentence ("the blade") then false-
   // matches as the asked-about item. Without this guard the bare-DC fix
   // (H-54 R4) just trades one wrong interceptor for another. (H-54 R4)
-  if ((META_ITEM.test(lowerText) || META_ITEM_CAPABILITY.test(lowerText)) && !META_EXPLICIT_CHECK_DECLARED.test(lowerText)) {
+  if ((META_ITEM.test(lowerText) || META_ITEM_CAPABILITY.test(lowerText)
+       || META_ITEM_QUERY.test(lowerText) || META_ITEM_PRESENCE.test(lowerText))  // H-65
+      && !META_EXPLICIT_CHECK_DECLARED.test(lowerText)) {
     const ans = answerItemQuery(lowerText, world);
     if (ans) return ans;
   }

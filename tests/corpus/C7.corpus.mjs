@@ -47,16 +47,20 @@ export default [
     source: 'opus-gate-2026-06-20-postH43-H44.md [Rules Lawyer DM, turn 1]; opus-gate-2026-06-20-postH45-H46.md [Rules Lawyer DM, turns 1, 4]; calibrated 2026-06-20',
   },
 
-  // ---- TARGET — item query phrasings that misfire ----
+  // ---- LOCKED (H-65) — item query phrasings that used to misfire ----
   {
     id: 'C7-001-target',
     capability: 'C7',
+    // GRADUATED H-65 (target → locked): META_ITEM_QUERY now routes these in the
+    // meta path, PREEMPTING the referent guard that used to capture "Tonic" as a
+    // fabricated NPC. All four now answer "Tonic of grit — it heals 2d4."
+    // Before H-65:
     // "Tell me about the Tonic of grit — what does it actually do mechanically if I drink it?"
-    //   → [clarify:referent] (treats "Tonic" as an NPC name!)
+    //   → [clarify:referent] (treated "Tonic" as an NPC name)
     // "the tonic of grit — what does it do when i drink it" → trivial auto-success
     // "I examine the Tonic of grit. What does the label say it does?" → observe-only
-    // These should all produce the item description but don't.
-    status: 'target',
+    // "What's the Tonic of grit's mechanical effect?" → observe-only
+    status: 'locked',
     fixture: 'village_baker',
     intent: 'item query phrasings that should describe the Tonic but currently misfire',
     paraphrases: [
@@ -117,6 +121,17 @@ export default [
   },
 
   // ---- TARGET — USE phrasings that misfire (roll instead of consume) ----
+  // REVIEW: needs CONSUME_RE broadening in playloop tryUseConsumable (out of the
+  // grace lane — H-65 HALT). The correct result is [consume:unneeded] at max HP,
+  // which ONLY playloop's tryUseConsumable can emit; grace can describe but cannot
+  // consume. Two playloop-side root causes: (1) CONSUME_RE requires the use-verb
+  // BEFORE the item noun, so "uncork the tonic and swallow it down" / "tilt it
+  // back and drain it" (verb after noun; "uncork"/"tilt"/"drain" not in the verb
+  // list) never reach tryUseConsumable and fall to a roll; (2) the "tell me what
+  // changes on my sheet" rider trips the grace stat-sheet meta first ("I cannot
+  // edit them"). Routing these to answerItemQuery (a description) would pass the
+  // loose assert but is the WRONG DM response to an explicit USE action, so we do
+  // NOT game it here — left target until playloop broadens CONSUME_RE.
   {
     id: 'C7-002-target',
     capability: 'C7',
@@ -212,16 +227,22 @@ export default [
     source: 'opus-gate-2026-06-20-postH43-H44.md [Rules Lawyer DM, turns 2-3]; calibrated 2026-06-20',
   },
 
-  // ---- TARGET — "so nothing changed, is the Tonic still there" phrasing rolls ----
+  // ---- LOCKED (H-65) — "so nothing changed, is the Tonic still there" phrasings ----
   {
     id: 'C7-004-target',
     capability: 'C7',
+    // GRADUATED H-65 (target → locked): META_ITEM_PRESENCE + a widened
+    // META_CONSUMABLES_LIST now read inventory state for these. The
+    // "is the tonic gone or still there" phrasing additionally gets a guard on
+    // the NPC-presence branch so it no longer answers "Still here — Mira Hearth"
+    // (the item-presence query preempts the NPC-presence path when it names a
+    // real carried item). Before H-65:
     // "So nothing changed when I drank it — is the Tonic still in my consumables, or did it get used up?"
-    // → rolls [roll:20 vs DC:12 → success] — should state the Tonic's presence without rolling.
+    //   → rolls [roll:20 vs DC:12 → success]
     // "After drinking it, do I still have the Tonic of grit?" → rolls
-    // "consumables list — is the tonic gone or still there" → produces "Still here — Mira Hearth" (wrong)
+    // "consumables list — is the tonic gone or still there" → "Still here — Mira Hearth" (wrong)
     // "My consumables: Tonic of grit — in or out?" → rolls
-    status: 'target',
+    status: 'locked',
     fixture: 'village_baker',
     intent: 'compound "after drinking" / "still there?" inventory phrasings that roll instead of reading state',
     paraphrases: [

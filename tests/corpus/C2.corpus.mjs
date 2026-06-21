@@ -157,6 +157,6 @@ export default [
       { text: 'I intimidate Mira into talking.', reason: 'grounded present NPC by name — must resolve the social action, not clarify' },
       { text: 'I intimidate the baker into talking.', reason: 'grounded role (Mira is the baker) — must resolve, not clarify' },
     ],
-    source: 'opus-gate-2026-06-21.md (gate 4, Lore-hound t12: invented "Brae" → intimidate resolved against present Corwin); reproduced LLM-off village_baker; fixed H-79',
+    source: 'opus-gate-2026-06-21-gate4-postH77.md (gate 4, Lore-hound t12: invented "Brae" → intimidate resolved against present Corwin); reproduced LLM-off village_baker; fixed H-79',
   },
 ];

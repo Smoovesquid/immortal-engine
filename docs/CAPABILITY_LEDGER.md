@@ -166,7 +166,7 @@ real effect proactively") is inaccurate (reality rolls; the diverge still passes
 C7 packet should route "tell me what X does" → effect query and correct that diverge reason. **All three C7 gate-3
 fixes (H-76/H-77) are corpus-closed → confirm them live in the next gate.**
 
-*2026-06-21 (gate 4 — post H-75/76/77, HARDENED judge, `docs/playtests/opus-gate-2026-06-21.md`):* **7/48** (seed
+*2026-06-21 (gate 4 — post H-75/76/77, HARDENED judge, `docs/playtests/opus-gate-2026-06-21-gate4-postH77.md`):* **7/48** (seed
 glass-harbor, same personas as gate 3's 5/48; gate 3 preserved at `opus-gate-2026-06-21-gate3-hardened.md`). **Discovery
 = 0 new capabilities — 3rd consecutive zero-discovery gate → the loop is CLOSED on discovery.** All 7 map to known rows:
 **C4 ×5** (empty-success — an UNANSWERABLE info-question, "who carried me in last night / where was I found", a fact canon
@@ -227,6 +227,25 @@ AGILITY?" framing) + an answer ("Melee strikes use MIGHT — d20+MIGHT to hit, d
 wired into `isMetaQuestion` + `handleMetaQuestion` BEFORE the breakpoint last-resort, and ahead of the combat swing for
 the in-combat case. Over-fire guard: a WHICH-question, NOT an attack declaration ("I strike with MIGHT" must still
 resolve as combat). Grace + playloop (in-combat half) → serialize. Lowest-severity gate-4 item; not blocking.
+
+*2026-06-21 (gate 5 — post H-78/79/80, the full tail, `docs/playtests/opus-gate-2026-06-21.md`):* **10/48** (5→7→10
+across gates 3→4→5, same seed/personas). **The H-75→H-80 fixes HELD** — none of their targeted bugs recurred (no
+attack-misroute, no "who carried me in" empty-success, no Tonic-effect dodge, no melee breakpoint-dump). **The rise is
+NOT regression** — it's the stochastic personas drilling fresh long-tail veins each run. **BUT the "0-discovery" streak
+BROKE — discovery is NOT at 0;** gates 3/4's "loop near-closed" was premature (only 3 gates of personas sampled). New
+flavors: (a) **DM invents an access-OBSTACLE to a PRESENT NPC** ×2 (Newbie t4 Kael / t10 Tove — "go say hi" → "that way
+is blocked"; fabricated barrier, CANON_HALLUCINATION-class); (b) **quest/negotiation info** ×2 (RL t10/t11 — "what's the
+pay for the job?" → generic exits-dump / own-purse non-sequitur); (c) **object-reading empty-success** ×1 (Newbie t8 —
+"open the book" → "it goes your way"; H-78's empty-success class but a NEW trigger — reading an object, not a backstory
+question); (d) **inventory-as-machine-dump** ×2 (RL t1 / Newbie t6 — RIGHT content, delivered as a UI category-dump or
+"read your sheet"); + C4-deadend phrasing-tails (Lore t3 "Nothing's happened yet") + a dropped compound-strike (Chaos t9,
+C1/C10). **#1 FINDING — the frontier has shifted to the NARRATION/PRESENTATION layer.** 8 of 10 are VIBE/DEADEND where the
+engine has the RIGHT content but delivers it as a machine artifact, an empty-success, a deflect-to-sheet, or an invented
+barrier — LLM-narration-quality / **Road-B** failures, NOT deterministic-regex-patchable ones. **Rung-1 implication:** the
+Road-A one-regex-per-vein loop is hitting diminishing returns (close a vein, the next stochastic run finds three more);
+the closer looks like **narration-layer hardening** — a live output-validator (cross-family, the gate judge moved into
+the loop), which is exactly what **[[IG-12]]** (the Dungeon Ref, parked 2026-06-21) is a seed of. **Budget after: ~$1.71**
+(~$2.73 spent, 96 calls) — BELOW the one-run floor; top up before gate 6. Gate 4 preserved as `opus-gate-2026-06-21-gate4-postH77.md`.
 
 **Social-physics categories to mine next (Biblioteca Vols 2–6, mostly not yet failing-in-gate but on the map):**
 sarcasm/irony inversion (Vol 2; transcript: `docs/playtests/ridiculous-sarcasm-2026-06-06.md`), loaded

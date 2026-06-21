@@ -277,6 +277,6 @@ export default [
       { text: 'take me to Mira', reason: 'present-tense escort = movement intent, not a provenance question; must not info-decline' },
       { text: 'point me to Mira', reason: 'C12 directions (H-75); must not info-decline, and must not strike' },
     ],
-    source: 'opus-gate-2026-06-21.md (gate 4, Lore-hound t2/t9/t10/t11) — C4 empty-success in the resolve path; reproduced LLM-off village_baker; fixed H-78',
+    source: 'opus-gate-2026-06-21-gate4-postH77.md (gate 4, Lore-hound t2/t9/t10/t11) — C4 empty-success in the resolve path; reproduced LLM-off village_baker; fixed H-78',
   },
 ];

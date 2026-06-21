@@ -190,6 +190,6 @@ export default [
       { text: 'which stat governs my armor class?', reason: 'defense/AC question — answered as AC (AGILITY-based), not the melee-attack MIGHT' },
       { text: 'I swing my blade at the fence post.', reason: 'attack declaration — resolves as an action/roll, not a rules answer' },
     ],
-    source: 'opus-gate-2026-06-21.md (gate 4, Rules Lawyer t8: "which modifier for a melee strike" leaked the breakpoint table); reproduced LLM-off village_baker; fixed H-80',
+    source: 'opus-gate-2026-06-21-gate4-postH77.md (gate 4, Rules Lawyer t8: "which modifier for a melee strike" leaked the breakpoint table); reproduced LLM-off village_baker; fixed H-80',
   },
 ];

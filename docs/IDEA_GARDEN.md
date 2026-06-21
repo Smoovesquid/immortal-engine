@@ -338,3 +338,41 @@ clarification-as-a-first-class-outcome.
 behavior is deterministic · feels like creativity but is a rule · what would a real DM do · sarcasm ·
 wit · the DM has standards · deterministic personality · NPC reacts under pressure · react under
 pressure · number transparency · what else is out there waiting · the test itself can be the problem
+
+---
+
+## IG-12 — The Dungeon Ref (an appeals layer over DM rulings)
+**2026-06-21 · rung: someday / soul-feature (NOT a Rung-1 closer — see verdict) · status: raw**
+
+Tim: *"If the player tries to do something that falls outside of what the DM can handle, or if you don't
+like the result of a particular ruling, you can reach out to the Dungeon Ref who you explain your case
+to and the DR makes a ruling that stands in for the last DM output."*
+
+The ask: a diegetic **appeals / override** layer. Player disputes a ruling (or the DM punts) → escalate
+to the Ref → plead the case → the Ref re-adjudicates and its ruling replaces the DM's.
+
+**Verdict (Tim asked: does this close Rung 1?) — NO. It's a safety net OVER the tail, not a closer OF
+it.** Rung 1 = the DM stops *producing* hard-tail bad rulings. The Ref gives the player *recourse* after
+a bad ruling; it doesn't lower the rate of bad rulings. Different axis. BUT the instinct points at the
+right *mechanism*: the Ref as a **cross-family re-judge** (a SECOND model evaluating DM output against
+canon) IS the gate's adversarial judge — and gate 5 (2026-06-21) showed the Rung-1 tail has shifted to
+the **narration/presentation layer** (machine-dumps, empty-success flavor, invented barriers) where a
+Road-A regex can't reach. Generalize the Ref from *player-triggered appeal* → *always-on second-model
+output-validator that catches & regenerates the bad narration* and you've described the **live quality
+gate** that plausibly IS part of what closes the narration tail. So: wrong-as-a-closer, right-as-a-seed.
+
+**The hard constraint (or it detonates the moat):** "replaces the last DM output," taken literally as
+overwriting a ruling that already wrote to the Canon Log, breaks the founding rail (*Canon Log wins; the
+LLM is never runtime authority*) — [[IG-8]] cataclysm territory. Canon-safe form: the Ref triggers a
+**deterministic rewind** ([[IG-3]]) to before the disputed ruling and re-resolves; it never edits
+collapsed canon. Plus anti-save-scum friction: the Ref can UPHOLD (and usually should), it costs
+something, and it requires a real ARGUMENT (a misread intent / a rules error / new info), not "re-roll
+till I win" (else it rebuilds the [[IG-10]] problem).
+
+**Diegetic frame, free:** the Ref isn't a sports referee (fourth-wall) — it's the **universe-AI** from
+[[IG-6]]/[[IG-7]], the layer above the DM-agent. Appealing to it = appealing to the thing that renders
+reality coherent. On-myth (the Coherence Cosmology).
+
+**echoes:** dungeon ref · appeal the ruling · override the DM · I don't like that result · second opinion
+on a ruling · re-adjudicate · the DM got it wrong · talk to the management · higher court · contest the
+call · live quality gate · second model judges the DM · regenerate the bad ruling · the DM can't handle this

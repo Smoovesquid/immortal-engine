@@ -1179,3 +1179,6 @@ other agents. (none active)
   - `npm run playtest:quick` — 50 runs, 0 crashes, no bugs found.
 - Remaining/next: C2 is now fully graduated (5L/0T) — `docs/CAPABILITY_LEDGER.md`'s C2 row (lineage `H-56, C2-grad`, `3L/2T`, graduated `partial`) needs updating to lineage `+H-60`, `5L/0T`, graduated `✓`, but that file is outside this packet's strict file lane (`engine/playloop.js` + `tests/corpus/C2.corpus.mjs` only) — flagging for the queue owner.
 - Rollback: revert this commit (not yet pushed)
+
+2026-06-21T00:18:00Z — Claude Sonnet
+[CLAIMED] H-61 — graduate C5 (rules/mechanic questions) to typed-intent pattern · Claude Sonnet · 2026-06-21T00:18:00Z · files: engine/grace/gracefulAdjudication.js, tests/corpus/C5.corpus.mjs

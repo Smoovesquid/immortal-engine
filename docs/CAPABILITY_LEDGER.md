@@ -41,7 +41,7 @@ detectors. Status starts `seed`.
 | C9 | **Canon non-invention** — no invented name/date/tenure/relationship | H-27/H-49/H-52 | `findInventedFactClaim` | 2L/2T | — |
 | C10 | A **declared attack** routes to real combat resolution | H-30/H-32/H-43/H-48/H-55/H-64/H-71, **H-72** | playloop attack gates + `go for`/flip-onto-person/npc-generic/firebolt + attack-resolution-over-meta | 10L/1T | **partial** |
 | C11 | **Confrontation under pressure** → in-character NPC reaction | H-42 | `isConfrontationChallenge`, `confrontationReaction` | 3L/0T | — |
-| C12 | **Movement/travel intent** resolves in fiction, no travel-gate bounce | THE_DM_TEST residuals, **H-62** | playloop talkRef-before-free-movement + `extractFindPersonRef` | 3L/0T | **✓** |
+| C12 | **Movement/travel intent** resolves in fiction, no travel-gate bounce | THE_DM_TEST residuals, H-62, **H-75** | playloop talkRef-before-free-movement + `extractFindPersonRef` + `detectPhysicalAssault` point/edge de-weaponize | 4L/0T | **✓** |
 | C13 | **Absurd / out-of-bounds** input declines in-character | IG-10, **H-67** | `tryRidiculous`/`RIDICULOUS` (playloop, Road A) | 4L/0T | **✓** |
 | C14 | **Meta / system check-in** acknowledged, no roll | H-51, **H-66** | `META_SYSTEM_CHECKIN` (widened) | 4L/1T | **partial** |
 | C15 | **Active combat is reflected, not narrated as calm conversation** | gate 2026-06-20 → **H-58** | `playloop` `isCombatConversationNonAction` guard | 2L/0T | **✓** |
@@ -132,6 +132,15 @@ cross-item compound effect-of-X/count-of-Y), C4 ×1 (compound dismiss+question, 
 elder identity), and the standout **C12/intent: "point me to Kael" resolved as a real ATTACK on Kael** (directions
 → combat — highest severity, the next bug to chase). True live DM quality ≈ 90% on this gate. Budget after:
 ~$2.38 (below the one-run floor — top up before the next gate).
+
+*2026-06-21 (H-75 — C12, gate-3's #1 fix):* the standout gate-3 failure (**"point me to <NPC>" → real ATTACK**) is
+closed. `detectPhysicalAssault` branch C listed "point" in BOTH the weapon-noun and the bring-verb alternations, so
+"point me to Mira" + trailing "to Mira" satisfied all three legs and mis-fired a strike. Removed "point"/"edge"
+(blade-PARTS, not weapons) from the weapon-noun list — a genuine blade-threat must still name a real weapon. **C12
+3L/0T → 4L/0T** (C12-004 locked); convergence 64/64 → 65/65 (100% throughout); **C10 declared-attack held 10/10** (the
+regression risk cleared); suite 8285/0. §7-VERIFIED by Basecamp — worker self-committed+pushed `ae75558` mid-verification
+(lesson-(a) concurrency, caught by the pre-push range check). **4 of gate-3's 5 failures now remain — all
+free/corpus-lockable** (C7 ×2, C4 ×1, C9 ×1); batch before the next paid gate (budget ~$2.38, below the one-run floor).
 
 **Social-physics categories to mine next (Biblioteca Vols 2–6, mostly not yet failing-in-gate but on the map):**
 sarcasm/irony inversion (Vol 2; transcript: `docs/playtests/ridiculous-sarcasm-2026-06-06.md`), loaded

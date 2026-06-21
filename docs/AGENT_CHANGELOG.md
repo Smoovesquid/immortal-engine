@@ -1402,3 +1402,15 @@ other agents. (none active)
   - Over-fire probe (dialogue_active): MUST-DECLINE 4/4 ("worst trouble"/"worst danger"/"anything bad"/"who founded this village" → deflect); MUST-DESCRIBE 2/2 ("Tell me about this village"/"What is this place?" → place line); news/self branches unchanged.
 - Remaining/next: C4-001b (village_baker founding path — a different `[roll:]`+place route, not this dialogue branch) + C4-004b (Corwin → clarify:referent, shared with C9) remain target.
 - Rollback: revert `9b22d8e`
+
+2026-06-21T13:30:00Z — Basecamp (§7-verified after-the-fact; worker self-committed + self-pushed)
+- Packet/seam: H-75 — "point me to <NPC>" resolves as directions, not a blade-threat (C12 — gate-3's highest-severity failure)
+- Commit(s): `ae75558` (worker, playloop lane, self-pushed to origin/v2-polish). Docs (this entry + ledger flip) = separate Basecamp commit.
+- Files changed: `engine/playloop.js` (6 lines), `tests/corpus/C12.corpus.mjs` (+1 locked case C12-004) [worker]; `docs/AGENT_CHANGELOG.md` + `docs/CAPABILITY_LEDGER.md` [Basecamp].
+- Summary: `detectPhysicalAssault` branch C ("a blade brought TO the body") listed "point" in BOTH the weapon-noun alternation AND the bring-verb alternation, so "point me to <NPC>" + the trailing "to <NPC>" satisfied all three legs (weapon + verb + target) and mis-fired a real strike — gate 3's worst failure (a Confused-newbie directions request became combat). Fix: removed "point"/"edge" (blade-PARTS, not weapons in their own right) from the weapon-noun list; a genuine blade-threat must still NAME a real weapon. Deliberately did NOT touch the bring-verb list, so "I point my sword at her" still detects via weapon-noun "sword" + verb "point".
+- §7 verdict (Basecamp, independent): **VERIFIED.**
+  - Process: the diff arrived UNCOMMITTED + unclaimed in the shared tree (worker mid-flight). I verified the working-tree content; during verification the worker committed it as `ae75558` and pushed to origin, so my own commit attempt no-op'd ("nothing to commit"). Confirmed `ae75558` == the verified content (clean tree post-commit), parent `3dd9309`, scope = the two files only, no `Math.random`/`Date.now`/`WORLD_VERSION`. This is exactly the BASECAMP lesson-(a) concurrency case (workers commit into the shared tree mid-turn) — caught by the pre-push range check.
+  - `npm run convergence` — C12 **4/4 locked** (C12-004 new), Overall **100% (65/65)**, exit 0. The regression risk (removing point/edge could break declared-attack detection) cleared: **C10 held 10/10**, and the corpus diverges ("I point my sword at the baker", "I press my dagger to her throat") still resolve as strikes.
+  - `node --test` — **8285/8285, 0 fail** (determinism U19/21/22/27/30 included).
+- Remaining/next: none for C12-004. Remaining gate-3 failures (all free/corpus-lockable, batch before the next paid gate): C7 ×2 (live item-effect phrasing-tail + cross-item compound), C4 ×1 (compound dismiss+question — question dropped), C9 ×1 (wrong elder identity).
+- Rollback: revert `ae75558` (engine+corpus) + this docs commit.

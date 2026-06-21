@@ -388,4 +388,77 @@ export default [
     ],
     source: 'opus-gate-2026-06-21.md; H-73',
   },
+
+  // ---- LOCKED (H-77) — cross-item compound: effect + count, different items ----
+  {
+    id: 'C7-008',
+    capability: 'C7',
+    // Gate finding: "What's the Tonic of grit do — and how many bandages do I
+    // have?" lost the Tonic's effect, answering counts only. Root cause:
+    // answerItemQuery's count branch (ITEM_COUNT_RE) already appends an
+    // effect line when wantsEffect is true, but the old ITEM_EFFECT_CUE_RE
+    // (/\bwhat\s+(?:does|do|is|are)\b/) doesn't match the "what's X do"
+    // contraction — "what's" has no space before the verb. Widened to add a
+    // second alternative for the contraction. (H-77)
+    status: 'locked',
+    fixture: 'village_baker',
+    intent: 'compound ask — Tonic effect AND Rations count, two different items — both must be answered',
+    paraphrases: [
+      "What's the Tonic of grit do — and how many rations do I have?",
+      "What's the Tonic of grit do exactly, and how many rations am I carrying?",
+      "What does the Tonic of grit do, and how many rations do I have?",
+      "Quick — what's the Tonic of grit do, and how many rations do I have on me?",
+      "Remind me — what's the Tonic of grit do, plus how many rations do I have?",
+    ],
+    assert: {
+      surface_matches: [
+        /heal|2d4/i,                                 // Tonic's real effect, not dropped
+        /Rations/i,
+        /\bone\b|\b1\b/i,                            // a real count, not just the name
+      ],
+      surface_excludes: [
+        /\[roll:/,
+      ],
+    },
+    diverge: [
+      { text: "how many rations do I have?", reason: "pure count, no effect cue — count only, no effect line" },
+      { text: "What does the Tonic of grit do?", reason: "pure effect ask, no count cue — effect only, no count line" },
+    ],
+    source: 'H-77 dispatch; calibrated 2026-06-21',
+  },
+
+  // ---- LOCKED (H-77) — effect-demand phrasing tail ("give/tell me ... or flag undefined") ----
+  {
+    id: 'C7-009',
+    capability: 'C7',
+    // Gate finding: "give me the Tonic's mechanical effect or flag it as
+    // undefined" fell to a generic roll — none of META_ITEM / _CAPABILITY /
+    // _QUERY match a message that opens "give me..." instead of "what...".
+    // New ITEM_EFFECT_DEMAND_RE catches the "give/tell me ... effect" and
+    // "tell me ... what X does" demand shapes; answerItemQuery's existing
+    // effect branch does the rest. (H-77)
+    status: 'locked',
+    fixture: 'village_baker',
+    intent: 'demand-phrased effect ask ("give/tell me the effect or flag it undefined") — must answer the real effect, never roll',
+    paraphrases: [
+      "give me the Tonic's mechanical effect or flag it as undefined",
+      "tell me exactly what the Tonic does or say it's undefined",
+      "give me the Tonic of grit's effect, or flag it as undefined if there isn't one",
+      "tell me the Tonic's mechanical effect — or flag it as undefined",
+      "give me the Tonic of grit's real effect or say it's undefined",
+    ],
+    assert: {
+      surface_matches: [
+        /heal|2d4/i,
+      ],
+      surface_excludes: [
+        /\[roll:/,
+        /undefined/i,                                // a real def exists — must never claim it's undefined
+      ],
+    },
+    diverge: [
+      { text: "I roll WITS to read him — what's the DC?", reason: "declared check; must route to the check, not the item-effect demand path" },
+    ],
+    source: 'H-77 dispatch; calibrated 2026-06-21',
+  },
 ];

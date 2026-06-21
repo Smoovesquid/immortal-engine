@@ -288,6 +288,17 @@ const META_ITEM_QUERY = /\bwhat\b[\s\S]{0,40}?\bdo(?:es)?\b[\s\S]{0,40}?\b(?:dri
 // consumables", "gone or still there", "did it get used up"). answerItemQuery's
 // presence branch reads the real pack; returns null for a non-item. (H-65)
 const META_ITEM_PRESENCE = /\bdo i still have\b|\bhave i still got\b|\bstill\s+in\s+my\s+(?:pack|bag|inventory|kit|consumables|belongings)\b|\bgone\s+or\s+still\s+(?:there|here|in)\b|\bget\s+used\s+up\b/i;
+// Effect-demand phrasings that open "give/tell me ..." instead of "what
+// does X do" — "give me the Tonic's mechanical effect or flag it as
+// undefined", "tell me exactly what the Tonic does or say it's undefined".
+// Miss META_ITEM/META_ITEM_QUERY's "what does/is" shapes entirely since the
+// cue verb is "give"/"tell", not "what". Second alternative requires the
+// "...undefined" tail (not just bare "what does X do") so a plain open
+// query like "Tell me what the Tonic does." keeps its existing path rather
+// than being swept into this demand branch (C7-003's diverge). Same safety
+// net as the rest of the META_ITEM family: answerItemQuery returns null
+// (falls through) unless a REAL carried item is named in the text. (H-77)
+const ITEM_EFFECT_DEMAND_RE = /\b(?:give|tell)\s+me\b[\s\S]{0,40}?\b(?:mechanical\s+)?effect\b|\bwhat\b[\s\S]{0,60}?\bdo(?:es)?\b[\s\S]{0,60}?\bundefined\b/i;
 // A player asserting a carried item is inert/useless/does-nothing — "the
 // Tonic is inert, it does nothing". A real DM corrects a false claim about
 // an item that canon gives a real effect, rather than agreeing with it.
@@ -472,6 +483,7 @@ export function isMetaQuestion(text) {
     || META_CONSUMABLES_LIST.test(t)  // H-45
     || META_ITEM_CAPABILITY.test(t) || META_ITEM_INERT_CLAIM.test(t)  // H-47
     || META_ITEM_QUERY.test(t) || META_ITEM_PRESENCE.test(t)  // H-65
+    || ITEM_EFFECT_DEMAND_RE.test(t)  // H-77
     || (META_ENEMY_STATUS.test(t) && ENEMY_HP_CUE_RE.test(t))  // H-59 — enemy name+HP compound
     || (DAMAGE_CUE_RE.test(t) && /\beffect\b/i.test(t))  // H-59 — "X dmg, Y effect" list compound
     || hasIdentitySlotCompound(t)  // H-59 — terse name/class/level/HP slot listing
@@ -742,8 +754,12 @@ const GENERIC_CONSUMABLE_CUE = /\b(doses?|consumables?|potions?|drinks?|vials?|t
 // True if the same message also asks what the item DOES (a compound ask —
 // "what does the Tonic of grit do, and how many doses do I have?"). Reuses
 // the same broad "what does/is/are" cue the query branch below answers from,
-// so a count-only ask doesn't pick up an unrequested effect line.
-const ITEM_EFFECT_CUE_RE = /\bwhat\s+(?:does|do|is|are)\b/i;
+// so a count-only ask doesn't pick up an unrequested effect line. Second
+// alternative catches the "what's X do" contraction ("what's the Tonic of
+// grit do exactly, and how many bandages do I have?") — "what's" doesn't
+// match the first alternative's "what does/do/is/are" shape since there's
+// no space between "what" and the contracted verb. (H-77)
+const ITEM_EFFECT_CUE_RE = /\bwhat\s+(?:does|do|is|are)\b|\bwhat'?s\b[\s\S]{0,40}?\bdo(?:es)?\b/i;
 
 // Answer a question about carried item(s) ("what does X do?", "is X in my
 // pack?", "does X heal HP?"). Returns null if no carried item matches, so
@@ -1616,7 +1632,8 @@ export function handleMetaQuestion(text, world) {
   // matches as the asked-about item. Without this guard the bare-DC fix
   // (H-54 R4) just trades one wrong interceptor for another. (H-54 R4)
   if ((META_ITEM.test(lowerText) || META_ITEM_CAPABILITY.test(lowerText)
-       || META_ITEM_QUERY.test(lowerText) || META_ITEM_PRESENCE.test(lowerText))  // H-65
+       || META_ITEM_QUERY.test(lowerText) || META_ITEM_PRESENCE.test(lowerText)  // H-65
+       || ITEM_EFFECT_DEMAND_RE.test(lowerText))  // H-77
       && !META_EXPLICIT_CHECK_DECLARED.test(lowerText)) {
     const ans = answerItemQuery(lowerText, world);
     if (ans) return ans;

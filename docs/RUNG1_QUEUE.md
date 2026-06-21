@@ -1209,13 +1209,14 @@ Full per-turn detail in the report file. Catalog these as the next hard-tail pac
 once a worker prompt is drafted. Priority order: CRASH → DM_TEST_DEADEND → CRUNCH_INCONSISTENCY →
 CANON_HALLUCINATION.
 
-## Budget — ~$2.38 remaining — BELOW the ~$2.5 one-run floor; TOP UP before the next gate
+## Budget — **$7.29 confirmed (Tim, 2026-06-21, post-gate-3)** — ABOVE the ~$2.5 one-run floor; gating unblocked (~2.5 runs headroom)
 Tim confirmed actual balance **$10.51** on 2026-06-20. Gate 1 (~$2.63,
 `docs/playtests/opus-gate-2026-06-20-convergence-baseline.md`) → **~$7.88**. Gate 2 (2026-06-21, ~$2.71,
 `docs/playtests/opus-gate-2026-06-21-pre-judge-hardening.md`, 18/48 raw — later shown ~13 were JUDGE artifacts)
 → **~$5.17**. Gate 3 (2026-06-21, ~$2.79, `docs/playtests/opus-gate-2026-06-21.md`, **HARDENED judge → 5/48,
-0 new capabilities**) → **~$2.38 left — below the one-run floor.** Re-confirm the real balance with Tim and top
-up before any further gate.
+0 new capabilities**) → estimated ~$2.38, but **Tim re-confirmed the real balance at $7.29 on 2026-06-21**
+(the running estimates had drifted low — the confirmed number is authoritative; re-confirm before any run that
+would drop below ~$2.5). At ~$2.7/run that's ~2 gates of headroom.
 The corpus harness (`npm run convergence`) is FREE/deterministic and is now the **primary regression signal**;
 the paid gate is reserved for the **discovery signal** (tag failures by capability). Worker-side fixes
 (Sonnet/Codex windows) don't draw this budget — only `scripts/dm-playtest.mjs` runs do. Still confirm the

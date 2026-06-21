@@ -1506,3 +1506,5 @@ other agents. (none active)
 - Proof (§7): convergence 76→77 (C4 9/9), node --test 8285/0, determinism green; LLM-off repro + recap-negative diverge. **Gate 9 measured: N-4 held (no recurrence); headline 5→10 = persona-variance onto fresh veins (RL stats/AC/declared-roll), 0 new discovery.**
 - Remaining/next (recurring, unfixed): **C12/H-81 invented-barrier to a present NPC — TOP priority (recurred gates 6/8/9)**; C9 invention; Ex-1 describe-present-NPC (A/B/C pending); C2 false-NER on connectives ("Then"→name).
 - Rollback: revert `2a0e267`.
+
+2026-06-21T23:47:02Z — [CLAIMED] H-81 (C12 — approach a PRESENT NPC → invented navigation barrier) · Basecamp(main window) · 2026-06-21T23:47:02Z · files: engine/playloop.js

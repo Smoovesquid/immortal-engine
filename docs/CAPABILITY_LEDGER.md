@@ -34,7 +34,7 @@ detectors. Status starts `seed`.
 | C2 | A **named referent** must be grounded before the turn resolves | H-56/C2-grad/H-60, **H-79** | `ungroundedNpcReferentForText` + `hasPersonReferentSignal` + observe/travel hoist + social-resolver guard | 6L/0T | **✓** |
 | C3 | A **declared check** gets a DC + roll | H-54 R4 | `META_EXPLICIT_CHECK_*` | 0L/3T | — |
 | C4 | Info-seeking **delivers a grounded fact or honestly declines** | H-22/23/29/31/39/H-63/H-74, **H-78** | `isInfoSeekingText` (+provenance widen) + `META_PURSE` + dialogue place-branch + pre-roll `isUngroundedInfoCheck` | 6L/2T | **partial** |
-| C5 | A **rules/mechanic question** is answered straight, never rolled | H-25/H-54 R3, **H-61** | `META_DAMAGE_RULE`/`META_ATTACK_MOD` + typed governing-stat classifier | 3L/1T | **partial** |
+| C5 | A **rules/mechanic question** is answered straight, never rolled | H-25/H-54 R3/H-61, **H-80** | `META_DAMAGE_RULE`/`META_ATTACK_MOD` + governing-stat classifier (skill + `META_ATTACK_GOVERNING_STAT` for attacks) | 4L/1T | **partial** |
 | C6 | **Number-transparency**: own stats/mods/AC/HP/items from the sheet | H-25/H-31/H-40, **H-68** | `answerSkillModifier`, `META_ARMOR_VALUE`, `META_HELD_ITEMS`, `META_INVENTORY` (widened) | 5L/0T | **✓** |
 | C7 | **Item/consumable** query answers from real def; **use** applies effect | H-45/H-47/H-65/H-69/H-70/H-73/H-76, **H-77** | `answerItemQuery`/`META_ITEM` + `CONSUME_RE` + count/compound + bare-count list + sheet-rider guard + effect-cue/`ITEM_EFFECT_DEMAND_RE` widen | 13L/0T | **partial** |
 | C8 | **Narration ≤ mechanics** — no hit/defeat the dice didn't produce | H-26/H-28/H-43, **H-72** | `llmAdapter` R1–R3 + playloop `attackResolutionIntent` | 4L/0T | **corpus✓ / live⚠** |
@@ -207,9 +207,14 @@ over-fire-safe (present NPC by name/role + "everyone"/"them" still resolve). Jud
 this CANON_HALLUCINATION — it was a C2 referent-clarify gap (Corwin is real/present, nothing invented). Only RL t8
 (**C5 melee-stat**, H-80) remains of the gate-4 tail.
 
-*2026-06-21 (H-80 — C5 melee governing-stat — SCOPED, NOT YET IMPLEMENTED):* gate-4 RL t8 ("which ability modifier
-applies to a melee strike — MIGHT or AGILITY? roll it now") reproduced LLM-off but DEFERRED as packet-scale (multi-layer)
-rather than rushed solo at session end. Worker-ready findings: **(1) RULE confirmed** — melee = MIGHT (`escapeCombat.js:16`:
+*2026-06-21 (H-80 — C5 melee governing-stat — DONE, grace core):* gate-4 RL t8 ("which ability modifier applies to a
+melee strike — MIGHT or AGILITY? roll it now") leaked the raw breakpoint table. **CLOSED the out-of-combat case (the
+actual gate failure):** added `META_ATTACK_GOVERNING_STAT` + `answerAttackGoverningStat` (melee→MIGHT with the real mod +
+d20/d6 formula, ranged→AGILITY), wired into `isMetaQuestion` + checked FIRST in `handleMetaQuestion`. C5 3L/1T → 4L/1T
+(C5-005 locked); convergence 70→71 (100%); suite 8285/0; over-fire-safe (attack-modifier number-ask, attack declarations,
+AC questions all unaffected). **Residuals (NOT the gate failure — deferred to a future pass):** (c) the in-`active_combat`
+variant still SWINGS on a rules question (needs an H-72-style combat-meta exception, playloop), and (d) the literal d6
+roll-demand isn't rolled (the formula answer covers its intent). Original scoping reference (rule + layers) retained below: **(1) RULE confirmed** — melee = MIGHT (`escapeCombat.js:16`:
 d20+MIGHT to hit, d6+MIGHT damage), ranged = AGILITY, AC = 12+AGILITY. **(2) THREE layers:** (a) the exact phrasing hits
 the breakpoint-table dump (`gracefulAdjudication.js:1407`, last-resort in the stat-mod handler) — needs a governing-stat-
 FOR-ATTACK answer paralleling `answerSkillModifier` (:1008, which maps SKILLS→stat only, not attacks); (b) "which stat to

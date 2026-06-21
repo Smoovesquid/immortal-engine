@@ -1467,3 +1467,16 @@ other agents. (none active)
   - `node --test` — **8285/8285, 0 fail**.
 - Remaining/next: the in-DIALOGUE variant of the same bug (an invented name addressed while a dialogue is already open) routes through `askNpc`, not `resolveSocialAdjudication`, so it's a separate seam — not observed failing in gate 4, left unscoped. Only gate-4 RL t8 (C5 melee-stat) remains of the tail → H-80.
 - Rollback: revert `a706ec8` + this docs commit.
+
+2026-06-21T18:30:00Z — Basecamp (acting as worker; Tim away — "everything free, then run the gates")
+- Packet/seam: H-80 — C5 governing stat for a melee/ranged attack (gate-4 RL t8); grace core
+- Commit(s): `4868d48` (engine grace + C5 corpus, atomic). Docs (this entry + ledger flip/reframe) separate.
+- Files changed: `engine/grace/gracefulAdjudication.js` (+`META_ATTACK_GOVERNING_STAT`, `answerAttackGoverningStat`, wired into `isMetaQuestion` + first check in `handleMetaQuestion`), `tests/corpus/C5.corpus.mjs` (+locked C5-005).
+- Summary: gate-4 RL t8 ("which ability modifier applies to a melee strike — MIGHT or AGILITY? roll it now") leaked the raw breakpoint table (`gracefulAdjudication.js:1407`), and sibling phrasings ("which stat to hit in melee?") fell to a generic WITS roll. Added a governing-stat-FOR-ATTACK detector + answer (melee→MIGHT with the player's real mod + the d20/d6 formula, ranged→AGILITY), checked FIRST in `handleMetaQuestion` so it beats the breakpoint last-resort, and added to `isMetaQuestion` so the previously-unclassified phrasings route here instead of rolling. Rule per `escapeCombat.js:16` (d20+MIGHT to hit, d6+MIGHT damage; ranged/AC use AGILITY).
+- §7 verification (Basecamp self):
+  - Reproduced LLM-off FIRST: gate phrasing → breakpoint dump; "which stat to hit in melee?" → generic `[roll:21]`. Post-fix → "Melee attacks run off MIGHT — yours is 13 (+1), so it's d20 +1 to hit and d6 +1 for damage. (Ranged uses AGILITY.)".
+  - Over-fire probe: "what's my attack modifier?" → its existing number-answer (unchanged); "I swing my blade at the fence post" → resolves as an action; "which stat governs my armor class?" → AC answer (NOT mis-answered as MIGHT — attack-sense word required).
+  - `npm run convergence` — C5 **4/4 locked** (C5-005 new; C5-004 still target), C6 5/5 held, Overall **100% (71/71)**, exit 0.
+  - `node --test` — **8285/8285, 0 fail**.
+- Remaining/next (residuals, NOT the gate failure): (c) the in-`active_combat` variant still SWINGS on a rules question (needs an H-72-style combat-meta exception — playloop); (d) the literal d6 roll-demand isn't rolled (the formula answer covers its intent). Both deferred — not observed as the gate failure.
+- Rollback: revert `4868d48` + this docs commit.

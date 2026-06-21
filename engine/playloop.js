@@ -1260,11 +1260,31 @@ function playerMoveCore(world, packsById, text) {
     }
   }
 
+  // Resolve NPC referent early — before the free-movement gate — so compound
+  // phrases like "head to the tavern and find the oldest person there" route to
+  // the NPC encounter rather than the travel bounce path.
+  let talkRef = !w.combat?.active ? extractDialogueRef(text) : null;
+  if (!talkRef && !w.combat?.active) {
+    const approachRef = extractApproachRef(text);
+    if (approachRef) {
+      const strictNpc = resolvePresentNpcStrict(w, approachRef) || resolvePresentNpcLoose(w, approachRef);
+      if (strictNpc) talkRef = String(strictNpc.name || strictNpc.id || '');
+    }
+  }
+  if (!talkRef && !w.combat?.active) {
+    const findPersonRef = extractFindPersonRef(text);
+    if (findPersonRef) {
+      const npc = resolvePresentNpcLoose(w, findPersonRef);
+      if (npc) talkRef = String(npc.name || npc.id || '');
+    }
+  }
+
   // Free movement (within speed): deterministic travel without a roll unless explicit obstacle/risk language is present.
   // Never while a fight is live — a bare direction mid-combat must not walk the
   // player out of the encounter (escape combat has no flee by design; the input
   // falls through to the combat branch instead).
-  if (!w.scene?.interior && !w.combat?.active && !declaredNpcViolence && isFreeMovementIntent(text)) {
+  // Not entered when an NPC referent was resolved above — that takes precedence.
+  if (!w.scene?.interior && !w.combat?.active && !declaredNpcViolence && isFreeMovementIntent(text) && !talkRef) {
     // v20 free-roam: the overworld is walked one tile at a time. A bare cardinal
     // ("north", "go west", or a compass button) steps the avatar a single cell.
     // There is no teleport-to-named-place out here — the journey IS the gameplay,
@@ -1418,7 +1438,7 @@ function playerMoveCore(world, packsById, text) {
         const roads = exitNames.length
           ? `From here the roads lead to ${joinNames(exitNames)}.`
           : `No roads lead anywhere you'd know from here.`;
-        return { world: w, output: { narration: `Wizard: You know of no such place hereabouts. ${roads} Where will you make for?`, mechanics: '' } };
+        return { world: w, output: { narration: `Wizard: You know of no such place hereabouts. ${roads}`, mechanics: '' } };
       }
       const roads = exitNames.length ? ` The roads lead to ${joinNames(exitNames)}.` : '';
       return { world: w, output: { narration: `Wizard: Which way will you set off${roads ? ',' : ''}${roads}`, mechanics: '' } };
@@ -1535,18 +1555,6 @@ function playerMoveCore(world, packsById, text) {
   // Dialogue cannot begin mid-combat (the world invariant forbids combat.active
   // and scene.dialogue coexisting). When fighting, a "talk to X" intent falls
   // through to the combat turn rather than crashing. See prose-playtest finding.
-  let talkRef = !w.combat?.active ? extractDialogueRef(text) : null;
-  // "go over to Aldrich (and say hello)" is dialogue ONLY when Aldrich is actually
-  // standing here (strict, name-only match); a place name falls through to travel
-  // below. This is what makes natural approach phrasings reach conversation without
-  // hijacking "go to the mill". (Present-NPC wins, narrowly.)
-  if (!talkRef && !w.combat?.active) {
-    const approachRef = extractApproachRef(text);
-    if (approachRef) {
-      const strictNpc = resolvePresentNpcStrict(w, approachRef) || resolvePresentNpcLoose(w, approachRef);
-      if (strictNpc) talkRef = String(strictNpc.name || strictNpc.id || '');
-    }
-  }
   if (talkRef) {
     // "Talk to someone" with no name: a real DM doesn't roll dice at a vague
     // intention — they name who's actually here and ask who you mean.
@@ -3485,12 +3493,26 @@ function cleanApproachRef(raw) {
   return cleanDialogueRef(trimmed);
 }
 
-// The ambiguous "approach" phrasings ("go over to X", "walk up to X"). Returns a
-// candidate ref or ''. The caller decides it's dialogue ONLY if the ref strictly
-// names a present NPC (resolvePresentNpcStrict); otherwise it's travel/movement.
+// The ambiguous "approach" phrasings ("go over to X", "walk up to X", "make my
+// way across the room to where the baker is standing"). Returns a candidate ref
+// or ''. The caller decides it's dialogue ONLY if the ref strictly names a present
+// NPC (resolvePresentNpcStrict); otherwise it's travel/movement.
 function extractApproachRef(text) {
-  const m = String(text || '').match(/\b(?:go|come|walk|head|step|wander|stroll|move)\s+(?:(?:right|on|back)\s+)?(?:over|up)?\s*to\s+(.+)/i);
+  const m = String(text || '').match(/\b(?:go|come|walk|head|step|wander|stroll|move)\s+(?:(?:right|on|back)\s+)?(?:over|up)?\s*to\s+(.+)/i)
+    || String(text || '').match(/\bmake\s+my\s+way\b[^.!?]*?\bto\s+(?:where\s+)?(.+)/i);
   return (m && m[1]) ? cleanApproachRef(m[1]) : '';
+}
+
+// "head to the village tavern and find the oldest person there" — extract the
+// person-descriptor from a "find <person>" clause so the DM can route to the
+// present NPC instead of bouncing with "no such place". Deliberately narrow:
+// only fires on explicit person-class keywords so "find the treasure" / "find
+// the exit" pass through unchanged.
+function extractFindPersonRef(text) {
+  const m = String(text || '').match(
+    /\bfind\s+(?:the\s+)?(?:\w+\s+)?(person|man|woman|elder|baker|trader|guard|smith|merchant|innkeeper|someone|anybody)\b/i
+  );
+  return (m && m[1]) ? cleanDialogueRef(m[1]) : '';
 }
 
 // Strict, NAME-only match against the non-hostile NPCs standing at the current

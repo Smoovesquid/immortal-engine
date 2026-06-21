@@ -732,6 +732,13 @@ function itemNameInText(lowerText, n) {
 // answer "Yes — X is in your pack" with no number. (H-70)
 const ITEM_COUNT_RE = /\bhow many\b/i;
 
+// A bare consumable-count cue ("how many doses/consumables/potions do I
+// have") — names no specific item, so answerItemQuery's per-item fold
+// (H-70) finds nothing and returns null. Checked only after that fold comes
+// up empty, so a NAMED count ("how many doses of Tonic of grit") still goes
+// through the single-item branch above, not this list. (H-73)
+const GENERIC_CONSUMABLE_CUE = /\b(doses?|consumables?|potions?|drinks?|vials?|things to (?:drink|use))\b/i;
+
 // True if the same message also asks what the item DOES (a compound ask —
 // "what does the Tonic of grit do, and how many doses do I have?"). Reuses
 // the same broad "what does/is/are" cue the query branch below answers from,
@@ -839,6 +846,27 @@ function listConsumables(world) {
   return names.length
     ? `Your consumables: ${names.join(', ')}.`
     : `You're not carrying anything you could drink, eat, or use up — no consumables in the pack.`;
+}
+
+// Bare consumable-count answer ("how many doses do I have") — same real
+// per-item source as listConsumables, but with a count per name rather than
+// a flat list, since the player asked "how many" not "what". (H-73)
+function listConsumableCounts(world) {
+  const inv = world.party?.[0]?.inventory || {};
+  const flavorNames = (Array.isArray(inv.consumables) ? inv.consumables : [])
+    .map(it => String(it?.name || it).trim()).filter(Boolean);
+  const structuredNames = (Array.isArray(inv.items) ? inv.items : [])
+    .map(it => getItemDef(it.defRef))
+    .filter(def => def && def.kind === 'consumable')
+    .map(def => def.name);
+  const names = [...flavorNames, ...structuredNames];
+  if (!names.length) {
+    return `You're not carrying anything you could drink, eat, or use up — no consumables in the pack.`;
+  }
+  const counts = new Map();
+  for (const n of names) counts.set(n, (counts.get(n) || 0) + 1);
+  const parts = [...counts.entries()].map(([n, c]) => `${n} ×${c}`);
+  return `You're carrying: ${parts.join(', ')}.`;
 }
 
 // Answer a weapon damage-die query from the real loadout. Inventory weapons
@@ -1580,6 +1608,12 @@ export function handleMetaQuestion(text, world) {
       && !META_EXPLICIT_CHECK_DECLARED.test(lowerText)) {
     const ans = answerItemQuery(lowerText, world);
     if (ans) return ans;
+    // Bare count, no item named ("how many doses do I have") — H-70's fold
+    // above found nothing to match against; list real per-item counts
+    // instead of falling through to observe-only. (H-73)
+    if (ITEM_COUNT_RE.test(lowerText) && GENERIC_CONSUMABLE_CUE.test(lowerText)) {
+      return listConsumableCounts(world);
+    }
   }
 
   // A player asserts a carried item is inert/useless/does-nothing — correct

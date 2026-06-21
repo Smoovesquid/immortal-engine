@@ -351,4 +351,40 @@ export default [
     ],
     source: 'opus-gate-2026-06-21.md; H-70',
   },
+
+  // ---- LOCKED (H-73) — bare consumable-count query, no item named ----
+  {
+    id: 'C7-007',
+    capability: 'C7',
+    // Gate finding 2026-06-21: "how many doses do I have" names no specific
+    // item, so H-70's per-item fold in answerItemQuery finds nothing and
+    // returns null — the message fell through every branch to observe-only
+    // ("Your eyes move slow across this corner..."). Fixed (H-73): when the
+    // count cue fires with a generic consumable word (doses/consumables/
+    // potions/etc.) but no carried item matched, list the real per-item
+    // counts off the pack instead of falling through.
+    status: 'locked',
+    fixture: 'village_baker',
+    intent: 'bare "how many doses/consumables" with no item named — must list real per-item counts, not fall through to observe',
+    paraphrases: [
+      "how many doses do I have",
+      "How many doses do I have on me right now?",
+      "how many consumables am I carrying?",
+    ],
+    assert: {
+      surface_matches: [
+        /Tonic/i,
+        /Rations/i,
+        /×\d|\b1\b|\bone\b/i,                          // a count token, not just names
+      ],
+      surface_excludes: [
+        /\[roll:/,
+        /observe only/i,
+      ],
+    },
+    diverge: [
+      { text: "how many doses of Tonic of grit do I have?", reason: "NAMED item count (H-70) — must answer for the Tonic only, not become the full list" },
+    ],
+    source: 'opus-gate-2026-06-21.md; H-73',
+  },
 ];

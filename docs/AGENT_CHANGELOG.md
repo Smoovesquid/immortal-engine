@@ -1,5 +1,13 @@
 # AGENT_CHANGELOG
 
+2026-06-21 — Basecamp (Opus) — §7 verdict: H-63 (C4) VERIFIED + backlog notes
+- **H-63 (Sonnet, C4)** `ced79f7` — **VERIFIED** (Sonnet pushed). Info-seeking graduation: broadens detection (new `INFO_SEEKING_EXISTENTIAL_RE` + `INFO_SEEKING_ORIGIN_RE` + founding/settling anchor nouns + widened `META_PURSE`) routing into the EXISTING deliver-or-decline contract (H-29/31/39 infra) — the typed pattern, not phrase band-aids. Siblings C1/C5/C6/C7 green, suite 8285, determinism 6/6, overall **50/50**. Scope clean (grace + C4 corpus), no forbidden patterns. Promotions genuine.
+- **Correction to the DONE entry below:** actual state is **C4 4L/2T**, not the entry's "4L/0T" headline — the worker honestly split 2 out-of-lane phrasings into `C4-001b`/`C4-004b` REVIEW targets, which the headline overlooked; convergence confirms 4L/2T. (Reassuring direction: a gamer loosens asserts to claim 0T; this kept the targets honest.)
+- **Backlog captured (cross-lane, future packets):**
+  - H-63's 2 REVIEW targets expose denylist gaps OUTSIDE grace: `dialogue.js` `commonKnowledgeAnswer` treats "this village/place" as a known fact (no decline), and playloop's `ungroundedNpcReferentForText` common-word denylist blocks some C4 phrasings. → a cross-lane (grace+dialogue+playloop) packet.
+  - From the H-64 report: **C10-002-target's rules-lawyer paraphrase shares a root cause with C8-001-target** (narration-vs-mechanics on a rules-framing mid-combat) — bundle into one packet when scoped.
+- Wave status: C4 done (partial). Graduated: **C1 · C2 · C4(p) · C5(p) · C10(p) · C12 · C15**; convergence **50/50 locked**.
+
 2026-06-21 — Claude Sonnet (H-63, C4 graduation)
 - **H-63 (Sonnet, C4)** — **DONE.** C4 "info-seeking delivers a grounded fact or honestly declines" graduated **1L/3T → 4L/0T**. Convergence **47/47 → 50/50 locked (+4 promoted, 0 regressions)**, suite **8285/8285**, determinism **6/6**, `playtest:quick` **50/0/0**.
   - **C4-001 (village_baker, founding questions):** New INFO_SEEKING_RE anchor nouns (`built|settl\w+|arrived|establish\w*|started|created|found(?:ers?|ed|ing)`) catch "who founded/built X?", "when was X established?", "who were the first settlers?" without needing to name "this village". New INFO_SEEKING_TOPIC_RE branch (`what do people/folk say about`) catches community-knowledge phrasings. 5 clean paraphrases avoiding `this village/place` false positive in `commonKnowledgeAnswer` (original 4 blocked phrasings parked in C4-001b target+REVIEW).

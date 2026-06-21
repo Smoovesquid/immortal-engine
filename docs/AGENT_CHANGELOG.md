@@ -1414,3 +1414,5 @@ other agents. (none active)
   - `node --test` — **8285/8285, 0 fail** (determinism U19/21/22/27/30 included).
 - Remaining/next: none for C12-004. Remaining gate-3 failures (all free/corpus-lockable, batch before the next paid gate): C7 ×2 (live item-effect phrasing-tail + cross-item compound), C4 ×1 (compound dismiss+question — question dropped), C9 ×1 (wrong elder identity).
 - Rollback: revert `ae75558` (engine+corpus) + this docs commit.
+
+[CLAIMED] H-76 C7-002b consume-vs-sheet · Claude-Sonnet · 2026-06-21T16:32:30Z · files: engine/grace/gracefulAdjudication.js, tests/corpus/C7.corpus.mjs

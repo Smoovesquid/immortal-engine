@@ -193,4 +193,19 @@ beats random persona probing), benchmark-**saturation** studies (formalizes "is 
 track failure-MODES not counts. **Reach for it:** before trusting a gate verdict, recalibrating the gate, or
 judging whether coverage has saturated.
 
-*The arc: Vol 2–6 build the layers, Vol 7 wires them, Vol 8 tests them, Vols 9–10 calibrate the testing; **Vols 11–14 = the 2025–26 frontier layer** — new pragmatics (11), fragility/leakage (12), secret-leakage DEFENSES (13 → C16), current judge+coverage SOTA (14). The frontier vols are SOTA-dated; re-mine periodically.*
+### Vol 15 — LLM Game-Mastering, Interactive-Narrative Agents & Interactive Drama  →  [`vol-15-llm-gamemaster-interactive-narrative.md`](vol-15-llm-gamemaster-interactive-narrative.md)  ·  *2023–26 frontier; the games / interactive-drama side of Vols 1 & 7*
+*Current LLM-GM / interactive-narrative systems — Drama Llama & Dramamancer (storylets + LLM realization),
+WhatELSE (executable narrative-space + external validation), Elsewise (possibility-space visualization),
+Orchestrated Reality (the free-prose-state critique), Co-Creativity-at-the-Table (qualitative TTRPG findings),
+Façade (drama manager).* **Headline: the frontier independently RE-DERIVES our core — "GM proposes, the
+deterministic system commits"** — the strongest external endorsement yet of Road A. Its named failure modes are
+our active threads: **free-prose state-assertion = C8 / `narration≠canon`** (the 2026-06-21 gate's fabricated-
+ledger bug); **yes-to-everything / no pushback = deliver-or-decline / [[IG-10]] / C13** ("yes-and → yes/no/clarify,
+fiction first" = THE_DM_TEST); **narrative structurelessness = needs a scene/beat manager = [[IG-7]]**. **New
+seeds:** GM-moves-as-deterministic-affordances (→ `conductor`/`instrument`; the GM-move half of [[IG-11]]);
+**possibility-space SIMULATION as a dev tool** (the convergence harness + Opus gate are a proto); external-
+validator-for-executable-narrative (= C8 + invariants). **Reach for it:** any LLM-GM architecture/boundary
+question ("should the LLM own X?"), the C8 narration-validator track, scene/beat/storylet/drama-manager design,
+GM-move/affordance design, or possibility-space / long-horizon-eval tooling.
+
+*The arc: Vol 2–6 build the layers, Vol 7 wires them, Vol 8 tests them, Vols 9–10 calibrate the testing; **Vols 11–14 = the 2025–26 frontier layer** — new pragmatics (11), fragility/leakage (12), secret-leakage DEFENSES (13 → C16), current judge+coverage SOTA (14); **Vol 15 = the LLM-GM / interactive-drama frontier** (2023–26) — the games-side endorsement of "GM proposes / system commits", plus GM-moves-as-affordances + possibility-space simulation. The frontier vols are SOTA-dated; re-mine periodically.*

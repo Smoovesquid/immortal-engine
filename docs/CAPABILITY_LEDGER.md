@@ -108,6 +108,20 @@ clean LLM-OFF, so the deterministic corpus structurally **cannot** lock it. The 
 to confirm — not more corpus point-fixes. This is the convergence meter doing its job: the regression corpus is
 near-saturated (63/63, last gate 0-new), and the frontier has moved to the LLM layer (Biblioteca [Vol 15] backs it).
 
+*2026-06-21 (narration-track localization — a Vol 10/14 payoff):* the gate's #2 "real failure" — the C8/C9
+**fabricated "18 vs DC 12" roll** — is a **JUDGE FALSE-POSITIVE, not an engine bug.** That line is a deterministic
+grace response (`answerRollRecall`, `gracefulAdjudication.js:1845–1855`) citing `world.conversation.lastRoll` (a
+REAL stored roll) to defend canon against the player's misremembered "14"; the Opus judge flagged it
+`CANON_HALLUCINATION` only because it can't see the roll ledger. Confirmed against ground-truth (Vol 10 discipline)
+BEFORE scoping a fix — which would have broken correct behaviour. **Two real next steps:** (1) **gate-judge
+hardening** — reference-guided judging that feeds the judge `world.conversation.lastRoll` / NPC-presence / Canon
+Log, so the discovery signal stops mis-flagging correct roll-recall & presence (the 18/48 is inflated; needs a
+paid gate to confirm the recal); (2) **C4 empty-success** is the genuinely-real narration bug — an NPC asked an
+info-question it has no knowledge for answers with a generic place-line non-sequitur (`[dialogue ask | place]`)
+instead of delivering a fact or honestly declining (reproduces LLM-off → corpus-lockable; a dialogue-system
+deliver-or-decline gap, distinct from C4-001b's "this village" common-knowledge false-positive). **Lesson: trust
+the judge-free corpus + canon ground-truth over the gate's HARD tags (Vol 10/14); the gate is a noisy pointer.**
+
 **Social-physics categories to mine next (Biblioteca Vols 2–6, mostly not yet failing-in-gate but on the map):**
 sarcasm/irony inversion (Vol 2; transcript: `docs/playtests/ridiculous-sarcasm-2026-06-06.md`), loaded
 questions / presupposition (Vol 3, "have you stopped stealing?"), bluff vs. claim (Vol 5), request/order/threat

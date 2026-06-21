@@ -1210,3 +1210,5 @@ other agents. (none active)
   - `git status --short` before commit: only the two owned files modified — scope clean.
 - Remaining/next: `docs/CAPABILITY_LEDGER.md`'s C5 row still reads lineage `H-25/H-54 R3` and `1L/4T` — needs updating to lineage `+H-61`, `3L/1T`, but that file is outside this packet's strict file lane; flagging for the queue owner. C5-004 remains open — needs a playloop-lane packet to hoist the rules-check gate (or a dialogue-routing carve-out) ahead of the dialogue-deflection path in `dialogue_active`.
 - Rollback: revert `3229a42`
+
+[CLAIMED] H-64 — close C10's 4 declared-attack misroutes · Claude-Sonnet · 2026-06-21T09:39:21Z · files: engine/playloop.js, tests/corpus/C10.corpus.mjs

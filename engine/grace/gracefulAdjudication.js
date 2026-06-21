@@ -1146,7 +1146,19 @@ function findBogusPossessionClaim(lowerText, world) {
     inv.weapons || [], inv.armor || [], inv.tools || [], inv.clothes || [],
     inv.oddities || [], inv.consumables || [], inv.tech || [], inv.junk || [], inv.items || []
   ).map(it => String(it?.name || it || '').toLowerCase());
-  const bogus = claimed.filter(c => !realNames.some(n => n.includes(c)));
+  // "armor"/"armour" is a CATEGORY word, not a specific item name: a player who
+  // references "my armor" while wearing a category-armor item is NOT making a
+  // bogus claim, even when that item's NAME lacks the word "armor" (e.g. a
+  // "Padded coat" sits in inv.armor). Grounding it by name-substring alone made
+  // an AC-math question ("does my armor class account for my AGILITY -1?")
+  // self-contradict — "There's no armor — you're wearing Padded coat" — and ate
+  // the real question. Ground the bare category word against the armor SLOT.
+  // (gate-9 RL t2; C6/C8)
+  const hasArmorEquipped = Array.isArray(inv.armor) && inv.armor.length > 0;
+  const bogus = claimed.filter(c => {
+    if (/^armou?r$/.test(c) && hasArmorEquipped) return false;
+    return !realNames.some(n => n.includes(c));
+  });
   return bogus.length ? bogus : null;
 }
 

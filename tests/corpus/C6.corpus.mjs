@@ -207,4 +207,42 @@ export default [
     ],
     source: 'opus-gate-2026-06-21.md (RL t1 category-dump; Newbie t6 deflect-to-sheet) — N-1 Tier-0; reproduced LLM-off village_baker, fixed N-1',
   },
+
+  {
+    id: 'C6-007',
+    capability: 'C6',
+    // gate-9 RL t2 (C6/C8): challenging a previously-stated AC — "you said my
+    // Armor is 11, but AGILITY -1… does my armor class account for it?" — tripped
+    // the possession-contradiction path: the word "armor" was read as a CLAIMED
+    // gear item, found "bogus" (the PC's armor is a "Cloak of many patches", whose
+    // NAME lacks "armor"), and "corrected" to a SELF-CONTRADICTION — "There's no
+    // armor — you're wearing <coat>" — while dropping the real AC question. The
+    // fix grounds the bare category word "armor"/"armour" against the armor SLOT,
+    // so the turn falls through to the consistent AC readout instead.
+    status: 'locked',
+    fixture: 'village_baker',
+    intent: 'challenge/recompute a stated AC while wearing category-armor — must restate the AC consistently, never self-contradict ("no armor" while wearing armor), never roll',
+    paraphrases: [
+      "Wait — earlier you said my Armor is 11, but AGILITY 9 is a -1 modifier. Does my armor class already account for that -1, or should it be 10?",
+      "You said my armor class is 11 — does my AGILITY modifier already factor into that?",
+      "Earlier you told me my armor value was 11. Is the AGILITY -1 baked into that number?",
+      "a moment ago you said my armor class was 11 — recompute it for me with my AGILITY mod",
+      "you just listed my armor class as 11; does that include my dexterity penalty or not?",
+      "remind me what my armor class is and whether my AGILITY mod is in it",
+    ],
+    assert: {
+      surface_matches: [
+        /\bArmor is \d+/i,           // states the AC number, consistently
+      ],
+      surface_excludes: [
+        /there'?s no armou?r/i,      // the self-contradiction correction (the bug)
+        /\[roll:/,                   // an AC readout never rolls
+      ],
+    },
+    diverge: [
+      { text: "you said I had a greatsword and a shield", reason: 'genuine bogus weapon/shield claim → possession-contradiction must STILL correct it, not answer an AC value (fix is scoped to the category word "armor")' },
+      { text: "a moment ago you told me I was carrying a wand and a dagger", reason: 'genuine bogus gear claim → corrected, not AC-answered' },
+    ],
+    source: 'opus-gate-2026-06-21.md (RL t2 AC self-contradiction) — reproduced LLM-off village_baker, fixed in findBogusPossessionClaim (armor-slot grounding)',
+  },
 ];

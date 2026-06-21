@@ -376,3 +376,25 @@ reality coherent. On-myth (the Coherence Cosmology).
 **echoes:** dungeon ref · appeal the ruling · override the DM · I don't like that result · second opinion
 on a ruling · re-adjudicate · the DM got it wrong · talk to the management · higher court · contest the
 call · live quality gate · second model judges the DM · regenerate the bad ruling · the DM can't handle this
+
+## IG-13 — Trade or buy from ANYONE, not just shopfronts
+**2026-06-21 · rung: someday · status: raw**
+
+Tim: *"I would like to be able to trade or buy from anyone. Someday!!"*
+
+Today trade is shop-gated — `tryTrade` bounces "No shop keeps a counter here — coin is just weight until you
+reach a settlement with a shopfront." The ask: **any NPC is a potential trade partner** (barter, buy, sell,
+haggle), not just a named shop. "Sell me that lantern," "I'll trade my scarf for your bread," "what'll you give
+me for this?" → resolves against whoever's present.
+
+**Why it's more than a feature:** it turns the 437 backstoried NPCs into a living economy and makes every NPC
+*useful* to approach — which dovetails with [[IG-11]] social physics (haggling IS rule-bound social behavior:
+trust → price, desperation → leverage, an NPC won't sell what they need). Pairs with the [[project_dm_only_verb]]
+direction (trade resolves in conversation, no shop menu). Canon-safe: a trade is a deterministic `applyDeltas`
+on two inventories + purses (mechanics own it; narration just voices it) — no new authority for the LLM.
+
+**Open Qs:** what does an NPC value (a per-NPC want already exists — `surfaceWant`)? barter vs coin? does refusing
+/ over-paying move trust? Start tiny: "sell me X" / "buy your Y" against a present NPC with a real item.
+
+**echoes:** trade · buy from anyone · sell to · barter · haggle · merchant · no shop here · what'll you give me ·
+economy · I'll trade my X for your Y · coin is just weight · shopfront · commerce · deal with the NPC

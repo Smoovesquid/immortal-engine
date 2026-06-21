@@ -1,4 +1,4 @@
-> **Status:** Partially stale. Branch naming convention (dave/tim prefixes) and review model reflect an earlier team structure. Current development uses the home-base/worker-window pattern described in `SLICE_PLAN.md`. Core principles (PR discipline, determinism checks, AI code as draft) remain valid.
+> **⚠ SUPERSEDED (2026-06-21).** The current operating model is **`docs/PROMPT_ARCHITECTURE.md`** (with `docs/WORKER_BRIEF.md` + `docs/BASECAMP.md`). This file reflects an earlier team/PR structure and is kept for history only — the determinism/PR *principles* still hold; the branch-naming and review specifics do not.
 
 # Immortal Engine — Collaboration Workflow
 

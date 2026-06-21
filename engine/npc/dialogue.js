@@ -288,7 +288,12 @@ export function commonKnowledgeAnswer(world, npc, text) {
   }
 
   // ── place: the ground under their feet ──
-  if (/\b(?:this place|this village|this town|about (?:the )?(?:village|town|place)|what is this place|around here|liv(?:e|ed) here|been here long)\b/.test(t) && here) {
+  // Guard against "this village/town" used as a mere locative inside a
+  // question about events/history/danger — that's not a place-description
+  // ask, and should fall through to the honest decline instead of a
+  // non-sequitur place blurb.
+  const NOT_PLACE_DESCRIPTION_RE = /\b(?:worst|trouble|danger|threat|happened|founded|built|first\s+stone|before|history|who\s+(?:runs|leads|founded|built)|how\s+long|how\s+many|years|winters|elder|stranger|attack(?:ed|s)?|raid)\b/i;
+  if (/\b(?:this place|this village|this town|about (?:the )?(?:village|town|place)|what is this place|around here|liv(?:e|ed) here|been here long)\b/.test(t) && !NOT_PLACE_DESCRIPTION_RE.test(t) && here) {
     const st = here.settlement;
     if (st) {
       const buildings = (Array.isArray(st.buildings) ? st.buildings : []).map(b => String(b?.name || '')).filter(Boolean).slice(0, 3);

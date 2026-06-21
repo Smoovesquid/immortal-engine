@@ -214,4 +214,32 @@ export default [
     diverge: [],
     source: 'C4-004 original paraphrases blocked by playloop/dialogue.js; parked H-63',
   },
+
+  // ---- LOCKED ----
+  {
+    id: 'C4-005',
+    capability: 'C4',
+    status: 'locked',
+    fixture: 'dialogue_active',
+    intent: 'ask about events/danger/history using "this village/town" as a mere locative — must get an honest decline, not the place-description non-sequitur (H-74)',
+    paraphrases: [
+      "Mira, what's the worst trouble that's hit this village in your lifetime?",
+      "what's the worst danger this town has faced?",
+      "Has anything bad ever happened in this village?",
+    ],
+    assert: {
+      surface_matches: [
+        /Couldn.t say|don.t know|wouldn.t be the one|no news|can.t help you there/i,
+      ],
+      surface_excludes: [
+        /\[dialogue ask \| place\]/i,
+        /Small, but it holds/i,
+      ],
+    },
+    diverge: [
+      { text: 'Tell me about this village.', reason: 'genuine place-description ask; "this village" used as the actual subject, not a locative — still gets the place line' },
+      { text: 'What is this place?', reason: 'genuine place-description ask — still gets the place line' },
+    ],
+    source: 'gate 2026-06-21 C4 empty-success regression (Brae roll:21 vacuous answer); reproduced LLM-off on dialogue_active; fixed H-74',
+  },
 ];

@@ -39,7 +39,7 @@ detectors. Status starts `seed`.
 | C7 | **Item/consumable** query answers from real def; **use** applies effect | H-45/H-47 | `answerItemQuery`, `tryUseConsumable`, `META_ITEM*` | 4L/3T | — |
 | C8 | **Narration ≤ mechanics** — no hit/defeat the dice didn't produce | H-26/H-28/H-43 | `llmAdapter` validator R1–R3 | 3L/1T | — |
 | C9 | **Canon non-invention** — no invented name/date/tenure/relationship | H-27/H-49/H-52 | `findInventedFactClaim` | 2L/2T | — |
-| C10 | A **declared attack** routes to real combat resolution | H-30/H-32/H-43/H-48/H-55 | playloop attack gates, `resolveEscapeCombatTurn` | 5L/4T | — |
+| C10 | A **declared attack** routes to real combat resolution | H-30/H-32/H-43/H-48/H-55, **H-64** | playloop attack gates + `go for`/`flip-onto-person`/npc-generic fixes | 8L/2T | **partial** |
 | C11 | **Confrontation under pressure** → in-character NPC reaction | H-42 | `isConfrontationChallenge`, `confrontationReaction` | 3L/0T | — |
 | C12 | **Movement/travel intent** resolves in fiction, no travel-gate bounce | THE_DM_TEST residuals, **H-62** | playloop talkRef-before-free-movement + `extractFindPersonRef` | 3L/0T | **✓** |
 | C13 | **Absurd / out-of-bounds** input declines in-character | IG-10 (parked) | — (Tier-B candidate) | 4L/3T | — |

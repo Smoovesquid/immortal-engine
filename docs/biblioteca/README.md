@@ -137,4 +137,20 @@ regression signal + a discovery-rate signal that can asymptote even over infinit
 ledger** enumerating the finite failure-categories. Vol 8 tells you how to test a rule; it does not tell you
 when the whole loop is done.
 
-*The arc: Vol 2–6 build the layers, Vol 7 wires them, Vol 8 tests them — the library is complete.*
+### Vol 9 — Defect Discovery & Coverage Saturation  →  [`vol-9-defect-discovery-coverage-saturation.md`](vol-9-defect-discovery-coverage-saturation.md)  ·  *the stopping rule*
+*Makes the convergence DISCOVERY signal quantitative + checks the REGRESSION corpus isn't hollow.*
+**Capture-recapture / Chao1** estimates how many capabilities remain UNDISCOVERED from how often gate runs
+re-find the same ones (turns "≈1 new → finite" into "~N remain, CI […]"); **mutation testing** (hand-rolled
+targeted mutants) proves the locked assertions are protective, not trivially-passing (the rigorous version of
+the invariant-#19 hand-check); accumulation curves + a composite done-rule. **Reach for it:** after any gate,
+or when asked "is the loop closeable / how close to done / are the assertions strong enough."
+
+### Vol 10 — LLM-as-Judge Reliability  →  [`vol-10-llm-as-judge-reliability.md`](vol-10-llm-as-judge-reliability.md)  ·  *the judge's error bars*
+*How much to trust + how to harden the gate, which runs Opus as BOTH player and judge.* Self-preference /
+verbosity / variance biases + shared-blind-spot risk; mitigations = **reference-guided + atomic-binary judging
+anchored to `canonGroundTruth`** (systematizes the H-45 recal), decouple player/judge model, low-temp +
+length-normalize. The reframe: **the judge-free corpus is the PRIMARY signal; the gate-judge is a SECONDARY
+noisy discovery pointer, confirmed deterministically** — which is why we already minimize judge exposure.
+**Reach for it:** before trusting a gate verdict, or when the % bounces.
+
+*The arc: Vol 2–6 build the layers, Vol 7 wires them, Vol 8 tests them, Vols 9–10 calibrate the testing — when you've tested enough (9) and how much to trust the judge (10).*

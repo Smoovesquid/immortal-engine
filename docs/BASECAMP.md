@@ -53,6 +53,10 @@ directly except in rare, scoped exceptions (see "When Basecamp edits code" below
    player-facing [[IG-12]] feature) that touches WORDS only, never canon/state. **When the convergence corpus is green
    and gates open zero new Road-A capabilities but quality still lags, THIS is the track** — read it before scoping
    narration work. It reuses what exists (`validateNarrationCandidate`, the gate `JUDGE_SYSTEM`, the OpenAI client).
+9. **`docs/WORKER_BRIEF.md` — the self-assembling worker-brief template (added 2026-06-21).** Turning Tim's
+   loose/blank prompts into a precise, repo-grounded brief is Basecamp's job — build it from this template
+   (see **Prompt assembly** below). The template loads invariants by reference (never copied) and
+   self-assembles current artifacts, so a brief never goes stale.
 
 ## The standing rhythm
 
@@ -60,13 +64,39 @@ directly except in rare, scoped exceptions (see "When Basecamp edits code" below
 re-derive state (git log + changelog tail + queue doc)
   → pick highest-priority open cluster
   → read the actual code at the exact lines involved (never guess file/line numbers)
-  → write a worker-ready prompt: context, exact files+lines, the fix shape, test plan, done-when
+  → assemble a worker-ready brief from `docs/WORKER_BRIEF.md` (interpret Tim's loose ask, or pick the
+    next packet yourself — see Prompt assembly): context, exact files+lines, fix shape, test plan, done-when
   → dispatch (tell Tim where to paste it, or paste directly if asked)
   → wait for worker self-report
   → independently verify (see below) — do NOT take "done" at face value
   → periodically (not every packet): run the Opus gate, read full failure detail, write verdict
     into RUNG1_QUEUE.md, commit+push, report budget
 ```
+
+## Prompt assembly — interpret/perfect Tim's prompts (or generate your own)
+
+Tim should never have to write a good prompt. **Turning a loose, half-formed, or blank ask into a precise,
+repo-grounded worker brief is Basecamp's job** — the template is `docs/WORKER_BRIEF.md`.
+
+Two input modes, one machine:
+- **Interpret mode** (Tim gave a vague/sloppy ask): infer the most likely packet from context (queue /
+  `CAPABILITY_LEDGER` / newest gate report). State the interpretation in **one line and proceed** — do NOT
+  bounce "please clarify." THE_DM_TEST applies to Tim too: resolve the intent, don't menu it back. Redirect
+  instantly if he corrects.
+- **Generate mode** (Tim said "what's next" / "go" / nothing specific): pick the next packet yourself from
+  the live queue / ledger / latest gate findings, then assemble.
+
+Then assemble:
+1. Fill the WORKER_BRIEF slots (track/altitude, autonomy, the inferred `{{PACKET}}`) from Tim's ask + live
+   repo state.
+2. **Self-assemble the artifacts fresh** (the template's Step 0): invariants *by reference* (never copied —
+   the canonical docs win), the newest `opus-gate-*.md` real failures, a matching `tests/corpus/C#` case, the
+   latest `AGENT_CHANGELOG` DONE entry as the golden trajectory, commands verified from `package.json`.
+3. Emit paste-ready for another window; if that window lacks repo access, inline the gathered artifacts;
+   otherwise dispatch per **Worker routing**.
+
+Discipline: **confirm the inferred packet before the worker edits** — the infer-and-confirm step is what
+stops a sloppy ask from becoming a confident wrong fix. Re-derive every time; never paste a stale snapshot.
 
 ## Independent verification checklist (protocol §7)
 

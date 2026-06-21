@@ -1388,3 +1388,17 @@ other agents. (none active)
 - Why: the narration-track localization proved the 2026-06-21 "fabricated roll" was the engine CORRECTLY citing `world.conversation.lastRoll` (a real stored roll) via `answerRollRecall`; the judge couldn't see the ledger. This recalibrates the discovery instrument (Vol 10/14 — the judge is a noisy pointer; anchor it to canon ground-truth).
 - Verification: `node --check scripts/dm-playtest.mjs` passes (additive change, judge output schema unchanged so parsing is unaffected). The recal EFFECT (judge stops false-flagging) can ONLY be confirmed by a paid gate run — **UNVERIFIED-LIVE until the next gate (~$2.6, budget-gated)**. Future gate counts won't be directly comparable to the inflated 18/48.
 - Rollback: revert this commit.
+
+2026-06-21T13:00:00Z — Basecamp (§7-verified; entry authored by queue owner)
+- Packet/seam: H-74 — NPC declines an unanswerable info-question instead of a place-line non-sequitur (C4 empty-success — the real narration bug, post-judge-false-positive correction)
+- Commit(s): `9b22d8e` (Claude Sonnet 4.6, dialogue lane, self-pushed)
+- Files changed: `engine/npc/dialogue.js` (7 lines), `tests/corpus/C4.corpus.mjs` (+1 locked case C4-005)
+- Summary: `commonKnowledgeAnswer`'s place branch (dialogue.js:291) fired on "this village/town" even as a mere LOCATIVE in an events/history/danger question ("worst trouble that's hit this village") → returned a place-description non-sequitur instead of the honest decline. Added `NOT_PLACE_DESCRIPTION_RE` (worst/trouble/danger/founded/history/who runs/how long/years/elder/…) so those questions skip the place branch → `commonKnowledgeAnswer` returns null → the resolver deflects ("Couldn't say. Try someone who minds other folks' business."). C4 4→5 locked.
+- §7 verdict (Basecamp, independent): **VERIFIED.**
+  - Scope: `git show 9b22d8e` = dialogue + C4 corpus. No `Math.random`/`Date.now`/`WORLD_VERSION`.
+  - Diff principled (negative-guard on the place branch; falls through to the existing deflection path). Corpus case C4-005 has real asserts (decline match; excludes the place-line) + two place-description diverges.
+  - `npm run convergence` — C4 5/5 locked, 0/2 (C4-001b/C4-004b out of scope, still target). Overall 100% (64/64). No regression.
+  - `node --test` 8285/0; determinism 6/6.
+  - Over-fire probe (dialogue_active): MUST-DECLINE 4/4 ("worst trouble"/"worst danger"/"anything bad"/"who founded this village" → deflect); MUST-DESCRIBE 2/2 ("Tell me about this village"/"What is this place?" → place line); news/self branches unchanged.
+- Remaining/next: C4-001b (village_baker founding path — a different `[roll:]`+place route, not this dialogue branch) + C4-004b (Corwin → clarify:referent, shared with C9) remain target.
+- Rollback: revert `9b22d8e`

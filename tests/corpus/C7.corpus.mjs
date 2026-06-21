@@ -283,4 +283,72 @@ export default [
     ],
     source: 'opus-gate-2026-06-20-postH43-H44.md [Rules Lawyer DM, turns 2-3]; calibrated 2026-06-20',
   },
+
+  // ---- LOCKED (H-70) — dose/quantity count query ----
+  {
+    id: 'C7-005',
+    capability: 'C7',
+    // Gate finding 2026-06-21: "how many doses do I have" was swallowed by the
+    // presence branch's own "do i have" alternative ("Yes — ... is in your
+    // pack."), with no number stated. Root cause: no count branch existed.
+    // Fixed (H-70): a dedicated count branch, checked before presence,
+    // reports the real entry count off the pack ("You have one Tonic of
+    // grit." — the data carries no per-item dose field, so a single-entry
+    // consumable is honestly "one", never an invented dose number).
+    status: 'locked',
+    fixture: 'village_baker',
+    intent: 'ask how many of a named consumable are carried — must state the real count, not just presence',
+    paraphrases: [
+      "how many doses of Tonic of grit do I have?",
+      "How many doses of the Tonic of grit am I carrying?",
+      "How many Tonics of grit do I have in my pack?",
+    ],
+    assert: {
+      surface_matches: [
+        /[Tt]onic/,
+        /\bone\b/i,                                  // real count (single carried entry)
+      ],
+      surface_excludes: [
+        /\[roll:/,
+        /^Yes — Tonic of grit is in your pack\.?$/i,  // bare presence non-answer — count must be stated
+        /Cloak/i,                                     // must not false-match "Cloak of many patches" via "many"
+      ],
+    },
+    diverge: [
+      { text: "Do I still have the Tonic of grit?", reason: "presence query (no 'how many') — the existing 'in your pack' answer is correct and must NOT become a count" },
+    ],
+    source: 'opus-gate-2026-06-21.md; H-70',
+  },
+
+  // ---- LOCKED (H-70) — compound effect + dose-count query ----
+  {
+    id: 'C7-006',
+    capability: 'C7',
+    // Gate finding 2026-06-21: "What does the Tonic of grit do, and how many
+    // doses do I have?" answered only "Yes — Cloak of many patches and Tonic
+    // of grit are in your pack." — no effect, no count, and a false Cloak
+    // match via the query word "many" overlapping its name. Fixed (H-70):
+    // the count branch detects the compound "what does ... do" cue and folds
+    // the real effect line in with the real count, for the Tonic only.
+    status: 'locked',
+    fixture: 'village_baker',
+    intent: 'compound ask — what the Tonic does AND how many doses — must answer both, for the right item only',
+    paraphrases: [
+      "What does the Tonic of grit do, and how many doses do I have?",
+    ],
+    assert: {
+      surface_matches: [
+        /heals?\s*2d4|heal/i,                         // real effect stated
+        /\bone\b/i,                                   // real count
+      ],
+      surface_excludes: [
+        /\[roll:/,
+        /Cloak/i,                                      // must not false-match via "many"
+      ],
+    },
+    diverge: [
+      { text: "What does the Tonic of grit do?", reason: "effect-only query, no 'how many' — C7-001 territory, no count line expected" },
+    ],
+    source: 'opus-gate-2026-06-21.md; H-70',
+  },
 ];

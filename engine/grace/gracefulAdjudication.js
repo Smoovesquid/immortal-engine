@@ -707,13 +707,36 @@ function gatherCarriedItems(world) {
   return [...flavor, ...structured];
 }
 
+// Common words that happen to be ≥4 chars and so would otherwise pass as a
+// "distinctive" item-name token below — "Cloak of MANY patches" must not
+// false-match a question like "how MANY doses do I have" just because the
+// generic query word overlaps one word of the item's name. (H-70)
+const ITEM_TOKEN_STOPWORDS = new Set([
+  'many', 'much', 'have', 'does', 'what', 'your', 'this', 'that', 'with',
+  'from', 'into', 'only', 'also', 'some', 'more', 'most', 'then', 'than',
+  'when', 'were', 'will', 'just', 'very',
+]);
+
 // True if `n` (lowercased item name) is referenced in the player's text —
-// either verbatim or by a distinctive (≥4-char) token of it.
+// either verbatim or by a distinctive (≥4-char, non-stopword) token of it.
 function itemNameInText(lowerText, n) {
   if (!n) return false;
   if (lowerText.includes(n)) return true;
-  return n.split(/\s+/).filter(x => x.length >= 4).some(tok => lowerText.includes(tok));
+  return n.split(/\s+/).filter(x => x.length >= 4 && !ITEM_TOKEN_STOPWORDS.has(x)).some(tok => lowerText.includes(tok));
 }
+
+// True if the player asked a quantity/count question ("how many doses do I
+// have", "how many Tonics of grit do I have?"). Checked before the presence
+// branch in answerItemQuery — "how many X do I have" also contains "do i
+// have", which would otherwise be swallowed by the presence regex and
+// answer "Yes — X is in your pack" with no number. (H-70)
+const ITEM_COUNT_RE = /\bhow many\b/i;
+
+// True if the same message also asks what the item DOES (a compound ask —
+// "what does the Tonic of grit do, and how many doses do I have?"). Reuses
+// the same broad "what does/is/are" cue the query branch below answers from,
+// so a count-only ask doesn't pick up an unrequested effect line.
+const ITEM_EFFECT_CUE_RE = /\bwhat\s+(?:does|do|is|are)\b/i;
 
 // Answer a question about carried item(s) ("what does X do?", "is X in my
 // pack?", "does X heal HP?"). Returns null if no carried item matches, so
@@ -741,6 +764,25 @@ function answerItemQuery(lowerText, world) {
     return true;
   });
   if (!matches.length) return null;
+
+  // Quantity/count query ("how many doses do I have", compound "what does it
+  // do AND how many doses") — checked before the presence branch below,
+  // which would otherwise swallow this via its own "do i have" alternative
+  // and answer presence-only with no number. Reports the REAL count off the
+  // pack (counting every matching entry across both inventory shapes), never
+  // an invented dose number the data doesn't carry. (H-70)
+  if (ITEM_COUNT_RE.test(lowerText)) {
+    const wantsEffect = ITEM_EFFECT_CUE_RE.test(lowerText);
+    const parts = matches.map(m => {
+      const n = items.filter(it => it.name.toLowerCase() === m.name.toLowerCase()).length;
+      const countLine = n === 1 ? `You have one ${m.name}.`
+        : n > 1 ? `You have ${n} ${m.name}.`
+        : `You don't have any ${m.name} left.`;
+      const effectLine = wantsEffect ? describeItemEffect(m.def) : null;
+      return effectLine ? `${m.name} — ${effectLine}. ${countLine}` : countLine;
+    });
+    return parts.join(' ');
+  }
 
   const presence = /\b(do i (?:still )?have|have i (?:still )?got|am i carrying|(?:still\s+)?in\s+my\s+(?:pack|bag|inventory|kit|consumables|belongings)|gone\s+or\s+still|get\s+used\s+up)\b/.test(lowerText);
   if (presence) {

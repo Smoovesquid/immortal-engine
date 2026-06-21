@@ -207,15 +207,27 @@ the paid gate (discovery). Build the SAME for narration:
 
 ---
 
-## Handover state (as of 2026-06-21)
+## Handover state (as of 2026-06-21, post gate 6)
 
-- **Branch `v2-polish`**, origin tip `624da91`. Convergence **71/71 (100%)**, suite **8285/8285**.
-- **Rung-1 Road-A**: H-75…H-80 all landed/verified (C12 attack-misroute, C7 item-effects, C4
-  empty-success/provenance, C2 invented-social-target, C5 melee-stat). The deterministic corpus is
-  near-saturated; the frontier is this doc.
+- **Branch `v2-polish`**. Convergence **73/73 (100%)**, suite **8285/8285**, determinism 200/0.
+- **N-1 (this track's first packets) — Fix 1/2/3 LANDED + gate-confirmed (gate 6, 10→7/48):** inventory as
+  prose (`describePack`, no category-dump), name-the-kit (no deflect-to-sheet, `META_INVENTORY` adverb), and
+  object content-read honest-decline (`isUngroundedObjectRead`/`objectReadDecline`, extends H-78 to objects).
+  Corpus-locked C6-006 + C4-007. None recurred in gate 6.
+- **N-1 Fix 4 DEFERRED → H-81** (Codex lane): "go say hi to <present NPC>" → invented barrier ("that way is
+  blocked" / "the passage is cluttered"). Root cause: a leading "go" makes `inferInteriorAction` read the
+  greeting as a blocked interior MOVE (`playloop.js` ~1052), pre-empting the talkRef/dialogue path (~1266);
+  the extractors also miss apposition / "ask <NPC>" / pronoun anaphora. Recurred at gate 6 (Newbie t3).
+- **NEW frontier shape (gate 6) — empty-success on a SUCCEEDED action:** a look/call-out rolls a SUCCESS but
+  the narration delivers no content ("the ledger shows 14 (success)" with no description; "a useful answer
+  comes back" with no answer). Distinct from H-78 (unanswerable) — here the success earned an outcome the
+  words don't deliver. This is the next narration Tier-0/1 (N-2): deliver-what-the-success-earned, else decline.
+- **Rung-1 Road-A**: H-75…H-80 landed/verified; the deterministic corpus is near-saturated; the frontier is this doc.
 - **Gates**: gate 3 (5/48, `-gate3-hardened.md`), gate 4 (7/48, `-gate4-postH77.md`), gate 5 (10/48,
-  `opus-gate-2026-06-21.md`). Gate 5 is the one to read for the narration taxonomy.
-- **Budget**: ~$1.71 estimated — BELOW the one-run floor. **Top up + re-confirm with Tim before any gate.**
+  `-gate5.md`), **gate 6 (7/48, `opus-gate-2026-06-21.md` — N-1 held, frontier=narration)**. Gate 5/6 are the
+  ones to read for the narration taxonomy.
+- **Budget**: ~$2.58 estimated (Tim confirmed $5.41 pre-gate-6; ~$2.83 spent) — at/below the one-run floor.
+  **Top up + re-confirm with Tim before gate 7.**
 - **Bootstrap**: `docs/BASECAMP.md` (the role), `docs/CAPABILITY_LEDGER.md` (Road-A status + the gate-5
   findings), `docs/biblioteca/` Vols 10/14/15 (judge reliability, GM-proposes/system-commits, the
   narration frontier). Vol 15 independently re-derives "GM proposes, deterministic system commits" — THE

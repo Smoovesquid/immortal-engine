@@ -1209,7 +1209,7 @@ Full per-turn detail in the report file. Catalog these as the next hard-tail pac
 once a worker prompt is drafted. Priority order: CRASH → DM_TEST_DEADEND → CRUNCH_INCONSISTENCY →
 CANON_HALLUCINATION.
 
-## Budget — **~$1.71 estimated post-gate-5** — BELOW the ~$2.5 one-run floor; TOP UP before gate 6 (re-confirm real balance with Tim)
+## Budget — **~$2.58 estimated post-gate-6** — at/below the ~$2.6 one-run floor; TOP UP before gate 7 (re-confirm real balance with Tim)
 Tim confirmed actual balance **$10.51** on 2026-06-20. Gate 1 (~$2.63,
 `docs/playtests/opus-gate-2026-06-20-convergence-baseline.md`) → **~$7.88**. Gate 2 (2026-06-21, ~$2.71,
 `docs/playtests/opus-gate-2026-06-21-pre-judge-hardening.md`, 18/48 raw — later shown ~13 were JUDGE artifacts)
@@ -1218,10 +1218,13 @@ Tim confirmed actual balance **$10.51** on 2026-06-20. Gate 1 (~$2.63,
 (the running estimates had drifted low — the confirmed number is authoritative; re-confirm before any run that
 would drop below ~$2.5). **Gate 4** (2026-06-21, post H-75/76/77, ~$2.85, `docs/playtests/opus-gate-2026-06-21-gate4-postH77.md`,
 **7/48 — C12 + C7 fixes held live, the bounce was the deferred C4 tail**) → ~$4.44 estimated. **Gate 5** (2026-06-21, post
-H-78/79/80 — the full tail, ~$2.73, `docs/playtests/opus-gate-2026-06-21.md`, **10/48 — fixes HELD, but the 0-discovery
+H-78/79/80 — the full tail, ~$2.73, `docs/playtests/opus-gate-2026-06-21-gate5.md`, **10/48 — fixes HELD, but the 0-discovery
 streak BROKE and the frontier shifted to the NARRATION/presentation layer; see the gate-5 findings in CAPABILITY_LEDGER**)
-→ **~$1.71 estimated left — BELOW the one-run floor.** TOP UP before gate 6 (re-confirm the real balance — estimates have
-drifted ~$2.4 low before, so the true number may differ either way).
+→ ~$1.71 estimated. **Tim confirmed the real balance at $5.41 on 2026-06-21** (the running estimate had drifted ~$3.7 low —
+the confirmed number is authoritative). **Gate 6** (2026-06-21, post N-1 Fix 1/2/3, ~$2.83, `docs/playtests/opus-gate-2026-06-21.md`,
+**7/48 — N-1 HELD (no inventory-dump/deflect/object-read empty-success recurred), discovery 0 new caps, frontier confirmed =
+narration track; see the gate-6 findings in CAPABILITY_LEDGER**) → **~$2.58 estimated left — at/below the one-run floor.** TOP UP
+before gate 7 (re-confirm the real balance — estimates have drifted before, so the true number may differ either way).
 The corpus harness (`npm run convergence`) is FREE/deterministic and is now the **primary regression signal**;
 the paid gate is reserved for the **discovery signal** (tag failures by capability). Worker-side fixes
 (Sonnet/Codex windows) don't draw this budget — only `scripts/dm-playtest.mjs` runs do. Still confirm the

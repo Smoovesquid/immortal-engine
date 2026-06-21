@@ -612,13 +612,28 @@ const INFO_SEEKING_ORIGIN_RE = /\bwhy\s+(?:did\s+)?(?:you|they|he|she)\s+(?:come
 // ("take me to X", "point me to <NPC>" — C12) stays movement, not info-decline. (H-78)
 const INFO_SEEKING_PROVENANCE_RE = /\b(?:who|where|when|how)\b[\s\S]{0,40}?\b(?:carried|brought|took|dragged|hauled|found|find|deliver(?:ed)?|left|drop(?:ped)?|put|placed|wheel(?:ed)?|dumped)\b[\s\S]{0,20}?\b(?:me|us)\b|\b(?:was|were)\s+(?:i|we)\s+(?:found|brought|carried|taken|left|dropped|put|placed|deliver(?:ed)?|discover(?:ed)?|dumped)\b/i;
 
+// A QUERY about who has been watching/spying on the PC — an unmodeled surveillance
+// fact about the player character. Gate-6 Newbie ("ask if either of them is the one
+// who was watching me") missed every sub-RE, rolled a d20, and any post-roll
+// narrator delivered a content-free "success" (the empty-success-on-a-SUCCEEDED-
+// action shape). The engine holds no canon for "who was watching you", so a success
+// could only INVENT it (the C9 rail) — it must honest-decline pre-roll, no roll,
+// exactly like INFO_SEEKING_PROVENANCE_RE. Narrow by design: a query cue (who /
+// whether / if / "the one who") AND a surveillance verb (watch/spy/tail/stalk/
+// shadow/surveil — deliberately NOT "follow", which collides with accompany-"follow
+// me") AND a me/us object. Imperatives ("watch me work") lack the query cue;
+// player-as-subject ("I follow the stranger") lacks the me/us object — both stay on
+// their normal paths. (N-2)
+const INFO_SEEKING_SURVEILLANCE_RE = /\b(?:who|which|whether|if|the\s+one\s+(?:who|that))\b[\s\S]{0,50}?\b(?:watch(?:ing|ed|es)?|spy(?:ing)?|spied|spies|tail(?:ing|ed|s)?|stalk(?:ing|ed|s)?|shadow(?:ing|ed|s)?|surveil\w*)\b[\s\S]{0,20}?\b(?:me|us)\b/i;
+
 export function isInfoSeekingText(text) {
   const t = String(text || '').toLowerCase();
   if (!t.trim()) return false;
   if (INFO_SEEKING_EXCLUDE_RE.test(t)) return false;
   return INFO_SEEKING_RE.test(t) || INFO_SEEKING_OBSERVE_RE.test(t) || INFO_SEEKING_TOPIC_RE.test(t)
     || INFO_SEEKING_CONCEALMENT_RE.test(t) || INFO_SEEKING_EXISTENTIAL_RE.test(t)
-    || INFO_SEEKING_ORIGIN_RE.test(t) || INFO_SEEKING_PROVENANCE_RE.test(t);
+    || INFO_SEEKING_ORIGIN_RE.test(t) || INFO_SEEKING_PROVENANCE_RE.test(t)
+    || INFO_SEEKING_SURVEILLANCE_RE.test(t);
 }
 
 // Confrontation / contradiction challenge (H-42, IG-11 social physics): "You

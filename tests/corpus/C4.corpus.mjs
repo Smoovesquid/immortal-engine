@@ -318,4 +318,48 @@ export default [
     ],
     source: "opus-gate-2026-06-21.md (Newbie t8 'open the book' → 'it goes your way') — N-1 Tier-0; reproduced LLM-off village_baker, fixed N-1",
   },
+
+  // ---- LOCKED — surveillance query about the PC, nothing modeled (N-2) ----
+  {
+    id: 'C4-008',
+    capability: 'C4',
+    // gate-6 Newbie t? ("call out … ask if either of them is the one who was
+    // watching me") → [roll:16 success] "a useful answer comes back" — empty filler.
+    // A QUERY about who has been watching/spying on the PC is an unmodeled fact: a
+    // success could only INVENT a watcher (the C9 rail). isInfoSeekingText missed it
+    // (no sub-RE matched), so it ROLLED and any post-roll narrator (composer OR the
+    // ask:s last-resort template) delivered a content-free success — the
+    // empty-success-on-a-SUCCEEDED-action shape. N-2 adds INFO_SEEKING_SURVEILLANCE_RE
+    // → isUngroundedInfoCheck fires PRE-ROLL → honest decline, NO roll. Distinct from
+    // C4-006 (PC provenance) and C4-007 (object content-read).
+    status: 'locked',
+    fixture: 'village_baker',
+    intent: 'ask who has been watching/spying on the PC — an unmodeled surveillance fact; must honestly decline with NO roll, never a contentless success',
+    paraphrases: [
+      "I'll call out to them and ask if either of them is the one who was watching me.",
+      "I call out and ask whether either of them was the one watching me",
+      "ask the strangers if one of them was watching me earlier",
+      "I ask around whether anyone here was the one spying on me",
+      "ask if anyone here is the one who's been watching me",
+      "ask them which one was spying on me",
+      "which of them has been watching me?",
+    ],
+    assert: {
+      surface_matches: [
+        // deterministic no-record sentinel from noInfoCheckResult(), tier-independent
+        /no-?record|don.t (have|know)|can.t (say|tell)|wouldn.t know|lost to me/i,
+      ],
+      surface_excludes: [
+        /\[roll:/,                                                                 // the whole point: no roll
+        /useful answer comes back|something real to go on|goes your way|read the room/i, // the empty-success filler it used to emit
+      ],
+    },
+    diverge: [
+      { text: 'ask Mira about the bread', reason: 'an answerable ask of a present NPC — no surveillance verb; rolls/routes normally, not an info-decline' },
+      { text: 'I follow the stranger down the alley', reason: 'a tracking ACTION (player as subject, no me/us object) — resolves with a roll, not a decline' },
+      { text: 'watch me work the dough', reason: 'imperative spectate ("watch me") with no query cue — not a surveillance query' },
+      { text: 'follow me to the market', reason: 'accompany request ("follow me") — why "follow" is deliberately excluded from the verb list' },
+    ],
+    source: "opus-gate-2026-06-21.md (gate-6 Newbie 'call out … ask if either was watching me' → [roll:16] 'a useful answer comes back') — N-2 empty-success-on-a-SUCCEEDED-action; reproduced LLM-off village_baker, fixed N-2",
+  },
 ];

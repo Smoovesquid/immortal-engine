@@ -173,4 +173,24 @@ fragility** (independent backing for the convergence paraphrase-invariance core 
 adversarial paraphrase") and hybrid open-input/bounded-action control (validates Vol 7). **Reach for it:** any
 hidden-lore / secret / mystery-gating / RUMOR_LAYER work, or designing leakage/paraphrase tests.
 
-*The arc: Vol 2–6 build the layers, Vol 7 wires them, Vol 8 tests them, Vols 9–10 calibrate the testing; **Vols 11–12 = the 2025–26 frontier layer** — what's genuinely new in pragmatics (11) and what's newly-known to be fragile/leaky (12). Vols 11–12 are SOTA-dated; re-mine periodically.*
+### Vol 13 — Hidden-State / Secret-Leakage Defenses  →  [`vol-13-hidden-state-secret-leakage-defenses.md`](vol-13-hidden-state-secret-leakage-defenses.md)  ·  *defense-side companion to Vol 12; backs C16*
+*2024–26 DEFENSE-side work on preventing secret/hidden-state extraction.* **The principle for us:** *never treat
+"the model knows it but won't say it" as a security property* — represent secrets as **access-controlled state**
+and enforce at the **reveal sink** (the engine decides assert/hint/imply/deny/evade/defer/refuse; the model only
+proposes). Tier-1 defenses (access control over secret resources · action-boundary capability checks · reveal-
+authorization policies · public/private separation · channel-aware audit) are all **deterministic-gate-able** —
+fits the engine's commit invariant exactly. Validates Vol 12's `RevealPolicy`/`KnowledgeState`; AgentLeak warns
+leakage hides in non-final channels (scratchpads/logs/memory). **Reach for it:** scoping **C16** / any RUMOR_LAYER
+/ `withheldFacts` / hidden-identity / mystery-gating work.
+
+### Vol 14 — LLM-Judge Reliability & Eval-Coverage Saturation  →  [`vol-14-judge-reliability-eval-coverage-saturation.md`](vol-14-judge-reliability-eval-coverage-saturation.md)  ·  *2025–26 frontier addendum to Vols 9 & 10*
+*Freshens Vol 10 (judge) + Vol 9 (coverage) with current work.* **Two live hits on our gate:** judges are **not
+generator-invariant** (2026) → **Opus-judging-Opus is a cited risk**, favor cross-family/panel; and **CoT can
+*harm* judging** (don't "make the judge think harder"). Plus judgment *distributions* > single-point, system-rank
+≠ instance-score (JuStRank), **rubric quality has its own failure modes** (RIFT — "test the rubric, not just the
+judge"), balanced-accuracy for prevalence. **Coverage:** ProbeLLM (failure-discovery as structured MCTS search,
+beats random persona probing), benchmark-**saturation** studies (formalizes "is the corpus still discriminating"),
+track failure-MODES not counts. **Reach for it:** before trusting a gate verdict, recalibrating the gate, or
+judging whether coverage has saturated.
+
+*The arc: Vol 2–6 build the layers, Vol 7 wires them, Vol 8 tests them, Vols 9–10 calibrate the testing; **Vols 11–14 = the 2025–26 frontier layer** — new pragmatics (11), fragility/leakage (12), secret-leakage DEFENSES (13 → C16), current judge+coverage SOTA (14). The frontier vols are SOTA-dated; re-mine periodically.*

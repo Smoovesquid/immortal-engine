@@ -42,8 +42,50 @@ const SKILL_STAT = {
 // Match "what's my <skill> modifier/mod/bonus/number/check" / "give me my <skill>".
 // "sleight of hand" is normalized to the focus key sleight_of_hand below.
 const META_SKILL_MOD = /\b(?:what(?:'?s| is)\s+my\s+|my\s+|give\s+me\s+(?:my\s+)?)(athletics|intimidation|stealth|acrobatics|sleight\s+of\s+hand|insight|persuasion|deception|performance|survival|medicine|nature|arcana|investigation|perception|tracking|history|religion)(?:\s+(?:modifier|mod|bonus|number|score|check|skill))?\b/i;
-// Attack/to-hit modifier — "what's my attack modifier", "my to-hit bonus".
-const META_ATTACK_MOD = /\b(?:what(?:'?s| is)\s+my\s+|my\s+|give\s+me\s+(?:my\s+)?)(?:attack|to[-\s]?hit)\s+(?:modifier|mod|bonus|number|roll)\b/i;
+// Attack/to-hit modifier — "what's my attack modifier", "my to-hit bonus", "what's my
+// total attack bonus", "what goes into an attack roll", "attack roll formula". (H-61:
+// widened beyond the strict "my attack <noun>" possessive to catch the same intent
+// phrased as a bare "how does this work" rules question.)
+const META_ATTACK_MOD = /\b(?:what(?:'?s| is)\s+(?:my\s+)?(?:total\s+)?|my\s+(?:total\s+)?|give\s+me\s+(?:my\s+)?)(?:attack|to[-\s]?hit)\s+(?:modifier|mod|bonus|number|roll)\b|\bwhat\s+goes\s+into\s+(?:an?\s+)?attack\s+roll\b|\battack\s+roll\s+formula\b/i;
+
+// ── H-61: typed rules-question classifier (C5 graduation) ──────────────────
+// Second typed-packet graduation (mirrors H-59's compound-decomposition
+// approach). A rules/mechanic question must be answered straight from
+// ground truth, never resolved as a die roll. Rather than chase every
+// surface phrasing with its own detector, classify WHICH rule is being
+// asked about (governing-stat-for-skill here; damage-modifier and
+// attack-formula already lived as META_DAMAGE_RULE/META_ATTACK_MOD above)
+// and answer from the same sources resolve.js/escapeCombat.js actually use.
+
+// "which stat governs tracking" — the SKILL half. Reuses the same skill
+// vocabulary as SKILL_STAT/META_SKILL_MOD so a skill missing from one is
+// never silently missing from the other. "track"/"tracking" both fire (a
+// verb-form ask — "if I want to track someone which stat is it" — names no
+// noun-form skill word).
+const SKILL_TOKEN_RE = /\b(?:track(?:ing)?|athletics|intimidation|stealth|acrobatics|sleight\s+of\s+hand|insight|persuasion|deception|performance|survival|medicine|nature|arcana|investigation|perception|history|religion)\b/i;
+// The CUE half — a question genuinely asking WHICH stat governs a skill,
+// not a player naming a skill in passing ("are you tracking damage?",
+// "tell me the village's history"). Checked as a separate, independent
+// regex (not anchored adjacent to the skill word) so phrasing order never
+// matters — "what stat for tracking" and "tracking — what's the stat"
+// both fire. Never matches a bare skill mention alone.
+const STAT_QUESTION_CUE_RE = /\bwhat\s+stat\b|\bwhich\s+stat\b|\bwhich\s+ability\b|\bwhat\s+ability\b|\bgovern(?:s|ing)?\b|\bconfirm\s+the\s+stat\b|\bdo\s+i\s+roll\s+(?:might|agility|wits|grit|charm)\b|\bis\s+(?:it\s+)?(?:a\s+)?(?:might|agility|wits|grit|charm)\s+check\b|'s\s+(?:might|agility|wits|grit|charm)\b/i;
+
+function isGoverningStatQuestion(lowerText) {
+  return SKILL_TOKEN_RE.test(lowerText) && STAT_QUESTION_CUE_RE.test(lowerText);
+}
+
+// Resolve the skill word actually present to its SKILL_STAT key — "track"
+// normalizes to "tracking" (the SKILL_STAT entry), every other token is
+// already a key. Returns null when no recognized skill is present (should
+// never happen when isGoverningStatQuestion already passed).
+function resolveSkillKeyFromText(lowerText) {
+  const m = lowerText.match(SKILL_TOKEN_RE);
+  if (!m) return null;
+  const raw = m[0].toLowerCase().replace(/\s+/g, '_');
+  const key = raw === 'track' ? 'tracking' : raw;
+  return key in SKILL_STAT ? key : null;
+}
 // Bare DC ask with no declared check — "give me the DC", "what's the DC", "what DC".
 // (Explicit "make a WITS check" DCs are handled by META_EXPLICIT_CHECK below.)
 const META_BARE_DC = /\b(?:give\s+me|what(?:'?s| is)|tell\s+me)\s+(?:the\s+)?dc\b|\bwhat\s+dc\b/i;
@@ -364,7 +406,11 @@ const META_SYSTEM_CHECKIN = /\b(?:you'?re\s+just\s+repeating\s+yourself|you\s+ke
 // damage" rule check. (H-54 R3, post-H-52/H-53 gate, Rules-Lawyer: this fell
 // through every META_* gate and got rolled as a real action — "Yes or no: do
 // I add my MIGHT +1 to melee damage with these blades?" fired a d20 vs DC13.)
-const META_DAMAGE_RULE = /\bdo\s+i\s+add\s+my\s+\w+\s*(?:\+\s*\d+)?\s+to\s+(?:melee\s+)?damage\b|\bconfirm\s+(?:that'?s\s+)?the\s+right\s+mod\b|\bis\s+(?:a\s+)?hit\s+\d*d\d+\s*\+\s*\d+\b|\byes\s+or\s+no:?\s+do\s+i\s+add\s+my\s+\w+\s*(?:\+\s*\d+)?\s+to\s+(?:melee\s+)?damage\b/i;
+// H-61: widened with two more phrasings of the same rule question —
+// "does <stat> add to ... damage" (third-person framing, not "do I add")
+// and "add <stat> modifier? is that the rule" (the modifier named, then a
+// bare confirmation request instead of a yes/no "do I add" template).
+const META_DAMAGE_RULE = /\bdo\s+i\s+add\s+my\s+\w+\s*(?:\+\s*\d+)?\s+to\s+(?:melee\s+)?damage\b|\bdoes\s+\w+\s+add\s+to\s+(?:melee\s+)?damage\b|\bconfirm\s+(?:that'?s\s+)?the\s+right\s+mod\b|\bis\s+(?:a\s+)?hit\s+\d*d\d+\s*\+\s*\d+\b|\byes\s+or\s+no:?\s+do\s+i\s+add\s+my\s+\w+\s*(?:\+\s*\d+)?\s+to\s+(?:melee\s+)?damage\b|\badd\s+\w+\s+modifier\b[?\s]*is\s+that\s+the\s+rule\b|\bgo(?:es)?\s+on\s+my\s+damage\s+rolls?\b/i;
 
 // ── H-59: typed compound-query decomposition (C1 graduation) ───────────────
 // First typed-packet graduation (Biblioteca Vol 7 §18 heuristic 3 — "prefer
@@ -411,7 +457,8 @@ export function isMetaQuestion(text) {
     || META_ITEM_CAPABILITY.test(t) || META_ITEM_INERT_CLAIM.test(t)  // H-47
     || (META_ENEMY_STATUS.test(t) && ENEMY_HP_CUE_RE.test(t))  // H-59 — enemy name+HP compound
     || (DAMAGE_CUE_RE.test(t) && /\beffect\b/i.test(t))  // H-59 — "X dmg, Y effect" list compound
-    || hasIdentitySlotCompound(t);  // H-59 — terse name/class/level/HP slot listing
+    || hasIdentitySlotCompound(t)  // H-59 — terse name/class/level/HP slot listing
+    || isGoverningStatQuestion(t);  // H-61 — "which stat governs <skill>"
 }
 
 // Exported guard for playloop.js — detects NPC identity/presence queries so
@@ -1113,6 +1160,22 @@ export function handleMetaQuestion(text, world) {
     if (skillAns) return skillAns;
   }
 
+  // Governing-stat rule — "which stat governs a tracking check?" States the
+  // rule (the stat) from SKILL_STAT, the same map answerSkillModifier and
+  // resolve.js's stat-for-approach use, so the named stat can never drift
+  // from what the engine actually rolls. Distinct from answerSkillModifier
+  // above (which answers a NUMBER for the player's own skill); this answers
+  // WHICH stat applies, with or without the player's own score in play.
+  // (H-61)
+  if (isGoverningStatQuestion(lowerText)) {
+    const skillKey = resolveSkillKeyFromText(lowerText);
+    if (skillKey) {
+      const statKey = SKILL_STAT[skillKey];
+      const skillName = skillKey.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+      return `${skillName} is governed by ${statKey} — roll ${statKey} when you make that check.`;
+    }
+  }
+
   // Attack / to-hit modifier — "what's my attack modifier?" When no specific
   // weapon is named, which ability applies is genuinely ambiguous (melee vs.
   // finesse) — keep the existing explanation (H-25; locked in by U189/U190).
@@ -1135,7 +1198,10 @@ export function handleMetaQuestion(text, world) {
     let ans;
     if (namedWeapon) {
       const prof = meleeProfile(p);
-      ans = `With the ${prof.name}, your attack bonus is ${fmtMod(prof.atkBonus)} — roll d20 and add that.`;
+      // Name the components (ability modifier + proficiency), not just the
+      // final number — "how is it calculated"/"formula" phrasings are
+      // asking for the breakdown, not only the total. (H-61)
+      ans = `With the ${prof.name}, your attack bonus is ${fmtMod(prof.atkBonus)} — that's your ability modifier plus proficiency. Roll d20 and add that.`;
     } else {
       const might = statMod(Number(p.stats?.MIGHT) || 10);
       const agi = statMod(Number(p.stats?.AGILITY) || 10);

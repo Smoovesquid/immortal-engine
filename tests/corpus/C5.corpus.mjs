@@ -13,15 +13,22 @@ export default [
   {
     id: 'C5-001',
     capability: 'C5',
-    // These two verbatim phrasings reliably hit META_DAMAGE_RULE and get a
-    // "Yes — your ability modifier adds to damage" answer with no roll.
+    // H-61: folded the former C5-001-target paraphrases back in (mirrors
+    // H-59's C1-001-target merge) — META_DAMAGE_RULE now catches both the
+    // explicit "do I add" template and the "does <stat> add to damage" /
+    // "add <stat> modifier? is that the rule" framings, so all six
+    // paraphrases get the same "Yes — your ability modifier adds to damage"
+    // answer with no roll.
     status: 'locked',
     fixture: 'village_baker',
-    intent: 'ask whether MIGHT modifier applies to melee damage using an explicit modifier reference',
+    intent: 'ask whether MIGHT modifier applies to melee damage, in any phrasing, and get the rule stated with no roll',
     paraphrases: [
       "With MIGHT 12 my modifier is +1 — so a hit with either blade is 1d6+1? Confirm that's the right mod to add.",
       "That's not an answer. Yes or no: do I add my MIGHT +1 to melee damage with these blades?",
       "do i add might to damage on a hit",
+      "Does MIGHT add to melee damage, or is damage just the flat die?",
+      "Melee hit: roll 1d6, then add MIGHT modifier? Is that the rule?",
+      "My MIGHT is 12, modifier +1. Does that +1 go on my damage rolls?",
     ],
     assert: {
       surface_matches: [
@@ -37,40 +44,21 @@ export default [
     },
     diverge: [
       { text: 'I add MIGHT to my swing and hit Corwin.', reason: 'attack action; routes to combat resolution — rolls happen here' },
-    ],
-    source: 'opus-gate-2026-06-20-postH52-H53.md (RL DM, turns 3–4); calibrated 2026-06-20',
-  },
-
-  {
-    id: 'C5-001-target',
-    capability: 'C5',
-    status: 'target',
-    fixture: 'village_baker',
-    intent: 'generic MIGHT-damage phrasings that should answer the rule but currently roll or deflect',
-    paraphrases: [
-      "Does MIGHT add to melee damage, or is damage just the flat die?",
-      "Melee hit: roll 1d6, then add MIGHT modifier? Is that the rule?",
-      "My MIGHT is 12, modifier +1. Does that +1 go on my damage rolls?",
-    ],
-    assert: {
-      surface_matches: [
-        /MIGHT|might/,
-        /damage|modifier|1d6/i,
-      ],
-      surface_excludes: [
-        /\[roll:/,
-      ],
-    },
-    diverge: [
       { text: "Yes or no: do I add the poison to the blade?", reason: 'action (applying poison); C10 territory, not a rules question' },
     ],
-    source: 'opus-gate-2026-06-20-postH52-H53.md; calibrated 2026-06-20',
+    source: 'opus-gate-2026-06-20-postH52-H53.md (RL DM, turns 3–4); calibrated 2026-06-20; H-61 merge',
   },
 
   {
     id: 'C5-002',
     capability: 'C5',
-    status: 'target',
+    // H-61: typed governing-stat classifier (isGoverningStatQuestion in
+    // gracefulAdjudication.js) — fires on the presence of a skill word
+    // (tracking/track included) AND an independent "which stat governs
+    // this" cue, regardless of order or template, and states the rule from
+    // SKILL_STAT (the same map answerSkillModifier/resolve.js read) with no
+    // roll.
+    status: 'locked',
     fixture: 'village_baker',
     intent: 'ask which stat governs tracking — must state the rule (WITS), must not roll before answering',
     paraphrases: [
@@ -82,28 +70,31 @@ export default [
       "I'm about to track something — do I roll WITS? Confirm the stat.",
     ],
     assert: {
-      // Engine often rolls (WITS check) or produces observe-only output
-      // without explicitly naming WITS as the governing stat.
-      // "Is tracking a WITS check..." correctly replies "Roll WITS" — one pass.
-      // All should answer without bypassing the rule statement entirely.
       surface_matches: [
         /WITS/i,
       ],
       surface_excludes: [
         /moment slips/i,
         /nothing happens/i,
+        /\[roll:/,
       ],
     },
     diverge: [
       { text: 'I track the bandit who left those boot prints.', reason: 'declared action (tracking); DC+roll is correct behavior here' },
     ],
-    source: 'opus-gate-2026-06-19-postH39.md (RL DM, turn 9); calibrated 2026-06-20',
+    source: 'opus-gate-2026-06-19-postH39.md (RL DM, turn 9); calibrated 2026-06-20; H-61 graduation',
   },
 
   {
     id: 'C5-003',
     capability: 'C5',
-    status: 'target',
+    // H-61: widened META_ATTACK_MOD beyond the strict "my attack <noun>"
+    // possessive template ("what's my total attack bonus", "what goes into
+    // an attack roll", "attack roll formula" all now gate), and the
+    // named-weapon answer always names the components (ability modifier +
+    // proficiency) so a "how is it calculated" ask gets the breakdown, not
+    // just the final number.
+    status: 'locked',
     fixture: 'village_baker',
     intent: 'ask attack roll formula / proficiency component — must state the rule, must not roll',
     paraphrases: [
@@ -115,8 +106,6 @@ export default [
       "How many modifiers go on my attack roll with a melee weapon I'm trained in?",
     ],
     assert: {
-      // Some phrasings get good answers: "Do I add proficiency..." → explains MIGHT+proficiency.
-      // Others roll ("what goes into an attack roll here" → ROLL). Target until all are consistent.
       surface_matches: [
         /MIGHT|modifier/i,
         /proficiency|trained|bonus/i,
@@ -128,7 +117,7 @@ export default [
     diverge: [
       { text: 'I attack with the Worn Blade.', reason: 'attack action; roll happens, no obligation to explain the formula first' },
     ],
-    source: 'opus-gate-2026-06-19-postH39.md (RL DM, turn 3); calibrated 2026-06-20',
+    source: 'opus-gate-2026-06-19-postH39.md (RL DM, turn 3); calibrated 2026-06-20; H-61 graduation',
   },
 
   {

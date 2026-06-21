@@ -213,6 +213,13 @@ function canonGroundTruth(world) {
     recentCanon: recentCanon.map(e => ({ kind: e?.kind || e?.type, ref: e?.id, data: e?.data })).slice(0, 8),
     consumables: consumablesGroundTruth(pc),
     timeline,
+    // The engine's stored last roll (engine/grace answerRollRecall cites this to
+    // defend canon against a player misremembering their number). Without it the
+    // judge can't see the ledger and false-flags correct roll-recall as a
+    // fabricated roll (the 2026-06-21 "18 vs DC 12" false-positive). (gate-hardening)
+    lastRoll: world.conversation?.lastRoll
+      ? { roll: world.conversation.lastRoll.roll, dc: world.conversation.lastRoll.dc, outcome: world.conversation.lastRoll.outcome }
+      : null,
   };
 }
 
@@ -279,6 +286,12 @@ is friendly"; "I hate everyone, not just you") need NO canon citation, the same 
 commentary doesn't — score those under GATE 1 (was intent resolved in voice?), not here. Only a
 CONCRETE checkable specific — a proper name, a date/number, or a who-did-what past event — requires
 grounding; a FALSE such specific still FAILs as hallucination.
+
+ROLL-RECALL — do NOT FAIL as hallucination: if the DM cites a PAST ROLL or DC ("the ledger shows 18 vs
+DC 12", "you rolled a 17") that MATCHES the CANON bundle's "lastRoll" (or a roll in recentCanon), it is
+GROUNDED — the DM is correctly quoting its own ledger to push back on a player who misremembers their
+number. That is CORRECT canon-defense, not a fabricated roll. Only FAIL if the cited roll/DC has NO support
+in lastRoll/recentCanon.
 
 ITEMS: the CANON bundle's "consumables" lists each carried item's REAL effect (e.g.
 {name:"Tonic of grit", effect:"heal 2d4"}) or effect:null for a flavor item. Grade item-effect

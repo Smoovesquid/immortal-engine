@@ -1381,3 +1381,10 @@ other agents. (none active)
   - `node --test` 8285/0; determinism 6/6.
   - Over-fire probe: "how many coins do I have?" → purse (NOT consumables); "how many doses of Tonic of grit do I have?" → single-item (H-70); "how many doses do I have" → "You're carrying: Rations ×1, Tonic of grit ×1." ✓ residual closed.
 - Rollback: revert `2de27e0`
+
+2026-06-21T12:30:00Z — Basecamp (gate tooling — NOT an H-packet)
+- Change: **gate-judge hardening** (reference-guided judging, Biblioteca Vol 10) — `scripts/dm-playtest.mjs`
+- What: added `world.conversation.lastRoll` ({roll, dc, outcome}) to `canonGroundTruth()`, and a ROLL-RECALL clause to `JUDGE_SYSTEM` — so the judge SEES the engine's stored roll and no longer false-flags correct roll-recall ("the ledger shows 18 vs DC 12") as `CANON_HALLUCINATION`.
+- Why: the narration-track localization proved the 2026-06-21 "fabricated roll" was the engine CORRECTLY citing `world.conversation.lastRoll` (a real stored roll) via `answerRollRecall`; the judge couldn't see the ledger. This recalibrates the discovery instrument (Vol 10/14 — the judge is a noisy pointer; anchor it to canon ground-truth).
+- Verification: `node --check scripts/dm-playtest.mjs` passes (additive change, judge output schema unchanged so parsing is unaffected). The recal EFFECT (judge stops false-flagging) can ONLY be confirmed by a paid gate run — **UNVERIFIED-LIVE until the next gate (~$2.6, budget-gated)**. Future gate counts won't be directly comparable to the inflated 18/48.
+- Rollback: revert this commit.

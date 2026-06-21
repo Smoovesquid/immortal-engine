@@ -122,6 +122,17 @@ instead of delivering a fact or honestly declining (reproduces LLM-off → corpu
 deliver-or-decline gap, distinct from C4-001b's "this village" common-knowledge false-positive). **Lesson: trust
 the judge-free corpus + canon ground-truth over the gate's HARD tags (Vol 10/14); the gate is a noisy pointer.**
 
+*2026-06-21 (gate 3 — HARDENED judge — `docs/playtests/opus-gate-2026-06-21.md`):* **5/48, down from run-1's
+18/48** on the same seed/personas. The reference-guided judge fix (commit `6e39d5c`: `world.conversation.lastRoll`
++ ROLL-RECALL clause) **validated the false-positive thesis** — ~13 of run-1's 18 were judge artifacts; the
+roll-recall false-positive is gone, Rules-Lawyer 8→2, **Chaos-griefer 12/12 clean.** The gate is now a trustworthy
+instrument (Vol 10/14 reference-guided judging, confirmed live). **Discovery = 0 new capabilities (2nd consecutive
+zero-discovery gate → the loop is near-closed).** The 5 real failures: C7 ×2 (live item-effect phrasing-tail +
+cross-item compound effect-of-X/count-of-Y), C4 ×1 (compound dismiss+question, question dropped), C9 ×1 (wrong
+elder identity), and the standout **C12/intent: "point me to Kael" resolved as a real ATTACK on Kael** (directions
+→ combat — highest severity, the next bug to chase). True live DM quality ≈ 90% on this gate. Budget after:
+~$2.38 (below the one-run floor — top up before the next gate).
+
 **Social-physics categories to mine next (Biblioteca Vols 2–6, mostly not yet failing-in-gate but on the map):**
 sarcasm/irony inversion (Vol 2; transcript: `docs/playtests/ridiculous-sarcasm-2026-06-06.md`), loaded
 questions / presupposition (Vol 3, "have you stopped stealing?"), bluff vs. claim (Vol 5), request/order/threat

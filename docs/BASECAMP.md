@@ -46,6 +46,13 @@ directly except in rare, scoped exceptions (see "When Basecamp edits code" below
    form-prompt into a Basecamp window to ask whether the research genie should be pointed at any NEW SOTA. The
    default answer is "nothing" — research is demand-pulled (gathered when a real near-term need names a SOTA
    gap), never stockpiled ahead. Don't manufacture research to keep the genie busy.
+8. **`docs/THE_REF.md` — the NARRATION-TRACK handover (added 2026-06-21, post gate-5).** Gate 5 (10/48) showed the
+   Road-A deterministic loop has **plateaued**: every landed fix held, but 8/10 remaining fails were *right content,
+   wrong words* (machine-dumps, empty-successes, invented barriers) — the Rung-1 frontier moved to the **narration
+   layer**. THE REF is the plan: a judge above the DM (engine-internal narration validator/regenerator — NOT the
+   player-facing [[IG-12]] feature) that touches WORDS only, never canon/state. **When the convergence corpus is green
+   and gates open zero new Road-A capabilities but quality still lags, THIS is the track** — read it before scoping
+   narration work. It reuses what exists (`validateNarrationCandidate`, the gate `JUDGE_SYSTEM`, the OpenAI client).
 
 ## The standing rhythm
 

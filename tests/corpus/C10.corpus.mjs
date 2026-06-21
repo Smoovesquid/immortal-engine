@@ -241,7 +241,10 @@ export default [
     // meta-question gate that an explicit attack verb in the same utterance
     // should resolve the attack (and fold the numbers into its narration)
     // rather than answer the question and stop the turn.
-    status: 'target',
+    // FIXED (H-72): attackResolutionIntent() in playloop now resolves a declared
+    // attack carrying a stats rider over the meta-question gate.
+    // (Engine fix landed in H-72; Basecamp promoted this case to locked on §7-verify.)
+    status: 'locked',
     fixture: 'active_combat',
     intent: 'attack declared alongside a rules-lawyer request for the roll breakdown — should still resolve as combat, not a meta-answer',
     paraphrases: [

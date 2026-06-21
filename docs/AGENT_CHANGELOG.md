@@ -1354,3 +1354,30 @@ other agents. (none active)
   - Over-fire probe: "I spit at the Lingerer and curse its name." / "I taunt the enemy." → `[combat:table-talk]` (taunts still bounce); "I spit a firebolt into the heart of it." → resolves (fire bolt).
 - Remaining/next: firebolt at a NON-enemy (cart/innocent) DURING combat → the castConsequence interaction (gate Chaos T3/T8) — deferred, gnarlier.
 - Rollback: revert `3e2b7dd`
+
+2026-06-21T12:00:00Z — Basecamp (§7-verified + COMPLETED; entry authored by queue owner)
+- Packet/seam: H-72 — declared/demanded attack resolves over the meta intercept (C8-001 + C10-002)
+- Commit(s): `7443ad5` (Claude Sonnet 4.6, playloop lane, self-pushed) — ENGINE ONLY. Basecamp completion (separate docs commit): flipped C8-001-target & C10-002-target target→locked.
+- Files changed: `engine/playloop.js` (~34 lines) [worker]; `tests/corpus/C8.corpus.mjs` + `tests/corpus/C10.corpus.mjs` status flips [Basecamp].
+- Summary: the combat meta-gate (playloop:1857) checked `isMetaQuestion` UNCONDITIONALLY, so an attack declaration carrying a stats rider ("roll it — give me the d20, the modifier, the total") tripped `META_ATTACK_MOD` and got hijacked into table-talk instead of a strike. Added `attackResolutionIntent()` (combat-active + a first-person attack VERB or an explicit roll-demand tied to an attack — anchored on the verb form so "what's my attack modifier?" still routes to meta) gating the intercept. Also added `isCombatDrawWeaponNonAction()` so "I reach for my weapon" (the C8-001 diverge) stays table-talk rather than the escape resolver's default-to-strike. Both target cases now resolve → Basecamp promoted them to locked.
+- §7 verdict (Basecamp, independent): **VERIFIED + COMPLETED.**
+  - Scope: `git show 7443ad5` = playloop.js only. No `Math.random`/`Date.now`/`WORLD_VERSION`.
+  - Diff principled: verb-anchored `attackResolutionIntent` (no bare-noun over-fire) + the draw-weapon diverge guard. Not gaming.
+  - Over-fire matrix (Basecamp probe, active_combat): MUST-STAY-META **6/6** clean ("what's my attack modifier / AC / damage / DC / stats / HP" → meta, NO strike); MUST-RESOLVE **3/3** (real `[strike:…→miss]`, convergence-confirmed — a 140-char probe slice had masked the trailing tag); MUST-STAY-TABLE-TALK **3/3** ("I reach for my weapon" / taunts).
+  - `npm run convergence` (post-promotion) — C8 **4/4 (0 targets)**, C10 10/10 (0/1, C10-003 remains). Overall 100% (63/63). No regression.
+  - `node --test` 8285/0; determinism 6/6.
+- PROCESS note: the worker landed engine-only, leaving the two cases as passing-`target` (contra the packet done-when). Basecamp completed the trivial status flip on §7-verify. Future playloop packets: include the corpus promotion in the same commit.
+- Rollback: revert `7443ad5` (engine) + this docs commit's two corpus flips.
+
+2026-06-21T12:00:00Z — Basecamp (§7-verified; entry authored by queue owner)
+- Packet/seam: H-73 — bare consumable-count query lists real per-item counts (closes the C7 dose residual from H-70)
+- Commit(s): `2de27e0` (Claude Sonnet 4.6, grace lane, self-pushed)
+- Files changed: `engine/grace/gracefulAdjudication.js` (~34 lines), `tests/corpus/C7.corpus.mjs` (+1 locked case)
+- Summary: H-70 fixed the NAMED dose-count; the bare unnamed "how many doses do I have" (the exact gate phrasing) names no item, so `answerItemQuery` found nothing and fell to observe-only. Added `GENERIC_CONSUMABLE_CUE` (doses/consumables/potions/…) + `listConsumableCounts()` (real per-item counts off the pack), wired AFTER the named per-item fold so a named "how many doses of Tonic" still answers single-item. C7 9→10 locked.
+- §7 verdict (Basecamp, independent): **VERIFIED.**
+  - Scope: `git show 2de27e0` = grace + C7 corpus. No forbidden tokens.
+  - Diff principled (real counts via `listConsumables`' source, never invented); corpus case real asserts + a named-count diverge.
+  - `npm run convergence` — C7 10/10 locked, 0/1 (C7-002b deferred). Overall 100% (63/63). No regression.
+  - `node --test` 8285/0; determinism 6/6.
+  - Over-fire probe: "how many coins do I have?" → purse (NOT consumables); "how many doses of Tonic of grit do I have?" → single-item (H-70); "how many doses do I have" → "You're carrying: Rations ×1, Tonic of grit ×1." ✓ residual closed.
+- Rollback: revert `2de27e0`

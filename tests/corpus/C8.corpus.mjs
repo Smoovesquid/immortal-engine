@@ -54,8 +54,10 @@ export default [
     id: 'C8-001-target',
     capability: 'C8',
     // Real output: "Modifier breakpoints: 9 → −1... [combat:table-talk]"
-    // This verbatim from the gate still routes to the modifier-explain path, not a real strike.
-    status: 'target',
+    // FIXED (H-72): attackResolutionIntent() now lets a declared attack carrying a
+    // stats rider resolve to a real strike instead of the modifier table-talk.
+    // (Engine fix landed in H-72; Basecamp promoted this case to locked on §7-verify.)
+    status: 'locked',
     fixture: 'active_combat',
     intent: 'verbatim RL gate phrasing for attack — must produce a real roll, currently routes to modifier table-talk',
     paraphrases: [

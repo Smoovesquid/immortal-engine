@@ -120,35 +120,22 @@ export default [
     source: 'opus-gate-2026-06-20-postH43-H44.md [Rules Lawyer DM, turn 2]; opus-gate-2026-06-20-postH45-H46.md [Rules Lawyer DM, turn 6]; calibrated 2026-06-20',
   },
 
-  // ---- TARGET — USE phrasings that misfire (roll instead of consume) ----
-  // REVIEW: needs CONSUME_RE broadening in playloop tryUseConsumable (out of the
-  // grace lane — H-65 HALT). The correct result is [consume:unneeded] at max HP,
-  // which ONLY playloop's tryUseConsumable can emit; grace can describe but cannot
-  // consume. Two playloop-side root causes: (1) CONSUME_RE requires the use-verb
-  // BEFORE the item noun, so "uncork the tonic and swallow it down" / "tilt it
-  // back and drain it" (verb after noun; "uncork"/"tilt"/"drain" not in the verb
-  // list) never reach tryUseConsumable and fall to a roll; (2) the "tell me what
-  // changes on my sheet" rider trips the grace stat-sheet meta first ("I cannot
-  // edit them"). Routing these to answerItemQuery (a description) would pass the
-  // loose assert but is the WRONG DM response to an explicit USE action, so we do
-  // NOT game it here — left target until playloop broadens CONSUME_RE.
+  // ---- LOCKED (H-69) — action-phrased USE, noun-before-verb order ----
+  // CONSUME_RE widened (H-69) to also match noun-before-verb order plus
+  // "uncork", so this reaches tryUseConsumable and correctly resolves
+  // [consume:unneeded] at max HP instead of falling through to a roll.
   {
-    id: 'C7-002-target',
+    id: 'C7-002a',
     capability: 'C7',
-    // "I'll uncork the Tonic of grit and drink it right now..." → "I cannot edit sheet" (wrong)
-    // "uncork the tonic and swallow it down" → rolls
-    // These should produce [consume:unneeded] at max HP, not roll or claim inability.
-    status: 'target',
+    status: 'locked',
     fixture: 'village_baker',
-    intent: 'verbose or action-phrased USE of tonic that should consume but rolls or claims inability',
+    intent: 'action-phrased USE of tonic (noun-before-verb order) must consume, not roll',
     paraphrases: [
-      "I'll uncork the Tonic of grit and drink it right now — tell me exactly what changes on my sheet.",
       "uncork the tonic and swallow it down",
-      "I tilt the Tonic of grit back and drain it — what does my sheet show now?",
     ],
     assert: {
       surface_matches: [
-        /\[consume:|already whole|tonic|grit/i,   // some consumption-related response
+        /\[consume:|already whole/i,   // consume-specific signature only — no bare /tonic|grit/
       ],
       surface_excludes: [
         /\[consume:none\]/i,
@@ -157,7 +144,38 @@ export default [
       ],
     },
     diverge: [
-      { text: "What does the Tonic of grit do?", reason: "query, not USE; C7-001 territory" },
+      { text: "What does the Tonic of grit do?", reason: "query, not USE; C7-001 territory — describe, don't apply" },
+    ],
+    source: 'opus-gate-2026-06-20-postH43-H44.md [Rules Lawyer DM, turn 2]; calibrated 2026-06-20; widened H-69',
+  },
+
+  // ---- TARGET — USE phrasings that trip the stat-sheet meta gate first ----
+  // DEFERRED to the meta-gate-precedence packet (shared root cause: C8-001,
+  // C10-002) — the "...what changes on my sheet" rider trips the grace
+  // stat-sheet meta intercept ("I cannot edit them") BEFORE tryUseConsumable
+  // ever runs. Out of scope for H-69 (playloop CONSUME_RE lane only).
+  {
+    id: 'C7-002b',
+    capability: 'C7',
+    status: 'target',
+    fixture: 'village_baker',
+    intent: 'verbose USE of tonic with a "what changes on my sheet" rider — should consume, not claim inability',
+    paraphrases: [
+      "I'll uncork the Tonic of grit and drink it right now — tell me exactly what changes on my sheet.",
+      "I tilt the Tonic of grit back and drain it — what does my sheet show now?",
+    ],
+    assert: {
+      surface_matches: [
+        /\[consume:|already whole/i,
+      ],
+      surface_excludes: [
+        /\[consume:none\]/i,
+        /I cannot edit/i,
+        /inert|does nothing/i,
+      ],
+    },
+    diverge: [
+      { text: "What does the Tonic of grit do?", reason: "query, not USE; C7-001 territory — describe, don't apply" },
     ],
     source: 'opus-gate-2026-06-20-postH43-H44.md [Rules Lawyer DM, turn 2]; calibrated 2026-06-20',
   },

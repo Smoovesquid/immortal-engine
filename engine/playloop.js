@@ -4352,7 +4352,12 @@ function tryAttune(w, text) {
 // "holy\s*water" added (H-45) so the newly-wired Holy water (questionable)
 // is actually reachable by its own name — without it "I drink the holy
 // water" never reached tryUseConsumable at all.
-const CONSUME_RE = /\b(?:drink|quaff|swig|down|use|take|swallow|apply|bind|wrap)\b.*\b(?:potion|draught|elixir|antidote|tonic|remedy|splint|dressing|bandage|holy\s*water)s?\b|\bdrink\b.*\bhealing\b/i;
+// H-69 — added the middle alternation (noun-before-verb order) + "uncork" so
+// action-phrased USE like "uncork the tonic and swallow it down" reaches this
+// path. Verb list there is kept tight (drink|quaff|swig|swallow|drain only)
+// to avoid catching incidental tonic mentions ("the tonic seller went down
+// the road", "I gulp near the tonic shelf").
+const CONSUME_RE = /\b(?:drink|quaff|swig|down|use|take|swallow|apply|bind|wrap|uncork)\b.*\b(?:potion|draught|elixir|antidote|tonic|remedy|splint|dressing|bandage|holy\s*water)s?\b|\b(?:potion|draught|elixir|antidote|tonic|remedy)s?\b.*\b(?:drink|quaff|swig|swallow|drain)\b|\bdrink\b.*\bhealing\b/i;
 
 function tryUseConsumable(w, text) {
   const t = String(text || '');

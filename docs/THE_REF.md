@@ -47,6 +47,47 @@ failures live.
 
 ---
 
+## The Ref's verdict space — it judges the QUESTION too, not only the answer
+
+A binary judge (pass / regenerate-the-words) has a blind spot: sometimes the DM whiffed because the
+*input* was bad, and the right DM move is not to fabricate a better answer — it's to engage the player
+about the question. A real DM does this constantly. So the verdict is an enum, not a boolean:
+
+- **PASS** — narration is fine, ship it.
+- **REGENERATE** — right facts, wrong words; redo the narration with the engine's computed content.
+- **DECLINE_INAPPROPRIATE** — the input is out of bounds / not playable. *Runtime home for [[IG-10]] /
+  C13* ("what are you doing? we're playing a game").
+- **REDIRECT_UNANSWERABLE** — no answerable intent as posed; say so and point a way ("no way for your
+  character to know that — try asking someone who would"). *Generalizes C4 honest-decline into a proactive
+  redirect.*
+- **DECOMPOSE** — too compound to answer well as one; invite one-at-a-time ("that's three questions —
+  which first?"). *The companion to C1's answer-every-part.*
+- **REPHRASE** — genuinely ambiguous; ask the player to narrow it. *Generalizes C2's clarify-referent.*
+
+A kick-back verdict produces a **no-op-on-state** turn (like the existing `clarify:referent` / no-info
+paths) — words only, no delta, the player re-asks. It also unifies behaviors already scattered across the
+engine (C2 clarify, C13 decline, ungrounded-info honest-decline) under one adjudicator, and it's the
+runtime home for the social-physics rules the Biblioteca names next: Vol 1 **clarification-as-a-
+first-class-outcome**, and Vol 3 **loaded-question / presupposition rejection** ("have you stopped
+stealing?" → reject the premise) — a genuinely NEW capability.
+
+**THREE GUARDRAILS — get these wrong and this feature backfires:**
+1. **Kick-back is the EXCEPTION; the default stays "resolve intent in the fiction" ([[THE_DM_TEST]]).** A
+   judge finds it *easier* to say "rephrase that" than to find the right answer — and every bounce is a
+   turn the player didn't get to play. Lean on kick-back and you quietly gut the game (the exact thing
+   Rung 1 was built to kill). Bias HARD toward answering (Vol 7: interpret richly, commit narrowly).
+   Kick-back is last resort.
+2. **The kick-back must be DM-VOICED / in-character — never a system artifact.** "Whoa, one at a time —
+   what first?" (a DM) NOT "INPUT INVALID: please decompose" (a UI). If it reads like form validation, it
+   IS the mechanical bounce THE_DM_TEST forbids, and we've reintroduced the bug we spent Rung 1 killing.
+   The verdict may be structured internally; what reaches the player is always the DM in character.
+3. **Triggers deterministic-first.** The engine already KNOWS most kick-back cases — C13 (absurd),
+   `isUngroundedInfoCheck` (unanswerable), C2 (ungrounded referent). Those fire the verdict for free
+   (Tier 0/1). The Tier-2 LLM judge only backstops the fuzzy ones (a loaded question, a real ambiguity)
+   where there's no clean deterministic signal.
+
+---
+
 ## Hard invariants (violate these and you detonate the moat — non-negotiable)
 
 1. **Narration ≠ canon. The Ref touches WORDS ONLY.** It sees `(player input, the engine's computed

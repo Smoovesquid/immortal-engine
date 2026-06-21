@@ -1181,7 +1181,7 @@ function playerMoveCore(world, packsById, text) {
 
   // Surface-only exploration: list adjacent map nodes deterministically (no roll, no tick, no timeline).
   // Skipped when combat is active — during a fight, everything routes through the combat resolver.
-  if (!w.combat?.active && isExploreIntent(text)) {
+  if (!w.combat?.active && isExploreIntent(text) && !isDirectAddressIntent(text)) {
     // H-60: a fabricated person-signalled referent inside an observer question
     // ("what is keeping Brokefang so quiet over there?", "what is Brokefang
     // staring at?") must clarify, not get swallowed as a generic look-around —
@@ -3472,7 +3472,10 @@ function extractDialogueRef(text) {
   }
   // 'X, hello' / 'X, good morning'
   const m4 = t.match(/^\s*([a-z][a-z' -]+?),\s*(?:hello|hi|hey|greetings|good\s+(?:morning|day|evening)|well met)\b/i);
-  if (m4 && m4[1]) return cleanDialogueRef(m4[1]);
+  // (N-3) reject a filler interjection mis-read as a name ("Um, hi …", "Well, hello").
+  if (m4 && m4[1] && !/^(?:um+|uh+|oh+|er+|ah+|hmm+|well|so|sorry|okay|ok|wait|hey|yeah|nah|yes|no|please)$/i.test(m4[1].trim())) {
+    return cleanDialogueRef(m4[1]);
+  }
   // Approaching or greeting a PERSON is dialogue intent. m5/m6 return a CANDIDATE
   // ref; the caller resolves it against NPCs actually present and falls through to
   // travel when it's a place, not a person — so "go over to Aldrich" (he's here)
@@ -3504,7 +3507,16 @@ function isDirectAddressIntent(text) {
   return /\bi(?:'?m|\s+am)\s+talking\s+to\s+you\b/.test(t)
     || /\btalking\s+to\s+you\b/.test(t)
     || /\bwhat\s+are\s+you\s+(?:looking|watching|staring)\s+at\s+(?:me\b|\?)/.test(t)
-    || /\bwhy\s+are\s+you\s+(?:watching|staring|looking)\s+at\s+me\b/.test(t);
+    || /\bwhy\s+are\s+you\s+(?:watching|staring|looking)\s+at\s+me\b/.test(t)
+    // (N-3) Conversational address to a present figure — the identity/acquaintance
+    // questions a player asks someone they've just met. A real DM opens the
+    // conversation (the NPC answers in voice), never a d20 roll or a room-observe.
+    // "who are YOU" (the addressee), never "who am I" (self → identity-meta).
+    || /\bwho(?:'?re|\s+are)\s+you\b/.test(t)
+    || /\bwho(?:'?s|\s+is)\s+(?:this|that)\b(?!\s+(?:place|building|town|village|road|thing))/.test(t)
+    || /\bdo\s+i\s+know\s+you\b/.test(t)
+    || /\bhave\s+(?:we\s+met|i\s+met\s+you)\b/.test(t)
+    || /\bwhat(?:'?s|\s+is)\s+your\s+name\b/.test(t);
 }
 
 // Like cleanDialogueRef, but also drops a trailing intent clause so a compound

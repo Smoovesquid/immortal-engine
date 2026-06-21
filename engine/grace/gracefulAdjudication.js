@@ -589,13 +589,24 @@ const INFO_SEEKING_EXISTENTIAL_RE = /\b(?:was|were)\s+there\s+(?:anyone|someone|
 // origin/motive questions aimed at an NPC. Share the deliver-or-decline contract. (H-63)
 const INFO_SEEKING_ORIGIN_RE = /\bwhy\s+(?:did\s+)?(?:you|they|he|she)\s+(?:come|came|settle[ds]?|move[ds]?|go|went|land(?:ed)?|arrive[ds]?)\b|\bwhy'?d\s+(?:you|they|he|she)\s+(?:come|came|settle[ds]?|move[ds]?|go|went|land(?:ed)?|arrive[ds]?)\b|\bwhat\s+brought\s+(?:you|them|him|her|everyone)\b/i;
 
+// The PC's OWN provenance — "who carried me in last night", "where did they find
+// me", "who brought me here", "was I found by anyone". Distinct from
+// INFO_SEEKING_ORIGIN_RE (an NPC's motive, "why did you come"). These are
+// fact-DEMANDS about a past event involving the PC; without this the bare AND
+// NPC-addressed forms missed every sub-RE and fell through to a generic WITS
+// resolve that "succeeded" with contentless flavor (gate-4 Lore-hound t2/t9/t10/
+// t11 — C4 empty-success in the resolve path). Anchored on a question-word + a
+// PAST-tense transport/discovery verb + a me/us object, so present-tense escort
+// ("take me to X", "point me to <NPC>" — C12) stays movement, not info-decline. (H-78)
+const INFO_SEEKING_PROVENANCE_RE = /\b(?:who|where|when|how)\b[\s\S]{0,40}?\b(?:carried|brought|took|dragged|hauled|found|find|deliver(?:ed)?|left|drop(?:ped)?|put|placed|wheel(?:ed)?|dumped)\b[\s\S]{0,20}?\b(?:me|us)\b|\b(?:was|were)\s+(?:i|we)\s+(?:found|brought|carried|taken|left|dropped|put|placed|deliver(?:ed)?|discover(?:ed)?|dumped)\b/i;
+
 export function isInfoSeekingText(text) {
   const t = String(text || '').toLowerCase();
   if (!t.trim()) return false;
   if (INFO_SEEKING_EXCLUDE_RE.test(t)) return false;
   return INFO_SEEKING_RE.test(t) || INFO_SEEKING_OBSERVE_RE.test(t) || INFO_SEEKING_TOPIC_RE.test(t)
     || INFO_SEEKING_CONCEALMENT_RE.test(t) || INFO_SEEKING_EXISTENTIAL_RE.test(t)
-    || INFO_SEEKING_ORIGIN_RE.test(t);
+    || INFO_SEEKING_ORIGIN_RE.test(t) || INFO_SEEKING_PROVENANCE_RE.test(t);
 }
 
 // Confrontation / contradiction challenge (H-42, IG-11 social physics): "You

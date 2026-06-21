@@ -242,4 +242,41 @@ export default [
     ],
     source: 'gate 2026-06-21 C4 empty-success regression (Brae roll:21 vacuous answer); reproduced LLM-off on dialogue_active; fixed H-74',
   },
+
+  // ---- LOCKED ----
+  {
+    id: 'C4-006',
+    capability: 'C4',
+    // The PC's OWN provenance — "who carried me in / where did they find me" — a
+    // past event canon doesn't hold. Before H-78 isInfoSeekingText missed these
+    // (INFO_SEEKING_PROVENANCE_RE didn't exist), so the NPC-addressed form fell to
+    // a generic WITS resolve that "succeeded" with contentless flavor ("it goes
+    // your way") — gate-4 Lore-hound t2/t9/t10/t11, C4 empty-success in the resolve
+    // path. Now isUngroundedInfoCheck fires PRE-ROLL → honest decline, no roll.
+    status: 'locked',
+    fixture: 'village_baker',
+    intent: 'ask who carried/brought the PC in or where they were found — an ungrounded past event; must honestly decline with NO roll, never a contentless success',
+    paraphrases: [
+      "Who carried me in last night?",
+      "Who brought me here?",
+      "Where did they find me?",
+      "Mira, who carried me in here last night, and where did they find me?",
+      "Who hauled me in, and when?",
+    ],
+    assert: {
+      surface_matches: [
+        // deterministic no-roll sentinel from noInfoCheckResult(), tier-independent
+        /no-?record|don.t (have|know)|can.t (say|tell)|lost to me|Couldn.t say|wouldn.t know/i,
+      ],
+      surface_excludes: [
+        /\[roll:/,                                         // the whole point: no gradeable roll
+        /it goes your way|something real to go on|half-works/i,  // the empty-success filler it used to emit
+      ],
+    },
+    diverge: [
+      { text: 'take me to Mira', reason: 'present-tense escort = movement intent, not a provenance question; must not info-decline' },
+      { text: 'point me to Mira', reason: 'C12 directions (H-75); must not info-decline, and must not strike' },
+    ],
+    source: 'opus-gate-2026-06-21.md (gate 4, Lore-hound t2/t9/t10/t11) — C4 empty-success in the resolve path; reproduced LLM-off village_baker; fixed H-78',
+  },
 ];

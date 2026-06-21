@@ -33,7 +33,7 @@ detectors. Status starts `seed`.
 | C1 | Answer **every part** of a compound query | H-25/H-31/H-40/H-54/**H-59** | `handleMetaQuestion` typed sub-intent decomposition | 4L/0T | **✓** |
 | C2 | A **named referent** must be grounded before the turn resolves | H-56, C2-grad, **H-60** | `ungroundedNpcReferentForText` + `hasPersonReferentSignal` + observe/travel hoist | 5L/0T | **✓** |
 | C3 | A **declared check** gets a DC + roll | H-54 R4 | `META_EXPLICIT_CHECK_*` | 0L/3T | — |
-| C4 | Info-seeking **delivers a grounded fact or honestly declines** | H-22/23/29/31/39/H-63, **H-74** | `isInfoSeekingText` + `META_PURSE` + dialogue place-branch deliver-or-decline guard | 5L/2T | **partial** |
+| C4 | Info-seeking **delivers a grounded fact or honestly declines** | H-22/23/29/31/39/H-63/H-74, **H-78** | `isInfoSeekingText` (+provenance widen) + `META_PURSE` + dialogue place-branch + pre-roll `isUngroundedInfoCheck` | 6L/2T | **partial** |
 | C5 | A **rules/mechanic question** is answered straight, never rolled | H-25/H-54 R3, **H-61** | `META_DAMAGE_RULE`/`META_ATTACK_MOD` + typed governing-stat classifier | 3L/1T | **partial** |
 | C6 | **Number-transparency**: own stats/mods/AC/HP/items from the sheet | H-25/H-31/H-40, **H-68** | `answerSkillModifier`, `META_ARMOR_VALUE`, `META_HELD_ITEMS`, `META_INVENTORY` (widened) | 5L/0T | **✓** |
 | C7 | **Item/consumable** query answers from real def; **use** applies effect | H-45/H-47/H-65/H-69/H-70/H-73/H-76, **H-77** | `answerItemQuery`/`META_ITEM` + `CONSUME_RE` + count/compound + bare-count list + sheet-rider guard + effect-cue/`ITEM_EFFECT_DEMAND_RE` widen | 13L/0T | **partial** |
@@ -185,6 +185,18 @@ generic d20 resolve, so an unanswerable info-question honestly declines instead 
 tail: C2 clarify-on-invented-referent (t12), C5 governing-stat-on-melee + honor-the-roll-demand (t8). Judge note (Vol 14):
 the hardened judge held (no roll-recall false-positives; sole loose tag = t12 invention-vs-referent) — trustworthy as a
 pointer, confirmed against the DM lines + canon. **Budget after: ~$4.44** (~$2.85 spent, 96 Opus calls).
+
+*2026-06-21 (H-78 — C4 empty-success in the RESOLVE path, gate-4's #1 fix):* closed. The gate-4 Lore-hound deadends
+("who carried me in last night / where did they find me", t2/t9/t10/t11) were info-questions about the PC's own
+PROVENANCE — a past event canon doesn't hold — that matched NONE of `isInfoSeekingText`'s sub-REs, so the pre-roll
+`isUngroundedInfoCheck` gate never fired and the turn rolled a generic WITS check that "succeeded" with contentless
+flavor. Added `INFO_SEEKING_PROVENANCE_RE` (question-word + PAST-tense transport/discovery verb + me/us) → the existing
+`noInfoCheckResult`/`declineInfoSeek` machine now honest-declines with NO roll. **C4 5L/2T → 6L/2T** (C4-006 locked);
+convergence 68→69 (100%); suite 8285/0; over-fire-safe (escort "take me to X" + C12 "point me to <NPC>" stay movement —
+8/8 negatives verified). §7-self-verified (Basecamp acting as worker, Tim away — "run all of this here"). **Reproduced
+LLM-off FIRST** — the empty-success only triggers when an NPC is addressed (bare forms went observe-only), the
+fixture-coverage lesson: the gate path needed the vocative/address form to reproduce. Remaining gate-4 tail: t4 + t12 =
+**C2 identity** (H-79 next), RL t8 = **C5 melee-stat** (H-80).
 
 **Social-physics categories to mine next (Biblioteca Vols 2–6, mostly not yet failing-in-gate but on the map):**
 sarcasm/irony inversion (Vol 2; transcript: `docs/playtests/ridiculous-sarcasm-2026-06-06.md`), loaded

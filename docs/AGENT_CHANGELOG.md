@@ -1441,3 +1441,16 @@ other agents. (none active)
   - Suite **8285/8285** green. Determinism (U19/21/22/27/30 + worldTick) **585/585** green.
   - **Files:** `engine/grace/gracefulAdjudication.js`, `tests/corpus/C7.corpus.mjs`
   - Rollback: revert this commit.
+
+2026-06-21T17:30:00Z — Basecamp (acting as worker; Tim away, authorized "run all of this here")
+- Packet/seam: H-78 — C4 empty-success in the RESOLVE path (gate-4 Lore-hound t2/t9/t10/t11)
+- Commit(s): `9fa47bb` (engine grace + C4 corpus, atomic). Docs (this entry + ledger flip) separate.
+- Files changed: `engine/grace/gracefulAdjudication.js` (+`INFO_SEEKING_PROVENANCE_RE`, wired into `isInfoSeekingText`), `tests/corpus/C4.corpus.mjs` (+locked C4-006).
+- Summary: "who carried me in last night / where did they find me" — an NPC-addressed question about a PAST EVENT canon doesn't hold — matched NONE of `isInfoSeekingText`'s sub-REs, so the pre-roll `isUngroundedInfoCheck` gate (playloop:2305) never fired and the turn fell to a generic WITS resolve that narrated a CONTENTLESS success ("it goes your way"). Added `INFO_SEEKING_PROVENANCE_RE` (question-word + PAST-tense transport/discovery verb {carried/brought/took/dragged/hauled/found/find/delivered/left/dropped/put/placed/wheeled/dumped} + me/us object, OR "(was|were) (i|we) found/brought/…"). The existing `noInfoCheckResult`/`declineInfoSeek` path now produces an honest NO-ROLL decline. Deliberately PAST-tense + question-word anchored so present-tense escort ("take me to X", "point me to <NPC>" / C12-H75) stays a movement intent, NOT an info-decline.
+- §7 verification (Basecamp self — full discipline since no second agent):
+  - Reproduced LLM-off FIRST: `isInfoSeekingText` returned false for every form; "Mira, who carried me in…" → `[roll:12 WITS mixed]` + filler. Post-fix → "…I don't know. [info-check → no-record | nothing grounded to deliver, no roll]".
+  - Detector probe: 6/6 gate phrasings TRUE; **8/8 over-fire negatives FALSE** ("take me to the elder", "point me to Mira", "take me to Sera Voss and her stall", "where do I go?", "what do I see?", "I search the room", "carry me to the healer", "I attack the one who carried me in" [EXCLUDE]).
+  - `npm run convergence` — C4 **6/6 locked** (C4-006 new), Overall **100% (69/69)**, exit 0. No regression — the widen touches every `isInfoSeekingText` call site; C2 5/5, C9 2/2, C12 4/4 all held.
+  - `node --test` — **8285/8285, 0 fail**.
+- Remaining/next: gate-4 t4 ("how can you not know your own name") + t12 (invented "Brae" → resolved vs present Corwin) are C2 identity, NOT C4 → H-79. C4-001b/C4-004b stay target (blocked outside grace lane).
+- Rollback: revert `9fa47bb` + this docs commit.

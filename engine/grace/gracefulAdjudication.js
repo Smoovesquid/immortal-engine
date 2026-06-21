@@ -1708,6 +1708,29 @@ export function handleMetaQuestion(text, world) {
   {
     const m = lowerText.match(META_STAT) || lowerText.match(META_STAT_SYNONYM);
     if (m) {
+      // (N-3) A stat name inside an ITEM-effect question ("what's the Tonic of
+      // grit do — does it boost my GRIT?") must not hijack to the bare stat
+      // readout — the item-effect answer wins. Gated on a REAL carried item
+      // actually being named (answerItemQuery falls back loosely to a consumable,
+      // which would wrongly answer "what does my GRIT do?" about the Tonic), so
+      // standalone stat queries still get the stat.
+      const itemEffectAsk = META_ITEM.test(lowerText) || META_ITEM_CAPABILITY.test(lowerText)
+        || META_ITEM_QUERY.test(lowerText) || ITEM_EFFECT_DEMAND_RE.test(lowerText);
+      if (itemEffectAsk) {
+        const inv = world.party?.[0]?.inventory || {};
+        const carried = [];
+        for (const [cat, arr] of Object.entries(inv)) {
+          if (cat === 'items' || !Array.isArray(arr)) continue;
+          for (const it of arr) { const n = String(it?.name || it).toLowerCase().trim(); if (n) carried.push(n); }
+        }
+        for (const it of (Array.isArray(inv.items) ? inv.items : [])) {
+          const def = getItemDef(it?.defRef); if (def?.name) carried.push(String(def.name).toLowerCase());
+        }
+        if (carried.some(n => n.length > 2 && lowerText.includes(n))) {
+          const itemAns = answerItemQuery(lowerText, world);
+          if (itemAns) return itemAns;
+        }
+      }
       const key = resolveStatKey(m[1]);
       const stats = world.party?.[0]?.stats || {};
       if (key in stats) {

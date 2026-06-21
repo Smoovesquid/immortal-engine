@@ -461,4 +461,34 @@ export default [
     ],
     source: 'H-77 dispatch; calibrated 2026-06-21',
   },
+
+  // ---- LOCKED — item-effect wins when the question also names a stat (N-3) ----
+  {
+    id: 'C7-010',
+    capability: 'C7',
+    // gate-7 RL t2/t5: "what's the Tonic do — does it boost my GRIT?" matched
+    // META_STAT ("my GRIT") and answered the bare stat readout ("Your GRIT is 12")
+    // before the item-effect branch. N-3: when a REAL carried item is named, the
+    // item-effect answer wins over the stat readout. Standalone stat queries (and
+    // "what does my GRIT do?", no real item) keep the stat — see diverge.
+    status: 'locked',
+    fixture: 'village_baker',
+    intent: 'an item-effect question that also names a stat states the item effect, not the bare stat/HP readout',
+    paraphrases: [
+      "What's the Tonic of grit do, mechanically — does it boost my GRIT, and for how long?",
+      'Does the Tonic restore HP, give a GRIT bonus, or temporary hit points?',
+      'mechanically, what does the Tonic of grit do for my HP?',
+      'what does the Tonic of grit do to my stats?',
+      'What does the Tonic of grit do — does it raise my GRIT?',
+    ],
+    assert: {
+      surface_matches: [ /2d4|heals/i ],
+      surface_excludes: [ /\[roll:/, /GRIT is \d|WITS is \d|a [+-]?\d+ modifier/i ],
+    },
+    diverge: [
+      { text: "what's my GRIT?", reason: 'standalone stat query → the stat readout, not an item effect' },
+      { text: 'what does my GRIT do?', reason: 'stat phrased with "do", no real item named → stat readout' },
+    ],
+    source: 'opus-gate-2026-06-21.md (gate 7 RL t2/t5) — stat name inside an item-effect question hijacked the stat readout; fixed N-3',
+  },
 ];

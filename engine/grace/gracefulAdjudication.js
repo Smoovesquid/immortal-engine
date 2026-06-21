@@ -1474,6 +1474,18 @@ export function handleMetaQuestion(text, world) {
   // weapon or armor, yes or no?", "what do my hands find when I pat myself
   // down?" — all four got the raw stat block, none got class or gear.)
   // Explicitly refuse to mutate (report-only).
+  // H-76 — a consume action carrying a "what changes on my sheet" rider
+  // ("I'll uncork the Tonic of grit and drink it right now — tell me exactly
+  // what changes on my sheet") used to be caught by META_SHEET_CONFIRM and
+  // answered with the static stat-block readout BEFORE the consume ever
+  // resolved. The downstream consume path (playloop.js CONSUME_RE) already
+  // matches these phrasings — this guard just steps out of its way. Mirrors
+  // CONSUME_RE's verb+noun shape locally rather than importing it, to keep
+  // grace/playloop layering clean.
+  const SHEET_CONSUME_CUE_RE = /\b(?:drink|quaff|swig|down|swallow|drain|uncork|tilt)\b.*\b(?:potion|draught|elixir|antidote|tonic|remedy)s?\b|\b(?:potion|draught|elixir|antidote|tonic|remedy)s?\b.*\b(?:drink|quaff|swig|swallow|drain)\b/i;
+  if (META_SHEET_CONFIRM.test(lowerText) && SHEET_CONSUME_CUE_RE.test(lowerText)) {
+    return null;
+  }
   if (META_SHEET_CONFIRM.test(lowerText)) {
     const wantsClass = mentionsCharacterClass(lowerText);
     const wantsGear = mentionsGearAsk(lowerText);

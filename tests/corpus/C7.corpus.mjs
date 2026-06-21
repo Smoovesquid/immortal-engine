@@ -157,7 +157,7 @@ export default [
   {
     id: 'C7-002b',
     capability: 'C7',
-    status: 'target',
+    status: 'locked',
     fixture: 'village_baker',
     intent: 'verbose USE of tonic with a "what changes on my sheet" rider — should consume, not claim inability',
     paraphrases: [
@@ -176,6 +176,7 @@ export default [
     },
     diverge: [
       { text: "What does the Tonic of grit do?", reason: "query, not USE; C7-001 territory — describe, don't apply" },
+      { text: "What's on my sheet?", reason: "bare sheet query, no consume cue — must stay the stat-block readout, not [consume:]" },
     ],
     source: 'opus-gate-2026-06-20-postH43-H44.md [Rules Lawyer DM, turn 2]; calibrated 2026-06-20',
   },

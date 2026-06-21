@@ -36,10 +36,10 @@ detectors. Status starts `seed`.
 | C4 | Info-seeking **delivers a grounded fact or honestly declines** | H-22/23/29/31/39, **H-63** | `isInfoSeekingText` (+existential/origin patterns), `META_PURSE` widened | 4L/2T | **partial** |
 | C5 | A **rules/mechanic question** is answered straight, never rolled | H-25/H-54 R3, **H-61** | `META_DAMAGE_RULE`/`META_ATTACK_MOD` + typed governing-stat classifier | 3L/1T | **partial** |
 | C6 | **Number-transparency**: own stats/mods/AC/HP/items from the sheet | H-25/H-31/H-40, **H-68** | `answerSkillModifier`, `META_ARMOR_VALUE`, `META_HELD_ITEMS`, `META_INVENTORY` (widened) | 5L/0T | **✓** |
-| C7 | **Item/consumable** query answers from real def; **use** applies effect | H-45/H-47/H-65, **H-69** | `answerItemQuery`/`META_ITEM` + `CONSUME_RE` (widened) | 7L/1T | **partial** |
+| C7 | **Item/consumable** query answers from real def; **use** applies effect | H-45/H-47/H-65/H-69, **H-70** | `answerItemQuery`/`META_ITEM` + `CONSUME_RE` + count/compound branch | 9L/1T | **partial** |
 | C8 | **Narration ≤ mechanics** — no hit/defeat the dice didn't produce | H-26/H-28/H-43 | `llmAdapter` validator R1–R3 | 3L/1T | — |
 | C9 | **Canon non-invention** — no invented name/date/tenure/relationship | H-27/H-49/H-52 | `findInventedFactClaim` | 2L/2T | — |
-| C10 | A **declared attack** routes to real combat resolution | H-30/H-32/H-43/H-48/H-55, **H-64** | playloop attack gates + `go for`/`flip-onto-person`/npc-generic fixes | 8L/2T | **partial** |
+| C10 | A **declared attack** routes to real combat resolution | H-30/H-32/H-43/H-48/H-55/H-64, **H-71** | playloop attack gates + `go for`/`flip-onto-person`/npc-generic + firebolt-as-action | 9L/2T | **partial** |
 | C11 | **Confrontation under pressure** → in-character NPC reaction | H-42 | `isConfrontationChallenge`, `confrontationReaction` | 3L/0T | — |
 | C12 | **Movement/travel intent** resolves in fiction, no travel-gate bounce | THE_DM_TEST residuals, **H-62** | playloop talkRef-before-free-movement + `extractFindPersonRef` | 3L/0T | **✓** |
 | C13 | **Absurd / out-of-bounds** input declines in-character | IG-10, **H-67** | `tryRidiculous`/`RIDICULOUS` (playloop, Road A) | 4L/0T | **✓** |

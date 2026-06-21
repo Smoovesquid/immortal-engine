@@ -1326,3 +1326,31 @@ other agents. (none active)
   - Over-fire probe (off-corpus): "What does the Tonic of grit do?" → describe (heals 2d4), NOT consumed; "I tilt my head at the tonic seller." / "the tonic seller went down the road" / "I gulp nervously near the tonic shelf." → no consume; genuine "uncork…swallow" → `[consume:unneeded]` at full HP.
 - Remaining/next: C7-002b → the meta-gate-precedence cross-lane packet (with C8-001, C10-002).
 - Rollback: revert `9f355ce`
+
+2026-06-21T11:45:00Z — Basecamp (§7-verified; entry authored by queue owner)
+- Packet/seam: H-70 — C7 dose-count + compound item-query (the 2026-06-21 gate's #1 finding, deterministic core)
+- Commit(s): `c7dc5fc` (Claude Sonnet 4.6, grace lane, self-pushed — correct for the grace lane)
+- Files changed: `engine/grace/gracefulAdjudication.js` (~46 lines), `tests/corpus/C7.corpus.mjs` (+2 locked cases)
+- Summary: C7 7L/1T → 9L/1T. In `answerItemQuery`: (1) an `ITEM_TOKEN_STOPWORDS` denylist (many/much/have/does/what/…) so a generic query word no longer false-matches an item name (the gate's "how MANY doses" wrongly matched "Cloak of MANY patches"); (2) a count branch (`ITEM_COUNT_RE` = /how many/) checked BEFORE the presence branch (which shared "do i have" and swallowed counts), reporting the REAL entry count ("You have one Tonic of grit" — never an invented dose number the data lacks); (3) compound (`ITEM_EFFECT_CUE_RE`) folds the real effect line in with the count. C7-005 (count) + C7-006 (compound) added as locked.
+- §7 verdict (Basecamp, independent): **VERIFIED.**
+  - Scope: `git show c7dc5fc` = grace + C7 corpus only. No `Math.random`/`Date.now`/`WORLD_VERSION`.
+  - Diffs principled (stopword guard + count-before-presence + honest count, NOT gaming); corpus cases carry real asserts (/Tonic/+/\bone\b/; /heal/+/\bone\b/; exclude /Cloak/ + bare presence) + diverge guards.
+  - `npm run convergence` — C7 9/9 locked, 0/1 target (C7-002b deferred). Overall 100% (60/60). No capability regressed.
+  - `node --test` 8285/0 (exit 0, re-run cleanly — an earlier `| tail` had masked the pipe exit code); determinism 6/6.
+  - Over-fire probe: "how many coins do I have?" → purse (NOT item-count); "Do I still have the Tonic?" → presence (NOT count); "What does the Tonic do?" → effect-only.
+- RESIDUAL (finding, not a blocker): the BARE unnamed "how many doses do I have" (no item named — the EXACT gate phrasing) still → observe-only. H-70 closed the NAMED count + compound it scoped; the unnamed form needs context-resolution ("doses" → the carried consumable in recent context) — a follow-up C7 packet, corpus-lockable. Not a regression (it bounced before H-70 too).
+- Rollback: revert `c7dc5fc`
+
+2026-06-21T11:45:00Z — Basecamp (§7-verified; entry authored by queue owner)
+- Packet/seam: H-71 — firebolt counts as a combat action, not a taunt (C10)
+- Commit(s): `3e2b7dd` (Claude Sonnet 4.6, playloop lane). LANE SLIP (3rd: H-67/H-69/H-71): packet said commit-local/Basecamp-pushes; self-pushed before my verify. Verified after-the-fact — clean, no revert. After-push verify has held every time → ADJUSTMENT: future playloop packets will say "push your own; Basecamp verifies after" (match reality) instead of commit-local, since Codex is usage-capped and Sonnet-on-playloop self-pushes regardless.
+- Files changed: `engine/playloop.js` (2 regexes, 4 lines), `tests/corpus/C10.corpus.mjs` (+1 locked case)
+- Summary: C10 8L/2T → 9L/2T. "I spit a firebolt right into the heart of it" bounced to `[combat:table-talk]`: `explicitAction` (:1856) listed fireball/cast/hurl but not firebolt/fire bolt, and `isCombatSocialNonAction` (:5935) strike-exclude had `\bbolt\b` (matches two-word "fire bolt", not one-word "firebolt") → the social verb "spit" matched first. Added `fire\s?bolt|firebolt` to BOTH. C10-002d added as locked (3 paraphrases + a taunt diverge).
+- §7 verdict (Basecamp, independent): **VERIFIED.**
+  - Scope: `git show 3e2b7dd` = playloop + C10 corpus only. No `Math.random`/`Date.now`/`WORLD_VERSION`.
+  - Diff is the precise 2-regex fix from the packet; corpus case asserts /fire bolt|\[strike:/ excludes table-talk + a taunt diverge.
+  - `npm run convergence` — C10 9/9 locked, 0/2 target (C10-002/003 deferred, unchanged). Overall 100% (60/60). No regression (C15 2/2 held).
+  - `node --test` 8285/0; determinism 6/6.
+  - Over-fire probe: "I spit at the Lingerer and curse its name." / "I taunt the enemy." → `[combat:table-talk]` (taunts still bounce); "I spit a firebolt into the heart of it." → resolves (fire bolt).
+- Remaining/next: firebolt at a NON-enemy (cart/innocent) DURING combat → the castConsequence interaction (gate Chaos T3/T8) — deferred, gnarlier.
+- Rollback: revert `3e2b7dd`

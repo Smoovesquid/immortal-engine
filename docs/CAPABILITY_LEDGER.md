@@ -41,7 +41,7 @@ detectors. Status starts `seed`.
 | C9 | **Canon non-invention** — no invented name/date/tenure/relationship | H-27/H-49/H-52 | `findInventedFactClaim` | 2L/2T | — |
 | C10 | A **declared attack** routes to real combat resolution | H-30/H-32/H-43/H-48/H-55/H-64/H-71, **H-72** | playloop attack gates + `go for`/flip-onto-person/npc-generic/firebolt + attack-resolution-over-meta | 10L/1T | **partial** |
 | C11 | **Confrontation under pressure** → in-character NPC reaction | H-42 | `isConfrontationChallenge`, `confrontationReaction` | 3L/0T | — |
-| C12 | **Movement/travel intent** resolves in fiction, no travel-gate bounce | THE_DM_TEST residuals, H-62, **H-75**; residual → **H-81** (recurred gates 6/8/9 — TOP live failure) | playloop talkRef-before-free-movement + `extractFindPersonRef` + `detectPhysicalAssault` point/edge de-weaponize | 4L/0T | **corpus✓ / live⚠** |
+| C12 | **Movement/travel intent** resolves in fiction, no travel-gate bounce | THE_DM_TEST residuals, H-62, H-75, **H-81** | playloop talkRef-before-free-movement + `extractFindPersonRef` + `approachPresentNpcRef` (indoors approach-present-NPC → dialogue) + `detectPhysicalAssault` point/edge de-weaponize | 5L/0T | **✓** (residual: "the elder"→wrong-NPC = C2) |
 | C13 | **Absurd / out-of-bounds** input declines in-character | IG-10, **H-67** | `tryRidiculous`/`RIDICULOUS` (playloop, Road A) | 4L/0T | **✓** |
 | C14 | **Meta / system check-in** acknowledged, no roll | H-51, **H-66** | `META_SYSTEM_CHECKIN` (widened) | 4L/1T | **partial** |
 | C15 | **Active combat is reflected, not narrated as calm conversation** | gate 2026-06-20 → **H-58** | `playloop` `isCombatConversationNonAction` guard | 2L/0T | **✓** |

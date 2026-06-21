@@ -1507,4 +1507,13 @@ other agents. (none active)
 - Remaining/next (recurring, unfixed): **C12/H-81 invented-barrier to a present NPC — TOP priority (recurred gates 6/8/9)**; C9 invention; Ex-1 describe-present-NPC (A/B/C pending); C2 false-NER on connectives ("Then"→name).
 - Rollback: revert `2a0e267`.
 
-2026-06-21T23:47:02Z — [CLAIMED] H-81 (C12 — approach a PRESENT NPC → invented navigation barrier) · Basecamp(main window) · 2026-06-21T23:47:02Z · files: engine/playloop.js
+2026-06-21T23:47:02Z — [CLAIMED→DONE] H-81 (C12 — approach a PRESENT NPC → invented navigation barrier) · Basecamp(main window) · files: engine/playloop.js
+
+2026-06-21 — Basecamp (main window) — H-81 DONE
+- Packet/seam: H-81 — indoors, "go talk to <present NPC>" → "that way is blocked" (gate 6/8/9 — the top recurring live failure).
+- Commit(s): `9083ea3` (playloop + interior_npc fixture + C12-005). Pushed.
+- Files: `engine/playloop.js` (+`approachPresentNpcRef` + interior-move guard), `scripts/convergence/fixtures.mjs` (+`interior_npc`), `tests/corpus/C12.corpus.mjs` (+C12-005).
+- Summary: a leading movement verb made `inferInteriorAction` read the greeting as a blocked interior MOVE before the talkRef/dialogue path ran. `approachPresentNpcRef` resolves a present-NPC approach (existing extractors + presence check); the move handler yields those turns to dialogue. Genuine interior moves still block (no NPC → guard inert).
+- Proof: `npm run check` GREEN — convergence **78/78** (C12 5/5), suite **8285/0**, determinism green; LLM-off repro on glass-harbor (all "go talk to X" → dialogue) + interior_npc fixture + over-fire negatives (go north / look around / go back outside stay movement).
+- Remaining/next (separate, **C2**): "the elder" resolves loosely to the WRONG NPC (Lingerer, not Kael) — referent precedence, not the barrier bug.
+- Rollback: revert `9083ea3`.

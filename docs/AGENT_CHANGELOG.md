@@ -1,5 +1,10 @@
 # AGENT_CHANGELOG
 
+2026-06-21 — Basecamp (Opus) — §7 verdicts: H-61 (C5) + H-62 (C12) VERIFIED
+- **H-61 (Sonnet, C5)** `3229a42` — **VERIFIED** (Sonnet pushed). Rules-question graduation via a typed classifier (mirrors H-59): classifies WHICH rule is asked (governing-stat / damage-modifier / attack-formula) and answers from the sources `resolve.js` uses, never rolling. C5 **1L/4T → 3L/1T** (C5-004 declared-check-in-dialogue correctly left `target` — needs playloop routing, per dispatch). Promotions genuine (locked asserts require the stat/rule named + exclude `[roll:` — invariant #19). Siblings C1/C4/C6/C7 green, suite 8285, determinism 6/6, no forbidden patterns. Scope clean (grace + C5 corpus).
+- **H-62 (Sonnet, C12)** `ba46c9a` — **VERIFIED + pushed by Basecamp.** Movement graduation **0L/3T → 3L/0T**: removed the "Where will you make for?" direction-menu bounce; routed present-NPC approaches (extended `extractApproachRef` + new narrow `extractFindPersonRef`); MOVED the talkRef extraction ahead of the free-movement gate (+ `&& !talkRef`) so compound "head to X and find Y" reaches the NPC path. Safe: talkRef only sets for PRESENT NPCs, so place-travel is untouched — **U99 4/4, C2 5/5, C10 5/5** green, suite 8285, determinism 6/6, playtest:quick 50/0/0, over-fire probe clean. Promotions genuine. Scope clean (playloop + C12 corpus).
+- **Milestone:** graduated = **C1, C2, C5(partial), C12, C15**; convergence **44/44 locked = 100%**. Both packets ran on **Sonnet** (Codex usage-capped — the playloop lane rerouted, handled cleanly). Remaining backlog: C3 · C4 · C5-004 · C7 · C10 · C13 · C14.
+
 2026-06-21 — Claude Sonnet (H-62, C12 graduation)
 - **H-62 (Sonnet, C12)** — **DONE.** C12 "movement/travel intent resolves in fiction; no travel-gate bounce" graduated 0L/3T → **3L/0T**. Three facets fixed; convergence **44/44 locked** (+3), suite **8285/8285**, determinism **6/6**, `playtest:quick` **50/0/0**.
   - **C12-001 (empty_room):** Removed `" Where will you make for?"` from the no-such-place fallthrough (`playloop.js` line ~1421). All 6 paraphrases now produce road narration or a travel roll; direction menu bounce gone. Status → locked.

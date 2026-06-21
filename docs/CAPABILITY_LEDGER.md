@@ -34,14 +34,14 @@ detectors. Status starts `seed`.
 | C2 | A **named referent** must be grounded before the turn resolves | H-56, C2-grad, **H-60** | `ungroundedNpcReferentForText` + `hasPersonReferentSignal` + observe/travel hoist | 5L/0T | **✓** |
 | C3 | A **declared check** gets a DC + roll | H-54 R4 | `META_EXPLICIT_CHECK_*` | 0L/3T | — |
 | C4 | Info-seeking **delivers a grounded fact or honestly declines** | H-22/23/29/31/39 | `isInfoSeekingText`, `infoExtractionOutcome`, `declineInfoSeek` | 1L/3T | — |
-| C5 | A **rules/mechanic question** is answered straight, never rolled | H-25/H-54 R3 | `META_DAMAGE_RULE`, advice/skill-mod | 1L/4T | — |
+| C5 | A **rules/mechanic question** is answered straight, never rolled | H-25/H-54 R3, **H-61** | `META_DAMAGE_RULE`/`META_ATTACK_MOD` + typed governing-stat classifier | 3L/1T | **partial** |
 | C6 | **Number-transparency**: own stats/mods/AC/HP/items from the sheet | H-25/H-31/H-40 | `answerSkillModifier`, `META_ARMOR_VALUE`, `META_HELD_ITEMS` | 3L/2T | — |
 | C7 | **Item/consumable** query answers from real def; **use** applies effect | H-45/H-47 | `answerItemQuery`, `tryUseConsumable`, `META_ITEM*` | 4L/3T | — |
 | C8 | **Narration ≤ mechanics** — no hit/defeat the dice didn't produce | H-26/H-28/H-43 | `llmAdapter` validator R1–R3 | 3L/1T | — |
 | C9 | **Canon non-invention** — no invented name/date/tenure/relationship | H-27/H-49/H-52 | `findInventedFactClaim` | 2L/2T | — |
 | C10 | A **declared attack** routes to real combat resolution | H-30/H-32/H-43/H-48/H-55 | playloop attack gates, `resolveEscapeCombatTurn` | 5L/4T | — |
 | C11 | **Confrontation under pressure** → in-character NPC reaction | H-42 | `isConfrontationChallenge`, `confrontationReaction` | 3L/0T | — |
-| C12 | **Movement/travel intent** resolves in fiction, no travel-gate bounce | THE_DM_TEST residuals | playloop movement / `inferInteriorAction` | 0L/3T | — |
+| C12 | **Movement/travel intent** resolves in fiction, no travel-gate bounce | THE_DM_TEST residuals, **H-62** | playloop talkRef-before-free-movement + `extractFindPersonRef` | 3L/0T | **✓** |
 | C13 | **Absurd / out-of-bounds** input declines in-character | IG-10 (parked) | — (Tier-B candidate) | 4L/3T | — |
 | C14 | **Meta / system check-in** acknowledged, no roll | H-51 | `META_SYSTEM_CHECKIN` | 2L/3T | — |
 | C15 | **Active combat is reflected, not narrated as calm conversation** | gate 2026-06-20 → **H-58** | `playloop` `isCombatConversationNonAction` guard | 2L/0T | **✓** |

@@ -5370,20 +5370,25 @@ const RIDICULOUS = [
   { re: /\b(stop|reverse|rewind|turn back|freeze|halt)\b.{0,12}\btime\b/i, sub: 'time' },
   { re: /\bflap\b.{0,20}\bfly\b|\bfly\b.{0,20}\bflap/i, sub: 'fly' },
   { re: /\b(breathe|breath of|spew|belch)\b.{0,8}\bfire\b/i, sub: 'fire' },
+  { re: /\b(?:inhale|breathe\s+in|suck\s+in|gulp(?:\s+down)?)\b.{0,16}\b(?:the\s+)?(?:atmosphere|sky)\b/i, sub: 'reach' },
   // grandiose boasts
   { re: /\b(?:sword|blade|axe|staff|wand|hammer|spear|bow|dagger|mace|weapon|shield|armou?r)\s+of\s+(?:infinite|unlimited|ultimate|legendary|godlike|limitless|pure|absolute|boundless|cosmic)\b/i, sub: 'boast-item' },
   { re: /\b(?:infinite|unlimited|ultimate|limitless|godlike|boundless|absolute)\s+(?:power|might|strength|gold|wealth|riches|health|hp|mana|magic|stats?)\b/i, sub: 'boast-infinite' },
   { re: /\bi(?:'?m| am)\b.{0,24}\b(?:strongest|greatest|mightiest|most powerful|best|smartest|fastest|deadliest)\b.{0,24}\b(?:in\s+(?:all\s+)?(?:the\s+)?(?:world|land|realm|realms|universe|existence|history|cosmos)|alive|who ever lived|of all time|that ever lived)\b/i, sub: 'boast-super' },
   { re: /\bi(?:'?m| am)\b.{0,16}\b(?:king|emperor|queen|god|lord|master|ruler|overlord)\b.{0,12}\bof\s+(?:everything|the world|all|all things|the universe|reality|creation)\b/i, sub: 'boast-king' },
   // meta / 4th-wall
-  { re: /\bi(?:'?m| am)\b.{0,10}\b(?:the\s+)?(?:dm|gm|dungeon ?master|game ?master|narrator|author)\b/i, sub: 'meta-dm' },
+  { re: /\bi(?:'?m| am)\b.{0,10}\b(?:the\s+)?(?:dm|gm|dungeon ?master|game ?master|narrator|author)\b|\bi'?m\s+taking\s+over\s+as\s+(?:the\s+)?(?:dm|gm|dungeon ?master|game ?master|narrator)\b/i, sub: 'meta-dm' },
+  { re: /\b(?:i\s+take|i'?m\s+taking|i\s+seize|let\s+me\s+take|i\s+grab)\b[\s\S]{0,16}\b(?:control|charge|over)\b[\s\S]{0,16}\b(?:the\s+)?(?:narrative|story|game|campaign|plot)\b/i, sub: 'meta-dm' },
   { re: /\b(?:give me|grant me|gimme|hand me|i demand|i want|add)\b.{0,40}\b(?:\d{2,}|hundred|thousand|million|legendary|epic|godly|magical?|infinite|unlimited|max(?:imum)?|all the)\b.{0,16}\b(?:gold|coins?|gp|money|xp|levels?|stats?|hp|health|mana|sword|weapon|armou?r|gear|items?|loot|blade|axe)\b/i, sub: 'meta-give' },
+  { re: /\bi\s+(?:declare|proclaim|announce|decree)\b[\s\S]{0,24}\b(?:i\s+(?:now\s+)?own|mine)\b[\s\S]{0,16}\b(?:all\s+the\s+(?:gold|wealth|money|riches|treasure)|everything|the\s+world)\b/i, sub: 'meta-give' },
   { re: /\b(?:i win|i'?ve won|i just won|end the game|skip to the end|beat the game|win the game|game over|i beat the game)\b/i, sub: 'meta-win' },
   { re: /\b(?:delete|destroy|erase|unmake|nuke)\b.{0,8}\bthe (?:world|game|universe)\b|\b(?:rewrite|change|break|ignore)\b.{0,8}\bthe rules\b/i, sub: 'meta-delete' },
 ];
 function ridiculousCelestialNoun(text) {
-  const m = String(text).match(/\b(sun|moon|stars?|sky|ocean|sea|world)\b/i);
-  return m ? m[1].toLowerCase() : 'it';
+  const m = String(text).match(/\b(sun|moon|stars?|sky|ocean|sea|world|atmosphere|air)\b/i);
+  if (!m) return 'it';
+  const n = m[1].toLowerCase();
+  return (n === 'atmosphere' || n === 'air') ? 'sky' : n;
 }
 function ridiculousItemNoun(text) {
   const m = String(text).match(/\b(sword|blade|axe|staff|wand|hammer|spear|bow|dagger|mace|weapon|shield|armou?r)\b/i);

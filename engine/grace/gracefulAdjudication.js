@@ -287,7 +287,7 @@ const META_CONSUMABLES_LIST = /\b(?:list|read\s+back|name|show)\s+(?:all\s+)?(?:
 // Coins/purse — a number the DM owns (read from party.purse). Also catches
 // "do I even have any money on me?" and a re-asserted "pouch of coin" claim
 // (the latter shares ground with POSSESSION_CHALLENGE below — H-35 R1/R2).
-const META_PURSE = /\bhow many coins\b|\bhow much (?:money|coin|gold|silver|copper|cash)\b|\bwhat(?:'?s| is)\s+in\s+my\s+(?:purse|pouch|coin\s?purse|wallet)\b|\bhow\s+(?:much\s+)?(?:money|coin|gold|silver)\s+(?:do i have|have i got|am i carrying)\b|\bmy (?:purse|coin\s?purse|pouch)\b|\bdo\s+i\s+(?:even\s+)?have\s+(?:any\s+)?(?:money|coin)\b|\bmoney\s+on\s+me\b|\bpouch\s+of\s+coin\b/i;
+const META_PURSE = /\bhow many coins\b|\bhow much (?:money|coin|gold|silver|copper|cash)\b|\bwhat(?:'?s| is)\s+in\s+my\s+(?:purse|pouch|coin\s?purse|wallet)\b|\bhow\s+(?:much\s+)?(?:money|coin|gold|silver)\s+(?:do i have|have i got|am i carrying)\b|\bmy (?:purse|coin\s?purse|pouch)\b|\bdo\s+i\s+(?:even\s+)?have\s+(?:any\s+)?(?:money|coin)\b|\bmoney\s+on\s+me\b|\bpouch\s+of\s+coin\b|\bopen\s+(?:the|my|this|a)\s+(?:purse|pouch|coin\s?purse|wallet)\b|\blook\s+inside\s+(?:the|my|this|a)\s+(?:purse|pouch|coin\s?purse|wallet)\b|\bcount\s+(?:the\s+|my\s+)?coins?\b|\b(?:anything|something)\s+(?:valuable\s+)?in\s+(?:the|my|this|a)\s+(?:coin\s?purse|purse|pouch|wallet)\b/i;
 const META_TIME = /\bwhat time\b|\btime of day\b|\bis it (?:day|night|morning|evening|dark|light)(?:time)?\b/;
 const META_OBJECTIVE = /\b(?:what(?:'?s| is| was)? )?my (?:quest|objective|goal|mission|task)\b|\bwhat (?:am i|are we) (?:supposed to|meant to|trying to)\b|\bwhy am i here\b|\bwhat(?:'?s| is) the (?:quest|objective|goal|plan)\b|\bremind me\b/;
 // "How do you resolve a sword swing — pure narration, or a dice mechanic?" /
@@ -508,7 +508,7 @@ export function isQuestionShaped(text) {
 // path AND, newly observed, the success path), and the turn falls to
 // genericGroundedOutcome's atmosphere-only pool ("It comes off cleanly...")
 // despite a resolved roll with real information on the table.
-const INFO_SEEKING_RE = /\b(?:who|what|when|where|whose)\b[\s\S]{0,60}?\b(?:name|named|year|date|deed|owner|own(?:s|ed)?|held|sold|gave|kin|family|relat\w*|tenure|found(?:ed|ing)|born|husband|wife|spouse|son|daughter|father|mother|married)\b|\bgive me (?:a|one|the)\s+name\b|\bby name\b|\bwhat year (?:is it|are we)\b|\bis\s+[a-z][\w'-]*(?:\s+[a-z][\w'-]*){0,2}\s+(?:dead|alive)\b|\bhow long\b[\s\S]{0,30}?\b(?:run|ran|owned|been here|been)\b|\bhow many generations\b/i;
+const INFO_SEEKING_RE = /\b(?:who|what|when|where|whose)\b[\s\S]{0,60}?\b(?:name|named|year|date|deed|owner|own(?:s|ed)?|held|sold|gave|kin|family|relat\w*|tenure|found(?:ers?|ed|ing)|born|husband|wife|spouse|son|daughter|father|mother|married|built|settl\w+|arrived|establish\w*|started|created)\b|\bgive me (?:a|one|the)\s+name\b|\bby name\b|\bwhat year (?:is it|are we)\b|\bis\s+[a-z][\w'-]*(?:\s+[a-z][\w'-]*){0,2}\s+(?:dead|alive)\b|\bhow long\b[\s\S]{0,30}?\b(?:run|ran|owned|been here|been)\b|\bhow many generations\b/i;
 // Action-feasibility/skill verbs — mirrors isExploreIntent's own exclusion
 // vocabulary (playloop.js ~L4349/4351), reused here for the same reason: a
 // question opener ("can/could/should I ...") followed by one of these is an
@@ -530,7 +530,7 @@ const INFO_SEEKING_EXCLUDE_RE = /\b(?:attack|strike|hit|stab|slash|shoot|kill|fi
 // survey questions (playloop.js isExploreIntent already defers to
 // isInfoSeekingText, so over-broadening here would silently break the
 // generic room-survey path — see U197-06).
-const INFO_SEEKING_TOPIC_RE = /\btell me\s+(?:about|more about|everything(?:\s+about|\s+you know about)?)\b|\bwhat\s+do\s+you\s+know\s+about\b|\bwhat\s+(?:happened|became)\s+(?:to|of)\b|\bwhat'?s\s+the\s+story\s+(?:behind|of|with)\b/i;
+const INFO_SEEKING_TOPIC_RE = /\btell me\s+(?:about|more about|everything(?:\s+about|\s+you know about)?)\b|\bwhat\s+do\s+you\s+know\s+about\b|\bwhat\s+(?:happened|became)\s+(?:to|of)\b|\bwhat'?s\s+the\s+story\s+(?:behind|of|with)\b|\bwhat\s+do\s+(?:people|folk|they|anyone|everyone|locals?)\s+(?:say|know|think|hear)\s+(?:about|of)\b|\bwhat\s+(?:happened|occurred|went\s+on)\b[\s\S]{0,60}?\bago\b/i;
 
 // Observe-object-detail: a player demands the literal text/marking on a held
 // or examined object ("what's stamped on the coin", "look at it and tell me
@@ -552,12 +552,21 @@ const INFO_SEEKING_OBSERVE_RE = /\b(?:what'?s|what is)\b[\s\S]{0,20}?\b(?:printe
 // ("he's hiding something") both fall outside these patterns by construction.
 const INFO_SEEKING_CONCEALMENT_RE = /\bis\s+(?:there\s+)?something\s+(?:going\s+on\s+)?you'?re\s+not\s+(?:telling|saying)\b|\bwhat\s+(?:aren'?t\s+you|are\s+you\s+not)\s+(?:telling|saying)\s+me\b|\bare\s+you\s+hiding\s+something\b/i;
 
+// "Was there anyone here before?", "has anyone been through recently?" —
+// existence/presence questions about the past or recent past. No who/what anchor
+// noun but clearly a fact demand, not an action. (H-63)
+const INFO_SEEKING_EXISTENTIAL_RE = /\b(?:was|were)\s+there\s+(?:anyone|someone|people|folk|others?)\b[\s\S]{0,60}?\b(?:before|earlier|first|previously|lately|recently)\b|\bhas\s+(?:anyone|someone)\s+(?:been|come|pass(?:ed|ing)?|gone|travel(?:l?ed|ing)?|lived?|settle[ds]?)\b/i;
+// "Why did you come here?", "why'd you settle here?", "what brought you?" —
+// origin/motive questions aimed at an NPC. Share the deliver-or-decline contract. (H-63)
+const INFO_SEEKING_ORIGIN_RE = /\bwhy\s+(?:did\s+)?(?:you|they|he|she)\s+(?:come|came|settle[ds]?|move[ds]?|go|went|land(?:ed)?|arrive[ds]?)\b|\bwhy'?d\s+(?:you|they|he|she)\s+(?:come|came|settle[ds]?|move[ds]?|go|went|land(?:ed)?|arrive[ds]?)\b|\bwhat\s+brought\s+(?:you|them|him|her|everyone)\b/i;
+
 export function isInfoSeekingText(text) {
   const t = String(text || '').toLowerCase();
   if (!t.trim()) return false;
   if (INFO_SEEKING_EXCLUDE_RE.test(t)) return false;
   return INFO_SEEKING_RE.test(t) || INFO_SEEKING_OBSERVE_RE.test(t) || INFO_SEEKING_TOPIC_RE.test(t)
-    || INFO_SEEKING_CONCEALMENT_RE.test(t);
+    || INFO_SEEKING_CONCEALMENT_RE.test(t) || INFO_SEEKING_EXISTENTIAL_RE.test(t)
+    || INFO_SEEKING_ORIGIN_RE.test(t);
 }
 
 // Confrontation / contradiction challenge (H-42, IG-11 social physics): "You

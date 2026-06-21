@@ -153,4 +153,24 @@ length-normalize. The reframe: **the judge-free corpus is the PRIMARY signal; th
 noisy discovery pointer, confirmed deterministically** — which is why we already minimize judge exposure.
 **Reach for it:** before trusting a gate verdict, or when the % bounces.
 
-*The arc: Vol 2–6 build the layers, Vol 7 wires them, Vol 8 tests them, Vols 9–10 calibrate the testing — when you've tested enough (9) and how much to trust the judge (10).*
+### Vol 11 — Frontier Pragmatics, Common Ground & Social Meaning  →  [`vol-11-frontier-pragmatics-common-ground.md`](vol-11-frontier-pragmatics-common-ground.md)  ·  *2025–26 frontier addendum to Vols 1–6*
+*Recent (2025–26) papers on pragmatic competence, common ground, and social meaning.* **Headline for us:**
+models get the *direction* of social meaning right but are **poorly calibrated on magnitude** (Mühlenbernd
+2026) → the citable rule for the IG-11 social layer: **never let an LLM magnitude estimate mutate canonical
+social state — route deltas through deterministic tables.** Plus ALTPRAG contrastive-alternatives + thought-
+based training (corpus/benchmark ideas) and common-ground-as-first-class-subsystem (validates explicit
+discourse state). Candidate packet fields: `social_magnitude_estimate` · `magnitude_confidence` ·
+`common_ground_status` · `repair_needed`. **Reach for it:** scoping any social-physics / NPC-reaction /
+trust-fear-respect-delta capability.
+
+### Vol 12 — Frontier Fragility, Security & Hybrid Control for LLM NPCs  →  [`vol-12-frontier-fragility-security-hybrid-control.md`](vol-12-frontier-fragility-security-hybrid-control.md)  ·  *2025–26 frontier addendum to Vols 4/5/7/8*
+*Recent (2025–26) work on how LLM-NPC systems FAIL.* **Headline for us:** **secret leakage** — hidden lore in
+prompt context is adversarially extractable ("Tricking LLM NPCs into Spilling Secrets", 2025) → represent
+secrecy as **access-controlled state with a deterministic reveal-authorization gate** (`RevealPolicy` /
+`KnowledgeState` schemas, §10), not "info the model happens not to mention." Direct hit on RUMOR_LAYER /
+`withheldFacts` / the IG-8 secret → **candidate capability C16 (secret-non-leakage)**. Also: **paraphrase/RAG
+fragility** (independent backing for the convergence paraphrase-invariance core + "test secrets under
+adversarial paraphrase") and hybrid open-input/bounded-action control (validates Vol 7). **Reach for it:** any
+hidden-lore / secret / mystery-gating / RUMOR_LAYER work, or designing leakage/paraphrase tests.
+
+*The arc: Vol 2–6 build the layers, Vol 7 wires them, Vol 8 tests them, Vols 9–10 calibrate the testing; **Vols 11–12 = the 2025–26 frontier layer** — what's genuinely new in pragmatics (11) and what's newly-known to be fragile/leaky (12). Vols 11–12 are SOTA-dated; re-mine periodically.*

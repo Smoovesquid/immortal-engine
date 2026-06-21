@@ -207,9 +207,9 @@ the paid gate (discovery). Build the SAME for narration:
 
 ---
 
-## Handover state (as of 2026-06-21, post gate 7)
+## Handover state (as of 2026-06-21, post gate 9)
 
-- **Branch `v2-polish`**. Convergence **74/74 (100%)**, suite **8285/8285**, determinism 200/0.
+- **Branch `v2-polish`**. Convergence **77/77 (100%)**, suite **8285/8285**, determinism 200/0.
 - **N-1 (this track's first packets) — Fix 1/2/3 LANDED + gate-confirmed (gate 6, 10→7/48):** inventory as
   prose (`describePack`, no category-dump), name-the-kit (no deflect-to-sheet, `META_INVENTORY` adverb), and
   object content-read honest-decline (`isUngroundedObjectRead`/`objectReadDecline`, extends H-78 to objects).
@@ -225,12 +225,19 @@ the paid gate (discovery). Build the SAME for narration:
   describe path** — fork is **(A)** route the dropped half to the identify path + de-brittle it, **(B)**
   in-character decline floor, **(C)** Tier-2 LLM describe from NPC canon. **Tim's A/B/C decision pending.**
   Recurred at gate 7 (Newbie t6/t7).
+- **N-3 LANDED + gate-confirmed (gate 8, 12→5):** **C16** in-character address → dialogue (`isDirectAddressIntent`
+  widened + observe-gate yield + greeting filler-reject) and **C7** item-effect wins over a named stat. Held in gate 9.
+- **N-4 LANDED + gate-confirmed (gate 9):** **C4** dialogue/info about ungrounded backstory/identity honest-declines
+  (`INFO_SEEKING_BACKSTORY_RE`/`IDENTITY_RE` + `META_RECAP` backstory-guard — no more "Nothing's happened yet" on a
+  substantive ask). Held.
+- **#1 NEXT — H-81 (C12): approach a PRESENT NPC → invented navigation barrier** ("go talk to the elder/Lingerer" →
+  "the way leads nowhere closer"). **Recurred gates 6/8/9** — the most reliably-reproduced live failure left; deep
+  playloop interior-move pre-emption (Codex lane); root cause in the N-1-Fix-4 bullet above. **Dispatch this first.**
 - **Rung-1 Road-A**: H-75…H-80 landed/verified; the deterministic corpus is near-saturated; the frontier is this doc.
-- **Gates**: gate 3 (5/48), gate 4 (7/48), gate 5 (10/48, `-gate5.md`), gate 6 (7/48, `-gate6.md` — N-1 held),
-  **gate 7 (12/48, `opus-gate-2026-06-21.md` — N-1 + N-2 Ex-2 held, no regression; the bounce = persona-variance
-  onto fresh veins)**. The gate 6/7 findings in `CAPABILITY_LEDGER` are the ones to read for the narration taxonomy.
-- **Budget**: ~$0 — EXHAUSTED (Tim confirmed $5.41 pre-gate-6; gate 6 ~$2.83 + gate 7 ~$2.87). **Top up +
-  re-confirm with Tim before gate 8.**
+- **Gates**: gate 5 (10/48, `-gate5.md`), gate 6 (7/48, `-gate6.md`), gate 7 (12/48, `-gate7.md`), gate 8 (5/48,
+  `-gate8.md` — N-3 held), **gate 9 (10/48, `opus-gate-2026-06-21.md` — N-4 held; 12→5→10 is a BOUNCING RULER, not a
+  regression — same engine, persona-variance)**. The gates 6–9 findings in `CAPABILITY_LEDGER` are the read.
+- **Budget**: ~$0 — EXHAUSTED (gates 6–9 ≈ $11.3 across the run). **Top up + re-confirm with Tim before gate 10.**
 - **Bootstrap**: `docs/BASECAMP.md` (the role), `docs/CAPABILITY_LEDGER.md` (Road-A status + the gate-5
   findings), `docs/biblioteca/` Vols 10/14/15 (judge reliability, GM-proposes/system-commits, the
   narration frontier). Vol 15 independently re-derives "GM proposes, deterministic system commits" — THE

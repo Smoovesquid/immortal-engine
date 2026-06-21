@@ -1489,3 +1489,20 @@ other agents. (none active)
 - Proof (Basecamp §7): scope grace-only (safety scan clean — no `WORLD_VERSION`/`Math.random`/`Date.now`/`applyDeltas`/`worldHash`/`rng`/`csl`); `npm run convergence` **74/74 (100%, C4 8/8)**, exit 0; `node --test` **8285/8285, 0 fail** (determinism U19/21/22/27/30 green); LLM-off repro — 7/7 surveillance paraphrases decline (no `[roll:`), 4/4 diverge negatives resolve normally.
 - Remaining/next: N-2 **Ex-1** (empty-success on a SUCCEEDED look/social action) NOT implemented — diagnostic done (no deterministic describe-NPC path; A/B/C decision pending Tim); recurred at gate 7 (Newbie t6/t7).
 - Rollback: revert `a0c8326`.
+
+2026-06-21T22:00:00Z — Basecamp (acting as worker; Tim away, authorized autonomous two-gate cycle)
+- Packet/seam: N-3 — (a) C16 in-character address → dialogue; (b) C7 item-effect wins over a named stat (gate-7 cluster)
+- Commit(s): `bf7a377` (playloop+C16 corpus), grace+C7 corpus (same push). Pushed by Basecamp.
+- Files: `engine/playloop.js` (isDirectAddressIntent widened + observe-gate `!isDirectAddressIntent` yield + greeting filler-reject), `engine/grace/gracefulAdjudication.js` (item-effect-over-named-stat guard), `tests/corpus/C16.corpus.mjs` (new), `tests/corpus/C7.corpus.mjs` (+C7-010).
+- Summary: (a) "who are you / do I know you / have we met" to a present figure fell to roll/observe — now routes via the existing direct-address guard to dialogue; "Um, hi…" no longer mis-parses "Um" as a name. (b) "what's the Tonic do — does it boost my GRIT?" answered the bare stat readout; when a REAL carried item is named the item-effect now wins (gated on a real inventory item, so standalone stat queries are untouched).
+- Proof (§7): convergence 74→76 (C16 1/1, C7 14/14), node --test 8285/0, determinism green; LLM-off repro for both + over-fire negatives. **Gate 8 measured: 12→5/48; both classes held, 0 new discovery.**
+- Rollback: revert `bf7a377`.
+
+2026-06-21T22:30:00Z — Basecamp (acting as worker; Tim away, autonomous cycle)
+- Packet/seam: N-4 — C4 dialogue/info about ungrounded backstory/identity honest-declines (gate-8 dominant cluster)
+- Commit(s): `2a0e267` (grace + C4 corpus). Pushed by Basecamp.
+- Files: `engine/grace/gracefulAdjudication.js` (+`INFO_SEEKING_BACKSTORY_RE` + `INFO_SEEKING_IDENTITY_RE` → `isInfoSeekingText`; `META_RECAP` guarded with `!isInfoSeekingText`), `tests/corpus/C4.corpus.mjs` (+C4-009).
+- Summary: "what happened here last night?" hit META_RECAP → "Nothing's happened yet"; "who was it that ceased to matter?" rolled a vague "partial." Both now honest-decline in-character (grounding-gated; an addressed present NPC declines in voice). Bare session "what happened?" still recaps (the guard).
+- Proof (§7): convergence 76→77 (C4 9/9), node --test 8285/0, determinism green; LLM-off repro + recap-negative diverge. **Gate 9 measured: N-4 held (no recurrence); headline 5→10 = persona-variance onto fresh veins (RL stats/AC/declared-roll), 0 new discovery.**
+- Remaining/next (recurring, unfixed): **C12/H-81 invented-barrier to a present NPC — TOP priority (recurred gates 6/8/9)**; C9 invention; Ex-1 describe-present-NPC (A/B/C pending); C2 false-NER on connectives ("Then"→name).
+- Rollback: revert `2a0e267`.

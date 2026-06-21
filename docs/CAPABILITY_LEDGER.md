@@ -33,18 +33,19 @@ detectors. Status starts `seed`.
 | C1 | Answer **every part** of a compound query | H-25/H-31/H-40/H-54/**H-59** | `handleMetaQuestion` typed sub-intent decomposition | 4L/0T | **✓** |
 | C2 | A **named referent** must be grounded before the turn resolves | H-56/C2-grad/H-60, **H-79** | `ungroundedNpcReferentForText` + `hasPersonReferentSignal` + observe/travel hoist + social-resolver guard | 6L/0T | **✓** |
 | C3 | A **declared check** gets a DC + roll | H-54 R4 | `META_EXPLICIT_CHECK_*` | 0L/3T | — |
-| C4 | Info-seeking **delivers a grounded fact or honestly declines** | H-22/23/29/31/39/H-63/H-74/H-78/N-1, **N-2 Ex-2** | `isInfoSeekingText` (+provenance/`INFO_SEEKING_SURVEILLANCE_RE`) + `META_PURSE` + dialogue place-branch + pre-roll `isUngroundedInfoCheck` + `isUngroundedObjectRead`/`objectReadDecline` | 8L/2T | **partial** (Ex-1 open) |
+| C4 | Info-seeking **delivers a grounded fact or honestly declines** | H-22/23/29/31/39/H-63/H-74/H-78/N-1/N-2 Ex-2, **N-4** | `isInfoSeekingText` (+provenance/surveillance/`BACKSTORY`/`IDENTITY` REs) + `META_PURSE` + dialogue place-branch + pre-roll `isUngroundedInfoCheck` + `isUngroundedObjectRead` + `META_RECAP` backstory-guard | 9L/2T | **partial** (Ex-1 open) |
 | C5 | A **rules/mechanic question** is answered straight, never rolled | H-25/H-54 R3/H-61, **H-80** | `META_DAMAGE_RULE`/`META_ATTACK_MOD` + governing-stat classifier (skill + `META_ATTACK_GOVERNING_STAT` for attacks) | 4L/1T | **partial** |
 | C6 | **Number-transparency**: own stats/mods/AC/HP/items from the sheet | H-25/H-31/H-40/H-68, **N-1** | `answerSkillModifier`, `META_ARMOR_VALUE`, `META_HELD_ITEMS`, `META_INVENTORY` (widened, +filler-adverb), `describePack` (inventory as prose, no category-dump/sheet-deflect) | 6L/0T | **✓** |
-| C7 | **Item/consumable** query answers from real def; **use** applies effect | H-45/H-47/H-65/H-69/H-70/H-73/H-76, **H-77** | `answerItemQuery`/`META_ITEM` + `CONSUME_RE` + count/compound + bare-count list + sheet-rider guard + effect-cue/`ITEM_EFFECT_DEMAND_RE` widen | 13L/0T | **partial** |
+| C7 | **Item/consumable** query answers from real def; **use** applies effect | H-45/H-47/H-65/H-69/H-70/H-73/H-76/H-77, **N-3** | `answerItemQuery`/`META_ITEM` + `CONSUME_RE` + count/compound + bare-count list + sheet-rider guard + `ITEM_EFFECT_DEMAND_RE` + item-effect-over-named-stat guard | 14L/0T | **partial** |
 | C8 | **Narration ≤ mechanics** — no hit/defeat the dice didn't produce | H-26/H-28/H-43, **H-72** | `llmAdapter` R1–R3 + playloop `attackResolutionIntent` | 4L/0T | **corpus✓ / live⚠** |
 | C9 | **Canon non-invention** — no invented name/date/tenure/relationship | H-27/H-49/H-52 | `findInventedFactClaim` | 2L/2T | — |
 | C10 | A **declared attack** routes to real combat resolution | H-30/H-32/H-43/H-48/H-55/H-64/H-71, **H-72** | playloop attack gates + `go for`/flip-onto-person/npc-generic/firebolt + attack-resolution-over-meta | 10L/1T | **partial** |
 | C11 | **Confrontation under pressure** → in-character NPC reaction | H-42 | `isConfrontationChallenge`, `confrontationReaction` | 3L/0T | — |
-| C12 | **Movement/travel intent** resolves in fiction, no travel-gate bounce | THE_DM_TEST residuals, H-62, **H-75**; residual → **H-81** | playloop talkRef-before-free-movement + `extractFindPersonRef` + `detectPhysicalAssault` point/edge de-weaponize | 4L/0T | **corpus✓ / live⚠** |
+| C12 | **Movement/travel intent** resolves in fiction, no travel-gate bounce | THE_DM_TEST residuals, H-62, **H-75**; residual → **H-81** (recurred gates 6/8/9 — TOP live failure) | playloop talkRef-before-free-movement + `extractFindPersonRef` + `detectPhysicalAssault` point/edge de-weaponize | 4L/0T | **corpus✓ / live⚠** |
 | C13 | **Absurd / out-of-bounds** input declines in-character | IG-10, **H-67** | `tryRidiculous`/`RIDICULOUS` (playloop, Road A) | 4L/0T | **✓** |
 | C14 | **Meta / system check-in** acknowledged, no roll | H-51, **H-66** | `META_SYSTEM_CHECKIN` (widened) | 4L/1T | **partial** |
 | C15 | **Active combat is reflected, not narrated as calm conversation** | gate 2026-06-20 → **H-58** | `playloop` `isCombatConversationNonAction` guard | 2L/0T | **✓** |
+| C16 | **In-character address to a present NPC enters dialogue** (greeting / "who are you" / "do I know you") | gate 6/7 → **N-3** | `isDirectAddressIntent` (widened) + direct-address guard + observe-gate yield + greeting filler-reject | 1L/0T | **✓** |
 
 **Findings log.** *2026-06-20:* H-56 (`3e214ec`) §7-verified — closes the `U219` referent shapes with no
 regression and no over-fire (grounded names/roles unaffected), but a Basecamp adversarial probe found **C2 still
@@ -269,7 +270,7 @@ stating it — H-12/13 lineage) and **C9 invention** (Lore t8: invented a baker/
 empty-success tags confirmed against the DM lines. **Budget after: ~$2.58** (~$2.83 spent, 96 calls) — at/below the
 one-run floor; TOP UP before gate 7. Gate 5 preserved as `opus-gate-2026-06-21-gate5.md`.
 
-*2026-06-21 (gate 7 — post N-1 + N-2 Ex-2, `docs/playtests/opus-gate-2026-06-21.md`):* **12/48** (gate 6 was 7/48,
+*2026-06-21 (gate 7 — post N-1 + N-2 Ex-2, `docs/playtests/opus-gate-2026-06-21-gate7.md`):* **12/48** (gate 6 was 7/48,
 same seed/personas; RL 4 · Chaos 1 · Lore 2 · Newbie 5). **DISCOVERY = 0 new capabilities** — all 12 map to
 C1/C2/C4/C6/C7/C10/C12. **N-1 + N-2 Ex-2 HELD, verified no-regression:** none of their classes recurred (no
 inventory category-dump; no deflect-to-sheet — RL t7 gave identity+stats, not "read your sheet"; no object-read
@@ -302,6 +303,34 @@ LLM-off before trusting the count.** The veins:
 judge held; one soft tag (RL t7 NONE). **Budget after: ~$0** (~$2.87 spent; est. $2.58 pre-gate — the run completed,
 so the real balance covered it but is now exhausted). **TOP UP before gate 8.** Gate 6 preserved as
 `opus-gate-2026-06-21-gate6.md`.
+
+*2026-06-21 (gates 8–9 — the N-3/N-4 two-gate cycle, autonomous; gate 8 `-gate8.md` **5/48**, gate 9
+`opus-gate-2026-06-21.md` **10/48**):* **Cycle headline gate 7→8→9 = 12 → 5 → 10 — a BOUNCING RULER, not a
+regression.** Same seed/personas; the engine only improved: convergence held **77/77** throughout, and NONE of
+the fixed classes recurred across either gate (no conversational-address→roll, no Tonic-names-a-stat→GRIT, no
+"what happened last night"→"Nothing's happened yet"). **Discovery = 0 new capabilities both gates.** The 5→10 is
+the stochastic personas drilling fresh veins (gate-8 RL drilled dialogue-stalls → N-4 fixed them; gate-9 RL drilled
+stats/AC/declared-roll).
+- **N-3 (gate 8, 12→5):** C16 (in-character address → dialogue) + C7 (item-effect wins over a named stat) landed +
+  held — RL 4→1, the Tonic cluster + conversational-address gone. Dominant gate-8 residual (3/5) = dialogue/info
+  about an ungrounded past → "Nothing's happened yet" / vague roll → became **N-4**.
+- **N-4 (gate 9):** C4 dialogue/info honest-decline landed + held (the "Nothing's happened yet" / "who was it"
+  classes did not recur). Gate-9's 10 all map to known rows: RL stat/AC compound + **AC self-contradiction**
+  ("no armor" yet "wearing Padded coat" — C6/C8) + a player-**DECLARED roll honored** ("I roll a 15…" → success
+  despite lastRoll fail — CRUNCH, fresh vein); Lore **"Then" parsed as a name** (C2 false-NER on a sentence-initial
+  connective) + invented-vocative-in-dialogue mis-attributed to the wrong NPC (C2 in-dialogue seam) + invented kin
+  (C9); Chaos shove-not-adjudicated (C10); Newbie "look at them [the NPCs]"→objects (the deferred **Ex-1**
+  describe-present-NPC) + **"go talk to the elder [Kael, present]"→blocked (C12/H-81)**.
+- **THE PERSISTENT #1 — C12/H-81: approach a PRESENT NPC → invented navigation barrier.** "go say hi to Kael" /
+  "go talk to the elder/Lingerer" → "the way leads nowhere closer." **Recurred gates 6, 8, AND 9** — it survives
+  every round because it's the deep playloop interior-move pre-emption (Codex lane), never yet dispatched. **This
+  is the highest-value next packet** (most reliably-reproduced live failure left).
+- **Other recurring (not new):** C9 invention (kin/backstory — narration-layer, the Ref/validator's job); Ex-1
+  describe-present-NPC (look-at-NPC→objects; A/B/C fork still pending Tim); C2 false-NER on sentence-initial
+  connectives ("Then"/"Was"/"Has" → name — a denylist gap).
+- **Methodology takeaway (re-confirmed): trust convergence (77/77) + the discovery rate (0 new), NOT the bouncing
+  headline.** The two-gate cycle is the clean demonstration: identical engine improvements, headline 5 then 10.
+  **Budget: EXHAUSTED** (gate 8 ~$2.80 + gate 9 ~$2.80). Gates 7/8 preserved as `-gate7.md`/`-gate8.md`; gate 9 = bare.
 
 **Social-physics categories to mine next (Biblioteca Vols 2–6, mostly not yet failing-in-gate but on the map):**
 sarcasm/irony inversion (Vol 2; transcript: `docs/playtests/ridiculous-sarcasm-2026-06-06.md`), loaded

@@ -362,4 +362,43 @@ export default [
     ],
     source: "opus-gate-2026-06-21.md (gate-6 Newbie 'call out … ask if either was watching me' → [roll:16] 'a useful answer comes back') — N-2 empty-success-on-a-SUCCEEDED-action; reproduced LLM-off village_baker, fixed N-2",
   },
+
+  // ---- LOCKED — info-question to a present NPC about ungrounded backstory/identity (N-4) ----
+  {
+    id: 'C4-009',
+    capability: 'C4',
+    // gate-8: a player asks a present NPC about an ungrounded past/identity — "what
+    // happened here last night?" (RL t4) → META_RECAP "Nothing's happened yet";
+    // "who was it that ceased to matter?" (Lore) → rolled "it lands, partial". Both
+    // are the C4 honest-decline class in the dialogue/info path. N-4: a fiction-
+    // backstory "what happened [here/last night/to X]" and a "who was it/the one"
+    // identity-ask are info-seeking → honest decline (no roll, no recap artifact).
+    // META_RECAP is guarded so a bare session "what happened?" still recaps.
+    status: 'locked',
+    fixture: 'village_baker',
+    intent: 'ask a present NPC about ungrounded fiction backstory / a past identity → honest in-character decline, no roll, never "Nothing\'s happened yet"',
+    paraphrases: [
+      'what happened here last night?',
+      'who was it that ceased to matter?',
+      'Mira, what happened here last night?',
+      'you owe me a name — who was it?',
+      'what happened to the people who were here before?',
+    ],
+    assert: {
+      surface_matches: [
+        /no-?record|don.t (have|know)|can.t (say|tell)|couldn.t say|wouldn.t know|lost to me/i,
+      ],
+      surface_excludes: [
+        /\[roll:/,                                          // ungrounded info never rolls
+        /Nothing'?s happened yet/i,                         // the recap artifact it used to emit
+        /it lands.*partial|falls short|goes your way/i,     // empty roll-flavor
+      ],
+    },
+    diverge: [
+      { text: 'what happened?', reason: 'a genuine session recap (no fiction-backstory qualifier) — still recaps, not an info-decline' },
+      { text: 'what did I just do?', reason: 'session recap of the last action — not a backstory question' },
+      { text: 'who are you?', reason: 'present-tense address → C16 dialogue, not a past-identity decline' },
+    ],
+    source: "opus-gate-2026-06-21.md (gate 8 RL t4 'what happened last night' → 'Nothing's happened yet'; Lore 'who was it' → rolled partial) — N-4 dialogue/info honest-decline; reproduced LLM-off village_baker",
+  },
 ];

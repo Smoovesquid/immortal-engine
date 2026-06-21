@@ -626,6 +626,18 @@ const INFO_SEEKING_PROVENANCE_RE = /\b(?:who|where|when|how)\b[\s\S]{0,40}?\b(?:
 // their normal paths. (N-2)
 const INFO_SEEKING_SURVEILLANCE_RE = /\b(?:who|which|whether|if|the\s+one\s+(?:who|that))\b[\s\S]{0,50}?\b(?:watch(?:ing|ed|es)?|spy(?:ing)?|spied|spies|tail(?:ing|ed|s)?|stalk(?:ing|ed|s)?|shadow(?:ing|ed|s)?|surveil\w*)\b[\s\S]{0,20}?\b(?:me|us)\b/i;
 
+// (N-4) "what happened here / last night / years ago / to <someone>" — a question
+// about FICTION BACKSTORY, not a game-session recap. Without this it matched
+// META_RECAP → "Nothing's happened yet" (gate-8 RL t4). The backstory qualifier
+// (locative/temporal/person) separates it from the bare recap "what happened?".
+const INFO_SEEKING_BACKSTORY_RE = /\bwhat\s+happened\b[\s\S]{0,40}?\b(?:here|last\s+night|last\s+\w+|years?\s+ago|long\s+ago|a\s+while\s+ago|before|earlier|that\s+(?:night|day|time)|to\s+(?:the|them|him|her|this|that|everyone|you|us|me|the\s+\w+))\b/i;
+
+// (N-4) "who was it / who was the one / who were they" — the identity of an
+// ungrounded past person ("who was it that ceased to matter?", gate-8 Lore). The
+// grounding check still gates the decline: a grounded answer is delivered; only an
+// ungrounded one declines.
+const INFO_SEEKING_IDENTITY_RE = /\bwho\s+(?:was|were)\s+(?:it|the\s+one|that(?:\s+person)?|they|the\s+\w+)\b/i;
+
 export function isInfoSeekingText(text) {
   const t = String(text || '').toLowerCase();
   if (!t.trim()) return false;
@@ -633,7 +645,8 @@ export function isInfoSeekingText(text) {
   return INFO_SEEKING_RE.test(t) || INFO_SEEKING_OBSERVE_RE.test(t) || INFO_SEEKING_TOPIC_RE.test(t)
     || INFO_SEEKING_CONCEALMENT_RE.test(t) || INFO_SEEKING_EXISTENTIAL_RE.test(t)
     || INFO_SEEKING_ORIGIN_RE.test(t) || INFO_SEEKING_PROVENANCE_RE.test(t)
-    || INFO_SEEKING_SURVEILLANCE_RE.test(t);
+    || INFO_SEEKING_SURVEILLANCE_RE.test(t)
+    || INFO_SEEKING_BACKSTORY_RE.test(t) || INFO_SEEKING_IDENTITY_RE.test(t);
 }
 
 // Confrontation / contradiction challenge (H-42, IG-11 social physics): "You
@@ -1916,8 +1929,10 @@ export function handleMetaQuestion(text, world) {
     return extras.length ? `${ans} ${extras.join(' ')}` : ans;
   }
 
-  // What happened — recap the last thing the DM narrated.
-  if (META_RECAP.test(lowerText)) {
+  // What happened — recap the last thing the DM narrated. (N-4) A fiction-backstory
+  // "what happened here last night / to them" is info-seeking, not a session recap —
+  // let it fall through to the honest info-decline instead of "Nothing's happened yet".
+  if (META_RECAP.test(lowerText) && !isInfoSeekingText(lowerText)) {
     const last = world.conversation?.lastNarration;
     if (last) {
       return `Here's what just happened: ${last}`;

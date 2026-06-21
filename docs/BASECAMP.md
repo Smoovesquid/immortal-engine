@@ -37,7 +37,7 @@ directly except in rare, scoped exceptions (see "When Basecamp edits code" below
    tag failures by capability). Corpus = free/primary; gate = paid/secondary. The biblioteca (14 vols, SOTA
    backing) has MEMORY gists that fire the right volume. `RUNG1_QUEUE.md` is now historical context, not the
    live queue. **Lessons (hard-won 2026-06-21):** (a) `git log origin/v2-polish..HEAD` before EVERY push —
-   workers commit into the shared tree mid-turn, and a doc push will carry unverified commits beneath it;
+   workers commit into the shared tree mid-turn, and a doc push will carry unverified commits beneath it — and note the workers share Basecamp's LOCAL `v2-polish` checkout (NOT separate clones), so a worker's commit silently advances your HEAD and your own `git commit` of their still-uncommitted diff can no-op ("nothing to commit"); re-derive `git status`/HEAD fresh each turn and verify a worker's commit by its hash on origin, never by re-committing the diff yourself;
    (b) verify a graduation's REAL locked/target against the corpus, not the commit message (messages overstate);
    (c) re-derive on every "X is done" relay — they're often stale; (d) per Biblioteca Vol 14, the Opus
    player+judge gate has a cited self-preference risk — prefer cross-family/panel + atomic checks + no judge-CoT

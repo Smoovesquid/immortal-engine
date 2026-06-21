@@ -47,12 +47,12 @@ export default [
 
   // ---- TARGET — broader inventory phrasings that fail ----
   {
-    id: 'C6-001-target',
+    id: 'C6-004',
     capability: 'C6',
     // "What weapons and gear am I carrying, and do I have any armor on?" → states armor but no weapons.
     // "List every item on me right now." → rolls.
-    // Target: all should produce a weapon list.
-    status: 'target',
+    // H-68: widened META_INVENTORY to catch "list every/all/my/each item(s)".
+    status: 'locked',
     fixture: 'village_baker',
     intent: 'broader inventory phrasings that should list all gear but currently roll or give partial answers',
     paraphrases: [
@@ -110,12 +110,12 @@ export default [
 
   // ---- TARGET — AC phrasings that roll or observe-only ----
   {
-    id: 'C6-002-target',
+    id: 'C6-005',
     capability: 'C6',
     // "Padded coat defense value — give me the number." → rolls
     // "what AC does padded coat give me" → observe-only bounce
-    // Target: should return armor number without rolling.
-    status: 'target',
+    // H-68: widened META_ARMOR_VALUE to catch "defense value" / "what AC" / "AC does/do/for/from".
+    status: 'locked',
     fixture: 'village_baker',
     intent: 'terse AC phrasings that should return the number but currently roll or observe-only',
     paraphrases: [

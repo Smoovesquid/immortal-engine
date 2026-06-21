@@ -210,7 +210,7 @@ const META_OUTCOME = /did i (?:succeed|fail|win|lose|make it)\b/;
 // The "what ... am I carrying" form allows up to 4 intervening words so a
 // named-noun ask ("what GEAR AND WEAPONS am I carrying") still matches, not
 // just the bare contiguous form. (H-37 R1)
-const META_INVENTORY = /\bwhat (?:do i have|am i carrying|have i got)\b|\bwhat\s+(?:\w+\s+){1,4}(?:do i have|am i carrying|have i got)\b|\bwhat'?s in my (?:pack|bag|inventory|pockets?)\b|\b(?:check|show|open|look in(?:to)?) (?:my )?(?:pack|bag|inventory|gear|equipment)\b|^\s*inventory\s*\??\s*$/;
+const META_INVENTORY = /\bwhat (?:do i have|am i carrying|have i got)\b|\bwhat\s+(?:\w+\s+){1,4}(?:do i have|am i carrying|have i got)\b|\bwhat'?s in my (?:pack|bag|inventory|pockets?)\b|\b(?:check|show|open|look in(?:to)?) (?:my )?(?:pack|bag|inventory|gear|equipment)\b|^\s*inventory\s*\??\s*$|\blist\s+(?:every|all|my|each)\s+(?:item|thing|piece|bit)s?\b/;
 // Equipment / "what am I wielding/wearing" / sheet queries — an information
 // request, never a dice roll. Answered in-voice from real canon (an empty
 // loadout is reported honestly, never invented as "a short sword").
@@ -236,7 +236,7 @@ const META_GEAR_YESNO = /\b(?:am\s+i|do\s+i)\s+(?:even\s+)?(?:carrying|wearing|w
 // scoped to the literal "give me for defense" / "its ac" / "defense bonus"
 // phrasings the gate-failure transcripts actually used, so a stray "plan
 // for defense of the village" doesn't false-positive. (H-37 R1)
-const META_ARMOR_VALUE = /\b(?:armor|armour)\s+(?:value|class|rating|number|score)\b|\bmy\s+ac\b|\bwhat(?:'?s| is)\s+(?:my\s+)?ac\b|\bgive\s+me\s+(?:my\s+)?ac\b|\bits\s+ac\b|\bdefen[cs]e\s+bonus\b|\bgive\s+me\s+for\s+defen[cs]e\b/i;
+const META_ARMOR_VALUE = /\b(?:armor|armour)\s+(?:value|class|rating|number|score)\b|\bmy\s+ac\b|\bwhat(?:'?s| is)\s+(?:my\s+)?ac\b|\bgive\s+me\s+(?:my\s+)?ac\b|\bits\s+ac\b|\bdefen[cs]e\s+bonus\b|\bgive\s+me\s+for\s+defen[cs]e\b|\bdefen[cs]e\s+(?:value|rating|number|score)\b|\bwhat\s+ac\b|\bac\s+(?:does|do|for|from)\b/i;
 // Possession contradiction — "you said I had a staff and a robe" / "a moment
 // ago I had X" / "I'm holding X" — the player re-asserts owning an item that
 // isn't in their real inventory. A real DM corrects the record in-fiction
@@ -1145,11 +1145,11 @@ export function handleMetaQuestion(text, world) {
     const ans = answerWeaponDamage(lowerText, world);
     if (ans) {
       const extras = [];
-      if (META_ARMOR_VALUE.test(lowerText)) {
+      if (WEAPON_AC_MISCONCEPTION_RE.test(lowerText)) {
+        extras.push(`Weapons don't carry an AC — that's your own defense number, not theirs.`);
+      } else if (META_ARMOR_VALUE.test(lowerText)) {
         const ac = playerAc(world.party?.[0] || {});
         extras.push(`Your Armor is ${ac} — that's the number an attack has to beat to land on you.`);
-      } else if (WEAPON_AC_MISCONCEPTION_RE.test(lowerText)) {
-        extras.push(`Weapons don't carry an AC — that's your own defense number, not theirs.`);
       }
       if (META_PURSE.test(lowerText)) extras.push(answerPurse(world));
       return extras.length ? `${ans} ${extras.join(' ')}` : ans;

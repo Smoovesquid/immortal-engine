@@ -4947,6 +4947,17 @@ function socialNarration(approach, outcome, name, lever) {
 function resolveSocialAdjudication(world, text) {
   const approach = detectApproach(text);
   if (!approach) return null;
+  // C2 (H-79, gate-4 t12): a social attempt that NAMES a specific person who
+  // isn't anyone present ("Brae, say it!" with only Mira here) must NOT silently
+  // retarget onto whoever's around — socialTarget falls back to npcs[0], which
+  // is how the gate resolved an intimidate against Corwin when the player
+  // addressed an invented "Brae". Clarify the referent instead, exactly as the
+  // dialogue/info paths do. Reached only OUT of an active dialogue (the caller
+  // gates on !scene.dialogue), so C11's in-dialogue confrontations are untouched.
+  const ungroundedSocialRef = ungroundedNpcReferentForText(world, text, { assumeNpcCentered: true });
+  if (ungroundedSocialRef) {
+    return npcReferentClarify(world, ungroundedSocialRef, { mechanics: '[clarify:referent]', mode: 'decline' });
+  }
   const npc = socialTarget(world, text);
   if (!npc) {
     return { world, output: { narration: `Wizard: There's no one here to sway.`, mechanics: '[social:no-target]' } };

@@ -130,4 +130,33 @@ export default [
     ],
     source: 'Basecamp adversarial probe 2026-06-20 (H-56 §7); H-60 promoted with proper-name travel person-signal and place-noun over-fire guards',
   },
+  {
+    id: 'C2-004',
+    capability: 'C2',
+    // gate-4 t12: a social attempt (intimidate/persuade/charm) that NAMES a
+    // person who isn't present must clarify the referent, not silently retarget
+    // onto whoever's around. Before H-79 socialTarget fell back to npcs[0], so
+    // "Brae, say it!" ran an intimidate against the present NPC (the gate
+    // resolved it against Corwin). Fixed by an ungrounded-referent guard at the
+    // top of resolveSocialAdjudication (reached only out of an active dialogue).
+    status: 'locked',
+    fixture: 'village_baker',
+    intent: 'a social attempt (intimidate/persuade/charm) aimed at an invented, not-present name must clarify — never retarget onto the present NPC',
+    paraphrases: [
+      "Brae, you keep dodging — say the name out loud or admit you don't know.",
+      "I intimidate Brae into telling me the truth.",
+      "Brae, tell me the truth or I'll make you regret it.",
+      "Threaten Kessen until he gives up the name.",
+      "I persuade Brae to help me.",
+    ],
+    assert: {
+      surface_matches: [/\[clarify:(?:referent|who)\]/i, /no one named|haven't introduced/i],
+      surface_excludes: [/\[social:/i, /\[roll:.*success/i],
+    },
+    diverge: [
+      { text: 'I intimidate Mira into talking.', reason: 'grounded present NPC by name — must resolve the social action, not clarify' },
+      { text: 'I intimidate the baker into talking.', reason: 'grounded role (Mira is the baker) — must resolve, not clarify' },
+    ],
+    source: 'opus-gate-2026-06-21.md (gate 4, Lore-hound t12: invented "Brae" → intimidate resolved against present Corwin); reproduced LLM-off village_baker; fixed H-79',
+  },
 ];

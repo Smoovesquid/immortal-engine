@@ -1,10 +1,10 @@
 // C10 — A declared attack on a present/role/named NPC routes to combat.
-// Lineage: H-30/H-32/H-43/H-48/H-55; playloop attack gates, resolveEscapeCombatTurn.
+// Lineage: H-30/H-32/H-43/H-48/H-55/H-64; playloop attack gates, resolveEscapeCombatTurn.
 // See docs/CAPABILITY_LEDGER.md.
 //
 // Calibrated against live engine output 2026-06-20.
 //
-// KEY FINDINGS:
+// KEY FINDINGS (pre-H-64):
 // In village_baker (NPC = Mira Hearth, baker):
 // - Direct name/role attacks ("I stab the baker", "I attack the baker") → [strike:Worn Blade | atk:5 vs AC:10 → miss]
 // - "blade out, go for throat" → "That way is blocked from here." (fake spatial gate)
@@ -16,6 +16,23 @@
 // In active_combat (enemy = Lingerer):
 // - Direct attacks reliably produce [strike:Worn Blade | atk:2 vs AC:10 → miss]
 // - "I go for the kill on Corwin" → [combat:table-talk] (wrong target name deflects to table-talk)
+//
+// H-64: closed the "go for X" attack idiom (was eaten whole by the interior
+// movement gate's "go <roomId>" capture before combat-begin ever ran — same
+// root cause behind both the fake spatial-gate AND the active-combat
+// table-talk deflection), added "npc"/"npcs" as a generic person referent so
+// "attack the nearest NPC" resolves like "attack the nearest person", and
+// added a flip/tip/topple/dump-onto pattern so an improvised-weapon attack
+// where the prop (not the person) is the verb's direct object ("flip the
+// counter onto her") is recognized as violence instead of a trivial
+// environmental auto-success. C10-001-target and C10-004b promoted to
+// locked. C10-002-target's first paraphrase ("I go for the kill on Corwin")
+// now resolves to real combat; its second paraphrase is still blocked by an
+// out-of-lane issue shared with C8 (a "give me the d20/modifier" rules-lawyer
+// framing wins the meta-question gate ahead of the combat-attack gate) — left
+// as target with a REVIEW note rather than touching the shared meta-question
+// gate. C10-003-target (shove misroutes) was not named in H-64's scope and is
+// untouched.
 export default [
   // ---- LOCKED — lethal attack on named NPC/role (baker) starts combat ----
   {
@@ -83,11 +100,13 @@ export default [
   {
     id: 'C10-001-target',
     capability: 'C10',
-    // "Blade out — I go for the baker's throat." → "That way is blocked from here." (fake spatial gate)
-    // "Attack the nearest NPC with my worn blade." → [no-target]
-    // "I draw my weapon and attack Corwin." → trivial draw action (no Corwin in fixture)
-    // These should route to combat but don't.
-    status: 'target',
+    // H-64: "Blade out — I go for the baker's throat." used to hit "That way is
+    // blocked from here." (the interior movement gate's "go <roomId>" capture
+    // swallowed "go for" before combat-begin ever ran). "Attack the nearest NPC
+    // with my worn blade." used to hit [no-target] (fuzzyMatchNpc didn't treat
+    // the literal word "NPC" as a generic person referent). Both now resolve to
+    // real combat. Promoted to locked.
+    status: 'locked',
     fixture: 'village_baker',
     intent: 'attack phrasings that should start combat but misroute to spatial gate or no-target',
     paraphrases: [
@@ -140,18 +159,59 @@ export default [
     source: 'opus-gate-2026-06-19-postH42-baseline.md [Rules Lawyer DM, turns 4-5]; calibrated 2026-06-20',
   },
 
-  // ---- TARGET — "I go for the kill on Corwin" routes to table-talk (wrong name deflects) ----
+  // ---- LOCKED — "I go for the kill on Corwin" (wrong enemy name) resolves to combat ----
   {
-    id: 'C10-002-target',
+    id: 'C10-002c',
     capability: 'C10',
-    // "I go for the kill on Corwin" → [combat:table-talk] ("steel between you and the road")
-    // The enemy is "Lingerer" not "Corwin" — name mismatch causes table-talk deflection.
-    // Target: should resolve as an attack on the present enemy regardless of name.
-    status: 'target',
+    // H-64: "I go for the kill on Corwin" used to hit [combat:table-talk]
+    // ("steel between you and the road") — the enemy is "Lingerer" not
+    // "Corwin", but the real bug was the same "go for" idiom being swallowed
+    // by the interior movement gate (kind:'move') before the in-combat
+    // table-talk/strike branching ever ran, not the name mismatch itself:
+    // once "go for" reaches the combat resolver, resolveEscapeCombatTurn
+    // defaults unrecognized-target text to a weapon strike against the live
+    // foe regardless of the name spoken. Promoted to locked.
+    status: 'locked',
     fixture: 'active_combat',
     intent: 'attack phrased with wrong enemy name — should still route to combat, not table-talk',
     paraphrases: [
       "I go for the kill on Corwin.",
+    ],
+    assert: {
+      surface_matches: [
+        /\[strike:[^\]]*→\s*(?:hit|miss)\]/i,
+      ],
+      surface_excludes: [
+        /\[combat:table.talk\]/i,
+      ],
+    },
+    diverge: [
+      { text: "I try to talk him down.", reason: "social action in combat; parley, not attack" },
+    ],
+    source: 'opus-gate-2026-06-19-postH42-baseline.md [Rules Lawyer DM, turn 5]; calibrated 2026-06-20',
+  },
+
+  // ---- TARGET — rules-lawyer "give me the d20/modifier" framing of an attack
+  // still loses to the meta-question gate, deflecting to table-talk ----
+  {
+    id: 'C10-002-target',
+    capability: 'C10',
+    // "You quoted me the modifier table but still didn't roll. d20 result for
+    // my attack on Corwin — now." → answers the modifier-breakdown
+    // meta-question instead of resolving the attack. REVIEW: root cause is
+    // the shared out-of-combat-style meta-question gate (isMetaQuestion /
+    // handleMetaQuestion) winning ahead of the combat-attack branch when a
+    // turn both asks a rules question AND declares an attack in the same
+    // breath — the identical shape blocks C8-001-target ("I attack Corwin
+    // with my worn blade. Roll it — give me the d20...") outside H-64's
+    // playloop.js/C10.corpus.mjs lane. Needs a dedicated packet to teach the
+    // meta-question gate that an explicit attack verb in the same utterance
+    // should resolve the attack (and fold the numbers into its narration)
+    // rather than answer the question and stop the turn.
+    status: 'target',
+    fixture: 'active_combat',
+    intent: 'attack declared alongside a rules-lawyer request for the roll breakdown — should still resolve as combat, not a meta-answer',
+    paraphrases: [
       "You quoted me the modifier table but still didn't roll. d20 result for my attack on Corwin — now.",
     ],
     assert: {
@@ -208,6 +268,11 @@ export default [
     // "I push the trader out of my way with force." → [social:intimidate] (wrong resolution)
     // "I shoulder the guard aside — hard." → rolls a WITS focus check (not combat)
     // "I shove him again, harder..." → MIGHT roll [roll:11 vs DC:13 → mixed] (not a strike tag)
+    // REVIEW: not one of H-64's 4 named misroutes (those were the spatial-gate,
+    // no-target, wrong-name-deflect, and trivial-prop-flip shapes — all closed).
+    // These shoves are a distinct gap: ambiguous-force phrasing with no
+    // explicit attack verb, competing against the generic skill-roll and
+    // social-intimidate resolvers. Left untouched, out of this packet's lane.
     status: 'target',
     fixture: 'village_baker',
     intent: 'role-target violence phrasings that should route to combat but misroute to generic roll or social',
@@ -266,10 +331,14 @@ export default [
   {
     id: 'C10-004b',
     capability: 'C10',
-    // "I grab the counter and flip it over onto her." → "You do so without difficulty. trivial action"
-    // The engine treats the counter-flip as an environmental action, not a NPC attack.
-    // Should route to combat as an improvised-weapon attack on the baker.
-    status: 'target',
+    // H-64: "I grab the counter and flip it over onto her." used to hit "You
+    // do so without difficulty." (trivial auto-success) — detectPhysicalAssault
+    // had no pattern for a thrown/flipped PROP whose person-target trails the
+    // verb's direct object ("flip the counter onto her": the counter is the
+    // verb's object, "her" only appears after the final preposition). Added a
+    // flip/tip/topple/dump-onto branch that captures the trailing target.
+    // Promoted to locked.
+    status: 'locked',
     fixture: 'village_baker',
     intent: '"I grab the counter and flip it over onto her" — should start combat, not auto-succeed as trivial',
     paraphrases: [

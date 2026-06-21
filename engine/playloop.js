@@ -2999,8 +2999,12 @@ function inferInteriorAction(text, interior) {
   // a movement preposition isn't a room, it's the start of an approach-a-person
   // intent, which must fall through to the dialogue path (resolved against present
   // NPCs there). Without this, "go to X" reads as a room move and hits a wall.
+  // "go for" is excluded the same way — it's the "go for X"/"go for the kill"
+  // attack idiom (H-64), not a destination; falling through here lets the
+  // combat-begin/targeted-combat gates downstream see it instead of a fake
+  // spatial-gate "blocked from here".
   const goMatch = t.match(/\bgo\s+([a-z0-9:_-]+)/i);
-  if (goMatch && !/^(?:to|over|up|down|back|into|in|out|on|toward|towards|and)$/i.test(goMatch[1])) {
+  if (goMatch && !/^(?:to|for|over|up|down|back|into|in|out|on|toward|towards|and)$/i.test(goMatch[1])) {
     return { kind: 'move', toRoomId: String(goMatch[1] || ''), direction: '' };
   }
   return { kind: 'none' };
@@ -6029,13 +6033,15 @@ function detectAttackBeginIntent(world, text) {
 // Includes unarmed/natural strikes (bite, knee, elbow, sweep, …) — by SRD they're
 // unarmed strikes (damage) or a shove-to-prone (sweep/trip); either way an attack.
 const DIRECT_ATTACK_VERB = /\b(attack|fight|kill|murder|assault|strike|stab|slash|punch|kick|tackle|charge|bash|club|clobber|whack|brain|throttle|choke|strangle|knife|gut|maim|behead|lunge|headbutt|grapple|shoot|hit|bite|claw|gnaw|scratch|knee|elbow|stomp|sweep|trip|gore|butt|throttle)\s+(.+)/i;
-// Attack idioms ("come at her", "set upon the elder", "lay into him"). NOTE:
-// "go for X" is intentionally omitted — "go" is consumed by the movement gate
-// (which runs before combat-begin), so it can't reach here. Logged for punchlist.
-const ATTACK_IDIOM = /\b(?:come\s+at|lunge\s+(?:at|for)|set\s+(?:upon|on)|lay\s+into|rush\s+at)\s+(.+)/i;
+// Attack idioms ("come at her", "set upon the elder", "lay into him", "go for
+// her throat"). "go for X" used to be omitted here because "go" was consumed
+// by the movement gate before combat-begin ever ran (H-64 punchlist) — that
+// gate (inferInteriorAction) now excludes "for" from its room-id capture, so
+// the idiom can reach this far.
+const ATTACK_IDIOM = /\b(?:come\s+at|lunge\s+(?:at|for)|set\s+(?:upon|on)|lay\s+into|rush\s+at|go\s+for)\s+(.+)/i;
 // Any violence at all (gate). Broad — recall here is fine because the target
 // must still resolve to a PRESENT NPC below (objects/empty refs → no match).
-const ANY_VIOLENCE = /\b(attack|fight|kill|murder|assault|strike|stab|slash|punch|kick|tackle|charge|bash|club|clobber|whack|brain|throttle|choke|strangle|knife|gut|maim|behead|lunge|headbutt|grapple|shoot|swings?|hurl|throw|lob|slam|smash|hit|beat|bite|claw|gnaw|scratch|knee|elbow|stomp|sweep|trip|gore|butt|come\s+at|set\s+(?:upon|on)|lay\s+into|rush\s+at)\b/i;
+const ANY_VIOLENCE = /\b(attack|fight|kill|murder|assault|strike|stab|slash|punch|kick|tackle|charge|bash|club|clobber|whack|brain|throttle|choke|strangle|knife|gut|maim|behead|lunge|headbutt|grapple|shoot|swings?|hurl|throw|lob|slam|smash|hit|beat|bite|claw|gnaw|scratch|knee|elbow|stomp|sweep|trip|gore|butt|come\s+at|set\s+(?:upon|on)|lay\s+into|rush\s+at|go\s+for)\b/i;
 // Unambiguously hostile verbs — only these license matching an NPC named anywhere
 // in the sentence (so "throw a coin to Corwin" can't, but "Corwin, I'll kill you" can).
 const UNAMBIGUOUS_VIOLENCE = /\b(attack|kill|murder|assault|stab|slash|punch|kick|tackle|charge|bash|club|clobber|whack|brain|throttle|choke|strangle|knife|gut|maim|behead|lunge)\b/i;
@@ -6136,6 +6142,16 @@ function detectPhysicalAssault(world, text) {
   // E — natural weapon: "sink/bury my teeth|fangs|claws into <NPC>".
   if ((m = t.match(/\b(?:sink|bury|dig)\s+(?:my\s+|your\s+)?(?:teeth|fangs|nails|claws|talons|tusks)\s+(?:in|into)\s+(.+)/i))) {
     const npc = hit(m[1]); if (npc) return { npc, kind: 'bite' };
+  }
+  // F — improvised-weapon prop directed at a person via a trailing preposition:
+  // "flip the counter over onto her" / "tip the table onto him" / "dump the
+  // shelf onto her". Unlike B, the verb's direct object is the PROP (the
+  // counter), not the person — the person only appears after the LAST
+  // onto/at/against, so the ref to match is the trailing target, not the
+  // text between the verb and the preposition. Without this, "flip X onto Y"
+  // reads as a trivial environmental action instead of an attack. (H-64)
+  if ((m = t.match(/\b(?:flip|tip|topple|dump|knock)\s+.+?\s+(?:onto|on\s*to|at|against)\s+(.+)/i))) {
+    const npc = hit(m[1]); if (npc) return { npc, kind: 'move' };
   }
   return null;
 }
@@ -6318,7 +6334,7 @@ function fuzzyMatchNpc(npcs, ref) {
   //     Catches adjective-qualified refs ("the nearest figure", "the lone man")
   //     and combat words ("the enemy", "the foe", "the attacker") that the exact
   //     descriptor set in step 3 misses. Role-specific refs already resolved above.
-  const GENERIC_WORD = /\b(woman|man|men|women|person|people|stranger|someone|anyone|everyone|them|her|him|his|its|their|lady|guy|fellow|figure|figures|villager|townsperson|townsfolk|civilian|bystander|enemy|enemies|foe|foes|attacker|assailant|creature|beast|monster|thing|shape|shadow)\b/;
+  const GENERIC_WORD = /\b(woman|man|men|women|person|people|stranger|someone|anyone|everyone|them|her|him|his|its|their|lady|guy|fellow|figure|figures|villager|townsperson|townsfolk|civilian|bystander|enemy|enemies|foe|foes|attacker|assailant|creature|beast|monster|thing|shape|shadow|npc|npcs)\b/;
   if (GENERIC_WORD.test(refLower)) return npcs[0];
 
   // 5. Last resort: if ref is a single common word that could describe

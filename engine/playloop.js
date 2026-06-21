@@ -1853,7 +1853,7 @@ function playerMoveCore(world, packsById, text) {
       const escVerb = parseEscapeAction(text).verb;
       const improvisedCombatAction = isImprovisedCombatAction(w, text);
       const targetedViolentAction = isTargetedViolentCombatAction(w, text);
-      const explicitAction = improvisedCombatAction || targetedViolentAction || /\b(strike|attack|swing|stab|shoot|slash|hit|beat|smite|fireball|blast|cast|rage|surge|guard|ward|cover|throw|hurl|lob|fling|toss)\b/i.test(String(text || ''));
+      const explicitAction = improvisedCombatAction || targetedViolentAction || /\b(strike|attack|swing|stab|shoot|slash|hit|beat|smite|fireball|fire\s?bolt|firebolt|blast|cast|rage|surge|guard|ward|cover|throw|hurl|lob|fling|toss)\b/i.test(String(text || ''));
       const asksQuestion = isQuestionShaped(text) || /\?/.test(String(text || ''));
       if (isMetaQuestion(text) || (asksQuestion && escVerb !== 'parley' && !explicitAction)) {
         const metaAnswer = isMetaQuestion(text) ? handleMetaQuestion(text, w) : null;
@@ -5935,7 +5935,7 @@ function isCombatSocialNonAction(text) {
   const t = String(text || '').toLowerCase();
   if (!t) return false;
   if (ANY_VIOLENCE.test(t)) return false;
-  if (/\b(?:stab|slash|strike|attack|kill|murder|smash|slam|bash|ram|drive|throw|hurl|fling|toss|lob|shoot|cast|blast|fireball|bolt|smite|grapple|choke|punch|kick|bite|claw|stomp|headbutt)\b/i.test(t)) return false;
+  if (/\b(?:stab|slash|strike|attack|kill|murder|smash|slam|bash|ram|drive|throw|hurl|fling|toss|lob|shoot|cast|blast|fireball|fire\s?bolt|firebolt|bolt|smite|grapple|choke|punch|kick|bite|claw|stomp|headbutt)\b/i.test(t)) return false;
   return /\b(?:taunt|mock|insult|jeer|spit|spits|spat|yell|shout|snarl|threaten|threat|warn|curse|glare|laugh)\b/i.test(t);
 }
 

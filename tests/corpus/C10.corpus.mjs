@@ -191,6 +191,39 @@ export default [
     source: 'opus-gate-2026-06-19-postH42-baseline.md [Rules Lawyer DM, turn 5]; calibrated 2026-06-20',
   },
 
+  // ---- LOCKED — declared firebolt in active combat resolves, not table-talk ----
+  {
+    id: 'C10-002d',
+    capability: 'C10',
+    // H-71: "I spit a firebolt right into the heart of it" bounced to
+    // [combat:table-talk]. explicitAction's combat-verb alternation listed
+    // "fireball"/"cast"/"hurl" but not "firebolt"/"fire bolt", and
+    // isCombatSocialNonAction's strike-exclude had \bbolt\b which matches
+    // two-word "fire bolt" but not the one-word "firebolt" — so a firebolt
+    // phrased with a social-sounding verb ("spit") fell through to the
+    // taunt/social-beat bounce before resolveEscapeCombatTurn ever ran.
+    status: 'locked',
+    fixture: 'active_combat',
+    intent: 'a firebolt declared at the live foe is a combat action regardless of verb — must resolve, not bounce as a taunt',
+    paraphrases: [
+      "I spit a firebolt right into the heart of it.",
+      "I spit a firebolt into its face.",
+      "I hiss and loose a firebolt at the thing.",
+    ],
+    assert: {
+      surface_matches: [
+        /fire bolt|\[strike:/i,
+      ],
+      surface_excludes: [
+        /\[combat:table.talk\]/i,
+      ],
+    },
+    diverge: [
+      { text: "I spit at the Lingerer and curse its name.", reason: "genuine taunt — no firebolt/strike verb — must stay table-talk" },
+    ],
+    source: 'H-71; calibrated 2026-06-21',
+  },
+
   // ---- TARGET — rules-lawyer "give me the d20/modifier" framing of an attack
   // still loses to the meta-question gate, deflecting to table-talk ----
   {

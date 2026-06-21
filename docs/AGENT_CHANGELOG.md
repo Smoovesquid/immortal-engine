@@ -1416,3 +1416,15 @@ other agents. (none active)
 - Rollback: revert `ae75558` (engine+corpus) + this docs commit.
 
 [CLAIMED] H-76 C7-002b consume-vs-sheet · Claude-Sonnet · 2026-06-21T16:32:30Z · files: engine/grace/gracefulAdjudication.js, tests/corpus/C7.corpus.mjs
+
+2026-06-21T16:50:00Z — Claude Sonnet 4.6 (grace lane, self-pushed)
+- Packet/seam: H-76 — C7-002b: a consume-action carrying a "what's on my sheet" rider applies the effect, not a stat readout (gate-3 C7 live item-effect failure)
+- Commit(s): `8444f23` (Claude Sonnet 4.6, grace lane, self-pushed)
+- Files changed: `engine/grace/gracefulAdjudication.js` (+12 lines), `tests/corpus/C7.corpus.mjs` (status flip + 1 diverge)
+- Summary: `META_SHEET_CONFIRM` (gracefulAdjudication.js:1477) caught "I'll uncork the Tonic of grit and drink it right now — tell me exactly what changes on my sheet" before the downstream consume path (playloop.js `CONSUME_RE`, already correct/reachable) ever fired, returning the static stat-block ("I cannot edit them") instead. Added a local `SHEET_CONSUME_CUE_RE` (mirrors `CONSUME_RE`'s verb+noun shape — drink/quaff/swig/down/swallow/drain/uncork/tilt × potion/draught/elixir/antidote/tonic/remedy, both orders) and a negative guard before the `META_SHEET_CONFIRM` block: if the sheet-cue text also carries a real consume cue, return `null` so the turn falls through to `tryUseConsumable`. Deliberately kept the regex local rather than importing `CONSUME_RE` from playloop, to keep grace/playloop layering clean. C7-002b target→locked.
+- Verification:
+  - `npm run convergence` — C7 **11/11 locked** (0/0 target), Overall **100% (66/66)**, exit 0.
+  - `node --test` — **8285/8285, 0 fail** (determinism U19/21/22/27/30 included).
+  - Over-fire probe (village_baker fixture, direct `playerMove` calls): "what's on my sheet?" → loadout readout (no consume cue, no class/gear/stats wording so falls to plain gear line) ✓; "what weapons, armor, and gear are on my sheet?" → gear readout ✓; "give me the sheet" → full stat-block readout ✓ (none of these three fire `[consume:]`); "I'll uncork the Tonic and drink it — what changes on my sheet?" → `[consume:unneeded]` (party already at full HP in the fixture, so the consume path correctly reports "already whole" rather than healing) ✓ — confirms the consume path now resolves instead of the stat-block bounce.
+- Out of scope (untouched, per packet): `engine/playloop.js` (`CONSUME_RE` already matched — read-only), the cross-item compound case (H-77, separate).
+- Rollback: revert `8444f23`

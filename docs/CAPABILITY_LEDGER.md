@@ -86,6 +86,18 @@ hoisted ahead of the combat loop) — joins the accumulating cross-lane cleanup 
 52/52 → 54/54, 100% throughout. Process note: the H-67 commit was found sitting unverified on local HEAD by the
 pre-push `origin/v2-polish..HEAD` check (parallel-lane workers commit into the shared tree) — verified before push.
 
+*2026-06-21 (gate 2 under the convergence framework — `docs/playtests/opus-gate-2026-06-21.md`, 18/48 raw):* the
+DISCOVERY signal = **0 new capabilities** (baseline opened C15; this opens none → the 1st zero-discovery gate).
+All 18 HARD failures map onto C4/C5/C7/C8/C9/C10/C12/C15; the 10→18 raw jump is the ruler bouncing (this run's
+Rules Lawyer drilled the Tonic vein ~9 turns, the Chaos-griefer firebolt-in-combat). **#1 finding
+(methodological): C7 is corpus-GREEN but LIVE-BROKEN** — the LLM-off corpus never exercises the compound /
+dose-count phrasings or the live narration sink; add C7 compound+dose-count targets + an LLM-on probe before the
+next C7 packet. **Confirmed live:** C6 holds (H-68), C15 improved (baseline combat-as-table-talk cluster gone,
+H-58), C13 holds. **Next by live density:** C8/C9 (fabricated roll/ledger — least-graduated, now live-confirmed)
+> C7 live-coverage > C10 spell/cast resolution > C4 empty-success. Judge caveat (Vol 14, Opus×Opus
+self-preference): HARD tags are a discovery pointer, confirmed against canon in the mech column; a cross-family
+re-judge is the future hardening.
+
 **Social-physics categories to mine next (Biblioteca Vols 2–6, mostly not yet failing-in-gate but on the map):**
 sarcasm/irony inversion (Vol 2; transcript: `docs/playtests/ridiculous-sarcasm-2026-06-06.md`), loaded
 questions / presupposition (Vol 3, "have you stopped stealing?"), bluff vs. claim (Vol 5), request/order/threat

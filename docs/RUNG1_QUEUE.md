@@ -1209,9 +1209,11 @@ Full per-turn detail in the report file. Catalog these as the next hard-tail pac
 once a worker prompt is drafted. Priority order: CRASH → DM_TEST_DEADEND → CRUNCH_INCONSISTENCY →
 CANON_HALLUCINATION.
 
-## Budget — ~$7.88 remaining
+## Budget — ~$5.17 remaining
 Tim confirmed actual balance **$10.51** on 2026-06-20. First convergence-framework gate (~$2.63,
 `docs/playtests/opus-gate-2026-06-20-convergence-baseline.md`) → **~$7.88 left** (~3 more 4-session runs).
+Second gate (2026-06-21, ~$2.71, `docs/playtests/opus-gate-2026-06-21.md`, 18/48 raw / **0 new capabilities**)
+→ **~$5.17 left** (~1–2 more 4-session runs). Re-confirm the actual balance with Tim before the next run.
 The corpus harness (`npm run convergence`) is FREE/deterministic and is now the **primary regression signal**;
 the paid gate is reserved for the **discovery signal** (tag failures by capability). Worker-side fixes
 (Sonnet/Codex windows) don't draw this budget — only `scripts/dm-playtest.mjs` runs do. Still confirm the

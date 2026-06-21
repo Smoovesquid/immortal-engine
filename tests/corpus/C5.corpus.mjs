@@ -154,4 +154,42 @@ export default [
     ],
     source: 'opus-gate-2026-06-20-postH52-H53.md (RL DM, turn 5); opus-gate-2026-06-20-postH54-H55.md; calibrated 2026-06-20',
   },
+
+  // ---- LOCKED ----
+  {
+    id: 'C5-005',
+    capability: 'C5',
+    // gate-4 RL t8: "which ability modifier applies to a melee strike — MIGHT or
+    // AGILITY?" leaked the raw breakpoint table (a system artifact) instead of
+    // answering the governing stat; sibling phrasings ("which stat to hit in
+    // melee?") fell through to a generic WITS roll. H-80 added a governing-stat-
+    // FOR-ATTACK answer (melee→MIGHT, ranged→AGILITY), checked before the
+    // breakpoint last-resort and never rolled.
+    status: 'locked',
+    fixture: 'village_baker',
+    intent: 'ask which stat/modifier governs a MELEE attack — must answer MIGHT straight, never the breakpoint table or a roll',
+    paraphrases: [
+      "Which ability modifier applies to a melee strike — MIGHT or AGILITY?",
+      "Which stat do I use to hit in melee?",
+      "What modifier applies to a melee attack?",
+      "Do I use MIGHT or AGILITY when I swing in melee?",
+      "What's the ability modifier for a melee strike?",
+    ],
+    assert: {
+      surface_matches: [
+        /\bMIGHT\b/i,
+        /melee/i,
+      ],
+      surface_excludes: [
+        /\[roll:/,
+        /Modifier breakpoints/i,
+        /Your measures/i,
+      ],
+    },
+    diverge: [
+      { text: 'which stat governs my armor class?', reason: 'defense/AC question — answered as AC (AGILITY-based), not the melee-attack MIGHT' },
+      { text: 'I swing my blade at the fence post.', reason: 'attack declaration — resolves as an action/roll, not a rules answer' },
+    ],
+    source: 'opus-gate-2026-06-21.md (gate 4, Rules Lawyer t8: "which modifier for a melee strike" leaked the breakpoint table); reproduced LLM-off village_baker; fixed H-80',
+  },
 ];

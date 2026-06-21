@@ -462,6 +462,14 @@ const DAMAGE_CUE_RE = /\bdamage\b|\bdmg\b|\bdeal(?:s|t)?\b/i;
 const EFFECT_CUE_RE = /\beffect\b|\bdoes\b|\bdo\b|\bheal(?:s|ing)?\b|\bcures?\b|\btell\s+me\b/i;
 
 // Detect meta-questions (questions about state, not actions)
+// "Which stat/modifier governs a melee (or ranged) ATTACK — MIGHT or AGILITY?"
+// A rules question, not an attack declaration: anchored on a (which|what) +
+// stat-word + melee/ranged + attack-sense shape (or "do I use MIGHT/AGILITY …
+// melee/hit"). Distinct from META_ATTACK_MOD (which asks for the NUMBER) and
+// from "which stat for my armor class" (AGILITY/AC — deliberately excluded by
+// requiring an attack-sense word). (H-80, gate-4 RL t8)
+const META_ATTACK_GOVERNING_STAT = /\b(?:which|what)\b[\s\S]{0,55}?\b(?:stat|ability|modifier|mod|bonus)\b[\s\S]{0,55}?\b(?:melee|ranged|unarmed)\b[\s\S]{0,25}?\b(?:attack|strike|hit|swing|blow|damage)\b|\b(?:which|what)\b[\s\S]{0,55}?\b(?:stat|ability|modifier|mod|bonus)\b[\s\S]{0,40}?\b(?:hit|attack|strike|swing)\b[\s\S]{0,20}?\b(?:melee|ranged)\b|\bdo i use\b[\s\S]{0,25}?\b(?:might|agility|strength|dexterity|str|dex)\b[\s\S]{0,45}?\b(?:melee|ranged|to[-\s]?hit|attack|strike|swing|hit)\b/i;
+
 export function isMetaQuestion(text) {
   const t = String(text || '').toLowerCase();
   return META_LOCATION.test(t) || META_HEALTH.test(t) || META_RECAP.test(t) || META_OUTCOME.test(t)
@@ -474,6 +482,7 @@ export function isMetaQuestion(text) {
     || META_EXPLICIT_CHECK_A.test(t) || META_EXPLICIT_CHECK_B.test(t)  // H-19
     || META_EXPLICIT_CHECK_C.test(t) || META_EXPLICIT_CHECK_D.test(t)  // H-26c
     || META_SKILL_MOD.test(t) || META_ATTACK_MOD.test(t) || META_BARE_DC.test(t)  // H-25
+    || META_ATTACK_GOVERNING_STAT.test(t)  // H-80 — governing stat for melee/ranged attack
     || META_ROLL_RECALL.test(t)  // H-12/13
     || META_SYSTEM_CHECKIN.test(t)  // H-51
     || META_DAMAGE_RULE.test(t)  // H-54 R3
@@ -1023,6 +1032,22 @@ function answerSkillModifier(lowerText, world) {
   return `Your ${skillName} modifier is ${fmtMod(base + prof)}${clause}.`;
 }
 
+// Governing stat for a melee/ranged ATTACK ("which modifier applies to a melee
+// strike — MIGHT or AGILITY?"). Melee runs off MIGHT (escapeCombat.js: d20+MIGHT
+// to hit, d6+MIGHT damage); ranged off AGILITY. Answer straight with the real
+// modifier — never the raw breakpoint table or a generic skill roll. Returns
+// null when the text isn't this governing-stat question. (H-80)
+function answerAttackGoverningStat(lowerText, world) {
+  if (!META_ATTACK_GOVERNING_STAT.test(lowerText)) return null;
+  const ranged = /\b(?:ranged|range|bow|thrown|missile|arrow|sling|crossbow)\b/i.test(lowerText);
+  const statKey = ranged ? 'AGILITY' : 'MIGHT';
+  const score = Number(world.party?.[0]?.stats?.[statKey]) || 10;
+  const mod = fmtMod(statMod(score));
+  return ranged
+    ? `Ranged attacks run off AGILITY — yours is ${score} (${mod}), so it's d20 ${mod} to hit. (Melee uses MIGHT.)`
+    : `Melee attacks run off MIGHT — yours is ${score} (${mod}), so it's d20 ${mod} to hit and d6 ${mod} for damage. (Ranged uses AGILITY.)`;
+}
+
 // Full ability-score block ("MIGHT 12 (+1), AGILITY 9 (-1), ..." plus escape-
 // mode HP when applicable) — the same "give me my numbers" content every
 // stats-request fold needs. Shared by the compound INVENTORY/EQUIPMENT/
@@ -1180,6 +1205,12 @@ function answerEnemyCompound(world) {
 // Returns null when the text isn't a recognized meta-question.
 export function handleMetaQuestion(text, world) {
   const lowerText = String(text || '').toLowerCase();
+
+  // Governing stat for a melee/ranged ATTACK — "which modifier applies to a
+  // melee strike, MIGHT or AGILITY?". Checked FIRST so it never falls to the
+  // raw breakpoint table (META_MODIFIER_FORMULA) or a generic skill roll. (H-80)
+  const attackStatAns = answerAttackGoverningStat(lowerText, world);
+  if (attackStatAns) return attackStatAns;
 
   // Location / survey — checked first (most specific phrasings).
   if (META_LOCATION.test(lowerText)) {

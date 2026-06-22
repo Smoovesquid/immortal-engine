@@ -207,10 +207,15 @@ export default [
       ],
     },
     diverge: [
-      { text: "Tell me what the Tonic does.", reason: "open query; DM states real effect proactively, not as a correction" },
+      // H-88 NOTE: "Tell me what the Tonic does." used to be a diverge here because the
+      // verb-final query ROLLED (no effect stated) — it no longer diverges now that
+      // META_ITEM_VERB_FINAL routes it to the same "heals 2d4" effect-statement (it's the
+      // C7-011 capability, not a correction). Replaced with a value/opinion question, which
+      // genuinely diverges (a judgment, not the mandatory effect readback or a correction).
+      { text: "Is the Tonic worth keeping or should I sell it?", reason: "value/opinion question; DM gives judgment, not a false-claim correction nor a mandatory effect readback" },
       { text: "I've already used the Tonic. Can I get another one?", reason: "inventory/acquisition request, not a false-claim endorsement scenario" },
     ],
-    source: 'opus-gate-2026-06-20-postH45-H46.md [Rules Lawyer DM, turn 7]; calibrated 2026-06-20',
+    source: 'opus-gate-2026-06-20-postH45-H46.md [Rules Lawyer DM, turn 7]; calibrated 2026-06-20; diverge updated H-88',
   },
 
   // ---- LOCKED — consumable inventory state after use ----
@@ -490,5 +495,42 @@ export default [
       { text: 'what does my GRIT do?', reason: 'stat phrased with "do", no real item named → stat readout' },
     ],
     source: 'opus-gate-2026-06-21.md (gate 7 RL t2/t5) — stat name inside an item-effect question hijacked the stat readout; fixed N-3',
+  },
+
+  // ---- LOCKED — verb-FINAL item-effect query states the effect, doesn't roll ----
+  // GRADUATED 2026-06-22 (H-88). The H-77 residual: "Tell me what the Tonic does" puts
+  // the verb AFTER the noun ("what the Tonic does"), which META_ITEM's verb-INITIAL
+  // shape ("what does the X do") misses entirely — so it rolled/observed instead of
+  // stating the effect. META_ITEM_VERB_FINAL routes the verb-final shape through the
+  // same answerItemQuery (which returns null for a non-item, so "what the elder does"
+  // still falls through to observe — the regex is broad, the pack decides).
+  {
+    id: 'C7-011',
+    capability: 'C7',
+    status: 'locked',
+    fixture: 'village_baker',
+    intent: 'verb-final item-effect query ("tell me what the Tonic does") — must state the real effect (heals 2d4), no roll',
+    paraphrases: [
+      "Tell me what the Tonic does.",
+      "Tell me what the Tonic of grit does.",
+      "what the Tonic of grit does",
+      "tell me what my Tonic does",
+      "remind me what the Tonic does",
+      "what the Tonic of grit does, exactly",
+    ],
+    assert: {
+      surface_matches: [
+        /heals 2d4|heal/i,        // states the real effect
+      ],
+      surface_excludes: [
+        /\[roll:/,                // must NOT roll
+        /observe only|no roll/i,  // must NOT fall to observe-only
+      ],
+    },
+    diverge: [
+      { text: "what the elder does around here", reason: "a present NPC, not a carried item — answerItemQuery returns null, falls through to observe (must NOT fabricate an item effect)" },
+      { text: "what does the door do when I open it", reason: "scenery/action, not an item — no carried-item match, must not state a heal" },
+    ],
+    source: 'H-77 residual (CAPABILITY_LEDGER, 2026-06-21) — verb-final "what the Tonic does" rolled instead of stating the effect; reproduced LLM-off village_baker',
   },
 ];

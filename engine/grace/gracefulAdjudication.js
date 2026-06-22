@@ -302,6 +302,14 @@ const META_ITEM_PRESENCE = /\bdo i still have\b|\bhave i still got\b|\bstill\s+i
 // net as the rest of the META_ITEM family: answerItemQuery returns null
 // (falls through) unless a REAL carried item is named in the text. (H-77)
 const ITEM_EFFECT_DEMAND_RE = /\b(?:give|tell)\s+me\b[\s\S]{0,40}?\b(?:mechanical\s+)?effect\b|\bwhat\b[\s\S]{0,60}?\bdo(?:es)?\b[\s\S]{0,60}?\bundefined\b/i;
+// Verb-FINAL item-effect query — "tell me what the Tonic does", "what the Tonic
+// of grit does", "what my rope does". META_ITEM only matches the verb-INITIAL
+// shape ("what does the X do"); when the verb trails the noun ("what the X
+// does") it missed entirely and the turn rolled/observed instead of stating the
+// effect (H-77 residual). Deliberately broad — it routes through answerItemQuery,
+// which returns null for a non-item ("what the elder does"), so the turn falls
+// through cleanly; the regex doesn't decide item-vs-not, the pack does.
+const META_ITEM_VERB_FINAL = /\bwhat\s+(?:the|my|this|that)\s+[\w' -]+?\s+do(?:es)?\b/i;
 // A player asserting a carried item is inert/useless/does-nothing — "the
 // Tonic is inert, it does nothing". A real DM corrects a false claim about
 // an item that canon gives a real effect, rather than agreeing with it.
@@ -504,6 +512,7 @@ export function isMetaQuestion(text) {
     || META_CONSUMABLES_LIST.test(t)  // H-45
     || META_ITEM_CAPABILITY.test(t) || META_ITEM_INERT_CLAIM.test(t)  // H-47
     || META_ITEM_QUERY.test(t) || META_ITEM_PRESENCE.test(t)  // H-65
+    || META_ITEM_VERB_FINAL.test(t)  // H-88 — "what the Tonic does" (verb trails the noun)
     || ITEM_EFFECT_DEMAND_RE.test(t)  // H-77
     || (META_ENEMY_STATUS.test(t) && ENEMY_HP_CUE_RE.test(t))  // H-59 — enemy name+HP compound
     || (DAMAGE_CUE_RE.test(t) && /\beffect\b/i.test(t))  // H-59 — "X dmg, Y effect" list compound
@@ -1839,7 +1848,8 @@ export function handleMetaQuestion(text, world) {
   // (H-54 R4) just trades one wrong interceptor for another. (H-54 R4)
   if ((META_ITEM.test(lowerText) || META_ITEM_CAPABILITY.test(lowerText)
        || META_ITEM_QUERY.test(lowerText) || META_ITEM_PRESENCE.test(lowerText)  // H-65
-       || ITEM_EFFECT_DEMAND_RE.test(lowerText))  // H-77
+       || ITEM_EFFECT_DEMAND_RE.test(lowerText)  // H-77
+       || META_ITEM_VERB_FINAL.test(lowerText))  // H-88 — verb-final "what the X does"
       && !META_EXPLICIT_CHECK_DECLARED.test(lowerText)) {
     const ans = answerItemQuery(lowerText, world);
     if (ans) return ans;

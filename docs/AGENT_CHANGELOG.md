@@ -1544,3 +1544,12 @@ other agents. (none active)
 - Proof (§7): reproduced LLM-off FIRST on `village_baker` — "how many founders…" rolled/observed pre-fix, honest-declines post-fix; 6/6 paraphrases decline (no `[roll:`, no referent-clarify), both C9-004 diverges (search action / NPC-knowledge speculation) stay non-declining. `npm run convergence` **100% (81/81)**, C9 **3/3** locked (C9-005 new), C1 5/5 + C6 7/7 held; `node --test` **8285/8285, 0 fail** (isInfoSeekingText widen touches every call site — no regression).
 - Remaining/next: C9-004 stays target for "Is there a founding family…" (blocked by the playloop sentence-initial false-NER, "Is"/"Then"→name — the same denylist gap flagged in H-81's remaining/next; a playloop seam). C9-001 (elder tenure) stays target (mixes playloop referent-clarify forms).
 - Rollback: revert `738c131`.
+
+2026-06-21 — Basecamp (grace-lane window; autonomous improvement loop) — H-85 DONE
+- Packet/seam: gate C9-001 (Lore tenure vein) — ungrounded leader-tenure questions roll/observe instead of honest-declining; **grace lane**. Sibling to H-84.
+- Commit(s): `97b9582` (engine grace + C9 corpus, atomic). On origin — verified via `git branch -r --contains`.
+- Files: `engine/grace/gracefulAdjudication.js` (+`INFO_SEEKING_TENURE_RE` → `isInfoSeekingText`), `tests/corpus/C9.corpus.mjs` (+locked C9-006).
+- Summary: "how long has the village leader held the post?" / "how many years has the elder ruled?" matched no `isInfoSeekingText` sub-RE → observe-deadended or rolled on a tenure canon doesn't hold (a success could only invent a number, the C9 rail). `INFO_SEEKING_TENURE_RE` (how-long/many → leadership role → tenure verb) routes them to deliver-or-decline; grounding gate still delivers where canon holds a tenure.
+- Proof (§7): reproduced LLM-off FIRST on `village_baker`; 6/6 tenure paraphrases decline (no `[roll:`, no invented number, no referent-clarify); 3/3 diverges stay non-declining (leadership ACTION, speculation, arrival-time). `npm run convergence` **100% (82/82)**, C9 **4/4** locked (C9-006 new); `node --test` **8285/8285, 0 fail**.
+- Remaining/next: "…been IN CHARGE" tenure forms deferred — `INFO_SEEKING_EXCLUDE_RE` short-circuits on "charge" (the attack verb) before any tenure RE runs; widening that shared exclude is a separate, broader change. They stay in the C9-001 target alongside the Kael-named referent-clarify forms (playloop).
+- Rollback: revert `97b9582`.

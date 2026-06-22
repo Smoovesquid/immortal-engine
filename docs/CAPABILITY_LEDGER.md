@@ -38,7 +38,7 @@ detectors. Status starts `seed`.
 | C6 | **Number-transparency**: own stats/mods/AC/HP/items from the sheet | H-25/H-31/H-40/H-68, **N-1** | `answerSkillModifier`, `META_ARMOR_VALUE`, `META_HELD_ITEMS`, `META_INVENTORY` (widened, +filler-adverb), `describePack` (inventory as prose, no category-dump/sheet-deflect); **H-82** armor-slot grounding (bare "armor" isn't a bogus possession when armor is worn) | 7L/0T | **✓** |
 | C7 | **Item/consumable** query answers from real def; **use** applies effect | H-45/H-47/H-65/H-69/H-70/H-73/H-76/H-77, **N-3** | `answerItemQuery`/`META_ITEM` + `CONSUME_RE` + count/compound + bare-count list + sheet-rider guard + `ITEM_EFFECT_DEMAND_RE` + item-effect-over-named-stat guard | 14L/0T | **partial** |
 | C8 | **Narration ≤ mechanics** — no hit/defeat the dice didn't produce | H-26/H-28/H-43, **H-72** | `llmAdapter` R1–R3 + playloop `attackResolutionIntent` | 4L/0T | **corpus✓ / live⚠** |
-| C9 | **Canon non-invention** — no invented name/date/tenure/relationship | H-27/H-49/H-52, **H-84** | `findInventedFactClaim` + `INFO_SEEKING_FOUNDING_RE` (ungrounded founding-history → honest-decline) | 3L/2T | — |
+| C9 | **Canon non-invention** — no invented name/date/tenure/relationship | H-27/H-49/H-52, H-84, **H-85** | `findInventedFactClaim` + `INFO_SEEKING_FOUNDING_RE`/`INFO_SEEKING_TENURE_RE` (ungrounded founding/tenure history → honest-decline) | 4L/2T | — |
 | C10 | A **declared attack** routes to real combat resolution | H-30/H-32/H-43/H-48/H-55/H-64/H-71, **H-72** | playloop attack gates + `go for`/flip-onto-person/npc-generic/firebolt + attack-resolution-over-meta | 10L/1T | **partial** |
 | C11 | **Confrontation under pressure** → in-character NPC reaction | H-42 | `isConfrontationChallenge`, `confrontationReaction` | 3L/0T | — |
 | C12 | **Movement/travel intent** resolves in fiction, no travel-gate bounce | THE_DM_TEST residuals, H-62, H-75, **H-81** | playloop talkRef-before-free-movement + `extractFindPersonRef` + `approachPresentNpcRef` (indoors approach-present-NPC → dialogue) + `detectPhysicalAssault` point/edge de-weaponize | 5L/0T | **✓** (residual: "the elder"→wrong-NPC = C2) |
@@ -359,6 +359,17 @@ locked, 6 paraphrases + 2 diverge — the search ACTION and the NPC-knowledge sp
 100% (81/81), suite 8285/0, determinism green (the widen touches every `isInfoSeekingText` call site, no regression).
 **Residual:** "Is there a founding family…" is deferred — the playloop sentence-initial false-NER reads "Is"/"Then" as a
 name and bounces a `[clarify:referent]` before grace runs (the denylist gap noted in H-81's remaining/next; a playloop seam).
+
+*2026-06-21 (H-85 — C9 ungrounded leader-tenure honest-decline, gate C9-001; grace lane; sibling to H-84):* closed the
+lockable subset. "how long has the village leader held the post?" / "how many years has the elder ruled?" observe-deadended
+or rolled on a tenure canon doesn't hold. `INFO_SEEKING_TENURE_RE` (how-long/many → leadership role → tenure verb) routes
+them to deliver-or-decline; grounding gate still delivers where canon holds a tenure. **C9 3L→4L** (C9-006 locked, 6
+paraphrases + 3 diverge — leadership ACTION / speculation / arrival-time all stay non-declining), convergence 100% (82/82),
+suite 8285/0. **Residual:** "…been IN CHARGE" forms are deferred — the shared `INFO_SEEKING_EXCLUDE_RE` matches "charge"
+(the attack verb) and short-circuits before any tenure RE; widening that exclude is a broader change. They + the Kael-named
+referent-clarify forms remain the C9-001 target (playloop). **Meta:** the H-84/H-85 pair shows the ungrounded-history
+honest-decline vein (founding + tenure) is now corpus-closed for the role/abstract forms; the remaining C9 tail is
+NER-blocked or named-NPC (playloop) — the grace-lane C9 work is saturating.
 
 **Social-physics categories to mine next (Biblioteca Vols 2–6, mostly not yet failing-in-gate but on the map):**
 sarcasm/irony inversion (Vol 2; transcript: `docs/playtests/ridiculous-sarcasm-2026-06-06.md`), loaded

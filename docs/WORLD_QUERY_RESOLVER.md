@@ -231,3 +231,29 @@ present other, `excludeId` = the speaker so an NPC never self-identifies (self m
 nuanced hostile-observer safety). personQuery fills the **floor-gap** it doesn't cover (named / specific-role /
 "about them") + the **dialogue** gap (W-6 left NPCs unable to identify a co-present other). Left grace untouched
 (route-around, documented) rather than re-architecting working code with regression risk.
+
+---
+
+## §9 — OBJECT scope: DEFERRED (already handled by `tryExamineTarget`; verified O-1, 2026-06-22)
+
+The same `WorldQuery` shape *would* extend to object-knowledge ("what is this?", "what is that object?"), but the
+deliver-or-ground behavior such a slot would add **already exists** as a competent handler — `tryExamineTarget`
+(`engine/playloop.js:4670`), observe-only, no roll:
+
+| Ask | Today | Source | Boundary | §0 |
+|---|---|---|---|---|
+| `identity` / `description` — "examine / look at / inspect the \<object\>" | **Built** (`tryExamineTarget`): delivers the real furniture (name + notes + state + parts) or a carried item; **named-but-absent → pivots to what IS present** ("you look for a table, but what's here is a tool rack and a wooden crate") — grounds, never invents | `node.furniture`, inventory | a present, named object; miss → grounded redirect → room-overview | safe (surface fields only) |
+| `function` / use — "equip / drink / identify / attune the \<object\>" | **Built** (`tryEquipItem` / `tryUseConsumable` / `tryIdentify` / `tryAttune`, P-68/69/77) | gear / item data | mundane grounded use only | safe |
+| origin / owner / creator / magic / secret mechanism / unmodeled contents / **meaning** | — | **none grounded** | DEFERRED — not answered; protected / §0 meaning never narrator-revealed | n/a |
+
+**The one seam (non-blocking).** A *verb-less bare demonstrative* — "what is this?", "what is that object?",
+"what do I see in the corner?" — routes to the room-overview (exits + location), which **under-surfaces** the
+present furniture (it says "ways lead off north and west" rather than naming the crate). This is a mild
+**under-claim**, not a fabrication, swallow, or menu-bounce: it returns a grounded observe-only overview and
+invents nothing. Classified **DEFERRED_COVERAGE**, not a Rung-1 competence blocker.
+
+**Decision: defer, add no behavior.** Building `engine/world/objectQuery.js` now would **duplicate or
+re-architect a working handler** with no real question pulling it — exactly the move §8 declined for grace, and
+the demand-pull rule in §0/§7. If the bare-demonstrative seam ever bites a gate, the **minimal** fix is to route
+those asks to name the present `node.furniture` (extend the overview / a thin classifier), **not** a parallel
+resolver.

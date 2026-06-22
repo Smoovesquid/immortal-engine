@@ -512,6 +512,25 @@ DEFERRED (no grounded source): motive/secret/backstory/allegiance/cult/thoughts/
 over-claim (history-fate now in the DEFER guard; 104/105 → 105/105). **C4 18L→21L** (C4-019/020/021), **+U222** (7),
 convergence **105/105**, suite **8310/0**, determinism **225/225**, **live-verified in v1.html** (both voices).
 
+*2026-06-22 (EK-1 — Law of Earned Knowledge: kill the narrator fabrication license; + O-1 ObjectQuery defer):*
+the one narrator path licensed to **fabricate** — `llmAdapter.js:151`, "on a `→ success` proper-noun ask, state a
+concrete answer, **invent a plausible one**" — closed. It contradicted the standing `:147` grounded-only rule and
+was **self-defeating**: clean-origin repro (inline `playerMove` probes) showed an info-ask that escapes
+`isInfoSeekingText` DOES roll a real `→ success` ("tell me the name" **15/80 seeds**, "give me a date" 15/80,
+"name him" 11/80) and reaches :151 — but the post-LLM validator (`validateNarrationCandidate` /
+`findInventedProperNoun` [U142], `findInventedFactClaim` [U212]) already rejects the invented name/place/date/
+duration and `augmentNarration` falls back to base, so :151 mostly produced the very **deflection it banned**
+(ACTIVE-but-largely-latent; the narrow live residual = lowercase/numberless "identifiable facts" slipping both
+guards). **Fork A (prompt-only):** :151 rewritten to deliver a specific ONLY when grounded (facts / PLACE HISTORY /
+base narration) and forbid coining any ungrounded name/title/date/fact, keeping the anti-deflection win. **+U223**
+(5 assertions, pure `buildSystemPrompt`), convergence **105/105**, suite **8315/0**, determinism green. Governing
+doc `docs/LAW_OF_EARNED_KNOWLEDGE.md`. **O-1 (ObjectQuery boundary):** investigated, **deferred docs-only** —
+`object.identity/description` is already a competent handler (`tryExamineTarget`, `playloop.js:4670`: delivers real
+furniture name/notes/state/parts + carried items, miss → grounded redirect, never invents, observe-only), so a
+parallel `objectQuery.js` would duplicate/refactor working code with no question pulling it. One non-blocking seam
+(verb-less bare demonstratives "what is that object?" under-surface present furniture → room-overview) =
+**DEFERRED_COVERAGE**, not a Rung-1 blocker. Recorded in `docs/WORLD_QUERY_RESOLVER.md` §9.
+
 **Social-physics categories to mine next (Biblioteca Vols 2–6, mostly not yet failing-in-gate but on the map):**
 sarcasm/irony inversion (Vol 2; transcript: `docs/playtests/ridiculous-sarcasm-2026-06-06.md`), loaded
 questions / presupposition (Vol 3, "have you stopped stealing?"), bluff vs. claim (Vol 5), request/order/threat

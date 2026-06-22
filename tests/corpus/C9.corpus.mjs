@@ -195,4 +195,45 @@ export default [
     ],
     source: 'opus-gate-2026-06-19-postH39.md (Lore-hound t7) + gate-9 founders vein — H-84 INFO_SEEKING_FOUNDING_RE; reproduced LLM-off village_baker',
   },
+
+  {
+    id: 'C9-006',
+    capability: 'C9',
+    // Sibling to C9-005 (founding) — an ungrounded LEADER's TENURE. "how long has
+    // the village leader held the post?" / "how many years has the elder ruled?"
+    // observe-deadended or rolled on a duration canon doesn't hold (a success could
+    // only invent a number, the C9 rail) until H-85 added INFO_SEEKING_TENURE_RE.
+    // The grounding gate still delivers where canon has a tenure; only the ungrounded
+    // case declines. NOTE: "…been IN CHARGE" forms are deferred — the pre-existing
+    // INFO_SEEKING_EXCLUDE_RE matches "charge" (the attack verb) and short-circuits
+    // before any tenure RE; they stay in the C9-001 target. The diverges prove the
+    // tenure RE stays off a leadership ACTION, speculation, and an arrival-time ask.
+    status: 'locked',
+    fixture: 'village_baker',
+    intent: 'ask how long an ungrounded leader has held power — must honest-decline, never roll or invent a tenure',
+    paraphrases: [
+      "How long has the village leader held the post?",
+      "how many years has the headman run things here?",
+      "how long has the chief been at the head of this place?",
+      "how many years has the elder ruled here?",
+      "how long has the elder led this village?",
+      "how many winters has the steward governed here?",
+    ],
+    assert: {
+      surface_matches: [
+        /I don.t (have|know)|unclear|no record|can.t say|lost to me|Couldn.t say|no-record/i,
+      ],
+      surface_excludes: [
+        /\[roll:/,                            // an ungrounded tenure never rolls
+        /no one named|haven.t introduced/i,   // not a referent-clarify bounce
+        /\d+\s*(?:years?|winters?|seasons?)/i, // never an invented number
+      ],
+    },
+    diverge: [
+      { text: "I challenge the elder for leadership of the village.", reason: 'leadership ACTION, no duration question — must resolve, not info-decline' },
+      { text: "The elder has probably led for ages, right?", reason: 'speculation, not a direct tenure demand — must not honest-decline' },
+      { text: "how long until the elder arrives?", reason: 'arrival-TIME question (no tenure verb) — the tenure RE must not fire on it' },
+    ],
+    source: 'gate C9-001 (Lore tenure vein) — H-85 INFO_SEEKING_TENURE_RE; reproduced LLM-off village_baker',
+  },
 ];

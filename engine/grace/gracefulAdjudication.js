@@ -613,6 +613,17 @@ const INFO_SEEKING_ORIGIN_RE = /\bwhy\s+(?:did\s+)?(?:you|they|he|she)\s+(?:come
 // matched the generic INFO_SEEKING_RE.)
 const INFO_SEEKING_FOUNDING_RE = /\b(?:how\s+many|which|what)\s+founders?\b|\bfounders?\s+were\s+there\b|\bfounding\s+famil(?:y|ies)\b|\bwas\s+(?:it|this\s+(?:place|village|town|settlement|hamlet))\s+(?:built|founded|settled|raised)\s+by\b/i;
 
+// (H-85) An ungrounded leader's TENURE — "how long has the elder been in charge?",
+// "how many winters has the headman led?". Sibling to INFO_SEEKING_FOUNDING_RE: a
+// duration-fact about the settlement's leadership that canon doesn't hold, so a
+// success could only invent a number (the C9 rail). Anchored how-long/many → a
+// leadership ROLE → a tenure verb/noun, so the leadership ACTION "I challenge the
+// elder for leadership" (no duration question), the speculation "the elder has
+// probably led for ages" (no how-long), and an arrival-time ask "how long until
+// the elder arrives" (no tenure verb) all stay on their normal paths. Grounding
+// gate still delivers where canon has a tenure; only the ungrounded case declines.
+const INFO_SEEKING_TENURE_RE = /\bhow\s+(?:long|many\s+(?:years?|winters?|seasons?|moons?))\b[\s\S]{0,50}?\b(?:elder|leader|headman|chief(?:tain)?|mayor|reeve|warden|steward|matriarch|patriarch)\b[\s\S]{0,30}?\b(?:in\s+charge|led|lead(?:ing)?|ruled?|run|reign\w*|held|govern\w*|been\s+the|at\s+the\s+head|the\s+post)\b/i;
+
 // The PC's OWN provenance — "who carried me in last night", "where did they find
 // me", "who brought me here", "was I found by anyone". Distinct from
 // INFO_SEEKING_ORIGIN_RE (an NPC's motive, "why did you come"). These are
@@ -657,6 +668,7 @@ export function isInfoSeekingText(text) {
   return INFO_SEEKING_RE.test(t) || INFO_SEEKING_OBSERVE_RE.test(t) || INFO_SEEKING_TOPIC_RE.test(t)
     || INFO_SEEKING_CONCEALMENT_RE.test(t) || INFO_SEEKING_EXISTENTIAL_RE.test(t)
     || INFO_SEEKING_ORIGIN_RE.test(t) || INFO_SEEKING_FOUNDING_RE.test(t)
+    || INFO_SEEKING_TENURE_RE.test(t)
     || INFO_SEEKING_PROVENANCE_RE.test(t)
     || INFO_SEEKING_SURVEILLANCE_RE.test(t)
     || INFO_SEEKING_BACKSTORY_RE.test(t) || INFO_SEEKING_IDENTITY_RE.test(t);

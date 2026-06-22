@@ -64,7 +64,7 @@ detectors. Status starts `seed`.
 | C1 | Answer **every part** of a compound query | H-25/H-31/H-40/H-54/H-59, **H-83** | `handleMetaQuestion` typed sub-intent decomposition (+ stats-into-AC fold) | 5L/0T | **✓** |
 | C2 | A **named referent** must be grounded before the turn resolves | H-56/C2-grad/H-60/H-79/H-90, **H-91** | `ungroundedNpcReferentForText` + `hasPersonReferentSignal` + observe/travel hoist + social-resolver guard + sentence-initial proper-name stopwords + person-signal-preferred referent selection | 8L/0T | **✓** |
 | C3 | A **declared check** gets a DC + roll | H-54 R4, **H-86** | `META_EXPLICIT_CHECK_*` + bare-DC bounce-guard now defers to C/D (a declared stat-check + DC-ask states the DC+formula, not "no standing DC") | 1L/3T | **partial** |
-| C4 | Info-seeking **delivers a grounded fact or honestly declines** | H-22/23/29/31/39/H-63/H-74/H-78/N-1/N-2 Ex-2/N-4/H-92, **W-1** | `isInfoSeekingText` (+provenance/surveillance/`BACKSTORY`/`IDENTITY` REs) + `META_PURSE` + dialogue place-branch + pre-roll `isUngroundedInfoCheck` + `isUngroundedObjectRead` + `META_RECAP` backstory-guard + `tryNpcStatusQuery` (alive/dead/pulse from canon) + the **World-Query Resolver** (`engine/world/placeQuery.js`: `classifyPlaceQuery`→`resolvePlaceFact`, place scope — delivers the node **substrate** founding fact, no roll; the W-# track's typed home, render-free, founding+events+population slots, DM/NPC sibling renderers) | 14L/2T | **partial** (Ex-1 open) |
+| C4 | Info-seeking **delivers a grounded fact or honestly declines** | H-22/23/29/31/39/H-63/H-74/H-78/N-1/N-2 Ex-2/N-4/H-92, **W-1** | `isInfoSeekingText` (+provenance/surveillance/`BACKSTORY`/`IDENTITY` REs) + `META_PURSE` + dialogue place-branch + pre-roll `isUngroundedInfoCheck` + `isUngroundedObjectRead` + `META_RECAP` backstory-guard + `tryNpcStatusQuery` (alive/dead/pulse from canon) + the **World-Query Resolver** (`engine/world/placeQuery.js`: `classifyPlaceQuery`→`resolvePlaceFact`, place scope — delivers the node **substrate** founding fact, no roll; the W-# track's typed home, render-free, founding+events+population slots, DM/NPC sibling renderers **both live** — narrator via playloop, NPC via `commonKnowledgeAnswer`→`resolvePlaceFact`, W-6) | 18L/2T | **partial** (Ex-1 open) |
 | C5 | A **rules/mechanic question** is answered straight, never rolled | H-25/H-54 R3/H-61/H-80, **H-87** | `META_DAMAGE_RULE`/`META_ATTACK_MOD` + governing-stat classifier + `META_ROLL_QUERY` (a roll-result query reports `lastRoll`, never denies/re-rolls) | 5L/1T | **partial** |
 | C6 | **Number-transparency**: own stats/mods/AC/HP/items from the sheet | H-25/H-31/H-40/H-68, **N-1** | `answerSkillModifier`, `META_ARMOR_VALUE`, `META_HELD_ITEMS`, `META_INVENTORY` (widened, +filler-adverb), `describePack` (inventory as prose, no category-dump/sheet-deflect); **H-82** armor-slot grounding (bare "armor" isn't a bogus possession when armor is worn) | 7L/0T | **✓** |
 | C7 | **Item/consumable** query answers from real def; **use** applies effect | H-45/H-47/H-65/H-69/H-70/H-73/H-76/H-77/N-3, **H-88** | `answerItemQuery`/`META_ITEM` + `CONSUME_RE` + count/compound + bare-count list + sheet-rider guard + `ITEM_EFFECT_DEMAND_RE` + item-effect-over-named-stat guard + `META_ITEM_VERB_FINAL` (verb-final "what the X does") | 15L/0T | **partial** |
@@ -479,6 +479,17 @@ contradicts C9 non-invention. Verified the five control phrasings classify to `n
 them) and fall to a safe non-inventing floor. **What unlocks it:** a node-level public-governance field (or wiring
 the `DEMO_REGION.md` authorities as engine data — today only *content*). Boundary + design recorded in
 `docs/WORLD_QUERY_RESOLVER.md` §2a. **No convergence/suite/determinism delta — zero code changed.**
+
+*2026-06-22 (W-6 — NPC-dialogue renderer; "one fact, two voices" closed):* `commonKnowledgeAnswer` now calls
+`resolvePlaceFact` for founding/events/population and renders the same grounded fact the narrator delivers, in NPC
+voice (`renderPlaceFactNpc`) — **not a second resolver.** Key design call: **resolver-FIRST**, so the existing
+`NOT_PLACE_DESCRIPTION_RE` carve-outs were **kept** (not dropped) as the honest-decline backstop for the null case
+(unknown node → decline, not a generic blurb). Population threads an `excludeId` perspective param so the speaking
+NPC doesn't list itself. Speaker-knows is structural (node-clarity = locally common × purity #8 co-location), so no
+separate "speaker knows this?" policy was needed. The required control negative surfaced + closed a **pre-existing
+leak** (control questions fell to the generic place blurb) by tightening the guard to mirror `PLACE_POPULATION_EXCLUDE_RE`.
+**C4 14L→18L** (C4-015/016/017 voiced + C4-018 unknown-node decline), **+U221** (6), convergence **102/102**, suite
+**8303/0**, determinism green, **live-verified in v1.html** (founding voiced; control deflected, no invention).
 
 **Social-physics categories to mine next (Biblioteca Vols 2–6, mostly not yet failing-in-gate but on the map):**
 sarcasm/irony inversion (Vol 2; transcript: `docs/playtests/ridiculous-sarcasm-2026-06-06.md`), loaded

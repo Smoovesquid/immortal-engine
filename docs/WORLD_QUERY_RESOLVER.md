@@ -180,10 +180,19 @@ dialogue both fall out of it."
    2026-06-22: no grounded public-leadership source exists, so a deliver-slot would invent a ruler (forbidden).
    See §2a for the verified-absent source + what unlocks it. The five control phrasings already fall to a safe
    non-inventing floor and do not leak into `population`.
-4. **NPC-dialogue voicing** (make `commonKnowledgeAnswer` call `resolvePlaceFact`, dropping its
-   `NOT_PLACE_DESCRIPTION_RE` carve-outs as types fill) — founding/events/population then voice in-character. **Next.**
-5. Now that **3 types are live**, the natural point to **spend a gate** to measure the materialization lift +
-   discover the next demand-pulled type.
+4. ~~**W-6 = NPC-dialogue voicing** (make `commonKnowledgeAnswer` call `resolvePlaceFact`) — founding/events/
+   population voice in-character.~~ **DONE** (`3613022`). The "one fact, two voices" closes: dialogue RENDERS the
+   same resolved fact the narrator does (no second source). **Finding — carve-outs were NOT dropped:** resolver-FIRST
+   means owned types are intercepted before `NOT_PLACE_DESCRIPTION_RE` is consulted, so the carve-outs *remain* as the
+   honest-decline backstop for the null case (unknown node → decline, not a generic blurb — strictly safer than
+   removal). Population carries a **perspective param** (`excludeId` = the speaking npc) so a local doesn't list
+   itself in third person — same roster, speaker-adjusted. The guard was *tightened* (not loosened) to keep
+   control/secret-authority phrasings off the generic blurb too (closing a pre-existing leak that answered "who
+   secretly controls…" with a place description). **Speaker-knows is structural:** node-clarity (vivid) facts are
+   locally common and purity #8 puts the speaking NPC at the node — the clarity ladder IS the speaker-knows policy;
+   guarded/secret never reach common knowledge (trust-gated knowledgeGraph path, untouched).
+5. Now that **3 types are live in both voices**, the natural point to **spend a gate** to measure the materialization
+   lift + discover the next demand-pulled type. **W-7** is the pre-gate hardening/audit pass over this batch.
 
 ---
 

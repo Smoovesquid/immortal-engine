@@ -11,6 +11,7 @@ import { appendCanonEvent } from '../csl/canonLog.js';
 import { buildNpcContext, fallbackRules, findCachedDecision } from './npcBrain.js';
 import { extractMemory } from './npcMemory.js';
 import { exitsFrom } from '../map/mapState.js';
+import { classifyPlaceQuery, resolvePlaceFact } from '../world/placeQuery.js';
 
 const TRUST_REVEAL_PUBLIC = 4;
 const TRUST_REVEAL_SECRET = 7;
@@ -287,12 +288,35 @@ export function commonKnowledgeAnswer(world, npc, text) {
     return { mode: 'services', body: 'Work follows need. Ask where the counters are, or whoever looks busiest — someone always wants a back that bends.' };
   }
 
+  // ── place-knowledge (W-6): the resolver owns the fact; the NPC is a VOICE ──
+  // founding / events / population are NODE-clarity (vivid) = common knowledge AT this
+  // node. Purity #8 puts the speaking NPC at the player's node, so a co-located local
+  // plausibly knows them — the substrate clarity ladder IS the "speaker-knows" policy.
+  // We RENDER the same resolved fact the DM-narrator renders (one fact, two voices); we do
+  // NOT classify or look up here (no second source of truth). Population passes the speaker
+  // as excludeId so the NPC doesn't list itself. Resolver null (this node has no such fact)
+  // → FALL THROUGH to the honest-decline backstop below (NOT_PLACE_DESCRIPTION_RE keeps the
+  // generic blurb off unknown place questions). Guarded/secret never reach here: control
+  // isn't a slot (W-5), and secrets flow through the trust-gated knowledgeGraph path.
+  if (here) {
+    const pq = classifyPlaceQuery(t);
+    if (pq) {
+      const fact = resolvePlaceFact(w, { ...pq, excludeId: npc.id });
+      const voiced = fact ? renderPlaceFactNpc(npc, fact) : null;
+      if (voiced) return { mode: 'place', body: voiced };
+    }
+  }
+
   // ── place: the ground under their feet ──
   // Guard against "this village/town" used as a mere locative inside a
   // question about events/history/danger — that's not a place-description
   // ask, and should fall through to the honest decline instead of a
   // non-sequitur place blurb.
-  const NOT_PLACE_DESCRIPTION_RE = /\b(?:worst|trouble|danger|threat|happened|founded|built|first\s+stone|before|history|who\s+(?:runs|leads|founded|built)|how\s+long|how\s+many|years|winters|elder|stranger|attack(?:ed|s)?|raid)\b/i;
+  // Control/secret-authority terms are excluded too (W-6): control is a DEFERRED slot (W-5,
+  // no grounded leadership source), so "who secretly controls/runs this town?" must DECLINE,
+  // not fall to a generic place blurb. Mirrors placeQuery's PLACE_POPULATION_EXCLUDE_RE so
+  // both sinks agree — the resolver never classifies control, and the blurb never poaches it.
+  const NOT_PLACE_DESCRIPTION_RE = /\b(?:worst|trouble|danger|threat|happened|founded|built|first\s+stone|before|history|who\s+(?:runs|leads|founded|built|controls?|owns|rules)|controls?|controlling|secretly|in\s+(?:charge|control|power)|pulls?\s+the\s+strings|the\s+(?:cult|boss)|how\s+long|how\s+many|years|winters|elder|stranger|attack(?:ed|s)?|raid)\b/i;
   if (/\b(?:this place|this village|this town|about (?:the )?(?:village|town|place)|what is this place|around here|liv(?:e|ed) here|been here long)\b/.test(t) && !NOT_PLACE_DESCRIPTION_RE.test(t) && here) {
     const st = here.settlement;
     if (st) {
@@ -363,6 +387,49 @@ export function commonKnowledgeAnswer(world, npc, text) {
 }
 
 function capitalize(s) { const x = String(s || ''); return x.charAt(0).toUpperCase() + x.slice(1); }
+
+// (W-6) Render a resolved place-fact in NPC VOICE — a RENDERER only, adds ZERO facts.
+// `fact.body` is the substrate truth the DM-narrator also renders; here it is framed as the
+// local speaking, with manner colouring DELIVERY, never content. §0-safe: the body is
+// authored never to allude to the cosmology, and these frames assert no world fact (only
+// attitude). New place TYPES inherit a plain frame until given a voiced one.
+function renderPlaceFactNpc(npc, fact) {
+  const raw = String(fact?.body || '').trim();
+  if (!raw) return null;
+  const S = capitalize(raw);
+  const manner = voiceManner(npcVoice(npc));
+  if (fact.type === 'founding') {
+    const f = {
+      guarded: `${S}. Old story. That's the whole of it.`,
+      skittish: `${S} — or so it's told. I don't dwell on it.`,
+      blunt: `${S}. There's your history.`,
+      open: `Ah, you want the old tale! ${S}. That's how this place came to be.`,
+      even: `${S}. That's the long and short of how it began.`
+    };
+    return f[manner] || f.even;
+  }
+  if (fact.type === 'events') {
+    const f = {
+      guarded: `${S}. Best left where it lies.`,
+      skittish: `${S}. I'd as soon not chew on it.`,
+      blunt: `${S}. That's what happened.`,
+      open: `Oh, there's a tale. ${S}. That's the talk of it.`,
+      even: `${S}. That's what's stirred here of late.`
+    };
+    return f[manner] || f.even;
+  }
+  if (fact.type === 'population') {
+    const f = {
+      guarded: `${S}. Mind your own and they'll mind theirs.`,
+      skittish: `${S}. Quiet sorts, mostly.`,
+      blunt: `${S}. That's the lot.`,
+      open: `${S} — that's who you'll meet about!`,
+      even: `${S}. That's who you'll find here.`
+    };
+    return f[manner] || f.even;
+  }
+  return `${S}.`;
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // askNpc

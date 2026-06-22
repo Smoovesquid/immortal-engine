@@ -570,4 +570,132 @@ export default [
     ],
     source: 'W-4 (world-wiring slice 4 — population, a category-boundary proof); reproduced LLM-off trade_town_tavern',
   },
+  {
+    id: 'C4-015',
+    capability: 'C4',
+    // (W-6) The NPC-dialogue RENDERER: an in-dialogue local voices the SAME grounded founding
+    // fact the DM-narrator delivers (C4-012) — one fact, two voices. dialogue.js calls the
+    // place-query resolver (NO second source of truth); renderPlaceFactNpc frames it in voice.
+    // The asserted fragment is the node's deterministic substrate founding label (seed
+    // 'w1-tallowcross' / 'tt_tavern_node'); the keeper recounts it because it is NODE-clarity
+    // common knowledge and purity #8 puts him AT the node. No roll, no invention, no decline.
+    // [dialogue ask | place] is the deliver stamp; [… | deflected] would be a non-answer. §0-safe.
+    status: 'locked',
+    fixture: 'trade_town_tavern_dialogue',
+    intent: 'an NPC voices the settlement founding fact from the resolver in-character — same grounded fact as the narrator, no roll, no invention',
+    paraphrases: [
+      'how was this place founded?',
+      'why was this town settled here?',
+      'what is the history of this place?',
+      'how did this town come to be?',
+      'how old is this town?',
+    ],
+    assert: {
+      surface_matches: [/merchant who saw the ford/i, /dialogue ask \| place/i],
+      surface_excludes: [
+        /\[roll:/i,                                   // common knowledge — never rolled
+        /dialogue ask \| deflected/i,                  // it DELIVERED in voice, did not deflect
+        /sidesteps|Couldn.t say|don.t (have|know)/i,   // not a decline
+      ],
+    },
+    diverge: [
+      { text: 'who founded this place?', reason: 'FOUNDER/agent → honest-decline (deflect), never a deliver (C9)' },
+      { text: 'who secretly controls this town?', reason: 'control DEFERRED (W-5) → deflect, never invent authority' },
+      { text: 'who runs the cult?', reason: 'guarded/control → deflect, never named from common knowledge' },
+    ],
+    source: 'W-6 (NPC-dialogue renderer over the place-query resolver); reproduced LLM-off trade_town_tavern_dialogue',
+  },
+  {
+    id: 'C4-016',
+    capability: 'C4',
+    // (W-6) The events type, NPC voice: the keeper recounts the node local-event the narrator
+    // delivers (C4-013). PLACE-ANCHORED still guards it — person ("happened to the baker"),
+    // cause/agent ("who caused…") and a DIFFERENT type (founding) do not poach it (diverges).
+    // The fragment is the node's deterministic earliest local-event. No roll, no invention.
+    status: 'locked',
+    fixture: 'trade_town_tavern_dialogue',
+    intent: 'an NPC voices a node local-event from the resolver in-character — no roll, no invention; person/cause/other-type forms do not poach it',
+    paraphrases: [
+      'what happened here?',
+      "what's happened in this town?",
+      'anything happen here lately?',
+      'what trouble has this town seen?',
+      'what goes on around here?',
+    ],
+    assert: {
+      surface_matches: [/traveling healers/i, /dialogue ask \| place/i],
+      surface_excludes: [
+        /\[roll:/i,
+        /dialogue ask \| deflected/i,
+        /sidesteps|Couldn.t say|don.t (have|know)/i,
+      ],
+    },
+    diverge: [
+      { text: 'what happened to the baker?', reason: 'PERSON question (no place anchor) → its own path, not a place-event deliver' },
+      { text: 'who caused all this trouble?', reason: 'AGENT/cause ask → deflect, not the event' },
+      { text: 'how was this place founded?', reason: 'a DIFFERENT place type (founding) → delivers founding, not the event (types disjoint)' },
+    ],
+    source: 'W-6 (NPC-dialogue renderer over the place-query resolver); reproduced LLM-off trade_town_tavern_dialogue',
+  },
+  {
+    id: 'C4-017',
+    capability: 'C4',
+    // (W-6) The population type, NPC voice — and the speaker-exclusion proof. The keeper names
+    // the present sociable roster the narrator names (C4-014) MINUS itself: the resolver gets
+    // excludeId = the speaking npc, so Bram does not list himself in third person. The exclude
+    // of "Bram Cask the tavern-keeper" is that proof — he appears only as the "Bram Cask says"
+    // attribution, never as a listed RESIDENT. Founder/control/services still do not poach it.
+    status: 'locked',
+    fixture: 'trade_town_tavern_dialogue',
+    intent: 'an NPC names the sociable roster from the resolver, EXCLUDING itself (speaker-adjusted same fact) — no roll, no invention',
+    paraphrases: [
+      'who lives here?',
+      "who's here?",
+      "who's in town?",
+      'is anyone around?',
+      'what kind of people live here?',
+    ],
+    assert: {
+      surface_matches: [/Pell Riven the trader/i, /dialogue ask \| place/i],
+      surface_excludes: [
+        /\[roll:/i,
+        /dialogue ask \| deflected/i,
+        /Bram Cask the tavern-keeper/i,   // the SPEAKER is never listed as a resident (excludeId) — only "Bram Cask says" attribution
+      ],
+    },
+    diverge: [
+      { text: 'who founded this place?', reason: 'FOUNDER → deflect, never the roster' },
+      { text: 'who secretly controls this town?', reason: 'control DEFERRED (W-5) → deflect, never invent a controller' },
+      { text: 'who can sell me weapons?', reason: 'SERVICES → trade/shops path, not the population roster' },
+    ],
+    source: 'W-6 (NPC-dialogue renderer over the place-query resolver); reproduced LLM-off trade_town_tavern_dialogue',
+  },
+  {
+    id: 'C4-018',
+    capability: 'C4',
+    // (W-6) The deliver/decline boundary on the NPC side: dialogue_active is village_baker,
+    // which has NO node substrate, so the resolver returns null and the NPC honestly DECLINES
+    // (mirrors the narrator C9-005/006/007). The proof is no invented founding + no roll. Only
+    // phrasings that carry a "founded/history" tell are used (others fall to a pre-existing
+    // generic place blurb — a non-inventing non-answer flagged as a W-7 hardening candidate).
+    status: 'locked',
+    fixture: 'dialogue_active',
+    intent: 'an NPC honestly DECLINES a place-history question its node has no substrate for — no invented founding, no roll',
+    paraphrases: [
+      'how was this village founded?',
+      'what is the history of this place?',
+      'who founded this village?',
+    ],
+    assert: {
+      surface_matches: [/dialogue ask \| deflected/i],
+      surface_excludes: [
+        /\[roll:/i,
+        /merchant who saw the ford|Established by|first stone was laid/i,   // never invents a founding
+      ],
+    },
+    diverge: [
+      { text: 'who are you?', reason: 'the NPC ANSWERS self (not deflect) — proves the decline signature is specific to the unknown place-history' },
+    ],
+    source: 'W-6 (NPC-dialogue renderer — deliver/decline boundary on the NPC side); reproduced LLM-off dialogue_active',
+  },
 ];

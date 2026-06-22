@@ -160,13 +160,19 @@ function joinNames(arr) {
   return `${a.slice(0, -1).join(', ')}, and ${a[a.length - 1]}`;
 }
 
-function resolvePopulation(world) {
+// `query.excludeId` is the PERSPECTIVE param (one fact, two voices): the DM-narrator passes
+// none (names everyone), the NPC-dialogue renderer passes the SPEAKING npc's id so a local
+// doesn't list itself in third person. Same roster, speaker-adjusted — not a second source.
+function resolvePopulation(world, query) {
   const nodeId = String(world?.map?.currentNodeId || '');
   if (!nodeId) return null;
   const node = (Array.isArray(world?.map?.nodes) ? world.map.nodes : []).find(n => n && n.id === nodeId);
   const npcs = Array.isArray(node?.settlement?.npcs) ? node.settlement.npcs : [];
-  const sociable = npcs.filter(n => n && !n.hostile);
-  if (!sociable.length) return null; // not a populated place (or only lurkers) → honest-decline; never name a hostile
+  const excludeId = query?.excludeId ? String(query.excludeId) : '';
+  // Only exclude when a speaker id is actually given — an empty excludeId must never drop
+  // id-less roster entries (it would equal their String(undefined) === '').
+  const sociable = npcs.filter(n => n && !n.hostile && (!excludeId || String(n.id || '') !== excludeId));
+  if (!sociable.length) return null; // not a populated place (or only the speaker / lurkers) → honest-decline; never name a hostile
   const lurkers = npcs.filter(n => n && n.hostile).length;
   const named = sociable.slice(0, 4).map(describePresentNpc);
   const remainder = sociable.length - Math.min(4, sociable.length);
@@ -207,5 +213,5 @@ export function classifyPlaceQuery(text) {
  */
 export function resolvePlaceFact(world, query) {
   const slot = PLACE_TYPES.find(s => s.type === (query && query.type));
-  return slot ? slot.resolve(world) : null;
+  return slot ? slot.resolve(world, query) : null;
 }

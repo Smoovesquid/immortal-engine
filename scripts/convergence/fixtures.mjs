@@ -234,6 +234,25 @@ export function tradeTownTavernWorld() {
   return ensureWorld(world);
 }
 
+// (W-6) trade_town_tavern with dialogue ACTIVE and a SECOND sociable NPC, so the NPC-voice
+// renderer can be exercised: founding/events deliver the resolver's grounded fact IN-CHARACTER,
+// and population (which excludes the SPEAKING npc) still names a neighbor (Pell Riven) instead
+// of Bram listing himself. Same seed/node/substrate as trade_town_tavern → the SAME founding
+// and local-event labels (proves "one fact, two voices"). §0-safe by construction.
+export function tradeTownTavernDialogueWorld() {
+  const w = tradeTownTavernWorld();
+  const node = w.map.nodes.find(n => n.id === w.map.currentNodeId);
+  node.settlement.npcs.push({
+    id: 'npc_patron', name: 'Pell Riven', role: 'trader',
+    occupation: 'trader', descriptor: 'road-worn trader',
+    hostile: false, conversationState: { trustLevel: 5 }
+  });
+  return ensureWorld({
+    ...w,
+    scene: { ...(w.scene || {}), dialogue: { npcId: 'npc_keeper', turnsInDialogue: 1, topicsCount: 0 } }
+  });
+}
+
 export const FIXTURES = {
   village_baker: villageBakerWorld,
   prior_roll: priorRollWorld,
@@ -243,5 +262,6 @@ export const FIXTURES = {
   dialogue_active: dialogueActiveWorld,
   crowd_baker: crowdBakerWorld,
   defeated_npc: defeatedNpcWorld,
-  trade_town_tavern: tradeTownTavernWorld
+  trade_town_tavern: tradeTownTavernWorld,
+  trade_town_tavern_dialogue: tradeTownTavernDialogueWorld
 };

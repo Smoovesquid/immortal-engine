@@ -12,6 +12,7 @@ import { buildNpcContext, fallbackRules, findCachedDecision } from './npcBrain.j
 import { extractMemory } from './npcMemory.js';
 import { exitsFrom } from '../map/mapState.js';
 import { classifyPlaceQuery, resolvePlaceFact } from '../world/placeQuery.js';
+import { classifyPersonQuery, resolvePersonFact } from '../world/personQuery.js';
 
 const TRUST_REVEAL_PUBLIC = 4;
 const TRUST_REVEAL_SECRET = 7;
@@ -307,6 +308,21 @@ export function commonKnowledgeAnswer(world, npc, text) {
     }
   }
 
+  // ── person-identity (P-2): the NPC identifies a present OTHER ──
+  // Closes the W-6 gap where dialogue could only do "who are YOU" (self): "who is that? /
+  // who is Pell?" now names a co-present non-hostile NPC, rendering the SAME identity fact the
+  // narrator does (one fact, two voices). excludeId = the SPEAKER so they never identify
+  // themselves (self mode already owns "who are you"); a demonstrative resolves the sole present
+  // other. Unknown/secret/motive → not classified or no match → fall through (deflect). §0-safe:
+  // name + role only — never allegiance, faction, or motive.
+  if (here) {
+    const pqp = classifyPersonQuery(t);
+    if (pqp) {
+      const fact = resolvePersonFact(w, { ...pqp, excludeId: npc.id });
+      if (fact) return { mode: 'identity', body: renderPersonIdentityNpc(npc, fact) };
+    }
+  }
+
   // ── place: the ground under their feet ──
   // Guard against "this village/town" used as a mere locative inside a
   // question about events/history/danger — that's not a place-description
@@ -429,6 +445,25 @@ function renderPlaceFactNpc(npc, fact) {
     return f[manner] || f.even;
   }
   return `${S}.`;
+}
+
+// (P-2) Render a resolved person-IDENTITY fact in NPC VOICE — a RENDERER only, adds ZERO facts.
+// `fact.body` is "<name>, a <role>" (the same the narrator renders). Manner colours delivery, never
+// content — these frames assert nothing about the person beyond their public identity + presence.
+// §0-safe: never allegiance, faction, or motive.
+function renderPersonIdentityNpc(npc, fact) {
+  const raw = String(fact?.body || '').trim();
+  if (!raw) return null;
+  const S = capitalize(raw);
+  const manner = voiceManner(npcVoice(npc));
+  const f = {
+    guarded: `${S}. That's all I'll say of them.`,
+    skittish: `${S}, or so I've gathered. I keep to my own.`,
+    blunt: `${S}. That's who.`,
+    open: `Oh, that's ${raw} — you'll have seen them about, surely!`,
+    even: `${S} — you'll have seen them about.`
+  };
+  return f[manner] || f.even;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

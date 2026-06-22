@@ -701,4 +701,106 @@ export default [
     ],
     source: 'W-6 (NPC-dialogue renderer — deliver/decline boundary on the NPC side); reproduced LLM-off dialogue_active',
   },
+  {
+    id: 'C4-019',
+    capability: 'C4',
+    // (P-2) PersonQuery, narrator voice — the first PERSON-scope slot (engine/world/personQuery.js
+    // `identity`). A named / specific-role identity ask ("who is the tavern-keeper?" / "who is Bram?")
+    // had grounded roster data (node.settlement.npcs) but FLOORED ("your eyes move slow…") — the Rung-1
+    // UNDER-claim hole. personQuery resolves the present non-hostile NPC and delivers name+role, NO roll.
+    // DELIVER-or-FALL-THROUGH: only claims a grounded match, so unknown names keep [clarify:referent] and
+    // demonstratives keep dialogue-enter (the diverges). The [person → grounded | identity] stamp makes
+    // the signature specific to THIS resolver (grace's generic-descriptor META_NPC_OBSERVER has no stamp).
+    // §0-safe: name + role only — never allegiance/motive.
+    status: 'locked',
+    fixture: 'trade_town_tavern',
+    intent: 'a named/specific-role person-identity ask names the present NPC from grounded roster data — no roll, no floor, no invention',
+    paraphrases: [
+      'who is the tavern-keeper?',
+      'who is the keeper?',
+      'who is Bram?',
+      'who is Bram Cask?',
+      'what do I know about Bram?',
+    ],
+    assert: {
+      surface_matches: [/Bram Cask, a tavern-keeper/i, /person → grounded \| identity/i],
+      surface_excludes: [
+        /\[roll:/i,                            // identity is common knowledge — never rolled
+        /eyes move slow|observe only/i,        // not the explore floor (the under-claim hole)
+        /clarify:referent/i,                   // it DELIVERED — Bram is present, not an unknown
+      ],
+    },
+    diverge: [
+      { text: 'who is that?', reason: 'bare demonstrative → dialogue-enter (narrator skips demonstratives), not a person-identity deliver' },
+      { text: 'who lives here?', reason: 'place.population (W-4) → the roster, not a single identity' },
+      { text: 'who runs this place?', reason: 'control DEFERRED (W-5) → floor/decline, never a person-identity answer' },
+      { text: 'what does the keeper want?', reason: 'MOTIVE deferred → floor, never invented' },
+      { text: 'who is Kael?', reason: 'unknown referent → [clarify:referent], not a deliver' },
+    ],
+    source: 'P-2 (PersonQuery — person.identity, narrator); reproduced LLM-off trade_town_tavern',
+  },
+  {
+    id: 'C4-020',
+    capability: 'C4',
+    // (P-2) PersonQuery, NPC-dialogue voice — closes the W-6 gap where an NPC could only do "who are
+    // YOU" (self): "who is Pell? / who is that?" now names a co-present non-hostile NPC, rendering the
+    // SAME identity fact the narrator does (one fact, two voices). excludeId = the SPEAKER, so Bram never
+    // identifies himself (the /Bram Cask, a tavern-keeper/ exclude is that proof — he appears only as the
+    // "Bram Cask says" attribution). Motive/secret/unknown/self → fall through (self / deflect).
+    status: 'locked',
+    fixture: 'trade_town_tavern_dialogue',
+    intent: 'an NPC identifies a present OTHER npc from the resolver, in voice — no roll, no invention; excludes itself',
+    paraphrases: [
+      'who is Pell?',
+      'who is the trader?',
+      'who is that?',
+      'what do I know about Pell?',
+    ],
+    assert: {
+      surface_matches: [/Pell Riven, a trader/i, /dialogue ask \| identity/i],
+      surface_excludes: [
+        /\[roll:/i,
+        /dialogue ask \| deflected/i,          // it DELIVERED in voice, did not deflect
+        /Bram Cask, a tavern-keeper/i,         // the SPEAKER never identifies itself (only "Bram Cask says")
+      ],
+    },
+    diverge: [
+      { text: 'who are you?', reason: 'self mode owns "who are YOU" — not a person-identity-of-other deliver' },
+      { text: 'what does Pell want?', reason: 'MOTIVE deferred → deflect, never invented' },
+      { text: 'who is Bram?', reason: 'the SPEAKER (excludeId) → no self-identity → deflect' },
+      { text: 'who is Kael?', reason: 'unknown referent → deflect, never invented' },
+      { text: 'who lives here?', reason: 'place.population (W-4) → the roster, not a single identity' },
+    ],
+    source: 'P-2 (PersonQuery — person.identity, NPC dialogue); reproduced LLM-off trade_town_tavern_dialogue',
+  },
+  {
+    id: 'C4-021',
+    capability: 'C4',
+    // (P-2) PersonQuery boundary — the DEFERRED person slots (motive/secret/backstory/allegiance/cult/
+    // leadership) have NO grounded source, so they must NEVER deliver and NEVER invent. They fall to the
+    // existing non-inventing floor (observe-only). The proof is in the EXCLUDES: no invented motive,
+    // secret, allegiance, cult, or §0 hidden-faction leaks. (The weak floor-vs-clean-decline quality is a
+    // pre-existing, non-inventing residual — a future tidy, not a P-2 defect.)
+    status: 'locked',
+    fixture: 'trade_town_tavern',
+    intent: 'deferred person slots (motive/secret/allegiance/cult) honestly decline — no invention, no §0 leak',
+    paraphrases: [
+      'what does the keeper want?',
+      'what is the keeper hiding?',
+      'who does the keeper work for?',
+      'is the keeper part of the cult?',
+    ],
+    assert: {
+      surface_matches: [/observe only — no roll|eyes move slow|couldn.t say|don.t (have|know)|no.?record/i],
+      surface_excludes: [
+        /\[roll:/i,                                                   // never rolled into a fake motive
+        /person → grounded/i,                                         // must NOT deliver an identity/motive
+        /\b(?:cult|cultist|works? for|loyal to|allegiance|hiding|secret(?:ly)?|plotting|conspir)\b/i,  // never invents allegiance/secret
+      ],
+    },
+    diverge: [
+      { text: 'who is the keeper?', reason: 'plain IDENTITY (name+role) DOES deliver (C4-019) — proves only the deferred motive/secret floors' },
+    ],
+    source: 'P-2 (PersonQuery — deferred-slot non-invention boundary); reproduced LLM-off trade_town_tavern',
+  },
 ];

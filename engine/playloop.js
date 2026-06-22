@@ -34,6 +34,7 @@ import { mintThing, revealTrueEdge } from './things.js';
 import { mintClaim } from './claims.js';
 import { generateSubstrate, ensureNodeSubstrate, substrateEventsFor, npcSubstrateContext } from './substrate.js';
 import { classifyPlaceQuery, resolvePlaceFact } from './world/placeQuery.js';
+import { classifyPersonQuery, resolvePersonFact } from './world/personQuery.js';
 import { resolveArc } from './npc/npcArc.js';
 import { companionPass } from './npc/companionVoice.js';
 import { checkMilestone, buildLevelUpLine } from './advancement/milestones.js';
@@ -1192,6 +1193,23 @@ function playerMoveCore(world, packsById, text) {
     if (placeQuery) {
       const placeFact = resolvePlaceFact(w, placeQuery);
       return placeFact ? renderPlaceFactDM(w, placeFact) : renderPlaceDeclineDM(w, text);
+    }
+  }
+
+  // (P-2) Person-knowledge query → identity of a RESOLVABLE present NPC (the World-Query Resolver,
+  // person scope — engine/world/personQuery.js). Closes the under-claim FLOOR where a named / specific-
+  // role identity ask ("who is the tavern-keeper?" / "who is Corwin?") had grounded roster data but fell
+  // to "your eyes move slow…". DELIVER-or-FALL-THROUGH: claims the turn ONLY on a grounded match, so
+  // unknown names keep the existing [clarify:referent] guard below and demonstratives ("who is that?")
+  // keep dialogue-enter (the narrator skips demonstratives — grace's META_NPC_OBSERVER owns the
+  // generic-descriptor ask with its hostile-observer safety). NO roll: identity is common knowledge,
+  // not a skill check. §0-safe: name + role only. Motive/secret/backstory/allegiance/leadership are NOT
+  // classified (deferred) → they fall through to their existing non-inventing decline/floor.
+  if (!w.combat?.active && !w.scene?.dialogue) {
+    const personQuery = classifyPersonQuery(text);
+    if (personQuery && !personQuery.demonstrative) {
+      const personFact = resolvePersonFact(w, personQuery);
+      if (personFact) return renderPersonFactDM(w, personFact);
     }
   }
 
@@ -3363,6 +3381,7 @@ function dialogueAskNarration(outcome, world) {
     case 'smalltalk':
     case 'self':
     case 'place':
+    case 'identity':   // (P-2) person-identity of a present other — common knowledge, body IS the answer
     case 'directions':
     case 'services':
     case 'news': {
@@ -5343,6 +5362,13 @@ function renderPlaceFactDM(world, fact) {
 }
 function renderPlaceDeclineDM(world, text) {
   return { world, output: { narration: declineInfoSeek(world, text, socialTarget(world, text)), mechanics: '[place-history → no-record | nothing grounded to deliver, no roll]' } };
+}
+// (P-2) DM-narrator renderer over a resolved person-identity fact. Mirrors grace's META_NPC_OBSERVER
+// phrasing ("<name>, a <role> — one of the folk here") so the two narrator surfaces read alike. §0-safe.
+function renderPersonFactDM(world, fact) {
+  const lab = String(fact?.body || '');
+  const body = lab.charAt(0).toUpperCase() + lab.slice(1);
+  return { world, output: { narration: `Wizard: ${body} — one of the folk here.`, mechanics: '[person → grounded | identity, no roll]' } };
 }
 
 // ── Stage F: general grounded fallback (kill the abstract floor everywhere) ──

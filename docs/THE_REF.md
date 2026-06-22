@@ -235,7 +235,7 @@ the paid gate (discovery). Build the SAME for narration:
   playloop interior-move pre-emption (Codex lane); root cause in the N-1-Fix-4 bullet above. **Dispatch this first.**
 - **Rung-1 Road-A**: H-75…H-80 landed/verified; the deterministic corpus is near-saturated; the frontier is this doc.
 - **Gates**: gate 5 (10/48, `-gate5.md`), gate 6 (7/48, `-gate6.md`), gate 7 (12/48, `-gate7.md`), gate 8 (5/48,
-  `-gate8.md` — N-3 held), **gate 9 (10/48, `opus-gate-2026-06-21.md` — N-4 held; 12→5→10 is a BOUNCING RULER, not a
+  `-gate8.md` — N-3 held), **gate 9 (10/48, `opus-gate-2026-06-21-gate9.md` — N-4 held; 12→5→10 is a BOUNCING RULER, not a
   regression — same engine, persona-variance)**. The gates 6–9 findings in `CAPABILITY_LEDGER` are the read.
 - **Budget**: ~$0 — EXHAUSTED (gates 6–9 ≈ $11.3 across the run). **Top up + re-confirm with Tim before gate 10.**
 - **Bootstrap**: `docs/BASECAMP.md` (the role), `docs/CAPABILITY_LEDGER.md` (Road-A status + the gate-5

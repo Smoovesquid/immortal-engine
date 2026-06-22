@@ -1209,7 +1209,7 @@ Full per-turn detail in the report file. Catalog these as the next hard-tail pac
 once a worker prompt is drafted. Priority order: CRASH → DM_TEST_DEADEND → CRUNCH_INCONSISTENCY →
 CANON_HALLUCINATION.
 
-## Budget — **~$0 estimated post-gate-9 (EXHAUSTED)** — Tim topped up for the N-3/N-4 two-gate cycle; now spent. TOP UP before gate 10 (re-confirm real balance with Tim)
+## Budget — **gate 10 ran 2026-06-22 (~$2.76 ACTUAL — NOT the brief's $1.10/run estimate)** — Tim authorized up to 3 gates this session via the autonomous-loop brief (presumed top-up). Real per-run ≈ $2.76; post-top-up balance UNKNOWN — re-confirm with Tim before a 2nd gate
 Tim confirmed actual balance **$10.51** on 2026-06-20. Gate 1 (~$2.63,
 `docs/playtests/opus-gate-2026-06-20-convergence-baseline.md`) → **~$7.88**. Gate 2 (2026-06-21, ~$2.71,
 `docs/playtests/opus-gate-2026-06-21-pre-judge-hardening.md`, 18/48 raw — later shown ~13 were JUDGE artifacts)
@@ -1228,9 +1228,14 @@ narration track; see the gate-6 findings in CAPABILITY_LEDGER**) → ~$2.58 esti
 persona-variance onto fresh veins [C7 item-effect-names-a-stat tail · N-2 Ex-1 unimplemented · C12 can't-leave · trader-info stall];
 discovery 0 new caps; see the gate-7 findings in CAPABILITY_LEDGER**) → ~$0 estimated. **Tim topped up for an autonomous N-3/N-4
 two-gate cycle.** **Gate 8** (2026-06-21, post N-3, ~$2.80, `docs/playtests/opus-gate-2026-06-21-gate8.md`, **5/48 — 12→5; C16
-address-mode + C7 names-a-stat HELD, 0 new caps**). **Gate 9** (2026-06-21, post N-4, ~$2.80, `docs/playtests/opus-gate-2026-06-21.md`,
+address-mode + C7 names-a-stat HELD, 0 new caps**). **Gate 9** (2026-06-21, post N-4, ~$2.80, `docs/playtests/opus-gate-2026-06-21-gate9.md`,
 **10/48 — N-4 dialogue/info-decline HELD; 5→10 = persona-variance (a bouncing ruler), 0 new caps; C12/H-81 invented-barrier recurred
-= TOP next; see the gates 8–9 findings in CAPABILITY_LEDGER**) → **~$0 — EXHAUSTED.** TOP UP before gate 10 (re-confirm with Tim).
+= TOP next; see the gates 8–9 findings in CAPABILITY_LEDGER**) → **~$0 — EXHAUSTED.** **Gate 10** (2026-06-22, post H-81..H-86,
+**~$2.76 ACTUAL**, `docs/playtests/opus-gate-2026-06-22.md`, **4/48 — milestone HELD, 0 new caps; the dominant grace-lockable fail =
+C5 roll-query denial → fixed H-87; the rest = narration-track dialogue-deflect; see the gate-10 findings in CAPABILITY_LEDGER**).
+**The autonomous-loop brief estimated $1.10/run, but the REAL per-run cost is ~$2.76 (≈2.5× higher); at $2.76/run "3 gates" ≈ $8.3,
+not $3.3. Balance post-top-up UNKNOWN — re-confirm with Tim before a 2nd gate this session.** (gate 9 renamed to `-gate9.md` to free
+the bare-date filename per the latest-gate-is-bare convention.)
 The corpus harness (`npm run convergence`) is FREE/deterministic and is now the **primary regression signal**;
 the paid gate is reserved for the **discovery signal** (tag failures by capability). Worker-side fixes
 (Sonnet/Codex windows) don't draw this budget — only `scripts/dm-playtest.mjs` runs do. Still confirm the

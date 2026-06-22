@@ -46,14 +46,16 @@ const PLACE_FOUNDING_QUERY_RE = new RegExp([
   /\bhow\s+old\s+is\s+(?:this|the)\b[^.?!]{0,18}?\b(?:place|town|village|settlement|hamlet|city|outpost|crossing|hold)\b/,
 ].map(r => r.source).join('|'), 'i');
 
-// An AGENT or COUNT ask wants a name/number the substrate founding label never holds —
-// excluded here so it routes to honest-decline (C9 non-invention), never the founding deliver.
-const PLACE_FOUNDING_AGENT_COUNT_RE = /\b(?:who|whose|whom|how\s+many|which\s+famil|by\s+name|named?\b|what\s+year|what\s+date)\b/i;
+// An AGENT or COUNT ask wants a name/number a circumstance/event label never holds —
+// excluded so it routes to honest-decline (C9 non-invention), never a place-fact deliver.
+// SHARED across place types: the circumstance-vs-agent boundary is a property of the DATA,
+// uniform — not a per-type trick (docs/WORLD_QUERY_RESOLVER.md §2).
+const PLACE_AGENT_COUNT_RE = /\b(?:who|whose|whom|how\s+many|which\s+famil|by\s+name|named?\b|what\s+year|what\s+date)\b/i;
 
 function isFoundingCircumstance(text) {
   const t = String(text || '');
   if (!t.trim()) return false;
-  if (PLACE_FOUNDING_AGENT_COUNT_RE.test(t)) return false;
+  if (PLACE_AGENT_COUNT_RE.test(t)) return false;
   return PLACE_FOUNDING_QUERY_RE.test(t);
 }
 
@@ -64,10 +66,47 @@ function resolveFounding(world) {
   return ev?.label ? { type: 'founding', body: String(ev.label), clarity: 'vivid' } : null;
 }
 
+// ── Type: events ───────────────────────────────────────────────────────────────
+// "What happened here? / what goes on in this town? / any trouble here?" → a node substrate
+// LOCAL-EVENT (NODE layer, 'vivid'). PLACE-ANCHORED on purpose (here / this <place>): that
+// anchor is the GUARD that keeps RELATIONAL history ("the history between X and Y") and PERSON
+// questions ("what happened to the baker") OFF this type — they carry no place anchor, so they
+// fall to their own deflect/decline paths (the C9-002/003 dialogue deflects stay green). The
+// bare "what happened?" (no anchor) keeps its own handler. Agent/count asks are excluded too
+// (shared boundary). Delivers ONE event deterministically (the earliest local-event); a node
+// with no local-event honest-declines. §0-safe (substrate labels never allude to the cosmology).
+const PLACE_EVENTS_QUERY_RE = new RegExp([
+  // what happened / what's happened / has anything happened … here / in this <place>
+  /\bwhat(?:'?s| has| have| had)?\b[^.?!]{0,24}?\bhappen(?:ed|s|ing)?\b[^.?!]{0,16}?\b(?:here|around\s+here|in\s+this\s+(?:place|town|village|settlement|hamlet|city|outpost|crossing))\b/,
+  // anything/something happen(ed) … here
+  /\b(?:any|some)thing\s+happen(?:ed|ing|s)?\b[^.?!]{0,16}?\b(?:here|around\s+here|in\s+this\s+(?:place|town|village|settlement))\b/,
+  // what/any trouble … here / this <place>
+  /\b(?:what|any)\s+troubles?\b[^.?!]{0,20}?\b(?:here|this\s+(?:place|town|village|settlement))\b/,
+  // what goes on / went on / going on … (around) here / in this <place>
+  /\bwhat(?:'?s)?\b[^.?!]{0,12}?\b(?:goes?\s+on|going\s+on|gone\s+on|went\s+on)\b[^.?!]{0,16}?\b(?:here|around\s+here|in\s+this\s+(?:place|town|village|settlement))\b/,
+].map(r => r.source).join('|'), 'i');
+
+function isEventsQuery(text) {
+  const t = String(text || '');
+  if (!t.trim()) return false;
+  if (PLACE_AGENT_COUNT_RE.test(t)) return false; // "who caused …" = agent → decline, not an event deliver
+  return PLACE_EVENTS_QUERY_RE.test(t);
+}
+
+function resolveEvents(world) {
+  const nodeId = String(world?.map?.currentNodeId || '');
+  if (!nodeId) return null;
+  const ev = substrateEventsFor(world, nodeId).find(e => e && e.layer === 'node' && e.kind === 'local-event');
+  return ev?.label ? { type: 'events', body: String(ev.label), clarity: 'vivid' } : null;
+}
+
 // ── The resolver (one mechanism) ───────────────────────────────────────────────
 // Add a place TYPE as one { type, classify, resolve } slot — never a bespoke handler.
+// Order matters only for overlap; founding ("history of this place") and events ("what
+// happened here") are disjoint by design, so first-match is unambiguous.
 const PLACE_TYPES = [
   { type: 'founding', classify: isFoundingCircumstance, resolve: resolveFounding },
+  { type: 'events',   classify: isEventsQuery,          resolve: resolveEvents },
 ];
 
 /**

@@ -161,8 +161,14 @@ export default [
       "I ask around: has anyone been through here recently — like in the last week — that nobody talks about?",
     ],
     assert: {
+      // Honest-decline is the intent. Match it by the variant-independent MECHANICS signal
+      // `no-record` (every decline path — info-check OR W-3's place-history events resolver —
+      // emits it) in addition to the narration phrasings, so the case can't be broken by which
+      // declineInfoSeek variant happens to fire. (W-3: "What happened here…" now routes through
+      // the place-events resolver, which declines via the "Wouldn't know…" variant the original
+      // narration-only list omitted.) Protective excludes (no invention, no roll) unchanged.
       surface_matches: [
-        /I don.t (have|know)|can.t (say|tell)|not sure|no record|lost to me|Couldn.t say/i,
+        /I don.t (have|know)|can.t (say|tell)|not sure|no.?record|lost to me|Couldn.t say|wouldn.t know|nobody.s ever/i,
       ],
       surface_excludes: [
         /Nothing'?s happened yet\. What do you want to do\?/i,
@@ -488,5 +494,43 @@ export default [
       { text: 'how do I get this town to settle down?', reason: 'a "settle down" idiom, not a founding question — must not deliver the founding fact' },
     ],
     source: 'W-1 (world-wiring slice 1 — substrate→place-history materialization); reproduced LLM-off trade_town_tavern',
+  },
+  {
+    id: 'C4-013',
+    capability: 'C4',
+    // (W-3) The first NEW place-knowledge TYPE through the World-Query Resolver, proving a
+    // new world question is just a SLOT (engine/world/placeQuery.js `events`), not a bespoke
+    // handler. "What happened here?" delivers a node substrate LOCAL-EVENT — no floor, no
+    // roll, no invention. PLACE-ANCHORED: person ("happened to the baker"), relational
+    // ("history between X and Y") and bare ("what happened?") forms do NOT poach it (the
+    // diverges) — the anchor is the guard that keeps relational history deflecting (C9-002/3).
+    // The delivered phrase is the node's deterministic earliest local-event (seed
+    // 'w1-tallowcross' / 'tt_tavern_node'); regenerate via fixtures.mjs if the pool/RNG change.
+    // §0-safe: local-event labels are mundane, never the cosmology.
+    status: 'locked',
+    fixture: 'trade_town_tavern',
+    intent: 'a place-EVENT question ("what happened here?") delivers a node substrate local-event — no roll, no floor, no invention',
+    paraphrases: [
+      'what happened here?',
+      "what's happened in this town?",
+      'anything happen here lately?',
+      'what trouble has this town seen?',
+      'what goes on around here?',
+    ],
+    assert: {
+      surface_matches: [/traveling healers/i, /place-history → grounded/i],
+      surface_excludes: [
+        /\[roll:/i,                                            // common knowledge — never rolled
+        /eyes move slow|what do you do\?/i,                    // not the generic explore floor
+        /I don.t (have|know)|no record|can.t say|no-record/i,  // it DELIVERED, did not decline
+      ],
+    },
+    diverge: [
+      { text: 'what happened to the baker?', reason: 'a PERSON question (no place anchor) → its own decline, not a place-event deliver' },
+      { text: 'what is the history between the two families?', reason: 'RELATIONAL history (no place anchor) → must NOT poach an event (C9-002 stays a deflect)' },
+      { text: 'what happened?', reason: 'bare, no place anchor → keeps its own "nothing has happened yet" handler' },
+      { text: 'how was this town founded?', reason: 'a DIFFERENT place type (founding) → delivers the founding fact, not the event (proves types are disjoint)' },
+    ],
+    source: 'W-3 (world-wiring slice 3 — events as the first new resolver slot); reproduced LLM-off trade_town_tavern',
   },
 ];

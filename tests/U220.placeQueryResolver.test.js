@@ -46,6 +46,38 @@ test('U220 placeQuery — resolvePlaceFact returns null when the node has no fou
   assert.equal(resolvePlaceFact(FIXTURES.village_baker(), { scope: 'here', type: 'founding' }), null);
 });
 
+test('U220 placeQuery — events: "what happened here?" classifies to the events slot', () => {
+  for (const t of [
+    'what happened here?',
+    "what's happened in this town?",
+    'anything happen here lately?',
+    'what goes on around here?',
+    'what trouble has this town seen?',
+  ]) {
+    assert.deepEqual(classifyPlaceQuery(t), { scope: 'here', type: 'events' }, t);
+  }
+});
+
+test('U220 placeQuery — events: person/relational/bare/agent forms do NOT classify (the place-anchor guard)', () => {
+  for (const t of [
+    'what happened to the baker?',                  // person — no place anchor
+    'what is the history between the two families?', // relational — keeps deflecting (C9-002)
+    'what happened?',                                // bare — its own handler
+    'who caused the trouble here?',                  // agent — decline, not an event deliver
+  ]) {
+    assert.equal(classifyPlaceQuery(t), null, t);
+  }
+});
+
+test('U220 placeQuery — events: resolvePlaceFact delivers a node local-event when present, null when not', () => {
+  const fact = resolvePlaceFact(FIXTURES.trade_town_tavern(), { scope: 'here', type: 'events' });
+  assert.ok(fact, 'expected a grounded local-event');
+  assert.equal(fact.type, 'events');
+  assert.equal(fact.clarity, 'vivid');
+  assert.match(fact.body, /traveling healers/);
+  assert.equal(resolvePlaceFact(FIXTURES.village_baker(), { scope: 'here', type: 'events' }), null);
+});
+
 test('U220 placeQuery — unknown/missing type resolves to null, never throws', () => {
   const w = FIXTURES.trade_town_tavern();
   assert.equal(resolvePlaceFact(w, { type: 'nonesuch' }), null);

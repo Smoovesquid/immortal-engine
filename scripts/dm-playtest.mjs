@@ -65,20 +65,44 @@ function dollars() { return (usage.in * RATES.in + usage.out * RATES.out); }
 
 // ── Thin Anthropic client (no temperature — Opus 4.8 deprecates it) ───────────
 const KEY = (process.env.ANTHROPIC_API_KEY || '').trim();
+// A transient API error (overload/rate-limit/5xx) must NOT kill a whole gate run
+// mid-flight and waste the spend already made. Retry on those with exponential
+// backoff; fail fast on non-retryable errors (400/401/etc). Deterministic backoff
+// (no Math.random — this is a script, but keep it grep-clean per the purity rules).
+const RETRYABLE_STATUS = new Set([429, 500, 502, 503, 529]);
 async function ask({ system, user, model, maxTokens = 400 }) {
-  const r = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: { 'content-type': 'application/json', 'x-api-key': KEY, 'anthropic-version': '2023-06-01' },
-    body: JSON.stringify({
-      model, max_tokens: maxTokens,
-      ...(system ? { system } : {}),
-      messages: [{ role: 'user', content: user }],
-    }),
+  const body = JSON.stringify({
+    model, max_tokens: maxTokens,
+    ...(system ? { system } : {}),
+    messages: [{ role: 'user', content: user }],
   });
-  const j = await r.json();
-  if (j.error) throw new Error(`${model} ${r.status}: ${j.error.message}`);
-  tally(j.usage);
-  return (j.content || []).map(b => b.text || '').join('').trim();
+  let lastErr = 'unknown';
+  for (let attempt = 0; attempt <= 5; attempt++) {
+    if (attempt > 0) {
+      const waitMs = Math.min(30000, 1000 * 2 ** (attempt - 1)); // 1s,2s,4s,8s,16s
+      process.stderr.write(`  [retry ${attempt}/5 — ${lastErr} — waiting ${waitMs}ms]\n`);
+      await new Promise(res => setTimeout(res, waitMs));
+    }
+    let r;
+    try {
+      r = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', 'x-api-key': KEY, 'anthropic-version': '2023-06-01' },
+        body,
+      });
+    } catch (e) {
+      lastErr = `network: ${e.message}`;        // transient network blip — retry
+      continue;
+    }
+    const j = await r.json();
+    if (j.error) {
+      if (RETRYABLE_STATUS.has(r.status)) { lastErr = `${r.status}: ${j.error.message}`; continue; }
+      throw new Error(`${model} ${r.status}: ${j.error.message}`); // non-retryable
+    }
+    tally(j.usage);
+    return (j.content || []).map(b => b.text || '').join('').trim();
+  }
+  throw new Error(`${model} failed after 5 retries — last: ${lastErr}`);
 }
 function parseJson(text) {
   const a = text.indexOf('{'), b = text.lastIndexOf('}');

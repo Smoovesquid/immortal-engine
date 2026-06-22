@@ -1513,7 +1513,14 @@ export function handleMetaQuestion(text, world) {
   // check falls all the way through to real action resolution instead of
   // grace intercepting it with either the bare-DC deflection or its own
   // "tell me what you get" canned reply. (H-54 R4)
+  // C3 (declared-check graduation): also defer when the player named an explicit
+  // stat-check IN the DC ask itself ("WITS check to read his face — what's the
+  // DC?", "shove him with a MIGHT check. What's the DC?") — C and D match but the
+  // bounce guard used to omit them, so the turn deflected ("no standing DC…")
+  // instead of falling through to the explicit-check handler that sets the real
+  // DC + formula. A bare "what's the DC?" (no stat-check named) still bounces.
   if (META_BARE_DC.test(lowerText) && !META_EXPLICIT_CHECK_A.test(lowerText) && !META_EXPLICIT_CHECK_B.test(lowerText)
+      && !META_EXPLICIT_CHECK_C.test(lowerText) && !META_EXPLICIT_CHECK_D.test(lowerText)
       && !META_EXPLICIT_CHECK_DECLARED.test(lowerText)) {
     const stored = world.conversation?.lastRoll;
     if (stored && Number.isFinite(Number(stored.dc))) {

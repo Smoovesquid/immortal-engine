@@ -122,4 +122,46 @@ export default [
     ],
     source: 'opus-gate-2026-06-19-postH39.md [Rules Lawyer DM, turn 9]; synthetic',
   },
+
+  // ---- LOCKED — declared <stat> check naming an action + DC ask → DC + formula ----
+  // GRADUATED 2026-06-21 (H-86; C3 0L→1L). The "<stat> check to <verb> … what's
+  // the DC?" family used to hit the bare-DC bounce ("There's no standing DC — tell
+  // me what you're attempting") because the bounce guard at gracefulAdjudication.js
+  // omitted META_EXPLICIT_CHECK_C/D. Adding !C && !D lets it fall through to the
+  // explicit-check handler, which states the DC + the d20+mod formula for the named
+  // stat. The stale notes above describe pre-2026-06-21 routing ("[dialogue ask |
+  // deflected]") that no longer reproduces — verify against live output, not them.
+  // Cosmetic residual (NOT asserted): the handler's flavor clause always reads "to
+  // read <npc>" even for a shove/slip — DC+stat are correct; the flavor verb is a
+  // separate future polish.
+  {
+    id: 'C3-004',
+    capability: 'C3',
+    status: 'locked',
+    fixture: 'village_baker',
+    intent: 'player names an explicit stat-check on an action AND asks the DC — must state the DC + the stat formula, not bounce "no standing DC"',
+    paraphrases: [
+      "WITS check to read Corwin's face — what's the DC?",
+      "WITS check to read his face — what's the DC?",
+      "MIGHT check to shove him aside — what's the DC?",
+      "I plant my feet and shove him with a MIGHT check. What's the DC?",
+      "AGILITY check to slip past him — what's the DC?",
+      "A WITS check to size him up — give me the DC.",
+    ],
+    assert: {
+      surface_matches: [
+        /DC\s*\d+/i,                 // a real DC number is stated
+        /(WITS|MIGHT|AGILITY)/i,     // the named stat is acknowledged
+      ],
+      surface_excludes: [
+        /no standing DC/i,           // must NOT bounce for clarification
+        /Couldn.t say/i,             // must NOT dialogue-deflect
+      ],
+    },
+    diverge: [
+      { text: "what's the DC?", reason: "bare DC ask, no stat-check declared — must still bounce 'no standing DC'; proves the fix is scoped to declared checks" },
+      { text: "I want to read his face.", reason: "vague read-intent, no explicit stat named — DM resolves/observes, must not fabricate a DC+stat" },
+    ],
+    source: 'convergence target backlog C3-001/002 (stale-calibrated 2026-06-20); LLM-off repro 2026-06-21 — bounce-guard omitted META_EXPLICIT_CHECK_C/D',
+  },
 ];

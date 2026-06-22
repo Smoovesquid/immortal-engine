@@ -491,6 +491,15 @@ leak** (control questions fell to the generic place blurb) by tightening the gua
 **C4 14L→18L** (C4-015/016/017 voiced + C4-018 unknown-node decline), **+U221** (6), convergence **102/102**, suite
 **8303/0**, determinism green, **live-verified in v1.html** (founding voiced; control deflected, no invention).
 
+*2026-06-22 (W-7 — materialization-batch hardening/audit, pre-gate):* focused architecture audit over the
+founding/events/population batch (both voices). **Verdict: no code defect** — narrator + NPC both render the same
+grounded fact via `resolvePlaceFact`; control stays deferred/non-inventive; services/directions/news/self route
+correctly; person/object/cause/bare-"what happened?" all deflect (not poached); §0 hidden at every sink. Patch =
+tests only: 2 diverge-LOCKS (bare "what happened?" + object-query) added to C4-016/017 (no new locked cases →
+**C4 stays 18L**). convergence 102/102, suite 8303/0, determinism untouched. Batch stable → paid-gate request
+drafted (not run). Residual (non-blocking): some unknown-founding phrasings fall to a pre-existing generic blurb
+(non-inventing) instead of a curt decline — a future decline-coverage tidy.
+
 **Social-physics categories to mine next (Biblioteca Vols 2–6, mostly not yet failing-in-gate but on the map):**
 sarcasm/irony inversion (Vol 2; transcript: `docs/playtests/ridiculous-sarcasm-2026-06-06.md`), loaded
 questions / presupposition (Vol 3, "have you stopped stealing?"), bluff vs. claim (Vol 5), request/order/threat

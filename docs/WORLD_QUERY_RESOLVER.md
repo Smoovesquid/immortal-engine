@@ -68,6 +68,37 @@ known/unknown boundary come *from the data*, not from the phrasing.
 | `rumor` | what's the talk / anything strange | `world.rumors` + `filterRumors` | trust-gated; quiet when none surfaced | **careful** — rumor bodies are folk takes, must stay symptom/ folk-level, never cosmology | live (`news`) |
 | `reputation` | what's this place known for | claims/rumor graph (confirm at slice) | only claims on the graph | careful (same as rumor) | TBD (demand-pull) |
 | `dangers` | what's dangerous here / recent trouble | threats ledger / `worldTick` (confirm at slice) | only recorded threats | careful (symptoms, never the why) | TBD (demand-pull) |
+| `control` | who openly runs / governs / keeps order here | **NONE that's grounded + public** (see §2a) | a present "elder" role ≠ governs; secret/cult control is guarded | **dangerous** — must split public office from secret/cult control, and never invent a ruler | **DEFERRED — no source (W-5)** |
+
+### §2a — `control` is DEFERRED: no grounded public-leadership source (verified W-5, 2026-06-22)
+
+`control` ("who runs this place? / who's in charge here? / who governs this town?") was investigated as W-5 and
+**deliberately not implemented** — the repo has **no safe public source of truth** for who openly runs a place, so
+a deliver-slot would have to **invent a ruler**, which the packet forbids and which contradicts C9 non-invention.
+Verified across the real sources:
+
+- **No structured field** — there is no `settlement.leader` / `node.ruler` / `governedBy` / faction-controls-node
+  anywhere in the engine (grep-confirmed).
+- **`elder` is one NPC *role* among seven** (`extractPresent.js`: trader/laborer/elder/artisan/guard/scholar/
+  innkeeper). A present elder NPC does **not** model "the elder governs this town" — picking them as "the ruler"
+  is *inventing a control relationship*.
+- **`'Civic Authority'`** (`settlementTicker.js`) is a generic **fallback faction** for thread/ecology tracking,
+  not a named public ruler.
+- **The engine already declines this on purpose** — `dialogue.js`'s `NOT_PLACE_DESCRIPTION_RE` excludes
+  `who runs|leads` and `elder`; the tenure-grounding path (`INFO_SEEKING_TENURE_RE`) has nothing feeding it; and
+  **C9-006 LOCKS** "how long has the elder led?" → honest-decline because canon holds no leader/tenure.
+- **Current behavior (verified):** the five control phrasings classify to `null` in the resolver (so `population`
+  does **not** poach them — W-4's exclusions hold) and fall to a generic observe-floor — no answer, no roll, **no
+  invention** (safe, if unpolished).
+
+**Decision: defer, add no behavior.** Implementing even a *decline-only* control slot is premature — it would be
+churn once real leaders land. **What unlocks it:** a node-level **public-governance field** (e.g.
+`settlement.governance = { office | leaderNpcId, public: true }`) populated by decompression — or, for the demo,
+by wiring the `DEMO_REGION.md` authorities (the steward-king Theodore Augustus §5#1, the COUG inquisition seat
+§5#3) as engine **data**, which today exists only as *content* in the bible. Once a grounded public office-holder
+exists, `control` becomes a normal slot: deliver the **public** office, **never** reveal/invent secret or cult
+control (the bible's COUG / cannibal / Incrementalist control is mostly guarded/faction), honest-decline where
+ungrounded. **Do not implement `control` until that source exists.**
 
 **Two structural axes the schema makes explicit (decide once, here):**
 
@@ -145,6 +176,10 @@ dialogue both fall out of it."
 3. ~~**W-4 = `population`** ("who lives here") from the settlement roster.~~ **DONE** (`463538d`) — a
    category-BOUNDARY proof: the type is one slot, the work is the exclusions (founder/cause/control/services/
    leadership/hidden-watcher) + the hostile-never-named safety. `META_NPC_ROSTER` untouched (a future unify target).
+3a. **W-5 = `control`** ("who runs this place") — **DEFERRED, design note only** (no behavior). Investigated
+   2026-06-22: no grounded public-leadership source exists, so a deliver-slot would invent a ruler (forbidden).
+   See §2a for the verified-absent source + what unlocks it. The five control phrasings already fall to a safe
+   non-inventing floor and do not leak into `population`.
 4. **NPC-dialogue voicing** (make `commonKnowledgeAnswer` call `resolvePlaceFact`, dropping its
    `NOT_PLACE_DESCRIPTION_RE` carve-outs as types fill) — founding/events/population then voice in-character. **Next.**
 5. Now that **3 types are live**, the natural point to **spend a gate** to measure the materialization lift +

@@ -469,6 +469,17 @@ source FIRST (don't invent data); `META_NPC_ROSTER` untouched (fires first; a fu
 `docs/WORLD_QUERY_RESOLVER.md`. **3 types live → next = wire the NPC-dialogue renderer, then the natural point to
 spend a gate on the materialization lift.**
 
+*2026-06-22 (W-5 — `control` DEFERRED, design note only, NO behavior; the "verify source first, don't invent"
+discipline working as intended):* "who runs this place?" was investigated as the next slot and **deliberately not
+implemented** — there is **no grounded public-leadership source** in the engine (no `settlement.leader`/`node.ruler`/
+faction-controls-node field; `elder` is one NPC *role* among seven, not a designated governor; `'Civic Authority'`
+is a generic fallback faction; the tenure-grounding path has nothing feeding it; `NOT_PLACE_DESCRIPTION_RE` + the
+locked C9-006 tenure-decline already decline it on purpose). A deliver-slot would have to **invent a ruler**, which
+contradicts C9 non-invention. Verified the five control phrasings classify to `null` (so `population` does not poach
+them) and fall to a safe non-inventing floor. **What unlocks it:** a node-level public-governance field (or wiring
+the `DEMO_REGION.md` authorities as engine data — today only *content*). Boundary + design recorded in
+`docs/WORLD_QUERY_RESOLVER.md` §2a. **No convergence/suite/determinism delta — zero code changed.**
+
 **Social-physics categories to mine next (Biblioteca Vols 2–6, mostly not yet failing-in-gate but on the map):**
 sarcasm/irony inversion (Vol 2; transcript: `docs/playtests/ridiculous-sarcasm-2026-06-06.md`), loaded
 questions / presupposition (Vol 3, "have you stopped stealing?"), bluff vs. claim (Vol 5), request/order/threat

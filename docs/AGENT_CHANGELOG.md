@@ -1526,3 +1526,12 @@ other agents. (none active)
 - Proof (§7): reproduced LLM-off FIRST on `village_baker` (generated PC carries `Cloak of many patches` in `inv.armor` → bug fires natively); 6/6 gate-class paraphrases → "Your Armor is 13 …", 0 contradiction; over-fire — bogus greatsword/shield still corrects, no-armor world ("you said I had plate armor") still corrects. `npm run convergence` **100% (79/79)**, C6 **7/7** (C6-007 new); `node --test` **8285/8285, 0 fail** (determinism U19/21/22/27/30 green).
 - Remaining/next (residual, NOT the gate failure): the deeper AC-MATH explanation ("the -1 is baked into 12 base") isn't spelled out — states the value consistently but not the arithmetic; Tier-2/narration, deferred.
 - Rollback: revert `3b699c8`.
+
+2026-06-21 — Basecamp (grace-lane window; autonomous improvement loop) — H-83 DONE
+- Packet/seam: gate-9 RL t1 — a "stats AND armor class" compound answered only the AC; **grace lane**.
+- Commit(s): `3287258` (engine grace + C1 corpus, atomic). On origin — verified via `git branch -r --contains` → origin/v2-polish.
+- Files: `engine/grace/gracefulAdjudication.js` (META_ARMOR_VALUE branch), `tests/corpus/C1.corpus.mjs` (+locked C1-005).
+- Summary: "What are my stats — Strength, Dexterity, all of them — and my armor class?" returned ONLY "Your Armor is N" — `META_ARMOR_VALUE` matches and returns before any stats branch, dropping the stats half (C1 compound-drop / C6 number-transparency). The AC branch now folds in `answerFullStats(world)` when `META_STATS_REQ` co-occurs, mirroring the existing compound folds (answerSkillModifier, META_WEAPON_DAMAGE). Both halves now land: "Your measures: MIGHT 13 (+1), AGILITY 13 (+1), … Hit points: 15 of 15. Your Armor is 13 …".
+- Proof (§7): reproduced LLM-off FIRST on `village_baker` (3/3 paraphrases → AC-only). Post-fix 6/6 gate-class paraphrases answer BOTH halves; over-fire — bare "what's my AC?" stays AC-only, the H-82 AC-challenge phrasings stay AC-only (no `META_STATS_REQ` word), a bare "what are my stats?" does not fold in AC. `npm run convergence` **100% (80/80)**, C1 **5/5** (C1-005 new), C6 **7/7** (H-82 held); `node --test` **8285/8285, 0 fail**.
+- Remaining/next: none for this vein; the deeper AC-arithmetic explanation residual stays with H-82.
+- Rollback: revert `3287258`.

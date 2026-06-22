@@ -30,7 +30,7 @@ detectors. Status starts `seed`.
 
 | # | Capability (DM obligation) | Lineage / H-IDs | Current home (detectors to unify) | Corpus | Graduated |
 |---|---|---|---|---|---|
-| C1 | Answer **every part** of a compound query | H-25/H-31/H-40/H-54/**H-59** | `handleMetaQuestion` typed sub-intent decomposition | 4L/0T | **✓** |
+| C1 | Answer **every part** of a compound query | H-25/H-31/H-40/H-54/H-59, **H-83** | `handleMetaQuestion` typed sub-intent decomposition (+ stats-into-AC fold) | 5L/0T | **✓** |
 | C2 | A **named referent** must be grounded before the turn resolves | H-56/C2-grad/H-60, **H-79** | `ungroundedNpcReferentForText` + `hasPersonReferentSignal` + observe/travel hoist + social-resolver guard | 6L/0T | **✓** |
 | C3 | A **declared check** gets a DC + roll | H-54 R4 | `META_EXPLICIT_CHECK_*` | 0L/3T | — |
 | C4 | Info-seeking **delivers a grounded fact or honestly declines** | H-22/23/29/31/39/H-63/H-74/H-78/N-1/N-2 Ex-2, **N-4** | `isInfoSeekingText` (+provenance/surveillance/`BACKSTORY`/`IDENTITY` REs) + `META_PURSE` + dialogue place-branch + pre-roll `isUngroundedInfoCheck` + `isUngroundedObjectRead` + `META_RECAP` backstory-guard | 9L/2T | **partial** (Ex-1 open) |
@@ -342,6 +342,13 @@ Root cause: the grounding check matched item NAMES only, not the armor CATEGORY.
 bogus weapon/shield claims and "armor" with no armor equipped still correct (LLM-off probe). Reproduced LLM-off FIRST on
 `village_baker` (its generated PC carries the category-armor item natively). **Residual (Tier-2, deferred):** the deeper
 AC-MATH arithmetic ("the -1 is baked into 12 base") still isn't spelled out — states the value, not the derivation.
+
+*2026-06-21 (H-83 — C1/C6 stats+AC compound-drop, gate-9 RL t1; grace lane):* closed. "What are my stats … AND my
+armor class?" answered ONLY the AC — `META_ARMOR_VALUE` matches and returns before any stats branch, dropping the
+stats half. The AC branch now folds in `answerFullStats(world)` when `META_STATS_REQ` co-occurs (the same compound-fold
+idiom already used by answerSkillModifier / META_WEAPON_DAMAGE), so both halves land. **C1 4L→5L** (C1-005 locked, 6
+paraphrases + 2 diverge proving the fold isn't one-sided), convergence 100% (80/80), suite 8285/0, determinism green.
+Over-fire-safe: bare AC, the H-82 AC-challenge phrasings, and bare stats queries are each unaffected (LLM-off probe).
 
 **Social-physics categories to mine next (Biblioteca Vols 2–6, mostly not yet failing-in-gate but on the map):**
 sarcasm/irony inversion (Vol 2; transcript: `docs/playtests/ridiculous-sarcasm-2026-06-06.md`), loaded

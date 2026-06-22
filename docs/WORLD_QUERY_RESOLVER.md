@@ -62,7 +62,7 @@ known/unknown boundary come *from the data*, not from the phrasing.
 |---|---|---|---|---|---|
 | `founding` | how/why was this place founded/settled | substrate NODE founding event | the label holds CIRCUMSTANCE, never an agent/count → "who founded" declines | safe (substrate labels never name the cosmology) | **W-1 done** (bespoke; lift in) |
 | `events` | what happened here / its history | substrate NODE local-events | only events the substrate minted; relational history ("between X and Y") is NOT this type → must still deflect | safe | **W-3 done** |
-| `population` | who lives here / who runs this place | `settlement.npcs` roster | only present/known roster; an un-rostered name → decline/clarify (C2) | safe | next |
+| `population` | who lives here / who's in town | `settlement.npcs` roster (sociable named; hostiles never named) | only present sociable roster; founder/cause/control/services excluded; no sociable roster → decline | safe | **W-4 done** |
 | `trade` | what's sold / what's it known for | `settlement.shops` (+ IG-13 later) | only listed shops; "no counter here" is an honest decline | safe | partly live (`services`) |
 | `geography` | what's nearby / where do roads lead | `map.nodes` + `exitsFrom` | only discovered/adjacent nodes | safe | live (`directions`) |
 | `rumor` | what's the talk / anything strange | `world.rumors` + `filterRumors` | trust-gated; quiet when none surfaced | **careful** — rumor bodies are folk takes, must stay symptom/ folk-level, never cosmology | live (`news`) |
@@ -142,11 +142,13 @@ dialogue both fall out of it."
 2. ~~**W-3 = `events`** ("what happened here") through the resolver — the first *new* type, proving extension is a
    slot; place-anchor guard so relational history (C9-002/003) still deflects.~~ **DONE** (`9c75d3a`) — the diff
    was one slot + one renderer-detail line, thesis proven.
-3. **W-4 = `population`** ("who lives/runs here") from the settlement roster — next.
-4. NPC-dialogue voicing falls out along the way (make `commonKnowledgeAnswer` call `resolvePlaceFact`, dropping
-   its `NOT_PLACE_DESCRIPTION_RE` carve-outs as types fill).
-5. Only then, with a batch of types live, **spend a gate** to measure the materialization lift + discover the
-   next demand-pulled type.
+3. ~~**W-4 = `population`** ("who lives here") from the settlement roster.~~ **DONE** (`463538d`) — a
+   category-BOUNDARY proof: the type is one slot, the work is the exclusions (founder/cause/control/services/
+   leadership/hidden-watcher) + the hostile-never-named safety. `META_NPC_ROSTER` untouched (a future unify target).
+4. **NPC-dialogue voicing** (make `commonKnowledgeAnswer` call `resolvePlaceFact`, dropping its
+   `NOT_PLACE_DESCRIPTION_RE` carve-outs as types fill) — founding/events/population then voice in-character. **Next.**
+5. Now that **3 types are live**, the natural point to **spend a gate** to measure the materialization lift +
+   discover the next demand-pulled type.
 
 ---
 

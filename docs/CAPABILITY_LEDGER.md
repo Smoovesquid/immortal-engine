@@ -38,7 +38,7 @@ detectors. Status starts `seed`.
 | C6 | **Number-transparency**: own stats/mods/AC/HP/items from the sheet | H-25/H-31/H-40/H-68, **N-1** | `answerSkillModifier`, `META_ARMOR_VALUE`, `META_HELD_ITEMS`, `META_INVENTORY` (widened, +filler-adverb), `describePack` (inventory as prose, no category-dump/sheet-deflect); **H-82** armor-slot grounding (bare "armor" isn't a bogus possession when armor is worn) | 7L/0T | **✓** |
 | C7 | **Item/consumable** query answers from real def; **use** applies effect | H-45/H-47/H-65/H-69/H-70/H-73/H-76/H-77, **N-3** | `answerItemQuery`/`META_ITEM` + `CONSUME_RE` + count/compound + bare-count list + sheet-rider guard + `ITEM_EFFECT_DEMAND_RE` + item-effect-over-named-stat guard | 14L/0T | **partial** |
 | C8 | **Narration ≤ mechanics** — no hit/defeat the dice didn't produce | H-26/H-28/H-43, **H-72** | `llmAdapter` R1–R3 + playloop `attackResolutionIntent` | 4L/0T | **corpus✓ / live⚠** |
-| C9 | **Canon non-invention** — no invented name/date/tenure/relationship | H-27/H-49/H-52 | `findInventedFactClaim` | 2L/2T | — |
+| C9 | **Canon non-invention** — no invented name/date/tenure/relationship | H-27/H-49/H-52, **H-84** | `findInventedFactClaim` + `INFO_SEEKING_FOUNDING_RE` (ungrounded founding-history → honest-decline) | 3L/2T | — |
 | C10 | A **declared attack** routes to real combat resolution | H-30/H-32/H-43/H-48/H-55/H-64/H-71, **H-72** | playloop attack gates + `go for`/flip-onto-person/npc-generic/firebolt + attack-resolution-over-meta | 10L/1T | **partial** |
 | C11 | **Confrontation under pressure** → in-character NPC reaction | H-42 | `isConfrontationChallenge`, `confrontationReaction` | 3L/0T | — |
 | C12 | **Movement/travel intent** resolves in fiction, no travel-gate bounce | THE_DM_TEST residuals, H-62, H-75, **H-81** | playloop talkRef-before-free-movement + `extractFindPersonRef` + `approachPresentNpcRef` (indoors approach-present-NPC → dialogue) + `detectPhysicalAssault` point/edge de-weaponize | 5L/0T | **✓** (residual: "the elder"→wrong-NPC = C2) |
@@ -349,6 +349,16 @@ stats half. The AC branch now folds in `answerFullStats(world)` when `META_STATS
 idiom already used by answerSkillModifier / META_WEAPON_DAMAGE), so both halves land. **C1 4L→5L** (C1-005 locked, 6
 paraphrases + 2 diverge proving the fold isn't one-sided), convergence 100% (80/80), suite 8285/0, determinism green.
 Over-fire-safe: bare AC, the H-82 AC-challenge phrasings, and bare stats queries are each unaffected (LLM-off probe).
+
+*2026-06-21 (H-84 — C9 ungrounded settlement-founding honest-decline, gate C9-004; grace lane):* closed the lockable
+subset. "How many founders were there?" / "founding family or built by merchants?" matched no `isInfoSeekingText` sub-RE
+(`INFO_SEEKING_ORIGIN_RE` only covers an NPC's MOTIVE) → rolled or observe-deadended on a fact canon doesn't hold, where
+a success could only invent founders (the C9 rail). `INFO_SEEKING_FOUNDING_RE` routes the founding shapes to the existing
+deliver-or-decline path (grounding gate still delivers where canon holds; only ungrounded declines). **C9 2L→3L** (C9-005
+locked, 6 paraphrases + 2 diverge — the search ACTION and the NPC-knowledge speculation stay non-declining), convergence
+100% (81/81), suite 8285/0, determinism green (the widen touches every `isInfoSeekingText` call site, no regression).
+**Residual:** "Is there a founding family…" is deferred — the playloop sentence-initial false-NER reads "Is"/"Then" as a
+name and bounces a `[clarify:referent]` before grace runs (the denylist gap noted in H-81's remaining/next; a playloop seam).
 
 **Social-physics categories to mine next (Biblioteca Vols 2–6, mostly not yet failing-in-gate but on the map):**
 sarcasm/irony inversion (Vol 2; transcript: `docs/playtests/ridiculous-sarcasm-2026-06-06.md`), loaded

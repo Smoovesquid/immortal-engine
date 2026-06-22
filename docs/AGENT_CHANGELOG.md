@@ -1535,3 +1535,12 @@ other agents. (none active)
 - Proof (§7): reproduced LLM-off FIRST on `village_baker` (3/3 paraphrases → AC-only). Post-fix 6/6 gate-class paraphrases answer BOTH halves; over-fire — bare "what's my AC?" stays AC-only, the H-82 AC-challenge phrasings stay AC-only (no `META_STATS_REQ` word), a bare "what are my stats?" does not fold in AC. `npm run convergence` **100% (80/80)**, C1 **5/5** (C1-005 new), C6 **7/7** (H-82 held); `node --test` **8285/8285, 0 fail**.
 - Remaining/next: none for this vein; the deeper AC-arithmetic explanation residual stays with H-82.
 - Rollback: revert `3287258`.
+
+2026-06-21 — Basecamp (grace-lane window; autonomous improvement loop) — H-84 DONE
+- Packet/seam: gate C9-004 (Lore founders vein) — ungrounded settlement-founding questions roll/observe instead of honest-declining; **grace lane**.
+- Commit(s): `738c131` (engine grace + C9 corpus, atomic). On origin — verified via `git branch -r --contains`.
+- Files: `engine/grace/gracefulAdjudication.js` (+`INFO_SEEKING_FOUNDING_RE` → `isInfoSeekingText`), `tests/corpus/C9.corpus.mjs` (+locked C9-005).
+- Summary: "how many founders were there?" / "founding family or built by merchants?" matched no `isInfoSeekingText` sub-RE (`INFO_SEEKING_ORIGIN_RE` only covers an NPC's MOTIVE, "why did you settle here") → fell to a generic resolve that ROLLED or observe-deadended on a fact canon doesn't hold; an ungrounded success could only invent founders (the C9 rail). `INFO_SEEKING_FOUNDING_RE` routes the founding shapes through the existing deliver-or-decline path; the downstream grounding gate still delivers a grounded answer where canon has one, only the ungrounded case declines.
+- Proof (§7): reproduced LLM-off FIRST on `village_baker` — "how many founders…" rolled/observed pre-fix, honest-declines post-fix; 6/6 paraphrases decline (no `[roll:`, no referent-clarify), both C9-004 diverges (search action / NPC-knowledge speculation) stay non-declining. `npm run convergence` **100% (81/81)**, C9 **3/3** locked (C9-005 new), C1 5/5 + C6 7/7 held; `node --test` **8285/8285, 0 fail** (isInfoSeekingText widen touches every call site — no regression).
+- Remaining/next: C9-004 stays target for "Is there a founding family…" (blocked by the playloop sentence-initial false-NER, "Is"/"Then"→name — the same denylist gap flagged in H-81's remaining/next; a playloop seam). C9-001 (elder tenure) stays target (mixes playloop referent-clarify forms).
+- Rollback: revert `738c131`.

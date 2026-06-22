@@ -418,6 +418,14 @@ const META_EXPLICIT_CHECK_DECLARED = /\b(?:roll|rolling)\s+(?:a\s+)?(?:might|agi
 // Roll-recall — player cites a specific past roll number to dispute or follow up.
 // "I rolled a 16", "16 vs DC 11", "you told me I got a 16", "my roll was 16". (H-12/13.)
 const META_ROLL_RECALL = /\b(?:i (?:rolled|got|said|had)(?:\s+a)?|my roll was(?:\s+a)?|you (?:said|told me)(?:\s+i (?:rolled?|got))?(?:\s+a)?)\s*\d+\b|\b\d+\s+(?:vs\.?|versus|against)\s+dc\s*\d+\b/i;
+// Roll-result QUERY — player ASKS what they last rolled / the die number + DC, with
+// NO number cited (so META_ROLL_RECALL above doesn't fire). "what did I roll?", "what
+// was my last roll?", "give me the die number and the DC I beat", "what number came
+// up on the die?", "remind me what I just rolled". Answered from
+// world.conversation.lastRoll — must report the recorded roll, never re-roll or deny
+// a check that happened. (Gate-10 RL t11 — engine answered "no roll to report" while
+// the ledger held 4 vs DC 12.)
+const META_ROLL_QUERY = /\bwhat\s+did\s+i\s+roll\b|\bwhat\s+(?:was|were)\s+(?:my|the)\s+(?:last\s+)?rolls?\b|\bremind\s+me\s+(?:what\s+i\s+(?:just\s+)?rolled|of\s+(?:my|the)\s+(?:last\s+)?roll)\b|\b(?:actual\s+)?number\s+on\s+the\s+(?:die|dice)\b|\b(?:die|dice)\s+number\b|\bwhat\s+number\s+(?:came\s+up|did\s+i\s+(?:roll|get)|landed)\b|\bwhat\s+did\s+the\s+(?:die|dice)\s+(?:say|show|come\s+up)\b/i;
 // Fourth-wall system check-in — a repetition/system callout paired with a
 // check-in, not an in-fiction action or health question. "You're just
 // repeating yourself now, are you okay?" must never roll: it's the player
@@ -487,6 +495,7 @@ export function isMetaQuestion(text) {
     || META_SKILL_MOD.test(t) || META_ATTACK_MOD.test(t) || META_BARE_DC.test(t)  // H-25
     || META_ATTACK_GOVERNING_STAT.test(t)  // H-80 — governing stat for melee/ranged attack
     || META_ROLL_RECALL.test(t)  // H-12/13
+    || META_ROLL_QUERY.test(t)  // gate-10 RL t11 — asking for the last roll's number/DC
     || META_SYSTEM_CHECKIN.test(t)  // H-51
     || META_DAMAGE_RULE.test(t)  // H-54 R3
     || META_HELD_ITEMS.test(t) || META_ARMOR_VALUE.test(t)  // H-31 R2
@@ -1500,6 +1509,21 @@ export function handleMetaQuestion(text, world) {
     // compound folds (e.g. answerSkillModifier, META_WEAPON_DAMAGE). (gate-9
     // RL t1; C1/C6)
     return META_STATS_REQ.test(lowerText) ? `${answerFullStats(world)} ${ans}` : ans;
+  }
+
+  // Roll-result QUERY — the player asks what they last rolled (the die number +
+  // DC) without citing a number, so META_ROLL_RECALL (which needs a cited number)
+  // doesn't apply. Report it straight from the ledger; never re-roll or deny a
+  // recorded check. Checked BEFORE the bare-DC bounce so "give me the die number
+  // and the DC I beat" reports the roll instead of bouncing "no standing DC".
+  // When nothing's on record, fall through to normal resolution (no over-claim).
+  // (Gate-10 RL t11; C5 roll-recall lineage, H-12/13.)
+  if (META_ROLL_QUERY.test(lowerText) && !META_ROLL_RECALL.test(lowerText)) {
+    const stored = world.conversation?.lastRoll;
+    if (stored && Number.isFinite(Number(stored.roll))) {
+      return `The ledger shows ${stored.roll} vs DC ${stored.dc}${stored.outcome ? ` — ${stored.outcome}` : ''}. That's your last roll.`;
+    }
+    // no roll on record yet — fall through to normal resolution
   }
 
   // Bare DC ask with no declared check — "give me the DC". There's no standing

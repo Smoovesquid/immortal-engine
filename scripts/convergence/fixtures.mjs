@@ -68,6 +68,16 @@ export function villageBakerWorld() {
   ], 'h56');
 }
 
+// village_baker with a roll already on the ledger (conversation.lastRoll), so a
+// single playerMove can exercise the roll-result-QUERY path ("what did I roll?").
+// ensureWorld preserves a valid lastRoll object (state.js), so the preset survives.
+// (gate-10 RL t11 — C5 roll-recall.)
+export function priorRollWorld() {
+  const w = villageBakerWorld();
+  w.conversation = { ...(w.conversation || {}), lastRoll: { roll: 4, dc: 12, outcome: 'failure', turn: 1 } };
+  return w;
+}
+
 export function emptyRoomWorld() {
   const base = baseWorld('h57-empty-room');
   return ensureWorld({
@@ -168,6 +178,7 @@ export function dialogueActiveWorld() {
 
 export const FIXTURES = {
   village_baker: villageBakerWorld,
+  prior_roll: priorRollWorld,
   empty_room: emptyRoomWorld,
   interior_npc: interiorNpcWorld,
   active_combat: activeCombatWorld,

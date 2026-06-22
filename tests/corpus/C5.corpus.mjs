@@ -192,4 +192,43 @@ export default [
     ],
     source: 'opus-gate-2026-06-21-gate4-postH77.md (gate 4, Rules Lawyer t8: "which modifier for a melee strike" leaked the breakpoint table); reproduced LLM-off village_baker; fixed H-80',
   },
+
+  // ---- LOCKED — roll-result QUERY reports the ledgered roll, never denies it ----
+  // GRADUATED 2026-06-22 (H-87). Gate 10 (RL t11): "what did I roll … give me the
+  // actual number on the die and the DC" → engine answered "no roll to report — you
+  // simply looked around, no check required" while world.conversation.lastRoll held
+  // 4 vs DC 12. The existing META_ROLL_RECALL only fires on a CITED number ("I
+  // rolled a 4"); a QUESTION asking for the number missed isMetaQuestion entirely
+  // and fell to observe-only, DENYING a recorded check. META_ROLL_QUERY now routes
+  // the question to a straight report of lastRoll. Fixture `prior_roll` presets the
+  // ledger so a single playerMove exercises the path.
+  {
+    id: 'C5-006',
+    capability: 'C5',
+    status: 'locked',
+    fixture: 'prior_roll',
+    intent: 'player ASKS what they last rolled (die number + DC), no number cited — must report the ledgered roll (4 vs DC 12), never deny it or re-roll',
+    paraphrases: [
+      "What did I roll to clear my head — give me the actual number on the die and the DC I was trying to beat.",
+      "what did I roll?",
+      "what was my last roll?",
+      "give me the die number and the DC I beat",
+      "what number came up on the die?",
+      "remind me what I just rolled and the DC",
+    ],
+    assert: {
+      surface_matches: [
+        /4\s*vs\s*DC\s*12/i,   // the real ledgered roll is reported
+      ],
+      surface_excludes: [
+        /no roll to report|no check required|observe only/i,  // must NOT deny the recorded roll
+        /\[roll:/,                                             // must NOT re-roll
+      ],
+    },
+    diverge: [
+      { text: "roll WITS to read his face", reason: "declares a NEW check (META_EXPLICIT_CHECK_DECLARED → playloop), not a recall of the stored roll — must not echo 4 vs DC 12" },
+      { text: "what's my current HP?", reason: "a different number-transparency query (HP) — reports HP, not the stored roll" },
+    ],
+    source: 'opus-gate-2026-06-22.md (gate 10, Rules Lawyer t11 CRUNCH — "no roll to report" denied lastRoll 4 vs DC 12); reproduced LLM-off prior_roll fixture',
+  },
 ];

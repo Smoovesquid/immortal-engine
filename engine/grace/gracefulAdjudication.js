@@ -1468,7 +1468,13 @@ export function handleMetaQuestion(text, world) {
   // into the META_WEAPON_DAMAGE branch above.) (H-31 R2)
   if (META_ARMOR_VALUE.test(lowerText)) {
     const ac = playerAc(world.party?.[0] || {});
-    return `Your Armor is ${ac} — that's the number an attack has to beat to land on you.`;
+    const ans = `Your Armor is ${ac} — that's the number an attack has to beat to land on you.`;
+    // A compound "my stats AND my armor class?" must answer BOTH halves — the
+    // AC branch fires first and otherwise drops the stats half. Fold the full
+    // stat block in when the same breath asks for it, mirroring the other
+    // compound folds (e.g. answerSkillModifier, META_WEAPON_DAMAGE). (gate-9
+    // RL t1; C1/C6)
+    return META_STATS_REQ.test(lowerText) ? `${answerFullStats(world)} ${ans}` : ans;
   }
 
   // Bare DC ask with no declared check — "give me the DC". There's no standing

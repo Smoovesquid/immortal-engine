@@ -147,4 +147,38 @@ export default [
     ],
     source: 'synthetic; grounded in H-52/H-53 compound-query lineage; H-59 typed decomposition; calibrated 2026-06-20',
   },
+
+  {
+    id: 'C1-005',
+    capability: 'C1',
+    // gate-9 RL t1 (C1/C6): "what are my stats … AND my armor class?" answered
+    // ONLY the AC — META_ARMOR_VALUE fires first and dropped the stats half.
+    // The AC branch now folds in answerFullStats when META_STATS_REQ co-occurs,
+    // mirroring the other compound folds. Both halves must land.
+    status: 'locked',
+    fixture: 'village_baker',
+    intent: 'ask the full stat block AND the armor class in one breath — must answer BOTH halves, no roll',
+    paraphrases: [
+      "What are my actual stats — Strength, Dexterity, all of them — and my armor class?",
+      "Give me all my ability scores and my AC.",
+      "List my stats and my armor class.",
+      "What are my attributes and what's my armor value?",
+      "Run down my ability scores and tell me my AC too.",
+      "Give me my stats and my armor class in one go.",
+    ],
+    assert: {
+      surface_matches: [
+        /MIGHT \d+|Your measures:/i,   // the stat block (stats half)
+        /Armor is \d+/i,               // the AC (armor half)
+      ],
+      surface_excludes: [
+        /\[roll:/,                     // a sheet readout never rolls
+      ],
+    },
+    diverge: [
+      { text: "what's my AC?", reason: 'AC-only query — answers just the AC, must NOT recite the full stat block (the fold is scoped to a co-occurring stats request)' },
+      { text: "what are my stats?", reason: 'stats-only query — no obligation to append the AC; the fold must not fire one-sided' },
+    ],
+    source: 'opus-gate-2026-06-21.md (RL t1 stats+AC compound dropped the stats) — reproduced LLM-off village_baker, fixed by folding answerFullStats into the META_ARMOR_VALUE branch',
+  },
 ];

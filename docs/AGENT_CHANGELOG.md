@@ -1517,3 +1517,12 @@ other agents. (none active)
 - Proof: `npm run check` GREEN — convergence **78/78** (C12 5/5), suite **8285/0**, determinism green; LLM-off repro on glass-harbor (all "go talk to X" → dialogue) + interior_npc fixture + over-fire negatives (go north / look around / go back outside stay movement).
 - Remaining/next (separate, **C2**): "the elder" resolves loosely to the WRONG NPC (Lingerer, not Kael) — referent precedence, not the barrier bug.
 - Rollback: revert `9083ea3`.
+
+2026-06-21 — Basecamp (grace-lane window; autonomous improvement loop) — H-82 DONE
+- Packet/seam: gate-9 RL t2 — challenging a stated AC self-contradicts; **grace lane** (file-disjoint from H-81's playloop lane, worked concurrently).
+- Commit(s): `3b699c8` (engine grace + C6 corpus, atomic). On origin — carried up by the shared-checkout fast-forward beneath the other window's `437646e`; **verified via `git branch -r --contains 3b699c8` → origin/v2-polish** (not by re-committing, per lesson-(a)).
+- Files: `engine/grace/gracefulAdjudication.js` (`findBogusPossessionClaim`), `tests/corpus/C6.corpus.mjs` (+locked C6-007).
+- Summary: "you said my Armor is 11 — does my AGILITY -1 factor in?" tripped the possession-contradiction path: "armor" was read as a CLAIMED gear item, found bogus (the PC's armor is a "Cloak of many patches", whose NAME lacks "armor"), and "corrected" to a self-contradiction — "There's no armor — you're wearing <coat>" — dropping the real AC question. `findBogusPossessionClaim` now grounds the bare category word "armor"/"armour" against the armor SLOT (`inv.armor` non-empty), so the turn falls through to the consistent AC readout ("Your Armor is 13 …"). Scoped to the category word: a genuine bogus weapon/shield claim, and "armor" with no armor equipped, still correct as before.
+- Proof (§7): reproduced LLM-off FIRST on `village_baker` (generated PC carries `Cloak of many patches` in `inv.armor` → bug fires natively); 6/6 gate-class paraphrases → "Your Armor is 13 …", 0 contradiction; over-fire — bogus greatsword/shield still corrects, no-armor world ("you said I had plate armor") still corrects. `npm run convergence` **100% (79/79)**, C6 **7/7** (C6-007 new); `node --test` **8285/8285, 0 fail** (determinism U19/21/22/27/30 green).
+- Remaining/next (residual, NOT the gate failure): the deeper AC-MATH explanation ("the -1 is baked into 12 base") isn't spelled out — states the value consistently but not the arithmetic; Tier-2/narration, deferred.
+- Rollback: revert `3b699c8`.

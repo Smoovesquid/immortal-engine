@@ -35,7 +35,7 @@ detectors. Status starts `seed`.
 | C3 | A **declared check** gets a DC + roll | H-54 R4 | `META_EXPLICIT_CHECK_*` | 0L/3T | — |
 | C4 | Info-seeking **delivers a grounded fact or honestly declines** | H-22/23/29/31/39/H-63/H-74/H-78/N-1/N-2 Ex-2, **N-4** | `isInfoSeekingText` (+provenance/surveillance/`BACKSTORY`/`IDENTITY` REs) + `META_PURSE` + dialogue place-branch + pre-roll `isUngroundedInfoCheck` + `isUngroundedObjectRead` + `META_RECAP` backstory-guard | 9L/2T | **partial** (Ex-1 open) |
 | C5 | A **rules/mechanic question** is answered straight, never rolled | H-25/H-54 R3/H-61, **H-80** | `META_DAMAGE_RULE`/`META_ATTACK_MOD` + governing-stat classifier (skill + `META_ATTACK_GOVERNING_STAT` for attacks) | 4L/1T | **partial** |
-| C6 | **Number-transparency**: own stats/mods/AC/HP/items from the sheet | H-25/H-31/H-40/H-68, **N-1** | `answerSkillModifier`, `META_ARMOR_VALUE`, `META_HELD_ITEMS`, `META_INVENTORY` (widened, +filler-adverb), `describePack` (inventory as prose, no category-dump/sheet-deflect) | 6L/0T | **✓** |
+| C6 | **Number-transparency**: own stats/mods/AC/HP/items from the sheet | H-25/H-31/H-40/H-68, **N-1** | `answerSkillModifier`, `META_ARMOR_VALUE`, `META_HELD_ITEMS`, `META_INVENTORY` (widened, +filler-adverb), `describePack` (inventory as prose, no category-dump/sheet-deflect); **H-82** armor-slot grounding (bare "armor" isn't a bogus possession when armor is worn) | 7L/0T | **✓** |
 | C7 | **Item/consumable** query answers from real def; **use** applies effect | H-45/H-47/H-65/H-69/H-70/H-73/H-76/H-77, **N-3** | `answerItemQuery`/`META_ITEM` + `CONSUME_RE` + count/compound + bare-count list + sheet-rider guard + `ITEM_EFFECT_DEMAND_RE` + item-effect-over-named-stat guard | 14L/0T | **partial** |
 | C8 | **Narration ≤ mechanics** — no hit/defeat the dice didn't produce | H-26/H-28/H-43, **H-72** | `llmAdapter` R1–R3 + playloop `attackResolutionIntent` | 4L/0T | **corpus✓ / live⚠** |
 | C9 | **Canon non-invention** — no invented name/date/tenure/relationship | H-27/H-49/H-52 | `findInventedFactClaim` | 2L/2T | — |
@@ -331,6 +331,17 @@ stats/AC/declared-roll).
 - **Methodology takeaway (re-confirmed): trust convergence (77/77) + the discovery rate (0 new), NOT the bouncing
   headline.** The two-gate cycle is the clean demonstration: identical engine improvements, headline 5 then 10.
   **Budget: EXHAUSTED** (gate 8 ~$2.80 + gate 9 ~$2.80). Gates 7/8 preserved as `-gate7.md`/`-gate8.md`; gate 9 = bare.
+
+*2026-06-21 (H-82 — C6 AC self-contradiction, gate-9 RL t2; grace lane, concurrent with H-81):* closed. Challenging
+a stated AC ("you said my Armor is 11 — does my AGILITY -1 factor in?") tripped `findBogusPossessionClaim`: the word
+"armor" was read as a CLAIMED gear item, found bogus (the PC's armor is a "Cloak of many patches", NAME lacks "armor"),
+and "corrected" to a self-contradiction — *"There's no armor — you're wearing <coat>"* — eating the real AC question.
+Root cause: the grounding check matched item NAMES only, not the armor CATEGORY. Fix grounds the bare category word
+"armor"/"armour" against `inv.armor` (non-empty) → the turn falls through to the consistent AC readout. **C6 6L→7L**
+(C6-007 locked, 6 paraphrases + 2 diverge), convergence 100% (79/79), suite 8285/0, determinism green. Over-fire-safe:
+bogus weapon/shield claims and "armor" with no armor equipped still correct (LLM-off probe). Reproduced LLM-off FIRST on
+`village_baker` (its generated PC carries the category-armor item natively). **Residual (Tier-2, deferred):** the deeper
+AC-MATH arithmetic ("the -1 is baked into 12 base") still isn't spelled out — states the value, not the derivation.
 
 **Social-physics categories to mine next (Biblioteca Vols 2–6, mostly not yet failing-in-gate but on the map):**
 sarcasm/irony inversion (Vol 2; transcript: `docs/playtests/ridiculous-sarcasm-2026-06-06.md`), loaded

@@ -453,4 +453,61 @@ export default [
     ],
     source: 'opus-gate-2026-06-22-gate11.md (Chaos t6: bite → [combat:table-talk]); reproduced LLM-off active_combat; fixed H-92',
   },
+  {
+    id: 'C10-007',
+    capability: 'C10',
+    // (H-93, gate-12 #5) The escape resolver defaults UNRECOGNIZED text to a weapon
+    // strike so the round always advances — pre-fix a self/emotion-directed body verb
+    // ("stomp my feet in frustration") or an idle beat ("pace the room, thinking")
+    // became a phantom swing at the foe. They must fall to table-talk: no foe is named
+    // and no weapon/aggression verb is present.
+    status: 'locked',
+    fixture: 'active_combat',
+    intent: 'a self/emotion-directed body verb or idle beat in active combat is NOT an attack → table-talk, not a phantom strike',
+    paraphrases: [
+      'I stomp my feet in frustration.',
+      'I stamp my foot in anger.',
+      'I pace the room, thinking.',
+      'I wring my hands nervously.',
+      'I clap my hands together.',
+      'I shake my head in disbelief.',
+    ],
+    assert: {
+      surface_matches: [/\[combat:table.talk\]/i],
+      surface_excludes: [/\[strike:/i],
+    },
+    diverge: [
+      { text: 'I stomp on the Lingerer.', reason: 'a foe-directed unarmed strike must resolve, not table-talk' },
+      { text: 'I punch it in the face.', reason: 'a foe-directed strike (pronoun) must resolve' },
+      { text: 'I drive my sword home.', reason: 'a weapon strike resolves even with no named target' },
+    ],
+    source: 'opus-gate-2026-06-22-gate12.md (#5 stomp-in-frustration over-fire); reproduced LLM-off active_combat; fixed H-93',
+  },
+  {
+    id: 'C10-008',
+    capability: 'C10',
+    // (H-93, gate-12 #4/D) A foe-directed unarmed/improvised strike — including "stamp"
+    // (the recognizer only knew "stomp") and a combat action in the 2nd clause of a
+    // compound after a non-combat first clause — must RESOLVE as a strike, not be eaten
+    // by the flee/table-talk guards.
+    status: 'locked',
+    fixture: 'active_combat',
+    intent: 'foe-directed unarmed/improvised strikes (incl. "stamp", and a compound after a non-combat clause) resolve as a strike',
+    paraphrases: [
+      'I stamp my boot down on its hand.',
+      "I scoop the coins back up and stamp my boot down on the Lingerer's hand.",
+      'I pocket the coins and punch it in the face.',
+      'I stomp on the Lingerer.',
+      'I knee the creature in the gut.',
+    ],
+    assert: {
+      surface_matches: [/\[strike:/i],
+      surface_excludes: [/\[combat:table.talk\]/i],
+    },
+    diverge: [
+      { text: 'I stomp my feet in frustration.', reason: 'self-directed body verb, no foe → table-talk, not a strike' },
+      { text: 'I kick the door off its hinges.', reason: 'a scene-object action → table-talk, not a strike on the foe' },
+    ],
+    source: 'opus-gate-2026-06-22-gate12.md (#4 stamp → table-talk + D compound); reproduced LLM-off active_combat; fixed H-93',
+  },
 ];

@@ -1921,6 +1921,16 @@ function playerMoveCore(world, packsById, text) {
           output: { narration: 'Wizard: Steel finds your hand. Name the strike when you mean to throw it.', mechanics: '[combat:table-talk]' }
         };
       }
+      // A self/emotion-directed body verb or an idle beat is not an attack. The
+      // escape resolver defaults unrecognized text to a weapon strike, so catch
+      // "stomp my feet in frustration" / "pace the room" before it becomes a
+      // phantom swing — but only when nothing points at the foe. (H-93)
+      if (!explicitAction && escVerb !== 'parley' && isCombatNonAttackBodyIdle(w, text)) {
+        return {
+          world: w,
+          output: { narration: `Wizard: ${combatStatusAnswer(w)}`, mechanics: '[combat:table-talk]' }
+        };
+      }
       // 1b — mid-combat target-switch: a NEW present NPC named in an attack joins
       // the fight as a combatant before the round resolves (else the strike lands
       // on no one). Goes through the canonical combatState delta.
@@ -6079,7 +6089,7 @@ function mentionsLiveCombatFoe(world, text) {
 function isTargetedViolentCombatAction(world, text) {
   const t = String(text || '').toLowerCase();
   if (!mentionsLiveCombatFoe(world, t)) return false;
-  return /\b(?:bury|buries|buried|burying|ram|rams|rammed|ramming|drive|drives|drove|driven|driving|stomp|stomps|stomped|stomping|plunge|plunges|plunged|plunging|jam|jams|jammed|jamming|smash|smashes|smashed|smashing|slam|slams|slammed|slamming)\b/.test(t);
+  return /\b(?:bury|buries|buried|burying|ram|rams|rammed|ramming|drive|drives|drove|driven|driving|stomp|stomps|stomped|stomping|stamp|stamps|stamped|stamping|plunge|plunges|plunged|plunging|jam|jams|jammed|jamming|smash|smashes|smashed|smashing|slam|slams|slammed|slamming)\b/.test(t);
 }
 
 function isImprovisedCombatAction(world, text) {
@@ -6101,6 +6111,32 @@ function isNaturalWeaponAttack(text) {
   if (/\bwith (?:my|your) (?:teeth|fangs|claws|nails|talons|jaws)\b/.test(t)) return true;
   if (/\b(?:rip|tear|sink|bury)\b[^.!?]*\b(?:throat|jugular|jaw|fangs|teeth|flesh)\b/.test(t)) return true;
   return false;
+}
+
+// (H-93, gate-12 #5) The escape resolver defaults UNRECOGNIZED text to a weapon
+// strike so the round always advances — but a self/emotion-directed body verb
+// ("stomp my feet in frustration", "stamp my foot in anger", "wring my hands")
+// or an idle beat ("pace the room, thinking") is NOT an attack and must not
+// become a phantom swing at the foe. Returns true only when the line names NO
+// live foe and carries NO weapon/aggression verb, so a genuine foe-directed
+// strike — "stomp the Lingerer", "stamp my boot on its hand", "kick him",
+// "drive my sword home" — is left to resolve untouched.
+function isCombatNonAttackBodyIdle(world, text) {
+  const t = String(text || '').toLowerCase();
+  if (!t) return false;
+  // A line that points at the foe (by name, or a pronoun with one foe present)
+  // is a real attack — leave it to the resolver.
+  if (mentionsLiveCombatFoe(world, t)) return false;
+  // A weapon, an explicit attack verb, or aggressive movement is a real attack
+  // even without a named target (single foe assumed).
+  if (/\b(strike|attack|swing|stab|slash|hit|shoot|cast|blast|fireball|fire\s?bolt|firebolt|bolt|smite|grapple|lunge|charge|rush|tackle|barrel|sword|blade|axe|spear|dagger|mace|bow|club|cleaver|knife|staff)\b/.test(t)) return false;
+  if (/\bdrive\b[^.!?]*\b(home|in|deep|through)\b/.test(t)) return false;
+  // Self/emotion-directed body verb: the object is the player's OWN body, or an
+  // emotional frame with no target.
+  const selfBody = /\b(?:stomp|stomps|stomping|stamp|stamps|stamping|kick|kicks|kicking|punch|punches|punching|knee|knees|kneeing|clap|claps|clapping|wring|wrings|wringing|shake|shakes|shaking|clench|clenches|clenching|ball|balls)\b[^.!?]*\b(?:my|your)\s+(?:feet|foot|hands?|fists?|legs?|arms?|head|teeth|jaw)\b/.test(t);
+  const emotionFrame = /\bin\s+(?:frustration|anger|rage|despair|fear|panic|disgust|impatience|fury|grief|defeat|resignation)\b/.test(t);
+  const idle = /\b(?:pace|paces|pacing|fidget|fidgets|fidgeting|wander|wanders|wandering|shuffle|shuffles|shuffling|sigh|sighs|sighing|mutter|mutters|muttering|think|thinks|thinking|hesitate|hesitates|hesitating|wring|wrings|wringing)\b/.test(t);
+  return selfBody || emotionFrame || idle;
 }
 
 function isCombatSocialNonAction(text) {

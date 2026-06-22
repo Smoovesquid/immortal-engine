@@ -236,4 +236,43 @@ export default [
     ],
     source: 'gate C9-001 (Lore tenure vein) — H-85 INFO_SEEKING_TENURE_RE; reproduced LLM-off village_baker',
   },
+
+  // ---- LOCKED — ungrounded prior-holder history honest-declines, doesn't roll ----
+  // GRADUATED 2026-06-22 (H-89). Gate 10 (Lore t11): "who DOES remember who ran this
+  // inn before Corwin?" → "[roll:18] you manage it, the way opens" (a contentless
+  // success on an ungrounded past — the C4/C9 empty-success rail). Some prior-holder
+  // phrasings already declined (matched an existing RE), but "who remembers who ran
+  // this bakery before her?" / "who used to run this stall before?" missed every
+  // sub-RE → observe-deadend. INFO_SEEKING_PRIOR_HOLDER_RE (who + holding verb +
+  // before) routes them to deliver-or-decline; the grounding gate still delivers if
+  // canon HAS a prior holder. Sibling to FOUNDING (H-84) / TENURE (H-85).
+  {
+    id: 'C9-007',
+    capability: 'C9',
+    status: 'locked',
+    fixture: 'village_baker',
+    intent: 'ask who ran/owned a place before the current holder, with no canon for it — must honest-decline, never roll or invent a prior owner',
+    paraphrases: [
+      "who remembers who ran this bakery before her?",
+      "who had this place before the baker took over?",
+      "who used to run this stall before?",
+      "who owned this shop before Mira?",
+      "who ran this place before the current owner?",
+      "who DOES remember who ran this inn before the owner?",
+    ],
+    assert: {
+      surface_matches: [
+        /I don.t (have|know)|don.t know|unclear|no record|can.t say|lost to me|Couldn.t say|no-record/i,
+      ],
+      surface_excludes: [
+        /\[roll:/,                          // an ungrounded past never rolls
+        /no one named|haven.t introduced/i, // not a referent-clarify bounce
+      ],
+    },
+    diverge: [
+      { text: "who runs this place?", reason: "the CURRENT proprietor (no 'before') — answerable, must not honest-decline as ungrounded history" },
+      { text: "I run for the door before he can block it", reason: "a movement ACTION ('run … before'), not a who-ran-it question — must resolve, not info-decline" },
+    ],
+    source: 'opus-gate-2026-06-22.md (gate 10, Lore-hound t11 — "who ran this inn before Corwin" rolled a contentless success); reproduced LLM-off village_baker',
+  },
 ];

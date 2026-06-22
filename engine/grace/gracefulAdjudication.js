@@ -641,6 +641,15 @@ const INFO_SEEKING_FOUNDING_RE = /\b(?:how\s+many|which|what)\s+founders?\b|\bfo
 // the elder arrives" (no tenure verb) all stay on their normal paths. Grounding
 // gate still delivers where canon has a tenure; only the ungrounded case declines.
 const INFO_SEEKING_TENURE_RE = /\bhow\s+(?:long|many\s+(?:years?|winters?|seasons?|moons?))\b[\s\S]{0,50}?\b(?:elder|leader|headman|chief(?:tain)?|mayor|reeve|warden|steward|matriarch|patriarch)\b[\s\S]{0,30}?\b(?:in\s+charge|led|lead(?:ing)?|ruled?|run|reign\w*|held|govern\w*|been\s+the|at\s+the\s+head|the\s+post)\b/i;
+// Prior-holder history — "who ran/owned/kept/had this <place> before <X>?", "who used
+// to run this stall before?", "who remembers who ran the inn before her?". An
+// ungrounded past-proprietor question: canon rarely holds it, so a generic resolve
+// rolls a contentless success or observe-deadends (gate-10 Lore t11 — "who DOES
+// remember who ran this inn before Corwin?" → "[roll:18] you manage it, the way
+// opens"). Anchored on who + a holding/keeping verb + "before" so it routes to
+// deliver-or-decline; the grounding gate still delivers where canon HAS a prior
+// holder. Sibling to FOUNDING/TENURE (H-84/85). (H-89, C9.)
+const INFO_SEEKING_PRIOR_HOLDER_RE = /\bwho\b[\s\S]{0,40}?\b(?:ran|run|owned?|kept|keep|held|hold|managed?|manage|had|use[ds]?\s+to\s+(?:run|own|keep|hold|manage))\b[\s\S]{0,40}?\bbefore\b/i;
 
 // The PC's OWN provenance — "who carried me in last night", "where did they find
 // me", "who brought me here", "was I found by anyone". Distinct from
@@ -687,6 +696,7 @@ export function isInfoSeekingText(text) {
     || INFO_SEEKING_CONCEALMENT_RE.test(t) || INFO_SEEKING_EXISTENTIAL_RE.test(t)
     || INFO_SEEKING_ORIGIN_RE.test(t) || INFO_SEEKING_FOUNDING_RE.test(t)
     || INFO_SEEKING_TENURE_RE.test(t)
+    || INFO_SEEKING_PRIOR_HOLDER_RE.test(t)  // H-89 — "who ran this place before X?"
     || INFO_SEEKING_PROVENANCE_RE.test(t)
     || INFO_SEEKING_SURVEILLANCE_RE.test(t)
     || INFO_SEEKING_BACKSTORY_RE.test(t) || INFO_SEEKING_IDENTITY_RE.test(t);

@@ -1179,6 +1179,21 @@ function playerMoveCore(world, packsById, text) {
     }
   }
 
+  // (W-1) Place-founding circumstance → deliver the settlement's TRUE founding fact from
+  // the substrate, or honest-decline — NO roll. Placed before the explore floor (so the
+  // fact isn't lost to "your eyes move slow…") and before resolve (so it isn't rolled
+  // into a fake success/failure). NODE-scoped substrate → a node with no founding event
+  // (village_baker) honest-declines (C9). DM-narrator path only — an NPC voicing it in
+  // dialogue is a later slice. §0-safe (the founding label never names the cosmology).
+  if (!w.combat?.active && !w.scene?.dialogue && isPlaceFoundingQuery(text)) {
+    const founding = nodeFoundingFact(w);
+    if (founding) {
+      const body = founding.charAt(0).toUpperCase() + founding.slice(1);
+      return { world: w, output: { narration: `Wizard: ${body}.`, mechanics: "[place-history → grounded | the settlement's founding, no roll]" } };
+    }
+    return { world: w, output: { narration: declineInfoSeek(w, text, socialTarget(w, text)), mechanics: '[place-history → no-record | nothing grounded to deliver, no roll]' } };
+  }
+
   // Surface-only exploration: list adjacent map nodes deterministically (no roll, no tick, no timeline).
   // Skipped when combat is active — during a fight, everything routes through the combat resolver.
   if (!w.combat?.active && isExploreIntent(text) && !isDirectAddressIntent(text)) {
@@ -5309,6 +5324,47 @@ export function infoExtractionOutcome(world, text, outcome) {
   }
 
   return declineInfoSeek(world, text, npc);
+}
+
+// ── (W-1) Place-history materialization: the first world-wiring slice ──
+// A settlement's founding is COMMON KNOWLEDGE, not a skill check. "How was this town
+// founded?" / "why was it settled here?" / "what's the history of this place?" must
+// deliver the node's TRUE founding fact from the substrate cascade, or honest-decline —
+// never floor ("your eyes move slow…"), never roll a fake success/failure, never invent.
+// The substrate already mints a deterministic per-node founding event on visit
+// (engine/substrate.js); this surfaces it. CIRCUMSTANCE forms only — who/whose/how-many/
+// which-family asks want an AGENT or COUNT the founding label never holds, so they are
+// excluded here and stay on the existing founding-decline path (C9-005 non-invention).
+const PLACE_FOUNDING_QUERY_RE = new RegExp([
+  // how/why was this <place> founded/settled/built/established/raised/came to be/grew
+  /\b(?:how|why)\b[^.?!]{0,30}?\bthis\b[^.?!]{0,18}?\b(?:place|town|village|settlement|hamlet|city|outpost|crossing|hold|here)\b[^.?!]{0,18}?\b(?:found\w*|settled|settling|settlement|built|build|establish\w*|raised|(?:come|came)\s+to\s+be|begin|began|grew|grow)\b/,
+  // how/why was it/here founded/settled/built/established (bare subject, place context)
+  /\b(?:how|why)\b[^.?!]{0,20}?\b(?:it|here)\b[^.?!]{0,14}?\b(?:found\w*|settled|settling|establish\w*|built)\b/,
+  // (the) founding/history/story/past of this <place>
+  /\b(?:founding|history|story|past)\s+of\s+(?:this|the)\b[^.?!]{0,18}?\b(?:place|town|village|settlement|hamlet|city|outpost|crossing|hold|inn|tavern)\b/,
+  // how old is this <place>
+  /\bhow\s+old\s+is\s+(?:this|the)\b[^.?!]{0,18}?\b(?:place|town|village|settlement|hamlet|city|outpost|crossing|hold)\b/,
+].map(r => r.source).join('|'), 'i');
+
+function isPlaceFoundingQuery(text) {
+  const t = String(text || '');
+  if (!t.trim()) return false;
+  // An AGENT or COUNT ask wants a name/number the substrate founding label never holds —
+  // leave it to the existing founding/decline path (C9 non-invention), don't deliver here.
+  if (/\b(?:who|whose|whom|how\s+many|which\s+famil|by\s+name|named?\b|what\s+year|what\s+date)\b/i.test(t)) return false;
+  return PLACE_FOUNDING_QUERY_RE.test(t);
+}
+
+// The node's TRUE founding fact (substrate NODE layer = this settlement's own founding,
+// 'vivid' clarity). NODE-scoped on purpose: region/cosmology events are never returned —
+// that is exactly what keeps village_baker (region events present, NO node events)
+// correctly DECLINING its founding questions (the C9 lock). §0-safe: substrate labels are
+// authored never to allude to the cosmology.
+function nodeFoundingFact(world) {
+  const nodeId = String(world?.map?.currentNodeId || '');
+  if (!nodeId) return null;
+  const ev = substrateEventsFor(world, nodeId).find(e => e && e.layer === 'node' && e.kind === 'founding');
+  return ev?.label ? String(ev.label) : null;
 }
 
 // ── Stage F: general grounded fallback (kill the abstract floor everywhere) ──

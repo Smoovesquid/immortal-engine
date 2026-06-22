@@ -450,4 +450,43 @@ export default [
     ],
     source: 'opus-gate-2026-06-22-gate11.md (RL t2, defeated NPC); reproduced LLM-off defeated_npc; fixed H-92',
   },
+  {
+    id: 'C4-012',
+    capability: 'C4',
+    // (W-1) The first world-wiring slice: a settlement's founding is COMMON KNOWLEDGE the
+    // DM delivers from the substrate cascade — not a fact to floor ("your eyes move slow…"),
+    // roll a fake outcome on, or invent. The substrate mints a deterministic per-node
+    // founding event on visit (engine/substrate.js); the trade_town_tavern fixture seeds it,
+    // so these CIRCUMSTANCE questions deliver the TRUE founding fact with NO roll. The
+    // delivered phrase asserted below is that node's deterministic founding label (seed
+    // 'w1-tallowcross' / node 'tt_tavern_node') — stable under replay; if the substrate
+    // label pool or RNG changes, regenerate via scripts/convergence/fixtures.mjs. §0-safe:
+    // the founding label is mundane and never alludes to the cosmology.
+    status: 'locked',
+    fixture: 'trade_town_tavern',
+    intent: "a place-founding CIRCUMSTANCE question delivers the settlement's true substrate founding fact — no roll, no floor, no invention",
+    paraphrases: [
+      'how was this place founded?',
+      'why was this town settled here?',
+      'what is the history of this place?',
+      "what's the story of this town?",
+      'how did this town come to be?',
+      'how old is this town?',
+    ],
+    assert: {
+      surface_matches: [/merchant who saw the ford/i, /place-history → grounded/i],
+      surface_excludes: [
+        /\[roll:/i,                                            // common knowledge — never rolled
+        /eyes move slow|what do you do\?/i,                    // not the generic explore floor
+        /I don.t (have|know)|no record|can.t say|no-record/i,  // it DELIVERED, did not decline
+      ],
+    },
+    diverge: [
+      { text: 'who founded this place — give me a name?', reason: 'an AGENT ask the founding label never holds → honest-decline, not deliver (C9)' },
+      { text: 'I look for a founding stone in the square', reason: 'a search ACTION → rolls/searches, not a place-history delivery' },
+      { text: 'I look around', reason: 'a generic survey → the explore floor, not a founding delivery' },
+      { text: 'how do I get this town to settle down?', reason: 'a "settle down" idiom, not a founding question — must not deliver the founding fact' },
+    ],
+    source: 'W-1 (world-wiring slice 1 — substrate→place-history materialization); reproduced LLM-off trade_town_tavern',
+  },
 ];

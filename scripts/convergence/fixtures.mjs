@@ -2,6 +2,7 @@ import { newWorld, ensureWorld } from '../../engine/state.js';
 import { beginAdventure } from '../../engine/playloop.js';
 import { beginCombat, mintEnemyFromNpc } from '../../engine/combat/combatLifecycle.js';
 import { applyDeltas } from '../../engine/effectsCore.js';
+import { ensureNodeSubstrate } from '../../engine/substrate.js';
 
 export const PACKS = {
   fantasy: {
@@ -197,6 +198,42 @@ export function defeatedNpcWorld() {
   return ensureWorld({ ...w, meta: { ...(w.meta || {}), npcCombatHp: { npc_baker: { down: true, hp: 0 } } } });
 }
 
+// (W-1) The first REAL location: a trade-town tavern node whose substrate node-events
+// are SEEDED, so it holds a TRUE founding fact + a local-event the DM can deliver from
+// (deliver-or-decline). This is what distinguishes a "real location" from village_baker
+// (which has NO node-level substrate, so its founding questions correctly decline — the
+// C9-005/006/007 lock). The trade-town facts are mundane (§5 #4 "trade town in denial")
+// → §0 hidden-why safe by construction (substrate labels never allude to the cosmology).
+export function tradeTownTavernWorld() {
+  const base = baseWorld('w1-tallowcross');
+  const node = {
+    id: 'tt_tavern_node',
+    name: 'Tallow Cross',
+    nodeType: 'settlement',
+    discovered: true,
+    settlement: {
+      decompressed: true,
+      npcs: [{
+        id: 'npc_keeper',
+        name: 'Bram Cask',
+        role: 'tavern-keeper',
+        occupation: 'innkeeper',
+        descriptor: 'shrewd tavern-keeper',
+        hostile: false,
+        conversationState: { trustLevel: 5 }
+      }]
+    }
+  };
+  let world = ensureWorld({
+    ...base,
+    map: { ...base.map, currentNodeId: node.id, nodes: [...(base.map?.nodes || []), node] },
+    combat: { ...(base.combat || {}), active: false },
+    scene: { ...(base.scene || {}), interior: null, dialogue: null }
+  });
+  world = ensureNodeSubstrate(world, node.id); // ← seed the TRUE facts that make it real
+  return ensureWorld(world);
+}
+
 export const FIXTURES = {
   village_baker: villageBakerWorld,
   prior_roll: priorRollWorld,
@@ -205,5 +242,6 @@ export const FIXTURES = {
   active_combat: activeCombatWorld,
   dialogue_active: dialogueActiveWorld,
   crowd_baker: crowdBakerWorld,
-  defeated_npc: defeatedNpcWorld
+  defeated_npc: defeatedNpcWorld,
+  trade_town_tavern: tradeTownTavernWorld
 };

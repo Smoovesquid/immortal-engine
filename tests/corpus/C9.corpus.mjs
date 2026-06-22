@@ -275,4 +275,42 @@ export default [
     ],
     source: 'opus-gate-2026-06-22.md (gate 10, Lore-hound t11 — "who ran this inn before Corwin" rolled a contentless success); reproduced LLM-off village_baker',
   },
+
+  // ---- LOCKED — the deliver/decline BOUNDARY on a REAL location (W-1) ----
+  // The trade_town_tavern node HAS a true substrate founding fact (its CIRCUMSTANCE is
+  // delivered — see C4-012). This case locks the other half: an AGENT or COUNT ask ("who
+  // founded it", "how many founders", "name them") must STILL honest-decline — the
+  // founding label holds the circumstance, never a name or a number, so delivering it as
+  // the "who" answer would be invention. Proves the W-1 materializer delivers the
+  // circumstance WITHOUT leaking into agent/count non-invention (C9). Sibling to C9-005
+  // (the same decline on village_baker, which has no founding fact at all).
+  {
+    id: 'C9-008',
+    capability: 'C9',
+    status: 'locked',
+    fixture: 'trade_town_tavern',
+    intent: 'on a location whose founding CIRCUMSTANCE is known, a who/how-many founder ask must honest-decline — never invent a name/count, never deliver the circumstance as the answer',
+    paraphrases: [
+      'who founded this place — give me a name?',
+      'how many founders were there?',
+      'who built this town originally?',
+      'who settled here first?',
+      'how many founders does this town have?',
+    ],
+    assert: {
+      surface_matches: [
+        /I don.t (have|know)|no record|can.t say|lost to me|Couldn.t say|no-record|won.t be drawn|wouldn.t know|nobody.s ever/i,
+      ],
+      surface_excludes: [
+        /merchant who saw the ford/i,  // must NOT deliver the founding CIRCUMSTANCE as a "who/how-many" answer
+        /\[roll:/i,                    // an ungrounded agent/count never rolls
+        /no one named|haven.t introduced/i, // not a referent-clarify bounce
+      ],
+    },
+    diverge: [
+      { text: 'how was this place founded?', reason: 'the CIRCUMSTANCE — answerable from the substrate; must DELIVER, not decline (C4-012)' },
+      { text: 'I look for a founding stone in the square', reason: 'a search ACTION → rolls/searches, not an info-decline' },
+    ],
+    source: 'W-1 (world-wiring slice 1 — deliver/decline boundary on a real location); reproduced LLM-off trade_town_tavern',
+  },
 ];

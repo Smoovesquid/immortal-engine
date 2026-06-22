@@ -81,12 +81,18 @@ Most of the Law is **already enforced** — the hole is narrow and named.
 | 1–2 (earnable / unknown) | **Built.** The World-Query Resolver classifies a place/person ask, resolves a typed fact from canon, or returns null → honest-decline; the `isInfoSeekingText` net declines ungrounded demands pre-roll; failed rolls keep info out of reach. | `engine/world/placeQuery.js`, `engine/world/personQuery.js`; `engine/grace/gracefulAdjudication.js`; `engine/llmAdapter.js:150` |
 | place-meaning (tier 3-adjacent) | **Built.** "describe what is here; never interpret or explain what it means." | `engine/llmAdapter.js:116` |
 | 4 (other minds) | **Partly built.** NPC voice is epistemically bounded (vivid/dim/myth ladder; "invent no names/dates/history; say you don't know"); confrontation routes to NPC reaction, not narrator answer. | `server/npcVoicePrompt.js:169`; `gracefulAdjudication.js` (`isConfrontationChallenge`) |
-| **THE HOLE** | **`engine/llmAdapter.js:151`** — on a *successful* knowledge roll where the player asks for a proper noun, the narrator is told to *"state a concrete answer… **invent a plausible one.**"* This is the only narrator path licensed to **fabricate**, and it has **no tier-awareness**: no protected-lore floor (tier 3), no source-routing (tier 4), no "grounded-or-decline" discipline (tiers 1–2). A good roll can mint deep lore the world never authored. | `engine/llmAdapter.js:151` |
+| **CLOSED — EK-1 (2026-06-22)** | **`engine/llmAdapter.js:151`** — the success-roll clause no longer says *"invent a plausible one."* It now states a specific **only when it is already grounded** (in the facts, PLACE HISTORY, or base narration), and on an *ungrounded* success **forbids coining** any name/title/date/fact — while preserving the anti-deflection win for grounded answers. Harmonized with the standing rule at `:147` and with the post-LLM validator (`validateNarrationCandidate` / `findInventedProperNoun` [U142] / `findInventedFactClaim` [U212]). Regression-locked by **U223**. | `engine/llmAdapter.js:151`; `tests/U223.earnedKnowledgeNoFabrication.test.js` |
 
-The hole exists for a real reason — it was added in Road-A to kill *atmospheric deflection* ("a name
-forms in your mind") on a **succeeded** ask, which the gate scored as bad DMing. The fix must preserve
-that win (no return to vague deflection when a grounded answer exists) while removing the **fabrication**.
-That is packet **EK-1** in `docs/PACKETS.md`.
+The hole was added in Road-A to kill *atmospheric deflection* ("a name forms in your mind") on a
+**succeeded** ask, which the gate scored as bad DMing. **EK-1 (2026-06-22)** kept that win — a grounded
+answer is still stated plainly — while removing the fabrication license. The repro (inline `playerMove`
+probes over the live action path) found the fabrication was **largely latent**: an info-ask that escapes
+`isInfoSeekingText` does roll a real `→ success` (e.g. "tell me the name" succeeded on 15/80 seeds), but
+the post-LLM validator already rejected the resulting invented names/places/dates/durations and
+`augmentNarration` fell back to base — so line 151 was mostly **self-defeating** (it produced the very
+deflection it banned) rather than user-visibly fabricating. The narrow **active** residual —
+lowercase/numberless "identifiable facts" that slip both validator guards — is now closed at the prompt
+layer too. Packet **EK-1** in `docs/PACKETS.md`.
 
 ---
 

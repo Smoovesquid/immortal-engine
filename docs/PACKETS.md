@@ -12,8 +12,14 @@ done_when · rollback`.
 ## ACTIVE
 
 ### EK-1 — Law of Earned Knowledge: tier-aware narrator (kill the `llmAdapter:151` fabrication)
-**Status:** PROPOSED 2026-06-22 — **repro-first; NOT started.** Do not patch until the repro proves the
-risk and the A/B fork (below) is resolved. Governing doc: `docs/LAW_OF_EARNED_KNOWLEDGE.md`.
+**Status:** ✅ DONE 2026-06-22 — **Fork A (prompt-only); ACTIVE-but-largely-latent.** Clean-origin repro
+(baseline 100.0% / 8310-pass) confirmed an info-ask escaping `isInfoSeekingText` rolls a real `→ success`
+("tell me the name" 15/80 seeds) and reaches line 151 — but the post-LLM validator (U142/U212) already
+rejects the invented specifics and `augmentNarration` falls back to base, so the clause was mostly
+*self-defeating* (it produced the deflection it banned), leaving a narrow active residual
+(lowercase/numberless facts). Fix landed: `llmAdapter.js:151` rewritten to deliver-grounded /
+never-coin-ungrounded, harmonized with `:147` + the validator; regression-locked by **U223**;
+`npm run check` GREEN (100.0% / 8315-pass). Governing doc: `docs/LAW_OF_EARNED_KNOWLEDGE.md`.
 
 **Objective:** Make the narrator's one fabrication path obey the Law of Earned Knowledge. Replace the
 `llmAdapter.js:151` *"invent a plausible one"* clause with a **tier-aware contract** — deliver grounded

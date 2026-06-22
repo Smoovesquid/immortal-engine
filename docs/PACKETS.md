@@ -11,6 +11,73 @@ done_when · rollback`.
 
 ## ACTIVE
 
+### EK-1 — Law of Earned Knowledge: tier-aware narrator (kill the `llmAdapter:151` fabrication)
+**Status:** PROPOSED 2026-06-22 — **repro-first; NOT started.** Do not patch until the repro proves the
+risk and the A/B fork (below) is resolved. Governing doc: `docs/LAW_OF_EARNED_KNOWLEDGE.md`.
+
+**Objective:** Make the narrator's one fabrication path obey the Law of Earned Knowledge. Replace the
+`llmAdapter.js:151` *"invent a plausible one"* clause with a **tier-aware contract** — deliver grounded
+facts concretely, honest-decline unknowns, refuse protected/§0 lore regardless of roll, and route
+other-minds facts to their source — **without** reintroducing the atmospheric deflection that clause was
+added to kill.
+
+**The hole (located):** `engine/llmAdapter.js:151` — on a `→ success` knowledge roll where the player
+explicitly requests a proper noun, the narrator is instructed to state a concrete answer and *invent one
+if needed*. It is the only narrator path licensed to fabricate; it has no tier-awareness. Tiers 1–2 are
+already owned upstream by the World-Query Resolver (`engine/world/placeQuery.js`, `personQuery.js`) +
+the `isInfoSeekingText` decline net + roll-gating (`llmAdapter.js:150`); §0/place-meaning is guarded at
+`llmAdapter.js:116`; NPC voice is bounded at `npcVoicePrompt.js:169`.
+
+**REPRO FIRST (LLM-OFF — required before any edit):**
+1. `buildSystemPrompt` is a **pure function** (`llmAdapter.js:43`) → unit-assert that for a proper-noun
+   ask + `→ success`, the emitted prompt currently contains *"invent a plausible one"* (the risk, in
+   black and white).
+2. Deterministic routing probe: confirm which asks actually REACH line 151 vs. are intercepted by
+   `placeQuery`/`personQuery`/the decline net (all deterministic, LLM-off).
+3. **The A/B fork the repro must resolve** (this decides the fix's size):
+   - **(A)** If grounded proper-noun delivery is now fully owned by the resolvers (grounded asks never
+     reach line 151), then line 151 only ever fires on *ungrounded* asks → its invent clause is pure
+     fabrication → replace with honest-decline + protected floor + source-routing. **Low touch, prompt-only.**
+   - **(B)** If grounded asks STILL reach line 151, flipping invent→decline would regress them to
+     deflection → the grounded fact must be threaded into `ctx` (or `placeQuery` coverage extended) so
+     delivery happens before any decline. **Higher touch.**
+
+**Tier-aware contract (the replacement for line 151):**
+- canon holds the fact → state it **concretely** (preserve specificity);
+- canon lacks the fact → **honest-decline** in DM voice (no invented name);
+- fact is **protected lore / §0** → refuse/deflect in DM voice **regardless of roll** (symptoms/residue
+  only — never the hidden cause);
+- fact belongs to an **NPC/source** → route to that source, never omniscient narration.
+
+**allowed_files:** `engine/llmAdapter.js` (the prompt clause + any tier tag it reads); IF the repro lands
+on fork (B): a minimal `ctx` field via `engine/ai/narratorContext.js` to carry the grounded fact / tier
+tag. Tests: `tests/corpus/C4.corpus.mjs` (+ a fixture in `scripts/convergence/fixtures.mjs` if a
+protected-lore case needs one) and a `buildSystemPrompt` unit test.
+
+**forbidden:** no broad lore system; no new canon data; no invented facts; no §0 leakage; no
+secret/control/motive leakage; no broad `playloop` rewrite; no test weakening; **no paid gate.**
+
+**invariants:** narration ≠ canon (prompt-text + ctx-tag only; zero state/RNG/Canon-Log mutation);
+determinism tripwires (U19/21/22/27/30) stay green; LLM layer still never throws (silent fallback);
+the deterministic resolvers/decline net behavior is unchanged (this packet only retires fabrication and
+adds the protected/source rules).
+
+**test_plan:**
+- *Prompt-unit* (`buildSystemPrompt`, deterministic): proper-noun + success → contract present, no "invent";
+  protected/§0 ask → refusal language present regardless of roll.
+- *Corpus C4* (deterministic, `npm run convergence`): success + grounded public fact → concrete answer;
+  success + missing proper noun → honest decline, no invented name; ask about NPC hidden motive/secret →
+  no omniscient narrator answer; ask about unobserved place/object → route to observation/action or decline.
+- *Regression:* existing `placeQuery` founding/events/population still deliver; existing honest-decline
+  cases still pass; **no** return to vague "a name forms in your mind" when the answer is actually grounded.
+
+**verify:** targeted prompt-unit + `npm run convergence` + `node --test` + determinism tripwires if `ctx`
+touched. No paid gate.
+
+**rollback:** prompt-clause edit (+ optional one `ctx` field) in named files — revert them.
+
+---
+
 ### P-81 — One continuous zoom + organic layout + legible biome tiles
 **Status:** P-81a ✅ (zoom button removed, `e5f7e60`) · P-81c ✅ (legible tiles:
 trees≠mountains + marsh de-wormed, `42f3407`) · P-81b ✅ (organic curved-road

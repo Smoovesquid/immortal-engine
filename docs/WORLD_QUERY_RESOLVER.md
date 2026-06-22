@@ -61,7 +61,7 @@ known/unknown boundary come *from the data*, not from the phrasing.
 | type | the question | data source | known/unknown boundary | §0 | status |
 |---|---|---|---|---|---|
 | `founding` | how/why was this place founded/settled | substrate NODE founding event | the label holds CIRCUMSTANCE, never an agent/count → "who founded" declines | safe (substrate labels never name the cosmology) | **W-1 done** (bespoke; lift in) |
-| `events` | what happened here / its history | substrate NODE local-events | only events the substrate minted; relational history ("between X and Y") is NOT this type → must still deflect | safe | next |
+| `events` | what happened here / its history | substrate NODE local-events | only events the substrate minted; relational history ("between X and Y") is NOT this type → must still deflect | safe | **W-3 done** |
 | `population` | who lives here / who runs this place | `settlement.npcs` roster | only present/known roster; an un-rostered name → decline/clarify (C2) | safe | next |
 | `trade` | what's sold / what's it known for | `settlement.shops` (+ IG-13 later) | only listed shops; "no counter here" is an honest decline | safe | partly live (`services`) |
 | `geography` | what's nearby / where do roads lead | `map.nodes` + `exitsFrom` | only discovered/adjacent nodes | safe | live (`directions`) |
@@ -138,12 +138,13 @@ dialogue both fall out of it."
 
 ## §6 — Build sequence (demand-pulled)
 
-1. **W-2 = the resolver itself** + lift `founding` in (behavior-locked; no new player-visible behavior). *This is
-   the category work — do it before any new type.*
-2. **W-3 = `events`** ("what happened here") through the resolver — the first *new* type, proving extension is a
-   slot. Needs the place-self guard so relational history (C9-002/003) still deflects.
-3. **W-4 = `population`** ("who lives/runs here") from the roster.
-4. NPC-dialogue voicing falls out along the way (same resolver).
+1. ~~**W-2 = the resolver itself** + lift `founding` in (behavior-locked).~~ **DONE** (`8d63c79`).
+2. ~~**W-3 = `events`** ("what happened here") through the resolver — the first *new* type, proving extension is a
+   slot; place-anchor guard so relational history (C9-002/003) still deflects.~~ **DONE** (`9c75d3a`) — the diff
+   was one slot + one renderer-detail line, thesis proven.
+3. **W-4 = `population`** ("who lives/runs here") from the settlement roster — next.
+4. NPC-dialogue voicing falls out along the way (make `commonKnowledgeAnswer` call `resolvePlaceFact`, dropping
+   its `NOT_PLACE_DESCRIPTION_RE` carve-outs as types fill).
 5. Only then, with a batch of types live, **spend a gate** to measure the materialization lift + discover the
    next demand-pulled type.
 

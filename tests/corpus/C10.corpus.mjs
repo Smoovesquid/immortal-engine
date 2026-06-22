@@ -394,4 +394,63 @@ export default [
     ],
     source: 'opus-gate-2026-06-19-postH31-H32.md [Chaos-griefer, turn 10]; calibrated 2026-06-20',
   },
+  {
+    id: 'C10-005',
+    capability: 'C10',
+    // (H-92, gate-11 RL t1) A practice/test swing at an inanimate object (post/dummy/
+    // sack) must NOT fabricate an attack on a present bystander. Pre-fix the trailing
+    // pronoun "hit IT" (it = the post) fell through to fuzzyMatchNpc's generic arm and
+    // struck Corwin. crowd_baker has a second present NPC — the condition the bug needed.
+    status: 'locked',
+    fixture: 'crowd_baker',
+    intent: 'a practice/test swing at an inanimate object resolves WITHOUT minting a present NPC as a foe',
+    paraphrases: [
+      'Before I head out, let me test the cleaver: I draw it and take a practice swing at the wooden post by the door. What do I need to roll to hit it?',
+      'I take a practice swing at the wooden post. What do I roll to hit it?',
+      'I swing my blade at the training dummy to warm up.',
+      'I take a few test cuts at the straw dummy.',
+      'I practice my swing against the wooden post.',
+    ],
+    assert: {
+      surface_excludes: [
+        /\[strike:/i,
+        /\[grapple:/i,
+        /\bCorwin\b/i,
+        /\[combat:/i,
+        /lunges|return blow|rakes across/i,
+      ],
+    },
+    diverge: [
+      { text: "I swing my cleaver at Corwin's head.", reason: 'names a present NPC as the target → a real attack must resolve (strike present), not be suppressed by the inanimate-target guard' },
+      { text: 'I attack Corwin.', reason: 'a bare declared attack on a present NPC still routes to combat' },
+    ],
+    source: 'opus-gate-2026-06-22-gate11.md (RL t1: practice swing at the post → struck Corwin); reproduced LLM-off crowd_baker; fixed H-92',
+  },
+  {
+    id: 'C10-006',
+    capability: 'C10',
+    // (H-92, gate-11 Chaos t6) A natural-weapon attack in active combat ("rip out its
+    // throat with my teeth") must RESOLVE as a strike — pre-fix the trailing "spit" made
+    // isCombatSocialNonAction read it as a taunt → [combat:table-talk], the enemy's
+    // counter never applied.
+    status: 'locked',
+    fixture: 'active_combat',
+    intent: 'a bite / natural-weapon attack in active combat resolves as a strike, not table-talk',
+    paraphrases: [
+      'I rip out its throat with my teeth and spit the chunk in its face.',
+      'I sink my teeth into its throat and tear.',
+      'I bite down on its neck and refuse to let go.',
+      'I claw at its eyes with my nails.',
+      'I maul the creature with everything I have.',
+    ],
+    assert: {
+      surface_matches: [/\[strike:|→\s*(?:hit|miss)/i],
+      surface_excludes: [/\[combat:table.talk\]/i, /threat lands in the air/i],
+    },
+    diverge: [
+      { text: 'I ask the creature if we can stop and talk this out.', reason: 'a conversational beat mid-fight → table-talk, not a natural-weapon strike' },
+      { text: 'I spit at its feet and curse it.', reason: 'a pure taunt → social non-action, not a natural-weapon strike' },
+    ],
+    source: 'opus-gate-2026-06-22-gate11.md (Chaos t6: bite → [combat:table-talk]); reproduced LLM-off active_combat; fixed H-92',
+  },
 ];

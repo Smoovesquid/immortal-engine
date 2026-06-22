@@ -401,4 +401,53 @@ export default [
     ],
     source: "opus-gate-2026-06-21.md (gate 8 RL t4 'what happened last night' → 'Nothing's happened yet'; Lore 'who was it' → rolled partial) — N-4 dialogue/info honest-decline; reproduced LLM-off village_baker",
   },
+  {
+    id: 'C4-010',
+    capability: 'C4',
+    // (H-92, gate-11 RL t2) An alive/dead/pulse status query about a present (living) NPC
+    // answers from canon and is NOT swallowed by a leading body verb ("I kneel by Mira and
+    // check...") that classifyTrivial reads as "You kneel".
+    status: 'locked',
+    fixture: 'village_baker',
+    intent: 'an alive/dead/pulse status query about a present living NPC answers from canon, not "You kneel"',
+    paraphrases: [
+      'I kneel by Mira and check for a pulse and breath — is she alive or dead? Give me a straight yes or no.',
+      'I crouch by Mira and check for a pulse — is she alive or dead?',
+      'I check the baker for a pulse — is she breathing?',
+      'I lean over Mira and feel for breath — alive or dead?',
+      'I kneel and feel for a pulse on Mira — is she still alive?',
+    ],
+    assert: {
+      surface_matches: [/alive|breathing|pulse/i],
+      surface_excludes: [/You kneel/i, /trivial action/i, /\[roll:/i],
+    },
+    diverge: [
+      { text: 'I kneel and pray.', reason: 'a genuine trivial body action with no status question → "You kneel"/trivial is correct' },
+      { text: 'I kneel down to rest a moment.', reason: 'trivial posture, not a status query' },
+    ],
+    source: 'opus-gate-2026-06-22-gate11.md (RL t2: "is he alive or dead?" → "You kneel"); reproduced LLM-off village_baker; fixed H-92',
+  },
+  {
+    id: 'C4-011',
+    capability: 'C4',
+    // (H-92) The same query about a present DEFEATED NPC answers "dead" from canon
+    // (persisted down/0-HP state), not a living-pulse reading.
+    status: 'locked',
+    fixture: 'defeated_npc',
+    intent: 'an alive/dead status query about a present DEFEATED NPC answers "dead" from canon',
+    paraphrases: [
+      'I kneel by Mira and check for a pulse — is she alive or dead? Give me a straight yes or no.',
+      'I crouch by Mira and check for a pulse — is she alive or dead?',
+      'I check the baker for breath — is she breathing?',
+      'I feel for a pulse on Mira — alive or dead?',
+    ],
+    assert: {
+      surface_matches: [/dead|no pulse|no breath|gone/i],
+      surface_excludes: [/You kneel/i, /alive — breathing/i, /\[roll:/i],
+    },
+    diverge: [
+      { text: 'I kneel and pray over the body.', reason: 'a trivial body action, not a status query' },
+    ],
+    source: 'opus-gate-2026-06-22-gate11.md (RL t2, defeated NPC); reproduced LLM-off defeated_npc; fixed H-92',
+  },
 ];

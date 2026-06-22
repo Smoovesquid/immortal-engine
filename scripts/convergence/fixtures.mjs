@@ -176,11 +176,34 @@ export function dialogueActiveWorld() {
   });
 }
 
+// (H-92) village_baker plus a SECOND present NPC — the crowd the gate-11 practice-swing
+// bug needed (with one NPC the turn went trivial; with a bystander present the trailing
+// "hit it" minted that bystander as a foe). Locks C10-005.
+export function crowdBakerWorld() {
+  const w = villageBakerWorld();
+  const node = w.map.nodes.find(n => n.id === w.map.currentNodeId);
+  node.settlement.npcs.push({
+    id: 'npc_rep', name: 'Corwin Boneknit', role: 'representative',
+    occupation: 'representative', descriptor: 'weathered representative',
+    hostile: false, conversationState: { trustLevel: 5 }
+  });
+  return ensureWorld(w);
+}
+
+// (H-92) village_baker with the present NPC already defeated (persisted down state), so
+// an alive/dead status query must answer "dead" from canon. Locks C4-011.
+export function defeatedNpcWorld() {
+  const w = villageBakerWorld();
+  return ensureWorld({ ...w, meta: { ...(w.meta || {}), npcCombatHp: { npc_baker: { down: true, hp: 0 } } } });
+}
+
 export const FIXTURES = {
   village_baker: villageBakerWorld,
   prior_roll: priorRollWorld,
   empty_room: emptyRoomWorld,
   interior_npc: interiorNpcWorld,
   active_combat: activeCombatWorld,
-  dialogue_active: dialogueActiveWorld
+  dialogue_active: dialogueActiveWorld,
+  crowd_baker: crowdBakerWorld,
+  defeated_npc: defeatedNpcWorld
 };

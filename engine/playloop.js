@@ -1853,7 +1853,7 @@ function playerMoveCore(world, packsById, text) {
       const escVerb = parseEscapeAction(text).verb;
       const improvisedCombatAction = isImprovisedCombatAction(w, text);
       const targetedViolentAction = isTargetedViolentCombatAction(w, text);
-      const explicitAction = improvisedCombatAction || targetedViolentAction || /\b(strike|attack|swing|stab|shoot|slash|hit|beat|smite|fireball|fire\s?bolt|firebolt|blast|cast|rage|surge|guard|ward|cover|throw|hurl|lob|fling|toss)\b/i.test(String(text || ''));
+      const explicitAction = improvisedCombatAction || targetedViolentAction || isNaturalWeaponAttack(text) || /\b(strike|attack|swing|stab|shoot|slash|hit|beat|smite|fireball|fire\s?bolt|firebolt|blast|cast|rage|surge|guard|ward|cover|throw|hurl|lob|fling|toss)\b/i.test(String(text || ''));
       const asksQuestion = isQuestionShaped(text) || /\?/.test(String(text || ''));
       if (!attackResolutionIntent(w, text) && (isMetaQuestion(text) || (asksQuestion && escVerb !== 'parley' && !explicitAction))) {
         const metaAnswer = isMetaQuestion(text) ? handleMetaQuestion(text, w) : null;
@@ -2270,6 +2270,14 @@ function playerMoveCore(world, packsById, text) {
   // excluded by isUngroundedObjectRead, so they keep their normal paths.
   if (!targetedCombatAction && !declaredNpcViolence && isUngroundedObjectRead(w, text)) {
     return { world: w, output: { narration: objectReadDecline(w, text), mechanics: '[read → no-content | nothing written to deliver, no roll]' } };
+  }
+
+  // (H-92, gate-11 RL t2) An alive/dead/pulse status query about a present NPC answers
+  // from canon (defeated/down → dead, else alive), winning over a leading body verb
+  // ("I kneel by Corwin and check...") that classifyTrivial would swallow as "You kneel".
+  if (!targetedCombatAction && !declaredNpcViolence && !w.scene?.dialogue) {
+    const npcStatus = tryNpcStatusQuery(w, text);
+    if (npcStatus) return npcStatus;
   }
 
   if (isTrivialIntent(text) || classifyTrivial(text)) {
@@ -6082,6 +6090,19 @@ function isImprovisedCombatAction(world, text) {
   return /\b(?:at|toward|towards|into|against|onto|on)\b[^.!?]*\b(?:foe|enemy|monster|creature|thing|him|her|them|it)\b/i.test(t);
 }
 
+// (H-92, gate-11 Chaos t6) Natural-weapon attacks the explicit-verb list misses: a
+// bite/maul/gore, "with my teeth/fangs/claws", or "rip/tear out <a body part>".
+// "rip out its throat with my teeth and spit ..." was read as a social taunt (the
+// trailing "spit") → [combat:table-talk], no resolution. Narrow: needs a body-weapon
+// noun or a body target, so "grit my teeth" / "spit on him" / "rip the pouch" are safe.
+function isNaturalWeaponAttack(text) {
+  const t = String(text || '').toLowerCase();
+  if (/\b(?:bite|bites|maul|mauls|gnash|gore|gores)\b/.test(t)) return true;
+  if (/\bwith (?:my|your) (?:teeth|fangs|claws|nails|talons|jaws)\b/.test(t)) return true;
+  if (/\b(?:rip|tear|sink|bury)\b[^.!?]*\b(?:throat|jugular|jaw|fangs|teeth|flesh)\b/.test(t)) return true;
+  return false;
+}
+
 function isCombatSocialNonAction(text) {
   const t = String(text || '').toLowerCase();
   if (!t) return false;
@@ -6207,6 +6228,9 @@ const ANY_VIOLENCE = /\b(attack|fight|kill|murder|assault|strike|stab|slash|punc
 // in the sentence (so "throw a coin to Corwin" can't, but "Corwin, I'll kill you" can).
 const UNAMBIGUOUS_VIOLENCE = /\b(attack|kill|murder|assault|stab|slash|punch|kick|tackle|charge|bash|club|clobber|whack|brain|throttle|choke|strangle|knife|gut|maim|behead|lunge)\b/i;
 
+// (H-92) Inanimate strike targets — a swing "at the post/dummy/wall" is not an NPC attack.
+const INANIMATE_STRIKE_TARGET_RE = /\b(?:post|pell|dummy|dummies|sack|sandbag|stake|beam|board|plank|log|stump|fence|crate|barrel|pole|tree|wall)\b/i;
+
 function detectAttackAnyIntent(world, text) {
   const t = String(text || '').trim();
   if (!t) return null;
@@ -6217,6 +6241,22 @@ function detectAttackAnyIntent(world, text) {
   const node = (world?.map?.nodes || []).find(n => n && n.id === nodeId) || null;
   const npcs = node?.settlement?.npcs || [];
   if (!Array.isArray(npcs) || !npcs.length) return null;
+
+  // (H-92, gate-11 RL t1) A swing/strike whose target is an INANIMATE object (a
+  // practice post, dummy, the wall...) is not an attack on a present NPC. Without this,
+  // "...practice swing at the wooden post ... what do I roll to hit IT?" fell through to
+  // fuzzyMatchNpc's generic-descriptor arm (the trailing "it") and minted a present
+  // bystander as a foe. Bail unless a present NPC is actually named ("throw the rock AT
+  // Corwin" still names its target and resolves below).
+  if (/\b(?:at|on|against|upon)\b/i.test(t) && INANIMATE_STRIKE_TARGET_RE.test(t)
+      && !npcs.some(n => {
+        const tl = t.toLowerCase();
+        const nm = String(n?.name || '').toLowerCase().split(/\s+/)[0];
+        const role = String(n?.role || '').toLowerCase();
+        return (nm && nm.length >= 3 && tl.includes(nm)) || (role && role.length >= 3 && tl.includes(role));
+      })) {
+    return null;
+  }
 
   // Candidate target references, most explicit first. Each must resolve to a
   // PRESENT npc (fuzzyMatchNpc returns null for objects like "the barrel").
@@ -6337,6 +6377,29 @@ function isSocialIdentificationNonCombat(text) {
 function isNpcAlreadyDefeated(world, npc) {
   const saved = world?.meta?.npcCombatHp?.[String(npc?.id || '')];
   return Boolean(saved && (saved.down || Number(saved.hp) <= 0));
+}
+
+// (H-92) Answer an alive/dead/pulse status query about a present NPC from canon —
+// see the call site before the trivial gate.
+function tryNpcStatusQuery(world, text) {
+  if (world?.combat?.active) return null;
+  const t = String(text || '').toLowerCase();
+  const STATUS_RE = /\b(?:alive or dead|dead or alive|is (?:he|she|they|it|\w+) (?:still )?(?:alive|dead|breathing)|check (?:for )?(?:a |his |her |their )?(?:pulse|breath)|feel for (?:a )?pulse|is there (?:a )?pulse|are they (?:alive|dead|breathing))\b/;
+  if (!STATUS_RE.test(t)) return null;
+  const nodeId = String(world?.map?.currentNodeId ?? '');
+  const node = (world?.map?.nodes || []).find(n => n && n.id === nodeId) || null;
+  const npcs = node?.settlement?.npcs || [];
+  if (!Array.isArray(npcs) || !npcs.length) return null;
+  const named = npcs.find(n => {
+    const nm = String(n?.name || '').toLowerCase().split(/\s+/)[0];
+    return nm && nm.length >= 3 && t.includes(nm);
+  });
+  const npc = named || npcs[0];
+  const name = String(npc?.name || 'They');
+  if (isNpcAlreadyDefeated(world, npc)) {
+    return { world, output: { narration: `Wizard: ${name} is dead — no pulse, no breath. Gone.`, mechanics: '[status:npc | dead]' } };
+  }
+  return { world, output: { narration: `Wizard: ${name} is alive — breathing, a steady pulse.`, mechanics: '[status:npc | alive]' } };
 }
 
 // Shared: mint the NPC as an enemy, begin combat, resolve the player's opening

@@ -8,6 +8,37 @@ doc is that finite list, plus the two-signal meter that tells us whether we're c
 
 ---
 
+## ⛳ ERA MARKER — Road-A is CLOSED; the track is now WORLD-WIRING (2026-06-22)
+
+**Road-A (deterministic regex/state-guard hard-tail bug-fixing) is closed.** Seven consecutive paid gates
+(gates 6–12) opened **zero new capabilities** — every HARD failure mapped to an existing C-row or to a
+non-Road-A frontier. The regression corpus stands at **94/94 locked (100%)**; the finite set C1–C16 is
+graduated or corpus-closed for its abstract/role forms.
+
+**Do not reopen Road-A over narration quality.** When a gate shows *right content, wrong words* (empty-success
+on a succeeded roll, machine-dumps, invented barriers), that is the **narration track** (`docs/THE_REF.md`),
+NOT a new deterministic capability — another regex detector will not move it.
+
+**The frontier moved to WORLD-WIRING (W-#).** The insight: the open narration failures (empty-success /
+fact-invention / *answer from real data*) and *the world is thin* are the SAME seam — the DM narrates against a
+hollow test world with no true facts to materialize. The track now wires the demo region
+(`docs/DEMO_REGION.md`) **one tested LOCATION at a time**, giving the DM real location facts to
+deliver-or-decline from. New packets are **W-#** (world-slice), distinct from the H-# hard-tail loop. §0 of the
+region bible (the hidden-why) is a HARD narration constraint on every slice.
+
+**Known deferred deterministic tail (bounded — NOT a reason to reopen Road-A):**
+- **H-94 (combat-truth, Codex/escapeCombat lane):** throw-a-bystander-into-a-hazard substitution (#10/E); the
+  `its hand`+flee-word compound edge.
+- **THE_REF (narration-emphasis):** gate-12 A/B — hazard-damage / defeat narration read *worse* than the
+  mechanics actually are (judge-emphasis, not a missed deduction; reproduce-first disproved an engine miss).
+- **Playloop-lane low-yield tail:** C3 DECLARED-check forms handed to playloop; C9-001/004 (named-NPC /
+  sentence-initial false-NER).
+
+This marker summarizes the dated findings log below so a future agent does not re-run the closed loop. See the
+gate-12 verdict (this doc) + `docs/THE_REF.md` + `docs/DEMO_REGION.md`.
+
+---
+
 ## The two signals (replaces the bouncing gate %)
 
 - **Regression signal** — % of the *frozen paraphrase corpus* (below) that passes. Runs on the **deterministic
@@ -33,12 +64,12 @@ detectors. Status starts `seed`.
 | C1 | Answer **every part** of a compound query | H-25/H-31/H-40/H-54/H-59, **H-83** | `handleMetaQuestion` typed sub-intent decomposition (+ stats-into-AC fold) | 5L/0T | **✓** |
 | C2 | A **named referent** must be grounded before the turn resolves | H-56/C2-grad/H-60/H-79/H-90, **H-91** | `ungroundedNpcReferentForText` + `hasPersonReferentSignal` + observe/travel hoist + social-resolver guard + sentence-initial proper-name stopwords + person-signal-preferred referent selection | 8L/0T | **✓** |
 | C3 | A **declared check** gets a DC + roll | H-54 R4, **H-86** | `META_EXPLICIT_CHECK_*` + bare-DC bounce-guard now defers to C/D (a declared stat-check + DC-ask states the DC+formula, not "no standing DC") | 1L/3T | **partial** |
-| C4 | Info-seeking **delivers a grounded fact or honestly declines** | H-22/23/29/31/39/H-63/H-74/H-78/N-1/N-2 Ex-2/N-4, **H-92** | `isInfoSeekingText` (+provenance/surveillance/`BACKSTORY`/`IDENTITY` REs) + `META_PURSE` + dialogue place-branch + pre-roll `isUngroundedInfoCheck` + `isUngroundedObjectRead` + `META_RECAP` backstory-guard + `tryNpcStatusQuery` (alive/dead/pulse from canon, before the trivial gate) | 11L/2T | **partial** (Ex-1 open) |
+| C4 | Info-seeking **delivers a grounded fact or honestly declines** | H-22/23/29/31/39/H-63/H-74/H-78/N-1/N-2 Ex-2/N-4/H-92, **W-1** | `isInfoSeekingText` (+provenance/surveillance/`BACKSTORY`/`IDENTITY` REs) + `META_PURSE` + dialogue place-branch + pre-roll `isUngroundedInfoCheck` + `isUngroundedObjectRead` + `META_RECAP` backstory-guard + `tryNpcStatusQuery` (alive/dead/pulse from canon) + `isPlaceFoundingQuery`→`nodeFoundingFact` (place-founding circumstance delivers the node **substrate** founding fact, no roll — the first world-wiring source) | 12L/2T | **partial** (Ex-1 open) |
 | C5 | A **rules/mechanic question** is answered straight, never rolled | H-25/H-54 R3/H-61/H-80, **H-87** | `META_DAMAGE_RULE`/`META_ATTACK_MOD` + governing-stat classifier + `META_ROLL_QUERY` (a roll-result query reports `lastRoll`, never denies/re-rolls) | 5L/1T | **partial** |
 | C6 | **Number-transparency**: own stats/mods/AC/HP/items from the sheet | H-25/H-31/H-40/H-68, **N-1** | `answerSkillModifier`, `META_ARMOR_VALUE`, `META_HELD_ITEMS`, `META_INVENTORY` (widened, +filler-adverb), `describePack` (inventory as prose, no category-dump/sheet-deflect); **H-82** armor-slot grounding (bare "armor" isn't a bogus possession when armor is worn) | 7L/0T | **✓** |
 | C7 | **Item/consumable** query answers from real def; **use** applies effect | H-45/H-47/H-65/H-69/H-70/H-73/H-76/H-77/N-3, **H-88** | `answerItemQuery`/`META_ITEM` + `CONSUME_RE` + count/compound + bare-count list + sheet-rider guard + `ITEM_EFFECT_DEMAND_RE` + item-effect-over-named-stat guard + `META_ITEM_VERB_FINAL` (verb-final "what the X does") | 15L/0T | **partial** |
 | C8 | **Narration ≤ mechanics** — no hit/defeat the dice didn't produce | H-26/H-28/H-43, **H-72** | `llmAdapter` R1–R3 + playloop `attackResolutionIntent` | 4L/0T | **corpus✓ / live⚠** |
-| C9 | **Canon non-invention** — no invented name/date/tenure/relationship | H-27/H-49/H-52/H-84/H-85, **H-89** | `findInventedFactClaim` + `INFO_SEEKING_FOUNDING_RE`/`TENURE_RE`/`PRIOR_HOLDER_RE` (ungrounded founding/tenure/prior-owner history → honest-decline) | 5L/2T | — |
+| C9 | **Canon non-invention** — no invented name/date/tenure/relationship | H-27/H-49/H-52/H-84/H-85/H-89, **W-1** | `findInventedFactClaim` + `INFO_SEEKING_FOUNDING_RE`/`TENURE_RE`/`PRIOR_HOLDER_RE` (ungrounded founding/tenure/prior-owner → honest-decline) + the W-1 deliver/decline BOUNDARY (a known founding CIRCUMSTANCE never leaks into a who/how-many AGENT answer) | 6L/2T | — |
 | C10 | A **declared attack** routes to real combat resolution | H-30/H-32/H-43/H-48/H-55/H-64/H-71/H-72/H-92, **H-93** | playloop attack gates + `go for`/flip-onto-person/npc-generic/firebolt + attack-resolution-over-meta + inanimate-practice-target guard (swing "at the post/dummy" ≠ NPC attack) + `isNaturalWeaponAttack` (bite/maul resolves as a strike, not table-talk; C15-flavored) + `stamp` recognized as unarmed/targeted + `isCombatNonAttackBodyIdle` (self/emotion/idle beat ≠ phantom swing) | 14L/1T | **partial** |
 | C11 | **Confrontation under pressure** → in-character NPC reaction | H-42 | `isConfrontationChallenge`, `confrontationReaction` | 3L/0T | — |
 | C12 | **Movement/travel intent** resolves in fiction, no travel-gate bounce | THE_DM_TEST residuals, H-62, H-75, **H-81** | playloop talkRef-before-free-movement + `extractFindPersonRef` + `approachPresentNpcRef` (indoors approach-present-NPC → dialogue) + `detectPhysicalAssault` point/edge de-weaponize | 5L/0T | **✓** (residual: "the elder"→wrong-NPC = C2) |
@@ -394,6 +425,31 @@ NER-blocked or named-NPC (playloop) — the grace-lane C9 work is saturating.
 *2026-06-22 (H-93a probe — a NON-fix worth recording; reproduce-first caught it):* before extending the combat-action recognizer for gate-12 #4, an LLM-off probe in `active_combat` showed unarmed/improvised strikes (stomp/stamp/punch/knee/kick at the foe) **ALREADY resolve as strikes** (`[strike:Kick|Stomp|Punch|Knee]`) — so #4's `[combat:table-talk]` is **NOT a recognizer gap**; it is context-specific to the gate's Corwin-as-combatant-in-a-settlement-building state (round 3), which `active_combat` (Lingerer/escape-mode) does not reproduce. → #4 belongs to the DEEP combat-path work (**H-93**, Codex/escapeCombat lane), needs a gate-matching fixture, NOT a quick playloop guard. The probe also surfaced a **pre-existing over-fire: "I stomp my feet in frustration" resolves as a Stomp strike at the foe** (the escape resolver's strike-default is too eager on unarmed verbs with no real foe target) → fold into H-93. **Net: H-93a NOT shipped** (no unverifiable fix) — the combat-truth frontier is confirmed DEEP (escapeCombat/combat-state), not a recognizer tweak. **H-93 scope (Codex/escapeCombat, when available): (1)** #4 stomp-in-active-NPC-combat → resolve (with a gate-matching fixture); **(2)** defeat/HP registration (4 dmg vs 4 HP must set `defeated`); **(3)** hazard-damage application (fall at HP 1 must deduct/down); **(4)** the #10 throw-a-bystander-into-a-hazard substitution; **(5)** the stomp-frustration over-fire (strike-default needs a foe-target guard).
 
 *2026-06-22 (H-93 DONE — combat-truth, escapeCombat/playloop; Opus deep-engine stand-in, Tim away):* closed the reproducible half of the gate-12 cluster and **disproved the other half as measurement artifacts** (the H-93a scope's items 2/3 + the brief's A/B). **Reproduce-first verdict:** **(2/A defeat registration)** a direct `resolveGrappleAction` at hp≤0 sets `defeated:true` ("they don't get up") and the victory check ends combat — the gate's "4 dmg vs 4 HP → defeated:false" just means the foe held >4 HP (judge misread, not an engine miss). **(3/B hazard damage)** `resolveHazard` DOES apply to `meta.escapeHp` in BOTH paths — leap-off-roof at escapeHp 1 → 0 HP + `[combat:dying]` (in-combat) / hazard-death ending lock (out-of-combat), narration shows "(You: 0/12 HP)"; the gate complaint was narration-emphasis (THE_REF), not a missed deduction. **Shipped (1/5 + #4/D):** the escape resolver's strike-DEFAULT was over-firing — **(C/#5)** "stomp my feet in frustration" / "pace the room" / "wring my hands" became phantom swings, and **(D/#4)** a foe-directed `stamp` (recognizer only knew `stomp`), incl. a compound after a non-combat clause, was eaten by the flee guard → table-talk. Fixes: `stamp` added to `parseEscapeAction` unarmed + `isTargetedViolentCombatAction`; new `isCombatNonAttackBodyIdle` guard (no-foe-ref + no-weapon-verb + self/emotion/idle frame → table-talk). **C10 12L→14L** (C10-007 over-fire→table-talk, C10-008 foe-directed/stamp/compound→strike). Convergence 92→94 (100%), suite 8285/0, determinism 200/0. **Regression caught in-flight:** adding `its` to the foe-pronoun set broke U149 ("kick the door off **its** hinges" → false foe-strike) — reverted; the `its hand`+flee-word compound stays a deferred edge. **Deferred → H-94:** E (throw-a-bystander substitution; needs design), the `its hand` compound edge, and A/B narration-emphasis (THE_REF). **Meta:** two of the four cluster items were the test-not-the-engine — the second time this gate's combat tags have read worse than the mechanics actually are; a cross-family re-judge / per-turn state-dump would cut these false combat fails.
+
+*2026-06-22 (W-1 — FIRST WORLD-WIRING SLICE: place-history materialization; playloop, Basecamp-authored, Tim away):*
+the pivot's first location slice — give the DM one real location's worth of TRUE facts and the empty-success /
+"answer from real data" problem becomes deliver-or-decline. **Root cause:** `engine/substrate.js` was built but
+its Phase-2 narration wiring was never done — it already mints a deterministic per-node founding fact on visit
+(vivid/dim/myth clarity, §0-safe by construction: labels never allude to the cosmology), wired into dungeon-gen /
+settlement-ticker / NPC-dialogue-voice but **NOT into the location-level deliver path**. So "how was this town
+founded?" floored ("your eyes move slow…"), rolled a fake failure, or declined — while the true fact sat unread.
+**Fix (`playloop.js`, no roll, before the explore floor + before resolve):** `isPlaceFoundingQuery` (how/why
+CIRCUMSTANCE forms only) + `nodeFoundingFact` (NODE-layer substrate, never region/cosmology) → deliver the true
+founding fact, else honest-decline. CIRCUMSTANCE-only is the safety: who/whose/how-many/which-family asks request
+an AGENT/COUNT the label never holds, so they stay on the existing founding-decline path (C9 non-invention). New
+`trade_town_tavern` fixture (a node with its substrate SEEDED — the thing `village_baker` deliberately lacks, which
+is why village_baker's founding questions keep declining: NODE-scope + no node events = unchanged → C9-005/006/007
+locked). **C4 11L→12L** (C4-012 deliver), **C9 5L→6L** (C9-008 the deliver/decline boundary on a real location).
+Convergence 94→**96 (100%)**, suite **8285/0**, determinism **6/6** (substrate is RNG-isolated by design).
+Reproduced LLM-off FIRST on `trade_town_tavern` AND on a real `beginAdventure` world. **Live-verified in v1.html**
+(per PLAYTEST_PROTOCOL, screenshots): seeded a played save into a settlement, "how was this town founded?" →
+*"Settled where the road bends and the water table is reliably shallow — the well never runs dry"* (true fact, no
+roll), "who founded this town? give me a name." → honest in-character decline (no invented founder). **This is the
+WORLD-WIRING track (W-#), not Road-A** — the seam stressed was the known-vs-unknown / materialization boundary, now
+locally wired and behavior-locked. **Next slices (toward `docs/DEMO_REGION.md`):** the local-event "what happened
+here?" deliver (riskier — collides with relational history, deferred deliberately); the barkeep voicing the
+founding IN dialogue (the `npcSubstrateContext` path, already fed); region-layer history one rung up the clarity
+ladder. One location at a time.
 
 **Social-physics categories to mine next (Biblioteca Vols 2–6, mostly not yet failing-in-gate but on the map):**
 sarcasm/irony inversion (Vol 2; transcript: `docs/playtests/ridiculous-sarcasm-2026-06-06.md`), loaded

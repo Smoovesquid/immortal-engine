@@ -3701,6 +3701,13 @@ const NPC_PROPER_REFERENT_STOPWORDS = new Set([
   'then', 'so', 'but', 'if',
   'is', 'was', 'are', 'were', 'has', 'have', 'had', 'do', 'does', 'did', 'can',
   'could', 'should', 'would', 'will',
+  // H-91: sentence-initial discourse markers that are never personal names.
+  // Deliberately EXCLUDES real first names (Will/Hope/Grace/Faith/May/June/Dawn/
+  // Mark/...) — see C2-006 over-fire diverge. Kept minimal; the person-signal
+  // preference in concreteNpcReferentFromText makes this list non-load-bearing
+  // whenever a real addressed name is also present.
+  'enough', 'anyway', 'besides', 'meanwhile', 'regardless', 'however',
+  'moreover', 'furthermore', 'nonetheless', 'perhaps', 'maybe', 'instead',
   'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten',
   'eleven', 'twelve'
 ]);
@@ -3717,7 +3724,17 @@ function concreteNpcReferentFromText(text) {
   const proper = [...raw.matchAll(/\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,2})(?:\b|['’])/g)]
     .map(m => m[1].trim())
     .filter(name => !isNpcProperReferentStopword(name));
-  if (proper.length) return proper.sort((a, b) => b.length - a.length)[0];
+  if (proper.length) {
+    // H-91: when more than one capitalized candidate survives, prefer the one the
+    // player actually addressed ("ask Kael ...") over an incidental capitalized
+    // word ("Enough about Corwin ..."). Longest-match remains the tiebreaker, and
+    // the single-candidate / zero-signal paths are unchanged.
+    if (proper.length > 1) {
+      const signalled = proper.filter(name => hasPersonReferentSignal(raw, name));
+      if (signalled.length) return signalled.sort((a, b) => b.length - a.length)[0];
+    }
+    return proper.sort((a, b) => b.length - a.length)[0];
+  }
 
   const lower = raw.toLowerCase();
   const roleMatch = lower.match(/\b(?:talk|speak|chat)\s+(?:to|with)\s+(?:the|a|an)\s+([a-z][a-z' -]+?)(?:\b|[,.!?;:])/)

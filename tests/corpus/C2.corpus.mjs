@@ -189,4 +189,42 @@ export default [
     ],
     source: 'H-90 sentence-initial false-NER denylist; reproduced LLM-off village_baker',
   },
+  {
+    id: 'C2-006',
+    capability: 'C2',
+    // H-91 (gate-11 Lore-hound t10): "Enough about Corwin — I walk to the far end
+    // and ask Kael which one's the trader" bounced "no one named Enough" — the
+    // sentence-initial discourse word "Enough" was extracted as the LONGEST
+    // capitalized token and clarified, instead of resolving toward the addressed
+    // name. Two-part fix in concreteNpcReferentFromText: (1) when >1 capitalized
+    // candidate survives, prefer the one carrying a person-signal ("ask Kael ...")
+    // over an incidental capitalized word; (2) extend NPC_PROPER_REFERENT_STOPWORDS
+    // with "enough" + sentence-initial discourse markers (anyway/besides/meanwhile/
+    // regardless/...), deliberately EXCLUDING real first names.
+    //
+    // In this fixture only Mira (baker) is grounded, so the addressed names
+    // (Kael/Wasiq/Corwin/Grace) are themselves ungrounded and the turn clarifies on
+    // THEM — the assertion is that the clarify never misnames the discourse word.
+    // "Grace" (a real first name) still clarifies, proving it was NOT denylisted.
+    status: 'locked',
+    fixture: 'village_baker',
+    intent: 'a sentence-initial discourse word ("Enough"/"Anyway"/...) is never extracted as the NPC name; the turn resolves toward the addressed name instead',
+    paraphrases: [
+      "Enough about Corwin — I walk to the far end and ask Kael which one's the trader.",
+      'Anyway, I head over and ask Kael about the road.',
+      "Besides, I turn and ask Wasiq what's for sale.",
+      "Meanwhile, I ask Grace why she's so quiet.",
+      'Regardless, I turn and ask Corwin what he saw.',
+    ],
+    assert: {
+      surface_matches: [/\[clarify:(?:referent|who)\]/i],
+      surface_excludes: [/named (?:Enough|Anyway|Besides|Meanwhile|Regardless)\b/i],
+    },
+    diverge: [
+      { text: 'Anyway, I head over and greet the baker.', reason: 'discourse prefix + grounded role still resolves to the present baker — must NOT clarify' },
+      { text: "Besides, I ask Mira what's for sale.", reason: 'discourse prefix + grounded present name resolves — must NOT clarify' },
+      { text: 'I intimidate Mira into talking.', reason: 'grounded present NPC by name resolves the action — must NOT clarify' },
+    ],
+    source: 'opus-gate-2026-06-22-gate11.md (Lore-hound t10: "Enough about Corwin … ask Kael" → "no one named Enough"); reproduced LLM-off village_baker; fixed H-91',
+  },
 ];

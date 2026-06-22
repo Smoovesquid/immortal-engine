@@ -1592,7 +1592,7 @@ other agents. (none active)
 
 2026-06-22 — Codex (playloop/state-adjacent lane) — H-90 DONE
 - Packet/seam: C2 sentence-initial false-NER denylist — connective/auxiliary/number-word tokens at sentence start parsed as NPC names before info/grace could answer.
-- Commit(s): local only; Basecamp verifies + pushes.
+- Commit(s): `784fa80` (Codex local → Basecamp §7-verified + pushed 2026-06-22: convergence 87/87, C2 7/7, determinism U19/21/22/27/30+U219 12/12, suite 8285/8285).
 - Files changed: `engine/playloop.js` (+shared `NPC_PROPER_REFERENT_STOPWORDS` for the capitalized-name extractor), `tests/corpus/C2.corpus.mjs` (+locked C2-005), `docs/CAPABILITY_LEDGER.md` (C2 7L/0T), `docs/AGENT_CHANGELOG.md`.
 - Summary: `concreteNpcReferentFromText` had an inline regex denylist that missed "Is", "Then", "Was", "Has", and number words. Those tokens were extracted as proper names and caused `[clarify:referent]` bounces like "I haven't introduced anyone named Is." Replaced the inline regex with a shared exact-token stopword set and added connectives, auxiliaries, and one/two/.../twelve. Exact anchoring preserves real names like "Wasiq" and "Isolde".
 - Proof (§7): reproduced LLM-off FIRST on `village_baker` — "Is there a founding family..." and "Then who ran the inn..." bounced pre-fix; post-fix both fall through to `[info-check → no-record]`, while "Kael the merchant..." / "Wasiq..." / "Isolde..." still clarify as real invented names. `npm run convergence` **100% (87/87)**, C2 **7/7 locked** (C2-005 new), C9 target not promoted (C9-004 still has two non-NER founder phrasings that roll); `node --test` **8285/8285, 0 fail** after local network permission for the HTTP endpoint test; determinism U19/21/22/27/30 green via full suite.

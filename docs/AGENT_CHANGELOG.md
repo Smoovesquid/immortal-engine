@@ -1590,6 +1590,18 @@ other agents. (none active)
 - Remaining/next: the grace-lane ungrounded-history vein (founding+tenure+prior-holder) is corpus-closed for abstract/role forms; the remaining C9 tail (C9-001/004 target) is NER-blocked / named-NPC = playloop. The other gate-10 dialogue-deflect (Newbie t11) is dialogue.js, not grace.
 - Rollback: revert `8054f12`.
 
+2026-06-22 — Basecamp (Opus, autonomous loop; Tim away — "handle it") — H-92 DONE
+- Packet/seam: gate-11 combat-truth cluster (3 of 4) — #1 practice-swing-at-object fabricates an NPC attack (RL t1, C10); #9 natural-weapon bite read as a social taunt → [combat:table-talk] (Chaos t6, C15/C10); #2 alive/dead status query swallowed by the leading-body-verb trivial gate (RL t2, C4). **playloop lane**; Basecamp authored the edits directly (Codex out, Tim away).
+- Commit(s): `5aa35e7` (engine + fixtures + C10/C4 corpus, atomic by path; Basecamp-pushed). Docs = the following commit.
+- Files changed: `engine/playloop.js` (inanimate-target guard in `detectAttackAnyIntent`; `isNaturalWeaponAttack` → active-combat `explicitAction`; `tryNpcStatusQuery` before the trivial gate), `scripts/convergence/fixtures.mjs` (+`crowd_baker`, `defeated_npc`), `tests/corpus/C10.corpus.mjs` (+locked C10-005/006), `tests/corpus/C4.corpus.mjs` (+locked C4-010/011).
+- Summary:
+  - #1 (C10): "practice swing at the wooden post … hit IT?" minted a bystander (Corwin) as a foe — the "at <X>" ref's trailing "it" fell to `fuzzyMatchNpc`'s generic-descriptor arm. Guard: an INANIMATE-target strike (post/dummy/sack/wall…) that names no present NPC returns null. "swing at Corwin's head" still resolves.
+  - #9 (C15/C10): "rip out its throat with my teeth and spit…" → table-talk (trailing "spit" tripped `isCombatSocialNonAction`; `ANY_VIOLENCE` lacked rip/teeth). `isNaturalWeaponAttack` makes the bite resolve as a strike.
+  - #2 (C4): "I kneel by Corwin … is he alive or dead?" → "You kneel". `tryNpcStatusQuery` answers from canon (defeated→dead, else alive) before the trivial gate. (#8 unsubstantiated-kill cascade falls out with #1.)
+- Proof (§7): reproduced LLM-off FIRST (`scripts/_repro_combat.mjs`) — #1 needed a 2-NPC world (`crowd_baker`) to fire. `npm run convergence` **88→92, 100%** (C10 12/12, C4 11/11; one bad diverge caught + replaced). `node --test` **8285/8285** (determinism U19/21/22/27/30 green; no engine change since).
+- Remaining/next: **#10 (C10, Chaos t8) → H-93** — "throw a fleeing villager into the burning stall" resolves as an Improvised-Burning-Oil strike at the foe (escapeCombat resolver substitutes an action); needs resolver-side design (throw/grapple of a non-foe ≠ improvised weapon). #1 fallthrough answers benignly but not richly (narration nicety, not a fabrication).
+- Rollback: revert `5aa35e7`.
+
 2026-06-22 — Codex (playloop window) → Basecamp landed — H-91 DONE
 - Packet/seam: C2 referent-extractor — sentence-initial discourse word ("Enough") parsed as the NPC name via LONGEST-match, bouncing `[clarify:referent]` instead of resolving toward the addressed name. Sibling to H-90, plus the deeper longest-match-ignores-person-signal fragility underneath.
 - Commit(s): `343f6b6` (engine + C2 corpus, atomic by path; worker finished local → Basecamp convergence-verified [88/88 locked-green, C2 8/8] + landed/pushed 2026-06-22 while Tim away. Full suite + determinism re-confirmed with the combat-truth batch (H-92) that builds on it).

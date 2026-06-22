@@ -64,7 +64,7 @@ detectors. Status starts `seed`.
 | C1 | Answer **every part** of a compound query | H-25/H-31/H-40/H-54/H-59, **H-83** | `handleMetaQuestion` typed sub-intent decomposition (+ stats-into-AC fold) | 5L/0T | **✓** |
 | C2 | A **named referent** must be grounded before the turn resolves | H-56/C2-grad/H-60/H-79/H-90, **H-91** | `ungroundedNpcReferentForText` + `hasPersonReferentSignal` + observe/travel hoist + social-resolver guard + sentence-initial proper-name stopwords + person-signal-preferred referent selection | 8L/0T | **✓** |
 | C3 | A **declared check** gets a DC + roll | H-54 R4, **H-86** | `META_EXPLICIT_CHECK_*` + bare-DC bounce-guard now defers to C/D (a declared stat-check + DC-ask states the DC+formula, not "no standing DC") | 1L/3T | **partial** |
-| C4 | Info-seeking **delivers a grounded fact or honestly declines** | H-22/23/29/31/39/H-63/H-74/H-78/N-1/N-2 Ex-2/N-4/H-92, **W-1** | `isInfoSeekingText` (+provenance/surveillance/`BACKSTORY`/`IDENTITY` REs) + `META_PURSE` + dialogue place-branch + pre-roll `isUngroundedInfoCheck` + `isUngroundedObjectRead` + `META_RECAP` backstory-guard + `tryNpcStatusQuery` (alive/dead/pulse from canon) + the **World-Query Resolver** (`engine/world/placeQuery.js`: `classifyPlaceQuery`→`resolvePlaceFact`, place scope — delivers the node **substrate** founding fact, no roll; the W-# track's typed home, render-free, founding+events+population slots, DM/NPC sibling renderers **both live** — narrator via playloop, NPC via `commonKnowledgeAnswer`→`resolvePlaceFact`, W-6) | 18L/2T | **partial** (Ex-1 open) |
+| C4 | Info-seeking **delivers a grounded fact or honestly declines** | H-22/23/29/31/39/H-63/H-74/H-78/N-1/N-2 Ex-2/N-4/H-92, **W-1** | `isInfoSeekingText` (+provenance/surveillance/`BACKSTORY`/`IDENTITY` REs) + `META_PURSE` + dialogue place-branch + pre-roll `isUngroundedInfoCheck` + `isUngroundedObjectRead` + `META_RECAP` backstory-guard + `tryNpcStatusQuery` (alive/dead/pulse from canon) + the **World-Query Resolver** (`engine/world/placeQuery.js`: `classifyPlaceQuery`→`resolvePlaceFact`, place scope — delivers the node **substrate** founding fact, no roll; the W-# track's typed home, render-free, founding+events+population slots, DM/NPC sibling renderers **both live** — narrator via playloop, NPC via `commonKnowledgeAnswer`→`resolvePlaceFact`, W-6) + the **PERSON-scope sibling** (`engine/world/personQuery.js`: `classifyPersonQuery`→`resolvePersonFact`, `identity` slot — names a present NPC from the roster, deliver-or-fall-through, both voices, P-2) | 21L/2T | **partial** (Ex-1 open) |
 | C5 | A **rules/mechanic question** is answered straight, never rolled | H-25/H-54 R3/H-61/H-80, **H-87** | `META_DAMAGE_RULE`/`META_ATTACK_MOD` + governing-stat classifier + `META_ROLL_QUERY` (a roll-result query reports `lastRoll`, never denies/re-rolls) | 5L/1T | **partial** |
 | C6 | **Number-transparency**: own stats/mods/AC/HP/items from the sheet | H-25/H-31/H-40/H-68, **N-1** | `answerSkillModifier`, `META_ARMOR_VALUE`, `META_HELD_ITEMS`, `META_INVENTORY` (widened, +filler-adverb), `describePack` (inventory as prose, no category-dump/sheet-deflect); **H-82** armor-slot grounding (bare "armor" isn't a bogus possession when armor is worn) | 7L/0T | **✓** |
 | C7 | **Item/consumable** query answers from real def; **use** applies effect | H-45/H-47/H-65/H-69/H-70/H-73/H-76/H-77/N-3, **H-88** | `answerItemQuery`/`META_ITEM` + `CONSUME_RE` + count/compound + bare-count list + sheet-rider guard + `ITEM_EFFECT_DEMAND_RE` + item-effect-over-named-stat guard + `META_ITEM_VERB_FINAL` (verb-final "what the X does") | 15L/0T | **partial** |
@@ -499,6 +499,18 @@ tests only: 2 diverge-LOCKS (bare "what happened?" + object-query) added to C4-0
 **C4 stays 18L**). convergence 102/102, suite 8303/0, determinism untouched. Batch stable → paid-gate request
 drafted (not run). Residual (non-blocking): some unknown-founding phrasings fall to a pre-existing generic blurb
 (non-inventing) instead of a curt decline — a future decline-coverage tidy.
+
+*2026-06-22 (P-1/P-2 — PERSON scope, first slot `identity`):* the second World-Query scope goes live
+(`engine/world/personQuery.js`, sibling of placeQuery). Closes a Rung-1 **under-claim** hole: "who is the
+tavern-keeper? / who is Corwin? / what do I know about Bram?" had grounded roster data but **floored** — now names
+the present non-hostile NPC (name+role), NO roll, both voices. **P-1 found it's not greenfield:** grace's
+`META_NPC_OBSERVER` already does the generic-descriptor narrator ask (left untouched — documented seam), so
+personQuery takes the floor-gap (named/specific-role/"about them") + the dialogue gap (W-6 left NPCs only able to
+do `self`). DELIVER-or-FALL-THROUGH: unknown→`[clarify:referent]`, demonstrative→dialogue-enter unchanged.
+DEFERRED (no grounded source): motive/secret/backstory/allegiance/cult/thoughts/tenure/leadership + history-fate
+("who was X before… what happened to them") — fall through, never invented. Caught + fixed in-flight a loose-role
+over-claim (history-fate now in the DEFER guard; 104/105 → 105/105). **C4 18L→21L** (C4-019/020/021), **+U222** (7),
+convergence **105/105**, suite **8310/0**, determinism **225/225**, **live-verified in v1.html** (both voices).
 
 **Social-physics categories to mine next (Biblioteca Vols 2–6, mostly not yet failing-in-gate but on the map):**
 sarcasm/irony inversion (Vol 2; transcript: `docs/playtests/ridiculous-sarcasm-2026-06-06.md`), loaded

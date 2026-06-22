@@ -200,8 +200,34 @@ dialogue both fall out of it."
 
 1. **Resolver home/name.** A new `engine/world/placeQuery.js` (clean module, imported by both `playloop` and
    `dialogue`), vs. growing `commonKnowledgeAnswer` in place. Leaning new module (keeps the unify honest).
-2. **How far to generalize now.** The same shape extends to `person`-queries and `object`-queries later. Build
-   `place` only (tight, demand-pulled), or name a `WorldQuery` umbrella now and let person/object be future
-   scopes? Leaning **place-only now**, umbrella named but not built.
+2. **How far to generalize now.** The same shape extends to `person`-queries and `object`-queries. **PERSON scope
+   is now live** (P-1/P-2 — see §8); `object` scope remains named-not-built (demand-pulled). The `WorldQuery`
+   umbrella is real: `placeQuery.js` + `personQuery.js` are siblings, same contract.
 3. **`rumor`/`dangers` §0 risk.** These folk-level types are where a careless body could leak the why. Worth a
    dedicated §0 assertion in the resolver test-set when those slots are filled.
+
+---
+
+## §8 — PERSON scope (`engine/world/personQuery.js`, P-1/P-2)
+
+Sibling of `placeQuery`, same contract: `classifyPersonQuery(text) → { type, ref, demonstrative } | null` +
+`resolvePersonFact(world, { type, ref, excludeId }) → { type, body } | null`. Pure, render-free; narrator + NPC
+dialogue render the same fact (one fact, two voices). DELIVER-or-FALL-THROUGH: it claims a turn ONLY on a grounded
+present-NPC match, so it can only *add* deliveries (close the under-claim floor), never change a decline.
+
+| Slot | Question | Source | Boundary | §0 | Status |
+|---|---|---|---|---|---|
+| `identity` | "who is X / the \<role\> / what do I know about X" | `node.settlement.npcs` (name/role/occupation/descriptor) | a RESOLVABLE present **non-hostile** NPC by name or specific role; unknown → fall through to `[clarify:referent]`; hostiles never named | safe (name + role only) | **P-2 done** |
+| `presence` | "is X still here / where did they go" | roster + grace `META_NPC_PRESENCE` | already handled by grace — not re-implemented | safe | grace-owned |
+| motive / secret / backstory / allegiance / cult / thoughts / tenure / leadership / **history-fate** ("who was X before… what happened to them") | — | **none grounded** | DEFERRED — not classified; falls through to the existing non-inventing decline/floor | n/a | **deferred** |
+
+**Referent policy.** personQuery *consumes* the present roster (the same source placeQuery reads); it never guesses.
+Bare demonstratives ("who is that?") are flagged — the **narrator skips them** (they keep dialogue-enter; grace's
+`META_NPC_OBSERVER` owns the generic-descriptor narrator ask, with hostile-observer safety — a documented seam,
+future-unify like `META_NPC_ROSTER` ↔ population). The **dialogue voice** may resolve a demonstrative to the sole
+present other, `excludeId` = the speaker so an NPC never self-identifies (self mode owns "who are YOU").
+
+**Why a module, not a refactor of grace.** Grace already answers the generic-descriptor narrator ask well (with
+nuanced hostile-observer safety). personQuery fills the **floor-gap** it doesn't cover (named / specific-role /
+"about them") + the **dialogue** gap (W-6 left NPCs unable to identify a co-present other). Left grace untouched
+(route-around, documented) rather than re-architecting working code with regression risk.

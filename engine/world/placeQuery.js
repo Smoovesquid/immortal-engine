@@ -100,13 +100,92 @@ function resolveEvents(world) {
   return ev?.label ? { type: 'events', body: String(ev.label), clarity: 'vivid' } : null;
 }
 
+// ── Type: population ───────────────────────────────────────────────────────────
+// Broad PUBLIC roster — "who lives here? / who's in town? / is anyone around? / what kind
+// of people live here?" → name the present SOCIABLE (non-hostile) settlement roster from
+// node.settlement.npcs; a node with none honest-declines. Unlike founding/events (which
+// EXCLUDE "who"), population IS a who-question, so it carries its OWN exclusion of the
+// LOADED who-asks it must never answer:
+//   - founder ("who founded/built/settled")        → founding type / honest-decline
+//   - cause/agent ("who caused / is behind")        → not the roster
+//   - secret/control ("who secretly controls / really runs / runs the cult / in charge /
+//     pulls the strings")                           → guarded; NEVER invent a controller
+//   - services ("who sells / buys / the blacksmith")→ stays the services/shops path
+//   - leadership ("who leads / the leader / elder")  → left to existing handlers
+// SIGHT-SCOPED SAFETY (mirrors the location survey): hostiles are NEVER named — a lurking
+// bandit is not a neighbor; he reads as "a stranger keeping to the edges, watching".
+// The existing META_NPC_ROSTER ("who are all these people / who's everyone") fires first
+// (playloop isMetaQuestion) and is untouched — population takes the GAP phrasings. (A future
+// slice may unify META_NPC_ROSTER + the location-survey roster INTO this slot.) §0-safe:
+// names/roles only; no affiliation, no cosmology.
+const PLACE_POPULATION_QUERY_RE = new RegExp([
+  /\bwho(?:'s| is| are)\s+(?:here|about|around|in\s+(?:town|this\s+(?:town|village|place|settlement|hamlet)))\b/,
+  /\bwho\s+lives\s+(?:here|around\s+here|in\s+this\s+(?:town|village|place|settlement|hamlet))\b/,
+  /\bwhat\s+(?:kind|sort|manner)\s+of\s+(?:people|folk|folks)\b/,
+  /\b(?:is|are)\s+(?:there\s+)?(?:any(?:one|body)|some(?:one|body)|people|folk)\s+(?:here|around|about|in\s+town)\b/,
+  /\banyone\s+(?:here|around|about)\b/,
+].map(r => r.source).join('|'), 'i');
+
+// LOADED who-asks population must never answer — founder / cause / secret-control / services
+// / leadership. Excluded so they route to their own paths (founding type, decline, services).
+// Also excludes SINGLING-OUT a specific/hidden person ("the one …", spying/watching me) —
+// "is anyone here the one who's been watching me?" is a hidden-agent / surveillance question
+// (its own decline path), NOT a broad "who lives here" roster ask. Bare presence ("is anyone
+// around?") has no such predicate and still resolves.
+const PLACE_POPULATION_EXCLUDE_RE = /\b(?:found(?:ed|er|ers|ing)|built|settled|caused|responsible|behind\s+(?:this|it|all|everything)|controls?|controlling|secretly|really\s+runs?|runs?\s+(?:the\s+cult|this|things)|in\s+charge|in\s+control|pulls?\s+the\s+strings|the\s+boss|sells?|selling|buys?|buying|blacksmith|smith|merchant|leads?|leader|leading|elder|chief|mayor|in\s+power|the\s+one|spy(?:ing|ied|ed)?|watching\s+me|watched\s+me|been\s+(?:watching|following|spying)|following\s+me|spied\s+on)\b/i;
+
+function isPopulationQuery(text) {
+  const t = String(text || '');
+  if (!t.trim()) return false;
+  if (PLACE_POPULATION_EXCLUDE_RE.test(t)) return false;
+  return PLACE_POPULATION_QUERY_RE.test(t);
+}
+
+// describeNpc-equivalent (kept local so placeQuery stays decoupled from grace's helpers).
+// Name + role, with the same "don't double a title already in the name" guard.
+function describePresentNpc(npc) {
+  const name = String(npc?.name ?? '').trim();
+  const role = String(npc?.role ?? npc?.occupation ?? '').trim();
+  if (name && /\bthe\b/i.test(name)) return name;     // "Brogan the Elder" — don't append a role
+  if (name && role) return `${name} the ${role}`;
+  if (name) return name;
+  if (role) return `a ${role}`;
+  return 'a stranger';
+}
+
+function joinNames(arr) {
+  const a = arr.filter(Boolean);
+  if (a.length <= 1) return a[0] || '';
+  if (a.length === 2) return `${a[0]} and ${a[1]}`;
+  return `${a.slice(0, -1).join(', ')}, and ${a[a.length - 1]}`;
+}
+
+function resolvePopulation(world) {
+  const nodeId = String(world?.map?.currentNodeId || '');
+  if (!nodeId) return null;
+  const node = (Array.isArray(world?.map?.nodes) ? world.map.nodes : []).find(n => n && n.id === nodeId);
+  const npcs = Array.isArray(node?.settlement?.npcs) ? node.settlement.npcs : [];
+  const sociable = npcs.filter(n => n && !n.hostile);
+  if (!sociable.length) return null; // not a populated place (or only lurkers) → honest-decline; never name a hostile
+  const lurkers = npcs.filter(n => n && n.hostile).length;
+  const named = sociable.slice(0, 4).map(describePresentNpc);
+  const remainder = sociable.length - Math.min(4, sociable.length);
+  if (remainder > 0) named.push(`${remainder} other${remainder === 1 ? '' : 's'}`);
+  let body = `${joinNames(named)} ${sociable.length === 1 ? 'lives' : 'live'} here`;
+  if (lurkers > 0) body += lurkers === 1
+    ? ', and a stranger keeps to the edges, watching'
+    : `, and ${lurkers} strangers keep to the edges, watching`;
+  return { type: 'population', body, clarity: 'vivid' };
+}
+
 // ── The resolver (one mechanism) ───────────────────────────────────────────────
 // Add a place TYPE as one { type, classify, resolve } slot — never a bespoke handler.
-// Order matters only for overlap; founding ("history of this place") and events ("what
-// happened here") are disjoint by design, so first-match is unambiguous.
+// The types are disjoint by design (founding = "history of this place", events = "what
+// happened here", population = "who's here"), so first-match is unambiguous.
 const PLACE_TYPES = [
-  { type: 'founding', classify: isFoundingCircumstance, resolve: resolveFounding },
-  { type: 'events',   classify: isEventsQuery,          resolve: resolveEvents },
+  { type: 'founding',   classify: isFoundingCircumstance, resolve: resolveFounding },
+  { type: 'events',     classify: isEventsQuery,          resolve: resolveEvents },
+  { type: 'population', classify: isPopulationQuery,      resolve: resolvePopulation },
 ];
 
 /**

@@ -78,6 +78,58 @@ test('U220 placeQuery — events: resolvePlaceFact delivers a node local-event w
   assert.equal(resolvePlaceFact(FIXTURES.village_baker(), { scope: 'here', type: 'events' }), null);
 });
 
+test('U220 placeQuery — population: broad "who lives here?" classifies to the population slot', () => {
+  for (const t of [
+    'who lives here?',
+    "who's here?",
+    "who's in town?",
+    'is anyone around?',
+    'what kind of people live here?',
+  ]) {
+    assert.deepEqual(classifyPlaceQuery(t), { scope: 'here', type: 'population' }, t);
+  }
+});
+
+test('U220 placeQuery — population: founder/cause/secret-control/services/leader who-asks are EXCLUDED', () => {
+  for (const t of [
+    'who founded this place?',          // founder → founding/decline
+    'who caused this?',                 // cause/agent
+    'who secretly controls this town?', // secret/control — never invent
+    'who runs the cult?',               // guarded/control
+    'who can sell me weapons?',         // services
+    'who leads this village?',          // leadership
+  ]) {
+    assert.equal(classifyPlaceQuery(t), null, t);
+  }
+});
+
+test('U220 placeQuery — population: resolve names the SOCIABLE roster and NEVER a hostile (sight-scoped safety)', () => {
+  const world = {
+    map: {
+      currentNodeId: 'n',
+      nodes: [{ id: 'n', settlement: { npcs: [
+        { name: 'Ada Holt', role: 'smith', hostile: false },
+        { name: 'Pell', role: 'weaver', hostile: false },
+        { name: 'Grik', role: 'bandit', hostile: true },   // hostile — must NOT be named
+      ] } }],
+    },
+  };
+  const fact = resolvePlaceFact(world, { scope: 'here', type: 'population' });
+  assert.ok(fact, 'expected a roster fact');
+  assert.equal(fact.type, 'population');
+  assert.match(fact.body, /Ada Holt the smith/);
+  assert.match(fact.body, /Pell the weaver/);
+  assert.doesNotMatch(fact.body, /Grik/);                  // the hostile is never named
+  assert.match(fact.body, /stranger keeps to the edges/);  // …it reads as a watcher
+});
+
+test('U220 placeQuery — population: a node with no sociable roster honest-declines (null)', () => {
+  const empty = { map: { currentNodeId: 'n', nodes: [{ id: 'n', settlement: { npcs: [] } }] } };
+  assert.equal(resolvePlaceFact(empty, { type: 'population' }), null);
+  const onlyHostile = { map: { currentNodeId: 'n', nodes: [{ id: 'n', settlement: { npcs: [{ name: 'Grik', hostile: true }] } }] } };
+  assert.equal(resolvePlaceFact(onlyHostile, { type: 'population' }), null); // never name a lurker as a resident
+});
+
 test('U220 placeQuery — unknown/missing type resolves to null, never throws', () => {
   const w = FIXTURES.trade_town_tavern();
   assert.equal(resolvePlaceFact(w, { type: 'nonesuch' }), null);

@@ -533,4 +533,41 @@ export default [
     ],
     source: 'W-3 (world-wiring slice 3 — events as the first new resolver slot); reproduced LLM-off trade_town_tavern',
   },
+  {
+    id: 'C4-014',
+    capability: 'C4',
+    // (W-4) The second new resolver TYPE, and a category-BOUNDARY proof: `population`
+    // ("who lives here?") names the present SOCIABLE roster from node.settlement.npcs — no
+    // roll, no floor, no invention. It is a who-question, so the proof is in the DIVERGES:
+    // it must NOT answer founder ("who founded" → founding/decline), services ("who sells"
+    // → trade), or secret/control ("who secretly controls / runs the cult" → never invent a
+    // controller from the roster). The existing META_NPC_ROSTER ("who are these people")
+    // fires first and is untouched. trade_town_tavern has one sociable NPC → deterministic.
+    // §0-safe: names/roles only, no affiliation/cosmology; hostiles are never named.
+    status: 'locked',
+    fixture: 'trade_town_tavern',
+    intent: 'a broad population question ("who lives here?") names the sociable settlement roster — no roll, no floor, no invention',
+    paraphrases: [
+      'who lives here?',
+      "who's here?",
+      "who's in town?",
+      'is anyone around?',
+      'what kind of people live here?',
+    ],
+    assert: {
+      surface_matches: [/Bram Cask the tavern-keeper/i, /place-history → grounded/i],
+      surface_excludes: [
+        /\[roll:/i,                                            // common knowledge — never rolled
+        /eyes move slow|what do you do\?/i,                    // not the generic explore floor
+        /I don.t (have|know)|no record|can.t say|no-record/i,  // it DELIVERED, did not decline
+      ],
+    },
+    diverge: [
+      { text: 'who founded this place?', reason: 'FOUNDER (agent) → founding type / honest-decline, never the resident roster' },
+      { text: 'who secretly controls this town?', reason: 'SECRET/control → must NEVER invent a controller or list residents as such' },
+      { text: 'who runs the cult?', reason: 'guarded/control → not population; never named from the public roster' },
+      { text: 'who can sell me weapons?', reason: 'SERVICES → stays the trade/shops path, not the population roster' },
+    ],
+    source: 'W-4 (world-wiring slice 4 — population, a category-boundary proof); reproduced LLM-off trade_town_tavern',
+  },
 ];

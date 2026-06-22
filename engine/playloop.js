@@ -3694,6 +3694,21 @@ const NPC_REFERENT_STOPWORDS = new Set([
   'villagers', 'this person', 'that person'
 ]);
 
+const NPC_PROPER_REFERENT_STOPWORDS = new Set([
+  'i', 'okay', 'ok', 'wait', 'where', 'who', 'what', 'when', 'why', 'how', 'don',
+  'dont', 'hey', 'hi', 'hello', 'stop', 'just', 'give', 'take', 'let', 'the', 'a',
+  'an', 'wizard', 'pilgrim', 'rest',
+  'then', 'so', 'but', 'if',
+  'is', 'was', 'are', 'were', 'has', 'have', 'had', 'do', 'does', 'did', 'can',
+  'could', 'should', 'would', 'will',
+  'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten',
+  'eleven', 'twelve'
+]);
+
+function isNpcProperReferentStopword(name) {
+  return NPC_PROPER_REFERENT_STOPWORDS.has(normalizedNpcRef(name));
+}
+
 function concreteNpcReferentFromText(text) {
   const raw = String(text || '');
   const commaName = raw.match(/\b(?:guard|baker|elder|stranger|merchant|trader|smith|blacksmith|innkeeper|priest|healer|scholar|artisan|villager|local|person|figure)\s*,\s*([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)(?:\b|['’])/);
@@ -3701,7 +3716,7 @@ function concreteNpcReferentFromText(text) {
 
   const proper = [...raw.matchAll(/\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,2})(?:\b|['’])/g)]
     .map(m => m[1].trim())
-    .filter(name => !/^(?:I|Okay|Ok|Wait|Where|Who|What|When|Why|How|Don|Dont|Hey|Hi|Hello|Stop|Just|Give|Take|Let|The|A|An|Wizard|Pilgrim|Rest)$/i.test(name));
+    .filter(name => !isNpcProperReferentStopword(name));
   if (proper.length) return proper.sort((a, b) => b.length - a.length)[0];
 
   const lower = raw.toLowerCase();

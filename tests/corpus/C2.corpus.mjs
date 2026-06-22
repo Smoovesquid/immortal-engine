@@ -159,4 +159,34 @@ export default [
     ],
     source: 'opus-gate-2026-06-21-gate4-postH77.md (gate 4, Lore-hound t12: invented "Brae" → intimidate resolved against present Corwin); reproduced LLM-off village_baker; fixed H-79',
   },
+  {
+    id: 'C2-005',
+    capability: 'C2',
+    // H-90: sentence-initial capitalized non-names are not NPC referents. These
+    // used to be extracted as proper names ("Is", "Then", "Was", "Has") and
+    // bounced before the info/grace paths could answer in-fiction.
+    status: 'locked',
+    fixture: 'village_baker',
+    intent: 'sentence-initial connective, auxiliary, and number-word tokens must not be treated as NPC names',
+    paraphrases: [
+      'Is there a founding family here, or was it built by merchants?',
+      'Then who ran the inn before the owner?',
+      'Was there anyone living here before the current villagers arrived?',
+      'Has anyone been here before the current settlers arrived?',
+      'Eleven years, you said — so who led this place before you?',
+    ],
+    assert: {
+      surface_matches: [/Wizard:/i],
+      surface_excludes: [
+        /\[clarify:(?:referent|who)\]/i,
+        /no one named|haven.t introduced/i,
+      ],
+    },
+    diverge: [
+      { text: 'Kael the merchant, what do you want?', reason: 'real sentence-initial fabricated name with a role appositive still clarifies' },
+      { text: 'Wasiq, why are you so quiet?', reason: 'real sentence-initial fabricated name is not swept by the stopword denylist' },
+      { text: 'Isolde, why are you so quiet?', reason: 'real name beginning with Is remains a name; only exact "Is" is denied' },
+    ],
+    source: 'H-90 sentence-initial false-NER denylist; reproduced LLM-off village_baker',
+  },
 ];

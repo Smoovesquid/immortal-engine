@@ -601,6 +601,18 @@ const INFO_SEEKING_EXISTENTIAL_RE = /\b(?:was|were)\s+there\s+(?:anyone|someone|
 // origin/motive questions aimed at an NPC. Share the deliver-or-decline contract. (H-63)
 const INFO_SEEKING_ORIGIN_RE = /\bwhy\s+(?:did\s+)?(?:you|they|he|she)\s+(?:come|came|settle[ds]?|move[ds]?|go|went|land(?:ed)?|arrive[ds]?)\b|\bwhy'?d\s+(?:you|they|he|she)\s+(?:come|came|settle[ds]?|move[ds]?|go|went|land(?:ed)?|arrive[ds]?)\b|\bwhat\s+brought\s+(?:you|them|him|her|everyone)\b/i;
 
+// (H-84) The SETTLEMENT's founding history — "how many founders were there?",
+// "is there a founding family, or was it built by merchants?". INFO_SEEKING_ORIGIN_RE
+// above only covers an NPC's MOTIVE ("why did you settle here"), so these founding
+// forms fell through to a generic resolve that ROLLED or observe-deadended on a fact
+// canon doesn't hold (C9-004). The downstream grounding gate still DELIVERS a grounded
+// answer where canon has one; only the ungrounded case honest-declines. Tight by
+// design — an interrogative founding shape — so the search ACTION "I look for a
+// founding stone" and the speculation "the elder probably knows the founders' names"
+// (the C9-004 diverges) stay on their normal paths. ("who founded/built X" already
+// matched the generic INFO_SEEKING_RE.)
+const INFO_SEEKING_FOUNDING_RE = /\b(?:how\s+many|which|what)\s+founders?\b|\bfounders?\s+were\s+there\b|\bfounding\s+famil(?:y|ies)\b|\bwas\s+(?:it|this\s+(?:place|village|town|settlement|hamlet))\s+(?:built|founded|settled|raised)\s+by\b/i;
+
 // The PC's OWN provenance — "who carried me in last night", "where did they find
 // me", "who brought me here", "was I found by anyone". Distinct from
 // INFO_SEEKING_ORIGIN_RE (an NPC's motive, "why did you come"). These are
@@ -644,7 +656,8 @@ export function isInfoSeekingText(text) {
   if (INFO_SEEKING_EXCLUDE_RE.test(t)) return false;
   return INFO_SEEKING_RE.test(t) || INFO_SEEKING_OBSERVE_RE.test(t) || INFO_SEEKING_TOPIC_RE.test(t)
     || INFO_SEEKING_CONCEALMENT_RE.test(t) || INFO_SEEKING_EXISTENTIAL_RE.test(t)
-    || INFO_SEEKING_ORIGIN_RE.test(t) || INFO_SEEKING_PROVENANCE_RE.test(t)
+    || INFO_SEEKING_ORIGIN_RE.test(t) || INFO_SEEKING_FOUNDING_RE.test(t)
+    || INFO_SEEKING_PROVENANCE_RE.test(t)
     || INFO_SEEKING_SURVEILLANCE_RE.test(t)
     || INFO_SEEKING_BACKSTORY_RE.test(t) || INFO_SEEKING_IDENTITY_RE.test(t);
 }

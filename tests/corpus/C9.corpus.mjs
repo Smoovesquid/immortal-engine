@@ -155,4 +155,44 @@ export default [
     ],
     source: 'opus-gate-2026-06-19-postH39.md (Lore-hound, turn 7); calibrated 2026-06-20',
   },
+
+  {
+    id: 'C9-005',
+    capability: 'C9',
+    // The lockable subset of C9-004 (which stays target for its harder forms).
+    // "who founded/built X" already honest-declined via the generic INFO_SEEKING_RE;
+    // the "how many founders" count forms fell through to a roll/observe (canon holds
+    // no founders for the test village) until H-84 added INFO_SEEKING_FOUNDING_RE.
+    // All six decline in-character with NO roll. NOTE: "Is there a founding family…"
+    // is deferred — the playloop sentence-initial false-NER reads "Is" as a name and
+    // bounces a [clarify:referent] before grace runs (same class as "Then"→name); a
+    // separate playloop seam, not this grace decline.
+    status: 'locked',
+    fixture: 'village_baker',
+    intent: 'ask about the settlement\'s ungrounded founding history — must honest-decline, never roll or invent founders',
+    paraphrases: [
+      "Who founded this village — one person or a group?",
+      "who built pilgrim's rest originally",
+      "How many founders were there, and do we know any of their names?",
+      "how many founders does this town have?",
+      "who settled here first?",
+      "how many founders does this village have?",
+    ],
+    assert: {
+      surface_matches: [
+        /I don.t (have|know)|unclear|no record|can.t say|lost to me|Couldn.t say|no-record/i,
+      ],
+      surface_excludes: [
+        /two famil/i,                  // no invented founder count
+        /the rest followed after the road/i,
+        /\[roll:/,                     // an ungrounded fact never rolls
+        /no one named|haven.t introduced/i,  // not a referent-clarify bounce
+      ],
+    },
+    diverge: [
+      { text: 'I look for a founding stone or monument in the village square.', reason: 'action (search/observe); routes to spatial discovery — a roll is correct here, NOT an info-decline' },
+      { text: "The village elder probably knows the founders' names, right?", reason: 'speculation about what an NPC might know; not a direct founding-fact demand — must not honest-decline' },
+    ],
+    source: 'opus-gate-2026-06-19-postH39.md (Lore-hound t7) + gate-9 founders vein — H-84 INFO_SEEKING_FOUNDING_RE; reproduced LLM-off village_baker',
+  },
 ];

@@ -877,6 +877,28 @@ convergence-plan graduation step). **Net:** convergence 109/109, suite 8494→85
 acknowledgment (no quest-board artifact), placed so it never breaks dialogue or over-claims; corpus-lock the
 no-artifact contract.
 
+*2026-06-23 (D-B1 — STEP 2 LANDED + CONFIRMATION GATE on `tallow`; `docs/playtests/opus-gate-2026-06-23.md`):*
+STEP 2 (the wiring) landed: a declaration that would fall to empty generic filler now mints a tracked goal +
+an in-fiction acknowledgment ("You set yourself to it — you'll … <sociable witness> marks your word"); placed as
+the last check before the resolve floor (talk-now/travel/social claim first, so no over-claim). U247 locks it;
+`f764eb1`; convergence 109/109, suite 8507/0, determinism green. **Live-confirmed** on tallow via a direct probe:
+"anything I can help with?" → concern → "I'll find out who owes that debt" → **goal born** → "Elske marks your
+word"; "I'll deal with the bandit at the edge" → resolved the role to the present hostile → **Deal with Ashblade**.
+**Confirmation gate: 7/48 (15%)** — no regression from the Phase-A 8/48 (bouncing ruler). **D-B1 ZERO over-claim**:
+no `[goal:born]` fired on any of the 48 adversarial-persona turns (they drill crunch/lore, never DECLARE — the
+tight detector correctly stayed silent). **Lore-hound 12/12** (the prior Elske/Dalla NPC-merge did NOT recur); §0
+held. **None of the 7 fails are in the Road-A / D-A2 / D-B1 spine:**
+- **COMBAT-LANE ×3 (Codex — now the DOMINANT class):** Chaos face-to-flames hold → no roll resolved (combat r3);
+  4-dmg knife to a 4-HP Lingerer → not applied as a kill; knife + window-egress → hit narrated, no damage applied.
+  The recurring killing-blow/attack-not-resolved class (escapeCombat state) → spawned as a Codex packet.
+- **CRUNCH-transparency ×3 (borderline):** weapon-stat-key ("is the Worn Blade MIGHT or AGILITY?") dodged;
+  practice-POST damage ("roll the 1d6, give the total") → "you bide your time" (the post is a prop, not a
+  combatant — the DM should SAY that); a to-hit-math vs mechanics-string mismatch.
+- **NARRATION-FRONTIER ×1 (THE REF):** newbie "what's the shrine like? let's check it out" → "you manage it, the
+  way ahead opens" (vague-positive filler on a travel/look).
+**Verdict:** D-B1 (rung 3) lands cleanly and didn't dent the experience; residual = the combat lane (now dominant
+— Codex) + crunch-transparency + 1 narration slip. Cost ~$2.78 (budget ~$27.05 → ~$24.27).
+
 **Social-physics categories to mine next (Biblioteca Vols 2–6, mostly not yet failing-in-gate but on the map):**
 sarcasm/irony inversion (Vol 2; transcript: `docs/playtests/ridiculous-sarcasm-2026-06-06.md`), loaded
 questions / presupposition (Vol 3, "have you stopped stealing?"), bluff vs. claim (Vol 5), request/order/threat

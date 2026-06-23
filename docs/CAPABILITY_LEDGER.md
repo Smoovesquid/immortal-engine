@@ -564,6 +564,24 @@ deterministic Rung-1 floor is live-validated** (combat-truth + world-query + ear
 empty-success is the one open Rung-1 competence gap → THE_REF-1.** Full 4-persona panel deferred until post-THE_REF-1
 (measure the delta, don't re-confirm).
 
+*2026-06-23 (THE_REF-1 — empty-success materialization; narration/grace, Basecamp-authored; gate-13 turn-5):* the
+sole gate-13 failure — a pointed challenge to Kael ("are you telling me he lied?") on `[roll:20 vs DC:12 → success]`
+returned the content-free `gen:s` filler "You see it through, and it goes your way" (DM_TEST_DEADEND / empty-success).
+**Deterministic root cause** (not LLM/validator), two gaps: **(1)** `isConfrontationChallenge` missed the
+accusation-BY-QUESTION shape ("are you telling me … lied?", "are you lying?") — it only had present-tense
+"you're lying"; **(2)** `genericGroundedOutcome`'s confrontation branch was FAILURE-only, so a succeeded challenge
+fell through to the gen:s/gen:m atmosphere bank. **Fix:** `CONFRONTATION_TELLING_LIED_RE` (tight: a telling/saying
+frame + a lie token, or bare "are you lying" — "are you telling me the truth/where Kael is?" do NOT match) +
+outcome-aware `confrontationReaction` (success = a landed read/tell, mixed = a half-caught flicker, failure =
+stonewall) fired on ALL outcomes. The contested FACT is never conceded or invented — a landed read is a tell, not
+the lore (EK-1 / Law of Earned Knowledge holds). In-dialogue confrontations unchanged (askNpc already reacts).
+**+U226** (8 cases); **U205-27/28 flipped** from the now-superseded failure-only scope to the THE_REF-1 behavior
+(success/mixed react, no filler, no concession — strengthened, not weakened). Convergence 105/105, suite
+8334→8342/0, determinism green. Reproduced LLM-off FIRST. Commit `7534c16`. **Conclusion: the gate-13 empty-success
+failure class is fixed on the deterministic floor; targeted lore-hound rerun next to confirm live.** (Separate
+deferred THE_REF defect, NOT fixed here: the composer's garbled material-injection prose "In the Saltmarket Town,
+flour—… what do you do?".)
+
 **Social-physics categories to mine next (Biblioteca Vols 2–6, mostly not yet failing-in-gate but on the map):**
 sarcasm/irony inversion (Vol 2; transcript: `docs/playtests/ridiculous-sarcasm-2026-06-06.md`), loaded
 questions / presupposition (Vol 3, "have you stopped stealing?"), bluff vs. claim (Vol 5), request/order/threat

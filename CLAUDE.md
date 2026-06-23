@@ -140,6 +140,15 @@ Bug fix protocol: reproduce → baseline test → fix → retest → commit.
 
 **Staging discipline.** Do not use `git add -A` / `git add .` when unrelated untracked or modified files are present in the tree — stage files explicitly by path so each commit's scope matches its message. Only use `-A` when the working tree is known to contain a single coherent change.
 
+## Parallel lanes (Homebase = conductor)
+
+Full map: **`docs/LANE_MAP.md`**. Default to the maximum *worthwhile* concurrency, **per lane-type**: parallel by default for **content / UI / docs-design**; **serial** for **competence hot files** (`playloop.js`, `dialogue.js`, `grace/`, composer, `escapeCombat.js`), **schema/`WORLD_VERSION`**, and taste-critical narration. Assume warm worker lanes may be running.
+
+- **Homebase conducts + integrates:** plan the split, own the merge into `v2-polish`, never delegate the global-invariants lane. Worker lanes produce branches; Homebase lands them.
+- **Isolate parallel lanes in their own git worktree** (`git worktree add` / Agent `isolation: "worktree"`) — branch names do NOT isolate a shared working dir (two models in one checkout collide on uncommitted edits). Stay off another lane's hot files; if you need one, coordinate first. **Never commit edits you didn't make.**
+- **Before every push/merge:** run `scripts/lane-check.sh` (outgoing/incoming + hot-file/foreign-edit flags) then `npm run check`; confirm outgoing is only this lane's. Tiny solo packets may go direct to `v2-polish`; multi-hour/parallel work uses a worktree+branch.
+- Shared docs (`CAPABILITY_LEDGER.md`, `AGENT_CHANGELOG.md`, `PACKETS.md`) interleave too — each lane **appends its own dated section** (append-only).
+
 ## Skill routing
 
 When the user's request matches an available skill, ALWAYS invoke it using the Skill

@@ -411,6 +411,17 @@ export function validateNarrationCandidate(world, narrationCandidate, {
   if (findInventedProperNoun(cand, grounded)) return false;
   if (findMisattributedRoleClaim(cand, ctx)) return false;
 
+  // Fled-foe kill-claim guard (combat lane). The escape model lets a WOUNDED foe
+  // break and RUN (morale) — a legitimate outcome ("driven off counts"), so the
+  // state is defeated:false because it FLED, not died. The base narration says so
+  // ("breaks and runs / driven off"). The LLM polish must NOT overwrite that flee
+  // with a KILL ("you cut it down, dead at your feet") — the gate's combat
+  // CRUNCH_INCONSISTENCY (gate-19 #5, gate-REF #10). This works off the base text
+  // (combat is already ended on a total flee, so ctx.combat is gone) — reject a
+  // kill claim when the base reports a flight. Falls back to the honest base.
+  const baseFled = /\bbreaks?\s+and\s+(?:runs?|bolts?)\b|broke\s+and\s+ran|\bfled\b|driven\s+off|has\s+had\s+enough/i.test(String(baseNarration || ''));
+  if (baseFled && /\b(?:kill(?:ed|s)?|slain|slew|slay|lifeless|corpse|cut(?:s|ting)?\s+(?:it|him|her|them)\s+down|cut\s+down|finish(?:ed|es)?\s+(?:it|him|her|them)\s+off|run\s+through|throat\s+(?:slit|cut|open)|bleeds?\s+out|drops?\s+dead|lies\s+dead|dead\s+(?:at|on)\b)\b/i.test(cand)) return false;
+
   // Combat contradiction guard — only fires when combat is active and the
   // narration context carries the snapshot. Conservative: only flagrant
   // contradictions on three axes (combat-presence, hit/miss inversion).

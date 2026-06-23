@@ -93,9 +93,15 @@ export async function reviewNarration({
     // answering (guardrail 1): an unknown verdict must NOT manufacture a bounce.
     if (!v || v === REF_VERDICTS.PASS) return safe;
 
-    // REGENERATE — right situation, wrong words. Hand the regen the engine's facts.
+    // REGENERATE — the judge flagged the candidate as bad (dodge / misroute /
+    // fabrication). The safe fallback is therefore the engine's grounded BASE
+    // narration (the honest decline / grounded fact), NOT the flagged candidate —
+    // never ship a known-bad dodge when the honest base is in hand. Try to
+    // regenerate better in-voice words first; fall back to base; candidate last.
     if (v === REF_VERDICTS.REGENERATE) {
-      if (typeof regenerate !== 'function' || !t.canRegen()) return safe;
+      const baseClean = String(baseNarration ?? '').trim();
+      const fallback = baseClean || safe;
+      if (typeof regenerate !== 'function' || !t.canRegen()) return fallback;
       t.useRegen();
       let redo = null;
       try {
@@ -104,10 +110,10 @@ export async function reviewNarration({
           failureClass: verdict.failure_class || 'NONE', source,
         });
       } catch {
-        return safe;                                 // regen error → fallback
+        return fallback;                             // regen error → base (not the bad candidate)
       }
       const out = String(redo ?? '').trim();
-      return out || safe;                            // empty regen → keep the candidate
+      return out || fallback;                         // empty regen → base
     }
 
     // Kick-backs are the EXCEPTION and MUST be DM-VOICED (guardrail 2). We only

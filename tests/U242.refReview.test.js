@@ -86,24 +86,26 @@ test('U242: soft + REGENERATE returns the regenerated words; regen gets the fact
   assert.ok(regenArgs.canon, 'regen gets canon truth to deliver the exact content');
 });
 
-test('U242: REGENERATE with no regenerate fn → falls back to candidate', async () => {
+test('U242: REGENERATE with no regenerate fn → falls back to BASE (never the flagged candidate)', async () => {
   const out = await reviewNarration({
     world: tinyWorld(), outcome: SOFT, candidate: CAND, baseNarration: BASE,
     judge: regenJudge, enabled: true, budget: fresh(),
   });
-  assert.equal(out, CAND);
+  assert.equal(out, BASE);
 });
 
-test('U242: REGENERATE but regen budget exhausted → falls back to candidate', async () => {
+test('U242: REGENERATE but regen budget exhausted → falls back to BASE', async () => {
   const budget = createRefBudget({ maxRegenPerTurn: 0 });
   const out = await reviewNarration({
     world: tinyWorld(), outcome: SOFT, candidate: CAND, baseNarration: BASE,
     judge: regenJudge, regenerate: async () => 'SHOULD NOT BE USED', enabled: true, budget,
   });
-  assert.equal(out, CAND);
+  assert.equal(out, BASE);
 });
 
-test('U242: judge throwing → silent fallback to candidate (Invariant 3)', async () => {
+test('U242: judge throwing → silent fallback to candidate (no verdict learned; Invariant 3)', async () => {
+  // The judge erred before any verdict — we never learned the candidate is bad, so
+  // keep it (this is the validator-accepted candidate, not a flagged one).
   const out = await reviewNarration({
     world: tinyWorld(), outcome: SOFT, candidate: CAND, baseNarration: BASE,
     judge: async () => { throw new Error('judge api down'); }, enabled: true, budget: fresh(),
@@ -111,20 +113,20 @@ test('U242: judge throwing → silent fallback to candidate (Invariant 3)', asyn
   assert.equal(out, CAND);
 });
 
-test('U242: regenerate throwing → silent fallback to candidate', async () => {
+test('U242: regenerate throwing on a REGENERATE verdict → falls back to BASE', async () => {
   const out = await reviewNarration({
     world: tinyWorld(), outcome: SOFT, candidate: CAND, baseNarration: BASE,
     judge: regenJudge, regenerate: async () => { throw new Error('regen down'); }, enabled: true, budget: fresh(),
   });
-  assert.equal(out, CAND);
+  assert.equal(out, BASE);
 });
 
-test('U242: empty regen output → keeps the candidate', async () => {
+test('U242: empty regen output → falls back to BASE', async () => {
   const out = await reviewNarration({
     world: tinyWorld(), outcome: SOFT, candidate: CAND, baseNarration: BASE,
     judge: regenJudge, regenerate: async () => '   ', enabled: true, budget: fresh(),
   });
-  assert.equal(out, CAND);
+  assert.equal(out, BASE);
 });
 
 test('U242: REDIRECT_UNANSWERABLE honored ONLY with a DM-voiced line (else answer)', async () => {

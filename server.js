@@ -7,6 +7,8 @@ import { fileURLToPath } from 'node:url';
 import { makeOpenAiClient, hasOpenAiKey, handleAiRequest } from './server/ai.js';
 import { buildLocalProjection } from './engine/map/projection/localProjection.js';
 import { augmentNarration } from './engine/llmAdapter.js';
+import { buildRefAdapter } from './server/refJudge.js';
+import { defaultRefBudget } from './engine/ref/index.js';
 import { hashPassword, verifyPassword, generateToken, requireAuth } from './server/auth.js';
 import { createUser, findUser, userExists, validateUsername } from './server/userStore.js';
 import { saveWorld, loadWorld, listWorlds, deleteWorld, isSafeId } from './server/worldStore.js';
@@ -160,13 +162,23 @@ return res.json({ ok:false, reason:safe });
         return res.json({ ok: true, narration: baseNarration });
       }
 
+      // THE REF (Tier 2) — gated behind REF_ENABLED, OFF by default. When on, build
+      // the live judge + regenerate adapter (Haiku judge / Sonnet regen) and inject
+      // it; augmentNarration runs it AFTER the Tier-1 validator, on soft-source turns
+      // only (docs/THE_REF.md). Falls back silently to base narration on any miss.
+      const refEnabled = /^(1|true|on)$/i.test(String(process.env.REF_ENABLED || ''));
+      const ref = (refEnabled && anthropicKey)
+        ? { enabled: true, budget: defaultRefBudget, ...buildRefAdapter({ world }) }
+        : { enabled: false };
+
       const narration = await augmentNarration({
         world,
         outcome,
         baseNarration,
         placeChunks,
         enabled: Boolean(anthropicKey),
-        apiKey:  anthropicKey
+        apiKey:  anthropicKey,
+        ref
       });
 
       return res.json({ ok: true, narration });

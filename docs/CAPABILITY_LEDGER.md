@@ -862,6 +862,21 @@ picture, now confirmed on the demo region. Per the bouncing-ruler rule, no count
 (109/109) is the floor. **Recommends advancing to Phase B (talk→quest), where the newbie already started pulling
 the thread.**
 
+*2026-06-23 (D-B1 — Phase B, rung 3: the quest-birth bridge — STEP 1 of 2):*
+The make-or-break rung: dialogue → a tracked goal the player CHOSE (today dialogue never mints a goal; the world
+starts with zero). STEP 1 (the pure detector) landed: `engine/goals/proposeGoalFromDialogue` maps a player's
+DECLARED intent to a `goalContract` spec {kind,targetRef,label} — H3 seam: **H2** (concrete action+target →
+reach/talkTo/defeat/obtain/learn, resolved against world entities; an UNRESOLVED target mints NOTHING — no
+phantom quests) + **H1** (a bare help-offer to a present NPC adopts the NPC's own `npcArc` want — "it was their
+idea", integrating D-A2b's surfaced concern). Pure + deterministic; biases HARD against false births
+(musings/questions/non-commitments/idioms → null; fixed a substring over-match where "find a way" resolved
+"Crossway Village" → whole-word node match + a vague-object guard). **Lock:** G06 (8 cases — every kind, the
+mint→complete loop, no-over-fire, determinism). UNWIRED by design (zero behavior change, regression-safe per the
+convergence-plan graduation step). **Net:** convergence 109/109, suite 8494→8502/0, determinism green; commit
+`16c1d3b`. **STEP 2 (next):** the playloop wiring — mint via createGoal + a `goalCreated` event + an in-fiction
+acknowledgment (no quest-board artifact), placed so it never breaks dialogue or over-claims; corpus-lock the
+no-artifact contract.
+
 **Social-physics categories to mine next (Biblioteca Vols 2–6, mostly not yet failing-in-gate but on the map):**
 sarcasm/irony inversion (Vol 2; transcript: `docs/playtests/ridiculous-sarcasm-2026-06-06.md`), loaded
 questions / presupposition (Vol 3, "have you stopped stealing?"), bluff vs. claim (Vol 5), request/order/threat

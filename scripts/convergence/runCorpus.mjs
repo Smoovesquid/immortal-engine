@@ -42,10 +42,19 @@ function validateCase(testCase, file) {
 
 async function loadCorpusFiles() {
   if (!fs.existsSync(CORPUS_DIR)) return [];
-  return fs.readdirSync(CORPUS_DIR)
-    .filter(name => name.endsWith('.corpus.mjs'))
-    .sort()
-    .map(name => path.join(CORPUS_DIR, name));
+  // Recurse so capability tracks can group cases in a subdir (e.g.
+  // tests/corpus/narration/ for THE REF) while flat files still load. Sorted for
+  // deterministic order.
+  const out = [];
+  const walk = (dir) => {
+    for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, ent.name);
+      if (ent.isDirectory()) walk(full);
+      else if (ent.name.endsWith('.corpus.mjs')) out.push(full);
+    }
+  };
+  walk(CORPUS_DIR);
+  return out.sort();
 }
 
 async function loadCases() {

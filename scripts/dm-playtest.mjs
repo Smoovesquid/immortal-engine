@@ -38,7 +38,9 @@ import { newWorld } from '../engine/state.js';
 import { beginAdventure, playerMove } from '../engine/playloop.js';
 import { isMetaQuestion, handleMetaQuestion } from '../engine/grace/gracefulAdjudication.js';
 import { normalizeManifest, normalizePack } from '../engine/rulesets.js';
-import { getItemDef, findDefByName } from '../engine/ruleset/core/items/index.js';
+// THE REF — the gate and the live Ref share ONE rubric (canon oracle + judge
+// prompt + bug taxonomy). See engine/ref/rubric.js + docs/THE_REF.md §"Discovery".
+import { buildCanonGroundTruth, JUDGE_SYSTEM } from '../engine/ref/rubric.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..');
@@ -195,58 +197,9 @@ async function playTurn(world, text) {
 // item-effect answers ("what does the Tonic do?") against ground truth instead
 // of assuming an effect exists — a flavor item with effect:null genuinely does
 // nothing, so the DM doing nothing with it is correct. (H-45 fairness fix.)
-function consumablesGroundTruth(pc) {
-  const inv = pc?.inventory || {};
-  const describe = (def) => def?.effect?.kind === 'heal' ? `heal ${def.effect.amount}`
-    : def?.effect?.kind === 'removeCondition' ? `cure ${def.effect.condition}` : null;
-  const out = [];
-  for (const it of (Array.isArray(inv.consumables) ? inv.consumables : [])) {
-    const name = String(it?.name || it).trim();
-    if (!name) continue;
-    out.push({ name, effect: describe(it?.defRef ? getItemDef(it.defRef) : findDefByName(name)) });
-  }
-  for (const it of (Array.isArray(inv.items) ? inv.items : [])) {
-    const def = getItemDef(it?.defRef);
-    if (def && def.kind === 'consumable') out.push({ name: def.name, effect: describe(def) });
-  }
-  return out;
-}
-
-function canonGroundTruth(world) {
-  const node = (world.map?.nodes || []).find(n => n && n.id === world.map?.currentNodeId) || null;
-  const npcs = (node?.settlement?.npcs || []).map(p => ({ name: p?.name, role: p?.role || p?.archetype || '' }));
-  const pc = world.party?.[0] || {};
-  const led = world.ledger || {};
-  const recentCanon = Array.isArray(world.canonLog?.events) ? world.canonLog.events.slice(-8)
-    : Array.isArray(world.canonLog) ? world.canonLog.slice(-8) : [];
-  const timeline = Array.isArray(world.timeline) ? world.timeline.slice(-6).map(e => ({ kind: e.kind, t: e.t })) : [];
-  // Escape mode (the live combat engine) tracks the PC's health in meta.escapeHp
-  // and enemy health in e.hp — NOT party[0].wounds / e.wounds. Report the model
-  // that's actually live so the judge sees real combat HP (else it flags every
-  // legitimate hit/defeat as "no HP update"). (F12 — sibling of the F9 fix.)
-  const escape = world.meta?.mode === 'escape';
-  return {
-    location: node ? { name: node.name, kind: node.kind } : null,
-    npcsPresent: npcs,
-    pc: escape
-      ? { hp: world.meta?.escapeHp, maxHp: world.meta?.escapeMaxHp, level: pc.level, conditions: pc.conditions, note: 'escape mode: HP is the live health; party wounds are not used here' }
-      : { wounds: pc.wounds, maxWounds: pc.maxWounds, level: pc.level, conditions: pc.conditions },
-    inCombat: Boolean(world.combat?.active),
-    combatRound: world.combat?.round,
-    enemies: (world.combat?.enemies || []).map(e => ({ name: e.name, hp: e.hp, maxHp: e.maxHp, defeated: !!e.defeated })),
-    ledgerFacts: (led.facts || []).map(f => (typeof f === 'string' ? f : f?.text)).filter(Boolean).slice(0, 8),
-    recentCanon: recentCanon.map(e => ({ kind: e?.kind || e?.type, ref: e?.id, data: e?.data })).slice(0, 8),
-    consumables: consumablesGroundTruth(pc),
-    timeline,
-    // The engine's stored last roll (engine/grace answerRollRecall cites this to
-    // defend canon against a player misremembering their number). Without it the
-    // judge can't see the ledger and false-flags correct roll-recall as a
-    // fabricated roll (the 2026-06-21 "18 vs DC 12" false-positive). (gate-hardening)
-    lastRoll: world.conversation?.lastRoll
-      ? { roll: world.conversation.lastRoll.roll, dc: world.conversation.lastRoll.dc, outcome: world.conversation.lastRoll.outcome }
-      : null,
-  };
-}
+// canonGroundTruth + consumablesGroundTruth moved to engine/ref/rubric.js
+// (exported as buildCanonGroundTruth) so the live Ref scores against the SAME
+// oracle. The gate calls buildCanonGroundTruth(world) below.
 
 // ── Personas ──────────────────────────────────────────────────────────────────
 const PERSONAS = {
@@ -285,54 +238,11 @@ async function playerTurn(persona, transcript) {
 }
 
 // ── The judge ───────────────────────────────────────────────────────────────
-const JUDGE_SYSTEM =
-`You are a strict evaluator of an AI Dungeon Master, judging ONE turn. You see the player's
-line, the DM's response, the engine's mechanics string, and a CANON ground-truth bundle.
-
-Score three things. Default to FAIL when uncertain — you are adversarial.
-
-GATE 1 — DM VIBE (THE_DM_TEST): Did the DM resolve the player's intent IN THE FICTION? FAIL
-if it bounced intent back as a mechanical/UI prompt ("which way: N/S/E/W?"), dumped raw ids
-or stat blocks as the answer, said "command not recognized", or otherwise leaked the machine.
-
-GATE 2 — CRUNCH CORRECTNESS: Are the rules under the narration correct and self-consistent?
-FAIL if the dice and the fiction contradict (e.g. rolled "success" but nothing happened), HP/
-wounds/resources update wrong or not at all, a declared attack on a present foe does NOT start
-real combat (no enemy entity / no HP / no combat state), or an outcome violates the stated DC/roll.
-
-AXIS — RAG FAITHFULNESS: If the DM or an NPC asserts a FACT about the world (a name, a past
-event, a rumor, who-did-what), is it GROUNDED in the CANON bundle? FAIL (hallucination) if a
-confident claim has no support in canon and isn't flagged as hearsay/uncertain. If no factual
-claim was made, set checked=false.
-
-NOT a hallucination — do NOT FAIL these on RAG: rhetorical hyperbole ("there are dragons and demons
-out here"), atmosphere, and an in-character JUDGMENT/ATTITUDE stance ("yes, stay wary — nothing here
-is friendly"; "I hate everyone, not just you") need NO canon citation, the same way a real DM's color
-commentary doesn't — score those under GATE 1 (was intent resolved in voice?), not here. Only a
-CONCRETE checkable specific — a proper name, a date/number, or a who-did-what past event — requires
-grounding; a FALSE such specific still FAILs as hallucination.
-
-ROLL-RECALL — do NOT FAIL as hallucination: if the DM cites a PAST ROLL or DC ("the ledger shows 18 vs
-DC 12", "you rolled a 17") that MATCHES the CANON bundle's "lastRoll" (or a roll in recentCanon), it is
-GROUNDED — the DM is correctly quoting its own ledger to push back on a player who misremembers their
-number. That is CORRECT canon-defense, not a fabricated roll. Only FAIL if the cited roll/DC has NO support
-in lastRoll/recentCanon.
-
-ITEMS: the CANON bundle's "consumables" lists each carried item's REAL effect (e.g.
-{name:"Tonic of grit", effect:"heal 2d4"}) or effect:null for a flavor item. Grade item-effect
-answers against THIS, not against your assumptions: describing the listed effect PASSES; saying a
-flavor item (effect:null) does nothing, or just describes it, is CORRECT — do NOT assume an item has
-an effect it lacks. FAIL only if the DM invents an effect absent from the list, or claims a
-real-effect item does nothing.
-
-Return ONLY JSON:
-{"vibe":{"pass":bool,"issue":""},"crunch":{"pass":bool,"issue":""},
-"rag":{"checked":bool,"grounded":bool,"issue":""},
-"bug_class":"NONE|DM_TEST_DEADEND|DM_ARTIFACT_LEAK|CRUNCH_INCONSISTENCY|COMBAT_NOT_STARTED|CANON_HALLUCINATION|CRASH",
-"severity":"none|low|med|high","note":"one terse sentence"}`;
+// JUDGE_SYSTEM is imported from engine/ref/rubric.js (the shared rubric) so the
+// offline gate and the live Ref score "a bad ruling" by one definition.
 
 async function judgeTurn({ player, dm, mechanics, world }) {
-  const truth = canonGroundTruth(world);
+  const truth = buildCanonGroundTruth(world);
   const out = await ask({
     system: JUDGE_SYSTEM,
     user: `PLAYER: ${player}\nDM: ${dm}\nMECHANICS: ${mechanics || '(none)'}\n\nCANON (ground truth):\n${JSON.stringify(truth, null, 0)}`,

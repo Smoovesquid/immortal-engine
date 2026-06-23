@@ -1053,7 +1053,7 @@ function playerMoveCore(world, packsById, text) {
     }
   }
 
-  if (!targetedCombatAction && !declaredNpcViolence && interiorAction.kind === 'move' && !approachPresentNpcRef(w, text)) {
+  if (!targetedCombatAction && !declaredNpcViolence && interiorAction.kind === 'move' && !approachPresentNpcRef(w, text) && !talkOrApproachResolvesPresentNpc(w, text)) {
     const wantsRiskyMove = isRiskyOrObstructedMoveIntent(text);
     if (!wantsRiskyMove) {
       const targetRoomId = interiorAction.toRoomId || pickAdjacentInteriorByDirection(w, interiorAction.direction);
@@ -3589,6 +3589,20 @@ function approachPresentNpcRef(world, text) {
   return null;
 }
 
+// gate-17 (newbie t8): like approachPresentNpcRef but HOSTILE-INCLUSIVE — uses the same
+// resolver the talk path itself uses (resolveNpcAtCurrentNode), so "go talk to that
+// stranger watching from the edges" (a wary lurker) is recognized as a talk intent and
+// the interior-move gate doesn't bounce it with "that way is blocked from here". The
+// downstream talk path then enters the wary dialogue (a real DM lets you walk over to a
+// stranger), and approachPresentNpcRef stays the non-hostile gate for its other callers.
+function talkOrApproachResolvesPresentNpc(world, text) {
+  if (world.combat?.active) return false;
+  for (const ref of [extractDialogueRef(text), extractApproachRef(text), extractFindPersonRef(text)]) {
+    if (ref && resolveNpcAtCurrentNode(world, ref)) return true;
+  }
+  return false;
+}
+
 function extractDialogueRef(text) {
   const t = String(text || '');
   // 'talk to X' / 'speak to X' / 'speak with X' / 'chat with X'
@@ -3631,11 +3645,33 @@ function extractDialogueRef(text) {
   return '';
 }
 
+// gate-17: strip a leading demonstrative and a trailing descriptor/locative clause so a
+// player who refers to an NPC by the survey's own words ("that stranger watching from the
+// edges", "the man standing by the door") reduces to the head noun ("stranger", "man")
+// the NPC resolvers match. Conservative: only known participle/locative tails.
+const PERSON_HEAD_NOUN_RE = /\b(?:stranger|man|woman|figure|person|fellow|guy|lad|lass|girl|boy|elder|guard|merchant|trader|smith|innkeeper|priest|healer|keeper|scholar|artisan|villager|local|child|kid|someone|somebody|soul|watcher|onlooker|bystander)\b/i;
+function stripRefDescriptors(ref) {
+  const r = String(ref || '').trim();
+  // Gate on a PERSON head-noun so PLACE names ("The Standing Stones", "Hollow by the
+  // Weir") are left fully intact — only a person reference ("that stranger watching
+  // from the edges") gets its demonstrative + trailing descriptor clause collapsed.
+  if (!PERSON_HEAD_NOUN_RE.test(r)) return r;
+  const s = r
+    .replace(/^(?:that|this|those|these)\s+/i, '')
+    .replace(/\s+(?:who\s+(?:is|was|keeps?)\s+)?(?:watching|lurking|standing|sitting|waiting|loitering|leaning|hiding|skulking|keeping|hovering|pacing)\b.*$/i, '')
+    .replace(/\s+(?:from|at|by|near|in|over)\s+(?:the\s+)?(?:edge|edges|corner|corners|back|side|shadows?|door|doorway|window|bar|counter|fire|hearth|wall)\b.*$/i, '')
+    .trim();
+  return s || r;
+}
+
 function cleanDialogueRef(raw) {
-  return String(raw || '')
+  const base = String(raw || '')
     .trim()
     .replace(/[.!?,;:]+$/, '')
     .trim();
+  const stripped = stripRefDescriptors(base);
+  // Never strip away to nothing — fall back to the punctuation-cleaned base.
+  return stripped || base;
 }
 
 // Direct-address detection: "I'm talking to you", "what are you looking at?"

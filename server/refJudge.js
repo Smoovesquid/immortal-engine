@@ -22,7 +22,9 @@ import { validateNarrationCandidate } from '../engine/llmAdapter.js';
 import { REF_JUDGE_SYSTEM, buildRefJudgeUser, REF_VERDICTS } from '../engine/ref/rubric.js';
 
 const JUDGE_MODEL = (process.env.REF_JUDGE_MODEL || 'claude-haiku-4-5-20251001').trim();
-const REGEN_MODEL = (process.env.REF_REGEN_MODEL || 'claude-sonnet-4-20250514').trim();
+// The regen produces in-voice prose → use the NARRATOR's model (engine/llmAdapter
+// DEFAULT_MODEL), the same one whose polish it replaces. Env-overridable.
+const REGEN_MODEL = (process.env.REF_REGEN_MODEL || 'claude-sonnet-4-6').trim();
 
 function firstJsonObject(text) {
   const s = String(text || '');

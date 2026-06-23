@@ -370,7 +370,19 @@ const META_SHEET_CONFIRM = /\b(?:my|the)\s+sheet\b|\bconfirm\s+(?:the\s+)?(?:sta
 // NPC-observer queries — "Who's that stranger watching me?", "Who is that figure?"
 // Identity questions about a visibly present NPC. Never a location survey.
 // (H-14, Rung-1 gate 2026-06-18.)
-const META_NPC_OBSERVER = /\bwho(?:'s| is| was| are)?\s+(?:that|this|the)\s+(?:stranger|figure|person|man|woman|one|fellow|guard|merchant|trader|elder|individual|character|someone|anyone)\b/i;
+const META_NPC_OBSERVER = /\bwho(?:'s| is| was| are)?\s+(?:that|this|the)\s+(stranger|figure|person|man|woman|one|fellow|guard|merchant|trader|elder|individual|character|someone|anyone)\b/i;
+// (U231) The subset of META_NPC_OBSERVER's noun list that names an actual NPC
+// ROLE field (vs. a generic descriptor like "stranger"/"figure"/"someone").
+// "Who is the elder?" must identify the PRESENT NPC whose role matches —
+// not whichever NPC happens to be first in the settlement roster. Distinct
+// from a leadership/authority ask ("who's in charge", "who leads this
+// place?") — those never reach this branch (no "the <role>" shape; "leader"/
+// "chief"/"charge" aren't in META_NPC_OBSERVER's noun list) and stay
+// deferred per W-5. personQuery.js already resolves the other role nouns
+// here (guard/merchant/trader) correctly by role; "elder" is the one
+// personQuery.js deliberately defers (PERSON_DEFER_RE, W-4/W-5 leadership
+// ambiguity), so it falls through to this branch — where the bug lived.
+const NPC_OBSERVER_ROLE_WORDS = new Set(['guard', 'merchant', 'trader', 'elder']);
 // "Lurking"/"edges"/"shadows" framing — the player is pointing at the HOSTILE
 // observer specifically, not whichever sociable NPC happens to be first in the
 // roster. (H-44, post-H-42 baseline gate, Rules Lawyer t5: "I asked who the
@@ -1766,6 +1778,26 @@ export function handleMetaQuestion(text, world) {
     const allNpcs = node?.settlement?.npcs || [];
     const sociable = allNpcs.filter(n => n && !n.hostile);
     const lurkers = allNpcs.filter(n => n && n.hostile);
+
+    // (U231) A query naming an actual ROLE ("who is the elder/guard/merchant/
+    // trader") identifies the present role-holder by role, never the first
+    // NPC in the roster. No present role-holder → an honest decline, never a
+    // wrong-NPC guess.
+    const askedNoun = (lowerText.match(META_NPC_OBSERVER) || [])[1];
+    if (askedNoun && NPC_OBSERVER_ROLE_WORDS.has(askedNoun)) {
+      const holder = allNpcs.find(n => n && String(n.role || '').trim().toLowerCase() === askedNoun);
+      if (holder) {
+        const name = String(holder.name || '').trim();
+        const desc = String(holder.description || holder.notes || '').trim();
+        const who = name ? `${name}, the ${askedNoun}` : `the ${askedNoun}`;
+        if (desc) return `${who} — ${desc.charAt(0).toLowerCase() + desc.slice(1)}.`;
+        return holder.hostile
+          ? `${who} — keeping to the edges, watching.`
+          : `${who} — one of the folk here, watching from nearby.`;
+      }
+      return `No ${askedNoun} here that you can see.`;
+    }
+
     const wantsLurker = NPC_OBSERVER_LURK_RE.test(lowerText);
     // An evasion-framed ask ("you don't want to name", "keep going quiet")
     // names the ADDRESSEE in the same breath ("Corwin, ...") while asking

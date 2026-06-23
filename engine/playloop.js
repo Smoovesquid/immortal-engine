@@ -813,7 +813,10 @@ function playerMoveCore(world, packsById, text) {
   // If an NPC dialogue is active, route input: explicit exit, auto-exit on
   // movement/physics/scene intents, else treat as an ask.
   if (w.scene?.dialogue) {
-    const explicitExit = isDialogueExitIntent(text);
+    // U233 — a bare exit returns the [dialogue exit] stub; but "leave X AND
+    // walk to Y" must end the dialogue AND resolve the travel, so when the exit
+    // carries a travel clause we let the breaking-intent path handle it instead.
+    const explicitExit = isDialogueExitIntent(text) && !exitCarriesTravel(text);
     // Recruit intent ("invite to travel") must beat the breaking-intent guard —
     // its literal phrase contains "travel" which would otherwise route through
     // moveAdvancesScene and exit dialogue. Inside an active dialogue the player's
@@ -3208,6 +3211,22 @@ function isDialogueExitIntent(text) {
   // caravan leave?" is a question for the NPC, not a goodbye.
   if (/^(?:i\s+)?leave\b/.test(t)) return true;
   return /\b(walk away|step away|end conversation|end conversation\.|stop talking|goodbye|good\s?bye|farewell|done talking)\b/.test(t);
+}
+
+// U233 — a dialogue-exit that ALSO carries a travel clause ("leave X AND walk
+// to Y"). The bare-exit early-return swallows the whole turn and drops the
+// trailing move; when this fires we instead cede to the breaking-intent path,
+// which ends the conversation out loud and then re-resolves the residual travel
+// through the normal movement system. This is the SAME movement-verb-aimed-at-a-
+// destination regex as isDialogueBreakingIntent's commandedMove first alternative
+// (minus the bare-"leave" clause), so a true here guarantees breakingIntent is
+// also true — the turn never falls through to the ask branch. A bare goodbye
+// ("I leave", "leave me alone", "I leave it at that") names no destination and
+// stays a plain exit.
+function exitCarriesTravel(text) {
+  const t = String(text || '');
+  if (!t.trim()) return false;
+  return /\b(?:go|head|walk|run|ride|travel|journey|move|escape|set\s+(?:out|off)|make\s+for|press\s+on|take\s+me)\b[^.!?]*\b(?:to|toward|towards|for|into|north|south|east|west)\b/i.test(t);
 }
 
 function isDialogueBreakingIntent(text, world) {

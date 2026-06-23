@@ -744,6 +744,36 @@ second-model output-validator** (the principled close for the dialogue-voice/nar
 frontier) vs. keep mining regex shapes (diminishing, whack-a-mole). Session: corpus 105/105, suite 8435/0, determinism
 green; 4 paid gates ($≈11); 5 fixes shipped (U235–U239) + 1 harness-robustness commit (`3d58f99`).
 
+*2026-06-23 (THE REF — Tier 2 narration second-opinion BUILT + flag-ON verified; the TERMINATION's "single
+clearest next decision," now executed; full build doc `docs/THE_REF.md`, gate `docs/playtests/opus-gate-2026-06-23-REF-flagon.md`):*
+the principled close for the residual narration frontier (NPC dialogue dodges with atmosphere / answers the
+wrong question / fabricates a record — the regex-unreachable shapes). **Architecture:** a selective LLM judge
+that reviews narration AFTER the Tier-1 validator, on SOFT-source turns ONLY (`narrationSource` derived from the
+`[dialogue ask | <mode>]` mechanics tag — deflected/place/shared/continuity; lied/withheld/claim_recall stay HARD
+so a deliberate lie is never "corrected"). On a flagged candidate it REGENERATEs to the engine's grounded facts,
+else falls back to the honest BASE (never ships the flagged dodge). **Per Tim's Open-Decision-A call:** same-family
+**Haiku** judge (Vol-14 atomic atoms, NO chain-of-thought) on the existing key + **Sonnet** regen (the narrator's
+model), the regen re-validated through the Tier-1 guard. **Four hard invariants enforced + tested:** narration≠canon
+(returns a STRING only; world/outcome unmutated — U242), determinism preserved (U19/21/22/27/30 green — the Ref
+never touches state), never-throws/silent-fallback (flag-off/no-judge/judge-error/over-budget/bad-output → base),
+LLM authors WORDS only. Budget-guarded (≤1 judge + ≤1 regen per turn, session cap). **Flag OFF by default** —
+flag-off is byte-identical to the prior `augmentNarration` (zero regression). **Files:** `engine/ref/{rubric,
+narrationSource,budget,index}.js` (pure orchestration) + `server/refJudge.js` (the live adapter, injected into
+`/api/narrate` behind `REF_ENABLED`) + the gate now imports the shared rubric (one definition of "a bad ruling").
+**Corpus:** `tests/corpus/narration/REF.corpus.mjs` locks the deterministic FLOOR (REF-001 tenure honest-decline,
+REF-002 anti-fabrication; REF-003 documents the misroute as a judge-closed target). **Tests:** U240 (classifier),
+U241 (budget), U242 (orchestration, 14 cases incl. narration≠canon), U243 (adapter, 15 cases incl. the regen
+validation gate). Convergence 107/107, suite 8475/0, determinism green. **Flag-ON verification (the done-when):**
+the 3 named targets verified DIRECTLY against the live judge+regen — **5/5** (T1 atmosphere-dodge → honest decline,
+T2 misroute → base, T3 fabrication caught via `grounded:false`; + 2 controls PASS, so the judge is not trigger-happy).
+One paid flag-ON gate (~$2.9): **12/48, but ZERO failures in the Ref's scope** — every failure is a `(none)`/`[roll]`/
+`[rest]`/`[strike]` turn (compound-meta precedence [design-locked], navigation/approach [C12], combat target [combat
+lane]); the Ref touched no failing turn and ran 48 turns non-erroring (bouncing-ruler: 12 is within the 3–12 range on
+an only-improving engine, NOT a Ref regression). **DISCOVERY → next packet:** fabrications/dodges ALSO arrive via the
+generic WITS-roll path (gate #11 "the representative was his father" on a `[roll]`, not a `[dialogue ask]`) — extend the
+soft-set to generic-resolve (the `narrationSource='generic-resolve'` hook is already built; wire playloop's gen outcomes
+to set it). 4 commits on `v2-polish` (`4f44e2c`→). Budget note: spend = ~$2.9 of the .env $20 (Tim-approved one gate).
+
 **Social-physics categories to mine next (Biblioteca Vols 2–6, mostly not yet failing-in-gate but on the map):**
 sarcasm/irony inversion (Vol 2; transcript: `docs/playtests/ridiculous-sarcasm-2026-06-06.md`), loaded
 questions / presupposition (Vol 3, "have you stopped stealing?"), bluff vs. claim (Vol 5), request/order/threat

@@ -45,7 +45,7 @@ import { resolveCompanionTurn } from './combat/companionTurn.js';
 import { castSpell } from './spell/castSpell.js';
 import { classifyOffensiveCast, castConsequence } from './magic/castConsequence.js';
 import { evaluateEncounter, selectCreatures, spawnEncounter } from './combat/encounterSpawn.js';
-import { isMetaQuestion, handleMetaQuestion, isNullAction, isQuestionShaped, META_LOCATION, META_RECAP, isNpcObserverQuery, isInfoSeekingText, isConfrontationChallenge } from './grace/gracefulAdjudication.js';
+import { isMetaQuestion, handleMetaQuestion, isNullAction, isQuestionShaped, META_LOCATION, META_RECAP, isNpcObserverQuery, isInfoSeekingText, isConfrontationChallenge, buildLocationSurvey, INFO_SEEKING_EXCLUDE_RE } from './grace/gracefulAdjudication.js';
 import { resolveEscapeCombatTurn, initEscapeHp, initEscapeKit, shortRest, longRest, applySurpriseRound, parseEscapeAction, combatStatusAnswer, meleeProfile, playerAc } from './combat/escapeCombat.js';
 import { statMod, maxWounds } from './ruleset/core/stats.js';
 import { shopsHere, stockFor, settlementStock, economyAt, priceToSell, shopBuys, restockEpoch, purseTotalCopper, pursePay, purseReceive, formatPrice, matchByName } from './economy/shop.js';
@@ -2504,7 +2504,12 @@ function playerMoveCore(world, packsById, text) {
   // override the composer's abstract narration with outcome-aware prose that names
   // the thing and says what happened (success/mixed/failure). Everything else keeps
   // the composer line. (Keeps composed.ledgerDelta either way.)
-  const grounded = physicalObjectOutcome(w, text, result.outcome) || nonObjectSkillOutcome(text, result.outcome) || infoExtractionOutcome(w, text, result.outcome);
+  // answerOrDeclineQuestion (gate-15) is LAST: a concrete information/presence
+  // question that no specific handler grounded gets a roster/grounded answer or an
+  // honest decline here, BEFORE the composer's generic atmosphere — so it never
+  // depends on whether the composer happened to floor. Returns null for actions
+  // and action/permission questions, leaving them to the normal resolve narration.
+  const grounded = physicalObjectOutcome(w, text, result.outcome) || nonObjectSkillOutcome(text, result.outcome) || infoExtractionOutcome(w, text, result.outcome) || answerOrDeclineQuestion(w, text, result.outcome);
   // Stage F: if the composer would fall to the abstract literary floor, replace it with
   // grounded, outcome-aware prose (a DM never says "a low hum threads through the walls"
   // for a resolved action). Specific handlers still win; good composer lines pass through.
@@ -5535,6 +5540,72 @@ function confrontationReaction(world, npc, outcome = 'failure') {
   ]);
 }
 
+// ── gate-15: a concrete INFORMATION/PRESENCE question never falls to empty
+// atmosphere. who-do-I-see / who's-here / anyone-here, and "is/are there a <thing>
+// here" → answered from the LIVE roster (the present people/places are canon).
+const PRESENCE_Q_RE = new RegExp([
+  String.raw`\bwho\b[^?]{0,40}\b(?:do|did|can|could|would|will|might|should)\s+(?:i|we)\s+(?:see|meet|spot|find|notice|run\s+into|come\s+across|talk\s+to|deal\s+with)\b`,
+  String.raw`\bwho(?:'s|s|\s+is|\s+are)?\b[^?]{0,24}\b(?:here|around|about|present|nearby|outside|inside|with\s+(?:me|us))\b`,
+  String.raw`\bwho\s+else\b`,
+  String.raw`\b(?:any\s?one|any\s?body|some\s?one|some\s?body)\b[^?]{0,16}\b(?:here|around|about|nearby|present|else|with\s+(?:me|us))\b`,
+  String.raw`\b(?:is|are)\s+there\s+(?:a|an|any|some|another|other)\b[^?]{0,40}\b(?:here|around|about|nearby|in\s+(?:this|the))\b`,
+].join('|'), 'i');
+// "where's <X>" / "where can I find <X>" — deliver from the roster ONLY when the
+// asked person/role is actually present (don't "lose" someone in front of the
+// player); otherwise it falls through to grounded-or-decline below.
+const WHERE_Q_RE = /\bwhere(?:'s|s|\s+is|\s+are|\s+did|\s+have|\s+can\s+i\s+find|\s+would\s+i\s+find|\s+might\s+i\s+find)\b/i;
+// Action / permission / advice questions ("can I climb?", "should I go north?")
+// are action-attempts, not info queries — they keep the action floor (gen:s/m/f).
+const ACTION_PERMISSION_Q_RE = /\b(?:can|could|should|shall|may|do|did|does|would|will|must)\s+(?:i|we)\b/i;
+
+// True iff the text names a present NPC by name or role — strict, with no npcs[0]
+// fallback (unlike socialTarget). Gates the "where is <present person>" deliver.
+function namesPresentNpc(world, t) {
+  const nodeId = String(world?.map?.currentNodeId || '');
+  const node = (world?.map?.nodes || []).find(n => n && n.id === nodeId) || null;
+  const npcs = Array.isArray(node?.settlement?.npcs) ? node.settlement.npcs : [];
+  return npcs.some(n => {
+    const nm = normName(n?.name).trim();
+    // full name OR any name token >3 chars ("Corwin" from "Corwin Boneknit") —
+    // the same name-token idiom used elsewhere in this file.
+    if (nm && (t.includes(nm) || nm.split(/\s+/).some(tok => tok.length > 3 && t.includes(tok)))) return true;
+    const r = String(n?.role || '').toLowerCase();
+    return !!r && t.includes(r);
+  });
+}
+
+// A concrete information/presence QUESTION that reached the last-resort floor:
+// deliver from canon (the present roster, or a grounded fact) or honestly decline
+// — NEVER the gen:s/m/f atmosphere bank ("you see it through, it goes your way").
+// Returns a narration string, or null to let the gen bank own it (action /
+// permission questions, action statements that merely end in "?"). (gate-15)
+function answerOrDeclineQuestion(world, text, outcome) {
+  const o = outcome === 'success' ? 's' : outcome === 'failure' ? 'f' : 'm';
+  const t = String(text || '').toLowerCase().trim();
+  if (!isQuestionShaped(t)) return null;
+  // Confrontations/accusations ("…one of you is lying. Which one?") are owned by
+  // genericGroundedOutcome's confrontationReaction (reaction if an NPC is present,
+  // real atmosphere if not) — never the info path. Returning null here keeps that
+  // handler authoritative at BOTH call sites (the grounded chain and the floor).
+  if (isConfrontationChallenge(t)) return null;
+  // (a) presence / who's-here / where-is-present → the live roster. Checked first
+  // so "where can I find Corwin" isn't mistaken for a feasibility question.
+  if (PRESENCE_Q_RE.test(t) || (WHERE_Q_RE.test(t) && namesPresentNpc(world, t))) {
+    return `Wizard: ${buildLocationSurvey(world)}`;
+  }
+  // (b) action / permission / advice questions, and action statements with a
+  // trailing "?", are not info queries — let the action floor (gen) own them.
+  if (ACTION_PERMISSION_Q_RE.test(t) || INFO_SEEKING_EXCLUDE_RE.test(t)) return null;
+  // (c) a grounded fact canon actually holds → deliver (outcome-aware).
+  const npc = socialTarget(world, text);
+  const ground = lookupGroundedFact(world, text, npc);
+  if (ground) {
+    return o === 's' ? `Wizard: ${ground.body}` : `Wizard: ${ground.body} — given hedged, and not the whole of it.`;
+  }
+  // (d) otherwise an honest in-fiction decline (escalates under repeat pressure).
+  return declineInfoSeek(world, text, npc);
+}
+
 // Grounded prose for any resolved non-combat action that would otherwise floor.
 // Exported for unit testing.
 export function genericGroundedOutcome(world, text, outcome) {
@@ -5611,6 +5682,12 @@ export function genericGroundedOutcome(world, text, outcome) {
         : V(`strike-object:f:${target}`, [`Your swing goes wide of the ${target}; it sits untouched.`, `The blow never reaches the ${target}; nothing on it changes.`, `You miss the ${target}, and it stays exactly where it was.`]);
     }
   }
+  // gate-15: a concrete information/presence question that fell through every
+  // specific handler must be answered or honestly declined — never the empty
+  // atmosphere bank below. (Action/permission questions return null and fall through.)
+  const q = answerOrDeclineQuestion(world, text, outcome);
+  if (q) return q;
+
   // Generic last resort: grounded, in-fiction, no abstract filler, no mechanical prompt.
   return o === 's' ? V('gen:s', [`You see it through, and it goes your way.`, `It comes off cleanly; the moment turns toward you.`, `You manage it, and the way ahead opens a little.`])
     : o === 'm' ? V('gen:m', [`It half-works — you get part of what you were after, not all of it.`, `You get something out of it, though not what you hoped.`, `It lands, after a fashion — partial, imperfect.`])

@@ -587,7 +587,10 @@ const INFO_SEEKING_RE = /\b(?:who|what|when|where|whose)\b[\s\S]{0,60}?\b(?:name
 // recall-bias net below so "can I climb this wall?"/"could I jump that gap?"
 // keep rolling as actions instead of dead-ending on a "no record" decline.
 // (H-39)
-const INFO_SEEKING_EXCLUDE_RE = /\b(?:attack|strike|hit|stab|slash|shoot|kill|fight|charge|intimidate|charm|deceive|persuade|climb|jump|leap|vault|pick|force|break|try|attempt|sneak|steal|track|forage|decipher|calm)\b/i;
+// Exported (gate-15) so the playloop's last-resort question handler can reuse the
+// SAME action-verb list: a question that contains an action verb ("I attack — what
+// happens?") is an action-attempt, not an info query, and must keep the action floor.
+export const INFO_SEEKING_EXCLUDE_RE = /\b(?:attack|strike|hit|stab|slash|shoot|kill|fight|charge|intimidate|charm|deceive|persuade|climb|jump|leap|vault|pick|force|break|try|attempt|sneak|steal|track|forage|decipher|calm)\b/i;
 // Recall-bias net (H-39, BASECAMP design-review verdict 2026-06-19): the curated
 // anchor-noun list above (name/year/date/owner/kin/family/...) is precision-
 // tuned and keeps missing fresh phrasings of the same intent — a genuine

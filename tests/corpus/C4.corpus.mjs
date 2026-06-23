@@ -159,6 +159,10 @@ export default [
       "I ask around: has anyone been here before the current settlers?",
       // Already passing: INFO_SEEKING_EXISTENTIAL_RE "has anyone been"
       "I ask around: has anyone been through here recently — like in the last week — that nobody talks about?",
+      // D-A2a: this open-ended HISTORY ask used to BOUNCE on the capitalized imperative "Tell"
+      // (false-NER, now denylisted) — which masked that it actually honest-declines like the rest
+      // (village_baker has no grounded detailed history; §0-safe, never invented).
+      "Tell me everything about this village's history.",
     ],
     assert: {
       // Honest-decline is the intent. Match it by the variant-independent MECHANICS signal
@@ -178,7 +182,7 @@ export default [
       ],
     },
     diverge: [
-      { text: "Tell me everything about this village's history.", reason: 'open-ended lore dump via "tell me about" → "this village" triggers commonKnowledgeAnswer, delivers place fact, no decline' },
+      { text: 'Tell me about this village.', reason: 'a place-description ask with NO history/event predicate — the placeQuery overview DELIVERS the place identity (name + founding when present), so it does NOT hit the history decline (D-A2a contrast)' },
       // Changed from "I search the village for old records about who settled here" — that text contains
       // "who settled" which now matches INFO_SEEKING_RE (settl\w+) and would decline, not roll.
       { text: 'I search the village for old documents and ruins.', reason: 'action (search); no who/what+anchor-noun combination → isInfoSeekingText false → routes to action resolution, roll acceptable' },
@@ -802,5 +806,40 @@ export default [
       { text: 'who is the keeper?', reason: 'plain IDENTITY (name+role) DOES deliver (C4-019) — proves only the deferred motive/secret floors' },
     ],
     source: 'P-2 (PersonQuery — deferred-slot non-invention boundary); reproduced LLM-off trade_town_tavern',
+  },
+
+  // ---- LOCKED ----
+  {
+    id: 'C4-022',
+    capability: 'C4',
+    // D-A2a (world-wiring track). The natural "tell me about here" ask used to either bounce
+    // [clarify:referent] (the capitalized imperative "Tell" parsed as an NPC name) or fall to a
+    // generic roll. The placeQuery `overview` type now delivers the place IDENTITY (name + its
+    // founding line when the substrate has it) with NO roll. §0-safe: name/founding only.
+    status: 'locked',
+    fixture: 'village_baker',
+    intent: '"what is this place / tell me about this town" delivers the place overview — never a [clarify:referent] bounce on the imperative "Tell", never a roll, never a §0 cosmology leak',
+    paraphrases: [
+      'What is this place?',
+      'Tell me about this town.',
+      "What's this village like?",
+      'Describe this place.',
+      'What kind of place is this?',
+      'tell me about this settlement',
+    ],
+    assert: {
+      surface_matches: [/\bthis is\b[^.?!]*pilgrim/i],   // delivers the place by name
+      surface_excludes: [
+        /clarify:referent/i,
+        /haven'?t introduced anyone named/i,              // the "Tell" false-NER bounce
+        /\[roll:/,                                        // common knowledge, never a check
+        /cataclysm|the scar|undoing|under-?collapse|universe.?mind/i,  // §0 — never the cosmology
+      ],
+    },
+    diverge: [
+      { text: 'tell me about Corwin', reason: 'a PERSON ask — routes to the person/clarify path, never a place overview' },
+      { text: 'tell me about the orb', reason: 'a lore/topic ask — no place anchor; honest-declines, never an overview deliver' },
+    ],
+    source: 'D-A2a — _a2_probe.mjs surfaced "Tell me about this town" → [clarify:referent] "named Tell" on glass-harbor; reproduced + fixed LLM-off (placeQuery overview type + NPC_PROPER_REFERENT_STOPWORDS tell/show/describe)',
   },
 ];

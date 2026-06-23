@@ -3867,6 +3867,8 @@ const NPC_REFERENT_STOPWORDS = new Set([
 const NPC_PROPER_REFERENT_STOPWORDS = new Set([
   'i', 'okay', 'ok', 'wait', 'where', 'who', 'what', 'when', 'why', 'how', 'don',
   'dont', 'hey', 'hi', 'hello', 'stop', 'just', 'give', 'take', 'let', 'the', 'a',
+  // imperative verbs that open a "tell/show/describe me about <place>" ask — never names
+  'tell', 'show', 'describe',
   'an', 'wizard', 'pilgrim', 'rest',
   'then', 'so', 'but', 'if',
   'is', 'was', 'are', 'were', 'has', 'have', 'had', 'do', 'does', 'did', 'can',
@@ -5483,7 +5485,7 @@ export function infoExtractionOutcome(world, text, outcome) {
 // docs/WORLD_QUERY_RESOLVER.md §3. Common knowledge → NO roll; no data → honest-decline via
 // the shared `declineInfoSeek` phrasing. §0 is enforced upstream: the resolver only surfaces
 // symptom/fact-level substrate, never the cosmology. (W-1 founding lifted in, behavior-locked.)
-const PLACE_FACT_MECH_DETAIL = { founding: "the settlement's founding", events: "what's remembered here", population: "who's about" };
+const PLACE_FACT_MECH_DETAIL = { founding: "the settlement's founding", events: "what's remembered here", population: "who's about", overview: "what this place is" };
 function renderPlaceFactDM(world, fact) {
   const lab = String(fact?.body || '');
   const body = lab.charAt(0).toUpperCase() + lab.slice(1);

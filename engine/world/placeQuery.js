@@ -184,14 +184,58 @@ function resolvePopulation(world, query) {
   return { type: 'population', body, clarity: 'vivid' };
 }
 
+// ── Type: overview ───────────────────────────────────────────────────────────
+// "What is this place? / tell me about this town / describe this village / what's
+// this town like / what kind of place is this" → the broad IDENTITY of where you
+// stand: the node's NAME + its founding line (the place's character in one fact).
+// This is the natural "tell me about here" ask that is NOT a founding-HISTORY
+// question (how/why founded), NOT an events question (what happened), NOT a roster
+// (who's here) — disjoint from those, so it carries its own classifier. PLACE-ANCHORED
+// on purpose (this <place> / here): "tell me about Corwin" (a person) and "tell me
+// about the orb" (a topic) carry no place anchor → they fall to their own paths. A
+// settlement always has a name, so this almost always DELIVERS (you can always say
+// where you stand); the founding line is appended only when the substrate has it.
+// §0-safe: name + founding label only, authored never to allude to the cosmology.
+const PLACE_OVERVIEW_QUERY_RE = new RegExp([
+  // what is / what's this <place> (… like)
+  /\bwhat(?:'?s| is)\s+(?:this|the)\s+(?:place|town|village|settlement|hamlet|city|outpost|crossing|hold)\b/,
+  // tell me about this <place> / tell me about here
+  /\btell\s+me\s+about\s+(?:this\s+(?:place|town|village|settlement|hamlet|city|outpost|crossing|hold)|here)\b/,
+  // describe this <place>
+  /\bdescribe\s+(?:this|the)\s+(?:place|town|village|settlement|hamlet|city|outpost|crossing|hold)\b/,
+  // what kind/sort/manner of place is this
+  /\bwhat\s+(?:kind|sort|manner)\s+of\s+(?:place|town|village|settlement|hamlet)\s+is\s+this\b/,
+].map(r => r.source).join('|'), 'i');
+
+function isOverviewQuery(text) {
+  const t = String(text || '');
+  if (!t.trim()) return false;
+  if (PLACE_AGENT_COUNT_RE.test(t)) return false; // "who/whose/how many …" is not an overview
+  return PLACE_OVERVIEW_QUERY_RE.test(t);
+}
+
+function resolveOverview(world) {
+  const nodeId = String(world?.map?.currentNodeId || '');
+  if (!nodeId) return null;
+  const node = (Array.isArray(world?.map?.nodes) ? world.map.nodes : []).find(n => n && n.id === nodeId);
+  const name = String(node?.name || '').trim();
+  if (!name) return null; // nowhere named → honest-decline (never invent a place)
+  const ev = substrateEventsFor(world, nodeId).find(e => e && e.layer === 'node' && e.kind === 'founding');
+  const founding = ev?.label ? String(ev.label) : '';
+  const body = founding ? `this is ${name} — ${founding}` : `this is ${name}`;
+  return { type: 'overview', body, clarity: 'vivid' };
+}
+
 // ── The resolver (one mechanism) ───────────────────────────────────────────────
 // Add a place TYPE as one { type, classify, resolve } slot — never a bespoke handler.
 // The types are disjoint by design (founding = "history of this place", events = "what
-// happened here", population = "who's here"), so first-match is unambiguous.
+// happened here", population = "who's here", overview = "what this place is"), so
+// first-match is unambiguous.
 const PLACE_TYPES = [
   { type: 'founding',   classify: isFoundingCircumstance, resolve: resolveFounding },
   { type: 'events',     classify: isEventsQuery,          resolve: resolveEvents },
   { type: 'population', classify: isPopulationQuery,      resolve: resolvePopulation },
+  { type: 'overview',   classify: isOverviewQuery,        resolve: resolveOverview },
 ];
 
 /**

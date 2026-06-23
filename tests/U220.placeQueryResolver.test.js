@@ -26,7 +26,6 @@ test('U220 placeQuery — AGENT/COUNT + non-place queries are NOT classified (ca
     'which family built this town?',     // agent
     'name the founders of this town',    // agent
     'I look around',                     // survey
-    'what is this place?',               // look-around, not a founding circumstance
     'how do I get this town to settle down?', // "settle down" idiom, not founding
   ]) {
     assert.equal(classifyPlaceQuery(t), null, t);
@@ -128,6 +127,47 @@ test('U220 placeQuery — population: a node with no sociable roster honest-decl
   assert.equal(resolvePlaceFact(empty, { type: 'population' }), null);
   const onlyHostile = { map: { currentNodeId: 'n', nodes: [{ id: 'n', settlement: { npcs: [{ name: 'Grik', hostile: true }] } }] } };
   assert.equal(resolvePlaceFact(onlyHostile, { type: 'population' }), null); // never name a lurker as a resident
+});
+
+test('U220 placeQuery — overview: "what is this place / tell me about this town" classifies to the overview slot', () => {
+  for (const t of [
+    'what is this place?',
+    'tell me about this town',
+    "what's this village like?",
+    'describe this place',
+    'what kind of place is this?',
+    'tell me about this settlement',
+  ]) {
+    assert.deepEqual(classifyPlaceQuery(t), { scope: 'here', type: 'overview' }, t);
+  }
+});
+
+test('U220 placeQuery — overview: person/lore/agent asks do NOT classify as overview (the place-anchor guard)', () => {
+  for (const t of [
+    'tell me about Corwin',          // person — no place anchor
+    'tell me about the orb',         // lore/topic — not a place
+    'who lives here?',               // roster → population, not overview
+    'how was this town founded?',    // founding history → founding, not overview
+    'who founded this place?',       // agent → excluded
+  ]) {
+    assert.notDeepEqual(classifyPlaceQuery(t), { scope: 'here', type: 'overview' }, t);
+  }
+});
+
+test('U220 placeQuery — overview: resolve delivers node NAME (+ founding when present); declines when nowhere named', () => {
+  // trade_town_tavern has a named node WITH a node-founding substrate event → name + founding
+  const withFounding = resolvePlaceFact(FIXTURES.trade_town_tavern(), { scope: 'here', type: 'overview' });
+  assert.ok(withFounding, 'expected an overview fact');
+  assert.equal(withFounding.type, 'overview');
+  assert.match(withFounding.body, /^this is .+ — .*merchant who saw the ford/i);
+  // village_baker has a named node but NO founding substrate → name only, still delivers
+  const nameOnly = resolvePlaceFact(FIXTURES.village_baker(), { scope: 'here', type: 'overview' });
+  assert.ok(nameOnly, 'a named place always delivers its name');
+  assert.match(nameOnly.body, /^this is Pilgrim'?s Rest/i);
+  assert.doesNotMatch(nameOnly.body, /—/);  // no founding clause appended when the substrate has none
+  // a node with no name → honest-decline (never invent a place)
+  const unnamed = { map: { currentNodeId: 'n', nodes: [{ id: 'n', settlement: { npcs: [] } }] } };
+  assert.equal(resolvePlaceFact(unnamed, { scope: 'here', type: 'overview' }), null);
 });
 
 test('U220 placeQuery — unknown/missing type resolves to null, never throws', () => {

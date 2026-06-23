@@ -795,6 +795,22 @@ throw/choke correctly requires a grip first; a name-mismatch attack sensibly hit
 107/107, suite 8480→8485/0, determinism green; 4 commits (`ae245f9`→); spend = the Tier-2 sweep only (~$0.05). The Ref
 now covers dialogue-ask AND generic-resolve, runs ON by default, and the kill-over-flee contradiction is closed.
 
+*2026-06-23 (D-A2a — world-wiring track, Phase A: one-town legibility) — the placeQuery `overview` type:*
+The autonomous demo-build block opened with a free LLM-off probe of the glass-harbor one-town slice
+(`scripts/_a2_probe.mjs`). The spine HELD (population / founding / events / person-identity all DELIVER grounded
+facts; §0 and the fabrication-guard hold), but two gaps surfaced: (1) "What is this place? / Tell me about this
+town" BOUNCED `[clarify:referent]` — the capitalized imperative "Tell" was parsed as an NPC name — or fell to a
+generic roll; (2) no forward-looking public CONCERN (→ D-A2b). Fix for (1): a new place `overview` type
+(`engine/world/placeQuery.js`) delivers the place IDENTITY (node name + its founding line when the substrate has
+it), no roll, §0-safe; + `tell`/`show`/`describe` added to `NPC_PROPER_REFERENT_STOPWORDS` (`playloop.js`) so the
+imperative is never read as a referent. Render-free → no state/RNG/WORLD_VERSION change (determinism
+U19/21/22/27/30 green). **Locks:** C4-022 (overview deliver — 6 paraphrases + person/lore diverge), U220 overview
+classify/resolve cases; corrected C4-004's stale diverge — the "Tell me everything about this village's history"
+phrase that had been MASKING the bug (it bounced on "Tell", which didn't match the decline signature) now
+correctly honest-declines, so it graduated into C4-004's locked paraphrases (net-strengthens the lock). **Net:**
+convergence 107→108/108, suite 8485→8488/0, determinism green; commit `6f80ae7` (pushed). Next: D-A2b (the public
+concern — the bridge from a legible town into Phase B's talk→quest loop).
+
 **Social-physics categories to mine next (Biblioteca Vols 2–6, mostly not yet failing-in-gate but on the map):**
 sarcasm/irony inversion (Vol 2; transcript: `docs/playtests/ridiculous-sarcasm-2026-06-06.md`), loaded
 questions / presupposition (Vol 3, "have you stopped stealing?"), bluff vs. claim (Vol 5), request/order/threat

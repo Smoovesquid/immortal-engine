@@ -28,6 +28,7 @@ import { detectPhysicalInteraction, evaluatePhysicsSync } from './llmPhysics.js'
 import { rollPhysicsCheck } from './resolve.js';
 import { appendCanonEvent } from './csl/canonLog.js';
 import { createGoal, checkGoals } from './goals/goalContract.js';
+import { proposeGoalFromDialogue } from './goals/proposeGoal.js';
 import { castArcs, tickArcs } from './story/storyEngine.js';
 import { beginDialogue, askNpc, endDialogue, resolveNpcAtCurrentNode, isRecruitIntent, npcVoice, voiceManner, commonKnowledgeAnswer, extractTopic } from './npc/dialogue.js';
 import { mintThing, revealTrueEdge } from './things.js';
@@ -2370,6 +2371,33 @@ function playerMoveCore(world, packsById, text) {
         return { ...social, world: { ...social.world, conversation: { ...social.world.conversation, lastRoll } } };
       }
       return social;
+    }
+  }
+
+  // (D-B1) Quest-birth bridge — a player's DECLARED intent in conversation becomes a
+  // tracked goal the player CHOSE, born in fiction (no quest-board artifact). LAST check
+  // before the generic resolve floor: every specific handler (combat, dialogue-enter,
+  // travel, social) has already claimed its turn, so a declaration that would otherwise
+  // fall to empty generic filler ("it lands clean…") instead mints a real goal + an
+  // in-character acknowledgment. maybeCheckGoals (next tick) completes it on the deed.
+  // Tight by construction (proposeGoalFromDialogue): a musing / question / unresolved
+  // target mints NOTHING and falls through to the normal resolve. createGoal is the
+  // sanctioned goal path (cap-guarded); pushEvent mirrors seedInitialGoal. NARRATION never
+  // carries a "NEW QUEST" artifact — the [goal:born] tag is the crunch annotation only.
+  if (!w.combat?.active) {
+    // The witness/help-target is a SOCIABLE present NPC, never the foe named in a
+    // "deal with <hostile>" vow (a bandit doesn't "mark your word").
+    const addressed = socialTarget(w, text);
+    const witness = (addressed && !addressed.hostile) ? addressed : (presentNonHostileNpcs(w)[0] || null);
+    const goalSpec = proposeGoalFromDialogue(w, text, witness);
+    if (goalSpec) {
+      const made = createGoal(w, goalSpec);
+      if (made.goal) {
+        const w2 = pushEvent(made.world, { kind: 'goalCreated', data: { goalId: made.goal.id, kind: made.goal.kind, targetRef: made.goal.targetRef, source: 'dialogue' } });
+        const lc = made.goal.label.charAt(0).toLowerCase() + made.goal.label.slice(1);
+        const reaction = witness?.name ? ` ${witness.name} marks your word.` : '';
+        return { world: w2, output: { narration: `Wizard: You set yourself to it — you'll ${lc}.${reaction}`, mechanics: `[goal:born | ${made.goal.kind}]` } };
+      }
     }
   }
 

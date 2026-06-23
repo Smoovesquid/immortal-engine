@@ -811,6 +811,20 @@ correctly honest-declines, so it graduated into C4-004's locked paraphrases (net
 convergence 107→108/108, suite 8485→8488/0, determinism green; commit `6f80ae7` (pushed). Next: D-A2b (the public
 concern — the bridge from a legible town into Phase B's talk→quest loop).
 
+*2026-06-23 (D-A2b — world-wiring track, Phase A: the town's public concern) — the placeQuery `concern` type:*
+The same one-town probe showed "anything I can help with? / what does the town need?" fell to the empty
+observe-only fallback — the town carried no forward-looking PUBLIC CONCERN (the §12-Q1 quest hook). New place
+`concern` type (`engine/world/placeQuery.js`) surfaces the present sociable NPCs' readable surface WANTS (reusing
+`engine/npc/npcArc.npcWant` — the shallow role-shaped layer), attributed + grounded, no roll. E.g. "Folk here
+carry their small wants — Corwin Boneknit the representative wants a rival undone and Tove the trader wants a debt
+repaid." Sight-scoped (a hostile lurker is never a concern-bearer); declines when no sociable roster. DISJOINT
+from the other four place types (verified: events/founding/population/overview unchanged). This is the **bridge
+into Phase B** — a want the player offers to help with becomes a goal (D-B1). §0-safe (npcWant draws only from the
+mundane want pools); render-free → determinism U19/21/22/27/30 green. **Locks:** C4-023 (concern deliver — 6
+paraphrases + events/population diverge), U220 concern classify/resolve/sight-safety cases. **Net:** convergence
+108→109/109, suite 8488→8491/0, determinism green; commit `9716e11`. Curated town-level concerns (the demo's
+missing-caravan plot) ride the D-A3 preset later by overriding this resolver's source.
+
 **Social-physics categories to mine next (Biblioteca Vols 2–6, mostly not yet failing-in-gate but on the map):**
 sarcasm/irony inversion (Vol 2; transcript: `docs/playtests/ridiculous-sarcasm-2026-06-06.md`), loaded
 questions / presupposition (Vol 3, "have you stopped stealing?"), bluff vs. claim (Vol 5), request/order/threat

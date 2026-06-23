@@ -644,6 +644,36 @@ judging the candidate against canon). **Methodology win:** the parallel sprint v
 disjoint U-numbers U229–U234; rebase-on-shared-branch). Next decision: re-gate to measure the six live, or keep
 building — gate spend is a deliberate call.
 
+*2026-06-23 (gate-15 deterministic batch — empty-result + dialogue-threat-redirect; narration/playloop, Basecamp-
+authored; from `docs/playtests/opus-gate-2026-06-23-regate-gate15.md`, 4/48):* the gate-15 failures converged onto
+TWO deterministic classes, both now closed:
+
+| gate-15 fail | shape | packet | commit |
+|---|---|---|---|
+| Lore t11 "is there a healer here?" | empty-SUCCESS — presence question → gen:s | U235 | `4c1d997` |
+| Chaos t11 "…where's Corwin?" | empty-MIXED — where-is-present → gen:m | U235 | `4c1d997` |
+| RL t5 "who do I see?" | empty-FAILURE — roster question → gen:f | U235 | `4c1d997` |
+| RL t12 threat to the Lingerer | dialogue routing → partner's role-talk | U236 | `68ff029` |
+
+**U235 (empty-result class):** a who's-here / where-is-present / is-there-here PRESENCE question escaped every detector
+(isInfoSeekingText / meta / confrontation / npc-observer) and fell to `genericGroundedOutcome`'s gen:s/m/f atmosphere
+bank — answering a concrete question with content-free filler. Fix: `answerOrDeclineQuestion`, wired into BOTH the
+`grounded` chain (so it fires regardless of whether the composer floored — a fresh-world repro hits composer
+atmosphere, the gate hit the gen bank; same class, two paths) AND `genericGroundedOutcome`'s floor. Presence → the live
+roster (`buildLocationSurvey` — the present people are canon); grounded fact → delivered; else honest `declineInfoSeek`.
+Confrontations stay owned by `confrontationReaction`; action/permission questions ("can I climb?") and action statements
+with a trailing "?" keep the action floor — diverge-locked. **U236 (dialogue-threat-redirect):** `isDialogueBreakingIntent`
+only broke on movement/physics, so a threat/attack at a present NPC fell to the "ask the partner" branch (even a bare
+"I attack the Lingerer" was swallowed as a deflected ask to Corwin). Fix: it now breaks on (a) an explicit attack on any
+present NPC, and (b) a threat/ultimatum aimed at a NON-partner present NPC; `detectApproach` now recognizes the ultimatum
+shape ("last chance to talk before I make you") so the redirected threat resolves AS an intimidate against its target,
+never atmosphere. Partner-threats and advice-questions stay in dialogue — diverge-locked. **+U235 (13 cases), +U236
+(8 cases).** Convergence 105/105, suite 8398→8415/0, determinism green. Both reproduced LLM-off FIRST; pushed
+`a13f574..68ff029`. **Gate-16 (live measure) BLOCKED:** the Anthropic Messages API was in a sustained outage
+(500 Internal-server-error → 529 Overloaded, all models) across two ~45-min polling windows — no gate ran, no spend
+(500/529 aren't billed; gate budget 0/7 used). Live measurement of U235/U236 + next-batch discovery is PENDING API
+recovery.
+
 **Social-physics categories to mine next (Biblioteca Vols 2–6, mostly not yet failing-in-gate but on the map):**
 sarcasm/irony inversion (Vol 2; transcript: `docs/playtests/ridiculous-sarcasm-2026-06-06.md`), loaded
 questions / presupposition (Vol 3, "have you stopped stealing?"), bluff vs. claim (Vol 5), request/order/threat

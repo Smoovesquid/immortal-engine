@@ -237,9 +237,18 @@ function naturalStrikeProfile(text, base) {
   return label ? { ...base, name: label } : base;
 }
 
+function isFixtureEgressText(text) {
+  const t = String(text || '').toLowerCase();
+  if (!/\b(door|window|windowsill|sill|shutter|hinge)\b/.test(t)) return false;
+  const directedAtFoe = /\b(?:at|into|onto|against)\s+(?:him|her|them|it|the\s+(?:foe|enemy|bandit|linger(?:er)?|monster|creature|guard|wolf|goblin|orc)|[a-z]+(?:fang|claw|hand|face|head|chest|gut|snout))\b/.test(t);
+  if (directedAtFoe) return false;
+  return /\b(open|opened|opening|through|out|outside|escape|egress|clear\s+the\s+street)\b/.test(t);
+}
+
 function isImprovisedStrikeText(text) {
   const t = String(text || '').toLowerCase();
   if (!/\b(grab|snatch|smash|shatter|break|slam|bash|kick|boot|throw|hurl|fling|toss|lob|shove|ram|drive|wedge|tip|dump|splash|pour|swing)\b/.test(t)) return false;
+  if (isFixtureEgressText(t)) return false;
   return /\b(oil|burning|lantern|lamp|torch|flame|fire|chair|stool|table|bottle|mug|rock|stone|beam|plank|board|door|window|windowsill|sill|shutter|hinge|wall|floor|ceiling|roof)\b/.test(t);
 }
 
@@ -687,6 +696,7 @@ export function escapeKitView(pc) {
  */
 export function parseEscapeAction(text) {
   const t = String(text || '').trim().toLowerCase();
+  if (isFixtureEgressText(t)) return { verb: 'egress' };
   // Cover is a positional move — duck behind the room's furniture for +AC. Check
   // it before the attack verbs so "hide behind the pillar" reads as cover.
   if (/\b(take\s+cover|cover|behind|duck|hunker)\b/.test(t)) return { verb: 'cover' };
@@ -1056,7 +1066,7 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
   const targetIdx = pickTargetIdx(enemies, actionText);
 
   if (!hadAliveAtTurnStart) {
-    const noTargetMech = (verb === 'grapple' || verb === 'throw' || verb === 'choke' || verb === 'escape')
+  const noTargetMech = (verb === 'grapple' || verb === 'throw' || verb === 'choke' || verb === 'escape')
       ? '[grapple:no-target]'
       : '[combat:no-live-target]';
     const noTargetBeat = noTargetMech === '[grapple:no-target]'
@@ -1069,7 +1079,10 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
   }
 
   const hazardKind = parseHazard(actionText);
-  if (hazardKind) {
+  if (verb === 'egress') {
+    beats.push('You force the way open and shout for people to clear out — movement, not a blow aimed at the foe.');
+    actionMech = '[combat:egress]';
+  } else if (hazardKind) {
     // Environmental hazard mid-fight (roof collapse / fire / fall): SRD damage to
     // the PC and everyone caught in the area. PC damage goes to meta.escapeHp (as
     // heals do — the enemy turn re-reads it); enemies mutate in place (area).

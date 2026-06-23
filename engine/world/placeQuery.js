@@ -26,6 +26,7 @@
 // authored never to allude). Folk-level types added later (rumor/dangers) get a §0 check.
 
 import { substrateEventsFor } from '../substrate.js';
+import { npcWant } from '../npc/npcArc.js';
 
 // ── Type: founding ───────────────────────────────────────────────────────────
 // "How/why was this place founded/settled?" / "the history of this town" / "how old is
@@ -226,14 +227,73 @@ function resolveOverview(world) {
   return { type: 'overview', body, clarity: 'vivid' };
 }
 
+// ── Type: concern ────────────────────────────────────────────────────────────
+// "Anything I can help with? / what does the town need? / is anyone in trouble? /
+// what's troubling folk here?" → the town's FORWARD-LOOKING public concern: the
+// readable surface WANTS the present people carry (engine/npc/npcArc.npcWant — the
+// shallow "what you read after a word or two" layer, role-shaped + deterministic). This
+// is the bridge from a legible town into the talk→quest loop (D-B1): a want a player
+// offers to help with becomes a goal. DISTINCT from `events` (PAST history / "what
+// happened") — this is what's UNSETTLED now. SIGHT-SCOPED safety (mirrors population): a
+// hostile lurker is never a concern-bearer. A node with no sociable roster honest-declines.
+// §0-safe: npcWant draws only from the mundane role/default want pools (a harvest that
+// holds, a quiet night, a caravan that arrives whole) — authored never to allude to the
+// cosmology. Curated, town-level concerns (the demo's missing-caravan plot) ride the D-A3
+// preset later by overriding this resolver's source.
+const PLACE_CONCERN_QUERY_RE = new RegExp([
+  // anything I can/could help with · how can I help · can I be of help/use
+  /\b(?:any|some)thing\b[^.?!]{0,20}?\bi\b[^.?!]{0,8}?\b(?:can|could|might)\b[^.?!]{0,8}?\bhelp\b/,
+  /\bhow\s+(?:can|could|might)\s+i\s+(?:help|be\s+of\s+(?:help|use)|lend\s+a\s+hand)\b/,
+  /\b(?:can|could)\s+i\s+(?:help|be\s+of\s+(?:help|use)|lend\s+a\s+hand)\b/,
+  // what does the town/people/folk need
+  /\bwhat\s+do(?:es)?\s+(?:this\s+)?(?:town|village|settlement|place|people|folk|everyone)\s+need\b/,
+  // is anyone in trouble/need/danger · does anyone need help/a hand
+  /\b(?:is|are)\s+(?:any(?:one|body)|the\s+people|folk)\s+in\s+(?:trouble|need|danger)\b/,
+  /\bdo(?:es)?\s+(?:any(?:one|body)|the\s+people|folk)\s+need\s+(?:help|a\s+hand|anything)\b/,
+  /\bany(?:one|body)\s+need(?:s|ing)?\s+(?:help|a\s+hand)\b/,
+  // what's troubling/worrying/bothering the people/folk/town
+  /\bwhat(?:'?s| is|\s+are)\b[^.?!]{0,12}?\b(?:troubling|worrying|bothering|weighing\s+on|eating)\b[^.?!]{0,12}?\b(?:the\s+)?(?:people|folk|town|village|everyone|locals)\b/,
+].map(r => r.source).join('|'), 'i');
+
+function isConcernQuery(text) {
+  const t = String(text || '');
+  if (!t.trim()) return false;
+  return PLACE_CONCERN_QUERY_RE.test(t);
+}
+
+function resolveConcern(world) {
+  const nodeId = String(world?.map?.currentNodeId || '');
+  if (!nodeId) return null;
+  const node = (Array.isArray(world?.map?.nodes) ? world.map.nodes : []).find(n => n && n.id === nodeId);
+  const npcs = Array.isArray(node?.settlement?.npcs) ? node.settlement.npcs : [];
+  const seed = String(world?.meta?.seed || '');
+  // present sociable NPCs only — never surface a hostile lurker as a concern-bearer
+  const sociable = npcs.filter(n => n && !n.hostile)
+    .slice()
+    .sort((a, b) => String(a.id || '').localeCompare(String(b.id || '')));
+  if (!sociable.length) return null; // no one to carry a concern → caller honest-declines
+  const seen = new Set();
+  const bits = [];
+  for (const n of sociable) {
+    const want = npcWant(n, seed)?.surface;
+    if (!want || seen.has(want)) continue;
+    seen.add(want);
+    bits.push(`${describePresentNpc(n)} wants ${want}`);
+    if (bits.length >= 2) break;
+  }
+  if (!bits.length) return null;
+  return { type: 'concern', body: `folk here carry their small wants — ${joinNames(bits)}`, clarity: 'vivid' };
+}
+
 // ── The resolver (one mechanism) ───────────────────────────────────────────────
 // Add a place TYPE as one { type, classify, resolve } slot — never a bespoke handler.
 // The types are disjoint by design (founding = "history of this place", events = "what
-// happened here", population = "who's here", overview = "what this place is"), so
-// first-match is unambiguous.
+// happened here", concern = "what folk need now", population = "who's here", overview =
+// "what this place is"), so first-match is unambiguous.
 const PLACE_TYPES = [
   { type: 'founding',   classify: isFoundingCircumstance, resolve: resolveFounding },
   { type: 'events',     classify: isEventsQuery,          resolve: resolveEvents },
+  { type: 'concern',    classify: isConcernQuery,         resolve: resolveConcern },
   { type: 'population', classify: isPopulationQuery,      resolve: resolvePopulation },
   { type: 'overview',   classify: isOverviewQuery,        resolve: resolveOverview },
 ];

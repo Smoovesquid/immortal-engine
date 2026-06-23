@@ -5485,7 +5485,7 @@ export function infoExtractionOutcome(world, text, outcome) {
 // docs/WORLD_QUERY_RESOLVER.md §3. Common knowledge → NO roll; no data → honest-decline via
 // the shared `declineInfoSeek` phrasing. §0 is enforced upstream: the resolver only surfaces
 // symptom/fact-level substrate, never the cosmology. (W-1 founding lifted in, behavior-locked.)
-const PLACE_FACT_MECH_DETAIL = { founding: "the settlement's founding", events: "what's remembered here", population: "who's about", overview: "what this place is" };
+const PLACE_FACT_MECH_DETAIL = { founding: "the settlement's founding", events: "what's remembered here", population: "who's about", overview: "what this place is", concern: "what folk here need" };
 function renderPlaceFactDM(world, fact) {
   const lab = String(fact?.body || '');
   const body = lab.charAt(0).toUpperCase() + lab.slice(1);

@@ -842,4 +842,39 @@ export default [
     ],
     source: 'D-A2a — _a2_probe.mjs surfaced "Tell me about this town" → [clarify:referent] "named Tell" on glass-harbor; reproduced + fixed LLM-off (placeQuery overview type + NPC_PROPER_REFERENT_STOPWORDS tell/show/describe)',
   },
+
+  // ---- LOCKED ----
+  {
+    id: 'C4-023',
+    capability: 'C4',
+    // D-A2b (world-wiring track). The town's forward-looking PUBLIC CONCERN — the §12-Q1 quest hook.
+    // "Anything I can help with? / what does the town need?" used to fall to the empty observe-only
+    // fallback. The placeQuery `concern` type now surfaces the present sociable NPCs' readable surface
+    // WANTS (engine/npc/npcArc.npcWant), attributed, no roll. The bridge into Phase B's talk→quest loop.
+    status: 'locked',
+    fixture: 'village_baker',
+    intent: '"anything I can help with / what does the town need" surfaces the town concern (present NPCs\' wants), grounded + attributed — never the empty observe fallback, never a roll, never a §0 cosmology leak',
+    paraphrases: [
+      'Is there anything I can help with around here?',
+      'What does this town need?',
+      'Is anyone in trouble here?',
+      "What's troubling the people here?",
+      'Does anyone need a hand?',
+      'How can I help the town?',
+    ],
+    assert: {
+      surface_matches: [/folk here carry their small wants/i],   // the grounded, attributed concern
+      surface_excludes: [
+        /observe only — no roll, state unchanged/i,   // the empty fallback this packet removed
+        /\[roll:/,                                      // common knowledge, never a check
+        /clarify:referent/i,
+        /cataclysm|the scar|undoing|under-?collapse|universe.?mind/i,  // §0 — wants never allude to the cosmology
+      ],
+    },
+    diverge: [
+      { text: 'What happened here?', reason: 'PAST history → the events resolver (a local-event), not the forward-looking concern' },
+      { text: 'Who lives here?', reason: 'a roster ask → the population resolver, not the concern' },
+    ],
+    source: 'D-A2b — _a2_probe.mjs showed "anything troubling the town?" fell to observe-only on glass-harbor; reproduced + fixed LLM-off (placeQuery concern type sourcing npcArc.npcWant surface)',
+  },
 ];

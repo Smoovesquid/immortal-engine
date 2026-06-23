@@ -170,6 +170,52 @@ test('U220 placeQuery — overview: resolve delivers node NAME (+ founding when 
   assert.equal(resolvePlaceFact(unnamed, { scope: 'here', type: 'overview' }), null);
 });
 
+test('U220 placeQuery — concern: "anything I can help with / what does the town need" classifies to the concern slot', () => {
+  for (const t of [
+    'is there anything I can help with around here?',
+    'what does this town need?',
+    'is anyone in trouble here?',
+    "what's troubling the people here?",
+    'does anyone need a hand?',
+    'how can I help the town?',
+  ]) {
+    assert.deepEqual(classifyPlaceQuery(t), { scope: 'here', type: 'concern' }, t);
+  }
+});
+
+test('U220 placeQuery — concern: past-events / roster / founding asks do NOT classify as concern (disjoint)', () => {
+  for (const t of [
+    'any trouble around here?',          // PAST → events, not a forward concern
+    'what trouble has this town seen?',  // PAST → events
+    'who lives here?',                   // roster → population
+    'how was this town founded?',        // history → founding
+  ]) {
+    assert.notDeepEqual(classifyPlaceQuery(t), { scope: 'here', type: 'concern' }, t);
+  }
+});
+
+test('U220 placeQuery — concern: resolve surfaces present sociable NPC wants; never a hostile; declines when no roster', () => {
+  const fact = resolvePlaceFact(FIXTURES.village_baker(), { scope: 'here', type: 'concern' });
+  assert.ok(fact, 'expected a concern fact');
+  assert.equal(fact.type, 'concern');
+  assert.match(fact.body, /Mira Hearth the baker wants /);   // attributed, grounded want (npcArc surface)
+  // sight-scoped safety: a hostile lurker is never surfaced as a concern-bearer (mirrors population)
+  const withHostile = {
+    meta: { seed: 'h-concern' },
+    map: { currentNodeId: 'n', nodes: [{ id: 'n', settlement: { npcs: [
+      { id: 'a', name: 'Ada Holt', role: 'smith', hostile: false },
+      { id: 'g', name: 'Grik', role: 'bandit', hostile: true },
+    ] } }] },
+  };
+  const f2 = resolvePlaceFact(withHostile, { scope: 'here', type: 'concern' });
+  assert.ok(f2);
+  assert.match(f2.body, /Ada Holt/);
+  assert.doesNotMatch(f2.body, /Grik/);                      // the hostile is never a concern-bearer
+  // no sociable roster → honest-decline (null)
+  const empty = { meta: { seed: 'x' }, map: { currentNodeId: 'n', nodes: [{ id: 'n', settlement: { npcs: [] } }] } };
+  assert.equal(resolvePlaceFact(empty, { scope: 'here', type: 'concern' }), null);
+});
+
 test('U220 placeQuery — unknown/missing type resolves to null, never throws', () => {
   const w = FIXTURES.trade_town_tavern();
   assert.equal(resolvePlaceFact(w, { type: 'nonesuch' }), null);

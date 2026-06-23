@@ -77,10 +77,11 @@ async function ask({ system, user, model, maxTokens = 400 }) {
     messages: [{ role: 'user', content: user }],
   });
   let lastErr = 'unknown';
-  for (let attempt = 0; attempt <= 5; attempt++) {
+  const MAX_RETRY = 10; // patient enough to ride through transient 529-Overloaded dips during API recovery
+  for (let attempt = 0; attempt <= MAX_RETRY; attempt++) {
     if (attempt > 0) {
-      const waitMs = Math.min(30000, 1000 * 2 ** (attempt - 1)); // 1s,2s,4s,8s,16s
-      process.stderr.write(`  [retry ${attempt}/5 — ${lastErr} — waiting ${waitMs}ms]\n`);
+      const waitMs = Math.min(30000, 1000 * 2 ** (attempt - 1)); // 1,2,4,8,16,30,30,30,30,30 ≈ 180s total
+      process.stderr.write(`  [retry ${attempt}/${MAX_RETRY} — ${lastErr} — waiting ${waitMs}ms]\n`);
       await new Promise(res => setTimeout(res, waitMs));
     }
     let r;
@@ -102,7 +103,7 @@ async function ask({ system, user, model, maxTokens = 400 }) {
     tally(j.usage);
     return (j.content || []).map(b => b.text || '').join('').trim();
   }
-  throw new Error(`${model} failed after 5 retries — last: ${lastErr}`);
+  throw new Error(`${model} failed after ${MAX_RETRY} retries — last: ${lastErr}`);
 }
 function parseJson(text) {
   const a = text.indexOf('{'), b = text.lastIndexOf('}');

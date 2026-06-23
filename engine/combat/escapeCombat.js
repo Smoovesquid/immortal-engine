@@ -984,11 +984,11 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
   let actionMech = ''; // a grapple action surfaces its own mechanics line
   const { verb: rawVerb, mode } = parseEscapeAction(actionText);
   let verb = rawVerb;
+  const grappleIntent = parseGrappleVerb(actionText);
   // Martial grapple intents only override the 'strike' DEFAULT — never a spell,
   // parley, cover, or ward verb. (Grapple slice, 2026-06-15.)
   if (verb === 'strike' && !isImprovisedStrikeText(actionText)) {
-    const gv = parseGrappleVerb(actionText);
-    if (gv) verb = gv;
+    if (grappleIntent) verb = grappleIntent;
   }
   let warded = false;
   let wardBonus = 0;
@@ -1763,6 +1763,9 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
       if (!e || e.defeated || (Number(e.hp) || 0) <= 0) continue;
       // A foe in your grip can't run — it has to break free first.
       if (hasCondition(e.conditions, 'grappled')) continue;
+      // A player-declared tackle/grab/pin is the table's current action. Do
+      // not replace that declared control beat with same-turn morale flight.
+      if (grappleIntent && (verb === 'grapple' || verb === 'throw' || verb === 'choke')) continue;
       // P-75: things with legendary actions don't run — match the NORMALIZED
       // shape ({perRound, options}, see ensureCombat), not just raw arrays.
       const eLeg = e.legendaryActions;

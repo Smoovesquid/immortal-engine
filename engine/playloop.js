@@ -3807,7 +3807,14 @@ function isGroundedNpcRef(world, ref) {
   if (!text) return false;
   const tokens = r.split(/\s+/).filter(Boolean);
   if (tokens.length >= 2 && text.includes(r)) return true;
-  return tokens.some(tok => tok.length >= 3 && text.includes(tok));
+  return tokens.some(tok => {
+    if (tok.length >= 3 && text.includes(tok)) return true;
+    // gate-16: a family-PLURAL surname ("the Boneknits") is grounded when a member is
+    // present/introduced ("Corwin Boneknit") — de-pluralize so the clarify-referent
+    // doesn't bounce with a contradictory "no one by that name here".
+    const singular = tok.endsWith('s') ? tok.slice(0, -1) : '';
+    return singular.length >= 4 && text.includes(singular);
+  });
 }
 
 const NPC_REFERENT_STOPWORDS = new Set([

@@ -695,7 +695,10 @@ const INFO_SEEKING_SURVEILLANCE_RE = /\b(?:who|which|whether|if|the\s+one\s+(?:w
 // about FICTION BACKSTORY, not a game-session recap. Without this it matched
 // META_RECAP → "Nothing's happened yet" (gate-8 RL t4). The backstory qualifier
 // (locative/temporal/person) separates it from the bare recap "what happened?".
-const INFO_SEEKING_BACKSTORY_RE = /\bwhat\s+happened\b[\s\S]{0,40}?\b(?:here|last\s+night|last\s+\w+|years?\s+ago|long\s+ago|a\s+while\s+ago|before|earlier|that\s+(?:night|day|time)|to\s+(?:the|them|him|her|this|that|everyone|you|us|me|the\s+\w+))\b/i;
+// gate-16 (newbie t5): added "(the) old days / olden days / back then / in the past /
+// bygone / days gone by / years past" — "what happened in the old days?" had no
+// in-range time-ref so it fell to the META_RECAP "Nothing's happened yet" bounce.
+const INFO_SEEKING_BACKSTORY_RE = /\bwhat\s+happened\b[\s\S]{0,40}?\b(?:here|last\s+night|last\s+\w+|years?\s+ago|long\s+ago|a\s+while\s+ago|before|earlier|that\s+(?:night|day|time)|(?:the\s+)?old\s+days|olden\s+days|back\s+then|in\s+the\s+past|bygone|days?\s+gone\s+by|years?\s+past|to\s+(?:the|them|him|her|this|that|everyone|you|us|me|the\s+\w+))\b/i;
 
 // (N-4) "who was it / who was the one / who were they" — the identity of an
 // ungrounded past person ("who was it that ceased to matter?", gate-8 Lore). The
@@ -724,6 +727,15 @@ const INFO_SEEKING_WHY_ABSENT_RE = /\bwhy\b[^?]{0,60}\b(?:no|any|a|an)\s+(?:[a-z
 // "name" and stay unaffected.
 const INFO_SEEKING_NAME_ME_RE = /\bname\s+me\s+(?:one|another|a|an|the)\b/i;
 
+// (gate-16, lore-hound) "name one person old enough to remember the Boneknits" — the
+// IMPERATIVE sibling of INFO_SEEKING_NAME_ME_RE: "name (one|a|the|some) <person/family
+// noun>" with NO "me" and no "?" (so neither the name-me anchor nor isQuestionShaped
+// caught it) → fell to a generic roll → gen:s empty-success. Requires a determiner AND a
+// person/entity noun, so naming ACTIONS ("name my sword", "name your price", "name the
+// time/village") don't trip it. Routes to deliver-or-decline (a grounded name is delivered;
+// an ungrounded one honestly declines — never invents a name, EK-1).
+const INFO_SEEKING_NAME_ONE_RE = /\bname\s+(?:me\s+)?(?:one|another|a|an|the|some)\s+(?:[a-z']+\s+){0,3}(?:person|someone|somebody|soul|man|woman|girl|boy|elder|elders|family|families|villager|local|resident|witness|survivor|name)\b/i;
+
 export function isInfoSeekingText(text) {
   const t = String(text || '').toLowerCase();
   if (!t.trim()) return false;
@@ -737,7 +749,8 @@ export function isInfoSeekingText(text) {
     || INFO_SEEKING_SURVEILLANCE_RE.test(t)
     || INFO_SEEKING_BACKSTORY_RE.test(t) || INFO_SEEKING_IDENTITY_RE.test(t)
     || INFO_SEEKING_WHY_ABSENT_RE.test(t)
-    || INFO_SEEKING_NAME_ME_RE.test(t);  // U232 — "name me one other old family"
+    || INFO_SEEKING_NAME_ME_RE.test(t)   // U232 — "name me one other old family"
+    || INFO_SEEKING_NAME_ONE_RE.test(t); // gate-16 — "name one person old enough to remember…"
 }
 
 // Confrontation / contradiction challenge (H-42, IG-11 social physics): "You

@@ -774,6 +774,27 @@ generic WITS-roll path (gate #11 "the representative was his father" on a `[roll
 soft-set to generic-resolve (the `narrationSource='generic-resolve'` hook is already built; wire playloop's gen outcomes
 to set it). 4 commits on `v2-polish` (`4f44e2c`→). Budget note: spend = ~$2.9 of the .env $20 (Tim-approved one gate).
 
+*2026-06-23 (THE REF Tiers 1–3 — the "do all of these" follow-up, Tim-directed, all in-window):*
+**Tier 1 (generic-resolve coverage):** the flag-on gate found a fabrication arriving via a generic WITS roll
+(`[roll]`, not `[dialogue ask]`), which the Ref skipped. `genericGroundedOutcome` now tags ONLY its content-free
+`gen:s/m/f` filler bank as `output.narrationSource='generic-resolve'` (specific/grounded banks stay untagged → the
+Ref still skips them, stays cheap); v1.js + the gate forward it into the `/api/narrate` outcome, so the Ref reviews
+these turns too. Not part of `worldHash` → determinism untouched. **+U244** (5 cases). **Tier 2 (false-positive
+sweep + default-ON):** the real default-on bar is "does the judge leave GOOD lines alone" — `scripts/ref-falsepos-sweep.mjs`
+(a reusable paid tool) ran 12 lines a competent DM would actually say through the LIVE Haiku judge → **12/12 PASS, 0
+false positives** (two initial flags were test-data bugs — inconsistent canon + a refusal mislabeled as a deflect —
+fixed per fork-engine-vs-measurement-wrong). `server.js` REF now **defaults ON** (`REF_ENABLED=0/off/false` disables);
+the free suite is unaffected (the Ref needs a key + the server, which `node --test` doesn't provide). **Tier 3 (combat
+lane):** reproduced LLM-off. The escape model lets a WOUNDED foe break and RUN (morale, "driven off counts",
+escapeCombat ~:1787) — state correctly `defeated:false` because it FLED, not died; the judged failures (gate-19 #5,
+gate-REF #10) were the LLM polish overwriting that flee with a KILL. `validateNarrationCandidate` now rejects a
+kill-claim candidate when the base reports a flight (words-only; combat STATE untouched → determinism safe). **+U245**
+(5 cases). DOCUMENTED as design/not-a-bug (per §6, combat-model = taste): flee-at-low-HP is the morale system;
+"draw sword, call out the bandit" is a threat not a declared attack (a clear `attack <foe>` DOES start combat); grapple
+throw/choke correctly requires a grip first; a name-mismatch attack sensibly hits the live foe. **Net:** convergence
+107/107, suite 8480→8485/0, determinism green; 4 commits (`ae245f9`→); spend = the Tier-2 sweep only (~$0.05). The Ref
+now covers dialogue-ask AND generic-resolve, runs ON by default, and the kill-over-flee contradiction is closed.
+
 **Social-physics categories to mine next (Biblioteca Vols 2–6, mostly not yet failing-in-gate but on the map):**
 sarcasm/irony inversion (Vol 2; transcript: `docs/playtests/ridiculous-sarcasm-2026-06-06.md`), loaded
 questions / presupposition (Vol 3, "have you stopped stealing?"), bluff vs. claim (Vol 5), request/order/threat

@@ -398,3 +398,54 @@ on two inventories + purses (mechanics own it; narration just voices it) — no 
 
 **echoes:** trade · buy from anyone · sell to · barter · haggle · merchant · no shop here · what'll you give me ·
 economy · I'll trade my X for your Y · coin is just weight · shopfront · commerce · deal with the NPC
+
+---
+
+## IG-14 — The cannibals publish the newspaper ("The Lasting Word")
+**2026-06-23 · rung: rung 4 (consequence) + content (Phase C/D) · status: warming**
+
+Tim: *"the newspaper would be published by the cannibals. They're the only ones concerned with continuity and
+recording any kind of history. The bounties should be mixed in with the 'Kasual Korner' section that's actually
+normally used for casual sex between very odd people. If you read between the lines, you can see which ones are
+actually bounties. (Assassination is Illegal — this is their workaround. You want someone killed, you put an ad in
+the KK.) This newspaper should be very well done, especially for a newspaper published by 'evil' cannibals."*
+
+A diegetic newspaper that makes three mechanics fall out of WHO publishes it. The cannibals (§7, DEMO_REGION) are
+the **continuity faction** — they eat the fading to keep a person's *having-been* from being lost, so recording
+history is the same instinct made public. They run the paper because they're the only people in the valley who
+refuse to forget. One object, three jobs:
+- **Reputation-travels (rung 4 / D-B2):** your deeds print in a news column ("From the Roads") → a stranger greets
+  you because they READ about you. The mechanic explains itself (pure §0: the world just behaving). Garbling rides
+  the existing rumor fidelity tiers — a far-traveled issue gets your name half-wrong.
+- **Quest discovery / bounties (Tim's refinement, 2026-06-23):** assassination is illegal, so the hit market hides
+  in the personal-ads ("Kasual Korner") as *genuine Casual-Encounter-style sex ads that double as coded contracts.*
+  The craft (Tim: "make them legitimately confusing"): each must read so you are **as likely to find — or violently
+  interrupt — a real tryst as a kill**. The cannibal voice does it for free: "I want to EAT you up, Corwin… slide a
+  good length of steel home and leave him laid out, spent, and quiet… bring an appetite" blurs attraction + sex +
+  consumption + murder into one line. Some ads name NO target (a real cannibal hookup, or a trap — never a bounty);
+  the named ones could be obsessive romance OR a paid kill — the player decodes, and may guess wrong. Acting on one
+  → a [[project_dm_only_verb]] goal (D-B1/[[IG-12]] quest-birth) with an *uncertain* resolution. Four mockup ads
+  drafted 2026-06-23 (Corwin / a no-target widower / Asha / Brae); "do better than me" bar met-and-raised.
+- **The §3 fade + the slow reveal:** a "The Forgotten" column records those lost to the thinning before even their
+  having-been is gone — the cannibals' philosophy made legible with zero lecture, and the seed of the gut-punch
+  that the "evil" faction are the valley's only honest archivists.
+
+**Why it's more than a feature:** it collapses reputation + quest-discovery + faction-character + the §3 theme
+into one touchable artifact, and it's the kind of thing that makes the demo memorable. First MOCKUP drafted
+2026-06-23 (a front page of "The Lasting Word" — masthead, From the Roads, The Forgotten, the Kasual Korner with
+two decodable hits on Corwin & Asha). The QUALITY bar is the charm: elegant, dry, literate prose from people who
+eat the dead.
+
+**§0 / invariants:** the paper trades only in the WHAT (deaths, deeds, news, the fading) — NEVER the why; the
+cannibals are as blind to the cosmology as everyone ([[project_pivot_world_wiring]] §0 law holds). Canon-safe: a
+printed item is a deterministic surface over the rumor/`claims` graph + the deeds ledger; garbling = the existing
+fidelity tiers; no new LLM authority. Pairs with [[IG-11]] (haggling/social) and [[IG-13]] (economy).
+
+**Open Qs:** scarce hand-run broadsheet (fits the fade) or a press? how does an issue reach the player — found in
+town, posted, crier-read? do YOU end up in the Kasual Korner (a bounty on the player)? does a misread (garbled
+name) let you hit the wrong target? Start tiny: the news/reputation column as the D-B2 reputation surface; the KK
++ the full paper is its own content packet tied to the cannibal faction (Phase C/D).
+
+**echoes:** newspaper · the paper · The Lasting Word · cannibals publish · Kasual Korner · personal ads · bounty ·
+bounties · hit · assassination · read between the lines · classifieds · obituaries · the forgotten · made the
+paper · reputation in print · broadsheet · the warren prints · continuity faction · who's hiring a killer

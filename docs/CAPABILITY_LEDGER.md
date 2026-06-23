@@ -720,6 +720,30 @@ Cost ~$2.77. **Gate budget: 3/7.** All 6 were one NEW theme: character-sheet CRU
 
 **Gate-18 net: 3 of 6 fixed (U239).** The remainder are the compound-precedence DESIGN class + a phantom-roll edge — frontier, not safely-deterministic. U235/236/237/238 confirmed held live (3 clean personas).
 
+*2026-06-23 (gate 19 — RE-CONFIRMATION panel, post U239; `docs/playtests/opus-gate-2026-06-23-gate19.md`):*
+`node scripts/dm-playtest.mjs --personas rules-lawyer,chaos,lore-hound,newbie --turns 12` (glass-harbor). **5/48**
+(trend 12→7→6→4→5→3→6→5 — bouncing ruler; corpus 100% is the floor). Cost ~$2.79. **Gate budget: 4/7 (4-gate
+confirmation cap reached).** **ALL FIVE closed classes (U235–U239) HELD — zero recurrence.** The 5 NEW failures are
+ALL frontier (none safely-deterministic in the narration/grace lane):
+
+| gate-19 fail | class | disposition |
+|---|---|---|
+| RL "Strength and what weapon?" → MIGHT only | compound-precedence | DESIGN — defer (same class as gate-17 #1) |
+| Lore "how long have you been here?" → atmosphere dodge `[dialogue ask\|continuity]` | dialogue-voice deliver-or-decline | **THE_REF frontier** (NPC dodges an earned-knowledge ask with atmosphere instead of an honest "couldn't say") |
+| Lore "born here or arrived?" → place recitation `[dialogue ask\|place]` | dialogue-ask topic misroute | **THE_REF frontier** (dialogue.js topic-routing — taste-critical; regex here = whack-a-mole) |
+| RL "draw sword, call out the bandit" → trivial, no combat | combat-not-started | **COMBAT LANE** (sibling of gate-16 #3; unreproducible LLM-off) |
+| Chaos "slit Brokefang's throat at 3 HP" → narrated kill, hp:3 defeated:false | killing-blow not applied to combat state | **COMBAT LANE** (sibling of gate-16 #4 / `task_22892b66`) |
+
+**TERMINATION (2026-06-23).** After U235–U239 (5 deterministic classes closed + corpus-locked), the live gate's
+residual failures are ALL non-(safely-deterministic-in-lane): COMBAT LANE (combat-not-started + kill/throw
+state-application — flagged for Codex), DESIGN (compound meta-precedence; dialogue-enter-identity locked by C16-001),
+and the **THE_REF second-model frontier** (NPC-voice + narrator deliver-or-decline quality, and lowercase
+fabrication — gate-16 #5). Per the loop's own rule (the bouncing ruler is noise; the corpus 100% is the floor;
+do NOT force a count-lowering fix), this is the stop. **Single clearest next decision for Tim: build the THE_REF
+second-model output-validator** (the principled close for the dialogue-voice/narrator deliver-or-decline + fabrication
+frontier) vs. keep mining regex shapes (diminishing, whack-a-mole). Session: corpus 105/105, suite 8435/0, determinism
+green; 4 paid gates ($≈11); 5 fixes shipped (U235–U239) + 1 harness-robustness commit (`3d58f99`).
+
 **Social-physics categories to mine next (Biblioteca Vols 2–6, mostly not yet failing-in-gate but on the map):**
 sarcasm/irony inversion (Vol 2; transcript: `docs/playtests/ridiculous-sarcasm-2026-06-06.md`), loaded
 questions / presupposition (Vol 3, "have you stopped stealing?"), bluff vs. claim (Vol 5), request/order/threat

@@ -669,10 +669,22 @@ present NPC, and (b) a threat/ultimatum aimed at a NON-partner present NPC; `det
 shape ("last chance to talk before I make you") so the redirected threat resolves AS an intimidate against its target,
 never atmosphere. Partner-threats and advice-questions stay in dialogue — diverge-locked. **+U235 (13 cases), +U236
 (8 cases).** Convergence 105/105, suite 8398→8415/0, determinism green. Both reproduced LLM-off FIRST; pushed
-`a13f574..68ff029`. **Gate-16 (live measure) BLOCKED:** the Anthropic Messages API was in a sustained outage
-(500 Internal-server-error → 529 Overloaded, all models) across two ~45-min polling windows — no gate ran, no spend
-(500/529 aren't billed; gate budget 0/7 used). Live measurement of U235/U236 + next-batch discovery is PENDING API
-recovery.
+`a13f574..68ff029`. (Gate-16 was initially BLOCKED ~1h by an Anthropic API outage — 500→529 all models; rode through
+it with a more-patient gate retry, `3d58f99`.)
+
+*2026-06-23 (gate 16 — FULL 4-persona panel, post U235/U236; `docs/playtests/opus-gate-2026-06-23-gate16.md`):*
+`node scripts/dm-playtest.mjs --personas rules-lawyer,chaos,lore-hound,newbie --turns 12` (glass-harbor). **5/48**
+(trend 12→7→6→4→5; the ±1 is ruler-noise — corpus 100% is the floor). Cost ~$2.79 (96 calls, 150k tokens). **Gate
+budget: 1/7.** **U235/U236 HELD** — the exact gate-15 empty-result/dialogue-routing shapes did NOT recur. The 5 NEW
+failures, classified:
+
+| gate-16 fail | shape | class | disposition |
+|---|---|---|---|
+| Lore "name one person old enough to remember the Boneknits" → gen:s | empty-success, IMPERATIVE info-request (not question-shaped, not "name me") | DETERMINISTIC | fix (U235/U232 sibling) |
+| Newbie "what happened in the old days?" → "Nothing's happened yet" | backstory ask; `INFO_SEEKING_BACKSTORY_RE` misses "the old days" → meta-recap bounce | DETERMINISTIC | fix |
+| RL "level the blade at the figure—roll my attack. what did I roll?" → quotes prior roll | meta roll-query preempts a declared attack; "the figure" doesn't resolve to the lurker | DETERMINISTIC (combat-adjacent) | assess |
+| Chaos grab+throw Brokefang → damage attributed backwards | grapple/throw egress mis-attributes the hit to the PC | DETERMINISTIC, **escapeCombat hot-file** | DEFER to combat lane |
+| Lore Kael "recite the ledger — how many nights, who vouched" → fabricated "three nights / Corwin vouched" | NPC-voice fabricates a non-existent record | **THE_REF frontier** (second-model validator) | note |
 
 **Social-physics categories to mine next (Biblioteca Vols 2–6, mostly not yet failing-in-gate but on the map):**
 sarcasm/irony inversion (Vol 2; transcript: `docs/playtests/ridiculous-sarcasm-2026-06-06.md`), loaded

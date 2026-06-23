@@ -825,6 +825,20 @@ paraphrases + events/population diverge), U220 concern classify/resolve/sight-sa
 108→109/109, suite 8488→8491/0, determinism green; commit `9716e11`. Curated town-level concerns (the demo's
 missing-caravan plot) ride the D-A3 preset later by overriding this resolver's source.
 
+*2026-06-23 (D-A3 — world-wiring track, Phase A: the region skeleton) — the locked demo region:*
+The map generator already produced a walkable valley (28–39 nodes, 9 settlements, 4–6 dungeon-entrances, fully
+reachable, deterministic) with biomes assigned by `biomeForNode` (a pure x,y projection — not in worldHash) and
+ALREADY surfaced on arrival via `biomeFlavor` ("You reach X, deep in old forest"). The only gap vs DEMO_REGION §3
+was biome VARIETY: glass-harbor's nodes span ~4 grid cells → only 2 biomes. Searched seeds (no generator change —
+hypothesis A); **'tallow'** (→ the plan's "Tallow Cross") is the richest: 8 settlements, 6 dungeon-entrances,
+39/39 reachable, 4 biomes, 18/42 contrasting (biome-bled) edges. Locked it as `engine/world/demoRegion.DEMO_SEED`
+(+ `DEMO_REGION_SPEC` minimums); the experiential gate (dm-playtest) now defaults to it, so it measures the
+ACTUAL demo region. Verified the tallow start town (Wayfarers' Outpost) holds all of D-A2 — overview / population
+/ concern deliver, §0 + non-fabrication hold. **Lock:** U246 (towns/dungeons present + fully reachable + biome
+variety/bleed + replay-stability). **Net:** convergence 109/109, suite 8491→8494/0, determinism green; commit
+`417d90c`. Deferred richness: "all 8 biomes packed" via the node-count knob (reaches 6–7 at higher counts) or an
+authored biome layer — not a skeleton blocker.
+
 **Social-physics categories to mine next (Biblioteca Vols 2–6, mostly not yet failing-in-gate but on the map):**
 sarcasm/irony inversion (Vol 2; transcript: `docs/playtests/ridiculous-sarcasm-2026-06-06.md`), loaded
 questions / presupposition (Vol 3, "have you stopped stealing?"), bluff vs. claim (Vol 5), request/order/threat

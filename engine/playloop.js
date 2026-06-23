@@ -6274,10 +6274,24 @@ function outOfCombatDyingGate(world, text) {
 // against a hostile NPC at the current node. Returns { npc } or null.
 // Conservative: only matches when the player text starts with an attack verb
 // AND the named target maps to an NPC at the current node with hostile===true.
+// A violent verb that is SPOKEN or merely hypothesised ("I tell Corwin I could
+// stomp him", "I warn her I'll break her arm") is talk, not an executed strike —
+// the player is reporting speech, not attacking. Requires BOTH a leading
+// speech-act frame ("I tell/say/warn X …") AND a reported first-person modal
+// ("I could/would/'ll …"), so a real action that merely follows speech ("I tell
+// Corwin off and punch him") is unaffected, and a bare direct threat
+// ("Corwin, I'll kill you") still starts combat. (H-94)
+function isSpokenOrHypotheticalViolence(text) {
+  const t = String(text || '').toLowerCase().trim();
+  if (!t) return false;
+  return /^\s*i\s+(?:tell|told|say|said|warn|warned|inform|informed)\b.*\bi\s+(?:could|would|might|may|can|will|'?ll|should)\b/.test(t);
+}
+
 function detectAttackBeginIntent(world, text) {
   const t = String(text || '').trim();
   if (!t) return null;
   if (isSocialIdentificationNonCombat(t)) return null;
+  if (isSpokenOrHypotheticalViolence(t)) return null;
   const m = t.match(/\b(attack|fight|kill|strike|assault|punch|stab|hit|slash|swing\s+at|shoot|kick|tackle|charge)\s+(.+)/i);
   if (!m) return null;
   const ref = String(m[2] || '').trim().replace(/[.!?,;:]+$/, '').trim();
@@ -6310,7 +6324,7 @@ function detectAttackBeginIntent(world, text) {
 // him"), handled separately, so "throw a coin to Corwin" never reads as an attack.
 // Includes unarmed/natural strikes (bite, knee, elbow, sweep, …) — by SRD they're
 // unarmed strikes (damage) or a shove-to-prone (sweep/trip); either way an attack.
-const DIRECT_ATTACK_VERB = /\b(attack|fight|kill|murder|assault|strike|stab|slash|punch|kick|tackle|charge|bash|club|clobber|whack|brain|throttle|choke|strangle|knife|gut|maim|behead|lunge|headbutt|grapple|shoot|hit|bite|claw|gnaw|scratch|knee|elbow|stomp|sweep|trip|gore|butt|throttle)\s+(.+)/i;
+const DIRECT_ATTACK_VERB = /\b(attack|fight|kill|murder|assault|strike|stab|slash|punch|kick|tackle|charge|bash|club|clobber|whack|brain|throttle|choke|strangle|knife|gut|maim|behead|lunge|headbutt|grapple|shoot|hit|bite|claw|gnaw|scratch|knee|elbow|stomp|stamp|sweep|trip|gore|butt|throttle)\s+(.+)/i;
 // Attack idioms ("come at her", "set upon the elder", "lay into him", "go for
 // her throat"). "go for X" used to be omitted here because "go" was consumed
 // by the movement gate before combat-begin ever ran (H-64 punchlist) — that
@@ -6319,7 +6333,7 @@ const DIRECT_ATTACK_VERB = /\b(attack|fight|kill|murder|assault|strike|stab|slas
 const ATTACK_IDIOM = /\b(?:come\s+at|lunge\s+(?:at|for)|set\s+(?:upon|on)|lay\s+into|rush\s+at|go\s+for)\s+(.+)/i;
 // Any violence at all (gate). Broad — recall here is fine because the target
 // must still resolve to a PRESENT NPC below (objects/empty refs → no match).
-const ANY_VIOLENCE = /\b(attack|fight|kill|murder|assault|strike|stab|slash|punch|kick|tackle|charge|bash|club|clobber|whack|brain|throttle|choke|strangle|knife|gut|maim|behead|lunge|headbutt|grapple|shoot|swings?|hurl|throw|lob|slam|smash|hit|beat|bite|claw|gnaw|scratch|knee|elbow|stomp|sweep|trip|gore|butt|come\s+at|set\s+(?:upon|on)|lay\s+into|rush\s+at|go\s+for)\b/i;
+const ANY_VIOLENCE = /\b(attack|fight|kill|murder|assault|strike|stab|slash|punch|kick|tackle|charge|bash|club|clobber|whack|brain|throttle|choke|strangle|knife|gut|maim|behead|lunge|headbutt|grapple|shoot|swings?|hurl|throw|lob|slam|smash|hit|beat|bite|claw|gnaw|scratch|knee|elbow|stomp|stamp|sweep|trip|gore|butt|come\s+at|set\s+(?:upon|on)|lay\s+into|rush\s+at|go\s+for)\b/i;
 // Unambiguously hostile verbs — only these license matching an NPC named anywhere
 // in the sentence (so "throw a coin to Corwin" can't, but "Corwin, I'll kill you" can).
 const UNAMBIGUOUS_VIOLENCE = /\b(attack|kill|murder|assault|stab|slash|punch|kick|tackle|charge|bash|club|clobber|whack|brain|throttle|choke|strangle|knife|gut|maim|behead|lunge)\b/i;
@@ -6331,6 +6345,7 @@ function detectAttackAnyIntent(world, text) {
   const t = String(text || '').trim();
   if (!t) return null;
   if (isSocialIdentificationNonCombat(t)) return null;
+  if (isSpokenOrHypotheticalViolence(t)) return null;
   if (!ANY_VIOLENCE.test(t)) return null;
 
   const nodeId = String(world?.map?.currentNodeId ?? '');
@@ -6390,6 +6405,7 @@ function detectPhysicalAssault(world, text) {
   const t = String(text || '').trim();
   if (!t || world.combat?.active || world.scene?.dialogue) return null;
   if (isSocialIdentificationNonCombat(t)) return null;
+  if (isSpokenOrHypotheticalViolence(t)) return null;
   const nodeId = String(world?.map?.currentNodeId ?? '');
   const node = (world?.map?.nodes || []).find(n => n && n.id === nodeId) || null;
   const npcs = node?.settlement?.npcs || [];

@@ -1209,7 +1209,8 @@ Full per-turn detail in the report file. Catalog these as the next hard-tail pac
 once a worker prompt is drafted. Priority order: CRASH → DM_TEST_DEADEND → CRUNCH_INCONSISTENCY →
 CANON_HALLUCINATION.
 
-## Budget — **Tim confirmed $20.00 on 2026-06-22.** Gate 11 (capstone) ran ~$2.86 → **~$17.14 remaining (~6 runs at the real ~$2.80/run).** Real per-run ≈ $2.76–2.86 (NOT the brief's $1.10/run). Re-confirm before any run that would drop below ~$2.5.
+## Budget — **Tim re-confirmed $29.82 on 2026-06-23** (a top-up beyond what the docs tracked; supersedes the stale $20/06-22 line below, which never accounted for gates 12–19 + the THE-REF flag-on gate). ~10 runs of headroom at the real ~$2.80/run. Re-confirm before any run that would drop below ~$2.5.
+- _History:_ **Tim confirmed $20.00 on 2026-06-22.** Gate 11 (capstone) ran ~$2.86 → **~$17.14 remaining (~6 runs at the real ~$2.80/run).** Real per-run ≈ $2.76–2.86 (NOT the brief's $1.10/run).
 Tim confirmed actual balance **$10.51** on 2026-06-20. Gate 1 (~$2.63,
 `docs/playtests/opus-gate-2026-06-20-convergence-baseline.md`) → **~$7.88**. Gate 2 (2026-06-21, ~$2.71,
 `docs/playtests/opus-gate-2026-06-21-pre-judge-hardening.md`, 18/48 raw — later shown ~13 were JUDGE artifacts)

@@ -3828,8 +3828,17 @@ function hasPersonReferentSignal(text, ref) {
   if (new RegExp('\\b(?:ask|asks|asked|tell|tells|told|greet|greets|answer|answers|question|questions|call(?:\\s+out)?\\s+to|shouts?\\s+(?:to|at)|beckon|wave\\s+to)\\s+(?:to\\s+)?(?:the\\s+)?' + esc + '\\b', 'i').test(t)) return true;
   // (b) the name is the SUBJECT of a person-specific gaze/posture/attention verb
   if (new RegExp('\\b' + esc + '\\b[^.?!]{0,18}?\\b(?:stares?|staring|glares?|glaring|nods?|nodding|looks?\\s+(?:at|away)|looking\\s+(?:at|away)|won[\'’]?t\\s+look|(?:so|gone|going|is|stay|fell)\\s+(?:quiet|silent))\\b', 'i').test(t)) return true;
-  // (c) possessive tied to the name, or a role appositive ("<name> the merchant")
-  if (new RegExp('\\b' + esc + '(?:[\'’]s\\b|\\b[^.?!]{0,14}?\\b(?:his|her|their|hers|theirs)\\b)', 'i').test(t)) return true;
+  // (c) possessive tied to the name, or a role appositive ("<name> the merchant").
+  // THE_REF-2/H-96: the "'s" possessive arm must NOT fire on a copula contraction of a
+  // closed-class function word ("That's" = that is, "There's", "Here's", "What's",
+  // "Who's") — those are never possessive person-references. Treating "That's" as a
+  // person-signal let a sentence-initial "That's no answer, Corwin" win the referent
+  // over the real addressed NPC and bounce a [clarify:referent] "no one named That".
+  // This keeps the POSITIVE person-signal honest (a real "Brae's voice" still fires);
+  // the his/her/their arm is unaffected.
+  if (!/^(?:that|there|here|what|where|who|whose|which|this|these|those|it|he|she|they|we|i|you|how|when|why)$/i.test(name)
+      && new RegExp('\\b' + esc + '[\'’]s\\b', 'i').test(t)) return true;
+  if (new RegExp('\\b' + esc + '\\b[^.?!]{0,14}?\\b(?:his|her|their|hers|theirs)\\b', 'i').test(t)) return true;
   if (new RegExp('\\b' + esc + '\\s+the\\s+(?:guard|baker|elder|stranger|merchant|trader|smith|blacksmith|innkeeper|priest|healer|scholar|artisan|villager|local)\\b', 'i').test(t)) return true;
   // (d) bare "take/lead/bring/walk/guide me to <Name>" with no preceding article
   // — restricted to this "ME to" imperative shape (not bare "go to X"/"head to X",

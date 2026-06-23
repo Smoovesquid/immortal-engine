@@ -5468,16 +5468,38 @@ function pickVariant(variants, world, key) {
 // reads as tougher resistance): a civil-but-defensive deflection, or a sharper
 // bristle for an NPC already flagged hostile. Deterministic via pickVariant —
 // no new RNG, no state mutation.
-function confrontationReaction(world, npc) {
+// Outcome-aware (H-94→THE_REF-1): a FAILED read leaves the NPC stonewalling (the
+// challenge didn't land); a SUCCESSFUL read is a TELL — the player perceives the
+// crack, the NPC's composure slips or they level with you — and a MIXED read is a
+// half-caught flicker. The contested FACT is never invented or conceded on any
+// outcome (that stays earned/grounded; the Law of Earned Knowledge). A landed
+// confrontation resolves the SOCIAL beat (you read them), not the lore.
+function confrontationReaction(world, npc, outcome = 'failure') {
   const name = String(npc.name || `the ${npc.role || 'stranger'}`);
   const V = (key, variants) => `Wizard: ${pickVariant(variants, world, key)}`;
+  const tag = outcome === 'success' ? 's' : outcome === 'mixed' ? 'm' : 'f';
   if (npc.hostile) {
+    if (tag === 's') return V(`confront:hostile:s:${npc.id || name}`, [
+      `You read ${name} cold: the threat is armor over something else. "Careful who you call a liar" — but the hand at their belt isn't as sure as the words.`,
+      `${name} squares up, and you catch the tell beneath it — a flicker they can't hold down. "Say that again," they manage, a half-beat too late.`
+    ]);
+    if (tag === 'm') return V(`confront:hostile:m:${npc.id || name}`, [
+      `${name} bristles, and you half-catch something under it — there and gone before you can name it. "You don't get to walk in here and call me a liar."`
+    ]);
     return V(`confront:hostile:${npc.id || name}`, [
       `${name} holds your gaze and doesn't blink. "Careful who you call a liar."`,
       `${name}'s hand drifts toward their belt. "Say that again and see what happens."`,
       `${name} bristles. "You don't get to walk in here and call me a liar."`
     ]);
   }
+  if (tag === 's') return V(`confront:civil:s:${npc.id || name}`, [
+    `You hold ${name}'s eye and the bluff thins. "I've said what I've said," they repeat — quieter now, and they look away first.`,
+    `${name} starts to brush it off, but the answer catches, and you see it catch. "...Believe what you like," they manage, the steadiness gone out of it.`,
+    `${name} works back through it, then levels with you — not the whole of it, but where they stand. "I'll not pretend I'm certain. That's all I've got."`
+  ]);
+  if (tag === 'm') return V(`confront:civil:m:${npc.id || name}`, [
+    `You catch part of it — a flicker across ${name}'s face — but they close up before you can be sure. "Think what you want."`
+  ]);
   return V(`confront:civil:${npc.id || name}`, [
     `${name}'s jaw tightens. "I've said what I've said — believe what you like."`,
     `${name} folds their arms. "I'm not changing my story because you don't like it."`,
@@ -5489,19 +5511,19 @@ function confrontationReaction(world, npc) {
 // Exported for unit testing.
 export function genericGroundedOutcome(world, text, outcome) {
   const t = String(text || '').toLowerCase().trim();
-  // H-42 — a confrontation/contradiction challenge aimed at a present NPC
-  // ("one of you is lying... which one?") gets an in-character REACTION from
-  // that NPC, never the generic atmosphere filler below — a real DM has the
-  // confronted person respond to being called a liar. Checked before the
-  // H-39 info-seeking decline (next) since an accusation is the more specific
-  // shape. Scoped to the FAILURE case only (the observed bug): the player's
-  // read didn't land, so the NPC doesn't conveniently concede or leak the
-  // contested fact — a successful/mixed read is the deliver path's job
-  // (H-12/13's roll-recall contradiction handling owns that), not this
-  // last-resort resolver's.
-  if (outcome === 'failure' && isConfrontationChallenge(t)) {
+  // H-42 / THE_REF-1 — a confrontation/contradiction challenge aimed at a present
+  // NPC ("are you telling me he lied?") gets an in-character REACTION from that NPC,
+  // never the generic atmosphere filler below — a real DM has the confronted person
+  // respond. Checked before the H-39 info-seeking decline (next) since an accusation
+  // is the more specific shape. ALL outcomes (THE_REF-1, gate-13 turn-5 empty-success
+  // fix): a SUCCEEDED challenge that fell through every deliver path used to hit the
+  // gen:s "it goes your way" filler — now it yields an outcome-aware reaction (success
+  // = a landed read/tell, failure = stonewall). The contested FACT is never conceded
+  // or invented here — confrontationReaction resolves the social beat, not the lore,
+  // so the deliver path (H-12/13 roll-recall) still owns any grounded reveal upstream.
+  if (isConfrontationChallenge(t)) {
     const npc = socialTarget(world, text);
-    if (npc) return confrontationReaction(world, npc);
+    if (npc) return confrontationReaction(world, npc, outcome);
   }
   // H-39 belt-and-suspenders: an info-seeking question has no business
   // reaching the LAST-resort resolver at all (a resolved success/mixed/

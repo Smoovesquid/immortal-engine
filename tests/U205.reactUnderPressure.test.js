@@ -13,17 +13,20 @@
 //   (i)  gracefulAdjudication.js: a new exported isConfrontationChallenge(text) —
 //        recall-biased net of accusation/contradiction markers ("you said... but",
 //        "one/which of you is lying", "you're lying", "stop lying", "admit it", "you
-//        claimed", "contradicts what you said", "you swore... but"), guarded against
-//        the "lying" = reclining false reading and against plain info-asks (which stay
-//        isInfoSeekingText's job).
+//        claimed", "contradicts what you said", "you swore... but", and — THE_REF-1 —
+//        the accusation-by-question "are you telling me … lied?" / "are you lying?"),
+//        guarded against the "lying" = reclining false reading and against plain
+//        info-asks (which stay isInfoSeekingText's job).
 //   (ii) playloop.js: genericGroundedOutcome gets a SIBLING branch to the existing
-//        H-39 isInfoSeekingText decline, at the top of the function — on a FAILURE
-//        outcome, a confrontation aimed at a present NPC returns a deterministic
-//        in-character reaction (confrontationReaction, two tiers off the NPC's real
-//        `hostile` flag) instead of falling to the gen:s/gen:m/gen:f atmosphere pool.
-//        The reaction never concedes or reveals the contested fact — the roll failed,
-//        so the player doesn't earn the read. Success/mixed outcomes are untouched
-//        (that's the deliver path / H-12-13 roll-recall contradiction handling's job).
+//        H-39 isInfoSeekingText decline, at the top of the function — a confrontation
+//        aimed at a present NPC returns a deterministic in-character reaction
+//        (confrontationReaction, two tiers off the NPC's real `hostile` flag) instead
+//        of falling to the gen:s/gen:m/gen:f atmosphere pool. The reaction never
+//        concedes or reveals the contested fact — a landed read is a TELL, not the
+//        earned lore. THE_REF-1 (gate-13 turn-5) extended this from FAILURE-only to
+//        ALL outcomes: a SUCCEEDED challenge used to fall to the gen:s "it goes your
+//        way" empty-success filler; now success = a landed read/tell, mixed = a
+//        half-caught flicker, failure = stonewall (see U226).
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -172,16 +175,25 @@ test('U205-26: false-positive guard — a neutral action with an NPC present is 
 
 // ── Scoped to FAILURE only — success/mixed are untouched ─────────────────────
 
-test('U205-27: a SUCCESSFUL confrontation read does not use the new reaction branch (deliver path\'s job)', () => {
+test('U205-27: a SUCCESSFUL confrontation read yields a reaction, never the empty-success filler (THE_REF-1)', () => {
   const w = confrontWorld({ npcs: [civilNpc] });
   const narr = genericGroundedOutcome(w, LORE_HOUND_T12, 'success');
-  assert.doesNotMatch(narr, REACTION_RE, `success must not be intercepted by the failure-only reaction branch: ${narr}`);
+  // THE_REF-1 (gate-13 turn-5): a SUCCEEDED challenge used to fall to gen:s
+  // "it goes your way" — now it reacts in-character (a landed read/tell).
+  assert.doesNotMatch(narr, ATMOSPHERE_BANK_RE, `success must not be empty "it goes your way" filler: ${narr}`);
+  assert.match(narr, /Mira/, 'a landed confrontation reacts in-character (names the present NPC)');
+  // EK-1 still holds: a landed read is a tell, not the conceded/invented lore.
+  assert.doesNotMatch(narr, /kael/i, `must not resolve the contested fact about Kael: ${narr}`);
+  assert.doesNotMatch(narr, /\byou'?re right\b|\bhe'?s right\b|\bshe'?s right\b|founded the village/i,
+    `must not concede the contradiction: ${narr}`);
 });
 
-test('U205-28: a MIXED confrontation read does not use the new reaction branch (failure-only scope)', () => {
+test('U205-28: a MIXED confrontation read also yields a reaction, not empty filler (THE_REF-1)', () => {
   const w = confrontWorld({ npcs: [civilNpc] });
   const narr = genericGroundedOutcome(w, LORE_HOUND_T12, 'mixed');
-  assert.doesNotMatch(narr, REACTION_RE, `mixed must not be intercepted by the failure-only reaction branch: ${narr}`);
+  assert.doesNotMatch(narr, ATMOSPHERE_BANK_RE, `mixed must not be empty filler: ${narr}`);
+  assert.match(narr, /Mira/, 'mixed reacts in-character (names the present NPC)');
+  assert.doesNotMatch(narr, /kael/i, `must not resolve the contested fact: ${narr}`);
 });
 
 // ── Determinism ───────────────────────────────────────────────────────────────

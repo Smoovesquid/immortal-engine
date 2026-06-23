@@ -725,13 +725,21 @@ const CONFRONTATION_ADMIT_RE = /\badmit\s+it\b/i;
 const CONFRONTATION_CLAIMED_RE = /\byou\s+claimed\b/i;
 const CONFRONTATION_CONTRADICTS_RE = /\bcontradicts\s+what\s+you\s+said\b/i;
 const CONFRONTATION_SWORE_BUT_RE = /\byou\s+swore\b[\s\S]{0,80}?\bbut\b/i;
+// THE_REF-1 (gate-13 turn-5): the accusation-BY-QUESTION shape — "are you telling me
+// he lied about that?", "so you're saying she lied", "are you lying to me?". The
+// LYING_RE above only caught present-tense "you're/he's lying"; this catches the
+// "are you telling/saying/claiming … lie(d)/lying" frame and bare "are you lying".
+// Tight: requires the telling/saying frame OR a direct "are you lying" — so "are you
+// telling me the truth?" / "are you saying it's over?" (no lie token) do not match.
+const CONFRONTATION_TELLING_LIED_RE = /\bare\s+you\s+(?:telling|saying|claiming|suggesting)\b[^?]{0,80}?\b(?:lie[ds]?|lying)\b|\bare\s+you\s+lying\b/i;
 
 export function isConfrontationChallenge(text) {
   const t = String(text || '').toLowerCase();
   if (!t.trim()) return false;
   return CONFRONTATION_SAID_BUT_RE.test(t) || CONFRONTATION_LYING_RE.test(t)
     || CONFRONTATION_ADMIT_RE.test(t) || CONFRONTATION_CLAIMED_RE.test(t)
-    || CONFRONTATION_CONTRADICTS_RE.test(t) || CONFRONTATION_SWORE_BUT_RE.test(t);
+    || CONFRONTATION_CONTRADICTS_RE.test(t) || CONFRONTATION_SWORE_BUT_RE.test(t)
+    || CONFRONTATION_TELLING_LIED_RE.test(t);
 }
 
 // Tier B trigger: a conjunction of two distinct actions ("dive behind the bar

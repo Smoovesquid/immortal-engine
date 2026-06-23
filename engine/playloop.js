@@ -1965,6 +1965,19 @@ function playerMoveCore(world, packsById, text) {
           output: { narration: `Wizard: ${combatStatusAnswer(w)}`, mechanics: '[combat:table-talk]' }
         };
       }
+      // (H-95) A throw/grab/shove or a help/pull-clear aimed at a NON-COMBATANT
+      // bystander ("the fleeing villager") mid-fight has no target the escape
+      // resolver models — it must NOT fabricate an improvised weapon from a hazard
+      // noun or retarget the blow to the active foe. Honestly decline. Fires
+      // regardless of explicitAction (the throw IS a declared action; the problem is
+      // the target), and BEFORE detectNewCombatTarget so a fleeing civilian is not
+      // dragged into the fight as a fresh combatant.
+      if (isCombatBystanderHandling(w, text)) {
+        return {
+          world: w,
+          output: { narration: "Wizard: You can't break off mid-fight to reach a bystander — the fight still has you, and there's no one here to grab, haul, or pull clear.", mechanics: '[combat:bystander-unreachable]' }
+        };
+      }
       // 1b — mid-combat target-switch: a NEW present NPC named in an attack joins
       // the fight as a combatant before the round resolves (else the strike lands
       // on no one). Goes through the canonical combatState delta.
@@ -6584,6 +6597,31 @@ function engageNpcCombat(world, npc, text, pack, actorId, markHostile) {
   }, { pack });
   w = applyComposerDelta(w, composed.ledgerDelta);
   return { world: w, output: { narration: ABSTRACT_FLOOR_RE.test(composed.narrationLine) ? combatGroundedOutcome(w, result.targetEnemyName, result.outcome) : composed.narrationLine, mechanics: result.mechanicsLine, combatSummary: String(result.combatSummary || '') } };
+}
+
+// (H-95) Mid-fight, a throw/grab/shove/haul or a help/pull-clear aimed at a
+// NON-COMBATANT bystander ("the fleeing villager", a civilian) is neither a strike
+// on the active foe nor an improvised-weapon attack built from a hazard noun. The
+// escape resolver models only combatants, so "throw the villager into the burning
+// stall" otherwise mis-resolves to "[strike:Improvised Burning Oil]" against the
+// foe. True only when a handling verb takes a bystander noun matching NO present
+// enemy — so "throw oil AT the monster" (a prop), "grab the monster" / "lunge at
+// the other guard" (fightable targets) are left to the strike/grapple/new-target
+// paths. There is no throw-a-bystander-into-hazard mechanic, so the call site
+// honestly declines rather than fabricate a weapon or retarget the blow. (H-95)
+const COMBAT_BYSTANDER_RE = /\b(?:throw|hurl|fling|toss|lob|sling|shove|push|drag|haul|grab|seize|snatch|grapple|pull|yank|help|save|rescue|usher|guide|shield|protect|carry|lift)\s+(?:the\s+|a\s+|an\s+|my\s+|that\s+|this\s+|some\s+|one\s+|nearest\s+|first\s+|fleeing\s+|panicking\s+|wounded\s+|injured\s+|terrified\s+|screaming\s+|cowering\s+|frightened\s+|poor\s+|innocent\s+|nearby\s+)*(bystander|villager|civilian|townsfolk|townsperson|townspeople|peasant|commoner|innocent|passerby|onlooker|child|children|kid)s?\b/i;
+function isCombatBystanderHandling(world, text) {
+  const m = String(text || '').match(COMBAT_BYSTANDER_RE);
+  if (!m) return false;
+  const ref = String(m[1] || '').toLowerCase();
+  const enemies = Array.isArray(world?.combat?.enemies) ? world.combat.enemies : [];
+  // If the bystander word actually names a present enemy, it's a real target — let
+  // the normal strike/grapple path handle it instead of declining.
+  const isEnemy = enemies.some(e => {
+    const n = String(e?.name || '').toLowerCase();
+    return n && (n.includes(ref) || ref.includes(n));
+  });
+  return !isEnemy;
 }
 
 // Mid-combat target-switch (1b): the player attacks a NEW present NPC who isn't

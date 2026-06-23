@@ -741,7 +741,10 @@ async function doSubmitMove() {
   // NPC attribution confused by the LLM seeing other NPCs in context.
   const skipPolish = /the DM is unmoved|nice try/i.test(String(output?.mechanics || ''))
     || /\[dialogue exit/.test(String(output?.mechanics || ''));
-  const aiText = skipPolish ? null : await tryAiNarration(world, baseNarration, { input: text });
+  // Pass mechanics through so THE REF can classify the narrationSource (the
+  // dialogue-ask mode lives in the mechanics tag) and gate its judge to soft
+  // turns only. (docs/THE_REF.md)
+  const aiText = skipPolish ? null : await tryAiNarration(world, baseNarration, { input: text, mechanics: output?.mechanics || '' });
   wizardLine.text = aiText || baseNarration;
   tts.speak(wizardLine.text);
   setStatus('Move resolved.');

@@ -699,9 +699,11 @@ all narration/grace/movement lane):
 
 | gate-17 fail | shape | class | disposition |
 |---|---|---|---|
-| RL "look around the room — what do I have on me? check gear/stats" → room survey, inventory dropped | compound: explore (META_LOCATION) preempts the meta-inventory query | DETERMINISTIC | fix |
-| RL "what's your name, and which old dispute…?" → NPC "turns and waits" | dialogue-ENTER on first contact drops the question instead of answering it | DETERMINISTIC | fix |
-| Newbie "go talk to that stranger" (from inside a building) → "That way is blocked from here" | interior→approach-NPC bounces with a logistics wall (THE_DM_TEST violation) | DETERMINISTIC | fix |
+| Newbie "go talk to that stranger" (from inside a building) → "That way is blocked from here" | interior→approach-NPC bounces with a logistics wall (THE_DM_TEST violation) | DETERMINISTIC | **FIXED — U238** (`6c9e6a6`) |
+| RL "what's your name, and which old dispute…?" → NPC "turns and waits" | dialogue-ENTER on first contact drops the question | DESIGN-LOCKED | **DEFER** — conflicts with locked **C16-001** (identity/acquaintance Qs, incl. compounds, ENTER dialogue by design; making them answer-on-entry broke convergence 105→104). The gate judge is re-litigating a settled call; the substantive-topic-vs-identity split isn't cleanly detectable. Needs a design decision. |
+| RL "look around the room — what do I have on me? check gear/stats" → room survey, inventory dropped | compound: two co-present meta intents (explore vs inventory) | DESIGN-PRECEDENCE | **DEFER** — `handleMetaQuestion` dispatch prioritizes META_LOCATION; making inventory win for a compound needs a dispatch-priority rework that risks the locked "look around → survey" cases. Not a small safe seam. |
+
+**Gate-17 net: 1 of 3 fixed deterministically (U238).** #2/#1 are compound-precedence DESIGN tensions that conflict with locked corpus contracts — out of the safely-deterministic lane (the corpus is the floor; the gate verdict is the noisy pointer). U238 reproduced LLM-off first; pushed.
 
 **Social-physics categories to mine next (Biblioteca Vols 2–6, mostly not yet failing-in-gate but on the map):**
 sarcasm/irony inversion (Vol 2; transcript: `docs/playtests/ridiculous-sarcasm-2026-06-06.md`), loaded

@@ -686,6 +686,23 @@ failures, classified:
 | Chaos grab+throw Brokefang → damage attributed backwards | grapple/throw egress mis-attributes the hit to the PC | DETERMINISTIC, **escapeCombat hot-file** | DEFER to combat lane |
 | Lore Kael "recite the ledger — how many nights, who vouched" → fabricated "three nights / Corwin vouched" | NPC-voice fabricates a non-existent record | **THE_REF frontier** (second-model validator) | note |
 
+The #1/#2 grace gaps were closed (U237, `3b3f220`). #3 was NOT reproducible LLM-off (a faithful
+reconstruction — present hostile lurker + prior roll — starts combat correctly; the gate miss is a
+glass-harbor-specific fuzzyMatch on the lurker's name) → DEFERRED. #4 flagged for the combat lane
+(`task_22892b66`). #5 stays the THE_REF frontier.
+
+*2026-06-23 (gate 17 — FULL 4-persona panel, post U237; `docs/playtests/opus-gate-2026-06-23-gate17.md`):*
+`node scripts/dm-playtest.mjs --personas rules-lawyer,chaos,lore-hound,newbie --turns 12` (glass-harbor). **3/48**
+(trend 12→7→6→4→5→3; BEST yet). Cost ~$2.80. **Gate budget: 2/7.** **U235/U236/U237 HELD** — 0 empty-result,
+0 fabrication, 0 combat recurrence. The 3 NEW failures (all DM_TEST_DEADEND, all "intent bounced not resolved",
+all narration/grace/movement lane):
+
+| gate-17 fail | shape | class | disposition |
+|---|---|---|---|
+| RL "look around the room — what do I have on me? check gear/stats" → room survey, inventory dropped | compound: explore (META_LOCATION) preempts the meta-inventory query | DETERMINISTIC | fix |
+| RL "what's your name, and which old dispute…?" → NPC "turns and waits" | dialogue-ENTER on first contact drops the question instead of answering it | DETERMINISTIC | fix |
+| Newbie "go talk to that stranger" (from inside a building) → "That way is blocked from here" | interior→approach-NPC bounces with a logistics wall (THE_DM_TEST violation) | DETERMINISTIC | fix |
+
 **Social-physics categories to mine next (Biblioteca Vols 2–6, mostly not yet failing-in-gate but on the map):**
 sarcasm/irony inversion (Vol 2; transcript: `docs/playtests/ridiculous-sarcasm-2026-06-06.md`), loaded
 questions / presupposition (Vol 3, "have you stopped stealing?"), bluff vs. claim (Vol 5), request/order/threat

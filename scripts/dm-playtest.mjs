@@ -38,6 +38,7 @@ import { newWorld } from '../engine/state.js';
 import { beginAdventure, playerMove } from '../engine/playloop.js';
 import { isMetaQuestion, handleMetaQuestion } from '../engine/grace/gracefulAdjudication.js';
 import { normalizeManifest, normalizePack } from '../engine/rulesets.js';
+import { DEMO_SEED } from '../engine/world/demoRegion.js';
 // THE REF — the gate and the live Ref share ONE rubric (canon oracle + judge
 // prompt + bug taxonomy). See engine/ref/rubric.js + docs/THE_REF.md §"Discovery".
 import { buildCanonGroundTruth, JUDGE_SYSTEM } from '../engine/ref/rubric.js';
@@ -52,7 +53,7 @@ function arg(name, def) {
   return i >= 0 && ARGV[i + 1] ? ARGV[i + 1] : def;
 }
 const TURNS = Number(arg('turns', '12'));
-const SEEDS = arg('seeds', 'glass-harbor').split(',').map(s => s.trim()).filter(Boolean);
+const SEEDS = arg('seeds', DEMO_SEED).split(',').map(s => s.trim()).filter(Boolean);  // D-A3: the gate measures the locked demo region
 const SERVER = arg('server', 'http://localhost:5179');
 const MODEL_PLAYER = arg('player-model', 'claude-opus-4-8');
 const MODEL_JUDGE = arg('judge-model', 'claude-opus-4-8');

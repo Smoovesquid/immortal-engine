@@ -839,6 +839,29 @@ variety/bleed + replay-stability). **Net:** convergence 109/109, suite 8491→84
 `417d90c`. Deferred richness: "all 8 biomes packed" via the node-count knob (reaches 6–7 at higher counts) or an
 authored biome layer — not a skeleton blocker.
 
+*2026-06-23 (PHASE A BOUNDARY GATE — first measurement on the locked demo region `tallow`; `docs/playtests/opus-gate-2026-06-23.md`):*
+`node scripts/dm-playtest.mjs --personas rules-lawyer,chaos,lore-hound,newbie --turns 12` (seed `tallow`, post
+D-A1/A2a/A2b/A3). **8/48 (17%)**, cost ~$2.77 (budget ~$29.82 → ~$27.05). **Headline: the Confused-newbie persona —
+the stranger / MVP-bar audience — went 12/12 PERFECT, and it walked the D-A2 chain LIVE** (where-am-I →
+who's-the-watcher → "anything I can help?" → followed the debt-CONCERN to "who owes it?" → went to ask the
+innkeeper). The D-A2 resolvers (overview/population/concern/observer) held across all four personas; **§0 held on
+all 48 turns** (zero cosmology leak). **NONE of the 8 fails sit in the Road-A / D-A2 deterministic spine.**
+Classification:
+- **JUDGE-ARTIFACT ×1 (not a defect):** RL "what are all SIX ability scores" → DM correctly listed the engine's
+  FIVE (MIGHT/AGILITY/WITS/GRIT/CHARM); the judge assumed D&D's six. → gate-rubric calibration (teach the judge
+  the 5-ability set), not an engine fix.
+- **COMBAT-LANE ×1 (Codex):** Chaos "hurl the blade at fleeing Ashblade" → 7 dmg to a 3-HP foe not applied as a
+  kill + a phantom "critical" (sibling of gate-19 #5). escapeCombat state — Codex lane.
+- **NARRATION-FRONTIER ×6 (THE REF's domain — the Ref is ON but its soft-set doesn't yet catch these shapes):**
+  empty-success filler ("it comes off cleanly" on "send for Asha"), observe-only fallback on an identify-NPC ask,
+  **NPC-identity conflation** (Elske + Dalla narrated as one amnesiac — a CANON_HALLUCINATION the Ref should
+  catch), and a rules-text deflection + practice-post-HP dodges (×2–3). All "right state, wrong/empty words."
+**Verdict:** the Phase-A spine (rung-1 + one-town + region skeleton) is SOLID and a stranger plays it flawlessly;
+the residual is the narration frontier (THE REF) + 1 combat-lane + 1 judge-artifact — exactly the post-Road-A
+picture, now confirmed on the demo region. Per the bouncing-ruler rule, no count-lowering force-fix; the corpus
+(109/109) is the floor. **Recommends advancing to Phase B (talk→quest), where the newbie already started pulling
+the thread.**
+
 **Social-physics categories to mine next (Biblioteca Vols 2–6, mostly not yet failing-in-gate but on the map):**
 sarcasm/irony inversion (Vol 2; transcript: `docs/playtests/ridiculous-sarcasm-2026-06-06.md`), loaded
 questions / presupposition (Vol 3, "have you stopped stealing?"), bluff vs. claim (Vol 5), request/order/threat

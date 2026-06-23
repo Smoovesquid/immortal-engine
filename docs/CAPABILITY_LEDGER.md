@@ -582,6 +582,31 @@ failure class is fixed on the deterministic floor; targeted lore-hound rerun nex
 deferred THE_REF defect, NOT fixed here: the composer's garbled material-injection prose "In the Saltmarket Town,
 flour—… what do you do?".)
 
+*2026-06-23 (THE_REF-1 targeted rerun — lore-hound, post-THE_REF-1; `docs/playtests/opus-gate-2026-06-23-theref1-rerun.md`):*
+`node scripts/dm-playtest.mjs --personas lore-hound --turns 12` (glass-harbor). **8/12 pass — 0 crunch / 0 RAG /
+4 vibe.** Cost ~$0.72 (24 calls, 37,620 tokens). Fresh-vein sampling (Corwin→Kael→Tove→Brae) — the frozen corpus held
+105/105 and EK-1/RAG/crunch were clean (0 invented, 0 hallucinated). The 4 vibe fails split into two deterministic
+classes: **(a) two MENU-BOUNCES** — "That's no answer, Corwin…" / "That's a dice roll, not Brae's voice…" →
+`[clarify:referent]` "no one named That" → **closed by H-96**; **(b) two EMPTY-SUCCESS siblings** — "Why does Kael
+have no surname?" (a succeeded info-question → gen:s filler) and "Did Tove arrive on a road, or born here? One of
+them's wrong." (a contradiction THE_REF-1's classifier misses → gen:s). The exact THE_REF-1 shape ("are you telling
+me … lied") was NOT re-asked this run (different vein) — no regression. **Conclusion: proceed to THE_REF-3 (the two
+empty-success siblings) BEFORE the full panel (measure a clean delta).**
+
+*2026-06-23 (THE_REF-2 / H-96 — clarify-referent false-NER on sentence-initial contractions; grace,
+Basecamp-authored; rerun turns 5 & 11):* "That's no answer, Corwin…" / "That's a dice roll, not Brae's voice. I asked
+Brae…" bounced `[clarify:referent]` "no one named That" even with real present NPCs named later. **Deterministic root
+cause:** `hasPersonReferentSignal`'s possessive arm (`\b<name>'s\b`) FALSELY matched the copula contraction "That's"
+(= "that is") as a possessive person-signal → "That" won the referent over the unsignalled real NPCs and, being
+ungrounded, bounced. The clarify gate (`playloop.js:1006`) ALREADY required a positive person-signal
+(`requirePersonSignal:true` — the ledger's prescribed approach); the signal itself was lying. **Fix (positive-signal
+honesty, NOT a name denylist):** the "'s" arm no longer fires for closed-class function words
+(that/there/here/what/where/who/this/it/he/she/they/…); a real possessive ("Brae's voice", "Garrett's brother")
+still signals; the his/her/their arm is unchanged. One clause split + a function-word guard — smallest seam, no
+extraction/NER refactor. **+U227** (11 cases: 7 contraction positives incl. both gate-turn repros + There's/What's,
+2 negatives — absent name via address-verb AND via real possessive still clarify, 2 regression). Convergence 105/105,
+suite 8342→8353/0, determinism green. Reproduced LLM-off FIRST. Commit `dd84633`.
+
 **Social-physics categories to mine next (Biblioteca Vols 2–6, mostly not yet failing-in-gate but on the map):**
 sarcasm/irony inversion (Vol 2; transcript: `docs/playtests/ridiculous-sarcasm-2026-06-06.md`), loaded
 questions / presupposition (Vol 3, "have you stopped stealing?"), bluff vs. claim (Vol 5), request/order/threat

@@ -162,11 +162,13 @@ return res.json({ ok:false, reason:safe });
         return res.json({ ok: true, narration: baseNarration });
       }
 
-      // THE REF (Tier 2) — gated behind REF_ENABLED, OFF by default. When on, build
-      // the live judge + regenerate adapter (Haiku judge / Sonnet regen) and inject
-      // it; augmentNarration runs it AFTER the Tier-1 validator, on soft-source turns
-      // only (docs/THE_REF.md). Falls back silently to base narration on any miss.
-      const refEnabled = /^(1|true|on)$/i.test(String(process.env.REF_ENABLED || ''));
+      // THE REF (Tier 2) — now ON by default (false-positive sweep 12/12 clean +
+      // the 3 named targets caught 5/5; see docs/playtests/opus-gate-2026-06-23-REF-flagon.md
+      // and scripts/ref-falsepos-sweep.mjs). REF_ENABLED=0/off/false disables it.
+      // When on, build the live judge + regenerate adapter (Haiku judge / Sonnet regen)
+      // and inject it; augmentNarration runs it AFTER the Tier-1 validator, on soft-
+      // source turns only. Falls back silently to base narration on any miss.
+      const refEnabled = !/^(0|false|off|no)$/i.test(String(process.env.REF_ENABLED ?? '').trim());
       const ref = (refEnabled && anthropicKey)
         ? { enabled: true, budget: defaultRefBudget, ...buildRefAdapter({ world }) }
         : { enabled: false };

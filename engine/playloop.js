@@ -3234,6 +3234,28 @@ function exitCarriesTravel(text) {
   return /\b(?:go|head|walk|run|ride|travel|journey|move|escape|set\s+(?:out|off)|make\s+for|press\s+on|take\s+me)\b[^.!?]*\b(?:to|toward|towards|for|into|north|south|east|west)\b/i.test(t);
 }
 
+// A threat / ultimatum that carries no explicit attack VERB ("last chance to talk
+// before I make you", "talk or I'll…", "draw my blade on…") — the hostile-redirect
+// shapes the attack detectors miss. (gate-15 RL-t12)
+const THREAT_REDIRECT_RE = /\b(?:last\s+chance|before\s+i\s+make\s+you|i'?ll\s+make\s+you|make\s+you\s+talk|talk\s+(?:to\s+me\s+)?or\s+(?:i|you|else)|or\s+i'?ll\b|or\s+else\b|draw(?:n)?\s+(?:on|my|the)\s+(?:blade|sword|weapon|knife|dagger|steel)|at\s+(?:blade|sword|knife)point|surrender\s+or)\b/i;
+
+// True iff the lowercased text names a present NPC who is NOT the current dialogue
+// partner (by name token or role). Gates the threat-redirect break so a threat at
+// the partner stays an in-dialogue social move. (gate-15 RL-t12)
+function namesNonPartnerNpc(world, tl) {
+  const nodeId = String(world?.map?.currentNodeId || '');
+  const node = (world?.map?.nodes || []).find(n => n && n.id === nodeId) || null;
+  const npcs = Array.isArray(node?.settlement?.npcs) ? node.settlement.npcs : [];
+  const partnerId = String(world?.scene?.dialogue?.npcId || '');
+  return npcs.some(n => {
+    if (!n || String(n.id) === partnerId) return false;
+    const nm = normName(n?.name).trim();
+    if (nm && (tl.includes(nm) || nm.split(/\s+/).some(tok => tok.length > 3 && tl.includes(tok)))) return true;
+    const r = String(n?.role || '').toLowerCase();
+    return !!r && tl.includes(r);
+  });
+}
+
 function isDialogueBreakingIntent(text, world) {
   const t = String(text || '');
   if (!t.trim()) return false;
@@ -3268,6 +3290,16 @@ function isDialogueBreakingIntent(text, world) {
     const detection = detectPhysicalInteraction(world, t);
     if (detection.detected && (detection.matches || []).some(m => m.match === 'name' || m.match === 'part')) return true;
   }
+  // gate-15 RL-t12 — a declared attack, or a threat/ultimatum aimed at someone,
+  // ends the conversation: you can't keep chatting with Corwin while you draw on
+  // the Lingerer (the old fall-through surfaced Corwin's role-talk). An explicit
+  // attack breaks regardless of target (you've gone hostile); a softer threat /
+  // ultimatum breaks only when aimed at a DIFFERENT present NPC than the one you're
+  // talking to — a threat at the PARTNER stays an in-dialogue social move (askNpc/
+  // intimidate owns it). Breaking re-resolves the action out loud against the foe.
+  if (detectAttackBeginIntent(world, text) || detectAttackAnyIntent(world, text)) return true;
+  if ((THREAT_REDIRECT_RE.test(t) || detectApproach(t) === 'intimidate') && namesNonPartnerNpc(world, tl)
+      && !/\b(?:should|can|could|would|do|did|shall|may|must)\s+(?:i|we)\b/i.test(tl)) return true;
   return false;
 }
 
@@ -5006,6 +5038,10 @@ function detectApproach(t) {
   // truth") is coercive interrogation → resolve as intimidate, NOT physical force.
   if (isConversationalPressure(t)) return 'intimidate';
   if (/\b(intimidate|threaten|menace|scare|frighten|cow|or i'?ll|or else|back off|out of my way|flay|kill you|hurt you|break you|gut you|make you regret|do as i say|or you'?ll regret)\b/i.test(t)) return 'intimidate';
+  // gate-15 RL-t12 — coercive ULTIMATUM ("last chance to talk before I make you",
+  // "talk or I'll…", "make you talk"). A redirected threat resolves AS an intimidate
+  // against its target (socialTarget by name) — never generic atmosphere.
+  if (/\bmake you talk\b|\blast\s+chance\b[^.!?]{0,40}\b(?:talk|surrender|leave|answer|comply|before\s+i|or\b)|\btalk\s+(?:to\s+me\s+)?or\s+(?:i\b|you\b|else\b)/i.test(t)) return 'intimidate';
   if (/\b(deceive|\blie\b|bluff|trick|fool|mislead|pretend|claim\b|make .* believe|convince .* that i|(?:i'?m|i am) the (?:new|royal|king|lord|captain|sheriff|the|a)|tell (?:him|her|them|the \w+) (?:i'?m|i am|that))\b/i.test(t)) return 'deceive';
   if (/\b(charm|flatter|flirt|seduce|sweet.?talk|compliment|woo|win .* over|befriend|make .* laugh|tell .* (a )?joke|hey (sexy|gorgeous|beautiful|handsome|cutie)|you look (great|lovely|beautiful|amazing|good)|buy you a|take you (out|to dinner)|dinner later)\b/i.test(t)) return 'charm';
   if (/\b(persuade|convince|reason with|bargain|negotiate|appeal to|talk .* into|plead|beg|ask .* to let|let me (in|pass|through|by)|please let|hear me out)\b/i.test(t)) return 'persuade';

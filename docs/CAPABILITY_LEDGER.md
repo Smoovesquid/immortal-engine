@@ -607,6 +607,43 @@ extraction/NER refactor. **+U227** (11 cases: 7 contraction positives incl. both
 2 negatives — absent name via address-verb AND via real possessive still clarify, 2 regression). Convergence 105/105,
 suite 8342→8353/0, determinism green. Reproduced LLM-off FIRST. Commit `dd84633`.
 
+*2026-06-23 (THE_REF-3 — empty-success siblings DONE; grace, gate-13 rerun turns 4 & 10):* the two empty-success
+shapes the THE_REF-1 rerun surfaced, closed deterministically. **(1)** "Why does Kael have no surname?" —
+`isInfoSeekingText` missed the "why does X have no/a <name/attribute>" reason-for-absent-attribute shape → generic
+WITS roll → gen:s. Added `INFO_SEEKING_WHY_ABSENT_RE` → deliver-or-decline (delivers if grounded, honestly declines
+if not; never invents a reason). **(2)** "One of them's wrong" / "one of those is wrong" / "that contradicts what X
+said" — `isConfrontationChallenge` missed the contradiction shape → gen:s. Added `CONFRONTATION_ONE_OF_WRONG_RE` +
+`CONFRONTATION_CONTRADICTS_WHO_RE` → outcome-aware `confrontationReaction`; the contested fact is never invented
+(EK-1). Tight ("what is wrong?", "wrong turn/road", ordinary "why" do NOT match). **+U228** (11 cases). Convergence
+105/105, suite 8353→8365/0, determinism green. Reproduced LLM-off FIRST. Commit `ad9d997`.
+
+*2026-06-23 (gate 14 — FULL 4-persona panel, post THE_REF-1/2/3 + H-94/95/96; `docs/playtests/opus-gate-2026-06-23-fullpanel.md`):*
+`node scripts/dm-playtest.mjs --personas rules-lawyer,chaos,lore-hound,newbie --turns 12` (glass-harbor). **6/48
+(87.5% pass)** — the BEST result yet on this seed/personas (gate-11 12/48 → gate-12 7/48 → gate-14 6/48). Cost ~$2.70
+(96 calls, 148k tokens). Per-persona: RL 1v · Chaos 1v+1c · Lore 1v+1RAG · Newbie 1RAG. **All prior fixes HELD LIVE:**
+H-96 "That's…" no-clarify, THE_REF-1 confrontations reacted, H-94/95 combat resolved, THE_REF-3 shapes didn't recur,
+EK-1 held under aggressive name/date pressure (only the one lowercase residual below slipped). **The 6 failures were
+then closed by a PARALLEL deterministic sprint** (4 file-exclusive lanes on the shared v2-polish branch; Codex on
+combat):
+
+| gate-14 fail | shape | packet | commit |
+|---|---|---|---|
+| Newbie t4 | "who's the elder?" → wrong NPC (Corwin, not Kael) | U231 | `928e7c8` |
+| Lore t4 | "name me one other old family" → empty-success | U232 | `dda9e6f` |
+| Chaos t7 | tackle a 1-HP foe → `[combat:fled]` on a success roll | U229 | `4a13059` |
+| RL t11 | "leave X and walk to Y" → travel clause dropped | U233 | `2ddd65a` |
+| Chaos t1 | "kick the door open" → fabricated Improvised-Fixture strike | U230 | `138f856` |
+| Lore t12 | fabricated "the quarrel was over the deed" (CANON_HALLUCINATION) | U234 | `b8823d8` |
+
+Post-sprint: convergence 105/105, suite 8398/0, determinism green; all six on origin. **5 of 6 are FULL deterministic
+closures; #6 (EK-2 / U234) is BOUNDED** — `findInventedFactClaim`'s new `DISPUTE_CAUSE_RE` closes the one-party
+dispute-cause class at the post-LLM validator, but the GENERAL lowercase-fabrication problem remains the **THE_REF
+second-model output-validator frontier** (a regex over the validator is whack-a-mole; the principled close is a model
+judging the candidate against canon). **Methodology win:** the parallel sprint validated the file-ownership lane model
+(escapeCombat / gracefulAdjudication / playloop / llmAdapter exclusive; same-file pairs serialized; pre-assigned
+disjoint U-numbers U229–U234; rebase-on-shared-branch). Next decision: re-gate to measure the six live, or keep
+building — gate spend is a deliberate call.
+
 **Social-physics categories to mine next (Biblioteca Vols 2–6, mostly not yet failing-in-gate but on the map):**
 sarcasm/irony inversion (Vol 2; transcript: `docs/playtests/ridiculous-sarcasm-2026-06-06.md`), loaded
 questions / presupposition (Vol 3, "have you stopped stealing?"), bluff vs. claim (Vol 5), request/order/threat

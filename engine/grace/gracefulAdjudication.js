@@ -708,6 +708,19 @@ const INFO_SEEKING_IDENTITY_RE = /\bwho\s+(?:was|were)\s+(?:it|the\s+one|that(?:
 // check still gates: a grounded why is delivered, never blanket-declined.
 const INFO_SEEKING_WHY_ABSENT_RE = /\bwhy\b[^?]{0,60}\b(?:no|any|a|an)\s+(?:[a-z]+\s+){0,2}(?:surname|last\s+name|family\s+name|second\s+name|name|title)\b|\bwhy\b[^?]{0,40}\b(?:has|have|had|got|gets?)\s+no\s+[a-z]+/i;
 
+// (U232, gate-14 full-panel, lore-hound t4): "name me one other old family besides the
+// Boneknits" / "name me another founding family" — a "name me <X>" REQUEST for a
+// specific fact, sibling to the existing "give me (a/one/the) name" anchor in
+// INFO_SEEKING_RE. Without this it fell through every sub-RE (no who/what/when/where
+// opener, no "give me ... name" shape) to a generic WITS roll, whose success then hit
+// genericGroundedOutcome's atmosphere-only pool — a gen:s empty success ("the way ahead
+// opens a little") on a turn that demanded a concrete fact. Anchored on "name me" +
+// a determiner (one/another/a/an/the) so it routes to the deliver-or-decline contract
+// (delivers a grounded name if canon holds one, honestly declines if not — never
+// inventing a family name, EK-1). "Name your price"/"name the time" have no "me" after
+// "name" and stay unaffected.
+const INFO_SEEKING_NAME_ME_RE = /\bname\s+me\s+(?:one|another|a|an|the)\b/i;
+
 export function isInfoSeekingText(text) {
   const t = String(text || '').toLowerCase();
   if (!t.trim()) return false;
@@ -720,7 +733,8 @@ export function isInfoSeekingText(text) {
     || INFO_SEEKING_PROVENANCE_RE.test(t)
     || INFO_SEEKING_SURVEILLANCE_RE.test(t)
     || INFO_SEEKING_BACKSTORY_RE.test(t) || INFO_SEEKING_IDENTITY_RE.test(t)
-    || INFO_SEEKING_WHY_ABSENT_RE.test(t);
+    || INFO_SEEKING_WHY_ABSENT_RE.test(t)
+    || INFO_SEEKING_NAME_ME_RE.test(t);  // U232 — "name me one other old family"
 }
 
 // Confrontation / contradiction challenge (H-42, IG-11 social physics): "You

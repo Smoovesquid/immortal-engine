@@ -688,6 +688,14 @@ const INFO_SEEKING_BACKSTORY_RE = /\bwhat\s+happened\b[\s\S]{0,40}?\b(?:here|las
 // ungrounded one declines.
 const INFO_SEEKING_IDENTITY_RE = /\bwho\s+(?:was|were)\s+(?:it|the\s+one|that(?:\s+person)?|they|the\s+\w+)\b/i;
 
+// THE_REF-3 (gate-13 rerun turn-4): a "why does X have no/a <name/attribute>" question
+// asks for the REASON behind an absent attribute ("why does Kael have no surname?") —
+// almost always ungrounded (the world rarely authors WHY someone lacks a surname).
+// Routes to the deliver-or-decline path (delivers if canon holds it, honestly declines
+// if not) instead of a gen:s "you manage it, the way opens" empty success. The grounding
+// check still gates: a grounded why is delivered, never blanket-declined.
+const INFO_SEEKING_WHY_ABSENT_RE = /\bwhy\b[^?]{0,60}\b(?:no|any|a|an)\s+(?:[a-z]+\s+){0,2}(?:surname|last\s+name|family\s+name|second\s+name|name|title)\b|\bwhy\b[^?]{0,40}\b(?:has|have|had|got|gets?)\s+no\s+[a-z]+/i;
+
 export function isInfoSeekingText(text) {
   const t = String(text || '').toLowerCase();
   if (!t.trim()) return false;
@@ -699,7 +707,8 @@ export function isInfoSeekingText(text) {
     || INFO_SEEKING_PRIOR_HOLDER_RE.test(t)  // H-89 — "who ran this place before X?"
     || INFO_SEEKING_PROVENANCE_RE.test(t)
     || INFO_SEEKING_SURVEILLANCE_RE.test(t)
-    || INFO_SEEKING_BACKSTORY_RE.test(t) || INFO_SEEKING_IDENTITY_RE.test(t);
+    || INFO_SEEKING_BACKSTORY_RE.test(t) || INFO_SEEKING_IDENTITY_RE.test(t)
+    || INFO_SEEKING_WHY_ABSENT_RE.test(t);
 }
 
 // Confrontation / contradiction challenge (H-42, IG-11 social physics): "You
@@ -732,6 +741,15 @@ const CONFRONTATION_SWORE_BUT_RE = /\byou\s+swore\b[\s\S]{0,80}?\bbut\b/i;
 // Tight: requires the telling/saying frame OR a direct "are you lying" — so "are you
 // telling me the truth?" / "are you saying it's over?" (no lie token) do not match.
 const CONFRONTATION_TELLING_LIED_RE = /\bare\s+you\s+(?:telling|saying|claiming|suggesting)\b[^?]{0,80}?\b(?:lie[ds]?|lying)\b|\bare\s+you\s+lying\b/i;
+// THE_REF-3 (gate-13 rerun turn-10): a contradiction between two claims — "one of
+// them's wrong", "one of those is wrong", "that contradicts what Corwin said" — is a
+// confrontation sibling (the player asserts someone's account is false). Routes to the
+// outcome-aware confrontationReaction (THE_REF-1) instead of a gen:s success; the
+// contested fact is never invented. Tight: requires "one of {them/those/you/these/the
+// two} (is/are/'s) wrong/mistaken/lying/false" OR "contradicts what <X> said/claimed" —
+// so "what is wrong?", "wrong turn", and "wrong road" do NOT match.
+const CONFRONTATION_ONE_OF_WRONG_RE = /\bone\s+of\s+(?:them|those|you|these|the\s+two)\b[^.?!]{0,24}?\b(?:is|are|'?s)\s+(?:wrong|mistaken|lying|false|not\s+(?:right|true))\b/i;
+const CONFRONTATION_CONTRADICTS_WHO_RE = /\bcontradicts\s+what\s+\w+\s+(?:said|told|claimed|swore|says)\b/i;
 
 export function isConfrontationChallenge(text) {
   const t = String(text || '').toLowerCase();
@@ -739,7 +757,8 @@ export function isConfrontationChallenge(text) {
   return CONFRONTATION_SAID_BUT_RE.test(t) || CONFRONTATION_LYING_RE.test(t)
     || CONFRONTATION_ADMIT_RE.test(t) || CONFRONTATION_CLAIMED_RE.test(t)
     || CONFRONTATION_CONTRADICTS_RE.test(t) || CONFRONTATION_SWORE_BUT_RE.test(t)
-    || CONFRONTATION_TELLING_LIED_RE.test(t);
+    || CONFRONTATION_TELLING_LIED_RE.test(t)
+    || CONFRONTATION_ONE_OF_WRONG_RE.test(t) || CONFRONTATION_CONTRADICTS_WHO_RE.test(t);
 }
 
 // Tier B trigger: a conjunction of two distinct actions ("dive behind the bar

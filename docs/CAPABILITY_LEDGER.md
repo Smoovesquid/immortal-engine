@@ -531,6 +531,39 @@ parallel `objectQuery.js` would duplicate/refactor working code with no question
 (verb-less bare demonstratives "what is that object?" under-surface present furniture → room-overview) =
 **DEFERRED_COVERAGE**, not a Rung-1 blocker. Recorded in `docs/WORLD_QUERY_RESOLVER.md` §9.
 
+*2026-06-23 (H-94 — combat-initiation parity; playloop, Basecamp-authored):* attacking a not-yet-hostile present
+NPC with an unarmed/improvised strike must START combat, not fall to generic grace. **(1)** "I stamp my boot down on
+Corwin's hand" hit a WITS skill roll because `ANY_VIOLENCE`/`DIRECT_ATTACK_VERB` knew `stomp` not `stamp` — added
+`stamp`. **(2)** "I tell Corwin I could stomp him" wrongly started combat (`DIRECT_ATTACK_VERB` matched "stomp him"
+→ "him" → present NPC) — new `isSpokenOrHypotheticalViolence` (speech-frame opener **and** a reported first-person
+modal) bails reported speech in all three initiation detectors; "I tell X off and punch him" and "Corwin, I'll kill
+you" still fight. **+U224** (12 cases: 6 positive, 4 negative, 2 guard-precision). Convergence 105/105, suite
+8315→8327/0, determinism green. Reproduced LLM-off FIRST. Commit `e4a5c22`.
+
+*2026-06-23 (H-95 — grapple/throw bystander + hazard; playloop, Basecamp-authored; the gate-12 #10 / H-93-deferred
+E):* mid-fight, "throw the fleeing villager into the burning stall" fabricated `[strike:Improvised Burning Oil]` at
+the active foe (the escape resolver models only combatants); the same "unknown text → strike the foe" default also
+turned "help the fleeing villager away from the fire" into a worn-blade swing. New `isCombatBystanderHandling`
+(handling verb + bystander noun matching no present enemy) → honest `[combat:bystander-unreachable]` decline,
+guarded BEFORE `detectNewCombatTarget`, firing regardless of `explicitAction`. There is NO throw-a-person-into-hazard
+mechanic (`hazard.js` FIRE_RE = "throw MYSELF into fire") → decline is the honest resolution (P4). Untouched: "throw
+oil AT the monster" (prop → improvised weapon), "grab the monster" (grapple), and the out-of-combat
+assault-a-villager-starts-combat path (C10-003, via `engageNpcCombat`). **+U225** (8 cases). Convergence 105/105,
+suite 8327→8334/0, determinism green. Reproduced LLM-off FIRST. Commit `e600b90`.
+
+*2026-06-23 (gate 13 — TARGETED lore-hound, post EK-1 / world-query / H-94 / H-95; `docs/playtests/opus-gate-2026-06-23.md`):*
+`node scripts/dm-playtest.mjs --personas lore-hound --turns 12` (1 persona × glass-harbor × 12). **11/12 pass —
+0 crunch / 0 RAG / 1 vibe.** Cost **~$0.70** (24 Opus calls, 37,637 tokens). The lore-hound drilled invention bait
+(oldest person, Corwin's teacher, Kael's age, founder + year, founding tale, a single founder name) →
+**EK-1 holds LIVE: 0 invented facts**; **world-query materialization works live** (0 RAG); **honest declines
+acceptable** (the founding YEAR and a teacher-name declined; the adversarial player conceded "fine — no year, then"
+with no vibe fail); **no §0/protected-lore leakage**. **Sole failure: turn-5 empty-success** — a pointed challenge to
+Kael ("did Corwin lie?") on `[roll:20 vs DC:12 → success]` returned *"You see it through, and it goes your way"*
+(content-free, resolves nothing) → **THE_REF empty-success / DM_TEST_DEADEND**, NOT deterministic. **Conclusion: the
+deterministic Rung-1 floor is live-validated** (combat-truth + world-query + earned-knowledge); **THE_REF
+empty-success is the one open Rung-1 competence gap → THE_REF-1.** Full 4-persona panel deferred until post-THE_REF-1
+(measure the delta, don't re-confirm).
+
 **Social-physics categories to mine next (Biblioteca Vols 2–6, mostly not yet failing-in-gate but on the map):**
 sarcasm/irony inversion (Vol 2; transcript: `docs/playtests/ridiculous-sarcasm-2026-06-06.md`), loaded
 questions / presupposition (Vol 3, "have you stopped stealing?"), bluff vs. claim (Vol 5), request/order/threat

@@ -860,6 +860,24 @@ export function findInventedFactClaim(candidate, baseNarration) {
       if (NEGATION_HYPOTHETICAL_RE.test(before)) continue;
       return claim;
     }
+    // EK-2 / U234 (gate-14 Lore-hound t12, CANON_HALLUCINATION) — an invented CAUSE or
+    // SUBJECT of a dispute/event ("the third grandmother's quarrel was over the deed to
+    // the building", "the dispute was about the old well"). The relationship guard above
+    // needs TWO named parties; this catches the ONE-party "<dispute> ... over/about
+    // <specific>" shape the LLM fabricates under contradiction pressure ("you swore there
+    // were three — what did the third quarrel over?"). Same restraint as every guard
+    // here: only rejects when the matched fragment is absent from base, and a denial or
+    // hypothetical lead-in ("no record of what they quarreled over", "if the quarrel was
+    // over ...") is exempt. Dispute nouns only, so a neutral "talk/question about X" never trips it.
+    const DISPUTE_CAUSE_RE = /\b(?:quarrel(?:l?ed|ling)?|disput(?:e[ds]?|ing)|feud(?:ed|ing)?|argument|falling[\s-]?out|grudge|disagree(?:d|ment)?|squabble[ds]?|strife|spat|rift)\b[^.!?]{0,40}?\b(?:over|about|because\s+of|due\s+to)\s+(?:the|a|an|their|his|her|its|that|this|some|who|what)\b[^.!?,;]{0,24}/gi;
+    let dm2;
+    while ((dm2 = DISPUTE_CAUSE_RE.exec(text)) !== null) {
+      const claim = dm2[0];
+      if (base.includes(claim.toLowerCase())) continue;
+      const before = text.slice(Math.max(0, dm2.index - 30), dm2.index).toLowerCase();
+      if (NEGATION_HYPOTHETICAL_RE.test(before)) continue;
+      return claim;
+    }
     return null;
   } catch { return null; }
 }

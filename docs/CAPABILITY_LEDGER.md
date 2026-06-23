@@ -705,6 +705,21 @@ all narration/grace/movement lane):
 
 **Gate-17 net: 1 of 3 fixed deterministically (U238).** #2/#1 are compound-precedence DESIGN tensions that conflict with locked corpus contracts — out of the safely-deterministic lane (the corpus is the floor; the gate verdict is the noisy pointer). U238 reproduced LLM-off first; pushed.
 
+*2026-06-23 (gate 18 — CONFIRMATION panel, post U238; `docs/playtests/opus-gate-2026-06-23-gate18.md`):*
+`node scripts/dm-playtest.mjs --personas rules-lawyer,chaos,lore-hound,newbie --turns 12` (glass-harbor). **6/48**
+— but **ALL 6 from the Rules-Lawyer persona; Chaos / Lore / Newbie were 0-fail** (U235/236/237/238 HELD broadly).
+Cost ~$2.77. **Gate budget: 3/7.** All 6 were one NEW theme: character-sheet CRUNCH transparency.
+
+| gate-18 fail | shape | disposition |
+|---|---|---|
+| RL "give me my proficiency bonus as a flat number" / "proficiency bonus is +2, pick one" | PB is modeled (levelTable, +2 @ L1) but had NO META pattern → gen roll / observe / "outside the walls" decline | **FIXED — U239** (`7bf3373`): META_PROFICIENCY answers PB + equipped-weapon to-hit from the sheet |
+| RL "what's my proficiency bonus … give me the to-hit number" | compound; also META_ATTACK_MOD rejected the "give me THE to-hit" determiner | **FIXED — U239** (widened determiner + PB handler resolves both) |
+| RL "what's my main weapon and damage?" → inventory dump | compound: META_INVENTORY preempts META_WEAPON_DAMAGE | DEFER — compound-precedence (same class as gate-17 #1) |
+| RL "what's my weapon, armor, AC?" → AC only (LOW) | compound; AC answered, weapon/armor not crisp | DEFER — compound-precedence, low severity |
+| RL "walk me through the 22 to-hit" (lastRoll was 3 vs 11) | roll-breakdown of a PHANTOM number → combat table-talk dodge | DEFER — phantom-number correction edge (combat) |
+
+**Gate-18 net: 3 of 6 fixed (U239).** The remainder are the compound-precedence DESIGN class + a phantom-roll edge — frontier, not safely-deterministic. U235/236/237/238 confirmed held live (3 clean personas).
+
 **Social-physics categories to mine next (Biblioteca Vols 2–6, mostly not yet failing-in-gate but on the map):**
 sarcasm/irony inversion (Vol 2; transcript: `docs/playtests/ridiculous-sarcasm-2026-06-06.md`), loaded
 questions / presupposition (Vol 3, "have you stopped stealing?"), bluff vs. claim (Vol 5), request/order/threat

@@ -46,7 +46,13 @@ const META_SKILL_MOD = /\b(?:what(?:'?s| is)\s+my\s+|my\s+|give\s+me\s+(?:my\s+)
 // total attack bonus", "what goes into an attack roll", "attack roll formula". (H-61:
 // widened beyond the strict "my attack <noun>" possessive to catch the same intent
 // phrased as a bare "how does this work" rules question.)
-const META_ATTACK_MOD = /\b(?:what(?:'?s| is)\s+(?:my\s+)?(?:total\s+)?|my\s+(?:total\s+)?|give\s+me\s+(?:my\s+)?)(?:attack|to[-\s]?hit)\s+(?:modifier|mod|bonus|number|roll)\b|\bwhat\s+goes\s+into\s+(?:an?\s+)?attack\s+roll\b|\battack\s+roll\s+formula\b/i;
+const META_ATTACK_MOD = /\b(?:what(?:'?s| is)\s+(?:my\s+|the\s+)?(?:total\s+)?|my\s+(?:total\s+)?|give\s+me\s+(?:my\s+|the\s+)?)(?:attack|to[-\s]?hit)\s+(?:modifier|mod|bonus|number|roll)\b|\bwhat\s+goes\s+into\s+(?:an?\s+)?attack\s+roll\b|\battack\s+roll\s+formula\b/i;
+
+// (gate-18, Rules-Lawyer) "what's my proficiency bonus / give me my proficiency bonus
+// as a flat number / is the Worn Blade one I'm trained with" — the PROFICIENCY value is
+// modeled (levelTable.profBonus; +2 at L1) but had no META pattern, so it fell to a gen
+// roll / observe / decline. Answered straight from the sheet, never rolled.
+const META_PROFICIENCY = /\b(?:proficiency|prof)\s+(?:bonus|modifier|mod)\b|\bwhat(?:'?s| is)\s+my\s+proficiency\b|\bmy\s+proficiency\s+bonus\b|\bproficiency\s+bonus\b/i;
 
 // ── H-61: typed rules-question classifier (C5 graduation) ──────────────────
 // Second typed-packet graduation (mirrors H-59's compound-decomposition
@@ -512,7 +518,7 @@ export function isMetaQuestion(text) {
     || META_NPC_OBSERVER.test(t) || META_NPC_PRESENCE.test(t) || META_NPC_ROSTER.test(t)  // H-34 R2a
     || META_EXPLICIT_CHECK_A.test(t) || META_EXPLICIT_CHECK_B.test(t)  // H-19
     || META_EXPLICIT_CHECK_C.test(t) || META_EXPLICIT_CHECK_D.test(t)  // H-26c
-    || META_SKILL_MOD.test(t) || META_ATTACK_MOD.test(t) || META_BARE_DC.test(t)  // H-25
+    || META_SKILL_MOD.test(t) || META_ATTACK_MOD.test(t) || META_PROFICIENCY.test(t) || META_BARE_DC.test(t)  // H-25 / gate-18
     || META_ATTACK_GOVERNING_STAT.test(t)  // H-80 — governing stat for melee/ranged attack
     || META_ROLL_RECALL.test(t)  // H-12/13
     || META_ROLL_QUERY.test(t)  // gate-10 RL t11 — asking for the last roll's number/DC
@@ -1541,6 +1547,18 @@ export function handleMetaQuestion(text, world) {
   // "give me my numbers... and my attack bonus" ask also gets the full
   // ability scores — a half-answer with no scores and no final bonus is the
   // H-40 DM_TEST_DEADEND this replaces. (H-40)
+  // (gate-18) Proficiency bonus — straight from the sheet (levelTable), never rolled.
+  // Also resolves the to-hit with the equipped weapon (meleeProfile.atkBonus already
+  // folds ability mod + proficiency), so a compound "proficiency bonus … to-hit number"
+  // is fully answered. Checked before META_ATTACK_MOD so the proficiency phrasing wins.
+  if (META_PROFICIENCY.test(lowerText)) {
+    const p = world.party?.[0] || {};
+    const lvl = Number(p.level) || 1;
+    const pb = profBonusFor(lvl);
+    const prof = meleeProfile(p);
+    const ans = `Your proficiency bonus is ${fmtMod(pb)} (level ${lvl}). On a weapon you're trained with, your to-hit is your ability modifier plus that — with the ${prof.name}, ${fmtMod(prof.atkBonus)}.`;
+    return META_STATS_REQ.test(lowerText) ? `${answerFullStats(world)} ${ans}` : ans;
+  }
   if (META_ATTACK_MOD.test(lowerText)) {
     const p = world.party?.[0] || {};
     const weapons = (Array.isArray(p.inventory?.weapons) ? p.inventory.weapons : [])

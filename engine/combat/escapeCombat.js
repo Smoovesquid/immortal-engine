@@ -245,6 +245,23 @@ function isFixtureEgressText(text) {
   return /\b(open|opened|opening|through|out|outside|escape|egress|clear\s+the\s+street)\b/.test(t);
 }
 
+// An offensive physical action aimed at the LIVING FOE — a thrown weapon, a
+// stab/jam/drive into the body, or a press/pin/shove that forces the foe. Used
+// to RESCUE an attack that a movement verb (egress), a self-hazard (dive out a
+// window), or a spell-less 'hold' would otherwise swallow, so a blow in active
+// combat always resolves a roll instead of fizzling. The match requires an
+// offensive verb AND a foe-directed object (a pronoun, a foe-noun, or a body
+// part — incl. a possessive name like "Elske's chest"), so a pure scene-exit
+// ("kick the door open and clear the street") never trips it. (Gate
+// 2026-06-23 combat-truth: lethal hits & embedded attacks during egress/hold.)
+function isAttackAtFoe(text) {
+  const t = String(text || '').toLowerCase();
+  const offensive = /\b(throw|throws|threw|hurl|hurls|hurled|fling|flings|flung|toss|tosses|tossed|lob|lobs|lobbed|jam|jams|jammed|drive|drives|drove|stab|stabs|stabbed|plunge|plunges|plunged|bury|buries|buried|sink|sinks|sank|ram|rams|rammed|thrust|thrusts|press|presses|pressed|pin|pins|pinned|shove|shoves|shoved|force|forces|forced|gouge|gouges|gouged|slam|slams|slammed)\b/;
+  if (!offensive.test(t)) return false;
+  const foeTarget = /\b(?:him|her|them|it|its)\b|\bthe\s+(?:foe|enemy|bandit|brute|linger(?:er)?|wanderer|monster|creature|beast|guard|wolf|goblin|orc|thing)\b|[a-z']+\s+(?:face|head|skull|throat|neck|chest|gut|belly|ribs|heart|eyes?|back|snout|fang|claw)\b/;
+  return foeTarget.test(t);
+}
+
 function isImprovisedStrikeText(text) {
   const t = String(text || '').toLowerCase();
   if (!/\b(grab|snatch|smash|shatter|break|slam|bash|kick|boot|throw|hurl|fling|toss|lob|shove|ram|drive|wedge|tip|dump|splash|pour|swing)\b/.test(t)) return false;
@@ -1000,6 +1017,18 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
   if (verb === 'strike' && !isImprovisedStrikeText(actionText)) {
     if (grappleIntent) verb = grappleIntent;
   }
+  // An attack aimed at the foe must RESOLVE even when phrased as an exit ("throw
+  // the knife into its chest and dive out the window") or a wrestle ("press its
+  // face into the flames and hold it there"). Without this, the egress branch and
+  // the spell-less 'hold' branch swallow the blow — no roll, no damage, and a
+  // lethal hit does nothing. Route those to the strike branch (which resolves the
+  // roll, applies damage, and marks a lethal foe defeated). A real spell — "hold
+  // person" / "paralyze" — keeps its caster path. (Gate 2026-06-23.)
+  const attackAtFoe = isAttackAtFoe(actionText);
+  if (attackAtFoe && (verb === 'egress'
+    || (verb === 'hold' && !/\bhold\s+person\b|\bparaly/i.test(actionText)))) {
+    verb = 'strike';
+  }
   let warded = false;
   let wardBonus = 0;
   let recklessThisRound = false;
@@ -1082,7 +1111,7 @@ export function resolveEscapeCombatTurn(world, actionText = '') {
   if (verb === 'egress') {
     beats.push('You force the way open and shout for people to clear out — movement, not a blow aimed at the foe.');
     actionMech = '[combat:egress]';
-  } else if (hazardKind) {
+  } else if (hazardKind && !attackAtFoe) {
     // Environmental hazard mid-fight (roof collapse / fire / fall): SRD damage to
     // the PC and everyone caught in the area. PC damage goes to meta.escapeHp (as
     // heals do — the enemy turn re-reads it); enemies mutate in place (area).

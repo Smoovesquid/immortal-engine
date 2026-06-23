@@ -2514,10 +2514,15 @@ function playerMoveCore(world, packsById, text) {
   // grounded, outcome-aware prose (a DM never says "a low hum threads through the walls"
   // for a resolved action). Specific handlers still win; good composer lines pass through.
   const base = composed.narrationLine;
-  const narration = grounded || (ABSTRACT_FLOOR_RE.test(base) ? genericGroundedOutcome(w, text, result.outcome) : base);
+  const genMeta = {};
+  const narration = grounded || (ABSTRACT_FLOOR_RE.test(base) ? genericGroundedOutcome(w, text, result.outcome, genMeta) : base);
 
-  // Strict output discipline: 1 narration line + 1 bracket line.
-  return { world: w, output: { narration, mechanics: result.mechanicsLine } };
+  // Strict output discipline: 1 narration line + 1 bracket line. narrationSource (set
+  // only when the generic-filler bank produced the line) rides out so THE REF can gate
+  // its judge to this soft path; absent → the Ref treats the turn as hard (no cost).
+  const output = { narration, mechanics: result.mechanicsLine };
+  if (genMeta.source) output.narrationSource = genMeta.source;
+  return { world: w, output };
 }
 
 export function newScene(world, packsById, { lastResolutionKind = 'turn' } = {}) {
@@ -5687,7 +5692,7 @@ function answerOrDeclineQuestion(world, text, outcome) {
 
 // Grounded prose for any resolved non-combat action that would otherwise floor.
 // Exported for unit testing.
-export function genericGroundedOutcome(world, text, outcome) {
+export function genericGroundedOutcome(world, text, outcome, meta = {}) {
   const t = String(text || '').toLowerCase().trim();
   // H-42 / THE_REF-1 — a confrontation/contradiction challenge aimed at a present
   // NPC ("are you telling me he lied?") gets an in-character REACTION from that NPC,
@@ -5768,6 +5773,12 @@ export function genericGroundedOutcome(world, text, outcome) {
   if (q) return q;
 
   // Generic last resort: grounded, in-fiction, no abstract filler, no mechanical prompt.
+  // THE REF (Tier 1 ext): mark this content-free "gen bank" outcome as a SOFT narration
+  // source. It is the lowest-content base — exactly what the LLM polish can inflate into
+  // a fabrication (gate-REF #11: "the representative was his father" on a WITS roll). The
+  // tag rides out on output.narrationSource so the Ref reviews these turns too, not just
+  // dialogue-ask. Specific/grounded banks above never set it → the Ref skips them (cheap).
+  meta.source = 'generic-resolve';
   return o === 's' ? V('gen:s', [`You see it through, and it goes your way.`, `It comes off cleanly; the moment turns toward you.`, `You manage it, and the way ahead opens a little.`])
     : o === 'm' ? V('gen:m', [`It half-works — you get part of what you were after, not all of it.`, `You get something out of it, though not what you hoped.`, `It lands, after a fashion — partial, imperfect.`])
     : V('gen:f', [`It doesn't come off the way you meant; the moment slips past you in ${place}.`, `It falls short here in ${place}, and you're left where you started.`, `Whatever you meant to do, ${place} doesn't give it to you.`]);

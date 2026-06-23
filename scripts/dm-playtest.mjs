@@ -181,7 +181,7 @@ async function playTurn(world, text) {
   }
   const mech = output?.mechanics || '';
   const skipPolish = /the DM is unmoved|nice try/i.test(mech) || /\[dialogue exit/.test(mech);
-  const ai = skipPolish ? null : await tryAiNarration(world2, base, { input: text, mechanics: mech });
+  const ai = skipPolish ? null : await tryAiNarration(world2, base, { input: text, mechanics: mech, narrationSource: output?.narrationSource });
   // The UI renders the DM via speaker attribution, not the literal "Wizard:"
   // prefix the engine puts on base narration — strip it so the judge sees what
   // a player sees (otherwise the raw prefix reads as a system-artifact leak).

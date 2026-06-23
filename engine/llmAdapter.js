@@ -6,6 +6,7 @@ import { ensureWorld } from './state.js';
 import { buildNarratorContext, buildDMContext } from './ai/narratorContext.js';
 import { renderAsciiMapBlock } from './ai/asciiMap.js';
 import { buildAiHashTrace } from './ai/aiHashTrace.js';
+import { reviewNarration } from './ref/index.js';
 
 const ANTHROPIC_API = 'https://api.anthropic.com/v1/messages';
 const ANTHROPIC_VERSION = '2023-06-01';
@@ -967,7 +968,8 @@ export async function augmentNarration({
   enabled = false,
   apiKey = '',
   model = DEFAULT_MODEL,
-  fetchImpl = globalThis.fetch
+  fetchImpl = globalThis.fetch,
+  ref = {}            // THE REF (Tier 2) — { enabled, judge, regenerate, budget }. Default OFF.
 } = {}) {
   const base = String(baseNarration ?? '').trim();
   if (!enabled) return base;
@@ -990,7 +992,14 @@ export async function augmentNarration({
     baseNarration: base,
     ctx
   });
-  return ok ? candidate : base;
+  if (!ok) return base;
+
+  // THE REF (Tier 2) — a selective second opinion on the SOFT-source turns only,
+  // AFTER the deterministic validator (Tier 1) has accepted the candidate. With
+  // the flag OFF (default) this returns `candidate` unchanged — zero behavior
+  // change vs. the prior `return ok ? candidate : base`. Never throws; falls back
+  // to the candidate/base on any miss (Invariant 3).
+  return reviewNarration({ world, outcome, candidate, baseNarration: base, ...ref });
 }
 
 // ── Legacy compatibility shim ─────────────────────────────────────────────────

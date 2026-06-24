@@ -141,9 +141,54 @@ export const GOAL_PROBE_ROOM = {
   },
 };
 
+// ── Goal #3 — tour the whole building ─────────────────────────────────────────
+// A COVERAGE goal over a STRUCTURE'S ROOMS (vs. probe-room's objects): drive the
+// player to set foot in every room of the building they wake in, so the harness
+// exercises room-to-room movement and each room's look/contents — the "work through
+// the entire building" beat. Progress = fraction of the structure's rooms visited
+// (scene.interior.visited, maintained by moveWithinInterior). satisfied = every
+// room visited. If the player wanders OUT before finishing, the current frame reads
+// 0 (no interior to read visited from) but the runner's bestProgress latch preserves
+// the max coverage reached, so the soft-lock oracle still trips on a half-toured
+// building the player couldn't get back into. Read-only, like every goal here.
+
+// The room ids of the structure the player is currently inside (null if outside).
+function structureRoomIds(world) {
+  const interior = world?.scene?.interior;
+  if (!interior || typeof interior !== 'object') return null;
+  const st = world?.structures?.byId?.[String(interior.structureKey || '')];
+  const rooms = Array.isArray(st?.topology?.rooms) ? st.topology.rooms : [];
+  return rooms.length ? rooms.map(r => String(r.id)) : null;
+}
+
+// { visited, total } rooms for the current structure — visited scoped to rooms that
+// actually belong to this structure (a stale id can't inflate coverage past 100%).
+export function buildingCoverage(world) {
+  const rooms = structureRoomIds(world);
+  if (!rooms) return { visited: 0, total: 0 };
+  const inStruct = new Set(rooms);
+  const visited = Array.isArray(world?.scene?.interior?.visited) ? world.scene.interior.visited.map(String) : [];
+  const seen = new Set(visited.filter(id => inStruct.has(id)));
+  return { visited: seen.size, total: rooms.length };
+}
+
+export const GOAL_TOUR_BUILDING = {
+  id: 'tour-building',
+  description: 'Explore the whole building you woke in — set foot in every room, then you may step outside.',
+  satisfied(world) {
+    const { visited, total } = buildingCoverage(world);
+    return total > 0 && visited >= total;
+  },
+  progressMetric(world) {
+    const { visited, total } = buildingCoverage(world);
+    return total > 0 ? visited / total : 0;
+  },
+};
+
 export const GOALS = Object.freeze({
   [GOAL_FIRST_CONCERN.id]: GOAL_FIRST_CONCERN,
   [GOAL_PROBE_ROOM.id]: GOAL_PROBE_ROOM,
+  [GOAL_TOUR_BUILDING.id]: GOAL_TOUR_BUILDING,
 });
 
 export function getGoal(id) {

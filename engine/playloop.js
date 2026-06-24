@@ -19,6 +19,8 @@ import { applyDeltas } from './effectsCore.js';
 import { introduceThread, resolveThread, ensureInstrumentLayer } from './instrument.js';
 import { applyGeneratedStructuresForNode } from './structures/applyGeneratedStructuresForNode.js';
 import { enterStructureInterior, exitStructureInterior, moveWithinInterior, getInteriorView, interiorDirectionalExits, resolveStructureSelection } from './structures/interiors.js';
+import { normalizeTopology, adjacentRooms } from './structures/topology.js';
+import { reachableRooms } from './movement/interiorMovement.js';
 import { generateDungeon, dungeonLevelToStructure, isDungeonStructureId, dungeonRoomAt } from './dungeon/generate.js';
 import { createCharacter } from './chargen/genesis.js';
 import { FANTASY_STARTER_GEAR } from './chargen/fantasyGear.js';
@@ -1056,10 +1058,21 @@ function playerMoveCore(world, packsById, text) {
     }
   }
 
-  if (!targetedCombatAction && !declaredNpcViolence && interiorAction.kind === 'move' && !approachPresentNpcRef(w, text) && !talkOrApproachResolvesPresentNpc(w, text)) {
+  // An explicit relative-room move ("the front room", "through the doorway") names an
+  // interior SPACE, not a person — so it must win over the NPC-approach guard, which
+  // otherwise captures "head TO the other room" as an approach-ref, loosely matches a
+  // present NPC, and bounces the move out to the exterior travel path (the player ends
+  // up outside, "you know of no such place"). A roomHint with NO room-noun (bare "go
+  // back") still defers to the guard, so "go back to Aldrich" remains an NPC approach.
+  const roomMoveWins = interiorAction.kind === 'move' && interiorAction.roomHint
+    && /\b(?:room|rooms|doorway|doorways|chamber|hall|hallway)\b/i.test(String(text || ''));
+  if (!targetedCombatAction && !declaredNpcViolence && interiorAction.kind === 'move'
+      && (roomMoveWins || (!approachPresentNpcRef(w, text) && !talkOrApproachResolvesPresentNpc(w, text)))) {
     const wantsRiskyMove = isRiskyOrObstructedMoveIntent(text);
     if (!wantsRiskyMove) {
-      const targetRoomId = interiorAction.toRoomId || pickAdjacentInteriorByDirection(w, interiorAction.direction);
+      const targetRoomId = interiorAction.toRoomId
+        || pickAdjacentInteriorByDirection(w, interiorAction.direction)
+        || (interiorAction.roomHint ? resolveInteriorRoomHint(w, interiorAction.roomHint) : '');
       const fromRoomId = String(w.scene?.interior?.roomId || '');
       const w1 = targetRoomId ? moveWithinInterior(w, targetRoomId) : w;
       // Success is a real room change, not just a new object identity. moveWithinInterior
@@ -1103,16 +1116,24 @@ function playerMoveCore(world, packsById, text) {
           const body = room ? dungeonLookNarration(room, 'look around').replace(/^Wizard:\s*/, '') : '';
           return { world: w2, output: { narration: `Wizard: ${movedLead} ${body}${dungeonTelegraph(w2, dungeon)}${dungeonExitsLine(w2)}`.trim(), mechanics: '' } };
         }
-        const moveMsg = movedDir ? `Wizard: You move ${movedDir} into the next chamber.` : 'Wizard: You move into the next chamber.';
+        const moveMsg = interiorAction.roomHint === 'fore'
+          ? 'Wizard: You step back the way you came, into the next room.'
+          : interiorAction.roomHint === 'aft'
+            ? 'Wizard: You step through into the next room.'
+            : movedDir ? `Wizard: You move ${movedDir} into the next room.` : 'Wizard: You move on into the next room.';
         return { world: w2, output: { narration: moveMsg, mechanics: '' } };
       }
       const blockedDir = normalizeDir(interiorAction.direction);
       // "Go inside" while already indoors gets the obvious answer.
       const blockedMsg = (!blockedDir && /\b(inside|indoors|enter)\b/i.test(String(text || '')) && w.scene?.interior)
         ? 'Wizard: You\'re already indoors. "Go outside" first if you\'re after a different roof.'
-        : blockedDir
-          ? `Wizard: There is no way ${blockedDir} from here. The wall holds.`
-          : 'Wizard: That way is blocked from here.';
+        : interiorAction.roomHint === 'aft'
+          ? 'Wizard: There is no room beyond this one.'
+          : interiorAction.roomHint === 'fore'
+            ? 'Wizard: You\'re already at the way in. "Go outside" to leave.'
+            : blockedDir
+              ? `Wizard: There is no way ${blockedDir} from here. The wall holds.`
+              : 'Wizard: That way is blocked from here.';
       return { world: w, output: { narration: blockedMsg, mechanics: '' } };
     }
     // Risky/obstructed/special movement falls through to normal resolution (roll-capable path).
@@ -3212,6 +3233,41 @@ function inferInteriorAction(text, interior) {
 
   const goDir = t.match(/^\s*(?:go\s+)?(north|south|east|west|n|s|e|w)\s*$/i);
   if (goDir) return { kind: 'move', toRoomId: '', direction: normalizeDir(goDir[1]) };
+
+  // RELATIVE-ROOM MOVEMENT — the natural language a person uses to walk through a
+  // building (vs. the bare-compass `go east`). Resolved to an adjacent room via the
+  // structure topology in the move branch (resolveInteriorRoomHint):
+  //   'aft'  = another room, deeper / onward / a new one ("the next/other/back room",
+  //            "through the doorway", "further in", "the rest of the house").
+  //   'fore' = back toward the way in ("the front room", "back the way I came", "go
+  //            back", "the previous room", "toward the entrance").
+  // The exit/rise/idiom guards ABOVE have already claimed "back out", "step outside",
+  // "out the door", "into the open", "step out of bed/line" — so a residual "back"
+  // here is a room move, not a leave. Object-probe verbs (look/peer/reach/search…) are
+  // excluded so "look deeper into the chest" is never read as walking. Placed after
+  // the compass match (so "go east" stays a direction) and before the bare "go <word>"
+  // rule (so "go through the doorway" no longer grabs "through" as a fake room id, and
+  // "go back" no longer falls through to a rolled resolve()).
+  const probesObject = /\b(?:look|peer|peek|reach|dig|search|rummage|rifle|feel|stare|gaze|fish|grope)\b/.test(t);
+  if (!probesObject) {
+    const aft =
+      /\b(?:the\s+)?(?:next|other|far|further|inner|back|rear)\s+room\b/.test(t) ||
+      /\bthrough\s+(?:the\s+|that\s+)?door(?:way)?\b/.test(t) ||
+      /\bthrough\s+to\b/.test(t) ||
+      /\b(?:go|head|step|move|continue|press|walk)\s+(?:on\s+)?through\b/.test(t) ||
+      /\b(?:further|farther|deeper)\s+(?:in|into|on)\b/.test(t) ||
+      /\b(?:explore|see|check|tour)\s+(?:the\s+)?rest\b/.test(t) ||
+      /\brest\s+of\s+the\s+(?:house|building|place|cottage|rooms?)\b/.test(t);
+    if (aft) return { kind: 'move', toRoomId: '', direction: '', roomHint: 'aft' };
+    const fore =
+      /\b(?:the\s+)?front\s+room\b/.test(t) ||
+      /\b(?:the\s+)?previous\s+room\b/.test(t) ||
+      /\bback\s+the\s+way\b/.test(t) ||
+      /\bthe\s+way\s+i\s+came\b/.test(t) ||
+      /\b(?:go|head|walk|come)\s+back\b/.test(t) ||
+      /\b(?:toward|towards|to|back\s+to)\s+the\s+(?:entrance|front\s+door|front|doorway)\b/.test(t);
+    if (fore) return { kind: 'move', toRoomId: '', direction: '', roomHint: 'fore' };
+  }
 
   // "go <roomId>" / "go hall" is an interior move — but NOT "go to/over/up Aldrich":
   // a movement preposition isn't a room, it's the start of an approach-a-person
@@ -6359,6 +6415,42 @@ function pickAdjacentInteriorByDirection(world, direction) {
   if (!dir) return '';
   const exits = interiorDirectionalExits(world);
   return String(exits[dir] || '');
+}
+
+// Resolve a relative-room hint ('fore'/'aft' from inferInteriorAction) to the
+// adjacent room it means, using the structure topology (BFS distance from the entry).
+//   'fore' = the neighbour CLOSER to the entrance (back the way you came / the front
+//            room). '' if you're already at the entry — the caller then says so.
+//   'aft'  = somewhere NEW: prefer an unvisited neighbour (deepest first), else the
+//            neighbour farther from the entry. '' at a dead end ("no room beyond").
+// Returns '' (a real wall) rather than folding onto an arbitrary door — same contract
+// as pickAdjacentInteriorByDirection. Pure read over the world; no RNG, no mutation.
+function resolveInteriorRoomHint(world, hint) {
+  const interior = (world?.scene && typeof world.scene.interior === 'object') ? world.scene.interior : null;
+  if (!interior) return '';
+  const st = world.structures?.byId?.[String(interior.structureKey || '')];
+  const topo = normalizeTopology(st?.topology);
+  if (!topo) return '';
+  const cur = String(interior.roomId || '');
+  const adj = adjacentRooms(topo, cur);
+  if (!adj.length) return '';
+  const entryRoom = topo.rooms.find(r => (Array.isArray(r.tags) ? r.tags : []).some(tag => String(tag).toLowerCase() === 'entry'));
+  const entryId = String(entryRoom?.id || topo.rooms[0]?.id || '');
+  const { dist } = reachableRooms(topo, entryId);
+  const here = dist.get(cur);
+
+  if (hint === 'fore') {
+    let best = '', bestD = Infinity;
+    for (const id of adj) { const d = dist.get(id); if (typeof d === 'number' && d < bestD) { bestD = d; best = id; } }
+    return (best && (typeof here !== 'number' || bestD < here)) ? best : '';
+  }
+  // 'aft' — prefer an unvisited neighbour (deepest first), else the deepest neighbour.
+  const visited = new Set(Array.isArray(interior.visited) ? interior.visited.map(String) : []);
+  const unvisited = adj.filter(id => !visited.has(id));
+  if (unvisited.length) return unvisited.sort((a, b) => (dist.get(b) ?? -1) - (dist.get(a) ?? -1))[0];
+  let best = '', bestD = -Infinity;
+  for (const id of adj) { const d = dist.get(id); if (typeof d === 'number' && d > bestD) { bestD = d; best = id; } }
+  return (best && (typeof here !== 'number' || bestD > here)) ? best : '';
 }
 
 // Player-facing exit labels. Each exit now carries the compass direction it

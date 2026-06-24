@@ -9,6 +9,8 @@ import { exitsFrom, cleanPlaceName } from '../map/mapState.js';
 import { statMod } from '../ruleset/core/stats.js';
 import { profBonusFor } from '../ruleset/core/levelTable.js';
 import { makeRng, seedFromString } from '../rng.js';
+import { normalizeTopology, adjacentRooms } from '../structures/topology.js';
+import { reachableRooms } from '../movement/interiorMovement.js';
 import { playerAc, meleeProfile } from '../combat/escapeCombat.js';
 import { purseTotalCopper, formatPrice } from '../economy/shop.js';
 import { fateBand } from '../rulesets.js';
@@ -2393,7 +2395,37 @@ export function buildLocationSurvey(world, opts = {}) {
     } else {
       parts.push('The room holds little of note.');
     }
-    parts.push('The way out leads back to the open air.');
+    // The WAYS OUT of this room. A multi-room building has interior doorways — a flat
+    // "the way out leads back to the open air" hid every other room, so a player could
+    // never discover them from looking around (FIRST_ROOM follow-up: whole-building
+    // playthrough). Describe the actual doorways (toward the front / deeper in) and,
+    // from the entry room, the way outside. Topology-driven; degrades to the open-air
+    // line for a single-room structure.
+    const st = w.structures?.byId?.[String(interior.structureKey || '')];
+    const topo = normalizeTopology(st?.topology);
+    let waysOut = 'The way out leads back to the open air.';
+    if (topo) {
+      const roomId = String(interior.roomId || '');
+      const adj = adjacentRooms(topo, roomId);
+      const entryRoom = topo.rooms.find(r => (Array.isArray(r.tags) ? r.tags : []).some(tag => String(tag).toLowerCase() === 'entry'));
+      const entryId = String(entryRoom?.id || topo.rooms[0]?.id || '');
+      const { dist } = reachableRooms(topo, entryId);
+      const here = dist.get(roomId);
+      const toward = adj.filter(id => (dist.get(id) ?? Infinity) < (here ?? Infinity)).length;
+      const deeper = adj.filter(id => (dist.get(id) ?? -Infinity) > (here ?? -Infinity)).length;
+      if (here === 0) {
+        // The entry room: the door out is here; interior doorways lead further in.
+        waysOut = deeper > 0
+          ? `${deeper === 1 ? 'A doorway leads' : 'Doorways lead'} further in, and the way out to the open air is here.`
+          : 'The way out leads back to the open air.';
+      } else if (adj.length) {
+        const bits = [];
+        if (toward) bits.push('back toward the front');
+        if (deeper) bits.push('deeper in');
+        if (bits.length) waysOut = `${adj.length === 1 ? 'A doorway leads' : 'Doorways lead'} ${joinList(bits)}.`;
+      }
+    }
+    parts.push(waysOut);
     return parts.join(' ');
   }
 

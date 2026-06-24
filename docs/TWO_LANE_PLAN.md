@@ -35,17 +35,19 @@ genesis assignment.
 
 ## Packets + done-when
 
-**Light Up the World**
-- **W1·1 — Populate every voice (finish Decision #1).** Broaden `npcVoiceResolve`'s allowlist from 25 to
-  the full set of minted roles that have a corpus file. *Done-when:* a broad sweep of tallow NPCs
-  resolves to a grounded Opus voice; unmapped roles fall back cleanly; `worldHash` replay-stable; a
-  coverage U-test. *(voiceCorpusId is a soft field → no WORLD_VERSION bump expected.)*
-- **W1·2 — The world answers (P-85).** Deepen `placeQuery`/`personQuery` so pointed substrate questions
-  resolve from buried history (no routing change). *Done-when:* a battery returns grounded answers or an
-  honest in-fiction decline (never a roll/fabrication); resolver U-tests.
-- **W1·3 — Rumor surface (P-83).** Fill `engine/rumor/rumorsReaching.js` (the contract below): tiered,
-  traceable gossip + the player's deeds reaching the next town. *Done-when:* the read-API returns
-  fidelity-tiered rumors deterministically; U-tests.
+**Light Up the World** — ✅ **ALL LANDED `6dc951a` (2026-06-24, clean FF, +37 tests green)**
+- **W1·1 — Populate every voice (finish Decision #1).** ✅ LANDED `1efbd40`. Broaden `npcVoiceResolve`'s
+  allowlist from 25 to the full set of minted roles that have a corpus file. *Done-when:* a broad sweep of
+  tallow NPCs resolves to a grounded Opus voice; unmapped roles fall back cleanly; `worldHash`
+  replay-stable; a coverage U-test (U270, 7/7). *(voiceCorpusId is a soft field → no WORLD_VERSION bump.)*
+- **W1·2 — The world answers (P-85).** ✅ LANDED `4a69465`. Deepen `placeQuery`/`personQuery` so pointed
+  substrate questions resolve from buried history (no routing change). *Done-when:* a battery returns
+  grounded answers or an honest in-fiction decline (never a roll/fabrication); resolver U-tests (U271, 17/17).
+- **W1·3 — Rumor surface (P-83).** ✅ LANDED `6dc951a`. Filled `engine/rumor/rumorsReaching.js` (the
+  contract below): reads `world.rumors` (carried, pre-garbled) + synthesizes player-deed rumors from
+  `world.deeds` (severity ≥ 25, `garbleRumor` by proximity tier). Pure/deterministic, copies-before-sort.
+  *Done-when:* the read-API returns fidelity-tiered rumors deterministically; U-tests (U272, 13/13; my
+  contract guard U266 still green). **→ W2·3 is now UNBLOCKED.**
 
 **Make Every Turn Honest**
 - **W2·1 — Correctness floor: COMBAT (P-86).** Harness the combat slice; close the RESIDUAL reconciliation
@@ -58,9 +60,15 @@ genesis assignment.
   Homebase.** *Done-when:* a tracked atrocity in one town measurably changes a stranger's reception in the
   next; tests; determinism intact.
 
-## The one dependency
-`W2·3 (reputation-travels) → consumes → W1·3 (rumorsReaching)`. Everything else is independent and runs
-in parallel from the start. Homebase lands W1·3 before W2·3 builds against it.
+## The one dependency — ✅ CLEARED
+`W2·3 (reputation-travels) → consumes → W1·3 (rumorsReaching)`. **W1·3 landed first (`6dc951a`), as
+intended — the producer is real before the consumer builds.** Coordination notes for W2·3:
+- **Rebase `honest-turn/p86-combat` onto `6dc951a` before building W2·3** (it carries the filled impl, not
+  the stub). The first two W2 packets (combat/dialogue) don't need it and can stay on their current base.
+- **Threshold alignment:** deed→rumor gossip fires at **`severity ≥ 25`** (0..100 scale). W2·3's notoriety
+  logic should key off the same cut so "what travels" matches "what shifts a stranger's reception."
+- The read shape W2·3 consumes is frozen by **U266** (`{subject, body, tier 0..4, distortion [0,1],
+  provenance[], eventRef, deedRef}`).
 
 ## The cross-lane contract (Homebase-owned, committed up front)
 `engine/rumor/rumorsReaching.js` — `rumorsReaching(world, nodeId, opts?) → Rumor[]`, where

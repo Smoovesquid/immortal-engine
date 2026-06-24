@@ -172,16 +172,27 @@ export function buildingCoverage(world) {
   return { visited: seen.size, total: rooms.length };
 }
 
+// "Work through the building" = both AXES: set foot in every room AND examine what's
+// in them. Room-coverage alone completes too cheaply on a small house (the boot already
+// counts the entry + the room you wake in, so one step finishes it) and never exercises
+// the look/examine path per room — which is exactly where coherence bugs surface (e.g.
+// the same chest described in every room). Fusing room-coverage with object-probing
+// (the probe-room metric) keeps the player genuinely touring AND handling the contents.
 export const GOAL_TOUR_BUILDING = {
   id: 'tour-building',
-  description: 'Explore the whole building you woke in — set foot in every room, then you may step outside.',
-  satisfied(world) {
+  description: 'Explore the whole building you woke in — go into every room and look at what is in each.',
+  satisfied(world, ctx) {
     const { visited, total } = buildingCoverage(world);
-    return total > 0 && visited >= total;
+    const roomsDone = total > 0 && visited >= total;
+    const obj = probeCoverage(world, ctx);
+    const objDone = obj.universe.length === 0 || obj.probed.length >= obj.universe.length;
+    return roomsDone && objDone;
   },
-  progressMetric(world) {
+  progressMetric(world, ctx) {
     const { visited, total } = buildingCoverage(world);
-    return total > 0 ? visited / total : 0;
+    const roomFrac = total > 0 ? visited / total : 1;
+    const objFrac = probeCoverage(world, ctx).fraction;
+    return 0.5 * roomFrac + 0.5 * objFrac;
   },
 };
 

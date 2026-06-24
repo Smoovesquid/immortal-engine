@@ -232,6 +232,14 @@ export function getToneModifier(tone) {
 // LOCATION is checked before HEALTH so "what's around" can't be mistaken for a
 // status check.
 export const META_LOCATION = /\bwhere am i\b|what (?:do|can) i see\b|\blook(?:ing)? around\b|\bsurvey\b|what'?s (?:around|here|nearby|out there)\b|who(?:'?s| is) (?:here|around|nearby)\b/;
+// A clear MOVEMENT-to-a-place intent (motion verb + spatial preposition) is an ACTION,
+// not a location survey — even when it trails a perception clause ("head toward the
+// front doorway TO SEE what's out there", "head back through the doorway and look for
+// the passage"). Without this, META_LOCATION's "what's out there"/"who's here" swallowed
+// the move and answered with a static bearings recap, so the player never moved (a
+// soft-lock in the whole-building playthrough). Narrow by design: a bare survey ("look
+// around", "where am I", "who's here") has no motion-verb+preposition, so it stays meta.
+export const META_MOVE_TO_PLACE = /\b(?:go|goes|going|head|heads|heading|walk|walks|walking|move|moves|moving|step|steps|stepping|push|pushes|pushing|stride|strides|creep|creeps|slip|slips|duck|ducks|cross|crosses)\b[\s\S]{0,40}?\b(?:through|toward|towards|into|out\s+to|over\s+to|back\s+(?:through|toward|towards|into))\b/;
 const META_HEALTH = /\bam i (?:hurt|wounded|damaged|injured|alive|ok|okay|alright|all right|fine|bleeding|dying)\b|\bhow am i (?:doing|holding up|feeling)\b|how(?:'?s| is) my (?:health|hp|status|condition|shape)\b|what(?:'?s| is) my (?:health|hp|status|condition|wounds|shape)\b|how much (?:health|hp|life)\b|\bhow (?:hurt|wounded|injured|bad(?:ly)? (?:hurt|off))\b|how many (?:hit ?points|hp)\b|\b(?:max|maximum)\s+(?:hp|hit\s?points?|health)\b|\bhp\s+(?:total|number|max|cap|count)\b|\bhit\s?points?\b|\bmy\s+(?:current\s+)?hp\b/;
 export const META_RECAP = /what happened|what did i (?:just )?do\b/;
 const META_OUTCOME = /did i (?:succeed|fail|win|lose|make it)\b/;
@@ -548,7 +556,7 @@ const META_ATTACK_GOVERNING_STAT = /\b(?:which|what)\b[\s\S]{0,55}?\b(?:stat|abi
 
 export function isMetaQuestion(text) {
   const t = String(text || '').toLowerCase();
-  return META_LOCATION.test(t) || META_HEALTH.test(t) || META_RECAP.test(t) || META_OUTCOME.test(t)
+  return (META_LOCATION.test(t) && !META_MOVE_TO_PLACE.test(t)) || META_HEALTH.test(t) || META_RECAP.test(t) || META_OUTCOME.test(t)
     || META_INVENTORY.test(t) || META_EQUIPMENT.test(t) || META_CHARACTER.test(t) || META_STAT.test(t)
     || META_STAT_SYNONYM.test(t) || META_ITEM.test(t) || META_PURSE.test(t) || META_TIME.test(t)
     || META_OBJECTIVE.test(t) || META_MECHANICS.test(t) || META_ADVICE.test(t)

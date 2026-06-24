@@ -26,7 +26,7 @@ import { newWorld } from '../engine/state.js';
 import { beginAdventure, playerMove } from '../engine/playloop.js';
 import { normalizeManifest, normalizePack } from '../engine/rulesets.js';
 import { getGoal, buildingCoverage } from '../engine/harness/goals.js';
-import { buildLocationSurvey } from '../engine/grace/gracefulAdjudication.js';
+import { buildLocationSurvey, isMetaQuestion } from '../engine/grace/gracefulAdjudication.js';
 
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
 function loadPacks() {
@@ -97,20 +97,26 @@ test('U258-E: "go outside" still EXITS; "go for it" is not a room move', () => {
   assert.ok(inside(forIt.world), '"go for it" does not exit');
 });
 
-// The integration: the tour-building goal completes via natural-language traversal,
-// and NO move in the tour rolls a die.
-test('U258-F: tour-building completes by walking the house in plain language, never rolling', () => {
+// The integration: tour-building completes by walking the house AND looking at what's
+// in it, in plain language — and no MOVE in the tour rolls a die. (The goal now spans
+// both axes: room-coverage + object-probing.)
+test('U258-F: tour-building completes by walking + examining the house in plain language', () => {
   const goal = getGoal('tour-building');
   let w = boot();
-  assert.equal(goal.satisfied(w), false, 'not yet toured at boot');
-  const tour = ['I go through the doorway into the next room.', 'I go back the way I came.', 'I head to the front room.'];
-  for (const phrase of tour) {
+  const actionsLog = [];
+  assert.equal(goal.satisfied(w, { actionsLog }), false, 'not yet toured at boot');
+  // Examine the room's objects (builds probe coverage)…
+  for (const phrase of ['I examine the straw pallet', 'I look at the oil lantern', 'I inspect the iron-bound chest', 'I examine the stone basin']) {
+    w = move(w, phrase).world; actionsLog.push(phrase);
+  }
+  // …and walk every room in plain language — these moves must never roll.
+  for (const phrase of ['I go through the doorway into the next room.', 'I go back the way I came.', 'I head to the front room.']) {
     const r = move(w, phrase);
     assert.equal(ROLL_RE.test(r.output.mechanics || ''), false, `[${phrase}] a walk through the house must not roll: ${r.output.mechanics}`);
-    w = r.world;
+    w = r.world; actionsLog.push(phrase);
   }
   const cov = buildingCoverage(w);
-  assert.equal(goal.satisfied(w), true, `every room visited (${cov.visited}/${cov.total})`);
+  assert.equal(goal.satisfied(w, { actionsLog }), true, `every room visited (${cov.visited}/${cov.total}) and objects probed`);
 });
 
 // Look-around must REVEAL the interior doorways — a flat "the way out leads back to
@@ -125,6 +131,23 @@ test('U258-H: look-around reveals interior doorways, not just the exit', () => {
   const backSurvey = buildLocationSurvey(back);
   assert.match(backSurvey, /back toward the front/i, 'the dead-end back room points toward the front');
   assert.doesNotMatch(backSurvey, /deeper in/i, 'no phantom deeper room from a dead end');
+});
+
+// A movement intent that TRAILS a perception clause ("...to see what's out there") is
+// an ACTION, not a location survey — the meta-gate must not swallow it (it did, returning
+// a static bearings recap so the player never moved: a soft-lock in the playthrough).
+test('U258-I: a move trailing a perception clause is an action, not a static survey', () => {
+  assert.equal(isMetaQuestion("I get out of bed and head toward the front doorway to see what's out there"), false, 'movement intent, not meta');
+  assert.equal(isMetaQuestion('I head back through the doorway and look for the passage that goes deeper'), false, 'movement intent, not meta');
+  // Bare surveys stay meta — they must still route to the look-around survey.
+  assert.equal(isMetaQuestion('look around'), true);
+  assert.equal(isMetaQuestion('where am I'), true);
+  assert.equal(isMetaQuestion("who's here"), true);
+  // End-to-end: the move actually happens (front doorway → another room), stays inside.
+  const w0 = boot();
+  const r = move(w0, "I head toward the front doorway to see what's out there.");
+  assert.ok(inside(r.world), 'still inside the building');
+  assert.notEqual(roomOf(r.world), roomOf(w0), 'the move happened — the room changed');
 });
 
 // Regression: compass movement (the path that already worked) must still work.

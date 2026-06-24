@@ -11,6 +11,20 @@ done_when · rollback`.
 
 ## ACTIVE
 
+### IT-1…IT-5 — Interior + Town polish cluster (specced 2026-06-24)
+Five small, Road-A-safe packets specced in full at
+**`docs/playtests/harness/INTERIOR_TOWN_PACKETS.md`** (objective · the-hole-at-file:line ·
+approach · allowed_files · test_plan · done_when · risk · lane). Surfaced by the building +
+surrounding-town playtests; **navigation is already shipped** (`da91a25`), so these are all
+*inside the interactions*. Suggested order:
+- **IT-2** — phantom item acquisition (HIGH; `playloop.js:6090` narrates a take with no
+  `addItem` + an oracle false-positive on "take … real"). Do first.
+- **IT-5** — generic failed-roll narration (biggest *quality* lever; `playloop.js:6148`
+  "${place} doesn't give it to you" → echo the player's verb + the obstacle).
+- **IT-3** — rolled-a-free-action (route `oracles.js:107` FREE_INTENT class roll-free).
+- **IT-1** — bare "head outside" exit + presence-question precedence (deferred from nav).
+- **IT-4** — building-type label drift ("inn" vs `cottage`; prompt-pin in `llmAdapter`).
+
 ### EK-1 — Law of Earned Knowledge: tier-aware narrator (kill the `llmAdapter:151` fabrication)
 **Status:** ✅ DONE 2026-06-22 — **Fork A (prompt-only); ACTIVE-but-largely-latent.** Clean-origin repro
 (baseline 100.0% / 8310-pass) confirmed an info-ask escaping `isInfoSeekingText` rolls a real `→ success`

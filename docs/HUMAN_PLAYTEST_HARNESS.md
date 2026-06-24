@@ -2,7 +2,7 @@
 
 *Companion to `docs/HARNESS_USAGE_STRATEGY.md` (how we AIM it) and `docs/biblioteca/vol-16-automated-playtesting-coherence-harness.md` (the research backing). Oracle reference spec: [THE_TABLE_TEST](THE_TABLE_TEST.md) — "would this happen at a real D&D table?" This doc is the construction plan: components, file plan, reuse map, build phases, done-when.*
 
-**Autonomy decision (Tim, 2026-06-24): FINDER now, self-fix later.** The harness *plays + detects + reports* — it never edits engine code unattended. We design its outputs (structured, seam-grouped, deterministically reproducible) so they can later *feed* a find→fix→re-run loop, but Phase 3 (self-fix) is deliberately gated until the finder's findings have earned trust.
+**Autonomy decision (Tim, 2026-06-24): FINDER first, then a GATED self-fix loop.** Phase 1 *plays + detects + reports*; it never edits engine code. Phase 3 (built 2026-06-24, `scripts/auto-playtest.mjs`) adds self-fix **without** loosening that stance: it works only on an isolated `auto-fix/<ts>` branch, every fix must clear a hard deterministic gate (the seam's LLM-off replay flips FAIL→PASS *and* the full suite stays green), and it never pushes or merges — Tim reviews + lands. A bad patch cannot survive (gate fails → auto-revert). "Self-fix" here means *proposes verified, reversible commits on a branch for review*, never "edits the trunk unattended."
 
 ---
 
@@ -74,12 +74,18 @@ seed → beginAdventure → ┌─────────────── per
 - Wire **goal-completion-rate + CED as a first-class gate** — the gate that must be green before anything is called **"playable"** (`HARNESS_USAGE_STRATEGY.md` §"two traps"). Add to `npm run check`.
 - **Done-when:** one command runs N seeds free; discovery curve + meters reported; "playable" gate live.
 
-**Phase 3 — self-fix loop (LATER, trust-gated).** find→group-by-seam→propose-fix→re-run-seeds→lock-regression. Human-approves each seam fix until trusted. Design Phases 1–2 outputs to feed this; do not build it yet.
+**Phase 3 — the autonomous fix loop (BUILT 2026-06-24, `scripts/auto-playtest.mjs`).** One command: press go, walk away, come back to a branch of verified fixes + a short needs-human list. It wraps the Phase-1 finder.
+- **The loop:** SETUP (refuse a dirty tracked tree → branch `auto-fix/<ts>` off the current head) → FIND (run the finder; `--find-player llm|scripted|replay:<log>`; the captured action logs make everything after this point deterministic even when discovery was stochastic) → GROUP findings into systemic **seams** (`oracleId::signature`, where the signature is the stable kebab slug leading the note) → TRIAGE via a **seam registry** (auto-fixable = localized + deterministically repro-gated, e.g. `free-action`; needs-human = state-commit / navigation-design / crash — returned untouched, diagnosed) → FIX each auto-fixable seam (bounded, `--max-attempts` default 3) → RE-RUN (replay the captured logs; confirm the seam dropped **and no new** seams appeared) → REPORT (`docs/playtests/harness/autofix-<ts>.md`) → STOP.
+- **The hard gate (per attempt):** apply the candidate (the fix edits **plus** a generated regression test) → the seam's LLM-off **replay must flip FAIL→PASS** → the full **`node --test` stays green** (which subsumes the determinism gates U19/U21/U22/U27/U30). Pass → commit atomically (fix + regression test). Fail → **auto-revert** the attempt, retry up to max, else mark *couldn't-fix* (diagnosed, left clean).
+- **The fixer is pluggable:** `proposeFix({ seam, codeContext }) → { edits[] }` via a coding model (Anthropic API default; a Codex-CLI drop-in for engine hot files per the routing memory). Edits are exact-string replacements; a malformed/no-op/not-found patch is simply a failed attempt.
+- **Safety rails:** isolated branch only — **never** touches v2-polish, **never** pushes/merges (Tim lands); bounded by `--max-attempts` / `--max-seams` / `--time-budget`; full audit trail; every landed fix atomic + reversible. The fixer MAY edit hot files (`playloop.js`) — that's the job — but only through the gate.
+- **The control logic is pure + dependency-injected** (`runFixLoop({ seams, fixer, gate, vcs })`); `scripts/auto-playtest.test.js` proves it **hermetically** with fakes — a good patch lands (commit, no revert), a bad one auto-reverts (no commit) — with no model calls, no git, no subprocess.
+- **Proven (2026-06-24):** on `tallow` the loop auto-fixed the free-action seam (`inferInteriorAction` misrouted "I step inside the building." — the trailing period missed the `$`-anchored enter rule, so the engine rolled the dice for a roll-free move). Attempt 1's model patch failed the gate and **auto-reverted in the wild**; attempt 2 landed (replay flipped FAIL→PASS, suite 8584/0). The soft-lock seam was correctly returned as needs-human. Branch left for review; nothing pushed.
 
 ---
 
 ## 3. File plan
-- **New:** `scripts/playtest-harness.mjs` (the runner/driver), `engine/harness/oracles.js` (the deterministic oracle bank), `engine/harness/goals.js` (typed goals). Phase 2: `engine/harness/legalActions.js` (or fold into an existing affordance module).
+- **New:** `scripts/playtest-harness.mjs` (the runner/driver; `--json` emits machine-readable findings for the Phase-3 gate), `engine/harness/oracles.js` (the deterministic oracle bank), `engine/harness/goals.js` (typed goals). Phase 2: `engine/harness/legalActions.js` (or fold into an existing affordance module). Phase 3: `scripts/auto-playtest.mjs` (the autonomous loop) + `scripts/auto-playtest.test.js` (hermetic control-logic test); generated regression tests land at `engine/harness/regr.<seam>.test.js`.
 - **Reused (no rewrite):** `engine/playloop.js` (`beginAdventure`/`playerMove`), `engine/ref/rubric.js` (`buildCanonGroundTruth`/`JUDGE_SYSTEM`), `scripts/dm-playtest.mjs` (player/loop scaffold), `scripts/playtest.js` (Tier-0 invariants), `engine/world/demoRegion.js` (`DEMO_SEED`).
 
 ## 4. Invariants this respects

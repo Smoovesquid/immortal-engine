@@ -75,9 +75,12 @@ export async function runSession({ world, packs, goal, player, turns = 25, softL
   const actionsLog = [];
   const progressHistory = []; // post-turn progressMetric, one entry per turn
 
-  let bestProgress = goal.progressMetric(world);
+  // Goals read committed state plus (optionally) the action history — a coverage
+  // goal like probe-room needs to know what's been probed. Existing one-arg goals
+  // ignore the 2nd arg, so this is backward-compatible.
+  let bestProgress = goal.progressMetric(world, { actionsLog });
   let sinceImprovement = 0;
-  let goalCompleted = goal.satisfied(world);
+  let goalCompleted = goal.satisfied(world, { actionsLog });
 
   for (let turn = 1; turn <= turns && !goalCompleted; turn++) {
     const action = String(await player({ world, goal, transcript, turn, stuck: sinceImprovement >= softLockWindow }) || '').trim();
@@ -109,10 +112,10 @@ export async function runSession({ world, packs, goal, player, turns = 25, softL
       findings.push(...runOracleBank({ before, after, action, output, turn }));
       world = after;
       transcript.push({ who: 'dm', text: cleanNarration(output?.narration), mech: output?.mechanics || '' });
-      if (goal.satisfied(world)) goalCompleted = true;
+      if (goal.satisfied(world, { actionsLog })) goalCompleted = true;
     }
 
-    const prog = goal.progressMetric(world);
+    const prog = goal.progressMetric(world, { actionsLog });
     progressHistory.push(prog);
     if (prog > bestProgress) { bestProgress = prog; sinceImprovement = 0; }
     else sinceImprovement += 1;
@@ -152,6 +155,87 @@ export function makeScriptedPlayer(actions) {
   let i = 0;
   const list = Array.isArray(actions) ? actions : [];
   return async () => (i < list.length ? list[i++] : '');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Run-to-saturation ("boringly predictable") — Vol 9 §2-3 (capture–recapture /
+// Chao1 + the discovery curve). "Boring" = explored-wide-and-found-nothing-new,
+// NEVER player-repetition: each run is a fresh world played by a VARYING player, we
+// track the curve of unique seamKeys, and stop when it flattens or Chao1 says ~0
+// remain. This turns "how close to done" from eyeballing into a number with bars.
+// The math + loop are PURE (an injected nextRun), so the stopping rule is unit-
+// tested on a fake discovery stream with zero model calls.
+// ─────────────────────────────────────────────────────────────────────────────
+
+// A finding's seam identity = oracleId + the leading kebab slug of its note (the
+// same grouping the fix loop uses). Kept local to avoid a cycle with the fixer
+// script (which imports from here); the two definitions are intentionally aligned.
+export function seamKeyOf(finding) {
+  const m = String(finding?.note || '').trim().match(/^([a-z0-9]+(?:-[a-z0-9]+)*)/i);
+  return `${finding?.oracleId || 'unknown'}::${m ? m[1] : 'unknown'}`;
+}
+
+// Chao1 lower-bound richness estimator + a log-normal 95% CI (Chao 1987). Input =
+// incidence counts: for each distinct seam, in how many runs it appeared. f1 =
+// seams seen in exactly one run, f2 = in exactly two. The bias-corrected form is
+// used when f2 = 0 so the estimate stays finite. Report as "at least N remain".
+export function chao1(incidenceCounts) {
+  const counts = (Array.isArray(incidenceCounts) ? incidenceCounts : Object.values(incidenceCounts || {}))
+    .map(Number).filter(c => c > 0);
+  const sObs = counts.length;
+  const f1 = counts.filter(c => c === 1).length;
+  const f2 = counts.filter(c => c === 2).length;
+  const extra = f2 > 0 ? (f1 * f1) / (2 * f2) : (f1 * (f1 - 1)) / 2;
+  const estimate = sObs + extra;
+  const remaining = Math.max(0, estimate - sObs);
+  // Log-normal CI on the unseen count (Chao 1987 / Chao & Jost 2012).
+  let ciLow = sObs, ciHigh = Math.ceil(estimate);
+  if (remaining > 0) {
+    const r = f2 > 0 ? f1 / f2 : 0;
+    const variance = f2 > 0
+      ? f2 * (0.25 * r ** 4 + r ** 3 + 0.5 * r ** 2)
+      : (f1 * (f1 - 1)) / 2 + (f1 * (2 * f1 - 1) ** 2) / 4 - (f1 ** 4) / (4 * estimate);
+    const safeVar = Math.max(variance, 1e-9);
+    const K = Math.exp(1.96 * Math.sqrt(Math.log(1 + safeVar / (remaining * remaining))));
+    ciLow = Math.round(sObs + remaining / K);
+    ciHigh = Math.round(sObs + remaining * K);
+  }
+  return { sObs, f1, f2, estimate, remaining, ciLow, ciHigh };
+}
+
+// The saturation loop. `nextRun(i)` -> { seamKeys: string[], ... } | null (null =
+// the stream is exhausted / over budget → stop). Stops when: the curve is flat
+// (no new seam for `k` consecutive runs), OR Chao1 says nothing remains (every seam
+// re-seen, f1 = 0), OR a hard cap trips (maxRuns / isOverBudget). Returns the curve,
+// the unique-seam set, and the final Chao1 estimate.
+export async function runToSaturation({ nextRun, k = 8, maxRuns = 200, isOverBudget = () => false, onRun = () => {} }) {
+  const incidence = new Map(); // seamKey -> # runs it appeared in
+  const curve = [];            // cumulative distinct seamKeys after each run
+  let runsSinceNew = 0;
+  let stopReason = null;
+  let i = 0;
+  for (; i < maxRuns; i++) {
+    if (isOverBudget()) { stopReason = 'budget'; break; }
+    const res = await nextRun(i);
+    if (!res) { stopReason = 'stream-end'; break; }
+    const before = incidence.size;
+    for (const key of new Set(res.seamKeys || [])) incidence.set(key, (incidence.get(key) || 0) + 1);
+    const totalDistinct = incidence.size;
+    const newThisRun = totalDistinct - before;
+    curve.push(totalDistinct);
+    runsSinceNew = newThisRun > 0 ? 0 : runsSinceNew + 1;
+    onRun({ run: i + 1, newThisRun, totalDistinct, seamKeys: [...new Set(res.seamKeys || [])] });
+    // Flat curve — the primary "boring" signal (works even with zero findings).
+    if (i + 1 >= k && runsSinceNew >= k) { stopReason = 'flat-curve'; break; }
+    // Chao1 saturation — every discovered seam re-seen (no singletons) ⇒ remaining 0.
+    const est = chao1([...incidence.values()]);
+    if (i + 1 >= 3 && est.sObs > 0 && est.f1 === 0) { stopReason = 'chao1-saturated'; break; }
+  }
+  if (!stopReason) stopReason = 'max-runs';
+  return {
+    stopReason, runs: curve.length, uniqueSeams: incidence.size, curve,
+    estimate: chao1([...incidence.values()]), counts: Object.fromEntries(incidence),
+  };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -300,6 +384,73 @@ if (isMain) {
   (async () => {
     const packs = loadPacks();
     const goal = getGoal(GOAL_ID);
+
+    // ── Run-to-saturation mode ("boringly predictable") ───────────────────────
+    // Explore WIDE (a fresh world per run, varying player) until the discovery
+    // curve of unique seamKeys flattens or Chao1 says ~0 remain. Reports the curve,
+    // the estimate (+CI), the cost, and which cap stopped it. Needs the LLM player —
+    // variation is the whole point; replay or a canned script can't saturate.
+    if (has('until-boring')) {
+      if (PLAYER_KIND !== 'llm') {
+        console.error('--until-boring needs the LLM player (set ANTHROPIC_API_KEY). Variation is required — a replay/scripted run can never saturate.');
+        process.exit(2);
+      }
+      const K = Number(arg('k', '8'));                 // flat-curve window
+      const MAX_SEEDS = Number(arg('max-seeds', '60')); // hard cap on runs
+      const BUDGET = Number(arg('budget', '2'));        // USD cap (cheap model)
+      const RATES = { 'claude-haiku-4-5-20251001': { in: 1, out: 5 } }; // $/M tokens
+      const rate = RATES[PLAYER_MODEL] || { in: 1, out: 5 };
+      const costUSD = () => (usage.in * rate.in + usage.out * rate.out) / 1e6;
+      // Fresh, distinct world per run: cycle the given seeds, then salt for width.
+      const seedFor = (i) => (i < SEEDS.length ? SEEDS[i] : `${SEEDS[i % SEEDS.length]}-sat${Math.floor(i / SEEDS.length)}`);
+      const satRuns = [];
+      console.log(`SATURATION — goal "${goal.id}" · player=llm(${PLAYER_MODEL}) · k=${K} · cap ${MAX_SEEDS} runs / $${BUDGET} · ≤${TURNS} turns each`);
+      const nextRun = async (i) => {
+        if (costUSD() >= BUDGET) return null;
+        const seed = seedFor(i);
+        const begun = bootWorld(seed, packs);
+        const r = await runSession({ world: begun.world, packs, goal, player: llmPlayer(PLAYER_MODEL), turns: TURNS, openerNarration: begun.output?.narration || begun.world.scene?.narration || '' });
+        satRuns.push({ seed, ...r });
+        return { seamKeys: r.findings.map(seamKeyOf), seed };
+      };
+      const sat = await runToSaturation({
+        nextRun, k: K, maxRuns: MAX_SEEDS, isOverBudget: () => costUSD() >= BUDGET,
+        onRun: ({ run, newThisRun, totalDistinct }) =>
+          process.stdout.write(`  run ${String(run).padStart(2)} · ${satRuns[run - 1]?.findings.length ?? 0} finding(s) · +${newThisRun} new seam · ${totalDistinct} unique so far\n`),
+      });
+      const e = sat.estimate;
+      console.log(`\n════════════════════════════════════════════`);
+      console.log(`STOP: ${sat.stopReason} after ${sat.runs} run(s)`);
+      console.log(`UNIQUE SEAMS: ${sat.uniqueSeams} · CHAO1 estimate: ${e.estimate.toFixed(1)} (≥${e.remaining.toFixed(1)} remain · 95% CI [${e.ciLow}, ${e.ciHigh}])`);
+      console.log(`CURVE: ${sat.curve.join(' → ')}`);
+      console.log(`COST: ${usage.calls} ${PLAYER_MODEL} calls · $${costUSD().toFixed(4)} (oracles: $0)`);
+      console.log(`════════════════════════════════════════════`);
+      if (WRITE_REPORT) {
+        const date = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
+        const dir = path.join(ROOT, 'docs', 'playtests', 'harness');
+        fs.mkdirSync(dir, { recursive: true });
+        const L = [];
+        L.push(`# Playtest Harness — saturation run — ${date}`);
+        L.push('');
+        L.push(`**Mode:** \`--until-boring\` · goal \`${goal.id}\` · player = llm(${PLAYER_MODEL}) · k=${K} · cap ${MAX_SEEDS} runs / $${BUDGET}`);
+        L.push(`**Stopped:** \`${sat.stopReason}\` after ${sat.runs} run(s).`);
+        L.push('');
+        L.push(`## Saturation`);
+        L.push(`- **Unique seams found:** ${sat.uniqueSeams}`);
+        L.push(`- **Chao1 estimate:** ${e.estimate.toFixed(1)} total — **at least ${e.remaining.toFixed(1)} remain** (95% CI [${e.ciLow}, ${e.ciHigh}]).`);
+        L.push(`- **Discovery curve (cumulative unique):** ${sat.curve.join(' → ')}`);
+        L.push(`- **Cost:** ${usage.calls} calls · $${costUSD().toFixed(4)} (deterministic oracles: $0).`);
+        L.push('');
+        L.push(`## Seams by incidence (runs seen / total runs)`);
+        for (const [key, n] of Object.entries(sat.counts).sort((a, b) => b[1] - a[1])) L.push(`- \`${key}\` — ${n}/${sat.runs}`);
+        if (!sat.uniqueSeams) L.push('_No seams surfaced — the oracle bank saw no incoherence across the explored worlds (clean saturation)._');
+        const file = path.join(dir, `saturation-${date}.md`);
+        fs.writeFileSync(file, L.join('\n'));
+        console.log(`REPORT: ${path.relative(ROOT, file)}`);
+      }
+      return;
+    }
+
     console.log(`HARNESS — goal "${goal.id}" · ${SEEDS.length} seed(s) · player=${PLAYER_KIND}${PLAYER_KIND === 'llm' ? `(${PLAYER_MODEL})` : ''} · ≤${TURNS} turns`);
     const runs = [];
     for (const seed of SEEDS) {

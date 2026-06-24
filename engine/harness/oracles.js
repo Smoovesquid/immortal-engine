@@ -17,7 +17,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { buildCanonGroundTruth } from '../ref/rubric.js';
-import { isInsideInterior } from './goals.js';
+import { isInsideInterior, presentRoomObjects, headNoun } from './goals.js';
 
 // The engine prefixes base narration with "Wizard:" (a speaker tag the UI renders
 // via attribution, not literally). Strip it so the oracle judges what a player
@@ -133,6 +133,166 @@ export function runFreeAction({ before, after, action, output }) {
   })];
 }
 
+// ── Oracle: object-interaction (look / search / take / examine) ───────────────
+// Certifies the room-object PATH: the structured world is the ground truth, so a
+// CLAIM about an object must match what the Canon Log committed (THE_TABLE_TEST —
+// "you take the knife" means the knife is now yours; "examine the table" can't
+// deny a table that's there). Reads committed state DIRECTLY (not the shared Ref
+// view) so it never perturbs the gate's judge input and can count every inventory
+// bucket. Precision over recall: each rule fires only on a structural contradiction
+// the engine itself can't argue with — phantom inventory, a denied present object,
+// loot conjured by a failed roll. (The looser "named a noun absent from furniture[]
+// on a bare examine" stays a DEFERRED slot below: the fiction is richer than the
+// furniture sockets — windows, walls, floors — so it can't clear the precision bar.)
+
+// Total carried-item count across EVERY inventory bucket (weapons/tools/junk/items/
+// spells/…). The live take path drops loot into `tools`, structured adds land in
+// `items[]` — counting all buckets generically makes "inventory grew" reliable, which
+// is the backbone of the acquisition check. (Mirrors playloop's allInventoryItems,
+// generalized so a new bucket can never silently fool the oracle.)
+function inventoryItemCount(world) {
+  const inv = world?.party?.[0]?.inventory;
+  if (!inv || typeof inv !== 'object') return 0;
+  let n = 0;
+  for (const k of Object.keys(inv)) if (Array.isArray(inv[k])) n += inv[k].length;
+  return n;
+}
+
+// Verbs that ask to look closely AT a named thing (examine/look-at + the rolling
+// search/check — a denial of a present object is a seam on either path).
+const INSPECT_TARGET_RE = /\b(?:examine|inspect|study|scrutinize|appraise|look\s+(?:at|over|inside|into)|peer\s+at|read|search|check|rummage\s+through|rifle\s+through)\b/i;
+// Generic "targets" that really mean the whole space (the engine defers these to a
+// room overview, never a per-object denial) — no concrete object to certify.
+const GENERIC_TARGET = new Set([
+  'room', 'area', 'around', 'surroundings', 'place', 'here', 'everything', 'inventory',
+  'pack', 'bag', 'belongings', 'self', 'myself', 'me', 'things', 'stuff', 'ground',
+  'floor', 'walls', 'wall', 'ceiling', 'exits', 'exit', 'way', 'darkness', 'shadows',
+  'nothing', 'surrounding', 'space', 'rest', 'door', 'doors',
+]);
+
+// The concrete object the player asked to inspect, or '' if none / generic.
+function examineTarget(action) {
+  const t = String(action || '').toLowerCase();
+  const m = t.match(INSPECT_TARGET_RE);
+  if (!m) return '';
+  let rest = t.slice((m.index ?? 0) + m[0].length).trim();
+  rest = rest.replace(/^(?:at|over|inside|in|into|the|a|an|my|this|that|these|those|some|your|for|through)\s+/i, '');
+  rest = rest.replace(/^(?:the|a|an|my|this|that|these|those|some|your)\s+/i, '');
+  rest = rest.replace(/\b(?:for\s+traps|for\s+danger|carefully|closely|over)\b.*$/i, '').trim();
+  rest = rest.replace(/[.?!,;:]+$/g, '').trim();
+  const head = rest.split(/\s+/).pop() || '';
+  if (!rest || GENERIC_TARGET.has(rest) || GENERIC_TARGET.has(head)) return '';
+  return rest;
+}
+
+// Does a present object answer to the player's target (full-name, substring, head
+// noun, or a named part)? The same loose match the engine's detector uses.
+function objectAnswersTo(obj, target) {
+  const name = String(obj.name || '').toLowerCase();
+  const tgt = String(target || '').toLowerCase();
+  const tHead = tgt.split(/\s+/).pop() || '';
+  if (!name || !tgt) return false;
+  if (name === tgt || name.includes(tgt) || tgt.includes(name)) return true;
+  if (tHead.length >= 3 && headNoun(name) === tHead) return true;
+  return obj.parts.some(p => { const pl = String(p).toLowerCase(); return pl && (pl === tgt || pl === tHead); });
+}
+
+// The roll outcome stamped in the mechanics line ("… → failure | …"), or null.
+function rollOutcome(output) {
+  const m = /→\s*(failure|success|mixed)\b/i.exec(String(output?.mechanics || ''));
+  return m ? m[1].toLowerCase() : null;
+}
+
+// ACQUISITION claim — the DM says a concrete object is now CARRIED. A determiner is
+// required before the noun, which alone rejects the idioms with no article ("take
+// cover/aim/stock/charge/refuge"); the stop-noun set rejects the rest ("take a
+// look/seat/breath", "take the lead/stairs/plunge", "take your time/leave").
+const ACQUIRE_VERB = '(?:take|takes|took|pocket|pockets|pocketed|grab|grabs|grabbed|snatch|snatches|snatched|scoop|scoops|scooped|stuff|stuffs|stuffed|tuck|tucks|tucked|slip|slips|slipped|claim|claims|claimed|collect|collects|collected|gather|gathers|gathered|lift|lifts|lifted|nab|nabs|nabbed|swipe|swipes|swiped|pick(?:s|ed)?\\s+up)';
+const ACQUIRE_CLAIM = new RegExp(`\\byou\\s+${ACQUIRE_VERB}\\s+(?:up\\s+)?(?:the|a|an|your|my|his|her|its|their|that|this|one|two|three|several|some|a\\s+few)\\s+([a-z][a-z'’-]+)`, 'i');
+const ACQUIRE_PHRASE = /\b(?:is|are)\s+(?:now\s+)?yours\b|\bnow\s+(?:carry|hold|have)\s+the\b|\b(?:goes|slides|drops)\s+into\s+your\s+(?:pack|pocket|bag|satchel|pouch|hand)\b|\binto\s+your\s+(?:pack|pocket|bag|satchel|pouch)\b/i;
+// A take that DIDN'T happen — too heavy, refused, or merely attempted.
+const ACQUIRE_NEGATE = /\b(?:tr(?:y|ies|ied)\s+to|attempts?\s+to|attempt(?:ing)?\s+to|can'?t|cannot|could\s?n'?t|won'?t|unable\s+to|fail(?:s|ed)?\s+to)\b|\btoo\s+(?:heavy|big|bulky|large|much)\b|\bwon'?t\s+budge\b|\bnothing\s+(?:to\s+take|worth\s+(?:taking|the))\b|\bcan'?t\s+(?:carry|lift|move)\b/i;
+const STOP_NOUNS = new Set([
+  'stock', 'cover', 'aim', 'note', 'notes', 'seat', 'breath', 'breather', 'moment', 'step',
+  'steps', 'look', 'peek', 'swing', 'shot', 'knee', 'turn', 'beat', 'sip', 'swig', 'gulp',
+  'drink', 'bite', 'stab', 'dive', 'plunge', 'gamble', 'chance', 'risk', 'side', 'lead',
+  'hint', 'bait', 'blame', 'hit', 'charge', 'rest', 'break', 'stand', 'path', 'paths',
+  'road', 'route', 'stairs', 'reins', 'helm', 'stage', 'point', 'refuge', 'shelter',
+  'position', 'watch', 'count', 'tally', 'measure', 'time', 'leave', 'heart', 'courage',
+  'comfort', 'pride', 'pity', 'offense', 'umbrage', 'initiative', 'vantage', 'stance',
+  'guard', 'cue', 'lead', 'flight', 'wing', 'pause', 'breather', 'liberty', 'toll',
+]);
+// A concrete DISCOVERY claim from a search ("you find a brass key").
+const FIND_CLAIM = new RegExp(`\\byou\\s+(?:find|finds|found|discover|discovers|discovered|uncover|uncovers|uncovered|turn\\s+up|turns\\s+up|come\\s+across|comes\\s+across|dig\\s+up|locate|locates|located|spot|spots|spotted)\\s+(?:the|a|an|some|one|two|several|a\\s+few)\\s+([a-z][a-z'’-]+)`, 'i');
+const FIND_NEGATE = /\b(?:nothing|empty[\s-]?handed|come\s+up\s+empty|no\s+sign|not\s+(?:a|one|anything|much))\b/i;
+
+export function runObjectInteraction({ before, after, action, output }) {
+  const text = cleanNarration(output?.narration);
+  const findings = [];
+  if (!text) return findings;
+
+  // Check A — ACQUISITION that didn't land. The narration says a concrete object is
+  // now carried, but total inventory did not grow (counted across every bucket).
+  // A phantom item is a high-severity desync — the same class as said-outside-still-
+  // inside, only on the inventory axis. (Backbone: structured inventory can't lie.)
+  if (!ACQUIRE_NEGATE.test(text)) {
+    const m = ACQUIRE_CLAIM.exec(text);
+    const claimed = (m && !STOP_NOUNS.has(String(m[1]).toLowerCase())) || ACQUIRE_PHRASE.test(text);
+    if (claimed && inventoryItemCount(after) <= inventoryItemCount(before)) {
+      findings.push(makeFinding('object-interaction', 'high', {
+        claim: `narration says you took an item${m ? ` ("${m[1]}")` : ''}`,
+        expected: 'that item added to inventory (item count up by one)',
+        committed: `inventory unchanged at ${inventoryItemCount(after)} item(s)`,
+        note: 'acquired-nothing — the DM handed you an item the engine never put in your pack (phantom acquisition)',
+      }));
+    }
+  }
+
+  // Check B — a present object DENIED. The player inspected a concrete target that
+  // canon HAS at this node, yet the narration says it isn't here. Canon presence is
+  // structural, so any denial of it is a flat contradiction (THE_TABLE_TEST: the
+  // table is on the table — you can't tell the player there's no table).
+  const target = examineTarget(action);
+  if (target) {
+    const present = presentRoomObjects(before).find(o => objectAnswersTo(o, target));
+    if (present) {
+      const esc = headNoun(present.name).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const full = String(present.name).toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const denyRe = new RegExp(
+        `\\b(?:look(?:s|ed)?\\s+for)\\b[^.!?]*\\b(?:${full}|${esc})\\b[^.!?]*\\bbut\\s+what'?s\\s+here\\b` +
+        `|\\b(?:there\\s+(?:is|are)\\s+no|you\\s+(?:see|find|spot)\\s+no|no\\s+such|don'?t\\s+see\\s+(?:a|an|any)?)\\s+(?:${full}|${esc})\\b` +
+        `|\\b(?:${full}|${esc})\\b[^.!?]{0,16}\\b(?:is|are)?\\s*n'?o?t?\\s*(?:here|present|there|around)\\b`,
+        'i',
+      );
+      if (denyRe.test(text)) {
+        findings.push(makeFinding('object-interaction', 'high', {
+          claim: `narration denies "${present.name}" is here`,
+          expected: `the DM to engage a present object (canon has it at this node)`,
+          committed: `furniture present: ${presentRoomObjects(before).map(o => o.name).join(', ')}`,
+          note: 'denied-present-object — the DM said an object isn\'t here that canon has present',
+        }));
+      }
+    }
+  }
+
+  // Check C — a FAILED search that still conjured loot. The roll failed, yet the
+  // narration claims a concrete find. (Success-finds and info-finds — "you find
+  // tracks" — are fine; the acquisition check covers a find you then "take".)
+  if (rollOutcome(output) === 'failure' && /\b(?:search|searches|searched|rummage|rummages|rifle|rifles|comb|combs|scour|scours|forage|forages)\b/i.test(String(action || ''))) {
+    const fm = FIND_CLAIM.exec(text);
+    if (fm && !STOP_NOUNS.has(String(fm[1]).toLowerCase()) && !FIND_NEGATE.test(text)) {
+      findings.push(makeFinding('object-interaction', 'high', {
+        claim: `a FAILED search narrated finding "${fm[1]}"`,
+        expected: 'a failed search to turn up nothing',
+        committed: `roll outcome: failure — ${String(output?.mechanics || '').slice(0, 60)}`,
+        note: 'failed-search-claimed-loot — a failed search still narrated finding an item (roll↔fiction contradiction)',
+      }));
+    }
+  }
+
+  return findings;
+}
+
 // ── The per-turn oracle registry ──────────────────────────────────────────────
 // Add a deterministic oracle as one { id, run } slot. run({before, after, action,
 // output}) -> finding[]. (Phase-1 "follow" slots — spatial-correctness,
@@ -140,6 +300,7 @@ export function runFreeAction({ before, after, action, output }) {
 export const PER_TURN_ORACLES = Object.freeze([
   { id: 'state-desync', run: runStateDesync },
   { id: 'free-action', run: runFreeAction },
+  { id: 'object-interaction', run: runObjectInteraction },
 ]);
 
 // Run the whole per-turn bank; tag every finding with its turn + the action.

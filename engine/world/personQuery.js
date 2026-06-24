@@ -59,6 +59,34 @@ function stripTrailingTemporal(ref) {
     .trim();
 }
 
+// ── Type: tenure ─────────────────────────────────────────────────────────────
+// "How long has X been here? / is X a founding member? / has X been around long?"
+// → answers from npc.originTick (0 = founding resident; > 0 = newer arrival).
+// This fires BEFORE the defer guard because PERSON_DEFER_RE blocks `how\s+long`
+// — and rightfully so for generic "how long" asks, but the targeted tenure pattern
+// is narrow enough to be safe: it requires a referent AND a presence anchor (here /
+// in town / around). Agent/count asks excluded (shared boundary). §0-safe: tenure
+// only; never motive, allegiance, or faction.
+const PERSON_TENURE_QUERY_RE = new RegExp([
+  // how long has [NAME] been here / in town / around
+  /\bhow\s+long\s+has\s+([a-z][\w''-]*(?:\s+[\w''-]+){0,3})\s+been\s+(?:here|in\s+town|around|in\s+this\s+(?:town|village|place|settlement|hamlet))\b/,
+  // has [NAME] been here long / a long time
+  /\bhas\s+([a-z][\w''-]*(?:\s+[\w''-]+){0,3})\s+been\s+(?:here|in\s+town|around)\s+(?:long|a\s+long\s+time|for\s+a\s+while|long\s+enough)\b/,
+  // is [NAME] a founding member / original settler / long-time resident
+  /\bis\s+([a-z][\w''-]*(?:\s+[\w''-]+){0,3})\s+(?:a\s+)?(?:founding\s+(?:member|resident|settler|citizen)|original\s+(?:settler|resident|member)|long-?time\s+resident|from\s+the\s+start)\b/,
+].map(r => r.source).join('|'), 'i');
+
+function classifyTenureQuery(text) {
+  const t = String(text || '');
+  if (!t.trim()) return null;
+  const m = PERSON_TENURE_QUERY_RE.exec(t);
+  if (!m) return null;
+  const ref = (m[1] || m[2] || m[3] || '').trim();
+  const r = cleanRef(ref);
+  if (!r || r.length < 2 || NON_PERSON_REF_RE.test(r)) return null;
+  return { type: 'tenure', ref };
+}
+
 // DEFER guard — a person-identity ask carrying any of these is NOT identity: it reaches for a
 // motive / secret / backstory / allegiance / LEADERSHIP that has no grounded source. Excluded so
 // it falls through to its own decline/floor (never an identity deliver, never an invention).
@@ -126,14 +154,18 @@ function describeIdentity(npc) {
 }
 
 /**
- * classifyPersonQuery(text) → { type:'identity', ref, demonstrative } | null
+ * classifyPersonQuery(text) → { type, ref, demonstrative? } | null
  * ref = the captured referent string; demonstrative = true when it's a bare "that/them/the
  * stranger" form (the narrator leaves those to dialogue-enter / grace). A DEFER token (motive/
  * secret/leadership/…) yields null — that is not an identity ask.
+ * type:'tenure' fires BEFORE the defer guard (it has its own narrow pattern).
  */
 export function classifyPersonQuery(text) {
   const t = String(text || '');
   if (!t.trim()) return null;
+  // tenure fires before the defer guard — it's narrow enough to be safe.
+  const tenureQ = classifyTenureQuery(t);
+  if (tenureQ) return tenureQ;
   if (PERSON_DEFER_RE.test(t)) return null;
   // identity — "who is X" / "what do I know about X" / "tell me about X"
   const mi = PERSON_IDENTITY_QUERY_RE.exec(t);
@@ -156,15 +188,34 @@ export function classifyPersonQuery(text) {
   return null;
 }
 
+// Describe a present NPC's tenure from their originTick.
+// originTick 0 = founding generation; > 0 = later arrival.
+function describeTenure(npc) {
+  const name = String(npc?.name ?? '').trim() || 'they';
+  const tick  = Number(npc?.originTick ?? 0);
+  if (tick === 0) return `${name} has been here since the founding — one of the original settlers`;
+  if (tick <= 3)  return `${name} has lived here for some years — not a founder, but long enough to know the place well`;
+  return `${name} arrived more recently — still finding their place among the long-established`;
+}
+
 /**
- * resolvePersonFact(world, query) → { type:'identity', body } | null
+ * resolvePersonFact(world, query) → { type, body } | null
  * query = { type, ref, demonstrative?, excludeId? }. Resolves the referent to a present non-hostile
  * NPC (excluding excludeId — the speaking npc, in the dialogue voice). A demonstrative resolves
  * ONLY when exactly one other present sociable NPC exists. null = no grounded match → caller falls
  * through (the existing clarify/decline/floor handles it). Pure, deterministic, NO roll, NO mutation.
  */
 export function resolvePersonFact(world, query) {
-  if (!query || (query.type !== 'identity' && query.type !== 'location')) return null;
+  if (!query || (query.type !== 'identity' && query.type !== 'location' && query.type !== 'tenure')) return null;
+  // tenure — answer from originTick; no demonstrative support needed.
+  if (query.type === 'tenure') {
+    const excludeId = query.excludeId ? String(query.excludeId) : '';
+    const pool = presentSociableNpcs(world).filter(n => !excludeId || String(n.id || '') !== excludeId);
+    if (!pool.length) return null;
+    const npc = matchPresentNpc(pool, query.ref);
+    if (!npc) return null;
+    return { type: 'tenure', body: describeTenure(npc) };
+  }
   const excludeId = query.excludeId ? String(query.excludeId) : '';
   const pool = presentSociableNpcs(world).filter(n => !excludeId || String(n.id || '') !== excludeId);
   if (!pool.length) return null;

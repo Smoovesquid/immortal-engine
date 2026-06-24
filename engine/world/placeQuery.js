@@ -68,14 +68,15 @@ function resolveFounding(world) {
 }
 
 // ── Type: events ───────────────────────────────────────────────────────────────
-// "What happened here? / what goes on in this town? / any trouble here?" → a node substrate
-// LOCAL-EVENT (NODE layer, 'vivid'). PLACE-ANCHORED on purpose (here / this <place>): that
+// "What happened here? / what goes on in this town? / any trouble here?" → ALL node substrate
+// LOCAL-EVENTs (NODE layer, 'vivid'), joined. A node may have 1–2 local events; returning them
+// all means "what happened the winter a stranger stayed?" surfaces the right label even when it
+// is the second event, not the first. PLACE-ANCHORED on purpose (here / this <place>): that
 // anchor is the GUARD that keeps RELATIONAL history ("the history between X and Y") and PERSON
 // questions ("what happened to the baker") OFF this type — they carry no place anchor, so they
 // fall to their own deflect/decline paths (the C9-002/003 dialogue deflects stay green). The
 // bare "what happened?" (no anchor) keeps its own handler. Agent/count asks are excluded too
-// (shared boundary). Delivers ONE event deterministically (the earliest local-event); a node
-// with no local-event honest-declines. §0-safe (substrate labels never allude to the cosmology).
+// (shared boundary). A node with no local-event honest-declines. §0-safe.
 const PLACE_EVENTS_QUERY_RE = new RegExp([
   // what happened / what's happened / has anything happened … here / in this <place>
   /\bwhat(?:'?s| has| have| had)?\b[^.?!]{0,24}?\bhappen(?:ed|s|ing)?\b[^.?!]{0,16}?\b(?:here|around\s+here|in\s+this\s+(?:place|town|village|settlement|hamlet|city|outpost|crossing))\b/,
@@ -97,8 +98,10 @@ function isEventsQuery(text) {
 function resolveEvents(world) {
   const nodeId = String(world?.map?.currentNodeId || '');
   if (!nodeId) return null;
-  const ev = substrateEventsFor(world, nodeId).find(e => e && e.layer === 'node' && e.kind === 'local-event');
-  return ev?.label ? { type: 'events', body: String(ev.label), clarity: 'vivid' } : null;
+  const evs = substrateEventsFor(world, nodeId).filter(e => e && e.layer === 'node' && e.kind === 'local-event');
+  if (!evs.length) return null;
+  const body = evs.map(e => String(e.label)).join('; also, ');
+  return { type: 'events', body, clarity: 'vivid' };
 }
 
 // ── Type: population ───────────────────────────────────────────────────────────
@@ -285,14 +288,55 @@ function resolveConcern(world) {
   return { type: 'concern', body: `folk here carry their small wants — ${joinNames(bits)}`, clarity: 'vivid' };
 }
 
+// ── Type: history ─────────────────────────────────────────────────────────────
+// "What troubles has this land seen? / what hardships hit this region? / any
+// crises in the past?" → REGION-layer substrate events (crises + blessings). These
+// are buried one level above the node: events that shaped the WHOLE valley, not just
+// this settlement. DISTINCT from `events` (node local-events, THIS settlement's past)
+// and from `founding` (how/why THIS place started). Agent/count asks are excluded
+// (shared boundary). A region with no crisis/blessing events honest-declines.
+// §0-safe: region labels never allude to the cosmology.
+const PLACE_HISTORY_QUERY_RE = new RegExp([
+  // what troubles / hardships / crises has this land / region / area seen
+  /\bwhat\b[^.?!]{0,20}?\b(?:troubles?|hardships?|crises?|crisis|catastrophe|calamity|plagues?|disasters?|strife|wars?|conflicts?|blight|drought|famine)\b[^.?!]{0,20}?\b(?:this\s+(?:land|region|area|valley|country|realm|place|province)|here|around\s+here)\b/,
+  // what has this land / region seen / endured / suffered
+  /\bwhat\b[^.?!]{0,12}?\bthis\s+(?:land|region|area|valley|country|realm|province)\b[^.?!]{0,16}?\b(?:seen|endured|suffered|survived|faced|gone\s+through|experienced)\b/,
+  // what crises / blessings / events shaped this region
+  /\bwhat\b[^.?!]{0,16}?\b(?:crises?|crisis|blessings?|events?|history|past)\b[^.?!]{0,20}?\b(?:shaped|marked|defined|struck|hit|befell|came\s+to)\b[^.?!]{0,16}?\b(?:this\s+(?:land|region|area|valley|country|realm|place|province)|here)\b/,
+  // what is the history of this land / region / area
+  /\bwhat\b[^.?!]{0,12}?\bhistory\b[^.?!]{0,16}?\bthis\s+(?:land|region|area|valley|country|realm|province)\b/,
+  // has this region / land known trouble / crisis / war / plague
+  /\bhas\b[^.?!]{0,12}?\bthis\s+(?:land|region|area|valley|country|realm)\b[^.?!]{0,16}?\b(?:known|seen|endured|suffered|faced|had)\b/,
+].map(r => r.source).join('|'), 'i');
+
+function isHistoryQuery(text) {
+  const t = String(text || '');
+  if (!t.trim()) return false;
+  if (PLACE_AGENT_COUNT_RE.test(t)) return false;
+  return PLACE_HISTORY_QUERY_RE.test(t);
+}
+
+function resolveHistory(world) {
+  const nodeId = String(world?.map?.currentNodeId || '');
+  if (!nodeId) return null;
+  // Region events only — node events surface through the `events` type.
+  const evs = substrateEventsFor(world, nodeId).filter(
+    e => e && e.layer === 'region' && (e.kind === 'crisis' || e.kind === 'blessing')
+  );
+  if (!evs.length) return null;
+  const body = evs.map(e => String(e.label)).join('; ');
+  return { type: 'history', body, clarity: 'distant' };
+}
+
 // ── The resolver (one mechanism) ───────────────────────────────────────────────
 // Add a place TYPE as one { type, classify, resolve } slot — never a bespoke handler.
-// The types are disjoint by design (founding = "history of this place", events = "what
-// happened here", concern = "what folk need now", population = "who's here", overview =
-// "what this place is"), so first-match is unambiguous.
+// The types are disjoint by design: founding = "history of THIS settlement"; events =
+// "what happened at THIS node"; history = "what shaped the REGION"; concern = "what
+// folk need now"; population = "who's here"; overview = "what this place is".
 const PLACE_TYPES = [
   { type: 'founding',   classify: isFoundingCircumstance, resolve: resolveFounding },
   { type: 'events',     classify: isEventsQuery,          resolve: resolveEvents },
+  { type: 'history',    classify: isHistoryQuery,         resolve: resolveHistory },
   { type: 'concern',    classify: isConcernQuery,         resolve: resolveConcern },
   { type: 'population', classify: isPopulationQuery,      resolve: resolvePopulation },
   { type: 'overview',   classify: isOverviewQuery,        resolve: resolveOverview },

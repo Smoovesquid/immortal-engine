@@ -5121,7 +5121,11 @@ function isExploreIntent(text) {
   // Searching for HIDDEN things is a skill check, not a free survey — the
   // fiction resists (the tracks don't want to be found).
   if (/\b(hidden|tracks?|trail|clues?|secret|conceal)\w*/.test(t)) return false;
-  if (/\b(look around|look about|survey|scan|search the area|where can i go|where do i go|options|exits|way out|how do i get out|get out of here|leave this place)\b/.test(t)) return true;
+  if (/\b(look around|look about|survey|scan|take stock|search the area|where can i go|where do i go|options|exits|way out|how do i get out|get out of here|leave this place)\b/.test(t)) return true;
+  // "look for someone to talk to" — a social SEARCH (finding people) resolves as a
+  // presence survey of who's around, never a charm/persuasion roll. Contested verbs
+  // ("to fight/rob/kill") are excluded by the talk/speak/chat anchor. (IT-3.)
+  if (/\blook(?:ing)?\s+for\s+(?:someone|anyone|somebody|some\s+one|people|folk|a\s+person)\b[^.?!]*\bto\s+(?:talk|speak|chat|trade|barter)\b/.test(t)) return true;
   // "What do I see / what's here / what is in this room / how big / what does X look like"
   if (/^(what|how|where|who|describe)\b/.test(t) && !/\b(pick|climb|force|break|fight|attack|try|attempt|sneak|steal|persuade|deceive|track|forage|decipher|calm|leap|jump)\b/.test(t)) return true;
   // Yes/no DM questions: "Is there a window?", "Are there any people?", "Is the door open?"

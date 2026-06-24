@@ -992,6 +992,22 @@ narrator + dialogue, §0). Reproduced LLM-off FIRST through both the narrator `p
 paths on tallow. `npm run check` GREEN: convergence 109/109, suite 8553/0, determinism green. **D-B4 residuals
 (a)(b)(c) all closed; (d) the combat roll-vs-outcome is the optional remaining one.**
 
+*2026-06-24 (D-B4 residual d — roll-vs-outcome on a forced barrier; playloop lane, Basecamp overnight):* closed
+the optional combat-lane residual. The Chaos-griefer's "I back up and ram the door again, putting my whole weight
+into it." narrated the door opening on a FAILED roll (8 vs DC 13). Two deterministic roots: (1) the `\bback up\b`
+leave-token claimed the turn as an EXIT ("step back outside"), which the LLM then polished into a contradictory
+"swings open"; (2) "ram" wasn't in `PHYS_FORCE` and the target-extractor let the trailing "...into it" hijack the
+object ("force the it"). Fixes, all in `playloop.js`: (a) `inferInteriorAction` now bails to `kind:'none'` when an
+UNAMBIGUOUS force verb (ram/barge/bash/kick/boot/shoulder/slam/"throw my weight") targets a BARRIER noun
+(door/gate/hatch/wall/crate/…), so a run-up-to-ram is resolved as the force action it is — a plain "I back out of
+here" still exits; (b) ram/barge/boot/shoulder/slam added to `PHYS_FORCE` → routes to the OUTCOME-AWARE
+`physicalObjectOutcome` (success yields / mixed splinters / **failure holds fast**); (c) `physObjTarget` drops the
+trailing manner clause and prefers the FIRST force-verb's object, and the renderer is pronoun-safe (never "the
+it"). Net: the door beat now ALWAYS agrees with the roll. Determinism untouched (resolveMove still owns the roll;
+this only fixes routing + prose). Locked by `tests/U255.ramDoorOutcome.test.js` (4 tests, incl. the cross-seed
+invariant: a failed ram never opens, a success never "holds"). `npm run check` GREEN: convergence 109/109, suite
+8557/0, determinism green; `playtest:quick` 0 crashes / no bugs. **ALL FOUR D-B4 residuals (a–d) now closed.**
+
 ---
 
 ## Corpus format (the shared interface — Lane B builds the runner to this, Lane C fills content to this)

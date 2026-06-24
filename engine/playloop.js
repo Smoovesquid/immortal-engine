@@ -3166,6 +3166,14 @@ function inferInteriorAction(text, interior) {
     return { kind: 'none' };
   }
 
+  // "I back up and ram the door" — a run-up to FORCE something, not a leave. The
+  // ambiguous "back up" / "back out" leave-tokens must not claim a forceful action
+  // aimed at a barrier. Tightly scoped to unambiguous force verbs + a barrier noun,
+  // so a plain "I back out of here" still reads as exit. (D-B4 residual d — a
+  // rammed door was read as "step back outside", then LLM-polished into a
+  // contradictory "swings open"; resolve it as the force action it is.)
+  const forcesBarrier = /\b(?:ram|rams|ramming|barge|barges|barging|bash|bashes|bashing|kick|kicks|kicking|boot|boots|booting|shoulder|shoulders|shouldering|slam|slams|slamming|throw\s+(?:my|your)\s+(?:whole\s+)?weight|put(?:ting)?\s+(?:my|your)\s+(?:whole\s+)?weight)\b[\s\S]*\b(?:door|gate|hatch|trapdoor|wall|crate|chest|barrier|portal|grate|shutter|lid|window|barricade)\b/i;
+  if (forcesBarrier.test(t)) return { kind: 'none' };
   if (
     /\b(leave|exit|go outside|step outside|ascend|to the surface|get out|out of here|head out|back out|back up|up and out|go up|head up)\b/.test(t) ||
     /\bclimb\b[^.!?]*\b(out|up|back|surface|stairs?|steps?)\b/.test(t)
@@ -5100,7 +5108,7 @@ function tryFurnitureStateChange(w, text) {
 // DM names the thing and says what happened. Returns outcome-aware prose (or null
 // to let the composer handle it — social/stealth/abstract intents). `outcome` is
 // 'success' | 'mixed' | 'failure' from resolveMove.
-const PHYS_FORCE = /\b(force|break|smash|bash|kick|shove|wrench|pry|prise|prize|budge|heave|topple|tip|knock|pull|lift|move|drag|haul|push|tear|rip|snap)\b/i;
+const PHYS_FORCE = /\b(force|break|smash|bash|kick|shove|wrench|pry|prise|prize|budge|heave|topple|tip|knock|pull|lift|move|drag|haul|push|tear|rip|snap|ram|barge|boot|shoulder|slam)\b/i;
 const PHYS_CLIMB = /\b(climb|scale|clamber|scramble up|scramble over)\b/i;
 const PHYS_PICK = /\bpick(?:ing)?\b/i;
 
@@ -5117,10 +5125,21 @@ function isConversationalPressure(t) {
 }
 
 function physObjTarget(text) {
-  const t = String(text || '').toLowerCase();
-  const m = t.match(/(?:force|break|smash|bash|kick|shove|wrench|pry|prise|prize|budge|heave|topple|tip|knock|pull|lift|move|drag|haul|push|tear|rip|snap|climb|scale|clamber|pick|open|over|up|down|through|into|across)\s+(?:open\s+)?(?:the|a|an|that|this|my|some)?\s*([a-z][a-z' -]*?)(?:\s+(?:open|down|up|shut|apart|aside|over|loose|free))?\s*$/i);
-  if (!m) return '';
-  return m[1].replace(/\b(open|down|up|shut|apart|aside|over|loose|free|the|a|an)\b/gi, '').trim();
+  let t = String(text || '').toLowerCase();
+  // Drop a trailing manner/instrument clause so it can't hijack the target:
+  // "ram the door again, putting my whole weight into it" → the object is the
+  // DOOR, not the "it" of the trailing clause. (D-B4 residual d.)
+  t = t.replace(/[,;].*$/, '').replace(/\s+\b(?:putting|throwing|using|with|into)\b.*$/i, '').trim();
+  // Prefer the object of the FIRST force/manipulation verb.
+  const FORCE_V = 'force|break|smash|bash|kick|shove|wrench|pry|prise|prize|budge|heave|topple|tip|knock|pull|lift|move|drag|haul|push|tear|rip|snap|ram|barge|boot|shoulder|slam|climb|scale|clamber|pick';
+  const lead = t.match(new RegExp(`\\b(?:${FORCE_V})\\s+(?:open\\s+|into\\s+|through\\s+|at\\s+|over\\s+|up\\s+)?(?:the|a|an|that|this|my|some)?\\s*([a-z][a-z' -]*?)(?:\\s+(?:open|down|up|shut|apart|aside|over|loose|free|again|harder|once|more)\\b.*)?$`, 'i'));
+  const raw = lead ? lead[1] : '';
+  if (!raw) {
+    const m = t.match(/(?:open|over|up|down|through|into|across)\s+(?:the|a|an|that|this|my|some)?\s*([a-z][a-z' -]*?)\s*$/i);
+    if (!m) return '';
+    return m[1].replace(/\b(open|down|up|shut|apart|aside|over|loose|free|the|a|an)\b/gi, '').trim();
+  }
+  return raw.replace(/\b(open|down|up|shut|apart|aside|over|loose|free|the|a|an|again|harder|once|more)\b/gi, '').trim();
 }
 
 function physicalObjectOutcome(world, text, outcome) {
@@ -5163,11 +5182,14 @@ function physicalObjectOutcome(world, text, outcome) {
       : o === 'm' ? `Wizard: The ${what} gives — but your pick bends in the doing and won't serve a second time.`
       : `Wizard: The ${what} resists every twist and probe; it holds.`;
   }
-  // force / move an object
+  // force / move an object. Pronoun-safe: a bare "it/that/this" target must not
+  // become "the it" — name the barrier when we have one, else say "it" cleanly.
   const what = named || target || 'it';
-  return o === 's' ? `Wizard: You set yourself and force the ${what}; it gives with a splintering crack and yields.`
-    : o === 'm' ? `Wizard: The ${what} gives at last — but the wood splinters and the noise carries further than you'd like.`
-    : `Wizard: You throw your weight against ${/^(it|that|this|them)$/i.test(what) ? what : `the ${what}`}, again and again, but it holds fast.`;
+  const ref = /^(it|that|this|them|him|her|me)$/i.test(what) ? what : `the ${what}`;
+  const Ref = ref.charAt(0).toUpperCase() + ref.slice(1);
+  return o === 's' ? `Wizard: You set yourself and force ${ref}; it gives with a splintering crack and yields.`
+    : o === 'm' ? `Wizard: ${Ref} gives at last — but the wood splinters and the noise carries further than you'd like.`
+    : `Wizard: You throw your weight against ${ref}, again and again, but it holds fast.`;
 }
 
 // ── Stage B: argued SOCIAL adjudication ─────────────────────────────────────

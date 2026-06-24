@@ -91,3 +91,35 @@ invariants, fix version-embedded test strings, run the full suite + `playtest:qu
 Plain-language state report to Tim (what's now real for a player, what's still dark, what was
 compressed). Pace spend: `node --test` is the free loop; the `--real-dm` harness + any Opus gate cost the
 `.env` key — run deliberately, by Tim's explicit OK for paid gates.
+
+---
+
+## Ready-to-dispatch — Codex lane, next (W2·1 LANDED `6b5f6b5`; tests renumbered U273/U274)
+
+**FIRST, rebase the lane.** `honest-turn/p86-combat` still points at the pre-merge `e61de58`. Its W2·1 is
+already in `v2-polish`, so **reset/rebase the branch onto current `v2-polish` HEAD** before either packet
+(you get W1's rumor producer + the figures + the goal-law for free). New tests start at **U275** (U265–U274
+are taken). Verify each with `npm run check`. **Do NOT bump `WORLD_VERSION` yourself** — propose new fields
+to Homebase (the serialized seam).
+
+### W2·2 — Dialogue correctness floor
+- **Fence:** `engine/npc/dialogue.js`, `engine/grace/*`, `engine/resolve.js` (logic), the dialogue threads
+  in `playloop.js`/`composer.js`, `engine/harness/*`; its tests. (Stay off W1's `npc/npcVoiceResolve.js`,
+  `world/*Query.js`, `rumor/*`.)
+- **Charge:** harness the conversation slice under the oracles; close agency / trust / info-ask seams. Mine
+  Biblioteca **Vol 7** (interpret-richly-commit-narrowly), **Vol 15** (GM proposes / system commits), **Vol 17**
+  (DM narration craft — hide-the-math, never-narrate-the-player).
+- **Done-when:** clean multi-turn dialogue runs (no state-desync, no agency-violation) + U-tests; `npm run check` green.
+
+### W2·3 — Morality M2 / reputation-travels  *(consumes W1·3 — now LANDED)*
+- **Fence:** the morality threads in `worldTick.js` + the deeds ledger + dialogue **reception** (greeting/
+  trust in `dialogue.js`); its tests.
+- **Charge:** witnessed deed → trust shift (built) **+ reputation that TRAVELS** + towns withholding from the
+  notorious. A tracked atrocity in town A measurably changes a stranger's reception in town B.
+- **Contract:** `import { rumorsReaching } from '../rumor/rumorsReaching.js'` — shape frozen by `U266`.
+  Gossip threshold is **`severity ≥ 25`** (0..100); align notoriety to it.
+- **DESIGN LAW:** the reception change is **DISCOVERED**, never announced — no "reputation −3" popup, no
+  meter. Obscure + player-held (`memory/project_obscure_goals_no_quest_log.md`); a stranger simply receives
+  you differently and you infer why.
+- **Done-when:** the elsewhere-reception shift lands as a surprise; tests; determinism intact. If it needs
+  persistent state → **propose fields to Homebase** for the single `WORLD_VERSION` bump.

@@ -81,3 +81,29 @@ test('U264: OUTSIDE — a real exit narration is accepted (scene.interior alread
     assert.equal(accepts(out, s), true, `a real exit must be allowed once outside: "${s}"`);
   }
 });
+
+// Reverse direction (Rule 1c) — OUTSIDE but the polish claims the player went INSIDE a
+// building canon never put them in (journey: the DM narrated entering an inn an encounter
+// blocked). Reject. Approaches / readiness / descriptions are untouched.
+test('U264: OUTSIDE — polish that claims the player entered a building is REJECTED', () => {
+  const out = playerMove(boot(), PACKS, 'I step outside.').world;
+  for (const s of [
+    'You step inside the inn and nod to Dalla',
+    'You enter the tavern',
+    'You walk into the shop',
+    'You duck into the cottage',
+  ]) {
+    assert.equal(accepts(out, s), false, `must reject (canon says still outside): "${s}"`);
+  }
+});
+
+test('U264: OUTSIDE — approach / readiness / description is NOT rejected by the entry rule', () => {
+  const out = playerMove(boot(), PACKS, 'I step outside.').world;
+  for (const s of [
+    'You approach the inn but the toll-gang blocks your way',   // approach, not entry
+    'You ready yourself to step inside the inn',                // future intent
+    'Through the open doorway, inside a hearth burns low',      // description of the interior
+  ]) {
+    assert.equal(accepts(out, s), true, `must NOT reject (no committed entry): "${s}"`);
+  }
+});

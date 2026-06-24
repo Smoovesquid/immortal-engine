@@ -55,13 +55,21 @@ const ENTER_CLAIM = /\b(?:step(?:s|ped)?|head(?:s|ed)?|walk(?:s|ed)?|go|going|du
 
 const DEATH_CLAIM = /\b(?:falls?\s+(?:dead|lifeless)|drops?\s+dead|lies?\s+dead|is\s+(?:slain|killed|dead|cut\s+down|struck\s+down)|crumples?\s+(?:dead|lifeless)|you\s+(?:kill|slay|cut\s+down|strike\s+down|finish))\b/i;
 
+// FUTURE intent, not a committed move: "ready yourself TO step out", "about to head
+// in", "before you step outside". The DM describing the player getting READY to leave/
+// enter is not a lie about where they are — skip the exit/enter desync when the motion
+// sits inside a readiness clause. (Journey run t2: "as you ready yourself to step out
+// into the settlement" while dressing — narration is fine, the oracle was over-firing.)
+const FUTURE_MOTION = /\b(?:ready|readies|readied|readying|prepar\w+|about|set|bracing|steeling|getting\s+ready|going|meaning|hoping|intend\w*|ready\s+yourself)\s+(?:yourself\s+|himself\s+|herself\s+|themselves\s+)?to\s+(?:step|head|walk|go|move|slip|duck|stride|venture|leave|exit|enter|set\s+out|head\s+(?:out|in))\b|\bbefore\s+(?:you\s+)?(?:step|head|walk|go|leave|enter|venture|set)\b/i;
+
 export function runStateDesync({ before, after, output }) {
   const text = cleanNarration(output?.narration);
   if (!text) return [];
   const findings = [];
+  const futureOnly = FUTURE_MOTION.test(text); // readiness clause, not a committed move
 
   // EXIT — if the narration says you went outside but you are STILL inside.
-  if (EXIT_CLAIM.test(text) && isInsideInterior(before) && isInsideInterior(after)) {
+  if (!futureOnly && EXIT_CLAIM.test(text) && isInsideInterior(before) && isInsideInterior(after)) {
     findings.push(makeFinding('state-desync', 'high', {
       claim: 'narration says the player stepped outside',
       expected: 'scene.interior cleared (now outdoors)',
@@ -71,7 +79,7 @@ export function runStateDesync({ before, after, output }) {
   }
 
   // ENTER — if the narration says you went inside but no interior was set.
-  if (ENTER_CLAIM.test(text) && !isInsideInterior(before) && !isInsideInterior(after)) {
+  if (!futureOnly && ENTER_CLAIM.test(text) && !isInsideInterior(before) && !isInsideInterior(after)) {
     findings.push(makeFinding('state-desync', 'high', {
       claim: 'narration says the player stepped inside a structure',
       expected: 'scene.interior set (now indoors)',

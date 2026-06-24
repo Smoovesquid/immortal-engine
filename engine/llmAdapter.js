@@ -566,6 +566,22 @@ export function validateNarrationCandidate(world, narrationCandidate, {
     if (claimsExit) return false;
   }
 
+  // Rule 1c (J-Q1, reverse) — claims an ENTRY canon didn't commit. If the player is
+  // OUTSIDE after the action (no scene.interior) but the polish narrates them stepping
+  // INSIDE a building, reject. Journey: the DM narrated entering an inn the player could
+  // not reach (a highwaymen encounter blocked it) while the engine kept them outdoors.
+  // Fires ONLY while outside (a real entry sets scene.interior first); "you" must be
+  // adjacent to the motion verb, so future intent ("ready yourself to step inside") and
+  // descriptions ("inside, a fire burns") are untouched.
+  if (!(w?.scene?.interior && typeof w.scene.interior === 'object')) {
+    const bld = '(?:building|inn|house|hut|cabin|cottage|shop|store|tavern|hall|lodge|temple|shrine|keep|tower|structure|common\\s+room)';
+    const claimsEntry =
+      /\byou(?:'ve| have)?\s+(?:step|steps|stepped|stepping|walk|walks|walked|head|heads|headed|go|goes|went|move|moves|moved|stride|strode|slip|slips|slipped|duck|ducks|ducked|push|pushed)\s+(?:back\s+|right\s+|now\s+)?(?:inside|indoors)\b/i.test(cand)
+      || new RegExp(`\\byou(?:'ve| have)?\\s+(?:step|stepped|walk|walked|head|headed|go|went|move|moved|duck|ducked|slip|slipped|push|pushed)\\s+(?:back\\s+)?(?:in\\s+)?into\\s+(?:the\\s+)?${bld}\\b`, 'i').test(cand)
+      || new RegExp(`\\byou(?:'ve| have)?\\s+enter(?:s|ed)?\\s+(?:the\\s+)?${bld}\\b`, 'i').test(cand);
+    if (claimsEntry) return false;
+  }
+
   // Rule 2 (H-26a) — fresh attack/defeat against an already-reconciled enemy.
   // Fires only when combat is NOT active. If a defeated enemy is on record and
   // the polish narrates a live exchange ending with the PLAYER defeated, or the

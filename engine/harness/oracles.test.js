@@ -39,6 +39,22 @@ test('state-desync: a real exit (interior cleared) raises NO finding', () => {
   assert.equal(findings.length, 0);
 });
 
+test('state-desync: FUTURE intent ("ready yourself to step out") is NOT a desync (J-Q1)', () => {
+  // The DM describing the player getting READY to leave/enter is not a lie about where
+  // they are — only a COMMITTED move that contradicts canon should fire. (Journey run t2.)
+  assert.equal(runStateDesync({
+    before: inside(), after: inside(),
+    output: { narration: 'Wizard: You pull on your clothes as you ready yourself to step out into the settlement.' },
+  }).length, 0, 'readiness to step out is not a committed exit');
+  assert.equal(runStateDesync({
+    before: outside(), after: outside(),
+    output: { narration: 'Wizard: You ready yourself to step inside the inn.' },
+  }).length, 0, 'readiness to step inside is not a committed entry');
+  // …but the committed forms still fire.
+  assert.equal(runStateDesync({ before: inside(), after: inside(), output: { narration: 'You step outside into the cold.' } }).length, 1, 'a real exit still fires');
+  assert.equal(runStateDesync({ before: outside(), after: outside(), output: { narration: 'You step inside the inn and nod.' } }).length, 1, 'a real entry still fires');
+});
+
 test('state-desync: narrated kill with every foe still standing is caught', () => {
   const before = { scene: {}, combat: { active: true, enemies: [{ name: 'Rook', hp: 5, maxHp: 5, defeated: false }] } };
   const after = { scene: {}, combat: { active: true, enemies: [{ name: 'Rook', hp: 5, maxHp: 5, defeated: false }] } };

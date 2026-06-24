@@ -38,6 +38,8 @@ import { normalizeManifest, normalizePack } from '../engine/rulesets.js';
 import { DEMO_SEED } from '../engine/world/demoRegion.js';
 import { getGoal } from '../engine/harness/goals.js';
 import { runOracleBank, checkSoftLock, cleanNarration, SOFT_LOCK_WINDOW } from '../engine/harness/oracles.js';
+import { judgeSession } from '../engine/harness/qualityJudge.js';
+import { augmentNarration } from '../engine/llmAdapter.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -67,7 +69,12 @@ export function bootWorld(seed, packs) {
 // `player(ctx)` -> next action string (or '' to stop). ctx = { world, goal,
 // transcript, turn, stuck }. This is the heart of the harness; the CLI wraps it
 // with an LLM player + reporting, the test wraps it with a scripted player.
-export async function runSession({ world, packs, goal, player, turns = 25, softLockWindow = SOFT_LOCK_WINDOW, openerNarration = '' }) {
+// `narrate({world,output,action}) -> Promise<string>` (optional): in REAL-DM mode it
+// returns the live LLM narration (augmentNarration) so the oracles + transcript see the
+// prose a player actually reads, not the gen:s/m/f skeleton. `judge({system,user}) ->
+// Promise<string>` (optional): the Tier-2 quality model. Both default OFF → the
+// hermetic test path stays fully deterministic and free.
+export async function runSession({ world, packs, goal, player, turns = 25, softLockWindow = SOFT_LOCK_WINDOW, openerNarration = '', narrate = null, judge = null }) {
   const transcript = [];
   if (openerNarration) transcript.push({ who: 'dm', text: cleanNarration(openerNarration) });
 
@@ -109,9 +116,15 @@ export async function runSession({ world, packs, goal, player, turns = 25, softL
         findings.push({ oracleId: 'crash', severity: 'high', turn, action, claim: 'the player\'s action', expected: 'a turn that does not throw', committed: 'engine threw', note: `[ENGINE THREW] ${e?.message || e}` });
         break;
       }
-      findings.push(...runOracleBank({ before, after, action, output, turn }));
+      // Real-DM mode: swap the deterministic skeleton narration for the LIVE DM
+      // (augmentNarration) so BOTH the oracles and the quality judge see the prose a
+      // player actually reads. Falls back to base on any miss (Invariant 4).
+      let narration = output?.narration;
+      if (narrate) { try { const real = await narrate({ world: after, output, action }); if (real) narration = real; } catch { /* keep base */ } }
+      const dmOutput = narrate ? { ...output, narration } : output;
+      findings.push(...runOracleBank({ before, after, action, output: dmOutput, turn }));
       world = after;
-      transcript.push({ who: 'dm', text: cleanNarration(output?.narration), mech: output?.mechanics || '' });
+      transcript.push({ who: 'dm', text: cleanNarration(narration), mech: output?.mechanics || '' });
       if (goal.satisfied(world, { actionsLog })) goalCompleted = true;
     }
 
@@ -123,6 +136,11 @@ export async function runSession({ world, packs, goal, player, turns = 25, softL
     const sl = checkSoftLock(progressHistory, { window: softLockWindow, goal, turn });
     if (sl) findings.push({ ...sl, action });
   }
+
+  // Tier-2 QUALITY judge — one cheap call over the REAL transcript (the open-ended
+  // "is this a real DM?" half the deterministic oracles can't see). Findings are
+  // tagged quality-* (discovery / human-triage, NEVER auto-fixed). Off by default.
+  if (judge) findings.push(...await judgeSession({ transcript, callModel: judge }));
 
   return {
     goal: goal.id,
@@ -260,6 +278,13 @@ if (isMain) {
   const SEEDS = arg('seeds', DEMO_SEED).split(',').map(s => s.trim()).filter(Boolean);
   const PLAYER_KIND = REPLAY ? 'replay' : arg('player', KEY ? 'llm' : 'scripted');
   const WRITE_REPORT = !has('no-report');
+  // --real-dm: route each turn through the LIVE DM (augmentNarration) + run the Tier-2
+  // quality judge. This is the only mode whose verdict is about the game a human plays;
+  // without it the harness judges the deterministic skeleton (free, replayable, but the
+  // DM's brain is off). DM model cheap+real; judge model stronger + DECOUPLED (Vol 14).
+  const REAL_DM = has('real-dm');
+  const DM_MODEL = arg('dm-model', 'claude-haiku-4-5-20251001');
+  const JUDGE_MODEL = arg('judge-model', 'claude-sonnet-4-6');
 
   // ── Thin Anthropic client (forked from dm-playtest.mjs: no temperature on Opus,
   // patient retry on transient overload). Only used by the LLM player. ──────────
@@ -329,6 +354,21 @@ if (isMain) {
     return llmPlayer(PLAYER_MODEL);
   }
 
+  // ── Real-DM narration (the LIVE path: augmentNarration in-process) ────────────
+  // OFF unless --real-dm + a key. Returns the validated LLM narration a player reads
+  // (server-side RAG place-chunks aren't injected here, but the DM prose is faithful).
+  const narrate = (REAL_DM && KEY)
+    ? async ({ world, output, action }) => augmentNarration({
+        world, baseNarration: output?.narration || '',
+        outcome: { input: action, mechanics: output?.mechanics || '', narrationSource: output?.narrationSource },
+        apiKey: KEY, enabled: true, model: DM_MODEL, fetchImpl: fetch,
+      })
+    : null;
+  // ── The Tier-2 quality judge call (decoupled model; strict JSON; ~1 call/session) ──
+  const judge = (REAL_DM && KEY)
+    ? async ({ system, user }) => ask({ system, user, model: JUDGE_MODEL, maxTokens: 900 })
+    : null;
+
   // ── Report ──────────────────────────────────────────────────────────────────
   function writeReport(runs) {
     const date = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
@@ -347,7 +387,8 @@ if (isMain) {
     const L = [];
     L.push(`# Playtest Harness — finder run — ${date}`);
     L.push('');
-    L.push(`**Harness:** \`scripts/playtest-harness.mjs\` · deterministic oracle bank (state-desync · free-action · soft-lock) · player = ${PLAYER_KIND}${PLAYER_KIND === 'llm' ? ` (${PLAYER_MODEL})` : ''}`);
+    L.push(`**Harness:** \`scripts/playtest-harness.mjs\` · oracle bank (state-desync · free-action · object-interaction · soft-lock) · player = ${PLAYER_KIND}${PLAYER_KIND === 'llm' ? ` (${PLAYER_MODEL})` : ''}`);
+    L.push(`**DM under test:** ${REAL_DM ? `LIVE — \`augmentNarration\` (${DM_MODEL}) + Tier-2 quality judge (${JUDGE_MODEL})` : 'SKELETON — deterministic \`gen:s/m/f\` filler (NOT the real DM; consistency-only). Pass \`--real-dm\` to test the real game.'}`);
     L.push(`**Run:** ${runs.length} session(s) · goal: \`${GOAL_ID}\` · seeds: ${runs.map(r => r.seed).join(', ')} · ≤${TURNS} turns each`);
     L.push(`**Repro (LLM-off):** \`${reproCmd}\` — re-drives the saved actions on the seed; oracles add zero API cost.`);
     L.push('');
@@ -372,9 +413,11 @@ if (isMain) {
         if (run && f.turn) L.push(`  - context:\n${transcriptSlice(run.transcript, f.turn).map(s => `      ${s}`).join('\n')}`);
       }
     }
-    if (!allFindings.length) { L.push(''); L.push('_No findings — the oracle bank saw no incoherence on these seeds._'); }
+    if (!allFindings.length) { L.push(''); L.push(REAL_DM
+      ? '_No findings — oracles + the quality judge saw no incoherence on these seeds (coverage-bounded clean)._'
+      : '_No findings — but this judged the deterministic SKELETON (no `--real-dm`): only consistency was checked, not DM quality. NOT a playability verdict._'); }
     L.push('');
-    if (PLAYER_KIND === 'llm') L.push(`## Cost\n${usage.calls} ${PLAYER_MODEL} calls · ${usage.in.toLocaleString()} in + ${usage.out.toLocaleString()} out tokens (oracles: $0 — deterministic).`);
+    if (PLAYER_KIND === 'llm' || REAL_DM) L.push(`## Cost\n${usage.calls} metered calls (player${REAL_DM ? ` + ${JUDGE_MODEL} judge` : ''}) · ${usage.in.toLocaleString()} in + ${usage.out.toLocaleString()} out tokens (deterministic oracles: $0).${REAL_DM ? ` DM narration (${DM_MODEL}, ~1 call/turn) is billed separately, not metered here.` : ''}`);
 
     const file = path.join(dir, `harness-${date}.md`);
     fs.writeFileSync(file, L.join('\n'));
@@ -409,7 +452,7 @@ if (isMain) {
         if (costUSD() >= BUDGET) return null;
         const seed = seedFor(i);
         const begun = bootWorld(seed, packs);
-        const r = await runSession({ world: begun.world, packs, goal, player: llmPlayer(PLAYER_MODEL), turns: TURNS, openerNarration: begun.output?.narration || begun.world.scene?.narration || '' });
+        const r = await runSession({ world: begun.world, packs, goal, player: llmPlayer(PLAYER_MODEL), turns: TURNS, openerNarration: begun.output?.narration || begun.world.scene?.narration || '', narrate, judge });
         satRuns.push({ seed, ...r });
         return { seamKeys: r.findings.map(seamKeyOf), seed };
       };
@@ -443,7 +486,9 @@ if (isMain) {
         L.push('');
         L.push(`## Seams by incidence (runs seen / total runs)`);
         for (const [key, n] of Object.entries(sat.counts).sort((a, b) => b[1] - a[1])) L.push(`- \`${key}\` — ${n}/${sat.runs}`);
-        if (!sat.uniqueSeams) L.push('_No seams surfaced — the oracle bank saw no incoherence across the explored worlds (clean saturation)._');
+        if (!sat.uniqueSeams) L.push(REAL_DM
+          ? '_No seams across the explored worlds with the REAL DM + quality judge active — a meaningful, coverage-bounded clean result._'
+          : '_INCONCLUSIVE — 0 findings, but this run judged the DETERMINISTIC SKELETON (no `--real-dm`): the quality axis was never measured, and Chao1 over zero observations is vacuous. This is NOT a "clean" verdict. Re-run with `--real-dm`._');
         const file = path.join(dir, `saturation-${date}.md`);
         fs.writeFileSync(file, L.join('\n'));
         console.log(`REPORT: ${path.relative(ROOT, file)}`);
@@ -457,7 +502,7 @@ if (isMain) {
       const begun = bootWorld(seed, packs);
       const player = pickPlayer(seed, goal);
       process.stdout.write(`\n  ▶ seed "${seed}" `);
-      const r = await runSession({ world: begun.world, packs, goal, player, turns: TURNS, openerNarration: begun.output?.narration || begun.world.scene?.narration || '' });
+      const r = await runSession({ world: begun.world, packs, goal, player, turns: TURNS, openerNarration: begun.output?.narration || begun.world.scene?.narration || '', narrate, judge });
       runs.push({ seed, ...r });
       process.stdout.write(`— ${r.goalCompleted ? 'GOAL ✅' : 'stuck/❌'} · ${r.turns} turns · ${r.findings.length} finding(s)\n`);
       for (const f of r.findings) process.stdout.write(`      • [${f.oracleId}/${f.severity}] t${f.turn ?? '—'}: ${f.note}\n`);

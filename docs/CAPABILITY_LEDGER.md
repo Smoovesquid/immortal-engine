@@ -939,6 +939,25 @@ phrasing, false-positive guards). Reproduced LLM-off FIRST. `npm run check` GREE
 8530/0, determinism U19/21/22/27/30 green. **Residual still open from gate-24 (a):** the roll-on-demand (C3) —
 "roll the GRIT save, show me d20 + modifier + total" still returns the chart instead of rolling; next packet.
 
+*2026-06-24 (D-B4 residual a part 2 — roll-on-demand / C3; grace lane, Basecamp overnight):* closed the second
+half of residual (a). When the Rules-Lawyer EXPLICITLY commanded a roll and to be shown it ("roll the GRIT save:
+show me d20 result, plus the modifier, plus the total. Numbers only.") the DM either recited the breakpoint table
+(the "show me the modifier" phrasing diverted to `META_MODIFIER_FORMULA`) or bounced "tell me what you get" — but
+the player has no physical die, so a demanded roll produced none (the gate rated this HIGH: "a roll was demanded
+and none was produced"). Added `META_ROLL_NOW` (imperative "roll it" + an explicit "show me the d20/result/total/
+math/numbers" demand) and a roll-on-demand branch checked FIRST in `handleMetaQuestion`, gated on a genuinely
+NAMED stat-check (`META_EXPLICIT_CHECK_C`/`D`) so a bare "show me the math" can't fabricate a roll. It rolls a
+real d20, adds the stat modifier, compares to the same base-12 (NPC-openness-nudged) DC the collaborative handler
+uses, and reports `Rolling GRIT: d20 14 −1 = 13 vs DC 12 — success.` **Determinism (SACRED):** the d20 is drawn
+from `makeRng(seedFromString(seed|rollnow|promptSeed|timeline|stat|text))` — the SAME per-call fresh-RNG pattern
+`resolveMove` uses — so it is a pure function of world state (replay-stable), consumes NO global RNG cursor, and
+CANNOT affect U19/21/22/27/30. The roll is DEMONSTRATIVE: it mutates nothing (narration != canon; a save with no
+stated trigger has no canonical consequence). The COLLABORATIVE explicit-check path ("let me make a WITS check" →
+"Tell me what you get") is untouched (U182 green). Locked by `tests/U252.rollOnDemand.test.js` (real d20+mod+total
+math, determinism, collaborative-path preservation, unnamed-stat guard). Reproduced LLM-off FIRST, confirmed
+through the full `playerMove` path on tallow. `npm run check` GREEN: convergence 109/109, suite 8536/0,
+determinism green. **D-B4 residual (a) is now fully closed** (the dominant 6–7 of 10 gate fails).
+
 ---
 
 ## Corpus format (the shared interface — Lane B builds the runner to this, Lane C fills content to this)

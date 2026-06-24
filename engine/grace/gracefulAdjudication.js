@@ -8,6 +8,7 @@ import { adjudicate } from '../adjudication/adjudicate.js';
 import { exitsFrom, cleanPlaceName } from '../map/mapState.js';
 import { statMod } from '../ruleset/core/stats.js';
 import { profBonusFor } from '../ruleset/core/levelTable.js';
+import { makeRng, seedFromString } from '../rng.js';
 import { playerAc, meleeProfile } from '../combat/escapeCombat.js';
 import { purseTotalCopper, formatPrice } from '../economy/shop.js';
 import { fateBand } from '../rulesets.js';
@@ -468,6 +469,15 @@ const META_EXPLICIT_CHECK_D = /\b(might|agility|wits|grit|charm|strength|dexteri
 // path (outside grace) handles the actual roll once grace doesn't intercept.
 // (H-54 R4)
 const META_EXPLICIT_CHECK_DECLARED = /\b(?:roll|rolling)\s+(?:a\s+)?(?:might|agility|wits|grit|charm|strength|dexterity|constitution|intelligence|wisdom|charisma|str|dex|con|int|wis|cha)\s+to\s+[a-z]|\bmake\s+a\s+(?:might|agility|wits|grit|charm|strength|dexterity|constitution|intelligence|wisdom|charisma|str|dex|con|int|wis|cha)\s+check\s+to\s+[a-z]/i;
+// Roll-ON-DEMAND — the player COMMANDS the DM to roll a check NOW and SHOW the
+// result ("roll it and show me the math", "roll the GRIT save: show me d20
+// result, plus the total. Numbers only."). Distinct from the COLLABORATIVE
+// explicit-check ("let me make a WITS check" — player rolls, DM sets the DC):
+// here the player has no physical die and wants the engine to produce the
+// number. Anchored on the imperative "roll it" and on an explicit "show me the
+// d20/result/total/math/numbers" demand, so a collaborative "what do I roll?"
+// stays on the DC-prompt path. (D-B4 gate residual a — roll-on-demand / C3.)
+const META_ROLL_NOW = /\broll it\b|\broll\s+(?:it\s+)?(?:for me|now|right now)\b|\bshow me\s+(?:the\s+)?(?:d20|result|total|the math|numbers?)\b|\bnumbers only\b|\byou roll\b/i;
 // Roll-recall — player cites a specific past roll number to dispute or follow up.
 // "I rolled a 16", "16 vs DC 11", "you told me I got a 16", "my roll was 16". (H-12/13.)
 const META_ROLL_RECALL = /\b(?:i (?:rolled|got|said|had)(?:\s+a)?|my roll was(?:\s+a)?|you (?:said|told me)(?:\s+i (?:rolled?|got))?(?:\s+a)?)\s*\d+\b|\b\d+\s+(?:vs\.?|versus|against)\s+dc\s*\d+\b/i;
@@ -1445,6 +1455,40 @@ export function handleMetaQuestion(text, world) {
   // raw breakpoint table (META_MODIFIER_FORMULA) or a generic skill roll. (H-80)
   const attackStatAns = answerAttackGoverningStat(lowerText, world);
   if (attackStatAns) return attackStatAns;
+
+  // Roll-on-demand — the player explicitly commands the DM to roll a NAMED
+  // check/save now and SHOW the result. A real DM (and a digital one, where the
+  // player has no die in hand) just rolls it. Checked FIRST so "roll the GRIT
+  // save: show me the d20, plus the modifier" ROLLS instead of reciting the
+  // breakpoint table (the gate's loudest dead-end after the table itself).
+  // Determinism: the d20 is drawn from a seed built off world state + the
+  // request text via the SAME makeRng/seedFromString path resolveMove uses —
+  // so it's a pure function of state (replay-stable) and consumes no global RNG
+  // cursor. The roll is DEMONSTRATIVE: it mutates nothing (narration != canon;
+  // a save with no stated trigger has no canonical consequence). Gated on a
+  // genuinely NAMED stat-check so a bare "show me the math" can't fabricate a
+  // WITS roll out of nothing. (D-B4 residual a — roll-on-demand / C3.)
+  if (META_ROLL_NOW.test(lowerText)
+      && (META_EXPLICIT_CHECK_C.test(lowerText) || META_EXPLICIT_CHECK_D.test(lowerText))) {
+    const stat = extractRequestedStat(text);
+    const score = Number(world.party?.[0]?.stats?.[stat] ?? 10);
+    const mod = statMod(score);
+    // DC: base 12, nudged by a present NPC's openness — identical to the
+    // collaborative explicit-check handler so the number is consistent whoever
+    // rolls it.
+    const node = (world.map?.nodes || []).find(n => n && n.id === world.map?.currentNodeId) || null;
+    const npc = (node?.settlement?.npcs || []).find(n => n && !n.hostile) || null;
+    let dc = 12;
+    if (npc) {
+      const P = npc.personality || {};
+      dc = Math.max(8, Math.round(12 - (Number(P.trustOfOutsiders ?? 0.5) - 0.5) * 6));
+    }
+    const seed = seedFromString(`${world.meta?.seed || ''}|rollnow|${world.scene?.promptSeed || ''}|${world.timeline?.length || 0}|${stat}|${lowerText}`);
+    const d20 = makeRng(seed).int(1, 20);
+    const total = d20 + mod;
+    const pass = total >= dc;
+    return `Rolling ${stat}: d20 ${d20} ${fmtMod(mod)} = ${total} vs DC ${dc} — ${pass ? 'success' : 'failure'}.`;
+  }
 
   // Location / survey — checked first (most specific phrasings).
   if (META_LOCATION.test(lowerText)) {

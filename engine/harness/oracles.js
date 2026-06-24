@@ -216,9 +216,13 @@ const ACQUIRE_VERB = '(?:take|takes|took|pocket|pockets|pocketed|grab|grabs|grab
 // Only KNOWN adjectives are skipped, so "take a breath AND relax" can't swallow "and".
 const ACQUIRE_ADJ = '(?:real|deep|long|good|quick|brief|short|fresh|hard|firm|big|great|fine|proper|decent|little|last|first|next|final|sharp|slow|wide|close|whole|full|sheer|mere|very|same|other|nice|sweet|sound|careful|steady|gentle|tight|loose|heavy|light|small|large|old|new|strange|mysterious|shiny|rusty|brass|iron|steel|silver|gold|golden|wooden|stone|leather|bone)';
 const ACQUIRE_CLAIM = new RegExp(`\\byou\\s+${ACQUIRE_VERB}\\s+(?:up\\s+)?(?:the|a|an|your|my|his|her|its|their|that|this|one|two|three|several|some|a\\s+few)\\s+(?:${ACQUIRE_ADJ}\\s+)*([a-z][a-z'’-]+)`, 'i');
-const ACQUIRE_PHRASE = /\b(?:is|are)\s+(?:now\s+)?yours\b|\bnow\s+(?:carry|hold|have)\s+the\b|\b(?:goes|slides|drops)\s+into\s+your\s+(?:pack|pocket|bag|satchel|pouch|hand)\b|\binto\s+your\s+(?:pack|pocket|bag|satchel|pouch)\b/i;
+// NOTE: a bare "into your pocket" was REMOVED — it false-fired on "you REACH into your
+// pocket… and your fingers close on nothing" (retrieving, not acquiring; the player had
+// no coin). A real acquisition is caught by "goes/slides/drops into your pocket" or by an
+// ACQUIRE_VERB ("you slip the coin into your pocket"). (IT-2 follow-up.)
+const ACQUIRE_PHRASE = /\b(?:is|are)\s+(?:now\s+)?yours\b|\bnow\s+(?:carry|hold|have)\s+the\b|\b(?:goes|slides|drops|tucked|slipped|dropped)\s+into\s+your\s+(?:pack|pocket|bag|satchel|pouch|hand)\b/i;
 // A take that DIDN'T happen — too heavy, refused, or merely attempted.
-const ACQUIRE_NEGATE = /\b(?:tr(?:y|ies|ied)\s+to|attempts?\s+to|attempt(?:ing)?\s+to|can'?t|cannot|could\s?n'?t|won'?t|unable\s+to|fail(?:s|ed)?\s+to)\b|\btoo\s+(?:heavy|big|bulky|large|much)\b|\bwon'?t\s+budge\b|\bnothing\s+(?:to\s+take|worth\s+(?:taking|the))\b|\bcan'?t\s+(?:carry|lift|move)\b/i;
+const ACQUIRE_NEGATE = /\b(?:tr(?:y|ies|ied)\s+to|attempts?\s+to|attempt(?:ing)?\s+to|can'?t|cannot|could\s?n'?t|won'?t|unable\s+to|fail(?:s|ed)?\s+to)\b|\btoo\s+(?:heavy|big|bulky|large|much)\b|\bwon'?t\s+budge\b|\bnothing\s+(?:to\s+take|worth\s+(?:taking|the))\b|\bcan'?t\s+(?:carry|lift|move)\b|\b(?:close|closes|closed)\s+on\s+nothing\b|\bempty[\s-]?handed\b|\bnot\s+even\s+lint\b|\bpockets?\s+(?:are|is)\s+empty\b|\bhand\s+(?:outstretched\s+and\s+)?empty\b/i;
 const STOP_NOUNS = new Set([
   'stock', 'cover', 'aim', 'note', 'notes', 'seat', 'breath', 'breather', 'moment', 'step',
   'steps', 'look', 'peek', 'swing', 'shot', 'knee', 'turn', 'beat', 'sip', 'swig', 'gulp',

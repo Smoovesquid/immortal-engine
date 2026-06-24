@@ -60,6 +60,16 @@ test('A/neg: adjective-led idioms ("take a real bed", "deep breath", "long look"
   assert.equal(run({ output: { narration: 'You take her meaning and say no more.' } }).length, 0, 'take her meaning (dialogue idiom)');
 });
 
+test('A/neg: "reach INTO your pocket … fingers close on nothing" is not a phantom (IT-2 follow-up)', () => {
+  // Paying a coin you don't have: the DM correctly narrates an EMPTY hand. The bare
+  // "into your pocket" used to read as an acquisition (it's retrieval) — now it doesn't.
+  const narr = "You reach into your pocket with a practiced motion, but your fingers close on nothing—not even lint—and you stand there, hand outstretched and empty.";
+  assert.equal(run({ output: { narration: narr } }).length, 0, 'reaching into an empty pocket is not acquiring');
+  // …but a real drop INTO the pocket still fires (recall preserved).
+  assert.equal(run({ output: { narration: 'The brass key slides into your pocket.' } }).length, 1, 'slides into pocket = acquisition');
+  assert.equal(run({ output: { narration: 'You slip the coin into your pocket.' } }).length, 1, 'verb-form take still fires');
+});
+
 test('A/pos: recall preserved — a real adjective+noun take ("the brass key") still fires (IT-2)', () => {
   // Skipping the adjective must NOT suppress a genuine phantom: the HEAD noun (key) is
   // a real object, so an ungranted "you take the brass key" is still caught.

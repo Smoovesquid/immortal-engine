@@ -96,7 +96,10 @@ const ui = {
   packs: { manifest: null, byId: {} },
   screen: 'invoke',
 
-  invoke: { seed: 'seed', fate: 0.2, primaryId: 'fantasy', mixerId: '' },
+  // 'tallow' = the curated demo region (DEMO_SEED in engine/world/demoRegion.js):
+  // 8 reachable towns, the real roster, the talk→quest→reputation loop. A raw seed
+  // ('seed', a random one) drops you in an uncurated procgen world instead.
+  invoke: { seed: 'tallow', fate: 0.2, primaryId: 'fantasy', mixerId: '' },
 
   gate4: {
     mythInput: '',
@@ -805,12 +808,13 @@ function travelTo(text) {
   doSubmitMove();
 }
 
-// Start a fresh Escape game with a new random seed (front door + Play Again).
+// Front door + Play Again — load the curated demo region by default so a player
+// who clicks Play lands IN the demo (Wayfarers' Outpost, the real roster, the
+// proven loop), not a raw procgen world. The seed feeds character creation too,
+// so the demo is repeatable. To explore a random adventure, type a different seed
+// in the seed field before starting. (DEMO_SEED = 'tallow', engine/world/demoRegion.js.)
 function playAgain() {
-  // Front door — roll up a character first, like a real table. A fresh random
-  // seed feeds the wizard; everything downstream is deterministic from it.
-  const seed = `escape-${Date.now().toString(36)}-${Math.floor(Math.random() * 1e6).toString(36)}`;
-  ui.invoke.seed = seed;
+  ui.invoke.seed = 'tallow';
   beginNewWorld();
 }
 

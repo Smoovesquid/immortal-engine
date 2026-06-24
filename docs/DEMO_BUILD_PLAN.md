@@ -92,6 +92,13 @@ return, and the world remembered. This is the highest-leverage work — everythi
 - **Done-when:** in conversation, a concern becomes a tracked goal the player chose; `checkGoals` completes it on
   the deed; the gate judges it born-in-fiction (no quest-board / no "NEW QUEST" artifact). Corpus-lock the
   no-artifact contract.
+- **DESIGN LAW (Tim 2026-06-24 — "I HATE that mechanic"):** goals are **obscure + player-held**, NOT
+  video-game fetch-quests. The engine may track intent INTERNALLY (for completion → discovered consequence),
+  but the player surface NEVER shows a checklist: no quest log, no objective markers, no "quest updated" toast,
+  no go-fetch-and-return-for-reward loop. Origin is diegetic — a concern in talk, or a bounty decoded from the
+  **Kasual Korner** ([[IG-14]] classifieds, read between the lines). "We write it down or forget it." **KILL the
+  live violation:** `public/v1.js renderGoalsSection` (the `aria-label="Goal tracker"` panel). See
+  `memory/project_obscure_goals_no_quest_log.md`.
 
 ### D-B2 — Consequence the player DISCOVERS (rung 4) (reuses P-83 + morality M2)
 - **Seam:** the rumor/`claims.js` graph + `rumor/` fidelity tiers; morality M2 (witnessed deeds → trust/faction);

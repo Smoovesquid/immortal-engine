@@ -241,3 +241,57 @@ what the engine generates (one building + roads), which is the root of the entry
 - The harness "stuck"/goal-miss in some runs is the AI player's wandering path, not an
   engine block — `explore-town` is reachable (runs #1–#2 reached it; `U259` proves the
   metric climbs as the player gets out and meets people).
+
+---
+
+# Journey to another town (2026-06-24) — "from bed out into the world and into another town"
+
+**Goal:** `journey-to-town` (new, `engine/harness/goals.js`, locked by `U263`): bed → out
+of the building → out of the home settlement → travel the road graph → a DIFFERENT
+settlement. On seed `tallow` the world is 39 nodes / 8 settlements; the nearest OTHER town
+is **Crossway Village**, two hops out (Wayfarers' Outpost → Old Shrine → Crossway Village).
+Farther: Saltmarket Town (5), Riverside Inn (6), Pilgrim's Rest (12), Trader's Camp (15).
+
+## FIXED (tested; VALIDATED — the journey now completes; goal reached 1/2 real-DM runs, up from 0/2 pre-fix)
+- **J-F1 — travel vocabulary.** "take the road/path to X", "follow the trail", "continue/
+  press on", "make my way" fell to the action floor (no move). Added to
+  `isFreeMovementIntent`; road-noun + travel-continuation guards "take the road MAP". `U263`.
+- **J-F2 — the soft-lock ROOT: onward roads were invisible to the DM.** `buildScene`
+  computed `exits` from `e.from`/`e.to`, but map edges are keyed `{a,b}` → the exits list
+  was **ALWAYS EMPTY**. The DM never knew where the roads led, so it narrated a waypoint
+  (Old Shrine's standing stones) as a *blocked dead end* and the player burned turns
+  trying to "get past the stones." Fixed the edge-schema read + fed `exits` into the DM
+  prompt ("The roads from here lead onward to: …; never describe this place as having no
+  way out or the road blocked"). The travel analog of WB-Q1. `N7`. Post-fix, the DM says
+  *"the roads lead to … Crossway Village to the south"* and the player travels on.
+- **J-F3 — oracle precision (IT-2 follow-up).** Figurative "the road is yours" (a combat-
+  fled line) no longer reads as a phantom acquisition; a concrete object "is yours" still
+  fires. `object-interaction.test.js`.
+
+## QUEUED
+- **J-Q1 (narration-agency — quality lever).** The DM over-narrates player movement: on an
+  info-check ("ask the shopkeeper which way out"), it narrated *"you leave the building"*
+  while the engine kept the player inside (a state-desync the oracle correctly caught).
+  Cause is LLM narration adding an UNREQUESTED exit — not a deterministic engine bug. Lever:
+  the RESPECT-AGENCY prompt guardrail (never narrate the player moving/leaving unless they
+  said so). Same class as the judge's `quality-respects-agency` findings. *Prompt packet.*
+- **J-Q2 (intent, DEFERRED — ambiguity).** Partial place-names don't resolve ("I walk to
+  Crossway" misses "Crossway Village"). Deferred on purpose: the seed has TWO "Crossway
+  Village" nodes, so a prefix match is ambiguous — needs a disambiguation pass (pick the
+  nearest, or ask "which Crossway?"), not a blind substring-loosen.
+- **J-Q3 (not a bug).** Travel encounters (toll-gangs, ambushes) interrupt the journey —
+  pay/talk/fight/slip past. Working as designed; lengthens the trip and can stall a
+  dithering LLM player.
+
+## Triage
+- **The journey works end to end** — run #1 reached Crossway Village cleanly in 26 turns
+  (the DM now names the roads: *"…Crossway Village to the south"* and the player travels
+  on). The travel MECHANICS are solid: no rolled-free-action, no phantom in the runs.
+- **Honest caveat — 1/2, not a guarantee.** Run #2 did NOT finish: the LLM player wandered
+  the WRONG way first (south to Sooted Bridge, a landmark, instead of west to Old Shrine),
+  burned the 30-turn clock backtracking, and hit a J-Q1 agency-desync inside a shop. So the
+  fix lifts completion from 0/2 → 1/2 — real improvement, not certainty. The residual is
+  (a) the J-Q1 narration-agency lever and (b) the LLM player's own navigation, NOT a travel
+  blocker (the deterministic `U263` drive completes every time).
+- The bulk of findings are **DM prose quality** over a long (~26–30 turn) journey — the
+  standing lever (50+ discovery-only judge findings).

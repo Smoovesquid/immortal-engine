@@ -3167,6 +3167,54 @@ function setPrimaryPartyZone(world, zone) {
   };
 }
 
+// Building nouns the player might name for the structure they enter from outdoors.
+const ENTER_BUILDING_NOUN = /\b(inn|tavern|alehouse|pub|building|structure|house|home|hut|cabin|cottage|shack|hovel|shop|store|smithy|forge|barn|stable|mill|warehouse|hall|longhouse|lodge|manor|keep|tower|temple|shrine|chapel|church|bathhouse|den)\b/i;
+// Motion verbs that carry an enter. "move"/"come" are excluded on purpose — "move
+// into position", "come into view" are not building entries.
+const ENTER_MOTION = /\b(?:go(?:es|ing)?|step(?:s|ping)?|head(?:s|ing)?|walk(?:s|ing)?|duck(?:s|ing)?|slip(?:s|ping)?|push(?:es|ing)?|stride(?:s|ing)?|venture(?:s|ing)?|enter(?:s|ing)?|return(?:s|ing)?)\b/i;
+
+// Classify an OUTDOOR enter intent, tolerant of a trailing clause and of "into".
+// The legacy rule only caught "inside/in" at END-OF-LINE, so "step into the inn and
+// ask Dalla …" fell through to the dialogue path — the engine stayed outdoors while
+// the LIVE DM narrated stepping inside: a HIGH state-desync the town playtest caught.
+// Returns the structureRef to enter, or null when it is NOT an enter. Over-match is
+// guarded: "into <non-building>" (a rage, the water, town) and "inside the <non-
+// building>" (the ring) do not count. Locked by U260.
+function classifyOutdoorEnter(t) {
+  const nounM = t.match(ENTER_BUILDING_NOUN);
+  const refRaw = nounM ? String(nounM[1]).toLowerCase() : '';
+  const ref = (refRaw === 'building' || refRaw === 'structure') ? '' : refRaw;
+
+  // Transitive "enter the <building>" / "I enter the inn", or a bare "I enter". Gated
+  // on a building noun (or bareness) so "enter the fray/conversation" doesn't count.
+  if (/\benter(?:s|ing)?\b/.test(t)) {
+    if (nounM) return ref;
+    if (/\benter(?:s|ing)?\s*$/.test(t)) return '';
+  }
+
+  if (!ENTER_MOTION.test(t)) return null;
+
+  // "inside"/"indoors" mean into a building (unambiguous), tolerant of a trailing
+  // clause ("…inside the inn and ask", "…inside and warm up").
+  if (/\b(?:back\s+)?(?:inside|indoors)\b/.test(t)) {
+    const objM = t.match(/\b(?:inside|indoors)\s+(?:back\s+)?(?:the|that|a|an|my|his|her|their|its)\s+([a-z'\-]+)/i);
+    if (objM && !ENTER_BUILDING_NOUN.test(objM[1])) return null; // "inside the ring" ≠ enter
+    return ref;
+  }
+
+  // "into" / "in through" — needs a building noun ("into the inn"); otherwise it is
+  // "into a rage" / "into town" / "into the water" and not a building entry.
+  if (/\b(?:into|in\s+through|in\s+to)\b/.test(t)) return nounM ? ref : null;
+
+  // "push/go through the <building> door" — the player names the building's threshold
+  // ("I push through the inn door and head to the bar"). Requires BOTH a building noun
+  // AND a door/threshold noun, so "push through the crowd" / "press through the pain"
+  // (U258-J) never count. (Town playtest: this was read as forcing a stuck door.)
+  if (nounM && /\bthrough\s+(?:the|a|that|its)\s+[\w'\s-]*?(?:door|doorway|entrance|entry|gate|gateway)\b/.test(t)) return ref;
+
+  return null;
+}
+
 function inferInteriorAction(text, interior) {
   const t = String(text || '').toLowerCase().trim();
   const inside = Boolean(interior && typeof interior === 'object');
@@ -3174,15 +3222,11 @@ function inferInteriorAction(text, interior) {
 
   if (!inside) {
     if (t === 'enter') return { kind: 'enter', structureRef: '' };
-    if (/\b(go inside|enter building|enter structure|go indoors)\b/.test(t)) return { kind: 'enter', structureRef: '' };
+    if (/\b(enter building|enter structure|go indoors)\b/.test(t)) return { kind: 'enter', structureRef: '' };
 
-    // "go back inside", "step back inside", "head inside", "I go back inside the inn" etc.
-    const backIn = t.match(/\b(?:go|step|head)\s+(?:back\s+)?(?:inside|in(?:doors)?)\b(?:\s+(?:the\s+)?(\w[\w\s]*))?$/i);
-    if (backIn) {
-      const raw = String(backIn[1] || '').trim();
-      const ref = (raw === 'building' || raw === 'structure') ? '' : raw;
-      return { kind: 'enter', structureRef: ref };
-    }
+    // Robust outdoor ENTER (handles "into" + trailing clauses; over-match guarded).
+    const enterRef = classifyOutdoorEnter(t);
+    if (enterRef !== null) return { kind: 'enter', structureRef: enterRef };
 
     const m = t.match(/^enter\s+(.+)$/i);
     if (m) {
@@ -3210,7 +3254,15 @@ function inferInteriorAction(text, interior) {
   const riseOnly = risesFromFurniture.test(t) && !hasExitCue;
   if (!riseOnly && (
     /\b(leave|exit|go outside|step outside|ascend|to the surface|get out|out of here|head out|back out|back up|up and out|go up|head up)\b/.test(t) ||
-    /\bclimb\b[^.!?]*\b(out|up|back|surface|stairs?|steps?)\b/.test(t)
+    /\bclimb\b[^.!?]*\b(out|up|back|surface|stairs?|steps?)\b/.test(t) ||
+    // "<motion verb> (back|on|right) out(side|doors)" — the leave verb with an adverb
+    // wedged in ("step BACK outside", "walk back out", "go back outdoors"). The old
+    // rules needed verb+out adjacency, so these rolled a free move while the DM
+    // narrated leaving — an exit-fidelity desync (WB-Q9). The adverb is REQUIRED: a
+    // bare "head outside" must stay free so a compound "head outside … who do I see?"
+    // still reaches the presence answer (U235). riseOnly guards "step back out of
+    // bed"; the lookahead guards the "step back out of line/turn" idioms (U257).
+    /\b(?:go(?:es)?|step(?:s|ped|ping)?|walk(?:s|ed|ing)?|head(?:s|ed|ing)?|move(?:s|d)?|come(?:s)?|duck(?:s)?|slip(?:s)?|wander(?:s|ed|ing)?)\s+(?:back|on|right)\s+out(?:side|doors)?\b(?!\s+of\s+(?:line|turn|character|place|order|step|sync)\b)/.test(t)
   )) return { kind: 'exit' };
   // Compound "step out ..." — a leave that carries a trailing purpose clause
   // ("step out through the way", "...to the open air", "...to explore the rest")

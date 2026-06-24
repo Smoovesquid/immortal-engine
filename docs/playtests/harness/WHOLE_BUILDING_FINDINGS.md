@@ -183,3 +183,61 @@ cosmetic (the #4 anti-repeat intent); fold into a buildLocationSurvey pass.
 - The harness still reports "stuck" because `tour-building` demands probing every object AND
   the AI player wanders into the settlement — NOT because the building is broken (the
   hermetic `U258-F` proves the building tours to completion when driven properly).
+
+---
+
+# Surrounding-town playtest (2026-06-24) — "On to the surrounding town"
+
+**Goal:** `explore-town` (new, `engine/harness/goals.js` — locked by `U259`): leave the
+building and MEET THE TOWNSFOLK (engage ≥2 present non-hostile NPCs). Scored on the
+reachable social signal so the soft-lock oracle reads true progress; the description is
+broad so the LLM player also wanders the streets/roads (surfacing spatial breaks).
+
+**Town shape (seed `tallow`):** `Wayfarers' Outpost` (settlement) — ONE building (Dalla's
+cottage), 5 NPCs (Elske, Dalla, Asha, the Lingerer, + Ashblade the bandit), roads to
+`Sooted Bridge` (S) and `Old Shrine` (W). The "town" the player/DM imagine is larger than
+what the engine generates (one building + roads), which is the root of the entry breaks.
+
+## FIXED this packet (deterministic repro + tests; validated across 3 real-DM runs)
+
+| id | bug | fix | test |
+|----|-----|-----|------|
+| **T-F1** | **Multi-building entry desync (HIGH, = WB-Q9).** "I step **into** the inn **and** ask Dalla…" — the engine routed it to the dialogue path and stayed OUTDOORS while the live DM narrated stepping inside (narration≠canon). The enter-classifier only fired for `inside/in` at END-OF-LINE, missing `into` + trailing clauses. | `classifyOutdoorEnter` in `playloop.js`: motion-verb + inward particle → `kind:'enter'`, tolerant of `into`/trailing clauses; the handler's `all[0]` fallback enters the one structure so canon matches the narration. Over-match guarded (`into a rage`, `inside the ring`). | `U260` |
+| **T-F2** | **Exit fidelity (= WB-Q9 "move/exit").** "I step **back** outside" / "go back outside" / "walk back outside" did NOT exit (rolled a free move while the DM narrated leaving) — the exit rules needed verb+`out` adjacency. | Broadened the exit disjunct to `<motion> (back\|on\|right) out(side\|doors)`. Adverb REQUIRED (a bare "head outside" stays free so "head outside … who do I see?" still answers the presence question — `U235`); `riseOnly` guards "out of bed", a lookahead guards the "out of line/turn" idioms (`U257`). | `U260` |
+| **T-F3** | **"push through the inn door" → forced/stuck door.** "I push through the inn door and head to the bar" was read as forcing a barrier (rolled, narrated a door that "does not give"). | `classifyOutdoorEnter` also accepts `through the <building> door/doorway` — requires BOTH a building noun AND a threshold noun, so "push through the crowd" / "press through the pain" never count. | `U260` |
+
+## Queued — town residuals (concrete, NOT "someday")
+
+- **T-Q1 (minor, intent-routing): bare "head outside" / "walk outside" (no adverb) does
+  not exit.** Deliberately left free this packet because a compound "I head outside … who
+  do I see?" must reach the presence answer (`U235-03`), and a bare "head outside" exit
+  would preempt it. *Fix:* in the `playloop.js` exit handler (`interiorAction.kind ===
+  'exit'`, ~L1049), let a bare `<motion> outside` classify as exit BUT yield when the
+  text is a presence/who question (the path that reaches `buildLocationSurvey(world,
+  {presence:true})` ~L6031). Add the bare forms to the exit disjunct AND guard that
+  handler with the presence-query predicate. Test: "I head outside" exits; "I head
+  outside, who's here?" delivers the roster.
+- **T-Q2 (HIGH, = WB-Q4 reconfirmed): phantom item acquisition.** Town run t1 — the DM
+  "handed you an item the engine never put in your pack." Deep: the item-grant path
+  doesn't `applyDeltas` an `addItem` for DM-narrated pickups. Same packet as WB-Q4.
+- **T-Q3 (med, = WB-Q3): rolled-a-free-action.** Town run t17 — a free action got a d20.
+  Same intent-routing seam as WB-Q3.
+- **T-Q4 (cosmetic, = WB-Q9): building-type "inn" drift.** The DM calls the cottage "the
+  inn" because Dalla's role is innkeeper; the topology says `cottage`. Not a navigation
+  bug — a label the DM prompt could pin from `describeInteriorLayout.buildingType`.
+- **T-Q5 (quality, discovery-only): the haiku DM's prose.** The Tier-2 judge flags
+  `concise-no-filtering`, `specific-and-grounded`, `natural-DM-voice`, `no-machine-voice`
+  (e.g. "building number one", "forty-four souls", purple/filtering prose). NEVER
+  auto-fixed — human-triage. This is the standing narration-quality lever (the same class
+  as WB-Q2), strongest on the cheap DM model; re-mine when prose quality is the focus.
+
+## Triage summary
+- **The town's headline bug is fixed:** entering/leaving the settlement's building in plain
+  language now keeps canon and narration in sync — **NO state-desync across 3 post-fix
+  real-DM runs** (was a HIGH desync pre-fix). The DM also respects the real geometry at the
+  settlement layer ("building number one", "the single substantial building") — WB-Q1 holds.
+- **What's left is not town-navigation:** phantom items (T-Q2/WB-Q4), a free-action roll
+  (T-Q3/WB-Q3), a cosmetic label (T-Q4), and DM prose quality (T-Q5). Each is queued.
+- The harness "stuck"/goal-miss in some runs is the AI player's wandering path, not an
+  engine block — `explore-town` is reachable (runs #1–#2 reached it; `U259` proves the
+  metric climbs as the player gets out and meets people).

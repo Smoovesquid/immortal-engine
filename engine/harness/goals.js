@@ -93,6 +93,57 @@ export function probeCoverage(world, ctx) {
   return { universe, probed, fraction: universe.length ? probed.length / universe.length : 1 };
 }
 
+// All present, non-hostile NPCs at the node — the "townsfolk" you can meet (a
+// superset of presentConcernNpcs: an innkeeper with no forward-looking want is
+// still someone to talk to). A hostile lurker is not a townsperson to befriend.
+export function presentTownsfolk(world) {
+  const node = currentNode(world);
+  const npcs = Array.isArray(node?.settlement?.npcs) ? node.settlement.npcs : [];
+  return npcs.filter(n => n && !n.hostile && (n.name || n.id));
+}
+
+// Stopwords that must NOT count as a name/role hit (so "the Lingerer" doesn't match
+// every action containing "the").
+const NAME_STOPWORDS = new Set(['the', 'and', 'who', 'has', 'for', 'too', 'one', 'now', 'asking', 'questions', 'stayed', 'long', 'wanderer', 'someone', 'people']);
+
+// The address-tokens for an NPC: the ≥3-char words of their name plus the head noun
+// of their role ("innkeeper", "guard"), minus stopwords. A talk action naming any of
+// these counts as engaging that person — mirrors how probeCoverage keys on an object.
+function npcAddressTokens(npc) {
+  const toks = new Set();
+  for (const w of String(npc?.name || '').toLowerCase().split(/[^a-z0-9]+/)) {
+    if (w.length >= 3 && !NAME_STOPWORDS.has(w)) toks.add(w);
+  }
+  const roleHead = headNoun(npc?.role || '');
+  if (roleHead.length >= 3 && !NAME_STOPWORDS.has(roleHead)) toks.add(roleHead);
+  return [...toks];
+}
+
+// Verbs that COUNT as engaging a person (talk/greet/ask are the canonical ones; an
+// approach is the table-level "I walk up to them" that opens the exchange).
+const TALK_VERB_RE = /\b(?:talk|speak|ask|asks|greet|hail|address|chat|converse|say|tell|question|approach|approaches|introduce|call out to|go up to|walk up to|meet)\b/i;
+
+// Distinct townsfolk the player has engaged, inferred from the action log (history-
+// aware, like probeCoverage) AND the live dialogue frame (whoever you're mid-exchange
+// with right now). Pure over (world, ctx).
+export function townsfolkEngaged(world, ctx) {
+  const folk = presentTownsfolk(world);
+  const actions = Array.isArray(ctx?.actionsLog) ? ctx.actionsLog : [];
+  const liveId = dialogueNpcId(world);
+  let count = 0;
+  for (const npc of folk) {
+    if (liveId && String(npc.id) === String(liveId)) { count++; continue; }
+    const toks = npcAddressTokens(npc);
+    const hit = actions.some(a => {
+      const t = String(a || '').toLowerCase();
+      if (!TALK_VERB_RE.test(t)) return false;
+      return toks.some(tok => new RegExp(`\\b${tok}\\b`).test(t));
+    });
+    if (hit) count++;
+  }
+  return count;
+}
+
 // "Reached" a concern-bearer = you are in dialogue with one (scene.dialogue.npcId
 // points at a present non-hostile NPC who has a want). Engaging them is the
 // observable a human would call "I reached the person with a problem" — NOT
@@ -196,10 +247,38 @@ export const GOAL_TOUR_BUILDING = {
   },
 };
 
+// ── Goal #4 — explore the surrounding town ────────────────────────────────────
+// The building-scoped goals certify the room you wake in; this one pushes the player
+// OUT into the settlement to exercise the town surface — finding the way outdoors,
+// the other townsfolk, and the roads. It scores on MEETING THE TOWNSFOLK (engaging
+// ≥2 distinct present non-hostile NPCs): the most reachable, latchable town signal,
+// and the one that drives the dialogue / NPC-presence / movement paths where the
+// settlement-layer coherence bugs live. The description is deliberately broad so the
+// LLM player also wanders the streets and roads (surfacing the spatial breaks), but
+// the metric stays on the achievable core so the soft-lock oracle reads true progress.
+//
+// satisfied = met ≥2 townsfolk (regardless of where you're standing now — meeting
+// people is the achievement; you can only do it outdoors anyway). progress blends
+// "got outside" with the fraction of the 2-person quota met, so it climbs as the
+// player leaves the building and works the room.
+export const GOAL_EXPLORE_TOWN = {
+  id: 'explore-town',
+  description: 'Leave the building and explore the surrounding town — get outside, meet the townsfolk, and see what the settlement holds.',
+  satisfied(world, ctx) {
+    return townsfolkEngaged(world, ctx) >= 2;
+  },
+  progressMetric(world, ctx) {
+    const out = isInsideInterior(world) ? 0 : 1;
+    const engaged = Math.min(townsfolkEngaged(world, ctx), 2) / 2;
+    return 0.4 * out + 0.6 * engaged;
+  },
+};
+
 export const GOALS = Object.freeze({
   [GOAL_FIRST_CONCERN.id]: GOAL_FIRST_CONCERN,
   [GOAL_PROBE_ROOM.id]: GOAL_PROBE_ROOM,
   [GOAL_TOUR_BUILDING.id]: GOAL_TOUR_BUILDING,
+  [GOAL_EXPLORE_TOWN.id]: GOAL_EXPLORE_TOWN,
 });
 
 export function getGoal(id) {

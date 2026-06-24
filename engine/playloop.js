@@ -1130,7 +1130,7 @@ function playerMoveCore(world, packsById, text) {
         : interiorAction.roomHint === 'aft'
           ? 'Wizard: There is no room beyond this one.'
           : interiorAction.roomHint === 'fore'
-            ? 'Wizard: You\'re already at the way in. "Go outside" to leave.'
+            ? 'Wizard: You\'re at the front of the building already; the way out is right here.'
             : blockedDir
               ? `Wizard: There is no way ${blockedDir} from here. The wall holds.`
               : 'Wizard: That way is blocked from here.';
@@ -3252,11 +3252,14 @@ function inferInteriorAction(text, interior) {
   if (!probesObject) {
     const aft =
       /\b(?:the\s+)?(?:next|other|far|further|inner|back|rear)\s+room\b/.test(t) ||
-      /\bthrough\s+(?:the\s+|that\s+)?door(?:way)?\b/.test(t) ||
+      // "through [the] [front] doorway/passage/opening" — a threshold noun is REQUIRED
+      // so "press through the crowd" / "push through the pain" are NOT room moves. One
+      // optional adjective lets "through the front doorway" through.
+      /\bthrough\s+(?:the\s+|that\s+)?(?:\w+\s+)?(?:door|doorway|doorways|passage|passageway|opening|threshold|archway|gap)\b/.test(t) ||
       /\bthrough\s+to\b/.test(t) ||
-      /\b(?:go|head|step|move|continue|press|walk)\s+(?:on\s+)?through\b/.test(t) ||
       /\b(?:further|farther|deeper)\s+(?:in|into|on)\b/.test(t) ||
-      /\b(?:explore|see|check|tour)\s+(?:the\s+)?rest\b/.test(t) ||
+      // The "rest" must be the rest of a PLACE ("the rest of the house"), never "check
+      // the rest of my inventory" — so the bare "explore/check the rest" is dropped.
       /\brest\s+of\s+the\s+(?:house|building|place|cottage|rooms?)\b/.test(t);
     if (aft) return { kind: 'move', toRoomId: '', direction: '', roomHint: 'aft' };
     const fore =

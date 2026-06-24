@@ -150,6 +150,38 @@ test('U258-I: a move trailing a perception clause is an action, not a static sur
   assert.notEqual(roomOf(r.world), roomOf(w0), 'the move happened — the room changed');
 });
 
+// OVER-MATCH GUARD (cold fresh-eye catch): a "rest"/"through" phrase that is NOT about
+// the building must never teleport the player to another room. "check the rest of my
+// inventory" and "press through the crowd" stay put; "explore the rest of the house" and
+// "through the front doorway" still move.
+test('U258-J: non-building "rest"/"through" phrases do NOT move rooms (over-match guard)', () => {
+  for (const phrase of ['check the rest of my inventory', 'press through the crowd', 'push through the pain']) {
+    const w0 = boot();
+    const r = move(w0, phrase);
+    assert.equal(roomOf(r.world), roomOf(w0), `[${phrase}] must NOT change room`);
+  }
+  // …but the real building phrasings still move.
+  for (const phrase of ['I explore the rest of the house', 'I push through the front doorway']) {
+    const w0 = boot();
+    const r = move(w0, phrase);
+    assert.notEqual(roomOf(r.world), roomOf(w0), `[${phrase}] should still move rooms`);
+    assert.equal(ROLL_RE.test(r.output.mechanics || ''), false, `[${phrase}] is a free move`);
+  }
+});
+
+// A fore/aft move must resolve even when NPCs are present at the node — the NPC-approach
+// guard must not swallow a clear room move. (The boot node carries a full roster.)
+test('U258-K: room moves resolve with NPCs present (the approach guard does not eat them)', () => {
+  const roster = (boot().map.nodes.find(n => n.id === boot().map.currentNodeId)?.settlement?.npcs || []).length;
+  assert.ok(roster > 0, 'precondition: NPCs are present at the node');
+  for (const phrase of ['head back', 'go back to my room', 'I go through the doorway into the next room']) {
+    const w0 = boot();
+    const r = move(w0, phrase);
+    assert.equal(ROLL_RE.test(r.output.mechanics || ''), false, `[${phrase}] free move, no roll`);
+    assert.notEqual(roomOf(r.world), roomOf(w0), `[${phrase}] moved despite NPCs present`);
+  }
+});
+
 // Regression: compass movement (the path that already worked) must still work.
 test('U258-G: compass movement still works (go east → room change, no roll)', () => {
   const w0 = boot();

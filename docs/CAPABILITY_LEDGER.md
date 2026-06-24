@@ -914,7 +914,7 @@ no low-score entries → reads self-contradictory) + the DM dodges a roll-on-dem
 2 mirror dead-ends (object-presence query → no honest "no mirror"). **Verdict: PHASE B COMPLETE + PROVEN.** The
 residual is pre-existing frontier (the modifier-table is the new dominant Road-A find → spawned), not a Phase-B
 regression. The loop's "wow" wants a Tim taste-read (a real playthrough); the adversarial gate can't supply it.
-Next: **Phase C (populate)** — Open Decision 1 RESOLVED ✅ (2026-06-24: all-bespoke, **Opus 4.8 voice for every NPC**; see `DECISIONS_FOR_TIM.md` #1 / `VOICE_COST_MODEL.md` §6). Still needs Decision 2 (the 5-figure roster) to light the figures.
+**Phase C (populate) — IN MOTION (2026-06-24).** Decisions 1 (all-bespoke **Opus 4.8 voice for every NPC**) + 2 (the 5-figure roster: Aurelius/Joan/**Kant×Knight**/Goldblum-Socrates/**Jesus-the-Host** + the Twain-**Goat of the Blasted Heath** wildcard) both RESOLVED; figure voice archives authored in `server/rag/corpus/`. Decision 3 (orb climax) reshaped → the departed-orb + ALIENS-hive + fragments-as-police (`DEMO_REGION.md` §8). **D-C1 — NPC voice wiring: LANDED ✅** (`e6c41fd`, Opus worker → Basecamp §7-verified + live-proven end-to-end + pushed): ordinary NPCs now speak Opus-grounded lines via the `/api/npc-voice` route (engine stays pure/sync — surfaces `voiceCorpusId`; silent fallback Opus→8B→templates; `N8`, suite 8710/0). Next: **place the 5 figures as world NPCs** (so they're talkable) + the **bulk 437-archetype→corpus mapping** (D-C1 covers 25 common roles).
 
 **Social-physics categories to mine next (Biblioteca Vols 2–6, mostly not yet failing-in-gate but on the map):**
 sarcasm/irony inversion (Vol 2; transcript: `docs/playtests/ridiculous-sarcasm-2026-06-06.md`), loaded

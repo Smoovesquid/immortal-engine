@@ -3132,7 +3132,15 @@ function isFreeMovementIntent(text) {
   // Broad free movement / travel phrasing (deterministic: destination is still resolved by adjacency rules).
   // Single-letter compass guarded against apostrophe contractions ("what's" ≠ south).
   return /\b(travel|leave|exit|head\s+(?:to|toward|towards|for)|go\s+(?:to|toward|towards)|move\s+to|walk\s+(?:to|toward|towards)|walk|make\s+for|set\s+(?:out|off)|get\s+moving|go\s+north|go\s+south|go\s+east|go\s+west|north|south|east|west)\b/.test(t)
-    || /(?<!['’])\b(n|s|e|w)\b/.test(t);
+    || /(?<!['’])\b(n|s|e|w)\b/.test(t)
+    // "take the road/path to X", "follow the trail", "make my way", "continue/press on"
+    // — natural travel phrasing that fell to the action floor (journey playtest). The
+    // road-noun + a travel-continuation guards against "take the road MAP". Destination
+    // is still resolved by adjacency, so a no-match just asks "which way?".
+    || /\btake\s+(?:the\s+)?(?:road|path|trail|track|route|lane|pass|highway|byway)(?:\s+(?:to|toward|towards|out|back|north|south|east|west|up|down|that|leading|ahead|home|on|along)\b|\s*[.!?]?$)/.test(t)
+    || /\bfollow\s+(?:the\s+)?(?:road|path|trail|track|route|signs?)\b/.test(t)
+    || /\bmake\s+(?:my|our|your)\s+way\b/.test(t)
+    || /\b(?:continue|carry|press|push|journey|march)\s+on\b/.test(t);
 }
 
 function parseLocalFeetMove(text) {

@@ -12,6 +12,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { npcWant } from '../npc/npcArc.js';
+import { neighbors } from '../map/mapState.js';
 
 // ── Read-only world probes (shared by goals + the runner) ─────────────────────
 
@@ -274,11 +275,82 @@ export const GOAL_EXPLORE_TOWN = {
   },
 };
 
+// ── Goal #5 — journey from bed out into the world, to ANOTHER town ────────────
+// The biggest surface yet: leave the building, leave the HOME settlement, and travel
+// the node graph to a DIFFERENT settlement — exercising inter-node movement, the
+// "roads lead to…" surface, and arrival. "Another town" = a settlement node whose id
+// ≠ the node you woke in (ctx.startNodeId, threaded by the runner). Progress shrinks
+// the road-distance from the current node to the nearest OTHER settlement, so it climbs
+// monotonically toward the goal (the soft-lock oracle's fuel). Read-only over the world.
+
+function nodeById(world, id) {
+  return (Array.isArray(world?.map?.nodes) ? world.map.nodes : []).find(n => n && n.id === id) || null;
+}
+function neighborIds(world, id) {
+  try { return neighbors(world.map, id).map(x => (x && typeof x === 'object') ? x.id : x).filter(Boolean); }
+  catch { return []; }
+}
+// BFS road-distance from `fromId` to the nearest settlement whose id ≠ startId. 0 if
+// `fromId` is itself such a settlement; Infinity if none is reachable.
+function distToOtherSettlement(world, fromId, startId) {
+  const isTarget = (id) => { const n = nodeById(world, id); return Boolean(n && n.nodeType === 'settlement' && String(id) !== String(startId)); };
+  if (!fromId) return Infinity;
+  if (isTarget(fromId)) return 0;
+  const seen = new Set([String(fromId)]);
+  let frontier = [String(fromId)];
+  let d = 0;
+  while (frontier.length) {
+    d += 1;
+    const next = [];
+    for (const c of frontier) {
+      for (const nb of neighborIds(world, c)) {
+        const id = String(nb);
+        if (seen.has(id)) continue;
+        seen.add(id);
+        if (isTarget(id)) return d;
+        next.push(id);
+      }
+    }
+    frontier = next;
+  }
+  return Infinity;
+}
+
+// "At another town" = standing on a settlement node that isn't the one you woke in.
+function atAnotherTown(world, startId) {
+  const cur = String(world?.map?.currentNodeId || '');
+  const node = nodeById(world, cur);
+  return Boolean(node && node.nodeType === 'settlement' && cur && cur !== String(startId));
+}
+
+export const GOAL_JOURNEY_TO_TOWN = {
+  id: 'journey-to-town',
+  description: 'Leave the building, leave this settlement, and travel the roads to ANOTHER town.',
+  satisfied(world, ctx) {
+    return atAnotherTown(world, String(ctx?.startNodeId || ''));
+  },
+  progressMetric(world, ctx) {
+    const startId = String(ctx?.startNodeId || '');
+    const cur = String(world?.map?.currentNodeId || '');
+    if (isInsideInterior(world)) return 0;                  // still in the home building
+    if (atAnotherTown(world, startId)) return 1;            // arrived
+    const startDist = distToOtherSettlement(world, startId, startId); // journey length from home
+    const curDist = distToOtherSettlement(world, cur, startId);
+    if (!Number.isFinite(startDist) || startDist <= 0) {
+      // No other town reachable from home (degenerate seed) — reward leaving home at all.
+      return cur && cur !== startId ? 0.5 : 0.15;
+    }
+    const closed = Number.isFinite(curDist) ? Math.max(0, (startDist - curDist) / startDist) : 0;
+    return 0.15 + 0.8 * closed;                             // 0.15 outside-at-home → ~0.95 next door
+  },
+};
+
 export const GOALS = Object.freeze({
   [GOAL_FIRST_CONCERN.id]: GOAL_FIRST_CONCERN,
   [GOAL_PROBE_ROOM.id]: GOAL_PROBE_ROOM,
   [GOAL_TOUR_BUILDING.id]: GOAL_TOUR_BUILDING,
   [GOAL_EXPLORE_TOWN.id]: GOAL_EXPLORE_TOWN,
+  [GOAL_JOURNEY_TO_TOWN.id]: GOAL_JOURNEY_TO_TOWN,
 });
 
 export function getGoal(id) {

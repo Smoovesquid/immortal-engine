@@ -81,13 +81,16 @@ export async function runSession({ world, packs, goal, player, turns = 25, softL
   const findings = [];
   const actionsLog = [];
   const progressHistory = []; // post-turn progressMetric, one entry per turn
+  // The node the player woke in — threaded to goals so a journey goal can tell "another
+  // town" from "home". Existing goals ignore extra ctx keys (backward-compatible).
+  const startNodeId = world?.map?.currentNodeId || '';
 
   // Goals read committed state plus (optionally) the action history — a coverage
   // goal like probe-room needs to know what's been probed. Existing one-arg goals
   // ignore the 2nd arg, so this is backward-compatible.
-  let bestProgress = goal.progressMetric(world, { actionsLog });
+  let bestProgress = goal.progressMetric(world, { actionsLog, startNodeId });
   let sinceImprovement = 0;
-  let goalCompleted = goal.satisfied(world, { actionsLog });
+  let goalCompleted = goal.satisfied(world, { actionsLog, startNodeId });
 
   for (let turn = 1; turn <= turns && !goalCompleted; turn++) {
     const action = String(await player({ world, goal, transcript, turn, stuck: sinceImprovement >= softLockWindow }) || '').trim();
@@ -125,10 +128,10 @@ export async function runSession({ world, packs, goal, player, turns = 25, softL
       findings.push(...runOracleBank({ before, after, action, output: dmOutput, turn }));
       world = after;
       transcript.push({ who: 'dm', text: cleanNarration(narration), mech: output?.mechanics || '' });
-      if (goal.satisfied(world, { actionsLog })) goalCompleted = true;
+      if (goal.satisfied(world, { actionsLog, startNodeId })) goalCompleted = true;
     }
 
-    const prog = goal.progressMetric(world, { actionsLog });
+    const prog = goal.progressMetric(world, { actionsLog, startNodeId });
     progressHistory.push(prog);
     if (prog > bestProgress) { bestProgress = prog; sinceImprovement = 0; }
     else sinceImprovement += 1;

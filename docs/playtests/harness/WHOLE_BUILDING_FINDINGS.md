@@ -269,12 +269,14 @@ Farther: Saltmarket Town (5), Riverside Inn (6), Pilgrim's Rest (12), Trader's C
   fires. `object-interaction.test.js`.
 
 ## QUEUED
-- **J-Q1 (narration-agency — quality lever).** The DM over-narrates player movement: on an
-  info-check ("ask the shopkeeper which way out"), it narrated *"you leave the building"*
-  while the engine kept the player inside (a state-desync the oracle correctly caught).
-  Cause is LLM narration adding an UNREQUESTED exit — not a deterministic engine bug. Lever:
-  the RESPECT-AGENCY prompt guardrail (never narrate the player moving/leaving unless they
-  said so). Same class as the judge's `quality-respects-agency` findings. *Prompt packet.*
+- **J-Q1 ✅ DONE** (`b3093a5` + `9b3d52c`). The DM over-narrated player movement — on an
+  info-ask it narrated *"you leave the building"* while canon kept the player inside. Fixed
+  with a DETERMINISTIC guard (not just the existing RESPECT-AGENCY prompt nudge the LLM
+  ignored): `validateNarrationCandidate` now REJECTS polish that claims an exit/entry canon
+  didn't commit (Rules 1b/1c → fall back to grounded base), the live analog of the harness
+  oracle. Also fixed the oracle's own over-fire on FUTURE intent ("ready yourself to step
+  out" while dressing ≠ a committed move). `U264`, `oracles.test.js`. Validated: state-
+  desync findings dropped to ~0 across the post-fix runs.
 - **J-Q2 (intent, DEFERRED — ambiguity).** Partial place-names don't resolve ("I walk to
   Crossway" misses "Crossway Village"). Deferred on purpose: the seed has TWO "Crossway
   Village" nodes, so a prefix match is ambiguous — needs a disambiguation pass (pick the

@@ -90,13 +90,13 @@ of §"points up and answers down": run it when the sprawl starts costing more th
 Keep the **organ-set** small and stable (eight); let the **files** within each organ come and go. The fix for
 sprawl is never "stop making docs" — it's this loop, run on purpose.
 
-> **Standing cleanup targets** (the current run — *verify live-vs-spent before moving, and fix inbound links so
-> nothing dangles; names lie, so check the contents*): the `victory-gate*` / `victory-ladder` family (~7 files,
-> ~900 lines — merge the *live* gate-definitions into one Spec, archive the spent ladders; note
-> `API_ACTIVATION_GATES` documents a live path); the spent `PACKET_H5*` / `WORKER_PROMPT_*` worker-prompts and the
-> `*_PUNCHLIST` one-offs (archive — closed); the superseded `WORKFLOW.md` (archive — replaced by
-> `PROMPT_ARCHITECTURE`). **Re-file, don't merge:** `KB_MAP` (the Kevin-Bacon social graph) and `ONE_MAP` (the
-> continuous-zoom camera) are *Specs wearing Map names*, not redundant Maps — rename so they stop reading as the
-> Map organ. **Leave alone:** `RUNG1_*` — Rung 1 is the *current* backlog frame, not a remnant. And the
-> highest-traffic doc of all, `CLAUDE.md`, gets the same diet: trim to the **minimal high-signal set**, detail
-> pushed into the linked docs it already points at.
+> **Gardening run — 2026-06-24 (done):** archived 17 spent docs to `docs/_archive/` — the superseded
+> `WORKFLOW.md`; the `PACKET_H5*` / `WORKER_PROMPT_rung1` worker-prompts; `PRE_SESSION_PUNCHLIST`; and the six
+> historical `VICTORY_*` ladders + their `.log` (each self-marked "superseded" by `NORTH_STAR` / `SLICE_PLAN`).
+> **Kept live:** `API_ACTIVATION_GATES` (an active gate), `RUNG1_*` (the *current* backlog frame),
+> `CONVERSATION_PUNCHLIST` (half reusable pipeline-map). **Still open:** trim `CLAUDE.md` to the **minimal
+> high-signal set** (detail pushed to the docs it already links); `CAMPAIGN_LIFECYCLE_SPEC_v1` is a same-class
+> archive candidate (finite-arc, superseded by `NORTH_STAR`); the archived `SPATIAL_EXPLORATION_VICTORY_GATES`
+> holds un-surfaced future spatial intent (interiors, tactical grids, dungeons) worth lifting into `ROADMAP` / a
+> Spec if wanted; and `KB_MAP` / `ONE_MAP` are Specs wearing Map names (rename deferred — cosmetic, the link-churn
+> isn't worth it yet).

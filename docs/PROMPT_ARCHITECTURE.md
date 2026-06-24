@@ -127,6 +127,6 @@ a minimal corpus lock · how to patch a *safe-layer* defect · which free tests 
 
 ---
 
-*Supersedes the legacy `docs/WORKFLOW.md` (old team/PR model). Backing research + full source list:
+*Supersedes the legacy `docs/_archive/WORKFLOW.md` (old team/PR model; archived 2026-06-24). Backing research + full source list:
 `docs/sota_prompt_architecture_eval_loops.md` is the desk reference this distills (keep that as the appendix; this
 doc is the operating model).*

@@ -2,7 +2,7 @@
 
 **Version:** 1.0
 **Established:** 2026-04-11
-**Supersedes:** The finite-arc framing in `VICTORY_LADDER_MVP_v1.md` and `CAMPAIGN_LIFECYCLE_SPEC_v1.md`. Those docs remain as historical artifacts; when they conflict with this one, this one wins.
+**Supersedes:** The finite-arc framing in `_archive/VICTORY_LADDER_MVP_v1.md` (archived 2026-06-24) and `CAMPAIGN_LIFECYCLE_SPEC_v1.md`. Those docs remain as historical artifacts; when they conflict with this one, this one wins.
 
 ---
 

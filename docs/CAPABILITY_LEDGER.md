@@ -899,6 +899,23 @@ held. **None of the 7 fails are in the Road-A / D-A2 / D-B1 spine:**
 **Verdict:** D-B1 (rung 3) lands cleanly and didn't dent the experience; residual = the combat lane (now dominant
 — Codex) + crunch-transparency + 1 narration slip. Cost ~$2.78 (budget ~$27.05 → ~$24.27).
 
+*2026-06-24 (D-B4 — PHASE B BOUNDARY: full-loop gate + free proof; `docs/playtests/opus-gate-2026-06-24.md`):*
+The whole Phase B loop is BUILT (D-B1 talk→quest, D-B2/the newspaper reputation, NP-1/2/3/4 The Lasting Word,
+D-B3 the moat) + the combat fix (`d2600e4`) landed. **Free full-loop PROOF** (LLM-off, tallow) lands rungs 3+4
+end-to-end: concern → "I'll deal with Ashblade" (quest born) → read The Lasting Word → the deed → a fresh peddler
+greets "you're the one the Word wrote of — the one who dealt with Ashblade" (reputation travels) → save/reload
+worldHash-intact (the quest completed on the deed; the loop closed). **Paid gate (10/48, ~$2.75):** the
+adversarial personas DON'T walk the loop (no newspaper/quest/reputation turns fired), so the gate measures
+ROBUSTNESS, not the loop — and confirms **NO regression** from any Phase-B/newspaper work (none of the 10 fails
+touch it) and **§0 held**. The 10: **6–7 are one real PRE-EXISTING crunch bug** the Rules-Lawyer hammered — the
+ability-score→modifier **breakpoint table is incomplete** (prints "9→−1, 10–11→+0…" but assigns 6→−2 / 8→−1 with
+no low-score entries → reads self-contradictory) + the DM dodges a roll-on-demand (C3); plus 1 combat-routing
+(burn→sword), 1 roll-vs-outcome (door opens on a fail), 1 canon-halluc (Dalla denies present Elske's location),
+2 mirror dead-ends (object-presence query → no honest "no mirror"). **Verdict: PHASE B COMPLETE + PROVEN.** The
+residual is pre-existing frontier (the modifier-table is the new dominant Road-A find → spawned), not a Phase-B
+regression. The loop's "wow" wants a Tim taste-read (a real playthrough); the adversarial gate can't supply it.
+Next: **Phase C (populate)**, gated by Open Decision 1 (the bespoke-voice cost model).
+
 **Social-physics categories to mine next (Biblioteca Vols 2–6, mostly not yet failing-in-gate but on the map):**
 sarcasm/irony inversion (Vol 2; transcript: `docs/playtests/ridiculous-sarcasm-2026-06-06.md`), loaded
 questions / presupposition (Vol 3, "have you stopped stealing?"), bluff vs. claim (Vol 5), request/order/threat

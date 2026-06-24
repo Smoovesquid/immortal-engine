@@ -5031,8 +5031,10 @@ function classifyTrivial(text) {
   const L = '(?:i\\s+|i\'?d\\s+like\\s+to\\s+|let\\s+me\\s+)?'; // optional first-person lead
 
   let m;
-  // Body / posture (no object)
-  m = t.match(new RegExp(`^${L}(sit\\s+down|sit|stand\\s+up|stand|kneel|bow|nod|wave|stretch|yawn|rest|pray|dismount|whistle|hum)\\b`));
+  // Body / posture (no object) — rising, sitting, small gestures. A DM never calls
+  // a check to stand up or climb out of bed; the player wakes IN BED on some seeds,
+  // so "get up / get out of bed / rise / wake" must resolve free, not roll a d20.
+  m = t.match(new RegExp(`^${L}(sit\\s+down|sit\\s+up|sit|stand\\s+up|stand|get\\s+up|get\\s+out\\s+of\\s+bed|step\\s+out\\s+of\\s+bed|climb\\s+out\\s+of\\s+bed|roll\\s+out\\s+of\\s+bed|rise|wake\\s+up|wake|rouse|kneel|bow|nod|wave|stretch|yawn|rest|pray|dismount|whistle|hum)\\b`));
   if (m) return { cat: 'body', verb: m[1].replace(/\s+/g, ' ') };
 
   // Draw / ready a weapon. WEAPON_NOUN covers the common armory so "draw my

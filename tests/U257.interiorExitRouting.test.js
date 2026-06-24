@@ -86,3 +86,14 @@ test('U257-E: "get out of bed and step outside" still exits (cue overrides the r
   assert.equal(ROLL_RE.test(r.output.mechanics || ''), false, `must not roll: ${r.output.mechanics}`);
   assert.equal(Boolean(r.world.scene?.interior), false, 'the explicit "step outside" makes it an exit');
 });
+
+// Rising is a FREE action — a DM never calls a check to stand up or get out of bed
+// (the player wakes in bed on tallow). It resolves trivially, no roll. (Free-action
+// follow-up to #2: the rise cases stayed inside but still rolled before this.)
+test('U257-F: rising (get out of bed / get up / stand up) resolves FREE — no roll', () => {
+  for (const phrase of ['I get out of bed', 'I step out of bed', 'I get up', 'I rise', 'I stand up', 'I wake up']) {
+    const r = playerMove(boot(), PACKS, phrase);
+    assert.equal(ROLL_RE.test(r.output.mechanics || ''), false, `[${phrase}] must resolve free, no roll: ${r.output.mechanics}`);
+    assert.equal(Boolean(r.world.scene?.interior), true, `[${phrase}] stays inside (rising is not leaving)`);
+  }
+});

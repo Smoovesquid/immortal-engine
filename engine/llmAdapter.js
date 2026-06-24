@@ -52,7 +52,10 @@ function interiorLayoutFact(interior) {
   const rooms = `a SINGLE-STOREY ${lay.buildingType} of ${lay.roomCount} room${lay.roomCount === 1 ? '' : 's'} (one floor, no upstairs)`;
   const doors = (Array.isArray(lay.doorways) && lay.doorways.length) ? lay.doorways.join(' and ') : 'no other doorway';
   const wayOut = lay.atEntry ? ' The way outside is from this room.' : ' The way outside is back toward the front.';
-  return `The player is inside ${rooms}. From this room there is ${doors}.${wayOut} There are NO other rooms, floors, or stairs than these.`;
+  // Pin the label: the DM kept calling a cottage "the inn" because an innkeeper lives
+  // there. Name the building by its TYPE, never by the trade of whoever is inside (IT-4).
+  const label = ` Call this building a ${lay.buildingType} — do not rename it for the trade of whoever lives or works here.`;
+  return `The player is inside ${rooms}. From this room there is ${doors}.${wayOut} There are NO other rooms, floors, or stairs than these.${label}`;
 }
 
 export function buildSystemPrompt(ctx) {

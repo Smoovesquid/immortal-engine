@@ -57,6 +57,10 @@ test('N7: buildSystemPrompt states the single-storey room count + forbids invent
   assert.match(sys, /INTERIOR GEOMETRY IS FIXED/, 'carries the constraint rule');
   assert.match(sys, /staircase/i, 'forbids the staircase the DM kept inventing');
   assert.match(sys, /keeps the player INSIDE/i, 'a room-to-room move does not narrate going outdoors');
+  // IT-4: pin the building label to its TYPE (cottage), not the trade of whoever's inside
+  // (the DM kept calling the cottage "the inn" because Dalla is an innkeeper).
+  assert.match(sys, /Call this building a cottage/i, 'names the real building type');
+  assert.match(sys, /do not rename it for the trade/i, 'forbids the role-implied label');
   // The old bare line ("inside a structure (room: …)") is gone.
   assert.doesNotMatch(sys, /inside a structure \(room:/);
 });

@@ -23,6 +23,7 @@ import { generateDungeon, dungeonLevelToStructure, isDungeonStructureId, dungeon
 import { createCharacter } from './chargen/genesis.js';
 import { FANTASY_STARTER_GEAR } from './chargen/fantasyGear.js';
 import { decompressAndCanonizeSync } from './decompression/decompress.js';
+import { containerContents } from './decompression/generateFurniture.js';
 import { discoverNode } from './map/mapState.js';
 import { detectPhysicalInteraction, evaluatePhysicsSync } from './llmPhysics.js';
 import { rollPhysicsCheck } from './resolve.js';
@@ -1196,6 +1197,11 @@ function playerMoveCore(world, packsById, text) {
   }
 
   if (!w.combat?.active && !w.scene?.dialogue) {
+    // Look inside / search / "what's inside" a present container → reveal its
+    // contents (or say it's empty), before tryExamineTarget would describe the
+    // lid and before the explore floor bounces a room-survey (THE_TABLE_TEST).
+    const insideContainer = tryContainerReveal(w, text);
+    if (insideContainer) return insideContainer;
     const revealed = tryRevealThing(w, text);
     if (revealed) return revealed;
     const examined = tryExamineTarget(w, text);
@@ -5063,6 +5069,88 @@ function furnitureNameAt(w, target) {
 const OPENED_STATES = new Set(['open', 'ajar']);
 const DAMAGED_STATES = new Set(['broken', 'damaged', 'shattered', 'smashed']);
 
+// ── Container contents — a present container, opened or searched, reveals what
+// it holds (THE_TABLE_TEST: open a chest → the DM states what is inside, or that
+// it is empty; never a survey, a roll, or a tease). Contents come from canon
+// (containerContents — derived from seed + node + piece name), so the reveal is
+// deterministic and stable across re-looks and save/load, with no hashed state.
+const CONTAINER_CATS = new Set(['container', 'storage']);
+function isContainerPiece(f) { return !!f && CONTAINER_CATS.has(String(f.category || '')); }
+
+function andList(items) {
+  const a = items.filter(Boolean).map(String);
+  if (a.length === 0) return '';
+  if (a.length === 1) return a[0];
+  if (a.length === 2) return `${a[0]} and ${a[1]}`;
+  return `${a.slice(0, -1).join(', ')}, and ${a[a.length - 1]}`;
+}
+
+// The "Inside: …" clause for a container, or a plain it's-empty line. An empty
+// container must say so plainly — that is the table's answer too.
+function containerContentsClause(w, node, f) {
+  const items = containerContents(String(w?.meta?.seed || ''), String(node?.id || ''), String(f?.name || ''), String(f?.category || ''));
+  if (!items.length) {
+    return pickVariant([
+      `Inside, there's nothing — empty but for a film of dust.`,
+      `It's empty; whatever it once held is long gone.`,
+      `Empty inside, bare to the boards.`,
+    ], w, `container:empty:${String(node?.id || '')}:${String(f?.name || '')}`);
+  }
+  return `Inside: ${andList(items)}.`;
+}
+
+// Which present container does the player's text name? Matches a container by full
+// name or head noun ("the chest" ← "iron-bound chest"); failing that, a generic
+// container noun resolves when exactly one container is here ("open the box").
+const GENERIC_CONTAINER_NOUN = /\b(?:chest|crate|coffer|box|container|strongbox|cabinet|drawer|cupboard|trunk|footlocker|locker)\b/i;
+function findReferencedContainer(text, furniture) {
+  const t = String(text || '').toLowerCase();
+  const containers = (Array.isArray(furniture) ? furniture : []).filter(isContainerPiece);
+  for (const f of containers) {
+    const n = String(f.name || '').toLowerCase();
+    const tail = n.split(/\s+/).filter(Boolean).pop();
+    if (n && (t.includes(n) || (tail && tail.length >= 3 && new RegExp(`\\b${tail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`).test(t)))) return f;
+  }
+  if (containers.length === 1 && GENERIC_CONTAINER_NOUN.test(t)) return containers[0];
+  return null;
+}
+
+// Inside-directed intents — look in / peer into / search / rummage / "what's
+// inside". (Plain "open" is handled by tryFurnitureStateChange, which reveals
+// contents in the same breath.) Bare "examine"/"look at" stay on the examine path.
+const CONTAINER_INSIDE_RE = /\b(?:look|looks|looking|peek|peeks|peeking|peer|peers|peering|glance|glances|gaze|gazes)\s+(?:in|into|inside|within)\b|\b(?:search|searches|searching|rummage|rummages|rummaging|rifle|rifles|rifling|ransack|ransacks|root|roots|paw|paws|sift|sifts|dig|digs)\b|\bgo(?:es|ing)?\s+through\b|\b(?:empt(?:y|ies)|upend|upends|tip)\b|\bwhat(?:'?s| is)\s+(?:in|inside|within)\b|\bsee\s+what(?:'?s| is)\s+(?:in|inside|within)\b/i;
+
+// Look inside / search a present container → reveal its contents (or say it's
+// empty), opening it in passing if it was shut (you can't look inside a closed
+// chest without opening it) and persisting that exactly like an explicit open.
+// Returns { world, output } or null (let the normal look/examine paths answer).
+function tryContainerReveal(w, text) {
+  const t = String(text || '');
+  if (!CONTAINER_INSIDE_RE.test(t)) return null;
+  const node = (w.map?.nodes || []).find(n => n && n.id === w.map?.currentNodeId) || null;
+  const furniture = Array.isArray(node?.furniture) ? node.furniture : [];
+  if (!furniture.length) return null;
+  const f = findReferencedContainer(t, furniture);
+  if (!f) return null;
+
+  const idx = furniture.indexOf(f);
+  const cur = String(f.state || 'intact');
+  const alreadyOpen = OPENED_STATES.has(cur) || DAMAGED_STATES.has(cur);
+  const clause = containerContentsClause(w, node, f);
+  const name = String(f.name);
+
+  if (alreadyOpen) {
+    return { world: w, output: { narration: `Wizard: The ${name} stands open. ${clause}`, mechanics: '[container:reveal] observe only — no roll' } };
+  }
+  // Open it as part of looking inside, and remember it (mirrors tryFurnitureStateChange).
+  let w1 = applyDeltas(w, [{ op: 'modifyFurniture', nodeId: String(node.id), furnitureId: idx, changes: { state: 'open' } }]);
+  w1 = pushEvent(w1, {
+    kind: 'resolution',
+    data: { actorId: 'party', intent: t, text: t, roll: 0, dc: 0, outcome: 'success', updateKind: 'furniture:open' }
+  });
+  return { world: w1, output: { narration: `Wizard: You lift the lid of the ${name}. ${clause}`, mechanics: '[container:open+reveal] no roll, auto-success' } };
+}
+
 function tryFurnitureStateChange(w, text) {
   const c = classifyTrivial(text);
   if (!c || (c.cat !== 'open' && c.cat !== 'close')) return null;
@@ -5080,10 +5168,12 @@ function tryFurnitureStateChange(w, text) {
   const wantOpen = c.cat === 'open';
   const TRIVIAL_MECH = 'trivial action — no roll, auto-success';
   const isOpen = OPENED_STATES.has(cur);
+  // Opening a container shows what it holds in the same breath (THE_TABLE_TEST).
+  const reveal = (wantOpen && isContainerPiece(f)) ? ` ${containerContentsClause(w, node, f)}` : '';
 
   // Already in the requested state → acknowledge, don't re-mutate.
   if (wantOpen && isOpen) {
-    return { world: w, output: { narration: `Wizard: The ${name} already stands open.`, mechanics: TRIVIAL_MECH } };
+    return { world: w, output: { narration: `Wizard: The ${name} already stands open.${reveal}`, mechanics: TRIVIAL_MECH } };
   }
   if (!wantOpen && !isOpen) {
     const why = DAMAGED_STATES.has(cur) ? `The ${name} is too far gone to close.` : `The ${name} is already shut.`;
@@ -5100,7 +5190,7 @@ function tryFurnitureStateChange(w, text) {
   const line = wantOpen
     ? (damaged ? `You haul the ${name} open; battered as it is, it stays open now.` : `You open the ${name}; it stands open now.`)
     : `You swing the ${name} shut.`;
-  return { world: w1, output: { narration: `Wizard: ${line}`, mechanics: TRIVIAL_MECH } };
+  return { world: w1, output: { narration: `Wizard: ${line}${reveal}`, mechanics: TRIVIAL_MECH } };
 }
 
 // ── Stage B: ground the floor for resolved PHYSICAL actions ─────────────────

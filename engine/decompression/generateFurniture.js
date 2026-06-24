@@ -98,6 +98,53 @@ const TEMPLATES = [
   }
 ];
 
+// ── Container contents — the loot a container/storage piece holds ─────────────
+// THE_TABLE_TEST: open a chest → the DM states what is inside, or that it is empty
+// — never a survey, a roll, or a tease. Contents are derived PURELY from canon
+// (seed + nodeId + the piece's name), so a look-inside is stable across re-looks
+// and a save/load round-trip WITHOUT adding any hashed world state. The name is a
+// per-node-unique key (generateNodeFurniture never repeats a template within a
+// node), so the derivation survives furniture-index shifts (e.g. a piece taken or
+// broken before the chest is opened). Many containers sit honestly empty.
+const CONTAINER_LOOT = [
+  'a handful of copper coins', 'a tarnished brass key', 'a stub of tallow candle',
+  'a flint-and-steel tinderbox', 'a coil of hempen rope', 'a waxed-leather waterskin',
+  'a cloth bundle of hardtack', 'a folded letter, its seal broken', 'a worn whetstone',
+  'a bone needle wound with thread', 'a clay vial of lamp-oil', 'a moth-eaten wool blanket',
+  'a spare pair of patched boots', 'a carved wooden luck-token', 'a length of waxed twine',
+  'a nub of red chalk', 'a horn comb missing two teeth', 'a small mirror of polished tin',
+  'a drawstring pouch of dried herbs', 'a fishhook and a hank of line',
+];
+const STORAGE_LOOT = [
+  'a short hand-axe', 'a wooden mallet', 'a flat-bladed chisel', 'a coil of binding wire',
+  'a worn rasp', 'a pair of iron tongs', 'a spool of waxed thread', 'a notched wood-plane',
+  'a leather-handled awl', 'a whetstone gone smooth with use',
+];
+
+/**
+ * containerContents(seed, nodeId, name, category) → string[]
+ * Deterministic. Returns the named contents of a container/storage piece (1–3
+ * items), or [] for an empty one or a non-container. Pure: no state, no RNG leak.
+ */
+export function containerContents(seed, nodeId, name, category) {
+  const cat = String(category || '');
+  if (cat !== 'container' && cat !== 'storage') return [];
+  const rng = makeRng(seedFromString(`${String(seed || 'seed')}|${String(nodeId || '')}|${String(name || '')}|contents`));
+  if (rng.nextFloat() < 0.28) return []; // a fair share of containers are empty
+  const pool = cat === 'storage' ? STORAGE_LOOT : CONTAINER_LOOT;
+  const n = 1 + rng.int(0, 2); // 1–3 distinct items
+  const out = [];
+  const used = new Set();
+  for (let i = 0; i < n; i++) {
+    let idx = rng.int(0, pool.length - 1);
+    let tries = 0;
+    while (used.has(idx) && tries < pool.length) { idx = (idx + 1) % pool.length; tries++; }
+    used.add(idx);
+    out.push(pool[idx]);
+  }
+  return out;
+}
+
 /**
  * generateNodeFurniture(nodeId, seed) → furniture[]
  * Deterministic. Returns 2-4 furniture items per node.

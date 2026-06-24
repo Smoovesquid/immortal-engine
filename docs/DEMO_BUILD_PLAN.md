@@ -198,7 +198,7 @@ A (spine + one town + region skeleton)
 B (talk→quest→consequence loop)   ◄── the gating capability; the whole adventure sits on it
         │
         ▼
-C (populate: towns, figures, faith-war, cannibals, trade)   ◄── gated by D-X1 (voice cost decision)
+C (populate: towns, figures, faith-war, cannibals, trade)   ◄── D-X1 RESOLVED ✅ (all-Opus voice, 2026-06-24)
         │
         ▼
 D (dungeons + cosmology-as-symptom + orb climax + death-prose)   ◄── the payoff; rungs 5–6
@@ -212,7 +212,7 @@ only then populate (C) and descend (D). Climb on the *wow*, not the suite.
 
 ## Open decisions (Tim's — surfaced as hard stops in the build block)
 
-1. **Bespoke-voice cost model (D-X1)** — all-bespoke vs. marquee+template. *Gates Phase C.*
+1. **Bespoke-voice cost model (D-X1)** — ✅ **DECIDED 2026-06-24: all-bespoke, Opus 4.8 for every NPC** (see `DECISIONS_FOR_TIM.md` #1 / `VOICE_COST_MODEL.md` §6). *Unblocks Phase C.*
 2. **The 5-figure roster (D-C2)** — confirm/replace the re-skin leads (Aurelius/Joan/Goldblum-Socrates…).
 3. **The orb climax (D-D3)** — is "wake it" the demo climax or the campaign hook?
 4. **The compound-meta-precedence design tension (D-A1)** — re-litigate the locked C16-001 split, or leave it?

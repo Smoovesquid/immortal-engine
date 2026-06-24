@@ -49,7 +49,17 @@ Six of them. #1 is the one that unblocks the next build phase; I wrote a whole p
 The rest are taste/scope calls only you can make — I've framed each with the trade-off and, where I have a view, a
 recommendation. **None of these are urgent before you play** — play first, then decide.
 
-### #1 — How bespoke should the ~200 NPC voices be? *(unblocks Phase C — read `docs/VOICE_COST_MODEL.md`)*
+### #1 — How bespoke should the ~200 NPC voices be? — ✅ **DECIDED 2026-06-24: all-bespoke, Opus 4.8 for EVERY NPC**
+> **The call (Tim, 2026-06-24):** all-bespoke, and **Opus 4.8 voice for every NPC — common man and king alike**, not
+> tiered. Reasoning: a live A/B on the real `buildNpcVoicePrompt` (Haiku vs Sonnet vs Opus, same corpus archive) showed
+> the model gap is real on *wit/subtext* (Opus did the Socratic turn; Haiku even slipped a forbidden stage direction)
+> and near-zero on *plain refusals*. Since you can't predict which throwaway villager line lands, all-Opus refuses the
+> tiering bet so **no line is ever the flat one** — the "every NPC alive" moat, bought outright. Cost is the reason it's
+> affordable: **~$0.70–1.05 per hour of talk-heavy play (~$0.40–0.50 cached); ~0.7¢/line; ~1.9s/reply.** A non-issue at
+> demo/early-sales scale. (Local-8B and marquee-template remain documented free levers for a future free-to-play scale
+> scenario — not the demo default.) See `docs/VOICE_COST_MODEL.md` §6 for the implementation notes that the Phase-C
+> wiring inherits (Opus 4.8 rejects the `temperature` param; the voice path still needs wiring to a call site).
+
 The fear was that giving every NPC a real, corpus-grounded voice would be too expensive. **The numbers say it isn't.**
 A full playthrough where every NPC speaks in their own voice costs about **9–21¢** on Haiku 4.5 (the model the
 narration already uses). The old cost notes were 3–15× too high (they priced "Opus" at $15/$75; it's $5/$25 now, and

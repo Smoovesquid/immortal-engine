@@ -914,7 +914,7 @@ no low-score entries → reads self-contradictory) + the DM dodges a roll-on-dem
 2 mirror dead-ends (object-presence query → no honest "no mirror"). **Verdict: PHASE B COMPLETE + PROVEN.** The
 residual is pre-existing frontier (the modifier-table is the new dominant Road-A find → spawned), not a Phase-B
 regression. The loop's "wow" wants a Tim taste-read (a real playthrough); the adversarial gate can't supply it.
-Next: **Phase C (populate)**, gated by Open Decision 1 (the bespoke-voice cost model).
+Next: **Phase C (populate)** — Open Decision 1 RESOLVED ✅ (2026-06-24: all-bespoke, **Opus 4.8 voice for every NPC**; see `DECISIONS_FOR_TIM.md` #1 / `VOICE_COST_MODEL.md` §6). Still needs Decision 2 (the 5-figure roster) to light the figures.
 
 **Social-physics categories to mine next (Biblioteca Vols 2–6, mostly not yet failing-in-gate but on the map):**
 sarcasm/irony inversion (Vol 2; transcript: `docs/playtests/ridiculous-sarcasm-2026-06-06.md`), loaded

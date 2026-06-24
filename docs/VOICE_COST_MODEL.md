@@ -147,3 +147,26 @@ feeling, so it's a scale decision, not a craft one.
 >
 > The numbers say all-bespoke-on-Haiku is affordable (~$0.09–0.21/session) and protects the moat. The other two trade
 > moat or add ops for savings that are immaterial at demo scale. **Your call.**
+
+---
+
+## 6. DECISION + implementation notes (2026-06-24)
+
+**DECIDED (Tim):** all-bespoke, **Opus 4.8 voice for EVERY NPC** — not tiered. The §4 lean was Haiku-for-cost; Tim chose
+*up*, for the moat. A live A/B on the real `buildNpcVoicePrompt` (this run, ~$0.056 on the `.env` key) confirmed the
+trade: on *wit/subtext* (the clown-Socrates dodging) Opus clearly led and Haiku even broke the "no stage directions"
+rule; on a *plain refusal* (Joan withholding, §0) all three tied and all held the line. Because you can't predict which
+nobody-villager says the line that lands, all-Opus means no line is ever the flat one. Measured reality at Opus:
+**~0.7¢/line · ~$0.70–1.05 per talk-heavy hour (~$0.40–0.50 cached) · ~1.9s/reply.**
+
+**Implementation notes the Phase-C wiring INHERITS (do not lose these):**
+1. **Opus 4.8 rejects `temperature`.** Sending it returns `HTTP 400: temperature is deprecated for this model`. The
+   voice call to `claude-opus-4-8` must OMIT the `temperature` field (it uses the model default). `engine/llmAdapter.js`
+   / `server/llmProvider.js` `chatCompletion` currently always passes `temperature` (default 0.2) — the Opus voice path
+   needs a conditional omit, or a voice-specific caller that drops it.
+2. **The voice path is built-but-DARK.** `buildNpcVoicePrompt` is a pure function with NO live call site yet (grep finds
+   no caller in `server/`/`engine/`). Phase C must (a) wire dialogue → `buildNpcVoicePrompt` → an Anthropic call, and
+   (b) route that call to `claude-opus-4-8` (today `NARRATION_MODEL` = Haiku). Keep marquee-template + local-8B as the
+   documented free fallback levers for a future free-to-play scale, per §3–§4.
+3. **Prompt caching still applies** (`cache_control` on the voice-archive/system block) — ~halves multi-turn COGS; worth
+   wiring regardless of model. Opus caching brings the talk-hour to ~$0.40–0.50.

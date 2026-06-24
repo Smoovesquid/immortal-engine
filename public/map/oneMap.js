@@ -22,7 +22,11 @@ import { isDungeonStructureId } from '../../engine/dungeon/generate.js';
 import { interiorCompassLayout } from '../../engine/structures/topology.js';
 
 const PAPER = '#e8ecdd';
-const INK = 'rgba(18,26,48,0.96)', INKSOFT = 'rgba(18,26,48,0.5)';
+// One warm walnut ink for every band's line-work. The close bands used to ink
+// in a cool blue-black (rgba(18,26,48)) while the far bands drew sepia — so a
+// dive across the LOD shifted the ink colour mid-zoom. A single brown ink ties
+// world → street into one hand-drawn sheet (M5: near-band ink consistency).
+const INK = 'rgba(52,36,20,0.94)', INKSOFT = 'rgba(52,36,20,0.5)';
 const ROAD = 'rgba(110,84,52,0.62)', ROAD_GHOST = 'rgba(110,84,52,0.22)';
 const GROVE = 'rgba(92,134,120,0.16)', GROVE_DARK = 'rgba(74,112,98,0.28)';
 const WATERY = 'rgba(96,128,148,0.12)';
@@ -53,6 +57,11 @@ const OCEAN_FILL = 'rgba(108,148,170,0.30)', WAVE = 'rgba(78,116,142,0.42)';
 const RANGE_INK = 'rgba(58,58,56,0.84)', RANGE_FILL = 'rgba(126,126,122,0.52)';
 const HEATH_FILL = 'rgba(36,30,34,0.74)', HEATH_EDGE = 'rgba(24,20,24,0.78)', HEATH_CRACK = 'rgba(122,40,32,0.66)', HEATH_GLOW = 'rgba(120,40,30,0.14)';
 const RIVER_INK = 'rgba(96,140,168,0.64)';
+
+// A pure arithmetic hash → [0,1) for seeded-but-stateless jitter (NO Math.random;
+// same inputs → same value every render, so motifs never shimmer). Used to
+// thicken forest clumps without an rng allocation per visible tree.
+function h2(a, b) { const s = Math.sin(a * 12.9898 + b * 78.233) * 43758.5453; return s - Math.floor(s); }
 
 // ── biome motif drawers (px-space; called when a clump is big enough to read) ─
 // A conifer: a fir silhouette over a hair of trunk.
@@ -98,6 +107,34 @@ function drawPeak(ctx, x, y, s, snow) {
     ctx.beginPath();
     ctx.moveTo(apexX, apexY); ctx.lineTo(apexX + s * 0.22, apexY + s * 0.42);
     ctx.lineTo(apexX, apexY + s * 0.3); ctx.lineTo(apexX - s * 0.22, apexY + s * 0.42);
+    ctx.closePath(); ctx.fill();
+  }
+}
+
+// A settlement glyph: a little clutch of gabled roofs, the way a cartographer
+// marks a town on a hand-drawn map — three pitched houses of stepped height
+// instead of the old two-box-and-a-triangle stamp (M5: town glyphs). Drawn as
+// warm-ink silhouettes with a hair of paper between them so the cluster reads.
+// `s` is the glyph half-scale; pure (no rng) so it never shimmers.
+function drawTownGlyph(ctx, x, y, s, ink) {
+  // each house: [centre-x offset, body width, body height, roof rise] in s-units
+  const houses = [
+    [-0.92, 0.78, 0.78, 0.62],   // left, low
+    [0.02, 0.96, 1.06, 0.82],    // centre, tall
+    [0.96, 0.70, 0.66, 0.54],    // right, low
+  ];
+  const baseY = y + s * 0.62;    // a shared ground line
+  for (const [dx, bw, bh, rise] of houses) {
+    const cx = x + dx * s, w = bw * s, h = bh * s, top = baseY - h;
+    // a thin paper moat so overlapping roofs stay legible
+    ctx.fillStyle = PAPER;
+    ctx.fillRect(cx - w / 2 - s * 0.06, top - rise * s - s * 0.06, w + s * 0.12, h + rise * s + s * 0.12);
+    ctx.fillStyle = ink;
+    ctx.fillRect(cx - w / 2, top, w, h);                 // wall
+    ctx.beginPath();                                     // gable roof
+    ctx.moveTo(cx - w / 2 - s * 0.12, top);
+    ctx.lineTo(cx, top - rise * s);
+    ctx.lineTo(cx + w / 2 + s * 0.12, top);
     ctx.closePath(); ctx.fill();
   }
 }
@@ -150,10 +187,21 @@ function cameraFor(world) {
 // rose, paper-haloed calligraphic labels, an aged grade. Pure + deterministic.
 const HALO = 'rgba(233,237,222,0.92)';  // paper-coloured halo so names read over terrain
 
-// A name in a cartographer's hand: a soft paper halo, then the ink.
+// A name in a cartographer's hand: a feathered paper halo, then the ink. The
+// halo is a soft paper glow (blurred) UNDER a crisp paper stroke — so the name
+// lifts off any terrain (woods, ocean, the dead Heath) the way ink sits in the
+// sized fibre of real parchment, never a hard cut-out ring (M5: calligraphic
+// label halos). Shadow state is always restored so callers stay unaffected.
 function inkLabel(ctx, text, x, y, font, fill, align, baseline, haloW = 3.2) {
   ctx.font = font; ctx.textAlign = align; ctx.textBaseline = baseline;
   ctx.lineJoin = 'round'; ctx.miterLimit = 2;
+  // 1) feathered glow: a paper-coloured fill bled outwards by a small blur.
+  ctx.save();
+  ctx.shadowColor = HALO; ctx.shadowBlur = haloW * 1.8;
+  ctx.fillStyle = HALO;
+  ctx.fillText(text, x, y); ctx.fillText(text, x, y);   // twice → a denser bleed
+  ctx.restore();
+  // 2) a crisp paper stroke to keep counters open, then the ink.
   ctx.strokeStyle = HALO; ctx.lineWidth = haloW; ctx.strokeText(text, x, y);
   ctx.fillStyle = fill; ctx.fillText(text, x, y);
 }
@@ -180,6 +228,23 @@ function parchmentFor(seed, W, H, dpr) {
     d[i + 2] = Math.max(0, Math.min(255, d[i + 2] + n * 0.85));
   }
   o.putImageData(img, 0, 0);
+  // Laid lines: the faint horizontal ribbing a sheet picks up off the mould
+  // wire, with sparser vertical chain lines crossing them. Very low alpha — you
+  // feel the fibre before you see it. Deterministic spacing + a hair of wander.
+  const ldpr = Math.max(1, dpr);
+  o.lineWidth = 1; o.lineCap = 'butt';
+  const laidGap = 3.0 * ldpr;
+  o.strokeStyle = 'rgba(120,96,56,0.035)';
+  for (let y = 0; y < ch; y += laidGap) {
+    const wob = (rng.nextFloat() - 0.5) * 0.6 * ldpr;
+    o.beginPath(); o.moveTo(0, y + wob); o.lineTo(cw, y + wob); o.stroke();
+  }
+  const chainGap = 26 * ldpr;
+  o.strokeStyle = 'rgba(120,96,56,0.05)';
+  for (let x = chainGap * 0.5; x < cw; x += chainGap) {
+    const wob = (rng.nextFloat() - 0.5) * 1.4 * ldpr;
+    o.beginPath(); o.moveTo(x + wob, 0); o.lineTo(x + wob, ch); o.stroke();
+  }
   const stains = 8 + rng.int(0, 6);                     // soft age blotches
   for (let i = 0; i < stains; i++) {
     const sx = rng.nextFloat() * cw, sy = rng.nextFloat() * ch;
@@ -273,7 +338,21 @@ function drawStamp(ctx, st, cx, cy, rPx, fillScale = 1) {
   }
   for (const [ox, oy, s, aux] of st.pts) {
     const x = cx + ox * rPx, y = cy + oy * rPx, sz = Math.max(1, s * rPx * 0.4);
-    if (b === 'forest') { (aux ? drawConifer : drawDeciduous)(ctx, x, y, sz); }
+    if (b === 'forest') {
+      // A forest reads as a MASS, not scattered lollipops: each clump-point is a
+      // small stand — one canopy tree plus a couple of seeded understory trees —
+      // so the woods fill in (M5: forest density). Slightly smaller than before
+      // so the extra trees thicken rather than blob together.
+      const m = sz * 0.82;
+      (aux ? drawConifer : drawDeciduous)(ctx, x, y, m);
+      for (let k = 0; k < 2; k++) {
+        const jx = (h2(ox + k * 3.1, oy - k * 1.7) - 0.5) * sz * 1.5;
+        const jy = (h2(oy + k * 2.3, ox + k * 5.9) - 0.5) * sz * 1.1;
+        const ss = m * (0.52 + h2(ox * 1.3 + k, oy * 0.7 - k) * 0.34);
+        if (ss < 0.8) continue;
+        (h2(ox * 1.7 + k, oy * 2.3 - k) < 0.5 ? drawConifer : drawDeciduous)(ctx, x + jx, y + jy, ss);
+      }
+    }
     else if (b === 'marsh') {
       // Short UPRIGHT reed ticks rising from the waterline (a small lean), not
       // curves radiating out of the pool — which read as worms. Cattails, not worms.
@@ -663,7 +742,7 @@ export function renderOneMap(world, opts = {}) {
         // room names at the deepest zoom — you're reading the floor plan now.
         if (z >= 6) {
           ctx.globalAlpha = alpha * cut;
-          ctx.fillStyle = 'rgba(18,26,48,0.66)'; ctx.font = `${Math.round(Math.min(14, 1.1 * PLACE_WU * z))}px ${HAND}`;
+          ctx.fillStyle = 'rgba(52,36,20,0.66)'; ctx.font = `${Math.round(Math.min(14, 1.1 * PLACE_WU * z))}px ${HAND}`;
           ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
           for (const r of (b.plan?.rooms || [])) { if (!r.name) continue; const [rx, ry] = P(b.ox + r.cx, b.oy + r.cy); ctx.fillText(String(r.name), rx, ry); }
         }
@@ -798,11 +877,7 @@ export function renderOneMap(world, opts = {}) {
       if (glyphAlpha < 0.03) {
         // glyph fully handed over to the layout — name still draws below.
       } else if (type === 'settlement') {
-        ctx.fillStyle = INK;
-        const s = r * 0.9;
-        ctx.fillRect(x - s, y - s * 0.4, s * 0.85, s * 0.85);
-        ctx.fillRect(x + s * 0.15, y - s * 0.1, s * 0.85, s * 0.7);
-        ctx.beginPath(); ctx.moveTo(x - s * 1.15, y - s * 0.4); ctx.lineTo(x - s * 0.575, y - s * 1.05); ctx.lineTo(x, y - s * 0.4); ctx.closePath(); ctx.fill();
+        drawTownGlyph(ctx, x, y, r * 0.82, INK);
       } else if (/dungeon/.test(type)) {
         ctx.fillStyle = 'rgba(60,24,28,0.92)';
         ctx.beginPath(); ctx.moveTo(x, y - r); ctx.lineTo(x + r, y + r * 0.8); ctx.lineTo(x - r, y + r * 0.8); ctx.closePath(); ctx.fill();

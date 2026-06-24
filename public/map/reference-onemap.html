@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reference — ONE MAP (M5 beauty pass)</title>
+<style>
+  html,body{margin:0;background:#2c302a;font-family:ui-sans-serif,system-ui,sans-serif;color:#cdd2c4;}
+  .wrap{max-width:980px;margin:0 auto;padding:18px 0 60px;}
+  .bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:0 0 12px;}
+  button{font:inherit;background:#cdd2c4;color:#2a2e27;border:0;border-radius:6px;padding:7px 13px;cursor:pointer;}
+  button:hover{background:#fff;}
+  button.on{background:#c0843c;color:#fff;}
+  .hint{opacity:.7;font-size:13px;}
+  #host{box-shadow:0 18px 60px rgba(0,0,0,.5);border-radius:6px;overflow:hidden;}
+  code{background:#1f231d;padding:1px 5px;border-radius:4px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="bar">
+    <strong>ONE MAP</strong>
+    <button data-band="world">world</button>
+    <button data-band="region">region</button>
+    <button data-band="settlement">settlement</button>
+    <button data-band="street">street</button>
+    <button data-band="forest">forest</button>
+    <span class="hint">z = <span id="z">—</span> · drag to pan, wheel to zoom · seed <code>tallow</code></span>
+  </div>
+  <div id="host"></div>
+</div>
+<script type="module">
+import { renderOneMap } from './oneMap.js';
+import { nodeToWu, worldBounds } from './worldSpace.js';
+
+const world = await fetch('./onemap-fixture.json').then(r => r.json());
+const host = document.getElementById('host');
+const zEl = document.getElementById('z');
+
+// player position for the street band (so the marker sits where you stand)
+const pos = world?.party?.[0]?.position || world?.scene?.interior || null;
+const playerPos = pos ? { nodeId: world.map.currentNodeId, ux: pos.ux, uy: pos.uy } : null;
+
+const wrap = renderOneMap(world, { height: 620, playerPos });
+host.appendChild(wrap);
+
+// center on the current node (Crossway Village) for the close bands
+const here = (world.map.nodes || []).find(n => n.id === world.map.currentNodeId);
+const c = here ? nodeToWu(here) : { x: 0, y: 0 };
+
+// world band fits the whole node field (so every biome shows, not just the
+// mountains the player happens to stand in).
+const wb = worldBounds(world.map.nodes || []);
+const worldCenter = { x: (wb.minX + wb.maxX) / 2, y: (wb.minY + wb.maxY) / 2 };
+const worldZ = Math.min(0.06, Math.max(0.012, 620 / Math.max(wb.maxX - wb.minX, wb.maxY - wb.minY)));
+
+// band → {center, z} (from worldSpace BAND thresholds, pushed into each band's heart)
+const BANDS = {
+  world: { c: worldCenter, z: worldZ },
+  region: { c, z: 0.16 },
+  settlement: { c, z: 1.2 },
+  street: { c, z: 7.5 },
+  // a dense forest neighbourhood (computed offline) at region/settlement zoom
+  // so the forest-density iteration has woods on screen, not the player's peaks.
+  forest: { c: { x: -20930, y: 15599 }, z: 0.5 },
+};
+window.__focus = (x, y, z) => wrap.__oneMapFocus(x, y, z);
+
+function focus(band) {
+  const { c: cc, z } = BANDS[band];
+  wrap.__oneMapFocus(cc.x, cc.y, z);
+  zEl.textContent = z.toFixed(3);
+  for (const b of document.querySelectorAll('button[data-band]')) b.classList.toggle('on', b.dataset.band === band);
+}
+for (const b of document.querySelectorAll('button[data-band]')) b.addEventListener('click', () => focus(b.dataset.band));
+
+// poll z so manual wheel-zoom updates the readout
+setInterval(() => {
+  const canvas = wrap.querySelector('canvas');
+  if (canvas) zEl.textContent = (window.__lastZ ?? zEl.textContent);
+}, 200);
+
+focus('region');
+</script>
+</body>
+</html>

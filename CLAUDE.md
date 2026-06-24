@@ -1,34 +1,34 @@
 # Immortal Engine — Agent Guide
 
+*Operating model: `docs/THE_PLAYBOOK.md` (how we build) + `docs/THE_BUILD_SYSTEM.md` (map of the doc apparatus). This guide is the high-signal index; detail lives in the linked docs.*
+
 ## Read first (durable docs)
-- **`docs/WHAT_THIS_IS.md` — plain-English audit of every system with status tags (🟢 live / 🟡 built-but-dark / 🔴 partial) + moat notes. The map of what exists; read to orient fast.**
-- **`docs/IDEA_GARDEN.md` — parked ideas (capture without committing). Each has `echoes:` triggers — when Tim says something that rhymes with one, resurface it. Gists are in MEMORY.md so associations fire without opening the file.**
-- **`docs/biblioteca/` — the Biblioteca: research library (how others already solved these problems — precedent + state of the art to mine before reinventing). Sibling to the Idea Garden. Consult the matching volume BEFORE scoping a social/pragmatic/dialogue/NPC rule; Vol 1 (pragmatic logic) is the backing for IG-11 social physics. Gist in MEMORY.md.**
-- **`docs/PATH_TO_SELLABLE.md` — the plan to make this sellable (surface the depth → make it correct → build the soul). The three open decisions live here. Carrying packets: `docs/PACKETS.md` → "Sellable / Surface-the-Depth track" (P-82–P-88).**
-- **`docs/THE_DM_TEST.md` — THE governing principle. For any player input, do what a real DM would do; resolve intent in the fiction. Never bounce intent back as a game-mechanical prompt ("travel one tile at a time, which way?") or a system artifact. The DM is the interface; mechanics serve the fiction. This is the answer, as always — apply it before shipping any response.**
-- **`docs/THE_TABLE_TEST.md` — THE governing principle for the FUNCTIONAL LAYER (the bigger sibling of the DM Test). For any question of how the game should BEHAVE — a kick, a murder, a searched pouch, a step through a door — do what would happen at a real D&D table. Actual D&D is a 50-yr-playtested spec we already own; wrong behavior has DRIFTED from the table, not gone undesigned, so RESTORE the table's answer rather than invent one. Texture, not skin (D&D's behavior, never its visible math). Also the Human Playtest Harness's reference spec ("coherent against what?" → against the table). DM Test asks "what would the DM SAY?"; Table Test asks "what would happen at the table?"**
-- **`docs/HARNESS_USAGE_STRATEGY.md` — how to AIM the Human Playtest Harness (companion to `HUMAN_PLAYTEST_HARNESS.md` = how to build it; that's another lane). Crown jewel = the deterministic desync oracle (narrated change vs committed Canon Log — free, no LLM, catches the movement/state bug class). Free-wide deterministic oracles / paid-narrow LLM judge; saturate-by-seeds then fix-by-seam; goal-completion + CED gate the word "playable" (never "fun"). It RELOCATES human playtesting (machine finds broken; human judges good), doesn't replace it. Backed by Biblioteca Vol 16.**
-- **`docs/PLAYTEST_PROTOCOL.md` — BEFORE handing Tim anything to playtest, I MUST play every new feature myself through the live `v1.html` browser surface and confirm it VISIBLY works (screenshot, not DOM dump). Default failure mode: handing over a broken game and debugging live. Don't.**
-- **`docs/PROSE_MECHANIC_PLAN.md` — active roadmap to perfect the prose mechanic (Stages C→A→B→F→D→E) + the per-stage Severe Playtest discipline. Each stage closes only with a committed live playtest report in `docs/playtests/`.**
-- `docs/ROADMAP.md` — the goal + the critical path (R0–R7) to voice-first, DM-adjudicated tabletop. The anchor against drift.
+- `docs/THE_DM_TEST.md` — **THE governing principle.** For any player input, do what a real DM would do; resolve intent in the fiction, never bounce it back as a mechanical prompt. Run it before shipping any response.
+- `docs/THE_TABLE_TEST.md` — **governing principle for BEHAVIOR** (sibling of the DM Test): do what would happen at a real D&D table; wrong behavior has *drifted* from the table, so restore it. Texture, not the visible math.
+- `docs/IMMORTAL_INVARIANTS.md` — the non-negotiables (determinism, narration≠canon, one walkable scale, open-ended).
+- `docs/WHAT_THIS_IS.md` — status-tagged audit (🟢 live / 🟡 built-but-dark / 🔴 partial) of every system. Orient here fast.
 - `docs/REPO_MAP.md` — module map + the "two play surfaces" gotcha (v1 = trunk, `__preview/` = sandbox). Read before exploring.
-- `docs/IMMORTAL_INVARIANTS.md` — non-negotiables (determinism, narration≠canon, one walkable scale, open-ended, etc.).
+- `docs/ROADMAP.md` + `docs/NORTH_STAR.md` — the goal + critical path; the anchor against drift.
 - `docs/PACKETS.md` — active queue + done-when. Spec a packet before editing; small bounded diffs.
+- `docs/PATH_TO_SELLABLE.md` — the sellable plan (surface depth → make correct → build soul); open decisions live here.
+- `docs/IDEA_GARDEN.md` — parked ideas (capture without committing); `echoes:` triggers resurface them when Tim's words rhyme (gists in MEMORY.md).
+- `docs/biblioteca/` — research library; mine the matching volume BEFORE scoping a social/dialogue/NPC/eval rule (gist in MEMORY.md).
+- `docs/HARNESS_USAGE_STRATEGY.md` — how to aim the Human Playtest Harness (the deterministic desync oracle is the crown jewel).
+- `docs/PLAYTEST_PROTOCOL.md` — play every new feature yourself through live `v1.html` (screenshot, not DOM dump) BEFORE handing Tim anything.
+- `docs/PROSE_MECHANIC_PLAN.md` — active roadmap for the prose mechanic; each stage closes with a committed playtest report.
 - `docs/LIVING_WORLD_MERGE.md` — region/ecology/discovery/will merge (P1–P6 done).
 
-## Build budget (Pro plan — fire every session; full protocol in `docs/BUILD_BUDGET.md`)
-Tim is on Pro and hits the 5-hour cap fast. Govern spend:
-- **Default to Sonnet** for mechanical work (reads, edits, greps, running tests, routine wiring). Escalate to **Opus** only for hard reasoning (architecture, design, gnarly debugging), then drop back. Opus burns ≈5× faster.
-- **Model-fit check — do this at the START of each new request.** Classify the task. If it's mechanical and the active model is **Opus**, open with ONE line: *"This is routine — `/model sonnet` will save your window; I'll proceed either way."* If it's deep reasoning and the active model is **Sonnet**, suggest `/model opus`. Suggest ONCE per task, then proceed regardless — never nag, and skip it for trivial/conversational turns.
-- **Targeted reads only.** NEVER read whole large files — `playloop.js` (~5.7k lines), the bestiary catalogs, `server/rag/corpus/*` in bulk. Grep to locate → Read with `offset`/`limit`. Don't re-read what's in context; don't re-read to confirm an edit.
-- **One packet per session**; `/clear` between unrelated tasks, `/compact` when deep. Batch independent tool calls.
-- **Heavy LLM testing runs on the `.env` API key from the CLI, not interactively** (the Opus gate is the costliest thing in the repo). Use `node --test` / `playtest:quick` for the fast loop.
+## Build budget (full protocol: `docs/BUILD_BUDGET.md`)
+- **Use the right model for the task.** Hard reasoning (architecture, design, gnarly debugging) → Opus; mechanical work (reads, edits, greps, routine wiring) → Sonnet is plenty. The clearer the spec, the cheaper the model can run it. *This home base runs loose — don't over-conserve.* The Sonnet-default / 5-hr-cap discipline is for the **Pro farm/worker lanes** (see `BUILD_BUDGET.md`); suggest a model switch only when it genuinely matters, never as a per-request ritual.
+- **Targeted reads only.** NEVER read whole large files — `playloop.js` (~7.4k lines), bestiary catalogs, `server/rag/corpus/*`. Grep to locate → Read a slice. Don't re-read what's in context or re-read to confirm an edit.
+- **One packet per session**; `/clear` between unrelated tasks, `/compact` when deep; batch independent tool calls.
+- **Heavy LLM testing runs on the `.env` API key from the CLI, not interactively** (the Opus gate is the repo's costliest thing). Use `node --test` / `playtest:quick` for the fast loop.
 - Don't spawn subagents unless fan-out is truly needed (cold context = expensive).
-- Opus 4.8 IS available on Pro (confirmed by Tim) — the fast cap is Opus eating the 5-hour window, so Sonnet-default is the lever, not a tier change.
 
 ## Quick Reference
 
 ```
+npm run check                  # the one-command green (convergence + suite + determinism + git sync)
 node --test                    # full suite (S/N/U/C/G/D prefixes)
 npm run dev                    # Express on :5179
 npm run playtest:quick         # headless playtest, fast probes
@@ -48,42 +48,24 @@ WORLD_VERSION                  # see engine/state.js (source of truth)
 
 **Mutation path.** All structured world mutations go through `engine/effectsCore.js` → `applyDeltas()`. No direct state writes.
 
-## Engine Map
+## Engine Map (full module map: `docs/REPO_MAP.md`)
 
 ```
 engine/
   state.js            WORLD_VERSION, ensureWorld(), newWorld()
-  playloop.js         beginAdventure/playerMove/newScene (1,215 LoC — largest file)
+  playloop.js         beginAdventure/playerMove/newScene (~7.4k LoC — largest, hot file)
   effectsCore.js      applyDeltas() — sole mutation path
   resolve.js          d20 vs DC, delta generation
   worldTick.js        factions, threads, ecology, scars
-  conductor.js        AI orchestration, delta proposals
-  composer.js         narration assembly
-  invariants.js       assertWorldInvariants()
-  instrument.js       threads, motifs, inevitability meter
-  guard.js            player text validation against canon
-  ledger.js           facts/threats/questions (cap 8 each)
-  llmAdapter.js       narration polish, DM system prompt, validation
-  llmPhysics.js       physics-detection LLM calls
-  rng.js              seeded RNG
-  worldHash.js        determinism fingerprint (+ worldHash.browser.js)
-  save.js             export/import
-
-  csl/                Canon Log: schema, validator, serializer, grammar, latent, domains
-  npc/                npcGenesis, npcDepth, perspectiveFilter, dialogue
-  map/                generateMap, mapState, projection/, spatial/
-  structures/         generation, interiors, anchors, topology, discovery
-  decompression/      decompress, detectEvents, furniture, settlement, texturize
-  goals/              goalContract (reach/obtain/talkTo/learn/defeat)
-  chargen/            character creation (ritual options)
-  scene/              latentProjection
-  ai/                 narratorContext, conductContract, polishValidation
-  env/                envCore (noise/heat/scent/light residue)
-  gear/               gearProps (gear as physics input)
-  metrics/            telemetry
+  conductor.js        AI orchestration, delta proposals     composer.js  narration assembly
+  invariants.js       assertWorldInvariants()               guard.js     player text vs canon
+  ledger.js           facts/threats/questions (cap 8 each)  rng.js       seeded RNG
+  llmAdapter.js       narration polish, DM system prompt     llmPhysics.js  physics-detection calls
+  worldHash.js        determinism fingerprint (+ .browser)   save.js      export/import
+  csl/ npc/ map/ structures/ decompression/ goals/ chargen/ scene/ ai/ env/ gear/ metrics/
 ```
 
-Other dirs: `server/` (Express + LLM provider), `public/` (vanilla HTML/CSS/JS UI, `v1.html`/`v1.js` are live), `packs/` (5 genre packs + manifest), `canon/` (query system), `gates/` (spatial/structure gate scripts), `docs/` (16 design docs).
+Other dirs: `server/` (Express + LLM provider), `public/` (`v1.html`/`v1.js` are live), `packs/` (5 genre packs), `canon/` (query system), `gates/` (spatial/structure gate scripts).
 
 **Trap:** `state.js` exists at repo root (35-byte stub) AND at `engine/state.js`. The engine one is real. `public/legacy/` is dead code.
 
@@ -110,9 +92,7 @@ Other dirs: `server/` (Express + LLM provider), `public/` (vanilla HTML/CSS/JS U
 
 ## Playtest Harness
 
-`scripts/playtest.js` + `PLAYTEST.md`. 10 bug classes: CRASH, INVARIANT_VIOLATION, DEATH_SPIRAL, DETERMINISM_BREAK, SAVE_CORRUPTION, ENDING_LEAK, TIMELINE_RUNAWAY, CLOCK_MONOTONIC, NPC_OVERFLOW, THREAD_STARVATION.
-
-Run after any commit that touches state shape, playloop, or worldTick.
+`scripts/playtest.js` + `PLAYTEST.md`. 10 bug classes: CRASH, INVARIANT_VIOLATION, DEATH_SPIRAL, DETERMINISM_BREAK, SAVE_CORRUPTION, ENDING_LEAK, TIMELINE_RUNAWAY, CLOCK_MONOTONIC, NPC_OVERFLOW, THREAD_STARVATION. Run after any commit that touches state shape, playloop, or worldTick.
 
 ## Test Naming
 
@@ -127,9 +107,9 @@ Run after any commit that touches state shape, playloop, or worldTick.
 
 File convention: `{prefix}##.shortName.test.js`
 
-## Milestones
+## Status & milestones
 
-See `PLAN.md` for active gates. Canonical Surface v1 (S1–S6): ✅ complete. AI Narration v1 (N1–N6): ✅ complete. Phase 2 (physics/decompression/goals/campfire): in progress.
+Current backlog + done-when: `docs/PACKETS.md`. Direction: `docs/NORTH_STAR.md` + `docs/SLICE_PLAN.md`. Shipped: Canonical Surface (S1–S6) ✅, AI Narration (N1–N6) ✅. *(The older `PLAN.md` "Phase 2" framing predates the North-Star pivot — prefer PACKETS / SLICE_PLAN.)*
 
 ## Commit Convention
 
@@ -147,26 +127,23 @@ Bug fix protocol: reproduce → baseline test → fix → retest → commit.
 Full map: **`docs/LANE_MAP.md`**. Default to the maximum *worthwhile* concurrency, **per lane-type**: parallel by default for **content / UI / docs-design**; **serial** for **competence hot files** (`playloop.js`, `dialogue.js`, `grace/`, composer, `escapeCombat.js`), **schema/`WORLD_VERSION`**, and taste-critical narration. Assume warm worker lanes may be running.
 
 - **Homebase conducts + integrates:** plan the split, own the merge into `v2-polish`, never delegate the global-invariants lane. Worker lanes produce branches; Homebase lands them.
-- **Isolate parallel lanes in their own git worktree** (`git worktree add` / Agent `isolation: "worktree"`) — branch names do NOT isolate a shared working dir (two models in one checkout collide on uncommitted edits). Stay off another lane's hot files; if you need one, coordinate first. **Never commit edits you didn't make.**
-- **Before every push/merge:** run `scripts/lane-check.sh` (outgoing/incoming + hot-file/foreign-edit flags) then `npm run check`; confirm outgoing is only this lane's. Tiny solo packets may go direct to `v2-polish`; multi-hour/parallel work uses a worktree+branch.
-- Shared docs (`CAPABILITY_LEDGER.md`, `AGENT_CHANGELOG.md`, `PACKETS.md`) interleave too — each lane **appends its own dated section** (append-only).
+- **Isolate parallel lanes in their own git worktree** (`git worktree add` / Agent `isolation: "worktree"`) — branch names do NOT isolate a shared working dir. Stay off another lane's hot files; coordinate first. **Never commit edits you didn't make.**
+- **Before every push/merge:** run `scripts/lane-check.sh` then `npm run check`; confirm outgoing is only this lane's. Tiny solo packets may go direct to `v2-polish`; multi-hour/parallel work uses a worktree+branch.
+- Shared docs (`CAPABILITY_LEDGER.md`, `AGENT_CHANGELOG.md`, `PACKETS.md`) interleave — each lane **appends its own dated section** (append-only).
 
 ## Skill routing
 
-When the user's request matches an available skill, ALWAYS invoke it using the Skill
-tool as your FIRST action. Do NOT answer directly, do NOT use other tools first.
-The skill has specialized workflows that produce better results than ad-hoc answers.
+When the user's request matches an available skill, ALWAYS invoke it using the Skill tool as your FIRST action. Do NOT answer directly, do NOT use other tools first. The skill has specialized workflows that produce better results than ad-hoc answers.
 
-Key routing rules:
-- Product ideas, "is this worth building", brainstorming → invoke office-hours
-- Bugs, errors, "why is this broken", 500 errors → invoke investigate
-- Ship, deploy, push, create PR → invoke ship
-- QA, test the site, find bugs → invoke qa
-- Code review, check my diff → invoke review
-- Update docs after shipping → invoke document-release
-- Weekly retro → invoke retro
-- Design system, brand → invoke design-consultation
-- Visual audit, design polish → invoke design-review
-- Architecture review → invoke plan-eng-review
-- Save progress, checkpoint, resume → invoke checkpoint
-- Code quality, health check → invoke health
+- Product ideas, "is this worth building", brainstorming → **office-hours**
+- Bugs, errors, "why is this broken", 500 errors → **investigate**
+- Ship, deploy, push, create PR → **ship**
+- QA, test the site, find bugs → **qa**
+- Code review, check my diff → **review**
+- Update docs after shipping → **document-release**
+- Weekly retro → **retro**
+- Design system, brand → **design-consultation**
+- Visual audit, design polish → **design-review**
+- Architecture review → **plan-eng-review**
+- Save progress, checkpoint, resume → **checkpoint**
+- Code quality, health check → **health**

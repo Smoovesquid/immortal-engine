@@ -168,6 +168,7 @@ if (isMain) {
 
   const KEY = (process.env.ANTHROPIC_API_KEY || '').trim();
   const REPLAY = arg('replay', null);
+  const JSON_OUT = arg('json', null); // machine-readable findings sink (the Phase-3 gate reads this)
   const TURNS = Number(arg('turns', '25'));
   const GOAL_ID = arg('goal', 'reach-first-concern');
   const PLAYER_MODEL = arg('player-model', 'claude-haiku-4-5-20251001'); // cheap by directive
@@ -313,6 +314,17 @@ if (isMain) {
     console.log(`\n════════════════════════════════════════════`);
     const totalFindings = runs.reduce((a, r) => a + r.findings.length, 0);
     console.log(`SESSIONS: ${runs.length} · GOAL REACHED: ${runs.filter(r => r.goalCompleted).length}/${runs.length} · FINDINGS: ${totalFindings}`);
+    if (JSON_OUT) {
+      // Structured, seam-groupable findings + the action log that reproduces them.
+      // This is the contract the autonomous fix loop (scripts/auto-playtest.mjs) reads.
+      const payload = runs.map(r => ({
+        seed: r.seed, goal: r.goal, goalDescription: r.goalDescription,
+        goalCompleted: r.goalCompleted, turns: r.turns, progressMax: r.progressMax,
+        findings: r.findings, actionsLog: r.actionsLog,
+      }));
+      fs.writeFileSync(path.resolve(JSON_OUT), JSON.stringify(payload, null, 2));
+      console.log(`JSON: ${path.relative(ROOT, path.resolve(JSON_OUT))}`);
+    }
     if (WRITE_REPORT) {
       const rep = writeReport(runs);
       console.log(`REPORT: ${path.relative(ROOT, rep.file)}`);

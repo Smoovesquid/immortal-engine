@@ -9,6 +9,13 @@ protocols that actually organize the build. The specific files don't transfer to
 > every file plays one of **eight functional roles**, and work flows through them in **one repeating loop**.
 > Name the organs and the loop and the whole apparatus becomes legible. When something feels off, you can ask
 > "which organ is weak?"; when a new doc appears, you know where it belongs.
+>
+> **The apparatus points up and answers down.** It exists to serve the *product* (organ 3, the North Star) —
+> never itself; an apparatus that grows to serve its own tidiness has become the disease it treats. And it is
+> kept honest from *below* by the **gardening loop** (last section) — the method-eval applied to the docs
+> themselves. Read this whole thing as **context engineering at the project scale**: the Map and the Memory are
+> the team's external memory, the worker lanes are sub-agent isolation, `/compact` is compaction. Same craft,
+> bigger window.
 
 ---
 
@@ -17,11 +24,11 @@ protocols that actually organize the build. The specific files don't transfer to
 | Organ | What it does | Load-bearing files | Playbook principle it makes physical |
 |---|---|---|---|
 | **1. The Constitution** | Non-negotiable law, run before shipping | `THE_DM_TEST`, `THE_TABLE_TEST`, `IMMORTAL_INVARIANTS`, `DETERMINISM_DOCTRINE`, `LAW_OF_EARNED_KNOWLEDGE`, `THE_REF`, §0 (in `DEMO_REGION`) | Governing principles as named tests; Propose-vs-Commit |
-| **2. The Map** | Where am I / what actually exists | `WHAT_THIS_IS` (status-tagged audit), `REPO_MAP`, `ARCHITECTURE_OVERVIEW`, `CAPABILITY_LEDGER`, `KB_MAP` | Legibility; honest "what exists" |
-| **3. The North Star + Roadmaps** | Where we're going & the critical path | `NORTH_STAR` (+`CRUNCH_V1`/`RUMOR_LAYER`/`PROSE_TO_WORLD`/`SLICE_PLAN`), `ROADMAP`, `PATH_TO_SELLABLE`, `DEMO_BUILD_PLAN`, `PROSE_MECHANIC_PLAN` | Direction; anti-drift |
+| **2. The Map** | Where am I / what actually exists | `WHAT_THIS_IS` (status-tagged audit), `REPO_MAP`, `ARCHITECTURE_OVERVIEW`, `CAPABILITY_LEDGER` | Legibility; honest "what exists" |
+| **3. The North Star + Roadmaps** | Where we're going & the critical path | `NORTH_STAR` (+`CRUNCH_V1`/`RUMOR_LAYER`/`PROSE_TO_WORLD`/`SLICE_PLAN`), `ROADMAP`, `PATH_TO_SELLABLE`, `DEMO_BUILD_PLAN`, `PROSE_MECHANIC_PLAN` | Direction; anti-drift; **the layer everything else serves** |
 | **4. The Protocols** | How we do specific things | `PROMPT_ARCHITECTURE`, `BASECAMP`, `AGENT_PROTOCOL`, `BUILD_BUDGET`, `PLAYTEST_PROTOCOL`, `DEBUG_OPERATING_PROTOCOL`, `DRIFT_GUARD_PROTOCOL`, `LANE_MAP`, `WORKER_BRIEF`, `HARNESS_USAGE_STRATEGY` | The workflow; the agent operating model |
-| **5. The Work Queue** | The unit of work + active backlog | `PACKETS`, the `PACKET_H5*` specs, `RUNG1_QUEUE`, `*_PUNCHLIST`, `DECISIONS_FOR_TIM` | Packet discipline; small bounded diffs |
-| **6. The Specs** | The design of each system | `COMBAT_SPEC`, `MORALITY_SYSTEM`, the staged `*_R3…R7` series, `WORLD_AND_DUNGEONS`, the `VICTORY_GATE*` family, content bibles (`HISTORICAL_FIGURES`, `CHURCH_OF_INCREMENTALISM`) | "Done-when"; the reference for *this* build |
+| **5. The Work Queue** | The unit of work + active backlog | `PACKETS`, `DECISIONS_FOR_TIM` (+ spent worker-prompts, archived once closed) | Packet discipline; small bounded diffs |
+| **6. The Specs** | The design of each system | `COMBAT_SPEC`, `MORALITY_SYSTEM`, the staged `*_R3…R7` series, `WORLD_AND_DUNGEONS`, the victory-gate definitions, content bibles (`HISTORICAL_FIGURES`, `CHURCH_OF_INCREMENTALISM`) | "Done-when"; the reference for *this* build |
 | **7. The Eval System** | The three signals, instantiated | the convergence corpus (`tests/corpus/`), `dm-playtest.mjs` (the discovery gate), `check.mjs` (one-command green), `playtest.js` (bug classes), `docs/playtests/` (the empirical record), `HUMAN_PLAYTEST_HARNESS` | Three-signal evals; determinism → cheap verification |
 | **8. The Memory** | So ideas / research / history don't evaporate | `IDEA_GARDEN` (+echoes), `biblioteca/` (16 vols, demand-pulled), `AGENT_CHANGELOG`, `CAPABILITY_LEDGER`, `memory/`, `BASECAMP_HANDOVER` | Knowledge structures; recall across sessions |
 
@@ -30,15 +37,21 @@ protocols that actually organize the build. The specific files don't transfer to
 ## The one lifecycle (how work flows through the organs)
 
 ```
-  capture          research          spec             build under           verify by             record               recall
-  an idea    →     before      →     it as a     →    the Constitution  →   three signals    →    append-only    →     across
- (Idea Garden)    reinventing       Packet          (Protocols + Specs)   (corpus·gate·play)    (Ledger·Changelog)    sessions
-                  (Biblioteca)     (justified vs                           + npm run check        + playtest report    (Memory·
-                                    North Star)                            defines "done"                              Handover)
+  ↺ two doors in, and the tail feeds the head — the loop never really ends:
+
+  door A · a new idea ─────────────────▶ capture ─▶ research ─▶ spec ─▶ build ─▶ verify ─▶ record ─▶ recall ─╮
+  door B · a live bug ─▶ reproduce ─▶ root cause ────────────────┘  under     by three   append-     across   │
+           (model OFF, deterministic)                                the law   signals    only        sessions │
+            (Idea Garden / Biblioteca feed the head)                (Protocols (corpus·   (Ledger·   (Memory·  │
+                                                                    + Specs)    gate·play) Changelog) Handover) │
+                                                                    = "done"   + npm run check                  │
+  ╰──────────────  recall feeds the next turn's capture; a bug-fix's regression test re-enters as Spec + Eval  ◀╯
 ```
 
-**capture → research → spec → build-under-law → verify-three-ways → record → recall**, looping forever. The whole
-apparatus is organs of that single loop.
+**capture → research → spec → build-under-law → verify-three-ways → record → recall**, looping forever, entered
+from either door. Most work starts at **door A** (a new idea, justified against the North Star). Bug-fixing starts
+at **door B** (reproduce first, expensive layer *off*) and merges in at the spec/build stage — its regression test
+is not a detour but a new permanent Spec + Eval case. The whole apparatus is organs of that single loop.
 
 ---
 
@@ -53,19 +66,37 @@ apparatus is organs of that single loop.
 - Does it *measure* whether something works? → **Eval.**
 - Is it *captured knowledge / research / history*? → **Memory.**
 
-If a doc fits two organs, it's probably two docs.
+If a doc fits two organs, it's probably two docs. If it fits *no* organ, it's probably an artifact of finding
+your way — a candidate for the gardening loop below.
 
 ---
 
-## The health note (the cost of a living apparatus)
+## The gardening loop (how the apparatus stays honest)
 
-Eighty living docs accrue entropy. Current sprawl signals worth a periodic "archive the spent, merge the
-overlapping" pass:
-- **Three overlapping Maps** — `WHAT_THIS_IS`, `REPO_MAP`, `KB_MAP` (candidate to unify).
-- A **superseded Protocol** — `WORKFLOW.md` (replaced by `PROMPT_ARCHITECTURE`).
-- **Spent Work-Queue prompts** — the one-off `PACKET_H5*` specs (served their purpose; archive).
-- A **five-headed Spec family** — `VICTORY_GATE*` (consolidate).
+A living doc-system accrues entropy exactly the way a context window does — and **stale docs tax every session
+the way a bloated context window taxes every inference** (recall sags, the agent trusts a Map that's no longer
+true). So the apparatus needs its *own* recurring maintenance pass, not a one-time cleanup. This is the method-eval
+of §"points up and answers down": run it when the sprawl starts costing more than it carries.
 
-The sprawl is not a flaw in the *method* — it's the natural entropy of a real, working build system. The fix is
-this doc (the index it was missing) plus an occasional gardening pass. Keep the **organ-set** small and stable;
-let the **files** within each organ come and go.
+**Two failure modes to garden against:**
+- **Spent scaffolding piles up.** One-off worker-prompts, superseded protocols, early victory-ladders — the
+  remnants of *finding* a way to work. Don't delete (history is append-only); **archive** them out of the live
+  set so they stop competing for attention. (`git mv` to `docs/_archive/` preserves the trail.)
+- **Forward-docs rot silently.** History is protected (the append-only Ledger), but the *Map, Specs, and Roadmap*
+  can drift out of true with nothing flagging it. Apply the memory rule to docs: **verify before trusting** —
+  every forward-doc should be *datable and falsifiable* (a "last-true-as-of" date, a one-line "still true?" check).
+
+**The pass itself:** *archive the spent · merge the overlapping · date the forward-looking · re-file the orphans.*
+Keep the **organ-set** small and stable (eight); let the **files** within each organ come and go. The fix for
+sprawl is never "stop making docs" — it's this loop, run on purpose.
+
+> **Standing cleanup targets** (the current run — *verify live-vs-spent before moving, and fix inbound links so
+> nothing dangles; names lie, so check the contents*): the `victory-gate*` / `victory-ladder` family (~7 files,
+> ~900 lines — merge the *live* gate-definitions into one Spec, archive the spent ladders; note
+> `API_ACTIVATION_GATES` documents a live path); the spent `PACKET_H5*` / `WORKER_PROMPT_*` worker-prompts and the
+> `*_PUNCHLIST` one-offs (archive — closed); the superseded `WORKFLOW.md` (archive — replaced by
+> `PROMPT_ARCHITECTURE`). **Re-file, don't merge:** `KB_MAP` (the Kevin-Bacon social graph) and `ONE_MAP` (the
+> continuous-zoom camera) are *Specs wearing Map names*, not redundant Maps — rename so they stop reading as the
+> Map organ. **Leave alone:** `RUNG1_*` — Rung 1 is the *current* backlog frame, not a remnant. And the
+> highest-traffic doc of all, `CLAUDE.md`, gets the same diet: trim to the **minimal high-signal set**, detail
+> pushed into the linked docs it already points at.

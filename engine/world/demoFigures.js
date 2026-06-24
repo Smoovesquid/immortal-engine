@@ -15,26 +15,41 @@
 // through npcVoiceResolve.js → the server's existence-gated corpus retrieval (D-C1).
 // §0: a figure surfaces NO cosmology; the authored voice carries tone, nothing more.
 //
-// SCOPE (D-C2a): only the steward-king has a live `nodeSelector` and is placed.
-// The kingdom seat is the ONE node the map already identifies (generateMap tags
-// exactly one settlement `'city'` / `'seat'`). The other five figures' homes
-// (frontier / trade / faith / cannibal-outlier / wilderness) are NOT semantically
-// tagged yet — assigning them needs a node-role map that does not exist. They are
-// recorded here with `nodeSelector: null` so the follow-on packet can place them
-// without re-deriving the table, but they are NOT injected by this overlay.
+// SCOPE: FIVE of six figures are placed via `nodeSelector` — the steward-king at the
+// tagged seat (D-C2a), and (Tier-2 follow-on) Cassandra / the Kant-Knight / Goldblum-
+// Socrates / the Host at the frontier / trade / faith / outlier towns, matched by the
+// locked layout's on-the-nose names. ONLY the Goat is deferred: it belongs in the
+// wilderness, but `injectDemoFigures` runs inside the SETTLEMENT decompress pipeline,
+// so a wild node never reaches it — the Goat waits on a wilderness-encounter hook.
 
 import { DEMO_SEED } from './demoRegion.js';
 
 // Node selectors. A selector is `(node) => boolean` evaluated against a map node.
-// Only `seat` is live in this packet.
-//   seat — the kingdom seat: the one settlement tagged 'city'/'seat' by generateMap
-//          (generateMap.js M7-S3). Steward-king's home.
+//   seat        — the kingdom seat (tag 'city'/'seat'). Steward-king's home.
+//   frontierFar — the far frontier outpost (NOT the start node). Cassandra.
+//   trade       — the market town. The Kant-Knight scholar.
+//   faith       — the pilgrim town. The clown-leader's congregation.
+//   outlier     — the set-apart hamlet. The cannibal-prophet Host.
+//
+// The locked 'tallow' layout names are thematically on-the-nose (Pilgrim's Rest =
+// faith, Saltmarket = trade, Wayfarers' Outpost = frontier), so a name-substring
+// selector lands each figure where the fiction already points. We match on
+// apostrophe-free substrings (the names carry a "'", style-fragile) and include the
+// "(2)" suffix to disambiguate the duplicated twin names ("Wayfarers' Outpost" vs
+// "… (2)"). Each substring is verified unique across the 8 tallow settlements.
+const nameContains = (sub) => (node) =>
+  String(node?.name || '').toLowerCase().includes(sub);
+
 const SELECTORS = {
   // Tolerant of either tag — generateMap pushes BOTH 'city' (tier) and 'seat'.
   seat: (node) => {
     const tags = Array.isArray(node?.tags) ? node.tags : [];
     return tags.includes('seat') || tags.includes('city');
   },
+  frontierFar: nameContains('outpost (2)'),   // n31 "Wayfarers' Outpost (2)"
+  trade: nameContains('saltmarket'),          // n14 "Saltmarket Town"
+  faith: nameContains('pilgrim'),             // n21 "Pilgrim's Rest Village"
+  outlier: nameContains('crossway village (2)'), // n34 "Crossway Village (2)"
 };
 
 // The six authored figures. ORDER and KEYS are stable (the follow-on relies on them).
@@ -60,8 +75,8 @@ export const DEMO_FIGURES = [
     role: 'frontier-watcher',
     voiceCorpusId: 'joan-of-arc',
     personality: { trustOfOutsiders: 0.5, selfPreservation: 0.3, honesty: 0.8 },
-    note: 'Frontier town. NOT placed — needs a node-role map (frontier).',
-    nodeSelector: null /* TODO: node-role map */,
+    note: 'Frontier outpost (the far twin, not the start node). Joan of Arc voice. PLACED.',
+    nodeSelector: SELECTORS.frontierFar,
   },
   {
     key: 'scholar',
@@ -69,8 +84,8 @@ export const DEMO_FIGURES = [
     role: 'scholar',
     voiceCorpusId: 'kant-knight',
     personality: { trustOfOutsiders: 0.4, selfPreservation: 0.5, honesty: 0.9 },
-    note: 'Trade/academy town. NOT placed — needs a node-role map (trade).',
-    nodeSelector: null /* TODO: node-role map */,
+    note: 'The market town (Saltmarket). Kant×Knight voice. PLACED.',
+    nodeSelector: SELECTORS.trade,
   },
   {
     key: 'clown-leader',
@@ -78,8 +93,8 @@ export const DEMO_FIGURES = [
     role: 'clown-leader',
     voiceCorpusId: 'goldblum-socrates',
     personality: { trustOfOutsiders: 0.6, selfPreservation: 0.4, honesty: 0.6 },
-    note: 'Faith town. NOT placed — needs a node-role map (faith).',
-    nodeSelector: null /* TODO: node-role map */,
+    note: 'The pilgrim town (Pilgrim\'s Rest). Goldblum-Socrates voice. PLACED.',
+    nodeSelector: SELECTORS.faith,
   },
   {
     key: 'cannibal-prophet',
@@ -87,8 +102,8 @@ export const DEMO_FIGURES = [
     role: 'cannibal-prophet',
     voiceCorpusId: 'jesus',
     personality: { trustOfOutsiders: 0.3, selfPreservation: 0.5, honesty: 0.7 },
-    note: 'Cannibal outlier. NOT placed — needs a node-role map (outlier).',
-    nodeSelector: null /* TODO: node-role map */,
+    note: 'The set-apart outlier hamlet (Crossway Village (2)). Jesus/Host voice. PLACED.',
+    nodeSelector: SELECTORS.outlier,
   },
   {
     key: 'the-goat',
@@ -96,8 +111,11 @@ export const DEMO_FIGURES = [
     role: 'wilderness-hermit',
     voiceCorpusId: 'twain',
     personality: { trustOfOutsiders: 0.2, selfPreservation: 0.6, honesty: 0.5 },
-    note: 'Wilderness. NOT placed — needs a wilderness-node map.',
-    nodeSelector: null /* TODO: node-role map */,
+    note: 'Wilderness (the Blasted Heath). DEFERRED — injectDemoFigures runs only in the '
+        + 'SETTLEMENT decompress pipeline, so a wilderness node never reaches it. Needs a '
+        + 'wilderness-encounter hook before the Goat can wander; placing him in a town would '
+        + 'break the fiction. Selector stays null until that hook exists.',
+    nodeSelector: null /* DEFERRED: needs a non-settlement (wilderness) injection hook */,
   },
 ];
 

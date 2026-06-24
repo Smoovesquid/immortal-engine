@@ -52,6 +52,57 @@ test('U265 — the steward-king Theodore Augustus stands at the tallow kingdom s
   assert.equal(king.conversationState.metPlayer, false, 'fresh conversation state');
 });
 
+// The Tier-2 follow-on: the four SETTLEMENT figures, placed by on-the-nose name
+// selector (frontier / trade / faith / outlier). The Goat is wilderness-deferred.
+const SETTLEMENT_FIGURES = [
+  { sub: 'outpost (2)',          id: 'figure_cassandra',        name: 'Cassandra',        voice: 'joan-of-arc' },
+  { sub: 'saltmarket',           id: 'figure_scholar',          name: 'The Kant-Knight',  voice: 'kant-knight' },
+  { sub: 'pilgrim',              id: 'figure_clown-leader',     name: 'Goldblum-Socrates',voice: 'goldblum-socrates' },
+  { sub: 'crossway village (2)', id: 'figure_cannibal-prophet', name: 'The Host',         voice: 'jesus' },
+];
+
+function findSettlementByName(world, sub) {
+  return world.map.nodes.find(
+    n => n.nodeType === 'settlement' && String(n.name || '').toLowerCase().includes(sub)
+  );
+}
+
+test('U265 — the four settlement figures stand at their named tallow towns', () => {
+  const w = buildWorld(DEMO_SEED);
+  for (const f of SETTLEMENT_FIGURES) {
+    const node = findSettlementByName(w, f.sub);
+    assert.ok(node, `tallow must have a settlement matching "${f.sub}"`);
+    const w2 = decompressAndCanonizeSync(w, node.id, PACKS);
+    const node2 = w2.map.nodes.find(n => n.id === node.id);
+    const npcs = node2.settlement?.npcs || [];
+    const fig = npcs.find(n => n.id === f.id);
+    assert.ok(fig, `${f.name} must stand at "${node.name}"; got [${npcs.map(n => n.name).join(', ')}]`);
+    assert.equal(fig.name, f.name, 'authored figure name');
+    assert.equal(fig.voiceCorpusId, f.voice, `${f.name} carries the authored voice ${f.voice}`);
+    assert.equal(fig.hostile, false, 'a figure is not hostile');
+  }
+});
+
+test('U265 — each settlement figure is unique to ONE town; the Goat is not in any town', () => {
+  const w = buildWorld(DEMO_SEED);
+  const placements = new Map(); // figureId -> [town names]
+  for (const node of w.map.nodes.filter(n => n.nodeType === 'settlement')) {
+    const w2 = decompressAndCanonizeSync(w, node.id, PACKS);
+    const node2 = w2.map.nodes.find(n => n.id === node.id);
+    for (const npc of (node2.settlement?.npcs || [])) {
+      if (String(npc.id || '').startsWith('figure_')) {
+        placements.set(npc.id, [...(placements.get(npc.id) || []), node.name]);
+      }
+    }
+  }
+  for (const f of SETTLEMENT_FIGURES) {
+    const at = placements.get(f.id) || [];
+    assert.equal(at.length, 1, `${f.name} must appear at exactly ONE town; got [${at.join(', ')}]`);
+  }
+  assert.ok(!placements.has('figure_the-goat'),
+    'the Goat is wilderness-deferred — it must not appear at any settlement');
+});
+
 test('U265 — the overlay is tallow-gated: another seed gets NO authored figure', () => {
   const w = buildWorld('u265-not-tallow');
   const seat = findSeat(w);

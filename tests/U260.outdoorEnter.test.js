@@ -121,6 +121,25 @@ test('U260: "<verb> back outside" exits the building (no roll, now outdoors)', (
   }
 });
 
+// IT-1: a BARE "<motion> outside" (no adverb) now exits — but a trailing presence/
+// survey question wins, so "head outside, who do I see?" still answers the roster.
+test('U260: bare "head outside" / "walk outside" exits the building (IT-1)', () => {
+  for (const phrase of ['I head outside', 'I walk outside', 'I head outside to get some air', 'I go outside']) {
+    const r = playerMove(boot(), PACKS, phrase);
+    assert.equal(inside(r.world), false, `[${phrase}] should exit`);
+  }
+});
+
+test('U260: "head outside, who do I see?" answers (does NOT exit-and-stop) — presence wins', () => {
+  const r = playerMove(boot(), PACKS, 'I head outside, who do I see?');
+  assert.equal(inside(r.world), true, 'the presence question wins — not a bare exit');
+  // It delivers the roster (names present folk), not "you step back outside".
+  assert.doesNotMatch(r.output.narration || '', /you step back outside/i);
+  // "head outside and look around" yields to the survey too (isExploreIntent guard).
+  const r2 = playerMove(boot(), PACKS, 'I head outside and look around');
+  assert.equal(inside(r2.world), true, 'survey intent wins over the bare exit');
+});
+
 // The rise-from-furniture guard must survive the broadened exit rule: standing up out
 // of bed/covers is NOT leaving the building.
 test('U260: "out of bed / out of the covers" still does NOT exit (rise guard holds)', () => {

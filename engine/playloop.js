@@ -3274,6 +3274,16 @@ function inferInteriorAction(text, interior) {
   const saysStepOut = /\bstep(?:ped|s|ping)?\s+out\b/.test(t);
   const stepOutIdiom = /\bstep(?:ped|s|ping)?\s+out\s+of\s+(?:line|turn|character|place|order|step|sync)\b/.test(t);
   if (saysStepOut && !stepOutIdiom && !riseOnly) return { kind: 'exit' };
+  // IT-1: a BARE "<motion> outside/outdoors" (no adverb) exits — but YIELDS when the
+  // text also asks a presence/survey question, so "head outside, who do I see?" reaches
+  // the roster instead of stopping at "you step back outside" (the adverb forms above
+  // already exit unconditionally; this adds the bare form without stomping the question).
+  if (!riseOnly
+      && /\b(?:go(?:es)?|step(?:s|ped|ping)?|walk(?:s|ed|ing)?|head(?:s|ed|ing)?|move(?:s|d)?|wander(?:s|ed|ing)?)\s+(?:outside|outdoors)\b/.test(t)
+      && !/\bwho(?:'?s|\s+(?:is|are|do|did|can|could|might|else))\b/i.test(t)
+      && !isExploreIntent(t)) {
+    return { kind: 'exit' };
+  }
   // "out the door", "to the open air", "into the open" — explicit egress phrasings
   // that name the threshold or the outside rather than the verb.
   if (

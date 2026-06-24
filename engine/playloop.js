@@ -29,7 +29,7 @@ import { rollPhysicsCheck } from './resolve.js';
 import { appendCanonEvent } from './csl/canonLog.js';
 import { createGoal, checkGoals } from './goals/goalContract.js';
 import { proposeGoalFromDialogue } from './goals/proposeGoal.js';
-import { playerReputation, generateNewspaper, renderNewspaperForRead, isNewspaperRead } from './newspaper/lastingWord.js';
+import { playerReputation, generateNewspaper, renderNewspaperForRead, isNewspaperRead, isKasualKornerAnswer, findKasualKornerAd, resolveKasualKornerEncounter } from './newspaper/lastingWord.js';
 import { castArcs, tickArcs } from './story/storyEngine.js';
 import { beginDialogue, askNpc, endDialogue, resolveNpcAtCurrentNode, isRecruitIntent, npcVoice, voiceManner, commonKnowledgeAnswer, extractTopic } from './npc/dialogue.js';
 import { mintThing, revealTrueEdge } from './things.js';
@@ -1184,6 +1184,15 @@ function playerMoveCore(world, packsById, text) {
   if (!w.combat?.active && !w.scene?.dialogue && isNewspaperRead(text)) {
     const body = renderNewspaperForRead(generateNewspaper(w));
     return { world: w, output: { narration: `Wizard: ${body}`, mechanics: '[newspaper:read | no roll]' } };
+  }
+
+  // (NP-3) Answer a Kasual Korner ad → the engine flips its hidden card (tryst / contract /
+  // trap / both). Words only here; a contract NAMES the target so the player commits via the
+  // normal quest-birth ("I'll deal with <target>", D-B1); a trap sets up the fight. §0-safe.
+  if (!w.combat?.active && !w.scene?.dialogue && isKasualKornerAnswer(text)) {
+    const ad = findKasualKornerAd(w, text);
+    if (ad) return { world: w, output: resolveKasualKornerEncounter(w, ad) };
+    return { world: w, output: { narration: 'Wizard: The Korner is thick with the lonely and the worse; you will have to name the one that caught your eye — the smith, the widow, the twins, the gentleman in the grey coat.', mechanics: '[korner:which?]' } };
   }
 
   if (!w.combat?.active && !w.scene?.dialogue) {

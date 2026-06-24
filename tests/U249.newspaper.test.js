@@ -4,7 +4,7 @@
 // ad's truth only by acting on it.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { generateNewspaper, renderNewspaperText, AD_KINDS, playerReputation, isNewspaperRead } from '../engine/newspaper/lastingWord.js';
+import { generateNewspaper, renderNewspaperText, AD_KINDS, playerReputation, isNewspaperRead, isKasualKornerAnswer, resolveKasualKornerEncounter } from '../engine/newspaper/lastingWord.js';
 import { playerMove } from '../engine/playloop.js';
 import { villageBakerWorld, PACKS } from '../scripts/convergence/fixtures.mjs';
 import { ensureWorld } from '../engine/state.js';
@@ -94,4 +94,28 @@ test('U249 newspaper — NP-4: "read the broadsheet" surfaces the paper; an ordi
   assert.match(o.narration, /The Lasting Word/);
   assert.match(o.narration, /Kasual Korner/i);
   assert.doesNotMatch(o.narration, /\b(contract|tryst|trap|kill|murder)\b/i);  // the page keeps its secrets
+});
+
+test('U249 newspaper — NP-3: answering an ad flips its hidden card; a contract names its target', () => {
+  assert.ok(isKasualKornerAnswer("I'll answer the blacksmith's ad"));
+  assert.ok(isKasualKornerAnswer('respond to the personal in the paper'));
+  assert.ok(!isKasualKornerAnswer('go meet the blacksmith'));   // no ad reference → not the Korner
+  assert.ok(!isKasualKornerAnswer("what's the news"));
+  const np = generateNewspaper(world(), { kkCount: 8 });
+  for (const ad of np.kasualKorner) {
+    assert.ok(ad.persona, 'every ad has a matchable persona');
+    if (ad._kind === 'contract' || ad._kind === 'both') assert.ok(ad._target, 'a contract carries a hidden target');
+  }
+  const contractAd = np.kasualKorner.find(a => a._kind === 'contract');
+  if (contractAd) {
+    const enc = resolveKasualKornerEncounter(world(), contractAd);
+    assert.match(enc.mechanics, /korner:contract \| target:/);
+  }
+});
+
+test('U249 newspaper — NP-3 wiring: "answer the <persona> ad" resolves an encounter; an unnamed answer asks which', () => {
+  const persona = generateNewspaper(villageBakerWorld(), { kkCount: 8 }).kasualKorner[0].persona;
+  const o = playerMove(villageBakerWorld(), PACKS, `I'll answer the ${persona}'s ad`).output;
+  assert.match(o.mechanics, /\[korner:(tryst|contract|trap|both)/);
+  assert.match(playerMove(villageBakerWorld(), PACKS, "I'll answer a personal ad").output.mechanics, /korner:which/);
 });

@@ -4,7 +4,10 @@
 // ad's truth only by acting on it.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { generateNewspaper, renderNewspaperText, AD_KINDS } from '../engine/newspaper/lastingWord.js';
+import { generateNewspaper, renderNewspaperText, AD_KINDS, playerReputation } from '../engine/newspaper/lastingWord.js';
+import { playerMove } from '../engine/playloop.js';
+import { villageBakerWorld, PACKS } from '../scripts/convergence/fixtures.mjs';
+import { ensureWorld } from '../engine/state.js';
 
 function world() {
   return {
@@ -59,4 +62,24 @@ test('U249 newspaper — §0 + indistinguishability: no cosmology, and no kind/m
   assert.doesNotMatch(text, /cataclysm|the scar|undoing|under-?collapse|universe.?mind|deep:?foundation/i);  // §0
   assert.doesNotMatch(text, /\b(contract|tryst|trap|bounty|assassinat\w*)\b/i);   // hidden kind never prints
   assert.doesNotMatch(text, /\b(kill|killed|murder|corpse|stab|slay|dead body)\b/i); // a hit reads as a hookup
+});
+
+test('U249 newspaper — playerReputation: the most notable recent deed becomes a recognition clause', () => {
+  assert.match(playerReputation(world())?.clause || '', /put Ashblade beyond mischief/);  // a defeat in the timeline
+  assert.equal(playerReputation({ timeline: [] }), null);                                  // no deeds → null
+});
+
+test('U249 newspaper — NP-2: a STRANGER greets you by your deed; no deed and a known face stay silent', () => {
+  const withDeed = () => {
+    let w = villageBakerWorld();
+    w.map.nodes.find(n => n.id === w.map.currentNodeId).settlement.npcs.push({ id: 'npc_bandit', name: 'Brokefang', role: 'bandit', hostile: true });
+    w = ensureWorld(w);
+    return ensureWorld({ ...w, timeline: [...w.timeline, { id: 'r:x', t: w.timeline.length, kind: 'resolution', data: { targetDefeated: 'npc_bandit' } }] });
+  };
+  const fresh = playerMove(withDeed(), PACKS, "I'll go talk to Mira").output.narration;
+  assert.match(fresh, /Word wrote of — the one who put Brokefang beyond mischief/);  // a stranger who read the Word
+  assert.doesNotMatch(playerMove(villageBakerWorld(), PACKS, "I'll go talk to Mira").output.narration, /Word wrote of/);  // no deed
+  let w = playerMove(withDeed(), PACKS, "I'll go talk to Mira").world;  // meet her
+  w = playerMove(w, PACKS, 'goodbye').world;
+  assert.doesNotMatch(playerMove(w, PACKS, "I'll go talk to Mira").output.narration, /Word wrote of/);  // does not repeat
 });

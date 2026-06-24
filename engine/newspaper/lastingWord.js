@@ -163,3 +163,30 @@ export function renderNewspaperText(np) {
   for (const ad of np.kasualKorner) L.push('  · ' + ad.text);
   return L.join('\n');
 }
+
+/**
+ * playerReputation(world) → { clause } | null
+ * The player's most notable recent deed, phrased as the recognition clause a stranger who
+ * has read the Word would use ("the one who put Ashblade beyond mischief"). NP-2 wires this
+ * into the live greeting, so a deed in one town precedes you to the next. §0-safe (a deed is
+ * symptom/event-level; never the cosmology).
+ */
+export function playerReputation(world) {
+  const tl = Array.isArray(world?.timeline) ? world.timeline : [];
+  for (let i = tl.length - 1; i >= 0; i--) {
+    const e = tl[i];
+    if (!e) continue;
+    if (e.kind === 'resolution' && e.data && e.data.targetDefeated) {
+      const nm = npcNameById(world, e.data.targetDefeated) || 'a bad sort';
+      return { clause: `the one who put ${nm} beyond mischief` };
+    }
+    if (e.kind === 'goalCompleted' && e.data && e.data.kind === 'defeat') {
+      const nm = npcNameById(world, e.data.targetRef) || 'one who needed the putting-down';
+      return { clause: `the one who dealt with ${nm}` };
+    }
+    if (e.kind === 'goalCompleted') {
+      return { clause: 'the one who keeps their word' };
+    }
+  }
+  return null;
+}

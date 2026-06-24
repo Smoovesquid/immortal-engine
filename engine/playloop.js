@@ -29,6 +29,7 @@ import { rollPhysicsCheck } from './resolve.js';
 import { appendCanonEvent } from './csl/canonLog.js';
 import { createGoal, checkGoals } from './goals/goalContract.js';
 import { proposeGoalFromDialogue } from './goals/proposeGoal.js';
+import { playerReputation } from './newspaper/lastingWord.js';
 import { castArcs, tickArcs } from './story/storyEngine.js';
 import { beginDialogue, askNpc, endDialogue, resolveNpcAtCurrentNode, isRecruitIntent, npcVoice, voiceManner, commonKnowledgeAnswer, extractTopic } from './npc/dialogue.js';
 import { mintThing, revealTrueEdge } from './things.js';
@@ -1615,6 +1616,9 @@ function playerMoveCore(world, packsById, text) {
     }
     const resolved = resolveNpcAtCurrentNode(w, talkRef);
     if (resolved) {
+      // NP-2 (reputation-travels): a STRANGER (not yet met) who has read the Word may greet
+      // you by your deeds — captured before beginDialogue flips metPlayer.
+      const wasStranger = !resolved?.conversationState?.metPlayer;
       const begun = beginDialogue(w, talkRef);
       if (begun.outcome.ok) {
         w = begun.world;
@@ -1652,6 +1656,10 @@ function playerMoveCore(world, packsById, text) {
         const arc = npcNow ? resolveArc(npcNow, w.meta.seed, { wits }) : null;
         const wantClause = arc?.surfaceWant ? ` There's a want in them, plain enough: ${arc.surfaceWant}.` : '';
         const tellClause = (arc?.status === 'hinted' && arc.tell) ? ` ${arc.tell}` : '';
+        // NP-2 — a stranger who has read the Word greets you by your deeds (the paper carried
+        // them ahead of you). Diegetic reputation-travels; §0-safe (a deed, never the why).
+        const rep = wasStranger ? playerReputation(w) : null;
+        const repClause = rep ? ` Their eyes catch on you a moment. "You're the one the Word wrote of — ${rep.clause}." Word travels, even out here.` : '';
         // Voice: the first impression carries the personality — how they
         // RECEIVE you is who they are (manner derives from npc personality).
         const atHome = Boolean(w.meta?.homeNodeId) && w.meta.homeNodeId === w.map?.currentNodeId;
@@ -1677,7 +1685,7 @@ function playerMoveCore(world, packsById, text) {
         return {
           world: w,
           output: {
-            narration: `Wizard: You approach ${begun.outcome.npcName}${role}; ${eyeDesc} eyes meet yours.${opener}${wantClause}${tellClause}`,
+            narration: `Wizard: You approach ${begun.outcome.npcName}${role}; ${eyeDesc} eyes meet yours.${opener}${repClause}${wantClause}${tellClause}`,
             mechanics: `[dialogue enter | ${begun.outcome.npcName} | role:${begun.outcome.npcRole || 'unknown'} | trust:${begun.outcome.trustLevel}/10 | mood:${begun.outcome.mood}]`
           }
         };

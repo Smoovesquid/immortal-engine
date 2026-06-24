@@ -94,9 +94,8 @@ sprawl is never "stop making docs" — it's this loop, run on purpose.
 > `WORKFLOW.md`; the `PACKET_H5*` / `WORKER_PROMPT_rung1` worker-prompts; `PRE_SESSION_PUNCHLIST`; and the six
 > historical `VICTORY_*` ladders + their `.log` (each self-marked "superseded" by `NORTH_STAR` / `SLICE_PLAN`).
 > **Kept live:** `API_ACTIVATION_GATES` (an active gate), `RUNG1_*` (the *current* backlog frame),
-> `CONVERSATION_PUNCHLIST` (half reusable pipeline-map). **Still open:** trim `CLAUDE.md` to the **minimal
-> high-signal set** (detail pushed to the docs it already links); `CAMPAIGN_LIFECYCLE_SPEC_v1` is a same-class
-> archive candidate (finite-arc, superseded by `NORTH_STAR`); the archived `SPATIAL_EXPLORATION_VICTORY_GATES`
-> holds un-surfaced future spatial intent (interiors, tactical grids, dungeons) worth lifting into `ROADMAP` / a
-> Spec if wanted; and `KB_MAP` / `ONE_MAP` are Specs wearing Map names (rename deferred — cosmetic, the link-churn
-> isn't worth it yet).
+> `CONVERSATION_PUNCHLIST` (half reusable pipeline-map). **Done since:** `CLAUDE.md` trimmed (commit `1310aa8`);
+> `CAMPAIGN_LIFECYCLE_SPEC_v1` archived; the archived `SPATIAL_EXPLORATION_VICTORY_GATES`' un-built future intent
+> (interiors, tactical layer, landmarks, dungeons, faction spatial influence, discovery memory) lifted into
+> `ROADMAP`'s parallel section (off the `S#` labels). **Still open:** `KB_MAP` / `ONE_MAP` are Specs wearing Map
+> names (rename deferred — cosmetic); and a periodic *method-retro* (the down-layer gap) is offered but unbuilt.

@@ -244,7 +244,7 @@ After Pass M1, the slice is shown to the user. If it holds up, post-slice work:
 - Pass TTS1 — TTS voice output.
 - Pass D1 — Second region, deeper rumor testing.
 - Pass A1 — Server authority + accounts.
-- Pass L1 — Legacy doc cleanup: `VICTORY_LADDER_MVP_v1.md` archived 2026-06-24 (→ `docs/_archive/`); `CAMPAIGN_LIFECYCLE_SPEC_v1.md` still to archive or rewrite (same finite-arc supersession).
+- Pass L1 — Legacy doc cleanup: ✅ done — `VICTORY_LADDER_MVP_v1.md` and `CAMPAIGN_LIFECYCLE_SPEC_v1.md` both archived 2026-06-24 (→ `docs/_archive/`).
 
 ---
 

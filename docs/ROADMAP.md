@@ -78,6 +78,18 @@ Bestiary depth (toward 1000, world-native), rumor-collapse, prose-to-world world
 generation, religions/factions. These advance opportunistically; the critical path
 above is what turns this into *tabletop you can speak to.*
 
+### Future spatial layers (rescued 2026-06-24 from the retired spatial gate ladder)
+Un-built spatial intent beyond today's node/road/building/structure rendering — all
+deterministic and *projection-only* (never canon authority), reproducible from seed:
+- **Interior maps** — deterministic layouts per structure type (house, tavern, temple, tower, shop, dungeon), each yielding a tactical grid.
+- **Tactical interaction layer** — interiors support interaction: deterministic obstacles, defined entry/exit, a valid movement grid.
+- **Landmark nodes** — major landmarks (ruin, fortress, ancient shrine, wizard tower) get unique structure grammar, deterministic per node.
+- **Dungeon generation** — procedural labyrinths (rooms, corridors, branch loops, boss chamber); see also `WORLD_AND_DUNGEONS.md`.
+- **Faction spatial influence** — faction pressure shapes settlement layout (military → walls/towers, religious → temples, trade → markets).
+- **Spatial discovery memory** — the player remembers discovered locations (node, structure, last-visited turn).
+
+*(Full acceptance criteria preserved in `_archive/SPATIAL_EXPLORATION_VICTORY_GATES.md`; renamed off the old `S7–S12` labels to avoid the clash with the `S#` Canonical-Surface test names.)*
+
 ## Anti-drift commitments
 1. **One phase at a time**, as a packet with a written done-when, verified + suite
    green before the next. No sprawling multi-direction sessions.

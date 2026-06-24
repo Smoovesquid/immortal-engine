@@ -7,6 +7,7 @@ with a live one, **the live one wins**. Recover anything with `git mv docs/_arch
 ## Archived 2026-06-24 (meta-refactor gardening run)
 
 - `WORKFLOW.md` — superseded by `PROMPT_ARCHITECTURE.md` (old team/PR model).
+- `CAMPAIGN_LIFECYCLE_SPEC_v1.md` — finite-arc campaign model (convergence / ending / sequel chaining), retired; superseded by `NORTH_STAR.md`. Archived in the follow-up pass.
 - `PACKET_H52_PROMPT.md` … `PACKET_H56_PROMPT.md` (+ `_FIXFORWARD`), `WORKER_PROMPT_rung1.md` — spent one-off
   worker hand-off prompts; the packets they drove are closed.
 - `PRE_SESSION_PUNCHLIST.md` — a dated session-findings snapshot, worked through.

@@ -549,6 +549,23 @@ export function validateNarrationCandidate(world, narrationCandidate, {
     }
   }
 
+  // Rule 1b (J-Q1) — claims an EXIT that canon did not commit. If the player is still
+  // INSIDE a structure after the action (scene.interior is live) but the polish narrates
+  // them leaving / stepping outside, that is a location desync — the journey playtest:
+  // the DM narrated "you leave the building" on an info-ask while the engine kept the
+  // player indoors. Canon (scene.interior) is authoritative → reject, fall back to base.
+  // Fires ONLY while still inside, so a real exit (interior already cleared) is untouched;
+  // scoped to "player exits a BUILDING" so idioms ("step out of the way/line") survive.
+  if (w?.scene?.interior && typeof w.scene.interior === 'object') {
+    const claimsExit =
+      /\byou(?:'ve| have)?\s+(?:step|steps|stepped|stepping|walk|walks|walked|head|heads|headed|go|goes|went|move|moves|moved|stride|strode|slip|slips|slipped|duck|ducks|ducked)\s+(?:back\s+|right\s+|now\s+)?out(?:side|doors)\b/i.test(cand)
+      || /\byou(?:'ve| have)?\s+(?:step|stepped|walk|walked|head|headed|go|went|move|moved|push|pushed|burst)\s+(?:back\s+)?out\s+(?:into|onto|through)\b/i.test(cand)
+      || /\byou(?:'ve| have)?\s+(?:leave|leaves|left|exit|exits|exited|step\s+out\s+of|walk\s+out\s+of|head\s+out\s+of|go\s+out\s+of)\s+(?:the\s+)?(?:building|inn|house|hut|cabin|cottage|shop|store|room|tavern|hall|structure|interior|premises|common\s+room)\b/i.test(cand)
+      || /\byou(?:'ve| have)?\s+(?:step|stepped|walk|walked|move|moved|head|headed|go|went)\s+(?:back\s+)?(?:in)?to\s+the\s+open(?:\s+air)?\b/i.test(cand)
+      || /\byou\s+emerge[sd]?\s+(?:back\s+)?(?:out\b|into\s+the\s+open|onto|from\s+the\s+(?:building|inn|house|hut|cabin|shop|interior|common\s+room))/i.test(cand);
+    if (claimsExit) return false;
+  }
+
   // Rule 2 (H-26a) — fresh attack/defeat against an already-reconciled enemy.
   // Fires only when combat is NOT active. If a defeated enemy is on record and
   // the polish narrates a live exchange ending with the PLAYER defeated, or the

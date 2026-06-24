@@ -3180,10 +3180,17 @@ function inferInteriorAction(text, interior) {
   // contradictory "swings open"; resolve it as the force action it is.)
   const forcesBarrier = /\b(?:ram|rams|ramming|barge|barges|barging|bash|bashes|bashing|kick|kicks|kicking|boot|boots|booting|shoulder|shoulders|shouldering|slam|slams|slamming|throw\s+(?:my|your)\s+(?:whole\s+)?weight|put(?:ting)?\s+(?:my|your)\s+(?:whole\s+)?weight)\b[\s\S]*\b(?:door|gate|hatch|trapdoor|wall|crate|chest|barrier|portal|grate|shutter|lid|window|barricade)\b/i;
   if (forcesBarrier.test(t)) return { kind: 'none' };
-  if (
+  // RISE FROM FURNITURE is not a building exit. "step/get/climb out of bed / a chair /
+  // the covers" = standing up (the player wakes in bed on some seeds), NOT leaving the
+  // structure — UNLESS the text also carries a standalone exit cue ("...and step
+  // outside"). FIRST_ROOM #2 over-match caught in verification: "step out of bed" exited.
+  const risesFromFurniture = /\b(?:step|steps|stepped|stepping|get|gets|got|getting|climb|climbs|climbed|climbing|rise|rises|rose|rising|hop|hops|hopped|swing|swings|swinging|roll|rolls|rolled)\s+(?:up\s+|back\s+)?out\s+of\s+(?:the\s+|my\s+|his\s+|her\s+|your\s+|its\s+)?(?:bed|cot|bunk|bedroll|hammock|chair|seat|stool|bench|saddle|tub|bath|covers|blankets|sheets|pallet)\b/i;
+  const hasExitCue = /\b(?:outside|out the door|out that door|to the open air|into the open|leave the (?:room|building|inn|house|hut|cabin)|exit|out of here|out of the (?:room|inn|building|house|hut|cabin))\b/i.test(t);
+  const riseOnly = risesFromFurniture.test(t) && !hasExitCue;
+  if (!riseOnly && (
     /\b(leave|exit|go outside|step outside|ascend|to the surface|get out|out of here|head out|back out|back up|up and out|go up|head up)\b/.test(t) ||
     /\bclimb\b[^.!?]*\b(out|up|back|surface|stairs?|steps?)\b/.test(t)
-  ) return { kind: 'exit' };
+  )) return { kind: 'exit' };
   // Compound "step out ..." — a leave that carries a trailing purpose clause
   // ("step out through the way", "...to the open air", "...to explore the rest")
   // or a bare "step out". The old regex only caught the exact "step outside", so
@@ -3193,7 +3200,7 @@ function inferInteriorAction(text, interior) {
   // order/sync". "step out of here" / "...of the inn" still read as exit.
   const saysStepOut = /\bstep(?:ped|s|ping)?\s+out\b/.test(t);
   const stepOutIdiom = /\bstep(?:ped|s|ping)?\s+out\s+of\s+(?:line|turn|character|place|order|step|sync)\b/.test(t);
-  if (saysStepOut && !stepOutIdiom) return { kind: 'exit' };
+  if (saysStepOut && !stepOutIdiom && !riseOnly) return { kind: 'exit' };
   // "out the door", "to the open air", "into the open" — explicit egress phrasings
   // that name the threshold or the outside rather than the verb.
   if (

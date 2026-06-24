@@ -69,3 +69,20 @@ test('U257-C: "step out of line / turn" do NOT exit (idiom guard)', () => {
     assert.equal(Boolean(r.world.scene?.interior), true, `[${phrase}] must NOT be read as an exit`);
   }
 });
+
+// RISE FROM FURNITURE is standing up, NOT leaving the building — the player wakes
+// in bed on tallow, so "step/get out of bed" must NOT teleport them outside (an
+// over-match caught verifying the original #2 fix).
+test('U257-D: "step/get out of bed / a chair" do NOT exit (rise-from-furniture guard)', () => {
+  for (const phrase of ['I step out of bed', 'I get out of bed', 'I step out of the chair']) {
+    const r = playerMove(boot(), PACKS, phrase);
+    assert.equal(Boolean(r.world.scene?.interior), true, `[${phrase}] is rising, not a building exit`);
+  }
+});
+
+// ...but rise-from-furniture WITH a standalone exit cue still exits (intent to leave).
+test('U257-E: "get out of bed and step outside" still exits (cue overrides the rise guard)', () => {
+  const r = playerMove(boot(), PACKS, 'I get out of bed and step outside.');
+  assert.equal(ROLL_RE.test(r.output.mechanics || ''), false, `must not roll: ${r.output.mechanics}`);
+  assert.equal(Boolean(r.world.scene?.interior), false, 'the explicit "step outside" makes it an exit');
+});

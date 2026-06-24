@@ -121,8 +121,10 @@ test('U235-05: "where\'s Corwin?" (present) delivers the roster; "where\'s Brae?
 
 test('U235-10: a plain (non-question) action still uses the gen/normal floor, not the roster', () => {
   const out = ggo('I shove the broken cart aside and step through', 'success');
-  assert.match(out, GEN_RE, `non-question action must keep gen:s: ${out}`);
-  assert.doesNotMatch(out, ROSTER_RE);
+  // The action floor may now NAME the object it acted on (IT-5: gen:s:<obj>) — still a
+  // grounded action outcome, just more specific. The gate-15 point is: NOT the roster.
+  assert.doesNotMatch(out, ROSTER_RE, `non-question action must not survey: ${out}`);
+  assert.ok(GEN_RE.test(out) || /\bcart\b/i.test(out), `must be a grounded action floor (generic or object-named): ${out}`);
 });
 
 test('U235-11: a permission/feasibility question ("can I climb?") is an action, not an info query', () => {

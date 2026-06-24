@@ -6054,6 +6054,24 @@ function answerOrDeclineQuestion(world, text, outcome) {
   return declineInfoSeek(world, text, npc);
 }
 
+// The object the player's action acted ON, for a grounded generic outcome — so a
+// failure names what RESISTED ("the floorboards won't give") instead of blaming the
+// place ("the outpost doesn't give it to you"), which the table-test judge flags as
+// not resolving the intent (IT-5). A 1–3-word noun phrase after a determiner, stopped
+// at a preposition/particle/conjunction; abstract idiom-objects (a moment, a look)
+// return '' so the prose falls back to the place-generic. Pure (determinism-safe).
+function genericActionObject(t) {
+  const s = String(t || '').toLowerCase().replace(/^\s*(?:i\s+)?(?:try(?:ing)?\s+to\s+|attempt(?:ing)?\s+to\s+|want\s+to\s+|decide\s+to\s+|then\s+|carefully\s+|quietly\s+|slowly\s+)?/i, '').trim();
+  // DIRECT object only: <verb> [<adverb>] <determiner> <object>. Anchoring the
+  // determiner right after the verb excludes a PREPOSITIONAL/movement object ("swing
+  // BY the tavern", "cut ACROSS the square") — those are travel, not a thing acted on.
+  const om = s.match(/^[a-z][a-z'-]+(?:\s+(?:quickly|carefully|hard|firmly|slowly|gently|again|once|twice))?\s+(?:the|that|this|a|an|my|his|her|their|its)\s+([a-z][a-z'-]+(?:\s+[a-z][a-z'-]+){0,2}?)(?=\s+(?:with|using|to|into|onto|on|in|from|at|by|for|and|or|but|up|down|open|shut|loose|free|aside|away|out|apart|together|back|over|through|around)\b|[.,;!?]|$)/);
+  let obj = om ? om[1].trim() : '';
+  // Reject abstract / idiom "objects" — naming them in a failure reads wrong.
+  if (/\b(?:moment|time|chance|risk|look|seat|breath|stock|cover|aim|lead|step|steps|way|idea|thought|plan|courage|heart|measure|stand)\b/.test(obj)) obj = '';
+  return obj;
+}
+
 // Grounded prose for any resolved non-combat action that would otherwise floor.
 // Exported for unit testing.
 export function genericGroundedOutcome(world, text, outcome, meta = {}) {
@@ -6143,6 +6161,15 @@ export function genericGroundedOutcome(world, text, outcome, meta = {}) {
   // tag rides out on output.narrationSource so the Ref reviews these turns too, not just
   // dialogue-ask. Specific/grounded banks above never set it → the Ref skips them (cheap).
   meta.source = 'generic-resolve';
+  // When the action named a concrete object, the outcome NAMES it (resolves-the-intent,
+  // specific-and-grounded) — object-as-direct-object phrasings, so plural/singular never
+  // disagree ("the floorboards won't give"). Otherwise fall back to the place-generic.
+  const obj = genericActionObject(t);
+  if (obj) {
+    return o === 's' ? V(`gen:s:${obj}`, [`You manage the ${obj}, and it goes your way.`, `You get the better of the ${obj}; the way ahead opens a little.`, `You work the ${obj}, and it comes off the way you meant.`])
+      : o === 'm' ? V(`gen:m:${obj}`, [`You get the ${obj} part of the way, but no further.`, `You make some headway with the ${obj}, though not all you hoped.`, `You half-manage the ${obj} — it gives ground, grudgingly.`])
+      : V(`gen:f:${obj}`, [`You can't get the ${obj} to budge; you're left where you started.`, `Whatever you tried, you can't make the ${obj} give.`, `The ${obj} holds against you, and nothing about it changes.`]);
+  }
   return o === 's' ? V('gen:s', [`You see it through, and it goes your way.`, `It comes off cleanly; the moment turns toward you.`, `You manage it, and the way ahead opens a little.`])
     : o === 'm' ? V('gen:m', [`It half-works — you get part of what you were after, not all of it.`, `You get something out of it, though not what you hoped.`, `It lands, after a fashion — partial, imperfect.`])
     : V('gen:f', [`It doesn't come off the way you meant; the moment slips past you in ${place}.`, `It falls short here in ${place}, and you're left where you started.`, `Whatever you meant to do, ${place} doesn't give it to you.`]);

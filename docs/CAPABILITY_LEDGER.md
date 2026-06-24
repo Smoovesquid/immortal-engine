@@ -958,6 +958,21 @@ math, determinism, collaborative-path preservation, unnamed-stat guard). Reprodu
 through the full `playerMove` path on tallow. `npm run check` GREEN: convergence 109/109, suite 8536/0,
 determinism green. **D-B4 residual (a) is now fully closed** (the dominant 6–7 of 10 gate fails).
 
+*2026-06-24 (D-B4 residual b — object-presence query; playloop lane, Basecamp overnight):* closed the
+Confused-newbie's two dead-ends. "Is there a mirror around here I could look at?" was claimed by `isExploreIntent`
+(the "is there a window?" yes/no shape, `playloop.js:4928`) and bounced a generic exits-survey ("You stand still
+and read this corner of Wayfarers' Outpost. Ways lead off east and south. What do you do?") — the yes/no was
+NEVER answered. A real DM tracks what's in the room. Added `objectPresenceTarget` (extracts the object noun from
+"is there a/an/any <noun> (here/around/anywhere)…", excluding people / exits / vague "anything") + an interior
+handler that answers from this node's `furniture`: affirms with the real piece if present ("Yes — there's an
+iron-bound chest here: banded with rusted iron."), honestly declines GROUNDED in what IS there if absent ("No — no
+mirror here. What's here is a straw pallet, an oil lantern, and an iron-bound chest."). Never invents an object
+canon doesn't hold (narration != canon); scoped to interiors so outdoor structure questions stay on the survey;
+pure read (no mutation, no RNG — deterministic). Guards verified: "is there a way out?" stays on the exits path,
+"is there anyone here?" still lists the roster, "where can I go?" still surveys. Locked by
+`tests/U253.objectPresenceQuery.test.js` (7 tests). Reproduced LLM-off FIRST, confirmed through the full
+`playerMove` path on tallow. `npm run check` GREEN: convergence 109/109, suite 8543/0, determinism green.
+
 ---
 
 ## Corpus format (the shared interface — Lane B builds the runner to this, Lane C fills content to this)

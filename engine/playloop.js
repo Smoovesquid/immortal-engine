@@ -1252,6 +1252,35 @@ function playerMoveCore(world, packsById, text) {
         return npcReferentClarify(w, earlyUngroundedRef, { mechanics: '[clarify:referent]', mode: 'decline' });
       }
     }
+    // Object-presence query inside an interior — "is there a mirror here?".
+    // Answer the yes/no from canon (this node's furniture) instead of bouncing a
+    // generic exits-survey. An honest "no mirror here, but there's a washbasin"
+    // beats a navigation prompt, and never invents an object canon doesn't hold
+    // (narration != canon). Scoped to interiors, where furniture is the relevant
+    // object set; outdoor structure questions stay on the survey. (D-B4 resid b.)
+    if (w.scene?.interior && !w.scene?.dialogue) {
+      const presenceNoun = objectPresenceTarget(text);
+      if (presenceNoun) {
+        const pNode = (w.map?.nodes || []).find(n => n && n.id === w.map?.currentNodeId) || null;
+        const furniture = Array.isArray(pNode?.furniture) ? pNode.furniture : [];
+        const pWords = presenceNoun.split(/\s+/);
+        const found = furniture.find(x => nameMatches(x?.name, presenceNoun, pWords[pWords.length - 1]));
+        const art = (s) => `${/^[aeiou]/i.test(String(s).trim()) ? 'an' : 'a'} ${s}`;
+        if (found) {
+          const notes = String(found.notes || '').trim().replace(/[.?!]+$/, '');
+          return { world: w, output: { narration: `Wizard: Yes — there's ${art(found.name)} here${notes ? `: ${notes}` : ''}.`, mechanics: 'observe only — no roll, state unchanged' } };
+        }
+        let groundClause = '';
+        if (furniture.length) {
+          const names = furniture.slice(0, 3).map(x => String(x.name)).filter(Boolean).map(art);
+          const list = names.length === 1 ? names[0]
+            : names.length === 2 ? `${names[0]} and ${names[1]}`
+            : `${names.slice(0, -1).join(', ')}, and ${names[names.length - 1]}`;
+          groundClause = ` What's here is ${list}.`;
+        }
+        return { world: w, output: { narration: `Wizard: No — no ${presenceNoun} here.${groundClause}`, mechanics: 'observe only — no roll, state unchanged' } };
+      }
+    }
     if (w.scene?.interior) {
       const view = getInteriorView(w);
       const labels = exitDirectionLabels(view);
@@ -4898,6 +4927,29 @@ function tryExamineTarget(w, text) {
 
   // Nothing to anchor to — let the room-overview explore branch answer.
   return null;
+}
+
+// Object-presence query — "is there a mirror around here?", "is there a well
+// nearby?". A yes/no about a SPECIFIC concrete object (not people, not exits,
+// not a vague "anything"). Returns the object noun, or null. The yes/no must be
+// ANSWERED from canon (furniture at this node), never bounced to a generic
+// exits-survey — a real DM tracks what's in the room. (D-B4 gate residual b.)
+const OBJECT_PRESENCE_EXCLUDE = new Set([
+  'anyone', 'someone', 'anybody', 'somebody', 'one', 'person', 'people', 'soul', 'souls',
+  'folk', 'guard', 'guards', 'anything', 'something', 'way', 'place', 'point', 'reason',
+  'danger', 'threat', 'trouble', 'catch', 'problem', 'other', 'others', 'use',
+]);
+function objectPresenceTarget(text) {
+  const t = String(text || '').toLowerCase().trim();
+  const m = t.match(/^(?:is|are)\s+there\s+(?:a|an|any|some)\s+([a-z][a-z '-]*?)\s*(?:\b(?:around|here|nearby|near|anywhere|about|close\s+by|in\s+here|i\s+(?:could|can|might|may|need|want)|that\s+i)\b|[?.,]|$)/i);
+  if (!m) return null;
+  let noun = m[1].trim().replace(/^(?:other|spare|second|small|large|big|old|good|proper|real|nice|decent|working)\s+/, '').trim();
+  noun = noun.replace(/\s+(?:i|to)$/, '').trim();
+  if (!noun || noun.length > 28) return null;
+  if (noun.split(/\s+/).length > 3) return null;          // a noun, not a clause
+  if (OBJECT_PRESENCE_EXCLUDE.has(noun)) return null;
+  if (/\b(?:way|exit|exits|out|door\s+out)\b/.test(noun)) return null; // exits → survey
+  return noun;
 }
 
 function isExploreIntent(text) {

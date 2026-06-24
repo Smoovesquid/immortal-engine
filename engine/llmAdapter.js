@@ -41,13 +41,25 @@ const TONE_GUIDANCE = {
  * Constructs a grounded system prompt from the narrator context.
  * Pure function — no API calls.
  */
+// Render the interior as a CANONICAL FACT the DM must respect: the real building type,
+// room count, single storey, and the doorways out of this room — with the geometry locked
+// so the narrator can't add a staircase/upper floor/extra room (WB-Q1). Falls back to the
+// bare room line if no layout was attached (older context shape / no-throw safety).
+function interiorLayoutFact(interior) {
+  if (!interior) return 'The player is outside.';
+  const lay = interior.layout;
+  if (!lay) return `The player is inside a structure (room: ${interior.roomId}).`;
+  const rooms = `a SINGLE-STOREY ${lay.buildingType} of ${lay.roomCount} room${lay.roomCount === 1 ? '' : 's'} (one floor, no upstairs)`;
+  const doors = (Array.isArray(lay.doorways) && lay.doorways.length) ? lay.doorways.join(' and ') : 'no other doorway';
+  const wayOut = lay.atEntry ? ' The way outside is from this room.' : ' The way outside is back toward the front.';
+  return `The player is inside ${rooms}. From this room there is ${doors}.${wayOut} There are NO other rooms, floors, or stairs than these.`;
+}
+
 export function buildSystemPrompt(ctx) {
   const typeDesc = NODE_TYPE_DESCRIPTIONS[ctx.nodeType] ?? 'a place';
   const tone     = TONE_GUIDANCE[ctx.tone] ?? TONE_GUIDANCE.grim;
 
-  const inside = ctx.interior
-    ? `The player is inside a structure (room: ${ctx.interior.roomId}).`
-    : `The player is outside.`;
+  const inside = interiorLayoutFact(ctx.interior);
 
   const structures = ctx.structuresHere.length
     ? `Structures here: ${ctx.structuresHere.map(s => `${s.kind} #${s.index}`).join(', ')}.`
@@ -145,6 +157,7 @@ export function buildSystemPrompt(ctx) {
   lines.push(
     `RULES:`,
     `- Do NOT invent topology, place names, or structures not listed above.`,
+    `- INTERIOR GEOMETRY IS FIXED: if the player is inside, the building has EXACTLY the rooms, doorways, and (single) storey stated in the facts above — nothing more. Never invent a staircase, an upper floor, a cellar, an attic, a wing, a corridor, a balcony, or any room or exit not listed. You may dress the listed rooms with ambient detail; you may NEVER add navigable space the player could try to walk into. Moving between rooms keeps the player INSIDE — never narrate them stepping outdoors or into the open on a room-to-room move; only leaving the building puts them outside.`,
     `- Do NOT name any person, place, structure, or thing with a proper name unless that exact name is already listed in the facts above. Refer to anyone or anywhere else only in generic terms (a traveler, a nearby road, the elder).`,
     `- Do NOT tease readable content you won't deliver. If the player reads something, give the actual words plainly OR a concrete reason it can't be read (faded, a script you don't know, too dark) — never "words that feel heavier than they should" or an inscription "you can't quite make out".`,
     `- Do NOT tease FINDABLE content either. If the player opens, searches, or looks inside a container (chest, box, drawer, pouch, crate), state plainly what is there OR that it is empty — never "perhaps coin, perhaps cloth, perhaps something stranger still" or any list of maybes. Commit to the contents.`,
@@ -1207,7 +1220,7 @@ export function buildDMSystemPrompt(dmCtx) {
     `- Location: "${loc.name}" (${loc.type})`,
     scene.timeOfDay ? `- Time of day: ${scene.timeOfDay}` : '',
     (loc.exits ?? []).length ? `- Exits: ${loc.exits.join(', ')}` : '',
-    scene.interior ? `- Interior: room ${scene.interior.roomId}` : `- Outdoors`,
+    scene.interior ? `- ${interiorLayoutFact(scene.interior)}` : `- Outdoors`,
     mapBlock,
     threatLine,
     goalLine,
@@ -1235,6 +1248,7 @@ export function buildDMSystemPrompt(dmCtx) {
     ``,
     `RULES:`,
     `- You CANNOT invent locations, NPCs, or history not in the context above.`,
+    `- INTERIOR GEOMETRY IS FIXED: inside a building, there are EXACTLY the rooms, doorways, and (single) storey stated in CURRENT SCENE — never a staircase, upper floor, cellar, attic, wing, or extra room/exit the player could walk into. Dress the listed rooms; never add navigable space. A room-to-room move keeps the player INSIDE; only leaving the building puts them outdoors.`,
     `- You CAN invent ambient environmental details (a blanket in a room, books on a shelf).`,
     `- EXCEPTION — successful knowledge roll: if a player explicitly asks for a specific name, date, or identifiable fact (e.g., "name me one X", "who was the last X", "tell me the name") AND the action succeeds, you MUST invent and state a concrete answer — a specific proper name, a date, a title. Atmospheric deflection ("a name surfaces in your mind", "the ledger hums with secrets") does NOT fulfill a successful knowledge roll.`,
     `  If the player interacts with an invented item, emit <<ITEM_CREATED: itemName, location: locationName>>`,

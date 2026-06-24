@@ -19,6 +19,7 @@ import { availableTopics as dialogueAvailableTopics } from '../npc/dialogue.js';
 import { companionApproachForRole } from '../combat/companionTurn.js';
 import { statMod, maxWounds } from '../ruleset/core/stats.js';
 import { buildAsciiMap } from './asciiMap.js';
+import { describeInteriorLayout } from '../structures/interiors.js';
 
 /**
  * buildNarratorContext(world, outcome) → NarratorContext (original slim context)
@@ -356,7 +357,9 @@ function buildScene(w, outcome) {
     .map((s, i) => ({ index: i + 1, kind: String(s.kind ?? 'structure') }));
 
   const interior = (w.scene?.interior && typeof w.scene.interior === 'object')
-    ? { structureKey: String(w.scene.interior.structureKey ?? ''), roomId: String(w.scene.interior.roomId ?? '') }
+    // layout = the REAL room graph (count, single storey, doorways), so the DM prompt can
+    // forbid invented stairs/floors/rooms (WB-Q1). Ephemeral narration context, not state.
+    ? { structureKey: String(w.scene.interior.structureKey ?? ''), roomId: String(w.scene.interior.roomId ?? ''), layout: describeInteriorLayout(w) }
     : null;
 
   const toneWords = outcome?.pack?.toneWords ?? w._resolvedPack?.toneWords ?? null;

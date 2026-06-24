@@ -240,6 +240,17 @@ export const META_LOCATION = /\bwhere am i\b|what (?:do|can) i see\b|\blook(?:in
 // soft-lock in the whole-building playthrough). Narrow by design: a bare survey ("look
 // around", "where am I", "who's here") has no motion-verb+preposition, so it stays meta.
 export const META_MOVE_TO_PLACE = /\b(?:go|goes|going|head|heads|heading|walk|walks|walking|move|moves|moving|step|steps|stepping|push|pushes|pushing|stride|strides|creep|creeps|slip|slips|duck|ducks|cross|crosses)\b[\s\S]{0,40}?\b(?:through|toward|towards|into|out\s+to|over\s+to|back\s+(?:through|toward|towards|into))\b/;
+// INTERIOR-LAYOUT QUESTION — "are there other rooms?", "is there another doorway?",
+// "what other exits are there?", "check if there are doorways I missed". The engine KNOWS
+// the answer (the topology is finite and known), so a real DM answers from the map — never
+// a d20 roll ("the outpost doesn't give it to you"), a wrong object-presence reply ("no
+// rooms here, what's here is a pallet"), or an accidental MOVE. Routed to the location
+// survey (which lists the real doorways). Requires an INTERROGATIVE/SEEKING lead, so the
+// imperative "go to the other room" (a move) is NOT caught.
+export const META_INTERIOR_LAYOUT =
+  /\b(?:are there|is there|are any|is any|any other|any more|what other|how many|did i miss|have i (?:missed|seen)|do i see|where (?:are|do))\b[\s\S]{0,30}\b(?:rooms?|doorways?|doors?|exits?|passages?|chambers?|ways? (?:out|on|in))\b/i;
+const META_INTERIOR_LAYOUT_SEEK =
+  /\b(?:check|look|search|find)\b[\s\S]{0,25}\b(?:other|more|another|hidden|any|missed|remaining)\b[\s\S]{0,15}\b(?:rooms?|doorways?|doors?|exits?|passages?|chambers?)\b/i;
 const META_HEALTH = /\bam i (?:hurt|wounded|damaged|injured|alive|ok|okay|alright|all right|fine|bleeding|dying)\b|\bhow am i (?:doing|holding up|feeling)\b|how(?:'?s| is) my (?:health|hp|status|condition|shape)\b|what(?:'?s| is) my (?:health|hp|status|condition|wounds|shape)\b|how much (?:health|hp|life)\b|\bhow (?:hurt|wounded|injured|bad(?:ly)? (?:hurt|off))\b|how many (?:hit ?points|hp)\b|\b(?:max|maximum)\s+(?:hp|hit\s?points?|health)\b|\bhp\s+(?:total|number|max|cap|count)\b|\bhit\s?points?\b|\bmy\s+(?:current\s+)?hp\b/;
 export const META_RECAP = /what happened|what did i (?:just )?do\b/;
 const META_OUTCOME = /did i (?:succeed|fail|win|lose|make it)\b/;
@@ -556,7 +567,8 @@ const META_ATTACK_GOVERNING_STAT = /\b(?:which|what)\b[\s\S]{0,55}?\b(?:stat|abi
 
 export function isMetaQuestion(text) {
   const t = String(text || '').toLowerCase();
-  return (META_LOCATION.test(t) && !META_MOVE_TO_PLACE.test(t)) || META_HEALTH.test(t) || META_RECAP.test(t) || META_OUTCOME.test(t)
+  return (META_LOCATION.test(t) && !META_MOVE_TO_PLACE.test(t)) || META_INTERIOR_LAYOUT.test(t) || META_INTERIOR_LAYOUT_SEEK.test(t)
+    || META_HEALTH.test(t) || META_RECAP.test(t) || META_OUTCOME.test(t)
     || META_INVENTORY.test(t) || META_EQUIPMENT.test(t) || META_CHARACTER.test(t) || META_STAT.test(t)
     || META_STAT_SYNONYM.test(t) || META_ITEM.test(t) || META_PURSE.test(t) || META_TIME.test(t)
     || META_OBJECTIVE.test(t) || META_MECHANICS.test(t) || META_ADVICE.test(t)
@@ -1501,7 +1513,7 @@ export function handleMetaQuestion(text, world) {
   }
 
   // Location / survey — checked first (most specific phrasings).
-  if (META_LOCATION.test(lowerText)) {
+  if (META_LOCATION.test(lowerText) || META_INTERIOR_LAYOUT.test(lowerText) || META_INTERIOR_LAYOUT_SEEK.test(lowerText)) {
     return buildLocationSurvey(world);
   }
 

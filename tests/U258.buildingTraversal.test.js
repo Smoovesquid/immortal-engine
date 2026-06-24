@@ -182,6 +182,18 @@ test('U258-K: room moves resolve with NPCs present (the approach guard does not 
   }
 });
 
+// Interior-layout QUESTIONS ("are there other rooms / doorways / exits?") are answered
+// from the map (the location survey), never a d20 roll, a wrong object reply, or a move.
+// The engine knows the topology, so a real DM just answers. Imperative moves are untouched.
+test('U258-L: interior-layout questions are answered from the map, not rolled or moved', () => {
+  for (const q of ['are there any other rooms?', 'is there another doorway?', 'are there other exits?', 'check if there are other doorways I missed', 'are there more rooms deeper in?', 'how many rooms are there?']) {
+    assert.equal(isMetaQuestion(q), true, `[${q}] is a layout question — answered from the map`);
+  }
+  for (const q of ['go to the other room', 'I head to the next room', 'search the chest', 'look at the other shelf']) {
+    assert.equal(isMetaQuestion(q), false, `[${q}] is an action (move/examine), not a layout question`);
+  }
+});
+
 // Regression: compass movement (the path that already worked) must still work.
 test('U258-G: compass movement still works (go east → room change, no roll)', () => {
   const w0 = boot();

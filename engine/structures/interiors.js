@@ -1,6 +1,7 @@
 import { ensureWorld } from '../state.js';
 import { ensureMap } from '../map/mapState.js';
 import { adjacentRooms, normalizeTopology, interiorExitsFrom } from './topology.js';
+import { reachableRooms } from '../movement/interiorMovement.js';
 
 function sortedStructuresAtNode(world) {
   const w = ensureWorld(world);
@@ -209,5 +210,40 @@ export function getInteriorView(world) {
     roomId,
     exits,
     surfaces: []
+  };
+}
+
+// describeInteriorLayout(world) -> { buildingType, roomCount, atEntry, doorways[] } | null
+// An ENGINE-OWNED, compact description of the interior the player stands in, for the DM
+// prompt. The live narrator had been inventing navigable geography the topology lacks —
+// a staircase, an upper floor, extra rooms — so the player navigated a fiction the engine
+// couldn't honor and soft-locked (WB-Q1). Feeding the REAL room graph (count, single
+// storey, the doorways out of THIS room) lets the prompt constrain narration to it. Pure
+// read; never mutates; returns null when not inside a known structure.
+export function describeInteriorLayout(world) {
+  const w = ensureWorld(world);
+  const interior = (w.scene && typeof w.scene.interior === 'object' && w.scene.interior) ? w.scene.interior : null;
+  if (!interior) return null;
+  const st = w.structures?.byId?.[String(interior.structureKey || '')];
+  const topo = normalizeTopology(st?.topology);
+  if (!topo || !topo.rooms.length) return null;
+  const roomId = String(interior.roomId || '');
+  const adj = adjacentRooms(topo, roomId);
+  const entryRoom = topo.rooms.find(r => (Array.isArray(r.tags) ? r.tags : []).some(t => String(t).toLowerCase() === 'entry'));
+  const entryId = String(entryRoom?.id || topo.rooms[0]?.id || '');
+  const { dist } = reachableRooms(topo, entryId);
+  const here = dist.get(roomId);
+  const doorways = [];
+  if (adj.some(id => (dist.get(id) ?? Infinity) < (here ?? Infinity))) doorways.push('a doorway back toward the front');
+  if (adj.some(id => (dist.get(id) ?? -Infinity) > (here ?? -Infinity))) doorways.push('a doorway leading deeper in');
+  // Fallback when the entry-relative split is ambiguous (e.g. a non-linear plan).
+  if (!doorways.length && adj.length) {
+    doorways.push(adj.length === 1 ? 'a doorway to the adjoining room' : `${adj.length} doorways to adjoining rooms`);
+  }
+  return {
+    buildingType: String(st?.buildingType || 'building'),
+    roomCount: topo.rooms.length,
+    atEntry: here === 0,
+    doorways,
   };
 }

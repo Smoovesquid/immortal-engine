@@ -11,12 +11,13 @@ done_when · rollback`.
 
 ## ACTIVE
 
-### IT-1…IT-5 — Interior + Town polish cluster (specced 2026-06-24)
-Five small, Road-A-safe packets specced in full at
-**`docs/playtests/harness/INTERIOR_TOWN_PACKETS.md`** (objective · the-hole-at-file:line ·
-approach · allowed_files · test_plan · done_when · risk · lane). Surfaced by the building +
-surrounding-town playtests; **navigation is already shipped** (`da91a25`), so these are all
-*inside the interactions*. Suggested order:
+### IT-1…IT-5 — Interior + Town polish cluster ✅ DONE 2026-06-24
+**All five shipped** — repro'd LLM-OFF, fixed, test-locked, full suite green (8685).
+Commits: IT-2 `86ac11e` · IT-5 `f194e72` · IT-3 `3a40ce8` · IT-1 `04c7c4f` · IT-4
+`0992c6a`. Full specs + the historical hole/approach per packet:
+**`docs/playtests/harness/INTERIOR_TOWN_PACKETS.md`**. Surfaced by the building +
+surrounding-town playtests; navigation was already shipped (`da91a25`), so these were all
+*inside the interactions*:
 - **IT-2** — phantom item acquisition (HIGH; `playloop.js:6090` narrates a take with no
   `addItem` + an oracle false-positive on "take … real"). Do first.
 - **IT-5** — generic failed-roll narration (biggest *quality* lever; `playloop.js:6148`

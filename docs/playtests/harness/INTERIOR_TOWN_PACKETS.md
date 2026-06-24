@@ -1,5 +1,12 @@
 # Interior + Town polish — specced packets (2026-06-24)
 
+> **✅ ALL FIVE SHIPPED 2026-06-24** — each repro'd LLM-OFF, fixed, test-locked, full
+> suite green (8685). Commits: IT-2 `86ac11e` · IT-5 `f194e72` · IT-3 `3a40ce8` · IT-1
+> `04c7c4f` · IT-4 `0992c6a`. Tests: U259–U262, N7, object-interaction.test.js. Notable
+> finding: IT-2 was a *measurement* false-positive (the rest idiom "take a real bed"), not
+> a live engine phantom — the audit found takes route to the trivial-action path. The spec
+> below is kept as the historical record of each hole + approach.
+
 Spec-out of the residuals the building + surrounding-town playtests queued (see
 `WHOLE_BUILDING_FINDINGS.md` → WB-Q* / T-Q*). Each packet is sized so one agent
 understands every touched file. **House rule (PACKETS.md): repro LLM-OFF first, then

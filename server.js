@@ -262,6 +262,10 @@ return res.json({ ok:false, reason:safe });
       const factPhrase = String(req.body?.factPhrase || '').slice(0, 120);
       const playerLine = String(req.body?.playerLine || '').slice(0, 200);
       const historicalFigureId = String(req.body?.historicalFigureId || '').slice(0, 40).replace(/[^a-z0-9_-]/gi, '');
+      // D-C1: ordinary-NPC voice corpus (archetype/role → corpus basename, from
+      // the engine resolver). Sanitized to a safe basename so it can't escape
+      // the corpus dir. Used for RAG grounding when no historical figure is set.
+      const voiceCorpusId = String(req.body?.voiceCorpusId || '').slice(0, 60).replace(/[^a-z0-9_-]/gi, '');
       // Claim context — present only when mode === 'claim_recall'. The client
       // passes the resolved claim object from the askNpc outcome. We validate
       // shape here so the voice prompt builder can trust the fields.
@@ -293,12 +297,36 @@ return res.json({ ok:false, reason:safe });
       const { buildNpcVoicePrompt } = await import('./server/npcVoicePrompt.js');
       let ragChunks = [];
       let ragReconstructed = false;
-      if (historicalFigureId) {
+      // D-C1: ground on whichever corpus we have — a named historical figure, or
+      // the ordinary-NPC archetype/role corpus from the engine resolver.
+      // retrieveChunks no-ops (returns []) for a missing file, so a stale id is
+      // harmless. Named figure wins when both are present.
+      const corpusId = historicalFigureId || voiceCorpusId;
+      if (corpusId) {
         const { retrieveChunks } = await import('./server/rag/ragRetriever.js');
-        ({ chunks: ragChunks, reconstructed: ragReconstructed } = retrieveChunks(historicalFigureId, playerLine, 4));
+        ({ chunks: ragChunks, reconstructed: ragReconstructed } = retrieveChunks(corpusId, playerLine, 4));
       }
       const prompt = buildNpcVoicePrompt({ npcName, role, mood, manner, trust, mode, factPhrase, playerLine, ragChunks, ragReconstructed, claim, substrateContext });
       if (!prompt) return res.json({ ok: false, reason: 'bad_mode' });
+
+      // D-C1: Opus 4.8 is the primary voice ("Opus voice for every NPC").
+      // When the Anthropic key is present, render the line through Opus; on ANY
+      // failure (or no key) fall back to the local 8B, then to templates — the
+      // LLM layer NEVER throws to the caller (CLAUDE.md). callNpcVoice already
+      // omits temperature (Opus 4.8 rejects it).
+      const anthropicKey = (process.env.ANTHROPIC_API_KEY || '').trim();
+      if (anthropicKey) {
+        try {
+          const { callNpcVoice } = await import('./engine/llmAdapter.js');
+          const opusLine = await callNpcVoice({ prompt, apiKey: anthropicKey });
+          const fenced = String(opusLine || '').split('\n')[0].trim()
+            .replace(/^["'“]+|["'”]+$/g, '').trim();
+          if (fenced && fenced.length <= 240) return res.json({ ok: true, line: fenced });
+          // Empty/over-long Opus reply → fall through to the local path.
+        } catch {
+          // Opus errored → silent fall-through to the local 8B.
+        }
+      }
 
       const { queryLocal } = await import('./server/localLlmProvider.js');
       // A warm local 8B with RAG-grounded context can take ~10–12s; the old 9s cap

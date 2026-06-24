@@ -13,6 +13,7 @@ import { extractMemory } from './npcMemory.js';
 import { exitsFrom } from '../map/mapState.js';
 import { classifyPlaceQuery, resolvePlaceFact } from '../world/placeQuery.js';
 import { classifyPersonQuery, resolvePersonFact } from '../world/personQuery.js';
+import { npcVoiceCorpusId } from './npcVoiceResolve.js';
 
 const TRUST_REVEAL_PUBLIC = 4;
 const TRUST_REVEAL_SECRET = 7;
@@ -752,6 +753,10 @@ export function askNpc(world, text) {
       rumorBodies: rumorSurface.bodies,
       rumorMintHint: rumorSurface.mintHint,
       historicalFigureId: String(npc.historicalFigure || ''),
+      // D-C1: corpus basename to ground this NPC's Opus voice (or '' if none
+      // maps). PURE derivation — no fs, no state write; the SERVER does the
+      // existence-gated retrieval, so a stale id degrades to templates silently.
+      voiceCorpusId: String(npcVoiceCorpusId(npc) || ''),
       // Claim context — present only when mode === 'claim_recall'.
       // Contains the NPC's distorted belief about the subject; the voice layer
       // uses this to render their MAP of the event, not the engine's truth.

@@ -931,6 +931,10 @@ function playerMoveCore(world, packsById, text) {
             trustLevel: Number(asked.outcome.trustLevel) || 0,
             playerLine: String(text || ''),
             historicalFigureId: String(asked.outcome.historicalFigureId || ''),
+            // D-C1: corpus basename to ground an ordinary NPC's Opus voice
+            // (empty when no archetype/role maps). The server retrieves chunks
+            // from this and routes to callNpcVoice; absent → templates.
+            voiceCorpusId: String(asked.outcome.voiceCorpusId || ''),
             // Cascade-weighted substrate: the NPC's rung of history.
             // vivid = their town; dim = their region; myth = the cosmological age.
             substrateContext: npcSubstrateContext(w, String(w.map?.currentNodeId || ''))

@@ -546,6 +546,9 @@ async function tryLocalNpcVoice(dialogue) {
         factPhrase: dialogue.factPhrase || '',
         playerLine: dialogue.playerLine || '',
         historicalFigureId: dialogue.historicalFigureId || '',
+        // D-C1: ordinary-NPC voice corpus (archetype/role → corpus basename).
+        // Grounds the Opus voice line for NPCs who aren't named historical figures.
+        voiceCorpusId: dialogue.voiceCorpusId || '',
         claim: dialogue.claim || null,
         substrateContext: dialogue.substrateContext || []
       })

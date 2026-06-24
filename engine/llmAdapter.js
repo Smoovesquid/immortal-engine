@@ -12,6 +12,10 @@ const ANTHROPIC_API = 'https://api.anthropic.com/v1/messages';
 const ANTHROPIC_VERSION = '2023-06-01';
 const DEFAULT_MODEL = 'claude-sonnet-4-6';
 const NARRATION_MODEL = 'claude-haiku-4-5-20251001';
+// D-C1: NPC voice runs on Opus 4.8 — "Opus voice for every NPC" (Decision #1).
+// ⚠️ Opus 4.8 REJECTS `temperature` (HTTP 400 "temperature is deprecated for
+// this model"). The voice call MUST omit temperature entirely — see callNpcVoice.
+const VOICE_MODEL = 'claude-opus-4-8';
 
 // ── N3: Grounded system prompt ────────────────────────────────────────────────
 
@@ -226,6 +230,51 @@ export async function callLLM({
   const data = await res.json();
   const text = data?.content?.[0]?.text;
   return String(text ?? '').replace(/\s+/g, ' ').trim();
+}
+
+// ── D-C1: NPC voice (Opus 4.8) ────────────────────────────────────────────────
+// Phrase one spoken dialogue line in a specific NPC's voice, grounded in their
+// corpus archive. The `prompt` is the COMPLETE persona+archive+decision system
+// instruction already built by server/npcVoicePrompt.js (buildNpcVoicePrompt) —
+// the engine has ALREADY decided WHAT happens (share/deflect/withhold/lie); this
+// only renders the words (Road A). Sent as the system block (cache_control
+// ephemeral, so the persona/archive caches across a session) plus a minimal user
+// turn. ⚠️ NO `temperature` — Opus 4.8 rejects it (HTTP 400). Throws on !res.ok;
+// the CALLER must wrap this in try/catch and fall back to the template body.
+export async function callNpcVoice({
+  prompt,
+  apiKey,
+  model = VOICE_MODEL,
+  fetchImpl = globalThis.fetch
+}) {
+  const res = await fetchImpl(ANTHROPIC_API, {
+    method: 'POST',
+    headers: {
+      'content-type':      'application/json',
+      'x-api-key':         apiKey,
+      'anthropic-version': ANTHROPIC_VERSION,
+      'anthropic-beta':    'prompt-caching-2024-07-31'
+    },
+    body: JSON.stringify({
+      model,
+      max_tokens: 120,
+      // NOTE: deliberately NO `temperature` field — Opus 4.8 rejects it.
+      system: [{ type: 'text', text: String(prompt || ''), cache_control: { type: 'ephemeral' } }],
+      messages: [{ role: 'user', content: 'Speak your one line now.' }]
+    })
+  });
+
+  if (!res.ok) throw new Error(`Anthropic API HTTP ${res.status}`);
+  const data = await res.json();
+  const text = data?.content?.[0]?.text;
+  // One spoken line: collapse whitespace, take the first line, strip wrapping
+  // quotes the model sometimes adds. The voice prompt already forbids stage
+  // directions, so we keep it minimal.
+  return String(text ?? '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/^["'“]+|["'”]+$/g, '')
+    .trim();
 }
 
 // ── N4: Extended grounding validator ─────────────────────────────────────────

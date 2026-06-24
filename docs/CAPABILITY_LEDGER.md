@@ -921,6 +921,24 @@ sarcasm/irony inversion (Vol 2; transcript: `docs/playtests/ridiculous-sarcasm-2
 questions / presupposition (Vol 3, "have you stopped stealing?"), bluff vs. claim (Vol 5), request/order/threat
 disambiguation (Vol 2 §13). Add a `C#` row when one actually surfaces — the map is finite (see plan §2.4).
 
+*2026-06-24 (D-B4 residual a — the modifier breakpoint TABLE; grace lane, Basecamp overnight):* closed the
+loudest gate-16/24 crunch nit (6–7 of the 10 fails were this one cluster). The displayed ability-score→modifier
+chart was a HAND-WRITTEN string that started at "9 → −1" and omitted every low score, so a Rules-Lawyer character
+with scores of 6 and 8 saw a chart with NO entry for them — while the "Your measures" line correctly showed
+6 → −2 and 8 → −1. Side by side it read self-contradictory ("your table starts at 9 but my scores are 6 and 8").
+Fix: GENERATE the chart from the real `statMod` (`floor((score−10)/2)`) at display time, grouping consecutive
+scores that share a modifier into ranges across the realistic 3–18 band — so the printed table can NEVER again
+drift from the engine's math (`3 → −4, 4–5 → −3, 6–7 → −2, 8–9 → −1, 10–11 → +0, 12–13 → +1, 14–15 → +2,
+16–17 → +3, 18 → +4`). The math is UNCHANGED (no determinism impact); only the displayed string. Also widened
+`META_MODIFIER_FORMULA` to recognize the PAIRED rules-lawyer phrasings ("breakpoint chart/table", "modifier
+breakpoints", "modifier table") so "show me the full breakpoint chart down to 6" returns the complete chart
+instead of dead-ending on a d20 bounce — kept paired on purpose (a bare physical "breakpoint of the rope" / a
+literal table must NOT intercept). Locked by `tests/U251.modifierBreakpointTable.test.js` (6 tests: chart matches
+statMod across 3–18, explicit 6/8 entries, chart agrees with the measures line, recognition of the chart
+phrasing, false-positive guards). Reproduced LLM-off FIRST. `npm run check` GREEN: convergence 109/109, suite
+8530/0, determinism U19/21/22/27/30 green. **Residual still open from gate-24 (a):** the roll-on-demand (C3) —
+"roll the GRIT save, show me d20 + modifier + total" still returns the chart instead of rolling; next packet.
+
 ---
 
 ## Corpus format (the shared interface — Lane B builds the runner to this, Lane C fills content to this)

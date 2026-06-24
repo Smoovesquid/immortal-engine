@@ -24,6 +24,28 @@ const STAT_SYNONYMS = { str: 'MIGHT', strength: 'MIGHT', dexterity: 'AGILITY', d
 function resolveStatKey(raw) { return STAT_SYNONYMS[raw.toLowerCase()] || raw.toUpperCase(); }
 function fmtMod(m) { return m >= 0 ? `+${m}` : `${m}`; }
 
+// The displayed ability-score→modifier breakpoint table, GENERATED from the
+// real `statMod` function so the printed chart can never drift from the engine's
+// actual math. Consecutive scores sharing a modifier collapse into a range,
+// across the realistic ability band (3–18, the 4d6-drop-lowest span). Replaces
+// a hand-written string that started at 9 and omitted the low scores — which
+// read self-contradictory next to a character whose scores were 6 and 8 (the
+// "9 → −1" chart had no entry for 6 or 8, yet the measures line correctly showed
+// 6 → −2 and 8 → −1). A Rules-Lawyer who demands "the full breakpoint chart down
+// to 6" now gets a complete, internally-consistent table. (D-B4 gate residual a.)
+function modifierBreakpointTable(lo = 3, hi = 18) {
+  const groups = [];
+  for (let s = lo; s <= hi; s++) {
+    const m = statMod(s);
+    const last = groups[groups.length - 1];
+    if (last && last.mod === m) last.hi = s;
+    else groups.push({ lo: s, hi: s, mod: m });
+  }
+  return groups
+    .map(g => `${g.lo === g.hi ? g.lo : `${g.lo}–${g.hi}`} → ${fmtMod(g.mod)}`)
+    .join(', ');
+}
+
 // H-25 (Opus gate 06-18): a player asking for their OWN number — a D&D SKILL
 // modifier ("what's my Insight modifier? I need a number"), their attack
 // modifier, or a bare DC — must get the number, never an atmosphere deflection.
@@ -369,7 +391,12 @@ const META_ADVICE = /\bshould i\b[^?]*\?|\bis (?:that|this|it) a (?:bad|good|sma
 // Modifier-formula questions — "how are modifiers calculated?", "the formula",
 // "ability modifier", "what do I add to hit?". Report the (score−10)÷2 rule
 // plus the PC's current scores. Never a dice roll. (Rung-1 gate 2026-06-18.)
-const META_MODIFIER_FORMULA = /\bstat[-\s]to[-\s]modifier\b|\bmodifier\s+formula\b|\bability\s+modifier\b|\bwhat\s+(?:do\s+i|would\s+i)\s+add\b|\bthe\s+formula\b|\bthe\s+modifier\b|\bto[-\s]hit\s+(?:bonus|modifier|formula)\b|\bmodifier\s+math\b/i;
+// PAIRED rules-lawyer terms for this same table ("breakpoint chart", "modifier
+// breakpoints", "modifier table") — recognize them so "show me the full breakpoint
+// chart down to 6" returns the (now complete) chart instead of dead-ending on a
+// d20 bounce. Kept PAIRED on purpose: a bare "breakpoint" or "table" must NOT match
+// (a physical "breakpoint of the rope" / a literal table is not a stats query).
+const META_MODIFIER_FORMULA = /\bstat[-\s]to[-\s]modifier\b|\bmodifier\s+formula\b|\bability\s+modifier\b|\bwhat\s+(?:do\s+i|would\s+i)\s+add\b|\bthe\s+formula\b|\bthe\s+modifier\b|\bto[-\s]hit\s+(?:bonus|modifier|formula)\b|\bmodifier\s+math\b|\b(?:modifier|score|stat)\s+breakpoints?\b|\bbreakpoint\s+(?:chart|table)\b|\bmodifier\s+(?:chart|table)\b/i;
 // Sheet-confirmation queries — "my sheet", "the sheet", "confirm my stats".
 // Reports the full stat block from canon; explicitly refuses to mutate scores.
 const META_SHEET_CONFIRM = /\b(?:my|the)\s+sheet\b|\bconfirm\s+(?:the\s+)?(?:stats?|scores?|sheet|modifiers?)\b/i;
@@ -1682,7 +1709,7 @@ export function handleMetaQuestion(text, world) {
       const score = Number(stats[statKey]) || 10;
       ans = `Your ${statKey} is ${score}, a ${fmtMod(statMod(score))} modifier.`;
     } else {
-      ans = 'Modifier breakpoints: 9 → −1, 10–11 → +0, 12–13 → +1, 14–15 → +2.';
+      ans = `Modifier breakpoints: ${modifierBreakpointTable()}.`;
       const order = ['MIGHT', 'AGILITY', 'WITS', 'GRIT', 'CHARM'];
       const line = order.filter(k => k in stats).map(k => `${k} ${stats[k]} (${fmtMod(statMod(Number(stats[k]) || 10))})`).join(', ');
       if (line) ans += ` Your measures: ${line}.`;

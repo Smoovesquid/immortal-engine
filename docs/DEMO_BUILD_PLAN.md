@@ -155,13 +155,18 @@ return, and the world remembered. This is the highest-leverage work — everythi
 - **Done-when:** a player asking "why is the world this way" gets symptoms / faith / rumor — **never** cosmology;
   THE REF treats a cosmology-explanation line as a defect. (Corpus-lock a §0 negative.)
 
-### D-D3 — The orb fork (rung 6, §8 — the climax)
-- **Seam:** the sealed `deep:foundation` secret; the three pantheon tiers + the trade economy; canon-safe form
-  (re-collapse the indeterminate / court the Undoing — **never overwrite collapsed canon**).
-- **Fork:** free → power (frontier worsens, unnamed) · destroy → COUG reward (the end creeps back) · consume →
-  permanence (cannibal rite) · leave/sell → restraint.
-- **Open Decision 3:** is **wake-it** the demo climax, or held back as the campaign hook?
-- **Done-when:** a deep player reaches the core and the fork lands with real, *discovered* stakes (no exposition).
+### D-D3 — The hole + the hive (rung 6, §8 — the climax) — *reshaped 2026-06-24*
+- **Seam:** the sealed `deep:foundation` — the orb is **GONE**; in its place a perfectly round hole, and something
+  escaped. Canon-safe (§0: the orb's leaving / its destination are never explained — a hole, a horror, rumor).
+- **Climax (demo):** an **ALIENS-ending** — a hive pours up the shaft; the player can only **run, fight, or seal the
+  hole.** The old relic-fork (free/destroy/consume/leave) survives as fragment-rehearsal on the way down + the
+  **campaign hook** (the true orb's fate). Plus **fragments-as-police** — wardens that answer a lawbreaker with
+  *unmaking* ([[IG-16]] *Tough Shit* / [[IG-8]] the law; §0-hidden, symptom-only).
+- **Decision 3 — largely RESOLVED by the reshape:** the demo gets a *contained* climax (the hive battle); "wake the
+  orb" is mooted (orb absent) and its fate becomes the hook. Remaining nuance: is the seal permanent (clean ending)
+  or temporary (a hook)?
+- **Done-when:** a deep player reaches the hole and the run / fight / seal lands with *discovered* stakes (no
+  exposition); the unmaking-warden reads as judgement, never as the machine.
 
 ### D-D4 — Death-prose / the pale-root vision (IG-5) in the deepest reaches
 - **Seam:** engine-owned `[vision:raw]` (NEVER sent to the LLM — the iron rule in `server.js`).

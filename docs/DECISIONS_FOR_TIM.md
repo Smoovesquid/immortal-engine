@@ -90,7 +90,15 @@ The leads are re-skins: a steward-king (Marcus Aurelius → *Theodore Augustus*)
 a clown-leader (a Goldblum-flavored Socrates), and a cannibal-prophet. **Confirm or swap these five.** This is pure
 taste — who do you want the player to feel echoes of? It only gates lighting up the figures (Phase C), not the loop.
 
-### #3 — Is the orb climax the demo's ending, or the campaign hook?
+### #3 — Is the orb climax the demo's ending, or the campaign hook? — ✅ **RESHAPED 2026-06-24 (you get both)**
+> **The redesign (Tim):** at the bottom there is **no orb** — a perfectly round hole, the orb having *left* for the
+> centre of the earth (~25,000 years; unknowable, §0). The hole let **something out**, and the demo climax is an
+> **ALIENS-ending**: a nightmarish hive up the shaft — **run, fight, or seal it.** That's a *contained* demo climax;
+> the orb's fate / return becomes the *campaign hook*. So #3's either/or dissolves — the demo ends AND teases. New
+> lore folded in: **orb fragments as police** — leftover AI "plasma" that punishes lawbreakers with **unmaking**
+> (consequence with a cosmological spine, [[IG-16]]/[[IG-8]], §0-hidden). Recorded in `DEMO_REGION.md` §8 + D-D3.
+> *Remaining nuance:* is the seal permanent (clean ending) or temporary (a sharper hook)?
+
 "Wake the orb" can either be the **payoff of the demo** (player gets a real ending) or the **cliffhanger that sells the
 campaign** (the demo stops just before it). Trade-off: a contained ending is more satisfying to a first-time player; a
 hook leaves them wanting more but can feel like a tease. This shapes how Phase D (dungeons + climax) is built.

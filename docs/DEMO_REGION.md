@@ -123,21 +123,31 @@ The player should feel they *chose*. The cannibals' lair is the **second dungeon
 
 ## §8 — The orb (Ark-tier rare)
 
-**One true orb** in the region — the buried heart of the mega-dungeon (the `deep:foundation`): immense,
-half-sentient, lethal to reach, believed a myth. Reconciles magic: **mages work the thin ambient residue** the
-Scar leaks; **an intact orb is a god-in-a-bottle**, orders of magnitude beyond — which is *why* it's legend, not
-loot. The whole region orbits its rumor. The climactic choice maps onto the **three pantheon tiers**:
+**One true orb** in the region — once the buried heart of the mega-dungeon (the `deep:foundation`): immense,
+half-sentient, believed a myth. Reconciles magic: **mages work the thin ambient residue** the Scar leaks; an intact
+orb is a **god-in-a-bottle**, orders of magnitude beyond — which is *why* it's legend, not loot. The whole region
+orbits its rumor.
 
-- **Free it → power** (Governors / Will / the ambitious). *Hidden cost no one names:* one less thing holding the
-  Scar — the frontier worsens where orbs are freed; an attentive player notices the pattern, the world never
-  explains it.
-- **Destroy it → nothing arcane, but the COUG rewards you** and the end creeps back (Creator tier; framed only
-  as the One God's will).
-- **Consume it → permanence** (Sin tier / the cannibal rite).
-- **Leave / sell** — steward's restraint; or the trade-economy ([[IG-13]], consequences for *who* buys).
+**The twist at the bottom (the demo climax — reshaped 2026-06-24).** A deep player who reaches the `deep:foundation`
+does **not** find the orb. They find a **perfectly round hole, burrowed straight down** — the orb simply *left*, one
+day, and (so the unprovable story goes) went to spend some **twenty-five thousand years at the centre of the earth**.
+*Nobody can know.* What is plain is that the hole has let **something escape the deep** — and that is the final
+battle. Not a fork over a relic but an **ALIENS-ending**: in the orb's place, a **hive of something nightmarish**
+pouring up the shaft. All you can do is **run, fight, or seal the hole.** (§0: the orb's leaving and its destination
+are *never explained* — a hole, a horror, and rumor; the cosmology stays sealed.)
 
-Lesser **fragments, fakes, and rumors rehearse** the theme on the way down; the real fork is the **demo's climax**
-at world stakes.
+**The four doors survive as rehearsal + hook.** Lesser **fragments, fakes, and rumors** rehearse the old relic-fork
+on the way down — **free → power** (the Scar worsens where orbs are freed, unnamed) · **destroy → COUG reward** (the
+end creeps back) · **consume → permanence** (the cannibal rite, [[IG-17]]) · **leave / sell** (steward's restraint;
+the [[IG-13]] trade economy). With the true orb *gone*, the relic-fork becomes the **campaign hook** (its fate; what
+waits at the centre; whether it returns); the **demo's contained climax** is the hive at the hole.
+
+**Fragments as police — the unmaking.** Some fragments are not loot but **wardens**: leftover AI "plasma" that once
+ruled, still keeping the old law — it answers a lawbreaker with **unmaking** (the hardest consequence the world has,
+[[IG-16]] *Tough Shit*). **§0-HIDDEN truth** (never surfaced in-world): this is the substrate's old governance
+([[IG-8]] the law · [[IG-6]] collapse-on-observation). **In-world symptom only:** glowing shards that erase the
+wrong-doer; the people call it judgement, a curse, the gods — *never the machine*. A diegetic, cosmological spine for
+consequence.
 
 ---
 
@@ -190,8 +200,9 @@ the refactor-sequencing posture).
    a wildcard:** **The Goat of the Blasted Heath** (`twain.json` — Twain's voice in a Tom-Bombadil-esque *unkillable
    goat* who wanders the waste, older than the war/king/prophet and refuses to be drawn into any of it). Voice archives
    seeded in `server/rag/corpus/`; the NPC→voice→Opus wiring is the Phase-C packet (`VOICE_COST_MODEL.md` §6).
-3. **The orb's climax** — exact shape of free / destroy / consume / leave at the bottom; and whether the
-   *wake-it* path is the demo climax or held back as the campaign hook.
+3. **The orb's climax** — ✅ *reshaped 2026-06-24 (see §8):* the orb is **gone**; the bottom is a **hole + an
+   escaped hive** (run / fight / seal — the contained demo climax), the relic-fork + the orb's fate become the
+   **campaign hook**, and **fragments-as-police** (the unmaking) give consequence a cosmological spine.
 4. **Follow-up:** fold the COUG-inquisition / Red-Noses turn into `docs/CHURCH_OF_INCREMENTALISM.md`.
 
 **Resolved this session:** the "one problem" public face = *the economy / human muddle* (§5); second dungeon =

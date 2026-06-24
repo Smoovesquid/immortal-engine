@@ -345,12 +345,70 @@ export const GOAL_JOURNEY_TO_TOWN = {
   },
 };
 
+// ── Goal #6 — prevail in a fight (the combat slice) ───────────────────────────
+// The building/town/journey goals never force a fight; this one points the harness
+// at the LIVE combat engine (escapeCombat) so its turn-loop is exercised under the
+// oracles — the W2·1 correctness floor. On seed `tallow` a hostile (Ashblade) lurks
+// at the start node, so the player must get outside, engage, and win.
+//
+// The win signal is COMMITTED + durable: endCombat persists each foe's final state
+// to `meta.npcCombatHp[sourceNpcId] = { hp, down }` (it survives ensureWorld and the
+// combat thread ending, unlike `combat.enemies`, which is cleared on victory). So
+// "prevailed" = a foe was downed AND the player is not still mid-fight (and not the
+// one who fell). Read-only, like every goal here.
+
+// Live enemies still standing in the active fight (hp > 0, not defeated).
+function liveEnemies(world) {
+  return (Array.isArray(world?.combat?.enemies) ? world.combat.enemies : [])
+    .filter(e => e && !e.defeated && (Number(e.hp) || 0) > 0);
+}
+// Fraction of total live-enemy HP remaining (1 = untouched, 0 = all worn down).
+function liveEnemyHpFraction(world) {
+  const en = (Array.isArray(world?.combat?.enemies) ? world.combat.enemies : []).filter(Boolean);
+  if (!en.length) return 0;
+  let cur = 0, max = 0;
+  for (const e of en) { cur += Math.max(0, Number(e.hp) || 0); max += Math.max(1, Number(e.maxHp) || Number(e.hp) || 1); }
+  return max > 0 ? cur / max : 0;
+}
+// A foe has been downed and recorded (the durable victory trace).
+function aFoeWasDowned(world) {
+  const rec = world?.meta?.npcCombatHp;
+  if (!rec || typeof rec !== 'object') return false;
+  return Object.values(rec).some(r => r && (r.down === true || (Number(r.hp) || 0) <= 0));
+}
+function playerAlive(world) {
+  // In escape mode the PC's health is meta.escapeHp; >0 = up. Outside combat (never
+  // engaged) escapeHp may be undefined — treat that as alive (not yet at risk).
+  const hp = world?.meta?.escapeHp;
+  return hp == null || (Number(hp) || 0) > 0;
+}
+
+export const GOAL_PREVAIL = {
+  id: 'prevail-in-fight',
+  description: 'Get outside, face the hostile lurking nearby, and win the fight.',
+  satisfied(world) {
+    return aFoeWasDowned(world) && !world?.combat?.active && playerAlive(world);
+  },
+  // 0 inside · 0.2 outside, not engaged · 0.4→0.9 fight in progress (climbs as you
+  // wear the foes down) · 1 prevailed. The runner latches the running max, so the
+  // dip when `combat.enemies` clears on victory can't lower the recorded progress.
+  progressMetric(world) {
+    if (aFoeWasDowned(world) && !world?.combat?.active && playerAlive(world)) return 1;
+    if (world?.combat?.active && liveEnemies(world).length) {
+      return 0.4 + 0.5 * (1 - liveEnemyHpFraction(world));
+    }
+    if (isInsideInterior(world)) return 0;
+    return 0.2;
+  },
+};
+
 export const GOALS = Object.freeze({
   [GOAL_FIRST_CONCERN.id]: GOAL_FIRST_CONCERN,
   [GOAL_PROBE_ROOM.id]: GOAL_PROBE_ROOM,
   [GOAL_TOUR_BUILDING.id]: GOAL_TOUR_BUILDING,
   [GOAL_EXPLORE_TOWN.id]: GOAL_EXPLORE_TOWN,
   [GOAL_JOURNEY_TO_TOWN.id]: GOAL_JOURNEY_TO_TOWN,
+  [GOAL_PREVAIL.id]: GOAL_PREVAIL,
 });
 
 export function getGoal(id) {

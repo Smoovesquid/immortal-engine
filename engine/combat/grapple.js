@@ -40,7 +40,14 @@ export function parseGrappleVerb(text) {
   const t = String(text || '').toLowerCase();
   if (/\b(?:grab|grabs|seize|seizes|hold|holds)\b.*\b(?:head|neck)\b.*\b(?:twist|twists|snap|snaps|break|breaks)\b/.test(t)) return null;
   if (/\b(choke|chokes|choking|strangle|throttle|rear[\s-]?naked|guillotine|sleeper|squeeze\s+(?:his|her|their|its)\s+throat)\b/.test(t)) return 'choke';
-  if (/\b(throw|throws|throwing|takedown|take\s+(?:him|her|them|it)\s+down|suplex|body[\s-]?slam|sweep|trip|dump|toss\s+(?:him|her|them))\b/.test(t)) return 'throw';
+  // A grapple THROW is throwing the FOE (a person) to the ground — "throw her down",
+  // "suplex", "takedown". A bare "throw <object>" (a thrown dagger, a fistful of
+  // sand, a rock) is an object hurled AT the foe — a STRIKE, not a grapple — so it
+  // must NOT match here, else it fizzled to [grapple:throw-no-grip] (no grip → no
+  // roll, no damage; the stab/throw was swallowed). Restrict throw/toss/dump to a
+  // foe reference; the wrestling idioms carry no object ambiguity. (U265-B.)
+  if (/\b(?:takedown|suplex|body[\s-]?slam|sweep|trip|take\s+(?:him|her|them|it)\s+down)\b/.test(t)) return 'throw';
+  if (/\b(?:throw|throws|throwing|dump|dumps|toss|tosses|tossing)\s+(?:him|her|them|it|the\s+(?:foe|enemy|bandit|brute|linger(?:er)?|wanderer|monster|creature|beast|guard|wolf|goblin|orc|thug|man|woman|figure|attacker|assailant))\b/.test(t)) return 'throw';
   if (/\b(escape|break\s+free|break\s+(?:his|her|their|its)\s+grip|wriggle\s+(?:free|out)|squirm\s+(?:free|out)|get\s+(?:free|out)\s+of)\b/.test(t)) return 'escape';
   if (/\b(grapple|grapples|grappling|grab|grabs|clinch|seize|wrestle|tackle|pin\b|takedown)\b/.test(t)) return 'grapple';
   return null;

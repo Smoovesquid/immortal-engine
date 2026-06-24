@@ -25,16 +25,24 @@
 // thing is hermetically testable with a fake — zero API cost in tests.
 // ─────────────────────────────────────────────────────────────────────────────
 
-// The rubric: three atomic, binary table-test questions. Each maps to a real failure
-// I watched the skeleton harness sail past — non-resolution ("it goes your way"),
-// generic/debug-dump filler ("State: intact. Parts: lid, hinge, lock."), system voice.
+// The rubric: six atomic, binary criteria — each a NAMED principle of real DM
+// narration craft (researched 2026-06-24: Angry GM, PbtA MC moves/principles, Keith
+// Johnstone improv, Sly Flourish), each mapped to a failure mode we've actually seen.
+// Filtered through the engine's invariants (narration ≠ canon; hide the math; §0).
+// See docs/biblioteca/vol-17-dm-narration-craft.md for the craft→criterion mapping.
 export const QUALITY_CRITERIA = Object.freeze([
-  { id: 'resolved', label: 'resolves-the-action',
-    q: "Does the DM's line actually RESOLVE or address what the player tried to do — not dodge it with vague atmosphere?" },
-  { id: 'specific', label: 'specific-not-filler',
-    q: "Is the line SPECIFIC to this world and moment — not interchangeable filler that would fit any turn, and not a debug/struct dump (e.g. 'State: intact. Parts: lid, hinge, lock.')?" },
-  { id: 'table', label: 'a-real-DM-would-say-it',
-    q: "Would a real human D&D dungeon master actually SAY this at the table — natural, in-fiction, not a system artifact or template?" },
+  { id: 'resolved', label: 'resolves-the-intent',
+    q: "Does the DM resolve/address what the player ACTUALLY tried, and leave a clear call to action — not dodge it with vague atmosphere? (Angry GM: a scene is a call to action. Improv: don't block the offer.)" },
+  { id: 'agency', label: 'respects-agency',
+    q: "Does the DM narrate only the WORLD and outcomes — NEVER the player character's choices, feelings, or undeclared actions? (The player decides what their character does; the DM never says 'you decide to…', 'you feel…', or moves them somewhere they didn't choose.)" },
+  { id: 'nomachine', label: 'no-machine-voice',
+    q: "Is the prose free of leaking mechanics — no stat numbers, struct/debug dumps ('State: intact. Parts: lid, hinge, lock'), population counts ('forty-four souls'), dice, or system-artifact phrasing? (PbtA: make your move but NEVER speak its name. Hide the math.)" },
+  { id: 'concise', label: 'concise-no-filtering',
+    q: "Is it snappy and direct — a few sentences, ≤~3 concrete details, NO purple/Tolkien prose, and NO 'filtering' distance ('you see that…', 'you notice…', 'you feel that…')? Give the perception straight. (Angry GM.)" },
+  { id: 'grounded', label: 'specific-and-grounded',
+    q: "Is the detail concrete, sensory, and specific to THIS world and moment — not interchangeable filler that would fit any turn? (Sly Flourish: describe through the character's eyes.)" },
+  { id: 'voice', label: 'natural-DM-voice',
+    q: "Does it sound like a real human DM talking at the table — not a template, an AI artifact, or a system message? (Angry GM: speak normally.)" },
 ]);
 
 const CRITERIA_BY_ID = Object.fromEntries(QUALITY_CRITERIA.map(c => [c.id, c]));
@@ -72,8 +80,9 @@ export function buildJudgePrompt(transcript) {
   const user =
     `Score each turn on these binary criteria (true = passes, false = fails):\n${rubric}\n\n` +
     `TRANSCRIPT (${turns.length} turn(s)):\n${body}\n\n` +
+    `true = PASSES the criterion, false = FAILS it. A terse-but-real DM line PASSES.\n` +
     `Return STRICT JSON, no other text:\n` +
-    `{"turns":[{"turn":<int>,"resolved":<bool>,"specific":<bool>,"table":<bool>,"evidence":"<≤140-char quote of the DM line if ANY criterion failed, else \\"\\">"}]}`;
+    `{"turns":[{"turn":<int>,"resolved":<bool>,"agency":<bool>,"nomachine":<bool>,"concise":<bool>,"grounded":<bool>,"voice":<bool>,"evidence":"<≤140-char quote of the DM line if ANY criterion failed, else \\"\\">"}]}`;
   return { system: QUALITY_JUDGE_SYSTEM, user, turns };
 }
 

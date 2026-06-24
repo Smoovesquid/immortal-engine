@@ -40,12 +40,12 @@ test('buildJudgePrompt asks for strict JSON, lists every criterion, embeds the t
 test('parseJudgeVerdict emits one finding per FAILED criterion, tagged + evidence-anchored', () => {
   const { turns } = buildJudgePrompt(transcript());
   const raw = JSON.stringify({ turns: [
-    { turn: 1, resolved: true, specific: true, table: true, evidence: '' },
-    { turn: 2, resolved: false, specific: false, table: true, evidence: 'It goes your way.' },
+    { turn: 1, resolved: true, agency: true, nomachine: true, concise: true, grounded: true, voice: true, evidence: '' },
+    { turn: 2, resolved: false, agency: true, nomachine: false, concise: true, grounded: true, voice: true, evidence: 'It goes your way.' },
   ] });
   const findings = parseJudgeVerdict(raw, turns);
   assert.equal(findings.length, 2, 'two failed criteria on turn 2');
-  assert.deepEqual(findings.map(f => f.oracleId).sort(), ['quality-resolves-the-action', 'quality-specific-not-filler']);
+  assert.deepEqual(findings.map(f => f.oracleId).sort(), ['quality-no-machine-voice', 'quality-resolves-the-intent']);
   assert.ok(findings.every(f => f.severity === 'quality' && f.turn === 2));
   assert.equal(findings[0].evidence, 'It goes your way.');
   assert.equal(findings[0].action, 'I pry the lock');
@@ -54,8 +54,8 @@ test('parseJudgeVerdict emits one finding per FAILED criterion, tagged + evidenc
 test('parseJudgeVerdict: a clean verdict yields zero findings', () => {
   const { turns } = buildJudgePrompt(transcript());
   const raw = '```json\n' + JSON.stringify({ turns: [
-    { turn: 1, resolved: true, specific: true, table: true, evidence: '' },
-    { turn: 2, resolved: true, specific: true, table: true, evidence: '' },
+    { turn: 1, resolved: true, agency: true, nomachine: true, concise: true, grounded: true, voice: true, evidence: '' },
+    { turn: 2, resolved: true, agency: true, nomachine: true, concise: true, grounded: true, voice: true, evidence: '' },
   ] }) + '\n```';
   assert.equal(parseJudgeVerdict(raw, turns).length, 0, 'code fences tolerated, all-pass = clean');
 });
@@ -69,9 +69,9 @@ test('parseJudgeVerdict: unparseable output degrades to a single low note, never
 });
 
 test('judgeSession: fake callModel → findings; empty transcript → no call, no findings', async () => {
-  const fakeModel = async () => JSON.stringify({ turns: [{ turn: 2, resolved: false, specific: false, table: false, evidence: 'It goes your way.' }] });
+  const fakeModel = async () => JSON.stringify({ turns: [{ turn: 2, resolved: false, agency: false, nomachine: false, concise: false, grounded: false, voice: false, evidence: 'It goes your way.' }] });
   const findings = await judgeSession({ transcript: transcript(), callModel: fakeModel });
-  assert.equal(findings.length, 3, 'all three criteria failed on the filler turn');
+  assert.equal(findings.length, 6, 'all six criteria failed on the filler turn');
   assert.equal(await (await judgeSession({ transcript: [], callModel: fakeModel })).length, 0);
 });
 

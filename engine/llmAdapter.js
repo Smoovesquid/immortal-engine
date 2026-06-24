@@ -68,6 +68,14 @@ export function buildSystemPrompt(ctx) {
     ? `Structures here: ${ctx.structuresHere.map(s => `${s.kind} #${s.index}`).join(', ')}.`
     : 'No structures are present here.';
 
+  // The roads onward (real adjacency). Outdoors only — so the DM always names where the
+  // player can go and never narrates a waypoint as a dead end / blocked road (the
+  // journey soft-lock: the player got stuck at a shrine thinking the stones blocked the
+  // way, when the road continued to the next town).
+  const roadsFact = (!ctx.interior && Array.isArray(ctx.exits) && ctx.exits.length)
+    ? `The roads from here lead onward to: ${ctx.exits.join(', ')}. The player can travel to any of these by naming it — never describe this place as having no way out or the road blocked.`
+    : '';
+
   const lines = [
     `You are a Dungeon Master narrator. Describe what the player experiences in ONE sentence.`,
     ``,
@@ -76,6 +84,7 @@ export function buildSystemPrompt(ctx) {
     `- Place type: ${typeDesc}`,
     `- ${inside}`,
     `- ${structures}`,
+    ...(roadsFact ? [`- ${roadsFact}`] : []),
     ``
   ];
 

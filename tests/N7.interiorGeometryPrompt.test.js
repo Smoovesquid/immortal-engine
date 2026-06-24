@@ -78,3 +78,21 @@ test('N7: a context with no layout degrades to the bare room line (no throw)', (
   const sys = buildSystemPrompt(minimal);
   assert.match(sys, /room-x/, 'falls back to the bare room line when no layout is attached');
 });
+
+// The travel analog of the geometry fix: OUTDOORS, the prompt names the onward roads so
+// the DM never narrates a waypoint as a dead end (the journey soft-lock). The scene's
+// exits were computed from the wrong edge schema (from/to vs a/b) and were ALWAYS empty.
+test('N7: outdoors, the prompt names the onward roads (journey fix)', () => {
+  const out = playerMove(boot(), PACKS, 'I step outside.').world;
+  const ctx = buildNarratorContext(out, {});
+  assert.ok(Array.isArray(ctx.exits) && ctx.exits.length > 0, 'exits now populate (a/b edge schema)');
+  const sys = buildSystemPrompt(ctx);
+  assert.match(sys, /roads from here lead onward to/i, 'names the onward roads');
+  assert.match(sys, /Sooted Bridge|Old Shrine/, 'names a real neighbouring place');
+  assert.match(sys, /never describe this place as having no way out/i, 'forbids the dead-end narration');
+});
+
+test('N7: indoors, there is NO onward-roads fact (you are inside a building)', () => {
+  const sys = buildSystemPrompt(buildNarratorContext(boot(), {}));
+  assert.doesNotMatch(sys, /roads from here lead onward/i, 'no roads fact while inside');
+});

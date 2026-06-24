@@ -91,6 +91,14 @@ test('A/pos: a phrase-form acquisition ("the X is yours now") with no delta is c
   assert.match(f[0].note, /^acquired-nothing/);
 });
 
+test('A/neg: figurative "the road is yours" is not an acquisition (IT-2 follow-up)', () => {
+  // A combat-fled narration ("The road is yours again") used to read as taking an item.
+  assert.equal(run({ output: { narration: 'The Highwaymen breaks and runs. The road is yours again.', mechanics: '[combat:fled]' } }).length, 0, 'the road is not an item');
+  assert.equal(run({ output: { narration: 'The day is yours; the field is yours.' } }).length, 0, 'figurative victory phrasings');
+  // …but a concrete object "is yours" still fires (recall preserved).
+  assert.equal(run({ output: { narration: 'The brass key is yours now.' } }).length, 1, 'a real object still fires');
+});
+
 // ── Check B — a present object denied ────────────────────────────────────────
 test('B/pos: denying a present object ("there is no X here") is caught', () => {
   const before = roomWorld(['straw pallet', 'oil lantern']);

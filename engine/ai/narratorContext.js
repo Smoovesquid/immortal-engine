@@ -61,6 +61,9 @@ export function buildNarratorContext(world, outcome = {}) {
     objective: String(w.scene?.objective ?? ''),
     structuresHere: scene.structuresHere,
     interior: scene.interior,
+    // The roads that lead onward from here (real adjacency) — so the DM can tell the
+    // player where they can go and never narrate a waypoint as a dead end (journey fix).
+    exits: scene.location.exits,
     tone: scene.tone,
     actionText: String(outcome?.input ?? outcome?.text ?? ''),
     mechanicsText: String(outcome?.mechanics ?? ''),
@@ -365,12 +368,20 @@ function buildScene(w, outcome) {
   const toneWords = outcome?.pack?.toneWords ?? w._resolvedPack?.toneWords ?? null;
   const tone = deriveTone(toneWords, w.meta?.fate);
 
-  // Exits from current node
+  // Exits from current node — the roads that lead onward. Map edges are keyed {a,b}
+  // (NOT from/to): the old filter never matched, so `exits` was ALWAYS EMPTY and the DM
+  // never knew where the roads led — a player arriving at a waypoint read it as a dead
+  // end and got stuck (journey playtest soft-lock). Handle both schemas, defensively.
   const edges = Array.isArray(w.map?.edges) ? w.map.edges : [];
   const exits = edges
-    .filter(e => e.from === nodeId || e.to === nodeId)
     .map(e => {
-      const targetId = e.from === nodeId ? e.to : e.from;
+      const A = e.a ?? e.from, B = e.b ?? e.to;
+      if (A === nodeId) return B;
+      if (B === nodeId) return A;
+      return null;
+    })
+    .filter(Boolean)
+    .map(targetId => {
       const targetNode = (w.map?.nodes ?? []).find(n => n.id === targetId);
       return targetNode ? String(targetNode.name) : null;
     })

@@ -1516,19 +1516,9 @@ function renderTranscript(lines) {
 
 // ── Status panels: pure views over canonical world state ──────────────
 
-const GOAL_KIND_VERBS = {
-  reach: 'Reach',
-  obtain: 'Obtain',
-  talkTo: 'Talk to',
-  learn: 'Learn',
-  defeat: 'Defeat'
-};
-
-function goalDisplayLabel(goal) {
-  if (goal.label && goal.label.trim()) return goal.label.trim();
-  const verb = GOAL_KIND_VERBS[goal.kind] || goal.kind;
-  return `${verb} ${goal.targetRef}`;
-}
+// (Removed: GOAL_KIND_VERBS + goalDisplayLabel — they fed the goal-tracker panel.
+//  Goals are obscure + player-held; the UI never shows a quest checklist.
+//  See docs/DEMO_BUILD_PLAN.md D-B1 design law.)
 
 function dots(filled, total, ch = '●', empty = '○') {
   const n = Math.max(0, Math.min(total, filled | 0));
@@ -1803,38 +1793,10 @@ function renderRumorBoardSection(world) {
   );
 }
 
-function renderGoalsSection(world) {
-  const goals = Array.isArray(world?.goals) ? world.goals : [];
-  const active = goals
-    .filter(g => g.status === 'active')
-    .slice()
-    .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-  const completed = goals
-    .filter(g => g.status === 'completed')
-    .slice()
-    .sort((a, b) => (b.completedAt || 0) - (a.completedAt || 0));
-
-  // 12 total cap matches engine GOALS_CAP.
-  const ordered = [...active, ...completed].slice(0, 12);
-
-  const body = ordered.length === 0
-    ? el('div', { class: 'empty-muted' }, 'No goals yet.')
-    : el('ul', { class: 'goal-list' },
-        ordered.map(g => {
-          const isActive = g.status === 'active';
-          return el('li', { class: `goal-item ${isActive ? 'active' : 'completed'}` },
-            el('span', { class: 'goal-icon' }, isActive ? '▢' : '✓'),
-            el('span', { class: 'goal-label' }, goalDisplayLabel(g)),
-            isActive ? el('span', { class: 'goal-kind' }, String(g.kind)) : null
-          );
-        })
-      );
-
-  return el('section', { class: 'status-section', 'aria-label': 'Goal tracker' },
-    el('h3', { class: 'status-heading' }, 'Goals'),
-    body
-  );
-}
+// (Removed: renderGoalsSection — a "Goal tracker" panel that listed the player's goals.
+//  Dead code (never mounted), and it's exactly the video-game quest-list mechanic we
+//  reject: goals are obscure + player-held, never a UI checklist. The engine still
+//  tracks goals internally for consequence/completion. See DEMO_BUILD_PLAN.md D-B1.)
 
 function renderPartySection(world) {
   const pc = Array.isArray(world?.party) && world.party[0] ? world.party[0] : null;

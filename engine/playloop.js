@@ -1977,7 +1977,7 @@ function playerMoveCore(world, packsById, text) {
       const escVerb = parseEscapeAction(text).verb;
       const improvisedCombatAction = isImprovisedCombatAction(w, text);
       const targetedViolentAction = isTargetedViolentCombatAction(w, text);
-      const explicitAction = improvisedCombatAction || targetedViolentAction || isNaturalWeaponAttack(text) || /\b(strike|attack|swing|stab|shoot|slash|hit|beat|smite|fireball|fire\s?bolt|firebolt|blast|cast|rage|surge|guard|ward|cover|throw|hurl|lob|fling|toss)\b/i.test(String(text || ''));
+      const explicitAction = improvisedCombatAction || targetedViolentAction || isNaturalWeaponAttack(text) || isFoeEnvironmentAttack(text) || /\b(strike|attack|swing|stab|shoot|slash|hit|beat|smite|fireball|fire\s?bolt|firebolt|blast|cast|rage|surge|guard|ward|cover|throw|hurl|lob|fling|toss)\b/i.test(String(text || ''));
       const asksQuestion = isQuestionShaped(text) || /\?/.test(String(text || ''));
       if (!attackResolutionIntent(w, text) && (isMetaQuestion(text) || (asksQuestion && escVerb !== 'parley' && !explicitAction))) {
         const metaAnswer = isMetaQuestion(text) ? handleMetaQuestion(text, w) : null;
@@ -6833,6 +6833,23 @@ function isTargetedViolentCombatAction(world, text) {
   const t = String(text || '').toLowerCase();
   if (!mentionsLiveCombatFoe(world, t)) return false;
   return /\b(?:bury|buries|buried|burying|ram|rams|rammed|ramming|drive|drives|drove|driven|driving|stomp|stomps|stomped|stomping|stamp|stamps|stamped|stamping|plunge|plunges|plunged|plunging|jam|jams|jammed|jamming|smash|smashes|smashed|smashing|slam|slams|slammed|slamming)\b/.test(t);
+}
+
+// (U265-A) Using a fixture as a weapon ON the foe — "slam him into the wall", "drive
+// his head against the stones", "throw them through the window". A bare pronoun
+// target with MORE THAN ONE live foe never satisfied `mentionsLiveCombatFoe` (which
+// requires a single foe to disambiguate "him"), so the attack failed to set
+// `explicitAction` and the combat scene-object gate bounced it to [combat:table-talk]
+// ("make a mess of the room … name the foe"). This is foe-count-agnostic: the resolver
+// picks the default target, exactly as a NAMED foe already routes. Precision guard:
+// requires BOTH the violence's object to be a foe reference AND an into/against-a-
+// fixture destination, so plain room work ("kick the door", "press him for answers")
+// is untouched.
+function isFoeEnvironmentAttack(text) {
+  const t = String(text || '').toLowerCase();
+  const verbFoe = /\b(?:slam|slams|ram|rams|drive|drives|smash|smashes|bash|bashes|throw|throws|hurl|hurls|fling|flings|knock|knocks|dash|dashes|crack|cracks|grind|grinds|pin|pins|press|presses|push|pushes|shove|shoves|drag|drags|haul|hauls|hoist|hoists|sling|slings)\s+(?:\w+\s+){0,2}?(?:him|her|them|it|his|her|their|its|the\s+(?:foe|enemy|bandit|brute|linger(?:er)?|wanderer|monster|creature|beast|guard|wolf|goblin|orc|thug|man|woman|figure|attacker|assailant))\b/;
+  if (!verbFoe.test(t)) return false;
+  return /\b(?:into|against|onto|through|down\s+(?:on|onto|into)|on\s+to)\b[^.!?]*\b(?:wall|walls|floor|ground|table|hearth|fire|flames?|brazier|coals?|window|sill|shutter|door|stone|stones|rock|rocks|bench|post|pillar|beam|railing|bannister|stair|stairs|edge|ledge|pit|water|river|mud|counter|bar|fence|cliff|rubble|wreckage|crate|barrel|chair|stool|spike|spikes|hook|hooks)\b/.test(t);
 }
 
 function isImprovisedCombatAction(world, text) {

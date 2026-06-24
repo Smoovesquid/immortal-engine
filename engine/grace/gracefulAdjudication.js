@@ -2347,7 +2347,11 @@ function describeNpc(npc) {
   return 'a stranger';
 }
 
-export function buildLocationSurvey(world) {
+// opts.presence — the caller is answering an explicit who's-here / is-there-a-X
+// PRESENCE question. Inside an interior that still names the settlement roster
+// (the people are reachable in the settlement); a bare "look around" does not
+// (see the interior branch below). Default (no opts) = the general survey.
+export function buildLocationSurvey(world, opts = {}) {
   const w = world || {};
   const nodeId = String(w.map?.currentNodeId ?? '');
   const nodes = Array.isArray(w.map?.nodes) ? w.map.nodes : [];
@@ -2357,9 +2361,43 @@ export function buildLocationSurvey(world) {
 
   const parts = [];
 
-  // Opening line — interior vs. exterior
   const interior = w.scene?.interior;
   const insideStructure = interior && typeof interior === 'object' && interior.structureKey;
+
+  // ── INSIDE a private interior room — general look-around ────────────────
+  // "Look around" your room describes the ROOM — its furniture and features —
+  // not the settlement's people (THE_TABLE_TEST). You can't see the village
+  // roster through the walls; dumping Elske/Dalla/the guard here was the
+  // meta-roster leak (FIRST_ROOM #4 — the same canned overview returned 3×
+  // verbatim). An explicit PRESENCE question (opts.presence) still gets the
+  // roster below — the people are reachable in the settlement; only the bare
+  // "what do I see" survey is scoped to the room.
+  if (insideStructure && !opts.presence) {
+    // Vary the lead by turn so a repeated "look around" is never byte-identical
+    // (the second half of FIRST_ROOM #4). Furniture is read from the node — the
+    // same present set the object-presence answers and presentRoomObjects use.
+    const lookRng = makeRng(seedFromString(`${w.meta?.seed ?? ''}|survey|${(w.timeline?.length) ?? 0}`));
+    const lead = lookRng.pick([
+      `You're inside ${placeName}.`,
+      `You take the measure of the room here in ${placeName}.`,
+      `Your eyes move slow across the room.`
+    ]);
+    parts.push(lead);
+
+    const furniture = (Array.isArray(currentNode?.furniture) ? currentNode.furniture : [])
+      .map(f => String(f?.name ?? '').trim())
+      .filter(Boolean);
+    if (furniture.length) {
+      const art = (s) => `${/^[aeiou]/i.test(s) ? 'an' : 'a'} ${s}`;
+      parts.push(`Here: ${joinList(furniture.slice(0, 5).map(art))}.`);
+    } else {
+      parts.push('The room holds little of note.');
+    }
+    parts.push('The way out leads back to the open air.');
+    return parts.join(' ');
+  }
+
+  // Opening line — interior vs. exterior
   if (insideStructure) {
     parts.push(`You're inside ${placeName}.`);
   } else {
@@ -2367,18 +2405,12 @@ export function buildLocationSurvey(world) {
     parts.push(`You're in ${placeName}, ${article} ${nodeType}.`);
   }
 
-  // Who's present — SIGHT-SCOPED. Indoors you cannot see the village roster
-  // through the walls; you see whoever shares your roof (today: no one is
-  // placed in interiors, so the honest answer is the quiet). Outdoors, the
-  // social roster (non-hostile) is who's about — the same people the local
-  // map draws. Hostiles aren't listed by name: a lurking bandit is not a
-  // neighbor; if he's visible at all he reads as a wary stranger.
+  // Who's present — SIGHT-SCOPED. The settlement roster (non-hostile) is who's
+  // about — the same people the local map draws. Hostiles aren't listed by
+  // name: a lurking bandit is not a neighbor; if he's visible at all he reads
+  // as a wary stranger. Inside, frame them as in-and-around the place (they're
+  // in the settlement, not strictly under this roof).
   const allNpcs = Array.isArray(currentNode?.settlement?.npcs) ? currentNode.settlement.npcs : [];
-  // The settlement roster is who's present at this location. Name them whether
-  // inside or out — the player can look at / talk to / fight them, so denying
-  // they're here ("no one under this roof" with seven NPCs in canon) reads as a
-  // hallucinated emptiness (Opus gate). Inside, frame them as in-and-around the
-  // place rather than strictly under the roof; hostiles read as wary strangers.
   {
     const sociable = allNpcs.filter(n => n && !n.hostile);
     const lurkers = allNpcs.filter(n => n && n.hostile).length;

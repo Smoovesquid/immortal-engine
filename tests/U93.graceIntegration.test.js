@@ -75,6 +75,38 @@ test('U93-S5: survey never invents exits that do not exist', () => {
   assert.ok(!survey.includes('Stone Well'), survey);
 });
 
+// FIRST_ROOM #4 — inside a private interior, "look around" describes the ROOM
+// (its furniture), never the settlement's people. You can't see the village
+// roster through the walls; naming them here was the meta-roster leak.
+test('U93-S6: interior survey describes room furniture, not the settlement NPC roster', () => {
+  const w = makeSurveyWorld();
+  w.scene.interior = { structureKey: 'inn:room-3', roomId: 'r3', visited: ['r3'] };
+  const node = w.map.nodes.find(n => n.id === 'town');
+  node.furniture = [
+    { name: 'straw pallet' }, { name: 'oil lantern' }, { name: 'iron-bound chest' }
+  ];
+  const survey = buildLocationSurvey(w);
+  // Room contents present...
+  assert.ok(survey.includes('straw pallet'), survey);
+  assert.ok(survey.includes('iron-bound chest'), survey);
+  // ...and the settlement roster is NOT leaked through the walls.
+  assert.ok(!survey.includes('Mary Rottencrotch'), survey);
+  assert.ok(!survey.includes('barkeep'), survey);
+  assert.ok(!survey.includes('Gus'), survey);
+  // No exterior survey vocabulary either (no compass exits / "nearby stand").
+  assert.ok(!/to the (?:north|south|east|west) lies/i.test(survey), survey);
+});
+
+// A bare interior (no furniture defined) still answers honestly — never the
+// roster, never a hallucinated object.
+test('U93-S7: bare interior survey holds little of note, no roster leak', () => {
+  const w = makeSurveyWorld();
+  w.scene.interior = { structureKey: 'inn:room-3', roomId: 'r3', visited: ['r3'] };
+  const survey = buildLocationSurvey(w);
+  assert.ok(!survey.includes('Mary Rottencrotch'), survey);
+  assert.ok(/little of note|way out/i.test(survey), survey);
+});
+
 
 // Create a test world
 function makeTestWorld() {

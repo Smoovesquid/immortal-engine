@@ -11,6 +11,12 @@ import { normalizeManifest, normalizePack } from '../engine/rulesets.js';
 // roof" while canon listed many NPCs present (a hallucinated emptiness); (2) the
 // examine pivot echoed a long verbose input verbatim ("You look for a building
 // myself — what does the sign over the door say…").
+//
+// FIRST_ROOM #4 (2026-06-24) SUPERSEDES (1) inside a private interior: "what do I
+// see around me?" inside your room describes the ROOM (its furniture), not the
+// settlement NPC roster — you can't see the village through the walls. The old
+// "name the NPCs inside" behavior was itself the meta-roster leak. The roster is
+// still named OUTDOORS and for explicit who's-here PRESENCE questions (see U235).
 
 function world(seed = 'ashfen-reach') {
   const man = normalizeManifest(JSON.parse(fs.readFileSync('packs/manifest.json', 'utf8')));
@@ -20,14 +26,21 @@ function world(seed = 'ashfen-reach') {
   return { w, byId };
 }
 
-test('U161: the survey names present NPCs inside, not "no one under this roof"', () => {
+test('U161: interior survey describes the room, never dumps the settlement NPC roster', () => {
   const { w } = world();
+  assert.ok(w.scene?.interior, 'precondition: the start is inside an interior');
   const node = w.map.nodes.find(n => n.id === w.map.currentNodeId);
-  const someNpc = (node.settlement.npcs || []).find(n => n && !n.hostile);
   const ans = handleMetaQuestion('what do I see around me?', w);
-  if (someNpc) {
-    assert.match(ans, new RegExp(String(someNpc.name).split(' ')[0]), 'names a present NPC');
-    assert.doesNotMatch(ans, /No one else is under this roof\.(?!\s*$)/);
+  // Room-scoped: describes the room / the way out, never the hallucinated-empty
+  // denial ("No one under this roof") nor the settlement roster.
+  assert.match(ans, /room|way out/i, ans);
+  assert.doesNotMatch(ans, /No one else is under this roof/, ans);
+  for (const npc of (node.settlement?.npcs || [])) {
+    // Distinctive name tokens only (≥4 chars, skips "the"/"a" epithet glue that
+    // legitimately appears in prose like "the room" / "the way out").
+    for (const tok of String(npc?.name || '').split(/\s+/)) {
+      if (tok.length >= 4) assert.doesNotMatch(ans, new RegExp(`\\b${tok}\\b`, 'i'), `roster leaked: ${ans}`);
+    }
   }
 });
 

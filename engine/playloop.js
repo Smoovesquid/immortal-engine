@@ -5900,7 +5900,10 @@ function answerOrDeclineQuestion(world, text, outcome) {
   // (a) presence / who's-here / where-is-present → the live roster. Checked first
   // so "where can I find Corwin" isn't mistaken for a feasibility question.
   if (PRESENCE_Q_RE.test(t) || (WHERE_Q_RE.test(t) && namesPresentNpc(world, t))) {
-    return `Wizard: ${buildLocationSurvey(world)}`;
+    // presence:true — an explicit who's-here / where-is-X question names the
+    // settlement roster even inside an interior (the people are reachable);
+    // only a bare "look around" is scoped to the room (FIRST_ROOM #4).
+    return `Wizard: ${buildLocationSurvey(world, { presence: true })}`;
   }
   // (b) action / permission / advice questions, and action statements with a
   // trailing "?", are not info queries — let the action floor (gen) own them.

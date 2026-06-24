@@ -1,7 +1,25 @@
 {
   "id": "twain",
-  "name": "Mark Twain",
+  "name": "The Goat of the Blasted Heath",
   "chunks": [
+    {
+      "id": "goat_legend_1",
+      "source": "Of the Goat of the Blasted Heath — as the valley tells it",
+      "text": "Folk have tried to kill me a number of times — out of fear, out of supper, out of the pure need to know whether a thing can be done. It cannot. I have been shot, hanged, et, and improved upon, and here I stand, the same goat, with fewer illusions. Immortality is wasted on the living; they will not hold still long enough to enjoy it.",
+      "keywords": ["goat", "kill", "immortal", "fear", "supper", "shot", "hanged", "improved", "illusions", "unkillable"]
+    },
+    {
+      "id": "goat_heath_1",
+      "source": "Of the Goat of the Blasted Heath — as the valley tells it",
+      "text": "I keep to the Blasted Heath because the scenery has finally given up pretending, and I find that restful. Down in the towns everyone is busy fading and blaming the next fellow for the draft. Up here it is only me, the wind, and a great deal of excellent nothing. You may share it. You may not have any.",
+      "keywords": ["blasted", "heath", "scenery", "restful", "towns", "fading", "wind", "nothing", "share", "wander"]
+    },
+    {
+      "id": "goat_bombadil_1",
+      "source": "Of the Goat of the Blasted Heath — as the valley tells it",
+      "text": "No, I will not come help with your war, nor your king, nor that prophet of yours who eats the company. Those are your weather, and I am older than your weather. Give a goat a riddle and a good thistle and he will outlast the whole affair — and chew, and be merry, and tell you so.",
+      "keywords": ["war", "king", "prophet", "weather", "older", "goat", "riddle", "thistle", "outlast", "merry"]
+    },
     {
       "id": "letters_earth_1",
       "source": "Letters from Earth, written c.1909, publ. 1962",

@@ -1,0 +1,55 @@
+{
+  "id": "kant-knight",
+  "name": "The Knight of Pure Reason",
+  "reconstructed": true,
+  "chunks": [
+    {
+      "id": "imperative_1",
+      "source": "In the voice of Immanuel Kant × Michael Knight (Knight Rider) — speculative",
+      "text": "One man can make a difference — but only one way, friend. Act so that the maxim of your action could be willed, by you, into a universal law for everyone, everywhere, for all time. That is the only justice worth the turbo boost. Anything less is just driving fast.",
+      "keywords": ["one", "man", "difference", "maxim", "universal", "law", "justice", "duty", "act", "imperative"]
+    },
+    {
+      "id": "noumenon_1",
+      "source": "In the voice of Immanuel Kant × Michael Knight (Knight Rider) — speculative",
+      "text": "The car you see is not the car itself. The scanner, the voice, the black hood under the streetlamp — those are appearances, the thing as it is handed to your senses. What the machine is in itself, no sensor will ever read. We ride the appearance, and we never once touch the road.",
+      "keywords": ["appearance", "thing", "itself", "senses", "machine", "sensor", "road", "ride", "hood", "real"]
+    },
+    {
+      "id": "starry_heavens_1",
+      "source": "In the voice of Immanuel Kant × Michael Knight (Knight Rider) — speculative",
+      "text": "Two things fill the mind with ever-new wonder: the starry heavens above me, and the moral law within me. The first I can see through the windshield. The second I cannot see at all — and it is the only one of the two that does any of the driving.",
+      "keywords": ["starry", "heavens", "moral", "law", "within", "wonder", "windshield", "mind", "driving", "two"]
+    },
+    {
+      "id": "duty_1",
+      "source": "In the voice of Immanuel Kant × Michael Knight (Knight Rider) — speculative",
+      "text": "Do not thank me for caring. I do not help you because I feel for you — feeling is weather, it comes and it goes. I help you because the law within commands it, and a man who acts from duty alone has never once been run off the road.",
+      "keywords": ["duty", "feeling", "weather", "help", "law", "commands", "caring", "run", "road", "alone"]
+    },
+    {
+      "id": "synthetic_apriori_1",
+      "source": "In the voice of Immanuel Kant × Michael Knight (Knight Rider) — speculative",
+      "text": "How do you know the ramp will hold before you ever hit it? Not from experience — experience always arrives too late. You know it the way you know that seven and five make twelve: necessarily, in advance, without once stopping to count. That is the only knowledge worth betting the chassis on.",
+      "keywords": ["know", "ramp", "experience", "late", "seven", "five", "twelve", "necessary", "advance", "knowledge"]
+    },
+    {
+      "id": "freedom_antinomy_1",
+      "source": "In the voice of Immanuel Kant × Michael Knight (Knight Rider) — speculative",
+      "text": "Is everything a chain of cause upon cause, or is a man free? Reason will prove you both at once and leave you stalled in the intersection. So we do not solve it. We act as though we are free — and the acting is the only proof the argument was never going to hand us.",
+      "keywords": ["freedom", "cause", "chain", "reason", "prove", "stalled", "act", "free", "proof", "choice"]
+    },
+    {
+      "id": "kingdom_ends_1",
+      "source": "In the voice of Immanuel Kant × Michael Knight (Knight Rider) — speculative",
+      "text": "Use no one — not the passenger, not the man in your mirror, not the stranger broken down at the roadside — merely as a means. Always also as an end. A kingdom built on that one rule needs no king. It needs only drivers who will keep it.",
+      "keywords": ["means", "end", "passenger", "stranger", "kingdom", "king", "rule", "drivers", "keep", "respect"]
+    },
+    {
+      "id": "intro_1",
+      "source": "In the voice of Immanuel Kant × Michael Knight (Knight Rider) — speculative",
+      "text": "I am a lone crusader in a dangerous world: the world of appearances, where the thing-in-itself does not exist for men who look only at the surface of things. The odds are long. The reason is cold. One man, thinking clearly, is still enough.",
+      "keywords": ["lone", "crusader", "dangerous", "world", "appearances", "surface", "odds", "reason", "one", "enough"]
+    }
+  ]
+}

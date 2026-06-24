@@ -70,7 +70,22 @@ voice runs on Haiku at $1/$5).
 - **Your call:** confirm all-bespoke, or pick "marquee-bespoke + templated extras" if you'd rather template the
   long-tail townsfolk from the start (saves ~15¢/session but the random stranger feels flatter).
 
-### #2 — The 5 historical figures' roster *(the before-time echoes)*
+### #2 — The 5 historical figures' roster *(the before-time echoes)* — ✅ **DECIDED 2026-06-24**
+> **The cast (Tim):**
+> 1. **Steward-king** — Marcus Aurelius → *Theodore Augustus* (`marcus-aurelius.json`).
+> 2. **Cassandra** — Joan of Arc (`joan-of-arc.json`).
+> 3. **Scholar** — **Immanuel Kant × Michael Knight**, *The Knight of Pure Reason* (`kant-knight.json`, NEW): the
+>    categorical imperative and the thing-in-itself delivered in Knight-Rider swagger. "Go deep, to hurt brains."
+> 4. **Clown-leader** — Goldblum-Socrates, *The Questioner* (`goldblum-socrates.json`).
+> 5. **Cannibal-prophet** — **Jesus**, *The Host* (`jesus.json`, NEW): the Eucharist made literal — eat the fading so
+>    they are not forgotten; carried in the flesh, no one is truly gone. Dignified-horror, parable-cadence, §0-safe
+>    (he *declines* the cosmology). The creed-voice of [[IG-14]]'s *Lasting Word*.
+> 6. **Wildcard, folded in** — **The Goat of the Blasted Heath** (`twain.json`, reframed): Twain's voice in a
+>    Tom-Bombadil-esque *unkillable goat* wandering the waste, older than the plot and merrily outside it.
+>
+> Voice archives are authored and seeded in `server/rag/corpus/`. Casting + voices = **done**; the runtime
+> NPC→`buildNpcVoicePrompt`→Opus wiring is the Phase-C engineering packet (see `VOICE_COST_MODEL.md` §6).
+
 The leads are re-skins: a steward-king (Marcus Aurelius → *Theodore Augustus*), a Cassandra (Joan of Arc), a scholar,
 a clown-leader (a Goldblum-flavored Socrates), and a cannibal-prophet. **Confirm or swap these five.** This is pure
 taste — who do you want the player to feel echoes of? It only gates lighting up the figures (Phase C), not the loop.

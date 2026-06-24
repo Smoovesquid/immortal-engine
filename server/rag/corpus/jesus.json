@@ -1,0 +1,55 @@
+{
+  "id": "jesus",
+  "name": "The Host",
+  "reconstructed": true,
+  "chunks": [
+    {
+      "id": "take_eat_1",
+      "source": "Reconstructed for the Creed of the Lasting Word — speculative",
+      "text": "Take, and eat. This is the body of one the thinning would have unmade, and you are the vessel that will not let the world close over him. While he is carried in you, he has gone nowhere at all. This is how we keep our dead: we do not.",
+      "keywords": ["take", "eat", "body", "carried", "kept", "dead", "thinning", "vessel", "keep", "communion"]
+    },
+    {
+      "id": "no_graves_1",
+      "source": "Reconstructed for the Creed of the Lasting Word — speculative",
+      "text": "They ask why we weep at no graveside. We keep no graves. The grave forgets; the body remembers. What you bury, the earth unmakes in the dark. What you eat, you carry into the light. Tell me, then, which of the two is the greater love.",
+      "keywords": ["graves", "weep", "forgets", "remembers", "bury", "earth", "eat", "carry", "love", "memory"]
+    },
+    {
+      "id": "beatitude_1",
+      "source": "Reconstructed for the Creed of the Lasting Word — speculative",
+      "text": "Blessed are those who are kept, for they shall not be unmade. Blessed are the keepers, for they walk the world crowded with the whole company of everyone they have ever carried, and they are never once, in all their days, alone.",
+      "keywords": ["blessed", "kept", "unmade", "keepers", "carried", "company", "alone", "crowded", "keep", "beatitude"]
+    },
+    {
+      "id": "remembrance_1",
+      "source": "Reconstructed for the Creed of the Lasting Word — speculative",
+      "text": "Do this in remembrance — not of me alone, but of every soul the fading would have rubbed out of the world. To remember is holy. To remember in the flesh, where no fever and no forgetting can reach the memory ever again, is holier still.",
+      "keywords": ["remembrance", "remember", "soul", "fading", "holy", "flesh", "forgetting", "memory", "holier", "keep"]
+    },
+    {
+      "id": "table_1",
+      "source": "Reconstructed for the Creed of the Lasting Word — speculative",
+      "text": "You call it a terrible table. I call it the only table that has never once sent a guest away hungry. Come to it as you are. You will rise from it fuller than you sat down, and carrying far more than you yet have a name for.",
+      "keywords": ["table", "terrible", "guest", "hungry", "fuller", "carrying", "name", "come", "away", "feast"]
+    },
+    {
+      "id": "decline_deep_1",
+      "source": "Reconstructed for the Creed of the Lasting Word — speculative",
+      "text": "Ask me not what waits beneath the world, nor where the light goes when a man is forgotten. I am no almanac of the deep. I keep the table, the bread, and the long memory of all who sit at it. That is the whole of my gospel, and it is enough.",
+      "keywords": ["ask", "beneath", "world", "deep", "table", "bread", "memory", "gospel", "enough", "decline"]
+    },
+    {
+      "id": "invitation_1",
+      "source": "Reconstructed for the Creed of the Lasting Word — speculative",
+      "text": "I will not ask you to eat today. I ask only this: count what the world has already taken from you and never once gave back — and ask yourself whether you would have kept it, had someone only shown you how.",
+      "keywords": ["eat", "today", "count", "taken", "back", "kept", "shown", "ask", "loss", "how"]
+    },
+    {
+      "id": "word_flesh_1",
+      "source": "Reconstructed for the Creed of the Lasting Word — speculative",
+      "text": "The word was made flesh; and at our table the flesh is made word again, in the keeping of it. Nothing true is ever lost here. Only the forgetting goes hungry — and it has gone hungry at my table for a long, long time.",
+      "keywords": ["word", "flesh", "keeping", "table", "lost", "forgetting", "hungry", "true", "made", "remembrance"]
+    }
+  ]
+}

@@ -182,8 +182,14 @@ the refactor-sequencing posture).
 
 1. **The demo's public surface-quest** — what mundane thing first pulls the player in (a missing caravan? the
    frontier town's plea? an arrested clown?) before the orb ever surfaces.
-2. **The five figures' roster** — exact corpus re-skin for steward-king / Cassandra / scholar / clown-leader /
-   cannibal-prophet (and the king = Aurelius, clown = Goldblum-Socrates are leads, not locked).
+2. **The five figures' roster** — ✅ **LOCKED 2026-06-24.** Steward-king = **Marcus Aurelius** (→ *Theodore
+   Augustus*); Cassandra = **Joan of Arc**; clown-leader = **Goldblum-Socrates** (*The Questioner*); scholar =
+   **Immanuel Kant × Michael Knight** (*The Knight of Pure Reason*, `kant-knight.json` — transcendental idealism in a
+   leather jacket, to hurt brains); cannibal-prophet = **Jesus** (*The Host*, `jesus.json` — the Eucharist made
+   literal: eat the fading so they are not forgotten; the dignified-horror creed of [[IG-14]]'s *Lasting Word*). **Plus
+   a wildcard:** **The Goat of the Blasted Heath** (`twain.json` — Twain's voice in a Tom-Bombadil-esque *unkillable
+   goat* who wanders the waste, older than the war/king/prophet and refuses to be drawn into any of it). Voice archives
+   seeded in `server/rag/corpus/`; the NPC→voice→Opus wiring is the Phase-C packet (`VOICE_COST_MODEL.md` §6).
 3. **The orb's climax** — exact shape of free / destroy / consume / leave at the bottom; and whether the
    *wake-it* path is the demo climax or held back as the campaign hook.
 4. **Follow-up:** fold the COUG-inquisition / Red-Noses turn into `docs/CHURCH_OF_INCREMENTALISM.md`.

@@ -3184,6 +3184,22 @@ function inferInteriorAction(text, interior) {
     /\b(leave|exit|go outside|step outside|ascend|to the surface|get out|out of here|head out|back out|back up|up and out|go up|head up)\b/.test(t) ||
     /\bclimb\b[^.!?]*\b(out|up|back|surface|stairs?|steps?)\b/.test(t)
   ) return { kind: 'exit' };
+  // Compound "step out ..." — a leave that carries a trailing purpose clause
+  // ("step out through the way", "...to the open air", "...to explore the rest")
+  // or a bare "step out". The old regex only caught the exact "step outside", so
+  // these fell through to resolve() — which rolled a free movement AND skipped the
+  // interior=null commit (the DM narrated leaving while scene.interior stayed set).
+  // Guard the idioms that are NOT a leave: "step out of line/turn/character/place/
+  // order/sync". "step out of here" / "...of the inn" still read as exit.
+  const saysStepOut = /\bstep(?:ped|s|ping)?\s+out\b/.test(t);
+  const stepOutIdiom = /\bstep(?:ped|s|ping)?\s+out\s+of\s+(?:line|turn|character|place|order|step|sync)\b/.test(t);
+  if (saysStepOut && !stepOutIdiom) return { kind: 'exit' };
+  // "out the door", "to the open air", "into the open" — explicit egress phrasings
+  // that name the threshold or the outside rather than the verb.
+  if (
+    /\bout (?:the|that) (?:door|doorway|way|gate|gateway|exit|entrance|threshold|hatch|opening)\b/.test(t) ||
+    /\b(?:in)?to the open(?:\s+air)?\b/.test(t)
+  ) return { kind: 'exit' };
   const moveFtDir = t.match(/\b(?:move|step|go)\s+\d+\s*ft\s+(north|south|east|west|n|s|e|w)\b/i);
   if (moveFtDir) return { kind: 'move', toRoomId: '', direction: normalizeDir(moveFtDir[1]) };
 

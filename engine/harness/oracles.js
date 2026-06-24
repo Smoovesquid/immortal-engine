@@ -207,7 +207,9 @@ function rollOutcome(output) {
 // required before the noun, which alone rejects the idioms with no article ("take
 // cover/aim/stock/charge/refuge"); the stop-noun set rejects the rest ("take a
 // look/seat/breath", "take the lead/stairs/plunge", "take your time/leave").
-const ACQUIRE_VERB = '(?:take|takes|took|pocket|pockets|pocketed|grab|grabs|grabbed|snatch|snatches|snatched|scoop|scoops|scooped|stuff|stuffs|stuffed|tuck|tucks|tucked|slip|slips|slipped|claim|claims|claimed|collect|collects|collected|gather|gathers|gathered|lift|lifts|lifted|nab|nabs|nabbed|swipe|swipes|swiped|pick(?:s|ed)?\\s+up)';
+// "lift" was REMOVED — it false-fired on "you lift the chest's lid" (lifting a lid is
+// not acquiring the object). The remaining verbs are unambiguous acquisitions.
+const ACQUIRE_VERB = '(?:take|takes|took|pocket|pockets|pocketed|grab|grabs|grabbed|snatch|snatches|snatched|scoop|scoops|scooped|stuff|stuffs|stuffed|tuck|tucks|tucked|slip|slips|slipped|claim|claims|claimed|collect|collects|collected|gather|gathers|gathered|nab|nabs|nabbed|swipe|swipes|swiped|pick(?:s|ed)?\\s+up)';
 const ACQUIRE_CLAIM = new RegExp(`\\byou\\s+${ACQUIRE_VERB}\\s+(?:up\\s+)?(?:the|a|an|your|my|his|her|its|their|that|this|one|two|three|several|some|a\\s+few)\\s+([a-z][a-z'’-]+)`, 'i');
 const ACQUIRE_PHRASE = /\b(?:is|are)\s+(?:now\s+)?yours\b|\bnow\s+(?:carry|hold|have)\s+the\b|\b(?:goes|slides|drops)\s+into\s+your\s+(?:pack|pocket|bag|satchel|pouch|hand)\b|\binto\s+your\s+(?:pack|pocket|bag|satchel|pouch)\b/i;
 // A take that DIDN'T happen — too heavy, refused, or merely attempted.
@@ -221,6 +223,7 @@ const STOP_NOUNS = new Set([
   'position', 'watch', 'count', 'tally', 'measure', 'time', 'leave', 'heart', 'courage',
   'comfort', 'pride', 'pity', 'offense', 'umbrage', 'initiative', 'vantage', 'stance',
   'guard', 'cue', 'lead', 'flight', 'wing', 'pause', 'breather', 'liberty', 'toll',
+  'lid', 'lids', 'flap', 'cover', 'hood', 'cap',
 ]);
 // A concrete DISCOVERY claim from a search ("you find a brass key").
 const FIND_CLAIM = new RegExp(`\\byou\\s+(?:find|finds|found|discover|discovers|discovered|uncover|uncovers|uncovered|turn\\s+up|turns\\s+up|come\\s+across|comes\\s+across|dig\\s+up|locate|locates|located|spot|spots|spotted)\\s+(?:the|a|an|some|one|two|several|a\\s+few)\\s+([a-z][a-z'’-]+)`, 'i');

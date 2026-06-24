@@ -53,6 +53,10 @@ export const QUALITY_JUDGE_SYSTEM =
   "or fun; you are flagging turns where the DM fails a concrete, binary quality bar. " +
   "Be strict but fair: a terse-but-real DM line PASSES; only flag genuine failures " +
   "(vague non-answers, interchangeable filler, debug/struct-dump text, system-artifact voice). " +
+  "Judge each criterion INDEPENDENTLY — do NOT let one flaw fail a turn on every criterion. " +
+  "A turn can resolve the action poorly yet still read in a natural voice, or be a touch wordy yet " +
+  "specific and grounded; mark only the criterion that actually fails. When a criterion is borderline, " +
+  "PASS it. A decent, specific, in-voice line should pass most or all criteria. " +
   "Answer with STRICT JSON only — no preamble, no explanation, no reasoning.";
 
 // Render the session as a compact numbered transcript the judge scores. Only the

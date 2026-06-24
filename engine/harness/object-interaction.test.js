@@ -49,6 +49,11 @@ test('A/neg: take-idioms with no object ("take cover", "take stock") never fire'
   assert.equal(run({ output: { narration: 'You take the stairs down and take the lead.' } }).length, 0);
 });
 
+test('A/neg: "lift the lid" of a container is NOT a phantom acquisition (the lift-verb regression)', () => {
+  const f = run({ output: { narration: "You lift the iron-bound chest's heavy lid and find it holds bundled bedding, three waterskins, a tinderbox, and a coil of rope." } });
+  assert.equal(f.length, 0, 'lifting a lid is not acquiring the object — "lift" was dropped from the acquire verbs');
+});
+
 test('A/pos: a phrase-form acquisition ("the X is yours now") with no delta is caught', () => {
   const f = run({ output: { narration: 'The silver locket is yours now.' } });
   assert.equal(f.length, 1);

@@ -10,6 +10,7 @@ import { generateSettlementNPCs, mintNpcName } from '../npc/npcGenesis.js';
 import { generateNodeFurniture } from './generateFurniture.js';
 import { verifyRumorsForSeed } from '../rumor/verify.js';
 import { ensureNodeSubstrate } from '../substrate.js';
+import { injectDemoFigures } from '../world/demoFigures.js';
 
 export async function decompressAndCanonize(world, nodeId, pack, llmOptions = {}) {
   const node = world.map.nodes.find(n => n.id === nodeId);
@@ -33,7 +34,12 @@ export async function decompressAndCanonize(world, nodeId, pack, llmOptions = {}
 
   // Pass T2 — hostile NPC gap fix (async path).
   const texturedNpcs = ensureHostileNpc(textured.npcs || [], world, nodeId);
-  const texturedWithHostile = { ...textured, npcs: texturedNpcs };
+  // D-C2a — authored-figure overlay (demo seed only). Prepends a named figure
+  // (e.g. the steward-king at the kingdom seat) so it flows into the node's final
+  // npcs and is seen by dialogue.js/askNpc + the D-C1 voiceCorpusId surface. No-op
+  // on every non-tallow seed and on any node without a placed figure.
+  const texturedWithFigures = injectDemoFigures({ world, node, npcs: texturedNpcs });
+  const texturedWithHostile = { ...textured, npcs: texturedWithFigures };
 
   // Step 5: Canonize on the node
   const canonized = {
@@ -139,7 +145,9 @@ export function decompressAndCanonizeSync(world, nodeId, pack) {
   // Pass T2 — hostile NPC gap fix. If no hostile NPC exists in any
   // decompressed settlement in the world AND none in the current batch,
   // seed a hostile bandit. Deterministic: same seed+node → same bandit.
-  const finalNpcs = ensureHostileNpc(namedNpcs, world, nodeId);
+  const finalNpcsBase = ensureHostileNpc(namedNpcs, world, nodeId);
+  // D-C2a — authored-figure overlay (demo seed only). See async path above.
+  const finalNpcs = injectDemoFigures({ world, node, npcs: finalNpcsBase });
 
   const offlineSettlement = {
     ...settlement,

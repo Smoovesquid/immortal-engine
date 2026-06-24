@@ -49,6 +49,27 @@ test('A/neg: take-idioms with no object ("take cover", "take stock") never fire'
   assert.equal(run({ output: { narration: 'You take the stairs down and take the lead.' } }).length, 0);
 });
 
+test('A/neg: adjective-led idioms ("take a real bed", "deep breath", "long look") never fire (IT-2)', () => {
+  // The oracle keyed STOP_NOUNS on a LEADING ADJECTIVE ("real"), so a rest narration
+  // ("you take a real bed and a real night") read as taking an item named "real".
+  // It now skips known adjectives and keys the HEAD noun (bed/breath/look = stop-nouns).
+  assert.equal(run({ output: { narration: 'You take a real bed and a real night. You wake whole.', mechanics: '[rest:long]' } }).length, 0, 'rest idiom + [rest:] guard');
+  assert.equal(run({ output: { narration: 'You take a deep breath and steady yourself.' } }).length, 0, 'deep breath');
+  assert.equal(run({ output: { narration: 'You take a long look around the room.' } }).length, 0, 'long look');
+  assert.equal(run({ output: { narration: 'You take a quick breather, then press on.' } }).length, 0, 'quick breather');
+  assert.equal(run({ output: { narration: 'You take her meaning and say no more.' } }).length, 0, 'take her meaning (dialogue idiom)');
+});
+
+test('A/pos: recall preserved — a real adjective+noun take ("the brass key") still fires (IT-2)', () => {
+  // Skipping the adjective must NOT suppress a genuine phantom: the HEAD noun (key) is
+  // a real object, so an ungranted "you take the brass key" is still caught.
+  const f = run({ output: { narration: 'You take the brass key and pocket it.' } });
+  assert.equal(f.length, 1, 'brass key is a real object — phantom still caught');
+  assert.match(f[0].note, /^acquired-nothing/);
+  // A multi-word object phrase resolves to its head noun, too.
+  assert.equal(run({ output: { narration: 'You take the small wooden box.' } }).length, 1, 'wooden box still fires');
+});
+
 test('A/neg: "lift the lid" of a container is NOT a phantom acquisition (the lift-verb regression)', () => {
   const f = run({ output: { narration: "You lift the iron-bound chest's heavy lid and find it holds bundled bedding, three waterskins, a tinderbox, and a coil of rope." } });
   assert.equal(f.length, 0, 'lifting a lid is not acquiring the object — "lift" was dropped from the acquire verbs');

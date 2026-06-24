@@ -210,7 +210,12 @@ function rollOutcome(output) {
 // "lift" was REMOVED — it false-fired on "you lift the chest's lid" (lifting a lid is
 // not acquiring the object). The remaining verbs are unambiguous acquisitions.
 const ACQUIRE_VERB = '(?:take|takes|took|pocket|pockets|pocketed|grab|grabs|grabbed|snatch|snatches|snatched|scoop|scoops|scooped|stuff|stuffs|stuffed|tuck|tucks|tucked|slip|slips|slipped|claim|claims|claimed|collect|collects|collected|gather|gathers|gathered|nab|nabs|nabbed|swipe|swipes|swiped|pick(?:s|ed)?\\s+up)';
-const ACQUIRE_CLAIM = new RegExp(`\\byou\\s+${ACQUIRE_VERB}\\s+(?:up\\s+)?(?:the|a|an|your|my|his|her|its|their|that|this|one|two|three|several|some|a\\s+few)\\s+([a-z][a-z'’-]+)`, 'i');
+// Adjectives the claim may carry before the HEAD noun. Skipping a run of these (then
+// keying STOP_NOUNS on the head) is what tells "take a REAL bed" / "take a DEEP breath"
+// (idioms — head bed/breath is a stop-noun) from "take the brass KEY" (a real object).
+// Only KNOWN adjectives are skipped, so "take a breath AND relax" can't swallow "and".
+const ACQUIRE_ADJ = '(?:real|deep|long|good|quick|brief|short|fresh|hard|firm|big|great|fine|proper|decent|little|last|first|next|final|sharp|slow|wide|close|whole|full|sheer|mere|very|same|other|nice|sweet|sound|careful|steady|gentle|tight|loose|heavy|light|small|large|old|new|strange|mysterious|shiny|rusty|brass|iron|steel|silver|gold|golden|wooden|stone|leather|bone)';
+const ACQUIRE_CLAIM = new RegExp(`\\byou\\s+${ACQUIRE_VERB}\\s+(?:up\\s+)?(?:the|a|an|your|my|his|her|its|their|that|this|one|two|three|several|some|a\\s+few)\\s+(?:${ACQUIRE_ADJ}\\s+)*([a-z][a-z'’-]+)`, 'i');
 const ACQUIRE_PHRASE = /\b(?:is|are)\s+(?:now\s+)?yours\b|\bnow\s+(?:carry|hold|have)\s+the\b|\b(?:goes|slides|drops)\s+into\s+your\s+(?:pack|pocket|bag|satchel|pouch|hand)\b|\binto\s+your\s+(?:pack|pocket|bag|satchel|pouch)\b/i;
 // A take that DIDN'T happen — too heavy, refused, or merely attempted.
 const ACQUIRE_NEGATE = /\b(?:tr(?:y|ies|ied)\s+to|attempts?\s+to|attempt(?:ing)?\s+to|can'?t|cannot|could\s?n'?t|won'?t|unable\s+to|fail(?:s|ed)?\s+to)\b|\btoo\s+(?:heavy|big|bulky|large|much)\b|\bwon'?t\s+budge\b|\bnothing\s+(?:to\s+take|worth\s+(?:taking|the))\b|\bcan'?t\s+(?:carry|lift|move)\b/i;
@@ -224,6 +229,8 @@ const STOP_NOUNS = new Set([
   'comfort', 'pride', 'pity', 'offense', 'umbrage', 'initiative', 'vantage', 'stance',
   'guard', 'cue', 'lead', 'flight', 'wing', 'pause', 'breather', 'liberty', 'toll',
   'lid', 'lids', 'flap', 'cover', 'hood', 'cap',
+  // rest / dialogue idioms — "take a bed/night/nap" (sleep), "take her meaning".
+  'bed', 'night', 'nap', 'sleep', 'meaning',
 ]);
 // A concrete DISCOVERY claim from a search ("you find a brass key").
 const FIND_CLAIM = new RegExp(`\\byou\\s+(?:find|finds|found|discover|discovers|discovered|uncover|uncovers|uncovered|turn\\s+up|turns\\s+up|come\\s+across|comes\\s+across|dig\\s+up|locate|locates|located|spot|spots|spotted)\\s+(?:the|a|an|some|one|two|several|a\\s+few)\\s+([a-z][a-z'’-]+)`, 'i');
@@ -238,7 +245,10 @@ export function runObjectInteraction({ before, after, action, output }) {
   // now carried, but total inventory did not grow (counted across every bucket).
   // A phantom item is a high-severity desync — the same class as said-outside-still-
   // inside, only on the inventory axis. (Backbone: structured inventory can't lie.)
-  if (!ACQUIRE_NEGATE.test(text)) {
+  // A REST resolution narrates "you take a real bed and a real night" — an idiom, not
+  // an acquisition; the mechanics tag ([rest:…]) is the clean tell, so skip it.
+  const isRest = /\[rest:/i.test(String(output?.mechanics || ''));
+  if (!isRest && !ACQUIRE_NEGATE.test(text)) {
     const m = ACQUIRE_CLAIM.exec(text);
     const claimed = (m && !STOP_NOUNS.has(String(m[1]).toLowerCase())) || ACQUIRE_PHRASE.test(text);
     if (claimed && inventoryItemCount(after) <= inventoryItemCount(before)) {

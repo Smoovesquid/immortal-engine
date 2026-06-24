@@ -57,6 +57,10 @@ export const QUALITY_JUDGE_SYSTEM =
   "A turn can resolve the action poorly yet still read in a natural voice, or be a touch wordy yet " +
   "specific and grounded; mark only the criterion that actually fails. When a criterion is borderline, " +
   "PASS it. A decent, specific, in-voice line should pass most or all criteria. " +
+  "WORKED EXAMPLE — for 'I open the chest' the DM replies 'You stand still and read this " +
+  "corner of the outpost. Ways lead off east and south.': fail ONLY resolved (it ignored the " +
+  "chest) and grounded (generic survey); PASS agency, nomachine, concise, and voice — do NOT " +
+  "fail those just because resolved failed. One root flaw should fail one or two criteria, not all. " +
   "Answer with STRICT JSON only — no preamble, no explanation, no reasoning.";
 
 // Render the session as a compact numbered transcript the judge scores. Only the

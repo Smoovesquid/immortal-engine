@@ -419,6 +419,19 @@ if (isMain) {
     L.push('');
     if (PLAYER_KIND === 'llm' || REAL_DM) L.push(`## Cost\n${usage.calls} metered calls (player${REAL_DM ? ` + ${JUDGE_MODEL} judge` : ''}) · ${usage.in.toLocaleString()} in + ${usage.out.toLocaleString()} out tokens (deterministic oracles: $0).${REAL_DM ? ` DM narration (${DM_MODEL}, ~1 call/turn) is billed separately, not metered here.` : ''}`);
 
+    // Full untruncated transcript — so a fresh-eye reviewer (human or a cold agent)
+    // can audit the actual DM prose after the fact, not just the finding slices.
+    L.push('');
+    L.push(`## Full transcript`);
+    for (const r of runs) {
+      L.push('');
+      L.push(`### seed \`${r.seed}\` — goal ${r.goalCompleted ? 'REACHED' : 'NOT reached'} · ${r.turns} turns`);
+      for (const t of r.transcript) {
+        const who = t.who === 'you' ? '**YOU**' : (t.meta ? '_DM(meta)_' : '**DM**');
+        L.push(`- ${who}: ${String(t.text).replace(/\n/g, ' ')}${t.mech ? `  — \`${t.mech}\`` : ''}`);
+      }
+    }
+
     const file = path.join(dir, `harness-${date}.md`);
     fs.writeFileSync(file, L.join('\n'));
     return { file, logFile, total: allFindings.length, byOracle };

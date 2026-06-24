@@ -39,6 +39,26 @@ const PERSON_IDENTITY_QUERY_RE = new RegExp([
   /\btell\s+me\s+about\s+(?:the\s+)?([a-z][\w'’-]*(?:\s+[\w'’-]+){0,3})\b/,
 ].map(r => r.source).join('|'), 'i');
 
+// "where is X" / "where's X" / "where can/could/would/might I find/see/reach X".
+// A LOCATION ask about a person. Resolves ONLY when X is a present NPC → the
+// answer names their presence ("right here"); a NON-present referent returns
+// null so the caller keeps the existing honest deflection (a real NPC genuinely
+// may not know where someone NOT here is). This exists so the engine never DENIES
+// the location of a PRESENT NPC (the D-B4 canon-hallucination: Dalla "can't place"
+// Elske while Elske stands right there). §0-safe: presence only — never motive.
+const PERSON_LOCATION_QUERY_RE = new RegExp([
+  /\bwhere(?:'s| is| are| was)\s+([a-z][\w'’-]*(?:\s+[\w'’-]+){0,3})\b/,
+  /\bwhere\s+(?:can|could|would|might|will|do|should|must|to)\s+i\s+(?:find|see|reach|meet|catch|locate)\s+([a-z][\w'’-]*(?:\s+[\w'’-]+){0,3})\b/,
+].map(r => r.source).join('|'), 'i');
+
+// Trailing time/filler words a location ask often carries ("...right now",
+// "...at this hour") — stripped so the referent matches the roster name cleanly.
+function stripTrailingTemporal(ref) {
+  return String(ref || '')
+    .replace(/\s+(?:right\s+now|now|today|tonight|currently|presently|these\s+days|at\s+(?:this|the)\s+(?:hour|moment|minute|time)|at\s+present)\s*$/i, '')
+    .trim();
+}
+
 // DEFER guard — a person-identity ask carrying any of these is NOT identity: it reaches for a
 // motive / secret / backstory / allegiance / LEADERSHIP that has no grounded source. Excluded so
 // it falls through to its own decline/floor (never an identity deliver, never an invention).
@@ -69,7 +89,7 @@ function cleanRef(raw) {
 
 // Match a present non-hostile NPC by NAME (exact / prefix / first-word) or by ROLE / occupation /
 // descriptor / archetype / title. Mirrors playloop's resolvePresentNpcStrict + resolveNpcByRoleOrDescriptor.
-function matchPresentNpc(npcs, ref) {
+function matchPresentNpc(npcs, ref, opts = {}) {
   const r = cleanRef(ref);
   if (r.length < 3 || NON_PERSON_REF_RE.test(r)) return null;
   // by name
@@ -77,11 +97,18 @@ function matchPresentNpc(npcs, ref) {
     const nm = String(n.name || '').toLowerCase();
     if (nm && (nm === r || nm.startsWith(r + ' ') || (nm.split(/\s+/)[0] || '') === r)) return n;
   }
-  // by role / occupation / descriptor / archetype / title
+  // by role / occupation / descriptor / archetype / title. strictRole = exact
+  // match only (no substring): a LOCATION ask about a PLACE noun must never
+  // resolve to a person whose role merely CONTAINS it ("where is the inn?" must
+  // not point at the innKEEPER). Identity keeps the loose match ("keeper" →
+  // "tavern-keeper"). (D-B4 residual c.)
   const norm = (s) => String(s || '').toLowerCase().replace(/_/g, ' ').trim();
   for (const n of npcs) {
     const vals = [n.role, n.occupation, n.descriptor, n.archetype, n.title].map(norm).filter(Boolean);
-    if (vals.some(v => v === r || v.includes(r) || r.includes(v))) return n;
+    const hit = opts.strictRole
+      ? vals.some(v => v === r)
+      : vals.some(v => v === r || v.includes(r) || r.includes(v));
+    if (hit) return n;
   }
   return null;
 }
@@ -108,13 +135,25 @@ export function classifyPersonQuery(text) {
   const t = String(text || '');
   if (!t.trim()) return null;
   if (PERSON_DEFER_RE.test(t)) return null;
-  const m = PERSON_IDENTITY_QUERY_RE.exec(t);
-  if (!m) return null;
-  const ref = (m[1] || m[2] || m[3] || '').trim();
-  if (!ref) return null;
-  const r = cleanRef(ref);
-  if (!r || NON_PERSON_REF_RE.test(r)) return null;     // "who is here?" → place, not person
-  return { type: 'identity', ref, demonstrative: PERSON_DEMONSTRATIVE_RE.test(r) };
+  // identity — "who is X" / "what do I know about X" / "tell me about X"
+  const mi = PERSON_IDENTITY_QUERY_RE.exec(t);
+  if (mi) {
+    const ref = (mi[1] || mi[2] || mi[3] || '').trim();
+    const r = cleanRef(ref);
+    if (r && !NON_PERSON_REF_RE.test(r)) {              // "who is here?" → place, not person
+      return { type: 'identity', ref, demonstrative: PERSON_DEMONSTRATIVE_RE.test(r) };
+    }
+  }
+  // location — "where is X" / "where can I find X" (a person, not a place)
+  const ml = PERSON_LOCATION_QUERY_RE.exec(t);
+  if (ml) {
+    const ref = stripTrailingTemporal((ml[1] || ml[2] || '').trim());
+    const r = cleanRef(ref);
+    if (r && !NON_PERSON_REF_RE.test(r)) {              // "where is the inn?" → place → falls through
+      return { type: 'location', ref, demonstrative: PERSON_DEMONSTRATIVE_RE.test(r) };
+    }
+  }
+  return null;
 }
 
 /**
@@ -125,7 +164,7 @@ export function classifyPersonQuery(text) {
  * through (the existing clarify/decline/floor handles it). Pure, deterministic, NO roll, NO mutation.
  */
 export function resolvePersonFact(world, query) {
-  if (!query || query.type !== 'identity') return null;
+  if (!query || (query.type !== 'identity' && query.type !== 'location')) return null;
   const excludeId = query.excludeId ? String(query.excludeId) : '';
   const pool = presentSociableNpcs(world).filter(n => !excludeId || String(n.id || '') !== excludeId);
   if (!pool.length) return null;
@@ -133,8 +172,12 @@ export function resolvePersonFact(world, query) {
   if (query.demonstrative) {
     if (pool.length === 1) npc = pool[0];               // "that / them" → the sole present other
   } else {
-    npc = matchPresentNpc(pool, query.ref);
+    npc = matchPresentNpc(pool, query.ref, { strictRole: query.type === 'location' });
   }
-  if (!npc) return null;
-  return { type: 'identity', body: describeIdentity(npc) };
+  if (!npc) return null;                                 // not present → caller honest-declines
+  // location carries the bare name (for a clean "X is right here"); identity
+  // carries the full name+role label.
+  return query.type === 'location'
+    ? { type: 'location', body: describeIdentity(npc), name: String(npc.name || '').trim() || describeIdentity(npc) }
+    : { type: 'identity', body: describeIdentity(npc) };
 }

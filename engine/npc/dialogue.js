@@ -319,6 +319,8 @@ export function commonKnowledgeAnswer(world, npc, text) {
     const pqp = classifyPersonQuery(t);
     if (pqp) {
       const fact = resolvePersonFact(w, { ...pqp, excludeId: npc.id });
+      // A present NPC's whereabouts — never deny someone standing right here.
+      if (fact?.type === 'location') return { mode: 'identity', body: renderPersonLocationNpc(npc, fact) };
       if (fact) return { mode: 'identity', body: renderPersonIdentityNpc(npc, fact) };
     }
   }
@@ -462,6 +464,22 @@ function renderPersonIdentityNpc(npc, fact) {
     blunt: `${S}. That's who.`,
     open: `Oh, that's ${raw} — you'll have seen them about, surely!`,
     even: `${S} — you'll have seen them about.`
+  };
+  return f[manner] || f.even;
+}
+
+// The asked-after person is PRESENT — the speaking NPC points them out rather
+// than deflecting. Never denies someone standing right here (D-B4 residual c).
+function renderPersonLocationNpc(npc, fact) {
+  const who = String(fact?.name || fact?.body || '').trim();
+  if (!who) return null;
+  const manner = voiceManner(npcVoice(npc));
+  const f = {
+    guarded: `${who}? Right here, same as you. Eyes open.`,
+    skittish: `${who}'s here — right here, about the place. See for yourself.`,
+    blunt: `${who}? Standing right here. Look around.`,
+    open: `Oh, ${who}? Right here with us — you'll not have to go far!`,
+    even: `${who}? Right here — about the place, same as the rest of us.`
   };
   return f[manner] || f.even;
 }

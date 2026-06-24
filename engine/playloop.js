@@ -5604,6 +5604,11 @@ function renderPlaceDeclineDM(world, text) {
 // (P-2) DM-narrator renderer over a resolved person-identity fact. Mirrors grace's META_NPC_OBSERVER
 // phrasing ("<name>, a <role> — one of the folk here") so the two narrator surfaces read alike. §0-safe.
 function renderPersonFactDM(world, fact) {
+  if (fact?.type === 'location') {
+    const who = String(fact?.name || fact?.body || '').trim();
+    const W = who.charAt(0).toUpperCase() + who.slice(1);
+    return { world, output: { narration: `Wizard: ${W} is right here — no need to look far.`, mechanics: '[person → grounded | location:here, no roll]' } };
+  }
   const lab = String(fact?.body || '');
   const body = lab.charAt(0).toUpperCase() + lab.slice(1);
   return { world, output: { narration: `Wizard: ${body} — one of the folk here.`, mechanics: '[person → grounded | identity, no roll]' } };

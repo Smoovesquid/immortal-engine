@@ -973,6 +973,25 @@ pure read (no mutation, no RNG — deterministic). Guards verified: "is there a 
 `tests/U253.objectPresenceQuery.test.js` (7 tests). Reproduced LLM-off FIRST, confirmed through the full
 `playerMove` path on tallow. `npm run check` GREEN: convergence 109/109, suite 8543/0, determinism green.
 
+*2026-06-24 (D-B4 residual c — never deny a PRESENT NPC's location; personQuery + dialogue + playloop lanes,
+Basecamp overnight):* closed the canon-hallucination. The Lore-hound asked Dalla "where can I find Elske
+Nightherd right now?" and Dalla "genuinely can't place Elske at this hour" — while Elske is listed PRESENT at the
+same node. Root cause: the P-2 person-query slot (`engine/world/personQuery.js`) only classified IDENTITY ("who is
+X"); a LOCATION ask ("where is X / where can I find X") wasn't classified, so it fell through to dialogue
+deflection. Added a `location` query type (sibling of identity): `classifyPersonQuery` now also matches the
+"where is X" shapes (stripping trailing "right now / at this hour"), `resolvePersonFact` resolves it against the
+SAME present-NPC roster and returns a presence fact when X is here — `null` when X is NOT present, so the existing
+honest deflection stands for someone genuinely elsewhere (no over-claim, no invention). Both renderers updated:
+the narrator says "Elske Nightherd is right here — no need to look far"; the NPC voice points them out by manner
+("Oh, Elske Nightherd? Right here with us — you'll not have to go far!") instead of deflecting (mode flips
+deflected→identity). **Place-noun guard:** role matching for LOCATION is EXACT (`strictRole`), never substring, so
+"where is the inn?" does NOT resolve to the innKEEPER (identity keeps the loose "keeper"→"tavern-keeper" match).
+§0-safe: presence only — never faction/motive. Pure/deterministic (the resolution mutates nothing). Locked by
+`tests/U254.presentNpcLocation.test.js` (10 tests: classify, present-resolves / absent-null / place-noun-null,
+narrator + dialogue, §0). Reproduced LLM-off FIRST through both the narrator `playerMove` and the `askNpc` dialogue
+paths on tallow. `npm run check` GREEN: convergence 109/109, suite 8553/0, determinism green. **D-B4 residuals
+(a)(b)(c) all closed; (d) the combat roll-vs-outcome is the optional remaining one.**
+
 ---
 
 ## Corpus format (the shared interface — Lane B builds the runner to this, Lane C fills content to this)

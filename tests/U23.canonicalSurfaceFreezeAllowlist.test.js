@@ -23,7 +23,7 @@ const packsById = {
   }
 };
 
-// Canonical Surface Freeze (docs/VICTORY_GATE_v1.md)
+// Canonical Surface Freeze (docs/_archive/VICTORY_GATE_v1.md — archived 2026-06-24)
 const CANONICAL_TIMELINE_EVENT_KINDS = [
   'begin',
   'scene',

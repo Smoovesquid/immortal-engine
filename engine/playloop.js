@@ -29,7 +29,7 @@ import { rollPhysicsCheck } from './resolve.js';
 import { appendCanonEvent } from './csl/canonLog.js';
 import { createGoal, checkGoals } from './goals/goalContract.js';
 import { proposeGoalFromDialogue } from './goals/proposeGoal.js';
-import { playerReputation } from './newspaper/lastingWord.js';
+import { playerReputation, generateNewspaper, renderNewspaperForRead, isNewspaperRead } from './newspaper/lastingWord.js';
 import { castArcs, tickArcs } from './story/storyEngine.js';
 import { beginDialogue, askNpc, endDialogue, resolveNpcAtCurrentNode, isRecruitIntent, npcVoice, voiceManner, commonKnowledgeAnswer, extractTopic } from './npc/dialogue.js';
 import { mintThing, revealTrueEdge } from './things.js';
@@ -1175,6 +1175,15 @@ function playerMoveCore(world, packsById, text) {
     if (known) return known;
     const bonded = tryAttune(w, text);
     if (bonded) return bonded;
+  }
+
+  // (NP-4) Read The Lasting Word — surface the generated paper (your deeds in From the Roads,
+  // the §3 Forgotten, the Kasual Korner). BEFORE tryExamineTarget, which would otherwise claim
+  // "read the broadsheet" as a generic object-look. No roll, no mutation; the hidden ad kinds
+  // never print — you learn an ad's truth only by acting on it (NP-3). §0-safe.
+  if (!w.combat?.active && !w.scene?.dialogue && isNewspaperRead(text)) {
+    const body = renderNewspaperForRead(generateNewspaper(w));
+    return { world: w, output: { narration: `Wizard: ${body}`, mechanics: '[newspaper:read | no roll]' } };
   }
 
   if (!w.combat?.active && !w.scene?.dialogue) {

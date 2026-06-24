@@ -190,3 +190,33 @@ export function playerReputation(world) {
   }
   return null;
 }
+
+// NP-4 — the player asks to read the paper. Triggers on the named object or its sections,
+// not on bare "the word" (too ambiguous).
+const READ_RE = /\b(?:newspaper|news-?sheet|broadsheet|gazette|the\s+lasting\s+word|kasual\s+korner|the\s+classifieds|personal\s+ads)\b/i;
+export function isNewspaperRead(text) {
+  const t = String(text || '');
+  if (!t.trim()) return false;
+  if (!READ_RE.test(t)) return false;
+  // a verb of getting/reading, OR a "is there a…" presence ask
+  return /\b(?:read|find|pick\s+up|buy|grab|look\s+(?:at|for|through)|any|is\s+there|get\s+(?:a|the)|where('?s| is))\b/i.test(t);
+}
+
+/**
+ * renderNewspaperForRead(np) → string. The in-fiction read — a player turning the pages.
+ * The hidden _kind / _target never appear; the Kasual Korner reads as plain lonely-hearts.
+ */
+export function renderNewspaperForRead(np) {
+  if (!np) return '';
+  const m = np.masthead;
+  const L = [];
+  L.push(`You turn up a copy of The Lasting Word — the broadsheet set and kept, they say, at the Warren. "${m.tagline}." ${m.dateline}, No. ${m.edition}.`);
+  L.push('');
+  L.push('FROM THE ROADS. ' + np.fromTheRoads.join(' '));
+  L.push('');
+  L.push('THE FORGOTTEN. ' + np.theForgotten.join(' '));
+  L.push('');
+  L.push('THE KASUAL KORNER, for company of the warmer sort:');
+  for (const ad of np.kasualKorner) L.push('  · ' + ad.text);
+  return L.join('\n');
+}

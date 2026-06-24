@@ -4,7 +4,7 @@
 // ad's truth only by acting on it.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { generateNewspaper, renderNewspaperText, AD_KINDS, playerReputation } from '../engine/newspaper/lastingWord.js';
+import { generateNewspaper, renderNewspaperText, AD_KINDS, playerReputation, isNewspaperRead } from '../engine/newspaper/lastingWord.js';
 import { playerMove } from '../engine/playloop.js';
 import { villageBakerWorld, PACKS } from '../scripts/convergence/fixtures.mjs';
 import { ensureWorld } from '../engine/state.js';
@@ -82,4 +82,16 @@ test('U249 newspaper — NP-2: a STRANGER greets you by your deed; no deed and a
   let w = playerMove(withDeed(), PACKS, "I'll go talk to Mira").world;  // meet her
   w = playerMove(w, PACKS, 'goodbye').world;
   assert.doesNotMatch(playerMove(w, PACKS, "I'll go talk to Mira").output.narration, /Word wrote of/);  // does not repeat
+});
+
+test('U249 newspaper — NP-4: "read the broadsheet" surfaces the paper; an ordinary "read the sign" does not', () => {
+  assert.ok(isNewspaperRead('is there a newspaper? I want to read it'));
+  assert.ok(isNewspaperRead('find the lasting word'));
+  assert.ok(!isNewspaperRead('I read the sign on the wall'));
+  assert.ok(!isNewspaperRead("what's the word on the street"));
+  const o = playerMove(villageBakerWorld(), PACKS, 'Is there a newspaper around? I read it.').output;
+  assert.match(o.mechanics, /newspaper:read/);
+  assert.match(o.narration, /The Lasting Word/);
+  assert.match(o.narration, /Kasual Korner/i);
+  assert.doesNotMatch(o.narration, /\b(contract|tryst|trap|kill|murder)\b/i);  // the page keeps its secrets
 });

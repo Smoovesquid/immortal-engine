@@ -1197,6 +1197,42 @@ function playerMoveCore(world, packsById, text) {
     }
   }
 
+  // ── Window ENTRY / PEEK (from OUTSIDE) ──────────────────────────────────────
+  // The mirror of the inside-window verbs. Standing outside, you can scout a building
+  // through its window (peek) or climb IN through it — a quiet way past the door. Entry
+  // routes through enterStructureInterior, so you appear INSIDE on the map exactly as a
+  // door-entry would (canonical position, no side channel). A shuttered or windowless
+  // wall is declined honestly; the peek never claims occupancy it cannot actually see.
+  if (!w.scene?.interior && !w.combat?.active && !targetedCombatAction && !declaredNpcViolence) {
+    const we = windowEntryKind(text);
+    if (we) {
+      const probe = enterStructureInterior(w, '');
+      const reached = probe !== w && Boolean(probe.scene?.interior);
+      const win = reached ? roomWindows(probe, probe.scene.interior) : { count: 0, shuttered: false };
+      if (!reached) {
+        return { world: w, output: { narration: 'Wizard: There\'s no window within reach — no wall close enough to climb through.', mechanics: '' } };
+      }
+      if (!win.count) {
+        return { world: w, output: { narration: 'Wizard: The wall before you is blank — no window to use.', mechanics: '' } };
+      }
+      if (we === 'peek') {
+        if (win.shuttered) {
+          return { world: w, output: { narration: 'Wizard: The shutters are drawn fast; you can make out nothing of what lies within.', mechanics: '[window:peek|shuttered]' } };
+        }
+        const node = (w.map?.nodes || []).find(n => n && String(n.id) === String(w.map?.currentNodeId)) || null;
+        const livelyHere = (((node && node.settlement && node.settlement.npcs) || [])).length > 0;
+        const occ = livelyHere
+          ? 'You cannot tell from here whether anyone waits within.'
+          : 'The room sits still and empty.';
+        return { world: w, output: { narration: `Wizard: Through the window, a room opens beyond the sill. ${occ}`, mechanics: '[window:peek]' } };
+      }
+      if (we === 'enter') {
+        const w2 = pushEvent(probe, { kind: 'resolution', data: { actorId, intent: String(text || ''), text: String(text || ''), roll: 0, dc: 0, outcome: 'success', updateKind: 'interior-enter' } });
+        return { world: w2, output: { narration: 'Wizard: You find a foothold on the sill and slip in through the window — no door, no announcement. You are inside, and the way you came went unmarked.', mechanics: '[window:enter|stealth]' } };
+      }
+    }
+  }
+
   if (!targetedCombatAction && !declaredNpcViolence && interiorAction.kind === 'exit') {
     const wasDungeon = isDungeonStructureId(w.scene?.interior?.structureKey);
     const w1 = exitStructureInterior(w);
@@ -3413,6 +3449,24 @@ function windowVerbKind(text) {
   // window" is the egress fallback (after the more specific verbs above).
   if (/\b(?:climb|climbs|climbing|jump|jumps|jumping|crawl|crawls|crawling|clamber|clambers|clambering|scramble|scrambles|dive|dives|diving|leap|leaps|leaping|duck|ducks|slip|slips|slide|slides|squeeze|squeezes|squeezing|go|goes|get|gets|getting|escape|escapes|flee|flees|bail|bails|vault|vaults|hop|hops|wriggle|wriggles)\b[^.!?]*\b(?:out|through|outside|out\s+of)\b[^.!?]*\bwindow/.test(t)
       || /\b(?:out|through)\s+(?:the|a|that)\s+window\b/.test(t)) return 'exit';
+  return null;
+}
+
+// windowEntryKind(text) → 'peek' | 'enter' | null — the INWARD window verbs, for when you
+// stand OUTSIDE a building: 'peek' scouts the inside through the glass, 'enter' climbs IN
+// (a quiet way past the door). The mirror of windowVerbKind (the outward/inside verbs). It
+// is only ever called from the outside-window handler, so a bare "through the window" reads
+// as inward here, while the same phrase reads as egress inside.
+function windowEntryKind(text) {
+  const t = String(text || '').toLowerCase();
+  if (!/\b(?:window|windows|windowsill|sill)\b/.test(t)) return null;
+  // "throw/fling MYSELF ... window" is self-harm — a FALL (U159), never a window action.
+  if (/\b(?:throw|throws|hurl|hurls|fling|flings|pitch|pitches|launch|launches|propel|propels)\s+(?:my(?:self)?|him(?:self)?|her(?:self)?|them(?:selves)?|your(?:self)?|itself)\b/.test(t)) return null;
+  // PEEK IN — scout the inside through the glass.
+  if (/\b(?:look|looks|looking|peer|peers|peering|peek|peeks|peeking|glance|glances|glancing|gaze|gazes|gazing|spy|spies|spying|stare|stares|staring|see|check|checks|scout|scouts|watch|watches)\b[^.!?]*\b(?:in|into|inside|through|in\s+through)\b[^.!?]*\bwindow/.test(t)) return 'peek';
+  // CLIMB IN — use the window as a quiet way in (past the door).
+  if (/\b(?:climb|climbs|climbing|clamber|clambers|clambering|scramble|scrambles|scrambling|duck|ducks|slip|slips|slide|slides|squeeze|squeezes|squeezing|crawl|crawls|crawling|go|goes|get|gets|getting|enter|enters|entering|hop|hops|vault|vaults|haul|hauls|boost|boosts|wriggle|wriggles|sneak|sneaks|sneaking|break)\b[^.!?]*\b(?:in|into|inside|in\s+through|through)\b[^.!?]*\bwindow/.test(t)
+      || /\b(?:in|into|in\s+through|through)\s+(?:the|a|that)\s+window\b/.test(t)) return 'enter';
   return null;
 }
 

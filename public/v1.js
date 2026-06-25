@@ -830,6 +830,20 @@ function travelTo(text) {
 // proven loop), not a raw procgen world. The seed feeds character creation too,
 // so the demo is repeatable. To explore a random adventure, type a different seed
 // in the seed field before starting. (DEMO_SEED = 'tallow', engine/world/demoRegion.js.)
+// Starting a new character overwrites the single save slot. Guard it so a reflexive
+// click never destroys a saved character + their progress (the playtest pain point:
+// "I have to roll a new character every time"). Continue is the prominent action when
+// a save exists; New asks first.
+function savedCharacterName() {
+  try { return hasSlot(localStorage, 'slot1') ? (loadSlot(localStorage, 'slot1')?.party?.[0]?.name || '') : ''; }
+  catch { return ''; }
+}
+function confirmNewOverSave(startFn) {
+  const nm = savedCharacterName();
+  if (nm && !window.confirm(`Start a NEW character? This replaces your saved character "${nm}" and all their progress. Use Continue to keep playing them instead.`)) return;
+  startFn();
+}
+
 function playAgain() {
   ui.invoke.seed = 'tallow';
   beginNewWorld();
@@ -838,6 +852,7 @@ function playAgain() {
 function renderInvoke() {
   const packs = ui.packs.manifest?.packs || [];
   const has = hasSlot(localStorage, 'slot1');
+  const savedName = has ? savedCharacterName() : '';
 
   const seedInput = el('input', {
     class: 'input',
@@ -869,12 +884,12 @@ function renderInvoke() {
   ]);
 
   const continueBtn = el('button', {
-    class: 'btn',
+    class: has ? 'btn primary' : 'btn',
     disabled: !has,
     onClick: () => continueSlot1()
-  }, 'Continue (slot1)');
+  }, has && savedName ? `Continue — ${savedName}` : 'Continue (slot1)');
 
-  const beginBtn = el('button', { class: 'btn primary', onClick: () => beginNewWorld() }, 'Begin');
+  const beginBtn = el('button', { class: has ? 'btn' : 'btn primary', onClick: () => confirmNewOverSave(beginNewWorld) }, has ? 'New character' : 'Begin');
 
   return el('div', { class: 'container stack' },
     el('div', { class: 'panel' },
@@ -889,8 +904,12 @@ function renderInvoke() {
         el('div', { class: 'front-door-title' }, 'An Ordinary Morning'),
         el('div', { class: 'front-door-sub' }, 'You wake in your own bed, your own life. It will not stay ordinary.'),
         el('div', { class: 'row' },
-          el('button', { class: 'btn primary front-door-btn', onClick: () => playAgain() }, 'Begin'),
-          has ? el('button', { class: 'btn front-door-btn', onClick: () => { ui.screen = 'play'; continueSlot1(); } }, 'Continue') : null
+          has
+            ? el('button', { class: 'btn primary front-door-btn', onClick: () => { ui.screen = 'play'; continueSlot1(); } }, savedName ? `Continue as ${savedName}` : 'Continue')
+            : el('button', { class: 'btn primary front-door-btn', onClick: () => playAgain() }, 'Begin'),
+          has
+            ? el('button', { class: 'btn front-door-btn', onClick: () => confirmNewOverSave(playAgain) }, 'New character')
+            : null
         )
       ),
       el('details', { class: 'card stack advanced-invoke' },

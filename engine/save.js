@@ -64,5 +64,13 @@ export function importWorld(text) {
 export function markResume(world) {
   const w = ensureWorld(world);
   const t = w.timeline.length;
-  return { ...w, timeline: [...w.timeline, { t, kind: 'sessionResume', data: {} }] };
+  // Resume lands you in the SCENE, never mid-conversation. A real DM re-establishes the scene
+  // when you sit back down; you re-address an NPC to talk again. Saving inside a dialogue used
+  // to drop you back "in conversation with X" on Continue — which is not how a session opens.
+  // (Conversation begins only by explicitly addressing someone; see playloop's dialogue entry.)
+  return {
+    ...w,
+    scene: w.scene?.dialogue ? { ...w.scene, dialogue: null } : w.scene,
+    timeline: [...w.timeline, { t, kind: 'sessionResume', data: {} }]
+  };
 }

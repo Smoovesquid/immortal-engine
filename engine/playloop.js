@@ -415,8 +415,26 @@ export function beginAdventure(world, packsById) {
 // Morality M1: single-chokepoint wrapper. Runs the real turn, then silently lets the act
 // form the soul (the seven-axis deed detector). No output change — M1 is invisible. Never
 // throws to the turn (silent-fallback discipline, like the LLM layer).
+// Set-piece beats — the three threshold moments worth a vivid paragraph instead of
+// one terse line: arriving somewhere new, a fight igniting, death. Detected by
+// comparing the world before and after a move; carried on the (transient) output as
+// `output.beat`, read by the narrator (ctx.beat). Never written to canon or the hash.
+export function detectSetPieceBeat(before, after) {
+  if (!before || !after) return '';
+  const hpBefore = Number(before?.meta?.escapeHp);
+  const hpAfter  = Number(after?.meta?.escapeHp);
+  if (Number.isFinite(hpBefore) && Number.isFinite(hpAfter) && hpBefore > 0 && hpAfter <= 0) return 'death';
+  if (!before?.combat?.active && after?.combat?.active) return 'combat-start';
+  const nodeBefore = String(before?.map?.currentNodeId ?? '');
+  const nodeAfter  = String(after?.map?.currentNodeId ?? '');
+  if (nodeBefore && nodeAfter && nodeBefore !== nodeAfter) return 'arrival';
+  return '';
+}
+
 export function playerMove(world, packsById, text) {
   const res = playerMoveCore(world, packsById, text);
+  const setPieceBeat = detectSetPieceBeat(world, res?.world);
+  if (setPieceBeat && res) res.output = { ...(res.output || {}), beat: setPieceBeat };
   try {
     const oldCorruption = Number(world?.party?.[0]?.morality?.corruption ?? 0);
     const w2 = applyDeedCharges(res.world, text, res.output);

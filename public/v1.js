@@ -750,7 +750,7 @@ async function doSubmitMove() {
   // Pass mechanics through so THE REF can classify the narrationSource (the
   // dialogue-ask mode lives in the mechanics tag) and gate its judge to soft
   // turns only. (docs/THE_REF.md)
-  const aiText = skipPolish ? null : await tryAiNarration(world, baseNarration, { input: text, mechanics: output?.mechanics || '', narrationSource: output?.narrationSource });
+  const aiText = skipPolish ? null : await tryAiNarration(world, baseNarration, { input: text, mechanics: output?.mechanics || '', narrationSource: output?.narrationSource, beat: output?.beat });
   wizardLine.text = aiText || baseNarration;
   tts.speak(wizardLine.text);
   setStatus('Move resolved.');

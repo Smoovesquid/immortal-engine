@@ -62,9 +62,22 @@ function interiorLayoutFact(interior) {
   return `The player is inside ${rooms}. From this room there is ${doors}.${wayOut} There are NO other rooms, floors, or stairs than these.${label}`;
 }
 
+// Set-piece beats — the three threshold moments where the DM rises from one terse
+// line to a short, vivid paragraph: arriving somewhere new, a fight igniting, death.
+// The beat is transient (detected per-move in playloop, carried on the outcome →
+// ctx.beat); it never touches canon or the world hash.
+export const SETPIECE_BEATS = new Set(['arrival', 'combat-start', 'death']);
+
+const SETPIECE_CRAFT = {
+  'arrival': `SET-PIECE — ARRIVAL (the establishing shot): the player has just reached this place and takes it in for the first time. Open wide — the light, the sound, the smell, the one detail the eye snags on — and close on something that pulls them onward.`,
+  'combat-start': `SET-PIECE — THE FIGHT IGNITES: violence has just broken open. Render the charged beat — the space tightening, who moves first, the edge of danger — and leave it poised on the threat, unresolved.`,
+  'death': `SET-PIECE — DEATH: the player has died. Render it gravely and without flinching — the body's failure stated plainly, then the cold edge of what lies past it. Weight and consequence, never spectacle for its own sake.`
+};
+
 export function buildSystemPrompt(ctx) {
   const typeDesc = NODE_TYPE_DESCRIPTIONS[ctx.nodeType] ?? 'a place';
   const tone     = TONE_GUIDANCE[ctx.tone] ?? TONE_GUIDANCE.grim;
+  const setPiece = SETPIECE_CRAFT[String(ctx?.beat || '')] || null;
 
   const inside = interiorLayoutFact(ctx.interior);
 
@@ -81,7 +94,9 @@ export function buildSystemPrompt(ctx) {
     : '';
 
   const lines = [
-    `You are a Dungeon Master narrator. Describe what the player experiences in ONE sentence.`,
+    setPiece
+      ? `You are a Dungeon Master narrator at a SET-PIECE MOMENT. Paint what the player experiences as a short, vivid paragraph — 2 to 4 sentences, not one line.`
+      : `You are a Dungeon Master narrator. Describe what the player experiences in ONE sentence.`,
     ``,
     `CANONICAL FACTS — you must not contradict these:`,
     `- Location: "${ctx.placeName}"`,
@@ -170,6 +185,10 @@ export function buildSystemPrompt(ctx) {
     lines.push(``);
   }
 
+  if (setPiece) {
+    lines.push(setPiece, ``);
+  }
+
   lines.push(
     `RULES:`,
     `- Do NOT invent topology, place names, or structures not listed above.`,
@@ -185,7 +204,9 @@ export function buildSystemPrompt(ctx) {
     ambientRule,
     `- Do NOT use the words: actually, turns out.`,
     `- Do NOT use brackets or parentheses.`,
-    `- Write exactly ONE sentence.`,
+    setPiece
+      ? `- Write 2 to 4 sentences — a short, vivid paragraph. Every rule above still holds: stay grounded, hide the math, never narrate the player's choices.`
+      : `- Write exactly ONE sentence.`,
     `- Reference the location name "${ctx.placeName}" in your narration.`,
     ``,
     tone
@@ -220,7 +241,7 @@ export async function callLLM({
     },
     body: JSON.stringify({
       model,
-      max_tokens: 120,
+      max_tokens: SETPIECE_BEATS.has(String(ctx?.beat || '')) ? 320 : 120,
       system: [{ type: 'text', text: sys, cache_control: { type: 'ephemeral' } }],
       messages: [{ role: 'user', content: user }]
     })
@@ -435,7 +456,8 @@ export function validateNarrationCandidate(world, narrationCandidate, {
   // Must be exactly one sentence (loosely): reject if contains brackets or multiple terminal punctuation.
   if (/[\[\]]/.test(cand)) return false;
   const terminals = (cand.match(/[.!?]/g) || []).length;
-  if (terminals > 1) return false;
+  const termCap = SETPIECE_BEATS.has(String(ctx?.beat || '')) ? 6 : 1;
+  if (terminals > termCap) return false;
 
   // Location lock: Claude was told to reference ctx.placeName, so check that.
   // Fall back to scene.location only if placeName is absent.

@@ -24,6 +24,10 @@ import { describeInteriorLayout } from '../structures/interiors.js';
 /**
  * buildNarratorContext(world, outcome) → NarratorContext (original slim context)
  */
+// Set-piece beats (see llmAdapter.SETPIECE_BEATS) — kept inline to avoid a circular
+// import (llmAdapter imports this module). The beat rides in on outcome.beat.
+const SETPIECE_BEATS = new Set(['arrival', 'combat-start', 'death']);
+
 export function buildNarratorContext(world, outcome = {}) {
   const w = ensureWorld(world);
   const scene = buildScene(w, outcome);
@@ -55,6 +59,8 @@ export function buildNarratorContext(world, outcome = {}) {
   }
 
   return {
+    // Set-piece register signal: 'arrival' | 'combat-start' | 'death' | '' (default).
+    beat: SETPIECE_BEATS.has(String(outcome?.beat || '')) ? String(outcome.beat) : '',
     placeName: scene.location.name,
     nodeType: scene.location.type,
     location: scene.location.name,

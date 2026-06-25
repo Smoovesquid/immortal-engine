@@ -45,7 +45,7 @@ export function parseGrappleVerb(text) {
   // sand, a rock) is an object hurled AT the foe — a STRIKE, not a grapple — so it
   // must NOT match here, else it fizzled to [grapple:throw-no-grip] (no grip → no
   // roll, no damage; the stab/throw was swallowed). Restrict throw/toss/dump to a
-  // foe reference; the wrestling idioms carry no object ambiguity. (U265-B.)
+  // foe reference; the wrestling idioms carry no object ambiguity. (U273-B.)
   if (/\b(?:takedown|suplex|body[\s-]?slam|sweep|trip|take\s+(?:him|her|them|it)\s+down)\b/.test(t)) return 'throw';
   if (/\b(?:throw|throws|throwing|dump|dumps|toss|tosses|tossing)\s+(?:him|her|them|it|the\s+(?:foe|enemy|bandit|brute|linger(?:er)?|wanderer|monster|creature|beast|guard|wolf|goblin|orc|thug|man|woman|figure|attacker|assailant))\b/.test(t)) return 'throw';
   if (/\b(escape|break\s+free|break\s+(?:his|her|their|its)\s+grip|wriggle\s+(?:free|out)|squirm\s+(?:free|out)|get\s+(?:free|out)\s+of)\b/.test(t)) return 'escape';

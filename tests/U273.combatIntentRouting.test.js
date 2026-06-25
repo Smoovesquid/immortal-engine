@@ -1,4 +1,4 @@
-// U265 — combat intent-routing residuals (W2·1 correctness floor, harness LLM-off
+// U273 — combat intent-routing residuals (W2·1 correctness floor, harness LLM-off
 // probe on seed 'tallow', 2026-06-24). Two seams where an attack aimed at the live
 // foe was swallowed instead of resolving a roll:
 //
@@ -57,7 +57,7 @@ function twoFoeCombat({ seed = 'b', ac = 1 } = {}) {
 }
 
 // ── Seam A — playloop scene-object bounce ─────────────────────────────────────
-test('U265-A: "grab him and slam him into the wall" (two foes) resolves a strike, not table-talk', () => {
+test('U273-A: "grab him and slam him into the wall" (two foes) resolves a strike, not table-talk', () => {
   const w = twoFoeCombat();
   const { output } = playerMove(w, PACKS, 'I grab him and slam him into the wall.');
   const mech = String(output?.mechanics || '');
@@ -65,13 +65,13 @@ test('U265-A: "grab him and slam him into the wall" (two foes) resolves a strike
   assert.match(mech, /strike:/, `environment-as-weapon attack must resolve a strike: ${mech}`);
 });
 
-test('U265-A: a NAMED foe slam still resolves (regression — the path that already worked)', () => {
+test('U273-A: a NAMED foe slam still resolves (regression — the path that already worked)', () => {
   const w = twoFoeCombat();
   const { output } = playerMove(w, PACKS, 'I slam Ashblade headfirst into the stone wall.');
   assert.match(String(output?.mechanics || ''), /strike:/);
 });
 
-test('U265-A: pure scene-object business mid-fight still bounces (no over-match)', () => {
+test('U273-A: pure scene-object business mid-fight still bounces (no over-match)', () => {
   // "kick the door" with no foe object is room business, not an attack — must stay
   // table-talk so the resolver does not fabricate a swing.
   const w = twoFoeCombat();
@@ -80,21 +80,21 @@ test('U265-A: pure scene-object business mid-fight still bounces (no over-match)
 });
 
 // ── Seam B — grapple-throw over-match on a thrown OBJECT ───────────────────────
-test('U265-B: parseGrappleVerb does NOT read a thrown object as a grapple throw', () => {
+test('U273-B: parseGrappleVerb does NOT read a thrown object as a grapple throw', () => {
   assert.equal(parseGrappleVerb('I throw my dagger into his throat'), null);
   assert.equal(parseGrappleVerb('I throw sand in his eyes'), null);
   assert.equal(parseGrappleVerb('I throw the rock at the bandit'), null);
   assert.equal(parseGrappleVerb('I hurl the lantern at it'), null);
 });
 
-test('U265-B: parseGrappleVerb still reads a thrown FOE as a grapple throw', () => {
+test('U273-B: parseGrappleVerb still reads a thrown FOE as a grapple throw', () => {
   assert.equal(parseGrappleVerb('I throw her to the ground'), 'throw');   // U151 contract
   assert.equal(parseGrappleVerb('I throw him down'), 'throw');
   assert.equal(parseGrappleVerb('I suplex the brute'), 'throw');
   assert.equal(parseGrappleVerb('I take him down'), 'throw');
 });
 
-test('U265-B: "throw my dagger into his throat" resolves a strike, not throw-no-grip', () => {
+test('U273-B: "throw my dagger into his throat" resolves a strike, not throw-no-grip', () => {
   const before = 20;
   const r = resolveEscapeCombatTurn(combat({ seed: 'b', hp: before }), 'I throw my dagger into the Lingerer\'s throat.');
   assert.doesNotMatch(r.result.mechanicsLine, /grapple:throw-no-grip/, `object-throw must not read as a grapple: ${r.result.mechanicsLine}`);
@@ -102,7 +102,7 @@ test('U265-B: "throw my dagger into his throat" resolves a strike, not throw-no-
   assert.ok(foe(r.world).hp < before, `damage must land: ${before} -> ${foe(r.world).hp}`);
 });
 
-test('U265-B: "throw sand in his eyes then stab him" resolves a strike', () => {
+test('U273-B: "throw sand in his eyes then stab him" resolves a strike', () => {
   const before = 20;
   const r = resolveEscapeCombatTurn(combat({ seed: 'b', hp: before }), 'I throw sand in his eyes then stab him.');
   assert.doesNotMatch(r.result.mechanicsLine, /grapple:throw-no-grip/, `blinding feint + stab must not read as a grapple: ${r.result.mechanicsLine}`);
@@ -113,6 +113,6 @@ test('U265-B: "throw sand in his eyes then stab him" resolves a strike', () => {
 // A real grapple throw — including a foe named by role-noun ("the bandit") — is
 // still routed to 'throw' (the resolver then requires a grip). Only OBJECT throws
 // were stripped out.
-test('U265-B: a foe-throw by role-noun is still a grapple intent (no regression)', () => {
+test('U273-B: a foe-throw by role-noun is still a grapple intent (no regression)', () => {
   assert.equal(parseGrappleVerb('I throw the bandit to the ground'), 'throw');
 });

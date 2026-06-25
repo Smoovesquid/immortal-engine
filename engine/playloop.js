@@ -6835,7 +6835,7 @@ function isTargetedViolentCombatAction(world, text) {
   return /\b(?:bury|buries|buried|burying|ram|rams|rammed|ramming|drive|drives|drove|driven|driving|stomp|stomps|stomped|stomping|stamp|stamps|stamped|stamping|plunge|plunges|plunged|plunging|jam|jams|jammed|jamming|smash|smashes|smashed|smashing|slam|slams|slammed|slamming)\b/.test(t);
 }
 
-// (U265-A) Using a fixture as a weapon ON the foe — "slam him into the wall", "drive
+// (U273-A) Using a fixture as a weapon ON the foe — "slam him into the wall", "drive
 // his head against the stones", "throw them through the window". A bare pronoun
 // target with MORE THAN ONE live foe never satisfied `mentionsLiveCombatFoe` (which
 // requires a single foe to disambiguate "him"), so the attack failed to set

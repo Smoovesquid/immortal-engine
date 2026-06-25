@@ -51,8 +51,14 @@ test('U93-S2: survey lists NPCs present by name and role', () => {
   assert.ok(survey.includes('Gus'), survey);
 });
 
-test('U93-S3: survey reports exits by compass direction with destination names', () => {
-  const w = makeSurveyWorld();
+test('U93-S3: a KNOWN landmark in sight is named by compass direction (line of sight)', () => {
+  // Look-around reports only what you can SEE. Landmarks poke above the treeline, so they're
+  // in view; once you've been to them (discovered) you also know their names. An UNKNOWN
+  // landmark reads by silhouette, and an over-the-horizon settlement is directional — see U278.
+  const base = makeSurveyWorld();
+  const w = ensureWorld({ ...base, map: { ...base.map,
+    nodes: base.map.nodes.map(n => (n.id === 'town' ? n : { ...n, nodeType: 'landmark' })),
+    discovered: ['town', 'north_node', 'south_node'] } });
   const survey = buildLocationSurvey(w).toLowerCase();
   // Tight, order-specific: the Old Tower (y=2) is north, the Stone Well (y=8) is south.
   assert.ok(survey.includes('to the north lies the old tower'), survey);

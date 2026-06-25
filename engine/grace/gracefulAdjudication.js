@@ -2373,6 +2373,15 @@ function describeNpc(npc) {
 // PRESENCE question. Inside an interior that still names the settlement roster
 // (the people are reachable in the settlement); a bare "look around" does not
 // (see the interior branch below). Default (no opts) = the general survey.
+// Line-of-sight silhouettes: a landmark you can SEE but whose name you don't yet know is
+// read by its shape (a tower, a bridge, a ruin) — never named until you've been there.
+const SILHOUETTE_NOUNS = ['watchtower', 'lighthouse', 'tower', 'spire', 'obelisk', 'monument', 'shrine', 'chapel', 'temple', 'abbey', 'monastery', 'bridge', 'ruin', 'arch', 'gate', 'cairn', 'well', 'altar', 'standing stone'];
+function landmarkSilhouette(name) {
+  const n = String(name || '').toLowerCase();
+  const hit = SILHOUETTE_NOUNS.find(k => n.includes(k));
+  return hit ? `a ${hit}` : 'a distant structure';
+}
+
 export function buildLocationSurvey(world, opts = {}) {
   const w = world || {};
   const nodeId = String(w.map?.currentNodeId ?? '');
@@ -2496,13 +2505,26 @@ export function buildLocationSurvey(world, opts = {}) {
   // Exits by compass direction (grounded in real map geometry)
   if (!insideStructure) {
     const exits = exitsFrom(w.map, nodeId);
+    // LINE OF SIGHT (THE TABLE TEST): "look around" reports only what you can SEE from where
+    // you stand. A LANDMARK (tower, shrine, bridge, ruin) pokes above the treeline, so it's in
+    // view — name it if you know its name (discovered), else read its silhouette ("you can see
+    // a bridge"). A settlement or open country down a road is over the horizon / behind trees:
+    // you see the ROAD leaving, never the place. Its name lives on the MAP, not in your eyes.
+    const discovered = new Set((Array.isArray(w.map?.discovered) ? w.map.discovered : []).map(String));
     const dirLines = [];
     for (const dir of ['north', 'east', 'south', 'west']) {
       const targetId = exits?.[dir];
       if (!targetId) continue;
       const target = nodes.find(n => String(n.id) === String(targetId));
-      const tName = cleanPlaceName(target?.name);
-      dirLines.push(tName ? `to the ${dir} lies ${tName}` : `a path leads ${dir}`);
+      const isLandmark = String(target?.nodeType || '') === 'landmark';
+      if (isLandmark && discovered.has(String(targetId))) {
+        const tName = cleanPlaceName(target?.name);
+        dirLines.push(tName ? `to the ${dir} lies ${tName}` : `a landmark stands to the ${dir}`);
+      } else if (isLandmark) {
+        dirLines.push(`to the ${dir} you can see ${landmarkSilhouette(target?.name)}`);
+      } else {
+        dirLines.push(`a path leads ${dir}`);
+      }
     }
     if (dirLines.length) {
       parts.push(titleCase(joinList(dirLines)) + '.');

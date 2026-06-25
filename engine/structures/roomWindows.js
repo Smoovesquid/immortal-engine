@@ -1,0 +1,57 @@
+// Room Windows — a deterministic, derived room feature. A window is NOT stored
+// world state: it is a PURE function of (seed + structureKey + roomId + the room's
+// daylight), exactly like the interior doorways and container contents are derived.
+// That keeps worldHash stable — no new field, no WORLD_VERSION bump, no invariant.
+//
+// Which rooms have windows: ABOVE-GROUND / exterior-facing rooms — i.e. rooms that
+// get daylight. roomDetail() already marks the windowless ones with `dark` (cellars,
+// crypts, caves, pantries, vaults, dungeon chambers). dark → no windows; lit → 1-2.
+// The entry room is always lit (daylight spills in), so it faces outside too.
+
+import { seedFromString, makeRng } from '../rng.js';
+import { normalizeTopology } from './topology.js';
+import { roomDetail } from './roomDetail.js';
+
+const EMPTY = Object.freeze({ count: 0, shuttered: false, outlook: '' });
+
+// What the window looks onto — derived, never a place-name (line of sight is
+// honored at look-out time; this is just the near framing for the survey).
+const OUTLOOKS = ['onto the road', 'onto the yard', 'onto the street below', 'onto the open ground beyond'];
+
+/**
+ * roomWindows(world, interior) -> { count, shuttered, outlook }
+ * count 0 = no windows (cellar / windowless interior room / no topology).
+ * Pure and deterministic: same seed + structure + room = same windows.
+ */
+export function roomWindows(world, interior) {
+  if (!interior || typeof interior !== 'object' || !interior.structureKey) return EMPTY;
+  const st = world?.structures?.byId?.[String(interior.structureKey)];
+  const topo = normalizeTopology(st?.topology);
+  // No topology (e.g. a generated dungeon, which is underground anyway) → no windows.
+  if (!topo || !Array.isArray(topo.rooms)) return EMPTY;
+  const roomId = String(interior.roomId || '');
+  const room = topo.rooms.find(r => String(r.id) === roomId);
+  if (!room) return EMPTY;
+
+  const detail = roomDetail(room, st?.buildingType || null);
+  if (detail.dark) return EMPTY; // below-ground / windowless service room
+
+  const rng = makeRng(seedFromString(`${world?.meta?.seed ?? ''}|${interior.structureKey}|${roomId}|windows`));
+  const count = 1 + rng.int(0, 1); // 1-2 windows
+  const shuttered = rng.nextFloat() < 0.5;
+  const outlook = rng.pick(OUTLOOKS) || OUTLOOKS[0];
+  return { count, shuttered, outlook };
+}
+
+/**
+ * windowSurveyPhrase(win) -> string  — the noun phrase "look around" lists.
+ *   "a shuttered window" / "a window looking onto the road" / "two windows ..."
+ * Returns '' when there are no windows.
+ */
+export function windowSurveyPhrase(win) {
+  if (!win || !win.count) return '';
+  if (win.count === 1) {
+    return win.shuttered ? 'a shuttered window' : `a window looking ${win.outlook}`;
+  }
+  return win.shuttered ? 'two shuttered windows' : `two windows looking ${win.outlook}`;
+}

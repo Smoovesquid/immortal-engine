@@ -20,6 +20,7 @@ import { introduceThread, resolveThread, ensureInstrumentLayer } from './instrum
 import { applyGeneratedStructuresForNode } from './structures/applyGeneratedStructuresForNode.js';
 import { enterStructureInterior, exitStructureInterior, moveWithinInterior, getInteriorView, interiorDirectionalExits, resolveStructureSelection } from './structures/interiors.js';
 import { normalizeTopology, adjacentRooms } from './structures/topology.js';
+import { roomWindows } from './structures/roomWindows.js';
 import { reachableRooms } from './movement/interiorMovement.js';
 import { generateDungeon, dungeonLevelToStructure, isDungeonStructureId, dungeonRoomAt } from './dungeon/generate.js';
 import { createCharacter } from './chargen/genesis.js';
@@ -50,7 +51,7 @@ import { resolveCompanionTurn } from './combat/companionTurn.js';
 import { castSpell } from './spell/castSpell.js';
 import { classifyOffensiveCast, castConsequence } from './magic/castConsequence.js';
 import { evaluateEncounter, selectCreatures, spawnEncounter } from './combat/encounterSpawn.js';
-import { isMetaQuestion, handleMetaQuestion, isNullAction, isQuestionShaped, META_LOCATION, META_RECAP, isNpcObserverQuery, isInfoSeekingText, isConfrontationChallenge, buildLocationSurvey, INFO_SEEKING_EXCLUDE_RE } from './grace/gracefulAdjudication.js';
+import { isMetaQuestion, handleMetaQuestion, isNullAction, isQuestionShaped, META_LOCATION, META_RECAP, isNpcObserverQuery, isInfoSeekingText, isConfrontationChallenge, buildLocationSurvey, windowView, INFO_SEEKING_EXCLUDE_RE } from './grace/gracefulAdjudication.js';
 import { resolveEscapeCombatTurn, initEscapeHp, initEscapeKit, shortRest, longRest, applySurpriseRound, parseEscapeAction, combatStatusAnswer, meleeProfile, playerAc } from './combat/escapeCombat.js';
 import { statMod, maxWounds } from './ruleset/core/stats.js';
 import { shopsHere, stockFor, settlementStock, economyAt, priceToSell, shopBuys, restockEpoch, purseTotalCopper, pursePay, purseReceive, formatPrice, matchByName } from './economy/shop.js';
@@ -1159,6 +1160,43 @@ function playerMoveCore(world, packsById, text) {
     }
   }
 
+  // ── Window interactions (out of combat) ─────────────────────────────────────
+  // Windows are a real, generated room feature (engine/structures/roomWindows.js):
+  // above-ground rooms have them, cellars/windowless rooms don't. Bind the verbs to
+  // the SAME deriver the survey uses, so what you can see you can act on:
+  //   • look out  → a line-of-sight outlook (windowView honors the fog rules)
+  //   • climb/jump/crawl out → a real escape exit (clears scene.interior)
+  //   • break/smash → shatter the glass (an opening + noise)
+  // Shooting out the window mid-fight is the combat branch. A room with no window
+  // says so honestly. Placed before the generic exit handler so window egress reads
+  // as going THROUGH the window, not "step back outside".
+  if (w.scene?.interior && !w.combat?.active && !targetedCombatAction && !declaredNpcViolence) {
+    const wv = windowVerbKind(text);
+    if (wv) {
+      const win = roomWindows(w, w.scene.interior);
+      if (!win.count) {
+        return { world: w, output: { narration: 'Wizard: There\'s no window in this room — only solid wall.', mechanics: '' } };
+      }
+      if (wv === 'look') {
+        return { world: w, output: { narration: `Wizard: ${windowView(w)}`, mechanics: '' } };
+      }
+      if (wv === 'break') {
+        const w1 = pushEvent(w, { kind: 'resolution', data: { actorId, intent: String(text || ''), text: String(text || ''), roll: 0, dc: 0, outcome: 'success', updateKind: 'window-break' } });
+        return { world: w1, output: { narration: 'Wizard: You smash the window — glass bursts from the frame and rains across the sill. The noise carries; anyone near will have heard it. The way through stands open now.', mechanics: '[window:break]' } };
+      }
+      if (wv === 'shoot') {
+        return { world: w, output: { narration: 'Wizard: You loose a shot through the window — it skips off the ground outside. There\'s nothing out there to hit; save it for when there is.', mechanics: '[window:shoot|no-target]' } };
+      }
+      if (wv === 'exit') {
+        const w1 = exitStructureInterior(w);
+        if (w1 !== w) {
+          const w2 = pushEvent(w1, { kind: 'resolution', data: { actorId, intent: String(text || ''), text: String(text || ''), roll: 0, dc: 0, outcome: 'success', updateKind: 'interior-exit' } });
+          return { world: w2, output: { narration: 'Wizard: You go through the window and drop to the open ground outside.', mechanics: '[window:exit]' } };
+        }
+      }
+    }
+  }
+
   if (!targetedCombatAction && !declaredNpcViolence && interiorAction.kind === 'exit') {
     const wasDungeon = isDungeonStructureId(w.scene?.interior?.structureKey);
     const w1 = exitStructureInterior(w);
@@ -2197,7 +2235,19 @@ function playerMoveCore(world, packsById, text) {
         enemy.id = `enemy_${maxIdx + 1}`;
         w = applyDeltas(w, [{ op: 'combatState', set: { enemies: [...(w.combat.enemies || []), enemy] } }]);
       }
-      const { world: wAfter, result } = resolveEscapeCombatTurn(w, String(text || ''));
+      // SHOOT OUT THE WINDOW — a ranged line of fire from a covered position. The
+      // room must actually have a window. The verb parser would otherwise read
+      // "...out the window" as an egress (isFixtureEgressText) and try to LEAVE; we
+      // strip the window phrase so it parses as the real attack ("fire bolt out the
+      // window" → fire bolt; "shoot ... " → a strike), resolve a true attack turn,
+      // and frame the narration as firing through the window with the frame for cover.
+      const windowShoot = Boolean(w.scene?.interior) && windowVerbKind(text) === 'shoot'
+        && roomWindows(w, w.scene.interior).count > 0;
+      const turnText = windowShoot
+        ? (String(text).replace(/\b(?:out|through)\s+(?:the|a|that)\s+window(?:sill)?\b/gi, ' ')
+            .replace(/\bwindows?\b/gi, ' ').replace(/\s+/g, ' ').trim() || 'shoot')
+        : String(text || '');
+      const { world: wAfter, result } = resolveEscapeCombatTurn(w, turnText);
       w = wAfter;
       const escMove = { actorId, intentText: String(text || ''), approachTag: 'force', stakeTag: 'survival' };
       const escResult = { outcome: result.outcome, mechanicsLine: result.mechanicsLine };
@@ -2206,8 +2256,12 @@ function playerMoveCore(world, packsById, text) {
         kind: 'resolution',
         data: { actorId, intent: String(text || ''), text: String(text || ''), roll: 0, dc: 0, outcome: result.outcome, updateKind: 'combat', combatSummary: String(result.combatSummary || '') }
       });
-      const narr = result.combatSummary ? `Wizard: ${result.combatSummary}` : 'Wizard: You trade blows.';
-      return { world: w, output: { narration: narr, mechanics: result.mechanicsLine, combatSummary: String(result.combatSummary || ''), beats: Array.isArray(result.beats) ? result.beats : [] } };
+      const escBody = result.combatSummary ? String(result.combatSummary) : 'You trade blows.';
+      const narr = windowShoot
+        ? `Wizard: You set yourself at the window — the frame for cover — and fire through it. ${escBody}`
+        : `Wizard: ${escBody}`;
+      const escMech = windowShoot ? `${result.mechanicsLine} [window:shoot]` : result.mechanicsLine;
+      return { world: w, output: { narration: narr, mechanics: escMech, combatSummary: String(result.combatSummary || ''), beats: Array.isArray(result.beats) ? result.beats : [] } };
     }
 
     // Flee / retreat: deterministic exit, costs 1 stress and 1 pressure clock.
@@ -3336,6 +3390,29 @@ function classifyOutdoorEnter(t) {
   // (U258-J) never count. (Town playtest: this was read as forcing a stuck door.)
   if (nounM && /\bthrough\s+(?:the|a|that|its)\s+[\w'\s-]*?(?:door|doorway|entrance|entry|gate|gateway)\b/.test(t)) return ref;
 
+  return null;
+}
+
+// windowVerbKind(text) → 'look' | 'break' | 'shoot' | 'exit' | null
+// Classifies a window interaction. Order matters: look / break / shoot are checked
+// before the generic "out the window" egress so they aren't swallowed as an exit.
+function windowVerbKind(text) {
+  const t = String(text || '').toLowerCase();
+  if (!/\b(?:window|windows|windowsill|sill|shutters?)\b/.test(t)) return null;
+  // "throw/hurl/fling MYSELF out the window" is self-harm — a FALL, owned by the
+  // hazard path (U159), never a window action. Let it fall through to parseHazard.
+  if (/\b(?:throw|throws|hurl|hurls|fling|flings|pitch|pitches|launch|launches|cast|casts|propel|propels)\s+(?:my(?:self)?|him(?:self)?|her(?:self)?|them(?:selves)?|your(?:self)?|itself|my\s+body|his\s+body|her\s+body)\b/.test(t)) return null;
+  // LOOK OUT — peer through the glass at what's outside.
+  if (/\b(?:look|looks|looking|peer|peers|peering|gaze|gazes|gazing|glance|glances|glancing|stare|stares|staring|peek|peeks|peeking|see|watch|watches|check|checks|view)\b[^.!?]*\b(?:out|through|outside|out\s+of)\b[^.!?]*\bwindow/.test(t)
+      || /\b(?:out|through)\s+(?:the|a|that)\s+window\b[^.!?]*\b(?:see|look|view|outside|what)\b/.test(t)) return 'look';
+  // BREAK / SMASH — shatter the glass (an opening + noise).
+  if (/\b(?:break|breaks|breaking|smash|smashes|smashing|shatter|shatters|shattering|bust|busts|busting|punch|punches|punching|kick|kicks|knock|knocks|put\s+(?:my|your)\s+\w+\s+through)\b[^.!?]*\bwindow/.test(t)) return 'break';
+  // SHOOT / FIRE — a ranged line out the window (resolved by combat when fighting).
+  if (/\b(?:shoot|shoots|shooting|fire|fires|firing|loose|looses|launch|launches|sling|slings|hurl|hurls|throw|throws)\b[^.!?]*\b(?:out|through|out\s+of)\b[^.!?]*\bwindow/.test(t)) return 'shoot';
+  // CLIMB / JUMP / CRAWL OUT — use the window as an escape route. The bare "out the
+  // window" is the egress fallback (after the more specific verbs above).
+  if (/\b(?:climb|climbs|climbing|jump|jumps|jumping|crawl|crawls|crawling|clamber|clambers|clambering|scramble|scrambles|dive|dives|diving|leap|leaps|leaping|duck|ducks|slip|slips|slide|slides|squeeze|squeezes|squeezing|go|goes|get|gets|getting|escape|escapes|flee|flees|bail|bails|vault|vaults|hop|hops|wriggle|wriggles)\b[^.!?]*\b(?:out|through|outside|out\s+of)\b[^.!?]*\bwindow/.test(t)
+      || /\b(?:out|through)\s+(?:the|a|that)\s+window\b/.test(t)) return 'exit';
   return null;
 }
 

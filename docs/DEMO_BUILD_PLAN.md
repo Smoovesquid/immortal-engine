@@ -156,6 +156,14 @@ return, and the world remembered. This is the highest-leverage work — everythi
   + the **cannibal warren**; monster gradient = proximity to the Scar (mundane → pre-cataclysm guardians →
   reality-warped outer-reaches; world-native filter holds; Lovecraft/King/Asimov flavor at the bottom).
 - **Done-when:** both dungeons playable; the gradient legible (the deeper, the *wronger*).
+- **✅ LYNCHPIN LANDED (`c9a8478`, 2026-06-25): multi-level descent.** `dungeon_entrance`s now default to a
+  multi-level `site` (`engine/dungeon/generate.js buildSite`): self-contained floors linked by a stair down
+  at each vault, descend via a narrow go-deeper intent, deeper = wronger (encounter/treasure depth-scaling =
+  the **gradient seed**), a real bottom, dread-building §0-safe narration + stair telegraphs. `U140` (4/4),
+  determinism green. **Remaining on top of this:** the two AUTHORED dungeons (Tomb's un-collapsing strata,
+  the warren), the full reality-warped gradient (wire the bestiary tiers to depth), the climax (D-D3), and
+  the death-prose (D-D4). Deferred fast-follow: single-step inter-level ASCENT (exit-to-surface works from
+  any depth, so no soft-lock) + lazy-infinite `mega` depth.
 
 ### D-D2 — The cosmology as SYMPTOMS only (rung 5, §0/§3) (reuses P-84, §0-constrained)
 - **Seam:** `substrate.js` cascade + THE REF §0 guard (the hard narration constraint).

@@ -35,9 +35,11 @@ common/entry room; a private back room is usually empty. Resolved:
 Also closed the live-display note: the window-shot framing now rides the first combat **beat**
 ("Firing in through the window — …"), so it reaches the screen (beats aren't LLM-condensed). U284.
 
-### Two small remainders (not blocking)
-- **Multi-building disambiguation.** Occupancy distributes the *node's* roster across the rooms of the
-  building you're in; it doesn't yet split a town's people *between* its several buildings. Single
-  buildings / your home are exact; a dense multi-building town is approximate.
-- **Shoot-in named target.** Firing in resolves a real combat turn but still frames an abstract foe,
-  not a specific room occupant — escape combat models enemies abstractly. Low value; deferred.
+### Two small remainders — now DONE (U284, U286)
+- **Multi-building disambiguation** ✅ — occupancy is two-level: each NPC belongs to one *building*
+  at the node (a town roster splits BETWEEN its buildings), then one room within it. A dense town no
+  longer shows the whole town in every building; single buildings / your home are unchanged.
+- **Shoot-in named target** ✅ — firing in names the specific foe (the active combat enemy, captured
+  pre-turn) in the framing and the first beat: "Sighting <foe> through the window, you fire in — …".
+
+The windows feature is now complete with no open remainders.

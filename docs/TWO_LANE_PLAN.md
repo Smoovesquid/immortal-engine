@@ -49,16 +49,26 @@ genesis assignment.
   *Done-when:* the read-API returns fidelity-tiered rumors deterministically; U-tests (U272, 13/13; my
   contract guard U266 still green). **→ W2·3 is now UNBLOCKED.**
 
-**Make Every Turn Honest**
-- **W2·1 — Correctness floor: COMBAT (P-86).** Harness the combat slice; close the RESIDUAL reconciliation
-  seams (minus the H-92 / `d2600e4` ones already fixed). *Done-when:* residual seams fixed + test-locked,
-  no state-desync on combat runs, suite + determinism green.
-- **W2·2 — Correctness floor: DIALOGUE (P-86).** Harness the conversation slice; close agency/trust/
-  info-ask seams (mine Biblioteca Vol 7/15/17). *Done-when:* clean dialogue runs + tests.
-- **W2·3 — Morality M2.** Witnessed deed shifts trust (built) + reputation that TRAVELS (consumes W1·3's
-  `rumorsReaching`) + towns withholding from the notorious. **Gated on W1·3 + new state fields → both via
-  Homebase.** *Done-when:* a tracked atrocity in one town measurably changes a stranger's reception in the
-  next; tests; determinism intact.
+**Make Every Turn Honest** — ✅ **ALL LANDED (2026-06-24; Tim: "just do the codex lane yourself" → Homebase took the lane in-house, built directly on `v2-polish`, no worker dispatch).**
+- **W2·1 — Correctness floor: COMBAT (P-86).** ✅ LANDED (`6b5f6b5`, Codex branch merged + renumbered).
+  Three attack-resolves-not-fizzles seams (grapple throw-foe-vs-object, `isFoeEnvironmentAttack` routing,
+  GOAL_PREVAIL). `U273`/`U274`.
+- **W2·2 — Correctness floor: DIALOGUE (P-86).** ✅ LANDED (`755e2fe`). Harness-probed the conversation
+  slice; the info-ask layer is already robust (locked corpus C4/C9 encodes deliberate answer/deflect/
+  withhold) — the one real gap was the `place` regex missing third-person "lives here", so "who else lives
+  here?" deflected. One-char fix routes it through the existing answer; locked cases intact. `U275` (4/4).
+  *(A broader "residents" branch was tried and reverted — it fought C4-017 / C9-003. The slice is deliberate.)*
+- **W2·3 — Morality M2 / reputation-travels.** ✅ LANDED (`98da11f`). New `engine/npc/reputation.js`
+  (`notorietyReaching`) consumes `rumorsReaching` for the player's atrocities reaching a node; the dialogue
+  greeting turns wary + knowing, garbled to the travel tier. DISCOVERED, never a meter. **Derived from the
+  deeds ledger → NO new state, NO `WORLD_VERSION` bump** (the anticipated bump didn't materialise); clean
+  players byte-identical. `U276` (5/5). *Done-when met:* a tracked atrocity changes a stranger's reception.
+- **Deferred (noted, not hacked):** "towns withholding from the notorious" (an effective-trust penalty in
+  `askNpc`) — riskier (threads trust through the gating points, could fight locked cases like W2·2 did);
+  worth a careful follow-on packet. The greeting-reception change already meets the M2 done-when.
+
+> The `honest-turn/p86-combat` worker branch is now **defunct** (its W2·1 is merged; W2·2/W2·3 built on
+> `v2-polish`). Safe to delete.
 
 ## The one dependency — ✅ CLEARED
 `W2·3 (reputation-travels) → consumes → W1·3 (rumorsReaching)`. **W1·3 landed first (`6dc951a`), as

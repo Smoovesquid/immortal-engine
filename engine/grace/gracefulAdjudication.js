@@ -10,6 +10,7 @@ import { statMod } from '../ruleset/core/stats.js';
 import { profBonusFor } from '../ruleset/core/levelTable.js';
 import { makeRng, seedFromString } from '../rng.js';
 import { normalizeTopology, adjacentRooms } from '../structures/topology.js';
+import { roomWindows, windowSurveyPhrase } from '../structures/roomWindows.js';
 import { reachableRooms } from '../movement/interiorMovement.js';
 import { playerAc, meleeProfile } from '../combat/escapeCombat.js';
 import { purseTotalCopper, formatPrice } from '../economy/shop.js';
@@ -2465,9 +2466,17 @@ export function buildLocationSurvey(world, opts = {}) {
     const furniture = (Array.isArray(currentNode?.furniture) ? currentNode.furniture : [])
       .map(f => String(f?.name ?? '').trim())
       .filter(Boolean);
-    if (furniture.length) {
-      const art = (s) => `${/^[aeiou]/i.test(s) ? 'an' : 'a'} ${s}`;
-      parts.push(`Here: ${joinList(furniture.slice(0, 5).map(art))}.`);
+    // Windows are a real, generated room feature (engine/structures/roomWindows.js):
+    // above-ground rooms get 1-2, cellars/windowless rooms get none. Derived (seeded,
+    // no stored state) so "look around" lists one to act on — and the window verbs
+    // (look/climb/shoot out) bind to the SAME deriver. Listed alongside the furniture.
+    const win = roomWindows(w, interior);
+    const winPhrase = windowSurveyPhrase(win);
+    const art = (s) => `${/^[aeiou]/i.test(s) ? 'an' : 'a'} ${s}`;
+    const features = furniture.slice(0, 5).map(art);
+    if (winPhrase) features.push(winPhrase);
+    if (features.length) {
+      parts.push(`Here: ${joinList(features)}.`);
     } else {
       parts.push('The room holds little of note.');
     }
@@ -2478,21 +2487,6 @@ export function buildLocationSurvey(world, opts = {}) {
     // from the entry room, the way outside. Topology-driven; degrades to the open-air
     // line for a single-room structure.
     const st = w.structures?.byId?.[String(interior.structureKey || '')];
-    // Above-ground buildings have a WINDOW — a real wall feature you can see (and look / climb /
-    // shoot out of; the interaction verbs are a follow-up). Dungeons, cellars, and underground
-    // rooms don't. Down-payment for the windows feature: rooms used to never mention one, so
-    // "are there windows?" (which routes here) came back empty. Deterministic (seeded lookRng).
-    const interiorKey = String(interior.structureKey || '');
-    const stKind = String(st?.buildingType || st?.arch || st?.kind || '').toLowerCase();
-    const hasWindow = Boolean(st) && !/^dungeon/i.test(interiorKey)
-      && !/cellar|vault|crypt|undercroft|dungeon|cave|tunnel|mine/.test(stKind);
-    if (hasWindow) {
-      parts.push(lookRng.pick([
-        'A window in the wall looks out onto the open air.',
-        'A shuttered window faces the street outside.',
-        'Daylight falls through a window onto the floor.'
-      ]));
-    }
     const topo = normalizeTopology(st?.topology);
     let waysOut = 'The way out leads back to the open air.';
     if (topo) {
@@ -2598,6 +2592,41 @@ export function buildLocationSurvey(world, opts = {}) {
   }
 
   return parts.join(' ');
+}
+
+// windowView(world) — what is visibly OUTSIDE through a window, obeying the same
+// LINE OF SIGHT / fog rules as the exterior "look around": the immediate exterior
+// (the node's terrain), landmarks that poke above the treeline (NAMED only if
+// discovered, else read by silhouette), and the ROADS leaving by direction. An
+// over-the-horizon settlement down a road is never named — you see the road, not
+// the place. Reused by the playloop's "look out the window" verb.
+export function windowView(world) {
+  const w = world || {};
+  const nodeId = String(w.map?.currentNodeId ?? '');
+  const nodes = Array.isArray(w.map?.nodes) ? w.map.nodes : [];
+  const currentNode = nodes.find(n => String(n.id) === nodeId) ?? null;
+  const nodeType = String(currentNode?.nodeType ?? 'wilderness');
+  const article = /^[aeiou]/i.test(nodeType) ? 'an' : 'a';
+  const lead = `Through the window: ${article} ${nodeType} outside`;
+
+  const exits = exitsFrom(w.map, nodeId);
+  const discovered = new Set((Array.isArray(w.map?.discovered) ? w.map.discovered : []).map(String));
+  const dirLines = [];
+  for (const dir of ['north', 'east', 'south', 'west']) {
+    const targetId = exits?.[dir];
+    if (!targetId) continue;
+    const target = nodes.find(n => String(n.id) === String(targetId));
+    const isLandmark = String(target?.nodeType || '') === 'landmark';
+    if (isLandmark && discovered.has(String(targetId))) {
+      const tName = cleanPlaceName(target?.name);
+      dirLines.push(tName ? `to the ${dir} lies ${tName}` : `a landmark stands to the ${dir}`);
+    } else if (isLandmark) {
+      dirLines.push(`to the ${dir} you can make out ${landmarkSilhouette(target?.name)}`);
+    } else {
+      dirLines.push(`a path leads ${dir}`);
+    }
+  }
+  return dirLines.length ? `${lead}; ${joinList(dirLines)}.` : `${lead}.`;
 }
 
 // Main grace layer function

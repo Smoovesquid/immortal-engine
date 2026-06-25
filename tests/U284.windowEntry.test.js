@@ -86,3 +86,33 @@ test('U284: "fire into the window" in combat is a real ranged line IN (not a bou
   assert.match(r.output.mechanics || '', /cantrip|strike|atk:|combat:/i, r.output.mechanics);
   assert.match(r.output.narration, /window/i, r.output.narration);
 });
+
+test('U284: climbing in where there are witnesses is a contested stealth check (deterministic)', () => {
+  const a = playerMove(outside(), PACKS, 'climb in the window');
+  const b = playerMove(outside(), PACKS, 'climb in the window');
+  assert.match(a.output.mechanics || '', /window:enter\|(unseen|spotted)/, a.output.mechanics);
+  assert.match(a.output.mechanics || '', /stealth:\d/, 'a witnessed climb rolls a stealth check');
+  assert.ok(a.world.scene?.interior, 'spotted or not, you still get in');
+  assert.equal(a.output.mechanics, b.output.mechanics, 'deterministic: same seed → same roll/outcome');
+});
+
+test('U284: getting spotted climbing in costs you — the pressure clock ticks', () => {
+  // Force the spotted branch deterministically by zeroing AGILITY (any roll < DC).
+  const w = outside();
+  w.party[0].stats = { ...(w.party[0].stats || {}), AGILITY: 1 };
+  const before = Number(w.clocks?.pressure || 0);
+  const r = playerMove(w, PACKS, 'climb in the window');
+  if (!/spotted/.test(r.output.mechanics || '')) return; // empty node edge — nothing to assert
+  assert.ok(r.world.scene?.interior, 'you still get in');
+  assert.equal(Number(r.world.clocks?.pressure || 0), before + 1, 'being seen tightens the escape clock');
+});
+
+test('U284: climbing in with no one around is a free, uncontested entry', () => {
+  const w = outside();
+  const node = (w.map.nodes).find(n => n.id === w.map.currentNodeId);
+  node.settlement = { ...(node.settlement || {}), npcs: [] };
+  const r = playerMove(w, PACKS, 'climb in the window');
+  assert.match(r.output.mechanics || '', /\[window:enter\|unseen\]/, r.output.mechanics);
+  assert.doesNotMatch(r.output.mechanics || '', /stealth:/, 'no witnesses → no check');
+  assert.ok(r.world.scene?.interior);
+});

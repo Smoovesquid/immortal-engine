@@ -1227,8 +1227,27 @@ function playerMoveCore(world, packsById, text) {
         return { world: w, output: { narration: `Wizard: Through the window, a room opens beyond the sill. ${occ}`, mechanics: '[window:peek]' } };
       }
       if (we === 'enter') {
-        const w2 = pushEvent(probe, { kind: 'resolution', data: { actorId, intent: String(text || ''), text: String(text || ''), roll: 0, dc: 0, outcome: 'success', updateKind: 'interior-enter' } });
-        return { world: w2, output: { narration: 'Wizard: You find a foothold on the sill and slip in through the window — no door, no announcement. You are inside, and the way you came went unmarked.', mechanics: '[window:enter|stealth]' } };
+        // Climbing in is unsanctioned. In a POPULATED place there are witnesses to the very act
+        // of scaling a wall (honest at node granularity), so it is a contested STEALTH check
+        // (AGILITY vs a moderate DC); getting spotted still lets you in but costs you — the escape
+        // clock tightens (pressure), and word travels. An empty place is a clean, free entry.
+        // (Whether someone INSIDE the room saw you is a deeper per-building-occupancy model.)
+        const enode = (w.map?.nodes || []).find(n => n && String(n.id) === String(w.map?.currentNodeId)) || null;
+        const watchers = (((enode && enode.settlement && enode.settlement.npcs) || [])).length;
+        let w2 = pushEvent(probe, { kind: 'resolution', data: { actorId, intent: String(text || ''), text: String(text || ''), roll: 0, dc: 0, outcome: 'success', updateKind: 'interior-enter' } });
+        if (!watchers) {
+          return { world: w2, output: { narration: 'Wizard: No one about. You find a foothold on the sill and slip in through the window — no door, no announcement, no witness.', mechanics: '[window:enter|unseen]' } };
+        }
+        const srng = makeRng(seedFromString(`${w.meta?.seed ?? ''}|window-stealth|${Array.isArray(w.timeline) ? w.timeline.length : 0}`));
+        const bonus = statMod(Number(w.party?.[0]?.stats?.AGILITY ?? 10));
+        const roll = srng.int(1, 20);
+        const dc = 10;
+        const sign = bonus >= 0 ? `+${bonus}` : String(bonus);
+        if ((roll + bonus) < dc) {
+          w2 = applyDeltas(w2, [{ op: 'clock', key: 'pressure', by: 1 }]);
+          return { world: w2, output: { narration: 'Wizard: You haul yourself to the sill and through — but a head turns your way as you go. You are in; you were also seen, and word of it will travel.', mechanics: `[window:enter|spotted | stealth:${roll}${sign} vs DC${dc} | pressure+1]` } };
+        }
+        return { world: w2, output: { narration: 'Wizard: You pick your moment, find a foothold on the sill, and slip in through the window unseen — no door, no announcement, no one the wiser.', mechanics: `[window:enter|unseen | stealth:${roll}${sign} vs DC${dc}]` } };
       }
     }
   }

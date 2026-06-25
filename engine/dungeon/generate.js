@@ -22,6 +22,14 @@ const THEME_BY_BIOME = {
   plains: ['crypt', 'shrine'], wilderness: ['shrine', 'crypt']
 };
 
+// Authored demo dungeons — a specific entrance gets a hand-picked theme instead of a
+// biome roll. Keyed by the seed-unique node id (the hash encodes seed+position, so this
+// only ever matches on the locked `tallow` demo). Today: the cannibal WARREN beneath
+// Gallows Hill (2), the dungeon nearest the outlier where the Host stands (DEMO_REGION §7).
+const DEMO_DUNGEON_THEMES = {
+  'n35_689537805': 'warren',
+};
+
 // A shrine's single feature, flavoured by theme. Read-only at D0 — a DM moment,
 // not a mechanic yet (boons/curses come with the object model).
 const SHRINE_FEATURE = {
@@ -31,7 +39,8 @@ const SHRINE_FEATURE = {
   hold: { name: 'a war-banner', look: 'A rotted banner hangs over a captain\'s empty chair', detail: 'The sigil is unfamiliar; whoever held this hall did not leave by choice.' },
   sewer: { name: 'a votive grate', look: 'A bronze grate set in the floor, ringed with tallow stubs', detail: 'People came down here to wish for things. The water below gives nothing back but the smell.' },
   lair: { name: 'a bone-strewn nest', look: 'A hollow lined with gnawed bones and matted nesting', detail: 'It is cold now. Whatever denned here has not fed in some time — or has only just left.' },
-  infernal: { name: 'a scorched sigil', look: 'A circle burned black into the floor', detail: 'The stone is warm. The lines were drawn to summon something, or to keep a bargain.' }
+  infernal: { name: 'a scorched sigil', look: 'A circle burned black into the floor', detail: 'The stone is warm. The lines were drawn to summon something, or to keep a bargain.' },
+  warren: { name: 'the long table', look: 'A long table set end to end down the hall, every place laid and every place named', detail: 'The settings are mismatched — gathered, not bought. A card at each place bears a name in the same immaculate hand as the paper sold upstairs. One place, near the head, is set and waiting. The card there is blank.' }
 };
 
 function pick(rng, arr) { return arr[Math.floor(rng.nextFloat() * arr.length)] || arr[0]; }
@@ -93,6 +102,15 @@ const HISTORY = {
     catastrophe: ['the bargain came due, and the price was the place itself', 'a summoning slipped its bindings', 'the warlock paid in the only coin left — everyone here'],
     denizen: ['what the circle still holds, barely', 'the collector, come for the debt'],
     echoes: ['a circle burned black into the floor, still warm to the hand', 'chalk diagrams half-scuffed away in panic', 'a ledger of names, the last entry unfinished', 'the air tastes of struck flint and old blood', 'a mirror gone black, that does not show the room']
+  },
+  // The cannibal warren (DEMO_REGION §7 / IG-14) — the eaters' archive beneath the
+  // gallows. The horror is the TIDINESS: a library that smells of smoke, where the dead
+  // are kept twice (eaten, and written down). §0-safe — the faith, never the cosmology.
+  warren: {
+    origin: ['the warren the eaters dug beneath the gallows', 'the archive the Lasting Word keeps under the hill', 'the stacks-and-kitchens where the outlier keeps its dead'],
+    catastrophe: ['the valley began to forget, and these few resolved to remember by other means', 'they reasoned the gods let what they tire of dissolve — and chose to take first', 'the warren stopped burying its dead and began, instead, to keep them'],
+    denizen: ['the eaters, who do not thin', 'the congregation of the Host', 'the kindly, dreadful keepers of the kept'],
+    echoes: ['a long table laid for a meal, every place set and named', 'shelves of ledgers — a name to each spine, the spines past counting', 'a kettle banked warm over low coals, and the smell that lives beneath the smell', 'a wall of pinned obituaries, the ink immaculate, the edges just beginning to curl', 'a child\'s chair drawn up to the long table, kept, the way everything here is kept', 'tally-marks beside each name — not the years they lived, but how many still remember them']
   }
 };
 function generateHistory(rng, theme, substrateEvents) {
@@ -136,7 +154,8 @@ const CHAMBER_DRESSING = {
   hold: 'a toppled table and sconces eaten through with rust',
   sewer: 'a slick of black water and a drain choked with rot',
   lair: 'gnawed bones and the close animal reek of a den',
-  infernal: 'scorch-marks fanned across the walls and a faint sulphur tang'
+  infernal: 'scorch-marks fanned across the walls and a faint sulphur tang',
+  warren: 'shelves of named ledgers, a swept floor, and the low warmth of banked coals'
 };
 
 // A room's feature (D1: descriptive — a DM moment per room). Vaults hold the
@@ -306,7 +325,7 @@ export function generateDungeon(seed, entranceNodeId, opts = {}) {
   // deeper site for now; lazy-infinite Moria depth is a later packet (D4).
   const scale = ['shrine', 'small', 'site', 'mega'].includes(opts.scale) ? opts.scale : 'site';
   const rng = makeRng(seedFromString(`${seed}|dungeon|${nodeId}`));
-  const theme = opts.theme || themeFor(rng, biome);
+  const theme = opts.theme || DEMO_DUNGEON_THEMES[nodeId] || themeFor(rng, biome);
 
   // History first — the build reads its ECHOES into the rooms, so the crawl tells
   // the dungeon's story as you go (the Underworld-is-horror law).

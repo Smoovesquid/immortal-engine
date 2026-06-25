@@ -18,7 +18,7 @@
 // (see generate.dungeonLevelToStructure).
 
 export const DUNGEON_SCALES = ['shrine', 'small', 'site', 'mega'];
-export const DUNGEON_THEMES = ['mine', 'crypt', 'shrine', 'lair', 'sewer', 'hold', 'infernal'];
+export const DUNGEON_THEMES = ['mine', 'crypt', 'shrine', 'lair', 'sewer', 'hold', 'infernal', 'warren'];
 export const ROOM_ROLES = ['entry', 'chamber', 'corridor', 'vault', 'lair', 'shrine', 'crypt', 'prison', 'cache', 'puzzle'];
 export const CONTENT_KINDS = ['feature', 'encounter', 'treasure', 'trap', 'boss'];
 export const ROOM_LIGHT = ['dark', 'dim', 'lit'];

@@ -410,6 +410,13 @@ const META_CLASS_FOLD_RE = /\band\s+(?:my\s+|what'?s\s+my\s+)?(?:class|archetype
 // character, never bounces it back as a navigation prompt. (Opus gate
 // 2026-06-16, Confused newbie.)
 const META_ADVICE = /\bshould i\b[^?]*\?|\bis (?:that|this|it) a (?:bad|good|smart|wise|dumb) idea\b|\bwould (?:that|it) be (?:smart|wise|safe|dangerous)\b/i;
+// First-person "what do I know about this place?" — the player asking the game to be their
+// memory. Too vague to answer, and we keep NO auto-recall: the DM points you back at your own
+// notes (write-it-down). Scoped TIGHT — bare ("what do I know?") or an explicit VAGUE place
+// ("...about this area / this town / here"). It must NOT catch "what do I know about <a person /
+// a specific thing>" ("...about Bram?" → identify Bram), nor "what do YOU know about X" (asks an
+// NPC for lore — "do i" vs "do you").
+const META_SELF_KNOWLEDGE = /\bwhat\s+do\s+i\s+(?:know|remember|recall)\s*\??$|\bwhat\s+do\s+i\s+(?:know|remember|recall)\s+(?:about\s+)?(?:this\s+(?:area|place|spot|town|village|city|region|land|valley|settlement|locale|hamlet)|here|around\s+here)\b/i;
 // Modifier-formula questions — "how are modifiers calculated?", "the formula",
 // "ability modifier", "what do I add to hit?". Report the (score−10)÷2 rule
 // plus the PC's current scores. Never a dice roll. (Rung-1 gate 2026-06-18.)
@@ -571,7 +578,7 @@ export function isMetaQuestion(text) {
     || META_HEALTH.test(t) || META_RECAP.test(t) || META_OUTCOME.test(t)
     || META_INVENTORY.test(t) || META_EQUIPMENT.test(t) || META_CHARACTER.test(t) || META_STAT.test(t)
     || META_STAT_SYNONYM.test(t) || META_ITEM.test(t) || META_PURSE.test(t) || META_TIME.test(t)
-    || META_OBJECTIVE.test(t) || META_MECHANICS.test(t) || META_ADVICE.test(t)
+    || META_OBJECTIVE.test(t) || META_MECHANICS.test(t) || META_ADVICE.test(t) || META_SELF_KNOWLEDGE.test(t)
     || META_WEAPON_DAMAGE.test(t) || META_NAME.test(t)
     || META_MODIFIER_FORMULA.test(t) || META_SHEET_CONFIRM.test(t)
     || META_NPC_OBSERVER.test(t) || META_NPC_PRESENCE.test(t) || META_NPC_ROSTER.test(t)  // H-34 R2a
@@ -2320,6 +2327,20 @@ export function handleMetaQuestion(text, world) {
         : answerHealth(world));
     }
     if (parts.length) return parts.join(' ');
+  }
+
+  // "What do I know about this place?" — a vague self-knowledge question: the player asking the
+  // game to be their memory. Checked LAST, so any SPECIFIC query (weapon, stat, a named person)
+  // is answered first and only the genuinely-vague form lands here. We keep no auto-recall — a
+  // real DM points you back at your own notes (the world is the DM's to track; the record is yours).
+  if (META_SELF_KNOWLEDGE.test(lowerText)) {
+    const rng = makeRng(seedFromString(`${world?.meta?.seed || ''}|notes|${world?.timeline?.length || 0}|${lowerText}`));
+    return rng.pick([
+      `That's what your notes are for — I keep the world, you keep the record of it.`,
+      `Check your notes. I don't hold your memories for you; a careful traveler writes things down.`,
+      `Whatever you've set down — your notes have it, I don't.`,
+      `Check your notes. What you didn't write down is gone, same as at any table.`
+    ]);
   }
 
   return null; // not a recognized meta-question

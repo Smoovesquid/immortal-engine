@@ -1018,6 +1018,31 @@ function playerMoveCore(world, packsById, text) {
       return { world: w, output: { narration: 'Wizard: No stair opens beneath you here. If this place runs deeper, the way down lies at its heart — the vault.' + dungeonExitsLine(w), mechanics: '' } };
     }
 
+    // Climb back UP — at a stair up (a deeper floor's entry), an ascend intent lifts you
+    // one level (you arrive at that floor's entry, its own up-stair, so you can keep
+    // climbing). Only fires deep (depth > 0) on the stair; otherwise "go up" falls through
+    // to the exit handler (bail to the surface), so you're never trapped either way.
+    if (inDungeon && !w.combat?.active &&
+        /\b(ascend|go up|climb up|head up|up the stair|up a (?:level|floor|flight)|climb back up|go back up)\b/.test(String(text || '').toLowerCase())) {
+      const st = w.structures?.byId?.[String(inside.structureKey)];
+      const nodeId = String(st?.nodeId || '');
+      const cn = dnodes.find(n => String(n?.id || '') === nodeId) || null;
+      const biome = cn ? biomeForNode(w.meta.seed, cn) : 'wilderness';
+      const dungeon = generateDungeon(w.meta.seed, nodeId, { biome, substrateEvents: substrateEventsFor(w, nodeId) });
+      const depth = dungeonDepthFromKey(inside.structureKey);
+      const level = dungeon.levels[depth] || null;
+      if (depth > 0 && level && level.upStairsRoomId && String(inside.roomId) === String(level.upStairsRoomId)) {
+        const stPrev = dungeonLevelToStructure(dungeon, depth - 1);
+        if (stPrev) {
+          let w1 = applyDeltas(w, [{ op: 'addStructure', structure: stPrev }]);
+          w1 = enterStructureInterior(w1, stPrev.id);
+          const w2 = pushEvent(w1, { kind: 'resolution', data: { actorId: 'party', text: String(text || ''), intent: String(text || ''), roll: 0, dc: 0, outcome: 'success', updateKind: 'dungeon-ascend' } });
+          return { world: w2, output: { narration: `Wizard: You climb the stair back toward the light, one floor up out of the deeper dark.${dungeonExitsLine(w2)}`, mechanics: `[ascend → depth ${depth - 1}]` } };
+        }
+      }
+      // not on an up-stair (or at the top floor): fall through to exit-to-surface.
+    }
+
     if (inDungeon && !w.combat?.active && isDungeonLookIntent(text)) {
       const st = w.structures?.byId?.[String(inside.structureKey)];
       const nodeId = String(st?.nodeId || '');
@@ -1153,7 +1178,8 @@ function playerMoveCore(world, packsById, text) {
           const biome = cn ? biomeForNode(w2.meta.seed, cn) : 'wilderness';
           const roomId = String(w2.scene.interior.roomId);
           const dungeon = generateDungeon(w2.meta.seed, nodeId, { biome, substrateEvents: substrateEventsFor(w2, nodeId) });
-          const room = dungeon.levels[0]?.rooms?.[roomId] || null;
+          const depth = dungeonDepthFromKey(st.id);
+          const room = dungeon.levels[depth]?.rooms?.[roomId] || null;
           const movedLead = movedDir ? `You move ${movedDir}.` : 'You move on.';
           // A denizen reveals itself if this room still holds an un-cleared encounter
           // — the dread you've carried resolves into the fight (the payoff).
@@ -1161,13 +1187,15 @@ function playerMoveCore(world, packsById, text) {
           const enc = room?.contents?.find(c => c.kind === 'encounter');
           if (enc && !(sroom?.tags || []).includes('cleared')) {
             const frng = makeRng(seedFromString(`${w2.meta.seed}|dungeon-fight|${nodeId}|${roomId}`));
-            const creatures = selectCreatures(enc.cr, enc.count, null, frng, biome);
+            // The gradient: each floor down raises the CR floor (depth × 0.5), so the
+            // mundane drops away and the deeper dark holds the wronger things.
+            const creatures = selectCreatures(enc.cr, enc.count, null, frng, biome, depth * 0.5);
             let w3 = applyDeltas(w2, [{ op: 'tagRoom', structureId: st.id, roomId, tag: 'cleared' }]);
             w3 = spawnEncounter(w3, creatures, { ambush: true, reason: 'dungeon' }, frng);
             return { world: w3, output: { narration: `Wizard: ${movedLead} ${dungeonAmbushLine(creatures, dungeon)}`, mechanics: '[encounter]' } };
           }
           const body = room ? dungeonLookNarration(room, 'look around').replace(/^Wizard:\s*/, '') : '';
-          return { world: w2, output: { narration: `Wizard: ${movedLead} ${body}${dungeonTelegraph(w2, dungeon)}${dungeonExitsLine(w2)}`.trim(), mechanics: '' } };
+          return { world: w2, output: { narration: `Wizard: ${movedLead} ${body}${dungeonTelegraph(w2, dungeon, depth)}${dungeonExitsLine(w2)}`.trim(), mechanics: '' } };
         }
         const moveMsg = interiorAction.roomHint === 'fore'
           ? 'Wizard: You step back the way you came, into the next room.'

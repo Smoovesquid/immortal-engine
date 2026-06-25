@@ -80,12 +80,20 @@ export function evaluateEncounter(world, _scenePlan, rng) {
  * @param {object} rng - seeded RNG
  * @returns {Array<object>} - array of creature definitions
  */
-export function selectCreatures(cr, count, region, rng, biome = null) {
+export function selectCreatures(cr, count, region, rng, biome = null, minCr = 0) {
   const targetCR = Number(cr) || 1;
   const n = Math.max(1, Math.min(4, Number(count) || 1));
+  const floor = Math.max(0, Number(minCr) || 0);
 
-  // Filter to creatures with CR <= target budget
-  const eligible = ALL_CREATURES.filter(
+  // Filter to creatures within the CR budget. The `minCr` floor is the dungeon-depth
+  // GRADIENT (the deeper you go, the wronger — mundane wolves and bandits drop out,
+  // leaving the tougher denizens). It is a PREFERENCE: if nothing qualifies above the
+  // floor, relax to the full budget rather than starve the encounter. (floor 0 = the
+  // historical behaviour, so every non-dungeon caller is byte-identical.)
+  let eligible = ALL_CREATURES.filter(
+    c => c && typeof c.cr === 'number' && c.cr > 0 && c.cr <= targetCR && c.cr >= floor
+  );
+  if (eligible.length === 0) eligible = ALL_CREATURES.filter(
     c => c && typeof c.cr === 'number' && c.cr <= targetCR && c.cr > 0
   );
 

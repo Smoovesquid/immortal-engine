@@ -78,3 +78,14 @@ test('U140-04: the descent is deterministic — same seed replays to an identica
   };
   assert.equal(run(), run());
 });
+
+test('U140-05: ascending at a stair up climbs you one floor toward the light', () => {
+  const { w: w0, ent, biome } = atEntrance('blackvale');
+  const dn = generateDungeon(w0.meta.seed, ent.id, { biome });
+  let w = descendTo(w0, dn, 1);   // on level 1, standing at its entry (the up-stair)
+  assert.equal(w.scene.interior.structureKey, dungeonStructureId(ent.id, 1), 'on level 1');
+  assert.equal(w.scene.interior.roomId, dn.levels[1].upStairsRoomId, 'standing at the up-stair');
+  const r = playerMove(w, PACKS, 'go up');
+  assert.equal(r.world.scene.interior.structureKey, dungeonStructureId(ent.id, 0), 'climbed to level 0');
+  assert.match(r.output.mechanics, /ascend → depth 0/);
+});

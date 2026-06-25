@@ -441,8 +441,33 @@ export function setPieceCooldownGate(beat, gap, window = 3) {
   return Number(gap) >= Number(window) ? String(beat) : '';
 }
 
+// Addressing a present, non-hostile NPC by speaking AT them ("tell Miriel she's cool", "ask
+// the elder about the road") opens a sustained conversation — AFTER the turn resolves by its
+// natural system (a social roll, an info answer), so the OUTPUT is unchanged. Skipped on combat
+// ("tell X off and punch him" stays a fight), when already in dialogue, when the name matches no
+// present NPC (so "tell me about the war" / an absent name don't), and for hostiles. Classic
+// DM-ing: speaking to a person engages them — but a fight is still a fight.
+function maybeEnterConversationAfterAddress(world, text, output) {
+  if (!world || world.combat?.active || world.scene?.dialogue) return world;
+  if (/\[(?:strike|combat|encounter|attack|escape)/i.test(String(output?.mechanics || ''))) return world;
+  const m = String(text || '').match(/\b(?:tell|ask)\s+(?!me\b|us\b|myself\b|ourselves\b|around\b|again\b|anyone\b|everyone\b|someone\b|somebody\b|them\b|him\b|her\b|it\b|the\s+truth\b|the\s+time\b|the\s+story\b|a\s+story\b|a\s+joke\b|a\s+tale\b|a\s+lie\b)((?:the\s+)?[a-z][a-z'\-]+)/i);
+  if (!m || !m[1]) return world;
+  const ref = m[1].trim();
+  const resolved = resolveNpcAtCurrentNode(world, ref);
+  if (!resolved || resolved.hostile) return world;
+  const begun = beginDialogue(world, ref);
+  return begun?.outcome?.ok ? begun.world : world;
+}
+
 export function playerMove(world, packsById, text) {
   const res = playerMoveCore(world, packsById, text);
+  // Speaking AT a present person ("tell/ask X ...") opens a sustained conversation AFTER the
+  // turn resolves naturally — the social roll / info answer is unchanged; combat, "tell me
+  // about …", and an absent name all skip it (see maybeEnterConversationAfterAddress).
+  if (res) {
+    const convoWorld = maybeEnterConversationAfterAddress(res.world, text, res.output);
+    if (convoWorld && convoWorld !== res.world) res.world = convoWorld;
+  }
   const setPieceBeat = detectSetPieceBeat(world, res?.world);
   if (setPieceBeat && res) res.output = { ...(res.output || {}), beat: setPieceBeat };
   try {

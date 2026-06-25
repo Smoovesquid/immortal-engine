@@ -58,6 +58,29 @@ test('U281: a mention / a look does NOT start a conversation — only addressing
   assert.equal(dlg(playerMove(w, PACKS, `I look at ${name} across the way`).world), null, 'a look is not a conversation');
   assert.equal(dlg(playerMove(w, PACKS, `${name} is standing over there`).world), null, 'a mention is not a conversation');
 
-  // Explicitly addressing them DOES open a conversation.
+  // Addressing them by name DOES open a conversation — talk to / tell / ask.
   assert.ok(dlg(playerMove(w, PACKS, `talk to ${name}`).world), 'talk to X opens the conversation');
+  assert.ok(dlg(playerMove(w, PACKS, `tell ${name} she is cool`).world), 'tell X <statement> opens the conversation');
+  assert.ok(dlg(playerMove(w, PACKS, `ask ${name} about the road`).world), 'ask X about Y opens the conversation');
+
+  // ...but the self / everyone forms do NOT (info-seeking, not addressing a person).
+  assert.equal(dlg(playerMove(w, PACKS, 'tell me about the war').world), null, '"tell me about X" is info-seeking, not addressing a person');
+  assert.equal(dlg(playerMove(w, PACKS, 'ask around about it').world), null, '"ask around" addresses no one in particular');
+});
+
+test('U281: addressing resolves naturally AND enters conversation — combat still fights', () => {
+  const w = playerMove(boot(), PACKS, 'I step outside').world;
+  const node = (w.map?.nodes || []).find(n => n && n.id === w.map?.currentNodeId) || null;
+  const npc = (node?.settlement?.npcs || []).find(n => n && !n.hostile);
+  if (!npc) return;
+  const name = String(npc.name || '').split(/\s+/)[0];
+
+  // "tell X <statement>" still RESOLVES as a social interaction (the roll fires) — entering
+  // conversation is additive, it does not replace the natural outcome.
+  const told = playerMove(w, PACKS, `tell ${name} she is cool`);
+  assert.match(String(told.output?.mechanics || ''), /social|roll:/i, `the social reaction must still fire: ${told.output?.mechanics}`);
+  assert.ok(dlg(told.world), 'and you are now in conversation');
+
+  // "tell X off and punch him" is a FIGHT — addressing-then-attacking never becomes a chat.
+  assert.equal(dlg(playerMove(w, PACKS, `I tell ${name} off and punch him`).world), null, 'a fight is not a conversation');
 });

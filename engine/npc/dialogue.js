@@ -336,7 +336,7 @@ export function commonKnowledgeAnswer(world, npc, text) {
   // not fall to a generic place blurb. Mirrors placeQuery's PLACE_POPULATION_EXCLUDE_RE so
   // both sinks agree — the resolver never classifies control, and the blurb never poaches it.
   const NOT_PLACE_DESCRIPTION_RE = /\b(?:worst|trouble|danger|threat|happened|founded|built|first\s+stone|before|history|who\s+(?:runs|leads|founded|built|controls?|owns|rules)|controls?|controlling|secretly|in\s+(?:charge|control|power)|pulls?\s+the\s+strings|the\s+(?:cult|boss)|how\s+long|how\s+many|years|winters|elder|stranger|attack(?:ed|s)?|raid)\b/i;
-  if (/\b(?:this place|this village|this town|about (?:the )?(?:village|town|place)|what is this place|around here|liv(?:e|ed) here|been here long)\b/.test(t) && !NOT_PLACE_DESCRIPTION_RE.test(t) && here) {
+  if (/\b(?:this place|this village|this town|about (?:the )?(?:village|town|place)|what is this place|around here|liv(?:e|ed|es) here|been here long)\b/.test(t) && !NOT_PLACE_DESCRIPTION_RE.test(t) && here) {
     const st = here.settlement;
     if (st) {
       const buildings = (Array.isArray(st.buildings) ? st.buildings : []).map(b => String(b?.name || '')).filter(Boolean).slice(0, 3);

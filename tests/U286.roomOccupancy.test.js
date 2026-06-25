@@ -65,6 +65,26 @@ test('U286: a private (empty) room lists no people; an occupied room names its o
   }
 });
 
+test('U286: a multi-building node splits its roster BETWEEN buildings (partition holds)', () => {
+  const mkTopo = (p) => ({ kind: 'rooms', rooms: [{ id: `${p}:entry`, tags: ['entry'] }, { id: `${p}:back` }], edges: [{ a: `${p}:entry`, b: `${p}:back` }] });
+  const npcs = Array.from({ length: 8 }, (_, i) => ({ id: `npc${i}`, name: `NPC${i}` }));
+  const w = {
+    meta: { seed: 'multi' },
+    map: { currentNodeId: 'town', nodes: [{ id: 'town', settlement: { npcs } }] },
+    structures: { byId: {
+      b1: { id: 'b1', nodeId: 'town', topology: mkTopo('b1') },
+      b2: { id: 'b2', nodeId: 'town', topology: mkTopo('b2') }
+    } }
+  };
+  const roomsOf = (b) => [`${b}:entry`, `${b}:back`];
+  let total = 0; const seen = new Set();
+  for (const b of ['b1', 'b2']) for (const r of roomsOf(b)) { const o = occupantsOfRoom(w, b, r); total += o.length; o.forEach(n => seen.add(n.name)); }
+  assert.equal(total, 8, 'every NPC is placed exactly once across all buildings + rooms');
+  assert.equal(seen.size, 8, 'no NPC is duplicated across buildings');
+  const inB1 = roomsOf('b1').reduce((a, r) => a + occupantsOfRoom(w, 'b1', r).length, 0);
+  assert.ok(inB1 > 0 && inB1 < 8, 'the roster is split between buildings, not all dumped in one');
+});
+
 test('U286: a structure with no interior topology puts everyone "here" (backward compatible)', () => {
   const w = boot();
   const occ = occupantsOfRoom(w, 'no-such-structure:0', 'r'); // unresolved → single-space fallback

@@ -89,6 +89,8 @@ test('U284: "fire into the window" in combat is a real ranged line IN (not a bou
   // turn's narration, so this is what actually reaches the screen.
   const beats = r.output.beats || [];
   assert.ok(beats.length && /window/i.test(beats[0]), `beat[0] should carry the window framing: ${JSON.stringify(beats)}`);
+  // ...and it names the specific foe being fired at, not an abstract one (W-Q2 remainder).
+  assert.match(beats[0], /sighting .+ through the window/i, `shoot-in should name the foe: ${beats[0]}`);
 });
 
 test('U284: climbing in where there are witnesses is a contested stealth check (deterministic)', () => {

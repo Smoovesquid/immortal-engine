@@ -2336,6 +2336,9 @@ function playerMoveCore(world, packsById, text) {
         windowShootIn = pwin.count > 0 && !pwin.shuttered;
       }
       const windowFire = windowShoot || windowShootIn;
+      // Name the foe you fire IN at (the active combat enemy, captured PRE-turn) so the shoot-in is
+      // aimed at a specific target, not an abstract one. (W-Q2 remainder.)
+      const shootInFoe = windowShootIn ? (((w.combat?.enemies) || []).find(e => e && !e.defeated)?.name || '') : '';
       const turnText = windowFire
         ? (String(text).replace(/\b(?:out|in|into|through|at)\s+(?:the|a|that)\s+window(?:sill)?\b/gi, ' ')
             .replace(/\bwindows?\b/gi, ' ').replace(/\s+/g, ' ').trim() || 'shoot')
@@ -2353,7 +2356,7 @@ function playerMoveCore(world, packsById, text) {
       const narr = windowShoot
         ? `Wizard: You set yourself at the window — the frame for cover — and fire through it. ${escBody}`
         : windowShootIn
-        ? `Wizard: You sight through the window and fire in — the frame the only cover between you and what waits inside. ${escBody}`
+        ? `Wizard: ${shootInFoe ? `You sight ${shootInFoe} through the window and fire in` : 'You sight through the window and fire in'} — the frame the only cover between you and what waits inside. ${escBody}`
         : `Wizard: ${escBody}`;
       const escMech = windowShoot ? `${result.mechanicsLine} [window:shoot]`
         : windowShootIn ? `${result.mechanicsLine} [window:shoot-in]`
@@ -2362,7 +2365,9 @@ function playerMoveCore(world, packsById, text) {
       // a combat turn, so the window framing has to ride the FIRST beat or it is lost on screen.
       let outBeats = Array.isArray(result.beats) ? result.beats : [];
       if (windowFire && outBeats.length) {
-        const frame = windowShootIn ? 'Firing in through the window — ' : 'From behind the window-frame — ';
+        const frame = windowShootIn
+          ? (shootInFoe ? `Sighting ${shootInFoe} through the window, you fire in — ` : 'Firing in through the window — ')
+          : 'From behind the window-frame — ';
         outBeats = [frame + String(outBeats[0]), ...outBeats.slice(1)];
       }
       return { world: w, output: { narration: narr, mechanics: escMech, combatSummary: String(result.combatSummary || ''), beats: outBeats } };

@@ -156,14 +156,21 @@ return, and the world remembered. This is the highest-leverage work — everythi
   + the **cannibal warren**; monster gradient = proximity to the Scar (mundane → pre-cataclysm guardians →
   reality-warped outer-reaches; world-native filter holds; Lovecraft/King/Asimov flavor at the bottom).
 - **Done-when:** both dungeons playable; the gradient legible (the deeper, the *wronger*).
-- **✅ LYNCHPIN LANDED (`c9a8478`, 2026-06-25): multi-level descent.** `dungeon_entrance`s now default to a
-  multi-level `site` (`engine/dungeon/generate.js buildSite`): self-contained floors linked by a stair down
-  at each vault, descend via a narrow go-deeper intent, deeper = wronger (encounter/treasure depth-scaling =
-  the **gradient seed**), a real bottom, dread-building §0-safe narration + stair telegraphs. `U140` (4/4),
-  determinism green. **Remaining on top of this:** the two AUTHORED dungeons (Tomb's un-collapsing strata,
-  the warren), the full reality-warped gradient (wire the bestiary tiers to depth), the climax (D-D3), and
-  the death-prose (D-D4). Deferred fast-follow: single-step inter-level ASCENT (exit-to-surface works from
-  any depth, so no soft-lock) + lazy-infinite `mega` depth.
+- **✅ MUCH OF D-D1 LANDED (2026-06-25):**
+  - **Multi-level descent** (`c9a8478`): `dungeon_entrance`s default to a multi-level `site` (`buildSite`) —
+    self-contained floors linked by a stair down at each vault, a narrow go-deeper intent, a real bottom,
+    dread-building §0-safe narration + stair telegraphs. `U140`.
+  - **Inter-level ascent + the monster gradient** (`15aac11`): "go up" at a stair climbs one floor (else
+    bails to surface — never trapped); `selectCreatures` gained a depth-scaled CR FLOOR so deeper floors drop
+    the mundane and hold the wronger things (depth 0 → cr-2 beasts, depth 2 → cr-4 elites). Fixed a depth
+    desync in the move-into-room handler. `U140-05`.
+  - **The cannibal WARREN** (`8c9b9d8`) — one of the two real dungeons: a `warren` theme (the eaters' archive
+    beneath the gallows, "a library that smells of smoke"; the long table with a blank place set for you),
+    placed at Gallows Hill (2) by the outlier, on the descent engine. `U141`.
+- **Remaining on D-D1:** the **Tomb of the Foundation** (the OTHER dungeon — the un-collapsing pre-cataclysm
+  strata; §0-sensitive); a curated **reality-warped deep-creature pool** (the gradient is CR-tier today,
+  not yet bespoke outer-reaches horrors); the warren's **bespoke cannibal denizens** + a hand-laid layout.
+  Deferred: lazy-infinite `mega` depth. Then D-D2 (cosmology-as-symptom), D-D3 (climax), D-D4 (death-prose).
 
 ### D-D2 — The cosmology as SYMPTOMS only (rung 5, §0/§3) (reuses P-84, §0-constrained)
 - **Seam:** `substrate.js` cascade + THE REF §0 guard (the hard narration constraint).

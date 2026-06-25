@@ -51,7 +51,8 @@ import { resolveCompanionTurn } from './combat/companionTurn.js';
 import { castSpell } from './spell/castSpell.js';
 import { classifyOffensiveCast, castConsequence } from './magic/castConsequence.js';
 import { evaluateEncounter, selectCreatures, spawnEncounter } from './combat/encounterSpawn.js';
-import { isMetaQuestion, handleMetaQuestion, isNullAction, isQuestionShaped, META_LOCATION, META_RECAP, isNpcObserverQuery, isInfoSeekingText, isConfrontationChallenge, buildLocationSurvey, windowView, INFO_SEEKING_EXCLUDE_RE } from './grace/gracefulAdjudication.js';
+import { isMetaQuestion, handleMetaQuestion, isNullAction, isQuestionShaped, META_LOCATION, META_RECAP, isNpcObserverQuery, isInfoSeekingText, isConfrontationChallenge, buildLocationSurvey, windowView, knowsNpcName, describeNpc, INFO_SEEKING_EXCLUDE_RE } from './grace/gracefulAdjudication.js';
+import { occupantsOfRoom } from './structures/roomOccupancy.js';
 import { resolveEscapeCombatTurn, initEscapeHp, initEscapeKit, shortRest, longRest, applySurpriseRound, parseEscapeAction, combatStatusAnswer, meleeProfile, playerAc } from './combat/escapeCombat.js';
 import { statMod, maxWounds } from './ruleset/core/stats.js';
 import { shopsHere, stockFor, settlementStock, economyAt, priceToSell, shopBuys, restockEpoch, purseTotalCopper, pursePay, purseReceive, formatPrice, matchByName } from './economy/shop.js';
@@ -1232,23 +1233,34 @@ function playerMoveCore(world, packsById, text) {
         if (win.shuttered) {
           return { world: w, output: { narration: 'Wizard: The shutters are drawn fast; you can make out nothing of what lies within.', mechanics: '[window:peek|shuttered]' } };
         }
-        const node = (w.map?.nodes || []).find(n => n && String(n.id) === String(w.map?.currentNodeId)) || null;
-        const livelyHere = (((node && node.settlement && node.settlement.npcs) || [])).length > 0;
-        const occ = livelyHere
-          ? 'You cannot tell from here whether anyone waits within.'
-          : 'The room sits still and empty.';
-        return { world: w, output: { narration: `Wizard: Through the window, a room opens beyond the sill. ${occ}`, mechanics: '[window:peek]' } };
+        // Name who is actually in the room the window sees into (its entry/common room) — the
+        // outside-peek is a recon beat. Earned-knowledge naming (home/met → name, else by role).
+        const occ = occupantsOfRoom(w, String(probe.scene.interior.structureKey || ''), String(probe.scene.interior.roomId || ''));
+        const sociable = occ.filter(n => n && !n.hostile);
+        const lurkers = occ.filter(n => n && n.hostile).length;
+        let who;
+        if (sociable.length) {
+          const named = sociable.slice(0, 3).map(n => describeNpc(n, knowsNpcName(w, n)));
+          const extra = sociable.length - Math.min(3, sociable.length);
+          if (extra > 0) named.push(`${extra} other${extra === 1 ? '' : 's'}`);
+          const joined = named.length <= 1 ? (named[0] || '') : `${named.slice(0, -1).join(', ')} and ${named[named.length - 1]}`;
+          who = `${joined.charAt(0).toUpperCase()}${joined.slice(1)} ${sociable.length === 1 ? 'is' : 'are'} within.`;
+        } else if (lurkers > 0) {
+          who = 'Someone keeps to the shadows inside.';
+        } else {
+          who = 'The room sits still and empty.';
+        }
+        return { world: w, output: { narration: `Wizard: Through the window, a room opens beyond the sill. ${who}`, mechanics: '[window:peek]' } };
       }
       if (we === 'enter') {
-        // Climbing in is unsanctioned. In a POPULATED place there are witnesses to the very act
-        // of scaling a wall (honest at node granularity), so it is a contested STEALTH check
-        // (AGILITY vs a moderate DC); getting spotted still lets you in but costs you — the escape
-        // clock tightens (pressure), and word travels. An empty place is a clean, free entry.
-        // (Whether someone INSIDE the room saw you is a deeper per-building-occupancy model.)
-        const enode = (w.map?.nodes || []).find(n => n && String(n.id) === String(w.map?.currentNodeId)) || null;
-        const watchers = (((enode && enode.settlement && enode.settlement.npcs) || [])).length;
+        // Climbing in is unsanctioned. The witnesses are the people IN the room you climb into
+        // (occupancy) — the ones who would actually see you come through the window. If any are
+        // there it is a contested STEALTH check (AGILITY vs a moderate DC): spotted still lets you
+        // in but costs you — the escape clock tightens (pressure) and word travels. An empty room
+        // is a clean, free entry. Deterministic (seeded).
+        const witnesses = occupantsOfRoom(w, String(probe.scene.interior.structureKey || ''), String(probe.scene.interior.roomId || '')).length;
         let w2 = pushEvent(probe, { kind: 'resolution', data: { actorId, intent: String(text || ''), text: String(text || ''), roll: 0, dc: 0, outcome: 'success', updateKind: 'interior-enter' } });
-        if (!watchers) {
+        if (!witnesses) {
           return { world: w2, output: { narration: 'Wizard: No one about. You find a foothold on the sill and slip in through the window — no door, no announcement, no witness.', mechanics: '[window:enter|unseen]' } };
         }
         const srng = makeRng(seedFromString(`${w.meta?.seed ?? ''}|window-stealth|${Array.isArray(w.timeline) ? w.timeline.length : 0}`));
@@ -2346,7 +2358,14 @@ function playerMoveCore(world, packsById, text) {
       const escMech = windowShoot ? `${result.mechanicsLine} [window:shoot]`
         : windowShootIn ? `${result.mechanicsLine} [window:shoot-in]`
         : result.mechanicsLine;
-      return { world: w, output: { narration: narr, mechanics: escMech, combatSummary: String(result.combatSummary || ''), beats: Array.isArray(result.beats) ? result.beats : [] } };
+      // The UI shows a fight as BEATS (revealed one by one) and never displays output.narration for
+      // a combat turn, so the window framing has to ride the FIRST beat or it is lost on screen.
+      let outBeats = Array.isArray(result.beats) ? result.beats : [];
+      if (windowFire && outBeats.length) {
+        const frame = windowShootIn ? 'Firing in through the window — ' : 'From behind the window-frame — ';
+        outBeats = [frame + String(outBeats[0]), ...outBeats.slice(1)];
+      }
+      return { world: w, output: { narration: narr, mechanics: escMech, combatSummary: String(result.combatSummary || ''), beats: outBeats } };
     }
 
     // Flee / retreat: deterministic exit, costs 1 stress and 1 pressure clock.

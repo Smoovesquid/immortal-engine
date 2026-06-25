@@ -85,6 +85,10 @@ test('U284: "fire into the window" in combat is a real ranged line IN (not a bou
   assert.doesNotMatch(r.output.mechanics || '', /combat:table-talk|make a mess of the room/i, r.output.mechanics);
   assert.match(r.output.mechanics || '', /cantrip|strike|atk:|combat:/i, r.output.mechanics);
   assert.match(r.output.narration, /window/i, r.output.narration);
+  // The window framing must ride the FIRST beat — the UI shows a fight as beats and never the
+  // turn's narration, so this is what actually reaches the screen.
+  const beats = r.output.beats || [];
+  assert.ok(beats.length && /window/i.test(beats[0]), `beat[0] should carry the window framing: ${JSON.stringify(beats)}`);
 });
 
 test('U284: climbing in where there are witnesses is a contested stealth check (deterministic)', () => {

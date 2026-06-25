@@ -11,6 +11,7 @@ import { profBonusFor } from '../ruleset/core/levelTable.js';
 import { makeRng, seedFromString } from '../rng.js';
 import { normalizeTopology, adjacentRooms } from '../structures/topology.js';
 import { roomWindows, windowSurveyPhrase } from '../structures/roomWindows.js';
+import { occupantsOfRoom } from '../structures/roomOccupancy.js';
 import { reachableRooms } from '../movement/interiorMovement.js';
 import { playerAc, meleeProfile } from '../combat/escapeCombat.js';
 import { purseTotalCopper, formatPrice } from '../economy/shop.js';
@@ -2399,13 +2400,13 @@ function joinOr(items) {
 // store — metPlayer is the in-fiction "we've been introduced", and home is character knowledge —
 // so this honors the no-auto-recall rule (names you've learned live with you; everything else
 // you write down).
-function knowsNpcName(world, npc) {
+export function knowsNpcName(world, npc) {
   const home = String(world?.meta?.homeNodeId || '');
   const here = String(world?.map?.currentNodeId || '');
   return (Boolean(home) && home === here) || Boolean(npc?.conversationState?.metPlayer);
 }
 
-function describeNpc(npc, nameKnown = true) {
+export function describeNpc(npc, nameKnown = true) {
   const name = String(npc?.name ?? '').trim();
   const role = String(npc?.role ?? '').trim();
   const aRole = role ? `${/^[aeiou]/i.test(role) ? 'an' : 'a'} ${role}` : 'a stranger';
@@ -2502,7 +2503,11 @@ export function buildLocationSurvey(world, opts = {}) {
     // the exterior survey does (home/met → name, else by role). None present → no
     // people line at all (the room is genuinely empty). Hostiles never join the
     // social roster — a lurker reads as a wary stranger, not a neighbor.
-    const roomNpcs = Array.isArray(currentNode?.settlement?.npcs) ? currentNode.settlement.npcs : [];
+    // Only the people in THIS room (occupancy), not the whole settlement — so waking in a private
+    // back room no longer dumps the entire roster. Folk gather in the common room; back rooms are
+    // usually empty. A structure with no interior topology falls back to "everyone here".
+    // (engine/structures/roomOccupancy.js — derived, deterministic, no schema bump.)
+    const roomNpcs = occupantsOfRoom(w, String(interior.structureKey || ''), String(interior.roomId || ''));
     const roomSociable = roomNpcs.filter(n => n && !n.hostile);
     const roomLurkers = roomNpcs.filter(n => n && n.hostile).length;
     if (roomSociable.length) {

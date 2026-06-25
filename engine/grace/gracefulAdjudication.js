@@ -1514,7 +1514,7 @@ export function handleMetaQuestion(text, world) {
 
   // Location / survey — checked first (most specific phrasings).
   if (META_LOCATION.test(lowerText) || META_INTERIOR_LAYOUT.test(lowerText) || META_INTERIOR_LAYOUT_SEEK.test(lowerText)) {
-    return buildLocationSurvey(world);
+    return buildLocationSurvey(world, { queryText: lowerText });
   }
 
   // Enemy name+HP compound during active combat — "who am I fighting and how
@@ -1822,7 +1822,7 @@ export function handleMetaQuestion(text, world) {
     const lurkers = allNpcs.filter(n => n && n.hostile).length;
     const parts = [];
     if (sociable.length) {
-      const named = sociable.slice(0, 4).map(describeNpc);
+      const named = sociable.slice(0, 4).map(n => describeNpc(n, knowsNpcName(world, n)));
       const remainder = sociable.length - Math.min(4, sociable.length);
       if (remainder > 0) named.push(`${remainder} other${remainder === 1 ? '' : 's'}`);
       parts.push(`${joinList(named)} ${sociable.length === 1 ? 'is' : 'are'} right here.`);
@@ -1844,7 +1844,7 @@ export function handleMetaQuestion(text, world) {
     const allNpcs = Array.isArray(node?.settlement?.npcs) ? node.settlement.npcs : [];
     const npcs = allNpcs.filter(n => n && !n.hostile);
     if (/\btalk|speak|approach|ask\b/.test(lowerText) && npcs.length) {
-      return `Worth a try — ${joinList(npcs.slice(0, 3).map(describeNpc))} ${npcs.length === 1 ? 'is' : 'are'} right here, and nothing's stopping you from walking over.`;
+      return `Worth a try — ${joinList(npcs.slice(0, 3).map(n => describeNpc(n, knowsNpcName(world, n))))} ${npcs.length === 1 ? 'is' : 'are'} right here, and nothing's stopping you from walking over.`;
     }
     // H-39 — "should I be worried?" used to get the content-free "that one's
     // yours to call" hedge, never resolving the actual question. A real DM
@@ -2356,17 +2356,32 @@ function joinOr(items) {
   return `${arr.slice(0, -1).join(', ')}, or ${arr[arr.length - 1]}`;
 }
 
-function describeNpc(npc) {
+// Do you know this NPC's name? At HOME you know your neighbors; elsewhere you learn a name
+// only by meeting them (conversationState.metPlayer, set when you speak to them). NOT a memory
+// store — metPlayer is the in-fiction "we've been introduced", and home is character knowledge —
+// so this honors the no-auto-recall rule (names you've learned live with you; everything else
+// you write down).
+function knowsNpcName(world, npc) {
+  const home = String(world?.meta?.homeNodeId || '');
+  const here = String(world?.map?.currentNodeId || '');
+  return (Boolean(home) && home === here) || Boolean(npc?.conversationState?.metPlayer);
+}
+
+function describeNpc(npc, nameKnown = true) {
   const name = String(npc?.name ?? '').trim();
   const role = String(npc?.role ?? '').trim();
+  const aRole = role ? `${/^[aeiou]/i.test(role) ? 'an' : 'a'} ${role}` : 'a stranger';
+  // Earned knowledge for PEOPLE: you can SEE someone and read their role from dress and
+  // bearing, but you don't know their NAME until you've met them — or unless this is home,
+  // where you know your neighbors. Unknown → by role ("a guard"); known → by name.
+  if (!nameKnown) return aRole;
   // If the name already contains "the" — an epithet ("Brogan the Elder") or a
   // bare title used as a name ("the laborer") — don't append the role, or we get
   // "Brogan the Elder the representative" / "the laborer the laborer".
   if (name && /\bthe\b/i.test(name)) return name;
   if (name && role) return `${name} the ${role}`;
   if (name) return name;
-  if (role) return `a ${role}`;
-  return 'a stranger';
+  return aRole;
 }
 
 // opts.presence — the caller is answering an explicit who's-here / is-there-a-X
@@ -2389,6 +2404,17 @@ export function buildLocationSurvey(world, opts = {}) {
   const currentNode = nodes.find(n => String(n.id) === nodeId) ?? null;
   const placeName = cleanPlaceName(currentNode?.name ?? w.scene?.location ?? '') || 'an unfamiliar place';
   const nodeType = String(currentNode?.nodeType ?? 'wilderness');
+  // Name-vs-role for the people roster below: home + metPlayer (see knowsNpcName), OR a name
+  // the player used in their own query — typing "where's Corwin?" proves they know Corwin, so
+  // the answer must honor it (you can't redact a name the asker just said).
+  const queryToks = new Set(String(opts.queryText || '').toLowerCase().split(/[^a-z0-9]+/i).filter(Boolean));
+  const namedInQuery = (npc) => {
+    const nm = String(npc?.name || '').toLowerCase().trim();
+    if (!nm) return false;
+    const first = nm.split(/\s+/)[0] || '';
+    return queryToks.has(nm) || (first.length >= 3 && queryToks.has(first));
+  };
+  const knowsName = (npc) => knowsNpcName(w, npc) || namedInQuery(npc);
 
   const parts = [];
 
@@ -2476,7 +2502,7 @@ export function buildLocationSurvey(world, opts = {}) {
     const sociable = allNpcs.filter(n => n && !n.hostile);
     const lurkers = allNpcs.filter(n => n && n.hostile).length;
     if (sociable.length) {
-      const named = sociable.slice(0, 4).map(describeNpc);
+      const named = sociable.slice(0, 4).map(n => describeNpc(n, knowsName(n)));
       const remainder = sociable.length - Math.min(4, sociable.length);
       if (remainder > 0) named.push(`${remainder} other${remainder === 1 ? '' : 's'}`);
       parts.push(insideStructure

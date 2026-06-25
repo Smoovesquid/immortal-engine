@@ -273,5 +273,6 @@ test('U202-54: regression guard — "should I talk to them" still names the pres
   w.map.nodes[0].settlement.npcs = [{ id: 'corwin', name: 'Corwin', role: 'representative', hostile: false }];
   const ans = handleMetaQuestion('Should I talk to them, or is that a bad idea?', w);
   assert.match(ans, /worth a try/i, `the talk-to-NPC branch must be untouched: ${ans}`);
-  assert.match(ans, /Corwin/, `must still name the real present NPC: ${ans}`);
+  // Unmet, away from home → described by ROLE, not name (earned knowledge for people).
+  assert.match(ans, /representative/i, `must still describe the present NPC (by role when unmet): ${ans}`);
 });

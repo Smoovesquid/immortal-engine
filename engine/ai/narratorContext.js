@@ -81,7 +81,13 @@ export function buildNarratorContext(world, outcome = {}) {
     infoSeeking: isInfoSeekingText(String(outcome?.input ?? outcome?.text ?? '')),
     fate: Number(w.meta?.fate ?? 0.5),
     settlement: settlement ? {
-      npcs: settlement.npcs || [],
+      // Earned knowledge for people: the prompt roster carries an NPC's NAME only if you're
+      // home (you know your neighbors) or you've met them (metPlayer) — otherwise the DM gets
+      // a role, not a name, so it can't narrate "Dalla" at a town you just walked into.
+      npcs: (settlement.npcs || []).map(n => (
+        ((Boolean(w.meta?.homeNodeId) && String(w.meta.homeNodeId) === nodeId) || Boolean(n?.conversationState?.metPlayer))
+          ? n : { ...n, name: '' }
+      )),
       factions: settlement.factions || [],
       tensions: Array.isArray(settlement.tensions) ? settlement.tensions : [],
       economy: settlement.economy ?? null,

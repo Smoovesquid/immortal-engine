@@ -102,7 +102,9 @@ test('U195-10: R2a catch — "who are all these people?" lists the real roster i
   const text = 'Um, who are all these people? Should I know them?';
   assert.equal(isMetaQuestion(text), true, 'must be recognized as a meta-question');
   const ans = handleMetaQuestion(text, world);
-  assert.match(ans, /Corwin/, `must name the real present NPC: ${ans}`);
+  // Earned knowledge for people: at a place you don't know (the player asks "should I know
+  // them?"), the roster is delivered by ROLE, not name — but it IS a real roster, not a dodge.
+  assert.match(ans, /right here/i, `must deliver the real roster (by role when unmet): ${ans}`);
   assert.doesNotMatch(ans, /yours to call|go with your gut/i, `must not be the generic advice non-answer: ${ans}`);
 });
 

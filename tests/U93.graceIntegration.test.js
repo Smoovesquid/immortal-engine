@@ -10,7 +10,9 @@ import { adjudicateWithGrace, buildLocationSurvey, handleMetaQuestion } from '..
 // so compass exits resolve to real directions.
 function makeSurveyWorld() {
   return ensureWorld({
-    meta: { version: 21, seed: 'u93-survey', fate: 0.2 },
+    // The survey fixture is the player's HOME — so you know your neighbors by name
+    // (earned-knowledge for people: home → names; a foreign town → roles, see U279).
+    meta: { version: 21, seed: 'u93-survey', fate: 0.2, homeNodeId: 'town' },
     party: [{ id: 'party', name: 'Sera', level: 1, wounds: 0, stress: 0,
       stats: { MIGHT: 10, AGILITY: 10, WITS: 10, GRIT: 10, CHARM: 10 },
       position: { ux: 50, uy: 50, elevation: 0, nodeId: 'town' } }],

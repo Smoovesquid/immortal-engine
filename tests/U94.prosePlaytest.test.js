@@ -138,7 +138,9 @@ describe('U94-D: meta gate and answerer stay aligned', () => {
 describe('U94-E: NPC epithet de-duplication', () => {
   it('a bare-title name ("the laborer") is not doubled in the survey', () => {
     const w = ensureWorld({
-      meta: { version: 21, seed: 'u94-dup', fate: 0.2 },
+      // Home → you know your neighbors by name, so the name/epithet path runs (away from home
+      // the survey shows roles, which never doubles — this test is specifically the name path).
+      meta: { version: 21, seed: 'u94-dup', fate: 0.2, homeNodeId: 'n0' },
       party: [{ id: 'party', name: 'Hero', stats: { MIGHT: 10, AGILITY: 10, WITS: 10, GRIT: 10, CHARM: 10 }, position: { nodeId: 'n0' } }],
       map: {
         currentNodeId: 'n0',

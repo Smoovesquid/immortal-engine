@@ -1837,15 +1837,13 @@ function playerMoveCore(world, packsById, text) {
         // "Dax the Wary the elder" or "the scholar the scholar".
         const role = (begun.outcome.npcRole && !/\bthe\b/i.test(String(begun.outcome.npcName || '')))
           ? ` the ${begun.outcome.npcRole}` : '';
-        // Living-World P4: surface the person's WANT on meeting (most are small and
-        // mundane), and — for the perceptive (WITS) — an unreliable tell when they
-        // carry a deeper thread from the Discovery Layer. Realistic distribution:
-        // most lead nowhere; a rare few hint at more.
+        // convo-honesty FIX 3 — a greeting is NOT mind-reading. Saying hello can't
+        // hand you an NPC's inner WANT ("a caravan that arrives whole") or a tell at
+        // their deeper thread; that's unearned knowledge read from a glance. The want
+        // stays in the arc data (resolveArc is deterministic and re-derivable) for an
+        // EARNED reveal through conversation/trust — never on hello. We keep only the
+        // OBSERVABLE manner (how they receive you), surfaced via the opener below.
         const npcNow = resolveNpcAtCurrentNode(w, talkRef);
-        const wits = Number(w.party?.[0]?.stats?.WITS ?? 10);
-        const arc = npcNow ? resolveArc(npcNow, w.meta.seed, { wits }) : null;
-        const wantClause = arc?.surfaceWant ? ` There's a want in them, plain enough: ${arc.surfaceWant}.` : '';
-        const tellClause = (arc?.status === 'hinted' && arc.tell) ? ` ${arc.tell}` : '';
         // NP-2 — a stranger who has read the Word greets you by your deeds (the paper carried
         // them ahead of you). Diegetic reputation-travels; §0-safe (a deed, never the why).
         const rep = wasStranger ? playerReputation(w) : null;
@@ -1875,7 +1873,7 @@ function playerMoveCore(world, packsById, text) {
         return {
           world: w,
           output: {
-            narration: `Wizard: You approach ${begun.outcome.npcName}${role}; ${eyeDesc} eyes meet yours.${opener}${repClause}${wantClause}${tellClause}`,
+            narration: `Wizard: You approach ${begun.outcome.npcName}${role}; ${eyeDesc} eyes meet yours.${opener}${repClause}`,
             mechanics: `[dialogue enter | ${begun.outcome.npcName} | role:${begun.outcome.npcRole || 'unknown'} | trust:${begun.outcome.trustLevel}/10 | mood:${begun.outcome.mood}]`
           }
         };

@@ -472,6 +472,17 @@ const META_NPC_PRESENCE = /\bis\s+(?:that|this|the)\s+\w+\s+(?:gone|left|still\s
 // "yours to call" non-answer or an outright denial of a real lurking NPC.
 // (H-34 R2a, Opus gate 2026-06-19, Confused newbie.)
 const META_NPC_ROSTER = /\bwho(?:'s|\s+are)\s+(?:all\s+)?(?:these|those)\s+people\b|\bwho(?:'s| is| are)\s+(?:everyone|everybody)\b|\b(?:is\s+(?:there|anyone|anybody|someone)|can\s+i\s+(?:just\s+)?(?:look\s+at|see|spot|check\s+out))\b[^.?!]*\bwatch(?:ing)?\b/i;
+// Bare "is anyone here with me?" presence ask — "is anyone in the room?", "who's
+// in the room with me?", "is anybody nearby?", "is someone else here?". A DM just
+// TELLS you who's visibly present; this must NOT fall through to a WITS perception
+// roll. Routes to the same answer as META_NPC_ROSTER (list who's here, name/role
+// gated). Distinct from META_NPC_PRESENCE (an absence/return question about a
+// SPECIFIC NPC: "is that stranger gone?"). (convo-honesty FIX 2)
+// Tight adjacency on purpose: the presence word must follow the pronoun directly
+// (optionally "else"), so this fires on "is anyone here / nearby / in the room /
+// with me" but NOT on richer questions that merely contain those words — "is anyone
+// AROUND?" (place-history handler) or "is anyone IN TROUBLE here?" (a danger read).
+const META_NPC_PRESENCE_HERE = /\b(?:is|are)\s+(?:there\s+)?(?:any\s*(?:one|body)|some\s*(?:one|body))\s+(?:else\s+)?(?:here|nearby|with\s+me|present|in\s+(?:the|this)\s+room)\b|\bwho(?:'s|\s+is|\s+are)\s+(?:here\s+with\s+me|in\s+(?:the|this)\s+room|present(?:\s+here)?|nearby)\b/i;
 // Explicit skill-check request — player declares they want to roll, asks for DC.
 // Pattern A: "let me make a WITS check", "I want to do a GRIT test", "can I attempt a MIGHT save"
 // Requires the action verb (make/do/attempt/try) so bare "I want to fight" doesn't fire.
@@ -582,6 +593,7 @@ export function isMetaQuestion(text) {
     || META_WEAPON_DAMAGE.test(t) || META_NAME.test(t)
     || META_MODIFIER_FORMULA.test(t) || META_SHEET_CONFIRM.test(t)
     || META_NPC_OBSERVER.test(t) || META_NPC_PRESENCE.test(t) || META_NPC_ROSTER.test(t)  // H-34 R2a
+    || META_NPC_PRESENCE_HERE.test(t)  // convo-honesty FIX 2 — "is anyone here?" answers free, no roll
     || META_EXPLICIT_CHECK_A.test(t) || META_EXPLICIT_CHECK_B.test(t)  // H-19
     || META_EXPLICIT_CHECK_C.test(t) || META_EXPLICIT_CHECK_D.test(t)  // H-26c
     || META_SKILL_MOD.test(t) || META_ATTACK_MOD.test(t) || META_PROFICIENCY.test(t) || META_BARE_DC.test(t)  // H-25 / gate-18
@@ -1822,7 +1834,11 @@ export function handleMetaQuestion(text, world) {
   // "lurkers"), but a real one in canon must never be flatly denied. Checked
   // before META_ADVICE so a trailing "...should I know them?" doesn't steal
   // the turn into a generic "your call" non-answer. (H-34 R2a)
-  if (META_NPC_ROSTER.test(lowerText)) {
+  // General roster ("who's everyone here?") AND the bare presence ask ("is anyone
+  // in the room with me?") — both answered the same way: list who's visibly present,
+  // name/role gated, and NEVER roll a WITS check (convo-honesty FIX 2 — the presence
+  // phrasing was falling through to a perception roll). No one present → an honest no.
+  if (META_NPC_ROSTER.test(lowerText) || META_NPC_PRESENCE_HERE.test(lowerText)) {
     const node = (world.map?.nodes || []).find(n => n && n.id === world.map?.currentNodeId) || null;
     const allNpcs = Array.isArray(node?.settlement?.npcs) ? node.settlement.npcs : [];
     const sociable = allNpcs.filter(n => n && !n.hostile);
@@ -1839,7 +1855,7 @@ export function handleMetaQuestion(text, world) {
         ? `Someone else keeps to the edges, watching — not close enough yet to put a face to.`
         : `${lurkers} others keep to the edges, watching.`);
     }
-    if (!parts.length) parts.push(`No one's close enough to name right now.`);
+    if (!parts.length) parts.push(`No one else is here — you're alone.`);
     return parts.join(' ');
   }
 
@@ -2470,6 +2486,26 @@ export function buildLocationSurvey(world, opts = {}) {
       parts.push(`Here: ${joinList(furniture.slice(0, 5).map(art))}.`);
     } else {
       parts.push('The room holds little of note.');
+    }
+    // People in the room with you. A bare "look around" that omits someone standing
+    // right there is the INVERSE failure of the old roster-dump (FIRST_ROOM #4) — a
+    // real DM names who's visibly present. Gate NAMES by earned knowledge exactly as
+    // the exterior survey does (home/met → name, else by role). None present → no
+    // people line at all (the room is genuinely empty). Hostiles never join the
+    // social roster — a lurker reads as a wary stranger, not a neighbor.
+    const roomNpcs = Array.isArray(currentNode?.settlement?.npcs) ? currentNode.settlement.npcs : [];
+    const roomSociable = roomNpcs.filter(n => n && !n.hostile);
+    const roomLurkers = roomNpcs.filter(n => n && n.hostile).length;
+    if (roomSociable.length) {
+      const named = roomSociable.slice(0, 4).map(n => describeNpc(n, knowsName(n)));
+      const remainder = roomSociable.length - Math.min(4, roomSociable.length);
+      if (remainder > 0) named.push(`${remainder} other${remainder === 1 ? '' : 's'}`);
+      parts.push(`${titleCase(joinList(named))} ${roomSociable.length === 1 ? 'is' : 'are'} here.`);
+    }
+    if (roomLurkers > 0) {
+      parts.push(roomLurkers === 1
+        ? 'And someone else — a stranger keeping to the edges, watching.'
+        : `And ${roomLurkers} strangers keeping to the edges, watching.`);
     }
     // The WAYS OUT of this room. A multi-room building has interior doorways — a flat
     // "the way out leads back to the open air" hid every other room, so a player could

@@ -2478,6 +2478,21 @@ export function buildLocationSurvey(world, opts = {}) {
     // from the entry room, the way outside. Topology-driven; degrades to the open-air
     // line for a single-room structure.
     const st = w.structures?.byId?.[String(interior.structureKey || '')];
+    // Above-ground buildings have a WINDOW — a real wall feature you can see (and look / climb /
+    // shoot out of; the interaction verbs are a follow-up). Dungeons, cellars, and underground
+    // rooms don't. Down-payment for the windows feature: rooms used to never mention one, so
+    // "are there windows?" (which routes here) came back empty. Deterministic (seeded lookRng).
+    const interiorKey = String(interior.structureKey || '');
+    const stKind = String(st?.buildingType || st?.arch || st?.kind || '').toLowerCase();
+    const hasWindow = Boolean(st) && !/^dungeon/i.test(interiorKey)
+      && !/cellar|vault|crypt|undercroft|dungeon|cave|tunnel|mine/.test(stKind);
+    if (hasWindow) {
+      parts.push(lookRng.pick([
+        'A window in the wall looks out onto the open air.',
+        'A shuttered window faces the street outside.',
+        'Daylight falls through a window onto the floor.'
+      ]));
+    }
     const topo = normalizeTopology(st?.topology);
     let waysOut = 'The way out leads back to the open air.';
     if (topo) {

@@ -24,16 +24,20 @@ W-Q3 note: shutter state is **event-sourced** — the seed-derived default, over
 
 ---
 
-## One residual refinement (not blocking)
+## Per-room occupancy — now DONE (`engine/structures/roomOccupancy.js`, U286)
 
-**Per-building / per-room occupancy.** Three things currently work at *node* granularity because NPCs
-are modeled per-node, not per-room:
-- the **peek** hedges ("you cannot tell whether anyone waits within") instead of naming who is inside;
-- the **contested-stealth** check on entry rolls against *witnesses to the act of climbing* (honest at
-  node level), not against whoever is *inside the room* seeing you come through;
-- **shoot-in** frames firing at an abstract foe rather than a specific occupant of that room.
+NPCs are placed per BUILDING ROOM (derived, deterministic, no schema bump). Folk gather in the
+common/entry room; a private back room is usually empty. Resolved:
+- **look around** names only who is in YOUR room — no roster dump in a private room;
+- the **peek** NAMES who is in the room it sees into (earned-knowledge), instead of hedging;
+- the **contested-stealth** check runs against the people IN the room you climb into.
 
-Modelling which NPCs occupy which building/room would let peek report true occupancy, make the stealth
-check "did someone inside see you," and let shoot-in/out target a specific occupant. It's a broader
-NPC-placement change (canon-safe, worldHash-stable) — worth a dedicated packet if/when interiors get
-more populated. Until then the node-level behavior is honest and self-consistent.
+Also closed the live-display note: the window-shot framing now rides the first combat **beat**
+("Firing in through the window — …"), so it reaches the screen (beats aren't LLM-condensed). U284.
+
+### Two small remainders (not blocking)
+- **Multi-building disambiguation.** Occupancy distributes the *node's* roster across the rooms of the
+  building you're in; it doesn't yet split a town's people *between* its several buildings. Single
+  buildings / your home are exact; a dense multi-building town is approximate.
+- **Shoot-in named target.** Firing in resolves a real combat turn but still frames an abstract foe,
+  not a specific room occupant — escape combat models enemies abstractly. Low value; deferred.

@@ -866,8 +866,8 @@ function renderInvoke() {
     el('div', { class: 'panel' },
       el('div', { class: 'header' },
         el('div', {},
-          el('div', { class: 'title' }, 'Immortal Engine — build 005'),
-          el('div', { class: 'sub' }, 'Gate 4: MythSpec + Deterministic Triad')
+          el('div', { class: 'title' }, 'Immortal Engine — v0.3.0'),
+          el('div', { class: 'sub' }, 'build 006 · 2026-06-25 · multi-level descent + reputation')
         )
       ),
       // ── One-click front door: start (or resume) the Escape game ──────

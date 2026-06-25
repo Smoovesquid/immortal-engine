@@ -83,10 +83,13 @@ test('U93-S5: survey never invents exits that do not exist', () => {
   assert.ok(!survey.includes('Stone Well'), survey);
 });
 
-// FIRST_ROOM #4 — inside a private interior, "look around" describes the ROOM
-// (its furniture), never the settlement's people. You can't see the village
-// roster through the walls; naming them here was the meta-roster leak.
-test('U93-S6: interior survey describes room furniture, not the settlement NPC roster', () => {
+// FIRST_ROOM #4 + convo-honesty FIX 1 — inside a private interior, "look around"
+// describes the ROOM (its furniture) AND registers who is visibly present. The
+// original #4 fix over-corrected by hiding ALL people (the inverse failure: a
+// person standing right there went unmentioned). People are now listed with the
+// SAME earned-knowledge name gating as outdoors (home/met → name, else by role).
+// What must NOT leak is the EXTERIOR survey shape (compass exits / "nearby stand").
+test('U93-S6: interior survey describes room furniture AND registers present people', () => {
   const w = makeSurveyWorld();
   w.scene.interior = { structureKey: 'inn:room-3', roomId: 'r3', visited: ['r3'] };
   const node = w.map.nodes.find(n => n.id === 'town');
@@ -97,22 +100,22 @@ test('U93-S6: interior survey describes room furniture, not the settlement NPC r
   // Room contents present...
   assert.ok(survey.includes('straw pallet'), survey);
   assert.ok(survey.includes('iron-bound chest'), survey);
-  // ...and the settlement roster is NOT leaked through the walls.
-  assert.ok(!survey.includes('Mary Rottencrotch'), survey);
-  assert.ok(!survey.includes('barkeep'), survey);
-  assert.ok(!survey.includes('Gus'), survey);
-  // No exterior survey vocabulary either (no compass exits / "nearby stand").
+  // ...and the present people ARE registered — this fixture is HOME, so by name.
+  assert.ok(survey.includes('Mary Rottencrotch'), survey);
+  assert.ok(survey.includes('Gus'), survey);
+  // But NOT the exterior survey vocabulary (no compass exits / "nearby stand").
   assert.ok(!/to the (?:north|south|east|west) lies/i.test(survey), survey);
+  assert.ok(!/nearby stand/i.test(survey), survey);
 });
 
-// A bare interior (no furniture defined) still answers honestly — never the
-// roster, never a hallucinated object.
-test('U93-S7: bare interior survey holds little of note, no roster leak', () => {
+// A bare interior (no furniture defined) still answers honestly — furniture
+// "little of note", present people registered, never a hallucinated exterior.
+test('U93-S7: bare interior survey holds little of note but still registers people', () => {
   const w = makeSurveyWorld();
   w.scene.interior = { structureKey: 'inn:room-3', roomId: 'r3', visited: ['r3'] };
   const survey = buildLocationSurvey(w);
-  assert.ok(!survey.includes('Mary Rottencrotch'), survey);
-  assert.ok(/little of note|way out/i.test(survey), survey);
+  assert.ok(/little of note/i.test(survey), survey);
+  assert.ok(survey.includes('Mary Rottencrotch'), survey);  // home → named
 });
 
 

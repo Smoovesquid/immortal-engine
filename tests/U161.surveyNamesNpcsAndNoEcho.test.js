@@ -12,11 +12,13 @@ import { normalizeManifest, normalizePack } from '../engine/rulesets.js';
 // examine pivot echoed a long verbose input verbatim ("You look for a building
 // myself — what does the sign over the door say…").
 //
-// FIRST_ROOM #4 (2026-06-24) SUPERSEDES (1) inside a private interior: "what do I
-// see around me?" inside your room describes the ROOM (its furniture), not the
-// settlement NPC roster — you can't see the village through the walls. The old
-// "name the NPCs inside" behavior was itself the meta-roster leak. The roster is
-// still named OUTDOORS and for explicit who's-here PRESENCE questions (see U235).
+// FIRST_ROOM #4 (2026-06-24): "what do I see around me?" inside your room describes
+// the ROOM (its furniture) and the way out — never the hallucinated-empty denial
+// ("No one under this roof"), never the EXTERIOR survey shape (compass exits).
+// convo-honesty FIX 1 (2026-06-25) refines #4: the room survey ALSO registers who
+// is visibly present (the #4 fix had over-corrected to hide everyone, so a person
+// standing right there went unmentioned). The boot starts you at HOME, so present
+// townsfolk are named; away from home they read by role (earned knowledge, U282).
 
 function world(seed = 'ashfen-reach') {
   const man = normalizeManifest(JSON.parse(fs.readFileSync('packs/manifest.json', 'utf8')));
@@ -26,21 +28,20 @@ function world(seed = 'ashfen-reach') {
   return { w, byId };
 }
 
-test('U161: interior survey describes the room, never dumps the settlement NPC roster', () => {
+test('U161: interior survey describes the room and registers present people, no exterior leak', () => {
   const { w } = world();
   assert.ok(w.scene?.interior, 'precondition: the start is inside an interior');
   const node = w.map.nodes.find(n => n.id === w.map.currentNodeId);
   const ans = handleMetaQuestion('what do I see around me?', w);
   // Room-scoped: describes the room / the way out, never the hallucinated-empty
-  // denial ("No one under this roof") nor the settlement roster.
+  // denial ("No one under this roof") nor the exterior compass-exit shape.
   assert.match(ans, /room|way out/i, ans);
   assert.doesNotMatch(ans, /No one else is under this roof/, ans);
-  for (const npc of (node.settlement?.npcs || [])) {
-    // Distinctive name tokens only (≥4 chars, skips "the"/"a" epithet glue that
-    // legitimately appears in prose like "the room" / "the way out").
-    for (const tok of String(npc?.name || '').split(/\s+/)) {
-      if (tok.length >= 4) assert.doesNotMatch(ans, new RegExp(`\\b${tok}\\b`, 'i'), `roster leaked: ${ans}`);
-    }
+  assert.doesNotMatch(ans, /to the (?:north|south|east|west) lies/i, ans);
+  // A present, non-hostile person IS registered (home boot → by name).
+  const firstSociable = (node.settlement?.npcs || []).find(n => n && !n.hostile);
+  if (firstSociable) {
+    assert.match(ans, /\bis here\b|\bare here\b/i, `present people should be registered: ${ans}`);
   }
 });
 

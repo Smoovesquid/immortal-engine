@@ -90,6 +90,16 @@ is to refuse to forget them.* That's the rope that ties the cannibals to **The L
 the same instinct — *keep what was* — runs the rite and runs the newspaper. The "evil" faction are
 the valley's only honest archivists.
 
+### The congregation (the rite is right; the people are not)
+The correction to the easy version: being *correct* is not the same as being *good*, and the warren
+proves it. The Host may be a true believer — but a creed that ends the one universal terror and calls
+it mercy is catnip to exactly the wrong people. The pews fill with the **desperate** (who'd swallow
+anything to stop fading), the **grasping** (who hear "more real each year" and read a *ladder*), and
+the **already-cruel** (who have wanted to do this their whole lives and now have scripture for it).
+Joining is not joining noble, misunderstood truth-seekers — it is throwing in with people you would
+not share a drink with, *because theirs is the only logic that holds.* That's the real horror of §7:
+not that the monsters are wrong, but that being right hasn't made them anyone you'd want to be.
+
 ### The join-rite (the first communion) — a scene, not a stat
 You are not asked to kill. The first one is always **a volunteer** — someone already going, who
 *wants* to be kept rather than dissolved. That's the trap's elegance: your first bite is an act of
@@ -98,9 +108,11 @@ You are not asked to kill. The first one is always **a volunteer** — someone a
 ### The cost ladder (discovered, compounding — this is the real design)
 1. **First communion (the volunteer):** you stop fading. The world's central terror simply… stops
    applying to you. This is enormous and the game should let you feel the relief before the bill.
-2. **Belonging:** the morality system normally isolates the monstrous (the lone-psychopath spiral).
-   The cannibals **invert** that — you gain a *community* that is warm, literate, and glad you came.
-   This is the cruellest, best mechanic in the whole piece: monstrousness that is not lonely.
+2. **Belonging (the grubby kind):** the morality system normally isolates the monstrous (the
+   lone-psychopath spiral). The cannibals **invert** that — you gain a *community*, so monstrousness
+   is no longer lonely. The sting is *who* the company is (above): you are finally not alone, and the
+   people you're not alone with are not people you respect. **Wanted, not admired.** That's the
+   cruellest, best mechanic in the piece — belonging you can't feel clean about.
 3. **The doors that close:** the COUG and the king turn (your name travels — §3). Virtue-gated paths
    (the clown faith, certain NPC trust ceilings) quietly stop opening. The karma compounds — not as a
    meter, but as a valley that has *decided about you.*
@@ -124,19 +136,21 @@ who eat the dead. It is also the **face of the W2·3 system I just built**: your
 rumor; *The Lasting Word* is where that rumor is *printed*, so a stranger greets you because they
 *read about you.*
 
-### The decode (the game inside the page)
-Assassination is illegal, so contracts can't be posted plainly. They hide in the **Kasual Korner**
-personal ads, in a register any warren-reader knows and the player learns by pattern:
-- A "lonely heart" seeking someone **by a trait that is really a target** ("a tall man, *quick to
-  raise his hand*, last seen taking the Saltmarket road") + an offer of "**a warm supper, no
-  questions**" (the warren's idiom for payment + discretion) + a closing **printer's dagger (†)** the
-  straight ads never carry = **a contract.** (A dagger for a hidden hit — and it's a real newspaper
-  footnote mark, so it hides in plain sight.)
-- The reward scales with the mark. A single dagger (†) is coin. A **double dagger (‡)** — *"a place
-  set at our table, kept for you always"* — is the warren offering you the **rite itself**; they want
-  this one badly enough to make you one of them for it.
-- Misread it and you've answered a genuinely lonely person, which is its own small, sad scene. The
-  game should let you make that mistake.
+### The decode — Missed Connections (the game inside the page)
+Assassination is illegal, so contracts can't be posted plainly — and the cleanest cover is the one
+column that *already* means "**person A wants person B**": **Missed Connections.** *"To the broad man
+on the dawn road, free with your fists — I have not forgotten your face."* That is either a lovesick
+stranger or a mark, and **the page gives you no way to tell.** About **half are real** — genuine
+lonely hearts, lost kin, a debtor sought — and **half are warren contracts** in the very same breath.
+There is **no tell, no dagger, no secret rune.** The ambiguity *is* the mechanic.
+- The only way to know a longing from a knife is to **go look at the named person.** Is the broad man
+  on the dawn road a heartbroken woman's runaway husband, or someone the warren wants gone? You find
+  out the way the warren intends — *by getting close to him.*
+- Read it wrong and you've **menaced (or worse) an innocent** who only wanted to be found — a genuine,
+  ugly mistake the game lets you make and then *remembers* (→ your own name in next week's column).
+- Read it right and payment comes in the warren's idiom (*"a warm supper, no questions"*); the
+  hungriest offers don't pay in coin at all — they offer **a place at the table**, which is the rite,
+  which is door 2 of §2 arriving disguised as a classified.
 
 ### A sample front page (draft copy — this is the texture I'm reaching for)
 > **THE LASTING WORD** — *That which is eaten is not forgotten.* — Vol. CCXIV, the Third Thaw
@@ -152,17 +166,18 @@ personal ads, in a register any warren-reader knows and the player learns by pat
 > · *THE TIN-WHISTLE MAN OF CROSSWAY,* name unrecorded because he forgot it before we asked. If you
 > remember it, the Word will hold it.
 >
-> **THE KASUAL KORNER**
-> · *Widow, patient, seeks the trout-poacher of the east weir — a broad fellow, free with his fists,
-> partial to the dawn road. A warm supper waits, no questions asked.* †
+> **MISSED CONNECTIONS**
+> · *To the trout-poacher of the east weir — broad, free with your fists, fond of the dawn road. I
+> have not forgotten your face, and a warm supper waits for the one who hasn't. No questions.*
 > · *Lonely this thaw. Would walk the orchard with a kind soul who reads. Bring your own apples.*
 > · *To the one who burned what could not be replaced at Gallows-Watch: a place is set at our table,
-> and kept for you, always.* ‡
+> and kept for you, always.*
 
-*(Read the three Korner ads in order: a paid hit (†), a real lonely heart (no mark), and the warren
-reaching for the player by name (‡ — the rite offered, not coin). The third only appears once your
-deed has traveled — it is the printed twin of the wary greeting in `reputation.js`. A rendered front
-page accompanies this draft.)*
+*(Read the three the way a player must — any could be a longing or a knife, and the page won't say.
+The first is a warren contract dressed as heartbreak; the second is just heartbreak; the third is the
+warren reaching for the player by name, and it only surfaces once your Gallows-Watch deed has
+travelled — the printed twin of the wary greeting in `reputation.js`. A rendered front page
+accompanies this draft.)*
 
 ### Why this is the keystone
 It makes reputation **visible and decode-able** instead of a hidden number; it gives the cannibals a
@@ -179,9 +194,9 @@ of small print instead of a speech.
    want it punished.
 2. **The cannibals' first bite as mercy** — I made the seduction airtight (a volunteer). Too clean? A
    version where the *first* bite already has a victim is darker and closes the trap faster.
-3. **The Kasual Korner's decode difficulty** — I made it learnable-by-pattern. Too easy spoils the
-   "read between the lines"; too hard and players never find a contract. The printer's dagger (†) is my
-   training-wheel; you might bury it deeper, or drop it entirely and make the *idiom* ("a warm supper,
-   no questions") carry the whole tell.
+3. **The Missed Connections ratio** — I set it ~50/50 with *no* tell: the only way to tell a longing
+   from a contract is to go look at the person. Is half-and-half the right mix? Too opaque (players
+   never risk answering)? Too generous (every ad starts to feel like a trap)? The ratio — and whether
+   *any* soft signal should exist at all — is the knob.
 4. **Tone of *The Lasting Word*** — I went dry-elegant-melancholy. You might want it colder, or
    funnier, or more openly menacing.

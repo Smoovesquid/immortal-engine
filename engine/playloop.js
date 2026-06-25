@@ -2279,8 +2279,19 @@ function playerMoveCore(world, packsById, text) {
       // and frame the narration as firing through the window with the frame for cover.
       const windowShoot = Boolean(w.scene?.interior) && windowVerbKind(text) === 'shoot'
         && roomWindows(w, w.scene.interior).count > 0;
-      const turnText = windowShoot
-        ? (String(text).replace(/\b(?:out|through)\s+(?:the|a|that)\s+window(?:sill)?\b/gi, ' ')
+      // SHOOT IN THROUGH THE WINDOW — the mirror of shoot-out: firing FROM outside, IN
+      // through a building's window at a foe within. Same machinery (strip the window
+      // phrase so it parses as the real attack, resolve a true turn), framed as firing in
+      // past the frame. Needs a windowed building at the node (resolved via a pure probe).
+      let windowShootIn = false;
+      if (!w.scene?.interior
+          && /\b(?:shoot|shoots|fire|fires|loose|looses|launch|launches|sling|slings|hurl|hurls|throw|throws|cast|casts|lob|lobs)\b[^.!?]*\b(?:in|into|through|at)\b[^.!?]*\bwindow/i.test(String(text || ''))) {
+        const probe = enterStructureInterior(w, '');
+        windowShootIn = probe !== w && Boolean(probe.scene?.interior) && roomWindows(probe, probe.scene.interior).count > 0;
+      }
+      const windowFire = windowShoot || windowShootIn;
+      const turnText = windowFire
+        ? (String(text).replace(/\b(?:out|in|into|through|at)\s+(?:the|a|that)\s+window(?:sill)?\b/gi, ' ')
             .replace(/\bwindows?\b/gi, ' ').replace(/\s+/g, ' ').trim() || 'shoot')
         : String(text || '');
       const { world: wAfter, result } = resolveEscapeCombatTurn(w, turnText);
@@ -2295,8 +2306,12 @@ function playerMoveCore(world, packsById, text) {
       const escBody = result.combatSummary ? String(result.combatSummary) : 'You trade blows.';
       const narr = windowShoot
         ? `Wizard: You set yourself at the window — the frame for cover — and fire through it. ${escBody}`
+        : windowShootIn
+        ? `Wizard: You sight through the window and fire in — the frame the only cover between you and what waits inside. ${escBody}`
         : `Wizard: ${escBody}`;
-      const escMech = windowShoot ? `${result.mechanicsLine} [window:shoot]` : result.mechanicsLine;
+      const escMech = windowShoot ? `${result.mechanicsLine} [window:shoot]`
+        : windowShootIn ? `${result.mechanicsLine} [window:shoot-in]`
+        : result.mechanicsLine;
       return { world: w, output: { narration: narr, mechanics: escMech, combatSummary: String(result.combatSummary || ''), beats: Array.isArray(result.beats) ? result.beats : [] } };
     }
 

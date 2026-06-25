@@ -75,3 +75,14 @@ test('U284: regression — "throw myself out the window" is still a fall, not an
   const r = playerMove(outside(), PACKS, 'I throw myself out the window');
   assert.doesNotMatch(r.output.mechanics || '', /\[window:(enter|peek)\]/, r.output.mechanics);
 });
+
+test('U284: "fire into the window" in combat is a real ranged line IN (not a bounce)', () => {
+  let w = playerMove(outside(), PACKS, 'I attack the nearest stranger').world;
+  if (!w.combat?.active || w.scene?.interior) return; // couldn't stage outside combat on this seed — skip
+  const r = playerMove(w, PACKS, 'fire bolt into the window');
+  assert.match(r.output.mechanics || '', /\[window:shoot-in\]/, r.output.mechanics);
+  // a real combat turn resolved — never an object-bounce or table-talk non-action
+  assert.doesNotMatch(r.output.mechanics || '', /combat:table-talk|make a mess of the room/i, r.output.mechanics);
+  assert.match(r.output.mechanics || '', /cantrip|strike|atk:|combat:/i, r.output.mechanics);
+  assert.match(r.output.narration, /window/i, r.output.narration);
+});

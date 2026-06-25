@@ -11,7 +11,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import { newWorld } from '../engine/state.js';
-import { beginAdventure } from '../engine/playloop.js';
+import { beginAdventure, newScene } from '../engine/playloop.js';
 import { normalizeManifest, normalizePack } from '../engine/rulesets.js';
 import { buildSystemPrompt, validateNarrationCandidate } from '../engine/llmAdapter.js';
 import { buildNarratorContext } from '../engine/ai/narratorContext.js';
@@ -55,6 +55,24 @@ test('N9: every guardrail still holds in set-piece mode', () => {
   assert.match(p, /RESPECT AGENCY/);
   assert.match(p, /Do NOT invent topology/);
   assert.match(p, /Reference the location name/);
+});
+
+test('N9: set-piece mode adds an explicit "do not move the player" agency rule', () => {
+  // The longer leash invited the DM to narrate the player rising/stepping out (a false
+  // exit). The set-piece block now forbids it. Only present when a beat is active.
+  assert.match(buildSystemPrompt(ctxFor('arrival')), /AGENCY \(set-piece\)/);
+  assert.match(buildSystemPrompt(ctxFor('arrival')), /do NOT narrate them rising, dressing, walking, stepping outside/);
+  assert.doesNotMatch(buildSystemPrompt(ctxFor('')), /AGENCY \(set-piece\)/);
+});
+
+test('N9: the opener (beginAdventure) carries an arrival set-piece beat', () => {
+  const begun = beginAdventure(newWorld({ seed: 'tallow', fate: 0.3, mode: 'escape', pack: { primaryId: 'fantasy', mixerId: null } }), PACKS);
+  assert.equal(begun.output.beat, 'arrival', 'waking into the world is the first establishing shot');
+});
+
+test('N9: a scene advance (newScene → adjacent node) carries an arrival beat', () => {
+  const ns = newScene(boot(), PACKS, { lastResolutionKind: 'turn' });
+  assert.equal(ns.output.beat, 'arrival', 'advancing to a new node is an arrival');
 });
 
 test('N9: buildNarratorContext carries a valid beat to ctx.beat and drops junk', () => {

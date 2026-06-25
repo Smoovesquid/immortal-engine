@@ -186,7 +186,11 @@ export function buildSystemPrompt(ctx) {
   }
 
   if (setPiece) {
-    lines.push(setPiece, ``);
+    lines.push(
+      setPiece,
+      `- AGENCY (set-piece): the longer leash describes the WORLD, never the player's body. Paint the place and the charged moment the player is IN — do NOT narrate them rising, dressing, walking, stepping outside, leaving, or travelling onward; they have declared no such action. Describe what they perceive, not what they do.`,
+      ``
+    );
   }
 
   lines.push(

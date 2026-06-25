@@ -7,7 +7,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { detectSetPieceBeat } from '../engine/playloop.js';
+import { detectSetPieceBeat, setPieceCooldownGate } from '../engine/playloop.js';
 
 test('U277: death — live HP (escapeHp) crossing to zero is the death beat', () => {
   const before = { meta: { escapeHp: 4 }, map: { currentNodeId: 'n1' } };
@@ -59,4 +59,24 @@ test('U277: missing world(s) is safe (returns no beat, never throws)', () => {
   assert.equal(detectSetPieceBeat(null, { meta: { escapeHp: 1 } }), '');
   assert.equal(detectSetPieceBeat({ meta: { escapeHp: 1 } }, null), '');
   assert.equal(detectSetPieceBeat(undefined, undefined), '');
+});
+
+// ── Cooldown gate — keep set-pieces rare so they stay special ──────────────────
+test('U277: cooldown gate — a beat fires only once the window has passed', () => {
+  assert.equal(setPieceCooldownGate('arrival', 5, 3), 'arrival');  // gap > window → fires
+  assert.equal(setPieceCooldownGate('arrival', 3, 3), 'arrival');  // gap == window → fires
+  assert.equal(setPieceCooldownGate('arrival', 2, 3), '');         // within window → suppressed
+  assert.equal(setPieceCooldownGate('combat-start', 0, 3), '');    // just fired → suppressed
+  assert.equal(setPieceCooldownGate('death', 999, 3), 'death');    // first ever → always fires
+});
+
+test('U277: cooldown gate — no beat in, no beat out (regardless of gap)', () => {
+  assert.equal(setPieceCooldownGate('', 999, 3), '');
+  assert.equal(setPieceCooldownGate(null, 999, 3), '');
+  assert.equal(setPieceCooldownGate(undefined, 0, 3), '');
+});
+
+test('U277: cooldown gate — the window is configurable', () => {
+  assert.equal(setPieceCooldownGate('arrival', 1, 1), 'arrival'); // window 1 → fires every turn
+  assert.equal(setPieceCooldownGate('arrival', 4, 5), '');        // tighter window holds it back
 });

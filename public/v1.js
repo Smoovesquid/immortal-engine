@@ -1,6 +1,6 @@
 import { normalizeManifest, normalizePack } from '../engine/rulesets.js';
 import { newWorld, ensureWorld } from '../engine/state.js';
-import { beginAdventure, playerMove, newScene } from '../engine/playloop.js';
+import { beginAdventure, playerMove, newScene, setPieceCooldownGate } from '../engine/playloop.js';
 import { isMetaQuestion, handleMetaQuestion, looksMultiAction } from '../engine/grace/gracefulAdjudication.js';
 import { exitsFrom, ensureMap, cleanPlaceName } from '../engine/map/mapState.js';
 import { escapeOutcome } from '../engine/victory.js';
@@ -182,6 +182,18 @@ function setStatus(msg) {
   render();
 }
 
+// Set-piece cooldown (presentation pacing): keep the vivid paragraphs rare. We track
+// turns since the last set-piece in `ui.setPieceGap` and let the engine's pure gate
+// decide whether THIS beat fires. Reset to a large gap at game start so the opening
+// arrival always lands.
+const SETPIECE_COOLDOWN = 3;
+function gatedBeat(rawBeat) {
+  ui.setPieceGap = (Number(ui.setPieceGap) || 0) + 1;
+  const beat = setPieceCooldownGate(rawBeat || '', ui.setPieceGap, SETPIECE_COOLDOWN);
+  if (beat) ui.setPieceGap = 0;
+  return beat;
+}
+
 async function tryAiNarration(world, baseNarration, outcome) {
   const anthropicKey = String(ui.aiKey || '').trim();
   // Narration runs when toggled on (server env key fallback) or when a
@@ -352,8 +364,9 @@ async function beginFromInvocation(inv) {
 
   startFromWorld(world, { keepTranscript: true });
 
-  // Try AI narration; fall back to base if unavailable
-  const aiText = await tryAiNarration(world, baseNarration, {});
+  // The opening scene is the player's arrival into the world — always a set-piece.
+  ui.setPieceGap = 999;
+  const aiText = await tryAiNarration(world, baseNarration, { beat: gatedBeat(output?.beat) });
   wizardLine.text = aiText || baseNarration;
   tts.speak(wizardLine.text);
   render();
@@ -436,7 +449,8 @@ async function beginFromChargen() {
 
   startFromWorld(world, { keepTranscript: true });
 
-  const aiText = await tryAiNarration(world, baseNarration, {});
+  ui.setPieceGap = 999;
+  const aiText = await tryAiNarration(world, baseNarration, { beat: gatedBeat(output?.beat) });
   wizardLine.text = aiText || baseNarration;
   tts.speak(wizardLine.text);
   render();
@@ -750,7 +764,7 @@ async function doSubmitMove() {
   // Pass mechanics through so THE REF can classify the narrationSource (the
   // dialogue-ask mode lives in the mechanics tag) and gate its judge to soft
   // turns only. (docs/THE_REF.md)
-  const aiText = skipPolish ? null : await tryAiNarration(world, baseNarration, { input: text, mechanics: output?.mechanics || '', narrationSource: output?.narrationSource, beat: output?.beat });
+  const aiText = skipPolish ? null : await tryAiNarration(world, baseNarration, { input: text, mechanics: output?.mechanics || '', narrationSource: output?.narrationSource, beat: gatedBeat(output?.beat) });
   wizardLine.text = aiText || baseNarration;
   tts.speak(wizardLine.text);
   setStatus('Move resolved.');
@@ -798,7 +812,7 @@ async function doNewScene() {
   setStatus('Narrating…');
   render();
 
-  const aiText = await tryAiNarration(world, baseNarration, {});
+  const aiText = await tryAiNarration(world, baseNarration, { beat: gatedBeat(output?.beat) });
   wizardLine.text = aiText || baseNarration;
   tts.speak(wizardLine.text);
   setStatus('Scene advanced.');

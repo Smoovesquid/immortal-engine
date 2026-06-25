@@ -408,7 +408,8 @@ export function beginAdventure(world, packsById) {
 
   const composed = compose(w, '', outcome, { pack });
   w = applyComposerDelta(w, composed.ledgerDelta);
-  return { world: w, output: { narration: composed.narrationLine, mechanics: composed.mechanicsLine } };
+  // The opening scene is the player's first arrival into the world — a set-piece beat.
+  return { world: w, output: { narration: composed.narrationLine, mechanics: composed.mechanicsLine, beat: 'arrival' } };
 
 }
 
@@ -429,6 +430,15 @@ export function detectSetPieceBeat(before, after) {
   const nodeAfter  = String(after?.map?.currentNodeId ?? '');
   if (nodeBefore && nodeAfter && nodeBefore !== nodeAfter) return 'arrival';
   return '';
+}
+
+// Keep set-pieces rare so they stay special: a beat only fires if enough turns have
+// passed since the last one (`gap` >= `window`). The first set-piece always fires (the
+// caller starts the gap large). Pure — the presentation layer tracks the gap, so the
+// engine stores nothing and the world hash is untouched.
+export function setPieceCooldownGate(beat, gap, window = 3) {
+  if (!beat) return '';
+  return Number(gap) >= Number(window) ? String(beat) : '';
 }
 
 export function playerMove(world, packsById, text) {
@@ -2836,7 +2846,9 @@ export function newScene(world, packsById, { lastResolutionKind = 'turn' } = {})
 
   const composed = compose(w, '', outcome, { pack });
   w = applyComposerDelta(w, composed.ledgerDelta);
-  return { world: w, output: { narration: composed.narrationLine, mechanics: composed.mechanicsLine } };
+  // newScene advances to an adjacent node — detect the threshold (arrival, or a fight
+  // if the new scene drops the player into one) so the DM can rise to a set-piece.
+  return { world: w, output: { narration: composed.narrationLine, mechanics: composed.mechanicsLine, beat: detectSetPieceBeat(world, w) } };
 }
 
 // (legacy DC/update logic removed; handled by engine/resolve.js + engine/effectsCore.js)

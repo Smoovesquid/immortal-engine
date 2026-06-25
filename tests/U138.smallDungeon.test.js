@@ -1,7 +1,8 @@
 // U138 — D1: the small multi-room dungeon (docs/WORLD_AND_DUNGEONS.md Part B).
-// generateDungeon now defaults to a `small` scale — a real D&D room graph (5–12
-// rooms, branching off the entry, a deepest vault), deterministic, fully
-// connected, and projecting cleanly onto the existing interior-crawl topology.
+// The `small` scale is a real D&D room graph (5–12 rooms, branching off the entry, a
+// deepest vault), single-level, deterministic, fully connected, and projecting cleanly
+// onto the interior-crawl topology. (dungeon_entrances now DEFAULT to multi-level
+// `site` — see U140; this asks for `small` by name to test the single-level builder.)
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -11,9 +12,10 @@ import { validateDungeon } from '../engine/dungeon/schema.js';
 
 function level0(d) { return d.levels[0]; }
 
-test('U138-01: a dungeon_entrance defaults to a small multi-room dungeon', () => {
-  const d = generateDungeon('blackvale', 'nDung', { biome: 'mountains' });
+test('U138-01: the small scale is a single-level multi-room dungeon', () => {
+  const d = generateDungeon('blackvale', 'nDung', { biome: 'mountains', scale: 'small' });
   assert.equal(d.scale, 'small');
+  assert.equal(d.levels.length, 1, 'small is one level');
   const rooms = Object.values(level0(d).rooms);
   assert.ok(rooms.length >= 5 && rooms.length <= 12, `5–12 rooms, got ${rooms.length}`);
   assert.equal(level0(d).entryRoomId, 'r:entry');
@@ -22,7 +24,7 @@ test('U138-01: a dungeon_entrance defaults to a small multi-room dungeon', () =>
 
 test('U138-02: every room is reachable from the entry (no orphan rooms)', () => {
   for (const seed of ['blackvale', 'mira', 'dragonspire', 'thornwood']) {
-    const d = generateDungeon(seed, 'nDung', { biome: 'forest' });
+    const d = generateDungeon(seed, 'nDung', { biome: 'forest', scale: 'small' });
     const lvl = level0(d);
     const topo = normalizeTopology(dungeonLevelToStructure(d, 0).topology);
     // BFS from entry over the projected topology.
@@ -34,7 +36,7 @@ test('U138-02: every room is reachable from the entry (no orphan rooms)', () => 
 });
 
 test('U138-03: there is exactly one vault (the heart), deepest from the entry', () => {
-  const d = generateDungeon('mira', 'nDung', { biome: 'desert' });
+  const d = generateDungeon('mira', 'nDung', { biome: 'desert', scale: 'small' });
   const vaults = Object.values(level0(d).rooms).filter(r => r.role === 'vault');
   assert.equal(vaults.length, 1, 'exactly one vault');
   assert.notEqual(vaults[0].id, level0(d).entryRoomId, 'the vault is not the entry');
@@ -42,15 +44,15 @@ test('U138-03: there is exactly one vault (the heart), deepest from the entry', 
 });
 
 test('U138-04: deterministic — same seed+node+biome → identical dungeon', () => {
-  const a = generateDungeon('blackvale', 'nDung', { biome: 'mountains' });
-  const b = generateDungeon('blackvale', 'nDung', { biome: 'mountains' });
+  const a = generateDungeon('blackvale', 'nDung', { biome: 'mountains', scale: 'small' });
+  const b = generateDungeon('blackvale', 'nDung', { biome: 'mountains', scale: 'small' });
   assert.equal(JSON.stringify(a), JSON.stringify(b));
-  const c = generateDungeon('blackvale', 'nOther', { biome: 'mountains' });
+  const c = generateDungeon('blackvale', 'nOther', { biome: 'mountains', scale: 'small' });
   assert.notEqual(JSON.stringify(a), JSON.stringify(c));
 });
 
 test('U138-05: the projected structure is a connected room graph the crawl navigates', () => {
-  const d = generateDungeon('thornwood', 'nDung', { biome: 'marsh' });
+  const d = generateDungeon('thornwood', 'nDung', { biome: 'marsh', scale: 'small' });
   const st = dungeonLevelToStructure(d, 0);
   assert.equal(st.kind, 'dungeon');
   const topo = normalizeTopology(st.topology);
@@ -62,9 +64,9 @@ test('U138-05: the projected structure is a connected room graph the crawl navig
 });
 
 test('U138-06: rooms re-derive on demand and carry role-appropriate content', () => {
-  const d = generateDungeon('mira', 'nDung', { biome: 'forest' });
+  const d = generateDungeon('mira', 'nDung', { biome: 'forest', scale: 'small' });
   for (const r of Object.values(level0(d).rooms)) {
-    const again = dungeonRoomAt('mira', 'nDung', r.id, { biome: 'forest' });
+    const again = dungeonRoomAt('mira', 'nDung', r.id, { biome: 'forest', scale: 'small' });
     assert.deepEqual(again, r, `room ${r.id} re-derives identically`);
   }
 });

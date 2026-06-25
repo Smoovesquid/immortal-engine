@@ -229,6 +229,68 @@ function buildSmall(rng, theme, history) {
   return [{ depth: 0, entryRoomId: 'r:entry', rooms, downStairsRoomId: null, upStairsRoomId: null }];
 }
 
+// One level of a MULTI-LEVEL dungeon — the same branching room graph as buildSmall,
+// plus STAIRS: a down-stair AT THE VAULT (the heart you fight through to descend) when a
+// level lies below, and an up-stair at the entry when one lies above. Each level is
+// self-contained — its own vault, hoard, and guardian — so depth 0 alone still reads as
+// a complete small dungeon (U139). Encounters/treasure scale with depth (the gradient
+// seed: the deeper you go, the wronger and the richer). Deterministic.
+function buildLevelGraph(rng, theme, history, depth, hasUp, hasDown) {
+  const n = 5 + rng.int(0, 7);
+  const ids = [];
+  for (let i = 0; i < n; i++) ids.push(i === 0 ? 'r:entry' : `r:r${i}`);
+  const pairs = [];
+  for (let i = 1; i < n; i++) pairs.push([ids[i], ids[rng.int(0, i - 1)]]);
+  const loops = rng.int(0, 2);
+  for (let k = 0; k < loops; k++) { const a = rng.int(1, n - 1), b = rng.int(1, n - 1); if (a !== b) pairs.push([ids[a], ids[b]]); }
+  const adj = new Map(ids.map(id => [id, new Set()]));
+  for (const [a, b] of pairs) { adj.get(a).add(b); adj.get(b).add(a); }
+  const dep = new Map([['r:entry', 0]]);
+  const q = ['r:entry'];
+  while (q.length) { const x = q.shift(); for (const nb of adj.get(x)) if (!dep.has(nb)) { dep.set(nb, dep.get(x) + 1); q.push(nb); } }
+  let vault = 'r:entry', vd = -1;
+  for (const id of ids) { const d = dep.get(id) ?? 0; if (d > vd) { vd = d; vault = id; } }
+  const echoes = (history && Array.isArray(history.echoes) && history.echoes.length) ? history.echoes : (HISTORY[theme] || HISTORY.crypt).echoes;
+  const deepThreshold = Math.max(2, Math.ceil(vd / 2));
+  let echoI = 0;
+  const rooms = {};
+  for (const id of ids) {
+    const deg = adj.get(id).size;
+    const d = dep.get(id) ?? 0;
+    const role = id === 'r:entry' ? 'entry' : id === vault ? 'vault' : deg === 1 ? 'cache' : deg >= 3 ? 'chamber' : 'corridor';
+    const contents = [];
+    if (role === 'vault') {
+      const f = SHRINE_FEATURE[theme] || SHRINE_FEATURE.shrine;
+      contents.push({ kind: 'feature', name: f.name, look: f.look, detail: f.detail, vaultHeart: true });
+    } else if (role === 'chamber' || role === 'cache') {
+      contents.push({ kind: 'feature', name: 'a sign of what happened here', look: echoes[echoI++ % echoes.length], echo: true });
+    }
+    const deepEnough = d >= deepThreshold;
+    if (role === 'vault' || ((role === 'chamber' || role === 'corridor') && deepEnough && rng.nextFloat() < 0.4)) {
+      const cr = (role === 'vault' ? 1 + rng.int(0, 1) : 1) + depth;   // deeper = wronger (gradient seed)
+      contents.push({ kind: 'encounter', cr, count: 1 });
+    }
+    if (role === 'vault' || role === 'cache') {
+      const gold = (role === 'vault' ? 15 : 4) + rng.int(0, role === 'vault' ? 45 : 14) + depth * 10;
+      contents.push({ kind: 'treasure', gold });
+    }
+    rooms[id] = { id, role, exits: [...adj.get(id)].sort((a, b) => a.localeCompare(b)), contents, dressing: ['cold stone', 'dust', 'still air'], light: 'dark' };
+  }
+  return {
+    depth, entryRoomId: 'r:entry', rooms,
+    downStairsRoomId: hasDown ? vault : null,    // the heart is the way down
+    upStairsRoomId: hasUp ? 'r:entry' : null,    // you arrive (descending) at the entry
+  };
+}
+
+// A multi-level site: descend the stairs at each vault to reach the next floor; the
+// deepest level has no stair down (the true bottom). Deterministic.
+function buildSite(rng, theme, history, levelCount = 3) {
+  const levels = [];
+  for (let d = 0; d < levelCount; d++) levels.push(buildLevelGraph(rng, theme, history, d, d > 0, d < levelCount - 1));
+  return levels;
+}
+
 /**
  * generateDungeon(seed, entranceNodeId, opts) -> Dungeon (normalized, deterministic).
  * opts: { scale='shrine', biome='wilderness', theme? }. The caller passes the
@@ -238,16 +300,20 @@ function buildSmall(rng, theme, history) {
 export function generateDungeon(seed, entranceNodeId, opts = {}) {
   const nodeId = String(entranceNodeId || '');
   const biome = String(opts.biome || 'wilderness');
-  // A dungeon_entrance is a real (small) dungeon by default; the 1-room shrine is
-  // for basements/roadside crypts (an explicit scale). site/mega arrive in D3/D4.
-  const scale = ['shrine', 'small', 'site', 'mega'].includes(opts.scale) ? opts.scale : 'small';
+  // A dungeon_entrance is a real MULTI-LEVEL `site` by default — you descend the stairs
+  // at each vault to go deeper (the Phase-D lynchpin). The 1-room `shrine` and the
+  // single-level `small` are explicit scales (basements / hill caves). `mega` is a
+  // deeper site for now; lazy-infinite Moria depth is a later packet (D4).
+  const scale = ['shrine', 'small', 'site', 'mega'].includes(opts.scale) ? opts.scale : 'site';
   const rng = makeRng(seedFromString(`${seed}|dungeon|${nodeId}`));
   const theme = opts.theme || themeFor(rng, biome);
 
   // History first — the build reads its ECHOES into the rooms, so the crawl tells
   // the dungeon's story as you go (the Underworld-is-horror law).
   const history = generateHistory(rng, theme, opts.substrateEvents);
-  const levels  = (scale === 'shrine') ? buildShrine(rng, theme) : buildSmall(rng, theme, history);
+  const levels  = (scale === 'shrine') ? buildShrine(rng, theme)
+                : (scale === 'small')  ? buildSmall(rng, theme, history)
+                :                        buildSite(rng, theme, history);
 
   return normalizeDungeon({ id: `dungeon:${nodeId}`, seed: String(seed), entranceNodeId: nodeId, scale, theme, biome, history, levels });
 }

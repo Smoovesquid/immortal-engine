@@ -989,14 +989,44 @@ function playerMoveCore(world, packsById, text) {
       }
     }
 
+    // Descend DEEPER — at the vault that holds the stair down, a "go deeper" intent drops
+    // you to the next floor (you arrive at its entry, the foot of the up-stair). A narrow
+    // intent on purpose: the entrance-descend verb also matches "enter", which inside a
+    // dungeon must stay room movement, not a plunge. The deepest vault has no stair down.
+    if (inDungeon && !w.combat?.active &&
+        /\b(descend|delve|go down|climb down|head down|go deeper|deeper|down the stair|take the stair|further down|go below|into the depths?)\b/.test(String(text || '').toLowerCase())) {
+      const st = w.structures?.byId?.[String(inside.structureKey)];
+      const nodeId = String(st?.nodeId || '');
+      const cn = dnodes.find(n => String(n?.id || '') === nodeId) || null;
+      const biome = cn ? biomeForNode(w.meta.seed, cn) : 'wilderness';
+      const dungeon = generateDungeon(w.meta.seed, nodeId, { biome, substrateEvents: substrateEventsFor(w, nodeId) });
+      const depth = dungeonDepthFromKey(inside.structureKey);
+      const level = dungeon.levels[depth] || null;
+      if (level && level.downStairsRoomId && String(inside.roomId) === String(level.downStairsRoomId)) {
+        const stNext = dungeonLevelToStructure(dungeon, depth + 1);
+        if (stNext) {
+          let w1 = applyDeltas(w, [{ op: 'addStructure', structure: stNext }]);
+          w1 = enterStructureInterior(w1, stNext.id);
+          const nroom = dungeon.levels[depth + 1]?.rooms?.[String(w1.scene?.interior?.roomId || '')] || null;
+          const w2 = pushEvent(w1, { kind: 'resolution', data: { actorId: 'party', text: String(text || ''), intent: String(text || ''), roll: 0, dc: 0, outcome: 'success', updateKind: 'dungeon-descend-deeper' } });
+          return { world: w2, output: { narration: dungeonDescendDeeperNarration(dungeon, depth + 1, nroom) + dungeonExitsLine(w2), mechanics: `[descend → depth ${depth + 1}]` } };
+        }
+      }
+      if (level && !level.downStairsRoomId) {
+        return { world: w, output: { narration: 'Wizard: This is the deepest dark; no stair drops away from here. The only way on is back the way you came.', mechanics: '' } };
+      }
+      return { world: w, output: { narration: 'Wizard: No stair opens beneath you here. If this place runs deeper, the way down lies at its heart — the vault.' + dungeonExitsLine(w), mechanics: '' } };
+    }
+
     if (inDungeon && !w.combat?.active && isDungeonLookIntent(text)) {
       const st = w.structures?.byId?.[String(inside.structureKey)];
       const nodeId = String(st?.nodeId || '');
       const cn = dnodes.find(n => String(n?.id || '') === nodeId) || null;
       const biome = cn ? biomeForNode(w.meta.seed, cn) : 'wilderness';
       const dungeon = generateDungeon(w.meta.seed, nodeId, { biome, substrateEvents: substrateEventsFor(w, nodeId) });
-      const room = dungeon.levels[0]?.rooms?.[String(inside.roomId)] || null;
-      if (room) return { world: w, output: { narration: dungeonLookNarration(room, text) + dungeonTelegraph(w, dungeon) + dungeonExitsLine(w), mechanics: '' } };
+      const depth = dungeonDepthFromKey(inside.structureKey);
+      const room = dungeon.levels[depth]?.rooms?.[String(inside.roomId)] || null;
+      if (room) return { world: w, output: { narration: dungeonLookNarration(room, text) + dungeonTelegraph(w, dungeon, depth) + dungeonExitsLine(w), mechanics: '' } };
     }
 
     // D1b — take the treasure. A room's hoard is granted once, then the room is
@@ -1007,7 +1037,8 @@ function playerMoveCore(world, packsById, text) {
       const cn = dnodes.find(n => String(n?.id || '') === nodeId) || null;
       const biome = cn ? biomeForNode(w.meta.seed, cn) : 'wilderness';
       const roomId = String(inside.roomId);
-      const room = dungeonRoomAt(w.meta.seed, nodeId, roomId, { biome });
+      const depth = dungeonDepthFromKey(inside.structureKey);
+      const room = dungeonRoomAt(w.meta.seed, nodeId, roomId, { biome, depth });
       const sroom = (st?.topology?.rooms || []).find(r => r.id === roomId);
       const treasure = room?.contents?.find(c => c.kind === 'treasure');
       if (treasure && !(sroom?.tags || []).includes('looted')) {
@@ -3411,6 +3442,27 @@ function dungeonDescendNarration(dungeon, room) {
   return h.catastrophe ? `${lead} This is where ${h.catastrophe} — and whatever came after has had the place to itself a long time.` : lead;
 }
 
+// Which level you stand on, read from the interior's structure key
+// (dungeon:<node> = depth 0, dungeon:<node>:d2 = depth 2).
+function dungeonDepthFromKey(structureKey) {
+  const m = /:d(\d+)$/.exec(String(structureKey || ''));
+  return m ? Number(m[1]) : 0;
+}
+
+// The deeper descent — each floor down, the world gets older and less itself (the
+// gradient: the deeper you go, the wronger). §0-safe — symptom and dread, never the why.
+function dungeonDescendDeeperNarration(dungeon, depth, room) {
+  const h = dungeon?.history || {};
+  const deeper = [
+    'The stair winds down past the reach of daylight memory. The stone changes underfoot — older, and set by hands that worked a different art.',
+    'Down again. The cold here has a grain to it, as though the dark were older this far down, and more attentive.',
+    'The steps go down and down. Whatever was true on the floor above feels like a rumour here.'
+  ];
+  const line = deeper[Math.max(0, depth - 1) % deeper.length];
+  void room;
+  return `Wizard: ${line}${h.denizen ? ` This deep, you have come into the country of ${h.denizen}.` : ''}`;
+}
+
 // A room read as horror: surface its ECHO (a sign of the history) and the pressing
 // dark. A targeted examine brings the light close — and the worse understanding.
 function dungeonLookNarration(room, text) {
@@ -3438,19 +3490,26 @@ function dungeonLookNarration(room, text) {
 function dungeonExitsLine(w) {
   const ex = interiorDirectionalExits(w);
   const dirs = ['north', 'east', 'south', 'west'].filter(d => ex && ex[d]);
-  if (!dirs.length) return ' There is no way on — the dark dead-ends here.';
+  // Telegraph a stair at this room (a multi-level site links floors at the vault).
+  const interior = (w.scene && typeof w.scene.interior === 'object') ? w.scene.interior : null;
+  const st = interior ? w.structures?.byId?.[String(interior.structureKey)] : null;
+  const tags = ((st?.topology?.rooms || []).find(r => r.id === String(interior?.roomId || ''))?.tags) || [];
+  const stair = tags.includes('stairs-down') ? ' A stair descends into the deeper dark — you could go down.'
+              : tags.includes('stairs-up') ? ' A stair climbs back the way you came.'
+              : '';
+  if (!dirs.length) return stair || ' There is no way on — the dark dead-ends here.';
   const list = dirs.length === 1 ? dirs[0] : `${dirs.slice(0, -1).join(', ')} and ${dirs[dirs.length - 1]}`;
-  return ` Dark passage${dirs.length > 1 ? 's open' : ' opens'} ${list}.`;
+  return ` Dark passage${dirs.length > 1 ? 's open' : ' opens'} ${list}.${stair}`;
 }
 
 // DREAD ON THE APPROACH: if a passage leads to a room that still holds its denizen,
 // you SENSE it before you see it. The tension builds; the fight (the payoff) is earned.
-function dungeonTelegraph(w, dungeon) {
+function dungeonTelegraph(w, dungeon, depth = 0) {
   const interior = (w.scene && typeof w.scene.interior === 'object') ? w.scene.interior : null;
   if (!interior) return '';
   const st = w.structures?.byId?.[String(interior.structureKey)];
   const ex = interiorDirectionalExits(w);
-  const rooms = dungeon?.levels?.[0]?.rooms || {};
+  const rooms = dungeon?.levels?.[depth]?.rooms || {};
   for (const dir of ['north', 'east', 'south', 'west']) {
     const adjId = ex[dir]; if (!adjId) continue;
     const sroom = (st?.topology?.rooms || []).find(r => r.id === adjId);

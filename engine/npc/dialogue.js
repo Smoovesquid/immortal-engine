@@ -13,6 +13,7 @@ import { extractMemory } from './npcMemory.js';
 import { exitsFrom } from '../map/mapState.js';
 import { classifyPlaceQuery, resolvePlaceFact } from '../world/placeQuery.js';
 import { classifyPersonQuery, resolvePersonFact } from '../world/personQuery.js';
+import { notorietyReaching } from './reputation.js';
 import { npcVoiceCorpusId } from './npcVoiceResolve.js';
 
 const TRUST_REVEAL_PUBLIC = 4;
@@ -362,6 +363,25 @@ export function commonKnowledgeAnswer(world, npc, text) {
     return { mode: 'smalltalk', body: courtesy[voiceManner(npcVoice(npc))] || courtesy.even };
   }
   if (/^(?:hello|hi|hey|greetings|good (?:morning|day|evening)|well met)\b/.test(t) || /\b(?:how are you|how('s| is) (?:it going|life|business)|nice weather|fine (?:day|morning)|can i ask you something|what brings you)\b/.test(t)) {
+    // (W2·3) Reputation precedes you. If a notable atrocity of yours has reached this
+    // place (rumorsReaching → notorietyReaching), the greeting turns wary and knowing —
+    // wherever you are, home or away. DISCOVERED in the fiction, never a meter. Clean
+    // players never reach this branch (heard:false), so every existing greeting is
+    // byte-identical — this is purely additive.
+    const notor = notorietyReaching(w, here?.id);
+    if (notor.heard) {
+      const what = String(notor.worst?.body || 'what you did')
+        .replace(/[.?!]+\s*$/, '')
+        .replace(/^([A-Z])/, (m, c) => c.toLowerCase());
+      const pool = {
+        guarded: `Spare me the pleasantries. I know who you are — word came ahead of you: ${what}. State your business and go.`,
+        skittish: `Oh — it's you. We heard. ${capitalize(what)}, they said. I don't want any trouble, please.`,
+        blunt: `I know your name and how you earned it — ${what}. Say what you came to say.`,
+        open: `Ah. So you're the one. The talk reached us before you did — ${what}. I'll hear you out, but folk are watching.`,
+        even: `Word travels faster than feet. We heard about you — ${what}. Speak your piece, and mind yourself here.`,
+      };
+      return { mode: 'smalltalk', body: pool[voiceManner(npcVoice(npc))] || pool.even };
+    }
     // Home village: the player is a known face — no "stranger" language, but
     // manner still colours the delivery (guarded stays curt, open stays warm).
     if (ctx.atHome) {

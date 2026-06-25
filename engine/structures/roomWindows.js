@@ -38,8 +38,22 @@ export function roomWindows(world, interior) {
 
   const rng = makeRng(seedFromString(`${world?.meta?.seed ?? ''}|${interior.structureKey}|${roomId}|windows`));
   const count = 1 + rng.int(0, 1); // 1-2 windows
-  const shuttered = rng.nextFloat() < 0.5;
+  let shuttered = rng.nextFloat() < 0.5; // seed-derived default
   const outlook = rng.pick(OUTLOOKS) || OUTLOOKS[0];
+  // A player can close/open the shutters; that is canon (a 'window-shutter' timeline event),
+  // so the CURRENT state is the derived default unless a LATER toggle overrode it. Reading it
+  // from the timeline keeps this a pure, replayable function of the world — no stored field, no
+  // WORLD_VERSION bump, worldHash stays stable (events are already hashed). Latest toggle wins.
+  const tl = Array.isArray(world?.timeline) ? world.timeline : [];
+  for (let i = tl.length - 1; i >= 0; i--) {
+    const d = tl[i] && tl[i].data ? tl[i].data : null;
+    if (d && d.updateKind === 'window-shutter'
+        && String(d.structureKey) === String(interior.structureKey)
+        && String(d.roomId) === roomId) {
+      shuttered = Boolean(d.closed);
+      break;
+    }
+  }
   return { count, shuttered, outlook };
 }
 

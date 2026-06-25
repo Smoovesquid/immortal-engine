@@ -1177,7 +1177,20 @@ function playerMoveCore(world, packsById, text) {
       if (!win.count) {
         return { world: w, output: { narration: 'Wizard: There\'s no window in this room — only solid wall.', mechanics: '' } };
       }
+      if (wv === 'shutter-close' || wv === 'shutter-open') {
+        const closed = wv === 'shutter-close';
+        if (Boolean(win.shuttered) === closed) {
+          return { world: w, output: { narration: closed ? 'Wizard: The shutters are already closed.' : 'Wizard: The shutters already stand open.', mechanics: '' } };
+        }
+        const w1 = pushEvent(w, { kind: 'resolution', data: { actorId, intent: String(text || ''), text: String(text || ''), roll: 0, dc: 0, outcome: 'success', updateKind: 'window-shutter', structureKey: String(w.scene.interior.structureKey || ''), roomId: String(w.scene.interior.roomId || ''), closed } });
+        return { world: w1, output: { narration: closed
+          ? 'Wizard: You draw the shutters to and bar them. The room dims, and the street loses its line on you.'
+          : 'Wizard: You throw the shutters open; daylight and the noise of the street spill back in.', mechanics: closed ? '[window:shutter-close]' : '[window:shutter-open]' } };
+      }
       if (wv === 'look') {
+        if (win.shuttered) {
+          return { world: w, output: { narration: 'Wizard: The shutters are closed — you would have to open them to see out.', mechanics: '' } };
+        }
         return { world: w, output: { narration: `Wizard: ${windowView(w)}`, mechanics: '' } };
       }
       if (wv === 'break') {
@@ -2306,7 +2319,9 @@ function playerMoveCore(world, packsById, text) {
       if (!w.scene?.interior
           && /\b(?:shoot|shoots|fire|fires|loose|looses|launch|launches|sling|slings|hurl|hurls|throw|throws|cast|casts|lob|lobs)\b[^.!?]*\b(?:in|into|through|at)\b[^.!?]*\bwindow/i.test(String(text || ''))) {
         const probe = enterStructureInterior(w, '');
-        windowShootIn = probe !== w && Boolean(probe.scene?.interior) && roomWindows(probe, probe.scene.interior).count > 0;
+        const pwin = (probe !== w && probe.scene?.interior) ? roomWindows(probe, probe.scene.interior) : { count: 0, shuttered: true };
+        // A shuttered window gives no line in — the closed shutters are cover.
+        windowShootIn = pwin.count > 0 && !pwin.shuttered;
       }
       const windowFire = windowShoot || windowShootIn;
       const turnText = windowFire
@@ -3483,6 +3498,12 @@ function windowVerbKind(text) {
   // window" is the egress fallback (after the more specific verbs above).
   if (/\b(?:climb|climbs|climbing|jump|jumps|jumping|crawl|crawls|crawling|clamber|clambers|clambering|scramble|scrambles|dive|dives|diving|leap|leaps|leaping|duck|ducks|slip|slips|slide|slides|squeeze|squeezes|squeezing|go|goes|get|gets|getting|escape|escapes|flee|flees|bail|bails|vault|vaults|hop|hops|wriggle|wriggles)\b[^.!?]*\b(?:out|through|outside|out\s+of)\b[^.!?]*\bwindow/.test(t)
       || /\b(?:out|through)\s+(?:the|a|that)\s+window\b/.test(t)) return 'exit';
+  // CLOSE / OPEN the shutters — a toggle persisted as canon (roomWindows reads it back from the
+  // timeline). Tight verb+object patterns so "close in on the foe by the window" / "fire bolt at
+  // the window" never misfire. Checked AFTER the egress verbs so "...out the window" stays exit.
+  if (/\b(?:close|closes|closing|shut|shuts|shutting|bar|bars|barring|fasten|fastens|latch|latches)\s+(?:the\s+|my\s+|those\s+|that\s+|a\s+)?(?:shutters?|window)\b/.test(t)) return 'shutter-close';
+  if (/\b(?:open|opens|opening|unbar|unbars|unlatch|unlatches)\s+(?:the\s+|my\s+|those\s+|that\s+|a\s+)?(?:shutters?|window)\b/.test(t)
+      || /\b(?:throw|throws|fling|flings)\s+open\s+(?:the\s+|my\s+|those\s+|that\s+|a\s+)?(?:shutters?|window)\b/.test(t)) return 'shutter-open';
   return null;
 }
 

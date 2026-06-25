@@ -77,7 +77,9 @@ test('U282: windows are deterministic — same seed/turn → identical survey + 
 
 // ── look out ────────────────────────────────────────────────────────────────
 test('U282: "look out the window" gives a line-of-sight outlook, no roll', () => {
-  const w = boot();
+  // A room may START shuttered (derived), and you can't see out closed shutters (W-Q3) — so
+  // open them first. Opening is a free, in-the-room action; then the outlook reads.
+  const w = playerMove(boot(), PACKS, 'open the shutters').world;
   const r = playerMove(w, PACKS, 'look out the window');
   assert.match(r.output.narration, /Through the window/i, r.output.narration);
   assert.doesNotMatch(r.output.mechanics || '', ROLL_RE, 'a window outlook is perception, not a dice roll');

@@ -1,0 +1,32 @@
+[
+  {
+    "seed": "tallow",
+    "goal": "explore-town",
+    "actions": [
+      "I sit up and rub the sleep from my eyes, then head to the window to see what kind of day it is.",
+      "I push the shutters open to get a better look at the town outside.",
+      "I head downstairs to find the innkeeper and ask about the town.",
+      "I lean against the counter and ask Dalla what the town is known for.",
+      "I nod like I understand and ask her what the best way to get a feel for the place would be—where do most folks gather during the day.",
+      "I thank her and head out the door to walk around the settlement and get my own lay of the land before the crowd arrives.",
+      "I walk down the main road to see what other buildings and shops are around.",
+      "I head toward the Sooted Bridge to see what's there.",
+      "I take a step back from the bridge and scan the structure more carefully to see if anyone's around or if there's anything worth investigating up close.",
+      "I approach the structure carefully and peer through one of the windows to see what's inside.",
+      "I step back from the window and check if the door is unlocked.",
+      "I step inside and let my eyes adjust to the dimness, listening for any sign of movement.",
+      "I move deeper into the building to see if there's anything useful or interesting in here.",
+      "I run my hand along the table's surface to check if anything's been left behind or if there's any clue what this place was used for.",
+      "I head back out of this empty building and return to the main road to explore the other direction—toward the Old Shrine.",
+      "I head back toward the main road and make for the Old Shrine to the west, hoping to find someone there or learn something new about the settlement.",
+      "I head back to the main road and look for someone actually living here to talk to—a shopkeeper, a guard, anyone who can point me toward where people gather.",
+      "I head back to the inn where Dalla said the crowd gathers during the day.",
+      "I step back into the common room and this time I sit down at a table where people are gathering, ready to actually talk with whoever comes through.",
+      "I stand up from the table and directly ask one of the locals who just drifted over where they're actually from and what brought them to this place.",
+      "I ask this traveler what they know about the settlement itself—what's worth seeing, where people actually live, and how to get beyond just this one building.",
+      "I ask the traveler if they know anything about what's wrong with this place—why the innkeeper got quiet when I asked what the town's known for.",
+      "I head back out of Sooted Bridge and walk north toward the main settlement, looking for the guard I saw earlier moving between posts.",
+      "I walk back to the inn and ask Dalla directly if there's someone specific I should talk to—a blacksmith, a healer, anyone with actual roots in this place."
+    ]
+  }
+]

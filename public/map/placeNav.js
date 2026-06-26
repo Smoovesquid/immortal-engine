@@ -98,3 +98,51 @@ export function walkTo(grid, fromX, fromY, toX, toY, opts = {}) {
   }
   return { ux: x, uy: y };
 }
+
+/**
+ * exteriorAnchor(plan, ox, oy, M) -> { ux, uy } in place coords.
+ *
+ * Where a token stands after a PLAIN-DOOR exit: just outside the building's actual
+ * exterior entrance. `plan.mouths` are the exterior openings (gaps in the outer
+ * wall); `plan.doors` are interior room-to-room links (see plans/planTopology.js) —
+ * so the MOUTH, not a door, is the way out. The mouth's `orient` selects the wall
+ * axis (v = east/west wall, h = north/south wall) and its position vs. the nearest
+ * footprint edge selects the side, so the token lands just beyond THAT edge — not a
+ * hardcoded south. Falls back to the south edge (the pre-mouth behaviour) when a
+ * plan has no usable mouth, and always returns a FINITE point (degenerate plans
+ * included). PURE: no canvas, no rng, no mutation.
+ */
+export function exteriorAnchor(plan, ox = 0, oy = 0, M = 1.3) {
+  const rooms = (plan && plan.rooms) || [];
+  let nx = Infinity, xx = -Infinity, ny = Infinity, xy = -Infinity;
+  for (const r of rooms) { const rw = (r.w || r.r * 2) / 2, rh = (r.h || r.r * 2) / 2; nx = Math.min(nx, r.cx - rw); xx = Math.max(xx, r.cx + rw); ny = Math.min(ny, r.cy - rh); xy = Math.max(xy, r.cy + rh); }
+  const haveBounds = Number.isFinite(nx) && Number.isFinite(xx) && Number.isFinite(ny) && Number.isFinite(xy);
+  const cx = haveBounds ? (nx + xx) / 2 : 0, cy = haveBounds ? (ny + xy) / 2 : 0;
+  const mouth = pickMouth(plan, cx, cy);
+  if (!mouth || !haveBounds) {
+    // No exterior entrance recorded (or no footprint): keep the prior south-edge
+    // behaviour so plain exits still land outside the footprint, finite always.
+    return haveBounds ? { ux: ox + cx, uy: oy + xy + M } : { ux: ox, uy: oy + M };
+  }
+  // orient 'v' = vertical opening on the east/west wall; otherwise the north/south
+  // wall. Side = whichever edge the mouth sits nearest (robust for off-centre rooms).
+  if (String(mouth.orient) === 'v') {
+    const west = Math.abs(mouth.x - nx) <= Math.abs(mouth.x - xx);
+    return { ux: west ? ox + nx - M : ox + xx + M, uy: oy + mouth.y };
+  }
+  const north = Math.abs(mouth.y - ny) <= Math.abs(mouth.y - xy);
+  return { ux: ox + mouth.x, uy: north ? oy + ny - M : oy + xy + M };
+}
+
+// The exterior entrance nearest the entry room — the front door for multi-mouth
+// buildings (keeps/castles). Map plans identify the entry room by `r.id === plan.entry`
+// (NOT an `isEntry` flag, which is an engine floorPlan field). Falls back to the first mouth.
+function pickMouth(plan, cx, cy) {
+  const mouths = (plan && plan.mouths) || [];
+  if (mouths.length <= 1) return mouths[0] || null;
+  const rooms = (plan && plan.rooms) || [];
+  const entry = rooms.find(r => String(r.id) === String(plan.entry)) || rooms[0] || { cx, cy };
+  let best = mouths[0], bestD = Infinity;
+  for (const m of mouths) { const d = Math.hypot(m.x - entry.cx, m.y - entry.cy); if (d < bestD) { bestD = d; best = m; } }
+  return best;
+}

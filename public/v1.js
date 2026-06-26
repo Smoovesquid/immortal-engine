@@ -17,7 +17,7 @@ import { renderMapView } from './map/MapView.js';
 import { renderLocalMap } from './map/LocalMap.js';
 import { createPlaceMap } from './map/handDrawnPlace.js';
 import { placeFromWorldNode } from './map/placeFromNode.js';
-import { buildPlaceGrid, walkTo } from './map/placeNav.js';
+import { buildPlaceGrid, walkTo, exteriorAnchor } from './map/placeNav.js';
 import { renderSpellbookSection } from './panels/spellbook.js';
 import { renderCombatHudSection } from './panels/combatHud.js';
 import { renderInitiativeBar } from './panels/initiativeBar.js';
@@ -2077,17 +2077,15 @@ function renderWalkPlace(world) {
           ? (place.buildings || []).find(b => b.structureKey && prevKey.startsWith(b.structureKey + ':'))
           : null;
         if (exitedBld) {
-          // #4: if you climbed out a NAMED window, stand on THAT side of the building (the map must
-          // reflect the side you left by). Otherwise (a door / unnamed exit) you appear at the door.
-          // Footprint extent in building-local units — uses the same (r.w||r.r*2) form as
-          // handDrawnPlace's ext()/roomPoly, so the anchor lines up with the DRAWN footprint.
-          // Shared by both the window-facing and the plain-door placement below.
-          const rs = exitedBld.plan.rooms || [];
-          let nx = Infinity, xx = -Infinity, ny = Infinity, xy = -Infinity;
-          for (const r of rs) { const rw = (r.w || r.r * 2) / 2, rh = (r.h || r.r * 2) / 2; nx = Math.min(nx, r.cx - rw); xx = Math.max(xx, r.cx + rw); ny = Math.min(ny, r.cy - rh); xy = Math.max(xy, r.cy + rh); }
           const ox = exitedBld.ox || 0, oy = exitedBld.oy || 0, M = 1.3;
           const facing = lastInteriorExitFacing(world);
           if (facing) {
+            // #4: climbed out a NAMED window → stand on THAT recorded side. Footprint extent in
+            // building-local units, same (r.w||r.r*2) form as handDrawnPlace's ext()/roomPoly so
+            // the anchor lines up with the DRAWN footprint.
+            const rs = exitedBld.plan.rooms || [];
+            let nx = Infinity, xx = -Infinity, ny = Infinity, xy = -Infinity;
+            for (const r of rs) { const rw = (r.w || r.r * 2) / 2, rh = (r.h || r.r * 2) / 2; nx = Math.min(nx, r.cx - rw); xx = Math.max(xx, r.cx + rw); ny = Math.min(ny, r.cy - rh); xy = Math.max(xy, r.cy + rh); }
             let ux = ox + (nx + xx) / 2, uy = oy + (ny + xy) / 2;
             if (facing === 'east') ux = ox + xx + M;
             else if (facing === 'west') ux = ox + nx - M;
@@ -2095,13 +2093,11 @@ function renderWalkPlace(world) {
             else if (facing === 'south') uy = oy + xy + M;
             ui.place = { nodeId, ux, uy, interiorKey: curInteriorKey };
           } else {
-            // Plain door exit (no recorded window wall): stand just OUTSIDE the building's front
-            // (south) edge, at the door's x. The old fallback used a hardcoded uy:12 that landed
-            // INSIDE the drawn footprint (BUG 1a). South is the safe conventional approach side for
-            // an unmarked door; window exits keep their recorded side via the branch above.
-            const entryRoom = rs.find(r => r.isEntry) || rs[0];
-            const doorX = entryRoom ? entryRoom.cx + ox : ox + (nx + xx) / 2;
-            ui.place = { nodeId, ux: doorX, uy: oy + xy + M, interiorKey: curInteriorKey };
+            // Plain door exit → stand just outside the building's ACTUAL exterior entrance
+            // (plan.mouths), which can face N/E/W. da2b528 hardcoded the south edge, which only
+            // looked right because tallow's cottage is south-facing; exteriorAnchor reads the mouth.
+            const a = exteriorAnchor(exitedBld.plan, ox, oy, M);
+            ui.place = { nodeId, ux: a.ux, uy: a.uy, interiorKey: curInteriorKey };
           }
         } else {
           const fw = place.footprintW || 8;

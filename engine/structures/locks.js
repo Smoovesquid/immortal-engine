@@ -10,28 +10,39 @@
 // wins: 'lock-open' (picked/forced) unlocks; 'lock-close' locks.
 
 import { seedFromString, makeRng } from '../rng.js';
-
-const LOCKED_SHARE = { door: 0, window: 0.4 };
+import { isNight } from '../dayNight.js';
 
 /**
  * lockState(world, kind, key) -> { locked, dc }
  *   kind: 'door' | 'window'
  *   key:  the structureKey (door) or `${structureKey}:${roomId}` (window)
- * Deterministic; the most recent lock-open / lock-close event for this (kind,key) wins.
+ *
+ * The valley locks up at NIGHT: seen from OUTSIDE, a door or window is locked between 10pm and 6am
+ * and open by day. From INSIDE the very building this lock belongs to it is ALWAYS open — a lock
+ * keeps people out, not in, so you can always walk out the door or climb out a window. A deliberate
+ * lock event (a wary householder bolting up, a pick) still wins at any hour. Deterministic; no
+ * stored state (worldHash-stable).
  */
 export function lockState(world, kind, key) {
   const seed = world?.meta?.seed ?? '';
   const k = String(kind);
   const id = String(key);
   const rng = makeRng(seedFromString(`${seed}|${k}|${id}|lock`));
-  let locked = rng.nextFloat() < (LOCKED_SHARE[k] ?? 0); // derived default
   const dc = 12 + rng.int(0, 4); // a workaday lock: DC 12–16
+
+  // Inside the building this lock belongs to → open to you. (A door key IS the structureKey; a
+  // window key is `${structureKey}:${roomId}`, so it starts with the structureKey you're inside.)
+  const sk = String(world?.scene?.interior?.structureKey || '');
+  const insideThis = Boolean(sk) && (k === 'door' ? id === sk : id.startsWith(`${sk}:`));
+
+  let locked = !insideThis && isNight(world); // from outside: locked after dark, open by day
+  // Latest deliberate lock event wins (and overrides the time-of-day default).
   const tl = Array.isArray(world?.timeline) ? world.timeline : [];
   for (let i = tl.length - 1; i >= 0; i--) {
     const d = tl[i] && tl[i].data ? tl[i].data : null;
     if (!d || String(d.lockKind) !== k || String(d.lockKey) !== id) continue;
     if (d.updateKind === 'lock-open') { locked = false; break; }
-    if (d.updateKind === 'lock-close') { locked = true; break; }
+    if (d.updateKind === 'lock-close') { locked = !insideThis; break; } // still open to you from inside
   }
   return { locked, dc };
 }

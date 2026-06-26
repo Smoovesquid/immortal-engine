@@ -2130,13 +2130,15 @@ function renderWalkPlace(world) {
   place.tokens.unshift({ type: 'player', ux: ui.place.ux, uy: ui.place.uy });
 
   const W = 61 * 14;
-  // P-79 — prose first (DESIGN.md): the map yields to the story. On short
-  // columns (compass + bars eat the height) the 30vh clamp alone starved the
-  // transcript to a 20px sliver — the recap/narration was in the DOM but
-  // invisible. Cap the canvas to leave the transcript a real floor.
+  // P-79 — prose first (DESIGN.md): the map yields to the story. The canvas height
+  // is a DEFINITE viewport-relative clamp (≤30vh) so it never balloons to its
+  // intrinsic ~854px square and clips the narration transcript to a sliver. (An
+  // earlier container-relative percentage term depended on the wrapper's height,
+  // which in turn sizes to this canvas — a circular dependency that left the height
+  // unresolved and the map oversized once the canvas was nested in a wrapper div.)
   const canvas = el('canvas', {
     width: String(W), height: String(W), class: 'local-map-canvas',
-    style: 'height:min(clamp(160px, 30vh, 340px), calc(100% - 128px)); min-height:120px'
+    style: 'height:clamp(160px, 30vh, 340px); min-height:120px'
   });
   let pm; try { pm = createPlaceMap(canvas, { seed: String(place.seed || 'place'), fog: true, sight: 8, explored: exploredSet }); }
   catch { placeCtl = null; ui.placeCache = null; return renderLocalMap(world, { compact: true }); }
@@ -2194,7 +2196,12 @@ function renderWalkPlace(world) {
   const tod = el('div', {
     style: 'position:absolute;top:4px;right:8px;line-height:1;pointer-events:none;font:600 12px ui-sans-serif,system-ui;color:#2c2418;text-shadow:0 1px 1px rgba(255,255,255,0.55);'
   }, `${glyph} ${clockLabel(world)}`);
-  const wrap = el('div', { style: 'position:relative;display:block;' }, canvas, tod);
+  // class 'play-map' so the desktop layout bounds the map (.play-body .play-map{flex:0 0 auto})
+  // and the narration transcript (its sibling, flex:1 1 auto) takes the remaining height. Without
+  // the class the canvas was nested in an unclassed div, matching neither the bare-canvas nor the
+  // .play-map selector, so the height bound never applied and the transcript was pushed off-screen
+  // (the DM's spoken text "disappeared"). position:relative anchors the day/night glyph (tod).
+  const wrap = el('div', { class: 'play-map', style: 'position:relative;display:block;' }, canvas, tod);
   return wrap;
 }
 

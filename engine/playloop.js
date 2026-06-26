@@ -53,6 +53,7 @@ import { classifyOffensiveCast, castConsequence } from './magic/castConsequence.
 import { evaluateEncounter, selectCreatures, spawnEncounter } from './combat/encounterSpawn.js';
 import { isMetaQuestion, handleMetaQuestion, isNullAction, isQuestionShaped, META_LOCATION, META_RECAP, isNpcObserverQuery, isInfoSeekingText, isConfrontationChallenge, buildLocationSurvey, windowView, knowsNpcName, describeNpc, INFO_SEEKING_EXCLUDE_RE } from './grace/gracefulAdjudication.js';
 import { occupantsOfRoom } from './structures/roomOccupancy.js';
+import { lockState, lockOpenEventData } from './structures/locks.js';
 import { resolveEscapeCombatTurn, initEscapeHp, initEscapeKit, shortRest, longRest, applySurpriseRound, parseEscapeAction, combatStatusAnswer, meleeProfile, playerAc } from './combat/escapeCombat.js';
 import { statMod, maxWounds } from './ruleset/core/stats.js';
 import { shopsHere, stockFor, settlementStock, economyAt, priceToSell, shopBuys, restockEpoch, purseTotalCopper, pursePay, purseReceive, formatPrice, matchByName } from './economy/shop.js';
@@ -1152,6 +1153,11 @@ function playerMoveCore(world, packsById, text) {
         : 'Wizard: There are no structures to enter here.';
       return { world: w, output: { narration: msg, mechanics: '' } };
     }
+    // A locked front door blocks entry until it is picked or forced (or you find a window).
+    const doorLock = lockState(wPrepared, 'door', String(sel.structure.id));
+    if (doorLock.locked) {
+      return { world: w, output: { narration: 'Wizard: The door is locked. You could pick the lock, force it, or look for another way in — a window, perhaps.', mechanics: `[lock:door|locked dc:${doorLock.dc}]` } };
+    }
     const w1 = enterStructureInterior(wPrepared, interiorAction.structureRef);
     if (w1 !== wPrepared) {
       // Record the transition so it replays from the timeline. Without an event,
@@ -1211,6 +1217,60 @@ function playerMoveCore(world, packsById, text) {
     }
   }
 
+  // ── Locks: pick or force a door / window (a D&D-style check) ────────────────
+  // Standing outside, a locked door or latched window can be PICKED (AGILITY + Thieves'-Tools
+  // proficiency vs the lock DC — finesse) or FORCED (MIGHT vs a higher DC — loud). Success opens it
+  // for good (a canon 'lock-open' event); then you enter / climb in normally. Deterministic (seeded).
+  if (!w.scene?.interior && !w.combat?.active && !targetedCombatAction && !declaredNpcViolence) {
+    const la = lockActionKind(text);
+    if (la) {
+      // Only HANDLE a genuine lock here. If there's no building/lock within reach, or it isn't
+      // locked, fall through so "pry the door" / "pick the lock" still resolves as a normal
+      // (contested) skill action through the generic system — never a silent no-op.
+      const probe = enterStructureInterior(w, '');
+      const reached = probe !== w && Boolean(probe.scene?.interior);
+      if (reached) {
+        const sk = String(probe.scene.interior.structureKey);
+        const rid = String(probe.scene.interior.roomId);
+        const wantsWindow = /\b(?:window|shutters?|latch)\b/i.test(String(text));
+        const kind = wantsWindow ? 'window' : 'door';
+        const key = wantsWindow ? `${sk}:${rid}` : sk;
+        const lk = lockState(w, kind, key);
+        if (lk.locked) {
+          const pc = w.party?.[0] || {};
+          const foci = Array.isArray(pc.foci) ? pc.foci : [];
+          const profBonus = 2 + Math.floor(((Number(pc.level) || 1) - 1) / 4);
+          const srng = makeRng(seedFromString(`${w.meta?.seed ?? ''}|lockpick|${la}|${kind}|${key}|${Array.isArray(w.timeline) ? w.timeline.length : 0}`));
+          const roll = srng.int(1, 20);
+          const sign = (n) => (n >= 0 ? `+${n}` : String(n));
+          let stat, prof, dc;
+          if (la === 'pick') {
+            stat = statMod(Number(pc.stats?.AGILITY ?? 10));
+            prof = foci.some(f => /stealth|sleight|thiev|lockpick|acrobat/i.test(String(f))) ? profBonus : 0;
+            dc = lk.dc;
+          } else {
+            stat = statMod(Number(pc.stats?.MIGHT ?? 10));
+            prof = foci.some(f => /athlet|brawn|force/i.test(String(f))) ? profBonus : 0;
+            dc = lk.dc + 3; // forcing is harder, and loud
+          }
+          const tag = `${la === 'pick' ? 'AGI' : 'MIGHT'}:${roll}${sign(stat)}${prof ? sign(prof) : ''} vs DC${dc}`;
+          if ((roll + stat + prof) >= dc) {
+            const w1 = pushEvent(w, { kind: 'resolution', data: lockOpenEventData(kind, key, la === 'pick' ? 'picked' : 'forced') });
+            const narr = la === 'pick'
+              ? `Wizard: You work the lock, feeling for the pins — and the ${kind} gives with a soft click. It's open.`
+              : `Wizard: You set your shoulder and drive into it — the ${kind} bursts open with a crack that carries. It's open, and anyone near will have heard.`;
+            return { world: w1, output: { narration: narr, mechanics: `[lock:${kind}|${la === 'pick' ? 'picked' : 'forced'} | ${tag}]` } };
+          }
+          const failNarr = la === 'pick'
+            ? `Wizard: A pin slips and the tension bar skids — the lock holds. You can try again, or force it.`
+            : `Wizard: The ${kind} shudders in its frame but holds — and the noise will have carried.`;
+          return { world: w, output: { narration: failNarr, mechanics: `[lock:${kind}|fail | ${tag}]` } };
+        }
+      }
+      // no lock to work → fall through to the generic system
+    }
+  }
+
   // ── Window ENTRY / PEEK (from OUTSIDE) ──────────────────────────────────────
   // The mirror of the inside-window verbs. Standing outside, you can scout a building
   // through its window (peek) or climb IN through it — a quiet way past the door. Entry
@@ -1253,6 +1313,12 @@ function playerMoveCore(world, packsById, text) {
         return { world: w, output: { narration: `Wizard: Through the window, a room opens beyond the sill. ${who}`, mechanics: '[window:peek]' } };
       }
       if (we === 'enter') {
+        // A latched/locked window blocks climbing IN (from inside you can always unlatch and climb
+        // OUT). Pick the latch or force it first.
+        const wlock = lockState(w, 'window', `${probe.scene.interior.structureKey}:${probe.scene.interior.roomId}`);
+        if (wlock.locked) {
+          return { world: w, output: { narration: 'Wizard: The window is latched fast from the inside. You could pick the latch or force it.', mechanics: `[lock:window|locked dc:${wlock.dc}]` } };
+        }
         // Climbing in is unsanctioned. The witnesses are the people IN the room you climb into
         // (occupancy) — the ones who would actually see you come through the window. If any are
         // there it is a contested STEALTH check (AGILITY vs a moderate DC): spotted still lets you
@@ -3546,6 +3612,18 @@ function windowEntryKind(text) {
   // CLIMB IN — use the window as a quiet way in (past the door).
   if (/\b(?:climb|climbs|climbing|clamber|clambers|clambering|scramble|scrambles|scrambling|duck|ducks|slip|slips|slide|slides|squeeze|squeezes|squeezing|crawl|crawls|crawling|go|goes|get|gets|getting|enter|enters|entering|hop|hops|vault|vaults|haul|hauls|boost|boosts|wriggle|wriggles|sneak|sneaks|sneaking|break)\b[^.!?]*\b(?:in|into|inside|in\s+through|through)\b[^.!?]*\bwindow/.test(t)
       || /\b(?:in|into|in\s+through|through)\s+(?:the|a|that)\s+window\b/.test(t)) return 'enter';
+  return null;
+}
+
+// lockActionKind(text) → 'pick' | 'force' | null — addressing a LOCK on a door/window/latch. PICK
+// is finesse (AGILITY + Thieves'-Tools proficiency); FORCE is might (loud). "break the window"
+// (smash the glass) is NOT here — that stays the window-break verb; only "break DOWN/open" counts.
+function lockActionKind(text) {
+  const t = String(text || '').toLowerCase();
+  if (!/\b(?:lock|door|window|shutters?|latch)\b/.test(t)) return null;
+  if (/\b(?:pick|picks|picking|jimmy|jimmies|jimmying)\s+(?:at\s+)?(?:the\s+|a\s+|this\s+|that\s+)?(?:lock|door|window|shutters?|latch)\b/.test(t)) return 'pick';
+  if (/\b(?:force|forces|forcing|pry|pries|prise|prises)\s+(?:open\s+)?(?:the\s+|a\s+|this\s+|that\s+)?(?:lock|door|window|shutters?|latch)\b/.test(t)
+      || /\b(?:break\s+down|breaks\s+down|break\s+open|kick\s+(?:in|down)|kicks\s+(?:in|down)|bash|bashes|shoulder|shoulders|ram|rams|bust\s+open|busts\s+open)\b[^.!?]*\b(?:lock|door|window|shutters?|latch)\b/.test(t)) return 'force';
   return null;
 }
 

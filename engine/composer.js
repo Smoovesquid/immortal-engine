@@ -81,7 +81,7 @@ export function compose(world, playerText, resolution, context = {}) {
   // scene.time !== 'waking' or no interior falls through to legacy behavior.
   const wakingOpener = pickWakingOpener(w, resolution, rng);
 
-  const narrationLine = ensureOneSentence(buildNarration({
+  const builtNarration = buildNarration({
     band,
     tone,
     motifPhrase,
@@ -96,7 +96,10 @@ export function compose(world, playerText, resolution, context = {}) {
     stressPhrase,
     approachPhrase,
     wakingOpener
-  }));
+  });
+  // The waking opener is a deliberately LONGER, multi-sentence scene-set (an artful "where you
+  // are" on game start). Every other DM line stays one sentence; only the opener is exempt.
+  const narrationLine = wakingOpener ? builtNarration : ensureOneSentence(builtNarration);
 
   const mechanicsLine = bracketLine(buildMechanics({ band, resolution, clocks }));
 
@@ -246,12 +249,11 @@ function stakesPhrase(band, clocks, resolution, rng) {
 // texture is layered elsewhere). Selection is deterministic via the
 // composer's seeded rng, so same world + same seed → same opener.
 const WAKING_OPENERS = [
-  'You wake in your own bed, in your own room — first light through the shutters.',
-  'The ceiling above your bed. A familiar crack. Morning.',
-  'Your eyes open in the half-dark. Your house. Your village. Another day.',
-  'You wake. The bed is yours. The room is yours. The day is waiting.',
-  'Morning. The quiet of your own room. The smell of woodsmoke from downstairs.',
-  'You come awake slowly. The weight of the blanket. The sound of your own village outside.'
+  'You wake to the grey hush before sunrise. The bed is yours, the room is yours — the same cracked plaster overhead, the same shutters letting in their thin blade of first light. Below, someone rakes a hearth, and the smell of woodsmoke climbs the stairs to find you. An ordinary day, by every sign of it.',
+  'Light the colour of watered milk lies across the floorboards. Your room; your blanket, heavy and warm. Beyond the shutters the village is clearing its throat — a door, a dog, a bucket set down on stone. Nothing in the morning suggests it will be anything but ordinary.',
+  'You surface slowly, the way you always do, and the familiar room assembles itself around you: the cool air, the pale shape of the window, the weight of the quilt. Somewhere below, a low voice and the small clatter of a morning getting underway. The day is waiting, and for now it asks nothing of you.',
+  'Morning finds you where it always has — your own bed, your own four walls, the rafters you could trace blind. First light edges the shutters; the air carries woodsmoke and the ordinary noises of a village waking. You could lie here a while yet. The day has not started without you.',
+  'Your eyes open on the half-dark of your own room. The bed beneath you, the worn boards, the window going slowly gold at its edges — all of it as it has been for as long as you can remember. Beyond the wall a cart creaks past and a neighbour calls out. It is, in every way you can see, just another morning.'
 ];
 
 function pickWakingOpener(world, resolution, rng) {

@@ -13,7 +13,7 @@ import path from 'node:path';
 import { newWorld } from '../engine/state.js';
 import { beginAdventure, playerMove } from '../engine/playloop.js';
 import { normalizeManifest, normalizePack } from '../engine/rulesets.js';
-import { occupantsOfRoom } from '../engine/structures/roomOccupancy.js';
+import { occupantsOfRoom, outdoorOccupants } from '../engine/structures/roomOccupancy.js';
 import { normalizeTopology } from '../engine/structures/topology.js';
 import { buildLocationSurvey } from '../engine/grace/gracefulAdjudication.js';
 
@@ -29,14 +29,14 @@ const boot = () => beginAdventure(newWorld({ seed: 'tallow', fate: 0.3, mode: 'e
 const nodeNpcs = (w) => (w.map.nodes.find(n => n.id === w.map.currentNodeId)?.settlement?.npcs) || [];
 const rooms = (w, sk) => (normalizeTopology(w.structures?.byId?.[sk]?.topology)?.rooms || []).map(r => r.id);
 
-test('U286: occupancy partitions the roster — every NPC is in exactly one room', () => {
+test('U286: occupancy partitions the roster — every NPC is in exactly one place (a room or outdoors)', () => {
   const w = boot();
   const sk = w.scene.interior.structureKey;
   const rids = rooms(w, sk);
   assert.ok(rids.length > 1, 'precondition: a multi-room building');
-  let total = 0;
+  let total = outdoorOccupants(w).length; // some folk are out in the open
   for (const rid of rids) total += occupantsOfRoom(w, sk, rid).length;
-  assert.equal(total, nodeNpcs(w).length, 'each NPC is placed in exactly one room');
+  assert.equal(total, nodeNpcs(w).length, 'each NPC is placed in exactly one place (room or outdoors)');
 });
 
 test('U286: occupancy is deterministic', () => {
@@ -77,12 +77,16 @@ test('U286: a multi-building node splits its roster BETWEEN buildings (partition
     } }
   };
   const roomsOf = (b) => [`${b}:entry`, `${b}:back`];
-  let total = 0; const seen = new Set();
-  for (const b of ['b1', 'b2']) for (const r of roomsOf(b)) { const o = occupantsOfRoom(w, b, r); total += o.length; o.forEach(n => seen.add(n.name)); }
-  assert.equal(total, 8, 'every NPC is placed exactly once across all buildings + rooms');
-  assert.equal(seen.size, 8, 'no NPC is duplicated across buildings');
-  const inB1 = roomsOf('b1').reduce((a, r) => a + occupantsOfRoom(w, 'b1', r).length, 0);
-  assert.ok(inB1 > 0 && inB1 < 8, 'the roster is split between buildings, not all dumped in one');
+  const seen = new Set();
+  const tally = (arr) => { arr.forEach(n => seen.add(n.name)); return arr.length; };
+  const buckets = [
+    tally(outdoorOccupants(w)),
+    roomsOf('b1').reduce((a, r) => a + tally(occupantsOfRoom(w, 'b1', r)), 0),
+    roomsOf('b2').reduce((a, r) => a + tally(occupantsOfRoom(w, 'b2', r)), 0)
+  ];
+  assert.equal(buckets.reduce((a, b) => a + b, 0), 8, 'partition: every NPC placed exactly once across outdoors + both buildings');
+  assert.equal(seen.size, 8, 'no NPC is duplicated across places');
+  assert.ok(buckets.filter(n => n > 0).length >= 2, 'the roster is genuinely distributed, not all dumped in one place');
 });
 
 test('U286: a structure with no interior topology puts everyone "here" (backward compatible)', () => {

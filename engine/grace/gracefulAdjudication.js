@@ -11,7 +11,7 @@ import { profBonusFor } from '../ruleset/core/levelTable.js';
 import { makeRng, seedFromString } from '../rng.js';
 import { normalizeTopology, adjacentRooms } from '../structures/topology.js';
 import { roomWindows, windowSurveyPhrase } from '../structures/roomWindows.js';
-import { occupantsOfRoom } from '../structures/roomOccupancy.js';
+import { occupantsOfRoom, outdoorOccupants } from '../structures/roomOccupancy.js';
 import { reachableRooms } from '../movement/interiorMovement.js';
 import { playerAc, meleeProfile } from '../combat/escapeCombat.js';
 import { purseTotalCopper, formatPrice } from '../economy/shop.js';
@@ -2521,6 +2521,18 @@ export function buildLocationSurvey(world, opts = {}) {
         ? 'And someone else — a stranger keeping to the edges, watching.'
         : `And ${roomLurkers} strangers keeping to the edges, watching.`);
     }
+    // You can see OUT through an unshuttered window — the open air, and whoever is out there (line
+    // of sight passes through the glass). A shuttered window shows nothing; an empty street adds no
+    // line (the window itself is already noted among the room's features above).
+    if (win.count && !win.shuttered) {
+      const outside = outdoorOccupants(w).filter(n => n && !n.hostile);
+      if (outside.length) {
+        const seen = outside.slice(0, 3).map(n => describeNpc(n, knowsName(n)));
+        const more = outside.length - Math.min(3, outside.length);
+        if (more > 0) seen.push(`${more} other${more === 1 ? '' : 's'}`);
+        parts.push(`Through the window you can see ${joinList(seen)} out in the open.`);
+      }
+    }
     // The WAYS OUT of this room. A multi-room building has interior doorways — a flat
     // "the way out leads back to the open air" hid every other room, so a player could
     // never discover them from looking around (FIRST_ROOM follow-up: whole-building
@@ -2563,24 +2575,32 @@ export function buildLocationSurvey(world, opts = {}) {
     parts.push(`You're in ${placeName}, ${article} ${nodeType}.`);
   }
 
-  // Who's present — SIGHT-SCOPED. The settlement roster (non-hostile) is who's
-  // about — the same people the local map draws. Hostiles aren't listed by
-  // name: a lurking bandit is not a neighbor; if he's visible at all he reads
-  // as a wary stranger. Inside, frame them as in-and-around the place (they're
-  // in the settlement, not strictly under this roof).
-  const allNpcs = Array.isArray(currentNode?.settlement?.npcs) ? currentNode.settlement.npcs : [];
+  // Who's present — LINE OF SIGHT, never the whole settlement roster. Outside, you see the people
+  // out in the open near you (the rest are indoors, out of sight); a presence-query inside sees the
+  // people in your room. Hostiles aren't listed by name — a lurking bandit reads as a wary stranger.
+  const interiorHere = w.scene?.interior;
   {
-    const sociable = allNpcs.filter(n => n && !n.hostile);
-    const lurkers = allNpcs.filter(n => n && n.hostile).length;
+    // A presence / "who's here / where's X" query (opts.presence) consults the WHOLE roster — you
+    // are asking after specific people. A plain "look around" is LINE OF SIGHT: outdoors you see
+    // the people in the open, a presence-less interior survey sees your room. Never the full roster
+    // for a look-around.
+    const allNpcs = Array.isArray(currentNode?.settlement?.npcs) ? currentNode.settlement.npcs : [];
+    const visible = opts.presence
+      ? allNpcs
+      : insideStructure
+        ? occupantsOfRoom(w, String(interiorHere?.structureKey || ''), String(interiorHere?.roomId || ''))
+        : outdoorOccupants(w);
+    const sociable = visible.filter(n => n && !n.hostile);
+    const lurkers = visible.filter(n => n && n.hostile).length;
     if (sociable.length) {
       const named = sociable.slice(0, 4).map(n => describeNpc(n, knowsName(n)));
       const remainder = sociable.length - Math.min(4, sociable.length);
       if (remainder > 0) named.push(`${remainder} other${remainder === 1 ? '' : 's'}`);
       parts.push(insideStructure
-        ? `You're not alone — ${joinList(named)} ${sociable.length === 1 ? 'is' : 'are'} about, in and around the place.`
-        : `You see ${joinList(named)} here.`);
+        ? `You're not alone — ${joinList(named)} ${sociable.length === 1 ? 'is' : 'are'} here with you.`
+        : `Out in the open you see ${joinList(named)}.`);
     } else if (insideStructure) {
-      parts.push('No one else is under this roof.');
+      parts.push('No one else is in the room with you.');
     }
     if (lurkers > 0) {
       parts.push(lurkers === 1

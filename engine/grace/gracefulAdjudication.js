@@ -1841,8 +1841,16 @@ export function handleMetaQuestion(text, world) {
   // name/role gated, and NEVER roll a WITS check (convo-honesty FIX 2 — the presence
   // phrasing was falling through to a perception roll). No one present → an honest no.
   if (META_NPC_ROSTER.test(lowerText) || META_NPC_PRESENCE_HERE.test(lowerText)) {
-    const node = (world.map?.nodes || []).find(n => n && n.id === world.map?.currentNodeId) || null;
-    const allNpcs = Array.isArray(node?.settlement?.npcs) ? node.settlement.npcs : [];
+    // LINE OF SIGHT — a presence query ("who's in the room with me / who's here") lists only who is
+    // ACTUALLY present, never the whole settlement roster. Inside a structure → the people in your
+    // room; outdoors → the people out in the open near you. The rest of the roster is elsewhere /
+    // out of sight. Reuses the same deterministic occupancy model the look-around survey uses
+    // (engine/structures/roomOccupancy.js) rather than dumping node.settlement.npcs.
+    const interior = world.scene?.interior;
+    const insideStructure = interior && typeof interior === 'object' && interior.structureKey;
+    const allNpcs = insideStructure
+      ? occupantsOfRoom(world, String(interior.structureKey || ''), String(interior.roomId || ''))
+      : outdoorOccupants(world);
     const sociable = allNpcs.filter(n => n && !n.hostile);
     const lurkers = allNpcs.filter(n => n && n.hostile).length;
     const parts = [];
@@ -2585,11 +2593,16 @@ export function buildLocationSurvey(world, opts = {}) {
     // the people in the open, a presence-less interior survey sees your room. Never the full roster
     // for a look-around.
     const allNpcs = Array.isArray(currentNode?.settlement?.npcs) ? currentNode.settlement.npcs : [];
-    const visible = opts.presence
-      ? allNpcs
-      : insideStructure
-        ? occupantsOfRoom(w, String(interiorHere?.structureKey || ''), String(interiorHere?.roomId || ''))
-        : outdoorOccupants(w);
+    // Line of sight: outdoors → people in the open; an interior survey → people in your room.
+    const losVisible = insideStructure
+      ? occupantsOfRoom(w, String(interiorHere?.structureKey || ''), String(interiorHere?.roomId || ''))
+      : outdoorOccupants(w);
+    // A DIRECTED locate — "where is Corwin?" names a specific person — may reach beyond line of
+    // sight to report where that named person is (you asked after them by name). A BARE presence
+    // ask ("who's here / who's in the room with me") is line of sight, exactly like a look-around;
+    // it must NEVER answer from the whole town roster. (opts.presence alone is not enough.)
+    const namedTargets = allNpcs.filter(namedInQuery);
+    const visible = (opts.presence && namedTargets.length) ? allNpcs : losVisible;
     const sociable = visible.filter(n => n && !n.hostile);
     const lurkers = visible.filter(n => n && n.hostile).length;
     if (sociable.length) {

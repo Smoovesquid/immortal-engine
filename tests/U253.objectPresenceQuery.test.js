@@ -78,11 +78,16 @@ test('U253-c: "is there a way out?" is NOT a false "no way out" — stays on the
   assert.doesNotMatch(output.narration, /no way here|no way out here/i, 'must not honest-decline an exits query');
 });
 
-test('U253-c: "is there anyone here?" still lists the roster, not "no anyone"', () => {
+test('U253-c: "is there anyone here?" routes to the people-presence answer (line of sight), not object-presence', () => {
+  // Corrected for line-of-sight presence (see U288): the boot room is private/empty, so the honest
+  // answer is "no one here" — NOT the whole-town roster. What this still guards is routing: the
+  // people query must reach the PRESENCE handler, never the object-presence furniture pivot
+  // ("no anyone here. What's here is …") or an exits survey.
   const { output } = playerMove(world(), packs(), 'Is there anyone here?');
-  assert.doesNotMatch(output.narration, /no anyone here|no one here/i, 'people-presence must route to the roster');
-  // Real NPCs at the outpost are named.
-  assert.match(output.narration, /Elske|Dalla|Asha|representative|innkeeper|guard/i, 'names present NPCs');
+  assert.doesNotMatch(output.narration, /What's here is/i, 'must not be hijacked by the object-presence furniture pivot');
+  assert.doesNotMatch(output.narration, /Ways lead off/i, 'must not bounce an exits survey');
+  // It IS the people-presence read: alone in this room (LOS), or names a room occupant if one is here.
+  assert.match(output.narration, /alone|no one else is here|right here|with you/i, 'gives the people-presence read');
 });
 
 test('U253-c: a generic "where can I go?" still gets the survey', () => {

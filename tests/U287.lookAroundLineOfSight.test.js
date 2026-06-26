@@ -36,13 +36,24 @@ test('U287: outdoor look-around is line-of-sight — it never names the indoor f
   }
 });
 
-test('U287: a presence query DOES consult the whole roster (who is here / where is X)', () => {
+test('U287: a DIRECTED locate names the person out of sight; a BARE presence ask stays line-of-sight', () => {
+  // Corrected contract (was "a presence query consults the whole roster"): per THE_DM_TEST,
+  // "who is here / who's in the room with me" is line of sight — it must NOT dump the off-sight
+  // roster. The one roster-reaching exception is a DIRECTED "where is <named person>?", because
+  // naming a specific person you're after lets the DM tell you where they are. (See U288.)
   const w = playerMove(begin().world, PACKS, 'I step outside').world;
-  const presence = buildLocationSurvey(w, { presence: true });
   const outdoors = new Set(outdoorOccupants(w).map(n => n.name));
   const indoorsSociable = nodeNpcs(w).filter(n => n && !n.hostile && !outdoors.has(n.name));
-  // someone out of line of sight is still answered for a "who's here" — proving the two paths differ.
-  assert.ok(indoorsSociable.some(n => presence.includes(n.name)), `a presence query should reach the full roster: ${presence}`);
+  assert.ok(indoorsSociable.length > 0, 'precondition: someone sociable is indoors / out of sight');
+  const target = indoorsSociable[0];
+  // Directed: the named person is located even though they're out of line of sight.
+  const directed = buildLocationSurvey(w, { presence: true, queryText: `where is ${target.name}` });
+  assert.ok(directed.includes(target.name), `a directed "where is X" should locate the named ${target.name}: ${directed}`);
+  // Bare presence ask: line of sight only — never the out-of-sight indoor folk.
+  const bare = buildLocationSurvey(w, { presence: true, queryText: 'who is here with me' });
+  for (const n of indoorsSociable) {
+    assert.ok(!bare.includes(n.name), `a bare presence ask must not name out-of-sight ${n.name}: ${bare}`);
+  }
 });
 
 test('U287: the opening DM line is a longer, multi-sentence scene-set', () => {

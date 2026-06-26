@@ -54,6 +54,7 @@ import { evaluateEncounter, selectCreatures, spawnEncounter } from './combat/enc
 import { isMetaQuestion, handleMetaQuestion, isNullAction, isQuestionShaped, META_LOCATION, META_RECAP, isNpcObserverQuery, isInfoSeekingText, isConfrontationChallenge, buildLocationSurvey, windowView, knowsNpcName, describeNpc, INFO_SEEKING_EXCLUDE_RE } from './grace/gracefulAdjudication.js';
 import { occupantsOfRoom } from './structures/roomOccupancy.js';
 import { lockState, lockOpenEventData } from './structures/locks.js';
+import { assessProvocation } from './npc/provocation.js';
 import { resolveEscapeCombatTurn, initEscapeHp, initEscapeKit, shortRest, longRest, applySurpriseRound, parseEscapeAction, combatStatusAnswer, meleeProfile, playerAc } from './combat/escapeCombat.js';
 import { statMod, maxWounds } from './ruleset/core/stats.js';
 import { shopsHere, stockFor, settlementStock, economyAt, priceToSell, shopBuys, restockEpoch, purseTotalCopper, pursePay, purseReceive, formatPrice, matchByName } from './economy/shop.js';
@@ -2152,6 +2153,25 @@ function playerMoveCore(world, packsById, text) {
       }
       const eng = engageNpcCombat(w, assault.npc, text, pack, actorId, true);
       if (eng) return eng;
+    }
+  }
+
+  // ── Social provocation (IG-11): insulting a present NPC enough can make them
+  // attack first — and how much is "enough" is the person's temperament. The
+  // verdict is deterministic (engine/npc/provocation.js); offense accumulates;
+  // only a crossed fuse begins combat (via the same engageNpcCombat seam).
+  {
+    const prov = assessTurnProvocation(w, text);
+    if (prov) {
+      w = recordProvocation(w, prov.npcId, prov.assessed);
+      if (prov.assessed.verdict === 'attack') {
+        const eng = engageNpcCombat(w, prov.target, text, pack, actorId, true);
+        if (eng && eng.world?.combat?.active) {
+          const lead = provocationAttackLead(prov.target, prov.assessed);
+          const tail = String(eng.output?.narration || '').replace(/^Wizard:\s*/i, '');
+          return { ...eng, output: { ...eng.output, narration: `Wizard: ${lead} ${tail}`.trim() } };
+        }
+      }
     }
   }
 
@@ -6001,6 +6021,60 @@ function socialTarget(world, text) {
   const byRole = npcs.find(n => { const r = String(n?.role || '').toLowerCase(); return r && t.includes(r); });
   if (byRole) return byRole;
   return npcs[0];
+}
+
+// ── Social provocation (IG-11): insults carry risk; the threshold is the NPC's
+// temperament (engine/npc/provocation.js). The DM proposes the words; this
+// deterministic table commits the consequence — up to the NPC attacking first.
+// Offense accumulates as 'provocation' timeline events (derived by replay).
+function priorProvocationOffense(world, npcId) {
+  const tl = Array.isArray(world?.timeline) ? world.timeline : [];
+  let sum = 0;
+  for (const e of tl) { const d = e?.data; if (d && d.updateKind === 'provocation' && String(d.npcId) === String(npcId)) sum += Number(d.severity) || 0; }
+  return sum;
+}
+
+function isInterrogative(text) {
+  const t = String(text || '').trim();
+  return /\?\s*$/.test(t) || /^(?:how|what|why|should|shall|can|could|would|do|does|did|is|are|was|were|when|where|who|which)\b/i.test(t);
+}
+
+// Is the insult plainly aimed at THIS present NPC (not an offhand remark)?
+function insultDirectedAtNpc(world, npc, text) {
+  if (world?.scene?.dialogue) return true;
+  const t = String(text || '').toLowerCase();
+  const nm = normName(npc?.name).trim();
+  const role = String(npc?.role || '').toLowerCase().trim();
+  if ((nm && t.includes(nm)) || (role && t.includes(role))) return true;
+  return /\b(?:you|your|you'?re|youre|thou|thy|thee)\b/i.test(t);
+}
+
+// Read-only: does THIS turn land as a directed insult at a present NPC, and what
+// does it provoke? Returns { target, npcId, assessed } or null.
+function assessTurnProvocation(world, text) {
+  if (world?.combat?.active) return null;
+  if (isInterrogative(text)) return null; // a question ("how do I insult X") is not an insult
+  const target = socialTarget(world, text);
+  if (!target || target.hostile) return null;
+  if (!insultDirectedAtNpc(world, target, text)) return null;
+  const seed = String(world?.meta?.seed || '');
+  const npcId = String(target.id || '');
+  const assessed = assessProvocation({ seed, npcId, text, priorOffense: priorProvocationOffense(world, npcId) });
+  return assessed.severity > 0 ? { target, npcId, assessed } : null;
+}
+
+function recordProvocation(world, npcId, assessed) {
+  return pushEvent(world, { kind: 'resolution', data: {
+    actorId: 'party', npcId: String(npcId), text: '', intent: 'insult', roll: 0, dc: 0, outcome: 'success',
+    updateKind: 'provocation', severity: assessed.severity, tier: assessed.tier, verdict: assessed.verdict
+  } });
+}
+
+function provocationAttackLead(npc, assessed) {
+  const name = String(npc?.name || 'They').trim() || 'They';
+  if (assessed.temperament === 'volatile') return `${name} doesn't wait for you to finish — the slight is all the excuse they were waiting for.`;
+  if (assessed.tier === 'grievous') return `Something behind ${name}'s eyes goes cold and final. That one drew blood.`;
+  return `${name} has taken the last they'll take from you. Your words tip them over the edge.`;
 }
 
 function setNpcTrust(world, npcId, delta) {

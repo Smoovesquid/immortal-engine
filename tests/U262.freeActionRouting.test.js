@@ -37,6 +37,18 @@ test('U262: "take stock" is a free survey — no roll (inside or outside)', () =
   assert.equal(rolled(outside(), 'I take stock of my surroundings'), false, 'take stock of surroundings is free');
 });
 
+test('U262: "step outside" when already outdoors is a free no-op — never a roll (map-sweep finding)', () => {
+  const w = outside(); // already outside
+  for (const a of ['I step outside', 'step outside', 'go outside', 'leave the building', 'head out']) {
+    assert.equal(rolled(w, a), false, `"${a}" when already outside must not roll`);
+  }
+  const r = playerMove(w, PACKS, 'step outside');
+  assert.equal(r.world.scene?.interior ?? null, null, 'you stay outside (no state change)');
+  assert.match(r.output.narration, /already.*(open|outside)/i, r.output.narration);
+  // a COMPOUND ("head outside, then who do I see?") must NOT be swallowed by the bare no-op (U235).
+  assert.doesNotMatch(playerMove(w, PACKS, 'head outside and tell me who I see').output.narration, /already out in the open/i);
+});
+
 test('U262: a social SEARCH ("look for someone to talk to") surveys, never a charm roll', () => {
   assert.equal(rolled(outside(), 'I look for anyone to talk to'), false);
   assert.equal(rolled(outside(), 'I look for someone to speak with'), false);

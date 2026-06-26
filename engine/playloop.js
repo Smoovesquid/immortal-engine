@@ -1138,6 +1138,12 @@ function playerMoveCore(world, packsById, text) {
       output: { narration: 'Wizard: There\'s steel between you and the road — no running from this one. Strike, guard, cast, or talk.', mechanics: '[combat:table-talk]' }
     };
   }
+  if (!targetedCombatAction && !declaredNpcViolence && interiorAction.kind === 'already-outside') {
+    // "Step outside" when you're already outdoors is a free no-op — a DM never rolls a check for it
+    // (it used to fall through to resolve() and roll a WITS check; the map-angle harness sweep
+    // surfaced it). The mirror of the "already indoors" answer below.
+    return { world: w, output: { narration: 'Wizard: You\'re already out in the open — name a direction or a place to head for.', mechanics: '' } };
+  }
   if (!targetedCombatAction && !declaredNpcViolence && interiorAction.kind === 'enter') {
     // "Go inside" when already indoors gets the obvious answer, not the
     // blocked-wall message.
@@ -3677,6 +3683,12 @@ function inferInteriorAction(text, interior) {
       if (ref === 'building' || ref === 'structure') return { kind: 'enter', structureRef: '' };
       return { kind: 'enter', structureRef: ref };
     }
+    // Already OUTSIDE + a plain "step outside / go out / leave the building" (the WHOLE intent, no
+    // trailing clause) → you're already in the open: a free no-op, never a dice roll. A compound
+    // ("head outside, then who do I see?") carries trailing text and falls through to the real answer.
+    const plainExit = /^(?:i\s+|i'?d\s+like\s+to\s+|let\s+me\s+)?(?:step|steps|stepped|stepping|head|heads|headed|heading|go|goes|walk|walks|walked|walking|move|moves|moved|come|comes|duck|ducks|slip|slips|wander|wanders|get|gets)\s+(?:back\s+|right\s+|on\s+|up\s+)?(?:out|outside|outdoors)(?:\s+of\s+(?:the\s+|this\s+)?(?:building|house|inn|hut|cabin|room|shop|store|place|here))?[.!?]*$/;
+    const leaveBld = /^(?:i\s+)?(?:leave|exit)(?:\s+(?:the\s+)?(?:building|house|inn|hut|cabin|room|shop|store|place))?[.!?]*$/;
+    if (plainExit.test(t) || leaveBld.test(t)) return { kind: 'already-outside' };
     return { kind: 'none' };
   }
 

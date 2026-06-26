@@ -2079,12 +2079,15 @@ function renderWalkPlace(world) {
         if (exitedBld) {
           // #4: if you climbed out a NAMED window, stand on THAT side of the building (the map must
           // reflect the side you left by). Otherwise (a door / unnamed exit) you appear at the door.
+          // Footprint extent in building-local units — uses the same (r.w||r.r*2) form as
+          // handDrawnPlace's ext()/roomPoly, so the anchor lines up with the DRAWN footprint.
+          // Shared by both the window-facing and the plain-door placement below.
+          const rs = exitedBld.plan.rooms || [];
+          let nx = Infinity, xx = -Infinity, ny = Infinity, xy = -Infinity;
+          for (const r of rs) { const rw = (r.w || r.r * 2) / 2, rh = (r.h || r.r * 2) / 2; nx = Math.min(nx, r.cx - rw); xx = Math.max(xx, r.cx + rw); ny = Math.min(ny, r.cy - rh); xy = Math.max(xy, r.cy + rh); }
+          const ox = exitedBld.ox || 0, oy = exitedBld.oy || 0, M = 1.3;
           const facing = lastInteriorExitFacing(world);
           if (facing) {
-            const rs = exitedBld.plan.rooms || [];
-            let nx = Infinity, xx = -Infinity, ny = Infinity, xy = -Infinity;
-            for (const r of rs) { nx = Math.min(nx, r.cx - r.w / 2); xx = Math.max(xx, r.cx + r.w / 2); ny = Math.min(ny, r.cy - r.h / 2); xy = Math.max(xy, r.cy + r.h / 2); }
-            const ox = exitedBld.ox || 0, oy = exitedBld.oy || 0, M = 1.3;
             let ux = ox + (nx + xx) / 2, uy = oy + (ny + xy) / 2;
             if (facing === 'east') ux = ox + xx + M;
             else if (facing === 'west') ux = ox + nx - M;
@@ -2092,9 +2095,13 @@ function renderWalkPlace(world) {
             else if (facing === 'south') uy = oy + xy + M;
             ui.place = { nodeId, ux, uy, interiorKey: curInteriorKey };
           } else {
-            const entryRoom = (exitedBld.plan.rooms || []).find(r => r.isEntry) || exitedBld.plan.rooms?.[0];
-            const doorX = entryRoom ? entryRoom.cx + exitedBld.ox : exitedBld.ox;
-            ui.place = { nodeId, ux: doorX, uy: 12, interiorKey: curInteriorKey };
+            // Plain door exit (no recorded window wall): stand just OUTSIDE the building's front
+            // (south) edge, at the door's x. The old fallback used a hardcoded uy:12 that landed
+            // INSIDE the drawn footprint (BUG 1a). South is the safe conventional approach side for
+            // an unmarked door; window exits keep their recorded side via the branch above.
+            const entryRoom = rs.find(r => r.isEntry) || rs[0];
+            const doorX = entryRoom ? entryRoom.cx + ox : ox + (nx + xx) / 2;
+            ui.place = { nodeId, ux: doorX, uy: oy + xy + M, interiorKey: curInteriorKey };
           }
         } else {
           const fw = place.footprintW || 8;

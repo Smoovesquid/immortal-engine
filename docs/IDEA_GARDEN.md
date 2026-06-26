@@ -27,6 +27,15 @@ ladder. Append freely; never prune a good idea.*
 - **The True Edge — IG-1 + IG-5.** What you glimpse at death and on the pale root is the same
   thing: a look at the substrate (the universe-AI). Dying = a one-second leak of the rung-6
   answer.
+- **Tough Shit — the shared world holds through cost — IG-15 + IG-16 + IG-17.** The multiplayer
+  dream (run into other real parties — IG-15) is made *livable* not by restriction but by
+  **consequence** (IG-16: "burn it down, go to jail; playing is a careful privilege, like a
+  driver's license") — which only bites if there's **one authoritative shared world** plus an
+  **accountable identity you can't shed**; and **death** is the ultimate cost, with its own
+  playable second act (IG-17: die → fight back through the underworld for your life). Net: **a
+  shared, high-stakes social frontier governed by cost, not rules-enforcement** — carrying one
+  real architectural fork (a shared shard vs. infinite per-player copies) to reconcile against
+  the determinism invariants *deliberately*.
 
 ### The live tension this resolves: can the AI touch Canon?
 Tim's long-standing discomfort with the founding rule "the LLM never influences Canon" — a
@@ -449,3 +458,148 @@ name) let you hit the wrong target? Start tiny: the news/reputation column as th
 **echoes:** newspaper · the paper · The Lasting Word · cannibals publish · Kasual Korner · personal ads · bounty ·
 bounties · hit · assassination · read between the lines · classifieds · obituaries · the forgotten · made the
 paper · reputation in print · broadsheet · the warren prints · continuity faction · who's hiring a killer
+
+---
+
+## IG-15 — Run into other parties: the shared-world multiplayer dream
+**2026-06-24 · rung: someday / soul-feature (a whole new pillar — the biggest scope in the garden) · status: raw**
+
+Tim: *"You go out on an adventure with your friends and find another party miles from where you started. Do
+you join them? Do you fight them? ... Can you fucking imagine how cool it would be if you could run into other
+players while playing DnD from home? That's a gamechanger."*
+
+The dream: a shared, seed-deterministic world where you and your friends cross paths with *another real party*
+far from where you started — and choose to join, fight, rob, recruit, or travel with them. Conversation-native,
+so it needs **no new UI**: meeting another party is just an intent you speak, and the DM resolves it
+([[project_dm_only_verb]]).
+
+**Why it's a genuinely new thing (the framing):** what's described is a **MUD × No Man's Sky × an AI DM.** Each
+leg is already proven — MUDs did real-time shared *text* RPG worlds in the '80s; NMS did infinite deterministic
+procedural; AI-DM games did LLM narration. The novel (and hard) part is the **AI DM arbitrating a shared
+world.** And it fills a real gap: MMOs gave us scale but **killed the DM** (social collapsed into emote-spam and
+raid-logistics — you can't truly lie to, bluff, or betray another player); tabletop kept the DM but **capped the
+world at one table.** Nobody has had both. The deep unlock: **an AI DM refereeing stranger-to-stranger improv is
+exactly what makes stranger roleplay hold together** — normally it dies in thirty seconds (trolls, no shared
+rules, no stakes); a referee with authority over a canonical world is the fix.
+
+**The hard part (honest seam) — it's a merge conflict, not a meeting.** The DM-narration handoff is *easy*
+(elect one DM to run the joint scene). The killer is **canon**: two parties arrive dragging two contradictory
+rewritten worlds. Party A's DM killed the king and burned the bridge; in B's world both still stand. It's a
+**git merge conflict** — same seed = same starting commit, each Canon Log = a branch of edits, and overlapping
+edits (A deleted the king, B gave him a quest) can't both be true. *Something* must rule, and the ruling retcons
+one real human's lived history. The conflict lives in the two **pasts**, not the moment they meet — which is why
+"decide not to fight" doesn't dissolve it (the worlds already disagreed). This is the inverse of NMS, whose
+shared layer is **additive** (names/bases don't contradict); ours is all contradiction because **Canon Log
+wins** (rewriting the world is the whole point).
+
+**The path (cheap → hard), all three real:**
+- **Async echoes — start here, nearly free.** Don't meet parties live; meet their **traces**. The burned tavern,
+  the NPC who says "another group came through asking the same thing," your deeds in the paper. This *is*
+  [[IG-14]] (the newspaper / reputation-travels) and the rumor layer — pointed at **other real players' deeds.**
+  "The world remembers other players." No concurrency, no merge crisis. Highest payoff per unit of effort, and
+  it delivers most of the *feeling*.
+- **Instanced encounters on neutral ground.** Wilderness meetings are cheap *because the wilderness has no
+  contested canon* — you reconcile two *people*, not two *worlds*. Spin up a shared scene, one elected DM, write
+  consequences back into each log as deltas. The sellable image: *crest a ridge at dusk and there are other
+  people's campfires in the valley — dinner, a fight, or the best story of the year?* (The NMS-NEXT model.)
+- **Full shared shard — the dream as stated.** One authoritative world, one region-DM, everyone co-present. The
+  genuine dream and **the hardest thing in the genre** (persistent shared narrative under an AI arbiter — no
+  clean precedent at scale). Where you *arrive*, not where you start.
+
+**The architectural fork (load-bearing; ties [[IG-16]]):** a *shared authoritative world* vs. *infinite cheap
+per-player deterministic copies*. You can't fully have both in the same space — and consequences ([[IG-16]])
+only bite in a shared world. **Resolution: shard the contested social spaces (towns, meeting-grounds, PvP zones)
+into real shared servers; keep the frontier infinite and per-player.** The wilderness is yours and endless; the
+town is a server with a sheriff. This unifies the "neutral ground" insight (encounters are cheap where no one
+owns the canon) with the consequence model.
+
+**§0 / invariants:** the shard model pushes hard on `IMMORTAL_INVARIANTS.md` determinism — replay-hash-equality
+is a *per-player* guarantee; a live authoritative server is a different beast. Reconcile **deliberately, never
+casually** (same caution as the Coherence-Cosmology tension). Async echoes (the on-ramp) needs none of this — it
+rides the existing rumor/`claims` graph.
+
+**echoes:** multiplayer · other players · another party · run into other players · shared world · join them or
+fight them · MMO · MUD · No Man's Sky · campfires in the valley · meet a stranger party · PvP · merge conflict ·
+two canons · whose DM narrates · async echoes · the world remembers other players · shard the towns · neutral
+ground · gamechanger · DnD from home · social play
+
+## IG-16 — "Tough Shit": consequences are the glue, and playing is an earned privilege
+**2026-06-24 · rung: spine/meta for the social world (the governing ethos) + rung-4 consequence rules · status: raw**
+
+Tim: *"I pretty much live in a PvP server, man, but we keep it together. Through fucking consequences. If I
+murder someone, I'm gonna have a tough go of it. If I burn a building down, which I could, I'm going to jail.
+Consequences are what you pay. Playing this game should be a careful privilege, like having a driver's license."*
+(Early working title: **"Tough Shit."** Death penalty for everything — see [[IG-17]].)
+
+The ethos: a free multiplayer world holds together **through consequence, not restriction.** You *can* burn it
+down — and then you pay. This is not a new system; it's the engine's existing soul pointed at *players* instead
+of NPCs — the gratuitous-magic recoil ladder ([[project_gratuitous_magic_consequence]]) and social physics
+([[IG-11]]) already are "cross a line → escalating cost."
+
+**The hidden precondition (the insight that ties it to [[IG-15]]):** consequences only mean anything if there's
+**ONE authoritative shared world.** On a Rust / RP server the building is burned *for everyone* because a single
+server watched you do it — that's *why* the jail has something to bite into; you can't be jailed for a fire
+nobody else can see. So "we keep it together through consequences" **silently assumes the shared-shard model** —
+every PvP/RP server Tim has played hands him that single world for free, which is exactly why the [[IG-15]] merge
+problem feels invisible from inside it. Consequences and the shard are the **same coin**: adopt one authoritative
+world and the consequence model + the merge-conflict dissolution arrive together.
+
+**The driver's-license pillar (gives consequences teeth):** a consequence only works if you **can't shed it.**
+Throwaway accounts make "I go to jail" meaningless — respawn as a stranger, who cares. **Persistent, accountable
+identity you earn and can lose** is the enforcement layer: it's what makes betrayal *stick*, what makes your
+name *mean something* a month later when you meet the player you robbed. "A careful privilege, like a driver's
+license" = vetted/earned entry + accountability + the real threat of losing access. This isn't just anti-grief
+plumbing — **it's what turns a game into a *place*** (the stories are permanent because the people are). Most
+studios are too afraid of friction to build it; that fearlessness is the differentiator. Reputation-in-print
+([[IG-14]]) is the natural diegetic *surface* of this identity (your crimes travel; the valley reads about you).
+
+**Tension to hold (with [[IG-3]]):** "death penalty for everything / consequences are real" pushes *against*
+casual deterministic rewind (save-scum-as-time-magic). The clean resolution is [[IG-17]]: you don't rewind death
+away, you fight back from it — the underworld is the diegetic, stakes-preserving alternative to the rewind.
+
+**Open Qs:** what's the consequence *currency* — reputation, jail-as-downtime, bounties ([[IG-14]] Kasual
+Korner), loss of access? who enforces it in-fiction (a sheriff NPC, the world turning cold, player-run law)? how
+is identity earned/vetted without killing onboarding? does each town-shard run its own "law," letting different
+regions have different consequence-cultures (a lawful town vs. an anarchy frontier)?
+
+**echoes:** Tough Shit · consequences · consequences are what you pay · PvP server · we keep it together · burn
+it down go to jail · death penalty for everything · careful privilege · driver's license · accountable identity ·
+you earn the right to play · reputation · griefing · your name means something · one shared world · stakes · pay
+the price · earned access
+
+## IG-17 — The Underworld: die, then fight your way back for your life
+**2026-06-24 · rung: rung 6 / the death-moment mechanic · status: raw · pairs with [[IG-16]] + [[IG-5]]**
+
+Tim: *"Death penalty for everything. If you die, you have to fight back through the underworld. Then you can
+maybe get your life back. Could be cool."*
+
+The mechanic: **no cheap respawn.** Death costs. When you die you don't reload — you cross into the
+**underworld** and must fight your way back through it to *maybe* reclaim your life. The "maybe" is the engine of
+it: the climb out is its own gauntlet (roguelike-flavored — a death-run with an *uncertain* return), and you can
+fail it.
+
+**Why it's strong:** it makes death *land* instead of cutting to a screen, and it gives death a **playable second
+act** rather than a penalty box — the worst moment becomes the start of the hardest, most memorable run.
+
+**Ties to canon (it's a keystone, not a one-off):**
+- **[[IG-5]] death prose** — no death screen → gory anatomical death → what you see dying → the afterlife
+  glimpse. The underworld is where that glimpse becomes **literal playable space**: you don't just *see* the door
+  open, you walk through it and fight. The afterlife / pale-root substrate ([[IG-1]] the universe-AI) is a
+  candidate for what the underworld's deeper floors actually *are*.
+- **[[IG-3]] diegetic rewind** — this is the **canon-safe alternative to save-scum.** Instead of rewinding death
+  away (which cheapens it), you *earn* your way back. Resolves the IG-3 ↔ "death must have stakes" tension
+  cleanly; "time taken is time owed" could become the *cost* of a successful return (you come back marked,
+  indebted, diminished).
+- **`engine/ending.js` "The Cost Paid"** — death is already the one true ending in the infinite world. The
+  underworld turns that ending into a **threshold you may attempt to re-cross**, without cheapening it (fail the
+  climb and the cost is paid for good).
+
+**Open Qs:** is the underworld procedural (a generated death-realm per run) or an authored place everyone shares?
+what does a *failed* climb cost — permadeath, or a worse return? what do you carry back (a mark, a lost memory, a
+debt — the [[IG-3]] "owed" hook)? does it intersect the shared world ([[IG-15]]) — can you meet *other* dead
+players down there, or be helped / hindered by the living? is "death penalty for everything" too punishing
+without the underworld as the relief valve (the climb *is* the mercy)?
+
+**echoes:** underworld · death penalty · fight back from death · get your life back · no respawn · death has
+stakes · the climb back · afterlife as a place · die and return · roguelike death-run · Tough Shit · cross back
+over · what death costs · land of the dead

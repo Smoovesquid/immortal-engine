@@ -28,12 +28,12 @@ export function dayPhase(world) {
   return 'dusk';
 }
 
-/** darkness(world) -> 0 (bright day) .. 1 (deep night) — how dark to tint the map. */
+/** darkness(world) -> 0 (bright day) .. 1 (deep night) — how dark to tint the map (still readable). */
 export function darkness(world) {
   switch (dayPhase(world)) {
-    case 'night': return 0.72;
-    case 'dawn': case 'dusk': return 0.4;
-    default: return 0.08;
+    case 'night': return 0.5;
+    case 'dawn': case 'dusk': return 0.26;
+    default: return 0.04;
   }
 }
 

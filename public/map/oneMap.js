@@ -20,6 +20,48 @@ import { worldGeography, terrainStamps } from './geography.js';
 import { placeFromWorldNode } from './placeFromNode.js';
 import { isDungeonStructureId } from '../../engine/dungeon/generate.js';
 import { interiorCompassLayout } from '../../engine/structures/topology.js';
+import { dayPhase, clockLabel } from '../../engine/dayNight.js';
+
+// The compass facing of the window you JUST climbed out of (the latest interior-exit event), so the
+// map can place your marker on that side of the building. '' once you act again or move on.
+function lastWindowExitFacing(world) {
+  const tl = Array.isArray(world?.timeline) ? world.timeline : [];
+  const last = tl[tl.length - 1];
+  const d = last && last.data ? last.data : null;
+  return (d && d.updateKind === 'interior-exit' && d.windowFacing) ? String(d.windowFacing) : '';
+}
+
+// A small world-unit nudge in a compass direction (north is -y; the engine's grid grows south = +y).
+function facingNudge(facing) {
+  const D = 0.35; // ~a third of a cell — just off the building wall
+  return ({ north: [0, -D], south: [0, D], east: [D, 0], west: [-D, 0] }[String(facing)] || [0, 0]);
+}
+
+// Time-of-day badge (top-right): a sun by day, a moon at night, with the wall-clock time. This is
+// how day/night reads on the map (alongside the dimming veil drawn over the whole canvas).
+function drawTimeOfDay(ctx, world, W) {
+  const phase = dayPhase(world);
+  const night = phase === 'night';
+  const dim = phase === 'dawn' || phase === 'dusk';
+  const cx = W - 22, cy = 22;
+  ctx.save();
+  ctx.textAlign = 'right';
+  ctx.font = '12px ' + HAND;
+  ctx.fillStyle = night ? 'rgba(222,226,255,0.95)' : 'rgba(38,28,16,0.92)';
+  ctx.fillText(clockLabel(world), cx - 12, cy + 4);
+  if (night) {
+    ctx.fillStyle = 'rgba(226,230,255,0.95)';
+    ctx.beginPath(); ctx.arc(cx, cy, 6, 0, 7); ctx.fill();
+    ctx.fillStyle = 'rgba(12,16,40,0.95)';
+    ctx.beginPath(); ctx.arc(cx + 3.2, cy - 2.4, 6, 0, 7); ctx.fill(); // crescent bite
+  } else {
+    ctx.fillStyle = dim ? 'rgba(240,168,86,0.95)' : 'rgba(250,206,86,0.97)';
+    ctx.beginPath(); ctx.arc(cx, cy, 5, 0, 7); ctx.fill();
+    ctx.strokeStyle = ctx.fillStyle; ctx.lineWidth = 1.4;
+    for (let i = 0; i < 8; i++) { const a = i / 8 * Math.PI * 2; ctx.beginPath(); ctx.moveTo(cx + Math.cos(a) * 7.5, cy + Math.sin(a) * 7.5); ctx.lineTo(cx + Math.cos(a) * 10.5, cy + Math.sin(a) * 10.5); ctx.stroke(); }
+  }
+  ctx.restore();
+}
 
 const PAPER = '#e8ecdd';
 const INK = 'rgba(18,26,48,0.96)', INKSOFT = 'rgba(18,26,48,0.5)';
@@ -876,7 +918,13 @@ export function renderOneMap(world, opts = {}) {
     if (here && !inDungeon) {
       let p = nodeToWu(here);
       const pos = opts.playerPos;
-      if (pos && String(pos.nodeId || '') === hereId && Number.isFinite(+pos.ux) && Number.isFinite(+pos.uy)) {
+      // #4: if you just climbed out a NAMED window, stand on that side of the building (the map must
+      // reflect the side you left by). This wins over the walk position for that one beat.
+      const exitFacing = lastWindowExitFacing(world);
+      if (exitFacing) {
+        const [dx, dy] = facingNudge(exitFacing);
+        p = { x: p.x + dx, y: p.y + dy };
+      } else if (pos && String(pos.nodeId || '') === hereId && Number.isFinite(+pos.ux) && Number.isFinite(+pos.uy)) {
         const layout = layoutFor(here);
         if (layout) p = placeUnitToWu(here, layout.frame, +pos.ux, +pos.uy);
       }
@@ -892,6 +940,9 @@ export function renderOneMap(world, opts = {}) {
 
     // ── M7: the compass rose (screen-space, lower-right) ──
     drawCompass(ctx, W - 48, H - 54, 25);
+
+    // ── M8: time of day — a sun by day, a moon at night, with the wall-clock (no dimming) ──
+    drawTimeOfDay(ctx, world, W);
 
     // ── HUD: a Google-maps scale bar (1 wu ≈ 1 m) ──
     const target = 100 / z; // ~100 px worth of wu

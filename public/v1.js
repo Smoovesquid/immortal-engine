@@ -3,6 +3,7 @@ import { newWorld, ensureWorld } from '../engine/state.js';
 import { beginAdventure, playerMove, newScene, setPieceCooldownGate } from '../engine/playloop.js';
 import { isMetaQuestion, handleMetaQuestion, looksMultiAction } from '../engine/grace/gracefulAdjudication.js';
 import { exitsFrom, ensureMap, cleanPlaceName } from '../engine/map/mapState.js';
+import { dayPhase, clockLabel } from '../engine/dayNight.js';
 import { escapeOutcome } from '../engine/victory.js';
 import { escapeKitView } from '../engine/combat/escapeCombat.js';
 import { getItemDef } from '../engine/ruleset/core/items/index.js';
@@ -2158,7 +2159,15 @@ function renderWalkPlace(world) {
     if (hit && hit.type === 'mon' && hit.info && hit.info.name) { placeCtl.walkToward(hit.ux, hit.uy); travelTo('attack ' + hit.info.name); return; }
     placeCtl.walkToward(t.ux, t.uy);
   });
-  return canvas;
+  // ── time of day: a simple sun / moon (+ wall clock) in the corner of the map. Day vs night, no
+  // dimming. The lock rules follow the same clock (engine/dayNight.js). ──
+  const ph = dayPhase(world);
+  const glyph = ph === 'night' ? '🌙' : (ph === 'dawn' || ph === 'dusk') ? '🌅' : '☀️';
+  const tod = el('div', {
+    style: 'position:absolute;top:4px;right:8px;line-height:1;pointer-events:none;font:600 12px ui-sans-serif,system-ui;color:#2c2418;text-shadow:0 1px 1px rgba(255,255,255,0.55);'
+  }, `${glyph} ${clockLabel(world)}`);
+  const wrap = el('div', { style: 'position:relative;display:block;' }, canvas, tod);
+  return wrap;
 }
 
 function renderPlay() {

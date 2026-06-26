@@ -278,6 +278,11 @@ engine field (P-66c) — revert the named files.
 feels in 20 minutes; (2) **make it correct** — the Opus-gate correctness floor; (3) **then
 build the soul** — the morality milestones (already tracked in `docs/MORALITY_SYSTEM.md`).
 
+**Post-lane runway (specced 2026-06-24):** `docs/POST_LANE_PACKETS.md` turns "build the soul"
++ the UI/map remainder into two collision-safe lanes — **Lane D (Morality M4–M11, Codex)** with a
+parallel pantheon-data strand (D-DATA, Sonnet, startable now), and **Lane N (UI redo + map M5
+beauty, Sonnet, `public/`-only, startable now)**. Only Lane D's mechanics spine waits on W2.
+
 **The audit's central finding:** most of what makes this special is *built and working but
 not reaching the player.* So this track is mostly **wiring + surfacing**, not building —
 the highest value-per-hour work in the project. P-82–P-85 are Phase 1 (surfacing). P-86 is

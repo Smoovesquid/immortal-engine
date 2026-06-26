@@ -11,6 +11,39 @@ done_when · rollback`.
 
 ## ACTIVE
 
+### H-95 — Scope the LLM narration context to line-of-sight (presence leak, AI-narration ON)
+**Status:** OPEN — follow-up from the 2026-06-26 presence/look-around fix (`9599199`). The
+deterministic (LLM-off) presence answer is now line-of-sight, but the AI-narration-ON path can
+still re-leak off-room people.
+
+**The hole (located):** `engine/ai/narratorContext.js:83-90` injects the **full** `settlement.npcs`
+roster into the DM prompt (`settlement: { npcs: (settlement.npcs||[]).map(...) }`), regardless of
+who is actually in the player's room. When AI narration is on and the player asks a presence
+question, the LLM could volunteer a real-but-off-room NPC even though the base narration it polishes
+is line-of-sight correct. Lower severity (base narration anchors it; the U195 validator rejects
+*invented* NPCs but not a real off-room mention), and AI-off play is unaffected.
+
+**Why not folded into the fix:** `settlement.npcs` in the prompt also feeds speaker auto-selection
+(`narratorContext.js:41-51`) and other briefing fields — narrowing it needs care + a paid gate run
+to confirm it doesn't regress dialogue, so it's its own packet.
+
+- **objective:** the people the DM prompt lists as *present* are line-of-sight (room occupants
+  inside / outdoor occupants outside), reusing `engine/structures/roomOccupancy.js`
+  (`occupantsOfRoom` / `outdoorOccupants`) — the same model the grace fix uses. Keep the full roster
+  available where it's genuinely needed (speaker selection), but tag/scope the *present* set.
+- **allowed_files:** `engine/ai/narratorContext.js` (+ a new `tests/U###` grounding test).
+- **forbidden:** changing the deterministic grace presence answer (done in `9599199`); touching
+  `playloop.js`; broad narratorContext refactor.
+- **invariants:** determinism (pure projection, no new world shape); narration ≠ canon; LLM-off path
+  unchanged; speaker-selection behavior preserved.
+- **test_plan:** unit — build the DM context for the `tallow` boot world (player alone in an empty
+  room) and assert the *present-people* field names no off-room roster NPC; a multi-room/occupied
+  case names only the room's occupants. Then a paid Opus-gate spot-check that presence answers with
+  AI on don't name off-room folk.
+- **done_when:** present-people context is line-of-sight; new grounding test green; full suite +
+  convergence 100% locked; one gate run confirms no off-room leak and no dialogue regression.
+- **rollback:** revert the `narratorContext.js` change (restores full-roster context).
+
 ### IT-1…IT-5 — Interior + Town polish cluster ✅ DONE 2026-06-24
 **All five shipped** — repro'd LLM-OFF, fixed, test-locked, full suite green (8685).
 Commits: IT-2 `86ac11e` · IT-5 `f194e72` · IT-3 `3a40ce8` · IT-1 `04c7c4f` · IT-4

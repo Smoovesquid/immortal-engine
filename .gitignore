@@ -13,3 +13,13 @@ yarn-error.log*
 .pack-cache/
 data/
 .gstack/
+
+# Scratch probe/repro scripts — underscore-prefixed; self-declared "untracked, not committed".
+scripts/_*.mjs
+
+# Human Playtest Harness — raw per-run artifacts. The curated *FINDINGS*/*PACKETS* docs and the
+# specific run reports / replay logs they cite as evidence are committed explicitly (git add -f).
+docs/playtests/harness/actions-*.json
+docs/playtests/harness/harness-*.md
+docs/playtests/harness/saturation-*.md
+docs/playtests/harness/transcript-sample.txt

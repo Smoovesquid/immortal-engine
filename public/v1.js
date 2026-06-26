@@ -2031,6 +2031,15 @@ function snapToBuildingRoom(bld, roomId) {
 // Live handle to the mounted walkable place so the compass and text input can move
 // the SAME token the mouse does (one movement system). Rebuilt each render.
 let placeCtl = null;
+
+// The compass facing of the window you JUST climbed out of (the latest interior-exit event's
+// windowFacing), so the place map can stand you on that side of the building. '' for a door exit.
+function lastInteriorExitFacing(world) {
+  const tl = Array.isArray(world?.timeline) ? world.timeline : [];
+  const last = tl[tl.length - 1];
+  const d = last && last.data ? last.data : null;
+  return (d && d.updateKind === 'interior-exit' && d.windowFacing) ? String(d.windowFacing) : '';
+}
 const STRIDE = 3; // units per cardinal nudge
 const DIR_VEC = { north: [0, -STRIDE], south: [0, STRIDE], east: [STRIDE, 0], west: [-STRIDE, 0] };
 
@@ -2068,9 +2077,25 @@ function renderWalkPlace(world) {
           ? (place.buildings || []).find(b => b.structureKey && prevKey.startsWith(b.structureKey + ':'))
           : null;
         if (exitedBld) {
-          const entryRoom = (exitedBld.plan.rooms || []).find(r => r.isEntry) || exitedBld.plan.rooms?.[0];
-          const doorX = entryRoom ? entryRoom.cx + exitedBld.ox : exitedBld.ox;
-          ui.place = { nodeId, ux: doorX, uy: 12, interiorKey: curInteriorKey };
+          // #4: if you climbed out a NAMED window, stand on THAT side of the building (the map must
+          // reflect the side you left by). Otherwise (a door / unnamed exit) you appear at the door.
+          const facing = lastInteriorExitFacing(world);
+          if (facing) {
+            const rs = exitedBld.plan.rooms || [];
+            let nx = Infinity, xx = -Infinity, ny = Infinity, xy = -Infinity;
+            for (const r of rs) { nx = Math.min(nx, r.cx - r.w / 2); xx = Math.max(xx, r.cx + r.w / 2); ny = Math.min(ny, r.cy - r.h / 2); xy = Math.max(xy, r.cy + r.h / 2); }
+            const ox = exitedBld.ox || 0, oy = exitedBld.oy || 0, M = 1.3;
+            let ux = ox + (nx + xx) / 2, uy = oy + (ny + xy) / 2;
+            if (facing === 'east') ux = ox + xx + M;
+            else if (facing === 'west') ux = ox + nx - M;
+            else if (facing === 'north') uy = oy + ny - M;
+            else if (facing === 'south') uy = oy + xy + M;
+            ui.place = { nodeId, ux, uy, interiorKey: curInteriorKey };
+          } else {
+            const entryRoom = (exitedBld.plan.rooms || []).find(r => r.isEntry) || exitedBld.plan.rooms?.[0];
+            const doorX = entryRoom ? entryRoom.cx + exitedBld.ox : exitedBld.ox;
+            ui.place = { nodeId, ux: doorX, uy: 12, interiorKey: curInteriorKey };
+          }
         } else {
           const fw = place.footprintW || 8;
           ui.place = { nodeId, ux: fw / 2, uy: 12, interiorKey: curInteriorKey };

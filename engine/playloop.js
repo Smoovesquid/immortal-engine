@@ -20,7 +20,7 @@ import { introduceThread, resolveThread, ensureInstrumentLayer } from './instrum
 import { applyGeneratedStructuresForNode } from './structures/applyGeneratedStructuresForNode.js';
 import { enterStructureInterior, exitStructureInterior, moveWithinInterior, getInteriorView, interiorDirectionalExits, resolveStructureSelection } from './structures/interiors.js';
 import { normalizeTopology, adjacentRooms } from './structures/topology.js';
-import { roomWindows } from './structures/roomWindows.js';
+import { roomWindows, roomWindowFacings } from './structures/roomWindows.js';
 import { reachableRooms } from './movement/interiorMovement.js';
 import { generateDungeon, dungeonLevelToStructure, isDungeonStructureId, dungeonRoomAt } from './dungeon/generate.js';
 import { createCharacter } from './chargen/genesis.js';
@@ -1208,10 +1208,23 @@ function playerMoveCore(world, packsById, text) {
         return { world: w, output: { narration: 'Wizard: You loose a shot through the window — it skips off the ground outside. There\'s nothing out there to hit; save it for when there is.', mechanics: '[window:shoot|no-target]' } };
       }
       if (wv === 'exit') {
+        // Which window? Each carries a compass facing. With more than one and no side named, the DM
+        // asks — and the chosen facing is recorded in canon (the interior-exit event) so the map can
+        // place you on that side. Climbing out an (accessible) window never rolls.
+        const facings = roomWindowFacings(w, w.scene.interior);
+        const requested = parseWindowFacing(text);
+        if (facings.length > 1 && !requested) {
+          return { world: w, output: { narration: `Wizard: There's more than one window — ${joinFacings(facings)}. Which do you go out?`, mechanics: '[window:exit|which]' } };
+        }
+        if (requested && facings.length && !facings.includes(requested)) {
+          return { world: w, output: { narration: `Wizard: No window faces ${requested} here — ${facings.length > 1 ? 'they face' : 'it faces'} ${joinFacings(facings)}.`, mechanics: '[window:exit|no-such]' } };
+        }
+        const chosen = (requested && facings.includes(requested)) ? requested : (facings[0] || '');
         const w1 = exitStructureInterior(w);
         if (w1 !== w) {
-          const w2 = pushEvent(w1, { kind: 'resolution', data: { actorId, intent: String(text || ''), text: String(text || ''), roll: 0, dc: 0, outcome: 'success', updateKind: 'interior-exit' } });
-          return { world: w2, output: { narration: 'Wizard: You go through the window and drop to the open ground outside.', mechanics: '[window:exit]' } };
+          const w2 = pushEvent(w1, { kind: 'resolution', data: { actorId, intent: String(text || ''), text: String(text || ''), roll: 0, dc: 0, outcome: 'success', updateKind: 'interior-exit', windowFacing: chosen } });
+          const via = chosen ? `out the ${chosen}-facing window` : 'out the window';
+          return { world: w2, output: { narration: `Wizard: You go ${via} and drop to the open ground outside.`, mechanics: `[window:exit${chosen ? '|' + chosen : ''}]` } };
         }
       }
     }
@@ -3625,6 +3638,24 @@ function lockActionKind(text) {
   if (/\b(?:force|forces|forcing|pry|pries|prise|prises)\s+(?:open\s+)?(?:the\s+|a\s+|this\s+|that\s+)?(?:lock|door|window|shutters?|latch)\b/.test(t)
       || /\b(?:break\s+down|breaks\s+down|break\s+open|kick\s+(?:in|down)|kicks\s+(?:in|down)|bash|bashes|shoulder|shoulders|ram|rams|bust\s+open|busts\s+open)\b[^.!?]*\b(?:lock|door|window|shutters?|latch)\b/.test(t)) return 'force';
   return null;
+}
+
+// parseWindowFacing(text) → 'north'|'east'|'south'|'west'|null — a compass side named for a window
+// ("the east window", "the window to the north", "the north-facing one").
+function parseWindowFacing(text) {
+  const t = String(text || '').toLowerCase();
+  if (/\bnorth(?:ern|\s*-?\s*facing)?\b/.test(t)) return 'north';
+  if (/\bsouth(?:ern|\s*-?\s*facing)?\b/.test(t)) return 'south';
+  if (/\beast(?:ern|\s*-?\s*facing)?\b/.test(t)) return 'east';
+  if (/\bwest(?:ern|\s*-?\s*facing)?\b/.test(t)) return 'west';
+  return null;
+}
+
+// joinFacings(['north','east']) → "one to the north or one to the east" — for the "which?" prompt.
+function joinFacings(facings) {
+  const parts = (facings || []).map(f => `one to the ${f}`);
+  if (parts.length <= 1) return parts[0] || '';
+  return `${parts.slice(0, -1).join(', ')} or ${parts[parts.length - 1]}`;
 }
 
 function inferInteriorAction(text, interior) {

@@ -14,7 +14,7 @@ import { newWorld } from '../engine/state.js';
 import { beginAdventure, playerMove } from '../engine/playloop.js';
 import { normalizeManifest, normalizePack } from '../engine/rulesets.js';
 import { buildLocationSurvey } from '../engine/grace/gracefulAdjudication.js';
-import { roomWindows } from '../engine/structures/roomWindows.js';
+import { roomWindows, roomWindowFacings } from '../engine/structures/roomWindows.js';
 import { roomDetail } from '../engine/structures/roomDetail.js';
 
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
@@ -87,14 +87,17 @@ test('U282: "look out the window" gives a line-of-sight outlook, no roll', () =>
   assert.ok(r.world.scene?.interior, 'looking out keeps you in the room');
 });
 
-// ── climb / jump / crawl out → a real exit ────────────────────────────────────
-for (const verb of ['climb out the window', 'jump out the window', 'crawl out the window']) {
-  test(`U282: "${verb}" is a real exit (clears the interior)`, () => {
+// ── climb / jump / crawl out a CHOSEN window → a real exit (no roll) ──────────
+test('U282: climbing out a chosen window is a real exit (clears the interior), no roll', () => {
+  const facing = roomWindowFacings(boot(), boot().scene.interior)[0];
+  assert.ok(facing, 'precondition: the room has a window with a facing');
+  for (const verb of [`climb out the ${facing} window`, `jump out the ${facing} window`, `crawl out the ${facing} window`]) {
     const r = playerMove(boot(), PACKS, verb);
     assert.equal(r.world.scene?.interior, null, `${verb} should put you outside`);
-    assert.match(r.output.mechanics || '', /\[window:exit\]/, r.output.mechanics);
-  });
-}
+    assert.match(r.output.mechanics || '', /\[window:exit\|/, r.output.mechanics); // [window:exit|<facing>]
+    assert.doesNotMatch(r.output.mechanics || '', ROLL_RE, 'climbing out an accessible window never rolls');
+  }
+});
 
 // ── break / smash → an opening + noise ────────────────────────────────────────
 test('U282: "smash the window" makes an opening + noise (still inside)', () => {

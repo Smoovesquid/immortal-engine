@@ -11,6 +11,7 @@ import path from 'node:path';
 
 import { newWorld } from '../engine/state.js';
 import { beginAdventure, playerMove } from '../engine/playloop.js';
+import { roomWindowFacings } from '../engine/structures/roomWindows.js';
 import { normalizeManifest, normalizePack } from '../engine/rulesets.js';
 
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
@@ -65,10 +66,11 @@ test('U284: peek is deterministic (same seed/turn → identical)', () => {
   assert.equal(a.output.narration, b.output.narration);
 });
 
-test('U284: regression — climbing OUT from inside still exits (the inverse is unbroken)', () => {
-  const r = playerMove(boot(), PACKS, 'climb out the window'); // boot() starts INSIDE
+test('U284: regression — climbing OUT a chosen window from inside still exits', () => {
+  const facing = roomWindowFacings(boot(), boot().scene.interior)[0];
+  const r = playerMove(boot(), PACKS, `climb out the ${facing} window`); // boot() starts INSIDE
   assert.equal(r.world.scene?.interior, null, 'climb out the window still leaves');
-  assert.match(r.output.mechanics || '', /\[window:exit\]/, r.output.mechanics);
+  assert.match(r.output.mechanics || '', /\[window:exit\|/, r.output.mechanics);
 });
 
 test('U284: regression — "throw myself out the window" is still a fall, not an entry', () => {

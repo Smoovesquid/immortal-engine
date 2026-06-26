@@ -57,6 +57,24 @@ export function roomWindows(world, interior) {
   return { count, shuttered, outlook };
 }
 
+const FACINGS = ['north', 'east', 'south', 'west'];
+
+/**
+ * roomWindowFacings(world, interior) -> string[]
+ * A compass facing for each window in the room (distinct, deterministic) — so climbing out names a
+ * real side ("the east window") and >1 window can ask "which?". Derived (seeded), no stored state.
+ * Returns [] when there are no windows.
+ */
+export function roomWindowFacings(world, interior) {
+  const win = roomWindows(world, interior);
+  if (!win.count) return [];
+  const rng = makeRng(seedFromString(`${world?.meta?.seed ?? ''}|${interior?.structureKey ?? ''}|${interior?.roomId ?? ''}|facings`));
+  const pool = [...FACINGS];
+  const out = [];
+  for (let i = 0; i < win.count && pool.length; i++) out.push(pool.splice(rng.int(0, pool.length - 1), 1)[0]);
+  return out;
+}
+
 /**
  * windowSurveyPhrase(win) -> string  — the noun phrase "look around" lists.
  *   "a shuttered window" / "a window looking onto the road" / "two windows ..."

@@ -389,6 +389,77 @@ export function findInventedProperNoun(candidate, groundedNouns) {
   } catch { return null; }
 }
 
+// ML-1 — NPC-voice fabrication guard.
+// Deterministic, lean; never throws. Reuses findInventedProperNoun + normNoun from
+// above, but builds the ground set from the FLAT per-call fields available at
+// /api/npc-voice — there is NO `world` object at this route.
+//
+// Returns false → reject the candidate; route falls back to the template body.
+// Returns true  → candidate passed every cheaply-checkable guard; route may ship it.
+//
+// Scope:
+//   withheld    — line must NOT contain the factPhrase text (secret-leak guard).
+//   all modes   — invented proper nouns (mid-sentence Cap not in ground set) are rejected.
+//   all modes   — 4-digit CE year (1000–2099) absent from every grounded source is rejected.
+//   claim_recall — distortion drift vs eventDescription is INTENDED; we do NOT flag it.
+//   deflected    — tone/dodge check is judgment-shaped → out of scope (belongs to THE_REF).
+export function validateNpcVoiceCandidate(line, {
+  npcName          = '',
+  role             = '',
+  factPhrase       = '',
+  playerLine       = '',
+  ragChunks        = [],
+  substrateContext = [],
+  claim            = null,
+  mode             = '',
+} = {}) {
+  try {
+    const cand = String(line || '').trim();
+    if (!cand) return false;
+
+    // Ground set: every text token from the per-call context fields (no world object).
+    const groundedNouns = new Set();
+    const addNouns = (str) => {
+      for (const tok of String(str || '').split(/[^A-Za-z''-]+/)) {
+        const n = normNoun(tok);
+        if (n.length >= 2) groundedNouns.add(n);
+      }
+    };
+    addNouns(npcName);
+    addNouns(role);
+    addNouns(factPhrase);
+    addNouns(playerLine);
+    for (const c of (Array.isArray(ragChunks)        ? ragChunks        : [])) addNouns(c?.text);
+    for (const e of (Array.isArray(substrateContext)  ? substrateContext  : [])) addNouns(e?.label);
+    if (claim?.eventDescription) addNouns(claim.eventDescription);
+
+    // Withheld-mode secret-leak guard: the voiced line must not contain the factPhrase.
+    if (mode === 'withheld' && factPhrase) {
+      const fp = String(factPhrase).trim().toLowerCase();
+      if (fp && cand.toLowerCase().includes(fp)) return false;
+    }
+
+    // Invented proper-noun guard (all modes, including claim_recall).
+    if (findInventedProperNoun(cand, groundedNouns) !== null) return false;
+
+    // Invented-year guard: 4-digit CE years (1000–2099) absent from every grounded
+    // text source are treated as fabricated dates.
+    const allGrounded = [
+      factPhrase, playerLine,
+      ...(Array.isArray(ragChunks)        ? ragChunks.map(c        => String(c?.text  || '')) : []),
+      ...(Array.isArray(substrateContext)  ? substrateContext.map(e => String(e?.label || '')) : []),
+      claim?.eventDescription || ''
+    ].join(' ');
+    const yearRe = /\b(1[0-9]{3}|20[0-9]{2})\b/g;
+    let m;
+    while ((m = yearRe.exec(cand)) !== null) {
+      if (!allGrounded.includes(m[1])) return false;
+    }
+
+    return true;
+  } catch { return true; } // defensive: never let the guard break the narration path
+}
+
 function escapeRe(str) {
   return String(str || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }

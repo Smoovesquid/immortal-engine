@@ -309,20 +309,24 @@ return res.json({ ok:false, reason:safe });
       const prompt = buildNpcVoicePrompt({ npcName, role, mood, manner, trust, mode, factPhrase, playerLine, ragChunks, ragReconstructed, claim, substrateContext });
       if (!prompt) return res.json({ ok: false, reason: 'bad_mode' });
 
-      // D-C1: Opus 4.8 is the primary voice ("Opus voice for every NPC").
+      // D-C1: Opus 4.8 is the primary voice (“Opus voice for every NPC”).
       // When the Anthropic key is present, render the line through Opus; on ANY
       // failure (or no key) fall back to the local 8B, then to templates — the
       // LLM layer NEVER throws to the caller (CLAUDE.md). callNpcVoice already
       // omits temperature (Opus 4.8 rejects it).
       const anthropicKey = (process.env.ANTHROPIC_API_KEY || '').trim();
+      // ML-1: validateNpcVoiceCandidate gates BOTH the Opus and Ollama return paths.
+      const { callNpcVoice, validateNpcVoiceCandidate } = await import('./engine/llmAdapter.js');
+      const voiceCtx = { npcName, role, factPhrase, playerLine, ragChunks, substrateContext, claim, mode };
       if (anthropicKey) {
         try {
-          const { callNpcVoice } = await import('./engine/llmAdapter.js');
           const opusLine = await callNpcVoice({ prompt, apiKey: anthropicKey });
           const fenced = String(opusLine || '').split('\n')[0].trim()
-            .replace(/^["'“]+|["'”]+$/g, '').trim();
-          if (fenced && fenced.length <= 240) return res.json({ ok: true, line: fenced });
-          // Empty/over-long Opus reply → fall through to the local path.
+            .replace(/^[“'”]+|[“'”]+$/g, '').trim();
+          if (fenced && fenced.length <= 240 && validateNpcVoiceCandidate(fenced, voiceCtx)) {
+            return res.json({ ok: true, line: fenced });
+          }
+          // Empty/over-long/fabrication-rejected Opus reply → fall through to local path.
         } catch {
           // Opus errored → silent fall-through to the local 8B.
         }
@@ -336,10 +340,12 @@ return res.json({ ok:false, reason:safe });
       const out = await queryLocal({ prompt, schema: { line: 'one spoken line' }, timeout: voiceTimeout, maxTokens: 120 });
       if (!out?.ok) return res.json({ ok: false, reason: out?.reason || 'local_llm_unavailable' });
 
-      // The fence: one line, bounded length, no narration leakage.
+      // The fence: one line, bounded length, no fabrication (validator gates both paths).
       let line = String(out.result?.line || '').split('\n')[0].trim()
-        .replace(/^["'“]+|["'”]+$/g, '').trim();
-      if (!line || line.length > 240) return res.json({ ok: false, reason: 'bad_line' });
+        .replace(/^[“'”]+|[“'”]+$/g, '').trim();
+      if (!line || line.length > 240 || !validateNpcVoiceCandidate(line, voiceCtx)) {
+        return res.json({ ok: false, reason: 'bad_line' });
+      }
       return res.json({ ok: true, line });
     } catch (e) {
       return res.json({ ok: false, reason: String(e?.message || 'error').slice(0, 60) });

@@ -145,6 +145,33 @@ export function containerContents(seed, nodeId, name, category) {
   return out;
 }
 
+// Authored prose bodies for text-items found in containers. Mundane domestic prose only —
+// no invented proper nouns, no NPCs, no §0 cosmology vocabulary (orb/cataclysm/pale root/…).
+const LETTER_BODIES = [
+  'You owe me three silvers from the festival market, and I have not forgot it.\nSend the boy when you can spare him — I am not angry, only short.',
+  'I was meant to be back before first frost. The road south is slower than I thought and the inns are full. Do not wait up.',
+  'The grain merchant will not hold his price past the new moon. If you mean to buy, go now — he will not be there when the cold comes.',
+  'I said things I should not have. I do not ask you to forget them. Only that we sit at the same table again when you are ready.',
+  'The fence between our fields has gone rotten at the lower post. I will pay for the wood if you put a day toward it — my back will not allow me to.',
+  'She will not come. I am sorry to be the one to tell you. Do not write again.',
+  'I have left the place as I found it. The east shutter wants mending before the rains. I took nothing that was not owed me.',
+  'They are married at last. You are welcome at the table if you choose to come — there will be no quarrel from my side.',
+  'The cart left yesterday — two bolts of wool and the lamp oil you asked for. The balance is four coppers. Pay when you can.',
+  'The fire took most of the north wall. I do not blame you, and I want you to know that. Come back when you are able. There is still a floor and a roof.',
+];
+
+/**
+ * containerItemText(seed, nodeId, name, item) → string | null
+ * Deterministic authored body for a text-item found in a container. Returns null when no
+ * body exists (caller keeps the honest not-legible fallback). Pure: no state, no RNG leak.
+ */
+export function containerItemText(seed, nodeId, name, item) {
+  const it = String(item || '');
+  if (!/\bletter\b/i.test(it)) return null;
+  const rng = makeRng(seedFromString(`${String(seed || 'seed')}|${String(nodeId || '')}|${String(name || '')}|${it}|lettertext`));
+  return LETTER_BODIES[rng.int(0, LETTER_BODIES.length - 1)];
+}
+
 /**
  * generateNodeFurniture(nodeId, seed) → furniture[]
  * Deterministic. Returns 2-4 furniture items per node.

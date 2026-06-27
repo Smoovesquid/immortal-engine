@@ -26,7 +26,7 @@ import { generateDungeon, dungeonLevelToStructure, isDungeonStructureId, dungeon
 import { createCharacter } from './chargen/genesis.js';
 import { FANTASY_STARTER_GEAR } from './chargen/fantasyGear.js';
 import { decompressAndCanonizeSync } from './decompression/decompress.js';
-import { containerContents } from './decompression/generateFurniture.js';
+import { containerContents, containerItemText } from './decompression/generateFurniture.js';
 import { discoverNode } from './map/mapState.js';
 import { detectPhysicalInteraction, evaluatePhysicsSync } from './llmPhysics.js';
 import { rollPhysicsCheck } from './resolve.js';
@@ -5851,6 +5851,15 @@ function tryReadRevealedContainerItem(w, text) {
   if (!match && !namedNoun && revealed.length === 1) match = revealed[0]; // bare "read it" / "read"
   if (!match) return null;
   const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+  const body = containerItemText(String(w?.meta?.seed || ''), String(node?.id || ''), String(match.container || ''), String(match.item || ''));
+  if (body) {
+    const lead = pickVariant([
+      `You take up ${match.item} from the ${match.container} and unfold it.`,
+      `${cap(match.item)}, drawn from the ${match.container} — you hold it to the light and read.`,
+      `You lift ${match.item} from the ${match.container} and unfold it carefully.`,
+    ], w, `read:revealed:lead:${match.item}`);
+    return { world: w, output: { narration: `Wizard: ${lead}\n\n${body}`, mechanics: '[read:revealed-item | grounded object, legible text, no roll]' } };
+  }
   const narration = `Wizard: ${pickVariant([
     `You take up ${match.item} from the ${match.container} and unfold it — but the writing has faded past reading; there's nothing on it you can make out as words.`,
     `${cap(match.item)} lies in your hands, drawn from the ${match.container}; you turn it to the light, but whatever it once said is lost to damp and age — nothing legible remains.`,

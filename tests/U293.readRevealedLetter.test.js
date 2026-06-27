@@ -22,7 +22,7 @@ import path from 'node:path';
 import { newWorld } from '../engine/state.js';
 import { beginAdventure, playerMove } from '../engine/playloop.js';
 import { normalizeManifest, normalizePack } from '../engine/rulesets.js';
-import { containerContents } from '../engine/decompression/generateFurniture.js';
+import { containerContents, containerItemText } from '../engine/decompression/generateFurniture.js';
 
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
 function loadPacks() {
@@ -88,4 +88,33 @@ test('U293: the acknowledgment is deterministic', () => {
   const a = playerMove(playerMove(boot(), PACKS, 'open the iron-bound chest').world, PACKS, 'read the letter').output.narration;
   const b = playerMove(playerMove(boot(), PACKS, 'open the iron-bound chest').world, PACKS, 'read the letter').output.narration;
   assert.equal(a, b, 'same seed → identical read narration');
+});
+
+test('U293: reading the letter delivers authored body, not the not-legible fallback', () => {
+  const opened = playerMove(boot(), PACKS, 'open the iron-bound chest').world;
+  const { output } = playerMove(opened, PACKS, 'read the letter');
+  const NOT_LEGIBLE_RE = /faded past reading|nothing on it you can make out|too far gone to read|lost to damp and age|nothing legible remains/i;
+  assert.doesNotMatch(output.narration, NOT_LEGIBLE_RE, `must deliver authored body, not fallback: ${output.narration}`);
+  assert.match(String(output.mechanics || ''), /legible text/, `mechanics tag must reflect legible text: ${output.mechanics}`);
+});
+
+test('U293: authored body contains no §0 cosmology vocabulary', () => {
+  const opened = playerMove(boot(), PACKS, 'open the iron-bound chest').world;
+  const { output } = playerMove(opened, PACKS, 'read the letter');
+  const COSMOLOGY_RE = /\b(?:orb|cataclysm|waveform|pale root|mintFact|27[,\s]?000|mandela)\b/i;
+  assert.doesNotMatch(output.narration, COSMOLOGY_RE, `narration must not contain §0 cosmology: ${output.narration}`);
+});
+
+test('U293: containerItemText — null for non-letter items; letter body is stable and clean', () => {
+  assert.equal(containerItemText('tallow', 'n0', 'iron-bound chest', 'a scroll of notes'), null, 'non-letter returns null');
+  assert.equal(containerItemText('tallow', 'n0', 'iron-bound chest', 'a parchment note'), null, 'non-parchment note returns null');
+  const body = containerItemText('tallow', 'n0', 'iron-bound chest', 'a folded letter, its seal broken');
+  assert.ok(typeof body === 'string' && body.length > 10, `letter must have an authored body: ${body}`);
+  assert.equal(
+    containerItemText('tallow', 'n0', 'iron-bound chest', 'a folded letter, its seal broken'),
+    body,
+    'same inputs → byte-identical body'
+  );
+  const COSMOLOGY_RE = /\b(?:orb|cataclysm|waveform|pale root|mintFact|27[,\s]?000|mandela)\b/i;
+  assert.doesNotMatch(body, COSMOLOGY_RE, `body must not contain §0 cosmology: ${body}`);
 });

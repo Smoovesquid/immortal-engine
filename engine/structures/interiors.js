@@ -1,5 +1,6 @@
 import { ensureWorld } from '../state.js';
 import { ensureMap } from '../map/mapState.js';
+import { applyDeltas } from '../effectsCore.js';
 import { adjacentRooms, normalizeTopology, interiorExitsFrom } from './topology.js';
 import { reachableRooms } from '../movement/interiorMovement.js';
 
@@ -145,7 +146,7 @@ export function moveWithinInterior(world, toRoomId) {
   const visited = Array.isArray(interior.visited) ? interior.visited.slice() : [];
   if (!visited.includes(targetRoomId)) visited.push(targetRoomId);
 
-  return {
+  const next = ensureWorld({
     ...w,
     map: {
       ...ensureMap(w.map),
@@ -160,7 +161,12 @@ export function moveWithinInterior(world, toRoomId) {
         visited
       }
     }
-  };
+  });
+
+  const actorId = String(next.party?.[0]?.id || '');
+  return actorId
+    ? applyDeltas(next, [{ op: 'position', entityId: actorId, set: { interior: { structureId: structureKey, roomId: targetRoomId } } }])
+    : next;
 }
 
 // interiorDirectionalExits(world) -> { north, east, south, west } room id or null

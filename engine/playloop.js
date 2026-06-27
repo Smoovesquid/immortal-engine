@@ -2924,7 +2924,11 @@ function playerMoveCore(world, packsById, text) {
   });
 
   // Living Terrain Engine v1: travel intents advance map position deterministically.
-  if (moveAdvancesScene(text)) {
+  const indoorCompassLeak = Boolean(w.scene?.interior)
+    && (/\b(?:go\s+north|go\s+south|go\s+east|go\s+west|north|south|east|west)\b/i.test(String(text || ''))
+      || /(?<!['’])\b(?:n|s|e|w)\b/i.test(String(text || '')))
+    && !/\b(?:travel|leave|exit|head to|go to|move to|escape|journey|walk to)\b/i.test(String(text || ''));
+  if (!indoorCompassLeak && moveAdvancesScene(text)) {
     const dest = pickTravelDestination(w, text);
     const before = w.map?.currentNodeId;
     w = moveToNode(w, dest);

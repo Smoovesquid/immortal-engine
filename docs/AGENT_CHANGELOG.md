@@ -1716,3 +1716,20 @@ other agents. (none active)
 - Proof (§7): reproduced LLM-off FIRST on `village_baker` — "Is there a founding family..." and "Then who ran the inn..." bounced pre-fix; post-fix both fall through to `[info-check → no-record]`, while "Kael the merchant..." / "Wasiq..." / "Isolde..." still clarify as real invented names. `npm run convergence` **100% (87/87)**, C2 **7/7 locked** (C2-005 new), C9 target not promoted (C9-004 still has two non-NER founder phrasings that roll); `node --test` **8285/8285, 0 fail** after local network permission for the HTTP endpoint test; determinism U19/21/22/27/30 green via full suite.
 - Remaining/next: "Eleven years, you said — so who led this place before you?" no longer bounces referent-clarify, but still rolls because the existing history-info regexes do not cover "who led this place before you"; changing that is grace/info-seeking scope, not H-90's denylist seam.
 - Rollback: revert the H-90 local commit.
+
+2026-06-27 — Homebase (Sonnet 4.6) — ML-1…ML-3 multi-LLM layer cleanup DONE
+- **Provenance:** 2026-06-27 Codex architecture review + Homebase verdicts. Three actionable items; dark lanes (queryBrain / extractMemoryWithLlm / async evaluatePhysics) stay dark by design (determinism invariant).
+- **Commits:** `9fc3ac9` (ML-1), `89b5efa` (ML-3), ML-2 doc-only (this commit).
+
+- **ML-1 — validateNpcVoiceCandidate** (`9fc3ac9`):
+  - File(s): `engine/llmAdapter.js` (+`validateNpcVoiceCandidate` export), `server.js` (wire both voice paths), `tests/U294.npcVoiceValidator.test.js` (13 new tests, 13/13 pass).
+  - Lean deterministic guard: rejects invented proper nouns (mid-sentence Cap not in per-call ground set built from npcName/role/factPhrase/playerLine/ragChunks/substrateContext/claim.eventDescription), ungrounded 4-digit CE years, and withheld-mode secret leaks. claim_recall distortion unflagged (intended). deflected tone/dodge = judgment-shaped → deferred to THE_REF. Gates BOTH Opus 4.8 and Ollama return paths. Never throws.
+
+- **ML-3 — modelRejectsTemperature** (`89b5efa`):
+  - File(s): new `engine/llmModelRules.js`, `engine/llmAdapter.js` (callLLM/callNpcVoice/callDM spread `anthropicSamplingFields`), `server/llmProvider.js` (callAnthropic fixed — was passing temperature unconditionally, would HTTP 400 on any Opus route), `tests/U295.modelRejectsTemperature.test.js` (8 new tests, 8/8 pass).
+  - Bug fixed: `server/llmProvider.js callAnthropic` was passing `temperature` unconditionally — would HTTP 400 on Opus routes. Now all four Anthropic call sites spread `anthropicSamplingFields(model, temperature)`. Zero behavior change for Sonnet/Haiku.
+
+- **ML-2 — doc sync** (this commit):
+  - File(s): `docs/LOCAL_LLM.md` (table rewritten — 4-tier NPC voice stack; "never writes player-facing prose" false statement corrected; Ollama-as-voice-fallback documented), `docs/WHAT_THIS_IS.md` (new "Multi-LLM Lanes" section with 🟢/🟡/🔴 table, dark-lane rationale, OpenAI coexistence note), `docs/AGENT_CHANGELOG.md`.
+  - Proof: `npm run check` GREEN — 8939/8939 pass, 109/109 convergence locked, determinism green.
+- Rollback: revert the three commits individually (ML-1, ML-3 are code; ML-2 is docs-only).

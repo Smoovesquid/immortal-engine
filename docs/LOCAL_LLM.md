@@ -15,15 +15,26 @@ Add a local LLM path (Ollama) alongside the existing Anthropic API to handle hig
 
 ## The line
 
-The engine has three AI layers. Each has a clear job and a clear boundary:
+The engine has four AI layers for player-facing text. Each has a clear job and a clear boundary:
 
-| Layer | Model | Decides | Never decides |
+| Layer | Model | Writes player-facing prose | Never decides |
 |---|---|---|---|
-| **Deterministic engine** | None | Physics, rolls, state mutation, combat, spells, movement | — |
-| **Local LLM (new)** | Ollama 7-8B | NPC behavior choices, rumor garbling, physics classification | State changes, roll outcomes, prose |
-| **Cloud LLM** | Claude Sonnet | Narration prose, prose-to-world import, complex reasoning | State changes, roll outcomes, NPC decisions |
+| **Deterministic engine** | None | Base narration text (always runs) | — |
+| **Cloud LLM — narration** | Claude Haiku / Sonnet | Polish / DM narration; prose-to-world import | State changes, roll outcomes, NPC decisions |
+| **Cloud LLM — NPC voice** | Claude Opus 4.8 (primary) | One spoken NPC dialogue line per turn | State changes, rolls, what the NPC decides |
+| **Local LLM — NPC voice fallback** | Ollama 7-8B | NPC dialogue line when Anthropic key absent | State changes, rolls, NPC decisions |
+| **Local LLM — NPC brain / rumor** | Ollama 7-8B | NPC behavior choices, rumor garbling, physics classify | State changes, roll outcomes, prose |
 
-**Rule:** The local model never writes player-facing prose. It returns structured JSON that the engine acts on and that the cloud model narrates.
+**NPC voice tier (D-C1):** Opus 4.8 is the primary voice ("Opus voice for every NPC"). When the
+Anthropic key is present the line is rendered through Opus; on failure or no key, Ollama is the
+fallback; if Ollama is also absent the engine falls back to deterministic template text.
+`validateNpcVoiceCandidate` gates both LLM paths (ML-1) — fabricated names / years / withheld
+secrets are rejected before the line ships. The LLM layer **never throws to the caller**.
+
+**Rule (still true):** The local model never decides canon or overrides physics. A charm spell's
+success/failure is resolved by `resolve.js` (d20 + mod vs DC). If the spell succeeds, the engine
+mutates NPC trust via `applyDeltas`. The local model sees the *result* (trust is now 7) and
+decides what the NPC does with that new trust level.
 
 **Rule:** The local model never overrides physics. A charm spell's success/failure is resolved by `resolve.js` (d20 + mod vs DC). If the spell succeeds, the engine mutates NPC trust via `applyDeltas`. The local model sees the *result* (trust is now 7) and decides what the NPC does with that new trust level.
 
@@ -245,7 +256,7 @@ A subtle indicator in the settings/debug panel: "🧠 Local AI: active" or "🧠
 
 ## What this does NOT do
 
-- **Replace the cloud LLM for narration.** Claude writes the prose. The local model doesn't write player-facing text.
+- **Replace the cloud LLM for narration.** Claude (Haiku/Sonnet) writes DM narration prose. The local model handles NPC brain, rumor garble, and physics classify — NOT narration. Exception: the local model IS the NPC-voice fallback when no Anthropic key is present (D-C1), so it can write one spoken NPC line — but it is validated by `validateNpcVoiceCandidate` and never writes world-description or DM narration.
 - **Make the game dependent on Ollama.** Every consumer has a deterministic fallback. Ollama is an enhancement, not a requirement.
 - **Compromise determinism.** LLM decisions are canonized in Canon Log on first evaluation. Replay reads the log, not the model.
 - **Touch state directly.** The local model returns structured decisions. The engine acts on them through `applyDeltas`. The model never writes to world state.

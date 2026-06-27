@@ -419,6 +419,31 @@ investor leans forward for.
 
 ---
 
+## Multi-LLM Lanes — *which model does what* (ML-1…ML-3 audit, 2026-06-27)
+
+The engine runs **three AI clients** in parallel by design. They don't share a pipeline; each
+has a distinct job and failure mode.
+
+| Lane | Model(s) | Job | Status |
+|---|---|---|---|
+| **DM narration** | Claude Haiku (polish) / Sonnet (DM mode) | One-sentence polish or full structured DM turn | 🟢 Live |
+| **NPC voice** | Opus 4.8 primary → Ollama fallback → templates floor | One spoken dialogue line in the NPC's voice | 🟢 Live |
+| **The REF (narration judge)** | Claude Sonnet (via `llmAdapter.ref/`) | Accepts or regenerates the polish pass | 🟢 Live |
+| **Intent arbiter** | Claude Sonnet (via `playloop.js` `askNpc`) | Structured NPC-decision output → engine acts on it | 🟢 Live |
+| **NPC brain** | Ollama 7-8B (`dialogue.js:545` `fallbackRules`) | Personality-flavored NPC behavior choices | 🟡 Built but dark — fallbackRules fires instead; determinism constraint keeps this dark |
+| **LLM memory** | Ollama 7-8B (`dialogue.js:736` `extractMemory`) | Extracts salient memory from conversation | 🟡 Built but dark — same reason: a live non-deterministic LLM decision breaks seed-replay (U19/U21/U22) |
+| **Async physics** | Ollama 7-8B (`llmPhysics.js:291` `evaluatePhysicsSync`) | "Can I climb this wall?" — physics classification | 🟡 Built but dark — same reason |
+
+**Why the 🟡 lanes stay dark:** A live LLM routing decision inside the turn loop would break
+`worldHash` determinism under replay. The dark lanes are working code held intentionally offline
+until a canonical-log-backed replay strategy lands. They are NOT stale — do not remove them.
+
+**The OpenAI client coexists by design:** `server/ai.js` uses the `openai` npm package for the
+victory-gates trace/replay flow (polish + activation path). This is a separate API client from
+the Anthropic-backed narration/voice layer. Both are live. Do not consolidate them.
+
+---
+
 # What's solid vs. what's in the way
 
 **Rock solid (the foundation is real):**

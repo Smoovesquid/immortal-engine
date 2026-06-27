@@ -1545,6 +1545,11 @@ function playerMoveCore(world, packsById, text) {
     if (insideContainer) return insideContainer;
     const revealed = tryRevealThing(w, text);
     if (revealed) return revealed;
+    // A read/peek aimed at a text-object an OPEN container here revealed → acknowledge the grounded
+    // item, before tryExamineTarget would pivot "you look for a letter, but what's here is …" and
+    // deny the just-revealed letter (THE_DM_TEST). (U293)
+    const readRevealed = tryReadRevealedContainerItem(w, text);
+    if (readRevealed) return readRevealed;
     const examined = tryExamineTarget(w, text);
     if (examined) {
       return { world: w, output: { narration: `Wizard: ${examined}`, mechanics: 'observe only — no roll, state unchanged' } };
@@ -5802,6 +5807,51 @@ function tryContainerReveal(w, text) {
     data: { actorId: 'party', intent: t, text: t, roll: 0, dc: 0, outcome: 'success', updateKind: 'furniture:open' }
   });
   return { world: w1, output: { narration: `Wizard: You lift the lid of the ${name}. ${clause}`, mechanics: '[container:open+reveal] no roll, auto-success' } };
+}
+
+// Once a container is OPEN, its deterministic contents (containerContents) are grounded, readable
+// scene state — the DM must never deny a letter it just revealed (THE_DM_TEST; live bug 2026-06-27:
+// "read the letter" after opening the chest claimed no letter existed). A read/peek aimed at a
+// text-object (letter/note/scroll…) that an open container HERE actually holds is acknowledged from
+// that grounded item — re-derived from the persisted 'open' state + the pure contents deriver, so no
+// new world shape and no hash change. No authored body exists yet, so it honestly reports the object
+// as present-but-not-legible; it never invents lore (narration != canon). Returns { world, output }
+// or null (let the examine / read-floor paths answer when nothing readable is revealed here).
+const READ_SAY_RE = /\b(?:says?|reads?|written)\b/i;
+function tryReadRevealedContainerItem(w, text) {
+  const t = String(text || '');
+  const wantsRead = OBJ_READ_VERB_RE.test(t) || OBJ_CONTENT_PEEK_RE.test(t) || (OBJ_TEXT_NOUN_RE.test(t) && READ_SAY_RE.test(t));
+  if (!wantsRead) return null;
+  const node = (w.map?.nodes || []).find(n => n && n.id === w.map?.currentNodeId) || null;
+  const furniture = Array.isArray(node?.furniture) ? node.furniture : [];
+  if (!furniture.length) return null;
+  // Text-items revealed by any OPEN container here (deterministic; only after it's been opened).
+  const revealed = [];
+  for (const f of furniture) {
+    if (!isContainerPiece(f)) continue;
+    const st = String(f.state || 'intact');
+    if (!OPENED_STATES.has(st) && !DAMAGED_STATES.has(st)) continue;
+    const items = containerContents(String(w?.meta?.seed || ''), String(node?.id || ''), String(f?.name || ''), String(f?.category || ''));
+    for (const it of items) if (OBJ_TEXT_NOUN_RE.test(String(it))) revealed.push({ item: String(it), container: String(f.name) });
+  }
+  if (!revealed.length) return null;
+  // Match by the named text-noun ("read the letter" → the letter), or by an unambiguous bare
+  // pronoun ("read it" / "read") when exactly one readable item has been revealed here.
+  const namedNoun = (t.match(OBJ_TEXT_NOUN_RE) || [])[0];
+  let match = null;
+  if (namedNoun) {
+    const re = new RegExp(`\\b${namedNoun.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
+    match = revealed.find(r => re.test(r.item));
+  }
+  if (!match && !namedNoun && revealed.length === 1) match = revealed[0]; // bare "read it" / "read"
+  if (!match) return null;
+  const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+  const narration = `Wizard: ${pickVariant([
+    `You take up ${match.item} from the ${match.container} and unfold it — but the writing has faded past reading; there's nothing on it you can make out as words.`,
+    `${cap(match.item)} lies in your hands, drawn from the ${match.container}; you turn it to the light, but whatever it once said is lost to damp and age — nothing legible remains.`,
+    `You hold ${match.item}, real enough, lifted from the ${match.container} — yet the ink is too far gone to read; not a line of it holds together.`,
+  ], w, `read:revealed:${match.item}`)}`;
+  return { world: w, output: { narration, mechanics: '[read:revealed-item | grounded object, no legible text, no roll]' } };
 }
 
 function tryFurnitureStateChange(w, text) {

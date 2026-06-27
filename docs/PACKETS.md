@@ -88,6 +88,41 @@ four call sites route through it; fixed the live `llmProvider.js` bug (was passi
   existing Sonnet/Haiku request bodies byte-for-byte unchanged.
 - **rollback:** revert the predicate + call-site edits (restores the scattered handling).
 
+### VG — Visual Map Gate (the Map Nit player SEES the rendered map) ✅ BUILT 2026-06-27 (`33b9658`)
+**Status:** ✅ tool shipped. `scripts/dm-playtest-visual.mjs` drives the real `public/v1.html` in a
+Node-owned browser (puppeteer devDep — no browse-daemon session ceiling); a multimodal Opus PLAYER
+(Map Nit) + JUDGE see the actual rendered map canvas each turn. Catches render-vs-state and
+narration-vs-map divergence the headless `dm-playtest.mjs` is blind to. Disposable focused probe per
+[[feedback_focused_gates_when_needed]] — NOT added to the standing gate. Run:
+`node scripts/dm-playtest-visual.mjs --turns 8 --server http://localhost:5179` (needs dev server + key).
+Screenshots → `output/visual-map-gate/<stamp>/` (gitignored); report → `docs/playtests/visual-map-gate-*.md`.
+
+### VG-F1 — Interior navigation incoherence (the root the visual gate surfaced; CRITICAL)
+**Status:** OPEN — first 8-turn run, report `docs/playtests/visual-map-gate-2026-06-27T15-24-32.md`.
+**Forked diagnosis (engine-wrong, NOT render-wrong):** the DM narrates smooth room-to-room "walk east"
+movement the engine does NOT perform. Engine ground truth shows the player either NO-OPing (pos frozen at
+n6 `(0,9)` for turns 4–8 while the DM keeps narrating eastward steps) or being TELEPORTED between unrelated
+structures (Wayfarers' Outpost `n3`→Beacon Tor `n1`→Crossway Village `n6`). The rendered map marker is
+mostly FAITHFUL to engine state (frozen because the engine froze) — so this is the [[project_dm_invents_geography]]
+root (DM narrates topology that doesn't exist → navigation soft-locks / scene-jumps), now with visual proof.
+- **objective:** interior "go east/through the door" moves the player coherently within ONE structure (or the
+  DM honestly reports no such exit) — no silent teleport to a different structure, no narrated movement the
+  engine ignores.
+- **suspect_files:** `engine/playloop.js` move/scene-transition path (the `newScene` auto-travel at
+  `public/v1.js:789` fires on node change — confirm it isn't shuffling interiors); the interior topology +
+  the DM prompt's geography grounding (see WHOLE_BUILDING_FINDINGS WB-Q1).
+- **forbidden:** "fixing" the renderer/marker first — the marker is mostly truthful here; fork before patching.
+- **done_when:** a fresh visual-gate run shows the marker advancing east when the player walks east, and
+  the location name stable within one building.
+
+### VG-F2 — Location-name drift across turns (secondary; same root)
+**Status:** OPEN — same run. The place is named Wayfarers' Outpost, then Old Shrine, then Beacon Tor, then
+Crossway Village across 8 turns. Partly real (the engine IS jumping structures — see VG-F1) and partly DM
+invention. A transient render-vs-state blip also appeared at the scene jump (T3: engine inside `n1`, map
+briefly drew an EXTERIOR building view while the DM narrated approaching from a treeline).
+- **done_when:** VG-F1 fixed (stops the structure-shuffle) AND the DM names the current location from canon,
+  not invention; re-run the visual gate to confirm name stability.
+
 ### H-96 — Author readable content for revealed text-items (letters/notes deliver prose, not "too faded")
 **Status:** OPEN — follow-up from the chest-letter fix (`6b46c53`). The letter is now grounded and
 acknowledged, but there is **no authored body**, so `read the letter` honestly reports it as

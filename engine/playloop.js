@@ -2176,6 +2176,11 @@ function playerMoveCore(world, packsById, text) {
           const tail = String(eng.output?.narration || '').replace(/^Wizard:\s*/i, '');
           return { ...eng, output: { ...eng.output, narration: `Wizard: ${lead} ${tail}`.trim() } };
         }
+      } else {
+        // Below the fuse — surface the graded "read the room" tell (shrug/warn/bristle)
+        // so the player feels the heat rising before it tips, instead of it accumulating
+        // silently and then a fight out of nowhere. An insult is a social act, not a die roll.
+        return { world: w, output: { narration: `Wizard: ${provocationReactionLine(prov.target, prov.assessed)}`, mechanics: '' } };
       }
     }
   }
@@ -6104,6 +6109,10 @@ function insultDirectedAtNpc(world, npc, text) {
 function assessTurnProvocation(world, text) {
   if (world?.combat?.active) return null;
   if (isInterrogative(text)) return null; // a question ("how do I insult X") is not an insult
+  // A goal-directed social maneuver (intimidate / persuade / charm / deceive) is a
+  // social ROLL, not gratuitous disrespect — defer to resolveSocialAdjudication.
+  // "you worm" provokes; "let me in or I flay you, you worm" is an intimidation.
+  if (detectApproach(text)) return null;
   const target = socialTarget(world, text);
   if (!target || target.hostile) return null;
   if (!insultDirectedAtNpc(world, target, text)) return null;
@@ -6125,6 +6134,26 @@ function provocationAttackLead(npc, assessed) {
   if (assessed.temperament === 'volatile') return `${name} doesn't wait for you to finish — the slight is all the excuse they were waiting for.`;
   if (assessed.tier === 'grievous') return `Something behind ${name}'s eyes goes cold and final. That one drew blood.`;
   return `${name} has taken the last they'll take from you. Your words tip them over the edge.`;
+}
+
+// Below the fuse: the graded tell, so the player can read the room before it breaks.
+// 'bristle' = the last warning (one more and it's a fight); 'warn' = heat rising;
+// 'shrug' = it didn't land. Flavored by temperament — no numbers (hide the math).
+function provocationReactionLine(npc, assessed) {
+  const name = String(npc?.name || 'They').trim() || 'They';
+  if (assessed.verdict === 'bristle') {
+    return assessed.temperament === 'volatile'
+      ? `${name}'s hand drifts toward their belt. One more word and this stops being talk.`
+      : `${name} goes still and cold. "Say that again," they tell you, very quietly — and mean it.`;
+  }
+  if (assessed.verdict === 'warn') {
+    return assessed.temperament === 'stoic'
+      ? `${name} lets it pass with a long, unimpressed look — but the warmth has gone out of them.`
+      : `${name}'s jaw tightens. "Watch your mouth," they say, low. The room has noticed.`;
+  }
+  return assessed.temperament === 'stoic'
+    ? `${name} doesn't even blink; whatever you hoped to land slides right off.`
+    : `${name} brushes the jab aside — though something flickers behind the eyes.`;
 }
 
 function setNpcTrust(world, npcId, delta) {

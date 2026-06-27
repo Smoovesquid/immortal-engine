@@ -74,3 +74,21 @@ test('U293: provocation is deterministic — same insults, same combat timeline'
   };
   assert.deepEqual(run(), run(), 'identical insults → identical outcome (replay-safe)');
 });
+
+test('U293: a patient NPC visibly escalates (a warning) before any blow — read the room', () => {
+  let w = town();
+  const p = mostPatient(w);
+  const lines = []; let began = -1;
+  for (let i = 0; i < 8 && began < 0; i++) {
+    const r = playerMove(w, PACKS, `you craven thief, ${p.name}`); w = r.world;
+    lines.push(String(r.output.narration || ''));
+    if (w.combat?.active) began = i;
+  }
+  assert.ok(began >= 1, `a patient NPC should not snap on the first insult (began=${began})`);
+  const first = p.name.split(' ')[0];
+  for (const ln of lines.slice(0, began)) {
+    assert.match(ln, new RegExp(first, 'i'), `each pre-combat turn is a real reaction that names them: "${ln}"`);
+    assert.doesNotMatch(ln, /it comes off cleanly|it lands, after a fashion|falls short|you manage it|doesn't give it to you/i,
+      `a directed insult must read as a social reaction, not a generic die roll: "${ln}"`);
+  }
+});

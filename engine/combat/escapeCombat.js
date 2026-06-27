@@ -998,7 +998,34 @@ export function applySurpriseRound(world, rng) {
  * result.beats        — array of short lines, one per exchange (for paced reveal)
  * result.combatSummary— the beats joined (for AI narration / fallback)
  */
+// A foe minted from a named NPC (sourceNpcId) carries a PROPER name — "Elske
+// Nightherd", not "the goblin" — so combat prose must not stick an article on it.
+// Rather than thread this through ~35 beat sites, strip "the/The {Name}" -> "{Name}"
+// once on the way out, for the proper-named foes in THIS fight. Generic creatures
+// ("the goblin") keep their article. Pre-turn enemy list, so a foe felled this turn
+// still reads right.
+function stripFoeArticles(result, properNames) {
+  if (!result || !properNames.length) return result;
+  const fix = (s) => properNames.reduce((acc, nm) => {
+    const esc = nm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return acc.replace(new RegExp(`\\b[Tt]he ${esc}\\b`, 'g'), nm);
+  }, String(s == null ? '' : s));
+  return {
+    ...result,
+    beats: Array.isArray(result.beats) ? result.beats.map(fix) : result.beats,
+    combatSummary: typeof result.combatSummary === 'string' ? fix(result.combatSummary) : result.combatSummary
+  };
+}
+
 export function resolveEscapeCombatTurn(world, actionText = '') {
+  const proper = ((world?.combat?.enemies) || [])
+    .filter(e => e && e.sourceNpcId && e.name)
+    .map(e => String(e.name));
+  const out = resolveEscapeCombatTurnCore(world, actionText);
+  return proper.length ? { ...out, result: stripFoeArticles(out.result, proper) } : out;
+}
+
+function resolveEscapeCombatTurnCore(world, actionText = '') {
   let w = ensureWorld(world);
   if (!w.combat?.active) {
     return { world: w, result: { beats: [], combatSummary: '', mechanicsLine: '', outcome: 'mixed' } };

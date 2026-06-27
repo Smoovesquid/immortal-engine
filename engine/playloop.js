@@ -6091,6 +6091,15 @@ function priorProvocationOffense(world, npcId) {
   return carriedGrudge(sum);
 }
 
+// How this NPC already feels about the player → the resolver's disposition (-100..100).
+// trustLevel is 0..10 (5 = neutral): low trust (they mistrust/dislike you) shortens the
+// fuse so they snap sooner; neutral/high reads as no penalty. "Already dislikes you."
+function dispositionFromTrust(npc) {
+  const trust = Number(npc?.conversationState?.trustLevel);
+  if (!Number.isFinite(trust)) return 0;
+  return Math.max(-100, Math.min(100, Math.round((trust - 5) * 20)));
+}
+
 function isInterrogative(text) {
   const t = String(text || '').trim();
   return /\?\s*$/.test(t) || /^(?:how|what|why|should|shall|can|could|would|do|does|did|is|are|was|were|when|where|who|which)\b/i.test(t);
@@ -6120,7 +6129,7 @@ function assessTurnProvocation(world, text) {
   if (!insultDirectedAtNpc(world, target, text)) return null;
   const seed = String(world?.meta?.seed || '');
   const npcId = String(target.id || '');
-  const assessed = assessProvocation({ seed, npcId, text, priorOffense: priorProvocationOffense(world, npcId) });
+  const assessed = assessProvocation({ seed, npcId, text, priorOffense: priorProvocationOffense(world, npcId), disposition: dispositionFromTrust(target) });
   return assessed.severity > 0 ? { target, npcId, assessed } : null;
 }
 

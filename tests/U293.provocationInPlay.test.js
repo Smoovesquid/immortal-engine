@@ -75,6 +75,32 @@ test('U293: provocation is deterministic — same insults, same combat timeline'
   assert.deepEqual(run(), run(), 'identical insults → identical outcome (replay-safe)');
 });
 
+test('U293: an NPC who already mistrusts you snaps sooner (disposition feeds the fuse)', () => {
+  const insultsToSnap = (trustLevel) => {
+    let w = town();
+    const p = mostPatient(w); // even-tempered, so standing has room to matter
+    p.conversationState = { ...(p.conversationState || {}), trustLevel };
+    let began = -1;
+    for (let i = 0; i < 12 && began < 0; i++) { w = playerMove(w, PACKS, `you craven thief, ${p.name}`).world; if (w.combat?.active) began = i; }
+    return began;
+  };
+  const neutral = insultsToSnap(5);
+  const mistrustful = insultsToSnap(1);
+  assert.ok(neutral >= 0 && mistrustful >= 0, 'both eventually snap');
+  assert.ok(mistrustful < neutral, `low trust should snap sooner (mistrustful=${mistrustful} < neutral=${neutral})`);
+});
+
+test('U293: combat prose drops the article before a proper-named foe (no "the Asha")', () => {
+  let w = town();
+  const v = mostVolatile(w); // attacks on the first insult
+  const r = playerMove(w, PACKS, `you spineless coward, ${v.name}`);
+  assert.ok(r.world.combat?.active, 'the volatile one attacked');
+  const re = new RegExp(`\\bthe ${v.name.split(' ')[0]}\\b`, 'i');
+  assert.doesNotMatch(r.output.narration || '', re, `no article before a proper name: "${r.output.narration}"`);
+  const r2 = playerMove(r.world, PACKS, 'strike'); // ongoing exchange
+  assert.doesNotMatch(r2.output.narration || '', re, `ongoing combat is also clean: "${r2.output.narration}"`);
+});
+
 test('U293: a patient NPC visibly escalates (a warning) before any blow — read the room', () => {
   let w = town();
   const p = mostPatient(w);

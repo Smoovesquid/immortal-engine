@@ -11,6 +11,83 @@ done_when · rollback`.
 
 ## ACTIVE
 
+### ML-1…ML-3 — Multi-LLM layer cleanup (from the 2026-06-27 Codex architecture review + Homebase verdicts)
+**Provenance:** Codex read-only audit of the multi-LLM lanes (verified accurate against code by Homebase).
+Three actionable items survived the verdict; the rest (an `AiTask` rebuild, "same pipeline everywhere",
+external structured memory, lighting up the NPC brain as a live decision-maker) were **deferred or
+rejected** — the dark lanes (`queryBrain`, `extractMemoryWithLlm`, async `evaluatePhysics`) stay dark by
+design because a live non-deterministic LLM decision would break deterministic-by-seed (U19/U21/U22).
+
+### ML-1 — `validateNpcVoiceCandidate()` — close the NPC-voice fabrication hole
+**Status:** ✅ DONE 2026-06-27 (`9fc3ac9`; test U294, 13/13). Guards: invented mid-sentence proper
+noun (reuses `findInventedProperNoun` + `COMMON_CAPS`), ungrounded 4-digit CE year, `withheld` factPhrase
+leak; fails OPEN on throw. Gates both Opus + Ollama paths. **Known boundary:** spelled/digit *counts* are
+not guarded (only years) and `claim_recall` name-distortion can over-reject to template — acceptable, lean.
+**Status (orig):** OPEN — the one real correctness gap. `/api/narrate` has a ~500-line validator
+(`engine/llmAdapter.js:447`); `/api/npc-voice` has only a length fence (`server.js:340`), and Opus is now
+the **primary** voice (`server.js:318-324`) — so an NPC can invent a name/number/date and it ships.
+- **model:** Sonnet (clear spec, additive, assembled from existing exports). Optional Opus follow-up = a
+  false-positive calibration sweep over good gate-transcript voice lines.
+- **objective:** a deterministic fabrication guard on NPC voice output — reject invented proper nouns /
+  numbers / dates not in the grounding set; enforce the cheaply-checkable mode constraints; gate BOTH the
+  Opus and Ollama return paths. **Lean guard, not a second 500-line wall.**
+- **allowed_files:** `engine/llmAdapter.js` (add `validateNpcVoiceCandidate`, reuse the exports below);
+  `server.js` (wire both `/api/npc-voice` return paths); new `tests/U###.npcVoiceValidator.test.js`.
+- **reuse_map:** `findInventedProperNoun(cand, groundedNouns)` (`:361`) + `collectGroundedNouns`/`normNoun`
+  (`:337`/`:335`) + `COMMON_CAPS` allowlist (`:316`). Build `groundedNouns` from the route's FLAT fields
+  (`factPhrase`, `claim.eventDescription`, `substrateContext` labels, `ragChunks` text, `npcName`, `role`,
+  `playerLine`) — there is NO `world` object at this route.
+- **forbidden:** a new LLM call (fabrication is a checkable property — use set membership, not a judge);
+  state mutation; throwing to the route (return boolean → client falls back to deterministic templates);
+  over-rejecting `shared`-mode local color (the prompt explicitly allows invented small color).
+- **invariants:** silent-fallback contract intact (never throws); narration ≠ canon; no world-shape change.
+- **mode_constraints (only deterministically-checkable):** `withheld` must not contain the `factPhrase`
+  content; `shared` allows local color (proper-noun/number guards are the limit); `claim_recall` distortion
+  is intended (ground vs `claim.eventDescription`, don't flag drift). `deflected` "did it dodge"/tone =
+  judgment-shaped → OUT OF SCOPE (leave for the REF; note it in code).
+- **test_plan:** rejects an invented proper noun in `shared`; PASSES a grounded noun + ordinary local color
+  (no false positive on common words); rejects an invented year/count; passes a vague quantity ("a few");
+  `withheld` line containing the secret rejected; `claim_recall` distortion NOT flagged.
+- **done_when:** `validateNpcVoiceCandidate` exported and gating both voice paths; new U-test + full suite +
+  `npm run check` green; a fabricating Opus line now returns `ok:false` (template fallback shows).
+- **rollback:** revert the validator + the two wiring lines (voice returns to length-only fence).
+
+### ML-2 — Doc sync: reconcile LOCAL_LLM.md + WHAT_THIS_IS.md with the running system
+**Status:** ✅ DONE 2026-06-27 (`9308112`). LOCAL_LLM.md voice-stack table corrected (Opus→Ollama→templates);
+WHAT_THIS_IS.md gained the 🟢/🟡/🔴 Multi-LLM Lanes table + dark-lane determinism rationale; AGENT_CHANGELOG appended.
+**Status (orig):** OPEN — two docs lie about reality; the status apparatus already half-exists.
+- **model:** Sonnet (docs + cross-reference judgment; cheap).
+- **objective:** `docs/LOCAL_LLM.md` "the local model never writes player-facing prose" is FALSE (Ollama is
+  the NPC-voice fallback, `server.js:331-343`) — correct the contract to Opus-primary / Ollama-fallback /
+  templates-floor. In `docs/WHAT_THIS_IS.md` add a 🟢/🟡/🔴 "Multi-LLM lanes" table.
+- **allowed_files:** `docs/LOCAL_LLM.md`, `docs/WHAT_THIS_IS.md`, `docs/AGENT_CHANGELOG.md` (append-only).
+- **lane_status:** 🟢 narration / REF / NPC-voice / intent-arbiter; 🟡 NPC brain (`dialogue.js:545` uses
+  `fallbackRules`), LLM memory (`dialogue.js:736` uses `extractMemory`), async physics
+  (`llmPhysics.js:291` `evaluatePhysicsSync`). **State the reason the 🟡 lanes stay dark: determinism.**
+- **forbidden:** any code change; touching the still-true "local never decides canon" rule.
+- **done_when:** both docs match verified line refs; `git status` shows only the three doc files.
+
+### ML-3 — Centralize the "Opus 4.8 rejects `temperature`" quirk
+**Status:** ✅ DONE 2026-06-27 (`89b5efa`; test U295, 8/8). New `engine/llmModelRules.js` —
+`modelRejectsTemperature` (prefix `claude-opus-4`, fails toward omission) + `anthropicSamplingFields`; all
+four call sites route through it; fixed the live `llmProvider.js` bug (was passing temperature to Opus → 400).
+**Status (orig):** OPEN — the rule is scattered across comments + a hardcoded omission; `llmProvider.js:71`
+`callAnthropic` passes `temperature` unconditionally (would 400 on an Opus route).
+- **model:** Sonnet (surgical refactor, well-specced).
+- **objective:** one source of truth for the per-model sampling quirk; all four Anthropic call sites consult
+  it; zero behavior change for shipping Sonnet/Haiku calls.
+- **allowed_files:** new `engine/llmModelRules.js` (or top of `engine/llmAdapter.js`); `engine/llmAdapter.js`
+  (`callLLM:238`, `callNpcVoice:275`, `callDM:1595`); `server/llmProvider.js` (`callAnthropic:71`); a unit test.
+- **forbidden:** merging the two Anthropic clients (the OpenAI victory-gates path coexists by design —
+  CLAUDE.md); behavior change for non-Opus calls.
+- **api:** `modelRejectsTemperature(model)` (Set/prefix, not a one-off compare) + optional
+  `anthropicSamplingFields(model, temperature)`.
+- **test_plan:** assert the request body (via the existing `fetchImpl` injection) OMITS `temperature` for an
+  Opus model and INCLUDES it for a non-Opus model.
+- **done_when:** single source of truth; all four sites route through it; suite + `npm run check` green;
+  existing Sonnet/Haiku request bodies byte-for-byte unchanged.
+- **rollback:** revert the predicate + call-site edits (restores the scattered handling).
+
 ### H-96 — Author readable content for revealed text-items (letters/notes deliver prose, not "too faded")
 **Status:** OPEN — follow-up from the chest-letter fix (`6b46c53`). The letter is now grounded and
 acknowledged, but there is **no authored body**, so `read the letter` honestly reports it as

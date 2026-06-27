@@ -23,3 +23,7 @@ docs/playtests/harness/actions-*.json
 docs/playtests/harness/harness-*.md
 docs/playtests/harness/saturation-*.md
 docs/playtests/harness/transcript-sample.txt
+
+# Visual Map Gate — raw per-run map screenshots. The curated run report under
+# docs/playtests/visual-map-gate-*.md is committed explicitly as the evidence record.
+output/

@@ -22,5 +22,8 @@
     "express": "^4.19.2",
     "jsonwebtoken": "^9.0.3",
     "openai": "^4.76.0"
+  },
+  "devDependencies": {
+    "puppeteer": "^25.2.1"
   }
 }

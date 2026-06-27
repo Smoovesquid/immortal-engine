@@ -11,6 +11,37 @@ done_when · rollback`.
 
 ## ACTIVE
 
+### H-96 — Author readable content for revealed text-items (letters/notes deliver prose, not "too faded")
+**Status:** OPEN — follow-up from the chest-letter fix (`6b46c53`). The letter is now grounded and
+acknowledged, but there is **no authored body**, so `read the letter` honestly reports it as
+present-but-not-legible ("the ink is too far gone to read"). Correct-but-thin: a real DM who reveals
+"a folded letter, waiting to be read" should have *something* to read.
+
+**The hole (located):** `engine/decompression/generateFurniture.js` `containerContents()` returns item
+*name* strings only (e.g. `"a folded letter, its seal broken"`); nothing carries a readable body.
+`engine/playloop.js` `tryReadRevealedContainerItem` (the `6b46c53` reader) already finds the grounded
+text-item — it just has no text to deliver, so it falls back to the "not legible" line.
+
+- **objective:** a text-item revealed from a container can deliver short, deterministic, in-world prose
+  when read — a few lines of letter/note text — while staying canon-safe (no §0 cosmology, no major
+  lore, no NPC secrets). Honest "not legible" remains the fallback for items with no body.
+- **allowed_files:** `engine/decompression/generateFurniture.js` (a per-(seed,nodeId,name,item)
+  text deriver or a small authored table keyed to the existing `CONTAINER_LOOT` text-items),
+  `engine/playloop.js` (`tryReadRevealedContainerItem` delivers the body when present), a new `tests/U###`.
+- **forbidden:** an inventory/item-pickup system; LLM-authored runtime text (must be deterministic);
+  surfacing cosmology/§0 or unearned NPC lore; broad refactor of the furniture model.
+- **invariants:** determinism (pure projection of seed+node+item — no world shape, no hash change);
+  narration ≠ canon; the reveal→read grounding from `6b46c53` preserved; the "not legible" fallback
+  stays for bodiless items.
+- **test_plan:** unit — open the tallow chest, read the letter, assert a stable, non-empty body is
+  delivered (same seed → identical text) and that it contains no cosmology/§0 markers; a bodiless
+  text-item still gives the honest "not legible" line; re-run U293 (grounding) + U256 (contents).
+- **done_when:** authored/derived bodies deliver deterministically on read; new test + U293 + U256
+  green; full suite + convergence 100% locked; determinism gates green.
+- **rollback:** revert the `generateFurniture.js` body deriver (reader falls back to "not legible").
+- **note:** decide table-of-authored-letters vs seeded-generator with the DM-voice rubric (docs/biblioteca
+  Vol 17) — authored reads better but doesn't scale; a constrained generator scales but risks flat prose.
+
 ### H-95 — Scope the LLM narration context to line-of-sight (presence leak, AI-narration ON)
 **Status:** OPEN — follow-up from the 2026-06-26 presence/look-around fix (`9599199`). The
 deterministic (LLM-off) presence answer is now line-of-sight, but the AI-narration-ON path can

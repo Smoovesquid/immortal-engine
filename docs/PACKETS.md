@@ -98,7 +98,15 @@ narration-vs-map divergence the headless `dm-playtest.mjs` is blind to. Disposab
 Screenshots → `output/visual-map-gate/<stamp>/` (gitignored); report → `docs/playtests/visual-map-gate-*.md`.
 
 ### VG-F1 — Interior navigation incoherence (the root the visual gate surfaced; CRITICAL)
-**Status:** OPEN — first 8-turn run, report `docs/playtests/visual-map-gate-2026-06-27T15-24-32.md`.
+**Status:** ✅ DONE 2026-06-27 (`9821f0d`; test U280). Root cause confirmed: interior room moves didn't
+sync `party[0].position.interior` (stale persisted/render position), and bare compass words ("east")
+indoors leaked into generic overworld travel → `map.currentNodeId` jumped → structure teleport. Fix:
+`moveWithinInterior` syncs party interior position via `applyDeltas` (`engine/structures/interiors.js`);
+`playerMoveCore` blocks indoor compass-leak while preserving explicit travel phrases (`engine/playloop.js`).
+**Homebase-verified:** full suite 8941/0 + determinism U19/21/22/27/30 green; **visual gate re-run 5/8→7/8,
+location stayed "Wayfarers' Outpost" all 8 turns (was teleporting across 3 buildings).** Residual marker-
+render gap split out to VG-F3 (renderer, out of this fix's engine scope). Original finding:
+**Status (orig):** OPEN — first 8-turn run, report `docs/playtests/visual-map-gate-2026-06-27T15-24-32.md`.
 **Forked diagnosis (engine-wrong, NOT render-wrong):** the DM narrates smooth room-to-room "walk east"
 movement the engine does NOT perform. Engine ground truth shows the player either NO-OPing (pos frozen at
 n6 `(0,9)` for turns 4–8 while the DM keeps narrating eastward steps) or being TELEPORTED between unrelated
@@ -122,6 +130,24 @@ invention. A transient render-vs-state blip also appeared at the scene jump (T3:
 briefly drew an EXTERIOR building view while the DM narrated approaching from a treeline).
 - **done_when:** VG-F1 fixed (stops the structure-shuffle) AND the DM names the current location from canon,
   not invention; re-run the visual gate to confirm name stability.
+**Status:** ✅ RESOLVED 2026-06-27 by VG-F1 (`9821f0d`) — the structure-shuffle was the cause; visual-gate
+re-run held "Wayfarers' Outpost" stable across all 8 turns. The transient T3 exterior-view blip is the
+render-refresh issue now tracked as VG-F3.
+
+### VG-F3 — Rendered map marker doesn't track room-to-room movement / lags on inside↔outside (RENDERER)
+**Status:** OPEN — surfaced by the VG-F1 verification run (`docs/playtests/visual-map-gate-2026-06-27T19-48-20.md`).
+With VG-F1 landed, the ENGINE now advances the room correctly (U280) and stops teleporting — but the
+RENDERED marker still doesn't visibly move between rooms inside one structure, and on T8 the engine put the
+player OUTSIDE on the road while the marker stayed drawn inside a building room (map_matches_state=false).
+This is the [[map_marker_reads_v1_walk_pos]] renderer concern, NOT engine — the marker reads v1 walk-pos,
+not engine room/interior state, and the interior view lacks per-room marker granularity / didn't refresh on exit.
+- **objective:** the on-map marker reflects the engine's current room and the inside↔outside transition; a
+  room change moves the marker, stepping outside flips the map to the outdoor view.
+- **suspect_files:** `public/map/MapView.js` (interior render + marker placement), `public/v1.js` (map refresh
+  on scene/interior change). Renderer + v1 work, per [[map_marker_reads_v1_walk_pos]] — engine is now truthful.
+- **forbidden:** re-touching the engine movement path (VG-F1 is correct); breaking U21 via direct ux/uy writes.
+- **done_when:** a visual-gate re-run shows the marker advancing on a room change and the map flipping to the
+  outdoor view when the player steps outside; the T8-class fail no longer reproduces.
 
 ### H-96 — Author readable content for revealed text-items (letters/notes deliver prose, not "too faded")
 **Status:** OPEN — follow-up from the chest-letter fix (`6b46c53`). The letter is now grounded and

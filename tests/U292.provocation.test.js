@@ -7,7 +7,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  npcTemperament, temperamentLabel, insultSeverity, resolveProvocation, assessProvocation
+  npcTemperament, temperamentLabel, insultSeverity, resolveProvocation, assessProvocation, carriedGrudge
 } from '../engine/npc/provocation.js';
 
 const RANK = { none: 0, shrug: 0, warn: 1, bristle: 2, attack: 3 };
@@ -58,6 +58,18 @@ test('U292: temperament is deterministic per npc and genuinely varied across a t
   assert.equal(temperamentLabel(10), 'volatile');
   assert.equal(temperamentLabel(90), 'stoic');
   assert.equal(temperamentLabel(50), 'even');
+});
+
+test('U292: a grudge is REMEMBERED but cools — carried offense is half the peak, never zero, never full', () => {
+  assert.equal(carriedGrudge(100), 50, 'cools to half');
+  assert.equal(carriedGrudge(0), 0, 'no grudge → nothing carried');
+  assert.equal(carriedGrudge(25), 13, 'rounds');
+  assert.ok(carriedGrudge(80) > 0 && carriedGrudge(80) < 80, 'remembered (>0) but cooler than the moment (<full)');
+  // The remembered grudge + a fresh full insult is what a returning player faces:
+  // an even NPC (fuse 50) who was pushed to 60 of offense is carried at 30, so one
+  // fresh sharp jab (25) lands at 55 — over the edge. They remembered.
+  const r = resolveProvocation({ tolerance: 50, priorOffense: carriedGrudge(60), severity: 25 });
+  assert.equal(r.verdict, 'attack', 'a remembered grudge + a fresh slight can still tip them');
 });
 
 test('U292: assessProvocation is deterministic (replay-safe); non-insults never trigger', () => {

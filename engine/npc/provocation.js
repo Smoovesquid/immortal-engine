@@ -70,3 +70,12 @@ export function assessProvocation({ seed, npcId, text, priorOffense = 0, disposi
   const res = resolveProvocation({ tolerance, priorOffense, severity, disposition, jitter });
   return { ...res, severity, tier, tolerance, temperament: temperamentLabel(tolerance) };
 }
+
+// A grudge is REMEMBERED but cools: an offense burns at full only on the turn it
+// lands; every prior offense is carried at HALF — never as hot as the moment it
+// happened, but never fully gone (half is the floor). Walk off and come back and
+// they're half-primed, not still mid-rage. (Tim, 2026-06-27.)
+export const GRUDGE_RETENTION = 0.5;
+export function carriedGrudge(priorOffense) {
+  return Math.round(Number(priorOffense || 0) * GRUDGE_RETENTION);
+}

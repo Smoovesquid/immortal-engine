@@ -54,7 +54,7 @@ import { evaluateEncounter, selectCreatures, spawnEncounter } from './combat/enc
 import { isMetaQuestion, handleMetaQuestion, isNullAction, isQuestionShaped, META_LOCATION, META_RECAP, isNpcObserverQuery, isInfoSeekingText, isConfrontationChallenge, buildLocationSurvey, windowView, knowsNpcName, describeNpc, INFO_SEEKING_EXCLUDE_RE } from './grace/gracefulAdjudication.js';
 import { occupantsOfRoom } from './structures/roomOccupancy.js';
 import { lockState, lockOpenEventData } from './structures/locks.js';
-import { assessProvocation } from './npc/provocation.js';
+import { assessProvocation, carriedGrudge } from './npc/provocation.js';
 import { resolveEscapeCombatTurn, initEscapeHp, initEscapeKit, shortRest, longRest, applySurpriseRound, parseEscapeAction, combatStatusAnswer, meleeProfile, playerAc } from './combat/escapeCombat.js';
 import { statMod, maxWounds } from './ruleset/core/stats.js';
 import { shopsHere, stockFor, settlementStock, economyAt, priceToSell, shopBuys, restockEpoch, purseTotalCopper, pursePay, purseReceive, formatPrice, matchByName } from './economy/shop.js';
@@ -6086,7 +6086,9 @@ function priorProvocationOffense(world, npcId) {
   const tl = Array.isArray(world?.timeline) ? world.timeline : [];
   let sum = 0;
   for (const e of tl) { const d = e?.data; if (d && d.updateKind === 'provocation' && String(d.npcId) === String(npcId)) sum += Number(d.severity) || 0; }
-  return sum;
+  // The grudge is remembered but cooled: prior offenses are carried at half (the fresh
+  // insult, added by resolveProvocation, is the only thing at full heat this turn).
+  return carriedGrudge(sum);
 }
 
 function isInterrogative(text) {

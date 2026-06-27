@@ -18,6 +18,7 @@ Every NPC has a **fuse length** (`npcTemperament(seed, npcId)` → 6..100), seed
 - **Severity** (`insultSeverity`): look (6) < mild (12) < sharp (25) < grievous (40).
 - **Disposition**: someone who already dislikes you starts closer to the edge (rides `npc.disposition`).
 - **Mood jitter**: a seeded ±10 — a bad day shortens the fuse — deterministic per (npc, accumulated pressure), so a replay is identical.
+- **Grudge memory** (`carriedGrudge`, `GRUDGE_RETENTION = 0.5`): an offense burns at **full** only on the turn it lands; every prior offense is carried at **half** — never as hot as the moment it happened, but never gone. Walk off and come back and they're *half-primed*, not still mid-rage. A volatile soul still snaps on a fresh slight (the new jab alone clears their low fuse); an even/stoic one takes a touch more sustained pushing, since the older jabs have cooled.
 
 ## Seams it plugs into
 - **Detector:** the existing insult vocabulary (`isCombatSocialNonAction`, `engine/playloop.js`), generalized to a non-combat address.

@@ -7,14 +7,14 @@ import { buildNarratorContext, buildDMContext } from './ai/narratorContext.js';
 import { renderAsciiMapBlock } from './ai/asciiMap.js';
 import { buildAiHashTrace } from './ai/aiHashTrace.js';
 import { reviewNarration } from './ref/index.js';
+import { anthropicSamplingFields } from './llmModelRules.js';
 
 const ANTHROPIC_API = 'https://api.anthropic.com/v1/messages';
 const ANTHROPIC_VERSION = '2023-06-01';
 const DEFAULT_MODEL = 'claude-sonnet-4-6';
 const NARRATION_MODEL = 'claude-haiku-4-5-20251001';
 // D-C1: NPC voice runs on Opus 4.8 — "Opus voice for every NPC" (Decision #1).
-// ⚠️ Opus 4.8 REJECTS `temperature` (HTTP 400 "temperature is deprecated for
-// this model"). The voice call MUST omit temperature entirely — see callNpcVoice.
+// Opus 4.x rejects `temperature` — see modelRejectsTemperature in engine/llmModelRules.js.
 const VOICE_MODEL = 'claude-opus-4-8';
 
 // ── N3: Grounded system prompt ────────────────────────────────────────────────
@@ -246,6 +246,7 @@ export async function callLLM({
     body: JSON.stringify({
       model,
       max_tokens: SETPIECE_BEATS.has(String(ctx?.beat || '')) ? 320 : 120,
+      ...anthropicSamplingFields(model, undefined),
       system: [{ type: 'text', text: sys, cache_control: { type: 'ephemeral' } }],
       messages: [{ role: 'user', content: user }]
     })
@@ -283,7 +284,7 @@ export async function callNpcVoice({
     body: JSON.stringify({
       model,
       max_tokens: 120,
-      // NOTE: deliberately NO `temperature` field — Opus 4.8 rejects it.
+      ...anthropicSamplingFields(model, undefined),
       system: [{ type: 'text', text: String(prompt || ''), cache_control: { type: 'ephemeral' } }],
       messages: [{ role: 'user', content: 'Speak your one line now.' }]
     })
@@ -1675,6 +1676,7 @@ export async function callDM({
           model,
           max_tokens: 500,
           stream: streaming,
+          ...anthropicSamplingFields(model, undefined),
           system: [{ type: 'text', text: sysPrompt, cache_control: { type: 'ephemeral' } }],
           messages: [{ role: 'user', content: userMessage }]
         })

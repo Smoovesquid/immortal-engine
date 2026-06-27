@@ -3,6 +3,8 @@
 // All engine modules call chatCompletion() and don't care which provider is active.
 // Local LLM is a separate channel (NPC brain, rumor garble, physics detect) — not a cloud replacement.
 
+import { anthropicSamplingFields } from '../engine/llmModelRules.js';
+
 import { queryLocal, checkHealth, isAvailable } from './localLlmProvider.js';
 
 const ANTHROPIC_DEFAULT_MODEL = 'claude-sonnet-4-20250514';
@@ -84,7 +86,7 @@ async function callAnthropic({ messages, model, temperature, max_tokens, apiKey,
   const body = {
     model,
     messages: userMessages,
-    temperature,
+    ...anthropicSamplingFields(model, temperature),
     max_tokens: max_tokens || 1024
   };
   if (systemText) {

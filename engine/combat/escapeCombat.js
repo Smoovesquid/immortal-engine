@@ -714,6 +714,10 @@ export function escapeKitView(pc) {
 export function parseEscapeAction(text) {
   const t = String(text || '').trim().toLowerCase();
   if (isFixtureEgressText(t)) return { verb: 'egress' };
+  // DX-2b — positional tactical intents that grant advantage. Checked before the
+  // broad cover match so "circle behind it" reads as a flank, not as cover.
+  if (/\b(?:high|higher)\s+ground\b|\bhigh\s+point\b|\bthe\s+heights\b|\bget\s+(?:up\s+)?(?:high|above)\s+(?:it|them|him|her|the\b)/.test(t)) return { verb: 'highground' };
+  if (/\bflank(?:s|ing|ed)?\b|\bcircle\s+(?:around\s+)?behind\b|\b(?:to|at|on|around)\s+(?:its|their|his|her)\s+(?:side|flank|rear|back)\b/.test(t)) return { verb: 'flank' };
   // Cover is a positional move — duck behind the room's furniture for +AC. Check
   // it before the attack verbs so "hide behind the pillar" reads as cover.
   if (/\b(take\s+cover|cover|behind|duck|hunker)\b/.test(t)) return { verb: 'cover' };
@@ -770,6 +774,14 @@ export function parseEscapeAction(text) {
 function fmtBonus(n) {
   const x = Math.trunc(Number(n)) || 0;
   return (x >= 0 ? '+' : '') + String(x);
+}
+
+// DX-2b: a d20 with optional advantage (roll twice, keep the higher). The second
+// die is drawn ONLY when advantage is active, so fights without a tactical edge
+// keep the exact same rng stream as before.
+function rollD20Adv(rng, advantage) {
+  const a = rng.int(1, 20);
+  return advantage ? Math.max(a, rng.int(1, 20)) : a;
 }
 
 /**
@@ -1070,6 +1082,13 @@ function resolveEscapeCombatTurnCore(world, actionText = '') {
   let coverState = (savedCover && savedCover.active && savedCover.beganAt === beganAt)
     ? { ...savedCover } : null;
 
+  // DX-2b: the player's tactical position (cover/flank/high-ground), persisted on
+  // the combat object (DX-2a schema) so the DM's tactical read sees it and the
+  // structured path shares one model. High-ground/flank are sourced by the verbs
+  // below and grant advantage on the player's attack roll; cover is mirrored from
+  // the escapeCover system above so the read is consistent.
+  let playerTactical = { ...(w.combat?.playerTactical || { cover: 'none', flanked: false, highGround: false }) };
+
   // ── Feature state (v24) ─────────────────────────────────────────────────────
   // Rage / second wind / breath reset per fight (beganAt scope); the paladin's
   // pool and relentless endurance persist until a rest.
@@ -1155,9 +1174,29 @@ function resolveEscapeCombatTurnCore(world, actionText = '') {
   } else if (verb === 'cover') {
     if (roomCover) {
       coverState = { active: true, bonus: Number(roomCover.bonus) || 0, label: roomCover.label, tier: roomCover.tier, beganAt };
+      // Mirror into the shared tactical model for the DM's read (DX-2b): a
+      // +5-grade feature reads as full cover, anything lighter as half.
+      playerTactical.cover = (Number(roomCover.bonus) || 0) >= 5 ? 'full' : 'half';
       beats.push(`You slip behind the ${roomCover.label} — ${roomCover.tier} cover (+${coverState.bonus} AC).`);
     } else {
       beats.push('There is nothing here to take cover behind.');
+    }
+  } else if (verb === 'highground') {
+    // DX-2b: take the high ground — advantage on your attacks while you hold it
+    // (until the fight ends). A positioning action; the foe still gets its turn.
+    playerTactical.highGround = true;
+    beats.push('You scramble up to the high ground — the better footing, the longer reach, the downward angle all yours.');
+    actionMech = '[tactical:high-ground]';
+  } else if (verb === 'flank') {
+    // DX-2b: maneuver to the foe's flank — advantage attacking it (the defender
+    // is caught between angles). Lands on the named/first standing foe.
+    const fIdx = targetIdx >= 0 ? targetIdx : enemies.findIndex(e => e && !e.defeated && (Number(e.hp) || 0) > 0);
+    if (fIdx >= 0) {
+      enemies[fIdx] = { ...enemies[fIdx], tactical: { ...(enemies[fIdx].tactical || {}), flanked: true } };
+      beats.push(`You slip to the ${enemies[fIdx].name}'s flank — its guard splits between you and the angle you've opened.`);
+      actionMech = '[tactical:flank]';
+    } else {
+      beats.push('There is no one here to get around.');
     }
   } else if (verb === 'rage') {
     if (hasFeature(pc, 'rage') && !feats.rageActive) {
@@ -1563,7 +1602,12 @@ function resolveEscapeCombatTurnCore(world, actionText = '') {
   } else if (targetIdx >= 0) {
     const target = enemies[targetIdx];
     const ac = Number(target.ac) || 10;
-    let roll = rng.int(1, 20);
+    // DX-2b: advantage from tactical position — the player holds the high ground
+    // or strikes a flanked foe. True D&D advantage: roll 2d20, keep the higher.
+    // The second die is only drawn when advantage is active, so the rng stream is
+    // unchanged for fights without it.
+    const tacticalAdv = Boolean(playerTactical.highGround) || Boolean(target?.tactical?.flanked);
+    let roll = rollD20Adv(rng, tacticalAdv);
     // Halfling Lucky: reroll any natural 1 on an attack roll (SRD).
     if (roll === 1 && hasFeature(pc, 'rerollOnes')) {
       roll = rng.int(1, 20);
@@ -1647,7 +1691,10 @@ function resolveEscapeCombatTurnCore(world, actionText = '') {
         if (tIdx < 0) break;
         const tgt = enemies[tIdx];
         const tAc = Number(tgt.ac) || 10;
-        let r = swing === 0 ? roll : rng.int(1, 20);
+        // DX-2b: extra-attack swings each get advantage from high ground or the
+        // swing's own flanked target (swing 0 already carries it via `roll`).
+        const swingAdv = Boolean(playerTactical.highGround) || Boolean(tgt?.tactical?.flanked);
+        let r = swing === 0 ? roll : rollD20Adv(rng, swingAdv);
         if (swing > 0 && r === 1 && hasFeature(pc, 'rerollOnes')) r = rng.int(1, 20);
         const heldFast = hasCondition(tgt.conditions, 'paralyzed');
         const tot = r + melee.atkBonus + styleAtk + recklessAtk
@@ -2113,7 +2160,10 @@ function resolveEscapeCombatTurnCore(world, actionText = '') {
   }
 
   // ── Advance round ──────────────────────────────────────────────────────────
-  w = applyDeltas(w, [{ op: 'combatState', set: { enemies, round: round + 1, turnIndex: 0 } }]);
+  // DX-2b: persist the player's tactical position (high-ground/flank/cover-mirror)
+  // and the enemies array (which carries any new flanked flag) so position holds
+  // across rounds within the fight; beginCombat clears it for the next fight.
+  w = applyDeltas(w, [{ op: 'combatState', set: { enemies, round: round + 1, turnIndex: 0, playerTactical } }]);
   w = { ...w, meta: { ...w.meta, escapeCover: coverState
     ? { active: true, bonus: coverState.bonus, label: coverState.label, tier: coverState.tier, beganAt }
     : { active: false, bonus: 0, label: '', tier: '', beganAt } } };

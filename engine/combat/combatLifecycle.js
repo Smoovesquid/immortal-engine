@@ -165,7 +165,11 @@ export function beginCombat(world, { enemies, reason } = {}) {
       reason: reasonStr,
       playerGuard: false,
       companionGuard: false,
-      initiativeOrder
+      initiativeOrder,
+      // DX-2b: a fresh fight starts in the open — clear any tactical position
+      // carried over from a previous combat (without this, the combatState merge
+      // would keep the prior fight's high-ground/cover).
+      playerTactical: { cover: 'none', flanked: false, highGround: false }
     }
   }]);
 

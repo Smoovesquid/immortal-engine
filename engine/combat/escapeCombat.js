@@ -38,6 +38,7 @@ import { makeRng, seedFromString } from '../rng.js';
 import { rollLootForCR } from '../ruleset/core/loot/lootRoll.js';
 import { rollDice } from './diceRoller.js';
 import { coverForRoom, bestCover } from '../structures/coverFeatures.js';
+import { coverAcBonus } from './tacticalMods.js';
 import { applyCondition, hasCondition, removeAllConditions } from './conditions.js';
 import { parseGrappleVerb, resolveGrappleAction, enemyGrappleEscape } from './grapple.js';
 import { parseHazard, resolveHazard } from './hazard.js';
@@ -554,6 +555,44 @@ function currentRoomCover(world) {
   return bestCover(coverForRoom(room));
 }
 
+// DX-2c — source the enemy side's opening tactical positions, ONCE at fight start
+// (the caller gates this on round === 1, then persists the result on the enemies
+// array so it carries forward and stays contestable). Two-sided XCOM tension: some
+// foes start behind cover (harder to hit) or holding the high ground (they strike
+// with advantage). Seeded from a SEPARATE rng (world seed + beganAt), so it never
+// perturbs the turn's combat stream — a fight whose roll yields no terrain edge for
+// any foe keeps the identical rng stream it had before DX-2c. A perched / ranged
+// foe (archer, slinger, harpy) is built to use ground and cover; others only
+// sometimes do. THE LAW holds: this sets STATE the DM narrates, never a number.
+function sourceEnemyTactical(enemies, world, beganAt) {
+  const trng = makeRng(seedFromString(`${world?.meta?.seed || ''}|enemyTactical|${beganAt}`));
+  const PERCHED = /\b(archer|bowman|bowwoman|slinger|sniper|gunner|marksman|crossbow|hawk|raven|harpy|eyrie|sentinel|watcher|gargoyle)\b/i;
+  return enemies.map(e => {
+    if (!e || typeof e !== 'object') return e;
+    const base = (e.tactical && typeof e.tactical === 'object')
+      ? e.tactical : { cover: 'none', flanked: false, highGround: false };
+    // A defeated foe brought into the array (aftermath) takes no position.
+    if (e.defeated || (Number(e.hp) || 0) <= 0) return e;
+    const perched = PERCHED.test(String(e.name || ''));
+    const coverRoll = trng.int(1, 6);
+    const hgRoll = trng.int(1, 6);
+    let cover = base.cover === 'half' || base.cover === 'full' ? base.cover : 'none';
+    let highGround = Boolean(base.highGround);
+    if (perched) {
+      // The perched foe reliably has the terrain: cover on 3+, the heights on 4+.
+      if (coverRoll >= 3) cover = coverRoll === 6 ? 'full' : 'half';
+      if (hgRoll >= 4) highGround = true;
+    } else {
+      // A common foe only occasionally seizes terrain — kept rare so the bulk of
+      // simple fights stay non-tactical (and stream-identical).
+      if (coverRoll === 6) cover = 'half';
+      if (hgRoll === 6) highGround = true;
+    }
+    if (cover === base.cover && highGround === Boolean(base.highGround)) return e;
+    return { ...e, tactical: { ...base, cover, highGround } };
+  });
+}
+
 /**
  * initEscapeHp(world) -> world
  * Set the player's starting hit points. Called once at beginAdventure for
@@ -714,6 +753,10 @@ export function escapeKitView(pc) {
 export function parseEscapeAction(text) {
   const t = String(text || '').trim().toLowerCase();
   if (isFixtureEgressText(t)) return { verb: 'egress' };
+  // DX-2c — drive a foe out of its cover. Checked FIRST, before the high-ground,
+  // flank, and the broad cover match, so "circle its cover" / "flush it out" read
+  // as breaking the foe's cover rather than the player taking cover themselves.
+  if (/\bflush\s+(?:it|them|him|her|that)?\s*out\b|\b(?:drive|force|chase|smoke|root|push|drag)\s+(?:it|them|him|her|that\s+\w+)?\s*(?:out\s+)?(?:of|from)\s+(?:its|their|his|her|the)?\s*cover\b|\b(?:break|breach|strip|clear|deny|circle|flank|get\s+(?:past|around|behind)|around|past|behind)\s+(?:its|their|his|her|the)\s+cover\b|\bout\s+of\s+cover\b|\bno\s+(?:more\s+)?cover\b/.test(t)) return { verb: 'flushcover' };
   // DX-2b — positional tactical intents that grant advantage. Checked before the
   // broad cover match so "circle behind it" reads as a flank, not as cover.
   if (/\b(?:high|higher)\s+ground\b|\bhigh\s+point\b|\bthe\s+heights\b|\bget\s+(?:up\s+)?(?:high|above)\s+(?:it|them|him|her|the\b)/.test(t)) return { verb: 'highground' };
@@ -1133,6 +1176,12 @@ function resolveEscapeCombatTurnCore(world, actionText = '') {
 
   // ── Player turn ────────────────────────────────────────────────────────────
   let enemies = (Array.isArray(w.combat.enemies) ? w.combat.enemies : []).map(e => ({ ...e }));
+  // DX-2c: on the FIRST round of a fight, source the enemy side's opening tactical
+  // positions (some foes hold cover / the high ground). Round === 1 marks the first
+  // player turn (the surprise round doesn't advance it), so this runs exactly once;
+  // the result rides the persisted enemies array forward and stays contestable. Uses
+  // a separate rng (see sourceEnemyTactical), so the turn stream is untouched.
+  if (round === 1) enemies = sourceEnemyTactical(enemies, w, beganAt);
   const hadAliveAtTurnStart = enemies.some(e => e && !e.defeated && (Number(e.hp) || 0) > 0);
   // P-75: snapshot boss hp before the player's strike for phase-crossing detection.
   const bossHpAtStart = new Map(enemies.map(e => [e.id, Number(e.hp) || 0]));
@@ -1197,6 +1246,26 @@ function resolveEscapeCombatTurnCore(world, actionText = '') {
       actionMech = '[tactical:flank]';
     } else {
       beats.push('There is no one here to get around.');
+    }
+  } else if (verb === 'flushcover') {
+    // DX-2c contest: drive a foe out of its cover — clears that enemy's
+    // tactical.cover so your next strike lands clean. A positioning action (the
+    // foe still gets its turn). Lands on the named/first COVERED foe; if the named
+    // target has no cover, falls back to whichever standing foe does.
+    const isCovered = (e) => e && !e.defeated && (Number(e.hp) || 0) > 0
+      && (e.tactical?.cover === 'half' || e.tactical?.cover === 'full');
+    let covIdx = (targetIdx >= 0 && isCovered(enemies[targetIdx])) ? targetIdx : -1;
+    if (covIdx < 0) covIdx = enemies.findIndex(isCovered);
+    if (covIdx >= 0) {
+      enemies[covIdx] = { ...enemies[covIdx], tactical: { ...(enemies[covIdx].tactical || {}), cover: 'none' } };
+      beats.push(`You sweep wide and drive the ${enemies[covIdx].name} out of its cover — nothing between you and it now.`);
+      actionMech = '[tactical:flush-cover]';
+    } else {
+      const fIdx = targetIdx >= 0 ? targetIdx : enemies.findIndex(e => e && !e.defeated && (Number(e.hp) || 0) > 0);
+      beats.push(fIdx >= 0
+        ? `You move to flush it out, but the ${enemies[fIdx].name} has no cover to lose.`
+        : 'There is no one here to flush out.');
+      actionMech = '[tactical:flush-cover | no-cover]';
     }
   } else if (verb === 'rage') {
     if (hasFeature(pc, 'rage') && !feats.rageActive) {
@@ -1601,7 +1670,10 @@ function resolveEscapeCombatTurnCore(world, actionText = '') {
     }
   } else if (targetIdx >= 0) {
     const target = enemies[targetIdx];
-    const ac = Number(target.ac) || 10;
+    // DX-2c: honor the foe's own cover — a covered foe is harder to hit (+2 half /
+    // +5 full effective AC), mirroring the player's escapeCover. coverAcBonus is 0
+    // for an uncovered foe, so this is a no-op for fights without enemy cover.
+    const ac = (Number(target.ac) || 10) + coverAcBonus(target?.tactical?.cover);
     // DX-2b: advantage from tactical position — the player holds the high ground
     // or strikes a flanked foe. True D&D advantage: roll 2d20, keep the higher.
     // The second die is only drawn when advantage is active, so the rng stream is
@@ -1690,7 +1762,8 @@ function resolveEscapeCombatTurnCore(world, actionText = '') {
         const tIdx = named >= 0 ? named : enemies.findIndex(e => e && !e.defeated && (Number(e.hp) || 0) > 0);
         if (tIdx < 0) break;
         const tgt = enemies[tIdx];
-        const tAc = Number(tgt.ac) || 10;
+        // DX-2c: per-swing effective AC folds in the foe's cover (+2/+5; 0 if none).
+        const tAc = (Number(tgt.ac) || 10) + coverAcBonus(tgt?.tactical?.cover);
         // DX-2b: extra-attack swings each get advantage from high ground or the
         // swing's own flanked target (swing 0 already carries it via `roll`).
         const swingAdv = Boolean(playerTactical.highGround) || Boolean(tgt?.tactical?.flanked);
@@ -2005,6 +2078,15 @@ function resolveEscapeCombatTurnCore(world, actionText = '') {
     }
   }
 
+  // DX-2c: outnumbered = flanked. Count the foes that can actually press you —
+  // conscious, not charmed, not paralyzed. Two or more closing on you splits your
+  // guard, so every one of them strikes with advantage. Recomputed each turn from
+  // the post-player-action enemy state, so thinning the pack down to one LIFTS the
+  // flank — being surrounded is dangerous, but it is contestable by killing.
+  const pressingFoes = enemies.filter(e => e && !e.defeated && (Number(e.hp) || 0) > 0
+    && !hasCondition(e.conditions, 'charmed') && !hasCondition(e.conditions, 'paralyzed')).length;
+  playerTactical.flanked = pressingFoes >= 2;
+
   for (const e of enemies) {
     if (hp <= 0) break;
     if (!e || e.defeated || (Number(e.hp) || 0) <= 0) continue;
@@ -2057,7 +2139,14 @@ function resolveEscapeCombatTurnCore(world, actionText = '') {
     // position — same attack penalty, but NOT the entangle save below.
     const restrained = hasCondition(e.conditions, 'restrained');
     const grappledNow = hasCondition(e.conditions, 'grappled');
-    const roll = rng.int(1, 20);
+    // DX-2c: the enemy strikes with advantage from its own high ground OR when the
+    // player is flanked (outnumbered). Not while it is tangled (restrained/grappled)
+    // — it can't leverage position from a bad spot. rollD20Adv draws the 2nd die
+    // ONLY when advantage is live, so a fight with no enemy terrain and one foe
+    // keeps the identical rng stream it had before DX-2c.
+    const enemyAdv = !(restrained || grappledNow)
+      && (Boolean(e.tactical?.highGround) || Boolean(playerTactical.flanked));
+    const roll = rollD20Adv(rng, enemyAdv);
     const total = roll + ENEMY_ATK_BONUS - ((restrained || grappledNow) ? RESTRAINED_PENALTY : 0) + (recklessThisRound ? 4 : 0);
     if (restrained) {
       const cond = (e.conditions || []).find(c => c.name === 'restrained');
@@ -2159,10 +2248,22 @@ function resolveEscapeCombatTurnCore(world, actionText = '') {
     };
   }
 
+  // ── Contest: the high ground is not permanent ───────────────────────────────
+  // DX-2c: a single foe can't take the rise from you, but a pack closing from
+  // every side does. When you're flanked (outnumbered) and didn't re-claim the
+  // height THIS turn, the swarm overruns it and the high ground is lost. A lone
+  // foe never breaks it — so a 1v1 high ground still holds within the fight
+  // (DX-2b). You keep this turn's payoff: any strike already rolled with the edge.
+  if (playerTactical.highGround && playerTactical.flanked && verb !== 'highground') {
+    playerTactical.highGround = false;
+    beats.push('They swarm up from every side — the high ground is gone.');
+  }
+
   // ── Advance round ──────────────────────────────────────────────────────────
-  // DX-2b: persist the player's tactical position (high-ground/flank/cover-mirror)
-  // and the enemies array (which carries any new flanked flag) so position holds
-  // across rounds within the fight; beginCombat clears it for the next fight.
+  // DX-2b/2c: persist the player's tactical position (high-ground/flank/cover-mirror)
+  // and the enemies array (which carries any sourced/contested enemy tactical) so
+  // position holds across rounds within the fight; beginCombat clears it for the
+  // next fight.
   w = applyDeltas(w, [{ op: 'combatState', set: { enemies, round: round + 1, turnIndex: 0, playerTactical } }]);
   w = { ...w, meta: { ...w.meta, escapeCover: coverState
     ? { active: true, bonus: coverState.bonus, label: coverState.label, tier: coverState.tier, beganAt }

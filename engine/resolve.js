@@ -37,6 +37,14 @@ export function resolveMove(world, move) {
   const profBonus = proficient ? profBonusFor(actor?.level ?? 1) : 0;
   roll = clampInt(roll + statBonus + profBonus, 1, 30);
 
+  // DX-2a: tactical advantage (flanking the defender / attacking from high
+  // ground). Positional — applied to THIS roll as a flat +2 (the engine's
+  // advantage model), and it does NOT consume an advantage token.
+  const tacticalAdvantage = Boolean(m.tacticalAdvantage);
+  if (tacticalAdvantage) {
+    roll = clampInt(roll + 2, 1, 30);
+  }
+
   // Advantage (0..2): global rule = +2 to roll, deterministic trigger.
   const advNow = clampInt((w.meta.advantageTokens?.[m.actorId] ?? 0), 0, 2);
   let usedAdvantage = false;
@@ -128,7 +136,11 @@ function normalizeMove(move) {
     risk: clamp01(x.risk ?? 0.5),
     stakeTag: String(x.stakeTag ?? 'time'),
     targetId: x.targetId ? String(x.targetId) : null,
-    toolTag: x.toolTag ? String(x.toolTag) : null
+    toolTag: x.toolTag ? String(x.toolTag) : null,
+    // DX-2a: tactical modifiers supplied by combatResolve. Defaults are no-ops,
+    // so non-combat callers and old replays roll exactly as before.
+    tacticalDefenseBonus: clampInt(x.tacticalDefenseBonus ?? 0, 0, 5),
+    tacticalAdvantage: Boolean(x.tacticalAdvantage)
   };
 }
 
@@ -182,7 +194,13 @@ function computeDC({ w, m, band, gearSignals }) {
     tacticalBump = clampInt(tacticalBump, -1, 2);
   }
 
+  // DX-2a: a defender behind cover is harder to hit — fold their cover bonus
+  // (+2 half / +5 full, supplied by combatResolve) into the effective DC. The
+  // ceiling is lifted to 25 so full cover can push past the normal cap of 20.
+  const tacticalDefenseBonus = clampInt(m.tacticalDefenseBonus ?? 0, 0, 5);
+
   let dc = clampInt(base + clockBump + riskBump + bandBump + woundBump + stressBump + gearBump + tacticalBump, 6, 20);
+  dc = clampInt(dc + tacticalDefenseBonus, 6, 25);
 
   // Focus learning-from-failure hook: if the newest ledger fact is the
   // "studied-the-miss" marker left by a prior focus failure, the next focus

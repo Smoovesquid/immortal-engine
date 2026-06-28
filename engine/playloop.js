@@ -8066,7 +8066,10 @@ function inferCombatMoveFromText(world, pack, actorId, text) {
   const base = inferMoveFromText(world, pack, actorId, text);
   const t = String(text || '').toLowerCase();
   let approachTag = base.approachTag;
-  if (/\b(attack|strike|hit|punch|fight|kill|swing|slash|stab|charge)\b/.test(t)) approachTag = 'force';
+  // DX-2a: take cover is a positioning action (sets the player's cover for +AC),
+  // checked first so "take cover behind the cart" doesn't read as an attack.
+  if (/\b(take\s+cover|take\s+shelter|hunker(?:\s+down)?|duck\s+(?:behind|down))\b/.test(t)) approachTag = 'cover';
+  else if (/\b(attack|strike|hit|punch|fight|kill|swing|slash|stab|charge)\b/.test(t)) approachTag = 'force';
   else if (/\b(parley|talk\s+down|soothe|calm|appeal|plead)\b/.test(t)) approachTag = 'heart';
   else if (/\b(defend|guard|brace|block|hold\s+the\s+line|shield)\b/.test(t)) approachTag = 'endure';
   else if (/\b(study|aim|read|observe|size\s+up|focus)\b/.test(t)) approachTag = 'focus';

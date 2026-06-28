@@ -21,6 +21,7 @@ import { checkGoals } from '../goals/goalContract.js';
 import { makeRng, seedFromString } from '../rng.js';
 import { statMod, maxWounds } from '../ruleset/core/stats.js';
 import { computeAttack, computeAC } from '../gear/gearProps.js';
+import { coverAcBonus } from './tacticalMods.js';
 import { applyResistance } from './damageTypes.js';
 import { tickConditions, hasCondition, applyCondition } from './conditions.js';
 import { getConditionModifiers } from './conditionEffects.js';
@@ -73,6 +74,12 @@ export function resolveCombatTurn(world, move, opts = {}) {
   const bossHpAtStart = new Map((w.combat?.enemies || []).map(e => [e.id, e.hp]));
 
   const m = normalizeCombatMove(move, w.combat);
+
+  // DX-2a source: auto-flank. An enemy fought by a party of >=2 conscious
+  // combatants is flanked (caught between foes) — any attacker striking it
+  // does so with advantage. Deterministic: reads conscious party count only.
+  w = applyAutoFlank(w);
+
   const targetId = m.targetId;
   const targetEnemy = findLivingEnemy(w.combat, targetId) || firstLivingEnemy(w.combat);
   const targetEnemyName = String(targetEnemy?.name ?? '');
@@ -114,6 +121,19 @@ export function resolveCombatTurn(world, move, opts = {}) {
   const playerId = String(w.party?.[0]?.id ?? 'party');
   const playerWoundsAtStart = Number.isFinite(w.party?.[0]?.wounds) ? w.party[0].wounds : 0;
 
+  // DX-2a: resolve the player's positioning declaration up front so it holds for
+  // the whole round, independent of initiative order — taking cover protects
+  // against this round's incoming strikes; a melee strike steps out and breaks
+  // cover (you can't swing and stay hunkered). The strike itself is translated
+  // in the player's initiative slot below.
+  if (m.approachTag === 'cover') {
+    w = setPlayerCover(w, 'half');
+    summaryParts.push('take cover — half cover');
+  } else if (m.approachTag === 'force' && playerCoverLevel(w) !== 'none') {
+    w = setPlayerCover(w, 'none');
+    summaryParts.push('break from cover to strike');
+  }
+
   // CM7: Pure initiative ordering. Walk initiativeOrder top-to-bottom.
   const initOrder = Array.isArray(w.combat?.initiativeOrder) ? w.combat.initiativeOrder : [];
   const counterSeed = seedFromString(`${w.meta?.seed || ''}|counter|${w.time?.turn ?? 0}|${w.combat?.round ?? 0}`);
@@ -140,7 +160,9 @@ export function resolveCombatTurn(world, move, opts = {}) {
     if (slot.type === 'party' && slot.id === playerId && !playerResolved) {
       // ── Player's turn ──
       playerResolved = true;
-      const moveResult = resolveMove(w, m);
+      // DX-2a: fold the target's cover (effective AC → DC) and the player's
+      // positional advantage (high ground / flanked foe) into the roll.
+      const moveResult = resolveMove(w, withTacticalMods(w, m, targetId));
       result = moveResult.result;
       w = applyDeltas(w, result.deltas);
 
@@ -148,7 +170,10 @@ export function resolveCombatTurn(world, move, opts = {}) {
       const combatDeltas = [];
       const currentTargetEnemy = findLivingEnemy(w.combat, targetId) || firstLivingEnemy(w.combat);
 
-      if (currentTargetEnemy && result.outcome === 'success') {
+      if (m.approachTag === 'cover') {
+        // DX-2a: positioning only — the player's cover was set up front (above
+        // the initiative loop); there is no strike to translate.
+      } else if (currentTargetEnemy && result.outcome === 'success') {
         if (m.approachTag === 'force' || m.approachTag === 'finesse') {
           const attack = computeAttack(w.party?.[0]);
           const base = m.approachTag === 'force' ? FORCE_BASE : FINESSE_BASE;
@@ -304,7 +329,9 @@ export function resolveCombatTurn(world, move, opts = {}) {
       const baseAc = computeAC(rawTarget);
       // CM9: Apply sense overrides — enemy senses can adjust effective AC of target.
       const senseResult = applySenseOverrides(e, rawTarget);
-      const targetMember = { ...rawTarget, ac: Math.max(0, baseAc - senseResult.toHitMod) };
+      // DX-2a: the player's cover raises their effective AC against this strike.
+      const coverBonus = String(rawTarget.id) === playerId ? playerCoverBonus(w) : 0;
+      const targetMember = { ...rawTarget, ac: Math.max(0, baseAc - senseResult.toHitMod + coverBonus) };
       // The player reads as "you" in summaries, never by name — otherwise an enemy
       // sharing the PC's name produces "Sera hits Sera for 3".
       const tLabel = String(targetMember.id) === playerId ? 'you' : String(targetMember.name);
@@ -312,6 +339,9 @@ export function resolveCombatTurn(world, move, opts = {}) {
 
       // P-75: phase-2 bosses fight differently (derived from hp, not stored).
       const ePhased = applyBossPhase(e);
+      // DX-2a: the enemy strikes with advantage from high ground, or against a
+      // flanked player.
+      const enemyAdv = enemyAttackAdvantage(w, ePhased, targetMember, playerId);
       const enemyActions = Array.isArray(ePhased.actions) ? ePhased.actions : [];
       const counterDeltas = [];
 
@@ -321,7 +351,7 @@ export function resolveCombatTurn(world, move, opts = {}) {
         const actionSummaries = [];
 
         for (const act of actionsToResolve) {
-          const res = resolveAction(act, ePhased, targetMember, counterRng, w);
+          const res = resolveAction(act, ePhased, targetMember, counterRng, w, { advantage: enemyAdv });
 
           if (res.hit) {
             totalDmg += res.damage;
@@ -406,7 +436,8 @@ export function resolveCombatTurn(world, move, opts = {}) {
   // If player's move was not resolved via initiative (empty initiativeOrder or
   // player not in the list), resolve it now — backwards compat.
   if (!playerResolved && !parleyEnded && !companionEndedCombat) {
-    const moveResult = resolveMove(w, m);
+    // DX-2a: same tactical fold as the initiative-ordered player turn.
+    const moveResult = resolveMove(w, withTacticalMods(w, m, targetId));
     result = moveResult.result;
     w = applyDeltas(w, result.deltas);
     playerResolved = true;
@@ -414,7 +445,9 @@ export function resolveCombatTurn(world, move, opts = {}) {
     // Translate combat effects (same as initiative-ordered player turn).
     const combatDeltas = [];
     const currentTargetEnemy = findLivingEnemy(w.combat, targetId) || firstLivingEnemy(w.combat);
-    if (currentTargetEnemy && result.outcome === 'success') {
+    if (m.approachTag === 'cover') {
+      // DX-2a: positioning only — cover was set up front; no strike to translate.
+    } else if (currentTargetEnemy && result.outcome === 'success') {
       if (m.approachTag === 'force' || m.approachTag === 'finesse') {
         const attack = computeAttack(w.party?.[0]);
         const base = m.approachTag === 'force' ? FORCE_BASE : FINESSE_BASE;
@@ -539,16 +572,19 @@ export function resolveCombatTurn(world, move, opts = {}) {
         const livingParty = (w.party || []).filter(p => p && (p.wounds ?? 0) < maxWounds(p.level ?? 1, statMod(p.stats?.GRIT ?? 10)));
         if (livingParty.length === 0) break;
         const rawTarget = livingParty[partyIdx % livingParty.length];
-        const targetMember = { ...rawTarget, ac: computeAC(rawTarget) };
+        // DX-2a: player cover raises effective AC here too.
+        const coverBonus = String(rawTarget.id) === playerId ? playerCoverBonus(w) : 0;
+        const targetMember = { ...rawTarget, ac: Math.max(0, computeAC(rawTarget) + coverBonus) };
         partyIdx++;
         const ePhased = applyBossPhase(e);
+        const enemyAdv = enemyAttackAdvantage(w, ePhased, targetMember, playerId);
         const enemyActions = Array.isArray(ePhased.actions) ? ePhased.actions : [];
         if (enemyActions.length > 0) {
           const actionsToResolve = pickActions(ePhased, enemyActions);
           let totalDmg = 0;
           const actionSummaries = [];
           for (const act of actionsToResolve) {
-            const res = resolveAction(act, ePhased, targetMember, counterRng, w);
+            const res = resolveAction(act, ePhased, targetMember, counterRng, w, { advantage: enemyAdv });
             if (res.hit) {
               totalDmg += res.damage;
               actionSummaries.push(`${res.actionName} ${res.damage} ${res.damageType}`);
@@ -967,6 +1003,79 @@ function findLivingEnemy(combat, id) {
 function firstLivingEnemy(combat) {
   const list = Array.isArray(combat?.enemies) ? combat.enemies : [];
   return list.find(e => e.hp > 0) || null;
+}
+
+// ── DX-2a: tactical position ────────────────────────────────────────────────
+// Cover raises effective defense; flanking the defender / attacking from high
+// ground confers advantage. The engine owns these numbers (tacticalMods.js);
+// the DM narrates the read, never the modifier.
+
+/** The player's current cover level (none|half|full). */
+function playerCoverLevel(w) {
+  return String(w?.combat?.playerTactical?.cover ?? 'none');
+}
+
+/** Effective-AC bonus from the player's cover. */
+function playerCoverBonus(w) {
+  return coverAcBonus(playerCoverLevel(w));
+}
+
+/** Set the player's cover level via the sole combat-mutation path. */
+function setPlayerCover(world, level) {
+  const cur = world?.combat?.playerTactical || {};
+  if (String(cur.cover ?? 'none') === level) return world;
+  return applyDeltas(world, [{ op: 'combatState', set: { playerTactical: { ...cur, cover: level } } }]);
+}
+
+/**
+ * Build the attacker-side tactical mods for the player's roll against a target:
+ *   - the target's cover folds into the effective DC (harder to hit);
+ *   - the player gains advantage from high ground or against a flanked foe.
+ */
+function withTacticalMods(w, m, targetId) {
+  const tEnemy = findLivingEnemy(w.combat, targetId) || firstLivingEnemy(w.combat);
+  const pTac = w?.combat?.playerTactical || {};
+  return {
+    ...m,
+    tacticalDefenseBonus: coverAcBonus(tEnemy?.tactical?.cover),
+    tacticalAdvantage: Boolean(pTac.highGround) || Boolean(tEnemy?.tactical?.flanked)
+  };
+}
+
+/**
+ * Does this enemy strike with advantage? Yes when it holds high ground, or when
+ * the target it strikes is the (flanked) player. Flanking is a property of the
+ * DEFENDER, so it lifts whoever is striking them.
+ */
+function enemyAttackAdvantage(w, enemy, targetMember, playerId) {
+  const onHighGround = Boolean(enemy?.tactical?.highGround);
+  const targetIsFlankedPlayer = String(targetMember?.id) === playerId
+    && Boolean(w?.combat?.playerTactical?.flanked);
+  return onHighGround || targetIsFlankedPlayer;
+}
+
+/**
+ * Auto-flank source: every living enemy is flanked when the party fields >=2
+ * conscious combatants. Deterministic (reads conscious party count only); a
+ * no-op when nothing changes, so replay hashes stay stable.
+ */
+function applyAutoFlank(world) {
+  let w = world;
+  const enemies = w.combat?.enemies || [];
+  if (enemies.length === 0) return w;
+  const consciousParty = (w.party || []).filter(p =>
+    p && (p.wounds ?? 0) < maxWounds(p.level ?? 1, statMod(p.stats?.GRIT ?? 10))
+  ).length;
+  const flanked = consciousParty >= 2;
+  let changed = false;
+  const updated = enemies.map(e => {
+    const cur = e.tactical || {};
+    if (Boolean(cur.flanked) === flanked) return e;
+    changed = true;
+    return { ...e, tactical: { ...cur, flanked } };
+  });
+  if (!changed) return w;
+  return applyDeltas(w, [{ op: 'combatState', set: { enemies: updated } }]);
 }
 
 /**

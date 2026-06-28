@@ -27,19 +27,20 @@ import { augmentActionConditions } from './conditionInference.js';
  *   resistanceResult, conditionsApplied, saveResult, actionName
  * }
  */
-export function resolveAction(action, attacker, target, rng, world) {
+export function resolveAction(action, attacker, target, rng, world, opts = {}) {
   const act = augmentActionConditions(action && typeof action === 'object' ? action : {});
   const tgt = target && typeof target === 'object' ? target : {};
   const actionName = String(act.name ?? 'Attack');
   const damageType = String(act.type ?? 'bludgeoning');
 
-  // Save-based action (breath weapon, area effect)
+  // Save-based action (breath weapon, area effect) — positional advantage does
+  // not apply to a save (the target rolls), so opts are ignored here.
   if (act.save && typeof act.save === 'object') {
     return resolveSaveAction(act, tgt, rng, actionName, damageType, attacker);
   }
 
   // Attack roll action (default)
-  return resolveAttackAction(act, tgt, rng, actionName, damageType, attacker, world);
+  return resolveAttackAction(act, tgt, rng, actionName, damageType, attacker, world, opts);
 }
 
 function resolveSaveAction(act, tgt, rng, actionName, damageType, attacker) {
@@ -91,12 +92,16 @@ function resolveSaveAction(act, tgt, rng, actionName, damageType, attacker) {
   };
 }
 
-function resolveAttackAction(act, tgt, rng, actionName, damageType, attacker, world) {
+function resolveAttackAction(act, tgt, rng, actionName, damageType, attacker, world, opts = {}) {
   const baseToHit = typeof act.toHit === 'number' ? act.toHit : 0;
   const toHit = attacker ? applyToHitTraits(attacker, baseToHit, world) : baseToHit;
   const targetAc = typeof tgt.ac === 'number' ? tgt.ac : 10;
 
-  const attackRoll = rng.int(1, 20);
+  // DX-2a: with positional advantage (attacker on high ground / defender
+  // flanked) roll two d20 and keep the higher. The second draw only happens
+  // when advantage is set, so the rng stream is unchanged without it.
+  const firstRoll = rng.int(1, 20);
+  const attackRoll = opts && opts.advantage ? Math.max(firstRoll, rng.int(1, 20)) : firstRoll;
   const natural20 = attackRoll === 20;
   const natural1 = attackRoll === 1;
 

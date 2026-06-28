@@ -6,6 +6,7 @@
 - `docs/THE_DM_TEST.md` — **THE governing principle.** For any player input, do what a real DM would do; resolve intent in the fiction, never bounce it back as a mechanical prompt. Run it before shipping any response.
 - `docs/THE_TABLE_TEST.md` — **governing principle for BEHAVIOR** (sibling of the DM Test): do what would happen at a real D&D table; wrong behavior has *drifted* from the table, so restore it. Texture, not the visible math.
 - `docs/IMMORTAL_INVARIANTS.md` — the non-negotiables (determinism, narration≠canon, one walkable scale, open-ended).
+- `docs/SOBRIETY.md` — **the guardrails against never shipping.** Read when scope is growing or a feature is "done": build-dark ≠ done · the LLM meter · prototype gravity · unfalsifiable vision → **ship ONE bounded Module.**
 - `docs/WHAT_THIS_IS.md` — status-tagged audit (🟢 live / 🟡 built-but-dark / 🔴 partial) of every system. Orient here fast.
 - `docs/REPO_MAP.md` — module map + the "two play surfaces" gotcha (v1 = trunk, `__preview/` = sandbox). Read before exploring.
 - `docs/ROADMAP.md` + `docs/NORTH_STAR.md` — the goal + critical path; the anchor against drift.

@@ -4,10 +4,19 @@
  *
  * Inputs are explicit so determinism is obvious and testable.
  */
+// Structure generation owns its OWN schema version, decoupled from the global
+// WORLD_VERSION: a building's shape and id must NOT change just because an
+// unrelated engine field advances the world version (e.g. a combat-schema bump).
+// Bump this only when structure-generation LOGIC actually changes — it
+// cache-busts stale structures embedded in old saves.
+export const STRUCTURE_SCHEMA_VERSION = 27;
+
 export function generateStructuresForNode({ seed, nodeId, engineVersion, nodeTags }) {
   const s = String(seed ?? '');
   const nid = String(nodeId ?? '');
-  const ver = Number.isFinite(+engineVersion) ? Math.floor(+engineVersion) : 0;
+  // `engineVersion` is accepted for backward compatibility but no longer drives
+  // structure identity — see STRUCTURE_SCHEMA_VERSION above.
+  const ver = STRUCTURE_SCHEMA_VERSION;
   const tags = Array.isArray(nodeTags) ? nodeTags.map(String) : [];
 
   // Deterministic stable id: derived solely from inputs (not from RNG).

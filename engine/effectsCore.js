@@ -393,6 +393,8 @@ export function applyDeltas(world, deltas = []) {
         companionGuard: set && 'companionGuard' in set ? Boolean(set.companionGuard) : cur.companionGuard,
         // CM6: initiativeOrder
         initiativeOrder: set && 'initiativeOrder' in set ? set.initiativeOrder : (cur.initiativeOrder || []),
+        // DX-2a: player tactical position (re-normalized by ensureCombat).
+        playerTactical: set && 'playerTactical' in set ? set.playerTactical : cur.playerTactical,
         enemies
       };
 

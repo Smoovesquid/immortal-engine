@@ -11,6 +11,7 @@ import { ensureStructures } from './structures/structuresState.js';
 import { statMod, maxWounds } from './ruleset/core/stats.js';
 import { normalizeResistances, isValidDamageType } from './combat/damageTypes.js';
 import { normalizeCondition } from './combat/conditions.js';
+import { normalizeTactical, defaultTactical } from './combat/tacticalMods.js';
 import { ensureVillain } from './story/villain.js';
 
 // Pass R1 — bumped from 16 → 17. Adds rumor layer: world.rumors[],
@@ -37,7 +38,12 @@ import { ensureVillain } from './story/villain.js';
 // seed — identity, seat, staged agenda — minted at beginAdventure, advanced
 // by worldTick (P-74b). Old saves get villain: null (minted on next begin —
 // i.e., existing campaigns simply have no adversary; new ones do).
-export const WORLD_VERSION = 27;
+// v28 — DX-2a tactical position (D&D × XCOM). Each combat enemy carries a
+// `tactical` block { cover, flanked, highGround }; the combat object carries a
+// `playerTactical` block of the same shape. Cover raises effective AC (+2/+5),
+// flank/high-ground confer attack advantage. Old saves backfill all-default
+// (none/false/false) — no positional advantage until a fight sources it.
+export const WORLD_VERSION = 28;
 
 // Crunch caps (T1). Kept here so they're colocated with ensureEntity.
 const FOCI_CAP = 6;
@@ -325,17 +331,24 @@ export function appendRecentBeat(world, beat) {
 // Combat encounter shape — see engine/combat/* for the resolver/lifecycle.
 //
 //   world.combat = {
-//     active, round, turnIndex, enemies, beganAt, reason, playerGuard
+//     active, round, turnIndex, enemies, beganAt, reason, playerGuard,
+//     playerTactical: { cover, flanked, highGround }   // DX-2a
 //   }
 //
-// Enemy: { id, name, hp, maxHp, damage, canParley, defeated, sourceNpcId }
+// Enemy: { id, name, hp, maxHp, damage, canParley, defeated, sourceNpcId,
+//          tactical: { cover, flanked, highGround } }  // DX-2a
 //
 // playerGuard is a one-shot flag set by an endure-success during combat;
 // the next enemy counter consumes it (–1 to that counter's damage).
+//
+// DX-2a: each enemy carries a `tactical` block { cover, flanked, highGround }
+// and the combat object carries `playerTactical` of the same shape. Cover
+// raises effective AC; flank/high-ground confer attack advantage. See
+// engine/combat/tacticalMods.js for the engine-owned numbers.
 const COMBAT_ENEMY_CAP = 6;
 
 export function defaultCombat() {
-  return { active: false, round: 0, turnIndex: 0, enemies: [], beganAt: 0, reason: '', playerGuard: false, companionGuard: false, initiativeOrder: [] };
+  return { active: false, round: 0, turnIndex: 0, enemies: [], beganAt: 0, reason: '', playerGuard: false, companionGuard: false, initiativeOrder: [], playerTactical: defaultTactical() };
 }
 
 export function ensureCombat(c) {
@@ -387,7 +400,9 @@ export function ensureCombat(c) {
     // CM9: lairActions and senses.
     const lairActions = normalizeLairActions(eRaw.lairActions);
     const senses = normalizeSenses(eRaw.senses);
-    enemies.push({ id, name, hp, maxHp, damage, ac, cr, damageType, resistances, conditionImmunities, conditions, actions, multiattack, saveProficiencies, canParley, defeated, sourceNpcId, lootTableRef, initMod, legendaryActions, reactions, lairActions, senses });
+    // DX-2a: per-enemy tactical position. Defaults to none/false/false.
+    const tactical = normalizeTactical(eRaw.tactical);
+    enemies.push({ id, name, hp, maxHp, damage, ac, cr, damageType, resistances, conditionImmunities, conditions, actions, multiattack, saveProficiencies, canParley, defeated, sourceNpcId, lootTableRef, initMod, legendaryActions, reactions, lairActions, senses, tactical });
     if (enemies.length >= COMBAT_ENEMY_CAP) break;
   }
 
@@ -399,6 +414,8 @@ export function ensureCombat(c) {
   const reason = reasonRaw.length > 64 ? reasonRaw.slice(0, 64) : reasonRaw;
   const playerGuard = Boolean(c.playerGuard);
   const companionGuard = Boolean(c.companionGuard);
+  // DX-2a: the player's tactical position (cover/flank/high-ground).
+  const playerTactical = normalizeTactical(c.playerTactical);
 
   // CM6: initiativeOrder — array of { id, type, roll, modifier, total }.
   const initiativeOrder = (Array.isArray(c.initiativeOrder) ? c.initiativeOrder : [])
@@ -412,7 +429,7 @@ export function ensureCombat(c) {
     }))
     .slice(0, 12); // cap at party + enemy cap
 
-  return { active, round, turnIndex, enemies, beganAt, reason, playerGuard, companionGuard, initiativeOrder };
+  return { active, round, turnIndex, enemies, beganAt, reason, playerGuard, companionGuard, initiativeOrder, playerTactical };
 }
 
 // ── CM7 — legendary actions & reactions normalizers ─────────────────────

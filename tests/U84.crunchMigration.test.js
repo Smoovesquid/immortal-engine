@@ -54,12 +54,12 @@ test('U84-01: loading a v15 save upgrades to v16 with crunch defaults', () => {
 
   assert.ok(loaded, 'loadSlot must return a world');
   assert.equal(loaded.meta.version, WORLD_VERSION);
-  assert.equal(loaded.meta.version, 27);
+  assert.equal(loaded.meta.version, 28);
 
   // Warning mentioned both versions
   assert.ok(warnings.length > 0, 'expected a version-mismatch warning');
   assert.ok(warnings[0].includes('v15'));
-  assert.ok(warnings[0].includes('v27'));
+  assert.ok(warnings[0].includes('v28'));
 
   const member = loaded.party[0];
   assert.equal(member.level, 1);
@@ -94,7 +94,7 @@ test('U84-02: v15 save with wounds at the legacy cap of 6 still loads cleanly', 
   try {
     const loaded = loadSlot(storage, 'slot1');
     assert.equal(loaded.party[0].wounds, 6);
-    assert.equal(loaded.meta.version, 27);
+    assert.equal(loaded.meta.version, 28);
   } finally {
     console.warn = origWarn;
   }

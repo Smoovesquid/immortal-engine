@@ -289,6 +289,27 @@ export function assertWorldInvariants(world) {
     }
   }
 
+  // DX-2a: a tactical position block must be { cover: none|half|full,
+  // flanked: bool, highGround: bool }. Validated WHEN PRESENT — like
+  // companionGuard/initiativeOrder, presence isn't hard-required (every
+  // production path backfills it via ensureCombat; worldHash runs through
+  // ensureWorld), but a malformed block is caught.
+  function assertTacticalBlock(t, label) {
+    if (t === undefined) return;
+    if (!t || typeof t !== 'object' || Array.isArray(t)) {
+      throw new Error(`Invariant: ${label} must be object`);
+    }
+    if (t.cover !== 'none' && t.cover !== 'half' && t.cover !== 'full') {
+      throw new Error(`Invariant: ${label}.cover must be none|half|full`);
+    }
+    if (typeof t.flanked !== 'boolean') {
+      throw new Error(`Invariant: ${label}.flanked must be boolean`);
+    }
+    if (typeof t.highGround !== 'boolean') {
+      throw new Error(`Invariant: ${label}.highGround must be boolean`);
+    }
+  }
+
   // Combat (Pass 5)
   const combat = world.combat;
   if (!combat || typeof combat !== 'object') {
@@ -312,6 +333,8 @@ export function assertWorldInvariants(world) {
   if (typeof combat.playerGuard !== 'boolean') {
     throw new Error('Invariant: combat.playerGuard must be boolean');
   }
+  // DX-2a: tactical position blocks.
+  assertTacticalBlock(combat.playerTactical, 'combat.playerTactical');
   if (!Array.isArray(combat.enemies)) {
     throw new Error('Invariant: combat.enemies must be array');
   }
@@ -354,6 +377,8 @@ export function assertWorldInvariants(world) {
     if (typeof e.sourceNpcId !== 'string') {
       throw new Error(`Invariant: combat enemy ${e.id} sourceNpcId must be string`);
     }
+    // DX-2a: per-enemy tactical position.
+    assertTacticalBlock(e.tactical, `combat enemy ${e.id} tactical`);
     // CM1: damage type, resistances, conditionImmunities
     if (typeof e.damageType !== 'string') {
       throw new Error(`Invariant: combat enemy ${e.id} damageType must be string`);

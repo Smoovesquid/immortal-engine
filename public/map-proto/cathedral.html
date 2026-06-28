@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>MAPNINJA · Cathedral — hand-drawn → 2D → 3D, XCOM camera</title>
+<style>
+  :root{ --gold:#d9a441; --parch:#e9dcc0; --cyan:#36c5ff; }
+  *{box-sizing:border-box;}
+  html,body{margin:0;height:100%;background:#05060a;overflow:hidden;
+    font-family:"Iowan Old Style","Palatino Linotype",Georgia,serif;color:var(--parch);}
+  #app{position:fixed;inset:0;} canvas{display:block;cursor:grab;} canvas:active{cursor:grabbing;}
+  .mono{font-family:"SF Mono",ui-monospace,Menlo,monospace;}
+  #frame{position:fixed;inset:0;pointer-events:none;z-index:5;box-shadow:inset 0 0 220px 40px rgba(0,0,0,.8);}
+  #frame::before,#frame::after{content:"";position:absolute;width:46px;height:46px;border:2px solid rgba(217,164,65,.5);}
+  #frame::before{top:18px;left:18px;border-right:none;border-bottom:none;}
+  #frame::after{bottom:18px;right:18px;border-left:none;border-top:none;}
+  #banner{position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:6;text-align:center;}
+  #banner .loc{font-size:13px;letter-spacing:.42em;text-transform:uppercase;color:var(--gold);}
+  #banner .turn{font-size:11px;letter-spacing:.3em;color:#9aa0ab;margin-top:4px;}
+  #alt{position:fixed;top:60px;right:26px;z-index:6;text-align:right;width:210px;}
+  #alt .ft{font-size:34px;letter-spacing:.04em;color:#f0d9b5;line-height:1;}
+  #alt .ft small{font-size:14px;color:#9aa0ab;letter-spacing:.1em;}
+  #alt .mode{font-size:11px;letter-spacing:.26em;text-transform:uppercase;margin-top:6px;color:var(--cyan);}
+  #ladder{margin-top:10px;display:flex;flex-direction:column;gap:5px;align-items:flex-end;}
+  #ladder div{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:#5f6671;}
+  #ladder div.on{color:var(--gold);}
+  #ladder div b{color:#cdd2da;font-weight:400;}
+  #legend{position:fixed;top:60px;left:26px;z-index:6;font-size:11px;}
+  #legend .t{letter-spacing:.24em;text-transform:uppercase;color:#9aa0ab;font-size:10px;margin-bottom:7px;}
+  #legend .row{display:flex;align-items:center;gap:8px;margin:5px 0;color:#cdd2da;}
+  #legend .sw{width:14px;height:14px;border:1px solid rgba(255,255,255,.25);}
+  #views{position:fixed;top:184px;left:26px;z-index:7;display:flex;flex-direction:column;gap:7px;}
+  #views button{pointer-events:auto;cursor:pointer;font-family:inherit;font-size:11px;letter-spacing:.14em;
+    text-transform:uppercase;color:#cdd2da;background:rgba(16,17,22,.7);border:1px solid rgba(217,164,65,.3);
+    border-radius:5px;padding:7px 11px;}
+  #views button:hover{border-color:var(--gold);color:#fff;}
+  #hint{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:6;font-size:10px;
+    letter-spacing:.24em;text-transform:uppercase;color:#6b7280;}
+  #hint b{color:var(--gold);}
+  #say{position:fixed;bottom:24px;left:26px;z-index:6;max-width:250px;}
+  #say .q{font-style:italic;font-size:15px;color:#e9dcc0;line-height:1.35;}
+  #say .q b{color:var(--cyan);font-style:normal;}
+  #say .sub{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#7d8490;margin-top:6px;}
+  #mark{position:fixed;bottom:24px;right:26px;z-index:6;text-align:right;font-size:10px;letter-spacing:.22em;
+    text-transform:uppercase;color:#5f6671;}
+  #mark b{color:var(--gold);}
+  #loading{position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;
+    background:#05060a;color:var(--gold);letter-spacing:.4em;text-transform:uppercase;font-size:12px;}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="frame"></div>
+<div id="loading">Raising the cathedral…</div>
+<div id="banner">
+  <div class="loc">Cathedral of the Pale Root</div>
+  <div class="turn mono">DRAG TO ORBIT · SCROLL TO ZOOM · Q / E ROTATE</div>
+</div>
+<div id="alt">
+  <div class="ft mono"><span id="altNum">42</span><small> FT</small></div>
+  <div class="mode" id="altMode">TACTICAL · 3D</div>
+  <div id="ladder">
+    <div data-band="map"><b>400+ ft</b> · hand-drawn</div>
+    <div data-band="2d"><b>~300 ft</b> · battle map · 2D</div>
+    <div data-band="3d"><b>~50 ft</b> · tactical · 3D</div>
+  </div>
+</div>
+<div id="legend">
+  <div class="t">Grid truth (under the stone)</div>
+  <div class="row"><span class="sw" style="background:rgba(54,150,216,.4)"></span>walkable aisle</div>
+  <div class="row"><span class="sw" style="background:rgba(217,140,60,.55)"></span>column / wall</div>
+  <div class="row"><span class="sw" style="background:rgba(20,22,30,.6)"></span>outside / blocked</div>
+</div>
+<div id="views">
+  <button data-alt="420">▭ Hand-drawn · 420 ft</button>
+  <button data-alt="150">◫ Battle 2D · 150 ft</button>
+  <button data-alt="42">◇ Tactical 3D · 42 ft</button>
+</div>
+<div id="say">
+  <div class="q">“Advance up the nave — <b>keep a column between you and the archers.</b>”</div>
+  <div class="sub">columns block · aisles walk · the grid rules</div>
+</div>
+<div id="hint">drag to orbit · scroll to zoom · <b>Q</b> / <b>E</b> rotate 90°</div>
+<div id="mark"><b>MAPNINJA</b> · gothic cathedral · solid realism</div>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+
+const TILE=1.0, WH=3.4;
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const smooth=(e0,e1,x)=>{const t=clamp((x-e0)/(e1-e0),0,1);return t*t*(3-2*t);};
+const lerp=THREE.MathUtils.lerp;
+
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2)); renderer.setSize(innerWidth,innerHeight);
+renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.55;
+document.getElementById('app').appendChild(renderer.domElement);
+const scene=new THREE.Scene(); scene.fog=new THREE.FogExp2(0x05060a,0.022);
+const camera=new THREE.PerspectiveCamera(42,innerWidth/innerHeight,0.1,400);
+
+// ---------- textures ----------
+function speckle(base){const c=document.createElement('canvas');c.width=c.height=256;const x=c.getContext('2d');
+  x.fillStyle=base;x.fillRect(0,0,256,256);
+  for(let i=0;i<2400;i++){const a=Math.random()*0.13;x.fillStyle=(Math.random()<0.5?`rgba(0,0,0,${a})`:`rgba(255,255,255,${a*0.7})`);x.fillRect(Math.random()*256,Math.random()*256,2,2);}
+  const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.wrapS=t.wrapT=THREE.RepeatWrapping;return t;}
+function brickTex(){const c=document.createElement('canvas');c.width=c.height=256;const x=c.getContext('2d');
+  x.fillStyle='#6a5a4a';x.fillRect(0,0,256,256);
+  for(let i=0;i<1500;i++){const a=Math.random()*0.13;x.fillStyle=`rgba(0,0,0,${a})`;x.fillRect(Math.random()*256,Math.random()*256,2,2);}
+  x.strokeStyle='rgba(28,22,18,.85)';x.lineWidth=4;
+  for(let yy=0,r=0;yy<=256;yy+=42,r++){x.beginPath();x.moveTo(0,yy);x.lineTo(256,yy);x.stroke();const off=(r%2)?42:0;for(let xx=off;xx<=256;xx+=84){x.beginPath();x.moveTo(xx,yy);x.lineTo(xx,yy+42);x.stroke();}}
+  const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.wrapS=t.wrapT=THREE.RepeatWrapping;return t;}
+function woodTex(){const c=document.createElement('canvas');c.width=c.height=128;const x=c.getContext('2d');
+  x.fillStyle='#5a3a22';x.fillRect(0,0,128,128);
+  for(let i=0;i<60;i++){x.strokeStyle=`rgba(0,0,0,${Math.random()*0.28})`;x.lineWidth=1+Math.random()*2;x.beginPath();x.moveTo(0,Math.random()*128);x.lineTo(128,Math.random()*128);x.stroke();}
+  const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.wrapS=t.wrapT=THREE.RepeatWrapping;return t;}
+const stoneTex=speckle('#9a9181'), brickTx=brickTex(), woodTx=woodTex();
+const fadeMats=[];
+const stoneMat=new THREE.MeshStandardMaterial({map:stoneTex,color:0xcabfa6,roughness:0.92,transparent:true});
+const brickMat=new THREE.MeshStandardMaterial({map:brickTx,color:0x9a8a76,roughness:0.95,transparent:true});
+const woodMat =new THREE.MeshStandardMaterial({map:woodTx,color:0x7a5230,roughness:0.85,transparent:true});
+const goldMat =new THREE.MeshStandardMaterial({color:0xd9a441,metalness:0.9,roughness:0.3,emissive:0x3a2600,emissiveIntensity:0.3,transparent:true});
+fadeMats.push(stoneMat,brickMat,woodMat,goldMat);
+
+// ---------- hand-drawn map (top layer) ----------
+function handDrawn(){const S=1024,c=document.createElement('canvas');c.width=c.height=S;const x=c.getContext('2d');
+  x.fillStyle='#d8c39a';x.fillRect(0,0,S,S);
+  for(let i=0;i<900;i++){x.fillStyle=`rgba(120,90,50,${Math.random()*0.08})`;const r=10+Math.random()*60;x.beginPath();x.arc(Math.random()*S,Math.random()*S,r,0,7);x.fill();}
+  x.strokeStyle='#4a3520';x.lineWidth=10;x.strokeRect(28,28,S-56,S-56);x.lineWidth=2;x.strokeRect(44,44,S-88,S-88);
+  x.strokeStyle='rgba(74,53,32,.5)';x.lineWidth=2;
+  for(let r=130;r<560;r+=48){x.beginPath();for(let a=0;a<=6.3;a+=0.1){const w=1+Math.sin(a*5+r)*0.05;x.lineTo(S/2+Math.cos(a)*r*w,S/2+Math.sin(a)*r*w*0.92);}x.stroke();}
+  x.strokeStyle='#7a5a36';x.lineWidth=6;x.setLineDash([14,10]);
+  x.beginPath();x.moveTo(120,920);x.quadraticCurveTo(420,560,512,512);x.stroke();
+  x.beginPath();x.moveTo(910,150);x.quadraticCurveTo(640,420,512,512);x.stroke();x.setLineDash([]);
+  x.fillStyle='#4d5e36';for(let i=0;i<320;i++){const px=Math.random()*S,py=Math.random()*S;if(Math.hypot(px-S/2,py-S/2)>360){x.beginPath();x.arc(px,py,3+Math.random()*3,0,7);x.fill();}}
+  // cathedral icon (cruciform)
+  x.save();x.translate(S/2,S/2);x.fillStyle='#cdb98c';x.strokeStyle='#3a2a18';x.lineWidth=4;
+  x.beginPath();x.rect(-26,-90,52,170);x.rect(-70,-30,140,44);x.fill();x.stroke();
+  x.beginPath();x.arc(0,-90,26,Math.PI,0);x.fill();x.stroke();
+  x.fillStyle='#3a2a18';x.font='italic 30px Georgia';x.textAlign='center';x.fillText('Cathedral of',0,150);x.fillText('the Pale Root',0,188);x.restore();
+  x.save();x.translate(170,180);x.strokeStyle='#4a3520';x.fillStyle='#4a3520';x.lineWidth=3;
+  for(let i=0;i<4;i++){x.beginPath();x.moveTo(0,0);x.lineTo(0,-58);x.stroke();x.rotate(Math.PI/2);}x.font='bold 26px Georgia';x.textAlign='center';x.fillText('N',0,-68);x.restore();
+  const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;return t;}
+const mapPlane=new THREE.Mesh(new THREE.PlaneGeometry(52,52),new THREE.MeshBasicMaterial({map:handDrawn(),transparent:true,depthWrite:false}));
+mapPlane.rotation.x=-Math.PI/2; mapPlane.position.y=0.07; scene.add(mapPlane);
+
+// ---------- cathedral footprint (Latin cross + apse) ----------
+const pts=[];
+pts.push([-4.5,8.5]);            // facade left (west, entrance at +z)
+pts.push([ 4.5,8.5]);            // facade right
+pts.push([ 4.5,-0.5]);           // right nave wall to crossing
+pts.push([ 6.8,-0.5]);           // right transept out
+pts.push([ 6.8,-3.5]);           // right transept end
+pts.push([ 4.0,-3.5]);           // back to apse springing (right)
+const ax=0,apz=-3.5,ar=4.0,SEG=18; // apse semicircle bulging to -z
+for(let i=1;i<SEG;i++){const th=-Math.PI*(i/SEG);pts.push([ax+ar*Math.cos(th),apz+ar*Math.sin(th)]);}
+pts.push([-4.0,-3.5]);           // apse springing (left)
+pts.push([-6.8,-3.5]);           // left transept end
+pts.push([-6.8,-0.5]);           // left transept out
+pts.push([-4.5,-0.5]);           // left nave wall
+const N=pts.length;
+
+const wallsGroup=new THREE.Group(); scene.add(wallsGroup); // scales up + fades
+const propsGroup=new THREE.Group(); scene.add(propsGroup); // fades
+const flatGroup =new THREE.Group(); scene.add(flatGroup);  // 2D grid + classification
+
+// floor
+const shape=new THREE.Shape(pts.map(p=>new THREE.Vector2(p[0],p[1])));
+const floor=new THREE.Mesh(new THREE.ShapeGeometry(shape),new THREE.MeshStandardMaterial({map:stoneTex,color:0x8f897b,roughness:0.95,transparent:true}));
+floor.rotation.x=-Math.PI/2; floor.receiveShadow=true; flatGroup.add(floor); fadeMats.push(floor.material);
+
+// outer walls (brick lower, along the footprint) — leave the facade & apse openings readable
+const THICK=0.5;
+for(let i=0;i<N;i++){const a=pts[i],b=pts[(i+1)%N];const dx=b[0]-a[0],dz=b[1]-a[1],len=Math.hypot(dx,dz);
+  const isApse=(i>=6&&i<6+SEG-1);
+  const m=new THREE.Mesh(new THREE.BoxGeometry(len+THICK*0.6,isApse?WH+1.0:WH,THICK), isApse?stoneMat:brickMat);
+  m.position.set((a[0]+b[0])/2,(isApse?WH+1.0:WH)/2,(a[1]+b[1])/2); m.rotation.y=-Math.atan2(dz,dx);
+  m.castShadow=true;m.receiveShadow=true;wallsGroup.add(m);}
+
+// columns (two nave rows + crossing piers + apse ambulatory)
+const columnPts=[];
+function column(x,z,h){const g=new THREE.Group();
+  const base=new THREE.Mesh(new THREE.CylinderGeometry(0.32,0.4,0.3,12),stoneMat);base.position.y=0.15;base.castShadow=true;g.add(base);
+  const shaft=new THREE.Mesh(new THREE.CylinderGeometry(0.26,0.3,h-0.6,14),stoneMat);shaft.position.y=h/2;shaft.castShadow=true;g.add(shaft);
+  const cap=new THREE.Mesh(new THREE.BoxGeometry(0.7,0.35,0.7),stoneMat);cap.position.y=h-0.15;cap.castShadow=true;g.add(cap);
+  g.position.set(x,0,z);wallsGroup.add(g);columnPts.push([x,z]);return g;}
+for(const rowX of [-2.4,2.4]) for(const z of [7.4,5.9,4.4,2.9,1.4,-0.1]) column(rowX,z,WH);   // nave colonnades
+for(const rx of [-2.4,2.4]) column(rx,-1.6,WH+0.6);                                            // crossing piers
+for(let k=0;k<7;k++){const th=-Math.PI*(0.12+0.76*(k/6));column(ax+2.5*Math.cos(th),apz+2.5*Math.sin(th),WH+0.4);} // apse ambulatory
+
+// pointed-arch arcade panels between nave columns
+function archPanel(bw,ph,ah){const s=new THREE.Shape();
+  s.moveTo(-bw/2,0);s.lineTo(bw/2,0);s.lineTo(bw/2,ph);s.lineTo(-bw/2,ph);s.closePath();
+  const hw=bw*0.34,h=new THREE.Path();
+  h.moveTo(-hw,0.05);h.lineTo(-hw,ah*0.5);h.quadraticCurveTo(-hw,ah,0,ah);h.quadraticCurveTo(hw,ah,hw,ah*0.5);h.lineTo(hw,0.05);h.closePath();
+  s.holes.push(h);return s;}
+const panelGeo=new THREE.ExtrudeGeometry(archPanel(1.5,2.4,2.2),{depth:0.25,bevelEnabled:false});
+for(const rowX of [-2.4,2.4]){const zs=[7.4,5.9,4.4,2.9,1.4,-0.1];
+  for(let i=0;i<zs.length-1;i++){const zc=(zs[i]+zs[i+1])/2;const p=new THREE.Mesh(panelGeo,stoneMat);
+    p.position.set(rowX,WH-0.2,zc);p.rotation.y=Math.PI/2;p.castShadow=true;wallsGroup.add(p);}}
+
+// clerestory + colored window strips on the side walls (stained glass, emissive)
+const glassCols=[0xff6f9c,0x5aa0ff,0xffc24a,0x6fe39a];
+for(const sx of [-4.4,4.4]) for(let i=0;i<5;i++){const z=6.6-i*1.6;
+  const w=new THREE.Mesh(new THREE.PlaneGeometry(0.7,1.6),new THREE.MeshStandardMaterial({color:glassCols[i%4],emissive:glassCols[i%4],emissiveIntensity:1.6,roughness:0.4,transparent:true,side:THREE.DoubleSide}));
+  w.position.set(sx+(sx<0?0.26:-0.26),2.6,z);w.rotation.y=Math.PI/2;wallsGroup.add(w);fadeMats.push(w.material);}
+
+// west facade + rose window + portal
+const facade=new THREE.Mesh(new THREE.BoxGeometry(9.4,6.6,0.6),brickMat);facade.position.set(0,3.3,8.7);facade.castShadow=true;wallsGroup.add(facade);
+const portal=new THREE.Mesh(new THREE.BoxGeometry(1.8,2.6,0.4),woodMat);portal.position.set(0,1.3,8.45);wallsGroup.add(portal);
+const roseRing=new THREE.Mesh(new THREE.TorusGeometry(1.25,0.16,12,32),stoneMat);roseRing.position.set(0,4.6,8.45);wallsGroup.add(roseRing);
+for(let k=0;k<8;k++){const sp=new THREE.Mesh(new THREE.BoxGeometry(0.1,2.4,0.12),stoneMat);sp.position.set(0,4.6,8.46);sp.rotation.z=k*Math.PI/8;wallsGroup.add(sp);}
+const roseColors=[0xff6f9c,0x5aa0ff,0xffc24a,0x6fe39a,0xb46fff,0xff8a3a];
+for(let k=0;k<12;k++){const a0=k*Math.PI/6;const wedge=new THREE.Mesh(new THREE.CircleGeometry(1.18,12,a0,Math.PI/6),
+  new THREE.MeshStandardMaterial({color:roseColors[k%6],emissive:roseColors[k%6],emissiveIntensity:1.9,roughness:0.4,transparent:true,side:THREE.DoubleSide}));
+  wedge.position.set(0,4.6,8.5);wallsGroup.add(wedge);fadeMats.push(wedge.material);}
+
+// timber roof beams near the entrance only (cutaway nave)
+for(let i=0;i<2;i++){const z=7.6-i*1.4;const beam=new THREE.Mesh(new THREE.BoxGeometry(9.0,0.26,0.32),woodMat);
+  beam.position.set(0,WH+0.7,z);beam.castShadow=true;wallsGroup.add(beam);}
+
+// ---------- altar + relic + pews + figures ----------
+const altar=new THREE.Mesh(new THREE.BoxGeometry(2.0,1.0,1.1),new THREE.MeshStandardMaterial({map:stoneTex,color:0xb7ad97,roughness:0.9,transparent:true}));
+altar.position.set(0,0.5,-4.6);altar.castShadow=true;altar.receiveShadow=true;propsGroup.add(altar);fadeMats.push(altar.material);
+const relic=new THREE.Mesh(new THREE.IcosahedronGeometry(0.3,0),new THREE.MeshStandardMaterial({color:0x9fe6ff,emissive:0x49d6ff,emissiveIntensity:2.4,roughness:0.3,transparent:true}));
+relic.position.set(0,1.45,-4.6);propsGroup.add(relic);fadeMats.push(relic.material);
+const pewMat=new THREE.MeshStandardMaterial({map:woodTx,color:0x6b4426,roughness:0.85,transparent:true});fadeMats.push(pewMat);
+for(let r=0;r<4;r++) for(const sx of [-1.4,1.4]){const pew=new THREE.Mesh(new THREE.BoxGeometry(1.7,0.5,0.4),pewMat);pew.position.set(sx,0.25,5.6-r*1.4);pew.castShadow=true;pew.receiveShadow=true;propsGroup.add(pew);}
+
+const steel=new THREE.MeshStandardMaterial({color:0xb8c0cc,metalness:0.85,roughness:0.38,transparent:true});
+const dksteel=new THREE.MeshStandardMaterial({color:0x6b7180,metalness:0.8,roughness:0.45,transparent:true});
+const cloth=new THREE.MeshStandardMaterial({color:0xb8313f,roughness:0.85,transparent:true});
+const skin=new THREE.MeshStandardMaterial({color:0xcaa07a,roughness:0.7,transparent:true});
+const robeMat=new THREE.MeshStandardMaterial({color:0x394a6b,roughness:0.9,transparent:true});
+fadeMats.push(steel,dksteel,cloth,skin,robeMat);
+function roundBase(col){const g=new THREE.Group();
+  const b=new THREE.Mesh(new THREE.CylinderGeometry(0.42,0.46,0.12,20),new THREE.MeshStandardMaterial({color:0x2b2d33,roughness:0.9,transparent:true}));b.castShadow=true;g.add(b);fadeMats.push(b.material);
+  const rim=new THREE.Mesh(new THREE.TorusGeometry(0.42,0.025,8,24),new THREE.MeshStandardMaterial({color:col,metalness:0.8,roughness:0.35,emissive:col,emissiveIntensity:0.25,transparent:true}));rim.rotation.x=Math.PI/2;rim.position.y=0.06;g.add(rim);fadeMats.push(rim.material);return g;}
+function makeKnight(){const g=new THREE.Group();g.add(roundBase(0xd9a441));const b=new THREE.Group();b.position.y=0.12;g.add(b);
+  for(const sx of[-0.12,0.12]){const l=new THREE.Mesh(new THREE.CylinderGeometry(0.09,0.08,0.5,8),dksteel);l.position.set(sx,0.27,0);l.castShadow=true;b.add(l);}
+  const t=new THREE.Mesh(new THREE.CylinderGeometry(0.2,0.26,0.55,12),steel);t.position.y=0.74;t.castShadow=true;b.add(t);
+  const tab=new THREE.Mesh(new THREE.BoxGeometry(0.3,0.5,0.06),cloth);tab.position.set(0,0.7,0.2);b.add(tab);
+  for(const sx of[-0.28,0.28]){const p=new THREE.Mesh(new THREE.SphereGeometry(0.13,10,8),steel);p.position.set(sx,0.96,0);p.scale.y=0.8;p.castShadow=true;b.add(p);}
+  const head=new THREE.Mesh(new THREE.SphereGeometry(0.13,12,10),skin);head.position.y=1.16;b.add(head);
+  const helm=new THREE.Mesh(new THREE.SphereGeometry(0.15,12,10,0,6.3,0,Math.PI*0.62),steel);helm.position.y=1.2;helm.castShadow=true;b.add(helm);
+  const plume=new THREE.Mesh(new THREE.BoxGeometry(0.04,0.22,0.14),cloth);plume.position.set(0,1.34,-0.02);b.add(plume);
+  const shield=new THREE.Mesh(new THREE.CylinderGeometry(0.26,0.26,0.05,16),new THREE.MeshStandardMaterial({color:0x2f6b8c,metalness:0.5,roughness:0.5,transparent:true}));shield.rotation.x=Math.PI/2;shield.rotation.z=0.1;shield.position.set(-0.42,0.72,0.16);shield.castShadow=true;b.add(shield);fadeMats.push(shield.material);
+  const blade=new THREE.Mesh(new THREE.BoxGeometry(0.05,0.7,0.02),new THREE.MeshStandardMaterial({color:0xd6dde6,metalness:0.95,roughness:0.2,transparent:true}));blade.position.set(0.44,0.62,0.12);b.add(blade);fadeMats.push(blade.material);
+  g.userData.body=b;return g;}
+function makePriest(){const g=new THREE.Group();g.add(roundBase(0x49d6ff));const b=new THREE.Group();b.position.y=0.12;g.add(b);
+  const robe=new THREE.Mesh(new THREE.ConeGeometry(0.4,1.2,16),robeMat);robe.position.y=0.6;robe.castShadow=true;b.add(robe);
+  const head=new THREE.Mesh(new THREE.SphereGeometry(0.14,12,10),skin);head.position.y=1.28;b.add(head);
+  const hood=new THREE.Mesh(new THREE.SphereGeometry(0.18,12,10,0,6.3,0,Math.PI*0.7),robeMat);hood.position.y=1.3;b.add(hood);
+  g.userData.body=b;return g;}
+const knight=makeKnight();knight.position.set(0,0,2.6);knight.rotation.y=Math.PI;propsGroup.add(knight);
+const priest=makePriest();priest.position.set(-0.1,0,-3.2);priest.rotation.y=0.3;propsGroup.add(priest);
+
+// ---------- grid + classification ----------
+function inPoly(px,pz){let c=false;for(let i=0,j=N-1;i<N;j=i++){const xi=pts[i][0],zi=pts[i][1],xj=pts[j][0],zj=pts[j][1];
+  if(((zi>pz)!=(zj>pz))&&(px<(xj-xi)*(pz-zi)/(zj-zi)+xi))c=!c;}return c;}
+function distSeg(px,pz,a,b){const dx=b[0]-a[0],dz=b[1]-a[1],l2=dx*dx+dz*dz||1e-6;let t=clamp(((px-a[0])*dx+(pz-a[1])*dz)/l2,0,1);return Math.hypot(px-(a[0]+t*dx),pz-(a[1]+t*dz));}
+function nearWall(px,pz){let d=1e9;for(let i=0;i<N;i++)d=Math.min(d,distSeg(px,pz,pts[i],pts[(i+1)%N]));return d;}
+function nearCol(px,pz){let d=1e9;for(const c of columnPts)d=Math.min(d,Math.hypot(px-c[0],pz-c[1]));return d;}
+const classMats=[];const GX0=-8,GX1=8,GZ0=-9,GZ1=9.5;
+for(let x=GX0;x<GX1;x+=TILE) for(let z=GZ0;z<GZ1;z+=TILE){const cx=x+0.5,cz=z+0.5;
+  const inside=inPoly(cx,cz);let col,op;
+  if(inside && nearWall(cx,cz)>THICK*0.7 && nearCol(cx,cz)>0.55){col=0x2bbcf0;op=0.22;}
+  else if(inside && nearCol(cx,cz)<=0.55){col=0xd88c3c;op=0.5;}      // column cell
+  else if(nearWall(cx,cz)<=THICK*0.9 && inside){col=0xd88c3c;op=0.42;} // wall cell
+  else continue;
+  const t=new THREE.Mesh(new THREE.PlaneGeometry(TILE-0.08,TILE-0.08),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:op,depthWrite:false}));
+  t.rotation.x=-Math.PI/2;t.position.set(cx,0.04,cz);flatGroup.add(t);classMats.push({m:t.material,base:op});}
+const grid=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.PlaneGeometry(GX1-GX0,GZ1-GZ0,GX1-GX0,GZ1-GZ0)),new THREE.LineBasicMaterial({color:0x39a7c8,transparent:true,opacity:0.13}));
+grid.rotation.x=-Math.PI/2;grid.position.set((GX0+GX1)/2,0.05,(GZ0+GZ1)/2);flatGroup.add(grid);
+
+// ---------- lighting ----------
+scene.add(new THREE.HemisphereLight(0x4a5270,0x0c0c12,0.6));
+scene.add(new THREE.AmbientLight(0x33425e,0.75));
+const fill=new THREE.DirectionalLight(0xbfc8d8,0.55);fill.position.set(0,20,0.5);scene.add(fill);
+const key=new THREE.DirectionalLight(0xfff0d8,1.15);key.position.set(-6,14,9);key.castShadow=true;
+key.shadow.mapSize.set(1024,1024);key.shadow.camera.near=1;key.shadow.camera.far=60;
+key.shadow.camera.left=-14;key.shadow.camera.right=14;key.shadow.camera.top=16;key.shadow.camera.bottom=-16;key.shadow.bias=-0.0006;scene.add(key);
+const candle=[];for(const sx of[-1.1,1.1]){const cl=new THREE.PointLight(0xffb060,0,5,2);cl.position.set(sx,1.2,-4.3);scene.add(cl);candle.push(cl);
+  const fl=new THREE.Mesh(new THREE.SphereGeometry(0.06,8,8),new THREE.MeshStandardMaterial({color:0xffd27a,emissive:0xffae3a,emissiveIntensity:3,transparent:true}));fl.position.set(sx,1.05,-4.3);propsGroup.add(fl);fadeMats.push(fl.material);}
+const roseLight=new THREE.PointLight(0xffd0e0,0,12,2);roseLight.position.set(0,4.6,7.6);scene.add(roseLight);
+const relicLight=new THREE.PointLight(0x6fd2ff,0,6,2);relicLight.position.set(0,1.6,-4.6);scene.add(relicLight);
+
+// ---------- post ----------
+const composer=new EffectComposer(renderer);composer.addPass(new RenderPass(scene,camera));
+composer.addPass(new UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),0.52,0.6,0.85));composer.addPass(new OutputPass());
+
+// ---------- altitude + XCOM orbit camera ----------
+const target=new THREE.Vector3(0,1.0,1.2);
+let alt=42, az=-0.6, pitchOff=0;
+const altNum=document.getElementById('altNum'),altMode=document.getElementById('altMode');
+const ladder=[...document.querySelectorAll('#ladder div')];
+function apply(){
+  const mapO=smooth(280,360,alt), threeIn=1-smooth(44,60,alt);
+  mapPlane.material.opacity=mapO;
+  wallsGroup.scale.y=lerp(0.015,1,threeIn);
+  for(const m of fadeMats) m.opacity=threeIn;
+  for(const c of classMats) c.m.opacity=c.base*Math.max(0.12,1-threeIn*0.7);
+  grid.material.opacity=0.13*(1-mapO)*(1-threeIn*0.4);
+  floor.material.opacity=Math.max(1-mapO,threeIn);
+  for(const cl of candle) cl.intensity=9*threeIn; relicLight.intensity=7*threeIn; roseLight.intensity=10*threeIn;
+  key.intensity=lerp(0.5,1.15,1-mapO);
+  // camera: top-down (far) → oblique (near); azimuth user-controlled
+  const tilt=smooth(30,62,alt);
+  const phi=clamp(lerp(0.92,0.06,tilt)+pitchOff,0.05,1.15);
+  const rad=clamp(7+alt*0.12,20,64);
+  camera.position.set(target.x+rad*Math.sin(phi)*Math.sin(az),target.y+rad*Math.cos(phi),target.z+rad*Math.sin(phi)*Math.cos(az));
+  camera.lookAt(target);
+  altNum.textContent=Math.round(alt);
+  let band;if(alt>=300){altMode.textContent='STRATEGIC MAP';band='map';}else if(alt>=60){altMode.textContent='BATTLE MAP · 2D';band='2d';}else{altMode.textContent='TACTICAL · 3D';band='3d';}
+  ladder.forEach(d=>d.classList.toggle('on',d.dataset.band===band));
+  document.getElementById('legend').style.opacity=(alt<300&&alt>46)?1:0.25;
+}
+window.setAlt=ft=>{alt=clamp(ft,30,470);apply();};
+window.setAz=a=>{az=a;apply();};
+
+// ---------- interaction (XCOM) ----------
+let drag=false,lx=0,ly=0;
+const cv=renderer.domElement;
+cv.addEventListener('pointerdown',e=>{drag=true;lx=e.clientX;ly=e.clientY;cv.setPointerCapture(e.pointerId);});
+cv.addEventListener('pointerup',e=>{drag=false;});
+cv.addEventListener('pointermove',e=>{if(!drag)return;az-=(e.clientX-lx)*0.006;pitchOff=clamp(pitchOff+(e.clientY-ly)*0.004,-0.35,0.5);lx=e.clientX;ly=e.clientY;apply();});
+addEventListener('wheel',e=>{if(!window.__lock)window.setAlt(alt+e.deltaY*0.28);},{passive:true});
+addEventListener('keydown',e=>{if(e.key==='q'||e.key==='Q'){az-=Math.PI/2;apply();}if(e.key==='e'||e.key==='E'){az+=Math.PI/2;apply();}});
+document.querySelectorAll('#views button').forEach(b=>b.onclick=()=>window.setAlt(+b.dataset.alt));
+
+// ---------- render driver ----------
+let frames=0;const clock=new THREE.Clock();
+function step(){const tt=clock.elapsedTime;const kb=knight.userData.body,pb=priest.userData.body;
+  if(kb)kb.position.y=0.12+Math.sin(tt*1.6)*0.012;if(pb)pb.position.y=0.12+Math.sin(tt*1.3+1)*0.01;
+  relic.rotation.y+=0.01;if(relic.material)relic.material.emissiveIntensity=2.0+Math.sin(tt*3)*0.5;
+  composer.render();frames++;
+  if(frames===1){const l=document.getElementById('loading');if(l)l.remove();}
+  if(frames>=4)window.__ready=true;}
+apply();function animate(){requestAnimationFrame(animate);step();}animate();
+window.renderNow=(n=1)=>{for(let i=0;i<n;i++)step();return frames;};
+window.go=(ft,a,n=12)=>{window.__lock=true;if(a!==undefined)az=a;window.setAlt(ft);const l=document.getElementById('loading');if(l)l.remove();window.renderNow(n);return{alt:Math.round(alt),az:+az.toFixed(2),frames};};
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);composer.setSize(innerWidth,innerHeight);});
+window.__err=[];addEventListener('error',e=>window.__err.push(String(e.message)));
+</script>
+</body>
+</html>

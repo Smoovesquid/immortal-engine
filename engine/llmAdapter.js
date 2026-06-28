@@ -182,6 +182,7 @@ export function buildSystemPrompt(ctx) {
       lines.push(`- Last action resolved: ${cb.lastBeat.result}${dmgNote}`);
     }
     lines.push(`- COMBAT RULE: You are inside an active fight. The enemies listed above are actively threatening the player. NEVER write "no blade was drawn", "no blow exchanged", "you are unharmed", or any phrase that denies the ongoing combat. NEVER invert the last action's hit/miss result.`);
+    lines.push(`- TACTICAL READ (give the player the read they need to choose — XCOM clarity as pure fiction): convey what the threat is doing, where the player stands (their footing, what shields them, who holds the advantage), and the shape of their danger — as the world they perceive. Render the odds and stakes as feeling and image ("its jaws find your guard half-open", "the wall at your back buys you a breath", "you could close now, or hold and let it come"), NEVER as figures: never speak an HP value, a percentage, a DC, a dice result, or a label like "advantage"/"half cover". Make the move; never name it. The numbers you were given are BACKGROUND that shapes this read — never content to recite.`);
     lines.push(``);
   }
 

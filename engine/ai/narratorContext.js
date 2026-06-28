@@ -192,8 +192,12 @@ function buildNarratorCombatBlock(world, outcome) {
     name: String(e?.name ?? ''),
     hp: Number(e?.hp ?? 0),
     maxHp: Number(e?.maxHp ?? 0),
-    defeated: Boolean(e?.defeated)
+    defeated: Boolean(e?.defeated),
+    // DX-2a: per-enemy tactical position — STATE for the DM to narrate as
+    // fiction (never recited; THE LAW lives in the prompt's TACTICAL READ rule).
+    tactical: tacticalView(e?.tactical)
   }));
+  const playerTactical = tacticalView(c.playerTactical);
   const mechanics = String(outcome?.mechanics ?? '');
   const hitMatch = /→\s*(hit|miss)/i.exec(mechanics);
   const dmgMatch = /(\d+)\s*dmg/i.exec(mechanics);
@@ -219,10 +223,19 @@ function buildNarratorCombatBlock(world, outcome) {
     inCombat: true,
     round: Number(c.round ?? 0),
     enemies,
+    playerTactical,
     pcHp: Number(world?.meta?.escapeHp ?? 0),
     pcMaxHp: Number(world?.meta?.escapeMaxHp ?? 0),
     lastBeat
   };
+}
+
+// DX-2a: a copied, plain tactical view for the DM context. Never mutated back
+// into world state.
+function tacticalView(t) {
+  const src = t && typeof t === 'object' ? t : {};
+  const cover = src.cover === 'half' || src.cover === 'full' ? src.cover : 'none';
+  return { cover, flanked: Boolean(src.flanked), highGround: Boolean(src.highGround) };
 }
 
 // ── Combat ────────────────────────────────────────────────────────────────

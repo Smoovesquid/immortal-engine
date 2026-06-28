@@ -74,6 +74,18 @@ const SETPIECE_CRAFT = {
   'death': `SET-PIECE — DEATH: the player has died. Render it gravely and without flinching — the body's failure stated plainly, then the cold edge of what lies past it. Weight and consequence, never spectacle for its own sake.`
 };
 
+// DX-2a: a compact, non-numeric STATE tag for a combatant's tactical position.
+// Returns '' when nothing notable. THE LAW: this is BACKGROUND the DM renders as
+// fiction (the TACTICAL READ rule) — never a label to recite, never a number.
+function tacticalTag(t) {
+  if (!t || typeof t !== 'object') return '';
+  const parts = [];
+  if (t.cover === 'half' || t.cover === 'full') parts.push(`cover=${t.cover}`);
+  if (t.flanked) parts.push('flanked');
+  if (t.highGround) parts.push('high-ground');
+  return parts.length ? ` [position: ${parts.join(', ')}]` : '';
+}
+
 export function buildSystemPrompt(ctx) {
   const typeDesc = NODE_TYPE_DESCRIPTIONS[ctx.nodeType] ?? 'a place';
   const tone     = TONE_GUIDANCE[ctx.tone] ?? TONE_GUIDANCE.grim;
@@ -174,9 +186,11 @@ export function buildSystemPrompt(ctx) {
     lines.push(`COMBAT (active — round ${cb.round}):`);
     for (const e of (cb.enemies || [])) {
       const prefix = e.defeated ? '(defeated) ' : '';
-      lines.push(`- ${prefix}${e.name}: HP ${e.hp}/${e.maxHp}`);
+      const pos = tacticalTag(e.tactical);
+      lines.push(`- ${prefix}${e.name}: HP ${e.hp}/${e.maxHp}${pos}`);
     }
-    lines.push(`- Player HP: ${cb.pcHp}/${cb.pcMaxHp}`);
+    const playerPos = tacticalTag(cb.playerTactical);
+    lines.push(`- Player HP: ${cb.pcHp}/${cb.pcMaxHp}${playerPos}`);
     if (cb.lastBeat) {
       const dmgNote = cb.lastBeat.damage > 0 ? `, ${cb.lastBeat.damage} damage` : '';
       lines.push(`- Last action resolved: ${cb.lastBeat.result}${dmgNote}`);

@@ -259,7 +259,7 @@ test('U73-05: NPC with invalid sophistication throws invariant', () => {
 
 // ── Migration v16 → v21 ────────────────────────────────────────────────
 
-test('U70-11: loading a v16 save upgrades to v21 with empty rumors', () => {
+test('U70-11: loading a v16 save upgrades to current version with empty rumors', () => {
   const v16Save = {
     meta: { version: 16, seed: 'u70-mig', fate: 0.2, campaignId: 'c' },
     party: [{
@@ -280,7 +280,7 @@ test('U70-11: loading a v16 save upgrades to v21 with empty rumors', () => {
     assert.deepEqual(loaded.rumors, []);
     assert.ok(warnings.length > 0, 'expected a version-mismatch warning');
     assert.ok(warnings[0].includes('v16'));
-    assert.ok(warnings[0].includes('v28'));
+    assert.ok(warnings[0].includes('v29'));
   } finally {
     console.warn = origWarn;
   }

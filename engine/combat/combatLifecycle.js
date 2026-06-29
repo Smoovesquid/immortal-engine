@@ -17,6 +17,7 @@ import { endDialogue } from '../npc/dialogue.js';
 import { getMonsterDef } from '../ruleset/core/bestiary/index.js';
 import { makeRng, seedFromString } from '../rng.js';
 import { buildCombatants, rollInitiative } from './initiative.js';
+import { placeCombatants } from './grid.js';
 
 const ENEMY_CAP = 6;
 
@@ -152,6 +153,12 @@ export function beginCombat(world, { enemies, reason } = {}) {
   const initRng = makeRng(initSeed);
   const combatants = buildCombatants(w.party, shaped);
   const initiativeOrder = rollInitiative(combatants, initRng);
+  const placementSeed = seedFromString(`${w.meta?.seed || ''}|combat-grid|${beganAt}|${reasonStr}|${shaped.map(e => e.name).join('|')}`);
+  const placement = placeCombatants({
+    enemies: shaped,
+    reason: reasonStr,
+    rng: makeRng(placementSeed)
+  });
 
   // Then apply the state mutation through the canonical delta op.
   w = applyDeltas(w, [{
@@ -160,12 +167,14 @@ export function beginCombat(world, { enemies, reason } = {}) {
       active: true,
       round: 1,
       turnIndex: 0,
-      enemies: shaped,
+      enemies: placement.enemies,
       beganAt,
       reason: reasonStr,
       playerGuard: false,
       companionGuard: false,
       initiativeOrder,
+      grid: placement.grid,
+      playerCell: placement.playerCell,
       // DX-2b: a fresh fight starts in the open — clear any tactical position
       // carried over from a previous combat (without this, the combatState merge
       // would keep the prior fight's high-ground/cover).

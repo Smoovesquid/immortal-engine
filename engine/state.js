@@ -13,6 +13,16 @@ import { statMod, maxWounds } from './ruleset/core/stats.js';
 import { normalizeResistances, isValidDamageType } from './combat/damageTypes.js';
 import { normalizeCondition } from './combat/conditions.js';
 import { normalizeTactical, defaultTactical } from './combat/tacticalMods.js';
+import {
+  combatCellKey,
+  defaultCombatGrid,
+  defaultEnemyCell,
+  defaultPlayerCell,
+  firstOpenCellNear,
+  hasExplicitCombatCell,
+  normalizeCombatCell,
+  normalizeCombatGrid
+} from './combat/grid.js';
 import { ensureVillain } from './story/villain.js';
 
 // Pass R1 — bumped from 16 → 17. Adds rumor layer: world.rumors[],
@@ -44,7 +54,10 @@ import { ensureVillain } from './story/villain.js';
 // `playerTactical` block of the same shape. Cover raises effective AC (+2/+5),
 // flank/high-ground confer attack advantage. Old saves backfill all-default
 // (none/false/false) — no positional advantage until a fight sources it.
-export const WORLD_VERSION = 28;
+// v29 — MX-1 combat tactical grid. Active combat owns grid:{w,h}, playerCell,
+// and per-enemy cx/cy integer cells (x=east, y=south). Old/direct combats
+// backfill deterministic default cells; beginCombat sources seeded placement.
+export const WORLD_VERSION = 29;
 
 // Crunch caps (T1). Kept here so they're colocated with ensureEntity.
 const FOCI_CAP = 6;
@@ -342,11 +355,12 @@ export function appendRecentBeat(world, beat) {
 //
 //   world.combat = {
 //     active, round, turnIndex, enemies, beganAt, reason, playerGuard,
+//     grid: { w, h }, playerCell: { cx, cy },
 //     playerTactical: { cover, flanked, highGround }   // DX-2a
 //   }
 //
 // Enemy: { id, name, hp, maxHp, damage, canParley, defeated, sourceNpcId,
-//          tactical: { cover, flanked, highGround } }  // DX-2a
+//          cx, cy, tactical: { cover, flanked, highGround } }  // MX-1 + DX-2a
 //
 // playerGuard is a one-shot flag set by an endure-success during combat;
 // the next enemy counter consumes it (–1 to that counter's damage).
@@ -358,12 +372,29 @@ export function appendRecentBeat(world, beat) {
 const COMBAT_ENEMY_CAP = 6;
 
 export function defaultCombat() {
-  return { active: false, round: 0, turnIndex: 0, enemies: [], beganAt: 0, reason: '', playerGuard: false, companionGuard: false, initiativeOrder: [], playerTactical: defaultTactical() };
+  const grid = defaultCombatGrid();
+  return {
+    active: false,
+    round: 0,
+    turnIndex: 0,
+    enemies: [],
+    beganAt: 0,
+    reason: '',
+    playerGuard: false,
+    companionGuard: false,
+    initiativeOrder: [],
+    grid,
+    playerCell: defaultPlayerCell(grid),
+    playerTactical: defaultTactical()
+  };
 }
 
 export function ensureCombat(c) {
   if (!c || typeof c !== 'object') return defaultCombat();
 
+  const grid = normalizeCombatGrid(c.grid);
+  const playerCell = normalizeCombatCell(c.playerCell, defaultPlayerCell(grid), grid);
+  const occupiedFallbackCells = new Set([combatCellKey(playerCell)]);
   const enemiesIn = Array.isArray(c.enemies) ? c.enemies : [];
   const enemies = [];
   for (const eRaw of enemiesIn) {
@@ -420,9 +451,18 @@ export function ensureCombat(c) {
     const traits = Array.isArray(eRaw.traits)
       ? eRaw.traits.filter(t => typeof t === 'string' && t).slice(0, 24)
       : [];
+    const hasCell = hasExplicitCombatCell(eRaw);
+    const fallbackCell = firstOpenCellNear(defaultEnemyCell(enemies.length, grid), grid, occupiedFallbackCells);
+    let cell = hasCell
+      ? normalizeCombatCell(eRaw, fallbackCell, grid)
+      : fallbackCell;
+    if (occupiedFallbackCells.has(combatCellKey(cell))) {
+      cell = firstOpenCellNear(cell, grid, occupiedFallbackCells);
+    }
+    occupiedFallbackCells.add(combatCellKey(cell));
     // The one-shot onDeath-revive flag (Undead Fortitude / Rejuvenation…) must
     // persist across turns so a foe refuses to fall ONCE per fight, not per death.
-    const enemy = { id, name, hp, maxHp, damage, ac, cr, damageType, resistances, conditionImmunities, conditions, actions, multiattack, saveProficiencies, canParley, defeated, sourceNpcId, lootTableRef, initMod, legendaryActions, reactions, lairActions, senses, tactical, traits };
+    const enemy = { id, name, hp, maxHp, damage, ac, cr, damageType, resistances, conditionImmunities, conditions, actions, multiattack, saveProficiencies, canParley, defeated, sourceNpcId, lootTableRef, initMod, legendaryActions, reactions, lairActions, senses, tactical, traits, cx: cell.cx, cy: cell.cy };
     if (eRaw._traitRevived) enemy._traitRevived = true;
     enemies.push(enemy);
     if (enemies.length >= COMBAT_ENEMY_CAP) break;
@@ -451,7 +491,7 @@ export function ensureCombat(c) {
     }))
     .slice(0, 12); // cap at party + enemy cap
 
-  return { active, round, turnIndex, enemies, beganAt, reason, playerGuard, companionGuard, initiativeOrder, playerTactical };
+  return { active, round, turnIndex, enemies, beganAt, reason, playerGuard, companionGuard, initiativeOrder, grid, playerCell, playerTactical };
 }
 
 // ── CM7 — legendary actions & reactions normalizers ─────────────────────

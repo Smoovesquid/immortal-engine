@@ -393,6 +393,9 @@ export function applyDeltas(world, deltas = []) {
         companionGuard: set && 'companionGuard' in set ? Boolean(set.companionGuard) : cur.companionGuard,
         // CM6: initiativeOrder
         initiativeOrder: set && 'initiativeOrder' in set ? set.initiativeOrder : (cur.initiativeOrder || []),
+        // MX-1: engine-owned tactical grid and player cell.
+        grid: set && 'grid' in set ? set.grid : cur.grid,
+        playerCell: set && 'playerCell' in set ? set.playerCell : cur.playerCell,
         // DX-2a: player tactical position (re-normalized by ensureCombat).
         playerTactical: set && 'playerTactical' in set ? set.playerTactical : cur.playerTactical,
         enemies

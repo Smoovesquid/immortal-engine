@@ -440,6 +440,9 @@ export function assertWorldInvariants(world) {
   if (combat.active && world.scene?.dialogue) {
     throw new Error('Invariant: combat.active and scene.dialogue are mutually exclusive');
   }
+  if (combat.active) {
+    assertCombatGrid(combat);
+  }
 
   // ── v26 — party condition invariants ──────────────────────────────────────
   for (const member of (Array.isArray(world.party) ? world.party : [])) {
@@ -607,6 +610,42 @@ export function assertWorldInvariants(world) {
     if (!foundNpc) {
       throw new Error(`Invariant: scene.dialogue.npcId ${dialogue.npcId} not at current node`);
     }
+  }
+}
+
+function assertCombatGrid(combat) {
+  const grid = combat.grid;
+  if (!grid || typeof grid !== 'object' || Array.isArray(grid)) {
+    throw new Error('Invariant: combat.grid must be object');
+  }
+  if (!Number.isInteger(grid.w) || grid.w < 1 || grid.w > 64) {
+    throw new Error('Invariant: combat.grid.w must be integer 1..64');
+  }
+  if (!Number.isInteger(grid.h) || grid.h < 1 || grid.h > 64) {
+    throw new Error('Invariant: combat.grid.h must be integer 1..64');
+  }
+  const occupied = new Set();
+  assertCombatCell(combat.playerCell, 'combat.playerCell', grid);
+  occupied.add(`${combat.playerCell.cx},${combat.playerCell.cy}`);
+  for (const e of combat.enemies) {
+    assertCombatCell(e, `combat enemy ${e.id} cell`, grid);
+    const key = `${e.cx},${e.cy}`;
+    if (occupied.has(key)) {
+      throw new Error(`Invariant: combat cell ${key} occupied by multiple combatants`);
+    }
+    occupied.add(key);
+  }
+}
+
+function assertCombatCell(cell, label, grid) {
+  if (!cell || typeof cell !== 'object' || Array.isArray(cell)) {
+    throw new Error(`Invariant: ${label} must be object`);
+  }
+  if (!Number.isInteger(cell.cx) || !Number.isInteger(cell.cy)) {
+    throw new Error(`Invariant: ${label} must have integer cx,cy`);
+  }
+  if (cell.cx < 0 || cell.cx >= grid.w || cell.cy < 0 || cell.cy >= grid.h) {
+    throw new Error(`Invariant: ${label} must be in combat.grid bounds`);
   }
 }
 

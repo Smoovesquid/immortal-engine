@@ -5,6 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Immortal Engine — UI v1</title>
     <link rel="stylesheet" href="/styles.css" />
+    <!-- Three.js resolution for the OPT-IN 3D map mode (public/map/render3d.js).
+         An importmap is inert until a bare-specifier import runs, so this adds
+         ZERO first-paint cost — the CDN fetch happens only when a player toggles
+         the Map to 3D. Same CDN/version as the proto (map-proto/slice.html). -->
+    <script type="importmap">
+    { "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    }}
+    </script>
   </head>
   <body>
     <div id="app"></div>

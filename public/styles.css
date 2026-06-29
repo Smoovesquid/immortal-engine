@@ -567,3 +567,16 @@ a{color:var(--accent)}
   .play-layout{grid-template-columns:1fr}
   .local-map-canvas.compact{max-width:100%}
 }
+
+/* ── 3D map mode (opt-in Three.js overworld; public/map/render3d.js) ───── */
+.map3d-container{ box-shadow:inset 0 0 80px 20px rgba(0,0,0,.45); }
+.map3d-loading{
+  position:absolute; inset:0; z-index:2; display:flex; align-items:center;
+  justify-content:center; color:#d9a441; letter-spacing:.32em;
+  text-transform:uppercase; font-size:11px; pointer-events:none;
+}
+.map3d-hint{
+  position:absolute; bottom:10px; left:50%; transform:translateX(-50%); z-index:3;
+  font-size:9px; letter-spacing:.18em; text-transform:uppercase; color:#cbb68a;
+  text-shadow:0 1px 4px #000; pointer-events:none;
+}

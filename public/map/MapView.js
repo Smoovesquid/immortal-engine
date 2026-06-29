@@ -33,7 +33,9 @@ export function renderMapView(world, opts = {}) {
         el('div', {},
           el('div', { class: 'title' }, 'Map'),
           el('div', { class: 'small' }, 'Scroll to zoom · drag to pan')
-        )
+        ),
+        // opts.headerExtra: the 2D⇄3D toggle, rendered on the right of the header.
+        opts.headerExtra || null
       ),
       renderOneMap(world, { playerPos: opts.playerPos })
     )

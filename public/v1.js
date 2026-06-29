@@ -28,6 +28,8 @@ import { triggerFromMech } from './panels/DiceRoller.js';
 import { createVoiceButton } from './panels/VoiceInput.js';
 import tts from './tts.js';
 import { rollDetailOptions } from '../engine/chargen/details.js';
+import { PRE_ROLLED, buildPreRolledCharacter } from '../engine/chargen/preRolled.js';
+import { SLICE_SEED } from '../engine/world/sliceRegion.js';
 import { seedFromString, makeRng } from '../engine/rng.js';
 import {
   listSpecies, getSpecies, listClasses, getClass,
@@ -438,6 +440,43 @@ async function beginFromChargen() {
     // Inject pre-created character; beginAdventure skips creation when party.length > 0
     w1 = ensureWorld({ ...w0, party: [pc] });
 
+    ({ world, output } = beginAdventure(w1, ui.packs.byId));
+  } catch (e) {
+    return setStatus(`Begin failed: ${e?.message || e}`);
+  }
+  saveSlot(localStorage, world, 'slot1');
+
+  const baseNarration = output?.narration || 'The world begins.';
+  const wizardLine = { who: 'wizard', text: '', mech: output?.mechanics || '' };
+  ui.play.lines = [wizardLine];
+  ui.play.input = '';
+  ui.play.lastResolutionKind = 'turn';
+
+  startFromWorld(world, { keepTranscript: true });
+
+  ui.setPieceGap = 999;
+  const aiText = await tryAiNarration(world, baseNarration, { beat: gatedBeat(output?.beat) });
+  wizardLine.text = aiText || baseNarration;
+  tts.speak(wizardLine.text);
+  render();
+}
+
+// One-click pre-rolled hero → straight into the slice, no chargen wizard. Mirrors
+// beginFromChargen but injects a ready-made roster character and the slice seed.
+async function beginFromPreRolled(entry) {
+  let pc, w0, w1, world, output;
+  try {
+    pc = buildPreRolledCharacter(entry);
+    if (!pc) return setStatus('Unknown pre-rolled hero.');
+    w0 = newWorld({
+      seed: SLICE_SEED,
+      fate: 0.2,
+      campaignId: `campaign-${SLICE_SEED}`,
+      pack: { primaryId: 'fantasy', mixerId: null },
+      mode: 'escape'
+    });
+    // beginAdventure skips creation when party.length > 0.
+    w1 = ensureWorld({ ...w0, party: [pc] });
     ({ world, output } = beginAdventure(w1, ui.packs.byId));
   } catch (e) {
     return setStatus(`Begin failed: ${e?.message || e}`);
@@ -899,8 +938,8 @@ function renderInvoke() {
     el('div', { class: 'panel' },
       el('div', { class: 'header' },
         el('div', {},
-          el('div', { class: 'title' }, 'Immortal Engine — v0.4.0'),
-          el('div', { class: 'sub' }, 'build 007 · 2026-06-29 · the shippable slice (Aldermere)')
+          el('div', { class: 'title' }, 'Immortal Engine — v0.5.0'),
+          el('div', { class: 'sub' }, 'build 008 · 2026-06-29 · pre-rolled heroes')
         )
       ),
       // ── One-click front door: start (or resume) the Escape game ──────
@@ -914,6 +953,15 @@ function renderInvoke() {
           has
             ? el('button', { class: 'btn front-door-btn', onClick: () => confirmNewOverSave(playAgain) }, 'New character')
             : null
+        ),
+        // ── Pre-rolled heroes: one click drops you into the slice, no chargen wizard ──
+        el('div', { class: 'front-door-sub', style: { marginTop: '14px' } }, 'Or jump straight in as a ready-made hero:'),
+        el('div', { class: 'row', style: { flexWrap: 'wrap' } },
+          PRE_ROLLED.map(entry => el('button', {
+            class: 'btn front-door-btn',
+            title: entry.blurb,
+            onClick: () => confirmNewOverSave(() => beginFromPreRolled(entry))
+          }, `${entry.name} · ${entry.archetype}`))
         )
       ),
       el('details', { class: 'card stack advanced-invoke' },

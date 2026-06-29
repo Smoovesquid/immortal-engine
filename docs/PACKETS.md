@@ -105,6 +105,17 @@ live page boots clean (zero console errors). Standing polish backlog: see SL-2/3
 
 ---
 
+### QS — Pre-rolled heroes (one-click playthrough start)  ·  **Status: ✅ DONE 2026-06-29** (Basecamp)
+**Provenance:** Tim 2026-06-29 — "a set of pre-rolled characters I can just start the game with" (the recurring
+chargen-friction pain point). **Landed:** new `engine/chargen/preRolled.js` — a roster of 5 ready-made heroes
+(Bryn Holt/Sellsword · Wrenna Vale/Outrider · Father Oswin/Hedge-Priest · Mim Cobble/Cutpurse · Dame
+Aldith/Knight-Errant), each built deterministically via `createCharacter` (full inventory/traits/id) with a
+themed stat override + `FANTASY_STARTER_GEAR`. `public/v1.js`: a front-door picker ("Or jump straight in as a
+ready-made hero") + `beginFromPreRolled(entry)` (mirrors `beginFromChargen`, injects the PC, slice seed,
+escape mode) — one click → in Aldermere, no wizard. Test `tests/U303` (5/5). **Verified live:** picker renders,
+clicking Bryn Holt drops into the slice as Bryn (MIGHT 14/…/GRIT 13, HP 15/15, kitted), zero console errors.
+`npm run check` GREEN — suite **9004/0**, determinism in. Version **v0.5.0 / build 008**.
+
 ### ML-1…ML-3 — Multi-LLM layer cleanup (from the 2026-06-27 Codex architecture review + Homebase verdicts)
 **Provenance:** Codex read-only audit of the multi-LLM lanes (verified accurate against code by Homebase).
 Three actionable items survived the verdict; the rest (an `AiTask` rebuild, "same pipeline everywhere",

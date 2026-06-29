@@ -899,8 +899,8 @@ function renderInvoke() {
     el('div', { class: 'panel' },
       el('div', { class: 'header' },
         el('div', {},
-          el('div', { class: 'title' }, 'Immortal Engine — v0.3.0'),
-          el('div', { class: 'sub' }, 'build 006 · 2026-06-25 · multi-level descent + reputation')
+          el('div', { class: 'title' }, 'Immortal Engine — v0.4.0'),
+          el('div', { class: 'sub' }, 'build 007 · 2026-06-29 · the shippable slice (Aldermere)')
         )
       ),
       // ── One-click front door: start (or resume) the Escape game ──────

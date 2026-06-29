@@ -121,6 +121,11 @@ fix(<module>): <bug class> — <what changed>
 
 Bug fix protocol: reproduce → baseline test → fix → retest → commit.
 
+**Versioning (ALWAYS — Tim plays the live build and must know which one).** Every shipped change-set bumps the version, and you **state the new version number at the end of the work**. Two sources, keep them in lockstep:
+- `package.json` `"version"` — semver. Minor bump for a feature/milestone (`0.3.0`→`0.4.0`), patch for a fix (`0.4.0`→`0.4.1`).
+- `public/v1.js` the header `title` (`Immortal Engine — vX.Y.Z`) **and** the `sub` build line (`build NNN · YYYY-MM-DD · <short label>`) — increment the build counter, set today's date, write a 2-4 word label. This is what the player SEES on the front door, so verify it live after the bump.
+No `VERSION`/`CHANGELOG` file exists; these two are the source of truth.
+
 **Staging discipline.** Do not use `git add -A` / `git add .` when unrelated untracked or modified files are present in the tree — stage files explicitly by path so each commit's scope matches its message. Only use `-A` when the working tree is known to contain a single coherent change.
 
 ## Parallel lanes (Homebase = conductor)

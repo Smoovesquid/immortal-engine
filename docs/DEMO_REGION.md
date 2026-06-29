@@ -8,6 +8,34 @@ honor §0).
 
 ---
 
+## ⛳ SCOPE-LOCK 2026-06-29 — THE SHIPPABLE SLICE (read this first)
+
+**Everything below this banner is the CAMPAIGN VISION. The shippable demo is much smaller.** Per
+`docs/SOBRIETY.md` (ship ONE bounded module), the demo is cut from the 1,000 km² / 5-town / 2-mega-dungeon
+bible down to **one walkable ~100 km² region with exactly four places:**
+
+1. **One town** — the home base; populated from the Westmarch backstory pack.
+2. **A forest** — the woods between town and chapel; **bandits roam here** (the existing `bandit` /
+   `bandit_captain` encounter tables, bound to this node).
+3. **A bandit camp** — a hostile *place* out in the woods, led by a `bandit_captain`.
+4. **One dungeon — a haunted chapel, a couple km from town.** A small, bounded ghost-dungeon (a handful of
+   rooms), **not** the 20-level Khazekhrok port (that stays shelved as a future/campaign mega-dungeon).
+
+**What survives of the cosmology:** exactly one thread, unexplained — §3's *"the recently dead don't always
+stay dead."* That symptom is what makes the chapel haunted. §0 still holds absolutely: no NPC or DM ever
+names the Scar, the orb, or the why. The orb / cannibals / COUG / Incrementalists / 5-town economy are all
+**deferred to the campaign**, not in the demo.
+
+**Why authored, not rolled:** today `generateInitialMap` *procedurally scatters* 24–39 generic nodes
+(ring + chords). This slice is **four hand-placed places with real distances** ("a couple km from town"),
+so the region is **authored**, plugged in at the `beginAdventure` map-gen seam.
+
+**Build order (packets in `docs/PACKETS.md`):** SL-1 region skeleton → SL-2 the town (DX-4 plot-and-parcel
+lands here) → SL-3 the haunted-chapel dungeon → SL-4 the woods + bandit camp. Frame holds throughout:
+DM-is-the-only-verb, one continuous-zoom map (read-only aid).
+
+---
+
 ## §0 — THE LAW OF THE HIDDEN WHY (the governing constraint)
 
 **No one in the world understands the *why*. Only the *what*.** The cosmology in §2 is the **author's secret**

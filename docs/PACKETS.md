@@ -11,6 +11,51 @@ done_when · rollback`.
 
 ## ACTIVE
 
+### SL — THE SHIPPABLE SLICE (priority, scope-locked 2026-06-29)
+**Provenance:** Tim's 2026-06-29 scope re-lock (`docs/DEMO_REGION.md` scope-lock banner). The demo is cut to
+ONE walkable ~100 km² region with four authored places: a town, a forest (bandits roam), a bandit camp, and
+a haunted-chapel dungeon ~2 km from town. The DEMO_REGION bible's 5-town / orb / cannibal / COUG apparatus is
+deferred to the campaign. Per `docs/SOBRIETY.md`: ship ONE bounded module — finish, don't expand.
+**Build order:** SL-1 (skeleton) → SL-2 (town) → SL-3 (chapel dungeon) → SL-4 (woods + camp).
+
+#### SL-1 — curated demo region skeleton  ·  **Status: IN PROGRESS** (Basecamp, autonomous)
+- **objective:** Replace the procedural scatter (`generateInitialMap`, 24–39 ring+chord nodes) with a
+  **hand-authored four-node region** for the demo: Town (settlement/village) · Greenwood/forest (wilderness) ·
+  Bandit Camp (settlement 'camp', hostile) · Haunted Chapel (landmark surface → dungeon_entrance interior).
+  Real tile positions so chapel reads as "a couple km from town"; deterministic by seed; player starts in town.
+- **allowed_files:** new `engine/map/demoRegion.js` (the authored `{nodes, edges, discovered, currentNodeId}`
+  in `generateInitialMap`'s return shape); `engine/playloop.js` (**minimal** conditional at the `beginAdventure`
+  map-gen seam, ~line 206 — keep the hot-file footprint tiny); new `tests/U###.demoRegion.test.js`.
+- **trigger (resolve at impl):** opt-in so the generic `fantasy` procedural path (used by determinism tests)
+  is UNTOUCHED — likely a pack/sub-region flag (`pack.curatedRegion` / a `westmarch_slice` id), not the bare
+  `fantasy` default. Verify which pack the live demo boots before wiring.
+- **forbidden:** changing `generateInitialMap`'s procedural output for non-demo packs; `Math.random` (rng.js
+  only); direct state writes (mutate via the map shape only); breaking `assertMapStructure`.
+- **invariants:** determinism — same seed → same region → stable `worldHash` (U19/21/22/27/30 stay green);
+  `assertMapStructure` passes; start node is a settlement.
+- **test_plan:** unit — region has exactly the 4 typed nodes, deterministic across two builds, chapel↔town
+  distance > town↔forest; full suite + determinism gates; `npm run check` GREEN; `playtest:quick` clean.
+- **done_when:** demo boots into the authored 4-node region; player wakes in town; `npm run check` GREEN;
+  determinism untouched for non-demo packs.
+- **rollback:** delete `demoRegion.js` + revert the one `beginAdventure` conditional.
+
+#### SL-2 — the town (populate + plot-and-parcel)  ·  **Status: QUEUED**
+- **objective:** Populate the town from the Westmarch backstory pack; lay its internal buildings via
+  **DX-4 plot-and-parcel** (`engine/map/spatial/buildingPlots.js`) — non-overlapping slots, door-facing,
+  no church-clips-inn. *(Detail when reached — read the settlement-decompression + buildingPlots seams first.)*
+
+#### SL-3 — the haunted-chapel dungeon  ·  **Status: QUEUED**
+- **objective:** A small bounded ghost-dungeon interior behind the chapel landmark (a handful of rooms),
+  carrying the §3 "recently dead don't stay dead" symptom (never explained — §0). *(Detail when reached —
+  read the structures/dungeon-interior generation seam first.)*
+
+#### SL-4 — the woods + bandit camp  ·  **Status: QUEUED**
+- **objective:** Bind the existing forest `bandit`/`bandit_captain` encounter tables (`engine/ruleset/core/
+  encounters.js`) to the forest node so the woods actually spawn bandits; make the bandit camp a hostile
+  *place*. *(Detail when reached — read the encounter-binding + hostile-settlement seams first.)*
+
+---
+
 ### ML-1…ML-3 — Multi-LLM layer cleanup (from the 2026-06-27 Codex architecture review + Homebase verdicts)
 **Provenance:** Codex read-only audit of the multi-LLM lanes (verified accurate against code by Homebase).
 Three actionable items survived the verdict; the rest (an `AiTask` rebuild, "same pipeline everywhere",

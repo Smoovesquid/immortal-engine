@@ -308,15 +308,21 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
   }
 
   // ---------- orbit controls (canvas-scoped — never hijacks the page) ----------
+  // Skipped when opts.controls === false: in the continuous-zoom map the 3D
+  // layer is a PASSIVE overlay (pointer-events:none) whose camera is driven
+  // externally via setCamera() by the 2D map's zoom. Standalone use keeps them.
   let drag = false, lx = 0;
   function onPointerDown(e) { drag = true; lx = e.clientX; try { canvas.setPointerCapture(e.pointerId); } catch {} }
   function onPointerUp() { drag = false; }
   function onPointerMove(e) { if (!drag) return; az -= (e.clientX - lx) * 0.005; lx = e.clientX; applyCamera(); }
   function onWheel(e) { e.preventDefault(); alt = clamp(alt + e.deltaY * 0.6, 60, 700); applyCamera(); }
-  canvas.addEventListener('pointerdown', onPointerDown);
-  canvas.addEventListener('pointerup', onPointerUp);
-  canvas.addEventListener('pointermove', onPointerMove);
-  canvas.addEventListener('wheel', onWheel, { passive: false });
+  const interactive = opts.controls !== false;
+  if (interactive) {
+    canvas.addEventListener('pointerdown', onPointerDown);
+    canvas.addEventListener('pointerup', onPointerUp);
+    canvas.addEventListener('pointermove', onPointerMove);
+    canvas.addEventListener('wheel', onWheel, { passive: false });
+  }
 
   // ---------- build the scene from the contract object ----------
   const nodeById = {};
@@ -379,15 +385,21 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
     if (composer) composer.render(); else renderer.render(scene, camera);
     return 1;
   }
+  let paused = false;
   // Paint one frame up front so first paint never depends on rAF (which is
   // throttled in headless/background tabs) — the canvas is never blank.
   renderFrame();
   function frame() {
-    if (!alive) return;
+    if (!alive || paused) { raf = 0; return; }
     renderFrame();
     raf = requestAnimationFrame(frame);
   }
+  function startLoop() { if (alive && !paused && !raf) raf = requestAnimationFrame(frame); }
   raf = requestAnimationFrame(frame);
+  // pause/resume: idle the rAF loop while the 3D overlay is hidden (zoomed out
+  // into pure 2D) so a hidden diorama costs no GPU.
+  function pause() { paused = true; if (raf) { cancelAnimationFrame(raf); raf = 0; } }
+  function resume() { paused = false; renderFrame(); startLoop(); }
 
   // ---------- resize to the container ----------
   let ro = null;
@@ -406,10 +418,12 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
     alive = false;
     if (raf) cancelAnimationFrame(raf);
     if (ro) { try { ro.disconnect(); } catch {} }
-    canvas.removeEventListener('pointerdown', onPointerDown);
-    canvas.removeEventListener('pointerup', onPointerUp);
-    canvas.removeEventListener('pointermove', onPointerMove);
-    canvas.removeEventListener('wheel', onWheel);
+    if (interactive) {
+      canvas.removeEventListener('pointerdown', onPointerDown);
+      canvas.removeEventListener('pointerup', onPointerUp);
+      canvas.removeEventListener('pointermove', onPointerMove);
+      canvas.removeEventListener('wheel', onWheel);
+    }
     scene.traverse(obj => {
       if (obj.geometry) { try { obj.geometry.dispose(); } catch {} }
       const mats = Array.isArray(obj.material) ? obj.material : (obj.material ? [obj.material] : []);
@@ -431,5 +445,33 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
     return { alt: Math.round(alt), az: +az.toFixed(2) };
   }
 
-  return { dispose, renderFrame, setView, canvas };
+  // setCamera: the continuous-zoom driver. The 2D map's zoom hands us a
+  // pxPerTile (screen px for one node-tile); we pick the camera DISTANCE that
+  // makes one tile cover the same screen px in 3D — so the 3D scale stays locked
+  // to the 2D map's scale through the crossover. `phi` is the tilt (≈0 top-down,
+  // larger = oblique), `target` the look-at in node-tile units, `az` orientation
+  // (0 = north-up, matching the 2D plan).
+  const vFovTan = Math.tan((camera.fov * Math.PI / 180) / 2);
+  function setCamera(o = {}) {
+    if (o.target) target.set((Number(o.target.tx) || 0) * TILE_WU, 0, (Number(o.target.ty) || 0) * TILE_WU);
+    if (o.az != null) az = o.az;
+    let phi = clamp(o.phi != null ? o.phi : 0.06, 0.02, 1.35);
+    let rad;
+    if (o.pxPerTile != null && o.pxPerTile > 0) {
+      const Hpx = Math.max(1, canvas.clientHeight || h0);
+      rad = (TILE_WU * Hpx) / (2 * o.pxPerTile * vFovTan);
+    } else { rad = o.rad != null ? o.rad : 200; }
+    rad = clamp(rad, 30, 4000);
+    camera.position.set(
+      target.x + rad * Math.sin(phi) * Math.sin(az),
+      target.y + rad * Math.cos(phi),
+      target.z + rad * Math.sin(phi) * Math.cos(az)
+    );
+    camera.lookAt(target);
+    sky.position.copy(camera.position);
+    renderFrame();
+    return { phi: +phi.toFixed(3), rad: Math.round(rad) };
+  }
+
+  return { dispose, renderFrame, setView, setCamera, pause, resume, canvas };
 }

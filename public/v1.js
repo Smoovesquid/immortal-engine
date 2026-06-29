@@ -13,8 +13,7 @@ import { worldHash as worldHashAsync } from '../engine/worldHash.browser.js';
 import { buildMythSpec, mythSpecJson } from '../engine/mythSpec.js';
 import { generateTriadFrames, deriveInvocationFromFrame } from '../engine/triad.js';
 import { deriveSequelInvocation } from '../engine/sequel.js';
-import { renderMapView } from './map/MapView.js';
-import { sceneFromWorld } from './map/sliceScene.js';
+import { renderContinuousMap, disposeContinuousMap3d } from './map/continuousMap.js';
 import { renderLocalMap } from './map/LocalMap.js';
 import { createPlaceMap } from './map/handDrawnPlace.js';
 import { placeFromWorldNode } from './map/placeFromNode.js';
@@ -140,11 +139,11 @@ const ui = {
   aiStatus: { ok: null, online: null, source: "(unknown)", mode: "(unknown)", envPresent: null, sessionPresent: null },
   devMode: false,
   gearOpen: false,
-  map: { zoom: 'one', mode: '2d' }, // ONE MAP (docs/ONE_MAP.md): one continuous semantic-zoom
-  // surface — no discrete scale tabs. `mode` = the Map tab's representation:
-  // '2d' graph-paper (DEFAULT) ⇄ '3d' overworld diorama (opt-in, lazy Three.js).
-  // renderLocalMap survives ONLY as an error fallback in renderWalkPlace (when
-  // placeFromWorldNode/createPlaceMap fail).
+  map: { zoom: 'one' }, // ONE MAP (docs/ONE_MAP.md): one continuous semantic-zoom
+  // surface — no discrete scale tabs, no 2D|3D toggle. Zoom alone drives the
+  // representation: far = 2D plan, zoom in morphs to the 3D overworld diorama
+  // (continuousMap.js). renderLocalMap survives ONLY as an error fallback in
+  // renderWalkPlace (when placeFromWorldNode/createPlaceMap fail).
   // Continuous local-scale position: where your token stands on the one walkable
   // place (village + building interiors). Persists across re-renders; resets when
   // you move to a new node or interior state changes.
@@ -941,8 +940,8 @@ function renderInvoke() {
     el('div', { class: 'panel' },
       el('div', { class: 'header' },
         el('div', {},
-          el('div', { class: 'title' }, 'Immortal Engine — v0.6.0'),
-          el('div', { class: 'sub' }, 'build 009 · 2026-06-29 · 3D map mode')
+          el('div', { class: 'title' }, 'Immortal Engine — v0.7.0'),
+          el('div', { class: 'sub' }, 'build 010 · 2026-06-29 · continuous zoom')
         )
       ),
       // ── One-click front door: start (or resume) the Escape game ──────
@@ -2711,52 +2710,18 @@ function renderNav() {
 }
 
 
-// ── 3D map mode lifecycle ──────────────────────────────────────────────
-// The Map tab can render in '2d' (graph-paper, default) or '3d' (Three.js
-// overworld diorama). The 3D scene is a live WebGL canvas that must NOT leak
-// across v1's full-rebuild render() model, so we track a single controller and
-// dispose it whenever we leave 3D (mode flip, screen change, or re-render).
-let _map3d = null;       // the active controller { dispose() }, or null
-let _map3dToken = 0;     // guards async mounts against races / staleness
-
-function disposeMap3d() {
-  if (_map3d) { try { _map3d.dispose(); } catch {} _map3d = null; }
-  try { delete window.__map3d; } catch {}
-  _map3dToken++; // invalidate any in-flight mount
-}
-
-// Mount the 3D overworld into `container` from the LIVE world. Lazy-loads the
-// renderer + Three.js; on any failure (no WebGL, import error) it flips back to
-// the 2D map so the player is never stranded on a blank screen.
-// Deferred via setTimeout (not rAF) so the mount fires even in throttled tabs,
-// and only after render() has inserted `container` into the document.
-function mountMap3d(container, world) {
-  const token = ++_map3dToken;
-  setTimeout(async () => {
-    if (token !== _map3dToken || !document.contains(container)) return;
-    try {
-      const scene = sceneFromWorld(world); // PURE read — no engine writes.
-      const { mountSlice3D } = await import('./map/render3d.js');
-      if (token !== _map3dToken || !document.contains(container)) return;
-      const ctrl = await mountSlice3D(container, scene, {});
-      if (token !== _map3dToken || !document.contains(container)) { try { ctrl.dispose(); } catch {} return; }
-      _map3d = ctrl;
-      try { window.__map3d = ctrl; } catch {} // debug/verification hook
-    } catch (err) {
-      if (token !== _map3dToken) return;
-      // Graceful fallback: 2D is the floor.
-      ui.map.mode = '2d';
-      setStatus('3D map unavailable here — showing the 2D map.');
-      render();
-    }
-  }, 0);
-}
-
+// ── Continuous-zoom Map (ONE_MAP): 2D ⟷ 3D driven by zoom alone, no toggle ──
+// The Map is one semantic-zoom surface: far out = the 2D graph-paper plan; zoom
+// in past a threshold and the plane tilts and morphs into the live 3D overworld
+// diorama (render3d), then reverses on zoom-out. continuousMap.js owns the
+// stacked layers + the morph; the 3D layer is a passive WebGL overlay that must
+// not leak across v1's full-rebuild render() model, so we dispose it whenever we
+// leave the Map screen (see render()).
 function renderMap() {
   const w = ui.world ? ensureWorld(ui.world) : null;
 
   if (!w) {
-    disposeMap3d();
+    disposeContinuousMap3d();
     return el("div",{class:"container stack"},
       el("div",{class:"panel"},
         el("div",{class:"header"},
@@ -2772,47 +2737,19 @@ function renderMap() {
     );
   }
 
-  const mode = ui.map.mode === '3d' ? '3d' : '2d';
-
-  // 2D⇄3D toggle. 2D graph-paper stays the DEFAULT; 3D is opt-in.
-  const modeBtn = (id, label) => el('button', {
-    class: 'btn' + (mode === id ? ' primary' : ''),
-    style: { padding: '4px 12px' },
-    onClick: () => { if (ui.map.mode === id) return; disposeMap3d(); ui.map.mode = id; render(); }
-  }, label);
-  const toggle = el('div', { class: 'row', style: { gap: '6px' } }, modeBtn('2d', '2D'), modeBtn('3d', '3D'));
-
-  if (mode === '3d') {
-    const container = el('div', {
-      class: 'map3d-container',
-      style: { position: 'relative', width: '100%', height: '68vh', minHeight: '360px',
-               borderRadius: '6px', overflow: 'hidden', background: '#0b0d12' }
-    },
-      el('div', { class: 'map3d-loading' }, 'Summoning the 3D overworld…'),
-      el('div', { class: 'map3d-hint' }, 'drag to orbit · scroll to zoom')
-    );
-    // Fresh mount each render (v1 rebuilds the DOM); disposeMap3d() above + the
-    // toggle handler keep exactly one live canvas at a time.
-    disposeMap3d();
-    mountMap3d(container, w);
-    return el('div', { class: 'container stack' },
-      el('div', { class: 'panel' },
-        el('div', { class: 'header' },
-          el('div', {},
-            el('div', { class: 'title' }, 'Map'),
-            el('div', { class: 'small' }, 'Overworld · drag to orbit, scroll to zoom')
-          ),
-          toggle
-        ),
-        container
-      )
-    );
-  }
-
-  // 2D (default). ONE MAP (M4): one continuous map; hand it the live walk
-  // position so the marker sits where you actually stand.
-  disposeMap3d();
-  return renderMapView(w, { playerPos: ui.place, headerExtra: toggle });
+  // One continuous map; hand it the live walk position so the marker sits where
+  // you actually stand. Scroll to zoom drives 2D → tilt → 3D and back.
+  return el('div', { class: 'container stack' },
+    el('div', { class: 'panel' },
+      el('div', { class: 'header' },
+        el('div', {},
+          el('div', { class: 'title' }, 'Map'),
+          el('div', { class: 'small' }, 'Scroll to zoom — out for the plan, in for the 3D world · drag to pan')
+        )
+      ),
+      renderContinuousMap(w, { playerPos: ui.place })
+    )
+  );
 }
 
 let _lpReqToken = 0;
@@ -2965,9 +2902,9 @@ function renderAi() {
 function render() {
   clear(app);
 
-  // Tear down the 3D map canvas whenever we're not on the Map screen, so a live
+  // Tear down the 3D map overlay whenever we're not on the Map screen, so a live
   // WebGL context never leaks across v1's full-rebuild render model.
-  if (ui.screen !== 'map') disposeMap3d();
+  if (ui.screen !== 'map') disposeContinuousMap3d();
 
   // Nav hidden during play — game feels like a game, not a dashboard
   if (ui.screen !== 'play') app.append(renderNav());

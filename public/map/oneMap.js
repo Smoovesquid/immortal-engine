@@ -955,6 +955,12 @@ export function renderOneMap(world, opts = {}) {
     bar.style.cssText = `display:inline-block;width:${Math.round(px)}px;border-bottom:2px solid rgba(18,26,48,0.75);vertical-align:middle;margin-left:4px;`;
     hud.appendChild(bar);
     void target;
+
+    // ── continuous-zoom hook: mirror the live 2D camera to any stacked layer
+    // (the 3D overworld overlay). Pure read of camera state; never mutates world.
+    if (typeof opts.onCamera === 'function') {
+      try { opts.onCamera({ z: cam.z, cx: cam.cx, cy: cam.cy, W, H }); } catch {}
+    }
   }
 
   // ── interactions: wheel zoom at the cursor, drag pan ──

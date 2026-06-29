@@ -57,15 +57,20 @@ test('U301: pending.band survives ensureWorld normalization', () => {
   assert.equal(r.travel.pending.band, 'road');
 });
 
-test('U301: fighting the camp spawns the captain + crew (2 foes); the road spawns one', () => {
+test('U301: the camp spawns the Bandit Captain (a winnable solo boss); the road a brigand', () => {
+  // The camp is a captain DUEL — a captain+crew pair is unwinnable at escape\'s 12 HP
+  // under the DX-2c flank (measured); the crew hang back. Verified: a careful player at
+  // full HP wins the captain duel with margin (hp ~7 left). The road spawns one brigand.
   const camp = playerMove(withPending(bootSlice(), 'camp'), PACKS, 'fight them');
   const foes = camp.world.combat?.enemies || [];
   assert.ok(camp.world.combat?.active, 'combat begins');
-  assert.equal(foes.length, 2, 'captain + one of his crew');
-  assert.ok(foes.some(e => /captain/i.test(e.name || e.ref || '')), 'the captain is present');
+  assert.equal(foes.length, 1, 'a solo captain, not a lethal pair');
+  assert.ok(/captain/i.test(foes[0].name || foes[0].ref || ''), 'and it is the captain');
 
   const road = playerMove(withPending(bootSlice(), 'road'), PACKS, 'fight them');
-  assert.equal((road.world.combat?.enemies || []).length, 1, 'a road-band is a single brigand (regression)');
+  const rf = road.world.combat?.enemies || [];
+  assert.equal(rf.length, 1, 'a road-band is a single brigand');
+  assert.ok(!/captain/i.test(rf[0].name || rf[0].ref || ''), 'the road foe is a plain brigand, not the captain');
 });
 
 test('U301: the camp standoff reads as a stronghold, not a tollgate', () => {

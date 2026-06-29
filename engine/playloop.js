@@ -638,9 +638,15 @@ function playerMoveCore(world, packsById, text) {
         // The bandit camp's stand (SL-4): the captain and one of his crew. Outnumbered
         // is dangerous (DX-2c flank presses with advantage) — but thin it to the captain
         // alone and the press lifts, so it's a real but winnable stronghold fight.
+        // The camp's climax is a DUEL with the captain. Escape gives a gearless player
+        // ~12 HP and a low-accuracy worn blade, and DX-2c makes being outnumbered lethal,
+        // so a captain+crew pair was a measured 50/50 coin-flip even played well — unfair
+        // for a climax. The crew hang back; the captain steps up at hp6/ac11/dmg3: a fresh
+        // careful player wins reliably (measured ~100%, leaving ~5 HP), but it COSTS ~7 HP
+        // — so arriving wounded, or pushing straight on into the chapel's undead after,
+        // stays genuinely dangerous. Multi-foe DX-2c pressure lives in the chapel undead.
         const band = [
-          { name: 'Bandit Captain', ref: 'bandit_captain', cr: 2, maxHp: 9, ac: 13, damage: 5, canParley: false },
-          { name: 'Bandit', ref: 'bandit', cr: 0.125, maxHp: ESCAPE_ENEMY_HP, ac: 12, damage: 4, canParley: false },
+          { name: 'Bandit Captain', ref: 'bandit_captain', cr: 2, maxHp: 6, ac: 11, damage: 3, canParley: false },
         ];
         return spawnEncounter(w1, band, { ambush: true, reason: 'bandit-camp' }, erng);
       }
@@ -3529,7 +3535,7 @@ function maybeTravelEncounter(world, before, chance, destName) {
   // a wild place → a beast ambush.
   if (brigKind) {
     const foe = isHold
-      ? 'The bandit captain and his crew'
+      ? 'The bandit captain'
       : (rng.pick(['Brigands', 'Robbers', 'Highwaymen', 'A toll-gang']) || 'Brigands');
     return { world: { ...w, travel: { pending: { kind: 'brigands', foeName: foe, destName: String(destName || ''), band: isHold ? 'camp' : 'road' } } }, kind: 'pending' };
   }
@@ -3541,7 +3547,7 @@ function brigandSceneLine(pend, destName) {
   const foeName = (pend && pend.foeName) || 'Brigands';
   // A bandit camp is their ground, not a tollgate — reframe the standoff accordingly.
   if (pend && pend.band === 'camp') {
-    return `Wizard: ${foeName} rise from around the cook-fires as you come up on the camp, blades already out. No toll here — only how you mean to handle them. You can try to talk them down, slip away, buy your way past, or fight.`;
+    return `Wizard: ${foeName} steps out to meet you as you come up on the camp, his crew fanning out at his back with blades drawn. No toll here — only how you mean to handle this. You can try to talk him down, slip away, buy your way past, or fight.`;
   }
   const dest = destName || (pend && pend.destName);
   const tail = dest ? ` ${dest} lies just beyond them.` : '';

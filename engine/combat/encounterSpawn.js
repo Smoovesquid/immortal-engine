@@ -80,7 +80,7 @@ export function evaluateEncounter(world, _scenePlan, rng) {
  * @param {object} rng - seeded RNG
  * @returns {Array<object>} - array of creature definitions
  */
-export function selectCreatures(cr, count, region, rng, biome = null, minCr = 0) {
+export function selectCreatures(cr, count, region, rng, biome = null, minCr = 0, theme = null) {
   const targetCR = Number(cr) || 1;
   const n = Math.max(1, Math.min(4, Number(count) || 1));
   const floor = Math.max(0, Number(minCr) || 0);
@@ -120,6 +120,16 @@ export function selectCreatures(cr, count, region, rng, biome = null, minCr = 0)
     const b = String(biome);
     const native = pool.filter(c => { const cb = biomeOf(c); return cb === b || cb === 'any'; });
     if (native.length > 0) pool = native;
+  }
+
+  // SL-3: a themed location (the haunted chapel → 'undead') prefers creatures tagged
+  // with that theme — biome-native first, else any in-CR themed creature. theme=null
+  // skips this entirely, so every unthemed caller is byte-identical (determinism).
+  if (theme) {
+    const t = String(theme);
+    let themed = pool.filter(c => Array.isArray(c.tags) && c.tags.includes(t));
+    if (themed.length === 0) themed = eligible.filter(c => Array.isArray(c.tags) && c.tags.includes(t));
+    if (themed.length > 0) pool = themed;
   }
 
   const picked = [];

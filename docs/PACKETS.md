@@ -61,10 +61,20 @@ deferred to the campaign. Per `docs/SOBRIETY.md`: ship ONE bounded module — fi
   - **Slice-specific town CHARACTER** (NPC concerns/rumors that point at the bandits + the haunted chapel, so
     the four nodes cohere into a module) — authored + taste-laden → **Tim's call**, surfaced not auto-built.
 
-#### SL-3 — the haunted-chapel dungeon  ·  **Status: QUEUED**
-- **objective:** A small bounded ghost-dungeon interior behind the chapel landmark (a handful of rooms),
-  carrying the §3 "recently dead don't stay dead" symptom (never explained — §0). *(Detail when reached —
-  read the structures/dungeon-interior generation seam first.)*
+#### SL-3 — the haunted-chapel dungeon  ·  **Status: ✅ DONE 2026-06-29** (Basecamp, autonomous)
+- **finding + landed:** The engine ALREADY builds a real multi-level dungeon for any `dungeon_entrance`
+  node (`generateDungeon` → the chapel gets 3 levels / 4 encounter rooms, explorable, CR-graded). So SL-3 is
+  THEMING, not construction (SOBRIETY). Added an optional `theme` PREFERENCE to `selectCreatures`
+  (`engine/combat/encounterSpawn.js`) — a themed location prefers creatures whose `tags` include it (undead
+  first biome-native, else any in-CR undead, else fall back) — plus a pure exported `creatureThemeForNode`
+  (`engine/playloop.js`): a `haunted`-tagged node → `'undead'`. Threaded through both dungeon spawn points
+  (the room-fight at the live escape path + the scene-encounter path). The Hollowed Chapel's `haunted` tag
+  now draws **Hollow Husks** (CR⅛) and **Pilgrim Shades** (CR1) instead of generic dungeon fauna — the
+  diegetic §3 symptom ("the recently dead don't stay dead"), never explained (§0). Test `tests/U302` (6/6).
+- **verified:** `npm run check` GREEN — convergence 109/109, suite **8999/0** (determinism in — `theme=null`
+  is byte-identical to the un-themed call, so every non-chapel spawn is unchanged), `playtest:quick` clean.
+- **deferred polish:** haunted ROOM PROSE (the dungeon look/telegraph lines stay generic; the LLM DM narrates
+  atmosphere from the chapel's name + the undead) and undead-specific loot — narration/taste, not skeleton.
 
 #### SL-4 — the woods + bandit camp  ·  **Status: ✅ DONE 2026-06-29** (Basecamp, autonomous)
 - **landed:** Tagged the slice nodes (`engine/world/sliceRegion.js`): **The Greenwood `bandits`** (bandit

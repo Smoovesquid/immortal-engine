@@ -1445,7 +1445,7 @@ function playerMoveCore(world, packsById, text) {
             const frng = makeRng(seedFromString(`${w2.meta.seed}|dungeon-fight|${nodeId}|${roomId}`));
             // The gradient: each floor down raises the CR floor (depth × 0.5), so the
             // mundane drops away and the deeper dark holds the wronger things.
-            const creatures = selectCreatures(enc.cr, enc.count, null, frng, biome, depth * 0.5);
+            const creatures = selectCreatures(enc.cr, enc.count, null, frng, biome, depth * 0.5, creatureThemeForNode(cn));
             let w3 = applyDeltas(w2, [{ op: 'tagRoom', structureId: st.id, roomId, tag: 'cleared' }]);
             w3 = spawnEncounter(w3, creatures, { ambush: true, reason: 'dungeon' }, frng);
             return { world: w3, output: { narration: `Wizard: ${movedLead} ${dungeonAmbushLine(creatures, dungeon)}`, mechanics: '[encounter]' } };
@@ -3128,7 +3128,7 @@ export function newScene(world, packsById, { lastResolutionKind = 'turn' } = {})
     const node = (w.map?.nodes || []).find(n => n && n.id === nodeId) || null;
     const region = node?.settlement?.region || null;
     const biome = node ? biomeForNode(w.meta.seed, node) : null;
-    const creatures = selectCreatures(encounterEval.cr, encounterEval.count, region, encounterRng, biome);
+    const creatures = selectCreatures(encounterEval.cr, encounterEval.count, region, encounterRng, biome, 0, creatureThemeForNode(node));
     w = spawnEncounter(w, creatures, {
       ambush: encounterEval.ambush,
       reason: encounterEval.ambush ? 'ambush' : 'encounter'
@@ -3497,6 +3497,15 @@ export function brigandNodeKind(node, biome) {
   if (tags.includes('banditCamp')) return 'camp';
   if (tags.includes('bandits')) return 'road';
   if (node?.nodeType === 'settlement' || biome === 'plains' || biome === 'coastal') return 'road';
+  return null;
+}
+
+// A node's encounter THEME (SL-3). A 'haunted' node (the Hollowed Chapel) draws
+// 'undead' — the diegetic face of DEMO_REGION §3 ("the recently dead don't always
+// stay dead"), never explained (§0). null = no theme → the normal biome pool.
+export function creatureThemeForNode(node) {
+  const tags = Array.isArray(node?.tags) ? node.tags : [];
+  if (tags.includes('haunted')) return 'undead';
   return null;
 }
 

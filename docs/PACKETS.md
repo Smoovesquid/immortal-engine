@@ -47,10 +47,19 @@ deferred to the campaign. Per `docs/SOBRIETY.md`: ship ONE bounded module — fi
   determinism untouched for non-demo packs.
 - **rollback:** delete `demoRegion.js` + revert the one `beginAdventure` conditional.
 
-#### SL-2 — the town (populate + plot-and-parcel)  ·  **Status: QUEUED**
-- **objective:** Populate the town from the Westmarch backstory pack; lay its internal buildings via
-  **DX-4 plot-and-parcel** (`engine/map/spatial/buildingPlots.js`) — non-overlapping slots, door-facing,
-  no church-clips-inn. *(Detail when reached — read the settlement-decompression + buildingPlots seams first.)*
+#### SL-2 — the town (populate + plot-and-parcel)  ·  **Status: ✅ SATISFIED by existing systems 2026-06-29** (Basecamp, verified-not-built)
+- **finding:** Aldermere is ALREADY real via the generic genesis — no rebuild needed (SOBRIETY: don't build
+  what exists). Verified live on the slice seed: the town wakes with named, role-differentiated NPCs
+  (*Senna the Fox · Galen the artisan · Brogan the laborer · the Lingerer*) **plus an auto-seeded hostile
+  "stranger who keeps to the edges, watching"** (the `ensureHostileNpc` bandit — already foreshadows SL-4);
+  conversation works ("I greet Galen…" → approach + natural deflection); `stgen:v27` buildings generate; the
+  `generateBuildingPlots` sample placed 10 buildings with **0 gross collisions**.
+- **deferred (NOT gold-plated now — neither blocks a walkable slice):**
+  - **DX-4 plot-and-parcel rigor** (footprint non-overlap / door-facing / fortify-by-danger in
+    `engine/map/spatial/buildingPlots.js`) — a separate large deterministic-geometry packet (S3-gated); the
+    slice doesn't visibly suffer church-clips-inn yet because it isn't rendering town building footprints.
+  - **Slice-specific town CHARACTER** (NPC concerns/rumors that point at the bandits + the haunted chapel, so
+    the four nodes cohere into a module) — authored + taste-laden → **Tim's call**, surfaced not auto-built.
 
 #### SL-3 — the haunted-chapel dungeon  ·  **Status: QUEUED**
 - **objective:** A small bounded ghost-dungeon interior behind the chapel landmark (a handful of rooms),

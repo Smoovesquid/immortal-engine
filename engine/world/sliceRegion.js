@@ -30,11 +30,14 @@ export const SLICE_SEED = 'aldermere';
 // Positions are on the same integer tile grid the overworld uses. Town at origin;
 // the woods sit between town and chapel; the camp branches off the woods. The
 // chapel is deliberately farther from town than the forest is ("a couple km out").
+// SL-4 tags drive the travel-encounter system (engine/playloop.js brigandNodeKind):
+//   'bandits'    — bandit country: traveling this node has a CHANCE of a brigand standoff.
+//   'banditCamp' — a bandit stronghold: arriving ALWAYS confronts the captain + crew.
 const LAYOUT = [
-  { key: 'town',   name: 'Aldermere',            nodeType: 'settlement',       tags: ['village'],        x: 0, y: 0 },
-  { key: 'forest', name: 'The Greenwood',        nodeType: 'wilderness',       tags: ['forest'],         x: 2, y: 0 },
-  { key: 'camp',   name: 'Crowfoot Camp',        nodeType: 'settlement',       tags: ['hamlet', 'camp'], x: 3, y: 2 },
-  { key: 'chapel', name: 'The Hollowed Chapel',  nodeType: 'dungeon_entrance', tags: ['haunted'],        x: 4, y: 0 },
+  { key: 'town',   name: 'Aldermere',            nodeType: 'settlement',       tags: ['village'],                   x: 0, y: 0 },
+  { key: 'forest', name: 'The Greenwood',        nodeType: 'wilderness',       tags: ['forest', 'bandits'],         x: 2, y: 0 },
+  { key: 'camp',   name: 'Crowfoot Camp',        nodeType: 'settlement',       tags: ['hamlet', 'camp', 'banditCamp'], x: 3, y: 2 },
+  { key: 'chapel', name: 'The Hollowed Chapel',  nodeType: 'dungeon_entrance', tags: ['haunted'],                   x: 4, y: 0 },
 ];
 
 // Edges keep the woods as the gateway: town → forest → chapel, with the camp

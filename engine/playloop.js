@@ -634,6 +634,16 @@ function playerMoveCore(world, packsById, text) {
     const dest = pend.destName || 'the road ahead';
     const erng = makeRng(seedFromString(`${w1.meta.seed}|roadEncounter|${w1.timeline.length}|${choice}`));
     const startFight = () => {
+      if (pend.band === 'camp') {
+        // The bandit camp's stand (SL-4): the captain and one of his crew. Outnumbered
+        // is dangerous (DX-2c flank presses with advantage) — but thin it to the captain
+        // alone and the press lifts, so it's a real but winnable stronghold fight.
+        const band = [
+          { name: 'Bandit Captain', ref: 'bandit_captain', cr: 2, maxHp: 9, ac: 13, damage: 5, canParley: false },
+          { name: 'Bandit', ref: 'bandit', cr: 0.125, maxHp: ESCAPE_ENEMY_HP, ac: 12, damage: 4, canParley: false },
+        ];
+        return spawnEncounter(w1, band, { ambush: true, reason: 'bandit-camp' }, erng);
+      }
       const brig = { name: String(pend.foeName).replace(/^A\s+/i, '').replace(/s$/, ''), ref: 'brigand', cr: 0.125, maxHp: ESCAPE_ENEMY_HP, ac: 12, damage: 4, canParley: false };
       return spawnEncounter(w1, [brig], { ambush: true, reason: 'brigand-fight' }, erng);
     };
@@ -1769,7 +1779,7 @@ function playerMoveCore(world, packsById, text) {
           const enc = maybeTravelEncounter(w1, before, ESCAPE_ENCOUNTER_CHANCE, nextName);
           w1 = enc.world;
           if (enc.kind === 'pending') {
-            return { world: w1, output: { narration: brigandSceneLine(w1.travel.pending.foeName, nextName), mechanics: '[encounter:pending]' } };
+            return { world: w1, output: { narration: brigandSceneLine(w1.travel.pending, nextName), mechanics: '[encounter:pending]' } };
           }
           const ambushed = Boolean(w1.combat?.active);
           const timeWord = travelTimeWord(hours);
@@ -1845,7 +1855,7 @@ function playerMoveCore(world, packsById, text) {
           const destNode = (w1.map?.nodes || []).find(n => n && String(n.id) === farId) || null;
           const destName = cleanPlaceName(destNode?.name) || 'your destination';
           if (pendingEnc && w1.travel?.pending) {
-            return { world: w1, output: { narration: brigandSceneLine(w1.travel.pending.foeName, destName), mechanics: '[encounter:pending]' } };
+            return { world: w1, output: { narration: brigandSceneLine(w1.travel.pending, destName), mechanics: '[encounter:pending]' } };
           }
           const timeWord = travelTimeWord(hours);
           const afterWord = timeWord === 'a short way' ? 'A short way on' : `After ${timeWord} on the road`;
@@ -3478,6 +3488,18 @@ function joinNames(items) {
 // fight). Wild terrain keeps the beast ambush. Same seed/gate as the beast spawner
 // so the danger RATE is unchanged; only the KIND differs by terrain. Returns
 // { world, kind: 'pending' | 'combat' | 'none' }.
+// A node's brigand disposition (SL-4). 'camp' = a bandit stronghold (captain + crew,
+// always present); 'road' = brigand/toll country (a road-band); null = no brigands
+// (wild country → a beast ambush instead). PURE — no rng — so computing it before the
+// chance roll leaves the encounter rng stream byte-identical for every existing world.
+export function brigandNodeKind(node, biome) {
+  const tags = Array.isArray(node?.tags) ? node.tags : [];
+  if (tags.includes('banditCamp')) return 'camp';
+  if (tags.includes('bandits')) return 'road';
+  if (node?.nodeType === 'settlement' || biome === 'plains' || biome === 'coastal') return 'road';
+  return null;
+}
+
 function maybeTravelEncounter(world, before, chance, destName) {
   const w = world;
   if (w.meta?.mode !== 'escape') return { world: w, kind: 'none' };
@@ -3485,23 +3507,35 @@ function maybeTravelEncounter(world, before, chance, destName) {
   const after = String(w.map?.currentNodeId || '');
   if (!after || after === String(before || '')) return { world: w, kind: 'none' };
   const rng = makeRng(seedFromString(`${w.meta.seed}|escapeEncounter|${after}|${w.timeline.length}`));
-  if (rng.nextFloat() >= chance) return { world: w, kind: 'none' };
   const node = (w.map?.nodes || []).find(n => n && n.id === after) || null;
   const biome = node ? biomeForNode(w.meta.seed, node) : 'wilderness';
-  // "The road has brigands, the wood has beasts": arriving at a town, or crossing
-  // open plains/coast, is road country → brigands/toll. Arriving at a wild place is
-  // beast country → ambush. A natural ~half-and-half mix.
-  const roadish = node?.nodeType === 'settlement' || biome === 'plains' || biome === 'coastal';
-  if (roadish) {
-    const foe = rng.pick(['Brigands', 'Robbers', 'Highwaymen', 'A toll-gang']) || 'Brigands';
-    return { world: { ...w, travel: { pending: { kind: 'brigands', foeName: foe, destName: String(destName || '') } } }, kind: 'pending' };
+  const brigKind = brigandNodeKind(node, biome);
+  // A bandit stronghold always has its bandits; everywhere else an encounter is a
+  // chance. The chance roll is preserved unchanged for every non-camp node (and the
+  // 'camp' tag is slice-only), so existing worlds' encounter streams are unaffected.
+  const isHold = brigKind === 'camp';
+  if (!isHold && rng.nextFloat() >= chance) return { world: w, kind: 'none' };
+  // "The road has brigands, the wood has beasts": brigand country (a town, open
+  // plains/coast, or a bandit-tagged wood) → a standoff; a bandit camp → captain + crew;
+  // a wild place → a beast ambush.
+  if (brigKind) {
+    const foe = isHold
+      ? 'The bandit captain and his crew'
+      : (rng.pick(['Brigands', 'Robbers', 'Highwaymen', 'A toll-gang']) || 'Brigands');
+    return { world: { ...w, travel: { pending: { kind: 'brigands', foeName: foe, destName: String(destName || ''), band: isHold ? 'camp' : 'road' } } }, kind: 'pending' };
   }
   const region = node?.settlement?.region || null;
   return { world: spawnTamedAmbush(w, region, rng, 'journey-ambush'), kind: 'combat' };
 }
 
-function brigandSceneLine(foeName, destName) {
-  const tail = destName ? ` ${destName} lies just beyond them.` : '';
+function brigandSceneLine(pend, destName) {
+  const foeName = (pend && pend.foeName) || 'Brigands';
+  // A bandit camp is their ground, not a tollgate — reframe the standoff accordingly.
+  if (pend && pend.band === 'camp') {
+    return `Wizard: ${foeName} rise from around the cook-fires as you come up on the camp, blades already out. No toll here — only how you mean to handle them. You can try to talk them down, slip away, buy your way past, or fight.`;
+  }
+  const dest = destName || (pend && pend.destName);
+  const tail = dest ? ` ${dest} lies just beyond them.` : '';
   return `Wizard: ${foeName} step into the road ahead, hands on their hilts. "Toll's a coin to pass — or we take it the hard way."${tail} You can pay, talk your way past, slip by, or fight.`;
 }
 

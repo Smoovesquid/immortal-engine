@@ -236,7 +236,10 @@ export function ensureWorld(partial) {
         pending: {
           kind: String(p.kind || 'brigands'),
           foeName: String(p.foeName || 'Brigands'),
-          destName: p.destName ? String(p.destName) : ''
+          destName: p.destName ? String(p.destName) : '',
+          // SL-4: 'camp' = a bandit stronghold (captain + crew); 'road' = a road-band.
+          // Default 'road' keeps every pre-SL-4 pending encounter byte-identical.
+          band: p.band === 'camp' ? 'camp' : 'road'
         }
       };
     })(),

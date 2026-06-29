@@ -66,10 +66,23 @@ deferred to the campaign. Per `docs/SOBRIETY.md`: ship ONE bounded module — fi
   carrying the §3 "recently dead don't stay dead" symptom (never explained — §0). *(Detail when reached —
   read the structures/dungeon-interior generation seam first.)*
 
-#### SL-4 — the woods + bandit camp  ·  **Status: QUEUED**
-- **objective:** Bind the existing forest `bandit`/`bandit_captain` encounter tables (`engine/ruleset/core/
-  encounters.js`) to the forest node so the woods actually spawn bandits; make the bandit camp a hostile
-  *place*. *(Detail when reached — read the encounter-binding + hostile-settlement seams first.)*
+#### SL-4 — the woods + bandit camp  ·  **Status: ✅ DONE 2026-06-29** (Basecamp, autonomous)
+- **landed:** Tagged the slice nodes (`engine/world/sliceRegion.js`): **The Greenwood `bandits`** (bandit
+  country — a CHANCE of a brigand standoff when traveled) and **Crowfoot Camp `banditCamp`** (a stronghold —
+  arriving ALWAYS confronts the captain + crew). Taught the LIVE escape travel-encounter path the tags via a
+  pure exported `brigandNodeKind(node, biome)` (`engine/playloop.js`); a `banditCamp` node bypasses the
+  chance roll; the camp's "fight" spawns a **Bandit Captain (hp9/ac13) + Bandit** band (vs the road's single
+  brigand), and the standoff scene reframes for a camp (no "toll"). Root fix in `engine/state.js`: added
+  `band` to the `travel.pending` whitelist (the [[ensureCombat-strips-fields]] pattern — it was silently
+  stripped). Test `tests/U301` (6/6) + `U100` road-encounter regression (8/8).
+- **why not encounters.js:** the rich `forest` biome tables in `engine/ruleset/core/encounters.js` are the
+  STRUCTURED-combat path; `v1.html` runs the escape engine, whose travel encounters are the brigand standoff
+  (pay/talk/slip/fight) + `spawnTamedAmbush` (the two-engines trap, [[project_two_combat_engines]]). SL-4
+  wires bandits onto the LIVE path, reusing that standoff — richer than a raw table roll.
+- **verified:** `npm run check` GREEN — convergence 109/109, suite **8993/0** (determinism U19/21/22/27/30
+  in — the chance-roll order is preserved for every non-camp node), `playtest:quick` 0 crashes/0 bugs.
+- **deferred polish:** a cleared camp re-confronts on re-entry (no "cleared" state yet); the camp captain is a
+  tuned escape-HP foe, not the full bestiary `bandit_captain` (escape balance).
 
 ---
 

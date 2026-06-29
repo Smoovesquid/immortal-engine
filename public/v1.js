@@ -97,10 +97,12 @@ const ui = {
   packs: { manifest: null, byId: {} },
   screen: 'invoke',
 
-  // 'tallow' = the curated demo region (DEMO_SEED in engine/world/demoRegion.js):
-  // 8 reachable towns, the real roster, the talk→quest→reputation loop. A raw seed
-  // ('seed', a random one) drops you in an uncurated procgen world instead.
-  invoke: { seed: 'tallow', fate: 0.2, primaryId: 'fantasy', mixerId: '' },
+  // 'aldermere' = THE SHIPPABLE SLICE (SLICE_SEED, engine/world/sliceRegion.js): one
+  // authored ~100 km² region — Aldermere (town) · The Greenwood (woods, bandits) ·
+  // Crowfoot Camp (the captain's stronghold) · The Hollowed Chapel (haunted dungeon).
+  // The richer 8-town demo is still reachable by typing 'tallow' in the seed field
+  // (DEMO_REGION.md); a raw seed drops you in an uncurated procgen world.
+  invoke: { seed: 'aldermere', fate: 0.2, primaryId: 'fantasy', mixerId: '' },
 
   gate4: {
     mythInput: '',
@@ -826,11 +828,12 @@ function travelTo(text) {
   doSubmitMove();
 }
 
-// Front door + Play Again — load the curated demo region by default so a player
-// who clicks Play lands IN the demo (Wayfarers' Outpost, the real roster, the
-// proven loop), not a raw procgen world. The seed feeds character creation too,
-// so the demo is repeatable. To explore a random adventure, type a different seed
-// in the seed field before starting. (DEMO_SEED = 'tallow', engine/world/demoRegion.js.)
+// Front door + Play Again — load THE SHIPPABLE SLICE by default so a player who
+// clicks Play lands in the authored ~100 km² region (Aldermere, the bandit woods,
+// Crowfoot Camp, the Hollowed Chapel), not a raw procgen world. The seed feeds
+// character creation too, so the demo is repeatable. Type 'tallow' to play the
+// richer 8-town demo, or any other seed for a random adventure.
+// (SLICE_SEED = 'aldermere', engine/world/sliceRegion.js.)
 // Starting a new character overwrites the single save slot. Guard it so a reflexive
 // click never destroys a saved character + their progress (the playtest pain point:
 // "I have to roll a new character every time"). Continue is the prominent action when
@@ -846,7 +849,7 @@ function confirmNewOverSave(startFn) {
 }
 
 function playAgain() {
-  ui.invoke.seed = 'tallow';
+  ui.invoke.seed = 'aldermere';
   beginNewWorld();
 }
 

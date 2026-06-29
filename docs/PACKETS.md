@@ -17,6 +17,10 @@ ONE walkable ~100 km² region with four authored places: a town, a forest (bandi
 a haunted-chapel dungeon ~2 km from town. The DEMO_REGION bible's 5-town / orb / cannibal / COUG apparatus is
 deferred to the campaign. Per `docs/SOBRIETY.md`: ship ONE bounded module — finish, don't expand.
 **Build order:** SL-1 (skeleton) → SL-2 (town) → SL-3 (chapel dungeon) → SL-4 (woods + camp).
+**✅ LIVE 2026-06-29:** all four packets done; `public/v1.js` now boots the slice by default
+(`seed: 'aldermere'`). The richer 8-town `tallow` demo stays reachable by typing it in the seed field.
+End-to-end verified in Node (town → woods bandits → camp captain duel → chapel undead; no soft-lock) and the
+live page boots clean (zero console errors). Standing polish backlog: see SL-2/3/4 "deferred" notes.
 
 #### SL-1 — curated demo region skeleton  ·  **Status: ✅ DONE 2026-06-29** (Basecamp, autonomous)
 - **landed:** new `engine/world/sliceRegion.js` (authored 4-node region: Aldermere · The Greenwood ·
@@ -91,8 +95,13 @@ deferred to the campaign. Per `docs/SOBRIETY.md`: ship ONE bounded module — fi
   wires bandits onto the LIVE path, reusing that standoff — richer than a raw table roll.
 - **verified:** `npm run check` GREEN — convergence 109/109, suite **8993/0** (determinism U19/21/22/27/30
   in — the chance-roll order is preserved for every non-camp node), `playtest:quick` 0 crashes/0 bugs.
+- **rebalanced (live-verify):** the camp's captain+crew pair was a measured **50/50 coin-flip** at escape's
+  12 HP under the DX-2c flank — unfair for a climax. Now a **solo captain duel** (hp6/ac11/dmg3): a careful
+  full-HP player wins **~100%** (30/30 sweep, ~5 HP left), but it costs ~7 HP, so arriving wounded or pushing
+  straight into the chapel undead after stays dangerous. Multi-foe DX-2c pressure lives in the chapel undead.
 - **deferred polish:** a cleared camp re-confronts on re-entry (no "cleared" state yet); the camp captain is a
-  tuned escape-HP foe, not the full bestiary `bandit_captain` (escape balance).
+  tuned escape-HP foe, not the full bestiary `bandit_captain` (escape balance); the camp scene still routes
+  through the brigand standoff (pay/talk/slip reframed as bribe/talk-down/slip — coherent, not a tollgate).
 
 ---
 

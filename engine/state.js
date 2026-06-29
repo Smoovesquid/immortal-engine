@@ -402,7 +402,19 @@ export function ensureCombat(c) {
     const senses = normalizeSenses(eRaw.senses);
     // DX-2a: per-enemy tactical position. Defaults to none/false/false.
     const tactical = normalizeTactical(eRaw.tactical);
-    enemies.push({ id, name, hp, maxHp, damage, ac, cr, damageType, resistances, conditionImmunities, conditions, actions, multiattack, saveProficiencies, canParley, defeated, sourceNpcId, lootTableRef, initMod, legendaryActions, reactions, lairActions, senses, tactical });
+    // DX-2d-i: creature traits drive the shared trait-hook pipeline (traitHooks.js)
+    // in BOTH combat engines. They MUST survive this normalization or every hook
+    // (Regeneration, Pack Tactics, Natural Armor, Evasion, Undead Fortitude…) runs
+    // against an empty array and the trait layer is dark. Derived at beginCombat
+    // from the seeded bestiary → replay-stable; defaults to [] for trait-less foes.
+    const traits = Array.isArray(eRaw.traits)
+      ? eRaw.traits.filter(t => typeof t === 'string' && t).slice(0, 24)
+      : [];
+    // The one-shot onDeath-revive flag (Undead Fortitude / Rejuvenation…) must
+    // persist across turns so a foe refuses to fall ONCE per fight, not per death.
+    const enemy = { id, name, hp, maxHp, damage, ac, cr, damageType, resistances, conditionImmunities, conditions, actions, multiattack, saveProficiencies, canParley, defeated, sourceNpcId, lootTableRef, initMod, legendaryActions, reactions, lairActions, senses, tactical, traits };
+    if (eRaw._traitRevived) enemy._traitRevived = true;
+    enemies.push(enemy);
     if (enemies.length >= COMBAT_ENEMY_CAP) break;
   }
 

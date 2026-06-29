@@ -47,6 +47,14 @@ import { getItemDef } from '../ruleset/core/items/index.js';
 import { levelUpSheet, levelForXp } from '../chargen/srd/levelUp.js';
 import { resolveBossActionPayload, resolveLairActionPayload, bossPhase, detectPhaseCrossings } from './bossActions.js';
 import { sealLoot } from '../ruleset/core/items/magic.js';
+import {
+  applyTurnStartTraits,
+  applyToHitTraits,
+  applyDamageDealtTraits,
+  applyDamageTakenTraits,
+  applyACTraits,
+  applyDeathTraits
+} from './traitHooks.js';
 
 // ── Player build (level-1 hedge-caster escapee) ──────────────────────────────
 const PLAYER_BASE_HP = 14;   // + GRIT mod
@@ -1059,6 +1067,47 @@ export function applySurpriseRound(world, rng) {
 // once on the way out, for the proper-named foes in THIS fight. Generic creatures
 // ("the goblin") keep their article. Pre-turn enemy list, so a foe felled this turn
 // still reads right.
+// ── DX-2d-i: trait-aware enemy damage (live escape engine) ───────────────────
+// Folds the foe's damage-taken traits (Evasion / Uncanny Dodge / fire-&-cold
+// auras = DR) onto the already-rolled `rawDmg`, applies it to the enemy IN PLACE,
+// then runs its onDeath traits (Undead Fortitude / Rejuvenation / Reassemble /
+// Reforming…) so a foe can refuse to fall ONCE per fight (one-shot, enforced via
+// the `_traitRevived` flag — mirrors combatResolve.processDeathTraits). Pure
+// arithmetic on rolled values — it draws NO rng, so a trait-less foe stays
+// byte-identical (the determinism guard). Returns the figures the caller's beat
+// reads:
+//   dmg        — damage after trait DR (what actually came off the foe)
+//   hp         — enemy hp after (surviving hp, revived hp, or 0)
+//   dropped    — the blow took it to 0 (the prose says "it drops")
+//   defeated   — truly down (dropped and did NOT revive)
+//   revived    — clawed back this hit
+//   reviveBeat — fiction line for the comeback (no number/label — THE LAW)
+function applyEnemyDamage(enemy, rawDmg, dmgType, world) {
+  const base = Math.max(0, Number(rawDmg) || 0);
+  if (base <= 0) {
+    return { dmg: 0, hp: Math.max(0, Number(enemy.hp) || 0), dropped: false, defeated: false, revived: false, reviveBeat: '' };
+  }
+  const dmg = applyDamageTakenTraits(enemy, base, dmgType);
+  let hp = Math.max(0, (Number(enemy.hp) || 0) - dmg);
+  enemy.hp = hp;
+  const dropped = hp <= 0;
+  let defeated = false, revived = false, reviveBeat = '';
+  if (dropped) {
+    const death = (!enemy._traitRevived) ? applyDeathTraits(enemy, world) : { revive: false };
+    if (death.revive) {
+      hp = Math.max(1, Number(death.hpIfRevived) || 1);
+      enemy.hp = hp;
+      enemy._traitRevived = true;
+      revived = true;
+      reviveBeat = `The ${enemy.name} drops — then will not stay down, dragging itself back upright.`;
+    } else {
+      enemy.defeated = true;
+      defeated = true;
+    }
+  }
+  return { dmg, hp, dropped, defeated, revived, reviveBeat };
+}
+
 function stripFoeArticles(result, properNames) {
   if (!result || !properNames.length) return result;
   const fix = (s) => properNames.reduce((acc, nm) => {
@@ -1175,7 +1224,14 @@ function resolveEscapeCombatTurnCore(world, actionText = '') {
   }
 
   // ── Player turn ────────────────────────────────────────────────────────────
-  let enemies = (Array.isArray(w.combat.enemies) ? w.combat.enemies : []).map(e => ({ ...e }));
+  let enemies = (Array.isArray(w.combat.enemies) ? w.combat.enemies : []).map(e => ({
+    ...e,
+    // DX-2d-i (Step 0): every escape foe carries a traits array (default []), so
+    // the trait hooks run for bestiary foes and are a clean no-op for trait-less
+    // ones. mintEnemyFromNpc already threads this; the default covers legacy/
+    // synthetic enemies from older saves.
+    traits: Array.isArray(e.traits) ? e.traits : []
+  }));
   // DX-2c: on the FIRST round of a fight, source the enemy side's opening tactical
   // positions (some foes hold cover / the high ground). Round === 1 marks the first
   // player turn (the surprise round doesn't advance it), so this runs exactly once;
@@ -1367,13 +1423,13 @@ function resolveEscapeCombatTurnCore(world, actionText = '') {
       for (const e of enemies) {
         if (!e || e.defeated || (Number(e.hp) || 0) <= 0) continue;
         const save = rng.int(1, 20) + 2;
-        let dmg = rng.int(1, breath.die) + rng.int(1, breath.die);
-        if (save >= breath.dc) dmg = Math.floor(dmg / 2);
-        dmg = Math.max(save >= breath.dc ? 0 : 1, dmg);
-        const newHp = Math.max(0, (Number(e.hp) || 0) - dmg);
-        e.hp = newHp;
-        if (newHp <= 0) { e.defeated = true; dropped++; }
-        beats.push(`The ${e.name} ${save >= breath.dc ? 'twists half-clear of' : 'takes the full force of'} your ${breath.damage} breath — ${dmg} ${breath.damage}.${newHp <= 0 ? ' It drops.' : ''}`);
+        let raw = rng.int(1, breath.die) + rng.int(1, breath.die);
+        if (save >= breath.dc) raw = Math.floor(raw / 2);
+        raw = Math.max(save >= breath.dc ? 0 : 1, raw);
+        const hit = applyEnemyDamage(e, raw, breath.damage, w);
+        if (hit.defeated) dropped++;
+        beats.push(`The ${e.name} ${save >= breath.dc ? 'twists half-clear of' : 'takes the full force of'} your ${breath.damage} breath — ${hit.dmg} ${breath.damage}.${hit.dropped ? ' It drops.' : ''}`);
+        if (hit.revived) beats.push(hit.reviveBeat);
       }
       if (dropped === 0 && !beats.length) beats.push('Your breath scorches empty air.');
     } else if (feats.breathUsed) {
@@ -1392,26 +1448,26 @@ function resolveEscapeCombatTurnCore(world, actionText = '') {
         // Magic missile: every dart hits. No roll, no mercy. Upcast: one
         // extra dart per slot level above 1st.
         const darts = spell.darts + Math.max(0, slotLvl - 1);
-        let dmg = 0;
-        for (let i = 0; i < darts; i++) dmg += rng.int(1, spell.die) + spell.flat;
-        const newHp = Math.max(0, (Number(target.hp) || 0) - dmg);
-        target.hp = newHp;
-        if (newHp <= 0) target.defeated = true;
-        beats.push(`${darts === 3 ? 'Three' : darts} darts of force streak unerringly into the ${target.name} — ${dmg} force${slotLvl > 1 ? ` (level-${slotLvl} slot)` : ''}${newHp <= 0 ? ' — it drops.' : `. (${newHp} HP left)`}`);
+        let raw = 0;
+        for (let i = 0; i < darts; i++) raw += rng.int(1, spell.die) + spell.flat;
+        const hit = applyEnemyDamage(target, raw, 'force', w);
+        beats.push(`${darts === 3 ? 'Three' : darts} darts of force streak unerringly into the ${target.name} — ${hit.dmg} force${slotLvl > 1 ? ` (level-${slotLvl} slot)` : ''}${hit.dropped ? ' — it drops.' : `. (${hit.hp} HP left)`}`);
+        if (hit.revived) beats.push(hit.reviveBeat);
       } else {
         const roll = rng.int(1, 20);
-        const ac = Number(target.ac) || 10;
+        // DX-2d-i: effective AC folds the foe's Natural Armor / Shell / Magic
+        // Resistance (applyACTraits is a no-op for trait-less foes).
+        const ac = applyACTraits(target, Number(target.ac) || 10);
         const total = roll + spell.atkBonus + (feats.blessActive ? rng.int(1, 4) : 0) + (hasCondition(target.conditions, 'restrained') ? RESTRAINED_PENALTY : 0);
         if (roll !== 1 && (roll === 20 || total >= ac)) {
           const crit = roll === 20;
           // Witch bolt upcasts: +1d12 per slot level above 1st.
           const dice = 1 + Math.max(0, slotLvl - 1);
-          let dmg = 0;
-          for (let i = 0; i < dice * (crit ? 2 : 1); i++) dmg += rng.int(1, spell.die);
-          const newHp = Math.max(0, (Number(target.hp) || 0) - dmg);
-          target.hp = newHp;
-          if (newHp <= 0) target.defeated = true;
-          beats.push(`A crackling arc of lightning lashes the ${target.name} for ${dmg}${crit ? ' (critical!)' : ''}${slotLvl > 1 ? ` (level-${slotLvl} slot)` : ''}${newHp <= 0 ? ' — it drops.' : `. (${newHp} HP left)`}`);
+          let raw = 0;
+          for (let i = 0; i < dice * (crit ? 2 : 1); i++) raw += rng.int(1, spell.die);
+          const hit = applyEnemyDamage(target, raw, 'lightning', w);
+          beats.push(`A crackling arc of lightning lashes the ${target.name} for ${hit.dmg}${crit ? ' (critical!)' : ''}${slotLvl > 1 ? ` (level-${slotLvl} slot)` : ''}${hit.dropped ? ' — it drops.' : `. (${hit.hp} HP left)`}`);
+          if (hit.revived) beats.push(hit.reviveBeat);
         } else {
           beats.push(`Your witch bolt cracks past the ${target.name} and grounds out in the dirt.`);
         }
@@ -1541,13 +1597,12 @@ function resolveEscapeCombatTurnCore(world, actionText = '') {
         const tgt = enemies[tIdx];
         const r = rng.int(1, 20);
         const tot = r + spell.atkBonus + (feats.blessActive ? rng.int(1, 4) : 0);
-        if (r !== 1 && (r === 20 || tot >= (Number(tgt.ac) || 10))) {
-          let dmg = rng.int(1, spell.die) + rng.int(1, spell.die);
-          if (r === 20) dmg += rng.int(1, spell.die) + rng.int(1, spell.die);
-          const newHp = Math.max(0, (Number(tgt.hp) || 0) - dmg);
-          tgt.hp = newHp;
-          if (newHp <= 0) tgt.defeated = true;
-          beats.push(`A ray of fire sears the ${tgt.name} for ${dmg}${r === 20 ? ' (critical!)' : ''}${newHp <= 0 ? ' — it drops.' : `. (${newHp} HP left)`}`);
+        if (r !== 1 && (r === 20 || tot >= applyACTraits(tgt, Number(tgt.ac) || 10))) {
+          let raw = rng.int(1, spell.die) + rng.int(1, spell.die);
+          if (r === 20) raw += rng.int(1, spell.die) + rng.int(1, spell.die);
+          const hit = applyEnemyDamage(tgt, raw, 'fire', w);
+          beats.push(`A ray of fire sears the ${tgt.name} for ${hit.dmg}${r === 20 ? ' (critical!)' : ''}${hit.dropped ? ' — it drops.' : `. (${hit.hp} HP left)`}`);
+          if (hit.revived) beats.push(hit.reviveBeat);
         } else {
           beats.push(`A ray of fire hisses past the ${tgt.name}.`);
         }
@@ -1603,11 +1658,10 @@ function resolveEscapeCombatTurnCore(world, actionText = '') {
       for (const e of enemies) {
         if (!e || e.defeated || (Number(e.hp) || 0) <= 0) continue;
         const save = rng.int(1, 20) + ENEMY_SAVE_BONUS;
-        const dmg = save >= dc ? Math.floor(base / 2) : base;
-        const newHp = Math.max(0, (Number(e.hp) || 0) - dmg);
-        e.hp = newHp;
-        if (newHp <= 0) e.defeated = true;
-        beats.push(`The ${e.name} ${save >= dc ? 'dives clear of the worst of it' : 'takes the blast full'} — ${dmg} fire.${newHp <= 0 ? ' It drops.' : ''}`);
+        const raw = save >= dc ? Math.floor(base / 2) : base;
+        const hit = applyEnemyDamage(e, raw, 'fire', w);
+        beats.push(`The ${e.name} ${save >= dc ? 'dives clear of the worst of it' : 'takes the blast full'} — ${hit.dmg} fire.${hit.dropped ? ' It drops.' : ''}`);
+        if (hit.revived) beats.push(hit.reviveBeat);
       }
     } else if (spell && lowestSlot(pc) > 0) {
       beats.push('Fireball needs a 3rd-level slot. The bead of light refuses to form.');
@@ -1673,7 +1727,9 @@ function resolveEscapeCombatTurnCore(world, actionText = '') {
     // DX-2c: honor the foe's own cover — a covered foe is harder to hit (+2 half /
     // +5 full effective AC), mirroring the player's escapeCover. coverAcBonus is 0
     // for an uncovered foe, so this is a no-op for fights without enemy cover.
-    const ac = (Number(target.ac) || 10) + coverAcBonus(target?.tactical?.cover);
+    // DX-2d-i: fold the foe's AC traits (Natural Armor / Shell / Magic Resistance)
+    // alongside the DX-2c cover bonus — both no-ops when absent.
+    const ac = applyACTraits(target, Number(target.ac) || 10) + coverAcBonus(target?.tactical?.cover);
     // DX-2b: advantage from tactical position — the player holds the high ground
     // or strikes a flanked foe. True D&D advantage: roll 2d20, keep the higher.
     // The second die is only drawn when advantage is active, so the rng stream is
@@ -1697,16 +1753,15 @@ function resolveEscapeCombatTurnCore(world, actionText = '') {
         const crit = roll === 20;
         // Cantrips scale with character level (SRD): two dice at 5th.
         const cantripDice = ((pc?.dnd?.level || 1) >= 5 ? 2 : 1) * (crit ? 2 : 1);
-        let dmg = 0;
-        for (let i = 0; i < cantripDice; i++) dmg += rng.int(1, cantrip.die);
+        let raw = 0;
+        for (let i = 0; i < cantripDice; i++) raw += rng.int(1, cantrip.die);
         // Agonizing Blast (warlock 2): CHA mod rides the eldritch blast.
-        if (cantrip.ref === 'eldritch_blast' && hasFeature(pc, 'agonizingBlast')) dmg += Math.max(0, pc.dnd.mods.CHA);
-        dmg = Math.max(1, dmg);
-        const newHp = Math.max(0, (Number(target.hp) || 0) - dmg);
-        target.hp = newHp;
-        if (newHp <= 0) target.defeated = true;
-        beats.push(`Your ${cname} sears the ${target.name} for ${dmg} ${cantrip.type}${crit ? ' (critical!)' : ''}${newHp <= 0 ? ' — it drops.' : `. (${newHp} HP left)`}`);
-        actionMech = `[cantrip:${cantrip.name} | atk:${total} vs AC:${ac} → hit | ${dmg} ${cantrip.type}${crit ? ' crit' : ''}]`;
+        if (cantrip.ref === 'eldritch_blast' && hasFeature(pc, 'agonizingBlast')) raw += Math.max(0, pc.dnd.mods.CHA);
+        raw = Math.max(1, raw);
+        const hit = applyEnemyDamage(target, raw, cantrip.type, w);
+        beats.push(`Your ${cname} sears the ${target.name} for ${hit.dmg} ${cantrip.type}${crit ? ' (critical!)' : ''}${hit.dropped ? ' — it drops.' : `. (${hit.hp} HP left)`}`);
+        if (hit.revived) beats.push(hit.reviveBeat);
+        actionMech = `[cantrip:${cantrip.name} | atk:${total} vs AC:${ac} → hit | ${hit.dmg} ${cantrip.type}${crit ? ' crit' : ''}]`;
       } else {
         beats.push(`Your ${cname} sputters wide of the ${target.name}.`);
         actionMech = `[cantrip:${cantrip.name} | atk:${total} vs AC:${ac} → miss]`;
@@ -1763,7 +1818,8 @@ function resolveEscapeCombatTurnCore(world, actionText = '') {
         if (tIdx < 0) break;
         const tgt = enemies[tIdx];
         // DX-2c: per-swing effective AC folds in the foe's cover (+2/+5; 0 if none).
-        const tAc = (Number(tgt.ac) || 10) + coverAcBonus(tgt?.tactical?.cover);
+        // DX-2d-i: …plus its AC traits (Natural Armor / Shell / Magic Resistance).
+        const tAc = applyACTraits(tgt, Number(tgt.ac) || 10) + coverAcBonus(tgt?.tactical?.cover);
         // DX-2b: extra-attack swings each get advantage from high ground or the
         // swing's own flanked target (swing 0 already carries it via `roll`).
         const swingAdv = Boolean(playerTactical.highGround) || Boolean(tgt?.tactical?.flanked);
@@ -1818,10 +1874,9 @@ function resolveEscapeCombatTurnCore(world, actionText = '') {
             dmg += smite;
           }
           dmg = Math.max(1, dmg);
-          anyHit = true; swingHits++; swingDmg += dmg;
-          const newHp = Math.max(0, (Number(tgt.hp) || 0) - dmg);
-          tgt.hp = newHp;
-          if (newHp <= 0) tgt.defeated = true;
+          anyHit = true; swingHits++;
+          const hit = applyEnemyDamage(tgt, dmg, melee.damageType || 'physical', w);
+          swingDmg += hit.dmg;
           const tags = [
             crit ? 'critical!' : '',
             sneak ? `sneak attack +${sneak}` : '',
@@ -1829,7 +1884,8 @@ function resolveEscapeCombatTurnCore(world, actionText = '') {
             smite ? `divine smite +${smite}` : '',
             rageDmg ? 'raging' : ''
           ].filter(Boolean).join(', ');
-          beats.push(`Your ${wname} ${smite ? 'falls like judgment on' : 'hits'} the ${tgt.name} for ${dmg}${tags ? ` (${tags})` : ''}${newHp <= 0 ? ' — it drops.' : `. (${newHp} HP left)`}`);
+          beats.push(`Your ${wname} ${smite ? 'falls like judgment on' : 'hits'} the ${tgt.name} for ${hit.dmg}${tags ? ` (${tags})` : ''}${hit.dropped ? ' — it drops.' : `. (${hit.hp} HP left)`}`);
+          if (hit.revived) beats.push(hit.reviveBeat);
         } else {
           beats.push(`You swing your ${wname} at the ${tgt.name} and miss.`);
         }
@@ -1997,6 +2053,11 @@ function resolveEscapeCombatTurnCore(world, actionText = '') {
   const coverBonus = coverState ? (Number(coverState.bonus) || 0) : 0;
   const ac = playerAc(pc) + (warded ? wardBonus : 0) + coverBonus;
   const enemyMech = [];
+  // DX-2d-i: a world view whose combat.enemies is THIS turn's live (post-action,
+  // post-morale) enemy array, so Pack/Flock Tactics counts only the foes still
+  // standing. The local `enemies` array is mutated in place through the loop, so
+  // the view tracks it without a rebuild. Pure read — no rng, no state write.
+  const eWorld = { ...w, combat: { ...(w.combat || {}), enemies } };
 
   // ── P-75: boss beats between turns ──────────────────────────────────────────
   // The boss answers your turn (legendary action: one option per round, the
@@ -2091,6 +2152,17 @@ function resolveEscapeCombatTurnCore(world, actionText = '') {
     if (hp <= 0) break;
     if (!e || e.defeated || (Number(e.hp) || 0) <= 0) continue;
 
+    // DX-2d-i: start-of-turn regeneration (Regeneration / Dire / Fungal / Regrowing
+    // Heads). Heals the LIVING foe only — a dropped foe is already past the guard
+    // above; the hook clamps to maxHp. No rng draw, so a trait-less foe is
+    // untouched. Fires even when charmed/held (regen is start-of-turn, not an
+    // action). Narrated as fiction — no number, no label (THE LAW).
+    const regen = applyTurnStartTraits(e, eWorld);
+    if (regen.hpDelta > 0) {
+      e.hp = Math.max(0, (Number(e.hp) || 0) + regen.hpDelta);
+      beats.push(`The ${e.name}'s wounds close before your eyes — torn flesh crawling shut.`);
+    }
+
     // Charmed: it will not raise a hand against you. The charm fades on a
     // countdown — when it breaks, the foe knows exactly what you did.
     if (hasCondition(e.conditions, 'charmed')) {
@@ -2147,7 +2219,12 @@ function resolveEscapeCombatTurnCore(world, actionText = '') {
     const enemyAdv = !(restrained || grappledNow)
       && (Boolean(e.tactical?.highGround) || Boolean(playerTactical.flanked));
     const roll = rollD20Adv(rng, enemyAdv);
-    const total = roll + ENEMY_ATK_BONUS - ((restrained || grappledNow) ? RESTRAINED_PENALTY : 0) + (recklessThisRound ? 4 : 0);
+    const baseToHit = roll + ENEMY_ATK_BONUS - ((restrained || grappledNow) ? RESTRAINED_PENALTY : 0) + (recklessThisRound ? 4 : 0);
+    // DX-2d-i: fold the foe's to-hit traits — Pack/Flock Tactics (+2 while an ally
+    // still stands, read from eWorld's live enemy list), Reckless/Aggressive.
+    // Arithmetic on the already-rolled d20: no extra draw, and a trait-less foe's
+    // `total` is identical to before.
+    const total = applyToHitTraits(e, baseToHit, eWorld);
     if (restrained) {
       const cond = (e.conditions || []).find(c => c.name === 'restrained');
       const dc = cond?.saveToEnd?.dc || 13;
@@ -2169,25 +2246,27 @@ function resolveEscapeCombatTurnCore(world, actionText = '') {
       let dmg = rng.int(1, die);
       if (crit) dmg += rng.int(1, die);
       dmg = Math.max(1, dmg);
+      // DX-2d-i: the foe's damage-dealt traits (Brute, Sneak Attack, Precision
+      // Strike…) ride the rolled damage, before the player's own defenses. No rng
+      // draw — a trait-less foe is unchanged.
+      dmg = applyDamageDealtTraits(e, dmg);
       // Rage: resistance to weapon damage — the blow lands at half force.
       if (feats.rageActive) dmg = Math.max(1, Math.floor(dmg / 2));
       // Armor of Agathys: while the black ice holds, it soaks the hit first
       // and bites back at whoever struck it.
       if (feats.tempHp > 0) {
-        let retaliated = false;
-        if (feats.agathysActive) {
-          const newEnemyHp = Math.max(0, (Number(e.hp) || 0) - 5);
-          e.hp = newEnemyHp;
-          retaliated = true;
-          if (newEnemyHp <= 0) e.defeated = true;
-        }
+        // DX-2d-i: the ice's cold retaliation runs the trait pipeline too —
+        // Evasion/Uncanny Dodge halve it, an aura soaks a point, Undead Fortitude
+        // can refuse to fall. applyEnemyDamage mutates e.hp/e.defeated in place.
+        const iceHit = feats.agathysActive ? applyEnemyDamage(e, 5, 'cold', eWorld) : null;
         const soaked = Math.min(feats.tempHp, dmg);
         feats.tempHp -= soaked;
         dmg -= soaked;
         if (feats.tempHp <= 0) feats.agathysActive = false;
         if (soaked > 0) {
-          beats.push(`The ${e.name} cracks into the black ice — ${soaked} swallowed by the armor${retaliated ? `, and the ice bites back for 5 cold${e.defeated ? ' — it drops' : ''}` : ''}.`);
+          beats.push(`The ${e.name} cracks into the black ice — ${soaked} swallowed by the armor${iceHit ? `, and the ice bites back for ${iceHit.dmg} cold${iceHit.dropped ? ' — it drops' : ''}` : ''}.`);
         }
+        if (iceHit && iceHit.revived) beats.push(iceHit.reviveBeat);
         if (dmg <= 0) continue;
       }
       const beforeHp = hp;

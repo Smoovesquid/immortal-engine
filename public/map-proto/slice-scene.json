@@ -1,0 +1,66 @@
+{
+  "schema": "slice-overworld-scene/v1",
+  "seed": "aldermere",
+  "bounds": {
+    "minX": -1,
+    "minY": -1,
+    "maxX": 5,
+    "maxY": 3
+  },
+  "nodes": [
+    {
+      "id": "n0_2935788122",
+      "name": "Aldermere",
+      "nodeType": "settlement",
+      "x": 0,
+      "y": 0,
+      "discovered": true
+    },
+    {
+      "id": "n1_1247857428",
+      "name": "The Greenwood",
+      "nodeType": "wilderness",
+      "x": 2,
+      "y": 0,
+      "discovered": false
+    },
+    {
+      "id": "n2_2697197287",
+      "name": "Crowfoot Camp",
+      "nodeType": "settlement",
+      "x": 3,
+      "y": 2,
+      "discovered": false
+    },
+    {
+      "id": "n3_2053637344",
+      "name": "The Hollowed Chapel",
+      "nodeType": "dungeon_entrance",
+      "x": 4,
+      "y": 0,
+      "discovered": false
+    }
+  ],
+  "edges": [
+    {
+      "a": "n0_2935788122",
+      "b": "n1_1247857428",
+      "kind": "road"
+    },
+    {
+      "a": "n1_1247857428",
+      "b": "n3_2053637344",
+      "kind": "path"
+    },
+    {
+      "a": "n1_1247857428",
+      "b": "n2_2697197287",
+      "kind": "path"
+    }
+  ],
+  "player": {
+    "nodeId": "n0_2935788122",
+    "x": 0,
+    "y": 0
+  }
+}

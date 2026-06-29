@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>MAPNINJA · Aldermere Slice — Overworld</title>
+<style>
+  :root{ --gold:#d9a441; --parch:#e9dcc0; --cyan:#36c5ff; }
+  *{box-sizing:border-box;}
+  html,body{margin:0;height:100%;background:#05060a;overflow:hidden;
+    font-family:"Iowan Old Style","Palatino Linotype",Georgia,serif;color:var(--parch);}
+  #app{position:fixed;inset:0;} canvas{display:block;cursor:grab;} canvas:active{cursor:grabbing;}
+  #frame{position:fixed;inset:0;pointer-events:none;z-index:5;box-shadow:inset 0 0 240px 60px rgba(0,0,0,.55);}
+  #frame::before,#frame::after{content:"";position:absolute;width:46px;height:46px;border:2px solid rgba(217,164,65,.45);}
+  #frame::before{top:18px;left:18px;border-right:none;border-bottom:none;}
+  #frame::after{bottom:18px;right:18px;border-left:none;border-top:none;}
+  #banner{position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:6;text-align:center;}
+  #banner .loc{font-size:13px;letter-spacing:.42em;text-transform:uppercase;color:var(--gold);}
+  #banner .sub{font-size:11px;letter-spacing:.3em;color:#cbb68a;margin-top:4px;}
+  #hint{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:6;font-size:10px;
+    letter-spacing:.2em;text-transform:uppercase;color:#cbb68a;text-shadow:0 1px 4px #000;}
+  #hint b{color:var(--gold);}
+  #mark{position:fixed;bottom:24px;right:26px;z-index:6;text-align:right;font-size:10px;letter-spacing:.2em;
+    text-transform:uppercase;color:#8a7a55;}
+  #mark b{color:var(--gold);}
+  #loading{position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;
+    background:#0b0d12;color:var(--gold);letter-spacing:.4em;text-transform:uppercase;font-size:12px;}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="frame"></div>
+<div id="loading">Surveying the overworld…</div>
+<div id="banner">
+  <div class="loc" id="locTitle">Aldermere Region</div>
+  <div class="sub" id="locSub">OVERWORLD · SLICE</div>
+</div>
+<div id="hint">drag to orbit · scroll to zoom · <b>Q</b>/<b>E</b> rotate</div>
+<div id="mark"><b>MAPNINJA</b> · overworld · view only</div>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+
+window.__err = [];
+window.__ready = false;
+addEventListener('error', e => window.__err.push((e.message || e.error) + ' @' + (e.lineno || '?') + ':' + (e.colno || '?')));
+
+// ---------- seeded RNG ----------
+// mulberry32: same as outpost.html
+function mulberry32(a) {
+  return function() {
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+// String → u32 hash (djb2 variant)
+function strHash(s) {
+  let h = 5381;
+  for (let i = 0; i < s.length; i++) h = ((h << 5) + h) ^ s.charCodeAt(i);
+  return h >>> 0;
+}
+// Make a per-node RNG seeded from seed string + node id
+function nodeRng(seedStr, nodeId) {
+  return mulberry32(strHash(seedStr + '_' + nodeId));
+}
+
+const TILE_WU = 40; // world units per tile
+
+// ---------- renderer ----------
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.2;
+document.getElementById('app').appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.fog = new THREE.Fog(0xd8cdb8, 180, 520);
+const camera = new THREE.PerspectiveCamera(45, innerWidth / innerHeight, 0.5, 1200);
+
+// ---------- sky ----------
+function skyTex() {
+  const c = document.createElement('canvas'); c.width = 16; c.height = 256;
+  const x = c.getContext('2d');
+  const g = x.createLinearGradient(0, 0, 0, 256);
+  g.addColorStop(0, '#4a78b0'); g.addColorStop(0.45, '#8fb0cc');
+  g.addColorStop(0.72, '#e0ccaa'); g.addColorStop(0.9, '#f2c98a'); g.addColorStop(1, '#e9b878');
+  x.fillStyle = g; x.fillRect(0, 0, 16, 256);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+}
+const sky = new THREE.Mesh(
+  new THREE.SphereGeometry(600, 24, 16),
+  new THREE.MeshBasicMaterial({ map: skyTex(), side: THREE.BackSide, fog: false })
+);
+scene.add(sky);
+
+// ---------- lighting ----------
+scene.add(new THREE.HemisphereLight(0xbcd2f0, 0x6a5a40, 0.7));
+const sun = new THREE.DirectionalLight(0xffe2a8, 2.0);
+sun.position.set(-80, 90, 50); sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+sun.shadow.camera.near = 1; sun.shadow.camera.far = 500;
+sun.shadow.camera.left = -200; sun.shadow.camera.right = 200;
+sun.shadow.camera.top = 200; sun.shadow.camera.bottom = -200;
+sun.shadow.bias = -0.0004;
+scene.add(sun); scene.add(sun.target);
+scene.add(new THREE.AmbientLight(0xfff0d8, 0.3));
+
+// ---------- ground ----------
+// Large flat ground plane with a subtle grass color
+const groundGeo = new THREE.PlaneGeometry(900, 900, 1, 1);
+groundGeo.rotateX(-Math.PI / 2);
+const ground = new THREE.Mesh(groundGeo, new THREE.MeshStandardMaterial({
+  color: 0x5e7040, roughness: 0.98
+}));
+ground.receiveShadow = true;
+scene.add(ground);
+
+// ---------- materials ----------
+const stoneMat = new THREE.MeshStandardMaterial({ color: 0x8b8579, roughness: 0.95 });
+const plasterMat = new THREE.MeshStandardMaterial({ color: 0xcdbf9c, roughness: 0.95 });
+const timberMat = new THREE.MeshStandardMaterial({ color: 0x49301a, roughness: 0.85 });
+const thatchMat = new THREE.MeshStandardMaterial({ color: 0xb8a05a, roughness: 1.0 });
+const darkStoneMat = new THREE.MeshStandardMaterial({ color: 0x4a4642, roughness: 0.97 });
+const darkRoofMat = new THREE.MeshStandardMaterial({ color: 0x2e2c2a, roughness: 0.95 });
+const trunkMat = new THREE.MeshStandardMaterial({ color: 0x5a3f28, roughness: 0.95 });
+
+// ---------- label sprite ----------
+function makeLabel(text, color = '#fff') {
+  const c = document.createElement('canvas'); c.width = 512; c.height = 96;
+  const x = c.getContext('2d');
+  // shadow
+  x.shadowColor = 'rgba(0,0,0,0.9)'; x.shadowBlur = 10;
+  x.fillStyle = color;
+  x.font = 'bold 44px Georgia, serif';
+  x.textAlign = 'center'; x.textBaseline = 'middle';
+  x.fillText(text, 256, 48);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  const mat = new THREE.SpriteMaterial({ map: tex, depthTest: false, sizeAttenuation: true });
+  const sprite = new THREE.Sprite(mat);
+  // aspect: 512/96 ≈ 5.33 → scale accordingly
+  sprite.scale.set(22, 4.1, 1);
+  return sprite;
+}
+
+// ---------- node builders ----------
+// roof prism: ridge along longer axis
+function roofPrism(w, d, rh, eave, mat) {
+  const long = Math.max(w, d), short = Math.min(w, d);
+  const s = new THREE.Shape();
+  s.moveTo(-short / 2 - eave, 0); s.lineTo(short / 2 + eave, 0); s.lineTo(0, rh); s.closePath();
+  const geo = new THREE.ExtrudeGeometry(s, { depth: long + eave * 2, bevelEnabled: false });
+  geo.translate(0, 0, -(long + eave * 2) / 2);
+  const m = new THREE.Mesh(geo, mat); m.castShadow = true;
+  if (w >= d) m.rotation.y = Math.PI / 2;
+  return m;
+}
+
+function makeHouse(rng, dark = false) {
+  const g = new THREE.Group();
+  const w = 3.5 + rng() * 1.5, d = 4.0 + rng() * 2.0;
+  const h = 2.4 + rng() * 0.5;
+  const wall = dark ? darkStoneMat : plasterMat;
+  const body = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), wall);
+  body.position.y = h / 2; body.castShadow = true; body.receiveShadow = true; g.add(body);
+  // timber trim front
+  const frMat = dark ? darkRoofMat : timberMat;
+  for (const sx of [-w / 2 + 0.1, w / 2 - 0.1]) {
+    const fr = new THREE.Mesh(new THREE.BoxGeometry(0.14, h, 0.16), frMat);
+    fr.position.set(sx, h / 2, d / 2 + 0.01); g.add(fr);
+  }
+  const roof = roofPrism(w, d, 1.6, 0.3, dark ? darkRoofMat : thatchMat);
+  roof.position.y = h; g.add(roof);
+  return g;
+}
+
+function buildSettlement(node, rng, dark = false) {
+  const g = new THREE.Group();
+  // 2–3 houses arranged in a small cluster
+  const count = dark ? 2 : 3;
+  const offsets = [[0, 0], [5.5, 1.5], [-4.5, 2.5]];
+  for (let i = 0; i < count; i++) {
+    const h = makeHouse(rng, dark);
+    h.position.set(offsets[i][0], 0, offsets[i][1]);
+    h.rotation.y = (rng() - 0.5) * 0.6;
+    g.add(h);
+  }
+  return g;
+}
+
+function buildWilderness(node, rng) {
+  const g = new THREE.Group();
+  const treeCount = 5 + Math.floor(rng() * 5); // 5–9
+  const greenVariants = [0x3f6a35, 0x4f7a3f, 0x35602e, 0x44702a, 0x547a44];
+  for (let i = 0; i < treeCount; i++) {
+    // scatter in a radius around origin
+    const angle = rng() * Math.PI * 2;
+    const radius = 2 + rng() * 9;
+    const tx = Math.cos(angle) * radius;
+    const tz = Math.sin(angle) * radius;
+    const s = 0.7 + rng() * 0.9;
+    // trunk
+    const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.3, 2.0, 6), trunkMat);
+    trunk.position.set(tx, 1.0 * s, tz);
+    trunk.scale.setScalar(s);
+    trunk.castShadow = true; g.add(trunk);
+    // foliage cone
+    const greenColor = greenVariants[Math.floor(rng() * greenVariants.length)];
+    const foliMat = new THREE.MeshStandardMaterial({ color: greenColor, roughness: 0.9 });
+    const foli = new THREE.Mesh(new THREE.ConeGeometry(1.4, 3.0, 7), foliMat);
+    foli.position.set(tx, (2.0 + 1.5) * s, tz);
+    foli.scale.setScalar(s);
+    foli.castShadow = true; g.add(foli);
+  }
+  return g;
+}
+
+function buildDungeon(node, rng) {
+  const g = new THREE.Group();
+  // Main chapel block
+  const w = 6, d = 9, h = 5;
+  const body = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), darkStoneMat);
+  body.position.y = h / 2; body.castShadow = true; body.receiveShadow = true; g.add(body);
+  // Roof
+  const roof = roofPrism(w, d, 2.5, 0.25, darkRoofMat);
+  roof.position.y = h; g.add(roof);
+  // Tall spire
+  const spire = new THREE.Mesh(new THREE.ConeGeometry(0.6, 7.0, 6), darkRoofMat);
+  spire.position.set(0, h + 2.5 + 3.5, -d / 2 + 1.2); spire.castShadow = true; g.add(spire);
+  // Side buttress pillars
+  for (const sx of [-w / 2 - 0.3, w / 2 + 0.3]) {
+    const pill = new THREE.Mesh(new THREE.BoxGeometry(0.8, h * 0.75, 1.2), darkStoneMat);
+    pill.position.set(sx, h * 0.75 / 2, 0); pill.castShadow = true; g.add(pill);
+  }
+  // Ominous glow from within (very subtle)
+  const glow = new THREE.PointLight(0x6633aa, 1.5, 20, 2);
+  glow.position.set(0, 2, 0); g.add(glow);
+  return g;
+}
+
+// ---------- edge ribbon builder ----------
+function buildEdge(ax, az, bx, bz, kind) {
+  const dx = bx - ax, dz = bz - az;
+  const len = Math.sqrt(dx * dx + dz * dz);
+  const half = kind === 'road' ? 1.2 : 0.6;
+  const nx = -dz / len, nz = dx / len;
+  const verts = [
+    ax + nx * half, 0.08, az + nz * half,
+    ax - nx * half, 0.08, az - nz * half,
+    bx + nx * half, 0.08, bz + nz * half,
+    bx - nx * half, 0.08, bz - nz * half,
+  ];
+  const idx = [0, 1, 2, 1, 3, 2];
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
+  geo.setIndex(idx); geo.computeVertexNormals();
+  const color = kind === 'road' ? 0xa08050 : 0x7a6440;
+  const mat = new THREE.MeshStandardMaterial({ color, roughness: 1.0 });
+  const m = new THREE.Mesh(geo, mat);
+  m.receiveShadow = true;
+  return m;
+}
+
+// ---------- player token ----------
+function buildPlayerToken() {
+  const g = new THREE.Group();
+  // Base ring
+  const ring = new THREE.Mesh(
+    new THREE.TorusGeometry(1.4, 0.18, 8, 32),
+    new THREE.MeshStandardMaterial({ color: 0xd9a441, emissive: 0xd9a441, emissiveIntensity: 0.7, metalness: 0.8, roughness: 0.2 })
+  );
+  ring.rotation.x = -Math.PI / 2; ring.position.y = 0.1; ring.castShadow = true; g.add(ring);
+  // Cylinder body
+  const body = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.55, 0.65, 2.2, 10),
+    new THREE.MeshStandardMaterial({ color: 0x3388ff, emissive: 0x1144cc, emissiveIntensity: 0.4, roughness: 0.4, metalness: 0.3 })
+  );
+  body.position.y = 1.2; body.castShadow = true; g.add(body);
+  // Cone top
+  const top = new THREE.Mesh(
+    new THREE.ConeGeometry(0.65, 1.0, 10),
+    new THREE.MeshStandardMaterial({ color: 0x66aaff, emissive: 0x2255cc, emissiveIntensity: 0.5 })
+  );
+  top.position.y = 2.9; top.castShadow = true; g.add(top);
+  return g;
+}
+
+// ---------- post ----------
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+composer.addPass(new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 0.28, 0.5, 0.88));
+composer.addPass(new OutputPass());
+
+// ---------- camera state ----------
+let alt = 280, az = -0.65;
+const target = new THREE.Vector3(0, 0, 0);
+
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const smooth = (e0, e1, x) => { const t = clamp((x - e0) / (e1 - e0), 0, 1); return t * t * (3 - 2 * t); };
+
+function applyCamera() {
+  const tilt = smooth(80, 400, alt);
+  const phi = clamp(0.55 + (1 - tilt) * 0.6, 0.12, 1.3);
+  const rad = clamp(alt * 0.65, 40, 500);
+  camera.position.set(
+    target.x + rad * Math.sin(phi) * Math.sin(az),
+    target.y + rad * Math.cos(phi),
+    target.z + rad * Math.sin(phi) * Math.cos(az)
+  );
+  camera.lookAt(target);
+  sky.position.copy(camera.position);
+}
+
+// ---------- orbit controls ----------
+let drag = false, lx = 0, ly = 0;
+const cv = renderer.domElement;
+cv.addEventListener('pointerdown', e => { drag = true; lx = e.clientX; ly = e.clientY; cv.setPointerCapture(e.pointerId); });
+cv.addEventListener('pointerup', () => drag = false);
+cv.addEventListener('pointermove', e => {
+  if (!drag) return;
+  az -= (e.clientX - lx) * 0.005;
+  lx = e.clientX; ly = e.clientY;
+  applyCamera();
+});
+addEventListener('wheel', e => { if (!window.__lock) { alt = clamp(alt + e.deltaY * 0.6, 60, 700); applyCamera(); } }, { passive: true });
+addEventListener('keydown', e => {
+  if (e.key === 'q' || e.key === 'Q') { az -= Math.PI / 2; applyCamera(); }
+  if (e.key === 'e' || e.key === 'E') { az += Math.PI / 2; applyCamera(); }
+});
+
+// ---------- render driver ----------
+let frames = 0;
+function step() {
+  // Update label sprites to face camera (billboards are auto-facing via THREE.Sprite)
+  composer.render();
+  frames++;
+  if (frames === 1) { const l = document.getElementById('loading'); if (l) l.remove(); }
+}
+applyCamera();
+function animate() { requestAnimationFrame(animate); step(); }
+
+// ---------- headless driving hook ----------
+window.renderNow = (n = 1) => { for (let i = 0; i < n; i++) composer.render(); return frames; };
+window.go = (ft, az_val, n = 16, tx, ty, tz) => {
+  window.__lock = true;
+  if (az_val !== undefined) az = az_val;
+  if (tx !== undefined) { target.set(tx, ty !== undefined ? ty : 0, tz !== undefined ? tz : 0); }
+  alt = clamp(ft, 60, 700);
+  applyCamera();
+  const l = document.getElementById('loading'); if (l) l.remove();
+  for (let i = 0; i < n; i++) composer.render();
+  return { alt: Math.round(alt), az: +az.toFixed(2), frames };
+};
+
+// ---------- scene load ----------
+async function loadScene() {
+  const resp = await fetch('./slice-scene.json');
+  const scene_data = await resp.json();
+
+  // Build node lookup by id
+  const nodeById = {};
+  for (const n of scene_data.nodes) nodeById[n.id] = n;
+
+  // Compute center of bounds for camera target
+  const cx = ((scene_data.bounds.minX + scene_data.bounds.maxX) / 2) * TILE_WU;
+  const cz = ((scene_data.bounds.minY + scene_data.bounds.maxY) / 2) * TILE_WU;
+  target.set(cx, 0, cz);
+
+  // Map tile coords to world coords
+  const wPos = n => ({ x: n.x * TILE_WU, z: n.y * TILE_WU });
+
+  // Draw edges first (below nodes)
+  for (const edge of scene_data.edges) {
+    const a = nodeById[edge.a], b = nodeById[edge.b];
+    const ap = wPos(a), bp = wPos(b);
+    const ribbon = buildEdge(ap.x, ap.z, bp.x, bp.z, edge.kind);
+    scene.add(ribbon);
+  }
+
+  // Draw nodes
+  for (const node of scene_data.nodes) {
+    const rng = nodeRng(scene_data.seed, node.id);
+    const pos = wPos(node);
+    const grp = new THREE.Group();
+    grp.position.set(pos.x, 0, pos.z);
+
+    let geo3d;
+    const dark = !node.discovered; // slightly dark/desaturated for undiscovered
+
+    if (node.nodeType === 'settlement') {
+      geo3d = buildSettlement(node, rng, false);
+      if (dark) {
+        // Desaturate settlement meshes slightly
+        geo3d.traverse(child => {
+          if (child.isMesh && child.material) {
+            const m = child.material.clone();
+            m.color.offsetHSL(0, -0.3, -0.1);
+            child.material = m;
+          }
+        });
+      }
+    } else if (node.nodeType === 'wilderness') {
+      geo3d = buildWilderness(node, rng);
+      if (dark) {
+        geo3d.traverse(child => {
+          if (child.isMesh && child.material) {
+            const m = child.material.clone();
+            m.color.offsetHSL(0, -0.25, -0.08);
+            child.material = m;
+          }
+        });
+      }
+    } else if (node.nodeType === 'dungeon_entrance') {
+      geo3d = buildDungeon(node, rng);
+    }
+
+    if (geo3d) grp.add(geo3d);
+
+    // Floating name label
+    const labelColor = node.discovered ? '#fff9e6' : '#b0a890';
+    const label = makeLabel(node.name, labelColor);
+    // Height of label: above the tallest element of each node type
+    const labelY = node.nodeType === 'dungeon_entrance' ? 18 :
+                   node.nodeType === 'wilderness' ? 16 : 12;
+    label.position.set(0, labelY, 0);
+    grp.add(label);
+
+    scene.add(grp);
+  }
+
+  // Player token at player position
+  const playerNode = nodeById[scene_data.player.nodeId];
+  const playerPos = { x: scene_data.player.x * TILE_WU, z: scene_data.player.y * TILE_WU };
+  const token = buildPlayerToken();
+  token.position.set(playerPos.x + 3, 0, playerPos.z + 3); // slight offset so token doesn't clip into Aldermere buildings
+  scene.add(token);
+
+  // "You" label above token
+  const youLabel = makeLabel('You', '#66aaff');
+  youLabel.position.set(playerPos.x + 3, 8, playerPos.z + 3);
+  scene.add(youLabel);
+
+  // Update banner
+  document.getElementById('locTitle').textContent = scene_data.seed.charAt(0).toUpperCase() + scene_data.seed.slice(1) + ' Region';
+
+  // First render
+  applyCamera();
+  step(); // renders one frame, removes loading overlay
+
+  // Start the animation loop
+  animate();
+
+  window.__ready = true;
+}
+
+addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+  composer.setSize(innerWidth, innerHeight);
+  applyCamera();
+});
+
+loadScene().catch(err => {
+  window.__err.push('loadScene failed: ' + err);
+  console.error('slice.html loadScene error:', err);
+});
+</script>
+</body>
+</html>

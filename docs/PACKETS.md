@@ -18,7 +18,15 @@ a haunted-chapel dungeon ~2 km from town. The DEMO_REGION bible's 5-town / orb /
 deferred to the campaign. Per `docs/SOBRIETY.md`: ship ONE bounded module — finish, don't expand.
 **Build order:** SL-1 (skeleton) → SL-2 (town) → SL-3 (chapel dungeon) → SL-4 (woods + camp).
 
-#### SL-1 — curated demo region skeleton  ·  **Status: IN PROGRESS** (Basecamp, autonomous)
+#### SL-1 — curated demo region skeleton  ·  **Status: ✅ DONE 2026-06-29** (Basecamp, autonomous)
+- **landed:** new `engine/world/sliceRegion.js` (authored 4-node region: Aldermere · The Greenwood ·
+  Crowfoot Camp · The Hollowed Chapel — names provisional/re-skinnable) on its own fixed seed
+  `SLICE_SEED='aldermere'`; routed at the REAL map-gen seam `newWorld` (`engine/state.js`, **not**
+  `beginAdventure` — `newWorld` pre-generates the map) + a mirror fallback in `beginAdventure`. Test
+  `tests/U300` (7/7). **Verified:** `npm run check` GREEN — convergence 109/109, suite **8987/0**
+  (determinism U19/21/22/27/30 in), `playtest:quick` 0 crashes/0 bugs. Opt-in proven: `tallow` still
+  yields 34 nodes (untouched). Live `v1.js` invoke still points at `tallow` — flip to the slice deferred
+  until SL-2 populates the town (Tim accepted "town unpopulated until SL-2").
 - **objective:** Replace the procedural scatter (`generateInitialMap`, 24–39 ring+chord nodes) with a
   **hand-authored four-node region** for the demo: Town (settlement/village) · Greenwood/forest (wilderness) ·
   Bandit Camp (settlement 'camp', hostile) · Haunted Chapel (landmark surface → dungeon_entrance interior).

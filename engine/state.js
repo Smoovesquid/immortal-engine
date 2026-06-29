@@ -7,6 +7,7 @@ import { ensureEnv } from './env/envCore.js';
 import { createCanonLog } from './csl/canonLog.js';
 import { generateRegions } from './world/regions.js';
 import { generateInitialMap } from './map/generateMap.js';
+import { SLICE_SEED, buildSliceRegion } from './world/sliceRegion.js';
 import { ensureStructures } from './structures/structuresState.js';
 import { statMod, maxWounds } from './ruleset/core/stats.js';
 import { normalizeResistances, isValidDamageType } from './combat/damageTypes.js';
@@ -252,7 +253,13 @@ export function ensureWorld(partial) {
 
 export function newWorld({ seed, fate, campaignId, pack, mode }) {
   const packObj = (pack && typeof pack === 'object') ? pack : { primaryId: 'fantasy', mixerId: null };
-  const map0 = generateInitialMap({ seed: String(seed), packId: String(packObj.primaryId || 'fantasy'), pack: {} });
+  const packId = String(packObj.primaryId || 'fantasy');
+  // The shippable slice (SL-1) rides its own fixed seed: an AUTHORED four-place
+  // region (town · forest · bandit camp · haunted chapel). Every other seed —
+  // including the 'tallow' demo — falls through to the procedural generator.
+  const map0 = String(seed) === SLICE_SEED
+    ? buildSliceRegion({ seed: String(seed), packId })
+    : generateInitialMap({ seed: String(seed), packId, pack: {} });
   return ensureWorld({
     meta: { seed: String(seed), fate: clamp01(fate ?? 0.2), campaignId: String(campaignId ?? 'campaign'), mode: String(mode ?? ''), motifs: ensureMotifs(null), advantageTokens: ensureAdvantageTokens(null), aiMode: ensureAiMode(null), microClocks: ensureMicroClocks(null) },
     pack: packObj,

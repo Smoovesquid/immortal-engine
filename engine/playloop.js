@@ -9,6 +9,7 @@ import { triggerEnding } from './ending.js';
 import { compose } from './composer.js';
 import { planNextScene } from './sceneDirector.js';
 import { generateInitialMap } from './map/generateMap.js';
+import { SLICE_SEED, buildSliceRegion } from './world/sliceRegion.js';
 import { biomeForNode, biomeFlavor } from './world/biome.js';
 import { ecologyTravelLine } from './ecology/snapshot.js';
 import { ensureMap, pickTravelDestination, moveToNode, neighbors, bfsPath, cleanPlaceName, exitsFrom, directionFromText, stepCell, nodeAtCell, nodesWithinSight, cardinalToCell, seeNode, visitNode, SIGHT_RADIUS } from './map/mapState.js';
@@ -205,7 +206,13 @@ export function beginAdventure(world, packsById) {
   // Living Terrain Engine v1: generate map if missing.
   if (!w.map?.nodes?.length) {
     const packId = w.pack?.primaryId || 'fantasy';
-    w = { ...w, map: generateInitialMap({ seed: w.meta.seed, packId, pack }) };
+    // The shippable slice (SL-1) rides its own fixed seed: an AUTHORED four-place
+    // region (town · forest · bandit camp · haunted chapel), not the procedural
+    // scatter. Every other seed — including the 'tallow' demo — is untouched.
+    const map = w.meta.seed === SLICE_SEED
+      ? buildSliceRegion({ seed: w.meta.seed, packId })
+      : generateInitialMap({ seed: w.meta.seed, packId, pack });
+    w = { ...w, map };
   }
 
   // Starting node must be a settlement (not random wilderness).

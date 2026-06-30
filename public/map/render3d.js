@@ -570,9 +570,13 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
   // interior; it reverses smoothly on zoom-out. Per-building lerp → no pop on focus
   // change. Pure view: reads the camera + the precomputed wall normals, writes only
   // material opacity / mesh position — never engine state.
-  const PEEL_START_PX = 2400, PEEL_FULL_PX = 6200; // px-per-tile band where the roof comes off
+  // px-per-tile band where the roof comes off. The play map opens at zoom z=2.0
+  // (zoomPx = NODE_WU·z = 2000), so the peel must START just past that and COMPLETE
+  // at a comfortable mid-zoom — otherwise it's only visible near max zoom and reads
+  // as "not happening" in casual play (the bug this fixes). z≈2.4 → z≈4.0.
+  const PEEL_START_PX = 2400, PEEL_FULL_PX = 4000;
   const ROOF_LIFT = 2.6;
-  const FOCUS_R2 = 17 * 17;                         // look-at within ~17wu of a building → it's focused
+  const FOCUS_R2 = 20 * 20;                          // look-at within ~20wu of a building → it's focused
   const _camDir = new THREE.Vector3();
   function updateCutaway() {
     if (!peelables.length) return;

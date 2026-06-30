@@ -940,8 +940,8 @@ function renderInvoke() {
     el('div', { class: 'panel' },
       el('div', { class: 'header' },
         el('div', {},
-          el('div', { class: 'title' }, 'Immortal Engine — v0.11.0'),
-          el('div', { class: 'sub' }, 'build 014 · 2026-06-30 · one map')
+          el('div', { class: 'title' }, 'Immortal Engine — v0.12.0'),
+          el('div', { class: 'sub' }, 'build 015 · 2026-06-30 · lush map')
         )
       ),
       // ── One-click front door: start (or resume) the Escape game ──────
@@ -2293,7 +2293,7 @@ function renderPlay() {
       // The map is no longer reached through this menu — it's the always-present
       // primary play surface (the continuous map embedded in renderPlay). The
       // fullscreen Map screen survives only as the tap-to-expand affordance on
-      // that embedded map (⤢), never the only path. (ONE MAP, v0.11.0.)
+      // that embedded map (⤢), never the only path. (ONE MAP, v0.12.0.)
       el('button', { class: 'gear-item', onClick: () => {
         ui.devMode = !ui.devMode; ui.gearOpen = false; render();
       }}, ui.devMode ? 'Hide Dev Info' : 'Show Dev Info'),
@@ -2437,7 +2437,7 @@ function renderPlay() {
     onKeydown: (e) => { if (e.key === 'Enter') doSubmitMove(); }
   });
 
-  // ── The map — ONE MAP, always present (v0.11.0) ───────────────────────
+  // ── The map — ONE MAP, always present (v0.12.0) ───────────────────────
   // The continuous map (2D plan ⟷ 3D diorama by zoom) is the PRIMARY play
   // surface, sized to ~60% of the viewport and opening in the 3D (tilted) view.
   // In combat it becomes the tactical battle board. No gear detour: the map is

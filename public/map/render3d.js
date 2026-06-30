@@ -475,3 +475,279 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
 
   return { dispose, renderFrame, setView, setCamera, pause, resume, canvas };
 }
+
+// ───────────────────────────────────────────────────────────────────────────
+// COMBAT TACTICAL BOARD (MX-2 render) — the XCOM board made visible.
+//
+// mountCombat3D(container, combatScene, opts?) -> Promise<controller>
+//   container : a DOM element (already in the document); gets the canvas.
+//   combatScene : a combat-scene/v1 object (combatScene.js combatSceneFromWorld).
+//   throws    : Error('webgl-unavailable') when 3D can't run (caller falls back
+//               to the 2D board / text — the board is an aid, never required).
+//
+// A PURE VIEW of world.combat: a gridded w×h board with the player + enemy minis
+// standing on their engine cells (cx=east, cy=south). Reuses the diorama look
+// (sky/light/ground) + the "You" token style. Intentionally self-contained from
+// mountSlice3D so the shipped overworld morph can never be regressed by combat
+// changes. Minis show CURRENT positions only — they do not move yet (talk→token
+// is the next step); the caller re-mounts on combat-state change.
+const CELL_WU = 6; // world units per tactical cell — minis sit at cell centres.
+
+export async function mountCombat3D(container, combatScene, opts = {}) {
+  if (!container) throw new Error('no-container');
+  if (!webglAvailable()) throw new Error('webgl-unavailable');
+
+  const THREE = await import('three');
+  let EffectComposer, RenderPass, UnrealBloomPass, OutputPass;
+  try {
+    ({ EffectComposer } = await import('three/addons/postprocessing/EffectComposer.js'));
+    ({ RenderPass } = await import('three/addons/postprocessing/RenderPass.js'));
+    ({ UnrealBloomPass } = await import('three/addons/postprocessing/UnrealBloomPass.js'));
+    ({ OutputPass } = await import('three/addons/postprocessing/OutputPass.js'));
+  } catch { EffectComposer = null; }
+
+  const w0 = Math.max(1, container.clientWidth || 800);
+  const h0 = Math.max(1, container.clientHeight || 480);
+
+  let renderer;
+  try { renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false }); }
+  catch (e) { throw new Error('webgl-unavailable'); }
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.setSize(w0, h0);
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.2;
+  const canvas = renderer.domElement;
+  canvas.style.display = 'block'; canvas.style.width = '100%'; canvas.style.height = '100%';
+  canvas.style.cursor = 'grab'; canvas.style.touchAction = 'none';
+  while (container.firstChild) container.removeChild(container.firstChild);
+  container.appendChild(canvas);
+
+  const scene = new THREE.Scene();
+  scene.fog = new THREE.Fog(0xcfc4ad, 220, 620);
+  const camera = new THREE.PerspectiveCamera(45, w0 / h0, 0.5, 1400);
+
+  // ---------- sky / lighting / ground (the shared diorama look) ----------
+  function skyTex() {
+    const c = document.createElement('canvas'); c.width = 16; c.height = 256;
+    const x = c.getContext('2d');
+    const g = x.createLinearGradient(0, 0, 0, 256);
+    g.addColorStop(0, '#3f6aa0'); g.addColorStop(0.45, '#86a6c4');
+    g.addColorStop(0.72, '#d8c6a6'); g.addColorStop(0.9, '#eec488'); g.addColorStop(1, '#e6b478');
+    x.fillStyle = g; x.fillRect(0, 0, 16, 256);
+    const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+  }
+  const sky = new THREE.Mesh(new THREE.SphereGeometry(700, 24, 16),
+    new THREE.MeshBasicMaterial({ map: skyTex(), side: THREE.BackSide, fog: false }));
+  scene.add(sky);
+  scene.add(new THREE.HemisphereLight(0xbcd2f0, 0x6a5a40, 0.7));
+  const sun = new THREE.DirectionalLight(0xffe2a8, 2.1);
+  sun.position.set(-60, 110, 70); sun.castShadow = true;
+  sun.shadow.mapSize.set(2048, 2048);
+  sun.shadow.camera.near = 1; sun.shadow.camera.far = 400;
+  sun.shadow.camera.left = -120; sun.shadow.camera.right = 120;
+  sun.shadow.camera.top = 120; sun.shadow.camera.bottom = -120;
+  sun.shadow.bias = -0.0004;
+  scene.add(sun); scene.add(sun.target);
+  scene.add(new THREE.AmbientLight(0xfff0d8, 0.32));
+  const grassGeo = new THREE.PlaneGeometry(1400, 1400, 1, 1); grassGeo.rotateX(-Math.PI / 2);
+  const grass = new THREE.Mesh(grassGeo, new THREE.MeshStandardMaterial({ color: 0x556437, roughness: 0.99 }));
+  grass.position.y = -0.3; grass.receiveShadow = true; scene.add(grass);
+
+  // ---------- labels + minis (the "You" token style, reused) ----------
+  function makeLabel(text, color = '#fff', sx = 11, sy = 2.0) {
+    const c = document.createElement('canvas'); c.width = 512; c.height = 96;
+    const x = c.getContext('2d');
+    x.shadowColor = 'rgba(0,0,0,0.9)'; x.shadowBlur = 10;
+    x.fillStyle = color; x.font = 'bold 44px Georgia, serif';
+    x.textAlign = 'center'; x.textBaseline = 'middle';
+    x.fillText(text, 256, 48);
+    const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
+    const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, depthTest: false, sizeAttenuation: true }));
+    sprite.scale.set(sx, sy, 1);
+    return sprite;
+  }
+  function buildPlayerToken() {
+    const g = new THREE.Group();
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(1.35, 0.17, 8, 28),
+      new THREE.MeshStandardMaterial({ color: 0xd9a441, emissive: 0xd9a441, emissiveIntensity: 0.75, metalness: 0.8, roughness: 0.2 }));
+    ring.rotation.x = -Math.PI / 2; ring.position.y = 0.08; ring.castShadow = true; g.add(ring);
+    const body = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.6, 2.1, 10),
+      new THREE.MeshStandardMaterial({ color: 0x3388ff, emissive: 0x1144cc, emissiveIntensity: 0.4, roughness: 0.4, metalness: 0.3 }));
+    body.position.y = 1.15; body.castShadow = true; g.add(body);
+    const top = new THREE.Mesh(new THREE.ConeGeometry(0.6, 0.95, 10),
+      new THREE.MeshStandardMaterial({ color: 0x66aaff, emissive: 0x2255cc, emissiveIntensity: 0.5 }));
+    top.position.y = 2.75; top.castShadow = true; g.add(top);
+    return g;
+  }
+  function buildEnemyToken(defeated = false) {
+    const g = new THREE.Group();
+    const bodyCol = defeated ? 0x6a5454 : 0xb02a2a;
+    const emis = defeated ? 0x100808 : 0x6a1410;
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(1.25, 0.16, 8, 26),
+      new THREE.MeshStandardMaterial({ color: defeated ? 0x6a5a3a : 0xe05038, emissive: defeated ? 0x000000 : 0x7a1a10, emissiveIntensity: defeated ? 0 : 0.55, metalness: 0.6, roughness: 0.3 }));
+    ring.rotation.x = -Math.PI / 2; ring.position.y = 0.08; ring.castShadow = true; g.add(ring);
+    const body = new THREE.Mesh(new THREE.CylinderGeometry(0.48, 0.6, 1.9, 9),
+      new THREE.MeshStandardMaterial({ color: bodyCol, emissive: emis, emissiveIntensity: defeated ? 0.04 : 0.35, roughness: 0.5 }));
+    body.position.y = 1.05; body.castShadow = true; g.add(body);
+    const head = new THREE.Mesh(new THREE.ConeGeometry(0.58, 1.1, 6),
+      new THREE.MeshStandardMaterial({ color: bodyCol, emissive: emis, emissiveIntensity: defeated ? 0.04 : 0.4, roughness: 0.5 }));
+    head.position.y = 2.45; head.rotation.y = Math.PI / 6; head.castShadow = true; g.add(head);
+    if (defeated) {
+      g.rotation.z = Math.PI / 2.15; // toppled — a downed foe
+      g.traverse(o => { if (o.isMesh && o.material) { o.material.transparent = true; o.material.opacity = 0.5; } });
+    }
+    return g;
+  }
+
+  // ---------- the board ----------
+  const grid = combatScene?.grid || { w: 12, h: 10 };
+  const W = Math.max(1, Math.trunc(grid.w) || 12);
+  const H = Math.max(1, Math.trunc(grid.h) || 10);
+  const boardW = W * CELL_WU, boardH = H * CELL_WU;
+  const cx0 = boardW / 2, cz0 = boardH / 2; // board centre (world units)
+  const cellCenter = (cx, cy) => ({ x: (cx + 0.5) * CELL_WU, z: (cy + 0.5) * CELL_WU });
+
+  // Board base (a raised dais so the grid reads as a tabletop).
+  const base = new THREE.Mesh(new THREE.BoxGeometry(boardW + 2, 0.6, boardH + 2),
+    new THREE.MeshStandardMaterial({ color: 0x3a3326, roughness: 0.96 }));
+  base.position.set(cx0, -0.05, cz0); base.receiveShadow = true; scene.add(base);
+  // Board top (where minis cast shadows).
+  const topGeo = new THREE.PlaneGeometry(boardW, boardH, 1, 1); topGeo.rotateX(-Math.PI / 2);
+  const top = new THREE.Mesh(topGeo, new THREE.MeshStandardMaterial({ color: 0x6f7d4a, roughness: 0.97 }));
+  top.position.set(cx0, 0.26, cz0); top.receiveShadow = true; scene.add(top);
+  // Grid lines (exact cell coords → aligned 1:1 with mini cells).
+  const pts = [];
+  for (let i = 0; i <= W; i++) { const x = i * CELL_WU; pts.push(x, 0.30, 0, x, 0.30, boardH); }
+  for (let j = 0; j <= H; j++) { const z = j * CELL_WU; pts.push(0, 0.30, z, boardW, 0.30, z); }
+  const lg = new THREE.BufferGeometry();
+  lg.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
+  scene.add(new THREE.LineSegments(lg, new THREE.LineBasicMaterial({ color: 0xe9dcb6, transparent: true, opacity: 0.4 })));
+
+  const labels = [];
+  // Player mini + cell highlight + label.
+  const player = combatScene?.player || { cx: 0, cy: 0, name: 'You' };
+  const pc = cellCenter(player.cx, player.cy);
+  const hl = new THREE.Mesh(new THREE.PlaneGeometry(CELL_WU * 0.94, CELL_WU * 0.94),
+    new THREE.MeshBasicMaterial({ color: 0xd9a441, transparent: true, opacity: 0.22, depthWrite: false }));
+  hl.rotation.x = -Math.PI / 2; hl.position.set(pc.x, 0.32, pc.z); scene.add(hl);
+  const pToken = buildPlayerToken(); pToken.position.set(pc.x, 0.32, pc.z); scene.add(pToken);
+  const pLabel = makeLabel(String(player.name || 'You'), '#bfe0ff'); pLabel.position.set(pc.x, 4.0, pc.z); scene.add(pLabel); labels.push(pLabel);
+
+  // Enemy minis + labels.
+  const enemies = Array.isArray(combatScene?.enemies) ? combatScene.enemies : [];
+  for (const e of enemies) {
+    const ec = cellCenter(e.cx, e.cy);
+    const tok = buildEnemyToken(Boolean(e.defeated));
+    tok.position.set(ec.x, 0.32, ec.z); scene.add(tok);
+    const lbl = makeLabel(String(e.name || 'Foe'), e.defeated ? '#8a7d72' : '#ffb0a0');
+    lbl.position.set(ec.x, e.defeated ? 2.4 : 3.7, ec.z); scene.add(lbl); labels.push(lbl);
+  }
+
+  // ---------- postprocessing ----------
+  let composer = null;
+  if (EffectComposer) {
+    try {
+      composer = new EffectComposer(renderer);
+      composer.addPass(new RenderPass(scene, camera));
+      composer.addPass(new UnrealBloomPass(new THREE.Vector2(w0, h0), 0.22, 0.5, 0.9));
+      composer.addPass(new OutputPass());
+    } catch { composer = null; }
+  }
+
+  // ---------- camera (oblique XCOM 3/4 view, framing the whole board) ----------
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const smooth = (e0, e1, x) => { const t = clamp((x - e0) / (e1 - e0), 0, 1); return t * t * (3 - 2 * t); };
+  const target = new THREE.Vector3(cx0, 0, cz0);
+  const boardMax = Math.max(boardW, boardH);
+  let alt = clamp((boardMax * 1.5) / 0.65, 80, 700);
+  let az = (opts.az != null ? opts.az : -0.6);
+  function applyCamera() {
+    const tilt = smooth(80, 460, alt);
+    const phi = clamp(0.5 + (1 - tilt) * 0.62, 0.16, 1.2);
+    const rad = clamp(alt * 0.65, 40, 560);
+    camera.position.set(
+      target.x + rad * Math.sin(phi) * Math.sin(az),
+      target.y + rad * Math.cos(phi),
+      target.z + rad * Math.sin(phi) * Math.cos(az)
+    );
+    camera.lookAt(target);
+    sky.position.copy(camera.position);
+  }
+
+  // ---------- orbit controls (view-only — the board never moves anyone) ----------
+  let drag = false, lx = 0;
+  function onPointerDown(e) { drag = true; lx = e.clientX; try { canvas.setPointerCapture(e.pointerId); } catch {} }
+  function onPointerUp() { drag = false; }
+  function onPointerMove(e) { if (!drag) return; az -= (e.clientX - lx) * 0.005; lx = e.clientX; applyCamera(); }
+  function onWheel(e) { e.preventDefault(); alt = clamp(alt + e.deltaY * 0.5, 70, 700); applyCamera(); }
+  const interactive = opts.controls !== false;
+  if (interactive) {
+    canvas.addEventListener('pointerdown', onPointerDown);
+    canvas.addEventListener('pointerup', onPointerUp);
+    canvas.addEventListener('pointermove', onPointerMove);
+    canvas.addEventListener('wheel', onWheel, { passive: false });
+  }
+
+  applyCamera();
+
+  // ---------- render loop ----------
+  let raf = 0, alive = true, paused = false;
+  function renderFrame() {
+    if (!alive) return 0;
+    // billboard labels stay upright (sprites auto-face); just render.
+    if (composer) composer.render(); else renderer.render(scene, camera);
+    return 1;
+  }
+  renderFrame();
+  function frame() { if (!alive || paused) { raf = 0; return; } renderFrame(); raf = requestAnimationFrame(frame); }
+  function startLoop() { if (alive && !paused && !raf) raf = requestAnimationFrame(frame); }
+  raf = requestAnimationFrame(frame);
+  function pause() { paused = true; if (raf) { cancelAnimationFrame(raf); raf = 0; } }
+  function resume() { paused = false; renderFrame(); startLoop(); }
+
+  // ---------- resize ----------
+  let ro = null;
+  function resize() {
+    const w = Math.max(1, container.clientWidth || w0);
+    const h = Math.max(1, container.clientHeight || h0);
+    camera.aspect = w / h; camera.updateProjectionMatrix();
+    renderer.setSize(w, h);
+    if (composer) composer.setSize(w, h);
+  }
+  try { ro = new ResizeObserver(resize); ro.observe(container); } catch { ro = null; }
+
+  // ---------- teardown ----------
+  function dispose() {
+    if (!alive) return;
+    alive = false;
+    if (raf) cancelAnimationFrame(raf);
+    if (ro) { try { ro.disconnect(); } catch {} }
+    if (interactive) {
+      canvas.removeEventListener('pointerdown', onPointerDown);
+      canvas.removeEventListener('pointerup', onPointerUp);
+      canvas.removeEventListener('pointermove', onPointerMove);
+      canvas.removeEventListener('wheel', onWheel);
+    }
+    scene.traverse(obj => {
+      if (obj.geometry) { try { obj.geometry.dispose(); } catch {} }
+      const mats = Array.isArray(obj.material) ? obj.material : (obj.material ? [obj.material] : []);
+      for (const m of mats) { if (m.map) { try { m.map.dispose(); } catch {} } try { m.dispose(); } catch {} }
+    });
+    if (composer) { try { composer.dispose && composer.dispose(); } catch {} }
+    try { renderer.dispose(); } catch {}
+    try { renderer.forceContextLoss(); } catch {}
+    if (canvas.parentNode === container) container.removeChild(canvas);
+  }
+
+  // setView: drive the camera (headless verification + orbit recentring).
+  function setView(view = {}) {
+    if (view.alt != null) alt = clamp(view.alt, 70, 700);
+    if (view.az != null) az = view.az;
+    applyCamera(); renderFrame();
+    return { alt: Math.round(alt), az: +az.toFixed(2) };
+  }
+
+  return { dispose, renderFrame, setView, pause, resume, canvas };
+}

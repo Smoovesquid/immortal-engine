@@ -14,6 +14,7 @@ import { buildMythSpec, mythSpecJson } from '../engine/mythSpec.js';
 import { generateTriadFrames, deriveInvocationFromFrame } from '../engine/triad.js';
 import { deriveSequelInvocation } from '../engine/sequel.js';
 import { renderContinuousMap, disposeContinuousMap3d } from './map/continuousMap.js';
+import { renderCombatBoard, disposeCombatBoard } from './map/combatView.js';
 import { renderLocalMap } from './map/LocalMap.js';
 import { createPlaceMap } from './map/handDrawnPlace.js';
 import { placeFromWorldNode } from './map/placeFromNode.js';
@@ -940,8 +941,8 @@ function renderInvoke() {
     el('div', { class: 'panel' },
       el('div', { class: 'header' },
         el('div', {},
-          el('div', { class: 'title' }, 'Immortal Engine — v0.7.0'),
-          el('div', { class: 'sub' }, 'build 010 · 2026-06-29 · continuous zoom')
+          el('div', { class: 'title' }, 'Immortal Engine — v0.8.0'),
+          el('div', { class: 'sub' }, 'build 011 · 2026-06-29 · combat minis')
         )
       ),
       // ── One-click front door: start (or resume) the Escape game ──────
@@ -2721,7 +2722,7 @@ function renderMap() {
   const w = ui.world ? ensureWorld(ui.world) : null;
 
   if (!w) {
-    disposeContinuousMap3d();
+    disposeContinuousMap3d(); disposeCombatBoard();
     return el("div",{class:"container stack"},
       el("div",{class:"panel"},
         el("div",{class:"header"},
@@ -2737,8 +2738,26 @@ function renderMap() {
     );
   }
 
-  // One continuous map; hand it the live walk position so the marker sits where
-  // you actually stand. Scroll to zoom drives 2D → tilt → 3D and back.
+  // During a live fight the Map becomes the TACTICAL BOARD — the player + enemy
+  // minis on their engine cells. The overworld map returns when the fight ends.
+  if (w.combat && w.combat.active) {
+    disposeContinuousMap3d(); // the overworld overlay yields to the board
+    return el('div', { class: 'container stack' },
+      el('div', { class: 'panel' },
+        el('div', { class: 'header' },
+          el('div', {},
+            el('div', { class: 'title' }, 'Battle'),
+            el('div', { class: 'small' }, 'The tactical board — your mini and the foes on their cells · drag to orbit')
+          )
+        ),
+        renderCombatBoard(w)
+      )
+    );
+  }
+
+  // Out of combat: one continuous map; hand it the live walk position so the
+  // marker sits where you stand. Scroll to zoom drives 2D → tilt → 3D and back.
+  disposeCombatBoard();
   return el('div', { class: 'container stack' },
     el('div', { class: 'panel' },
       el('div', { class: 'header' },
@@ -2902,9 +2921,9 @@ function renderAi() {
 function render() {
   clear(app);
 
-  // Tear down the 3D map overlay whenever we're not on the Map screen, so a live
-  // WebGL context never leaks across v1's full-rebuild render model.
-  if (ui.screen !== 'map') disposeContinuousMap3d();
+  // Tear down the 3D map overlay + combat board whenever we're not on the Map
+  // screen, so a live WebGL context never leaks across v1's full-rebuild model.
+  if (ui.screen !== 'map') { disposeContinuousMap3d(); disposeCombatBoard(); }
 
   // Nav hidden during play — game feels like a game, not a dashboard
   if (ui.screen !== 'play') app.append(renderNav());

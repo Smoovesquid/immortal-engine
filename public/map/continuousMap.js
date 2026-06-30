@@ -53,8 +53,15 @@ export function renderContinuousMap(world, opts = {}) {
   disposeContinuousMap3d();
   const token = _token;
 
+  // Fill mode (opts.heightCss, e.g. '100%'): the map sizes to its container so the
+  // in-play embed can take ~60% of the viewport. Otherwise it keeps its own height
+  // (the standalone Map screen). The wrap must be height:100% in fill mode so the
+  // 3D overlay (inset:0) covers the same box as the 2D plan.
+  const fillMode = typeof opts.heightCss === 'string' && opts.heightCss;
   const wrap = document.createElement('div');
-  wrap.style.cssText = 'position:relative;width:100%;';
+  wrap.style.cssText = fillMode
+    ? 'position:relative;width:100%;height:100%;'
+    : 'position:relative;width:100%;';
 
   // The 2D map: the single input surface and the fallback. Its onCamera hook
   // streams the live camera to the 3D overlay.
@@ -63,6 +70,8 @@ export function renderContinuousMap(world, opts = {}) {
   const twoD = renderOneMap(world, {
     playerPos: opts.playerPos,
     height: opts.height,
+    heightCss: opts.heightCss,
+    initialZoom: opts.initialZoom,
     onCamera: (cam) => onCamera(cam),
   });
   twoD.style.zIndex = '1';

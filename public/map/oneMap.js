@@ -177,12 +177,15 @@ const SKIP_FURN = new Set(['rug']);
 // Camera survives v1's full-DOM re-renders: module singleton, per campaign.
 const CAMS = new Map();
 
-function cameraFor(world) {
+function cameraFor(world, initialZoom) {
   const key = String(world?.meta?.campaignId || 'campaign');
   if (!CAMS.has(key)) {
     const here = (world?.map?.nodes || []).find(n => n && n.id === world?.map?.currentNodeId);
     const c = here ? nodeToWu(here) : { x: 0, y: 0 };
-    CAMS.set(key, { cx: c.x, cy: c.y, z: 0.12 }); // region band — the county frames on open
+    // Default opens in the region band; the in-play embed seeds the 3D band
+    // (initialZoom) so the map opens as the tilted diorama, not the flat plan.
+    const z = Number.isFinite(initialZoom) ? initialZoom : 0.12;
+    CAMS.set(key, { cx: c.x, cy: c.y, z });
   }
   return CAMS.get(key);
 }
@@ -569,17 +572,26 @@ function strokeSmooth(ctx, pts) {
 export function renderOneMap(world, opts = {}) {
   const map = world?.map || {};
   const nodes = Array.isArray(map.nodes) ? map.nodes : [];
-  const cam = cameraFor(world);
+  const cam = cameraFor(world, opts.initialZoom);
   const seed = String(world?.meta?.seed || 'seed');
   const { geo, stamps } = geoFor(world);
   const { known, rumor } = discoveryTiers(map);
   const hereId = String(map.currentNodeId || '');
 
-  const cssH = Math.max(320, Number(opts.height) || 520);
+  // Height: by default a fixed pixel canvas (the standalone Map screen). When the
+  // caller passes a CSS height (opts.heightCss, e.g. '100%'), the canvas FILLS its
+  // container instead — the in-play embed sizes the map to ~60% of the viewport —
+  // and the draw loop reads the live clientHeight (kept fresh by a ResizeObserver).
+  const fixedH = Math.max(320, Number(opts.height) || 520);
+  const fillMode = typeof opts.heightCss === 'string' && opts.heightCss;
+  const curH = () => fillMode ? Math.max(120, canvas.clientHeight || fixedH) : fixedH;
   const wrap = document.createElement('div');
-  wrap.style.cssText = 'position:relative;width:100%;user-select:none;';
+  wrap.style.cssText = fillMode
+    ? 'position:relative;width:100%;height:100%;user-select:none;'
+    : 'position:relative;width:100%;user-select:none;';
   const canvas = document.createElement('canvas');
-  canvas.style.cssText = `display:block;width:100%;height:${cssH}px;border-radius:6px;cursor:grab;touch-action:none;`;
+  const hCss = fillMode ? opts.heightCss : `${fixedH}px`;
+  canvas.style.cssText = `display:block;width:100%;height:${hCss};border-radius:6px;cursor:grab;touch-action:none;`;
   wrap.appendChild(canvas);
 
   const hud = document.createElement('div');
@@ -743,6 +755,7 @@ export function renderOneMap(world, opts = {}) {
 
   function draw() {
     const cssW = Math.max(200, canvas.clientWidth || 700);
+    const cssH = curH();
     if (canvas.width !== Math.round(cssW * dpr)) canvas.width = Math.round(cssW * dpr);
     if (canvas.height !== Math.round(cssH * dpr)) canvas.height = Math.round(cssH * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -968,7 +981,7 @@ export function renderOneMap(world, opts = {}) {
     ev.preventDefault();
     const rect = canvas.getBoundingClientRect();
     const mx = ev.clientX - rect.left, my = ev.clientY - rect.top;
-    const W = canvas.clientWidth, H = cssH;
+    const W = canvas.clientWidth, H = curH();
     const wx = cam.cx + (mx - W / 2) / cam.z;
     const wy = cam.cy + (my - H / 2) / cam.z;
     const factor = Math.exp(-ev.deltaY * 0.0016);
@@ -1004,6 +1017,12 @@ export function renderOneMap(world, opts = {}) {
 
   // First paint after mount (clientWidth needs layout).
   requestAnimationFrame(draw);
+  // Fill mode: the canvas tracks its container (a vh-based height), so redraw
+  // whenever that container resizes — keeps the backing store crisp on window
+  // resize without waiting for the next turn's full re-render.
+  if (fillMode) {
+    try { const ro = new ResizeObserver(() => draw()); ro.observe(canvas); wrap.__ro = ro; } catch {}
+  }
   // A camera-focus seam: deep-link the view to a world point + zoom. Future
   // "show me on the map" / quest pins use this; tests drive it directly.
   wrap.__oneMapFocus = (wx, wy, zz) => {

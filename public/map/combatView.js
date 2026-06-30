@@ -91,8 +91,11 @@ export function renderCombatBoard(world, opts = {}) {
   const token = _token;
   const scene = combatSceneFromWorld(world); // PURE read of world.combat
 
+  // Height: the caller can size the board (the in-play embed fills its ~60vh
+  // container with '100%'); standalone it keeps a tall 68vh board.
+  const boardH = (typeof opts.height === 'string' && opts.height) ? opts.height : '68vh';
   const wrap = el('div', { class: 'combat-board', style: {
-    position: 'relative', width: '100%', height: '68vh', minHeight: '360px',
+    position: 'relative', width: '100%', height: boardH, minHeight: '300px',
     borderRadius: '6px', overflow: 'hidden', background: '#0b0d12'
   } });
 

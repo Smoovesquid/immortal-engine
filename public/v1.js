@@ -24,7 +24,6 @@ import { renderCombatHudSection } from './panels/combatHud.js';
 import { renderInitiativeBar } from './panels/initiativeBar.js';
 import { renderLootPopup } from './panels/lootPopup.js';
 import { renderPaperDoll } from './panels/PaperDoll.js';
-import { renderDiabloOrbs } from './panels/DiabloOrbs.js';
 import { triggerFromMech } from './panels/DiceRoller.js';
 import { createVoiceButton } from './panels/VoiceInput.js';
 import tts from './tts.js';
@@ -941,8 +940,8 @@ function renderInvoke() {
     el('div', { class: 'panel' },
       el('div', { class: 'header' },
         el('div', {},
-          el('div', { class: 'title' }, 'Immortal Engine — v0.10.0'),
-          el('div', { class: 'sub' }, 'build 013 · 2026-06-30 · stylized minis')
+          el('div', { class: 'title' }, 'Immortal Engine — v0.11.0'),
+          el('div', { class: 'sub' }, 'build 014 · 2026-06-30 · one map')
         )
       ),
       // ── One-click front door: start (or resume) the Escape game ──────
@@ -2291,9 +2290,10 @@ function renderPlay() {
         startFromWorld(w2, { keepTranscript: true });
         ui.gearOpen = false;
       }}, 'Load'),
-      el('button', { class: 'gear-item', onClick: () => {
-        ui.screen = 'map'; ui.gearOpen = false; render();
-      }}, 'Map'),
+      // The map is no longer reached through this menu — it's the always-present
+      // primary play surface (the continuous map embedded in renderPlay). The
+      // fullscreen Map screen survives only as the tap-to-expand affordance on
+      // that embedded map (⤢), never the only path. (ONE MAP, v0.11.0.)
       el('button', { class: 'gear-item', onClick: () => {
         ui.devMode = !ui.devMode; ui.gearOpen = false; render();
       }}, ui.devMode ? 'Hide Dev Info' : 'Show Dev Info'),
@@ -2437,15 +2437,32 @@ function renderPlay() {
     onKeydown: (e) => { if (e.key === 'Enter') doSubmitMove(); }
   });
 
-  // ── Compact map ───────────────────────────────────────────────────────
-  // Outside: a compact region map that labels every location you've discovered
-  // (names appear the moment you arrive). Inside a structure: the room layout,
-  // since the overland map isn't what you're navigating in there.
-  // One scale: the local map. Inside a structure it draws the room layout; outside
-  // it draws the SAME hand-drawn local scale — a continuous walkable place with the
-  // settlement's buildings embedded — not a separate tile overworld. (The abstract
-  // region view lives only on the Map tab as a zoom-out.)
-  const playMap = w ? renderWalkPlace(w) : null;
+  // ── The map — ONE MAP, always present (v0.11.0) ───────────────────────
+  // The continuous map (2D plan ⟷ 3D diorama by zoom) is the PRIMARY play
+  // surface, sized to ~60% of the viewport and opening in the 3D (tilted) view.
+  // In combat it becomes the tactical battle board. No gear detour: the map is
+  // right here. Pure VIEW — it never writes world state (determinism stays green).
+  //
+  // The local-walk simulation still runs underneath: renderWalkPlace maintains
+  // placeCtl + ui.place (which the compass and the continuous map's player marker
+  // read), so we still CALL it — for its side-effects — and discard its compact
+  // canvas. Unifying the local-walk renderer INTO the zoom is the deeper follow-on.
+  if (w) { try { renderWalkPlace(w); } catch {} }
+  const INPLAY_MAP_3D_ZOOM = 2.0; // 3D band (Z_3D_CROSS 0.5 → Z_3D_TILT 2.5): a well-tilted diorama.
+  let mapEl = null;
+  if (w) {
+    const inner = inCombat
+      ? renderCombatBoard(w, { height: '100%' })
+      : renderContinuousMap(w, { playerPos: ui.place, initialZoom: INPLAY_MAP_3D_ZOOM, heightCss: '100%' });
+    // Tap-to-expand: the only surviving path to the fullscreen Map screen.
+    const expand = el('button', {
+      class: 'map-expand-btn',
+      title: 'Expand the map',
+      onClick: () => { ui.screen = 'map'; render(); }
+    }, '⤢');
+    mapEl = el('div', { class: 'play-map-3d' }, inner, expand);
+  }
+  const playMap = mapEl;
 
   // ── Escape-mode chrome (objective banner + clickable paths) ───────────
   const isEscape = w?.meta?.mode === 'escape';
@@ -2456,47 +2473,13 @@ function renderPlay() {
         el('span', { class: 'objective-text' }, objective))
     : null;
 
-  // ── Compass ───────────────────────────────────────────────────────────
-  // Four cardinal buttons, always shown — no preview of where they lead. You
-  // discover exits by trying them (a dead direction reports "no way"); the map
-  // fills in a location's name only once you've been there. Typing "north" /
-  // "go west" works identically. This keeps travel text-first and exploratory
-  // rather than a list of click-to-teleport place names.
-  const showCompass = w && isEscape && !ended && !inCombat;
-  const inInterior = Boolean(w?.scene?.interior);
-  const compassBar = showCompass
-    ? el('div', { class: 'paths-bar compass-bar' },
-        el('span', { class: 'paths-label' }, 'Go:'),
-        el('div', { class: 'compass' },
-          el('button', { class: 'btn compass-btn compass-n', onClick: () => placeWalk('north') }, 'N'),
-          el('button', { class: 'btn compass-btn compass-w', onClick: () => placeWalk('west') }, 'W'),
-          el('span', { class: 'compass-hub' }, '✶'),
-          el('button', { class: 'btn compass-btn compass-e', onClick: () => placeWalk('east') }, 'E'),
-          el('button', { class: 'btn compass-btn compass-s', onClick: () => placeWalk('south') }, 'S')))
-    : null;
-
-  // Escape combat is text-only: you type what you do. The kit panel below is a
-  // reference, not a control surface — it shows the verb to type for each item
-  // (your blade, your cantrips) so you always know your options at a glance,
-  // without combat becoming a button-mashing clicker. Always visible in escape
-  // play so it reads as "this is what you have," in or out of a fight.
-  const kit = (isEscape && w?.party?.[0]) ? escapeKitView(w.party[0]) : null;
-  const hasKit = kit && (kit.weapons.length || kit.spells.length);
-  const kitChip = (entry) => el('div', { class: 'kit-chip', title: entry.note || '' },
-    el('span', { class: 'kit-chip-name' }, entry.name),
-    el('span', { class: 'kit-chip-verb' }, `type "${entry.verb}"`));
-  const kitBar = (hasKit && !ended)
-    ? el('div', { class: 'kit-bar' + (inCombat ? ' kit-bar-combat' : '') },
-        el('div', { class: 'kit-group' },
-          el('span', { class: 'kit-label' }, 'Blade'),
-          ...kit.weapons.map(kitChip)),
-        kit.spells.length
-          ? el('div', { class: 'kit-group' },
-              el('span', { class: 'kit-label' }, 'Cantrips'),
-              ...kit.spells.map(kitChip))
-          : null,
-        inCombat ? el('span', { class: 'kit-hint' }, 'or "ward" to defend') : null)
-    : null;
+  // ── No compass / kit / orb chrome (the DM is the only verb) ───────────
+  // The N/S/E/W buttons, the HP/STR orbs, and the "what you're wielding" chips
+  // are gone: you act by TALKING. Movement is still text-first — typing "north"
+  // / "go west" nudges you locally (see placeWalk, used by the move parser); the
+  // map shows where you stand, and your vitals/kit live in the side panels and
+  // the fiction, not as a control surface. This clears the column so the map can
+  // be the dominant play surface.
 
   // ── Main panel (narration + map, no chrome) ───────────────────────────
   const mainPanel = el('div', { class: 'panel play-panel' },
@@ -2511,10 +2494,7 @@ function renderPlay() {
       playMap,
       renderTranscript(ui.play.lines)
     ),
-    compassBar,
-    kitBar,
     el('div', { class: 'play-hud-row' },
-      w ? renderDiabloOrbs(w) : null,
       el('div', { class: 'play-input-bar' },
         input,
         (() => {
@@ -2921,9 +2901,12 @@ function renderAi() {
 function render() {
   clear(app);
 
-  // Tear down the 3D map overlay + combat board whenever we're not on the Map
-  // screen, so a live WebGL context never leaks across v1's full-rebuild model.
-  if (ui.screen !== 'map') { disposeContinuousMap3d(); disposeCombatBoard(); }
+  // Tear down the 3D map overlay + combat board whenever we leave the surfaces
+  // that mount them — the Map screen AND the play screen (where the continuous
+  // map / battle board is now embedded) — so a live WebGL context never leaks
+  // across v1's full-rebuild model. (renderContinuousMap / renderCombatBoard each
+  // dispose + remount cleanly on every render of those screens.)
+  if (ui.screen !== 'map' && ui.screen !== 'play') { disposeContinuousMap3d(); disposeCombatBoard(); }
 
   // Nav hidden during play — game feels like a game, not a dashboard
   if (ui.screen !== 'play') app.append(renderNav());

@@ -208,6 +208,15 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
   const darkRoofMat = new THREE.MeshStandardMaterial({ color: 0x2e2c2a, roughness: 0.95 });
   const trunkMat = new THREE.MeshStandardMaterial({ color: 0x5a3f28, roughness: 0.95 });
   const roofMatOf = { thatch: thatchMat, tile: tileRoofMat, shingle: shingleMat };
+  // Shared (re-used) materials must be cloned before a per-place tint; the
+  // peelable buildings already use unique transparent clones, so those tint in
+  // place (preserving the cutaway's material references — see dimGroup).
+  const SHARED_MATS = new Set([plasterMat, timberMat, thatchMat, tileRoofMat, shingleMat, stoneMat, woodMat, logMat, darkStoneMat, darkRoofMat, trunkMat]);
+  // ROOF-PEEL CUTAWAY registry: each modular settlement building registers its
+  // separable roof + walls here so the per-frame updateCutaway() can lift/fade the
+  // FOCUSED building (the one the camera looks into) as the continuous zoom pushes
+  // in. Pure view — camera-driven, never engine state.
+  const peelables = [];
 
   // ---------- clean corner HUD (replaces the giant in-scene 3D labels) ----------
   // A DOM overlay added INTO the 3D container, so it fades with the 3D layer's
@@ -255,30 +264,67 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
 
   const PARCELS = { inn: [5.2, 6.4], chapel: [4.2, 5.6], smithy: [4.0, 5.0], cottage: [3.8, 4.6], house: [4.2, 5.0], store: [4.6, 4.4] };
 
-  // A varied stylized building: plaster body + timber framing on the street face,
-  // a door + warm-lit windows, a pitched roof (thatch / red tile / shingle), with
-  // type-specific extras (chapel spire, smithy forge-glow, inn sign). Built at the
-  // group origin facing +z; the caller positions + rotates it (door to the square).
+  // A bare interior revealed when the roof peels: a wooden floor, a hearth (emissive
+  // glow — no scene light, so it never leaks through the closed shell), a table + stool.
+  function makeInterior(rng, bw, bdep) {
+    const g = new THREE.Group();
+    const floor = new THREE.Mesh(new THREE.BoxGeometry(bw - 0.3, 0.12, bdep - 0.3), woodMat.clone()); floor.position.y = 0.06; floor.receiveShadow = true; g.add(floor);
+    const hearth = new THREE.Mesh(new THREE.BoxGeometry(1.0, 1.0, 0.45), stoneMat.clone()); hearth.position.set(-bw / 2 + 0.7, 0.5, -bdep / 2 + 0.35); hearth.castShadow = true; g.add(hearth);
+    const fire = new THREE.Mesh(new THREE.SphereGeometry(0.22, 8, 6), new THREE.MeshStandardMaterial({ color: 0xff7a1e, emissive: 0xff5a14, emissiveIntensity: 2.2, roughness: 0.6 })); fire.position.set(-bw / 2 + 0.7, 0.42, -bdep / 2 + 0.5); fire.scale.y = 0.7; g.add(fire);
+    const tx = (rng() - 0.5) * bw * 0.4, tz = (rng() - 0.1) * bdep * 0.22;
+    const top = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.55, 0.1, 12), woodMat.clone()); top.position.set(tx, 0.78, tz); top.castShadow = true; g.add(top);
+    const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.11, 0.78, 8), woodMat.clone()); leg.position.set(tx, 0.39, tz); g.add(leg);
+    const sx = tx + 0.95, sz = tz + 0.25;
+    const stool = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.1, 10), woodMat.clone()); stool.position.set(sx, 0.46, sz); stool.castShadow = true; g.add(stool);
+    const sleg = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.07, 0.46, 6), woodMat.clone()); sleg.position.set(sx, 0.23, sz); g.add(sleg);
+    return g;
+  }
+
+  // A varied stylized building, now MODULAR for the roof-peel cutaway: 4 separate
+  // walls (each a small group: panel + its decorations) + a separate roof + floor +
+  // interior, instead of one sealed box. Built at the origin facing +z; the caller
+  // positions/rotates it. Returns the separable pieces so updateCutaway() can lift
+  // the roof and fade the camera-side walls of the focused building.
   function makeBuilding(rng, type, roofKind) {
     const g = new THREE.Group();
     const fp = PARCELS[type] || PARCELS.cottage;
     const bw = fp[0] * (0.92 + rng() * 0.16), bdep = fp[1] * (0.92 + rng() * 0.16);
     const h = type === 'inn' || type === 'chapel' ? 3.3 : 2.5;
-    const body = new THREE.Mesh(new THREE.BoxGeometry(bw, h, bdep), plasterMat);
-    body.position.y = h / 2; body.castShadow = true; body.receiveShadow = true; g.add(body);
-    const fr = (w, hh, d, x, y, z) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w, hh, d), timberMat); m.position.set(x, y, z); g.add(m); };
-    for (const sx of [-bw / 2 + 0.1, bw / 2 - 0.1]) fr(0.16, h, 0.18, sx, h / 2, bdep / 2 + 0.02);
-    fr(bw, 0.18, 0.2, 0, h - 0.1, bdep / 2 + 0.02);
-    fr(bw, 0.18, 0.2, 0, h * 0.5, bdep / 2 + 0.02);
-    const door = new THREE.Mesh(new THREE.BoxGeometry(0.95, 1.6, 0.12), woodMat); door.position.set(0, 0.8, bdep / 2 + 0.04); g.add(door);
-    const winMat = new THREE.MeshStandardMaterial({ color: 0x3a4d63, emissive: 0xffd27a, emissiveIntensity: 0.5, roughness: 0.3 });
-    for (const sx of [-bw / 3.2, bw / 3.2]) { const wn = new THREE.Mesh(new THREE.BoxGeometry(0.65, 0.75, 0.1), winMat); wn.position.set(sx, 1.45, bdep / 2 + 0.04); g.add(wn); }
+    const T = 0.2; // wall thickness
+    g.add(makeInterior(rng, bw, bdep)); // revealed when peeled (opaque; hidden inside the closed shell)
+
+    // each wall is its own group (panel + decorations) with a unique transparent
+    // material set, so the cutaway can fade only the camera-side walls.
+    const walls = [];
+    function wall(geo, x, z, nx, nz, deco) {
+      const wg = new THREE.Group(); wg.position.set(x, 0, z);
+      const mats = [], castSet = [];
+      const pm = plasterMat.clone(); pm.transparent = true; mats.push(pm);
+      const panel = new THREE.Mesh(geo, pm); panel.position.y = h / 2; panel.castShadow = true; panel.receiveShadow = true; wg.add(panel); castSet.push(panel);
+      if (deco) deco(wg, mats, castSet);
+      g.add(wg); walls.push({ group: wg, n: [nx, nz], mats, castSet });
+    }
+    const addDeco = (wg, mats, castSet, geo, baseMat, x, y, z) => { const m2 = baseMat.clone(); m2.transparent = true; mats.push(m2); const mm = new THREE.Mesh(geo, m2); mm.position.set(x, y, z); wg.add(mm); castSet.push(mm); };
+    // front (+z): timber framing + door + warm-lit windows
+    wall(new THREE.BoxGeometry(bw, h, T), 0, bdep / 2, 0, 1, (wg, mats, castSet) => {
+      for (const sx of [-bw / 2 + 0.1, bw / 2 - 0.1]) addDeco(wg, mats, castSet, new THREE.BoxGeometry(0.16, h, 0.18), timberMat, sx, h / 2, T / 2 + 0.02);
+      addDeco(wg, mats, castSet, new THREE.BoxGeometry(bw, 0.18, 0.2), timberMat, 0, h - 0.1, T / 2 + 0.02);
+      addDeco(wg, mats, castSet, new THREE.BoxGeometry(bw, 0.18, 0.2), timberMat, 0, h * 0.5, T / 2 + 0.02);
+      addDeco(wg, mats, castSet, new THREE.BoxGeometry(0.95, 1.6, 0.12), woodMat, 0, 0.8, T / 2 + 0.04);
+      const winMat = new THREE.MeshStandardMaterial({ color: 0x3a4d63, emissive: 0xffd27a, emissiveIntensity: 0.5, roughness: 0.3 });
+      for (const sx of [-bw / 3.2, bw / 3.2]) addDeco(wg, mats, castSet, new THREE.BoxGeometry(0.65, 0.75, 0.1), winMat, sx, 1.45, T / 2 + 0.04);
+    });
+    wall(new THREE.BoxGeometry(bw, h, T), 0, -bdep / 2, 0, -1);   // back
+    wall(new THREE.BoxGeometry(T, h, bdep), -bw / 2, 0, -1, 0);   // left
+    wall(new THREE.BoxGeometry(T, h, bdep), bw / 2, 0, 1, 0);     // right
+
     const rh = type === 'inn' ? 2.3 : type === 'chapel' ? 3.0 : 1.85;
-    const roof = roofPrism(bw, bdep, rh, 0.34, roofMatOf[roofKind] || thatchMat); roof.position.y = h; g.add(roof);
-    if (type === 'chapel') { const sp = new THREE.Mesh(new THREE.ConeGeometry(0.5, 2.2, 6), shingleMat); sp.position.set(0, h + rh + 1.0, -bdep / 2 + 0.6); sp.castShadow = true; g.add(sp); }
-    if (type === 'smithy') { const ch = new THREE.Mesh(new THREE.BoxGeometry(0.8, h + 1.4, 0.8), stoneMat); ch.position.set(bw / 2 - 0.6, (h + 1.4) / 2, -bdep / 2 + 0.7); ch.castShadow = true; g.add(ch); const glow = new THREE.PointLight(0xff7a22, 1.6, 6, 2); glow.position.set(0, 0.8, bdep / 2 - 0.4); g.add(glow); }
+    const roofMat = (roofMatOf[roofKind] || thatchMat).clone(); roofMat.transparent = true;
+    const roof = roofPrism(bw, bdep, rh, 0.34, roofMat); roof.position.y = h; g.add(roof);
+    // type extras stay on the shell (not peeled — minor silhouette details)
+    if (type === 'smithy') { const ch = new THREE.Mesh(new THREE.BoxGeometry(0.8, h + 1.4, 0.8), stoneMat); ch.position.set(bw / 2 - 0.6, (h + 1.4) / 2, -bdep / 2 + 0.7); ch.castShadow = true; g.add(ch); }
     if (type === 'inn') { const post = new THREE.Mesh(new THREE.BoxGeometry(0.12, 2.1, 0.12), timberMat); post.position.set(bw / 2 + 0.4, 1.05, bdep / 2 - 1); g.add(post); const sign = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.65, 0.85), woodMat); sign.position.set(bw / 2 + 0.4, 1.55, bdep / 2 - 1.6); g.add(sign); }
-    return { group: g, r: Math.hypot(bw, bdep) / 2 };
+    return { group: g, r: Math.hypot(bw, bdep) / 2, roof, roofMat, roofBaseY: h, walls };
   }
 
   // Low-poly tree scatter (instanced trunks + icosahedron foliage clumps), each
@@ -299,7 +345,15 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
     trunkIM.instanceMatrix.needsUpdate = true; foliIM.instanceMatrix.needsUpdate = true; foliIM.instanceColor.needsUpdate = true;
   }
 
-  function dimGroup(grp, satDrop, lumDrop) { grp.traverse(c => { if (c.isMesh && c.material && c.material.color && !c.isInstancedMesh) { const m = c.material.clone(); m.color.offsetHSL(0, -satDrop, -lumDrop); c.material = m; } }); }
+  function dimGroup(grp, satDrop, lumDrop) {
+    grp.traverse(c => {
+      if (!c.isMesh || !c.material || !c.material.color || c.isInstancedMesh) return;
+      // Shared materials must be cloned so dimming one place doesn't dim all; unique
+      // ones (incl. the peelable walls/roof) tint in place to keep cutaway refs live.
+      if (SHARED_MATS.has(c.material)) { const m = c.material.clone(); m.color.offsetHSL(0, -satDrop, -lumDrop); c.material = m; }
+      else c.material.color.offsetHSL(0, -satDrop, -lumDrop);
+    });
+  }
 
   // A settlement: a ring of varied buildings (doors to the square) around a well,
   // wrapped in a palisade of instanced log stakes with one gate gap, with a few
@@ -324,6 +378,8 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
         b.group.position.set(bx, groundAt(bx, bz), bz);
         b.group.rotation.y = Math.atan2(-bx, -bz); // door (+z) faces the square
         g.add(b.group); placed.push({ x: bx, z: bz, r: b.r });
+        // register for the roof-peel cutaway (world transforms resolved after layout)
+        peelables.push({ bgroup: b.group, roof: b.roof, roofMat: b.roofMat, roofBaseY: b.roofBaseY, walls: b.walls, cur: 0 });
         break;
       }
     }
@@ -406,6 +462,7 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
   // ---------- camera state ----------
   let alt = (opts.alt != null ? opts.alt : 280);
   let az = (opts.az != null ? opts.az : -0.65);
+  let zoomPx = 0; // continuous-zoom depth signal (px per node-tile), set by setCamera
   const target = new THREE.Vector3(0, 0, 0);
 
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -462,6 +519,23 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
     scene.add(grp);
   }
 
+  // Resolve each peelable building's world transform once the hierarchy is placed:
+  // its centre (for picking the focused building) and each wall's world position +
+  // outward normal (for the camera-relative fade). Static thereafter — only the
+  // camera moves, so updateCutaway() just reads these per frame.
+  scene.updateMatrixWorld(true);
+  {
+    const _q = new THREE.Quaternion();
+    for (const b of peelables) {
+      b.center = b.bgroup.getWorldPosition(new THREE.Vector3());
+      b.bgroup.getWorldQuaternion(_q);
+      for (const w of b.walls) {
+        w.worldPos = w.group.getWorldPosition(new THREE.Vector3());
+        w.worldNormal = new THREE.Vector3(w.n[0], 0, w.n[1]).applyQuaternion(_q).normalize();
+      }
+    }
+  }
+
   // Player token — the SAME figure as the combat board (one consistent "you"),
   // sitting on the terrain with a gentle idle breathe. No giant label (the clean
   // HUD names the place instead).
@@ -490,12 +564,47 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
 
   applyCamera();
 
+  // ---------- roof-peel cutaway (XCOM-style), driven by the continuous zoom ----------
+  // As the zoom pushes in, the FOCUSED building (the one nearest the look-at) lifts +
+  // fades its roof and fades its CAMERA-SIDE walls (far walls stay solid) to reveal the
+  // interior; it reverses smoothly on zoom-out. Per-building lerp → no pop on focus
+  // change. Pure view: reads the camera + the precomputed wall normals, writes only
+  // material opacity / mesh position — never engine state.
+  const PEEL_START_PX = 2400, PEEL_FULL_PX = 6200; // px-per-tile band where the roof comes off
+  const ROOF_LIFT = 2.6;
+  const FOCUS_R2 = 17 * 17;                         // look-at within ~17wu of a building → it's focused
+  const _camDir = new THREE.Vector3();
+  function updateCutaway() {
+    if (!peelables.length) return;
+    const zp = zoomPx > 0 ? smooth(PEEL_START_PX, PEEL_FULL_PX, zoomPx)
+                          : smooth(78, 40, camera.position.distanceTo(target));
+    let focus = null, fd = Infinity;
+    for (const b of peelables) { const dx = b.center.x - target.x, dz = b.center.z - target.z; const d = dx * dx + dz * dz; if (d < fd) { fd = d; focus = b; } }
+    const focusValid = fd < FOCUS_R2;
+    for (const b of peelables) {
+      const tgt = (focusValid && b === focus) ? zp : 0;
+      b.cur += (tgt - b.cur) * 0.16;
+      if (b.cur < 0.003) b.cur = 0;
+      const c = b.cur;
+      b.roof.position.y = b.roofBaseY + c * ROOF_LIFT;
+      b.roofMat.opacity = 1 - c; b.roofMat.depthWrite = c < 0.5;
+      b.roof.visible = c < 0.997; b.roof.castShadow = c < 0.5;
+      for (const w of b.walls) {
+        _camDir.copy(camera.position).sub(w.worldPos).normalize();
+        const op = 1 - c * smooth(0.05, 0.5, Math.max(0, w.worldNormal.dot(_camDir)));
+        for (const m of w.mats) { m.opacity = op; m.depthWrite = op > 0.5; }
+        for (const mesh of w.castSet) mesh.castShadow = op > 0.5;
+      }
+    }
+  }
+
   // ---------- render loop ----------
   let raf = 0, alive = true;
   function renderFrame() {
     if (!alive) return 0;
     breatheMinis(sliceMinis, (typeof performance !== 'undefined' ? performance.now() : Date.now()) / 1000);
-    updateHud(); // refresh the corner zoom-band readout (cheap; only writes on change)
+    updateHud();      // corner title (cheap; only writes on change)
+    updateCutaway();  // roof-peel of the focused building per the zoom depth
     if (composer) composer.render(); else renderer.render(scene, camera);
     return 1;
   }
@@ -575,6 +684,7 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
     if (o.pxPerTile != null && o.pxPerTile > 0) {
       const Hpx = Math.max(1, canvas.clientHeight || h0);
       rad = (TILE_WU * Hpx) / (2 * o.pxPerTile * vFovTan);
+      zoomPx = o.pxPerTile; // continuous-zoom depth → drives the roof-peel cutaway
     } else { rad = o.rad != null ? o.rad : 200; }
     rad = clamp(rad, 30, 4000);
     camera.position.set(

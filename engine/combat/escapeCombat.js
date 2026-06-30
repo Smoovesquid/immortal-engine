@@ -39,6 +39,8 @@ import { rollLootForCR } from '../ruleset/core/loot/lootRoll.js';
 import { rollDice } from './diceRoller.js';
 import { coverForRoom, bestCover } from '../structures/coverFeatures.js';
 import { coverAcBonus } from './tacticalMods.js';
+import { moveCombatant } from './grid.js';
+import { resolveSpatialMove, PLAYER_COMBAT_SPEED_FEET } from './spatialMove.js';
 import { applyCondition, hasCondition, removeAllConditions } from './conditions.js';
 import { parseGrappleVerb, resolveGrappleAction, enemyGrappleEscape } from './grapple.js';
 import { parseHazard, resolveHazard } from './hazard.js';
@@ -772,6 +774,15 @@ export function parseEscapeAction(text) {
   // Cover is a positional move — duck behind the room's furniture for +AC. Check
   // it before the attack verbs so "hide behind the pillar" reads as cover.
   if (/\b(take\s+cover|cover|behind|duck|hunker)\b/.test(t)) return { verb: 'cover' };
+  // MX-4 — TALK→TOKEN: spoken spatial movement. These reposition the mini on the
+  // board (no attack roll this turn); the resolver picks the cell deterministically
+  // (engine/combat/spatialMove.js). Compass first (most specific), then fall-back,
+  // then close-on. flank/highground/cover above keep their own precedence; these
+  // only catch phrasings that previously defaulted to a blade strike.
+  const compass = t.match(/\b(?:move|go|step|head|shift|slide|sidestep|reposition)\s+(?:to\s+the\s+)?(north|south|east|west)\b/);
+  if (compass) return { verb: 'move', mode: `compass-${compass[1]}` };
+  if (/\b(fall\s+back|retreat|pull\s+back|back\s+(?:away|off)|give\s+ground|disengage|withdraw|move\s+(?:away|back)|create\s+(?:some\s+)?distance|put\s+(?:some\s+)?distance)\b/.test(t)) return { verb: 'move', mode: 'away' };
+  if (/\b(charge\s+(?:at|in|on|the|toward|towards|forward)|close\s+(?:on|in|with|the\s+distance|the\s+gap)|advance\s+on|rush\s+(?:at|toward|towards|in)|bear\s+down|press\s+(?:toward|towards|forward|in)|move\s+(?:up\s+)?(?:on|toward|towards|to|into|in\s+on)|get\s+(?:in\s+)?(?:close|closer))\b/.test(t)) return { verb: 'move', mode: 'toward' };
   // Class/species features — checked before the generic verbs so "breathe fire"
   // doesn't fall into the cantrip bucket and "rally" doesn't read as a guard.
   // Parley — talking is always an option at this table. Intimidation and
@@ -833,6 +844,51 @@ function fmtBonus(n) {
 function rollD20Adv(rng, advantage) {
   const a = rng.int(1, 20);
   return advantage ? Math.max(a, rng.int(1, 20)) : a;
+}
+
+// MX-4 — commit a resolved player move through moveCombatant (the grid's
+// bounds/occupancy/reach validator). Builds a combat-shaped object from the live
+// turn state, asks the grid to move the player token, and returns the committed
+// cell — or null if the grid rejected it, so the narration stays honest.
+function commitPlayerMove({ grid, playerCell, enemies }, cell) {
+  if (!cell) return null;
+  const combat = { grid, playerCell, enemies };
+  const next = moveCombatant(combat, 'player', cell.cx, cell.cy, { speedFeet: PLAYER_COMBAT_SPEED_FEET });
+  if (next === combat) return null;
+  const pc = next.playerCell;
+  if (!pc || (pc.cx === playerCell.cx && pc.cy === playerCell.cy)) return null;
+  return { cx: pc.cx, cy: pc.cy };
+}
+
+// MX-4 — the structured tag for a spatial move (mechanicsLine, never prose).
+function spatialMoveTag(mode) {
+  if (typeof mode === 'string' && mode.startsWith('compass-')) return mode.slice('compass-'.length);
+  return mode === 'away' ? 'fallback' : 'toward';
+}
+
+// MX-4 — narrate a spatial move as a READ. No cells, coords, or numbers; cardinal
+// directions are fiction (a DM says "you fall back to the east"), not coordinates.
+function spatialMoveBeat(mode, sm, moved) {
+  const who = sm.targetName ? `the ${sm.targetName}` : 'it';
+  if (typeof mode === 'string' && mode.startsWith('compass-')) {
+    const dir = mode.slice('compass-'.length);
+    return moved
+      ? `You stride ${dir}, putting open ground under your boots.`
+      : `You're already at the edge of the fray — no room to push ${dir}.`;
+  }
+  if (mode === 'away') {
+    return moved
+      ? 'You give ground, breaking contact and falling back to open space.'
+      : 'There is nowhere left to fall back to — they have you boxed in.';
+  }
+  // toward / charge
+  if (moved) {
+    return sm.reached
+      ? `You close on ${who}, blade ready.`
+      : `You drive toward ${who}, eating up the ground — still a stride short.`;
+  }
+  if (sm.reason === 'no-target') return 'There is no one here to close on.';
+  return `You are already in ${who}'s face — no ground left to close.`;
 }
 
 /**
@@ -1181,6 +1237,12 @@ function resolveEscapeCombatTurnCore(world, actionText = '') {
   // the escapeCover system above so the read is consistent.
   let playerTactical = { ...(w.combat?.playerTactical || { cover: 'none', flanked: false, highGround: false }) };
 
+  // MX-4 — TALK→TOKEN: the player's mini cell on the tactical grid. A spoken
+  // spatial-move command resolves a destination deterministically and commits it
+  // through moveCombatant; the persisted playerCell is what the Battle board
+  // reflects. Initialized from current combat state (ensureWorld normalized it).
+  let playerCell = { ...(w.combat?.playerCell || { cx: 0, cy: 0 }) };
+
   // ── Feature state (v24) ─────────────────────────────────────────────────────
   // Rage / second wind / breath reset per fight (beganAt scope); the paladin's
   // pool and relentless endurance persist until a rest.
@@ -1295,13 +1357,38 @@ function resolveEscapeCombatTurnCore(world, actionText = '') {
   } else if (verb === 'flank') {
     // DX-2b: maneuver to the foe's flank — advantage attacking it (the defender
     // is caught between angles). Lands on the named/first standing foe.
+    // MX-4: this is also a spatial move — the mini circles to a cell beside/behind
+    // the foe on the board. The tag is set whenever there's a foe to flank
+    // (geometry-gating the advantage is MX-2, deferred); the TOKEN moves only when
+    // a flank cell is in reach.
     const fIdx = targetIdx >= 0 ? targetIdx : enemies.findIndex(e => e && !e.defeated && (Number(e.hp) || 0) > 0);
     if (fIdx >= 0) {
       enemies[fIdx] = { ...enemies[fIdx], tactical: { ...(enemies[fIdx].tactical || {}), flanked: true } };
-      beats.push(`You slip to the ${enemies[fIdx].name}'s flank — its guard splits between you and the angle you've opened.`);
+      const sm = resolveSpatialMove({ kind: 'flank', playerCell, enemies, grid: w.combat.grid, targetIdx: fIdx });
+      const moved = commitPlayerMove({ grid: w.combat.grid, playerCell, enemies }, sm.cell);
+      if (moved) playerCell = moved;
+      beats.push(moved
+        ? `You circle to the ${enemies[fIdx].name}'s flank — its guard splits between you and the angle you've opened.`
+        : `You slip to the ${enemies[fIdx].name}'s flank — its guard splits between you and the angle you've opened.`);
       actionMech = '[tactical:flank]';
     } else {
       beats.push('There is no one here to get around.');
+    }
+  } else if (verb === 'move') {
+    // MX-4 — TALK→TOKEN: spoken repositioning. The resolver picks the destination
+    // cell deterministically from current positions (engine/combat/spatialMove.js);
+    // moveCombatant commits it; the Battle board reflects the new cell. A
+    // positioning action — no attack roll — so the foe still gets its turn.
+    // Narrated as a READ; no cells/coords/numbers ever surface.
+    const sm = resolveSpatialMove({ kind: mode, playerCell, enemies, grid: w.combat.grid, targetIdx });
+    const moved = commitPlayerMove({ grid: w.combat.grid, playerCell, enemies }, sm.cell);
+    if (moved) {
+      playerCell = moved;
+      beats.push(spatialMoveBeat(mode, sm, true));
+      actionMech = `[move:${spatialMoveTag(mode)}${sm.reached ? '' : ' | partial'}]`;
+    } else {
+      beats.push(spatialMoveBeat(mode, sm, false));
+      actionMech = `[move:${spatialMoveTag(mode)} | ${sm.reason}]`;
     }
   } else if (verb === 'flushcover') {
     // DX-2c contest: drive a foe out of its cover — clears that enemy's
@@ -2293,7 +2380,7 @@ function resolveEscapeCombatTurnCore(world, actionText = '') {
   // ── Defeat check ───────────────────────────────────────────────────────────
   if (hp <= 0) {
     if (enemies.some(e => e && !e.defeated && (Number(e.hp) || 0) > 0)) {
-      w = applyDeltas(w, [{ op: 'combatState', set: { enemies, round: round + 1, turnIndex: 0 } }]);
+      w = applyDeltas(w, [{ op: 'combatState', set: { enemies, round: round + 1, turnIndex: 0, playerCell } }]);
       beats.push('You fall — the foe still stands. You are down and dying.');
       return {
         world: w,
@@ -2343,7 +2430,7 @@ function resolveEscapeCombatTurnCore(world, actionText = '') {
   // and the enemies array (which carries any sourced/contested enemy tactical) so
   // position holds across rounds within the fight; beginCombat clears it for the
   // next fight.
-  w = applyDeltas(w, [{ op: 'combatState', set: { enemies, round: round + 1, turnIndex: 0, playerTactical } }]);
+  w = applyDeltas(w, [{ op: 'combatState', set: { enemies, round: round + 1, turnIndex: 0, playerTactical, playerCell } }]);
   w = { ...w, meta: { ...w.meta, escapeCover: coverState
     ? { active: true, bonus: coverState.bonus, label: coverState.label, tier: coverState.tier, beganAt }
     : { active: false, bonus: 0, label: '', tier: '', beganAt } } };

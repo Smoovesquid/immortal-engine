@@ -20,6 +20,10 @@
 
 const TILE_WU = 40; // world units per node tile — keeps the 3D geography to scale.
 
+// Procedural archetype minis + idle breathe (MAPNINJA Step 5). Pure helpers; they
+// receive the lazily-imported THREE, so this stays a zero-cost static import.
+import { buildArchetypeFigure, breatheMinis, phaseFromKey } from './figures3d.js';
+
 // ---------- seeded RNG (matches the proto: view-deterministic scatter) ----------
 function mulberry32(a) {
   return function () {
@@ -254,27 +258,6 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
     return m;
   }
 
-  // ---------- player token ----------
-  function buildPlayerToken() {
-    const g = new THREE.Group();
-    const ring = new THREE.Mesh(
-      new THREE.TorusGeometry(1.4, 0.18, 8, 32),
-      new THREE.MeshStandardMaterial({ color: 0xd9a441, emissive: 0xd9a441, emissiveIntensity: 0.7, metalness: 0.8, roughness: 0.2 })
-    );
-    ring.rotation.x = -Math.PI / 2; ring.position.y = 0.1; ring.castShadow = true; g.add(ring);
-    const body = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.55, 0.65, 2.2, 10),
-      new THREE.MeshStandardMaterial({ color: 0x3388ff, emissive: 0x1144cc, emissiveIntensity: 0.4, roughness: 0.4, metalness: 0.3 })
-    );
-    body.position.y = 1.2; body.castShadow = true; g.add(body);
-    const top = new THREE.Mesh(
-      new THREE.ConeGeometry(0.65, 1.0, 10),
-      new THREE.MeshStandardMaterial({ color: 0x66aaff, emissive: 0x2255cc, emissiveIntensity: 0.5 })
-    );
-    top.position.y = 2.9; top.castShadow = true; g.add(top);
-    return g;
-  }
-
   // ---------- postprocessing ----------
   let composer = null;
   if (EffectComposer) {
@@ -369,9 +352,12 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
   const player = sceneData?.player || { nodeId: nodes[0]?.id, x: 0, y: 0 };
   const px = (Number(player.x) || 0) * TILE_WU + 3;
   const pz = (Number(player.y) || 0) * TILE_WU + 3;
-  const token = buildPlayerToken();
-  token.position.set(px, 0, pz);
+  // The overworld avatar reuses the SAME player figure as the combat board (one
+  // consistent "you"), with a gentle idle breathe.
+  const token = buildArchetypeFigure(THREE, 'player', {});
+  token.position.set(px, 0.06, pz);
   scene.add(token);
+  const sliceMinis = [{ group: token, baseY: 0.06, baseScale: 1, rate: 1.4, phase: 0, bob: 0.05, defeated: false }];
   const youLabel = makeLabel('You', '#66aaff');
   youLabel.position.set(px, 8, pz);
   scene.add(youLabel);
@@ -382,6 +368,7 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
   let raf = 0, alive = true;
   function renderFrame() {
     if (!alive) return 0;
+    breatheMinis(sliceMinis, (typeof performance !== 'undefined' ? performance.now() : Date.now()) / 1000);
     if (composer) composer.render(); else renderer.render(scene, camera);
     return 1;
   }
@@ -568,38 +555,11 @@ export async function mountCombat3D(container, combatScene, opts = {}) {
     sprite.scale.set(sx, sy, 1);
     return sprite;
   }
-  function buildPlayerToken() {
-    const g = new THREE.Group();
-    const ring = new THREE.Mesh(new THREE.TorusGeometry(1.35, 0.17, 8, 28),
-      new THREE.MeshStandardMaterial({ color: 0xd9a441, emissive: 0xd9a441, emissiveIntensity: 0.75, metalness: 0.8, roughness: 0.2 }));
-    ring.rotation.x = -Math.PI / 2; ring.position.y = 0.08; ring.castShadow = true; g.add(ring);
-    const body = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.6, 2.1, 10),
-      new THREE.MeshStandardMaterial({ color: 0x3388ff, emissive: 0x1144cc, emissiveIntensity: 0.4, roughness: 0.4, metalness: 0.3 }));
-    body.position.y = 1.15; body.castShadow = true; g.add(body);
-    const top = new THREE.Mesh(new THREE.ConeGeometry(0.6, 0.95, 10),
-      new THREE.MeshStandardMaterial({ color: 0x66aaff, emissive: 0x2255cc, emissiveIntensity: 0.5 }));
-    top.position.y = 2.75; top.castShadow = true; g.add(top);
-    return g;
-  }
-  function buildEnemyToken(defeated = false) {
-    const g = new THREE.Group();
-    const bodyCol = defeated ? 0x6a5454 : 0xb02a2a;
-    const emis = defeated ? 0x100808 : 0x6a1410;
-    const ring = new THREE.Mesh(new THREE.TorusGeometry(1.25, 0.16, 8, 26),
-      new THREE.MeshStandardMaterial({ color: defeated ? 0x6a5a3a : 0xe05038, emissive: defeated ? 0x000000 : 0x7a1a10, emissiveIntensity: defeated ? 0 : 0.55, metalness: 0.6, roughness: 0.3 }));
-    ring.rotation.x = -Math.PI / 2; ring.position.y = 0.08; ring.castShadow = true; g.add(ring);
-    const body = new THREE.Mesh(new THREE.CylinderGeometry(0.48, 0.6, 1.9, 9),
-      new THREE.MeshStandardMaterial({ color: bodyCol, emissive: emis, emissiveIntensity: defeated ? 0.04 : 0.35, roughness: 0.5 }));
-    body.position.y = 1.05; body.castShadow = true; g.add(body);
-    const head = new THREE.Mesh(new THREE.ConeGeometry(0.58, 1.1, 6),
-      new THREE.MeshStandardMaterial({ color: bodyCol, emissive: emis, emissiveIntensity: defeated ? 0.04 : 0.4, roughness: 0.5 }));
-    head.position.y = 2.45; head.rotation.y = Math.PI / 6; head.castShadow = true; g.add(head);
-    if (defeated) {
-      g.rotation.z = Math.PI / 2.15; // toppled — a downed foe
-      g.traverse(o => { if (o.isMesh && o.material) { o.material.transparent = true; o.material.opacity = 0.5; } });
-    }
-    return g;
-  }
+  // Minis are stylized procedural archetype figures (figures3d.js): the player +
+  // humanoid / beast / undead foes, with an `elite` overlay for leaders/bosses and
+  // a toppled pose for the downed. They breathe in the render loop (registered
+  // into `minis` below). buildArchetypeFigure(THREE, archetype, { defeated, elite }).
+  const minis = [];
 
   // ---------- the board ----------
   const grid = combatScene?.grid || { w: 12, h: 10 };
@@ -632,17 +592,25 @@ export async function mountCombat3D(container, combatScene, opts = {}) {
   const hl = new THREE.Mesh(new THREE.PlaneGeometry(CELL_WU * 0.94, CELL_WU * 0.94),
     new THREE.MeshBasicMaterial({ color: 0xd9a441, transparent: true, opacity: 0.22, depthWrite: false }));
   hl.rotation.x = -Math.PI / 2; hl.position.set(pc.x, 0.32, pc.z); scene.add(hl);
-  const pToken = buildPlayerToken(); pToken.position.set(pc.x, 0.32, pc.z); scene.add(pToken);
+  const pToken = buildArchetypeFigure(THREE, 'player', {});
+  pToken.position.set(pc.x, 0.32, pc.z); scene.add(pToken);
+  minis.push({ group: pToken, baseY: 0.32, baseScale: 1, rate: 1.5, phase: 0, bob: 0.05, defeated: false });
   const pLabel = makeLabel(String(player.name || 'You'), '#bfe0ff'); pLabel.position.set(pc.x, 4.0, pc.z); scene.add(pLabel); labels.push(pLabel);
 
-  // Enemy minis + labels.
+  // Enemy minis + labels — figure keyed to archetype, elite upscales + crowns.
   const enemies = Array.isArray(combatScene?.enemies) ? combatScene.enemies : [];
   for (const e of enemies) {
     const ec = cellCenter(e.cx, e.cy);
-    const tok = buildEnemyToken(Boolean(e.defeated));
+    const arch = e.archetype || 'humanoid';
+    const tok = buildArchetypeFigure(THREE, arch, { defeated: Boolean(e.defeated), elite: Boolean(e.elite) });
     tok.position.set(ec.x, 0.32, ec.z); scene.add(tok);
+    minis.push({
+      group: tok, baseY: 0.32, baseScale: e.elite ? 1.24 : 1,
+      rate: arch === 'undead' ? 1.1 : 1.6, phase: phaseFromKey(e.id || e.name),
+      bob: arch === 'undead' ? 0.09 : 0.05, defeated: Boolean(e.defeated),
+    });
     const lbl = makeLabel(String(e.name || 'Foe'), e.defeated ? '#8a7d72' : '#ffb0a0');
-    lbl.position.set(ec.x, e.defeated ? 2.4 : 3.7, ec.z); scene.add(lbl); labels.push(lbl);
+    lbl.position.set(ec.x, e.defeated ? 2.4 : 3.9, ec.z); scene.add(lbl); labels.push(lbl);
   }
 
   // ---------- postprocessing ----------
@@ -696,6 +664,8 @@ export async function mountCombat3D(container, combatScene, opts = {}) {
   let raf = 0, alive = true, paused = false;
   function renderFrame() {
     if (!alive) return 0;
+    // idle breathe — the minis read as alive (cheap sine, view-only).
+    breatheMinis(minis, (typeof performance !== 'undefined' ? performance.now() : Date.now()) / 1000);
     // billboard labels stay upright (sprites auto-face); just render.
     if (composer) composer.render(); else renderer.render(scene, camera);
     return 1;

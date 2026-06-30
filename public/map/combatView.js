@@ -75,7 +75,14 @@ function drawCombatBoard2D(canvas, scene) {
       ctx.fillText(label, x, y - r - 2);
     }
   };
-  for (const e of scene.enemies) token(e.cx, e.cy, e.defeated ? '#6a5454' : '#c0392b', e.defeated ? '#8a7d72' : '#e8806f', e.name, e.defeated);
+  // Archetype-keyed colors mirror the 3D figures so the fallback reads the same.
+  const ARCH_FILL = { humanoid: '#8a3b2e', beast: '#6f5a39', undead: '#9fb8b0' };
+  const ARCH_RING = { humanoid: '#e05038', beast: '#b0883a', undead: '#6fd9c4' };
+  for (const e of scene.enemies) {
+    const fill = e.defeated ? '#6a5454' : (ARCH_FILL[e.archetype] || '#c0392b');
+    const ring = e.defeated ? '#8a7d72' : (e.elite ? '#f2cf5e' : (ARCH_RING[e.archetype] || '#e8806f'));
+    token(e.cx, e.cy, fill, ring, e.name, e.defeated);
+  }
   token(scene.player.cx, scene.player.cy, '#3388ff', '#d9a441', scene.player.name, false);
 }
 

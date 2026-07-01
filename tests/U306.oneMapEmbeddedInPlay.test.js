@@ -2,9 +2,10 @@
 // surface, embedded directly in renderPlay (no gear detour), sized to ~60% of the viewport, and
 // opening in the 3D (tilted) view. This locks the source contract the live browser proof validated
 // (jsdom does no flexbox layout, so the faithful automated guard is the source + CSS contract):
-//   (1) public/v1.js — renderPlay embeds renderContinuousMap (out of combat) and renderCombatBoard
-//       (in combat) filling their container (height/heightCss '100%'), inside a '.play-map-3d'
-//       wrapper, opening in the 3D zoom band; and the local-walk sim (renderWalkPlace, which keeps
+//   (1) public/v1.js — renderPlay embeds renderContinuousMap as the ONE always-present play
+//       surface (combat is the map's deepest tactical zoom, not a separate renderCombatBoard
+//       surface), filling its container (heightCss '100%'), inside a '.play-map-3d' wrapper,
+//       opening in the 3D zoom band; and the local-walk sim (renderWalkPlace, which keeps
 //       placeCtl + ui.place alive) is still CALLED for its side-effects.
 //   (2) public/v1.js — the gear menu no longer offers a 'Map' item (the settings detour is gone).
 //   (3) public/styles.css — '.play-map-3d' is bounded to a vh height and held flex:0 0 auto so the
@@ -33,13 +34,14 @@ async function renderPlaySource() {
   return src.slice(start, next > 0 ? next : undefined);
 }
 
-test('U306: renderPlay embeds the continuous map + battle board, filling a .play-map-3d wrapper', async () => {
+test('U306: renderPlay embeds the ONE continuous map (combat is its tactical zoom), filling a .play-map-3d wrapper', async () => {
   const body = await renderPlaySource();
-  assert.match(body, /renderContinuousMap\(/, 'out-of-combat play embeds the continuous map');
-  assert.match(body, /renderCombatBoard\(/, 'in-combat play embeds the tactical battle board');
+  // ONE map: renderContinuousMap is the always-present play surface — out of combat AND in
+  // combat (the tactical board is the map's deepest zoom, not a separate renderer surface).
+  assert.match(body, /renderContinuousMap\(/, 'play embeds the continuous map');
+  assert.doesNotMatch(body, /renderCombatBoard\(/, "combat is the one map's tactical zoom — renderPlay no longer calls a separate battle-board renderer");
   // The map fills its container (~60vh) rather than a fixed canvas height.
   assert.match(body, /heightCss:\s*'100%'/, 'the continuous map fills its container (heightCss 100%)');
-  assert.match(body, /renderCombatBoard\(w,\s*\{\s*height:\s*'100%'\s*\}\)/, 'the battle board fills its container');
   // Wrapped in '.play-map-3d' (the CSS height authority).
   assert.match(body, /class:\s*'play-map-3d'/, 'the embedded map is wrapped in .play-map-3d');
 });

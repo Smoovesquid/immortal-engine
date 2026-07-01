@@ -940,8 +940,8 @@ function renderInvoke() {
     el('div', { class: 'panel' },
       el('div', { class: 'header' },
         el('div', {},
-          el('div', { class: 'title' }, 'Immortal Engine — v0.19.0'),
-          el('div', { class: 'sub' }, 'build 023 · 2026-07-01 · combat is the map')
+          el('div', { class: 'title' }, 'Immortal Engine — v0.19.1'),
+          el('div', { class: 'sub' }, 'build 024 · 2026-07-01 · combat via one map')
         )
       ),
       // ── One-click front door: start (or resume) the Escape game ──────
@@ -2718,10 +2718,9 @@ function renderMap() {
     );
   }
 
-  // During a live fight the Map becomes the TACTICAL BOARD — the player + enemy
-  // minis on their engine cells. The overworld map returns when the fight ends.
+  // During a live fight the Map is the ONE map at its tactical zoom — renderContinuousMap
+  // shows the board itself (no separate combat surface; same entry as the in-play embed).
   if (w.combat && w.combat.active) {
-    disposeContinuousMap3d(); // the overworld overlay yields to the board
     return el('div', { class: 'container stack' },
       el('div', { class: 'panel' },
         el('div', { class: 'header' },
@@ -2730,7 +2729,7 @@ function renderMap() {
             el('div', { class: 'small' }, 'The tactical board — your mini and the foes on their cells · drag to orbit')
           )
         ),
-        renderCombatBoard(w)
+        renderContinuousMap(w)
       )
     );
   }

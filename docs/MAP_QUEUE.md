@@ -73,3 +73,32 @@ Prove it holds together.
 Sequence rationale: **fightable → populated → polished → verified.** After these four, the
 demo region is something you can walk through, meet its people, and fight its monsters —
 the first genuinely playable slice of the map vision.
+
+---
+
+## NEXT PACKET — one-scene continuous zoom into the fight (the true finish)
+
+Combat is now the one map's tactical view (v0.19.x): no separate combat *screen* anywhere
+(`renderContinuousMap` owns it; both the in-play embed and the fullscreen Map screen route
+through it). BUT combat still mounts as its OWN 3D scene (`mountCombat3D`) rather than being
+the overworld scene zoomed in. The remaining "finish" = render the fight INSIDE the
+`mountSlice3D` overworld scene at the player's node, so you scroll in and the board is *there*
+on the same ground. Scale checks out: `TILE_WU=40` (~1 m/unit), 5 ft ≈ **1.5 units/cell**, so
+a 12×10 board ≈ 18×15 m ≈ **half a node tile** — visible at deepest zoom.
+
+Steps (each verifiable via map-proto labs importing the real builders):
+1. **Extract** `buildTacticalBoard(THREE, combatScene, { cell, buildFig, makeLabel })` from
+   `mountCombat3D` (dais + 5-ft grid + minis + 30-ft move range + labels → Group + minis[]).
+   `mountCombat3D` calls it (regression-check combat-lab renders identically).
+2. **sliceScene**: include `combat: combatSceneFromWorld(world)` when active.
+3. **mountSlice3D**: when `sceneData.combat`, add `buildTacticalBoard` at the player node
+   world pos (`px,pz`) with `cell ≈ 1.5` (5 ft); register its minis into the breathe loop.
+4. **continuousMap**: DROP the `renderCombatBoard` short-circuit; always 2D + `mountSlice3D`.
+   On combat-start, auto-drive the zoom deep (frame the player node); zoom-out shows it in
+   overworld context = continuous.
+5. **Retire** `combatView.js` / `mountCombat3D` (or keep the 2D board as the no-WebGL fallback).
+6. **Verify**: seeded fight → zoom in → board materializes at the player's node on the one
+   scene; zoom out → overworld. Suite green; determinism unaffected (pure view).
+
+Risk: scale/position + camera choreography need visual iteration; do it as a focused pass,
+not tail-of-session — rushing risks the working combat view.

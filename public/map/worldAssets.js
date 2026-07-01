@@ -43,6 +43,7 @@
 import { glbTreeScatter, glbBloomScatter, glbBarrelScatter, glbVillagerScatter, buildGLBProp } from './treeAssets.js';
 import { ruinKitReady, ruinMesh, chapelBodyIndex, gravestoneIndices } from './ruinKit.js';
 import { buildCreature } from './creatureKit.js';
+import { buildShell } from './buildingKit.js';
 
 // ───────────────────────── seeded RNG (view-deterministic scatter) ─────────────
 export function mulberry32(a) {
@@ -432,6 +433,16 @@ export function buildSettlement(THREE, mats, rng, groundAt, discovered, peelable
       peelables.push({ bgroup: b.group, roof: b.roof, roofMat: b.roofMat, roofBaseY: b.roofBaseY, walls: b.walls, cur: 0 });
       break;
     }
+  }
+  // authored landmark buildings (sealed shells) on an outer ring — silhouette variety
+  // next to the peelable procedural cottages; non-peelable (the "look at" buildings).
+  for (const [name, ang] of [['smithy', 0.5], ['cottage_thatched', 2.9], ['cottage_blue', 5.0]]) {
+    const shell = buildShell(THREE, name); if (!shell) continue;
+    const rr = ringR + 3.0, bx = Math.cos(ang) * rr, bz = Math.sin(ang) * rr;
+    if (placed.some(p => Math.hypot(bx - p.x, bz - p.z) < p.r + 3)) continue;
+    shell.position.set(bx, groundAt(bx, bz), bz);
+    shell.rotation.y = Math.atan2(-bx, -bz);   // face the square
+    g.add(shell); placed.push({ x: bx, z: bz, r: 3 });
   }
   // well at the square
   const well = buildWell(THREE, mats); well.position.y = groundAt(0, 0); g.add(well);

@@ -21,6 +21,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { createWorldMaterials, buildSettlement, buildWilderness, nodeRng } from '/map/worldAssets.js';
 import { ensureFoliageGLBs } from '/map/treeAssets.js';
 import { ensureCreatureKit } from '/map/creatureKit.js';
+import { ensureBuildingKit } from '/map/buildingKit.js';
 window.__err=[]; addEventListener('error',e=>__err.push(e.message||String(e.error)));
 let W=innerWidth||1280,H=innerHeight||800;
 const renderer=new THREE.WebGLRenderer({antialias:true, preserveDrawingBuffer:true});
@@ -48,8 +49,8 @@ function place(){
   seeds.forEach((sd,i)=>{ const a=(i/seeds.length)*Math.PI*2; const wl=buildWilderness(THREE, mats, nodeRng('aldermere',sd), ()=>0, true); wl.position.set(Math.cos(a)*R, 0, Math.sin(a)*R); scene.add(wl); });
 }
 (async()=>{
-  await Promise.all([ensureFoliageGLBs(), ensureCreatureKit()]).catch(()=>{});
-  await new Promise(r=>setTimeout(r,500));
+  await Promise.all([ensureFoliageGLBs(), ensureCreatureKit(), ensureBuildingKit()]).catch(()=>{});
+  await new Promise(r=>setTimeout(r,600));
   place();
   document.getElementById('hud').textContent='REAL buildSettlement (livestock) + buildWilderness ×6 (some = bandit camps)';
   window.__ready=true; view(0,60,70);

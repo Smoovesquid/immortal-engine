@@ -42,6 +42,7 @@
 // addTreeScatter falls through to procedural until/unless they're ready.
 import { glbTreeScatter, glbBloomScatter, glbBarrelScatter, glbVillagerScatter, buildGLBProp } from './treeAssets.js';
 import { ruinKitReady, ruinMesh, chapelBodyIndex, gravestoneIndices } from './ruinKit.js';
+import { buildCreature } from './creatureKit.js';
 
 // ───────────────────────── seeded RNG (view-deterministic scatter) ─────────────
 export function mulberry32(a) {
@@ -449,16 +450,31 @@ export function buildSettlement(THREE, mats, rng, groundAt, discovered, peelable
   // townsfolk milling around the square — a few NPC figures from the villager pool
   const vilPicks = []; for (let i = 0; i < 5; i++) { const a = rng() * 6.28, r = 3.5 + rng() * 5; vilPicks.push([Math.cos(a) * r, Math.sin(a) * r]); }
   glbVillagerScatter(THREE, g, rng, groundAt, vilPicks);
+  // livestock milling around the square — authored menagerie animals (chickens/goats/cows) when loaded
+  for (let i = 0; i < 5; i++) {
+    const a = rng() * 6.28, r = 4 + rng() * 5, sc = 1.15 + rng() * 0.5;
+    const c = buildCreature(THREE, rng, sc);
+    if (c) { const cx = Math.cos(a) * r, cz = Math.sin(a) * r; c.position.set(cx, groundAt(cx, cz), cz); c.rotation.y = rng() * Math.PI * 2; g.add(c); }
+  }
   if (!discovered) dimGroup(g, 0.3, 0.1, mats.shared);
   return g;
 }
 
-// Wilderness: dense low-poly woods.
+// Wilderness: dense low-poly woods — and, on a seeded ~1/4 of nodes, a bandit camp
+// (tents + campfire + loot barrels) tucked in the trees (the Greenwood's Crowfoot Camp).
 export function buildWilderness(THREE, mats, rng, groundAt, discovered) {
   const g = new THREE.Group();
-  const n = 24 + Math.floor(rng() * 14), picks = [];
-  for (let i = 0; i < n; i++) { const a = rng() * 6.28, r = rng() * 17; picks.push([Math.cos(a) * r, Math.sin(a) * r]); }
-  addTreeScatter(THREE, g, rng, groundAt, picks, mats);
+  if (rng() < 0.25) {
+    g.add(buildCampTent(THREE, mats, rng, groundAt));                        // A-frame tents + campfire
+    const bp = []; for (let i = 0; i < 4; i++) { const a = rng() * 6.28, r = 2.4 + rng() * 2; bp.push([Math.cos(a) * r, Math.sin(a) * r]); }
+    glbBarrelScatter(THREE, g, rng, groundAt, bp);                            // looted barrels
+    const picks = []; for (let i = 0; i < 11; i++) { const a = rng() * 6.28, r = 6 + rng() * 11; picks.push([Math.cos(a) * r, Math.sin(a) * r]); }
+    addTreeScatter(THREE, g, rng, groundAt, picks, mats);                     // ring of trees
+  } else {
+    const n = 24 + Math.floor(rng() * 14), picks = [];
+    for (let i = 0; i < n; i++) { const a = rng() * 6.28, r = rng() * 17; picks.push([Math.cos(a) * r, Math.sin(a) * r]); }
+    addTreeScatter(THREE, g, rng, groundAt, picks, mats);
+  }
   if (!discovered) dimGroup(g, 0.22, 0.08, mats.shared);
   return g;
 }

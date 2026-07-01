@@ -481,7 +481,10 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
 // mountSlice3D so the shipped overworld morph can never be regressed by combat
 // changes. Minis show CURRENT positions only — they do not move yet (talk→token
 // is the next step); the caller re-mounts on combat-state change.
-const CELL_WU = 6; // world units per tactical cell — minis sit at cell centres.
+const CELL_WU = 6;       // world units per tactical cell — minis sit at cell centres.
+const CELL_FT = 5;       // each grid square = 5 feet (D&D tactical scale).
+const MOVE_FT = 30;      // a normal creature's move; 30 ft / 5 ft = 6 squares.
+const MOVE_SQ = Math.round(MOVE_FT / CELL_FT);
 
 export async function mountCombat3D(container, combatScene, opts = {}) {
   if (!container) throw new Error('no-container');
@@ -614,6 +617,21 @@ export async function mountCombat3D(container, combatScene, opts = {}) {
     });
     const lbl = makeLabel(String(e.name || 'Foe'), e.defeated ? '#8a7d72' : '#ffb0a0');
     lbl.position.set(ec.x, e.defeated ? 2.4 : 3.9, ec.z); scene.add(lbl); labels.push(lbl);
+  }
+
+  // ---------- 30-ft move range (6 squares @ 5 ft) around the player ----------
+  // Chebyshev radius (5e: a step is 5 ft in any direction incl. diagonal). Reachable,
+  // unoccupied cells get a faint blue overlay so "how far can I move" reads at a glance.
+  {
+    const occupied = new Set(enemies.filter(e => !e.defeated).map(e => e.cx + ',' + e.cy));
+    const rangeMat = new THREE.MeshBasicMaterial({ color: 0x4aa3ff, transparent: true, opacity: 0.13, depthWrite: false });
+    const tileGeo = new THREE.PlaneGeometry(CELL_WU * 0.9, CELL_WU * 0.9); tileGeo.rotateX(-Math.PI / 2);
+    for (let gx = 0; gx < W; gx++) for (let gy = 0; gy < H; gy++) {
+      const d = Math.max(Math.abs(gx - player.cx), Math.abs(gy - player.cy));
+      if (d === 0 || d > MOVE_SQ || occupied.has(gx + ',' + gy)) continue;
+      const t = new THREE.Mesh(tileGeo, rangeMat); const c = cellCenter(gx, gy);
+      t.position.set(c.x, 0.315, c.z); scene.add(t);
+    }
   }
 
   // ---------- postprocessing ----------

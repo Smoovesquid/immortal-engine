@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8" /><title>Combat lab — REAL mountCombat3D (5ft grid, 30ft range)</title>
+<script type="importmap">{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+}}</script>
+<style>html,body{margin:0;height:100%;background:#0b0d12;overflow:hidden}#c{position:fixed;inset:0}
+#hud{position:fixed;top:10px;left:12px;color:#cdd6e6;font:12px ui-monospace,Menlo,monospace;white-space:pre;text-shadow:0 1px 3px #000;z-index:5}</style>
+</head><body>
+<div id="c" style="position:absolute;top:0;left:0;width:1200px;height:800px"></div>
+<div id="hud">loading…</div>
+<script type="module">
+import { ensureFigureGLB } from '/map/figureAssets.js';
+window.__err=[]; addEventListener('error',e=>__err.push(e.message||String(e.error)));
+const scene = {
+  grid: { w: 12, h: 10 },
+  player: { cx: 3, cy: 5, name: 'You' },
+  enemies: [
+    { id:'b1', cx: 8, cy: 3, name: 'Bandit', archetype: 'humanoid' },
+    { id:'b2', cx: 9, cy: 6, name: 'Bandit', archetype: 'humanoid' },
+    { id:'cap', cx: 10, cy: 4, name: 'Warlord', archetype: 'humanoid', elite: true },
+    { id:'s1', cx: 6, cy: 8, name: 'Skeleton', archetype: 'undead' },
+  ],
+};
+(async()=>{
+  await Promise.all([ensureFigureGLB('player'), ensureFigureGLB('humanoid'), ensureFigureGLB('undead')]).catch(()=>{});
+  await new Promise(r=>setTimeout(r,500));
+  const { mountCombat3D } = await import('/map/render3d.js');
+  const ctrl = await mountCombat3D(document.getElementById('c'), scene, {});
+  window.__ctrl = ctrl;
+  // size the canvas (headless innerWidth can be 0)
+  if (ctrl && ctrl.setSize) { try { ctrl.setSize(1200, 800); } catch {} }
+  document.getElementById('hud').textContent='REAL mountCombat3D — 5 ft/square · 30 ft move range (6 squares, blue) around You\nbandits + warlord (elite) + skeleton';
+  window.__ready=true;
+})();
+</script>
+</body></html>

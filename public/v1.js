@@ -940,8 +940,8 @@ function renderInvoke() {
     el('div', { class: 'panel' },
       el('div', { class: 'header' },
         el('div', {},
-          el('div', { class: 'title' }, 'Immortal Engine — v0.18.0'),
-          el('div', { class: 'sub' }, 'build 022 · 2026-07-01 · town landmarks')
+          el('div', { class: 'title' }, 'Immortal Engine — v0.19.0'),
+          el('div', { class: 'sub' }, 'build 023 · 2026-07-01 · combat is the map')
         )
       ),
       // ── One-click front door: start (or resume) the Escape game ──────
@@ -2451,9 +2451,9 @@ function renderPlay() {
   const INPLAY_MAP_3D_ZOOM = 2.0; // 3D band (Z_3D_CROSS 0.5 → Z_3D_TILT 2.5): a well-tilted diorama.
   let mapEl = null;
   if (w) {
-    const inner = inCombat
-      ? renderCombatBoard(w, { height: '100%' })
-      : renderContinuousMap(w, { playerPos: ui.place, initialZoom: INPLAY_MAP_3D_ZOOM, heightCss: '100%' });
+    // ONE map — combat is its deepest tactical zoom, not a separate surface
+    // (renderContinuousMap shows the tactical board itself while combat is live).
+    const inner = renderContinuousMap(w, { playerPos: ui.place, initialZoom: INPLAY_MAP_3D_ZOOM, heightCss: '100%' });
     // Tap-to-expand: the only surviving path to the fullscreen Map screen.
     const expand = el('button', {
       class: 'map-expand-btn',

@@ -23,6 +23,7 @@
 import { renderOneMap } from './oneMap.js';
 import { sceneFromWorld } from './sliceScene.js';
 import { NODE_WU } from './worldSpace.js';
+import { renderCombatBoard } from './combatView.js';
 
 // Zoom thresholds (in the 2D camera's z = px per world-unit; NODE_WU wu ≈ 1 km).
 // Tuned so the morph begins while a neighbouring place is still in frame (the
@@ -51,6 +52,15 @@ export function disposeContinuousMap3d() {
 export function renderContinuousMap(world, opts = {}) {
   // Fresh layers each render() (v1 rebuilds the DOM); drop any prior 3D context.
   disposeContinuousMap3d();
+
+  // Combat is NOT a separate surface — it's this one map at its deepest, tactical zoom
+  // (5-ft grid, minis on cells; read-only, driven by DM text). While a fight is live the
+  // map shows the tactical board; it returns to the overworld the moment combat ends.
+  // (Fully-continuous zoom from overworld INTO the fight is the next refinement.)
+  if (world && world.combat && world.combat.active) {
+    return renderCombatBoard(world, { height: opts.heightCss || opts.height });
+  }
+
   const token = _token;
 
   // Fill mode (opts.heightCss, e.g. '100%'): the map sizes to its container so the

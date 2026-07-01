@@ -2,7 +2,7 @@
 
 Authored 3D assets for the map (Meshy-generated → game-ready). All live in
 `public/map/assets/*.glb`, decimated (`gltfpack -si 0.85 -noq`) and WebP-shrunk
-(gltf-transform `resize` + `webp`). **56 assets, ~46MB total.**
+(gltf-transform `resize` + `webp`). **60 assets, ~49MB total.**
 
 Pipeline + gotchas: `[[meshy-textures-not-tileable]]` memory. Preview via
 `public/map-proto/_glbview.html?src=/map/assets/NAME.glb` and the assembled-room
@@ -25,7 +25,10 @@ individual enemies, then wire like `figureAssets.js`.
 - `enemies_undead_b.glb` — second undead legion (20 figures, similar).
 - `enemies_menagerie.glb` — animals: **wolves** (Greenwood enemy) + chickens, ducks,
   cows, goats (Aldermere livestock / ambient).
-- Still needed: **bandits + bandit captain** (human enemies — the packs are undead + beasts only).
+- `enemies_bandits_a.glb`, `enemies_bandits_b.glb` — human bandits/warriors (6 each).
+- `enemies_warlords.glb` — hulking brutes → **bandit captains / elites** (6).
+- `enemies_skullbound.glb` — the Skullbound Covenant (cultists — bonus, 31 islands).
+- Roster now COMPLETE (all as packs to split): undead · wolves · bandits + captains.
 
 ### Foliage (3) — wired LIVE via `treeAssets.js` (instanced scatter)
 `tree_verdant.glb`, `tree_gnarled.glb`, `bloom.glb` (flowering shrub)

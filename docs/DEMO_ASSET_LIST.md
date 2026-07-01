@@ -23,9 +23,9 @@ interiors are **assembled from panels** (like the cottage kit we just built). So
 - 🔲 A child + a merchant (round out the town) — *optional, Tier 3*
 
 ### Enemies — Greenwood + Crowfoot Camp
-- 🔲 **Bandit** (the common foe — roams the woods + fills the camp)
-- 🔲 **Bandit captain** (the camp boss — bigger, armored, distinct)
-- 🔲 Bandit sergeant (mid-tier) — *optional; can reuse bandit*
+- ✅ **Bandit** — `enemies_bandits_a/b.glb` (6 warriors each; need split)
+- ✅ **Bandit captain** — `enemies_warlords.glb` (hulking brutes = boss tier)
+- ✅ Bonus cultists — `enemies_skullbound.glb` (the Skullbound Covenant)
 - ✅ **Wolf** (Greenwood predator) — in `enemies_menagerie.glb` (needs split)
 - 🔲 Dire wolf (alpha, bigger) — *optional*
 

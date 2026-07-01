@@ -24,21 +24,14 @@ const TILE_WU = 40; // world units per node tile — keeps the 3D geography to s
 // receive the lazily-imported THREE, so this stays a zero-cost static import.
 import { buildArchetypeFigure, breatheMinis, phaseFromKey } from './figures3d.js';
 
-// ---------- seeded RNG (matches the proto: view-deterministic scatter) ----------
-function mulberry32(a) {
-  return function () {
-    a |= 0; a = a + 0x6D2B79F5 | 0;
-    let t = Math.imul(a ^ a >>> 15, 1 | a);
-    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
-    return ((t ^ t >>> 14) >>> 0) / 4294967296;
-  };
-}
-function strHash(s) {
-  let h = 5381;
-  for (let i = 0; i < s.length; i++) h = ((h << 5) + h) ^ s.charCodeAt(i);
-  return h >>> 0;
-}
-function nodeRng(seedStr, nodeId) { return mulberry32(strHash(seedStr + '_' + nodeId)); }
+// World-asset builders (terrain, dirt roads, settlements, woods, the chapel ruin) —
+// the SAME pure-view module the standalone asset lab (map-proto/asset-lab.html) uses,
+// so a look designed there flows straight to the game on reload. THREE + the seeded
+// RNG are passed in; this stays a zero-cost static import (no three fetch of its own).
+import {
+  nodeRng, createWorldMaterials, buildTerrain, buildEdge,
+  buildSettlement, buildWilderness, buildChapelRuin,
+} from './worldAssets.js';
 
 // ---------- WebGL capability probe (so we can fall back BEFORE importing) ----------
 function webglAvailable() {
@@ -131,87 +124,19 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
   const bounds = sceneData?.bounds || { minX: 0, minY: 0, maxX: 0, maxY: 0 };
   const wPos = n => ({ x: (Number(n.x) || 0) * TILE_WU, z: (Number(n.y) || 0) * TILE_WU });
   const boundsCenter = { x: ((bounds.minX + bounds.maxX) / 2) * TILE_WU, z: ((bounds.minY + bounds.maxY) / 2) * TILE_WU };
-  const _smooth = (e0, e1, x) => { const t = Math.max(0, Math.min(1, (x - e0) / (e1 - e0))); return t * t * (3 - 2 * t); };
-  const D = new THREE.Object3D(); // scratch matrix carrier for instanced placement
   // HUD hook (assigned once its DOM exists, below); the render loop calls it.
   let updateHud = () => {};
 
-  // ---------- terrain: a vertex-coloured heightfield (outpost.html technique) ----------
-  // Gentle rolling hills FLATTENED where the world is inhabited (node centres + the
-  // roads between them) so buildings/paths sit level; coloured grass with dirt along
-  // the roads, rock on the high points, a forest tint past the settled tiles. All
-  // deterministic from the scene seed — a pure-view scatter, never engine state.
-  const tRng = mulberry32(strHash(seed + '_terrain'));
-  const edgeSegs = [];
-  for (const e of edges) { const a = nodeById[e.a], b = nodeById[e.b]; if (a && b) edgeSegs.push([wPos(a), wPos(b)]); }
-  function distToEdges(x, z) {
-    let d = 1e9;
-    for (const [a, b] of edgeSegs) {
-      const dx = b.x - a.x, dz = b.z - a.z, l2 = dx * dx + dz * dz || 1e-6;
-      const t = Math.max(0, Math.min(1, ((x - a.x) * dx + (z - a.z) * dz) / l2));
-      d = Math.min(d, Math.hypot(x - (a.x + t * dx), z - (a.z + t * dz)));
-    }
-    return d;
-  }
-  function distToNodes(x, z) {
-    let d = 1e9;
-    for (const n of nodes) { const p = wPos(n); d = Math.min(d, Math.hypot(x - p.x, z - p.z)); }
-    return d;
-  }
-  const FLAT_R = TILE_WU * 0.78;
-  function settledFlat(x, z) {
-    return Math.max(1 - _smooth(FLAT_R * 0.5, FLAT_R, distToNodes(x, z)), 1 - _smooth(3, 9, distToEdges(x, z)));
-  }
-  function heightAt(x, z) {
-    let h = 2.4 * Math.sin(x * 0.013) * Math.cos(z * 0.012) + 1.3 * Math.sin(x * 0.031 + 1.4) * Math.sin(z * 0.027);
-    return h * (1 - settledFlat(x, z) * 0.95);
-  }
-  const MARGIN = TILE_WU * 2.4;
-  const tMinX = bounds.minX * TILE_WU - MARGIN, tMaxX = bounds.maxX * TILE_WU + MARGIN;
-  const tMinZ = bounds.minY * TILE_WU - MARGIN, tMaxZ = bounds.maxY * TILE_WU + MARGIN;
-  const tCx = (tMinX + tMaxX) / 2, tCz = (tMinZ + tMaxZ) / 2;
-  const tW = Math.max(80, tMaxX - tMinX), tD = Math.max(80, tMaxZ - tMinZ);
-  const tgeo = new THREE.PlaneGeometry(tW, tD, Math.min(200, Math.max(48, Math.round(tW / 3))), Math.min(200, Math.max(48, Math.round(tD / 3))));
-  tgeo.rotateX(-Math.PI / 2);
-  const tposn = tgeo.attributes.position, tcol = [];
-  const cGrass = new THREE.Color(0x5e7d3a), cGrass2 = new THREE.Color(0x6f8a44),
-        cDirt = new THREE.Color(0x6b5234), cForest = new THREE.Color(0x415c2c), cRock = new THREE.Color(0x8b8472);
-  for (let i = 0; i < tposn.count; i++) {
-    const x = tposn.getX(i) + tCx, z = tposn.getZ(i) + tCz, y = heightAt(x, z);
-    tposn.setY(i, y);
-    let c;
-    if (distToEdges(x, z) < 2.4) c = cDirt.clone();
-    else if (y > 2.3) c = cRock.clone();
-    else {
-      c = (Math.sin(x * 0.6) * Math.cos(z * 0.5) > 0 ? cGrass : cGrass2).clone();
-      c.lerp(cForest, _smooth(TILE_WU * 0.9, TILE_WU * 1.9, distToNodes(x, z)) * 0.7);
-    }
-    c.offsetHSL(0, 0, (tRng() - 0.5) * 0.05);
-    tcol.push(c.r, c.g, c.b);
-  }
-  tgeo.setAttribute('color', new THREE.Float32BufferAttribute(tcol, 3));
-  tgeo.computeVertexNormals();
-  const terrain = new THREE.Mesh(tgeo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.98 }));
-  terrain.position.set(tCx, 0, tCz); terrain.receiveShadow = true;
+  // ---------- world materials + terrain (shared worldAssets builders) ----------
+  // One material bundle per scene — its `shared` set drives dimGroup's clone-before-
+  // tint, and the peelable buildings clone it into transparent sets for the cutaway.
+  // The terrain is a vertex-coloured heightfield FLATTENED under the nodes/roads; it
+  // returns heightAt() so nodes, roads and the player all drop onto the same surface.
+  // All deterministic from the scene seed — pure view, never engine state.
+  const mats = createWorldMaterials(THREE);
+  const { mesh: terrain, heightAt } = buildTerrain(THREE, { nodes, edges, bounds, seed, tileWU: TILE_WU });
   scene.add(terrain);
 
-  // ---------- materials (outpost.html palette: plaster, timber, varied roofs) ----------
-  const plasterMat = new THREE.MeshStandardMaterial({ color: 0xcdbf9c, roughness: 0.95 });
-  const timberMat = new THREE.MeshStandardMaterial({ color: 0x49301a, roughness: 0.85 });
-  const thatchMat = new THREE.MeshStandardMaterial({ color: 0xb8a05a, roughness: 1.0 });
-  const tileRoofMat = new THREE.MeshStandardMaterial({ color: 0x9a4636, roughness: 0.85 }); // red tile
-  const shingleMat = new THREE.MeshStandardMaterial({ color: 0x5c4632, roughness: 0.9 });
-  const stoneMat = new THREE.MeshStandardMaterial({ color: 0x8b8579, roughness: 0.95 });
-  const woodMat = new THREE.MeshStandardMaterial({ color: 0x6a4526, roughness: 0.8 });
-  const logMat = new THREE.MeshStandardMaterial({ color: 0x6e4a28, roughness: 0.95 });
-  const darkStoneMat = new THREE.MeshStandardMaterial({ color: 0x4a4642, roughness: 0.97 });
-  const darkRoofMat = new THREE.MeshStandardMaterial({ color: 0x2e2c2a, roughness: 0.95 });
-  const trunkMat = new THREE.MeshStandardMaterial({ color: 0x5a3f28, roughness: 0.95 });
-  const roofMatOf = { thatch: thatchMat, tile: tileRoofMat, shingle: shingleMat };
-  // Shared (re-used) materials must be cloned before a per-place tint; the
-  // peelable buildings already use unique transparent clones, so those tint in
-  // place (preserving the cutaway's material references — see dimGroup).
-  const SHARED_MATS = new Set([plasterMat, timberMat, thatchMat, tileRoofMat, shingleMat, stoneMat, woodMat, logMat, darkStoneMat, darkRoofMat, trunkMat]);
   // ROOF-PEEL CUTAWAY registry: each modular settlement building registers its
   // separable roof + walls here so the per-frame updateCutaway() can lift/fade the
   // FOCUSED building (the one the camera looks into) as the continuous zoom pushes
@@ -249,204 +174,13 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
     return wrap;
   }
 
-  // ---------- node builders (outpost.html stylized look, data-driven) ----------
-  // roof prism whose ridge runs along the building's LONGER horizontal axis.
-  function roofPrism(w, d, rh, eave, mat) {
-    const long = Math.max(w, d), short = Math.min(w, d);
-    const s = new THREE.Shape();
-    s.moveTo(-short / 2 - eave, 0); s.lineTo(short / 2 + eave, 0); s.lineTo(0, rh); s.closePath();
-    const geo = new THREE.ExtrudeGeometry(s, { depth: long + eave * 2, bevelEnabled: false });
-    geo.translate(0, 0, -(long + eave * 2) / 2);
-    const m = new THREE.Mesh(geo, mat); m.castShadow = true;
-    if (w >= d) m.rotation.y = Math.PI / 2;
-    return m;
-  }
-
-  const PARCELS = { inn: [5.2, 6.4], chapel: [4.2, 5.6], smithy: [4.0, 5.0], cottage: [3.8, 4.6], house: [4.2, 5.0], store: [4.6, 4.4] };
-
-  // A bare interior revealed when the roof peels: a wooden floor, a hearth (emissive
-  // glow — no scene light, so it never leaks through the closed shell), a table + stool.
-  function makeInterior(rng, bw, bdep) {
-    const g = new THREE.Group();
-    const floor = new THREE.Mesh(new THREE.BoxGeometry(bw - 0.3, 0.12, bdep - 0.3), woodMat.clone()); floor.position.y = 0.06; floor.receiveShadow = true; g.add(floor);
-    const hearth = new THREE.Mesh(new THREE.BoxGeometry(1.0, 1.0, 0.45), stoneMat.clone()); hearth.position.set(-bw / 2 + 0.7, 0.5, -bdep / 2 + 0.35); hearth.castShadow = true; g.add(hearth);
-    const fire = new THREE.Mesh(new THREE.SphereGeometry(0.22, 8, 6), new THREE.MeshStandardMaterial({ color: 0xff7a1e, emissive: 0xff5a14, emissiveIntensity: 2.2, roughness: 0.6 })); fire.position.set(-bw / 2 + 0.7, 0.42, -bdep / 2 + 0.5); fire.scale.y = 0.7; g.add(fire);
-    const tx = (rng() - 0.5) * bw * 0.4, tz = (rng() - 0.1) * bdep * 0.22;
-    const top = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.55, 0.1, 12), woodMat.clone()); top.position.set(tx, 0.78, tz); top.castShadow = true; g.add(top);
-    const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.11, 0.78, 8), woodMat.clone()); leg.position.set(tx, 0.39, tz); g.add(leg);
-    const sx = tx + 0.95, sz = tz + 0.25;
-    const stool = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.1, 10), woodMat.clone()); stool.position.set(sx, 0.46, sz); stool.castShadow = true; g.add(stool);
-    const sleg = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.07, 0.46, 6), woodMat.clone()); sleg.position.set(sx, 0.23, sz); g.add(sleg);
-    return g;
-  }
-
-  // A varied stylized building, now MODULAR for the roof-peel cutaway: 4 separate
-  // walls (each a small group: panel + its decorations) + a separate roof + floor +
-  // interior, instead of one sealed box. Built at the origin facing +z; the caller
-  // positions/rotates it. Returns the separable pieces so updateCutaway() can lift
-  // the roof and fade the camera-side walls of the focused building.
-  function makeBuilding(rng, type, roofKind) {
-    const g = new THREE.Group();
-    const fp = PARCELS[type] || PARCELS.cottage;
-    const bw = fp[0] * (0.92 + rng() * 0.16), bdep = fp[1] * (0.92 + rng() * 0.16);
-    const h = type === 'inn' || type === 'chapel' ? 3.3 : 2.5;
-    const T = 0.2; // wall thickness
-    g.add(makeInterior(rng, bw, bdep)); // revealed when peeled (opaque; hidden inside the closed shell)
-
-    // each wall is its own group (panel + decorations) with a unique transparent
-    // material set, so the cutaway can fade only the camera-side walls.
-    const walls = [];
-    function wall(geo, x, z, nx, nz, deco) {
-      const wg = new THREE.Group(); wg.position.set(x, 0, z);
-      const mats = [], castSet = [];
-      const pm = plasterMat.clone(); pm.transparent = true; mats.push(pm);
-      const panel = new THREE.Mesh(geo, pm); panel.position.y = h / 2; panel.castShadow = true; panel.receiveShadow = true; wg.add(panel); castSet.push(panel);
-      if (deco) deco(wg, mats, castSet);
-      g.add(wg); walls.push({ group: wg, n: [nx, nz], mats, castSet });
-    }
-    const addDeco = (wg, mats, castSet, geo, baseMat, x, y, z) => { const m2 = baseMat.clone(); m2.transparent = true; mats.push(m2); const mm = new THREE.Mesh(geo, m2); mm.position.set(x, y, z); wg.add(mm); castSet.push(mm); };
-    // front (+z): timber framing + door + warm-lit windows
-    wall(new THREE.BoxGeometry(bw, h, T), 0, bdep / 2, 0, 1, (wg, mats, castSet) => {
-      for (const sx of [-bw / 2 + 0.1, bw / 2 - 0.1]) addDeco(wg, mats, castSet, new THREE.BoxGeometry(0.16, h, 0.18), timberMat, sx, h / 2, T / 2 + 0.02);
-      addDeco(wg, mats, castSet, new THREE.BoxGeometry(bw, 0.18, 0.2), timberMat, 0, h - 0.1, T / 2 + 0.02);
-      addDeco(wg, mats, castSet, new THREE.BoxGeometry(bw, 0.18, 0.2), timberMat, 0, h * 0.5, T / 2 + 0.02);
-      addDeco(wg, mats, castSet, new THREE.BoxGeometry(0.95, 1.6, 0.12), woodMat, 0, 0.8, T / 2 + 0.04);
-      const winMat = new THREE.MeshStandardMaterial({ color: 0x3a4d63, emissive: 0xffd27a, emissiveIntensity: 0.5, roughness: 0.3 });
-      for (const sx of [-bw / 3.2, bw / 3.2]) addDeco(wg, mats, castSet, new THREE.BoxGeometry(0.65, 0.75, 0.1), winMat, sx, 1.45, T / 2 + 0.04);
-    });
-    wall(new THREE.BoxGeometry(bw, h, T), 0, -bdep / 2, 0, -1);   // back
-    wall(new THREE.BoxGeometry(T, h, bdep), -bw / 2, 0, -1, 0);   // left
-    wall(new THREE.BoxGeometry(T, h, bdep), bw / 2, 0, 1, 0);     // right
-
-    const rh = type === 'inn' ? 2.3 : type === 'chapel' ? 3.0 : 1.85;
-    const roofMat = (roofMatOf[roofKind] || thatchMat).clone(); roofMat.transparent = true;
-    const roof = roofPrism(bw, bdep, rh, 0.34, roofMat); roof.position.y = h; g.add(roof);
-    // type extras stay on the shell (not peeled — minor silhouette details)
-    if (type === 'smithy') { const ch = new THREE.Mesh(new THREE.BoxGeometry(0.8, h + 1.4, 0.8), stoneMat); ch.position.set(bw / 2 - 0.6, (h + 1.4) / 2, -bdep / 2 + 0.7); ch.castShadow = true; g.add(ch); }
-    if (type === 'inn') { const post = new THREE.Mesh(new THREE.BoxGeometry(0.12, 2.1, 0.12), timberMat); post.position.set(bw / 2 + 0.4, 1.05, bdep / 2 - 1); g.add(post); const sign = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.65, 0.85), woodMat); sign.position.set(bw / 2 + 0.4, 1.55, bdep / 2 - 1.6); g.add(sign); }
-    return { group: g, r: Math.hypot(bw, bdep) / 2, roof, roofMat, roofBaseY: h, walls };
-  }
-
-  // Low-poly tree scatter (instanced trunks + icosahedron foliage clumps), each
-  // tree dropped onto the terrain via groundAt. picks: [[localX, localZ], …].
-  function addTreeScatter(g, rng, groundAt, picks) {
-    if (!picks.length) return;
-    const trunkIM = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.18, 0.3, 2.4, 5), trunkMat, picks.length); trunkIM.castShadow = true; g.add(trunkIM);
-    const foliIM = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1.0, 0), new THREE.MeshStandardMaterial({ roughness: 0.9, flatShading: true }), picks.length * 3); foliIM.castShadow = true; g.add(foliIM);
-    foliIM.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(picks.length * 3 * 3), 3);
-    const greens = [0x3f6a35, 0x4f7a3f, 0x35602e, 0xb0732e, 0x8a9a3a];
-    let fi = 0;
-    picks.forEach(([lx, lz], i) => {
-      const gy = groundAt(lx, lz), s = 0.8 + rng() * 0.8;
-      D.position.set(lx, gy + 1.2 * s, lz); D.scale.setScalar(s); D.rotation.set(0, rng() * 6.28, 0); D.updateMatrix(); trunkIM.setMatrixAt(i, D.matrix);
-      const bc = new THREE.Color(greens[(rng() * greens.length) | 0]);
-      for (let k = 0; k < 3; k++) { const bs = (1.0 + rng() * 0.7) * s; D.position.set(lx + (rng() - 0.5) * 0.8 * s, gy + (2.2 + k * 0.7) * s, lz + (rng() - 0.5) * 0.8 * s); D.scale.set(bs, bs * 0.9, bs); D.rotation.set(0, rng() * 6.28, 0); D.updateMatrix(); foliIM.setMatrixAt(fi, D.matrix); foliIM.setColorAt(fi, bc.clone().offsetHSL(0, 0, (rng() - 0.5) * 0.08)); fi++; }
-    });
-    trunkIM.instanceMatrix.needsUpdate = true; foliIM.instanceMatrix.needsUpdate = true; foliIM.instanceColor.needsUpdate = true;
-  }
-
-  function dimGroup(grp, satDrop, lumDrop) {
-    grp.traverse(c => {
-      if (!c.isMesh || !c.material || !c.material.color || c.isInstancedMesh) return;
-      // Shared materials must be cloned so dimming one place doesn't dim all; unique
-      // ones (incl. the peelable walls/roof) tint in place to keep cutaway refs live.
-      if (SHARED_MATS.has(c.material)) { const m = c.material.clone(); m.color.offsetHSL(0, -satDrop, -lumDrop); c.material = m; }
-      else c.material.color.offsetHSL(0, -satDrop, -lumDrop);
-    });
-  }
-
-  // A settlement: a ring of varied buildings (doors to the square) around a well,
-  // wrapped in a palisade of instanced log stakes with one gate gap, with a few
-  // trees just outside the wall. Deterministic from the node rng.
-  function buildSettlement(rng, groundAt, discovered) {
-    const g = new THREE.Group();
-    const types = ['cottage', 'house', 'smithy', 'store', 'cottage', 'house'];
-    const roofKinds = ['thatch', 'tile', 'shingle'];
-    const count = 4 + Math.floor(rng() * 3);
-    const placed = [];
-    const order = ['inn'];
-    for (let i = 0; i < count; i++) order.push(types[(rng() * types.length) | 0]);
-    const ringR = 6.5;
-    for (let k = 0; k < order.length; k++) {
-      const type = order[k];
-      for (let t = 0; t < 16; t++) {
-        const ang = rng() * Math.PI * 2;
-        const rr = k === 0 ? 0 : ringR + (rng() - 0.5) * 4;
-        const bx = Math.cos(ang) * rr, bz = Math.sin(ang) * rr;
-        const b = makeBuilding(rng, type, roofKinds[(rng() * 3) | 0]);
-        if (placed.some(p => Math.hypot(bx - p.x, bz - p.z) < b.r + p.r + 1.4)) continue;
-        b.group.position.set(bx, groundAt(bx, bz), bz);
-        b.group.rotation.y = Math.atan2(-bx, -bz); // door (+z) faces the square
-        g.add(b.group); placed.push({ x: bx, z: bz, r: b.r });
-        // register for the roof-peel cutaway (world transforms resolved after layout)
-        peelables.push({ bgroup: b.group, roof: b.roof, roofMat: b.roofMat, roofBaseY: b.roofBaseY, walls: b.walls, cur: 0 });
-        break;
-      }
-    }
-    // well at the square
-    const well = new THREE.Group(); well.position.y = groundAt(0, 0);
-    const ring0 = new THREE.Mesh(new THREE.CylinderGeometry(0.9, 1.0, 1.0, 14), stoneMat); ring0.position.y = 0.5; ring0.castShadow = true; well.add(ring0);
-    for (const sx of [-0.8, 0.8]) { const p = new THREE.Mesh(new THREE.BoxGeometry(0.16, 1.6, 0.16), woodMat); p.position.set(sx, 1.3, 0); well.add(p); }
-    const wr = new THREE.Mesh(new THREE.ConeGeometry(1.3, 0.7, 4), shingleMat); wr.position.y = 2.3; wr.rotation.y = Math.PI / 4; wr.castShadow = true; well.add(wr); g.add(well);
-    // palisade ring of instanced stakes + tips, one gate gap
-    const palR = ringR + 5.5, PN = 44, gate = rng() * Math.PI * 2, ring = [];
-    for (let i = 0; i < PN; i++) { const a = i / PN * Math.PI * 2; if (Math.abs(((a - gate + Math.PI * 3) % (Math.PI * 2)) - Math.PI) < 0.26) continue; const r = palR + Math.sin(a * 3 + 1) * 1.1; ring.push([Math.cos(a) * r, Math.sin(a) * r, a]); }
-    const stakeIM = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.16, 0.2, 2.8, 5), logMat, ring.length); stakeIM.castShadow = true; g.add(stakeIM);
-    const tipIM = new THREE.InstancedMesh(new THREE.ConeGeometry(0.2, 0.4, 5), logMat, ring.length); g.add(tipIM);
-    ring.forEach((p, i) => { const gy = groundAt(p[0], p[1]); D.position.set(p[0], gy + 1.4, p[1]); D.rotation.set(0, p[2], (rng() - 0.5) * 0.08); D.scale.setScalar(1); D.updateMatrix(); stakeIM.setMatrixAt(i, D.matrix); D.position.y = gy + 2.9; D.rotation.set(0, p[2], 0); D.updateMatrix(); tipIM.setMatrixAt(i, D.matrix); });
-    stakeIM.instanceMatrix.needsUpdate = true; tipIM.instanceMatrix.needsUpdate = true;
-    // a few trees just outside the wall
-    const picks = []; for (let i = 0; i < 9; i++) { const a = rng() * 6.28, r = palR + 3 + rng() * 9; picks.push([Math.cos(a) * r, Math.sin(a) * r]); }
-    addTreeScatter(g, rng, groundAt, picks);
-    if (!discovered) dimGroup(g, 0.3, 0.1);
-    return g;
-  }
-
-  // Wilderness: dense low-poly woods.
-  function buildWilderness(rng, groundAt, discovered) {
-    const g = new THREE.Group();
-    const n = 24 + Math.floor(rng() * 14), picks = [];
-    for (let i = 0; i < n; i++) { const a = rng() * 6.28, r = rng() * 17; picks.push([Math.cos(a) * r, Math.sin(a) * r]); }
-    addTreeScatter(g, rng, groundAt, picks);
-    if (!discovered) dimGroup(g, 0.22, 0.08);
-    return g;
-  }
-
-  // Dungeon entrance: a stone chapel / ruin — steep shingle roof + spire, an
-  // arched mouth with a cold glow from within, leaning gravestones, bare trees.
-  function buildDungeon(rng, groundAt) {
-    const g = new THREE.Group();
-    const bw = 6, bdep = 9, h = 4.5;
-    const body = new THREE.Mesh(new THREE.BoxGeometry(bw, h, bdep), stoneMat); body.position.y = h / 2; body.castShadow = true; body.receiveShadow = true; g.add(body);
-    const roof = roofPrism(bw, bdep, 3.4, 0.3, shingleMat); roof.position.y = h; g.add(roof);
-    const spire = new THREE.Mesh(new THREE.ConeGeometry(0.6, 4.0, 6), shingleMat); spire.position.set(0, h + 3.4 + 1.6, -bdep / 2 + 1.0); spire.castShadow = true; g.add(spire);
-    const door = new THREE.Mesh(new THREE.BoxGeometry(1.3, 2.2, 0.2), darkRoofMat); door.position.set(0, 1.1, bdep / 2 + 0.05); g.add(door);
-    const glow = new THREE.PointLight(0x6f55c8, 1.7, 16, 2); glow.position.set(0, 1.4, bdep / 2 - 0.4); g.add(glow);
-    for (let i = 0; i < 5; i++) { const gx = (rng() - 0.5) * 11, gz = bdep / 2 + 2 + rng() * 5; const st = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.95, 0.18), stoneMat); st.position.set(gx, groundAt(gx, gz) + 0.45, gz); st.rotation.z = (rng() - 0.5) * 0.32; st.castShadow = true; g.add(st); }
-    const picks = []; for (let i = 0; i < 9; i++) { const a = rng() * 6.28, r = 8 + rng() * 9; picks.push([Math.cos(a) * r, Math.sin(a) * r]); }
-    addTreeScatter(g, rng, groundAt, picks);
-    return g;
-  }
-
-  // ---------- edge (dirt road) ribbon — follows the terrain height ----------
-  function buildEdge(ax, az, bx, bz, kind) {
-    const dx = bx - ax, dz = bz - az, len = Math.hypot(dx, dz) || 1;
-    const half = kind === 'road' ? 1.7 : 1.1;
-    const nx = -dz / len * half, nz = dx / len * half;
-    const STEPS = Math.max(6, Math.round(len / 8));
-    const verts = [], idx = [];
-    for (let i = 0; i <= STEPS; i++) {
-      const t = i / STEPS, x = ax + dx * t, z = az + dz * t, y = heightAt(x, z) + 0.08;
-      verts.push(x + nx, y, z + nz, x - nx, y, z - nz);
-      if (i < STEPS) { const o = i * 2; idx.push(o, o + 1, o + 2, o + 1, o + 3, o + 2); }
-    }
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
-    geo.setIndex(idx); geo.computeVertexNormals();
-    const m = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: kind === 'road' ? 0x6e5536 : 0x66502f, roughness: 1.0 }));
-    m.receiveShadow = true;
-    return m;
-  }
+  // ---------- node builders ----------
+  // The world-asset builders (roofPrism, makeInterior, buildBuilding, buildWell,
+  // buildPalisade, addTreeScatter, buildSettlement, buildWilderness, buildChapelRuin,
+  // buildEdge, buildTerrain, dimGroup) now live in the shared ./worldAssets.js so the
+  // asset lab and the live game draw the SAME meshes. They are imported at the top and
+  // called by the node-dressing loop below; only the HUD + camera/cutaway/render loop
+  // (the scene-specific wiring) stay here.
 
   // ---------- postprocessing ----------
   let composer = null;
@@ -465,21 +199,46 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
   let zoomPx = 0; // continuous-zoom depth signal (px per node-tile), set by setCamera
   const target = new THREE.Vector3(0, 0, 0);
 
+  // Free-orbit: the continuous map drives a BASE azimuth/tilt (north-up, locked to
+  // the 2D plan) + a scale-locked distance via setCamera; the player ADDS an orbit
+  // offset by dragging the 3D view. positionCamera() places the camera from base +
+  // offset, so orbit preserves the zoom scale & centre and only swings the angle.
+  // The offset eases back to north-up as you zoom out (so the 2D morph re-aligns).
+  let baseAz = az, basePhi = 0.06, curRad = 200;
+  let azOffset = 0, phiOffset = 0, orbiting = false;
+
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   const smooth = (e0, e1, x) => { const t = clamp((x - e0) / (e1 - e0), 0, 1); return t * t * (3 - 2 * t); };
 
-  function applyCamera() {
-    const tilt = smooth(80, 400, alt);
-    const phi = clamp(0.55 + (1 - tilt) * 0.6, 0.12, 1.3);
-    const rad = clamp(alt * 0.65, 40, 500);
+  function positionCamera() {
+    const a = baseAz + azOffset;
+    const phi = clamp(basePhi + phiOffset, 0.1, 1.46);
     camera.position.set(
-      target.x + rad * Math.sin(phi) * Math.sin(az),
-      target.y + rad * Math.cos(phi),
-      target.z + rad * Math.sin(phi) * Math.cos(az)
+      target.x + curRad * Math.sin(phi) * Math.sin(a),
+      target.y + curRad * Math.cos(phi),
+      target.z + curRad * Math.sin(phi) * Math.cos(a)
     );
     camera.lookAt(target);
     sky.position.copy(camera.position);
   }
+
+  // Standalone path (controls:true): alt/az drive the camera; routed through the same
+  // positionCamera so the orbit offset still applies if present.
+  function applyCamera() {
+    const tilt = smooth(80, 400, alt);
+    basePhi = clamp(0.55 + (1 - tilt) * 0.6, 0.12, 1.3);
+    baseAz = az; curRad = clamp(alt * 0.65, 40, 500);
+    positionCamera();
+  }
+
+  // Free-orbit input (the in-play 3D drag, wired by continuousMap): swing azimuth +
+  // tilt around the current target. Pure view — only moves the camera.
+  function orbitBy(daz, dphi) {
+    azOffset += daz;
+    phiOffset = clamp(basePhi + phiOffset + dphi, 0.12, 1.46) - basePhi;
+    positionCamera(); renderFrame();
+  }
+  function setOrbiting(v) { orbiting = !!v; }
 
   // ---------- orbit controls (canvas-scoped — never hijacks the page) ----------
   // Skipped when opts.controls === false: in the continuous-zoom map the 3D
@@ -504,7 +263,7 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
     const a = nodeById[edge.a], b = nodeById[edge.b];
     if (!a || !b) continue;
     const ap = wPos(a), bp = wPos(b);
-    scene.add(buildEdge(ap.x, ap.z, bp.x, bp.z, edge.kind));
+    scene.add(buildEdge(THREE, ap.x, ap.z, bp.x, bp.z, edge.kind, heightAt));
   }
   for (const node of nodes) {
     const base = wPos(node);
@@ -513,9 +272,9 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
     const rng = nodeRng(seed, node.id);
     const grp = new THREE.Group();
     grp.position.set(base.x, baseY, base.z);
-    if (node.nodeType === 'settlement') grp.add(buildSettlement(rng, groundAt, node.discovered));
-    else if (node.nodeType === 'dungeon_entrance') grp.add(buildDungeon(rng, groundAt));
-    else grp.add(buildWilderness(rng, groundAt, node.discovered));
+    if (node.nodeType === 'settlement') grp.add(buildSettlement(THREE, mats, rng, groundAt, node.discovered, peelables));
+    else if (node.nodeType === 'dungeon_entrance') grp.add(buildChapelRuin(THREE, mats, rng, groundAt));
+    else grp.add(buildWilderness(THREE, mats, rng, groundAt, node.discovered));
     scene.add(grp);
   }
 
@@ -606,6 +365,14 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
   let raf = 0, alive = true;
   function renderFrame() {
     if (!alive) return 0;
+    // Ease the player's free-orbit back to north-up as the zoom approaches the flat
+    // 2D plan, so the 2D⟷3D morph stays aligned (the parchment plan is north-up).
+    if (!orbiting && zoomPx > 0 && zoomPx < PEEL_START_PX && (azOffset !== 0 || phiOffset !== 0)) {
+      azOffset *= 0.84; phiOffset *= 0.84;
+      if (Math.abs(azOffset) < 0.003) azOffset = 0;
+      if (Math.abs(phiOffset) < 0.003) phiOffset = 0;
+      positionCamera();
+    }
     breatheMinis(sliceMinis, (typeof performance !== 'undefined' ? performance.now() : Date.now()) / 1000);
     updateHud();      // corner title (cheap; only writes on change)
     updateCutaway();  // roof-peel of the focused building per the zoom depth
@@ -682,27 +449,21 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
   const vFovTan = Math.tan((camera.fov * Math.PI / 180) / 2);
   function setCamera(o = {}) {
     if (o.target) target.set((Number(o.target.tx) || 0) * TILE_WU, 0, (Number(o.target.ty) || 0) * TILE_WU);
-    if (o.az != null) az = o.az;
-    let phi = clamp(o.phi != null ? o.phi : 0.06, 0.02, 1.35);
+    if (o.az != null) baseAz = o.az;
+    basePhi = clamp(o.phi != null ? o.phi : 0.06, 0.02, 1.35);
     let rad;
     if (o.pxPerTile != null && o.pxPerTile > 0) {
       const Hpx = Math.max(1, canvas.clientHeight || h0);
       rad = (TILE_WU * Hpx) / (2 * o.pxPerTile * vFovTan);
       zoomPx = o.pxPerTile; // continuous-zoom depth → drives the roof-peel cutaway
     } else { rad = o.rad != null ? o.rad : 200; }
-    rad = clamp(rad, 30, 4000);
-    camera.position.set(
-      target.x + rad * Math.sin(phi) * Math.sin(az),
-      target.y + rad * Math.cos(phi),
-      target.z + rad * Math.sin(phi) * Math.cos(az)
-    );
-    camera.lookAt(target);
-    sky.position.copy(camera.position);
+    curRad = clamp(rad, 30, 4000);
+    positionCamera(); // base + the player's orbit offset
     renderFrame();
-    return { phi: +phi.toFixed(3), rad: Math.round(rad) };
+    return { phi: +basePhi.toFixed(3), rad: Math.round(curRad) };
   }
 
-  return { dispose, renderFrame, setView, setCamera, pause, resume, canvas };
+  return { dispose, renderFrame, setView, setCamera, orbitBy, setOrbiting, pause, resume, canvas };
 }
 
 // ───────────────────────────────────────────────────────────────────────────

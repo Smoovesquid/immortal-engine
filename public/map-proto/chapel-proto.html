@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Chapel proto — built from a split grey-stone ruin kit</title>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+}}
+</script>
+<style>html,body{margin:0;height:100%;background:#0f1114;overflow:hidden}#c{position:fixed;inset:0}
+#hud{position:fixed;top:10px;left:12px;color:#cdd6e6;font:12px ui-monospace,Menlo,monospace;white-space:pre;text-shadow:0 1px 3px #000}</style>
+</head>
+<body>
+<div id="c"></div>
+<div id="hud">loading…</div>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { splitIslands } from './glbkit.js';
+window.__err=[]; addEventListener('error',e=>__err.push(e.message||String(e.error)));
+let W=innerWidth||1280,H=innerHeight||800;
+const renderer=new THREE.WebGLRenderer({antialias:true, preserveDrawingBuffer:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2)); renderer.setSize(W,H);
+renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.5;
+document.getElementById('c').appendChild(renderer.domElement);
+const scene=new THREE.Scene(); scene.background=new THREE.Color(0x20242c);
+scene.fog=new THREE.Fog(0x20242c, 24, 52);
+const camera=new THREE.PerspectiveCamera(42,W/H,0.02,200);
+scene.add(new THREE.HemisphereLight(0xafc2e0,0x3a3a2c,1.0));
+const moon=new THREE.DirectionalLight(0xdbe4ff,1.7); moon.position.set(-6,10,4); moon.castShadow=true;
+moon.shadow.mapSize.set(2048,2048); moon.shadow.camera.left=-14;moon.shadow.camera.right=14;moon.shadow.camera.top=14;moon.shadow.camera.bottom=-14; scene.add(moon);
+scene.add(new THREE.AmbientLight(0x99a8c0,0.55));
+const controls=new OrbitControls(camera,renderer.domElement); controls.enableDamping=true;
+let _s=99; const rng=()=>{ _s=(_s*1664525+1013904223)>>>0; return _s/4294967296; };
+const GROUND=new THREE.Mesh(new THREE.CircleGeometry(30,64), new THREE.MeshStandardMaterial({color:0x2b3128,roughness:1}));
+GROUND.rotateX(-Math.PI/2); GROUND.receiveShadow=true; scene.add(GROUND);
+const CH=new THREE.Group(); scene.add(CH);
+
+const A='/map/assets/';
+const loader=new GLTFLoader(); const cache={};
+const load=u=>cache[u]||(cache[u]=new Promise((res,rej)=>loader.load(u,g=>res(g.scene),undefined,rej)));
+
+// place a split piece scaled to (w × h × depth), feet at 0, centred x/z
+function placePiece(piece, w, h, depth){
+  const b=piece.box, sz=piece.size;
+  const sx=w/(sz.x||1), sy=h/(sz.y||1), sz2=depth?depth/(sz.z||1):sx;
+  const m=new THREE.Mesh(piece.geo, piece.mat); m.castShadow=true; m.receiveShadow=true;
+  m.scale.set(sx,sy,sz2);
+  m.position.set(-((b.min.x+b.max.x)/2)*sx, -b.min.y*sy, -((b.min.z+b.max.z)/2)*sz2);
+  const g=new THREE.Group(); g.add(m); return g;
+}
+// a loaded GLB (the gothic door) baked to a box
+function panel(src,w,h,depth){ return load(src).then(s=>{
+  const root=s.clone(true); root.updateMatrixWorld(true);
+  root.traverse(o=>{ if(o.isMesh){ if(!o.geometry.attributes.normal)o.geometry.computeVertexNormals(); o.castShadow=true;o.receiveShadow=true; }});
+  const b=new THREE.Box3().setFromObject(root),sz=new THREE.Vector3(),ct=new THREE.Vector3(); b.getSize(sz);b.getCenter(ct);
+  const sx=w/(sz.x||1),sy=h/(sz.y||1),sz2=depth?depth/(sz.z||1):sx;
+  const g=new THREE.Group(); root.scale.set(sx,sy,sz2); root.position.set(-ct.x*sx,-b.min.y*sy,-ct.z*sz2); g.add(root); return g;
+}); }
+
+const PW=2.0;
+let walls=[], rubble=[];
+const pick=a=>a[(rng()*a.length)|0];
+
+async function ruinWall(x,z,faceDeg,depth=0.5){
+  const rad=faceDeg*Math.PI/180;
+  const h=2.5*(0.55+rng()*0.5);                  // ruined: heights vary, tops broken
+  const p=placePiece(pick(walls), PW, h, depth);
+  p.rotation.y=rad; p.position.set(x - Math.sin(rad)*(depth/2-0.02), 0, z - Math.cos(rad)*(depth/2-0.02));
+  CH.add(p);
+}
+function scatterRubble(x,z){ const s=0.5+rng()*0.9; const p=placePiece(pick(rubble.length?rubble:walls), s, s*0.6, s*0.7);
+  p.rotation.set(rng()*0.4, rng()*6.28, rng()*0.3); p.position.set(x,0.05,z); CH.add(p); }
+
+(async()=>{ try{
+  const kit=await load(A+'ruin_kit.glb');
+  const pieces=splitIslands(THREE, kit);
+  walls=pieces.filter(p=>p.size.y>0.5);
+  rubble=pieces.filter(p=>p.size.y<=0.5);
+
+  const LEN=4; const zs=[]; for(let i=0;i<LEN;i++) zs.push((i-(LEN-1)/2)*PW);
+  const xL=-3.0, xR=3.0, zBack=zs[0]-PW, zFront=zs[LEN-1]+PW;
+  // side walls (ruined, single broken course)
+  for(const z of zs){ await ruinWall(xL,z,90); await ruinWall(xR,z,-90); }
+  // back wall (one panel dropped → breach)
+  for(const x of [-2,0,2]){ if(x===2 && rng()<0.9) continue; await ruinWall(x,zBack,0); }
+  await ruinWall(-2,zBack,0); await ruinWall(0,zBack,0);
+  // front wall + gothic entrance
+  for(const x of [-2.7,2.7]) await ruinWall(x,zFront,180);
+  { const d=await panel(A+'portal_gothic.glb',2.3,2.9,0.5); d.rotation.y=Math.PI; d.position.set(0,0,zFront); CH.add(d); }
+  // rubble inside + spilling out the breach
+  for(let i=0;i<16;i++){ const x=-3.3+rng()*6.6, z=zBack-0.6+rng()*(zFront-zBack+1.2); scatterRubble(x,z); }
+
+  document.getElementById('hud').textContent=
+    'RUINED CHAPEL — built from a SPLIT grey-stone kit\n'+
+    walls.length+' wall pieces + '+rubble.length+' rubble (auto-split from 1 file) · gothic door · roofless · seeded';
+  window.__ready=true; view(10,20,16);
+}catch(e){ document.getElementById('hud').textContent='BUILD ERROR: '+(e.message||e); window.__err.push(String(e)); } })();
+
+function view(az,el,r){ const ph=el*Math.PI/180,a=az*Math.PI/180; camera.position.set(Math.sin(a)*Math.cos(ph)*r, 2+Math.sin(ph)*r, Math.cos(a)*Math.cos(ph)*r); controls.target.set(0,1.4,0); controls.update(); renderNow(); }
+window.__view=view;
+window.renderNow=()=>renderer.render(scene,camera);
+window.__resize=(w,h)=>{W=w||1280;H=h||800;renderer.setSize(W,H);camera.aspect=W/H;camera.updateProjectionMatrix();renderNow();return W+'x'+H;};
+addEventListener('resize',()=>window.__resize(innerWidth,innerHeight));
+function loop(){ controls.update(); renderer.render(scene,camera); requestAnimationFrame(loop);} loop();
+</script>
+</body>
+</html>

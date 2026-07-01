@@ -15,6 +15,11 @@
 // archetype ∈ 'player' | 'humanoid' | 'beast' | 'undead'.
 // Pure view: no engine state, no randomness that worldHash depends on.
 
+// Authored GLB sculpts (e.g. the hero warrior) override the procedural archetype when
+// they're loaded — see figureAssets.js. Graceful: until/unless a GLB is ready, the
+// procedural figure below is used. The preload kicks on import of that module.
+import { buildFigureFromGLB } from './figureAssets.js';
+
 const PALETTE = {
   player:   { body: 0x2f6fd0, accent: 0x9fc8ff, emissive: 0x163a78, ring: 0xd9a441, ei: 0.34 },
   humanoid: { body: 0x8a3b2e, accent: 0x5a2a20, emissive: 0x35110b, ring: 0xe05038, ei: 0.16 },
@@ -118,6 +123,10 @@ function eliteCrown(THREE, topY) {
  * userData.{archetype, baseScale, defeated} for the breathe loop.
  */
 export function buildArchetypeFigure(THREE, archetype = 'humanoid', opts = {}) {
+  // Authored GLB sculpt for this archetype takes precedence once loaded (the hero
+  // warrior for 'player'); otherwise fall through to the procedural figure.
+  const glb = buildFigureFromGLB(THREE, archetype, opts);
+  if (glb) return glb;
   const { defeated = false, elite = false } = opts;
   const pal = PALETTE[archetype] || PALETTE.humanoid;
   const g = new THREE.Group();

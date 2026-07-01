@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Chapel lab — the REAL buildChapelRuin from the kit</title>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+}}
+</script>
+<style>html,body{margin:0;height:100%;background:#0f1114;overflow:hidden}#c{position:fixed;inset:0}
+#hud{position:fixed;top:10px;left:12px;color:#cdd6e6;font:12px ui-monospace,Menlo,monospace;white-space:pre;text-shadow:0 1px 3px #000}</style>
+</head>
+<body>
+<div id="c"></div>
+<div id="hud">loading…</div>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { createWorldMaterials, buildChapelRuin } from '/map/worldAssets.js';
+import { ensureRuinKit, ruinKitReady } from '/map/ruinKit.js';
+window.__err=[]; addEventListener('error',e=>__err.push(e.message||String(e.error)));
+let W=innerWidth||1280,H=innerHeight||800;
+const renderer=new THREE.WebGLRenderer({antialias:true, preserveDrawingBuffer:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2)); renderer.setSize(W,H);
+renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.4;
+document.getElementById('c').appendChild(renderer.domElement);
+const scene=new THREE.Scene(); scene.background=new THREE.Color(0x20242c);
+scene.fog=new THREE.Fog(0x20242c, 26, 60);
+const camera=new THREE.PerspectiveCamera(42,W/H,0.02,200);
+scene.add(new THREE.HemisphereLight(0xafc2e0,0x3a3a2c,1.0));
+const moon=new THREE.DirectionalLight(0xdbe4ff,1.6); moon.position.set(-6,11,5); moon.castShadow=true;
+moon.shadow.mapSize.set(2048,2048); moon.shadow.camera.left=-16;moon.shadow.camera.right=16;moon.shadow.camera.top=16;moon.shadow.camera.bottom=-16; scene.add(moon);
+scene.add(new THREE.AmbientLight(0x99a8c0,0.5));
+const ground=new THREE.Mesh(new THREE.CircleGeometry(34,64), new THREE.MeshStandardMaterial({color:0x33402a,roughness:1}));
+ground.rotateX(-Math.PI/2); ground.receiveShadow=true; scene.add(ground);
+const controls=new OrbitControls(camera,renderer.domElement); controls.enableDamping=true;
+
+let chapel=null;
+function build(){ if(chapel){scene.remove(chapel);} const mats=createWorldMaterials(THREE); let s=1; const rng=()=>{ s=(s*1664525+1013904223)>>>0; return s/4294967296; }; chapel=buildChapelRuin(THREE, mats, rng, ()=>0); scene.add(chapel); }
+window.__rebuild=build;
+(async()=>{
+  build();
+  await ensureRuinKit().catch(()=>{});
+  await new Promise(r=>setTimeout(r,400));
+  build(); // rebuild now that the kit is ready → authored path
+  document.getElementById('hud').textContent='REAL buildChapelRuin — kitReady='+ruinKitReady()+'\ngable body + scattered gravestones + wall fragments + glow';
+  window.__ready=true; view(10,18,17);
+})();
+function view(az,el,r){ const ph=el*Math.PI/180,a=az*Math.PI/180; camera.position.set(Math.sin(a)*Math.cos(ph)*r, 2+Math.sin(ph)*r, Math.cos(a)*Math.cos(ph)*r); controls.target.set(0,1.8,1); controls.update(); renderNow(); }
+window.__view=view;
+window.renderNow=()=>renderer.render(scene,camera);
+window.__resize=(w,h)=>{W=w||1280;H=h||800;renderer.setSize(W,H);camera.aspect=W/H;camera.updateProjectionMatrix();renderNow();return W+'x'+H;};
+addEventListener('resize',()=>window.__resize(innerWidth,innerHeight));
+function loop(){ controls.update(); renderer.render(scene,camera); requestAnimationFrame(loop);} loop();
+</script>
+</body>
+</html>

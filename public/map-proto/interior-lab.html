@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Interior lab — room from authored panels</title>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+}}
+</script>
+<style>html,body{margin:0;height:100%;background:#141210;overflow:hidden}#c{position:fixed;inset:0}
+#hud{position:fixed;top:10px;left:12px;color:#e9dcb6;font:12px ui-monospace,Menlo,monospace;white-space:pre;text-shadow:0 1px 3px #000}</style>
+</head>
+<body>
+<div id="c"></div>
+<div id="hud">loading…</div>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+window.__err=[]; addEventListener('error',e=>__err.push(e.message||String(e.error)));
+let W=innerWidth||1280, H=innerHeight||800;
+const renderer=new THREE.WebGLRenderer({antialias:true, preserveDrawingBuffer:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2)); renderer.setSize(W,H);
+renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.15;
+document.getElementById('c').appendChild(renderer.domElement);
+const scene=new THREE.Scene(); scene.background=new THREE.Color(0x1b1712);
+const camera=new THREE.PerspectiveCamera(42,W/H,0.02,200);
+// warm interior lighting: hearth-side key + soft fill + a little sky through the window
+scene.add(new THREE.HemisphereLight(0xbcd2f0,0x40331f,0.55));
+const sun=new THREE.DirectionalLight(0xffe6b0,1.5); sun.position.set(4,7,5); sun.castShadow=true;
+sun.shadow.mapSize.set(2048,2048); sun.shadow.camera.left=-8; sun.shadow.camera.right=8; sun.shadow.camera.top=8; sun.shadow.camera.bottom=-8; scene.add(sun);
+scene.add(new THREE.AmbientLight(0xfff0d8,0.35));
+const hearthGlow=new THREE.PointLight(0xff8a3c, 6, 9, 2); hearthGlow.position.set(0,1.1,-2.4); scene.add(hearthGlow);
+const controls=new OrbitControls(camera,renderer.domElement); controls.enableDamping=true;
+const ROOM=new THREE.Group(); scene.add(ROOM);
+
+const loader=new GLTFLoader();
+const cache={};
+function load(url){ return cache[url] || (cache[url]=new Promise((res,rej)=>loader.load(url,g=>res(g.scene),undefined,rej))); }
+// Clone a loaded scene, bake it to a box of (targetW wide on X, targetH tall on Y),
+// feet at y=0, centred on x/z. depthKeep keeps native depth ratio if true.
+function panel(src, targetW, targetH, targetDepth){
+  return load(src).then(s=>{
+    const root=s.clone(true); root.updateMatrixWorld(true);
+    root.traverse(o=>{ if(o.isMesh){ if(!o.geometry.attributes.normal) o.geometry.computeVertexNormals(); o.castShadow=true; o.receiveShadow=true; }});
+    const box=new THREE.Box3().setFromObject(root); const size=new THREE.Vector3(),ctr=new THREE.Vector3();
+    box.getSize(size); box.getCenter(ctr);
+    const sx=targetW/(size.x||1), sy=(targetH||targetW)/(size.y||1);
+    const sz=targetDepth?targetDepth/(size.z||1):sx;   // walls flatten to a slab; floor keeps sx
+    const g=new THREE.Group();
+    root.scale.set(sx,sy,sz);
+    root.position.set(-ctr.x*sx, -box.min.y*sy, -ctr.z*sz);
+    g.add(root); g.userData.depth=(targetDepth||size.z*sx); return g;
+  });
+}
+// mode 'long' = scale by longest horizontal footprint; 'tall' = scale by height.
+function furn(src, target, mode){
+  return load(src).then(s=>{
+    const root=s.clone(true); root.updateMatrixWorld(true);
+    root.traverse(o=>{ if(o.isMesh){ if(!o.geometry.attributes.normal) o.geometry.computeVertexNormals(); o.castShadow=true; o.receiveShadow=true; }});
+    const box=new THREE.Box3().setFromObject(root); const size=new THREE.Vector3(),ctr=new THREE.Vector3();
+    box.getSize(size); box.getCenter(ctr);
+    const sc = mode==='tall' ? target/(size.y||1) : target/(Math.max(size.x,size.z)||1);
+    const g=new THREE.Group(); root.scale.setScalar(sc);
+    root.position.set(-ctr.x*sc,-box.min.y*sc,-ctr.z*sc); g.add(root); return g;
+  });
+}
+
+const A='/map/assets/';
+const WALL_H=2.5, PW=1.8, HALF=2.7; // room half-width (3 panels ≈ 5.4m)
+(async()=>{
+  try {
+    // ---- FLOOR: plank panels laid flat, 3×3 ----
+    for(let ix=-1;ix<=1;ix++) for(let iz=-1;iz<=1;iz++){
+      const p=await panel(A+'wall_planks_wood.glb', PW, PW);
+      p.rotation.x=-Math.PI/2;           // lay flat, sculpt face up
+      p.position.set(ix*PW, 0, iz*PW);
+      ROOM.add(p);
+    }
+    // helper to drop a standing wall panel; face = inward normal direction
+    async function wall(src, x, z, faceDeg){
+      const p=await panel(src, PW, WALL_H, 0.38);   // flatten to a thin slab so walls don't intrude
+      const rad=faceDeg*Math.PI/180; p.rotation.y=rad;
+      // seat the slab so its inner (sculpt) face sits on the room edge, depth going outward
+      p.position.set(x - Math.sin(rad)*0.19, 0, z - Math.cos(rad)*0.19); ROOM.add(p); return p;
+    }
+    // BACK wall (−Z), sculpt faces +Z (into room) → rot 0
+    await wall(A+'wall_stone.glb',    -PW, -HALF, 0);
+    await wall(A+'wall_logcabin.glb',   0, -HALF, 0);
+    await wall(A+'wall_stone.glb',     PW, -HALF, 0);
+    // LEFT wall (−X), sculpt faces +X → rot +90
+    await wall(A+'wall_planks_blue.glb', -HALF, -PW, 90);
+    await wall(A+'wall_curtain_red.glb', -HALF,   0, 90);
+    await wall(A+'wall_planks_blue.glb', -HALF,  PW, 90);
+    // RIGHT wall (+X), sculpt faces −X → rot −90
+    await wall(A+'wall_logcabin.glb',  HALF, -PW, -90);
+    await wall(A+'wall_stone.glb',     HALF,   0, -90);
+    await wall(A+'wall_curtain_red.glb', HALF, PW, -90);
+    // FRONT (+Z) left OPEN — dollhouse cutaway toward camera
+    // DOOR: timber portal set into the left wall, front slot (in front of its panel)
+    { const d=await panel(A+'portal_timber.glb', 1.7, 2.1, 0.34); d.rotation.y=Math.PI/2; d.position.set(-HALF+0.2,0,PW); ROOM.add(d); }
+    // RUG: crimson tile laid flat in the open, in front of the hearth
+    { const r=await panel(A+'rug_crimson.glb', 2.1, 2.1); r.rotation.x=-Math.PI/2; r.position.set(-0.3,0.03,-0.55); ROOM.add(r); }
+
+    // ---- HEARTH against back wall, centre ----
+    const h=await furn(A+'hearth.glb', 2.1); h.position.set(0,0,-HALF+0.55); ROOM.add(h);
+    // ---- FURNITURE ----
+    const put=async(src,tgt,mode,x,z,ry)=>{ try{ const o=await furn(A+src,tgt,mode); o.position.set(x,0,z); if(ry) o.rotation.y=ry; ROOM.add(o); }catch(e){} };
+    await put('bed_rustic.glb',     1.9,  'long', HALF-1.05, -0.7, -Math.PI/2);   // right wall, back
+    await put('dresser_wood.glb',   1.5,  'long', -HALF+0.6, -1.3,  Math.PI/2);   // left wall, back
+    await put('chest_iron_a.glb',   0.85, 'long', -HALF+0.8,  1.7,  0);           // left-front corner
+    // dining set, centre-front
+    await put('table_rustic.glb',   1.35, 'long', -0.1,  1.0,  0);
+    await put('chair_wood.glb',     0.95, 'tall', -0.1,  1.85, Math.PI);          // near side, faces table
+    await put('stool_wood.glb',     0.55, 'tall', -0.1,  0.2,  0);                // far side of table
+    await put('cauldron.glb',       0.7,  'tall',  1.0,  -1.5, 0);                // by the hearth
+
+    document.getElementById('hud').textContent='interior room · panels + hearth + furniture\nwood floor · log/stone/curtain walls · dollhouse-open front';
+    window.__ready=true; place();
+  } catch(e){ document.getElementById('hud').textContent='BUILD ERROR: '+(e.message||e); window.__err.push(String(e)); }
+})();
+
+function place(){ // default dollhouse view: from +Z, above, looking down-in
+  camera.position.set(3.4, 4.6, 7.2); controls.target.set(0,1.1,-0.3); controls.update(); renderNow();
+}
+window.renderNow=()=>renderer.render(scene,camera);
+window.__resize=(w,h)=>{ W=w||1280;H=h||800; renderer.setSize(W,H); camera.aspect=W/H; camera.updateProjectionMatrix(); renderNow(); return W+'x'+H; };
+window.__view=(az,el,r)=>{ const ph=(el||30)*Math.PI/180,a=(az||0)*Math.PI/180,rad=r||8; camera.position.set(Math.sin(a)*Math.cos(ph)*rad, 1.1+Math.sin(ph)*rad, Math.cos(a)*Math.cos(ph)*rad); controls.target.set(0,1.1,-0.3); controls.update(); renderNow(); };
+addEventListener('resize',()=>window.__resize(innerWidth,innerHeight));
+let spinning=false; function loop(){ controls.update(); renderer.render(scene,camera); requestAnimationFrame(loop);} loop();
+</script>
+</body>
+</html>

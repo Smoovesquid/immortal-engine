@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Asset Lab — Immortal Engine world parts</title>
+<!-- STANDALONE design showroom for the 3D map's world assets. It imports the SAME
+     public/map/worldAssets.js the live game uses, lit/fogged with the SAME setup as
+     render3d.js (WYSIWYG) — so a look you dial here is exactly what ships. NOT
+     imported by v1; it cannot affect the game. Pure view, deterministic, no deps. -->
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+}}
+</script>
+<style>
+  :root { color-scheme: dark; }
+  html, body { margin: 0; height: 100%; background: #1a1712; overflow: hidden;
+    font-family: "Iowan Old Style", Palatino, Georgia, serif; color: #e9dcb6; }
+  #stage { position: fixed; inset: 0; }
+  canvas { display: block; }
+  #panel {
+    position: fixed; top: 12px; left: 12px; z-index: 5; width: 232px;
+    background: rgba(26,23,18,0.86); border: 1px solid rgba(217,164,65,0.32);
+    border-radius: 8px; padding: 12px 13px; backdrop-filter: blur(4px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+  }
+  #panel h1 { font-size: 13px; letter-spacing: .26em; text-transform: uppercase;
+    color: #d9a441; margin: 0 0 2px; }
+  #panel .sub { font-size: 10px; letter-spacing: .14em; color: #9c8f6e;
+    font-family: ui-monospace, Menlo, monospace; margin-bottom: 10px; }
+  #panel label { display: block; font-size: 11px; letter-spacing: .08em;
+    color: #cbb88a; margin: 9px 0 3px; text-transform: uppercase; }
+  #panel .row { display: flex; gap: 6px; }
+  #panel button, #panel select, #panel input {
+    font: inherit; font-size: 12px; color: #e9dcb6; background: #2b2620;
+    border: 1px solid rgba(217,164,65,0.3); border-radius: 5px; padding: 5px 8px;
+    cursor: pointer; flex: 1; }
+  #panel input[type=range] { padding: 0; cursor: pointer; }
+  #panel button:hover, #panel select:hover { border-color: #d9a441; }
+  #panel button.on { background: #4a3a18; border-color: #d9a441; color: #ffe2a8; }
+  #panel .seg { display: flex; gap: 4px; margin-top: 4px; }
+  #panel .hint { font-size: 9.5px; color: #80755a; margin-top: 11px; line-height: 1.4;
+    font-family: ui-monospace, Menlo, monospace; }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<div id="panel">
+  <h1>Asset Lab</h1>
+  <div class="sub" id="status">booting…</div>
+
+  <label>View</label>
+  <div class="seg">
+    <button data-view="showroom" class="on">Showroom</button>
+    <button data-view="settlement">Settle</button>
+    <button data-view="compare">Compare</button>
+  </div>
+
+  <label>Seed</label>
+  <div class="row">
+    <input id="seed" value="aldermere" />
+    <button id="reseed" style="flex:0 0 auto;">↻</button>
+  </div>
+
+  <label>Roof (buildings)</label>
+  <div class="seg">
+    <button data-roof="cycle" class="on">Mix</button>
+    <button data-roof="thatch">Thatch</button>
+    <button data-roof="tile">Tile</button>
+    <button data-roof="shingle">Shingle</button>
+  </div>
+
+  <label>Tree variant</label>
+  <div class="seg">
+    <button data-tree="broadleaf" class="on">Leaf</button>
+    <button data-tree="autumn">Fall</button>
+    <button data-tree="conifer">Pine</button>
+    <button data-tree="dead">Dead</button>
+  </div>
+
+  <label>Scale <span id="scaleVal" style="color:#9c8f6e">1.0×</span></label>
+  <input id="scale" type="range" min="0.5" max="2.5" step="0.1" value="1" />
+
+  <div class="row" style="margin-top:9px;">
+    <button id="spinBtn" class="on">Turntable ⟳</button>
+  </div>
+
+  <div class="hint">Drag = orbit · wheel = zoom · the live game imports this same worldAssets.js, so a look dialed here ships on reload.</div>
+</div>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import {
+  nodeRng, createWorldMaterials,
+  buildBuilding, buildWell, buildTree, buildPalisade,
+  buildSettlement, buildChapelRuin, buildCampTent,
+} from '../map/worldAssets.js';
+
+window.__err = [];
+addEventListener('error', e => window.__err.push((e.message || e.error) + ' @' + (e.lineno || '?') + ':' + (e.colno || '?')));
+
+const stage = document.getElementById('stage');
+const W0 = innerWidth, H0 = innerHeight;
+
+// ───────── renderer + post (SAME setup as render3d.js mountSlice3D) ─────────
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(W0, H0);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.2;
+stage.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.fog = new THREE.Fog(0xe6d4ac, 200, 560);
+const camera = new THREE.PerspectiveCamera(45, W0 / H0, 0.5, 1200);
+
+// sky dome (the render3d gradient)
+function skyTex() {
+  const c = document.createElement('canvas'); c.width = 16; c.height = 256;
+  const x = c.getContext('2d');
+  const g = x.createLinearGradient(0, 0, 0, 256);
+  g.addColorStop(0, '#4a78b0'); g.addColorStop(0.45, '#8fb0cc');
+  g.addColorStop(0.72, '#e0ccaa'); g.addColorStop(0.9, '#f2c98a'); g.addColorStop(1, '#e9b878');
+  x.fillStyle = g; x.fillRect(0, 0, 16, 256);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+}
+const sky = new THREE.Mesh(new THREE.SphereGeometry(600, 24, 16),
+  new THREE.MeshBasicMaterial({ map: skyTex(), side: THREE.BackSide, fog: false }));
+scene.add(sky);
+
+// lighting (identical to render3d.js)
+scene.add(new THREE.HemisphereLight(0xbcd2f0, 0x6a5a40, 0.7));
+const sun = new THREE.DirectionalLight(0xffe2a8, 2.0);
+sun.position.set(-80, 90, 50); sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+sun.shadow.camera.near = 1; sun.shadow.camera.far = 500;
+sun.shadow.camera.left = -200; sun.shadow.camera.right = 200;
+sun.shadow.camera.top = 200; sun.shadow.camera.bottom = -200;
+sun.shadow.bias = -0.0004;
+scene.add(sun); scene.add(sun.target);
+scene.add(new THREE.AmbientLight(0xfff0d8, 0.3));
+
+// grass ground (the diorama's grass tone) so shadows land like in-game
+const ground = new THREE.Mesh(
+  new THREE.PlaneGeometry(1200, 1200), new THREE.MeshStandardMaterial({ color: 0x5e7d3a, roughness: 0.98 }));
+ground.rotateX(-Math.PI / 2); ground.position.y = -0.02; ground.receiveShadow = true; scene.add(ground);
+
+let composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+composer.addPass(new UnrealBloomPass(new THREE.Vector2(W0, H0), 0.28, 0.5, 0.88));
+composer.addPass(new OutputPass());
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true; controls.dampingFactor = 0.08;
+controls.maxPolarAngle = Math.PI * 0.495;
+
+// shared material bundle (one per scene, like the game)
+let mats = createWorldMaterials(THREE);
+
+// ───────── label sprites (face the camera; sit above each pedestal) ─────────
+function makeLabel(text) {
+  const c = document.createElement('canvas'); c.width = 512; c.height = 110;
+  const x = c.getContext('2d');
+  x.font = '600 40px "Iowan Old Style", Georgia, serif';
+  x.textAlign = 'center'; x.textBaseline = 'middle';
+  x.shadowColor = 'rgba(0,0,0,0.85)'; x.shadowBlur = 12;
+  x.fillStyle = '#f2e4bd'; x.fillText(text, 256, 58);
+  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
+  const spr = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, depthTest: false, transparent: true }));
+  spr.scale.set(8.6, 1.85, 1);
+  return spr;
+}
+
+// ───────── the showroom: a labelled pedestal per part, on a turntable ─────────
+const PEDESTAL_MAT = new THREE.MeshStandardMaterial({ color: 0x6b6256, roughness: 0.95 });
+let root = new THREE.Group(); scene.add(root);   // everything the rebuild owns
+const spinners = [];                              // [{ group }] turntable subgroups
+let spinning = true;
+
+function pedestal(x, z, labelText, asset, labelY = 6.4) {
+  const g = new THREE.Group(); g.position.set(x, 0, z);
+  const base = new THREE.Mesh(new THREE.CylinderGeometry(5.2, 5.6, 0.4, 28), PEDESTAL_MAT);
+  base.position.y = 0.2; base.receiveShadow = true; base.castShadow = true; g.add(base);
+  const spin = new THREE.Group(); spin.position.y = 0.4; spin.add(asset); g.add(spin);
+  spinners.push({ group: spin });
+  const lbl = makeLabel(labelText); lbl.position.set(0, labelY, 0); g.add(lbl);
+  root.add(g);
+  return g;
+}
+
+function rng(key) { return nodeRng(state.seed, key); }
+
+// each entry: a builder that returns a THREE.Object3D to display on a pedestal.
+function buildShowroom() {
+  const GAP = 18, COLS = 5;
+  const roofFor = (i) => state.roof === 'cycle' ? ['thatch', 'tile', 'shingle'][i % 3] : state.roof;
+  const parts = [
+    ['Inn',         k => buildBuilding(THREE, mats, rng(k), 'inn', roofFor(0)).group],
+    ['Cottage',     k => buildBuilding(THREE, mats, rng(k), 'cottage', roofFor(1)).group],
+    ['House',       k => buildBuilding(THREE, mats, rng(k), 'house', roofFor(2)).group],
+    ['Smithy',      k => buildBuilding(THREE, mats, rng(k), 'smithy', roofFor(3)).group],
+    ['Store',       k => buildBuilding(THREE, mats, rng(k), 'store', roofFor(4)).group],
+    ['Well',        () => buildWell(THREE, mats)],
+    ['Tree',        k => buildTree(THREE, rng(k), { variant: state.tree })],
+    ['Palisade',    k => { const g = new THREE.Group(); buildPalisade(THREE, g, rng(k), () => 0, 1.0, mats); return g; }],
+    ['Chapel ruin', k => buildChapelRuin(THREE, mats, rng(k), () => 0)],
+    ['Camp',        k => buildCampTent(THREE, mats, rng(k), () => 0)],
+  ];
+  const rows = Math.ceil(parts.length / COLS);
+  parts.forEach(([name, make], i) => {
+    const cx = (i % COLS - (COLS - 1) / 2) * GAP;
+    const cz = (Math.floor(i / COLS) - (rows - 1) / 2) * GAP;
+    let asset; try { asset = make('part_' + name + '_' + i); } catch (e) { window.__err.push('build ' + name + ': ' + e.message); asset = new THREE.Group(); }
+    pedestal(cx, cz, name, asset);
+  });
+  frame(80, 46, 0, 0);
+}
+
+function buildSettlementView(seedKey, x = 0, z = 0, label = '') {
+  const g = new THREE.Group(); g.position.set(x, 0, z);
+  g.add(buildSettlement(THREE, mats, nodeRng(state.seed, seedKey), () => 0, true, []));
+  root.add(g);
+  if (label) { const lbl = makeLabel(label); lbl.position.set(x, 12, z); scene.add(lbl); root.userData._labels = root.userData._labels || []; root.userData._labels.push(lbl); }
+  return g;
+}
+
+function frame(rad, height, tx, tz) {
+  controls.target.set(tx, 2, tz);
+  camera.position.set(tx + rad * 0.55, height, tz + rad * 0.83);
+  controls.update();
+}
+
+// ───────── (re)build per current control state ─────────
+const state = { view: 'showroom', seed: 'aldermere', roof: 'cycle', tree: 'broadleaf', scale: 1 };
+
+function disposeTree(obj) {
+  obj.traverse(o => {
+    if (o.geometry) { try { o.geometry.dispose(); } catch {} }
+    const ms = Array.isArray(o.material) ? o.material : (o.material ? [o.material] : []);
+    for (const m of ms) { if (m.map) { try { m.map.dispose(); } catch {} } try { m.dispose(); } catch {} }
+  });
+}
+
+function rebuild() {
+  // tear down the previous build (geometry + materials), keep the static scene
+  for (const l of (root.userData._labels || [])) scene.remove(l);
+  scene.remove(root); disposeTree(root);
+  root = new THREE.Group(); scene.add(root);
+  spinners.length = 0;
+  mats = createWorldMaterials(THREE);   // fresh bundle each rebuild (matches the game's per-scene bundle)
+
+  if (state.view === 'showroom') buildShowroom();
+  else if (state.view === 'settlement') { buildSettlementView('seed_a', 0, 0); frame(58, 30, 0, 0); }
+  else { // compare two seeds side by side
+    buildSettlementView('cmp_a', -24, 0, state.seed);
+    buildSettlementView('cmp_b', 24, 0, state.seed + '·2');
+    frame(86, 40, 0, 0);
+  }
+  root.scale.setScalar(state.scale);
+  renderNow();
+}
+
+// ───────── render loop ─────────
+let last = performance.now();
+function renderNow() { controls.update(); composer.render(); }
+function loop() {
+  const now = performance.now(), dt = Math.min(0.05, (now - last) / 1000); last = now;
+  if (spinning) for (const s of spinners) s.group.rotation.y += dt * 0.5;
+  controls.update();
+  composer.render();
+  requestAnimationFrame(loop);
+}
+
+addEventListener('resize', () => {
+  const w = innerWidth, h = innerHeight;
+  camera.aspect = w / h; camera.updateProjectionMatrix();
+  renderer.setSize(w, h); composer.setSize(w, h);
+});
+
+// ───────── controls wiring ─────────
+const $ = sel => document.querySelector(sel);
+const setSeg = (attr, val) => document.querySelectorAll(`[data-${attr}]`).forEach(b => b.classList.toggle('on', b.dataset[attr] === val));
+
+document.querySelectorAll('[data-view]').forEach(b => b.onclick = () => { state.view = b.dataset.view; setSeg('view', state.view); rebuild(); });
+document.querySelectorAll('[data-roof]').forEach(b => b.onclick = () => { state.roof = b.dataset.roof; setSeg('roof', state.roof); rebuild(); });
+document.querySelectorAll('[data-tree]').forEach(b => b.onclick = () => { state.tree = b.dataset.tree; setSeg('tree', state.tree); rebuild(); });
+$('#seed').oninput = e => { state.seed = e.target.value || 'seed'; rebuild(); };
+$('#reseed').onclick = () => { state.seed = Math.random().toString(36).slice(2, 9); $('#seed').value = state.seed; rebuild(); };
+$('#scale').oninput = e => { state.scale = +e.target.value; $('#scaleVal').textContent = state.scale.toFixed(1) + '×'; root.scale.setScalar(state.scale); renderNow(); };
+$('#spinBtn').onclick = () => { spinning = !spinning; $('#spinBtn').classList.toggle('on', spinning); };
+
+// ───────── headless hooks (drive + screenshot) ─────────
+window.__lab = {
+  setView(v) { state.view = v; setSeg('view', v); rebuild(); },
+  setSeed(s) { state.seed = s; $('#seed').value = s; rebuild(); },
+  setRoof(r) { state.roof = r; setSeg('roof', r); rebuild(); },
+  setTree(t) { state.tree = t; setSeg('tree', t); rebuild(); },
+  setSpin(on) { spinning = on; $('#spinBtn').classList.toggle('on', on); },
+  frame, renderNow, state, errors: () => window.__err,
+};
+window.renderNow = renderNow;
+
+rebuild();
+$('#status').textContent = 'ready · ' + (window.__err.length ? (window.__err.length + ' errors') : 'clean');
+window.__ready = true;
+loop();
+</script>
+</body>
+</html>

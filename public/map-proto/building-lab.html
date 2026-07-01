@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Building lab — the REAL buildBuilding, peeled</title>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+}}
+</script>
+<style>html,body{margin:0;height:100%;background:#141210;overflow:hidden}#c{position:fixed;inset:0}
+#hud{position:fixed;top:10px;left:12px;color:#e9dcb6;font:12px ui-monospace,Menlo,monospace;white-space:pre;text-shadow:0 1px 3px #000}</style>
+</head>
+<body>
+<div id="c"></div>
+<div id="hud">loading…</div>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+// import the ACTUAL live builders — this verifies the shipped code, not a mock
+import { createWorldMaterials, buildBuilding, nodeRng } from '/map/worldAssets.js';
+import { ensureFoliageGLBs } from '/map/treeAssets.js';
+window.__err=[]; addEventListener('error',e=>__err.push(e.message||String(e.error)));
+let W=innerWidth||1280,H=innerHeight||800;
+const renderer=new THREE.WebGLRenderer({antialias:true, preserveDrawingBuffer:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2)); renderer.setSize(W,H);
+renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.25;
+document.getElementById('c').appendChild(renderer.domElement);
+const scene=new THREE.Scene(); scene.background=new THREE.Color(0x1c1a16);
+const camera=new THREE.PerspectiveCamera(42,W/H,0.02,200);
+scene.add(new THREE.HemisphereLight(0xbcd2f0,0x40331f,0.85));
+const sun=new THREE.DirectionalLight(0xffe6b0,1.5); sun.position.set(5,9,6); sun.castShadow=true;
+sun.shadow.mapSize.set(2048,2048); sun.shadow.camera.left=-10;sun.shadow.camera.right=10;sun.shadow.camera.top=10;sun.shadow.camera.bottom=-10; scene.add(sun);
+scene.add(new THREE.AmbientLight(0xfff0d8,0.4));
+const ground=new THREE.Mesh(new THREE.CircleGeometry(16,48), new THREE.MeshStandardMaterial({color:0x556b3a,roughness:1}));
+ground.rotateX(-Math.PI/2); ground.receiveShadow=true; scene.add(ground);
+const controls=new OrbitControls(camera,renderer.domElement); controls.enableDamping=true;
+
+let building=null;
+function build(){
+  if (building) { scene.remove(building.group); building=null; }
+  const mats=createWorldMaterials(THREE);
+  const rng=nodeRng('aldermere','cottage-lab');
+  building=buildBuilding(THREE, mats, rng, 'cottage', 'tile');
+  scene.add(building.group);
+  return building;
+}
+// simulate the roof-peel: lift roof + fade it and the walls out so the interior shows
+function peel(amount){ // 0 closed .. 1 fully open
+  if (!building) return;
+  const a=Math.max(0,Math.min(1,amount));
+  building.roof.position.y = building.roofBaseY + a*3.2;
+  building.roofMat.opacity = 1-a;
+  for (const w of building.walls){ for (const m of w.mats){ m.opacity = 1-a; } }
+}
+window.__peel=peel;
+window.__rebuild=()=>{ build(); peel(window.__lastPeel??1); };
+
+(async()=>{
+  build();
+  // wait for the interior furniture GLBs, then rebuild so they're populated (they only
+  // appear on a build that happens AFTER load — same as the game's re-mount behaviour)
+  await ensureFoliageGLBs().catch(()=>{});
+  await new Promise(r=>setTimeout(r,400));
+  build(); peel(1);
+  document.getElementById('hud').textContent='REAL buildBuilding (cottage) — roof peeled, authored interior\nfurniture via makeInterior + treeAssets GLB kit';
+  window.__ready=true; view(18,22,11);
+})();
+
+function view(az,el,r){ const ph=el*Math.PI/180,a=az*Math.PI/180; camera.position.set(Math.sin(a)*Math.cos(ph)*r, 1.2+Math.sin(ph)*r, Math.cos(a)*Math.cos(ph)*r); controls.target.set(0,1.0,0); controls.update(); renderNow(); }
+window.__view=view;
+window.renderNow=()=>renderer.render(scene,camera);
+window.__resize=(w,h)=>{W=w||1280;H=h||800;renderer.setSize(W,H);camera.aspect=W/H;camera.updateProjectionMatrix();renderNow();return W+'x'+H;};
+addEventListener('resize',()=>window.__resize(innerWidth,innerHeight));
+function loop(){ controls.update(); renderer.render(scene,camera); requestAnimationFrame(loop);} loop();
+</script>
+</body>
+</html>

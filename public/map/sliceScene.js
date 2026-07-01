@@ -22,6 +22,8 @@
 //     player:  { nodeId, x, y }                   // the avatar's overworld tile
 //   }
 
+import { combatSceneFromWorld } from './combatScene.js';
+
 export const SLICE_SCENE_SCHEMA = 'slice-overworld-scene/v1';
 
 /** Tile extents of the node set, with a one-tile margin for framing. */
@@ -68,6 +70,10 @@ export function sceneFromWorld(world) {
     ? { x: Number(map.pos.x), y: Number(map.pos.y) }
     : { x: here.x, y: here.y };
 
+  // When a fight is live, carry the tactical scene so the renderer can materialise the
+  // board AT the player's node (the overworld ground zoomed in) — combat = deepest zoom.
+  const combat = (world && world.combat && world.combat.active) ? combatSceneFromWorld(world) : null;
+
   return {
     schema: SLICE_SCENE_SCHEMA,
     seed: String(world?.meta?.seed ?? world?.seed ?? map.seed ?? ''),
@@ -75,5 +81,6 @@ export function sceneFromWorld(world) {
     nodes,
     edges,
     player: { nodeId: currentNodeId, x: posTile.x, y: posTile.y },
+    combat,
   };
 }

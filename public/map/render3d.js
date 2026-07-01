@@ -301,10 +301,23 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
   const player = sceneData?.player || { nodeId: nodes[0]?.id, x: 0, y: 0 };
   const px = (Number(player.x) || 0) * TILE_WU + 3, pz = (Number(player.y) || 0) * TILE_WU + 3;
   const py = heightAt(px, pz);
-  const token = buildArchetypeFigure(THREE, 'player', {});
-  token.position.set(px, py + 0.06, pz);
-  scene.add(token);
-  const sliceMinis = [{ group: token, baseY: py + 0.06, baseScale: 1, rate: 1.4, phase: 0, bob: 0.05, defeated: false }];
+  const sliceMinis = [];
+  if (sceneData?.combat) {
+    // Combat is this overworld scene zoomed in: the tactical board sits ON the ground at
+    // the player's node, scaled so a cell ≈ 5 ft (1.5 u ≈ half a node tile), the player's
+    // cell aligned to the avatar's overworld position. Zoom in → the fight is right there.
+    const board = buildTacticalBoard(THREE, sceneData.combat, { dais: false });
+    const S = 1.5 / CELL_WU;
+    board.group.scale.setScalar(S);
+    board.group.position.set(px - board.playerCenter.x * S, py + 0.05, pz - board.playerCenter.z * S);
+    scene.add(board.group);
+    for (const m of board.minis) sliceMinis.push(m);
+  } else {
+    const token = buildArchetypeFigure(THREE, 'player', {});
+    token.position.set(px, py + 0.06, pz);
+    scene.add(token);
+    sliceMinis.push({ group: token, baseY: py + 0.06, baseScale: 1, rate: 1.4, phase: 0, bob: 0.05, defeated: false });
+  }
 
   // ---------- clean HUD (corner title = the place you're in, + zoom band) ----------
   const placeName = (nodeById[player.nodeId] && nodeById[player.nodeId].name) || (nodes[0] && nodes[0].name) || '';
@@ -486,6 +499,68 @@ const CELL_FT = 5;       // each grid square = 5 feet (D&D tactical scale).
 const MOVE_FT = 30;      // a normal creature's move; 30 ft / 5 ft = 6 squares.
 const MOVE_SQ = Math.round(MOVE_FT / CELL_FT);
 
+// buildTacticalBoard — the shared tactical scene (dais + 5-ft grid + minis + 30-ft move
+// range), built into its OWN group at local origin (cells 0..W*CELL_WU). Used two ways:
+//   • mountCombat3D — added at origin, dais on (the standalone tabletop);
+//   • mountSlice3D — added at the player's node and SCALED to 5 ft ≈ 1.5 units so the
+//     fight is the overworld ground zoomed in (dais off — it sits on the terrain).
+// Returns { group, minis, boardW, boardH, playerCenter }. Pure view; no scene refs.
+function buildTacticalBoard(THREE, combatScene, opts = {}) {
+  const { makeLabel = null, dais = true } = opts;
+  const g = new THREE.Group();
+  const minis = [];
+  const grid = combatScene?.grid || { w: 12, h: 10 };
+  const W = Math.max(1, Math.trunc(grid.w) || 12);
+  const H = Math.max(1, Math.trunc(grid.h) || 10);
+  const boardW = W * CELL_WU, boardH = H * CELL_WU;
+  const cellCenter = (cx, cy) => ({ x: (cx + 0.5) * CELL_WU, z: (cy + 0.5) * CELL_WU });
+
+  if (dais) {
+    const base = new THREE.Mesh(new THREE.BoxGeometry(boardW + 2, 0.6, boardH + 2), new THREE.MeshStandardMaterial({ color: 0x3a3326, roughness: 0.96 }));
+    base.position.set(boardW / 2, -0.05, boardH / 2); base.receiveShadow = true; g.add(base);
+    const topGeo = new THREE.PlaneGeometry(boardW, boardH, 1, 1); topGeo.rotateX(-Math.PI / 2);
+    const top = new THREE.Mesh(topGeo, new THREE.MeshStandardMaterial({ color: 0x6f7d4a, roughness: 0.97 }));
+    top.position.set(boardW / 2, 0.26, boardH / 2); top.receiveShadow = true; g.add(top);
+  }
+  const pts = [];
+  for (let i = 0; i <= W; i++) { const x = i * CELL_WU; pts.push(x, 0.30, 0, x, 0.30, boardH); }
+  for (let j = 0; j <= H; j++) { const z = j * CELL_WU; pts.push(0, 0.30, z, boardW, 0.30, z); }
+  const lg = new THREE.BufferGeometry(); lg.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
+  g.add(new THREE.LineSegments(lg, new THREE.LineBasicMaterial({ color: 0xe9dcb6, transparent: true, opacity: 0.4 })));
+
+  const player = combatScene?.player || { cx: 0, cy: 0, name: 'You' };
+  const pc = cellCenter(player.cx, player.cy);
+  const hl = new THREE.Mesh(new THREE.PlaneGeometry(CELL_WU * 0.94, CELL_WU * 0.94), new THREE.MeshBasicMaterial({ color: 0xd9a441, transparent: true, opacity: 0.22, depthWrite: false }));
+  hl.rotation.x = -Math.PI / 2; hl.position.set(pc.x, 0.32, pc.z); g.add(hl);
+  const pToken = buildArchetypeFigure(THREE, 'player', {});
+  pToken.position.set(pc.x, 0.32, pc.z); g.add(pToken);
+  minis.push({ group: pToken, baseY: 0.32, baseScale: 1, rate: 1.5, phase: 0, bob: 0.05, defeated: false });
+  if (makeLabel) { const pLabel = makeLabel(String(player.name || 'You'), '#bfe0ff'); pLabel.position.set(pc.x, 4.0, pc.z); g.add(pLabel); }
+
+  const enemies = Array.isArray(combatScene?.enemies) ? combatScene.enemies : [];
+  for (const e of enemies) {
+    const ec = cellCenter(e.cx, e.cy);
+    const arch = e.archetype || 'humanoid';
+    const tok = buildArchetypeFigure(THREE, arch, { defeated: Boolean(e.defeated), elite: Boolean(e.elite), variant: e.id || e.name });
+    tok.position.set(ec.x, 0.32, ec.z); g.add(tok);
+    minis.push({ group: tok, baseY: 0.32, baseScale: e.elite ? 1.24 : 1, rate: arch === 'undead' ? 1.1 : 1.6, phase: phaseFromKey(e.id || e.name), bob: arch === 'undead' ? 0.09 : 0.05, defeated: Boolean(e.defeated) });
+    if (makeLabel) { const lbl = makeLabel(String(e.name || 'Foe'), e.defeated ? '#8a7d72' : '#ffb0a0'); lbl.position.set(ec.x, e.defeated ? 2.4 : 3.9, ec.z); g.add(lbl); }
+  }
+
+  // 30-ft move range (Chebyshev ≤ 6 squares) around the player — reachable, unoccupied cells.
+  const occupied = new Set(enemies.filter(e => !e.defeated).map(e => e.cx + ',' + e.cy));
+  const rangeMat = new THREE.MeshBasicMaterial({ color: 0x4aa3ff, transparent: true, opacity: 0.13, depthWrite: false });
+  const tileGeo = new THREE.PlaneGeometry(CELL_WU * 0.9, CELL_WU * 0.9); tileGeo.rotateX(-Math.PI / 2);
+  for (let gx = 0; gx < W; gx++) for (let gy = 0; gy < H; gy++) {
+    const d = Math.max(Math.abs(gx - player.cx), Math.abs(gy - player.cy));
+    if (d === 0 || d > MOVE_SQ || occupied.has(gx + ',' + gy)) continue;
+    const t = new THREE.Mesh(tileGeo, rangeMat); const c = cellCenter(gx, gy);
+    t.position.set(c.x, 0.315, c.z); g.add(t);
+  }
+
+  return { group: g, minis, boardW, boardH, playerCenter: pc };
+}
+
 export async function mountCombat3D(container, combatScene, opts = {}) {
   if (!container) throw new Error('no-container');
   if (!webglAvailable()) throw new Error('webgl-unavailable');
@@ -565,74 +640,13 @@ export async function mountCombat3D(container, combatScene, opts = {}) {
   // humanoid / beast / undead foes, with an `elite` overlay for leaders/bosses and
   // a toppled pose for the downed. They breathe in the render loop (registered
   // into `minis` below). buildArchetypeFigure(THREE, archetype, { defeated, elite }).
-  const minis = [];
-
-  // ---------- the board ----------
-  const grid = combatScene?.grid || { w: 12, h: 10 };
-  const W = Math.max(1, Math.trunc(grid.w) || 12);
-  const H = Math.max(1, Math.trunc(grid.h) || 10);
-  const boardW = W * CELL_WU, boardH = H * CELL_WU;
+  // The tactical scene (dais + 5-ft grid + minis + 30-ft move range) — shared builder,
+  // added at the board origin. (mountSlice3D reuses the same builder, embedded + scaled.)
+  const board = buildTacticalBoard(THREE, combatScene, { makeLabel, dais: true });
+  scene.add(board.group);
+  const minis = board.minis;
+  const boardW = board.boardW, boardH = board.boardH;
   const cx0 = boardW / 2, cz0 = boardH / 2; // board centre (world units)
-  const cellCenter = (cx, cy) => ({ x: (cx + 0.5) * CELL_WU, z: (cy + 0.5) * CELL_WU });
-
-  // Board base (a raised dais so the grid reads as a tabletop).
-  const base = new THREE.Mesh(new THREE.BoxGeometry(boardW + 2, 0.6, boardH + 2),
-    new THREE.MeshStandardMaterial({ color: 0x3a3326, roughness: 0.96 }));
-  base.position.set(cx0, -0.05, cz0); base.receiveShadow = true; scene.add(base);
-  // Board top (where minis cast shadows).
-  const topGeo = new THREE.PlaneGeometry(boardW, boardH, 1, 1); topGeo.rotateX(-Math.PI / 2);
-  const top = new THREE.Mesh(topGeo, new THREE.MeshStandardMaterial({ color: 0x6f7d4a, roughness: 0.97 }));
-  top.position.set(cx0, 0.26, cz0); top.receiveShadow = true; scene.add(top);
-  // Grid lines (exact cell coords → aligned 1:1 with mini cells).
-  const pts = [];
-  for (let i = 0; i <= W; i++) { const x = i * CELL_WU; pts.push(x, 0.30, 0, x, 0.30, boardH); }
-  for (let j = 0; j <= H; j++) { const z = j * CELL_WU; pts.push(0, 0.30, z, boardW, 0.30, z); }
-  const lg = new THREE.BufferGeometry();
-  lg.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
-  scene.add(new THREE.LineSegments(lg, new THREE.LineBasicMaterial({ color: 0xe9dcb6, transparent: true, opacity: 0.4 })));
-
-  const labels = [];
-  // Player mini + cell highlight + label.
-  const player = combatScene?.player || { cx: 0, cy: 0, name: 'You' };
-  const pc = cellCenter(player.cx, player.cy);
-  const hl = new THREE.Mesh(new THREE.PlaneGeometry(CELL_WU * 0.94, CELL_WU * 0.94),
-    new THREE.MeshBasicMaterial({ color: 0xd9a441, transparent: true, opacity: 0.22, depthWrite: false }));
-  hl.rotation.x = -Math.PI / 2; hl.position.set(pc.x, 0.32, pc.z); scene.add(hl);
-  const pToken = buildArchetypeFigure(THREE, 'player', {});
-  pToken.position.set(pc.x, 0.32, pc.z); scene.add(pToken);
-  minis.push({ group: pToken, baseY: 0.32, baseScale: 1, rate: 1.5, phase: 0, bob: 0.05, defeated: false });
-  const pLabel = makeLabel(String(player.name || 'You'), '#bfe0ff'); pLabel.position.set(pc.x, 4.0, pc.z); scene.add(pLabel); labels.push(pLabel);
-
-  // Enemy minis + labels — figure keyed to archetype, elite upscales + crowns.
-  const enemies = Array.isArray(combatScene?.enemies) ? combatScene.enemies : [];
-  for (const e of enemies) {
-    const ec = cellCenter(e.cx, e.cy);
-    const arch = e.archetype || 'humanoid';
-    const tok = buildArchetypeFigure(THREE, arch, { defeated: Boolean(e.defeated), elite: Boolean(e.elite), variant: e.id || e.name });
-    tok.position.set(ec.x, 0.32, ec.z); scene.add(tok);
-    minis.push({
-      group: tok, baseY: 0.32, baseScale: e.elite ? 1.24 : 1,
-      rate: arch === 'undead' ? 1.1 : 1.6, phase: phaseFromKey(e.id || e.name),
-      bob: arch === 'undead' ? 0.09 : 0.05, defeated: Boolean(e.defeated),
-    });
-    const lbl = makeLabel(String(e.name || 'Foe'), e.defeated ? '#8a7d72' : '#ffb0a0');
-    lbl.position.set(ec.x, e.defeated ? 2.4 : 3.9, ec.z); scene.add(lbl); labels.push(lbl);
-  }
-
-  // ---------- 30-ft move range (6 squares @ 5 ft) around the player ----------
-  // Chebyshev radius (5e: a step is 5 ft in any direction incl. diagonal). Reachable,
-  // unoccupied cells get a faint blue overlay so "how far can I move" reads at a glance.
-  {
-    const occupied = new Set(enemies.filter(e => !e.defeated).map(e => e.cx + ',' + e.cy));
-    const rangeMat = new THREE.MeshBasicMaterial({ color: 0x4aa3ff, transparent: true, opacity: 0.13, depthWrite: false });
-    const tileGeo = new THREE.PlaneGeometry(CELL_WU * 0.9, CELL_WU * 0.9); tileGeo.rotateX(-Math.PI / 2);
-    for (let gx = 0; gx < W; gx++) for (let gy = 0; gy < H; gy++) {
-      const d = Math.max(Math.abs(gx - player.cx), Math.abs(gy - player.cy));
-      if (d === 0 || d > MOVE_SQ || occupied.has(gx + ',' + gy)) continue;
-      const t = new THREE.Mesh(tileGeo, rangeMat); const c = cellCenter(gx, gy);
-      t.position.set(c.x, 0.315, c.z); scene.add(t);
-    }
-  }
 
   // ---------- postprocessing ----------
   let composer = null;

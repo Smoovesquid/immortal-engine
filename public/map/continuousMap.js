@@ -23,7 +23,6 @@
 import { renderOneMap } from './oneMap.js';
 import { sceneFromWorld } from './sliceScene.js';
 import { NODE_WU } from './worldSpace.js';
-import { renderCombatBoard } from './combatView.js';
 
 // Zoom thresholds (in the 2D camera's z = px per world-unit; NODE_WU wu ≈ 1 km).
 // Tuned so the morph begins while a neighbouring place is still in frame (the
@@ -34,6 +33,7 @@ const Z_3D_CROSS = 0.50;   // by this: 3D fully opaque (2D faded out beneath).
 const Z_3D_TILT  = 2.5;    // tilt fully developed (top-down → oblique) by here.
 const PHI_TOP = 0.06;      // near straight-down — matches the flat 2D plan.
 const PHI_OBL = 1.0;       // oblique "diorama" tilt at deep zoom.
+const COMBAT_ZOOM = 2.6;   // auto zoom-in level on combat-start (frames the tactical board at the node).
 
 const smoothstep = (e0, e1, x) => { const t = Math.max(0, Math.min(1, (x - e0) / (e1 - e0))); return t * t * (3 - 2 * t); };
 
@@ -53,13 +53,12 @@ export function renderContinuousMap(world, opts = {}) {
   // Fresh layers each render() (v1 rebuilds the DOM); drop any prior 3D context.
   disposeContinuousMap3d();
 
-  // Combat is NOT a separate surface — it's this one map at its deepest, tactical zoom
-  // (5-ft grid, minis on cells; read-only, driven by DM text). While a fight is live the
-  // map shows the tactical board; it returns to the overworld the moment combat ends.
-  // (Fully-continuous zoom from overworld INTO the fight is the next refinement.)
-  if (world && world.combat && world.combat.active) {
-    return renderCombatBoard(world, { height: opts.heightCss || opts.height });
-  }
+  // Combat is NOT a separate surface — it's this one map at its deepest, tactical zoom.
+  // The fight is embedded IN the overworld 3D scene at the player's node (sliceScene
+  // carries world.combat → mountSlice3D builds the 5-ft board there); on combat-start we
+  // auto-zoom into that node so you drop straight into the fight, and zoom-out reveals it
+  // in the overworld. One scene, continuous — no swap.
+  const inCombat = !!(world && world.combat && world.combat.active);
 
   const token = _token;
 
@@ -144,6 +143,14 @@ export function renderContinuousMap(world, opts = {}) {
 
   // Verification / deep-link hook: drive the unified zoom to a world point.
   wrap.__continuousFocus = (cx, cy, z) => { if (twoD.__oneMapFocus) twoD.__oneMapFocus(cx, cy, z); };
+
+  // On combat-start, auto zoom into the player's node so the embedded tactical board is
+  // framed — you drop straight into the fight (zoom out still shows it in the overworld).
+  if (inCombat) {
+    const sc = sceneFromWorld(world);
+    const pcx = (Number(sc.player.x) || 0) * NODE_WU, pcy = (Number(sc.player.y) || 0) * NODE_WU;
+    setTimeout(() => { if (token === _token && twoD.__oneMapFocus) twoD.__oneMapFocus(pcx, pcy, COMBAT_ZOOM); }, 80);
+  }
 
   return wrap;
 }

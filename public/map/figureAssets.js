@@ -14,12 +14,18 @@
 // Pipeline note: STATIC meshes for now — they bob/breathe as a whole via breatheMinis,
 // but limb animation needs a rig (a later step).
 
-// archetype -> { url, tint?(untextured only), ring, eliteOnly? }
+import { splitIslands } from './glbSplit.js';
+
+// archetype -> { url, tint?(untextured only), ring, eliteOnly?, pack? }
+// `pack: true` means the GLB is a multi-figure sheet — it's split into individual
+// figures (glbSplit) and one is served per enemy (stable per enemy id → varied crowd).
 const REG = {
-  player: { url: '/map/assets/hero.glb', tint: 0xb4a896, ring: 0xd9a441 },     // warm stone + gold ring = you
-  undead: { url: '/map/assets/lich.glb', ring: 0x6fd9c4 },                     // the purple lich, teal foe ring
+  player: { url: '/map/assets/hero.glb', tint: 0xb4a896, ring: 0xd9a441 },              // warm stone + gold ring = you
+  humanoid: { url: '/map/assets/enemies_bandits_a.glb', pack: true, ring: 0xff8a5a },   // bandits (6-figure pack)
+  undead: { url: '/map/assets/enemies_undead_a.glb', pack: true, ring: 0x6fd9c4 },      // skeletons/wraiths/liches (pack)
 };
-const templates = {};                                  // archetype -> prepared Group | 'loading'
+const templates = {};                                  // archetype -> prepared Group | { figs:[Group] } | 'loading'
+const hashStr = s => { let h = 2166136261; s = String(s); for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
 const FIGURE_HEIGHT = 2.0;                             // match the procedural minis (~2 units tall)
 
 export function registerFigureGLB(archetype, entry) { REG[archetype] = entry; delete templates[archetype]; }
@@ -37,6 +43,28 @@ export async function ensureFigureGLB(archetype = 'player') {
     const THREE = await import('three');
     const { GLTFLoader } = await import('three/addons/loaders/GLTFLoader.js');
     const gltf = await new Promise((res, rej) => new GLTFLoader().load(reg.url, res, undefined, rej));
+
+    // PACK: split the multi-figure sheet into individual figures, each normalized to the
+    // mini height (feet at 0, centred x/z). Textured → keep material (their own UV slice).
+    if (reg.pack) {
+      // keep only upright, figure-sized islands — drop flat bases + small weapon/prop bits
+      // (a figure is taller than it is wide; junk is horizontal or tiny).
+      const isFig = reg.beast
+        ? (p, mx) => p.tris >= mx * 0.12                                   // beasts are long/low → tris only
+        : (p, mx) => p.size.y >= Math.max(p.size.x, p.size.z) * 0.85 && p.tris >= mx * 0.12;
+      const raw = splitIslands(THREE, gltf.scene);
+      const maxTris = raw.reduce((m, p) => Math.max(m, p.tris), 1);
+      const figs = raw.filter(p => isFig(p, maxTris)).map(p => {
+        const s = FIGURE_HEIGHT / (p.size.y || 1);
+        const m = new THREE.Mesh(p.geo, p.mat); m.castShadow = true; m.receiveShadow = true;
+        m.scale.setScalar(s);
+        m.position.set(-((p.box.min.x + p.box.max.x) / 2) * s, -p.box.min.y * s, -((p.box.min.z + p.box.max.z) / 2) * s);
+        const root = new THREE.Group(); root.add(m); return root;
+      });
+      templates[archetype] = figs.length ? { figs } : null;
+      return templates[archetype];
+    }
+
     const root = gltf.scene;
     root.traverse(o => {
       if (!o.isMesh) return;
@@ -78,13 +106,21 @@ function baseRing(THREE, color, defeated) {
 export function buildFigureFromGLB(THREE, archetype = 'player', opts = {}) {
   const reg = REG[archetype];
   if (!reg) return null;
-  const { defeated = false, elite = false } = opts;
+  const { defeated = false, elite = false, variant } = opts;
   if (reg.eliteOnly && !elite) return null;
   const tpl = templates[archetype];
   if (!tpl || tpl === 'loading') { ensureFigureGLB(archetype); return null; }
   const g = new THREE.Group();
   g.add(baseRing(THREE, reg.ring || 0xd9a441, defeated));
-  const body = tpl.clone(true);   // clones nodes; geometry + material are shared (cheap)
+  // pack → pick a figure (stable per enemy via `variant`, else random); single → the sculpt
+  let body;
+  if (tpl.figs) {
+    const figs = tpl.figs;
+    const idx = variant != null ? hashStr(variant) % figs.length : (Math.random() * figs.length) | 0;
+    body = figs[idx].clone(true);
+  } else {
+    body = tpl.clone(true);       // clones nodes; geometry + material are shared (cheap)
+  }
   g.add(body);
   const baseScale = elite ? 1.24 : 1.0; // bosses read bigger (matches the procedural elite upscale)
   g.scale.setScalar(baseScale);
@@ -101,4 +137,4 @@ export function buildFigureFromGLB(THREE, archetype = 'player', opts = {}) {
 
 // Head-start preload on import (browser only) so the figures are ready by first use:
 // the hero for the overworld, the lich for when a fight starts.
-if (typeof window !== 'undefined') { ensureFigureGLB('player').catch(() => {}); ensureFigureGLB('undead').catch(() => {}); }
+if (typeof window !== 'undefined') { ensureFigureGLB('player').catch(() => {}); ensureFigureGLB('undead').catch(() => {}); ensureFigureGLB('humanoid').catch(() => {}); }

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Figure lab — REAL buildArchetypeFigure (enemy packs)</title>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+}}
+</script>
+<style>html,body{margin:0;height:100%;background:#181c22;overflow:hidden}#c{position:fixed;inset:0}
+#hud{position:fixed;top:10px;left:12px;color:#cdd6e6;font:12px ui-monospace,Menlo,monospace;white-space:pre;text-shadow:0 1px 3px #000}</style>
+</head>
+<body>
+<div id="c"></div>
+<div id="hud">loading…</div>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { buildArchetypeFigure } from '/map/figures3d.js';
+import { ensureFigureGLB } from '/map/figureAssets.js';
+window.__err=[]; addEventListener('error',e=>__err.push(e.message||String(e.error)));
+let W=innerWidth||1280,H=innerHeight||800;
+const renderer=new THREE.WebGLRenderer({antialias:true, preserveDrawingBuffer:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2)); renderer.setSize(W,H);
+renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.2;
+document.getElementById('c').appendChild(renderer.domElement);
+const scene=new THREE.Scene(); scene.background=new THREE.Color(0x181c22);
+const camera=new THREE.PerspectiveCamera(38,W/H,0.02,300);
+scene.add(new THREE.HemisphereLight(0xbcd2f0,0x40331f,0.9));
+const sun=new THREE.DirectionalLight(0xffe6b0,1.6); sun.position.set(5,10,7); sun.castShadow=true;
+sun.shadow.mapSize.set(2048,2048); sun.shadow.camera.left=-20;sun.shadow.camera.right=20;sun.shadow.camera.top=20;sun.shadow.camera.bottom=-20; scene.add(sun);
+scene.add(new THREE.AmbientLight(0xfff0d8,0.4));
+const ground=new THREE.Mesh(new THREE.PlaneGeometry(60,20), new THREE.MeshStandardMaterial({color:0x3a4232,roughness:1}));
+ground.rotateX(-Math.PI/2); ground.receiveShadow=true; scene.add(ground);
+const controls=new OrbitControls(camera,renderer.domElement); controls.enableDamping=true;
+
+(async()=>{
+  await Promise.all([ensureFigureGLB('player'), ensureFigureGLB('humanoid'), ensureFigureGLB('undead')]).catch(()=>{});
+  await new Promise(r=>setTimeout(r,500));
+  const specs=[['player',null,false]];
+  for(let i=0;i<6;i++) specs.push(['humanoid','bandit'+i, i===5]);   // last = elite
+  for(let i=0;i<6;i++) specs.push(['undead','ud'+i, i===5]);
+  const n=specs.length;
+  specs.forEach((s,i)=>{ const f=buildArchetypeFigure(THREE, s[0], {variant:s[1], elite:s[2]}); if(f){ f.position.set((i-(n-1)/2)*2.5, 0, 0); scene.add(f); } });
+  document.getElementById('hud').textContent='REAL buildArchetypeFigure — player · 6 bandits (humanoid pack) · 6 undead (pack)\nlast of each row = elite (upscaled)';
+  window.__ready=true; view();
+})();
+function view(){ camera.position.set(0, 6, 20); controls.target.set(0,1.2,0); controls.update(); renderNow(); }
+window.__view=(x,y,z,tx,ty,tz)=>{ camera.position.set(x,y,z); controls.target.set(tx||0,ty||1.2,tz||0); controls.update(); renderNow(); };
+window.renderNow=()=>renderer.render(scene,camera);
+window.__resize=(w,h)=>{W=w||1280;H=h||800;renderer.setSize(W,H);camera.aspect=W/H;camera.updateProjectionMatrix();renderNow();return W+'x'+H;};
+addEventListener('resize',()=>window.__resize(innerWidth,innerHeight));
+function loop(){ controls.update(); renderer.render(scene,camera); requestAnimationFrame(loop);} loop();
+</script>
+</body>
+</html>

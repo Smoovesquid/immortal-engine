@@ -605,7 +605,7 @@ export async function mountCombat3D(container, combatScene, opts = {}) {
   for (const e of enemies) {
     const ec = cellCenter(e.cx, e.cy);
     const arch = e.archetype || 'humanoid';
-    const tok = buildArchetypeFigure(THREE, arch, { defeated: Boolean(e.defeated), elite: Boolean(e.elite) });
+    const tok = buildArchetypeFigure(THREE, arch, { defeated: Boolean(e.defeated), elite: Boolean(e.elite), variant: e.id || e.name });
     tok.position.set(ec.x, 0.32, ec.z); scene.add(tok);
     minis.push({
       group: tok, baseY: 0.32, baseScale: e.elite ? 1.24 : 1,

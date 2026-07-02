@@ -42,6 +42,28 @@ const SOFT_EXPLICIT_SOURCES = new Set([
 
 const DIALOGUE_ASK_MODE_RE = /\bdialogue ask \| ([a-z_]+)\b/i;
 
+// REF-D1 (Family A extension) — non-dialogue mechanics tags whose RENDERING keeps
+// failing the gate (2026-07-02 runs; docs/briefs/THE_REF_CONTRACT.md §2/§4.1).
+// Each prefix is an engine-authored decision branch already self-reported on
+// outcome.mechanics — so the soft-set grows with ZERO playloop changes. Every
+// entry is false-positive-swept before inclusion (scripts/ref-falsepos-sweep.mjs):
+//   egress:repair — base names REAL map neighbors (oracle carries nearbyPlaces);
+//                   a fabricated neighbor is FABRICATION.        [swept: PASS]
+//   info-check → no-record — base is an honest hedged decline / roster template;
+//                   glue bugs and over-claiming both live here.  [swept: PASS]
+//   clarify:referent — the DM's own ask-back; polish keeps smearing it into
+//                   mood that resolves nothing (postfamily gate ×2). Regen's
+//                   fallback is the honest base clarify.          [swept: PASS ×2]
+// HELD OUT deliberately: [read:revealed-item — a GOOD legible-text delivery is
+// flagged FABRICATION because buildCanonGroundTruth cannot see revealed-item
+// text (swept: FLAG). Needs the oracle extension first (REF-D2b, cross-lane —
+// the oracle is shared with the offline gate).]
+const SOFT_MECHANICS_PREFIXES = [
+  ['[egress:repair]', 'egress:repair'],
+  ['[info-check',     'info-check:no-record'],
+  ['[clarify:referent', 'clarify:referent'],
+];
+
 /**
  * classifyNarrationSource(outcome) -> { soft: boolean, source: string }
  *
@@ -64,9 +86,15 @@ export function classifyNarrationSource(outcome = {}) {
     return { soft: false, source: `dialogue:${mode}` };  // intentional state — skip
   }
 
+  // 2b) REF-D1: non-dialogue soft tags, also derived from the mechanics string.
+  const mechTrim = mech.trim();
+  for (const [prefix, label] of SOFT_MECHANICS_PREFIXES) {
+    if (mechTrim.startsWith(prefix)) return { soft: true, source: label };
+  }
+
   // 3) Everything else (combat strikes, meta answers, exits, grounded action
   //    resolves, openers) is HARD — the Ref skips it, no cost.
   return { soft: false, source: 'hard' };
 }
 
-export const _internal = { SOFT_DIALOGUE_MODES, SOFT_EXPLICIT_SOURCES, DIALOGUE_ASK_MODE_RE };
+export const _internal = { SOFT_DIALOGUE_MODES, SOFT_EXPLICIT_SOURCES, DIALOGUE_ASK_MODE_RE, SOFT_MECHANICS_PREFIXES };

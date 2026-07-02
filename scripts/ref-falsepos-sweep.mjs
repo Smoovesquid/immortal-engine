@@ -22,6 +22,9 @@ const BARE = { location: { name: 'Pilgrim\'s Rest', kind: 'settlement' }, npcsPr
 // Internally CONSISTENT canon (location name matches the fact) so a grounded delivery
 // is genuinely grounded — an inconsistent bundle is a test bug, not a judge error.
 const FOUNDED = { location: { name: 'Tallow Cross', kind: 'settlement' }, npcsPresent: [{ name: 'Bram Cask', role: 'tavern-keeper' }], ledgerFacts: ['Tallow Cross was founded by salt-panners three generations ago'] };
+// Canon with map neighbors — the egress path names REAL adjacent nodes, which the
+// oracle carries in nearbyPlaces (rubric.js buildCanonGroundTruth, P10 fix 2f0c272).
+const ROADS = { location: { name: 'Wayfarers\' Outpost', kind: 'settlement' }, nearbyPlaces: ['Old Shrine', 'Sooted Bridge'], npcsPresent: [{ name: 'Elske Nightherd', role: 'keeper' }], ledgerFacts: [] };
 
 // GOOD lines — every one is something a real DM/NPC would rightly say. The judge
 // should PASS all of them. Each is paired with an input + mechanics that make it
@@ -51,6 +54,22 @@ const GOOD = [
     candidate: "Just me and my ovens at this hour." },
   { tag: 'plain refusal (withheld-ish but honest)', input: 'what are you hiding?', mechanics: '[dialogue ask | shared | trust:3]', canon: BARE,
     candidate: "Everyone's got things they keep. I'll not air mine to a stranger." },
+
+  // ── REF-D1 soft-set extension probes (docs/briefs/THE_REF_CONTRACT.md §4.1) ──
+  // Each is the GOOD rendering of a mechanics tag proposed for the extended soft
+  // set. A flag here = the tag is unsafe to auto-review → hold it out of the set.
+  { tag: 'egress: names real neighbors', input: 'Where does the road out that door lead?', mechanics: '[egress:repair]', canon: ROADS,
+    candidate: 'The road runs to the Old Shrine one way and Sooted Bridge the other.' },
+  { tag: 'info-check: honest no-record hedge', input: "What are you afraid I'll find here?", mechanics: '[info-check → no-record | nothing grounded to deliver, no roll]', canon: BARE,
+    candidate: "If there's something worth fearing here, nobody's ever told me of it — you'd have to dig for yourself." },
+  { tag: 'read: legible letter delivered', input: 'I read the letter. What does it say?', mechanics: '[read:revealed-item | grounded object, legible text, no roll]', canon: BARE,
+    candidate: 'The letter speaks of a wedding held at the old mill — two names you don\'t recognize, and a date long past.' },
+  { tag: 'read: illegible honest decline', input: 'I read the ledger page.', mechanics: '[read:revealed-item | grounded object, no legible text, no roll]', canon: BARE,
+    candidate: "The ink's too far gone — whatever the page once said is lost." },
+  { tag: 'clarify: unknown name, honest ask-back', input: 'Where can I find Aldren?', mechanics: '[clarify:referent]', canon: BARE,
+    candidate: 'No one here goes by Aldren — who do you mean?' },
+  { tag: 'clarify: ambiguous referent, narrow', input: 'I ask her about it.', mechanics: '[clarify:referent]', canon: BARE,
+    candidate: 'Mira looks up from the ovens — about what, exactly?' },
 ];
 
 const rows = [];

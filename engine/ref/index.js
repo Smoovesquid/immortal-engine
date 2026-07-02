@@ -28,6 +28,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { classifyNarrationSource } from './narrationSource.js';
+import { detectNarrationArtifacts } from './detectors.js';
 import { defaultRefBudget } from './budget.js';
 import { buildCanonGroundTruth, REF_VERDICTS } from './rubric.js';
 
@@ -68,8 +69,20 @@ export async function reviewNarration({
     if (typeof judge !== 'function') return safe;    // no judge wired → fallback
     if (!safe) return safe;
 
+    // Escalation policy (REF-D1 — the union; docs/briefs/THE_REF_CONTRACT.md §4.2):
+    // judge a turn when its PROVENANCE is soft, OR when it is plain-hard and a
+    // deterministic content-shape detector fires on the line itself (Family B —
+    // stat-block runs, resolver grammar, list glue). Intentional epistemic
+    // dialogue modes (lied/withheld/claim_recall/…) are NEVER escalated, not even
+    // on a detector hit: "correcting" them would break the game's social physics.
     const { soft, source } = classifyNarrationSource(outcome);
-    if (!soft) return safe;                          // hard source → skip, no cost
+    let escalationSource = source;
+    if (!soft) {
+      if (source !== 'hard') return safe;            // intentional mode → untouchable
+      const det = detectNarrationArtifacts(safe);
+      if (!det.fired) return safe;                   // clean hard turn → skip, no cost
+      escalationSource = det.source;                 // e.g. 'detector:stat-block'
+    }
 
     const t = budget.turn();
     if (!t.canJudge()) return safe;                  // over budget → fallback
@@ -81,7 +94,7 @@ export async function reviewNarration({
     t.useJudge();
     let verdict = null;
     try {
-      verdict = await judge({ input, mechanics, candidate: safe, canon, source });
+      verdict = await judge({ input, mechanics, candidate: safe, canon, source: escalationSource });
     } catch {
       return safe;                                   // judge error → fallback (Invariant 3)
     }
@@ -107,7 +120,7 @@ export async function reviewNarration({
       try {
         redo = await regenerate({
           input, mechanics, base: baseNarration, candidate: safe, canon,
-          failureClass: verdict.failure_class || 'NONE', source,
+          failureClass: verdict.failure_class || 'NONE', source: escalationSource,
         });
       } catch {
         return fallback;                             // regen error → base (not the bad candidate)
@@ -136,6 +149,7 @@ export async function reviewNarration({
 }
 
 export { classifyNarrationSource } from './narrationSource.js';
+export { detectNarrationArtifacts } from './detectors.js';
 export { defaultRefBudget, createRefBudget } from './budget.js';
 export {
   buildCanonGroundTruth, REF_VERDICTS, REF_VERDICT_LIST, REF_FAILURE_CLASSES,

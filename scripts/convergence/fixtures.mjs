@@ -271,8 +271,51 @@ export function deathSenseWithCorpseWorld() {
   return { ...w, party: (w.party || []).map((p, i) => i === 0 ? { ...p, stress: 1 } : p) };
 }
 
+// (AG-3b) A settlement (NPC present, exterior — interior cleared) whose node holds
+// an OPEN coffer that has revealed a readable letter. Seed/node/name are chosen so
+// the deterministic containerContents/containerItemText derive the marriage letter
+// (LETTER_BODIES[7] — "They are married at last…", which names no one). This is the
+// rig for the person-question-vs-read-tag mismatch: "the letter says someone got
+// married — do you know who?" keys the read path (a THING-interaction) yet asks a
+// PERSON → the egress must repair it to an honest decline, while a genuine read
+// question ("what does the letter say?") still shows the letter. The booted interior
+// is cleared on BOTH scene.interior AND party.position.interior (ensureWorld re-derives
+// scene.interior from the position — state.js:132-137) so objectsHere returns the coffer.
+export function revealedLetterWorld() {
+  const seed = 'ag3b';
+  const base = baseWorld(seed);
+  const node = {
+    id: `${seed}_settlement`,
+    name: 'Pilgrim\'s Rest Test Village',
+    nodeType: 'settlement',
+    discovered: true,
+    settlement: {
+      decompressed: true,
+      npcs: [{
+        id: 'npc_baker', name: 'Mira Hearth', role: 'baker', occupation: 'baker',
+        descriptor: 'flour-dusted baker', hostile: false, conversationState: { trustLevel: 5 }
+      }]
+    },
+    furniture: [{
+      name: 'coffer', parts: ['lid', 'body'], state: 'open', bulk: 2, weight: 8,
+      tags: ['wood', 'container'], notes: 'lid thrown back', material: 'wood',
+      category: 'container', hardness: 2
+    }]
+  };
+  const party = (base.party || []).map((p, i) => i === 0
+    ? { ...p, position: { ...(p.position || {}), interior: null } } : p);
+  return ensureWorld({
+    ...base,
+    party,
+    map: { ...base.map, currentNodeId: node.id, nodes: [...(base.map?.nodes || []), node] },
+    combat: { ...(base.combat || {}), active: false },
+    scene: { ...(base.scene || {}), interior: null, dialogue: null }
+  });
+}
+
 export const FIXTURES = {
   village_baker: villageBakerWorld,
+  revealed_letter: revealedLetterWorld,
   prior_roll: priorRollWorld,
   empty_room: emptyRoomWorld,
   interior_npc: interiorNpcWorld,

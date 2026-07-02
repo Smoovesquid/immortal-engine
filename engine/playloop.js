@@ -507,6 +507,14 @@ const EGRESS_GEN_BANK_RE = /goes your way|after a fashion|see it through|it half
 // (AG-2R Part B), and a false repair here would fight the corpus (C4-021/C15).
 const EGRESS_NEUTRAL_MECH_RE = /^(?:observe only|trivial action)\b/i;
 
+// AG-3b — the read/observe/object-action provenance family: a THING-interaction
+// (reading a revealed item, revealing/opening a container, a vision draught, a
+// bare look-around). It is answer-bearing for read/OBJECT intents — but NOT for
+// an addressed-PERSON question. That cross is the R4 mismatch below. Anchored at
+// the string head so it matches the provenance tag, never an incidental mention;
+// `[reveal:…]` (the First-Aperture edge) is deliberately NOT a member.
+const EGRESS_READ_OBJECT_MECH_RE = /^(?:\[(?:read|newspaper|container|vision)\b|observe only\b)/i;
+
 function egressPositionKey(world) {
   return `${world?.map?.currentNodeId || ''}|${world?.scene?.interior?.roomId || ''}`;
 }
@@ -570,8 +578,22 @@ export function applyEgressRepair(prevWorld, text, res) {
   if (moved) moved = egressPositionKey(ensureWorld(prevWorld)) !== egressPositionKey(res.world);
   const narr = String(res.output.narration || '');
   const mech = String(res.output.mechanics || '').trim();
+  // R4 (AG-3b) — intent/provenance MISMATCH: a whitelisted provenance is answer-
+  // bearing only for the intents it actually SERVES. The read/observe/object-action
+  // family answers read/OBJECT asks; when the classifier types the turn as an
+  // ADDRESSED-PERSON question (`npc-addressed` — a "do you…?" / named-address ask)
+  // yet the output is that THING-interaction, the person's question went unanswered
+  // behind the object (Newbie-7, P10 gate: "the letter says someone got married —
+  // do you know who?" got the letter RE-READ instead of a legible answer/decline).
+  // Scoped to `npc-addressed` ONLY — a genuine read/object question ("what does the
+  // letter say?" → place, "is there a name on it?" → referent-followup) IS served by
+  // the read path and passes through untouched; the classifier never types those
+  // `npc-addressed`, and the 121-case corpus is the over-match oracle. (AG-3b brief.)
+  const intentProvenanceMismatch = intent.kind === 'npc-addressed'
+    && EGRESS_READ_OBJECT_MECH_RE.test(mech);
   const suspect = moved
     || EGRESS_GEN_BANK_RE.test(narr)
+    || intentProvenanceMismatch
     || (mech !== '' && !EGRESS_NEUTRAL_MECH_RE.test(mech) && !mech.startsWith('['));
   if (!suspect) return res;   // whitelisted answer-bearing provenance → untouched
   // Repair the NARRATION only, against the post-turn world (so LH-2's roster is

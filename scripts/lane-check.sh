@@ -35,6 +35,14 @@ HOT_DIRTY=$(git status --porcelain | grep -E "^.M|^M" | grep -E "${HOT}" || true
 echo ""; echo "Summary: ${OUT} outgoing, ${IN} incoming."
 
 STATUS=0
+# Version lockstep: package.json semver must match the public/v1.js front-door header
+# (Tim plays the live build and must know which one — see CLAUDE.md Versioning).
+PKG_V=$(node -p "require('./package.json').version" 2>/dev/null || echo "?")
+UI_V=$(grep -oE "Immortal Engine — v[0-9.]+" public/v1.js 2>/dev/null | head -1 | grep -oE "[0-9][0-9.]*" || echo "?")
+if [ "${PKG_V}" != "${UI_V}" ]; then
+  echo "⚠️  VERSION LOCKSTEP BROKEN: package.json v${PKG_V} vs public/v1.js v${UI_V} — fix both before push."
+  STATUS=1
+fi
 if [ -n "${HOT_DIRTY}" ]; then
   echo "⚠️  HOT files have uncommitted edits — another lane may share this working dir:"
   echo "${HOT_DIRTY}" | sed 's/^/     /'

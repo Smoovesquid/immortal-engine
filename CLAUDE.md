@@ -26,6 +26,26 @@
 - **Heavy LLM testing runs on the `.env` API key from the CLI, not interactively** (the Opus gate is the repo's costliest thing). Use `node --test` / `playtest:quick` for the fast loop.
 - Don't spawn subagents unless fan-out is truly needed (cold context = expensive).
 
+## Reporting to Tim (ALWAYS)
+
+Tim is not a coder. Every substantive report — from any window, worker or conductor — ends with a
+plain-English paragraph: *what was broken / what changed / why it matters*, jargon translated on first
+use. Never route a judgment call back to him mid-task (a question to Tim is a stalled lane — take the
+reversible option and flag it in the report). When a job is done, say so and stop; no trailing "want me to…?".
+
+## Cockpit — project skills & scripts
+
+| Command | What it does |
+|---|---|
+| `basecamp` (skill) | Boot the conductor from verified git state; plain-English status board |
+| `handoff` (skill) | Checkpoint this window → `.claude/handoff-latest.md` + next-window kickoff |
+| `dispatch` (skill) | Run a brief as a background subagent in a worktree (default over hand-carrying prompts) |
+| `execute` (skill) | Run a brief file end-to-end unattended; `review` mode critiques it first |
+| `play` (skill) / `scripts/play.sh` | Open the game guaranteed-fresh, version-checked (Tim never playtests a stale build) |
+| `adversarial` (skill) | Skeptic pass — no-reassurance analysis of a plan/claim/report |
+| `scripts/next-test-number.sh <prefix> [n]` | Allocate free test numbers (prevents parallel-worker collisions) |
+| `node scripts/budget.mjs` | Gate-spend ledger (`set`/`spend`) — check before any paid gate, record after |
+
 ## Quick Reference
 
 ```

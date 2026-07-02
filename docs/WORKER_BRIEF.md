@@ -31,6 +31,10 @@ task-completion** — a patch that crosses a layer boundary is a failure even if
 - **Never run the paid gate** (`node scripts/dm-playtest.mjs`, ~$2.8/run) without explicit approval.
 - If the fix needs canon / state / RNG / deltas / event-log / `effectsCore` semantics → **STOP** and write a
   scoped-packet proposal instead of editing.
+- **Decision policy (controlling).** Make ALL judgment calls yourself — never route a question back to Tim
+  mid-run (he is not a coder and is usually away; a question back to him is a stalled lane). If genuinely
+  blocked between options, take the reversible one and flag it under "Residual risk". New test numbers come
+  from `scripts/next-test-number.sh <prefix>` — never guessed.
 
 **Step 0 — self-assemble (do this FIRST; do not skip).** Run and paste:
 ```
@@ -91,7 +95,9 @@ silently weakening or deleting a test.
 
 **Done-when.** Relevant corpus green · determinism tripwires green · `npm run convergence` 100% · full suite
 green · no new capability regressions · residual failures style-only, not dead-ends · measurement honesty
-preserved (report what the *free* signals prove, separately from the noisy gate).
+preserved (report what the *free* signals prove, separately from the noisy gate) · **player-visible changes
+self-playtested through live `v1.html`** (per `docs/PLAYTEST_PROTOCOL.md`) — a report without playtest
+evidence is not DONE; Tim must never be handed a broken game to discover the break himself.
 
 **Output contract (every response).**
 ```
@@ -103,6 +109,7 @@ Files changed:
 Tests run:
 Residual risk:
 Rollback plan:
+Plain English (for Tim): <one short jargon-free paragraph — what was broken, what changed, why it matters>
 ```
 
 **Missing artifacts:** {{none — or the exact list to locate/request before editing}}

@@ -38,6 +38,17 @@ the DM's *words / intent-resolution*, i.e. the narration+grace frontier, not a n
 - **DM_ARTIFACT_LEAK (1).** "breathe in smoke on purpose" → "You manage the back, and it goes your way"
   (template nonsense ignoring the scene). → THE_REF narration-validator territory.
 
+### RE-GATE 2026-07-02 (post DTD-A/B, v0.20.4) — `opus-gate-2026-07-02-regate-postDTD.md` — **5/48; class did NOT collapse → META-DIAGNOSIS commissioned**
+The DTD fixes held on their exact targets: **CANON_HALLUCINATION → 0** (gear grounded in real inventory), and the
+rules-question-rolled + movement-ignored repros are gone. **But DM_TEST_DEADEND persisted (4→3) in a NEW flavor** —
+NPC dialogue *deflection*: "who are you? do you live here?" → NPC turns and waits (no answer); "who's it from?" →
+`[clarify:referent]` loop; "were you born here?" → a WITS info-roll NAT1 → hedge. Same class, different routing
+path (meta → dialogue/info-seek/clarify). New **CRUNCH_INCONSISTENCY** (a barrel-through combat action left as
+table-talk, unresolved). 6→5. **Per the mission's "judge by bug-nature": DM_TEST_DEADEND is a persistent FAMILY,
+not a shrinking count — the treadmill signal.** → Commissioned a **Fable whole-corpus meta-diagnosis**
+(`docs/briefs/FABLE-failure-meta-diagnosis.md`): find the structural root-generators behind the 47-gate history,
+predict remaining classes, propose family-dissolving structural fixes, split residual Road-A-structural vs THE_REF.
+
 ## Don't trust a stale snapshot — verify current state yourself
 This doc is hand-edited after every batch, but it is still a snapshot. **Before acting on anything
 below, confirm it against reality:** `git log --oneline -10` for the real HEAD/ahead-behind state,
@@ -1224,7 +1235,7 @@ Full per-turn detail in the report file. Catalog these as the next hard-tail pac
 once a worker prompt is drafted. Priority order: CRASH → DM_TEST_DEADEND → CRUNCH_INCONSISTENCY →
 CANON_HALLUCINATION.
 
-## Budget — **2026-07-02 gate (post IOM-P1..P5, seed `tallow`) ~$2.74 by the script's estimate → ~$18.78 remaining** (~6 runs). NOTE: the script prints its estimate at a stale $15/$75 per-M rate; Opus 4.8 is $5/$25, so the real charge was likely ~$0.9 → true remaining is nearer ~$20.6. Re-confirm Tim's actual balance before any run that would drop below ~$2.5. _Prior:_ $29.82 (2026-06-23) − three gates ~$2.77+$2.78+$2.75 → ~$21.52.
+## Budget — **two 2026-07-02 gates (post-IOM ~$2.74 + post-DTD re-gate ~$2.80, seed `tallow`) → ~$15.98 remaining** by the script's estimate (~5 runs). NOTE: the script prints its estimate at a stale $15/$75 per-M rate; Opus 4.8 is $5/$25, so the real charge was likely ~$0.9 → true remaining is nearer ~$20.6. Re-confirm Tim's actual balance before any run that would drop below ~$2.5. _Prior:_ $29.82 (2026-06-23) − three gates ~$2.77+$2.78+$2.75 → ~$21.52.
 - _History:_ **Tim confirmed $20.00 on 2026-06-22.** Gate 11 (capstone) ran ~$2.86 → **~$17.14 remaining (~6 runs at the real ~$2.80/run).** Real per-run ≈ $2.76–2.86 (NOT the brief's $1.10/run).
 Tim confirmed actual balance **$10.51** on 2026-06-20. Gate 1 (~$2.63,
 `docs/playtests/opus-gate-2026-06-20-convergence-baseline.md`) → **~$7.88**. Gate 2 (2026-06-21, ~$2.71,

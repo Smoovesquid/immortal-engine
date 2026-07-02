@@ -5,6 +5,16 @@
       "date": "2026-07-02",
       "regime": "bridge",
       "modes": []
+    },
+    {
+      "runId": "gate-2026-07-02T20-59-10-628Z-v1",
+      "date": "2026-07-02",
+      "regime": "v1",
+      "modes": [
+        "CRUNCH_INCONSISTENCY",
+        "DM_ARTIFACT_LEAK",
+        "DM_TEST_DEADEND"
+      ]
     }
   ]
 }

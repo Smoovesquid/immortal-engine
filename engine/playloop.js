@@ -49,6 +49,7 @@ import { companionPass } from './npc/companionVoice.js';
 import { checkMilestone, buildLevelUpLine } from './advancement/milestones.js';
 import { darkGiftForThreshold } from './magic/forbiddenGates.js';
 import { resolveCombatTurn } from './combat/combatResolve.js';
+import { makeBleed } from './combat/bleed.js';
 import { beginCombat, endCombat, mintEnemyFromNpc } from './combat/combatLifecycle.js';
 import { resolveCompanionTurn } from './combat/companionTurn.js';
 import { castSpell } from './spell/castSpell.js';
@@ -672,48 +673,115 @@ export function playerMove(world, packsById, text) {
   }
 }
 
-// Self-harm: deliberate harm to one's OWN body. A harm verb + an explicit self
-// target, not negated/hypothetical. Resolves as a deterministic wound (no roll) —
-// you cannot fail to hurt yourself, nor is it a trivial no-effect action.
-const SELF_HARM_VERB = /\b(cut|cuts|cutting|slash|stab|stabs|stabbing|slice|gash|gouge|carve|score|nick|jab|impale|bleed|hurt|injure|harm|wound|maim|mutilate)\b/i;
-const SELF_HARM_TARGET = /\b(myself|my\s+own\b|my\s+(?:arm|forearm|leg|thigh|hand|wrist|palm|throat|neck|face|cheek|chest|belly|gut|stomach|skin|flesh|side|shoulder|finger|thumb|vein|veins))\b/i;
+// Self-harm: deliberate harm to one's OWN body. A harm verb (or a blade/vein
+// idiom) + an explicit self target, not negated/hypothetical. Resolves along the
+// bleed spectrum (papercut → arterial) as a DETERMINISTIC wound (no roll) — you
+// cannot fail to hurt yourself, and it's never a trivial no-effect action. The
+// tier is inferred from the fiction by a keyword table (Biblioteca V11 — the
+// TABLE sets severity, never the LLM), so it's seed-independent and adds no rng.
+const SELF_HARM_VERB = /\b(cut|cuts|cutting|slash|slashe?s|slashing|stab|stabs|stabbing|slice|slices|slicing|slit|slits|slitting|gash|gashe?s|gouge|carve|carves|carving|score|nick|jab|impale|hack|hacks|hacking|sever|severs|bleed|hurt|injure|injures|harm|harms|wound|wounds|maim|maims|mutilate|mutilates|prick|scratch|scratche?s|graze|grazes)\b/i;
+// Blade/vein idioms that carry no verb from the list above ("open a vein",
+// "drive the blade in", "bury the knife", "run the blade across").
+const SELF_HARM_PHRASE = /\b(?:open(?:s|ing)?\s+(?:a|my|the|an)\s+(?:vein|artery|wrist|throat)|(?:drive|driving|bury|burying|sink|sinking|plunge|plunging|run|running|drag|dragging|draw|drawing)\s+(?:the|my|a|an)\s+(?:blade|knife|dagger|sword|point|edge|steel))\b/i;
+const SELF_HARM_TARGET = /\b(myself|my\s+own\b|my\s+(?:arm|forearm|leg|thigh|hand|wrist|palm|throat|neck|jugular|femoral|artery|arteries|face|cheek|chest|belly|gut|stomach|skin|flesh|side|shoulder|finger|thumb|vein|veins))\b/i;
 const SELF_HARM_NEGATED = /\b(don'?t|do\s+not|won'?t|will\s+not|never|avoid|without|nearly|almost|pretend|threaten|threatening|as\s+if|like\s+i)\b/i;
+
+// bleed-tier keyword table — the fiction picks the tier deterministically.
+// Ordered most-severe-first so an arterial cue wins over a "cut" that's also present.
+const BLEED_TIER_CUES = [
+  ['arterial', /\b(arter(?:y|ial|ies)|jugular|femoral|slit(?:s|ting)?\s+(?:my\s+)?(?:own\s+)?(?:throat|wrist|neck)|open(?:s|ing)?\s+(?:a|my|the)\s+(?:vein|artery|wrist)|throat|jugular|bleed\s+out)\b/i],
+  ['severe',   /\b(deep\s+gash|gash|gashe?s|hack|hacks|hacking|carve|carves|carving|to\s+the\s+bone|butcher)\b/i],
+  ['deep',     /\b(deep(?:ly)?|drive\s+it\s+in|bury\s+(?:the|my|a)\s+(?:blade|knife|dagger)|plunge|sink\s+(?:the|my|a)\s+(?:blade|knife)|to\s+the\s+hilt|hard)\b/i],
+  ['papercut', /\b(papercut|paper\s?cut|scratch|scratche?s|nick|nicks|graze|grazes|just\s+a\s+(?:small|little|tiny|shallow|scratch))\b/i],
+  // shallow is the default fall-through (a plain "I cut myself").
+];
+
+/** Deterministically map self-harm fiction → a bleed tier (V11: table, not LLM). */
+function inferBleedTier(text) {
+  const t = String(text || '').toLowerCase();
+  for (const [tier, re] of BLEED_TIER_CUES) {
+    if (re.test(t)) return tier;
+  }
+  return 'shallow';
+}
+
+/** True iff the text is a clear, non-hypothetical declaration of self-harm. */
+function isSelfHarmDeclared(text) {
+  const t = String(text || '');
+  if (SELF_HARM_NEGATED.test(t)) return false;
+  if (SELF_HARM_TARGET.test(t) && (SELF_HARM_VERB.test(t) || SELF_HARM_PHRASE.test(t))) return true;
+  // A papercut/scratch phrased about one's own body needs no strike-verb
+  // ("just a papercut on my thumb", "a scratch across my palm").
+  if (SELF_HARM_TARGET.test(t) && /\b(papercut|paper\s?cut|scratch|graze)\b/i.test(t)) return true;
+  return false;
+}
 
 function trySelfHarm(world, text, actorId) {
   const t = String(text || '');
-  if (world.combat?.active || world.scene?.dialogue) return null;
-  if (!SELF_HARM_VERB.test(t) || !SELF_HARM_TARGET.test(t)) return null;
-  if (SELF_HARM_NEGATED.test(t)) return null;
+  // Combat routes self-harm through the combat resolver, not here. A self-cut
+  // DURING dialogue is still a real action — relax the old dialogue bail for a
+  // clearly-declared self-harm intent (the meta/HP-status shadow is handled at
+  // the caller via isSelfHarmDeclared).
+  if (world.combat?.active) return null;
+  if (!isSelfHarmDeclared(t)) return null;
   const pc = world.party?.[0];
   if (!pc) return null;
   const id = String(actorId || pc.id || 'party');
-  // Escape mode tracks live health as meta.escapeHp (NOT party.wounds), so a
-  // self-cut must come off escapeHp there — else "I cut my arm" leaves the live
-  // HP unchanged and the DM reports the player untouched. A shallow cut = 1 HP.
+
+  const tier = inferBleedTier(t);
+  // Instant HP taken off the live track at the moment of the cut. HP is not
+  // proportional "meat" (Tim's ruling): a papercut costs nothing, a shallow cut
+  // barely stings, only a deep/arterial wound bites. This is deliberately NOT
+  // the tier's per-round tick `severity` (papercut ticks 0 anyway) — the ongoing
+  // bleed condition (below) is what graduates severity over time.
+  const INSTANT_HP = { papercut: 0, shallow: 1, deep: 2, severe: 3, arterial: 5 };
+  const hpCost = INSTANT_HP[tier] ?? 1;
+
+  // Apply the bleed condition through the sole mutation path (effectsCore
+  // `condition` op) so a health query can later surface "you're bleeding".
+  const cond = makeBleed(tier, 'self-inflicted');
+  let w = applyDeltas(world, [{ op: 'condition', entityId: id, cond }]);
+
+  // Escape mode tracks live health as meta.escapeHp (NOT party.wounds), so the
+  // instant HP must come off escapeHp there — else the cut leaves the live HP
+  // unchanged and the DM reports the player untouched.
   const escMax = Number(world.meta?.escapeMaxHp) || 0;
   const escapeMode = world.meta?.mode === 'escape' && escMax > 0;
-  let w = world;
-  let took = false;
   let hpLine = '';
-  if (escapeMode) {
-    const beforeHp = Number(world.meta?.escapeHp) || 0;
-    const afterHp = Math.max(0, beforeHp - 1);
-    w = { ...world, meta: { ...world.meta, escapeHp: afterHp } };
-    took = afterHp < beforeHp;
-    hpLine = ` You're at ${afterHp} of ${escMax} hit points now.`;
+  let hpMech = '';
+  if (hpCost > 0) {
+    if (escapeMode) {
+      const beforeHp = Number(w.meta?.escapeHp) || 0;
+      const afterHp = Math.max(0, beforeHp - hpCost);
+      w = { ...w, meta: { ...w.meta, escapeHp: afterHp } };
+      hpLine = ` You're at ${afterHp} of ${escMax} hit points now.`;
+      hpMech = `${afterHp < beforeHp ? hpCost : 0} HP`;
+    } else {
+      // Out of escape mode, live damage lands on party.wounds (1 wound ≈ 1 HP of
+      // give), same track the old handler used.
+      w = applyDeltas(w, [{ op: 'wound', entityId: id, by: hpCost }]);
+      hpMech = `${hpCost} wound${hpCost === 1 ? '' : 's'}`;
+    }
   } else {
-    const before = pc.wounds ?? 0;
-    w = applyDeltas(world, [{ op: 'wound', entityId: id, by: 1 }]);
-    took = (w.party?.[0]?.wounds ?? before) > before;
+    hpMech = '0 HP';
   }
+
   w = pushEvent(w, {
     kind: 'resolution',
-    data: { actorId: id, intent: t, text: t, roll: 0, dc: 0, outcome: 'success', updateKind: 'self-harm' }
+    data: { actorId: id, intent: t, text: t, roll: 0, dc: 0, outcome: 'success', updateKind: 'self-harm', bleedTier: tier }
   });
-  const narration = took
-    ? `Wizard: You go through with it — the hurt lands real and immediate, blood and bite, and you mark yourself.${hpLine}`
-    : `Wizard: You set yourself to do it, but you are already as battered as a body can be and still stand; there is no more give left to take.`;
-  const mech = escapeMode ? `[self-harm — 1 HP, no roll]` : `[self-harm — ${took ? '1 wound' : 'no further wound'}, no roll]`;
+
+  // NOTE (narration): functional per-tier voice, flagged taste-critical for Tim
+  // to finalize — the wording, not the mechanics, is what he tunes.
+  const NARR = {
+    papercut: `You draw the edge across and only a bead of blood wells up — a papercut, nothing that won't be forgotten by morning.`,
+    shallow:  `You go through with it — a thin red line opens where the edge bit. It stings, and it will close on its own.`,
+    deep:     `You drive it in and the cut goes deep — the wound gapes and blood runs steady; this one won't quit without pressure on it.`,
+    severe:   `You carve it deep — a real gash, lips of it parted, blood coming fast. It needs binding before it will close.`,
+    arterial: `The blade finds the vein and blood sheets down your arm in a bright, insistent flood — this one won't stop unaided, and you don't have long.`,
+  };
+  const narration = `Wizard: ${NARR[tier] || NARR.shallow}${hpLine}`;
+  const mech = `[self-harm — ${tier} bleed, ${hpMech}, no roll]`;
   return { world: w, output: { narration, mechanics: mech } };
 }
 
@@ -992,6 +1060,12 @@ function playerMoveCore(world, packsById, text) {
   // U37/U38); this gate would otherwise shadow it with a different format.
   const declaredNpcViolence = !w.combat?.active && !w.scene?.dialogue
     && (detectPhysicalAssault(w, text) || detectAttackBeginIntent(w, text) || detectAttackAnyIntent(w, text));
+  // A declared self-cut must RESOLVE, not be shadowed by an HP-status / weapon-
+  // damage meta answer when the two are bundled ("I cut my palm — what's my HP
+  // after?"). isMetaQuestion matches on META_HEALTH / META_WEAPON_DAMAGE, so
+  // without this guard the turn dead-ends on "you're untouched" and the cut is
+  // dropped. Mirrors declaredNpcViolence — a declared action beats a meta query.
+  const declaredSelfHarm = !w.combat?.active && isSelfHarmDeclared(text);
   // META_RECAP's bare "what happened" is unanchored and trivially matches a
   // direct historical question put TO a present NPC by name ("What happened
   // twelve years ago that made you settle here, Corwin?") — that's a question
@@ -1022,7 +1096,7 @@ function playerMoveCore(world, packsById, text) {
       const role = String(npc?.role || '').toLowerCase().trim();
       return (nm && t.includes(nm)) || (role && t.includes(role));
     })());
-  if (!w.combat?.active && !w.scene?.dialogue && isMetaQuestion(text) && !declaredNpcViolence && !npcAddressedRecap && !META_LOCATION.test(String(text || '').toLowerCase())) {
+  if (!w.combat?.active && !w.scene?.dialogue && isMetaQuestion(text) && !declaredNpcViolence && !declaredSelfHarm && !npcAddressedRecap && !META_LOCATION.test(String(text || '').toLowerCase())) {
     const metaAnswer = handleMetaQuestion(text, w);
     if (metaAnswer) {
       return { world: w, output: { narration: `Wizard: ${metaAnswer}`, mechanics: '' } };
@@ -1043,6 +1117,31 @@ function playerMoveCore(world, packsById, text) {
     // intent is to recruit, not to walk away.
     const recruitIntent = isRecruitIntent(text);
     const breakingIntent = !recruitIntent && isDialogueBreakingIntent(text, w);
+
+    // A self-cut mid-conversation is a real action — it can't be swallowed by
+    // the "ask the NPC" fall-through. End the dialogue out loud (you've turned
+    // the blade on yourself), then resolve the cut on the bleed spectrum.
+    if (!recruitIntent && isSelfHarmDeclared(text)) {
+      const ended = endDialogue(w);
+      let wEnded = ended.world;
+      wEnded = pushEvent(wEnded, {
+        kind: 'dialogueExit',
+        data: {
+          npcId: ended.outcome.npcId || '',
+          turnsInDialogue: ended.outcome.turnsInDialogue || 0,
+          topicsCount: ended.outcome.topicsCount || 0
+        }
+      });
+      const sh = trySelfHarm(wEnded, text, actorId);
+      if (sh) {
+        const rest = String(sh.output?.narration || '').replace(/^Wizard:\s*/, '');
+        const name = ended.outcome.npcName || 'them';
+        return {
+          world: sh.world,
+          output: { ...sh.output, narration: `Wizard: You break off from ${name} — ${rest}` }
+        };
+      }
+    }
 
     if (explicitExit) {
       const ended = endDialogue(w);

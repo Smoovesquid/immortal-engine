@@ -3866,15 +3866,35 @@ function inferInteriorAction(text, interior, opts = {}) {
   const saysStepOut = /\bstep(?:ped|s|ping)?\s+out\b/.test(t);
   const stepOutIdiom = /\bstep(?:ped|s|ping)?\s+out\s+of\s+(?:line|turn|character|place|order|step|sync)\b/.test(t);
   if (saysStepOut && !stepOutIdiom && !riseOnly) return { kind: 'exit' };
-  // IT-1: a BARE "<motion> outside/outdoors" (no adverb) exits — but YIELDS when the
-  // text also asks a presence/survey question, so "head outside, who do I see?" reaches
-  // the roster instead of stopping at "you step back outside" (the adverb forms above
-  // already exit unconditionally; this adds the bare form without stomping the question).
-  if (!riseOnly
-      && /\b(?:go(?:es)?|step(?:s|ped|ping)?|walk(?:s|ed|ing)?|head(?:s|ed|ing)?|move(?:s|d)?|wander(?:s|ed|ing)?)\s+(?:outside|outdoors)\b/.test(t)
-      && !/\bwho(?:'?s|\s+(?:is|are|do|did|can|could|might|else))\b/i.test(t)
-      && !isExploreIntent(t)) {
-    return { kind: 'exit' };
+  // IT-1 / DTD-B: a BARE "<motion> outside/outdoors" (no adverb) exits. It YIELDS to
+  // a presence question ("head outside, who do I see?" → the roster) via the who-guard,
+  // and to a survey that LEADS ("look around, then maybe head outside" → survey the room
+  // first). But a survey clause that TRAILS the exit gesture ("go outside AND look
+  // around") is the natural follow-on to arriving outside — the exit wins, never a
+  // reason to keep re-describing the interior (DTD-B: the newbie's "can I go outside and
+  // look around?"). Positional: the exit wins only when the leave verb PRECEDES the
+  // look/survey token, so "look around outside the window" (no motion verb — never
+  // reaches here) and "look around then head out" (survey leads) still survey. WB-F4
+  // over-match holds — a bare survey with no motion-outside gesture never enters this
+  // branch.
+  if (!riseOnly) {
+    const exitGesture = t.match(/\b(?:go(?:es)?|step(?:s|ped|ping)?|walk(?:s|ed|ing)?|head(?:s|ed|ing)?|move(?:s|d)?|wander(?:s|ed|ing)?)\s+(?:outside|outdoors)\b/);
+    const asksWho = /\bwho(?:'?s|\s+(?:is|are|do|did|can|could|might|else))\b/i.test(t);
+    if (exitGesture && !asksWho) {
+      const surveyIdx = t.search(/\b(?:look|looking|glance|peek|explore|survey|scan)\b/);
+      const exitLeadsSurvey = surveyIdx === -1 || exitGesture.index < surveyIdx;
+      if (!isExploreIntent(t) || exitLeadsSurvey) return { kind: 'exit' };
+    }
+    // Bare "go/head/walk out" (no "-side") counts as a leave ONLY when a TRAILING
+    // look/survey clause disambiguates it from idioms ("figure it out", "go out of
+    // your way"). "step out" is already claimed above; "out of line/turn/…" is guarded;
+    // "out of here" already exits via the leave regex above.
+    const bareOut = /\b(?:go(?:es)?|head(?:s|ed|ing)?|walk(?:s|ed|ing)?)\s+out\b/.test(t);
+    const trailsLook = /\bout\b[^.!?]*\b(?:and|then|to|so)\b[^.!?]*\b(?:look|glance|peek|explore|survey|scan)\b/i.test(t);
+    if (bareOut && !asksWho && trailsLook
+        && !/\bout\s+of\s+(?:line|turn|character|place|order|step|sync)\b/.test(t)) {
+      return { kind: 'exit' };
+    }
   }
   // "out the door", "to the open air", "into the open" — explicit egress phrasings
   // that name the threshold or the outside rather than the verb.
@@ -3939,6 +3959,25 @@ function inferInteriorAction(text, interior, opts = {}) {
     return { kind: 'move', toRoomId: String(goMatch[1] || ''), direction: '' };
   }
   return { kind: 'none' };
+}
+
+// DTD-B — the meta pre-check guard. `doSubmitMove` (and the gate harness) answer a
+// META_LOCATION question ("look around", "what's here") from the rich grounded survey
+// BEFORE playerMove runs. But "can I go outside and look around?" also carries a real
+// exit gesture — surveying the interior strands the player in the room (the newbie
+// gate repro: they had to repeat "I said I want to go outside"). This reports whether
+// the text is a movement the DM must RESOLVE, so the caller can skip the survey and let
+// playerMove's exit/move handler own the turn. A bare "look around" (no gesture) returns
+// false and still gets the survey — no regression to the common look-around. The
+// precedence logic lives here in playloop, not in a caller-side regex.
+export function carriesInteriorMovementIntent(world, text) {
+  try {
+    const interior = world?.scene?.interior || null;
+    const a = inferInteriorAction(String(text || ''), interior);
+    return !!a && (a.kind === 'exit' || a.kind === 'move' || a.kind === 'enter');
+  } catch {
+    return false;
+  }
 }
 
 // ── D0: the Underworld — intent + narration helpers (docs/WORLD_AND_DUNGEONS.md).

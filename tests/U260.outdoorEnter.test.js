@@ -135,9 +135,12 @@ test('U260: "head outside, who do I see?" answers (does NOT exit-and-stop) — p
   assert.equal(inside(r.world), true, 'the presence question wins — not a bare exit');
   // It delivers the roster (names present folk), not "you step back outside".
   assert.doesNotMatch(r.output.narration || '', /you step back outside/i);
-  // "head outside and look around" yields to the survey too (isExploreIntent guard).
+  // DTD-B (U311) reverses the old survey-wins call here: a survey clause that TRAILS
+  // the exit gesture ("head outside AND look around") is the natural follow-on to
+  // arriving outside — the exit wins. Only a LEADING survey ("look around, then maybe
+  // head outside") or a presence question ("who do I see?") still holds you inside.
   const r2 = playerMove(boot(), PACKS, 'I head outside and look around');
-  assert.equal(inside(r2.world), true, 'survey intent wins over the bare exit');
+  assert.equal(inside(r2.world), false, 'exit wins over a trailing "and look around" (DTD-B)');
 });
 
 // The rise-from-furniture guard must survive the broadened exit rule: standing up out

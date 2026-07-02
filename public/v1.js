@@ -1,6 +1,6 @@
 import { normalizeManifest, normalizePack } from '../engine/rulesets.js';
 import { newWorld, ensureWorld } from '../engine/state.js';
-import { beginAdventure, playerMove, newScene, setPieceCooldownGate } from '../engine/playloop.js';
+import { beginAdventure, playerMove, newScene, setPieceCooldownGate, carriesInteriorMovementIntent } from '../engine/playloop.js';
 import { isMetaQuestion, handleMetaQuestion, looksMultiAction } from '../engine/grace/gracefulAdjudication.js';
 import { exitsFrom, ensureMap, cleanPlaceName } from '../engine/map/mapState.js';
 import { dayPhase, clockLabel } from '../engine/dayNight.js';
@@ -673,7 +673,7 @@ async function doSubmitMove() {
   // "What happened with the cold well?" is a question for the NPC, not the DM
   // ("what happened" was shadowing dialogue asks as a recap request).
   const inDialogue = Boolean(w.scene?.dialogue?.npcId);
-  if (!w.combat?.active && !inDialogue && isMetaQuestion(text)) {
+  if (!w.combat?.active && !inDialogue && isMetaQuestion(text) && !carriesInteriorMovementIntent(w, text)) {
     const answer = handleMetaQuestion(text, w);
     if (answer) {
       ui.play.lines.push({ who: 'you', text, mech: '' });

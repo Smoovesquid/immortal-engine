@@ -23,6 +23,21 @@ Handle doc/process micro-decisions yourself; surface only forks that need Tim's 
   strategic fork — the Road-A-vs-B call is resolved (see "Open strategic question" below), not for
   prompt-writing, result ingestion, or routine gate-judging.
 
+## LATEST GATE — 2026-07-02 (post IOM-P1..P5, v0.20.3) — `docs/playtests/opus-gate-2026-07-02.md`
+**6/48 (13%) · all VIBE-axis · CRUNCH clean (0/48).** The interior object-model cluster HELD — no invented
+geography, and the chest/jar/letter sequence + "go outside" all resolved. Judge by bug-nature not the number
+(persona-variance; prior comparable gate-11 was 12/48): the mechanics floor is solid; every remaining fail is
+the DM's *words / intent-resolution*, i.e. the narration+grace frontier, not a new regression.
+- **DM_TEST_DEADEND (4) — DOMINANT → next packet.** The DM bounces player intent instead of resolving it: a
+  rules/meta question got ROLLED (a d20 on "is Gravedigger a class with abilities?"); an in-fiction question
+  ("who lit the lantern?") got a navigation prompt; "can I go outside?" re-described the room. → grace
+  meta-question binding + movement-intent routing (Road A, deterministic).
+- **CANON_HALLUCINATION (1).** "what's my name/class/HP/gear?" → DM invented gear (Mirror shard/staff/blade/helm)
+  absent from the bundle (canon = 2 Holy water). → feed real inventory/HP into the character-sheet answer
+  (a P2-style grounding packet).
+- **DM_ARTIFACT_LEAK (1).** "breathe in smoke on purpose" → "You manage the back, and it goes your way"
+  (template nonsense ignoring the scene). → THE_REF narration-validator territory.
+
 ## Don't trust a stale snapshot — verify current state yourself
 This doc is hand-edited after every batch, but it is still a snapshot. **Before acting on anything
 below, confirm it against reality:** `git log --oneline -10` for the real HEAD/ahead-behind state,
@@ -1209,7 +1224,7 @@ Full per-turn detail in the report file. Catalog these as the next hard-tail pac
 once a worker prompt is drafted. Priority order: CRASH → DM_TEST_DEADEND → CRUNCH_INCONSISTENCY →
 CANON_HALLUCINATION.
 
-## Budget — **$29.82 (Tim, 2026-06-23); three gates (Phase-A + D-B1 confirmation + D-B4 boundary, seed `tallow`) ~$2.77 + $2.78 + $2.75 → ~$21.52 remaining** (~7 runs at ~$2.80). Supersedes the stale $20/06-22 line below. Re-confirm before any run that would drop below ~$2.5.
+## Budget — **2026-07-02 gate (post IOM-P1..P5, seed `tallow`) ~$2.74 by the script's estimate → ~$18.78 remaining** (~6 runs). NOTE: the script prints its estimate at a stale $15/$75 per-M rate; Opus 4.8 is $5/$25, so the real charge was likely ~$0.9 → true remaining is nearer ~$20.6. Re-confirm Tim's actual balance before any run that would drop below ~$2.5. _Prior:_ $29.82 (2026-06-23) − three gates ~$2.77+$2.78+$2.75 → ~$21.52.
 - _History:_ **Tim confirmed $20.00 on 2026-06-22.** Gate 11 (capstone) ran ~$2.86 → **~$17.14 remaining (~6 runs at the real ~$2.80/run).** Real per-run ≈ $2.76–2.86 (NOT the brief's $1.10/run).
 Tim confirmed actual balance **$10.51** on 2026-06-20. Gate 1 (~$2.63,
 `docs/playtests/opus-gate-2026-06-20-convergence-baseline.md`) → **~$7.88**. Gate 2 (2026-06-21, ~$2.71,

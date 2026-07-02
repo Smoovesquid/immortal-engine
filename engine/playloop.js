@@ -22,7 +22,8 @@ import { applyGeneratedStructuresForNode } from './structures/applyGeneratedStru
 import { enterStructureInterior, exitStructureInterior, moveWithinInterior, getInteriorView, interiorDirectionalExits, resolveStructureSelection } from './structures/interiors.js';
 import { normalizeTopology, adjacentRooms } from './structures/topology.js';
 import { roomWindows, roomWindowFacings } from './structures/roomWindows.js';
-import { objectsHere } from './structures/roomObjects.js';
+import { furnitureRoomAssignments, objectsHere } from './structures/roomObjects.js';
+import { roomDetail } from './structures/roomDetail.js';
 import { reachableRooms } from './movement/interiorMovement.js';
 import { generateDungeon, dungeonLevelToStructure, isDungeonStructureId, dungeonRoomAt } from './dungeon/generate.js';
 import { createCharacter } from './chargen/genesis.js';
@@ -1409,7 +1410,7 @@ function playerMoveCore(world, packsById, text) {
     && /\b(?:room|rooms|doorway|doorways|chamber|hall|hallway)\b/i.test(String(text || ''));
   if (!targetedCombatAction && !declaredNpcViolence && interiorAction.kind === 'move'
       && (roomMoveWins || (!approachPresentNpcRef(w, text) && !talkOrApproachResolvesPresentNpc(w, text)))) {
-    const wantsRiskyMove = isRiskyOrObstructedMoveIntent(text);
+    const wantsRiskyMove = isRiskyOrObstructedMoveIntent(interiorAction.moveText || text);
     if (!wantsRiskyMove) {
       const targetRoomId = interiorAction.toRoomId
         || pickAdjacentInteriorByDirection(w, interiorAction.direction)
@@ -1465,6 +1466,12 @@ function playerMoveCore(world, packsById, text) {
           : interiorAction.roomHint === 'aft'
             ? 'Wizard: You step through into the next room.'
             : movedDir ? `Wizard: You move ${movedDir} into the next room.` : 'Wizard: You move on into the next room.';
+        if (interiorAction.thenText) {
+          const acted = playerMoveCore(w2, packsById, interiorAction.thenText);
+          const actLine = String(acted?.output?.narration || '').replace(/^Wizard:\s*/, '').trim();
+          const joined = actLine ? `${moveMsg} ${actLine}` : moveMsg;
+          return { ...acted, output: { ...(acted.output || {}), narration: joined } };
+        }
         return { world: w2, output: { narration: moveMsg, mechanics: '' } };
       }
       const blockedDir = normalizeDir(interiorAction.direction);
@@ -3756,9 +3763,22 @@ function joinFacings(facings) {
   return `${parts.slice(0, -1).join(', ')} or ${parts[parts.length - 1]}`;
 }
 
-function inferInteriorAction(text, interior) {
+const INTERIOR_THEN_ACTION_RE = /\b(?:open|close|shut|look|examine|inspect|study|search|rummage|rifle|peer|peek|read|take|grab|pick\s+up|snatch|seize|collect|loot|pocket|claim|lift|touch|reach|hold|catch|grasp|force|break|smash|bash|kick|shove|wrench|pry|pull|push|move|drag|haul|light|eat|drink|use|talk|ask|tell|attack|strike|slash|cut)\b/i;
+
+function splitInteriorMoveThenAct(text) {
+  const m = String(text || '').trim().match(/^([\s\S]+?)\s+and\s+(?:then\s+)?([\s\S]+)$/i);
+  if (!m) return null;
+  const moveText = String(m[1] || '').trim().replace(/[.!?,;:]+$/g, '').trim();
+  const thenText = String(m[2] || '').trim().replace(/^[,;:]+/g, '').trim();
+  if (!moveText || !thenText) return null;
+  if (!INTERIOR_THEN_ACTION_RE.test(thenText)) return null;
+  return { moveText, thenText };
+}
+
+function inferInteriorAction(text, interior, opts = {}) {
   const t = String(text || '').toLowerCase().trim();
   const inside = Boolean(interior && typeof interior === 'object');
+  const allowCompound = opts.allowCompound !== false;
   if (!t) return { kind: 'none' };
 
   if (!inside) {
@@ -3799,6 +3819,15 @@ function inferInteriorAction(text, interior) {
   const risesFromFurniture = /\b(?:step|steps|stepped|stepping|get|gets|got|getting|climb|climbs|climbed|climbing|rise|rises|rose|rising|hop|hops|hopped|swing|swings|swinging|roll|rolls|rolled)\s+(?:up\s+|back\s+)?out\s+of\s+(?:the\s+|my\s+|his\s+|her\s+|your\s+|its\s+)?(?:bed|cot|bunk|bedroll|hammock|chair|seat|stool|bench|saddle|tub|bath|covers|blankets|sheets|pallet)\b/i;
   const hasExitCue = /\b(?:outside|out the door|out that door|to the open air|into the open|leave the (?:room|building|inn|house|hut|cabin)|exit|out of here|out of the (?:room|inn|building|house|hut|cabin))\b/i.test(t);
   const riseOnly = risesFromFurniture.test(t) && !hasExitCue;
+
+  const compound = allowCompound ? splitInteriorMoveThenAct(t) : null;
+  if (compound) {
+    const move = inferInteriorAction(compound.moveText, interior, { allowCompound: false });
+    if (move?.kind === 'move') {
+      return { ...move, thenText: compound.thenText, moveText: compound.moveText };
+    }
+  }
+
   if (!riseOnly && (
     /\b(leave|exit|go outside|step outside|ascend|to the surface|get out|out of here|head out|back out|back up|up and out|go up|head up)\b/.test(t) ||
     /\bclimb\b[^.!?]*\b(out|up|back|surface|stairs?|steps?)\b/.test(t) ||
@@ -6793,7 +6822,7 @@ function answerOrDeclineQuestion(world, text, outcome) {
 // not resolving the intent (IT-5). A 1–3-word noun phrase after a determiner, stopped
 // at a preposition/particle/conjunction; abstract idiom-objects (a moment, a look)
 // return '' so the prose falls back to the place-generic. Pure (determinism-safe).
-function genericActionObject(t) {
+function genericActionObjectFromClause(t) {
   const s = String(t || '').toLowerCase().replace(/^\s*(?:i\s+)?(?:try(?:ing)?\s+to\s+|attempt(?:ing)?\s+to\s+|want\s+to\s+|decide\s+to\s+|then\s+|carefully\s+|quietly\s+|slowly\s+)?/i, '').trim();
   // DIRECT object only: <verb> [<adverb>] <determiner> <object>. Anchoring the
   // determiner right after the verb excludes a PREPOSITIONAL/movement object ("swing
@@ -6803,6 +6832,46 @@ function genericActionObject(t) {
   // Reject abstract / idiom "objects" — naming them in a failure reads wrong.
   if (/\b(?:moment|time|chance|risk|look|seat|breath|stock|cover|aim|lead|step|steps|way|idea|thought|plan|courage|heart|measure|stand)\b/.test(obj)) obj = '';
   return obj;
+}
+
+function genericActionObject(t) {
+  const clauses = String(t || '').toLowerCase().split(/[,;]|\s+and\s+(?:then\s+)?/i).map(s => s.trim()).filter(Boolean);
+  for (const clause of clauses.length ? clauses : [t]) {
+    const obj = genericActionObjectFromClause(clause);
+    if (obj) return obj;
+  }
+  return '';
+}
+
+function roomLabelForAssignment(world, assignment) {
+  const st = world?.structures?.byId?.[String(assignment?.structureId || '')];
+  const topo = normalizeTopology(st?.topology);
+  const room = topo?.rooms?.find(r => String(r.id) === String(assignment?.roomId || ''));
+  const label = roomDetail(room, st?.buildingType || null)?.name || 'that room';
+  return String(label).toLowerCase();
+}
+
+function siblingRoomObject(world, target) {
+  const name = String(target || '').toLowerCase().trim();
+  if (!name || name === 'it') return null;
+  const interior = (world?.scene && typeof world.scene.interior === 'object') ? world.scene.interior : null;
+  if (!interior) return null;
+  const tail = name.split(/\s+/).filter(Boolean).pop() || '';
+  if (objectsHere(world).map(o => o.piece).some(f => nameMatches(f?.name, name, tail))) return null;
+
+  const nodeId = String(world?.map?.currentNodeId || '');
+  const node = (world?.map?.nodes || []).find(n => n && String(n.id) === nodeId) || null;
+  const assignments = furnitureRoomAssignments(world, nodeId);
+  for (const f of (node?.furniture || [])) {
+    if (!nameMatches(f?.name, name, tail)) continue;
+    const assignment = assignments.get(String(f.name || ''));
+    if (!assignment) continue;
+    if (String(assignment.structureId) === String(interior.structureKey || '')
+        && String(assignment.roomId) !== String(interior.roomId || '')) {
+      return { name: String(f.name || name), roomName: roomLabelForAssignment(world, assignment), roomId: String(assignment.roomId) };
+    }
+  }
+  return null;
 }
 
 // Grounded prose for any resolved non-combat action that would otherwise floor.
@@ -6839,7 +6908,16 @@ export function genericGroundedOutcome(world, text, outcome, meta = {}) {
   const V = (key, variants) => `Wizard: ${pickVariant(variants, world, key)}`;
 
   if (/\b(take|grab|pick up|snatch|seize|collect|loot|pocket|claim)\b/.test(t)) {
-    const what = takeTargetOf(t) || 'it';
+    const what = takeTargetOf(t);
+    const sibling = o === 'f' ? siblingRoomObject(world, what) : null;
+    if (sibling) {
+      return V(`take:f:sibling:${sibling.name}:${sibling.roomId}`, [`The ${sibling.name} is back in the ${sibling.roomName} — nothing like it here.`]);
+    }
+    if (!what) {
+      return o === 's' ? V('take:s:it', [`You take it and stow it.`, `You pocket it and move on.`, `It's yours now, tucked away.`])
+        : o === 'm' ? V('take:m:it', [`You get a hand on it, though carrying it off is more awkward than you'd hoped.`, `You take it, but it's bulkier than it looked.`])
+        : V('take:f:it', [`You reach for it, but it doesn't come away so easily — it stays put.`, `It won't budge for you; you leave it where it is.`]);
+    }
     return o === 's' ? V(`take:s:${what}`, [`You take the ${what} and stow it.`, `You pocket the ${what} and move on.`, `The ${what} is yours now, tucked away.`])
       : o === 'm' ? V(`take:m:${what}`, [`You get a hand on the ${what}, though carrying it off is more awkward than you'd hoped.`, `You take the ${what}, but it's bulkier than it looked.`])
       : V(`take:f:${what}`, [`You reach for the ${what}, but it doesn't come away so easily — it stays put.`, `The ${what} won't budge for you; you leave it where it is.`]);
@@ -6899,6 +6977,10 @@ export function genericGroundedOutcome(world, text, outcome, meta = {}) {
   // disagree ("the floorboards won't give"). Otherwise fall back to the place-generic.
   const obj = genericActionObject(t);
   if (obj) {
+    const sibling = o === 'f' ? siblingRoomObject(world, obj) : null;
+    if (sibling) {
+      return V(`gen:f:sibling:${sibling.name}:${sibling.roomId}`, [`The ${sibling.name} is back in the ${sibling.roomName} — nothing like it here.`]);
+    }
     return o === 's' ? V(`gen:s:${obj}`, [`You manage the ${obj}, and it goes your way.`, `You get the better of the ${obj}; the way ahead opens a little.`, `You work the ${obj}, and it comes off the way you meant.`])
       : o === 'm' ? V(`gen:m:${obj}`, [`You get the ${obj} part of the way, but no further.`, `You make some headway with the ${obj}, though not all you hoped.`, `You half-manage the ${obj} — it gives ground, grudgingly.`])
       : V(`gen:f:${obj}`, [`You can't get the ${obj} to budge; you're left where you started.`, `Whatever you tried, you can't make the ${obj} give.`, `The ${obj} holds against you, and nothing about it changes.`]);

@@ -7136,6 +7136,35 @@ export function genericGroundedOutcome(world, text, outcome, meta = {}) {
       : o === 'm' ? V('smell:m', [`You catch a tangle of smells, nothing you can place.`, `The air gives you a muddle of scents and no clear read.`])
       : V('smell:f', [`The air tells you nothing new.`, `You breathe deep and learn nothing.`]);
   }
+  // DS-1a: a sense/detect check aimed at THE DEAD (the Gravedigger's
+  // death-sense, "detect for the dead", "scan for anything dead") is an
+  // enumerable-presence-domain check — the same shape as the object-presence
+  // precedent at :1683. A SUCCESS or MIXED result renders the grounded canon
+  // read (a named corpse if the node actually holds a defeated NPC) or the
+  // DEFINITE NEGATIVE ("nothing dead within reach") — never the gen-bank
+  // atmosphere filler below. Fog is not an answer; a grounded "nothing there"
+  // is (THE_DM_TEST/THE_TABLE_TEST; second-order diagnosis §4a). DS-1b (giving
+  // the demo an actual necro-substrate to find) is parked for Tim — this path
+  // stays permanently, honestly empty until then.
+  const SENSE_DEATH_RE = /\bdeath[- ]sense\b|\b(?:sense|detect|scan(?:s|ning)?|search|feel out|reach out)\b[^.?!]{0,40}\b(?:dead|undead|death|corpse|corpses|remains|the fallen|spirits?)\b/i;
+  if ((o === 's' || o === 'm') && SENSE_DEATH_RE.test(t)) {
+    const nodeId = String(world?.map?.currentNodeId || '');
+    const node = (world?.map?.nodes || []).find(n => n && n.id === nodeId) || null;
+    const npcs = Array.isArray(node?.settlement?.npcs) ? node.settlement.npcs : [];
+    const corpse = npcs.find(n => isNpcAlreadyDefeated(world, n));
+    if (corpse) {
+      const name = String(corpse.name || '').trim() || 'a body';
+      return V(`sense:dead:${corpse.id || name}`, [
+        `Your sense catches on ${name} — dead, and near enough to feel.`,
+        `The sense pulls toward ${name}'s body; the dead don't hide from it.`,
+      ]);
+    }
+    return V('sense:dead:empty', [
+      `Your sense sweeps ${place} and finds nothing dead within reach — a rare quiet.`,
+      `You reach out with the sense, and ${place} gives back nothing dead nearby — an unusual stillness.`,
+      `The dead-sense comes back empty here — nothing within reach has died, or none of it lingers.`,
+    ]);
+  }
   if (/\b(wait|linger|pause|bide|stay put|do nothing)\b/.test(t) || /\bhold (?:still|on)\b/.test(t)) {
     return o === 'f' ? V('wait:f', [`You wait, and the time you spend earns you nothing.`, `You hold still, and the wait costs you more than it gives.`])
       : V('wait:s', [`You wait, watchful, and let the moment in ${place} run on.`, `You bide your time, eyes moving over ${place}.`, `You hold where you are, patient, taking ${place} in.`]);

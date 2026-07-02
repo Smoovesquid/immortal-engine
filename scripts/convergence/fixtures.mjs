@@ -253,6 +253,24 @@ export function tradeTownTavernDialogueWorld() {
   });
 }
 
+// (DS-1a) village_baker with party stress:1 — the composer's stress clause
+// ("a thread of strain runs under your breath") is a DETERMINISTIC (non-rng)
+// abstract-floor trigger (composer.js buildStressPhrase), so a death-sense
+// success reliably reaches genericGroundedOutcome's DS-1a branch through the
+// real playerMove path, not just direct unit calls. No dead NPC modeled here.
+export function deathSenseEmptyWorld() {
+  const w = villageBakerWorld();
+  return { ...w, party: (w.party || []).map((p, i) => i === 0 ? { ...p, stress: 1 } : p) };
+}
+
+// (DS-1a) Same stress:1 rig as deathSenseEmptyWorld, but on defeated_npc — a
+// corpse IS present, so the death-sense must find it (the grounded positive),
+// never the false-negative.
+export function deathSenseWithCorpseWorld() {
+  const w = defeatedNpcWorld();
+  return { ...w, party: (w.party || []).map((p, i) => i === 0 ? { ...p, stress: 1 } : p) };
+}
+
 export const FIXTURES = {
   village_baker: villageBakerWorld,
   prior_roll: priorRollWorld,
@@ -263,5 +281,7 @@ export const FIXTURES = {
   crowd_baker: crowdBakerWorld,
   defeated_npc: defeatedNpcWorld,
   trade_town_tavern: tradeTownTavernWorld,
-  trade_town_tavern_dialogue: tradeTownTavernDialogueWorld
+  trade_town_tavern_dialogue: tradeTownTavernDialogueWorld,
+  death_sense_empty: deathSenseEmptyWorld,
+  death_sense_with_corpse: deathSenseWithCorpseWorld
 };

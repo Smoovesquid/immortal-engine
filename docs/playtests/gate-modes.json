@@ -1,0 +1,10 @@
+{
+  "runs": [
+    {
+      "runId": "gate-2026-07-02T19-44-24-605Z-bridge",
+      "date": "2026-07-02",
+      "regime": "bridge",
+      "modes": []
+    }
+  ]
+}

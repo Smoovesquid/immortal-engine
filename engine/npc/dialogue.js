@@ -216,6 +216,21 @@ export function commonKnowledgeAnswer(world, npc, text) {
     return { mode: 'self', body: `${npc.name}. ${roleLine}.` };
   }
 
+  // ── residence: "do you live/work here?" ──
+  if (/\bdo you (?:live|work|stay|dwell) here\b|\bhave you (?:always )?lived here\b|\byou (?:from|based) here\b/i.test(t)) {
+    const role = String(npc.role || '').toLowerCase();
+    const roleLine = ROLE_LINES[role] || (role ? `I work here as the ${role}` : 'I live here');
+    const manner = voiceManner(npcVoice(npc));
+    const resLines = {
+      guarded: `${roleLine} — and that's all you need to know.`,
+      skittish: `I do, yes. Has something happened?`,
+      blunt: `${roleLine}.`,
+      open: `I do! ${roleLine}.`,
+      even: `${roleLine}, yes.`
+    };
+    return { mode: 'residence', body: resLines[manner] || resLines.even };
+  }
+
   // ── news: the rumors they actually carry ──
   if (/\b(?:any news|the news|news\?|heard anything|anything strange|strange (?:lately|going on)|been happening|goings.?on|rumou?rs?|gossip|tell me a story|tell me something)\b/.test(t)) {
     const { surfacedRumors } = filterRumors(npc, Array.isArray(w.rumors) ? w.rumors : [], { trust });

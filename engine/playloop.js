@@ -2167,7 +2167,42 @@ function playerMoveCore(world, packsById, text) {
         w = daBegun.world;
         w = pushEvent(w, { kind: 'dialogueEnter', data: { npcId: daBegun.outcome.npcId, npcName: daBegun.outcome.npcName } });
         const daName = daBegun.outcome.npcName || 'them';
-        return { world: w, output: { narration: `Wizard: ${daName} stops and turns — eyes level, waiting.`, mechanics: `[dialogue enter | ${daName}]` } };
+        const daMech = `[dialogue enter | ${daName}]`;
+        // DLG-1: any direct-address fires a voice response — never the silent "turns and waits" line.
+        const dqEnterIntent = directQuestionIntent(text, w);
+        const daNpc = resolveNpcAtCurrentNode(w, daBegun.outcome.npcId);
+        // First: try to answer from common knowledge (self-identity, residence, news, directions).
+        const daCommon = daNpc ? commonKnowledgeAnswer(w, daNpc, text) : null;
+        if (daCommon?.body) {
+          const daNarr = pickVariant([
+            `${daName} says: "${daCommon.body}"`,
+            `${daName} looks up. "${daCommon.body}"`,
+            `"${daCommon.body}" ${daName} watches to see what you make of that.`
+          ], w, `dlg1:answer:${daBegun.outcome.npcId}`);
+          return { world: w, output: { narration: `Wizard: ${daNarr}`, mechanics: daMech } };
+        }
+        if (dqEnterIntent?.kind === 'npc-addressed') {
+          // Direct question, no common answer — decline in voice.
+          const daManner = daNpc ? voiceManner(npcVoice(daNpc)) : 'even';
+          const daDecline = {
+            guarded: `${daName}'s face closes. "That's my business."`,
+            skittish: `${daName} glances away. "I'd rather not say."`,
+            blunt: `"None of yours," ${daName} says.`,
+            open: `${daName} smiles, but doesn't answer. "Now that I won't tell you."`,
+            even: `"That I keep to myself," ${daName} says.`
+          }[daManner] || `"That I keep to myself," ${daName} says.`;
+          return { world: w, output: { narration: `Wizard: ${daDecline}`, mechanics: daMech } };
+        }
+        // Acquaintance contact ("do I know you?", "have we met?") — NPC self-introduces.
+        const daSelf = daNpc ? commonKnowledgeAnswer(w, daNpc, 'who are you?') : null;
+        if (daSelf?.body) {
+          const daNarr = pickVariant([
+            `${daName} meets your eye. "${daSelf.body}"`,
+            `${daName} turns to face you. "${daSelf.body}"`
+          ], w, `dlg1:intro:${daBegun.outcome.npcId}`);
+          return { world: w, output: { narration: `Wizard: ${daNarr}`, mechanics: daMech } };
+        }
+        return { world: w, output: { narration: `Wizard: ${daName} stops and turns — eyes level, waiting.`, mechanics: daMech } };
       }
     }
     return { world: w, output: { narration: `Wizard: You address the empty air — there's no one in earshot here.`, mechanics: '[social:no-target]' } };
@@ -4372,6 +4407,7 @@ function dialogueAskNarration(outcome, world) {
     case 'self':
     case 'place':
     case 'identity':   // (P-2) person-identity of a present other — common knowledge, body IS the answer
+    case 'residence':  // (DLG-1) NPC lives/works here — deterministic from settlement roster
     case 'directions':
     case 'services':
     case 'news': {

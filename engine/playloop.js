@@ -54,7 +54,7 @@ import { resolveCompanionTurn } from './combat/companionTurn.js';
 import { castSpell } from './spell/castSpell.js';
 import { classifyOffensiveCast, castConsequence } from './magic/castConsequence.js';
 import { evaluateEncounter, selectCreatures, spawnEncounter } from './combat/encounterSpawn.js';
-import { isMetaQuestion, handleMetaQuestion, isNullAction, isQuestionShaped, META_LOCATION, META_RECAP, isNpcObserverQuery, isInfoSeekingText, isConfrontationChallenge, buildLocationSurvey, windowView, knowsNpcName, describeNpc, INFO_SEEKING_EXCLUDE_RE } from './grace/gracefulAdjudication.js';
+import { isMetaQuestion, handleMetaQuestion, isNullAction, isQuestionShaped, META_LOCATION, META_RECAP, isNpcObserverQuery, isInfoSeekingText, isConfrontationChallenge, buildLocationSurvey, windowView, knowsNpcName, describeNpc, INFO_SEEKING_EXCLUDE_RE, answerCapability } from './grace/gracefulAdjudication.js';
 import { directQuestionIntent } from './grace/answerability.js';
 import { occupantsOfRoom } from './structures/roomOccupancy.js';
 import { getRoomState } from './structures/roomState.js';
@@ -1177,6 +1177,14 @@ function playerMoveCore(world, packsById, text) {
         return npcReferentClarify(w, ungroundedRef, { mechanics: '[clarify:who]', mode: 'talk' });
       }
     }
+    // AG-2: a rules/mechanics question ("Gravedigger's an odd class — what can I
+    // actually do with it? special abilities?") reads its proper-noun-looking word
+    // as an ungrounded NPC name before this guard — classify first so the class/
+    // ability question gets the rules answer, not a "who do you mean?" clarify.
+    const earlyDqKind = directQuestionIntent(text, w);
+    if (earlyDqKind?.kind === 'rules') {
+      return { world: w, output: { narration: `Wizard: ${answerCapability(w)}`, mechanics: 'observe only — no roll, state unchanged' } };
+    }
     const earlyUngroundedRef = ungroundedNpcReferentForText(w, text, { requirePersonSignal: true });
     if (earlyUngroundedRef) {
       return npcReferentClarify(w, earlyUngroundedRef, { mechanics: '[clarify:referent]', mode: 'decline' });
@@ -1650,14 +1658,25 @@ function playerMoveCore(world, packsById, text) {
   // Surface-only exploration: list adjacent map nodes deterministically (no roll, no tick, no timeline).
   // Skipped when combat is active — during a fight, everything routes through the combat resolver.
   if (!w.combat?.active && isExploreIntent(text) && !isDirectAddressIntent(text)) {
-    // AG-1: isExploreIntent's broad "who/what/where" prefix catches referent-followup
-    // questions ("who's it from?", "who sent this?", "who wrote this?") before the
-    // pre-roll gate can intercept them. A referent-followup is a direct question, not
-    // a room survey — route to answer/decline so it never produces a location survey.
+    // AG-1/AG-2: isExploreIntent's broad "who/what/where" prefix catches direct
+    // questions ("who's it from?", "who sent this?", "is Gravedigger a class?")
+    // before the pre-roll gate can intercept them. A typed direct question
+    // (referent-followup/rules) is not a room survey — route to answer/decline
+    // so it never produces a location survey, and — for `rules` — so it never
+    // gets read as an ungrounded NPC referent at the guard below (a "class"/
+    // "ability" question pre-empts the proper-noun clarify). NOTE: `place` is
+    // deliberately NOT widened here — it's the classifier's broad catch-all
+    // (any generic info-shaped question), and rerouting it this early swallowed
+    // grounded answers owned by later, more specific handlers ("where's the
+    // tavern?", "who runs this place?" — see the C9/C12 convergence regression
+    // this caused when tried).
     if (!w.scene?.dialogue) {
       const dqKind = directQuestionIntent(text, w);
-      if (dqKind && dqKind.kind === 'referent-followup') {
-        const ans = answerOrDeclineQuestion(w, text, 'no-info');
+      if (dqKind?.kind === 'rules') {
+        return { world: w, output: { narration: `Wizard: ${answerCapability(w)}`, mechanics: 'observe only — no roll, state unchanged' } };
+      }
+      if (dqKind?.kind === 'referent-followup') {
+        const ans = answerOrDeclineQuestion(w, text, 'no-info', dqKind);
         if (ans) return { world: w, output: { narration: ans, mechanics: noInfoCheckResult().mechanicsLine } };
       }
     }
@@ -1703,6 +1722,15 @@ function playerMoveCore(world, packsById, text) {
         }
         return { world: w, output: { narration: `Wizard: No — no ${presenceNoun} here.${groundClause}`, mechanics: 'observe only — no roll, state unchanged' } };
       }
+    }
+    // AG-2 Part B: a look-around turn that ALSO carries a presence sub-question
+    // ("what do I see in here — and who's standing in it?") must name who's
+    // present, not the bare exits recap below (which never mentions people at
+    // all). Route through buildLocationSurvey with presence:true so the room
+    // roster runs. A BARE look-around (no presence question) stays on the
+    // exits-only recap below — the FIRST_ROOM #4 anti-regression.
+    if (w.scene?.interior && !w.scene?.dialogue && PRESENCE_Q_RE.test(text)) {
+      return { world: w, output: { narration: `Wizard: ${buildLocationSurvey(w, { presence: true, queryText: text })}`, mechanics: 'observe only — no roll, state unchanged' } };
     }
     if (w.scene?.interior) {
       const view = getInteriorView(w);
@@ -2169,7 +2197,17 @@ function playerMoveCore(world, packsById, text) {
   // a present NPC without naming them. The extractDialogueRef m3 guard (above)
   // prevents garbage talkRef; this catch routes it to dialogue before the skill-roll
   // fallthrough. (H-15, Rung-1 gate 2026-06-18.)
-  if (!w.combat?.active && !w.scene?.dialogue && isDirectAddressIntent(text)) {
+  // AG-2: isDirectAddressIntent's "who's this/that …" pattern over-matches an
+  // object referent-followup ("who's this letter from?" — "this"/"that" followed
+  // by an actual noun) as a person-address. A BARE demonstrative ("who is that?",
+  // no noun following) is NOT an object referent — that stays dialogue-enter
+  // (the narrator skips demonstratives; locked corpus C4). Only strip direct-
+  // address when there's a concrete noun between the demonstrative and the rest
+  // of the question.
+  const DA_OBJECT_REFERENT_RE = /\bwho(?:'s|\s+is)\s+(?:this|that)\s+[a-z]/i;
+  const daDqKind = DA_OBJECT_REFERENT_RE.test(text) && !w.combat?.active && !w.scene?.dialogue ? directQuestionIntent(text, w) : null;
+  const daIsObjectReferent = daDqKind && (daDqKind.kind === 'place' || daDqKind.kind === 'referent-followup');
+  if (!w.combat?.active && !w.scene?.dialogue && !daIsObjectReferent && isDirectAddressIntent(text)) {
     const daNode = (w.map?.nodes || []).find(n => n && n.id === w.map?.currentNodeId) || null;
     const daNpcs = (daNode?.settlement?.npcs || []).filter(n => n && !n.hostile);
     if (daNpcs.length) {
@@ -6876,6 +6914,10 @@ function confrontationReaction(world, npc, outcome = 'failure') {
 const PRESENCE_Q_RE = new RegExp([
   String.raw`\bwho\b[^?]{0,40}\b(?:do|did|can|could|would|will|might|should)\s+(?:i|we)\s+(?:see|meet|spot|find|notice|run\s+into|come\s+across|talk\s+to|deal\s+with)\b`,
   String.raw`\bwho(?:'s|s|\s+is|\s+are)?\b[^?]{0,24}\b(?:here|around|about|present|nearby|outside|inside|with\s+(?:me|us))\b`,
+  // AG-2: "who's standing in it" — a room-referent presence question the "here/
+  // inside" alternation above misses (the pronoun points at the room, not a
+  // location word). Widened minimally per AG-2's Part B.
+  String.raw`\bwho(?:'s|s|\s+is|\s+are)?\b[^?]{0,30}\b(?:standing\s+)?in\s+it\b`,
   String.raw`\bwho\s+else\b`,
   String.raw`\b(?:any\s?one|any\s?body|some\s?one|some\s?body)\b[^?]{0,16}\b(?:here|around|about|nearby|present|else|with\s+(?:me|us))\b`,
   String.raw`\b(?:is|are)\s+there\s+(?:a|an|any|some|another|other)\b[^?]{0,40}\b(?:here|around|about|nearby|in\s+(?:this|the))\b`,
@@ -6904,15 +6946,29 @@ function namesPresentNpc(world, t) {
   });
 }
 
+// AG-2R / LH-3: an npc-addressed MOTIVE or SECRET question ("what are you
+// afraid I'll find?", "what are you hiding?") is not a fact-slot question —
+// motive/secret isn't grounded content yet, so the DM-Test-passing terminal is
+// the NPC's own in-voice decline, never a Wizard place-overview served with the
+// hedge suffix (the wrong-fact-delivery shape the second-order diagnosis found).
+const MOTIVE_SECRET_RE = /\b(?:afraid|hiding|secret|motive|ulterior|really\s+(?:want|think|know|mean)|why.*really)\b/i;
+
 // A concrete information/presence QUESTION that reached the last-resort floor:
 // deliver from canon (the present roster, or a grounded fact) or honestly decline
 // — NEVER the gen:s/m/f atmosphere bank ("you see it through, it goes your way").
 // Returns a narration string, or null to let the gen bank own it (action /
 // permission questions, action statements that merely end in "?"). (gate-15)
-function answerOrDeclineQuestion(world, text, outcome) {
+//
+// AG-2R: an optional `intent` (the classifier's typed verdict from
+// directQuestionIntent) skips the RE-DERIVATION at (b) — isQuestionShaped and
+// ACTION_PERMISSION_Q_RE re-run the same exclusion logic from raw text that the
+// caller already resolved, which silently no-ops the reroute on imperatives
+// like "tell me about the last traveler" (Blocker B, second-order diagnosis
+// §1.3). When intent is supplied, the typed kind is trusted instead of re-argued.
+function answerOrDeclineQuestion(world, text, outcome, intent) {
   const o = outcome === 'success' ? 's' : outcome === 'failure' ? 'f' : 'm';
   const t = String(text || '').toLowerCase().trim();
-  if (!isQuestionShaped(t)) return null;
+  if (!intent && !isQuestionShaped(t)) return null;
   // Confrontations/accusations ("…one of you is lying. Which one?") are owned by
   // genericGroundedOutcome's confrontationReaction (reaction if an NPC is present,
   // real atmosphere if not) — never the info path. Returning null here keeps that
@@ -6928,14 +6984,21 @@ function answerOrDeclineQuestion(world, text, outcome) {
   }
   // (b) action / permission / advice questions, and action statements with a
   // trailing "?", are not info queries — let the action floor (gen) own them.
-  if (ACTION_PERMISSION_Q_RE.test(t) || INFO_SEEKING_EXCLUDE_RE.test(t)) return null;
-  // (c) a grounded fact canon actually holds → deliver (outcome-aware).
+  // Skipped when a typed intent is supplied (the classifier already ruled this
+  // out — ACTION_VERB_RE/ACTION_PERM_RE — before returning non-null).
+  if (!intent && (ACTION_PERMISSION_Q_RE.test(t) || INFO_SEEKING_EXCLUDE_RE.test(t))) return null;
   const npc = socialTarget(world, text);
+  // (c) an npc-addressed motive/secret question declines in voice — never the
+  // grounded place-dump lookup below (LH-3).
+  if (intent?.kind === 'npc-addressed' && MOTIVE_SECRET_RE.test(t)) {
+    return declineInfoSeek(world, text, npc);
+  }
+  // (d) a grounded fact canon actually holds → deliver (outcome-aware).
   const ground = lookupGroundedFact(world, text, npc);
   if (ground) {
     return o === 's' ? `Wizard: ${ground.body}` : `Wizard: ${ground.body} — given hedged, and not the whole of it.`;
   }
-  // (d) otherwise an honest in-fiction decline (escalates under repeat pressure).
+  // (e) otherwise an honest in-fiction decline (escalates under repeat pressure).
   return declineInfoSeek(world, text, npc);
 }
 
@@ -7035,7 +7098,7 @@ export function genericGroundedOutcome(world, text, outcome, meta = {}) {
   {
     const dqFloor = directQuestionIntent(t, world);
     if (dqFloor) {
-      const ans = answerOrDeclineQuestion(world, text, outcome);
+      const ans = answerOrDeclineQuestion(world, text, outcome, dqFloor);
       if (ans) return ans;
     }
   }

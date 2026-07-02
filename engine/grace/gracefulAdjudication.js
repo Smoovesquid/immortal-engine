@@ -1233,7 +1233,7 @@ function answerClassLine(world) {
 // Rules/capability question answer — "is Gravedigger a class?" / "what can I
 // do in a fight?". Answered from the ruleset and archetype, never rolled.
 // (DTD-A Fix 1)
-function answerCapability(world) {
+export function answerCapability(world) {
   const arch = String(world.party?.[0]?.archetype || '').trim();
   const parts = [];
   if (arch) {

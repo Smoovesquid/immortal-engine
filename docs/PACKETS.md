@@ -565,6 +565,30 @@ engine field (P-66c) — revert the named files.
 
 ---
 
+## QUEUE — Interior Object Model track (specced 2026-07-01, Fable brief)
+
+**Provenance:** `docs/briefs/INTERIOR_OBJECT_MODEL.md` — the diagnosed root of the WB-Q2/Q3/Q5/Q9
+cluster (two disjoint object models; every narration/dialogue sink improvising its own room state).
+**P1 (foundational) landed 2026-07-01** (`4400956`, v0.20.1): room-scoped objects via
+`engine/structures/roomObjects.js` (derived, seeded, no WORLD_VERSION bump), all interaction gates +
+survey + physics detection + harness scorer consume it; U307 9/9, suite 9041/0, convergence 109/109,
+playtest:quick clean, verified live in v1 (wake room lists its pieces; next room honestly bare).
+Each remaining packet is one bounded file-set — full specs, file lists, and done-whens live in the brief:
+
+- **IOM-P2 — DM prompt learns the room** (`roomState.js` façade + `narratorContext.js` +
+  `llmAdapter.js`): interior facts gain the room's real objects; NPC block marks who is actually
+  in the room. Kills DM-invented furniture (WB-Q5's second half) and feeds the WB-Q8 fix.
+- **IOM-P3 — dialogue voice stops inventing space** (WB-Q9): attach engine-built `sceneFacts` to the
+  npc-voice payload (`playloop.js` → `public/v1.js` → `server/npcVoicePrompt.js`); facts block + one
+  grounding rule; "guest rooms upstairs" in a single-storey cottage dies here.
+- **IOM-P4 — failure floor grounds in the room** (WB-Q2 residual): fix the literal "reach for the it"
+  bug (`playloop.js:6839-42`), clause-scan `genericActionObject`, name a sibling-room object honestly.
+- **IOM-P5 — compound move-then-act routing** (rest of WB-Q3): "head back to my room and open that
+  chest" = interior move + re-dispatched act clause. Hot intent-routing file — serial lane, U258-style
+  over-match guards mandatory.
+- **IOM-P6 (LATER, own Opus brief) — model convergence:** `roomDetail`'s drawn furniture becomes the
+  one physical catalog with a stored mutation overlay (WORLD_VERSION bump). Do not start until P2/P3 soak.
+
 ## QUEUE — Sellable / Surface-the-Depth track (specced 2026-06-16)
 
 > **REFRAMED 2026-06-16 → the Realization Ladder.** `docs/PATH_TO_SELLABLE.md` was rewritten

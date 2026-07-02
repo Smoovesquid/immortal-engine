@@ -55,6 +55,7 @@ import { castSpell } from './spell/castSpell.js';
 import { classifyOffensiveCast, castConsequence } from './magic/castConsequence.js';
 import { evaluateEncounter, selectCreatures, spawnEncounter } from './combat/encounterSpawn.js';
 import { isMetaQuestion, handleMetaQuestion, isNullAction, isQuestionShaped, META_LOCATION, META_RECAP, isNpcObserverQuery, isInfoSeekingText, isConfrontationChallenge, buildLocationSurvey, windowView, knowsNpcName, describeNpc, INFO_SEEKING_EXCLUDE_RE } from './grace/gracefulAdjudication.js';
+import { directQuestionIntent } from './grace/answerability.js';
 import { occupantsOfRoom } from './structures/roomOccupancy.js';
 import { getRoomState } from './structures/roomState.js';
 import { lockState, lockOpenEventData } from './structures/locks.js';
@@ -1638,6 +1639,17 @@ function playerMoveCore(world, packsById, text) {
   // Surface-only exploration: list adjacent map nodes deterministically (no roll, no tick, no timeline).
   // Skipped when combat is active — during a fight, everything routes through the combat resolver.
   if (!w.combat?.active && isExploreIntent(text) && !isDirectAddressIntent(text)) {
+    // AG-1: isExploreIntent's broad "who/what/where" prefix catches referent-followup
+    // questions ("who's it from?", "who sent this?", "who wrote this?") before the
+    // pre-roll gate can intercept them. A referent-followup is a direct question, not
+    // a room survey — route to answer/decline so it never produces a location survey.
+    if (!w.scene?.dialogue) {
+      const dqKind = directQuestionIntent(text, w);
+      if (dqKind && dqKind.kind === 'referent-followup') {
+        const ans = answerOrDeclineQuestion(w, text, 'no-info');
+        if (ans) return { world: w, output: { narration: ans, mechanics: noInfoCheckResult().mechanicsLine } };
+      }
+    }
     // H-60: a fabricated person-signalled referent inside an observer question
     // ("what is keeping Brokefang so quiet over there?", "what is Brokefang
     // staring at?") must clarify, not get swallowed as a generic look-around —
@@ -2930,7 +2942,11 @@ function playerMoveCore(world, packsById, text) {
   // is moot (a real DM doesn't roll for a fact that doesn't exist). Decided
   // PRE-ROLL from the same grounding check infoExtractionOutcome uses below,
   // so the two can never disagree about what counts as grounded.
-  const { world2, result } = isUngroundedInfoCheck(w, text)
+  // AG-1 (R3): any direct question also bypasses the dice — a real DM never
+  // rolls to decide whether to answer "were you born here?" or "who's it from?".
+  // This catches the broader set of direct questions that isUngroundedInfoCheck
+  // misses (the ones whose phrasing falls outside isInfoSeekingText's allowlist).
+  const { world2, result } = (isUngroundedInfoCheck(w, text) || directQuestionIntent(text, w))
     ? { world2: w, result: noInfoCheckResult() }
     : resolveMove(w, move);
   // Apply deltas (canon mutation path).
@@ -4766,7 +4782,7 @@ const NPC_REFERENT_STOPWORDS = new Set([
 
 const NPC_PROPER_REFERENT_STOPWORDS = new Set([
   'i', 'okay', 'ok', 'wait', 'where', 'who', 'what', 'when', 'why', 'how', 'don',
-  'dont', 'hey', 'hi', 'hello', 'stop', 'just', 'give', 'take', 'let', 'the', 'a',
+  'dont', 'hey', 'hi', 'hello', 'huh', 'stop', 'just', 'give', 'take', 'let', 'the', 'a',
   // imperative verbs that open a "tell/show/describe me about <place>" ask — never names
   'tell', 'show', 'describe',
   'an', 'wizard', 'pilgrim', 'rest',
@@ -6957,6 +6973,19 @@ export function genericGroundedOutcome(world, text, outcome, meta = {}) {
   // atmosphere bank below.
   if (isInfoSeekingText(t)) {
     return declineInfoSeek(world, text, socialTarget(world, text));
+  }
+  // AG-1: broader direct-question gate — catches question phrasings that escaped
+  // isInfoSeekingText (e.g. "were you born here?", "who sent this?"). Belt-and-suspenders:
+  // the pre-roll gate and the npcReferentClarify guards already intercept most cases;
+  // this handles the residual that reaches the gen bank. Only reroutes when
+  // answerOrDeclineQuestion returns a real string (i.e. not an action-permission question,
+  // which should still fall to the gen bank for its action outcome).
+  {
+    const dqFloor = directQuestionIntent(t, world);
+    if (dqFloor) {
+      const ans = answerOrDeclineQuestion(world, text, outcome);
+      if (ans) return ans;
+    }
   }
   const o = outcome === 'success' ? 's' : outcome === 'failure' ? 'f' : 'm';
   const place = placeNameOf(world);

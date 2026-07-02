@@ -14,8 +14,14 @@
 // red. The live dodge/fabrication itself is measured by the paid gate (the discovery
 // instrument), not here. (docs/THE_REF.md §"Measurement".)
 //
-// Real NPC in dialogue_active: Mira Hearth (baker), present, mid-dialogue, holds NO
-// grounded tenure/origin/records facts → every such ask correctly deflects.
+// Real NPC in dialogue_active: Mira Hearth (baker), present, mid-dialogue. NBIO-1
+// (2026-07-02) gave every present NPC a grounded self-tenure fact (originTick) that
+// commonKnowledgeAnswer now delivers on the second-person self-tenure phrasings it
+// classifies (REF-003) — those are no longer declines, they're answers, which is the
+// correct DM-test outcome (a real answer beats an honest decline). REF-001/002 keep
+// testing the FALLBACK floor for phrasings the deterministic classifier does NOT
+// catch (guest-ledger records, unusual tenure phrasing) — those still correctly
+// deflect rather than fabricate.
 //
 // Honest-decline marker (the deflection bank): "Couldn't say. / lost to me / try
 // someone / couldn't tell you / ask someone older". Fabrication markers excluded:
@@ -36,9 +42,13 @@ export default [
     capability: 'REF',
     status: 'locked',
     fixture: 'dialogue_active',
-    intent: 'a tenure/continuity ask to a present NPC who does not know → honest decline, never a roll or a fabricated duration (the floor the Ref falls back to)',
+    intent: 'a tenure/continuity ask phrased outside NBIO-1\'s classifier → honest decline, never a roll or a fabricated duration (the floor the Ref falls back to)',
     paraphrases: [
-      'how long have you been here?',
+      // "how long have you been here?" moved to REF-003 territory (2026-07-02):
+      // NBIO-1's origin/tenure mode now classifies and ANSWERS it from the NPC's
+      // own originTick — a real answer, not a decline. The remaining paraphrases
+      // here are phrasings the classifier does not catch, so they still fall
+      // through to the honest-decline floor.
       'how many years have you lived in this place?',
       'how long has this been your home?',
       'you been around these parts a while?',
@@ -83,28 +93,26 @@ export default [
     // Target #2 (gate-19, [dialogue ask | place]) — the question-misroute, captured
     // as a TARGET (known gap, reported, does NOT fail the build). LLM-OFF these
     // origin/tenure questions that happen to contain a place-word ("here", "this
-    // village") misroute to the place-topic recitation ("This is …. Small, but it
-    // holds.") instead of addressing age/origin. By design THIS IS THE REF'S JOB —
-    // an LLM judge noticing "answered the wrong question" — NOT a deterministic
-    // routing patch (regex on the topic classifier is whack-a-mole + taste-critical;
-    // gate-19 #2). Documented so the gap is visible and PROMOTES if ever closed.
+    // village") used to misroute to the place-topic recitation ("This is ….
+    // Small, but it holds.") instead of addressing age/origin. NBIO-1 closed this
+    // deterministically: commonKnowledgeAnswer's new origin/tenure mode (fires
+    // before the place-blurb catch-all) answers from the addressed NPC's own
+    // originTick, so this is now regex-closed, not judge-closed.
     id: 'REF-003',
     capability: 'REF',
-    status: 'target',
+    status: 'locked',
     fixture: 'dialogue_active',
-    intent: 'an origin/age question containing a place-word should address origin/tenure (or honest-decline), NOT recite the generic settlement blurb',
+    intent: 'an origin/age question containing a place-word addresses origin/tenure (from the NPC\'s own originTick), NOT the generic settlement blurb',
     paraphrases: [
       'have you been here long?',
       'did you grow up in this village?',
     ],
     assert: {
-      // Desired: engages the origin/tenure question — either honest-declines or
-      // speaks to born-here / years / settling. The current misroute recites the
-      // place ("Small, but it holds.") and matches none of these → target backlog.
+      // Engages the origin/tenure question — speaks to born-here / years / settling.
       surface_matches: [/couldn'?t say|lost to me|don'?t (?:know|recall)|born|grew up|years?|winters?|came (?:here|from)|settled|local|outsider/i],
       // …and does NOT fall back to the generic place-recitation bank.
       surface_excludes: [/small, but it holds|not much to tell/i],
     },
-    source: 'opus-gate-2026-06-23-gate19.md (Lore "born here or arrived?" → place recitation) — THE_REF target #2 (judge-closed, not regex-closed)',
+    source: 'opus-gate-2026-06-23-gate19.md (Lore "born here or arrived?" → place recitation) — THE_REF target #2, closed by NBIO-1 (2026-07-02)',
   },
 ];

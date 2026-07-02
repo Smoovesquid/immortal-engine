@@ -216,6 +216,34 @@ export function commonKnowledgeAnswer(world, npc, text) {
     return { mode: 'self', body: `${npc.name}. ${roleLine}.` };
   }
 
+  // ── origin/tenure (NBIO-1): "were you born here / are you a local / how long
+  // have you been here" — the NPC's OWN founding-vs-later-arrival tenure, sourced
+  // from npc.originTick (the same fact personQuery.describeTenure renders in
+  // third person). Fires BEFORE residence and the place-blurb catch-all so
+  // "have you been here long?" lands on the NPC's tenure, not the place blurb
+  // (the REF-003 miss). Narrow to second-person self-address; third-person tenure
+  // ("is Kael a founding resident?") and generic place asks are untouched.
+  if (/\bwere you born (?:here|in this (?:town|village|place|settlement))\b|\bare you (?:a )?(?:local|native)\b|\bare you from (?:here|around here|this (?:town|village|place))\b|\bdid you grow up (?:here|in this (?:town|village|place|settlement))\b|\bhave you (?:always )?(?:been here|lived here)(?:\s+(?:long|a long time|for a while|all your life|always))?\b|\bhow long have you (?:lived|been) here\b/i.test(t)) {
+    const tick = Number(npc.originTick ?? 0);
+    const manner = voiceManner(npcVoice(npc));
+    const bornLines = {
+      guarded: 'Born here, yes. Same as my kin before me.',
+      skittish: 'I was, born and raised. Never left, if that\'s what you\'re asking.',
+      blunt: 'Born here. One of the first families.',
+      open: 'Born and raised, through and through! My people helped found this place.',
+      even: 'Born here — one of the founding families, if that means anything to you.'
+    };
+    const laterLines = {
+      guarded: 'No. I came later. That\'s all you need to know.',
+      skittish: 'No, no — I\'m not from here originally. I settled later, is all.',
+      blunt: 'No. Came later, same as most.',
+      open: 'Not born here, no! I settled here later, but it\'s home now.',
+      even: 'No — I came later. Not a native, but I\'ve made my place here.'
+    };
+    const lines = tick === 0 ? bornLines : laterLines;
+    return { mode: 'origin', body: lines[manner] || lines.even };
+  }
+
   // ── residence: "do you live/work here?" ──
   if (/\bdo you (?:live|work|stay|dwell) here\b|\bhave you (?:always )?lived here\b|\byou (?:from|based) here\b/i.test(t)) {
     const role = String(npc.role || '').toLowerCase();

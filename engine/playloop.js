@@ -4408,6 +4408,7 @@ function dialogueAskNarration(outcome, world) {
     case 'place':
     case 'identity':   // (P-2) person-identity of a present other — common knowledge, body IS the answer
     case 'residence':  // (DLG-1) NPC lives/works here — deterministic from settlement roster
+    case 'origin':     // (NBIO-1) NPC's own founding-vs-later tenure — deterministic from originTick
     case 'directions':
     case 'services':
     case 'news': {

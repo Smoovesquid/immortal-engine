@@ -291,6 +291,19 @@ return res.json({ ok:false, reason:safe });
           clarity: VALID_CLARITIES.has(e.clarity) ? e.clarity  : 'dim',
         } : null)
         .filter(e => e && e.label);
+      // P3 (WB-Q9) — real room layout facts (P2's getRoomState, engine-side).
+      // Validated to a known shape so buildNpcVoicePrompt can trust it; absent
+      // or malformed → null, and the prompt builder renders no facts block.
+      const rawScene = req.body?.sceneFacts && typeof req.body.sceneFacts === 'object' ? req.body.sceneFacts : null;
+      const sceneFacts = rawScene ? {
+        inside:        Boolean(rawScene.inside),
+        buildingType:  rawScene.buildingType != null ? String(rawScene.buildingType).slice(0, 40) : null,
+        roomCount:     Number.isFinite(Number(rawScene.roomCount)) ? Number(rawScene.roomCount) : null,
+        singleStorey:  rawScene.singleStorey != null ? Boolean(rawScene.singleStorey) : null,
+        roomName:      rawScene.roomName != null ? String(rawScene.roomName).slice(0, 40) : null,
+        doorways:      Array.isArray(rawScene.doorways) ? rawScene.doorways.slice(0, 8).map(d => String(d).slice(0, 40)) : [],
+        objects:       Array.isArray(rawScene.objects) ? rawScene.objects.slice(0, 5).map(o => String(o).slice(0, 40)) : [],
+      } : null;
 
       if (!npcName || !mode) return res.json({ ok: false, reason: 'bad_request' });
 
@@ -306,7 +319,7 @@ return res.json({ ok:false, reason:safe });
         const { retrieveChunks } = await import('./server/rag/ragRetriever.js');
         ({ chunks: ragChunks, reconstructed: ragReconstructed } = retrieveChunks(corpusId, playerLine, 4));
       }
-      const prompt = buildNpcVoicePrompt({ npcName, role, mood, manner, trust, mode, factPhrase, playerLine, ragChunks, ragReconstructed, claim, substrateContext });
+      const prompt = buildNpcVoicePrompt({ npcName, role, mood, manner, trust, mode, factPhrase, playerLine, ragChunks, ragReconstructed, claim, substrateContext, sceneFacts });
       if (!prompt) return res.json({ ok: false, reason: 'bad_mode' });
 
       // D-C1: Opus 4.8 is the primary voice (“Opus voice for every NPC”).

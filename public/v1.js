@@ -608,7 +608,10 @@ async function tryLocalNpcVoice(dialogue) {
         // Grounds the Opus voice line for NPCs who aren't named historical figures.
         voiceCorpusId: dialogue.voiceCorpusId || '',
         claim: dialogue.claim || null,
-        substrateContext: dialogue.substrateContext || []
+        substrateContext: dialogue.substrateContext || [],
+        // P3 (WB-Q9) — real room layout facts, so the voice layer stops
+        // inventing rooms/floors the current building doesn't have.
+        sceneFacts: dialogue.sceneFacts || null
       })
     });
     const data = await res.json();
@@ -940,8 +943,8 @@ function renderInvoke() {
     el('div', { class: 'panel' },
       el('div', { class: 'header' },
         el('div', {},
-          el('div', { class: 'title' }, 'Immortal Engine — v0.20.2'),
-          el('div', { class: 'sub' }, 'build 027 · 2026-07-02 · the DM sees the room')
+          el('div', { class: 'title' }, 'Immortal Engine — v0.20.3'),
+          el('div', { class: 'sub' }, 'build 028 · 2026-07-02 · the NPCs see the room')
         )
       ),
       // ── One-click front door: start (or resume) the Escape game ──────

@@ -121,8 +121,29 @@ function buildWorldKnowledgeBlock(npcName, substrateContext) {
   return lines.join('\n');
 }
 
+// P3 (WB-Q9) — WHERE-YOU-ARE facts, so the NPC voice stops inventing rooms,
+// floors, and furnishings the current building doesn't have. `sceneFacts`
+// comes from the engine's getRoomState (P2) — public room context (objects,
+// doorways, layout), never a secret. Absent/outdoors → no block.
+function buildSceneFactsBlock(sceneFacts) {
+  if (!sceneFacts || !sceneFacts.inside) return null;
+  const lines = ['WHERE YOU ARE (the only layout that exists — do not add to it):'];
+  if (sceneFacts.buildingType) lines.push(`  • Building: ${sceneFacts.buildingType}`);
+  if (Number.isFinite(sceneFacts.roomCount)) lines.push(`  • Rooms in this building: ${sceneFacts.roomCount}`);
+  if (sceneFacts.singleStorey) lines.push('  • This building is SINGLE-STOREY: there is no upstairs, no second floor.');
+  if (sceneFacts.roomName) lines.push(`  • You are in: ${sceneFacts.roomName}`);
+  if (Array.isArray(sceneFacts.doorways) && sceneFacts.doorways.length) {
+    lines.push(`  • Doorways/exits here: ${sceneFacts.doorways.join(', ')}`);
+  }
+  if (Array.isArray(sceneFacts.objects) && sceneFacts.objects.length) {
+    lines.push(`  • Objects actually present: ${sceneFacts.objects.join(', ')}`);
+  }
+  lines.push('Speak only of rooms, floors, and furnishings listed here. A single-storey building has no upstairs; do not invent rooms, floors, or exits that aren\'t listed.');
+  return lines.join('\n');
+}
+
 /**
- * buildNpcVoicePrompt({npcName, role, mood, manner, mode, factPhrase, playerLine, ragChunks, claim, substrateContext})
+ * buildNpcVoicePrompt({npcName, role, mood, manner, mode, factPhrase, playerLine, ragChunks, claim, substrateContext, sceneFacts})
  *   -> string | null  (null = mode the voice layer must not speak for)
  *
  * ragChunks: [{text, source}, ...] — primary source excerpts from this person's actual words.
@@ -130,6 +151,8 @@ function buildWorldKnowledgeBlock(npcName, substrateContext) {
  *   mode === 'claim_recall'. The voice layer renders the NPC's distorted belief, not the truth.
  * substrateContext: [{layer, clarity, label, kind}, ...] — cascade-weighted world history.
  *   clarity 'vivid' = NPC's own town; 'dim' = their region; 'myth' = cosmological age.
+ * sceneFacts: {inside, buildingType, roomCount, singleStorey, roomName, doorways, objects} — the
+ *   room's real layout (engine's getRoomState). PUBLIC context only, never a secret.
  */
 export function buildNpcVoicePrompt(p = {}) {
   const mode = String(p.mode || '');
@@ -147,6 +170,7 @@ export function buildNpcVoicePrompt(p = {}) {
     ? [archiveHeader, ...chunks.map(c => `[${c.source}] "${c.text}"`), archiveFooter].join('\n')
     : null;
   const worldKnowledge = buildWorldKnowledgeBlock(p.npcName, p.substrateContext);
+  const sceneFactsBlock = buildSceneFactsBlock(p.sceneFacts);
   // claim_recall passes two args; all other modes ignore the second.
   const decisionText = decision(String(p.factPhrase || ''), p.claim ?? null);
   const persona = MANNER_PERSONA[String(p.manner || '')] || '';
@@ -163,6 +187,7 @@ export function buildNpcVoicePrompt(p = {}) {
     `Your mood right now: ${p.mood || 'even'}.`,
     ...(archive ? [archive] : []),
     ...(worldKnowledge ? [worldKnowledge] : []),
+    ...(sceneFactsBlock ? [sceneFactsBlock] : []),
     ...(style ? [style] : []),
     `The player said to you: "${p.playerLine || ''}"`,
     decisionText,

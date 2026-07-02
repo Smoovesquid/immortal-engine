@@ -56,6 +56,7 @@ import { classifyOffensiveCast, castConsequence } from './magic/castConsequence.
 import { evaluateEncounter, selectCreatures, spawnEncounter } from './combat/encounterSpawn.js';
 import { isMetaQuestion, handleMetaQuestion, isNullAction, isQuestionShaped, META_LOCATION, META_RECAP, isNpcObserverQuery, isInfoSeekingText, isConfrontationChallenge, buildLocationSurvey, windowView, knowsNpcName, describeNpc, INFO_SEEKING_EXCLUDE_RE } from './grace/gracefulAdjudication.js';
 import { occupantsOfRoom } from './structures/roomOccupancy.js';
+import { getRoomState } from './structures/roomState.js';
 import { lockState, lockOpenEventData } from './structures/locks.js';
 import { assessProvocation, carriedGrudge } from './npc/provocation.js';
 import { resolveEscapeCombatTurn, initEscapeHp, initEscapeKit, shortRest, longRest, applySurpriseRound, parseEscapeAction, combatStatusAnswer, meleeProfile, playerAc } from './combat/escapeCombat.js';
@@ -1019,7 +1020,22 @@ function playerMoveCore(world, packsById, text) {
             voiceCorpusId: String(asked.outcome.voiceCorpusId || ''),
             // Cascade-weighted substrate: the NPC's rung of history.
             // vivid = their town; dim = their region; myth = the cosmological age.
-            substrateContext: npcSubstrateContext(w, String(w.map?.currentNodeId || ''))
+            substrateContext: npcSubstrateContext(w, String(w.map?.currentNodeId || '')),
+            // P3 (WB-Q9) — the room's real layout, so the voice layer stops
+            // inventing space (upstairs in a single-storey cottage, etc.).
+            // Derived from P2's getRoomState; null-safe outdoors.
+            sceneFacts: (() => {
+              const rs = getRoomState(w);
+              return {
+                inside: Boolean(rs.inside),
+                buildingType: rs.building?.type ?? null,
+                roomCount: rs.building?.roomCount ?? null,
+                singleStorey: rs.building?.singleStorey ?? null,
+                roomName: rs.roomId || null,
+                doorways: rs.doorways || [],
+                objects: (rs.objects || []).map(o => o.name).slice(0, 5)
+              };
+            })()
           }
         }
       };

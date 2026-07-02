@@ -317,6 +317,14 @@ const COIN_CLAIM_RE = /\b(?:\d+|one|two|three|four|five|six|seven|eight|nine|ten
 // stats/scores ask gets the actual numbers (it's your own sheet — a table DM tells you).
 const META_CHARACTER = /\bwho\s+am\s+i\b|\bwhat(?:'?s| is)\s+my\s+(?:class|archetype|level|background|build|character)\b|\bwhat\s+(?:kind\s+of\s+)?(?:character|class)\s+am\s+i\b|\bwhat\s+am\s+i\b(?!\s+(?:wielding|wearing|carrying|holding|armed|doing|looking|supposed|meant|going|here))|\b(?:what\s+are|tell\s+me|give\s+me|list)\s+my\s+(?:stats|abilities|attributes|scores|ability\s+scores|hp|hit\s?points?|health|numbers)\b/i;
 const META_STATS_REQ = /\b(?:stats|attributes|scores|ability\s+scores|hp|hit\s?points?|health|numbers)\b/i;
+// Rules/capability questions — "Gravedigger — is that a class with abilities,
+// or just a background? What can I actually do in a fight?" These are
+// information requests about the ruleset or archetype, not action declarations.
+// A real DM answers from the ruleset: name the archetype, explain it's a
+// background descriptor, list the basic actions available. Never rolls.
+// Over-match guard: "what can I do in a fight" is gated to fight/combat/battle,
+// not a bare "what can I do" (which would swallow real action intents). (DTD-A Fix 1)
+const META_CAPABILITY = /\bis\s+(?:that|this|a\s+\w+)\s+(?:a|an)\s+(?:class|background|archetype)\b|\bwhat\s+can\s+i\s+(?:actually\s+|really\s+|even\s+)?do\s+in\s+(?:a\s+)?(?:fight|combat|battle)\b|\bwhat\s+can\s+i\s+(?:actually\s+|really\s+)?bring\s+to\s+(?:a\s+)?(?:fight|combat)\b/i;
 // Item queries: "what does the Tonic of grit do?", "is the rope in my pack?",
 // "do I have a healing potion?". Broad shape — the handler only answers if it
 // resolves to a REAL inventory item (else it returns null and falls through, so
@@ -590,7 +598,7 @@ export function isMetaQuestion(text) {
   const t = String(text || '').toLowerCase();
   return (META_LOCATION.test(t) && !META_MOVE_TO_PLACE.test(t)) || META_INTERIOR_LAYOUT.test(t) || META_INTERIOR_LAYOUT_SEEK.test(t)
     || META_HEALTH.test(t) || META_RECAP.test(t) || META_OUTCOME.test(t)
-    || META_INVENTORY.test(t) || META_EQUIPMENT.test(t) || META_CHARACTER.test(t) || META_STAT.test(t)
+    || META_INVENTORY.test(t) || META_EQUIPMENT.test(t) || META_CHARACTER.test(t) || META_CAPABILITY.test(t) || META_STAT.test(t)
     || META_STAT_SYNONYM.test(t) || META_ITEM.test(t) || META_PURSE.test(t) || META_TIME.test(t)
     || META_OBJECTIVE.test(t) || META_MECHANICS.test(t) || META_ADVICE.test(t) || META_SELF_KNOWLEDGE.test(t)
     || META_WEAPON_DAMAGE.test(t) || META_NAME.test(t)
@@ -1222,6 +1230,20 @@ function answerClassLine(world) {
   return arch ? `You're a ${arch.toLowerCase()}.` : '';
 }
 
+// Rules/capability question answer — "is Gravedigger a class?" / "what can I
+// do in a fight?". Answered from the ruleset and archetype, never rolled.
+// (DTD-A Fix 1)
+function answerCapability(world) {
+  const arch = String(world.party?.[0]?.archetype || '').trim();
+  const parts = [];
+  if (arch) {
+    parts.push(`${arch} is a background — it marks who you are and shapes your starting kit, not a formal class with named powers.`);
+  }
+  parts.push(`In a fight you can: attack (name a target, describe your approach), use any item you're carrying, attempt to restrain, trip, disarm, or shove a foe, try something creative, or cut and run.`);
+  parts.push(`Your stats set the odds — Might for melee, Agility for ranged and evasion, Grit for endurance.`);
+  return parts.join(' ');
+}
+
 // Name what's actually equipped, in-voice, no roll. An empty loadout is
 // reported honestly — the DM never invents a weapon the player lacks.
 // Shared by the META_EQUIPMENT/META_HELD_ITEMS answer and the possession-
@@ -1239,6 +1261,15 @@ function describeLoadout(world) {
   const sigLower = sig.toLowerCase();
   const alreadyListed = sigLower && [...weapons, ...armor].some(n => n.toLowerCase().includes(sigLower) || sigLower.includes(n.toLowerCase()));
   const sigName = sig && !/^thing$/i.test(sig) && !alreadyListed ? sig : '';
+  // Structured consumables live in items[] (defRef-keyed) after H-45 moved
+  // them out of the legacy consumables[] bucket. Include them so "what gear
+  // do I have on me?" names the real items (e.g. Holy water) and the DM
+  // never falls silent on canon kit the player is carrying. (DTD-A Fix 3)
+  const consumableNames = (Array.isArray(inv.items) ? inv.items : [])
+    .map(it => { const def = getItemDef(it?.defRef); return def?.name ? String(def.name) : ''; })
+    .filter(n => Boolean(n)
+      && !weapons.some(w => w.toLowerCase() === n.toLowerCase())
+      && (!sigName || n.toLowerCase() !== sigLower));
   const parts = [];
   parts.push(weapons.length
     ? `You're armed with ${joinList(weapons)}.`
@@ -1246,6 +1277,7 @@ function describeLoadout(world) {
   if (armor.length) parts.push(`You're wearing ${joinList(armor)}.`);
   else parts.push(`Nothing but your own clothes stand between you and a blade.`);
   if (sigName) parts.push(`And you carry ${sigName}, which means something to you.`);
+  if (consumableNames.length) parts.push(`In your pack: ${joinList(consumableNames)}.`);
   return parts.join(' ');
 }
 
@@ -2178,6 +2210,14 @@ export function handleMetaQuestion(text, world) {
     return extraText ? `${ans} ${extraText}` : ans;
   }
 
+  // Rules/capability question — "is Gravedigger a class or a background?",
+  // "what can I actually do in a fight?". Answered from the ruleset/archetype,
+  // never rolled. Checked before META_CHARACTER so a phrasing like "is that a
+  // class" doesn't fall through to the d20 resolver. (DTD-A Fix 1)
+  if (META_CAPABILITY.test(lowerText)) {
+    return answerCapability(world);
+  }
+
   // Character identity / build — answer who you are from canon. Identity in-voice;
   // an explicit stats ask gets the real scores (your own sheet, no fiction to dodge);
   // a gear ask in the same breath gets the real loadout, not the "read your own
@@ -2705,6 +2745,35 @@ export function windowView(world) {
   return dirLines.length ? `${lead}; ${joinList(dirLines)}.` : `${lead}.`;
 }
 
+// Detect in-fiction questions addressed to a named NPC by name — "Who lit
+// that lantern, Elske?" patterns where the NPC name appears as the recipient
+// (comma-address at end, or name at start before comma). Without this,
+// these fall through adjudicate as "observe" actions and return
+// buildLocationSurvey, which is a navigation recap, not an NPC answer.
+// Returns an honest in-character deflection; never a location survey.
+// Exported so tests can call it directly. (DTD-A Fix 2)
+export function handleNpcAddressedQuestion(text, world) {
+  const t = String(text || '');
+  const hasWH = /\b(?:who|what|why|where|which|when|can|did|does|do|have|has|is|are|was|were)\b/i.test(t);
+  if (!hasWH) return null;
+  if (!(/\?/.test(t) || QUESTION_SHAPE.test(t))) return null;
+  const node = (world?.map?.nodes || []).find(n => n && n.id === world?.map?.currentNodeId) || null;
+  const npcs = node?.settlement?.npcs || [];
+  const addressed = npcs.find(npc => {
+    const first = String(npc?.name || '').trim().split(/\s+/)[0];
+    if (!first || first.length < 2) return false;
+    const esc = first.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    // Comma-address at end: "Q, NpcName?" or "Q, NpcName."
+    const trailingAddr = new RegExp(`[,]\\s*${esc}\\b(?:\\s*[?!.]|\\s*$)`, 'i');
+    // Name-first address: "NpcName, Q?"
+    const leadingAddr = new RegExp(`^\\s*${esc}\\s*[,—]`, 'i');
+    return trailingAddr.test(t) || leadingAddr.test(t);
+  });
+  if (!addressed) return null;
+  const name = String(addressed.name || '').trim().split(/\s+/)[0];
+  return `${name} doesn't have an answer for that — or won't give one right now. What do you do?`;
+}
+
 // Main grace layer function
 export async function adjudicateWithGrace(world, transcription) {
   // Ensure conversation state exists
@@ -2729,6 +2798,18 @@ export async function adjudicateWithGrace(world, transcription) {
         isPacing: false
       };
     }
+  }
+
+  // NPC-addressed in-fiction questions — "Who lit that lantern, Elske?" must
+  // not fall through to buildLocationSurvey (DTD-A Fix 2)
+  const npcAddressedResponse = handleNpcAddressedQuestion(transcription, world);
+  if (npcAddressedResponse) {
+    return {
+      type: 'meta',
+      message: npcAddressedResponse,
+      world: world,
+      isPacing: false
+    };
   }
 
   // Extract intent

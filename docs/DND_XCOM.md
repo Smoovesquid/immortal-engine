@@ -19,6 +19,15 @@ XCOM's soul is *no hidden information* — it shows "72% to hit, here's every mo
 - This reconciles XCOM transparency with our **hide-the-math** guard (`qualityJudge.js`) and the DM Test: *surface the decision, never the arithmetic.* The number exists in the engine; it reaches the player only as a spoken read.
 - **Map = optional.** Anything the map shows, the DM must also say. The map may never hold information the narration withholds.
 
+**Tier rider (what "never the number" does and does not cover).** The law governs *predictive* numbers only.
+Four tiers: **(1) Sheet** — your dice, modifiers, HP, abilities → plain numbers on demand *(shipped)*.
+**(2) Resolved ledger** — your last roll, its DC, its outcome → plain numbers on demand; the mech line already
+shows them *(shipped)*. **(3) Predictive** — odds to hit, un-set DCs, enemy HP → **the read, never the number**
+*(the law's true and only domain)*. **(4) World-content quantities** — how many dead, how many exits, how many
+riders → fiction facts from canon, always answerable, deterministically sourced (V11: the world supplies the
+count, never the LLM). At a real table your sheet and your die are yours to see; the DM's screen hides the
+monster's HP; "how many goblins do I see?" gets a number because it's fiction, not math.
+
 ---
 
 ## Turn structure (tabletop-authentic, XCOM-clear)

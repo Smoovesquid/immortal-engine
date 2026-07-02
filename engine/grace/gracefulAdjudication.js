@@ -538,7 +538,10 @@ const META_ROLL_RECALL = /\b(?:i (?:rolled|got|said|had)(?:\s+a)?|my roll was(?:
 // world.conversation.lastRoll — must report the recorded roll, never re-roll or deny
 // a check that happened. (Gate-10 RL t11 — engine answered "no roll to report" while
 // the ledger held 4 vs DC 12.)
-const META_ROLL_QUERY = /\bwhat\s+did\s+i\s+roll\b|\bwhat\s+(?:was|were)\s+(?:my|the)\s+(?:last\s+)?rolls?\b|\bremind\s+me\s+(?:what\s+i\s+(?:just\s+)?rolled|of\s+(?:my|the)\s+(?:last\s+)?roll)\b|\b(?:actual\s+)?number\s+on\s+the\s+(?:die|dice)\b|\b(?:die|dice)\s+number\b|\bwhat\s+number\s+(?:came\s+up|did\s+i\s+(?:roll|get)|landed)\b|\bwhat\s+did\s+the\s+(?:die|dice)\s+(?:say|show|come\s+up)\b/i;
+// Widened (CT-1) to catch "the raw d20", "the d20 result", "the actual
+// d20/attack roll" — the RESOLVED number the player is asking to be told,
+// not a predictive ask (odds/hit-chance stay tier-3, untouched here).
+const META_ROLL_QUERY = /\bwhat\s+did\s+i\s+roll\b|\bwhat\s+(?:was|were)\s+(?:my|the)\s+(?:last\s+)?rolls?\b|\bremind\s+me\s+(?:what\s+i\s+(?:just\s+)?rolled|of\s+(?:my|the)\s+(?:last\s+)?roll)\b|\b(?:actual\s+)?number\s+on\s+the\s+(?:die|dice)\b|\b(?:die|dice)\s+number\b|\bwhat\s+number\s+(?:came\s+up|did\s+i\s+(?:roll|get)|landed)\b|\bwhat\s+did\s+the\s+(?:die|dice)\s+(?:say|show|come\s+up)\b|\b(?:the\s+)?raw\s+d20\b|\b(?:the\s+)?d20\s+result\b|\b(?:the\s+)?actual\s+(?:d20|attack\s+roll)\b/i;
 // Fourth-wall system check-in — a repetition/system callout paired with a
 // check-in, not an in-fiction action or health question. "You're just
 // repeating yourself now, are you okay?" must never roll: it's the player
@@ -1179,6 +1182,17 @@ function answerWeaponDamage(lowerText, world) {
     : `Your weapons roll for damage as follows — ${joinList(list.map(describe))}, plus your ability modifier on a hit.`;
 }
 
+// Report the last recorded roll (number + DC + outcome) straight from the
+// ledger, or null when nothing's on record (no over-claim). Shared by the
+// standalone META_ROLL_QUERY branch and the weapon-damage compound fold
+// below, so "give me the raw d20 and the damage die" answers both halves
+// instead of the damage half winning alone. (CT-1)
+function lastRollReportLine(world) {
+  const stored = world.conversation?.lastRoll;
+  if (!stored || !Number.isFinite(Number(stored.roll))) return null;
+  return `The ledger shows ${stored.roll} vs DC ${stored.dc}${stored.outcome ? ` — ${stored.outcome}` : ''}. That's your last roll.`;
+}
+
 // Answer a coin/purse query from the real purse — a table DM just states the
 // number, no roll. An empty purse is reported honestly, never invented.
 // Reuses the shop layer's own copper-total/format helpers so the DM's count
@@ -1634,6 +1648,13 @@ export function handleMetaQuestion(text, world) {
         extras.push(`Your Armor is ${ac} — that's the number an attack has to beat to land on you.`);
       }
       if (META_PURSE.test(lowerText)) extras.push(answerPurse(world));
+      // Damage×roll compound — "give me the raw d20 and the damage die"
+      // answers both halves via the same ledger machinery META_ROLL_QUERY
+      // uses standalone, mirroring the stats/purse folds above. (CT-1)
+      if (META_ROLL_QUERY.test(lowerText) && !META_ROLL_RECALL.test(lowerText)) {
+        const rollLine = lastRollReportLine(world);
+        if (rollLine) extras.push(rollLine);
+      }
       return extras.length ? `${ans} ${extras.join(' ')}` : ans;
     }
   }
@@ -1772,10 +1793,8 @@ export function handleMetaQuestion(text, world) {
   // When nothing's on record, fall through to normal resolution (no over-claim).
   // (Gate-10 RL t11; C5 roll-recall lineage, H-12/13.)
   if (META_ROLL_QUERY.test(lowerText) && !META_ROLL_RECALL.test(lowerText)) {
-    const stored = world.conversation?.lastRoll;
-    if (stored && Number.isFinite(Number(stored.roll))) {
-      return `The ledger shows ${stored.roll} vs DC ${stored.dc}${stored.outcome ? ` — ${stored.outcome}` : ''}. That's your last roll.`;
-    }
+    const rollLine = lastRollReportLine(world);
+    if (rollLine) return rollLine;
     // no roll on record yet — fall through to normal resolution
   }
 

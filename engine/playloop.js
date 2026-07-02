@@ -1754,6 +1754,11 @@ function playerMoveCore(world, packsById, text) {
     // deny the just-revealed letter (THE_DM_TEST). (U293)
     const readRevealed = tryReadRevealedContainerItem(w, text);
     if (readRevealed) return readRevealed;
+    // PW-1: a take/pocket aimed at an item a container reveal put on the table
+    // COMMITS the acquisition (real inventory item + takenItems overlay) instead
+    // of the phantom "You pocket it" free-action floor (WB-Q4/T-Q2).
+    const tookRevealed = tryTakeRevealedContainerItem(w, text);
+    if (tookRevealed) return tookRevealed;
     const examined = tryExamineTarget(w, text);
     if (examined) {
       return { world: w, output: { narration: `Wizard: ${examined}`, mechanics: 'observe only — no roll, state unchanged' } };
@@ -6127,6 +6132,16 @@ const DAMAGED_STATES = new Set(['broken', 'damaged', 'shattered', 'smashed']);
 const CONTAINER_CATS = new Set(['container', 'storage']);
 function isContainerPiece(f) { return !!f && CONTAINER_CATS.has(String(f.category || '')); }
 
+// PW-1 (docs/briefs/PROSE_TO_WORLD_CONTRACT.md) — the derived contents MINUS what
+// the player has taken (piece.takenItems, committed via modifyFurniture). View
+// subtraction: the pure containerContents derivation is never edited; collapsed
+// canon stays immutable and the overlay only narrows what the view re-offers.
+function remainingContainerContents(w, node, f) {
+  const all = containerContents(String(w?.meta?.seed || ''), String(node?.id || ''), String(f?.name || ''), String(f?.category || ''));
+  const taken = new Set((Array.isArray(f?.takenItems) ? f.takenItems : []).map(String));
+  return all.filter(it => !taken.has(String(it)));
+}
+
 function andList(items) {
   const a = items.filter(Boolean).map(String);
   if (a.length === 0) return '';
@@ -6138,8 +6153,12 @@ function andList(items) {
 // The "Inside: …" clause for a container, or a plain it's-empty line. An empty
 // container must say so plainly — that is the table's answer too.
 function containerContentsClause(w, node, f) {
-  const items = containerContents(String(w?.meta?.seed || ''), String(node?.id || ''), String(f?.name || ''), String(f?.category || ''));
+  const items = remainingContainerContents(w, node, f);
   if (!items.length) {
+    // PW-1: emptied-by-the-player reads differently from never-held-anything.
+    if (Array.isArray(f?.takenItems) && f.takenItems.length > 0) {
+      return `Nothing left inside — you cleared it out.`;
+    }
     return pickVariant([
       `Inside, there's nothing — empty but for a film of dust.`,
       `It's empty; whatever it once held is long gone.`,
@@ -6211,10 +6230,43 @@ function tryContainerReveal(w, text) {
 // as present-but-not-legible; it never invents lore (narration != canon). Returns { world, output }
 // or null (let the examine / read-floor paths answer when nothing readable is revealed here).
 const READ_SAY_RE = /\b(?:says?|reads?|written)\b/i;
+
+// PW-1 — a text-item TAKEN into the pack stays readable: its authored body was
+// committed to item.notes at take time (collapsed canon, immutable — contract
+// law 4), so reading from the pack returns the SAME body as reading from the
+// chest did. Named-noun matches only; bare pronouns stay with the container path.
+function findCarriedTextItem(w, text) {
+  const noun = (String(text || '').match(OBJ_TEXT_NOUN_RE) || [])[0];
+  if (!noun) return null;
+  const re = new RegExp(`\\b${noun.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
+  const inv = w.party?.[0]?.inventory || {};
+  for (const bucket of Object.keys(inv)) {
+    const items = Array.isArray(inv[bucket]) ? inv[bucket] : [];
+    for (const it of items) {
+      const name = String(it?.name || '');
+      if (name && re.test(name)) return { name, notes: String(it?.notes || '') };
+    }
+  }
+  return null;
+}
+
 function tryReadRevealedContainerItem(w, text) {
   const t = String(text || '');
   const wantsRead = OBJ_READ_VERB_RE.test(t) || OBJ_CONTENT_PEEK_RE.test(t) || (OBJ_TEXT_NOUN_RE.test(t) && READ_SAY_RE.test(t));
   if (!wantsRead) return null;
+  // Carried copy wins: once taken, the item is the player's — read it from the pack.
+  const carried = findCarriedTextItem(w, t);
+  if (carried) {
+    if (carried.notes) {
+      const lead = pickVariant([
+        `You take the ${carried.name} from your pack and unfold it.`,
+        `The ${carried.name}, out of your pack — you hold it to the light and read.`,
+        `You draw the ${carried.name} from your pack and smooth it flat.`,
+      ], w, `read:carried:lead:${carried.name}`);
+      return { world: w, output: { narration: `Wizard: ${lead}\n\n${carried.notes}`, mechanics: '[read:carried-item | grounded object, legible text, no roll]' } };
+    }
+    return { world: w, output: { narration: `Wizard: You turn the ${carried.name} over in your hands, but nothing on it reads as words.`, mechanics: '[read:carried-item | grounded object, no legible text, no roll]' } };
+  }
   const node = (w.map?.nodes || []).find(n => n && n.id === w.map?.currentNodeId) || null;
   const furniture = objectsHere(w).map(o => o.piece); // room-scoped (WB-Q5)
   if (!furniture.length) return null;
@@ -6224,7 +6276,7 @@ function tryReadRevealedContainerItem(w, text) {
     if (!isContainerPiece(f)) continue;
     const st = String(f.state || 'intact');
     if (!OPENED_STATES.has(st) && !DAMAGED_STATES.has(st)) continue;
-    const items = containerContents(String(w?.meta?.seed || ''), String(node?.id || ''), String(f?.name || ''), String(f?.category || ''));
+    const items = remainingContainerContents(w, node, f); // PW-1: taken items live in the pack now
     for (const it of items) if (OBJ_TEXT_NOUN_RE.test(String(it))) revealed.push({ item: String(it), container: String(f.name) });
   }
   if (!revealed.length) return null;
@@ -6254,6 +6306,102 @@ function tryReadRevealedContainerItem(w, text) {
     `You hold ${match.item}, real enough, lifted from the ${match.container} — yet the ink is too far gone to read; not a line of it holds together.`,
   ], w, `read:revealed:${match.item}`)}`;
   return { world: w, output: { narration, mechanics: '[read:revealed-item | grounded object, no legible text, no roll]' } };
+}
+
+// ── PW-1: acquire a revealed container item ─────────────────────────────────
+// The materialization contract's foundational verb (docs/briefs/
+// PROSE_TO_WORLD_CONTRACT.md — closes WB-Q4/T-Q2 phantom acquisition). "Pocket
+// the letter" after the chest reveal COMMITS: a real inventory item (the value
+// is the seed-derived containerContents string; a letter's authored body —
+// containerItemText, pure — is written into item.notes at mint time) plus a
+// takenItems overlay on the piece so the derived view stops re-offering it.
+// Trigger = player text only (never narration), so replay re-executes the same
+// collapse; both mutations ride applyDeltas; a timeline resolution event makes
+// the path replayable (the physics-path discipline). Idempotent at the player
+// surface: taking what you already hold acknowledges and mutates nothing.
+const TAKE_ITEM_VERB_RE = /\b(?:take|grab|pick\s+up|snatch|seize|collect|loot|pocket|claim|lift|stow|keep)\b/i;
+const TAKE_BARE_PRONOUN_RE = /\b(?:take|grab|pocket|claim|stow|keep)\s+(?:it|that|this)\b/i;
+const TAKE_STOPWORDS = new Set(['the', 'and', 'its', 'his', 'her', 'with', 'for', 'from', 'of', 'a', 'an', 'pair', 'handful', 'length', 'coil', 'stub', 'nub']);
+
+// "a folded letter, its seal broken" → "folded letter" (display name for the pack).
+function compactItemName(s) {
+  let x = String(s || '').trim().split(',')[0].trim();
+  x = x.replace(/^(?:a|an|the|some)\s+/i, '');
+  return x || String(s || '').trim();
+}
+
+// Which content words of a revealed item may the player's text name it by?
+function itemContentWords(item) {
+  return String(item || '').toLowerCase().split(/[^a-z]+/)
+    .filter(wd => wd.length >= 3 && !TAKE_STOPWORDS.has(wd));
+}
+
+function tryTakeRevealedContainerItem(w, text) {
+  const t = String(text || '');
+  if (!TAKE_ITEM_VERB_RE.test(t)) return null;
+  // "take up the letter and read it" is a READ — that gate runs first and owns it.
+  if (OBJ_READ_VERB_RE.test(t) || OBJ_CONTENT_PEEK_RE.test(t)) return null;
+  const node = (w.map?.nodes || []).find(n => n && n.id === w.map?.currentNodeId) || null;
+  if (!node) return null;
+  const scoped = objectsHere(w);
+  if (!scoped.length) return null;
+  // Remaining (not-yet-taken) items revealed by OPEN containers here — the only
+  // things this gate may acquire: observation precedes acquisition.
+  const revealed = [];
+  for (const o of scoped) {
+    const f = o.piece;
+    if (!isContainerPiece(f)) continue;
+    const st = String(f.state || 'intact');
+    if (!OPENED_STATES.has(st) && !DAMAGED_STATES.has(st)) continue;
+    for (const it of remainingContainerContents(w, node, f)) {
+      revealed.push({ item: String(it), piece: f, nodeIndex: o.nodeIndex });
+    }
+  }
+  const lower = t.toLowerCase();
+  let hit = null;
+  const matches = revealed.filter(r => itemContentWords(r.item).some(wd => new RegExp(`\\b${wd}\\b`).test(lower)));
+  if (matches.length === 1) hit = matches[0];
+  else if (matches.length > 1) hit = matches[0]; // deterministic: container order, contents order
+  else if (revealed.length === 1 && TAKE_BARE_PRONOUN_RE.test(t)) hit = revealed[0]; // bare "pocket it"
+  // Idempotence: the named thing is already in the pack → acknowledge, mutate nothing.
+  // (Checked whether or not it still matches a revealed item, so a repeat take of the
+  // same noun lands here after the overlay removed it from `revealed`.)
+  const nounHeld = (() => {
+    const inv = w.party?.[0]?.inventory || {};
+    for (const bucket of Object.keys(inv)) {
+      for (const it of (Array.isArray(inv[bucket]) ? inv[bucket] : [])) {
+        const name = String(it?.name || '').toLowerCase();
+        if (!name) continue;
+        if (itemContentWords(name).some(wd => new RegExp(`\\b${wd}\\b`).test(lower))) return String(it.name);
+      }
+    }
+    return null;
+  })();
+  if (nounHeld && !hit) {
+    return { world: w, output: { narration: `Wizard: The ${nounHeld} is already in your pack.`, mechanics: '[take:already-held | no roll]' } };
+  }
+  if (!hit) return null; // nothing revealed matches → the normal take paths answer
+  const pc = w.party?.[0];
+  if (!pc?.id) return null;
+  const compact = compactItemName(hit.item);
+  const body = OBJ_TEXT_NOUN_RE.test(hit.item)
+    ? (containerItemText(String(w?.meta?.seed || ''), String(node.id), String(hit.piece.name || ''), hit.item) || '')
+    : '';
+  const priorTaken = Array.isArray(hit.piece.takenItems) ? hit.piece.takenItems : [];
+  let w1 = applyDeltas(w, [
+    { op: 'createItem', entityId: pc.id, bucket: 'junk', item: { name: compact, tags: ['found'], weight: 1, noise: 0, light: 0, bulk: 1, notes: body } },
+    { op: 'modifyFurniture', nodeId: String(node.id), furnitureId: hit.nodeIndex, changes: { takenItems: [...priorTaken, hit.item] } },
+  ]);
+  w1 = pushEvent(w1, {
+    kind: 'resolution',
+    data: { actorId: 'party', intent: t, text: t, roll: 0, dc: 0, outcome: 'success', updateKind: 'take:revealed' }
+  });
+  const lead = pickVariant([
+    `You take ${hit.item} from the ${hit.piece.name} and stow it in your pack.`,
+    `You lift ${hit.item} out of the ${hit.piece.name}; it goes into your pack.`,
+    `${hit.item.charAt(0).toUpperCase() + hit.item.slice(1)} — out of the ${hit.piece.name} and into your keeping.`,
+  ], w, `take:revealed:${compact}`);
+  return { world: w1, output: { narration: `Wizard: ${lead}`, mechanics: '[take:revealed-item | grounded object, no roll]' } };
 }
 
 function tryFurnitureStateChange(w, text) {

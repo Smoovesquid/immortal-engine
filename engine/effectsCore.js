@@ -470,6 +470,12 @@ export function applyDeltas(world, deltas = []) {
         if (typeof changes.state === 'string') next.state = changes.state;
         if (Array.isArray(changes.parts)) next.parts = changes.parts.map(String);
         if (typeof changes.notes === 'string') next.notes = changes.notes;
+        // PW-1 (prose-to-world contract): items taken OUT of a container piece.
+        // View-subtraction overlay — the pure containerContents derivation is never
+        // edited; readers subtract this list. Deduped, capped, deterministic order.
+        if (Array.isArray(changes.takenItems)) {
+          next.takenItems = [...new Set(changes.takenItems.map(String))].slice(0, 8);
+        }
         furniture[furnitureId] = next;
         return { ...node, furniture };
       });

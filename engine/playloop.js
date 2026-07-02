@@ -60,7 +60,7 @@ import { occupantsOfRoom } from './structures/roomOccupancy.js';
 import { getRoomState } from './structures/roomState.js';
 import { lockState, lockOpenEventData } from './structures/locks.js';
 import { assessProvocation, carriedGrudge } from './npc/provocation.js';
-import { resolveEscapeCombatTurn, initEscapeHp, initEscapeKit, shortRest, longRest, applySurpriseRound, parseEscapeAction, combatStatusAnswer, meleeProfile, playerAc } from './combat/escapeCombat.js';
+import { resolveEscapeCombatTurn, initEscapeHp, initEscapeKit, shortRest, longRest, applySurpriseRound, parseEscapeAction, isForcefulAdvanceText, combatStatusAnswer, meleeProfile, playerAc } from './combat/escapeCombat.js';
 import { statMod, maxWounds } from './ruleset/core/stats.js';
 import { shopsHere, stockFor, settlementStock, economyAt, priceToSell, shopBuys, restockEpoch, purseTotalCopper, pursePay, purseReceive, formatPrice, matchByName } from './economy/shop.js';
 import { getItemDef } from './ruleset/core/items/index.js';
@@ -1162,6 +1162,13 @@ function playerMoveCore(world, packsById, text) {
 
   const interiorAction = inferInteriorAction(text, w.scene?.interior);
   const targetedCombatAction = w.combat?.active && w.meta?.mode === 'escape' && (Number(w.meta?.escapeHp) || 0) > 0 && isTargetedViolentCombatAction(w, text);
+  // CMB-SINK-1 — a forceful advance ("barrel through the doorway and into the
+  // outpost", "shove past them") reads as an interior enter/move, but during escape
+  // combat it is an ENGAGEMENT, not flight. Route it past the interior enter/exit/
+  // move handlers exactly as a targeted violent combat action already is, so it
+  // reaches the Pass-5 escape resolver (move:toward — the round costs, foes react).
+  const forcefulAdvanceCombat = w.combat?.active && w.meta?.mode === 'escape' && (Number(w.meta?.escapeHp) || 0) > 0 && isForcefulAdvanceIntent(text);
+  const combatEngageAction = targetedCombatAction || forcefulAdvanceCombat;
   if (!w.combat?.active && !w.scene?.dialogue) {
     const pendingTalkRef = extractDialogueRef(text);
     if (pendingTalkRef && !/^(?:someone|anyone|somebody|anybody|people|folk|locals?|a local|villagers?|them|him|her)$/i.test(pendingTalkRef.trim())) {
@@ -1175,7 +1182,11 @@ function playerMoveCore(world, packsById, text) {
       return npcReferentClarify(w, earlyUngroundedRef, { mechanics: '[clarify:referent]', mode: 'decline' });
     }
   }
-  if (w.combat?.active && w.meta?.mode === 'escape' && (Number(w.meta?.escapeHp) || 0) > 0 && (interiorAction.kind === 'enter' || interiorAction.kind === 'exit' || interiorAction.kind === 'move') && !targetedCombatAction) {
+  if (w.combat?.active && w.meta?.mode === 'escape' && (Number(w.meta?.escapeHp) || 0) > 0 && (interiorAction.kind === 'enter' || interiorAction.kind === 'exit' || interiorAction.kind === 'move') && !combatEngageAction) {
+    // CMB-SINK-1 — a forceful advance (combatEngageAction) is an engagement, not
+    // flight: it falls through to the escape resolver instead of bouncing here.
+    // Genuine flight (enter/exit/move that isn't a forceful advance) still gets the
+    // no-flee ruling.
     return {
       world: w,
       output: { narration: 'Wizard: There\'s steel between you and the road — no running from this one. Strike, guard, cast, or talk.', mechanics: '[combat:table-talk]' }
@@ -1187,7 +1198,7 @@ function playerMoveCore(world, packsById, text) {
     // surfaced it). The mirror of the "already indoors" answer below.
     return { world: w, output: { narration: 'Wizard: You\'re already out in the open — name a direction or a place to head for.', mechanics: '' } };
   }
-  if (!targetedCombatAction && !declaredNpcViolence && interiorAction.kind === 'enter') {
+  if (!combatEngageAction && !declaredNpcViolence && interiorAction.kind === 'enter') {
     // "Go inside" when already indoors gets the obvious answer, not the
     // blocked-wall message.
     if (w.scene?.interior) {
@@ -1405,7 +1416,7 @@ function playerMoveCore(world, packsById, text) {
     }
   }
 
-  if (!targetedCombatAction && !declaredNpcViolence && interiorAction.kind === 'exit') {
+  if (!combatEngageAction && !declaredNpcViolence && interiorAction.kind === 'exit') {
     const wasDungeon = isDungeonStructureId(w.scene?.interior?.structureKey);
     const w1 = exitStructureInterior(w);
     if (w1 !== w) {
@@ -1425,7 +1436,7 @@ function playerMoveCore(world, packsById, text) {
   // back") still defers to the guard, so "go back to Aldrich" remains an NPC approach.
   const roomMoveWins = interiorAction.kind === 'move' && interiorAction.roomHint
     && /\b(?:room|rooms|doorway|doorways|chamber|hall|hallway)\b/i.test(String(text || ''));
-  if (!targetedCombatAction && !declaredNpcViolence && interiorAction.kind === 'move'
+  if (!combatEngageAction && !declaredNpcViolence && interiorAction.kind === 'move'
       && (roomMoveWins || (!approachPresentNpcRef(w, text) && !talkOrApproachResolvesPresentNpc(w, text)))) {
     const wantsRiskyMove = isRiskyOrObstructedMoveIntent(interiorAction.moveText || text);
     if (!wantsRiskyMove) {
@@ -2415,7 +2426,11 @@ function playerMoveCore(world, packsById, text) {
       const escVerb = parseEscapeAction(text).verb;
       const improvisedCombatAction = isImprovisedCombatAction(w, text);
       const targetedViolentAction = isTargetedViolentCombatAction(w, text);
-      const explicitAction = improvisedCombatAction || targetedViolentAction || isNaturalWeaponAttack(text) || isFoeEnvironmentAttack(text) || /\b(strike|attack|swing|stab|shoot|slash|hit|beat|smite|fireball|fire\s?bolt|firebolt|blast|cast|rage|surge|guard|ward|cover|throw|hurl|lob|fling|toss)\b/i.test(String(text || ''));
+      // CMB-SINK-1 — a forceful advance is a declared action (an engagement), so it
+      // is NOT bounced by the flee / scene-object / free-movement table-talk guards
+      // below; it flows to the resolver and resolves as move:toward.
+      const forcefulAdvance = isForcefulAdvanceIntent(text);
+      const explicitAction = improvisedCombatAction || targetedViolentAction || isNaturalWeaponAttack(text) || isFoeEnvironmentAttack(text) || forcefulAdvance || /\b(strike|attack|swing|stab|shoot|slash|hit|beat|smite|fireball|fire\s?bolt|firebolt|blast|cast|rage|surge|guard|ward|cover|throw|hurl|lob|fling|toss)\b/i.test(String(text || ''));
       const asksQuestion = isQuestionShaped(text) || /\?/.test(String(text || ''));
       if (!attackResolutionIntent(w, text) && (isMetaQuestion(text) || (asksQuestion && escVerb !== 'parley' && !explicitAction))) {
         const metaAnswer = isMetaQuestion(text) ? handleMetaQuestion(text, w) : null;
@@ -7691,6 +7706,17 @@ function runCompanionTurns(world, beats) {
 function isFleeIntent(text) {
   const t = String(text || '').toLowerCase();
   return /\b(flee|retreat|disengage|run\s+away|run\s+for\s+it|break\s+off)\b/.test(t);
+}
+
+// CMB-SINK-1 — a forceful advance ("barrel through", "shove past them", "bull my
+// way through", "force my way through", "push in", "rush them") is a declared COMBAT
+// ACTION (an engagement that closes / bulls through), not idle table-talk. Treating
+// it as an explicitAction lets it flow past the escape-mode table-talk guards to the
+// resolver, where it resolves as move:toward (the round costs, the foes react, but
+// the escape law still holds — you don't leave the fight). Genuine flight keeps the
+// no-flee ruling: isFleeIntent wins, so "shove past them and flee" stays flight.
+function isForcefulAdvanceIntent(text) {
+  return isForcefulAdvanceText(text) && !isFleeIntent(text);
 }
 
 // A declared or demanded attack must resolve to a real strike even when it

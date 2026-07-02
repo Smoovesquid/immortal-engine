@@ -755,6 +755,30 @@ export function escapeKitView(pc) {
   return { weapons: weaponsOut, spells: spellsOut };
 }
 
+// CMB-SINK-1 — a FORCEFUL ADVANCE: an aggressive closing / shove-through that bulls
+// INTO the fight ("barrel through the doorway", "bull my way through", "shove past
+// them", "force my way through", "push in", "rush them"). It is an ENGAGEMENT, not
+// flight — so it resolves as a taken turn (move:toward: the round advances and the
+// foes react), never as free table-talk and never as a phantom sword swing. Genuine
+// flight ("flee"/"retreat"/"run away") is EXCLUDED by the caller's no-flee ruling,
+// which stays intact. The barrel/bull tokens here are VERBS, not the cask noun: the
+// article lookbehind rejects "the/a/an barrel", and callers check isImprovisedStrike-
+// Text first, so "throw the barrel through the window" stays an improvised strike.
+export function isForcefulAdvanceText(text) {
+  const t = String(text || '').toLowerCase();
+  if (!t) return false;
+  // barrel / bull / plow / plough THROUGH|PAST|INTO|IN|FORWARD… — a driving move,
+  // guarded against the container noun ("the barrel", "a bull").
+  if (/(?<!\b(?:the|a|an|this|that|another|each|every|one|some|no)\s)\b(?:barrel|bull|plough|plow)s?\s+(?:my\s+way\s+|our\s+way\s+|their\s+way\s+)?(?:through|past|into|in\b|forward|ahead|onward|on\b|toward|towards)\b/.test(t)) return true;
+  // shove / push THROUGH|PAST|IN|FORWARD|INTO — a movement, not "shove HIM into the wall".
+  if (/\b(?:shove|push)\s+(?:my\s+way\s+|our\s+way\s+)?(?:through|past|forward|into|onward|ahead|in\b)/.test(t)) return true;
+  // force / barge / bust / muscle / power / carve MY|OUR|YOUR WAY — a bull-through.
+  if (/\b(?:force|barge|bust|muscle|power|carve|shoulder)\s+(?:my|our|your)\s+way\b/.test(t)) return true;
+  // rush THEM|HIM|HER|IT|THE|IN|FORWARD|THROUGH|PAST|INTO — extends the toward set.
+  if (/\brush\s+(?:them|him|her|it|the\b|in\b|forward|through|past|into|at|toward|towards|on\b|ahead)/.test(t)) return true;
+  return false;
+}
+
 /**
  * parseEscapeAction(text) -> { verb: 'strike'|'firebolt'|'ward'|'cover' }
  * Map a typed line to one of the hedge-caster's light verbs. Unrecognized
@@ -783,6 +807,12 @@ export function parseEscapeAction(text) {
   if (compass) return { verb: 'move', mode: `compass-${compass[1]}` };
   if (/\b(fall\s+back|retreat|pull\s+back|back\s+(?:away|off)|give\s+ground|disengage|withdraw|move\s+(?:away|back)|create\s+(?:some\s+)?distance|put\s+(?:some\s+)?distance)\b/.test(t)) return { verb: 'move', mode: 'away' };
   if (/\b(charge\s+(?:at|in|on|the|toward|towards|forward)|close\s+(?:on|in|with|the\s+distance|the\s+gap)|advance\s+on|rush\s+(?:at|toward|towards|in)|bear\s+down|press\s+(?:toward|towards|forward|in)|move\s+(?:up\s+)?(?:on|toward|towards|to|into|in\s+on)|get\s+(?:in\s+)?(?:close|closer))\b/.test(t)) return { verb: 'move', mode: 'toward' };
+  // CMB-SINK-1 — a forceful advance / shove-through the toward-set above misses
+  // ("barrel through", "bull my way through", "shove past them", "force my way
+  // through", "push in", "rush them"). A CLOSING move, so it resolves as move:toward
+  // (round advances, foes react) — never a phantom strike. isImprovisedStrikeText
+  // wins first so "throw the barrel through the window" stays an improvised weapon.
+  if (!isImprovisedStrikeText(t) && isForcefulAdvanceText(t)) return { verb: 'move', mode: 'toward' };
   // Class/species features — checked before the generic verbs so "breathe fire"
   // doesn't fall into the cantrip bucket and "rally" doesn't read as a guard.
   // Parley — talking is always an option at this table. Intimidation and

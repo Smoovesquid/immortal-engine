@@ -1,5 +1,7 @@
 // Bestiary — Standard Tier (CR 3–5)
 // 250 creatures — COMBAT_SPEC section 7 compliant
+import { makeBleed } from '../../../../combat/bleed.js';
+
 export const standard = [
 
   // ── Batch 1 (1–30): Core standard creatures ─────────────────
@@ -1005,7 +1007,7 @@ export const standard = [
     actions: [
       { name: 'Crystal Slam', toHit: 6, damage: '2d8+3', type: 'bludgeoning', range: null, save: null, conditions: null, recharge: null },
       { name: 'Prismatic Beam', toHit: 6, damage: '3d6', type: 'radiant', range: 60, save: null, conditions: null, recharge: null },
-      { name: 'Crystal Shatter', toHit: null, damage: '3d8', type: 'piercing', range: 20, save: { stat: 'AGILITY', dc: 14, halfOnSave: true }, conditions: ['bleeding'], recharge: 5 }
+      { name: 'Crystal Shatter', toHit: null, damage: '3d8', type: 'piercing', range: 20, save: { stat: 'AGILITY', dc: 14, halfOnSave: true }, conditions: [makeBleed('deep')], recharge: 5 }
     ],
     multiattack: ['Crystal Slam', 'Prismatic Beam'],
     legendaryActions: null,
@@ -1269,7 +1271,7 @@ export const standard = [
     conditionImmunities: [],
     actions: [
       { name: 'Bite', toHit: 7, damage: '2d6+4', type: 'piercing', range: null, save: null, conditions: null, recharge: null },
-      { name: 'Claw', toHit: 7, damage: '2d8+4', type: 'slashing', range: null, save: null, conditions: ['bleeding'], recharge: null }
+      { name: 'Claw', toHit: 7, damage: '2d8+4', type: 'slashing', range: null, save: null, conditions: [makeBleed('deep')], recharge: null }
     ],
     multiattack: ['Bite', 'Claw', 'Claw'],
     legendaryActions: null,
@@ -1873,7 +1875,7 @@ export const standard = [
     conditionImmunities: ['poisoned', 'charmed', 'frightened', 'exhaustion'],
     actions: [
       { name: 'Bone Slam', toHit: 8, damage: '2d10+5', type: 'bludgeoning', range: null, save: null, conditions: ['prone'], recharge: null },
-      { name: 'Bone Shrapnel', toHit: null, damage: '3d6', type: 'piercing', range: 20, save: { stat: 'AGILITY', dc: 15, halfOnSave: true }, conditions: ['bleeding'], recharge: 5 },
+      { name: 'Bone Shrapnel', toHit: null, damage: '3d6', type: 'piercing', range: 20, save: { stat: 'AGILITY', dc: 15, halfOnSave: true }, conditions: [makeBleed('deep')], recharge: 5 },
       { name: 'Reform', toHit: null, damage: null, type: null, range: null, save: null, conditions: null, recharge: 6 }
     ],
     multiattack: ['Bone Slam', 'Bone Slam'],
@@ -1989,7 +1991,7 @@ export const standard = [
     resistances: { poison: 'immune', necrotic: 'vulnerable' },
     conditionImmunities: ['poisoned', 'charmed'],
     actions: [
-      { name: 'Thorn Blade', toHit: 6, damage: '2d8+3', type: 'piercing', range: null, save: null, conditions: ['bleeding'], recharge: null },
+      { name: 'Thorn Blade', toHit: 6, damage: '2d8+3', type: 'piercing', range: null, save: null, conditions: [makeBleed('deep')], recharge: null },
       { name: 'Entangling Growth', toHit: null, damage: null, type: null, range: 30, save: { stat: 'MIGHT', dc: 14, halfOnSave: false }, conditions: ['restrained'], recharge: 5 },
       { name: 'Healing Spores', toHit: null, damage: null, type: null, range: 30, save: null, conditions: null, recharge: 6 }
     ],
@@ -2293,8 +2295,8 @@ export const standard = [
     conditionImmunities: ['frightened'],
     actions: [
       { name: 'Morningstar', toHit: 8, damage: '2d8+5', type: 'bludgeoning', range: null, save: null, conditions: null, recharge: null },
-      { name: 'Bite', toHit: 8, damage: '2d6+5', type: 'piercing', range: null, save: null, conditions: ['bleeding'], recharge: null },
-      { name: 'Rend', toHit: 8, damage: '3d8+5', type: 'slashing', range: null, save: null, conditions: ['bleeding'], recharge: 5 }
+      { name: 'Bite', toHit: 8, damage: '2d6+5', type: 'piercing', range: null, save: null, conditions: [makeBleed('severe')], recharge: null },
+      { name: 'Rend', toHit: 8, damage: '3d8+5', type: 'slashing', range: null, save: null, conditions: [makeBleed('severe')], recharge: 5 }
     ],
     multiattack: ['Morningstar', 'Bite'],
     legendaryActions: null,
@@ -3018,7 +3020,7 @@ export const standard = [
     actions: [
       { name: 'Plague Scalpel', toHit: 4, damage: '1d6+2', type: 'slashing', range: null, save: null, conditions: ['diseased'], recharge: null },
       { name: 'Miasma Bomb', toHit: null, damage: '3d6', type: 'poison', range: 30, save: { stat: 'GRIT', dc: 14, halfOnSave: true }, conditions: ['poisoned'], recharge: 5 },
-      { name: 'Leech Jar', toHit: null, damage: '1d8', type: 'necrotic', range: 15, save: { stat: 'AGILITY', dc: 13, halfOnSave: false }, conditions: ['bleeding'], recharge: 6 }
+      { name: 'Leech Jar', toHit: null, damage: '1d8', type: 'necrotic', range: 15, save: { stat: 'AGILITY', dc: 13, halfOnSave: false }, conditions: [makeBleed('deep')], recharge: 6 }
     ],
     multiattack: null,
     legendaryActions: null,
@@ -3091,7 +3093,7 @@ export const standard = [
     resistances: { poison: 'immune', psychic: 'immune' },
     conditionImmunities: ['poisoned', 'charmed', 'frightened', 'exhaustion'],
     actions: [
-      { name: 'Blade Arm', toHit: 7, damage: '2d6+4', type: 'slashing', range: null, save: null, conditions: ['bleeding'], recharge: null },
+      { name: 'Blade Arm', toHit: 7, damage: '2d6+4', type: 'slashing', range: null, save: null, conditions: [makeBleed('deep')], recharge: null },
       { name: 'Poison Dart', toHit: 7, damage: '1d6+4', type: 'piercing', range: 60, save: { stat: 'GRIT', dc: 14, halfOnSave: false }, conditions: ['poisoned', 'stunned'], recharge: null },
       { name: 'Self-Destruct', toHit: null, damage: '4d8', type: 'fire', range: 15, save: { stat: 'AGILITY', dc: 14, halfOnSave: true }, conditions: null, recharge: null }
     ],
@@ -3284,7 +3286,7 @@ export const standard = [
     actions: [
       { name: 'Bone Hook', toHit: 7, damage: '2d8+4', type: 'piercing', range: null, save: null, conditions: ['grappled'], recharge: null },
       { name: 'Sting', toHit: 7, damage: '2d6+4', type: 'piercing', range: null, save: { stat: 'GRIT', dc: 14, halfOnSave: true }, conditions: ['poisoned'], recharge: null },
-      { name: 'Bone Storm', toHit: null, damage: '3d8', type: 'piercing', range: 20, save: { stat: 'AGILITY', dc: 15, halfOnSave: true }, conditions: ['bleeding'], recharge: 5 }
+      { name: 'Bone Storm', toHit: null, damage: '3d8', type: 'piercing', range: 20, save: { stat: 'AGILITY', dc: 15, halfOnSave: true }, conditions: [makeBleed('deep')], recharge: 5 }
     ],
     multiattack: ['Bone Hook', 'Sting'],
     legendaryActions: null,
@@ -4004,7 +4006,7 @@ export const standard = [
     conditionImmunities: [],
     actions: [
       { name: 'Bite', toHit: 7, damage: '2d6+5', type: 'piercing', range: null, save: null, conditions: null, recharge: null },
-      { name: 'Claw', toHit: 7, damage: '2d8+5', type: 'slashing', range: null, save: null, conditions: ['bleeding'], recharge: null },
+      { name: 'Claw', toHit: 7, damage: '2d8+5', type: 'slashing', range: null, save: null, conditions: [makeBleed('deep')], recharge: null },
       { name: 'Rock Throw', toHit: 7, damage: '2d8+5', type: 'bludgeoning', range: 40, save: null, conditions: null, recharge: null }
     ],
     multiattack: ['Bite', 'Claw', 'Claw'],
@@ -4269,7 +4271,7 @@ export const standard = [
     resistances: { poison: 'resistant' },
     conditionImmunities: ['frightened'],
     actions: [
-      { name: 'Claw', toHit: 6, damage: '2d6+4', type: 'slashing', range: null, save: null, conditions: ['bleeding'], recharge: null },
+      { name: 'Claw', toHit: 6, damage: '2d6+4', type: 'slashing', range: null, save: null, conditions: [makeBleed('deep')], recharge: null },
       { name: 'Bite', toHit: 6, damage: '1d8+4', type: 'piercing', range: null, save: null, conditions: null, recharge: null },
       { name: 'Wounded Fury', toHit: 6, damage: '3d6+4', type: 'slashing', range: null, save: null, conditions: null, recharge: null }
     ],
@@ -4345,7 +4347,7 @@ export const standard = [
     resistances: { necrotic: 'resistant', bludgeoning: 'resistant', slashing: 'resistant', piercing: 'resistant', poison: 'immune' },
     conditionImmunities: ['poisoned', 'charmed', 'frightened', 'grappled', 'restrained', 'prone', 'stunned'],
     actions: [
-      { name: 'Bone Storm', toHit: 5, damage: '3d6+3', type: 'bludgeoning', range: null, save: null, conditions: ['bleeding'], recharge: null },
+      { name: 'Bone Storm', toHit: 5, damage: '3d6+3', type: 'bludgeoning', range: null, save: null, conditions: [makeBleed('deep')], recharge: null },
       { name: 'Engulfing Vortex', toHit: null, damage: '2d8', type: 'bludgeoning', range: 10, save: { stat: 'AGILITY', dc: 13, halfOnSave: true }, conditions: ['restrained'], recharge: 5 }
     ],
     multiattack: null,
@@ -4497,9 +4499,9 @@ export const standard = [
     resistances: { poison: 'resistant' },
     conditionImmunities: ['poisoned'],
     actions: [
-      { name: 'Thorn Bite', toHit: 6, damage: '2d8+3', type: 'piercing', range: null, save: null, conditions: ['bleeding'], recharge: null },
+      { name: 'Thorn Bite', toHit: 6, damage: '2d8+3', type: 'piercing', range: null, save: null, conditions: [makeBleed('deep')], recharge: null },
       { name: 'Tail Lash', toHit: 6, damage: '1d10+3', type: 'slashing', range: 10, save: null, conditions: ['prone'], recharge: null },
-      { name: 'Spine Volley', toHit: null, damage: '3d6', type: 'piercing', range: 30, save: { stat: 'AGILITY', dc: 14, halfOnSave: false }, conditions: ['bleeding'], recharge: 5 }
+      { name: 'Spine Volley', toHit: null, damage: '3d6', type: 'piercing', range: 30, save: { stat: 'AGILITY', dc: 14, halfOnSave: false }, conditions: [makeBleed('deep')], recharge: 5 }
     ],
     multiattack: ['Thorn Bite', 'Tail Lash'],
     legendaryActions: null,
@@ -4732,7 +4734,7 @@ export const standard = [
     resistances: { slashing: 'resistant', poison: 'resistant', lightning: 'vulnerable' },
     conditionImmunities: ['prone', 'deafened'],
     actions: [
-      { name: 'Thorn Slam', toHit: 6, damage: '2d8+3', type: 'piercing', range: null, save: null, conditions: ['bleeding'], recharge: null },
+      { name: 'Thorn Slam', toHit: 6, damage: '2d8+3', type: 'piercing', range: null, save: null, conditions: [makeBleed('deep')], recharge: null },
       { name: 'Entangling Roots', toHit: null, damage: '1d6', type: 'bludgeoning', range: 20, save: { stat: 'MIGHT', dc: 14, halfOnSave: false }, conditions: ['restrained'], recharge: 5 }
     ],
     multiattack: null,
@@ -4930,7 +4932,7 @@ export const standard = [
     resistances: { necrotic: 'immune', slashing: 'resistant', radiant: 'vulnerable' },
     conditionImmunities: ['poisoned', 'exhaustion', 'frightened'],
     actions: [
-      { name: 'Extending Claw', toHit: 7, damage: '2d10+4', type: 'slashing', range: 15, save: null, conditions: ['bleeding'], recharge: null },
+      { name: 'Extending Claw', toHit: 7, damage: '2d10+4', type: 'slashing', range: 15, save: null, conditions: [makeBleed('severe')], recharge: null },
       { name: 'Shadow Grasp', toHit: null, damage: '2d8', type: 'necrotic', range: 15, save: { stat: 'MIGHT', dc: 15, halfOnSave: false }, conditions: ['grappled'], recharge: null }
     ],
     multiattack: ['Extending Claw', 'Shadow Grasp'],
@@ -5011,7 +5013,7 @@ export const standard = [
     resistances: { necrotic: 'immune', poison: 'immune', radiant: 'vulnerable' },
     conditionImmunities: ['poisoned', 'exhaustion', 'charmed', 'frightened'],
     actions: [
-      { name: 'Bone Scythe', toHit: 7, damage: '2d10+4', type: 'slashing', range: 10, save: null, conditions: ['bleeding'], recharge: null },
+      { name: 'Bone Scythe', toHit: 7, damage: '2d10+4', type: 'slashing', range: 10, save: null, conditions: [makeBleed('deep')], recharge: null },
       { name: 'Harvest', toHit: null, damage: '3d8', type: 'necrotic', range: null, save: { stat: 'GRIT', dc: 15, halfOnSave: true }, conditions: ['max_hp_reduced'], recharge: null }
     ],
     multiattack: ['Bone Scythe', 'Harvest'],
@@ -5159,7 +5161,7 @@ export const standard = [
     resistances: { poison: 'resistant', acid: 'resistant' },
     conditionImmunities: ['poisoned', 'frightened'],
     actions: [
-      { name: 'Bite (per head)', toHit: 7, damage: '1d10+4', type: 'piercing', range: 10, save: null, conditions: ['bleeding'], recharge: null },
+      { name: 'Bite (per head)', toHit: 7, damage: '1d10+4', type: 'piercing', range: 10, save: null, conditions: [makeBleed('severe')], recharge: null },
       { name: 'Venomous Spray', toHit: null, damage: '2d8', type: 'poison', range: 20, save: { stat: 'GRIT', dc: 14, halfOnSave: true }, conditions: ['poisoned'], recharge: 5 }
     ],
     multiattack: ['Bite (per head)', 'Bite (per head)', 'Bite (per head)'],
@@ -5271,8 +5273,8 @@ export const standard = [
     resistances: { slashing: 'resistant', piercing: 'resistant', necrotic: 'resistant', fire: 'vulnerable' },
     conditionImmunities: ['poisoned', 'prone', 'grappled', 'exhaustion'],
     actions: [
-      { name: 'Blood Lash', toHit: 6, damage: '2d8+3', type: 'necrotic', range: 10, save: null, conditions: ['bleeding'], recharge: null },
-      { name: 'Exsanguinate', toHit: null, damage: '3d8', type: 'necrotic', range: null, save: { stat: 'GRIT', dc: 14, halfOnSave: true }, conditions: ['bleeding', 'weakened'], recharge: 5 }
+      { name: 'Blood Lash', toHit: 6, damage: '2d8+3', type: 'necrotic', range: 10, save: null, conditions: [makeBleed('deep')], recharge: null },
+      { name: 'Exsanguinate', toHit: null, damage: '3d8', type: 'necrotic', range: null, save: { stat: 'GRIT', dc: 14, halfOnSave: true }, conditions: [makeBleed('severe'), 'weakened'], recharge: 5 }
     ],
     multiattack: ['Blood Lash', 'Blood Lash'],
     legendaryActions: null,
@@ -5470,9 +5472,9 @@ export const standard = [
     resistances: { bludgeoning: 'resistant', lightning: 'vulnerable' },
     conditionImmunities: ['prone', 'charmed', 'frightened', 'deafened', 'stunned', 'exhaustion'],
     actions: [
-      { name: 'Razor Lash', toHit: 5, damage: '2d6+3', type: 'slashing', range: 15, save: null, conditions: ['bleeding'], recharge: null },
+      { name: 'Razor Lash', toHit: 5, damage: '2d6+3', type: 'slashing', range: 15, save: null, conditions: [makeBleed('deep')], recharge: null },
       { name: 'Constrict', toHit: 5, damage: '2d8+3', type: 'bludgeoning', range: 10, save: null, conditions: ['grappled', 'restrained'], recharge: null },
-      { name: 'Thorn Burst', toHit: null, damage: '2d8', type: 'piercing', range: 20, save: { stat: 'AGILITY', dc: 13, halfOnSave: true }, conditions: ['bleeding'], recharge: 5 }
+      { name: 'Thorn Burst', toHit: null, damage: '2d8', type: 'piercing', range: 20, save: { stat: 'AGILITY', dc: 13, halfOnSave: true }, conditions: [makeBleed('deep')], recharge: 5 }
     ],
     multiattack: ['Razor Lash', 'Razor Lash'],
     legendaryActions: null,
@@ -6001,7 +6003,7 @@ export const standard = [
     resistances: { sonic: 'resistant' },
     conditionImmunities: ['charmed'],
     actions: [
-      { name: 'Talon Rake', toHit: 5, damage: '2d6+2', type: 'slashing', range: null, save: null, conditions: ['bleeding'], recharge: null },
+      { name: 'Talon Rake', toHit: 5, damage: '2d6+2', type: 'slashing', range: null, save: null, conditions: [makeBleed('deep')], recharge: null },
       { name: 'Luring Song', toHit: null, damage: '0', type: 'psychic', range: 60, save: { stat: 'CHARM', dc: 15, halfOnSave: false }, conditions: ['charmed'], recharge: null },
       { name: 'Shriek', toHit: null, damage: '3d6', type: 'sonic', range: 30, save: { stat: 'GRIT', dc: 14, halfOnSave: true }, conditions: ['deafened', 'stunned'], recharge: 5 }
     ],
@@ -6614,7 +6616,7 @@ export const standard = [
     resistances: {},
     conditionImmunities: ['frightened'],
     actions: [
-      { name: 'Tusk Gore', toHit: 7, damage: '2d8+4', type: 'slashing', range: null, save: null, conditions: ['bleeding'], recharge: null },
+      { name: 'Tusk Gore', toHit: 7, damage: '2d8+4', type: 'slashing', range: null, save: null, conditions: [makeBleed('deep')], recharge: null },
       { name: 'Charge', toHit: 7, damage: '3d8+4', type: 'bludgeoning', range: null, save: { stat: 'MIGHT', dc: 15, halfOnSave: false }, conditions: ['prone'], recharge: null }
     ],
     multiattack: ['Tusk Gore', 'Tusk Gore'],
@@ -6799,7 +6801,7 @@ export const standard = [
     resistances: { poison: 'immune', psychic: 'immune' },
     conditionImmunities: ['poisoned', 'charmed', 'frightened', 'exhaustion'],
     actions: [
-      { name: 'Saw Mandible', toHit: 6, damage: '2d6+3', type: 'slashing', range: null, save: null, conditions: ['bleeding'], recharge: null },
+      { name: 'Saw Mandible', toHit: 6, damage: '2d6+3', type: 'slashing', range: null, save: null, conditions: [makeBleed('deep')], recharge: null },
       { name: 'Web Launcher', toHit: 6, damage: '0', type: 'force', range: 30, save: null, conditions: ['restrained'], recharge: null },
       { name: 'Self-Destruct', toHit: null, damage: '4d6', type: 'fire', range: 10, save: { stat: 'AGILITY', dc: 13, halfOnSave: true }, conditions: ['burning'], recharge: null }
     ],
@@ -6955,7 +6957,7 @@ export const standard = [
     resistances: { fire: 'resistant', bludgeoning: 'resistant', slashing: 'resistant', piercing: 'resistant' },
     conditionImmunities: ['poisoned', 'prone', 'exhaustion'],
     actions: [
-      { name: 'Sand Scour', toHit: 6, damage: '2d6+3', type: 'slashing', range: null, save: null, conditions: ['bleeding'], recharge: null },
+      { name: 'Sand Scour', toHit: 6, damage: '2d6+3', type: 'slashing', range: null, save: null, conditions: [makeBleed('deep')], recharge: null },
       { name: 'Desiccation Touch', toHit: 6, damage: '2d8+3', type: 'necrotic', range: null, save: null, conditions: ['dehydrated'], recharge: null },
       { name: 'Sandstorm', toHit: null, damage: '2d8', type: 'slashing', range: 20, save: { stat: 'GRIT', dc: 14, halfOnSave: true }, conditions: ['deafened', 'dehydrated'], recharge: 5 }
     ],
@@ -7075,7 +7077,7 @@ export const standard = [
     resistances: { acid: 'resistant', poison: 'resistant' },
     conditionImmunities: ['poisoned'],
     actions: [
-      { name: 'Claw', toHit: 7, damage: '2d6+4', type: 'slashing', range: null, save: null, conditions: ['bleeding'], recharge: null },
+      { name: 'Claw', toHit: 7, damage: '2d6+4', type: 'slashing', range: null, save: null, conditions: [makeBleed('deep')], recharge: null },
       { name: 'Bite', toHit: 7, damage: '2d8+4', type: 'piercing', range: null, save: null, conditions: ['diseased'], recharge: null },
       { name: 'Swamp Vomit', toHit: null, damage: '2d8', type: 'acid', range: 15, save: { stat: 'AGILITY', dc: 14, halfOnSave: true }, conditions: ['poisoned'], recharge: 5 }
     ],
@@ -7346,7 +7348,7 @@ export const standard = [
     resistances: { cold: 'resistant', necrotic: 'resistant', radiant: 'vulnerable' },
     conditionImmunities: ['poisoned', 'exhaustion', 'frightened'],
     actions: [
-      { name: 'Barnacle Cutlass', toHit: 6, damage: '2d8+3', type: 'slashing', range: null, save: null, conditions: ['bleeding'], recharge: null },
+      { name: 'Barnacle Cutlass', toHit: 6, damage: '2d8+3', type: 'slashing', range: null, save: null, conditions: [makeBleed('deep')], recharge: null },
       { name: 'Drowning Grasp', toHit: null, damage: '2d8', type: 'cold', range: null, save: { stat: 'GRIT', dc: 14, halfOnSave: false }, conditions: ['grappled', 'suffocating'], recharge: null },
       { name: 'Tidal Command', toHit: null, damage: '2d8', type: 'cold', range: 20, save: { stat: 'MIGHT', dc: 14, halfOnSave: true }, conditions: ['prone'], recharge: 5 }
     ],
@@ -7496,7 +7498,7 @@ export const standard = [
     resistances: { necrotic: 'resistant' },
     conditionImmunities: ['frightened'],
     actions: [
-      { name: 'Bone Shard', toHit: 7, damage: '2d6+4', type: 'piercing', range: 60, save: null, conditions: ['bleeding'], recharge: null },
+      { name: 'Bone Shard', toHit: 7, damage: '2d6+4', type: 'piercing', range: 60, save: null, conditions: [makeBleed('deep')], recharge: null },
       { name: 'Sculpt Bone', toHit: null, damage: '0', type: 'necrotic', range: 30, save: null, conditions: [], recharge: null },
       { name: 'Bone Cage', toHit: null, damage: '2d8', type: 'piercing', range: 30, save: { stat: 'AGILITY', dc: 15, halfOnSave: false }, conditions: ['restrained'], recharge: 5 }
     ],
@@ -7660,7 +7662,7 @@ export const standard = [
     resistances: { lightning: 'resistant', sonic: 'resistant' },
     conditionImmunities: ['prone'],
     actions: [
-      { name: 'Talons', toHit: 7, damage: '2d6+4', type: 'slashing', range: null, save: null, conditions: ['bleeding'], recharge: null },
+      { name: 'Talons', toHit: 7, damage: '2d6+4', type: 'slashing', range: null, save: null, conditions: [makeBleed('deep')], recharge: null },
       { name: 'Thunder Shriek', toHit: null, damage: '2d8', type: 'sonic', range: 30, save: { stat: 'GRIT', dc: 13, halfOnSave: true }, conditions: ['deafened'], recharge: 5 },
       { name: 'Diving Strike', toHit: 7, damage: '3d6+4', type: 'slashing', range: null, save: null, conditions: ['prone'], recharge: null }
     ],

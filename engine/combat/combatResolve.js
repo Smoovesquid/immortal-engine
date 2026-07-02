@@ -106,6 +106,22 @@ export function resolveCombatTurn(world, move, opts = {}) {
       }
     }
   }
+  // Bleed spectrum (combat/bleed.js): a bestiary attack (Claw, Thorn Blade,
+  // Bite, ...) tags `conditions: [makeBleed(tier)]`, applied through the same
+  // on-hit `conditions` path any other condition uses — including onto the
+  // PLAYER when an enemy's attack connects. That side is NOT wired here.
+  // Ticking it correctly needs a delta that can write a decremented/expired
+  // conditions array back onto the party entity; the only existing
+  // party-side op (`condition`, effectsCore.js) is additive-only and bleed's
+  // own `stackBehavior:'highest'` refuses any same-or-lower-severity re-add,
+  // so there is no way to express "this bleed just expired" or "the save
+  // succeeded" as a delta today. Recomputing the tick from the stale,
+  // never-decremented stored condition every round would deal correct
+  // damage on the first tick but then never stop — worse than leaving it
+  // unwired. effectsCore.js is out of this lane's file ownership, so this is
+  // a named follow-up, not a fix: add a party-conditions replace-op
+  // (combatState-style `partyConditions: [{ id, conditions }]`, mirroring
+  // `enemyConditions`), then extend this loop to also walk w.party[0].
   if (condTickDeltas.length) {
     w = applyDeltas(w, condTickDeltas);
   }

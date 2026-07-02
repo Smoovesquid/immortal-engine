@@ -44,7 +44,17 @@ export function normalizeCondition(raw) {
   const stackBehavior = VALID_STACK_BEHAVIORS.has(r.stackBehavior)
     ? r.stackBehavior : 'replace';
 
-  return { name, until, source, severity, saveToEnd, onTick, stackBehavior };
+  const cond = { name, until, source, severity, saveToEnd, onTick, stackBehavior };
+  // combat/bleed.js: carry the tier word through so narration can read it back
+  // without reverse-inferring from severity (bleedTierOf is only the fallback).
+  if (typeof r.bleedTier === 'string' && r.bleedTier) cond.bleedTier = r.bleedTier;
+  // tickConditions' bleed-duration anchor (below) needs this to survive a
+  // round trip through ensureWorld/ensureCombat, which re-normalizes every
+  // stored condition via this function on every mutation. Without carrying
+  // it through, the marker would be stripped every round and the anchor
+  // would recompute (and grow `until`) on every single tick instead of once.
+  if (r._bleedAnchored === true) cond._bleedAnchored = true;
+  return cond;
 }
 
 function normalizeUntil(u) {
@@ -168,6 +178,32 @@ export function tickConditions(conditions, entity, currentTurn, rng) {
     if (cond.onTick) {
       tr.damage = cond.severity;
       tr.damageType = cond.onTick;
+    }
+
+    // combat/bleed.js's shallow tier ships a raw numeric `until` (2) meaning
+    // a DURATION in rounds — but the general contract below (and every other
+    // caller: CM02.conditions.test.js, UX5.edgeProbes.test.js P3-02/P3-03)
+    // treats a numeric `until` as an ABSOLUTE round number. Left alone, a
+    // shallow bleed ticked for the first time on any round past 2 (the
+    // normal case — combat.round keeps climbing all fight) would read as
+    // already-expired and vanish before dealing its first tick, or after
+    // only one. Scoped strictly to bleed (identified by the `bleedTier`
+    // marker makeBleed() stamps, which normalizeCondition now preserves) so
+    // the load-bearing general contract is untouched for every other
+    // condition. Self-anchors to an absolute round on first tick, the same
+    // pattern end_of_next_turn already uses below — this makes the fix
+    // effective no matter how the bleed condition entered the array (a real
+    // attack, a test fixture, a future caller), not just one call site.
+    if (cond.bleedTier && typeof cond.until === 'number' && !cond._bleedAnchored) {
+      // This tick IS the condition's first: `duration` ticks total means
+      // ticking on turn, turn+1, ..., turn+duration-1, so the removal
+      // deadline (checked as turn >= until, same pass a tick still lands)
+      // is turn + duration - 1.
+      const duration = Math.max(1, cond.until);
+      const updated = { ...cond, until: turn + duration - 1, _bleedAnchored: true };
+      kept.push(updated);
+      tickResults.push(tr);
+      continue;
     }
 
     // 2. Expiration by turn number

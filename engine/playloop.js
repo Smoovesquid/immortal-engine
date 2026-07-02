@@ -474,8 +474,116 @@ function maybeEnterConversationAfterAddress(world, text, output) {
   return begun?.outcome?.ok ? begun.world : world;
 }
 
+// ── AG-3: the one-way egress door ───────────────────────────────────────────
+// The single funnel downstream of every sink. A direct player question (an
+// "owed-answer" turn) can never silently dead-end: if playerMoveCore returns a
+// NON-ANSWER on such a turn, the egress repairs the NARRATION ONLY (read-only —
+// no world mutation, no rng draw) by routing the classifier's TYPED verdict to
+// the grounded answerers, and — when none can answer — an honest voiced decline,
+// NEVER the gen/atmosphere/survey/clarify sink. Recall-bias is finally free at
+// this position: a false catch just attempts a better answer; if the machinery
+// returns null the original output stands (fail-open). This flips the default so
+// a NEW code path is guarded BY DEFAULT — an untagged non-answer on a question
+// turn gets repaired, not shipped. (second-order diagnosis §2.3; AG-3 brief.)
+//
+// Provenance whitelist — the one-time, greppable enumeration that replaces the
+// forever-enumeration of sinks: a recognized answer/action mechanics tag (any
+// `[…]` family), the explore/trivial neutral lines, and an empty tag (the meta
+// answers + local non-moving replies, which are too overloaded to treat as
+// suspect) all pass through UNTOUCHED. Three signals mark a suspect non-answer:
+//   R1  the player was walked through a door (position changed) on a question —
+//       the movement-claim swallow AG-2R deliberately left open (LH-2). Caught
+//       STRUCTURALLY here, with NO movement-branch guard: the whole point.
+//   R2  the narration is the atmosphere/gen bank — an owed answer must never
+//       terminate there (the 06-19 verdict (ii), finally shipped).
+//   R3  an unrecognized provenance (non-empty, non-neutral, not a `[…]` tag) —
+//       a synthetic or future sink defaults to must-prove-answerness.
+
+// The atmosphere/gen bank template signatures (genericGroundedOutcome gen:s/m/f).
+const EGRESS_GEN_BANK_RE = /goes your way|after a fashion|see it through|it half.?works|the moment (?:turns toward you|slips past you)|comes off (?:cleanly|the way you meant)|way ahead opens a little|left where you started|doesn.?t give it to you|holds against you|won.?t budge|part of the way, but no further|falls short here/i;
+
+// Neutral non-bracket mechanics that are NOT dead-ends (the explore survey / a
+// trivial auto-success): they pass through — the explore path has its own guards
+// (AG-2R Part B), and a false repair here would fight the corpus (C4-021/C15).
+const EGRESS_NEUTRAL_MECH_RE = /^(?:observe only|trivial action)\b/i;
+
+function egressPositionKey(world) {
+  return `${world?.map?.currentNodeId || ''}|${world?.scene?.interior?.roomId || ''}`;
+}
+
+function egressOutcomeFrom(mech) {
+  const m = String(mech || '');
+  if (/→\s*failure/i.test(m)) return 'failure';
+  if (/→\s*mixed/i.test(m)) return 'mixed';
+  return 'success';
+}
+
+// Typed dispatch — consumes the classifier verdict, NEVER re-derives question-ness
+// from raw text (this is what kills blocker B — the isQuestionShaped double-gate).
+// Every answerer is READ-ONLY (no mutation, no rng). Returns a narration string.
+function egressRepair(world, text, intent, outcome) {
+  const t = String(text || '').toLowerCase().trim();
+  // sheet / ledger / rules → the existing meta answers (report the number on demand)
+  if (isMetaQuestion(text)) {
+    const m = handleMetaQuestion(text, world);
+    if (m) return `Wizard: ${m}`;
+  }
+  // presence / who's-here — looser than the strict upstream PRESENCE_Q_RE (recall-
+  // bias is free at the egress), so "who's in the next room?" — the LH-2 phrasing
+  // that detector misses — answers from the roster of the room you're now in.
+  if (/\bwho\b/i.test(t) && /\b(?:here|there|around|present|nearby|room|inside|standing|next|with\s+me|in\s+it)\b/i.test(t)) {
+    return `Wizard: ${buildLocationSurvey(world, { presence: true, queryText: text })}`;
+  }
+  // place / person / object / npc-addressed → the typed answer-or-decline (a
+  // grounded fact, an in-voice decline for motive/secret, or the honest no-record
+  // decline). Passing intent skips the isQuestionShaped re-derivation (blocker B).
+  const a = answerOrDeclineQuestion(world, text, outcome, intent);
+  if (a) return a;
+  // The default flips — every dispatcher declined → an honest voiced decline,
+  // NEVER the gen/atmosphere/survey/clarify bank.
+  return declineInfoSeek(world, text, socialTarget(world, text));
+}
+
+// applyEgressRepair — the wrapper. Read-only: touches only res.output (narration
+// + mechanics). The world state (incl. any roll that already ticked upstream) is
+// whatever playerMoveCore produced → worldHash is unchanged → determinism holds.
+// Exported for U319 (test the four P10 properties directly on synthetic outputs).
+export function applyEgressRepair(prevWorld, text, res) {
+  if (!res || !res.output) return res;
+  // Mode claims stay first: a turn inside combat or dialogue is owned by that
+  // mode's resolver (DLG-1 / CMB-SINK-1 defaults hold; the gate proved it).
+  if (prevWorld?.combat?.active || prevWorld?.scene?.dialogue) return res;
+  if (res.world?.combat?.active) return res;
+  // Owed an answer? Recall-biased — the classifier IS the loose test the 06-19
+  // verdict wanted (question-shaped | imperative-info, only literal declared-
+  // action excluded). Classified against the pre-turn world (the state the input
+  // was composed against). null → not a question; let the output stand.
+  const intent = directQuestionIntent(text, prevWorld);
+  if (!intent) return res;
+  // Suspect provenance? R1 movement / R2 gen-bank / R3 unrecognized.
+  // Movement is the position the reducer STARTED from (ensureWorld's normalized
+  // prevWorld — playerMoveCore ensures at its top) vs where it ended. The raw
+  // check is cheap and yields no false negatives; only when it flags a move do
+  // we pay one ensureWorld to reject the normalization artifact (a caller-passed
+  // non-idempotent world whose interior/defaults differ only after ensuring).
+  let moved = egressPositionKey(prevWorld) !== egressPositionKey(res.world);
+  if (moved) moved = egressPositionKey(ensureWorld(prevWorld)) !== egressPositionKey(res.world);
+  const narr = String(res.output.narration || '');
+  const mech = String(res.output.mechanics || '').trim();
+  const suspect = moved
+    || EGRESS_GEN_BANK_RE.test(narr)
+    || (mech !== '' && !EGRESS_NEUTRAL_MECH_RE.test(mech) && !mech.startsWith('['));
+  if (!suspect) return res;   // whitelisted answer-bearing provenance → untouched
+  // Repair the NARRATION only, against the post-turn world (so LH-2's roster is
+  // the room you were walked into). State is untouched.
+  const outcome = egressOutcomeFrom(mech);
+  const repaired = egressRepair(res.world, text, intent, outcome);
+  if (!repaired) return res;   // fail-open: machinery returned nothing → keep original
+  return { ...res, output: { ...res.output, narration: repaired, mechanics: '[egress:repair]' } };
+}
+
 export function playerMove(world, packsById, text) {
-  const res = playerMoveCore(world, packsById, text);
+  const res = applyEgressRepair(world, text, playerMoveCore(world, packsById, text));
   // Speaking AT a present person ("tell/ask X ...") opens a sustained conversation AFTER the
   // turn resolves naturally — the social roll / info answer is unchanged; combat, "tell me
   // about …", and an absent name all skip it (see maybeEnterConversationAfterAddress).

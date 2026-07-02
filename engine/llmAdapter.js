@@ -59,7 +59,13 @@ function interiorLayoutFact(interior) {
   // Pin the label: the DM kept calling a cottage "the inn" because an innkeeper lives
   // there. Name the building by its TYPE, never by the trade of whoever is inside (IT-4).
   const label = ` Call this building a ${lay.buildingType} — do not rename it for the trade of whoever lives or works here.`;
-  return `The player is inside ${rooms}. From this room there is ${doors}.${wayOut} There are NO other rooms, floors, or stairs than these.${label}`;
+  // IOM-P2: name the room's real furnishings so the DM stops inventing objects the room
+  // doesn't have (WB-Q5/WB-Q9). Facts only — this is context, never a stat dump to recite.
+  const objects = Array.isArray(interior.objects) ? interior.objects : [];
+  const objectsFact = objects.length
+    ? ` In this room: ${objects.map(o => (o.state ? `${o.name} (${o.state})` : o.name)).join(', ')}. These are the room's furnishings — do not invent others you expect the player to act on.`
+    : '';
+  return `The player is inside ${rooms}. From this room there is ${doors}.${wayOut} There are NO other rooms, floors, or stairs than these.${label}${objectsFact}`;
 }
 
 // Set-piece beats — the three threshold moments where the DM rises from one terse
@@ -1309,6 +1315,9 @@ export function buildDMSystemPrompt(dmCtx) {
         const p = npc.personality ?? {};
         const cs = npc.conversationState ?? {};
         let block = `- ${npc.name} (${npc.role})`;
+        // IOM-P2: mark who is actually in the player's room (not the whole roster —
+        // the roster stays intact for downstream dialogue continuity).
+        block += npc.inRoomWithPlayer ? ` | IN THIS ROOM` : ` | not in this room`;
         if (p.honesty != null) block += ` | honesty:${fmt01(p.honesty)} trust:${fmt01(p.trustOfOutsiders)} self-preservation:${fmt01(p.selfPreservation)}`;
         if (cs.metPlayer) block += ` | has met the player (trust:${cs.trustLevel}/10)`;
         else block += ` | has NOT met the player`;

@@ -20,6 +20,8 @@ import { companionApproachForRole } from '../combat/companionTurn.js';
 import { statMod, maxWounds } from '../ruleset/core/stats.js';
 import { buildAsciiMap } from './asciiMap.js';
 import { describeInteriorLayout } from '../structures/interiors.js';
+import { getRoomState } from '../structures/roomState.js';
+import { occupantsOfRoom, outdoorOccupants } from '../structures/roomOccupancy.js';
 
 /**
  * buildNarratorContext(world, outcome) → NarratorContext (original slim context)
@@ -386,8 +388,15 @@ function buildScene(w, outcome) {
 
   const interior = (w.scene?.interior && typeof w.scene.interior === 'object')
     // layout = the REAL room graph (count, single storey, doorways), so the DM prompt can
-    // forbid invented stairs/floors/rooms (WB-Q1). Ephemeral narration context, not state.
-    ? { structureKey: String(w.scene.interior.structureKey ?? ''), roomId: String(w.scene.interior.roomId ?? ''), layout: describeInteriorLayout(w) }
+    // forbid invented stairs/floors/rooms (WB-Q1). objects = the room's real furnishings
+    // (IOM-P2), so the DM stops inventing furniture the room doesn't have. Ephemeral
+    // narration context, not state.
+    ? {
+        structureKey: String(w.scene.interior.structureKey ?? ''),
+        roomId: String(w.scene.interior.roomId ?? ''),
+        layout: describeInteriorLayout(w),
+        objects: getRoomState(w).objects
+      }
     : null;
 
   const toneWords = outcome?.pack?.toneWords ?? w._resolvedPack?.toneWords ?? null;
@@ -441,6 +450,16 @@ function buildNPCsPresent(w) {
   if (!settlement?.npcs?.length) return [];
 
   const npcs = settlement.npcs;
+
+  // IOM-P2: mark who is actually in the player's room, without filtering the roster —
+  // downstream dialogue continuity reads the full list. Inside, "the room" is the
+  // occupancy-derived room the player stands in; outdoors, it's who's out in the open.
+  const interior = (w.scene?.interior && typeof w.scene.interior === 'object' && w.scene.interior) ? w.scene.interior : null;
+  const roomOccupants = interior
+    ? occupantsOfRoom(w, String(interior.structureKey || ''), String(interior.roomId || ''))
+    : outdoorOccupants(w);
+  const inRoomIds = new Set(roomOccupants.map(npc => String(npc?.id ?? npc?.name ?? '')));
+
   // First NPC gets full detail (~500 tokens), rest get summary (~200 each)
   return npcs.map((npc, i) => {
     const cs = npc.conversationState ?? {};
@@ -451,6 +470,7 @@ function buildNPCsPresent(w) {
     const base = {
       name: String(npc.name ?? `the ${npc.role}`),
       role: String(npc.role ?? 'townfolk'),
+      inRoomWithPlayer: inRoomIds.has(String(npc?.id ?? npc?.name ?? '')),
       factionId: npc.factionId || null,
       personality: npc.personality ?? null,
       disposition: npc.disposition ?? null,

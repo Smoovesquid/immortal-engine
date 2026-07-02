@@ -48,6 +48,17 @@ export function buildCanonGroundTruth(world) {
   const recentCanon = Array.isArray(world.canonLog?.events) ? world.canonLog.events.slice(-8)
     : Array.isArray(world.canonLog) ? world.canonLog.slice(-8) : [];
   const timeline = Array.isArray(world.timeline) ? world.timeline.slice(-6).map(e => ({ kind: e.kind, t: e.t })) : [];
+  // Adjacent places (the map edges out of the current node) ARE canon — the DM/egress
+  // legitimately names them as "where the road leads". Without them in the oracle, the
+  // judge saw only the current node and false-flagged real neighbors as fabrication.
+  // (P10 gate Lore-8: "Old Shrine"/"Sooted Bridge" are real tallow nodes → judge said
+  // CANON_HALLUCINATION. They're connected places, not invented.)
+  const _nodesById = new Map((world.map?.nodes || []).map(n => [n?.id, n]));
+  const _curId = world.map?.currentNodeId;
+  const nearbyPlaces = (Array.isArray(world.map?.edges) ? world.map.edges : [])
+    .filter(e => e && (e.a === _curId || e.b === _curId))
+    .map(e => _nodesById.get(e.a === _curId ? e.b : e.a)?.name)
+    .filter(Boolean);
   // Escape mode (the live combat engine) tracks the PC's health in meta.escapeHp
   // and enemy health in e.hp — NOT party[0].wounds / e.wounds. Report the model
   // that's actually live so the judge sees real combat HP (else it flags every
@@ -55,6 +66,7 @@ export function buildCanonGroundTruth(world) {
   const escape = world.meta?.mode === 'escape';
   return {
     location: node ? { name: node.name, kind: node.kind } : null,
+    nearbyPlaces,
     npcsPresent: npcs,
     pc: escape
       ? { hp: world.meta?.escapeHp, maxHp: world.meta?.escapeMaxHp, level: pc.level, conditions: pc.conditions, note: 'escape mode: HP is the live health; party wounds are not used here' }

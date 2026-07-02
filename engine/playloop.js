@@ -1411,7 +1411,14 @@ function playerMoveCore(world, packsById, text) {
         // place you on that side. Climbing out an (accessible) window never rolls.
         const facings = roomWindowFacings(w, w.scene.interior);
         const requested = parseWindowFacing(text);
-        if (facings.length > 1 && !requested) {
+        // A COMMITTED plunge ("dive/leap through", "…into the flames", "headfirst")
+        // has decided to go — the specific window is immaterial, so resolve with the
+        // nearest facing instead of stalling on "which?". A tentative "I go out a
+        // window" (no plunge, no beyond-window destination) still asks, so the
+        // map-placement facing stays a real choice. (P10 gate Chaos-5: "climb through
+        // the burning window into the flames" got a which-prompt, resolved nothing.)
+        const committedPlunge = /\b(?:dive|leap|plunge|lunge)\b|\b(?:hurl|throw)\s+(?:myself|him|her)\b|\bhead\s?first\b|\binto\s+the\s+\w+/i.test(String(text || ''));
+        if (facings.length > 1 && !requested && !committedPlunge) {
           return { world: w, output: { narration: `Wizard: There's more than one window — ${joinFacings(facings)}. Which do you go out?`, mechanics: '[window:exit|which]' } };
         }
         if (requested && facings.length && !facings.includes(requested)) {

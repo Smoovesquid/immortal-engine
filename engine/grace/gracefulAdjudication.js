@@ -1441,7 +1441,14 @@ function mentionsCharacterClass(lowerText) {
 // another ask: "what gear is on me right now", "what weapons, armor, and
 // gear are on my sheet", "every item I'm carrying", "what do my hands find
 // when I pat myself down". (H-38a R1)
-const GEAR_ASK_FOLD_RE = /\b(?:gear|weapons?|armou?r|equipment|loadout)\b[\s\S]{0,25}\b(?:on\s+me|on\s+my\s+(?:person|sheet|body)|right\s+now)\b|\bi'?m\s+carrying\b|\bpat\s+(?:myself|him|her)\s+down\b|\bwhat\s+do\s+my\s+hands\s+(?:actually\s+)?find\b/i;
+// "see/show/check my inventory" ("see" is not an inventory VERB in META_INVENTORY,
+// which stays narrow for the primary route) and "what is my CHARACTER carrying"
+// (META_INVENTORY anchors on "what am I carrying", not "my character carrying") are
+// fold-only phrasings — they only appear alongside another ask ("…and my current HP?").
+// Adding them here (not to META_INVENTORY) folds the loadout without widening the
+// primary route. (P10 gate RL-1: "what's my character carrying — inventory and HP?"
+// answered stats+HP but dropped the item list.)
+const GEAR_ASK_FOLD_RE = /\b(?:gear|weapons?|armou?r|equipment|loadout)\b[\s\S]{0,25}\b(?:on\s+me|on\s+my\s+(?:person|sheet|body)|right\s+now)\b|\bi'?m\s+carrying\b|\bmy\s+character\s+(?:is\s+)?carrying\b|\b(?:see|show\s+me|check)\s+my\s+(?:inventory|pack|bag|gear|equipment|loadout|kit)\b|\bpat\s+(?:myself|him|her)\s+down\b|\bwhat\s+do\s+my\s+hands\s+(?:actually\s+)?find\b/i;
 
 function mentionsGearAsk(lowerText) {
   const stripped = stripArmorClassPhrase(lowerText);

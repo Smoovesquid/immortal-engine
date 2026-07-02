@@ -60,6 +60,7 @@ import { occupantsOfRoom } from './structures/roomOccupancy.js';
 import { getRoomState } from './structures/roomState.js';
 import { lockState, lockOpenEventData } from './structures/locks.js';
 import { assessProvocation, carriedGrudge } from './npc/provocation.js';
+import { deedFactionDeltas } from './social/reactionTable.js';
 import { resolveEscapeCombatTurn, initEscapeHp, initEscapeKit, shortRest, longRest, applySurpriseRound, parseEscapeAction, isForcefulAdvanceText, combatStatusAnswer, meleeProfile, playerAc } from './combat/escapeCombat.js';
 import { statMod, maxWounds } from './ruleset/core/stats.js';
 import { shopsHere, stockFor, settlementStock, economyAt, priceToSell, shopBuys, restockEpoch, purseTotalCopper, pursePay, purseReceive, formatPrice, matchByName } from './economy/shop.js';
@@ -7713,6 +7714,12 @@ function applyDeedCharges(world, text, output) {
     const by = dark ? -mag : mag;
     for (const npcId of witnesses) deltas.push({ op: 'npcTrustDelta', npcId, by });
   }
+  // SP-1 (M2 "faction disposition") — institutions learn what their PEOPLE saw. A deed
+  // witnessed by faction-affiliated NPCs moves the player's standing with that faction;
+  // direction from the deed kind, magnitude from the deterministic reaction table
+  // (engine/social/reactionTable.js — Vol 11: the LLM never sets the number). One shift
+  // per faction per deed; no witnesses → institutions never learn (heat/M6's seam, not this).
+  deltas.push(...deedFactionDeltas(world, { kind: dominant.kind, severity: dominant.sev, witnesses, nodeId }));
   return applyDeltas(world, deltas);
 }
 

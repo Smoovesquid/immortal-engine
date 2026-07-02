@@ -242,6 +242,25 @@ export function applyDeltas(world, deltas = []) {
       continue;
     }
 
+    if (kind === 'factionRepDelta') {
+      // SP-1 — player↔faction standing. A dumb clamped write to
+      // w.reputation.factions[factionId] (−100..100). MAGNITUDE comes from the
+      // deterministic reaction table (engine/social/reactionTable.js), never the LLM
+      // (Biblioteca Vol 11). Unknown factions are a no-op: ensureReputation keeps only
+      // keys for factions that exist, so writing a stray key would be normalized away
+      // and desync the hash image — refuse it here instead.
+      const factionId = String(op.factionId || '');
+      const by = toInt(op.by ?? 0);
+      if (!factionId || !by) continue;
+      const exists = Array.isArray(w.factions) && w.factions.some(f => f && String(f.id) === factionId);
+      if (!exists) continue;
+      const rep = (w.reputation && typeof w.reputation === 'object') ? w.reputation : { factions: {} };
+      const repFactions = (rep.factions && typeof rep.factions === 'object') ? rep.factions : {};
+      const cur = clampInt(toInt(repFactions[factionId] ?? 0), -100, 100);
+      w = { ...w, reputation: { ...rep, factions: { ...repFactions, [factionId]: clampInt(cur + by, -100, 100) } } };
+      continue;
+    }
+
     if (kind === 'npcSecretRevealed') {
       // Mark a secret as revealed
       const npcId = String(op.npcId || '');

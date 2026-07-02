@@ -173,6 +173,23 @@ export function assertWorldInvariants(world) {
     }
   }
 
+  // SP-1 — player↔faction reputation. Bounded standing keyed only by known factions
+  // (ensureReputation rebuilds keys from world.factions; the factionRepDelta op
+  // refuses unknown ids — a stray key here means a mutation bypassed both).
+  const rep = world.reputation;
+  if (!rep || typeof rep !== 'object' || !rep.factions || typeof rep.factions !== 'object') {
+    throw new Error('Invariant: world.reputation.factions must be object');
+  }
+  const knownFactionIds = new Set((Array.isArray(world.factions) ? world.factions : []).map(f => String(f?.id)));
+  for (const [fid, v] of Object.entries(rep.factions)) {
+    if (!knownFactionIds.has(fid)) {
+      throw new Error(`Invariant: reputation.factions key ${fid} is not a known faction`);
+    }
+    if (!Number.isInteger(v) || v < -100 || v > 100) {
+      throw new Error(`Invariant: reputation.factions.${fid} must be integer -100..100`);
+    }
+  }
+
   // v21 — position persistence. Player (party[0]) position includes place
   // coordinates (nodeId, ux, uy) and optional interior state. Zone must be
   // one of the valid values; ux/uy must be finite numbers if present.

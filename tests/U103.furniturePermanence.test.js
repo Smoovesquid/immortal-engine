@@ -13,6 +13,7 @@ import * as path from 'node:path';
 import { newWorld } from '../engine/state.js';
 import { beginAdventure, playerMove } from '../engine/playloop.js';
 import { normalizeManifest, normalizePack } from '../engine/rulesets.js';
+import { furnitureRoomAssignments } from '../engine/structures/roomObjects.js';
 
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
 function loadPacks() {
@@ -30,25 +31,40 @@ const furnHere = (w) => {
 const stateOf = (w, name) => String(furnHere(w).find(f => f.name === name)?.state ?? '');
 const firstFurnName = (w) => String(furnHere(w)[0]?.name || '');
 const bare = (o) => String(o.narration || '').replace(/^Wizard:\s*/, '');
+// Room-scoped objects (U307/WB-Q5): furniture lives in ONE room of an interior now,
+// so stand the player in the named piece's room before acting on it.
+const standInPieceRoom = (w, name) => {
+  const a = furnitureRoomAssignments(w, w.map.currentNodeId).get(String(name));
+  const cur = w.scene?.interior;
+  if (!a || !cur || String(cur.roomId) === a.roomId) return w;
+  const visited = [...new Set([...(cur.visited || []), a.roomId])];
+  return {
+    ...w,
+    party: (w.party || []).map(p => ({ ...p, position: { ...(p.position || {}), interior: { structureId: a.structureId, roomId: a.roomId } } })),
+    scene: { ...w.scene, interior: { structureKey: a.structureId, roomId: a.roomId, visited } }
+  };
+};
+const beginAt = (seed) => {
+  const w0 = begin(seed);
+  const name = firstFurnName(w0);
+  return { w: standInPieceRoom(w0, name), name };
+};
 
 describe('U103-A: open persists and is acknowledged', () => {
   it('opening a real piece sets state=open and names it', () => {
-    const w = begin('open');
-    const name = firstFurnName(w);
+    const { w, name } = beginAt('open');
     const r = playerMove(w, packs, `open the ${name}`);
     assert.equal(stateOf(r.world, name), 'open', `should be open: ${r.output.mechanics}`);
     assert.match(bare(r.output).toLowerCase(), new RegExp(name.toLowerCase()));
   });
   it('examine after opening reflects that it stands open', () => {
-    const w = begin('open');
-    const name = firstFurnName(w);
+    const { w, name } = beginAt('open');
     const r = playerMove(w, packs, `open the ${name}`);
     const e = playerMove(r.world, packs, `examine the ${name}`);
     assert.match(bare(e.output), /stands open/i, bare(e.output));
   });
   it('opening again acknowledges the prior state (no re-mutation, no crash)', () => {
-    const w = begin('open');
-    const name = firstFurnName(w);
+    const { w, name } = beginAt('open');
     const r = playerMove(w, packs, `open the ${name}`);
     const again = playerMove(r.world, packs, `open the ${name}`);
     assert.match(bare(again.output), /already (stands )?open/i, bare(again.output));
@@ -58,8 +74,7 @@ describe('U103-A: open persists and is acknowledged', () => {
 
 describe('U103-B: close reverses it', () => {
   it('closing an open piece sets state=closed; closing again is acknowledged', () => {
-    const w = begin('close');
-    const name = firstFurnName(w);
+    const { w, name } = beginAt('close');
     const opened = playerMove(w, packs, `open the ${name}`).world;
     const closed = playerMove(opened, packs, `close the ${name}`);
     assert.equal(stateOf(closed.world, name), 'closed', bare(closed.output));
@@ -70,8 +85,7 @@ describe('U103-B: close reverses it', () => {
 
 describe('U103-C: permanence across moves (the world remembers)', () => {
   it('open a piece, leave, return → it is STILL open', () => {
-    const w = begin('perm');
-    const name = firstFurnName(w);
+    const { w, name } = beginAt('perm');
     const opened = playerMove(w, packs, `open the ${name}`).world;
     const away = playerMove(opened, packs, 'go outside').world;
     const back = playerMove(away, packs, 'go inside').world;
@@ -88,8 +102,7 @@ describe('U103-D: graceful + no regression', () => {
     assert.equal(furnHere(r.world).map(f => f.state).join(','), before, 'no furniture should change');
   });
   it('break still persists (physics path unaffected)', () => {
-    const w = begin('break');
-    const name = firstFurnName(w);
+    const { w, name } = beginAt('break');
     const r = playerMove(w, packs, `break the ${name}`);
     // physics marks it damaged/broken/etc — anything but intact
     assert.notEqual(stateOf(r.world, name), 'intact', `break should persist: ${r.output.mechanics}`);
@@ -99,8 +112,7 @@ describe('U103-D: graceful + no regression', () => {
 describe('U103-E: deterministic', () => {
   it('same seed + inputs → identical prose, mechanics, and state', () => {
     const run = () => {
-      const w = begin('det');
-      const name = firstFurnName(w);
+      const { w, name } = beginAt('det');
       const a = playerMove(w, packs, `open the ${name}`);
       const b = playerMove(a.world, packs, `examine the ${name}`);
       return { open: a.output, exam: b.output, state: stateOf(a.world, name) };

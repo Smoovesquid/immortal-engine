@@ -5,6 +5,7 @@
 import { clampInt } from './util.js';
 import { ensureWorld } from './state.js';
 import { ensureMap } from './map/mapState.js';
+import { objectsHere } from './structures/roomObjects.js';
 import { resolveBreakRuling, resolveFireRuling, resolveCoverRuling } from './rulings/index.js';
 
 // Banned words in LLM-generated notes (Heartbreak Principle: no dramatic editorializing).
@@ -29,10 +30,10 @@ export function detectPhysicalInteraction(world, playerText) {
 
   const matches = [];
 
-  // Check furniture names, parts, and notes at current node
-  const furniture = Array.isArray(here.furniture) ? here.furniture : [];
-  for (let i = 0; i < furniture.length; i++) {
-    const f = furniture[i];
+  // Check furniture names, parts, and notes present here. Room-scoped when the
+  // player stands in a multi-room interior (roomObjects, WB-Q5); `i` stays the
+  // NODE index so the modify/removeFurniture ops keep their keys.
+  for (const { piece: f, nodeIndex: i } of objectsHere(w)) {
     if (!f) continue;
     const name = String(f.name || '').toLowerCase();
     // Match the full name ("wooden table") OR the head noun ("table")
@@ -227,7 +228,7 @@ async function callPhysicsLLM({ world, playerText, detection, apiKey, endpoint, 
   const here = m.nodes.find(n => n.id === m.currentNodeId);
   if (!here) return null;
 
-  const furniture = Array.isArray(here.furniture) ? here.furniture : [];
+  const scoped = objectsHere(world); // room-scoped; furnitureId stays the node index
   const party = Array.isArray(world.party) ? world.party : [];
   const actorId = party[0]?.id || 'party';
   const inventory = party[0]?.inventory || {};
@@ -235,7 +236,7 @@ async function callPhysicsLLM({ world, playerText, detection, apiKey, endpoint, 
   const userPayload = {
     nodeId: here.id,
     nodeName: here.name,
-    furniture: furniture.map((f, i) => ({ ...f, furnitureId: i })),
+    furniture: scoped.map(({ piece, nodeIndex }) => ({ ...piece, furnitureId: nodeIndex })),
     actorId,
     inventory,
     playerText,

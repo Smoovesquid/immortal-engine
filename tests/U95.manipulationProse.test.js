@@ -13,6 +13,7 @@ import * as path from 'node:path';
 import { newWorld } from '../engine/state.js';
 import { beginAdventure, playerMove } from '../engine/playloop.js';
 import { normalizeManifest, normalizePack } from '../engine/rulesets.js';
+import { furnitureRoomAssignments } from '../engine/structures/roomObjects.js';
 
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
 function loadPacks() {
@@ -27,11 +28,24 @@ function begin(seed) {
   return beginAdventure(newWorld({ seed, fate: 0.2, campaignId: `u95-${seed}`, pack: { primaryId: 'fantasy', mixerId: null }, mode: 'escape' }), packs).world;
 }
 function node(w) { return (w.map?.nodes || []).find(n => n && n.id === w.map?.currentNodeId) || null; }
+// Room-scoped objects (U307/WB-Q5): furniture lives in ONE room of an interior now,
+// so stand the player in the named piece's room before acting on it.
+const standInPieceRoom = (w, name) => {
+  const a = furnitureRoomAssignments(w, w.map.currentNodeId).get(String(name));
+  const cur = w.scene?.interior;
+  if (!a || !cur || String(cur.roomId) === a.roomId) return w;
+  const visited = [...new Set([...(cur.visited || []), a.roomId])];
+  return {
+    ...w,
+    party: (w.party || []).map(p => ({ ...p, position: { ...(p.position || {}), interior: { structureId: a.structureId, roomId: a.roomId } } })),
+    scene: { ...w.scene, interior: { structureKey: a.structureId, roomId: a.roomId, visited } }
+  };
+};
 function beginWithFurniture() {
   for (const s of ['probe', 'alpha', 'bravo', 'charlie', 'delta', 'echo']) {
     const w = begin(s);
     const f = node(w)?.furniture;
-    if (Array.isArray(f) && f.length) return { w, furniture: f };
+    if (Array.isArray(f) && f.length) return { w: standInPieceRoom(w, f[0].name), furniture: f };
   }
   throw new Error('no furniture world');
 }

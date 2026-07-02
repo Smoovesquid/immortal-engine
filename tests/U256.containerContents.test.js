@@ -22,6 +22,7 @@ import path from 'node:path';
 import { newWorld } from '../engine/state.js';
 import { beginAdventure, playerMove } from '../engine/playloop.js';
 import { normalizeManifest, normalizePack } from '../engine/rulesets.js';
+import { furnitureRoomAssignments } from '../engine/structures/roomObjects.js';
 import { containerContents } from '../engine/decompression/generateFurniture.js';
 import { runObjectInteraction } from '../engine/harness/oracles.js';
 import { getGoal } from '../engine/harness/goals.js';
@@ -35,6 +36,20 @@ function loadPacks() {
   return byId;
 }
 const PACKS = loadPacks();
+// Room-scoped objects (U307/WB-Q5): furniture lives in ONE room of an interior now,
+// so stand the player in the named piece's room before acting on it.
+const standInPieceRoom = (w, name) => {
+  const a = furnitureRoomAssignments(w, w.map.currentNodeId).get(String(name));
+  const cur = w.scene?.interior;
+  if (!a || !cur || String(cur.roomId) === a.roomId) return w;
+  const visited = [...new Set([...(cur.visited || []), a.roomId])];
+  return {
+    ...w,
+    party: (w.party || []).map(p => ({ ...p, position: { ...(p.position || {}), interior: { structureId: a.structureId, roomId: a.roomId } } })),
+    scene: { ...w.scene, interior: { structureKey: a.structureId, roomId: a.roomId, visited } }
+  };
+};
+
 const begin = (seed) => beginAdventure(newWorld({ seed, fate: 0.3, mode: 'escape', pack: { primaryId: 'fantasy', mixerId: null } }), PACKS).world;
 const nodeOf = (w) => w.map.nodes.find(n => n.id === w.map.currentNodeId);
 const furnOf = (w, name) => (nodeOf(w).furniture || []).find(f => f.name === name);
@@ -96,7 +111,7 @@ test('U256-C: every inside-directed phrasing reveals contents, not a survey/roll
 
 test('U256-D: an empty container says so plainly — not a tease', () => {
   // seed `thistle` starts with an empty wooden crate (deterministic).
-  const w = begin('thistle');
+  const w = standInPieceRoom(begin('thistle'), 'wooden crate');
   const crate = furnOf(w, 'wooden crate');
   assert.ok(crate && crate.category === 'container', 'thistle starts with a wooden crate');
   assert.deepEqual(containerContents(w.meta.seed, nodeOf(w).id, 'wooden crate', 'container'), [], 'fixture must be empty');

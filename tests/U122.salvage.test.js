@@ -12,6 +12,7 @@ import { newWorld } from '../engine/state.js';
 import { beginAdventure, playerMove } from '../engine/playloop.js';
 import { meleeProfile, resolveEscapeCombatTurn } from '../engine/combat/escapeCombat.js';
 import { normalizeManifest, normalizePack } from '../engine/rulesets.js';
+import { furnitureRoomAssignments } from '../engine/structures/roomObjects.js';
 import { assertWorldInvariants } from '../engine/invariants.js';
 import { salvageYield } from '../engine/ruleset/core/items/materials.js';
 import { getItemDef } from '../engine/ruleset/core/items/index.js';
@@ -25,6 +26,20 @@ function loadPacks() {
   return byId;
 }
 const packs = loadPacks();
+// Room-scoped objects (U307/WB-Q5): furniture lives in ONE room of an interior now,
+// so stand the player in the named piece's room before acting on it.
+const standInPieceRoom = (w, name) => {
+  const a = furnitureRoomAssignments(w, w.map.currentNodeId).get(String(name));
+  const cur = w.scene?.interior;
+  if (!a || !cur || String(cur.roomId) === a.roomId) return w;
+  const visited = [...new Set([...(cur.visited || []), a.roomId])];
+  return {
+    ...w,
+    party: (w.party || []).map(p => ({ ...p, position: { ...(p.position || {}), interior: { structureId: a.structureId, roomId: a.roomId } } })),
+    scene: { ...w.scene, interior: { structureKey: a.structureId, roomId: a.roomId, visited } }
+  };
+};
+
 const begin = (seed) => beginAdventure(newWorld({ seed, fate: 0.2, campaignId: `u122-${seed}`, pack: { primaryId: 'fantasy', mixerId: null }, mode: 'escape' }), packs).world;
 
 // Find a seed whose starting node has a wood-tagged piece of furniture.
@@ -33,7 +48,7 @@ function beginWithWood() {
     const w = begin(`u122s${i}`);
     const node = w.map.nodes.find(n => n.id === w.map.currentNodeId);
     const f = (node?.furniture || []).find(x => (x.tags || []).includes('wood'));
-    if (f) return { w, f, node };
+    if (f) return { w: standInPieceRoom(w, f.name), f, node };
   }
   return null;
 }
@@ -77,7 +92,7 @@ test('U122-03: naming a part still extracts via physics — salvage only takes w
     const node = w.map.nodes.find(n => n.id === w.map.currentNodeId);
     const f = (node?.furniture || []).find(x => (x.parts || []).includes('leg'));
     if (!f) continue;
-    const r = playerMove(w, packs, `I tear the leg off the ${f.name}`);
+    const r = playerMove(standInPieceRoom(w, f.name), packs, `I tear the leg off the ${f.name}`);
     assert.ok(!/salvage \|/.test(r.output.mechanics), 'part extraction is not salvage');
     return;
   }
@@ -118,8 +133,8 @@ test('U122-06: stacks merge — two smashed crates, one pile of boards', () => {
     const node = w.map.nodes.find(n => n.id === w.map.currentNodeId);
     const wood = (node?.furniture || []).filter(x => (x.tags || []).includes('wood'));
     if (wood.length < 2) continue;
-    let r = playerMove(w, packs, `I smash the ${wood[0].name} to pieces`);
-    r = playerMove(r.world, packs, `I smash the ${wood[1].name} to pieces`);
+    let r = playerMove(standInPieceRoom(w, wood[0].name), packs, `I smash the ${wood[0].name} to pieces`);
+    r = playerMove(standInPieceRoom(r.world, wood[1].name), packs, `I smash the ${wood[1].name} to pieces`);
     const boards = r.world.party[0].inventory.items.filter(it => it.defRef === 'board');
     assert.equal(boards.length, 1, 'one stack, not parallel instances');
     assert.ok((boards[0].qty || 1) >= 2, 'the stack grew');

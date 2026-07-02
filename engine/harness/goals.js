@@ -13,6 +13,7 @@
 
 import { npcWant } from '../npc/npcArc.js';
 import { neighbors } from '../map/mapState.js';
+import { objectsHere } from '../structures/roomObjects.js';
 
 // ── Read-only world probes (shared by goals + the runner) ─────────────────────
 
@@ -48,9 +49,9 @@ export function dialogueNpcId(world) {
 // the node, so it's the present set whether the player is in the interior or out.
 // Shared by the object-interaction oracle and the probe-room goal.
 export function presentRoomObjects(world) {
-  const map = world?.map || {};
-  const node = (Array.isArray(map.nodes) ? map.nodes : []).find(n => n && n.id === map.currentNodeId) || null;
-  const furn = Array.isArray(node?.furniture) ? node.furniture : [];
+  // Room-scoped (roomObjects): the goal scorer sees the same per-room object set the
+  // survey and the interaction gates see, not the whole node's list (WB-Q5).
+  const furn = objectsHere(world).map(o => o.piece);
   return furn.filter(Boolean)
     .map(f => ({ name: String(f.name || ''), parts: (Array.isArray(f.parts) ? f.parts : []).map(String) }))
     .filter(o => o.name);

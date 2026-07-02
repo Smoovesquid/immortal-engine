@@ -7,6 +7,7 @@ import { beginAdventure, playerMove } from '../engine/playloop.js';
 import { generateInitialMap } from '../engine/map/generateMap.js';
 import { ensureMap } from '../engine/map/mapState.js';
 import { decompressAndCanonizeSync } from '../engine/decompression/decompress.js';
+import { exitStructureInterior } from '../engine/structures/interiors.js';
 import { detectPhysicalInteraction } from '../engine/llmPhysics.js';
 import { buildNarratorContext } from '../engine/ai/narratorContext.js';
 
@@ -108,6 +109,9 @@ test('C1.4: narrator context includes settlement data after decompression', () =
 test('C1.5: physics detection finds furniture at current node', () => {
   let w = makeSettlementWorld('c1-physics');
   w = beginAdventure(w, packsById).world;
+  // Node-level semantics: stand outdoors, where detection sees the full node list
+  // (indoors it is room-scoped now — U307/WB-Q5).
+  w = exitStructureInterior(w);
   // Add furniture to current node
   const nodeId = w.map.currentNodeId;
   w = {

@@ -22,6 +22,7 @@ import { applyGeneratedStructuresForNode } from './structures/applyGeneratedStru
 import { enterStructureInterior, exitStructureInterior, moveWithinInterior, getInteriorView, interiorDirectionalExits, resolveStructureSelection } from './structures/interiors.js';
 import { normalizeTopology, adjacentRooms } from './structures/topology.js';
 import { roomWindows, roomWindowFacings } from './structures/roomWindows.js';
+import { objectsHere } from './structures/roomObjects.js';
 import { reachableRooms } from './movement/interiorMovement.js';
 import { generateDungeon, dungeonLevelToStructure, isDungeonStructureId, dungeonRoomAt } from './dungeon/generate.js';
 import { createCharacter } from './chargen/genesis.js';
@@ -1636,8 +1637,9 @@ function playerMoveCore(world, packsById, text) {
     if (w.scene?.interior && !w.scene?.dialogue) {
       const presenceNoun = objectPresenceTarget(text);
       if (presenceNoun) {
-        const pNode = (w.map?.nodes || []).find(n => n && n.id === w.map?.currentNodeId) || null;
-        const furniture = Array.isArray(pNode?.furniture) ? pNode.furniture : [];
+        // Room-scoped (roomObjects): "is there a chest here?" answers for THIS room,
+        // not the whole building's node list (WB-Q5).
+        const furniture = objectsHere(w).map(o => o.piece);
         const pWords = presenceNoun.split(/\s+/);
         const found = furniture.find(x => nameMatches(x?.name, presenceNoun, pWords[pWords.length - 1]));
         const art = (s) => `${/^[aeiou]/i.test(String(s).trim()) ? 'an' : 'a'} ${s}`;
@@ -5616,10 +5618,9 @@ function tryExamineTarget(w, text) {
   const tWords = target.split(/\s+/).filter(Boolean);
   const tail = tWords[tWords.length - 1];
 
-  const node = (w.map?.nodes || []).find(n => n && n.id === w.map?.currentNodeId) || null;
-  const furniture = Array.isArray(node?.furniture) ? node.furniture : [];
+  const furniture = objectsHere(w).map(o => o.piece);
 
-  // 1) Furniture present at the location.
+  // 1) Furniture present at the location (room-scoped when inside — WB-Q5).
   const f = furniture.find(x => nameMatches(x?.name, target, tail));
   if (f) {
     const notes = String(f.notes || '').trim().replace(/[.?!]+$/, '');
@@ -5774,8 +5775,7 @@ function playerWeaponName(w) {
 function furnitureNameAt(w, target) {
   if (!target) return null;
   const tail = String(target).split(/\s+/).filter(Boolean).pop();
-  const node = (w?.map?.nodes || []).find(n => n && n.id === w?.map?.currentNodeId) || null;
-  const furn = Array.isArray(node?.furniture) ? node.furniture : [];
+  const furn = objectsHere(w).map(o => o.piece);
   const f = furn.find(x => nameMatches(x?.name, target, tail));
   return f ? String(f.name) : null;
 }
@@ -5851,12 +5851,13 @@ function tryContainerReveal(w, text) {
   const t = String(text || '');
   if (!CONTAINER_INSIDE_RE.test(t)) return null;
   const node = (w.map?.nodes || []).find(n => n && n.id === w.map?.currentNodeId) || null;
-  const furniture = Array.isArray(node?.furniture) ? node.furniture : [];
-  if (!furniture.length) return null;
-  const f = findReferencedContainer(t, furniture);
+  // Room-scoped candidates (roomObjects); nodeIndex keeps the delta keyed to node.furniture.
+  const scoped = objectsHere(w);
+  if (!scoped.length) return null;
+  const f = findReferencedContainer(t, scoped.map(o => o.piece));
   if (!f) return null;
 
-  const idx = furniture.indexOf(f);
+  const idx = scoped.find(o => o.piece === f).nodeIndex;
   const cur = String(f.state || 'intact');
   const alreadyOpen = OPENED_STATES.has(cur) || DAMAGED_STATES.has(cur);
   const clause = containerContentsClause(w, node, f);
@@ -5888,7 +5889,7 @@ function tryReadRevealedContainerItem(w, text) {
   const wantsRead = OBJ_READ_VERB_RE.test(t) || OBJ_CONTENT_PEEK_RE.test(t) || (OBJ_TEXT_NOUN_RE.test(t) && READ_SAY_RE.test(t));
   if (!wantsRead) return null;
   const node = (w.map?.nodes || []).find(n => n && n.id === w.map?.currentNodeId) || null;
-  const furniture = Array.isArray(node?.furniture) ? node.furniture : [];
+  const furniture = objectsHere(w).map(o => o.piece); // room-scoped (WB-Q5)
   if (!furniture.length) return null;
   // Text-items revealed by any OPEN container here (deterministic; only after it's been opened).
   const revealed = [];
@@ -5934,12 +5935,14 @@ function tryFurnitureStateChange(w, text) {
   const target = String(c.object || '').trim();
   if (!target) return null;
   const node = (w.map?.nodes || []).find(n => n && n.id === w.map?.currentNodeId) || null;
-  const furniture = Array.isArray(node?.furniture) ? node.furniture : [];
-  if (!furniture.length) return null;
+  // Room-scoped candidates (roomObjects); nodeIndex keeps the delta keyed to node.furniture.
+  const scoped = objectsHere(w);
+  if (!scoped.length) return null;
   const tail = target.split(/\s+/).filter(Boolean).pop();
-  const idx = furniture.findIndex(x => nameMatches(x?.name, target, tail));
-  if (idx < 0) return null; // not a real piece here → let the trivial gate answer
-  const f = furniture[idx];
+  const hit = scoped.find(o => nameMatches(o.piece?.name, target, tail));
+  if (!hit) return null; // not a real piece here → let the trivial gate answer
+  const idx = hit.nodeIndex;
+  const f = hit.piece;
   const name = String(f.name);
   const cur = String(f.state || 'intact');
   const wantOpen = c.cat === 'open';

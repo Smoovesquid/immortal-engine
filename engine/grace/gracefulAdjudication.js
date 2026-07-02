@@ -12,6 +12,7 @@ import { makeRng, seedFromString } from '../rng.js';
 import { normalizeTopology, adjacentRooms } from '../structures/topology.js';
 import { roomWindows, windowSurveyPhrase } from '../structures/roomWindows.js';
 import { occupantsOfRoom, outdoorOccupants } from '../structures/roomOccupancy.js';
+import { objectsHere } from '../structures/roomObjects.js';
 import { reachableRooms } from '../movement/interiorMovement.js';
 import { playerAc, meleeProfile } from '../combat/escapeCombat.js';
 import { purseTotalCopper, formatPrice } from '../economy/shop.js';
@@ -2478,8 +2479,9 @@ export function buildLocationSurvey(world, opts = {}) {
   // "what do I see" survey is scoped to the room.
   if (insideStructure && !opts.presence) {
     // Vary the lead by turn so a repeated "look around" is never byte-identical
-    // (the second half of FIRST_ROOM #4). Furniture is read from the node — the
-    // same present set the object-presence answers and presentRoomObjects use.
+    // (the second half of FIRST_ROOM #4). Furniture is room-scoped (roomObjects) —
+    // the same present set the object-presence answers and presentRoomObjects use,
+    // so the same chest no longer shows in every room of the building (WB-Q5).
     const lookRng = makeRng(seedFromString(`${w.meta?.seed ?? ''}|survey|${(w.timeline?.length) ?? 0}`));
     const lead = lookRng.pick([
       `You're inside ${placeName}.`,
@@ -2488,8 +2490,8 @@ export function buildLocationSurvey(world, opts = {}) {
     ]);
     parts.push(lead);
 
-    const furniture = (Array.isArray(currentNode?.furniture) ? currentNode.furniture : [])
-      .map(f => String(f?.name ?? '').trim())
+    const furniture = objectsHere(w)
+      .map(({ piece }) => String(piece?.name ?? '').trim())
       .filter(Boolean);
     // Windows are a real, generated room feature (engine/structures/roomWindows.js):
     // above-ground rooms get 1-2, cellars/windowless rooms get none. Derived (seeded,

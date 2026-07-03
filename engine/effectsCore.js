@@ -206,7 +206,7 @@ export function applyDeltas(world, deltas = []) {
       for (const row of rows) {
         if (!row || typeof row !== 'object') continue;
         const entityId = resolvePlayerEntityId(w, row.id ?? row.entityId);
-        const conds = Array.isArray(row.conditions) ? row.conditions.slice(0, 12) : [];
+        const conds = Array.isArray(row.conditions) ? row.conditions.slice(0, 8) : [];
         w = mutateEntity(w, entityId, (e) => ({ ...e, conditions: conds }));
       }
       continue;

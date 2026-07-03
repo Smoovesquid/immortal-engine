@@ -596,7 +596,14 @@ async function tryIntentSplit(w, text) {
 // the shared question-verdict FROM it (playloop.js playerMove). On ANY
 // failure/timeout/offline, `llmPacket` stays null and playerMove runs
 // exactly as it does today — the deterministic path is always the floor.
-const INTENT_PACKET_TIMEOUT_MS = 2800;
+// Integration ruling 2026-07-03 (INT-2R): Tim ruled local Ollama = PRIMARY ears
+// unconditionally, and its measured real latency through the HTTP route is
+// ~6-8s on dev hardware — a 2.8s budget made almost every live turn time out
+// onto the deterministic floor, quietly defeating the ruling. Keep this ABOVE
+// llmIntent.js's server-side 8000ms proposal budget so the client doesn't give
+// up on an answer the server was still allowed to produce. Knobs if the wait
+// drags: lower this, trial a smaller local model, or INTENT_LLM=off.
+const INTENT_PACKET_TIMEOUT_MS = 9000;
 async function tryLlmIntentPacket(w, text) {
   try {
     const bundle = buildParseCtx(w);
@@ -987,8 +994,8 @@ function renderInvoke() {
     el('div', { class: 'panel' },
       el('div', { class: 'header' },
         el('div', {},
-          el('div', { class: 'title' }, 'Immortal Engine — v0.27.0'),
-          el('div', { class: 'sub' }, 'build 046 · 2026-07-03 · Ollama ears')
+          el('div', { class: 'title' }, 'Immortal Engine — v0.27.1'),
+          el('div', { class: 'sub' }, 'build 047 · 2026-07-03 · Ollama ears, heard')
         )
       ),
       // ── One-click front door: start (or resume) the Escape game ──────

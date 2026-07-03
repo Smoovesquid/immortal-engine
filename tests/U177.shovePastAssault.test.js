@@ -5,6 +5,7 @@ import fs from 'node:fs';
 import { newWorld } from '../engine/state.js';
 import { beginAdventure, playerMove } from '../engine/playloop.js';
 import { normalizeManifest, normalizePack } from '../engine/rulesets.js';
+import { coLocatePlayerWithNpc } from './support/presence.js';
 
 // H-20 gate 2026-06-18 — "I shove past Senna and hurl her into the wall" must
 // engage real combat, not a freebie narration. The old per-string "past" guard
@@ -21,11 +22,12 @@ function packs() {
 
 // Find a world where a non-hostile NPC is present to test against.
 function worldWithNpc(seed = 'shove-test-2026') {
-  let w = beginAdventure(newWorld({ seed, fate: 0.3, mode: 'escape', pack: { primaryId: 'fantasy', mixerId: null } }), packs()).world;
-  // Try a few seeds until we find one with an NPC at the start node.
-  const node = w.map.nodes.find(n => n.id === w.map.currentNodeId);
-  const npcs = (node?.settlement?.npcs || []).filter(n => n && !n.hostile);
-  return npcs.length ? { w, npcName: npcs[0].name, p: packs() } : null;
+  const w = beginAdventure(newWorld({ seed, fate: 0.3, mode: 'escape', pack: { primaryId: 'fantasy', mixerId: null } }), packs()).world;
+  // ROM-1: presence is LAW — relocate the player into the room where an NPC actually
+  // stands (occupancy is derived), so "hurl her into the wall" has a real target here
+  // rather than assuming the whole node roster is reachable from the empty wake room.
+  const co = coLocatePlayerWithNpc(w);
+  return co ? { w: co.w, npcName: co.npc.name, p: packs() } : null;
 }
 
 test('U177-01: "shove past X and hurl her into the wall" starts combat (H-20)', () => {

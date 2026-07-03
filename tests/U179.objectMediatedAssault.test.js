@@ -5,6 +5,7 @@ import fs from 'node:fs';
 import { newWorld } from '../engine/state.js';
 import { beginAdventure, playerMove } from '../engine/playloop.js';
 import { normalizeManifest, normalizePack } from '../engine/rulesets.js';
+import { coLocatePlayerWithNpc } from './support/presence.js';
 
 // H-7/H-8 gate 2026-06-18 — "smash it over their head" must engage real combat.
 // fuzzyMatchNpc GENERIC_WORD lacked "their", so prep[1]="their head" resolved to
@@ -19,10 +20,12 @@ function packs() {
 
 function worldWithNpc(seed = 'object-assault-2026') {
   const p = packs();
-  let w = beginAdventure(newWorld({ seed, fate: 0.3, mode: 'escape', pack: { primaryId: 'fantasy', mixerId: null } }), p).world;
-  const node = w.map.nodes.find(n => n.id === w.map.currentNodeId);
-  const npcs = (node?.settlement?.npcs || []).filter(n => n && !n.hostile);
-  return npcs.length ? { w, npcName: npcs[0].name, p } : null;
+  const w = beginAdventure(newWorld({ seed, fate: 0.3, mode: 'escape', pack: { primaryId: 'fantasy', mixerId: null } }), p).world;
+  // ROM-1: presence is LAW — relocate the player into the room where an NPC actually
+  // stands (occupancy is derived), so a generic-pronoun assault ("smash it over their
+  // head") has a real, present target instead of grabbing the first name in town.
+  const co = coLocatePlayerWithNpc(w);
+  return co ? { w: co.w, npcName: co.npc.name, p } : null;
 }
 
 test('U179-01: "smash it over their head" starts combat (H-7 — their resolves NPC)', () => {

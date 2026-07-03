@@ -25,6 +25,16 @@
         "DM_ARTIFACT_LEAK",
         "DM_TEST_DEADEND"
       ]
+    },
+    {
+      "runId": "gate-2026-07-03T11-45-56-173Z-v1",
+      "date": "2026-07-03",
+      "regime": "v1",
+      "modes": [
+        "CANON_HALLUCINATION",
+        "CRUNCH_INCONSISTENCY",
+        "DM_TEST_DEADEND"
+      ]
     }
   ]
 }

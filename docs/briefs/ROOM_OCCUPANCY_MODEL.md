@@ -300,9 +300,22 @@ schema change needed for v1**) or the reveal is blocked. Rides after ROM-1/2
 soak. The full object store (stable ids for NPC-possessed things) belongs to
 ROM-4's bump if Tim green-lights it.
 
+### ROM-2b — material/room validator gap (surfaced by the v0.26.0 gate, turn 9 newbie/tallow)
+The ONE canon-hallucination the v0.26.0 gate found (coherence analyzer still scored **0/48**):
+after a doorway move the DM narrated a "front room" of "wattle-and-daub / plank-and-earth"
+while canon = **Bedchamber**, shell **timber**. Two leaks past ROM-2's validator:
+(a) **Rule 6c** only rejects a room name from the CLOSED `ROOM_ROLE_NAMES` vocab — an INVENTED
+descriptor ("front room") isn't in it, so it slips (fix: also flag a confident "you are in the
+<X>" whose X contradicts `ctx.roomName`, even for a non-vocab X);
+(b) **Rule 6b**'s forbidden-material list didn't carry "wattle-and-daub" / "plank-and-earth"
+(they aren't canonical other-family wall phrases). Bounded, but NOT a blind-add — verify against
+the ROM-0 material family model first (over-blocking risk on a legit timber line). Also a **C2
+detector-sensitivity note**: the pure-text analyzer looks for a turn-to-turn material FLIP and
+missed this single-turn canon-vs-narration contradiction. Not a v0.26.0 regression; queued.
+
 **Symptom → packet:** C1 → ROM-1 + ROM-2 · C2 → ROM-0 + ROM-2 · C4 → ROM-2
 (+ROM-1's seek making real moves) · C3 → ROM-5 (+ROM-4 endgame) · judge
-blindness → ROM-3.
+blindness → ROM-3 · material/room leak → ROM-2b.
 
 ---
 

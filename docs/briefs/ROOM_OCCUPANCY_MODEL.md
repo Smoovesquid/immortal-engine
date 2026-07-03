@@ -313,9 +313,31 @@ the ROM-0 material family model first (over-blocking risk on a legit timber line
 detector-sensitivity note**: the pure-text analyzer looks for a turn-to-turn material FLIP and
 missed this single-turn canon-vs-narration contradiction. Not a v0.26.0 regression; queued.
 
+### ROM-1b — presence-query consistency (surfaced by PLAYING v0.26.0; look-around leak FIXED, two queued)
+Playing the live build (aldermere ready-made hero, EMPTY wake room) surfaced presence
+leaks the 0-break gate missed — its 48 turns never hit these exact phrasings:
+- **FIXED (U374):** a bare "look carefully around the room — who is in here with me?" answered
+  "You're not alone — Senna the Fox, Galen, Brogan, and the Lingerer are here with you" in an
+  EMPTY room. Root: `namedInQuery` (gracefulAdjudication.js) took each NPC's FIRST name token,
+  and for "the Lingerer" that token is **"the"** (len 3, passed the ≥3 guard). "the" is in
+  almost every query ("look around **the** room"), so it falsely marked the Lingerer as
+  asked-for → the survey flipped to the whole-roster branch. Fix: name an NPC by a MEANINGFUL
+  token, never a leading article. Bare presence stays line-of-sight; directed "where is Senna?"
+  still reaches the roster.
+- **QUEUED — assault/referent-clarify path:** "I grab the guard by his collar and headbutt him
+  in the face" → "I haven't introduced anyone named Grab… named Headbutt… Senna, Galen, Brogan,
+  the Lingerer are here — who do you mean?" Two bugs: (a) **verb-as-name** misparse ("grab"/
+  "headbutt" read as NPC names — C7-class); (b) the clarify prompt lists the roster as "here".
+  Separate path from buildLocationSurvey; needs its own pass.
+- **QUEUED — "Who is here?" residency phrasing:** "Senna, Galen, Brogan, the Lingerer live here,
+  and a stranger keeps to the edges, watching." "live here" (residency) is arguably by-design
+  for a settlement-scope ask, but the "a stranger keeps to the edges, watching" tail implies a
+  physical lurker in an empty room — confirm room-scope vs settlement-scope intent.
+Lesson: the coherence gate is DISCOVERY, not proof — playing the build surfaced what 48 gate turns didn't.
+
 **Symptom → packet:** C1 → ROM-1 + ROM-2 · C2 → ROM-0 + ROM-2 · C4 → ROM-2
 (+ROM-1's seek making real moves) · C3 → ROM-5 (+ROM-4 endgame) · judge
-blindness → ROM-3 · material/room leak → ROM-2b.
+blindness → ROM-3 · material/room leak → ROM-2b · presence-query leak → ROM-1b.
 
 ---
 

@@ -2525,7 +2525,15 @@ export function buildLocationSurvey(world, opts = {}) {
   const namedInQuery = (npc) => {
     const nm = String(npc?.name || '').toLowerCase().trim();
     if (!nm) return false;
-    const first = nm.split(/\s+/)[0] || '';
+    // Name the NPC by a MEANINGFUL token, never a leading article: "the Lingerer"
+    // is asked for by "lingerer", not "the". Otherwise the stopword "the" — in
+    // nearly every query ("look around THE room") — falsely marks that NPC as the
+    // person the player asked after, flipping the presence survey to the whole-roster
+    // branch and dumping the entire cast as "here with you" in an empty room (the
+    // look-around materialization leak; ROOM_OCCUPANCY_MODEL §2).
+    const toks = nm.split(/\s+/);
+    let first = toks[0] || '';
+    if (/^(?:the|a|an)$/.test(first) && toks[1]) first = toks[1];
     return queryToks.has(nm) || (first.length >= 3 && queryToks.has(first));
   };
   const knowsName = (npc) => knowsNpcName(w, npc) || namedInQuery(npc);

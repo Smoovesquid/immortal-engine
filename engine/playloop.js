@@ -665,7 +665,12 @@ function playerMoveTraced(world, packsById, text, dqIntent) {
   // (byte-identical to pre-INT-3) if playerMoveTraced is ever called directly
   // without a precomputed dqIntent.
   const __dqIntent = dqIntent !== undefined ? dqIntent : directQuestionIntent(text, world);
-  const res = applyEgressRepair(world, text, playerMoveCore(world, packsById, text), __dqIntent);
+  // INT-4a — playerMoveTraced is the true, non-recursive top-level entry
+  // point (the only caller entitled to hand a precomputed dqIntent to
+  // playerMoveCore's own internal referent-grounding call-sites). Every
+  // *recursive* self-call inside playerMoveCore must NOT forward it — see the
+  // load-bearing safety comment on playerMoveCore's signature.
+  const res = applyEgressRepair(world, text, playerMoveCore(world, packsById, text, __dqIntent), __dqIntent);
   // Speaking AT a present person ("tell/ask X ...") opens a sustained conversation AFTER the
   // turn resolves naturally — the social roll / info answer is unchanged; combat, "tell me
   // about …", and an absent name all skip it (see maybeEnterConversationAfterAddress).
@@ -861,7 +866,21 @@ function trySelfHarm(world, text, actorId) {
   return { world: w, output: { narration, mechanics: mech } };
 }
 
-function playerMoveCore(world, packsById, text) {
+// INT-4a — optional 4th param `dqIntent`, the shared directQuestionIntent(text,
+// world) verdict INT-3 already computes once per top-level turn. ONLY
+// playerMoveTraced (the true non-recursive entry point) ever passes it in.
+// LOAD-BEARING SAFETY RULE: playerMoveCore recurses on itself for chained
+// turns (dialogue auto-exit, interior move-then-act, indoor-to-travel bridge)
+// — each recursive self-call runs this ENTIRE function body again for its
+// OWN (world, text) pair, which may differ from the top-level turn's. Every
+// recursive call below (grep `playerMoveCore(` in this function) calls with
+// exactly the original 3 args — it NEVER forwards the received `dqIntent` —
+// so a recursive invocation always falls back to computing its own fresh
+// classification for its own (text, world), exactly as pre-INT-4a. Do not
+// "fix" this by threading dqIntent into a recursive call: a real repro
+// (U378) shows an outer top-level dqIntent silently answering the WRONG
+// utterance when force-reused by a recursive sub-turn.
+function playerMoveCore(world, packsById, text, dqIntent) {
 
   // Gate III.2: after ending is locked, play surfaces must not mutate state.
   if (Boolean(world?.ending?.locked)) {
@@ -1487,7 +1506,16 @@ function playerMoveCore(world, packsById, text) {
     // actually do with it? special abilities?") reads its proper-noun-looking word
     // as an ungrounded NPC name before this guard — classify first so the class/
     // ability question gets the rules answer, not a "who do you mean?" clarify.
-    const earlyDqKind = directQuestionIntent(text, w);
+    // INT-4a: consumes the passed-in dqIntent when available — safe here because
+    // this line is reached (within THIS invocation) only via the top-level
+    // ensureWorld(world) value of `w`/`text`: every `w =` reassignment between
+    // function entry and here sits inside an earlier branch that already
+    // returns (escape-combat, travel-pending-encounter, guard-blocked, the
+    // in-dialogue intercept), so none of them can fall through and mutate `w`
+    // before reaching this line in the same call. A recursive self-call never
+    // receives dqIntent (see the function signature comment), so it always
+    // recomputes fresh here for its OWN (text, w).
+    const earlyDqKind = dqIntent !== undefined ? dqIntent : directQuestionIntent(text, w);
     if (earlyDqKind?.kind === 'rules') {
       return { world: w, output: { narration: `Wizard: ${answerCapability(w)}`, mechanics: 'observe only — no roll, state unchanged' } };
     }
@@ -1989,7 +2017,17 @@ function playerMoveCore(world, packsById, text) {
     // tavern?", "who runs this place?" — see the C9/C12 convergence regression
     // this caused when tried).
     if (!w.scene?.dialogue) {
-      const dqKind = directQuestionIntent(text, w);
+      // INT-4a: consumes the passed-in dqIntent when available — safe here
+      // because, within THIS invocation, every `w =` reassignment between
+      // function entry (ensureWorld(world)) and this line lives inside an
+      // earlier branch that already returns (escape-combat, travel-pending,
+      // guard-blocked, the whole in-dialogue intercept including its own
+      // recursive self-call at the breakingIntent branch) — none of them
+      // fall through to reach this line with a mutated `w`, and `text` is
+      // never reassigned in this function. A recursive self-call never
+      // receives dqIntent (see the function signature comment), so it always
+      // recomputes fresh here for its OWN (text, w) — proven by U378.
+      const dqKind = dqIntent !== undefined ? dqIntent : directQuestionIntent(text, w);
       if (dqKind?.kind === 'rules') {
         return { world: w, output: { narration: `Wizard: ${answerCapability(w)}`, mechanics: 'observe only — no roll, state unchanged' } };
       }

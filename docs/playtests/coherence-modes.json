@@ -1,0 +1,49 @@
+{
+  "runs": [
+    {
+      "runId": "gate-2026-07-02T19-44-24-605Z-bridge",
+      "date": "2026-07-02",
+      "regime": "bridge",
+      "modes": []
+    },
+    {
+      "runId": "gate-2026-07-02T20-59-10-628Z-v1",
+      "date": "2026-07-02",
+      "regime": "v1",
+      "modes": [
+        "CG-1c"
+      ]
+    },
+    {
+      "runId": "gate-2026-07-03T03-56-04-236Z-v1",
+      "date": "2026-07-03",
+      "regime": "v1",
+      "modes": []
+    },
+    {
+      "runId": "gate-2026-07-03T11-45-56-173Z-v1",
+      "date": "2026-07-03",
+      "regime": "v1",
+      "modes": [
+        "CG-1b",
+        "CG-2a",
+        "CG-2c",
+        "CG-3a",
+        "CG-5"
+      ]
+    }
+  ],
+  "classCounts": {
+    "CG-0": 0,
+    "CG-1a": 0,
+    "CG-1b": 2,
+    "CG-1c": 1,
+    "CG-2a": 2,
+    "CG-2c": 1,
+    "CG-3a": 1,
+    "CG-4": 0,
+    "CG-5": 1,
+    "CG-7": 0
+  },
+  "note": "Namespaced ledger for the Coherence Gate's CG-* failure classes (docs/briefs/COHERENCE_GATE.md §3), separate from gate-modes.json (the Opus experiential-gate ledger — v1/v2 bug_class + failed-atom signatures). Do NOT merge the two: Chao1 saturation tracking requires consistent tagging granularity per capture universe (Vol 9 §8), and the Coherence Gate is a distinct instrument (state-grounded, deterministic, $0) from the judged gate (holistic/atomic, LLM, paid). Seeded 2026-07-03 by CG-P2 from the hand-verified baseline docs/playtests/COHERENCE_GATE_BASELINE_2026-07-03.md — reproduce via `node scripts/coherence-gate.mjs docs/playtests/gate-runs/*.jsonl`."
+}

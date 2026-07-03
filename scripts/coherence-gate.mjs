@@ -35,6 +35,11 @@
 //   CG-1c  presence omission   — WARN-only: a direct ask doesn't enumerate
 //                                 everyone present (a real DM needn't)
 //   CG-2a  place-noun desync   — narrated room-type noun != interior.roomName
+//   CG-2b  invented exit/stair/door — narrated compass exit (door/stairs/
+//                                 passage "to the north/east/south/west") the
+//                                 room's real topology (canon.roomExits, fed by
+//                                 CG-P4) doesn't have (docs/briefs/COHERENCE_GATE.md
+//                                 §7 CG-P4)
 //   CG-2c  unnarrated relocation — interior.roomId changed turn-over-turn with
 //                                 no movement intent in the player line and no
 //                                 motion claim in the DM line
@@ -48,22 +53,24 @@
 //                                 names Y and/or the DM voices Y
 //   CG-7   ungrounded quantity — a cited headcount that contradicts the roster
 //                                 size in canon
+//   CG-6   temporal desync     — narrated time-of-day contradicts canon.clock.segment
+//                                 (fed by CG-P4, the same clock the live "what
+//                                 time is it" meta-answer already gives a player)
 //   §0     forbidden-token scan — the world's true cosmology must never surface
 //                                 in-world prose (a pure grep; rides along free)
 //
 // NOT implemented here (by design, see docs/briefs/COHERENCE_GATE.md):
-//   - CG-2b (invented exits/stairs) — blocked on CG-P4 (exits not yet in bundle)
 //   - CG-3b (full lock/open state) — blocked on the Interior Object Model; do
 //     NOT build a pseudo-object-model here to fake it early
-//   - CG-6 (temporal desync) — blocked on CG-P4 (clock/timeOfDay not in bundle)
 //   - CG-8 (dropped intent / non-answer) — owned by the v2 atomic judge, not
 //     rebuilt here
 //
 // GRACEFUL DEGRADATION (the built-in negative control, P-B): pre-ROM-3 JSONLs
-// carry no `interior`/`roomOccupants`/`material` fields. Every comparator that
-// depends on a field checks for its presence first and goes DORMANT (never a
-// false flag) when the field is absent from the bundle. This is proven by test
-// U389 against the two real 07-02 files.
+// carry no `interior`/`roomOccupants`/`material` fields, and pre-CG-P4 JSONLs
+// carry no `roomExits`/`clock` fields. Every comparator that depends on a field
+// checks for its presence first and goes DORMANT (never a false flag) when the
+// field is absent from the bundle. This is proven by test U389 (interior/
+// roomOccupants/material) and U393 (roomExits/clock) against the real files.
 //
 // PRECISION OVER RECALL (the auditor's own caveat, carried over verbatim): every
 // comparator below ships a false-positive guard, documented inline. Under-
@@ -368,6 +375,75 @@ export function detectPlaceDesync(sessionTurns) {
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
+// CG-2b — invented exit/stair/door (CG-P4: docs/briefs/COHERENCE_GATE.md §7)
+//
+// Narration asserts a compass-directional exit (a door/doorway/stairs/passage/
+// corridor "to the north/east/south/west", or "the northern door", etc.) that
+// the room's REAL topology (canon.roomExits — CG-P4's bundle addition, built
+// from engine/structures/topology.js's interiorExitsFrom, the same reciprocal
+// compass the live movement code itself walks) does not have. This is the
+// "invented stairway" class §1 names directly: a room graph has no exit in a
+// direction, so a DM asserting a doorway/staircase there is narrating
+// geography the engine cannot honor (the WB-Q1 soft-lock bug class, made
+// measurable per turn instead of only reproducible by hand).
+//
+// PRECISION-FIRST, deliberately narrow:
+//   - Only fires on an EXIT-TYPE noun (door/doorway/stairs/staircase/stairway/
+//     passage/corridor/hallway/exit) bound to a COMPASS direction in the same
+//     clause — a bare "a door" with no direction is not checkable (which slot
+//     would it even claim?) and is correctly left alone.
+//   - DORMANT (never a false flag) when `roomExits` is absent from the bundle
+//     entirely (pre-CG-P4 JSONLs — no ground truth to compare against) OR when
+//     the player is not `inside` this turn (roomExits is an interior-only view;
+//     outdoor "exits" are the overland map, a different, already-covered
+//     surface — see narratorContext.js's `location.exits`).
+//   - GUARD: only flags when the compass slot canon.roomExits reports is
+//     GENUINELY absent (no key for that direction at all) — a direction that
+//     exists but leads somewhere the DM didn't name is not this class (that's
+//     an omission, not an invention; precision over recall, same doctrine as
+//     every sibling comparator here).
+// ═════════════════════════════════════════════════════════════════════════════
+
+const COMPASS_WORDS = { north: 'north', northern: 'north', south: 'south', southern: 'south', east: 'east', eastern: 'east', west: 'west', western: 'west' };
+const EXIT_NOUN_RE = '(?:door(?:way)?|stairs?|staircase|stairway|passage(?:way)?|corridor|hall(?:way)?|exit)';
+// "a door to the north" / "stairs leading north" / "the northern door" / "an exit to the east"
+const EXIT_DIR_RE = new RegExp(
+  `\\b${EXIT_NOUN_RE}\\b[^.!?]{0,25}\\b(north|south|east|west)(?:ern)?\\b` +
+  `|\\b(north|south|east|west)(?:ern)?\\b[^.!?]{0,25}\\b${EXIT_NOUN_RE}\\b`,
+  'i',
+);
+
+export function detectExitDesync(sessionTurns) {
+  const flags = [];
+  for (const t of sessionTurns) {
+    const canon = t.canon || {};
+    const dm = t.dm || '';
+    const hasRoomExits = 'roomExits' in canon; // bundle-shape gate — dormant if absent (CG-P4 not yet fed)
+    if (!hasRoomExits) continue;
+    const inside = canon.interior != null;
+    if (!inside) continue; // roomExits is an interior-only view; outdoor exits are a different surface
+    const roomExits = canon.roomExits && typeof canon.roomExits === 'object' ? canon.roomExits : null;
+    if (!roomExits) continue; // no interior structure this turn — nothing to compare
+
+    const match = dm.match(EXIT_DIR_RE);
+    if (!match) continue;
+    const rawDir = (match[1] || match[2] || '').toLowerCase();
+    const dir = COMPASS_WORDS[rawDir] || COMPASS_WORDS[rawDir + 'ern'] || rawDir;
+    if (!dir) continue;
+
+    if (!roomExits[dir]) {
+      flags.push(pointer({
+        cls: 'CG-2b', seed: t.seed, persona: t.persona, turn: t.i, span: dm,
+        canonField: 'roomExits', expected: `no real exit ${dir} (room graph has none there)`,
+        narrated: `an exit/door/stairway narrated to the ${dir}`,
+        severity: SEVERITY.FAIL,
+      }));
+    }
+  }
+  return flags;
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
 // CG-3a — object phantom-commit
 //
 // Narration asserts an IRREVERSIBLE physical change (forced lid, splintered
@@ -570,6 +646,75 @@ export function detectQuantityDesync(sessionTurns) {
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
+// CG-6 — temporal desync (CG-P4: docs/briefs/COHERENCE_GATE.md §7)
+//
+// Narrated time-of-day contradicts `canon.clock.segment` — the SAME clock the
+// live "what time is it" meta-answer already gives a player
+// (engine/grace/gracefulAdjudication.js META_TIME branch; CG-P4 mirrors that
+// exact bucketing into the bundle so this is one clock, not a second one
+// invented for the judge). Segments: "the small hours" (00:00-05:59), morning
+// (06:00-11:59), afternoon (12:00-16:59), evening (17:00-20:59), "deep night"
+// (21:00-23:59).
+//
+// PRECISION-FIRST: a broad but literal lexicon maps common narrated
+// time-phrases to ONE of the five canonical buckets; a bucket collision (DM
+// says "midnight", canon says "morning") fires FAIL. Ambiguous/ narrow phrases
+// that could span buckets ("later", "before long") are deliberately excluded —
+// this is a lower bound by construction, same doctrine as every sibling here.
+//
+// DORMANT when `clock` is absent from the bundle (pre-CG-P4 JSONLs — no
+// ground truth to compare against).
+// ═════════════════════════════════════════════════════════════════════════════
+
+// Narrated phrase -> canonical segment bucket (matches timeOfDayGroundTruth's
+// exact five buckets in engine/ref/rubric.js). Only unambiguous, single-bucket
+// phrases are listed; anything that could plausibly span two buckets is left
+// out on purpose (precision over recall).
+const TIME_PHRASE_TO_SEGMENT = [
+  [/\b(?:the\s+)?small\s+hours\b/i, 'the small hours'],
+  [/\bmidnight\b/i, 'the small hours'],
+  [/\bpredawn\b|\bpre-dawn\b/i, 'the small hours'],
+  [/\bdawn\b|\bdaybreak\b|\bfirst\s+light\b|\bsunrise\b/i, 'morning'],
+  [/\bmorning\b/i, 'morning'],
+  [/\bmidday\b|\bnoon\b/i, 'afternoon'],
+  [/\bafternoon\b/i, 'afternoon'],
+  [/\bdusk\b|\bsunset\b|\btwilight\b/i, 'evening'],
+  [/\bevening\b/i, 'evening'],
+  [/\bdeep\s+night\b|\blate\s+night\b/i, 'deep night'],
+  [/\bnightfall\b/i, 'evening'],
+];
+
+function narratedSegment(dm) {
+  for (const [re, seg] of TIME_PHRASE_TO_SEGMENT) {
+    if (re.test(dm)) return seg;
+  }
+  return null;
+}
+
+export function detectTemporalDesync(sessionTurns) {
+  const flags = [];
+  for (const t of sessionTurns) {
+    const canon = t.canon || {};
+    const dm = t.dm || '';
+    const hasClock = 'clock' in canon && canon.clock && typeof canon.clock === 'object';
+    if (!hasClock) continue; // dormant — no clock ground truth in the bundle (pre-CG-P4)
+    const canonSegment = canon.clock.segment;
+    if (!canonSegment) continue;
+
+    const narrated = narratedSegment(dm);
+    if (!narrated) continue;
+    if (narrated !== canonSegment) {
+      flags.push(pointer({
+        cls: 'CG-6', seed: t.seed, persona: t.persona, turn: t.i, span: dm,
+        canonField: 'clock.segment', expected: canonSegment, narrated,
+        severity: SEVERITY.FAIL,
+      }));
+    }
+  }
+  return flags;
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
 // §0 — forbidden-token scan (the cosmology must never surface in-world)
 //
 // A pure grep for named cosmology terms that IMMORTAL_INVARIANTS / the Idea
@@ -608,9 +753,9 @@ export function detectForbiddenTokens(sessionTurns) {
 
 // ── run all Tier-D comparators over one JSONL's worth of turns ─────────────
 const DETECTORS = [
-  detectPresenceDesync, detectPlaceDesync, detectObjectPhantomCommit,
+  detectPresenceDesync, detectPlaceDesync, detectExitDesync, detectObjectPhantomCommit,
   detectCombatDesync, detectAddresseeDesync, detectQuantityDesync,
-  detectForbiddenTokens,
+  detectTemporalDesync, detectForbiddenTokens,
 ];
 
 export function runCoherenceGate({ run, turns }) {
@@ -643,9 +788,9 @@ export function runCoherenceGate({ run, turns }) {
 // ── report rendering ────────────────────────────────────────────────────────
 const CLASS_LABELS = {
   'CG-1a': 'presence erasure', 'CG-1b': 'presence ghost-voice', 'CG-1c': 'presence omission',
-  'CG-2a': 'place-noun desync', 'CG-2c': 'unnarrated relocation',
+  'CG-2a': 'place-noun desync', 'CG-2b': 'invented exit/stair/door', 'CG-2c': 'unnarrated relocation',
   'CG-3a': 'object phantom-commit', 'CG-4': 'combat/health mirror',
-  'CG-5': 'addressee desync', 'CG-7': 'ungrounded quantity',
+  'CG-5': 'addressee desync', 'CG-7': 'ungrounded quantity', 'CG-6': 'temporal desync',
   'CG-0': '§0 forbidden-token scan',
 };
 

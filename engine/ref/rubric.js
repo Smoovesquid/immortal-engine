@@ -14,6 +14,8 @@
 
 import { getItemDef, findDefByName } from '../ruleset/core/items/index.js';
 import { getRoomState } from '../structures/roomState.js';
+import { normalizeTopology, interiorExitsFrom } from '../structures/topology.js';
+import { roomDetail, buildingTypeFor } from '../structures/roomDetail.js';
 
 // ── Canon ground-truth bundle (the RAG-faithfulness oracle) ───────────────────
 // The PC's consumables with their REAL resolved effects, from both inventory
@@ -36,6 +38,49 @@ export function consumablesGroundTruth(pc) {
     if (def && def.kind === 'consumable') out.push({ name: def.name, effect: describe(def) });
   }
   return out;
+}
+
+// CG-P4 (docs/briefs/COHERENCE_GATE.md §7 CG-P4): the current room's REAL exits,
+// keyed by compass direction, with the adjacent room's real name — so CG-2b can
+// catch a narrated stairway/door the room graph doesn't have at the source,
+// instead of only catching a wrong CURRENT room name (CG-2a). Mirrors
+// engine/structures/roomState.js's own pattern exactly (normalizeTopology +
+// interiorExitsFrom + roomDetail — the same trio `getRoomState` already uses to
+// build `room`), so this adds no new topology logic, just a second read of the
+// same pure, seed-derived facade. Pure + deterministic: interiorExitsFrom's
+// compass assignment is `seedFromString`-keyed (existing determinism-safe
+// pattern used throughout topology.js/roomDetail.js), never Math.random, never
+// stored, never touches worldHash. Returns null outside a known interior.
+function roomExitsGroundTruth(world, room) {
+  if (!room?.inside || !room.structureId) return null;
+  const st = world?.structures?.byId?.[room.structureId];
+  const topo = normalizeTopology(st?.topology);
+  if (!topo) return null;
+  const type = buildingTypeFor(room.structureId);
+  const byId = new Map(topo.rooms.map(r => [r.id, r]));
+  const dirs = interiorExitsFrom(topo, room.roomId);
+  const out = {};
+  for (const d of ['north', 'east', 'south', 'west']) {
+    const targetId = dirs?.[d];
+    if (!targetId) continue;
+    const targetRoom = byId.get(targetId);
+    out[d] = targetRoom ? (roomDetail(targetRoom, type)?.name || targetId) : targetId;
+  }
+  return out;
+}
+
+// CG-P4 CG-6: the world's real time-of-day, computed IDENTICALLY to the live
+// meta-answer the DM already gives a player who asks "what time is it"
+// (engine/grace/gracefulAdjudication.js META_TIME branch) — same ground truth,
+// not a second clock invented for the judge. `world.time.hours` is the existing,
+// always-present travel-hours counter (engine/state.js ensureTime); this is a
+// pure read + arithmetic, no mutation, no RNG, no new state field.
+function timeOfDayGroundTruth(world) {
+  const hours = Number(world?.time?.hours) || 0;
+  const day = Math.floor(hours / 24) + 1;
+  const hourOfDay = (6 + (hours % 24)) % 24; // journeys start at first light
+  const segment = hourOfDay < 6 ? 'the small hours' : hourOfDay < 12 ? 'morning' : hourOfDay < 17 ? 'afternoon' : hourOfDay < 21 ? 'evening' : 'deep night';
+  return { hours, day, segment };
 }
 
 // Compact, judge-readable view of what IS true, so the judge can flag any DM/NPC
@@ -76,6 +121,10 @@ export function buildCanonGroundTruth(world) {
   // defensive posture (engine/ref/index.js:36 already wraps the whole bundle).
   let room;
   try { room = getRoomState(world); } catch { room = null; }
+  let roomExits;
+  try { roomExits = roomExitsGroundTruth(world, room); } catch { roomExits = null; }
+  let clock;
+  try { clock = timeOfDayGroundTruth(world); } catch { clock = null; }
   return {
     location: node ? { name: node.name, kind: node.kind } : null,
     nearbyPlaces,
@@ -87,7 +136,16 @@ export function buildCanonGroundTruth(world) {
     roomOccupants: Array.isArray(room?.occupants)
       ? room.occupants.map(p => ({ name: p?.name, role: p?.role || p?.archetype || '' }))
       : [],
+    // CG-P4 CG-2b: the room's real compass exits (direction -> adjacent room
+    // name), so a narrated stairway/door the topology lacks is checkable, not
+    // just a wrong current-room name. null outside a known interior — old
+    // JSONLs and outdoor turns alike degrade gracefully (field simply absent).
+    roomExits,
     material: { shell: room?.material?.shell || null },
+    // CG-P4 CG-6: the world clock, same computation the live "what time is it"
+    // meta-answer already gives the player — so the judge can flag a narrated
+    // time-of-day that contradicts it.
+    clock,
     pc: escape
       ? { hp: world.meta?.escapeHp, maxHp: world.meta?.escapeMaxHp, level: pc.level, conditions: pc.conditions, note: 'escape mode: HP is the live health; party wounds are not used here' }
       : { wounds: pc.wounds, maxWounds: pc.maxWounds, level: pc.level, conditions: pc.conditions },

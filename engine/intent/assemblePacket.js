@@ -36,7 +36,9 @@ function splitCompoundParts(text) {
 
 // Build the parseIntent ctx (entities/abilities/spells/items) from world state,
 // read-only — mirrors what a caller with access to party/scene state would pass.
-function buildParseCtx(world) {
+// Exported (INT-2) so engine/intent/llmIntent.js can build the SAME scene-candidate
+// bundle for the LLM proposal + grounding step, instead of re-deriving it.
+export function buildParseCtx(world) {
   const w = world && typeof world === 'object' ? world : {};
   const map = ensureMap(w.map);
   const node = (map.nodes || []).find(n => n && n.id === map.currentNodeId) || null;

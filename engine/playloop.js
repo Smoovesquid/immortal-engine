@@ -616,8 +616,18 @@ export function applyEgressRepair(prevWorld, text, res) {
 // trace hook. It changes NOTHING about routing or output unless
 // INTENT_TRACE=1 (default off) — see engine/instrument.js traceIntentPacket
 // and docs/PACKETS.md INT-1.
-export function playerMove(world, packsById, text) {
-  const __intentPacket = assemblePacket(world, text);
+//
+// INT-2 — optional 4th param `{ llmPacket }`. ONLY ever passed by server.js's
+// /api/move handler, and ONLY after the proposed packet has been server-side
+// grounded (engine/intent/groundPacket.js) against the real scene bundle. When
+// omitted (every browser call via public/v1.js, and every server call where
+// the deterministic floor already classified confidently or no key/Ollama is
+// available), this function's behavior is BYTE-IDENTICAL to pre-INT-2 —
+// assemblePacket runs exactly as it does today. Passing llmPacket only swaps
+// which packet gets traced; it does NOT change what playerMoveTraced does
+// with the turn (that routing change is INT-3, out of scope here).
+export function playerMove(world, packsById, text, { llmPacket } = {}) {
+  const __intentPacket = (llmPacket && llmPacket.source === 'llm') ? llmPacket : assemblePacket(world, text);
   traceIntentPacket(__intentPacket);
   const res = playerMoveTraced(world, packsById, text);
   if (process.env.INTENT_TRACE === '1' && res && res.output) {

@@ -16,6 +16,11 @@ import { ensureWorld } from './engine/state.js';
 import { playerMove } from './engine/playloop.js';
 import { isMetaQuestion, handleMetaQuestion } from './engine/grace/gracefulAdjudication.js';
 import { normalizeManifest, normalizePack } from './engine/rulesets.js';
+import { assemblePacket, buildParseCtx } from './engine/intent/assemblePacket.js';
+import { proposeIntentViaLlm, isLowConfidencePacket } from './engine/intent/llmIntent.js';
+import { groundPacket } from './engine/intent/groundPacket.js';
+import { hasLlmKey } from './server/llmProvider.js';
+import { isAvailable as hasLocalLlmAvailable } from './server/localLlmProvider.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -491,7 +496,7 @@ return res.json({ ok:false, reason:safe });
     return byId;
   }
 
-  app.post('/api/move', requireAuth, (req, res) => {
+  app.post('/api/move', requireAuth, async (req, res) => {
     try {
       const worldId = String(req.body?.worldId || '').trim();
       const action = String(req.body?.action || '').trim();
@@ -522,7 +527,31 @@ return res.json({ ok:false, reason:safe });
         }
       }
 
-      const { world: newState, output } = playerMove(safeWorld, packsById, action);
+      // INT-2 — server-only LLM intent proposal. SERVER-ONLY: this is the one
+      // call-site allowed to import engine/intent/llmIntent.js (which pulls in
+      // server/llmProvider.js + server/localLlmProvider.js, both key-bearing).
+      // Fires ONLY when a key or Ollama is available AND the deterministic
+      // packet is unclassified/low-confidence. Never blocks the turn: wrapped
+      // in try/catch with a short internal timeout (llmIntent's own
+      // AbortController budget); on ANY failure/timeout, llmPacket stays
+      // undefined and playerMove runs exactly as it does without this packet.
+      let llmPacket;
+      try {
+        if (hasLlmKey() || hasLocalLlmAvailable()) {
+          const detPacket = assemblePacket(safeWorld, action);
+          if (isLowConfidencePacket(detPacket)) {
+            const bundle = buildParseCtx(safeWorld);
+            const proposed = await proposeIntentViaLlm(safeWorld, action, bundle);
+            const grounded = proposed ? groundPacket(proposed, bundle) : null;
+            if (grounded && grounded.source === 'llm') llmPacket = grounded;
+          }
+        }
+      } catch {
+        // Never let an LLM-proposal failure block or alter the turn.
+        llmPacket = undefined;
+      }
+
+      const { world: newState, output } = playerMove(safeWorld, packsById, action, { llmPacket });
       saveWorld(req.user.username, worldId, newState);
       return res.json({ ok: true, worldId, state: newState, output });
     } catch (e) {

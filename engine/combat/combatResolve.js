@@ -106,25 +106,73 @@ export function resolveCombatTurn(world, move, opts = {}) {
       }
     }
   }
-  // Bleed spectrum (combat/bleed.js): a bestiary attack (Claw, Thorn Blade,
-  // Bite, ...) tags `conditions: [makeBleed(tier)]`, applied through the same
-  // on-hit `conditions` path any other condition uses — including onto the
-  // PLAYER when an enemy's attack connects. That side is NOT wired here.
-  // Ticking it correctly needs a delta that can write a decremented/expired
-  // conditions array back onto the party entity; the only existing
-  // party-side op (`condition`, effectsCore.js) is additive-only and bleed's
-  // own `stackBehavior:'highest'` refuses any same-or-lower-severity re-add,
-  // so there is no way to express "this bleed just expired" or "the save
-  // succeeded" as a delta today. Recomputing the tick from the stale,
-  // never-decremented stored condition every round would deal correct
-  // damage on the first tick but then never stop — worse than leaving it
-  // unwired. effectsCore.js is out of this lane's file ownership, so this is
-  // a named follow-up, not a fix: add a party-conditions replace-op
-  // (combatState-style `partyConditions: [{ id, conditions }]`, mirroring
-  // `enemyConditions`), then extend this loop to also walk w.party[0].
   if (condTickDeltas.length) {
     w = applyDeltas(w, condTickDeltas);
   }
+
+  // Bleed spectrum (combat/bleed.js) — the PLAYER side. A bestiary attack
+  // (Claw, Thorn Blade, Bite, ...) tags `conditions: [makeBleed(tier)]`,
+  // applied through the same on-hit `conditions` path onto the player when the
+  // strike connects. This ticks that condition on the player the same way the
+  // enemy loop above ticks theirs: tickConditions() decrements duration, rolls
+  // any save_ends, and returns the surviving array + this round's damage.
+  // Reuses the SAME condTickRng — the player's save draw is ordered right after
+  // every enemy's, so the sequence stays fully determined by the condtick seed
+  // (no new RNG source). The decremented/expired array is written back through
+  // the new `partyConditions` replace-op (effectsCore.js) — the counterpart the
+  // old note below asked for, so a shallow nick can now actually clear and an
+  // arterial can keep bleeding. HP comes off the correct track: escape mode
+  // holds live HP as meta.escapeHp (NOT party.wounds — see the self-harm
+  // handler in playloop.js), everywhere else it lands on the wound path. The
+  // HP effect is deterministic (severity, no roll). Law 6: the tick summary
+  // reads the wound, never an HP number.
+  {
+    const playerEnt = w.party?.[0];
+    if (playerEnt && Array.isArray(playerEnt.conditions) && playerEnt.conditions.length) {
+      const { conditions: pConds, tickResults: pTick } =
+        tickConditions(playerEnt.conditions, playerEnt, w.combat?.round ?? 0, condTickRng);
+      const pDeltas = [];
+      if (pConds !== playerEnt.conditions) {
+        pDeltas.push({ op: 'partyConditions', set: [{ id: playerEnt.id, conditions: pConds }] });
+      }
+      const escMax = Number(w.meta?.escapeMaxHp) || 0;
+      const escapeMode = w.meta?.mode === 'escape' && escMax > 0;
+      let bleedDmg = 0;
+      let bleedSaved = false;
+      for (const tr of pTick) {
+        if (tr.damage > 0 && tr.damageType) bleedDmg += tr.damage;
+        if (tr.saved && tr.name === 'bleeding') bleedSaved = true;
+      }
+      if (escapeMode) {
+        // Live HP off meta.escapeHp (mirrors playloop's self-harm handler).
+        if (bleedDmg > 0) {
+          const beforeHp = Number(w.meta?.escapeHp) || 0;
+          const afterHp = Math.max(0, beforeHp - bleedDmg);
+          w = { ...w, meta: { ...w.meta, escapeHp: afterHp } };
+        }
+        if (pDeltas.length) w = applyDeltas(w, pDeltas);
+      } else {
+        if (bleedDmg > 0) pDeltas.push({ op: 'wound', entityId: playerEnt.id, by: bleedDmg });
+        if (pDeltas.length) w = applyDeltas(w, pDeltas);
+      }
+      // Law 6: read the wound, never the number. Only the escalating/relieving
+      // beats surface; a papercut (0 dmg) stays silent.
+      const stillBleeding = pConds.some(c => String(c?.name) === 'bleeding');
+      if (bleedSaved && !stillBleeding) {
+        condTickSummary.push('you clamp the wound and the bleeding finally clots');
+      } else if (bleedDmg > 0 && !stillBleeding) {
+        condTickSummary.push('the last of the bleeding slows and closes');
+      } else if (bleedDmg > 0) {
+        condTickSummary.push('your wound keeps bleeding, warm and steady');
+      }
+    }
+  }
+
+  // (Historical note — now RESOLVED above.) Ticking the player's bleed needed a
+  // delta that could write a decremented/expired conditions array back onto the
+  // party entity; the additive-only `condition` op couldn't express "this bleed
+  // expired" or "the save succeeded". The `partyConditions` replace-op
+  // (effectsCore.js, mirroring `enemyConditions`) closes that gap.
 
   // CM7: Reset legendary action remaining and reaction usesRemaining at round start.
   w = resetLegendaryAndReactions(w);

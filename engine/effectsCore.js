@@ -185,6 +185,33 @@ export function applyDeltas(world, deltas = []) {
       continue;
     }
 
+    // partyConditions — the REPLACE counterpart of the additive `condition` op
+    // above. The `condition` op can only add/stack; there was no delta that
+    // could write a *decremented or expired* conditions array back onto the
+    // player entity, so a bleed on the PLAYER could tick but never stop (see
+    // the bleed note in combat/combatResolve.js). This mirrors the enemy-side
+    // `combatState.enemyConditions` replace-op, but targets w.party — the
+    // player lives there, NOT under w.combat, so it can't ride the combatState
+    // op. Shape: { op:'partyConditions', set:[{ id, conditions }] } (array,
+    // like enemyConditions) or the single-target { op:'partyConditions',
+    // entityId, conditions }. The 'party' sentinel resolves to party[0]. The
+    // array is written wholesale — that IS the point (expressing "these
+    // expired / the save landed"). Deterministic: pure array replacement, no RNG.
+    if (kind === 'partyConditions') {
+      const rows = Array.isArray(op.set)
+        ? op.set
+        : (op.entityId !== undefined || op.conditions !== undefined)
+          ? [{ id: op.entityId, conditions: op.conditions }]
+          : [];
+      for (const row of rows) {
+        if (!row || typeof row !== 'object') continue;
+        const entityId = resolvePlayerEntityId(w, row.id ?? row.entityId);
+        const conds = Array.isArray(row.conditions) ? row.conditions.slice(0, 12) : [];
+        w = mutateEntity(w, entityId, (e) => ({ ...e, conditions: conds }));
+      }
+      continue;
+    }
+
     if (kind === 'position') {
       const entityId = String(op.entityId || '');
       const set = op.set && typeof op.set === 'object' ? op.set : null;

@@ -258,7 +258,16 @@ file) · P4 SERIAL (`engine/ref/rubric.js`, shared with the live Ref) · P6 last
 - **done_when:** baseline committed with confirmed/FP tally per class + the P-A/B/C/D scorecard.
 - **rollback:** n/a (a report).
 
-#### CG-P3 — standing-gate integration  ·  Phase 0  ·  **QUEUE (after P2 proves precision); coordinate on gate script** (Sonnet lane)
+#### CG-P3 — standing-gate integration  ·  Phase 0  ·  **✅ DONE 2026-07-03 (`162680c`; --coherence prints the honest floor, additive, $0 dry-run verified)**
+- **what landed:** `dm-playtest.mjs` `--coherence` now runs BOTH tiers over the just-written JSONL — the
+  transcript auditor (unchanged) + CG-P1's state checker (imported in-process via its exported
+  `loadJsonlFile`/`runCoherenceGate`/`summaryLine`, no shell-out). Output gains a `## Coherence
+  (state-grounded)` section + the combined **HONEST FLOOR (judge ∪ transcript ∪ state-grounded, de-duped)**
+  line; CG-* counts append to the namespaced `coherence-modes.json` via new `updateCoherenceModesLedger()`
+  (gate-modes.json untouched — asserted in U391). **Un-flagged path byte-identical** (U391 asserts it); flag
+  ADDITIVE (exit code unchanged — honest floor informs, not a hard gate yet). `--dry-run --coherence` = $0,
+  verified live by Basecamp. Suite 9530/0, convergence 100%. First worker under the fixed dispatch protocol
+  (reset to origin/v2-polish, clean worktree commit). **No version bump — gate tooling, live build v0.28.1.**
 - **objective:** `--coherence` on `dm-playtest.mjs` runs both tiers over the just-written JSONL; report gains a
   "Coherence (state-grounded)" section + the honest-floor line (`|judge fails ∪ coherence flags|` de-duped)
   beside the headline; CG modes accumulate in `coherence-modes.json` (namespaced — never into `gate-modes.json`,

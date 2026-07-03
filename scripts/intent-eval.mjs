@@ -137,12 +137,27 @@ async function main() {
   const parserRows = await runParserOnly();
   results.push(summarize('parser-only (parseIntent baseline)', parserRows));
 
+  // INT-2R — proposeIntentViaLlm's provider chain is now Ollama-first by
+  // DEFAULT (Tim's 2026-07-03 ruling — see engine/intent/llmIntent.js
+  // providerMode). Each backend pass below FORCES its provider explicitly
+  // via INTENT_LLM, rather than relying on which key happens to be present —
+  // leaving INTENT_LLM unset while a key AND Ollama are both available would
+  // silently score Ollama's answers under the "Anthropic" label (auto mode
+  // tries Ollama first). This isolation is what changed under INT-2R; the
+  // corpus/scoring logic itself did not.
+  const prevIntentLlm = process.env.INTENT_LLM;
+
   // Backend 2 — Anthropic fast tier (only if a key is present).
   const anthropicPresent = hasLlmKey();
   if (anthropicPresent) {
-    const anthropicRows = await runLlmBackend('anthropic');
-    requestCount += CORPUS.length; // one request per row (no retries)
-    results.push(summarize(`Anthropic (${process.env.LLM_MODEL || 'claude-sonnet-4-20250514'})`, anthropicRows));
+    process.env.INTENT_LLM = 'anthropic';
+    try {
+      const anthropicRows = await runLlmBackend('anthropic');
+      requestCount += CORPUS.length; // one request per row (no retries)
+      results.push(summarize(`Anthropic (${process.env.LLM_MODEL || 'claude-sonnet-4-6'})`, anthropicRows));
+    } finally {
+      if (prevIntentLlm === undefined) delete process.env.INTENT_LLM; else process.env.INTENT_LLM = prevIntentLlm;
+    }
   } else {
     results.push({ label: 'Anthropic', skipped: true, reason: 'no ANTHROPIC_API_KEY/OPENAI_API_KEY in env' });
   }
@@ -150,18 +165,12 @@ async function main() {
   // Backend 3 — local Ollama (only if reachable).
   await checkOllamaHealth();
   if (ollamaAvailable()) {
-    // Temporarily hide the Anthropic key so proposeIntentViaLlm's provider
-    // chain falls through to Ollama for this pass.
-    const prevAnthropic = process.env.ANTHROPIC_API_KEY;
-    const prevOpenAi = process.env.OPENAI_API_KEY;
-    delete process.env.ANTHROPIC_API_KEY;
-    delete process.env.OPENAI_API_KEY;
+    process.env.INTENT_LLM = 'ollama';
     try {
       const ollamaRows = await runLlmBackend('ollama');
       results.push(summarize('Ollama (local)', ollamaRows));
     } finally {
-      if (prevAnthropic !== undefined) process.env.ANTHROPIC_API_KEY = prevAnthropic;
-      if (prevOpenAi !== undefined) process.env.OPENAI_API_KEY = prevOpenAi;
+      if (prevIntentLlm === undefined) delete process.env.INTENT_LLM; else process.env.INTENT_LLM = prevIntentLlm;
     }
   } else {
     results.push({ label: 'Ollama (local)', skipped: true, reason: 'no local Ollama server reachable at LOCAL_LLM_ENDPOINT' });

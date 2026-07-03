@@ -7,7 +7,12 @@ import { anthropicSamplingFields } from '../engine/llmModelRules.js';
 
 import { queryLocal, checkHealth, isAvailable } from './localLlmProvider.js';
 
-const ANTHROPIC_DEFAULT_MODEL = 'claude-sonnet-4-20250514';
+// INT-2R — was 'claude-sonnet-4-20250514', which 404s against the live
+// Anthropic API unless LLM_MODEL overrides it (verified 2026-07-03, see
+// docs/playtests/intent-eval-2026-07-03T15-11-38-707Z.md). Matches
+// engine/llmAdapter.js's own working DEFAULT_MODEL so both Anthropic call
+// paths agree on a live model id.
+const ANTHROPIC_DEFAULT_MODEL = 'claude-sonnet-4-6';
 const OPENAI_DEFAULT_MODEL = 'gpt-4o-mini';
 
 export function detectProvider() {

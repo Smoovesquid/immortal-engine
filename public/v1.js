@@ -2,6 +2,11 @@ import { normalizeManifest, normalizePack } from '../engine/rulesets.js';
 import { newWorld, ensureWorld } from '../engine/state.js';
 import { beginAdventure, playerMove, newScene, setPieceCooldownGate, carriesInteriorMovementIntent } from '../engine/playloop.js';
 import { isMetaQuestion, handleMetaQuestion, looksMultiAction } from '../engine/grace/gracefulAdjudication.js';
+// INT-2R — buildParseCtx is browser-safe (no server-only deps; already in
+// this bundle's transitive graph via playloop.js -> assemblePacket.js). The
+// key-bearing engine/intent/llmIntent.js stays server-only — v1.js reaches
+// the LLM ONLY through the /api/intent-packet HTTP door (Purity Rule 9).
+import { buildParseCtx } from '../engine/intent/assemblePacket.js';
 import { exitsFrom, ensureMap, cleanPlaceName } from '../engine/map/mapState.js';
 import { dayPhase, clockLabel } from '../engine/dayNight.js';
 import { escapeOutcome } from '../engine/victory.js';
@@ -582,6 +587,39 @@ async function tryIntentSplit(w, text) {
   return null;
 }
 
+// INT-2R — the LLM is the PRIMARY reader of every typed free-text turn (no
+// confidence gate: the deterministic parser used to go first and the LLM
+// only got a swing at what it couldn't classify — Tim's 2026-07-03 course
+// correction inverted that). Every turn asks /api/intent-packet FIRST,
+// budgeted so a slow/offline server can never stall play; on ok+packet the
+// grounded IntentPacket rides into playerMove's 4th argument, which derives
+// the shared question-verdict FROM it (playloop.js playerMove). On ANY
+// failure/timeout/offline, `llmPacket` stays null and playerMove runs
+// exactly as it does today — the deterministic path is always the floor.
+const INTENT_PACKET_TIMEOUT_MS = 2800;
+async function tryLlmIntentPacket(w, text) {
+  try {
+    const bundle = buildParseCtx(w);
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), INTENT_PACKET_TIMEOUT_MS);
+    let data;
+    try {
+      const res = await fetch('/api/intent-packet', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ text, bundle }),
+        signal: controller.signal
+      });
+      data = await res.json();
+    } finally {
+      clearTimeout(timer);
+    }
+    if (data && data.ok && data.packet && data.packet.source === 'llm') return data.packet;
+  } catch {
+    // offline / timeout / bad JSON — silent fallback, playerMove runs without a packet
+  }
+  return null;
+}
 
 // P6 — local NPC voice (Ollama/Gemma). Presentation-only: the engine already
 // decided share/deflect/lie; the local model only phrases the spoken line.
@@ -734,7 +772,13 @@ async function doSubmitMove() {
       world = cw;
       output = { ...(lastOut || {}), narration: `Wizard: ${narrParts.join(' ')}` };
     } else {
-      ({ world, output } = playerMove(w, ui.packs.byId, text));
+      // INT-2R — the LLM is the primary ears for a single free-text turn: ask
+      // /api/intent-packet before playerMove, budgeted (tryLlmIntentPacket's
+      // own AbortController) so an offline/slow server never stalls the turn.
+      // On ANY miss `llmPacket` is null and playerMove runs exactly as it
+      // does with no 4th argument — the deterministic parser is the floor.
+      const llmPacket = await tryLlmIntentPacket(w, text);
+      ({ world, output } = playerMove(w, ui.packs.byId, text, { llmPacket }));
     }
   } catch (e) {
     return setStatus(`Move failed: ${e?.message || e}`);
@@ -943,8 +987,8 @@ function renderInvoke() {
     el('div', { class: 'panel' },
       el('div', { class: 'header' },
         el('div', {},
-          el('div', { class: 'title' }, 'Immortal Engine — v0.26.2'),
-          el('div', { class: 'sub' }, 'build 045 · 2026-07-03 · the empty room is empty')
+          el('div', { class: 'title' }, 'Immortal Engine — v0.27.0'),
+          el('div', { class: 'sub' }, 'build 046 · 2026-07-03 · Ollama ears')
         )
       ),
       // ── One-click front door: start (or resume) the Escape game ──────

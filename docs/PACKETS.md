@@ -11,6 +11,68 @@ done_when · rollback`.
 
 ## ACTIVE
 
+### INT — the Intent layer's LLM seat (INT-1 → INT-2R), 2026-07-02→07-03
+**Provenance:** Tim's Desktop-memo ruling 2026-07-03 — "LLM as intent translator" is house law
+(`project_rung1_llm_translator_ruling` memory gist). Invariants ban LLM *authority* (deciding an outcome,
+rolling a die, mutating state), not LLM *interpretation* (reading free text into the typed `IntentPacket`
+shape `engine/intent/intentSchema.js` already defines). Landed serially on `v2-polish` (competence hot
+files: `engine/playloop.js`, `server.js`, `public/v1.js`).
+
+- **INT-1** (`57b878c`) — shadow `IntentPacket` assembler (`engine/intent/assemblePacket.js`). Aggregates
+  already-shipped detectors (parseIntent/directQuestionIntent/detectPhysicalInteraction) into one typed
+  packet per free-text turn. Zero behavior change — nothing reads it yet outside `INTENT_TRACE=1`.
+- **INT-2** (`b60781e`, `918b10a`) — server-side LLM proposal (`engine/intent/llmIntent.js` proposes,
+  `engine/intent/groundPacket.js` hard-rejects any invented referent against the real scene bundle).
+  Shipped gated: fired only when the deterministic packet was low-confidence, Anthropic-first with an
+  Ollama fallback. **This design was later vetoed** — it drifted from the spec, which always said the LLM
+  is the *primary* reader of every turn, not a fallback for what the regex parser couldn't classify.
+- **INT-3 / INT-4a / INT-4b** (`a19b0bc`, `d217c85`, `b3d600e`) — the egress-repair / referent-grounding /
+  dialogue-address consumers refactored to share ONE `directQuestionIntent` verdict per turn instead of
+  re-deriving it at each call-site. Sound work, kept as-is by INT-2R below (it's the seam INT-2R's routing
+  fix now feeds a packet-derived verdict THROUGH).
+- **INT-2R** (course correction, this entry) — audited 2026-07-03: the live game (`public/v1.js`) never
+  called the LLM seat at all (it only existed behind `server.js /api/move`, a route v1 doesn't hit); the
+  confidence gate contradicted the spec; even a supplied packet only swapped which packet got *traced*,
+  never routed the turn; provider order was Anthropic-first against Tim's explicit Ollama-primary ruling.
+  Fixed all four: reordered `llmIntent.js` to Ollama-first (`INTENT_LLM=off|ollama|anthropic|auto`, `auto`
+  = Ollama→Anthropic default); removed the confidence-gate precondition at `server.js /api/move`; added
+  `POST /api/intent-packet` (the browser-safe HTTP door — `public/v1.js` calls it before every single-text
+  `playerMove`, budgeted so an offline/slow server never stalls a turn); `playerMove` (`engine/playloop.js`)
+  now derives the shared `directQuestionIntent`-shaped verdict FROM a grounded packet's `kind` field when
+  present, so the packet actually drives routing (live-verified: same movement text resolves differently
+  with vs. without a `kind:'rules'` packet). Also hardened the Ollama-facing prompt (explicit verb enum +
+  few-shot pairs, including an `ask`-vs-`talk` disambiguation the first hardening pass missed) and added
+  verb-synonym normalization in `groundPacket.js` (reuses `parseIntent.js`'s own `VERB_SYNONYMS` table —
+  one vocabulary, no parallel enum) so a model saying "stab" grounds to `attack` instead of falling back to
+  `ask`. Fixed a pre-existing `server/llmProvider.js` bug (stale Anthropic model id, 404ing without
+  `LLM_MODEL` set). Widened `llmIntent.js`'s internal timeout (measured live: the full production prompt
+  through the real HTTP route costs ~6-8s on ordinary dev hardware, not the old 4s budget).
+  **Rollback:** `INTENT_LLM=off` — zero outbound provider calls, deterministic parser is the floor (proven
+  under test, U377/U380/U382). Benchmark (correctly-isolated final run,
+  `docs/playtests/intent-eval-2026-07-03T19-26-19-363Z.md`): parser-only 66.7% · **Anthropic 88.9%** ·
+  **Ollama 44.4%** — Ollama rose from 0% (pre-hardening: valid JSON every time, but non-canonical verb
+  tokens the schema silently coerced to `ask`) to 44.4% after the prompt hardening + verb-synonym
+  normalization. Also fixed a bug in `scripts/intent-eval.mjs` itself, surfaced by INT-2R's provider
+  reordering: the script's backend isolation relied on which key/host was present rather than an explicit
+  `INTENT_LLM` override — under the OLD Anthropic-first default this correctly isolated each backend, but
+  under the NEW Ollama-first default, leaving `INTENT_LLM` unset (with both a key and Ollama available)
+  silently scored OLLAMA'S answers under the "Anthropic" label (two runs landed at 44.4%/16.7% before this
+  was caught). Fixed to force `INTENT_LLM='anthropic'`/`'ollama'` explicitly per pass.
+  **On the benchmark's own headline ("invented-id count: 1, HARD FAIL") in the final run:** investigated
+  directly — Anthropic proposed `target: "torch"` for "I light the torch." "torch" IS a real item in the
+  bundle, just not an ENTITY — `intentSchema.js`'s `target` field is entity-scoped by design (physical
+  objects belong in `objects[]`/`with`), so `groundPacket.js` correctly rejected it as a target
+  (`grounded.target === null`, verified directly) while correctly keeping it in `objects[]` (a torch is a
+  legitimate `use` object). Grounding worked exactly as designed; the benchmark's "invented-id" framing
+  doesn't distinguish "a real name in the wrong field" from "a fabricated name" — worth a benchmark-script
+  refinement someday, but NOT a live safety gap: no fabricated referent ever reached `playerMove`.
+  **Residual risk (flagged, not fixed here):** the CLIENT's `/api/intent-packet` fetch budget (2800ms, per
+  spec) is tighter than the measured real-world server-side HTTP-routed latency (~6-8s) — meaning most live
+  turns on this dev machine will currently miss the LLM packet and fall back to the deterministic parser
+  before the model finishes. Safe (never blocks a turn), but works against "Ollama primary" in practice;
+  worth Tim's explicit call on whether to relax the client budget or invest in latency (smaller model,
+  shorter prompt, fewer few-shot examples) in a follow-up packet.
+
 ### SL — THE SHIPPABLE SLICE (priority, scope-locked 2026-06-29)
 **Provenance:** Tim's 2026-06-29 scope re-lock (`docs/DEMO_REGION.md` scope-lock banner). The demo is cut to
 ONE walkable ~100 km² region with four authored places: a town, a forest (bandits roam), a bandit camp, and

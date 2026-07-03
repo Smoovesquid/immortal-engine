@@ -16,8 +16,8 @@ import { ensureWorld } from './engine/state.js';
 import { playerMove } from './engine/playloop.js';
 import { isMetaQuestion, handleMetaQuestion } from './engine/grace/gracefulAdjudication.js';
 import { normalizeManifest, normalizePack } from './engine/rulesets.js';
-import { assemblePacket, buildParseCtx } from './engine/intent/assemblePacket.js';
-import { proposeIntentViaLlm, isLowConfidencePacket } from './engine/intent/llmIntent.js';
+import { buildParseCtx } from './engine/intent/assemblePacket.js';
+import { proposeIntentViaLlm } from './engine/intent/llmIntent.js';
 import { groundPacket } from './engine/intent/groundPacket.js';
 import { hasLlmKey } from './server/llmProvider.js';
 import { isAvailable as hasLocalLlmAvailable } from './server/localLlmProvider.js';
@@ -248,6 +248,38 @@ return res.json({ ok:false, reason:safe });
       return res.json({ ok: true, steps });
     } catch (e) {
       return res.json({ ok: false, reason: String(e?.message || 'error').slice(0, 80) });
+    }
+  });
+
+  // ── INT-2R — the live-turn IntentPacket door ────────────────────────────
+  // POST { text, bundle } → { ok, packet: IntentPacket|null }
+  // The browser-safe seam onto engine/intent/llmIntent.js (key-bearing,
+  // server-only — never importable from public/v1.js's graph). `bundle` is
+  // the { entities, abilities, spells, items } candidate universe the CLIENT
+  // computed via buildParseCtx(world) (browser-safe: assemblePacket.js has no
+  // server-only deps) — the server never re-derives it from a world blob, so
+  // this request body stays small and this route never needs to know the
+  // full world shape. Proposes via the SAME Ollama-first/Anthropic-fallback
+  // provider chain as /api/move's server-authoritative path, then grounds
+  // the raw proposal before it's returned — an ungrounded referent must never
+  // reach the client. NEVER 500s: any failure (no key, no Ollama, timeout,
+  // malformed JSON) is `{ ok:true, packet:null }` — the caller's own
+  // deterministic parser is always the floor. `INTENT_LLM=off` short-circuits
+  // before any provider/network work (PACKETS.md INT-2 rollback).
+  app.post('/api/intent-packet', async (req, res) => {
+    try {
+      const text = String(req.body?.text || '').trim().slice(0, 500);
+      const bundle = req.body?.bundle && typeof req.body.bundle === 'object' ? req.body.bundle : {};
+      if (!text) return res.json({ ok: true, packet: null });
+      if (process.env.INTENT_LLM === 'off') return res.json({ ok: true, packet: null });
+      if (!hasLlmKey() && !hasLocalLlmAvailable()) return res.json({ ok: true, packet: null });
+
+      const proposed = await proposeIntentViaLlm(null, text, bundle);
+      const grounded = proposed ? groundPacket(proposed, bundle) : null;
+      const packet = (grounded && grounded.source === 'llm') ? grounded : null;
+      return res.json({ ok: true, packet });
+    } catch (e) {
+      return res.json({ ok: true, packet: null });
     }
   });
 
@@ -527,28 +559,28 @@ return res.json({ ok:false, reason:safe });
         }
       }
 
-      // INT-2 — server-only LLM intent proposal. SERVER-ONLY: this is the one
+      // INT-2R — server-only LLM intent proposal. SERVER-ONLY: this is the one
       // call-site allowed to import engine/intent/llmIntent.js (which pulls in
       // server/llmProvider.js + server/localLlmProvider.js, both key-bearing).
-      // Fires ONLY when a key or Ollama is available AND the deterministic
-      // packet is unclassified/low-confidence. Never blocks the turn: wrapped
-      // in try/catch with a short internal timeout (llmIntent's own
-      // AbortController budget); on ANY failure/timeout, llmPacket stays
-      // undefined and playerMove runs exactly as it does without this packet.
-      // PACKETS.md INT-2 rollback: `INTENT_LLM=off` disables this path outright
-      // (the INT-1 shadow path remains) — the dev .env key has a hard,
-      // non-reloading budget, so an ungated per-turn LLM path is a real risk;
-      // this is the escape hatch, checked before any provider/network work.
+      // The LLM is the PRIMARY reader of every typed/spoken free-text turn —
+      // NO confidence gate (the vetoed INT-2 design fired only on a low-
+      // confidence deterministic packet; Tim's 2026-07-03 course correction
+      // removed that precondition — see docs/PACKETS.md INT-2). Fires whenever
+      // a key or Ollama is available (Ollama first — see llmIntent.js
+      // providerMode). Never blocks the turn: wrapped in try/catch with a
+      // short internal timeout (llmIntent's own AbortController budget); on
+      // ANY failure/timeout, llmPacket stays undefined and playerMove runs
+      // exactly as it does without this packet — the deterministic parser is
+      // always the floor. `INTENT_LLM=off` disables this path outright (the
+      // INT-1 shadow path remains) — the escape hatch, checked before any
+      // provider/network work.
       let llmPacket;
       try {
         if (process.env.INTENT_LLM !== 'off' && (hasLlmKey() || hasLocalLlmAvailable())) {
-          const detPacket = assemblePacket(safeWorld, action);
-          if (isLowConfidencePacket(detPacket)) {
-            const bundle = buildParseCtx(safeWorld);
-            const proposed = await proposeIntentViaLlm(safeWorld, action, bundle);
-            const grounded = proposed ? groundPacket(proposed, bundle) : null;
-            if (grounded && grounded.source === 'llm') llmPacket = grounded;
-          }
+          const bundle = buildParseCtx(safeWorld);
+          const proposed = await proposeIntentViaLlm(safeWorld, action, bundle);
+          const grounded = proposed ? groundPacket(proposed, bundle) : null;
+          if (grounded && grounded.source === 'llm') llmPacket = grounded;
         }
       } catch {
         // Never let an LLM-proposal failure block or alter the turn.

@@ -14,7 +14,8 @@
  * "did not survive grounding" (caller falls back to the deterministic packet).
  */
 
-import { makeIntent } from './intentSchema.js';
+import { makeIntent, VERBS } from './intentSchema.js';
+import { VERB_SYNONYMS } from './parseIntent.js';
 
 // Normalize a name/id/ref for loose matching — case/space-insensitive, matches
 // how assemblePacket's own entity list is built (name-or-id, role-or-null).
@@ -57,6 +58,26 @@ function resolves(value, keys) {
   return keys.has(v);
 }
 
+// INT-2R — normalize a proposed verb TOKEN ("stab") to the canonical schema
+// verb ("attack") through parseIntent.js's OWN VERB_SYNONYMS table — the same
+// vocabulary the deterministic parser already uses, never a second one
+// (Purity Rule: no parallel contract enum). Runs BEFORE makeIntent, which
+// would otherwise silently coerce any unrecognized verb to 'ask' — this is
+// what turned a correct "attack" reading into a wrong "ask" for llama3.1:8b
+// in the 2026-07-03 benchmark (0% packet-match despite valid JSON every time).
+// Already-canonical verbs pass through unchanged (no double-normalization);
+// an unmatched token falls through untouched so makeIntent's own 'ask'
+// fallback still applies exactly as before.
+function normalizeVerb(verb) {
+  const v = String(verb || '').trim().toLowerCase();
+  if (!v) return v;
+  if (VERBS.includes(v)) return v;
+  for (const [canonical, re] of VERB_SYNONYMS) {
+    if (re.test(v)) return canonical;
+  }
+  return v;
+}
+
 /**
  * groundPacket(proposed, bundle) -> IntentPacket | null
  *
@@ -69,8 +90,11 @@ function resolves(value, keys) {
 export function groundPacket(proposed, bundle) {
   try {
     if (!proposed || typeof proposed !== 'object') return null;
-    const verb = String(proposed.verb || '').trim();
-    if (!verb) return null; // no verb survives -> nothing to ground
+    const rawVerb = String(proposed.verb || '').trim();
+    if (!rawVerb) return null; // no verb survives -> nothing to ground
+    // Normalize a non-canonical-but-recognizable verb token ("stab" -> "attack")
+    // through the SAME vocabulary parseIntent.js already uses — see normalizeVerb.
+    const verb = normalizeVerb(rawVerb);
 
     const { entityKeys, objectKeys } = candidateSet(bundle);
 

@@ -2576,7 +2576,7 @@ function playerMoveCore(world, packsById, text, dqIntent) {
   // address when there's a concrete noun between the demonstrative and the rest
   // of the question.
   const DA_OBJECT_REFERENT_RE = /\bwho(?:'s|\s+is)\s+(?:this|that)\s+[a-z]/i;
-  const daDqKind = DA_OBJECT_REFERENT_RE.test(text) && !w.combat?.active && !w.scene?.dialogue ? directQuestionIntent(text, w) : null;
+  const daDqKind = DA_OBJECT_REFERENT_RE.test(text) && !w.combat?.active && !w.scene?.dialogue ? (dqIntent !== undefined ? dqIntent : directQuestionIntent(text, w)) : null;
   const daIsObjectReferent = daDqKind && (daDqKind.kind === 'place' || daDqKind.kind === 'referent-followup');
   if (!w.combat?.active && !w.scene?.dialogue && !daIsObjectReferent && isDirectAddressIntent(text)) {
     // ROM-1: an unnamed direct address ("who are you?", "what are you looking
@@ -2591,7 +2591,7 @@ function playerMoveCore(world, packsById, text, dqIntent) {
         const daName = daBegun.outcome.npcName || 'them';
         const daMech = `[dialogue enter | ${daName}]`;
         // DLG-1: any direct-address fires a voice response — never the silent "turns and waits" line.
-        const dqEnterIntent = directQuestionIntent(text, w);
+        const dqEnterIntent = dqIntent !== undefined ? dqIntent : directQuestionIntent(text, w);
         const daNpc = resolveNpcAtCurrentNode(w, daBegun.outcome.npcId);
         // First: try to answer from common knowledge (self-identity, residence, news, directions).
         const daCommon = daNpc ? commonKnowledgeAnswer(w, daNpc, text) : null;

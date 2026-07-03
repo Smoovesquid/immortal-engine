@@ -30,6 +30,7 @@
 
 import { interiorCompassLayout } from './topology.js';
 import { roomDetail, buildingTypeFor } from './roomDetail.js';
+import { SHELL_BY_TYPE } from './structureMaterial.js';
 
 const DIRS = ['north', 'east', 'south', 'west'];
 const VEC = { north: [0, -1], south: [0, 1], east: [1, 0], west: [-1, 0] };
@@ -37,10 +38,11 @@ const BUILDING_NAME = {
   chapel: 'Chapel', tavern: 'Tavern', market: 'Market Hall', keep: 'Keep',
   cottage: 'Cottage', longhouse: 'Longhouse', lair: 'Lair', tower: 'Arcane Tower', hive: 'Hive'
 };
-const BUILDING_SHELL = {
-  chapel: 'stone', tavern: 'timber', market: 'open', keep: 'fortified',
-  cottage: 'timber', longhouse: 'timber', lair: 'cave', tower: 'round', hive: 'chitin'
-};
+// Shell material now lives in structureMaterial.js (ROM-0) so the drawn map and
+// the prose stack read ONE table — values byte-identical to the historical local
+// map (chapel:'stone', cottage/tavern/longhouse:'timber', …). U348 asserts the
+// alignment.
+const BUILDING_SHELL = SHELL_BY_TYPE;
 const DARK_BUILDINGS = new Set(['lair', 'hive']);
 
 function structIdOf(structure) {

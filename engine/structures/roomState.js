@@ -11,6 +11,7 @@ import { roomDetail } from './roomDetail.js';
 import { roomWindows } from './roomWindows.js';
 import { occupantsOfRoom, outdoorOccupants } from './roomOccupancy.js';
 import { objectsHere } from './roomObjects.js';
+import { structureMaterial } from './structureMaterial.js';
 
 const OBJECT_CAP = 6;
 
@@ -23,6 +24,9 @@ const OBJECT_CAP = 6;
  *   objects:   [{ name, state, category, notes, nodeIndex }]  (cap 6),
  *   occupants: NPC[],
  *   windows:   { count, shuttered } | null,
+ *   material:  { shell, family, walls, floor, line, forbidden } | null,
+ *              (ROM-0 — the structure's canonical build material, resolved the
+ *               same way the floor-plan renderer resolves it; null outdoors)
  * }
  *
  * nodeId is accepted for forward compatibility with future consumers (P3/P4); the
@@ -59,7 +63,8 @@ export function getRoomState(world, nodeId) {
       doorways: [],
       objects,
       occupants: outdoorOccupants(world),
-      windows: null
+      windows: null,
+      material: null
     };
   }
 
@@ -81,6 +86,7 @@ export function getRoomState(world, nodeId) {
     doorways: layout ? layout.doorways : [],
     objects,
     occupants: occupantsOfRoom(world, structureId, roomId),
-    windows: roomWindows(world, interior)
+    windows: roomWindows(world, interior),
+    material: structureMaterial(world, structureId)
   };
 }

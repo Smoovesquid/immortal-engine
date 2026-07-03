@@ -197,6 +197,105 @@ verbs — no parallel contract enum), `parseIntent` stays the LLM-off floor.
   categorically-new compound-drop; determinism intact (U19/21/22/27/30); `npm run check` green.
 - **rollback:** family flag back to legacy routing (keep both paths one release).
 
+### CG — THE COHERENCE GATE (Phase 0 — the state-grounded second eval instrument)  ·  **sliced 2026-07-03**
+**Provenance:** Tim's 2026-07-03 directive ("the Opus gates are almost useless — passing completely illogical
+outputs"). Full design + taxonomy + mechanism + falsifiable predictions: **`docs/briefs/COHERENCE_GATE.md`**
+(Fable, landed `35dc347`). The instrument compares DM *prose* against the deterministic Canon Log bundle the
+gate already logs per turn ("DM said X / records say Y") — Road-A-safe (checker PROPOSES, Canon Log CONFIRMS;
+narration≠canon is the invariant it *operationalizes*). Slots as a **4th deterministic signal** (regression-
+shaped): corpus=regression · determinism · **coherence=the honest floor, gates the word "playable"** ·
+gate=discovery · human=taste. Taxonomy CG-1..8 each anchored to a bundle field; **CG-8 (dropped intent) is
+explicitly ceded to the existing v2 atomic judge — not rebuilt.** Sequence CG-P1→P6, smallest-shippable first.
+**Parallelization:** P1/P2/P5 hot-file-free (worktree-parallel) · P3 coordinate on the gate script (not a hot
+file) · P4 SERIAL (`engine/ref/rubric.js`, shared with the live Ref) · P6 last. **Nothing touches `playloop.js`/
+`state.js`/`escapeCombat.js`/RNG/CSL/`WORLD_VERSION` at any phase.**
+
+#### CG-P1 — the state-grounded checker over existing JSONLs  ·  Phase 0  ·  **QUEUE — the whole value; hot-file-free; START ANYTIME** (Sonnet lane)
+- **objective:** new `scripts/coherence-gate.mjs` — Tier-D deterministic comparators (CG-1a/1b/1c, CG-2a/2c,
+  CG-3a, CG-4, CG-5, CG-7, §0 forbidden-token scan) over gate JSONLs, emitting desync pointers
+  (`{class, seed, persona, turn, span, canonField, expected, narrated, severity}`) + a per-class/per-run
+  markdown report incl. the honest floor. Reuse `coherence-audit.mjs`'s loader/session-walk verbatim; copy the
+  claim-regex doctrine (incl. FUTURE_MOTION-style guards) from `engine/harness/oracles.js` **by copy with a
+  provenance comment** (no engine import — the script stays pure/hermetic; unification is CG-P6).
+- **allowed_files:** new `scripts/coherence-gate.mjs`; new tests (allocate `scripts/next-test-number.sh U 3` —
+  detector fixtures / real-JSONL regression lock / CLI end-to-end, the U336–U338 pattern).
+- **forbidden:** `engine/**`, `scripts/dm-playtest.mjs`, any LLM call, any network.
+- **invariants:** pure read of JSONL; no RNG; no engine import; precision-over-recall (every check ships a
+  false-positive guard note); severities derived in code.
+- **done_when:** runs over all four existing JSONLs; report prints per-class flags + honest floor; tests green.
+- **rollback:** delete the script + tests (nothing references them).
+
+#### CG-P2 — baseline + adjudicate the predictions  ·  Phase 0  ·  **QUEUE (after P1); hot-file-free** (Sonnet lane)
+- **objective:** run P1 over the four JSONLs; hand-review every flag (prose+canon side-by-side, confirm/FP);
+  score P-A/P-B/P-D explicitly (P-C ≈ 5 judge calls — run same sitting, record in `scripts/budget.mjs`);
+  commit `docs/playtests/COHERENCE_GATE_BASELINE_<date>.md` (existing-baseline shape) incl. the labeled flag
+  set (becomes Tier-S's calibration corpus). **Headline prediction: Tier-D flags 4–7 turns the v1 judge PASSED
+  on `gate-2026-07-03T11-45-…` (falsified if <2 flags or <60% precision).**
+- **allowed_files:** new baseline doc; new `docs/playtests/coherence-modes.json` (`gate-modes.json` untouched).
+- **invariants:** report the falsified parts AS falsified — the prediction is the point, not the vindication.
+- **done_when:** baseline committed with confirmed/FP tally per class + the P-A/B/C/D scorecard.
+- **rollback:** n/a (a report).
+
+#### CG-P3 — standing-gate integration  ·  Phase 0  ·  **QUEUE (after P2 proves precision); coordinate on gate script** (Sonnet lane)
+- **objective:** `--coherence` on `dm-playtest.mjs` runs both tiers over the just-written JSONL; report gains a
+  "Coherence (state-grounded)" section + the honest-floor line (`|judge fails ∪ coherence flags|` de-duped)
+  beside the headline; CG modes accumulate in `coherence-modes.json` (namespaced — never into `gate-modes.json`,
+  Chao1 granularity).
+- **allowed_files:** `scripts/dm-playtest.mjs` (the existing `--coherence` block only), `scripts/coherence-gate.mjs`,
+  its tests (+ extend the U330-style dry-run structural test).
+- **invariants:** default gate byte-identical when the flag is absent; flag stays ADDITIVE (exit code unchanged —
+  honest floor *informs*; promotion to a hard gate is Tim's call after P2).
+- **done_when:** `--dry-run --coherence` exercises the full path for $0; a real run prints the floor.
+- **rollback:** flag reverts to the transcript-only auditor.
+
+#### CG-P4 — bundle enrichment: exits + clock  ·  Phase 0  ·  **QUEUE; SERIAL (`engine/ref/rubric.js`, shared with live Ref); read-only view**
+- **objective:** extend `buildCanonGroundTruth` with (a) the current room's real exits/adjacent rooms (topology
+  view CG-2b needs to catch invented stairways at the source) + (b) clock/timeOfDay (CG-6). Read-only view over
+  existing state — the ROM-3 precedent (no mutation, no RNG, no worldHash exposure). Consume the fields in
+  `coherence-gate.mjs`.
+- **allowed_files:** `engine/ref/rubric.js`; `scripts/coherence-gate.mjs`; tests.
+- **forbidden:** `engine/state.js`, `WORLD_VERSION`, any mutation path, `playloop.js`.
+- **invariants:** worldHash untouched (view-only, assert via determinism suite); bundle stays compact (judge
+  reads it too — token budget); old JSONLs without the fields still parse (checks degrade gracefully — P-B's
+  negative control).
+- **done_when:** new fields in fresh JSONLs; CG-2b/CG-6 comparators activate; `npm run check` green.
+- **rollback:** revert the rubric view additions; comparators auto-dormant (fields absent).
+
+#### CG-P5 — Tier-S span extraction  ·  Phase 0  ·  **QUEUE (only after P2 proves Tier-D precision); hot-file-free; paid, opt-in** (Sonnet lane)
+- **objective:** `--extract` on `coherence-gate.mjs` — cross-family small-model (Haiku-class) transcription of
+  presence/place spans ONLY (terse schema, no CoT, model never sees canon); comparison stays in code; calibrate
+  paraphrase-invariance against P2's labeled corpus; report Tier-D∪S delta.
+- **allowed_files:** `scripts/coherence-gate.mjs`, tests (mock provider — hermetic), `docs/briefs/` calibration note.
+- **invariants:** OFF by default; budget-gated (`scripts/budget.mjs` before/after); extractor output is a
+  PROPOSAL — a span that fails canon lookup is a disagreement report, never a flag by itself; INT-2R
+  schema-terseness lesson binds (re-benchmark after ANY prompt edit).
+- **done_when:** measured recall gain over Tier-D on the labeled corpus with precision held ≥80%; cost/run
+  documented. **If recall gain is negligible — RETIRE the tier and say so** (SOBRIETY: deterministic-only is a
+  fine end state; don't gold-plate the judge we designed out).
+- **rollback:** remove the flag.
+
+#### CG-P6 — unification + the meter  ·  Phase 0  ·  **QUEUE (last); mostly hot-file-free** (Sonnet lane)
+- **objective:** merge the transcript auditor (C1–C5) + the state checks into one instrument + one report;
+  retire transcript detectors the state version strictly supersedes (C1→CG-1b where bundles carry rooms; keep
+  the transcript form for pre-ROM-3 files + words-vs-words seams like C5); extract ONE shared claim-lexicon
+  module consumed by both `coherence-gate.mjs` and `engine/harness/oracles.js` (closes the CG-P1 copy); publish
+  the standing **desync-rate meter** per class and wire the word "playable" to it in `HARNESS_USAGE_STRATEGY.md`
+  + this file.
+- **allowed_files:** `scripts/coherence-gate.mjs`, `scripts/coherence-audit.mjs`, `engine/harness/oracles.js`
+  (lexicon import only — coordinate with the harness lane), the two docs, tests.
+- **invariants:** U336/U337 regression locks stay green or are consciously superseded with equal-or-better
+  locks; live-harness oracle behavior unchanged (lexicon extraction is a pure refactor, proven by its tests).
+- **done_when:** one command, one report, one meter; duplicate detectors retired; both consumers on the shared
+  lexicon.
+- **rollback:** keep the two instruments separate (they work independently by construction).
+
+> **CG-3 full lock-state check stays declared BLOCKED on the Interior Object Model** — when IOM lands per-object
+> state in the bundle the comparator is a one-liner; **do NOT build a pseudo-object-model in the checker to fake
+> it earlier.** **Deliberately NOT in this plan:** pushing these comparators into the live Ref path as a runtime
+> pre-ship check (natural endgame — the desync pointer *is* a REGENERATE trigger — but it sits on the hot
+> narration path, costs latency, and is a taste/product call; queue for Tim only after P2 proves the FP rate is
+> boring).
+
 ### SL — THE SHIPPABLE SLICE (priority, scope-locked 2026-06-29)
 **Provenance:** Tim's 2026-06-29 scope re-lock (`docs/DEMO_REGION.md` scope-lock banner). The demo is cut to
 ONE walkable ~100 km² region with four authored places: a town, a forest (bandits roam), a bandit camp, and

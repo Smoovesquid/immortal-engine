@@ -626,26 +626,40 @@ export function applyEgressRepair(prevWorld, text, res, dqIntent) {
 // INTENT_TRACE=1 (default off) — see engine/instrument.js traceIntentPacket
 // and docs/PACKETS.md INT-1.
 //
-// INT-2 — optional 4th param `{ llmPacket }`. ONLY ever passed by server.js's
-// /api/move handler, and ONLY after the proposed packet has been server-side
-// grounded (engine/intent/groundPacket.js) against the real scene bundle. When
-// omitted (every browser call via public/v1.js, and every server call where
-// the deterministic floor already classified confidently or no key/Ollama is
-// available), this function's behavior is BYTE-IDENTICAL to pre-INT-2 —
-// assemblePacket runs exactly as it does today. Passing llmPacket only swaps
-// which packet gets traced; it does NOT change what playerMoveTraced does
-// with the turn (that routing change is INT-3, out of scope here).
+// INT-2R — optional 4th param `{ llmPacket }`. Passed by server.js's
+// /api/move handler AND public/v1.js's live turn-submit path (via
+// /api/intent-packet), ONLY after the proposed packet has been server-side
+// grounded (engine/intent/groundPacket.js) against the real scene bundle.
+// When omitted or ungrounded (offline server, no key/Ollama, timeout, or a
+// malformed proposal), this function's behavior is BYTE-IDENTICAL to
+// pre-INT-2 — assemblePacket + directQuestionIntent run exactly as they did
+// before this packet existed; the deterministic path is always the floor.
 export function playerMove(world, packsById, text, { llmPacket } = {}) {
-  // INT-3 — compute the shared classifier verdict ONCE per turn when the
-  // deterministic path assembles its own packet (the common case: no LLM
-  // packet supplied). Fed into BOTH assemblePacket (so it doesn't re-derive
-  // what we already have) and playerMoveTraced's egress (so IT doesn't
-  // re-derive either) — collapsing two calls to directQuestionIntent(text,
-  // world) on the same turn into one. When an llmPacket IS supplied,
-  // assemblePacket is skipped entirely (unchanged from pre-INT-3), so there is
-  // nothing to share there — only the egress call-site benefits in that case.
+  // INT-3/INT-2R — compute ONE shared classifier verdict per turn, fed into
+  // BOTH assemblePacket/the packet trace AND playerMoveTraced's egress family
+  // (INT-3/4a/4b) — collapsing what used to be two-or-more independent
+  // directQuestionIntent(text, world) calls on the same turn into one shared
+  // verdict every consumer reads.
+  //
+  // When a grounded llmPacket is supplied, the verdict is DERIVED FROM IT
+  // rather than always re-run through the deterministic classifier — this is
+  // the fix that makes the packet actually DRIVE the turn (pre-INT-2R, an
+  // llmPacket only swapped which packet got traced; every downstream
+  // consumer still silently ran on the deterministic verdict regardless).
+  // Every consumer in the applyEgressRepair/playerMoveCore family
+  // (verified by reading every call-site) reads ONLY `.kind` off this
+  // object — `.addressee`/`.parts` are never consumed downstream — so
+  // constructing `{ kind, addressee: null, parts: [text] }` from the
+  // packet's own `kind` field is a faithful, minimal substitute for the
+  // full directQuestionIntent(text, world) return shape. A grounded packet
+  // that carries no question-kind (kind: null — the common case: a declared
+  // action like "I attack the goblin") falls through to the deterministic
+  // classifier exactly as before, since the LLM's reading agreed there was
+  // no direct-question verdict to override.
   const useLlmPacket = !!(llmPacket && llmPacket.source === 'llm');
-  const __dqIntent = directQuestionIntent(text, world);
+  const __dqIntent = (useLlmPacket && llmPacket.kind)
+    ? { kind: String(llmPacket.kind), addressee: null, parts: [String(text || '')] }
+    : directQuestionIntent(text, world);
   const __intentPacket = useLlmPacket ? llmPacket : assemblePacket(world, text, __dqIntent);
   traceIntentPacket(__intentPacket);
   const res = playerMoveTraced(world, packsById, text, __dqIntent);

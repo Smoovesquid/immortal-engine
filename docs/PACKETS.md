@@ -88,7 +88,7 @@ verbs — no parallel contract enum), `parseIntent` stays the LLM-off floor.
   0 invented IDs; key-off falls back silently; `npm run check` green.
 - **rollback:** `INTENT_LLM=off` env flag (the INT-1 shadow path remains).
 
-#### INT-2R — course correction: the LLM becomes the ACTUAL primary ears, Ollama first  ·  Phase 0  ·  **DISPATCHED 2026-07-03 (Basecamp worktree lane)**
+#### INT-2R — course correction: the LLM becomes the ACTUAL primary ears, Ollama first  ·  Phase 0  ·  **✅ LANDED 2026-07-03 (`cb9473a` merged; v0.27.0→0.27.1 "Ollama ears")**
 - **why (audit 2026-07-03 of `57b878c..b3d600e`):** four seams between spec and build — (1) live v1 runs
   the engine in-browser and never calls `/api/move`, so the LLM seat sits on a door the game doesn't use;
   (2) the seat fires only on `isLowConfidencePacket` — the vetoed regex-first design (the INT-2 *brief*
@@ -97,16 +97,37 @@ verbs — no parallel contract enum), `parseIntent` stays the LLM-off floor.
   hear the LLM; (4) provider order was Anthropic-first. Also: llama3.1:8b scored 0% packet-match in the
   committed benchmark (non-canonical verb tokens — fixable), and `server/llmProvider.js`'s hardcoded
   default model 404s (silently breaks the fallback ear).
-- **brief (spec of record for the fix):** `docs/briefs/INT-2R-ollama-primary-ears.md` — Ollama-first
-  (`INTENT_LLM=off|ollama|anthropic|auto`, default auto), confidence gate removed, new `POST /api/intent`
-  + v1 typed-turn await (≤2.8s budget, silent deterministic floor), packet-derived verdict actually
-  drives the graduated consumers, 8B prompt hardening (explicit verb enum + few-shot + Ollama
-  `format:json` + verb-synonym normalization at grounding via the ONE vocabulary), fallback model id
-  fixed, re-benchmark committed.
-- **done_when:** live proof — `INTENT_TRACE=1` shows a confidently-parseable sentence ("I stab the
-  goblin") arriving `source:'llm'` through real v1; Ollama beats the 66.7% parser baseline on the eval
-  (honest number either way); `npm run check` green; version → 0.27.0.
-- **rollback:** `INTENT_LLM=off` — zero provider calls (U377), deterministic floor is the whole game.
+- **what landed (worker lane `cb9473a`, brief `docs/briefs/INT-2R-ollama-primary-ears.md`, verified):**
+  Ollama-first (`INTENT_LLM=off|ollama|anthropic|auto`, default auto = Ollama→Anthropic); confidence gate
+  removed (every typed turn proposes); new `POST /api/intent-packet` — `public/v1.js` calls it before
+  every single-text `playerMove` (budgeted; an offline/slow server can never stall a turn); `playerMove`
+  derives the shared verdict FROM a grounded packet's `kind` (live-verified: the same text routes
+  differently with vs. without a `kind:'rules'` packet; every downstream call-site reads only `.kind`);
+  Ollama prompt hardened (explicit verb enum + few-shot incl. ask-vs-talk) + verb-synonym normalization
+  in `groundPacket.js` (reuses `parseIntent`'s `VERB_SYNONYMS` — one vocabulary); server-side proposal
+  budget widened to 8000ms (measured real latency ~6–8s); fixed pre-existing stale Anthropic model id
+  (404 without `LLM_MODEL`) and a benchmark-isolation bug in `scripts/intent-eval.mjs` (under the new
+  Ollama-first default, Ollama's answers were silently scored under the "Anthropic" label — now forces
+  explicit `INTENT_LLM` per pass). Suite 9468/9468 (serial), convergence 124/124, determinism green,
+  `playtest:quick` clean.
+- **benchmark** (`docs/playtests/intent-eval-2026-07-03T19-26-19-363Z.md`): parser-only 66.7% ·
+  **Anthropic 88.9%** · **Ollama 0% → 44.4%** after hardening. The run's "invented-id: 1 HARD FAIL"
+  headline was investigated: Anthropic put the real item "torch" in the entity-scoped `target` field;
+  grounding correctly nulled the target and kept it in `objects[]` — right-name-wrong-field, not
+  fabrication; no fabricated referent ever reached `playerMove`. (Benchmark field-aware framing =
+  follow-up, not a safety gap.)
+- **integration ruling (Basecamp 2026-07-03):** the worker flagged the client fetch budget (2800ms per
+  the fix brief) vs. measured ~6–8s Ollama latency — most live turns would time out and fall back,
+  quietly defeating "Ollama primary." Per Tim's unconditional ruling, the client budget is raised to
+  **9000ms** (v0.27.1); felt cost = a typed turn can wait several seconds to be heard correctly. Knobs if
+  it drags: lower the budget, smaller local model, `INTENT_LLM=off`.
+- **follow-ups (queued, concrete):** (a) Ollama boot-time warm-up ping from `server.js` (kills the
+  10–30s cold-load first-turn miss; `keep_alive` already 30m); (b) latency diet — trim few-shot/prompt
+  tokens, trial a smaller local model (e.g. 3B-class) on the eval; (c) benchmark invented-id framing made
+  field-aware; (d) Ollama accuracy 44.4% → next hardening pass or model trial (Anthropic fallback covers
+  misses meanwhile).
+- **rollback:** `INTENT_LLM=off` — zero provider calls (U377/U380/U382 proven), deterministic floor is
+  the whole game.
 
 #### INT-3 — graduate family #1: direct question → deliver-or-decline rides the packet  ·  Phase 0  ·  **✅ landed 2026-07-03 (`a19b0bc`; consumes the shared verdict — LLM-sourcing of that verdict arrives with INT-2R)**
 - **objective:** collapse the biggest lineage (meta-query answer-binding; capability rows C1/C4/C5/C6) onto

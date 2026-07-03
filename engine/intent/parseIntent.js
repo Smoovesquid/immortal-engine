@@ -20,7 +20,12 @@
 import { makeIntent, defaultApproachForVerb } from './intentSchema.js';
 
 // Verb synonyms → canonical verb. First match wins; order matters (specific first).
-const VERB_SYNONYMS = [
+// Exported (INT-2R) so engine/intent/groundPacket.js can normalize an
+// LLM-proposed verb token ("stab") to the canonical schema verb ("attack")
+// through this SAME table — no parallel vocabulary (Purity Rule: one contract
+// enum). Word-boundary matching only, applied to a single verb token (not a
+// full sentence) at the grounding call-site.
+export const VERB_SYNONYMS = [
   ['flee', /\b(flee|run away|run for it|retreat|withdraw|disengage|escape|back off|get out|leg it|bolt for|make a run)\b/],
   ['cast', /\b(cast|conjure|evoke|invoke|channel|incant)\b/],
   ['attack', /\b(attack|strike|hit|swing|slash|stab|smash|shoot|fire|loose|charge|kill|slay|fight|cut down|cleave|bash|punch)\b/],

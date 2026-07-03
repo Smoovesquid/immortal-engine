@@ -62,7 +62,7 @@ export function isAvailable() {
   return _available === true;
 }
 
-export async function queryLocal({ prompt, schema, model, timeout, maxTokens, fetchImpl } = {}) {
+export async function queryLocal({ prompt, schema, model, timeout, maxTokens, temperature, fetchImpl } = {}) {
   const resolvedModel = model || getModel();
   const resolvedTimeout = timeout ?? DEFAULT_TIMEOUT;
   const endpoint = getEndpoint();
@@ -94,7 +94,12 @@ export async function queryLocal({ prompt, schema, model, timeout, maxTokens, fe
           // Cap the reply length when the caller knows the output is short (e.g. a
           // one-line NPC voice). Bounds the generation tail — the slow part — so a
           // warm call lands well under the timeout. Omitted → Ollama's default.
-          ...(Number.isFinite(maxTokens) && maxTokens > 0 ? { num_predict: Math.trunc(maxTokens) } : {})
+          ...(Number.isFinite(maxTokens) && maxTokens > 0 ? { num_predict: Math.trunc(maxTokens) } : {}),
+          // INT-2R — a literal-translation task (intent parsing) wants greedy,
+          // repeatable output, not creative sampling. Opt-in only: every other
+          // caller (NPC brain/rumor garble/physics-detect) omits this and keeps
+          // Ollama's own default temperature, unchanged.
+          ...(Number.isFinite(temperature) ? { temperature } : {})
         }
       }),
       signal: controller.signal

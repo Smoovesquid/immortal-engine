@@ -210,7 +210,16 @@ explicitly ceded to the existing v2 atomic judge — not rebuilt.** Sequence CG-
 file) · P4 SERIAL (`engine/ref/rubric.js`, shared with the live Ref) · P6 last. **Nothing touches `playloop.js`/
 `state.js`/`escapeCombat.js`/RNG/CSL/`WORLD_VERSION` at any phase.**
 
-#### CG-P1 — the state-grounded checker over existing JSONLs  ·  Phase 0  ·  **QUEUE — the whole value; hot-file-free; START ANYTIME** (Sonnet lane)
+#### CG-P1 — the state-grounded checker over existing JSONLs  ·  Phase 0  ·  **✅ DONE 2026-07-03 (`691374d`; P-A prediction CONFIRMED on point estimate)**
+- **what landed:** `scripts/coherence-gate.mjs` + tests U388/U389/U390 (44 subtests). On the headline
+  `gate-2026-07-03T11-45-…v1.jsonl`: **7 state-grounded flags, 5 of them judge-PASSED** (CG-1b×2 ghost-voice,
+  CG-2a×2 place-noun, CG-2c relocation, CG-3a phantom-commit, CG-5 addressee) — honest floor **9→14/48**,
+  exactly the P-A point estimate; the 5 named turns all landed. Pre-ROM-3 JSONLs correctly flag ~0 on
+  room/presence classes (graceful-degradation negative control = P-B holds). Worker also fixed, mid-build,
+  a CG-5 case-sensitivity miss, a `judgeFailed()` JUDGE_ERROR over-count, a CG-4 finishing-blow false
+  positive, and a CLI arg-parse bug. Suite 9528/0, convergence 100%. **No version bump — dev tooling, live
+  build unchanged (v0.28.1).** (Worker flagged its stale worktree branch, reset to v2-polish before starting.)
+- **[superseded spec below — kept for provenance]** ~~QUEUE — the whole value; hot-file-free; START ANYTIME~~ (Sonnet lane)
 - **objective:** new `scripts/coherence-gate.mjs` — Tier-D deterministic comparators (CG-1a/1b/1c, CG-2a/2c,
   CG-3a, CG-4, CG-5, CG-7, §0 forbidden-token scan) over gate JSONLs, emitting desync pointers
   (`{class, seed, persona, turn, span, canonField, expected, narrated, severity}`) + a per-class/per-run

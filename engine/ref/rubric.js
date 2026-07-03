@@ -13,6 +13,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { getItemDef, findDefByName } from '../ruleset/core/items/index.js';
+import { getRoomState } from '../structures/roomState.js';
 
 // ── Canon ground-truth bundle (the RAG-faithfulness oracle) ───────────────────
 // The PC's consumables with their REAL resolved effects, from both inventory
@@ -64,10 +65,29 @@ export function buildCanonGroundTruth(world) {
   // that's actually live so the judge sees real combat HP (else it flags every
   // legitimate hit/defeat as "no HP update"). (F12 — sibling of the F9 fix.)
   const escape = world.meta?.mode === 'escape';
+  // ROM-3 (docs/briefs/ROOM_OCCUPANCY_MODEL.md §2/§3): the judge/gate feed carried
+  // npcsPresent (the WHOLE settlement roster) and no room dimension at all, so a
+  // person voiced/placed in the wrong room read as "consistent with canon NPC" —
+  // a feed gap before a rubric gap (§1a-7: "the judge is structurally blind").
+  // getRoomState is the same read-only façade the live occupancy/material consumers
+  // already use (roomOccupancy.js, structureMaterial.js via roomState.js) — pure,
+  // seed-derived, no stored state, so this adds ground truth without touching
+  // worldHash or engine behavior. try/catch matches this module's existing
+  // defensive posture (engine/ref/index.js:36 already wraps the whole bundle).
+  let room;
+  try { room = getRoomState(world); } catch { room = null; }
   return {
     location: node ? { name: node.name, kind: node.kind } : null,
     nearbyPlaces,
     npcsPresent: npcs,
+    // Room dimension (ROM-3): where the player actually stands, who is actually
+    // in that room (vs. the settlement-wide npcsPresent above), and what the
+    // structure is built of — the three facts C1/C2/C4 showed the judge lacked.
+    interior: room?.inside ? { roomId: room.roomId, roomName: room.room?.name || null } : null,
+    roomOccupants: Array.isArray(room?.occupants)
+      ? room.occupants.map(p => ({ name: p?.name, role: p?.role || p?.archetype || '' }))
+      : [],
+    material: { shell: room?.material?.shell || null },
     pc: escape
       ? { hp: world.meta?.escapeHp, maxHp: world.meta?.escapeMaxHp, level: pc.level, conditions: pc.conditions, note: 'escape mode: HP is the live health; party wounds are not used here' }
       : { wounds: pc.wounds, maxWounds: pc.maxWounds, level: pc.level, conditions: pc.conditions },

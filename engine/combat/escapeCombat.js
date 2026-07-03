@@ -41,7 +41,8 @@ import { coverForRoom, bestCover } from '../structures/coverFeatures.js';
 import { coverAcBonus } from './tacticalMods.js';
 import { moveCombatant } from './grid.js';
 import { resolveSpatialMove, PLAYER_COMBAT_SPEED_FEET } from './spatialMove.js';
-import { applyCondition, hasCondition, removeAllConditions } from './conditions.js';
+import { applyCondition, hasCondition, removeAllConditions, tickConditions } from './conditions.js';
+import { makeBleed, isBleedTier, bleedTierOf } from './bleed.js';
 import { parseGrappleVerb, resolveGrappleAction, enemyGrappleEscape } from './grapple.js';
 import { parseHazard, resolveHazard } from './hazard.js';
 import { xpForEnemies } from '../ruleset/core/xp.js';
@@ -69,6 +70,36 @@ const WARD_AC_BONUS = 4;     // +4 AC for the enemy turn after you ward
 
 // ── Enemy build (tamed; only fields that survive ensureCombat are used) ──────
 const ENEMY_ATK_BONUS = 3;   // fixed to-hit; enemy `damage` field = damage die max
+
+// The bleed spectrum (combat/bleed.js), PLAYER side. Escape mode abstracts a foe
+// to ONE melee strike per round (e.damage die, no per-action selection), so a
+// connecting hit reads its bleed off the foe's OWN bestiary attack list, carried
+// through mintEnemyFromDef → ensureCombat as `e.actions` (each action keeps its
+// `conditions: [makeBleed(tier)]`). We take the HIGHEST-tier bleed among the foe's
+// melee attacks (toHit set, no range) — the wound a hand-to-hand hit could open.
+// Pure read: no rng, no state. Returns a fresh bleed condition or null.
+function enemyMeleeBleed(enemy) {
+  const actions = Array.isArray(enemy?.actions) ? enemy.actions : [];
+  let best = null; // { tier, sev }
+  const rank = (t) => {
+    switch (t) { case 'papercut': return 0; case 'shallow': return 1; case 'deep': return 2; case 'severe': return 3; case 'arterial': return 4; default: return -1; }
+  };
+  for (const a of actions) {
+    if (!a || typeof a !== 'object') continue;
+    // Melee only: a to-hit attack with no ranged reach. A save-or-ranged bleed
+    // (Spine Volley, Bone Storm…) isn't what the abstract melee strike delivers.
+    if (a.toHit == null || a.range != null) continue;
+    const conds = Array.isArray(a.conditions) ? a.conditions : [];
+    for (const c of conds) {
+      // A bleed rides as an object ({name:'bleeding', bleedTier, ...}); string
+      // conditions ('poisoned', 'prone') are not bleeds and are ignored here.
+      if (!c || typeof c !== 'object' || c.name !== 'bleeding') continue;
+      const tier = isBleedTier(c.bleedTier) ? c.bleedTier : bleedTierOf(c);
+      if (best === null || rank(tier) > rank(best)) best = tier;
+    }
+  }
+  return best === null ? null : makeBleed(best, enemy?.name || '');
+}
 
 // ── Short rest (recover on a safe hop) ───────────────────────────────────────
 const REST_DIE = 6;          // d6 + REST_FLAT healed per clear hop
@@ -2170,6 +2201,16 @@ function resolveEscapeCombatTurnCore(world, actionText = '') {
   const coverBonus = coverState ? (Number(coverState.bonus) || 0) : 0;
   const ac = playerAc(pc) + (warded ? wardBonus : 0) + coverBonus;
   const enemyMech = [];
+  // Bleed (combat/bleed.js), PLAYER side. Snapshot the bleeds the PC ENTERED the
+  // round carrying (from a prior round, or self-inflicted before the fight via
+  // trySelfHarm) — these tick at end of this enemy phase. Fresh bleeds opened by
+  // a connecting strike THIS round accumulate separately and tick NEXT round, so
+  // a just-opened cut doesn't roll its save the same instant it lands (mirrors
+  // combatResolve, where enemy-applied bleeds tick from the following round). The
+  // pc reference (line ~1224) is stale after the cure path may have edited
+  // party[0].conditions, so read the live array off w.
+  const pcCondsAtRoundStart = Array.isArray(w.party?.[0]?.conditions) ? [...w.party[0].conditions] : [];
+  const freshPcBleeds = [];
   // DX-2d-i: a world view whose combat.enemies is THIS turn's live (post-action,
   // post-morale) enemy array, so Pack/Flock Tactics counts only the foes still
   // standing. The local `enemies` array is mutated in place through the loop, so
@@ -2389,6 +2430,18 @@ function resolveEscapeCombatTurnCore(world, actionText = '') {
       const beforeHp = hp;
       hp = Math.max(0, hp - dmg);
       enemyMech.push(`[enemy:${e.name} | atk:${total} vs AC:${ac} → hit | ${dmg} dmg${crit ? ' crit' : ''} | pcHp:${beforeHp}->${hp}]`);
+      // Bleed: a connecting melee strike opens the wound its bestiary attack
+      // carries (Claw/Bite/Rend → makeBleed(tier)). Read off the foe's own action
+      // list; queued as a fresh bleed (ticks from next round). Law 6: no number.
+      const bleed = enemyMeleeBleed(e);
+      if (bleed) {
+        freshPcBleeds.push(bleed);
+        beats.push(bleed.bleedTier === 'arterial'
+          ? `The cut is deep and pulsing — you're losing blood fast.`
+          : (bleed.bleedTier === 'severe'
+            ? `The wound gapes and won't close on its own — blood sheets down.`
+            : `The strike lays you open — the gash starts to weep.`));
+      }
       // Half-Orc Relentless Endurance: the blow that would drop you leaves you
       // standing at 1 HP instead. Once per rest.
       if (hp <= 0 && hasFeature(pc, 'relentlessEndurance') && !feats.relentlessUsed) {
@@ -2401,6 +2454,52 @@ function resolveEscapeCombatTurnCore(world, actionText = '') {
       if (hp <= 0) break;
     } else {
       beats.push(`The ${e.name} ${warded ? 'rakes the ward and finds no purchase' : 'lunges and misses'}.`);
+    }
+  }
+
+  // ── Bleed tick (combat/bleed.js), PLAYER side ──────────────────────────────
+  // Mirrors the combatResolve player-tick, in escapeCombat's direct-mutation
+  // idiom. Runs once per round at a FIXED point (right after the enemy phase),
+  // so the seeded rng's draw order is stable and a fight with no player bleed
+  // makes NO extra draw (tickConditions only rolls for a save_ends bleed —
+  // deep/severe). Ticks the bleeds the PC ENTERED the round with (carried or
+  // self-inflicted); severity comes straight off escapeHp (no roll); shallow
+  // self-heals (~2 rounds), deep/severe end on a made GRIT save, arterial
+  // persists. Fresh bleeds opened this round are unioned back UN-ticked (they
+  // tick next round). Law 6: the tick reads the wound, never an HP number.
+  {
+    const livePc = w.party?.[0] || pc;
+    let carried = pcCondsAtRoundStart;
+    let bleedDmg = 0;
+    let bleedSaved = false;
+    let hadBleedAtStart = pcCondsAtRoundStart.some(c => c?.name === 'bleeding');
+    if (hadBleedAtStart) {
+      const { conditions: ticked, tickResults } = tickConditions(pcCondsAtRoundStart, livePc, round, rng);
+      carried = ticked;
+      for (const tr of tickResults) {
+        if (tr.name === 'bleeding' && tr.damage > 0) bleedDmg += tr.damage;
+        if (tr.name === 'bleeding' && tr.saved) bleedSaved = true;
+      }
+      if (bleedDmg > 0) hp = Math.max(0, hp - bleedDmg);
+    }
+    // Union the ticked carry-over with any bleed opened THIS round. 'highest'
+    // stacking (makeBleed) means a worse cut supersedes and nicks never pile up.
+    let nextConds = carried;
+    for (const fresh of freshPcBleeds) nextConds = applyCondition(nextConds, fresh);
+    if (nextConds !== pcCondsAtRoundStart || freshPcBleeds.length) {
+      w = { ...w, party: [{ ...w.party[0], conditions: nextConds }, ...w.party.slice(1)] };
+    }
+    // Law 6 — read the wound, never the number. Only when a carried bleed
+    // actually ticked (a fresh cut got its own "gash starts to weep" beat above).
+    if (hadBleedAtStart) {
+      const stillBleeding = nextConds.some(c => c?.name === 'bleeding');
+      if (bleedSaved && !stillBleeding) {
+        beats.push('You clamp a hand over it and, at last, the bleeding clots.');
+      } else if (bleedDmg > 0 && !stillBleeding) {
+        beats.push('The last of the bleeding slows and finally closes.');
+      } else if (bleedDmg > 0) {
+        beats.push('The gash keeps weeping — warm and steady, and it will not quit.');
+      }
     }
   }
 

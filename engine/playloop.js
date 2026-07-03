@@ -17,7 +17,8 @@ import { conductorDecision, applyConductorDeltas } from './conductor.js';
 import { worldTick } from './worldTick.js';
 import { resolveMove } from './resolve.js';
 import { applyDeltas } from './effectsCore.js';
-import { introduceThread, resolveThread, ensureInstrumentLayer } from './instrument.js';
+import { introduceThread, resolveThread, ensureInstrumentLayer, traceIntentPacket } from './instrument.js';
+import { assemblePacket } from './intent/assemblePacket.js';
 import { applyGeneratedStructuresForNode } from './structures/applyGeneratedStructuresForNode.js';
 import { enterStructureInterior, exitStructureInterior, moveWithinInterior, getInteriorView, interiorDirectionalExits, resolveStructureSelection } from './structures/interiors.js';
 import { normalizeTopology, adjacentRooms } from './structures/topology.js';
@@ -610,7 +611,22 @@ export function applyEgressRepair(prevWorld, text, res) {
   return { ...res, output: { ...res.output, narration: repaired, mechanics: '[egress:repair]' } };
 }
 
+// INT-1 — shadow IntentPacket. Computed at the top of every free-text turn,
+// purely from the pre-turn world + raw text, and handed to the instrument
+// trace hook. It changes NOTHING about routing or output unless
+// INTENT_TRACE=1 (default off) — see engine/instrument.js traceIntentPacket
+// and docs/PACKETS.md INT-1.
 export function playerMove(world, packsById, text) {
+  const __intentPacket = assemblePacket(world, text);
+  traceIntentPacket(__intentPacket);
+  const res = playerMoveTraced(world, packsById, text);
+  if (process.env.INTENT_TRACE === '1' && res && res.output) {
+    return { ...res, output: { ...res.output, __intentTrace: __intentPacket } };
+  }
+  return res;
+}
+
+function playerMoveTraced(world, packsById, text) {
   const res = applyEgressRepair(world, text, playerMoveCore(world, packsById, text));
   // Speaking AT a present person ("tell/ask X ...") opens a sustained conversation AFTER the
   // turn resolves naturally — the social roll / info answer is unchanged; combat, "tell me

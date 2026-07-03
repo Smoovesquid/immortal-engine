@@ -71,6 +71,10 @@ export function defaultStakeForVerb(verb) {
   return 'time';
 }
 
+// Ambiguity flavors a shadow packet may signal — which slot is underdetermined.
+// Populated only by the INT-1 assembler; the base parsers never set this.
+export const AMBIGUITY_KINDS = ['target', 'object', 'goal', 'referent'];
+
 /**
  * makeIntent — normalize any partial into a full, well-formed Intent.
  *
@@ -84,6 +88,16 @@ export function defaultStakeForVerb(verb) {
  *   text     : the raw utterance, always preserved (narration + audit)
  *   source   : 'text' | 'click' | 'voice' | 'llm'
  *   confidence: 0..1 — how sure the parser is (clicks are 1; fuzzy text lower)
+ *
+ * INT-1 additive fields (all default empty/null; only the shadow assembler in
+ * engine/intent/assemblePacket.js populates them — every existing caller keeps
+ * working unmodified):
+ *   targets      : entity ids the utterance could plausibly aim at (array)
+ *   objects      : scene-object names/ids the utterance mentions (array)
+ *   compoundParts: sub-asks of a multi-part utterance (array)
+ *   ambiguity    : null | 'target' | 'object' | 'goal' | 'referent'
+ *   kind         : null | directQuestionIntent's kind (rules/self/npc-addressed/
+ *                  place/object/referent-followup)
  */
 export function makeIntent(partial = {}) {
   const p = partial && typeof partial === 'object' ? partial : {};
@@ -109,6 +123,12 @@ export function makeIntent(partial = {}) {
 
   const source = ['text', 'click', 'voice', 'llm'].includes(String(p.source)) ? String(p.source) : 'text';
 
+  const targets = Array.isArray(p.targets) ? p.targets.map(String).filter(Boolean) : [];
+  const objects = Array.isArray(p.objects) ? p.objects.map(String).filter(Boolean) : [];
+  const compoundParts = Array.isArray(p.compoundParts) ? p.compoundParts.map(String).filter(Boolean) : [];
+  const ambiguity = AMBIGUITY_KINDS.includes(p.ambiguity) ? p.ambiguity : null;
+  const kind = p.kind != null && String(p.kind).length ? String(p.kind) : null;
+
   return {
     verb,
     target: p.target != null && String(p.target).length ? String(p.target) : null,
@@ -118,7 +138,12 @@ export function makeIntent(partial = {}) {
     stake,
     text: String(p.text ?? '').trim(),
     source,
-    confidence
+    confidence,
+    targets,
+    objects,
+    compoundParts,
+    ambiguity,
+    kind
   };
 }
 

@@ -5,6 +5,20 @@ import { fateBand } from './rulesets.js';
 // Narrative Instrument — Thematic Core (V2)
 // Deterministic story architecture above physics.
 
+// INT-1 — shadow IntentPacket trace hook. Every free-text turn calls this with
+// the assembled packet (engine/intent/assemblePacket.js); by default (env flag
+// unset) it is a silent no-op so player-visible output is untouched. Set
+// INTENT_TRACE=1 to log one packet per free-text input to stdout — the
+// packet already rides the turn output too (engine/playloop.js playerMove),
+// this console line is for headless/CLI observation without a UI.
+export function traceIntentPacket(packet) {
+  if (process.env.INTENT_TRACE !== '1') return;
+  try {
+    // eslint-disable-next-line no-console
+    console.log('[intent-trace]', JSON.stringify(packet));
+  } catch { /* tracing must never throw into the turn */ }
+}
+
 export function ensureInstrumentLayer(inst) {
   const i = inst && typeof inst === 'object' ? inst : {};
 

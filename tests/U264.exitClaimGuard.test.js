@@ -65,7 +65,11 @@ test('U264: INSIDE — non-exit polish is NOT rejected by this rule (idioms / me
     'You glance out the window at the street',          // mere mention of outside
     'You step out of the way of the falling shelf',     // idiom, not a building exit
     'You step out of line and she frowns',              // idiom
-    'Dalla shrugs and turns back to her work',          // NPC narration
+    // NPC narration, unnamed (ROM-2: the tallow wake room is occupancy-empty —
+    // a NAMED roster NPC here would now correctly trip the ROM-2 presence rule
+    // (validateNarrationCandidate Rule 6a), a different, legitimate guard this
+    // exit-claim test isn't exercising).
+    'Someone nearby shrugs and turns back to their work',
     'You take stock of the warm common room',           // staying put
   ]) {
     assert.equal(accepts(w, s), true, `must NOT reject (no building exit claimed): "${s}"`);

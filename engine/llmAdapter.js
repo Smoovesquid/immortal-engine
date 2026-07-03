@@ -40,6 +40,26 @@ const TONE_GUIDANCE = {
   cooperative: 'The tone is warm but not naive. Allies exist. Describe with grounded optimism.'
 };
 
+// ROM-2 (validator Rule 6c) — the closed vocabulary of ROOM ROLE NAMES the
+// interior generator can ever assign (engine/structures/roomDetail.js
+// ROOM_TYPES, all 9 building blueprints — a fixed, exhaustive table, not
+// derived per-call). Used to catch polish that confidently plants the player
+// in a named room OTHER than ctx.roomName ("here in the back room of the
+// cottage" — ROOM_OCCUPANCY_MODEL.md §1c / v1-chaos t8). Deliberately a local
+// wordlist (same pattern as NODE_TYPE_FORBIDDEN above) rather than importing
+// structures/ logic — this file reads facts, it doesn't re-derive topology.
+const ROOM_ROLE_NAMES = [
+  'narthex', 'nave', 'crossing', 'apse', 'side chapel', 'vestry', 'crypt', 'bell tower',
+  'taproom', 'kitchen', 'cellar', 'guest room', 'pantry', 'privy',
+  'market floor', 'stall row', 'counting house', 'storeroom',
+  'great hall', 'tower', 'armory', 'barracks', 'solar', 'dungeon',
+  'hearth room', 'bedchamber', 'scullery',
+  'mead hall', 'hearth row', 'sleeping bay', 'larder', 'weaving room',
+  'cave mouth', 'tunnel', 'den', 'hoard', 'warren', 'pit', 'nest',
+  'foyer', 'study', 'library', 'laboratory', 'observatory', 'vault',
+  'hive mouth', 'gallery', 'brood cell', 'royal chamber', 'cocoon store'
+];
+
 /**
  * N3: buildSystemPrompt(ctx) → string
  * Constructs a grounded system prompt from the narrator context.
@@ -66,6 +86,20 @@ function interiorLayoutFact(interior) {
     ? ` In this room: ${objects.map(o => (o.state ? `${o.name} (${o.state})` : o.name)).join(', ')}. These are the room's furnishings — do not invent others you expect the player to act on.`
     : '';
   return `The player is inside ${rooms}. From this room there is ${doors}.${wayOut} There are NO other rooms, floors, or stairs than these.${label}${objectsFact}`;
+}
+
+// ROM-2 — the PEOPLE HERE display list. Reads ctx.settlement.npcs (already
+// earned-name-filtered by buildNarratorContext — a name only appears once the
+// player has met that NPC or is home) and keeps only those NOT marked
+// `elsewhere` (buildNarratorContext's occupancy marker). Falls back to the
+// role when the name hasn't been earned yet, same convention the SETTLEMENT
+// DATA block already uses (`npc.name || npc.role`). Never throws.
+function presentNpcDisplayNames(ctx) {
+  const npcs = Array.isArray(ctx?.settlement?.npcs) ? ctx.settlement.npcs : [];
+  return npcs
+    .filter(n => n && n.elsewhere === false)
+    .map(n => String(n.name || n.role || '').trim())
+    .filter(Boolean);
 }
 
 // Set-piece beats — the three threshold moments where the DM rises from one terse
@@ -111,6 +145,24 @@ export function buildSystemPrompt(ctx) {
     ? `The roads from here lead onward to: ${ctx.exits.join(', ')}. The player can travel to any of these by naming it — never describe this place as having no way out or the road blocked.`
     : '';
 
+  // ROM-2 — presence, material, position: three facts pulled straight from the
+  // engine's own occupancy/material/room answers (getRoomState via ctx.roomOccupants /
+  // ctx.roomMaterial / ctx.roomName), plus one law line binding them. This is the fix
+  // for the "dark prompt" — the presence flag existed in buildDMSystemPrompt (which has
+  // zero live callers) while THIS prompt, the one the game actually runs, never carried
+  // it (ROOM_OCCUPANCY_MODEL.md §0/§2).
+  const roomNameFact = (ctx.interior && ctx.roomName) ? `You are in the ${ctx.roomName}.` : '';
+  const peopleHereNames = (Array.isArray(ctx.roomOccupants) && ctx.roomOccupants.length)
+    ? presentNpcDisplayNames(ctx)
+    : [];
+  const peopleHereFact = ctx.interior
+    ? `PEOPLE HERE: ${peopleHereNames.length ? peopleHereNames.join(', ') : 'no one'}.`
+    : '';
+  const materialFact = (ctx.interior && ctx.roomMaterial?.line) ? String(ctx.roomMaterial.line) : '';
+  const presenceLawFact = ctx.interior
+    ? `Anyone else at this settlement is elsewhere — never place, voice, or have them act in this room; never state a wall/floor material other than the one above.`
+    : '';
+
   const lines = [
     setPiece
       ? `You are a Dungeon Master narrator at a SET-PIECE MOMENT. Paint what the player experiences as a short, vivid paragraph — 2 to 4 sentences, not one line.`
@@ -122,6 +174,10 @@ export function buildSystemPrompt(ctx) {
     `- ${inside}`,
     `- ${structures}`,
     ...(roadsFact ? [`- ${roadsFact}`] : []),
+    ...(roomNameFact ? [`- ${roomNameFact}`] : []),
+    ...(peopleHereFact ? [`- ${peopleHereFact}`] : []),
+    ...(materialFact ? [`- ${materialFact}`] : []),
+    ...(presenceLawFact ? [`- ${presenceLawFact}`] : []),
     ``
   ];
 
@@ -137,6 +193,10 @@ export function buildSystemPrompt(ctx) {
         if (npc.role) npcLine += ` (${npc.role})`;
         if (npc.factionId) npcLine += ` [${npc.factionId}]`;
         if (npc.disposition) npcLine += ` — ${npc.disposition}`;
+        // ROM-2: continuity memory only — anyone not physically in this room is
+        // marked elsewhere so the prompt never reads "at this settlement" as
+        // "standing beside you" (ROOM_OCCUPANCY_MODEL.md §1a.5).
+        if (ctx.interior && npc.elsewhere) npcLine += ` — elsewhere`;
         lines.push(npcLine);
       }
     }
@@ -949,6 +1009,84 @@ export function validateNarrationCandidate(world, narrationCandidate, {
   // not receipt claims because they lack the receipt verb.
   if (findUngroundedPurseReceiptClaim(cand, baseNarration)) return false;
 
+  // ── ROM-2 (docs/briefs/ROOM_OCCUPANCY_MODEL.md §2) — presence, material,
+  // position mirror checks. Same shape as every rule above: conservative,
+  // engine-side, falls back to the grounded base on any hit. All three fire
+  // ONLY while inside (ctx.interior) — the facts they check (room name,
+  // material, room-scoped presence) are interior-scoped by construction; the
+  // room-occupancy model's outdoor answer is a separate, existing surface
+  // (look-around / window-peek) this rule set doesn't touch.
+
+  // Rule 6a — voicing or physically placing a roster NPC who is NOT in this
+  // room. The opposite failure shape from Rule 6a's sibling, Rule 4f (fixed
+  // above to accept truthful absence): this rejects the CONFIRMING case —
+  // polish that gives an absent NPC a line of dialogue or has them act
+  // bodily in a room occupancy says is empty (the C1 "teleporting Elske"
+  // bug — ROOM_OCCUPANCY_MODEL.md §1a.4-5). Absence statements are exempt:
+  // if the same span reads as a denial-of-presence, Rule 4f's own DENY_RE
+  // already covers it as an ACCEPT, so this rule must not double-reject it.
+  if (ctx?.interior && Array.isArray(ctx?.settlement?.npcs)) {
+    const absent = ctx.settlement.npcs.filter(n => n && n.elsewhere === true && String(n.name || '').trim().length >= 2);
+    for (const n of absent) {
+      const name = String(n.name).trim();
+      const esc = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      // Absence-statement exemption — mirrors Rule 4f's DENY_RE shape exactly,
+      // so a truthful "X isn't here" about this same absent NPC is never
+      // double-punished by this rule.
+      const DENY_RE = new RegExp(
+        `\\b${esc}\\b[^.!?]{0,30}\\b(?:is\\s+not|isn'?t|aren'?t|ain'?t|was\\s+never)\\b[^.!?]{0,25}\\b(?:here|present|in\\s+(?:this|the)\\s+room|with\\s+you|around|nearby)\\b` +
+        `|\\bno\\b[^.!?]{0,8}${esc}\\b[^.!?]{0,20}\\bhere\\b` +
+        `|\\bnot\\s+here\\b[^.!?]{0,20}\\b${esc}\\b`,
+        'i'
+      );
+      if (DENY_RE.test(cand)) continue; // a truthful absence statement — not a violation
+      // Voicing: **Name:** dialogue tags, or "Name said/says/shrugs/..." attribution.
+      const VOICE_RE = new RegExp(
+        `\\*\\*${esc}\\*\\*\\s*:` +
+        `|\\b${esc}\\b[^.!?]{0,20}\\b(?:said|says|shrugs?|shrugged|mutters?|muttered|replies?|replied|answers?|answered|whispers?|whispered|snarls?|snarled|growls?|growled|calls?\\s+out|called\\s+out)\\b`,
+        'i'
+      );
+      if (VOICE_RE.test(cand)) return false;
+      // Physical placement: Name doing something bodily, in this room, right now.
+      const PLACE_RE = new RegExp(
+        `\\b${esc}\\b[^.!?]{0,25}\\b(?:stands?|stood|sits?|sat|leans?|leaned|steps?|stepped|walks?|walked|enters?|entered|appears?|appeared|approaches?|approached|watches?\\s+you|waits?|waited|is\\s+here|is\\s+in\\s+(?:this|the)\\s+room|turns?\\s+to\\s+you)\\b`,
+        'i'
+      );
+      if (PLACE_RE.test(cand)) return false;
+    }
+  }
+
+  // Rule 6b — wall/floor material contradiction (the C2 "wooden wall" →
+  // "stone wall" → "it was always stone" drift). ctx.roomMaterial.forbidden
+  // is the OTHER build families' wall phrases (ROM-0, structureMaterial.js —
+  // wall-scoped, never bans the building's own family or a bare material
+  // word like "stone basin"). Falls back to the grounded base.
+  if (ctx?.interior && Array.isArray(ctx?.roomMaterial?.forbidden)) {
+    for (const phrase of ctx.roomMaterial.forbidden) {
+      if (candLower.includes(String(phrase).toLowerCase())) return false;
+    }
+  }
+
+  // Rule 6c — a confidently-named ROOM that isn't the room the player is
+  // actually in (the C4 "here in the back room of the cottage" invention —
+  // ROOM_OCCUPANCY_MODEL.md §1c, v1/chaos t8). Scoped to the closed
+  // ROOM_ROLE_NAMES vocabulary the interior generator can ever assign, so a
+  // narrator-authored adjective ("a small room", "the dim room") never
+  // trips it — only a real, OTHER role name asserted as the player's
+  // location. ctx.roomName itself (any casing/substring) is always exempt.
+  if (ctx?.interior && ctx.roomName) {
+    const hereLower = String(ctx.roomName).toLowerCase();
+    for (const role of ROOM_ROLE_NAMES) {
+      if (hereLower.includes(role)) continue; // this IS the current room — never flag it
+      const esc = role.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const POSITION_RE = new RegExp(
+        `\\b(?:you(?:'re| are)?\\s+(?:now\\s+|currently\\s+)?(?:in|inside|within)|standing\\s+(?:in|inside|within)|here\\s+in|in\\s+the)\\s+(?:the\\s+)?${esc}\\b`,
+        'i'
+      );
+      if (POSITION_RE.test(cand)) return false;
+    }
+  }
+
   // Rule 5 (H-29) — deliver-or-decline contract for info-seeking outcomes. The
   // player demanded a specific fact (ctx.infoSeeking) and the roll resolved
   // success/mixed; polish must either keep the grounded content the (now-correct)
@@ -1179,13 +1317,27 @@ export function collectRosterTokens(world, ctx = null) {
   return tokens;
 }
 
-// Gathers the actual NAMES (not tokens) of NPCs the engine knows are present
-// at the current scene, same source list/order as collectRosterTokens (so the
-// two stay in sync). Used by Rule 4f to check a denial-of-presence claim
-// against a real name rather than a word fragment. Never throws.
+// Gathers the actual NAMES (not tokens) of NPCs the engine knows are
+// PRESENT — i.e. actually occupying the player's current room (inside) or
+// standing in the open (outdoors), NOT the whole node/settlement roster.
+// ROM-2 fix (ROOM_OCCUPANCY_MODEL.md §2): this used to read the same
+// node-global lists collectRosterTokens does, so Rule 4f rejected a truthful
+// "X isn't here" line whenever X existed ANYWHERE at the settlement — the
+// wrong model (occupancy is a view, not a law). Sourced from
+// ctx.roomOccupants (buildNarratorContext's occupancy answer, ROM-2) first;
+// falls back to the old node-global lists only when a caller hasn't threaded
+// roomOccupants in (defensive — never breaks an older/partial ctx). Used by
+// Rule 4f. Never throws.
 function collectPresentNpcNames(world, ctx = null) {
   const names = new Set();
   try {
+    if (Array.isArray(ctx?.roomOccupants)) {
+      for (const n of ctx.roomOccupants) {
+        const nm = String((typeof n === 'string' ? n : n?.name) ?? '').trim();
+        if (nm.length >= 2) names.add(nm);
+      }
+      return names;
+    }
     const lists = [ctx?.npcsPresent, ctx?.settlement?.npcs, world?.scene?.npcs, world?.npcs];
     for (const list of lists) {
       if (!Array.isArray(list)) continue;

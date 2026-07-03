@@ -38,20 +38,32 @@ export function buildNarratorContext(world, outcome = {}) {
   const currentNode = (w.map?.nodes ?? []).find(n => n.id === nodeId) ?? null;
   const settlement = currentNode?.settlement ?? null;
 
-  // Auto-select speaker from settlement NPCs
+  // ROM-2: who is actually HERE — inside, the occupancy-derived room the player
+  // stands in; outdoors, who's out in the open. Never the full node roster
+  // (ROOM_OCCUPANCY_MODEL §2 — the settlement's full cast is CONTINUITY memory,
+  // never presence).
+  const roomOccupants = roomOccupantsHere(w);
+  const roomOccupantIds = new Set(roomOccupants.map(npc => String(npc?.id ?? npc?.name ?? '')));
+
+  // Auto-select speaker from settlement NPCs — ROOM-SCOPED (never npcs[0], the
+  // dark C1.5 bug: the auto-speaker used to default to the settlement's first
+  // roster NPC even when nobody was assigned to the player's current room —
+  // e.g. the tallow wake-room speaker picking Elske while she's elsewhere).
   let speaker = null;
   if (settlement?.npcs?.length) {
     const actionText = String(outcome?.input ?? outcome?.text ?? '').toLowerCase();
-    // Pick NPC mentioned in action text, or default to first
+    // Pick NPC mentioned in action text (only if they're actually here), or
+    // default to the first NPC really occupying this room/outdoor space.
     let picked = null;
     if (actionText) {
       picked = settlement.npcs.find(npc => {
+        if (!roomOccupantIds.has(String(npc?.id ?? npc?.name ?? ''))) return false;
         const name = String(npc.name ?? npc.role ?? '').toLowerCase();
         return name && actionText.includes(name);
       });
     }
-    picked = picked || settlement.npcs[0];
-    speaker = buildSpeakerContext(picked, picked.knowledgeGraph || []);
+    picked = picked || roomOccupants[0] || null;
+    if (picked) speaker = buildSpeakerContext(picked, picked.knowledgeGraph || []);
   }
 
   // If brain mood is available from the outcome, overlay it onto speaker emotional coloring
@@ -86,19 +98,40 @@ export function buildNarratorContext(world, outcome = {}) {
       // Earned knowledge for people: the prompt roster carries an NPC's NAME only if you're
       // home (you know your neighbors) or you've met them (metPlayer) — otherwise the DM gets
       // a role, not a name, so it can't narrate "Dalla" at a town you just walked into.
-      npcs: (settlement.npcs || []).map(n => (
-        ((Boolean(w.meta?.homeNodeId) && String(w.meta.homeNodeId) === nodeId) || Boolean(n?.conversationState?.metPlayer))
-          ? n : { ...n, name: '' }
-      )),
+      // ROM-2: `elsewhere` marks anyone NOT in the room/outdoor-occupancy set (this stays
+      // continuity memory, never presence — the prompt below reads it to say "— elsewhere").
+      npcs: (settlement.npcs || []).map(n => {
+        const known = (Boolean(w.meta?.homeNodeId) && String(w.meta.homeNodeId) === nodeId) || Boolean(n?.conversationState?.metPlayer);
+        const base = known ? n : { ...n, name: '' };
+        return { ...base, elsewhere: !roomOccupantIds.has(String(n?.id ?? n?.name ?? '')) };
+      }),
       factions: settlement.factions || [],
       tensions: Array.isArray(settlement.tensions) ? settlement.tensions : [],
       economy: settlement.economy ?? null,
       population: settlement.population ?? null
     } : null,
+    // ROM-2: the presence/material/position facts the live prompt now states as law
+    // (ROOM_OCCUPANCY_MODEL §2 "the narration rule"). `roomOccupants` names are the
+    // engine's own occupancy answer — never filtered by the earned-name rule above,
+    // since presence itself (not a person's identity) is what the room states.
+    roomOccupants,
+    roomMaterial: scene.interior?.material ?? null,
+    roomName: scene.interior?.room?.name ?? null,
     speaker,
     dialogueTurn: buildDialogueTurn(w, outcome),
     combat: buildNarratorCombatBlock(w, outcome)
   };
+}
+
+// ROM-2: the room-occupancy candidate pool for "who is HERE right now" —
+// inside, occupantsOfRoom for the player's current structure/room; outdoors,
+// outdoorOccupants. Shared by the auto-speaker and the returned ctx fields so
+// both read the exact same answer. Pure; never throws on a malformed interior.
+function roomOccupantsHere(w) {
+  const interior = (w.scene?.interior && typeof w.scene.interior === 'object' && w.scene.interior) ? w.scene.interior : null;
+  return interior
+    ? occupantsOfRoom(w, String(interior.structureKey || ''), String(interior.roomId || ''))
+    : outdoorOccupants(w);
 }
 
 /**
@@ -389,14 +422,21 @@ function buildScene(w, outcome) {
   const interior = (w.scene?.interior && typeof w.scene.interior === 'object')
     // layout = the REAL room graph (count, single storey, doorways), so the DM prompt can
     // forbid invented stairs/floors/rooms (WB-Q1). objects = the room's real furnishings
-    // (IOM-P2), so the DM stops inventing furniture the room doesn't have. Ephemeral
-    // narration context, not state.
-    ? {
-        structureKey: String(w.scene.interior.structureKey ?? ''),
-        roomId: String(w.scene.interior.roomId ?? ''),
-        layout: describeInteriorLayout(w),
-        objects: getRoomState(w).objects
-      }
+    // (IOM-P2), so the DM stops inventing furniture the room doesn't have. room/material
+    // (ROM-2) = the room's real name and the structure's canonical build material, so the
+    // prompt can state WHERE the player stands and WHAT the walls are made of as law
+    // instead of guessing. Ephemeral narration context, not state.
+    ? (() => {
+        const rs = getRoomState(w);
+        return {
+          structureKey: String(w.scene.interior.structureKey ?? ''),
+          roomId: String(w.scene.interior.roomId ?? ''),
+          layout: describeInteriorLayout(w),
+          objects: rs.objects,
+          room: rs.room,
+          material: rs.material
+        };
+      })()
     : null;
 
   const toneWords = outcome?.pack?.toneWords ?? w._resolvedPack?.toneWords ?? null;

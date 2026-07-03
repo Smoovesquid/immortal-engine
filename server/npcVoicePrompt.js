@@ -125,6 +125,14 @@ function buildWorldKnowledgeBlock(npcName, substrateContext) {
 // floors, and furnishings the current building doesn't have. `sceneFacts`
 // comes from the engine's getRoomState (P2) — public room context (objects,
 // doorways, layout), never a secret. Absent/outdoors → no block.
+// ROM-2 (docs/briefs/ROOM_OCCUPANCY_MODEL.md §2) — `peopleHere`, an optional
+// array of names, so a voiced NPC can't hand the mic to someone who isn't in
+// this room ("Ashblade's over by the pens too? He just told me himself" —
+// a voice-layer leak the room-scoped auto-speaker fix alone can't catch,
+// since npc-voice is a SEPARATE model call from narration polish). Backward
+// compatible: an older caller that never threads peopleHere in renders the
+// same block it always did (the field is simply absent, same as every other
+// optional fact here).
 function buildSceneFactsBlock(sceneFacts) {
   if (!sceneFacts || !sceneFacts.inside) return null;
   const lines = ['WHERE YOU ARE (the only layout that exists — do not add to it):'];
@@ -137,6 +145,10 @@ function buildSceneFactsBlock(sceneFacts) {
   }
   if (Array.isArray(sceneFacts.objects) && sceneFacts.objects.length) {
     lines.push(`  • Objects actually present: ${sceneFacts.objects.join(', ')}`);
+  }
+  if (Array.isArray(sceneFacts.peopleHere)) {
+    lines.push(`  • PEOPLE HERE with you: ${sceneFacts.peopleHere.length ? sceneFacts.peopleHere.join(', ') : 'no one else'}.`);
+    lines.push('  • Anyone else at this settlement is elsewhere — do not speak as if they are here, and do not refer to them as present or acting in this room.');
   }
   lines.push('Speak only of rooms, floors, and furnishings listed here. A single-storey building has no upstairs; do not invent rooms, floors, or exits that aren\'t listed.');
   return lines.join('\n');

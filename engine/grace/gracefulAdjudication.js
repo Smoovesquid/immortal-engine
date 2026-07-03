@@ -2778,14 +2778,28 @@ export function windowView(world) {
 // buildLocationSurvey, which is a navigation recap, not an NPC answer.
 // Returns an honest in-character deflection; never a location survey.
 // Exported so tests can call it directly. (DTD-A Fix 2)
+// The people the player can actually address right now: this room's occupants
+// indoors, the folk out in the open outdoors — the same seed-derived occupancy
+// the look-around survey reads. ROM-1: presence is authoritative here too.
+// Guards a stale/foreign interior (a structure that belongs to another node) →
+// treat as outdoors, so a present outdoor NPC is never mistaken for absent
+// (mirrors playloop's presentPeoplePool node guard).
+function presentPeopleHere(world) {
+  const interior = world?.scene?.interior;
+  const structKey = interior && typeof interior === 'object' ? String(interior.structureKey || '') : '';
+  const st = structKey ? world?.structures?.byId?.[structKey] : null;
+  const belongsHere = st && String(st.nodeId || '') === String(world?.map?.currentNodeId ?? '');
+  return belongsHere
+    ? occupantsOfRoom(world, structKey, String(interior.roomId || ''))
+    : outdoorOccupants(world);
+}
+
 export function handleNpcAddressedQuestion(text, world) {
   const t = String(text || '');
   const hasWH = /\b(?:who|what|why|where|which|when|can|did|does|do|have|has|is|are|was|were)\b/i.test(t);
   if (!hasWH) return null;
   if (!(/\?/.test(t) || QUESTION_SHAPE.test(t))) return null;
-  const node = (world?.map?.nodes || []).find(n => n && n.id === world?.map?.currentNodeId) || null;
-  const npcs = node?.settlement?.npcs || [];
-  const addressed = npcs.find(npc => {
+  const matchesAddress = (npc) => {
     const first = String(npc?.name || '').trim().split(/\s+/)[0];
     if (!first || first.length < 2) return false;
     const esc = first.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -2794,10 +2808,25 @@ export function handleNpcAddressedQuestion(text, world) {
     // Name-first address: "NpcName, Q?"
     const leadingAddr = new RegExp(`^\\s*${esc}\\s*[,—]`, 'i');
     return trailingAddr.test(t) || leadingAddr.test(t);
-  });
-  if (!addressed) return null;
-  const name = String(addressed.name || '').trim().split(/\s+/)[0];
-  return `${name} doesn't have an answer for that — or won't give one right now. What do you do?`;
+  };
+  // ROM-1: only a person PRESENT (this room / the open) can be addressed — the
+  // old node-roster match let "…, Elske?" be answered by Elske while she stood
+  // in another room (the egress ghost). Answer from the present pool.
+  const here = presentPeopleHere(world);
+  const addressed = here.find(matchesAddress);
+  if (addressed) {
+    const name = String(addressed.name || '').trim().split(/\s+/)[0];
+    return `${name} doesn't have an answer for that — or won't give one right now. What do you do?`;
+  }
+  // Addressed a NAME that belongs to this settlement but ISN'T here → say so,
+  // in the fiction, rather than voicing a ghost or falling through to a survey.
+  const roster = (world?.map?.nodes || []).find(n => n && n.id === world?.map?.currentNodeId)?.settlement?.npcs || [];
+  const absent = roster.find(matchesAddress);
+  if (absent) {
+    const name = String(absent.name || '').trim().split(/\s+/)[0];
+    return `${name} isn't here to answer — you'd have to find them first. What do you do?`;
+  }
+  return null;
 }
 
 // Main grace layer function

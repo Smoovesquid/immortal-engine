@@ -57,8 +57,9 @@ import { classifyOffensiveCast, castConsequence } from './magic/castConsequence.
 import { evaluateEncounter, selectCreatures, spawnEncounter } from './combat/encounterSpawn.js';
 import { isMetaQuestion, handleMetaQuestion, isNullAction, isQuestionShaped, META_LOCATION, META_RECAP, isNpcObserverQuery, isInfoSeekingText, isConfrontationChallenge, buildLocationSurvey, windowView, knowsNpcName, describeNpc, INFO_SEEKING_EXCLUDE_RE, answerCapability } from './grace/gracefulAdjudication.js';
 import { directQuestionIntent } from './grace/answerability.js';
-import { occupantsOfRoom } from './structures/roomOccupancy.js';
+import { occupantsOfRoom, outdoorOccupants } from './structures/roomOccupancy.js';
 import { getRoomState } from './structures/roomState.js';
+import { pathBetween } from './movement/interiorMovement.js';
 import { lockState, lockOpenEventData } from './structures/locks.js';
 import { assessProvocation, carriedGrudge } from './npc/provocation.js';
 import { deedFactionDeltas } from './social/reactionTable.js';
@@ -550,8 +551,11 @@ function egressRepair(world, text, intent, outcome) {
   const a = answerOrDeclineQuestion(world, text, outcome, intent);
   if (a) return a;
   // The default flips — every dispatcher declined → an honest voiced decline,
-  // NEVER the gen/atmosphere/survey/clarify bank.
-  return declineInfoSeek(world, text, socialTarget(world, text));
+  // NEVER the gen/atmosphere/survey/clarify bank. ROM-1: the decline's SPEAKER
+  // must be physically present (requirePresent) — an empty room declines
+  // impersonally ("there's no record of that") instead of materializing an absent
+  // NPC to shrug ("Elske shrugs, alone in the cottage" — the v1/chaos t9 ghost).
+  return declineInfoSeek(world, text, socialTarget(world, text, { requirePresent: true }));
 }
 
 // applyEgressRepair — the wrapper. Read-only: touches only res.output (narration
@@ -2374,6 +2378,20 @@ function playerMoveCore(world, packsById, text) {
     }
     const resolved = resolveNpcAtCurrentNode(w, talkRef);
     if (resolved) {
+      // ROM-1 seek: you named someone who exists at this settlement but is in
+      // another room of THIS building — a real DM walks you to them (never
+      // teleports them to you). Auto-walk (canon-safe) before the greeting and
+      // prepend the walk. A target in ANOTHER building / outdoors is left to the
+      // existing talk flow (they remain reachable at the node — no bounce, no
+      // ghost; cross-building auto-seek is a v2 refinement, §2). This same-
+      // structure walk is transparent: dialogue still enters, just from the
+      // room the NPC is actually in.
+      let talkSeekLead = '';
+      const talkLoc = locatePersonRelativeToPlayer(w, resolved);
+      if (talkLoc.kind === 'same-structure') {
+        const seek = autoSeekWithinStructure(w, talkLoc, resolved?.name);
+        if (seek.moved) { w = seek.world; talkSeekLead = String(seek.line || '').replace(/^Wizard:\s*/i, '').trim(); }
+      }
       // NP-2 (reputation-travels): a STRANGER (not yet met) who has read the Word may greet
       // you by your deeds — captured before beginDialogue flips metPlayer.
       const wasStranger = !resolved?.conversationState?.metPlayer;
@@ -2438,10 +2456,11 @@ function playerMoveCore(world, packsById, text) {
           opener = npcNow ? (openerByManner[manner] || '') : '';
         }
         const eyeDesc = atHome && isEvil ? 'flat' : begun.outcome.mood;
+        const seekPrefix = talkSeekLead ? `${talkSeekLead} ` : '';
         return {
           world: w,
           output: {
-            narration: `Wizard: You approach ${begun.outcome.npcName}${role}; ${eyeDesc} eyes meet yours.${opener}${repClause}`,
+            narration: `Wizard: ${seekPrefix}You approach ${begun.outcome.npcName}${role}; ${eyeDesc} eyes meet yours.${opener}${repClause}`,
             mechanics: `[dialogue enter | ${begun.outcome.npcName} | role:${begun.outcome.npcRole || 'unknown'} | trust:${begun.outcome.trustLevel}/10 | mood:${begun.outcome.mood}]`
           }
         };
@@ -2468,8 +2487,10 @@ function playerMoveCore(world, packsById, text) {
   const daDqKind = DA_OBJECT_REFERENT_RE.test(text) && !w.combat?.active && !w.scene?.dialogue ? directQuestionIntent(text, w) : null;
   const daIsObjectReferent = daDqKind && (daDqKind.kind === 'place' || daDqKind.kind === 'referent-followup');
   if (!w.combat?.active && !w.scene?.dialogue && !daIsObjectReferent && isDirectAddressIntent(text)) {
-    const daNode = (w.map?.nodes || []).find(n => n && n.id === w.map?.currentNodeId) || null;
-    const daNpcs = (daNode?.settlement?.npcs || []).filter(n => n && !n.hostile);
+    // ROM-1: an unnamed direct address ("who are you?", "what are you looking
+    // at?") can only land on someone PRESENT (this room / the open) — not the
+    // first name in town. Empty room → no one to address → fall through.
+    const daNpcs = presentPeoplePool(w).filter(n => n && !n.hostile);
     if (daNpcs.length) {
       const daBegun = beginDialogue(w, String(daNpcs[0].name || daNpcs[0].id || ''));
       if (daBegun.outcome.ok) {
@@ -2544,6 +2565,12 @@ function playerMoveCore(world, packsById, text) {
   if (!w.combat?.active && !w.ending?.locked) {
     const assault = detectPhysicalAssault(w, text);
     if (assault) {
+      // ROM-1: a violent grab/grapple frame with no one present to lay hands on
+      // (empty room / the target is elsewhere at the node). A real DM says so —
+      // no dice, no trivial "you do so" floor, and never an out-of-room Elske.
+      if (assault.kind === 'no-target') {
+        return { world: w, output: { narration: 'Wizard: There\'s no one here to lay hands on.', mechanics: '[no-target]' } };
+      }
       // Corpse/object-handling (drag/shove/throw a BODY somewhere) against an
       // already-defeated NPC is a non-combat staging action, not a renewed
       // attack — narrate it instead of bouncing the whole turn through the
@@ -2560,8 +2587,13 @@ function playerMoveCore(world, packsById, text) {
           }
         };
       }
-      const eng = engageNpcCombat(w, assault.npc, text, pack, actorId, true);
-      if (eng) return eng;
+      // ROM-1 seek: the target may be named in another room of the same building
+      // — a real DM walks you to them, then the fight starts where they stand
+      // (never teleporting them into an empty room). engageWithSeek auto-walks
+      // via the canon-safe interior move and prepends the walk; on an empty room
+      // detectPhysicalAssault already returned null, so we never get here.
+      const seeked = engageWithSeek(w, assault, text, pack, actorId, true);
+      if (seeked) return seeked;
     }
   }
 
@@ -2974,10 +3006,12 @@ function playerMoveCore(world, packsById, text) {
   {
     const begin = detectAttackBeginIntent(w, text);
     if (begin) {
-      // Route through the shared engager so the hostile fast-path applies
-      // persisted HP and (in escape mode) the escape resolver — same as CM11.
-      const eng = engageNpcCombat(w, begin.npc, text, pack, actorId, false);
-      if (eng) return eng;
+      // ROM-1: if the hostile was named in another room of this building, walk
+      // there first (canon-safe), then fight where they stand. Route through the
+      // shared engager so the hostile fast-path applies persisted HP and (in
+      // escape mode) the escape resolver — same as CM11.
+      const seeked = engageWithSeek(w, begin, text, pack, actorId, false);
+      if (seeked) return seeked;
     }
   }
 
@@ -2985,8 +3019,8 @@ function playerMoveCore(world, packsById, text) {
   if (!w.combat?.active && !w.ending?.locked) {
     const anyIntent = detectAttackAnyIntent(w, text);
     if (anyIntent) {
-      const eng = engageNpcCombat(w, anyIntent.npc, text, pack, actorId, true);
-      if (eng) return eng;
+      const seeked = engageWithSeek(w, anyIntent, text, pack, actorId, true);
+      if (seeked) return seeked;
     }
   }
 
@@ -4643,6 +4677,19 @@ function capFirst(s) {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
+// Capitalize the first LETTER of a line (skipping a leading quotation mark), so a
+// sentence that opens with a lowercase-epithet NPC name ("the Lingerer") reads as
+// a proper sentence start. Idempotent for already-capitalized leads.
+function sentenceLead(s) {
+  const str = String(s || '');
+  const i = str.search(/[A-Za-z]/);
+  if (i < 0) return str;
+  // Only touch a leading letter that is at the very start or immediately after an
+  // opening quote — never mid-sentence.
+  if (i > 0 && !/^["'“”‘’]+$/.test(str.slice(0, i))) return str;
+  return str.slice(0, i) + str.charAt(i).toUpperCase() + str.slice(i + 1);
+}
+
 // P5 — NPCs SPEAK. Direct speech with deterministic variation (pickVariant);
 // the brain's decision is unchanged underneath: the engine decides share/
 // deflect/lie, this layer only decides the words in their mouth.
@@ -4651,7 +4698,12 @@ function dialogueAskNarration(outcome, world) {
   const mood = String(outcome?.brainMood || '').trim();
   const says = mood ? `${name} says, ${mood}` : `${name} says`;
   const phrase = factPhrase(outcome?.factId);
-  const V = (key, variants) => `Wizard: ${pickVariant(variants, world, `say:${key}`)}`;
+  // Sentence-case the leading token: an NPC whose name is a lowercase epithet
+  // ("the Lingerer") can open a line, and "Wizard: the Lingerer…" is a
+  // lowercase-start format error. Capitalize the first LETTER (skipping a
+  // leading quote), which is always correct at a sentence start and leaves
+  // quote-initial variants (already capitalized inside the quote) untouched.
+  const V = (key, variants) => `Wizard: ${sentenceLead(pickVariant(variants, world, `say:${key}`))}`;
   switch (outcome?.mode) {
     case 'shared': {
       // Authored testimony (story arcs): the words are the content. Speak them
@@ -5022,7 +5074,11 @@ function resolvePresentNpcStrict(world, ref) {
 // node, it's a journey, not a person.
 const GENERIC_PERSON_REF = /^(?:stranger|man|woman|person|someone|somebody|anybody|fellow|guy|local|villager|townsfolk|townsperson|figure|neighbou?r|elder|guard|merchant|trader|smith|innkeeper|priest|healer|keeper|scholar|artisan|child|kid|old\s+(?:man|woman)|young\s+(?:man|woman))$/;
 
-function resolveNpcByRoleOrDescriptor(npcs, ref, { allowGeneric = false } = {}) {
+// Role/occupation/descriptor match only — NO generic `npcs[0]` fallback. ROM-1:
+// the generic-descriptor fallback that used to live here (allowGeneric) is gone;
+// a bare generic ref is resolved over the PRESENT pool by fuzzyMatchNpc's
+// genericPool arm, never by grabbing the first name off a list here.
+function resolveNpcByRoleOrDescriptor(npcs, ref) {
   if (!Array.isArray(npcs) || !npcs.length) return null;
   const r = String(ref || '').trim().toLowerCase().replace(/^(?:the|a|an)\s+/, '').trim();
   if (r.length < 3) return null;
@@ -5038,9 +5094,7 @@ function resolveNpcByRoleOrDescriptor(npcs, ref, { allowGeneric = false } = {}) 
     ].map(normalizeRole).filter(Boolean);
     return values.some(v => v === r || v.includes(r) || r.includes(v));
   });
-  if (byRole) return byRole;
-  if (allowGeneric && GENERIC_PERSON_REF.test(r)) return npcs[0];
-  return null;
+  return byRole || null;
 }
 
 function resolvePresentNpcLoose(world, ref) {
@@ -5049,10 +5103,21 @@ function resolvePresentNpcLoose(world, ref) {
   // Don't hijack travel — a known place name is a journey, not a person.
   const isKnownPlace = (world?.map?.nodes || []).some(n => n && n.discovered && String(n.name || '').toLowerCase().includes(r));
   if (isKnownPlace) return null;
-  const node = (world?.map?.nodes || []).find(n => n && n.id === world?.map?.currentNodeId) || null;
-  const npcs = (node?.settlement?.npcs || []).filter(n => n && !n.hostile);
-  if (!npcs.length) return null;
-  return resolveNpcByRoleOrDescriptor(npcs, r, { allowGeneric: true });
+  const roster = nodeRosterNpcs(world).filter(n => n && !n.hostile);
+  if (!roster.length) return null;
+  // A SPECIFIC name/role referent stays node-scoped: a person named here is
+  // REACHABLE (the talk path walks you to them via the seek rule) — so keep them
+  // groundable and never bounce a real neighbour as "not here". (allowGeneric:false)
+  const specific = resolveNpcByRoleOrDescriptor(roster, r);
+  if (specific) return specific;
+  // ROM-1: the GENERIC arm ("the person", "someone") must NOT reach into an empty
+  // room and hand back the first name in town. A bare generic resolves only to
+  // someone actually PRESENT (this room / the open); else null.
+  if (GENERIC_PERSON_REF.test(r)) {
+    const present = presentPeoplePool(world).filter(n => n && !n.hostile);
+    return present[0] || null;
+  }
+  return null;
 }
 
 function presentNonHostileNpcs(world) {
@@ -6761,21 +6826,51 @@ function socialDC(approach, npc, morality) {
   return Math.max(5, Math.round(dc));
 }
 
-// Resolve who the player is addressing: the active dialogue NPC, an NPC named/role
-// in the text, or the first person at the node. Null if no one is here.
-function socialTarget(world, text) {
-  const nodeId = String(world?.map?.currentNodeId || '');
-  const node = (world?.map?.nodes || []).find(n => n && n.id === nodeId) || null;
-  const npcs = Array.isArray(node?.settlement?.npcs) ? node.settlement.npcs : [];
-  if (!npcs.length) return null;
+// Resolve who the player is addressing / who voices a decline: the active
+// dialogue NPC, an NPC named/role in the text who is PRESENT, or the first
+// person in the room. Null if no one is here.
+//
+// ROM-1: this is a voiced-speaker sink — its old `return npcs[0]` handed the
+// mic to the first name in TOWN, so a question asked into an empty room was
+// answered by an absent Elske ("Elske Nightherd shrugs. 'Can't say.'" alone in
+// the cottage). The pool is now who is PRESENT (this room / the open); the final
+// fallback is present[0] ?? null so an empty room voices no one — declineInfoSeek
+// then renders the impersonal "there's no record of that" form. A person named
+// but NOT present doesn't speak from another room (the caller handles seek/absence).
+// Resolve who the player is addressing / who answers.
+//
+// ROM-1: `requirePresent` splits the two needs this one resolver serves.
+//   • false (default) — INFO DELIVERY / reachability: a named/role match, else
+//     any node NPC. Common knowledge ("who's the innkeeper?") can be answered by
+//     someone at the settlement; a name delivery isn't a bodily placement, so the
+//     node fallback is safe and keeps the deliver-or-decline paths honest.
+//   • true — a VOICED speaker who must be physically HERE (an in-fiction decline
+//     or a social act that puts words in a specific mouth). Empty room → null, so
+//     an absent NPC is never made to shrug/refuse in a room they're not in (the
+//     egress "Elske shrugs, alone in the cottage" ghost). Named match still stays
+//     roster-reachable when addressed by name.
+function socialTarget(world, text, { requirePresent = false } = {}) {
+  const roster = nodeRosterNpcs(world);
   const dlgId = world?.scene?.dialogue?.npcId;
-  if (dlgId) { const a = npcs.find(n => String(n.id) === String(dlgId)); if (a) return a; }
+  if (dlgId) {
+    // Mid-conversation: the partner is by definition who you're addressing.
+    const a = roster.find(n => String(n.id) === String(dlgId));
+    if (a) return a;
+  }
   const t = String(text || '').toLowerCase();
-  const byName = npcs.find(n => { const nm = normName(n?.name).trim(); return nm && t.includes(nm); });
+  // A SPECIFIC name/role target is reachable at the settlement (you named a real
+  // person — the intent points at THEM, wherever they stand).
+  const byName = roster.find(n => { const nm = normName(n?.name).trim(); return nm && t.includes(nm); });
   if (byName) return byName;
-  const byRole = npcs.find(n => { const r = String(n?.role || '').toLowerCase(); return r && t.includes(r); });
+  const byRole = roster.find(n => { const r = String(n?.role || '').toLowerCase(); return r && t.includes(r); });
   if (byRole) return byRole;
-  return npcs[0];
+  // Unaddressed fallback. A VOICED speaker must be present (empty room → null); a
+  // deliverer may be any node NPC (reachability).
+  if (requirePresent) {
+    const present = presentPeoplePool(world);
+    return present.length ? present[0] : null;
+  }
+  return roster.length ? roster[0] : null;
 }
 
 // ── Social provocation (IG-11): insults carry risk; the threshold is the NPC's
@@ -8469,18 +8564,19 @@ function detectAttackBeginIntent(world, text) {
   const ref = String(m[2] || '').trim().replace(/[.!?,;:]+$/, '').trim();
   if (!ref) return null;
 
-  const nodeId = String(world?.map?.currentNodeId ?? '');
-  const node = (world?.map?.nodes || []).find(n => n && n.id === nodeId) || null;
-  const npcs = node?.settlement?.npcs || [];
-  if (!Array.isArray(npcs) || !npcs.length) return null;
+  const roster = nodeRosterNpcs(world);
+  if (!Array.isArray(roster) || !roster.length) return null;
+  const rosterHostiles = roster.filter(n => n && n.hostile === true);
+  if (!rosterHostiles.length) return null;
 
-  // Only consider hostile NPCs for the fast-path
-  const hostileNpcs = npcs.filter(n => n && n.hostile === true);
-  if (!hostileNpcs.length) return null;
-
-  const npc = fuzzyMatchNpc(hostileNpcs, ref);
+  // ROM-1: a SPECIFIC (name/token/role) hostile is reachable wherever they stand
+  // (walked-to when in the next room of this building); a GENERIC ref only
+  // matches a hostile actually PRESENT (this room / the open).
+  const presentHostiles = presentPeoplePool(world).filter(n => n && n.hostile === true);
+  const npc = fuzzyMatchNpc(rosterHostiles, ref, presentHostiles);
   if (!npc) return null;
-  return { npc };
+  const loc = locatePersonRelativeToPlayer(world, npc);
+  return { npc, seek: loc.kind === 'same-structure' ? loc : null };
 }
 
 // CM11: Like detectAttackBeginIntent but matches ANY NPC at the current node
@@ -8556,11 +8652,21 @@ function detectAttackAnyIntent(world, text) {
   }
   if (UNAMBIGUOUS_VIOLENCE.test(t)) refs.push(t);                    // name anywhere, hostile verb
 
+  // ROM-1: a SPECIFIC name/token/role target ("attack Corwin", "punch the guard")
+  // resolves against the full roster — a named person is a real settlement NPC,
+  // reachable wherever they stand (never a ghost), and walked-to when they're in
+  // the next room of THIS building. A GENERIC ref ("attack the man", the trailing
+  // "it") resolves ONLY over `present` (this room / the open), so an empty room
+  // can't materialize the first name in town.
+  const present = presentPeoplePool(world);
   for (let ref of refs) {
     ref = String(ref).replace(/[.!?,;:]+$/, '').trim();
     if (!ref) continue;
-    const npc = fuzzyMatchNpc(npcs, ref);
-    if (npc) return { npc };
+    const npc = fuzzyMatchNpc(npcs, ref, present);
+    if (npc) {
+      const loc = locatePersonRelativeToPlayer(world, npc);
+      return { npc, seek: loc.kind === 'same-structure' ? loc : null };
+    }
   }
   return null;
 }
@@ -8578,13 +8684,43 @@ function detectPhysicalAssault(world, text) {
   if (!t || world.combat?.active || world.scene?.dialogue) return null;
   if (isSocialIdentificationNonCombat(t)) return null;
   if (isSpokenOrHypotheticalViolence(t)) return null;
-  const nodeId = String(world?.map?.currentNodeId ?? '');
-  const node = (world?.map?.nodes || []).find(n => n && n.id === nodeId) || null;
-  const npcs = node?.settlement?.npcs || [];
-  if (!Array.isArray(npcs) || !npcs.length) return null;
+  // ROM-1: the pool of people the player can lay hands on is who is HERE (this
+  // room indoors, the open outdoors) — NOT the node roster. An empty room has
+  // no one to grab; the generic-ref `npcs[0]` fallback inside fuzzyMatchNpc now
+  // falls back over the present pool, so it can't materialize an absent Elske.
+  const present = presentPeoplePool(world);
+  const roster = nodeRosterNpcs(world);
+  if (!Array.isArray(roster) || !roster.length) return null;
+  // A GENERIC violent frame ("grab him", "headbutt the man") that lands on no
+  // one HERE: track it so an EMPTY room answers honestly ("no one here to grab")
+  // instead of falling through to the trivial floor OR materializing the first
+  // name in town. A SPECIFIC name/role target ("punch Senna") stays reachable at
+  // the node — you named a real person; attacking is explicit targeted intent —
+  // and is walked-to when they're just in the next room of THIS building.
+  let framedNoTarget = false;
+  // hit(ref) -> { npc, seek } | null. ONE resolve: name/token/role match over the
+  // full roster (a specific person is reachable wherever they stand); a GENERIC
+  // descriptor resolves only over `present` (empty room → null). If the matched
+  // NPC is in another room of this building, tag for auto-seek.
   const hit = (ref) => {
     const r = String(ref || '').replace(/[.!?,;:]+$/, '').trim();
-    return r ? fuzzyMatchNpc(npcs, r) : null;
+    if (!r) return null;
+    const npc = fuzzyMatchNpc(roster, r, present);
+    if (npc) {
+      const loc = locatePersonRelativeToPlayer(world, npc);
+      return { npc, seek: loc.kind === 'same-structure' ? loc : null };
+    }
+    // A DEFEATED NPC's body is where it fell — reachable for handling even by a
+    // generic ref ("drag his body"), regardless of live occupancy. Resolve over
+    // the full roster (roster as the generic pool) but ONLY accept a corpse, so a
+    // generic body-ref can't materialize a LIVING absent NPC. The move-verb
+    // branch narrates the staging; a renewed grapple/blade still no-ops (H-37 R3).
+    const corpse = fuzzyMatchNpc(roster, r, roster);
+    if (corpse && isNpcAlreadyDefeated(world, corpse)) return { npc: corpse, seek: null };
+    // A person-shaped ref that matched no one (generic in an empty room, or a
+    // name that resolves to nobody) → honest no-target rather than the trivial floor.
+    if (refLooksPersonal(r)) framedNoTarget = true;
+    return null;
   };
   let m;
   // Each branch tags its `kind` so the call site can tell a body-MOVE verb
@@ -8593,12 +8729,12 @@ function detectPhysicalAssault(world, text) {
   // (grapple/blade/hostage/bite), which stays correctly a no-op. (H-37 R3)
   // A — inherently violent grapple/strike on a person.
   if ((m = t.match(/\b(?:choke|strangle|throttle|garrott?e|smother|wrestle|grapple|headbutt|head-butt|gouge|maul|pummel|manhandle|pin)\s+(?:down\s+|on\s+)?(.+)/i))) {
-    const npc = hit(m[1]); if (npc) return { npc, kind: 'grapple' };
+    const h = hit(m[1]); if (h) return { npc: h.npc, kind: 'grapple', seek: h.seek };
   }
   // A2 — grab-to-harm: "grab X by the throat/neck/collar" (body-part or clothing anchor
   // distinguishes hostile grab from "grab a cup" / "grab his arm to steady him").
   if ((m = t.match(/\b(?:grab|seize|snatch|yank|clutch)\s+(.+?)\s+by\s+(?:the\s+)?(?:throat|neck|collar|hair|wrist|arm|scruff|shirt|jacket)\b/i))) {
-    const npc = hit(m[1]); if (npc) return { npc, kind: 'grapple' };
+    const h = hit(m[1]); if (h) return { npc: h.npc, kind: 'grapple', seek: h.seek };
   }
   // B — forced into harm: shove/throw/etc. <person> into|onto|against|through|over <x>.
   // Split on conjunctions so "shove past Senna AND hurl her into the wall" resolves
@@ -8610,7 +8746,7 @@ function detectPhysicalAssault(world, text) {
       const cm = clause.match(B_VERB);
       if (!cm) continue;
       if (/^(?:past|aside|away)\s/i.test(cm[1])) continue;
-      const npc = hit(cm[1]); if (npc) return { npc, kind: 'move' };
+      const h = hit(cm[1]); if (h) return { npc: h.npc, kind: 'move', seek: h.seek };
     }
   }
   // C — a blade brought TO the body (threat/assault), not handed over.
@@ -8621,16 +8757,16 @@ function detectPhysicalAssault(world, text) {
   if (/\b(?:dagger|knife|blade|sword|axe|hatchet|spear|cleaver|shiv|dirk|machete)\b/i.test(t)
       && /\b(?:press|hold|put|jam|dig|set|lay|raise|level|point|thrust|drive|bring|touch)\b/i.test(t)
       && (m = t.match(/\b(?:to|against|at|across|under|on)\s+(.+)/i))) {
-    const npc = hit(m[1]); if (npc) return { npc, kind: 'blade' };
+    const h = hit(m[1]); if (h) return { npc: h.npc, kind: 'blade', seek: h.seek };
   }
   // D — hostage / human shield.
   if (/\b(?:shield|hostage)\b/i.test(t)
       && (m = t.match(/\b(?:grab|drag|haul|use|hold|take|seize|snatch|yank)\s+(.+?)\s+(?:as|for|in\s+front)/i))) {
-    const npc = hit(m[1]); if (npc) return { npc, kind: 'hostage' };
+    const h = hit(m[1]); if (h) return { npc: h.npc, kind: 'hostage', seek: h.seek };
   }
   // E — natural weapon: "sink/bury my teeth|fangs|claws into <NPC>".
   if ((m = t.match(/\b(?:sink|bury|dig)\s+(?:my\s+|your\s+)?(?:teeth|fangs|nails|claws|talons|tusks)\s+(?:in|into)\s+(.+)/i))) {
-    const npc = hit(m[1]); if (npc) return { npc, kind: 'bite' };
+    const h = hit(m[1]); if (h) return { npc: h.npc, kind: 'bite', seek: h.seek };
   }
   // F — improvised-weapon prop directed at a person via a trailing preposition:
   // "flip the counter over onto her" / "tip the table onto him" / "dump the
@@ -8640,9 +8776,27 @@ function detectPhysicalAssault(world, text) {
   // text between the verb and the preposition. Without this, "flip X onto Y"
   // reads as a trivial environmental action instead of an attack. (H-64)
   if ((m = t.match(/\b(?:flip|tip|topple|dump|knock)\s+.+?\s+(?:onto|on\s*to|at|against)\s+(.+)/i))) {
-    const npc = hit(m[1]); if (npc) return { npc, kind: 'move' };
+    const h = hit(m[1]); if (h) return { npc: h.npc, kind: 'move', seek: h.seek };
   }
+  // ROM-1: a genuine assault frame parsed a person-ref, but no one is HERE to
+  // grab (empty room / absent target). Answer honestly rather than dropping to
+  // the trivial floor. The caller renders "no one here to lay hands on".
+  if (framedNoTarget) return { npc: null, kind: 'no-target' };
   return null;
+}
+
+// A ref that reads as a PERSON (a pronoun, a generic human word, a role, or a
+// name-shaped token) — used to distinguish "grab HIM" (a person no-target in an
+// empty room) from "grab the crate" (an object → falls through). Deliberately
+// excludes clear inanimate targets so object-handling stays object-handling.
+function refLooksPersonal(ref) {
+  const r = String(ref || '').toLowerCase().trim();
+  if (!r) return false;
+  if (INANIMATE_STRIKE_TARGET_RE.test(r)) return false;
+  if (/\b(?:him|her|them|his|their|man|men|woman|women|person|people|stranger|figure|guy|fellow|lady|villager|townsperson|townsfolk|guard|soldier|someone|anyone|everyone)\b/.test(r)) return true;
+  // "the <word>" or a bare capitalized-ish token (name/role) counts as personal;
+  // a leading article + noun that isn't an obvious object reads as a person here.
+  return /^(?:the\s+)?[a-z][\w'-]{2,}$/.test(r);
 }
 
 function isSocialIdentificationNonCombat(text) {
@@ -8758,6 +8912,30 @@ function engageNpcCombat(world, npc, text, pack, actorId, markHostile) {
   return { world: w, output: { narration: ABSTRACT_FLOOR_RE.test(composed.narrationLine) ? combatGroundedOutcome(w, result.targetEnemyName, result.outcome) : composed.narrationLine, mechanics: result.mechanicsLine, combatSummary: String(result.combatSummary || '') } };
 }
 
+// ROM-1: engage a target that may be in ANOTHER room of the same building. If
+// `hit.seek` is set (a same-structure location from detectPhysicalAssault /
+// detectAttackBeginIntent / detectAttackAnyIntent), auto-walk the player there
+// first (canon-safe moveWithinInterior over the BFS path) and narrate the walk,
+// then fight where the NPC actually stands — never teleporting them to the
+// player. Returns {world, output} or null (couldn't reach / combat didn't start).
+function engageWithSeek(world, hit, text, pack, actorId, markHostile) {
+  let w = world;
+  let seekLead = '';
+  if (hit?.seek) {
+    const seek = autoSeekWithinStructure(w, hit.seek, hit.npc?.name);
+    if (!seek.moved) return null; // couldn't walk there — don't reach across rooms
+    w = seek.world;
+    seekLead = String(seek.line || '').replace(/^Wizard:\s*/i, '').trim();
+  }
+  const eng = engageNpcCombat(w, hit.npc, text, pack, actorId, markHostile);
+  if (!eng) return null;
+  if (seekLead) {
+    const tail = String(eng.output?.narration || '').replace(/^Wizard:\s*/i, '');
+    return { ...eng, output: { ...eng.output, narration: `Wizard: ${seekLead} ${tail}`.trim() } };
+  }
+  return eng;
+}
+
 // (H-95) Mid-fight, a throw/grab/shove/haul or a help/pull-clear aimed at a
 // NON-COMBATANT bystander ("the fleeing villager", a civilian) is neither a strike
 // on the active foe nor an improvised-weapon attack built from a hazard noun. The
@@ -8811,10 +8989,184 @@ function detectNewCombatTarget(world, text) {
   return null;
 }
 
+// ── ROM-1: Presence authority ─────────────────────────────────────────────
+// Occupancy is a VIEW; before ROM-1 presence had no authority, so every
+// person-sink resolved against the node-global roster and fell back to
+// `settlement.npcs[0]` — an empty room handed back the first name in town
+// (headbutt "the carter" in a verifiably empty wake room → Elske engaged).
+// These helpers make the existing, replay-stable occupancy derivation BINDING:
+// the candidate pool for engaging/voicing/blaming a person is who is actually
+// HERE (this room indoors, the open outdoors), and the full roster is reached
+// only through the seek rule (auto-walk to a same-structure NPC, or a concrete
+// absence-with-pointer). All reads over hashed inputs; no new state, no RNG;
+// auto-seek uses moveWithinInterior (canon-safe, replay-stable). See
+// docs/briefs/ROOM_OCCUPANCY_MODEL.md §1a/§2/§3.
+
+// The candidate pool of people the player can reach RIGHT NOW: the occupants of
+// the current room when indoors, the folk out in the open when outdoors. This
+// REPLACES `node.settlement.npcs` at every person-sink — the fallback stays,
+// the POOL changes (the npcs[0] fallbacks are load-bearing OUTDOORS; there the
+// pool is outdoorOccupants, never the whole roster). Returns [] for an empty
+// room so an empty room answers as an empty room.
+function presentPeoplePool(world) {
+  const interior = (world?.scene && typeof world.scene.interior === 'object' && world.scene.interior)
+    ? world.scene.interior
+    : null;
+  // Only treat the scene as INDOORS when the interior's structure actually
+  // belongs to the CURRENT node. Some states (and test fixtures that re-point
+  // currentNodeId) carry a stale interior whose structure sits at another node;
+  // there occupancy for that structure is empty by construction, so the correct
+  // present pool is the node's OUTDOOR occupants — mirrors getRoomState's node
+  // guard and keeps outdoor scenes (and the convergence fixtures) unstranded.
+  const structId = interior ? String(interior.structureKey || '') : '';
+  const st = structId ? world?.structures?.byId?.[structId] : null;
+  const nodeId = String(world?.map?.currentNodeId ?? '');
+  const interiorBelongsHere = st && String(st.nodeId || '') === nodeId;
+  if (interior && interiorBelongsHere) {
+    return occupantsOfRoom(world, structId, String(interior.roomId || ''));
+  }
+  return outdoorOccupants(world);
+}
+
+// The whole node roster (continuity memory: who EXISTS at this settlement),
+// reachable only through the seek rule — never as presence.
+function nodeRosterNpcs(world) {
+  const nodeId = String(world?.map?.currentNodeId ?? '');
+  const node = (world?.map?.nodes || []).find(n => n && String(n.id) === nodeId) || null;
+  return Array.isArray(node?.settlement?.npcs) ? node.settlement.npcs : [];
+}
+
+function sameNpc(a, b) {
+  if (!a || !b) return false;
+  if (a === b) return true;
+  const ida = String(a.id || ''), idb = String(b.id || '');
+  if (ida && idb) return ida === idb;
+  return String(a.name || '') === String(b.name || '') && !!a.name;
+}
+
+// Where a given roster NPC actually is, relative to the player's position.
+//   { kind: 'here' }                                   in the player's room / the open with them
+//   { kind: 'same-structure', roomId, roomName, path } elsewhere in the building the player is in
+//   { kind: 'elsewhere', label }                       another building / outdoors while player is inside (& vice-versa)
+//   { kind: 'gone' }                                   not placed at this node at all (shouldn't happen for roster NPCs)
+// Pure: enumerates the same seed-derived occupancy the survey/window sinks read.
+function locatePersonRelativeToPlayer(world, npc) {
+  if (!npc) return { kind: 'gone' };
+  const interior = (world?.scene && typeof world.scene.interior === 'object' && world.scene.interior)
+    ? world.scene.interior
+    : null;
+  const nodeId = String(world?.map?.currentNodeId ?? '');
+  // Same guard as presentPeoplePool: an interior whose structure belongs to
+  // ANOTHER node is stale — treat the scene as outdoors for placement.
+  const interiorStruct = interior ? world?.structures?.byId?.[String(interior.structureKey || '')] : null;
+  const interiorBelongsHere = interiorStruct && String(interiorStruct.nodeId || '') === nodeId;
+
+  // Is the NPC in the player's immediate pool (this room, or the open)?
+  if (presentPeoplePool(world).some(n => sameNpc(n, npc))) return { kind: 'here' };
+
+  const structsHere = Object.values(world?.structures?.byId || {})
+    .filter(s => s && String(s.nodeId || '') === String(nodeId))
+    .sort((a, b) => String(a.id).localeCompare(String(b.id)));
+
+  if (interior && interiorBelongsHere) {
+    // Player is inside a building. Is the NPC in ANOTHER room of the SAME building?
+    const structId = String(interior.structureKey || '');
+    const st = world?.structures?.byId?.[structId] || null;
+    const topo = normalizeTopology(st?.topology);
+    if (st && topo && Array.isArray(topo.rooms)) {
+      for (const room of topo.rooms) {
+        const rid = String(room.id);
+        if (rid === String(interior.roomId || '')) continue;
+        if (occupantsOfRoom(world, structId, rid).some(n => sameNpc(n, npc))) {
+          const path = pathBetween(topo, String(interior.roomId || ''), rid);
+          const roomName = roomDetail(room, st?.buildingType || null)?.name || 'another room';
+          return { kind: 'same-structure', roomId: rid, roomName, path };
+        }
+      }
+    }
+    // Not in this building → outdoors or another building at the node.
+    if (outdoorOccupants(world).some(n => sameNpc(n, npc))) {
+      return { kind: 'elsewhere', label: 'out in the open' };
+    }
+    for (const other of structsHere) {
+      const oid = String(other.id);
+      if (oid === structId) continue;
+      const ot = normalizeTopology(other?.topology);
+      const rooms = ot && Array.isArray(ot.rooms) ? ot.rooms : [];
+      const placedHere = rooms.length
+        ? rooms.some(r => occupantsOfRoom(world, oid, String(r.id)).some(n => sameNpc(n, npc)))
+        : occupantsOfRoom(world, oid, '').some(n => sameNpc(n, npc));
+      if (placedHere) {
+        return { kind: 'elsewhere', label: `over in the ${buildingNoun(other)}` };
+      }
+    }
+    return { kind: 'gone' };
+  }
+
+  // Player is outdoors. The NPC isn't in the open (checked above) → inside some building.
+  for (const st of structsHere) {
+    const sid = String(st.id);
+    const ot = normalizeTopology(st?.topology);
+    const rooms = ot && Array.isArray(ot.rooms) ? ot.rooms : [];
+    const placed = rooms.length
+      ? rooms.some(r => occupantsOfRoom(world, sid, String(r.id)).some(n => sameNpc(n, npc)))
+      : occupantsOfRoom(world, sid, '').some(n => sameNpc(n, npc));
+    if (placed) return { kind: 'elsewhere', label: `inside the ${buildingNoun(st)}` };
+  }
+  return { kind: 'gone' };
+}
+
+// A plain noun for a building, for absence-pointer prose ("over in the tavern").
+function buildingNoun(st) {
+  const t = String(st?.buildingType || '').toLowerCase();
+  const NOUNS = {
+    cottage: 'cottage', house: 'house', tavern: 'tavern', inn: 'inn',
+    longhouse: 'longhouse', chapel: 'chapel', keep: 'keep', tower: 'tower',
+    smithy: 'smithy', barn: 'barn', shop: 'shop', hall: 'hall', temple: 'temple'
+  };
+  return NOUNS[t] || (t ? t : 'building');
+}
+
+// Auto-seek: walk the player, room by room, to the NPC's room inside the SAME
+// structure, narrating the walk. moveWithinInterior only crosses one doorway at
+// a time, so we step the pathBetween route. Returns { world, moved, line } —
+// `moved` false if the path is empty/unwalkable (then the caller degrades to
+// absence-with-pointer rather than teleporting anyone).
+function autoSeekWithinStructure(world, loc, npcName) {
+  const path = Array.isArray(loc?.path) ? loc.path : [];
+  if (path.length < 2) return { world, moved: false, line: '' };
+  let w = world;
+  for (let i = 1; i < path.length; i++) {
+    const before = String(w?.scene?.interior?.roomId || '');
+    w = moveWithinInterior(w, path[i]);
+    if (String(w?.scene?.interior?.roomId || '') === before) {
+      // A doorway wouldn't open (shouldn't happen on a BFS path) — don't strand.
+      return { world, moved: false, line: '' };
+    }
+  }
+  const who = String(npcName || 'them').trim() || 'them';
+  const dest = String(loc?.roomName || 'the next room');
+  const steps = path.length - 1;
+  const walk = steps > 1
+    ? `You cross through into the ${dest}, where ${who} is.`
+    : `You step into the ${dest}, where ${who} is.`;
+  return { world: w, moved: true, line: `Wizard: ${walk}` };
+}
+
 // Shared fuzzy NPC resolution. Tries exact name, then role, then generic
 // descriptors, then first-NPC fallback for clearly generic refs.
-function fuzzyMatchNpc(npcs, ref) {
+//
+// ROM-1: name/token/role matching runs over `npcs` (pass the full roster so a
+// SPECIFICALLY named person stays reachable wherever they stand). The GENERIC
+// descriptor fallbacks ("the man", "someone", "him") instead pick from
+// `genericPool` — pass who is PRESENT (this room / the open) so a generic ref in
+// an empty room resolves to NO ONE (`genericPool[0] ?? null`) rather than the
+// first name in town. `genericPool` defaults to `npcs` (unchanged behavior for
+// callers that don't pass a pool).
+function fuzzyMatchNpc(npcs, ref, genericPool) {
   if (!Array.isArray(npcs) || !npcs.length || !ref) return null;
+  const pool = Array.isArray(genericPool) ? genericPool : npcs;
+  const generic = () => (pool.length ? pool[0] : null);
   const norm = (s) => String(s || '').toLowerCase().trim();
   const refLower = norm(ref);
 
@@ -8853,7 +9205,7 @@ function fuzzyMatchNpc(npcs, ref) {
     'the guard', 'the merchant', 'the innkeeper', 'the smith',
     'the elder', 'the healer', 'the priest', 'the trader',
   ]);
-  if (GENERIC_REFS.has(refLower)) return npcs[0];
+  if (GENERIC_REFS.has(refLower)) return generic();
 
   // 4. "the <role>" pattern: "the guard captain" → guard_captain
   const theMatch = refLower.match(/^the\s+(.+)/);
@@ -8872,12 +9224,12 @@ function fuzzyMatchNpc(npcs, ref) {
   //     and combat words ("the enemy", "the foe", "the attacker") that the exact
   //     descriptor set in step 3 misses. Role-specific refs already resolved above.
   const GENERIC_WORD = /\b(woman|man|men|women|person|people|stranger|someone|anyone|everyone|them|her|him|his|its|their|lady|guy|fellow|figure|figures|villager|townsperson|townsfolk|civilian|bystander|enemy|enemies|foe|foes|attacker|assailant|creature|beast|monster|thing|shape|shadow|npc|npcs)\b/;
-  if (GENERIC_WORD.test(refLower)) return npcs[0];
+  if (GENERIC_WORD.test(refLower)) return generic();
 
   // 5. Last resort: if ref is a single common word that could describe
   //    any person, pick first NPC. This catches "stab everyone" etc.
   const ALWAYS_RESOLVE = /^(everyone|everybody|anyone|all|anything|everything)$/;
-  if (ALWAYS_RESOLVE.test(refLower)) return npcs[0];
+  if (ALWAYS_RESOLVE.test(refLower)) return generic();
 
   return null;
 }

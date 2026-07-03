@@ -535,9 +535,13 @@ return res.json({ ok:false, reason:safe });
       // in try/catch with a short internal timeout (llmIntent's own
       // AbortController budget); on ANY failure/timeout, llmPacket stays
       // undefined and playerMove runs exactly as it does without this packet.
+      // PACKETS.md INT-2 rollback: `INTENT_LLM=off` disables this path outright
+      // (the INT-1 shadow path remains) — the dev .env key has a hard,
+      // non-reloading budget, so an ungated per-turn LLM path is a real risk;
+      // this is the escape hatch, checked before any provider/network work.
       let llmPacket;
       try {
-        if (hasLlmKey() || hasLocalLlmAvailable()) {
+        if (process.env.INTENT_LLM !== 'off' && (hasLlmKey() || hasLocalLlmAvailable())) {
           const detPacket = assemblePacket(safeWorld, action);
           if (isLowConfidencePacket(detPacket)) {
             const bundle = buildParseCtx(safeWorld);

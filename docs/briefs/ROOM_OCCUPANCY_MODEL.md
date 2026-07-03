@@ -277,6 +277,22 @@ the room dimension on every turn.
 ### ROM-4 — QUEUED FOR TIM (WORLD_VERSION) — room-scoped stored furniture, Model-B convergence (WB-Q5 endgame = IOM-P6)
 See §4 for the full blast radius. Not started unattended, per standing law.
 
+**Status (2026-07-03, Tim green-lit):** the *bounded* correctness slice shipped as
+`c972fc1` — `modifyFurniture`/`removeFurniture` are now **batch-stable**: each op's
+index resolves to the stable piece NAME against a per-node pre-batch snapshot, so an
+earlier `removeFurniture` splice can no longer shift a later op onto the wrong piece
+(U371 reproduces + locks it; the splice contract — length still shrinks — is kept, so
+U122/U307 stay green). **No WORLD_VERSION bump was needed:** furniture STATE already
+persists (Model A / `node.furniture` is hashed + durable via `modifyFurniture`), and
+the one observed object break (the reappearing letter, C3) is ROM-5's narration-mint
+sink, not this. The full §4 overlay (Model-B-as-catalog + first-class object store)
+stays **DEFERRED to ship WITH ROM-5** — the consumer that makes the schema non-dark —
+rather than landing empty plumbing (and an irreversible bump) ahead of it. Determinism
+finding for whoever executes §4: the five worldHash sentries (U19/21/22/27/30) assert
+**replay-equality, not frozen hash strings**, so adding `roomOverlays` to `projectForHash`
+needs NO golden-hash re-baseline — the real must-verify is the save.js export/import
+roundtrip.
+
 ### ROM-5 — object identity/provenance (C3's letter; own Opus-class brief)
 Narration-minted objects become canon-or-refused at the sink: either the mint
 is committed (a `ledger` fact / inventory entity via existing deltas — **no

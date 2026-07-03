@@ -469,6 +469,21 @@ to confirm it doesn't regress dialogue, so it's its own packet.
   convergence 100% locked; one gate run confirms no off-room leak and no dialogue regression.
 - **rollback:** revert the `narratorContext.js` change (restores full-roster context).
 
+### MAP-3DR — reconnect the 3D diorama on a persistent mount  ·  **Phase 4 (the face)  ·  stub, cut when the map track resumes**
+- **why parked (2026-07-03, Tim's call):** the 3D layer was DISCONNECTED (`MAP_3D_ENABLED=false`,
+  `public/map/continuousMap.js`) — v1's full-DOM rebuild remounted the map on EVERY typed turn, flashing
+  an illegibly-deep 2D plan then popping the async 3D scene over it ("two totally unrelated views").
+  Structural, not cosmetic: the morph needs a mount that SURVIVES v1 renders.
+- **shape of the fix:** persistent map mount (the one DOM subtree v1's rebuild preserves), 3D scene diffed
+  from world changes instead of rebuilt per turn, THEN flip the flag back — U294/U306 automatically
+  restore the 3D-band assertions (they read the flag). Fold into the MAPNINJA/one-map track.
+- **until then:** the 2D graph-paper plan is the one map at every zoom — engine-truthful (camera recenters
+  on the engine's `currentNodeId` on node change — the map-fidelity fix in `oneMap.js cameraFor`), marker
+  + clock verified live 2026-07-03 (Aldermere → Greenwood → Crowfoot walk, screenshots in session).
+- **wart observed on the walk (fix with grace, not here):** "go to The Greenwood" while STANDING in The
+  Greenwood answered "You know of no such place hereabouts" — a DM would say "you're already here." One
+  grace phrase; queue with the next INT family packet.
+
 ### MAP-OCC — the map draws who's actually there (occupancy tokens) + position hygiene
 **Phase 0 (the floor holds).** **Status:** OPEN — spec'd 2026-07-03 (Basecamp diagnosis this session,
 "how tangled is the map's position-memory" audit). Sibling of **VG-F3** + **H-95**: same presence/

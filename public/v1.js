@@ -18,7 +18,7 @@ import { worldHash as worldHashAsync } from '../engine/worldHash.browser.js';
 import { buildMythSpec, mythSpecJson } from '../engine/mythSpec.js';
 import { generateTriadFrames, deriveInvocationFromFrame } from '../engine/triad.js';
 import { deriveSequelInvocation } from '../engine/sequel.js';
-import { renderContinuousMap, disposeContinuousMap3d } from './map/continuousMap.js';
+import { renderContinuousMap, disposeContinuousMap3d, MAP_3D_ENABLED } from './map/continuousMap.js';
 import { renderCombatBoard, disposeCombatBoard } from './map/combatView.js';
 import { renderLocalMap } from './map/LocalMap.js';
 import { createPlaceMap } from './map/handDrawnPlace.js';
@@ -998,8 +998,8 @@ function renderInvoke() {
     el('div', { class: 'panel' },
       el('div', { class: 'header' },
         el('div', {},
-          el('div', { class: 'title' }, 'Immortal Engine — v0.27.3'),
-          el('div', { class: 'sub' }, 'build 049 · 2026-07-03 · the words work')
+          el('div', { class: 'title' }, 'Immortal Engine — v0.28.0'),
+          el('div', { class: 'sub' }, 'build 050 · 2026-07-03 · one honest map')
         )
       ),
       // ── One-click front door: start (or resume) the Escape game ──────
@@ -2495,23 +2495,26 @@ function renderPlay() {
     onKeydown: (e) => { if (e.key === 'Enter') doSubmitMove(); }
   });
 
-  // ── The map — ONE MAP, always present (v0.12.0) ───────────────────────
-  // The continuous map (2D plan ⟷ 3D diorama by zoom) is the PRIMARY play
-  // surface, sized to ~60% of the viewport and opening in the 3D (tilted) view.
-  // In combat it becomes the tactical battle board. No gear detour: the map is
-  // right here. Pure VIEW — it never writes world state (determinism stays green).
+  // ── The map — ONE MAP, always present ─────────────────────────────────
+  // 2026-07-03: the 3D diorama is DISCONNECTED (MAP_3D_ENABLED=false in
+  // continuousMap.js) — on every typed turn the full-DOM rebuild remounted it,
+  // flashing an illegibly-deep 2D plan and then popping an unrelated-looking
+  // 3D scene over it. Until the morph gets a persistent mount, the in-play
+  // map is the 2D graph-paper plan, centered on the player's engine node at a
+  // readable zoom. Pure VIEW — it never writes world state.
   //
   // The local-walk simulation still runs underneath: renderWalkPlace maintains
-  // placeCtl + ui.place (which the compass and the continuous map's player marker
-  // read), so we still CALL it — for its side-effects — and discard its compact
-  // canvas. Unifying the local-walk renderer INTO the zoom is the deeper follow-on.
+  // placeCtl + ui.place (which the continuous map's player marker reads), so
+  // we still CALL it — for its side-effects — and discard its compact canvas.
   if (w) { try { renderWalkPlace(w); } catch {} }
-  const INPLAY_MAP_3D_ZOOM = 2.0; // 3D band (Z_3D_CROSS 0.5 → Z_3D_TILT 2.5): a well-tilted diorama.
+  const INPLAY_MAP_ZOOM = MAP_3D_ENABLED
+    ? 2.0    // 3D band (Z_3D_CROSS 0.5 → Z_3D_TILT 2.5): a well-tilted diorama.
+    : 0.12;  // the 2D plan's readable band — current node centered, neighbors in frame.
   let mapEl = null;
   if (w) {
     // ONE map — combat is its deepest tactical zoom, not a separate surface
     // (renderContinuousMap shows the tactical board itself while combat is live).
-    const inner = renderContinuousMap(w, { playerPos: ui.place, initialZoom: INPLAY_MAP_3D_ZOOM, heightCss: '100%' });
+    const inner = renderContinuousMap(w, { playerPos: ui.place, initialZoom: INPLAY_MAP_ZOOM, heightCss: '100%' });
     // Tap-to-expand: the only surviving path to the fullscreen Map screen.
     const expand = el('button', {
       class: 'map-expand-btn',

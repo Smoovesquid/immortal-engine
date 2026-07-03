@@ -46,16 +46,28 @@ test('U306: renderPlay embeds the ONE continuous map (combat is its tactical zoo
   assert.match(body, /class:\s*'play-map-3d'/, 'the embedded map is wrapped in .play-map-3d');
 });
 
-test('U306: the embedded map opens in the 3D (tilted) zoom band, not the flat 2D plan', async () => {
+test('U306: the embedded map opens in the zoom band matching MAP_3D_ENABLED', async () => {
+  // 2026-07-03 (Tim's call): the 3D diorama is disconnected until it can be
+  // made truthful — MAP_3D_ENABLED=false in continuousMap.js. The in-play
+  // zoom is a ternary on that flag: 3D on → the tilted-diorama band
+  // [0.5, 2.5]; 3D off → the 2D plan's readable band (0, 0.22]. This test
+  // asserts whichever branch is ACTIVE, so flipping the flag back restores
+  // the original 3D-band expectation automatically.
   const body = await renderPlaySource();
-  // initialZoom is seeded into the 3D band (Z_3D_CROSS 0.5 → Z_3D_TILT 2.5 in continuousMap.js).
   const m = body.match(/initialZoom:\s*([A-Z0-9_.]+)/);
   assert.ok(m, 'the continuous map embed must pass an initialZoom');
-  // The constant resolves to a value inside the 3D band.
-  const zm = body.match(/INPLAY_MAP_3D_ZOOM\s*=\s*([0-9.]+)/);
-  assert.ok(zm, 'INPLAY_MAP_3D_ZOOM constant must be defined');
-  const z = Number(zm[1]);
-  assert.ok(z >= 0.5 && z <= 2.5, `initial zoom ${z} must land in the 3D band [0.5, 2.5]`);
+  const cm = await readFile(path.resolve(__dirname, '..', 'public', 'map', 'continuousMap.js'), 'utf8');
+  const fm = cm.match(/export const MAP_3D_ENABLED\s*=\s*(true|false)/);
+  assert.ok(fm, 'MAP_3D_ENABLED must be exported from continuousMap.js');
+  const enabled = fm[1] === 'true';
+  const zm = body.match(/INPLAY_MAP_ZOOM\s*=\s*MAP_3D_ENABLED\s*\?\s*([0-9.]+)[\s\S]*?:\s*([0-9.]+)/);
+  assert.ok(zm, 'INPLAY_MAP_ZOOM must be a MAP_3D_ENABLED ternary with both branch values');
+  const z = enabled ? Number(zm[1]) : Number(zm[2]);
+  if (enabled) {
+    assert.ok(z >= 0.5 && z <= 2.5, `3D on: initial zoom ${z} must land in the tilted band [0.5, 2.5]`);
+  } else {
+    assert.ok(z > 0 && z <= 0.22, `3D off: initial zoom ${z} must land in the 2D plan's readable band (0, 0.22]`);
+  }
 });
 
 test('U306: the local-walk sim (renderWalkPlace) is still called for its side-effects', async () => {

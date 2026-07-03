@@ -37,6 +37,18 @@ const COMBAT_ZOOM = 2.6;   // auto zoom-in level on combat-start (frames the tac
 
 const smoothstep = (e0, e1, x) => { const t = Math.max(0, Math.min(1, (x - e0) / (e1 - e0))); return t * t * (3 - 2 * t); };
 
+// ── 3D DISCONNECT SWITCH ────────────────────────────────────────────────────
+// 2026-07-03 (Tim's call): the 3D diorama is DISCONNECTED until it can be made
+// truthful. v1 rebuilds the whole DOM on every typed turn and remounts this
+// map each time: the 2D ink plan drew first — at a zoom far past its legible
+// band — and the async 3D scene then popped in over it, so every sentence
+// flashed two unrelated-looking pictures. Until the morph is rebuilt on a
+// persistent mount, the map stays the 2D plan at every zoom (this file's own
+// no-WebGL path — fully usable, marker and combat included). Flip to true to
+// reconnect the morph; the map track in docs/PACKETS.md carries the
+// reconnection packet.
+export const MAP_3D_ENABLED = false;
+
 // One live 3D layer at a time (module-level, mirroring v1's full-rebuild render
 // model). disposeContinuousMap3d() is the teardown v1 calls when leaving the Map.
 let _live = null;     // { ctrl } — the mounted 3D controller, or null.
@@ -128,7 +140,9 @@ export function renderContinuousMap(world, opts = {}) {
   function onCamera(cam) {
     if (token !== _token) return;
     lastCam = cam;
-    const b = smoothstep(Z_3D_START, Z_3D_CROSS, cam.z);
+    // MAP_3D_ENABLED=false pins the blend at 0: the 3D layer is never even
+    // lazy-mounted and the map is the 2D plan at every zoom.
+    const b = MAP_3D_ENABLED ? smoothstep(Z_3D_START, Z_3D_CROSS, cam.z) : 0;
     if (b <= 0.001) {            // pure 2D — hide & idle the diorama
       layer3d.style.opacity = '0';
       if (_live) _live.ctrl.pause();
@@ -146,7 +160,10 @@ export function renderContinuousMap(world, opts = {}) {
 
   // On combat-start, auto zoom into the player's node so the embedded tactical board is
   // framed — you drop straight into the fight (zoom out still shows it in the overworld).
-  if (inCombat) {
+  if (inCombat && MAP_3D_ENABLED) {
+    // The tactical auto zoom-in only makes sense when the 3D board can mount;
+    // in 2D-only mode COMBAT_ZOOM (2.6) would push the ink plan far past its
+    // legible band. The 2D plan keeps its normal framing during a fight.
     const sc = sceneFromWorld(world);
     const pcx = (Number(sc.player.x) || 0) * NODE_WU, pcy = (Number(sc.player.y) || 0) * NODE_WU;
     setTimeout(() => { if (token === _token && twoD.__oneMapFocus) twoD.__oneMapFocus(pcx, pcy, COMBAT_ZOOM); }, 80);

@@ -179,15 +179,28 @@ const CAMS = new Map();
 
 function cameraFor(world, initialZoom) {
   const key = String(world?.meta?.campaignId || 'campaign');
+  const hereId = String(world?.map?.currentNodeId || '');
+  const here = (world?.map?.nodes || []).find(n => n && n.id === hereId);
   if (!CAMS.has(key)) {
-    const here = (world?.map?.nodes || []).find(n => n && n.id === world?.map?.currentNodeId);
     const c = here ? nodeToWu(here) : { x: 0, y: 0 };
-    // Default opens in the region band; the in-play embed seeds the 3D band
-    // (initialZoom) so the map opens as the tilted diorama, not the flat plan.
+    // Default opens in the region band; the in-play embed seeds its own band
+    // via initialZoom.
     const z = Number.isFinite(initialZoom) ? initialZoom : 0.12;
-    CAMS.set(key, { cx: c.x, cy: c.y, z });
+    CAMS.set(key, { cx: c.x, cy: c.y, z, nodeId: hereId });
   }
-  return CAMS.get(key);
+  const cam = CAMS.get(key);
+  // Map-fidelity law (2026-07-03): when the ENGINE moves you to a different
+  // node — typed travel, dungeon descent, journey — the map follows the story:
+  // recenter on the new node, preserving the player's chosen zoom. The camera
+  // used to be write-once, so after "go to The Greenwood" the narration moved
+  // and the map stayed on Aldermere with the marker off-frame. Panning around
+  // WITHIN a node is untouched (same nodeId → camera left alone). View state
+  // only — world/determinism untouched.
+  if (here && cam.nodeId !== hereId) {
+    const c = nodeToWu(here);
+    cam.cx = c.x; cam.cy = c.y; cam.nodeId = hereId;
+  }
+  return cam;
 }
 
 // M7 — beautification (docs/WORLD_AND_DUNGEONS.md). The pen turns ink-on-paper

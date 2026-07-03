@@ -36,9 +36,13 @@ test('U294: the roof-peel band is reachable — starts past the z=2.0 default, c
   assert.ok(full > start, `PEEL_FULL_PX (${full}) must exceed PEEL_START_PX (${start})`);
 });
 
-test('U294: the in-play map still opens at the z=2.0 zoom the peel band is tuned against', async () => {
+test('U294: the in-play 3D-branch zoom stays at the z=2.0 the peel band is tuned against', async () => {
+  // 2026-07-03: the 3D diorama is disconnectable (MAP_3D_ENABLED in
+  // continuousMap.js) and the in-play zoom is a ternary on that flag. The
+  // peel-band tuning contract applies to the 3D BRANCH — it must stay 2.0 so
+  // reconnecting the diorama lands back on the tuned band.
   const v1 = await readFile(path.resolve(__dirname, '..', 'public', 'v1.js'), 'utf8');
-  const m = v1.match(/INPLAY_MAP_3D_ZOOM\s*=\s*([0-9.]+)/);
-  assert.ok(m, 'INPLAY_MAP_3D_ZOOM must be defined in v1.js');
-  assert.equal(Number(m[1]), 2.0, 'the in-play 3D map opens at z=2.0 (the peel band assumes this default)');
+  const m = v1.match(/INPLAY_MAP_ZOOM\s*=\s*MAP_3D_ENABLED\s*\?\s*([0-9.]+)/);
+  assert.ok(m, 'INPLAY_MAP_ZOOM must be a MAP_3D_ENABLED ternary in v1.js');
+  assert.equal(Number(m[1]), 2.0, 'the 3D branch of the in-play zoom stays z=2.0 (the peel band assumes this default)');
 });

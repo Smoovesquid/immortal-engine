@@ -91,6 +91,10 @@ const SERVER = arg('server', 'http://localhost:5179');
 const REGIME = arg('judge-regime', 'v1');            // v1 | v2 | bridge
 const DRY_RUN = ARGV.includes('--dry-run');
 const OUT_DIR = arg('out-dir', path.join(ROOT, 'docs', 'playtests'));
+// Opt-in only — default gate behavior (report/JSONL/coverage) is unchanged when
+// this flag is absent. Runs the pure-text coherence analyzer (no LLM, no cost)
+// over the JSONL this run just wrote and prints one summary line at the end.
+const COHERENCE = ARGV.includes('--coherence');
 const MODEL_PLAYER = arg('player-model', 'claude-opus-4-8');
 // v1 keeps the historical Opus judge; v2/bridge default the ATOMIC judge to a
 // CROSS-FAMILY model (Fable 5) — the Vol-14 §3.3/§6.3 mitigation. Overridable.
@@ -719,6 +723,14 @@ async function main() {
   console.log(`COST: ~$${dollars().toFixed(2)} (${usageTotals().calls} calls, ${usageTotals().in + usageTotals().out} tokens)`);
   console.log(`REPORT: ${path.relative(ROOT, rep.file)}`);
   console.log(`AUDIT:  ${path.relative(ROOT, rep.jsonlFile)}`);
+  if (COHERENCE) {
+    // Opt-in, additive: the Phase-0 coherence analyzer (docs/playtests/
+    // COHERENCE_SEAMS_2026-07-02.md) over the JSONL just written. Pure text
+    // analysis — no LLM call, no cost, no effect on rep/exit behavior.
+    const { loadJsonlFile, analyzeCoherence, summaryLine } = await import('./coherence-audit.mjs');
+    const coherenceResult = analyzeCoherence(loadJsonlFile(rep.jsonlFile));
+    console.log(summaryLine(coherenceResult));
+  }
   console.log(`════════════════════════════════════════════`);
 }
 

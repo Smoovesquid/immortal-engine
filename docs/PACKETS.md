@@ -279,7 +279,18 @@ file) · P4 SERIAL (`engine/ref/rubric.js`, shared with the live Ref) · P6 last
 - **done_when:** `--dry-run --coherence` exercises the full path for $0; a real run prints the floor.
 - **rollback:** flag reverts to the transcript-only auditor.
 
-#### CG-P4 — bundle enrichment: exits + clock  ·  Phase 0  ·  **QUEUE; SERIAL (`engine/ref/rubric.js`, shared with live Ref); read-only view**
+#### CG-P4 — bundle enrichment: exits + clock  ·  Phase 0  ·  **✅ DONE 2026-07-03 (`928143a`; v0.28.2 build 052; worldHash byte-identical)**
+- **what landed:** `buildCanonGroundTruth` (`engine/ref/rubric.js`) gains `roomExits` (from topology's
+  existing `interiorExitsFrom` + roomDetail names — no new topology) + `clock` (mirrors gracefulAdjudication's
+  `world.time.hours` math — one clock, not a second invented one), both try/catch-guarded. Bundle +103 chars
+  (922→1025, stays compact — the live Ref judge reads it too). `coherence-gate.mjs` gains CG-2b (invented
+  exits/stairs/doors) + CG-6 (time-of-day) comparators, dormant on old JSONLs lacking the fields (graceful
+  degradation proven at real-file level — CG-2b/CG-6 = 0 on all 4, existing counts unchanged). Tests U392 (7,
+  bundle view) + U393 (10, comparators). **Determinism: worldHash byte-identical, U19/21/22/27/30 green;
+  suite 9547/0, convergence 100%.** Version bumped (touches `engine/ref/` in the live narration-review path
+  via `reviewNarration`, so the live Ref judge is now better-grounded — a latent improvement).
+- **note:** the new CG-2b/CG-6 checks fire only on JSONLs written AFTER this (existing gate transcripts
+  predate the fields) — the next real gate run is their first live exercise.
 - **objective:** extend `buildCanonGroundTruth` with (a) the current room's real exits/adjacent rooms (topology
   view CG-2b needs to catch invented stairways at the source) + (b) clock/timeOfDay (CG-6). Read-only view over
   existing state — the ROM-3 precedent (no mutation, no RNG, no worldHash exposure). Consume the fields in

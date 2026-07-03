@@ -810,6 +810,18 @@ export function isForcefulAdvanceText(text) {
   return false;
 }
 
+// CMB-LEGAL-1 — named leveled/utility spells the level-1 escape hedge-caster does
+// NOT have. An explicit "cast <one of these>" must DECLINE ("that spell is not
+// yours"), never fall through to the fire-bolt catch-all below (which otherwise
+// granted a FREE Fire Bolt for "cast lightning bolt / polymorph / counterspell /
+// wish"). Cantrips and the enumerated spell verbs (fireball/missile/bless/hold/
+// scorch/charm/entangle/agathys/shield/witch bolt) are matched ABOVE and never
+// reach the guard. Gated on an explicit cast verb so non-magical idioms ("cast
+// about", "cast a glance") are untouched. Coverage is the D&D staples a player
+// actually types; an unlisted obscure spell name still falls to the cantrip (a
+// weaker, harmless outcome, not a leveled-power leak) — see U373.
+const UNAVAILABLE_LEVELED_SPELL = /\b(lightning\s+bolt|chain\s+lightning|call\s+lightning|chromatic\s+orb|ice\s+knife|counterspell|polymorph|banish(?:ment)?|disintegrate|teleport|dimension\s+door|misty\s+step|blink|meteor\s+swarm|cone\s+of\s+cold|cloudkill|wall\s+of\s+(?:fire|force|ice|stone|thorns)|thunderwave|shatter|sleep|slow|haste|web|grease|dominate(?:\s+(?:person|monster|beast))?|hold\s+monster|feeblemind|power\s+word\s+\w+|finger\s+of\s+death|fly|greater\s+invisibility|invisibility|mirror\s+image|fear|confusion|hypnotic\s+pattern|revivify|raise\s+dead|mass\s+(?:cure|healing)\w*|prismatic\s+\w+|sunburst|blight|spirit\s+guardians|gate|maze|wish|time\s+stop|true\s+resurrection|power\s+word\s+kill)\b/;
+
 /**
  * parseEscapeAction(text) -> { verb: 'strike'|'firebolt'|'ward'|'cover' }
  * Map a typed line to one of the hedge-caster's light verbs. Unrecognized
@@ -878,6 +890,10 @@ export function parseEscapeAction(text) {
   if (/\b(entangle|roots|vines|snare)\b/.test(t)) return { verb: 'entangle' };
   if (/\bshield\b/.test(t)) return { verb: 'shield' };
   if (/\b(ward|brace|defend|guard|block|parry)\b/.test(t)) return { verb: 'ward' };
+  // CMB-LEGAL-1 — an explicit cast of a leveled/utility spell the escapee does not
+  // have DECLINES here, before the fire-bolt catch-all can silently grant it as a
+  // free attack cantrip. Enumerated spells + cantrips are handled above.
+  if (/\bcast(?:s|ing)?\b/.test(t) && UNAVAILABLE_LEVELED_SPELL.test(t)) return { verb: 'unknownspell' };
   // Cantrip verbs — the hedge-caster's fire bolt plus every class cantrip
   // (eldritch blast, vicious mockery, sacred flame, produce flame) and the
   // generic "cast" so a player can just say "cast at it".
@@ -1870,6 +1886,12 @@ function resolveEscapeCombatTurnCore(world, actionText = '') {
         ? `You raise a ward — a shimmer of force hardens the air around you (+${WARD_AC_BONUS} AC).`
         : `You set your feet and raise your guard (+${WARD_AC_BONUS} AC).`);
     }
+  } else if (verb === 'unknownspell') {
+    // CMB-LEGAL-1 — an explicit cast of a working the escapee does not know: no
+    // slot, no cantrip, no effect. The DM declines in the fiction and the round
+    // still advances (foes act) — a taken, wasted turn, exactly like the
+    // enumerated "that spell is not yours" declines (fireball/scorch/hold).
+    beats.push('You shape the words for it — but that spell is not yours.');
   } else if (targetIdx >= 0) {
     const target = enemies[targetIdx];
     // DX-2c: honor the foe's own cover — a covered foe is harder to hit (+2 half /

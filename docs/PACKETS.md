@@ -234,7 +234,20 @@ file) · P4 SERIAL (`engine/ref/rubric.js`, shared with the live Ref) · P6 last
 - **done_when:** runs over all four existing JSONLs; report prints per-class flags + honest floor; tests green.
 - **rollback:** delete the script + tests (nothing references them).
 
-#### CG-P2 — baseline + adjudicate the predictions  ·  Phase 0  ·  **QUEUE (after P1); hot-file-free** (Sonnet lane)
+#### CG-P2 — baseline + adjudicate the predictions  ·  Phase 0  ·  **✅ DONE 2026-07-03 (`e71760a`; ALL FOUR predictions PASS)**
+- **what landed:** `docs/playtests/COHERENCE_GATE_BASELINE_2026-07-03.md` + namespaced
+  `docs/playtests/coherence-modes.json`. Hand-review of all 8 flags: **8/8 CONFIRMED real, 0 false positives
+  (100% precision).** Scorecard: **P-A PASS** (5 judge-PASSED flags, point estimate, 100% precision) · **P-B
+  PASS** (pre-ROM-3 negative control: 0/1/0 — no hallucinated structure) · **P-C PASS, paid $0.073**
+  (re-asked the exact `claude-opus-4-8` v1 judge with one atomic per-class question on the 5 false-PASS turns
+  → **5/5 flip the atomic answer to "yes"**; honest nuance: only 1/5 also flipped the *holistic* bug_class —
+  which is the whole point: the judge SEES the contradiction when directed at the axis, but its vibe/crunch/rag
+  verdict never asks → **the axis-omission root is confirmed, not information-starvation**) · **P-D PASS**
+  (honest floor 9→14/48, ≈ +⅓ under-report). Suite green (doc-only; U381 pre-existing server flake noted).
+- **infra fix (Basecamp, this integration):** worker's `isolation:worktree` was 886 commits stale (branched
+  from `main`); it worked/committed in the MAIN checkout (clean result on top of HEAD, unpushed, verified —
+  but a race hazard). Root-caused + closed: the `dispatch` SKILL trailer now mandates
+  `git reset --hard origin/v2-polish` as the worker's FIRST step. See [[project_worker_worktree_stale_from_main]].
 - **objective:** run P1 over the four JSONLs; hand-review every flag (prose+canon side-by-side, confirm/FP);
   score P-A/P-B/P-D explicitly (P-C ≈ 5 judge calls — run same sitting, record in `scripts/budget.mjs`);
   commit `docs/playtests/COHERENCE_GATE_BASELINE_<date>.md` (existing-baseline shape) incl. the labeled flag

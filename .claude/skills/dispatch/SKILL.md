@@ -26,6 +26,12 @@ Pro-farm terminal. Everything else runs here.
    collision of 2026-07-02.
 5. **Spawn** via the Agent tool: `isolation: "worktree"`, `run_in_background: true`, model from step 2.
    Prompt = the brief's full text plus this standing trailer:
+   - **FIRST — fix your worktree base (known harness trap, 2026-07-03).** The `isolation: "worktree"`
+     worktree is branched from `main`, which is **~886 commits STALE** behind `v2-polish` (the mainline) —
+     current files (e.g. recently-added scripts/docs) are simply absent. Before any work, in your worktree
+     run `git fetch origin && git reset --hard origin/v2-polish` and confirm `git log --oneline -1` shows a
+     recent v2-polish commit. Commit there and let Basecamp cherry-pick. **Do NOT "work in the main checkout"
+     as a workaround** — that races Basecamp's integration and risks corrupting the live tree.
    - Follow `docs/WORKER_BRIEF.md` conventions (Step-0 self-assemble, verification ladder, output contract).
    - Make ALL judgment calls yourself; never wait on Tim. If truly blocked, take the reversible option
      and flag it in the report.

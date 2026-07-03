@@ -11,6 +11,120 @@ done_when · rollback`.
 
 ## ACTIVE
 
+> **Single intake — every task lands HERE.** Tasks get invented in many windows; this file is the one
+> queue (organ 5 of `THE_BUILD_SYSTEM.md`). No matter which window a task is born in, it comes here — do
+> not leave it in a chat, a playtest note, or a sibling doc. **Order = the PRD's six phases**
+> (`PRD.md` §7: 0 floor → 1 hook → 2 mirror → 3 end → 4 face → 5 door); **tag each new packet with the
+> phase it serves — that tag is its rank.** Within a phase, correctness/blockers before polish. The PRD's
+> named next work is **the INT arc** (Phase 0 — the Rung-1 structural close, packetized below 2026-07-03);
+> after it, **SL-5** (Phase 1 — "Aldermere wants something"), which is **not yet packetized here**
+> (packetize before starting).
+
+### INT — THE INTENT TRANSLATOR (Phase 0 — the structural close of Rung 1)  ·  **adopted 2026-07-03**
+**Provenance:** Tim's 2026-07-03 decision (Desktop memo `fable_rung1_llm_between_player_and_engine.md` +
+the in-session Fable ruling), executing `RUNG1_CONVERGENCE_PLAN.md` §3/§5 as option **(a)**. Trigger:
+`docs/briefs/FAILURE_META_DIAGNOSIS.md` (~25 packets spent on ONE root; allowlists-at-entrances cannot close
+an infinite phrasing space) + `docs/briefs/SECOND_ORDER_DIAGNOSIS.md` (scattered sinks force precision-bias;
+a single choke point affords recall). **THE ONE LAW is untouched:** the LLM *interprets* the player and
+proposes a typed packet; the deterministic engine grounds, validates, rolls, commits, logs — interpretation
+≠ authority (plan §4). The seat is already built and dark: `engine/intent/intentSchema.js` reserves
+`source:'llm'` ("a fourth source that emits this exact shape"); `engine/llmPhysics.js` +
+`server/localLlmProvider.js` are the live in-engine precedent. Input-side sibling of the narration-side
+`PROSE_TO_WORLD_CONTRACT.md`. **Sequence INT-1 → INT-2 → INT-3 → INT-4, one in flight** (playloop/grace hot
+files — serial lane, `RUNG1_QUEUE.md` protocol §2). Cautions ruled: CLARIFY gets a *budget* (clarify-loops
+are documented sink S4; THE_DM_TEST forbids mechanical bounces), ONE vocabulary (extend intentSchema's 10
+verbs — no parallel contract enum), `parseIntent` stays the LLM-off floor.
+
+#### INT-1 — typed IntentPacket in shadow mode (aggregate existing detectors; ZERO behavior change)  ·  Phase 0  ·  **✅ DONE 2026-07-03 (`57b878c`)**
+- **objective:** one assembler (`engine/intent/assemblePacket.js`) computes ONE typed packet per free-text
+  turn, each field fed by a detector that already exists (`directQuestionIntent` kinds, meta/info-seek/
+  confrontation/movement detectors, `detectPhysicalInteraction`); extend `intentSchema.js` with
+  `kind/goal`, `targets[]`, `objects[]`, `compoundParts[]`, `ambiguity`, `confidence`, `source`. Shadow
+  mode: the packet is traced on the existing `mech:` instrument line; all routing still runs today's paths.
+  (= convergence plan Phase 2: "control layer first, richness later.")
+- **allowed_files:** `engine/intent/*`, one shadow call-site in `engine/playloop.js`, `engine/instrument.js`
+  (trace field), new tests.
+- **forbidden:** any behavior change; writing packets into world state / canon events (that is INT-2's
+  replay story); `WORLD_VERSION`; rng.
+- **invariants:** packet assembly is a pure function of (text, world) — deterministic in shadow mode;
+  worldHash replay equality (U19/21/22/27/30).
+- **test_plan:** unit utterance→packet-fields table; `npm run convergence` 100% unchanged; full suite;
+  `playtest:quick`.
+- **done_when:** every free-text turn logs exactly one packet on the instrument trace (behind
+  `INTENT_TRACE=1`, default OFF — player-visible output stays byte-identical); `npm run check` green;
+  zero behavioral diffs.
+- **rollback:** delete the assembler + the one call-site.
+
+#### INT-2 — the LLM takes the seat (`source:'llm'`) + the translator benchmark  ·  Phase 0  ·  **⚠️ BUILT 2026-07-03 (`b60781e`,`918b10a`) — DIVERGED from this spec; corrected by INT-2R below**
+- **objective:** the LLM is the **PRIMARY reader of all typed/spoken free text** (ruled 2026-07-03 — no
+  confidence-gated regex pre-filter: regexes fail *confidently* ("I take him out" → verb `take` = pick up),
+  and deciding when a regex is trustworthy is itself a language problem — the treadmill's root shape, one
+  more "precision-tuned detector at the entrance"). Every free-text turn makes a **server-side** LLM call
+  (utterance + compact scene bundle → the SAME packet shape; temp 0; JSON-schema-constrained) that proposes
+  intent. Bypasses are *structural, not statistical*: `source:'click'` intents are already typed and skip
+  translation; a literal exact-match micro-set (bare `north` / `look`) MAY short-circuit. Deterministic
+  grounding validates every ID against the bundle — an unknown ID is rejected, never materialized.
+  Ambiguity: the LLM may only *flag* it; the engine decides whether to clarify, under a budget (in-voice,
+  offers the concrete options, never twice in a row). Provider chain (**Tim's ruling 2026-07-03**):
+  **Ollama PRIMARY** (`server/localLlmProvider.js`, local llama3.1:8b) → Anthropic fallback →
+  deterministic `parseIntent` **floor, never a pre-filter** (silent fallback — the game must run LLM-off). Replay: the committed packet is recorded on the turn log;
+  replay consumes logged packets and never re-calls the LLM.
+- **benchmark (answers "which model sits in the seat" empirically):** new `scripts/intent-eval.mjs` scores
+  ANY backend against a frozen utterance→packet corpus (seed it from the 49 gate reports' failing turns +
+  the memo's table — "I take him out"→clarify, "I use the table"→clarify-with-options, "I stab the goblin
+  by the door"→attack+grounded target, "I teleport through the wall"→impossible). Metrics: packet-match %,
+  invented-ID count (>0 = hard fail), clarify precision/rate, latency. Run ≥3 backends: Anthropic fast
+  tier, Tim's local Ollama model, parser-only baseline. Report committed to `docs/playtests/`.
+- **allowed_files:** new `engine/intent/llmIntent.js`; `server/llmProvider.js` + `server/localLlmProvider.js`
+  (one new task route); the INT-1 seam in `engine/playloop.js`; new `scripts/intent-eval.mjs`;
+  `tests/corpus/*` additions; `.env.example`.
+- **forbidden:** browser-side key; the LLM deciding outcomes or mutating state; blocking a turn on LLM
+  failure; a new contract enum (extend the 10 verbs).
+- **invariants:** LLM-off = today's behavior exactly; no ungrounded referent reaches resolution; worldHash
+  replay equality via logged packets.
+- **test_plan:** corpus green; a paraphrase set for translator routing; the benchmark report; full suite +
+  `playtest:quick`.
+- **done_when:** benchmark report committed (≥3 backends); default backend chosen at ≥95% packet-match with
+  0 invented IDs; key-off falls back silently; `npm run check` green.
+- **rollback:** `INTENT_LLM=off` env flag (the INT-1 shadow path remains).
+
+#### INT-2R — course correction: the LLM becomes the ACTUAL primary ears, Ollama first  ·  Phase 0  ·  **DISPATCHED 2026-07-03 (Basecamp worktree lane)**
+- **why (audit 2026-07-03 of `57b878c..b3d600e`):** four seams between spec and build — (1) live v1 runs
+  the engine in-browser and never calls `/api/move`, so the LLM seat sits on a door the game doesn't use;
+  (2) the seat fires only on `isLowConfidencePacket` — the vetoed regex-first design (the INT-2 *brief*
+  drifted from this spec and was built faithfully); (3) `playerMove` hands routing the deterministic
+  `__dqIntent` even when an LLM packet exists — the packet is trace-only, so INT-3/4a/4b consumers never
+  hear the LLM; (4) provider order was Anthropic-first. Also: llama3.1:8b scored 0% packet-match in the
+  committed benchmark (non-canonical verb tokens — fixable), and `server/llmProvider.js`'s hardcoded
+  default model 404s (silently breaks the fallback ear).
+- **brief (spec of record for the fix):** `docs/briefs/INT-2R-ollama-primary-ears.md` — Ollama-first
+  (`INTENT_LLM=off|ollama|anthropic|auto`, default auto), confidence gate removed, new `POST /api/intent`
+  + v1 typed-turn await (≤2.8s budget, silent deterministic floor), packet-derived verdict actually
+  drives the graduated consumers, 8B prompt hardening (explicit verb enum + few-shot + Ollama
+  `format:json` + verb-synonym normalization at grounding via the ONE vocabulary), fallback model id
+  fixed, re-benchmark committed.
+- **done_when:** live proof — `INTENT_TRACE=1` shows a confidently-parseable sentence ("I stab the
+  goblin") arriving `source:'llm'` through real v1; Ollama beats the 66.7% parser baseline on the eval
+  (honest number either way); `npm run check` green; version → 0.27.0.
+- **rollback:** `INTENT_LLM=off` — zero provider calls (U377), deterministic floor is the whole game.
+
+#### INT-3 — graduate family #1: direct question → deliver-or-decline rides the packet  ·  Phase 0  ·  **✅ landed 2026-07-03 (`a19b0bc`; consumes the shared verdict — LLM-sourcing of that verdict arrives with INT-2R)**
+- **objective:** collapse the biggest lineage (meta-query answer-binding; capability rows C1/C4/C5/C6) onto
+  ONE act-handler consuming the packet at the single egress (the AG-3 pattern) — the scattered entrance REs
+  (`INFO_SEEKING_TOPIC_RE`, `PROVENANCE_RE`, `FOUNDING_RE`, `TENURE_RE`, …) become packet-feeders or are
+  deleted. Graduation bar = convergence plan §3.3 (Vol 8 §15, all 9 points).
+- **done_when:** the family's corpus rows pass via the packet path; superseded REs retired; the next gate
+  shows **no categorically-new flavor** of the question family (judge by bug-nature, not the headline %).
+- **rollback:** family flag back to legacy routing (keep both paths for one release).
+
+#### INT-4 — the family graduation queue (stub — cut one packet per family on the INT-3 template)
+- **order** (by lineage size / sink): referent-grounding (`[clarify:referent]`, sink S4) → dialogue-address
+  (S5 deflect-and-wait) → combat table-talk (the CRUNCH seam) → compound multi-part asks (C1 remainder).
+  Cut each packet when its predecessor lands.
+- **ARC done-when (= PRD Phase 0 exit):** frozen corpus 100% **and** N consecutive gates open zero
+  categorically-new failure classes **and** ≤2 broken turns per 48, twice running (2026-07-02: 9/48 → 4/48
+  after the egress arc).
+
 ### SL — THE SHIPPABLE SLICE (priority, scope-locked 2026-06-29)
 **Provenance:** Tim's 2026-06-29 scope re-lock (`docs/DEMO_REGION.md` scope-lock banner). The demo is cut to
 ONE walkable ~100 km² region with four authored places: a town, a forest (bandits roam), a bandit camp, and
@@ -317,6 +431,59 @@ to confirm it doesn't regress dialogue, so it's its own packet.
 - **done_when:** present-people context is line-of-sight; new grounding test green; full suite +
   convergence 100% locked; one gate run confirms no off-room leak and no dialogue regression.
 - **rollback:** revert the `narratorContext.js` change (restores full-roster context).
+
+### MAP-OCC — the map draws who's actually there (occupancy tokens) + position hygiene
+**Phase 0 (the floor holds).** **Status:** OPEN — spec'd 2026-07-03 (Basecamp diagnosis this session,
+"how tangled is the map's position-memory" audit). Sibling of **VG-F3** + **H-95**: same presence/
+map-fidelity family — this is the renderer-token half. Payoff is closing the presence-mismatch fiction
+break (an empty room drawing scattered NPCs), the same class as the ROM-1b look-around leak.
+
+**The tangle (diagnosed):** "position" secretly means two things sharing one bag. WHERE YOU ARE =
+`map.currentNodeId` + range band (`far`/`near`/`engaged`) — engine-owned, clean, the game runs on it.
+WHERE THE DOT IS DRAWN = pixel `ux/uy`, held in ~5 renderer copies (`ui.place`, `place.tokens[player]`,
+`party[0].position`, building/room geometry) PLUS the NPC token positions, which
+`public/map/placeFromNode.js:143-147` **invents** by seeded-RNG scattering the *whole settlement roster*
+along the road — the map has no concept of who is actually in the player's room. That scatter is the
+recurring "map vs engine" mismatch Tim keeps hitting. Bounded job (~2–4 focused days), not a rewrite;
+mostly renderer-side; the engine already owns the clean location key.
+
+#### MAP-OCC-1 — occupancy-driven tokens (the real fix; kills the recurring mismatch)
+- **objective:** the people/creatures the map draws are line-of-sight — room occupants inside, outdoor
+  occupants outside — reusing `engine/structures/roomOccupancy.js` (`occupantsOfRoom` / `outdoorOccupants`),
+  the SAME occupancy model the grace presence fix + H-95 use. Roster (who exists) still comes from state;
+  the map stops sprinkling off-room people onto the ground.
+- **allowed_files:** `public/map/placeFromNode.js` (token set derives from occupancy, not the raw
+  `settlement.npcs` slice); possibly `public/v1.js` (pass interior/room context into the place builder);
+  new `tests/U###`.
+- **forbidden:** touching the engine movement/occupancy path (roomOccupancy is truth — READ it, don't
+  change it); `Math.random` (rng.js only); direct ux/uy writes into engine state (breaks U21 — see
+  MAP-OCC-2); inventing a renderer-side "who's here" heuristic (must derive from roomOccupancy).
+- **invariants:** determinism (token layout stays a pure seed projection — stable worldHash); the
+  MAP-FIDELITY RULE (verify on the LIVE map, not just a unit test); LLM-off path unaffected.
+- **test_plan:** unit — build the place for the `aldermere`/`tallow` boot world (player alone in the wake
+  room) and assert the token set names NO off-room roster NPC; a multi-occupant node draws exactly the
+  room/outdoor occupants. Then a live-map screenshot per `PLAYTEST_PROTOCOL.md`.
+- **done_when:** the empty wake room draws no phantom neighbours; a populated node draws exactly its
+  occupants; live-map verified; suite + convergence green.
+- **rollback:** revert the `placeFromNode.js` token-source change (restores roster scatter).
+
+#### MAP-OCC-2 — position hygiene (drop pixels from the determinism fingerprint)
+- **objective:** pixel `ux/uy` is a *rendering* projection, not canon — it must not sit in the worldHash.
+  Today `engine/crunchHashProjection.js` `projectMember` spreads `...m` (position **included**), so pixel
+  position IS in the hash; determinism holds only because the engine never authors ux/uy (only the renderer
+  does) — an accident of authorship, not a structural guard. The live comment at `public/v1.js:2224`
+  claims *"position is excluded from hash projection"* — **that is false** and will mislead the next editor
+  into silently breaking U21.
+- **allowed_files:** `engine/crunchHashProjection.js` (drop `position` — or its ux/uy — from the hashed
+  member projection), `public/v1.js` (fix the false comment), a new/extended determinism guard test.
+- **forbidden:** removing `position` from *state* (`spatial/positioning.js` + `invariants.js` expect the
+  field); wiring the dark `engine/adjudication/spatialRulings.js` spatial layer (leave it dark — out of scope).
+- **invariants:** U19/21/22/27/30 stay green; a renderer ux/uy write now provably does NOT change worldHash.
+- **test_plan:** unit — hash a world, write `party[0].position.ux/uy`, re-hash, assert **EQUAL** (today it
+  differs); full determinism suite.
+- **done_when:** pixel position is out of the fingerprint; the "excluded" comment is true and test-backed;
+  determinism gates green.
+- **rollback:** revert both edits.
 
 ### IT-1…IT-5 — Interior + Town polish cluster ✅ DONE 2026-06-24
 **All five shipped** — repro'd LLM-OFF, fixed, test-locked, full suite green (8685).

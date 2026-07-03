@@ -10,6 +10,16 @@ gate, Rules-Lawyer persona clean, only rare forgivable SOFT slips. HARD-count bo
 (gate agents explore freely) — judge by **bug nature** (real-defect vs phrasing-tail), not one run's
 number.
 
+## 2026-07-03 — DIRECTION: the structural close is ADOPTED (the INT arc)
+Tim adopted the intent-translator boundary — LLM interprets player speech → typed IntentPacket →
+deterministic ground/validate/roll/commit — as THE Rung-1 close. `RUNG1_CONVERGENCE_PLAN.md` now reads
+ADOPTED (§6 option (a)); the packets are **INT-1…INT-4 in `PACKETS.md`** (single intake — new Rung-1 work
+lands there as INT packets, not as new per-path H-patches). The **done-when bar above is superseded** by
+the plan's §2.3 convergence bar: frozen corpus 100% + N consecutive gates opening zero categorically-new
+failure classes + residual = phrasing-tail/SOFT only. Cautions ruled 2026-07-03: CLARIFY gets a budget
+(S4 is a documented sink; THE_DM_TEST), ONE vocabulary (extend `intentSchema`'s verbs — no parallel enum),
+`parseIntent` stays the LLM-off floor.
+
 ## Your role
 Single **queue owner + Rung-1 arbiter** (Tim's mandate). Write paste-ready worker prompts, assign each
 worker's model, sequence packets **one in flight at a time** (unless provably file-disjoint, protocol

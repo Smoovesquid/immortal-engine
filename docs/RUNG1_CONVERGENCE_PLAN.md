@@ -1,8 +1,11 @@
 # Rung-1 Convergence Plan — redefining victory + closing the fix loop
 
-**Status: DRAFT / proposed.** One decision pending (Tim): *execute now* (pivot the per-gate loop onto this)
-vs. *park as North Star* until per-packet ROI drops. The doc is the same either way — only the trigger in §6
-differs.
+**Status: ADOPTED 2026-07-03 (Tim) — §6 option (a), execute now.** Trigger: the treadmill evidence
+(`docs/briefs/FAILURE_META_DIAGNOSIS.md` — ~25 packets on one root; `docs/briefs/SECOND_ORDER_DIAGNOSIS.md` —
+scattered sinks force precision-bias) plus Tim's independent design memo
+(`fable_rung1_llm_between_player_and_engine.md`) converging on the same boundary. Packetized as
+**INT-1…INT-4** in `docs/PACKETS.md` (the single intake) — on conflict, the packets there win over this
+doc's phase sketch.
 
 **Reads first:** Biblioteca [Vol 7](biblioteca/vol-7-hybrid-architecture-patterns.md) (the wiring) +
 [Vol 8](biblioteca/vol-8-evaluation-harness.md) (the harness spec) + `docs/RUNG1_QUEUE.md` (the live loop this

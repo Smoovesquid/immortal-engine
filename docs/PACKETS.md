@@ -162,6 +162,41 @@ verbs — no parallel contract enum), `parseIntent` stays the LLM-off floor.
   categorically-new failure classes **and** ≤2 broken turns per 48, twice running (2026-07-02: 9/48 → 4/48
   after the egress arc).
 
+#### INT-4a — compound-action drop: a trivial leading clause must not eat the whole turn  ·  Phase 0  ·  **✅ DONE 2026-07-03 (`b410477`; v0.28.1 build 051; live-verified)**
+- **what landed:** root was NOT the ear (the LLM packet's `verb` never drives the turn — only `.kind` is
+  consumed; `playerMoveCore` re-parses raw text deterministically). The clause was dropped at TWO seams:
+  the physics-verb intercept (`playloop.js:3271`, "take" → chest "too heavy") and `classifyTrivial`
+  (`:3403`, "kneel" swallows the turn). Fix = `splitLeadingTrivialClause` in `playerMoveCore` — strip a
+  no-stake lead (ready-a-held-tool / posture) and recurse on the REAL clause, prepending the gesture as
+  flavor (mirrors the existing move-then-act splitter). Suite 9484/0, convergence 100% (124/124, incl.
+  C4-010 fixed mid-work), determinism 430/430, playtest:quick 0. **Live on v0.28.1:** "take my hatchet and
+  open the chest" → "You take your hatchet in hand. You open the chest."; "kneel by the chest and try its
+  lid" → resolves the lid (was bare "You kneel.").
+- **residual (separate, flagged):** the surviving "try its lid — is it locked?" tail lands on a generic
+  WITS roll, not a concrete locked/unlocked answer — a pre-existing phrasing weakness, squarely the new
+  Coherence Gate's CG-3 (object/lock-state) territory + IOM. NOT the compound-drop.
+- **symptom (reproduced live, current build, Haiku ears ON — Basecamp boot 2026-07-03):**
+  - _"I take my hatchet in hand and open the chest."_ → DM: **"The Hatchet is already in your pack."**
+    (the `open the chest` clause silently dropped).
+  - _"I kneel by the chest and try its lid — is it locked?"_ → DM: **"You kneel."** (the `try the lid /
+    is it locked?` intent silently dropped).
+  - Ear-level probe (`proposeIntentViaLlm`, live Haiku) confirms the root: the first utterance proposes
+    `verb=take, objects=["Wooden staff"]` — the classifier locks onto the leading trivial verb and never
+    reaches the real action. Same class as the stale 2026-07-03 gate's top DM_TEST_DEADENDs (chest turns);
+    **Haiku-primary ears did NOT fix it** — the compound is dropped upstream of grounding.
+- **distinct from CT-1** (`docs/briefs/CT-1-roll-report-compound.md`), which folds the *meta-query* compound
+  (raw-d20 ∧ damage-die) in `gracefulAdjudication.js`. This is the *action* compound (trivial-clause ∧
+  real-action) — a different path (the ear's single-verb collapse + the H-59 typed compound-decomposition
+  `gracefulAdjudication.js ~566–625` / the `playloop.js` action classifier). **Trace the drop point FIRST**
+  (packet step 1) before choosing the seam.
+- **reprioritization flag:** the INT-4 stub orders compound LAST (by lineage size); live gate evidence says
+  it bites HARDEST (dominant DM_TEST_DEADEND flavor). Recommend cutting INT-4a **now**, ahead of the
+  referent/dialogue/combat families.
+- **done_when:** both symptom turns above resolve the real action (open/inspect the chest) or say plainly
+  it isn't there — never silently drop a clause; the chest-compound corpus rows pass; next gate shows no
+  categorically-new compound-drop; determinism intact (U19/21/22/27/30); `npm run check` green.
+- **rollback:** family flag back to legacy routing (keep both paths one release).
+
 ### SL — THE SHIPPABLE SLICE (priority, scope-locked 2026-06-29)
 **Provenance:** Tim's 2026-06-29 scope re-lock (`docs/DEMO_REGION.md` scope-lock banner). The demo is cut to
 ONE walkable ~100 km² region with four authored places: a town, a forest (bandits roam), a bandit camp, and
@@ -483,6 +518,31 @@ to confirm it doesn't regress dialogue, so it's its own packet.
 - **wart observed on the walk (fix with grace, not here):** "go to The Greenwood" while STANDING in The
   Greenwood answered "You know of no such place hereabouts" — a DM would say "you're already here." One
   grace phrase; queue with the next INT family packet.
+
+### TAC — tactical movement: the graph-paper closest view is normal travel (5 ft / 30 ft-per-turn)  ·  **Phase 4 (the face)  ·  EPIC, design-first, BLOCKED on INT-4a**
+**Provenance:** Tim's ruling 2026-07-03 (this session). The felt bug: **"go east" teleports you to the next node**
+instead of walking. Tim wants normal travel to be **tactical grid movement** on the closest-zoom graph-paper
+view — **1 square = 5 ft, a character moves ≤ 30 ft (6 squares) per turn** — and directional/spoken commands
+("go east") to mean *walk 30 ft east on the current place grid*, resolved in the fiction (DM-only verb; the map
+stays a read-only aid). Extends [[project_map_3d_tactical_vision]] + [[project_dnd_xcom]] from combat-only into
+normal movement; the substrate partly exists (`placeNav` walkable grid, `dxFt/dyFt` foot-steps ~`playloop.js:4148`,
+the cell-stepping avatar ~`:2205`).
+- **THE TWO-TIER TRAVEL RULING (Tim, 2026-07-03):** node-travel is **NOT banned** — it survives as an **explicit,
+  separate "journey" action** (distinct verb/gesture from tactical "go east") so the ~100 km² slice stays crossable.
+  Tactical grid = local movement; journey = between-node/region travel. Settle the tactical (5 ft) truth FIRST,
+  then define how tactical composes up into journeys.
+- **THE ONE HARD DECISION (design step 1, Fable contract-design — NOT a patch):** is the tactical grid position
+  **canonical** (in deterministic, hashed world state → `WORLD_VERSION` bump + new invariants + hash-stability
+  work) or **renderer-side** (like today's on-map marker `ux/uy`, deliberately NOT canon — see
+  [[map_marker_reads_v1_walk_pos]]: direct `ux/uy` writes break U21)? If movement is the primary action with a
+  budget + consequences, position almost certainly must become canon. Decide the CONTRACT before any code.
+- **blocked_on:** INT-4a (the compound-drop fix) — this epic lives almost entirely in `playloop.js`, INT-4a's hot
+  file; serial lane, one at a time.
+- **sequence:** (1) Fable contract-design (position-as-canon? the 30 ft budget model? the tactical↔journey seam?)
+  → (2) packetize → (3) build after INT-4a lands.
+- **done_when (epic):** "go east" walks ≤30 ft on the 5 ft grid (never node-jumps); "journey to X" is the only
+  path that changes node; the closest-zoom graph-paper view shows the token on 5 ft squares and tracks live;
+  determinism intact (whichever contract wins, `worldHash`/U19-30 hold).
 
 ### MAP-OCC — the map draws who's actually there (occupancy tokens) + position hygiene
 **Phase 0 (the floor holds).** **Status:** OPEN — spec'd 2026-07-03 (Basecamp diagnosis this session,

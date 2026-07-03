@@ -15,6 +15,16 @@
         "DM_ARTIFACT_LEAK",
         "DM_TEST_DEADEND"
       ]
+    },
+    {
+      "runId": "gate-2026-07-03T03-56-04-236Z-v1",
+      "date": "2026-07-03",
+      "regime": "v1",
+      "modes": [
+        "COMBAT_NOT_STARTED",
+        "DM_ARTIFACT_LEAK",
+        "DM_TEST_DEADEND"
+      ]
     }
   ]
 }

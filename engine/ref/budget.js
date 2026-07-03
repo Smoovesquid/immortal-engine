@@ -50,7 +50,9 @@ export function createRefBudget({
 }
 
 function envSessionCap() {
-  const raw = Number(process.env.REF_MAX_JUDGE_CALLS);
+  // Browser-safe: `process` doesn't exist in the browser (see instrument.js).
+  const env = (typeof process !== 'undefined' && process.env) ? process.env : {};
+  const raw = Number(env.REF_MAX_JUDGE_CALLS);
   return Number.isFinite(raw) && raw > 0 ? raw : Infinity;
 }
 

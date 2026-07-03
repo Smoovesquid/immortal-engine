@@ -11,8 +11,18 @@ import { fateBand } from './rulesets.js';
 // INTENT_TRACE=1 to log one packet per free-text input to stdout — the
 // packet already rides the turn output too (engine/playloop.js playerMove),
 // this console line is for headless/CLI observation without a UI.
+//
+// BROWSER-SAFE env read (2026-07-03): this module runs in the browser (v1
+// imports playloop → here), where `process` DOES NOT EXIST. A bare
+// process.env here threw ReferenceError on EVERY typed turn — caught upstream
+// and shown as a blink-and-miss status — i.e. "everything I type does
+// nothing". Guard with `typeof`; U384 locks the whole browser graph.
+export function intentTraceOn() {
+  return typeof process !== 'undefined' && !!process.env && process.env.INTENT_TRACE === '1';
+}
+
 export function traceIntentPacket(packet) {
-  if (process.env.INTENT_TRACE !== '1') return;
+  if (!intentTraceOn()) return;
   try {
     // eslint-disable-next-line no-console
     console.log('[intent-trace]', JSON.stringify(packet));

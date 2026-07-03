@@ -17,7 +17,7 @@ import { conductorDecision, applyConductorDeltas } from './conductor.js';
 import { worldTick } from './worldTick.js';
 import { resolveMove } from './resolve.js';
 import { applyDeltas } from './effectsCore.js';
-import { introduceThread, resolveThread, ensureInstrumentLayer, traceIntentPacket } from './instrument.js';
+import { introduceThread, resolveThread, ensureInstrumentLayer, traceIntentPacket, intentTraceOn } from './instrument.js';
 import { assemblePacket } from './intent/assemblePacket.js';
 import { applyGeneratedStructuresForNode } from './structures/applyGeneratedStructuresForNode.js';
 import { enterStructureInterior, exitStructureInterior, moveWithinInterior, getInteriorView, interiorDirectionalExits, resolveStructureSelection } from './structures/interiors.js';
@@ -669,7 +669,10 @@ export function playerMove(world, packsById, text, { llmPacket } = {}) {
   const __intentPacket = useLlmPacket ? llmPacket : assemblePacket(world, text, __dqIntent);
   traceIntentPacket(__intentPacket);
   const res = playerMoveTraced(world, packsById, text, __dqIntent);
-  if (process.env.INTENT_TRACE === '1' && res && res.output) {
+  // intentTraceOn(), NOT bare process.env — this function runs in the browser,
+  // where `process` is undefined and a bare read threw on EVERY typed turn
+  // (the 07-03 "everything does nothing" root). U384 locks the graph.
+  if (intentTraceOn() && res && res.output) {
     return { ...res, output: { ...res.output, __intentTrace: __intentPacket } };
   }
   return res;

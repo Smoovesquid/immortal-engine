@@ -17,6 +17,10 @@
 import { makeIntent, VERBS } from './intentSchema.js';
 import { VERB_SYNONYMS } from './parseIntent.js';
 
+// The question kinds engine/grace/answerability.js can emit (its five return
+// sites). Keep in lockstep with directQuestionIntent — ONE vocabulary.
+const LEGAL_QUESTION_KINDS = new Set(['npc-addressed', 'rules', 'referent-followup', 'place']);
+
 // Normalize a name/id/ref for loose matching — case/space-insensitive, matches
 // how assemblePacket's own entity list is built (name-or-id, role-or-null).
 function norm(s) {
@@ -128,7 +132,12 @@ export function groundPacket(proposed, bundle) {
       text: proposed.text,
       compoundParts: Array.isArray(proposed.compoundParts) ? proposed.compoundParts : [],
       ambiguity: proposed.ambiguity,
-      kind: proposed.kind,
+      // `kind` claims "this turn is a QUESTION of this class" and downstream
+      // drives playerMove's shared question-verdict — an unvalidated junk kind
+      // ("string"/"action" from a small model) silently turns an ordinary
+      // action into a question turn (the 07-03 "everything does nothing" bug).
+      // Whitelist to the kinds engine/grace/answerability.js actually emits.
+      kind: LEGAL_QUESTION_KINDS.has(String(proposed.kind || '')) ? String(proposed.kind) : null,
       confidence: proposed.confidence,
       source: 'llm'
     });

@@ -657,7 +657,13 @@ export function playerMove(world, packsById, text, { llmPacket } = {}) {
   // classifier exactly as before, since the LLM's reading agreed there was
   // no direct-question verdict to override.
   const useLlmPacket = !!(llmPacket && llmPacket.source === 'llm');
-  const __dqIntent = (useLlmPacket && llmPacket.kind)
+  // The ear may PROPOSE a question-reading, but only question-shaped text can
+  // bear it — grounding whitelists the kind value, and this gate keeps even a
+  // legal-kind hallucination on an action sentence ("Smash the window") from
+  // hijacking the turn into the question machinery (the 07-03 silent-no-op).
+  // LLM proposes; the engine validates. isQuestionShaped is the broad,
+  // recall-biased shape test — a real missed question still passes.
+  const __dqIntent = (useLlmPacket && llmPacket.kind && isQuestionShaped(text))
     ? { kind: String(llmPacket.kind), addressee: null, parts: [String(text || '')] }
     : directQuestionIntent(text, world);
   const __intentPacket = useLlmPacket ? llmPacket : assemblePacket(world, text, __dqIntent);

@@ -1,11 +1,12 @@
 // U380 — INT-2R: the provider ORDER for the server-side LLM-intent proposal.
 //
-// Tim's ruling 2026-07-03: the local Ollama model is PRIMARY (free, local,
-// always-on); Anthropic is the fallback. engine/intent/llmIntent.js's
-// `INTENT_LLM` env flag selects the order:
+// Tim's rulings 2026-07-03 (the evening Haiku-primary ruling superseded the
+// morning's Ollama-primary): Anthropic's fast tier (INTENT_LLM_MODEL, default
+// claude-haiku-4-5) is PRIMARY; local Ollama is the free/offline fallback.
+// engine/intent/llmIntent.js's `INTENT_LLM` env flag selects the order:
 //   'off'       — no provider consulted at all (covered by U377's zero-
 //                 outbound-calls gate; not re-tested here).
-//   'auto' (default/unset) — Ollama first, Anthropic only on an Ollama miss.
+//   'auto' (default/unset) — Anthropic first, Ollama only on an Anthropic miss.
 //   'ollama'    — Ollama only, no Anthropic fallback even on a miss.
 //   'anthropic' — Anthropic only, no Ollama attempted at all.
 //
@@ -28,6 +29,7 @@ const BUNDLE = {
 // returns a valid packet-shaped JSON reply for whichever provider is asked.
 function makeRecordingFetch({ ollamaOk = true, anthropicOk = true } = {}) {
   const calls = [];
+  const anthropicModels = []; // the `model` field each Anthropic request carried
   const fetchImpl = async (url, opts) => {
     const u = String(url);
     if (u.includes(':11434')) {
@@ -40,6 +42,7 @@ function makeRecordingFetch({ ollamaOk = true, anthropicOk = true } = {}) {
     }
     if (u.includes('api.anthropic.com')) {
       calls.push('anthropic');
+      try { anthropicModels.push(JSON.parse(String(opts?.body || '{}')).model || null); } catch { anthropicModels.push(null); }
       if (!anthropicOk) return { ok: false, status: 500, text: async () => 'anthropic down' };
       return {
         ok: true,
@@ -49,7 +52,7 @@ function makeRecordingFetch({ ollamaOk = true, anthropicOk = true } = {}) {
     calls.push(`unknown:${u}`);
     return { ok: false, status: 404, text: async () => 'not found' };
   };
-  return { fetchImpl, calls };
+  return { fetchImpl, calls, anthropicModels };
 }
 
 function withEnv(vars, fn) {
@@ -67,23 +70,37 @@ function withEnv(vars, fn) {
   });
 }
 
-test('U380: default (INTENT_LLM unset/auto) — Ollama is consulted BEFORE Anthropic', async () => {
+test('U380: default (INTENT_LLM unset/auto) — Anthropic is consulted BEFORE Ollama', async () => {
   resetOllamaAvailability();
-  await withEnv({ INTENT_LLM: undefined, ANTHROPIC_API_KEY: 'test-key-not-real' }, async () => {
+  await withEnv({ INTENT_LLM: undefined, INTENT_LLM_MODEL: undefined, ANTHROPIC_API_KEY: 'test-key-not-real' }, async () => {
     const { fetchImpl, calls } = makeRecordingFetch();
     const result = await proposeIntentViaLlm(null, 'I stab the goblin', BUNDLE, { fetchImpl });
-    assert.deepEqual(calls, ['ollama'], 'a healthy Ollama response must short-circuit before Anthropic is ever touched');
+    assert.deepEqual(calls, ['anthropic'], 'a healthy Anthropic response must short-circuit before Ollama is ever touched (Haiku-primary ruling)');
     assert.equal(result.verb, 'attack');
   });
 });
 
-test('U380: default (auto) — Anthropic is consulted only AFTER an Ollama miss', async () => {
+test('U380: default (auto) — Ollama is consulted only AFTER an Anthropic miss', async () => {
   resetOllamaAvailability();
-  await withEnv({ INTENT_LLM: undefined, ANTHROPIC_API_KEY: 'test-key-not-real' }, async () => {
-    const { fetchImpl, calls } = makeRecordingFetch({ ollamaOk: false });
+  await withEnv({ INTENT_LLM: undefined, INTENT_LLM_MODEL: undefined, ANTHROPIC_API_KEY: 'test-key-not-real' }, async () => {
+    const { fetchImpl, calls } = makeRecordingFetch({ anthropicOk: false });
     const result = await proposeIntentViaLlm(null, 'I stab the goblin', BUNDLE, { fetchImpl });
-    assert.deepEqual(calls, ['ollama', 'anthropic'], 'Ollama must be attempted first even when it will miss, THEN Anthropic as the fallback');
+    assert.deepEqual(calls, ['anthropic', 'ollama'], 'Anthropic must be attempted first even when it will miss, THEN Ollama as the offline fallback');
     assert.equal(result.verb, 'attack');
+  });
+});
+
+test('U380: the ears request the intent model — claude-haiku-4-5 by default, INTENT_LLM_MODEL override respected', async () => {
+  resetOllamaAvailability();
+  await withEnv({ INTENT_LLM: 'anthropic', INTENT_LLM_MODEL: undefined, ANTHROPIC_API_KEY: 'test-key-not-real' }, async () => {
+    const { fetchImpl, anthropicModels } = makeRecordingFetch();
+    await proposeIntentViaLlm(null, 'I stab the goblin', BUNDLE, { fetchImpl });
+    assert.deepEqual(anthropicModels, ['claude-haiku-4-5'], 'the intent translator must ask for the fast tier by default, independent of LLM_MODEL');
+  });
+  await withEnv({ INTENT_LLM: 'anthropic', INTENT_LLM_MODEL: 'claude-sonnet-4-6', ANTHROPIC_API_KEY: 'test-key-not-real' }, async () => {
+    const { fetchImpl, anthropicModels } = makeRecordingFetch();
+    await proposeIntentViaLlm(null, 'I stab the goblin', BUNDLE, { fetchImpl });
+    assert.deepEqual(anthropicModels, ['claude-sonnet-4-6'], 'INTENT_LLM_MODEL must override the ears model per-env');
   });
 });
 
@@ -119,10 +136,10 @@ test('U380: INTENT_LLM=off — no provider is consulted at all (covers the same 
 
 test('U380: both providers miss (auto) — returns null, never throws', async () => {
   resetOllamaAvailability();
-  await withEnv({ INTENT_LLM: undefined, ANTHROPIC_API_KEY: 'test-key-not-real' }, async () => {
+  await withEnv({ INTENT_LLM: undefined, INTENT_LLM_MODEL: undefined, ANTHROPIC_API_KEY: 'test-key-not-real' }, async () => {
     const { fetchImpl, calls } = makeRecordingFetch({ ollamaOk: false, anthropicOk: false });
     const result = await proposeIntentViaLlm(null, 'I stab the goblin', BUNDLE, { fetchImpl });
-    assert.deepEqual(calls, ['ollama', 'anthropic']);
+    assert.deepEqual(calls, ['anthropic', 'ollama']);
     assert.equal(result, null);
   });
 });

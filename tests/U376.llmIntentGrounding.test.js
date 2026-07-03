@@ -281,18 +281,22 @@ test('U376: playerMove traces a grounded llmPacket verbatim when passed (source:
 // this turn as a direct question of that kind), THAT kind must be what routes
 // the turn — not a silently-recomputed deterministic classification.
 //
-// "I get out of bed and step outside." is a declared ACTION (movement) —
-// directQuestionIntent(text, world) classifies it as null (not a question at
-// all), so the un-overridden turn moves the character. Supplying an llmPacket
-// with kind:'rules' must redirect this exact turn to the capability answer
-// instead — proof positive the packet's kind is what routes, not decoration.
+// "so what exactly does someone like me know how to do?" IS question-shaped
+// (so playerMove's isQuestionShaped gate lets the ear's reading through — see
+// U383 for the action-sentence case it must block), but the deterministic
+// classifier MISREADS it: directQuestionIntent returns kind:'place', and the
+// un-overridden turn dead-ends as an ungrounded info-check. The ear's
+// kind:'rules' correction must redirect this exact turn to the capability
+// answer — proof positive the packet's kind is what routes, not decoration.
+// (Rewritten 2026-07-03: the original fixture used a plain movement sentence,
+// which enshrined the junk-kind hijack this arc exists to prevent.)
 
-test('U376: an llmPacket carrying kind:\'rules\' redirects the turn to the capability answer — even for text the deterministic classifier reads as a plain action', () => {
+test('U376: an llmPacket carrying kind:\'rules\' redirects a question turn to the capability answer — even when the deterministic classifier misreads the question', () => {
   const w = boot();
-  const text = 'I get out of bed and step outside.';
+  const text = 'so what exactly does someone like me know how to do?';
 
-  // Baseline: no packet override — this text is a declared action (movement),
-  // not a question at all, so it moves the character.
+  // Baseline: no packet override — the deterministic classifier misreads
+  // this as a place question and the turn dead-ends without a rules answer.
   const baseline = playerMove(w, PACKS, text);
   assert.doesNotMatch(baseline.output.mechanics || '', /observe only/i, 'sanity: the un-overridden turn must NOT already be a no-roll observe answer');
 

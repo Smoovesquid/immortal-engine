@@ -596,14 +596,13 @@ async function tryIntentSplit(w, text) {
 // the shared question-verdict FROM it (playloop.js playerMove). On ANY
 // failure/timeout/offline, `llmPacket` stays null and playerMove runs
 // exactly as it does today — the deterministic path is always the floor.
-// Integration ruling 2026-07-03 (INT-2R): Tim ruled local Ollama = PRIMARY ears
-// unconditionally, and its measured real latency through the HTTP route is
-// ~6-8s on dev hardware — a 2.8s budget made almost every live turn time out
-// onto the deterministic floor, quietly defeating the ruling. Keep this ABOVE
-// llmIntent.js's server-side 8000ms proposal budget so the client doesn't give
-// up on an answer the server was still allowed to produce. Knobs if the wait
-// drags: lower this, trial a smaller local model, or INTENT_LLM=off.
-const INTENT_PACKET_TIMEOUT_MS = 9000;
+// Hearing budget (Tim's Haiku-primary ruling, 2026-07-03 evening): the ears
+// run claude-haiku-4-5 first (~1-2s round trip), local Ollama as the offline
+// fallback. Keep this ABOVE the server route's 4000ms total budget (server.js
+// /api/intent-packet) so the client never gives up on an answer the server
+// was still allowed to produce — and the echo-first + "The DM listens…" UX in
+// doSubmitMove means even a full-budget wait is visible, never dead air.
+const INTENT_PACKET_TIMEOUT_MS = 4500;
 async function tryLlmIntentPacket(w, text) {
   try {
     const bundle = buildParseCtx(w);
@@ -731,6 +730,17 @@ async function doSubmitMove() {
     }
   }
 
+  // INT-2R-u — the table never goes silent: the player's words echo and the
+  // DM is visibly listening BEFORE the ear/turn work. The echo used to happen
+  // only after the LLM await + playerMove, so a slow ear read as "the game
+  // did nothing" (2026-07-03). Meta-questions and local walks return above
+  // with their own handling; everything from here on is a real turn.
+  const displayText = text.replace(/\s*::\S+\s*$/, '').trim();
+  ui.play.lines.push({ who: 'you', text: displayText, mech: '' });
+  ui.play.input = '';
+  setStatus('The DM listens…');
+  render();
+
   // Capture node before move for auto scene transition
   const prevNodeId = String(w.map?.currentNodeId ?? '');
   // Capture timeline length so we only react to events this move appended —
@@ -750,9 +760,8 @@ async function doSubmitMove() {
     }
     // Tier C: the DM's clarifying question costs nothing — answer and retry.
     if (split && split.clarify) {
-      ui.play.lines.push({ who: 'you', text, mech: '' });
+      // (player line + input clear already handled by the echo-first block)
       ui.play.lines.push({ who: 'wizard', text: split.clarify, mech: '[clarify:intent]' });
-      ui.play.input = '';
       tts.speak(split.clarify);
       setStatus('');
       render();
@@ -802,11 +811,6 @@ async function doSubmitMove() {
     if (spoken) baseNarration = spoken;
   }
 
-  // Strip the internal "::<nodeId>" travel marker from the echoed player line
-  // (path buttons append it for unambiguous resolution; it must not be visible).
-  const displayText = text.replace(/\s*::\S+\s*$/, '').trim();
-  ui.play.lines.push({ who: 'you', text: displayText, mech: '' });
-  ui.play.input = '';
   ui.play.lastResolutionKind = 'turn';
   ui.play.lastCombatSummary = output?.combatSummary || '';
 
@@ -994,8 +998,8 @@ function renderInvoke() {
     el('div', { class: 'panel' },
       el('div', { class: 'header' },
         el('div', {},
-          el('div', { class: 'title' }, 'Immortal Engine — v0.27.1'),
-          el('div', { class: 'sub' }, 'build 047 · 2026-07-03 · Ollama ears, heard')
+          el('div', { class: 'title' }, 'Immortal Engine — v0.27.2'),
+          el('div', { class: 'sub' }, 'build 048 · 2026-07-03 · Haiku ears, table never silent')
         )
       ),
       // ── One-click front door: start (or resume) the Escape game ──────

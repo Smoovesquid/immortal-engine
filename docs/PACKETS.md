@@ -121,11 +121,27 @@ verbs — no parallel contract enum), `parseIntent` stays the LLM-off floor.
   quietly defeating "Ollama primary." Per Tim's unconditional ruling, the client budget is raised to
   **9000ms** (v0.27.1); felt cost = a typed turn can wait several seconds to be heard correctly. Knobs if
   it drags: lower the budget, smaller local model, `INTENT_LLM=off`.
-- **follow-ups (queued, concrete):** (a) Ollama boot-time warm-up ping from `server.js` (kills the
-  10–30s cold-load first-turn miss; `keep_alive` already 30m); (b) latency diet — trim few-shot/prompt
-  tokens, trial a smaller local model (e.g. 3B-class) on the eval; (c) benchmark invented-id framing made
-  field-aware; (d) Ollama accuracy 44.4% → next hardening pass or model trial (Anthropic fallback covers
-  misses meanwhile).
+- **INT-2R-u + HAIKU-PRIMARY (Tim's evening ruling 2026-07-03 — supersedes the morning's Ollama-primary;
+  landed v0.27.2 build 048):** the live-play findings ("all I could do was look around" = 9s dead air +
+  a latent junk-`kind` hijack) fixed in-window: (1) **echo-first UX** — the player's words + "The DM
+  listens…" render BEFORE the ear/turn work (live-measured 63ms; the old echo waited behind the LLM
+  await); (2) **Anthropic (claude-haiku-4-5) is the PRIMARY ear** via new `INTENT_LLM_MODEL` (its own
+  setting — narration keeps its richer model), Ollama = offline fallback, `parseIntent` = floor;
+  (3) **real budgets** — route total 4000ms with per-leg deadlines (two sequential 8s legs was the
+  "13.7s route" bug), client 4500ms; (4) **kind-guard, both seams** — grounding whitelists `kind` to the
+  classifier's 4 legal values AND `playerMove` honors a kind only on `isQuestionShaped` text (U383; the
+  U376 fixture that enshrined the hijack rewritten); (5) prompt diet (candidate caps 12/14) + few-shot
+  now teaches `kind`; a mid-fix regression (schema-embedded instruction flipped models into "I'm ready
+  to translate…" acknowledgment mode, Sonnet 88.9→16.7) was caught by the benchmark and fixed —
+  `INTENT_DEBUG=1` now surfaces silent ear failures on the server console. Boot warm-up already existed
+  (`warmModel()` at listen).
+- **benchmark (final, `docs/playtests/intent-eval-2026-07-03T20-34-58-412Z.md`):** parser 66.7% ·
+  **Haiku 72.2% @ ~1.0s (the shipped default)** · Sonnet 4.6 **94.4%** @ ~1.7s (one-line upgrade:
+  `INTENT_LLM_MODEL=claude-sonnet-4-6`, ~3× the pennies) · Ollama 38.9% @ ~6.3s. 0 invented IDs
+  everywhere. Live-door proof: real-browser "go outside" → `source:'llm'`, `verb:'move'`, `kind:null`.
+- **follow-ups (queued, concrete):** (a) benchmark invented-id framing made field-aware; (b) grow the
+  18-row corpus from future gate history (the mid-fix 16.7% catch proves its worth); (c) consider
+  Sonnet-as-ears if Haiku's 72.2% is felt at the table (one env line, no code).
 - **rollback:** `INTENT_LLM=off` — zero provider calls (U377/U380/U382 proven), deterministic floor is
   the whole game.
 

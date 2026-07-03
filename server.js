@@ -274,7 +274,15 @@ return res.json({ ok:false, reason:safe });
       if (process.env.INTENT_LLM === 'off') return res.json({ ok: true, packet: null });
       if (!hasLlmKey() && !hasLocalLlmAvailable()) return res.json({ ok: true, packet: null });
 
-      const proposed = await proposeIntentViaLlm(null, text, bundle);
+      // Route TOTAL budget: the client shows "The DM listens…" for at most
+      // ~4.5s (v1.js INTENT_PACKET_TIMEOUT_MS) — both provider legs must fit
+      // inside it TOGETHER (two sequential 8s legs was the 07-03 "13.7s
+      // route" bug). Haiku-primary lands in ~1-2s; the race is the hard stop.
+      const budgetMs = 4000;
+      const proposed = await Promise.race([
+        proposeIntentViaLlm(null, text, bundle, { timeoutMs: budgetMs }),
+        new Promise(r => setTimeout(r, budgetMs + 300, null))
+      ]);
       const grounded = proposed ? groundPacket(proposed, bundle) : null;
       const packet = (grounded && grounded.source === 'llm') ? grounded : null;
       return res.json({ ok: true, packet });
@@ -578,7 +586,7 @@ return res.json({ ok:false, reason:safe });
       try {
         if (process.env.INTENT_LLM !== 'off' && (hasLlmKey() || hasLocalLlmAvailable())) {
           const bundle = buildParseCtx(safeWorld);
-          const proposed = await proposeIntentViaLlm(safeWorld, action, bundle);
+          const proposed = await proposeIntentViaLlm(safeWorld, action, bundle, { timeoutMs: 4000 });
           const grounded = proposed ? groundPacket(proposed, bundle) : null;
           if (grounded && grounded.source === 'llm') llmPacket = grounded;
         }

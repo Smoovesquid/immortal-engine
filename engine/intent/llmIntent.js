@@ -46,6 +46,15 @@ export const LOW_CONFIDENCE_THRESHOLD = 0.4;
 // public/v1.js so a slow server never stalls the player either way.
 const DEFAULT_TIMEOUT_MS = 8000;
 
+// The ears' Anthropic model is its OWN setting, separate from LLM_MODEL, so
+// intent-translation runs the fast/cheap tier while narration keeps its richer
+// default. Tim's ruling 2026-07-03 (evening — supersedes the morning's
+// Ollama-primary): Haiku primary. claude-haiku-4-5 round-trips this small
+// JSON job in ~1-2s at ~$0.0016/turn.
+export function intentModel() {
+  return (process.env.INTENT_LLM_MODEL || '').trim() || 'claude-haiku-4-5';
+}
+
 export function isLowConfidencePacket(packet) {
   if (!packet || typeof packet !== 'object') return true;
   const c = Number(packet.confidence);
@@ -69,7 +78,7 @@ function schemaHint() {
     approach: APPROACHES,
     stake: STAKES,
     ambiguity: ['target', 'object', 'goal', 'referent', null],
-    kind: 'string|null'
+    kind: ['npc-addressed', 'rules', 'referent-followup', 'place', null]
   };
 }
 
@@ -92,21 +101,24 @@ function schemaHint() {
 // (a WH-question-shaped address, matching the failing corpus rows' shape)
 // fixes this without inventing a second vocabulary.
 const FEW_SHOT = [
-  { text: 'I stab the goblin', out: { verb: 'attack', target: 'goblin', with: null } },
-  { text: 'I ask the innkeeper about the well', out: { verb: 'talk', target: 'innkeeper', with: null } },
-  { text: 'who lit that lantern, Elske?', out: { verb: 'talk', target: 'Elske', with: null } },
-  { text: 'I look around the room', out: { verb: 'search', target: null, with: null } },
-  { text: 'I light the torch', out: { verb: 'use', target: 'torch', with: null } },
-  { text: 'I run from the fight', out: { verb: 'flee', target: null, with: null } }
+  { text: 'I stab the goblin', out: { verb: 'attack', target: 'goblin', with: null, kind: null } },
+  { text: 'I ask the innkeeper about the well', out: { verb: 'talk', target: 'innkeeper', with: null, kind: 'npc-addressed' } },
+  { text: 'who lit that lantern, Elske?', out: { verb: 'talk', target: 'Elske', with: null, kind: 'npc-addressed' } },
+  { text: 'I look around the room', out: { verb: 'search', target: null, with: null, kind: null } },
+  { text: 'I light the torch', out: { verb: 'use', target: 'torch', with: null, kind: null } },
+  { text: 'I run from the fight', out: { verb: 'flee', target: null, with: null, kind: null } }
 ];
 
 function buildPrompt(text, bundle) {
-  const candidateEntities = (bundle.entities || []).map(e => e.name || e.id).filter(Boolean);
+  // Prompt diet — cap the candidate lists: a full room can list dozens of
+  // entities/items, and prompt-eval time is the bulk of a small model's
+  // latency. The nearest/salient candidates come first in buildParseCtx.
+  const candidateEntities = (bundle.entities || []).map(e => e.name || e.id).filter(Boolean).slice(0, 12);
   const candidateObjects = [
     ...(bundle.abilities || []),
     ...(bundle.spells || []),
     ...(bundle.items || [])
-  ].filter(Boolean);
+  ].filter(Boolean).slice(0, 14);
 
   const examples = FEW_SHOT.map(ex => `Player said: ${JSON.stringify(ex.text)}\nJSON: ${JSON.stringify(ex.out)}`).join('\n\n');
 
@@ -114,9 +126,10 @@ function buildPrompt(text, bundle) {
     'You translate a player\'s free-text D&D action into a strict JSON intent packet.',
     `The "verb" field MUST be exactly one of these ${VERBS.length} strings — never a synonym, never a variant: ${JSON.stringify(VERBS)}.`,
     '"talk" is for ANY address to a person present — greeting, questioning, persuading, demanding, even a sentence that literally contains the English word "ask" or "asked". "ask" (the verb value) means something different: NO mechanical verb applies at all — pure free narration with no action and no addressee (e.g. "I admire the sunset", "what do I smell?"). Do not pick "ask" just because the player\'s SENTENCE contains that word.',
+    '"kind" is null unless the player is ASKING A QUESTION; a question gets exactly one of: npc-addressed | rules | referent-followup | place. An action ("Smash the window", "go outside") is always kind:null.',
     'You NEVER invent an id — only use ids/names that appear in the candidate lists below.',
     'If nothing in the scene matches, use null / an empty array rather than guessing.',
-    'Reply with ONLY strict JSON matching the schema — no prose, no markdown fences.',
+    'Reply with ONLY strict JSON matching the schema — no prose, no markdown fences, no acknowledgement. Your ENTIRE reply is the one JSON object for the final "Player said" line.',
     '',
     'Examples (generic — do not reuse these names in your answer):',
     examples,
@@ -149,6 +162,7 @@ async function tryAnthropic(prompt, { fetchImpl, timeoutMs }) {
   try {
     const wrappedFetch = (url, opts) => (fetchImpl || globalThis.fetch)(url, { ...opts, signal: controller.signal });
     const { content } = await chatCompletion({
+      model: intentModel(),
       messages: [
         { role: 'system', content: 'You are a precise, literal JSON-only intent translator. Never invent facts.' },
         { role: 'user', content: prompt }
@@ -157,8 +171,16 @@ async function tryAnthropic(prompt, { fetchImpl, timeoutMs }) {
       max_tokens: 400,
       fetchImpl: wrappedFetch
     });
-    return parseJsonCandidate(content);
-  } catch {
+    const parsed = parseJsonCandidate(content);
+    if (!parsed && process.env.INTENT_DEBUG === '1') {
+      console.error('[intent-ear] unparseable anthropic reply:', String(content ?? '(empty)').slice(0, 400));
+    }
+    return parsed;
+  } catch (e) {
+    // Silent fallback is the LAW (the game must never stall on the ear), but
+    // invisible failures made the 07-03 diagnosis slow — INTENT_DEBUG=1 gives
+    // the server console the reason without changing any behavior.
+    if (process.env.INTENT_DEBUG === '1') console.error('[intent-ear] anthropic leg failed:', e?.message || e);
     return null;
   } finally {
     clearTimeout(timer);
@@ -178,13 +200,16 @@ async function tryOllama(prompt, { fetchImpl, timeoutMs }) {
   }
 }
 
-// INT-2R — Tim's ruling 2026-07-03: the local Ollama model is PRIMARY (free,
-// local, always-on); Anthropic is the fallback. `INTENT_LLM` selects the
-// provider order:
+// Provider order (Tim's rulings, 2026-07-03 — the evening Haiku-primary
+// ruling superseded the morning's Ollama-primary): the Anthropic fast tier
+// (intentModel(), default claude-haiku-4-5) reads FIRST — ~1-2s, no cold
+// start, and the sharper ear on the benchmark — with the local Ollama model
+// as the free/offline fallback; the deterministic parseIntent floor catches
+// everything upstream in the caller. `INTENT_LLM` selects:
 //   'off'      — no provider is ever consulted (U377's zero-outbound guarantee).
 //   'ollama'   — Ollama only, no Anthropic fallback.
 //   'anthropic'— Anthropic only, no Ollama fallback.
-//   'auto' | '' | unset — Ollama first, Anthropic on Ollama miss (the default).
+//   'auto' | '' | unset — Anthropic first, Ollama on an Anthropic miss (default).
 function providerMode() {
   const v = String(process.env.INTENT_LLM || '').trim().toLowerCase();
   if (v === 'off' || v === 'ollama' || v === 'anthropic') return v;
@@ -208,24 +233,32 @@ export async function proposeIntentViaLlm(world, text, bundle, opts = {}) {
 
     const scene = bundle || sceneBundleFor(world);
     const prompt = buildPrompt(text, scene);
-    const timeoutMs = Number.isFinite(opts.timeoutMs) ? opts.timeoutMs : DEFAULT_TIMEOUT_MS;
+    // opts.timeoutMs is the TOTAL budget for the whole chain, not per leg —
+    // two sequential full-budget legs was the 07-03 "13.7s route" bug.
+    const totalMs = Number.isFinite(opts.timeoutMs) ? opts.timeoutMs : DEFAULT_TIMEOUT_MS;
+    const t0 = Date.now();
+    const remaining = () => Math.max(250, totalMs - (Date.now() - t0));
 
-    if (mode === 'anthropic') {
-      const viaAnthropic = await tryAnthropic(prompt, { fetchImpl: opts.fetchImpl, timeoutMs });
-      return viaAnthropic ? { ...viaAnthropic, text: String(text || '') } : null;
+    if (mode === 'ollama') {
+      const viaOllama = await tryOllama(prompt, { fetchImpl: opts.fetchImpl, timeoutMs: remaining() });
+      return viaOllama ? { ...viaOllama, text: String(text || '') } : null;
     }
 
-    // Ollama first (mode 'ollama' or the 'auto' default).
-    const viaOllama = await tryOllama(prompt, { fetchImpl: opts.fetchImpl, timeoutMs });
-    if (viaOllama) return { ...viaOllama, text: String(text || '') };
-    if (mode === 'ollama') return null; // no Anthropic fallback in this mode
-
-    // Anthropic on Ollama miss/absence.
-    const viaAnthropic = await tryAnthropic(prompt, { fetchImpl: opts.fetchImpl, timeoutMs });
+    // Anthropic (Haiku-class) first — mode 'anthropic' or the 'auto' default.
+    // In 'auto' the leg is capped so a hung cloud call still leaves the local
+    // fallback a real share of the budget; a fast-fail (no key/401) costs
+    // near-zero and hands Ollama nearly the whole budget (the offline case).
+    const anthropicMs = mode === 'anthropic' ? remaining() : Math.min(3000, remaining());
+    const viaAnthropic = await tryAnthropic(prompt, { fetchImpl: opts.fetchImpl, timeoutMs: anthropicMs });
     if (viaAnthropic) return { ...viaAnthropic, text: String(text || '') };
+    if (mode === 'anthropic') return null; // no Ollama fallback in this mode
+
+    const viaOllama = await tryOllama(prompt, { fetchImpl: opts.fetchImpl, timeoutMs: remaining() });
+    if (viaOllama) return { ...viaOllama, text: String(text || '') };
 
     return null;
-  } catch {
+  } catch (e) {
+    if (process.env.INTENT_DEBUG === '1') console.error('[intent-ear] proposal failed:', e?.message || e);
     return null;
   }
 }

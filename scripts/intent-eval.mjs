@@ -137,32 +137,39 @@ async function main() {
   const parserRows = await runParserOnly();
   results.push(summarize('parser-only (parseIntent baseline)', parserRows));
 
-  // INT-2R — proposeIntentViaLlm's provider chain is now Ollama-first by
-  // DEFAULT (Tim's 2026-07-03 ruling — see engine/intent/llmIntent.js
-  // providerMode). Each backend pass below FORCES its provider explicitly
-  // via INTENT_LLM, rather than relying on which key happens to be present —
-  // leaving INTENT_LLM unset while a key AND Ollama are both available would
-  // silently score Ollama's answers under the "Anthropic" label (auto mode
-  // tries Ollama first). This isolation is what changed under INT-2R; the
-  // corpus/scoring logic itself did not.
+  // Each backend pass below FORCES its provider explicitly via INTENT_LLM
+  // (and its model via INTENT_LLM_MODEL), never relying on which key happens
+  // to be present — the 07-03 lesson: an ambient default silently scores one
+  // provider's answers under another's label. The corpus/scoring logic is
+  // provider-agnostic.
   const prevIntentLlm = process.env.INTENT_LLM;
+  const prevIntentModel = process.env.INTENT_LLM_MODEL;
+  const restoreEnv = () => {
+    if (prevIntentLlm === undefined) delete process.env.INTENT_LLM; else process.env.INTENT_LLM = prevIntentLlm;
+    if (prevIntentModel === undefined) delete process.env.INTENT_LLM_MODEL; else process.env.INTENT_LLM_MODEL = prevIntentModel;
+  };
 
-  // Backend 2 — Anthropic fast tier (only if a key is present).
+  // Backends 2+3 — Anthropic ears candidates (only if a key is present).
+  // Haiku is the live default (Tim's Haiku-primary ruling, 2026-07-03);
+  // Sonnet runs as the quality-ceiling comparison.
   const anthropicPresent = hasLlmKey();
   if (anthropicPresent) {
-    process.env.INTENT_LLM = 'anthropic';
-    try {
-      const anthropicRows = await runLlmBackend('anthropic');
-      requestCount += CORPUS.length; // one request per row (no retries)
-      results.push(summarize(`Anthropic (${process.env.LLM_MODEL || 'claude-sonnet-4-6'})`, anthropicRows));
-    } finally {
-      if (prevIntentLlm === undefined) delete process.env.INTENT_LLM; else process.env.INTENT_LLM = prevIntentLlm;
+    for (const model of ['claude-haiku-4-5', 'claude-sonnet-4-6']) {
+      process.env.INTENT_LLM = 'anthropic';
+      process.env.INTENT_LLM_MODEL = model;
+      try {
+        const rows = await runLlmBackend(model);
+        requestCount += CORPUS.length; // one request per row (no retries)
+        results.push(summarize(`Anthropic (${model})`, rows));
+      } finally {
+        restoreEnv();
+      }
     }
   } else {
     results.push({ label: 'Anthropic', skipped: true, reason: 'no ANTHROPIC_API_KEY/OPENAI_API_KEY in env' });
   }
 
-  // Backend 3 — local Ollama (only if reachable).
+  // Backend 4 — local Ollama (only if reachable).
   await checkOllamaHealth();
   if (ollamaAvailable()) {
     process.env.INTENT_LLM = 'ollama';
@@ -170,7 +177,7 @@ async function main() {
       const ollamaRows = await runLlmBackend('ollama');
       results.push(summarize('Ollama (local)', ollamaRows));
     } finally {
-      if (prevIntentLlm === undefined) delete process.env.INTENT_LLM; else process.env.INTENT_LLM = prevIntentLlm;
+      restoreEnv();
     }
   } else {
     results.push({ label: 'Ollama (local)', skipped: true, reason: 'no local Ollama server reachable at LOCAL_LLM_ENDPOINT' });

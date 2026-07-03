@@ -1509,6 +1509,39 @@ function playerMoveCore(world, packsById, text, dqIntent) {
   }
 
   const interiorAction = inferInteriorAction(text, w.scene?.interior);
+
+  // INT-4a — strip a TRIVIAL LEADING CLAUSE ("take my hatchet in hand and open
+  // the chest", "kneel by the chest and try its lid — is it locked?") so the
+  // REAL action drives the turn. Without this, the leading no-stake verb
+  // hijacks resolution downstream — the physics intercept reads the trailing
+  // object with the leading "take" ("the chest is too heavy"), or classifyTrivial
+  // swallows the whole turn as "You kneel." — and the real clause is silently
+  // dropped (the live gate's dominant DM_TEST_DEADEND). Guards:
+  //   • out of combat + out of dialogue (those own the full text for their cases,
+  //     and already returned above for theirs);
+  //   • the move-then-act splitter (below, in the interior branch) does NOT claim
+  //     it — a MOVE lead belongs to that path, so we only handle non-move leads
+  //     here (interiorAction is 'none' for a trivial gesture like take/kneel);
+  //   • the rest clause resolves via a recursive playerMoveCore on the ORIGINAL
+  //     3 args (never forwarding dqIntent — see the signature safety rule), so it
+  //     runs the entire pipeline for its own (world, text). The trivial gesture
+  //     is prepended as a brief lead-in, so nothing the player did is dropped.
+  //   • YIELD to the NPC alive/dead status guard (tryNpcStatusQuery, below): a
+  //     "kneel by Mira and check for a pulse — is she alive?" is already answered
+  //     from canon on the FULL text by that guard, and its corpus row (C4-010)
+  //     forbids a "You kneel" lead-in as the dropped-clause signature. So if the
+  //     full text is a status query, do NOT strip — let the normal path reach it.
+  if (!w.combat?.active && !w.scene?.dialogue && interiorAction.kind === 'none' && !tryNpcStatusQuery(w, text)) {
+    const trivialLead = splitLeadingTrivialClause(text);
+    if (trivialLead) {
+      const acted = playerMoveCore(w, packsById, trivialLead.restText);
+      const actLine = String(acted?.output?.narration || '').replace(/^Wizard:\s*/, '').trim();
+      const leadIn = trivialLeadIn(trivialLead.leadText);
+      const joined = (leadIn && actLine) ? `Wizard: ${leadIn} ${actLine}` : (actLine ? `Wizard: ${actLine}` : (acted?.output?.narration || ''));
+      return { ...acted, output: { ...(acted?.output || {}), narration: joined } };
+    }
+  }
+
   const targetedCombatAction = w.combat?.active && w.meta?.mode === 'escape' && (Number(w.meta?.escapeHp) || 0) > 0 && isTargetedViolentCombatAction(w, text);
   // CMB-SINK-1 — a forceful advance ("barrel through the doorway and into the
   // outpost", "shove past them") reads as an interior enter/move, but during escape
@@ -4302,6 +4335,115 @@ function splitInteriorMoveThenAct(text) {
   if (!moveText || !thenText) return null;
   if (!INTERIOR_THEN_ACTION_RE.test(thenText)) return null;
   return { moveText, thenText };
+}
+
+// INT-4a — the ACT-then-act compound. `splitInteriorMoveThenAct` above covers
+// only MOVE-then-act ("head to the back room AND open the chest"). The live
+// gate's dominant DM_TEST_DEADEND is the sibling case: a TRIVIAL leading
+// gesture — readying a held tool, or shifting posture — chained to the REAL
+// action, where the trivial verb hijacks the whole turn and the real clause is
+// silently dropped:
+//   "I take my hatchet in hand and open the chest."   → the physics intercept
+//       pairs the leading "take" with the trailing object "chest" and rules
+//       "the chest is too heavy"; "open the chest" is lost.
+//   "I kneel by the chest and try its lid — is it locked?" → classifyTrivial
+//       swallows "kneel" as "You kneel."; the lid/lock intent is lost.
+// A real DM resolves the SECOND clause and treats the first as flavor. This
+// splitter recognizes a trivial lead so the caller can resolve the real action
+// (the trivial gesture is prepended as a short lead-in, never a whole turn).
+//
+// TRIVIAL_LEAD_RE anchors at the start and must match the ENTIRE leading clause,
+// so it strips ONLY a genuine no-stake gesture. A real first action keeps the
+// turn: "I grab the lantern and open the chest" is NOT trivial ("grab the
+// lantern" acquires a present object → returns null → both clauses resolve on
+// the normal path, unchanged). Two families:
+//   • ready-a-held-tool: take/draw/ready/grip/hold/raise/heft/… my|the <tool>
+//     [in hand|out|up|ready|at the ready|tight] — a possessive/ready gesture.
+//   • posture/positioning: kneel/crouch/stoop/bend/lean/sit/brace/steady/… with
+//     an optional "down|myself" and an optional "by|beside|near|over <object>".
+const TRIVIAL_LEAD_RE = new RegExp(
+  '^(?:i\\s+|i\'?d\\s+like\\s+to\\s+|let\\s+me\\s+|first\\s+|then\\s+)*' +
+  '(?:' +
+    // ready / draw / take-in-hand a HELD tool. This is a no-stake gesture ONLY
+    // when it's clearly a ready — NOT a plain acquire of a present object (which
+    // must still resolve as a real pickup). So it fires on EITHER:
+    //   (a) a POSSESSIVE object ("take MY hatchet", "draw HIS sword") — the
+    //       possessive marks a tool you already carry; or
+    //   (b) any object followed by an explicit READY tail ("take the torch up",
+    //       "grip the torch tight", "raise the shield").
+    // A bare "take the oil lantern" (article, no ready tail) is NOT matched here
+    // → it keeps the turn and resolves as a real acquisition.
+    '(?:take|takes|taking|draw|draws|drawing|ready|readies|readying|grip|grips|gripping|' +
+      'grasp|grasps|grasping|hold|holds|holding|raise|raises|raising|heft|hefts|hefting|' +
+      'hoist|hoists|hoisting|palm|palms|palming|clutch|clutches|clutching|' +
+      'unsheathe|unsheathes|unsheathing|unsheath)\\s+' +
+      '(?:' +
+        '(?:my|his|her|their|its)\\s+[a-z][a-z\'-]*(?:\\s+[a-z][a-z\'-]*){0,2}' +
+          '(?:\\s+(?:in\\s+(?:my\\s+|both\\s+)?hands?|in\\s+hand|up|out|free|ready|at\\s+the\\s+ready|' +
+            'tight|tightly|close|closer|firmly))?' +
+      '|' +
+        '(?:the|a|an)\\s+[a-z][a-z\'-]*(?:\\s+[a-z][a-z\'-]*){0,2}\\s+' +
+          '(?:in\\s+(?:my\\s+|both\\s+)?hands?|in\\s+hand|up|out|free|ready|at\\s+the\\s+ready|' +
+            'tight|tightly|firmly)' +
+      ')' +
+  '|' +
+    // posture / positioning gestures (no stake).
+    '(?:kneel|kneels|kneeling|crouch|crouches|crouching|stoop|stoops|stooping|' +
+      'bend|bends|bending|lean|leans|leaning|sit|sits|sitting|settle|settles|settling|' +
+      'steady|steadies|steadying|brace|braces|bracing|lower|lowers|lowering|' +
+      'squat|squats|squatting|hunker|hunkers|hunkering)\\s*' +
+      '(?:down|myself|myself\\s+down|low|in|forward|closer)?' +
+      '(?:\\s+(?:by|beside|next\\s+to|near|over|before|at|in\\s+front\\s+of)\\s+' +
+        '(?:the|a|an|this|that|my|his|her|their|its)\\s+[a-z][a-z\'-]*(?:\\s+[a-z][a-z\'-]*){0,2})?' +
+  ')\\s*$',
+  'i'
+);
+
+// The trailing clause must carry a REAL action to be worth resolving on its own
+// (the move-then-act action set + a few probe verbs the chest cases need).
+const TRIVIAL_TAIL_ACTION_RE = new RegExp(
+  INTERIOR_THEN_ACTION_RE.source + '|\\b(?:try|tries|trying|unlock|unlocks|unlocking|check|checks|checking|feel|feels|feeling|undo|undoes|test|tests|testing|jiggle|jiggles|jiggling|lift)\\b',
+  'i'
+);
+
+function splitLeadingTrivialClause(text) {
+  const raw = String(text || '').trim();
+  // Split on the FIRST "and [then]" boundary only — the lead must be one clause.
+  const m = raw.match(/^([\s\S]+?)\s+and\s+(?:then\s+)?([\s\S]+)$/i);
+  if (!m) return null;
+  const leadText = String(m[1] || '').trim().replace(/[.!?,;:]+$/g, '').trim();
+  const restText = String(m[2] || '').trim().replace(/^[,;:\s]+/g, '').trim();
+  if (!leadText || !restText) return null;
+  if (!TRIVIAL_LEAD_RE.test(leadText)) return null;
+  if (!TRIVIAL_TAIL_ACTION_RE.test(restText)) return null;
+  return { leadText, restText };
+}
+
+// INT-4a — a short second-person acknowledgment of the trivial lead, prepended
+// to the real action's narration so the gesture reads as flavor, never a whole
+// turn. Deterministic string rewrite (no RNG, no state) — a leading "I <verb>…"
+// becomes "You <verb>…". Returns '' if the rewrite would be awkward, in which
+// case the caller just narrates the real action alone.
+function trivialLeadIn(leadText) {
+  let s = String(leadText || '').trim().replace(/[.!?,;:]+$/g, '').trim();
+  if (!s) return '';
+  // Drop a leading filler ("I'd like to", "let me", "first", "then", "I").
+  s = s.replace(/^(?:i\s+|i'?d\s+like\s+to\s+|let\s+me\s+|first\s+|then\s+)+/i, '').trim();
+  if (!s) return '';
+  // First token is the verb → second person (its base form suffices for these
+  // short gestures: take/kneel/draw/… → "You take/kneel/draw …"). Only the
+  // handful of gesture verbs the lead-matcher admits reach here.
+  const words = s.split(/\s+/);
+  const verb = words[0].toLowerCase().replace(/(?:s|es|ing)$/,'').replace(/i$/,'y');
+  const rest = words.slice(1).join(' ');
+  // Map first-person pronouns in the lead to second person for the read-back:
+  // possessives → "your", reflexive "myself" → "yourself".
+  const restYou = rest
+    .replace(/\bmyself\b/gi, 'yourself')
+    .replace(/\b(?:my|his|her|their|its)\b/gi, 'your');
+  const phrase = `You ${verb}${restYou ? ' ' + restYou : ''}.`;
+  // Cap length defensively; a runaway lead is better dropped than mangled.
+  return phrase.length <= 80 ? phrase.replace(/\s+/g, ' ') : '';
 }
 
 function inferInteriorAction(text, interior, opts = {}) {

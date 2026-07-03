@@ -13,12 +13,22 @@ cd "$(dirname "$0")/.."
 P="${1:-U}"
 N="${2:-1}"
 
-# Highest existing number for the prefix, across tracked AND untracked test files
-# (an in-flight worker's uncommitted test still reserves its number).
-MAX=$( (git ls-files 'tests/*'; ls tests 2>/dev/null) \
-  | grep -E '\.test\.(js|mjs)$' \
-  | sed 's|.*/||' \
-  | grep -oE "^${P}[0-9]+" \
+# Highest existing number for the prefix. Scanned in TWO places, because a single
+# file can carry MANY subtest labels (e.g. tests/U385.*.test.js used U385/U386/U387
+# internally — filename-only scanning would re-hand out U386/U387, the collision this
+# script exists to prevent):
+#   1. the FILENAME number (the ##.shortName convention), and
+#   2. every `<prefix><digits>` label INSIDE each test file's contents.
+# Across tracked AND untracked files (an in-flight worker's uncommitted test still
+# reserves its numbers). Over-counting is the safe direction — it only skips ahead.
+FILES=$( { git ls-files 'tests/*.test.js' 'tests/*.test.mjs'; \
+           ls tests/*.test.js tests/*.test.mjs 2>/dev/null; } | sort -u )
+MAX=$( {
+    printf '%s\n' "$FILES" | sed 's|.*/||' | grep -oE "^${P}[0-9]+"
+    while IFS= read -r f; do
+      [ -n "$f" ] && [ -f "$f" ] && grep -hoE "${P}[0-9]+" "$f"
+    done <<< "$FILES"
+  } 2>/dev/null \
   | grep -oE '[0-9]+' \
   | sort -n | tail -1 )
 MAX=${MAX:-0}

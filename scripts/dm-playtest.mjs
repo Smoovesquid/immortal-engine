@@ -620,6 +620,31 @@ function updateModesLedger(sessions, runId) {
   return { modes, newModes, incidence, totalRuns: sameGranularity.length, est: chao1(incidence) };
 }
 
+// CG-P3 — namespaced ledger for the Coherence Gate's CG-* classes, kept
+// SEPARATE from gate-modes.json (see docs/briefs/COHERENCE_GATE.md §5: Chao1
+// requires consistent tagging granularity per capture universe, and the
+// Coherence Gate is a distinct instrument — state-grounded/deterministic/$0 —
+// from the judged gate). CG-P2 seeded this file retroactively from the
+// existing gate JSONLs; this function appends the STANDING run alongside it
+// via the exact same shape (`runs[]` + `classCounts` + `note`), so a later
+// reader (or Chao1 pass) sees one continuous series regardless of which mode
+// (retroactive CLI vs standing --coherence) produced each entry.
+function updateCoherenceModesLedger(coherenceResult, runId) {
+  const file = path.join(OUT_DIR, 'coherence-modes.json');
+  let ledger = { runs: [], classCounts: {}, note: '' };
+  try { ledger = JSON.parse(fs.readFileSync(file, 'utf-8')); } catch { /* first run */ }
+  if (!Array.isArray(ledger.runs)) ledger.runs = [];
+  if (!ledger.classCounts || typeof ledger.classCounts !== 'object') ledger.classCounts = {};
+  const modes = Object.keys(coherenceResult.byClass || {}).filter(c => (coherenceResult.byClass[c] || []).length > 0).sort();
+  ledger.runs.push({ runId, date: new Date().toISOString().slice(0, 10), regime: REGIME, dryRun: DRY_RUN || undefined, modes });
+  for (const [cls, flags] of Object.entries(coherenceResult.byClass || {})) {
+    ledger.classCounts[cls] = (ledger.classCounts[cls] || 0) + flags.length;
+  }
+  ledger.note = ledger.note || 'Namespaced ledger for the Coherence Gate\'s CG-* failure classes (docs/briefs/COHERENCE_GATE.md §3), separate from gate-modes.json (the Opus experiential-gate ledger). Do NOT merge the two — Chao1 saturation tracking requires consistent tagging granularity per capture universe (Vol 9 §8). Seeded 2026-07-03 by CG-P2 from the hand-verified baseline docs/playtests/COHERENCE_GATE_BASELINE_2026-07-03.md; CG-P3 appends standing-gate runs (--coherence) alongside the retroactive ones.';
+  fs.writeFileSync(file, JSON.stringify(ledger, null, 2) + '\n');
+  return { modes };
+}
+
 function writeReport(sessions, runId) {
   const date = new Date().toISOString().slice(0, 10);
   const all = sessions.flatMap(s => s.verdicts.map(v => ({ ...v, persona: s.persona, seed: s.seed })));
@@ -724,12 +749,39 @@ async function main() {
   console.log(`REPORT: ${path.relative(ROOT, rep.file)}`);
   console.log(`AUDIT:  ${path.relative(ROOT, rep.jsonlFile)}`);
   if (COHERENCE) {
-    // Opt-in, additive: the Phase-0 coherence analyzer (docs/playtests/
-    // COHERENCE_SEAMS_2026-07-02.md) over the JSONL just written. Pure text
-    // analysis — no LLM call, no cost, no effect on rep/exit behavior.
-    const { loadJsonlFile, analyzeCoherence, summaryLine } = await import('./coherence-audit.mjs');
-    const coherenceResult = analyzeCoherence(loadJsonlFile(rep.jsonlFile));
-    console.log(summaryLine(coherenceResult));
+    // Opt-in, additive: BOTH coherence tiers run over the JSONL this run just
+    // wrote. Pure text/state analysis — no LLM call, no cost, no effect on
+    // rep/exit behavior (the flag INFORMS; it never changes the exit code).
+    //   Tier 1 — the transcript auditor (docs/playtests/COHERENCE_SEAMS_2026-07-02.md).
+    //   Tier 2 — CG-P1's state-grounded checker (docs/briefs/COHERENCE_GATE.md),
+    //            diffing DM prose against the SAME canon bundle the judge held.
+    const { loadJsonlFile: loadTranscript, analyzeCoherence, summaryLine: transcriptSummaryLine } = await import('./coherence-audit.mjs');
+    const transcriptResult = analyzeCoherence(loadTranscript(rep.jsonlFile));
+    console.log(transcriptSummaryLine(transcriptResult));
+
+    const { loadJsonlFile: loadStateGrounded, runCoherenceGate, summaryLine: coherenceSummaryLine } = await import('./coherence-gate.mjs');
+    const stateGroundedParsed = loadStateGrounded(rep.jsonlFile);
+    const coherenceResult = runCoherenceGate(stateGroundedParsed);
+    console.log('');
+    console.log(`## Coherence (state-grounded)`);
+    console.log(coherenceSummaryLine(coherenceResult));
+    // Honest floor across BOTH tiers: |judge fails ∪ transcript flags ∪ state-grounded flags|,
+    // de-duplicated per turn. runCoherenceGate() already unions judge-fails with its
+    // OWN flags (coherenceResult.honestFloor); fold the transcript tier's flagged
+    // turns in too, so the printed floor is the true honest floor of everything this
+    // run measured, not just the state-grounded tier's contribution.
+    const stateFlaggedKeys = new Set(coherenceResult.flags.map(f => `${f.persona}::${f.turn}`));
+    const judgeFailedKeys = new Set(
+      stateGroundedParsed.turns
+        .filter(t => (t.v1?.bug_class && t.v1.bug_class !== 'NONE') || (t.v2?.bug_class && t.v2.bug_class !== 'NONE' && t.v2.bug_class !== 'JUDGE_ERROR'))
+        .map(t => `${t.persona}::${t.i}`),
+    );
+    const transcriptFlaggedKeys = new Set((transcriptResult.flags || []).map(f => `${f.persona}::${f.turn}`));
+    const unionFloor = new Set([...judgeFailedKeys, ...stateFlaggedKeys, ...transcriptFlaggedKeys]).size;
+    console.log(`HONEST FLOOR (judge ∪ transcript ∪ state-grounded, de-duped): ${unionFloor}/${coherenceResult.totalTurns}`);
+
+    const coherenceLedger = updateCoherenceModesLedger(coherenceResult, runId);
+    console.log(`CG MODES: ${coherenceLedger.modes.length} this run${coherenceLedger.modes.length ? ` (${coherenceLedger.modes.join(' · ')})` : ''} · ledger: ${path.relative(ROOT, path.join(OUT_DIR, 'coherence-modes.json'))}`);
   }
   console.log(`════════════════════════════════════════════`);
 }

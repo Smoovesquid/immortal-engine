@@ -79,12 +79,19 @@ export function buildParseCtx(world) {
 }
 
 /**
- * assemblePacket(world, text) -> IntentPacket
+ * assemblePacket(world, text, dqIntent?) -> IntentPacket
  *
  * IntentPacket = the full makeIntent() shape (verb/target/at/with/approach/
  * stake/text/source/confidence/targets/objects/compoundParts/ambiguity/kind).
+ *
+ * INT-3 — optional 3rd param `dqIntent`. When a caller has already computed
+ * `directQuestionIntent(raw, world)` for this exact turn (e.g. playerMove,
+ * which also feeds the AG-3 egress), it can hand that result in here instead
+ * of letting this function re-derive it. When omitted — every existing
+ * caller (tests/U375.intentPacketShadow.test.js, playerMove pre-INT-3-fuller-
+ * threading) — behavior is BYTE-IDENTICAL to before: computed internally.
  */
-export function assemblePacket(world, text) {
+export function assemblePacket(world, text, dqIntent) {
   const raw = String(text ?? '');
 
   // Baseline verb/target/with/approach/stake/confidence — engine/intent/parseIntent.js
@@ -95,7 +102,7 @@ export function assemblePacket(world, text) {
   let kind = null;
   let ambiguity = null;
   let dqParts = [];
-  const dq = directQuestionIntent(raw, world);
+  const dq = dqIntent !== undefined ? dqIntent : directQuestionIntent(raw, world);
   if (dq) {
     kind = dq.kind || null;
     dqParts = Array.isArray(dq.parts) ? dq.parts.map(String) : [];

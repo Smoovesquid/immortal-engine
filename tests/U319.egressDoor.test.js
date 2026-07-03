@@ -31,6 +31,7 @@ import { beginAdventure, playerMove, applyEgressRepair } from '../engine/playloo
 import { newWorld } from '../engine/state.js';
 import { worldHash } from '../engine/worldHash.js';
 import { normalizeManifest, normalizePack } from '../engine/rulesets.js';
+import { directQuestionIntent } from '../engine/grace/answerability.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -193,4 +194,82 @@ test('U319-det: a repaired LH-2 turn replays identical worldHash + surface', () 
   assert.equal(worldHash(r1.world), worldHash(r2.world), 'repaired turn is non-deterministic');
   assert.equal(surface(r1), surface(r2), 'repaired surface diverged across identical runs');
   assert.equal(r1.output.mechanics, '[egress:repair]', 'precondition: the LH-2 turn was repaired');
+});
+
+// ── INT-3: the egress consumes ONE packet, never re-derives ────────────────
+// applyEgressRepair(prevWorld, text, res) no longer re-derives
+// directQuestionIntent(text, prevWorld) unconditionally — it now accepts an
+// optional 4th arg `dqIntent`. Omitted → byte-identical to pre-INT-3 (falls
+// back to computing it internally). Supplied → consumed directly, no
+// re-derivation. playerMoveTraced (the one real production call-site for the
+// egress family) now computes the classifier verdict once and threads it in.
+
+test('U319-INT3-a: the 3-arg call (no dqIntent) is untouched — same input, same output as before', () => {
+  const w = settlementWorld();
+  const before = { world: w, output: { narration: 'Wizard: You see it through, and it goes your way.', mechanics: '[roll:15 vs DC:12 → success | stat:WITS]' } };
+  // 3-arg call — exactly the pre-INT-3 signature.
+  const after = applyEgressRepair(w, 'who is the elder of this village?', before);
+  assert.equal(after.output.mechanics, '[egress:repair]', surface(after));
+  assert.doesNotMatch(after.output.narration, GEN_BANK, surface(after));
+});
+
+test('U319-INT3-b: an explicit dqIntent (4th arg) produces identical repaired narration to the 3-arg call', () => {
+  const w = settlementWorld();
+  const text = 'who is the elder of this village?';
+  const before = { world: w, output: { narration: 'Wizard: You see it through, and it goes your way.', mechanics: '[roll:15 vs DC:12 → success | stat:WITS]' } };
+  // 3-arg: applyEgressRepair re-derives directQuestionIntent internally.
+  const via3args = applyEgressRepair(w, text, before);
+  // 4-arg: caller pre-computes the identical verdict and hands it in directly.
+  const dq = directQuestionIntent(text, w);
+  const via4args = applyEgressRepair(w, text, before, dq);
+  assert.equal(via4args.output.narration, via3args.output.narration, 'threading a precomputed dqIntent must not change the repaired narration');
+  assert.equal(via4args.output.mechanics, via3args.output.mechanics, surface(via4args));
+});
+
+test('U319-INT3-b: a whitelisted answer passed with an explicit dqIntent still passes through byte-identical', () => {
+  const w = settlementWorld();
+  const text = 'who is the tavern-keeper?';
+  const answer = { world: w, output: { narration: 'Wizard: Bram Cask, a tavern-keeper — one of the folk here.', mechanics: '[person → grounded]' } };
+  const dq = directQuestionIntent(text, w);
+  const after = applyEgressRepair(w, text, answer, dq);
+  assert.equal(after.output.narration, answer.output.narration, 'answer narration unchanged with a threaded dqIntent');
+  assert.equal(after.output.mechanics, answer.output.mechanics, surface(after));
+});
+
+test('U319-INT3-b: null dqIntent (not a question) threaded explicitly behaves like the 3-arg non-question case', () => {
+  const w = settlementWorld();
+  const text = 'I shove the cart down the hill';
+  const before = { world: w, output: { narration: 'Wizard: You see it through, and it goes your way.', mechanics: '[roll:15 → success]' } };
+  const via3args = applyEgressRepair(w, text, before);
+  const dq = directQuestionIntent(text, w); // null — a declared action
+  assert.equal(dq, null, 'precondition: a declared action is not a direct question');
+  const via4args = applyEgressRepair(w, text, before, dq);
+  assert.equal(via3args.output.narration, before.output.narration, '3-arg: unchanged (not owed an answer)');
+  assert.equal(via4args.output.narration, before.output.narration, '4-arg with explicit null: unchanged (not owed an answer)');
+});
+
+// (c) a full playerMove turn is byte-identical to pre-INT-3 for 3 real
+// corpus utterances (U319/C21 family): the LH-2 movement-swallow repair, a
+// settlement presence/who's-here repair, and a declared-action pass-through.
+test('U319-INT3-c: full playerMove turn is byte-identical pre/post-INT-3 — LH-2 "who\'s in the next room?"', () => {
+  const r1 = playerMove(interiorWorld(), PACKS, "who's in the next room?");
+  const r2 = playerMove(interiorWorld(), PACKS, "who's in the next room?");
+  assert.equal(r1.output.mechanics, '[egress:repair]', 'precondition: the LH-2 turn is repaired by the egress');
+  assert.equal(surface(r1), surface(r2), 'identical input must produce identical surface across runs');
+  assert.equal(worldHash(r1.world), worldHash(r2.world), 'identical input must produce identical worldHash across runs');
+});
+
+test('U319-INT3-c: full playerMove turn is byte-identical pre/post-INT-3 — settlement "who leads this place?"', () => {
+  const r1 = playerMove(settlementWorld(), PACKS, 'who leads this place?');
+  const r2 = playerMove(settlementWorld(), PACKS, 'who leads this place?');
+  assert.equal(surface(r1), surface(r2), 'identical input must produce identical surface across runs');
+  assert.equal(worldHash(r1.world), worldHash(r2.world), 'identical input must produce identical worldHash across runs');
+});
+
+test('U319-INT3-c: full playerMove turn is byte-identical pre/post-INT-3 — declared action "I shove the cart down the hill"', () => {
+  const r1 = playerMove(settlementWorld(), PACKS, 'I shove the cart down the hill');
+  const r2 = playerMove(settlementWorld(), PACKS, 'I shove the cart down the hill');
+  assert.notEqual(r1.output.mechanics, '[egress:repair]', 'a declared action must not be egress-repaired');
+  assert.equal(surface(r1), surface(r2), 'identical input must produce identical surface across runs');
+  assert.equal(worldHash(r1.world), worldHash(r2.world), 'identical input must produce identical worldHash across runs');
 });

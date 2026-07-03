@@ -563,7 +563,16 @@ function egressRepair(world, text, intent, outcome) {
 // + mechanics). The world state (incl. any roll that already ticked upstream) is
 // whatever playerMoveCore produced → worldHash is unchanged → determinism holds.
 // Exported for U319 (test the four P10 properties directly on synthetic outputs).
-export function applyEgressRepair(prevWorld, text, res) {
+//
+// INT-3 — optional 4th param `dqIntent`. `assemblePacket` (INT-1) already calls
+// `directQuestionIntent(raw, world)` internally, one call earlier in the same
+// turn, on the same (text, world) pair — this let the egress's own internal
+// call re-derive an answer that was already computed. When `dqIntent` is
+// supplied (playerMoveTraced's real call-site, below), it is consumed directly
+// instead of re-derived. When omitted — every existing call in
+// tests/U319.egressDoor.test.js — behavior is BYTE-IDENTICAL to pre-INT-3: it
+// computes directQuestionIntent(text, prevWorld) internally, exactly as before.
+export function applyEgressRepair(prevWorld, text, res, dqIntent) {
   if (!res || !res.output) return res;
   // Mode claims stay first: a turn inside combat or dialogue is owned by that
   // mode's resolver (DLG-1 / CMB-SINK-1 defaults hold; the gate proved it).
@@ -573,7 +582,7 @@ export function applyEgressRepair(prevWorld, text, res) {
   // verdict wanted (question-shaped | imperative-info, only literal declared-
   // action excluded). Classified against the pre-turn world (the state the input
   // was composed against). null → not a question; let the output stand.
-  const intent = directQuestionIntent(text, prevWorld);
+  const intent = dqIntent !== undefined ? dqIntent : directQuestionIntent(text, prevWorld);
   if (!intent) return res;
   // Suspect provenance? R1 movement / R2 gen-bank / R3 unrecognized.
   // Movement is the position the reducer STARTED from (ensureWorld's normalized
@@ -627,17 +636,36 @@ export function applyEgressRepair(prevWorld, text, res) {
 // which packet gets traced; it does NOT change what playerMoveTraced does
 // with the turn (that routing change is INT-3, out of scope here).
 export function playerMove(world, packsById, text, { llmPacket } = {}) {
-  const __intentPacket = (llmPacket && llmPacket.source === 'llm') ? llmPacket : assemblePacket(world, text);
+  // INT-3 — compute the shared classifier verdict ONCE per turn when the
+  // deterministic path assembles its own packet (the common case: no LLM
+  // packet supplied). Fed into BOTH assemblePacket (so it doesn't re-derive
+  // what we already have) and playerMoveTraced's egress (so IT doesn't
+  // re-derive either) — collapsing two calls to directQuestionIntent(text,
+  // world) on the same turn into one. When an llmPacket IS supplied,
+  // assemblePacket is skipped entirely (unchanged from pre-INT-3), so there is
+  // nothing to share there — only the egress call-site benefits in that case.
+  const useLlmPacket = !!(llmPacket && llmPacket.source === 'llm');
+  const __dqIntent = directQuestionIntent(text, world);
+  const __intentPacket = useLlmPacket ? llmPacket : assemblePacket(world, text, __dqIntent);
   traceIntentPacket(__intentPacket);
-  const res = playerMoveTraced(world, packsById, text);
+  const res = playerMoveTraced(world, packsById, text, __dqIntent);
   if (process.env.INTENT_TRACE === '1' && res && res.output) {
     return { ...res, output: { ...res.output, __intentTrace: __intentPacket } };
   }
   return res;
 }
 
-function playerMoveTraced(world, packsById, text) {
-  const res = applyEgressRepair(world, text, playerMoveCore(world, packsById, text));
+function playerMoveTraced(world, packsById, text, dqIntent) {
+  // INT-3 — the shared classifier verdict for the egress family, computed
+  // once by playerMove (above) and threaded through — rather than letting
+  // applyEgressRepair re-derive it internally (it was the second call to
+  // directQuestionIntent(text, world) on this exact turn; assemblePacket
+  // used to make the first). Classified against the pre-turn world, same as
+  // the egress's own prior internal call. Falls back to computing it here
+  // (byte-identical to pre-INT-3) if playerMoveTraced is ever called directly
+  // without a precomputed dqIntent.
+  const __dqIntent = dqIntent !== undefined ? dqIntent : directQuestionIntent(text, world);
+  const res = applyEgressRepair(world, text, playerMoveCore(world, packsById, text), __dqIntent);
   // Speaking AT a present person ("tell/ask X ...") opens a sustained conversation AFTER the
   // turn resolves naturally — the social roll / info answer is unchanged; combat, "tell me
   // about …", and an absent name all skip it (see maybeEnterConversationAfterAddress).

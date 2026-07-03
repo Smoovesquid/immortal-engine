@@ -227,4 +227,52 @@ export default [
     ],
     source: 'opus-gate-2026-06-22-gate11.md (Lore-hound t10: "Enough about Corwin … ask Kael" → "no one named Enough"); reproduced LLM-off village_baker; fixed H-91',
   },
+  {
+    id: 'C2-007',
+    capability: 'C2',
+    // C7 (coherence-seams audit, 2026-07-02): sentence-initial demonstratives
+    // and reaction words ("That traveler — who ran this place?", "This place —
+    // who built it?", "Interesting — so Dalla…", "Fine — so who's the elder
+    // here?", "Now, who runs this place?") were extracted as the NPC referent
+    // and bounced "I haven't introduced anyone named That/This/Interesting/
+    // Fine/Now" — a follow-up question dead-ending on a mechanical clarify
+    // instead of resolving in the fiction (THE_DM_TEST). Same H-90/H-91
+    // discipline: extended NPC_PROPER_REFERENT_STOPWORDS with
+    // that/this/these/those/interesting/fine/now, deliberately EXCLUDING real
+    // first names. Also fixed a normalizer gap: normalizedNpcRef strips
+    // "this"/"that" as determiners (→ "") BEFORE the stopword Set lookup, so
+    // isNpcProperReferentStopword now additionally checks the raw lowercased
+    // token — otherwise "This"/"That" alone silently missed the denylist.
+    // Companion fix (not exercised by this fixture — village_baker has no
+    // "Wayfarers"-named node): a capitalized fragment of an ALREADY-KNOWN place
+    // name ("Wayfarers' Outpost" → extractor yields "Wayfarers"/"Outpost" as
+    // two candidates) is now excluded via isKnownPlaceNameFragment, checked
+    // against world.map.discovered — see U336 for the place-fragment repro.
+    status: 'locked',
+    fixture: 'village_baker',
+    intent: 'a sentence-initial demonstrative/reaction word ("That"/"This"/"These"/"Interesting"/"Fine"/"Now") is never extracted as the NPC referent; the turn resolves in the fiction instead of bouncing a mechanical clarify',
+    paraphrases: [
+      'That traveler — who ran this place?',
+      'This place — who built it?',
+      'These ruins — what happened here?',
+      "Fine — so who's the elder here?",
+      'Now, who runs this place?',
+      "Interesting — so Dalla, who's the trader?",
+    ],
+    assert: {
+      surface_matches: [/Wizard:/i],
+      surface_excludes: [
+        /\[clarify:(?:referent|who)\]/i,
+        /no one named|haven.t introduced/i,
+      ],
+    },
+    diverge: [
+      { text: 'That — I turn and ask Wasiq what he saw.', reason: 'discourse word + real addressed name — must clarify toward Wasiq, never sweep the discourse word' },
+      { text: 'This — so I ask Kael who runs this place.', reason: 'discourse word + real addressed name — must clarify toward Kael, never sweep the discourse word' },
+      { text: 'Now, I ask Kael who built this place.', reason: 'discourse word + real addressed name — must clarify toward Kael, never sweep the discourse word' },
+      { text: 'Kael the merchant, what do you want?', reason: 'real fabricated name with a role appositive still clarifies — not swept by the stopword denylist' },
+      { text: 'Wasiq, why are you so quiet?', reason: 'real fabricated name still clarifies — not swept by the stopword denylist' },
+    ],
+    source: 'docs/playtests/COHERENCE_SEAMS_2026-07-02.md seam C7 (audit: "That traveler…" → "named That"; "Interesting — so Dalla…" → "named Interesting"; "Wayfarers\' Outpost — where are we?" → "named Wayfarers"); reproduced LLM-off village_baker',
+  },
 ];

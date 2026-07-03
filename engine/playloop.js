@@ -679,10 +679,21 @@ export function playerMove(world, packsById, text) {
 // cannot fail to hurt yourself, and it's never a trivial no-effect action. The
 // tier is inferred from the fiction by a keyword table (Biblioteca V11 — the
 // TABLE sets severity, never the LLM), so it's seed-independent and adds no rng.
-const SELF_HARM_VERB = /\b(cut|cuts|cutting|slash|slashe?s|slashing|stab|stabs|stabbing|slice|slices|slicing|slit|slits|slitting|gash|gashe?s|gouge|carve|carves|carving|score|nick|jab|impale|hack|hacks|hacking|sever|severs|bleed|hurt|injure|injures|harm|harms|wound|wounds|maim|maims|mutilate|mutilates|prick|scratch|scratche?s|graze|grazes)\b/i;
+const SELF_HARM_VERB = /\b(cut|cuts|cutting|slash|slashe?s|slashing|stab|stabs|stabbing|slice|slices|slicing|slit|slits|slitting|gash|gashe?s|gouge|carve|carves|carving|score|jab|impale|hack|hacks|hacking|sever|severs|bleed|hurt|injure|injures|harm|harms|wound|wounds|maim|maims|mutilate|mutilates|prick)\b/i;
+// C8: "scratch/nick/graze" are AMBIGUOUS light-touch words with everyday
+// meanings that have nothing to do with self-harm ("I scratch my cheek" —
+// a nervous tic; "I nick my thumbnail on the doorframe"; "I graze my elbow
+// on the wall"). Split out of SELF_HARM_VERB so they need a blade/edge cue
+// (SELF_HARM_EDGE_CONTEXT below) or an explicit "papercut" word to fire —
+// unlike the unambiguous violence verbs above, which stand alone.
+const SELF_HARM_AMBIGUOUS_VERB = /\b(nick|nicks|scratch|scratche?s|graze|grazes)\b/i;
 // Blade/vein idioms that carry no verb from the list above ("open a vein",
 // "drive the blade in", "bury the knife", "run the blade across").
 const SELF_HARM_PHRASE = /\b(?:open(?:s|ing)?\s+(?:a|my|the|an)\s+(?:vein|artery|wrist|throat)|(?:drive|driving|bury|burying|sink|sinking|plunge|plunging|run|running|drag|dragging|draw|drawing)\s+(?:the|my|a|an)\s+(?:blade|knife|dagger|sword|point|edge|steel))\b/i;
+// C8: a blade/edge is actually present in the fiction — required to let an
+// ambiguous "scratch/nick/graze" resolve as self-harm ("I nick my wrist with
+// the blade", "I drag the edge across and give myself a scratch").
+const SELF_HARM_EDGE_CONTEXT = /\b(blade|knife|dagger|sword|razor|edge|steel)\b/i;
 const SELF_HARM_TARGET = /\b(myself|my\s+own\b|my\s+(?:arm|forearm|leg|thigh|hand|wrist|palm|throat|neck|jugular|femoral|artery|arteries|face|cheek|chest|belly|gut|stomach|skin|flesh|side|shoulder|finger|thumb|vein|veins))\b/i;
 const SELF_HARM_NEGATED = /\b(don'?t|do\s+not|won'?t|will\s+not|never|avoid|without|nearly|almost|pretend|threaten|threatening|as\s+if|like\s+i)\b/i;
 
@@ -710,9 +721,16 @@ function isSelfHarmDeclared(text) {
   const t = String(text || '');
   if (SELF_HARM_NEGATED.test(t)) return false;
   if (SELF_HARM_TARGET.test(t) && (SELF_HARM_VERB.test(t) || SELF_HARM_PHRASE.test(t))) return true;
-  // A papercut/scratch phrased about one's own body needs no strike-verb
-  // ("just a papercut on my thumb", "a scratch across my palm").
-  if (SELF_HARM_TARGET.test(t) && /\b(papercut|paper\s?cut|scratch|graze)\b/i.test(t)) return true;
+  // C8: a papercut/scratch/nick/graze phrased about one's own body needs no
+  // strike-verb ("just a papercut on my thumb", "a scratch across my palm" —
+  // the palm/thumb IS the injury, not a nervous tic) — BUT "scratch/nick/graze"
+  // are ambiguous light-touch words with everyday non-injury meanings ("I
+  // scratch my cheek" mid-conversation, "I nick my thumbnail on the doorframe",
+  // "I graze my elbow on the wall"). Papercut/paper-cut is unambiguous on its
+  // own; the ambiguous trio additionally needs a blade/edge word in the
+  // sentence to read as a deliberate cut rather than an incidental touch.
+  if (SELF_HARM_TARGET.test(t) && /\b(papercut|paper\s?cut)\b/i.test(t)) return true;
+  if (SELF_HARM_TARGET.test(t) && SELF_HARM_AMBIGUOUS_VERB.test(t) && SELF_HARM_EDGE_CONTEXT.test(t)) return true;
   return false;
 }
 
@@ -5128,22 +5146,57 @@ const NPC_PROPER_REFERENT_STOPWORDS = new Set([
   // whenever a real addressed name is also present.
   'enough', 'anyway', 'besides', 'meanwhile', 'regardless', 'however',
   'moreover', 'furthermore', 'nonetheless', 'perhaps', 'maybe', 'instead',
+  // C7: sentence-initial demonstratives and reaction words that open a follow-up
+  // question ("That traveler — who ran this place?", "This place — who built
+  // it?", "Interesting — so Dalla...", "Fine — so who's the elder here?", "Now,
+  // who runs this place?") — none are personal names. Same H-90/H-91 discipline:
+  // deliberately EXCLUDES real first names.
+  'that', 'this', 'these', 'those', 'interesting', 'fine', 'now',
   'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten',
   'eleven', 'twelve'
 ]);
 
 function isNpcProperReferentStopword(name) {
-  return NPC_PROPER_REFERENT_STOPWORDS.has(normalizedNpcRef(name));
+  if (NPC_PROPER_REFERENT_STOPWORDS.has(normalizedNpcRef(name))) return true;
+  // C7: normalizedNpcRef strips "this"/"that" as determiners (they normalize to
+  // "" and therefore silently miss the Set lookup above) — check the raw
+  // lowercased token too so "This"/"That" are denied like every other
+  // sentence-initial discourse word ("This place — who built it?").
+  return NPC_PROPER_REFERENT_STOPWORDS.has(String(name || '').trim().toLowerCase());
 }
 
-function concreteNpcReferentFromText(text) {
+// C7: a capitalized fragment of an already-known place name ("Wayfarers'
+// Outpost" → the extractor's word-boundary capture yields "Wayfarers" and
+// "Outpost" as two separate candidates) is a place, not a person. Same
+// principle as the "don't hijack travel" guard elsewhere (a known place name
+// is a journey, not a person), applied to the proper-name extractor instead.
+// `world.map.discovered` is the array of known node IDs (NOT a per-node
+// boolean — map.discovered[0] === currentNodeId is an invariant, see
+// mapState.js), so "already known" means the current node or any other
+// discovered node's name contains this token. A generic word like "Outpost"
+// alone still needs a real discovered settlement name to confirm it's a place
+// fragment, so this is a no-op without `world`.
+function isKnownPlaceNameFragment(world, name) {
+  const n = String(name || '').trim().toLowerCase();
+  if (n.length < 3) return false;
+  const discoveredIds = new Set((Array.isArray(world?.map?.discovered) ? world.map.discovered : []).map(String));
+  return (world?.map?.nodes || []).some(node => {
+    if (!node || !discoveredIds.has(String(node.id))) return false;
+    const nodeName = String(node.name || '').toLowerCase();
+    if (!nodeName) return false;
+    return nodeName.split(/\s+/).some(tok => tok.replace(/[^a-z]/g, '') === n);
+  });
+}
+
+function concreteNpcReferentFromText(text, world) {
   const raw = String(text || '');
   const commaName = raw.match(/\b(?:guard|baker|elder|stranger|merchant|trader|smith|blacksmith|innkeeper|priest|healer|scholar|artisan|villager|local|person|figure)\s*,\s*([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)(?:\b|['’])/);
   if (commaName && commaName[1]) return commaName[1].trim();
 
   const proper = [...raw.matchAll(/\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,2})(?:\b|['’])/g)]
     .map(m => m[1].trim())
-    .filter(name => !isNpcProperReferentStopword(name));
+    .filter(name => !isNpcProperReferentStopword(name))
+    .filter(name => !isKnownPlaceNameFragment(world, name));
   if (proper.length) {
     // H-91: when more than one capitalized candidate survives, prefer the one the
     // player actually addressed ("ask Kael ...") over an incidental capitalized
@@ -5211,7 +5264,7 @@ function isLikelyPersonProperName(ref) {
 }
 
 function ungroundedNpcReferentForText(world, text, { assumeNpcCentered = false, requirePersonSignal = false } = {}) {
-  const ref = concreteNpcReferentFromText(text);
+  const ref = concreteNpcReferentFromText(text, world);
   if (!ref || NPC_REFERENT_STOPWORDS.has(normalizedNpcRef(ref))) return '';
   const personSignal = hasPersonReferentSignal(text, ref);
   const npcCentered = requirePersonSignal ? personSignal : (

@@ -338,6 +338,44 @@ file) · P4 SERIAL (`engine/ref/rubric.js`, shared with the live Ref) · P6 last
 > narration path, costs latency, and is a taste/product call; queue for Tim only after P2 proves the FP rate is
 > boring).
 
+#### CG-LIVE-1 — the checker becomes the fix: shadow-mode coherence observer on the live narration path  ·  Phase 0  ·  **QUEUE — Tim GREENLIT 2026-07-03 (the design's named endgame; CG-P2 proved 100% precision → the FP rate is boring enough to build the trigger, shadow-first)**
+- **why now:** the deterministic desync pointer that *grades* a turn can *trigger a regenerate* on the live
+  path — one mechanism self-heals ALL caught classes (ghost-voice, wrong-room, invented-exit, phantom-commit,
+  wrong-speaker), and every future class we teach the checker becomes self-healing too. The Ref already routes
+  a REGENERATE (`engine/ref/index.js` `reviewNarration` → `regenerate()`), and CG-P4 already put
+  exits+occupants+clock into the `canonOf(world)` bundle the Ref reads. **Shadow FIRST** (this packet): the
+  100% precision is on HISTORICAL transcripts — measure the LIVE false-positive rate on fresh play before any
+  narration is silently re-rolled (the INT-1 shadow-mode pattern).
+- **objective:** a shadow observer that, gated by `COHERENCE_SHADOW=1` (**default OFF → byte-identical**),
+  runs the deterministic single-turn-capable comparators over `(input, candidate, mechanics, canonOf(world))`
+  at the narrate call-site (`engine/llmAdapter.js:1394`, where candidate+world+outcome are in hand) or an
+  equivalent hook **decoupled from the Ref's `enabled` (judge) flag** (the judge is off in normal play; the
+  deterministic check is free and must still observe). It **LOGS would-be-regenerate desync pointers** (to a
+  shadow jsonl `docs/playtests/coherence-shadow/*.jsonl` and/or the instrument trace) and **NEVER alters the
+  returned narration**. A small review path (reuse the checker's report over the shadow jsonl) so we can read
+  the live FP rate.
+- **module boundary:** the comparators are exported from `scripts/coherence-gate.mjs` but engine/ must NOT
+  depend on `scripts/`. Extract the pure comparator core into a neutral shared module (e.g.
+  `engine/coherence/checks.js`) imported by BOTH the script and the live observer — this pulls CG-P6's core
+  unification forward; note it against CG-P6. Run the single-turn-capable checks live (CG-1b, CG-2a, CG-2b,
+  CG-3a, CG-5, CG-6, CG-0); cross-turn ones (CG-2c relocation) need a NON-canon prev-canon side-channel
+  (module-level, never on `world` — worldHash sacred) or defer them to a later phase.
+- **allowed_files:** `engine/llmAdapter.js` (the shadow hook at the call-site only) OR `engine/ref/index.js`
+  (a shadow branch decoupled from `enabled`); new `engine/coherence/checks.js` (extracted pure comparators);
+  `scripts/coherence-gate.mjs` (re-import the extracted module, CLI byte-identical); new shadow-log dir; tests
+  **U394 (observer runs the checks + logs, narration returned UNCHANGED), U395 (default OFF = byte-identical +
+  worldHash stable)**.
+- **forbidden:** altering returned narration in ANY path; `WORLD_VERSION`; `state.js`; mutation; RNG; storing
+  prev-canon on `world`; `playloop.js`/`escapeCombat.js`/`dialogue.js`/`grace/`/`composer.js` (hot files — the
+  hook lives in the Ref/adapter layer only).
+- **invariants:** default OFF byte-identical (assert); worldHash untouched (determinism suite); shadow path
+  never throws to caller (Ref Invariant 3 — LLM/observer layer never breaks the turn); §0 never surfaced.
+- **done_when:** `COHERENCE_SHADOW=1` logs desync pointers on real live turns while narration is provably
+  unchanged; the review path prints the live FP-candidate rate; suite + determinism + convergence green.
+- **rollback:** delete the observer + flag (the extracted module stays — it's just a refactor).
+- **NEXT (not this packet):** CG-LIVE-2 = flip the observer to an actual REGENERATE trigger once the live FP
+  rate is proven boring — Tim's go, after reading the shadow data.
+
 ### SL — THE SHIPPABLE SLICE (priority, scope-locked 2026-06-29)
 **Provenance:** Tim's 2026-06-29 scope re-lock (`docs/DEMO_REGION.md` scope-lock banner). The demo is cut to
 ONE walkable ~100 km² region with four authored places: a town, a forest (bandits roam), a bandit camp, and

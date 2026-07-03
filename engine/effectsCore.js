@@ -13,6 +13,33 @@ export function applyDeltas(world, deltas = []) {
   let w = ensureWorld(world);
   const ops = Array.isArray(deltas) ? deltas : [];
 
+  // ── Batch-stable furniture resolution (splice-proof; ROM-4) ──────────────
+  // modifyFurniture/removeFurniture carry `furnitureId` = the piece's index in
+  // node.furniture as it stood BEFORE this batch (emitted from ONE objectsHere
+  // read per turn — llmPhysics.js). removeFurniture SPLICES, so once one fires
+  // every LATER furniture op in the same batch is off by the count of removed
+  // lower-indexed pieces — silently editing/removing the WRONG piece. Resolve
+  // each op's index to the stable piece NAME here, against a per-node pre-batch
+  // snapshot; the handlers below locate the piece by that name in the LIVE array
+  // (names are unique per node — roomObjects.js). Splice-proof, while the splice
+  // contract (length shrinks per remove) is preserved. Non-batch ops resolve to
+  // the same piece the raw index would have hit, so behavior is unchanged.
+  const furnitureName = new Map(); // op object -> resolved piece name ('' = unresolved)
+  {
+    const snapshots = new Map(); // nodeId -> node.furniture as of batch start
+    for (const op of ops) {
+      if (!op || (op.op !== 'modifyFurniture' && op.op !== 'removeFurniture')) continue;
+      const nid = String(op.nodeId || '');
+      if (!snapshots.has(nid)) {
+        const node = (w.map?.nodes || []).find(n => n && String(n.id) === nid);
+        snapshots.set(nid, Array.isArray(node?.furniture) ? node.furniture.slice() : []);
+      }
+      const snap = snapshots.get(nid);
+      const idx = toInt(op.furnitureId ?? -1);
+      furnitureName.set(op, (idx >= 0 && idx < snap.length) ? String(snap[idx]?.name ?? '') : '');
+    }
+  }
+
   for (const op of ops) {
     if (!op || typeof op !== 'object') continue;
     const kind = String(op.op || '');
@@ -505,13 +532,19 @@ export function applyDeltas(world, deltas = []) {
 
     if (kind === 'modifyFurniture') {
       const nodeId = String(op.nodeId || '');
-      const furnitureId = toInt(op.furnitureId ?? -1);
+      const rawId = toInt(op.furnitureId ?? -1);
+      const resolvedName = furnitureName.get(op) || '';
       const changes = op.changes && typeof op.changes === 'object' ? op.changes : null;
-      if (!nodeId || furnitureId < 0 || !changes) continue;
+      if (!nodeId || !changes || (!resolvedName && rawId < 0)) continue;
       w = mutateNode(w, nodeId, (node) => {
         const furniture = Array.isArray(node.furniture) ? [...node.furniture] : [];
-        if (furnitureId >= furniture.length) return node;
-        const cur = furniture[furnitureId] || {};
+        // Splice-proof: locate the piece by its batch-resolved stable name; fall
+        // back to the raw index only when the name couldn't be resolved (older or
+        // hand-built deltas). See the batch-stable pre-pass at the top of applyDeltas.
+        let fi = resolvedName ? furniture.findIndex(f => String(f?.name ?? '') === resolvedName) : -1;
+        if (fi < 0) fi = rawId;
+        if (fi < 0 || fi >= furniture.length) return node;
+        const cur = furniture[fi] || {};
         const next = { ...cur };
         if (typeof changes.state === 'string') next.state = changes.state;
         if (Array.isArray(changes.parts)) next.parts = changes.parts.map(String);
@@ -522,7 +555,7 @@ export function applyDeltas(world, deltas = []) {
         if (Array.isArray(changes.takenItems)) {
           next.takenItems = [...new Set(changes.takenItems.map(String))].slice(0, 8);
         }
-        furniture[furnitureId] = next;
+        furniture[fi] = next;
         return { ...node, furniture };
       });
       continue;
@@ -852,12 +885,18 @@ export function applyDeltas(world, deltas = []) {
 
     if (kind === 'removeFurniture') {
       const nodeId = String(op.nodeId || '');
-      const furnitureId = toInt(op.furnitureId ?? -1);
-      if (!nodeId || furnitureId < 0) continue;
+      const rawId = toInt(op.furnitureId ?? -1);
+      const resolvedName = furnitureName.get(op) || '';
+      if (!nodeId || (!resolvedName && rawId < 0)) continue;
       w = mutateNode(w, nodeId, (node) => {
         const furniture = Array.isArray(node.furniture) ? [...node.furniture] : [];
-        if (furnitureId >= furniture.length) return node;
-        furniture.splice(furnitureId, 1);
+        // Splice-proof: find by the batch-resolved stable name (index fallback for
+        // hand-built deltas), then splice — so an earlier remove in this batch can't
+        // shift this one onto the wrong piece. See the pre-pass at applyDeltas' top.
+        let fi = resolvedName ? furniture.findIndex(f => String(f?.name ?? '') === resolvedName) : -1;
+        if (fi < 0) fi = rawId;
+        if (fi < 0 || fi >= furniture.length) return node;
+        furniture.splice(fi, 1);
         return { ...node, furniture };
       });
       continue;

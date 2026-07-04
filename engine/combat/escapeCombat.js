@@ -822,6 +822,44 @@ export function isForcefulAdvanceText(text) {
 // weaker, harmless outcome, not a leveled-power leak) — see U373.
 const UNAVAILABLE_LEVELED_SPELL = /\b(lightning\s+bolt|chain\s+lightning|call\s+lightning|chromatic\s+orb|ice\s+knife|counterspell|polymorph|banish(?:ment)?|disintegrate|teleport|dimension\s+door|misty\s+step|blink|meteor\s+swarm|cone\s+of\s+cold|cloudkill|wall\s+of\s+(?:fire|force|ice|stone|thorns)|thunderwave|shatter|sleep|slow|haste|web|grease|dominate(?:\s+(?:person|monster|beast))?|hold\s+monster|feeblemind|power\s+word\s+\w+|finger\s+of\s+death|fly|greater\s+invisibility|invisibility|mirror\s+image|fear|confusion|hypnotic\s+pattern|revivify|raise\s+dead|mass\s+(?:cure|healing)\w*|prismatic\s+\w+|sunburst|blight|spirit\s+guardians|gate|maze|wish|time\s+stop|true\s+resurrection|power\s+word\s+kill)\b/;
 
+// CBT-AGENCY — a DECLARED ATTACK: the player commits to swinging a weapon or
+// striking a target. This must WIN over the defensive verbs (ward/cover) below,
+// because those match on NOUNS a player uses while attacking ("that GUARD leather
+// looks worn — I swing at her" / "a gravedigger doesn't cast force WARDS — roll MY
+// attack"). Before this gate, the bare word "guard"/"ward" in an attack sentence
+// silently substituted a defensive ward for the declared blow (Opus gate
+// 2026-07-04-3, both HIGH). THE_DM_TEST + D&D×XCOM: a declared action resolves as
+// declared; the machine never swaps in a different action class.
+//
+// The offensive verb must be the PLAYER's action, so we require it as a verb (first-
+// person / imperative), not the incoming blow a player is parrying. Reactive-defense
+// phrasings ("parry his strike", "block his blow", "raise my guard", "brace") carry
+// NO first-person offensive verb of their own and so never match here — they fall
+// through to the ward branch, preserving defense-on-request.
+const ATTACK_VERB = '(?:swing|swings|swinging|strike|strikes|striking|struck|stab|stabs|stabbing|stabbed|slash|slashes|slashing|slashed|slice|slices|slicing|sliced|hack|hacks|hacking|hacked|cleave|cleaves|cleaving|cleaved|lunge|lunges|lunging|lunged|thrust|thrusts|thrusting|chop|chops|chopping|chopped|jab|jabs|jabbing|jabbed|swipe|swipes|swiping|swiped|skewer|skewers|skewering|skewered|impale|impales|impaling|impaled|gut|guts|gutting|gutted|behead|beheads|beheading|beheaded|attack|attacks|attacking|attacked|hit|hits|hitting|cut|cuts|cutting)';
+// A target/weapon that confirms the verb is aimed at the foe (so a bare "cut" in a
+// non-combat idiom does not trip it). Body parts, foe pronouns/nouns, a "down"/"at"
+// tail, or the player's own weapon in hand.
+const ATTACK_OBJECT = "(?:\\b(?:him|her|them|it|its)\\b|\\bat\\b|\\bdown\\b|\\bthrough\\b|\\bthe\\s+(?:foe|enemy|bandit|brute|linger(?:er)?|wanderer|monster|creature|beast|guard|guardsman|wolf|goblin|orc|thing|man|woman|figure)\\b|\\b(?:my|the)\\s+(?:worn\\s+)?(?:blade|sword|dagger|knife|axe|mace|spear|hammer|weapon|staff|club|scimitar|rapier|shortsword|longsword|greatsword)\\b|[a-z']+['’]?s?\\s+(?:face|head|skull|throat|neck|chest|gut|belly|ribs|heart|eyes?|back|snout|fang|claw|leg|arm|side|flank))";
+// Unarmed / natural-weapon tokens are handled by their OWN branch (verb:'unarmed',
+// below the spell/feature branches) so a bite/knee/kick resolves with the fist/fang
+// profile — not the equipped weapon. The declared-attack guard defers to that branch
+// by excluding these, keeping the prior spell/feature/parley-vs-unarmed precedence
+// intact (moving unarmed up would have flipped "threaten to knee him" etc.).
+const UNARMED_TOKEN = /\b(headbutt|head[\s-]butt|bite|bites|biting|gnaw|gnaws|stomp|stomps|stomping|stamp|stamps|stamping|knee\s+(?:him|her|them|it|the)|elbow|elbows|punch|punches|pummel|pummels|kick\s+(?:him|her|them|it|the)|claw|claws|scratch)\b/;
+function isDeclaredAttackText(text) {
+  const t = String(text || '').toLowerCase();
+  if (!t) return false;
+  if (UNARMED_TOKEN.test(t)) return false; // let the unarmed branch resolve it
+  // "I draw my <weapon> and <attack> …" — the classic declaration (the gate's line).
+  if (new RegExp(`\\b${ATTACK_VERB}\\b`).test(t) && new RegExp(ATTACK_OBJECT).test(t)) return true;
+  // "I attack Asha" / "attack her" / "roll MY attack" — the noun "attack" as the
+  // player's own declared action (not "his attack" / "the enemy's attack" incoming).
+  if (/\b(?:my|an|the)\s+attack\b/.test(t) && /\broll\b/.test(t)) return true;
+  if (/\bi\s+attack(?:ed|s)?\b/.test(t)) return true;
+  return false;
+}
+
 /**
  * parseEscapeAction(text) -> { verb: 'strike'|'firebolt'|'ward'|'cover' }
  * Map a typed line to one of the hedge-caster's light verbs. Unrecognized
@@ -838,6 +876,17 @@ export function parseEscapeAction(text) {
   // broad cover match so "circle behind it" reads as a flank, not as cover.
   if (/\b(?:high|higher)\s+ground\b|\bhigh\s+point\b|\bthe\s+heights\b|\bget\s+(?:up\s+)?(?:high|above)\s+(?:it|them|him|her|the\b)/.test(t)) return { verb: 'highground' };
   if (/\bflank(?:s|ing|ed)?\b|\bcircle\s+(?:around\s+)?behind\b|\b(?:to|at|on|around)\s+(?:its|their|his|her)\s+(?:side|flank|rear|back)\b/.test(t)) return { verb: 'flank' };
+  // CBT-AGENCY — a DECLARED ATTACK short-circuits to a blade strike HERE, before the
+  // cover/ward branches, so the defensive NOUNS in an attack sentence ("that GUARD
+  // leather looks worn — I swing at her"; "a gravedigger doesn't cast force WARDS —
+  // roll MY attack") can no longer hijack the turn into a defensive ward. The named
+  // target is resolved downstream by pickTargetIdx; this only fixes the verb class.
+  // Reactive-defense phrasings carry no first-person offensive verb and fall through
+  // to the ward branch unchanged (see isDeclaredAttackText). Unarmed/natural-weapon
+  // strikes are EXCLUDED here (isDeclaredAttackText) so they keep their own branch
+  // below and resolve with the fist/fang profile. Improvised strikes (throw the
+  // chair) already route via the strike default + isImprovisedStrikeText.
+  if (isDeclaredAttackText(t)) return { verb: 'strike' };
   // Cover is a positional move — duck behind the room's furniture for +AC. Check
   // it before the attack verbs so "hide behind the pillar" reads as cover.
   if (/\b(take\s+cover|cover|behind|duck|hunker)\b/.test(t)) return { verb: 'cover' };
@@ -905,6 +954,8 @@ export function parseEscapeAction(text) {
   // Unarmed / natural-weapon strikes — headbutt, bite, stomp, knee, elbow,
   // kick (as attack on a creature), punch. These must NOT resolve as the
   // equipped weapon; see unarmedProfile(). (H-3/4/5/6 class-a, 2026-06-18.)
+  // The CBT-AGENCY declared-attack guard EXCLUDES these tokens so they reach
+  // this branch and resolve with the fist/fang profile (not a blade strike).
   if (/\b(headbutt|head[\s-]butt|bite|bites|biting|bite\s+(?:at|into)|gnaw|gnaws|stomp|stomps|stomping|stamp|stamps|stamping|knee\s+(?:him|her|them|it|the)|elbow|elbows|punch|punches|pummel|pummels|kick\s+(?:him|her|them|it|the)|claw|claws|scratch)\b/.test(t)) return { verb: 'unarmed' };
   // strike verbs (and the default)
   return { verb: 'strike' };

@@ -999,7 +999,7 @@ function renderInvoke() {
       el('div', { class: 'header' },
         el('div', {},
           el('div', { class: 'title' }, 'Immortal Engine — v0.28.10'),
-          el('div', { class: 'sub' }, 'build 060 · 2026-07-04 · movement never node-jumps')
+          el('div', { class: 'sub' }, 'build 060 · 2026-07-04 · movement law + follow camera')
         )
       ),
       // ── One-click front door: start (or resume) the Escape game ──────

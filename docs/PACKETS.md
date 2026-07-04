@@ -844,9 +844,12 @@ sheet (no per-node islands); the camera keeps the player centered (no edges, eve
   missing interior half. **Fork flagged for WS-2:** village art draws catalog-plan room shapes while
   movement/interior-projection use the real `floorPlan` — reconcile when wiring). → **WS-2** (one camera +
   LOD; absorbs the v0.28.8 inside/outside branch as an LOD band; retires scale tabs; in-play + Map tab =
-  one renderer — MAP_PATH 1.2/1.3; marker consumes `resolveEntityWu`) — **DISPATCHED 2026-07-04-pm**
-  (Sonnet worktree; brief `docs/briefs/WS-2-one-camera.md`; tests U407–U408; scope = MAP_PATH 1.2 +
-  player-centered FOLLOW per the movement law; interior-branch absorption deferred to WS-3).
+  one renderer — MAP_PATH 1.2/1.3; marker consumes `resolveEntityWu`) — ✅ **LANDED 2026-07-04-pm,
+  v0.28.10** (`e45c045`: `playerFocusWu(world)` — camera + marker read the ONE engine-truth point via
+  `resolveEntityWuFromWorld`, recentering on node/room/inside↔outside changes; manual pan holds until
+  the next real move; **VG-F3 closed on the live surface**; U407/U408; zero v1.js/engine diffs; legacy
+  fixed-scale renderers confirmed dead-on-disk, no tabs to retire). → **WS-3** (absorb the interior
+  branch into the continuous zoom) queued behind TT-DRAW.
 - **HARNESS (small, queue):** U381 (`server.js /api/move` confidence-gate HTTP test) fails under
   CONCURRENT parallel suites (port contention) and passes quiet — 2026-07-04 diagnosis, three lanes
   corroborated. Packet: bind an ephemeral port (or retry-on-EADDRINUSE) in U381; done_when = two full

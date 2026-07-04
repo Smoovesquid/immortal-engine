@@ -380,12 +380,22 @@ file) · P4 SERIAL (`engine/ref/rubric.js`, shared with the live Ref) · P6 last
     those turns log NO shadow record and their desyncs bypass the observer (the missed 1 of 3 above; the run1
     terse "Elske shrugs" base lines). Fix: run the observer on whatever text `augmentNarration` actually returns,
     at every return path — small, and required for CG-LIVE-2 to self-heal the full class.
-  - **REF-GHOST — the Ref regenerate MANUFACTURES ghost-voices (the deeper, live player-facing bug):** the Ref,
-    trying to answer a pointed question the coherent candidate dodged, regenerates prose that voices a settlement
-    NPC who is NOT in the player's room (`roomOccupants` empty). This is a real presence/ROM-3 desync the DM
-    ships to the player — the checker is correctly catching the Ref's own output. Own packet: constrain the
-    regenerate (and its judge/prompt) to the scoped room roster, or make it decline-in-fiction rather than
-    conjure an absent speaker. Related [[project_dm_invents_geography]] at the narration layer.
+  - **REF-GHOST — the Ref regenerate MANUFACTURES ghost-voices:** the Ref, trying to answer a pointed question the
+    coherent candidate dodged, regenerates prose that voices a settlement NPC who is NOT in the player's room
+    (`roomOccupants` empty) — overriding a *correct* engine narration with a hallucination. Related
+    [[project_dm_invents_geography]] at the narration layer.
+- **🧭 DECISION 2026-07-04 (Tim) — the Ref comes OUT; do NOT "fix" REF-GHOST.** The Ref was scaffolding for the
+  OLD system. We test the NEW system — LLM ears (intent) + authoritative engine + one narration pass — *by itself*
+  first; a third governing LLM that re-writes the output compounds failure (REF-GHOST is that in miniature: an LLM
+  overriding a correct engine result). **Config: `REF_ENABLED=0` in `.env`** (server default stays ON; revert =
+  delete the line). So REF-GHOST is now MOOT while the Ref is off — it's *evidence for removal*, not a fix-packet;
+  don't invest in constraining the regenerate. The A/B that informed this (chaos+lore-hound ×16/arm): REF-off = 0
+  coherence flags / honest floor 2/16; REF-on = 1 flag / 6/16 — worse on both axes in-sample (small n; a principle
+  call, not an empirical toss-up). **What to improve instead, at the engine/narration layer:** the base DM's
+  dead-ends (2/16 even REF-off) — answer pointed questions in the fiction without conjuring an absent speaker.
+- **CG-LIVE-2 status:** the observer is now correctly positioned (post-Ref) + instrumented, but its self-heal
+  premise assumed the Ref's regenerate path — reassess once the Ref-off new-system baseline is felt. CG-LIVE-1b
+  (base-narration blind spot) still stands if we ever want the observer to see validator-rejected turns.
 - **why now:** the deterministic desync pointer that *grades* a turn can *trigger a regenerate* on the live
   path — one mechanism self-heals ALL caught classes (ghost-voice, wrong-room, invented-exit, phantom-commit,
   wrong-speaker), and every future class we teach the checker becomes self-healing too. The Ref already routes

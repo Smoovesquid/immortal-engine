@@ -26,8 +26,14 @@ done_when · rollback`.
   "look around" names Brogan + the Lingerer, masks the hostile in-fiction, and sees Galen through the
   window — the full presence stack agrees with the morning's outdoor-dot receipt. Quiet-machine check
   GREEN 9601/9601 · convergence 124/124 · determinism green.
-- **FOLLOW-UP (small, → DISPATCHED 2026-07-04-pm5, Sonnet worktree, U446–U447): ND-1b — the
-  legacy-desync repair doesn't PERSIST.** Live-verified: loading
+- **FOLLOW-UP ✅ LANDED v0.28.15 b065 (`2ec503b3` → `477b338a`, U446–U447): ND-1b — the
+  legacy-desync repair doesn't PERSIST.** ROOT: the repair keyed off derived `scene.interior`, which
+  the `derivedElsewhere` load-guard had ALREADY nulled — so the raw `party[0].position.interior`
+  pointer (the thing scene.interior re-derives FROM) was never cleared and round-tripped through
+  every save. FIX: check + `delete` the stale raw pointer itself when its structure sits at the
+  wrong node (delete not null — matches interiors.js convention; explicit-null broke U219's shape).
+  First save after loading a broken game now converges; second load performs zero repair;
+  playtest:full 500 runs clean (SAVE_CORRUPTION covered). Original sighting: loading
   the corrupted 10am save through the new `ensureWorld` yields honest narration (repair effective
   in-memory, invariant quiet) but the autosave written AFTER a turn still carries the stale
   `scene.interior` blob — every load re-repairs, the save never converges, and any path reading the raw
@@ -967,7 +973,11 @@ sheet (no per-node islands); the camera keeps the player centered (no edges, eve
   door gaps + swings, CANONICAL windows from `roomWindows()` (count/shuttered/facing — the fiction
   already treats them as real), furniture palette, keyed-FNV wobble, label LOD folded in (closes the
   TT-DRAW-3 nit). Brief `docs/briefs/FP-2-walls-with-mass.md`; U436–U438; Opus; `public/map/` only,
-  floorPlan geometry untouchable (U429–431 stay locked).
+  floorPlan geometry untouchable (U429–431 stay locked). ✅ **LANDED v0.28.14 b064** (`525b2976` →
+  `392a16c3`): poché mass + hatch by material, door swings, canonical windows (glazed/shuttered;
+  interior-facing canon snapped to exterior walls, count preserved — flagged), furniture palette,
+  label LOD; receipts `docs/playtests/fp2/`; live-verified on the front door. ROADS-1 dispatched on
+  landing (lane freed).
   **→ ROADS-1 QUEUED 2026-07-04-pm5 (dispatch when FP-2 lands — same `public/map/` lane). Tim's
   rulings, verbatim: "We need a rule that Buildings CANNOT be on the same squares as roads" + "roads
   must continue to other places. Right now, road stop right outside towns. This is something I've
@@ -986,12 +996,17 @@ sheet (no per-node islands); the camera keeps the player centered (no edges, eve
   deterministic + seeded + in `worldHash`, DARK (nothing consumes it). Pinned constants block appended
   to the contract; new `engine/map/spatial/tacticalPos.js`; invariants + migration in place; tests
   U412–U415 green; suite 9504/9504, convergence 124/124 unchanged, determinism green, playtest:quick
-  clean. **TAC-2 → DISPATCHED 2026-07-04-pm5** (the tactical move verb — "go east" walks ≤6 cells;
-  `{op:'pos'}` delta through effectsCore; never changes currentNodeId; interior walks honor FP-1
-  doorways; narrate-the-read; Opus worktree, U442–U445; owns playloop/effectsCore/resolve/intent this
-  session — state.js fenced to ND-1b, patch-block protocol on collision; marker-visibility finding to
-  be reported, renderer catch-up is a later rung). The `public/v1.js` front-door build line is
-  deliberately left to integration (forbidden file for all lanes).
+  clean. **TAC-2 ✅ LANDED v0.28.15 b065** (`e5ec1d5d` → `9e690677`): the tactical move verb —
+  "walk north"/"go east" slides `pos` ≤6 cells through the SOLE mutation path (`{op:'pos'}` in
+  effectsCore; `resolveTacticalWalk` + `MAX_WALK_CELLS=6` in tacticalPos.js; `parseCardinalMove`
+  LLM-off floor in playloop); never changes currentNodeId; narrates the read, never the number;
+  U442–U445 (12/12); intent prompt/schema UNTOUCHED (no re-benchmark needed); state.js fence held.
+  **Two honest deferrals, by design:** (1) OUTDOORS still uses the node-tile step — the region-frame
+  walk is built + tested but unwired, awaiting the region-sheet packet (avoids forking the
+  journey-entangled outdoor mover); (2) the map marker does NOT yet slide for in-room steps —
+  `resolveEntityWuFromWorld` reads roomId/legacy ux-uy, not cell-granular `pos` → **TAC-4 renderer
+  square-snap is the rung that lights it up.** The `public/v1.js` front-door build line stays
+  integration-only.
 
 ### MAP-3DR — reconnect the 3D diorama on a persistent mount  ·  **Phase 4 (the face)  ·  = TABLETOP S4; cut the packet when S3 lands**
 - **why parked (2026-07-03, Tim's call):** the 3D layer was DISCONNECTED (`MAP_3D_ENABLED=false`,

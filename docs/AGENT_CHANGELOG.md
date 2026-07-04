@@ -1929,3 +1929,18 @@ other agents. (none active)
   suite 9773/0, determinism green. Receipts: `docs/playtests/fp2/*.png`.
 - Next in lane: ROADS-1 (buildings off road squares + one road network) dispatches now that
   `public/map/` is free.
+
+## 2026-07-04 — Basecamp (TAC-2 + ND-1b bundle → v0.28.15 build 065)
+
+- **TAC-2** (`e5ec1d5d` → `9e690677`): the tactical move verb — typed short moves slide canonical
+  `pos` ≤6 cells (30 ft) via `{op:'pos'}` through effectsCore; `resolveTacticalWalk`/`MAX_WALK_CELLS`
+  in tacticalPos.js; `parseCardinalMove` LLM-off floor; narrate-the-read. Never changes
+  currentNodeId. U442–U445 (12/12). Deferred by design: outdoor region-frame walk built+tested but
+  unwired (region-sheet packet); marker doesn't slide for in-room steps (TAC-4 renderer square-snap).
+  Intent prompts untouched — no re-benchmark.
+- **ND-1b** (`2ec503b3` → `477b338a`): NODE-DESYNC-1's legacy-save repair now PERSISTS — the repair
+  keyed off derived `scene.interior` (already nulled by the load guard) instead of the raw
+  `party[0].position.interior` pointer it derives from; fix deletes the stale raw pointer. U446–U447;
+  playtest:full 500 runs clean.
+- Bundle verified at integration: `npm run check` GREEN — convergence 124/124, suite 9787/0,
+  determinism green. Front door bumped + live-verified; "walk north" verified via the real input.

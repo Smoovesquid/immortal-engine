@@ -1095,10 +1095,14 @@ sheet (no per-node islands); the camera keeps the player centered (no edges, eve
   back byte-identical (U451); U450–U451 + U407/408 relock; receipts `docs/playtests/tac4/` (marker
   crosses into the Hearth Room on 'go east', then nudges exactly one square on 'walk east' —
   marker(wu) −44.52→−43.52 = 1 cell). The movement loop is now VISIBLY closed: law → engine → map.
-- **PL-RNG-1 (small, QUEUE — found by TAC-4's lab, engine hot-file): latent crash
-  `engine/playloop.js:292`** calls `threadRng.float()` but `makeRng()` exposes `nextFloat` — dormant
-  on the default fantasy pack (no story threads), CRASHES any threaded pack (crownlands/ashenmoor).
-  One-word fix + guard test (U454); dispatch the micro-lane as soon as INT-4-TRAVEL frees playloop.
+- **PL-RNG-1 ✅ LANDED v0.28.20 b070** (`e0ca472e`, one word: `float()`→`nextFloat()`; U454 guard
+  proven non-tautological by revert-test; fantasy/tallow worldHash byte-identical
+  `1de2d182…`). **Worker's deeper finding → PACK-THREADS-1 (design question, QUEUE for Tim):**
+  `normalizePack()`'s field whitelist silently DROPS `threads` (and sibling catalog fields) — so the
+  crash was unreachable because Crownlands'/Ashenmoor's long-running story-thread arcs NEVER LOAD in
+  the live app at all. The threads feature is dark content. Decide: admit `threads` through the
+  whitelist (then the U454 raw path becomes the live path — engine work + content audit), or delete
+  the dead catalog fields (honesty cut). Tim's call on whether threaded arcs are wanted for the slice.
 
 ### MAP-3DR — reconnect the 3D diorama on a persistent mount  ·  **Phase 4 (the face)  ·  = TABLETOP S4; cut the packet when S3 lands**
 - **why parked (2026-07-03, Tim's call):** the 3D layer was DISCONNECTED (`MAP_3D_ENABLED=false`,

@@ -1991,6 +1991,19 @@ other agents. (none active)
 - Integration ladder GREEN: **convergence 125/125** (first new lock since C23 targets), suite 9831/0,
   determinism green. Front door v0.28.19 b069 live-verified.
 
+## 2026-07-04 — Basecamp (gate re-baseline + PL-RNG-1 → v0.28.20 build 070)
+
+- **Gate 2026-07-04-3 (v0.28.19): 14/48 → 8/48 same-config** — the day's landings held (zero
+  movement/geography/map/perception/rules/travel failures); Chao1: 0 categorically new modes.
+  Clusters owned in PACKETS §GATE-3: CBT-AGENCY (top, 2×high — "roll MY attack" overridden by a
+  fabricated ward), take:already-held #3, answerability info-asks ×2, object-state question,
+  INFO-HONESTY fabricated specific, META-SHEET. Spend $0.95 recorded (ledger $16.16).
+- **PL-RNG-1 landed** (`e0ca472e`): `threadRng.float()`→`nextFloat()` at playloop:292; U454 guard
+  (revert-proven); fantasy worldHash byte-identical. Worker finding queued as PACK-THREADS-1:
+  `normalizePack` whitelist drops `threads` — Crownlands/Ashenmoor story arcs never load (dark
+  content; Tim's design call).
+- Integration ladder GREEN: convergence 125/125, suite 9836/0, determinism green. v0.28.20 b070.
+
 2026-07-04 — Sonnet (worker worktree, PERC-1) — LOGIC DONE, WIRING PENDING (playloop.js fenced)
 - Packet/seam: `docs/PACKETS.md` PERC-1 — 2026-07-04 gate (Chaos-griefer, CRUNCH_INCONSISTENCY): "Wait — is
   the ceiling still on fire or not? I stand in the middle of the room and look up." rolled a NATURAL 1 vs DC

@@ -16,6 +16,7 @@ import { getPlan } from './plans/index.js';
 import { buildingTypeFor } from '../../engine/structures/roomDetail.js';
 import { exitsFrom, ensureMap } from '../../engine/map/mapState.js';
 import { makeRng, seedFromString } from '../../engine/rng.js';
+import { outdoorOccupants } from '../../engine/structures/roomOccupancy.js';
 
 const TIER_STEP = 5; // grid-distance per danger rung
 
@@ -57,7 +58,16 @@ export function placeFromWorldNode(world, nodeId) {
 
   const structs = Object.values((world && world.structures && world.structures.byId) || {}).filter(s => String(s && s.nodeId || '') === id);
   const sbld = Array.isArray(node.settlement && node.settlement.buildings) ? node.settlement.buildings : [];
-  const npcs = Array.isArray(node.settlement && node.settlement.npcs) ? node.settlement.npcs : [];
+  // MAP-OCC-1: the outdoor token set is LINE OF SIGHT, never the whole settlement roster.
+  // outdoorOccupants(world) is the same occupancy model the DM's presence logic reads
+  // (engine/structures/roomOccupancy.js) — it derives who is truly out in the open from
+  // world.map.currentNodeId, so it's only valid for the node the player is actually AT.
+  // For any other node (the overworld map draws every settlement's layout at once via
+  // oneMap.js), we cannot correctly ask "who's outdoors there" without touching the
+  // engine's occupancy module for an arbitrary node — so those draw no roster-scatter
+  // NPCs at all (never-wrong-by-omission beats fabricating people who aren't there).
+  const isCurrentNode = id === String((world && world.map && world.map.currentNodeId) || '');
+  const outdoorNpcs = isCurrentNode ? outdoorOccupants(world) : [];
 
   const buildings = [], tokens = [];
   const pathY = 12;
@@ -138,9 +148,10 @@ export function placeFromWorldNode(world, nodeId) {
   };
 
   // The player enters from the lane's west end; neighbours stand scattered near
-  // the road through the village, not in a tidy row.
+  // the road through the village, not in a tidy row — but only the ones the engine
+  // says are actually outdoors right now (never the off-room roster).
   tokens.push({ type: 'player', ux: x0 + 1.5, uy: roadY(x0 + 1.5) });
-  const shown = npcs.filter(n => n && !n.hostile).slice(0, 12).concat(npcs.filter(n => n && n.hostile).slice(0, 2).map(n => ({ ...n, name: '?' })));
+  const shown = outdoorNpcs.filter(n => n && !n.hostile).slice(0, 12).concat(outdoorNpcs.filter(n => n && n.hostile).slice(0, 2).map(n => ({ ...n, name: '?' })));
   shown.forEach((n, i) => {
     const ax = minX + ((i + 1) / (shown.length + 1)) * (maxX - minX) + (rng.nextFloat() - 0.5) * 2;
     const ay = roadY(ax) + (rng.nextFloat() < 0.5 ? -1 : 1) * (0.8 + rng.nextFloat() * 1.4);

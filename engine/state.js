@@ -130,11 +130,22 @@ export function ensureWorld(partial) {
     scene: (() => {
       const s = w.scene && typeof w.scene === 'object' ? w.scene : {};
       let interior = ensureInteriorContext(s.interior);
-      // v21 — derive interior from position if not explicitly set
+      // v21 — derive interior from position if not explicitly set.
+      // NODE-DESYNC-1 guard: never re-derive an interior that would sit at a DIFFERENT
+      // node than currentNodeId. Old saves / test fixtures that re-point currentNodeId
+      // (worldWith) leave a stale position.interior from the boot node; re-deriving it
+      // here used to manufacture a position-desync the moment the world was ensured.
+      // Only adopt the derived interior when its structure is at the current node (or
+      // the structure is unknown, so no contradiction can be proven).
       if (!interior && Array.isArray(w.party) && w.party[0]?.position?.interior) {
         const posInterior = w.party[0].position.interior;
         if (typeof posInterior === 'object' && posInterior.structureId && posInterior.roomId) {
-          interior = { structureKey: posInterior.structureId, roomId: posInterior.roomId, visited: [posInterior.roomId] };
+          const curNode = String(w.map?.currentNodeId ?? '');
+          const stNode = w.structures?.byId?.[String(posInterior.structureId)]?.nodeId;
+          const derivedElsewhere = stNode != null && String(stNode) !== '' && String(stNode) !== curNode;
+          if (!derivedElsewhere) {
+            interior = { structureKey: posInterior.structureId, roomId: posInterior.roomId, visited: [posInterior.roomId] };
+          }
         }
       }
       return {
@@ -262,6 +273,39 @@ export function ensureWorld(partial) {
       lastError: ui.lastError ? String(ui.lastError) : ''
     }
   };
+
+  // NODE-DESYNC-1 — legacy position-desync repair (BEFORE the invariant assertion).
+  // Old saves written under the pre-fix bug can carry scene.interior pointing at a
+  // registered structure whose node ≠ map.currentNodeId (a failed "go to the hearth
+  // room" flipped the node while the interior stayed put). A hard invariant throw on
+  // load is not acceptable — repair in place.
+  //
+  // LEAST-DESTRUCTIVE choice: CLEAR the stale interior, keeping map.currentNodeId.
+  // Why clear rather than restore-the-node: currentNodeId is the far more load-bearing
+  // field (it drives roster/occupancy, travel, arrival, every present-here read), so a
+  // repair should defer to it rather than override it from the finer interior detail.
+  // This also matches how the running engine already degrades a stale interior
+  // (playloop's interiorBelongsHere guard treats an interior-at-the-wrong-node as
+  // "outdoors here"): the repair simply makes that truth explicit in the state instead
+  // of leaving a contradiction for every reader to special-case. The player ends up
+  // standing outdoors at their current node — a coherent place — rather than teleported
+  // by a stale pointer. (The live bug that CREATED this state is now structurally
+  // impossible; this branch only ever runs for saves written before the fix.)
+  // Shape-preserving: only scene.interior (→ null) and party[0].position.interior
+  // (the field scene.interior is re-derived from) change.
+  {
+    const it = world.scene?.interior;
+    const structureKey = it && typeof it === 'object' ? String(it.structureKey || '') : '';
+    const st = structureKey ? world.structures?.byId?.[structureKey] : null;
+    if (st && st.nodeId != null && String(st.nodeId) !== '' && String(st.nodeId) !== String(world.map?.currentNodeId ?? '')) {
+      world.scene = { ...world.scene, interior: null };
+      if (Array.isArray(world.party) && world.party[0]?.position?.interior) {
+        world.party = world.party.map((p, i) => i === 0
+          ? { ...p, position: { ...(p.position || {}), interior: null } }
+          : p);
+      }
+    }
+  }
 
   assertWorldInvariants(world);
   return world;

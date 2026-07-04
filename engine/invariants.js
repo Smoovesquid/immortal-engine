@@ -628,6 +628,27 @@ export function assertWorldInvariants(world) {
       throw new Error(`Invariant: scene.dialogue.npcId ${dialogue.npcId} not at current node`);
     }
   }
+
+  // NODE-DESYNC-1 — position-truth consistency. If scene.interior names a REGISTERED
+  // structure (one in structures.byId with a nodeId), that structure MUST sit at the
+  // current node. The live bug had "go to the hearth room" flip currentNodeId a region
+  // over while scene.interior stayed the cottage you were in — after which every
+  // presence read (nodeRoster/occupantsOfRoom) came back empty (the ghost-town
+  // signature). THE MOVEMENT LAW makes that structurally impossible going forward; this
+  // invariant is the tripwire so the class can never sleep. Synthetic test interiors
+  // (no structureKey, or a structure not registered here) are intentionally tolerated —
+  // this fires only on a real interior pointing at the wrong node.
+  const interior = world.scene?.interior;
+  if (interior && typeof interior === 'object') {
+    const structureKey = String(interior.structureKey || '');
+    const st = structureKey ? world.structures?.byId?.[structureKey] : null;
+    if (st && st.nodeId != null && String(st.nodeId) !== '') {
+      const curNode = String(world.map?.currentNodeId ?? '');
+      if (String(st.nodeId) !== curNode) {
+        throw new Error(`Invariant: scene.interior structure ${structureKey} is at node ${st.nodeId} but map.currentNodeId is ${curNode || '(none)'} (position desync — THE MOVEMENT LAW)`);
+      }
+    }
+  }
 }
 
 function assertCombatGrid(combat) {

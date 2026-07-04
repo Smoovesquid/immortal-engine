@@ -1508,7 +1508,7 @@ function playerMoveCore(world, packsById, text, dqIntent) {
     }
   }
 
-  const interiorAction = inferInteriorAction(text, w.scene?.interior);
+  const interiorAction = inferInteriorAction(text, w.scene?.interior, { roomNames: interiorRoomTargets(w) });
 
   // INT-4a — strip a TRIVIAL LEADING CLAUSE ("take my hatchet in hand and open
   // the chest", "kneel by the chest and try its lid — is it locked?") so the
@@ -1839,13 +1839,26 @@ function playerMoveCore(world, packsById, text, dqIntent) {
   // present NPC, and bounces the move out to the exterior travel path (the player ends
   // up outside, "you know of no such place"). A roomHint with NO room-noun (bare "go
   // back") still defers to the guard, so "go back to Aldrich" remains an NPC approach.
-  const roomMoveWins = interiorAction.kind === 'move' && interiorAction.roomHint
-    && /\b(?:room|rooms|doorway|doorways|chamber|hall|hallway)\b/i.test(String(text || ''));
+  // A NAMED-room move ("go to the hearth room") already proved it targets a real
+  // room of this structure, so it wins over the NPC-approach guard exactly like a
+  // roomHint move does — and it is honestly answered when it names the room you're
+  // already in (resolveInteriorRoomByName returns the '__here__' sentinel).
+  const namedRoomId = interiorAction.kind === 'move' && interiorAction.roomName
+    ? resolveInteriorRoomByName(w, interiorAction.moveText || text)
+    : '';
+  if (namedRoomId === '__here__') {
+    const hereLabel = String(interiorAction.roomName || 'this room').toLowerCase();
+    return { world: w, output: { narration: `Wizard: You're already in the ${hereLabel}.`, mechanics: 'observe only — no roll, state unchanged' } };
+  }
+  const roomMoveWins = interiorAction.kind === 'move'
+    && ((interiorAction.roomHint && /\b(?:room|rooms|doorway|doorways|chamber|hall|hallway)\b/i.test(String(text || '')))
+      || !!namedRoomId);
   if (!combatEngageAction && !declaredNpcViolence && interiorAction.kind === 'move'
       && (roomMoveWins || (!approachPresentNpcRef(w, text) && !talkOrApproachResolvesPresentNpc(w, text)))) {
     const wantsRiskyMove = isRiskyOrObstructedMoveIntent(interiorAction.moveText || text);
     if (!wantsRiskyMove) {
       const targetRoomId = interiorAction.toRoomId
+        || (namedRoomId && namedRoomId !== '__here__' ? namedRoomId : '')
         || pickAdjacentInteriorByDirection(w, interiorAction.direction)
         || (interiorAction.roomHint ? resolveInteriorRoomHint(w, interiorAction.roomHint) : '');
       const fromRoomId = String(w.scene?.interior?.roomId || '');
@@ -1906,7 +1919,9 @@ function playerMoveCore(world, packsById, text, dqIntent) {
           ? `Wizard: You step back into ${dest}.`
           : interiorAction.roomHint === 'aft'
             ? `Wizard: You step through into ${dest}.`
-            : movedDir ? `Wizard: You move ${movedDir} into ${dest}.` : `Wizard: You move on into ${dest}.`;
+            : interiorAction.roomName
+              ? `Wizard: You step through into ${dest}.`
+              : movedDir ? `Wizard: You move ${movedDir} into ${dest}.` : `Wizard: You move on into ${dest}.`;
         if (interiorAction.thenText) {
           const acted = playerMoveCore(w2, packsById, interiorAction.thenText);
           const actLine = String(acted?.output?.narration || '').replace(/^Wizard:\s*/, '').trim();
@@ -3526,11 +3541,18 @@ function playerMoveCore(world, packsById, text, dqIntent) {
   });
 
   // Living Terrain Engine v1: travel intents advance map position deterministically.
-  const indoorCompassLeak = Boolean(w.scene?.interior)
-    && (/\b(?:go\s+north|go\s+south|go\s+east|go\s+west|north|south|east|west)\b/i.test(String(text || ''))
-      || /(?<!['’])\b(?:n|s|e|w)\b/i.test(String(text || '')))
-    && !/\b(?:travel|leave|exit|head to|go to|move to|escape|journey|walk to)\b/i.test(String(text || ''));
-  if (!indoorCompassLeak && moveAdvancesScene(text)) {
+  // THE MOVEMENT LAW (NODE-DESYNC-1, docs/POSITION_AS_CANON.md §3): self-powered
+  // movement can NEVER change your node. While an interior is set, no movement input
+  // may reach node travel — full stop. This is the structural guarantee: a
+  // named-room move ("go to the hearth room") resolves interior-side upstream, and a
+  // travel-shaped remainder that falls through here must NOT silently teleport you a
+  // region over while scene.interior stays the room you were in. The old
+  // `indoorCompassLeak` guard only caught bare compass tokens ("go north"), so
+  // "go to X" leaked to pickTravelDestination's random-neighbour fallback and flipped
+  // the node behind a failed roll (the live desync). Node-scale travel outdoors is
+  // owned by the free-movement/journey handler above (which already returned); this
+  // legacy path only ever runs for the residual, and never while indoors.
+  if (!w.scene?.interior && moveAdvancesScene(text)) {
     const dest = pickTravelDestination(w, text);
     const before = w.map?.currentNodeId;
     w = moveToNode(w, dest);
@@ -4501,7 +4523,7 @@ function inferInteriorAction(text, interior, opts = {}) {
 
   const compound = allowCompound ? splitInteriorMoveThenAct(t) : null;
   if (compound) {
-    const move = inferInteriorAction(compound.moveText, interior, { allowCompound: false });
+    const move = inferInteriorAction(compound.moveText, interior, { allowCompound: false, roomNames: opts.roomNames });
     if (move?.kind === 'move') {
       return { ...move, thenText: compound.thenText, moveText: compound.moveText };
     }
@@ -4607,6 +4629,34 @@ function inferInteriorAction(text, interior, opts = {}) {
       /\b(?:go|head|walk|come)\s+back\b/.test(t) ||
       /\b(?:toward|towards|to|back\s+to)\s+the\s+(?:entrance|front\s+door|front|doorway)\b/.test(t);
     if (fore) return { kind: 'move', toRoomId: '', direction: '', roomHint: 'fore' };
+
+    // NAMED-ROOM MOVE (NODE-DESYNC-1 positive path). A room referred to by its
+    // derived label — "go to the hearth room", "walk out to the hearth room",
+    // "into the pantry" — is a real interior destination, resolved on the room
+    // graph. Without this, "go to X" fell past every interior rule (the goMatch
+    // below excludes the "to" preposition) down to node travel, silently flipping
+    // the node behind a failed roll. `opts.roomNames` carries [{id,name,lc}] for
+    // the current structure (the caller has the world; this classifier does not),
+    // so the match is over the ACTUAL rooms — never a fake room-id from free text.
+    // The move-verb / preposition gate keeps it off pure object-looks and NPC
+    // approaches ("look at the hearth" is excluded by probesObject above; "the
+    // hearth is cold" carries no motion cue).
+    const roomNames = Array.isArray(opts.roomNames) ? opts.roomNames : null;
+    if (roomNames && roomNames.length) {
+      const carriesMotion = /\b(?:go|goes|going|head|heads|heading|walk|walks|walking|move|moves|moving|step|steps|stepping|come|comes|get|gets|make\s+(?:my|our|your)\s+way|into|through|to)\b/.test(t);
+      if (carriesMotion) {
+        const ranked = roomNames.slice().sort((a, b) => String(b.lc || '').length - String(a.lc || '').length);
+        for (const r of ranked) {
+          const full = String(r.lc || '');
+          const core = roomNameCore(full);
+          const hitFull = full && new RegExp(`\\b${full.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`).test(t);
+          const hitCore = core.length >= 3 && new RegExp(`\\b${core.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`).test(t);
+          if (hitFull || hitCore) {
+            return { kind: 'move', toRoomId: '', direction: '', roomHint: '', roomName: String(r.name || full) };
+          }
+        }
+      }
+    }
   }
 
   // "go <roomId>" / "go hall" is an interior move — but NOT "go to/over/up Aldrich":
@@ -4636,7 +4686,7 @@ function inferInteriorAction(text, interior, opts = {}) {
 export function carriesInteriorMovementIntent(world, text) {
   try {
     const interior = world?.scene?.interior || null;
-    const a = inferInteriorAction(String(text || ''), interior);
+    const a = inferInteriorAction(String(text || ''), interior, { roomNames: interiorRoomTargets(world) });
     return !!a && (a.kind === 'exit' || a.kind === 'move' || a.kind === 'enter');
   } catch {
     return false;
@@ -4847,7 +4897,7 @@ function isDialogueBreakingIntent(text, world) {
   if (bareCompass || commandedMove) return true;
 
   // Interior transitions (already command-shaped: "enter the mill", "go outside")
-  const ia = inferInteriorAction(t, world?.scene?.interior);
+  const ia = inferInteriorAction(t, world?.scene?.interior, { roomNames: interiorRoomTargets(world) });
   if (ia && ia.kind && ia.kind !== 'none') return true;
   // Local feet moves ("move 30ft north")
   if (parseLocalFeetMove(t)) return true;
@@ -8394,6 +8444,67 @@ function resolveInteriorRoomHint(world, hint) {
   let best = '', bestD = -Infinity;
   for (const id of adj) { const d = dist.get(id); if (typeof d === 'number' && d > bestD) { bestD = d; best = id; } }
   return (best && (typeof here !== 'number' || bestD > here)) ? best : '';
+}
+
+// The named rooms of the CURRENT interior structure, with the derived label each one
+// narrates by (roomDetail: "Hearth Room", "Bedchamber", "Pantry", "Scullery"…). Used
+// to resolve a by-name move ("go to the hearth room") on the interior graph — the
+// positive side of NODE-DESYNC-1: a named room IS a real destination, it must resolve
+// where you already are, never leak to node travel. Pure/deterministic (roomDetail is
+// seed-free, keyed off room tags + buildingType).
+function interiorRoomTargets(world) {
+  const interior = (world?.scene && typeof world.scene.interior === 'object') ? world.scene.interior : null;
+  if (!interior) return [];
+  const st = world.structures?.byId?.[String(interior.structureKey || '')];
+  const topo = normalizeTopology(st?.topology);
+  if (!topo || !Array.isArray(topo.rooms)) return [];
+  const bt = st?.buildingType || null;
+  const out = [];
+  for (const room of topo.rooms) {
+    const name = String(roomDetail(room, bt)?.name || '').trim();
+    if (!name) continue;
+    out.push({ id: String(room.id), name, lc: name.toLowerCase() });
+  }
+  return out;
+}
+
+// The label→core-noun map for name matching, so "hearth room" matches "Hearth Room"
+// AND the looser "the hearth"/"the kitchen" a player actually types. Only the head
+// noun that disambiguates the room is needed; "room"/"chamber" are dropped as generic.
+function roomNameCore(lc) {
+  return String(lc || '')
+    .replace(/\b(?:the|a|an)\b/g, ' ')
+    .replace(/\b(?:room|rooms|chamber|chambers)\b/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+// Resolve a movement text to a NAMED interior room id (or '' — not a by-name move, or
+// it names the room you're already in). Matches the fullest label first so "hearth
+// room" beats a bare "hearth". Excludes the current room (a move-in-place is a no-op
+// the handler reports honestly, not a silent nothing).
+function resolveInteriorRoomByName(world, text) {
+  const t = String(text || '').toLowerCase();
+  if (!t) return '';
+  const interior = (world?.scene && typeof world.scene.interior === 'object') ? world.scene.interior : null;
+  const curId = interior ? String(interior.roomId || '') : '';
+  const targets = interiorRoomTargets(world);
+  if (!targets.length) return '';
+  // Longest label first (specificity): "hearth room" before "hall".
+  const ranked = targets.slice().sort((a, b) => b.lc.length - a.lc.length);
+  for (const r of ranked) {
+    const core = roomNameCore(r.lc);
+    const full = r.lc;
+    // Whole-word containment on the full label ("hearth room") or its core noun
+    // ("hearth"). Core must be ≥3 chars to avoid a stray 2-letter collision.
+    const hitFull = full && new RegExp(`\\b${full.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`).test(t);
+    const hitCore = core.length >= 3 && new RegExp(`\\b${core.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`).test(t);
+    if (hitFull || hitCore) {
+      if (r.id === curId) return '__here__'; // names the current room — honest no-op
+      return r.id;
+    }
+  }
+  return '';
 }
 
 // Player-facing exit labels. Each exit now carries the compass direction it

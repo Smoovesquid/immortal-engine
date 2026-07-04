@@ -46,6 +46,14 @@ function worldWith(npcs = [], seed = 'h57') {
   };
   return ensureWorld({
     ...base,
+    // NODE-DESYNC-1: clear the boot node's position.interior too. This fixture
+    // re-points currentNodeId to a synthetic OUTDOOR settlement (scene.interior:null);
+    // leaving the stale position.interior from baseWorld's indoor boot let ensureWorld
+    // silently re-derive an interior at the OLD node — a position-desync. Clearing it
+    // makes the intended "outdoors at the settlement" state honest and self-consistent.
+    party: (base.party || []).map((p, i) => i === 0
+      ? { ...p, position: { ...(p.position || {}), interior: null } }
+      : p),
     map: {
       ...base.map,
       currentNodeId: node.id,
@@ -99,21 +107,35 @@ export function emptyRoomWorld() {
 
 // (H-81) Indoors WITH a present NPC at the node — the only combo that triggers the
 // approach-a-present-NPC → "that way is blocked" interior-move bug. Mira is at the
-// node (from villageBakerWorld); the player is in an interior of that node.
+// node; the player is in a REAL interior of THAT SAME node.
+// NODE-DESYNC-1: this fixture used to be "indoors" only by accident — it re-pointed
+// currentNodeId to a synthetic settlement while a stale position.interior from the
+// boot node was silently re-derived into scene.interior (a position-desync the
+// pre-fix engine tolerated). With the desync closed, that state is now honestly
+// OUTDOORS, which stripped the egress-repair capability (C21) it was locking. So it
+// is rebuilt on the REAL boot interior: baseWorld already drops the player inside a
+// registered structure at its node; we just add the baker to that node's settlement.
+// currentNodeId, the interior, and the structure now all agree — a valid indoor state.
 export function interiorNpcWorld() {
-  const world = villageBakerWorld();
+  const world = baseWorld('h56');
+  const nid = String(world.map.currentNodeId);
+  const baker = {
+    id: 'npc_baker', name: 'Mira Hearth', role: 'baker', occupation: 'baker',
+    descriptor: 'flour-dusted baker', hostile: false, conversationState: { trustLevel: 5 }
+  };
+  // Replace the boot settlement's crowd with just the baker so NPC-reference
+  // resolution stays controlled (U238 approaches a single lurker; a full roster
+  // would capture "the stranger" as someone else). The REAL boot interior/structure
+  // is kept — so currentNodeId, scene.interior and the structure all agree (a valid
+  // indoor state) and the egress "next room" capability (C21) still exists.
+  const nodes = (world.map.nodes || []).map(n => String(n.id) === nid
+    ? { ...n, settlement: { ...(n.settlement || {}), decompressed: true, npcs: [baker] } }
+    : n);
   return ensureWorld({
     ...world,
-    scene: {
-      ...(world.scene || {}),
-      dialogue: null,
-      interior: {
-        id: 'h56_interior_npc',
-        name: 'Bakehouse',
-        kind: 'room',
-        description: 'Inside a modest building at the village.'
-      }
-    }
+    map: { ...world.map, nodes },
+    combat: { ...(world.combat || {}), active: false },
+    scene: { ...(world.scene || {}), dialogue: null }
   });
 }
 

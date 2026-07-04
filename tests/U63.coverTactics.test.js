@@ -48,6 +48,10 @@ function mkInteriorFight(seedKey) {
   let w = baseWorld(seedKey);
   w = {
     ...w,
+    // currentNodeId must match STRUCT.nodeId — otherwise scene.interior points at a
+    // registered structure sitting at a different node (a position-desync the
+    // NODE-DESYNC-1 invariant now rejects and ensureWorld repairs by clearing it).
+    map: { ...w.map, currentNodeId: STRUCT.nodeId },
     structures: { byId: { st1: STRUCT } },
     scene: { ...w.scene, interior: { structureKey: 'st1', roomId: ROOM_ID } }
   };
@@ -59,6 +63,7 @@ function mkBigEnemyFight(seedKey) {
   let w = baseWorld(seedKey);
   w = {
     ...w,
+    map: { ...w.map, currentNodeId: STRUCT.nodeId },
     structures: { byId: { st1: STRUCT } },
     scene: { ...w.scene, interior: { structureKey: 'st1', roomId: ROOM_ID } }
   };

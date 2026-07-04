@@ -55,7 +55,7 @@ export default [
       // NOTE: In dialogue_active, the NPC "Couldn't say" deflection fires for nearly ALL input.
       // Diverges must be actions that EXIT dialogue and produce [dialogue exit] instead.
       { text: "I leave the conversation.", reason: "exit action; produces [dialogue exit], not NPC speech — clearly not an NPC confrontation reaction" },
-      { text: "I open the door and leave.", reason: "spatial exit from dialogue; produces movement narration, not NPC confrontation reaction" },
+      { text: "I say goodbye and leave.", reason: "NODE-DESYNC-1 relock: the fixture is now honestly OUTDOORS in dialogue (no phantom interior), so the prior 'open the door and leave' has no door and stays in dialogue. A goodbye-and-leave exits dialogue → [dialogue exit], not an NPC confrontation reaction — same diverge intent on a valid state." },
     ],
     source: 'opus-gate-2026-06-19-postH39.md [Lore-hound, turn 12]; calibrated 2026-06-20',
   },
@@ -97,7 +97,7 @@ export default [
       // NOTE: In dialogue_active nearly everything produces NPC deflection ("Couldn't say").
       // Only actions that EXIT dialogue produce different output.
       { text: "I leave the conversation.", reason: "exit action; produces [dialogue exit], not NPC confrontation speech" },
-      { text: "I open the door and leave.", reason: "spatial exit; produces movement narration, not NPC speech" },
+      { text: "I say goodbye and leave.", reason: "NODE-DESYNC-1 relock: fixture is now honestly OUTDOORS in dialogue; a goodbye-and-leave exits dialogue -> [dialogue exit], not NPC speech (same diverge intent, valid state)." },
     ],
     source: 'opus-gate-2026-06-19-postH28.md [Lore-hound, turn 7]; opus-gate-2026-06-20-postH54-H55.md [Rules Lawyer DM, turn 2]; calibrated 2026-06-20',
   },
@@ -138,7 +138,7 @@ export default [
       // NOTE: In dialogue_active, nearly all input produces NPC deflection ("Couldn't say").
       // Only exit actions produce different [dialogue exit] output.
       { text: "I leave the conversation.", reason: "exit action; produces [dialogue exit] not NPC confrontation speech" },
-      { text: "I open the door and leave.", reason: "spatial exit; produces movement narration, not NPC speech" },
+      { text: "I say goodbye and leave.", reason: "NODE-DESYNC-1 relock: fixture is now honestly OUTDOORS in dialogue; a goodbye-and-leave exits dialogue -> [dialogue exit], not NPC speech (same diverge intent, valid state)." },
     ],
     source: 'opus-gate-2026-06-19-postH28.md [Lore-hound, turn 6]; H-42 DONE note; calibrated 2026-06-20',
   },

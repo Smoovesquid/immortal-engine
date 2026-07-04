@@ -169,20 +169,36 @@ export function isTacticalPosConsistent(pos, world, curNodeId, opts = {}) {
 
 // ── Struct-frame geometry ───────────────────────────────────────────────────
 
-// A room's cell-space rectangle, derived from its floorPlan layout box
-// (cx,cy centre; w,h size, in layout units). Half-extents floor to at least 0 so
-// even a tiny room owns its centre cell. Returns integer cell bounds (inclusive).
+// The shared-wall band, in cells, reserved between abutting rooms (FP-1). Under
+// the tiled floor plan connected rooms ABUT, so their layout boxes touch along a
+// shared wall; quantized to cells at PLACE_WU, two touching boxes would otherwise
+// claim the SAME boundary cell and roomOfStructCell would attribute it to whichever
+// room sorts first — mislabelling a cell the other room owns and tripping the pos
+// invariant on a room-to-room move. Insetting every room rect by one wall cell on
+// each side keeps room territories DISJOINT: the boundary cell belongs to the wall
+// (walkable by nobody), so a placed pos always resolves to exactly its own room.
+const WALL_CELLS = 1;
+
+// A room's cell-space rectangle, derived from its floorPlan layout box (cx,cy
+// centre; w,h size, in layout units). Half-extents floor to at least 0, then inset
+// by the shared-wall band so abutting rooms never share a boundary cell — but a
+// room always keeps at least its centre cell (a tiny closet stays placeable, and a
+// room too small to inset simply owns its single centre cell). Returns integer cell
+// bounds (inclusive).
 export function roomRectCells(room) {
   if (!room || typeof room !== 'object') return null;
   const cx = layoutToCells(room.cx);
   const cy = layoutToCells(room.cy);
   const halfW = Math.max(0, Math.floor(layoutToCells(room.w) / 2));
   const halfH = Math.max(0, Math.floor(layoutToCells(room.h) / 2));
+  // Inset by the wall band, but never past the centre cell.
+  const insetW = Math.min(WALL_CELLS, halfW);
+  const insetH = Math.min(WALL_CELLS, halfH);
   return {
     id: String(room.id),
     cx, cy,
-    minX: cx - halfW, maxX: cx + halfW,
-    minY: cy - halfH, maxY: cy + halfH
+    minX: cx - halfW + insetW, maxX: cx + halfW - insetW,
+    minY: cy - halfH + insetH, maxY: cy + halfH - insetH
   };
 }
 

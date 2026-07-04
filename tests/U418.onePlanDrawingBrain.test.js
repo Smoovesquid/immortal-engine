@@ -1,20 +1,17 @@
 // U418 — TT-DRAW-3 one plan-drawing brain (docs/briefs/TT-DRAW-3-graphpaper-
-// real-plans.md, docs/TABLETOP_MAP.md). Tim's live sighting: "the rooms are
-// squares inside of squares" — the outdoor sheet (drawModel.js's
-// drawnStructureModel) derived its OWN independent per-room wall/door-gap
-// arithmetic, never drawing corridors, while the in-play interior view
-// (handDrawnInterior.js's floorPlanToSceneModel) already drew real connected
-// architecture. Root cause (verified against the real tallow structure):
-// floorPlan.js deliberately pads a gap (PAD=0.34 layout units) between
-// adjacent room boxes and fills it with a corridor strip — a door's world
-// point sits in THAT gap, never on either room's own boundary edge — so a
-// per-room-only wall derivation leaves the gap undrawn: two sealed boxes with
-// dead space between them. The fix: planModel.js's floorPlanToPlanModel is
-// the ONE shared derivation (room shape, corridor dog-legs, door orientation)
-// BOTH floorPlanToSceneModel (interior) and drawnStructureModel (outdoor
-// sheet) now import — this test proves the sharing at the import level and
-// proves the geometry actually tiles/connects, not just that the code paths
-// happen to agree today.
+// real-plans.md, docs/TABLETOP_MAP.md), RELOCKED for FP-1 (docs/briefs/
+// FP-1-proper-floorplans.md). Both map surfaces still derive from the ONE shared
+// plan-model (planModel.js's floorPlanToPlanModel, imported by BOTH
+// floorPlanToSceneModel and drawnStructureModel — U418-A). FP-1 changed the
+// geometry that model carries: Tim's ruling "the 'rooms-interconnected-by-corridors'
+// is an old bug — rooms should have doorways that open into one another". floorPlan.js
+// no longer pads a gap and bridges it with a corridor strip; rooms now TILE (adjacent
+// cells ABUT, sharing a wall) and a doorway is a gap IN that shared wall. So these
+// tests now prove the connective geometry TILES (rooms share walls, doors sit on the
+// shared wall) and that corridors are ABOLISHED (always zero), rather than the old
+// corridor-bridge model. The one topology that can't tile on a square grid (a triangle:
+// three rooms in a cycle) records its un-tileable edge on fp.nonAdjacent and is
+// exempted — flagged, never bridged.
 //
 // Pure, deterministic, read-only — no engine writes, no Math.random, worldHash
 // unchanged. Hermetic — no network, no API key.
@@ -55,7 +52,7 @@ test('U418-A: import-level assertion — both public/map source files import flo
   assert.match(planModelSrc, /floorPlanToPlanModel/, 'the neutral module must actually define floorPlanToPlanModel');
 });
 
-test('U418-B: the interior scene-model geometry (rooms/doors/corridors, layout units) and the outdoor drawn-structure geometry (projected to world units) derive from the IDENTICAL shared plan-model — same room count, same door count, same corridor count, same ids, for the same structure', () => {
+test('U418-B: the interior scene-model geometry (rooms/doors, layout units) and the outdoor drawn-structure geometry (projected to world units) derive from the IDENTICAL shared plan-model — same room count, same door count, same ids, and NO corridors (FP-1: rooms tile and abut, corridors abolished)', () => {
   const w = boot();
   const nodeId = String(w.map.currentNodeId);
   const structureKey = String(w.scene.interior.structureKey);
@@ -72,74 +69,97 @@ test('U418-B: the interior scene-model geometry (rooms/doors/corridors, layout u
   assert.equal(drawn.rooms.length, shared.rooms.length, 'outdoor drawn-structure room count must match the shared plan-model exactly');
   assert.equal(sceneModel.doors.length, shared.doors.length, 'interior scene-model door count must match the shared plan-model exactly (fully visited)');
   assert.equal(drawn.doors.length, shared.doors.length, 'outdoor drawn-structure door count must match the shared plan-model exactly');
-  assert.equal(drawn.corridors.length, shared.corridors.length, 'outdoor drawn-structure corridor count must match the shared plan-model exactly — corridors are NOT dropped on the outdoor path');
-  assert.ok(shared.corridors.length > 0, 'precondition: the tallow wake structure has at least one corridor to test against');
+  // FP-1: corridors are abolished — the shared model, the interior scene-model, and
+  // the outdoor drawn model all carry ZERO corridors. Rooms abut and share walls;
+  // a doorway is a gap in a shared wall, not a bridge over a pad-void.
+  assert.equal(shared.corridors.length, 0, 'the shared plan-model must carry NO corridors (FP-1: rooms tile)');
+  assert.equal(sceneModel.corridors.length, 0, 'the interior scene-model must carry NO corridors');
+  assert.equal(drawn.corridors.length, 0, 'the outdoor drawn-structure model must carry NO corridors');
+  assert.ok(shared.doors.length > 0, 'precondition: the tallow wake structure has at least one doorway to test against');
 
   const sharedRoomIds = shared.rooms.map(r => r.id).sort();
   assert.deepEqual(sceneModel.rooms.map(r => r.id).sort(), sharedRoomIds, 'interior room ids match the shared model exactly');
   assert.deepEqual(drawn.rooms.map(r => r.id).sort(), sharedRoomIds, 'outdoor room ids match the shared model exactly');
 });
 
-test('U418-C: rooms tile the footprint — every corridor visits its two named rooms\' own centers, so the connective ink actually spans the gap between them (no floating/disconnected corridor)', () => {
+test('U418-C: rooms tile the footprint — adjacent room boxes ABUT (share a wall segment), never leaving a pad-void that a corridor would have bridged (FP-1)', () => {
   const w = boot();
   const structureKey = String(w.scene.interior.structureKey);
   const st = w.structures.byId[structureKey];
   const fp = floorPlan(st);
-  const shared = floorPlanToPlanModel(fp);
-  const roomById = new Map(shared.rooms.map(r => [r.id, r]));
-
-  for (const c of shared.corridors) {
-    assert.ok(c.a && c.b, 'every corridor must name both rooms it connects');
-    const ra = roomById.get(c.a), rb = roomById.get(c.b);
-    assert.ok(ra && rb, `corridor room pair (${c.a}, ${c.b}) must both exist in the shared room set`);
-    const firstPt = c.pts[0], lastPt = c.pts[c.pts.length - 1];
-    assert.ok(Math.abs(firstPt[0] - ra.cx) < 1e-9 && Math.abs(firstPt[1] - ra.cy) < 1e-9, `corridor ${c.a}->${c.b} must start at room ${c.a}'s own center (the connective tissue actually touches the room, not a gap)`);
-    assert.ok(Math.abs(lastPt[0] - rb.cx) < 1e-9 && Math.abs(lastPt[1] - rb.cy) < 1e-9, `corridor ${c.a}->${c.b} must end at room ${c.b}'s own center`);
+  // Every topology-connected pair of rooms placed on orthogonally-adjacent grid
+  // cells must have coincident boxes on the shared axis: their drawn edges meet
+  // (within the wall inset) instead of floating apart. The rare cycle edge that
+  // can't tile (a triangle on a square grid) is recorded on fp.nonAdjacent and
+  // exempted here — it is flagged, never bridged by a corridor.
+  const nonAdj = new Set((fp.nonAdjacent || []).map(n => `${n.a}|${n.b}`));
+  const byId = new Map(fp.rooms.map(r => [r.id, r]));
+  let sharedWallPairs = 0;
+  for (const d of fp.doors) {
+    if (nonAdj.has(`${d.a}|${d.b}`)) continue;
+    const a = byId.get(d.a), b = byId.get(d.b);
+    assert.ok(a && b, `door ${d.a}-${d.b} names two real rooms`);
+    const ax0 = a.cx - a.w / 2, ax1 = a.cx + a.w / 2, ay0 = a.cy - a.h / 2, ay1 = a.cy + a.h / 2;
+    const bx0 = b.cx - b.w / 2, bx1 = b.cx + b.w / 2, by0 = b.cy - b.h / 2, by1 = b.cy + b.h / 2;
+    // Boxes abut on a vertical shared wall (a's right meets b's left, or vice
+    // versa) with overlapping y-spans, OR on a horizontal shared wall with
+    // overlapping x-spans. The shared-wall inset (WALL=0.12) is the max gap.
+    const GAP = 0.13;
+    const vShare = (Math.abs(ax1 - bx0) < GAP || Math.abs(bx1 - ax0) < GAP) && Math.min(ay1, by1) - Math.max(ay0, by0) > -1e-9;
+    const hShare = (Math.abs(ay1 - by0) < GAP || Math.abs(by1 - ay0) < GAP) && Math.min(ax1, bx1) - Math.max(ax0, bx0) > -1e-9;
+    assert.ok(vShare || hShare, `connected rooms ${d.a} and ${d.b} must ABUT along a shared wall (no pad-void)`);
+    sharedWallPairs++;
   }
+  assert.ok(sharedWallPairs > 0, 'precondition: the wake structure has at least one tiled (wall-sharing) room pair');
 });
 
-test('U418-D: every doorway sits ON its corridor — the connective ink the door visually opens onto is the SAME corridor named by the same room pair (a/b), never orphaned', () => {
+test('U418-D: every doorway is a gap ON the shared wall between its two rooms — the door point lies on both rooms\' abutting edges, never floating in a corridor/pad-void (FP-1)', () => {
   const w = boot();
   const structureKey = String(w.scene.interior.structureKey);
   const st = w.structures.byId[structureKey];
   const fp = floorPlan(st);
-  const shared = floorPlanToPlanModel(fp);
-  assert.ok(shared.doors.length > 0, 'precondition: at least one door to test');
+  assert.ok(fp.doors.length > 0, 'precondition: at least one door to test');
+  assert.equal(fp.corridors.length, 0, 'FP-1: no corridors — a doorway opens directly room-into-room');
 
-  const corridorPairs = new Set(shared.corridors.map(c => `${c.a}|${c.b}`));
-  for (const d of shared.doors) {
-    assert.ok(corridorPairs.has(`${d.a}|${d.b}`), `door ${d.a}-${d.b} must have a matching corridor connecting the same two rooms (the gap it opens onto is drawn, not blank padding)`);
+  const nonAdj = new Set((fp.nonAdjacent || []).map(n => `${n.a}|${n.b}`));
+  const byId = new Map(fp.rooms.map(r => [r.id, r]));
+  for (const d of fp.doors) {
+    if (nonAdj.has(`${d.a}|${d.b}`)) continue; // flagged cycle edge — corner door, exempt
+    const a = byId.get(d.a), b = byId.get(d.b);
+    const inBox = (r, x, y) => x >= r.cx - r.w / 2 - 0.13 && x <= r.cx + r.w / 2 + 0.13 && y >= r.cy - r.h / 2 - 0.13 && y <= r.cy + r.h / 2 + 0.13;
+    assert.ok(inBox(a, d.x, d.y), `door ${d.a}-${d.b} must sit on room ${d.a}'s edge`);
+    assert.ok(inBox(b, d.x, d.y), `door ${d.a}-${d.b} must sit on room ${d.b}'s edge (the SHARED wall)`);
   }
 });
 
-test('U418-E: the SAME model feeds both surfaces — drawnStructureModel\'s per-room walls and its corridors are BOTH projections of shared plan-model geometry (planPointToWu), not an independently-derived shape; the outdoor structure\'s rect fully contains every corridor segment endpoint (no ink escaping the building)', () => {
+test('U418-E: the SAME model feeds both surfaces — drawnStructureModel\'s per-room walls are projections of the shared plan-model geometry (planPointToWu), and every room wall/door lands inside the structure\'s world rect (no ink escaping); corridors are abolished (FP-1) so the drawn corridor list is empty', () => {
   const w = boot();
   const nodeId = String(w.map.currentNodeId);
   const drawn = drawnStructureModel(w, nodeId);
   assert.ok(drawn.structures.length > 0);
   for (const s of drawn.structures) {
-    for (const c of s.corridors) {
-      assert.ok(Array.isArray(c.segs) && c.segs.length > 0, `structure ${s.structureKey} corridor ${c.a}-${c.b} must have at least one projected segment`);
-      for (const seg of c.segs) {
-        assert.ok(seg.a.wx >= s.rect.minX - 1e-6 && seg.a.wx <= s.rect.maxX + 1e-6, `corridor segment endpoint must land inside the structure's world rect (x)`);
-        assert.ok(seg.a.wy >= s.rect.minY - 1e-6 && seg.a.wy <= s.rect.maxY + 1e-6, `corridor segment endpoint must land inside the structure's world rect (y)`);
-        assert.ok(Number.isFinite(seg.b.wx) && Number.isFinite(seg.b.wy), 'corridor segment endpoint b must be finite world coordinates');
-      }
+    assert.equal(s.corridors.length, 0, `structure ${s.structureKey} must carry NO corridors (FP-1: rooms abut)`);
+    // Every door projects inside the building rect — the room-into-room opening
+    // sits on the shared interior wall, not beyond the shell.
+    for (const d of s.doors) {
+      assert.ok(d.wx >= s.rect.minX - 1e-6 && d.wx <= s.rect.maxX + 1e-6, `door must land inside the structure's world rect (x)`);
+      assert.ok(d.wy >= s.rect.minY - 1e-6 && d.wy <= s.rect.maxY + 1e-6, `door must land inside the structure's world rect (y)`);
     }
   }
 });
 
-test('U418-F: no fabricated void beyond the plan\'s own corridor/pad geometry — every drawn corridor traces back to a real floorPlan().corridors entry (same count, same order, same endpoints under the shared projection), nothing invented', () => {
+test('U418-F: no fabricated connective ink — corridors are abolished (FP-1), so the drawn model and the REAL floorPlan both carry ZERO corridors; nothing invented, nothing bridged', () => {
   const w = boot();
   const nodeId = String(w.map.currentNodeId);
   const structureKey = String(w.scene.interior.structureKey);
   const st = w.structures.byId[structureKey];
   const realPlan = floorPlan(st);
   const drawn = drawnStructureModel(w, nodeId).structures.find(s => s.structureKey === structureKey);
-  assert.equal(drawn.corridors.length, realPlan.corridors.length, 'drawn corridor count must equal the REAL floorPlan corridor count exactly — no invented passages, none dropped');
+  assert.equal(realPlan.corridors.length, 0, 'the REAL floorPlan must carry no corridors (FP-1)');
+  assert.equal(drawn.corridors.length, realPlan.corridors.length, 'drawn corridor count must equal the REAL floorPlan corridor count exactly (both zero)');
 });
 
-test('U418-G: two independent builds of the same seed produce an IDENTICAL drawn-structure model INCLUDING corridors (determinism x2)', () => {
+test('U418-G: two independent builds of the same seed produce an IDENTICAL drawn-structure model (rooms + doors; corridors empty) — determinism x2', () => {
   const project = () => {
     const w = boot();
     const nodeId = String(w.map.currentNodeId);
@@ -147,7 +167,7 @@ test('U418-G: two independent builds of the same seed produce an IDENTICAL drawn
   };
   const a = project();
   const b = project();
-  assert.deepEqual(a, b, 'the same seed must project an identical drawn-structure model (rooms, doors, AND corridors), every build');
+  assert.deepEqual(a, b, 'the same seed must project an identical drawn-structure model (rooms and doors), every build');
 });
 
 test('U418-H: worldHash is UNCHANGED by the shared plan-model derivation or its consumers (read-only proof)', () => {

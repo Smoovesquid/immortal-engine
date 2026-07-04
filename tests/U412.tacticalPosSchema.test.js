@@ -180,10 +180,15 @@ test('U413-02: pos IS in the hash — a consistent move to another valid cell ch
   const p = w.party[0].pos;
   // Move within the SAME room (still consistent → survives ensureWorld, TAC-2-ready).
   const st = w.structures.byId[String(w.scene.interior.structureKey)];
-  // Find a different in-room cell.
+  // Find a different in-room cell. FP-1 relock: rooms now TILE (abutting walls),
+  // and roomRectCells reserves a wall band so room territories are disjoint — a
+  // small room can be a single cell wide on one axis. Probe BOTH axes (the "pos is
+  // hashed" property is direction-agnostic) so the test doesn't assume the wider
+  // pre-tiling rects that always had a horizontal neighbour.
   let alt = null;
-  for (const dx of [1, -1, 2, -2]) {
-    const cand = { frame: p.frame, gx: p.gx + dx, gy: p.gy };
+  const deltas = [[1, 0], [-1, 0], [0, 1], [0, -1], [2, 0], [-2, 0], [0, 2], [0, -2]];
+  for (const [dx, dy] of deltas) {
+    const cand = { frame: p.frame, gx: p.gx + dx, gy: p.gy + dy };
     if (roomOfStructCell(floorPlan(st), cand.gx, cand.gy) === String(w.scene.interior.roomId)) { alt = cand; break; }
   }
   assert.ok(alt, 'a second in-room cell exists');

@@ -925,6 +925,12 @@ sheet (no per-node islands); the camera keeps the player centered (no edges, eve
   round-trip exact (U418–U419). **Polish nit (queue, tiny):** room-name labels crowd/overlap at the
   mid (street) band — add a label LOD (names only at plan-scale zoom). DEC-1 neighbors still oversized
   (already queued).
+  **→ FP-1 DISPATCHED 2026-07-04-pm4 — Tim's ruling, verbatim: the corridor geometry "is actually an
+  old bug… They should look like proper floorplans. Meaning rooms with doorways that open into one
+  another."** Engine-side fix in `floorPlan.js` (rooms TILE, shared walls, doors ON the shared wall,
+  corridors abolished) — every surface inherits via TT-DRAW-3's shared brain; TAC-1 `pos` interplay +
+  old-save repair explicitly in scope (brief `docs/briefs/FP-1-proper-floorplans.md`; U429–U431;
+  Opus; file-disjoint from JR-1 with a flagged state.js caution).
 - **S4 the tilt:** MAP-3DR (persistent mount, below) + tilt-threshold retune by eye (decision #1) +
   combat folds into the one scene (`MAP_QUEUE.md` "NEXT PACKET" spec) **QUEUE after S3**.
 - **S5 5-ft truth:** TAC — contract written + revised (`docs/POSITION_AS_CANON.md`); **TAC-1 LANDED

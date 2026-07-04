@@ -14,7 +14,7 @@ import { seedFromString, makeRng } from '../../engine/rng.js';
 import {
   NODE_WU, PLACE_WU, Z_MIN, Z_MAX, BAND,
   nodeToWu, fadeIn, discoveryTiers,
-  placeFrame, placeUnitToWu
+  placeFrame, placeUnitToWu, resolveEntityWuFromWorld
 } from './worldSpace.js';
 import { worldGeography, terrainStamps } from './geography.js';
 import { placeFromWorldNode } from './placeFromNode.js';
@@ -174,31 +174,84 @@ const METAL = 'rgba(34,40,54,0.95)', CLOTH = 'rgba(232,236,221,0.85)';
 const STONE_FURN = new Set(['hearth', 'altar', 'statue', 'column', 'brazier']);
 const SKIP_FURN = new Set(['rug']);
 
+// ── WS-2: the player's one resolved focus point ─────────────────────────────
+// playerFocusWu(world) -> { wx, wy, sig } | null
+// The ONE place the camera/marker anchor to: engine-truthful, room-granular
+// indoors, walk-position outdoors — read through WS-1's resolveEntityWuFromWorld
+// (docs/POSITION_AS_CANON.md §6). `sig` is a location signature (changes iff the
+// engine actually moved the player to a new room/node/inside-outside state) so
+// the camera can tell "the world moved me" from "I'm just re-rendering the same
+// spot." Pure + read-only: never touches world.party/world.scene, only reads them.
+// Exported for U407/U408 (hermetic camera-math + no-write proofs) — pure
+// functions, safe to call directly with no DOM/canvas required. Each test uses
+// a unique campaignId so the CAMS module singleton doesn't leak across cases.
+export function playerFocusWu(world) {
+  const nodeId = String(world?.map?.currentNodeId || '');
+  if (!nodeId) return null;
+  const node = (world?.map?.nodes || []).find(n => n && String(n.id) === nodeId);
+  if (!node) return null;
+  const interior = (world?.scene && typeof world.scene.interior === 'object') ? world.scene.interior : null;
+  const pos = (Array.isArray(world?.party) && world.party[0] && typeof world.party[0].position === 'object')
+    ? world.party[0].position : null;
+
+  let place = null, frame = null;
+  try {
+    place = node.settlement ? placeFromWorldNode(world, nodeId) : null;
+    if (place) frame = placeFrame(place);
+  } catch { place = null; frame = null; }
+
+  let loc, sig;
+  if (interior) {
+    const structureKey = String(interior.structureKey || '');
+    const roomId = String(interior.roomId || '');
+    loc = { nodeId, structureKey, roomId };
+    sig = `in|${nodeId}|${structureKey}|${roomId}`;
+  } else if (pos && String(pos.nodeId || '') === nodeId && Number.isFinite(+pos.ux) && Number.isFinite(+pos.uy)) {
+    loc = { nodeId, ux: +pos.ux, uy: +pos.uy };
+    sig = `out|${nodeId}|${(+pos.ux).toFixed(2)}|${(+pos.uy).toFixed(2)}`;
+  } else {
+    loc = { nodeId };
+    sig = `node|${nodeId}`;
+  }
+
+  const p = resolveEntityWuFromWorld(world, place, frame, loc);
+  if (!p) return null;
+  return { wx: p.wx, wy: p.wy, sig };
+}
+
 // Camera survives v1's full-DOM re-renders: module singleton, per campaign.
 const CAMS = new Map();
 
-function cameraFor(world, initialZoom) {
+export function cameraFor(world, initialZoom, focus) {
   const key = String(world?.meta?.campaignId || 'campaign');
   const hereId = String(world?.map?.currentNodeId || '');
   const here = (world?.map?.nodes || []).find(n => n && n.id === hereId);
   if (!CAMS.has(key)) {
-    const c = here ? nodeToWu(here) : { x: 0, y: 0 };
+    const c = focus || (here ? nodeToWu(here) : { x: 0, y: 0 });
     // Default opens in the region band; the in-play embed seeds its own band
     // via initialZoom.
     const z = Number.isFinite(initialZoom) ? initialZoom : 0.12;
-    CAMS.set(key, { cx: c.x, cy: c.y, z, nodeId: hereId });
+    CAMS.set(key, { cx: c.x ?? c.wx, cy: c.y ?? c.wy, z, focusSig: focus ? focus.sig : '', lookingAway: false });
   }
   const cam = CAMS.get(key);
-  // Map-fidelity law (2026-07-03): when the ENGINE moves you to a different
-  // node — typed travel, dungeon descent, journey — the map follows the story:
-  // recenter on the new node, preserving the player's chosen zoom. The camera
-  // used to be write-once, so after "go to The Greenwood" the narration moved
-  // and the map stayed on Aldermere with the marker off-frame. Panning around
-  // WITHIN a node is untouched (same nodeId → camera left alone). View state
-  // only — world/determinism untouched.
-  if (here && cam.nodeId !== hereId) {
-    const c = nodeToWu(here);
-    cam.cx = c.x; cam.cy = c.y; cam.nodeId = hereId;
+  // The camera keeps the player centered (docs/POSITION_AS_CANON.md §6, Tim
+  // 2026-07-04-pm): every render, re-derive the player's engine-truthful focus
+  // point (node change, room-to-room move, inside<->outside — anything WS-1's
+  // resolveEntityWuFromWorld can see) and recenter on it, UNLESS the player is
+  // mid-manual-pan ("looking"). A manual pan sets lookingAway; the next actual
+  // player move (a changed focus signature) snaps focus back — generalizing the
+  // old node-only recenter to every move. Panning within the SAME resolved spot
+  // (re-render, no move) is left alone so a look-around isn't fought every frame.
+  // View state only — world/determinism untouched.
+  if (focus && focus.sig !== cam.focusSig) {
+    cam.cx = focus.wx; cam.cy = focus.wy;
+    cam.focusSig = focus.sig;
+    cam.lookingAway = false;
+  } else if (!cam.lookingAway && focus) {
+    // No move since last render, and the user isn't mid-pan: keep centered
+    // (covers the very first render matching the initial CAMS.set above, and
+    // any external nudge — e.g. wrap.__oneMapFocus — that isn't a real move).
+    cam.cx = focus.wx; cam.cy = focus.wy;
   }
   return cam;
 }
@@ -585,7 +638,8 @@ function strokeSmooth(ctx, pts) {
 export function renderOneMap(world, opts = {}) {
   const map = world?.map || {};
   const nodes = Array.isArray(map.nodes) ? map.nodes : [];
-  const cam = cameraFor(world, opts.initialZoom);
+  const playerFocus = playerFocusWu(world);
+  const cam = cameraFor(world, opts.initialZoom, playerFocus);
   const seed = String(world?.meta?.seed || 'seed');
   const { geo, stamps } = geoFor(world);
   const { known, rumor } = discoveryTiers(map);
@@ -935,24 +989,23 @@ export function renderOneMap(world, opts = {}) {
     if (inDungeon) drawDungeonCutaway(ctx, world, dintr, nodes, toPx, W, H, z);
 
     // ── the player ──
-    // M4: place the marker where you actually STAND when the live walk
-    // position is known (opts.playerPos from ui.place, in place units), so the
-    // dot sits in your room/street — not at the node midpoint. Falls back to
-    // node-center when no walk position is available (e.g. viewing a far node).
+    // WS-2: the marker derives from the SAME resolveEntityWuFromWorld rail the
+    // camera centers on (playerFocusWu, computed once above for cameraFor) —
+    // engine-truthful, room-granular indoors, walk-position outdoors. This
+    // retires the legacy opts.playerPos/ui.place-only placement (VG-F3: the
+    // marker used to lag a room behind, or read stale on the fullscreen Map
+    // screen where no playerPos was ever passed at all). Falls back to
+    // node-center only if the resolution genuinely fails.
     // (In a dungeon the cutaway above draws its own marker.)
     const here = nodes.find(n => String(n.id) === hereId);
     if (here && !inDungeon) {
-      let p = nodeToWu(here);
-      const pos = opts.playerPos;
+      let p = playerFocus ? { x: playerFocus.wx, y: playerFocus.wy } : nodeToWu(here);
       // #4: if you just climbed out a NAMED window, stand on that side of the building (the map must
-      // reflect the side you left by). This wins over the walk position for that one beat.
+      // reflect the side you left by). This wins over the resolved position for that one beat.
       const exitFacing = lastWindowExitFacing(world);
       if (exitFacing) {
         const [dx, dy] = facingNudge(exitFacing);
         p = { x: p.x + dx, y: p.y + dy };
-      } else if (pos && String(pos.nodeId || '') === hereId && Number.isFinite(+pos.ux) && Number.isFinite(+pos.uy)) {
-        const layout = layoutFor(here);
-        if (layout) p = placeUnitToWu(here, layout.frame, +pos.ux, +pos.uy);
       }
       const [x, y] = toPx(p.x, p.y, W, H);
       ctx.strokeStyle = PLAYER; ctx.lineWidth = 2;
@@ -1016,6 +1069,11 @@ export function renderOneMap(world, opts = {}) {
     cam.cx -= (ev.clientX - dragging.x) / cam.z;
     cam.cy -= (ev.clientY - dragging.y) / cam.z;
     dragging = { x: ev.clientX, y: ev.clientY };
+    // Manual pan-to-look (read-only aid, per POSITION_AS_CANON §6): the player
+    // is deliberately looking away from their own position. The next real
+    // player move (a changed focus signature, checked in cameraFor on the next
+    // mount) snaps focus back — this flag just holds the view still until then.
+    cam.lookingAway = true;
     draw();
   });
   const endDrag = (ev) => { dragging = null; canvas.style.cursor = 'grab'; };

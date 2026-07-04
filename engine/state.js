@@ -307,17 +307,49 @@ export function ensureWorld(partial) {
   // impossible; this branch only ever runs for saves written before the fix.)
   // Shape-preserving: only scene.interior (→ null) and party[0].position.interior
   // (the field scene.interior is re-derived from) change.
+  //
+  // ND-1b — the FIRST version of this repair only fired off `world.scene.interior`
+  // (post-derivation). But the scene.interior guard just above (the `derivedElsewhere`
+  // check, ~line 148) ALREADY refuses to derive a desynced interior from a stale
+  // party[0].position.interior — so by the time this block ran, world.scene.interior
+  // was often already null, `it`/`structureKey` were falsy, and the block's `if`
+  // never entered: party[0].position.interior — the very field scene.interior is
+  // re-derived FROM on every load (see interiors.js's setPartyInterior/
+  // clearPartyInterior contract) — was NEVER cleared. That stale pointer then
+  // round-tripped through every save/load byte-for-byte (loadSlot → ensureWorld →
+  // saveSlot never touched it, since nothing here ever wrote to it), so the "repair"
+  // was invisible in-memory (scene.interior read null, narration was honest) but the
+  // STORED save carried the same landmine forever — and interiors.js's own comment
+  // warns the next ensureWorld() call would snap the player back inside the moment
+  // any future derivation path adopted it without the guard. Fix: check the RAW
+  // party[0].position.interior pointer independently (not just the already-derived
+  // world.scene.interior) and clear it whenever ITS structure is at the wrong node —
+  // so the repair actually converges the stored save instead of re-running forever.
   {
     const it = world.scene?.interior;
     const structureKey = it && typeof it === 'object' ? String(it.structureKey || '') : '';
     const st = structureKey ? world.structures?.byId?.[structureKey] : null;
-    if (st && st.nodeId != null && String(st.nodeId) !== '' && String(st.nodeId) !== String(world.map?.currentNodeId ?? '')) {
+    const sceneInteriorStale = Boolean(st && st.nodeId != null && String(st.nodeId) !== '' && String(st.nodeId) !== String(world.map?.currentNodeId ?? ''));
+    if (sceneInteriorStale) {
       world.scene = { ...world.scene, interior: null };
-      if (Array.isArray(world.party) && world.party[0]?.position?.interior) {
-        world.party = world.party.map((p, i) => i === 0
-          ? { ...p, position: { ...(p.position || {}), interior: null } }
-          : p);
-      }
+    }
+
+    const posInterior = world.party?.[0]?.position?.interior;
+    const posStructureKey = posInterior && typeof posInterior === 'object' ? String(posInterior.structureId || '') : '';
+    const posSt = posStructureKey ? world.structures?.byId?.[posStructureKey] : null;
+    const posInteriorStale = Boolean(posSt && posSt.nodeId != null && String(posSt.nodeId) !== '' && String(posSt.nodeId) !== String(world.map?.currentNodeId ?? ''));
+    if ((sceneInteriorStale || posInteriorStale) && Array.isArray(world.party) && world.party[0]?.position?.interior) {
+      // DELETE the key (matches interiors.js's clearPartyInterior "exit" convention)
+      // rather than setting an explicit `interior: null` — an absent key and a null
+      // key read identically everywhere (every consumer uses `?.interior`), but
+      // `delete` keeps this repair's output shape consistent with the engine's
+      // existing exit path instead of introducing a second "no interior" shape.
+      world.party = world.party.map((p, i) => {
+        if (i !== 0) return p;
+        const pos = { ...(p.position || {}) };
+        delete pos.interior;
+        return { ...p, position: pos };
+      });
     }
   }
 

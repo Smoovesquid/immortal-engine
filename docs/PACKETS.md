@@ -1058,11 +1058,17 @@ sheet (no per-node islands); the camera keeps the player centered (no edges, eve
   journey-entangled outdoor mover); (2) the map marker does NOT yet slide for in-room steps —
   `resolveEntityWuFromWorld` reads roomId/legacy ux-uy, not cell-granular `pos` → **TAC-4 renderer
   square-snap is the rung that lights it up.** The `public/v1.js` front-door build line stays
-  integration-only. **→ TAC-4 DISPATCHED 2026-07-04-pm7** (renderer square-snap: `resolveEntityWuFromWorld`
-  resolves from cell-granular `pos` when present — struct frame via the SAME projection the drawn plan
-  already uses (one sizing truth, no second mapping), region frame via the pinned NODE constants;
-  roomId/legacy fallback when `pos` null; camera inherits via `playerFocusWu`; Opus worktree,
-  U450–U451; `public/map/` only).
+  integration-only. **TAC-4 ✅ LANDED v0.28.18 b068** (`fb4c6ca1` → clean pick): the marker snaps to
+  the canonical square — `structCellToWu`/`regionCellToWu` in worldSpace.js read `pos` through the
+  drawn plan's OWN projection (one sizing truth); `playerFocusWu` folds the cell into the focus
+  signature (camera recenters on within-room walks; WS-3 zoom semantics preserved); pos-null falls
+  back byte-identical (U451); U450–U451 + U407/408 relock; receipts `docs/playtests/tac4/` (marker
+  crosses into the Hearth Room on 'go east', then nudges exactly one square on 'walk east' —
+  marker(wu) −44.52→−43.52 = 1 cell). The movement loop is now VISIBLY closed: law → engine → map.
+- **PL-RNG-1 (small, QUEUE — found by TAC-4's lab, engine hot-file): latent crash
+  `engine/playloop.js:292`** calls `threadRng.float()` but `makeRng()` exposes `nextFloat` — dormant
+  on the default fantasy pack (no story threads), CRASHES any threaded pack (crownlands/ashenmoor).
+  One-word fix + guard test (U454); dispatch the micro-lane as soon as INT-4-TRAVEL frees playloop.
 
 ### MAP-3DR — reconnect the 3D diorama on a persistent mount  ·  **Phase 4 (the face)  ·  = TABLETOP S4; cut the packet when S3 lands**
 - **why parked (2026-07-03, Tim's call):** the 3D layer was DISCONNECTED (`MAP_3D_ENABLED=false`,

@@ -1969,6 +1969,18 @@ other agents. (none active)
 - Integration ladder GREEN on re-run: convergence 124/124, suite 9813/0 (one U381-class load flake on
   the first run, documented profile, passed clean after); determinism green. Front door v0.28.17 b067.
 
+## 2026-07-04 — Basecamp (TAC-4 integration → v0.28.18 build 068)
+
+- Landed TAC-4 marker square-snap (`fb4c6ca1`, clean pick): `resolveEntityWu(FromWorld)` resolves
+  cell-granular `pos` via new `structCellToWu`/`regionCellToWu` (pinned constants imported read-only
+  from tacticalPos.js — one sizing truth, no second mapping); `playerFocusWu` recenters on pos walks;
+  pos-null fallback byte-identical. U450–U451 new; U407/408 ground-truth relocked (invariant
+  preserved). Receipts `docs/playtests/tac4/` — marker moves exactly 1 wu per cell.
+- Worker-found latent crash queued as PL-RNG-1: `playloop.js:292` `threadRng.float()` → method is
+  `nextFloat` — crashes threaded packs (crownlands/ashenmoor); micro-fix U454 once INT-4-TRAVEL
+  frees playloop.
+- Integration ladder GREEN: convergence 124/124, suite 9821/0, determinism green.
+
 2026-07-04 — Sonnet (worker worktree, PERC-1) — LOGIC DONE, WIRING PENDING (playloop.js fenced)
 - Packet/seam: `docs/PACKETS.md` PERC-1 — 2026-07-04 gate (Chaos-griefer, CRUNCH_INCONSISTENCY): "Wait — is
   the ceiling still on fire or not? I stand in the middle of the room and look up." rolled a NATURAL 1 vs DC

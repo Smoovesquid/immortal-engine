@@ -289,7 +289,7 @@ export function beginAdventure(world, packsById) {
     const threadRng = makeRng(seedFromString(`${w.meta.seed}|pack-threads`));
     const fate = Number(w.meta?.fate ?? 0.2);
     const count = fate >= 0.7 ? 3 : fate >= 0.4 ? 2 : 1;
-    const shuffled = [...pack.threads].sort(() => threadRng.float() - 0.5);
+    const shuffled = [...pack.threads].sort(() => threadRng.nextFloat() - 0.5);
     for (const pt of shuffled.slice(0, count)) {
       if (!existingLabels.has(pt.name)) {
         w = introduceThread(w, pt.name);

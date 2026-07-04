@@ -356,6 +356,16 @@ file) · P4 SERIAL (`engine/ref/rubric.js`, shared with the live Ref) · P6 last
 - **NEXT — CG-LIVE-2 (Tim's go, after reading live shadow data):** run `COHERENCE_SHADOW=1` on real/gate play,
   read the live FP-candidate rate via `--shadow`; if boring, flip the observer to an actual REGENERATE trigger
   in `reviewNarration` → the caught-bug class starts self-healing.
+- **✅ UNBLOCKED 2026-07-04 (v0.28.4, `3bd75c6`+`a59f584`):** the v0.28.3 gate's "live shadow 0 vs retroactive 5"
+  divergence is diagnosed + fixed, two roots. (1) The "live 0" was a **phantom** — the observer never executed
+  (empty `coherence-shadow/` dir; it logs one record/turn when flag ON). Root: the :5179 gate server wasn't
+  started with `COHERENCE_SHADOW=1`. **Proven** the observer fires CG-1b correctly on the real tallow start-state.
+  Guard added: `--shadow` on a 0-record log now prints "observer did not run" + `observer_ran=false`, not a
+  misleading 0%. **So CG-LIVE-2's precondition is simply: launch the gate server with `COHERENCE_SHADOW=1`.**
+  (2) The disputed canon was corrupt — `roomExitsGroundTruth` (rubric.js) named exits via raw id-hash
+  `buildingTypeFor` → a cottage's exits read as hive rooms ("Brood Cell"/"Hive Mouth") while the current room
+  was "Bedchamber". Fixed to `st.buildingType || buildingTypeFor(id)`. Empty `roomOccupants` for a wake-alone
+  Bedchamber is plausibly correct → the CG-1b ghost-voices are likely REAL catches, not artifacts.
 - **why now:** the deterministic desync pointer that *grades* a turn can *trigger a regenerate* on the live
   path — one mechanism self-heals ALL caught classes (ghost-voice, wrong-room, invented-exit, phantom-commit,
   wrong-speaker), and every future class we teach the checker becomes self-healing too. The Ref already routes

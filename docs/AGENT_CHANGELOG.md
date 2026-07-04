@@ -1,5 +1,12 @@
 # AGENT_CHANGELOG
 
+2026-07-04-pm — Basecamp (Fable 5) — **v0.28.10 build 060 "movement law + follow camera" LANDED + live receipts; Ref-off baseline gate launched**
+- Integrated both worker branches (NODE-DESYNC-1 `881c79b` Opus · WS-2 `e45c045` Sonnet); quiet-machine `npm run check` GREEN — **9601/9601**, convergence **124/124**, determinism green; pushed `33c9f81`.
+- **Live receipts on the pushed build (fresh Bryn boot):** "go to the hearth room" → *"You step through into the hearth room."* with `currentNodeId` unmoved (the teleport class is dead); "look around" names **Brogan + the Lingerer**, masks the hostile as "a stranger keeping to the edges," and sees **Galen through the window** — presence stack fully consistent with the morning's one-outdoor-dot receipt; the marker tracked into the Hearth Room on the follow camera (WS-2).
+- **ND-1b queued** (small): the legacy-desync repair is in-memory only — a corrupted save loads honestly but the stored blob keeps the stale interior; make the post-turn autosave persist the repaired shape.
+- **Ref-off baseline gate launched** (Opus judge, `COHERENCE_SHADOW=1`, own server :5200, ~$0.91): baselines the new system (LLM ears + engine + one narration pass), re-measures the AG-4 dodge cluster post-desync-fix, and yields the observer's live FP data (the CG-LIVE-2 gate). Report + budget entry land on completion.
+- Also this pm: **engine-brief gate** shipped (`f0c311d` — engine/** edits require a Form Prompt + Tim's OK; live-verified deny) + **FORM_PROMPT.md** (`f649a0f`).
+
 2026-07-04-pm — Worker (Opus, playloop serial worktree) — **NODE-DESYNC-1 LANDED: movement can never change your node (v0.28.10 build 060 "movement never node-jumps")**
 - **The bug (reproduced LLM-off, `scripts/_repro_node_desync.mjs`):** on the pre-rolled Bryn Holt slice boot (indoors, Aldermere cottage), "go to the hearth room" was NOT recognized as an interior room move, fell through to the post-resolve "Living Terrain" travel block (`playloop.js` ~3529), where `pickTravelDestination` returned a **random neighbour** (no name matched "hearth room") and `moveToNode` committed the flip Aldermere→Greenwood — behind a *failed* roll, while `scene.interior` stayed the cottage. From that flip every presence read (roster keys off the current node) came back empty (the CG-1b ghost-town signature). Turn ① ("I get up and walk out to the hearth room") was separately eaten by the trivial-gate (INT-4a: trivial lead + unrecognized named-room remainder).
 - **Root + fix (THE MOVEMENT LAW, `POSITION_AS_CANON.md` §3):**

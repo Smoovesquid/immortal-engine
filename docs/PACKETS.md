@@ -21,6 +21,17 @@ done_when · rollback`.
 > (packetize before starting).
 
 ### NODE-DESYNC-1 — a failed journey roll COMMITS the node move, and scene.interior survives it  ·  Phase 0  ·  **✅ DONE 2026-07-04-pm (Opus worktree, local commit; tests U403–U406; suite 9588/9588 · convergence 124/124 · live-verified v1.html).** Fix: (1) Living-Terrain `moveToNode` block gated `!scene.interior` — movement can't reach node travel while indoors; (2) `inferInteriorAction` named-room rule → "go to the hearth room" resolves interior-side ("You step through into the hearth room."); (3) `assertWorldInvariants` throws on interior-structure-node ≠ currentNodeId; (4) `ensureWorld` repairs a legacy desync by clearing the stale interior (never throws). Corpus relocks (interior_npc rebuilt on a real boot interior; dialogue_active honestly outdoors; C11 diverge swap; U14/U63 fixtures set node=structure) documented in AGENT_CHANGELOG. **JR-1 (risk premium) is the queued follow-up.** Contract: `docs/POSITION_AS_CANON.md` §3.
+- **✅ LANDED 2026-07-04-pm (`881c79b`, v0.28.10 b060) + LIVE RECEIPTS** (fresh Bryn boot on the pushed build):
+  "go to the hearth room" → *"You step through into the hearth room."*, `currentNodeId` STAYS Aldermere;
+  "look around" names Brogan + the Lingerer, masks the hostile in-fiction, and sees Galen through the
+  window — the full presence stack agrees with the morning's outdoor-dot receipt. Quiet-machine check
+  GREEN 9601/9601 · convergence 124/124 · determinism green.
+- **FOLLOW-UP (small, QUEUE): ND-1b — the legacy-desync repair doesn't PERSIST.** Live-verified: loading
+  the corrupted 10am save through the new `ensureWorld` yields honest narration (repair effective
+  in-memory, invariant quiet) but the autosave written AFTER a turn still carries the stale
+  `scene.interior` blob — every load re-repairs, the save never converges, and any path reading the raw
+  save without `ensureWorld` sees garbage. done_when: after one turn on a legacy-desynced save, the
+  STORED save's `scene.interior` is cleared/re-synced; U-test locks it.
 - **The live repro (4 turns, pre-rolled Bryn Holt boot, v0.28.9):** ① "I get up and walk out to the hearth
   room." → trivial-gate auto-success, NO move (the INT-4a class: trivial leading clause + an unrecognized
   named-room movement remainder). ② "go to the hearth room" → resolver treats it as TRAVEL, narrates

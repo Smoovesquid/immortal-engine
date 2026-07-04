@@ -25,6 +25,8 @@ import { normalizeTopology, adjacentRooms } from './structures/topology.js';
 import { roomWindows, roomWindowFacings } from './structures/roomWindows.js';
 import { furnitureRoomAssignments, objectsHere } from './structures/roomObjects.js';
 import { roomDetail } from './structures/roomDetail.js';
+import { floorPlan } from './structures/floorPlan.js';
+import { resolveTacticalWalk, roomRectCells } from './map/spatial/tacticalPos.js';
 import { reachableRooms } from './movement/interiorMovement.js';
 import { generateDungeon, dungeonLevelToStructure, isDungeonStructureId, dungeonRoomAt } from './dungeon/generate.js';
 import { createCharacter } from './chargen/genesis.js';
@@ -1948,6 +1950,32 @@ function playerMoveCore(world, packsById, text, dqIntent) {
         return { world: w2, output: { narration: moveMsg, mechanics: '' } };
       }
       const blockedDir = normalizeDir(interiorAction.direction);
+      // TAC-2 — no adjacent ROOM lies that way, but the player can still WALK across
+      // the room they're in. Resolve a ≤6-cell pos walk within the current room (§3
+      // THE MOVEMENT LAW) and commit it as an {op:'pos'} delta. This turns the old
+      // "the wall holds" bounce (and the worse "walk north" → nonsense roll fall-
+      // through) into an honest tactical move: you cross the floor and stop at the
+      // wall. Only when the walk can't advance a single cell (already against that
+      // wall) do we fall to the honest no-way line below. Never in a dungeon room's
+      // encounter flow (that returned above) and never for a non-cardinal.
+      if (blockedDir && w.scene?.interior && !w.combat?.active && !isDungeonStructureId(w.scene?.interior?.structureKey)) {
+        const walk = resolveTacticalWalk(w, { actorId: 'party', dir: blockedDir, cells: interiorAction.cells });
+        if (walk && walk.movedCells > 0) {
+          let wPos = applyDeltas(w, [{ op: 'pos', id: 'party', to: walk.pos }]);
+          wPos = pushEvent(wPos, {
+            kind: 'move',
+            data: { mode: 'tactical', dir: blockedDir, fromCell: `${walk.from.gx},${walk.from.gy}`, toCell: `${walk.pos.gx},${walk.pos.gy}`, cells: walk.movedCells, withinSpeed: true, rolled: false }
+          });
+          wPos = worldTick(wPos, `${wPos.meta.seed}|tick|tactical-walk|turn${wPos.time.turn}|tl${wPos.timeline.length}`);
+          const narration = `Wizard: ${tacticalWalkRead(wPos, blockedDir, walk)}`;
+          if (interiorAction.thenText) {
+            const acted = playerMoveCore(wPos, packsById, interiorAction.thenText);
+            const actLine = String(acted?.output?.narration || '').replace(/^Wizard:\s*/, '').trim();
+            return { ...acted, output: { ...(acted.output || {}), narration: actLine ? `${narration} ${actLine}` : narration } };
+          }
+          return { world: wPos, output: { narration, mechanics: '' } };
+        }
+      }
       // "Go inside" while already indoors gets the obvious answer.
       const blockedMsg = (!blockedDir && /\b(inside|indoors|enter)\b/i.test(String(text || '')) && w.scene?.interior)
         ? 'Wizard: You\'re already indoors. "Go outside" first if you\'re after a different roof.'
@@ -4618,11 +4646,14 @@ function inferInteriorAction(text, interior, opts = {}) {
     /\bout (?:the|that) (?:door|doorway|way|gate|gateway|exit|entrance|threshold|hatch|opening)\b/.test(t) ||
     /\b(?:in)?to the open(?:\s+air)?\b/.test(t)
   ) return { kind: 'exit' };
-  const moveFtDir = t.match(/\b(?:move|step|go)\s+\d+\s*ft\s+(north|south|east|west|n|s|e|w)\b/i);
-  if (moveFtDir) return { kind: 'move', toRoomId: '', direction: normalizeDir(moveFtDir[1]) };
-
-  const goDir = t.match(/^\s*(?:go\s+)?(north|south|east|west|n|s|e|w)\s*$/i);
-  if (goDir) return { kind: 'move', toRoomId: '', direction: normalizeDir(goDir[1]) };
+  // TAC-2 — a bare cardinal walk ("go east", "walk north", "head south 10 feet").
+  // parseCardinalMove is the LLM-off floor for the tactical move verb: it reads the
+  // direction and an OPTIONAL distance (ft → cells). The move branch resolves it as a
+  // ≤6-cell pos walk within the current room, crossing a doorway only when a real
+  // adjacent room lies that way (§3 THE MOVEMENT LAW). `cells` rides along so the
+  // resolver can clamp; absent = the full budget.
+  const cardinal = parseCardinalMove(t);
+  if (cardinal) return { kind: 'move', toRoomId: '', direction: cardinal.dir, cells: cardinal.cells };
 
   // RELATIVE-ROOM MOVEMENT — the natural language a person uses to walk through a
   // building (vs. the bare-compass `go east`). Resolved to an adjacent room via the
@@ -8428,6 +8459,75 @@ function normalizeDir(d) {
   if (s === 's') return 'south';
   if (s === 'w') return 'west';
   return s;
+}
+
+// TAC-2 — the LLM-off floor for the tactical move verb. Parse a bare cardinal walk
+// and its optional distance from typed text: "go east", "walk north", "head south",
+// "step west 10 ft", "go 15 feet east", "move e". Returns { dir, cells } (cells =
+// undefined when no distance is given → the resolver walks the full ≤6-cell budget)
+// or null when the text isn't a plain cardinal walk. The whole utterance must BE the
+// move (an optional leading motion verb + direction + optional distance, in either
+// order) so a compound sentence or an approach-a-person intent ("head to Aldrich")
+// is NOT captured here — those are handled by their own branches. Pure/deterministic.
+function parseCardinalMove(text) {
+  const t = String(text || '').toLowerCase().trim().replace(/[.!?]+$/, '').trim();
+  if (!t) return null;
+  const DIR = '(north|south|east|west|n|s|e|w)';
+  const VERB = '(?:go|walk|head|move|step|come|stride|pace)';
+  const FT = '(\\d+)\\s*(?:ft|feet|foot|\')';
+  // Distance BEFORE the direction: "walk 10 ft east", "go 15 feet north".
+  const pre = new RegExp(`^(?:${VERB}\\s+)?${FT}\\s+(?:to\\s+the\\s+)?${DIR}$`, 'i');
+  // Distance AFTER the direction: "go east 10 ft", "head north 15 feet".
+  const post = new RegExp(`^(?:${VERB}\\s+)?(?:to\\s+the\\s+)?${DIR}\\s+${FT}$`, 'i');
+  // No distance: "go east", "walk north", "n". A lone direction word with no verb is
+  // allowed (compass-style), matching the legacy bare-cardinal rule.
+  const bare = new RegExp(`^(?:${VERB}\\s+)?(?:to\\s+the\\s+)?${DIR}$`, 'i');
+
+  let dir = '', ft = null;
+  let m = t.match(pre);
+  if (m) { ft = Number(m[1]); dir = m[2]; }
+  else if ((m = t.match(post))) { dir = m[1]; ft = Number(m[2]); }
+  else if ((m = t.match(bare))) { dir = m[1]; }
+  else return null;
+
+  const norm = normalizeDir(dir);
+  if (!['north', 'south', 'east', 'west'].includes(norm)) return null;
+  // ft → cells (5 ft/cell): round UP so "walk 7 ft" is a 2-cell reach, not truncated
+  // to 1. Left undefined when no distance was spoken (resolver uses the full budget).
+  const cells = (ft != null && Number.isFinite(ft) && ft > 0) ? Math.ceil(ft / 5) : undefined;
+  return { dir: norm, cells };
+}
+
+// TAC-2 — narrate the READ of a tactical walk, never the number (THE LAW: no cell
+// counts, no coordinates, no "6 squares" — DM_TEST). Distinguishes hitting the far
+// wall (the walk stopped at the room edge) from an open step, and honours the budget
+// clamp ("as far as you can this turn") without ever stating a distance. `walk` is a
+// resolveTacticalWalk result; `world` is POST-move (pos already committed).
+function tacticalWalkRead(world, dir, walk) {
+  const d = normalizeDir(dir);
+  // Did the walk end against the room's wall in the travel direction? Compare the
+  // landed cell to the current room's rect edge on the moved axis.
+  let atWall = false;
+  try {
+    const interior = world?.scene?.interior;
+    const st = interior && world?.structures?.byId?.[String(interior.structureKey || '')];
+    if (st) {
+      const plan = floorPlan(st);
+      const room = (plan.rooms || []).find(r => String(r.id) === String(interior.roomId || ''));
+      const rect = room ? roomRectCells(room) : null;
+      if (rect) {
+        const p = walk.pos;
+        if (d === 'east') atWall = p.gx >= rect.maxX;
+        else if (d === 'west') atWall = p.gx <= rect.minX;
+        else if (d === 'south') atWall = p.gy >= rect.maxY;
+        else if (d === 'north') atWall = p.gy <= rect.minY;
+      }
+    }
+  } catch { atWall = false; }
+
+  if (atWall) return `You cross the room to the ${d} wall.`;
+  if (walk.clampedToBudget) return `You stride ${d} across the room, covering as much ground as you can this turn.`;
+  return `You move ${d} across the room.`;
 }
 
 // Resolve a typed cardinal direction to the room it leads to inside an interior,

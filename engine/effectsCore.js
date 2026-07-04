@@ -252,6 +252,30 @@ export function applyDeltas(world, deltas = []) {
       continue;
     }
 
+    // TAC-2 — the canonical tactical position (cells-in-canon, `pos`; distinct from
+    // the renderer's pixel `position` above). The tactical move verb commits a walk
+    // here: { op:'pos', id, to:{ frame, gx, gy } } (or a flat { frame, gx, gy }). The
+    // resolver (engine/map/spatial/tacticalPos.js) already clamped to the ≤6-cell
+    // budget and kept the cell in-frame (in-room / same-node), so this is a pure
+    // write — the shape is normalised (integer cells) and ensureWorld's pos invariant
+    // is the real guard on the frame/room/node projection. `id` 'party' → party[0].
+    // Only party members carry a mutable pos through this path (mutateEntity no-ops
+    // for a non-party id); a null `to` clears the actor's pos (a legal absent state).
+    if (kind === 'pos') {
+      const entityId = resolvePlayerEntityId(w, op.id ?? op.entityId);
+      const raw = (op.to !== undefined) ? op.to : op.pos;
+      let nextPos = null;
+      if (raw && typeof raw === 'object' && !Array.isArray(raw)
+          && Number.isFinite(Number(raw.gx)) && Number.isFinite(Number(raw.gy))
+          && raw.frame != null && String(raw.frame) !== '') {
+        nextPos = { frame: String(raw.frame), gx: Math.trunc(Number(raw.gx)), gy: Math.trunc(Number(raw.gy)) };
+      } else if (raw !== null && raw !== undefined) {
+        continue; // malformed pos — ignore rather than corrupt state
+      }
+      w = mutateEntity(w, entityId, (e) => ({ ...e, pos: nextPos }));
+      continue;
+    }
+
     if (kind === 'time') {
       const key = String(op.key || '');
       const by = toInt(op.by ?? 0);

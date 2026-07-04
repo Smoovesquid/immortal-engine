@@ -231,6 +231,153 @@ function planFor(structure, cache) {
   return plan;
 }
 
+// ── TAC-2 — the tactical move verb (the ≤6-cell pos walk) ────────────────────
+// docs/POSITION_AS_CANON.md §3 THE MOVEMENT LAW. Self-powered movement is ≤ 6 cells
+// (30 ft) per turn, ALWAYS — never node travel. resolveTacticalWalk is the pure
+// f(world, {actorId,dir,cells}) the engine grounds a cardinal walk with: it clamps
+// the ask to the budget, walks the actor's canonical `pos` greedily one cell at a
+// time on the current frame's walkable cells, and STOPS HONESTLY at the frame edge
+// (a room wall indoors; the node neighbourhood boundary outdoors — a same-node walk
+// is intentionally small, so this never leaks the region cell to another node before
+// the region-sheet packet lands). It NEVER crosses a doorway into another room — a
+// cross-room move is a frame/room transition owned by the existing interior-move
+// path (moveWithinInterior + the seeded re-placement), not this cell walk. Returns a
+// plain result the caller commits via applyDeltas({op:'pos'}) — this module never
+// mutates world state.
+
+// The self-powered movement budget, in cells (30 ft). THE MOVEMENT LAW's flat v1
+// value (speed stats come later); a clamp, never a target.
+export const MAX_WALK_CELLS = 6;
+
+// Cardinal → unit cell delta. North is up (−y), matching floorPlan/placeOnGrid and
+// the interior compass. Only orthogonal cardinals in v1 (diagonals deferred, §3).
+const DIR_VEC = {
+  north: { dx: 0, dy: -1 },
+  south: { dx: 0, dy: 1 },
+  east: { dx: 1, dy: 0 },
+  west: { dx: -1, dy: 0 }
+};
+
+// The room rect (roomRectCells) that CONTAINS a struct cell, or null. The walkable
+// area for an in-room walk is exactly this rect — the FP-1 wall band already carved
+// the inter-room void out of every rect, so "inside the current room's rect" is the
+// walkable mask the walk honours (and roomOfStructCell of any in-rect cell returns
+// this same room, keeping the pos invariant green by construction).
+function roomRectContaining(plan, gx, gy) {
+  const rooms = Array.isArray(plan?.rooms) ? plan.rooms : [];
+  const ordered = rooms
+    .slice()
+    .sort((a, b) => String(a.id).localeCompare(String(b.id)));
+  for (const r of ordered) {
+    const rect = roomRectCells(r);
+    if (!rect) continue;
+    if (gx >= rect.minX && gx <= rect.maxX && gy >= rect.minY && gy <= rect.maxY) {
+      return rect;
+    }
+  }
+  return null;
+}
+
+// Greedy straight walk from (gx,gy) by up to `steps` unit steps of (dx,dy), stopping
+// at the last cell for which inBounds(cell) holds. Pure integer arithmetic — the same
+// path every call. Returns { gx, gy, moved } (moved = cells actually advanced).
+function walkWhile(gx, gy, dx, dy, steps, inBounds) {
+  let cx = gx, cy = gy, moved = 0;
+  for (let i = 0; i < steps; i++) {
+    const nx = cx + dx, ny = cy + dy;
+    if (!inBounds(nx, ny)) break;
+    cx = nx; cy = ny; moved++;
+  }
+  return { gx: cx, gy: cy, moved };
+}
+
+/**
+ * resolveTacticalWalk(world, { actorId, dir, cells }) -> null | {
+ *   pos,          // the new pos to commit (same frame; { frame, gx, gy })
+ *   from,         // the pos walked from (unchanged reference)
+ *   dir,          // the normalized cardinal
+ *   askedCells,   // cells requested, AFTER the budget clamp (≤ MAX_WALK_CELLS)
+ *   movedCells,   // cells actually advanced (0 when already at the wall/edge)
+ *   clampedToBudget, // true when the raw ask exceeded MAX_WALK_CELLS
+ *   frame         // 'region' | 'struct:<id>'
+ * }
+ *
+ * Returns null when there is nothing to resolve here (no actor pos, unknown/absent
+ * direction, or an unrecognised frame) — the caller then falls back to its normal
+ * handling. A valid result with movedCells === 0 is an HONEST no-progress walk (the
+ * actor is already against the wall that way); the caller narrates the read and does
+ * NOT commit a delta (pos is unchanged). Actor 'party' resolves to party[0].
+ *
+ * Pure + deterministic: no rng, no LLM, a function of the current frame geometry.
+ */
+export function resolveTacticalWalk(world, { actorId = 'party', dir, cells } = {}) {
+  const d = String(dir || '').toLowerCase();
+  const vec = DIR_VEC[d];
+  if (!vec) return null; // not a cardinal we walk on
+
+  // Resolve the actor's current pos. 'party' → party[0]; a named id → that party
+  // member (NPC tactical walks are not a TAC-2 verb — the player drives this).
+  const party = Array.isArray(world?.party) ? world.party : [];
+  let actor = null;
+  if (String(actorId) === 'party') actor = party[0] || null;
+  else actor = party.find(m => String(m?.id) === String(actorId)) || null;
+  const pos = actor?.pos;
+  if (!pos || typeof pos !== 'object' || !Number.isInteger(pos.gx) || !Number.isInteger(pos.gy)) {
+    return null; // no tactical pos to walk (absent from the layer)
+  }
+
+  // Clamp the ask to the budget. A missing/invalid cell count defaults to the full
+  // budget (a bare "go east" = "cross the room", up to 30 ft).
+  let asked = Number.isFinite(cells) ? Math.trunc(cells) : MAX_WALK_CELLS;
+  if (asked < 0) asked = 0;
+  const clampedToBudget = asked > MAX_WALK_CELLS;
+  asked = Math.min(asked, MAX_WALK_CELLS);
+
+  const frame = String(pos.frame || '');
+  let landed;
+
+  if (frame === 'region') {
+    // Outdoors: walk on the region sheet, but keep the cell projecting to the
+    // CURRENT node (the region-sheet packet owns crossing node neighbourhoods; a
+    // ≤6-cell walk is far smaller than the node spacing, so this only bites at the
+    // extreme edge). The invariant requires nearestNode(cell) === currentNodeId, so
+    // the walk stops before it would flip the owning node.
+    const map = world?.map || {};
+    const curNodeId = String(map.currentNodeId ?? '');
+    const nodes = Array.isArray(map.nodes) ? map.nodes : [];
+    const anyPositioned = nodes.some(n => n && Number.isInteger(n.x) && Number.isInteger(n.y));
+    const inBounds = (nx, ny) => {
+      if (!curNodeId || !anyPositioned) return true; // nothing to project against
+      return nearestNodeToRegionCell(map, nx, ny) === curNodeId;
+    };
+    landed = walkWhile(pos.gx, pos.gy, vec.dx, vec.dy, asked, inBounds);
+  } else {
+    const m = /^struct:(.+)$/.exec(frame);
+    if (!m) return null;
+    const structId = m[1];
+    const st = world?.structures?.byId?.[structId] || null;
+    if (!st) return null;
+    const plan = floorPlan(st);
+    const rect = roomRectContaining(plan, pos.gx, pos.gy);
+    if (!rect) return null; // current cell isn't in a room rect — leave to the caller
+    // Walk within the CURRENT room's rect only. Leaving the room means crossing a
+    // doorway (an adjacent-room transition) — not this cell walk's job (§3).
+    const inBounds = (nx, ny) =>
+      nx >= rect.minX && nx <= rect.maxX && ny >= rect.minY && ny <= rect.maxY;
+    landed = walkWhile(pos.gx, pos.gy, vec.dx, vec.dy, asked, inBounds);
+  }
+
+  return {
+    pos: { frame: pos.frame, gx: landed.gx, gy: landed.gy },
+    from: pos,
+    dir: d,
+    askedCells: asked,
+    movedCells: landed.moved,
+    clampedToBudget,
+    frame: pos.frame
+  };
+}
+
 // ── Deterministic seeded placement ──────────────────────────────────────────
 
 // A stream keyed by the world seed, the entity, and the frame it is being placed

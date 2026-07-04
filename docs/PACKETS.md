@@ -892,6 +892,11 @@ sheet (no per-node islands); the camera keeps the player centered (no edges, eve
   the next real move; **VG-F3 closed on the live surface**; U407/U408; zero v1.js/engine diffs; legacy
   fixed-scale renderers confirmed dead-on-disk, no tabs to retire). → **WS-3** (absorb the interior
   branch into the continuous zoom) queued behind TT-DRAW.
+  **WS-3 ACCEPTANCE (Tim, live sighting 2026-07-04-pm2):** expanding the map while indoors currently
+  SWAPS SURFACES (interior plan → overworld, "I am no longer in my bedroom") and the two views disagree
+  (different building shapes + different hand). done_when: expand-from-indoors opens the SAME sheet
+  zoomed at your room; zooming out pulls up THROUGH the roofless plan to the settlement; the compact and
+  fullscreen views can never disagree because they are one surface at two sizes.
 - **HARNESS (small, queue):** U381 (`server.js /api/move` confidence-gate HTTP test) fails under
   CONCURRENT parallel suites (port contention) and passes quiet — 2026-07-04 diagnosis, three lanes
   corroborated. Packet: bind an ephemeral port (or retry-on-EADDRINUSE) in U381; done_when = two full
@@ -899,6 +904,8 @@ sheet (no per-node islands); the camera keeps the player centered (no edges, eve
 - **S3 tabletop look:** **TT-DRAW** — **DISPATCHED 2026-07-04-pm2** (Sonnet worktree; brief
   `docs/briefs/TT-DRAW-tabletop-look.md`; tests U409–U411; resolves the WS-1 catalog-vs-floorPlan fork —
   drawn layer uses the REAL plans; fog restore rides along; taste-gated by Tim on screenshots).
+  **ACCEPTANCE (Tim, live sighting 2026-07-04-pm2): "the extra roofs are still there" — NO roof art may
+  survive at ANY zoom** (drawn plans/footprints have no roof to detach; gate the land on this on-screen).
 - **S4 the tilt:** MAP-3DR (persistent mount, below) + tilt-threshold retune by eye (decision #1) +
   combat folds into the one scene (`MAP_QUEUE.md` "NEXT PACKET" spec) **QUEUE after S3**.
 - **S5 5-ft truth:** TAC — contract written + revised (`docs/POSITION_AS_CANON.md`); **TAC-1 DISPATCHED

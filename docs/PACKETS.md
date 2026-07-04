@@ -900,11 +900,14 @@ sheet (no per-node islands); the camera keeps the player centered (no edges, eve
 - **HARNESS (small, queue — evidence UPDATED 2026-07-04-pm2):** U381 (`U381.intentGateRemoved.test.js`)
   flakes ONLY inside full-suite/`npm run check` runs and passes solo/direct — port contention was the
   wrong first guess (the test already binds port 0). **Pinned suspect:** the assert is
-  `providerCallCount >= 1` on a fetch-spy; under full-suite CPU saturation the intent-provider path's
-  internal time budget can expire before the spied fetch is issued → count 0 → fail. Fix shape: make the
-  test deterministic against load (disable/raise the intent timeout via env for this test, or await the
-  provider promise explicitly), NOT a port change. done_when: 5 consecutive `npm run check` runs green
-  under a parallel CPU load.
+  `providerCallCount >= 1` on a fetch-spy. **Hypothesis REFINED (Basecamp code-read, pm3):** the spy
+  counts unconditionally on both provider URLs and ignores abort signals, and `proposeIntentViaLlm`'s
+  auto-mode always issues the Anthropic leg first — so the count can only be 0 if the proposal is
+  skipped UPSTREAM of `llmIntent.js` (server-side gating / an availability probe using non-fetch I/O
+  that times out under load). Fix protocol: REPRODUCE under parallel CPU load first (loop `npm run
+  check` with a load generator), instrument the /api/move seam to log which branch skipped, then fix
+  that seam or make the test force the branch. done_when: 5 consecutive loaded check runs green.
+  Dispatch in a QUIET window (the repro needs the whole machine).
 - **S3 tabletop look:** ✅ **TT-DRAW LANDED (`02c3721`) + TT-DRAW-2 LANDED (`33f8fa73`), v0.28.11 b061** —
   drawn-plan layer from the REAL `floorPlan` (door gaps visible; U409–U411), trees/people as placed
   tokens, fog logic in; then the taste-gate fixes: **one sizing truth** (every structure-backed building

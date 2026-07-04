@@ -1,5 +1,14 @@
 # AG-4 — pointed questions answered in the fiction (kill the no-record dodge)
 
+> **⚠️ STATUS: ON HOLD — EVIDENCE SUPERSEDED (2026-07-04-pm).** Most of this brief's observed cluster
+> was a shadow of NODE-DESYNC-1 (the silent node flip emptied every presence read, which is what fed
+> the "no record" dodges). The first Ref-off gate AFTER that fix (`opus-gate-2026-07-04-2.md`) shows
+> the dodge cluster GONE and the Confused-newbie floor clean. Do NOT dispatch this brief as written.
+> What plausibly still stands (re-confirm against the NEXT gate before cutting a fresh packet):
+> sub-fix (a) — "no record" language banned for SELF-questions (a person is not a filing cabinet) —
+> right in principle regardless; sub-fix (c) — per-topic vs per-NPC decline escalation — unproven now.
+> Sub-fix (b) (sensory probes) did not recur. Keep this file as the pattern reference.
+
 **Model:** Claude Sonnet (playloop info-seek seam — narration-routing shaped).
 **Lane:** SERIAL (playloop is a competence hot file — no parallel sibling on it).
 **Worktree step 0 (mandatory):** `git reset --hard origin/v2-polish` before reading anything — worker worktrees

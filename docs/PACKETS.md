@@ -574,7 +574,16 @@ file) · P4 SERIAL (`engine/ref/rubric.js`, shared with the live Ref) · P6 last
   patch version bump; changelog + this row updated.
 - **rollback:** revert the single commit.
 
-### PERC-1 — a failed perception read renders uncertainty, never a confident accurate report  ·  Phase 0  ·  **✅ LOGIC LANDED 2026-07-04-pm6 (U448–U449, 16/16; fence held) — wiring micro-lane in flight (2-line playloop patch, block in AGENT_CHANGELOG; promote C23 rows to locked on land)**
+### PERC-1 — a failed perception read renders uncertainty, never a confident accurate report  ·  Phase 0  ·  **✅ LANDED v0.28.16 b066 (logic `4e644dc6`→`42be6179` + wiring `13010c64`→`822960a0`; U448–U449 16/16; fence held end-to-end)**
+- **C23 corpus rows stay `status:'target'` (NOT locked) — honest finding from the wiring lane:** only
+  roll-path phrasings reach the hedge; "I glance up / I peer up / …I check" paraphrases are intercepted
+  UPSTREAM by `isExploreIntent`'s free-look (no dice ever rolled), and one row resolves `mixed` (hedge
+  correctly fail-only). The gate's exact case (real roll, real failure) is fixed and tested.
+- **FOLLOW-UP (small, queue): PERC-1c** — decide the free-look seam: a hazard/condition RECHECK
+  ("is the fire still burning? I check") probably shouldn't be a free confident look — either route
+  perception-recheck intents past `isExploreIntent` to the roll path, or accept free-look-as-canon-read
+  and re-phrase the C23 targets to roll-path phrasings. Taste + blast-radius call; playloop/grace
+  serial lane. Then promote C23-001/002 to `locked` (124→126).
 - **signal:** 2026-07-04 gate (Chaos-griefer): "is the ceiling still on fire? I look up." rolled **1 vs DC 13**
   yet narrated a definitive, ACCURATE all-clear ("plain wattle-and-daub… no trace of flame"). A crit-fail
   perception must not read as authoritative truth — render doubt/incompleteness ("smoke-haze and lamplight;

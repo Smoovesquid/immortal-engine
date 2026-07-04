@@ -1944,6 +1944,19 @@ other agents. (none active)
   playtest:full 500 runs clean.
 - Bundle verified at integration: `npm run check` GREEN — convergence 124/124, suite 9787/0,
   determinism green. Front door bumped + live-verified; "walk north" verified via the real input.
+
+## 2026-07-04 — Basecamp (PERC-1 logic + PERC-1b wiring → v0.28.16 build 066)
+
+- PERC-1 logic landed (`4e644dc6` → `42be6179`, suite 9803) + PERC-1b micro-lane applied the
+  pre-verified 2-line playloop wire (`13010c64` → `822960a0`) — the fence protocol worked end-to-end
+  (logic built outside the locked file, patch verified on a disposable copy, applied by a fresh
+  worktree lane after TAC-2 freed playloop).
+- HONEST CAVEAT: C23 corpus rows stay `target` (not locked) — `isExploreIntent`'s free-look
+  intercepts glance/peer paraphrases before any roll; the hedge fires on the roll path (the gate's
+  exact failure case). Follow-up PERC-1c queued in PACKETS (route rechecks to the roll vs re-phrase
+  targets), then promote C23 (124→126).
+- Integration ladder GREEN: convergence 124/124, suite 9803/0, determinism green.
+
 2026-07-04 — Sonnet (worker worktree, PERC-1) — LOGIC DONE, WIRING PENDING (playloop.js fenced)
 - Packet/seam: `docs/PACKETS.md` PERC-1 — 2026-07-04 gate (Chaos-griefer, CRUNCH_INCONSISTENCY): "Wait — is
   the ceiling still on fire or not? I stand in the middle of the room and look up." rolled a NATURAL 1 vs DC

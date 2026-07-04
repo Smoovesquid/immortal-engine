@@ -58,7 +58,7 @@ import { resolveCompanionTurn } from './combat/companionTurn.js';
 import { castSpell } from './spell/castSpell.js';
 import { classifyOffensiveCast, castConsequence } from './magic/castConsequence.js';
 import { evaluateEncounter, selectCreatures, spawnEncounter } from './combat/encounterSpawn.js';
-import { isMetaQuestion, handleMetaQuestion, isNullAction, isQuestionShaped, META_LOCATION, META_RECAP, isNpcObserverQuery, isInfoSeekingText, isConfrontationChallenge, buildLocationSurvey, windowView, knowsNpcName, describeNpc, INFO_SEEKING_EXCLUDE_RE, answerCapability } from './grace/gracefulAdjudication.js';
+import { isMetaQuestion, handleMetaQuestion, isNullAction, isQuestionShaped, META_LOCATION, META_RECAP, isNpcObserverQuery, isInfoSeekingText, isConfrontationChallenge, buildLocationSurvey, windowView, knowsNpcName, describeNpc, INFO_SEEKING_EXCLUDE_RE, answerCapability, hedgedPerceptionRead } from './grace/gracefulAdjudication.js';
 import { directQuestionIntent } from './grace/answerability.js';
 import { occupantsOfRoom, outdoorOccupants } from './structures/roomOccupancy.js';
 import { getRoomState } from './structures/roomState.js';
@@ -3681,7 +3681,7 @@ function playerMoveCore(world, packsById, text, dqIntent) {
   // honest decline here, BEFORE the composer's generic atmosphere — so it never
   // depends on whether the composer happened to floor. Returns null for actions
   // and action/permission questions, leaving them to the normal resolve narration.
-  const grounded = physicalObjectOutcome(w, text, result.outcome) || nonObjectSkillOutcome(w, text, result.outcome) || infoExtractionOutcome(w, text, result.outcome) || answerOrDeclineQuestion(w, text, result.outcome);
+  const grounded = physicalObjectOutcome(w, text, result.outcome) || nonObjectSkillOutcome(w, text, result.outcome) || hedgedPerceptionRead(w, text, result.outcome, result.rawDie) || infoExtractionOutcome(w, text, result.outcome) || answerOrDeclineQuestion(w, text, result.outcome);
   // Stage F: if the composer would fall to the abstract literary floor, replace it with
   // grounded, outcome-aware prose (a DM never says "a low hum threads through the walls"
   // for a resolved action). Specific handlers still win; good composer lines pass through.

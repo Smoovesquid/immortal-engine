@@ -86,10 +86,18 @@ done_when · rollback`.
 NODE-DESYNC-1 + presence repair dissolved most of AG-4's observed evidence), and the judge now reaches
 DEEPER classes. First full Ref-off measurement = the new system's baseline. Clusters → owners:
 - **RL-1 (8 of 14: Rules-Lawyer rules-answer cluster)** — **✅ TIM RULED 2026-07-04-pm3, verbatim:
-  "confirm the shape, never the table." PACKETIZED** (`docs/briefs/RL-1-confirm-shape-never-table.md`;
-  tests U426–U428; three seams: deterministic rules-answer floor + leak guard in the narration
-  validator + one DM-prompt law line; foe difficulty answered RELATIVELY from real state, self ≠ foe).
-  **DISPATCH ON JR-1 LAND** (same serial lane — grace/playloop meta seam).
+  "confirm the shape, never the table." ✅ DONE** (`docs/briefs/RL-1-confirm-shape-never-table.md`;
+  worker worktree, local commit; tests U426–U428, 21/21; suite 9717/9717 · convergence 124/124 (no
+  relock needed — C5-005/C8-001-target unaffected, verified directly) · determinism U19/21/22/27/30
+  green · `playtest:quick` clean; live-verified via a real `beginAdventure('tallow', mode:'escape')`
+  boot, same scenario the gate hit). Three seams landed: (1) `META_TO_HIT_SHAPE` + `ENEMY_DEFENSE_CUE_RE`
+  in `handleMetaQuestion` (gracefulAdjudication.js) — a deterministic rules-answer floor checked FIRST,
+  before the breakpoint-table/self-Armor branches; (2) a leak guard in `validateNarrationCandidate`
+  (llmAdapter.js) rejecting breakpoint sequences / numeric DC·TN / percentages / stat-block runs,
+  falling back to the grounded base narration; (3) one standing "confirm the shape, never the table"
+  line in the live DM system prompt (`buildSystemPrompt`). Foe difficulty answered RELATIVELY from real
+  state (bandit/cultist ac:12 ground truth when no live enemy, else the real trait-adjusted enemy AC),
+  self ≠ foe. v0.28.12 (build 062).
 - **THROW/DROP misroute (Chaos arson, 2–3 fails)** — "hurl the lantern"/"drop it on the pallet" matched the
   `take:already-held` sink → the throw silently never happened. → INT-4 family row (below). The fire-on-straw
   no-ignition + roll:1-narrated-as-success physics contradiction → P-80/DX consequence-physics evidence.

@@ -1857,3 +1857,61 @@ other agents. (none active)
   - File(s): `docs/LOCAL_LLM.md` (table rewritten — 4-tier NPC voice stack; "never writes player-facing prose" false statement corrected; Ollama-as-voice-fallback documented), `docs/WHAT_THIS_IS.md` (new "Multi-LLM Lanes" section with 🟢/🟡/🔴 table, dark-lane rationale, OpenAI coexistence note), `docs/AGENT_CHANGELOG.md`.
   - Proof: `npm run check` GREEN — 8939/8939 pass, 109/109 convergence locked, determinism green.
 - Rollback: revert the three commits individually (ML-1, ML-3 are code; ML-2 is docs-only).
+
+2026-07-04 — Sonnet (worker worktree, RL-1) — RL-1 DONE
+- Packet/seam: `docs/briefs/RL-1-confirm-shape-never-table.md` — Tim's ruling (2026-07-04-pm3, verbatim):
+  "confirm the shape, never the table." The Rules-Lawyer rules-answer cluster from the gate
+  (`docs/playtests/opus-gate-2026-07-04-2.md`, 8 of 14 fails): a player asking "how do I roll to hit,
+  yes or no, and what's the TN?" got raw modifier-breakpoint TABLE DUMPS twice; asking for the ENEMY's
+  defense got the player's own Armor read back twice, even after correction. `route: "meta"` /
+  `mech: (none)` in the gate JSONL confirmed all four exchanges come SOLELY from `handleMetaQuestion` —
+  `scripts/dm-playtest.mjs` short-circuits meta questions before `playerMove`/`/api/narrate` ever runs,
+  so no LLM is ever in the loop for these four utterances; "LLM-off AND LLM-on" is the same deterministic
+  code path for them.
+- Commit(s): this commit (code + tests + docs, atomic by path).
+- Files changed: `engine/grace/gracefulAdjudication.js` (+`META_TO_HIT_SHAPE`, `META_YESNO_SHELL`,
+  `ENEMY_DEFENSE_CUE_RE`, `BASIC_FOE_AC`, `answerFoeDefenseRelative`, `answerToHitShape`; both checked
+  FIRST in `handleMetaQuestion`, before the breakpoint-table/self-Armor branches; +`applyACTraits` import
+  from `combat/traitHooks.js`), `engine/llmAdapter.js` (+leak-guard rejection rules in
+  `validateNarrationCandidate`: breakpoint sequence / numeric DC·TN / percentage-odds / multi-stat
+  stat-block run → reject, falls back to the grounded base narration; +one standing "RULES QUESTIONS:
+  CONFIRM THE SHAPE, NEVER THE TABLE" line in `buildSystemPrompt`, the live DM system prompt),
+  `tests/U426.rulesQuestionShapeFloor.test.js` (7 tests), `tests/U427.rulesLeakGuard.test.js` (8 tests),
+  `tests/U428.foeDefenseRelativeCalibration.test.js` (6 tests), `package.json` (0.28.11→0.28.12),
+  `public/v1.js` (title/build line → v0.28.12, build 062), `docs/PACKETS.md`, `docs/AGENT_CHANGELOG.md`.
+- Summary: three seams. (1) **The floor** — `META_TO_HIT_SHAPE` catches "how do I roll to hit" /
+  "confirm the to-hit formula" / the direct "...d20 vs a target number, yes or no" framing, answered
+  with one honest sentence (die + governing stat + what it's rolled against), Yes/No leading when asked
+  that way — checked before `META_MODIFIER_FORMULA` (whose breakpoint-table dump is now a genuine LAST
+  resort, only for a player asking to see the chart/formula BY NAME — U251 unaffected, reverified
+  directly). `ENEMY_DEFENSE_CUE_RE` disambiguates an enemy/foe/target-scoped defense ask from
+  `META_ARMOR_VALUE`'s self-AC clause (an enemy/foe word within a short span of a defense/armor/AC/guard
+  word) — routes to `answerFoeDefenseRelative` instead of the player's own Armor. That function computes
+  the REAL foe AC (the live combat enemy's trait-adjusted AC via `applyACTraits` when a fight is already
+  on; else `BASIC_FOE_AC=12` — bandit/cultist, both CR 0.125, the bestiary's tied-lowest AND the modal AC
+  across the whole trivial-tier catalog, so "a basic foe" is honest ground truth, not an invented
+  placeholder) against the player's own `playerAc()`, and reports ONLY the relationship in words — no
+  digit from either side reaches the sentence (a >=3-point gap reads as more than "a touch", locked by
+  U428). (2) **The leak guard** — `validateNarrationCandidate` (ML-1's precedent) now rejects any LLM-
+  polish candidate carrying a breakpoint sequence, numeric DC/TN, percentage-odds claim, or multi-stat
+  stat-block run, defense-in-depth for a rules phrasing that reaches `playerMove`→`augmentNarration`
+  instead of the meta-intercept (mid-combat/mid-dialogue, where the intercept is deliberately skipped, or
+  a phrasing the classifier misses) — a single named stat+modifier is NOT falsely rejected. (3) **The
+  prompt line** — codifies the law in the live DM system prompt (confirmed `buildSystemPrompt`/`callLLM`
+  is the live path per `server.js`'s `augmentNarration` import; `buildDMSystemPrompt`/`callDM` have zero
+  call sites anywhere in the repo — dead code, left untouched).
+- Proof (§7): reproduced LLM-off FIRST on all four gate utterances against a synthetic tallow-shaped
+  sheet (MIGHT/AGILITY/WITS 6, GRIT 8, CHARM 6 — matches the gate's Rules-Lawyer PC exactly) — all four
+  produced the raw table/self-Armor pre-fix, all four produce the shape/relative answer post-fix.
+  Re-verified against a REAL `beginAdventure({seed:'tallow', mode:'escape', pack:fantasy})` boot (same
+  scenario the gate hit: "Sera Gravedigger" @ Wayfarers' Outpost, `inCombat:false`, `enemies:[]`) — same
+  result. `npm run check` GREEN: convergence **100% (124/124)** (no relock needed — C5-005/C8-001-target,
+  the two pre-existing corpus rows referencing breakpoints, test different phrasings/intents, verified
+  directly to be unaffected and still green; no corpus row anywhere asserted the four gate utterances'
+  old broken behavior as its locked expectation, so U426–U428 are net-new coverage, not relocks), suite
+  **9717/9717, 0 fail** (determinism U19/21/22/27/30 green), `npm run playtest:quick` clean (50/50 runs,
+  0 crashes). New tests: U426 (7/7), U427 (8/8), U428 (6/6) — 21/21.
+- Remaining/next: none queued by this packet. `META_TO_HIT_SHAPE`'s melee/ranged default (MIGHT named,
+  AGILITY noted parenthetically) mirrors the pre-existing `META_ATTACK_MOD` default — genuinely
+  ambiguous with no weapon named, unchanged design.
+- Rollback: revert this commit (table dumps + self-Armor-for-foe both return).

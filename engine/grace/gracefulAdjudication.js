@@ -15,6 +15,7 @@ import { occupantsOfRoom, outdoorOccupants } from '../structures/roomOccupancy.j
 import { objectsHere } from '../structures/roomObjects.js';
 import { reachableRooms } from '../movement/interiorMovement.js';
 import { playerAc, meleeProfile } from '../combat/escapeCombat.js';
+import { applyACTraits } from '../combat/traitHooks.js';
 import { purseTotalCopper, formatPrice } from '../economy/shop.js';
 import { fateBand } from '../rulesets.js';
 import { getItemDef, findDefByName } from '../ruleset/core/items/index.js';
@@ -75,6 +76,25 @@ const META_SKILL_MOD = /\b(?:what(?:'?s| is)\s+my\s+|my\s+|give\s+me\s+(?:my\s+)
 // widened beyond the strict "my attack <noun>" possessive to catch the same intent
 // phrased as a bare "how does this work" rules question.)
 const META_ATTACK_MOD = /\b(?:what(?:'?s| is)\s+(?:my\s+|the\s+)?(?:total\s+)?|my\s+(?:total\s+)?|give\s+me\s+(?:my\s+|the\s+)?)(?:attack|to[-\s]?hit)\s+(?:modifier|mod|bonus|number|roll)\b|\bwhat\s+goes\s+into\s+(?:an?\s+)?attack\s+roll\b|\battack\s+roll\s+formula\b/i;
+
+// RL-1 (Tim's ruling 2026-07-04-pm3, "confirm the shape, never the table") — a
+// player asking for the SHAPE of the to-hit mechanic: "how do I roll to hit",
+// "confirm the to-hit formula", or the direct "is my attack roll d20 vs a
+// target number, yes or no" framing. Distinct from META_ATTACK_MOD (which
+// answers a NUMBER) and META_MODIFIER_FORMULA (whose last resort is the raw
+// breakpoint table) — this answers the SHAPE in one honest sentence (die +
+// governing stat + what it's rolled against), confirming yes/no FIRST when
+// the player asked it that way. Checked before both of those so a shape
+// question never falls to the table dump (gate 2026-07-04, Rules-Lawyer:
+// "what does the modifier in parentheses mean, and how do I roll to hit
+// something?" → breakpoint table, twice; "is my attack roll d20 minus 2
+// versus a target number, yes or no" → dodged, re-dumped the table).
+const META_TO_HIT_SHAPE = /\bhow\s+(?:do|would|can)\s+i\s+roll\s+to\s+hit\b|\bhow\s+to\s+roll\s+to\s+hit\b|\bconfirm\s+the\s+to[-\s]?hit\s+formula\b|\b(?:is|does)\s+my\s+attack\s+roll\s+(?:a\s+)?d\s?20\b[\s\S]{0,80}\b(?:target\s+number|defen[cs]e)\b[\s\S]{0,20}\byes\s+or\s+no\b|\bd\s?20\b[\s\S]{0,40}\bversus\s+(?:the\s+)?target(?:'s)?\s+defen[cs]e\b/i;
+// The direct yes/no shell alone (no "versus…defense" clause needed) — "…yes or
+// no…" anchored near an attack-roll/d20 mention, so the confirmation always
+// leads with Yes/No even when the rest of the sentence is terser than the
+// gate's exact phrasing.
+const META_YESNO_SHELL = /\byes\s+or\s+no\b/i;
 
 // (gate-18, Rules-Lawyer) "what's my proficiency bonus / give me my proficiency bonus
 // as a flat number / is the Worn Blade one I'm trained with" — the PROFICIENCY value is
@@ -293,6 +313,18 @@ const META_GEAR_YESNO = /\b(?:am\s+i|do\s+i)\s+(?:even\s+)?(?:carrying|wearing|w
 // phrasings the gate-failure transcripts actually used, so a stray "plan
 // for defense of the village" doesn't false-positive. (H-37 R1)
 const META_ARMOR_VALUE = /\b(?:armor|armour)\s+(?:value|class|rating|number|score)\b|\bmy\s+ac\b|\bwhat(?:'?s| is)\s+(?:my\s+)?ac\b|\bgive\s+me\s+(?:my\s+)?ac\b|\bits\s+ac\b|\bdefen[cs]e\s+bonus\b|\bgive\s+me\s+for\s+defen[cs]e\b|\bdefen[cs]e\s+(?:value|rating|number|score)\b|\bwhat\s+ac\b|\bac\s+(?:does|do|for|from)\b/i;
+// RL-1 — self ≠ foe. META_ARMOR_VALUE's "defense value/number/score" clause
+// used to answer EVERY defense-number ask with the player's OWN Armor
+// (playerAc), even when the question was plainly about the ENEMY's number
+// (gate 2026-07-04: "what defense value do I need to beat... against a basic
+// foe?" and "now what's the enemy's — give me the defense number" both got
+// "Your Armor is 10" — twice, even after the player corrected it). This cue
+// disambiguates: an enemy/foe/target/opponent word within a short span of a
+// defense/armor/AC/guard word means the question is about THEM, not the
+// player — routed to the honest RELATIVE comparison (answerFoeDefenseRelative)
+// instead. A bare "what's my AC" (no foe word nearby) never matches this and
+// still gets the player's own number.
+const ENEMY_DEFENSE_CUE_RE = /\b(?:enem(?:y|ies)|foes?|opponents?|monsters?|creatures?|basic\s+foe)\b[\s\S]{0,60}\b(?:defen[cs]e|defen[cs]ive|armou?r|\bac\b|guard)\b|\b(?:defen[cs]e|defen[cs]ive|armou?r|\bac\b|guard)\b[\s\S]{0,60}\b(?:the\s+)?(?:enem(?:y|ies)|foes?|opponents?|monsters?|creatures?|basic\s+foe)\b|\btarget(?:'s)?\s+(?:defen[cs]e|number)\b[\s\S]{0,40}\bfoe\b|\bbeat\s+(?:on|against)\s+a\s+(?:basic\s+)?foe\b/i;
 // Possession contradiction — "you said I had a staff and a robe" / "a moment
 // ago I had X" / "I'm holding X" — the player re-asserts owning an item that
 // isn't in their real inventory. A real DM corrects the record in-fiction
@@ -1542,10 +1574,85 @@ function answerEnemyCompound(world) {
   return `You're fighting ${name} — they're at ${hp} of ${maxHp} HP (${status}).`;
 }
 
+// RL-1 — "a basic foe's guard" ground truth for the no-combat rules-question
+// case (there's no live enemy entity to read yet — the gate transcript asks
+// this while standing in a cottage, inCombat:false, enemies:[]). Bandit is
+// CR 0.125 — tied-lowest in the bestiary (with Cultist) — and AC 12 is also
+// the single most common AC across the whole trivial-tier catalog, so this is
+// the honest, real "basic foe" number, not an invented placeholder. Kept as a
+// local constant (not a full bestiary import) so this rules-answer floor stays
+// a pure, side-effect-free read with no catalog dependency weight.
+const BASIC_FOE_AC = 12; // engine/ruleset/core/bestiary/bandit.js + cultist.js — both CR 0.125, ac:12
+
+// RL-1 — the honest RELATIVE calibration Tim's law requires: NEVER hand back
+// a raw defense value (foe's or a bare TN/DC), but never dodge the question
+// either. Compares the real foe defense (the live combat enemy's
+// trait-adjusted AC when a fight is already on, else the BASIC_FOE_AC ground
+// truth) against the player's OWN Armor (playerAc — the same source combat
+// actually rolls against), and reports ONLY the relationship in words — no
+// digits from either side reach the returned sentence. The comparison band is
+// DERIVED from the real numbers (a >=3-point gap reads as more than "a
+// touch"), never asserted independent of them, so "about level with your
+// own" / "a touch stiffer" / "quite a bit stiffer" / "softer than yours" can
+// never drift from what a resolved attack would actually face — see U428.
+// Pure; never rolls; never mutates. (gate 2026-07-04: "what defense value do
+// I need to beat against a basic foe?" and "what's the enemy's defense
+// number?" both got the PLAYER's own Armor read back — twice, self answered
+// for foe.)
+function answerFoeDefenseRelative(world) {
+  const pc = world.party?.[0] || {};
+  const selfAc = playerAc(pc);
+  const enemies = Array.isArray(world.combat?.enemies) ? world.combat.enemies : [];
+  const liveEnemy = enemies.find(e => e && !e.defeated) || enemies[0] || null;
+  const foeAc = liveEnemy ? applyACTraits(liveEnemy, Number(liveEnemy.ac) || 10) : BASIC_FOE_AC;
+  const foeLabel = liveEnemy ? String(liveEnemy.name || 'the foe').trim() : null;
+  const diff = foeAc - selfAc;
+  const cmp = diff === 0 ? 'about level with your own'
+    : diff >= 3 ? 'quite a bit stiffer than your own'
+    : diff > 0 ? 'a touch stiffer than your own'
+    : diff <= -3 ? 'noticeably softer than yours'
+    : 'a touch softer than yours';
+  const subject = foeLabel ? `${foeLabel}'s` : "A common bandit's";
+  return `${subject} guard sits ${cmp} — that's what your roll has to beat to land.`;
+}
+
+// RL-1 — the SHAPE of the to-hit mechanic, confirmed in one honest sentence:
+// which die, which stat governs it, and what it's rolled against — never the
+// raw modifier-breakpoint table (META_MODIFIER_FORMULA's last resort) and
+// never a formula recitation that ignores a plain yes/no ask. When the
+// player framed it as yes/no ("...yes or no, and what's the TN"), the answer
+// leads with Yes/No — Tim's law: "confirm the shape, never the table." Melee
+// vs. ranged stays genuinely ambiguous with no weapon named (mirrors the
+// existing META_ATTACK_MOD default), so this names MIGHT for melee and notes
+// AGILITY covers the ranged/finesse case, same as that branch already does —
+// just phrased as a shape confirmation instead of a bare modifier readout.
+function answerToHitShape(lowerText, world) {
+  const p = world.party?.[0] || {};
+  const might = statMod(Number(p.stats?.MIGHT) || 10);
+  const yesNo = META_YESNO_SHELL.test(lowerText) ? 'Yes — ' : '';
+  const shape = `a d20, your MIGHT (${fmtMod(might)}) behind it, against the foe's guard`;
+  const foeLine = answerFoeDefenseRelative(world);
+  return `${yesNo}${shape}. (Ranged or finesse rolls off AGILITY instead.) ${foeLine}`;
+}
+
 // Handle meta-questions (status checks, location surveys, recaps, outcomes).
 // Returns null when the text isn't a recognized meta-question.
 export function handleMetaQuestion(text, world) {
   const lowerText = String(text || '').toLowerCase();
+
+  // ── RL-1 rules-answer floor (Tim's ruling: "confirm the shape, never the
+  // table") — checked FIRST, before every other meta branch, so a to-hit
+  // SHAPE question or a foe-defense ask can never fall through to the
+  // breakpoint table (META_MODIFIER_FORMULA) or get answered with the
+  // player's own Armor (META_ARMOR_VALUE) when the question was plainly
+  // about the ENEMY's number. Both checks are pure reads; neither rolls nor
+  // mutates. (docs/briefs/RL-1-confirm-shape-never-table.md)
+  if (META_TO_HIT_SHAPE.test(lowerText)) {
+    return answerToHitShape(lowerText, world);
+  }
+  if (META_ARMOR_VALUE.test(lowerText) && ENEMY_DEFENSE_CUE_RE.test(lowerText)) {
+    return answerFoeDefenseRelative(world);
+  }
 
   // Governing stat for a melee/ranged ATTACK — "which modifier applies to a
   // melee strike, MIGHT or AGILITY?". Checked FIRST so it never falls to the

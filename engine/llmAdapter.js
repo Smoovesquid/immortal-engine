@@ -286,6 +286,7 @@ export function buildSystemPrompt(ctx) {
     `- If the mechanics report "→ failure" (or a roll that fell short of the DC), the attempt did NOT succeed: do not narrate the player achieving, learning, recalling, or being told what they tried for. A failed recall/knowledge/perception/persuasion check means the information stays out of reach — describe the blank or the dead end, never the answer they failed to earn.`,
     `- SUCCESSFUL knowledge roll: if the mechanics report "→ success" AND the player's action requests a specific name, title, or date ("name me…", "who was the…", "say the name", "tell me the name"), state it plainly ONLY if that exact specific already appears in the facts or PLACE HISTORY above, or in the base narration you were given — never as atmospheric deflection ("the ledger hums with secrets", "a name forms in your mind"). If no grounded specific is present, the roll still succeeds, but do NOT invent one: narrate what the success concretely yields from grounded material, coining no name, title, date, or fact that was not given. Earned facts are spoken plainly; unearned ones are never fabricated.`,
     `- HIDE THE MATH (PbtA: make your move, but never speak its name). Any figures or labels given to you as context — population counts ("forty-four souls"), economy / faction / tension labels, dispositions, HP or stat numbers, struct or debug phrasing ("State: intact") — are BACKGROUND to color the scene, NEVER content to recite. Let the data shape the atmosphere indirectly; never state it.`,
+    `- RULES QUESTIONS: CONFIRM THE SHAPE, NEVER THE TABLE. A player asking how a mechanic works gets the SHAPE in fiction — the die, the governing stat by name, and what it's rolled against ("a d20, your might behind it, against the foe's guard") — never a modifier-breakpoint table, a numeric TN/DC/defense value, or a percentage. A direct yes/no framing is confirmed yes/no FIRST. A question about the FOE's difficulty is answered RELATIVELY against the player's own Armor ("about level with your own", "a touch stiffer", "softer than yours") — never with the player's own stat standing in for the enemy's.`,
     `- RESPECT AGENCY (Angry GM: never narrate the player). Narrate only the world and the OUTCOME of what the player declared — never the player character's decisions, feelings, or undeclared actions. Do not move them, make them speak, or have them "decide"/"feel"/"leave"/"turn toward" anything they did not state; the player chooses what their character does.`,
     ambientRule,
     `- Do NOT use the words: actually, turns out.`,
@@ -607,6 +608,26 @@ export function validateNarrationCandidate(world, narrationCandidate, {
 } = {}) {
   const cand = String(narrationCandidate ?? '').trim();
   if (!cand) return false;
+
+  // RL-1 — mechanics/table-dump leak guard (Tim's ruling: "confirm the shape,
+  // never the table"). The deterministic rules-answer floor in
+  // gracefulAdjudication.js (handleMetaQuestion) intercepts the four gate
+  // utterances before they ever reach LLM polish — but a rules/mechanics
+  // question that DOESN'T match that classifier (a phrasing it misses, or one
+  // asked mid-combat/mid-dialogue where the meta-intercept is deliberately
+  // skipped) still flows through the normal playerMove → augmentNarration
+  // path, where Sonnet polish could invent or echo a raw table. This is the
+  // safety net: reject any candidate carrying a modifier-breakpoint sequence
+  // (`6–7 → -2`), a numeric DC/TN (`DC 15`, `TN 12`), a percentage-odds claim
+  // (`60% to land`), or a multi-stat stat-block run (`MIGHT 6 (-2), AGILITY 6
+  // (-2), ...`) — falls back to the always-grounded base narration, same as
+  // every other rule below. Conservative: a single named stat+modifier
+  // ("Your MIGHT is 6, a -2 modifier") is a legitimate self-answer and never
+  // trips this — only a genuine multi-entry run does. (docs/briefs/RL-1-confirm-shape-never-table.md)
+  if (/\d+(?:[–-]\d+)?\s*(?:→|->)\s*[+-]\d/.test(cand)) return false;
+  if (/\b(?:DC|TN)\s*\d+/i.test(cand)) return false;
+  if (/\b\d{1,3}\s*%|\b\d{1,3}\s*percent\b/i.test(cand)) return false;
+  if (/\b(?:MIGHT|AGILITY|WITS|GRIT|CHARM)\s+\d+\s*\([+-]\d+\)(?:\s*,\s*(?:MIGHT|AGILITY|WITS|GRIT|CHARM)\s+\d+\s*\([+-]\d+\)){1,}/.test(cand)) return false;
 
   // Forbidden tokens.
   if (/\b(actually|turns\s+out)\b/i.test(cand)) return false;

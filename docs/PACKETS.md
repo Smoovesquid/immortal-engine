@@ -366,6 +366,26 @@ file) · P4 SERIAL (`engine/ref/rubric.js`, shared with the live Ref) · P6 last
   `buildingTypeFor` → a cottage's exits read as hive rooms ("Brood Cell"/"Hive Mouth") while the current room
   was "Bedchamber". Fixed to `st.buildingType || buildingTypeFor(id)`. Empty `roomOccupants` for a wake-alone
   Bedchamber is plausibly correct → the CG-1b ghost-voices are likely REAL catches, not artifacts.
+- **✅ LIVE-VERIFIED + repositioned 2026-07-04 (v0.28.5, `c7676cf`):** ran the gate server with
+  `COHERENCE_SHADOW=1` for real (5 slices / 58 turns). New finding: even with the flag ON the observer fired
+  **0** where the retroactive checker fired N — a GENUINE divergence (not the flag). **Root, proven with the new
+  instrument:** the observer ran on the **pre-Ref candidate**, but the player + retroactive checker see the
+  **post-Ref** narration. The Ref regenerate rewrites a coherent "the bedchamber is empty, no record here" into a
+  helpful-but-ghost-voiced "Elske Nightherd shrugs, 'Can't say'". **Fix:** observe `await reviewNarration(...)`
+  (the final prose), and log `dm`+`evaluated` in the shadow record. Live result: CG-1b fire **0 → 2/3** of the
+  retroactive catches on the same play. **CG-LIVE-2 is now genuinely measurable.**
+- **⚠️ TWO FOLLOW-UPS this exposed (queue before flipping CG-LIVE-2 to regenerate):**
+  - **CG-LIVE-1b — the base-narration blind spot:** when the Tier-1 validator REJECTS the LLM candidate,
+    `augmentNarration` returns `base` **before** the observer line (`llmAdapter.js` `if (!ok) return base;`), so
+    those turns log NO shadow record and their desyncs bypass the observer (the missed 1 of 3 above; the run1
+    terse "Elske shrugs" base lines). Fix: run the observer on whatever text `augmentNarration` actually returns,
+    at every return path — small, and required for CG-LIVE-2 to self-heal the full class.
+  - **REF-GHOST — the Ref regenerate MANUFACTURES ghost-voices (the deeper, live player-facing bug):** the Ref,
+    trying to answer a pointed question the coherent candidate dodged, regenerates prose that voices a settlement
+    NPC who is NOT in the player's room (`roomOccupants` empty). This is a real presence/ROM-3 desync the DM
+    ships to the player — the checker is correctly catching the Ref's own output. Own packet: constrain the
+    regenerate (and its judge/prompt) to the scoped room roster, or make it decline-in-fiction rather than
+    conjure an absent speaker. Related [[project_dm_invents_geography]] at the narration layer.
 - **why now:** the deterministic desync pointer that *grades* a turn can *trigger a regenerate* on the live
   path — one mechanism self-heals ALL caught classes (ghost-voice, wrong-room, invented-exit, phantom-commit,
   wrong-speaker), and every future class we teach the checker becomes self-healing too. The Ref already routes

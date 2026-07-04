@@ -42,6 +42,7 @@ const METAL = 'rgba(34,40,54,0.95)', CLOTH = 'rgba(232,236,221,0.7)';
 const HAND = '"Bradley Hand","Comic Sans MS","Chalkboard SE","Marker Felt",cursive';
 
 import { iconKindFor, drawCreatureIcon } from './creatureIcons.js';
+import { floorPlanToPlanModel } from './planModel.js';
 
 const MATERIALS = {
   stone:     { wall: INK, wallW: 3.0, band: 1.3, amp: 1.5, hatch: 'diag' },
@@ -256,33 +257,24 @@ export function planToSceneModel(plan, opts = {}) {
 
 // ── floorPlan -> scene model (pure adapter; no engine imports) ──────────────
 // Maps the engine's floorPlan() output onto the renderer's scene model so the
-// live map draws real generated dungeons in the hand-drawn style.
+// live map draws real generated dungeons in the hand-drawn style. The shape
+// derivation itself (room sizing, corridor dog-legs, door orientation,
+// material) is the ONE shared plan-model (planModel.js, TT-DRAW-3) the
+// outdoor sheet also consumes — this function only layers the interior
+// view's OWN dynamic overlay on top: current-room highlight, fog-of-war
+// (visited-filter), and tokens.
 export function floorPlanToSceneModel(fp, opts = {}) {
-  const f = fp || {};
   const currentRoomId = String(opts.currentRoomId ?? '');
   // Fog-of-war: when `visited` is supplied, only explored rooms (and the doors
   // between two explored rooms) are drawn — matching the live map's reveal.
   const visited = Array.isArray(opts.visited) && opts.visited.length ? new Set(opts.visited.map(String)) : null;
   const seen = id => !visited || visited.has(String(id));
-  const shellToMaterial = { stone: 'stone', fortified: 'fortified', timber: 'timber', cave: 'cave', open: 'stone', round: 'stone', chitin: 'cave' };
-  const rooms = (Array.isArray(f.rooms) ? f.rooms : []).filter(r => seen(r.id)).map(r => ({
-    id: String(r.id),
-    shape: r.shape === 'round' ? 'round' : 'rect',
-    cx: r.cx, cy: r.cy, w: r.w, h: r.h, r: Math.min(r.w, r.h) / 2,
-    name: r.name || r.role || r.id,
-    current: String(r.id) === currentRoomId
-  }));
-  // floorPlan corridors are straight center-to-center segments {ax,ay,bx,by}.
-  // Bend them into orthogonal dog-legs (horizontal then vertical) so hallways read
-  // as built passages, never diagonal funnels.
-  const corridors = (Array.isArray(f.corridors) ? f.corridors : []).map(c => {
-    const ax = c.ax, ay = c.ay, bx = c.bx, by = c.by;
-    if (Math.abs(ax - bx) < 0.02 || Math.abs(ay - by) < 0.02) return { pts: [[ax, ay], [bx, by]], w: 0.7 };
-    return { pts: [[ax, ay], [bx, ay], [bx, by]], w: 0.7 };
-  });
-  const doors = (Array.isArray(f.doors) ? f.doors : []).filter(d => seen(d.a) && seen(d.b)).map(d => ({ x: d.x, y: d.y, orient: (d.dir === 'east' || d.dir === 'west') ? 'v' : 'h' }));
+  const shape = floorPlanToPlanModel(fp);
+  const rooms = shape.rooms.filter(r => seen(r.id)).map(r => ({ ...r, current: String(r.id) === currentRoomId }));
+  const corridors = shape.corridors.map(c => ({ pts: c.pts, w: c.w }));
+  const doors = shape.doors.filter(d => seen(d.a) && seen(d.b)).map(d => ({ x: d.x, y: d.y, orient: d.orient }));
   return {
-    material: shellToMaterial[f.shell] || 'stone',
+    material: shape.material,
     rooms, doors, corridors,
     windows: [],
     furniture: [],

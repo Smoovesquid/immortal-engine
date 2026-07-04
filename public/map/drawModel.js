@@ -24,6 +24,8 @@
 import { floorPlan } from '../../engine/structures/floorPlan.js';
 import { outdoorOccupants } from '../../engine/structures/roomOccupancy.js';
 import { placeFromWorldNode } from './placeFromNode.js';
+import { floorPlanToPlanModel } from './planModel.js';
+import { CELL_FT } from '../../engine/map/spatial/tacticalPos.js';
 import {
   PLACE_WU,
   nodeToWu, placeFrame, placeUnitToWu, buildingAnchorInPlace, structureWorldRect
@@ -46,8 +48,58 @@ export const INK_PARAMS = Object.freeze({
   // not a bare block — but the line sits INSET from the rect edge, never on or
   // outside it (default keep, per the brief; Tim answers on roof STYLE later).
   roofLineInsetWu: 0.35,   // inset of the roof ridge-line from the true rect edge, in world units
-  roofLineWeight: 1.1      // ridge-line stroke weight (unscaled by z, kept subtle at any zoom)
+  roofLineWeight: 1.1,     // ridge-line stroke weight (unscaled by z, kept subtle at any zoom)
+  // TT-DRAW-3 — the graph paper at closest view: a 5-ft quadrille fades in over
+  // this z band (same fadeIn(z,a,b) idiom worldSpace.js already uses for every
+  // other band crossing — never a pop). Named tunables so a taste pass touches
+  // one spot; the grid PITCH itself is never tunable here — it is CELL_FT (see
+  // wuToFt below), pinned by TAC-1 and asserted exact by U419.
+  gridFadeZStart: 8,       // z at which the quadrille begins to appear (BAND.street=4 already shows tokens/interiors; the grid resolves a beat deeper, once individual 5-ft squares would be legible rather than a moiré)
+  gridFadeZEnd: 16,        // z at which the quadrille is fully opaque
+  gridMinorAlpha: 0.20,    // teal grid-rule alpha at full fade-in (matches handDrawnInterior.js's GMIN/GMAJ idiom)
+  gridMajorAlpha: 0.40,    // every 5th line (a 25-ft "major" rule), matching the interior map's minor/major convention
+  gridRGB: '92,134,120'    // the teal quadrille rule's RGB triplet (GRAPH_PAPER_UI.md's --grid-minor/--grid-major hue, handDrawnInterior.js's GMIN/GMAJ) — final alpha composed by quadrilleStroke(), never string-hacked
 });
+
+/**
+ * quadrilleStroke(major, fadeAlpha) -> 'rgba(92,134,120,X)'
+ * The final stroke color for one grid line: the pinned teal RGB triplet
+ * (INK_PARAMS.gridRGB) at either the minor or major per-line alpha, scaled by
+ * the current fade-in progress (quadrilleAlpha(z)). Kept as one small pure
+ * function (not a string-replace on a baked rgba literal) so the composition
+ * is explicit and testable.
+ */
+export function quadrilleStroke(major, fadeAlpha) {
+  const perLine = major ? INK_PARAMS.gridMajorAlpha : INK_PARAMS.gridMinorAlpha;
+  return `rgba(${INK_PARAMS.gridRGB},${perLine * fadeAlpha})`;
+}
+
+// ── the ONE wu↔ft mapping (TT-DRAW-3) ───────────────────────────────────────
+// worldSpace.js's PLACE_WU (wu per floorPlan layout unit — the SAME constant
+// interiorRoomToWu/structureWorldRect already use to place a building's rooms
+// in world units, no separate scale) composed with TAC-1's pinned CELL_FT
+// (feet per tactical cell, engine/map/spatial/tacticalPos.js) yields an EXACT
+// identity: one floorPlan layout unit is tacticalPos.PLACE_WU (4) cells ×
+// CELL_FT (5) = 20 ft, and that SAME layout unit is worldSpace.PLACE_WU (4) wu
+// — so 1 wu = (20 ft / 4) = CELL_FT ft, exactly. This is not a new conversion;
+// it is the two ALREADY-PINNED constants (tacticalPos.js's CELL_FT, this
+// module's own PLACE_WU) composed, asserted exact + round-trip by U419.
+export function wuToFt(wu) { return Number(wu) * CELL_FT; }
+export function ftToWu(ft) { return Number(ft) / CELL_FT; }
+
+/**
+ * quadrilleAlpha(z) -> 0..1
+ * Pure function of zoom: the graph-paper grid is invisible until the deep
+ * zoom band, then fades in (never pops) to fully opaque by INK_PARAMS.gridFadeZEnd.
+ * Same fadeIn(a,b) shape worldSpace.js uses for every other band crossing.
+ */
+export function quadrilleAlpha(z) {
+  const a = INK_PARAMS.gridFadeZStart, b = INK_PARAMS.gridFadeZEnd;
+  const zz = Number(z) || 0;
+  if (zz <= a) return 0;
+  if (zz >= b) return 1;
+  return (zz - a) / (b - a);
+}
 
 function isFiniteNum(n) { return typeof n === 'number' && Number.isFinite(n); }
 
@@ -86,81 +138,62 @@ function planPointToWu(node, frame, anchor, plan, x, y) {
   return { wx: p.x, wy: p.y };
 }
 
-/** Rectangle corners for a rect room (or a bounding square for a round room), in plan-local units. */
-function roomLocalCorners(room) {
-  const isRound = room?.shape === 'round';
-  const w = isRound ? (Number(room.r) || 0.5) * 2 : (Number(room.w) || 1);
-  const h = isRound ? (Number(room.r) || 0.5) * 2 : (Number(room.h) || 1);
-  const cx = Number(room?.cx) || 0, cy = Number(room?.cy) || 0;
-  return { x0: cx - w / 2, y0: cy - h / 2, x1: cx + w / 2, y1: cy + h / 2, cx, cy, w, h, round: isRound };
-}
-
 /**
- * wallsForRoom(node, frame, anchor, plan, room, doorsOnRoom) -> [{a:{wx,wy}, b:{wx,wy}}]
- * The four (or, for a round room, one circular) wall segments of a room, each
- * projected to world units — WITH a gap left open wherever a door/mouth sits on
- * that edge (a doorway is drawn as a GAP in the wall, per the tabletop spec, not
- * an ink line straight through it).
+ * roomWallSegments(node, frame, anchor, plan, room) -> [{a:{wx,wy}, b:{wx,wy}}]
+ * The four (or, for a round room, one circular) wall segments of a room's OWN
+ * outline, projected to world units. No per-edge door-gap cutting here — per
+ * floorPlan.js's own layout (the PAD gap between adjacent room boxes, filled
+ * by a corridor rather than a shared edge), a doorway never actually sits ON
+ * a room's boundary edge; the interior view (handDrawnInterior.js) doesn't cut
+ * room-edge gaps either — it draws the CORRIDOR polygon as its own connective
+ * void between rooms (see corridorSegmentsInWu below), which is the ink that
+ * reads as a doorway opening onto a passage. This is the shared plan-model's
+ * room SHAPE (floorPlanToPlanModel, planModel.js) projected to world units —
+ * no independent per-room wall derivation, no invented gap logic.
  */
-function wallSegmentsForRoom(node, frame, anchor, plan, room, doorsOnRoom) {
-  const segs = [];
-  if (room.round) {
-    // Round rooms: draw as a ring of short chord segments so a door gap can still
-    // carve a bite out of the circle without special-casing the renderer.
+function roomWallSegments(node, frame, anchor, plan, room) {
+  if (room.shape === 'round') {
     const N = 24;
-    const cx = room.cx, cy = room.cy, r = (room.x1 - room.x0) / 2;
-    const doorAngles = doorsOnRoom.map(d => Math.atan2(d.y - cy, d.x - cx));
-    const gapHalf = (0.5 / Math.max(r, 0.1)); // radians subtended by ~half the door gap width
+    const cx = room.cx, cy = room.cy, r = room.r;
+    const segs = [];
     for (let i = 0; i < N; i++) {
       const a0 = (i / N) * Math.PI * 2, a1 = ((i + 1) / N) * Math.PI * 2;
-      const mid = (a0 + a1) / 2;
-      const gapped = doorAngles.some(da => Math.abs(angleDelta(mid, da)) < gapHalf);
-      if (gapped) continue;
       const p0 = planPointToWu(node, frame, anchor, plan, cx + Math.cos(a0) * r, cy + Math.sin(a0) * r);
       const p1 = planPointToWu(node, frame, anchor, plan, cx + Math.cos(a1) * r, cy + Math.sin(a1) * r);
       segs.push({ a: p0, b: p1 });
     }
     return segs;
   }
-  const corners = [[room.x0, room.y0], [room.x1, room.y0], [room.x1, room.y1], [room.x0, room.y1]];
+  const x0 = room.cx - room.w / 2, y0 = room.cy - room.h / 2, x1 = room.cx + room.w / 2, y1 = room.cy + room.h / 2;
+  const corners = [[x0, y0], [x1, y0], [x1, y1], [x0, y1]];
+  const segs = [];
   for (let e = 0; e < 4; e++) {
     const [ax, ay] = corners[e], [bx, by] = corners[(e + 1) % 4];
-    const horiz = ay === by;
-    // Split the edge at any door that sits on it, leaving a INK_PARAMS.doorGapWu-wide
-    // gap in PLAN-LOCAL units centered on the door.
-    const onEdge = doorsOnRoom.filter(d => horiz ? (Math.abs(d.y - ay) < 1e-6 && d.x >= Math.min(ax, bx) - 1e-6 && d.x <= Math.max(ax, bx) + 1e-6)
-      : (Math.abs(d.x - ax) < 1e-6 && d.y >= Math.min(ay, by) - 1e-6 && d.y <= Math.max(ay, by) + 1e-6));
-    if (!onEdge.length) {
-      segs.push({ a: planPointToWu(node, frame, anchor, plan, ax, ay), b: planPointToWu(node, frame, anchor, plan, bx, by) });
-      continue;
-    }
-    const gapLocal = 0.55; // half-gap, in plan-local (footprint) units — matches floorPlan's PAD scale
-    const cuts = onEdge.map(d => horiz ? d.x : d.y).sort((x, y) => x - y);
-    let cur = horiz ? Math.min(ax, bx) : Math.min(ay, by);
-    const end = horiz ? Math.max(ax, bx) : Math.max(ay, by);
-    for (const c of cuts) {
-      const gapStart = c - gapLocal, gapEnd = c + gapLocal;
-      if (gapStart > cur) {
-        segs.push(horiz
-          ? { a: planPointToWu(node, frame, anchor, plan, cur, ay), b: planPointToWu(node, frame, anchor, plan, gapStart, ay) }
-          : { a: planPointToWu(node, frame, anchor, plan, ax, cur), b: planPointToWu(node, frame, anchor, plan, ax, gapStart) });
-      }
-      cur = Math.max(cur, gapEnd);
-    }
-    if (cur < end) {
-      segs.push(horiz
-        ? { a: planPointToWu(node, frame, anchor, plan, cur, ay), b: planPointToWu(node, frame, anchor, plan, end, ay) }
-        : { a: planPointToWu(node, frame, anchor, plan, ax, cur), b: planPointToWu(node, frame, anchor, plan, ax, end) });
-    }
+    segs.push({ a: planPointToWu(node, frame, anchor, plan, ax, ay), b: planPointToWu(node, frame, anchor, plan, bx, by) });
   }
   return segs;
 }
 
-function angleDelta(a, b) {
-  let d = a - b;
-  while (d > Math.PI) d -= Math.PI * 2;
-  while (d < -Math.PI) d += Math.PI * 2;
-  return d;
+/**
+ * corridorSegmentsInWu(node, frame, anchor, plan, corridor) -> [{a:{wx,wy}, b:{wx,wy}}]
+ * A corridor's dog-legged polyline (planModel.js's floorPlanToPlanModel output,
+ * plan-local layout units), projected to world units as consecutive wall-style
+ * segments — the SAME projection every room-wall segment uses (planPointToWu),
+ * so a corridor's ink sits in exactly the frame its two rooms do. This is the
+ * connective tissue that bridges floorPlan's own PAD gap between adjacent room
+ * boxes ("squares inside of squares" — TT-DRAW-3's root fix): the interior view
+ * draws this same polyline as a floor-strip "void" alongside the rooms; the
+ * outdoor sheet draws it the same way, so a doorway opens onto a visible
+ * passage instead of blank padding between two sealed boxes.
+ */
+function corridorSegmentsInWu(node, frame, anchor, plan, corridor) {
+  const pts = Array.isArray(corridor?.pts) ? corridor.pts : [];
+  const segs = [];
+  for (let i = 0; i < pts.length - 1; i++) {
+    const [ax, ay] = pts[i], [bx, by] = pts[i + 1];
+    segs.push({ a: planPointToWu(node, frame, anchor, plan, ax, ay), b: planPointToWu(node, frame, anchor, plan, bx, by) });
+  }
+  return segs;
 }
 
 /**
@@ -218,14 +251,23 @@ export function fitCatalogPointToRect(catalogBounds, trueRect, px, py) {
  *     structureKey, name, shell, dark,
  *     rect: {minX,minY,maxX,maxY},                 // structureWorldRect — LOD/culling box
  *     rooms: [{ id, name, isEntry, wx, wy, walls:[{a,b}] }],
- *     doors: [{ wx, wy, a, b }]
+ *     doors: [{ wx, wy, a, b }],
+ *     corridors: [{ a, b, segs:[{a:{wx,wy},b:{wx,wy}}] }]   // TT-DRAW-3 — the connective ink
  *   }]
  * }
  *
  * U409's contract: every settlement structure at this node yields a plan-model
  * derived from the REAL floorPlan(structure), fitted inside its
- * structureWorldRect. Pure, deterministic, read-only (structures/floorPlan are
- * both read-only inputs — nothing here writes world state or touches worldHash).
+ * structureWorldRect. TT-DRAW-3 (U418): the room/door/corridor SHAPE comes from
+ * the ONE shared plan-model (planModel.js's floorPlanToPlanModel — the SAME
+ * derivation handDrawnInterior.js's floorPlanToSceneModel uses for the in-play
+ * interior), projected here into world units. No parallel per-room wall/gap
+ * derivation — corridors are the ink that bridges floorPlan's own PAD gap
+ * between adjacent room boxes, exactly mirroring the interior view's
+ * hatch-the-rock-band trick, so a doorway opens onto a visible passage instead
+ * of blank padding between two sealed boxes ("squares inside of squares").
+ * Pure, deterministic, read-only (structures/floorPlan are both read-only
+ * inputs — nothing here writes world state or touches worldHash).
  */
 export function drawnStructureModel(world, nodeId) {
   const node = findNode(world, nodeId);
@@ -243,30 +285,34 @@ export function drawnStructureModel(world, nodeId) {
     const anchor = buildingAnchorInPlace(place, structureKey) || { ox: 0, oy: 0 };
     const rect = structureWorldRect(node, frame, anchor, plan);
 
-    const doorsByRoom = new Map();
-    for (const d of (plan.doors || [])) {
-      if (!doorsByRoom.has(d.a)) doorsByRoom.set(d.a, []);
-      if (!doorsByRoom.has(d.b)) doorsByRoom.set(d.b, []);
-      doorsByRoom.get(d.a).push({ x: d.x, y: d.y });
-      doorsByRoom.get(d.b).push({ x: d.x, y: d.y });
-    }
+    // The ONE shared plan-model — same derivation the in-play interior view
+    // consumes (handDrawnInterior.js's floorPlanToSceneModel), in plan-local
+    // layout units. This module only projects it into world units.
+    const shape = floorPlanToPlanModel(plan);
 
-    const rooms = plan.rooms.map(r => {
-      const corners = roomLocalCorners(r);
-      const doorsOnRoom = doorsByRoom.get(r.id) || [];
-      const walls = wallSegmentsForRoom(node, frame, anchor, plan, corners, doorsOnRoom);
+    const rooms = shape.rooms.map(r => {
+      const walls = roomWallSegments(node, frame, anchor, plan, r);
       const center = planPointToWu(node, frame, anchor, plan, r.cx, r.cy);
-      return { id: r.id, name: r.name || r.role || r.id, shape: r.shape === 'round' ? 'round' : 'rect', isEntry: !!r.isEntry, wx: center.wx, wy: center.wy, walls };
+      const isEntry = plan.rooms.find(pr => String(pr.id) === r.id)?.isEntry;
+      return { id: r.id, name: r.name, shape: r.shape, isEntry: !!isEntry, wx: center.wx, wy: center.wy, walls };
     });
 
-    const doors = (plan.doors || []).map(d => {
+    // dir is the original compass direction (floorPlan.js's d.dir), looked up
+    // by room pair rather than reconstructed from orient ('h'/'v' collapses
+    // north/south and east/west) — a lossless read of the same source doors.
+    const dirByPair = new Map((plan.doors || []).map(d => [`${d.a}|${d.b}`, d.dir]));
+    const doors = shape.doors.map(d => {
       const p = planPointToWu(node, frame, anchor, plan, d.x, d.y);
-      return { wx: p.wx, wy: p.wy, dir: d.dir, a: d.a, b: d.b };
+      return { wx: p.wx, wy: p.wy, dir: dirByPair.get(`${d.a}|${d.b}`) || '', a: d.a, b: d.b };
     });
+
+    const corridors = shape.corridors.map(c => ({
+      a: c.a, b: c.b, segs: corridorSegmentsInWu(node, frame, anchor, plan, c)
+    }));
 
     structures.push({
       structureKey, name: plan.name, shell: plan.shell, dark: !!plan.dark,
-      rect, rooms, doors
+      rect, rooms, doors, corridors
     });
   }
 

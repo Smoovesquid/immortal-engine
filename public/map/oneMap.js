@@ -24,7 +24,8 @@ import { dayPhase, clockLabel } from '../../engine/dayNight.js';
 // TT-DRAW (docs/TABLETOP_MAP.md): structure is DRAWN from the REAL floorPlan
 // (not the catalog placeFromNode.js shape), entities (people/trees) are PLACED
 // tokens, and a settlement-local fog wash distinguishes explored/unexplored.
-import { drawnStructureModel, placedTokenModel, fogMask, INK_PARAMS, catalogPlanBoundsInPlaceUnits, fitCatalogPointToRect } from './drawModel.js';
+// TT-DRAW-3: quadrilleAlpha/quadrilleStroke — the graph paper at the closest view.
+import { drawnStructureModel, placedTokenModel, fogMask, INK_PARAMS, catalogPlanBoundsInPlaceUnits, fitCatalogPointToRect, quadrilleAlpha, quadrilleStroke } from './drawModel.js';
 
 // The compass facing of the window you JUST climbed out of (the latest interior-exit event), so the
 // map can place your marker on that side of the building. '' once you act again or move on.
@@ -74,6 +75,51 @@ const GROVE = 'rgba(92,134,120,0.16)', GROVE_DARK = 'rgba(74,112,98,0.28)';
 const WATERY = 'rgba(96,128,148,0.12)';
 const PLAYER = '#c0392b', NPC = '#2a6f8e';
 const HAND = '"Iowan Old Style","Palatino",Georgia,serif';
+
+// TT-DRAW-3 — the graph paper at the closest view: a REAL 5-ft tactical
+// quadrille (CELL_FT, engine/map/spatial/tacticalPos.js, imported through
+// drawModel.js's wuToFt — never a re-derived conversion), teal rule per
+// GRAPH_PAPER_UI.md/handDrawnInterior.js's GMIN/GMAJ idiom, faint, drawn UNDER
+// every other ink (biome wash, roads, buildings, tokens all paint over it).
+// Fades in purely as a function of z (quadrilleAlpha, drawModel.js's ONE
+// ink-params place) — never a pop, matching every other band crossing on
+// this map. World-anchored (grid lines land on exact multiples of one
+// world-unit = CELL_FT feet in WORLD space, not screen space) so the grid
+// holds still under the camera exactly like every other drawn feature.
+function drawQuadrille(ctx, toPx, W, H, z, camCx, camCy) {
+  const a = quadrilleAlpha(z);
+  if (a <= 0) return;
+  // One grid line every 1 world unit (== CELL_FT == 5 ft, the pinned identity
+  // — see drawModel.js's wuToFt). Pixel pitch at this zoom:
+  const pitchPx = z; // 1 wu * z px/wu
+  if (!(pitchPx > 1)) return; // degenerate/too-fine to matter — never divide by ~0 below
+  // World-space line positions visible in [0,W]x[0,H]: the leftmost/topmost
+  // whole-wu grid line inside frame, stepping by 1 wu (pitchPx) thereafter.
+  const leftWu = camCx - W / 2 / z, topWu = camCy - H / 2 / z;
+  const startX = Math.floor(leftWu);
+  const startY = Math.floor(topWu);
+  const countX = Math.ceil(W / pitchPx) + 2;
+  const countY = Math.ceil(H / pitchPx) + 2;
+  ctx.save();
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= countX; i++) {
+    const wuX = startX + i;
+    const [px] = toPx(wuX, 0, W, H);
+    if (px < -2 || px > W + 2) continue;
+    const major = Math.round(wuX) % 5 === 0;
+    ctx.strokeStyle = quadrilleStroke(major, a);
+    ctx.beginPath(); ctx.moveTo(px + 0.5, 0); ctx.lineTo(px + 0.5, H); ctx.stroke();
+  }
+  for (let j = 0; j <= countY; j++) {
+    const wuY = startY + j;
+    const [, py] = toPx(0, wuY, W, H);
+    if (py < -2 || py > H + 2) continue;
+    const major = Math.round(wuY) % 5 === 0;
+    ctx.strokeStyle = quadrilleStroke(major, a);
+    ctx.beginPath(); ctx.moveTo(0, py + 0.5); ctx.lineTo(W, py + 0.5); ctx.stroke();
+  }
+  ctx.restore();
+}
 
 // M5/M6 — the Lord-of-the-Rings hand-drawn palette (sepia ink on aged parchment).
 const SEPIA = 'rgba(96,72,44,0.85)', SEPIA_SOFT = 'rgba(96,72,44,0.45)';
@@ -830,6 +876,32 @@ export function renderOneMap(world, opts = {}) {
           }
         }
       }
+      // TT-DRAW-3 — the connective ink: a corridor is the floor-strip that
+      // bridges floorPlan's own PAD gap between adjacent room boxes (the ROOT
+      // of the old "squares inside of squares" look — two sealed room
+      // rectangles with dead, wall-less gap between them). Filled BEFORE the
+      // room walls ink, in the same warm floor tone, so a doorway opens onto
+      // visible passage floor rather than blank gap — mirrors the interior
+      // view's hatch-the-rock-band trick (a corridor is its own "void" drawn
+      // alongside the rooms, not a literal shared wall).
+      if (realPlan && cut > 0.2 && realPlan.corridors && realPlan.corridors.length) {
+        ctx.globalAlpha = alpha * cut;
+        ctx.fillStyle = FLOOR_WARM;
+        const corridorHalfWu = 0.7 / 2; // matches planModel.js's corridor width (layout units), same scale room sizes use
+        for (const corridor of realPlan.corridors) {
+          for (const seg of corridor.segs) {
+            const [ax, ay] = toPx(seg.a.wx, seg.a.wy, W, H);
+            const [bxp, byp] = toPx(seg.b.wx, seg.b.wy, W, H);
+            const halfPx = Math.max(1, corridorHalfWu * PLACE_WU * z);
+            let dx = bxp - ax, dy = byp - ay; const len = Math.hypot(dx, dy) || 1; dx /= len; dy /= len;
+            const nx = -dy * halfPx, ny = dx * halfPx;
+            ctx.beginPath();
+            ctx.moveTo(ax + nx, ay + ny); ctx.lineTo(bxp + nx, byp + ny);
+            ctx.lineTo(bxp - nx, byp - ny); ctx.lineTo(ax - nx, ay - ny);
+            ctx.closePath(); ctx.fill();
+          }
+        }
+      }
       // TT-DRAW: once the cutaway has mostly resolved, ink the REAL floor plan's
       // walls (with door GAPS) on top of the true-sized fill above — the same
       // footprint, but now the wall lines and doorways are the ones "go through
@@ -977,6 +1049,12 @@ export function renderOneMap(world, opts = {}) {
     // M7 — real parchment under the ink (fibre grain + soft age stains).
     const parch = parchmentFor(seed, W, H, dpr);
     if (parch) ctx.drawImage(parch, 0, 0, W, H);
+
+    // TT-DRAW-3 — the graph paper at the closest view: the REAL 5-ft tactical
+    // quadrille, faint, UNDER every other ink (biome/roads/buildings/tokens
+    // all paint over it below). Invisible until the deep zoom band, then
+    // fades in (quadrilleAlpha, drawModel.js).
+    drawQuadrille(ctx, toPx, W, H, z, cam.cx, cam.cy);
 
     // ── M6: the illustrated biome ground + set-pieces (geography.js). Fades OUT
     // across the settlement band so real village layouts own the close ground (M2).

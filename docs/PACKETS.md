@@ -270,6 +270,10 @@ verbs — no parallel contract enum), `parseIntent` stays the LLM-off floor.
   case, JR-1 — answered "I haven't introduced anyone named The Greenwood… Bones the Fox, Galen, Brogan,
   the Lingerer are here — who do you actually mean?" The intent layer treated a place as a person;
   known-place names must resolve as travel BEFORE the npc-referent clarify sink).
+  **→ INT-4-TRAVEL DISPATCHED 2026-07-04-pm7** (Opus worktree, U452–U453; playloop+grace referent-sink
+  lane — ground "go to <X>" against KNOWN map places before the person-clarify sink, LLM-off floor
+  first, JR-1 premium intact, dialogue routing untouched; intent prompt/schema edits avoided —
+  downstream grounding preferred, re-benchmark flag if touched).
   Cut each packet when its predecessor lands.
 - **ARC done-when (= PRD Phase 0 exit):** frozen corpus 100% **and** N consecutive gates open zero
   categorically-new failure classes **and** ≤2 broken turns per 48, twice running (2026-07-02: 9/48 → 4/48
@@ -1054,7 +1058,11 @@ sheet (no per-node islands); the camera keeps the player centered (no edges, eve
   journey-entangled outdoor mover); (2) the map marker does NOT yet slide for in-room steps —
   `resolveEntityWuFromWorld` reads roomId/legacy ux-uy, not cell-granular `pos` → **TAC-4 renderer
   square-snap is the rung that lights it up.** The `public/v1.js` front-door build line stays
-  integration-only.
+  integration-only. **→ TAC-4 DISPATCHED 2026-07-04-pm7** (renderer square-snap: `resolveEntityWuFromWorld`
+  resolves from cell-granular `pos` when present — struct frame via the SAME projection the drawn plan
+  already uses (one sizing truth, no second mapping), region frame via the pinned NODE constants;
+  roomId/legacy fallback when `pos` null; camera inherits via `playerFocusWu`; Opus worktree,
+  U450–U451; `public/map/` only).
 
 ### MAP-3DR — reconnect the 3D diorama on a persistent mount  ·  **Phase 4 (the face)  ·  = TABLETOP S4; cut the packet when S3 lands**
 - **why parked (2026-07-03, Tim's call):** the 3D layer was DISCONNECTED (`MAP_3D_ENABLED=false`,

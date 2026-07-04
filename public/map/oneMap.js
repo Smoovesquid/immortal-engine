@@ -21,6 +21,10 @@ import { placeFromWorldNode } from './placeFromNode.js';
 import { isDungeonStructureId } from '../../engine/dungeon/generate.js';
 import { interiorCompassLayout } from '../../engine/structures/topology.js';
 import { dayPhase, clockLabel } from '../../engine/dayNight.js';
+// TT-DRAW (docs/TABLETOP_MAP.md): structure is DRAWN from the REAL floorPlan
+// (not the catalog placeFromNode.js shape), entities (people/trees) are PLACED
+// tokens, and a settlement-local fog wash distinguishes explored/unexplored.
+import { drawnStructureModel, placedTokenModel, fogMask, INK_PARAMS } from './drawModel.js';
 
 // The compass facing of the window you JUST climbed out of (the latest interior-exit event), so the
 // map can place your marker on that side of the building. '' once you act again or move on.
@@ -707,12 +711,18 @@ export function renderOneMap(world, opts = {}) {
       for (let i = 1; i < pts.length; i++) { const [px, py] = P(pts[i][0], pts[i][1]); ctx.lineTo(px, py); }
       ctx.stroke();
     }
-    for (const g of (place.terrain?.groves || [])) {
-      const [gx, gy] = P(g.cx, g.cy);
-      const gr = g.r * PLACE_WU * z;
-      if (gr < 1) continue;
+    // TT-DRAW: a tree is a PIECE you set down, not ground ink (the tabletop
+    // spec's tell for structure-vs-entity). Each grove's trees are individually
+    // PLACED tokens (placedTokenModel — deterministic, same scatter the old
+    // ellipse painted over) rather than one filled blob per grove.
+    const treeTokens = placedTokenModel(world, node.id).trees;
+    for (const t of treeTokens) {
+      const [tx, ty] = toPx(t.wx, t.wy, W, H);
+      const tr = Math.max(0.6, t.r * z * 0.55);
+      if (tr < 0.6) continue;
       ctx.fillStyle = GROVE_DARK;
-      ctx.beginPath(); ctx.ellipse(gx, gy, gr, gr * 0.8, 0, 0, 7); ctx.fill();
+      ctx.beginPath(); ctx.arc(tx, ty + tr * 0.12, tr, 0, 7); ctx.fill();
+      ctx.strokeStyle = GROVE; ctx.lineWidth = Math.max(0.5, tr * 0.16); ctx.stroke();
     }
     for (const prop of (place.terrain?.props || [])) {
       if (prop?.type !== 'well') continue;
@@ -731,10 +741,15 @@ export function renderOneMap(world, opts = {}) {
     const interiorKey = String(world?.scene?.interior?.structureKey || '');
     const labelAlpha = fadeIn(z, 2.2, 3.6);
     const wall = Math.max(0.8, Math.min(2.6, z * 0.5));
+    // TT-DRAW: the REAL per-structure plan (floorPlan fitted to its world rect),
+    // keyed by structureKey — drawn instead of the catalog b.plan shape for any
+    // building that's open (the WS-1-flagged fork this packet resolves).
+    const drawnStructures = new Map((drawnStructureModel(world, node.id)?.structures || []).map(s => [s.structureKey, s]));
     for (const b of (place.buildings || [])) {
       const material = String(b?.plan?.material || 'timber');
       const openable = b.structureKey && (b.structureKey === interiorKey || String(node.id) === homeNodeId);
       const cut = openable ? fadeIn(z, BAND.street, BAND.street * 1.8) : 0;
+      const realPlan = b.structureKey ? drawnStructures.get(String(b.structureKey)) : null;
 
       // helper: project a room/furniture rect to px corners.
       const rectPx = (ux, uy, w, h) => {
@@ -763,6 +778,25 @@ export function renderOneMap(world, opts = {}) {
         bx0 = Math.min(bx0, bxx); by0 = Math.min(by0, byy);
         const [bxe] = P(b.ox + r.cx + (r.w || (r.r || 1) * 2) / 2, b.oy + r.cy);
         bx1 = Math.max(bx1, bxe);
+      }
+      // TT-DRAW: once the cutaway has mostly resolved, ink the REAL floor plan's
+      // walls (with door GAPS) on top of the catalog-shaped floor fill above —
+      // the same footprint, but now the wall lines and doorways are the ones
+      // "go through the doorway" actually opens. Wall coordinates are already in
+      // WORLD units (drawnStructureModel), so they project straight through toPx,
+      // bypassing the place-unit P() helper the catalog shapes use.
+      if (realPlan && cut > 0.2) {
+        ctx.globalAlpha = alpha * cut;
+        ctx.strokeStyle = INK;
+        ctx.lineWidth = (INK_PARAMS.wallWeight[realPlan.shell] || INK_PARAMS.wallWeight.stone) * Math.max(0.5, Math.min(1, z * 0.6));
+        ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+        for (const room of realPlan.rooms) {
+          for (const seg of room.walls) {
+            const [ax, ay] = toPx(seg.a.wx, seg.a.wy, W, H);
+            const [bxp, byp] = toPx(seg.b.wx, seg.b.wy, W, H);
+            ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(bxp, byp); ctx.stroke();
+          }
+        }
       }
       ctx.globalAlpha = alpha;
 
@@ -799,7 +833,10 @@ export function renderOneMap(world, opts = {}) {
       }
     }
 
-    // people: dots at street approach (the village is inhabited, visibly).
+    // people: standing tokens (a base ring at the feet + a body disc) at street
+    // approach (the village is inhabited, visibly). TT-DRAW: upgraded from a
+    // plain ring to a base-ring + body so a person reads as a piece set down on
+    // the grid, not a dot painted on the ground.
     const npcAlpha = fadeIn(z, 1.4, 2.4);
     if (npcAlpha > 0) {
       for (const t of (place.tokens || [])) {
@@ -807,6 +844,10 @@ export function renderOneMap(world, opts = {}) {
         const [nx, ny] = P(t.ux, t.uy);
         const nr = Math.max(2, Math.min(6, 0.5 * PLACE_WU * z));
         ctx.globalAlpha = alpha * npcAlpha;
+        // base ring — a soft ellipse at the feet, the tabletop-mini "standing on
+        // a base" cue (docs/TABLETOP_MAP.md miniature art direction).
+        ctx.strokeStyle = 'rgba(18,26,48,0.28)'; ctx.lineWidth = Math.max(0.6, nr * 0.18);
+        ctx.beginPath(); ctx.ellipse(nx, ny + nr * 0.72, nr * 0.95, nr * 0.38, 0, 0, 7); ctx.stroke();
         ctx.fillStyle = PAPER;
         ctx.beginPath(); ctx.arc(nx, ny, nr, 0, 7); ctx.fill();
         ctx.strokeStyle = NPC; ctx.lineWidth = Math.max(1, nr * 0.35); ctx.stroke();
@@ -816,6 +857,21 @@ export function renderOneMap(world, opts = {}) {
           ctx.fillText(String(t.label), nx, ny + 0.5);
         }
       }
+    }
+
+    // TT-DRAW fog restore: a settlement the player has only SIGHTED (discovered
+    // from a distance) but never actually stood in reads as a faint haze over the
+    // ink, distinguishing it from a settlement the player has genuinely visited —
+    // the visited-vs-sighted signal drawModel.fogMask derives from
+    // world.map.memory.visitedTurnByNodeId (the live U42 visit stamp; every
+    // `known` node reaching drawLayout is already witnessed at the region tier,
+    // but only a VISITED one has had its ground truly walked). Unexplored ground
+    // stays blank paper elsewhere (draw() only calls drawLayout for known nodes
+    // at all); here the haze is the "glimpsed, not walked" middle tier.
+    if (!fogMask(world).isExplored(node.id)) {
+      ctx.globalAlpha = alpha * INK_PARAMS.hazeAlpha * fadeIn(z, BAND.settlement * 0.6, BAND.settlement * 2);
+      ctx.fillStyle = 'rgba(150,158,140,1)';
+      ctx.beginPath(); ctx.arc(...P(frame.cx, frame.cy), Math.max(20, 130 * z), 0, 7); ctx.fill();
     }
     ctx.globalAlpha = 1;
   }
@@ -1102,5 +1158,9 @@ export function renderOneMap(world, opts = {}) {
     if (Number.isFinite(zz)) cam.z = Math.max(Z_MIN, Math.min(Z_MAX, zz));
     draw();
   };
+  // Read-only camera snapshot — pairs with __oneMapFocus for lab pages/tests
+  // that need to nudge the CURRENT view (e.g. TT-DRAW's screenshot lab) rather
+  // than jump to an absolute point. Never used by production draw logic.
+  wrap.__oneMapCamera = () => ({ cx: cam.cx, cy: cam.cy, z: cam.z });
   return wrap;
 }

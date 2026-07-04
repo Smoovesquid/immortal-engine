@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Tabletop lab — the REAL renderOneMap, drawn structure + placed tokens</title>
+<style>
+  html,body{margin:0;height:100%;background:#3a3630;overflow:hidden;font:13px ui-monospace,Menlo,monospace}
+  #hud{position:fixed;top:0;left:0;right:0;z-index:2;color:#e9dcb6;padding:8px 12px;background:rgba(20,18,14,0.82);white-space:pre-wrap}
+  #stage{position:fixed;top:0;left:0;right:0;bottom:0}
+  button{font:12px ui-monospace,Menlo,monospace;margin-right:6px;cursor:pointer}
+</style>
+</head>
+<body>
+<div id="hud">loading…</div>
+<div id="stage"></div>
+<script type="module">
+// TT-DRAW verification lab (docs/briefs/TT-DRAW-tabletop-look.md "Verification"):
+// imports the ACTUAL live renderer (renderOneMap from /map/oneMap.js) over a REAL
+// booted tallow world (same beginAdventure path the engine tests use) — this
+// screenshots the shipped code, not a mock. Deep-links the camera via the
+// existing wrap.__oneMapFocus seam (oneMap.js already exposes this "for tests")
+// so the 3 required zoom bands are reachable deterministically, no mouse needed.
+import { newWorld } from '/engine/state.js';
+import { beginAdventure } from '/engine/playloop.js';
+import { normalizeManifest, normalizePack } from '/engine/rulesets.js';
+import { renderOneMap } from '/map/oneMap.js';
+import { nodeToWu, placeFrame, BAND, buildingAnchorInPlace, placeUnitToWu } from '/map/worldSpace.js';
+import { placeFromWorldNode } from '/map/placeFromNode.js';
+import { floorPlan } from '/engine/structures/floorPlan.js';
+
+window.__err = [];
+addEventListener('error', e => window.__err.push(e.message || String(e.error)));
+
+async function loadPacks() {
+  const m = normalizeManifest(await (await fetch('/packs/manifest.json')).json());
+  const byId = {};
+  for (const p of m.packs) byId[p.id] = normalizePack(await (await fetch(p.path.startsWith('/') ? p.path : '/' + p.path)).json());
+  return byId;
+}
+
+const hud = document.getElementById('hud');
+const stage = document.getElementById('stage');
+
+(async () => {
+  const packs = await loadPacks();
+  const world = beginAdventure(
+    newWorld({ seed: 'tallow', fate: 0.3, mode: 'escape', pack: { primaryId: 'fantasy', mixerId: null }, campaignId: 'tabletop-lab' }),
+    packs
+  ).world;
+
+  const wrap = renderOneMap(world, { height: window.innerHeight - 30, initialZoom: BAND.settlement });
+  wrap.style.marginTop = '30px';
+  stage.appendChild(wrap);
+  window.__world = world;
+  window.__wrap = wrap;
+  // Nudge the CURRENT view by a world-unit delta (or set an absolute z) — for
+  // interactively centering a screenshot without recomputing world coordinates.
+  window.__nudge = (dx = 0, dy = 0, z) => {
+    const cur = wrap.__oneMapCamera();
+    wrap.__oneMapFocus(cur.cx + dx, cur.cy + dy, Number.isFinite(z) ? z : cur.z);
+  };
+
+  const nodeId = String(world.map.currentNodeId);
+  const node = world.map.nodes.find(n => String(n.id) === nodeId);
+  const c = nodeToWu(node);
+  const place = node.settlement ? placeFromWorldNode(world, nodeId) : null;
+  const frame = place ? placeFrame(place) : { cx: 0, cy: 0 };
+
+  // building-plan centers on the player's OWN opened structure (the only one
+  // with a real floorPlan) rather than the settlement frame midpoint, so the
+  // deepest-zoom shot actually fills the frame with resolved room ink.
+  const interiorKey = String(world?.scene?.interior?.structureKey || '');
+  let planCenter = { x: c.x + (frame.cx || 0), y: c.y + (frame.cy || 0) };
+  if (interiorKey && place) {
+    const anchor = buildingAnchorInPlace(place, interiorKey);
+    if (anchor) {
+      const st = world.structures.byId[interiorKey];
+      const plan = floorPlan(st);
+      const p = placeUnitToWu(node, frame, anchor.ox, anchor.oy);
+      planCenter = { x: p.x, y: p.y };
+      void plan;
+    }
+  }
+
+  // The 3 required zoom bands (BAND thresholds from worldSpace.js), centered on
+  // the booted settlement's own frame midpoint so the village fills the frame at
+  // every band rather than drifting off-camera as z changes the px/wu scale.
+  const SHOTS = {
+    settlement: { z: BAND.settlement * 1.5, at: { x: c.x + (frame.cx || 0), y: c.y + (frame.cy || 0) } },
+    street: { z: BAND.street * 0.9, at: { x: c.x + (frame.cx || 0), y: c.y + (frame.cy || 0) } },
+    'building-plan': { z: BAND.street * 2.6, at: planCenter }
+  };
+
+  window.__gotoShot = (name) => {
+    const s = SHOTS[name];
+    if (!s) return false;
+    wrap.__oneMapFocus(s.at.x, s.at.y, s.z);
+    return true;
+  };
+  window.__focus = (wx, wy, z) => { wrap.__oneMapFocus(wx, wy, z); return true; };
+  window.__shotNames = Object.keys(SHOTS);
+  window.__ready = true;
+  hud.textContent = `tallow boot world — node ${nodeId}\nstructures at node: ${Object.values(world.structures.byId).filter(s => s.nodeId === nodeId).length}\nready — window.__gotoShot(name) for: ${Object.keys(SHOTS).join(', ')}`;
+})().catch(e => { hud.textContent = 'FAILED: ' + (e && e.stack || e); window.__err.push(String(e)); });
+</script>
+</body>
+</html>

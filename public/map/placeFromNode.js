@@ -17,28 +17,15 @@ import { buildingTypeFor } from '../../engine/structures/roomDetail.js';
 import { exitsFrom, ensureMap } from '../../engine/map/mapState.js';
 import { makeRng, seedFromString } from '../../engine/rng.js';
 import { outdoorOccupants } from '../../engine/structures/roomOccupancy.js';
+import { syntheticPlanForBuilding } from '../../engine/structures/settlementFootprint.js';
 
 const TIER_STEP = 5; // grid-distance per danger rung
 
-// Settlement "building" names (engine data) → an authored catalog plan type.
-// Settlement building names are descriptive ("meeting hall", "workshop", "stable").
-// Map them to a catalog plan type by substring. (Many — smithy, barn, mill, manor,
-// bathhouse, farm, shed, market, tavern, chapel — also resolve directly by name.)
-const NAME_TO_TYPE = [
-  ['smith', 'smithy'], ['forge', 'smithy'], ['workshop', 'smithy'], ['work', 'smithy'],
-  ['stable', 'barn'], ['granary', 'barn'], ['barn', 'barn'], ['warehouse', 'barn'],
-  ['meeting', 'longhouse'], ['hall', 'longhouse'], ['moot', 'longhouse'],
-  ['tavern', 'tavern'], ['inn', 'tavern'], ['alehouse', 'tavern'], ['brew', 'tavern'],
-  ['temple', 'chapel'], ['shrine', 'chapel'], ['church', 'chapel'], ['chapel', 'chapel'],
-  ['market', 'market'], ['store', 'market'], ['shop', 'market'], ['stall', 'market'],
-  ['mill', 'mill'], ['manor', 'manor'], ['bath', 'bathhouse'], ['keep', 'keep'],
-  ['tower', 'tower'], ['shed', 'shed'], ['shack', 'shed'], ['farm', 'farm']
-];
-function planForBuildingName(nm) {
-  const direct = getPlan(nm); if (direct) return direct;
-  for (const [k, t] of NAME_TO_TYPE) if (nm.includes(k)) { const p = getPlan(t); if (p) return p; }
-  return getPlan('cottage');
-}
+// DEC-1 — settlement building name → true footprint now lives in ONE place:
+// engine/structures/settlementFootprint.js (syntheticPlanForBuilding). The old
+// name→catalog-plan map here sized decorative buildings by an authored ROOM bbox
+// (a well became a whole cottage); it is retired. Real structures still resolve
+// their authored catalog plan via getPlan(buildingType) below.
 
 function planExtent(plan) {
   let minX = 1e9, minY = 1e9, maxX = -1e9, maxY = -1e9;
@@ -82,7 +69,15 @@ export function placeFromWorldNode(world, nodeId) {
     if (plan && plan.rooms) entries.push({ plan, meta: { structureKey: st.id, name: type } });
   }
   for (const b of sbld) {
-    const plan = planForBuildingName(String(b && b.name || '').toLowerCase());
+    // DEC-1 — a decorative-only settlement building (no world.structures record)
+    // gets a TRUE-footprint synthetic plan from the ONE footprint table
+    // (engine/structures/settlementFootprint.js), NOT the old inflated catalog
+    // plan (which sized a building by its authored ROOM bbox — ~5× per axis too
+    // big, and mapped a "well" to a whole cottage). Its drawn size is now the
+    // true footprint, and drawModel.decorativeBuildingRects derives the same rect
+    // from the same footprint, so the decorative set finally reads at one scale
+    // with its neighbours.
+    const plan = syntheticPlanForBuilding(String(b && b.name || ''));
     if (plan && plan.rooms) entries.push({ plan, meta: { buildingName: b.name } });
   }
   if (!entries.length) return generatePlace({ seed, nodeType: nodeTypeFor(node), tier: tierForNode(world, node) });

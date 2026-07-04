@@ -320,6 +320,57 @@ export function drawnStructureModel(world, nodeId) {
 }
 
 /**
+ * decorativeBuildingRects(world, nodeId) -> {
+ *   nodeId,
+ *   buildings: [{ key, name, shell, rect:{minX,minY,maxX,maxY}, index }]
+ * }
+ *
+ * DEC-1 (docs/briefs/DEC-1-structure-back-decoratives.md) — the true world-unit
+ * rect for every DECORATIVE settlement building at this node (a `place.buildings`
+ * entry with NO `structureKey` — a well, a workshop, a smithy with no
+ * `world.structures.byId` record). drawnStructureModel above is, by contract
+ * (U409), REAL structures only (they have interiors: rooms + walls + doors); this
+ * is its sibling for the buildings that are PLOTS, not enterable structures.
+ *
+ * The rect comes from the SAME sizing math a real structure uses —
+ * structureWorldRect over the building's footprint — the footprint being the true
+ * per-type one placeFromNode seated via settlementFootprint.js's
+ * syntheticPlanForBuilding, so a decorative building draws at the SAME scale a
+ * real one of that type would (a well ≈ 2×2 wu, not the old 36×20 catalog-bbox
+ * balloon). `rooms` are intentionally absent — a decorative building has no
+ * interior to draw (never fabricated). `index` is the building's position in
+ * `place.buildings` (a stable, deterministic id); `key` is `deco:<index>`.
+ *
+ * Pure, deterministic, read-only — same discipline as drawnStructureModel;
+ * nothing here writes world state or is ever hashed.
+ */
+export function decorativeBuildingRects(world, nodeId) {
+  const node = findNode(world, nodeId);
+  if (!node) return { nodeId: String(nodeId || ''), buildings: [] };
+  const id = String(node.id);
+  const place = node.settlement ? placeFromWorldNode(world, id) : null;
+  if (!place) return { nodeId: id, buildings: [] };
+  const frame = placeFrame(place);
+
+  const buildings = [];
+  (place.buildings || []).forEach((b, i) => {
+    if (b && b.structureKey) return;        // real structures → drawnStructureModel
+    const plan = b?.plan;
+    if (!plan || !plan.footprint) return;   // never fabricate a footprint
+    const anchor = { ox: Number(b.ox) || 0, oy: Number(b.oy) || 0 };
+    const rect = structureWorldRect(node, frame, anchor, plan);
+    buildings.push({
+      key: `deco:${i}`, index: i,
+      name: String(b.buildingName || plan.name || ''),
+      shell: String(plan.material || 'timber'),
+      rect
+    });
+  });
+
+  return { nodeId: id, buildings };
+}
+
+/**
  * placedTokenModel(world, nodeId) -> {
  *   nodeId,
  *   people: [{ id, name, role, wx, wy, hostile }],   // outdoorOccupants truth, at THIS node only

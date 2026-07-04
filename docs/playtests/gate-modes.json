@@ -44,6 +44,28 @@
         "CRUNCH_INCONSISTENCY",
         "DM_TEST_DEADEND"
       ]
+    },
+    {
+      "runId": "gate-2026-07-04T15-01-26-563Z-v1",
+      "date": "2026-07-04",
+      "regime": "v1",
+      "modes": [
+        "CANON_HALLUCINATION",
+        "COMBAT_NOT_STARTED",
+        "CRUNCH_INCONSISTENCY",
+        "DM_ARTIFACT_LEAK",
+        "DM_TEST_DEADEND"
+      ]
+    },
+    {
+      "runId": "gate-2026-07-04T22-53-46-252Z-v1",
+      "date": "2026-07-04",
+      "regime": "v1",
+      "modes": [
+        "CANON_HALLUCINATION",
+        "CRUNCH_INCONSISTENCY",
+        "DM_TEST_DEADEND"
+      ]
     }
   ]
 }

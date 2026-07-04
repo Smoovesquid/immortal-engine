@@ -87,6 +87,31 @@ done_when · rollback`.
   that slowness is intended; it's what fast travel is priced against.
 - **rollback:** revert the commit (journeys return to premium-free). Contract: `docs/POSITION_AS_CANON.md` §3.
 
+### GATE 2026-07-04-3 — evening re-baseline error analysis (v0.28.19 · **8/48** · `opus-gate-2026-07-04-3.md`)
+**The honest read:** 14/48 → **8/48 on the same Ref-off config** — the day's six landings HELD under the
+judge: ZERO movement / geography / map / perception failures (FP-2, TAC-2/4, ROADS-1, PERC-1, RL-1,
+INT-4-TRAVEL all silent). Chao1 ledger: 3 modes this run, **0 categorically new** (S_obs 5, CI [5,5]) —
+we are deepening known families, not discovering new ones. Clusters → owners (all 8):
+- **CBT-AGENCY (2, both high-sev — the sharpest new evidence): "roll MY attack" overridden.** Player
+  declares an attack on Asha ("I draw my Worn Blade and swing — roll it"); DM instead casts a
+  fabricated force ward (a gravedigger PC!) and runs only enemy attacks — player's declared combat
+  action never resolved. = combat intent routing / auto-action override in the escapeCombat seam.
+  **NEXT SERIAL ENGINE PACKET** (DX lane; queue row below).
+- **INT-4 take:already-held (1)** — "grab the lantern and set the pallet on fire" → "lantern already
+  tucked in your pack," arson never resolves. Evidence #3 for the queued throw/hurl/use-held row.
+- **Answerability info-asks (2)** — "who runs this outpost?" stonewalled with "no record" while Elske
+  (representative) + Dalla (innkeeper) stand present and answerable; "nearest person, let me talk to
+  them" listed names + [clarify:who] punt instead of opening the obvious dialogue. = the egress
+  pattern's next rung: present-NPC-answerable info-asks resolve THROUGH the NPC, compound
+  name+talk resolves not clarifies.
+- **Object-state question (1)** — "where did the letter go? I was just holding it" → deflected to NPC
+  presence. Inventory/canon knows the letter; answer it.
+- **INFO-HONESTY fabricated specific (1)** — pressed after a no-record info-check, DM invents "the
+  single building visible… Elske is within it." PERC-1's sibling: no-record must never become a
+  confident specific (extend the hedge/honesty floor to info-checks under pressure).
+- **META-SHEET (1)** — "what does my sheet say for HP and class?" answered with room description.
+  RL-1's sibling: character-state meta-asks answer from canon (HP 13/13, level 1, gear list exists).
+
 ### GATE 2026-07-04-2 — Ref-off baseline error analysis (v0.28.10 · 14/48 · `opus-gate-2026-07-04-2.md`)
 **The honest read:** 14/48 (29%) vs 9/48 Ref-on — NOT a regression story: the floor we built HELD
 (**Confused newbie 12/12 clean**; the lore-hound "no record" NPC-dodge cluster from 07-04-1 did NOT recur —

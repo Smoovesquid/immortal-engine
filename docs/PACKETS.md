@@ -270,10 +270,15 @@ verbs — no parallel contract enum), `parseIntent` stays the LLM-off floor.
   case, JR-1 — answered "I haven't introduced anyone named The Greenwood… Bones the Fox, Galen, Brogan,
   the Lingerer are here — who do you actually mean?" The intent layer treated a place as a person;
   known-place names must resolve as travel BEFORE the npc-referent clarify sink).
-  **→ INT-4-TRAVEL DISPATCHED 2026-07-04-pm7** (Opus worktree, U452–U453; playloop+grace referent-sink
-  lane — ground "go to <X>" against KNOWN map places before the person-clarify sink, LLM-off floor
-  first, JR-1 premium intact, dialogue routing untouched; intent prompt/schema edits avoided —
-  downstream grounding preferred, re-benchmark flag if touched).
+  **INT-4-TRAVEL ✅ LANDED v0.28.19 b069** (`e1f0d234` → `5dd06ef7`, clean pick): ROOT — the
+  indoor→travel bridge's verb whitelist (`toward|make for|set out|head…`) omitted "go to"/"walk to"/
+  "travel to", so destination phrases fell past the (interior-guarded) journey block into the
+  ungrounded-referent sink. FIX — bridge grounds the destination against real map places FIRST
+  (`resolveNamedNeighbor`/`resolveNamedDestination`, now article/case-insensitive via
+  `placeNameMatchLen`, ≥4-char core gate); unknown places reach the honest "no such place hereabouts"
+  branch; "go over to Galen" excluded (present-NPC approach → dialogue); NODE-DESYNC-1 room-move
+  precedence regression-guarded. ZERO intent prompt/schema edits (no re-benchmark). U452–U453
+  (10 subtests) + **corpus C24 LOCKED — convergence 125/125**. JR-1 thresholds/seeds untouched.
   Cut each packet when its predecessor lands.
 - **ARC done-when (= PRD Phase 0 exit):** frozen corpus 100% **and** N consecutive gates open zero
   categorically-new failure classes **and** ≤2 broken turns per 48, twice running (2026-07-02: 9/48 → 4/48

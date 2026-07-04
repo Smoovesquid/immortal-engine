@@ -1981,6 +1981,16 @@ other agents. (none active)
   frees playloop.
 - Integration ladder GREEN: convergence 124/124, suite 9821/0, determinism green.
 
+## 2026-07-04 — Basecamp (INT-4-TRAVEL integration → v0.28.19 build 069)
+
+- Landed INT-4-TRAVEL (`e1f0d234` → `5dd06ef7`, clean pick): "go to The Greenwood" starts the JR-1
+  journey — the indoor→travel bridge's verb whitelist had omitted go-to/walk-to/travel-to, dropping
+  destination phrases into the person-clarify sink. Bridge now grounds against real map places first
+  (article/case-insensitive); unknown places → honest branch; dialogue + interior-room routing
+  regression-guarded; zero intent prompt/schema edits. U452–U453; corpus C24 LOCKED.
+- Integration ladder GREEN: **convergence 125/125** (first new lock since C23 targets), suite 9831/0,
+  determinism green. Front door v0.28.19 b069 live-verified.
+
 2026-07-04 — Sonnet (worker worktree, PERC-1) — LOGIC DONE, WIRING PENDING (playloop.js fenced)
 - Packet/seam: `docs/PACKETS.md` PERC-1 — 2026-07-04 gate (Chaos-griefer, CRUNCH_INCONSISTENCY): "Wait — is
   the ceiling still on fire or not? I stand in the middle of the room and look up." rolled a NATURAL 1 vs DC

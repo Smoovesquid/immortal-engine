@@ -178,6 +178,12 @@ export function observeCoherenceShadow({ world, candidate, outcome = {}, _canonF
 
     // LOG the shadow record (fired or not — the empty-pointers case keeps the
     // denominator honest for the FP-rate report). NOTHING about narration changes.
+    // We log the EXACT `dm` (candidate) and a compact `evaluated` view of the
+    // canon fields the single-turn comparators key on, so a live-vs-retroactive
+    // divergence is diagnosable WITHOUT re-running: if the observer fired 0 where
+    // the retroactive checker fired, this record shows whether it judged different
+    // prose (e.g. the Ref regenerated after the observer ran) or a different canon
+    // snapshot (e.g. inside/roomOccupants differed). Names only — bounded.
     appendShadowRecord({
       type: 'shadow',
       ts: new Date().toISOString(),
@@ -185,6 +191,13 @@ export function observeCoherenceShadow({ world, candidate, outcome = {}, _canonF
       persona: sessionKey,
       turn,
       input: record.player,
+      dm,
+      evaluated: {
+        inside: 'interior' in canon && canon.interior != null,
+        roomName: canon?.interior?.roomName ?? null,
+        roomOccupants: Array.isArray(canon?.roomOccupants) ? canon.roomOccupants.map(n => n?.name).filter(Boolean) : null,
+        npcsPresent: Array.isArray(canon?.npcsPresent) ? canon.npcsPresent.map(n => n?.name).filter(Boolean) : null,
+      },
       pointers: flags,
     });
 

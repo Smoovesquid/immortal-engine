@@ -1387,21 +1387,26 @@ export async function augmentNarration({
   });
   if (!ok) return base;
 
-  // SHADOW COHERENCE OBSERVER (CG-LIVE-1) — decoupled from the Ref's `enabled`
-  // (judge) flag, which is off in normal play; the deterministic coherence check
-  // is free and must still observe. Gated by COHERENCE_SHADOW=1 (default OFF →
-  // this is a no-op and byte-identical). Called for SIDE-EFFECT ONLY: it LOGS
-  // what it would flag as a desync and returns nothing that touches narration —
-  // the return value below (the player-visible line) is never affected. Never
-  // throws (the observer wraps itself in try/catch).
-  observeCoherenceShadow({ world, candidate, outcome });
-
   // THE REF (Tier 2) — a selective second opinion on the SOFT-source turns only,
   // AFTER the deterministic validator (Tier 1) has accepted the candidate. With
   // the flag OFF (default) this returns `candidate` unchanged — zero behavior
   // change vs. the prior `return ok ? candidate : base`. Never throws; falls back
   // to the candidate/base on any miss (Invariant 3).
-  return reviewNarration({ world, outcome, candidate, baseNarration: base, ...ref });
+  const finalNarration = await reviewNarration({ world, outcome, candidate, baseNarration: base, ...ref });
+
+  // SHADOW COHERENCE OBSERVER (CG-LIVE-1) — observe the FINAL narration the player
+  // ACTUALLY SEES (post-Ref), not the pre-Ref candidate. The Ref can REGENERATE the
+  // candidate — e.g. rewrite a coherent "the bedchamber is empty, no record here" into
+  // a helpful-but-ghost-voiced "Elske Nightherd shrugs, 'Can't say'" (voicing an NPC
+  // not in the room to answer the player). Only the post-Ref prose is logged/shown, so
+  // running the observer BEFORE the Ref made it blind to exactly those desyncs (the
+  // live-shadow 0 vs retroactive N divergence — proven 2026-07-04). Decoupled from the
+  // Ref's `enabled` (judge) flag; gated by COHERENCE_SHADOW=1 (default OFF → no-op,
+  // byte-identical: the returned narration is `finalNarration` either way). Called for
+  // SIDE-EFFECT ONLY; never touches the return; never throws (wraps itself in try/catch).
+  observeCoherenceShadow({ world, candidate: finalNarration, outcome });
+
+  return finalNarration;
 }
 
 // ── Legacy compatibility shim ─────────────────────────────────────────────────

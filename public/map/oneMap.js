@@ -224,6 +224,129 @@ const METAL = 'rgba(34,40,54,0.95)', CLOTH = 'rgba(232,236,221,0.85)';
 const STONE_FURN = new Set(['hearth', 'altar', 'statue', 'column', 'brazier']);
 const SKIP_FURN = new Set(['rug']);
 
+// ── FP-2: walls with mass — poché (docs/briefs/FP-2-walls-with-mass.md) ──────
+// The plan band draws walls as solid MASS, not thin outlines: the wall band (the
+// building shell minus the room floor polys) fills in the material's ink with a
+// hatch, doorways pierce it and swing, windows the engine treats as CANON draw on
+// exterior walls. This ports handDrawnInterior.js's retired MATERIALS/window/door
+// vocabulary onto FP-1's honest tiled geometry (floorPlan WALL=0.12 band, U429).
+// Tunables live in drawModel.js's INK_PARAMS (Tim tunes by eye later).
+
+// A 10×10 repeating hatch pattern per material character (diag / cross / stipple),
+// matched to handDrawnInterior.js's hatch() so the map shell reads like the old
+// grubby graph-paper rock band. Cached per-kind on the module (built once).
+const _hatchCache = new Map();
+function pocheHatch(ctx, kind, rgba) {
+  const key = kind + '|' + rgba;
+  if (_hatchCache.has(key)) return _hatchCache.get(key);
+  if (typeof document === 'undefined') return null; // no DOM (tests) — renderer only
+  const t = document.createElement('canvas'); t.width = t.height = 10;
+  const x = t.getContext('2d');
+  x.strokeStyle = rgba; x.fillStyle = rgba; x.lineWidth = 1;
+  if (kind === 'stipple') {
+    [[2, 3], [6, 7], [8, 2], [3, 8]].forEach(([a, b]) => { x.beginPath(); x.arc(a, b, 0.85, 0, 7); x.fill(); });
+  } else {
+    x.beginPath(); x.moveTo(-2, 12); x.lineTo(12, -2); x.stroke();
+    x.beginPath(); x.moveTo(-2, 5); x.lineTo(5, -2); x.stroke();
+    x.beginPath(); x.moveTo(5, 12); x.lineTo(12, 5); x.stroke();
+    if (kind === 'cross') { x.beginPath(); x.moveTo(-2, -2); x.lineTo(12, 12); x.stroke(); }
+  }
+  const pat = ctx.createPattern(t, 'repeat');
+  _hatchCache.set(key, pat);
+  return pat;
+}
+
+// Bump an rgba's alpha to a fixed value (for a hatch overlay derived from a fill).
+function withAlpha(rgba, a) {
+  const m = /rgba?\(([^)]+)\)/.exec(String(rgba));
+  if (!m) return rgba;
+  const parts = m[1].split(',').map(s => s.trim());
+  return `rgba(${parts[0]},${parts[1]},${parts[2]},${a})`;
+}
+
+// Trace the shell rect (outer) then every room floor polygon (inner) as ONE path,
+// so an even-odd fill paints the wall BAND (shell minus rooms) — the space between
+// rooms becomes wall, not paper. `toPxFn(wx,wy) -> [px,py]`.
+function tracePocheBand(ctx, rect, rooms, toPxFn) {
+  const [ax, ay] = toPxFn(rect.minX, rect.minY);
+  const [bx, by] = toPxFn(rect.maxX, rect.maxY);
+  ctx.beginPath();
+  ctx.rect(Math.min(ax, bx), Math.min(ay, by), Math.abs(bx - ax), Math.abs(by - ay));
+  for (const room of rooms) {
+    const segs = room.walls;
+    if (!segs || !segs.length) continue;
+    const [mx, my] = toPxFn(segs[0].a.wx, segs[0].a.wy);
+    ctx.moveTo(mx, my);
+    for (const s of segs) { const [px, py] = toPxFn(s.b.wx, s.b.wy); ctx.lineTo(px, py); }
+    ctx.closePath();
+  }
+}
+
+// A door gap + swing arc, drawn in PAPER over the poché so the doorway reads as an
+// opening one room into the next (FP-2 #2). `dir` is the compass side the door
+// pierces; `gapPx` is the pre-scaled opening width; `wallPx` is the wall-band
+// thickness the gap must clear. The door LEAF (and its swing arc) is one gap-width
+// long — a real door swings its own width, so the arc stays inside a room instead
+// of sweeping across it. Ported from handDrawnInterior.js's openingGap + doorGlyph.
+function drawDoorOnPoche(ctx, dpx, dpy, dir, gapPx, wallPx) {
+  const horiz = dir === 'east' || dir === 'west'; // the shared wall runs vertically → gap spans y
+  const leaf = gapPx * (INK_PARAMS.doorSwingMul || 1); // leaf length / swing radius = a multiple of the opening width
+  const clear = Math.max(wallPx, gapPx * 0.55); // paper cut spans the wall thickness so the mass truly opens
+  ctx.fillStyle = PAPER;
+  if (horiz) ctx.fillRect(dpx - clear * 0.5, dpy - gapPx * 0.5, clear, gapPx);
+  else ctx.fillRect(dpx - gapPx * 0.5, dpy - clear * 0.5, gapPx, clear);
+  ctx.strokeStyle = INK; ctx.lineWidth = Math.max(1, gapPx * 0.14); ctx.lineCap = 'round';
+  const half = gapPx * 0.5;
+  if (horiz) {
+    // jambs at top & bottom of the gap, then a quarter-circle swing (radius = leaf).
+    ctx.beginPath(); ctx.moveTo(dpx - 2.5, dpy - half); ctx.lineTo(dpx + 2.5, dpy - half); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(dpx - 2.5, dpy + half); ctx.lineTo(dpx + 2.5, dpy + half); ctx.stroke();
+    ctx.strokeStyle = INKSOFT; ctx.lineWidth = Math.max(0.8, gapPx * 0.1);
+    ctx.beginPath(); ctx.arc(dpx, dpy - half, leaf, Math.PI * 0.5, 0, true); ctx.stroke(); // hinge at top jamb
+    ctx.beginPath(); ctx.moveTo(dpx, dpy - half); ctx.lineTo(dpx, dpy - half + leaf); ctx.stroke(); // the leaf itself
+  } else {
+    ctx.beginPath(); ctx.moveTo(dpx - half, dpy - 2.5); ctx.lineTo(dpx - half, dpy + 2.5); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(dpx + half, dpy - 2.5); ctx.lineTo(dpx + half, dpy + 2.5); ctx.stroke();
+    ctx.strokeStyle = INKSOFT; ctx.lineWidth = Math.max(0.8, gapPx * 0.1);
+    ctx.beginPath(); ctx.arc(dpx - half, dpy, leaf, 0, Math.PI * 0.5); ctx.stroke(); // hinge at left jamb
+    ctx.beginPath(); ctx.moveTo(dpx - half, dpy); ctx.lineTo(dpx - half + leaf, dpy); ctx.stroke(); // the leaf
+  }
+}
+
+// A window on an exterior wall: glazed double-tick when open (casement), shutter
+// marks when closed (FP-2 #3). Ported from handDrawnInterior.js's windowGlyph.
+// `orient` 'h' = window runs horizontally (on a north/south wall); 'v' = vertical.
+function drawWindowGlyph(ctx, wpx, wpy, orient, shuttered, lenPx) {
+  const H = orient === 'h', th = Math.max(3, lenPx * 0.22), half = lenPx * 0.5;
+  // Clear the wall behind the glass so it reads as an opening in the mass.
+  ctx.fillStyle = PAPER;
+  if (H) ctx.fillRect(wpx - half, wpy - th / 2, half * 2, th);
+  else ctx.fillRect(wpx - th / 2, wpy - half, th, half * 2);
+  const ln = (x1, y1, x2, y2, col, lw) => { ctx.strokeStyle = col; ctx.lineWidth = lw; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); };
+  // Frame.
+  if (H) {
+    ln(wpx - half, wpy - th / 2, wpx + half, wpy - th / 2, INK, 1.6);
+    ln(wpx - half, wpy + th / 2, wpx + half, wpy + th / 2, INK, 1.6);
+    ln(wpx - half, wpy - th / 2, wpx - half, wpy + th / 2, INK, 1.4);
+    ln(wpx + half, wpy - th / 2, wpx + half, wpy + th / 2, INK, 1.4);
+  } else {
+    ln(wpx - th / 2, wpy - half, wpx - th / 2, wpy + half, INK, 1.6);
+    ln(wpx + th / 2, wpy - half, wpx + th / 2, wpy + half, INK, 1.6);
+    ln(wpx - th / 2, wpy - half, wpx + th / 2, wpy - half, INK, 1.4);
+    ln(wpx - th / 2, wpy + half, wpx + th / 2, wpy + half, INK, 1.4);
+  }
+  if (shuttered) {
+    // Shutter leaves: two hatched panels closed over the opening.
+    ctx.strokeStyle = withAlpha(WOODI, 0.85); ctx.lineWidth = 1;
+    if (H) { for (let gx = wpx - half + 2; gx < wpx + half - 1; gx += 3) ln(gx, wpy - th / 2 + 1, gx, wpy + th / 2 - 1, withAlpha(WOODI, 0.7), 1); ln(wpx, wpy - th / 2, wpx, wpy + th / 2, INK, 1.4); }
+    else { for (let gy = wpy - half + 2; gy < wpy + half - 1; gy += 3) ln(wpx - th / 2 + 1, gy, wpx + th / 2 - 1, gy, withAlpha(WOODI, 0.7), 1); ln(wpx - th / 2, wpy, wpx + th / 2, wpy, INK, 1.4); }
+  } else {
+    // Glazed: the mullion tick across the light (casement double-tick).
+    if (H) ln(wpx, wpy - th / 2, wpx, wpy + th / 2, INKSOFT, 1.1);
+    else ln(wpx - th / 2, wpy, wpx + th / 2, wpy, INKSOFT, 1.1);
+  }
+}
+
 // ── WS-2: the player's one resolved focus point ─────────────────────────────
 // playerFocusWu(world) -> { wx, wy, sig } | null
 // The ONE place the camera/marker anchor to: engine-truthful, room-granular
@@ -866,16 +989,37 @@ export function renderOneMap(world, opts = {}) {
       };
 
       if (realPlan) {
-        // ONE rect for the whole building — no per-catalog-room shape once
-        // fitted to true size (the real interior ink, once open, supplies the
-        // actual room divisions; the roofed state is a single true-sized block).
-        const [rx0, ry0] = toPx(realPlan.rect.minX, realPlan.rect.minY, W, H);
-        const [rx1, ry1] = toPx(realPlan.rect.maxX, realPlan.rect.maxY, W, H);
+        const toPxB = (wx, wy) => toPx(wx, wy, W, H);
+        const [rx0, ry0] = toPxB(realPlan.rect.minX, realPlan.rect.minY);
+        const [rx1, ry1] = toPxB(realPlan.rect.maxX, realPlan.rect.maxY);
         const rx = Math.min(rx0, rx1), ry = Math.min(ry0, ry1), rw = Math.abs(rx1 - rx0), rh = Math.abs(ry1 - ry0);
-        if (cut > 0) {
+
+        // FLOOR + POCHÉ state (roof lifted): warm floor under everything, then the
+        // wall band drawn as solid MASS (FP-2 #1) — no more empty paper between
+        // rooms. Only once the cutaway has genuinely opened (cut > 0.2); below that
+        // the roof block below cross-fades in.
+        if (cut > 0.2) {
+          const poche = INK_PARAMS.pocheByShell[realPlan.shell] || INK_PARAMS.pocheByShell.stone;
+          // 1) warm floor fills the whole shell (rooms carve back to paper+grid,
+          //    the wall band paints over the rest as mass).
+          ctx.globalAlpha = alpha * cut;
+          ctx.fillStyle = FLOOR_WARM;
+          ctx.beginPath(); ctx.rect(rx, ry, rw, rh); ctx.fill();
+          // 2) poché: shell MINUS room floors, even-odd → the wall band. Solid
+          //    material fill, then a hatch overlay for wall character (stone diag,
+          //    fortified cross, timber warm diag, cave stipple).
+          tracePocheBand(ctx, realPlan.rect, realPlan.rooms, toPxB);
+          ctx.fillStyle = poche.fill; ctx.fill('evenodd');
+          const hpat = pocheHatch(ctx, poche.hatch, withAlpha(poche.ink, poche.hatchAlpha));
+          if (hpat) { tracePocheBand(ctx, realPlan.rect, realPlan.rooms, toPxB); ctx.fillStyle = hpat; ctx.fill('evenodd'); }
+          ctx.globalAlpha = alpha;
+        } else if (cut > 0) {
+          // Barely-open: a plain warm floor block (the poché resolves as the
+          // cutaway completes) — keeps the cross-fade smooth, never a hard pop.
           ctx.globalAlpha = alpha * cut;
           ctx.fillStyle = FLOOR_WARM; ctx.strokeStyle = INK; ctx.lineWidth = wall;
           ctx.beginPath(); ctx.rect(rx, ry, rw, rh); ctx.fill(); ctx.stroke();
+          ctx.globalAlpha = alpha;
         }
         if (cut < 1) {
           ctx.globalAlpha = alpha * (1 - cut);
@@ -883,8 +1027,7 @@ export function renderOneMap(world, opts = {}) {
           ctx.beginPath(); ctx.rect(rx, ry, rw, rh); ctx.fill(); ctx.stroke();
           // A subtle roof ridge-line, INSET from the true rect edge (never on or
           // outside it) — keeps the roofed read without any art exceeding the
-          // footprint truth. Default per the brief; a taste pass on roof STYLE
-          // for unentered buildings is a separate, later decision.
+          // footprint truth.
           const insetPx = INK_PARAMS.roofLineInsetWu * z;
           if (rw > insetPx * 3 && rh > insetPx * 3) {
             ctx.strokeStyle = INK; ctx.lineWidth = INK_PARAMS.roofLineWeight;
@@ -895,39 +1038,10 @@ export function renderOneMap(world, opts = {}) {
           }
         }
       }
-      // TT-DRAW-3 — the connective ink: a corridor is the floor-strip that
-      // bridges floorPlan's own PAD gap between adjacent room boxes (the ROOT
-      // of the old "squares inside of squares" look — two sealed room
-      // rectangles with dead, wall-less gap between them). Filled BEFORE the
-      // room walls ink, in the same warm floor tone, so a doorway opens onto
-      // visible passage floor rather than blank gap — mirrors the interior
-      // view's hatch-the-rock-band trick (a corridor is its own "void" drawn
-      // alongside the rooms, not a literal shared wall).
-      if (realPlan && cut > 0.2 && realPlan.corridors && realPlan.corridors.length) {
-        ctx.globalAlpha = alpha * cut;
-        ctx.fillStyle = FLOOR_WARM;
-        const corridorHalfWu = 0.7 / 2; // matches planModel.js's corridor width (layout units), same scale room sizes use
-        for (const corridor of realPlan.corridors) {
-          for (const seg of corridor.segs) {
-            const [ax, ay] = toPx(seg.a.wx, seg.a.wy, W, H);
-            const [bxp, byp] = toPx(seg.b.wx, seg.b.wy, W, H);
-            const halfPx = Math.max(1, corridorHalfWu * PLACE_WU * z);
-            let dx = bxp - ax, dy = byp - ay; const len = Math.hypot(dx, dy) || 1; dx /= len; dy /= len;
-            const nx = -dy * halfPx, ny = dx * halfPx;
-            ctx.beginPath();
-            ctx.moveTo(ax + nx, ay + ny); ctx.lineTo(bxp + nx, byp + ny);
-            ctx.lineTo(bxp - nx, byp - ny); ctx.lineTo(ax - nx, ay - ny);
-            ctx.closePath(); ctx.fill();
-          }
-        }
-      }
-      // WS-3 (#4, "keep the interior niceties") — a per-room wash UNDER the wall
-      // ink, same paint order the retired isInterior branch used (LocalMap.js's
-      // highlighter fill, then the outline on top): the room you're CURRENTLY
-      // standing in gets the highlighter wash, and any room in this SAME open
-      // building you haven't yet visited (interior.visited) dims — ported here
-      // rather than resurrecting the old renderer, per the brief. Only meaningful
-      // once the cutaway has genuinely opened (matches the wall-ink threshold below).
+      // WS-3 (#4, "keep the interior niceties") — a per-room wash OVER the poché
+      // floor: the room you're CURRENTLY standing in gets the highlighter wash, and
+      // any room in this SAME open building you haven't yet visited (interior.visited)
+      // dims. Drawn after the mass so the highlight reads inside the walls.
       if (realPlan && cut > 0.2 && b.structureKey === interiorKey) {
         const curRoomId = String(world?.scene?.interior?.roomId || '');
         const visitedRooms = new Set((Array.isArray(world?.scene?.interior?.visited) ? world.scene.interior.visited : []).map(String));
@@ -936,7 +1050,7 @@ export function renderOneMap(world, opts = {}) {
           if (!segs || !segs.length) continue;
           const isCurrent = String(room.id) === curRoomId;
           const isVisited = visitedRooms.size === 0 || visitedRooms.has(String(room.id));
-          if (!isCurrent && isVisited) continue; // ordinary visited room: no wash, just the wall ink below
+          if (!isCurrent && isVisited) continue; // ordinary visited room: no wash, just the poché floor
           ctx.globalAlpha = alpha * cut * (isCurrent ? 1 : INK_PARAMS.unvisitedRoomDim);
           ctx.fillStyle = isCurrent ? INK_PARAMS.currentRoomWash : FLOOR_WARM;
           ctx.beginPath();
@@ -947,24 +1061,46 @@ export function renderOneMap(world, opts = {}) {
         }
         ctx.globalAlpha = alpha;
       }
-      // TT-DRAW: once the cutaway has mostly resolved, ink the REAL floor plan's
-      // walls (with door GAPS) on top of the true-sized fill above — the same
-      // footprint, but now the wall lines and doorways are the ones "go through
-      // the doorway" actually opens. Wall coordinates are already in WORLD units
-      // (drawnStructureModel), so they project straight through toPx, bypassing
-      // the place-unit P() helper the catalog shapes use.
+      // FP-2 #1 — the bold hand-drawn ink on the wall/floor boundary (every room
+      // box outline), so the mass reads hand-drawn, not vector-CAD. On TOP of the
+      // poché fill, in the material's ink.
       if (realPlan && cut > 0.2) {
+        const poche = INK_PARAMS.pocheByShell[realPlan.shell] || INK_PARAMS.pocheByShell.stone;
         ctx.globalAlpha = alpha * cut;
-        ctx.strokeStyle = INK;
-        ctx.lineWidth = (INK_PARAMS.wallWeight[realPlan.shell] || INK_PARAMS.wallWeight.stone) * Math.max(0.5, Math.min(1, z * 0.6));
+        ctx.strokeStyle = poche.ink;
+        ctx.lineWidth = (INK_PARAMS.wallInkWeight[realPlan.shell] || INK_PARAMS.wallInkWeight.stone) * Math.max(0.5, Math.min(1.2, z * 0.6));
         ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+        // shell outline (the building's outer wall) + every room box.
+        const [sx0, sy0] = toPx(realPlan.rect.minX, realPlan.rect.minY, W, H);
+        const [sx1, sy1] = toPx(realPlan.rect.maxX, realPlan.rect.maxY, W, H);
+        ctx.beginPath(); ctx.rect(Math.min(sx0, sx1), Math.min(sy0, sy1), Math.abs(sx1 - sx0), Math.abs(sy1 - sy0)); ctx.stroke();
         for (const room of realPlan.rooms) {
-          for (const seg of room.walls) {
-            const [ax, ay] = toPx(seg.a.wx, seg.a.wy, W, H);
-            const [bxp, byp] = toPx(seg.b.wx, seg.b.wy, W, H);
-            ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(bxp, byp); ctx.stroke();
+          const segs = room.walls; if (!segs || !segs.length) continue;
+          ctx.beginPath();
+          const [mx, my] = toPx(segs[0].a.wx, segs[0].a.wy, W, H); ctx.moveTo(mx, my);
+          for (const seg of segs) { const [px, py] = toPx(seg.b.wx, seg.b.wy, W, H); ctx.lineTo(px, py); }
+          ctx.closePath(); ctx.stroke();
+        }
+        // FP-2 #2 — doorways pierce the mass + swing (paper gap + swing arc over
+        // the poché, so a doorway opens one room into the next). The gap is the
+        // shared-wall band width (floorPlan WALL=0.12 lu); the leaf swings its own
+        // width so the arc stays inside a room, not sweeping across it.
+        const gapPx = Math.max(3, INK_PARAMS.doorGapLu * PLACE_WU * z);
+        const wallBandPx = Math.max(3, 0.12 * PLACE_WU * z); // floorPlan.js WALL — the mass a door pierces
+        for (const d of (realPlan.doors || [])) {
+          const [dpx, dpy] = toPx(d.wx, d.wy, W, H);
+          drawDoorOnPoche(ctx, dpx, dpy, d.dir || 'north', gapPx, wallBandPx);
+        }
+        // FP-2 #3 — windows: CANON, on exterior walls only, dark rooms none. Glazed
+        // casement when open, shutter marks when closed (roomWindows()-derived).
+        const winLenPx = Math.max(4, INK_PARAMS.windowLenLu * PLACE_WU * z);
+        for (const list of Object.values(realPlan.windows || {})) {
+          for (const win of list) {
+            const [wpx, wpy] = toPx(win.wx, win.wy, W, H);
+            drawWindowGlyph(ctx, wpx, wpy, win.orient, win.shuttered, winLenPx);
           }
         }
+        ctx.globalAlpha = alpha;
       }
       ctx.globalAlpha = alpha;
 
@@ -1011,12 +1147,13 @@ export function renderOneMap(world, opts = {}) {
           ctx.beginPath(); ctx.rect(fx, fy, fw, fh); ctx.fill(); ctx.stroke();
           if (t === 'bed') { ctx.fillStyle = CLOTH; ctx.fillRect(fx + fw * 0.18, fy + fh * 0.28, fw * 0.64, fh * 0.6); }
         }
-        // room names at the deepest zoom — you're reading the floor plan now.
+        // room names at the plan band ONLY — you're reading the floor plan now,
+        // roof lifted (FP-2 #6: never at street/settlement zoom where they collide).
         // Read from realPlan.rooms (TRUE world-unit centers) when available so a
         // name lands on the room the true walls actually drew, not the catalog's
         // old (oversized) center; falls back to the catalog projection only for
         // the structureless decorative case.
-        if (z >= 6) {
+        if (z >= INK_PARAMS.labelPlanBandZ && cut > 0.5) {
           ctx.globalAlpha = alpha * cut;
           ctx.fillStyle = 'rgba(18,26,48,0.66)'; ctx.font = `${Math.round(Math.min(14, 1.1 * PLACE_WU * z))}px ${HAND}`;
           ctx.textAlign = 'center'; ctx.textBaseline = 'middle';

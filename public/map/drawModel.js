@@ -22,6 +22,10 @@
  */
 
 import { floorPlan } from '../../engine/structures/floorPlan.js';
+// Windows are CANON, not decoration (FP-2 #3): roomWindows.js is the pure per-room
+// derivation the FICTION already uses (climb out, night locks, shutter toggles are
+// timeline canon). Read-only engine import — this module never writes engine state.
+import { roomWindows, roomWindowFacings } from '../../engine/structures/roomWindows.js';
 import { outdoorOccupants } from '../../engine/structures/roomOccupancy.js';
 import { placeFromWorldNode } from './placeFromNode.js';
 import { floorPlanToPlanModel } from './planModel.js';
@@ -70,7 +74,40 @@ export const INK_PARAMS = Object.freeze({
   // a spoiler-grade withhold — just dimmed, never fully hidden, since the true
   // floor plan is already visible once the roof is lifted).
   currentRoomWash: 'rgba(248,226,120,0.34)',
-  unvisitedRoomDim: 0.4
+  unvisitedRoomDim: 0.4,
+  // FP-2 (docs/briefs/FP-2-walls-with-mass.md) — the plan band draws walls as MASS
+  // (poché), not thin outlines: the wall band (building shell minus the room floor
+  // polys) fills in the material's ink with a hatch, doorways pierce it and swing,
+  // and windows the engine already treats as canon (roomWindows.js) draw on the
+  // rooms' EXTERIOR walls. These are the tunables that language needs — one place,
+  // so a taste pass touches one spot (Tim tunes by eye later). Ported from the
+  // retired handDrawnInterior.js MATERIALS/window/furniture vocabulary onto FP-1's
+  // honest tiled geometry (floorPlan.js WALL=0.12 shared-wall band, locked by U429).
+  //
+  // Poché wall-mass ink + hatch character, keyed by shell material (mirrors
+  // handDrawnInterior.js's MATERIALS: stone crisp diag, fortified cross-hatch,
+  // timber warm-brown diag, cave stipple). `fill` is the solid wall body; `ink`
+  // is the bold outline stroke on the wall/floor boundary; `hatch` selects the
+  // character; `hatchAlpha` scales the hatch overlay so it reads as texture, not noise.
+  // Keyed by the RAW floorPlan shell (structureMaterial.js emits stone/timber/open/
+  // fortified/cave/round/chitin). `open`/`round` alias to stone and `chitin` to the
+  // cave look — the SAME collapse planModel.js's SHELL_TO_MATERIAL uses for the
+  // interior view, so a building's map poché matches the material it draws inside.
+  pocheByShell: {
+    stone:     { fill: 'rgba(70,78,98,0.30)',  ink: 'rgba(18,26,48,0.96)', hatch: 'diag',    hatchAlpha: 0.32 },
+    fortified: { fill: 'rgba(54,58,70,0.40)',  ink: 'rgba(14,20,40,0.98)', hatch: 'cross',   hatchAlpha: 0.34 },
+    timber:    { fill: 'rgba(120,86,52,0.30)', ink: 'rgba(74,52,30,0.95)', hatch: 'diag',    hatchAlpha: 0.24 },
+    cave:      { fill: 'rgba(50,54,64,0.34)',  ink: 'rgba(30,34,44,0.95)', hatch: 'stipple', hatchAlpha: 0.30 },
+    chitin:    { fill: 'rgba(50,54,64,0.34)',  ink: 'rgba(30,34,44,0.95)', hatch: 'stipple', hatchAlpha: 0.30 },
+    open:      { fill: 'rgba(70,78,98,0.30)',  ink: 'rgba(18,26,48,0.96)', hatch: 'diag',    hatchAlpha: 0.32 }, // market hall — stone shell
+    round:     { fill: 'rgba(70,78,98,0.30)',  ink: 'rgba(18,26,48,0.96)', hatch: 'diag',    hatchAlpha: 0.32 }  // round tower — stone shell
+  },
+  wallInkWeight: { stone: 2.4, fortified: 2.8, timber: 2.2, cave: 2.0, chitin: 2.0, open: 2.4, round: 2.4 }, // bold wall/floor boundary stroke (px, scaled by z)
+  doorGapLu: 0.34,          // width of the doorway gap carved through the wall band, in LAYOUT units (≈0.3 lu, tuned by eye)
+  doorSwingMul: 1.0,        // door-leaf length / swing radius as a multiple of the gap width (a door swings its own width — arc stays inside a room)
+  windowLenLu: 0.34,        // drawn length of a casement window along its wall, in layout units
+  windowInsetLu: 0.09,      // how far the window sits proud of / centered in the exterior wall, in layout units (≈ WALL/2 + a touch)
+  labelPlanBandZ: 6         // room-name labels draw only at/above this z (the plan band, roof lifted); never at street/settlement zoom where they collide (LOD nit, FP-2 #6)
 });
 
 /**
@@ -115,6 +152,68 @@ export function quadrilleAlpha(z) {
 
 function isFiniteNum(n) { return typeof n === 'number' && Number.isFinite(n); }
 
+// ── FP-2 poché geometry (pure) ───────────────────────────────────────────────
+// The wall band a building draws as solid MASS = its shell rect MINUS the room
+// floor polygons (the space BETWEEN rooms is wall, no longer dead paper). These
+// pure helpers let the renderer fill the band (even-odd) and let U436 assert the
+// band exists and a doorway pierces it — all without a canvas.
+
+/** Signed-area magnitude of a closed polygon of [x,y] points (world units). */
+function polygonArea(pts) {
+  let a = 0;
+  for (let i = 0; i < pts.length; i++) {
+    const [x0, y0] = pts[i], [x1, y1] = pts[(i + 1) % pts.length];
+    a += x0 * y1 - x1 * y0;
+  }
+  return Math.abs(a) / 2;
+}
+
+/** A room's drawn box as a closed [x,y] world-unit polygon, from its wall segments. */
+function roomPolyFromWalls(room) {
+  const segs = room && Array.isArray(room.walls) ? room.walls : [];
+  if (!segs.length) return [];
+  const pts = [[segs[0].a.wx, segs[0].a.wy]];
+  for (const s of segs) pts.push([s.b.wx, s.b.wy]);
+  return pts;
+}
+
+/** Is world point (x,y) inside the given closed polygon? (ray-cast; world units). */
+function pointInPoly(pts, x, y) {
+  let inside = false;
+  for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
+    const [xi, yi] = pts[i], [xj, yj] = pts[j];
+    if (((yi > y) !== (yj > y)) && (x < ((xj - xi) * (y - yi)) / ((yj - yi) || 1e-12) + xi)) inside = !inside;
+  }
+  return inside;
+}
+
+/**
+ * pocheBand(structure) -> { shellArea, roomsArea, wallArea, shell:{minX,minY,maxX,maxY}, rooms:[[[x,y]...]] }
+ * The poché wall band of one drawnStructureModel structure, in WORLD units: the
+ * shell rect, each room's drawn-box polygon, and the wall-band area (shell minus
+ * rooms). `wallArea > 0` is the FP-2 proof that the space between rooms is WALL,
+ * not void. Pure — geometry only, no canvas/DOM.
+ */
+export function pocheBand(structure) {
+  const rect = structure && structure.rect ? structure.rect : { minX: 0, minY: 0, maxX: 0, maxY: 0 };
+  const shellArea = Math.max(0, (rect.maxX - rect.minX)) * Math.max(0, (rect.maxY - rect.minY));
+  const rooms = (Array.isArray(structure?.rooms) ? structure.rooms : []).map(roomPolyFromWalls).filter(p => p.length >= 3);
+  const roomsArea = rooms.reduce((sum, p) => sum + polygonArea(p), 0);
+  return { shellArea, roomsArea, wallArea: Math.max(0, shellArea - roomsArea), shell: rect, rooms };
+}
+
+/** True if a world point lies in the wall band (inside the shell rect, outside every room). */
+export function pointInWallBand(structure, x, y) {
+  const rect = structure && structure.rect;
+  if (!rect) return false;
+  if (x < rect.minX || x > rect.maxX || y < rect.minY || y > rect.maxY) return false;
+  for (const room of (Array.isArray(structure?.rooms) ? structure.rooms : [])) {
+    const poly = roomPolyFromWalls(room);
+    if (poly.length >= 3 && pointInPoly(poly, x, y)) return false; // in a room floor, not wall
+  }
+  return true;
+}
+
 function nodesOf(world) {
   return Array.isArray(world?.map?.nodes) ? world.map.nodes : [];
 }
@@ -153,15 +252,17 @@ function planPointToWu(node, frame, anchor, plan, x, y) {
 /**
  * roomWallSegments(node, frame, anchor, plan, room) -> [{a:{wx,wy}, b:{wx,wy}}]
  * The four (or, for a round room, one circular) wall segments of a room's OWN
- * outline, projected to world units. No per-edge door-gap cutting here — per
- * floorPlan.js's own layout (the PAD gap between adjacent room boxes, filled
- * by a corridor rather than a shared edge), a doorway never actually sits ON
- * a room's boundary edge; the interior view (handDrawnInterior.js) doesn't cut
- * room-edge gaps either — it draws the CORRIDOR polygon as its own connective
- * void between rooms (see corridorSegmentsInWu below), which is the ink that
- * reads as a doorway opening onto a passage. This is the shared plan-model's
- * room SHAPE (floorPlanToPlanModel, planModel.js) projected to world units —
- * no independent per-room wall derivation, no invented gap logic.
+ * drawn box, projected to world units. FP-1 (U429) tiled the rooms: a room's box
+ * is its grid cell inset by half the shared-wall band (floorPlan.js WALL=0.12), so
+ * two connected rooms' boxes ABUT — the band BETWEEN two abutting boxes IS the
+ * shared wall, and a doorway is a gap ON it (floorPlan().doors sit on that shared
+ * centerline). FP-2 draws that band as solid wall MASS (poché): the renderer fills
+ * the structure shell (rect) minus the room floor polys these segments outline, so
+ * the space between rooms reads as wall, and each door gap pierces it with a swing.
+ * This is the shared plan-model's room SHAPE (floorPlanToPlanModel, planModel.js)
+ * projected to world units — no independent per-room wall derivation, no invented
+ * gap logic. Corridors are ABOLISHED (FP-1); corridorSegmentsInWu below maps over
+ * the always-empty corridor list and is a no-op kept only for shape stability.
  */
 function roomWallSegments(node, frame, anchor, plan, room) {
   if (room.shape === 'round') {
@@ -257,6 +358,126 @@ export function fitCatalogPointToRect(catalogBounds, trueRect, px, py) {
   };
 }
 
+// FP-2 — EXTERIOR-WALL derivation (pure geometry). A room's box has four sides; a
+// side is EXTERIOR when its outer face lies on the building hull boundary (there is
+// no room beyond it). Windows may sit on exterior walls ONLY (never on a shared /
+// interior wall — floorPlan.js's shared-wall band is where doorways live). The hull
+// is floorPlan().hull (bbox of all room boxes); a side counts as exterior when its
+// face is within EXT_EPS layout-units of the hull edge on that side. EXT_EPS spans
+// the shared-wall inset (WALL/2 = 0.06) with headroom, so a room flush to the shell
+// reads exterior and one tucked behind a neighbour does not.
+const EXT_EPS = 0.18;
+const OPP = { north: 'south', south: 'north', east: 'west', west: 'east' };
+
+/** exteriorSidesOf(hull, room) -> { north, east, south, west } booleans. */
+function exteriorSidesOf(hull, room) {
+  if (!hull) return { north: true, east: true, south: true, west: true };
+  const x0 = room.cx - room.w / 2, x1 = room.cx + room.w / 2;
+  const y0 = room.cy - room.h / 2, y1 = room.cy + room.h / 2;
+  const HX0 = hull.x, HY0 = hull.y, HX1 = hull.x + hull.w, HY1 = hull.y + hull.h;
+  return {
+    west: Math.abs(x0 - HX0) < EXT_EPS,
+    east: Math.abs(x1 - HX1) < EXT_EPS,
+    north: Math.abs(y0 - HY0) < EXT_EPS,
+    south: Math.abs(y1 - HY1) < EXT_EPS
+  };
+}
+
+/**
+ * placeWindowsOnExteriorWalls(want, ext) -> string[] of facings (length == want.length)
+ * Snaps each canon window facing (roomWindowFacings) onto an EXTERIOR wall: if the
+ * wanted facing is already exterior, keep it; else snap to the opposite exterior
+ * wall, then to any exterior wall, spreading across sides so two windows rarely
+ * stack. Guarantees every returned facing is exterior (never a shared wall — FP-2
+ * #3) while preserving the canon COUNT. Returns [] if the room has no exterior wall
+ * (never happens for a lit room — it's on the hull by construction). Pure.
+ */
+function placeWindowsOnExteriorWalls(want, ext) {
+  const extSides = ['north', 'east', 'south', 'west'].filter(s => ext[s]);
+  if (!extSides.length) return [];
+  const used = new Map(); // facing -> count, to spread windows across free exterior sides
+  const out = [];
+  for (const f of want) {
+    let side = ext[f] ? f : (ext[OPP[f]] ? OPP[f] : null);
+    // Prefer an exterior side not yet used; fall back to the chosen/opposite; then any.
+    const free = extSides.find(s => !used.has(s));
+    if (side == null) side = free != null ? free : extSides[0];
+    else if (used.has(side) && free != null) side = free;
+    used.set(side, (used.get(side) || 0) + 1);
+    out.push(side);
+  }
+  return out;
+}
+
+/**
+ * structureWindowModel(world, nodeId) -> {
+ *   nodeId, byKey: { [structureKey]: { [roomId]: [{ wx, wy, dir, orient, shuttered, style }] } }
+ * }
+ *
+ * The CANON windows (FP-2 #3), placed for drawing. For every OPEN building's every
+ * room, roomWindows() gives the count + shuttered state and roomWindowFacings() the
+ * compass facings — both PURE engine derivations the fiction already binds (climb
+ * out the east window, shutters lock at night). Each window is snapped onto the
+ * room's EXTERIOR wall (never a shared wall) and its center projected to world
+ * units. Dark rooms (cellars/pantries) draw NONE — the engine already says so
+ * (roomWindows returns count 0). `style` is 'casement' (glazed double-tick when
+ * open) — the authored slit/barred vocabulary (plans/races.js) is for hand-authored
+ * plans; the procedural floorPlan buildings read as glazed casements. Pure,
+ * deterministic, read-only — no engine writes, worldHash untouched.
+ */
+// windowsForStructure(world, structureKey, plan, node, frame, anchor) ->
+//   { [roomId]: [{ wx, wy, dir, orient, shuttered, style }] }
+// The per-structure window map — shared by structureWindowModel (standalone) and
+// drawnStructureModel (folded into each structure). `plan` is the caller's
+// floorPlan(st) (reused, never re-derived). Pure, read-only.
+function windowsForStructure(world, structureKey, plan, node, frame, anchor) {
+  const rooms = {};
+  if (!plan || !plan.hull || !Array.isArray(plan.rooms)) return rooms;
+  for (const room of plan.rooms) {
+    const interior = { structureKey, roomId: room.id };
+    const win = roomWindows(world, interior);
+    if (!win.count) continue; // dark / windowless room → no windows drawn
+    const facings = placeWindowsOnExteriorWalls(roomWindowFacings(world, interior), exteriorSidesOf(plan.hull, room));
+    if (!facings.length) continue;
+    const list = [];
+    for (const dir of facings) {
+      // The window sits on the named exterior wall, centered along it, set a hair
+      // proud of the wall face (windowInsetLu) so it reads ON the shell edge.
+      const x0 = room.cx - room.w / 2, x1 = room.cx + room.w / 2;
+      const y0 = room.cy - room.h / 2, y1 = room.cy + room.h / 2;
+      let lx = room.cx, ly = room.cy, orient = 'h';
+      if (dir === 'west') { lx = x0 - INK_PARAMS.windowInsetLu; ly = room.cy; orient = 'v'; }
+      else if (dir === 'east') { lx = x1 + INK_PARAMS.windowInsetLu; ly = room.cy; orient = 'v'; }
+      else if (dir === 'north') { lx = room.cx; ly = y0 - INK_PARAMS.windowInsetLu; orient = 'h'; }
+      else if (dir === 'south') { lx = room.cx; ly = y1 + INK_PARAMS.windowInsetLu; orient = 'h'; }
+      const p = planPointToWu(node, frame, anchor, plan, lx, ly);
+      list.push({ wx: p.wx, wy: p.wy, dir, orient, shuttered: !!win.shuttered, style: 'casement' });
+    }
+    if (list.length) rooms[String(room.id)] = list;
+  }
+  return rooms;
+}
+
+export function structureWindowModel(world, nodeId) {
+  const node = findNode(world, nodeId);
+  if (!node) return { nodeId: String(nodeId || ''), byKey: {} };
+  const id = String(node.id);
+  const structs = structuresAtNode(world, id);
+  const place = node.settlement ? placeFromWorldNode(world, id) : null;
+  const frame = place ? placeFrame(place) : null;
+
+  const byKey = {};
+  for (const st of structs) {
+    const structureKey = String(st.id);
+    const plan = floorPlan(st);
+    if (!plan.rooms.length || !plan.hull) continue;
+    const anchor = buildingAnchorInPlace(place, structureKey) || { ox: 0, oy: 0 };
+    const rooms = windowsForStructure(world, structureKey, plan, node, frame, anchor);
+    if (Object.keys(rooms).length) byKey[structureKey] = rooms;
+  }
+  return { nodeId: id, byKey };
+}
+
 /**
  * drawnStructureModel(world, nodeId) -> {
  *   nodeId, structures: [{
@@ -264,22 +485,23 @@ export function fitCatalogPointToRect(catalogBounds, trueRect, px, py) {
  *     rect: {minX,minY,maxX,maxY},                 // structureWorldRect — LOD/culling box
  *     rooms: [{ id, name, isEntry, wx, wy, walls:[{a,b}] }],
  *     doors: [{ wx, wy, a, b }],
- *     corridors: [{ a, b, segs:[{a:{wx,wy},b:{wx,wy}}] }]   // TT-DRAW-3 — the connective ink
+ *     windows: { [roomId]: [{ wx, wy, dir, orient, shuttered, style }] },  // FP-2 — canon windows, exterior walls only
+ *     corridors: [{ a, b, segs:[{a:{wx,wy},b:{wx,wy}}] }]   // FP-1: abolished — always empty
  *   }]
  * }
  *
  * U409's contract: every settlement structure at this node yields a plan-model
  * derived from the REAL floorPlan(structure), fitted inside its
- * structureWorldRect. TT-DRAW-3 (U418): the room/door/corridor SHAPE comes from
- * the ONE shared plan-model (planModel.js's floorPlanToPlanModel — the SAME
- * derivation handDrawnInterior.js's floorPlanToSceneModel uses for the in-play
- * interior), projected here into world units. No parallel per-room wall/gap
- * derivation — corridors are the ink that bridges floorPlan's own PAD gap
- * between adjacent room boxes, exactly mirroring the interior view's
- * hatch-the-rock-band trick, so a doorway opens onto a visible passage instead
- * of blank padding between two sealed boxes ("squares inside of squares").
- * Pure, deterministic, read-only (structures/floorPlan are both read-only
- * inputs — nothing here writes world state or touches worldHash).
+ * structureWorldRect. TT-DRAW-3 (U418): the room/door SHAPE comes from the ONE
+ * shared plan-model (planModel.js's floorPlanToPlanModel — the SAME derivation
+ * handDrawnInterior.js's floorPlanToSceneModel uses for the in-play interior),
+ * projected here into world units. FP-1 (U429) tiled the rooms so connected
+ * neighbours ABUT along a shared wall and a doorway is a gap ON it; FP-2 draws
+ * that between-rooms band as solid wall MASS (poché — see oneMap.js) and adds
+ * the canon `windows` (structureWindowModel, exterior walls only). Corridors are
+ * ABOLISHED (FP-1) — the corridor list is always empty, kept only for shape
+ * stability. Pure, deterministic, read-only (structures/floorPlan are both
+ * read-only inputs — nothing here writes world state or touches worldHash).
  */
 export function drawnStructureModel(world, nodeId) {
   const node = findNode(world, nodeId);
@@ -322,9 +544,14 @@ export function drawnStructureModel(world, nodeId) {
       a: c.a, b: c.b, segs: corridorSegmentsInWu(node, frame, anchor, plan, c)
     }));
 
+    // FP-2 — canon windows (structureWindowModel's per-structure map), on exterior
+    // walls only, dark rooms none. Reuses this call's plan/anchor/frame (no second
+    // floorPlan()).
+    const windows = windowsForStructure(world, structureKey, plan, node, frame, anchor);
+
     structures.push({
       structureKey, name: plan.name, shell: plan.shell, dark: !!plan.dark,
-      rect, rooms, doors, corridors
+      rect, rooms, doors, windows, corridors
     });
   }
 

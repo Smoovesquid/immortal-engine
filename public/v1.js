@@ -998,8 +998,8 @@ function renderInvoke() {
     el('div', { class: 'panel' },
       el('div', { class: 'header' },
         el('div', {},
-          el('div', { class: 'title' }, 'Immortal Engine — v0.28.5'),
-          el('div', { class: 'sub' }, 'build 055 · 2026-07-04 · shadow sees final prose')
+          el('div', { class: 'title' }, 'Immortal Engine — v0.28.6'),
+          el('div', { class: 'sub' }, 'build 056 · 2026-07-04 · hide the roll math')
         )
       ),
       // ── One-click front door: start (or resume) the Escape game ──────
@@ -1634,8 +1634,11 @@ function renderTranscript(lines) {
     const mech = String(ln?.mech || '');
     const isPlayer = who === 'you';
 
-    // Hide dev-only content: canon log lines and mechanics lines (except roll lines)
-    const mechIsDev = mech && !/\[roll:/.test(mech);
+    // Hide dev-only content: canon log lines AND all mechanics lines, roll lines
+    // included. THE LAW: narrate the read, never the number — the raw
+    // "[roll:16 vs DC:12 …]" string must never reach the player (the narration
+    // already conveys success/failure). Mechanics stay visible only in devMode.
+    const mechIsDev = Boolean(mech);
     const textIsDev = isDevLine(text);
 
     // Strip "Wizard: " prefix from narration for clean player-facing text

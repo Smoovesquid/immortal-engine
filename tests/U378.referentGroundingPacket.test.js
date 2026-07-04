@@ -136,8 +136,10 @@ test('U378-hazard: the recursive interior move-then-act sub-turn computes its OW
   const r = playerMove(interiorWorld(), PACKS, OUTER_TEXT);
   // The move line always leads (the interior chain narrates the step first),
   // then the chained action's own result is appended — proving the recursive
-  // sub-turn resolved "ask what level this spell is?" on its own merits.
-  assert.match(r.output.narration, /next room/i, surface(r));
+  // sub-turn resolved "ask what level this spell is?" on its own merits. The
+  // move line now NAMES the destination room ("...into the pantry"), so match the
+  // stable step/move-into-the shape rather than the old bare "next room".
+  assert.match(r.output.narration, /You (?:step|move)\b[^.]*into the\b/i, surface(r));
   assert.match(r.output.narration, /Sellsword is a background/i, `the recursive sub-turn must answer its OWN text's rules question: ${surface(r)}`);
   assert.equal(r.output.mechanics, 'observe only — no roll, state unchanged', surface(r));
 });

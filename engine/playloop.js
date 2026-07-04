@@ -1894,11 +1894,19 @@ function playerMoveCore(world, packsById, text, dqIntent) {
           const body = room ? dungeonLookNarration(room, 'look around').replace(/^Wizard:\s*/, '') : '';
           return { world: w2, output: { narration: `Wizard: ${movedLead} ${body}${dungeonTelegraph(w2, dungeon, depth)}${dungeonExitsLine(w2)}`.trim(), mechanics: '' } };
         }
+        // Name the DESTINATION room so the move is unmistakable. The bare "next
+        // room" reads as ambient description once the narrator LLM polishes it, so
+        // the player can't tell they actually moved (2026-07-04 playtest: "go
+        // through the doorway did not move my character" — the engine HAD moved).
+        // getRoomState(w2) is post-move: scene.interior is already the new room.
+        let destName = '';
+        try { destName = String(getRoomState(w2)?.room?.name || '').trim(); } catch { destName = ''; }
+        const dest = destName ? `the ${destName.toLowerCase()}` : 'the next room';
         const moveMsg = interiorAction.roomHint === 'fore'
-          ? 'Wizard: You step back the way you came, into the next room.'
+          ? `Wizard: You step back into ${dest}.`
           : interiorAction.roomHint === 'aft'
-            ? 'Wizard: You step through into the next room.'
-            : movedDir ? `Wizard: You move ${movedDir} into the next room.` : 'Wizard: You move on into the next room.';
+            ? `Wizard: You step through into ${dest}.`
+            : movedDir ? `Wizard: You move ${movedDir} into ${dest}.` : `Wizard: You move on into ${dest}.`;
         if (interiorAction.thenText) {
           const acted = playerMoveCore(w2, packsById, interiorAction.thenText);
           const actLine = String(acted?.output?.narration || '').replace(/^Wizard:\s*/, '').trim();
@@ -3609,7 +3617,7 @@ function playerMoveCore(world, packsById, text, dqIntent) {
   // honest decline here, BEFORE the composer's generic atmosphere — so it never
   // depends on whether the composer happened to floor. Returns null for actions
   // and action/permission questions, leaving them to the normal resolve narration.
-  const grounded = physicalObjectOutcome(w, text, result.outcome) || nonObjectSkillOutcome(text, result.outcome) || infoExtractionOutcome(w, text, result.outcome) || answerOrDeclineQuestion(w, text, result.outcome);
+  const grounded = physicalObjectOutcome(w, text, result.outcome) || nonObjectSkillOutcome(w, text, result.outcome) || infoExtractionOutcome(w, text, result.outcome) || answerOrDeclineQuestion(w, text, result.outcome);
   // Stage F: if the composer would fall to the abstract literary floor, replace it with
   // grounded, outcome-aware prose (a DM never says "a low hum threads through the walls"
   // for a resolved action). Specific handlers still win; good composer lines pass through.
@@ -7317,12 +7325,26 @@ function resolveSocialAdjudication(world, text) {
 // resolved outcome too, so they don't fall to the abstract floor. SOCIAL verbs
 // (persuade/intimidate/lie/calm) are intentionally NOT here: they want an NPC and
 // belong to a dialogue-integrated pass. Returns prose or null.
-function nonObjectSkillOutcome(text, outcome) {
+function nonObjectSkillOutcome(world, text, outcome) {
   const t = String(text || '').toLowerCase();
   const o = outcome === 'success' ? 's' : outcome === 'failure' ? 'f' : 'm';
   if (/\b(search|investigate|comb|scour|rummage|ransack|look for|hunt for|dig through|sift)\b/.test(t)) {
-    return o === 's' ? `Wizard: You search methodically, and your patience pays off — something turns up.`
-      : o === 'm' ? `Wizard: You find a little for your trouble, but the searching costs time you may not have.`
+    if (o === 's') {
+      // Ground SUCCESS in the room's ACTUAL contents. There is no hidden-loot
+      // system behind a generic "search the room", so success must NEVER promise a
+      // phantom find ("something turns up") in a room that holds nothing — that lie
+      // left "what is it?" with nothing to describe (2026-07-04 playtest). A
+      // successful search = a confident, truthful read of what's actually here.
+      let here = '';
+      try {
+        const objs = (getRoomState(world)?.objects || []).map(x => String(x?.name || '').trim()).filter(Boolean);
+        here = objs.length ? objs[0].toLowerCase() : '';
+      } catch { here = ''; }
+      return here
+        ? `Wizard: You go over the room with care — nothing's hidden or tucked away; the ${here} is what there is, plain in view.`
+        : `Wizard: You go over the room with care and satisfy yourself: nothing's hidden here, nothing worth the taking.`;
+    }
+    return o === 'm' ? `Wizard: You find a little for your trouble, but the searching costs time you may not have.`
       : `Wizard: You search high and low and turn up nothing worth the effort.`;
   }
   if (/\b(sneak|hide|creep|slink|skulk|stalk|steal past|stay hidden|keep to the shadows)\b/.test(t)) {

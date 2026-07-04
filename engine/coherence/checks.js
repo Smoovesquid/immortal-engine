@@ -131,6 +131,55 @@ const SPEECH_ACTION_RE = new RegExp(
   `\\b(${SPEECH_ACTION_VERBS.map(v => v.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})\\b`, 'i',
 );
 
+// ── CG-1c (this packet) — the absence/negation guard ────────────────────────
+// A name-mention does NOT count as in-room presence when the CLAUSE containing
+// the name itself asserts absence, distance, or negation. Live false positive
+// (the sole shadow-observer fire, PACKETS.md §GATE 2026-07-04-2, verbatim):
+//   "No one answers — Elske Nightherd is elsewhere in Wayfarers' Outpost, and
+//   the bedchamber holds only the quiet creak of timber walls…"
+// That is a CORRECT absence statement, not a ghost-voice — "is elsewhere" sits
+// in the SAME clause as the name. Classes covered (derived from real corpus
+// prose — docs/playtests/gate-runs/*.jsonl — not invented): "is/was elsewhere",
+// "not here" / "isn't here", "no one/nobody answers", "is away/gone", "has
+// left/stepped out", "is out in/at <place>", "somewhere else", and the explicit
+// line-of-sight carve-out "(through the window) you can see X" — seeing someone
+// through a window means they are OUT of this room by construction, regardless
+// of what verb follows.
+//
+// CLAUSE-SCOPED (load-bearing precision guard, not text-wide): the trap case
+// "Elske snorts — the rumor that she is elsewhere amuses her" must STILL FIRE
+// — she acted in-room ("Elske snorts") in HER OWN clause; the absence language
+// is in a DIFFERENT clause (about "the rumor", after the dash) and must not
+// suppress a real ghost-voice. Scoping to the clause around the name — bounded
+// by the nearest sentence-ender (. ! ?), dash (— – or spaced -), or semicolon on
+// either side — gives exactly that: an absence phrase elsewhere in the DM's
+// prose never reaches across a clause boundary to cancel a real in-room action.
+const ABSENCE_RE = /\b(?:is|was|are|were|remains?|stays?)\s+(?:still\s+)?elsewhere\b|\bnot\s+here\b|\bisn['’]?t\s+here\b|\baren['’]?t\s+here\b|\bwasn['’]?t\s+here\b|\bno\s?[- ]?one\s+(?:answers?|responds?|is\s+here)\b|\bnobody\s+(?:answers?|responds?|is\s+here)\b|\b(?:is|was)\s+(?:away|gone)\b|\bhas\s+(?:left|gone|stepped\s+out)\b|\bhad\s+(?:left|gone|stepped\s+out)\b|\bstepped\s+out\b|\b(?:is|was)\s+out\s+(?:in|at)\b|\bsomewhere\s+else\b|\bthrough\s+the\s+window\b/i;
+
+// Clause boundary characters: sentence-enders, em/en dashes, a hyphen used as a
+// clause break (spaced on both sides, so it doesn't cut mid-word), and
+// semicolons. Deliberately does NOT include commas — a comma joins clauses too
+// loosely for this guard to stay conservative (per-word FP risk goes up, not
+// down, if commas split too eagerly; see the real "whoever Elske Nightherd is,
+// she is somewhere else…" corpus line, where the absence clause legitimately
+// spans a comma from the name).
+const CLAUSE_BOUNDARY_RE = /[.!?;]|—|–|(?<= )-(?= )/g;
+
+// The clause of `text` that contains the span [start, start+len) — from the
+// nearest boundary before `start` to the nearest boundary at/after `start+len`.
+// Pure string slicing; no lookahead across paragraphs (dm lines are one turn).
+function clauseAround(text, start, len) {
+  CLAUSE_BOUNDARY_RE.lastIndex = 0;
+  let left = 0;
+  let m;
+  while ((m = CLAUSE_BOUNDARY_RE.exec(text.slice(0, start)))) left = m.index + m[0].length;
+  const tail = text.slice(start + len);
+  CLAUSE_BOUNDARY_RE.lastIndex = 0;
+  const rightMatch = CLAUSE_BOUNDARY_RE.exec(tail);
+  const right = rightMatch ? start + len + rightMatch.index : text.length;
+  return text.slice(left, right);
+}
+
 function namesPresentInText(dm, rosterNames) {
   const found = [];
   for (const name of rosterNames) {
@@ -161,7 +210,16 @@ export function detectPresenceDesync(sessionTurns) {
       const speakingNames = namesPresentInText(dm, npcsPresent).filter(name => {
         const idx = dm.indexOf(name);
         const window = dm.slice(Math.max(0, idx - 10), idx + name.length + 60);
-        return SPEECH_ACTION_RE.test(window);
+        if (!SPEECH_ACTION_RE.test(window)) return false;
+        // Absence guard (this packet): a name-mention does not count as
+        // in-room presence when the CLAUSE containing the name asserts
+        // absence/distance/negation — see ABSENCE_RE's provenance comment.
+        // Clause-scoped on purpose: an absence phrase in a DIFFERENT clause
+        // (e.g. "Elske snorts — the rumor that she is elsewhere amuses her")
+        // must never cancel a real in-room action.
+        const clause = clauseAround(dm, idx, name.length);
+        if (ABSENCE_RE.test(clause)) return false;
+        return true;
       });
       for (const name of speakingNames) {
         flags.push(pointer({

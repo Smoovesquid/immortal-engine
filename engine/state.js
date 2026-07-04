@@ -24,6 +24,10 @@ import {
   normalizeCombatGrid
 } from './combat/grid.js';
 import { ensureVillain } from './story/villain.js';
+import {
+  placementForWorld,
+  isTacticalPosConsistent
+} from './map/spatial/tacticalPos.js';
 
 // Pass R1 — bumped from 16 → 17. Adds rumor layer: world.rumors[],
 // npc.rumorIds[], npc.sophistication. See docs/RUMOR_LAYER.md.
@@ -57,7 +61,17 @@ import { ensureVillain } from './story/villain.js';
 // v29 — MX-1 combat tactical grid. Active combat owns grid:{w,h}, playerCell,
 // and per-enemy cx/cy integer cells (x=east, y=south). Old/direct combats
 // backfill deterministic default cells; beginCombat sources seeded placement.
-export const WORLD_VERSION = 29;
+// v30 — TAC-1 position-as-canon (docs/POSITION_AS_CANON.md). Every party member
+// and present settlement NPC gains a canonical TACTICAL cell `pos`: null |
+// { frame:'region', gx, gy } (outdoors — one continuous 5-ft grid over the region,
+// anchored to the node grid) | { frame:'struct:<structId>', gx, gy } (inside a
+// building's floorPlan). 1 cell = 5 ft (CELL_FT); pinned unit constants live in
+// engine/map/spatial/tacticalPos.js. pos IS canon and IS hashed (distinct from the
+// renderer's legacy pixel `position.ux/uy`, which MAP-OCC-2 strips from the hash).
+// Old saves get pos:null on load, then a deterministic seeded backfill at
+// ensureWorld's tail places the player + present NPCs. COMPLETELY DARK: nothing
+// consumes pos yet (movement unchanged — the verb lands in TAC-2).
+export const WORLD_VERSION = 30;
 
 // Crunch caps (T1). Kept here so they're colocated with ensureEntity.
 const FOCI_CAP = 6;
@@ -307,8 +321,90 @@ export function ensureWorld(partial) {
     }
   }
 
+  // TAC-1 — canonical tactical position backfill (docs/POSITION_AS_CANON.md §2/§5).
+  // The keystone under 5-ft minis: every present entity gets a deterministic 5-ft
+  // cell in `pos`. Runs at the TAIL of world assembly (map/structures/scene are all
+  // ensured by now) and on EVERY ensureWorld. Backfill policy (matches the contract
+  // + keeps this TAC-2-ready): SPAWN a seeded cell when pos is ABSENT, and RE-SPAWN
+  // when a stored pos has gone STALE (inconsistent with the current node/interior —
+  // e.g. after node travel left an old region cell behind). A pos that is already
+  // CONSISTENT is left untouched — so this is idempotent (an unchanged world
+  // re-ensures byte-identically) AND a future movement delta (TAC-2) that writes a
+  // valid pos survives ensureWorld instead of being healed away. All placement is a
+  // pure seeded f(worldSeed, entityId, frame) via rng.js. DARK: nothing consumes pos.
+  backfillTacticalPositions(world);
+
   assertWorldInvariants(world);
   return world;
+}
+
+// Give each present entity a valid `pos`: keep a consistent stored value, else
+// (absent or stale) place it at its deterministic seeded cell for the current
+// frame. Party members live in world.party; present settlement NPCs live in
+// world.map.nodes[].settlement.npcs — both written in place (shape-preserving),
+// only where a (re)placement is actually needed, so an unchanged world is untouched.
+function backfillTacticalPositions(world) {
+  const curNodeId = String(world.map?.currentNodeId ?? '');
+  const sceneInterior = world.scene?.interior && typeof world.scene.interior === 'object'
+    ? world.scene.interior : null;
+  let targets = null; // lazily computed only if some entity needs (re)placement
+  const targetFor = (id) => {
+    if (!targets) targets = placementForWorld(world);
+    return targets.get(id) ?? null;
+  };
+
+  // Resolve the pos an entity SHOULD hold this call: keep a stored value that
+  // exists and is still consistent with the current frame; otherwise (absent or
+  // stale) take the seeded target (which itself may be null when unplaceable).
+  const resolve = (stored, entityId, opts) => {
+    if (stored != null && isTacticalPosConsistent(stored, world, curNodeId, opts)) return stored;
+    return targetFor(entityId);
+  };
+
+  // Party members.
+  if (Array.isArray(world.party) && world.party.length) {
+    let changed = false;
+    const nextParty = world.party.map((m, i) => {
+      if (!m || typeof m !== 'object') return m;
+      const stored = ensureTacticalPos(m.pos);
+      const next = resolve(stored, String(m.id || 'party'), { isPlayer: i === 0, sceneInterior });
+      if (tacticalPosEqual(stored, next) && stored === m.pos) return m; // unchanged + normalized
+      changed = true;
+      return { ...m, pos: next };
+    });
+    if (changed) world.party = nextParty;
+  }
+
+  // Present NPCs at the current node.
+  const nodes = Array.isArray(world.map?.nodes) ? world.map.nodes : [];
+  const idx = nodes.findIndex(n => n && String(n.id) === curNodeId);
+  const node = idx >= 0 ? nodes[idx] : null;
+  const roster = Array.isArray(node?.settlement?.npcs) ? node.settlement.npcs : null;
+  if (roster && roster.length) {
+    let changed = false;
+    const nextNpcs = roster.map(npc => {
+      if (!npc || typeof npc !== 'object') return npc;
+      const nid = String(npc.id || npc.name || '');
+      const stored = ensureTacticalPos(npc.pos);
+      const next = nid ? resolve(stored, nid, { isPlayer: false }) : null;
+      if (tacticalPosEqual(stored, next) && stored === npc.pos) return npc;
+      changed = true;
+      return { ...npc, pos: next };
+    });
+    if (changed) {
+      const nextNode = { ...node, settlement: { ...node.settlement, npcs: nextNpcs } };
+      const nextNodes = nodes.slice();
+      nextNodes[idx] = nextNode;
+      world.map = { ...world.map, nodes: nextNodes };
+    }
+  }
+}
+
+// Structural equality for two normalized tactical pos values (both null or shape-gated).
+function tacticalPosEqual(a, b) {
+  if (a === b) return true; // both null / same ref
+  if (!a || !b) return false;
+  return a.frame === b.frame && a.gx === b.gx && a.gy === b.gy;
 }
 
 export function newWorld({ seed, fate, campaignId, pack, mode }) {
@@ -779,6 +875,15 @@ function ensureEntity(e) {
 
     position: ensurePosition(x.position),
 
+    // TAC-1 — canonical TACTICAL position (docs/POSITION_AS_CANON.md). A 5-ft-cell
+    // frame coordinate: null | { frame:'region', gx, gy } | { frame:'struct:<id>', gx, gy }.
+    // DISTINCT from `position` above (that is the renderer's legacy pixel walk-pos,
+    // ux/uy, stripped from the hash by MAP-OCC-2). `pos` IS canon and IS hashed.
+    // Absent (null) on load / new members; ensureWorld backfills a deterministic
+    // seeded cell for the player + present NPCs at the tail of world assembly.
+    // Nothing consumes it in TAC-1 (DARK) — movement lands in TAC-2.
+    pos: ensureTacticalPos(x.pos),
+
     // Pass C1 — companion marker. null for the player (party[0]) and for any
     // entity that has not been recruited as a traveling companion. A well-formed
     // marker carries enough provenance to render in the UI and the narrator
@@ -926,6 +1031,22 @@ function ensurePosition(pos) {
     }
   }
   return result;
+}
+
+// TAC-1 — normalize the canonical tactical `pos` field (docs/POSITION_AS_CANON.md
+// §1). Preserves a well-formed { frame, gx, gy } (region or struct:<id>) with
+// INTEGER cells; anything malformed / absent → null (always a legal state, and the
+// safe default so old saves and synthetic fixtures never violate the invariant).
+// Deterministic seeded BACKFILL of a real cell happens later, in ensureWorld's tail
+// (backfillTacticalPositions) once the whole world — map, structures, scene — is
+// assembled. This is purely the shape gate.
+function ensureTacticalPos(pos) {
+  if (!pos || typeof pos !== 'object' || Array.isArray(pos)) return null;
+  const frame = String(pos.frame ?? '');
+  const okFrame = frame === 'region' || /^struct:.+$/.test(frame);
+  if (!okFrame) return null;
+  if (!Number.isInteger(pos.gx) || !Number.isInteger(pos.gy)) return null;
+  return { frame, gx: pos.gx, gy: pos.gy };
 }
 
 // ── Pass T1 crunch helpers ───────────────────────────────────────────────

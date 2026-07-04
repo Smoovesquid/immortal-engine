@@ -1,5 +1,7 @@
 import { WORLD_VERSION, VICE_AXES, VIRTUE_AXES } from './state.js';
 import { statMod, maxWounds } from './ruleset/core/stats.js';
+import { nearestNodeToRegionCell, roomOfStructCell } from './map/spatial/tacticalPos.js';
+import { floorPlan } from './structures/floorPlan.js';
 
 const SPELL_SLOT_LEVELS = [1, 2, 3, 4, 5];
 const CURRENCY_KEYS = ['copper', 'silver', 'gold', 'platinum'];
@@ -214,6 +216,50 @@ export function assertWorldInvariants(world) {
       if ('roomId' in interior && typeof interior.roomId !== 'string') {
         throw new Error('Invariant: party[0].position.interior.roomId must be string or absent');
       }
+    }
+  }
+
+  // TAC-1 — canonical tactical position (docs/POSITION_AS_CANON.md §5). `pos` is
+  // the finer 5-ft-cell truth that sits UNDER the node/interior location (which
+  // stays authoritative in TAC-1). For every party member AND every present
+  // settlement NPC, pos is null XOR a well-formed frame coordinate whose
+  // PROJECTION agrees with the node/interior it must sit inside:
+  //   • region frame → the cell's nearest node is map.currentNodeId;
+  //   • struct:<id> frame → structure <id> is at the current node, the cell lands
+  //     in a real room rect, and (for the player) that room + structure match
+  //     scene.interior (composes with NODE-DESYNC-1's interior/node invariant).
+  // This is the DISTINCT field from `position` above: pos is cells-in-canon (hashed);
+  // position is pixels-in-renderer (ux/uy, stripped from the hash by MAP-OCC-2).
+  {
+    const curNodeId = String(world.map?.currentNodeId ?? '');
+    const sceneInterior = world.scene?.interior && typeof world.scene.interior === 'object'
+      ? world.scene.interior : null;
+    // If scene.interior itself desyncs from the current node (a registered
+    // structure at the WRONG node), that is the NODE-DESYNC-1 fault, reported by the
+    // dedicated scene.interior invariant below — the root cause. The player's pos is
+    // downstream of it, so skip the player's pos check in that case and let the
+    // interior invariant speak (ensureWorld would repair the interior anyway; U406).
+    const interiorDesynced = (() => {
+      if (!sceneInterior || !sceneInterior.structureKey) return false;
+      const st = world.structures?.byId?.[String(sceneInterior.structureKey)] || null;
+      return !!(st && st.nodeId != null && String(st.nodeId) !== '' && String(st.nodeId) !== curNodeId);
+    })();
+    for (let i = 0; i < party.length; i++) {
+      const m = party[i];
+      if (i === 0 && interiorDesynced) continue; // defer to the scene.interior invariant
+      // party[0] is the player: their frame is pinned to scene.interior (indoors →
+      // that struct's room; outdoors → region). Other members validate frame-only.
+      assertTacticalPos(m?.pos, `party[${i}]`, world, curNodeId, { isPlayer: i === 0, sceneInterior });
+    }
+    const node = (Array.isArray(world.map?.nodes) ? world.map.nodes : [])
+      .find(n => n && String(n.id) === curNodeId) || null;
+    const roster = Array.isArray(node?.settlement?.npcs) ? node.settlement.npcs : [];
+    for (let i = 0; i < roster.length; i++) {
+      const npc = roster[i];
+      if (!npc || typeof npc !== 'object' || npc.pos == null) continue;
+      const nid = String(npc.id || npc.name || `#${i}`);
+      // NPCs carry no scene.interior of their own — validate frame + projection only.
+      assertTacticalPos(npc.pos, `npc ${nid}`, world, curNodeId, { isPlayer: false });
     }
   }
 
@@ -649,6 +695,94 @@ export function assertWorldInvariants(world) {
       }
     }
   }
+}
+
+// TAC-1 — assert one entity's canonical tactical `pos` (docs/POSITION_AS_CANON.md
+// §5). null is always legal (absent from the tactical layer). A non-null pos must
+// be a well-formed frame coordinate whose projection agrees with the current node/
+// interior. opts.isPlayer pins the frame to opts.sceneInterior (the player is in
+// struct frame iff scene.interior names an at-node structure — that struct's room;
+// else region). NPCs (isPlayer falsy) validate frame + projection only. The detailed
+// throws mirror isTacticalPosConsistent (the shared oracle) so state and invariants
+// never disagree on what "valid" means.
+function assertTacticalPos(pos, label, world, curNodeId, opts = {}) {
+  if (pos == null) return; // absent — legal
+  if (typeof pos !== 'object' || Array.isArray(pos)) {
+    throw new Error(`Invariant: ${label}.pos must be null or a { frame, gx, gy } object`);
+  }
+  const frame = String(pos.frame ?? '');
+  if (!Number.isInteger(pos.gx) || !Number.isInteger(pos.gy)) {
+    throw new Error(`Invariant: ${label}.pos.gx/gy must be integers (got ${pos.gx},${pos.gy})`);
+  }
+  const isPlayer = !!opts.isPlayer;
+  const atNode = isPlayer ? playerInteriorAtNode(world, curNodeId, opts.sceneInterior) : null;
+  if (frame === 'region') {
+    // The player is only outdoors (region) when they have no at-node interior.
+    if (isPlayer && atNode) {
+      throw new Error(`Invariant: ${label}.pos is region but the player is inside ${atNode.structId}/${atNode.roomId} (scene.interior) — must be a struct pos`);
+    }
+    // The region sheet is one continuous grid; a present entity's cell must sit in
+    // the current node's area — the nearest node to the cell IS the current node.
+    // (Only enforced when the map has positioned nodes and a current node; bare/
+    // synthetic fixtures with neither are tolerated.)
+    const nodes = Array.isArray(world.map?.nodes) ? world.map.nodes : [];
+    const anyPositioned = nodes.some(n => n && Number.isInteger(n.x) && Number.isInteger(n.y));
+    if (curNodeId && anyPositioned) {
+      const nearest = nearestNodeToRegionCell(world.map, pos.gx, pos.gy);
+      if (nearest !== curNodeId) {
+        throw new Error(`Invariant: ${label}.pos is region ${pos.gx},${pos.gy} whose nearest node is ${nearest || '(none)'} but map.currentNodeId is ${curNodeId} (region pos must project to the current node)`);
+      }
+    }
+    return;
+  }
+  const m = /^struct:(.+)$/.exec(frame);
+  if (!m) {
+    throw new Error(`Invariant: ${label}.pos.frame must be 'region' or 'struct:<structId>' (got '${frame}')`);
+  }
+  const structId = m[1];
+  const st = world.structures?.byId?.[structId] || null;
+  // A struct pos names a REGISTERED structure that must sit at the current node
+  // (composes with NODE-DESYNC-1). Synthetic states pointing at an unknown
+  // structure are a hard error here — a real struct pos is only ever minted for a
+  // registered structure at the current node.
+  if (!st) {
+    throw new Error(`Invariant: ${label}.pos frame names structure ${structId} which is not registered`);
+  }
+  if (curNodeId && st.nodeId != null && String(st.nodeId) !== '' && String(st.nodeId) !== curNodeId) {
+    throw new Error(`Invariant: ${label}.pos is in structure ${structId} at node ${st.nodeId} but map.currentNodeId is ${curNodeId} (struct pos must be at the current node)`);
+  }
+  const room = roomOfStructCell(floorPlan(st), pos.gx, pos.gy);
+  if (!room) {
+    throw new Error(`Invariant: ${label}.pos cell ${pos.gx},${pos.gy} lands in no room of structure ${structId}`);
+  }
+  // For the player, the struct + room the cell lands in must be exactly what
+  // scene.interior names — pos is the finer detail of that same truth. A player
+  // with no at-node interior must not be in a struct frame at all.
+  if (isPlayer) {
+    if (!atNode) {
+      throw new Error(`Invariant: ${label}.pos is a struct pos but the player has no at-node interior (scene.interior) — must be region`);
+    }
+    if (atNode.structId !== structId) {
+      throw new Error(`Invariant: ${label}.pos is in structure ${structId} but scene.interior is ${atNode.structId}`);
+    }
+    if (atNode.roomId !== room) {
+      throw new Error(`Invariant: ${label}.pos cell lands in room ${room} but scene.interior.roomId is ${atNode.roomId}`);
+    }
+  }
+}
+
+// The registered at-node structure the player's frame is pinned to (mirrors
+// tacticalPos.playerAtNodeInterior — kept local to avoid widening that module's
+// export surface). Returns { structId, roomId } or null (outdoors / stale interior).
+function playerInteriorAtNode(world, curNodeId, sceneInterior) {
+  if (!sceneInterior || !sceneInterior.structureKey || !sceneInterior.roomId) return null;
+  const structId = String(sceneInterior.structureKey);
+  const st = world?.structures?.byId?.[structId] || null;
+  if (!st) return null;
+  if (curNodeId && st.nodeId != null && String(st.nodeId) !== '' && String(st.nodeId) !== curNodeId) {
+    return null;
+  }
+  return { structId, roomId: String(sceneInterior.roomId) };
 }
 
 function assertCombatGrid(combat) {

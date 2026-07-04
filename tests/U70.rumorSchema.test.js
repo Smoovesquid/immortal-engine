@@ -280,7 +280,7 @@ test('U70-11: loading a v16 save upgrades to current version with empty rumors',
     assert.deepEqual(loaded.rumors, []);
     assert.ok(warnings.length > 0, 'expected a version-mismatch warning');
     assert.ok(warnings[0].includes('v16'));
-    assert.ok(warnings[0].includes('v29'));
+    assert.ok(warnings[0].includes('v30'));
   } finally {
     console.warn = origWarn;
   }

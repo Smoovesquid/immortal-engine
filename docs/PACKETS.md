@@ -908,10 +908,15 @@ sheet (no per-node islands); the camera keeps the player centered (no edges, eve
   survive at ANY zoom** (drawn plans/footprints have no roof to detach; gate the land on this on-screen).
 - **S4 the tilt:** MAP-3DR (persistent mount, below) + tilt-threshold retune by eye (decision #1) +
   combat folds into the one scene (`MAP_QUEUE.md` "NEXT PACKET" spec) **QUEUE after S3**.
-- **S5 5-ft truth:** TAC — contract written + revised (`docs/POSITION_AS_CANON.md`); **TAC-1 DISPATCHED
-  2026-07-04-pm2** (Opus worktree; brief `docs/briefs/TAC-1-position-schema.md`; tests U412–U415;
-  `WORLD_VERSION` bump + `pos` schema + seeded placement, DARK — zero behavior change; serial engine
-  lane, zero overlap with the TT-DRAW renderer lane).
+- **S5 5-ft truth:** TAC — contract written + revised (`docs/POSITION_AS_CANON.md`); **TAC-1 LANDED
+  2026-07-04-pm2** (Opus worktree, one local commit; `WORLD_VERSION` 29 → 30, v0.28.11): canonical
+  tactical cell `pos` on party members + present NPCs (`null | region | struct:<id>`, 1 cell = 5 ft),
+  deterministic + seeded + in `worldHash`, DARK (nothing consumes it). Pinned constants block appended
+  to the contract; new `engine/map/spatial/tacticalPos.js`; invariants + migration in place; tests
+  U412–U415 green; suite 9504/9504, convergence 124/124 unchanged, determinism green, playtest:quick
+  clean. **NEXT: TAC-2** (the tactical move verb — "go east" walks ≤6 cells; `{op:'pos'}` delta;
+  playloop serial). The `public/v1.js` front-door build line is deliberately left to the TT-DRAW
+  renderer lane / integration (forbidden file for this lane).
 
 ### MAP-3DR — reconnect the 3D diorama on a persistent mount  ·  **Phase 4 (the face)  ·  = TABLETOP S4; cut the packet when S3 lands**
 - **why parked (2026-07-03, Tim's call):** the 3D layer was DISCONNECTED (`MAP_3D_ENABLED=false`,

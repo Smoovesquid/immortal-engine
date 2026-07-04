@@ -152,7 +152,7 @@ that packet onward, and TAC-1's region grid inherits it.
 
 | Packet | What lands | Risk gate |
 |---|---|---|
-| **TAC-1** | schema + migration + invariants + seeded party/NPC placement (DARK — nothing consumes) | `WORLD_VERSION` bump; hash replay green |
+| **TAC-1** ✅ LANDED (v0.28.11) | schema + migration + invariants + seeded party/NPC placement (DARK — nothing consumes) | `WORLD_VERSION` 29→30; hash replay green; 9504/9504 |
 | **TAC-2** | tactical move verb, LLM-off floor ("go east" walks ≤6 cells); honest partial-progress narration | playloop serial; corpus locks |
 | **JR-1** | journey = fast travel with the risk premium: elevated encounter chance + SURPRISED opening; interruption drops you en route | playloop/worldTick (+ a surprise hook in escapeCombat); after NODE-DESYNC-1, same serial lane |
 | **TAC-3** | INT spatial family — translator proposes the typed packet | INT-4 template; echo-first UX |
@@ -170,3 +170,29 @@ If TAC-1's hash-stability work shows seeded placement can't stay replay-stable a
 `ensureWorld` upgrades, the fallback is NOT renderer-side position — it is narrowing scope:
 canon position for party + combat-active entities only, `pos:null` for everyone else until
 materialized. The ruling (canon, not renderer) does not flip.
+
+## Pinned constants (TAC-1)
+
+**Landed 2026-07-04 (v0.28.x, `WORLD_VERSION` 29 → 30).** The unit constants are declared
+ONCE in `engine/map/spatial/tacticalPos.js` and locked by test **U415**. No renderer or caller
+may embed its own conversion — read these, or read `pos` (which is already denominated in them).
+`pos` is `null | { frame:'region', gx, gy } | { frame:'struct:<structId>', gx, gy }` with integer
+`gx/gy`; it is canon and hashed (distinct from the renderer's legacy pixel `position.ux/uy`, which
+MAP-OCC-2 strips from the hash).
+
+| Constant | Value | Meaning |
+|---|---|---|
+| `CELL_FT` | `5` | Feet per tactical cell (one 5e square). The atomic unit of the layer. |
+| `PLACE_WU` | `4` | **Cells per floorPlan layout unit** → one interior layout unit = `PLACE_WU × CELL_FT` = **20 ft**. Chosen so typical rooms land sane (a taproom ≈ 32×26 ft, a guest room ≈ 16 ft, the smallest privy ≈ 8 ft). |
+| `NODE_WU` | `1000` | **Feet per node-grid step** (the region sheet anchors to the integer node grid, `engine/map/embedding.js`). 1000 ft ≈ 305 m between adjacent grid cells — suits the ~100 km² slice. |
+| `NODE_CELLS` | `200` | Derived: region cells per node-grid step = `NODE_WU / CELL_FT`. A node's on-sheet "area" is a `NODE_CELLS`-wide neighbourhood around its projected centre. |
+
+**Conversions (exact, round-trippable — U415):**
+- floorPlan layout unit `u` → cells: `round(u × PLACE_WU)`.
+- cells ↔ feet: `ft = cells × CELL_FT` (exact both ways for whole multiples).
+- node grid `(nx,ny)` → region-cell centre: `(nx × NODE_CELLS, ny × NODE_CELLS)`; and back
+  by `round(gx / NODE_CELLS)`. A region `pos` "belongs to" the node whose projected centre is
+  nearest the cell (`nearestNodeToRegionCell`) — the TAC-1 region-frame projection invariant.
+
+**Range-band mapping** (pinned NOW so nothing drifts when combat later derives bands from cells,
+§5): **engaged ≤ 5 ft (1 cell) · near ≤ 30 ft (6 cells) · far > 30 ft.**

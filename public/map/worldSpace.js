@@ -7,6 +7,7 @@
 // are untouched, and nothing here is ever serialized or hashed.
 
 import { biomeForNode } from '../../engine/world/biome.js';
+import { floorPlan } from '../../engine/structures/floorPlan.js';
 
 export const NODE_WU = 1000;  // one node-lattice step ≈ 1 km (1 wu ≈ 1 m)
 export const PLACE_WU = 4;    // one village place-unit ≈ 4 m (61-unit village ≈ 244 wu)
@@ -122,4 +123,145 @@ export function discoveryTiers(map) {
     if (known.has(b) && !known.has(a)) rumor.add(a);
   }
   return { known, rumor };
+}
+
+// ── WS-1 — interiors + entities (MAP_PATH Phase 1.1, TABLETOP_MAP room-granular) ──
+//
+// The village embedding above (placeFrame/placeUnitToWu) anchors a settlement's
+// BUILDINGS (via a `placeFromWorldNode`-shaped `place.buildings[]`, each carrying
+// `{ox, oy, structureKey?}` in place-units — see public/map/placeFromNode.js). This
+// section adds the missing rung: fitting a building's REAL interior — the engine's
+// own room graph (`engine/structures/floorPlan.js`, the layout movement actually
+// uses) — inside that building's footprint, and resolving any entity (player/NPC)
+// to one `{wx, wy}` address whether it's outdoors (village walk-position) or indoors
+// (room-granular — no 5-ft squares yet; that arrives with the TAC contract per the
+// 2026-07-04 decision, docs/POSITION_AS_CANON.md). Pure + seeded: floorPlan() is a
+// deterministic function of the structure's topology; nothing here writes engine
+// state or is ever hashed.
+
+/**
+ * buildingAnchorInPlace(place, structureKey) -> {ox, oy} | null
+ * Finds the building entry (place-units) for a real engine structure inside a
+ * `placeFromWorldNode(world, nodeId)`-shaped place. `place` may be null (a lone
+ * structure with no settlement layout) — callers degrade to `{ox:0, oy:0}` (the
+ * building anchors at the village frame's own midpoint, i.e. the node center).
+ */
+export function buildingAnchorInPlace(place, structureKey) {
+  const key = String(structureKey || '');
+  if (!key) return null;
+  const buildings = Array.isArray(place?.buildings) ? place.buildings : [];
+  const b = buildings.find(x => String(x?.structureKey || '') === key);
+  if (!b) return null;
+  return { ox: Number(b.ox) || 0, oy: Number(b.oy) || 0 };
+}
+
+/**
+ * interiorRoomToPlaceUnit(anchor, plan, roomId) -> {ux, uy} | null
+ * A room's position in the VILLAGE's place-unit space: the floorPlan's own
+ * footprint is recentered on its own midpoint (so the building's world rect is
+ * centered at `anchor`, matching the `ox + (r.cx - frame.cx)` convention
+ * `placeFrame`/`placeUnitToWu` already use for catalog-plan buildings), then
+ * offset by the building's anchor. `plan` is a `floorPlan(structure)` result;
+ * `anchor` is a `buildingAnchorInPlace` result (or `{ox:0,oy:0}` for the no-place
+ * fallback). Returns null if the room isn't in the plan.
+ */
+export function interiorRoomToPlaceUnit(anchor, plan, roomId) {
+  const a = anchor && typeof anchor === 'object' ? anchor : { ox: 0, oy: 0 };
+  const rooms = Array.isArray(plan?.rooms) ? plan.rooms : [];
+  const room = rooms.find(r => String(r?.id || '') === String(roomId || ''));
+  if (!room) return null;
+  const fw = Number(plan?.footprint?.w) || 1, fh = Number(plan?.footprint?.h) || 1;
+  return {
+    ux: (Number(a.ox) || 0) + (Number(room.cx) || 0) - fw / 2,
+    uy: (Number(a.oy) || 0) + (Number(room.cy) || 0) - fh / 2
+  };
+}
+
+/**
+ * interiorRoomToWu(node, frame, anchor, plan, roomId) -> {wx, wy} | null
+ * The full room -> world-unit projection: village place-unit (above) pushed
+ * through `placeUnitToWu`. `frame` is the village's `placeFrame(place)` result
+ * (or a degenerate `{cx:0, cy:0}` frame when there's no settlement layout, so the
+ * building anchors directly at the node center).
+ */
+export function interiorRoomToWu(node, frame, anchor, plan, roomId) {
+  const u = interiorRoomToPlaceUnit(anchor, plan, roomId);
+  if (!u) return null;
+  const f = frame && typeof frame === 'object' ? frame : { cx: 0, cy: 0 };
+  const p = placeUnitToWu(node, f, u.ux, u.uy);
+  return { wx: p.x, wy: p.y };
+}
+
+/**
+ * structureWorldRect(node, frame, anchor, plan) -> {minX, minY, maxX, maxY}
+ * The building's world-unit AABB (footprint centered at its anchor) — every room
+ * this plan resolves via interiorRoomToWu MUST land inside this rect by
+ * construction (U400's "interiors land INSIDE their building" proof).
+ */
+export function structureWorldRect(node, frame, anchor, plan) {
+  const a = anchor && typeof anchor === 'object' ? anchor : { ox: 0, oy: 0 };
+  const f = frame && typeof frame === 'object' ? frame : { cx: 0, cy: 0 };
+  const fw = Number(plan?.footprint?.w) || 1, fh = Number(plan?.footprint?.h) || 1;
+  const c = placeUnitToWu(node, f, Number(a.ox) || 0, Number(a.oy) || 0);
+  const halfW = (fw / 2) * PLACE_WU, halfH = (fh / 2) * PLACE_WU;
+  return { minX: c.x - halfW, minY: c.y - halfH, maxX: c.x + halfW, maxY: c.y + halfH };
+}
+
+/**
+ * resolveEntityWu(ctx, loc) -> {wx, wy} | null
+ * ONE address for any entity (player, NPC, monster, object), read-only over
+ * engine-owned position fields. `ctx = { node, place, frame, plan }` carries the
+ * node the entity is AT (`node`, the raw engine node record), its village
+ * embedding (`place`/`frame` — either may be null for a non-settlement node,
+ * degrading to node-center anchoring), and — for an indoor `loc` — the building's
+ * `floorPlan(structure)` result (`plan`; resolveEntityWuFromWorld derives this for
+ * you). `loc` is the entity's resolved location:
+ *   outdoors: { nodeId, ux, uy }                      (village walk-position units)
+ *   indoors:  { nodeId, structureKey, roomId }         (room-granular; no ux/uy)
+ * Accepts either `structureKey` (world.scene.interior's field name) or
+ * `structureId` (party[0].position.interior's field name) — same value, two
+ * historical spellings (see docs/ONE_MAP.md M4b). Returns null if the node is
+ * unknown or (indoors) the structure/room can't be resolved — never throws.
+ */
+export function resolveEntityWu(ctx, loc) {
+  const node = ctx?.node;
+  if (!node || !Number.isFinite(+node.x) || !Number.isFinite(+node.y)) return null;
+  const structureKey = String(loc?.structureKey || loc?.structureId || '');
+  if (structureKey) {
+    const anchor = buildingAnchorInPlace(ctx?.place || null, structureKey) || { ox: 0, oy: 0 };
+    const plan = ctx?.plan || null; // caller supplies floorPlan(structure) — see resolveEntityWuFromWorld
+    if (!plan) return null;
+    return interiorRoomToWu(node, ctx?.frame || null, anchor, plan, loc?.roomId);
+  }
+  if (Number.isFinite(+loc?.ux) && Number.isFinite(+loc?.uy) && ctx?.frame) {
+    const p = placeUnitToWu(node, ctx.frame, +loc.ux, +loc.uy);
+    return { wx: p.x, wy: p.y };
+  }
+  // No walk-position and no interior — the entity is present at the node but its
+  // exact spot within it is unknown (e.g. a far node); anchor at the node center.
+  const c = nodeToWu(node);
+  return { wx: c.x, wy: c.y };
+}
+
+/**
+ * resolveEntityWuFromWorld(world, place, frame, loc) -> {wx, wy} | null
+ * Convenience wrapper for the common case: reads `world.structures.byId` to get
+ * the real `floorPlan(structure)` for an indoor `loc`, then calls
+ * resolveEntityWu. `place`/`frame` are the caller's already-computed village
+ * embedding for `loc.nodeId` (e.g. oneMap.js's `layoutFor()` cache) — pass null
+ * for a non-settlement node. Pure + read-only: `world.structures` is read, never
+ * written.
+ */
+export function resolveEntityWuFromWorld(world, place, frame, loc) {
+  const nodeId = String(loc?.nodeId || '');
+  const node = (world?.map?.nodes || []).find(n => String(n?.id || '') === nodeId) || null;
+  if (!node) return null;
+  const structureKey = String(loc?.structureKey || loc?.structureId || '');
+  let plan = null;
+  if (structureKey) {
+    const st = world?.structures?.byId?.[structureKey] || null;
+    if (!st) return null;
+    plan = floorPlan(st);
+  }
+  return resolveEntityWu({ node, place, frame, plan }, loc);
 }

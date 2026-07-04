@@ -67,7 +67,10 @@ test('U392a: inside a structure — roomExits carries real compass exits matchin
 
   const st = w.structures.byId[w.scene.interior.structureKey];
   const topo = normalizeTopology(st?.topology);
-  const type = buildingTypeFor(w.scene.interior.structureKey);
+  // Must mirror roomExitsGroundTruth's precedence: STORED buildingType first,
+  // id-hash only as a fallback (else a cottage's exits read as hive rooms while
+  // the current room is a "Bedchamber" — the self-inconsistent-interior bug).
+  const type = st?.buildingType || buildingTypeFor(w.scene.interior.structureKey);
   const dirs = interiorExitsFrom(topo, w.scene.interior.roomId);
   const byId = new Map(topo.rooms.map(r => [r.id, r]));
 

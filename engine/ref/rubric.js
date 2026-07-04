@@ -56,7 +56,13 @@ function roomExitsGroundTruth(world, room) {
   const st = world?.structures?.byId?.[room.structureId];
   const topo = normalizeTopology(st?.topology);
   if (!topo) return null;
-  const type = buildingTypeFor(room.structureId);
+  // Prefer the structure's STORED buildingType (what getRoomState uses to name
+  // the CURRENT room) and fall back to the id-hash only when absent — the same
+  // `st.buildingType || buildingTypeFor(id)` precedence LocalMap.js/placeFromNode.js
+  // already use. Using the raw hash here made a cottage's exits read as hive rooms
+  // ("Brood Cell"/"Hive Mouth") while getRoomState named the current room "Bedchamber",
+  // corrupting the coherence oracle (self-inconsistent interior in the same bundle).
+  const type = st?.buildingType || buildingTypeFor(room.structureId);
   const byId = new Map(topo.rooms.map(r => [r.id, r]));
   const dirs = interiorExitsFrom(topo, room.roomId);
   const out = {};

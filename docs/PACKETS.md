@@ -330,6 +330,12 @@ file) · P4 SERIAL (`engine/ref/rubric.js`, shared with the live Ref) · P6 last
 - **done_when:** one command, one report, one meter; duplicate detectors retired; both consumers on the shared
   lexicon.
 - **rollback:** keep the two instruments separate (they work independently by construction).
+- **PARTIAL DONE (2026-07-03, via CG-LIVE-1):** the "one shared comparator core" half of the unification is
+  already landed — CG-LIVE-1 extracted the Tier-D comparators VERBATIM out of `scripts/coherence-gate.mjs`
+  into a neutral pure module `engine/coherence/checks.js` (imported by BOTH the CLI checker, which re-exports
+  them so U388–U393 stayed byte-identical, AND the live shadow observer). Still open for CG-P6: merging the
+  transcript auditor C1–C5 into the same instrument, retiring superseded detectors, the shared claim-lexicon
+  with `engine/harness/oracles.js`, and the standing per-class desync-rate meter.
 
 > **CG-3 full lock-state check stays declared BLOCKED on the Interior Object Model** — when IOM lands per-object
 > state in the bundle the comparator is a one-liner; **do NOT build a pseudo-object-model in the checker to fake

@@ -1,0 +1,6 @@
+# CG-LIVE-1 shadow-mode observer run output — never commit the raw logs.
+# The observer (engine/coherence/shadowObserver.js) appends <date>.jsonl here
+# only when COHERENCE_SHADOW=1. Review them with:
+#   node scripts/coherence-gate.mjs --shadow docs/playtests/coherence-shadow/*.jsonl
+*.jsonl
+!.gitignore

@@ -7,6 +7,7 @@ import { buildNarratorContext, buildDMContext } from './ai/narratorContext.js';
 import { renderAsciiMapBlock } from './ai/asciiMap.js';
 import { buildAiHashTrace } from './ai/aiHashTrace.js';
 import { reviewNarration } from './ref/index.js';
+import { observeCoherenceShadow } from './coherence/shadowObserver.js';
 import { anthropicSamplingFields } from './llmModelRules.js';
 
 const ANTHROPIC_API = 'https://api.anthropic.com/v1/messages';
@@ -1385,6 +1386,15 @@ export async function augmentNarration({
     ctx
   });
   if (!ok) return base;
+
+  // SHADOW COHERENCE OBSERVER (CG-LIVE-1) — decoupled from the Ref's `enabled`
+  // (judge) flag, which is off in normal play; the deterministic coherence check
+  // is free and must still observe. Gated by COHERENCE_SHADOW=1 (default OFF →
+  // this is a no-op and byte-identical). Called for SIDE-EFFECT ONLY: it LOGS
+  // what it would flag as a desync and returns nothing that touches narration —
+  // the return value below (the player-visible line) is never affected. Never
+  // throws (the observer wraps itself in try/catch).
+  observeCoherenceShadow({ world, candidate, outcome });
 
   // THE REF (Tier 2) — a selective second opinion on the SOFT-source turns only,
   // AFTER the deterministic validator (Tier 1) has accepted the candidate. With

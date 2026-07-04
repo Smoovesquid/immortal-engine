@@ -905,10 +905,15 @@ sheet (no per-node islands); the camera keeps the player centered (no edges, eve
   v0.28.10** (`e45c045`: `playerFocusWu(world)` — camera + marker read the ONE engine-truth point via
   `resolveEntityWuFromWorld`, recentering on node/room/inside↔outside changes; manual pan holds until
   the next real move; **VG-F3 closed on the live surface**; U407/U408; zero v1.js/engine diffs; legacy
-  fixed-scale renderers confirmed dead-on-disk, no tabs to retire). → **WS-3** (absorb the interior
-  branch into the continuous zoom) — **DISPATCHED 2026-07-04-pm5** (Sonnet, `docs/briefs/WS-3-one-surface.md`,
-  U432–U433) **∥ DEC-1 DISPATCHED** (Opus, `docs/briefs/DEC-1-structure-back-decoratives.md`, U434–U435,
-  footprint-table-first, STRUCTURE_SCHEMA stop-and-flag).
+  fixed-scale renderers confirmed dead-on-disk, no tabs to retire). → **WS-3 ✅ LANDED (`21e72e9e` →
+  integrated, v0.28.13 b063):** the interior renderer fork in v1.js is RETIRED — one continuous sheet
+  always; camera snaps to a named plan-scale band indoors (re-snaps only on inside↔outside crossings, so
+  manual zoom survives room moves); current-room wash + unvisited dim ported to the sheet (INK_PARAMS);
+  live-verified end-to-end (boot indoors → expand same-sheet → zoom out through the plan → room walk →
+  step outside; U432–U433). Tim's "two disagreeing maps" acceptance CLOSED — one renderer remains.
+  **∥ DEC-1 ✅ LANDED (`9cc1fd7e` → `67994e5b`):** canonical per-type footprint table
+  (`engine/structures/settlementFootprint.js`, option (a) — no schema, no state, worldHash byte-identical);
+  well 36×20→2×2 wu; U434–U435; to-scale before/after SVGs in `docs/playtests/dec1/`.
   **WS-3 ACCEPTANCE (Tim, live sighting 2026-07-04-pm2):** expanding the map while indoors currently
   SWAPS SURFACES (interior plan → overworld, "I am no longer in my bedroom") and the two views disagree
   (different building shapes + different hand). done_when: expand-from-indoors opens the SAME sheet

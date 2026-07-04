@@ -20,6 +20,31 @@ done_when · rollback`.
 > after it, **SL-5** (Phase 1 — "Aldermere wants something"), which is **not yet packetized here**
 > (packetize before starting).
 
+### NODE-DESYNC-1 — a failed journey roll COMMITS the node move, and scene.interior survives it  ·  Phase 0  ·  **CRITICAL — QUEUED 2026-07-04 (live find, Basecamp map-land playtest); LLM-off repro first; playloop serial lane**
+- **The live repro (4 turns, pre-rolled Bryn Holt boot, v0.28.9):** ① "I get up and walk out to the hearth
+  room." → trivial-gate auto-success, NO move (the INT-4a class: trivial leading clause + an unrecognized
+  named-room movement remainder). ② "go to the hearth room" → resolver treats it as TRAVEL, narrates
+  **"It falls short here in The Greenwood, and you're left where you started."** — but `map.currentNodeId`
+  FLIPPED n0 (Aldermere) → n1 (The Greenwood) **while `scene.interior` stayed the Aldermere cottage**. The
+  "left where you started" line is false. ③ interior named-moves keep "working" in the stale building
+  (pantry → scullery at a node you're not at). ④ "look around" → **"You're inside The Greenwood."**
+- **Blast radius (why this is probably a deep root):** `nodeRoster()` keys occupancy off the CURRENT node,
+  so after the silent flip EVERY presence read (`occupantsOfRoom`, `outdoorOccupants`, `getRoomState`)
+  returns **empty** — wake building went {Hearth:3, Scullery:1, outdoors:1} → all-[] live. That empty-world
+  state is the same signature as the CG-1b disputed canon (`roomOccupants:[]` with 5 node-present NPCs,
+  2026-07-03 handoff finding #2) and plausibly feeds AG-4's "no record" dodges + the gate's "am I outside?"
+  confusion + VG-F2 wrong-place naming. **Check this FIRST when an interior "reads empty" or names the
+  wrong place.**
+- **Two seams:** (a) travel resolver — while `scene.interior` is set, "go to the <room name>" must resolve
+  on the INTERIOR graph, never enter node-travel (the TAC two-tier ruling, live evidence); AND a failed
+  travel roll must not commit the node (determine: commit-then-narrate-failure, or wrong-target match).
+  Capture the mech line + which intent path fired (Haiku ears vs parseIntent) in the LLM-off repro.
+  (b) invariant candidate — `scene.interior` ⇒ current node == the structure's node
+  (`assertWorldInvariants`), so this class can never sleep again.
+- **done_when:** LLM-off repro script shows the node stable across a failed journey + interior room-name
+  moves resolve interior-side; new invariant throws on the desync; corpus locks; gate utterances re-checked.
+- **rollback:** n/a (fix + invariant packet; spec before edit — this row is the spec's seed).
+
 ### INT — THE INTENT TRANSLATOR (Phase 0 — the structural close of Rung 1)  ·  **adopted 2026-07-03**
 **Provenance:** Tim's 2026-07-03 decision (Desktop memo `fable_rung1_llm_between_player_and_engine.md` +
 the in-session Fable ruling), executing `RUNG1_CONVERGENCE_PLAN.md` §3/§5 as option **(a)**. Trigger:
@@ -158,7 +183,9 @@ verbs — no parallel contract enum), `parseIntent` stays the LLM-off floor.
 - **order** (by lineage size / sink): referent-grounding (`[clarify:referent]`, sink S4) → dialogue-address
   (S5 deflect-and-wait) → combat table-talk (the CRUNCH seam) → compound multi-part asks (C1 remainder)
   → greeting/orientation address ("Oh, okay, so I'm outside now? Hi Asha." must greet + orient, never roll a
-  generic focus check — 2026-07-04 gate, Confused-newbie).
+  generic focus check — 2026-07-04 gate, Confused-newbie)
+  → named-room interior movement ("go to the hearth room" / "walk out to the hearth room" must resolve on the
+  interior room graph — today it falls to trivial-gate or NODE-TRAVEL; live 2026-07-04, see NODE-DESYNC-1).
   Cut each packet when its predecessor lands.
 - **ARC done-when (= PRD Phase 0 exit):** frozen corpus 100% **and** N consecutive gates open zero
   categorically-new failure classes **and** ≤2 broken turns per 48, twice running (2026-07-02: 9/48 → 4/48
@@ -788,6 +815,9 @@ structure + placed minis · 3-D tilt at full zoom · map truth = engine state, o
   hash projection; false "excluded" comment made true) + **MAP-OCC-1b** (`b97fc6c`, Basecamp — the
   worker-flagged interior twin: LocalMap §8 scattered the roster into random discovered rooms; now
   `interiorTokens.js` → `occupantsOfRoom` per room, U402). Suite 9588/0 + convergence 124/124 quiet-machine.
+  **Live-verify caveat:** the in-play interior draw (`drawInteriorV2`) passes player-only tokens — it never
+  drew people at all, so the live people layer arrives with TT-DRAW consuming `interiorTokens.js`; the §8
+  path is fixed for the views that use it. Outdoor fix verified live (1 true dot vs 5 phantom).
 - **S2 one sheet/camera:** WS-1 ✅ **LANDED 2026-07-04, v0.28.9** (`cf9455e` — interior-fit projection +
   `resolveEntityWu` single resolver, U400/U401; **premise correction:** `worldSpace.js` already existed
   live-wired (M1/M2/M6/M7-S; MAP_PATH 1.1 was PART-built — docs lagged code); worker added exactly the

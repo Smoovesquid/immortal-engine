@@ -2279,7 +2279,7 @@ function renderWalkPlace(world) {
     ui.place.ux = np.ux; ui.place.uy = np.uy;
     place.tokens[0].ux = np.ux; place.tokens[0].uy = np.uy;
     // R0 — persist walk position so reload restores exactly where you stood.
-    // Does NOT trigger render() or change worldHash (position is excluded from hash projection).
+    // Does NOT trigger render() or change worldHash (ux/uy are stripped from hash projection; see engine/crunchHashProjection.js).
     if (ui.world?.party?.[0]) {
       const prev = ui.world.party[0].position || {};
       ui.world.party[0].position = { ...prev, nodeId, ux: np.ux, uy: np.uy };

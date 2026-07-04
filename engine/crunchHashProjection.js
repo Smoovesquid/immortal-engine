@@ -16,6 +16,12 @@
 //   - foci
 //   - inventory.items (by id)
 //   - spells.known
+//
+// MAP-OCC-2 — position.ux/uy are renderer-owned pixel render coordinates
+// (the on-screen walk position), not canon. They must NOT affect the
+// world's determinism fingerprint: two replays that end at the same
+// nodeId/zone but differ in exact pixel offset are the same world. Drop
+// them from the hash image; keep nodeId/zone/interior, which ARE canon.
 
 export function projectPartyForHash(party) {
   if (!Array.isArray(party)) return party;
@@ -28,6 +34,7 @@ function projectMember(m) {
   const spells = m.spells && typeof m.spells === 'object' ? m.spells : {};
   return {
     ...m,
+    position: projectPosition(m.position),
     foci: Array.isArray(m.foci) ? [...m.foci].sort() : m.foci,
     inventory: {
       ...inv,
@@ -40,6 +47,15 @@ function projectMember(m) {
       known: Array.isArray(spells.known) ? [...spells.known].sort() : spells.known
     }
   };
+}
+
+// MAP-OCC-2 — strip renderer-owned pixel coordinates (ux/uy) from a
+// party member's position before hashing. Everything else on position
+// (zone, nodeId, interior, ...) is canon and stays.
+function projectPosition(position) {
+  if (!position || typeof position !== 'object') return position;
+  const { ux, uy, ...rest } = position;
+  return rest;
 }
 
 function compareById(a, b) {

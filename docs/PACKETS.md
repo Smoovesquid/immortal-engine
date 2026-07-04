@@ -896,14 +896,15 @@ sheet (no per-node islands); the camera keeps the player centered (no edges, eve
   CONCURRENT parallel suites (port contention) and passes quiet — 2026-07-04 diagnosis, three lanes
   corroborated. Packet: bind an ephemeral port (or retry-on-EADDRINUSE) in U381; done_when = two full
   suites running simultaneously both pass it.
-- **S3 tabletop look:** **TT-DRAW** (drawn-structure layer — buildings render their `floorPlan` ink +
-  roads/water contours at local zoom; placed-mini 2-D tokens from occupancy + roomObjects; **fog-of-war
-  restore** per decision #2) **QUEUE after WS-1 + OCC-1**.
+- **S3 tabletop look:** **TT-DRAW** — **DISPATCHED 2026-07-04-pm2** (Sonnet worktree; brief
+  `docs/briefs/TT-DRAW-tabletop-look.md`; tests U409–U411; resolves the WS-1 catalog-vs-floorPlan fork —
+  drawn layer uses the REAL plans; fog restore rides along; taste-gated by Tim on screenshots).
 - **S4 the tilt:** MAP-3DR (persistent mount, below) + tilt-threshold retune by eye (decision #1) +
   combat folds into the one scene (`MAP_QUEUE.md` "NEXT PACKET" spec) **QUEUE after S3**.
-- **S5 5-ft truth:** TAC — **contract WRITTEN 2026-07-04: `docs/POSITION_AS_CANON.md`** (position becomes
-  CANON; frames, 30-ft budget, propose→ground→commit; rollout table TAC-1..5 inside) → next = packetize
-  TAC-1 (`WORLD_VERSION` bump), serial engine lane.
+- **S5 5-ft truth:** TAC — contract written + revised (`docs/POSITION_AS_CANON.md`); **TAC-1 DISPATCHED
+  2026-07-04-pm2** (Opus worktree; brief `docs/briefs/TAC-1-position-schema.md`; tests U412–U415;
+  `WORLD_VERSION` bump + `pos` schema + seeded placement, DARK — zero behavior change; serial engine
+  lane, zero overlap with the TT-DRAW renderer lane).
 
 ### MAP-3DR — reconnect the 3D diorama on a persistent mount  ·  **Phase 4 (the face)  ·  = TABLETOP S4; cut the packet when S3 lands**
 - **why parked (2026-07-03, Tim's call):** the 3D layer was DISCONNECTED (`MAP_3D_ENABLED=false`,

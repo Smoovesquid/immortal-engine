@@ -71,6 +71,33 @@ done_when · rollback`.
 - **done_when:** journey turns roll the elevated table LLM-off; a triggered ambush provably opens with the
   surprise condition; walking the same route turn-by-turn provably does NOT carry the premium; corpus locks.
 
+### GATE 2026-07-04-2 — Ref-off baseline error analysis (v0.28.10 · 14/48 · `opus-gate-2026-07-04-2.md`)
+**The honest read:** 14/48 (29%) vs 9/48 Ref-on — NOT a regression story: the floor we built HELD
+(**Confused newbie 12/12 clean**; the lore-hound "no record" NPC-dodge cluster from 07-04-1 did NOT recur —
+NODE-DESYNC-1 + presence repair dissolved most of AG-4's observed evidence), and the judge now reaches
+DEEPER classes. First full Ref-off measurement = the new system's baseline. Clusters → owners:
+- **RL-1 (NEW, 8 of 14: Rules-Lawyer rules-answer cluster)** — "is it d20−2 vs a TN? what's a basic foe's
+  defense?" got raw modifier-breakpoint TABLE DUMPS (DM_ARTIFACT_LEAK ×2), the PLAYER'S own Armor as the
+  enemy's TN, and repeats. **Design tension for Tim:** the hide-the-math law vs a player who explicitly
+  demands the math. Proposed DM-Test answer: confirm the SHAPE in-fiction ("a d20, your might behind it —
+  beat the foe's guard; most common bandits' guard sits near your own") without leaking internals; never
+  dump a breakpoint table; never answer the enemy's TN with the player's Armor. NEEDS TIM'S TASTE CALL,
+  then packetize (llmAdapter DM-prompt + a deterministic rules-answer floor).
+- **THROW/DROP misroute (Chaos arson, 2–3 fails)** — "hurl the lantern"/"drop it on the pallet" matched the
+  `take:already-held` sink → the throw silently never happened. → INT-4 family row (below). The fire-on-straw
+  no-ignition + roll:1-narrated-as-success physics contradiction → P-80/DX consequence-physics evidence.
+- **Letter-sequence compound (Lore-hound ×2, one HIGH)** — "set it down, walk, pick it up, read" → "You step
+  back outside" non-sequitur. = INT-4 compound multi-part remainder (already in the stub order; this is its
+  sharpest evidence yet).
+- **COMBAT_NOT_STARTED (1)** — "step outside looking for something to fight" → no encounter path fired.
+- **Shadow observer (CG-LIVE-2 data): fire rate 2.8% (1/36) — boring, as hoped — but the ONE fire is a
+  FALSE POSITIVE:** narration said "Elske Nightherd is **elsewhere**…" (a correct ABSENCE statement) and the
+  CG-1b comparator counted the name-mention as in-room speech. → **CG-1c (small, free): absence/negation
+  guard in the presence comparator** — required before CG-LIVE-2 flips to regenerate.
+- **AG-4 status:** brief is STALE — most of its observed cluster was NODE-DESYNC shadow. Re-scope against
+  this run before any dispatch (the phrase-bank "no record for self-questions" fix likely still right;
+  the per-topic escalation evidence needs re-confirming).
+
 ### INT — THE INTENT TRANSLATOR (Phase 0 — the structural close of Rung 1)  ·  **adopted 2026-07-03**
 **Provenance:** Tim's 2026-07-03 decision (Desktop memo `fable_rung1_llm_between_player_and_engine.md` +
 the in-session Fable ruling), executing `RUNG1_CONVERGENCE_PLAN.md` §3/§5 as option **(a)**. Trigger:
@@ -211,7 +238,11 @@ verbs — no parallel contract enum), `parseIntent` stays the LLM-off floor.
   → greeting/orientation address ("Oh, okay, so I'm outside now? Hi Asha." must greet + orient, never roll a
   generic focus check — 2026-07-04 gate, Confused-newbie)
   → named-room interior movement ("go to the hearth room" / "walk out to the hearth room" must resolve on the
-  interior room graph — today it falls to trivial-gate or NODE-TRAVEL; live 2026-07-04, see NODE-DESYNC-1).
+  interior room graph — today it falls to trivial-gate or NODE-TRAVEL; live 2026-07-04, see NODE-DESYNC-1
+  — ✅ landed with NODE-DESYNC-1 `881c79b`)
+  → **throw/hurl/drop of a HELD object** must never resolve as `take:already-held` ("I hurl the lantern
+  against the wall" → "the lantern is already tucked in your pack" — gate 2026-07-04-2, Chaos ×2; the
+  throw silently never happens).
   Cut each packet when its predecessor lands.
 - **ARC done-when (= PRD Phase 0 exit):** frozen corpus 100% **and** N consecutive gates open zero
   categorically-new failure classes **and** ≤2 broken turns per 48, twice running (2026-07-02: 9/48 → 4/48

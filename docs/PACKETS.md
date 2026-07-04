@@ -20,7 +20,7 @@ done_when · rollback`.
 > after it, **SL-5** (Phase 1 — "Aldermere wants something"), which is **not yet packetized here**
 > (packetize before starting).
 
-### NODE-DESYNC-1 — a failed journey roll COMMITS the node move, and scene.interior survives it  ·  Phase 0  ·  **CRITICAL — QUEUED 2026-07-04 (live find, Basecamp map-land playtest); LLM-off repro first; playloop serial lane**
+### NODE-DESYNC-1 — a failed journey roll COMMITS the node move, and scene.interior survives it  ·  Phase 0  ·  **CRITICAL — DISPATCHED 2026-07-04-pm (Opus worktree; brief `docs/briefs/NODE-DESYNC-1.md`; tests U403–U406). SCOPE WIDENED by Tim's 2026-07-04-pm MOVEMENT LAW:** self-powered movement ≤6 cells/turn ALWAYS — a movement command must be *structurally unable* to change the node (not just the failed-roll seam); far-place requests route ONLY to the explicit journey verb (fast travel; risk premium = JR-1). Contract: `docs/POSITION_AS_CANON.md` §3.
 - **The live repro (4 turns, pre-rolled Bryn Holt boot, v0.28.9):** ① "I get up and walk out to the hearth
   room." → trivial-gate auto-success, NO move (the INT-4a class: trivial leading clause + an unrecognized
   named-room movement remainder). ② "go to the hearth room" → resolver treats it as TRAVEL, narrates
@@ -44,6 +44,21 @@ done_when · rollback`.
 - **done_when:** LLM-off repro script shows the node stable across a failed journey + interior room-name
   moves resolve interior-side; new invariant throws on the desync; corpus locks; gate utterances re-checked.
 - **rollback:** n/a (fix + invariant packet; spec before edit — this row is the spec's seed).
+
+### JR-1 — journey = fast travel with a risk premium  ·  Phase 0/4 seam  ·  **QUEUE (after NODE-DESYNC-1; same playloop serial lane)**
+- **Tim's parameter (2026-07-04-pm):** an explicit far-place request ("I want to go to the Greenwood") the
+  DM resolves in one action — but you fast-forwarded ground you weren't watching, so **the chance of a
+  negative consequence is ELEVATED** vs. walking it, and **whatever triggers opens with the player
+  SURPRISED** (on the enemy's terms). Walking manually (≤6 cells/turn, many turns) keeps full vigilance —
+  that slowness is intended; it's what fast travel is priced against.
+- **seams:** the explicit journey handler (post NODE-DESYNC-1 it's the ONLY node mover) + encounter roll
+  scaling + a "surprised opening" hook in `escapeCombat` (enemy acts first / player reacts late — design
+  the minimal v1 shape at packet time). Interruption drops the traveler en route (node edge interim;
+  region cell once TAC-1's grid exists).
+- **invariants:** determinism (seeded encounter rolls via rng.js); narrate-the-read-never-the-number (the
+  DM says "the road felt watched," not "+30% encounter chance"); DM-only verb.
+- **done_when:** journey turns roll the elevated table LLM-off; a triggered ambush provably opens with the
+  surprise condition; walking the same route turn-by-turn provably does NOT carry the premium; corpus locks.
 
 ### INT — THE INTENT TRANSLATOR (Phase 0 — the structural close of Rung 1)  ·  **adopted 2026-07-03**
 **Provenance:** Tim's 2026-07-03 decision (Desktop memo `fable_rung1_llm_between_player_and_engine.md` +
@@ -809,7 +824,12 @@ to confirm it doesn't regress dialogue, so it's its own packet.
 
 ### TABLETOP — the map arc, stage index  ·  **Tim greenlit the full plan 2026-07-04; all four TABLETOP_MAP.md open questions DECIDED**
 **The plan** (Basecamp, from Tim's 2026-07-04 vision statement): region→5-ft continuous zoom · drawn
-structure + placed minis · 3-D tilt at full zoom · map truth = engine state, one-way. Stages → packets:
+structure + placed minis · 3-D tilt at full zoom · map truth = engine state, one-way.
+**⚖️ THE MOVEMENT LAW (Tim, 2026-07-04-pm — governs the whole arc):** self-powered movement = ≤6 squares
+(30 ft)/turn, with NO node-travel as an ordinary action; far-place requests = DM fast travel with a risk
+premium (elevated consequence chance + surprised opening, JR-1); the outdoor grid is ONE continuous region
+sheet (no per-node islands); the camera keeps the player centered (no edges, ever). Contract:
+`docs/POSITION_AS_CANON.md` (revised 2026-07-04-pm). Enforcement: NODE-DESYNC-1 (dispatched). Stages → packets:
 - **S1 truth floor:** ✅ **LANDED 2026-07-04, v0.28.9** — MAP-OCC-1 (`30ed49e` outdoor tokens from
   `outdoorOccupants`; tallow boot 5→1 tokens) + MAP-OCC-2 (`3b02f8e` pixel ux/uy structurally OUT of the
   hash projection; false "excluded" comment made true) + **MAP-OCC-1b** (`b97fc6c`, Basecamp — the
@@ -824,8 +844,9 @@ structure + placed minis · 3-D tilt at full zoom · map truth = engine state, o
   missing interior half. **Fork flagged for WS-2:** village art draws catalog-plan room shapes while
   movement/interior-projection use the real `floorPlan` — reconcile when wiring). → **WS-2** (one camera +
   LOD; absorbs the v0.28.8 inside/outside branch as an LOD band; retires scale tabs; in-play + Map tab =
-  one renderer — MAP_PATH 1.2/1.3; marker consumes `resolveEntityWu`) **QUEUE, next in the renderer lane
-  once the active v1.js window is quiet**.
+  one renderer — MAP_PATH 1.2/1.3; marker consumes `resolveEntityWu`) — **DISPATCHED 2026-07-04-pm**
+  (Sonnet worktree; brief `docs/briefs/WS-2-one-camera.md`; tests U407–U408; scope = MAP_PATH 1.2 +
+  player-centered FOLLOW per the movement law; interior-branch absorption deferred to WS-3).
 - **HARNESS (small, queue):** U381 (`server.js /api/move` confidence-gate HTTP test) fails under
   CONCURRENT parallel suites (port contention) and passes quiet — 2026-07-04 diagnosis, three lanes
   corroborated. Packet: bind an ephemeral port (or retry-on-EADDRINUSE) in U381; done_when = two full

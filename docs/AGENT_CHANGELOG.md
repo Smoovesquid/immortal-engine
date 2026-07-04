@@ -1,5 +1,11 @@
 # AGENT_CHANGELOG
 
+2026-07-04-pm — Basecamp (Fable 5) — **THE MOVEMENT LAW locked (Tim) + NODE-DESYNC-1/WS-2 dispatched**
+- **Tim's parameter (re-articulated + confirmed):** self-powered movement = ≤6 squares (30 ft)/turn, NO node-travel as an ordinary action; far-place requests = DM **fast travel with a risk premium** (elevated negative-consequence chance + SURPRISED opening — you fast-forwarded ground you weren't watching); the outdoor grid is **one continuous region sheet** (no per-node islands, no "between nodes" null); the **camera keeps the player centered** (no edges, ever).
+- **`POSITION_AS_CANON.md` REVISED** (§0 status, §1 region frame + currentNodeId-as-projection staging, §3 THE LAW + journey-as-fast-travel, §6 camera law, §7 JR-1 row + NODE-DESYNC-1 precursor). `TABLETOP_MAP.md` cross-linked; PACKETS index carries the law; **JR-1 queued** (risk premium, after NODE-DESYNC-1, same serial lane).
+- **Dispatched:** NODE-DESYNC-1 (Opus worktree, playloop serial — movement structurally node-stable + interior/node invariant + named-room interior moves + honest move narration; U403–U406) ∥ WS-2 (Sonnet worktree, renderer — one camera, follow-the-player, marker through `resolveEntityWu`, closes VG-F3; U407–U408). AG-4 remains parked (playloop lane is NODE-DESYNC-1's).
+- Memory updated: [[project_tactical_travel_two_tier]] refined with the law; [[project-node-interior-desync]] check-first note (written at the am land).
+
 2026-07-04 — Basecamp (Fable 5) — **v0.28.9 build 059 "the map never lies": TABLETOP S1 + WS-1 LANDED** (3 worker lanes + 1 Basecamp absorb)
 - **MAP-OCC-1** (`30ed49e`, Sonnet worktree): outdoor tokens = `outdoorOccupants(world)`, not roster scatter — tallow boot went 5 phantom tokens → 1 true one; other-node views under-show rather than fabricate. U398/U399.
 - **MAP-OCC-1b** (`b97fc6c`, Basecamp — absorbed the worker's follow-up flag same-hour instead of chip-ing it): the interior floor plan had the IDENTICAL bug live on-screen since v0.28.8 (LocalMap §8 seeded the whole roster into random discovered rooms). New hermetic `public/map/interiorTokens.js` → `occupantsOfRoom` per discovered room; undiscovered rooms keep occupants hidden. U402 ×4.

@@ -65,6 +65,11 @@ This is a **renderer swap over engine-owned positions** — the determinism line
   "position-as-canon" contract (the `TAC` two-tier-travel packet, unblocked now
   that INT-4a landed). Until then, minis can place at **room granularity**
   (which room you're in) — already enough to fix the doorway-movement bug.
+- **THE MOVEMENT LAW + the camera (Tim, 2026-07-04-pm):** self-powered movement
+  is ≤6 squares (30 ft)/turn — never node travel; far places = DM fast travel
+  with a risk premium (`JR-1`). The camera keeps the **player centered** — the
+  sheet re-orients around you; there are no per-place sheets and no edges. Full
+  text: `POSITION_AS_CANON.md` §3/§6. Enforcement: `NODE-DESYNC-1`; camera: `WS-2`.
 
 ## What this fixes beyond looks
 

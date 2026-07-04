@@ -901,11 +901,17 @@ sheet (no per-node islands); the camera keeps the player centered (no edges, eve
   CONCURRENT parallel suites (port contention) and passes quiet — 2026-07-04 diagnosis, three lanes
   corroborated. Packet: bind an ephemeral port (or retry-on-EADDRINUSE) in U381; done_when = two full
   suites running simultaneously both pass it.
-- **S3 tabletop look:** **TT-DRAW** — **DISPATCHED 2026-07-04-pm2** (Sonnet worktree; brief
-  `docs/briefs/TT-DRAW-tabletop-look.md`; tests U409–U411; resolves the WS-1 catalog-vs-floorPlan fork —
-  drawn layer uses the REAL plans; fog restore rides along; taste-gated by Tim on screenshots).
-  **ACCEPTANCE (Tim, live sighting 2026-07-04-pm2): "the extra roofs are still there" — NO roof art may
-  survive at ANY zoom** (drawn plans/footprints have no roof to detach; gate the land on this on-screen).
+- **S3 tabletop look:** ✅ **TT-DRAW LANDED (`02c3721`) + TT-DRAW-2 LANDED (`33f8fa73`), v0.28.11 b061** —
+  drawn-plan layer from the REAL `floorPlan` (door gaps visible; U409–U411), trees/people as placed
+  tokens, fog logic in; then the taste-gate fixes: **one sizing truth** (every structure-backed building
+  draws at its `structureWorldRect`; art may never overhang the true footprint — the extra-roofs root)
+  + **Z_MAX 16→60** (a plan fills the frame, names legible; U416–U417).
+  **ACCEPTANCE (Tim): no roof art at any zoom** — enforced for every structure-backed building; roof-line
+  style for UNENTERED buildings = subtle inset line (Tim taste call still open: line vs bare outline).
+  **KNOWN GAP → DEC-1 (queue):** decorative-only settlement buildings (tallow: well/workshop/smithy) have
+  NO `world.structures.byId` record → no true rect → still catalog-sized art beside true-scale neighbors
+  (mitigated: true plans paint on top). Fix = structure-back all settlement buildings (village-layout /
+  structure-gen scope, NOT renderer) — cut when the map track next touches village data.
 - **S4 the tilt:** MAP-3DR (persistent mount, below) + tilt-threshold retune by eye (decision #1) +
   combat folds into the one scene (`MAP_QUEUE.md` "NEXT PACKET" spec) **QUEUE after S3**.
 - **S5 5-ft truth:** TAC — contract written + revised (`docs/POSITION_AS_CANON.md`); **TAC-1 LANDED

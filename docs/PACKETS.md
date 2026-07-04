@@ -1029,6 +1029,13 @@ sheet (no per-node islands); the camera keeps the player centered (no edges, eve
   didn't stick). Fix = THE RULE (footprint ∩ road-corridor = ∅, no give-up path, props included) +
   ONE road network (per-edge world-unit polylines whose terminals ARE each village's lane endpoints;
   one geometry drawn at every band). Brief `docs/briefs/ROADS-1-one-road-truth.md`; U439–U441; Opus.
+  ✅ **LANDED v0.28.17 b067** (`47bc61c4` → `fda69a9b`): THE RULE enforced (corridor-aware placement,
+  give-up-and-overlap path DELETED, deterministic projection to clear ground, well beside the lane;
+  plus the load-bearing fix — off-center plans could TEST clear while DRAWING onto the road, the real
+  reason past fixes never stuck); new `public/map/roadNetwork.js` = the one network (41/41 edges one
+  polyline each, seam-join exact 0.0 wu, lane terminals = network terminals); `roadMeanderPts` live
+  draw retired; numeric proof 0 corridor hits / 0 overlaps; receipts `docs/playtests/roads1/`.
+  Tim's two sentences are structurally true.
 - **S4 the tilt:** MAP-3DR (persistent mount, below) + tilt-threshold retune by eye (decision #1) +
   combat folds into the one scene (`MAP_QUEUE.md` "NEXT PACKET" spec) **QUEUE after S3**.
 - **S5 5-ft truth:** TAC — contract written + revised (`docs/POSITION_AS_CANON.md`); **TAC-1 LANDED

@@ -1957,6 +1957,18 @@ other agents. (none active)
   targets), then promote C23 (124→126).
 - Integration ladder GREEN: convergence 124/124, suite 9803/0, determinism green.
 
+## 2026-07-04 — Basecamp (ROADS-1 integration → v0.28.17 build 067)
+
+- Landed ROADS-1 "one road truth" (`47bc61c4` → `fda69a9b`, +791/−30): THE RULE (no building/prop on
+  road squares — corridor-aware placement, give-up-and-overlap path deleted, deterministic projection
+  to clear ground) + ONE road network (new `public/map/roadNetwork.js`; per-edge world-unit polylines,
+  lane terminals = network terminals, seam 0.0 wu; `roadMeanderPts` live draw retired; dashed grammar
+  far / ribbon close from the same geometry). Load-bearing root found by the worker: off-center plans
+  tested clear while drawing onto the road — why past fixes never stuck. U439–U441 (10 subtests);
+  receipts `docs/playtests/roads1/` (street band, lane-continues-out, region band).
+- Integration ladder GREEN on re-run: convergence 124/124, suite 9813/0 (one U381-class load flake on
+  the first run, documented profile, passed clean after); determinism green. Front door v0.28.17 b067.
+
 2026-07-04 — Sonnet (worker worktree, PERC-1) — LOGIC DONE, WIRING PENDING (playloop.js fenced)
 - Packet/seam: `docs/PACKETS.md` PERC-1 — 2026-07-04 gate (Chaos-griefer, CRUNCH_INCONSISTENCY): "Wait — is
   the ceiling still on fire or not? I stand in the middle of the room and look up." rolled a NATURAL 1 vs DC

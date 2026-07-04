@@ -159,11 +159,28 @@ function seedFirstAperture(w) {
 
 // ── v1 Escape: per-travel chance of a creature ambush. Tuned so the journey has
 // real risk without becoming a death-spiral — most hops are clear, some bite.
-const ESCAPE_ENCOUNTER_CHANCE = 0.3;
+// This is the WALKING rate (arriving at a node one overworld cell at a time): you
+// were watching the ground, so the base chance stands.
+export const ESCAPE_ENCOUNTER_CHANCE = 0.3;
+// JR-1 — the FAST-TRAVEL (journey) risk premium. An explicit "take me to X" fast-
+// forwards ground you weren't watching, so a journey rolls the encounter table at
+// this ELEVATED rate. Because a single-hop journey and a walked arrival draw the
+// SAME seeded float (`${seed}|escapeEncounter|${node}|${timeline}`) and only the
+// threshold differs, the premium is a strict monotone superset of the walking risk:
+// every float that would bite a walker also bites a traveller, PLUS the premium band
+// [ESCAPE_ENCOUNTER_CHANCE, JOURNEY_ENCOUNTER_CHANCE) bites only the traveller.
+// The asymmetry is therefore provable per-seed, not merely statistical (U420).
+export const JOURNEY_ENCOUNTER_CHANCE = 0.45;
 // Per-LEG chance during a multi-hop journey. Much lower than a single arrival so a
 // long trip doesn't compound to near-certain combat: e.g. a 3-leg journey is then
 // ~39% to be ambushed once (1-0.85^3), not ~78%. Longer trips stay modestly riskier.
-const MULTIHOP_LEG_CHANCE = 0.15;
+// This is the base (walked) per-leg reference; journeys elevate it below.
+export const MULTIHOP_LEG_CHANCE = 0.15;
+// JR-1 — the journey per-leg premium: MULTIHOP_LEG_CHANCE scaled by the same
+// single-hop premium ratio (0.45/0.3 = 1.5×), so a long fast-travel is proportionally
+// riskier per leg than covering that leg on foot. Kept well under 0.5 so a many-hop
+// trip stays survivable rather than a guaranteed gauntlet.
+export const JOURNEY_LEG_CHANCE = clamp01(MULTIHOP_LEG_CHANCE * (JOURNEY_ENCOUNTER_CHANCE / ESCAPE_ENCOUNTER_CHANCE));
 // Wandering off-road into open country is riskier per step than reaching a refuge,
 // but lower than an arrival roll so the wild isn't a meat grinder — most tiles are
 // quiet, the empty stretches are where something occasionally finds you.
@@ -2293,7 +2310,9 @@ function playerMoveCore(world, packsById, text, dqIntent) {
           w1 = maybeCheckGoals(w1);
           // The journey may be set upon. Road-ish country → brigands/a toll (an
           // interactive encounter: pay/talk/slip/fight). Wild country → a beast ambush.
-          const enc = maybeTravelEncounter(w1, before, ESCAPE_ENCOUNTER_CHANCE, nextName);
+          // JR-1: fast travel rolls the ELEVATED premium table (vs. the base walking
+          // rate) — you fast-forwarded ground you weren't watching.
+          const enc = maybeTravelEncounter(w1, before, JOURNEY_ENCOUNTER_CHANCE, nextName);
           w1 = enc.world;
           if (enc.kind === 'pending') {
             return { world: w1, output: { narration: brigandSceneLine(w1.travel.pending, nextName), mechanics: '[encounter:pending]' } };
@@ -2303,28 +2322,23 @@ function playerMoveCore(world, packsById, text, dqIntent) {
           const flavor = here ? biomeFlavor(w1.meta.seed, here) : '';
           const arrivalLine = `Wizard: You set out, and after ${timeWord} you reach ${nextName || 'the place ahead'}${flavor ? `, ${flavor}` : ''}.`;
           if (ambushed) {
-            // Surprise is contested: a wary/perceptive party catches the movement
-            // in time; a distracted one is caught flat-footed and eats a free strike.
-            const srng = makeRng(seedFromString(`${w1.meta.seed}|surprise|${destId}|${w1.timeline.length}`));
-            const surprised = isSurprisedByAmbush(w1, srng);
-            let lead, mech;
-            if (surprised) {
-              const sr = applySurpriseRound(w1, srng);
-              w1 = sr.world;
-              const blow = sr.beats.length ? ` ${sr.beats.join(' ')}` : '';
-              lead = `${arrivalLine} You never saw them — something native to this country was lying in wait.${blow}`;
-              mech = '[ambush | surprise]';
-            } else {
-              lead = `${arrivalLine} But you catch the movement at the edge of sight in time: something native to this country meant to take you unawares, and now you meet it ready.`;
-              mech = '[ambush | spotted]';
-            }
-            return { world: w1, output: { narration: lead, mechanics: mech } };
+            // JR-1: a journey ambush ALWAYS opens on the enemy's terms — you were fast-
+            // travelling, not watching the ground, so the surprise is not contested (a
+            // creeping, cell-by-cell walker would get that vigilance; a traveller does
+            // not). The enemy takes a free opening strike before the player can act.
+            const os = openJourneyAmbushSurprised(w1, `${destId}`);
+            w1 = os.world;
+            const lead = `${arrivalLine} You never saw them — something native to this country was lying in wait.${os.blow}`;
+            return { world: w1, output: { narration: lead, mechanics: '[ambush | surprise]' } };
           }
           // A clear journey may still have something on the road — a terrain-typed,
           // non-combat beat (observational; doesn't presume the player's choices).
           const beat = travelBeat(w1.meta.seed, here, w1.timeline.length);
           const ecoLine = here ? ecologyTravelLine(w1.meta.seed, biomeForNode(w1.meta.seed, here), w1.time?.turn ?? 0, destId) : '';
-          const extra = beat || ecoLine; // prefer the journey beat when one fires
+          // JR-1: a terrain beat wins when one fires; otherwise the felt premium of fast
+          // travel colors the arrival (the read, never the number). A journey therefore
+          // always reads as riskier ground than the same walk — even when nothing bit.
+          const extra = beat || ecoLine || journeyPremiumFlavor(w1.meta.seed, destId, w1.timeline.length);
           const narration = extra ? `${arrivalLine} ${extra}` : arrivalLine;
           return { world: w1, output: { narration, mechanics: beat ? '[travel | journey-arrive | beat]' : '[travel | journey-arrive]' } };
         }
@@ -2349,7 +2363,8 @@ function playerMoveCore(world, packsById, text, dqIntent) {
             w1 = moveToNode(w1, legId);
             if (String(ensureMap(w1.map).currentNodeId || '') !== legId) break; // safety
             stoppedAt = legId;
-            const enc = maybeTravelEncounter(w1, beforeLeg, MULTIHOP_LEG_CHANCE, farName); // road→brigands, wild→beast
+            // JR-1: each leg of a fast-travel rolls the elevated per-leg premium.
+            const enc = maybeTravelEncounter(w1, beforeLeg, JOURNEY_LEG_CHANCE, farName); // road→brigands, wild→beast
             w1 = enc.world;
             if (enc.kind === 'pending') { pendingEnc = true; break; }
             if (w1.combat?.active) { ambushed = true; break; }
@@ -2378,20 +2393,19 @@ function playerMoveCore(world, packsById, text, dqIntent) {
           const afterWord = timeWord === 'a short way' ? 'A short way on' : `After ${timeWord} on the road`;
           const flavor = here2 ? biomeFlavor(w1.meta.seed, here2) : '';
           if (ambushed) {
-            const srng = makeRng(seedFromString(`${w1.meta.seed}|surprise|${stopId}|${w1.timeline.length}`));
-            const surprised = isSurprisedByAmbush(w1, srng);
+            // JR-1: a journey ambush opens on the enemy's terms (unconditional surprise
+            // — you were fast-travelling, not watching). The interrupt drops you at the
+            // real node you reached, and the narration NAMES where honestly.
             const where = (stopId === farId) ? `just short of ${destName}` : `near ${stopName}, still short of ${destName}`;
-            if (surprised) {
-              const sr = applySurpriseRound(w1, srng); w1 = sr.world;
-              const blow = sr.beats.length ? ` ${sr.beats.join(' ')}` : '';
-              return { world: w1, output: { narration: `Wizard: You set out for ${destName}. ${afterWord}, ${where}, you never see them — something native to this country was lying in wait.${blow}`, mechanics: '[ambush | surprise]' } };
-            }
-            return { world: w1, output: { narration: `Wizard: You set out for ${destName}. ${afterWord}, ${where}, you catch the movement in time and meet it ready: something native to this country meant to take you unawares.`, mechanics: '[ambush | spotted]' } };
+            const os = openJourneyAmbushSurprised(w1, `${stopId}`);
+            w1 = os.world;
+            return { world: w1, output: { narration: `Wizard: You set out for ${destName}. ${afterWord}, ${where}, you never see them — something native to this country was lying in wait.${os.blow}`, mechanics: '[ambush | surprise]' } };
           }
           const arrivalLine = `Wizard: You set out for ${destName}, and ${afterWord.toLowerCase()} you reach it${flavor ? `, ${flavor}` : ''}.`;
           const beat = travelBeat(w1.meta.seed, here2, w1.timeline.length);
           const ecoLine = here2 ? ecologyTravelLine(w1.meta.seed, biomeForNode(w1.meta.seed, here2), w1.time?.turn ?? 0, stopId) : '';
-          const extra = beat || ecoLine;
+          // JR-1: same felt-premium fallback as the single-hop clear arrival.
+          const extra = beat || ecoLine || journeyPremiumFlavor(w1.meta.seed, stopId, w1.timeline.length);
           return { world: w1, output: { narration: extra ? `${arrivalLine} ${extra}` : arrivalLine, mechanics: beat ? '[travel | journey-arrive | beat]' : '[travel | journey-arrive]' } };
         }
       }
@@ -3998,27 +4012,24 @@ function legLeagues(fromNode, toNode) {
   return 3;
 }
 
-// Stage C.2 slice 2 — surprise is CONTESTED. A perceptive/wary character is hard
-// to surprise. Vigilance = WITS modifier + a bonus if the build reads as watchful
-// (a scout/ranger/perception focus, a wary vibe, etc.). DC is the ambush's stealth.
-const SURPRISE_DC = 8;
-const VIGILANCE_RE = /\b(perceiv|percept|scout|surviv|alert|watch|wary|vigil|ranger|tracker|hunter|outrider|sentinel|guide|keen|sharp.?eyed|lookout|warden)\b/i;
-function hasVigilanceSkill(pc) {
-  if (!pc || typeof pc !== 'object') return false;
-  const bag = [];
-  if (Array.isArray(pc.foci)) bag.push(...pc.foci.map(String));
-  bag.push(String(pc.archetype || ''), String(pc.vibe || ''));
-  const tr = pc.traits || {};
-  bag.push(String(tr.vibe || ''), String(tr.ideal || ''), String(tr.detail || ''));
-  return VIGILANCE_RE.test(bag.join(' '));
-}
-// Returns true if the party is caught off guard by an ambush (failed the contest).
-function isSurprisedByAmbush(world, rng) {
-  const pc = world.party?.[0] || {};
-  const witsMod = statMod(Number(pc.stats?.WITS ?? 10));
-  const skillBonus = hasVigilanceSkill(pc) ? 3 : 0;
-  const vigilance = rng.int(1, 20) + witsMod + skillBonus;
-  return vigilance < SURPRISE_DC;
+// JR-1 — open a JOURNEY (fast-travel) ambush on the enemy's terms. Fast travel means
+// you fast-forwarded ground you weren't watching, so the surprise is UNCONDITIONAL
+// (unlike a cell-by-cell walker, who is watching and never gets ambushed-with-surprise
+// at all in this model — the asymmetry is the point). Sets the transient combat.surprised
+// flag (canonically, through applyDeltas) and lets each ambusher take one free opening
+// strike before the player can act (applySurpriseRound). Deterministic via a seed keyed
+// on the journey context. Returns { world, blow } where `blow` is the pre-spaced beats.
+function openJourneyAmbushSurprised(world, tag) {
+  let w = world;
+  if (!w.combat?.active) return { world: w, blow: '' };
+  // Mark the fight as opened-surprised BEFORE the free strikes, so any downstream
+  // read (combat UI, defeat-in-surprise) sees the condition set.
+  w = applyDeltas(w, [{ op: 'combatState', set: { surprised: true } }]);
+  const srng = makeRng(seedFromString(`${w.meta.seed}|surprise|${String(tag || '')}|${w.timeline.length}`));
+  const sr = applySurpriseRound(w, srng);
+  w = sr.world;
+  const blow = sr.beats.length ? ` ${sr.beats.join(' ')}` : '';
+  return { world: w, blow };
 }
 
 // Stage C.2 — non-combat travel beats. On a CLEAR journey (no ambush) the road
@@ -4081,6 +4092,22 @@ function travelTimeWord(hours) {
   return 'more than a day';
 }
 
+// JR-1 — the felt premium of fast travel. On a CLEAR journey (no encounter) the DM
+// still lets you sense that pushing hard across open country left you exposed — you
+// made good time on ground you weren't watching. This narrates THE READ, never the
+// number (house law): "the road felt watched," never "+30% encounter chance." No
+// state change; deterministic seeded pick keyed on the destination + timeline.
+const JOURNEY_PREMIUM_FLAVOR = [
+  'You made good time — and more than once had the sense the road was watching you cover it.',
+  'You pushed hard and covered the ground fast, though the back of your neck never quite settled.',
+  'Good time, open country — the kind of stretch where you know you were seen and never see by whom.',
+  'You ate the miles quickly, trusting the road; something out there marked the pace of you and let you pass.'
+];
+function journeyPremiumFlavor(seed, destId, timeline) {
+  const rng = makeRng(seedFromString(`${seed}|journeyPremium|${String(destId || '')}|${timeline}`));
+  return rng.pick(JOURNEY_PREMIUM_FLAVOR) || '';
+}
+
 function joinNames(items) {
   const a = items.filter(Boolean);
   if (a.length === 0) return '';
@@ -4116,7 +4143,11 @@ export function creatureThemeForNode(node) {
   return null;
 }
 
-function maybeTravelEncounter(world, before, chance, destName) {
+// Exported for JR-1's determinism test (U420): the journey and the walked-arrival
+// encounter rolls draw the SAME seeded float from the SAME world snapshot, so calling
+// both on one world lets the test prove the premium is a strict monotone superset of
+// the walking risk — deterministically, not statistically.
+export function maybeTravelEncounter(world, before, chance, destName) {
   const w = world;
   if (w.meta?.mode !== 'escape') return { world: w, kind: 'none' };
   if (w.combat?.active || w.ending?.locked || w.travel?.pending) return { world: w, kind: 'none' };
@@ -9843,7 +9874,10 @@ function maybeCheckGoals(world) {
 // of a creature ambush scaled to player level. Losing the fight locks the loss
 // ending (combatResolve); winning lets the player press on. No-op outside escape
 // mode, so engine tests (mode '') are untouched.
-function maybeSpawnEscapeEncounter(world, before, chance = ESCAPE_ENCOUNTER_CHANCE) {
+// Exported alongside maybeTravelEncounter for JR-1's determinism test (U420): the
+// WALKING arrival roll. Same seeded float as the journey roll on the same world; only
+// the (lower) threshold differs — the walker was watching the ground.
+export function maybeSpawnEscapeEncounter(world, before, chance = ESCAPE_ENCOUNTER_CHANCE) {
   const w = world;
   if (w.meta?.mode !== 'escape') return w;
   if (w.combat?.active || w.ending?.locked) return w;

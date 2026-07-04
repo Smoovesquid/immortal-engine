@@ -464,6 +464,8 @@ export function applyDeltas(world, deltas = []) {
         reason: set && 'reason' in set ? String(set.reason ?? '') : cur.reason,
         playerGuard: set && 'playerGuard' in set ? Boolean(set.playerGuard) : cur.playerGuard,
         companionGuard: set && 'companionGuard' in set ? Boolean(set.companionGuard) : cur.companionGuard,
+        // JR-1: surprise flag (a journey/fast-travel ambush opened on the enemy's terms).
+        surprised: set && 'surprised' in set ? Boolean(set.surprised) : cur.surprised,
         // CM6: initiativeOrder
         initiativeOrder: set && 'initiativeOrder' in set ? set.initiativeOrder : (cur.initiativeOrder || []),
         // MX-1: engine-owned tactical grid and player cell.

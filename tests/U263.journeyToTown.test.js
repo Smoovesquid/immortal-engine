@@ -36,6 +36,32 @@ const ROLL_RE = /\broll:\s*\d+\s*vs\s*DC/i;
 const nodeName = (w) => (w.map.nodes || []).find(n => n.id === w.map.currentNodeId)?.name || '';
 const goal = getGoal('journey-to-town');
 
+// JR-1 RELOCK (2026-07-04): the journey verb is now fast travel WITH A RISK PREMIUM, so
+// a leg on this route can be interrupted by a road encounter (a brigand standoff or a
+// surprise ambush) that the friction-free old rate let pass. The journey-to-town still
+// COMPLETES — the traveller just has to survive the road. This press-on driver resolves
+// an interrupting encounter (fight it out; the tamed road foes are weak) and re-issues
+// the leg until it lands clear. Bounded so a genuine soft-lock still fails the test.
+function pressOn(world, leg, cap = 60) {
+  let w = world;
+  for (let turns = 0; turns < cap; turns++) {
+    if (w.travel?.pending) { w = playerMove(w, PACKS, 'I fight them.').world; continue; }
+    if (w.combat?.active) {
+      w = playerMove(w, PACKS, 'I attack.').world;
+      if (w.ending?.locked) throw new Error('the traveller died on the road (unexpected for this route)');
+      continue;
+    }
+    const before = String(w.map.currentNodeId);
+    const r = playerMove(w, PACKS, leg);
+    w = r.world;
+    // Leg resolved cleanly (no encounter opened by it) and we are free to proceed.
+    if (!w.combat?.active && !w.travel?.pending) return w;
+    // If the leg neither moved nor opened an encounter, avoid spinning.
+    if (String(w.map.currentNodeId) === before && !w.combat?.active && !w.travel?.pending) return w;
+  }
+  return w;
+}
+
 test('U263: journey-to-town is registered and reachable via getGoal', () => {
   assert.equal(goal.id, 'journey-to-town');
   assert.equal(typeof goal.satisfied, 'function');
@@ -64,7 +90,9 @@ test('U263: the journey completes — bed → Old Shrine → Crossway Village (p
   ];
   let prev = goal.progressMetric(w, ctx);
   for (const leg of legs) {
-    w = playerMove(w, PACKS, leg).world;
+    // JR-1: press on through any road encounter the premium now throws up (the journey
+    // still completes; the traveller survives the road). Progress stays monotone.
+    w = pressOn(w, leg);
     ctx.actionsLog.push(leg);
     const p = goal.progressMetric(w, ctx);
     assert.ok(p >= prev, `progress is monotone across the journey (${prev} -> ${p} after "${leg}")`);
@@ -75,14 +103,22 @@ test('U263: the journey completes — bed → Old Shrine → Crossway Village (p
   assert.equal(goal.progressMetric(w, ctx), 1, 'full progress on arrival');
 });
 
-test('U263: travel vocabulary — "take the road to X" / "continue on to X" travel (no roll)', () => {
-  // Get to Old Shrine first (Crossway is its neighbor).
-  const atShrine = playerMove(playerMove(boot(), PACKS, 'I get out of bed and step outside.').world, PACKS, 'I travel west to Old Shrine.').world;
+test('U263: travel vocabulary — "take the road to X" / "continue on to X" route to travel (no roll)', () => {
+  // Get to Old Shrine first (Crossway is its neighbor), pressing on past any road
+  // encounter the JR-1 premium throws up on the way.
+  const atShrine = pressOn(playerMove(boot(), PACKS, 'I get out of bed and step outside.').world, 'I travel west to Old Shrine.');
+  assert.equal(nodeName(atShrine), 'Old Shrine', 'reached Old Shrine to test the vocabulary from there');
   const here = atShrine.map.currentNodeId;
   for (const phrase of ['I take the road to Crossway Village.', 'I continue on to Crossway Village.']) {
     const r = playerMove(atShrine, PACKS, phrase);
-    assert.equal(r.world.map.currentNodeId !== here, true, `[${phrase}] should travel to Crossway`);
-    assert.equal(nodeName(r.world), 'Crossway Village', `[${phrase}] arrives at Crossway`);
+    // The phrase is recognized as TRAVEL, not bounced to the action floor: it either
+    // arrives at Crossway OR opens a journey encounter en route (both are the travel
+    // path). JR-1: the premium means arrival is no longer guaranteed friction-free.
+    const arrived = nodeName(r.world) === 'Crossway Village';
+    const journeyed = /travel|journey|encounter|ambush/i.test(r.output.mechanics || '');
+    const moved = r.world.map.currentNodeId !== here;
+    assert.ok(arrived || journeyed || moved, `[${phrase}] should route to travel, not the action floor: mech="${r.output.mechanics}"`);
+    // Travel is never resolved as a d20 vs DC roll.
     assert.equal(ROLL_RE.test(r.output.mechanics || ''), false, `[${phrase}] travel is not a die roll`);
   }
 });

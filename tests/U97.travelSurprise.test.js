@@ -1,10 +1,19 @@
-// U97 — Contested ambush surprise on travel (Stage C.2 slice 2).
+// U97 — JOURNEY (fast-travel) ambush surprise.
 //
-// A travel ambush does NOT automatically surprise you. Surprise is contested by
-// vigilance (WITS + a perception/scout/wary skill or trait): a sharp, wary
-// character is rarely caught; an oblivious one is caught more often. When
-// surprised, the attacker lands a free opening strike (HP drops before you act).
-// Deterministic.
+// RELOCKED for JR-1 (2026-07-04): the journey verb is fast travel with a risk premium.
+// You fast-forwarded ground you weren't watching, so a journey-triggered ambush ALWAYS
+// opens on the enemy's terms — the ambusher takes a free opening strike before you act.
+// This SUPERSEDES the old contested-surprise model (Stage C.2 slice 2), where a wary
+// character could "spot" a travel ambush and meet it ready; that vigilance now belongs
+// to WALKING the ground cell by cell (which accrues no premium and no surprise — see
+// U420–U423), not to the journey verb. The old "[ambush | spotted]" branch is gone.
+//
+// U97-A — a journey ambush ALWAYS surprises (never "spotted"), regardless of WITS/skill.
+// U97-B — a surprise round is mechanically real: HP drops before you act, or the free
+//          strike visibly missed.
+// U97-C — surprise resolution is deterministic (same seed + input → identical result).
+//
+// Deterministic, LLM-off.
 
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
@@ -31,7 +40,8 @@ function neighborsOf(w) {
     .map(nid => (w.map?.nodes || []).find(n => n && n.id === nid)).filter(Boolean);
 }
 
-// Travel once with a forced WITS/skill profile; return the result mechanics + HP.
+// Journey once to a neighbor with a forced WITS/skill profile; return the mechanics,
+// HP, and the combat.surprised flag.
 function travelOnce(seed, { wits, vigilant }) {
   let w = beginAdventure(newWorld({ seed, fate: 0.2, campaignId: `u97-${seed}`, pack: { primaryId: 'fantasy', mixerId: null }, mode: 'escape' }), packs).world;
   if (w.scene?.interior) w = playerMove(w, packs, 'go outside').world;
@@ -39,7 +49,7 @@ function travelOnce(seed, { wits, vigilant }) {
   const nb = neighborsOf(w)[0];
   if (!nb) return null;
   const { world, output } = playerMove(w, packs, `go to ${nb.name}`);
-  return { mech: String(output.mechanics || ''), hp: world.meta?.escapeHp ?? null, maxHp: world.meta?.escapeMaxHp ?? null, narration: output.narration };
+  return { mech: String(output.mechanics || ''), hp: world.meta?.escapeHp ?? null, maxHp: world.meta?.escapeMaxHp ?? null, surprised: world.combat?.surprised ?? null, combat: Boolean(world.combat?.active), narration: output.narration };
 }
 
 function tally(profile) {
@@ -47,44 +57,50 @@ function tally(profile) {
   for (let i = 0; i < 40; i++) {
     const r = travelOnce(`s${i}`, profile);
     if (!r) continue;
-    if (/surprise/.test(r.mech)) { surprise++; ambush++; }
-    else if (/spotted/.test(r.mech)) { spotted++; ambush++; }
+    if (/spotted/.test(r.mech)) { spotted++; ambush++; }
+    else if (/surprise/.test(r.mech)) { surprise++; ambush++; }
   }
   return { surprise, spotted, ambush };
 }
 
-describe('U97-A: surprise is the exception, and skill makes you hard to surprise', () => {
-  const sharp = tally({ wits: 16, vigilant: true });
-  const oblivious = tally({ wits: 6, vigilant: false });
-
-  it('an ambush usually does NOT surprise you (most ambushes are spotted)', () => {
-    const avg = tally({ wits: 10, vigilant: false });
-    assert.ok(avg.ambush > 0, 'some ambushes should occur across 40 trips');
-    assert.ok(avg.spotted >= avg.surprise, `most ambushes spotted, not surprises: ${JSON.stringify(avg)}`);
+describe('U97-A: a journey ambush ALWAYS surprises — vigilance does not save the fast traveller', () => {
+  it('a journey-triggered ambush is a surprise, never "spotted" (regardless of build)', () => {
+    const sharp = tally({ wits: 16, vigilant: true });
+    const oblivious = tally({ wits: 6, vigilant: false });
+    assert.ok(sharp.ambush > 0 && oblivious.ambush > 0, 'both profiles must hit some journey ambushes across 40 trips');
+    // The premium is unconditional: no journey ambush is ever spotted, for any build.
+    assert.equal(sharp.spotted, 0, `no journey ambush is "spotted" even for a wary build: ${JSON.stringify(sharp)}`);
+    assert.equal(oblivious.spotted, 0, `no journey ambush is "spotted" for an oblivious build: ${JSON.stringify(oblivious)}`);
+    // Every journey ambush is a surprise.
+    assert.equal(sharp.surprise, sharp.ambush, 'every journey ambush surprised the wary build too');
+    assert.equal(oblivious.surprise, oblivious.ambush, 'every journey ambush surprised the oblivious build');
   });
 
-  it('a sharp, wary character is surprised far less than an oblivious one', () => {
-    assert.ok(sharp.ambush > 0 && oblivious.ambush > 0, 'both profiles must hit some ambushes');
-    assert.ok(sharp.surprise <= oblivious.surprise, `sharp(${sharp.surprise}) <= oblivious(${oblivious.surprise})`);
-    assert.ok(sharp.surprise <= 2, `a WITS16+Scout build is rarely surprised: ${sharp.surprise}/40`);
+  it('the surprise is recorded on combat state (combat.surprised === true)', () => {
+    let checked = false;
+    for (let i = 0; i < 60 && !checked; i++) {
+      const r = travelOnce(`flag${i}`, { wits: 10, vigilant: false });
+      if (r && r.combat && /surprise/.test(r.mech)) {
+        checked = true;
+        assert.equal(r.surprised, true, 'a journey ambush sets combat.surprised');
+      }
+    }
+    assert.ok(checked, 'expected at least one journey ambush to inspect the flag');
   });
 });
 
 describe('U97-B: a surprise round costs HP before you act', () => {
-  it('when surprised, escapeHp is below max (a free strike landed) or it was a clean miss', () => {
-    // Find a seed where an oblivious character is surprised, and assert the
-    // surprise was mechanically real (HP loss) — unless the free strike missed.
+  it('when surprised, escapeHp is below max (a free strike landed) or the strike visibly missed', () => {
     let checked = false;
     for (let i = 0; i < 60 && !checked; i++) {
       const r = travelOnce(`hp${i}`, { wits: 4, vigilant: false });
       if (r && /surprise/.test(r.mech)) {
         checked = true;
-        // Either HP dropped, or the narration shows the opening strike missed.
         const lost = r.maxHp != null && r.hp != null && r.hp < r.maxHp;
         assert.ok(lost || /flinch aside|misses/i.test(r.narration), `surprise should land a blow or visibly miss: hp=${r.hp}/${r.maxHp} | ${r.narration}`);
       }
     }
-    assert.ok(checked, 'expected at least one surprise among an oblivious traveler');
+    assert.ok(checked, 'expected at least one surprise among a fast traveler');
   });
 });
 

@@ -56,20 +56,29 @@ done_when · rollback`.
   moves resolve interior-side; new invariant throws on the desync; corpus locks; gate utterances re-checked.
 - **rollback:** n/a (fix + invariant packet; spec before edit — this row is the spec's seed).
 
-### JR-1 — journey = fast travel with a risk premium  ·  Phase 0/4 seam  ·  **QUEUE (after NODE-DESYNC-1; same playloop serial lane)**
+### JR-1 — journey = fast travel with a risk premium  ·  Phase 0/4 seam  ·  **✅ DONE 2026-07-04-pm (Opus playloop worktree, local commit; tests U420–U423; suite 9654/9654 · convergence 124/124 · determinism green · playtest:quick clean). v0.28.12.**
+- **What landed:** (1) the PREMIUM — new `JOURNEY_ENCOUNTER_CHANCE = 0.45` / `JOURNEY_LEG_CHANCE` on the
+  journey path only (base walking stays `ESCAPE_ENCOUNTER_CHANCE = 0.3`); a single-hop journey and a walked
+  arrival draw the SAME seeded float, only the threshold differs → the premium is a strict MONOTONE SUPERSET
+  of the walking risk (provable per-seed, U420). (2) the SURPRISE — transient `combat.surprised` flag
+  (whitelisted in `ensureCombat`/`defaultCombat`/`combatState` merge/`beginCombat`/`endCombat`; **no
+  `WORLD_VERSION` bump** — combat-scoped); a journey ambush ALWAYS opens surprised (helper
+  `openJourneyAmbushSurprised` → `applySurpriseRound`, enemy's free first strike), a walked-into ambush does
+  not (U421). (3) the ASYMMETRY — walking the same node accrues no premium and no surprise (tested
+  deterministically, not statistically). (4) INTERRUPTION — an interrupted multi-hop journey drops the
+  traveller at the real intermediate node and NAMES where honestly (U422). THE LAW held: journey prose
+  carries the READ ("You made good time — … the road was watching you cover it"), never the number; the
+  mech line carries the trace (U423).
+- **Relocks (documented in AGENT_CHANGELOG):** U97 (`travelSurprise`) rewritten to the new always-surprise
+  contract (old "surprise-is-the-exception / skill dodges it" model removed); U263 (`journeyToTown`) presses
+  on through the now-dangerous road (journey still completes). No convergence-corpus row asserts
+  journey/ambush/surprise → convergence unchanged, no corpus relock.
 - **Tim's parameter (2026-07-04-pm):** an explicit far-place request ("I want to go to the Greenwood") the
   DM resolves in one action — but you fast-forwarded ground you weren't watching, so **the chance of a
   negative consequence is ELEVATED** vs. walking it, and **whatever triggers opens with the player
   SURPRISED** (on the enemy's terms). Walking manually (≤6 cells/turn, many turns) keeps full vigilance —
   that slowness is intended; it's what fast travel is priced against.
-- **seams:** the explicit journey handler (post NODE-DESYNC-1 it's the ONLY node mover) + encounter roll
-  scaling + a "surprised opening" hook in `escapeCombat` (enemy acts first / player reacts late — design
-  the minimal v1 shape at packet time). Interruption drops the traveler en route (node edge interim;
-  region cell once TAC-1's grid exists).
-- **invariants:** determinism (seeded encounter rolls via rng.js); narrate-the-read-never-the-number (the
-  DM says "the road felt watched," not "+30% encounter chance"); DM-only verb.
-- **done_when:** journey turns roll the elevated table LLM-off; a triggered ambush provably opens with the
-  surprise condition; walking the same route turn-by-turn provably does NOT carry the premium; corpus locks.
+- **rollback:** revert the commit (journeys return to premium-free). Contract: `docs/POSITION_AS_CANON.md` §3.
 
 ### GATE 2026-07-04-2 — Ref-off baseline error analysis (v0.28.10 · 14/48 · `opus-gate-2026-07-04-2.md`)
 **The honest read:** 14/48 (29%) vs 9/48 Ref-on — NOT a regression story: the floor we built HELD

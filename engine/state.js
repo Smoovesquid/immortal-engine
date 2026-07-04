@@ -525,7 +525,10 @@ export function defaultCombat() {
     initiativeOrder: [],
     grid,
     playerCell: defaultPlayerCell(grid),
-    playerTactical: defaultTactical()
+    playerTactical: defaultTactical(),
+    // JR-1: transient — true when this fight opened on the enemy's terms (a
+    // fast-travel/journey ambush the party couldn't see coming). Combat-scoped only.
+    surprised: false
   };
 }
 
@@ -616,6 +619,9 @@ export function ensureCombat(c) {
   const reason = reasonRaw.length > 64 ? reasonRaw.slice(0, 64) : reasonRaw;
   const playerGuard = Boolean(c.playerGuard);
   const companionGuard = Boolean(c.companionGuard);
+  // JR-1: transient surprise flag — a journey (fast-travel) ambush opens on the
+  // enemy's terms. Combat-scoped (no WORLD_VERSION bump): cleared with the fight.
+  const surprised = Boolean(c.surprised);
   // DX-2a: the player's tactical position (cover/flank/high-ground).
   const playerTactical = normalizeTactical(c.playerTactical);
 
@@ -631,7 +637,7 @@ export function ensureCombat(c) {
     }))
     .slice(0, 12); // cap at party + enemy cap
 
-  return { active, round, turnIndex, enemies, beganAt, reason, playerGuard, companionGuard, initiativeOrder, grid, playerCell, playerTactical };
+  return { active, round, turnIndex, enemies, beganAt, reason, playerGuard, companionGuard, surprised, initiativeOrder, grid, playerCell, playerTactical };
 }
 
 // ── CM7 — legendary actions & reactions normalizers ─────────────────────

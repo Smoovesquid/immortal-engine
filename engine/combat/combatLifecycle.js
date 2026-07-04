@@ -172,6 +172,9 @@ export function beginCombat(world, { enemies, reason } = {}) {
       reason: reasonStr,
       playerGuard: false,
       companionGuard: false,
+      // JR-1: a fresh fight starts on even footing; the journey (fast-travel) path
+      // flips this true right after spawn when the ambush opens on the enemy's terms.
+      surprised: false,
       initiativeOrder,
       grid: placement.grid,
       playerCell: placement.playerCell,
@@ -215,7 +218,9 @@ export function endCombat(world, { reason } = {}) {
       turnIndex: 0,
       reason: reasonStr,
       playerGuard: false,
-      companionGuard: false
+      companionGuard: false,
+      // JR-1: the surprise condition is spent once the fight ends.
+      surprised: false
     }
   }]);
   return w;

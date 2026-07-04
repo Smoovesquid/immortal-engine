@@ -94,18 +94,19 @@ the locked figurine art direction; prototypes under `public/map-proto/`. The
 mini is a *standing token on a base with a shadow* (the base + shadow are what
 sell "standing on the tilted table").
 
-## Open questions (decide before build)
+## Open questions — **ALL DECIDED (Tim, 2026-07-04)**
 
-1. **Tilt trigger:** re-use the existing `Z_3D_START`/`Z_3D_CROSS` thresholds, or
-   retune now that structure is graph-paper (flatter meshes → tilt can come
-   earlier)?
-2. **Fog of war:** the 2026-07-04 playtest showed it gone — restore explored-vs-
-   unexplored on the drawn layer, or intentional? (Cheap either way.)
-3. **Indoor ↔ outdoor transition:** does the map *switch* to the interior floor
-   plan when you go inside, or does the outdoor sheet zoom *into* the building's
-   drawn footprint continuously? (Latter is truer to "one continuous map.")
-4. **Placement granularity v1:** ship at room granularity first (fixes movement),
-   add 5-ft squares when `TAC` lands — confirm that staging.
+1. **Tilt trigger:** RETUNE at Stage-4/`MAP-3DR` time, by eye, AFTER the drawn-structure
+   layer lands (flatter world → tilt can come earlier). A taste pass, not a constant to
+   pick now.
+2. **Fog of war:** RESTORE — explored-vs-unexplored on the drawn layer (discovery is half
+   the tabletop feel). Work rides the drawn-structure packet (`TT-DRAW`).
+3. **Indoor ↔ outdoor:** CONTINUOUS — the sheet zooms *into* the building's drawn
+   footprint; one camera, no renderer switch. (The v0.28.8 inside/outside branch is an
+   approved *stopgap* until the one-camera work — `WS-2` — absorbs it as an LOD band.)
+4. **Placement granularity:** CONFIRMED — minis place at room granularity first; exact
+   5-ft squares arrive when the `TAC` position-as-canon contract lands
+   (`docs/POSITION_AS_CANON.md`).
 
 ## Build path (when greenlit)
 

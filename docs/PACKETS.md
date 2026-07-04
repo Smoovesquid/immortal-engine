@@ -156,7 +156,9 @@ verbs — no parallel contract enum), `parseIntent` stays the LLM-off floor.
 
 #### INT-4 — the family graduation queue (stub — cut one packet per family on the INT-3 template)
 - **order** (by lineage size / sink): referent-grounding (`[clarify:referent]`, sink S4) → dialogue-address
-  (S5 deflect-and-wait) → combat table-talk (the CRUNCH seam) → compound multi-part asks (C1 remainder).
+  (S5 deflect-and-wait) → combat table-talk (the CRUNCH seam) → compound multi-part asks (C1 remainder)
+  → greeting/orientation address ("Oh, okay, so I'm outside now? Hi Asha." must greet + orient, never roll a
+  generic focus check — 2026-07-04 gate, Confused-newbie).
   Cut each packet when its predecessor lands.
 - **ARC done-when (= PRD Phase 0 exit):** frozen corpus 100% **and** N consecutive gates open zero
   categorically-new failure classes **and** ≤2 broken turns per 48, twice running (2026-07-02: 9/48 → 4/48
@@ -432,6 +434,44 @@ file) · P4 SERIAL (`engine/ref/rubric.js`, shared with the live Ref) · P6 last
 - **rollback:** delete the observer + flag (the extracted module stays — it's just a refactor).
 - **NEXT (not this packet):** CG-LIVE-2 = flip the observer to an actual REGENERATE trigger once the live FP
   rate is proven boring — Tim's go, after reading the shadow data.
+
+### AG-4 — pointed questions answered in the fiction (the info-seek sink stops voicing database-misses through people)  ·  Phase 0  ·  **QUEUED 2026-07-04 → dispatched (Sonnet worktree lane)**
+- **provenance:** Tim's 2026-07-04 Ref-pull decision ("what to improve instead: the base DM's dead-ends — answer
+  pointed questions in the fiction without conjuring an absent speaker") + the v0.28.3 gate's dominant cluster
+  (5 of 9 fails, `opus-gate-2026-07-04.md`; NB that run was Ref-ON, which inflated the count — but the class
+  survives Ref-off: 2/16 base dead-ends in the A/B, and the dodge lines are ENGINE-side). Root traced at the
+  2026-07-04 boot: the dodge prose is the deterministic `declineInfoSeek` bank (`engine/playloop.js:7525–7545`),
+  not the LLM. Brief: `docs/briefs/AG-4-pointed-questions.md`.
+- **objective:** three sub-fixes at the info-seek seam:
+  **(a) self-questions ground on the NPC herself** — a question about the addressed NPC's own identity/role/
+  claims ("which caravan do YOU speak for?") delivers from her own modeled state (role/tenure/faction — NBIO-1
+  precedent) or declines IN HER VOICE with an in-fiction reason; "no record" language is banned for
+  self-questions (a person is not a filing cabinet);
+  **(b) sensory probes never enter the info sink** — "I dip a finger in the water — cold or slimy?" is a
+  physical read of present matter → truthful world-grounded sensory answer (honest-search sibling `baf1b51`;
+  DS-1a definite-read precedent), never an NPC shrug;
+  **(c) decline escalation is per-topic, not per-NPC** — a FRESH question never draws "the subject is closed";
+  only repeat-pressing the same dead topic escalates.
+- **allowed_files:** `engine/playloop.js` (info-seek seam only), new/updated tests, corpus locks (+ relock any
+  row asserting the old dodge — DLG-1/C16-001 relock precedent; document each).
+- **forbidden:** inventing canon facts (C9 rail — refusal reasons and sensory color commit NO new names/records);
+  `WORLD_VERSION`; rng; `dialogue.js`/`grace/` (STOP and flag if seemingly needed — serial lane).
+- **invariants:** determinism U19/21/22/27/30 (⚠️ if press-counts are re-keyed in world state, replay hash
+  equality must survive — see brief); convergence 100%; LLM-off repro FIRST (bug protocol).
+- **done_when:** the quoted gate utterances produce in-fiction answers/refusals LLM-off; no "no record"/"subject
+  closed" on self-questions or first-time topics; sensory probes get sensory answers; `npm run check` green;
+  patch version bump; changelog + this row updated.
+- **rollback:** revert the single commit.
+
+### PERC-1 — a failed perception read renders uncertainty, never a confident accurate report  ·  Phase 0  ·  **QUEUE (small; resolve/narration seam)**
+- **signal:** 2026-07-04 gate (Chaos-griefer): "is the ceiling still on fire? I look up." rolled **1 vs DC 13**
+  yet narrated a definitive, ACCURATE all-clear ("plain wattle-and-daub… no trace of flame"). A crit-fail
+  perception must not read as authoritative truth — render doubt/incompleteness ("smoke-haze and lamplight;
+  you honestly can't tell from here"), and never plant a FALSE fact (uncertainty ≠ misinformation; narration
+  must not contradict canon).
+- **seam:** where the roll outcome meets the room-read renderer; NOT the honest-search success branch
+  (`baf1b51`). **done_when:** failed/crit-failed perception over real canon renders hedged reads LLM-off;
+  corpus lock added; suite + convergence green.
 
 ### SL — THE SHIPPABLE SLICE (priority, scope-locked 2026-06-29)
 **Provenance:** Tim's 2026-06-29 scope re-lock (`docs/DEMO_REGION.md` scope-lock banner). The demo is cut to
@@ -740,7 +780,24 @@ to confirm it doesn't regress dialogue, so it's its own packet.
   convergence 100% locked; one gate run confirms no off-room leak and no dialogue regression.
 - **rollback:** revert the `narratorContext.js` change (restores full-roster context).
 
-### MAP-3DR — reconnect the 3D diorama on a persistent mount  ·  **Phase 4 (the face)  ·  stub, cut when the map track resumes**
+### TABLETOP — the map arc, stage index  ·  **Tim greenlit the full plan 2026-07-04; all four TABLETOP_MAP.md open questions DECIDED**
+**The plan** (Basecamp, from Tim's 2026-07-04 vision statement): region→5-ft continuous zoom · drawn
+structure + placed minis · 3-D tilt at full zoom · map truth = engine state, one-way. Stages → packets:
+- **S1 truth floor:** MAP-OCC-1 + MAP-OCC-2 — **DISPATCHED 2026-07-04** (parallel Sonnet worktrees).
+- **S2 one sheet/camera:** WS-1 (worldSpace projection, `docs/briefs/WS-1-worldspace-projection.md`) —
+  **DISPATCHED 2026-07-04** → **WS-2** (one camera + LOD; absorbs the v0.28.8 inside/outside branch as an
+  LOD band; retires scale tabs; in-play + Map tab = one renderer — MAP_PATH 1.2/1.3) **QUEUE, cut after
+  WS-1 lands and the active v1.js lane is quiet**.
+- **S3 tabletop look:** **TT-DRAW** (drawn-structure layer — buildings render their `floorPlan` ink +
+  roads/water contours at local zoom; placed-mini 2-D tokens from occupancy + roomObjects; **fog-of-war
+  restore** per decision #2) **QUEUE after WS-1 + OCC-1**.
+- **S4 the tilt:** MAP-3DR (persistent mount, below) + tilt-threshold retune by eye (decision #1) +
+  combat folds into the one scene (`MAP_QUEUE.md` "NEXT PACKET" spec) **QUEUE after S3**.
+- **S5 5-ft truth:** TAC — **contract WRITTEN 2026-07-04: `docs/POSITION_AS_CANON.md`** (position becomes
+  CANON; frames, 30-ft budget, propose→ground→commit; rollout table TAC-1..5 inside) → next = packetize
+  TAC-1 (`WORLD_VERSION` bump), serial engine lane.
+
+### MAP-3DR — reconnect the 3D diorama on a persistent mount  ·  **Phase 4 (the face)  ·  = TABLETOP S4; cut the packet when S3 lands**
 - **why parked (2026-07-03, Tim's call):** the 3D layer was DISCONNECTED (`MAP_3D_ENABLED=false`,
   `public/map/continuousMap.js`) — v1's full-DOM rebuild remounted the map on EVERY typed turn, flashing
   an illegibly-deep 2D plan then popping the async 3D scene over it ("two totally unrelated views").
@@ -755,7 +812,7 @@ to confirm it doesn't regress dialogue, so it's its own packet.
   Greenwood answered "You know of no such place hereabouts" — a DM would say "you're already here." One
   grace phrase; queue with the next INT family packet.
 
-### TAC — tactical movement: the graph-paper closest view is normal travel (5 ft / 30 ft-per-turn)  ·  **Phase 4 (the face)  ·  EPIC, design-first, BLOCKED on INT-4a**
+### TAC — tactical movement: the graph-paper closest view is normal travel (5 ft / 30 ft-per-turn)  ·  **Phase 4 (the face)  ·  EPIC — CONTRACT WRITTEN 2026-07-04 (`docs/POSITION_AS_CANON.md`); INT-4a landed → UNBLOCKED; next = packetize TAC-1 (WORLD_VERSION bump), serial after the current playloop queue**
 **Provenance:** Tim's ruling 2026-07-03 (this session). The felt bug: **"go east" teleports you to the next node**
 instead of walking. Tim wants normal travel to be **tactical grid movement** on the closest-zoom graph-paper
 view — **1 square = 5 ft, a character moves ≤ 30 ft (6 squares) per turn** — and directional/spoken commands
@@ -781,7 +838,9 @@ the cell-stepping avatar ~`:2205`).
   determinism intact (whichever contract wins, `worldHash`/U19-30 hold).
 
 ### MAP-OCC — the map draws who's actually there (occupancy tokens) + position hygiene
-**Phase 0 (the floor holds).** **Status:** OPEN — spec'd 2026-07-03 (Basecamp diagnosis this session,
+**Phase 0 (the floor holds).** **Status:** DISPATCHED 2026-07-04 — both sub-packets, parallel Sonnet
+worktrees (briefs: `docs/briefs/MAP-OCC-1-occupancy-tokens.md`, `docs/briefs/MAP-OCC-2-position-hygiene.md`;
+tests U396–U399 pre-allocated). Spec'd 2026-07-03 (Basecamp diagnosis,
 "how tangled is the map's position-memory" audit). Sibling of **VG-F3** + **H-95**: same presence/
 map-fidelity family — this is the renderer-token half. Payoff is closing the presence-mismatch fiction
 break (an empty room drawing scattered NPCs), the same class as the ROM-1b look-around leak.

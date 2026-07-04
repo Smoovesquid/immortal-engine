@@ -225,7 +225,23 @@ export function renderShadowReview(result, { title } = {}) {
   const lines = [];
   lines.push(`# ${title || 'Coherence Shadow — live false-positive-candidate rate'}`);
   lines.push('');
-  const rate = result.totalTurns > 0 ? (100 * result.firedTurns / result.totalTurns).toFixed(1) : '0.0';
+  // GUARD: zero observed turns is NOT a clean 0% false-positive rate — it means the
+  // observer never ran (nothing to measure). The observer logs one record PER TURN
+  // (fired or not), so an empty log = it early-returned every turn, almost always
+  // because the server serving /api/narrate was not started with COHERENCE_SHADOW=1.
+  // Report that loudly rather than a misleading "0/0 (0.0%)" that reads as a pass —
+  // that exact misread once recorded a phantom "live shadow 0" and blocked CG-LIVE-2.
+  if (result.totalTurns === 0) {
+    lines.push(`> ⚠️ **NO SHADOW RECORDS — the observer did not run.** Zero turns were observed, so this is`);
+    lines.push(`> **not** a 0% false-positive rate; there is nothing to measure. The likeliest cause is that the`);
+    lines.push(`> server serving \`/api/narrate\` was not started with \`COHERENCE_SHADOW=1\` (the observer`);
+    lines.push(`> early-returns and logs nothing when the flag is unset). Re-run the live turns with the flag set.`);
+    lines.push('');
+    lines.push(`**MACHINE:** shadow_pointers=0 shadow_fired_turns=0 shadow_turns=0 fire_rate_pct=n/a observer_ran=false`);
+    lines.push('');
+    return lines.join('\n');
+  }
+  const rate = (100 * result.firedTurns / result.totalTurns).toFixed(1);
   lines.push(`**Live turns observed:** ${result.totalTurns} · **turns that fired ≥1 pointer:** ${result.firedTurns} · **total pointers:** ${result.count}`);
   lines.push(`**Fire rate:** ${result.firedTurns}/${result.totalTurns} live turns (${rate}%) would have triggered a would-be regenerate.`);
   lines.push('');
@@ -249,7 +265,7 @@ export function renderShadowReview(result, { title } = {}) {
     }
     lines.push('');
   }
-  lines.push(`**MACHINE:** shadow_pointers=${result.count} shadow_fired_turns=${result.firedTurns} shadow_turns=${result.totalTurns} fire_rate_pct=${rate}`);
+  lines.push(`**MACHINE:** shadow_pointers=${result.count} shadow_fired_turns=${result.firedTurns} shadow_turns=${result.totalTurns} fire_rate_pct=${rate} observer_ran=true`);
   lines.push('');
   return lines.join('\n');
 }

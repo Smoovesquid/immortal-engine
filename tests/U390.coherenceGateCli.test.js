@@ -76,14 +76,16 @@ test('U390: coherence-gate.mjs exits non-zero with a usage message when no path 
   }, /Command failed/);
 });
 
-// ── the real thing: run over all four committed gate JSONLs at once (the exact
-// invocation named in the packet's verification ladder) ──────────────────────
-test('U390: coherence-gate.mjs runs over all four real gate JSONLs and prints the honest floor for each', () => {
+// ── the real thing: run over ALL committed gate JSONLs at once (the exact
+// invocation named in the packet's verification ladder). The count grows as new
+// gates run and their JSONLs land, so assert "at least the original four" and
+// "one summary line per input file" rather than a brittle magic number. ───────
+test('U390: coherence-gate.mjs runs over every real gate JSONL and prints the honest floor for each', () => {
   const files = fs.readdirSync(GATE_RUNS).filter(f => f.endsWith('.jsonl')).map(f => path.join(GATE_RUNS, f));
-  assert.equal(files.length, 4, 'expected exactly the four committed gate-runs JSONLs this packet targets');
+  assert.ok(files.length >= 4, `expected at least the four committed gate-runs JSONLs this packet targets (got ${files.length})`);
   const stdout = execFileSync(process.execPath, [GATE_SCRIPT, ...files], { cwd: ROOT, encoding: 'utf-8', timeout: 60_000 });
   const coherenceLines = stdout.split('\n').filter(l => l.startsWith('COHERENCE-GATE:'));
-  assert.equal(coherenceLines.length, 4, 'one summary line per input file');
+  assert.equal(coherenceLines.length, files.length, 'one summary line per input file');
   for (const line of coherenceLines) {
     assert.match(line, /honest floor \d+\/48/);
   }
@@ -93,4 +95,38 @@ test('U390: the 11-45 (post-ROM-3) file CLI run reports the P-A new-signal count
   const stdout = execFileSync(process.execPath, [GATE_SCRIPT, V1_1145_FILE], { cwd: ROOT, encoding: 'utf-8', timeout: 30_000 });
   assert.match(stdout, /new signal \(flagged, judge-PASSED\): 5/);
   assert.match(stdout, /^COHERENCE-GATE: 7 flag\(s\) across 48 turns — honest floor 14\/48/m);
+});
+
+// ── --shadow review mode: the empty-log guard ────────────────────────────────
+// A zero-record shadow log is NOT a 0% false-positive rate — it means the live
+// observer never ran (COHERENCE_SHADOW unset on the server serving /api/narrate).
+// The report must say so loudly, not print a "0/0 (0.0%)" that reads as a pass —
+// that exact misread once recorded a phantom "live shadow 0" and blocked CG-LIVE-2.
+function writeShadowFixture(dir, records) {
+  const file = path.join(dir, 'shadow.jsonl');
+  fs.writeFileSync(file, records.map(r => JSON.stringify(r)).join('\n') + (records.length ? '\n' : ''));
+  return file;
+}
+
+test('U390: --shadow with zero records reports the observer did NOT run, not a clean 0%', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'u390-shadow-empty-'));
+  const file = writeShadowFixture(dir, []); // observer never logged a turn
+  const stdout = execFileSync(process.execPath, [GATE_SCRIPT, '--shadow', file], { cwd: ROOT, encoding: 'utf-8', timeout: 30_000 });
+  assert.match(stdout, /NO SHADOW RECORDS — the observer did not run/);
+  assert.match(stdout, /COHERENCE_SHADOW=1/);
+  assert.match(stdout, /observer_ran=false/);
+  assert.doesNotMatch(stdout, /Fire rate:/, 'must NOT print a misleading 0/0 fire rate for an empty log');
+});
+
+test('U390: --shadow with real records prints the fire rate and observer_ran=true', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'u390-shadow-real-'));
+  const file = writeShadowFixture(dir, [
+    { type: 'shadow', seed: 'tallow', persona: 'chaos', turn: 1, input: 'look',
+      pointers: [{ class: 'CG-1b', canonField: 'roomOccupants', expected: '[] (empty)', narrated: '"Dalla" speaks/acts in-room', severity: 'fail', span: 'Dalla says hello.' }] },
+    { type: 'shadow', seed: 'tallow', persona: 'chaos', turn: 2, input: 'wait', pointers: [] },
+  ]);
+  const stdout = execFileSync(process.execPath, [GATE_SCRIPT, '--shadow', file], { cwd: ROOT, encoding: 'utf-8', timeout: 30_000 });
+  assert.match(stdout, /Fire rate:\*\* 1\/2 live turns \(50\.0%\)/);
+  assert.match(stdout, /observer_ran=true/);
+  assert.doesNotMatch(stdout, /NO SHADOW RECORDS/);
 });

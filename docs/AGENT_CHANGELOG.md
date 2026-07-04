@@ -2004,6 +2004,15 @@ other agents. (none active)
   content; Tim's design call).
 - Integration ladder GREEN: convergence 125/125, suite 9836/0, determinism green. v0.28.20 b070.
 
+## 2026-07-04 — Basecamp (CBT-AGENCY integration → v0.28.21 build 071)
+
+- Landed CBT-AGENCY (`a5a79b1e` → `71115f0e`): the gate's top finding dead — declared attacks are
+  never substituted. Root was `parseEscapeAction`'s defensive regex matching bare nouns
+  ("guard leather", "force wards") ahead of the strike default; fix = `isDeclaredAttackText` guard
+  ordered after tactical intents, before cover/ward. U455–U457 (8 subtests: exact gate lines roll
+  atk-vs-AC + 13-phrasing set + honest-fallback/defense regressions); no relocks; no state.js touch.
+- Integration ladder GREEN: convergence 125/125, suite 9844/0, determinism green. v0.28.21 b071.
+
 2026-07-04 — Sonnet (worker worktree, PERC-1) — LOGIC DONE, WIRING PENDING (playloop.js fenced)
 - Packet/seam: `docs/PACKETS.md` PERC-1 — 2026-07-04 gate (Chaos-griefer, CRUNCH_INCONSISTENCY): "Wait — is
   the ceiling still on fire or not? I stand in the middle of the room and look up." rolled a NATURAL 1 vs DC

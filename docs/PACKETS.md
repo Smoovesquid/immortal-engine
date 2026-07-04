@@ -96,9 +96,18 @@ we are deepening known families, not discovering new ones. Clusters → owners (
   declares an attack on Asha ("I draw my Worn Blade and swing — roll it"); DM instead casts a
   fabricated force ward (a gravedigger PC!) and runs only enemy attacks — player's declared combat
   action never resolved. = combat intent routing / auto-action override in the escapeCombat seam.
-  **NEXT SERIAL ENGINE PACKET** (DX lane; queue row below).
+  **CBT-AGENCY ✅ LANDED v0.28.21 b071** (`a5a79b1e` → `71115f0e`): ROOT — `parseEscapeAction`'s
+  defensive branch regex matched bare NOUNS ("that **guard** leather", "force **wards**") before the
+  strike default — a substring collision in the deterministic parser, not the LLM. FIX —
+  `isDeclaredAttackText` guard (13-phrasing paraphrase set) placed after tactical intents, before
+  cover/ward; named-target + unarmed + defense-on-request routing untouched; NO new enemy fields
+  (ensureCombat whitelist untouched). U455–U457 (8 subtests); both gate lines now roll atk-vs-AC,
+  Asha 8→1 HP; zero relocks.
 - **INT-4 take:already-held (1)** — "grab the lantern and set the pallet on fire" → "lantern already
   tucked in your pack," arson never resolves. Evidence #3 for the queued throw/hurl/use-held row.
+  **→ INT-4-HELD DISPATCHED 2026-07-04-pm9** (Opus worktree, U458–U459; grace+playloop object-action
+  lane; possession = precondition, never the resolution; letter-where object-state question in scope
+  if same seam, else flagged).
 - **Answerability info-asks (2)** — "who runs this outpost?" stonewalled with "no record" while Elske
   (representative) + Dalla (innkeeper) stand present and answerable; "nearest person, let me talk to
   them" listed names + [clarify:who] punt instead of opening the obvious dialogue. = the egress

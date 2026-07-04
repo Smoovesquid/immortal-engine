@@ -783,11 +783,23 @@ to confirm it doesn't regress dialogue, so it's its own packet.
 ### TABLETOP — the map arc, stage index  ·  **Tim greenlit the full plan 2026-07-04; all four TABLETOP_MAP.md open questions DECIDED**
 **The plan** (Basecamp, from Tim's 2026-07-04 vision statement): region→5-ft continuous zoom · drawn
 structure + placed minis · 3-D tilt at full zoom · map truth = engine state, one-way. Stages → packets:
-- **S1 truth floor:** MAP-OCC-1 + MAP-OCC-2 — **DISPATCHED 2026-07-04** (parallel Sonnet worktrees).
-- **S2 one sheet/camera:** WS-1 (worldSpace projection, `docs/briefs/WS-1-worldspace-projection.md`) —
-  **DISPATCHED 2026-07-04** → **WS-2** (one camera + LOD; absorbs the v0.28.8 inside/outside branch as an
-  LOD band; retires scale tabs; in-play + Map tab = one renderer — MAP_PATH 1.2/1.3) **QUEUE, cut after
-  WS-1 lands and the active v1.js lane is quiet**.
+- **S1 truth floor:** ✅ **LANDED 2026-07-04, v0.28.9** — MAP-OCC-1 (`30ed49e` outdoor tokens from
+  `outdoorOccupants`; tallow boot 5→1 tokens) + MAP-OCC-2 (`3b02f8e` pixel ux/uy structurally OUT of the
+  hash projection; false "excluded" comment made true) + **MAP-OCC-1b** (`b97fc6c`, Basecamp — the
+  worker-flagged interior twin: LocalMap §8 scattered the roster into random discovered rooms; now
+  `interiorTokens.js` → `occupantsOfRoom` per room, U402). Suite 9588/0 + convergence 124/124 quiet-machine.
+- **S2 one sheet/camera:** WS-1 ✅ **LANDED 2026-07-04, v0.28.9** (`cf9455e` — interior-fit projection +
+  `resolveEntityWu` single resolver, U400/U401; **premise correction:** `worldSpace.js` already existed
+  live-wired (M1/M2/M6/M7-S; MAP_PATH 1.1 was PART-built — docs lagged code); worker added exactly the
+  missing interior half. **Fork flagged for WS-2:** village art draws catalog-plan room shapes while
+  movement/interior-projection use the real `floorPlan` — reconcile when wiring). → **WS-2** (one camera +
+  LOD; absorbs the v0.28.8 inside/outside branch as an LOD band; retires scale tabs; in-play + Map tab =
+  one renderer — MAP_PATH 1.2/1.3; marker consumes `resolveEntityWu`) **QUEUE, next in the renderer lane
+  once the active v1.js window is quiet**.
+- **HARNESS (small, queue):** U381 (`server.js /api/move` confidence-gate HTTP test) fails under
+  CONCURRENT parallel suites (port contention) and passes quiet — 2026-07-04 diagnosis, three lanes
+  corroborated. Packet: bind an ephemeral port (or retry-on-EADDRINUSE) in U381; done_when = two full
+  suites running simultaneously both pass it.
 - **S3 tabletop look:** **TT-DRAW** (drawn-structure layer — buildings render their `floorPlan` ink +
   roads/water contours at local zoom; placed-mini 2-D tokens from occupancy + roomObjects; **fog-of-war
   restore** per decision #2) **QUEUE after WS-1 + OCC-1**.

@@ -344,7 +344,18 @@ file) · P4 SERIAL (`engine/ref/rubric.js`, shared with the live Ref) · P6 last
 > narration path, costs latency, and is a taste/product call; queue for Tim only after P2 proves the FP rate is
 > boring).
 
-#### CG-LIVE-1 — the checker becomes the fix: shadow-mode coherence observer on the live narration path  ·  Phase 0  ·  **QUEUE — Tim GREENLIT 2026-07-03 (the design's named endgame; CG-P2 proved 100% precision → the FP rate is boring enough to build the trigger, shadow-first)**
+#### CG-LIVE-1 — the checker becomes the fix: shadow-mode coherence observer on the live narration path  ·  Phase 0  ·  **✅ DONE 2026-07-03 (`7898386`; v0.28.3 build 053; default-OFF byte-identical, proven 3 ways)**
+- **what landed:** comparator core extracted to `engine/coherence/checks.js` (script re-imports, CLI + U388–U393
+  byte-identical; lands CG-P6's "one shared core" half early); `engine/coherence/shadowObserver.js`
+  (`observeCoherenceShadow`, flag-gated `COHERENCE_SHADOW=1`, default OFF); +10-line hook at
+  `llmAdapter.js:1394`; `--shadow <jsonl>` review mode. **ALL comparators run live** (CG-2c relocation too, via
+  a module-level `PREV_CANON` Map keyed by session — bounded 512, NEVER on `world`). **Default-OFF
+  byte-identity proven 3 ways** (observer null + no log; narration char-identical on/off; worldHash identical
+  before/after even flag-ON incl. two-turn path). Never throws to caller. Determinism 313/313; suite 9556/0;
+  convergence 100%. Tests U394 (5) + U395 (4). Version bumped — touches `engine/`, inert by default.
+- **NEXT — CG-LIVE-2 (Tim's go, after reading live shadow data):** run `COHERENCE_SHADOW=1` on real/gate play,
+  read the live FP-candidate rate via `--shadow`; if boring, flip the observer to an actual REGENERATE trigger
+  in `reviewNarration` → the caught-bug class starts self-healing.
 - **why now:** the deterministic desync pointer that *grades* a turn can *trigger a regenerate* on the live
   path — one mechanism self-heals ALL caught classes (ghost-voice, wrong-room, invented-exit, phantom-commit,
   wrong-speaker), and every future class we teach the checker becomes self-healing too. The Ref already routes

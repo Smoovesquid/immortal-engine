@@ -906,7 +906,9 @@ sheet (no per-node islands); the camera keeps the player centered (no edges, eve
   `resolveEntityWuFromWorld`, recentering on node/room/inside↔outside changes; manual pan holds until
   the next real move; **VG-F3 closed on the live surface**; U407/U408; zero v1.js/engine diffs; legacy
   fixed-scale renderers confirmed dead-on-disk, no tabs to retire). → **WS-3** (absorb the interior
-  branch into the continuous zoom) queued behind TT-DRAW.
+  branch into the continuous zoom) — **DISPATCHED 2026-07-04-pm5** (Sonnet, `docs/briefs/WS-3-one-surface.md`,
+  U432–U433) **∥ DEC-1 DISPATCHED** (Opus, `docs/briefs/DEC-1-structure-back-decoratives.md`, U434–U435,
+  footprint-table-first, STRUCTURE_SCHEMA stop-and-flag).
   **WS-3 ACCEPTANCE (Tim, live sighting 2026-07-04-pm2):** expanding the map while indoors currently
   SWAPS SURFACES (interior plan → overworld, "I am no longer in my bedroom") and the two views disagree
   (different building shapes + different hand). done_when: expand-from-indoors opens the SAME sheet

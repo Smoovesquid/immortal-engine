@@ -917,11 +917,14 @@ sheet (no per-node islands); the camera keeps the player centered (no edges, eve
   NO `world.structures.byId` record → no true rect → still catalog-sized art beside true-scale neighbors
   (mitigated: true plans paint on top). Fix = structure-back all settlement buildings (village-layout /
   structure-gen scope, NOT renderer) — cut when the map track next touches village data.
-  **→ TT-DRAW-3 DISPATCHED 2026-07-04-pm3** (Sonnet; brief `docs/briefs/TT-DRAW-3-graphpaper-real-plans.md`;
-  U418–U419) — **Tim's sighting as acceptance, verbatim: "At the closest view, we need the graphpaper and
-  a realistic floorplan of the buildings."** Fix: ONE plan-drawing brain shared with the interior view
-  (rooms tile the footprint, shared walls, door gaps — kills the squares-inside-squares regression) + the
-  REAL 5-ft quadrille fading in at closest zoom (consumes TAC-1's pinned constants). Runs BEFORE WS-3.
+  **→ TT-DRAW-3 ✅ LANDED (`31e46eed`)** — Tim's acceptance verified on the live screen: real 5-ft
+  quadrille at closest zoom + the connected plan (rooms + CORRIDOR floor-strips — the true root of
+  "squares inside squares" was un-rendered corridors: the engine pads rooms apart and bridges them;
+  doors sit in the corridor gaps, never on room walls). ONE shared drawing brain (`planModel.js`) feeds
+  BOTH surfaces — interior proven byte-identical; grid pitch composed from TAC-1's pinned constants,
+  round-trip exact (U418–U419). **Polish nit (queue, tiny):** room-name labels crowd/overlap at the
+  mid (street) band — add a label LOD (names only at plan-scale zoom). DEC-1 neighbors still oversized
+  (already queued).
 - **S4 the tilt:** MAP-3DR (persistent mount, below) + tilt-threshold retune by eye (decision #1) +
   combat folds into the one scene (`MAP_QUEUE.md` "NEXT PACKET" spec) **QUEUE after S3**.
 - **S5 5-ft truth:** TAC — contract written + revised (`docs/POSITION_AS_CANON.md`); **TAC-1 LANDED

@@ -13,7 +13,18 @@ export const NODE_WU = 1000;  // one node-lattice step ≈ 1 km (1 wu ≈ 1 m)
 export const PLACE_WU = 4;    // one village place-unit ≈ 4 m (61-unit village ≈ 244 wu)
 
 export const Z_MIN = 0.008;   // whole world in frame incl. the far Heath ("fit" button frames it all)
-export const Z_MAX = 16;      // street band, 1 place-unit = 64 px
+// TT-DRAW-2 — the zoom ceiling deepened so a true-scale building plan is
+// actually legible (room names + door gaps readable), not just theoretically
+// reachable: at Z_MAX a ~10 wu cottage (structureWorldRect scale, post TT-DRAW-2
+// sizing-truth fix) spans well over half the shorter viewport axis across the
+// realistic range of live map-panel widths (the play layout's main column is
+// `minmax(0,1fr)` beside a fixed ~280-300px sidebar — see U417). Was 16 (only
+// ~20-40% of frame on a true-scale building; wheel-in stalled short of
+// plan-legible). Named constant, tunable in this ONE spot; the wall/label
+// z-scale formulas downstream already saturate below this value (Math.min
+// caps), so raising it deepens the zoom without blowing up line weights or
+// font sizes.
+export const Z_MAX = 60;      // building-plan band, 1 place-unit = 240 px
 
 // Semantic LOD thresholds (px per wu). Representations fade in across an
 // octave around these — the camera never cuts.

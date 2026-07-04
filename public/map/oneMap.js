@@ -24,7 +24,7 @@ import { dayPhase, clockLabel } from '../../engine/dayNight.js';
 // TT-DRAW (docs/TABLETOP_MAP.md): structure is DRAWN from the REAL floorPlan
 // (not the catalog placeFromNode.js shape), entities (people/trees) are PLACED
 // tokens, and a settlement-local fog wash distinguishes explored/unexplored.
-import { drawnStructureModel, placedTokenModel, fogMask, INK_PARAMS } from './drawModel.js';
+import { drawnStructureModel, placedTokenModel, fogMask, INK_PARAMS, catalogPlanBoundsInPlaceUnits, fitCatalogPointToRect } from './drawModel.js';
 
 // The compass facing of the window you JUST climbed out of (the latest interior-exit event), so the
 // map can place your marker on that side of the building. '' once you act again or move on.
@@ -745,46 +745,97 @@ export function renderOneMap(world, opts = {}) {
     // keyed by structureKey — drawn instead of the catalog b.plan shape for any
     // building that's open (the WS-1-flagged fork this packet resolves).
     const drawnStructures = new Map((drawnStructureModel(world, node.id)?.structures || []).map(s => [s.structureKey, s]));
-    for (const b of (place.buildings || [])) {
+    // TT-DRAW-2 — paint order: a structureKey-backed (true-rect) building draws
+    // LAST (on top). Layout anchors were spaced by placeFromNode.js's rejection
+    // sampling assuming EVERY neighbor is catalog-sized; a decorative building
+    // (no structureKey, no structureWorldRect to clip its unfitted catalog art
+    // to — the one case with no ground truth) can still visually overlap a
+    // now-true-sized neighbor at close zoom. Painting true-sized buildings last
+    // keeps the fitted plan legible on top rather than buried under an
+    // oversized decorative roof — a pure paint-order fix, no sizing invented.
+    // The anchors themselves aren't colliding (this is a still-catalog-scale
+    // decorative building's own unfitted footprint reaching a shrunk neighbor)
+    // — flagged in the TT-DRAW-2 report as village-layout spacing, not fixed here.
+    const paintOrder = [...(place.buildings || [])].sort((a, b2) => (a.structureKey ? 1 : 0) - (b2.structureKey ? 1 : 0));
+    for (const b of paintOrder) {
       const material = String(b?.plan?.material || 'timber');
       const openable = b.structureKey && (b.structureKey === interiorKey || String(node.id) === homeNodeId);
       const cut = openable ? fadeIn(z, BAND.street, BAND.street * 1.8) : 0;
       const realPlan = b.structureKey ? drawnStructures.get(String(b.structureKey)) : null;
 
-      // helper: project a room/furniture rect to px corners.
+      // helper: project a room/furniture rect (catalog place-units) to px corners.
       const rectPx = (ux, uy, w, h) => {
         const [x0, y0] = P(ux, uy); const [x1, y1] = P(ux + w, uy + h);
         return [Math.min(x0, x1), Math.min(y0, y1), Math.abs(x1 - x0), Math.abs(y1 - y0)];
       };
 
-      let bx0 = Infinity, by0 = Infinity, bx1 = -Infinity;
-      for (const r of (b.plan?.rooms || [])) {
-        const isRound = r.shape === 'round';
-        // floor (cutaway) under roof, so the fade reads as the lid lifting.
+      // TT-DRAW-2 — ONE sizing source: any building backed by a real engine
+      // structure (realPlan, from drawnStructureModel) draws its roof/floor
+      // silhouette, furniture marks, and room-name labels FITTED INSIDE its true
+      // structureWorldRect — never the inflated catalog-art footprint (the root
+      // of the roof-overhang class; a structureless decorative building — no
+      // structureKey, no floorPlan, no ground truth to clip to — keeps drawing
+      // its catalog art unchanged, the one case with nothing to fit against).
+      // `PT` replaces `P` for every catalog-derived coordinate on this building:
+      // it re-maps the catalog plan's own local bounding box onto realPlan.rect
+      // 1:1 (same relative layout, true absolute scale) so furniture/labels stay
+      // INSIDE the walls realPlan.rooms[].walls (already world-unit-true) inks.
+      let PT = P, bx0, by0, bx1, by1;
+      if (realPlan) {
+        // catalogPlanBoundsInPlaceUnits/fitCatalogPointToRect (drawModel.js, pure
+        // + U416-tested) do the actual bbox+fit math — this closure just wraps
+        // the world-unit result through toPx for the canvas. world-space fit:
+        // catalog local coords -> world units directly (bypassing the place-unit
+        // P() the catalog shape would otherwise use), so the fitted silhouette
+        // shares the SAME projection realPlan's own wall ink uses.
+        const catBounds = catalogPlanBoundsInPlaceUnits(b);
+        PT = (ux, uy) => { const p = fitCatalogPointToRect(catBounds, realPlan.rect, ux, uy); return toPx(p.wx, p.wy, W, H); };
+        [bx0, by0] = toPx(realPlan.rect.minX, realPlan.rect.minY, W, H);
+        [bx1, by1] = toPx(realPlan.rect.maxX, realPlan.rect.maxY, W, H);
+      } else {
+        bx0 = Infinity; by0 = Infinity; bx1 = -Infinity; by1 = -Infinity;
+      }
+      const rectPxT = (ux, uy, w, h) => {
+        const [x0, y0] = PT(ux, uy); const [x1, y1] = PT(ux + w, uy + h);
+        return [Math.min(x0, x1), Math.min(y0, y1), Math.abs(x1 - x0), Math.abs(y1 - y0)];
+      };
+
+      if (realPlan) {
+        // ONE rect for the whole building — no per-catalog-room shape once
+        // fitted to true size (the real interior ink, once open, supplies the
+        // actual room divisions; the roofed state is a single true-sized block).
+        const [rx0, ry0] = toPx(realPlan.rect.minX, realPlan.rect.minY, W, H);
+        const [rx1, ry1] = toPx(realPlan.rect.maxX, realPlan.rect.maxY, W, H);
+        const rx = Math.min(rx0, rx1), ry = Math.min(ry0, ry1), rw = Math.abs(rx1 - rx0), rh = Math.abs(ry1 - ry0);
         if (cut > 0) {
           ctx.globalAlpha = alpha * cut;
           ctx.fillStyle = FLOOR_WARM; ctx.strokeStyle = INK; ctx.lineWidth = wall;
-          if (isRound) { const [cx2, cy2] = P(b.ox + r.cx, b.oy + r.cy); const rr = (r.r || 1) * PLACE_WU * z; ctx.beginPath(); ctx.arc(cx2, cy2, rr, 0, 7); ctx.fill(); ctx.stroke(); }
-          else { const [x, y, w, h] = rectPx(b.ox + r.cx - (r.w || 2) / 2, b.oy + r.cy - (r.h || 2) / 2, (r.w || 2), (r.h || 2)); ctx.beginPath(); ctx.rect(x, y, w, h); ctx.fill(); ctx.stroke(); }
+          ctx.beginPath(); ctx.rect(rx, ry, rw, rh); ctx.fill(); ctx.stroke();
         }
-        // roof on top, fading out as the cutaway fades in.
         if (cut < 1) {
           ctx.globalAlpha = alpha * (1 - cut);
           ctx.fillStyle = ROOF[material] || ROOF.timber; ctx.strokeStyle = INK; ctx.lineWidth = wall;
-          if (isRound) { const [cx2, cy2] = P(b.ox + r.cx, b.oy + r.cy); const rr = (r.r || 1) * PLACE_WU * z; ctx.beginPath(); ctx.arc(cx2, cy2, rr, 0, 7); ctx.fill(); ctx.stroke(); }
-          else { const [x, y, w, h] = rectPx(b.ox + r.cx - (r.w || 2) / 2, b.oy + r.cy - (r.h || 2) / 2, (r.w || 2), (r.h || 2)); ctx.beginPath(); ctx.rect(x, y, w, h); ctx.fill(); ctx.stroke(); }
+          ctx.beginPath(); ctx.rect(rx, ry, rw, rh); ctx.fill(); ctx.stroke();
+          // A subtle roof ridge-line, INSET from the true rect edge (never on or
+          // outside it) — keeps the roofed read without any art exceeding the
+          // footprint truth. Default per the brief; a taste pass on roof STYLE
+          // for unentered buildings is a separate, later decision.
+          const insetPx = INK_PARAMS.roofLineInsetWu * z;
+          if (rw > insetPx * 3 && rh > insetPx * 3) {
+            ctx.strokeStyle = INK; ctx.lineWidth = INK_PARAMS.roofLineWeight;
+            ctx.beginPath();
+            ctx.moveTo(rx + insetPx, ry + rh / 2);
+            ctx.lineTo(rx + rw - insetPx, ry + rh / 2);
+            ctx.stroke();
+          }
         }
-        const [bxx, byy] = P(b.ox + r.cx - (r.w || (r.r || 1) * 2) / 2, b.oy + r.cy - (r.h || (r.r || 1) * 2) / 2);
-        bx0 = Math.min(bx0, bxx); by0 = Math.min(by0, byy);
-        const [bxe] = P(b.ox + r.cx + (r.w || (r.r || 1) * 2) / 2, b.oy + r.cy);
-        bx1 = Math.max(bx1, bxe);
       }
       // TT-DRAW: once the cutaway has mostly resolved, ink the REAL floor plan's
-      // walls (with door GAPS) on top of the catalog-shaped floor fill above —
-      // the same footprint, but now the wall lines and doorways are the ones
-      // "go through the doorway" actually opens. Wall coordinates are already in
-      // WORLD units (drawnStructureModel), so they project straight through toPx,
-      // bypassing the place-unit P() helper the catalog shapes use.
+      // walls (with door GAPS) on top of the true-sized fill above — the same
+      // footprint, but now the wall lines and doorways are the ones "go through
+      // the doorway" actually opens. Wall coordinates are already in WORLD units
+      // (drawnStructureModel), so they project straight through toPx, bypassing
+      // the place-unit P() helper the catalog shapes use.
       if (realPlan && cut > 0.2) {
         ctx.globalAlpha = alpha * cut;
         ctx.strokeStyle = INK;
@@ -800,12 +851,40 @@ export function renderOneMap(world, opts = {}) {
       }
       ctx.globalAlpha = alpha;
 
+      // structureless decorative buildings (no realPlan, no ground truth to clip
+      // to) — keep drawing the catalog art unchanged, the one case with nothing
+      // to fit against; still track its own bx0/by0/bx1 for the name label.
+      if (!realPlan) {
+        for (const r of (b.plan?.rooms || [])) {
+          const isRound = r.shape === 'round';
+          if (cut > 0) {
+            ctx.globalAlpha = alpha * cut;
+            ctx.fillStyle = FLOOR_WARM; ctx.strokeStyle = INK; ctx.lineWidth = wall;
+            if (isRound) { const [cx2, cy2] = P(b.ox + r.cx, b.oy + r.cy); const rr = (r.r || 1) * PLACE_WU * z; ctx.beginPath(); ctx.arc(cx2, cy2, rr, 0, 7); ctx.fill(); ctx.stroke(); }
+            else { const [x, y, w, h] = rectPx(b.ox + r.cx - (r.w || 2) / 2, b.oy + r.cy - (r.h || 2) / 2, (r.w || 2), (r.h || 2)); ctx.beginPath(); ctx.rect(x, y, w, h); ctx.fill(); ctx.stroke(); }
+          }
+          if (cut < 1) {
+            ctx.globalAlpha = alpha * (1 - cut);
+            ctx.fillStyle = ROOF[material] || ROOF.timber; ctx.strokeStyle = INK; ctx.lineWidth = wall;
+            if (isRound) { const [cx2, cy2] = P(b.ox + r.cx, b.oy + r.cy); const rr = (r.r || 1) * PLACE_WU * z; ctx.beginPath(); ctx.arc(cx2, cy2, rr, 0, 7); ctx.fill(); ctx.stroke(); }
+            else { const [x, y, w, h] = rectPx(b.ox + r.cx - (r.w || 2) / 2, b.oy + r.cy - (r.h || 2) / 2, (r.w || 2), (r.h || 2)); ctx.beginPath(); ctx.rect(x, y, w, h); ctx.fill(); ctx.stroke(); }
+          }
+          const [bxx, byy] = P(b.ox + r.cx - (r.w || (r.r || 1) * 2) / 2, b.oy + r.cy - (r.h || (r.r || 1) * 2) / 2);
+          bx0 = Math.min(bx0, bxx); by0 = Math.min(by0, byy);
+          const [bxe] = P(b.ox + r.cx + (r.w || (r.r || 1) * 2) / 2, b.oy + r.cy);
+          bx1 = Math.max(bx1, bxe);
+        }
+        ctx.globalAlpha = alpha;
+      }
+
       // furniture marks, once the roof is mostly off (the lid-lifted reveal).
+      // Projected through PT (the catalog->true-rect fit) so furniture stays
+      // INSIDE the true walls realPlan.rooms[].walls just inked above.
       if (cut > 0.15) {
         for (const f of (b.plan?.furniture || [])) {
           const t = String(f.type || '');
           if (SKIP_FURN.has(t)) continue;
-          const [fx, fy, fw, fh] = rectPx(b.ox + f.ux, b.oy + f.uy, (f.uw || 0.6), (f.uh || 0.6));
+          const [fx, fy, fw, fh] = rectPxT(b.ox + f.ux, b.oy + f.uy, (f.uw || 0.6), (f.uh || 0.6));
           if (fw < 1.2 && fh < 1.2) continue;
           ctx.globalAlpha = alpha * cut;
           const stone = STONE_FURN.has(t), bars = t === 'bars';
@@ -816,11 +895,19 @@ export function renderOneMap(world, opts = {}) {
           if (t === 'bed') { ctx.fillStyle = CLOTH; ctx.fillRect(fx + fw * 0.18, fy + fh * 0.28, fw * 0.64, fh * 0.6); }
         }
         // room names at the deepest zoom — you're reading the floor plan now.
+        // Read from realPlan.rooms (TRUE world-unit centers) when available so a
+        // name lands on the room the true walls actually drew, not the catalog's
+        // old (oversized) center; falls back to the catalog projection only for
+        // the structureless decorative case.
         if (z >= 6) {
           ctx.globalAlpha = alpha * cut;
           ctx.fillStyle = 'rgba(18,26,48,0.66)'; ctx.font = `${Math.round(Math.min(14, 1.1 * PLACE_WU * z))}px ${HAND}`;
           ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-          for (const r of (b.plan?.rooms || [])) { if (!r.name) continue; const [rx, ry] = P(b.ox + r.cx, b.oy + r.cy); ctx.fillText(String(r.name), rx, ry); }
+          if (realPlan) {
+            for (const r of realPlan.rooms) { if (!r.name) continue; const [rx, ry] = toPx(r.wx, r.wy, W, H); ctx.fillText(String(r.name), rx, ry); }
+          } else {
+            for (const r of (b.plan?.rooms || [])) { if (!r.name) continue; const [rx, ry] = P(b.ox + r.cx, b.oy + r.cy); ctx.fillText(String(r.name), rx, ry); }
+          }
         }
         ctx.globalAlpha = alpha;
       }

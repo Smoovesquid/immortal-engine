@@ -39,7 +39,14 @@ export const INK_PARAMS = Object.freeze({
   waterBandWu: 1.6,
   treeRadiusWu: 0.7 * PLACE_WU, // a token's footprint radius, matching the old ground-ink tree size
   tokenBaseRadiusWu: 0.34 * PLACE_WU, // standing-token base ring radius
-  hazeAlpha: 0.46          // unexplored-cell overlay opacity (matches handDrawnPlace.js's fog wash)
+  hazeAlpha: 0.46,         // unexplored-cell overlay opacity (matches handDrawnPlace.js's fog wash)
+  // TT-DRAW-2 — one sizing truth: an unentered (roofed) building draws its roof
+  // fill sized to its TRUE structureWorldRect (no art may exceed the rect). A
+  // subtle roof-line stays visible so a roofed building still reads as a roof,
+  // not a bare block — but the line sits INSET from the rect edge, never on or
+  // outside it (default keep, per the brief; Tim answers on roof STYLE later).
+  roofLineInsetWu: 0.35,   // inset of the roof ridge-line from the true rect edge, in world units
+  roofLineWeight: 1.1      // ridge-line stroke weight (unscaled by z, kept subtle at any zoom)
 });
 
 function isFiniteNum(n) { return typeof n === 'number' && Number.isFinite(n); }
@@ -154,6 +161,55 @@ function angleDelta(a, b) {
   while (d > Math.PI) d -= Math.PI * 2;
   while (d < -Math.PI) d += Math.PI * 2;
   return d;
+}
+
+/**
+ * catalogPlanBoundsInPlaceUnits(b) -> {minX, minY, maxX, maxY}
+ * A catalog building entry's (placeFromNode.js's `place.buildings[]` shape —
+ * `{ plan, ox, oy, ... }`) own bounding box in VILLAGE place-units, covering
+ * both its room shapes AND its furniture (furniture anchors are ABSOLUTE
+ * catalog-local coordinates, not room-relative, so a fixture near a plan's
+ * edge — e.g. the wattle cottage's bed/shelf — can sit outside the room-only
+ * bbox otherwise). `b.ox`/`b.oy` are baked in so this lands in the SAME frame
+ * every catalog draw call already uses (`b.ox + r.cx`, `b.ox + f.ux`, …).
+ */
+export function catalogPlanBoundsInPlaceUnits(b) {
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  const ox = Number(b?.ox) || 0, oy = Number(b?.oy) || 0;
+  for (const r of (b?.plan?.rooms || [])) {
+    const rw = (r.w ?? (r.r ?? 1) * 2), rh = (r.h ?? (r.r ?? 1) * 2);
+    minX = Math.min(minX, ox + r.cx - rw / 2); maxX = Math.max(maxX, ox + r.cx + rw / 2);
+    minY = Math.min(minY, oy + r.cy - rh / 2); maxY = Math.max(maxY, oy + r.cy + rh / 2);
+  }
+  for (const f of (b?.plan?.furniture || [])) {
+    minX = Math.min(minX, ox + (Number(f.ux) || 0)); maxX = Math.max(maxX, ox + (Number(f.ux) || 0) + (Number(f.uw) || 0));
+    minY = Math.min(minY, oy + (Number(f.uy) || 0)); maxY = Math.max(maxY, oy + (Number(f.uy) || 0) + (Number(f.uh) || 0));
+  }
+  if (!Number.isFinite(minX)) { minX = 0; minY = 0; maxX = 1; maxY = 1; }
+  return { minX, minY, maxX, maxY };
+}
+
+/**
+ * fitCatalogPointToRect(catalogBounds, trueRect, px, py) -> {wx, wy}
+ * TT-DRAW-2 — the ONE-sizing-truth fit transform: re-maps a point inside a
+ * catalog building's own place-unit bounding box (`catalogPlanBoundsInPlaceUnits`)
+ * onto the SAME relative position inside the building's TRUE world-unit rect
+ * (`structureWorldRect`, via drawnStructureModel's `.rect`). Same relative
+ * layout, true absolute scale — so furniture/room-name positions the catalog
+ * plan authored stay INSIDE the real floorPlan walls drawnStructureModel already
+ * ink at true size, instead of the inflated catalog-art footprint (the root of
+ * the roof-overhang class this packet retires). `(px, py)` is in the SAME
+ * place-unit frame as `catalogBounds` (i.e. already `b.ox + local` — see
+ * catalogPlanBoundsInPlaceUnits). Pure, no canvas/DOM.
+ */
+export function fitCatalogPointToRect(catalogBounds, trueRect, px, py) {
+  const catW = Math.max(1e-6, catalogBounds.maxX - catalogBounds.minX);
+  const catH = Math.max(1e-6, catalogBounds.maxY - catalogBounds.minY);
+  const trueW = trueRect.maxX - trueRect.minX, trueH = trueRect.maxY - trueRect.minY;
+  return {
+    wx: trueRect.minX + ((px - catalogBounds.minX) / catW) * trueW,
+    wy: trueRect.minY + ((py - catalogBounds.minY) / catH) * trueH
+  };
 }
 
 /**

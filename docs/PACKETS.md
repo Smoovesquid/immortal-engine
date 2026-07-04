@@ -264,7 +264,12 @@ verbs — no parallel contract enum), `parseIntent` stays the LLM-off floor.
   — ✅ landed with NODE-DESYNC-1 `881c79b`)
   → **throw/hurl/drop of a HELD object** must never resolve as `take:already-held` ("I hurl the lantern
   against the wall" → "the lantern is already tucked in your pack" — gate 2026-07-04-2, Chaos ×2; the
-  throw silently never happens).
+  throw silently never happens)
+  → **place-name travel must route to the JOURNEY, never person-disambiguation** (live 2026-07-04-pm5,
+  v0.28.15 boot: typed "go to The Greenwood" — a neighboring NODE and the movement law's fast-travel
+  case, JR-1 — answered "I haven't introduced anyone named The Greenwood… Bones the Fox, Galen, Brogan,
+  the Lingerer are here — who do you actually mean?" The intent layer treated a place as a person;
+  known-place names must resolve as travel BEFORE the npc-referent clarify sink).
   Cut each packet when its predecessor lands.
 - **ARC done-when (= PRD Phase 0 exit):** frozen corpus 100% **and** N consecutive gates open zero
   categorically-new failure classes **and** ≤2 broken turns per 48, twice running (2026-07-02: 9/48 → 4/48

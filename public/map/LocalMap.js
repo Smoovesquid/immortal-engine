@@ -4,6 +4,7 @@ import { buildingTypeFor } from '../../engine/structures/roomDetail.js';
 import { createInteriorMap, floorPlanToSceneModel, planToSceneModel } from './handDrawnInterior.js';
 import { createPlaceMap } from './handDrawnPlace.js';
 import { placeModelFromNode, placeFromWorldNode } from './placeFromNode.js';
+import { interiorPeopleTokens } from './interiorTokens.js';
 import { ALL_PLANS } from './plans/planTopology.js';
 import { seedFromString as seedStr } from '../../engine/rng.js';
 
@@ -666,18 +667,16 @@ function drawInterior(ctx, world, w) {
   }
   drawCompass(ctx, w - margin * 0.9, w - margin * 1.1, Math.max(10, w * 0.028));
 
-  // ── 8) People (blue-pen rings) in discovered rooms. ──────────────────────
-  const npcs = npcsAtCurrentNode(world);
+  // ── 8) People (blue-pen rings) — the engine's occupants of each discovered room.
+  //      (MAP-OCC-1b: truth from roomOccupancy, never a seeded roster scatter.) ─────
   const discIds = drooms.map(r => r.id);
-  if (npcs.length && unit >= 24 && discIds.length) {
-    for (let i = 0; i < npcs.length; i++) {
-      const n = npcs[i] || {};
-      const nkey = String(n.id || n.name || ('npc' + i));
-      const target = pbox.get(discIds[seedStr('npcroom|' + structureKey + '|' + nkey) % discIds.length]);
+  if (unit >= 24 && discIds.length) {
+    for (const t of interiorPeopleTokens(world, structureKey, discIds)) {
+      const target = pbox.get(t.roomId);
       if (!target) continue;
       const { cx, cy, rw, rh } = target;
-      const ang = (seedStr('npcang|' + nkey) % 360) * Math.PI / 180;
-      const m = Math.min(rw, rh) * (0.16 + (seedStr('npcrad|' + nkey) % 100) / 100 * 0.18);
+      const ang = (seedStr('npcang|' + t.nkey) % 360) * Math.PI / 180;
+      const m = Math.min(rw, rh) * (0.16 + (seedStr('npcrad|' + t.nkey) % 100) / 100 * 0.18);
       const tx = cx + Math.cos(ang) * m, ty = cy + Math.sin(ang) * m;
       const tok = Math.max(3, unit * 0.1);
       ctx.beginPath(); ctx.arc(tx, ty, tok, 0, Math.PI * 2);

@@ -8,9 +8,30 @@
 
 import { biomeForNode } from '../../engine/world/biome.js';
 import { floorPlan } from '../../engine/structures/floorPlan.js';
+// TAC-4 — the marker reads the engine's canonical tactical position. The pinned
+// cell↔layout-unit / cell↔node-cell constants live in ONE place (the whole day's
+// sizing-truth law): tacticalPos.js. We import them (read-only) rather than
+// re-declaring a second conversion, so a struct cell projects through the SAME
+// footprint-centered chain the drawn plan uses (drawModel.js's planPointToWu) and
+// a region cell through the SAME node lattice the map draws (nodeToWu).
+import {
+  PLACE_WU as TAC_CELLS_PER_LAYOUT_UNIT,  // == PLACE_WU below; asserted in U450
+  NODE_CELLS as TAC_NODE_CELLS            // region cells per node-grid step
+} from '../../engine/map/spatial/tacticalPos.js';
 
 export const NODE_WU = 1000;  // one node-lattice step ≈ 1 km (1 wu ≈ 1 m)
 export const PLACE_WU = 4;    // one village place-unit ≈ 4 m (61-unit village ≈ 244 wu)
+
+// World units per tactical cell, DERIVED from the two pinned truths so there is
+// no third constant to keep in sync:
+//   • indoors, a floorPlan layout unit is PLACE_WU wu (the drawn-plan scale) and
+//     TAC_CELLS_PER_LAYOUT_UNIT cells, so one cell = PLACE_WU / cells-per-unit wu;
+//   • outdoors, a node-grid step is NODE_WU wu and TAC_NODE_CELLS cells, so one
+//     region cell = NODE_WU / node-cells wu.
+// Both land at 5 wu/cell here (5 ft per 5-ft square, 1 wu ≈ 1 ft/1 m on the map),
+// but we keep them as two derivations pinned to their own frame's constants.
+const STRUCT_WU_PER_CELL = PLACE_WU / TAC_CELLS_PER_LAYOUT_UNIT;
+const REGION_WU_PER_CELL = NODE_WU / TAC_NODE_CELLS;
 
 export const Z_MIN = 0.008;   // whole world in frame incl. the far Heath ("fit" button frames it all)
 // TT-DRAW-2 — the zoom ceiling deepened so a true-scale building plan is
@@ -213,6 +234,53 @@ export function interiorRoomToWu(node, frame, anchor, plan, roomId) {
 }
 
 /**
+ * structCellToWu(node, frame, anchor, plan, gx, gy) -> {wx, wy}
+ * TAC-4 — a canonical STRUCT-frame tactical cell (gx,gy, in 5-ft cells) projected
+ * to world units through the SAME footprint-centered chain interiorRoomToWu (and
+ * drawModel.js's planPointToWu, which draws the walls/doors) use. The cell is first
+ * expressed in the plan's own layout units (cell ÷ cells-per-layout-unit), then
+ * recentred on the footprint midpoint and pushed through placeUnitToWu — so the
+ * marker lands INSIDE the very room rect the plan drew (the pos invariant guarantees
+ * roomOf(cell) matches scene.interior; U450 proves the wu lands in that room's box).
+ * One sizing truth: no independent cell→pixel mapping. `anchor`/`frame` may be
+ * null (degrades to node-center, same as every projector here).
+ */
+export function structCellToWu(node, frame, anchor, plan, gx, gy) {
+  const a = anchor && typeof anchor === 'object' ? anchor : { ox: 0, oy: 0 };
+  const f = frame && typeof frame === 'object' ? frame : { cx: 0, cy: 0 };
+  const fw = Number(plan?.footprint?.w) || 1, fh = Number(plan?.footprint?.h) || 1;
+  // Cells → the plan's layout units (the same units room.cx/cy/w/h are in).
+  const lx = (Number(gx) || 0) / TAC_CELLS_PER_LAYOUT_UNIT;
+  const ly = (Number(gy) || 0) / TAC_CELLS_PER_LAYOUT_UNIT;
+  const ux = (Number(a.ox) || 0) + lx - fw / 2;
+  const uy = (Number(a.oy) || 0) + ly - fh / 2;
+  const p = placeUnitToWu(node, f, ux, uy);
+  return { wx: p.x, wy: p.y };
+}
+
+/**
+ * regionCellToWu(node, gx, gy) -> {wx, wy}
+ * TAC-4 — a canonical REGION-frame tactical cell projected to world units on the
+ * SAME node lattice the map draws (nodeToWu): the node grid at (node.x, node.y)
+ * anchors region cell (node.x·NODE_CELLS, node.y·NODE_CELLS) at nodeToWu(node), and
+ * every cell is REGION_WU_PER_CELL wu from its neighbour. `node` is the node the pos
+ * currently projects to (the caller passes the current node — the pos invariant
+ * keeps nearestNode(cell) === currentNode, so the marker sits in the node's own
+ * neighbourhood). Degrades to node-center when node has no grid coordinate.
+ */
+export function regionCellToWu(node, gx, gy) {
+  if (!node || !Number.isFinite(+node.x) || !Number.isFinite(+node.y)) return null;
+  // The region cell of this node's own grid coordinate (tacticalPos.nodeGridToRegionCell).
+  const nodeCellX = (Number(node.x) || 0) * TAC_NODE_CELLS;
+  const nodeCellY = (Number(node.y) || 0) * TAC_NODE_CELLS;
+  const c = nodeToWu(node);
+  return {
+    wx: c.x + ((Number(gx) || 0) - nodeCellX) * REGION_WU_PER_CELL,
+    wy: c.y + ((Number(gy) || 0) - nodeCellY) * REGION_WU_PER_CELL
+  };
+}
+
+/**
  * structureWorldRect(node, frame, anchor, plan) -> {minX, minY, maxX, maxY}
  * The building's world-unit AABB (footprint centered at its anchor) — every room
  * this plan resolves via interiorRoomToWu MUST land inside this rect by
@@ -240,12 +308,42 @@ export function structureWorldRect(node, frame, anchor, plan) {
  *   indoors:  { nodeId, structureKey, roomId }         (room-granular; no ux/uy)
  * Accepts either `structureKey` (world.scene.interior's field name) or
  * `structureId` (party[0].position.interior's field name) — same value, two
- * historical spellings (see docs/ONE_MAP.md M4b). Returns null if the node is
- * unknown or (indoors) the structure/room can't be resolved — never throws.
+ * historical spellings (see docs/ONE_MAP.md M4b).
+ *
+ * TAC-4 — when `loc.pos` is a NON-null canonical tactical position
+ * (`{frame:'region'|'struct:<id>', gx, gy}`, cells-in-canon; engine/map/spatial/
+ * tacticalPos.js), the marker resolves FROM it — a within-room walk now moves the
+ * marker, not just the room label. `pos` takes precedence over roomId/ux-uy because
+ * it is the finer, engine-authoritative truth (and the pos invariant keeps it
+ * consistent with scene.interior). A null/absent/invalid `pos` falls through to the
+ * legacy room-granular (indoors) / walk-position (outdoors) behavior UNCHANGED —
+ * legacy saves and NPCs without a pos are byte-for-byte as before.
+ *
+ * Returns null if the node is unknown or (indoors) the structure/room can't be
+ * resolved — never throws.
  */
 export function resolveEntityWu(ctx, loc) {
   const node = ctx?.node;
   if (!node || !Number.isFinite(+node.x) || !Number.isFinite(+node.y)) return null;
+
+  // TAC-4: canonical tactical position wins when present and well-formed.
+  const pos = loc?.pos;
+  if (pos && typeof pos === 'object' && Number.isInteger(pos.gx) && Number.isInteger(pos.gy)) {
+    const frame = String(pos.frame || '');
+    if (frame === 'region') {
+      return regionCellToWu(node, pos.gx, pos.gy);
+    }
+    const m = /^struct:(.+)$/.exec(frame);
+    if (m) {
+      // Same building the drawn plan uses; anchor from the village embedding.
+      const structKeyFromPos = m[1];
+      const anchor = buildingAnchorInPlace(ctx?.place || null, structKeyFromPos) || { ox: 0, oy: 0 };
+      const plan = ctx?.plan || null; // resolveEntityWuFromWorld derives this from the pos's own struct id
+      if (plan) return structCellToWu(node, ctx?.frame || null, anchor, plan, pos.gx, pos.gy);
+    }
+    // An unrecognized/ungroundable pos frame: fall through to the legacy path below.
+  }
+
   const structureKey = String(loc?.structureKey || loc?.structureId || '');
   if (structureKey) {
     const anchor = buildingAnchorInPlace(ctx?.place || null, structureKey) || { ox: 0, oy: 0 };
@@ -269,19 +367,42 @@ export function resolveEntityWu(ctx, loc) {
  * the real `floorPlan(structure)` for an indoor `loc`, then calls
  * resolveEntityWu. `place`/`frame` are the caller's already-computed village
  * embedding for `loc.nodeId` (e.g. oneMap.js's `layoutFor()` cache) — pass null
- * for a non-settlement node. Pure + read-only: `world.structures` is read, never
- * written.
+ * for a non-settlement node.
+ *
+ * TAC-4 — when `loc.pos` is a struct-frame tactical position, the plan is derived
+ * from the POS's OWN structure id (its `struct:<id>` frame), so the marker projects
+ * against the building the engine actually says the actor is standing in. Only when
+ * there is no usable pos do we fall back to `loc.structureKey` (the legacy indoor
+ * room-granular path). Pure + read-only: `world.structures` is read, never written.
  */
 export function resolveEntityWuFromWorld(world, place, frame, loc) {
   const nodeId = String(loc?.nodeId || '');
   const node = (world?.map?.nodes || []).find(n => String(n?.id || '') === nodeId) || null;
   if (!node) return null;
-  const structureKey = String(loc?.structureKey || loc?.structureId || '');
+
+  // TAC-4: a struct-frame pos names its own building — resolve the plan from it when
+  // that building exists; otherwise the pos can't be grounded, so we DROP it and let
+  // the legacy structureKey/roomId path (its own plan) resolve instead.
+  const pos = loc?.pos;
+  const posStructId = (pos && typeof pos === 'object' && Number.isInteger(pos.gx) && Number.isInteger(pos.gy))
+    ? (/^struct:(.+)$/.exec(String(pos.frame || '')) || [])[1] || ''
+    : '';
+  const posBuildingMissing = posStructId && !(world?.structures?.byId?.[posStructId]);
+  // The effective loc: if the pos points at a missing building, strip pos so the
+  // legacy fields drive resolution (region-frame and ungroundable-frame pos are
+  // handled inside resolveEntityWu, which simply falls through when it can't ground).
+  const effLoc = posBuildingMissing ? { ...loc, pos: null } : loc;
+
+  // The building whose floorPlan resolveEntityWu needs: the (present) pos building if
+  // resolving from pos, else the legacy structureKey/structureId.
+  const planStructId = (posStructId && !posBuildingMissing)
+    ? posStructId
+    : String(loc?.structureKey || loc?.structureId || '');
   let plan = null;
-  if (structureKey) {
-    const st = world?.structures?.byId?.[structureKey] || null;
-    if (!st) return null;
+  if (planStructId) {
+    const st = world?.structures?.byId?.[planStructId] || null;
+    if (!st) return null; // legacy indoor loc naming an unknown structure — unchanged behavior
     plan = floorPlan(st);
   }
-  return resolveEntityWu({ node, place, frame, plan }, loc);
+  return resolveEntityWu({ node, place, frame, plan }, effLoc);
 }

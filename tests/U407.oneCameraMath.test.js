@@ -54,24 +54,35 @@ const boot = (campaignId) => beginAdventure(
 const moveDeeper = (w) => playerMove(w, PACKS, 'I go through the doorway into the next room.').world;
 const stepOut = (w) => playerMove(w, PACKS, 'I step out through the way to the open air.').world;
 
+// The player's canonical tactical position, when present — the finer truth the
+// marker/camera now resolve FROM (TAC-4). Included in the ground-truth loc so this
+// helper agrees with production playerFocusWu (which threads the same pos).
+function tacPosOf(w) {
+  const p = w.party?.[0]?.pos;
+  return (p && typeof p === 'object' && Number.isInteger(p.gx) && Number.isInteger(p.gy)) ? p : null;
+}
+
 // Same helper shape U401 uses: the exact {wx,wy} the engine's current location
 // resolves to via WS-1's rail, independent of oneMap.js — the ground truth we
-// check the camera against.
+// check the camera against. TAC-4: the loc carries party[0].pos, so this ground
+// truth is the SAME pos-aware point production resolves (a walk moves the marker to
+// its canonical square, not just its room center).
 function expectedFocus(w) {
   const nodeId = String(w.map.currentNodeId);
   const node = w.map.nodes.find(n => String(n.id) === nodeId);
   const inside = Boolean(w.scene?.interior);
   const place = node.settlement ? placeFromWorldNode(w, nodeId) : null;
   const frame = place ? placeFrame(place) : null;
+  const pos = tacPosOf(w);
   if (!inside) {
-    const pos = w.party?.[0]?.position;
-    const loc = (pos && String(pos.nodeId) === nodeId && Number.isFinite(pos.ux) && Number.isFinite(pos.uy))
-      ? { nodeId, ux: pos.ux, uy: pos.uy } : { nodeId };
+    const walk = w.party?.[0]?.position;
+    const loc = (walk && String(walk.nodeId) === nodeId && Number.isFinite(walk.ux) && Number.isFinite(walk.uy))
+      ? { nodeId, ux: walk.ux, uy: walk.uy, pos } : { nodeId, pos };
     return resolveEntityWuFromWorld(w, place, frame, loc);
   }
   const structureKey = String(w.scene.interior.structureKey);
   const roomId = String(w.scene.interior.roomId);
-  return resolveEntityWuFromWorld(w, place, frame, { nodeId, structureKey, roomId });
+  return resolveEntityWuFromWorld(w, place, frame, { nodeId, structureKey, roomId, pos });
 }
 
 test('U407-A: playerFocusWu resolves to the SAME address resolveEntityWu gives for the current location (indoors, boot world)', () => {
@@ -115,8 +126,8 @@ test('U407-C: an interior room-to-room move (real engine call) recenters the cam
   const focus1 = playerFocusWu(w1);
   const cam1 = cameraFor(w1, undefined, focus1);
   const expected1 = expectedFocus(w1);
-  assert.equal(cam1.cx, expected1.wx, 'camera recentered on the new room\'s own center (cx)');
-  assert.equal(cam1.cy, expected1.wy, 'camera recentered on the new room\'s own center (cy)');
+  assert.equal(cam1.cx, expected1.wx, 'camera recentered on the new room (the player\'s tactical square in it) (cx)');
+  assert.equal(cam1.cy, expected1.wy, 'camera recentered on the new room (the player\'s tactical square in it) (cy)');
   // Two different rooms can share a grid axis (e.g. two rooms at the same gy in
   // this building's layout both land at the same world-Y) — require the camera's
   // {cx,cy} pair to differ from the pre-move pair on AT LEAST one axis, not both;

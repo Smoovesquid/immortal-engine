@@ -97,13 +97,19 @@ test('U408-C: the marker\'s derived position for the boot world matches WS-1\'s 
 
   // Ground truth, computed independently of oneMap.js (mirrors U400/U401's own
   // pattern): the exact same {nodeId[,structureKey,roomId]|[,ux,uy]} shape
-  // resolveEntityWuFromWorld expects.
+  // resolveEntityWuFromWorld expects — plus party[0].pos (TAC-4: the marker/camera
+  // resolve from the canonical tactical square when it's present, so the ground
+  // truth carries it too).
+  const tacPos = (() => {
+    const p = w.party?.[0]?.pos;
+    return (p && typeof p === 'object' && Number.isInteger(p.gx) && Number.isInteger(p.gy)) ? p : null;
+  })();
   const loc = inside
-    ? { nodeId, structureKey: String(w.scene.interior.structureKey), roomId: String(w.scene.interior.roomId) }
+    ? { nodeId, structureKey: String(w.scene.interior.structureKey), roomId: String(w.scene.interior.roomId), pos: tacPos }
     : (() => {
-        const pos = w.party?.[0]?.position;
-        return (pos && String(pos.nodeId) === nodeId && Number.isFinite(pos.ux) && Number.isFinite(pos.uy))
-          ? { nodeId, ux: pos.ux, uy: pos.uy } : { nodeId };
+        const walk = w.party?.[0]?.position;
+        return (walk && String(walk.nodeId) === nodeId && Number.isFinite(walk.ux) && Number.isFinite(walk.uy))
+          ? { nodeId, ux: walk.ux, uy: walk.uy, pos: tacPos } : { nodeId, pos: tacPos };
       })();
   const groundTruth = resolveEntityWuFromWorld(w, place, frame, loc);
   assert.ok(groundTruth, 'precondition: ground truth resolves on the boot world');

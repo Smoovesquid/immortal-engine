@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<!-- TAC-4 verification lab: boots the Aldermere slice INDOORS (pre-rolled hero in the
+     wake room, party[0].pos a struct-frame tactical cell), mounts renderOneMap at the
+     plan band, and lets a screenshot driver step the player with the REAL gesture
+     (playerMove 'go east' / 'walk east') and re-mount the map so the marker snaps to
+     the new tactical square. Not shipped; a lab page for the TAC-4 visual check. -->
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>TAC-4 lab</title>
+  <style>
+    html,body{margin:0;background:#e8ecdd;font:13px system-ui;color:#222}
+    #stage{width:1000px;height:680px;margin:8px auto;position:relative}
+    #hud{position:fixed;top:6px;left:8px;background:rgba(255,255,255,.9);padding:5px 9px;border-radius:5px;z-index:5;line-height:1.5}
+  </style>
+</head>
+<body>
+  <div id="hud">room: <b id="room">…</b> · pos: <b id="pos">…</b> · marker(wu): <b id="mk">…</b></div>
+  <div id="stage"></div>
+  <script type="module">
+    import { newWorld, ensureWorld } from '../../engine/state.js';
+    import { beginAdventure, playerMove } from '../../engine/playloop.js';
+    import { buildPreRolledCharacter } from '../../engine/chargen/preRolled.js';
+    import { SLICE_SEED } from '../../engine/world/sliceRegion.js';
+    import { normalizePack } from '../../engine/rulesets.js';
+    import { renderOneMap, playerFocusWu } from './oneMap.js';
+
+    // Packs, loaded over HTTP (the lab runs off the worktree static server). Load
+    // ONLY the fantasy pack — exactly what the Aldermere slice boots with (its
+    // .threads are empty, so this mirrors real play; loading threaded sub-packs
+    // would exercise an unrelated engine boot path the live slice never hits).
+    async function loadPacks() {
+      const out = {};
+      try { out.fantasy = normalizePack(await (await fetch('/packs/fantasy/pack.json')).json()); } catch (e) { console.error('pack load', e); }
+      return out;
+    }
+
+    const PACKS = await loadPacks();
+
+    function bootIndoors() {
+      const pc = buildPreRolledCharacter({ id: 'bryn' });
+      const w0 = newWorld({ seed: SLICE_SEED, fate: 0.2, campaignId: 'tac4-lab', pack: { primaryId: 'fantasy', mixerId: null }, mode: 'escape' });
+      const w1 = ensureWorld({ ...w0, party: [pc] });
+      return beginAdventure(w1, PACKS).world;
+    }
+
+    let world = bootIndoors();
+    window.__world = world;
+    window.__playerFocus = () => playerFocusWu(world);
+
+    const stage = document.getElementById('stage');
+    let wrap = null;
+
+    function focusPlayerAtPlan() {
+      // Center on the player's resolved marker at the plan band (deep enough that the
+      // building plan is legible — the band the map snaps to indoors).
+      const f = playerFocusWu(world);
+      if (f && wrap && wrap.__oneMapFocus) wrap.__oneMapFocus(f.wx, f.wy, 40);
+      const hud = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+      hud('room', String(world.scene?.interior?.roomId || '(outdoors)').replace(/^room:stgen:v27:/, ''));
+      hud('pos', world.party?.[0]?.pos ? `${world.party[0].pos.gx},${world.party[0].pos.gy}` : '(none)');
+      hud('mk', f ? `${f.wx.toFixed(2)}, ${f.wy.toFixed(2)}` : '(null)');
+      return f;
+    }
+
+    function mount() {
+      if (wrap && wrap.parentNode) wrap.parentNode.removeChild(wrap);
+      wrap = renderOneMap(world, { initialZoom: 40, heightCss: '100%' });
+      stage.appendChild(wrap);
+      window.__wrap = wrap;
+      // Two frames so the plan band's ink/quadrille settle before the screenshot.
+      return new Promise(res => requestAnimationFrame(() => requestAnimationFrame(() => { focusPlayerAtPlan(); requestAnimationFrame(() => requestAnimationFrame(res)); })));
+    }
+
+    // Driver hook: apply a real player gesture, re-mount, re-focus, resolve when settled.
+    window.__step = async (text) => {
+      const r = playerMove(world, PACKS, text);
+      world = r.world;
+      window.__world = world;
+      await mount();
+      return { room: String(world.scene?.interior?.roomId || ''), pos: world.party?.[0]?.pos || null, marker: playerFocusWu(world) };
+    };
+
+    await mount();
+    window.__ready = true;
+  </script>
+</body>
+</html>

@@ -367,6 +367,13 @@ export function playerFocusWu(world) {
   const interior = (world?.scene && typeof world.scene.interior === 'object') ? world.scene.interior : null;
   const pos = (Array.isArray(world?.party) && world.party[0] && typeof world.party[0].position === 'object')
     ? world.party[0].position : null;
+  // TAC-4: the player's canonical tactical cell (engine/map/spatial/tacticalPos.js).
+  // When present it moves the marker cell-by-cell (a within-room walk registers on the
+  // map); when null the legacy room/walk-position path resolves exactly as before.
+  const tacPos = (Array.isArray(world?.party) && world.party[0]
+    && world.party[0].pos && typeof world.party[0].pos === 'object'
+    && Number.isInteger(world.party[0].pos.gx) && Number.isInteger(world.party[0].pos.gy))
+    ? world.party[0].pos : null;
 
   let place = null, frame = null;
   try {
@@ -378,15 +385,21 @@ export function playerFocusWu(world) {
   if (interior) {
     const structureKey = String(interior.structureKey || '');
     const roomId = String(interior.roomId || '');
-    loc = { nodeId, structureKey, roomId };
+    loc = { nodeId, structureKey, roomId, pos: tacPos };
     sig = `in|${nodeId}|${structureKey}|${roomId}`;
   } else if (pos && String(pos.nodeId || '') === nodeId && Number.isFinite(+pos.ux) && Number.isFinite(+pos.uy)) {
-    loc = { nodeId, ux: +pos.ux, uy: +pos.uy };
+    loc = { nodeId, ux: +pos.ux, uy: +pos.uy, pos: tacPos };
     sig = `out|${nodeId}|${(+pos.ux).toFixed(2)}|${(+pos.uy).toFixed(2)}`;
   } else {
-    loc = { nodeId };
+    loc = { nodeId, pos: tacPos };
     sig = `node|${nodeId}`;
   }
+  // TAC-4: fold the tactical cell into the signature so the follow-camera treats a
+  // pos walk as a real move (recenters), even a WITHIN-room one where the room label
+  // is unchanged. The inside/outside prefix (`in|`/`out|`/`node|`) is preserved, so
+  // WS-3's "only re-snap the zoom on an indoor↔outdoor crossing" still reads correctly
+  // (sigIsIndoors keys off that prefix, which a same-frame pos step never changes).
+  if (tacPos) sig += `|@${tacPos.frame}:${tacPos.gx},${tacPos.gy}`;
 
   const p = resolveEntityWuFromWorld(world, place, frame, loc);
   if (!p) return null;

@@ -1996,7 +1996,40 @@ function playerMoveCore(world, packsById, text, dqIntent) {
   // set off. Don't bounce the intent back as a two-step chore (THE_DM_TEST).
   // Exit the interior, then resolve the journey on the now-outdoor world. No
   // recursion risk: the interior is cleared, so this gate can't fire again.
-  if (w.scene?.interior && !w.combat?.active && !declaredNpcViolence && isFreeMovementIntent(text) && /\b(toward|towards|make for|get moving|set (?:out|off)|head)\b/i.test(String(text || ''))) {
+  //
+  // INT-4-TRAVEL: the bridge must fire for the MOST COMMON travel phrasing too —
+  // "go to The Greenwood" / "walk to The Greenwood" / "travel to Crowfoot Camp"
+  // from inside a building. The old verb whitelist (toward/head/make for/set off)
+  // omitted the plain "go to <place>" / "walk to <place>" / "travel to <place>"
+  // verbs, so an indoor "go to The Greenwood" fell PAST the (interior-guarded)
+  // travel block below, down to the ungrounded-referent sink, and bounced a KNOWN
+  // MAP PLACE back as a person-clarify ("I haven't introduced anyone named The
+  // Greenwood… who do you mean?"). A DM hears "go to the Greenwood" and starts the
+  // journey. Ground the destination against REAL map places FIRST: when the text
+  // resolves to a direct neighbor (discovery-independent) OR a known discovered
+  // node, the bridge fires and the existing JR-1 journey path (below, now on the
+  // outdoor world) carries it — thresholds and seed strings untouched. An UNKNOWN
+  // place ("go to Rivendell") resolves to neither → bridge does NOT fire → the
+  // honest non-travel path handles it exactly as before. Interior room moves ("go
+  // to the hearth room", NODE-DESYNC-1) resolve as interiorAction.kind==='move'
+  // ABOVE and return before this line, so their room-graph precedence is intact.
+  const bridgeTravelVerb = /\b(toward|towards|make for|get moving|set (?:out|off)|head)\b/i.test(String(text || ''));
+  const bridgeNamedPlace = !bridgeTravelVerb
+    && Boolean(resolveNamedNeighbor(w, text) || resolveNamedDestination(w, text));
+  // A destination-phrased travel to an UNKNOWN place ("go to Rivendell" from inside
+  // the inn) also bridges — stepping outside lets the outdoor travel resolver give
+  // the honest "you know of no such place hereabouts, the roads lead to …" answer
+  // (below), instead of the ungrounded-referent sink treating the place as a PERSON
+  // and bouncing "who do you mean?" from indoors. Excluded when the "go to X" names
+  // a PERSON actually present in this room (an approach → dialogue is owned by the
+  // talkRef path below); a present-NPC approach must not be swept out the door.
+  const bridgeApproachRef = extractApproachRef(text) || extractDialogueRef(text);
+  const bridgeApproachesPresentNpc = Boolean(bridgeApproachRef)
+    && Boolean(resolvePresentNpcStrict(w, bridgeApproachRef) || resolvePresentNpcLoose(w, bridgeApproachRef));
+  const bridgeUnknownDest = !bridgeTravelVerb && !bridgeNamedPlace
+    && looksLikeNamedDestination(text) && !bridgeApproachesPresentNpc;
+  if (w.scene?.interior && !w.combat?.active && !declaredNpcViolence && isFreeMovementIntent(text)
+      && (bridgeTravelVerb || bridgeNamedPlace || bridgeUnknownDest)) {
     const outside = exitStructureInterior(w);
     const r = playerMoveCore(outside, packsById, text);
     const inner = String(r?.output?.narration || '').replace(/^Wizard:\s*/, '').trim();
@@ -3984,6 +4017,23 @@ function cap(s) {
 // Normalize apostrophe variants so "Trader's Camp" matches regardless of curly/straight.
 function normName(s) { return String(s || '').toLowerCase().replace(/[‘’ʼ]/g, "'"); }
 
+// INT-4-TRAVEL: does the player's text NAME this place? Matches the full cleaned
+// node name as a substring ("the greenwood") AND, so natural articles don't defeat
+// a real destination, the article-stripped form ("greenwood") — a DM hears "go to
+// the Greenwood", "go to Greenwood", and "go to The Greenwood" as the same journey.
+// Returns the matched length (0 = no match) so callers keep ranking by specificity:
+// the FULL name length wins ties, so a bare "greenwood" never out-ranks a fuller
+// "the greenwood" mention, and a two-word place still beats a one-word place. Core
+// matching is length-gated (>= 4) so a short article-stripped fragment can't hijack.
+function placeNameMatchLen(normText, nodeName) {
+  const full = normName(cleanPlaceName(nodeName)).trim();
+  if (!full) return 0;
+  if (normText.includes(full)) return full.length;
+  const core = full.replace(/^(?:the|a|an)\s+/, '').trim();
+  if (core && core !== full && core.length >= 4 && normText.includes(core)) return core.length;
+  return 0;
+}
+
 function resolveNamedNeighbor(world, text) {
   const w = world;
   const m = ensureMap(w.map);
@@ -3994,8 +4044,8 @@ function resolveNamedNeighbor(world, text) {
   let best = null, bestLen = 0;
   for (const id of nbs) {
     const node = (m.nodes || []).find(n => n && String(n.id) === String(id)) || null;
-    const name = normName(cleanPlaceName(node?.name)).trim();
-    if (name && name.length > bestLen && t.includes(name)) { best = String(id); bestLen = name.length; }
+    const len = placeNameMatchLen(t, node?.name);
+    if (len > bestLen) { best = String(id); bestLen = len; }
   }
   return best;
 }
@@ -4014,8 +4064,8 @@ function resolveNamedDestination(world, text) {
     const id = String(node?.id || '');
     if (!id || id === here) continue;
     if (!known.has(id)) continue; // only places the player has seen/heard of
-    const name = normName(cleanPlaceName(node?.name)).trim();
-    if (name && name.length > bestLen && t.includes(name)) { best = id; bestLen = name.length; }
+    const len = placeNameMatchLen(t, node?.name);
+    if (len > bestLen) { best = id; bestLen = len; }
   }
   return best;
 }

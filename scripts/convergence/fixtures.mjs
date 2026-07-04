@@ -335,6 +335,49 @@ export function revealedLetterWorld() {
   });
 }
 
+// INT-4-TRAVEL — the sighting fixture: the player is INDOORS at their node, and a
+// KNOWN neighbouring PLACE named "The Greenwood" sits one edge away, UNDISCOVERED
+// (the movement law lets you set off for an adjacent place you can see but haven't
+// been to). This reproduces the live sighting: "go to The Greenwood" from inside a
+// building must BRIDGE out the door and start the JOURNEY — never bounce the place
+// back as a person ("who do you actually mean?"). baseWorld drops the player inside a
+// real registered structure at its node; we splice the neighbour node + edge in and
+// keep it out of `discovered`. A single present NPC (Galen, the sighting's roster)
+// controls the no-overreach case ("talk to Galen" stays dialogue).
+export function sliceTravelIndoorsWorld() {
+  const world = interiorNpcWorld();
+  const nid = String(world.map.currentNodeId);
+  const here = (world.map.nodes || []).find(n => String(n.id) === nid) || null;
+  const gx = Number(here?.x) || 0;
+  const gy = Number(here?.y) || 0;
+  const greenwood = {
+    id: 'n_int4_greenwood',
+    name: 'The Greenwood',
+    nodeType: 'wilderness',
+    tags: ['forest'],
+    motifs: [], scars: [],
+    x: gx + 2, y: gy,
+  };
+  const galen = {
+    id: 'npc_galen', name: 'Galen', role: 'artisan', occupation: 'artisan',
+    descriptor: 'measured artisan', hostile: false, conversationState: { trustLevel: 5 }
+  };
+  const nodes = (world.map.nodes || []).map(n => String(n.id) === nid
+    ? { ...n, settlement: { ...(n.settlement || {}), decompressed: true, npcs: [galen] } }
+    : n);
+  nodes.push(greenwood);
+  const edges = [...(world.map.edges || []), { a: nid, b: greenwood.id, kind: 'road' }];
+  // Greenwood stays OUT of discovered — the whole point is travel to a place you
+  // haven't visited (a direct neighbour resolves discovery-independent).
+  const discovered = (world.map.discovered || []).map(String).filter(id => id !== greenwood.id);
+  return ensureWorld({
+    ...world,
+    map: { ...world.map, nodes, edges, discovered },
+    combat: { ...(world.combat || {}), active: false },
+    scene: { ...(world.scene || {}), dialogue: null }
+  });
+}
+
 export const FIXTURES = {
   village_baker: villageBakerWorld,
   revealed_letter: revealedLetterWorld,
@@ -348,5 +391,6 @@ export const FIXTURES = {
   trade_town_tavern: tradeTownTavernWorld,
   trade_town_tavern_dialogue: tradeTownTavernDialogueWorld,
   death_sense_empty: deathSenseEmptyWorld,
-  death_sense_with_corpse: deathSenseWithCorpseWorld
+  death_sense_with_corpse: deathSenseWithCorpseWorld,
+  slice_travel_indoors: sliceTravelIndoorsWorld
 };

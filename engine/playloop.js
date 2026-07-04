@@ -3369,7 +3369,13 @@ function playerMoveCore(world, packsById, text, dqIntent) {
   //   success → full damage (all deltas)
   //   mixed   → state change only (no item extraction)
   //   failure → no furniture change, but still loud
-  const PHYSICS_VERB_RE = /\b(examine|inspect|search|look at|check|rip|break|smash|tear|kick|punch|shatter|take|grab|pick up|steal|light|ignite|set fire|torch|kindle|burn|hide\s+behind|duck\s+behind|crouch\s+behind|brace\s+against|shelter\s+behind|press\s+against|take\s+cover)\b/i;
+  // INT-4-HELD — "set X on fire" / "set it ablaze" is the natural arson phrasing;
+  // the split VERB-LED form must open the physics gate too (was only "set fire"/
+  // "light"), so a standalone "set the straw pallet on fire" reaches the material-aware
+  // fire ruling (evaluatePhysicsSync → resolveFireRuling) instead of a generic skill
+  // roll. Requires the "set" verb so a bare descriptive/question "is the pallet on
+  // fire?" does NOT trip arson. Mirrors the broadened FIRE_RE in llmPhysics.js.
+  const PHYSICS_VERB_RE = /\b(examine|inspect|search|look at|check|rip|break|smash|tear|kick|punch|shatter|take|grab|pick up|steal|light|ignite|set fire|torch|kindle|burn|hide\s+behind|duck\s+behind|crouch\s+behind|brace\s+against|shelter\s+behind|press\s+against|take\s+cover)\b|\bset\b[^.!?]*\b(?:on fire|ablaze|alight|aflame|burning)\b/i;
   const FORCE_VERB_RE   = /\b(rip|break|smash|tear|kick|punch|shatter)\b/i;
   if (PHYSICS_VERB_RE.test(String(text || ''))) {
     const detection = detectPhysicalInteraction(w, text);
@@ -6966,6 +6972,14 @@ function tryReadRevealedContainerItem(w, text) {
 // surface: taking what you already hold acknowledges and mutates nothing.
 const TAKE_ITEM_VERB_RE = /\b(?:take|grab|pick\s+up|snatch|seize|collect|loot|pocket|claim|lift|stow|keep)\b/i;
 const TAKE_BARE_PRONOUN_RE = /\b(?:take|grab|pocket|claim|stow|keep)\s+(?:it|that|this)\b/i;
+// INT-4-HELD — an ACTION verb applied to the object means the take is a precondition,
+// not the resolution: the acquire-idempotence sink must yield so the action resolves.
+// Kept to the brief's action family (throw/hurl/smash/strike/light/set-fire/pour/break/
+// use) + close synonyms and drop (release IS an action, not acquisition). Deliberately
+// EXCLUDES take/pickup/pocket/read (those keep this gate) and talk/ask (a different
+// lane). "set … fire|ablaze|alight" is a two-word arson phrase, so a bare "set it down"
+// stays a pure take. GENUINE compound-arson/throw evidence (GATE 2026-07-04-2/-3).
+const TAKE_THEN_ACTION_RE = /\b(?:throw|hurl|fling|toss|lob|pitch|chuck|sling|smash|strike|swing|slam|bash|break|shatter|light|ignite|torch|kindle|burn|pour|douse|splash|drop|use)\b|\bset\b[^.!?]*\b(?:fire|ablaze|alight|aflame|burning)\b/i;
 const TAKE_STOPWORDS = new Set(['the', 'and', 'its', 'his', 'her', 'with', 'for', 'from', 'of', 'a', 'an', 'pair', 'handful', 'length', 'coil', 'stub', 'nub']);
 
 // "a folded letter, its seal broken" → "folded letter" (display name for the pack).
@@ -6986,6 +7000,14 @@ function tryTakeRevealedContainerItem(w, text) {
   if (!TAKE_ITEM_VERB_RE.test(t)) return null;
   // "take up the letter and read it" is a READ — that gate runs first and owns it.
   if (OBJ_READ_VERB_RE.test(t) || OBJ_CONTENT_PEEK_RE.test(t)) return null;
+  // INT-4-HELD — possession is a PRECONDITION, not a resolution. When the take
+  // verb is followed by (or paired with) an ACTION on the object — "grab the
+  // lantern AND SET the pallet ON FIRE", "take the bottle and hurl it" — the
+  // utterance's real intent is the action, not acquisition. Yield so the action
+  // resolves downstream (the arson/throw/physics/roll paths); the acquisition is
+  // implicit (the DM-Test way — one turn). A pure take ("grab the lantern off the
+  // wall") carries no such verb and still lands here. Mirrors the READ bail above.
+  if (TAKE_THEN_ACTION_RE.test(t)) return null;
   const node = (w.map?.nodes || []).find(n => n && n.id === w.map?.currentNodeId) || null;
   if (!node) return null;
   const scoped = objectsHere(w);
@@ -9288,6 +9310,13 @@ function detectPhysicalAssault(world, text) {
     // branch narrates the staging; a renewed grapple/blade still no-ops (H-37 R3).
     const corpse = fuzzyMatchNpc(roster, r, roster);
     if (corpse && isNpcAlreadyDefeated(world, corpse)) return { npc: corpse, seek: null };
+    // INT-4-HELD — the ref names a PRESENT OBJECT (a furniture piece here or a held
+    // item), not a person: "hurl THE LANTERN against the wall", "throw THE CHEST at
+    // the wall". A single-token noun after "the" reads as name-shaped to
+    // refLooksPersonal, which falsely stamped these no-target ("no one here to lay
+    // hands on") and ate the throw. An object-throw is NOT an assault — fall through
+    // (return null WITHOUT flagging) so the physics/roll path resolves it.
+    if (refIsPresentObject(world, r)) return null;
     // A person-shaped ref that matched no one (generic in an empty room, or a
     // name that resolves to nobody) → honest no-target rather than the trivial floor.
     if (refLooksPersonal(r)) framedNoTarget = true;
@@ -9368,6 +9397,31 @@ function refLooksPersonal(ref) {
   // "the <word>" or a bare capitalized-ish token (name/role) counts as personal;
   // a leading article + noun that isn't an obvious object reads as a person here.
   return /^(?:the\s+)?[a-z][\w'-]{2,}$/.test(r);
+}
+
+// INT-4-HELD — does the ref name a PRESENT OBJECT (a furniture piece at this node,
+// or a held inventory item), rather than a person? Used only to keep detectPhysical-
+// Assault from stamping an object-throw ("hurl the lantern against the wall") as a
+// no-target assault. Furniture match reuses furnitureNameAt (roomObjects-scoped);
+// the held-item scan mirrors tryTakeRevealedContainerItem's inventory walk. Pure.
+function refIsPresentObject(world, ref) {
+  const r = String(ref || '').toLowerCase().replace(/^(?:the|a|an|my|his|her|their|its|that|this)\s+/i, '').replace(/[.!?,;:]+$/, '').trim();
+  if (!r) return false;
+  const tail = r.split(/\s+/).filter(Boolean).pop() || r;
+  if (tail.length < 3) return false;
+  // (a) a furniture piece here (chest / lantern / pallet / basin …).
+  if (furnitureNameAt(world, r)) return true;
+  // (b) a carried item (the held oil lantern, the worn blade …). Match on any
+  // content word ≥3 chars, the same shape the take-idempotence check uses.
+  const inv = world?.party?.[0]?.inventory || {};
+  for (const bucket of Object.keys(inv)) {
+    for (const it of (Array.isArray(inv[bucket]) ? inv[bucket] : [])) {
+      const name = String(it?.name || '').toLowerCase();
+      if (!name) continue;
+      if (name.split(/[^a-z]+/).some(wd => wd.length >= 3 && wd === tail)) return true;
+    }
+  }
+  return false;
 }
 
 function isSocialIdentificationNonCombat(text) {

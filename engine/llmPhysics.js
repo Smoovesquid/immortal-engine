@@ -378,7 +378,14 @@ export function validateDeltas(deltas, world) {
 const FORCE_RE  = /\b(rip|break|smash|tear|kick|punch|shatter)\b/;
 const EXAMINE_RE = /\b(search|examine|inspect|look at|check)\b/;
 const TAKE_RE   = /\b(take|grab|pick up|steal)\b/;
-const FIRE_RE   = /\b(light|ignite|set fire|torch|kindle|burn)\b/i;
+// INT-4-HELD — players say "set the pallet ON FIRE" / "set it ablaze" far more than
+// the contiguous "set fire to X". The old pattern only caught "set fire", so a natural
+// arson phrasing fell through to TAKE_RE ("You take the straw pallet") when a leading
+// grab/take was present, or to a generic skill roll otherwise. Catch the split VERB-LED
+// "set … on fire | ablaze | alight | aflame | burning" so the arson reaches this
+// material-aware fire ruling. The "set" verb is required so a bare descriptive/question
+// "is the pallet on fire?" never trips arson. FORCE_RE still precedes it (smash > burn).
+const FIRE_RE   = /\b(light|ignite|set fire|torch|kindle|burn)\b|\bset\b[^.!?]*\b(?:on fire|ablaze|alight|aflame|burning)\b/i;
 const COVER_RE  = /\b(hide\s+behind|duck\s+behind|crouch\s+behind|brace\s+against|shelter\s+behind|press\s+against|take\s+cover)\b/i;
 
 function offlineFallback(world, playerText, detection) {

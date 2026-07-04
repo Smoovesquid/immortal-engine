@@ -378,6 +378,35 @@ export function sliceTravelIndoorsWorld() {
   });
 }
 
+// INT-4-HELD — the wake-room rig: the player is at their boot node with the standard
+// escape kit (a Lantern already carried) and the node holds a burnable straw pallet, a
+// name-shaped oil lantern, and an iron-bound chest. Reproduces the Opus-gate seam where
+// (a) "hurl the lantern against the wall" was stamped a no-target ASSAULT (an object
+// read as a person) and (b) "grab the lantern and set the pallet on fire" hit the
+// acquire-idempotence sink ("already in your pack") and ate the arson. The lantern is
+// both HELD and present-as-furniture — exactly the trap. Interior is cleared on scene
+// AND party.position (state.js re-derives scene.interior from the position) so
+// objectsHere returns the furniture.
+export function heldObjectRoomWorld() {
+  const base = baseWorld('int4held');
+  const nid = String(base.map?.currentNodeId || '');
+  const furniture = [
+    { name: 'straw pallet', parts: ['ticking', 'straw'], state: 'intact', bulk: 3, weight: 6, tags: ['cloth', 'flammable'], notes: 'a thin bed of straw', material: 'cloth', category: 'furniture', hardness: 1 },
+    { name: 'oil lantern', parts: ['glass', 'wick'], state: 'intact', bulk: 2, weight: 2, tags: ['glass', 'light'], notes: 'a hanging lamp', material: 'glass', category: 'furniture', hardness: 1 },
+    { name: 'iron-bound chest', parts: ['lid', 'body'], state: 'intact', bulk: 4, weight: 20, tags: ['wood', 'container'], notes: 'a stout chest', material: 'wood', category: 'container', hardness: 3 }
+  ];
+  const nodes = (base.map?.nodes || []).map(n => String(n.id) === nid ? { ...n, furniture } : n);
+  const party = (base.party || []).map((p, i) => i === 0
+    ? { ...p, position: { ...(p.position || {}), interior: null } } : p);
+  return ensureWorld({
+    ...base,
+    party,
+    map: { ...base.map, nodes },
+    combat: { ...(base.combat || {}), active: false },
+    scene: { ...(base.scene || {}), interior: null, dialogue: null }
+  });
+}
+
 export const FIXTURES = {
   village_baker: villageBakerWorld,
   revealed_letter: revealedLetterWorld,
@@ -392,5 +421,6 @@ export const FIXTURES = {
   trade_town_tavern_dialogue: tradeTownTavernDialogueWorld,
   death_sense_empty: deathSenseEmptyWorld,
   death_sense_with_corpse: deathSenseWithCorpseWorld,
-  slice_travel_indoors: sliceTravelIndoorsWorld
+  slice_travel_indoors: sliceTravelIndoorsWorld,
+  held_object_room: heldObjectRoomWorld
 };

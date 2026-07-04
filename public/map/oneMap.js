@@ -18,6 +18,7 @@ import {
 } from './worldSpace.js';
 import { worldGeography, terrainStamps } from './geography.js';
 import { placeFromWorldNode } from './placeFromNode.js';
+import { roadNetwork } from './roadNetwork.js';
 import { isDungeonStructureId } from '../../engine/dungeon/generate.js';
 import { interiorCompassLayout } from '../../engine/structures/topology.js';
 import { dayPhase, clockLabel } from '../../engine/dayNight.js';
@@ -793,6 +794,9 @@ function drawDungeonCutaway(ctx, world, interior, nodes, toPx, W, H, z) {
 // country) plus a touch of high-frequency jitter, tapered to meet both nodes.
 // Computed in px so the shape stays consistent across zoom; identical every
 // render (seeded by the sorted edge key).
+// ROADS-1: RETIRED from the live draw — the road ink now comes from the ONE
+// world-unit network (roadNetwork.js), whose terminals join each village's lane
+// (no node-to-node seam). Kept for lab/reference use; not called by renderOneMap.
 function roadMeanderPts(aId, bId, x1, y1, x2, y2) {
   const key = aId < bId ? `${aId}|${bId}` : `${bId}|${aId}`;
   const dx = x2 - x1, dy = y2 - y1, len = Math.hypot(dx, dy) || 1;
@@ -861,6 +865,13 @@ export function renderOneMap(world, opts = {}) {
   const dpr = Math.max(1, Math.min(2, (typeof devicePixelRatio === 'number' ? devicePixelRatio : 1)));
 
   const toPx = (wx, wy, W, H) => [W / 2 + (wx - cam.cx) * cam.z, H / 2 + (wy - cam.cy) * cam.z];
+
+  // ROADS-1 — the ONE road network in world units, derived once per mount (same
+  // lifetime as the layout cache; deterministic per world). Every band's road ink
+  // consumes THIS geometry — the lane through a village and the road to the next
+  // town are the same polyline, so roads continue seamlessly out of every town.
+  let roadNet = null;
+  try { roadNet = roadNetwork(world); } catch { roadNet = { segments: [], byNode: new Map() }; }
 
   // M2 — village layouts, computed once per mount (deterministic per world;
   // a turn re-renders the whole view, so the cache lifetime is exactly right).
@@ -1257,28 +1268,39 @@ export function renderOneMap(world, opts = {}) {
       ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
     }
 
-    // ── roads — dashed sepia, the way a cartographer dots a track between
-    // towns. (fade in entering the region band) ──
+    // ── ROADS-1 — the ONE road network (roadNetwork.js), drawn from the SAME
+    // world-unit polylines at every band. Far out it's a dashed sepia
+    // cartographer's track; as the camera dives it thickens into a solid ribbon —
+    // only the STYLE (dash/weight/alpha) varies with zoom, never the geometry, so
+    // the lane through a village and the road to the next town are one continuous
+    // line that reaches the horizon. (This retires the old node-center
+    // roadMeanderPts live draw; the two disconnected road systems are now one.) ──
     const roadAlpha = fadeIn(z, BAND.region * 0.75, BAND.region * 1.9);
-    if (roadAlpha > 0) {
+    if (roadAlpha > 0 && roadNet && roadNet.segments.length) {
+      // ribbon lerp: 0 at the region band (dashed thin track), 1 by the street
+      // band (solid ribbon). Weight in wu so the ribbon scales like real ground.
+      const ribbon = fadeIn(z, BAND.settlement * 0.6, BAND.street);
+      const trackW = Math.max(0.8, Math.min(2, z * 9));               // far-out track weight (px)
+      const ribbonW = INK_PARAMS.roadBandWu * PLACE_WU * z * 0.6;     // close-up ribbon (px, wu-scaled, matches the lane draw)
+      ctx.lineWidth = trackW * (1 - ribbon) + Math.max(trackW, ribbonW) * ribbon;
+      ctx.lineCap = 'round'; ctx.lineJoin = 'round';
       const dash = Math.max(3, Math.min(10, z * 26));
-      ctx.lineWidth = Math.max(0.8, Math.min(2, z * 9));
-      ctx.lineCap = 'round';
-      ctx.setLineDash([dash, dash * 0.8]);
-      for (const e of (Array.isArray(map.edges) ? map.edges : [])) {
-        const a = nodes.find(n => n.id === e.a), b = nodes.find(n => n.id === e.b);
-        if (!a || !b) continue;
-        const aKnown = known.has(String(a.id)), bKnown = known.has(String(b.id));
-        if (!aKnown && !bKnown) continue;
-        const pa = nodeToWu(a), pb = nodeToWu(b);
-        const [x1, y1] = toPx(pa.x, pa.y, W, H);
-        const [x2, y2] = toPx(pb.x, pb.y, W, H);
-        if (Math.max(x1, x2) < 0 || Math.min(x1, x2) > W || Math.max(y1, y2) < 0 || Math.min(y1, y2) > H) continue;
-        ctx.strokeStyle = (aKnown && bKnown) ? ROAD : ROAD_GHOST;
-        ctx.globalAlpha = roadAlpha * ((aKnown && bKnown) ? 1 : 0.7);
-        strokeSmooth(ctx, roadMeanderPts(String(a.id), String(b.id), x1, y1, x2, y2));
+      if (ribbon < 0.98) ctx.setLineDash([dash, dash * 0.8 * (1 - ribbon) + 0.001]);
+      else ctx.setLineDash([]);
+      for (const s of roadNet.segments) {
+        if (!s.aKnown && !s.bKnown) continue;                        // undiscovered on both ends → blank parchment
+        const pts = s.pts;
+        // cull if the whole polyline is off-screen (cheap AABB in px)
+        let bx0 = Infinity, by0 = Infinity, bx1 = -Infinity, by1 = -Infinity;
+        const px = [];
+        for (const p of pts) { const q = toPx(p[0], p[1], W, H); px.push(q); if (q[0] < bx0) bx0 = q[0]; if (q[1] < by0) by0 = q[1]; if (q[0] > bx1) bx1 = q[0]; if (q[1] > by1) by1 = q[1]; }
+        if (bx1 < 0 || bx0 > W || by1 < 0 || by0 > H) continue;
+        const bothKnown = s.aKnown && s.bKnown;
+        ctx.strokeStyle = bothKnown ? ROAD : ROAD_GHOST;
+        ctx.globalAlpha = roadAlpha * (bothKnown ? 1 : 0.7);
+        strokeSmooth(ctx, px);
       }
-      ctx.setLineDash([]); ctx.lineCap = 'butt';
+      ctx.setLineDash([]); ctx.lineCap = 'butt'; ctx.lineJoin = 'miter';
       ctx.globalAlpha = 1;
     }
 

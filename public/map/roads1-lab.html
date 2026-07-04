@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<!-- ROADS-1 verification lab: mounts renderOneMap on the tallow boot world and
+     lets a screenshot driver focus the boot village at region / street / village
+     bands. Not shipped; a lab page for the ROADS-1 visual check. -->
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>ROADS-1 lab</title>
+  <style>
+    html,body{margin:0;background:#e8ecdd;font:13px system-ui;color:#222}
+    #stage{width:1000px;height:680px;margin:8px auto;position:relative}
+    #hud{position:fixed;top:6px;left:8px;background:rgba(255,255,255,.85);padding:4px 8px;border-radius:5px;z-index:5}
+  </style>
+</head>
+<body>
+  <div id="hud">band: <b id="band">…</b> · z=<b id="z">…</b></div>
+  <div id="stage"></div>
+  <script type="module">
+    import { newWorld, ensureWorld } from '../../engine/state.js';
+    import { beginAdventure } from '../../engine/playloop.js';
+    import { renderOneMap } from './oneMap.js';
+    import { placeFromWorldNode } from './placeFromNode.js';
+    import { placeFrame, placeUnitToWu, nodeToWu } from './worldSpace.js';
+
+    // Build the tallow boot world exactly as v1 does.
+    let world = ensureWorld(newWorld('tallow'));
+    try { const r = beginAdventure(world, {}); if (r && r.world) world = r.world; } catch (e) { console.error('beginAdventure', e); }
+    window.__world = world;
+
+    const boot = String(world.map.currentNodeId);
+    const node = world.map.nodes.find(n => String(n.id) === boot);
+    const c = nodeToWu(node);
+
+    const stage = document.getElementById('stage');
+    const wrap = renderOneMap(world, { initialZoom: 0.1, heightCss: '100%' });
+    stage.appendChild(wrap);
+    window.__wrap = wrap;
+
+    // Bands (px per wu): region ~0.08, settlement ~0.5, street ~4.
+    const BANDS = { region: 0.09, village: 0.9, street: 5.0 };
+    window.__focus = (bandName) => {
+      const z = BANDS[bandName];
+      // center on the boot village
+      wrap.__oneMapFocus(c.x, c.y, z);
+      document.getElementById('band').textContent = bandName;
+      document.getElementById('z').textContent = z;
+      return wrap.__oneMapCamera();
+    };
+    // default view
+    window.__focus('village');
+    window.__ready = true;
+  </script>
+</body>
+</html>

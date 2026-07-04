@@ -13,6 +13,7 @@ import { normalizeTopology, adjacentRooms } from '../structures/topology.js';
 import { roomWindows, windowSurveyPhrase } from '../structures/roomWindows.js';
 import { occupantsOfRoom, outdoorOccupants } from '../structures/roomOccupancy.js';
 import { objectsHere } from '../structures/roomObjects.js';
+import { getRoomState } from '../structures/roomState.js';
 import { reachableRooms } from '../movement/interiorMovement.js';
 import { playerAc, meleeProfile } from '../combat/escapeCombat.js';
 import { applyACTraits } from '../combat/traitHooks.js';
@@ -931,6 +932,67 @@ export function isConfrontationChallenge(text) {
     || CONFRONTATION_CONTRADICTS_RE.test(t) || CONFRONTATION_SWORE_BUT_RE.test(t)
     || CONFRONTATION_TELLING_LIED_RE.test(t)
     || CONFRONTATION_ONE_OF_WRONG_RE.test(t) || CONFRONTATION_CONTRADICTS_WHO_RE.test(t);
+}
+
+// ── PERC-1: a failed perception read renders uncertainty, never a confident,
+// possibly-invented report ────────────────────────────────────────────────
+// Opus gate 2026-07-04 (Chaos-griefer, CRUNCH_INCONSISTENCY): "Wait — is the
+// ceiling still on fire or not? I stand in the middle of the room and look up."
+// rolled a NATURAL 1 vs DC 13 (failure, margin -12) yet the DM answered with a
+// definitive, confident, ACCURATE all-clear — "plain wattle-and-daub, dry and
+// unburnt, with no trace of flame or scorch". The engine's room model
+// (engine/structures/roomState.js) carries no hazard/fire/structural-damage
+// field at all, so that specific claim (true or false) was invented whole
+// cloth by the narration layer riding on top of the generic `gen:f` floor — a
+// real DM who rolled a 1 to read the room does NOT get to see clearly. THE_DM_TEST:
+// a failed perception check must render doubt/incompleteness, and must NEVER
+// assert a canon fact — positive OR negative — the engine has no ground truth
+// for. Scoped tight to ENVIRONMENTAL/STRUCTURAL condition rechecks (ceiling,
+// roof, walls, floor, smoke, fire/flame/scorch, general structural damage) —
+// deliberately narrower than a blanket "any yes/no question hedges" net, so it
+// never shadows a question canon DOES track (a door's lockState, an object's
+// tracked presence via objectPresenceTarget, an NPC's alive/dead status) —
+// those stay grounded and confident, exactly as they should be.
+const PERC_ENV_CONDITION_NOUN_RE = /\b(?:ceiling|roof|rafters?|beams?|sky|walls?|floor(?:boards?)?|smoke|flame|fire|blaze|scorch(?:ed|ing)?|char(?:red|ring)?|structural|foundation)\b/i;
+const PERC_RECHECK_VERB_RE = /\b(?:look|glance|peer|gaze|check|scan|study)\b/i;
+const PERC_STILL_QUESTION_RE = /\b(?:is|are|was|were)\b[\s\S]{0,40}?\bstill\b/i;
+// A bare overhead/upward glance — "I look up", "I look/glance/peer at the ceiling" —
+// is itself the perception gesture even with no explicit "still" question attached
+// (a player who just says "I look up" after a fire scare is asking the same thing).
+const PERC_OVERHEAD_GESTURE_RE = /\bi?\s*(?:look|glance|peer|gaze)(?:ing)?\s+up\b|\b(?:look|glance|peer|gaze)(?:ing)?\s+(?:up\s+)?at\s+the\s+(?:ceiling|sky|roof|rafters|beams)\b/i;
+
+export function isPerceptionRecheckIntent(text) {
+  const t = String(text || '').toLowerCase();
+  if (!t.trim()) return false;
+  if (PERC_OVERHEAD_GESTURE_RE.test(t)) return true;
+  return PERC_STILL_QUESTION_RE.test(t) && PERC_ENV_CONDITION_NOUN_RE.test(t) && PERC_RECHECK_VERB_RE.test(t);
+}
+
+// The hedge line itself. `outcome` is the resolved roll outcome ('success' |
+// 'mixed' | 'failure' | 'no-info'); `rawDie` is the actual d20 face (resolveMove's
+// result.rawDie) so a genuine crit-fail (nat 1) can read as MORE disoriented than
+// an ordinary low-margin miss — but NEITHER ever asserts the environmental fact
+// either way. Returns null for success/mixed (those keep whatever grounded or
+// composer narration already handles them — this function is a FAILURE-ONLY
+// floor, mirroring nonObjectSkillOutcome's shape). Pure/deterministic: reads
+// world only to name the room for grounding (getRoomState), writes nothing,
+// rolls nothing new.
+export function hedgedPerceptionRead(world, text, outcome, rawDie) {
+  if (!isPerceptionRecheckIntent(text)) return null;
+  if (outcome !== 'failure') return null;
+  let roomLabel = '';
+  try {
+    const rs = getRoomState(world);
+    roomLabel = rs?.inside && rs?.room?.name ? String(rs.room.name).toLowerCase() : '';
+  } catch { roomLabel = ''; }
+  const here = roomLabel ? `the ${roomLabel}` : 'here';
+  const critFail = rawDie === 1;
+  if (critFail) {
+    // A natural 1 is MORE disoriented, not more confident — still never a false
+    // claim in either direction (no false all-clear, no false "it's there").
+    return `Wizard: You crane to look, but between the sting in your eyes and the shift of shadow and lamplight, you can't make out anything for certain from ${here} — could be nothing, could be something you're missing.`;
+  }
+  return `Wizard: You look, but the read is murky — a haze of smoke-shadow and lamplight from ${here}; you honestly can't tell one way or the other from here.`;
 }
 
 // Tier B trigger: a conjunction of two distinct actions ("dive behind the bar

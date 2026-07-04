@@ -574,15 +574,42 @@ file) · P4 SERIAL (`engine/ref/rubric.js`, shared with the live Ref) · P6 last
   patch version bump; changelog + this row updated.
 - **rollback:** revert the single commit.
 
-### PERC-1 — a failed perception read renders uncertainty, never a confident accurate report  ·  Phase 0  ·  **→ DISPATCHED 2026-07-04-pm5 (Sonnet worktree, U448–U449; playloop.js hard-fenced — patch-block protocol if the seam lives there)**
+### PERC-1 — a failed perception read renders uncertainty, never a confident accurate report  ·  Phase 0  ·  **✅ LOGIC LANDED 2026-07-04-pm6 (U448–U449, 16/16; fence held) — wiring micro-lane in flight (2-line playloop patch, block in AGENT_CHANGELOG; promote C23 rows to locked on land)**
 - **signal:** 2026-07-04 gate (Chaos-griefer): "is the ceiling still on fire? I look up." rolled **1 vs DC 13**
   yet narrated a definitive, ACCURATE all-clear ("plain wattle-and-daub… no trace of flame"). A crit-fail
   perception must not read as authoritative truth — render doubt/incompleteness ("smoke-haze and lamplight;
   you honestly can't tell from here"), and never plant a FALSE fact (uncertainty ≠ misinformation; narration
   must not contradict canon).
-- **seam:** where the roll outcome meets the room-read renderer; NOT the honest-search success branch
-  (`baf1b51`). **done_when:** failed/crit-failed perception over real canon renders hedged reads LLM-off;
-  corpus lock added; suite + convergence green.
+- **seam found:** `engine/playloop.js`'s `grounded ||` chain (~line 3656, inside `playerMoveCore`) — the
+  SAME chain `nonObjectSkillOutcome`/`infoExtractionOutcome`/`answerOrDeclineQuestion` sit in. The exact gate
+  text escapes `isExploreIntent`'s free-survey branch (starts with "Wait —", not "is/are"), escapes
+  `isInfoSeekingText` (lore-fact demands only) and `isQuestionShaped` (no trailing `?`, no interrogative
+  opener), rolls a REAL `resolveMove()` (`approach:focus`, the untagged-verb default), then falls to the
+  composer/`genericGroundedOutcome` floor — which has NO look/perceive bucket at all, so a leading "Wait —"
+  false-positives into the `wait` bucket, or (with LLM polish riding on top in the live gate) the model
+  invents a specific, confident, ungrounded claim. `engine/structures/roomState.js`'s room model carries
+  **no fire/hazard/structural-damage field whatsoever** — canon is silent either way, so ANY confident
+  verdict (positive or negative) is an invention. NOT the honest-search success branch (`baf1b51`) — read
+  first, extended its grammar (kept as a sibling, untouched; regression-guarded by U449-04).
+- **landed (logic + tests + corpus, no playloop.js edit — fenced this session):**
+  `isPerceptionRecheckIntent` + `hedgedPerceptionRead` (both new, `engine/grace/gracefulAdjudication.js`) —
+  a FAILURE-ONLY deterministic floor scoped tight to untracked environmental/structural condition rechecks
+  (ceiling/roof/walls/floor/smoke/fire/flame/scorch + a bare overhead glance), so it never shadows tracked
+  canon (lockState, NPC presence, object presence) or sibling capabilities (search/explore). Distinguishes a
+  genuine crit-fail (`rawDie===1`, preserved on `resolveMove`'s `result.rawDie`) from an ordinary miss with a
+  MORE-disoriented (but still never-confident-either-way) hedge. Companion LLM-polish safety net added to
+  `validateNarrationCandidate` (`engine/llmAdapter.js`) mirroring the pre-existing fled-foe guard (U245) — a
+  polish candidate asserting a confident verdict over a hedged base is rejected, falls back to the honest
+  base. **Playloop wiring is a 2-line patch** (import extension + one `||` chain insertion) delivered as an
+  exact patch block in the worker's report — apply once the `playloop.js` fence lifts, then promote
+  `tests/corpus/C23.corpus.mjs`'s two `status:'target'` rows to `'locked'` (verified end-to-end against a
+  scratch-patched copy: crit-fail seed renders the hedge, ordinary-fail seeds hedge, honest-search success
+  and explore/window paths all unaffected).
+- **done_when:** ✅ failed/crit-failed perception over real canon renders hedged reads LLM-off (proven via
+  direct unit tests + a scratch-patched end-to-end dry run) · ✅ corpus lock added (`C23`, `target` status
+  pending the patch) · ✅ suite + convergence green (124/124 convergence, 9773/9773 suite, determinism
+  U19/21/22/27/30 green, `playtest:quick` 0/0). Remaining: land the 2-line playloop.js patch, promote C23 to
+  `locked`, re-run convergence to confirm 126/126.
 
 ### SL — THE SHIPPABLE SLICE (priority, scope-locked 2026-06-29)
 **Provenance:** Tim's 2026-06-29 scope re-lock (`docs/DEMO_REGION.md` scope-lock banner). The demo is cut to

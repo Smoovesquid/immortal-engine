@@ -1944,3 +1944,88 @@ other agents. (none active)
   playtest:full 500 runs clean.
 - Bundle verified at integration: `npm run check` GREEN — convergence 124/124, suite 9787/0,
   determinism green. Front door bumped + live-verified; "walk north" verified via the real input.
+2026-07-04 — Sonnet (worker worktree, PERC-1) — LOGIC DONE, WIRING PENDING (playloop.js fenced)
+- Packet/seam: `docs/PACKETS.md` PERC-1 — 2026-07-04 gate (Chaos-griefer, CRUNCH_INCONSISTENCY): "Wait — is
+  the ceiling still on fire or not? I stand in the middle of the room and look up." rolled a NATURAL 1 vs DC
+  13 (failure) yet the DM answered with a definitive, confident, ACCURATE all-clear ("plain wattle-and-daub…
+  no trace of flame or scorch"). The engine's room model (`engine/structures/roomState.js`) carries no
+  fire/hazard/structural-damage field at all — canon is silent either way, so the claim (true OR false) was
+  invented outright. THE_DM_TEST: a failed perception roll must never resolve into a confident verdict.
+- Seam found: `engine/playloop.js`'s `grounded ||` chain inside `playerMoveCore` (~line 3656) — same chain as
+  `nonObjectSkillOutcome`/`infoExtractionOutcome`/`answerOrDeclineQuestion`. The gate text escapes every
+  existing classifier (`isExploreIntent`'s yes/no anchor needs a LEADING is/are — "Wait —" breaks it;
+  `isInfoSeekingText` is lore-fact-demand-only; `isQuestionShaped` needs a trailing `?` or interrogative
+  opener — this text has neither), so it rolls a real `resolveMove()` (untagged verb → `approach:focus`
+  default) and falls to `genericGroundedOutcome`'s floor, which has zero look/perceive bucket — the leading
+  "Wait —" false-positives into the `wait` bucket, or (with LLM polish on top, the live gate path) the model
+  invents a specific claim wholesale. Read `baf1b51` (honest-search) FIRST per the brief — extended its
+  sibling grammar, did not fork it; `nonObjectSkillOutcome`'s search-success branch is untouched and
+  regression-guarded (U449-04).
+- ⚠️ **HARD FENCE this session:** `engine/playloop.js` owned by a sibling lane. Implemented everything
+  outside it; the 2-line playloop.js wiring patch is delivered as an exact block in this entry (below) and
+  in the worker's report, for Basecamp/next-lane to apply once the fence lifts.
+- Commit(s): this commit (code + tests + corpus + docs, atomic by path; playloop.js NOT touched).
+- Files changed: `engine/grace/gracefulAdjudication.js` (+`getRoomState` import; +`isPerceptionRecheckIntent`
+  — scoped detector: a bare overhead/upward glance, OR an "is/are/was/were … still …" self-question
+  co-occurring with a look/glance/peer/gaze/check/scan verb AND an untracked environmental-condition noun
+  (ceiling/roof/rafters/walls/floor/smoke/fire/flame/scorch/structural/foundation) — deliberately excludes
+  tracked canon: `lockState` door-lock questions, NPC-presence questions, object-presence questions, and
+  `nonObjectSkillOutcome`'s search verbs all stay grounded/confident, untouched; +`hedgedPerceptionRead(world,
+  text, outcome, rawDie)` — a FAILURE-ONLY floor (returns `null` on success/mixed/no-info, mirroring
+  `nonObjectSkillOutcome`'s shape) that renders a hedge grounded in the real room name via `getRoomState`
+  (never inventing a place), with a MORE-disoriented variant when `rawDie===1` — neither variant ever asserts
+  a confident verdict in either direction), `engine/llmAdapter.js` (+PERC-1 un-hedge guard in
+  `validateNarrationCandidate`, mirroring the pre-existing fled-foe kill-claim guard (U245/`baseFled`): when
+  `baseNarration` matches one of `hedgedPerceptionRead`'s two hedge shapes, a polish candidate asserting a
+  confident all-clear OR hazard-confirmation is rejected, falling back to the honest base — polish may
+  reword the doubt, never resolve it into a verdict), `tests/U448.perceptionFailureHedge.test.js` (7 tests:
+  detector precision/recall against the exact gate text + close paraphrases + tracked-canon/sibling-verb
+  exclusions, hedge content assertions, determinism ×2, success/mixed no-op, room-grounding), 
+  `tests/U449.critFailPerceptionHonesty.test.js` (9 tests: crit-fail both-directions no-false-fact,
+  crit-fail-vs-ordinary-fail distinguishability, determinism, the honest-search SUCCESS regression guard
+  against a real `beginAdventure(seed:'a3')` boot + "I search the room carefully" → deterministic roll 15 vs
+  DC 12 success → "the straw pallet is what there is, plain in view" still renders exactly, an unrelated-verb
+  crit-fail no-op guard, and 4 `validateNarrationCandidate` subtests for the LLM-polish safety net),
+  `tests/corpus/C23.corpus.mjs` (2 rows, `status:'target'` — the runner calls the real `playerMove()`
+  pipeline, so these correctly show as backlog until the playloop.js patch lands; promote to `'locked'` then),
+  `package.json` (0.28.13→0.28.14, patch only — `public/v1.js` NOT touched per the brief), `docs/PACKETS.md`,
+  `docs/AGENT_CHANGELOG.md`.
+- **The playloop.js patch block (apply once the fence lifts, then re-run `npm run convergence` — expect
+  126/126 and promote C23-001/C23-002 to `locked`):**
+  ```diff
+  --- a/engine/playloop.js
+  +++ b/engine/playloop.js
+  @@ (import line, ~59) @@
+  -import { isMetaQuestion, handleMetaQuestion, isNullAction, isQuestionShaped, META_LOCATION, META_RECAP, isNpcObserverQuery, isInfoSeekingText, isConfrontationChallenge, buildLocationSurvey, windowView, knowsNpcName, describeNpc, INFO_SEEKING_EXCLUDE_RE, answerCapability } from './grace/gracefulAdjudication.js';
+  +import { isMetaQuestion, handleMetaQuestion, isNullAction, isQuestionShaped, META_LOCATION, META_RECAP, isNpcObserverQuery, isInfoSeekingText, isConfrontationChallenge, buildLocationSurvey, windowView, knowsNpcName, describeNpc, INFO_SEEKING_EXCLUDE_RE, answerCapability, hedgedPerceptionRead } from './grace/gracefulAdjudication.js';
+  @@ (grounded chain, ~3656, inside playerMoveCore) @@
+  -  const grounded = physicalObjectOutcome(w, text, result.outcome) || nonObjectSkillOutcome(w, text, result.outcome) || infoExtractionOutcome(w, text, result.outcome) || answerOrDeclineQuestion(w, text, result.outcome);
+  +  const grounded = physicalObjectOutcome(w, text, result.outcome) || nonObjectSkillOutcome(w, text, result.outcome) || hedgedPerceptionRead(w, text, result.outcome, result.rawDie) || infoExtractionOutcome(w, text, result.outcome) || answerOrDeclineQuestion(w, text, result.outcome);
+  ```
+  `result.rawDie` is already threaded through `resolveMove`'s return (`engine/resolve.js`'s `buildMechanicsLine`
+  already tags `NAT1`/`NAT20` off the same field) — no `resolve.js` change needed. Placement is deliberate:
+  after `nonObjectSkillOutcome` (its closest sibling, the search/skill-verb bucket) and before
+  `infoExtractionOutcome`/`answerOrDeclineQuestion` (neither of which match this text class — verified no
+  collision). Verified end-to-end by copying `playloop.js` into a disposable scratch file, applying this
+  exact patch, and re-running the gate scenario + regression seeds through the real `playerMove()` pipeline
+  (scratch file deleted immediately after — `engine/playloop.js` itself was never modified this session).
+- Proof (§7): `hedgedPerceptionRead`/`isPerceptionRecheckIntent` unit-tested directly (16/16 across
+  U448+U449). End-to-end dry run against a scratch-patched copy: seed `perc-seed-7` (real `NAT1` roll on the
+  exact gate text) renders "You crane to look, but between the sting in your eyes and the shift of shadow
+  and lamplight, you can't make out anything for certain from the bedchamber — could be nothing, could be
+  something you're missing." — no invented "no trace of flame" claim. Ordinary-failure seeds
+  (`ashfen-reach`/`aldermere`) render the non-crit hedge. Regression seeds confirmed untouched: honest-search
+  success (seed `a3`) still names "the straw pallet… plain in view"; `look around` / `is there a window
+  here?` still resolve through their pre-existing free-survey paths. `npm run check` GREEN: convergence
+  **100% (124/124** locked; C23's 2 rows are `target`, don't count against the ladder**)**, suite **9773/9773,
+  0 fail** (determinism U19/21/22/27/30 green; one incidental U381 flake seen on a single `npm run check`
+  pass — reproduced the documented known-flake profile: fails only under full-suite CPU load, passes solo
+  and on a clean re-run — not this packet's regression), `npm run playtest:quick` clean (50/50 runs, 0
+  crashes). New tests: U448 (7/7), U449 (9/9) — 16/16.
+- Remaining/next: land the playloop.js patch block above (2 lines) the moment the fence lifts this hour;
+  then promote `tests/corpus/C23.corpus.mjs`'s two rows from `status:'target'` to `'locked'` and re-run
+  `npm run convergence` (expect 126/126). No other follow-up queued — scope was deliberately narrow (a
+  failure-only floor for untracked environmental/structural perception rechecks), not a blanket "any yes/no
+  question hedges" net.
+- Rollback: revert this commit (the deterministic hedge + LLM-polish guard both return to the prior
+  ungrounded-floor behavior; playloop.js was never touched, so no playloop revert is needed).

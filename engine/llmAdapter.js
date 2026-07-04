@@ -700,6 +700,19 @@ export function validateNarrationCandidate(world, narrationCandidate, {
   const baseFled = /\bbreaks?\s+and\s+(?:runs?|bolts?)\b|broke\s+and\s+ran|\bfled\b|driven\s+off|has\s+had\s+enough/i.test(String(baseNarration || ''));
   if (baseFled && /\b(?:kill(?:ed|s)?|slain|slew|slay|lifeless|corpse|cut(?:s|ting)?\s+(?:it|him|her|them)\s+down|cut\s+down|finish(?:ed|es)?\s+(?:it|him|her|them)\s+off|run\s+through|throat\s+(?:slit|cut|open)|bleeds?\s+out|drops?\s+dead|lies\s+dead|dead\s+(?:at|on)\b)\b/i.test(cand)) return false;
 
+  // PERC-1 un-hedge guard: when the base (LLM-off, deterministic) narration is
+  // hedgedPerceptionRead's failure/crit-fail floor (engine/grace/gracefulAdjudication.js
+  // — "you honestly can't tell", "can't make out anything for certain"), the LLM polish
+  // must NOT overwrite that honest doubt with a confident, invented verdict in EITHER
+  // direction. Opus gate 2026-07-04 (Chaos-griefer): a nat-1 perception check ("is the
+  // ceiling still on fire?") got a definitive, accurate-sounding all-clear ("plain
+  // wattle-and-daub… no trace of flame") — a fact the room model doesn't even track,
+  // so the claim (true or false) was invented outright. Mirrors the fled-foe guard just
+  // above: the base already carries the correct (uncertain) shape; polish may reword
+  // the doubt, but may never resolve it into a verdict. Falls back to the honest base.
+  const baseHedgedPerception = /\bhonestly\s+can'?t\s+tell\b|\bcan'?t\s+make\s+out\s+anything\s+for\s+certain\b/i.test(String(baseNarration || ''));
+  if (baseHedgedPerception && /\bno\s+trace\s+of\b|\bunburnt\b|\bplain\s+wattle|\bdefinitely\b|\bclearly\s+(?:is|isn'?t|not)\b|\bconfirmed\b|\bwithout\s+(?:a\s+)?doubt\b|\bcertain(?:ly)?\s+(?:is|isn'?t|not)\b|\byes,?\s+it(?:'s|\s+is)\s+(?:still\s+)?(?:burning|on\s+fire|aflame)\b|\bstill\s+ablaze\b/i.test(cand)) return false;
+
   // Combat contradiction guard — only fires when combat is active and the
   // narration context carries the snapshot. Conservative: only flagrant
   // contradictions on three axes (combat-presence, hit/miss inversion).

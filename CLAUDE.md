@@ -9,6 +9,7 @@
 - `docs/SOBRIETY.md` — **the guardrails against never shipping.** Read when scope is growing or a feature is "done": build-dark ≠ done · the LLM meter · prototype gravity · unfalsifiable vision → **ship ONE bounded Module.**
 - `docs/WHAT_THIS_IS.md` — status-tagged audit (🟢 live / 🟡 built-but-dark / 🔴 partial) of every system. Orient here fast.
 - `docs/REPO_MAP.md` — module map + the "two play surfaces" gotcha (v1 = trunk, `__preview/` = sandbox). Read before exploring.
+- `docs/PRD.md` — **the victory map** (canonical, code-audited 2026-07-02): the three victories, the Armory of what's already built, the six-phase plan to V1, the Witness Test. **Check the Armory before building anything new.** Page 1 is Tim's wall poster.
 - `docs/ROADMAP.md` + `docs/NORTH_STAR.md` — the goal + critical path; the anchor against drift.
 - `docs/PACKETS.md` — active queue + done-when. Spec a packet before editing; small bounded diffs.
 - `docs/PATH_TO_SELLABLE.md` — the sellable plan (surface depth → make correct → build soul); open decisions live here.
@@ -32,6 +33,16 @@ Tim is not a coder. Every substantive report — from any window, worker or cond
 plain-English paragraph: *what was broken / what changed / why it matters*, jargon translated on first
 use. Never route a judgment call back to him mid-task (a question to Tim is a stalled lane — take the
 reversible option and flag it in the report). When a job is done, say so and stop; no trailing "want me to…?".
+
+## Engine-brief ritual (ALWAYS — hook-enforced)
+
+Any request whose execution would **edit `engine/**` in the main checkout**: FIRST render the request
+back to Tim as a **Form Prompt brief** (`docs/FORM_PROMPT.md`) in chat and **STOP for his explicit OK**
+— before any engine edit. After his OK: `touch .claude/engine-edit-ok` (authorizes 4 h) and proceed.
+A PreToolUse hook (`scripts/hooks/engine_brief_gate.sh`, wired in `.claude/settings.local.json`)
+hard-blocks engine writes without a fresh marker — **never touch the marker without Tim's OK in-chat.**
+Tim away → queue the brief in `docs/PACKETS.md` or dispatch it to a worker worktree (worktrees are
+exempt — their approval happened at dispatch). Reads are unrestricted; this gates WRITES only.
 
 ## Cockpit — project skills & scripts
 

@@ -31,3 +31,4 @@ output/
 # Cockpit — local-only state (budget ledger, window handoff)
 .budget.json
 .claude/handoff-latest.md
+.claude/engine-edit-ok

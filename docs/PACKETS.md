@@ -76,13 +76,11 @@ done_when · rollback`.
 (**Confused newbie 12/12 clean**; the lore-hound "no record" NPC-dodge cluster from 07-04-1 did NOT recur —
 NODE-DESYNC-1 + presence repair dissolved most of AG-4's observed evidence), and the judge now reaches
 DEEPER classes. First full Ref-off measurement = the new system's baseline. Clusters → owners:
-- **RL-1 (NEW, 8 of 14: Rules-Lawyer rules-answer cluster)** — "is it d20−2 vs a TN? what's a basic foe's
-  defense?" got raw modifier-breakpoint TABLE DUMPS (DM_ARTIFACT_LEAK ×2), the PLAYER'S own Armor as the
-  enemy's TN, and repeats. **Design tension for Tim:** the hide-the-math law vs a player who explicitly
-  demands the math. Proposed DM-Test answer: confirm the SHAPE in-fiction ("a d20, your might behind it —
-  beat the foe's guard; most common bandits' guard sits near your own") without leaking internals; never
-  dump a breakpoint table; never answer the enemy's TN with the player's Armor. NEEDS TIM'S TASTE CALL,
-  then packetize (llmAdapter DM-prompt + a deterministic rules-answer floor).
+- **RL-1 (8 of 14: Rules-Lawyer rules-answer cluster)** — **✅ TIM RULED 2026-07-04-pm3, verbatim:
+  "confirm the shape, never the table." PACKETIZED** (`docs/briefs/RL-1-confirm-shape-never-table.md`;
+  tests U426–U428; three seams: deterministic rules-answer floor + leak guard in the narration
+  validator + one DM-prompt law line; foe difficulty answered RELATIVELY from real state, self ≠ foe).
+  **DISPATCH ON JR-1 LAND** (same serial lane — grace/playloop meta seam).
 - **THROW/DROP misroute (Chaos arson, 2–3 fails)** — "hurl the lantern"/"drop it on the pallet" matched the
   `take:already-held` sink → the throw silently never happened. → INT-4 family row (below). The fire-on-straw
   no-ignition + roll:1-narrated-as-success physics contradiction → P-80/DX consequence-physics evidence.

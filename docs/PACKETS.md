@@ -897,10 +897,14 @@ sheet (no per-node islands); the camera keeps the player centered (no edges, eve
   (different building shapes + different hand). done_when: expand-from-indoors opens the SAME sheet
   zoomed at your room; zooming out pulls up THROUGH the roofless plan to the settlement; the compact and
   fullscreen views can never disagree because they are one surface at two sizes.
-- **HARNESS (small, queue):** U381 (`server.js /api/move` confidence-gate HTTP test) fails under
-  CONCURRENT parallel suites (port contention) and passes quiet — 2026-07-04 diagnosis, three lanes
-  corroborated. Packet: bind an ephemeral port (or retry-on-EADDRINUSE) in U381; done_when = two full
-  suites running simultaneously both pass it.
+- **HARNESS (small, queue — evidence UPDATED 2026-07-04-pm2):** U381 (`U381.intentGateRemoved.test.js`)
+  flakes ONLY inside full-suite/`npm run check` runs and passes solo/direct — port contention was the
+  wrong first guess (the test already binds port 0). **Pinned suspect:** the assert is
+  `providerCallCount >= 1` on a fetch-spy; under full-suite CPU saturation the intent-provider path's
+  internal time budget can expire before the spied fetch is issued → count 0 → fail. Fix shape: make the
+  test deterministic against load (disable/raise the intent timeout via env for this test, or await the
+  provider promise explicitly), NOT a port change. done_when: 5 consecutive `npm run check` runs green
+  under a parallel CPU load.
 - **S3 tabletop look:** ✅ **TT-DRAW LANDED (`02c3721`) + TT-DRAW-2 LANDED (`33f8fa73`), v0.28.11 b061** —
   drawn-plan layer from the REAL `floorPlan` (door gaps visible; U409–U411), trees/people as placed
   tokens, fog logic in; then the taste-gate fixes: **one sizing truth** (every structure-backed building

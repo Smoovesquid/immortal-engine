@@ -272,16 +272,28 @@ export function playerFocusWu(world) {
 // Camera survives v1's full-DOM re-renders: module singleton, per campaign.
 const CAMS = new Map();
 
+// WS-3 — a focus signature is "indoors" iff playerFocusWu tagged it 'in|...'
+// (see playerFocusWu above: 'in|' room-granular, 'out|'/'node|' otherwise). The
+// ONE place that string convention is interpreted as a boolean, so the indoor
+// default-zoom band and the outdoor one never drift from playerFocusWu's own sig format.
+function sigIsIndoors(sig) { return typeof sig === 'string' && sig.startsWith('in|'); }
+
 export function cameraFor(world, initialZoom, focus) {
   const key = String(world?.meta?.campaignId || 'campaign');
   const hereId = String(world?.map?.currentNodeId || '');
   const here = (world?.map?.nodes || []).find(n => n && n.id === hereId);
+  // The band a fresh mount (or an indoor<->outdoor crossing) snaps to: plan
+  // scale indoors (BAND.plan, framing the room), the caller's outdoor default
+  // otherwise (opts.initialZoom — the in-play embed's street band, or the
+  // region band on the standalone Map screen). docs/briefs/WS-3-one-surface.md
+  // scope #2: this is the ONE thing that changes SIZE on that crossing — never
+  // which renderer runs.
+  const outdoorZ = Number.isFinite(initialZoom) ? initialZoom : 0.12;
+  const bandZFor = (sig) => sigIsIndoors(sig) ? BAND.plan : outdoorZ;
   if (!CAMS.has(key)) {
     const c = focus || (here ? nodeToWu(here) : { x: 0, y: 0 });
-    // Default opens in the region band; the in-play embed seeds its own band
-    // via initialZoom.
-    const z = Number.isFinite(initialZoom) ? initialZoom : 0.12;
-    CAMS.set(key, { cx: c.x ?? c.wx, cy: c.y ?? c.wy, z, focusSig: focus ? focus.sig : '', lookingAway: false });
+    const sig = focus ? focus.sig : '';
+    CAMS.set(key, { cx: c.x ?? c.wx, cy: c.y ?? c.wy, z: bandZFor(sig), focusSig: sig, lookingAway: false });
   }
   const cam = CAMS.get(key);
   // The camera keeps the player centered (docs/POSITION_AS_CANON.md §6, Tim
@@ -294,6 +306,13 @@ export function cameraFor(world, initialZoom, focus) {
   // (re-render, no move) is left alone so a look-around isn't fought every frame.
   // View state only — world/determinism untouched.
   if (focus && focus.sig !== cam.focusSig) {
+    // WS-3: only re-snap the ZOOM when the move actually crosses the indoor/
+    // outdoor threshold (the "band widens/narrows" behavior the brief asks
+    // for) — a room-to-room move that stays on the SAME side (walking through
+    // your house, or walking outdoors) recenters position only, so a player
+    // who wheel-zoomed in to read the furniture never gets fought by the very
+    // next move.
+    if (sigIsIndoors(focus.sig) !== sigIsIndoors(cam.focusSig)) cam.z = bandZFor(focus.sig);
     cam.cx = focus.wx; cam.cy = focus.wy;
     cam.focusSig = focus.sig;
     cam.lookingAway = false;
@@ -901,6 +920,32 @@ export function renderOneMap(world, opts = {}) {
             ctx.closePath(); ctx.fill();
           }
         }
+      }
+      // WS-3 (#4, "keep the interior niceties") — a per-room wash UNDER the wall
+      // ink, same paint order the retired isInterior branch used (LocalMap.js's
+      // highlighter fill, then the outline on top): the room you're CURRENTLY
+      // standing in gets the highlighter wash, and any room in this SAME open
+      // building you haven't yet visited (interior.visited) dims — ported here
+      // rather than resurrecting the old renderer, per the brief. Only meaningful
+      // once the cutaway has genuinely opened (matches the wall-ink threshold below).
+      if (realPlan && cut > 0.2 && b.structureKey === interiorKey) {
+        const curRoomId = String(world?.scene?.interior?.roomId || '');
+        const visitedRooms = new Set((Array.isArray(world?.scene?.interior?.visited) ? world.scene.interior.visited : []).map(String));
+        for (const room of realPlan.rooms) {
+          const segs = room.walls;
+          if (!segs || !segs.length) continue;
+          const isCurrent = String(room.id) === curRoomId;
+          const isVisited = visitedRooms.size === 0 || visitedRooms.has(String(room.id));
+          if (!isCurrent && isVisited) continue; // ordinary visited room: no wash, just the wall ink below
+          ctx.globalAlpha = alpha * cut * (isCurrent ? 1 : INK_PARAMS.unvisitedRoomDim);
+          ctx.fillStyle = isCurrent ? INK_PARAMS.currentRoomWash : FLOOR_WARM;
+          ctx.beginPath();
+          const [mx, my] = toPx(segs[0].a.wx, segs[0].a.wy, W, H);
+          ctx.moveTo(mx, my);
+          for (const seg of segs) { const [px, py] = toPx(seg.b.wx, seg.b.wy, W, H); ctx.lineTo(px, py); }
+          ctx.closePath(); ctx.fill();
+        }
+        ctx.globalAlpha = alpha;
       }
       // TT-DRAW: once the cutaway has mostly resolved, ink the REAL floor plan's
       // walls (with door GAPS) on top of the true-sized fill above — the same

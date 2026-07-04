@@ -31,7 +31,16 @@ export const Z_MAX = 60;      // building-plan band, 1 place-unit = 240 px
 export const BAND = {
   region: 0.08,     // roads + all discovered nodes + names
   settlement: 0.5,  // village footprints with real layouts (M2)
-  street: 4         // walkable detail, tokens, interiors (M3)
+  street: 4,        // walkable detail, tokens, interiors (M3)
+  // WS-3 — the plan-scale default the camera snaps to on crossing the
+  // indoor/outdoor threshold (docs/briefs/WS-3-one-surface.md): deep enough that
+  // the roof-lift cutaway (fully resolved by BAND.street*1.8) has long since
+  // opened, room names are legible (oneMap.js's z>=6 label threshold) and the
+  // graph-paper quadrille (drawModel.js's gridFadeZEnd=16) is fully inked — but
+  // short of Z_MAX so the room's own building (and a neighbor or two) still sit
+  // in frame, not one room filling the whole canvas. Named + tunable in this ONE
+  // spot, same idiom as every other band threshold here.
+  plan: 32
 };
 
 /** Node lattice → world units. */

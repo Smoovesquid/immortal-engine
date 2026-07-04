@@ -2512,19 +2512,22 @@ function renderPlay() {
   if (w) { try { renderWalkPlace(w); } catch {} }
   const INPLAY_MAP_ZOOM = MAP_3D_ENABLED
     ? 2.0    // 3D band (Z_3D_CROSS 0.5 → Z_3D_TILT 2.5): a well-tilted diorama.
-    : 0.12;  // the 2D plan's readable band — current node centered, neighbors in frame.
+    : 0.12;  // the 2D plan's readable band — current node centered, neighbors in frame (OUTDOORS only).
   let mapEl = null;
   if (w) {
-    // INSIDE a building → the graph-paper interior floor plan (rooms, doorways,
-    // your position, fog) via renderLocalMap → handDrawnInterior. The one-map
-    // switch left this dormant (fallback-only) and drew the overworld region even
-    // when you were in a bedroom, so interior play had no map (2026-07-04 playtest).
-    // OUTSIDE → the continuous overworld plan. renderWalkPlace above still runs for
-    // its ui.place side-effect. combat = the overworld map's deepest tactical zoom.
-    const inside = Boolean(w.scene && typeof w.scene.interior === 'object' && w.scene.interior) && !w.combat?.active;
-    const inner = inside
-      ? renderLocalMap(w, { compact: true })
-      : renderContinuousMap(w, { playerPos: ui.place, initialZoom: INPLAY_MAP_ZOOM, heightCss: '100%' });
+    // WS-3 (docs/briefs/WS-3-one-surface.md) — the compact in-play map and the
+    // fullscreen Map screen (renderMap(), below) now ALWAYS render the SAME
+    // continuous sheet; the old inside-a-building ? [legacy interior renderer]
+    // : renderContinuousMap(...) fork (the v0.28.8 stopgap — two renderers that
+    // could draw a different building shape / different hand for the same room)
+    // is retired. While scene.interior is set, WS-2's playerFocusWu + cameraFor
+    // (oneMap.js) center the camera on the player's room at a plan-scale default
+    // zoom (BAND.plan) — the room is just the closest zoom of the SAME sheet the
+    // settlement and region live on. INPLAY_MAP_ZOOM only seeds the OUTDOOR band
+    // (cameraFor overrides to BAND.plan indoors on the very next resolve) and
+    // only matters on first mount / a genuine indoor<->outdoor crossing — never
+    // fights a manual zoom. combat = the overworld map's deepest tactical zoom.
+    const inner = renderContinuousMap(w, { playerPos: ui.place, initialZoom: INPLAY_MAP_ZOOM, heightCss: '100%' });
     // Tap-to-expand: the only surviving path to the fullscreen Map screen.
     const expand = el('button', {
       class: 'map-expand-btn',

@@ -58,7 +58,19 @@ export const INK_PARAMS = Object.freeze({
   gridFadeZEnd: 16,        // z at which the quadrille is fully opaque
   gridMinorAlpha: 0.20,    // teal grid-rule alpha at full fade-in (matches handDrawnInterior.js's GMIN/GMAJ idiom)
   gridMajorAlpha: 0.40,    // every 5th line (a 25-ft "major" rule), matching the interior map's minor/major convention
-  gridRGB: '92,134,120'    // the teal quadrille rule's RGB triplet (GRAPH_PAPER_UI.md's --grid-minor/--grid-major hue, handDrawnInterior.js's GMIN/GMAJ) — final alpha composed by quadrilleStroke(), never string-hacked
+  gridRGB: '92,134,120',   // the teal quadrille rule's RGB triplet (GRAPH_PAPER_UI.md's --grid-minor/--grid-major hue, handDrawnInterior.js's GMIN/GMAJ) — final alpha composed by quadrilleStroke(), never string-hacked
+  // WS-3 (docs/briefs/WS-3-one-surface.md #4) — the niceties the retired
+  // isInterior branch (LocalMap.js's highlighter wash + "You are here" dot)
+  // drew per-room, ported here so the ONE sheet's plan band carries the same
+  // signal: a highlighter-yellow wash on the room you're CURRENTLY standing in
+  // (matches LocalMap.js's PAPER.highlight hue/feel), and a dimming wash over
+  // any room in the SAME open building you have not yet visited (interior.visited)
+  // — mirrors the old renderer's `drooms` filter (undiscovered rooms drew nothing
+  // at all; here they still show as walls/shape — this is presentation-only, not
+  // a spoiler-grade withhold — just dimmed, never fully hidden, since the true
+  // floor plan is already visible once the roof is lifted).
+  currentRoomWash: 'rgba(248,226,120,0.34)',
+  unvisitedRoomDim: 0.4
 });
 
 /**

@@ -429,6 +429,11 @@ a{color:var(--accent)}
 .overworld:not(.overworld-full) svg{max-width:328px}
 .local-map-canvas{border-radius:10px;display:block}
 .local-map-canvas.compact{width:100%;max-width:460px;height:auto;aspect-ratio:1/1;image-rendering:auto}
+/* Interior floor-plan as the in-play surface: fill .play-map-3d, not a small
+   centered square. The canvas is square — cap it by the container height so it
+   grows as large as the surface allows (leaving room for the header + legend). */
+.play-map-3d > .play-map{width:100%;height:100%;justify-content:center;gap:4px;padding:4px 0}
+.play-map-3d > .play-map > .local-map-canvas.compact{max-width:100%;height:auto;max-height:calc(58vh - 80px)}
 .local-map-header{display:flex;align-items:baseline;gap:8px}
 
 /* Floor-plan glyph legend (interiors only) */

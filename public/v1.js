@@ -998,8 +998,8 @@ function renderInvoke() {
     el('div', { class: 'panel' },
       el('div', { class: 'header' },
         el('div', {},
-          el('div', { class: 'title' }, 'Immortal Engine — v0.28.7'),
-          el('div', { class: 'sub' }, 'build 057 · 2026-07-04 · honest search + named moves')
+          el('div', { class: 'title' }, 'Immortal Engine — v0.28.8'),
+          el('div', { class: 'sub' }, 'build 058 · 2026-07-04 · interior floor-plan map')
         )
       ),
       // ── One-click front door: start (or resume) the Escape game ──────
@@ -2515,9 +2515,16 @@ function renderPlay() {
     : 0.12;  // the 2D plan's readable band — current node centered, neighbors in frame.
   let mapEl = null;
   if (w) {
-    // ONE map — combat is its deepest tactical zoom, not a separate surface
-    // (renderContinuousMap shows the tactical board itself while combat is live).
-    const inner = renderContinuousMap(w, { playerPos: ui.place, initialZoom: INPLAY_MAP_ZOOM, heightCss: '100%' });
+    // INSIDE a building → the graph-paper interior floor plan (rooms, doorways,
+    // your position, fog) via renderLocalMap → handDrawnInterior. The one-map
+    // switch left this dormant (fallback-only) and drew the overworld region even
+    // when you were in a bedroom, so interior play had no map (2026-07-04 playtest).
+    // OUTSIDE → the continuous overworld plan. renderWalkPlace above still runs for
+    // its ui.place side-effect. combat = the overworld map's deepest tactical zoom.
+    const inside = Boolean(w.scene && typeof w.scene.interior === 'object' && w.scene.interior) && !w.combat?.active;
+    const inner = inside
+      ? renderLocalMap(w, { compact: true })
+      : renderContinuousMap(w, { playerPos: ui.place, initialZoom: INPLAY_MAP_ZOOM, heightCss: '100%' });
     // Tap-to-expand: the only surviving path to the fullscreen Map screen.
     const expand = el('button', {
       class: 'map-expand-btn',

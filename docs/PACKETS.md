@@ -26,7 +26,8 @@ done_when · rollback`.
   "look around" names Brogan + the Lingerer, masks the hostile in-fiction, and sees Galen through the
   window — the full presence stack agrees with the morning's outdoor-dot receipt. Quiet-machine check
   GREEN 9601/9601 · convergence 124/124 · determinism green.
-- **FOLLOW-UP (small, QUEUE): ND-1b — the legacy-desync repair doesn't PERSIST.** Live-verified: loading
+- **FOLLOW-UP (small, → DISPATCHED 2026-07-04-pm5, Sonnet worktree, U446–U447): ND-1b — the
+  legacy-desync repair doesn't PERSIST.** Live-verified: loading
   the corrupted 10am save through the new `ensureWorld` yields honest narration (repair effective
   in-memory, invariant quiet) but the autosave written AFTER a turn still carries the stale
   `scene.interior` blob — every load re-repairs, the save never converges, and any path reading the raw
@@ -562,7 +563,7 @@ file) · P4 SERIAL (`engine/ref/rubric.js`, shared with the live Ref) · P6 last
   patch version bump; changelog + this row updated.
 - **rollback:** revert the single commit.
 
-### PERC-1 — a failed perception read renders uncertainty, never a confident accurate report  ·  Phase 0  ·  **QUEUE (small; resolve/narration seam)**
+### PERC-1 — a failed perception read renders uncertainty, never a confident accurate report  ·  Phase 0  ·  **→ DISPATCHED 2026-07-04-pm5 (Sonnet worktree, U448–U449; playloop.js hard-fenced — patch-block protocol if the seam lives there)**
 - **signal:** 2026-07-04 gate (Chaos-griefer): "is the ceiling still on fire? I look up." rolled **1 vs DC 13**
   yet narrated a definitive, ACCURATE all-clear ("plain wattle-and-daub… no trace of flame"). A crit-fail
   perception must not read as authoritative truth — render doubt/incompleteness ("smoke-haze and lamplight;
@@ -954,7 +955,29 @@ sheet (no per-node islands); the camera keeps the player centered (no edges, eve
   another."** Engine-side fix in `floorPlan.js` (rooms TILE, shared walls, doors ON the shared wall,
   corridors abolished) — every surface inherits via TT-DRAW-3's shared brain; TAC-1 `pos` interplay +
   old-save repair explicitly in scope (brief `docs/briefs/FP-1-proper-floorplans.md`; U429–U431;
-  Opus; file-disjoint from JR-1 with a flagged state.js caution).
+  Opus; file-disjoint from JR-1 with a flagged state.js caution). ✅ LANDED (v0.28.12→13).
+  **→ FP-2 DISPATCHED 2026-07-04-pm5 — Tim's sighting, verbatim: "the buildings themselves have taken
+  a huge step backwards. I want windows, doors, I want to be able to tell what walls are made of. We
+  had all of this stuff at the beginning of the day. I do not want boxes in boxes as rooms. I want
+  floorplans."** Root cause CONFIRMED (Node + live): FP-1's geometry is right (WALL=0.12 shared-wall
+  band, doors in the band) but the sheet's plan band strokes rooms as thin outlines and leaves the
+  wall band as blank paper — and windows/door-swings/materials never ported from the retired
+  `handDrawnInterior.js` (WS-3's "niceties" checklist named highlight/furniture/fog/marker only —
+  checklist miss, not data loss). Fix = renderer-only rich-ink port: poché wall mass by material,
+  door gaps + swings, CANONICAL windows from `roomWindows()` (count/shuttered/facing — the fiction
+  already treats them as real), furniture palette, keyed-FNV wobble, label LOD folded in (closes the
+  TT-DRAW-3 nit). Brief `docs/briefs/FP-2-walls-with-mass.md`; U436–U438; Opus; `public/map/` only,
+  floorPlan geometry untouchable (U429–431 stay locked).
+  **→ ROADS-1 QUEUED 2026-07-04-pm5 (dispatch when FP-2 lands — same `public/map/` lane). Tim's
+  rulings, verbatim: "We need a rule that Buildings CANNOT be on the same squares as roads" + "roads
+  must continue to other places. Right now, road stop right outside towns. This is something I've
+  asked for repeatedly."** Roots CONFIRMED: (1) P-81b's scatter rejection-tests placed buildings only —
+  never the road corridor — and after 48 failed tries places the building ANYWAY (overlap accepted);
+  (2) two disconnected road systems — the village lane ends at the layout bounds while the region band
+  draws separate node-center dashed tracks; they never meet (the structural reason repeated fixes
+  didn't stick). Fix = THE RULE (footprint ∩ road-corridor = ∅, no give-up path, props included) +
+  ONE road network (per-edge world-unit polylines whose terminals ARE each village's lane endpoints;
+  one geometry drawn at every band). Brief `docs/briefs/ROADS-1-one-road-truth.md`; U439–U441; Opus.
 - **S4 the tilt:** MAP-3DR (persistent mount, below) + tilt-threshold retune by eye (decision #1) +
   combat folds into the one scene (`MAP_QUEUE.md` "NEXT PACKET" spec) **QUEUE after S3**.
 - **S5 5-ft truth:** TAC — contract written + revised (`docs/POSITION_AS_CANON.md`); **TAC-1 LANDED
@@ -963,9 +986,12 @@ sheet (no per-node islands); the camera keeps the player centered (no edges, eve
   deterministic + seeded + in `worldHash`, DARK (nothing consumes it). Pinned constants block appended
   to the contract; new `engine/map/spatial/tacticalPos.js`; invariants + migration in place; tests
   U412–U415 green; suite 9504/9504, convergence 124/124 unchanged, determinism green, playtest:quick
-  clean. **NEXT: TAC-2** (the tactical move verb — "go east" walks ≤6 cells; `{op:'pos'}` delta;
-  playloop serial). The `public/v1.js` front-door build line is deliberately left to the TT-DRAW
-  renderer lane / integration (forbidden file for this lane).
+  clean. **TAC-2 → DISPATCHED 2026-07-04-pm5** (the tactical move verb — "go east" walks ≤6 cells;
+  `{op:'pos'}` delta through effectsCore; never changes currentNodeId; interior walks honor FP-1
+  doorways; narrate-the-read; Opus worktree, U442–U445; owns playloop/effectsCore/resolve/intent this
+  session — state.js fenced to ND-1b, patch-block protocol on collision; marker-visibility finding to
+  be reported, renderer catch-up is a later rung). The `public/v1.js` front-door build line is
+  deliberately left to integration (forbidden file for all lanes).
 
 ### MAP-3DR — reconnect the 3D diorama on a persistent mount  ·  **Phase 4 (the face)  ·  = TABLETOP S4; cut the packet when S3 lands**
 - **why parked (2026-07-03, Tim's call):** the 3D layer was DISCONNECTED (`MAP_3D_ENABLED=false`,

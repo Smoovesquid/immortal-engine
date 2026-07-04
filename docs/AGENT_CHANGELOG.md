@@ -1915,3 +1915,17 @@ other agents. (none active)
   AGILITY noted parenthetically) mirrors the pre-existing `META_ATTACK_MOD` default — genuinely
   ambiguous with no weapon named, unchanged design.
 - Rollback: revert this commit (table dumps + self-Armor-for-foe both return).
+
+## 2026-07-04 — Basecamp (FP-2 integration → v0.28.14 build 064)
+
+- Landed FP-2 "walls with mass, windows with glass" (worker commit `525b2976` → cherry-picked
+  `392a16c3`): poché wall mass by shell material (timber/stone/fortified/cave hatch), door gaps +
+  swing arcs, CANONICAL windows from `roomWindows()`/`roomWindowFacings()` (glazed vs shuttered;
+  dark rooms none; renderer snaps interior-facing canon to exterior walls, count preserved —
+  flagged), furniture material palette, label LOD (plan band only), stale pad-and-corridor comment
+  rewritten. Root of Tim's "boxes in boxes / no windows / no materials" sighting: FP-1's WALL=0.12
+  band was drawn as blank paper, and WS-3's niceties checklist missed windows/doors/materials.
+- Tests U436–U438 (16 subtests); `npm run check` GREEN at integration: 124/124 convergence,
+  suite 9773/0, determinism green. Receipts: `docs/playtests/fp2/*.png`.
+- Next in lane: ROADS-1 (buildings off road squares + one road network) dispatches now that
+  `public/map/` is free.

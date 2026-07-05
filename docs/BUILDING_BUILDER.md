@@ -12,10 +12,16 @@ role/material/furniture/enterable; demo behind seed `loaderDemo`, default game b
 `house-builder/v5+`). Tier 0 #4 (validate) + #5 (walk-it test) came with it (U513–U517, live LLM-off
 receipt). **Also done same day (tool-side):** Tier 1 **#6 room roles** ✅ + **#7 full furniture set** ✅.
 
-**Next (queued):** **LOAD-2** — attach an ARBITRARY tool export at a REAL map node (not just the demo
-seed), + all rooms not just the first, + windows/doors as real openings. **LOAD-MR2C** — widen/unify the
-pre-existing `authoredPlans.js` (MR-2c) registry (validates v5 only) with the new loader path. Then the
-rest of Tier 1 (multi-floor/stairs — engine work; entrance; NPC/monster placement) and Tiers 2–3 stand.
+**In flight:** **LOAD-2** dispatched to an engine worker (`docs/briefs/LOAD-2-multiroom-realnode.md`) —
+an ARBITRARY tool export at a REAL map node, all rooms, doors→adjacency.
+
+**Also done same day (tool-side, verified live):** Tier 1 **#9 entrance** ✅ (mark a door as the map
+entrance) · Tier 2 **#11 door locks/keys** ✅ · **#12 traps** ✅ (hidden hazards, sibling of Secrets) ·
+**#13 room lighting** ✅ (lit/dark, the engine `dark` flag). Export now `house-builder/v9`.
+
+**Still standing:** LOAD-MR2C (widen/unify the pre-existing `authoredPlans.js` MR-2c registry) · Tier 1
+#8 multi-floor/stairs (ENGINE work) + #10 NPC/monster placement · Tier 2 #14 terrain + #15 cover/elevation
+· Tier 3 glue.
 
 ## The one truth that shapes everything
 

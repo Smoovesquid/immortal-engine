@@ -240,15 +240,15 @@ done_when · rollback`.
   up to something"). **MAP-REAL STAGE 2 COMPLETE — walls block · doors canon · DM grounded · authored
   plans load · windows see.**
 
-### CONDUCTOR-SPLIT — two live conductors, explicit territory  ·  meta  ·  **✅ ADOPTED (Tim, 2026-07-05-night): SIBLING WINDOW = the AUTHORING pipeline end-to-end (house-builder · npc-builder · minis library · LOADER-MERGE — absorb authoredPlans' door-canon/mask depth into ONE loader — · LOAD-3/AUTH-HOUSE-1 behind it) · BASECAMP (this window) = MAP-REAL remainder (MR-3 fog-procgen · oracle · integrations · releases). TEST RANGES: Basecamp U523+ · sibling U600+ (leave U518–U522 as-is until the merge renames).**
-- Evidence: the Carl race (am) · duplicate loaders (authoredPlans MR-2c vs authoredStructure LOAD-1/2,
-  ~900 combined lines, one job) · test numbers U513/514 + U518–U522 double-allocated (both suites
-  green — filenames differ — bookkeeping broken twice). Root cause: two conductors commit/allocate
-  blind against each other's unpushed state.
-- **Recommendation:** sibling window owns the AUTHORING pipeline end-to-end (house-builder, npc-builder,
-  minis library, LOADER-MERGE absorbing authoredPlans' door-canon/mask depth into one loader);
-  Basecamp owns MAP-REAL remainder (MR-3 fog-procgen, oracle, integrations) + releases. Test ranges:
-  Basecamp U523+, sibling U600+. One word from Tim adopts this (or names another split).
+### CONDUCTOR-SPLIT — superseded same night: SINGLE-CONDUCTOR mode  ·  meta  ·  **SUPERSEDED 2026-07-05-night (Tim): the split was adopted, then Tim consolidated — sibling window CLOSED CLEAN (npc-builder landed `81307bd1`, tree clean, all its work in v0.29.6) and Basecamp now conducts EVERYTHING. Authoring queue absorbed: LOADER-MERGE dispatched (below) · LOAD-3/AUTH-HOUSE-1 behind it · minis wiring. One conductor sees all unpushed state = the collision class ends structurally.**
+- Original evidence (why coordination was needed at all): the Carl race (am) · duplicate loaders
+  (authoredPlans MR-2c vs authoredStructure LOAD-1/2, ~900 combined lines, one job) · test numbers
+  U513/514 + U518–U522 double-allocated. Root cause: two conductors commit/allocate blind against each
+  other's unpushed state. Single-conductor mode dissolves it; test allocation = one continuous range
+  from U523 (U526+ next free).
+- flakeloop_v5.sh spinners (~6 cores): NOT orphans — the LIVE load harness of Tim's external
+  U381-FLAKE session (17 min elapsed, live parent chain, session scratchpad — the sibling misread
+  `17:20` elapsed as a 3:15pm start). HANDS OFF; it closes with its session.
 
 ### MR-2b — the DM grounds architecture claims (no invented geography)  ·  Phase 1/2 (MAP-REAL stage 2)  ·  **✅ LANDED v0.29.1 b088 (worker `8afa145e` → integrated; U507–U509 22/22; suite 10155/0; CG-ARCH structural-tier detector + roomPlan ground truth + hide-the-math DOORS prompt line; corpus lock on the wake cottage; flagged U483 equal-base fixture retune — legitimate, documented inline)**
 - Plan-facts bundle (rooms + doors + states + exits) into the DM prompt seam; CG family gains CG-ARCH

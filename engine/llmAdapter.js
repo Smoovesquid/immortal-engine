@@ -713,6 +713,23 @@ export function validateNarrationCandidate(world, narrationCandidate, {
   const baseHedgedPerception = /\bhonestly\s+can'?t\s+tell\b|\bcan'?t\s+make\s+out\s+anything\s+for\s+certain\b/i.test(String(baseNarration || ''));
   if (baseHedgedPerception && /\bno\s+trace\s+of\b|\bunburnt\b|\bplain\s+wattle|\bdefinitely\b|\bclearly\s+(?:is|isn'?t|not)\b|\bconfirmed\b|\bwithout\s+(?:a\s+)?doubt\b|\bcertain(?:ly)?\s+(?:is|isn'?t|not)\b|\byes,?\s+it(?:'s|\s+is)\s+(?:still\s+)?(?:burning|on\s+fire|aflame)\b|\bstill\s+ablaze\b/i.test(cand)) return false;
 
+  // INFO-HONESTY guard: when the base (LLM-off, deterministic) narration is an
+  // honest NO-RECORD info answer — declineInfoSeek / objectReadDecline /
+  // renderPlaceDeclineDM (engine/playloop.js), mech `[info-check → no-record …]`
+  // or `[place-history → no-record …]` — the polish must NOT convert that honest
+  // "can't say" into a LOCATED, CONFIDENT specific. Opus gate 2026-07-04-3
+  // (CANON_HALLUCINATION): pressed after a no-record answer for Elske's
+  // whereabouts, the DM invented "the single building visible from where you
+  // stand — that's the only structure here, and Elske is somewhere within it",
+  // planting a located fact (WHERE she is) and a structure COUNT that canon
+  // doesn't carry (interior:null, no location on record). Third of the
+  // "base carries the correct uncertain shape" family (fled-foe, PERC-1 above):
+  // polish may REWORD the uncertainty — "she couldn't say where Elske's got to"
+  // stays honest and passes — but may never RESOLVE it into a canon-shaped
+  // located/counted assertion. Atmosphere with no located fact passes. Falls
+  // back to the honest base. (docs/briefs/INFO-HONESTY.md)
+  if (isNoRecordInfoBase(baseNarration) && findResolvedInfoSpecific(cand)) return false;
+
   // Combat contradiction guard — only fires when combat is active and the
   // narration context carries the snapshot. Conservative: only flagrant
   // contradictions on three axes (combat-presence, hit/miss inversion).
@@ -1187,6 +1204,98 @@ const LINEAGE_PHRASE_RE = /\broots?\s+(?:run\s+|reach\s+|go\s+)?deep\b|\bfor\s+g
 // claim and must pass unchanged — same restraint as Rule 4d's roster-entity
 // guard. Returns the offending substring, or null. Never throws.
 const NEGATION_HYPOTHETICAL_RE = /\b(?:no|not|never|isn|wasn|doesn|didn|if|suppose|imagine|hypothetical)\b/;
+
+// INFO-HONESTY helper — is the BASE narration an honest no-record info answer?
+// Detects the deterministic decline templates (engine/playloop.js): declineInfoSeek
+// (named + unnamed, all press tiers), objectReadDecline (read:no-content), and the
+// place-history no-record decline (renderPlaceDeclineDM, which reuses declineInfoSeek).
+// Keyed on signature phrases that appear ONLY in those decline templates — never in a
+// grounded delivery — so a real answered fact never trips the guard. Never throws.
+const NO_RECORD_BASE_RE = new RegExp([
+  "no record",                               // "no record I've ever seen" / "There's no record of that"
+  "can'?t say",                              // "Can't say."
+  "can'?t rightly say",                      // "Can't rightly say."
+  "wouldn'?t know",                          // "Wouldn't know — nobody's ever told me."
+  "nobody'?s ever told",                     // named tier-0 decline
+  "lost to me",                              // "That's lost to me, truth be told."
+  "lost,? (?:whatever|truth)",               // "That's lost, whatever it was."
+  "no one here would know",                  // unnamed tier-0 decline
+  "not written anywhere",                    // "It's not written anywhere you can find."
+  "i don'?t know",                           // named tier-1 decline ("I told you — I don't know.")
+  "i don'?t have it",                        // named tier-1 decline ("Same answer. I don't have it.")
+  "same answer",                             // named tier-1 decline
+  "won'?t be drawn twice",                   // named tier-1 decline
+  "no answer exists",                        // unnamed tier-1 decline
+  "won'?t conjure a record",                 // "Asking again won't conjure a record that isn't there."
+  "matter stays unsettled",                  // unnamed tier-1 decline
+  "done with that question",                 // named tier-2 decline
+  "subject is closed",                       // named/unnamed tier-2 decline
+  "won'?t say another word",                 // named tier-2 decline
+  "question'?s closed",                      // unnamed tier-2 decline
+  "no answer coming",                        // "There's no answer coming, here or anywhere."
+  "won'?t make a fact appear",               // "pressing further won't make a fact appear."
+  "matter'?s done",                          // "The matter's done; no more comes of asking."
+  "nothing here that means anything",        // objectReadDecline
+  "nothing set down here you can read",      // objectReadDecline
+  "nothing here gives you a thing to go on", // objectReadDecline
+].join("|"), "i");
+
+function isNoRecordInfoBase(baseNarration) {
+  try {
+    return NO_RECORD_BASE_RE.test(String(baseNarration || ''));
+  } catch { return false; }
+}
+
+// INFO-HONESTY helper — does the candidate RESOLVE an honest no-record answer into a
+// LOCATED / COUNTED specific? Two shapes the Opus gate (2026-07-04-3) produced on a
+// no-record base: (1) a positive WHERE assertion — "Elske is somewhere within it",
+// "she's inside the building", "you'll find her in/at …"; and (2) a structure COUNT —
+// "the single/only/lone building here", "the one structure". A denial / hypothetical /
+// still-hedged lead-in ("she couldn't say where …", "no one knows where …") is NOT a
+// resolution and must pass unchanged (same restraint as Rule 4d). Atmosphere carrying
+// no located fact or count passes. Returns the offending substring, or null. Never throws.
+const INFO_WHERE_RE = new RegExp(
+  // "<subject> is/'s (somewhere)? within/inside/in/at/over-at/about <thing>"
+  "\\b(?:she|he|they|it|her|him|them|[A-Z][a-zA-Z'’-]+)\\b" +
+  "[^.!?]{0,24}?\\b(?:is|'?s|are|'?re|was|were|must\\s+be|will\\s+be|'?ll\\s+be|stands?|stood|waits?|waited|sits?|sat|stays?|stayed|lies?)\\b" +
+  "[^.!?]{0,24}?\\b(?:somewhere\\s+)?(?:within|inside|in(?:side)?|at|about|over\\s+(?:at|in)|off\\s+in|through)\\b" +
+  "[^.!?]{0,32}?\\b(?:it|building|structure|hall|house|hut|cabin|cottage|inn|shop|store|tavern|lodge|temple|shrine|keep|tower|barn|shed|room|chamber|place|there)\\b"
+  , "i");
+// "you (will|'ll)? find/catch/see her/him/them (in|at|inside|within) …"
+const INFO_FIND_RE = new RegExp(
+  "\\byou(?:'?ll| will| can| should)?\\s+(?:find|catch|see|spot)\\s+(?:her|him|them|[A-Z][a-zA-Z'’-]+)\\b" +
+  "[^.!?]{0,24}?\\b(?:in(?:side)?|within|at|about|over\\s+(?:at|in)|through)\\b"
+  , "i");
+// Structure COUNT — "the single/only/lone/one building/structure … here".
+const INFO_COUNT_RE = /\b(?:the\s+)?(?:single|only|lone|sole|one)\s+(?:building|structure|house|hall|hut|cabin|cottage|inn|shop|store|tavern|lodge|tower|edifice)\b|\bthe\s+(?:building|structure)\s+(?:is\s+)?the\s+(?:only|single|lone|sole)\s+(?:one|structure|building)\b|\bthe\s+only\s+(?:structure|building)\s+(?:here|about|around|in\s+(?:sight|view))\b/i;
+// A candidate that STILL carries uncertainty/decline anywhere is a REWORD, not a
+// resolution — the whole point of this guard is that polish may keep the doubt.
+// Broader than the shared NEGATION_HYPOTHETICAL_RE (adds the contraction-negations
+// can't/couldn't/won't/wouldn't and the soft hedges maybe/perhaps/might/whether/no
+// telling), and applied to the ENTIRE candidate (not a fixed lead-in window) so a
+// hedge at the clause head — "she can't say if Elske is inside" — exempts the located
+// clause that follows it. Mirrors Rule 5's hasDecline short-circuit. Terminal-safe:
+// only checks one sentence's worth of text (the validator caps candidates at one
+// sentence outside setpieces).
+const INFO_CANDIDATE_HEDGE_RE = /\b(?:can'?t|cannot|could\s?n'?t|couldn'?t|won'?t|will\s+not|would\s?n'?t|wouldn'?t|no\s+telling|not\s+sure|unsure|uncertain|no\s+record|no\s+idea|who\s+knows|hard\s+to\s+say|maybe|perhaps|might(?:\s+be)?|possibly|somewhere\s+or\s+other)\b|\b(?:if|whether|suppose|imagine|hypothetical)\b/i;
+
+function findResolvedInfoSpecific(candidate) {
+  try {
+    const text = String(candidate || '');
+    // Reword short-circuit: polish that keeps ANY uncertainty/decline marker has
+    // not resolved the answer — pass it through untouched.
+    if (INFO_CANDIDATE_HEDGE_RE.test(text)) return null;
+    // (2) structure count — a plain, positive count assertion.
+    const cm = INFO_COUNT_RE.exec(text);
+    if (cm) return cm[0];
+    // (1) located WHERE assertion — positive placement of a person/thing.
+    for (const re of [INFO_WHERE_RE, INFO_FIND_RE]) {
+      const m = re.exec(text);
+      if (m) return m[0];
+    }
+    return null;
+  } catch { return null; }
+}
 
 function findUngroundedPurseReceiptClaim(candidate, baseNarration) {
   try {

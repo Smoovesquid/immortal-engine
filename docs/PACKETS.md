@@ -240,7 +240,7 @@ done_when · rollback`.
   up to something"). **MAP-REAL STAGE 2 COMPLETE — walls block · doors canon · DM grounded · authored
   plans load · windows see.**
 
-### CONDUCTOR-SPLIT — two live conductors need explicit territory (RULING NEEDED — Tim)  ·  meta  ·  **QUEUED 2026-07-05-night after 3 same-day collisions**
+### CONDUCTOR-SPLIT — two live conductors, explicit territory  ·  meta  ·  **✅ ADOPTED (Tim, 2026-07-05-night): SIBLING WINDOW = the AUTHORING pipeline end-to-end (house-builder · npc-builder · minis library · LOADER-MERGE — absorb authoredPlans' door-canon/mask depth into ONE loader — · LOAD-3/AUTH-HOUSE-1 behind it) · BASECAMP (this window) = MAP-REAL remainder (MR-3 fog-procgen · oracle · integrations · releases). TEST RANGES: Basecamp U523+ · sibling U600+ (leave U518–U522 as-is until the merge renames).**
 - Evidence: the Carl race (am) · duplicate loaders (authoredPlans MR-2c vs authoredStructure LOAD-1/2,
   ~900 combined lines, one job) · test numbers U513/514 + U518–U522 double-allocated (both suites
   green — filenames differ — bookkeeping broken twice). Root cause: two conductors commit/allocate
@@ -281,7 +281,7 @@ done_when · rollback`.
   through the exact `playerMove` browser entry, LLM-off); "lean into the door" marginal phrasing
   documented out of family (corpus candidate if it ever bites).
 
-### U381-FLAKE — the load-flake earns a packet (3 strikes 2026-07-05)  ·  maintenance  ·  **QUEUED with evidence**
+### U381-FLAKE — the load-flake earns a packet (3 strikes 2026-07-05)  ·  maintenance  ·  **IN PROGRESS in a separate Tim-launched session (2026-07-05-night, background task off Basecamp's flag) — no lane should touch server.js test fixtures meanwhile**
 - `U381` (server.js `/api/move` confidence-gate) fails ~1-in-3 FULL-suite runs under the parallel
   runner, passes in isolation + on every rerun; reproduced on CLEAN baselines by two independent
   workers today (TT-OCC report; MR-1b report) + twice in Basecamp integration checks. Likely port/

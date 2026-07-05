@@ -2730,3 +2730,13 @@ other agents. (none active)
   2d windows). Remaining arc: MR-3 fog-procgen (design next), LOADER-MERGE (urgent, grew again),
   OCC-STORY-2, AUTH-HOUSE-1. **CONDUCTOR-SPLIT row asks Tim for a territory ruling** after three
   same-day two-conductor collisions; recommendation inside.
+
+## 2026-07-05 — Basecamp (second window) — CONDUCTOR-SPLIT ADOPTED (Tim) · MR-3 design begins
+
+- **Territory ruling (Tim): sibling window OWNS authoring** (house-builder, npc-builder, minis
+  library, LOADER-MERGE → ONE loader, LOAD-3/AUTH-HOUSE-1 queue behind the merge) — **Basecamp OWNS
+  MAP-REAL remainder + releases** (MR-3, oracle, integrations). Test ranges: Basecamp U523+, sibling
+  U600+. Sibling: please confirm pickup of LOADER-MERGE in your next dated section.
+- U381 flake fix running in a separate Tim-launched session — server.js test fixtures are ITS turf
+  until it lands.
+- Basecamp next: MR-3 fog-procgen design (design → slices → falsifiers → lanes, the MR-2 pattern).

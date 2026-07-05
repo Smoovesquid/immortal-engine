@@ -243,7 +243,17 @@ done_when · rollback`.
 
 ### TT-MINIS — miniatures library wiring (corpse GLBs → the board)  ·  **SIBLING WINDOW'S LANE (2026-07-05 `7110362e` miniLibrary.js + decimate script) — no Basecamp dispatch; stay off `public/map/miniLibrary.js`/figures/render until it lands or hands off**
 
-### DOOR-FORCE-1 — bare "force the door" flips canon door state  ·  Phase 2 follow-up  ·  **CUT + DISPATCHED 2026-07-05-night (Opus worktree, serial engine slot; U513–U514)**
+### DOOR-FORCE-1 — bare "force the door" flips canon door state  ·  Phase 2 follow-up  ·  **✅ LANDED v0.29.3 b090 (worker `1b603306` → integrated; U513 4/4 + U514 15/15, both failing pre-fix; suite 10198/0; playloop-only +158 lines; 8-phrasing family routed, 6 furniture-force regressions byte-identical)**
+- Honest deferrals carried: live-browser force-turn verify = Tim's next play session (worker verified
+  through the exact `playerMove` browser entry, LLM-off); "lean into the door" marginal phrasing
+  documented out of family (corpus candidate if it ever bites).
+
+### U381-FLAKE — the load-flake earns a packet (3 strikes 2026-07-05)  ·  maintenance  ·  **QUEUED with evidence**
+- `U381` (server.js `/api/move` confidence-gate) fails ~1-in-3 FULL-suite runs under the parallel
+  runner, passes in isolation + on every rerun; reproduced on CLEAN baselines by two independent
+  workers today (TT-OCC report; MR-1b report) + twice in Basecamp integration checks. Likely port/
+  listen contention under load. Fix = isolate its server fixture (ephemeral port / serialized group).
+  Cut when a serial slot idles — this now costs a rerun on every third integration.
 - A bare/unnamed "force the door" still routes to the pre-existing generic physics-force resolver
   (predates door canon): it rolls + narrates but does NOT flip the new door state. Named-room moves and
   egress DO enforce canon. Unify every force-phrasing through the `door` op — touches the combat-resolve

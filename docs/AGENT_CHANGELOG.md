@@ -2643,3 +2643,14 @@ other agents. (none active)
 - Fresh Opus worker on the original approved brief (U491–U493); prompt carries a base-update note
   (v0.29.2, door canon + front-door records now exist — anchors may consume doors.js read-only).
   In flight alongside DOOR-FORCE-1 (no file overlap). MR-2d stays held until this lands.
+
+## 2026-07-05 — Basecamp (second window) — DOOR-FORCE-1 integrated → v0.29.3 build 090 "the lock remembers"
+
+- Cherry-picked `1b603306`, clean. First check run: 1 transient fail → same-run capture rerun = 0
+  `not ok` lines; second check GREEN (10198/0, 131/131, probe clean). That's the U381-class flake's
+  THIRD strike today → promoted from quiet-window note to a QUEUED packet with evidence (see PACKETS).
+- Bare force-phrasings now flip canon door state + mint the witness fact; furniture force untouched.
+  Live-browser force-turn verification deliberately deferred to Tim's next session (worker's honest
+  flag — playerMove-entry verification done; prose⇔canon agreement asserted in U513).
+- In flight: OCC-STORY-1 (relaunched). Held: MR-2d behind it. Sibling lanes: miniatures library,
+  npc-builder.

@@ -2360,3 +2360,23 @@ other agents. (none active)
   (taste calls settled) + SEEK-2 are the next playloop dispatch.
 - Both session-switch-halted lanes are now HOME. Two windows sharing v2-polish caused one divergence
   today (the Carl race) — resolved non-destructively; flagged for one-window-owns-the-branch going forward.
+
+## 2026-07-05 — Basecamp (second window) — Carl ruling recorded: leave as-is, SHIP-GATE packet cut
+
+- **Tim's ruling on the Carl race fallout: leave Carl exactly as-is** — no content edits now, no history
+  surgery now. Durable principle behind it: the game allows participation in ANY kind of evil, and the
+  **MORAL PHYSICS PUNISH THE EVILDOER**. Carl (avian-supremacy theorist, Aldermere) is the designated
+  test case for that consequence engine — his vileness is load-bearing; do not defang him.
+- What stays flagged (verified by grep this window): borrowed real-world supremacist vocabulary is still
+  in the shipped tree — `packs/base/npc/carl-manifesto.md` (Untermenschen ×2, miscegenation ×2, "open
+  borders", cosmopolitan, bloodline/purity) and residual terms in `server/rag/corpus/carl_manifesto.json`
+  (miscegenation, cosmopolitan, bloodline, purity, pure strain); `10d02e90` was a partial, JSON-only
+  pass. The original full text is in published history at `77b2bc8d` (remote private; expunge = separate
+  quiet-window decision, deferred).
+- Queue: **CARL-SHIP-1** added to PACKETS ACTIVE (Phase 5 · SHIP-GATE · PARKED BY DESIGN) — re-voice both
+  files into world-native language with the evil intact, before any public build; grep gate + live-play
+  receipt in its done_when.
+- This window's conduct today: booted /basecamp mid-race, detected the concurrent lane, stood down from
+  integration (its check-ladder run on the then-current tree was GREEN, 10014/0 · 131/131), and made
+  docs-only appends since. The sibling conductor owns the branch; +1 to its one-window-owns-the-branch
+  flag.

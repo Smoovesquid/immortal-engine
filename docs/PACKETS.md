@@ -130,6 +130,29 @@ done_when · rollback`.
   SL-5 (+ the SEEK-2 locket follow-up) is the next playloop dispatch — spec is the draft's §6 row verbatim
   with the settled taste calls baked in.
 
+### CARL-SHIP-1 — re-voice Carl's borrowed real-ideology vocabulary  ·  Phase 5 (door) · **SHIP-GATE**  ·  **PARKED BY DESIGN 2026-07-05 (Tim's ruling — do NOT "fix" earlier)**
+- **Tim's ruling (2026-07-05):** leave Carl AS-IS for now. Durable principle: the game must allow the
+  player to participate in ANY kind of evil — and the **MORAL PHYSICS PUNISH THE EVILDOER.** Carl the
+  avian supremacist is the designated **test case** for that consequence engine: he must stay genuinely,
+  coherently vile so the moral physics have something real to punish. When the consequence arc is built
+  (Rung 4 seam, `PATH_TO_SELLABLE.md`; kin of the gratuitous-magic recoil ladder + IG-16 "Tough Shit"),
+  Carl is the first-target fixture.
+- **What a public build must NOT contain (the flag):** borrowed real-world supremacist vocabulary, still
+  live in the tree — `packs/base/npc/carl-manifesto.md` ("Untermenschen" ×2, "miscegenation" ×2, "open
+  borders", "cosmopolitan", bloodline/purity framing) and residually in
+  `server/rag/corpus/carl_manifesto.json` ("miscegenation", "cosmopolitan", "bloodline", "purity", "pure
+  strain") — the `10d02e90` refactor was a partial pass (JSON only, incomplete). History note: the
+  original full text sits in published commit `77b2bc8d` (remote is private; whether to expunge history
+  is a separate quiet-window decision — all lanes closed, one rebase, one force-push — deliberately
+  deferred).
+- **done_when:** both files re-voiced into world/poultry-native language with the EVIL INTACT (the
+  supremacist *structure* — hierarchy, culling, strain-purity, contempt — stays; the borrowed real-world
+  vocabulary goes); the term-grep above is clean over `packs/` + `server/rag/corpus/`; Carl still reads
+  as coherently vile in live play (playtest receipt).
+- **forbidden:** defanging Carl into a toothless joke; shipping moral-physics mechanics inside this
+  packet; touching this before the pre-ship pass without a new Tim ruling.
+- **rollback:** content-only; revert the commit.
+
 ### GATE 2026-07-05 — morning fresh measure (v0.28.29 · **3/48** · `opus-gate-2026-07-05.md`)
 **The honest read:** 14/48 → 8/48 → **3/48 (6%) on the same Ref-off config** — the best score the gate has
 ever recorded. All eight of 07-04-3's fixes HELD (CBT-AGENCY, INT-4-HELD, ANS-2, INFO-HONESTY all silent),

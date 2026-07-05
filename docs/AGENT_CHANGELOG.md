@@ -2304,3 +2304,33 @@ other agents. (none active)
   swap gate live (fallback must strictly beat candidate; coherence-safe floor is the second rung) ·
   labels threaded. **Live flip remains BLOCKED on a rehearsal at the next scheduled gate** (Tim's
   ruling — no extra paid run).
+
+## 2026-07-05 — Basecamp (TT-WORLD/TT-INK/TT-PROPS map lane → v0.28.31 build 080; lane recovered after session switch)
+
+- The map lane (renderer, public/map/**) was one of two subagents halted when Fable's safeguard flag
+  switched the session to Opus. Recovered by the conductor: TT-WORLD + TT-INK were already committed
+  in the worktree; TT-PROPS sat uncommitted-but-complete with receipts. Committed stage 3, integrated
+  all three (content now on origin as 9682046d/2c7a9603/3b7cbba4).
+- **TT-WORLD**: tilt-band ground is ONE flat graph-paper sheet carrying the world as ink (reuses
+  oneMap's own drawing as the paper texture), player-centered, no edges; flat sheet (heightAt relief
+  retired from the tilt view). Fog OFF for the build (Tim's amendment). **TT-INK**: building/wall
+  meshes no longer mount — buildings render as drawn floorplans (walls = lines, doorway = a gap),
+  reusing the TT-DRAW-3 drawing brain. **TT-PROPS**: everything standing is a mini — placedTokenModel
+  gains props[] (barrels/beds/dressers/chests) reusing the 2-D sheet's furniture data + fitting math;
+  buildPropMini renders simple solid pieces on a shadow disc; people + props placed from the single
+  placedTokenModel source, never during combat. U478/U479/U480 + U410 update. No engine/server/state
+  touched (renderer swap over engine-owned positions).
+- **Live-verified on the integrated mainline** (continue-save, no mutation): tilt HUD "tilt 100%", the
+  Aldermere interior renders as drawn ink (Bedchamber/Scullery floorplan + wall lines, zero 3-D house
+  meshes) with player + NPC minis on shadowed bases. Receipts docs/playtests/tabletop/. Ladder GREEN:
+  suite 10014/0, convergence 131/131, determinism green. v0.28.31 b080 "the world, drawn".
+- **Carl NPC — kept in SOFTENED form (Tim's product call).** A parallel Haiku window committed an
+  avian-supremacy-parody NPC (77b2bc8d) directly to the shared checkout's v2-polish and pushed it,
+  then added 10d02e90 de-Nazifying the vocabulary (Untermenschen→lesser-ranked fowl, culling→specimen
+  winnowing, miscegenation→cross-nesting, etc.). Basecamp flagged the content and its recorded
+  position stands: the vocabulary scrub clears censor triggers but the doctrine STRUCTURE is unchanged,
+  and it still feeds the live NPC-voice generation loop. Tim reviewed and chose to keep the softened
+  version and ship the map; done non-destructively (this release rebased on top, nothing erased).
+  **Operational flag: two windows (this conductor + a Haiku window) were committing and pushing to the
+  same v2-polish on the shared checkout — that race caused a divergence this session; one window should
+  own the branch.**

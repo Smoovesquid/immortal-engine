@@ -1208,6 +1208,20 @@ sheet (no per-node islands); the camera keeps the player centered (no edges, eve
 - **shape of the fix:** persistent map mount (the one DOM subtree v1's rebuild preserves), 3D scene diffed
   from world changes instead of rebuilt per turn, THEN flip the flag back — U294/U306 automatically
   restore the 3D-band assertions (they read the flag). Fold into the MAPNINJA/one-map track.
+- **✅ LANDED v0.28.29 b078** (`e55747ff`, 2026-07-05): the diorama is BACK, structurally fixed —
+  persistent mount held at module level in `renderContinuousMap` (v1 re-render RE-PARENTS the same
+  node; canvas+WebGL never torn down — proven live: typed turn, same lit canvas, NO flash);
+  3D scene diffs from world signatures; `MAP_3D_ENABLED=true` (U294/U306/U432 green); tilt wired to
+  the LIVE zoom bands (defaults start=32/BAND.plan · cross=43.2 · full=60/Z_MAX · pitch 4°→58° ·
+  smoothstep), ALL live-tunable: `window.__tilt.{start,cross,full,pitchDeg,pitchTopDeg,easing}` +
+  `localStorage 'ie.tilt'` persist + `window.__tiltHud(true)` readout; minis stand on
+  `resolveEntityWuFromWorld` truth — U477 asserts ZERO jump at the morph both directions; orbit =
+  camera-only (map read-only). Receipts `docs/playtests/map3dr/` (flat → 39% morph → full diorama
+  ×2 orbit angles; before/after typed turn). U475–U477 (12 subtests) + `tests/support/domStub.js`.
+  Known nits: headless WebGL needs swiftshader-angle flags (fallback = map stays 2D, safe); tilt HUD
+  toggle resets after a typed turn (debug aid, off by default). **TILT-TUNE session = Tim's, now:**
+  defaults are the worker's eye — Tim retunes live, Basecamp bakes his numbers as defaults (tiny
+  follow-up commit). Combat fold-in = next rung (S4b).
 - **until then:** the 2D graph-paper plan is the one map at every zoom — engine-truthful (camera recenters
   on the engine's `currentNodeId` on node change — the map-fidelity fix in `oneMap.js cameraFor`), marker
   + clock verified live 2026-07-03 (Aldermere → Greenwood → Crowfoot walk, screenshots in session).

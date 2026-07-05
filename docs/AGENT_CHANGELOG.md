@@ -2086,6 +2086,17 @@ other agents. (none active)
   124→131 · suite ~9.75k→9,945 · ledger $16.16.
 - Integration ladder GREEN: convergence 131/131, suite 9945/0, determinism green. v0.28.28 b077.
 
+## 2026-07-05 — Basecamp (MAP-3DR integration → v0.28.29 build 078)
+
+- Landed MAP-3DR (`e55747ff`): the 3D diorama reconnected on a persistent mount — module-held map
+  subtree re-parented across v1 re-renders (WebGL survives typed turns, live-proven no-flash);
+  scene diffs from world signatures; MAP_3D_ENABLED=true (U294/U306/U432 auto-restored); tilt wired
+  to live zoom bands, all knobs tunable (`window.__tilt`, localStorage `ie.tilt`, `__tiltHud`);
+  minis on resolveEntityWu truth with U477 zero-jump-at-morph; orbit camera read-only. U475–U477 +
+  domStub. Receipts docs/playtests/map3dr/. Combat fold-in deferred to S4b.
+- Ladder GREEN on re-run (one U381 load flake, passes solo): convergence 131/131, suite 9957/0,
+  determinism green. v0.28.29 b078. Next: Tim's live tilt-tune; bake his numbers as defaults.
+
 2026-07-04 — Sonnet (worker worktree, PERC-1) — LOGIC DONE, WIRING PENDING (playloop.js fenced)
 - Packet/seam: `docs/PACKETS.md` PERC-1 — 2026-07-04 gate (Chaos-griefer, CRUNCH_INCONSISTENCY): "Wait — is
   the ceiling still on fire or not? I stand in the middle of the room and look up." rolled a NATURAL 1 vs DC

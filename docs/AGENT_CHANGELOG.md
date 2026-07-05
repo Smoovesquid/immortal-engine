@@ -2740,3 +2740,13 @@ other agents. (none active)
 - U381 flake fix running in a separate Tim-launched session — server.js test fixtures are ITS turf
   until it lands.
 - Basecamp next: MR-3 fog-procgen design (design → slices → falsifiers → lanes, the MR-2 pattern).
+
+## 2026-07-05 — Basecamp — SINGLE-CONDUCTOR mode (Tim) · sibling closed clean · LOADER-MERGE dispatched
+
+- Sibling window closed for the night: tree clean, npc-builder landed (`81307bd1`), all its work in
+  v0.29.6. Tim consolidated conducting into this window; CONDUCTOR-SPLIT superseded (see row). Its
+  spinner flag resolved by forensics: flakeloop_v5.sh = the external U381 session's LIVE load harness
+  (17 min, not since 15:15) — spared.
+- LOADER-MERGE dispatched (Opus; U526–U532): one authored-plan loader from authoredStructure (v7
+  tolerance, proven wiring, multi-room) + authoredPlans (door canon, mask, registry); LOAD's U518–U522
+  files renumber into U526–U530; loser module deleted only with all green.

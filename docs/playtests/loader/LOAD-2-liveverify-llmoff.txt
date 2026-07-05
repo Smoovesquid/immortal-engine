@@ -1,0 +1,87 @@
+──────────────────────────────────────────────────────────────────────────────
+LOAD-2 — LIVE-VERIFY (LLM-OFF) · seed "loaderDemo2" · a WHOLE hand-drawn building walkable
+──────────────────────────────────────────────────────────────────────────────
+OPENING (beginAdventure) — the player wakes inside the authored building:
+   [state] boot: inside=true · building=cottage · room="Scullery" (scullery) · roomCount=3 · atEntry=false · exits=[north:1]
+   [invariants] OK
+──────────────────────────────────────────────────────────────────────────────
+> go outside
+Wizard: You step back outside.
+   [state] go outside: inside=false · (outdoors)
+   [invariants] OK
+──────────────────────────────────────────────────────────────────────────────
+> look around
+Wizard: You take stock of your surroundings. Exits: Gallows Hill, Riverside Inn, Old Mill Ruin. Structures: building #1, building #2.
+   [mechanics] observe only — no roll, state unchanged
+   [state] look around (on the map): inside=false · (outdoors)
+   [invariants] OK
+──────────────────────────────────────────────────────────────────────────────
+> go inside
+Wizard: You enter the structure interior.
+   [state] go inside (enter the Hall): inside=true · building=cottage · room="Hearth Room" (hearthroom) · roomCount=3 · atEntry=true · exits=[south:2, west:3]
+   [state] objects: wooden chair, iron brazier
+   [invariants] OK
+──────────────────────────────────────────────────────────────────────────────
+> go to the bedchamber
+Wizard: You step through into the bedchamber.
+   [state] go to the bedchamber: inside=true · building=cottage · room="Bedchamber" (bedchamber) · roomCount=3 · atEntry=false · exits=[east:1]
+   [invariants] OK
+──────────────────────────────────────────────────────────────────────────────
+> look around
+Wizard: You stand still and read this corner of Howling Pass. The only way on lies east. What do you do?
+   [mechanics] observe only — no roll, state unchanged
+   [state] look around: inside=true · building=cottage · room="Bedchamber" (bedchamber) · roomCount=3 · atEntry=false · exits=[east:1]
+   [invariants] OK
+──────────────────────────────────────────────────────────────────────────────
+> go back to the hall
+Wizard: You step back into the hearth room.
+   [state] go back to the hall: inside=true · building=cottage · room="Hearth Room" (hearthroom) · roomCount=3 · atEntry=true · exits=[south:2, west:3]
+   [state] objects: wooden chair, iron brazier
+   [invariants] OK
+──────────────────────────────────────────────────────────────────────────────
+> go to the scullery
+Wizard: You step through into the scullery.
+   [state] go to the scullery: inside=true · building=cottage · room="Scullery" (scullery) · roomCount=3 · atEntry=false · exits=[north:1]
+   [invariants] OK
+──────────────────────────────────────────────────────────────────────────────
+> look around
+Wizard: Your eyes move slow across this corner of Howling Pass. The only way on lies north. What do you do?
+   [mechanics] observe only — no roll, state unchanged
+   [state] look around: inside=true · building=cottage · room="Scullery" (scullery) · roomCount=3 · atEntry=false · exits=[north:1]
+   [invariants] OK
+──────────────────────────────────────────────────────────────────────────────
+> go back to the hall
+Wizard: You step back into the hearth room.
+   [state] go back to the hall: inside=true · building=cottage · room="Hearth Room" (hearthroom) · roomCount=3 · atEntry=true · exits=[south:2, west:3]
+   [state] objects: wooden chair, iron brazier
+   [invariants] OK
+──────────────────────────────────────────────────────────────────────────────
+END — walked into the authored building, moved room-to-room through its
+       authored doorways (Hall ↔ Bedchamber ↔ Scullery), looked around in
+       each, returned to the Hall and stepped outside. Invariants clean throughout.
+──────────────────────────────────────────────────────────────────────────────
+
+──────────────────────────────────────────────────────────────────────────────
+LOAD-2 — REAL SLICE NODE (brief §3) · seed "aldermere" (the shippable slice) · Crowfoot Camp
+──────────────────────────────────────────────────────────────────────────────
+slice nodes: Aldermere · The Greenwood · Crowfoot Camp · The Hollowed Chapel
+target node: "Crowfoot Camp"  id=n2_2697197287  tags=[hamlet, camp, banditCamp]
+registry match for Crowfoot Camp: FOUND the authored house
+attached: authored:n2_2697197287 (3 rooms) at the real Crowfoot Camp node
+doors: 1->OUT shut · 1->2 open · 1->3 open
+──────────────────────────────────────────────────────────────────────────────
+> enter Crowfoot Camp cottage (from the map)
+   [state] enter: inside=true · room="Hearth Room" (hearthroom) · atEntry=true · exits=[south:2, west:3]
+   [invariants] OK
+> walk through the doorway into 2
+   [state] in 2: inside=true · room="Scullery" (scullery) · atEntry=false · exits=[north:1]
+   [invariants] OK
+   doorway back to the hall: "north" -> 1 (reciprocal)
+> walk through the doorway into 3
+   [state] in 3: inside=true · room="Bedchamber" (bedchamber) · atEntry=false · exits=[east:1]
+   [invariants] OK
+   doorway back to the hall: "east" -> 1 (reciprocal)
+──────────────────────────────────────────────────────────────────────────────
+END — the authored building sits at the REAL Crowfoot Camp node on the REAL
+       slice map, entered from the map and walked room-to-room. Invariants clean.
+──────────────────────────────────────────────────────────────────────────────

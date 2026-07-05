@@ -1,51 +1,81 @@
-// LOAD-1 — the smallest loader: one hand-authored room becomes a walkable engine
-// structure (docs/briefs/LOAD-1-smallest-loader.md).
+// LOAD-1/LOAD-2 — the authored-structure loader: a hand-drawn building becomes a
+// walkable engine structure (docs/briefs/LOAD-1-smallest-loader.md +
+// docs/briefs/LOAD-2-multiroom-realnode.md).
 //
-// ENGINE LEADS. public/house-builder.html exports a `house-builder/v6` document
+// ENGINE LEADS. public/house-builder.html exports a `house-builder/v7` document
 // (rooms/walls/openings/tunnels/corridors/furniture/secrets — see its btnExport
-// handler). This module maps the SMALLEST useful subset of that export DOWN onto the
-// engine's existing interior model — the SAME `{ kind, nodeId, anchors, topology,
-// surfaces, tags, buildingType, authoredPlan }` structure object every other seam
-// (movement, invariants, doors, roomDetail, structureMaterial) already reads for an
-// MR-2c authored plan — and IGNORES/DEGRADES everything the engine can't represent
-// yet. The goal is to prove the PATH end-to-end for ONE room: a room Tim drew is a
-// room the player can walk into, look around in, and walk out of.
+// handler). This module maps that export DOWN onto the engine's existing interior
+// model — the SAME `{ kind, nodeId, anchors, topology, surfaces, tags, buildingType,
+// authoredPlan }` structure object every other seam (movement, invariants, doors,
+// roomDetail, structureMaterial) already reads for an MR-2c authored plan — and
+// IGNORES/DEGRADES everything the engine can't represent yet.
 //
-// ── What maps DOWN (v1, engine-leads) ────────────────────────────────────────────
-//   • ONE room — the FIRST room in the export. Rectangular or round (the engine has
-//     a 'round' shape). Its id is canonicalized to `room:<structId>:1` and tagged
-//     'entry' so interiors.js drops the player into it (it picks topo.rooms[0] after
-//     an alpha-sort, and a single `:1` room sorts first — the same convention
-//     procgen and authoredPlans.js rely on).
-//   • ROLE — room.role if present, else a sensible cottage default ('quarters').
-//     The role + building='cottage' drive which furniture reads right and the
-//     material line, exactly as roomDetail.js/structureMaterial.js do for procgen.
-//   • MATERIAL — room.material 'timber'|'stone' selects the shell; anything else
-//     falls back to timber (the cottage default). buildingType stays 'cottage' so
-//     the whole read stack (furniture loadout, material prose) is coherent.
-//   • A DOOR — the room is enterable because the engine's door tail (doors.js
-//     deriveDoors, run by ensureWorld's backfillDoors) always authors exactly ONE
-//     exterior front door on the entry room. We don't need to emit a door in the
-//     plan for a single-room hut — the tail grounds the front door on the room's
-//     outer wall. (An authored exterior door in the export is noted-degraded below.)
+// LOAD-1 proved the PATH for ONE room. LOAD-2 makes a WHOLE building walkable: ALL
+// its rooms, connected by its authored DOORS as reciprocal-compass doorways, so a
+// player can walk in from the map and move room-to-room. loadAuthoredStructure now
+// consumes every room and builds the room graph the engine's compass topology needs.
+//
+// ── What maps DOWN (engine-leads) ─────────────────────────────────────────────────
+//   • ALL rooms (LOAD-2). Each becomes a topology room `room:<structId>:<n>` (entry
+//     canonicalized to `:1` so interiors.js drops the player there — it picks
+//     topo.rooms[0] after an alpha-sort). Rectangular or round (the engine has a
+//     'round' shape); a round room keeps its bounding box for movement/mask.
+//   • ROLE per room — room.role if it names a KNOWN engine role (roomDetail.js ROLES),
+//     carried as a `role:<role>` tag so roomDetail reads the AUTHORED role (a
+//     bed-having 'bedchamber', a 'scullery' with a basin) instead of the cottage
+//     blueprint's by-index default. An unknown/absent role falls to the cottage
+//     default per position (entry → hearth room, others → bedchamber). LOAD-1 pattern,
+//     now per-room.
+//   • DOORS → ADJACENCY (the LOAD-2 crux). The tool records an opening as
+//     `{kind:'door', x, y, room}` — a SINGLE room tag (house-builder's nearest-wall
+//     sample). roomsAtOpening recovers BOTH rooms a door joins by geometric boundary
+//     membership: a door on a SHARED interior wall sits on TWO rooms' rects → that
+//     pair is a topology edge (the doorway the player "goes through"); a door on an
+//     OUTER wall sits on ONE room → the exterior front door. Where the drawn data is
+//     ambiguous (a room the doors don't reach), we FALL BACK to abutment — two rooms
+//     that share a wall segment get an edge — and finally REPAIR any still-orphaned
+//     room by joining it to its nearest neighbour, so the graph is always connected
+//     and a room you can see is a room you can reach (never a soft-lock).
+//   • MATERIAL — 'stone' anywhere → stone shell, else timber (the cottage default).
+//     buildingType stays 'cottage' so the whole read stack is coherent.
+//   • FURNITURE — each room's authoredPlan furniture is the roomDetail loadout for
+//     its role, so the drawn floor plan shows role-appropriate furniture and the
+//     prose ("look around") and the map agree.
 //
 // ── What is IGNORED / DEGRADED (noted, not represented — future work) ─────────────
-//   • EXTRA ROOMS — only the first room loads. A multi-room export degrades to its
-//     first room. (Multi-room authored plans already have a path: authoredPlans.js's
-//     makeAuthoredStructure, MR-2c — this loader is the smallest single-room proof.)
-//   • WALLS[] (freeform/bowed wall segments), TUNNELS/CORRIDORS, SECRETS, WINDOWS,
-//     room CURVES (bowed walls), SIZED/ANGLED door openings — all dropped. The one
-//     room is a plain AABB; its front door is the seeded engine default.
-//   • multi-FLOOR — the engine interior model is single-storey; not represented.
+//   • WALLS[] (freeform/bowed wall segments), per-wall CURVES (bowed room walls),
+//     TUNNELS/CORRIDORS, SECRETS, SIZED/ANGLED door openings (len/angle) — dropped.
+//     Rooms are plain AABBs joined by doorways; a tunnel between two rooms is NOT an
+//     edge (only wall-sharing doors + abutment are), so a tunnel-only link degrades
+//     to the abutment/repair pass rather than a modelled passage.
+//   • WINDOWS — carried onto authoredPlan.windows (additive; roomWindows derives
+//     presence). Not load-bearing for movement.
+//   • The DRAWN per-piece furniture POSITIONS (ux/uy) — narration/furniture is
+//     regenerated from the room ROLE (roomDetail), so a bed drawn in a corner reads
+//     as "a bed" but at the role's canonical layout, not the exact drawn spot.
+//   • multi-FLOOR — the engine interior model is single-storey; a multi-floor export
+//     degrades to one storey (all rooms coplanar). Noted per the report.
 //
 // ── Determinism + purity ─────────────────────────────────────────────────────────
 // PURE and deterministic: same JSON in, byte-identical structure out, forever. No
 // rng / Math.random, no I/O, no world mutation — the returned object is data the
 // caller merges through the normal structures path (applyGeneratedStructuresForNode
 // → ensureStructures). Authored content is FIXED data (like a pack), so worldHash
-// stays stable under replay. MALFORMED JSON THROWS LOUDLY (a clear Error naming the
+// stays stable under replay. The reciprocal-compass slots are assigned by the ENGINE
+// (interiorCompassLayout, topology.js) from the edges this loader supplies —
+// deterministic, seeded, and reused here so the plan's door directions AGREE with the
+// directions movement resolves. MALFORMED JSON THROWS LOUDLY (a clear Error naming the
 // problem) — it never silently corrupts state; the caller decides whether to surface
 // or degrade (the demo wire-in try/catch-degrades to procgen, mirroring MR-2c).
+
+// interiorCompassLayout is topology.js's spanning-tree compass assignment. Reused
+// here so the authored plan's door directions and (gx,gy) slots are the SAME
+// deterministic "north/east/south/west from the entry" the engine's movement +
+// getInteriorView independently compute — they agree by construction. topology.js is
+// a leaf module (no engine imports beyond rng.js — see its header), so importing it
+// creates no cycle with floorPlan.js (which imports THIS module for its override).
+import { interiorCompassLayout } from './topology.js';
+import { roomDetail } from './roomDetail.js';
 
 // House-builder grid units → floorPlan layout units. Shares the MR-2c constant's
 // value (authoredPlans.js HB_UNIT_TO_LAYOUT = 1) so a room drawn in the tool lands
@@ -53,9 +83,10 @@
 const HB_UNIT_TO_LAYOUT = 1;
 function hbToLayout(v) { return Number(v) * HB_UNIT_TO_LAYOUT; }
 
-// The role a single authored room takes when the export doesn't name one. 'quarters'
-// is a real cottage room role (roomDetail.js ROLES.quarters — a bed, nightstand,
-// chest, lantern, rug), so an unroled hut reads like a lived-in room, not a void.
+// The role a single unroled authored room takes. 'quarters' is a real cottage room
+// role (roomDetail.js ROLES.quarters — a bed, nightstand, chest, lantern, rug), so an
+// unroled hut reads like a lived-in room, not a void. Multi-room defaults key off
+// entry vs non-entry below.
 const DEFAULT_ROLE = 'quarters';
 
 function fail(msg) {
@@ -80,7 +111,8 @@ function coerceJson(json) {
 /**
  * validate(raw) — the loud well-formedness gate. Throws on anything that would
  * produce a nonsense structure; permissive about the fields we IGNORE (walls,
- * tunnels, secrets, extra rooms) — those are dropped, not errors.
+ * tunnels, secrets) — those are dropped, not errors. Validates ALL rooms (LOAD-2),
+ * not just the first, so a malformed later room fails loudly too.
  */
 function validate(raw) {
   const schema = String(raw.schema || '');
@@ -95,29 +127,491 @@ function validate(raw) {
   }
   const rooms = Array.isArray(raw.rooms) ? raw.rooms : null;
   if (!rooms || !rooms.length) fail('no rooms (need at least one)');
-  const first = rooms[0];
-  const id = String(first?.id ?? '');
-  if (!id) fail('the first room is missing an id');
-  if (!(Number(first.w) > 0) || !(Number(first.h) > 0)) {
-    fail(`room '${id}' must have w>0 and h>0`);
+  const seen = new Set();
+  for (const r of rooms) {
+    const id = String(r?.id ?? '');
+    if (!id) fail('a room is missing an id');
+    if (seen.has(id)) fail(`duplicate room id '${id}'`);
+    seen.add(id);
+    if (!(Number(r.w) > 0) || !(Number(r.h) > 0)) {
+      fail(`room '${id}' must have w>0 and h>0`);
+    }
+    const shape = String(r.shape ?? 'rect');
+    if (shape !== 'rect' && shape !== 'round') {
+      fail(`room '${id}' has unsupported shape '${shape}' (expected rect or round)`);
+    }
   }
-  const shape = String(first.shape ?? 'rect');
-  if (shape !== 'rect' && shape !== 'round') {
-    fail(`room '${id}' has unsupported shape '${shape}' (expected rect or round)`);
+  for (const o of (Array.isArray(raw.openings) ? raw.openings : [])) {
+    if (o.kind !== 'door' && o.kind !== 'window') {
+      fail(`opening has unknown kind '${o.kind}' (must be door|window)`);
+    }
+    if (!Number.isFinite(Number(o.x)) || !Number.isFinite(Number(o.y))) {
+      fail('an opening is missing x/y');
+    }
   }
+}
+
+// ── Geometry (house-builder units; AABB — round rooms keep a bounding rect, the same
+// way floorPlan.js/authoredPlans.js bound a round room for hit-testing) ────────────
+
+function roomRectHb(room) {
+  const x0 = Number(room.x), y0 = Number(room.y);
+  const w = Number(room.w), h = Number(room.h);
+  return { x0, y0, x1: x0 + w, y1: y0 + h };
+}
+
+// Is a point ON (within a small tolerance of) a room's rectangle boundary? Openings
+// sit exactly on the wall centerline the tool snapped them to, so the tolerance only
+// absorbs float rounding — not real distance search.
+const EDGE_EPS = 0.05;
+function pointOnRectBoundary(rect, x, y) {
+  const onVert = (Math.abs(x - rect.x0) < EDGE_EPS || Math.abs(x - rect.x1) < EDGE_EPS)
+    && y >= rect.y0 - EDGE_EPS && y <= rect.y1 + EDGE_EPS;
+  const onHoriz = (Math.abs(y - rect.y0) < EDGE_EPS || Math.abs(y - rect.y1) < EDGE_EPS)
+    && x >= rect.x0 - EDGE_EPS && x <= rect.x1 + EDGE_EPS;
+  return onVert || onHoriz;
+}
+
+/**
+ * roomsAtOpening(rooms, opening) -> string[] of ORIGINAL room ids whose rect
+ * boundary the opening's point sits on. A standalone exterior wall opening touches
+ * exactly ONE room; a shared interior wall (two rooms drawn abutting) touches TWO —
+ * the tool never records the second room explicitly (`opening.room` is a single
+ * "nearest sample" tag), so this geometric membership test recovers it. Deterministic.
+ */
+function roomsAtOpening(rooms, opening) {
+  const x = Number(opening.x), y = Number(opening.y);
+  const out = [];
+  for (const r of rooms) {
+    if (pointOnRectBoundary(roomRectHb(r), x, y)) out.push(String(r.id));
+  }
+  out.sort((a, b) => a.localeCompare(b));
+  return out;
+}
+
+// Do two rects ABUT — share a wall SEGMENT of positive length (not merely touch at a
+// corner)? Used as the fallback edge source when the drawn doors don't reach a room.
+function rectsAbut(A, B) {
+  const overlapY = Math.min(A.y1, B.y1) - Math.max(A.y0, B.y0);
+  const overlapX = Math.min(A.x1, B.x1) - Math.max(A.x0, B.x0);
+  // Vertical shared wall: A.right == B.left (or vice-versa) with a y-overlap.
+  const sharedVert = (Math.abs(A.x1 - B.x0) < EDGE_EPS || Math.abs(B.x1 - A.x0) < EDGE_EPS) && overlapY > EDGE_EPS;
+  // Horizontal shared wall: A.bottom == B.top (or vice-versa) with an x-overlap.
+  const sharedHoriz = (Math.abs(A.y1 - B.y0) < EDGE_EPS || Math.abs(B.y1 - A.y0) < EDGE_EPS) && overlapX > EDGE_EPS;
+  return sharedVert || sharedHoriz;
+}
+
+// Squared centre-to-centre distance between two rects (for nearest-neighbour repair).
+function rectDist2(A, B) {
+  const acx = (A.x0 + A.x1) / 2, acy = (A.y0 + A.y1) / 2;
+  const bcx = (B.x0 + B.x1) / 2, bcy = (B.y0 + B.y1) / 2;
+  const dx = bcx - acx, dy = bcy - acy;
+  return dx * dx + dy * dy;
+}
+
+// The outward-facing compass direction for an opening on a room's OUTER wall, from
+// which edge of that room's rect the point lands closest to (used for the exterior
+// front door's direction — independent of the interior compass).
+function outwardDirFromRoom(rect, x, y) {
+  const dLeft = Math.abs(x - rect.x0), dRight = Math.abs(x - rect.x1);
+  const dTop = Math.abs(y - rect.y0), dBottom = Math.abs(y - rect.y1);
+  const min = Math.min(dLeft, dRight, dTop, dBottom);
+  if (min === dLeft) return 'west';
+  if (min === dRight) return 'east';
+  if (min === dTop) return 'north';
+  return 'south';
+}
+
+// ── Role selection ────────────────────────────────────────────────────────────────
+// A room's role: its own `role` if it names a KNOWN engine role (so roomDetail reads
+// it), else a cottage default by position — entry rooms get the hearth room, other
+// rooms a bedchamber (a lived-in default, never a void).
+function roleForRoom(room, isEntry) {
+  const declared = (typeof room?.role === 'string') ? room.role.trim() : '';
+  if (declared && KNOWN_ROLES.has(declared)) return declared;
+  if (isEntry) return 'hearthroom';
+  return DEFAULT_ROLE;
+}
+
+// The set of roles roomDetail.js recognizes — mirrored here so an unknown role
+// degrades to a default rather than producing an empty room. Kept in sync with
+// roomDetail.js ROLES; a role not here simply isn't carried as a role: tag (the
+// room still loads, at its positional default).
+const KNOWN_ROLES = new Set([
+  'narthex', 'nave', 'crossing', 'apse', 'chapel', 'vestry', 'crypt', 'belltower',
+  'taproom', 'kitchen', 'cellar', 'quarters', 'pantry', 'privy',
+  'plaza', 'stallrow', 'counting', 'storeroom',
+  'greathall', 'tower', 'armory', 'barracks', 'solar', 'dungeon',
+  'hearthroom', 'bedchamber', 'scullery',
+  'mead', 'hearthrow', 'sleeping', 'larder', 'loomroom',
+  'maw', 'tunnel', 'den', 'hoard', 'warren', 'pit', 'nest',
+  'foyer', 'study', 'library', 'lab', 'observ', 'vault',
+  'mouth', 'gallery', 'broodcell', 'royalchamber', 'cocoonstore',
+]);
+
+// ── Entry room + canonical ids ─────────────────────────────────────────────────────
+// Entry = the room tagged 'entry', else the room the exterior (single-room) front
+// door borders, else lexicographically first. Mirrors floorPlan.js/authoredPlans.js.
+function pickEntryRoomId(raw) {
+  const rooms = raw.rooms;
+  const tagged = rooms.find(r => Array.isArray(r.tags) && r.tags.map(String).map(s => s.toLowerCase()).includes('entry'));
+  if (tagged) return String(tagged.id);
+  for (const d of (raw.openings || []).filter(o => o.kind === 'door')) {
+    const at = roomsAtOpening(rooms, d);
+    if (at.length === 1) return at[0]; // a door bordering exactly one room = the front door
+  }
+  return rooms.map(r => String(r.id)).sort((a, b) => a.localeCompare(b))[0];
+}
+
+// Canonicalize free-text room ids to procgen's `room:<structId>:<n>` shape, entry
+// ALWAYS `:1`. interiors.js's enterStructureInterior drops the player into
+// topo.rooms[0] AFTER an alpha-sort (NOT the entry TAG); procgen dodges this because
+// its ids are `:1`,`:2`,… with entry `:1` sorting first, and a free-text id ("hall")
+// has no such guarantee. Tim's own name stays the DISPLAY name; only the id changes.
+function canonicalRoomIds(raw, structId) {
+  const entryId = pickEntryRoomId(raw);
+  const rest = raw.rooms.map(r => String(r.id)).filter(id => id !== entryId).sort((a, b) => a.localeCompare(b));
+  const ordered = [entryId, ...rest];
+  const map = new Map();
+  ordered.forEach((origId, i) => map.set(origId, `room:${structId}:${i + 1}`));
+  return map;
+}
+
+// ── The adjacency graph (doors → edges, + abutment fallback + orphan repair) ────────
+/**
+ * buildEdges(raw, idMap) -> { edges: [{a,b}] (canonical ids, sorted), repaired: [...] }
+ *
+ * The room graph the engine's reciprocal-compass topology needs. Three passes, in
+ * priority order, each ADDING edges the earlier passes didn't already produce:
+ *   1. DOORS — every opening that borders exactly TWO rooms is the doorway the player
+ *      goes through: a topology edge. (The primary, authored source.)
+ *   2. ABUTMENT FALLBACK — when the drawn doors leave a room's connection ambiguous,
+ *      two rooms that SHARE A WALL SEGMENT get an edge, so a room you drew touching
+ *      the hall is reachable even if you forgot to draw the interior door.
+ *   3. ORPHAN REPAIR — any room still unreachable from the entry is joined to its
+ *      nearest neighbour (centre-to-centre). Guarantees a CONNECTED graph — never an
+ *      orphaned room / soft-lock. Repairs are reported (the report flags them).
+ * Deterministic (pure geometry + sorted iteration); no rng.
+ */
+function buildEdges(raw, idMap) {
+  const rooms = raw.rooms;
+  const rectOf = new Map(rooms.map(r => [String(r.id), roomRectHb(r)]));
+  const edgeSet = new Set();
+  const edges = [];
+  const addEdge = (origA, origB, why, sink) => {
+    if (origA === origB) return false;
+    const a = idMap.get(origA), b = idMap.get(origB);
+    if (!a || !b) return false;
+    const [lo, hi] = [a, b].sort((x, y) => x.localeCompare(y));
+    const key = `${lo}|${hi}`;
+    if (edgeSet.has(key)) return false;
+    edgeSet.add(key);
+    edges.push({ a: lo, b: hi });
+    if (sink) sink.push({ a: origA, b: origB, why });
+    return true;
+  };
+
+  const ids = rooms.map(r => String(r.id)).sort((a, b) => a.localeCompare(b));
+  const entryId = pickEntryRoomId(raw);
+  // canonical id → original id, so the reachability BFS runs in original-id space
+  // (rectOf, ids, entryId are all original) while `edges` are canonical.
+  const canonToOrig = new Map([...idMap.entries()].map(([o, c]) => [c, o]));
+  const reachableFromEntry = () => {
+    const adj = new Map(ids.map(id => [id, []]));
+    for (const e of edges) {
+      const oa = canonToOrig.get(e.a), ob = canonToOrig.get(e.b);
+      if (oa && ob) { adj.get(oa).push(ob); adj.get(ob).push(oa); }
+    }
+    const seen = new Set([entryId]);
+    const q = [entryId];
+    while (q.length) {
+      const u = q.shift();
+      for (const v of (adj.get(u) || [])) if (!seen.has(v)) { seen.add(v); q.push(v); }
+    }
+    return seen;
+  };
+
+  // Pass 1 — doors bordering exactly two rooms. The PRIMARY, authored adjacency: a
+  // drawn interior door is a doorway. (Walls without a door BLOCK — they are not
+  // edges here, so "walls block; doors gate" holds for a fully-doored building.)
+  for (const o of (raw.openings || [])) {
+    if (o.kind !== 'door') continue;
+    const at = roomsAtOpening(rooms, o);
+    if (at.length !== 2) continue; // exterior (1) or ungrounded (0)
+    addEdge(at[0], at[1], 'door');
+  }
+
+  // Pass 2 — abutment fallback, applied ONLY where it is load-bearing for connectivity
+  // (a true fallback, not a blanket "every shared wall is a doorway" — that would
+  // punch phantom doorways through walls the author left solid). An abutting pair is
+  // connected only when at least one of the two rooms is otherwise UNREACHABLE from the
+  // entry via the door graph — i.e. the author drew the rooms touching but forgot the
+  // interior door, and without this the room would be orphaned. Rooms already reachable
+  // keep their solid shared walls. Deterministic: sorted ids, nearest abutting anchor
+  // first, re-checking reachability so each fallback edge earns its place.
+  const abutted = [];
+  for (let guard = 0; guard <= ids.length; guard++) {
+    const reached = reachableFromEntry();
+    // The lexicographically-first unreachable room that ABUTS a reachable one.
+    const orphan = ids.find(id => !reached.has(id)
+      && ids.some(other => reached.has(other) && rectsAbut(rectOf.get(id), rectOf.get(other))));
+    if (!orphan) break;
+    // Connect it to its nearest reachable abutting neighbour.
+    let best = null, bestD = Infinity;
+    for (const cand of ids) {
+      if (!reached.has(cand) || !rectsAbut(rectOf.get(orphan), rectOf.get(cand))) continue;
+      const d = rectDist2(rectOf.get(orphan), rectOf.get(cand));
+      if (d < bestD) { bestD = d; best = cand; }
+    }
+    if (best == null || !addEdge(orphan, best, 'abut', abutted)) break;
+  }
+
+  // Pass 3 — orphan repair. Any room STILL unreachable (it neither has a door nor abuts
+  // a reachable room — a floating room, or one linked only by a tunnel we degrade) is
+  // joined to its nearest reachable neighbour. Guarantees a CONNECTED graph — never an
+  // orphaned room / soft-lock. Repairs are reported (flagged, never hidden).
+  const repaired = [];
+  // Guard against a pathological loop; at most one repair per room.
+  for (let guard = 0; guard <= ids.length; guard++) {
+    const reached = reachableFromEntry();
+    const orphans = ids.filter(id => !reached.has(id));
+    if (!orphans.length) break;
+    // Repair the lexicographically-first orphan → its nearest ALREADY-REACHED room
+    // (so each repair grows the connected component toward the entry).
+    const orphan = orphans[0];
+    let best = null, bestD = Infinity;
+    for (const cand of ids) {
+      if (!reached.has(cand)) continue;
+      const d = rectDist2(rectOf.get(orphan), rectOf.get(cand));
+      if (d < bestD) { bestD = d; best = cand; }
+    }
+    if (best == null) {
+      // No reached room to attach to (entry itself orphaned by a bug) — attach to the
+      // entry as a last resort so the graph is still connected.
+      best = entryId === orphan ? (ids.find(id => id !== orphan) || orphan) : entryId;
+    }
+    if (!addEdge(orphan, best, 'repair', repaired)) break; // no progress → stop (defensive)
+  }
+
+  edges.sort((x, y) => (x.a + '|' + x.b).localeCompare(y.a + '|' + y.b));
+  return { edges, abutted, repaired };
+}
+
+// ── Topology ───────────────────────────────────────────────────────────────────────
+function buildTopology(raw, structId, idMap, edges) {
+  const entryId = pickEntryRoomId(raw);
+  const rooms = raw.rooms.map(r => {
+    const origId = String(r.id);
+    const isEntry = origId === entryId;
+    const tags = [];
+    if (isEntry) tags.push('entry');
+    const role = roleForRoom(r, isEntry);
+    if (KNOWN_ROLES.has(role)) tags.push(`role:${role}`);
+    return { id: idMap.get(origId), tags };
+  });
+  return { kind: 'rooms', rooms, edges };
+}
+
+// ── authoredPlan (drawn geometry + compass-agreeing doors + role furniture) ─────────
+const DIRS4 = ['north', 'east', 'south', 'west'];
+const VEC4 = { north: [0, -1], south: [0, 1], east: [1, 0], west: [-1, 0] };
+
+// A deterministic integer (gx,gy) compass slot per room, reusing topology.js's OWN
+// spanning-tree compass layout (interiorCompassLayout) so the ASCII renderer + the
+// door directions walk the SAME "north/east/south/west from the entry" logic movement
+// resolves. (Mirrors authoredPlans.js compassSlotsFor + floorPlan.js placeOnGrid.)
+function compassSlotsFor(topology, entryCanonId) {
+  const exits = interiorCompassLayout(topology);
+  const pos = new Map();
+  const occ = new Set();
+  const key = (x, y) => `${x},${y}`;
+  const put = (id, x, y) => { pos.set(id, { gx: x, gy: y }); occ.add(key(x, y)); };
+  const nearestFree = (x, y) => {
+    if (!occ.has(key(x, y))) return [x, y];
+    for (let r = 1; r < 24; r++) {
+      for (let dy = -r; dy <= r; dy++) {
+        for (let dx = -r; dx <= r; dx++) {
+          if (Math.abs(dx) !== r && Math.abs(dy) !== r) continue;
+          if (!occ.has(key(x + dx, y + dy))) return [x + dx, y + dy];
+        }
+      }
+    }
+    return [x, y];
+  };
+  const queue = [];
+  if (entryCanonId) { put(entryCanonId, 0, 0); queue.push(entryCanonId); }
+  while (queue.length) {
+    const id = queue.shift();
+    const here = pos.get(id);
+    const ex = exits.get(id) || {};
+    for (const dir of DIRS4) {
+      const nb = ex[dir];
+      if (!nb || pos.has(nb)) continue;
+      const [vx, vy] = VEC4[dir];
+      const [fx, fy] = nearestFree(here.gx + vx, here.gy + vy);
+      put(nb, fx, fy);
+      queue.push(nb);
+    }
+  }
+  let stray = 0;
+  for (const r of (topology.rooms || [])) {
+    const id = String(r.id);
+    if (!pos.has(id)) { const [fx, fy] = nearestFree(stray++, 99); put(id, fx, fy); }
+  }
+  return pos;
+}
+
+function buildAuthoredPlan(raw, structId, idMap, topology) {
+  const rooms = raw.rooms;
+  const entryId = pickEntryRoomId(raw);
+  const entryCanon = idMap.get(entryId);
+  const rectOf = new Map(rooms.map(r => [String(r.id), roomRectHb(r)]));
+
+  // 'stone' anywhere → the stone shell; otherwise the cottage timber default.
+  const materials = new Set(rooms.map(r => String(r.material || '')).filter(Boolean));
+  const shell = materials.has('stone') ? 'stone' : 'timber';
+
+  // Compass slots (gx,gy) + the reciprocal exits map — the SAME the engine uses, so
+  // door directions below match what getInteriorView/movement resolve.
+  const exits = interiorCompassLayout(topology);
+  const gxy = compassSlotsFor(topology, entryCanon);
+
+  // roomDetail furniture per room (so the drawn plan shows role-appropriate furniture
+  // and the prose stack + the map agree). roomDetail reads the topology room's tags.
+  const topoRoomById = new Map((topology.rooms || []).map(r => [String(r.id), r]));
+
+  const outRooms = [];
+  for (const r of rooms) {
+    const origId = String(r.id);
+    const id = idMap.get(origId);
+    const rect = rectOf.get(origId);
+    const cx = hbToLayout((rect.x0 + rect.x1) / 2);
+    const cy = hbToLayout((rect.y0 + rect.y1) / 2);
+    const w = hbToLayout(rect.x1 - rect.x0);
+    const h = hbToLayout(rect.y1 - rect.y0);
+    const slot = gxy.get(id) || { gx: 0, gy: 0 };
+    const isEntry = origId === entryId;
+    const topoRoom = topoRoomById.get(id) || { id, tags: [] };
+    const det = roomDetail(topoRoom, 'cottage');
+    // roomDetail's furniture is normalized 0..1 of the room box — floorPlan consumers
+    // read exactly this shape (fx/fy/w/h/r), so pass it through verbatim.
+    outRooms.push({
+      id, role: det.name, name: String(r.name || origId),
+      shape: (r.shape === 'round') ? 'round' : 'rect',
+      dark: isEntry ? 0 : (det.dark || 0),
+      isEntry,
+      gx: slot.gx, gy: slot.gy,
+      cx, cy, w, h,
+      furniture: det.furniture,
+    });
+  }
+
+  // hull + footprint: bounding box of every drawn room box.
+  let hx0 = Infinity, hy0 = Infinity, hx1 = -Infinity, hy1 = -Infinity;
+  for (const r of outRooms) {
+    hx0 = Math.min(hx0, r.cx - r.w / 2); hx1 = Math.max(hx1, r.cx + r.w / 2);
+    hy0 = Math.min(hy0, r.cy - r.h / 2); hy1 = Math.max(hy1, r.cy + r.h / 2);
+  }
+  const hull = Number.isFinite(hx0) ? { x: hx0, y: hy0, w: hx1 - hx0, h: hy1 - hy0, round: false } : null;
+  const footprint = Number.isFinite(hx0) ? { w: hx1 - hx0, h: hy1 - hy0 } : { w: 1, h: 1 };
+
+  // doors[] — floorPlan.js shape { x, y, dir, a, b }. Interior doors come from the
+  // topology EDGES (every edge → one door), with `dir` taken from the ENGINE's
+  // compass layout so it agrees with movement + the exit labels. The doorway point
+  // is the midpoint of the two rooms' shared-wall overlap when they abut, else the
+  // segment between their centres (a repaired/diagonal pair). The exterior/front door
+  // is the first single-room door (b:''), its direction outward from that room's wall.
+  const canonToOrig = new Map([...idMap.entries()].map(([o, c]) => [c, o]));
+  const doors = [];
+  for (const e of (topology.edges || [])) {
+    const oa = canonToOrig.get(e.a), ob = canonToOrig.get(e.b);
+    if (!oa || !ob) continue;
+    const rectA = rectOf.get(oa), rectB = rectOf.get(ob);
+    // Direction a→b from the compass layout (authoritative). Fall back to geometry if
+    // the compass didn't assign a slot for this edge (should not happen for tree/loop
+    // edges the layout covers).
+    const exA = exits.get(e.a) || {};
+    let dir = DIRS4.find(d => exA[d] === e.b) || dirFromRects(rectA, rectB);
+    const { x, y } = doorwayPoint(rectA, rectB);
+    doors.push({ x: hbToLayout(x), y: hbToLayout(y), dir, a: e.a, b: e.b });
+  }
+  // Exterior front door — the first door opening bordering exactly one room.
+  let exteriorSeen = false;
+  for (const o of (raw.openings || [])) {
+    if (o.kind !== 'door' || exteriorSeen) continue;
+    const at = roomsAtOpening(rooms, o);
+    if (at.length !== 1) continue;
+    const rect = rectOf.get(at[0]);
+    doors.push({
+      x: hbToLayout(Number(o.x)), y: hbToLayout(Number(o.y)),
+      dir: outwardDirFromRoom(rect, Number(o.x), Number(o.y)),
+      a: idMap.get(at[0]), b: '',
+    });
+    exteriorSeen = true;
+  }
+
+  // windows[] — ADDITIVE (roomWindows derives presence; not load-bearing here).
+  const windows = [];
+  for (const o of (raw.openings || [])) {
+    if (o.kind !== 'window') continue;
+    const at = roomsAtOpening(rooms, o);
+    if (!at.length) continue;
+    windows.push({
+      x: hbToLayout(Number(o.x)), y: hbToLayout(Number(o.y)),
+      room: idMap.get(at[0]), exterior: at.length === 1,
+    });
+  }
+
+  return {
+    type: 'cottage', name: String(raw.name || 'Authored House'), shell,
+    dark: 0, footprint, hull,
+    rooms: outRooms, doors, corridors: [], nonAdjacent: [], windows,
+  };
+}
+
+// The direction from rect A to rect B (A's side of a shared/near wall), from centres.
+function dirFromRects(rectA, rectB) {
+  const acx = (rectA.x0 + rectA.x1) / 2, acy = (rectA.y0 + rectA.y1) / 2;
+  const bcx = (rectB.x0 + rectB.x1) / 2, bcy = (rectB.y0 + rectB.y1) / 2;
+  const dx = bcx - acx, dy = bcy - acy;
+  if (Math.abs(dx) >= Math.abs(dy)) return dx >= 0 ? 'east' : 'west';
+  return dy >= 0 ? 'south' : 'north';
+}
+
+// The point a doorway between two rooms sits at: the centre of their shared-wall
+// overlap when they abut on a vertical/horizontal wall, else the midpoint of their
+// centres (a repaired/diagonal pair — the door lands where they come closest).
+function doorwayPoint(A, B) {
+  const overlapY0 = Math.max(A.y0, B.y0), overlapY1 = Math.min(A.y1, B.y1);
+  const overlapX0 = Math.max(A.x0, B.x0), overlapX1 = Math.min(A.x1, B.x1);
+  // Vertical shared wall (A.right == B.left or vice-versa).
+  if ((Math.abs(A.x1 - B.x0) < EDGE_EPS || Math.abs(B.x1 - A.x0) < EDGE_EPS) && overlapY1 > overlapY0) {
+    const x = Math.abs(A.x1 - B.x0) < EDGE_EPS ? A.x1 : B.x1;
+    return { x, y: (overlapY0 + overlapY1) / 2 };
+  }
+  // Horizontal shared wall (A.bottom == B.top or vice-versa).
+  if ((Math.abs(A.y1 - B.y0) < EDGE_EPS || Math.abs(B.y1 - A.y0) < EDGE_EPS) && overlapX1 > overlapX0) {
+    const y = Math.abs(A.y1 - B.y0) < EDGE_EPS ? A.y1 : B.y1;
+    return { x: (overlapX0 + overlapX1) / 2, y };
+  }
+  return { x: ((A.x0 + A.x1) / 2 + (B.x0 + B.x1) / 2) / 2, y: ((A.y0 + A.y1) / 2 + (B.y0 + B.y1) / 2) / 2 };
 }
 
 /**
  * loadAuthoredStructure(json, { nodeId, structureId }) -> a structure object ready
  * to merge into world.structures.byId (via ensureStructures / the normal structures
- * path), built from the FIRST room of a house-builder export. Pure + deterministic;
- * throws loudly on malformed input.
+ * path), built from ALL rooms of a house-builder export, connected by its doors as
+ * reciprocal-compass doorways. Pure + deterministic; throws loudly on malformed input.
  *
- * @param json        a parsed house-builder/v6 (or v5) export object, OR a JSON string.
+ * @param json        a parsed house-builder/v5+ export object, OR a JSON string.
  * @param nodeId      the map node the structure attaches to (its anchors.nodeId).
- * @param structureId optional explicit id; defaults to a deterministic id derived
- *                    from the node (`authored:<nodeId>` — collision-free with procgen's
- *                    `stgen:...` ids, and stable so worldHash is replay-stable).
+ * @param structureId optional explicit id; defaults to `authored:<nodeId>`
+ *                    (collision-free with procgen's `stgen:...` ids, stable so
+ *                    worldHash is replay-stable).
+ *
+ * Also exposes the loader diagnostics (edges added by abutment fallback / orphan
+ * repair) on a non-enumerable `__loaderInfo` so tests/the report can assert HOW the
+ * graph was connected without changing the structure's hashed shape.
  */
 export function loadAuthoredStructure(json, { nodeId, structureId } = {}) {
   const raw = coerceJson(json);
@@ -125,73 +619,15 @@ export function loadAuthoredStructure(json, { nodeId, structureId } = {}) {
 
   const nid = String(nodeId || '');
   const explicitId = String(structureId || '');
-  // A structureId must be resolvable: an explicit one, or a nodeId to derive
-  // `authored:<nodeId>` from. Neither → fail loudly (a `authored:` id with no node
-  // would ground nothing for movement/doors).
   if (!explicitId && !nid) fail('cannot derive a structureId (no structureId and no nodeId given)');
   const structId = explicitId || `authored:${nid}`;
 
-  const room = raw.rooms[0];
-  const origId = String(room.id);
-  const roomId = `room:${structId}:1`; // entry sorts first — interiors.js convention
+  const idMap = canonicalRoomIds(raw, structId);
+  const { edges, abutted, repaired } = buildEdges(raw, idMap);
+  const topology = buildTopology(raw, structId, idMap, edges);
+  const authoredPlan = buildAuthoredPlan(raw, structId, idMap, topology);
 
-  // Role: the export's own role if present and non-empty, else the cottage default.
-  const role = (typeof room.role === 'string' && room.role.trim()) ? room.role.trim() : DEFAULT_ROLE;
-  const displayName = String(room.name || origId || 'Room');
-  const shape = (room.shape === 'round') ? 'round' : 'rect';
-
-  // Material: timber/stone select the shell family; anything else → timber (cottage
-  // default). buildingType stays 'cottage' regardless, so roomDetail/structureMaterial
-  // resolve a coherent cottage (a stone-walled cottage still reads as a cottage room).
-  const mat = String(room.material || '').toLowerCase();
-  const material = (mat === 'stone') ? 'stone' : 'timber';
-  const shell = (material === 'stone') ? 'stone' : 'timber';
-
-  // ── topology — one room, tagged 'entry' (interiors.js drops the player here) AND
-  // 'role:<role>' so roomDetail reads the AUTHORED role (a bed-having 'quarters')
-  // instead of the cottage entry's hearth room. No edges (a single room has no
-  // interior doorways). normalizeTopology re-sorts/validates on store; emission order
-  // here doesn't matter, only the deterministic id + tag VALUES.
-  const topology = { kind: 'rooms', rooms: [{ id: roomId, tags: ['entry', `role:${role}`] }], edges: [] };
-
-  // ── authoredPlan — floorPlan.js's OWN output shape, so floorPlan(structure)
-  // returns Tim's DRAWN geometry verbatim (its override branch reads authoredPlan)
-  // instead of re-tiling via placeOnGrid. One room: it IS the entry, at a compass
-  // slot of (0,0) (interiorCompassLayout roots the entry at the origin). The exterior
-  // front door is authored by the engine tail (doors.js deriveDoors), so doors: [].
-  const x0 = hbToLayout(Number(room.x)), y0 = hbToLayout(Number(room.y));
-  const w = hbToLayout(Number(room.w)), h = hbToLayout(Number(room.h));
-  const cx = x0 + w / 2, cy = y0 + h / 2;
-  // A single room roots at the compass origin (interiorCompassLayout puts the entry
-  // at 0,0). Hardcoded for the trivial one-room case — no dependency on the layout's
-  // return, and byte-identical to what it would give.
-  const gx = 0, gy = 0;
-
-  const authoredPlan = {
-    type: 'cottage',
-    name: String(raw.name || 'Authored House'),
-    shell,
-    dark: 0,
-    footprint: { w, h },
-    hull: { x: cx - w / 2, y: cy - h / 2, w, h, round: shape === 'round' },
-    rooms: [{
-      id: roomId,
-      role: displayName,
-      name: displayName,
-      shape,
-      dark: 0,
-      isEntry: true,
-      gx, gy,
-      cx, cy, w, h,
-      furniture: []
-    }],
-    doors: [],       // exterior front door authored by deriveDoors (engine tail)
-    corridors: [],
-    nonAdjacent: [],
-    windows: []
-  };
-
-  return {
+  const structure = {
     id: structId,
     kind: 'building',
     nodeId: nid,
@@ -200,6 +636,21 @@ export function loadAuthoredStructure(json, { nodeId, structureId } = {}) {
     surfaces: {},
     tags: ['authored', 'loader'],
     buildingType: 'cottage',
-    authoredPlan
+    authoredPlan,
   };
+
+  // Loader diagnostics — non-enumerable so it never enters ensureStructures / the
+  // hashed shape (ensureStructure rebuilds the object field-by-field anyway; this is
+  // purely for the loader's caller/tests to inspect the connection strategy).
+  Object.defineProperty(structure, '__loaderInfo', {
+    value: {
+      roomCount: raw.rooms.length,
+      edgeCount: edges.length,
+      abutted,   // edges added because two rooms shared a wall (no drawn door)
+      repaired,  // edges added to reconnect an otherwise-orphaned room
+    },
+    enumerable: false,
+  });
+
+  return structure;
 }

@@ -1,0 +1,25 @@
+{
+  "kind": "authored-structure",
+  "schema": "house-builder/v7",
+  "name": "Warden's Cottage",
+  "grid": { "cols": 120, "rows": 90, "cell": 28 },
+  "rooms": [
+    { "id": "hall", "name": "Hall", "role": "hearthroom", "shape": "rect", "material": "timber", "x": 10, "y": 10, "w": 6, "h": 6 },
+    { "id": "west-room", "name": "West Bedchamber", "role": "bedchamber", "shape": "rect", "material": "timber", "x": 4, "y": 10, "w": 6, "h": 6 },
+    { "id": "east-room", "name": "East Scullery", "role": "scullery", "shape": "rect", "material": "timber", "x": 16, "y": 10, "w": 5, "h": 6 }
+  ],
+  "walls": [],
+  "openings": [
+    { "kind": "door", "x": 13, "y": 16, "angle": 0, "orient": "h", "len": 1, "room": "hall" },
+    { "kind": "door", "x": 10, "y": 13, "angle": 90, "orient": "v", "len": 1, "room": "hall" },
+    { "kind": "door", "x": 16, "y": 13, "angle": 90, "orient": "v", "len": 1, "room": "hall" },
+    { "kind": "window", "x": 4, "y": 13, "angle": 90, "orient": "v", "len": 1, "room": "west-room" }
+  ],
+  "tunnels": [],
+  "corridors": [],
+  "furniture": [
+    { "type": "bed", "x": 5, "y": 11, "w": 2, "h": 3, "rot": 0, "room": "west-room", "ux": 0.3333, "uy": 0.5 },
+    { "type": "cookpot", "x": 18, "y": 13, "w": 1, "h": 1, "rot": 0, "room": "east-room", "ux": 0.5, "uy": 0.5 }
+  ],
+  "secrets": []
+}

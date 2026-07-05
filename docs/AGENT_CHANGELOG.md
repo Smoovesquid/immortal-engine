@@ -2617,3 +2617,14 @@ other agents. (none active)
   Worker's one out-of-lane touch (U483 equal-base fixture: "the pantry"→"the cellar" to restore the
   equal-failing pair after CG-ARCH added real signal) reviewed and accepted — documented inline.
 - Remaining in flight: MR-2c (house-builder loader, Sonnet). Stage 2 = 2a ✅ 2b ✅ 2c ⏳ 2d queued.
+
+## 2026-07-05 — Basecamp (second window) — MR-2c integrated → v0.29.2 build 089 "drawn houses load"
+
+- Cherry-picked `55ff864d`, clean. Ladder GREEN: 10179/0 (+24), convergence 131/131, probe clean.
+  Authored-plan loader lands as a browser-safe data module (engine runs unbundled in browser+server —
+  worker's import-ordering discovery, documented); doors ride MR-2a machinery untouched; windows never
+  doors. AUTH-HOUSE-1 queued for the first real placement (worker's wake-cottage safety-check flag).
+- MAP-REAL stage 2: 2a ✅ 2b ✅ 2c ✅ · 2d (windows LOS) HELD pending the occupancy decision (2d
+  composes over roomOccupancy.js — the file OCC-STORY-1 rewrites if Tim relaunches it; dependency
+  order says occupancy first). Next dispatches: DOOR-FORCE-1 (serial) + TT-MINIS (renderer, corpse
+  GLBs → defeated figures). U513–U516 claimed.

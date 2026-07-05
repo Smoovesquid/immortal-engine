@@ -213,7 +213,16 @@ done_when · rollback`.
   (narrated-geometry-not-in-plan, structural tier — rides the CG-2b swap ladder); corpus lock on the
   wake cottage's real layout. Kills the DM-invents-geography root class.
 
-### MR-2c — house-builder loader: authored plans become the world's truth  ·  Phase 1/2 (MAP-REAL stage 2)  ·  **CUT + DISPATCHED 2026-07-05-night (Sonnet worktree, parallel; U510–U512)**
+### MR-2c — house-builder loader: authored plans become the world's truth  ·  Phase 1/2 (MAP-REAL stage 2)  ·  **✅ LANDED v0.29.2 b089 (worker `55ff864d` → integrated; U510–U512 24/24; suite 10179/0; loader = browser-safe data-module pattern; sample `wake_cottage.house.js` proves the pipeline on a placeholder id)**
+- Tim's 4-step drop-in path documented in the worker report + module header (draw → export → wrap as
+  `.house.js` under `packs/base/structures/authored/` → one registry import line). **Honest flag →
+  queued below:** wiring the sample onto the REAL wake cottage tripped a pre-existing safety check for
+  that specific building — the first real authored placement is a Tim taste call anyway.
+
+### AUTH-HOUSE-1 — first REAL authored house placement (Tim draws it, we wire it)  ·  Phase 2  ·  **QUEUED (waiting on a Tim drawing + location pick)**
+- The pipeline is live; the sample sits on a placeholder id. When Tim exports a house he wants in the
+  world: pick the structure id, resolve the wake-cottage safety-check interaction (worker's flag,
+  MR-2c report), wire, live-verify on his screen.
 - Loader for the tool's export (wall segments + openings {x,y,orient,len} + tunnels) → structure
   topology + plan + mask + DOOR RECORDS (2a schema), keyed by structure id; authored OVERRIDES procgen;
   fixture round-trip test; worldHash replay-stable; STRUCTURE_SCHEMA_VERSION target no-bump.

@@ -47,6 +47,80 @@ const ROAD_HALF_LU = 0.7;
 const ROAD_CLEAR_LU = 1.3;
 const CORRIDOR_LU = ROAD_HALF_LU + ROAD_CLEAR_LU; // ~2.0 lu each side of centerline
 
+// ── TT-OCC THE RULE — no outdoor mini ever stands inside ink that isn't theirs ──
+// Tim's ruling (2026-07-05, docs/MAP_REAL.md): floorplans stay ALWAYS-OPEN
+// (roofless DM-screen look, locked), so a strict placement margin is the ONLY
+// defense against a figure reading as "in the bedroom" when the engine says
+// they're outdoors. NPC_MARGIN_LU is derived from the two things that actually
+// eat into the visual gap between a token's coordinate and "clearly outside the
+// wall": the wall stroke itself, and the token's own drawn footprint — not
+// imported (drawModel.js imports FROM this file; importing back would cycle),
+// but pinned to the same numbers so a future taste pass on either stays honest:
+//   wall stroke:  INK_PARAMS.wallWeight.fortified = 3.4 world-units (widest of
+//                 the five shells) ÷ PLACE_WU (4 wu/lu, worldSpace.js) = 0.85 lu
+//   token base:   INK_PARAMS.tokenBaseRadiusWu = 0.34*PLACE_WU wu ÷ PLACE_WU
+//                 = 0.34 lu (a token isn't a point; its own ring must clear too)
+// Sum, rounded up a hair for a real setback rather than a graze: 1.2 lu. This is
+// the exact class of miss that let Galen's 0.72-lu-from-cottage scatter point
+// (aldermere boot, node n0_2935788122) pass a bare rect-edge check while still
+// reading on screen as standing inside the wake cottage.
+export const NPC_MARGIN_LU = 1.2;
+
+// True if point (px,py) falls inside any rect in `rects`, each grown by `margin`
+// on every side. Rects are the SAME `placed` AABBs the building-scatter loop
+// above already computed (post ROADS-1 projection) — one footprint truth, no
+// re-derivation. Exported (with pushClearOfBuildings below) so tests can drive
+// the exclusion directly against synthetic tight-packed geometry, not just
+// indirectly through a full settlement boot.
+export function insideAnyRect(px, py, rects, margin) {
+  for (const r of rects) {
+    if (px >= r.minX - margin && px <= r.maxX + margin && py >= r.minY - margin && py <= r.maxY + margin) return true;
+  }
+  return false;
+}
+
+// Deterministically relocate (x,y) to the nearest point clear of every
+// building rect (+margin) — a fixed ring/angle SPIRAL SEARCH outward from the
+// original point, not a repulsion vector-field.
+//
+// Why a spiral and not "push away from the nearest/summed rect": a first draft
+// tried exactly that (push directly away from whichever rect's centre — or
+// nearest edge, or the summed away-vector of every claiming rect — was
+// nearest), mirroring ROADS-1's buildings-vs-road projection. It broke on a
+// realistic tight-packed village (several buildings only ~1-2 lu apart,
+// margin-inflated zones overlapping in the gap between them): the point
+// oscillates between two neighbours' opposing pulls, or settles into a stable
+// EQUILIBRIUM where multiple rects' push vectors exactly cancel — a known
+// failure mode of potential-field navigation, not a rare edge case (an
+// adversarial-fixture sweep hit it on ~40-75% of trials). A vector field can
+// get stuck; an exhaustive search cannot. Walking outward ring by ring and
+// taking the FIRST clear point found is instead a monotonic search — no
+// equilibrium is possible because nothing is being followed, every candidate
+// point is independently tested. Verified against the same adversarial
+// checkerboard (0/300 failures, vs. the vector approaches' 40-75%) plus a
+// realistic 2-lu-gap grid and a "deep inside one giant building" case.
+//
+// Deterministic and pure: same (x,y,rects,margin) always yields the same
+// escape point, no rng, nothing here reads world state. `angleSteps` scales
+// with ring number so the arc-length between samples stays roughly bounded as
+// the radius grows (a fixed angle count would under-sample a narrow clear
+// wedge far out); `maxRadius`/`ringStep` cap the search — the country is
+// unbounded off any settlement, so a clear point always exists well within
+// range, and the cap only protects against a pathological caller.
+export function pushClearOfBuildings(x, y, rects, margin, maxRadius = 200, ringStep = 0.5, angleSteps = 24) {
+  if (!insideAnyRect(x, y, rects, margin)) return { x, y }; // already clear — most calls, zero work
+  for (let ring = 1; ring * ringStep <= maxRadius; ring++) {
+    const r = ring * ringStep;
+    const steps = Math.min(angleSteps * ring, 720);
+    for (let a = 0; a < steps; a++) {
+      const theta = (a / steps) * Math.PI * 2;
+      const px = x + Math.cos(theta) * r, py = y + Math.sin(theta) * r;
+      if (!insideAnyRect(px, py, rects, margin)) return { x: px, y: py };
+    }
+  }
+  return { x, y }; // exhausted maxRadius — never hit in practice (see module doc); returns the original point rather than fabricating one
+}
+
 // Distance from a point to a segment [a..b] (all layout units).
 function distPointSeg(px, py, ax, ay, bx, by) {
   const vx = bx - ax, vy = by - ay;
@@ -313,11 +387,21 @@ export function placeFromWorldNode(world, nodeId) {
   // The player enters from the lane's west end; neighbours stand scattered near
   // the road through the village, not in a tidy row — but only the ones the engine
   // says are actually outdoors right now (never the off-room roster).
+  // The player token is exempt from the TT-OCC exclusion below: the player may
+  // legitimately be indoors (wake = your bed) — their token comes from position
+  // truth, not this seeded scatter, so it's never routed through the building
+  // check.
   tokens.push({ type: 'player', ux: x0 + 1.5, uy: roadY(x0 + 1.5) });
   const shown = outdoorNpcs.filter(n => n && !n.hostile).slice(0, 12).concat(outdoorNpcs.filter(n => n && n.hostile).slice(0, 2).map(n => ({ ...n, name: '?' })));
   shown.forEach((n, i) => {
-    const ax = minX + ((i + 1) / (shown.length + 1)) * (maxX - minX) + (rng.nextFloat() - 0.5) * 2;
-    const ay = roadY(ax) + (rng.nextFloat() < 0.5 ? -1 : 1) * (0.8 + rng.nextFloat() * 1.4);
+    const ax0 = minX + ((i + 1) / (shown.length + 1)) * (maxX - minX) + (rng.nextFloat() - 0.5) * 2;
+    const ay0 = roadY(ax0) + (rng.nextFloat() < 0.5 ? -1 : 1) * (0.8 + rng.nextFloat() * 1.4);
+    // TT-OCC — outdoor scatter must never land inside a building's footprint
+    // (+ NPC_MARGIN_LU). `placed` is the SAME building AABB set the scatter
+    // loop above already resolved (post ROADS-1 projection); hostile-masked
+    // tokens (name '?') go through this identical path — no exemption, an
+    // ambusher is still outdoors until the fiction says otherwise.
+    const { x: ax, y: ay } = pushClearOfBuildings(ax0, ay0, placed, NPC_MARGIN_LU);
     tokens.push({ type: 'npc', ux: ax, uy: ay, label: String(n.name || 'V').trim().charAt(0).toUpperCase() || 'V', npc: { id: n.id || ('npc' + i), name: n.name, role: n.role } });
   });
 

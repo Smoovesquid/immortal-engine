@@ -52,10 +52,18 @@ this when he sits down to make assets. Spec format per entry firms up once the p
 
 ## ✅ Already standing (for reference — don't remake)
 Barrels, beds, dressers, chests (TT-PROPS furniture set) · generic people archetype figures ·
-grove trees (settlement-scale) · livestock (base set).
+grove trees (settlement-scale) · livestock (base set) · corpse_assemblage + corpse_remains_red
+(TT-MINIS, wired 2026-07-05 — a defeated combat enemy renders as one of these instead of a
+toppled standing figure).
 
 ---
 *Append below this line, newest first, date every add.*
+
+**2026-07-05 · WIRED (TT-MINIS):** corpse_assemblage + corpse_remains_red are live. A defeated
+combat enemy's mini now swaps to one of these two GLBs (figures3d.js's buildCorpseMini,
+deterministic per entity id/name — same foe always shows the same corpse) instead of the old
+toppled-archetype pose; falls back to that toppled pose gracefully if the GLB isn't loaded/fails.
+Moved out of "untracked" above.
 
 **2026-07-05 · RECEIVED from Tim (GLB, dropped in `public/map/assets/`):** corpse_assemblage ·
 corpse_remains_red — death/aftermath set pieces (combat scenes, the Underworld someday). Wiring into

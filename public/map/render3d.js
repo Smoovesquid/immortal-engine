@@ -29,7 +29,7 @@ const TILE_WU = 40; // world units per node tile — keeps the 3D geography to s
 // TT-PROPS standing-prop mini builder (barrels/beds/dressers/chests). Pure
 // helpers; they receive the lazily-imported THREE, so this stays a zero-cost
 // static import.
-import { buildArchetypeFigure, buildPropMini, breatheMinis, phaseFromKey } from './figures3d.js';
+import { buildArchetypeFigure, buildPropMini, buildCorpseMini, breatheMinis, phaseFromKey } from './figures3d.js';
 
 // World-asset builders (terrain, dirt roads, settlements, woods, the chapel ruin) —
 // the SAME pure-view module the standalone asset lab (map-proto/asset-lab.html) uses,
@@ -843,9 +843,24 @@ function buildTacticalBoard(THREE, combatScene, opts = {}) {
   for (const e of enemies) {
     const ec = cellCenter(e.cx, e.cy);
     const arch = e.archetype || 'humanoid';
-    const tok = buildArchetypeFigure(THREE, arch, { defeated: Boolean(e.defeated), elite: Boolean(e.elite), variant: e.id || e.name });
+    const defeated = Boolean(e.defeated);
+    // TT-MINIS: the fallen get bodies. A defeated foe used to just topple in
+    // place (buildArchetypeFigure's `defeated` branch — same standing rig,
+    // rotated 90° + faded). Now try an authored corpse GLB (miniLibrary.js)
+    // FIRST, deterministic per entity (buildCorpseMini hashes e.id||e.name —
+    // the SAME foe always shows the SAME corpse); buildCorpseMini returns null
+    // whenever the library's empty, the GLB hasn't loaded yet, or it failed to
+    // load — in every one of those cases fall straight back to the toppled
+    // archetype figure, exactly like buildArchetypeFigure already falls back
+    // from buildFigureFromGLB. The map must never break over a corpse asset.
+    const tok = (defeated && buildCorpseMini(THREE, e.id || e.name)) ||
+      buildArchetypeFigure(THREE, arch, { defeated, elite: Boolean(e.elite), variant: e.id || e.name });
     tok.position.set(ec.x, 0.32, ec.z); g.add(tok);
-    minis.push({ group: tok, baseY: 0.32, baseScale: e.elite ? 1.24 : 1, rate: arch === 'undead' ? 1.1 : 1.6, phase: phaseFromKey(e.id || e.name), bob: arch === 'undead' ? 0.09 : 0.05, defeated: Boolean(e.defeated) });
+    // A corpse mini is already ground-flush geometry (its own userData.corpseId
+    // marks it) — no toppled-figure rate/bob needed either way since `defeated:
+    // true` makes breatheMinis skip it entirely (a corpse is the one mini
+    // legitimately still).
+    minis.push({ group: tok, baseY: 0.32, baseScale: e.elite ? 1.24 : 1, rate: arch === 'undead' ? 1.1 : 1.6, phase: phaseFromKey(e.id || e.name), bob: arch === 'undead' ? 0.09 : 0.05, defeated });
     if (makeLabel) { const lbl = makeLabel(String(e.name || 'Foe'), e.defeated ? '#8a7d72' : '#ffb0a0'); lbl.position.set(ec.x, e.defeated ? 2.4 : 3.9, ec.z); g.add(lbl); }
   }
 
@@ -939,9 +954,12 @@ export async function mountCombat3D(container, combatScene, opts = {}) {
     return sprite;
   }
   // Minis are stylized procedural archetype figures (figures3d.js): the player +
-  // humanoid / beast / undead foes, with an `elite` overlay for leaders/bosses and
-  // a toppled pose for the downed. They breathe in the render loop (registered
-  // into `minis` below). buildArchetypeFigure(THREE, archetype, { defeated, elite }).
+  // humanoid / beast / undead foes, with an `elite` overlay for leaders/bosses.
+  // They breathe in the render loop (registered into `minis` below).
+  // buildArchetypeFigure(THREE, archetype, { defeated, elite }). TT-MINIS: a
+  // defeated foe now prefers an authored corpse GLB (buildCorpseMini,
+  // miniLibrary.js) over the toppled-archetype pose, falling back to it when no
+  // corpse is available — see buildTacticalBoard's enemy loop, below.
   // The tactical scene (dais + 5-ft grid + minis + 30-ft move range) — shared builder,
   // added at the board origin. (mountSlice3D reuses the same builder, embedded + scaled.)
   const board = buildTacticalBoard(THREE, combatScene, { makeLabel, dais: true });

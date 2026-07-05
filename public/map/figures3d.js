@@ -217,6 +217,99 @@ export function buildPropMini(THREE, kind) {
   return g;
 }
 
+// TT-MINIS (docs/MINIS_WISHLIST.md's 2026-07-05 "received" corpse pair) — the
+// fallen get bodies. Where a defeated figure used to just topple in place
+// (buildArchetypeFigure's `defeated` branch, above: same standing rig, rotated
+// 90° + faded translucent), an authored corpse GLB from miniLibrary.js now
+// stands in when one is loaded — the one mini category where "still, on the
+// ground" IS the correct pose, not a placeholder for it. Same graceful-GLB
+// contract as figureAssets.js: lazy-loaded, cached, and a failed/missing/
+// not-yet-loaded fetch returns null so the caller falls back to the existing
+// toppled-archetype look — the map must never break over a corpse asset.
+import { minisByCategory } from './miniLibrary.js';
+
+const corpseTemplates = new Map();     // mini.id -> prepared Group | 'loading' | null (failed)
+
+function corpseReady(id) { const t = corpseTemplates.get(id); return !!t && t !== 'loading'; }
+
+// Load + normalize ONE corpse GLB (idempotent, keyed by miniLibrary id). Scales by
+// the LONGEST HORIZONTAL footprint (mini.fitLong), the exact convention
+// treeAssets.js's furniture path uses (a corpse has no "standing height" to
+// speak of — it's fit by its ground footprint, like a bed or a rug) — lowest
+// point pinned to y=0 so it lies flush with the paper, no floating/clipping.
+async function ensureCorpseGLB(mini) {
+  if (!mini?.id) return null;
+  if (corpseReady(mini.id)) return corpseTemplates.get(mini.id);
+  if (corpseTemplates.get(mini.id) === 'loading') return null;
+  if (typeof window === 'undefined') return null;
+  corpseTemplates.set(mini.id, 'loading');
+  try {
+    const THREE = await import('three');
+    const { GLTFLoader } = await import('three/addons/loaders/GLTFLoader.js');
+    const gltf = await new Promise((res, rej) => new GLTFLoader().load(mini.url, res, undefined, rej));
+    const root = gltf.scene;
+    root.traverse(o => {
+      if (!o.isMesh) return;
+      if (!o.geometry.attributes.normal) o.geometry.computeVertexNormals();
+      o.castShadow = true; o.receiveShadow = true;
+    });
+    const box = new THREE.Box3().setFromObject(root);
+    const size = new THREE.Vector3(); box.getSize(size);
+    const ctr = new THREE.Vector3(); box.getCenter(ctr);
+    const fitLong = Number(mini.fitLong) || 1.9;
+    const s = fitLong / (Math.max(size.x, size.z) || 1);
+    root.scale.setScalar(s);
+    root.position.set(-ctr.x * s, -box.min.y * s, -ctr.z * s); // lowest point at y=0 — flush with the ground
+    corpseTemplates.set(mini.id, root);
+    return root;
+  } catch (e) {
+    corpseTemplates.set(mini.id, null); // give up → toppled-archetype fallback (retried next call)
+    return null;
+  }
+}
+
+// pickCorpseMini(key) -> miniLibrary entry, DETERMINISTIC per key (the same
+// FNV-1a hash phaseFromKey below uses — an entity id/name always hashes to
+// the SAME corpse, never Math.random). Returns null if the corpse category
+// is empty (never fabricate a corpse when the library has none).
+export function pickCorpseMini(key) {
+  const pool = minisByCategory('corpse');
+  if (!pool.length) return null;
+  return pool[hashToIndex(key, pool.length)];
+}
+function hashToIndex(key, n) {
+  const s = String(key || '');
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
+  return (h >>> 0) % n;
+}
+
+/**
+ * buildCorpseMini(THREE, key) -> THREE.Group | null
+ * The GLB-backed corpse mini for a defeated entity, keyed by `key` (the
+ * entity's id/name) so the SAME entity always renders the SAME corpse model
+ * (hashToIndex picks which of the library's corpse entries; ensureCorpseGLB
+ * loads it lazily). Returns null when the corpse category is empty, the GLB
+ * hasn't finished loading yet, or the load failed — the caller (render3d.js)
+ * falls back to the existing toppled-archetype figure in every one of those
+ * cases, exactly like buildArchetypeFigure falls back from buildFigureFromGLB.
+ * No breathe/bob: a corpse is the one mini legitimately still (render3d.js
+ * marks it `defeated: true` in the minis list, which breatheMinis already
+ * skips).
+ */
+export function buildCorpseMini(THREE, key) {
+  const mini = pickCorpseMini(key);
+  if (!mini) return null;
+  if (!corpseReady(mini.id)) { ensureCorpseGLB(mini); return null; }
+  const tpl = corpseTemplates.get(mini.id);
+  if (!tpl) return null;
+  const g = new THREE.Group();
+  g.add(tpl.clone(true)); // clone nodes; geometry/material shared (cheap, matches figureAssets.js)
+  g.userData.corpseId = mini.id;
+  g.userData.defeated = true;
+  return g;
+}
+
 /**
  * breatheMinis(minis, tSeconds) — the idle "alive" pass. Each mini is
  * { group, baseY, baseScale, rate, phase, bob, defeated }. A defeated mini is

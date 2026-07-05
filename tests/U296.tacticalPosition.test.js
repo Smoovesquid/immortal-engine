@@ -99,7 +99,7 @@ test('U296-03: normalizers coerce to valid defaults', () => {
 // ── 2: schema + invariants ────────────────────────────────────────────────────
 
 test('U296-04: fresh combat carries default tactical blocks; version bumped', () => {
-  assert.equal(WORLD_VERSION, 30);
+  assert.equal(WORLD_VERSION, 31);
   const c = defaultCombat();
   assert.deepEqual(c.playerTactical, { cover: 'none', flanked: false, highGround: false });
   const w = mkCombatWorld();

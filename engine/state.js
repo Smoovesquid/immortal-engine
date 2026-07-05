@@ -28,6 +28,7 @@ import {
   placementForWorld,
   isTacticalPosConsistent
 } from './map/spatial/tacticalPos.js';
+import { normalizeDoors } from './structures/doors.js';
 
 // Pass R1 — bumped from 16 → 17. Adds rumor layer: world.rumors[],
 // npc.rumorIds[], npc.sophistication. See docs/RUMOR_LAYER.md.
@@ -71,7 +72,22 @@ import {
 // Old saves get pos:null on load, then a deterministic seeded backfill at
 // ensureWorld's tail places the player + present NPCs. COMPLETELY DARK: nothing
 // consumes pos yet (movement unchanged — the verb lands in TAC-2).
-export const WORLD_VERSION = 30;
+// v31 — MR-2a DOORS ARE CANON (docs/briefs/MR-2-FUNCTIONAL-INK.md §MR-2a). Every
+// registered structure gains a per-door canon record list `doors[]`: for each
+// room-to-room doorway of its floorPlan, PLUS exactly one EXTERIOR (front) door,
+// { id, a, b, orient:'ns'|'ew', exterior, state } where state ∈
+// {open|shut|barred|locked}. Door STATE is canon (hashed, on the structure);
+// door CELLS are DERIVED from the plan, never stored (POSITION_AS_CANON §1 —
+// geometry is the single source). Seeded defaults: interior doors open, homes/keeps
+// shut, shops open by daylight (shut after dark), the wake cottage's front door
+// shut-not-locked; nothing seeds locked/barred (that is content/quest authorship via
+// the `door` op). Walls now BLOCK and doors are the only room↔region crossings —
+// enforced TODAY at the interior room-move + egress seams. Old saves carry no
+// doors[]: ensureStructures keeps the field absent (byte-identical shape), then a
+// deterministic backfill at ensureWorld's tail (backfillDoors) authors the full
+// list once the floorPlan geometry is assembled. All state changes go through
+// applyDeltas({op:'door', structId, doorId, to}). See engine/structures/doors.js.
+export const WORLD_VERSION = 31;
 
 // Crunch caps (T1). Kept here so they're colocated with ensureEntity.
 const FOCI_CAP = 6;
@@ -353,6 +369,18 @@ export function ensureWorld(partial) {
     }
   }
 
+  // MR-2a (v31) — canon door records backfill (docs/briefs/MR-2-FUNCTIONAL-INK.md
+  // §MR-2a). Runs at the TAIL, once every structure's floorPlan geometry (the plan
+  // the door cells project onto) and the map node anchors are assembled. For each
+  // registered structure it authors the full door list via normalizeDoors: derive
+  // the interior doors + the single exterior front door with seeded defaults, and
+  // COMPLETE a partial/legacy stored set (keeping stored states, backfilling missing
+  // doors). Idempotent: a structure whose stored doors[] already MATCHES the derived
+  // list is left untouched by reference, so an unchanged world re-ensures
+  // byte-identically AND a `door` op that flipped a state survives ensureWorld
+  // instead of being healed back to the default. Pure + deterministic (rng.js only).
+  backfillDoors(world);
+
   // TAC-1 — canonical tactical position backfill (docs/POSITION_AS_CANON.md §2/§5).
   // The keystone under 5-ft minis: every present entity gets a deterministic 5-ft
   // cell in `pos`. Runs at the TAIL of world assembly (map/structures/scene are all
@@ -368,6 +396,54 @@ export function ensureWorld(partial) {
 
   assertWorldInvariants(world);
   return world;
+}
+
+// MR-2a — author each registered structure's canon door records (state.js tail).
+// normalizeDoors(world, st, st.doors) returns the FULL door list: the interior
+// doors + the single exterior front door, with seeded defaults, completing a
+// partial/legacy stored set while preserving already-flipped states. Written in
+// place (shape-preserving), only where the structure's stored doors[] differs from
+// the authored list — so an unchanged world is untouched by REFERENCE (idempotent
+// re-ensure, byte-identical hash) and a `door` op survives instead of being healed
+// back to the default. A structure with no groundable plan (no rooms) authors no
+// doors (normalizeDoors returns []) — the field stays absent, matching its shape.
+function backfillDoors(world) {
+  const byId = world?.structures?.byId;
+  if (!byId || typeof byId !== 'object') return;
+  let changed = false;
+  const next = {};
+  for (const [key, st] of Object.entries(byId)) {
+    if (!st || typeof st !== 'object') { next[key] = st; continue; }
+    const authored = normalizeDoors(world, st, st.doors);
+    // Empty authored list (no groundable plan) → keep the structure's shape as-is
+    // (do not add an empty doors[] that would differ from the absent field).
+    if (!authored.length) {
+      if (Array.isArray(st.doors) && st.doors.length) { next[key] = { ...st, doors: authored }; changed = true; }
+      else next[key] = st;
+      continue;
+    }
+    if (doorsEqual(st.doors, authored)) { next[key] = st; continue; }
+    next[key] = { ...st, doors: authored };
+    changed = true;
+  }
+  if (changed) world.structures = { ...world.structures, byId: next };
+}
+
+// Structural + state equality of two door lists (order-independent by id). Used by
+// backfillDoors' idempotency guard so an unchanged world is never re-cloned.
+function doorsEqual(a, b) {
+  const A = Array.isArray(a) ? a : [];
+  const B = Array.isArray(b) ? b : [];
+  if (A.length !== B.length) return false;
+  const byIdA = new Map(A.map(d => [String(d?.id ?? ''), d]));
+  for (const db of B) {
+    const da = byIdA.get(String(db?.id ?? ''));
+    if (!da) return false;
+    if (String(da.a) !== String(db.a) || String(da.b) !== String(db.b)
+      || String(da.orient) !== String(db.orient) || Boolean(da.exterior) !== Boolean(db.exterior)
+      || String(da.state) !== String(db.state)) return false;
+  }
+  return true;
 }
 
 // Give each present entity a valid `pos`: keep a consistent stored value, else

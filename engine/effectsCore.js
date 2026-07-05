@@ -5,6 +5,10 @@ import { ensureInstrumentLayer } from './instrument.js';
 import { statMod, maxWounds } from './ruleset/core/stats.js';
 import { applyCondition as applyConditionPure } from './combat/conditions.js';
 import { ensureStructures } from './structures/structuresState.js';
+import { DOOR_STATES } from './structures/doors.js';
+
+// MR-2a — the valid target states for the `door` op (canon door-state enum).
+const DOOR_STATE_ENUM = new Set(DOOR_STATES);
 
 // Data-driven delta executor. Pure and deterministic.
 // Applies a list of ops to the world safely (clamps, initializes missing fields).
@@ -273,6 +277,41 @@ export function applyDeltas(world, deltas = []) {
         continue; // malformed pos — ignore rather than corrupt state
       }
       w = mutateEntity(w, entityId, (e) => ({ ...e, pos: nextPos }));
+      continue;
+    }
+
+    // MR-2a — the canon DOOR-STATE op (docs/briefs/MR-2-FUNCTIONAL-INK.md §MR-2a).
+    // The SOLE path that changes a door's state: { op:'door', structId, doorId,
+    // to:'open'|'shut'|'barred'|'locked', how? }. Every door-state change (a shut
+    // door opened as part of a move, a bar lifted, a lock picked/forced, a wary
+    // householder bolting up) routes here — no direct writes. `to` must be a valid
+    // enum state and `doorId` an existing door of the structure; anything malformed
+    // is ignored rather than corrupting state. FORCED / PICKED entry mints a ledger
+    // FACT (the moral-physics witness seam — consequence, not blocking): a broken or
+    // picked door is a fact the world can later react to. `how` is 'forced' |
+    // 'picked' | 'opened' | '' (only forced/picked mint the fact).
+    if (kind === 'door') {
+      const structId = String(op.structId ?? op.structureId ?? '');
+      const doorId = String(op.doorId ?? '');
+      const to = String(op.to ?? '');
+      if (!structId || !doorId || !DOOR_STATE_ENUM.has(to)) continue;
+      const st = w.structures?.byId?.[structId] || null;
+      const doors = Array.isArray(st?.doors) ? st.doors : null;
+      if (!st || !doors) continue;
+      const idx = doors.findIndex(d => d && String(d.id) === doorId);
+      if (idx < 0) continue;
+      if (String(doors[idx].state) === to) continue; // no-op — already in that state
+      const nextDoors = doors.map((d, i) => (i === idx ? { ...d, state: to } : d));
+      const nextSt = { ...st, doors: nextDoors };
+      w = { ...w, structures: { ...w.structures, byId: { ...w.structures.byId, [structId]: nextSt } } };
+      // Witness fact on forced/picked entry (both open a secured door by force of
+      // hand). A quiet open/shut/lock does not mint one.
+      const how = String(op.how ?? '');
+      if ((how === 'forced' || how === 'picked') && to === 'open') {
+        const doorLabel = doors[idx].exterior ? 'the door' : 'an inner door';
+        const verb = how === 'forced' ? 'forced open' : 'picked the lock on';
+        w = addFact(w, `${verb === 'forced open' ? 'Forced open' : 'Picked the lock on'} ${doorLabel} of ${structId}`, 'action');
+      }
       continue;
     }
 

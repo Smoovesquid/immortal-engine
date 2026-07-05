@@ -18,7 +18,7 @@ const mk = (over = {}) => ensureWorld({ meta: { seed: 'u107', fate: 0.2, campaig
 const ZERO_AXES = { pride: 0, greed: 0, wrath: 0, envy: 0, lust: 0, gluttony: 0, sloth: 0, humility: 0, charity: 0, patience: 0, kindness: 0, chastity: 0, temperance: 0, diligence: 0 };
 
 describe('U107-A: state shape & safe defaults', () => {
-  it('WORLD_VERSION is 30', () => assert.equal(WORLD_VERSION, 30));
+  it('WORLD_VERSION is 31', () => assert.equal(WORLD_VERSION, 31));
   it('a fresh party member has neutral morality', () => {
     const m = mk().party[0].morality;
     assert.deepEqual(m, { corruption: 0, virtue: 0, heat: 0, locked: false, patrons: {}, axes: ZERO_AXES, lastDeedT: 0 });
@@ -26,7 +26,7 @@ describe('U107-A: state shape & safe defaults', () => {
   it('the world has an empty deeds index', () => assert.deepEqual(mk().deeds, []));
   it('an old save with no morality upgrades to a clean neutral slate', () => {
     const w = ensureWorld({ meta: { version: 5, seed: 'old', fate: 0.3 }, party: [{ id: 'party', name: 'X' }] });
-    assert.equal(w.meta.version, 30);
+    assert.equal(w.meta.version, 31);
     assert.equal(w.party[0].morality.corruption, 0);
     assert.equal(w.party[0].morality.locked, false);
     assert.doesNotThrow(() => assertWorldInvariants(w));

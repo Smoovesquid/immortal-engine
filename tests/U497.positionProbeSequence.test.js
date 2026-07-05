@@ -46,10 +46,11 @@ test('U497: the slice boot wakes the player INSIDE the wake room (struct frame +
 });
 
 // ── The probe runs end to end and produces structured output ──────────────────
-test('U497: runSequence returns the six canonical steps and a layer diagnosis', () => {
+test('U497: runSequence returns the seven canonical steps and a layer diagnosis', () => {
   const r = runSequence();
   assert.equal(r.seed, 'aldermere');
-  assert.deepEqual(r.steps.map(s => s.label), ['wake', 'look', 'go-outside', 're-enter', 'walk', 'journey']);
+  // MR-2a added an interior-move step (the GEOMETRY_BREACH falsifier) between walk and journey.
+  assert.deepEqual(r.steps.map(s => s.label), ['wake', 'look', 'go-outside', 're-enter', 'walk', 'interior-move', 'journey']);
   // Each step carries both layers of the position story.
   for (const s of r.steps) {
     assert.ok('engine' in s && 'renderer' in s, `step ${s.label} carries engine + renderer snapshots`);

@@ -1,5 +1,6 @@
 import { normalizeAnchor } from './anchors.js';
 import { normalizeTopology } from './topology.js';
+import { isDoorState } from './doors.js';
 
 function ensureInteriorDiscovery(x) {
   const obj = x && typeof x === 'object' ? x : {};
@@ -85,6 +86,15 @@ function ensureStructure(v, fallbackId) {
   // buildingType, kept only when set so existing structures' shape and hash are
   // untouched (no WORLD_VERSION bump: old saves carry no player builds).
   const build = ensureBuild(x.build);
+  // MR-2a (v31) — canon door records. SHAPE-ONLY normalization here (no world
+  // context is available mid-ensureStructures): validate/round each stored door's
+  // fields and keep the array only when present, so a structure that carries no
+  // stored doors[] is byte-identical to its pre-v31 shape. The AUTHORITATIVE
+  // derivation — deriving the full door list (interior doors + the exterior front
+  // door) with seeded defaults, and completing a partial one — runs at the TAIL of
+  // ensureWorld (backfillDoors, state.js), once the map/floorPlan geometry the door
+  // cells project onto is fully assembled. This mirrors TAC-1's tactical-pos backfill.
+  const doors = ensureDoorsShape(x.doors);
 
   return {
     id,
@@ -95,8 +105,39 @@ function ensureStructure(v, fallbackId) {
     surfaces,
     tags,
     ...(buildingType ? { buildingType } : {}),
-    ...(build ? { build } : {})
+    ...(build ? { build } : {}),
+    ...(doors ? { doors } : {})
   };
+}
+
+// MR-2a — shape-only door normalization (no world context). Keeps a well-formed
+// stored doors[] round-trippable: each door needs a non-empty id and an `a` room,
+// a boolean `exterior`, an 'ns'|'ew' orient, and a valid state (else the enum's
+// default 'shut' — the tail backfill re-derives the true seeded default anyway).
+// Returns a sorted array, or null when there is nothing well-formed to keep (so the
+// field is omitted and the structure's shape stays pre-v31 until the tail authors it).
+function ensureDoorsShape(x) {
+  if (!Array.isArray(x)) return null;
+  const out = [];
+  const seen = new Set();
+  for (const d of x) {
+    if (!d || typeof d !== 'object') continue;
+    const id = String(d.id ?? '');
+    const a = String(d.a ?? '');
+    if (!id || !a || seen.has(id)) continue;
+    seen.add(id);
+    out.push({
+      id,
+      a,
+      b: String(d.b ?? ''),
+      orient: (d.orient === 'ns' || d.orient === 'ew') ? d.orient : 'ew',
+      exterior: Boolean(d.exterior),
+      state: isDoorState(d.state) ? String(d.state) : 'shut'
+    });
+  }
+  if (!out.length) return null;
+  out.sort((p, q) => String(p.id).localeCompare(String(q.id)));
+  return out;
 }
 
 // P-72 — normalize a player-built structure's provenance. quality is the

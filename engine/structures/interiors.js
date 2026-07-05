@@ -4,6 +4,7 @@ import { applyDeltas } from '../effectsCore.js';
 import { adjacentRooms, normalizeTopology, interiorExitsFrom } from './topology.js';
 import { reachableRooms } from '../movement/interiorMovement.js';
 import { doorThresholdCells } from '../map/spatial/tacticalPos.js';
+import { doorBetween, exteriorDoorOf, crossable, needsForcing } from './doors.js';
 
 function sortedStructuresAtNode(world) {
   const w = ensureWorld(world);
@@ -126,10 +127,24 @@ export function exitStructureInterior(world) {
   const entryDoorRoom = Array.isArray(w.scene.interior.visited) ? w.scene.interior.visited[0] : null;
   const threshold = exitedKey ? doorThresholdCells(w, exitedKey, entryDoorRoom) : null;
 
+  // MR-2a — NEVER SOFT-LOCK ON THE WAY OUT (docs/briefs/MR-2-FUNCTIONAL-INK.md
+  // §MR-2a; THE DM TEST). A locked/barred FRONT door keeps people OUT, not in — from
+  // inside you lift the bar / turn the latch and leave. Unbarring is PART of the exit
+  // action, so open the exterior door here (canon `door` op — no roll, no witness
+  // fact: it's your own door and you're leaving through it) BEFORE clearing the
+  // interior. Guarantees the no-soft-lock property (U506): a room you could enter is
+  // always a room you can leave.
+  let wExit = w;
+  const exitedSt = exitedKey ? w.structures?.byId?.[exitedKey] : null;
+  const frontDoor = exitedSt ? exteriorDoorOf(exitedSt) : null;
+  if (frontDoor && needsForcing(frontDoor.state)) {
+    wExit = applyDeltas(w, [{ op: 'door', structId: exitedKey, doorId: frontDoor.id, to: 'open', how: 'opened' }]);
+  }
+
   // Wrap in ensureWorld so cleared positions canonicalize identically to an
   // export/import round-trip (worldHash replay stability — U21).
   const cleared = ensureWorld({
-    ...w,
+    ...wExit,
     party: clearPartyInterior(w.party),
     map: {
       ...ensureMap(w.map),
@@ -152,6 +167,33 @@ export function exitStructureInterior(world) {
   return cleared;
 }
 
+// MR-2a — the door-state a room-to-room move must clear (docs/briefs/
+// MR-2-FUNCTIONAL-INK.md §MR-2a). A pure read the playloop consults BEFORE it calls
+// moveWithinInterior, so it can narrate/resolve the door honestly (THE DM TEST):
+//   { state, crossable, needsForcing, door } for the door between the current room
+//   and `toRoomId`, or null when there is no such door (no adjacency / no record).
+// crossable → walk straight through (open). needsForcing → barred/locked, real play.
+// Otherwise (shut) the move opens it first as a narrated part of the move.
+export function interiorDoorBlock(world, toRoomId) {
+  const w = ensureWorld(world);
+  const interior = w.scene?.interior;
+  if (!interior || typeof interior !== 'object') return null;
+  const structureKey = String(interior.structureKey || '');
+  const fromRoomId = String(interior.roomId || '');
+  const targetRoomId = String(toRoomId || '').trim();
+  if (!structureKey || !fromRoomId || !targetRoomId) return null;
+  const st = w.structures?.byId?.[structureKey];
+  if (!st) return null;
+  const door = doorBetween(st, fromRoomId, targetRoomId);
+  if (!door) return null; // no door record between these rooms (legacy / non-adjacent)
+  return {
+    state: door.state,
+    crossable: crossable(door.state),
+    needsForcing: needsForcing(door.state),
+    door,
+  };
+}
+
 export function moveWithinInterior(world, toRoomId) {
   const w = ensureWorld(world);
   const interior = w.scene?.interior;
@@ -168,11 +210,32 @@ export function moveWithinInterior(world, toRoomId) {
   const exits = adjacentRooms(structureTopology(st), fromRoomId);
   if (!exits.includes(targetRoomId)) return w;
 
-  const visited = Array.isArray(interior.visited) ? interior.visited.slice() : [];
+  // MR-2a — walls block; doors gate. A barred/locked door between here and the
+  // target REFUSES the move at this structural seam (moveWithinInterior is the
+  // "can this move happen" gate — a no-op return, exactly like a non-adjacent
+  // room). The playloop consults interiorDoorBlock FIRST and routes barred/locked
+  // through the force/pick roll (resolve.js); it only reaches here to actually
+  // cross once the door is open. A SHUT door is opened as part of the move (a canon
+  // `door` op — narrated by the caller), so from here it reads as open. `open`
+  // passes straight through. No record (legacy structure) → move freely (backward
+  // compatible with pre-v31 saves whose doors[] the tail hasn't authored).
+  let wMove = w;
+  const door = doorBetween(st, fromRoomId, targetRoomId);
+  if (door) {
+    if (needsForcing(door.state)) return w; // barred/locked — refuse (playloop resolves the roll)
+    if (String(door.state) === 'shut') {
+      // Open it as part of the move — the sole mutation path (the `door` op).
+      wMove = applyDeltas(w, [{ op: 'door', structId: structureKey, doorId: door.id, to: 'open', how: 'opened' }]);
+    }
+  }
+
+  const iv = wMove.scene?.interior;
+  const visited = Array.isArray(iv?.visited) ? iv.visited.slice()
+    : (Array.isArray(interior.visited) ? interior.visited.slice() : []);
   if (!visited.includes(targetRoomId)) visited.push(targetRoomId);
 
   const next = ensureWorld({
-    ...w,
+    ...wMove,
     map: {
       ...ensureMap(w.map),
       currentStructureId: structureKey,

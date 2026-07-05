@@ -79,8 +79,8 @@ function bootOutdoorHeadroom() {
 
 // ── U442 — a cardinal walk moves pos exactly, never the node ───────────────────
 
-test('U442-01: WORLD_VERSION is still 30 (TAC-2 adds no schema)', () => {
-  assert.equal(WORLD_VERSION, 30);
+test('U442-01: WORLD_VERSION is 31 (TAC-2 added no schema; MR-2a doors bumped it)', () => {
+  assert.equal(WORLD_VERSION, 31);
 });
 
 test('U442-02: resolveTacticalWalk moves pos EXACTLY the asked cells (≤6) with clean headroom', () => {

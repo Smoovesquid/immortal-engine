@@ -212,8 +212,8 @@ test('U110-10: cleric life domain grants heavy armor; half-elf gets chosen skill
 
 // ---- state integration ----
 
-test('U110-11: WORLD_VERSION is 30 and a 5e character survives ensureWorld + invariants', () => {
-  assert.equal(WORLD_VERSION, 30);
+test('U110-11: WORLD_VERSION is 31 and a 5e character survives ensureWorld + invariants', () => {
+  assert.equal(WORLD_VERSION, 31);
   const pc = createCharacter5e({ seed: 'world-test', speciesId: 'half-orc', classId: 'barbarian', abilityMethod: '4d6' });
   const w0 = newWorld({ seed: 'world-test', campaignId: 'c', pack: { primaryId: 'fantasy', mixerId: null }, mode: 'escape' });
   const w1 = ensureWorld({ ...w0, party: [pc] });

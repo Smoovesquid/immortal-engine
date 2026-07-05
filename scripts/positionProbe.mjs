@@ -52,6 +52,7 @@ import { beginAdventure, playerMove } from '../engine/playloop.js';
 import { SLICE_SEED } from '../engine/world/sliceRegion.js';
 import {
   nodeGridToRegionCell, nearestNodeToRegionCell, roomOfStructCell,
+  pathCrossesWallWithoutDoor,
   NODE_CELLS, PLACE_WU, CELL_FT
 } from '../engine/map/spatial/tacticalPos.js';
 import { floorPlan } from '../engine/structures/floorPlan.js';
@@ -74,6 +75,7 @@ const PACKS = {
 export const FINDING_CLASSES = {
   POSITION_DESYNC:  'Engine position disagrees with the fiction anchor after a transition',
   TOPOLOGY_BREACH:  'An interior move landed in a room not adjacent-by-door to its origin',
+  GEOMETRY_BREACH:  'A committed struct move crossed a wall without passing through a door (MR-2a)',
 };
 
 // ── Thresholds (documented inline; all in engine-native units) ───────────────
@@ -269,6 +271,30 @@ export function assertInteriorMoveAdjacent(world, structureKey, fromRoomId, toRo
   return findings;
 }
 
+/**
+ * GEOMETRY_BREACH (MR-2a): a committed struct-frame move whose straight cell path
+ * crosses a wall segment without passing through a door cell = a body walked
+ * through a wall. Given the world, the moved structure, and the (from → to) struct
+ * cells the move committed, returns a finding when the path breaches a wall.
+ * `fromCell`/`toCell` are { gx, gy } struct cells (the pos before/after the move).
+ * A move that stays outdoors (region frame) or in one room is clean. Pure.
+ */
+export function assertNoGeometryBreach(world, structureKey, fromCell, toCell, ctx = 'geometry') {
+  const findings = [];
+  if (!fromCell || !toCell) return findings;
+  if (fromCell.gx === toCell.gx && fromCell.gy === toCell.gy) return findings;
+  const st = structById(world, structureKey);
+  if (!st) return findings; // no structure to verify against
+  if (pathCrossesWallWithoutDoor(st, fromCell, toCell)) {
+    findings.push({
+      class: 'GEOMETRY_BREACH',
+      detail: `struct move (${fromCell.gx},${fromCell.gy})→(${toCell.gx},${toCell.gy}) in ${structureKey} crossed a wall without a door (walked through a wall)`,
+      context: ctx,
+    });
+  }
+  return findings;
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 //  View-model probe — what a marker would consume (Deliverable A, layer 2).
 // ─────────────────────────────────────────────────────────────────────────────
@@ -420,6 +446,35 @@ export function runSequence({ seed = SLICE_SEED } = {}) {
     const postInterior = world?.scene?.interior?.roomId || null;
     if (preInterior && postInterior && String(preInterior) !== String(postInterior)) {
       push(assertInteriorMoveAdjacent(world, world.scene.interior.structureKey, preInterior, postInterior, 'walk'), 'walk');
+    }
+    steps.push(snap);
+  }
+
+  // ── interior move (GEOMETRY_BREACH — a room→room move must go through a door) ──
+  // Re-enter the wake structure and step to an adjacent room, asserting the
+  // committed struct-cell path did not cross a wall without a door. This is the
+  // MR-2a falsifier: walls block; doors are the only room↔room crossings.
+  {
+    if (!world?.scene?.interior) { const rr = turn(world, 'go back inside'); world = rr.world; }
+    const structureKey = world?.scene?.interior?.structureKey || null;
+    const preCell = playerPos(world);
+    const preRoom = world?.scene?.interior?.roomId || null;
+    // Move deeper: name a cardinal that has an interior exit, else "go inside/deeper".
+    let moved = null;
+    for (const cmd of ['go north', 'go east', 'go south', 'go west', 'go deeper']) {
+      const r = turn(world, cmd);
+      const toRoom = r.world?.scene?.interior?.roomId || null;
+      if (toRoom && String(toRoom) !== String(preRoom)) { world = r.world; moved = r; break; }
+    }
+    const snap = snapshot(world, 'interior-move');
+    snap.narration = moved ? (moved.output?.narration || '').slice(0, 120) : '(no adjacent room to step to)';
+    const postCell = playerPos(world);
+    const postRoom = world?.scene?.interior?.roomId || null;
+    if (structureKey && preCell && postCell && preCell.frame === postCell.frame && String(preCell.frame).startsWith('struct:')) {
+      push(assertNoGeometryBreach(world, structureKey, preCell, postCell, 'interior-move'), 'interior-move');
+    }
+    if (preRoom && postRoom && String(preRoom) !== String(postRoom)) {
+      push(assertInteriorMoveAdjacent(world, structureKey, preRoom, postRoom, 'interior-move'), 'interior-move');
     }
     steps.push(snap);
   }

@@ -300,6 +300,20 @@ export function doorThresholdCells(world, structId, doorId = null) {
       || (byIdx ? rooms.find(r => String(r.id) === String(byIdx.a)) : null)
       || null;
   }
+  // MR-2a — CONSUME THE EXTERIOR DOOR RECORD (docs/briefs/MR-2-FUNCTIONAL-INK.md
+  // §MR-2a). When the caller didn't pin a specific door room, prefer the canon
+  // exterior-door RECORD (st.doors[].exterior — authored by ensureWorld's tail):
+  // its `a` field IS the front-door room, so the doorstep is grounded on the door
+  // the world records rather than re-derived from geometry. Read inline off the
+  // plain structure array (no import of doors.js — that would cycle with this
+  // module). The isEntry / sorted-first derivation BELOW stays as the LEGACY
+  // FALLBACK for a structure with no doors[] yet (pre-v31 saves before the tail
+  // authors them, or a roomless/ungroundable structure).
+  if (!doorRoom) {
+    const storedDoors = Array.isArray(st.doors) ? st.doors : [];
+    const ext = storedDoors.find(d => d && d.exterior && String(d.a ?? '') !== '');
+    if (ext) doorRoom = rooms.find(r => String(r.id) === String(ext.a)) || null;
+  }
   if (!doorRoom) doorRoom = rooms.find(r => r.isEntry) || null;
   if (!doorRoom) {
     doorRoom = rooms.slice().sort((a, b) => String(a.id).localeCompare(String(b.id)))[0] || null;
@@ -341,6 +355,78 @@ export function doorThresholdCells(world, structId, doorId = null) {
   const outside = { frame: 'region', gx, gy };
 
   return { inside, outside, dir };
+}
+
+// ── MR-2a — struct walkable-mask helpers (the GEOMETRY_BREACH geometry) ───────
+// docs/briefs/MR-2-FUNCTIONAL-INK.md §MR-2a. Walls block; the only room↔room
+// crossings are DOORS. These pure helpers answer "did a committed struct move cross
+// from one room into another the two rooms have no OPEN door between?" — the
+// falsifier the position probe's GEOMETRY_BREACH assertion evaluates. Kept here
+// (not doors.js) so tacticalPos owns the frame geometry and doors.js need not be
+// imported (that would cycle). Door adjacency is read INLINE off the plain
+// structure array (st.doors).
+//
+// Why room-PAIR adjacency, not door-cell-on-path: a room-to-room move is a
+// TOPOLOGICAL transition that re-seeds the body's cell somewhere in the destination
+// room (placementForWorld), NOT a cell walk along the door. So the straight line
+// between the two seeded cells legitimately crosses the FP-1 wall band — the move
+// is honest iff the two ENDPOINT rooms are joined by an open door. A same-room move
+// (a tactical walk) that leaves the room's rect crosses a wall and IS a breach.
+
+// The room a struct cell belongs to (roomRectCells territories are DISJOINT under
+// the FP-1 wall band). Exported form of the module-internal projection, taking a
+// structure (so callers work from world.structures.byId[...]).
+export function roomOfStructCellForStruct(structure, gx, gy) {
+  return roomOfStructCell(floorPlan(structure), gx, gy);
+}
+
+// The set of room PAIRS joined by an OPEN interior door (order-independent keys
+// "a|b" sorted). Read inline from the structure's canon doors[] — NO import of
+// doors.js (would cycle). Only an OPEN door is a passable crossing; a shut door is
+// opened as part of a move (so a committed cross reads open), barred/locked block.
+function openDoorRoomPairs(structure) {
+  const doors = Array.isArray(structure?.doors) ? structure.doors : [];
+  const pairs = new Set();
+  for (const d of doors) {
+    if (!d || d.exterior) continue;
+    if (String(d.state) !== 'open') continue;
+    const a = String(d.a ?? ''), b = String(d.b ?? '');
+    if (!a || !b) continue;
+    pairs.add([a, b].sort((x, y) => x.localeCompare(y)).join('|'));
+  }
+  return pairs;
+}
+
+/**
+ * pathCrossesWallWithoutDoor(structure, from, to) -> boolean
+ *
+ * True when a committed struct move from `from` to `to` (both struct cells of
+ * `structure`) crosses a wall the geometry forbids — a GEOMETRY BREACH (a body
+ * walked through a wall). The rule:
+ *   • same room (from and to resolve to the same room) → the walk stayed inside its
+ *     room rect → clean (false). (A tactical walk that left the rect would land in
+ *     the void/another room and be caught below.)
+ *   • different rooms → LEGITIMATE iff an OPEN door joins those two rooms (the move
+ *     went through that door, re-seeding the cell); otherwise a wall was crossed →
+ *     breach (true).
+ *   • an endpoint in NO room (the wall band / void / outside the plan) → breach: a
+ *     committed body should never rest inside a wall.
+ *
+ * Pure integer geometry; no world, no rng. Byte-deterministic (probe GEOMETRY_BREACH).
+ */
+export function pathCrossesWallWithoutDoor(structure, from, to) {
+  if (!from || !to || !Number.isInteger(from.gx) || !Number.isInteger(from.gy)
+    || !Number.isInteger(to.gx) || !Number.isInteger(to.gy)) return false;
+  const plan = floorPlan(structure);
+  const roomFrom = roomOfStructCell(plan, from.gx, from.gy);
+  const roomTo = roomOfStructCell(plan, to.gx, to.gy);
+  // A committed body must rest in a real room, never inside a wall/void.
+  if (roomTo === '') return true;
+  if (roomFrom === '') return true;
+  if (roomFrom === roomTo) return false; // stayed in one room — no wall crossed
+  // Crossed into a different room: legal only through an OPEN door joining them.
+  const pairKey = [roomFrom, roomTo].sort((x, y) => x.localeCompare(y)).join('|');
+  return !openDoorRoomPairs(structure).has(pairKey);
 }
 
 // Cached floorPlan per structure id (floorPlan is a pure function of the

@@ -20,7 +20,7 @@ import { applyDeltas } from './effectsCore.js';
 import { introduceThread, resolveThread, ensureInstrumentLayer, traceIntentPacket, intentTraceOn } from './instrument.js';
 import { assemblePacket } from './intent/assemblePacket.js';
 import { applyGeneratedStructuresForNode } from './structures/applyGeneratedStructuresForNode.js';
-import { enterStructureInterior, exitStructureInterior, moveWithinInterior, getInteriorView, interiorDirectionalExits, resolveStructureSelection } from './structures/interiors.js';
+import { enterStructureInterior, exitStructureInterior, moveWithinInterior, getInteriorView, interiorDirectionalExits, resolveStructureSelection, interiorDoorBlock } from './structures/interiors.js';
 import { normalizeTopology, adjacentRooms } from './structures/topology.js';
 import { roomWindows, roomWindowFacings } from './structures/roomWindows.js';
 import { furnitureRoomAssignments, objectsHere } from './structures/roomObjects.js';
@@ -1963,6 +1963,62 @@ function playerMoveCore(world, packsById, text, dqIntent) {
   if (!combatEngageAction && !declaredNpcViolence && interiorAction.kind === 'move'
       && (roomMoveWins || (!isSeekPersonIntent(text) && !approachPresentNpcRef(w, text) && !talkOrApproachResolvesPresentNpc(w, text)))) {
     const wantsRiskyMove = isRiskyOrObstructedMoveIntent(interiorAction.moveText || text);
+
+    // MR-2a — DOORS GATE INTERIOR MOVES (docs/briefs/MR-2-FUNCTIONAL-INK.md §MR-2a).
+    // A barred/locked door between here and the target room is REAL PLAY, not a
+    // bounce (THE DM TEST) — resolved BEFORE either move branch below (both refuse
+    // to cross it) so a "force the door" intent (which reads as a risky move) still
+    // lands here. A force/pick INTENT routes through the resolve.js roll seam
+    // (rollPhysicsCheck — barred is a shove, locked a pick/pry); a plain "go to X"
+    // gets the door described as a fact with texture and the ways past it, never
+    // "invalid move". Success opens the door (canon `door` op — mints the witness
+    // fact) and completes the move.
+    {
+      const doorTargetRoomId = interiorAction.toRoomId
+        || (namedRoomId && namedRoomId !== '__here__' ? namedRoomId : '')
+        || pickAdjacentInteriorByDirection(w, interiorAction.direction)
+        || (interiorAction.roomHint ? resolveInteriorRoomHint(w, interiorAction.roomHint) : '');
+      const doorBlock = doorTargetRoomId ? interiorDoorBlock(w, doorTargetRoomId) : null;
+      if (doorBlock && doorBlock.needsForcing) {
+        const fromRoomId = String(w.scene?.interior?.roomId || '');
+        const la = lockActionKind(text);
+        const barred = String(doorBlock.state) === 'barred';
+        if (la === 'force' || la === 'pick') {
+          // Barred = a physical bar (force it — a pick does nothing to a bar, so a
+          // pick attempt reads as a shove); locked = a lock (either works, pick is
+          // quieter). Hardness sets the DC: a bar is stouter (4) than a lock (3).
+          const hardness = barred ? 4 : 3;
+          const chk = rollPhysicsCheck(w, { actorId: 'party', hardness, intentText: String(text || '') });
+          const how = (la === 'pick' && !barred) ? 'picked' : 'forced';
+          if (chk.outcome !== 'failure') {
+            const wOpen = applyDeltas(w, [{ op: 'door', structId: String(w.scene.interior.structureKey), doorId: doorBlock.door.id, to: 'open', how }]);
+            const wMoved = moveWithinInterior(wOpen, doorTargetRoomId);
+            let destName = '';
+            try { destName = String(getRoomState(wMoved)?.room?.name || '').trim(); } catch { destName = ''; }
+            const dest = destName ? `the ${destName.toLowerCase()}` : 'the next room';
+            const line = how === 'picked'
+              ? `Wizard: You work the lock until it gives with a click, and step through into ${dest}.`
+              : barred
+                ? `Wizard: You set your shoulder and drive in — the bar splinters from its brackets and the door bangs open. You step through into ${dest}. The noise carried.`
+                : `Wizard: You throw your weight against it and the lock tears free of the frame; the door bursts open and you step through into ${dest}. Anyone near will have heard.`;
+            let w2 = pushEvent(wMoved, { kind: 'move', data: { mode: 'interior', fromRoomId, toRoomId: String(wMoved.scene?.interior?.roomId || ''), withinSpeed: true, rolled: true, forcedDoor: how } });
+            w2 = worldTick(w2, `${w2.meta.seed}|tick|interior-door-force|turn${w2.time.turn}|tl${w2.timeline.length}`);
+            return { world: w2, output: { narration: line, mechanics: chk.mechanicsLine } };
+          }
+          const failLine = barred
+            ? `Wizard: You hit the door hard but the bar holds — it shudders in its frame and stays shut. You could try again, or find another way.`
+            : `Wizard: The lock resists you — the door doesn't budge. Another attempt, or a different route.`;
+          return { world: w, output: { narration: failLine, mechanics: chk.mechanicsLine } };
+        }
+        // Plain move toward a secured door: describe it honestly, offer the ways past.
+        const roomWord = doorBlock.door.exterior ? 'the door' : 'the door ahead';
+        const obstruction = barred
+          ? `${roomWord} doesn't move — a bar's been dropped across it on the far side.`
+          : `${roomWord} is locked fast; the latch won't lift.`;
+        return { world: w, output: { narration: `Wizard: ${obstruction.charAt(0).toUpperCase()}${obstruction.slice(1)} You could force it, ${barred ? 'or look for another way around' : 'pick the lock, or find another route'}.`, mechanics: `[door:${doorBlock.state}]` } };
+      }
+    }
+
     if (!wantsRiskyMove) {
       const targetRoomId = interiorAction.toRoomId
         || (namedRoomId && namedRoomId !== '__here__' ? namedRoomId : '')

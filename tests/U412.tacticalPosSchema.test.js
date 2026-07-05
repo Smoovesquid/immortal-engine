@@ -78,8 +78,8 @@ function posEqual(a, b) {
 
 // ── U412 — schema + migration ────────────────────────────────────────────────
 
-test('U412-01: WORLD_VERSION bumped to 30 for TAC-1', () => {
-  assert.equal(WORLD_VERSION, 30);
+test('U412-01: WORLD_VERSION is 31 (TAC-1 bumped to 30; MR-2a doors → 31)', () => {
+  assert.equal(WORLD_VERSION, 31);
 });
 
 test('U412-02: the player gets a valid struct pos at the indoor boot', () => {
@@ -140,7 +140,7 @@ test('U412-04: a pre-bump (v29) save loads with a warn and gains pos', () => {
 
   assert.ok(loaded, 'the save loads');
   assert.equal(loaded.meta.version, WORLD_VERSION, 'upgraded to the current version');
-  assert.ok(warnings.length > 0 && warnings[0].includes('v29') && warnings[0].includes('v30'),
+  assert.ok(warnings.length > 0 && warnings[0].includes('v29') && warnings[0].includes('v31'),
     `warns about the version jump: ${warnings[0]}`);
   // The upgrade populated pos on the player + present NPCs.
   assert.ok(loaded.party[0].pos, 'player gained a pos on upgrade');

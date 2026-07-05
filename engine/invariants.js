@@ -2,6 +2,7 @@ import { WORLD_VERSION, VICE_AXES, VIRTUE_AXES } from './state.js';
 import { statMod, maxWounds } from './ruleset/core/stats.js';
 import { nearestNodeToRegionCell, roomOfStructCell } from './map/spatial/tacticalPos.js';
 import { floorPlan } from './structures/floorPlan.js';
+import { isDoorState } from './structures/doors.js';
 
 const SPELL_SLOT_LEVELS = [1, 2, 3, 4, 5];
 const CURRENCY_KEYS = ['copper', 'silver', 'gold', 'platinum'];
@@ -692,6 +693,51 @@ export function assertWorldInvariants(world) {
       const curNode = String(world.map?.currentNodeId ?? '');
       if (String(st.nodeId) !== curNode) {
         throw new Error(`Invariant: scene.interior structure ${structureKey} is at node ${st.nodeId} but map.currentNodeId is ${curNode || '(none)'} (position desync — THE MOVEMENT LAW)`);
+      }
+    }
+  }
+
+  // MR-2a (v31) — canon door records (docs/briefs/MR-2-FUNCTIONAL-INK.md §MR-2a).
+  // For every registered structure that carries a doors[]: each door's state is in
+  // the enum, each door's rooms EXIST in the structure's plan (an interior door
+  // needs both a+b to be real rooms — "door cells exist in the plan"; the exterior
+  // door needs its `a` entry room), and there is EXACTLY ONE exterior door per v1
+  // structure (a structure with a groundable plan). The door LIST is authored by
+  // ensureWorld's tail (backfillDoors) so a validly-ensured world always satisfies
+  // this; it is the tripwire against a hand-built/malformed doors[] slipping in.
+  const structuresById = world.structures?.byId;
+  if (structuresById && typeof structuresById === 'object') {
+    for (const st of Object.values(structuresById)) {
+      const doors = Array.isArray(st?.doors) ? st.doors : null;
+      if (!doors) continue; // a structure may carry no doors[] (no groundable plan / pre-author)
+      const plan = floorPlan(st);
+      const roomIds = new Set((Array.isArray(plan?.rooms) ? plan.rooms : []).map(r => String(r.id)));
+      let exteriorCount = 0;
+      for (const d of doors) {
+        if (!d || typeof d !== 'object') {
+          throw new Error(`Invariant: structure ${st.id} has a malformed door (not an object)`);
+        }
+        if (!isDoorState(d.state)) {
+          throw new Error(`Invariant: structure ${st.id} door ${d.id} has invalid state '${d.state}' (must be one of open|shut|barred|locked)`);
+        }
+        if (d.exterior) {
+          exteriorCount++;
+          // The exterior door fronts a real entry room; its far side is 'outside' (b === '').
+          if (!roomIds.has(String(d.a))) {
+            throw new Error(`Invariant: structure ${st.id} exterior door ${d.id} fronts room ${d.a} which is not in the plan`);
+          }
+        } else {
+          // An interior door's cells exist in the plan iff both rooms it joins do.
+          if (!roomIds.has(String(d.a)) || !roomIds.has(String(d.b))) {
+            throw new Error(`Invariant: structure ${st.id} interior door ${d.id} joins rooms ${d.a},${d.b} not both in the plan (door cells must exist in the plan)`);
+          }
+        }
+      }
+      // Exactly one exterior door for any structure that has rooms (a groundable
+      // plan). A roomless/ungroundable structure authors no doors and is skipped
+      // above (doors === null), so this only asserts on real, doored structures.
+      if (roomIds.size > 0 && exteriorCount !== 1) {
+        throw new Error(`Invariant: structure ${st.id} must have exactly one exterior door, has ${exteriorCount}`);
       }
     }
   }

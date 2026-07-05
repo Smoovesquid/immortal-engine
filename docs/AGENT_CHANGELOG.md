@@ -2025,6 +2025,20 @@ other agents. (none active)
   the answerability wave. Integration ladder GREEN: **convergence 127/127**, suite 9855/0,
   determinism green. v0.28.22 b072.
 
+## 2026-07-04 — Basecamp (docs lanes + INFO-HONESTY → v0.28.23 build 073)
+
+- Landed the PACK-THREADS-1 decision memo (`a1b7f62d`): 19 never-loaded authored arcs, consumer
+  machinery real+tested; whitelist also drops `factions` + half-darkens locations/objectives/
+  sensoryMotifs; recommends admit threads+factions / audit trio / delete dead four. TIM'S CALL
+  (changes the default game).
+- Landed the CG-LIVE-2 regeneration design brief (`e3ab26b6`): recommends promoting the shadow's
+  detectors into validateNarrationCandidate (reject-at-sink → base, coherence-safe description-only
+  floor for ghost-voicing bases); B shelved, C rejected. Ready to packetize on Tim's nod.
+- Landed INFO-HONESTY (`a3f27940`): third validator guard — no-record info answers can be reworded
+  by polish, never resolved into located specifics/structure counts; all 20 decline templates
+  enumerated + covered. U464–U465 (11 tests).
+- Integration ladder GREEN: convergence 127/127, suite 9866/0, determinism green. v0.28.23 b073.
+
 2026-07-04 — Sonnet (worker worktree, PERC-1) — LOGIC DONE, WIRING PENDING (playloop.js fenced)
 - Packet/seam: `docs/PACKETS.md` PERC-1 — 2026-07-04 gate (Chaos-griefer, CRUNCH_INCONSISTENCY): "Wait — is
   the ceiling still on fire or not? I stand in the middle of the room and look up." rolled a NATURAL 1 vs DC

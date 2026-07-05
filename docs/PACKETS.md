@@ -122,9 +122,21 @@ we are deepening known families, not discovering new ones. Clusters → owners (
   name+talk resolves not clarifies.
 - **Object-state question (1)** — "where did the letter go? I was just holding it" → deflected to NPC
   presence. Inventory/canon knows the letter; answer it.
+  **→ ANS-2 DISPATCHED 2026-07-04-pm10** (Opus worktree, U460–U463): the four question-family turns
+  in ONE packet — info-asks resolve THROUGH present knowledgeable NPCs (secret gates enforced at the
+  reveal sink per V12-13), nearest-person compound opens dialogue deterministically, sheet asks
+  answer from canon via the RL-1 meta floor, letter-where answers from inventory canon (+
+  question-shape broadening from INT-4-HELD's U459-05 diagnosis). llmAdapter fenced (INFO-HONESTY
+  fabricated-specific remains its own follow-up row).
 - **INFO-HONESTY fabricated specific (1)** — pressed after a no-record info-check, DM invents "the
   single building visible… Elske is within it." PERC-1's sibling: no-record must never become a
   confident specific (extend the hedge/honesty floor to info-checks under pressure).
+  **INFO-HONESTY ✅ LANDED v0.28.23 b073** (`a3f27940`): third validator guard after PERC-1's —
+  `isNoRecordInfoBase` (all 20 decline templates from declineInfoSeek/objectReadDecline enumerated,
+  U464-06 covers every one) + `findResolvedInfoSpecific` (positive WHERE assertions + structure
+  counts rejected; reworded uncertainty + pure atmosphere pass). No floor change needed (it was
+  already honest — fabrication was purely polish-layer). U464–U465 (11 tests); U245/PERC-1 guards
+  regression-green; zero patch blocks.
 - **META-SHEET (1)** — "what does my sheet say for HP and class?" answered with room description.
   RL-1's sibling: character-state meta-asks answer from canon (HP 13/13, level 1, gear list exists).
 
@@ -1119,6 +1131,27 @@ sheet (no per-node islands); the camera keeps the player centered (no edges, eve
   the live app at all. The threads feature is dark content. Decide: admit `threads` through the
   whitelist (then the U454 raw path becomes the live path — engine work + content audit), or delete
   the dead catalog fields (honesty cut). Tim's call on whether threaded arcs are wanted for the slice.
+  **AUDIT ✅ MEMO LANDED** (`a1b7f62d` → `cbc86c06`, `docs/briefs/PACK-THREADS-1-decision-memo.md`).
+  **THE FINDING IS BIGGER THAN THE QUESTION:** (1) 19 hand-authored arcs across 4 packs never load —
+  and the consumer machinery (playloop seeding + worldTick tension escalation) is REAL, tested, and
+  proven working by U454 → admission is a ~2-3h packet, not construction; (2) it affects the DEFAULT
+  game (beginAdventure unconditionally merges all threaded packs into `fantasy`, the slice's primary);
+  (3) the whitelist ALSO drops `factions` (real consumer exists), and `locations`/`objectives`/
+  `sensoryMotifs` are HALF-dark (engine reads them but silently falls back to thinner starter content
+  — the built-but-dark class, exactly PATH_TO_SELLABLE's "surface, don't build"); `regions`/`npcs`/
+  `seeds`/`toneVectors` are genuinely dead (zero readers — honest deletion candidates). MEMO
+  RECOMMENDS: admit `threads`+`factions`, audit the half-dark trio, delete the dead four. One known
+  cost: U454-E's pinned boot hash refreshes once (expected, scoped). **DECISION = TIM'S** (it changes
+  the default game). ∥ **CG-LIVE-2 DESIGN ✅ BRIEF LANDED** (`e3ab26b6` → `417446f3`,
+  `docs/briefs/CG-LIVE-2-regeneration-design.md`): RECOMMENDS Candidate A — promote the shadow's
+  pure single-turn detectors into the `validateNarrationCandidate` slot (REJECT-AT-SINK → base
+  fallback; zero new LLM calls; no new governing LLM = the Ref-pull ruling kept to the letter).
+  Load-bearing nuance surfaced: base itself can ghost-voice (CG-LIVE-1b) → includes a coherence-safe
+  description-only floor + a `finalize()` choke point. B (named-violation retry) shelved as escape
+  hatch (it's a narrower REF-GHOST); C (post-hoc note) rejected (ships the lie). Rollout
+  dark→shadow-compare→live; eval = corpus lock on all 8 historical catches + gate A/B + shadow-ledger
+  FP monitor. Size M; honest limit: stops the lie, doesn't author the better answer (that's AG-4's
+  layer — they compose). READY TO PACKETIZE on Tim's nod.
 
 ### MAP-3DR — reconnect the 3D diorama on a persistent mount  ·  **Phase 4 (the face)  ·  = TABLETOP S4; cut the packet when S3 lands**
 - **why parked (2026-07-03, Tim's call):** the 3D layer was DISCONNECTED (`MAP_3D_ENABLED=false`,

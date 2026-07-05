@@ -2054,6 +2054,16 @@ other agents. (none active)
 - Bundle ladder GREEN: convergence **131/131**, suite **9902/0**, determinism green (ANS-2's
   fixtures held under thread-enriched worlds — no cross-lane relocks needed). v0.28.25 b074.
 
+## 2026-07-04 — Basecamp (CG-2 integration → v0.28.26 build 075)
+
+- Landed CG-2 dark (`a91108c3` → `d56b7b7e`, Tim-approved design): shadow detectors promoted to a
+  pre-delivery validator behind `COHERENCE_VALIDATE` (off / shadow-compare / on); new pure
+  `engine/coherence/validator.js`; `finalize()` single-exit choke point; description-only safe floor
+  for ghost-voicing bases. Honest accounting: 6 single-turn corpus catches locked (U469, live
+  re-derivation), the cross-turn 7th stays with the observer by design. Zero new LLM calls. U468–U470
+  (22 subtests). Next: Tim flips shadow-compare on a live session and reviews the swap log.
+- Integration ladder GREEN: convergence 131/131, suite 9924/0, determinism green. v0.28.26 b075.
+
 2026-07-04 — Sonnet (worker worktree, PERC-1) — LOGIC DONE, WIRING PENDING (playloop.js fenced)
 - Packet/seam: `docs/PACKETS.md` PERC-1 — 2026-07-04 gate (Chaos-griefer, CRUNCH_INCONSISTENCY): "Wait — is
   the ceiling still on fire or not? I stand in the middle of the room and look up." rolled a NATURAL 1 vs DC

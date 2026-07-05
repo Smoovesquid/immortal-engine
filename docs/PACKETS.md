@@ -1172,10 +1172,18 @@ sheet (no per-node islands); the camera keeps the player centered (no edges, eve
   hatch (it's a narrower REF-GHOST); C (post-hoc note) rejected (ships the lie). Rollout
   dark→shadow-compare→live; eval = corpus lock on all 8 historical catches + gate A/B + shadow-ledger
   FP monitor. Size M; honest limit: stops the lie, doesn't author the better answer (that's AG-4's
-  layer — they compose). **✅ TIM APPROVED 2026-07-04-pm11 → CG-2 DISPATCHED** (Opus worktree,
-  U468–U470: Candidate A built DARK per the brief's own rollout — `COHERENCE_VALIDATE` env flag
-  default OFF, shadow-compare mode logs would-be swaps; coherence-safe description-only floor +
-  `finalize()` choke point; all 8 historical catches corpus-locked as the regression floor).
+  layer — they compose). **✅ TIM APPROVED 2026-07-04-pm11 → CG-2 ✅ LANDED v0.28.26 b075**
+  (`a91108c3` → `d56b7b7e`): Candidate A DARK — new pure `engine/coherence/validator.js` +
+  `finalize()` choke point in llmAdapter (single exit, all 5 delivery paths proven).
+  `COHERENCE_VALIDATE` = off (byte-identical, U468) / shadow-compare (decide-don't-act, logs
+  would-be swaps to `docs/playtests/coherence-validate/*.jsonl` — the human-eyeball stage) / on
+  (reject → base → re-check base → description-only safe floor; warn-severity never blocks).
+  HONEST ACCOUNTING: "8 catches" was pre-enrichment — the code-audited corpus carries 6 single-turn
+  fail catches, ALL locked in U469 (live re-derivation fails on recall drift); the 7th (CG-2c
+  cross-turn relocation) stays with the shadow OBSERVER by design (U388/U389 its lock). Zero new LLM
+  calls; no composer touch. U468–U470 (22 subtests). **NEXT STEP when Tim wants it: flip
+  `COHERENCE_VALIDATE=shadow-compare` on a live session and review the swap log together — the
+  eyeball stage before `on`.**
 
 ### MAP-3DR — reconnect the 3D diorama on a persistent mount  ·  **Phase 4 (the face)  ·  = TABLETOP S4; cut the packet when S3 lands**
 - **why parked (2026-07-03, Tim's call):** the 3D layer was DISCONNECTED (`MAP_3D_ENABLED=false`,

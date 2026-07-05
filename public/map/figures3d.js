@@ -148,6 +148,75 @@ export function buildArchetypeFigure(THREE, archetype = 'humanoid', opts = {}) {
   return g;
 }
 
+// TT-PROPS (docs/briefs/TT-WORLD-paper-world.md Stage 3) — palette + rough
+// proportions for the standing-prop minis. Kept intentionally plain: "simple
+// solid pieces" per the brief, not a fifth rigged figure — a prop is a single
+// box/cylinder, not a silhouette that needs archetype legibility the way a
+// creature does.
+const PROP_PALETTE = {
+  barrel:  { color: 0x6b4a2c, rough: 0.88 },   // banded wood cask
+  bed:     { color: 0x8a6a45, rough: 0.82 },   // wood frame (a pillow tick reads the "bed"-ness)
+  chest:   { color: 0x5e3f26, rough: 0.7, metal: 0.15 }, // dark wood + a hint of iron banding
+  dresser: { color: 0x7a5a38, rough: 0.8 },
+};
+const PROP_SHADOW_MAT_CACHE = new Map(); // one shared shadow material per THREE module instance
+
+function propShadowMat(THREE) {
+  let m = PROP_SHADOW_MAT_CACHE.get(THREE);
+  if (!m) {
+    m = new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.22, depthWrite: false });
+    PROP_SHADOW_MAT_CACHE.set(THREE, m);
+  }
+  return m;
+}
+
+/**
+ * buildPropMini(THREE, kind) -> THREE.Group | null
+ * A standing prop token — barrel/bed/chest/dresser — as a SIMPLE SOLID piece
+ * (a single box or cylinder, full color, no rig) sitting on a soft round
+ * shadow disc (the "base + soft shadow" that sells "standing on the tilted
+ * table", per TABLETOP_MAP.md's miniature art direction). Feet at y=0, like
+ * buildArchetypeFigure, so the caller positions/scales it identically. Returns
+ * null for an unrecognized kind (never fabricate a shape for data that isn't
+ * one of the props this stage covers).
+ */
+export function buildPropMini(THREE, kind) {
+  const pal = PROP_PALETTE[String(kind || '')];
+  if (!pal) return null;
+  const g = new THREE.Group();
+  const mat = new THREE.MeshStandardMaterial({ color: pal.color, roughness: pal.rough ?? 0.85, metalness: pal.metal ?? 0.05 });
+
+  // Soft shadow disc — a flat, faded dark circle at the piece's feet.
+  const shadow = new THREE.Mesh(new THREE.CircleGeometry(0.55, 16), propShadowMat(THREE));
+  shadow.rotation.x = -Math.PI / 2;
+  shadow.position.y = 0.012;
+  g.add(shadow);
+
+  let body;
+  if (kind === 'barrel') {
+    body = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.3, 0.62, 12), mat);
+    body.position.y = 0.31;
+  } else if (kind === 'chest') {
+    body = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.42, 0.46), mat);
+    body.position.y = 0.21;
+  } else if (kind === 'dresser') {
+    body = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.78, 0.4), mat);
+    body.position.y = 0.39;
+  } else { // bed
+    const frame = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.24, 1.9), mat);
+    frame.position.y = 0.12;
+    g.add(frame);
+    const tickMat = new THREE.MeshStandardMaterial({ color: 0xd8cfb8, roughness: 0.95 });
+    const tick = new THREE.Mesh(new THREE.BoxGeometry(0.98, 0.16, 0.4), tickMat);
+    tick.position.set(0, 0.28, -0.72); // the pillow end reads "bed" at a glance
+    g.add(tick);
+    body = null;
+  }
+  if (body) { body.castShadow = true; g.add(body); }
+  g.userData.kind = String(kind);
+  return g;
+}
+
 /**
  * breatheMinis(minis, tSeconds) — the idle "alive" pass. Each mini is
  * { group, baseY, baseScale, rate, phase, bob, defeated }. A defeated mini is

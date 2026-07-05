@@ -25,9 +25,11 @@
 
 const TILE_WU = 40; // world units per node tile — keeps the 3D geography to scale.
 
-// Procedural archetype minis + idle breathe (MAPNINJA Step 5). Pure helpers; they
-// receive the lazily-imported THREE, so this stays a zero-cost static import.
-import { buildArchetypeFigure, breatheMinis, phaseFromKey } from './figures3d.js';
+// Procedural archetype minis + idle breathe (MAPNINJA Step 5), plus the
+// TT-PROPS standing-prop mini builder (barrels/beds/dressers/chests). Pure
+// helpers; they receive the lazily-imported THREE, so this stays a zero-cost
+// static import.
+import { buildArchetypeFigure, buildPropMini, breatheMinis, phaseFromKey } from './figures3d.js';
 
 // World-asset builders (terrain, dirt roads, settlements, woods, the chapel ruin) —
 // the SAME pure-view module the standalone asset lab (map-proto/asset-lab.html) uses,
@@ -69,6 +71,12 @@ import {
 //      zoom-drift redraw catches up.
 import { renderOneMap, playerFocusWu } from './oneMap.js';
 import { NODE_WU } from './worldSpace.js';
+// TT-PROPS — placedTokenModel(world, nodeId) is the pure engine-position read
+// (people/trees/props/livestock, all {wx,wy} world units) the 2-D sheet
+// already draws minis from; the tilt view reuses the SAME model, never a
+// second derivation, so 2-D and 3-D can never disagree on where a barrel or
+// an NPC actually stands.
+import { placedTokenModel } from './drawModel.js';
 
 const SHEET_PX = 1024;         // texture resolution (px) — the hidden mount's square canvas.
 const SHEET_SPAN_MARGIN = 4.5; // the plane spans this many multiples of the camera's own ground footprint.
@@ -529,6 +537,45 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
     playerToken = token;
     playerMini = { group: token, baseY: py + 0.06, baseScale: 1, rate: 1.4, phase: 0, bob: 0.05, defeated: false };
     sliceMinis.push(playerMini);
+  }
+
+  // TT-PROPS — everything standing is a mini. Positions come from the SAME
+  // engine scene contract the brief requires: placedTokenModel(world, nodeId)
+  // (drawModel.js) is a pure read of engine-owned occupancy/terrain — the
+  // renderer never invents a position. Skipped entirely for a bare sceneData
+  // caller (opts.world is the only source; a lab page with no world sees no
+  // props/people, exactly as it saw no trees/furniture on the 2-D sheet either).
+  // Not run during combat: the tactical board above already owns every mini in
+  // that scene. People use the SAME archetype-figure builder combat/overworld
+  // both use ('humanoid'); trees stay on their existing worldAssets.js path
+  // (buildWilderness/addTreeScatter) — TT-PROPS only adds furniture + people,
+  // per the brief's Stage 3 scope ("trees (already law), PLUS props").
+  if (opts.world && !sceneData?.combat) {
+    for (const node of nodes) {
+      if (node.nodeType !== 'settlement') continue;
+      const tok = placedTokenModel(opts.world, node.id);
+      for (const npc of (tok.people || [])) {
+        const p = worldPosFromWu(npc.wx, npc.wy);
+        const y = heightAt(p.x, p.z);
+        const fig = buildArchetypeFigure(THREE, 'humanoid', {});
+        fig.position.set(p.x, y + 0.02, p.z);
+        scene.add(fig);
+        sliceMinis.push({ group: fig, baseY: y + 0.02, baseScale: 1, rate: 1.3, phase: phaseFromKey(npc.id || npc.name), bob: 0.04, defeated: false });
+      }
+      for (const prop of (tok.props || [])) {
+        const mini = buildPropMini(THREE, prop.kind);
+        if (!mini) continue;
+        const p = worldPosFromWu(prop.wx, prop.wy);
+        const y = heightAt(p.x, p.z);
+        mini.position.set(p.x, y, p.z);
+        scene.add(mini);
+        // Props breathe far more subtly than creatures — a prop is inert, not
+        // alive; the tiny bob is only enough to avoid a perfectly static scene
+        // reading as a screenshot (Dejarik-alive per the brief, kept honest —
+        // furniture doesn't have a pulse).
+        sliceMinis.push({ group: mini, baseY: y, baseScale: 1, rate: 0.6, phase: phaseFromKey(prop.kind + prop.wx + prop.wy), bob: 0.008, defeated: false });
+      }
+    }
   }
 
   // MAP-3DR — setPlayerFocus(tx, ty): stand the player mini on an exact node-TILE

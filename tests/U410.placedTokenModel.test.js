@@ -114,5 +114,7 @@ test('U410-E: token layout is a pure seed projection — same seed yields identi
 test('U410-F: an unknown node yields empty token lists, never invented content', () => {
   const w = boot();
   const model = placedTokenModel(w, 'a-node-that-does-not-exist');
-  assert.deepEqual(model, { nodeId: 'a-node-that-does-not-exist', people: [], trees: [], livestock: [] });
+  // TT-PROPS (docs/briefs/TT-WORLD-paper-world.md Stage 3) added `props` —
+  // additive, backward-compatible; still empty for an unknown node.
+  assert.deepEqual(model, { nodeId: 'a-node-that-does-not-exist', people: [], trees: [], props: [], livestock: [] });
 });

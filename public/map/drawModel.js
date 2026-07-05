@@ -609,11 +609,19 @@ export function decorativeBuildingRects(world, nodeId) {
   return { nodeId: id, buildings };
 }
 
+// TT-PROPS furniture kinds worth a standing mini (matches the 2-D sheet's own
+// furniture palette, oneMap.js's SKIP_FURN/STONE_FURN sets) — big built-in
+// fixtures (hearth, altar, statue, column, brazier — masonry, part of the
+// room's shell) and 'rug'/'bars' are excluded: the decision rule is "if you
+// could pick it up off the table → mini" and a hearth is not picked up.
+const PROP_MINI_KINDS = new Set(['barrel', 'bed', 'chest', 'dresser']);
+
 /**
  * placedTokenModel(world, nodeId) -> {
  *   nodeId,
  *   people: [{ id, name, role, wx, wy, hostile }],   // outdoorOccupants truth, at THIS node only
  *   trees:  [{ wx, wy, r }],                          // terrain groves/tree props, as PLACED tokens
+ *   props:  [{ wx, wy, kind }],                       // TT-PROPS: barrels/beds/dressers/chests as minis
  *   livestock: [{ wx, wy, kind }]                     // only ever populated from real data — none
  *                                                      // exists at the settlement-node level today,
  *                                                      // so this is always [] (never fabricate).
@@ -624,10 +632,20 @@ export function decorativeBuildingRects(world, nodeId) {
  * move from ground-ink (the old grove ellipse) to placed tokens, one per actual
  * grove tree. Determinism: identical (seed, occupancy, terrain) yields identical
  * tokens — same guarantee U398/U399 already prove for placeFromWorldNode.
+ *
+ * TT-PROPS (docs/briefs/TT-WORLD-paper-world.md Stage 3): `props` reuses the
+ * EXACT same furniture data + fitting math the 2-D sheet's furniture ink
+ * already uses (b.plan.furniture, catalogPlanBoundsInPlaceUnits +
+ * fitCatalogPointToRect — TT-DRAW-2's "one sizing truth", U416-tested) rather
+ * than inventing a new derivation — this file only stops at the world-unit
+ * point (fitCatalogPointToRect's {wx,wy}) instead of projecting on through
+ * toPx to pixels. Gated to the SAME "open" condition oneMap.js's furniture ink
+ * uses (the structure you're standing IN, or your home) — a closed building's
+ * furniture isn't visible from outside, on the sheet or as minis.
  */
 export function placedTokenModel(world, nodeId) {
   const node = findNode(world, nodeId);
-  if (!node) return { nodeId: String(nodeId || ''), people: [], trees: [], livestock: [] };
+  if (!node) return { nodeId: String(nodeId || ''), people: [], trees: [], props: [], livestock: [] };
   const id = String(node.id);
   const isCurrentNode = id === String(world?.map?.currentNodeId || '');
   const place = node.settlement ? placeFromWorldNode(world, id) : null;
@@ -676,7 +694,42 @@ export function placedTokenModel(world, nodeId) {
     }
   }
 
-  return { nodeId: id, people, trees, livestock: [] };
+  const props = [];
+  if (place) {
+    const homeNodeId = String(world?.meta?.homeNodeId || '');
+    const interiorKey = String(world?.scene?.interior?.structureKey || '');
+    const drawnStructures = new Map((drawnStructureModel(world, id)?.structures || []).map(s => [s.structureKey, s]));
+    for (const b of (place.buildings || [])) {
+      const structureKey = b?.structureKey;
+      const realPlan = structureKey ? drawnStructures.get(String(structureKey)) : null;
+      // Same "open" gate the 2-D sheet's furniture ink uses (oneMap.js): only the
+      // structure you're standing IN, or your own home — never a stranger's
+      // closed roof (the map is no spoiler).
+      const openable = structureKey && (String(structureKey) === interiorKey || id === homeNodeId);
+      if (!openable || !realPlan) continue;
+      const catBounds = catalogPlanBoundsInPlaceUnits(b);
+      const ox = Number(b?.ox) || 0, oy = Number(b?.oy) || 0;
+      for (const f of (b.plan?.furniture || [])) {
+        const kind = String(f?.type || '');
+        if (!PROP_MINI_KINDS.has(kind)) continue;
+        // Furniture rect center, in the SAME building-offset-inclusive place-unit
+        // space catalogPlanBoundsInPlaceUnits itself uses (ox+f.ux, oy+f.uy — see
+        // that function's own bounds accumulation just above) -> fitted into the
+        // TRUE world-unit rect (fitCatalogPointToRect — the SAME TT-DRAW-2
+        // "one sizing truth" the 2-D sheet's furniture ink uses, stopping one
+        // step short of that call's toPx pixel projection). Omitting +ox/+oy here
+        // was a live-caught bug (U480): the point then compared against catBounds
+        // in two DIFFERENT coordinate origins, so the fit could land a piece
+        // outside its own structure's true rect.
+        const cx = ox + (Number(f.ux) || 0) + (Number(f.uw) || 0.6) / 2;
+        const cy = oy + (Number(f.uy) || 0) + (Number(f.uh) || 0.6) / 2;
+        const fitted = fitCatalogPointToRect(catBounds, realPlan.rect, cx, cy);
+        props.push({ wx: fitted.wx, wy: fitted.wy, kind });
+      }
+    }
+  }
+
+  return { nodeId: id, people, trees, props, livestock: [] };
 }
 
 // Same FNV-1a hash handDrawnPlace.js's grove scatter uses (h32), reimplemented

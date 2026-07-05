@@ -116,10 +116,11 @@ done_when · rollback`.
   "curate this later" comment at the exact seam. **Recommended: Candidate A (curated concern source:
   Greenwood-road + chapel worries) + C (one cold-open worry line at wake) in ONE small packet; size S,
   ~3 files, no schema.** Candidate B (pinned thread) folded in only as A's consequence router.
-- Tim's three taste calls (draft §7, defaults flagged reversible): worry count/stability · bandit-camp
-  folded into the road worry vs. its own · cold-open same-packet vs. fast-follow.
-- **Build waits on:** Tim's rulings + the playloop serial slot (the cold-open line touches the boot scene;
-  SEEK-PERSON holds the slot).
+- **TASTE CALLS SETTLED (Tim, 2026-07-05 — all three defaults confirmed):** 2 worries FIXED BY SEED
+  (Greenwood-road + chapel, stable all session) · bandit camp FOLDED into the road worry (two dangers,
+  not three) · cold-open ships SAME PACKET. The draft's §6 proposed row is now the spec verbatim.
+- **BUILD QUEUED behind SEEK-PERSON** (the cold-open line touches the boot scene in `playloop.js` — the
+  serial slot frees when that lane lands; dispatch SL-5 immediately after, same-day).
 
 ### GATE 2026-07-05 — morning fresh measure (v0.28.29 · **3/48** · `opus-gate-2026-07-05.md`)
 **The honest read:** 14/48 → 8/48 → **3/48 (6%) on the same Ref-off config** — the best score the gate has

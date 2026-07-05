@@ -1,0 +1,42 @@
+──────────────────────────────────────────────────────────────────────────────
+LOAD-1 — LIVE-VERIFY (LLM-OFF) · seed "loaderDemo" · one hand-authored room walkable
+──────────────────────────────────────────────────────────────────────────────
+OPENING NARRATION (beginAdventure):
+Wizard: Your eyes open on the half-dark of your own room. The bed beneath you, the worn boards, the window going slowly gold at its edges — all of it as it has been for as long as you can remember. Beyond the wall a cart creaks past and a neighbour calls out. It is, in every way you can see, just another morning. What do you do?
+   [state] boot: inside=true · building=cottage · room="Guest Room" (quarters) · roomCount=1 · material="timber"
+   [state] objects: tool rack, straw pallet, wooden chair, stone basin
+   [invariants] OK
+──────────────────────────────────────────────────────────────────────────────
+> look around
+Wizard: You take the measure of this corner of Trader's Camp. No way out shows itself — not yet. What do you do?
+   [mechanics] observe only — no roll, state unchanged
+   [state] look around: inside=true · building=cottage · room="Guest Room" (quarters) · roomCount=1 · material="timber"
+   [state] objects: tool rack, straw pallet, wooden chair, stone basin
+   [invariants] OK
+──────────────────────────────────────────────────────────────────────────────
+> go outside
+Wizard: You step back outside.
+   [state] go outside: inside=false · (outdoors)
+   [invariants] OK
+──────────────────────────────────────────────────────────────────────────────
+> look around
+Wizard: You take stock of your surroundings. Exits: Ferry Landing, Old Shrine, Salt Flats. Structures: building #1, building #2.
+   [mechanics] observe only — no roll, state unchanged
+   [state] look around: inside=false · (outdoors)
+   [invariants] OK
+──────────────────────────────────────────────────────────────────────────────
+> go inside
+Wizard: You enter the structure interior.
+   [state] go inside: inside=true · building=cottage · room="Guest Room" (quarters) · roomCount=1 · material="timber"
+   [state] objects: tool rack, straw pallet, wooden chair, stone basin
+   [invariants] OK
+──────────────────────────────────────────────────────────────────────────────
+> look around
+Wizard: Your eyes move slow across this corner of Trader's Camp. No way out shows itself — not yet. What do you do?
+   [mechanics] observe only — no roll, state unchanged
+   [state] look around: inside=true · building=cottage · room="Guest Room" (quarters) · roomCount=1 · material="timber"
+   [state] objects: tool rack, straw pallet, wooden chair, stone basin
+   [invariants] OK
+──────────────────────────────────────────────────────────────────────────────
+END — walked into the authored room, looked around, walked out, walked back in. Invariants clean throughout.
+──────────────────────────────────────────────────────────────────────────────

@@ -1,0 +1,20 @@
+{
+  "kind": "authored-structure",
+  "schema": "house-builder/v6",
+  "name": "Woodcutter's Hut",
+  "grid": { "cols": 120, "rows": 90, "cell": 28 },
+  "rooms": [
+    { "id": "hut", "name": "Hut", "role": "quarters", "shape": "rect", "material": "timber", "x": 10, "y": 10, "w": 6, "h": 5 }
+  ],
+  "walls": [],
+  "openings": [
+    { "kind": "door", "x": 10, "y": 12.5, "angle": 90, "orient": "v", "len": 1, "room": "hut" }
+  ],
+  "tunnels": [],
+  "corridors": [],
+  "furniture": [
+    { "type": "bed", "x": 11, "y": 11, "w": 2, "h": 3, "rot": 0, "room": "hut", "ux": 0.3333, "uy": 0.5 },
+    { "type": "barrel", "x": 14, "y": 13, "w": 1, "h": 1, "rot": 0, "room": "hut", "ux": 0.75, "uy": 0.7 }
+  ],
+  "secrets": []
+}

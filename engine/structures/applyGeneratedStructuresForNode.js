@@ -2,6 +2,33 @@ import { ensureWorld } from '../state.js';
 import { generateStructuresForNode } from './generateStructures.js';
 import { ensureStructures } from './structuresState.js';
 import { hasAuthoredPlan, makeAuthoredStructure } from './authoredPlans.js';
+import { loadAuthoredStructure } from './authoredStructure.js';
+import loaderDemoHouse from '../../packs/base/structures/authored/loader_demo.house.js';
+
+// LOAD-1 — the smallest-loader DEMO (docs/briefs/LOAD-1-smallest-loader.md). Gated
+// ENTIRELY on one opt-in seed so the DEFAULT game is byte-identical (any seed !==
+// this returns before any of this code runs — see maybeInjectLoaderDemo). Under the
+// seed, the hand-authored one-room hut (loader_demo.house.js) is loaded via
+// loadAuthoredStructure and attached at whatever node the player is on, id-deduped so
+// it's injected once. Because it sorts first by id ('authored:<node>' < 'stgen:...'),
+// beginAdventure's enterStructureInterior('#1') drops the player straight into the
+// authored room at boot — the room Tim drew is the room the game opens in, and
+// go-outside / go-inside walk through its (engine-derived) front door.
+const LOADER_DEMO_SEED = 'loaderDemo';
+
+function maybeInjectLoaderDemo(world, nid, mergedById) {
+  if (String(world?.meta?.seed || '') !== LOADER_DEMO_SEED) return; // default game untouched
+  const demoId = `authored:${nid}`;
+  if (mergedById[demoId]) return; // idempotent — already injected for this node
+  try {
+    const st = loadAuthoredStructure(loaderDemoHouse, { nodeId: nid });
+    if (st && st.id) mergedById[st.id] = st;
+  } catch (err) {
+    // A broken demo house degrades to procgen with a warning (never crashes play) —
+    // same failure posture as the MR-2c authored override below.
+    console.warn(`applyGeneratedStructuresForNode: loader-demo house failed to load (${err?.message || err}); node keeps procgen`);
+  }
+}
 
 // MR-2c (docs/briefs/MR-2-FUNCTIONAL-INK.md §MR-2c) — AUTHORED OVERRIDE. The
 // procgen candidate id for a node is fully deterministic (generateStructures.js:
@@ -47,7 +74,12 @@ export function applyGeneratedStructuresForNode(world, nodeId) {
     nodeTags
   });
 
-  if (!generated.length) return w;
+  // The loader demo attaches its authored hut even at a node procgen skips (a node
+  // whose id doesn't match generateStructures' `/^n\d+/` heuristic). So the "nothing
+  // to do" early-out only fires when there are NO procgen candidates AND this isn't
+  // the demo seed — otherwise the default game is byte-identical to before.
+  const isLoaderDemo = seed === LOADER_DEMO_SEED;
+  if (!generated.length && !isLoaderDemo) return w;
 
   const existing = ensureStructures(w.structures);
   const mergedById = { ...(existing.byId || {}) };
@@ -58,6 +90,9 @@ export function applyGeneratedStructuresForNode(world, nodeId) {
     if (mergedById[id]) continue;
     mergedById[id] = authoredOrProcgen(s);
   }
+
+  // LOAD-1 — inject the authored one-room demo (seed-gated; no-op on every other seed).
+  maybeInjectLoaderDemo(w, nid, mergedById);
 
   const merged = ensureStructures({ byId: mergedById, nextId: existing.nextId });
 

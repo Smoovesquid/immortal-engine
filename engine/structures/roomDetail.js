@@ -280,8 +280,18 @@ export function roomDetail(room, forcedType = null) {
   const buildingType = (forcedType && BUILDINGS[forcedType]) ? forcedType : buildingTypeFor(structId);
   const B = BUILDINGS[buildingType];
 
+  // LOAD-1 — an AUTHORED room may declare its own role via a `role:<name>` tag
+  // (house-builder's room.role, carried onto the topology room by the loader). It
+  // wins over the building-blueprint default ONLY when it names a KNOWN role — so a
+  // single hand-drawn room Tim marked 'quarters' reads as quarters (with a bed),
+  // not the cottage entry's hearth room. This is ADDITIVE: every procgen room carries
+  // no such tag, so its role selection below is byte-identical to before.
+  const authoredRoleTag = tags.map(t => (t.startsWith('role:') ? t.slice(5) : '')).find(t => t && ROLES[t]) || '';
+
   let role;
-  if (isEntry) {
+  if (authoredRoleTag) {
+    role = authoredRoleTag;
+  } else if (isEntry) {
     role = B.entry;
   } else {
     const idx = roomIndexFromId(id);

@@ -107,12 +107,19 @@ done_when · rollback`.
   the seek in fiction; blocked bank still fires for true dead-ends (wall-holds cases keep their tests);
   `npm run check` green.  ·  **rollback:** revert the lane's commit.
 
-### SL-5 — "Aldermere wants something" (Phase 1's named next)  ·  **DRAFTING 2026-07-05 (Sonnet lane, docs-only — packetize before starting, per the queue note)**
-- A drafting worker is producing `docs/briefs/SL-5-DRAFT.md`: 2–3 candidate shapes grounded in SHIPPED
-  systems (the FACT-1 factions, the PACK-1 arcs — tallow "Bridge Dispute" / slice "Drowned Twin", the
-  goals/goalContract bridge), each with discovery-in-conversation, engine tracking, and **no-quest-log
-  compliance (HARD LAW — goals stay obscure and player-held; nothing renders a list)**. Output = draft +
-  recommended pick + proposed packet row, for Tim's taste pass. No code.
+### SL-5 — "Aldermere wants something" (Phase 1's named next)  ·  **DRAFT READY 2026-07-05 (`docs/briefs/SL-5-DRAFT.md`, landed from the drafting lane) — awaiting Tim's three taste calls, then build**
+- **The Armory finding (why this packet shrank):** the want loop is ALREADY LIVE end-to-end — ask-a-concern
+  (`resolveConcern`, U220) → "I'll help" mints a silent goal (G06, no quest banner) → goalContract tracks
+  (cap 12, predicate completion, never a list) → worldTick ages threads/factions into consequence. The
+  authored arcs (Bridge Dispute / Drowned Twin) already boot into the slice. THE GAP: the concern source is
+  a generic random want pool, not the slice's two authored dangers — and `placeQuery.js` carries a
+  "curate this later" comment at the exact seam. **Recommended: Candidate A (curated concern source:
+  Greenwood-road + chapel worries) + C (one cold-open worry line at wake) in ONE small packet; size S,
+  ~3 files, no schema.** Candidate B (pinned thread) folded in only as A's consequence router.
+- Tim's three taste calls (draft §7, defaults flagged reversible): worry count/stability · bandit-camp
+  folded into the road worry vs. its own · cold-open same-packet vs. fast-follow.
+- **Build waits on:** Tim's rulings + the playloop serial slot (the cold-open line touches the boot scene;
+  SEEK-PERSON holds the slot).
 
 ### GATE 2026-07-05 — morning fresh measure (v0.28.29 · **3/48** · `opus-gate-2026-07-05.md`)
 **The honest read:** 14/48 → 8/48 → **3/48 (6%) on the same Ref-off config** — the best score the gate has

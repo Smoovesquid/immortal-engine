@@ -22,6 +22,7 @@ import { assemblePacket } from './intent/assemblePacket.js';
 import { applyGeneratedStructuresForNode } from './structures/applyGeneratedStructuresForNode.js';
 import { enterStructureInterior, exitStructureInterior, moveWithinInterior, getInteriorView, interiorDirectionalExits, resolveStructureSelection, interiorDoorBlock } from './structures/interiors.js';
 import { normalizeTopology, adjacentRooms } from './structures/topology.js';
+import { exteriorDoorOf, needsForcing as doorNeedsForcing } from './structures/doors.js';
 import { roomWindows, roomWindowFacings } from './structures/roomWindows.js';
 import { furnitureRoomAssignments, objectsHere } from './structures/roomObjects.js';
 import { roomDetail } from './structures/roomDetail.js';
@@ -1937,6 +1938,69 @@ function playerMoveCore(world, packsById, text, dqIntent) {
         ? 'Wizard: You climb back up and out into the open air; the dark closes behind you.'
         : 'Wizard: You step back outside.';
       return { world: w2, output: { narration: msg, mechanics: '' } };
+    }
+  }
+
+  // DOOR-FORCE-1 — a BARE "force the door" / "kick it down" / "shoulder it open"
+  // flips the canon door state (docs/PACKETS.md MR-2a honest-scope flag). MR-2a made
+  // door states canon and wired the NAMED room-move + egress seams to consult and flip
+  // them; a bare barrier-force (no room named) was classified kind:'none' by
+  // inferInteriorAction and fell PAST that seam to the generic physics-force resolver,
+  // which predates door canon — it rolled and narrated "the door gives" but never
+  // flipped the state, so a player could "break down" a locked door, hear success, and
+  // the door stayed locked. This intercept routes the family through the SAME path
+  // MR-2a built: find the secured door the player faces (facingSecuredDoor mirrors the
+  // room-move adjacency), roll via the resolve seam (barred is stouter than a lock),
+  // and on success commit the canon `door` op (+ its ledger witness fact). Failure is a
+  // real partial event, never a mechanical bounce (THE DM TEST). Placed BEFORE the
+  // room-move fast paths so the bare force is claimed here; furniture/chest force
+  // targets carry no door and fall through to the legacy physics path byte-identically.
+  if (w.scene?.interior && !w.combat?.active && !combatEngageAction && !declaredNpcViolence) {
+    const la = doorForceKind(text);
+    if (la === 'force' || la === 'pick') {
+      const facing = facingSecuredDoor(w);
+      if (facing && facing.door) {
+        const structId = String(w.scene.interior.structureKey);
+        const barred = String(facing.door.state) === 'barred';
+        // Barred = a physical bar (force it — a pick does nothing to a bar, so a pick
+        // attempt reads as a shove); locked = a lock (either works, pick is quieter).
+        // Hardness sets the DC: a bar is stouter (4) than a lock (3) — same as MR-2a.
+        const hardness = barred ? 4 : 3;
+        const chk = rollPhysicsCheck(w, { actorId: 'party', hardness, intentText: String(text || '') });
+        const how = (la === 'pick' && !barred) ? 'picked' : 'forced';
+        if (chk.outcome !== 'failure') {
+          let w2 = applyDeltas(w, [{ op: 'door', structId, doorId: facing.door.id, to: 'open', how }]);
+          if (!facing.exterior && facing.targetRoomId) {
+            // Interior door: forcing it grants access — step through into the room beyond.
+            const fromRoomId = String(w.scene?.interior?.roomId || '');
+            const wMoved = moveWithinInterior(w2, facing.targetRoomId);
+            let destName = '';
+            try { destName = String(getRoomState(wMoved)?.room?.name || '').trim(); } catch { destName = ''; }
+            const dest = destName ? `the ${destName.toLowerCase()}` : 'the next room';
+            const line = how === 'picked'
+              ? `Wizard: You work the lock until it gives with a click, and step through into ${dest}.`
+              : barred
+                ? `Wizard: You set your shoulder and drive in — the bar splinters from its brackets and the door bangs open. You step through into ${dest}. The noise carried.`
+                : `Wizard: You throw your weight against it and the lock tears free of the frame; the door bursts open and you step through into ${dest}. Anyone near will have heard.`;
+            w2 = pushEvent(wMoved, { kind: 'move', data: { mode: 'interior', fromRoomId, toRoomId: String(wMoved.scene?.interior?.roomId || ''), withinSpeed: true, rolled: true, forcedDoor: how } });
+            w2 = worldTick(w2, `${w2.meta.seed}|tick|door-force|turn${w2.time.turn}|tl${w2.timeline.length}`);
+            return { world: w2, output: { narration: line, mechanics: chk.mechanicsLine } };
+          }
+          // Exterior/front door: the way out is now open (no room to step into).
+          const line = how === 'picked'
+            ? `Wizard: You work the front door's lock until it gives with a click. The way out stands open.`
+            : barred
+              ? `Wizard: You set your shoulder and drive into the front door — the bar splinters from its brackets and it bangs open. The way out stands open, and the noise carried.`
+              : `Wizard: You throw your weight against the front door and the lock tears free of the frame; it bursts open. The way out stands open — anyone near will have heard.`;
+          w2 = worldTick(w2, `${w2.meta.seed}|tick|door-force|turn${w2.time.turn}|tl${w2.timeline.length}`);
+          return { world: w2, output: { narration: line, mechanics: chk.mechanicsLine } };
+        }
+        // Failure — a real partial event, not a bounce. The door holds; noise happened.
+        const failLine = barred
+          ? `Wizard: You hit the door hard but the bar holds — it shudders in its frame and stays shut. Your shoulder will feel that. You could try again, or find another way.`
+          : `Wizard: The lock resists you — the door doesn't budge, though the frame rattled and the sound carried. Another attempt, or a different route.`;
+        return { world: w, output: { narration: failLine, mechanics: chk.mechanicsLine } };
+      }
     }
   }
 
@@ -9039,6 +9103,100 @@ function exitDirectionLabels(view) {
 function isRiskyOrObstructedMoveIntent(text) {
   const t = String(text || '').toLowerCase();
   return /\b(hazard|obstacle|obstruct|blocked|contested|jump|force\s+door|squeeze|stealth\s*sprint|under\s*fire|danger)\b/.test(t);
+}
+
+// DOOR-FORCE-1 — is this a bare FORCE/PICK aimed at the door (not a furniture piece)?
+// 'pick' | 'force' | null. lockActionKind is noun-GATED (needs "door"/"lock"/… in the
+// text), so it misses the natural bare phrasings the brief lists — "kick it down",
+// "shoulder it open", "I break it down". This intercept only ever runs when a secured
+// door already faces the player (facingSecuredDoor), so we can read intent from the
+// physics-force verb + its extracted TARGET: a door-family / lock target, or a bare
+// pronoun (it/that/this/them — which cannot name a furniture piece anyway, so the
+// furniture path never claims it), routes to the door. A NAMED non-door object
+// (chest/crate/barrel/lid…) does NOT — that stays the legacy physics path, byte-
+// identically. Mirrors physicalObjectOutcome's pick/force verb families + physObjTarget.
+function doorForceKind(text) {
+  const t = String(text || '');
+  // The "throw/put (my) weight (into/against)", "put my shoulder to", "lean/press
+  // against" idioms are barrier-force phrasings PHYS_FORCE's verb list doesn't carry —
+  // mirror the forcesBarrier vocabulary (inferInteriorAction) so they route like a shove.
+  const WEIGHT_FORCE = /\b(?:throw|threw|throwing|put|puts|putting|lean|leans|leaning|press|presses|pressing)\b[^.!?]*\b(?:weight|shoulder|body|self)\b/i;
+  const isPick = PHYS_PICK.test(t) && !/\bpick\s+up\b/i.test(t);
+  const isForce = (PHYS_FORCE.test(t) || WEIGHT_FORCE.test(t)) && !/\bpick\s+up\b/i.test(t);
+  if (!isPick && !isForce) return null;
+  // A NAMED non-door object anywhere in the text disqualifies the door — the force is
+  // aimed at that furniture/item, and the legacy physics path owns it. (physObjTarget
+  // strips trailing "into/against X" clauses, so an idiom like "throw my weight into
+  // the crate" would otherwise read as an EMPTY target and be mistaken for the door;
+  // this raw-text guard catches the object the stripping dropped.)
+  const OBJECT_NOUN = /\b(?:chest|crate|barrel|cask|keg|box|coffer|strongbox|cabinet|cupboard|dresser|drawer|wardrobe|table|desk|chair|stool|bench|bed|cot|bunk|shelf|shelves|rack|stand|urn|pot|jar|vase|statue|idol|lid|window|shutters?)\b/i;
+  if (OBJECT_NOUN.test(t)) return null;
+  const target = physObjTarget(t);
+  const DOOR_TARGET = /^(?:door|doors|doorway|gate|gateway|lock|padlock|latch|bolt|bar|entrance|entry|hatch|trapdoor|portal)$/i;
+  const PRONOUN_TARGET = /^(?:it|that|this|them)$/i;
+  // A door-family noun ANYWHERE in the text also qualifies (target extraction can
+  // mangle prepositional phrasings like "put my shoulder to the door" → "to door").
+  const DOOR_NOUN = /\b(?:door|doorway|gate|gateway|lock|padlock|latch|entrance|entry|hatch|trapdoor|portal)\b/i;
+  const isDoorTarget = !target || DOOR_TARGET.test(target) || PRONOUN_TARGET.test(target) || DOOR_NOUN.test(t);
+  if (!isDoorTarget) return null; // a named non-door target — not the door
+  // Prefer 'pick' only for a genuine lock-finesse verb; a shove/kick/ram is 'force'.
+  if (isPick && !isForce) return 'pick';
+  if (isPick && /\bpick(?:s|ing)?\s+(?:at\s+)?(?:the\s+|a\s+|this\s+|that\s+)?(?:lock|door|padlock|latch)\b/i.test(t)) return 'pick';
+  return 'force';
+}
+
+// DOOR-FORCE-1 — the secured door the player FACES from the current interior room.
+// A BARE "force the door" (no room named — inferInteriorAction returns kind:'none'
+// for a barrier-force, so the MR-2a room-move seam never sees it) still means the
+// door in front of you. This mirrors MR-2a's adjacency EXACTLY: it consults the same
+// interiorDoorBlock(w, adjRoom) for each adjacent room and returns the first door
+// that needsForcing (barred/locked), PLUS the exterior/front door when you stand in
+// the entry room it fronts on (interiorDoorBlock is room↔room only, so the front
+// door — b === '' — is checked separately via its canon record). Returns
+//   { door, targetRoomId, exterior } | null
+// targetRoomId is the room BEYOND an interior door (step through on success); it is
+// '' for the exterior door (forcing it opens the way OUT — no room to step into).
+// Pure read; the caller resolves the roll + the `door` op.
+function facingSecuredDoor(world) {
+  const w = world || {};
+  const interior = w.scene?.interior;
+  if (!interior || typeof interior !== 'object') return null;
+  const structureKey = String(interior.structureKey || '');
+  const here = String(interior.roomId || '');
+  if (!structureKey || !here) return null;
+  const st = w.structures?.byId?.[structureKey];
+  if (!st) return null;
+
+  // Interior doors: scan adjacent rooms in a stable cardinal order (mirrors the
+  // room-move seam), return the first secured room↔room door.
+  const dirExits = interiorDirectionalExits(w) || {};
+  const adj = [];
+  for (const dir of ['north', 'east', 'south', 'west']) {
+    const to = dirExits[dir];
+    if (to && to !== here && !adj.includes(String(to))) adj.push(String(to));
+  }
+  // Fallback for structures whose topology yields no cardinal (non-grid) exits.
+  try {
+    for (const to of adjacentRooms(normalizeTopology(st.topology), here)) {
+      const id = String(to);
+      if (id && id !== here && !adj.includes(id)) adj.push(id);
+    }
+  } catch { /* topology may be absent on legacy structures — cardinals still apply */ }
+
+  for (const to of adj) {
+    const block = interiorDoorBlock(w, to);
+    if (block && block.needsForcing) {
+      return { door: block.door, targetRoomId: to, exterior: false };
+    }
+  }
+
+  // The exterior/front door — only "in front of you" when you stand in the entry
+  // room it fronts (its `a` side). Forcing it opens the way out; no room to enter.
+  const front = exteriorDoorOf(st);
+  if (front && String(front.a) === here && doorNeedsForcing(front.state)) {
+    return { door: front, targetRoomId: '', exterior: true };
+  }
+  return null;
 }
 
 function exitsLine(world) {

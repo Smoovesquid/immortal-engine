@@ -56,3 +56,7 @@ grove trees (settlement-scale) · livestock (base set).
 
 ---
 *Append below this line, newest first, date every add.*
+
+**2026-07-05 · RECEIVED from Tim (GLB, dropped in `public/map/assets/`):** corpse_assemblage ·
+corpse_remains_red — death/aftermath set pieces (combat scenes, the Underworld someday). Wiring into
+the renderer = a TT lane packet (loader + scale/anchor pass); untracked until that lane claims them.

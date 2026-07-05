@@ -124,6 +124,32 @@ convention — worth an eye if the count grows). Cost $0.92, ledger $15.24. Clus
   Log: `docs/playtests/coherence-validate/2026-07-05.jsonl` (gitignored raw, by design). **Tim's go/no-go
   review is a five-minute look at ONE swap**, not an hour of transcript.
 
+### CG-2b — the cure must beat the disease (validator swap rule)  ·  Phase 0  ·  **CUT + DISPATCHED 2026-07-05 (Sonnet worktree; Tim's ruling: "fix first, watch meanwhile")**
+- **provenance:** Tim's 2026-07-05 CG-2 review (the GATE 2026-07-05 shadow-compare finding, reviewed on
+  screen): detector RIGHT (CG-6 clock desync, cosmetic), replacement WORSE (the deterministic base for the
+  turn was an Elske "no record" dodge — proof the base can fail harder than the candidate). Ruling:
+  fix-first-watch-meanwhile; **watch mode ON in `.env`** (`COHERENCE_VALIDATE=shadow-compare`, local-only,
+  logs to the gitignored `docs/playtests/coherence-validate/`), live flip BLOCKED on this packet.
+- **objective, three rules:** (a) **severity tiering** — a cosmetic-class detection (CG-6 time-word desync
+  at minimum) NEVER blocks: log `wouldBlock:false, tier:cosmetic`, deliver the candidate; (b) **the swap
+  gate** — before any replacement, run the SAME detector bank over the fallback; the swap happens ONLY if
+  the fallback's failure set is strictly better than the candidate's, else the candidate stands (the cure
+  must beat the disease); (c) **label the log** — thread real persona/turn identifiers into the
+  shadow-compare records (today: `persona:"campaign"`, `turn:null`).
+- **parked as CG-2c (do NOT build now):** the reword path — asking the polish layer to fix ONLY the
+  cosmetic word. Bigger machine; tier-to-pass is the CG-2b floor.
+- **allowed_files:** `engine/coherence/validator.js`, `engine/coherence/checks.js` (tier map only),
+  `engine/llmAdapter.js` (finalize seam ONLY if the swap decision lives there), tests U482–U484, corpus
+  locks if any row asserts old behavior. **forbidden:** world state, rng, `WORLD_VERSION`, playloop,
+  dialogue/grace; LLM layer never throws (silent-fallback law).
+- **invariants:** `COHERENCE_VALIDATE` unset/off stays BYTE-IDENTICAL (existing CG-2 dark guarantee +
+  tests); determinism ladder; convergence 100%.
+- **done_when:** the logged locket record, replayed as a fixture, delivers the candidate UNCHANGED in both
+  shadow-compare and ON modes (cosmetic tier); a synthetic hard-fail-with-clean-fallback still swaps; a
+  synthetic fallback-fails-worse case keeps the candidate; labels threaded; `npm run check` green; live
+  flip stays a Tim decision AFTER a rehearsal on the next scheduled gate (no extra paid run for this).
+- **rollback:** revert the lane's commit (validator returns to block-on-fail + trust-the-fallback).
+
 ### GATE 2026-07-04-3 — evening re-baseline error analysis (v0.28.19 · **8/48** · `opus-gate-2026-07-04-3.md`)
 **The honest read:** 14/48 → **8/48 on the same Ref-off config** — the day's six landings HELD under the
 judge: ZERO movement / geography / map / perception failures (FP-2, TAC-2/4, ROADS-1, PERC-1, RL-1,

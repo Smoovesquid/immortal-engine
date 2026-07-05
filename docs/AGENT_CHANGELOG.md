@@ -2225,3 +2225,23 @@ other agents. (none active)
   (furniture/props as minis) — one serial Sonnet renderer lane, same files; tests U478–U481
   allocated; brief `docs/briefs/TT-WORLD-paper-world.md`. NB: TT-DRAW-1/2 names were avoided —
   that family is TAKEN by the landed 2-D arc (02c3721/33f8fa73).
+
+## 2026-07-05 — Basecamp (CG-2 review with Tim → ruling: fix first, watch meanwhile; CG-2b cut + dispatched)
+
+- Tim reviewed the GATE 2026-07-05 shadow-compare evidence on screen (the one would-block in 48
+  turns, rendered side-by-side). Deeper finding surfaced during prep: the bad replacement IS the
+  deterministic base for that turn — the engine's no-LLM path misrouted a sensory probe ("is there
+  a portrait inside?") into the info sink and produced the banned "no record" dodge; the LLM polish
+  had rescued the turn except for one time word. Canon holds no locket contents at all, so
+  "empty" contradicted nothing — the sole true error was "midday" vs `clock.segment: morning`.
+- **Ruling (Tim, via decision prompt): "Fix first, watch meanwhile."** Actions: (1)
+  `COHERENCE_VALIDATE=shadow-compare` appended to `.env` (local-only, gitignored) — his live
+  sessions now log would-be swaps to the gitignored coherence-validate dir at zero player impact,
+  from the next server start; (2) **CG-2b** cut + dispatched (Sonnet worktree lane, U482–U484 —
+  assigned MANUALLY: the allocator re-offered U478–480 because the in-flight map lane's tests
+  haven't landed; collision caught): severity tiering (cosmetic never blocks), the swap gate (the
+  fallback must out-score the candidate under the same detectors), log labels (persona/turn).
+  Reword-the-cosmetic-word parked as CG-2c. Live flip stays BLOCKED on CG-2b + a rehearsal on the
+  next scheduled gate.
+- Lanes in flight: TT-WORLD/TT-INK/TT-PROPS (renderer, public/map/**) ∥ CG-2b (engine/coherence/*)
+  — disjoint files; both append changelog sections worktree-side, Basecamp resolves at integration.

@@ -16,10 +16,20 @@
 // never a stranger's anchor. Every returned occupant carries an additive `reason` (why they're
 // there) — narration fuel. The line-of-sight model is UNCHANGED: only who-is-where moved, and the
 // common/back room split within a building is still the seeded ~70% gather in the entry room.
+//
+// MR-2d (docs/briefs/MR-2-FUNCTIONAL-INK.md §2d): a window is a real APERTURE — sight
+// passes through the glass it FACES, never through a wall. visibleThroughWindows() makes
+// good on this header's own promise ("you can see OUT through windows"): from inside a
+// windowed room you see the slice of outdoor folk on the sides the room's windows look
+// onto (each with their OCC-STORY reason and a side label), and NOT the folk standing on
+// a side no window faces. Still a PURE derived read — a function of (seed + who's outdoors
+// + the room's window facings) — so no stored field, no WORLD_VERSION bump, worldHash
+// untouched.
 
 import { seedFromString, makeRng } from '../rng.js';
 import { normalizeTopology } from './topology.js';
 import { placementFor } from './storyAnchors.js';
+import { roomWindows, roomWindowFacings } from './roomWindows.js';
 
 const COMMON_SHARE = 0.7;   // ~70% of a building's indoor folk are in its common / entry room
 
@@ -116,4 +126,110 @@ export function outdoorOccupants(world) {
     if (p.where === 'outdoors') out.push(withReason(npc, p.reason));
   }
   return out;
+}
+
+// ── MR-2d: line of sight THROUGH a window ────────────────────────────────────
+// A window is an aperture with a FACING, not an x-ray. Sight through it reaches only
+// the outdoor folk standing on the side the glass looks onto. Outdoor occupants carry
+// no region-cell position in v1 (they're "at the node, in the open"), so the simplest
+// CORRECT geometry is a deterministic 4-sector bearing: each outdoor person is assigned
+// one fixed COMPASS BEARING for this world (a stable side of the settlement they're on),
+// and a room's windows see a person iff that person's bearing sector matches one of the
+// window facings. This respects facing (a north window can't see the south side), is
+// pure/seeded (same world → same view), and can never see through a wall (a windowless
+// or wrong-facing room returns nobody). No ray-casting — this is v1, PINNED below.
+
+// The four 90° compass sectors, N centred on 0°/360°. A bearing lands in exactly one.
+// PINNED: N=[315,45), E=[45,135), S=[135,225), W=[225,315). Changing these boundaries
+// changes who a window sees, so they are constants, not magic numbers inline.
+const SECTOR_N_LO = 315, SECTOR_E_LO = 45, SECTOR_S_LO = 135, SECTOR_W_LO = 225;
+function sectorOfBearing(deg) {
+  const d = ((Number(deg) % 360) + 360) % 360;
+  if (d >= SECTOR_N_LO || d < SECTOR_E_LO) return 'north';
+  if (d < SECTOR_S_LO) return 'east';
+  if (d < SECTOR_W_LO) return 'south';
+  return 'west';
+}
+
+// The fixed side of the settlement this outdoor NPC stands on, for this world. Seeded per
+// (seed, npc) so it's stable across turns and identical under replay — the same person is
+// always on the same side, exactly as their story anchor is always their story anchor.
+function outdoorBearing(seed, npc) {
+  return makeRng(seedFromString(`${seed}|${String(npc?.id || npc?.name || '')}|window-bearing`)).int(0, 359);
+}
+
+// Which SIDE a window looks onto, as a short narratable label — derived from the room's
+// window outlook (roomWindows), falling back to a compass side. Never a place-name (line
+// of sight is honored elsewhere): "the road side", "the yard side", "the street side",
+// "the open ground", or "the north side". A FIXED map so the label can't drift.
+const OUTLOOK_SIDE = Object.freeze({
+  'onto the road': 'the road side',
+  'onto the yard': 'the yard side',
+  'onto the street below': 'the street side',
+  'onto the open ground beyond': 'the open ground',
+});
+function windowSide(outlook, facing) {
+  const byOutlook = OUTLOOK_SIDE[String(outlook || '')];
+  if (byOutlook) return byOutlook;
+  return facing ? `the ${facing} side` : 'the open';
+}
+
+/**
+ * visibleThroughWindows(world, structureKey, roomId) -> NPC[]
+ * The outdoor settlement folk you can SEE from inside this room through its windows —
+ * only those on a side one of the room's windows FACES (never through a wall). Each
+ * returned occupant is a shallow clone carrying its OCC-STORY `reason` AND an additive
+ * `side` label (which side the glass looks onto, e.g. "the road side"). Empty when the
+ * room has no windows, its windows are shuttered, or no outdoor person is within the arc.
+ * Hostiles are excluded — a lurker keeping to the edges is not a face at your window.
+ * Pure + seeded + deterministic; writes nothing.
+ */
+export function visibleThroughWindows(world, structureKey, roomId) {
+  const interior = { structureKey: String(structureKey), roomId: String(roomId) };
+  const win = roomWindows(world, interior);
+  if (!win.count || win.shuttered) return [];        // no glass, or the shutters are drawn
+  const facings = roomWindowFacings(world, interior);
+  if (!facings.length) return [];                    // no facing arc → sees nothing outdoors
+  const arc = new Set(facings.map(String));
+  const side = windowSide(win.outlook, facings[0]);  // the room's near outlook / first facing
+
+  const seed = String(world?.meta?.seed ?? '');
+  const out = [];
+  for (const npc of outdoorOccupants(world)) {
+    if (!npc || npc.hostile) continue;               // lurkers don't wave through the glass
+    if (arc.has(sectorOfBearing(outdoorBearing(seed, npc)))) {
+      out.push({ ...npc, side });                    // reason already rode along from outdoorOccupants
+    }
+  }
+  return out;
+}
+
+/**
+ * occupiedWindowsFromOutside(world) -> boolean
+ * The MIRROR of visibleThroughWindows for the outdoor look-around: is there at least one
+ * building at the current node whose UNSHUTTERED, EXTERIOR-facing room is occupied — so a
+ * window "reads" from the street (a shape moving within, a lit room)? This is line of
+ * sight, NOT x-ray: it reports only THAT a room reads through its glass, never a roster
+ * (the caller renders one capped texture line, no names — you catch movement from the
+ * open, not identities). Skips the player's OWN home (you're outside it) and any building
+ * with no occupied lit window. Pure + deterministic; writes nothing.
+ */
+export function occupiedWindowsFromOutside(world) {
+  const nodeId = String(world?.map?.currentNodeId ?? '');
+  const wakeKey = homeStructureKey(world);
+  const byId = world?.structures?.byId || {};
+  for (const st of Object.values(byId)) {
+    if (!st || String(st.nodeId || '') !== nodeId) continue;
+    const key = String(st.id);
+    if (key === wakeKey) continue;                    // you're standing outside your own home
+    const topo = normalizeTopology(st.topology);
+    if (!topo || !Array.isArray(topo.rooms) || !topo.rooms.length) continue;
+    for (const room of topo.rooms) {
+      const rid = String(room.id);
+      const win = roomWindows(world, { structureKey: key, roomId: rid });
+      if (!win.count || win.shuttered) continue;      // no glass to read through
+      if (occupantsOfRoom(world, key, rid).some(n => n && !n.hostile)) return true;
+    }
+  }
+  return false;
 }

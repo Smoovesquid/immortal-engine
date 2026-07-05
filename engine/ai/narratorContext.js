@@ -21,7 +21,8 @@ import { statMod, maxWounds } from '../ruleset/core/stats.js';
 import { buildAsciiMap } from './asciiMap.js';
 import { describeInteriorLayout } from '../structures/interiors.js';
 import { getRoomState } from '../structures/roomState.js';
-import { occupantsOfRoom, outdoorOccupants } from '../structures/roomOccupancy.js';
+import { occupantsOfRoom, outdoorOccupants, visibleThroughWindows } from '../structures/roomOccupancy.js';
+import { roomWindows, roomWindowFacings } from '../structures/roomWindows.js';
 import { doorsOf } from '../structures/doors.js';
 
 /**
@@ -422,6 +423,9 @@ function buildGoalsBlock(w) {
 // mentions) so an identical turn produces an identical block — no token churn,
 // no new randomness (pure f(world)). Returns null when not inside a structure.
 const DOOR_FACT_CAP = 4;
+// MR-2d: cap the through-window folk the plan-facts bundle carries (line of sight, not a
+// roster dump) — stable-ordered by visibleThroughWindows so an identical turn is identical.
+const WINDOW_FACT_CAP = 3;
 const DOOR_STATE_TEXTURE = {
   barred: 'stands barred from the far side',
   locked: 'is locked fast',
@@ -469,7 +473,38 @@ function interiorPlanFacts(w) {
     if (securedHere.length >= DOOR_FACT_CAP) break;
   }
 
-  return { frontDoor, securedDoors: securedHere };
+  // MR-2d: this room's WINDOWS as canon apertures — count, compass facings, shuttered
+  // state, and (when open) WHO the player can see out on the side the glass looks onto,
+  // each with their OCC-STORY reason. So the DM narrates the real windows this room has
+  // and the real folk visible through them, never invents a window or a face at it. Pure
+  // f(world); the through-window folk are the same facing-aware set the look-around uses.
+  const interiorRef = { structureKey: structId, roomId };
+  const win = roomWindows(w, interiorRef);
+  let windows = null;
+  if (win.count > 0) {
+    // Earned-name gate (same rule as the PEOPLE-HERE block above): the DM gets a name only
+    // when the player is HOME (knows the neighbors) or has MET this NPC — otherwise a role,
+    // so a stranger glimpsed through the glass at a new town isn't named for free.
+    const nodeIdNow = String(w?.map?.currentNodeId ?? '');
+    const atHome = Boolean(w?.meta?.homeNodeId) && String(w.meta.homeNodeId) === nodeIdNow;
+    const displayName = (n) => {
+      const known = atHome || Boolean(n?.conversationState?.metPlayer);
+      return (known && n?.name) ? String(n.name) : String(n?.role || 'someone');
+    };
+    const through = visibleThroughWindows(w, structId, roomId)
+      .slice(0, WINDOW_FACT_CAP)
+      .map(n => ({ name: displayName(n), reason: String(n.reason || ''), side: String(n.side || '') }));
+    windows = {
+      count: win.count,
+      shuttered: Boolean(win.shuttered),
+      facings: roomWindowFacings(w, interiorRef),
+      outlook: String(win.outlook || ''),
+      // Only present + non-empty when the window is open AND someone's on the arc.
+      through,
+    };
+  }
+
+  return { frontDoor, securedDoors: securedHere, windows };
 }
 
 // ── Scene ─────────────────────────────────────────────────────────────────

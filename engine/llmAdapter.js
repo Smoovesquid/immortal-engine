@@ -130,6 +130,35 @@ function interiorDoorFact(interior) {
   return `DOORS (canon — describe these exactly; a barred or locked door does not simply open, it must be lifted, forced, or picked): ${parts.join('; ')}. Invent no door, hatch, or passage beyond these and the doorways already named.`;
 }
 
+// MR-2d — the WINDOW fact line. A window is a real aperture (engine/structures/
+// roomWindows.js): the DM narrates the windows this room actually has and the folk
+// visible through them, never invents a window or a face at one. HIDE-THE-MATH — no
+// counts-as-enum; the through-window folk arrive pre-resolved (name + OCC-STORY reason +
+// the side the glass looks onto) from interiorPlanFacts. Seeing someone through the glass
+// is line of sight, NOT presence: they are OUTSIDE and cannot be addressed as if in the
+// room. Returns '' when the room has no window (nothing to state). Never throws.
+function interiorWindowFact(interior) {
+  const win = interior && interior.planFacts && interior.planFacts.windows;
+  if (!win || typeof win !== 'object' || !win.count) return '';
+  if (win.shuttered) {
+    // A shuttered window is worth one orientation line (the shutters can be opened; no
+    // view out until then) — but no invented view and no folk.
+    return `WINDOW (canon): this room's window is shuttered — no view out until the shutters are opened. Do not describe anyone or anything seen through it while it stays closed.`;
+  }
+  const through = Array.isArray(win.through) ? win.through : [];
+  if (through.length) {
+    const side = String(through[0].side || '').trim();
+    const who = through
+      .map(p => (p.reason ? `${p.name} (${p.reason})` : p.name))
+      .join(', ');
+    return `WINDOW (canon — line of sight, NOT presence): through this room's window, out on ${side || 'the open ground'}, the player can see ${who}. Describe them as glimpsed THROUGH the window/outside — never as standing in this room, never addressable as if present. Invent no other window than the ones here.`;
+  }
+  // Open window, no one on the arc: pin that it exists (so the DM doesn't invent one
+  // elsewhere or forget it as an escape route) without over-claiming the whole street is
+  // empty — only that no one is IN VIEW through this window right now (line of sight).
+  return `WINDOW (canon): this room has a window open onto the outside — no one is in view through it right now. Invent no window other than this.`;
+}
+
 // ROM-2 — the PEOPLE HERE display list. Reads ctx.settlement.npcs (already
 // earned-name-filtered by buildNarratorContext — a name only appears once the
 // player has met that NPC or is home) and keeps only those NOT marked
@@ -204,6 +233,9 @@ export function buildSystemPrompt(ctx) {
   // MR-2b: the door canon rendered as perceivable texture (front door + any
   // secured interior door). '' when nothing is notable (an all-open house).
   const doorFact = ctx.interior ? interiorDoorFact(ctx.interior) : '';
+  // MR-2d: the window canon — the real apertures this room has and who is visible
+  // through them (line of sight, never presence). '' when the room has no window.
+  const windowFact = ctx.interior ? interiorWindowFact(ctx.interior) : '';
   const presenceLawFact = ctx.interior
     ? `Anyone else at this settlement is elsewhere — never place, voice, or have them act in this room; never state a wall/floor material other than the one above.`
     : '';
@@ -223,6 +255,7 @@ export function buildSystemPrompt(ctx) {
     ...(peopleHereFact ? [`- ${peopleHereFact}`] : []),
     ...(materialFact ? [`- ${materialFact}`] : []),
     ...(doorFact ? [`- ${doorFact}`] : []),
+    ...(windowFact ? [`- ${windowFact}`] : []),
     ...(presenceLawFact ? [`- ${presenceLawFact}`] : []),
     ``
   ];

@@ -11,7 +11,7 @@ import { profBonusFor } from '../ruleset/core/levelTable.js';
 import { makeRng, seedFromString } from '../rng.js';
 import { normalizeTopology, adjacentRooms } from '../structures/topology.js';
 import { roomWindows, windowSurveyPhrase } from '../structures/roomWindows.js';
-import { occupantsOfRoom, outdoorOccupants } from '../structures/roomOccupancy.js';
+import { occupantsOfRoom, outdoorOccupants, visibleThroughWindows, occupiedWindowsFromOutside } from '../structures/roomOccupancy.js';
 import { objectsHere } from '../structures/roomObjects.js';
 import { getRoomState } from '../structures/roomState.js';
 import { reachableRooms } from '../movement/interiorMovement.js';
@@ -2954,17 +2954,24 @@ export function buildLocationSurvey(world, opts = {}) {
         ? 'And someone else — a stranger keeping to the edges, watching.'
         : `And ${roomLurkers} strangers keeping to the edges, watching.`);
     }
-    // You can see OUT through an unshuttered window — the open air, and whoever is out there (line
-    // of sight passes through the glass). A shuttered window shows nothing; an empty street adds no
-    // line (the window itself is already noted among the room's features above).
-    if (win.count && !win.shuttered) {
-      const outside = outdoorOccupants(w).filter(n => n && !n.hostile);
-      if (outside.length) {
-        const seen = outside.slice(0, 3).map(n => describeNpc(n, knowsName(n)));
-        const more = outside.length - Math.min(3, outside.length);
-        if (more > 0) seen.push(`${more} other${more === 1 ? '' : 's'}`);
-        parts.push(`Through the window you can see ${joinList(seen)} out in the open.`);
-      }
+    // You can see OUT through an unshuttered window — but only the folk on the side the glass
+    // FACES (line of sight passes through the aperture, never through a wall). MR-2d: the window
+    // arc filters the outdoor roster to who's actually on the road/yard side this room looks onto,
+    // and each is named WITH the reason they're out there ("Elske Nightherd, up to something") on
+    // the side the window looks onto. A shuttered/windowless room, or an empty arc, adds no line
+    // (the window itself is already noted among the room's features above). Seeing someone through
+    // the glass is NOT the same as standing beside them — they stay OUT of the room (they never
+    // join the room's occupancy and can't be addressed as if present).
+    const throughWindow = visibleThroughWindows(w, String(interior.structureKey || ''), String(interior.roomId || ''));
+    if (throughWindow.length) {
+      const seen = throughWindow.slice(0, 3).map(n => {
+        const name = describeNpc(n, knowsName(n));
+        return n.reason ? `${name}, ${n.reason}` : name;
+      });
+      const more = throughWindow.length - Math.min(3, throughWindow.length);
+      if (more > 0) seen.push(`${more} other${more === 1 ? '' : 's'}`);
+      const side = String(throughWindow[0]?.side || '').trim();
+      parts.push(`Through the window, out on ${side || 'the open ground'}: ${joinList(seen)}.`);
     }
     // The WAYS OUT of this room. A multi-room building has interior doorways — a flat
     // "the way out leads back to the open air" hid every other room, so a player could
@@ -3055,6 +3062,13 @@ export function buildLocationSurvey(world, opts = {}) {
   if (structures.length && !insideStructure) {
     const uniq = [...new Set(structures)].slice(0, 4);
     parts.push(`Nearby stand ${joinList(uniq.map(k => `a ${k}`))}.`);
+  }
+  // MR-2d — the mirror of the inside-out window view: from the open, an occupied lit room
+  // READS through its glass. ONE capped texture line, never a roster (line of sight from
+  // the street catches a shape moving, not names). Outdoors only; omitted when no window
+  // reads (an empty or shuttered settlement adds nothing).
+  if (!insideStructure && occupiedWindowsFromOutside(w)) {
+    parts.push('Through a lit window nearby, a shape moves within.');
   }
 
   // Exits by compass direction (grounded in real map geometry)

@@ -132,7 +132,7 @@
   // the full in-game item catalogue (scripts/dump-items.mjs → /data/items.json) for the Secret stash menu
   let ITEMS=[];
   const VESSELS=['Loose floorboard','Secret stone compartment','False-bottomed chest','Hollow statue','Concealed wall niche','Under the mattress','Behind a loose brick','Buried in the ash','Beneath a flagstone','Inside a hollow book','Under a rug','Hidden wall panel'];
-  fetch('/data/items.json').then(r=>r.json()).then(j=>{ ITEMS=j; }).catch(()=>{ ITEMS=[]; });
+  fetch('/map/items.json').then(r=>r.json()).then(j=>{ ITEMS=j; }).catch(()=>{ ITEMS=[]; });
   document.getElementById('vesselPresets').innerHTML=VESSELS.map(v=>`<option>${v}</option>`).join('');
 
   const tools=[...document.querySelectorAll('.tool[data-tool]')];

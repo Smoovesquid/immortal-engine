@@ -11,7 +11,7 @@ const items = Object.values(ITEM_CATALOG)
   .map(d => ({ defRef: d.defRef, name: d.name || d.defRef, kind: d.kind || d.type || 'misc' }))
   .sort((a, b) => a.kind.localeCompare(b.kind) || a.name.localeCompare(b.name));
 
-const outDir = path.join(ROOT, 'public', 'data');
+const outDir = path.join(ROOT, 'public', 'map');   // committed dir (a data/ .gitignore rule excludes public/data)
 fs.mkdirSync(outDir, { recursive: true });
 fs.writeFileSync(path.join(outDir, 'items.json'), JSON.stringify(items));
-console.log(`wrote ${items.length} items → public/data/items.json`);
+console.log(`wrote ${items.length} items → public/map/items.json`);

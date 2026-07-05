@@ -1032,6 +1032,46 @@ to confirm it doesn't regress dialogue, so it's its own packet.
   convergence 100% locked; one gate run confirms no off-room leak and no dialogue regression.
 - **rollback:** revert the `narratorContext.js` change (restores full-roster context).
 
+### TT-WORLD + TT-INK + TT-PROPS — the whole world on the paper (Tim's 2026-07-05 directive)  ·  Phase 4 (the face)  ·  **CUT 2026-07-05, one renderer lane (Sonnet worktree, serial across the three — same files)** *(NB: the TT-DRAW name family is TAKEN by the landed 2-D drawn-map arc — 02c3721/33f8fa73 — these three are its 3-D-view successors and REUSE its "one drawing brain")*
+- **provenance:** Tim 2026-07-05 (verbatim intent in `TABLETOP_MAP.md` §"The 2026-07-05 directive", confirmed
+  after Basecamp rearticulation): tilt+3D great, "rest of the map" lost at the tilt view. Root diagnosed
+  code+live: `render3d.js` canvas is opaque (`alpha:false`, own sky) and its scene holds only the local
+  slice, so at blend=1 the whole 2-D world sheet is occluded — the drawn layer (TABLETOP build-path stage
+  after MAP-3DR) was never built. Outer zooms intact (blend=0).
+- **TT-WORLD — the paper carries the world:** at the tilt band, the ground = ONE flat graph-paper sheet
+  carrying the world's cartography as INK — terrain washes/edges, water contours, ruled roads, neighboring
+  places — player-centered, no edges (movement-law camera). Suggested seam (lane verifies perf): reuse the
+  2-D sheet's own drawing (`oneMap.js`) as the paper's canvas-texture so 2-D and 3-D can never disagree;
+  re-render on world-signature change, same diff discipline as MAP-3DR. Sheet is FLAT (tabletop law):
+  retire `heightAt` relief from the tilt view; terrain reads as ink. **Fog of war OFF for the build**
+  (Tim's amendment — he wants to watch the whole map render; RESTORE is a follow-up flag flip).
+- **TT-INK — architecture is ink, never geometry (yet):** remove `buildSettlement`/`buildChapelRuin`
+  building+wall meshes from the tilt scene; buildings render as their DRAWN floorplans on the paper (walls
+  = pen lines, doorway = a gap in the line, dungeon = drawn rooms/corridors) — reuse the landed TT-DRAW
+  arc's "one drawing brain" (TT-DRAW-3, poché plans b064) as the plan source so interiors match the 2-D
+  sheet exactly. "(Yet)" honored: nothing removed from the asset layer; the meshes just stop mounting.
+- **TT-PROPS — everything standing is a mini:** discrete standing things become placed pieces at their
+  engine positions (room granularity until TAC): trees (already law), plus props — barrels, beds,
+  dressers, chests — simple solid pieces, base + soft shadow, Dejarik-alive idle per the locked art
+  direction (`figures3d.js` precedent). If it could be picked up off the table → mini; if it's the shape
+  of the world → ink.
+- **allowed_files:** `public/map/**` (render3d.js, continuousMap.js, sliceScene.js, oneMap.js read/reuse,
+  figures3d.js), `public/v1.js` ONLY if a mount-point line demands it, new tests (U-prefix renderer),
+  `docs/playtests/tabletop/` receipts. **forbidden:** `engine/**`, `server/**`, world state, rng, save
+  shape — this track draws positions the engine already owns (TABLETOP_MAP contract); no render coords
+  onto world state (U21 precedent).
+- **invariants:** determinism ladder green (U19/21/22/27/30); U475–U477 MAP-3DR suite stays green
+  (persistent mount, zero-jump-at-morph); convergence 100%; combat fold-in (S4b) untouched.
+- **test_plan + live protocol:** worker runs its own server on a NON-5179 port (⚠️ 2026-07-05 finding:
+  clicking any front-door hero with a save present fires a native overwrite-`confirm` — NEVER drive Tim's
+  :5179 origin / localStorage; the `ai-dm-v2:slot:slot1` save is his live game). Baseline screenshots at 3
+  zoom bands BEFORE code, after-screenshots at the same bands as receipts; suite + playtest:quick.
+- **done_when:** at the tilt view the whole world reads as ink-on-graph-paper (no void beyond the local
+  slice), zero 3-D architecture meshes mounted, props + entities stand as minis at engine positions, fog
+  off, receipts committed, `npm run check` green, version bump + front-door build line, live-verified on
+  the player map (map-fidelity rule).
+- **rollback:** revert the lane's commits (the 3-D diorama returns exactly as b078 shipped it).
+
 ### TABLETOP — the map arc, stage index  ·  **Tim greenlit the full plan 2026-07-04; all four TABLETOP_MAP.md open questions DECIDED**
 **The plan** (Basecamp, from Tim's 2026-07-04 vision statement): region→5-ft continuous zoom · drawn
 structure + placed minis · 3-D tilt at full zoom · map truth = engine state, one-way.

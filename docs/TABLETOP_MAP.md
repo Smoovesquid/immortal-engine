@@ -1,6 +1,24 @@
 # TABLETOP MAP — drawn structure, placed miniatures
 
-**Status:** SPEC (Tim locked the model 2026-07-04). Not yet built. Renderer track.
+**Status:** BUILDING (Tim locked the model 2026-07-04; **re-confirmed + extended 2026-07-05** — see
+"The 2026-07-05 directive" below. Packets `TT-WORLD` / `TT-INK` / `TT-PROPS`, one renderer lane;
+successors to the landed 2-D `TT-DRAW` arc, reusing its drawing brain).
+
+## The 2026-07-05 directive (Tim, verbatim intent — supersedes where it sharpens)
+
+Post-MAP-3DR fallout: *"Tilt and 3D work is great. We seem to have lost the rest of the map."*
+(Root: at the tilt band the opaque 3-D diorama covers the 2-D sheet and only contains the local
+slice — the drawn layer below was never built. Diagnosed 2026-07-05, code + live.)
+
+The final push: **the ENTIRE WORLD is rendered on graph paper at the 3-D view.** No 3-D houses,
+walls, or dungeon geometry (*yet*) — everything architectural is **DRAWN in ink on the paper**, as
+at a real table. The map is then **populated with miniatures**: trees, barrels, beds, dressers,
+NPCs, monsters — every discrete standing thing is a placed piece. The paper is the tabletop law:
+the sheet is FLAT; terrain reads as ink (washes/contours/edges), not as relief geometry.
+
+**Fog of war — build-phase amendment (Tim, 2026-07-05):** fog stays **OFF for the build portion**
+so Tim can watch the whole map render end-to-end. The 2026-07-04 RESTORE decision stands as the
+*follow-up* (a flag flip + review), not part of the build.
 **Ask (Tim):** the map is a tabletop. One continuous sheet that, as you zoom all
 the way in, **tilts into a low-angle 3-D tabletop**: a graph-paper battlemap on
 the table with miniatures standing on it. Two representations, one surface.

@@ -2206,3 +2206,22 @@ other agents. (none active)
   gate-2 finding + INFO-HONESTY b073 supersede parts of sub-fix a).
 - No version bump: measurement + docs only, no shipped game change. Gate server :5200 stopped after
   the run.
+
+## 2026-07-05 — Basecamp (TT-WORLD directive: whole world on the paper → packets cut, lane dispatched)
+
+- Tim's post-b078 verdict: tilt+3D great, "we seem to have lost the rest of the map" + the final
+  push — ENTIRE world on graph paper at the 3-D view, architecture DRAWN not modeled (yet), the map
+  populated with minis (trees, barrels, beds, dressers, NPCs, monsters). Rearticulated, Tim
+  confirmed, one amendment: **fog of war OFF during the build** so he can watch the whole map
+  render. Spec updated: `TABLETOP_MAP.md` §"The 2026-07-05 directive" (+ fog amendment).
+- Root diagnosed (code + live): `render3d.js` WebGL canvas is opaque (`alpha:false`, own sky) and
+  its scene holds only the local slice, so blend=1 occludes the whole 2-D sheet — the drawn layer
+  was never built. Outer zooms intact. Live poke also surfaced ⚠️ the front-door overwrite-confirm
+  landmine (hero click with a save present fires native `confirm` — wedges eval, threatens the
+  save; Tim's slot1 verified intact, 22,743 bytes, "Bryn Holt"). Baked into the brief's live
+  protocol: workers verify on their OWN port, never :5179.
+- Packets cut: **TT-WORLD** (paper carries the world's ink, flat sheet, fog off) → **TT-INK**
+  (strip building/wall meshes; floorplans drawn via the TT-DRAW-3 one-drawing-brain) → **TT-PROPS**
+  (furniture/props as minis) — one serial Sonnet renderer lane, same files; tests U478–U481
+  allocated; brief `docs/briefs/TT-WORLD-paper-world.md`. NB: TT-DRAW-1/2 names were avoided —
+  that family is TAKEN by the landed 2-D arc (02c3721/33f8fa73).

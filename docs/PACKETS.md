@@ -167,7 +167,7 @@ done_when · rollback`.
 - Wake cottage empty · anchors seed-stable per role/epithet/faction · time-of-day movement · hostiles
   keep to edges with purpose · every occupant carries a narratable `reason`. MR-2d UNBLOCKED.
 
-### LOADER-MERGE — two authored-plan loaders must become one  ·  Phase 2 · **QUEUED-URGENT 2026-07-05-night — SIBLING CONDUCTOR PLEASE READ BEFORE DISPATCHING LOAD-2**
+### LOADER-MERGE — two authored-plan loaders became ONE  ·  Phase 2 · **✅ LANDED v0.29.8 b095 (worker `ee58383a` → integrated; suite 10325/0; survivor = authoredStructure.js + absorbed registry; authoredPlans.js DELETED (−461); U518–U522 renamed → U526–U530; U531/U532 new; LOAD-2 walkthrough byte-identical through the unified path; worker corrected the premise: both loaders already shared deriveDoors/mask downstream — the real merge was the registry)**
 - Convergent evolution, same day: Basecamp's MR-2c landed `engine/structures/authoredPlans.js`
   (v0.29.2 b089: registry + topology + MR-2a door records + mask + procgen override; U510–U512) and
   the sibling lane's LOAD-1 landed `engine/structures/authoredStructure.js` (v0.29.4 b091: v5+/v7

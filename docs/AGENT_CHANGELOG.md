@@ -2767,3 +2767,11 @@ other agents. (none active)
   Corpse GLBs live: defeated enemies swap to Tim's minis, geometry-verified (45,424-vertex mesh,
   grounded, fitLong honored), deterministic per entity, silent fallback to the toppled rig.
 - Next: LOADER-MERGE cherry-pick (`ee58383a`) → background check → v0.29.8 b095.
+
+## 2026-07-06 — Basecamp — LOADER-MERGE integrated → v0.29.8 build 095 "one loader"
+
+- Cherry-picked `ee58383a`; check GREEN (10325/0, 131/131, probe clean). One loader remains
+  (authoredStructure.js + registry); duplicate deleted; collision numbers renamed (U526–U530);
+  walkthrough receipt identical pre/post. AUTH-HOUSE-1 is now UNBLOCKED (needs only Tim's drawing +
+  location pick). Two doc-comment mentions of the old module left in floorPlan.js/structuresState.js
+  (harmless provenance; docs-sweep candidates).

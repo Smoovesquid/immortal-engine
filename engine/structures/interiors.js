@@ -3,6 +3,7 @@ import { ensureMap } from '../map/mapState.js';
 import { applyDeltas } from '../effectsCore.js';
 import { adjacentRooms, normalizeTopology, interiorExitsFrom } from './topology.js';
 import { reachableRooms } from '../movement/interiorMovement.js';
+import { doorThresholdCells } from '../map/spatial/tacticalPos.js';
 
 function sortedStructuresAtNode(world) {
   const w = ensureWorld(world);
@@ -110,9 +111,24 @@ export function enterStructureInterior(world, structureRef = '') {
 export function exitStructureInterior(world) {
   const w = ensureWorld(world);
   if (!w.scene?.interior) return w;
+
+  // MR-1a — EGRESS WRITES THE DOORSTEP (docs/POSITION_AS_CANON.md §2/§3).
+  // Compute where the body should land BEFORE clearing the interior: the region
+  // cell just outside the door of the structure being left. The entry room is the
+  // door the player came in by (scene.interior.visited[0] = the room enter dropped
+  // them in); doorThresholdCells prefers it, else the structure's entry room.
+  // Without this, exit clears the interior, then ensureWorld's backfill sees a
+  // struct pos with no interior (stale), re-seeds it via placeNearNode's ±50-cell
+  // jitter — the 247-ft teleport the fiction never narrated. We WRITE the doorstep
+  // through applyDeltas ({op:'pos'} — the sole mutation path) so backfill finds a
+  // CONSISTENT region pos and leaves it untouched.
+  const exitedKey = String(w.scene.interior.structureKey || '');
+  const entryDoorRoom = Array.isArray(w.scene.interior.visited) ? w.scene.interior.visited[0] : null;
+  const threshold = exitedKey ? doorThresholdCells(w, exitedKey, entryDoorRoom) : null;
+
   // Wrap in ensureWorld so cleared positions canonicalize identically to an
   // export/import round-trip (worldHash replay stability — U21).
-  return ensureWorld({
+  const cleared = ensureWorld({
     ...w,
     party: clearPartyInterior(w.party),
     map: {
@@ -125,6 +141,15 @@ export function exitStructureInterior(world) {
       interior: null
     }
   });
+
+  // Commit the doorstep pos. applyDeltas re-ensures at its head (backfill runs, then
+  // the pos op overwrites with the doorstep — no re-ensure after, so the doorstep
+  // stands). If the threshold couldn't be grounded (unusual structure/plan/node),
+  // fall through to `cleared` and keep the existing seeded-placement behaviour.
+  if (threshold && threshold.outside) {
+    return applyDeltas(cleared, [{ op: 'pos', id: 'party', to: threshold.outside }]);
+  }
+  return cleared;
 }
 
 export function moveWithinInterior(world, toRoomId) {

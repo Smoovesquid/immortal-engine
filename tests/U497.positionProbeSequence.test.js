@@ -1,21 +1,21 @@
 // U497 — MR-ORACLE: the real boot-and-transition sequence.
 //
 // Runs the probe's canonical sequence (wake → look → go outside → re-enter →
-// walk → journey) against the REAL slice boot, LLM off. It asserts only the
-// invariants that are TRUE on today's build, so it stays GREEN:
+// walk → journey) against the REAL slice boot, LLM off, and asserts the position
+// story is coherent at every transition:
 //
-//   • wake lands the body INSIDE the wake room (true today);
+//   • wake lands the body INSIDE the wake room;
 //   • the sequence is deterministic (two runs → identical findings);
-//   • the probe produces exactly the POSITION_DESYNC exit finding today, and its
-//     layer diagnosis names the lie — i.e. the oracle is RED-against-today by
-//     design (this is asserted as a positive fact, so it's green while the bug
-//     lives, and U497's EXPECTED-FAIL block below flips when MR-1 lands).
+//   • MR-1a LANDED — "go outside" lands the body on the DOORSTEP of the structure
+//     it left (egress writes the doorstep pos through applyDeltas). The probe now
+//     runs CLEAN of position findings and the layer diagnosis clears the ENGINE.
+//     (The renderer view-model still does not consume pos — that lie is MR-1b/TAC-4
+//     turf, out of the engine's scope.)
 //
-// The KNOWN-RED exit invariant (the post-MR-1 target: exit lands on the doorstep)
-// is encoded as an EXPECTED-FAIL (`todo`) test that fails today and turns green
-// the moment MR-1 makes exit honest. A failing `todo` does NOT fail the suite.
+// The doorstep invariant that was an EXPECTED-FAIL (`todo`) before MR-1a is now a
+// LIVE assertion (the `todo` marker is flipped OFF — see the block below).
 //
-// docs/MAP_REAL.md stage 0 (MR-ORACLE) · docs/POSITION_AS_CANON.md §7 (MR-1).
+// docs/MAP_REAL.md stage 0 (MR-ORACLE) · docs/POSITION_AS_CANON.md §2/§3 (MR-1a).
 // Sibling: U496 (assertion helpers on synthetic fixtures).
 
 import { test } from 'node:test';
@@ -68,37 +68,36 @@ test('U497: the sequence is deterministic (LLM off) — two runs produce identic
   assert.deepEqual(a.steps.map(s => s.engine.pos), b.steps.map(s => s.engine.pos), 'engine positions identical across runs');
 });
 
-// ── The oracle is RED-against-today BY DESIGN (asserted as a positive fact) ────
-// This is GREEN while the bug lives: the probe MUST surface the exit teleport and
-// name the lie. When MR-1 lands, this test flips to failing — a loud signal to
-// update U497 (delete this block; the EXPECTED-FAIL below becomes the live check).
-test('U497: TODAY the probe catches the exit teleport (POSITION_DESYNC) and diagnoses the layer', () => {
+// ── MR-1a LANDED: exit is honest — the probe finds NO exit teleport ───────────
+// Before MR-1a the probe surfaced a POSITION_DESYNC on go-outside (the exit re-rolled
+// a region cell ~49 cells / 247 ft from the door — a teleport). MR-1a makes egress
+// write the doorstep through applyDeltas, so the sequence now runs CLEAN: zero
+// position findings, and the layer diagnosis clears the engine (the only remaining
+// lie is the RENDERER view-model, which MR-1b/TAC-4 own — it does not consume pos yet).
+test('U497: MR-1a — the probe finds no exit teleport; the engine pos is honest', () => {
   const r = runSequence();
   const exitFindings = r.findings.filter(f => f.step === 'go-outside' && f.class === 'POSITION_DESYNC');
-  assert.equal(exitFindings.length, 1, 'exactly one POSITION_DESYNC on go-outside today');
-  assert.match(exitFindings[0].detail, /teleport, not a doorstep/, 'the finding names the teleport');
-  // The layer diagnosis must implicate the engine pos (the lie is engine-side; the
-  // renderer also does not consume pos, so "both" is the correct verdict today).
-  assert.ok(['engine', 'both'].includes(r.diagnosis.layer), `diagnosis implicates the engine; got "${r.diagnosis.layer}"`);
-  assert.equal(r.diagnosis.engine.lies, true, 'engine pos is diagnosed as lying');
+  assert.equal(exitFindings.length, 0, 'no POSITION_DESYNC on go-outside after MR-1a (exit lands on the doorstep)');
+  assert.equal(r.findings.length, 0, 'the whole sequence is clean of position findings after MR-1a');
+  // The engine is now cleared; the remaining lie (if any) is renderer-side only.
+  assert.equal(r.diagnosis.engine.lies, false, 'engine pos is diagnosed as honest after MR-1a');
+  assert.ok(['view-model', 'none'].includes(r.diagnosis.layer), `engine is exonerated; got "${r.diagnosis.layer}"`);
 });
 
-// ── EXPECTED FAIL until MR-1 (docs/POSITION_AS_CANON.md §7) ───────────────────
-// The post-MR-1 TARGET invariant: "go outside" lands the body on the DOORSTEP of
-// the structure it left. This FAILS today (the exit re-rolls a region cell up to
-// ~50 cells from the node centre) and turns GREEN when MR-1 makes egress route
-// through the door to doorstep coords. A failing `todo` does not fail the suite.
-test('U497: EXPECTED-FAIL until MR-1 — go outside lands on the doorstep, not a teleport',
-  { todo: 'MR-1 (docs/POSITION_AS_CANON.md §7): egress-through-the-door → doorstep coords. Flip when it lands.' },
-  () => {
-    // Boot and drive to the exit exactly as the sequence does.
-    let world = bootSlice();
-    ({ world } = playerMove(world, PACKS, 'look around'));
-    const exitedStructureKey = world?.scene?.interior?.structureKey
-      || world?.party?.[0]?.position?.interior?.structureId
-      || null;
-    assert.ok(exitedStructureKey, 'an interior is active before exit');
-    ({ world } = playerMove(world, PACKS, 'go outside'));
-    const findings = assertExitOnDoorstep(world, exitedStructureKey, 'go-outside');
-    assert.deepEqual(findings, [], `exit must land on the doorstep; got: ${JSON.stringify(findings)}`);
-  });
+// ── THE DOORSTEP INVARIANT — LIVE (docs/POSITION_AS_CANON.md §2/§3) ───────────
+// The post-MR-1a target, now asserted for real (the expected-fail `todo` is FLIPPED
+// ON): "go outside" lands the body on the DOORSTEP of the structure it left — same
+// node, within the probe's doorstep threshold of that structure's footprint, NEVER
+// re-rolled to a far cell. assertExitOnDoorstep is the same check the probe runs.
+test('U497: go outside lands on the doorstep, not a teleport', () => {
+  // Boot and drive to the exit exactly as the sequence does.
+  let world = bootSlice();
+  ({ world } = playerMove(world, PACKS, 'look around'));
+  const exitedStructureKey = world?.scene?.interior?.structureKey
+    || world?.party?.[0]?.position?.interior?.structureId
+    || null;
+  assert.ok(exitedStructureKey, 'an interior is active before exit');
+  ({ world } = playerMove(world, PACKS, 'go outside'));
+  const findings = assertExitOnDoorstep(world, exitedStructureKey, 'go-outside');
+  assert.deepEqual(findings, [], `exit must land on the doorstep; got: ${JSON.stringify(findings)}`);
+});

@@ -221,6 +221,128 @@ export function roomOfStructCell(plan, gx, gy) {
   return '';
 }
 
+// ── Door thresholds (MR-1a) — the struct↔region cells a doorway maps ─────────
+// docs/POSITION_AS_CANON.md §2 ("arrivals enter at the doorway/road edge they came
+// by") + §3 ("stepping through an entry doorway swaps frame struct: ↔ region at the
+// door's mapped cells"). This is the geometry the EGRESS path commits: stepping out
+// must land the body on the DOORSTEP of the structure it left, not a re-seeded cell.
+//
+// A structure's floorPlan carries only room-to-room doors (each has room ids in
+// a/b — see floorPlan.js) — there is NO explicit exterior door record. So the ENTRY
+// ROOM (isEntry, where enterStructureInterior drops you) is the doorway to the
+// outside, and the outside threshold is the region cell one doorstep beyond that
+// room's OUTER edge. "Outer" is deterministic geometry: the dominant-axis cardinal
+// of (entry-room-centre − building-footprint-centre) — the entry room sits on the
+// building's perimeter, so that vector points away from the interior, out the front.
+//
+// Frame anchoring matches the probe's structFootprintRegionCells and the TAC-1
+// unit block: a floorPlan layout coordinate L maps to the region cell
+// (nodeCentre + L × PLACE_WU); struct-frame cells use layoutToCells(L) on the same
+// scale. PLACE_WU is the one scale both frames share, so the inside/outside cells
+// are a consistent doorstep across the frame swap.
+
+// The node record for a structure (by its nodeId), or null.
+function nodeForStruct(world, structure) {
+  const nodes = Array.isArray(world?.map?.nodes) ? world.map.nodes : [];
+  return nodes.find(n => n && String(n.id) === String(structure?.nodeId)) || null;
+}
+
+// The building-local footprint centre, in layout units: the mid of the bounding box
+// of every room's drawn box. Mirrors the probe's midX/midY (kept in-sync with
+// structFootprintRegionCells). Returns { cx, cy } or null when no room grounds.
+function footprintCentreLayout(plan) {
+  const rooms = Array.isArray(plan?.rooms) ? plan.rooms : [];
+  if (!rooms.length) return null;
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  for (const r of rooms) {
+    const rw = (r.w || (r.r ? r.r * 2 : 0)) / 2;
+    const rh = (r.h || (r.r ? r.r * 2 : 0)) / 2;
+    minX = Math.min(minX, r.cx - rw); maxX = Math.max(maxX, r.cx + rw);
+    minY = Math.min(minY, r.cy - rh); maxY = Math.max(maxY, r.cy + rh);
+  }
+  if (!Number.isFinite(minX)) return null;
+  return { cx: (minX + maxX) / 2, cy: (minY + maxY) / 2 };
+}
+
+/**
+ * doorThresholdCells(world, structId, doorId?) -> null | {
+ *   inside:  { frame: 'struct:<id>', gx, gy },   // the doorway room's cell, struct frame
+ *   outside: { frame: 'region', gx, gy },        // one doorstep beyond it, region frame
+ *   dir      // the outward cardinal ('north'|'east'|'south'|'west')
+ * }
+ *
+ * `doorId` selects a specific room-to-room door by its `a`/`b` room-pair id or index
+ * when the caller entered by one; absent, the ENTRY room (isEntry) is the doorway.
+ * Pure + deterministic (no rng, no LLM) — a function of the structure geometry and
+ * the node anchor. Returns null when the structure/plan/node can't be grounded (the
+ * caller then falls back to its existing handling — the seeded placement).
+ */
+export function doorThresholdCells(world, structId, doorId = null) {
+  const st = world?.structures?.byId?.[String(structId)] || null;
+  if (!st) return null;
+  const node = nodeForStruct(world, st);
+  if (!node || !Number.isInteger(node.x) || !Number.isInteger(node.y)) return null;
+  const plan = floorPlan(st);
+  const rooms = Array.isArray(plan?.rooms) ? plan.rooms : [];
+  if (!rooms.length) return null;
+
+  // The doorway room. A specific doorId (a room id the entrant used, or a door
+  // index) selects the room on the near side; otherwise the entry room, else the
+  // sorted-first room (matches floorPlan's entryId fallback).
+  let doorRoom = null;
+  if (doorId != null && String(doorId) !== '') {
+    const doors = Array.isArray(plan.doors) ? plan.doors : [];
+    const idx = Number(doorId);
+    const byIdx = (Number.isInteger(idx) && idx >= 0 && idx < doors.length) ? doors[idx] : null;
+    const wantId = String(doorId);
+    // Prefer a room whose id matches; else the near room of the indexed door.
+    doorRoom = rooms.find(r => String(r.id) === wantId)
+      || (byIdx ? rooms.find(r => String(r.id) === String(byIdx.a)) : null)
+      || null;
+  }
+  if (!doorRoom) doorRoom = rooms.find(r => r.isEntry) || null;
+  if (!doorRoom) {
+    doorRoom = rooms.slice().sort((a, b) => String(a.id).localeCompare(String(b.id)))[0] || null;
+  }
+  if (!doorRoom) return null;
+
+  const rect = roomRectCells(doorRoom);
+  if (!rect) return null;
+
+  // Inside cell: the doorway room's centre cell in the STRUCT frame (always inside
+  // the room rect — roomRectCells keeps the centre even for a tiny room).
+  const inside = { frame: `struct:${String(st.id)}`, gx: rect.cx, gy: rect.cy };
+
+  // Outward direction: dominant cardinal of (entry-room-centre − footprint-centre).
+  // Ties (a perfectly central single-room building) break to a stable default so the
+  // result is deterministic; south is chosen so the doorstep sits "in front".
+  const fc = footprintCentreLayout(plan) || { cx: doorRoom.cx, cy: doorRoom.cy };
+  const vx = doorRoom.cx - fc.cx;
+  const vy = doorRoom.cy - fc.cy;
+  let dx = 0, dy = 0, dir;
+  if (Math.abs(vx) >= Math.abs(vy) && Math.abs(vx) > 1e-9) {
+    dx = vx > 0 ? 1 : -1; dir = vx > 0 ? 'east' : 'west';
+  } else if (Math.abs(vy) > 1e-9) {
+    dy = vy > 0 ? 1 : -1; dir = vy > 0 ? 'south' : 'north';
+  } else {
+    dy = 1; dir = 'south'; // central single-room building — step out the front (south)
+  }
+
+  // Outside cell: the region cell one doorstep beyond the doorway room's OUTER edge.
+  // The room's outer edge, in region cells, is nodeCentre + (roomCentre ± halfSpan)
+  // × PLACE_WU along the outward axis; +1 cell is the doorstep just past the wall.
+  const centre = nodeGridToRegionCell(node.x, node.y);
+  const halfWLayout = Math.max(0, (doorRoom.w || 0) / 2);
+  const halfHLayout = Math.max(0, (doorRoom.h || 0) / 2);
+  const edgeXLayout = doorRoom.cx + dx * halfWLayout;
+  const edgeYLayout = doorRoom.cy + dy * halfHLayout;
+  const gx = Math.round(centre.gx + edgeXLayout * PLACE_WU) + dx;
+  const gy = Math.round(centre.gy + edgeYLayout * PLACE_WU) + dy;
+  const outside = { frame: 'region', gx, gy };
+
+  return { inside, outside, dir };
+}
+
 // Cached floorPlan per structure id (floorPlan is a pure function of the
 // structure, so this is a per-call memo, not stored state).
 function planFor(structure, cache) {

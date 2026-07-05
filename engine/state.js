@@ -375,6 +375,17 @@ export function ensureWorld(partial) {
 // frame. Party members live in world.party; present settlement NPCs live in
 // world.map.nodes[].settlement.npcs — both written in place (shape-preserving),
 // only where a (re)placement is actually needed, so an unchanged world is untouched.
+//
+// MR-1a — THIS IS A REPAIR, NOT AN AUTHOR (docs/POSITION_AS_CANON.md §2/§3).
+// It exists to (a) give genuinely-LEGACY saves a pos (absent because the save
+// predates TAC-1) and (b) heal a pos left STALE by a frame change that did NOT
+// write a new one. It must NEVER re-seed a pos that this turn's transition just
+// wrote: the egress path (exitStructureInterior) now commits the DOORSTEP through
+// applyDeltas, so an ordinary exit hands us a CONSISTENT region pos — and the
+// keep-if-consistent rule in resolve() below leaves it exactly where the transition
+// put it (the ±50-cell placeNearNode jitter is the legacy/stale fallback ONLY).
+// Do not weaken that rule to "always re-seed on frame change" — that would clobber
+// the doorstep and bring the 247-ft teleport back.
 function backfillTacticalPositions(world) {
   const curNodeId = String(world.map?.currentNodeId ?? '');
   const sceneInterior = world.scene?.interior && typeof world.scene.interior === 'object'
@@ -388,6 +399,9 @@ function backfillTacticalPositions(world) {
   // Resolve the pos an entity SHOULD hold this call: keep a stored value that
   // exists and is still consistent with the current frame; otherwise (absent or
   // stale) take the seeded target (which itself may be null when unplaceable).
+  // MR-1a: the keep-if-consistent branch is what protects a freshly-written
+  // transition pos (the egress doorstep) from being re-seeded — a consistent stored
+  // pos is authoritative here; only an absent or genuinely-stale one is replaced.
   const resolve = (stored, entityId, opts) => {
     if (stored != null && isTacticalPosConsistent(stored, world, curNodeId, opts)) return stored;
     return targetFor(entityId);

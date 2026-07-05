@@ -33,7 +33,7 @@
   .seg button.on { border-color:var(--accent); background:#fff; box-shadow:inset 0 0 0 1px var(--accent); font-weight:600; }
   .slbl { font-size:10px; text-transform:uppercase; letter-spacing:.6px; color:var(--ink-soft); margin:10px 0 2px; }
   .sinp { width:100%; padding:6px 8px; font-size:12px; border:1px solid var(--panel-line); border-radius:6px; background:#fbf8ef; color:var(--ink); }
-  #itemResults { max-height:150px; overflow-y:auto; margin-top:4px; }
+  #itemResults, #furnResults { max-height:150px; overflow-y:auto; margin-top:4px; }
   .iresult { font-size:12px; padding:4px 7px; border-radius:6px; cursor:pointer; color:var(--ink); display:flex; justify-content:space-between; gap:6px; }
   .iresult:hover { background:#fff; }
   .iresult .k { color:var(--ink-soft); font-size:10px; align-self:center; }
@@ -78,6 +78,7 @@
       <button class="tool" data-tool="barrel"><span class="swatch" id="sw-barrel"></span><span>Barrel<small>1 × 1</small></span></button>
       <button class="tool" data-tool="cookpot"><span class="swatch" id="sw-cookpot"></span><span>Cooking pot<small>1 × 1</small></span></button>
       <button class="tool" data-tool="dresser"><span class="swatch" id="sw-dresser"></span><span>Dresser<small>2 × 1</small></span></button>
+      <button class="tool" data-tool="furniture"><span class="swatch" id="sw-furniture"></span><span>More…<small>any of 39 engine types</small></span></button>
     </div>
     <div class="group">
       <h2>Selected</h2>
@@ -93,6 +94,11 @@
       <div id="roleRow" style="display:none">
         <div class="slbl">Room type <span style="text-transform:none;letter-spacing:0">· the engine narrates &amp; furnishes by role</span></div>
         <select id="roomRole" class="sinp"></select>
+      </div>
+      <div id="furnPanel" style="display:none">
+        <div class="slbl">Furniture type</div>
+        <input id="furnSearch" class="sinp" placeholder="search 39 furniture types…"/>
+        <div id="furnResults"></div>
       </div>
       <div id="secretPanel" style="display:none">
         <div class="slbl">Vessel · where it's hidden</div>
@@ -139,6 +145,8 @@
   let ITEMS=[];
   const VESSELS=['Loose floorboard','Secret stone compartment','False-bottomed chest','Hollow statue','Concealed wall niche','Under the mattress','Behind a loose brick','Buried in the ash','Beneath a flagstone','Inside a hollow book','Under a rug','Hidden wall panel'];
   fetch('/map/items.json').then(r=>r.json()).then(j=>{ ITEMS=j; }).catch(()=>{ ITEMS=[]; });
+  let FURNCAT=[]; fetch('/map/furniture.json').then(r=>r.json()).then(j=>{ FURNCAT=j; }).catch(()=>{ FURNCAT=[]; });
+  const furnName=t=>{ const f=FURNCAT.find(x=>x.type===t); return f?f.name:(FURN[t]?FURN[t].label:t); };
   document.getElementById('vesselPresets').innerHTML=VESSELS.map(v=>`<option>${v}</option>`).join('');
   document.getElementById('roomRole').innerHTML=ROLES.map(([v,n])=>`<option value="${v}">${n}</option>`).join('');
 
@@ -205,6 +213,7 @@
     else if(tool==='door'||tool==='window'){ const w=nearestWall(c.px,c.py); if(w){ scene.openings.push({id:nextId('o'),kind:tool,x:w.x,y:w.y,angle:w.angle,len:1,room:w.room}); select('open',scene.openings[scene.openings.length-1].id); } else flash('click nearer a wall'); }
     else if(tool==='tunnel'){ const r=roomAt(c.gx,c.gy); if(!r) flash('click a room'); else if(!tunnelStart){ tunnelStart=r.id; flash('now click the room to link'); } else if(r.id!==tunnelStart){ scene.tunnels.push({id:nextId('t'),a:tunnelStart,b:r.id,bend:0}); tunnelStart=null; flash('tunnel linked · drag its dot to bend'); } else tunnelStart=null; }
     else if(tool==='secret'){ const s={id:nextId('s'),x:cCol(c.gx)+0.5,y:cRow(c.gy)+0.5,vessel:'Loose floorboard',dc:12,items:[]}; scene.secrets.push(s); select('secret',s.id); setTool('select'); }
+    else if(tool==='furniture'){ const f={id:nextId('f'),type:'table',x:Math.min(cCol(c.gx),COLS-1),y:Math.min(cRow(c.gy),ROWS-1),w:1,h:1,rot:0}; scene.furniture.push(f); select('furn',f.id); drag={mode:'move-furn',id:f.id,offx:0,offy:0}; setTool('select'); }
     else if(FURN[tool]){ const def=FURN[tool]; const f={id:nextId('f'),type:tool,x:cCol(c.gx),y:cRow(c.gy),w:def.w,h:def.h,rot:0}; f.x=Math.min(f.x,COLS-f.w); f.y=Math.min(f.y,ROWS-f.h); scene.furniture.push(f); select('furn',f.id); drag={mode:'move-furn',id:f.id,offx:0,offy:0}; setTool('select'); }
     else {
       if(sel&&sel.kind==='room'){ const r=roomById(sel.id); if(r&&r.shape!=='round'){ const H=wallHandles(r); for(const k in H){ const p=H[k]; if(Math.hypot(p[0]-c.px,p[1]-c.py)<9/cam.scale+4){ drag={mode:'curve-wall',id:r.id,edge:k}; return; } } } }
@@ -251,10 +260,10 @@
   window.addEventListener('keyup',(e)=>{ if(e.code==='Space'){ spaceHeld=false; cv.style.cursor=tool==='select'?'default':'crosshair'; } });
 
   // ── selection + panel ──
-  const matRow=document.getElementById('matRow'), shapeRow=document.getElementById('shapeRow'), secretPanel=document.getElementById('secretPanel'), roleRow=document.getElementById('roleRow');
-  function select(kind,id){ sel=kind?{kind,id}:null; const info=document.getElementById('selInfo'); matRow.style.display='none'; shapeRow.style.display='none'; secretPanel.style.display='none'; roleRow.style.display='none';
+  const matRow=document.getElementById('matRow'), shapeRow=document.getElementById('shapeRow'), secretPanel=document.getElementById('secretPanel'), roleRow=document.getElementById('roleRow'), furnPanel=document.getElementById('furnPanel');
+  function select(kind,id){ sel=kind?{kind,id}:null; const info=document.getElementById('selInfo'); matRow.style.display='none'; shapeRow.style.display='none'; secretPanel.style.display='none'; roleRow.style.display='none'; furnPanel.style.display='none';
     if(!sel){ info.textContent='nothing selected'; draw(); return; }
-    if(sel.kind==='furn'){ const f=scene.furniture.find(x=>x.id===id); info.innerHTML=`<b>${FURN[f.type].label}</b> · ${f.w}×${f.h}`; }
+    if(sel.kind==='furn'){ const f=scene.furniture.find(x=>x.id===id); info.innerHTML=`<b>${esc(furnName(f.type))}</b> · ${f.w}×${f.h}`; furnPanel.style.display='block'; document.getElementById('furnSearch').value=''; renderFurnResults(''); }
     else if(sel.kind==='open'){ const o=scene.openings.find(x=>x.id===id); info.innerHTML=`<b>${o.kind}</b> · ${o.len||1} wide<br><span style="font-size:11px">drag along the wall to widen</span>`; }
     else if(sel.kind==='tunnel'){ info.innerHTML=`<b>tunnel</b> · links two rooms`; }
     else if(sel.kind==='wall'){ const w=scene.walls.find(x=>x.id===id); info.innerHTML=`<b>wall segment</b> · ${w.material}<br><span style="font-size:11px">drag endpoints to reshape</span>`; matRow.style.display='block'; setSeg('#segMaterial','mat',w.material); }
@@ -276,6 +285,12 @@
   document.getElementById('secretVessel').addEventListener('input',e=>{ const s=curSecret(); if(s) s.vessel=e.target.value; });
   document.getElementById('secretDC').addEventListener('input',e=>{ const s=curSecret(); if(s) s.dc=Math.max(1,Math.min(30,+e.target.value||12)); });
   document.getElementById('itemSearch').addEventListener('input',e=>renderItemResults(e.target.value));
+  function curFurn(){ return sel&&sel.kind==='furn'?scene.furniture.find(x=>x.id===sel.id):null; }
+  function renderFurnResults(q){ const el=document.getElementById('furnResults'), f=curFurn(); if(!f){ el.innerHTML=''; return; }
+    q=(q||'').toLowerCase().trim(); const list=q?FURNCAT.filter(x=>x.name.toLowerCase().includes(q)||x.type.includes(q)):FURNCAT;
+    el.innerHTML=list.length?list.slice(0,60).map(x=>`<div class="iresult" data-t="${x.type}"><span>${esc(x.name)}</span>${x.type===f.type?'<span class="k">current</span>':''}</div>`).join(''):'<div style="font-size:11px;color:var(--ink-soft);padding:4px 2px">no match</div>';
+    el.querySelectorAll('.iresult').forEach(d=>d.addEventListener('click',()=>{ f.type=d.dataset.t; const def=FURN[f.type]; if(def){ f.w=def.w; f.h=def.h; } else { f.w=1; f.h=1; } select('furn',f.id); })); }
+  document.getElementById('furnSearch').addEventListener('input',e=>renderFurnResults(e.target.value));
   function setSeg(s2,attr,val){ document.querySelectorAll(s2+' button').forEach(b=>b.classList.toggle('on',b.dataset[attr]===val)); }
   document.querySelectorAll('#segMaterial button').forEach(b=>b.addEventListener('click',()=>{ if(!sel) return; if(sel.kind==='room') roomById(sel.id).material=b.dataset.mat; else if(sel.kind==='wall') scene.walls.find(x=>x.id===sel.id).material=b.dataset.mat; select(sel.kind,sel.id); }));
   document.querySelectorAll('#segShape button').forEach(b=>b.addEventListener('click',()=>{ if(sel&&sel.kind==='room'){ roomById(sel.id).shape=b.dataset.shape; select('room',sel.id); } }));
@@ -383,7 +398,8 @@
     if(f.type==='bed'){ ctx.fillStyle=getCss('--cloth'); roundRect(ix,iy,iw,ih,4); ctx.fill(); ctx.fillStyle='#e8eef4'; const p=Math.min(ih*0.28,CELL*0.7); roundRect(ix+3,iy+3,iw-6,p,3); ctx.fill(); ctx.strokeStyle=getCss('--wood-dark'); ctx.lineWidth=1.5; roundRect(ix,iy,iw,ih,4); ctx.stroke(); }
     else if(f.type==='barrel'){ const cx=x+w/2,cy=y+h/2,rr=Math.min(iw,ih)/2; ctx.fillStyle=getCss('--wood'); circle(cx,cy,rr); ctx.fill(); ctx.strokeStyle=getCss('--wood-dark'); ctx.lineWidth=1.5; circle(cx,cy,rr); ctx.stroke(); circle(cx,cy,rr*0.6); ctx.stroke(); }
     else if(f.type==='cookpot'){ const cx=x+w/2,cy=y+h/2,rr=Math.min(iw,ih)/2; ctx.fillStyle=getCss('--iron'); circle(cx,cy,rr); ctx.fill(); ctx.strokeStyle='#20222699'; ctx.lineWidth=2; circle(cx,cy,rr*0.62); ctx.stroke(); ctx.fillStyle=getCss('--iron'); circle(cx-rr,cy,rr*0.16); ctx.fill(); circle(cx+rr,cy,rr*0.16); ctx.fill(); }
-    else if(f.type==='dresser'){ ctx.fillStyle=getCss('--wood'); roundRect(ix,iy,iw,ih,3); ctx.fill(); ctx.strokeStyle=getCss('--wood-dark'); ctx.lineWidth=1.5; roundRect(ix,iy,iw,ih,3); ctx.stroke(); const yy=iy+ih/2; line(ix+2,yy,ix+iw-2,yy); ctx.stroke(); ctx.fillStyle=getCss('--wood-dark'); circle(ix+iw/2,iy+ih*0.28,1.6); ctx.fill(); circle(ix+iw/2,iy+ih*0.72,1.6); ctx.fill(); } }
+    else if(f.type==='dresser'){ ctx.fillStyle=getCss('--wood'); roundRect(ix,iy,iw,ih,3); ctx.fill(); ctx.strokeStyle=getCss('--wood-dark'); ctx.lineWidth=1.5; roundRect(ix,iy,iw,ih,3); ctx.stroke(); const yy=iy+ih/2; line(ix+2,yy,ix+iw-2,yy); ctx.stroke(); ctx.fillStyle=getCss('--wood-dark'); circle(ix+iw/2,iy+ih*0.28,1.6); ctx.fill(); circle(ix+iw/2,iy+ih*0.72,1.6); ctx.fill(); }
+    else { ctx.fillStyle=getCss('--wood'); roundRect(ix,iy,iw,ih,3); ctx.fill(); ctx.strokeStyle=getCss('--wood-dark'); ctx.lineWidth=1.3; roundRect(ix,iy,iw,ih,3); ctx.stroke(); ctx.fillStyle='#fff'; ctx.font=`700 ${Math.min(9,Math.max(6,iw/4))}px ui-sans-serif`; ctx.textAlign='center'; ctx.textBaseline='middle'; const nm=furnName(f.type); ctx.fillText(nm.length>9?nm.slice(0,8)+'…':nm, x+w/2, y+h/2); ctx.textAlign='left'; ctx.textBaseline='alphabetic'; } }
 
   function line(x0,y0,x1,y1){ ctx.beginPath(); ctx.moveTo(x0,y0); ctx.lineTo(x1,y1); ctx.stroke(); }
   const ln=(x0,y0,x1,y1,col,lw)=>{ ctx.strokeStyle=col; ctx.lineWidth=lw; ctx.lineCap='round'; ctx.beginPath(); ctx.moveTo(x0,y0); ctx.lineTo(x1,y1); ctx.stroke(); };
@@ -403,8 +419,9 @@
     else if(kind==='bed'){ g.fillStyle='#7d95ac'; g.fillRect(5,3,16,20); g.fillStyle='#e8eef4'; g.fillRect(7,5,12,5); }
     else if(kind==='barrel'){ g.fillStyle='#9c6b3e'; g.beginPath(); g.arc(13,13,9,0,7); g.fill(); g.strokeStyle='#6f4a28'; g.lineWidth=1.5; g.beginPath(); g.arc(13,13,5.5,0,7); g.stroke(); }
     else if(kind==='cookpot'){ g.fillStyle='#3d3f45'; g.beginPath(); g.arc(13,13,9,0,7); g.fill(); g.strokeStyle='#20222699'; g.lineWidth=2; g.beginPath(); g.arc(13,13,5.5,0,7); g.stroke(); }
-    else if(kind==='dresser'){ g.fillStyle='#9c6b3e'; g.fillRect(3,7,20,12); g.strokeStyle='#6f4a28'; g.lineWidth=1.2; g.strokeRect(3,7,20,12); g.beginPath(); g.moveTo(3,13); g.lineTo(23,13); g.stroke(); } }
-  ['select','room','wall','door','window','tunnel','secret','bed','barrel','cookpot','dresser'].forEach(k=>swatch('sw-'+k,k));
+    else if(kind==='dresser'){ g.fillStyle='#9c6b3e'; g.fillRect(3,7,20,12); g.strokeStyle='#6f4a28'; g.lineWidth=1.2; g.strokeRect(3,7,20,12); g.beginPath(); g.moveTo(3,13); g.lineTo(23,13); g.stroke(); }
+    else if(kind==='furniture'){ g.fillStyle='#9c6b3e'; g.fillRect(4,6,18,14); g.strokeStyle='#6f4a28'; g.lineWidth=1.2; g.strokeRect(4,6,18,14); g.fillStyle='#fff'; g.font='700 11px ui-sans-serif'; g.textAlign='center'; g.textBaseline='middle'; g.fillText('+',13,13); g.textAlign='left'; g.textBaseline='alphabetic'; } }
+  ['select','room','wall','door','window','tunnel','secret','bed','barrel','cookpot','dresser','furniture'].forEach(k=>swatch('sw-'+k,k));
 
   // ── fit view ──
   document.getElementById('btnFit').addEventListener('click',fitView);

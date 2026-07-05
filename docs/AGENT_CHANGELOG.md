@@ -2691,3 +2691,14 @@ other agents. (none active)
   pre-existing authored-plan path). Worker's U381-class flake note: my mainline ladder was clean 10228/0.
 - Version from the true current head (second window had shipped v0.29.3 b090 "the lock remembers"): now
   **v0.29.4 b091 "a room you drew"**.
+
+## 2026-07-05 — Basecamp (second window) — OCC-STORY-1 released → v0.29.5 b092 "everyone has a reason" + LOADER-MERGE flagged URGENT
+
+- OCC-STORY-1 rode the sibling's push unreleased (integration race #2 today — benign, both trees
+  green); released as v0.29.5 b092. Story placement live: wake cottage empty, anchors seed-stable,
+  time-of-day movement, hostiles purposeful, `reason` on every occupant (MR-2b's prompt seam can voice
+  it). Worker's honest worldHash re-pin accepted (seeded TAC-1 npc pos values moved once, documented).
+- **LOADER-MERGE queued URGENT:** MR-2c's `authoredPlans.js` and LOAD-1's `authoredStructure.js` are
+  duplicate loaders born the same day; sibling asked (via PACKETS row) to hold LOAD-2 until merged.
+  LOAD-1 also reused test numbers U513/U514 (DOOR-FORCE-1's) — rename queued in the same row.
+- MR-2d (windows LOS; U520–U522) dispatching now — the LAST stage-2 packet.

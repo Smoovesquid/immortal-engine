@@ -163,7 +163,23 @@ done_when · rollback`.
   SL-5 (+ the SEEK-2 locket follow-up) is the next playloop dispatch — spec is the draft's §6 row verbatim
   with the settled taste calls baked in.
 
-### OCC-STORY-1 — every settlement NPC is where their story puts them  ·  Phase 1  ·  **RELAUNCHED 2026-07-05-night on Tim's word (fresh Opus worktree; same brief `docs/briefs/OCC-STORY-1.md`; U491–U493) — base moved to v0.29.2 (door canon landed; roomOccupancy.js untouched, still free). MR-2d unblocks when this lands.**
+### OCC-STORY-1 — every settlement NPC is where their story puts them  ·  Phase 1  ·  **✅ LANDED v0.29.5 b092 (worker `3e8862c2` → integrated `5383caa9`; U491–U493 green, U491 failing-first; suite 10241/0 combined; 19 tests honestly relocked off the strangers-in-cottage scaffold via shared helper; one documented worldHash re-pin — story anchors moved the SEEDED TAC-1 npc pos values, replay still deterministic)**
+- Wake cottage empty · anchors seed-stable per role/epithet/faction · time-of-day movement · hostiles
+  keep to edges with purpose · every occupant carries a narratable `reason`. MR-2d UNBLOCKED.
+
+### LOADER-MERGE — two authored-plan loaders must become one  ·  Phase 2 · **QUEUED-URGENT 2026-07-05-night — SIBLING CONDUCTOR PLEASE READ BEFORE DISPATCHING LOAD-2**
+- Convergent evolution, same day: Basecamp's MR-2c landed `engine/structures/authoredPlans.js`
+  (v0.29.2 b089: registry + topology + MR-2a door records + mask + procgen override; U510–U512) and
+  the sibling lane's LOAD-1 landed `engine/structures/authoredStructure.js` (v0.29.4 b091: v5+/v7
+  export support, wired via `applyGeneratedStructuresForNode.js`; live-verified). Two modules consume
+  the same house-builder export at different wiring points — reconcile to ONE loader (best of both:
+  MR-2c's door-canon/mask depth + LOAD-1's v7 format tolerance + its wiring point) BEFORE LOAD-2
+  builds multi-room on the duplicate. LOAD-2's stated scope (multi-room, doors→adjacency) is largely
+  ALREADY BUILT in authoredPlans.js — check first.
+- **Test-number collision to fix in the same pass:** LOAD-1's `tests/U513.authoredStructureLoad` +
+  `U514.authoredRoomEnterable` reuse DOOR-FORCE-1's landed numbers (different filenames, suite green,
+  bookkeeping broken) → rename to U518/U519 with doc refs. Numbers U515–U519 hereby reserved for that
+  rename + this merge's tests.
 - **provenance:** Tim's live playtest (v0.28.32, wake scene): a mini beside his player token that the DM
   said wasn't there. Diagnosis (live-save probe, this window): the mini = Galen, OUTDOORS, painted inside
   the roofless floorplan ink; and the occupancy scatter had stuffed FIVE strangers into the player's own

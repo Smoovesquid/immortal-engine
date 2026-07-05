@@ -2073,6 +2073,19 @@ other agents. (none active)
   U104-D composer-phrasing coupling. Convergence zero relocks. U471–U472.
 - Integration ladder GREEN: convergence 131/131, suite 9934/0, determinism green. v0.28.27 b076.
 
+## 2026-07-04 — Basecamp (FACT-1 integration → v0.28.28 build 077 — day close)
+
+- Landed FACT-1 (`909bfe16`): authored pack factions reach world state — the old seed guard was
+  dead code; new shape-compare vs untouched defaults, playloop-side (old saves structurally
+  unreachable, U474 byte-stable proof). MERGE not replace (U324-C caught civic as load-bearing for
+  deed→reputation). Fantasy boots: 12 factions live. Sole-delta hash proof; playtest:full 500 clean;
+  U473–U474; no WORLD_VERSION bump.
+- Day totals (builds 058→077, 14 landings tonight alone): map arc complete · movement law live
+  end-to-end · 4 honesty guards at the delivery sink · gate 14→8/48 then all 8 fixed same-day ·
+  content unlock (19 arcs, 12 factions, 188 flavor entries, healed sub-region merge) · corpus
+  124→131 · suite ~9.75k→9,945 · ledger $16.16.
+- Integration ladder GREEN: convergence 131/131, suite 9945/0, determinism green. v0.28.28 b077.
+
 2026-07-04 — Sonnet (worker worktree, PERC-1) — LOGIC DONE, WIRING PENDING (playloop.js fenced)
 - Packet/seam: `docs/PACKETS.md` PERC-1 — 2026-07-04 gate (Chaos-griefer, CRUNCH_INCONSISTENCY): "Wait — is
   the ceiling still on fire or not? I stand in the middle of the room and look up." rolled a NATURAL 1 vs DC

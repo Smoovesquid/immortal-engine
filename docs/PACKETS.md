@@ -1152,10 +1152,16 @@ sheet (no per-node islands); the camera keeps the player centered (no edges, eve
   threads+factions admitted, malformed-safe; dead four deleted; boots seed authored arcs — tallow
   "The Bridge Dispute", aldermere "The Drowned Twin", 1/2/3 by fate band; playtest:full 500 clean;
   two relocks justified — U454-E hash `1de2d182`→`982c62b5`, D01 dead-field asserts dropped;
-  U466–U467. **FOLLOW-UP QUEUE: FACT-1** — factions admitted but INERT: `ensureWorld()` pre-fills
-  default civic/shadow BEFORE playloop's `!Array.isArray(w.factions)` seed guard, so pack factions
-  never reach world state; small playloop/state seam, worker analysis in its report; dispatch when
-  the playloop lane frees) **∥ PACK-2-AUDIT ✅ MEMO LANDED** (`3a2ef027` → `f7ed6586`,
+  U466–U467. **FACT-1 ✅ LANDED v0.28.28 b077** (`909bfe16`): the seed guard was DEAD CODE
+  (ensureWorld always pre-fills) — replaced with a shape-compare vs untouched defaults,
+  playloop-side (beginAdventure fires only on fresh boots → old saves structurally unreachable;
+  U474 proves byte-stable round-trip incl. evolved factions). **MERGE not replace** — the suite
+  caught U324-C: `civic` is load-bearing (settlement NPCs affiliate to it; deed→reputation would
+  silently die) — authored factions JOIN the defaults. Fantasy boots carry 12 factions (crown-watch,
+  seil-compact, ember-quill, greyfen-cutters, the-regency, wandering-faithful, merchant-league,
+  order-long-watch, crimson-brotherhood, hollow-guild + civic/shadow); no-faction packs
+  byte-identical. Sole-delta hash proof (U454-E `ca6c4b5d`→`7aa7b987`, revert-reproduces-prior);
+  playtest:full 500 clean; U473–U474; no WORLD_VERSION bump) **∥ PACK-2-AUDIT ✅ MEMO LANDED** (`3a2ef027` → `f7ed6586`,
   `docs/briefs/PACK-TRIO-decision-memo.md`): ALL THREE recommended for admission as ONE S-sized
   packet — 188 authored entries proven stripped live (90 locations/objectives + sensory details vs
   fallbacks of 3 generic locations / 3 generic objectives / ONE hardcoded ambiance sentence repeated

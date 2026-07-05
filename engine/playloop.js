@@ -1930,7 +1930,7 @@ function playerMoveCore(world, packsById, text, dqIntent) {
     && ((interiorAction.roomHint && /\b(?:room|rooms|doorway|doorways|chamber|hall|hallway)\b/i.test(String(text || '')))
       || !!namedRoomId);
   if (!combatEngageAction && !declaredNpcViolence && interiorAction.kind === 'move'
-      && (roomMoveWins || (!approachPresentNpcRef(w, text) && !talkOrApproachResolvesPresentNpc(w, text)))) {
+      && (roomMoveWins || (!isSeekPersonIntent(text) && !approachPresentNpcRef(w, text) && !talkOrApproachResolvesPresentNpc(w, text)))) {
     const wantsRiskyMove = isRiskyOrObstructedMoveIntent(interiorAction.moveText || text);
     if (!wantsRiskyMove) {
       const targetRoomId = interiorAction.toRoomId
@@ -2085,6 +2085,39 @@ function playerMoveCore(world, packsById, text, dqIntent) {
     && Boolean(resolvePresentNpcStrict(w, bridgeApproachRef) || resolvePresentNpcLoose(w, bridgeApproachRef));
   const bridgeUnknownDest = !bridgeTravelVerb && !bridgeNamedPlace
     && looksLikeNamedDestination(text) && !bridgeApproachesPresentNpc;
+  // SEEK-PERSON — the person-goal sibling of the travel bridge. A social search
+  // voiced indoors ("go find someone who can tell me who founded this outpost")
+  // names no PLACE, so the three place-triggers above all miss it and it would fall
+  // to the blocked bank ("that way is blocked from here" — a navigation refusal for
+  // a social intent). A real DM walks you out to the lane and finds you a face:
+  // exit the interior, then let the OUTDOOR seek resolve on the node roster
+  // (extractFindPersonRef → resolvePresentNpcLoose → the talk path, which delivers a
+  // real canon person or an honest in-fiction miss — never "no record"). This path
+  // does NOT require isFreeMovementIntent (a bare "find someone" carries no travel
+  // verb). GUARD: an OCCUPIED interior room resolves the seek to the person right
+  // here (no spurious exit) — only an EMPTY room bridges. The knowledge tail ("who
+  // founded X") then flows through the existing question machinery once outside.
+  const bridgeSeekPerson = isSeekPersonIntent(text)
+    && !bridgeApproachesPresentNpc
+    && !interiorRoomHasSociablePerson(w);
+  if (w.scene?.interior && !w.combat?.active && !declaredNpcViolence && bridgeSeekPerson) {
+    // Only bridge OUT when the settlement actually HAS someone to find. If the node
+    // roster is empty of sociable folk, exiting and re-running would fall to the info-
+    // seek decline ("no answer exists to give") — the exact "no record" the DM Test
+    // forbids for a person-search — and the egress-repair layer would clobber any
+    // honest miss produced after a position change. So for the empty settlement,
+    // resolve the miss IN PLACE (no exit, no position change): the player goes to the
+    // door, looks, and finds the lane silent. C9-safe (no invented name, no record
+    // claim); tried again elsewhere. reachablePersonAtNode reads the SAME node from
+    // inside or out, so this decision is stable.
+    if (!reachablePersonAtNode(w)) {
+      return { world: w, output: { narration: 'Wizard: You rise and go to the door, but the settlement is still — the lane empty at this hour, the shutters along it closed. There is no one about to ask just now; you will have to find a face elsewhere.', mechanics: '[seek-person → none about | no roll]' } };
+    }
+    const outside = exitStructureInterior(w);
+    const r = playerMoveCore(outside, packsById, text);
+    const inner = String(r?.output?.narration || '').replace(/^Wizard:\s*/, '').trim();
+    return { ...r, output: { ...(r.output || {}), narration: `Wizard: You step out into the open air. ${inner}`.trim() } };
+  }
   if (w.scene?.interior && !w.combat?.active && !declaredNpcViolence && isFreeMovementIntent(text)
       && (bridgeTravelVerb || bridgeNamedPlace || bridgeUnknownDest)) {
     const outside = exitStructureInterior(w);
@@ -5562,15 +5595,99 @@ function extractApproachRef(text) {
 }
 
 // "head to the village tavern and find the oldest person there" — extract the
-// person-descriptor from a "find <person>" clause so the DM can route to the
-// present NPC instead of bouncing with "no such place". Deliberately narrow:
-// only fires on explicit person-class keywords so "find the treasure" / "find
-// the exit" pass through unchanged.
+// person-descriptor from a seek clause ("find <person>", "look for <person>") so the
+// DM can route to the present NPC instead of bouncing with "no such place".
+// Deliberately narrow on the OBJECT of the seek: fires only on explicit person-class
+// keywords, so "find the treasure" / "find the exit" pass through unchanged.
+//
+// SEEK-PERSON widening: the generic-person family is normalized to the single token
+// "someone", which resolvePresentNpcLoose already resolves to a present sociable NPC
+// (or, unresolved, falls to the vague-talk honest clarify — never "no record"). This
+// keeps the whole family ("find somebody", "look for anyone", "search for a local")
+// on the ONE delivery path the working "find someone" case already uses. A ROLE ref
+// (elder/guard/smith/…) still returns its specific descriptor for a role-scoped match.
+const SEEK_PERSON_GENERIC_RE = /\b(?:find|locate|look\s+for|search\s+for|seek(?:\s+out)?|track\s+down|round\s+up|ask\s+around\s+for)\s+(?:the\s+|a\s+|an\s+|some\s+|any\s+)?(?:\w+\s+){0,2}?(someone|somebody|anyone|anybody|person|people|folk|local|villager|townsperson|stranger|soul)\b/i;
+const SEEK_PERSON_ROLE_RE = /\bfind\s+(?:the\s+)?(?:\w+\s+)?(man|woman|elder|baker|trader|guard|smith|merchant|innkeeper)\b/i;
+// A CONTESTED purpose flips a "find someone" from a friendly social search into an
+// action that must ROLL (rob / fight / kill / …) — "I look for someone to rob" is a
+// crime, not a greeting (U262). When the seek carries a hostile-intent cue it is NOT
+// a seek-PERSON: let it fall to the contested resolver. Scoped to unambiguous
+// violence/theft/coercion verbs so a plain "find someone to talk to / ask / help"
+// still counts.
+const SEEK_PERSON_CONTESTED_RE = /\b(?:rob|robs|robbing|steal(?:\s+from)?|steals|stealing|mug|mugs|mugging|pickpocket|pick\s+the\s+pocket|fight|fights|fighting|kill|kills|killing|attack|attacks|attacking|ambush|ambushes|ambushing|assault|assaults|assaulting|jump|jumps|jumping|hurt|hurts|hurting|harm|harms|harming|beat|beats|beating|stab|stabs|stabbing|strike|strikes|striking|threaten|threatens|threatening|intimidate|intimidates|intimidating|kidnap|kidnaps|kidnapping|subdue|subdues|subduing|silence|silences|silencing|knock\s+out|slit|corner|corners|cornering)\b/i;
 function extractFindPersonRef(text) {
-  const m = String(text || '').match(
-    /\bfind\s+(?:the\s+)?(?:\w+\s+)?(person|man|woman|elder|baker|trader|guard|smith|merchant|innkeeper|someone|anybody)\b/i
-  );
-  return (m && m[1]) ? cleanDialogueRef(m[1]) : '';
+  const t = String(text || '');
+  if (SEEK_PERSON_CONTESTED_RE.test(t)) return '';   // a hostile-purpose seek must roll, not talk
+  const g = t.match(SEEK_PERSON_GENERIC_RE);
+  if (g && g[1]) return 'someone';   // normalize the generic family to the vague token
+  const r = t.match(SEEK_PERSON_ROLE_RE);
+  return (r && r[1]) ? cleanDialogueRef(r[1]) : '';
+}
+
+// SEEK-PERSON — a SOCIAL SEARCH: "go find someone who can tell me who founded this
+// outpost", "look for anyone who knows the way", "find somebody to ask about the
+// road". The player wants to be put in front of a PERSON (any suitable one), not
+// a named acquaintance and not an object. This is the intent the INT-4-TRAVEL
+// bridge must recognize when it is voiced INDOORS: a real DM walks you out to the
+// lane and finds you a face — never "that way is blocked" (the seek names no place,
+// so the place-bridge misses it) and never routes the compound to a bogus room-move
+// ("go FIND …" → the goMatch read "find" as a room id). Deliberately narrow:
+//   • a seek/search verb (find / look for / search for / seek out / track down /
+//     hunt / ask around for) …
+//   • … aimed at a GENERIC person referent (someone / anyone / somebody / a person /
+//     people / folk / a local / a villager / a stranger / a passer-by).
+// GUARDS (return false):
+//   • an OBJECT/place seek ("find the exit / the treasure / the way out / my sword")
+//     — the generic-person referent is required, so those never match;
+//   • a NAMED person ("find Elske") — no generic referent, so it falls to the
+//     existing approach/talk path (which keeps a present NPC in the room).
+// The knowledge tail ("who can tell me X", "who knows about Y") is OPTIONAL — a bare
+// "find someone to talk to" still counts; the info goal itself flows through the
+// existing question machinery once a person is in front of the player.
+const SEEK_PERSON_VERB_RE = /\b(?:find|locate|look\s+for|looking\s+for|search\s+for|searching\s+for|seek(?:\s+out)?|track\s+down|hunt\s+(?:for|down)|ask\s+around\s+for|go\s+(?:and\s+)?(?:find|look\s+for|see|talk\s+to)|round\s+up)\b/i;
+const SEEK_PERSON_TARGET_RE = /\b(?:someone|somebody|anyone|anybody|some\s*one|a\s+person|a\s+soul|a\s+living\s+soul|(?:some|any)\s+(?:folk|person|people|villager|local|soul)|people|folk|a\s+local|a\s+villager|a\s+townsperson|a\s+stranger|a\s+passer-?by|the\s+locals?|whoever(?:'?s|\s+is)?(?:\s+(?:around|about|here|nearby))?)\b/i;
+function isSeekPersonIntent(text) {
+  const t = String(text || '').toLowerCase().trim();
+  if (!t) return false;
+  // A hostile-purpose seek ("find someone to rob/fight") is a contested action, not
+  // a friendly social search — it must roll, so it is NOT a seek-person (U262).
+  if (SEEK_PERSON_CONTESTED_RE.test(t)) return false;
+  if (!SEEK_PERSON_VERB_RE.test(t)) return false;
+  if (!SEEK_PERSON_TARGET_RE.test(t)) return false;
+  // The verb must PRECEDE the person target ("find … someone", not "someone who
+  // wants to find the map") so an object-seek clause riding alongside a person noun
+  // doesn't trip it. Uses the earliest verb / earliest target positions.
+  const verbIdx = t.search(SEEK_PERSON_VERB_RE);
+  const targetIdx = t.search(SEEK_PERSON_TARGET_RE);
+  return verbIdx >= 0 && targetIdx >= 0 && verbIdx <= targetIdx;
+}
+
+// True when the player's CURRENT interior room already holds a sociable (non-hostile)
+// person. A seek-for-anyone voiced in an OCCUPIED room ("find someone to ask")
+// resolves to the person right here — so the SEEK-PERSON bridge must NOT sweep the
+// player out the door in that case; only an EMPTY room (the wake bedchamber) bridges
+// to the outdoor roster. Occupancy is read from the same source the enter/peek paths
+// use (occupantsOfRoom), so the bridge and the in-room social paths never disagree.
+function interiorRoomHasSociablePerson(world) {
+  const interior = world?.scene?.interior || null;
+  if (!interior) return false;
+  try {
+    const occ = occupantsOfRoom(world, String(interior.structureKey || ''), String(interior.roomId || ''));
+    return Array.isArray(occ) && occ.some(n => n && !n.hostile);
+  } catch { return false; }
+}
+
+// True when a sociable (non-hostile) person is REACHABLE at the current node — out
+// in the open OR anywhere on the node roster (the seek rule walks the player to a
+// roster member). This is the SEEK-PERSON honest-miss oracle: when the bridge has
+// stepped the player outdoors and this is false, the settlement genuinely has no one
+// to find, so the seek yields an honest in-fiction miss ("the lane is empty at this
+// hour") — never the info-record decline the raw re-run would otherwise fall to.
+function reachablePersonAtNode(world) {
+  try {
+    if (outdoorOccupants(world).some(n => n && !n.hostile)) return true;
+  } catch { /* fall through to roster */ }
+  return nodeRosterNpcs(world).some(n => n && !n.hostile);
 }
 
 // Strict, NAME-only match against the non-hostile NPCs standing at the current

@@ -2759,3 +2759,11 @@ other agents. (none active)
   TT-MINIS (Sonnet — miniLibrary + corpse GLBs → defeated figures; U537–U538). In flight alongside
   LOADER-MERGE (structures) — three lanes, disjoint files. Claimed numbers through U538; MR-3b/3c
   reserve U539–U544.
+
+## 2026-07-06 — Basecamp — TT-MINIS integrated → v0.29.7 build 094 "the fallen get bodies"
+
+- Cherry-picked `d1ae6119`; check GREEN in background (10311/0, 131/131, probe clean — machine ran
+  up to three concurrent gates tonight; worker's own gate flag resolved by this mainline pass).
+  Corpse GLBs live: defeated enemies swap to Tim's minis, geometry-verified (45,424-vertex mesh,
+  grounded, fitLong honored), deterministic per entity, silent fallback to the toppled rig.
+- Next: LOADER-MERGE cherry-pick (`ee58383a`) → background check → v0.29.8 b095.

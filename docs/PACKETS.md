@@ -238,7 +238,7 @@ done_when · rollback`.
   parchment, never darkness; roads stay clear; blocking trees stop walks honestly; settlements own
   their ink. Falsifiers + non-goals in the brief.
 
-### TT-MINIS — defeated entities become corpse minis  ·  Phase 1 (map texture)  ·  **CUT + DISPATCHED 2026-07-05-night (Sonnet renderer lane; U537–U538) — reclaimed under single-conductor mode; consumes sibling's miniLibrary.js seed + Tim's corpse GLBs**
+### TT-MINIS — defeated entities become corpse minis  ·  Phase 1 (map texture)  ·  **✅ LANDED v0.29.7 b094 (worker `d1ae6119` → integrated; U537 4/4 + U538 15/15; suite 10311/0; geometry-verified: real 45k-vertex GLB flush at y=0, deterministic per entity, silent fallback; wishlist rows → wired)**
 
 ### MR-2d — windows are apertures (sight through glass, never walls)  ·  Phase 1/2 (MAP-REAL stage 2)  ·  **✅ LANDED v0.29.6 b093 (worker `5266665a` → integrated; tests renamed U523–U525 post-collision, 17/17; suite 10292/0 combined; grace edit accepted — buildLocationSurvey IS the look composition point, decision logic stayed in roomOccupancy)**
 - Windows face directions; sightlines are 90° sectors; shuttered blocks; windowless rooms see nothing;

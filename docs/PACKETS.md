@@ -130,6 +130,33 @@ done_when · rollback`.
   SL-5 (+ the SEEK-2 locket follow-up) is the next playloop dispatch — spec is the draft's §6 row verbatim
   with the settled taste calls baked in.
 
+### OCC-STORY-1 — every settlement NPC is where their story puts them  ·  Phase 1  ·  **CUT + DISPATCHED 2026-07-05-pm (engine worktree lane; brief `docs/briefs/OCC-STORY-1.md`; U491–U493)**
+- **provenance:** Tim's live playtest (v0.28.32, wake scene): a mini beside his player token that the DM
+  said wasn't there. Diagnosis (live-save probe, this window): the mini = Galen, OUTDOORS, painted inside
+  the roofless floorplan ink; and the occupancy scatter had stuffed FIVE strangers into the player's own
+  wake cottage — including **Scarvein, the seeded hostile bandit** (`ensureHostileNpc`), in the front
+  room at dawn, by accident. Root cause: `assignedPlace()` distributes over MATERIALIZED buildings only
+  (`world.structures.byId`) and at wake exactly one exists — yours.
+- **Tim's design ruling (2026-07-05):** placement must be *explained by personal story* — their own
+  buildings, or visibly up to something; "just having them materialize at random won't work." Test for
+  every placement: "why is he here?" already has an answer. Derived, seed-stable, no schema; reasons ride
+  the occupancy records so the DM can voice them.
+- **done_when:** wake cottage strangers-free; every occupant carries a narratable `reason`; hostiles get
+  purpose-spots, never idle in unrelated interiors; consumers unmodified (API additive); U491–U493 +
+  determinism ladder + `npm run check` green; playtest:quick clean.
+- **follow-ups queued:** OCC-STORY-2 (below) · TT-OCC (below).
+
+### OCC-STORY-2 — "up to something" becomes thread-driven  ·  Phase 1/4 seam  ·  **QUEUED behind OCC-STORY-1 (do not cut until 1 lands)**
+- Stage 2 of the ruling: placement overrides read live world threads/goals (worldTick) — the Lingerer
+  haunts the chapel path *because the chapel thread is hot*; a hostile indoors is a burglary IN PROGRESS
+  with consequences, not an accident. Still derived + deterministic. Scope on cut.
+
+### TT-OCC — minis never stand inside ink that isn't theirs  ·  Phase 1 (map fidelity)  ·  **QUEUED behind OCC-STORY-1 (verify against final positions, not current scatter)**
+- Renderer-side: outdoor people-minis must not render inside building floorplan ink (TT-INK rooflessness
+  makes an outdoor scatter point read as "in your bedroom" — the exact confusion Tim hit). Placement of
+  the fix: `public/map` lane (drawModel/placeFromNode token scatter or render3d gating). Done = live
+  screenshot on Tim's screen: nobody standing "indoors" who isn't.
+
 ### CARL-SHIP-1 — re-voice Carl's borrowed real-ideology vocabulary  ·  Phase 5 (door) · **SHIP-GATE**  ·  **PARKED BY DESIGN 2026-07-05 (Tim's ruling — do NOT "fix" earlier)**
 - **Tim's ruling (2026-07-05):** leave Carl AS-IS for now. Durable principle: the game must allow the
   player to participate in ANY kind of evil — and the **MORAL PHYSICS PUNISH THE EVILDOER.** Carl the

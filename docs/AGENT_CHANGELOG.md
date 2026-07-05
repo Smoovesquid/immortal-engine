@@ -2458,3 +2458,20 @@ other agents. (none active)
   article-stripping cosmetic quirk in `proposeGoal.js`'s `clean()` (goal labels read "find out
   chapel bell" not "find out the chapel bell" — confirmed universal/pre-existing across the whole
   engine, not something this packet introduced, and `proposeGoal.js` is outside this lane).
+
+## 2026-07-05 — Basecamp (second window) — ghost-figure diagnosis → OCC-STORY arc cut, stage 1 dispatched
+
+- Tim's live playtest bug ("someone in the room with me but not registering") diagnosed via read-only
+  live-save probe (separate tab, his session untouched): the figure = Galen (outdoor artisan) painted
+  inside roofless floorplan ink; deeper find — occupancy scatter had assigned all five indoor villagers
+  to the player's wake cottage (only materialized structure), incl. Scarvein the seeded hostile bandit
+  in the entry room. DM narration was truthful per-room throughout; instruments disagreeing were the
+  renderer (people layer) and the assignment model.
+- Tim's ruling: placement must be story-explained ("their respective buildings or they may be up to
+  something; materializing at random won't work"). Rearticulated as the OCC-STORY arc; his OK on record.
+- Cut + dispatched **OCC-STORY-1** (engine lane, worktree; brief `docs/briefs/OCC-STORY-1.md`;
+  U491–U493; derived story anchors + time-of-day + seeded "up to something" minority + `reason` field,
+  API-additive, no schema/WORLD_VERSION, playloop untouched). Queued **OCC-STORY-2** (thread-driven
+  stage 2) and **TT-OCC** (renderer: minis never inside foreign ink) behind it.
+- Also on record from the probe: `anthropic_key` exists in browser localStorage (purity rule 9 says
+  server-only) — needs a look; not touched this window.

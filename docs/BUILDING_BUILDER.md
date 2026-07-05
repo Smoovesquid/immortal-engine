@@ -1,8 +1,13 @@
 # The Building Builder — authoritative "what's left" list
 
 *Status 2026-07-05. The house-builder (`public/house-builder.html`) authors rich structure
-data (`house-builder/v6`); the NPC builder + mini library feed it. **Nothing built plays in
-the game yet** — there is no loader. This doc is the definitive gap list.*
+data (`house-builder/v7`); the NPC builder + mini library feed it. This doc is the definitive gap list.*
+
+**DECISION (Tim, 2026-07-05): ENGINE LEADS.** The loader maps authored data down to what the engine
+supports; richer features degrade. **In progress:** LOAD-1 (Tier 0 #1, the smallest one-room loader)
+dispatched to an engine worker (`docs/briefs/LOAD-1-smallest-loader.md`). **Done same day (tool-side):**
+Tier 1 **#6 room roles** ✅ (the engine's ~30 roles, exported optional `room.role`) and **#7 full
+furniture set** ✅ (all 39 engine furniture types via a "More…" picker). Everything else below stands.
 
 ## The one truth that shapes everything
 

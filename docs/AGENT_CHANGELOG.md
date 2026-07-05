@@ -2289,3 +2289,18 @@ other agents. (none active)
   `engine/coherence/validator.js`, `engine/llmAdapter.js` (the `finalize()` seam ONLY, per the
   brief's explicit allowance), tests U482–U484. No world-state, RNG, `WORLD_VERSION`, `playloop.js`,
   `dialogue.js`, or `grace/` touched. Live flip stays a Tim decision, unchanged by this packet.
+
+## 2026-07-05 — Basecamp (CG-2b integration → v0.28.30 build 079)
+
+- Cherry-picked worker `0f0a84ce` → `v2-polish`, clean. Ladder GREEN on the mainline: suite 9989/0
+  (exactly +32), convergence 131/131, determinism green. Released v0.28.30 b079 "the cure checks
+  itself"; front door live-verified. Worker's honest flags carried forward: (1) an intermittent
+  single-test failure on 2/7 full-suite runs in its worktree, unreproducible, own tests clean on
+  all runs — consistent with the KNOWN U381 load-flake (still the queued quiet-window item); my
+  mainline check run was green. (2) U483 end-to-end fixtures use CG-2a rather than CG-1b (a
+  pre-existing Tier-1 rule in validateNarrationCandidate catches ghost-voice one layer earlier —
+  documented in the test file).
+- State of CG-2: watch mode ON locally (.env, logs gitignored) · tier map live (CG-6 cosmetic) ·
+  swap gate live (fallback must strictly beat candidate; coherence-safe floor is the second rung) ·
+  labels threaded. **Live flip remains BLOCKED on a rehearsal at the next scheduled gate** (Tim's
+  ruling — no extra paid run).

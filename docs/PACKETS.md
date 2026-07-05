@@ -124,7 +124,7 @@ convention — worth an eye if the count grows). Cost $0.92, ledger $15.24. Clus
   Log: `docs/playtests/coherence-validate/2026-07-05.jsonl` (gitignored raw, by design). **Tim's go/no-go
   review is a five-minute look at ONE swap**, not an hour of transcript.
 
-### CG-2b — the cure must beat the disease (validator swap rule)  ·  Phase 0  ·  **CUT + DISPATCHED 2026-07-05 (Sonnet worktree; Tim's ruling: "fix first, watch meanwhile")**
+### CG-2b — the cure must beat the disease (validator swap rule)  ·  Phase 0  ·  **✅ LANDED v0.28.30 b079 (worker `0f0a84ce` → integrated `2da3c1b6`; U482–U484 32/32; suite 9989/0; tier map: CG-6 cosmetic, 11 classes structural; swap = two-rung ladder base→floor, ties denied; labels live. Live flip still BLOCKED on next-gate rehearsal per the ruling.)**
 - **provenance:** Tim's 2026-07-05 CG-2 review (the GATE 2026-07-05 shadow-compare finding, reviewed on
   screen): detector RIGHT (CG-6 clock desync, cosmetic), replacement WORSE (the deterministic base for the
   turn was an Elske "no record" dodge — proof the base can fail harder than the candidate). Ruling:

@@ -22,6 +22,7 @@ import { buildAsciiMap } from './asciiMap.js';
 import { describeInteriorLayout } from '../structures/interiors.js';
 import { getRoomState } from '../structures/roomState.js';
 import { occupantsOfRoom, outdoorOccupants } from '../structures/roomOccupancy.js';
+import { doorsOf } from '../structures/doors.js';
 
 /**
  * buildNarratorContext(world, outcome) → NarratorContext (original slim context)
@@ -406,6 +407,71 @@ function buildGoalsBlock(w) {
   return { active, completedThisSession };
 }
 
+// ── Interior plan-facts (MR-2b) ────────────────────────────────────────────
+// The DM prompt's ARCHITECTURE grounding block: the door canon (MR-2a) rendered
+// as perceivable TEXTURE so the DM describes THE house — its real doors and
+// their states — never A house it invents. This is the prompt-side twin of the
+// CG-ARCH coherence check (engine/coherence/checks.js): the check catches an
+// invented staircase after the fact; this feeds the DM the real front door +
+// any SECURED interior door so it narrates them correctly in the first place.
+//
+// HIDE-THE-MATH (Vol 17): door state is rendered in fiction words ("stands
+// barred", "is locked fast", "sits shut"), never the enum. OPEN doors are the
+// unremarkable default and are omitted (a real DM doesn't announce every open
+// doorway). CAPPED + STABLE-ORDERED (sorted by door id, ≤ DOOR_FACT_CAP
+// mentions) so an identical turn produces an identical block — no token churn,
+// no new randomness (pure f(world)). Returns null when not inside a structure.
+const DOOR_FACT_CAP = 4;
+const DOOR_STATE_TEXTURE = {
+  barred: 'stands barred from the far side',
+  locked: 'is locked fast',
+  shut: 'sits shut',
+  // open is the default — deliberately no texture line (omitted, not announced).
+};
+
+function interiorPlanFacts(w) {
+  const interior = (w?.scene && typeof w.scene.interior === 'object' && w.scene.interior) ? w.scene.interior : null;
+  if (!interior) return null;
+  const structId = String(interior.structureKey ?? '');
+  const st = w.structures?.byId?.[structId];
+  if (!st) return null;
+  const roomId = String(interior.roomId ?? '');
+
+  const doors = doorsOf(st);
+  // Stable order: the canonical door list is already sorted by id in
+  // ensureStructures, but sort defensively so the block never churns.
+  const ordered = [...doors].sort((a, b) => String(a.id).localeCompare(String(b.id)));
+
+  // The FRONT door — always worth naming (it's how the player leaves). Its
+  // direction is the doorstep direction the layout already computes; its state
+  // is canon. Rendered even when open (the way out is load-bearing orientation).
+  const ext = ordered.find(d => d && d.exterior) || null;
+  let frontDoor = null;
+  if (ext) {
+    frontDoor = {
+      state: String(ext.state || 'shut'),
+      // Whether the CURRENT room is the one the front door fronts on (so the DM
+      // knows the way out is from HERE vs. back toward the front).
+      hereFronts: String(ext.a) === roomId,
+    };
+  }
+
+  // SECURED interior doors touching THIS room (barred/locked/shut) — the ones a
+  // player perceives and must act on. Open interior doors are omitted. Capped.
+  const securedHere = [];
+  for (const d of ordered) {
+    if (!d || d.exterior) continue;
+    const touchesHere = String(d.a) === roomId || String(d.b) === roomId;
+    if (!touchesHere) continue;
+    const texture = DOOR_STATE_TEXTURE[String(d.state)];
+    if (!texture) continue; // open (or unknown) — nothing to announce
+    securedHere.push({ state: String(d.state), texture });
+    if (securedHere.length >= DOOR_FACT_CAP) break;
+  }
+
+  return { frontDoor, securedDoors: securedHere };
+}
+
 // ── Scene ─────────────────────────────────────────────────────────────────
 
 function buildScene(w, outcome) {
@@ -434,7 +500,11 @@ function buildScene(w, outcome) {
           layout: describeInteriorLayout(w),
           objects: rs.objects,
           room: rs.room,
-          material: rs.material
+          material: rs.material,
+          // MR-2b: the door canon rendered as perceivable texture (front door +
+          // any SECURED interior door), so the DM describes THE house's real
+          // doors and states — never invents them. Pure f(world); capped; stable.
+          planFacts: interiorPlanFacts(w)
         };
       })()
     : null;

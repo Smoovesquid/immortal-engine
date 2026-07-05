@@ -105,11 +105,21 @@ const GHOST_LINE_2 = 'Elske Nightherd nods slowly. "I\'ve nothing more to add."'
 // ── end-to-end fixtures (CG-2a — see the FIXTURE NOTE above) ────────────────
 // Verified empirically: all three pass Tier-1's validateNarrationCandidate
 // against a real booted 'tallow'/'escape' world (interior: Bedchamber); the
-// candidate and equalBase both hard-fail CG-2a (a wrong room-type noun), the
+// candidate and equalBase both hard-fail with EQUAL blockingFail COUNTS, the
 // cleanBase does not.
-const E2E_CANDIDATE = 'At Wayfarers\' Outpost, the kitchen opens before you, pans hanging from iron hooks.'; // CG-2a
+//
+// MR-2b note (CG-ARCH): the candidate's "kitchen" and the equal-base's "cellar"
+// each trip BOTH CG-2a (wrong current-room noun) AND CG-ARCH (a room the
+// single-storey cottage does not contain — no kitchen, no cellar). Both are
+// invented rooms, so both hard-fail with 2 blockingFails — still EQUAL, so the
+// swap gate still denies the equal-base exactly as designed. (Before CG-ARCH the
+// equal-base used "pantry", a REAL room of the cottage, which trips only CG-2a;
+// once CG-ARCH landed that made the candidate a strictly-worse 2-vs-1, breaking
+// the "equal" invariant — so the equal-base is now an invented room too, keeping
+// the pair equal while both still hard-fail CG-2a as the precondition asserts.)
+const E2E_CANDIDATE = 'At Wayfarers\' Outpost, the kitchen opens before you, pans hanging from iron hooks.'; // CG-2a + CG-ARCH (invented room)
 const E2E_CLEAN_BASE = 'At Wayfarers\' Outpost, the bedchamber is quiet, dust drifting in the low light.'; // clean
-const E2E_EQUAL_BASE = 'At Wayfarers\' Outpost, the pantry shelves stand bare in the dim light.'; // ALSO CG-2a
+const E2E_EQUAL_BASE = 'At Wayfarers\' Outpost, the cellar shelves stand bare in the dim light.'; // ALSO CG-2a + CG-ARCH (invented room) — equal count
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 1. `fallbackIsBetter` directly — the pure comparison, both directions.

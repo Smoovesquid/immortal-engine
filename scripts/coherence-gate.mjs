@@ -37,8 +37,8 @@ import { fileURLToPath } from 'node:url';
 // ── the pure Tier-D comparator core (extracted, CG-LIVE-1) ──────────────────
 import {
   snippet, SEVERITY, pointer,
-  detectPresenceDesync, detectPlaceDesync, detectExitDesync, detectObjectPhantomCommit,
-  detectCombatDesync, detectAddresseeDesync, detectQuantityDesync,
+  detectPresenceDesync, detectPlaceDesync, detectExitDesync, detectArchitectureDesync,
+  detectObjectPhantomCommit, detectCombatDesync, detectAddresseeDesync, detectQuantityDesync,
   detectTemporalDesync, detectForbiddenTokens,
   DETECTORS, SINGLE_TURN_DETECTORS, runDetectors, CLASS_LABELS,
 } from '../engine/coherence/checks.js';
@@ -47,8 +47,8 @@ import {
 // these from scripts/coherence-gate.mjs keep working byte-identically.
 export {
   snippet, SEVERITY, pointer,
-  detectPresenceDesync, detectPlaceDesync, detectExitDesync, detectObjectPhantomCommit,
-  detectCombatDesync, detectAddresseeDesync, detectQuantityDesync,
+  detectPresenceDesync, detectPlaceDesync, detectExitDesync, detectArchitectureDesync,
+  detectObjectPhantomCommit, detectCombatDesync, detectAddresseeDesync, detectQuantityDesync,
   detectTemporalDesync, detectForbiddenTokens,
   DETECTORS, SINGLE_TURN_DETECTORS, runDetectors, CLASS_LABELS,
 };

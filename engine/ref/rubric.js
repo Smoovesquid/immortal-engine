@@ -75,6 +75,43 @@ function roomExitsGroundTruth(world, room) {
   return out;
 }
 
+// MR-2b (docs/briefs/MR-2-FUNCTIONAL-INK.md §2b): the WHOLE structure's room
+// roster + storey count — the ground truth CG-ARCH needs to catch a narrated
+// room/stair/floor the building does NOT have (the WB-Q1 root soft-lock class).
+// roomExitsGroundTruth above reports only the CURRENT room's adjacent exits;
+// CG-ARCH needs every room the structure contains (so "the cellar" in a
+// cellar-less cottage is checkable) and whether it is single-storey (so an
+// invented "upper floor"/"staircase" is checkable). Sourced the SAME way as
+// roomExits — normalizeTopology + the STORED-buildingType-first precedence +
+// roomDetail's naming façade — so the roster names match what getRoomState /
+// the DM prompt call the rooms exactly (no self-inconsistent interior). Pure +
+// deterministic + read-only; never stored, never touches worldHash. null
+// outside a known interior (same graceful-degradation contract as roomExits).
+//
+// singleStorey: the engine models interiors as ONE floor (describeInteriorLayout
+// pins "single storey, no upstairs"; the DM prompt already states it as law).
+// There is no multi-floor topology in v1 (MR-2 non-goal: "stairs = room links,
+// not 3D"), so every real interior is single-storey by construction — but we
+// derive it defensively from a topology `floors`/`storeys` hint if one ever
+// appears, defaulting to true (the current, always-true reality).
+function roomPlanGroundTruth(world, room) {
+  if (!room?.inside || !room.structureId) return null;
+  const st = world?.structures?.byId?.[room.structureId];
+  const topo = normalizeTopology(st?.topology);
+  if (!topo || !Array.isArray(topo.rooms) || !topo.rooms.length) return null;
+  const type = st?.buildingType || buildingTypeFor(room.structureId);
+  const rooms = topo.rooms
+    .map(r => roomDetail(r, type)?.name)
+    .filter(Boolean);
+  // De-dupe (a cottage plan can repeat "Bedchamber") — the roster is a
+  // membership set for CG-ARCH, so duplicates add nothing but bytes.
+  const uniqueRooms = [...new Set(rooms)];
+  // Storey count: honor an explicit topology hint if one exists; otherwise the
+  // engine's single-floor reality (MR-2 non-goal). >1 floor ⇒ not single-storey.
+  const storeys = Number(topo.floors ?? topo.storeys ?? st?.floors ?? 1) || 1;
+  return { rooms: uniqueRooms, singleStorey: storeys <= 1 };
+}
+
 // CG-P4 CG-6: the world's real time-of-day, computed IDENTICALLY to the live
 // meta-answer the DM already gives a player who asks "what time is it"
 // (engine/grace/gracefulAdjudication.js META_TIME branch) — same ground truth,
@@ -129,6 +166,8 @@ export function buildCanonGroundTruth(world) {
   try { room = getRoomState(world); } catch { room = null; }
   let roomExits;
   try { roomExits = roomExitsGroundTruth(world, room); } catch { roomExits = null; }
+  let roomPlan;
+  try { roomPlan = roomPlanGroundTruth(world, room); } catch { roomPlan = null; }
   let clock;
   try { clock = timeOfDayGroundTruth(world); } catch { clock = null; }
   return {
@@ -147,6 +186,13 @@ export function buildCanonGroundTruth(world) {
     // just a wrong current-room name. null outside a known interior — old
     // JSONLs and outdoor turns alike degrade gracefully (field simply absent).
     roomExits,
+    // MR-2b CG-ARCH: the WHOLE structure's room roster + storey count, so a
+    // narrated room/stair/floor the building does NOT have (the WB-Q1 invented-
+    // geography soft-lock class) is checkable across the structure, not just the
+    // current room's compass exits. null outside a known interior (graceful
+    // degradation — old JSONLs and outdoor turns lack it and CG-ARCH stays
+    // dormant). { rooms: string[], singleStorey: bool }.
+    roomPlan,
     material: { shell: room?.material?.shell || null },
     // CG-P4 CG-6: the world clock, same computation the live "what time is it"
     // meta-answer already gives the player — so the judge can flag a narrated

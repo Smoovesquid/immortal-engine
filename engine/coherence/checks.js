@@ -420,6 +420,202 @@ export function detectExitDesync(sessionTurns) {
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
+// CG-ARCH — invented architecture (MR-2b: docs/briefs/MR-2-FUNCTIONAL-INK.md §2b)
+//
+// The historical ROOT bug class (docs/playtests/harness/WHOLE_BUILDING_FINDINGS.md
+// WB-Q1, project_dm_invents_geography): the live DM narrates ROOMS, STAIRS, and
+// FLOORS the building does not have — "a narrow staircase climbs to the upper
+// floor", "the cellar below", "the sleeping quarters overhead" in a single-storey
+// 3-room cottage — so the player navigates a fiction the engine can't honor and
+// SOFT-LOCKS (turns 7-9/17/21/23 of that playtest). MR-2a made a structure's
+// architecture CANON (rooms + doors + front door); this comparator closes the
+// coherence loop: an architecture noun the plan can't back ⇒ FAIL.
+//
+// WHY CG-2b IS NOT ENOUGH (the gap this fills, proven in the repro): CG-2b
+// (detectExitDesync) only fires on an exit noun bound to a COMPASS direction
+// ("a door to the NORTH"). The archetypal WB-Q1 line carries NO compass —
+// "a narrow staircase climbs to the upper floor ABOVE" — and CG-2b misses it
+// entirely. CG-2a (place-noun) catches a wrong CURRENT-room noun, not an
+// invented SECOND space; and only for the ~18 nouns that happen to sit in its
+// list (it misses "staircase", "upper floor", "loft", "wing", "balcony"). This
+// class is the dedicated architecture-presence check keyed off the STRUCTURE's
+// real room roster (canon.roomPlan), not just the current room.
+//
+// GROUND TRUTH: canon.roomPlan (rubric.js buildCanonGroundTruth, this packet) —
+//   { rooms: string[] (every room name the structure HAS), singleStorey: bool }
+// DORMANT (never a false flag) when roomPlan is absent from the bundle
+// (pre-MR-2b JSONLs, or any outdoor turn — no structure to check) OR when the
+// PC is not `inside` this turn. Same P-B graceful-degradation discipline as the
+// rest of the bank.
+//
+// PRECISION-FIRST — conservative by construction (under-flagging is the correct
+// failure direction for a gate). Two tiers of claim, both requiring a DEFINITE/
+// existential reference ("the cellar", "a staircase") so a mood image never
+// fires:
+//
+//   (A) VERTICAL/MULTI-STOREY nouns — staircase/stairs/stairway/upper floor/
+//       second storey/cellar/basement/attic/loft/mezzanine/balcony. A structure
+//       the bundle marks singleStorey (the wake cottage, every cottage/home in
+//       the slice) categorically has NONE of these. This is the WB-Q1 killer and
+//       is NEVER legitimate atmosphere — a single-storey building has no "floor
+//       above". Fires whenever a definite/existential vertical noun appears and
+//       singleStorey is true.
+//
+//   (B) ROOM-TYPE nouns bound to a DEFINITE article ("the kitchen", "the
+//       pantry", "the vestry") that name a room the structure's roster does NOT
+//       contain. Uses the SAME ROOM_IDENTITY_NOUNS lexicon CG-2a already trusts,
+//       but the test is roster-membership across the WHOLE structure, not the
+//       current-room name. A room the plan HAS (case/space-insensitive contains)
+//       never fires — the cottage's own "Bedchamber"/"Pantry"/"Hearth Room" are
+//       legal. Only a DEFINITE reference counts ("THE cellar", not "a cellar"
+//       spoken hypothetically, and not a bare mention) — precision over recall.
+//
+// FALSE-POSITIVE GUARDS (U508 negative suite locks these):
+//   - mood/atmosphere language ("shadowed alcoves", "dim corners", "the far
+//     end", "the back of the room") carries no architecture noun → never fires;
+//   - a NEGATED/ABSENT claim ("there is no cellar here", "no stairs lead up")
+//     is the DM correctly DENYING invented space — the WB-Q1 fix's success
+//     signal — and must never be flagged as if it asserted the space;
+//   - a room the structure genuinely has is always legal, even multi-word
+//     ("hearth room"), matched against the roster.
+// ═════════════════════════════════════════════════════════════════════════════
+
+// (A) Vertical / multi-storey architecture nouns — a single-storey building has
+// none of these BY CONSTRUCTION. Deliberately high-specificity: each is a
+// navigable second space, never a mood word.
+const VERTICAL_ARCH_NOUNS = [
+  'staircase', 'stairway', 'stairs', 'stair', 'upper floor', 'upper storey',
+  'upper story', 'second floor', 'second storey', 'second story', 'upstairs',
+  'cellar', 'basement', 'attic', 'loft', 'mezzanine', 'balcony',
+  'floor above', 'storey above', 'story above', 'room above', 'level below',
+  'floor below',
+];
+// A definite/existential lead so a bare metaphor doesn't trip it: "the/a/an" or
+// an existential "there is/stands/climbs/leads" within a short window before the
+// noun. Vertical nouns are specific enough that this stays conservative. The
+// SECOND alternative (noun immediately followed by above/overhead/below/up/down)
+// catches "stairs up", "the floor above" phrasings without a leading article.
+const VERTICAL_ARCH_RE = new RegExp(
+  `\\b(?:the|a|an|another|its?|his|her|their)\\s+(?:[a-z]+\\s+){0,2}(?:${VERTICAL_ARCH_NOUNS.map(n => n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})\\b` +
+  `|\\b(?:${VERTICAL_ARCH_NOUNS.map(n => n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})\\s+(?:above|overhead|below|beneath|underfoot|up|down)\\b`,
+  'i',
+);
+
+// A DEFINITE room-type reference: "the <room noun>". We reuse ROOM_IDENTITY_NOUNS
+// (defined below with CG-2a) via a lazily-built regex so the two comparators
+// share one lexicon. Only a definite article counts (an indefinite "a kitchen"
+// or a bare mention is not an assertion that THIS structure contains one).
+let _DEFINITE_ROOM_RE = null;
+function definiteRoomRe() {
+  if (!_DEFINITE_ROOM_RE) {
+    _DEFINITE_ROOM_RE = new RegExp(`\\bthe\\s+(${ROOM_IDENTITY_NOUNS.join('|')})\\b`, 'ig');
+  }
+  return _DEFINITE_ROOM_RE;
+}
+
+// Negation/absence guard: the DM DENYING invented space ("there is no cellar",
+// "no stairs lead anywhere", "nothing above", "no way down", "single storey, no
+// upstairs") is the WB-Q1 FIX working, not a violation. Whole-line here: a
+// single narrated sentence that denies vertical space is the fix's own success
+// signal. Covers denials in BOTH directions (up: staircase/upper floor; down:
+// cellar/basement/way down) and the explicit "no way up/down/further" idioms.
+const ARCH_NEGATION_RE = /\bno\s+(?:other\s+)?(?:stair|stairs|staircase|stairway|cellar|basement|attic|loft|upper|second\s+(?:floor|storey|story)|balcony|mezzanine|floor\s+above|way\s+(?:up|down|below|further))\b|\bnothing\s+(?:above|below|overhead|upstairs|beneath)\b|\b(?:nothing|no\s+way)\s+leads?\s+(?:up|down|below)\b|\bsingle[- ]stor(?:e?y)\b|\bone\s+floor\b|\bno\s+(?:upstairs|way\s+up|way\s+down|second\s+floor)\b|\bnowhere\s+(?:up|down|above|below|to\s+climb|to\s+descend)\b|\b(?:solid|bare)\s+(?:earth|ground|stone|floor)\b/i;
+
+// Does the structure's real room roster contain a room whose name matches this
+// narrated room noun? Case- and space-insensitive substring both ways so
+// "bedchamber" matches "Bedchamber" and "hearth room" matches "Hearth Room".
+function rosterHasRoom(rooms, narratedNoun) {
+  const want = normRoomNoun(narratedNoun).replace(/\s+/g, '');
+  if (!want) return true; // empty noun can't be a violation
+  for (const rn of rooms) {
+    const have = String(rn || '').toLowerCase().replace(/\s+/g, '');
+    if (!have) continue;
+    if (have.includes(want) || want.includes(have)) return true;
+  }
+  return false;
+}
+
+// Tier-A roster precedence: does the matched vertical-noun SPAN name a real room
+// of the structure? Some vertical nouns are also legitimate room roles ("Loft",
+// "Cellar", "Attic" can be real rooms in a roster). If the roster contains a
+// room whose (space-collapsed, lowercased) name equals one of the matched
+// vertical nouns, the narration is describing a canon room, not inventing a
+// floor. Only an EXACT roster-name match counts here (not the loose substring
+// rosterHasRoom uses) so "Hearth Room" never launders "stairs".
+function rosterHasVerticalNoun(rooms, matchedSpan) {
+  const span = String(matchedSpan || '').toLowerCase();
+  const roomSet = new Set(rooms.map(r => String(r || '').toLowerCase().replace(/\s+/g, '')));
+  if (!roomSet.size) return false;
+  for (const noun of VERTICAL_ARCH_NOUNS) {
+    if (!span.includes(noun)) continue;
+    if (roomSet.has(noun.replace(/\s+/g, ''))) return true;
+  }
+  return false;
+}
+
+export function detectArchitectureDesync(sessionTurns) {
+  const flags = [];
+  for (const t of sessionTurns) {
+    const canon = t.canon || {};
+    const dm = t.dm || '';
+    const hasRoomPlan = 'roomPlan' in canon && canon.roomPlan && typeof canon.roomPlan === 'object';
+    if (!hasRoomPlan) continue; // dormant — no structure ground truth (pre-MR-2b / outdoor)
+    const inside = canon.interior != null;
+    if (!inside) continue; // architecture claims are an interior-only surface
+    const plan = canon.roomPlan;
+    const rooms = Array.isArray(plan.rooms) ? plan.rooms : [];
+    const singleStorey = plan.singleStorey === true;
+
+    // The absence guard is whole-line here (a single narrated sentence that
+    // DENIES upstairs/cellar is the fix working — never read it as an
+    // assertion). If the line fundamentally denies vertical space, no
+    // vertical-tier flag can fire from it.
+    const isDenial = ARCH_NEGATION_RE.test(dm);
+
+    // ── Tier A: vertical / multi-storey space in a single-storey building ────
+    // ROSTER PRECEDENCE (precision guard): a vertical noun that IS a named room
+    // of THIS structure ("Loft", "Cellar" when the plan genuinely lists one) is
+    // canon, not invented — the roster wins. Only fire when the matched noun
+    // does NOT correspond to a real room the plan contains.
+    if (singleStorey && !isDenial) {
+      const m = dm.match(VERTICAL_ARCH_RE);
+      if (m && !rosterHasVerticalNoun(rooms, m[0])) {
+        flags.push(pointer({
+          cls: 'CG-ARCH', seed: t.seed, persona: t.persona, turn: t.i, span: dm,
+          canonField: 'roomPlan.singleStorey',
+          expected: 'single storey — no stairs, upper floor, cellar, attic, or loft',
+          narrated: `invented vertical architecture: "${snippet(m[0], 40)}"`,
+          severity: SEVERITY.FAIL,
+        }));
+        continue; // one architecture flag per turn is enough to reject; don't double-count
+      }
+    }
+
+    // ── Tier B: a DEFINITE room-type noun the structure's roster lacks ───────
+    const re = definiteRoomRe();
+    re.lastIndex = 0;
+    let rm;
+    while ((rm = re.exec(dm)) !== null) {
+      const noun = rm[1];
+      if (rosterHasRoom(rooms, noun)) continue; // the plan HAS this room — legal
+      // The current room's own name is always legal even if the roster read
+      // missed it (defensive): the interior.roomName is ground truth too.
+      const curName = canon.interior?.roomName;
+      if (curName && rosterHasRoom([curName], noun)) continue;
+      flags.push(pointer({
+        cls: 'CG-ARCH', seed: t.seed, persona: t.persona, turn: t.i, span: dm,
+        canonField: 'roomPlan.rooms',
+        expected: `a room the structure has (${rooms.join(', ') || 'none'})`,
+        narrated: `invented room: "the ${noun}"`,
+        severity: SEVERITY.FAIL,
+      }));
+      break; // one is enough
+    }
+  }
+  return flags;
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
 // CG-3a — object phantom-commit
 //
 // Narration asserts an IRREVERSIBLE physical change (forced lid, splintered
@@ -725,8 +921,8 @@ export function detectForbiddenTokens(sessionTurns) {
 // The full run order used by the CLI checker (scripts/coherence-gate.mjs re-
 // exports this so runCoherenceGate walks the same list).
 export const DETECTORS = [
-  detectPresenceDesync, detectPlaceDesync, detectExitDesync, detectObjectPhantomCommit,
-  detectCombatDesync, detectAddresseeDesync, detectQuantityDesync,
+  detectPresenceDesync, detectPlaceDesync, detectExitDesync, detectArchitectureDesync,
+  detectObjectPhantomCommit, detectCombatDesync, detectAddresseeDesync, detectQuantityDesync,
   detectTemporalDesync, detectForbiddenTokens,
 ];
 
@@ -742,6 +938,7 @@ export const SINGLE_TURN_DETECTORS = [
   detectPresenceDesync,       // CG-1a/1b/1c
   detectPlaceDesync,          // CG-2a (CG-2c dormant on a 1-turn array — prevRoomId null)
   detectExitDesync,           // CG-2b
+  detectArchitectureDesync,   // CG-ARCH (invented rooms/stairs/floors — MR-2b)
   detectObjectPhantomCommit,  // CG-3a
   detectCombatDesync,         // CG-4
   detectAddresseeDesync,      // CG-5
@@ -767,6 +964,7 @@ export function runDetectors(sessionTurns, detectors = DETECTORS) {
 export const CLASS_LABELS = {
   'CG-1a': 'presence erasure', 'CG-1b': 'presence ghost-voice', 'CG-1c': 'presence omission',
   'CG-2a': 'place-noun desync', 'CG-2b': 'invented exit/stair/door', 'CG-2c': 'unnarrated relocation',
+  'CG-ARCH': 'invented architecture',
   'CG-3a': 'object phantom-commit', 'CG-4': 'combat/health mirror',
   'CG-5': 'addressee desync', 'CG-7': 'ungrounded quantity', 'CG-6': 'temporal desync',
   'CG-0': '§0 forbidden-token scan',
@@ -818,6 +1016,11 @@ export const CLASS_LABELS = {
 //         state — a real DM narrating "midday" instead of "morning" would
 //         never stop the game. Tim's ruling: cosmetic AT MINIMUM. NEVER
 //         blocks, in any mode.
+//   CG-ARCH structural (MR-2b) — an invented staircase/upper-floor/cellar/room
+//         is the EXACT project_dm_invents_geography soft-lock: the player walks
+//         into space the engine can't honor and the game dead-ends (WB-Q1).
+//         This is the class MR-2 exists to make impossible; a table-breaking
+//         lie about the building's shape, not atmosphere. Blocks.
 //   CG-7  structural — WARN-severity already (never blocks); listed for
 //         completeness only.
 //
@@ -837,6 +1040,7 @@ export const CLASS_TIERS = Object.freeze({
   'CG-2a': TIER.STRUCTURAL,
   'CG-2b': TIER.STRUCTURAL,
   'CG-2c': TIER.STRUCTURAL,
+  'CG-ARCH': TIER.STRUCTURAL,
   'CG-3a': TIER.STRUCTURAL,
   'CG-4': TIER.STRUCTURAL,
   'CG-5': TIER.STRUCTURAL,

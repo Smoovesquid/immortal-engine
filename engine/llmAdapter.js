@@ -90,6 +90,46 @@ function interiorLayoutFact(interior) {
   return `The player is inside ${rooms}. From this room there is ${doors}.${wayOut} There are NO other rooms, floors, or stairs than these.${label}${objectsFact}`;
 }
 
+// MR-2b — the DOOR-STATE fact line. The door canon (MR-2a) reaches the DM as
+// perceivable texture so it narrates the real doors and their states, never
+// invents them: a barred cellar-hatch the player must lift, a front door that
+// stands open to the street. HIDE-THE-MATH — states come pre-rendered as fiction
+// ("stands barred from the far side", "is locked fast") by interiorPlanFacts in
+// narratorContext.js; this only assembles them into one law line. Returns '' when
+// there is nothing notable (no secured door, no plan-facts) — an all-open house
+// needs no door announcement, matching how a real DM narrates. Never throws.
+function interiorDoorFact(interior) {
+  const pf = interior && interior.planFacts;
+  if (!pf || typeof pf !== 'object') return '';
+  const parts = [];
+  // The front door — orientation the player leaves by. Only worth a line when
+  // it's secured OR the way out is from this very room (load-bearing wayfinding).
+  const fd = pf.frontDoor;
+  if (fd && typeof fd === 'object') {
+    const state = String(fd.state || '');
+    if (state === 'barred' || state === 'locked') {
+      parts.push(`the front door out of the building ${state === 'locked' ? 'is locked fast' : 'stands barred'}`);
+    } else if (fd.hereFronts && state === 'shut') {
+      parts.push('the front door out of the building sits shut in this room');
+    } else if (fd.hereFronts && state === 'open') {
+      parts.push('the front door out of the building stands open from this room');
+    }
+  }
+  // Secured interior doors touching this room — the ones the player must act on.
+  // Collapse identical textures into a count so two barred doors read as "two
+  // doors ... stand barred" rather than the same line twice (Table Test prose).
+  const byTexture = new Map();
+  for (const d of (Array.isArray(pf.securedDoors) ? pf.securedDoors : [])) {
+    if (!d || !d.texture) continue;
+    byTexture.set(d.texture, (byTexture.get(d.texture) || 0) + 1);
+  }
+  for (const [texture, n] of byTexture) {
+    parts.push(n > 1 ? `${n === 2 ? 'two' : n} doors from this room ${texture.replace(/^stands\b/, 'stand').replace(/^sits\b/, 'sit').replace(/^is\b/, 'are')}` : `a door from this room ${texture}`);
+  }
+  if (!parts.length) return '';
+  return `DOORS (canon — describe these exactly; a barred or locked door does not simply open, it must be lifted, forced, or picked): ${parts.join('; ')}. Invent no door, hatch, or passage beyond these and the doorways already named.`;
+}
+
 // ROM-2 — the PEOPLE HERE display list. Reads ctx.settlement.npcs (already
 // earned-name-filtered by buildNarratorContext — a name only appears once the
 // player has met that NPC or is home) and keeps only those NOT marked
@@ -161,6 +201,9 @@ export function buildSystemPrompt(ctx) {
     ? `PEOPLE HERE: ${peopleHereNames.length ? peopleHereNames.join(', ') : 'no one'}.`
     : '';
   const materialFact = (ctx.interior && ctx.roomMaterial?.line) ? String(ctx.roomMaterial.line) : '';
+  // MR-2b: the door canon rendered as perceivable texture (front door + any
+  // secured interior door). '' when nothing is notable (an all-open house).
+  const doorFact = ctx.interior ? interiorDoorFact(ctx.interior) : '';
   const presenceLawFact = ctx.interior
     ? `Anyone else at this settlement is elsewhere — never place, voice, or have them act in this room; never state a wall/floor material other than the one above.`
     : '';
@@ -179,6 +222,7 @@ export function buildSystemPrompt(ctx) {
     ...(roomNameFact ? [`- ${roomNameFact}`] : []),
     ...(peopleHereFact ? [`- ${peopleHereFact}`] : []),
     ...(materialFact ? [`- ${materialFact}`] : []),
+    ...(doorFact ? [`- ${doorFact}`] : []),
     ...(presenceLawFact ? [`- ${presenceLawFact}`] : []),
     ``
   ];

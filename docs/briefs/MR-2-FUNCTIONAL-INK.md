@@ -13,7 +13,7 @@ THE SAME plan. Anything the plan lacks does not exist; anything it has, works.
 ### MR-2a — walls block + door states (engine, serial; **WORLD_VERSION bump**)
 - Walkable mask derived from each structure's plan (walls → blocked cells; door cells = the ONLY
   struct↔region crossings; `POSITION_AS_CANON` §3 threshold law already pins this).
-- Door state = canon: `{open|shut|barred|locked}` per door, stored on the structure (schema addendum
+- **Explicit exterior/front-door record joins the schema here** (MR-1a found none exists — doorstep is currently derived from the entry room's wall; the record makes it canon). Door state = canon: `{open|shut|barred|locked}` per door, stored on the structure (schema addendum
   → ONE `WORLD_VERSION` bump, full protocol: ensureWorld defaults, invariants, old-save warn, grep
   version-embedded test strings). Default derivation seeded (homes shut, shops open by daylight,
   wake-cottage door shut-not-locked). All mutations via `applyDeltas` ops (`door` op).

@@ -2560,3 +2560,13 @@ other agents. (none active)
   U501–U502) and `MR-2-FUNCTIONAL-INK.md` (stage-2 design: 2a door-state canon w/ WORLD_VERSION bump ·
   2b DM architecture grounding · 2c house-builder loader — export shape verified from the live tool —
   · 2d window LOS). Engine slices go to Tim for OK at their dispatch.
+
+## 2026-07-05 — Basecamp (second window) — MR-1a integrated → v0.28.36 build 085; MR-1b dispatched
+
+- Cherry-picked `fc7ef397` → `7a11f607`. Ladder GREEN incl. the NEW third rung: "position probe: no
+  findings (doorstep egress honest)". Suite 10094/0, convergence 131/131. go-outside: region(-42,21)
+  247 ft teleport → region(9,4) doorstep 5 ft. Worker proved U499 failing-without-fix via stash;
+  playtest:full 500 runs clean. Honest flags carried into PACKETS (no exterior-door record — derived
+  doorstep, schema record folded into MR-2a; entry-side 5-ft-inside audited OK, exact-cell = MR-2a;
+  TAC-2 untouched).
+- MR-1b (marker reads pos; U501–U502) dispatched per the ready-to-fire brief on this landing.

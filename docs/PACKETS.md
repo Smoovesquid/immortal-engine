@@ -193,7 +193,13 @@ done_when · rollback`.
   segments + openings {x,y,orient,len}) → 2d windows as sight apertures. MR-1b brief is READY-TO-FIRE
   (`docs/briefs/MR-1b-marker-reads-pos.md`, U501–U502) — dispatches the moment MR-1a lands.
 
-### MR-1a — egress writes the doorstep: exit lands you at the door you used  ·  Phase 1 (MAP-REAL stage 1, engine serial)  ·  **CUT + DISPATCHED 2026-07-05-eve (Opus worktree; brief `docs/briefs/MR-1a-doorstep-egress.md`; U498–U500 + flips U497's todo; Tim OK on record)**
+### MR-1a — egress writes the doorstep: exit lands you at the door you used  ·  Phase 1 (MAP-REAL stage 1, engine serial)  ·  **✅ LANDED v0.28.36 b085 (worker `fc7ef397` → integrated `7a11f607`; U497 flipped + U498–U500; suite 10094/0; probe GREEN — 247 ft teleport → 5 ft doorstep; `playtest:position` now a permanent `npm run check` rung)**
+- **Worker divergence flags (honest, carried):** (1) structures have NO explicit exterior-door record
+  — doorstep derived from the entry room's outer wall (deterministic, 4-direction tested); MR-2a/2c
+  MUST add a real front-door record to the door-state schema (house-builder exports carry orient).
+  (2) Entry-side lands 5 ft inside the correct entry room (audited coherent) — exact inside door-cell
+  write = MR-1a-follow-up, folded into MR-2a. (3) walk-east currentNodeId-null stays TAC-2.
+
 - Oracle targeting data: exit NULLS `pos` → `ensureWorld` backfill re-seeds via `placeNearNode` ±50-cell
   jitter (247 ft measured). Fix: threshold crossing WRITES the door's outside cell (`POSITION_AS_CANON`
   §2/§3), backfill demoted to legacy-save repair. Done = probe green, U497 todo flipped ON,

@@ -2637,3 +2637,9 @@ other agents. (none active)
 - DOOR-FORCE-1 (Opus, serial; U513–U514): unify bare force-phrasings through the canon `door` op
   (MR-2a's honest flag). escapeCombat.js read-only — if unification truly needs it, worker stops and
   reports (two-combat-engines rule + taste).
+
+## 2026-07-05 — Basecamp (second window) — OCC-STORY-1 relaunched (Tim's explicit word)
+
+- Fresh Opus worker on the original approved brief (U491–U493); prompt carries a base-update note
+  (v0.29.2, door canon + front-door records now exist — anchors may consume doors.js read-only).
+  In flight alongside DOOR-FORCE-1 (no file overlap). MR-2d stays held until this lands.

@@ -163,7 +163,7 @@ done_when · rollback`.
   SL-5 (+ the SEEK-2 locket follow-up) is the next playloop dispatch — spec is the draft's §6 row verbatim
   with the settled taste calls baked in.
 
-### OCC-STORY-1 — every settlement NPC is where their story puts them  ·  Phase 1  ·  **⏸ WORKER STOPPED (by Tim, 12:12, zero commits — harness rule: no relaunch without his explicit word). Brief stands ready (`docs/briefs/OCC-STORY-1.md`, U491–U493 still claimed); ONE WORD relaunches it. Design + taste calls remain approved.**
+### OCC-STORY-1 — every settlement NPC is where their story puts them  ·  Phase 1  ·  **RELAUNCHED 2026-07-05-night on Tim's word (fresh Opus worktree; same brief `docs/briefs/OCC-STORY-1.md`; U491–U493) — base moved to v0.29.2 (door canon landed; roomOccupancy.js untouched, still free). MR-2d unblocks when this lands.**
 - **provenance:** Tim's live playtest (v0.28.32, wake scene): a mini beside his player token that the DM
   said wasn't there. Diagnosis (live-save probe, this window): the mini = Galen, OUTDOORS, painted inside
   the roofless floorplan ink; and the occupancy scatter had stuffed FIVE strangers into the player's own
